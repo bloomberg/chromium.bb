@@ -1271,6 +1271,9 @@ void MobileSetupHandler::GetDeviceInfo(chromeos::CellularNetwork* network,
     return;
   value->SetString("carrier", network->name());
   value->SetString("payment_url", network->payment_url());
+  if (network->using_post() && network->post_data().length())
+    value->SetString("post_data", network->post_data());
+
   const chromeos::NetworkDevice* device =
       cros->FindNetworkDeviceByPath(network->device_path());
   if (device) {

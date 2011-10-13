@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,8 +24,12 @@ cr.define('mobile', function() {
   MobileSetup.PLAN_ACTIVATION_DONE                    = 10;
   MobileSetup.PLAN_ACTIVATION_ERROR                   = 0xFF;
 
-  MobileSetup.ACTIVATION_PAGE_URL =
-    'chrome-extension://iadeocfgjdjdmpenejdbfeaocpbikmab/activation.html';
+  MobileSetup.EXTENSION_PAGE_URL =
+      'chrome-extension://iadeocfgjdjdmpenejdbfeaocpbikmab';
+  MobileSetup.ACTIVATION_PAGE_URL = MobileSetup.EXTENSION_PAGE_URL +
+                                    '/activation.html';
+  MobileSetup.REDIRECT_POST_PAGE_URL = MobileSetup.EXTENSION_PAGE_URL +
+                                       '/redirect.html';
 
   MobileSetup.localStrings_ = new LocalStrings();
 
@@ -59,7 +63,15 @@ cr.define('mobile', function() {
       $('closeButton').addEventListener('click', function(e) {
           $('finalStatus').classList.add('hidden');
       });
-      $(frame_name).addEventListener('load', function(e) {
+
+      this.changeState_({state: MobileSetup.PLAN_ACTIVATION_PAGE_LOADING});
+      setInterval(mobile.MobileSetup.drawProgress, 100);
+      // Kick off activation process.
+      chrome.send('startActivation', []);
+    },
+
+    setupPaymentFrameListener_: function() {
+      $(this.frameName_).addEventListener('load', function(e) {
         // Flip the visibility of the payment page only after the frame is
         // fully loaded.
         if (self.state_ == MobileSetup.PLAN_ACTIVATION_SHOWING_PAYMENT) {
@@ -72,29 +84,35 @@ cr.define('mobile', function() {
           $('paymentForm').classList.remove('hidden');
         }
       });
-
-      this.changeState_({state: MobileSetup.PLAN_ACTIVATION_PAGE_LOADING});
-      setInterval(mobile.MobileSetup.drawProgress, 100);
-      // Kick off activation process.
-      chrome.send('startActivation', []);
     },
 
     loadPaymentFrame_: function(deviceInfo) {
       if (deviceInfo) {
         this.deviceInfo_ = deviceInfo;
-
-        $(this.frameName_).contentWindow.location.href =
-            this.deviceInfo_.payment_url;
+        if (deviceInfo.post_data && deviceInfo.post_data.length) {
+          $(this.frameName_).contentWindow.location.href =
+              MobileSetup.REDIRECT_POST_PAGE_URL +
+              '?post_data=' + escape(deviceInfo.post_data) +
+              '&formUrl=' + escape(deviceInfo.payment_url);
+        } else {
+          this.setupPaymentFrameListener_();
+          $(this.frameName_).contentWindow.location.href =
+              deviceInfo.payment_url;
+        }
       }
     },
 
     onMessageReceived_: function(e) {
       if (e.origin !=
-            this.deviceInfo_.payment_url.substring(0, e.origin.length))
+              this.deviceInfo_.payment_url.substring(0, e.origin.length) &&
+          e.origin != MobileSetup.EXTENSION_PAGE_URL)
         return;
 
       if (e.data.type == 'requestDeviceInfoMsg') {
         this.sendDeviceInfo_();
+      } else if (e.data.type == 'framePostReady') {
+        this.setupPaymentFrameListener_();
+        this.sendPostFrame_(e.origin);
       } else if (e.data.type == 'reportTransactionStatusMsg') {
         console.log('calling setTransactionStatus from onMessageReceived_');
         $('paymentForm').classList.add('hidden');
@@ -190,6 +208,11 @@ cr.define('mobile', function() {
 
     updateDeviceStatus_: function(deviceInfo) {
       this.changeState_(deviceInfo);
+    },
+
+    sendPostFrame_ : function(frameUrl) {
+      var msg = { type: 'postFrame' };
+      $(this.frameName_).contentWindow.postMessage(msg, frameUrl);
     },
 
     sendDeviceInfo_ : function() {
