@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/sync_global_error.h"
 
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/browser/sync/sync_ui_util.h"
@@ -28,25 +29,24 @@ SyncGlobalError::~SyncGlobalError() {
 }
 
 bool SyncGlobalError::HasBadge() {
-#if defined(OS_CHROMEOS)
-  // TODO(sail): Due to http://crbug.com/96608 we don't have a wrench menu
-  // item on ChromeOS thus we don't badge the wrench menu either.
-  return false;
-#else
   return GetStatusLabelsForSyncGlobalError(service_, NULL, NULL, NULL) ==
       SYNC_ERROR;
-#endif
 }
 
 bool SyncGlobalError::HasMenuItem() {
-  // TODO(sail): Once http://crbug.com/96608 is fixed this should return
-  // true for ChromeOS.
+  // When we're on Chrome OS we need to add a separate menu item to the wrench
+  // menu to the show the error. On other platforms we can just reuse the
+  // "Sign in to Chrome..." menu item to show the error.
+#if defined(OS_CHROMEOS)
+  return GetStatusLabelsForSyncGlobalError(service_, NULL, NULL, NULL) ==
+      SYNC_ERROR;
+#else
   return false;
+#endif
 }
 
 int SyncGlobalError::MenuItemCommandID() {
-  NOTREACHED();
-  return 0;
+  return IDC_SHOW_SYNC_ERROR;
 }
 
 string16 SyncGlobalError::MenuItemLabel() {
