@@ -1,6 +1,6 @@
 {
   "name": "__MSG_extName__",
-  "version": "0.3",
+  "version": "0.4",
   "description": "__MSG_extDescription__",
   "default_locale": "en",
   "browser_action": {
@@ -16,5 +16,6 @@
   "background_page": "background.html",
   "permissions": [
     "proxy"
-  ]
+  ],
+  "content_security_policy": "default-src 'self'; img-src data:;"
 }

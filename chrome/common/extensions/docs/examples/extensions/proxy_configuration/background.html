@@ -13,17 +13,6 @@
     -->
     <script src="./proxy_form_controller.js"></script>
     <script src="./proxy_error_handler.js"></script>
-    <script>
-      var errorHandler = new ProxyErrorHandler();
-
-      // If this extension has already set the proxy settings, then reset it
-      // once as the background page initializes.  This is essential, as
-      // incognito settings are wiped on restart.
-      var persistedSettings = ProxyFormController.getPersistedSettings();
-      if (persistedSettings !== null) {
-        chrome.proxy.settings.set(
-            {'value': persistedSettings.regular});
-      }
-    </script>
+    <script src="./background.js"></script>
   </body>
 </html>
