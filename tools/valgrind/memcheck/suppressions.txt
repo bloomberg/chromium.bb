@@ -4718,11 +4718,6 @@
    fun:_ZN7WebCore11RenderBlock6layoutEv
 }
 {
-   bug_100315
-   Memcheck:Cond
-   fun:_ZN7browser8NavigateEPNS_14NavigateParamsE
-}
-{
    bug_100330
    Memcheck:Leak
    fun:_Znw*
