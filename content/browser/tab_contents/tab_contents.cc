@@ -820,7 +820,12 @@ double TabContents::GetZoomLevel() const {
     zoom_level = zoom_map->GetTemporaryZoomLevel(
         GetRenderProcessHost()->id(), render_view_host()->routing_id());
   } else {
-    zoom_level = zoom_map->GetZoomLevel(net::GetHostOrSpecFromURL(GetURL()));
+    GURL url;
+    NavigationEntry* active_entry = controller().GetActiveEntry();
+    // Since zoom map is updated using rewritten URL, use rewritten URL
+    // to get the zoom level.
+    url = active_entry ? active_entry->url() : GURL::EmptyGURL();
+    zoom_level = zoom_map->GetZoomLevel(net::GetHostOrSpecFromURL(url));
   }
   return zoom_level;
 }
