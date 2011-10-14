@@ -7,6 +7,5 @@
 
 // PLEASE DO NOT LEAVE ENTRIES IN THIS FILE FOR MORE THAN 24 HRS.
 
-// rebaseline after skia rev. 2351 lands
-BUG_BSALOMON WIN MAC LINUX GPU: fast/canvas/canvas-composite-transformclip.html = IMAGE
-BUG_BSALOMON WIN MAC LINUX GPU: fast/canvas/canvas-composite.html = IMAGE
+// This needs to be rebaselined (B/W text became grayscale on linux)
+BUG_BSALOMON : media/video-playing-and-pause.html = IMAGE

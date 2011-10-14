@@ -29,7 +29,7 @@ vars = {
   "libvpx_revision": "103347",
   "ffmpeg_revision": "105457",
   "sfntly_revision": "98",
-  "skia_revision": "2465",
+  "skia_revision": "2478",
   "v8_revision": "9442",
   "webrtc_revision": "711",
 
@@ -113,9 +113,6 @@ deps = {
   "src/third_party/sfntly/src/sfntly":
     (Var("googlecode_url") % "sfntly") + "/trunk/cpp/src/sfntly@" +
     Var("sfntly_revision"),
-
-  "src/third_party/skia/gpu":
-    (Var("googlecode_url") % "skia") + "/trunk/gpu@" + Var("skia_revision"),
 
   "src/third_party/skia/src":
     (Var("googlecode_url") % "skia") + "/trunk/src@" + Var("skia_revision"),

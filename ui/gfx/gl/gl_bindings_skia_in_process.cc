@@ -6,10 +6,9 @@
 #include "ui/gfx/gl/gl_bindings_skia_in_process.h"
 
 #include "base/logging.h"
+#include "third_party/skia/include/gpu/GrGLInterface.h"
 #include "ui/gfx/gl/gl_bindings.h"
 #include "ui/gfx/gl/gl_implementation.h"
-
-#include "third_party/skia/gpu/include/GrGLInterface.h"
 
 namespace {
 
