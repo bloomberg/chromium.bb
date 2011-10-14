@@ -14,20 +14,20 @@
 #include "native_client/tests/toolchain/utils.h"
 
 /*  __builtin_popcount(x) */
-uint32_t llvm_intrinsic_ctpop(uint32_t) asm("llvm.ctpop.i32");
-uint64_t llvm_intrinsic_ctpopll(uint64_t) asm("llvm.ctpop.i64");
+uint32_t llvm_intrinsic_ctpop(uint32_t) __asm__("llvm.ctpop.i32");
+uint64_t llvm_intrinsic_ctpopll(uint64_t) __asm__("llvm.ctpop.i64");
 
 /* __builtin_clz(x) */
-uint32_t llvm_intrinsic_ctlz(uint32_t) asm("llvm.ctlz.i32");
-uint64_t llvm_intrinsic_ctlzll(uint64_t) asm("llvm.ctlz.i64");
+uint32_t llvm_intrinsic_ctlz(uint32_t) __asm__("llvm.ctlz.i32");
+uint64_t llvm_intrinsic_ctlzll(uint64_t) __asm__("llvm.ctlz.i64");
 
 /* __builtin_ctz(x) */
-uint32_t llvm_intrinsic_cttz(uint32_t) asm("llvm.cttz.i32");
-uint64_t llvm_intrinsic_cttzll(uint64_t) asm("llvm.cttz.i64");
+uint32_t llvm_intrinsic_cttz(uint32_t) __asm__("llvm.cttz.i32");
+uint64_t llvm_intrinsic_cttzll(uint64_t) __asm__("llvm.cttz.i64");
 
 /* __builtin_bswap32(x) */
-uint32_t llvm_intrinsic_bswap(uint32_t) asm("llvm.bswap.i32");
-uint64_t llvm_intrinsic_bswapll(uint64_t) asm("llvm.bswap.i64");
+uint32_t llvm_intrinsic_bswap(uint32_t) __asm__("llvm.bswap.i32");
+uint64_t llvm_intrinsic_bswapll(uint64_t) __asm__("llvm.bswap.i64");
 
 /* volatile prevents partial evaluation by llvm */
 volatile uint32_t i32[] = {0xaa, 0xaa00};

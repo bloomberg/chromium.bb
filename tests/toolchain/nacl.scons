@@ -46,10 +46,6 @@ TESTS_TO_RUN = [
      ('initfini.c', '0', True, env.Bit('bitcode')),
 ]
 
-# BUG=http://code.google.com/p/nativeclient/issues/detail?id=2334
-if env.Bit('bitcode'):
-  env.FilterOut(CCFLAGS=['-pedantic'])
-
 for src, exit_status, golden_file, cond in TESTS_TO_RUN:
   if not cond: continue
   name = src.split('.')[0]

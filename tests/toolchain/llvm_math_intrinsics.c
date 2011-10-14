@@ -33,32 +33,32 @@ volatile double base64 = 2.0;
  * c.f. for a list of these
  * llvm-trunk/lib/CodeGen/SelectionDAG/TargetLowering.cpp
  */
-double llvm_intrinsic_sqrt(double) asm("llvm.sqrt.f64");
-float llvm_intrinsic_sqrtf(float) asm("llvm.sqrt.f32");
+double llvm_intrinsic_sqrt(double) __asm__("llvm.sqrt.f64");
+float llvm_intrinsic_sqrtf(float) __asm__("llvm.sqrt.f32");
 
-double llvm_intrinsic_log(double) asm("llvm.log.f64");
-float llvm_intrinsic_logf(float) asm("llvm.log.f32");
+double llvm_intrinsic_log(double) __asm__("llvm.log.f64");
+float llvm_intrinsic_logf(float) __asm__("llvm.log.f32");
 
-double llvm_intrinsic_log2(double) asm("llvm.log2.f64");
-float llvm_intrinsic_log2f(float) asm("llvm.log2.f32");
+double llvm_intrinsic_log2(double) __asm__("llvm.log2.f64");
+float llvm_intrinsic_log2f(float) __asm__("llvm.log2.f32");
 
-double llvm_intrinsic_log10(double) asm("llvm.log10.f64");
-float llvm_intrinsic_log10f(float) asm("llvm.log10.f32");
+double llvm_intrinsic_log10(double) __asm__("llvm.log10.f64");
+float llvm_intrinsic_log10f(float) __asm__("llvm.log10.f32");
 
-double llvm_intrinsic_exp(double) asm("llvm.exp.f64");
-float llvm_intrinsic_expf(float) asm("llvm.exp.f32");
+double llvm_intrinsic_exp(double) __asm__("llvm.exp.f64");
+float llvm_intrinsic_expf(float) __asm__("llvm.exp.f32");
 
-double llvm_intrinsic_exp2(double) asm("llvm.exp2.f64");
-float llvm_intrinsic_exp2f(float) asm("llvm.exp2.f32");
+double llvm_intrinsic_exp2(double) __asm__("llvm.exp2.f64");
+float llvm_intrinsic_exp2f(float) __asm__("llvm.exp2.f32");
 
-double llvm_intrinsic_sin(double) asm("llvm.sin.f64");
-float llvm_intrinsic_sinf(float) asm("llvm.sin.f32");
+double llvm_intrinsic_sin(double) __asm__("llvm.sin.f64");
+float llvm_intrinsic_sinf(float) __asm__("llvm.sin.f32");
 
-double llvm_intrinsic_cos(double) asm("llvm.cos.f64");
-float llvm_intrinsic_cosf(float) asm("llvm.cos.f32");
+double llvm_intrinsic_cos(double) __asm__("llvm.cos.f64");
+float llvm_intrinsic_cosf(float) __asm__("llvm.cos.f32");
 
-double llvm_intrinsic_pow(double, double) asm("llvm.pow.f64");
-float llvm_intrinsic_powf(float, float) asm("llvm.pow.f32");
+double llvm_intrinsic_pow(double, double) __asm__("llvm.pow.f64");
+float llvm_intrinsic_powf(float, float) __asm__("llvm.pow.f32");
 
 #define print_op1(op, x) \
   printf("%s: %.6f\n", #op, llvm_intrinsic_ ## op(x))
