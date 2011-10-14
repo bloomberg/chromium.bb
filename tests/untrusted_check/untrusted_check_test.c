@@ -1,7 +1,7 @@
 /*
- * Copyright 2011 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include "native_client/src/shared/platform/nacl_check.h"
@@ -23,6 +23,7 @@
 int main(void) {
   /* NaClPlatformInit(); -- not available in untrusted platform lib */
   NaClLogModuleInit();
-  NaClLog(0, "Log output\n");
+  NaClLog(LOG_INFO, "Log output\n");
   CHECK(0);
+  return 0;
 }
