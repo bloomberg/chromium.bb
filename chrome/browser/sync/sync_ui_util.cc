@@ -389,7 +389,7 @@ bool ShouldShowSyncErrorButton(ProfileSyncService* service) {
          ((!service->IsManaged() &&
            service->HasSyncSetupCompleted()) &&
          (GetStatus(service) == sync_ui_util::SYNC_ERROR ||
-          service->IsPassphraseRequiredForDecryption()));
+          service->IsPassphraseRequired()));
 }
 
 string16 GetSyncMenuLabel(ProfileSyncService* service) {
