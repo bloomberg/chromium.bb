@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/native_library.h"
 #include "base/path_service.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/stringprintf.h"
 #include "ui/gfx/gl/gl_bindings.h"
 #include "ui/gfx/gl/gl_implementation.h"
@@ -59,6 +60,12 @@ bool InitializeGLBindings(GLImplementation implementation) {
   // later switch to another GL implementation.
   if (GetGLImplementation() != kGLImplementationNone)
     return true;
+
+  // Allow the main thread or another to initialize these bindings
+  // after instituting restrictions on I/O. Going forward they will
+  // likely be used in the browser process on most platforms. The
+  // one-time initialization cost is small, between 2 and 5 ms.
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
 
   switch (implementation) {
     case kGLImplementationOSMesaGL: {
