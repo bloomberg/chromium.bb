@@ -149,8 +149,7 @@ static INLINE Bool NaClIsValidMemOffset(
 }
 
 void NaClMemoryReferenceValidator(NaClValidatorState* state,
-                                  NaClInstIter* iter,
-                                  void* ignore) {
+                                  NaClInstIter* iter) {
   uint32_t i;
   NaClInstState* inst_state = state->cur_inst_state;
   NaClExpVector* vector = state->cur_inst_vector;

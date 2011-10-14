@@ -20,26 +20,53 @@
 # endif
 #endif
 
+NaClValidationStatus NaClValidatorSetup_x86_64(
+    uintptr_t guest_addr,
+    size_t size,
+    int bundle_size,
+    Bool local_cpu,
+    struct NaClValidatorState** vstate_ptr) {
+  CPUFeatures features;
+  CPUFeatures* apply_features;
+  if (local_cpu) {
+    apply_features = NULL;
+  } else {
+    apply_features = &features;
+    NaClSetAllCPUFeatures(apply_features);
+  }
+  *vstate_ptr = NaClValidatorStateCreate(guest_addr, size, bundle_size, RegR15,
+                                         apply_features);
+  return (*vstate_ptr == NULL)
+      ? NaClValidationFailedOutOfMemory
+      : NaClValidationSucceeded;     /* or at least to this point! */
+}
+
+Bool NaClSegmentValidate_x86_64(
+    uintptr_t guest_addr,
+    uint8_t *data,
+    size_t size,
+    struct NaClValidatorState* vstate) {
+  Bool is_ok;
+  NaClValidateSegment(data, guest_addr, size, vstate);
+  is_ok = NaClValidatesOk(vstate);
+  NaClValidatorStateDestroy(vstate);
+  return is_ok;
+}
+
 static NaClValidationStatus NaClApplyValidatorSilently_x86_64(
     uintptr_t guest_addr,
     uint8_t *data,
     size_t size,
     int bundle_size,
     Bool local_cpu) {
-  CPUFeatures features;
-  int is_ok;
-  struct NaClValidatorState *vstate =
-      NaClValidatorStateCreate(guest_addr, size, bundle_size, RegR15);
-  if (vstate == NULL) return NaClValidationFailedOutOfMemory;
+  struct NaClValidatorState *vstate;
+  NaClValidationStatus status =
+      NaClValidatorSetup_x86_64(guest_addr, size, bundle_size, local_cpu,
+                                &vstate);
+  if (status != NaClValidationSucceeded) return status;
   NaClValidatorStateSetLogVerbosity(vstate, LOG_ERROR);
-  if (!local_cpu) {
-    NaClSetAllCPUFeatures(&features);
-    NaClValidatorStateSetCPUFeatures(vstate, &features);
-  }
-  NaClValidateSegment(data, guest_addr, size, vstate);
-  is_ok = NaClValidatesOk(vstate);
-  NaClValidatorStateDestroy(vstate);
-  return is_ok ? NaClValidationSucceeded : NaClValidationFailed;
+  return NaClSegmentValidate_x86_64(guest_addr, data, size, vstate)
+      ? NaClValidationSucceeded : NaClValidationFailed;
 }
 
 NaClValidationStatus NaClApplyValidatorStubout_x86_64(
@@ -48,17 +75,13 @@ NaClValidationStatus NaClApplyValidatorStubout_x86_64(
     size_t size,
     int bundle_size,
     Bool local_cpu) {
-  CPUFeatures features;
-  struct NaClValidatorState *vstate =
-      NaClValidatorStateCreate(guest_addr, size, bundle_size, RegR15);
-  if (vstate == NULL) return NaClValidationFailedOutOfMemory;
+  struct NaClValidatorState *vstate;
+  NaClValidationStatus status =
+      NaClValidatorSetup_x86_64(guest_addr, size, bundle_size, local_cpu,
+                                &vstate);
+  if (status != NaClValidationSucceeded) return status;
   NaClValidatorStateSetDoStubOut(vstate, TRUE);
-  if (!local_cpu) {
-    NaClSetAllCPUFeatures(&features);
-    NaClValidatorStateSetCPUFeatures(vstate, &features);
-  }
-  NaClValidateSegment(data, guest_addr, size, vstate);
-  NaClValidatorStateDestroy(vstate);
+  NaClSegmentValidate_x86_64(guest_addr, data, size, vstate);
   return NaClValidationSucceeded;
 }
 
@@ -102,9 +125,11 @@ static NaClValidationStatus NaClApplyValidatorPair(
     size_t size,
     int bundle_size) {
   int is_ok;
-  struct NaClValidatorState *vstate =
-      NaClValidatorStateCreate(guest_addr, size, bundle_size, RegR15);
-  if (vstate == NULL) return NaClValidationFailedOutOfMemory;
+  struct NaClValidatorState *vstate;
+  NaClValidationStatus status =
+      NaClValidatorSetup_x86_64(guest_addr, size, bundle_size, FALSE,
+                                &vstate);
+  if (status != NaClValidationSucceeded) return status;
   NaClValidatorStateSetLogVerbosity(vstate, LOG_ERROR);
   NaClValidateSegmentPair(data_old, data_new, guest_addr, size, vstate);
   is_ok = NaClValidatesOk(vstate);

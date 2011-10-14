@@ -11,11 +11,6 @@
  * nc_jumps.h - Implements set of possible jump points, and set of
  * actual jump points, and the verification that the possible
  * (explicit) jumps only apply to valid actual jumps.
- *
- * Note: The functions JumpValidatorCreate, JumpValidator,
- * JumpValidatorSummarize, and JumValidatorDestroy are used to
- * register JumpValidator as a validator function to be applied
- * to a validated segment, as defined in ncvalidate_iter.h.
  */
 
 #include <stdio.h>
@@ -63,35 +58,30 @@ typedef struct NaClJumpSets {
  */
 extern Bool NACL_FLAGS_identity_mask;
 
-/* Creates jump sets to track the set of possible and actual (explicit)
- * address.
+/* Initializes jump sets to track the set of possible and actual (explicit)
+ * address. Returns true if successful.
  */
-struct NaClJumpSets* NaClJumpValidatorCreate(struct NaClValidatorState* state);
+Bool NaClJumpValidatorInitialize(struct NaClValidatorState* state);
 
 /* Collects information on instruction addresses, and where explicit jumps
  * go to.
  */
 void NaClJumpValidator(struct NaClValidatorState* state,
-                       struct NaClInstIter* iter,
-                       struct NaClJumpSets* jump_sets);
+                       struct NaClInstIter* iter);
 
 /* Don't record anything but the instruction address, in order to validate
  * basic block alignment at the end of validation.
  */
 void NaClJumpValidatorRememberIpOnly(struct NaClValidatorState* state,
-                       struct NaClInstIter* iter,
-                       struct NaClJumpSets* jump_sets);
+                                     struct NaClInstIter* iter);
 
 /* Compares the collected actual jumps and the set of possible jump points,
  * and reports any descrepancies that don't follow NACL rules.
  */
-void NaClJumpValidatorSummarize(struct NaClValidatorState* state,
-                                struct NaClInstIter* iter,
-                                struct NaClJumpSets* jump_sets);
+void NaClJumpValidatorSummarize(struct NaClValidatorState* state);
 
 /* Cleans up memory used by the jump validator. */
-void NaClJumpValidatorDestroy(struct NaClValidatorState* state,
-                              struct NaClJumpSets* jump_sets);
+void NaClJumpValidatorCleanUp(struct NaClValidatorState* state);
 
 /* Record that the given instruction can't be a possible target of a jump,
  * because it appears as the non-first

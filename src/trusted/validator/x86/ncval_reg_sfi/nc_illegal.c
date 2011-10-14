@@ -428,9 +428,7 @@ static void NaClReportWhyNaClIllegal(NaClValidatorState* state,
   }
 }
 
-void NaClValidateInstructionLegal(NaClValidatorState* state,
-                                  NaClInstIter* iter,
-                                  void* ignore) {
+void NaClValidateInstructionLegal(NaClValidatorState* state) {
   Bool is_legal = TRUE;
   NaClDisallowsFlags disallows_flags = NACL_EMPTY_DISALLOWS_FLAGS;
   DEBUG_OR_ERASE({

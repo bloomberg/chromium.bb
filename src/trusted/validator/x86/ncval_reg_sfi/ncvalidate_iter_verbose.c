@@ -12,27 +12,9 @@
 
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/ncvalidate_iter.h"
 
-#include <assert.h>
-#include <string.h>
-
-#include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
-#include "native_client/src/trusted/validator/x86/decoder/ncop_exps.h"
-#include "native_client/src/trusted/validator/x86/decoder/nc_inst_iter.h"
 #include "native_client/src/trusted/validator/x86/decoder/nc_inst_state_internal.h"
-#include "native_client/src/trusted/validator/x86/halt_trim.h"
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/ncvalidate_iter_internal.h"
-#include "native_client/src/trusted/validator/x86/ncval_reg_sfi/ncvalidator_registry.h"
-#include "native_client/src/trusted/validator/x86/ncval_reg_sfi/nc_jumps.h"
-#include "native_client/src/trusted/validator/x86/nc_segment.h"
-#include "native_client/src/trusted/validator_x86/ncdis_decode_tables.h"
-
-/* To turn on debugging of instruction decoding, change value of
- * DEBUGGING to 1.
- */
-#define DEBUGGING 0
-
-#include "native_client/src/shared/utils/debugging.h"
 
 void NaClValidatorStateSetErrorReporter(NaClValidatorState *state,
                                         NaClErrorReporter *reporter) {

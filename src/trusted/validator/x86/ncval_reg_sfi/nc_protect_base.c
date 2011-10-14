@@ -31,60 +31,26 @@
 #include "native_client/src/trusted/validator/x86/decoder/ncop_exps_inl.c"
 #include "native_client/src/trusted/validator/x86/decoder/nc_inst_iter_inl.c"
 
-/* Defines locals used by the NaClBaseRegisterValidator to
- * record registers set in the current instruction, that are
- * a problem if not used correctly in the next instruction.
- */
-typedef struct NaClRegisterLocals {
-  /* Points to an instruction that contains an assignment to register ESP,
-   * or NULL if the instruction doesn't set ESP. This is done so that we
-   * can check if the next instruction uses the value of ESP to update RSP
-   * (if not, we need to report that ESP is incorrectly assigned).
-   */
-  NaClInstState* esp_set_inst;
-  /* Points to the instruction that contains an assignment to register EBP,
-   * or NULL if the instruction doesn't set EBP. This is done so that we
-   * can check if the next instruciton uses the value of EBP to update RBP
-   * (if not, we need to report that EBP is incorrectly assigned).
-   */
-  NaClInstState* ebp_set_inst;
-} NaClRegisterLocals;
-
-/* Ths size of the circular buffer, used to keep track of registers
- * assigned in the previous instruction, that must be correctly used
- * in the current instruction, or reported as an error.
- */
-#define NACL_REGISTER_LOCALS_BUFFER_SIZE 2
-
-/* A circular buffer of two elements, used to  keep track of the
- * current/previous instruction.
- */
-typedef struct NaClBaseRegisterLocals {
-  NaClRegisterLocals buffer[NACL_REGISTER_LOCALS_BUFFER_SIZE];
-  int previous_index;
-  int current_index;
-} NaClBaseRegisterLocals;
-
 static void NaClReportIllegalChangeToRsp(NaClValidatorState* state,
                                          NaClInstState* inst) {
   NaClValidatorInstMessage(LOG_ERROR, state, inst,
                            "Illegal assignment to RSP\n");
 }
 
-/* Checks flags in the given locals, and reports any
+/* Checks flags in the possible set base registers, and reports any
  * previous instructions that were marked as bad.
  *
  * Parameters:
  *   state - The state of the validator.
  *   iter - The instruction iterator being used by the validator.
- *   locals - The locals used by validator NaClBaseRegisterValidator.
  */
-static void NaClMaybeReportPreviousBad(NaClValidatorState* state,
-                                       NaClBaseRegisterLocals* locals) {
+static INLINE void NaClMaybeReportPreviousBad(NaClValidatorState* state) {
   NaClInstState* prev_esp_set_inst =
-      locals->buffer[locals->previous_index].esp_set_inst;
+      state->set_base_registers.buffer[
+          state->set_base_registers.previous_index].esp_set_inst;
   NaClInstState* prev_ebp_set_inst =
-      locals->buffer[locals->previous_index].ebp_set_inst;
+      state->set_base_registers.buffer[
+          state->set_base_registers.previous_index].ebp_set_inst;
 
   /* First check if previous register references are not followed
    * by acceptable instructions.
@@ -94,45 +60,34 @@ static void NaClMaybeReportPreviousBad(NaClValidatorState* state,
                              state,
                              prev_esp_set_inst,
                              "Illegal assignment to ESP\n");
-    locals->buffer[locals->previous_index].esp_set_inst = NULL;
+    state->set_base_registers.buffer[
+        state->set_base_registers.previous_index].esp_set_inst = NULL;
   }
   if (NULL != prev_ebp_set_inst) {
     NaClValidatorInstMessage(LOG_ERROR,
                              state,
                              prev_ebp_set_inst,
                              "Illegal assignment to EBP\n");
-    locals->buffer[locals->previous_index].ebp_set_inst = NULL;
+    state->set_base_registers.buffer[
+        state->set_base_registers.previous_index].ebp_set_inst = NULL;
   }
 
   /* Now advance the register recording by one instruction. */
-  locals->previous_index = locals->current_index;
-  locals->current_index = ((locals->current_index + 1)
-                           % NACL_REGISTER_LOCALS_BUFFER_SIZE);
+  state->set_base_registers.previous_index =
+      state->set_base_registers.current_index;
+  state->set_base_registers.current_index =
+      ((state->set_base_registers.current_index + 1)
+       % NACL_REGISTER_LOCALS_BUFFER_SIZE);
 }
 
-NaClBaseRegisterLocals* NaClBaseRegisterMemoryCreate(
-    NaClValidatorState* state) {
+void NaClBaseRegisterMemoryInitialize(NaClValidatorState* state) {
   int i;
-  NaClBaseRegisterLocals* locals = (NaClBaseRegisterLocals*)
-      malloc(sizeof(NaClBaseRegisterLocals));
-  if (NULL == locals) {
-    NaClValidatorMessage(
-        LOG_ERROR, state,
-        "Out of memory, can't allocate NaClBaseRegisterLocals\n");
-  } else {
-    for (i = 0; i < NACL_REGISTER_LOCALS_BUFFER_SIZE; ++i) {
-      locals->buffer[i].esp_set_inst = NULL;
-      locals->buffer[i].ebp_set_inst = NULL;
-    }
-    locals->previous_index = 0;
-    locals->current_index = 1;
+  for (i = 0; i < NACL_REGISTER_LOCALS_BUFFER_SIZE; ++i) {
+    state->set_base_registers.buffer[i].esp_set_inst = NULL;
+    state->set_base_registers.buffer[i].ebp_set_inst = NULL;
   }
-  return locals;
-}
-
-void NaClBaseRegisterMemoryDestroy(NaClValidatorState* state,
-                                   NaClBaseRegisterLocals* locals) {
-  free(locals);
+  state->set_base_registers.previous_index = 0;
+  state->set_base_registers.current_index = 1;
 }
 
 /* Returns true if the instruction is of the form
@@ -237,13 +192,11 @@ static Bool NaClAcceptRegMoveLea32To64(struct NaClValidatorState* state,
  * Parameters are:
  *   state - The state of the validator.
  *   iter  - The instruction iterator (defining the current instruction).
- *   locals- Pointer to the instructions defining propagated registers.
  *   i     - The index of the node (in the expression tree) that
  *           assigns the RSP register.
  */
 static void NaClCheckRspAssignments(struct NaClValidatorState* state,
                                     NaClInstIter* iter,
-                                    NaClBaseRegisterLocals* locals,
                                     uint32_t i) {
   /*
    * Only allow one of:
@@ -337,7 +290,8 @@ static void NaClCheckRspAssignments(struct NaClValidatorState* state,
             DEBUG(printf("nc protect esp for zero extend, or or/add "
                          "constant\n"));
             NaClMarkInstructionJumpIllegal(state, inst_state);
-            locals->buffer[locals->previous_index].esp_set_inst = NULL;
+            state->set_base_registers.buffer[
+                state->set_base_registers.previous_index].esp_set_inst = NULL;
             return;
           }
         }
@@ -351,7 +305,8 @@ static void NaClCheckRspAssignments(struct NaClValidatorState* state,
          */
         DEBUG(printf("nc protect esp for lea\n"));
         NaClMarkInstructionJumpIllegal(state, inst_state);
-        locals->buffer[locals->previous_index].esp_set_inst = NULL;
+        state->set_base_registers.buffer[
+            state->set_base_registers.previous_index].esp_set_inst = NULL;
         return;
       }
       break;
@@ -385,13 +340,11 @@ static void NaClCheckRspAssignments(struct NaClValidatorState* state,
  * Parameters are:
  *   state - The state of the validator.
  *   iter  - The instruction iterator (defining the current instruction).
- *   locals- Pointer to the instructions defining propagated registers.
  *   i     - The index of the node (in the expression tree) that
  *           assigns the RSP register.
  */
 static void NaClCheckRbpAssignments(struct NaClValidatorState* state,
                                     NaClInstIter* iter,
-                                    NaClBaseRegisterLocals* locals,
                                     uint32_t i) {
   /* (1) mov %rbp, %rsp
    *
@@ -434,7 +387,8 @@ static void NaClCheckRbpAssignments(struct NaClValidatorState* state,
                 prev_state, RegEBP)) {
           /* case 2. */
           NaClMarkInstructionJumpIllegal(state, inst_state);
-          locals->buffer[locals->previous_index].ebp_set_inst = NULL;
+          state->set_base_registers.buffer[
+              state->set_base_registers.previous_index].ebp_set_inst = NULL;
           return;
         }
       }
@@ -442,7 +396,8 @@ static void NaClCheckRbpAssignments(struct NaClValidatorState* state,
     case InstLea:
       if (NaClAcceptRegMoveLea32To64(state, iter, inst, RegRBP)) {
         /* case 3 */
-        locals->buffer[locals->previous_index].ebp_set_inst = NULL;
+        state->set_base_registers.buffer[
+            state->set_base_registers.previous_index].ebp_set_inst = NULL;
         return;
       }
       break;
@@ -488,8 +443,7 @@ static void NaClCheckSubregChangeOfRspRbpOrBase(
 }
 
 void NaClBaseRegisterValidator(struct NaClValidatorState* state,
-                               struct NaClInstIter* iter,
-                               NaClBaseRegisterLocals* locals) {
+                               struct NaClInstIter* iter) {
   uint32_t i;
   NaClInstState* inst_state = state->cur_inst_state;
   NaClExpVector* vector = state->cur_inst_vector;
@@ -516,22 +470,26 @@ void NaClBaseRegisterValidator(struct NaClValidatorState* state,
         } else {
           switch (reg_name) {
             case RegRSP:
-              NaClCheckRspAssignments(state, iter, locals, i);
+              NaClCheckRspAssignments(state, iter, i);
               break;
             case RegRBP:
-              NaClCheckRbpAssignments(state, iter, locals, i);
+              NaClCheckRbpAssignments(state, iter, i);
               break;
             case RegESP:
               /* Record that we must recheck this after we have
                * moved to the next instruction.
                */
-              locals->buffer[locals->current_index].esp_set_inst = inst_state;
+              state->set_base_registers.buffer[
+                  state->set_base_registers.current_index
+                                               ].esp_set_inst = inst_state;
               break;
             case RegEBP:
               /* Record that we must recheck this after we have
                * moved to the next instruction.
                */
-              locals->buffer[locals->current_index].ebp_set_inst = inst_state;
+              state->set_base_registers.buffer[
+                  state->set_base_registers.current_index
+                                               ].ebp_set_inst = inst_state;
               break;
             case RegCS:
             case RegDS:
@@ -555,12 +513,10 @@ void NaClBaseRegisterValidator(struct NaClValidatorState* state,
   /* Before moving to the next instruction, see if we need to report
    * problems with the previous instruction.
    */
-  NaClMaybeReportPreviousBad(state, locals);
+  NaClMaybeReportPreviousBad(state);
 }
 
-void NaClBaseRegisterSummarize(struct NaClValidatorState* state,
-                             struct NaClInstIter* iter,
-                             struct NaClBaseRegisterLocals* locals) {
+void NaClBaseRegisterSummarize(struct NaClValidatorState* state) {
   /* Check if problems in last instruction of segment. */
-  NaClMaybeReportPreviousBad(state, locals);
+  NaClMaybeReportPreviousBad(state);
 }

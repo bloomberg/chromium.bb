@@ -94,25 +94,23 @@ Bool NaClInstructionIsLegal(uint8_t* mbase,
   NaClInstIter* iter;
   NaClValidatorState* state;
   Bool is_legal = FALSE;
-  state = NaClValidatorStateCreate(vbase, (NaClMemorySize) size, 32, RegR15);
+  state = NaClValidatorStateCreate(vbase, (NaClMemorySize) size,
+                                   32, RegR15, NULL);
   do {
-    if (NaClValidatorStateInitializeValidators(state)) {
-      NaClSegmentInitialize(mbase, vbase, (NaClMemorySize) size, &segment);
-      iter = NaClInstIterCreate(kNaClDecoderTables, &segment);
-      if (NULL == iter) break;
-      state->cur_inst_state = NaClInstIterGetState(iter);
-      state->cur_inst = NaClInstStateInst(state->cur_inst_state);
-      state->cur_inst_vector = NaClInstStateExpVector(state->cur_inst_state);
-      NaClValidateInstructionLegal(state, iter, NULL);
-      NaClSafeSegmentReference(state, iter, NULL);
-      is_legal = NaClValidatesOk(state);
-      state->cur_inst_state = NULL;
-      state->cur_inst = NULL;
-      state->cur_inst_vector = NULL;
-      NaClInstIterDestroy(iter);
-    }
+    NaClSegmentInitialize(mbase, vbase, (NaClMemorySize) size, &segment);
+    iter = NaClInstIterCreate(kNaClDecoderTables, &segment);
+    if (NULL == iter) break;
+    state->cur_inst_state = NaClInstIterGetState(iter);
+    state->cur_inst = NaClInstStateInst(state->cur_inst_state);
+    state->cur_inst_vector = NaClInstStateExpVector(state->cur_inst_state);
+    NaClValidateInstructionLegal(state);
+    NaClSafeSegmentReference(state, iter, NULL);
+    is_legal = NaClValidatesOk(state);
+    state->cur_inst_state = NULL;
+    state->cur_inst = NULL;
+    state->cur_inst_vector = NULL;
+    NaClInstIterDestroy(iter);
   } while(0);
-  NaClValidatorStateCleanUpValidators(state);
   NaClValidatorStateDestroy(state);
   return is_legal;
 }

@@ -24,7 +24,6 @@ struct NaClJumpSets;
  * Note: Replaces the post validator NaClJumpValidatorSummarize in nc_jumps.h,
  */
 void NaClJumpValidatorSummarizeDetailed(struct NaClValidatorState* state,
-                                        struct NaClInstIter* iter,
-                                        struct NaClJumpSets* jump_sets);
+                                        struct NaClInstIter* iter);
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_REG_SFI_NC_JUMPS_DETAILED_H__ */

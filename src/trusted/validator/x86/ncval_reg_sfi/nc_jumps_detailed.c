@@ -106,10 +106,11 @@ static void NaClInstLayoutCheck(NaClValidatorState* state,
 }
 
 void NaClJumpValidatorSummarizeDetailed(NaClValidatorState* state,
-                                        NaClInstIter* iter,
-                                        NaClJumpSets* jump_sets) {
+                                        NaClInstIter* iter) {
+  NaClJumpSets* jump_sets;
   NaClInstIter *check_iter;
   if (state->quit) return;
+  jump_sets = &state->jump_sets;
   NaClValidatorMessage(
       LOG_INFO, state,
       "Checking block alignment and jump targets: %"NACL_PRIxNaClPcAddress

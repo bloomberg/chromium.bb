@@ -16,8 +16,6 @@
         # we depend on ncvalidate build to generate the headers
         'sources': [ 'ncvalidate_iter.c',
                      'ncvalidate_iter_detailed.c',
-                     'ncvalidator_registry.c',
-                     'ncvalidator_registry_detailed.c',
                      'nc_cpu_checks.c',
                      'nc_illegal.c',
                      'nc_jumps.c',

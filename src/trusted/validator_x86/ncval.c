@@ -31,8 +31,8 @@
 #include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/ncvalidate_iter.h"
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/ncvalidate_iter_detailed.h"
-#include "native_client/src/trusted/validator/x86/ncval_reg_sfi/ncvalidator_registry.h"
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/nc_jumps.h"
+#include "native_client/src/trusted/validator/x86/ncval_reg_sfi/nc_opcode_histogram.h"
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/nc_memory_protect.h"
 #include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncdecode.h"
 #include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncdecode_verbose.h"
@@ -374,8 +374,10 @@ struct NaClValidatorState* NaClValStateCreate(
     const uint8_t alignment,
     const NaClOpKind base_register) {
   return NACL_FLAGS_detailed_errors
-      ? NaClValidatorStateCreateDetailed(vbase, sz, alignment, base_register)
-      : NaClValidatorStateCreate(vbase, sz, alignment, base_register);
+      ? NaClValidatorStateCreateDetailed(vbase, sz, alignment,
+                                         base_register, NULL)
+      : NaClValidatorStateCreate(vbase, sz, alignment,
+                                 base_register, NULL);
 }
 
 /* Returns the decoder tables to use. */

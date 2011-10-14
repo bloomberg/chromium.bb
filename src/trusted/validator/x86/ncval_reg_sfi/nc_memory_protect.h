@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_REG_SFI_NC_MEMORY_PROTECT_H__
@@ -48,7 +48,6 @@ extern Bool NACL_FLAGS_read_sandbox;
  * NOTE: in x86 code, displacements can't be larger than 32 bits.
  */
 void NaClMemoryReferenceValidator(struct NaClValidatorState* state,
-                                  struct NaClInstIter* iter,
-                                  void* ignore);
+                                  struct NaClInstIter* iter);
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_REG_SFI_NC_MEMORY_PROTECT_H__ */

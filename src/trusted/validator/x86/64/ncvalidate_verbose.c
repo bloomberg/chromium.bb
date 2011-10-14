@@ -29,22 +29,16 @@ static NaClValidationStatus NaClApplyValidatorVerbosely_x86_64(
     size_t size,
     int bundle_size,
     Bool local_cpu) {
-  CPUFeatures features;
-  int is_ok;
-  struct NaClValidatorState *vstate =
-      NaClValidatorStateCreate(guest_addr, size, bundle_size, RegR15);
-  if (vstate == NULL) return NaClValidationFailedOutOfMemory;
+  struct NaClValidatorState *vstate;
+  NaClValidationStatus status =
+      NaClValidatorSetup_x86_64(guest_addr, size, bundle_size, local_cpu,
+                                &vstate);
+  if (status != NaClValidationSucceeded) return status;
   NaClValidatorStateSetLogVerbosity(vstate, LOG_ERROR);
   NaClValidatorStateSetMaxReportedErrors(vstate, -1);  /* Report all errors. */
-  if (!local_cpu) {
-    NaClSetAllCPUFeatures(&features);
-    NaClValidatorStateSetCPUFeatures(vstate, &features);
-  }
   NaClValidatorStateSetErrorReporter(vstate, &kNaClVerboseErrorReporter);
-  NaClValidateSegment(data, guest_addr, size, vstate);
-  is_ok = NaClValidatesOk(vstate);
-  NaClValidatorStateDestroy(vstate);
-  return is_ok ? NaClValidationSucceeded : NaClValidationFailed;
+  return NaClSegmentValidate_x86_64(guest_addr, data, size, vstate)
+      ? NaClValidationSucceeded : NaClValidationFailed;
 }
 
 NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorVerbosely, x86, 64)
