@@ -54,6 +54,9 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   virtual void DrawCustomFrame(cairo_t* cr, GtkWidget* widget,
                                GdkEventExpose* event) OVERRIDE;
   virtual void ActiveWindowChanged(GdkWindow* active_window) OVERRIDE;
+  // 'focus-in-event' handler.
+  virtual void HandleFocusIn(GtkWidget* widget,
+                             GdkEventFocus* event) OVERRIDE;
 
 
   // Overridden from NativePanel:
@@ -113,8 +116,6 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
                        OnTitlebarButtonPressEvent, GdkEventButton*);
   CHROMEGTK_CALLBACK_1(PanelBrowserWindowGtk, gboolean,
                        OnTitlebarButtonReleaseEvent, GdkEventButton*);
-  CHROMEGTK_CALLBACK_1(PanelBrowserWindowGtk, gboolean, OnFocusIn,
-                       GdkEventFocus*);
 
   // drag-begin is emitted when the drag is started. We connect so that we can
   // set the drag icon to a transparent pixbuf.

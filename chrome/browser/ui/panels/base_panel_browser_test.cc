@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/panels/base_panel_browser_test.h"
 
+#include "chrome/browser/ui/browser_list.h"
+
 #include "base/command_line.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/message_loop.h"
@@ -249,10 +251,32 @@ Panel* BasePanelBrowserTest::CreatePanelWithParams(
   }
 
   Panel* panel = static_cast<Panel*>(panel_browser->window());
-  if (params.show_flag == SHOW_AS_ACTIVE)
+
+  if (params.show_flag == SHOW_AS_ACTIVE) {
     panel->Show();
-  else
+  } else {
+#if defined(OS_LINUX)
+    std::string wm_name;
+    bool has_name = ui::GetWindowManagerName(&wm_name);
+    // On bots, we might have a simple window manager which always activates new
+    // windows, and can't always deactivate them. Activate previously active
+    // window back to ensure the new window is inactive.
+    // IceWM has a name string like "IceWM 1.3.6 (Linux 2.6.24-23-server/x86)"
+    if (has_name && wm_name.find("IceWM") != std::string::npos) {
+      Browser* last_active_browser = BrowserList::GetLastActive();
+      EXPECT_TRUE(last_active_browser);
+      EXPECT_NE(last_active_browser, panel->browser());
+      panel->ShowInactive();  // Shows as active anyways in icewm.
+      MessageLoopForUI::current()->RunAllPending();
+      // Restore focus where it was. It will deactivate the new panel.
+      last_active_browser->window()->Activate();
+    } else {
+      panel->ShowInactive();
+    }
+#else
     panel->ShowInactive();
+#endif
+  }
   MessageLoopForUI::current()->RunAllPending();
   // More waiting, because gaining or losing focus may require inter-process
   // asynchronous communication, and it is not enough to just run the local

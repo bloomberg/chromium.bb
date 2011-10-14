@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/panels/panel_browser_window_gtk.h"
 
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_settings_menu_model.h"
@@ -85,8 +86,6 @@ void PanelBrowserWindowGtk::Init() {
   // minimize etc. can only be done from the panel UI.
   gtk_window_set_skip_taskbar_hint(window(), TRUE);
 
-  g_signal_connect(titlebar_widget(), "focus-in-event",
-                   G_CALLBACK(OnFocusInThunk), this);
   g_signal_connect(titlebar_widget(), "button-press-event",
                    G_CALLBACK(OnTitlebarButtonPressEventThunk), this);
   g_signal_connect(titlebar_widget(), "button-release-event",
@@ -263,6 +262,8 @@ void PanelBrowserWindowGtk::ClosePanel() {
 }
 
 void PanelBrowserWindowGtk::ActivatePanel() {
+  if (IsActive())
+    return;
   Activate();
 }
 
@@ -559,10 +560,12 @@ gboolean PanelBrowserWindowGtk::OnTitlebarButtonReleaseEvent(
   return TRUE;
 }
 
-gboolean PanelBrowserWindowGtk::OnFocusIn(GtkWidget* widget,
+void PanelBrowserWindowGtk::HandleFocusIn(GtkWidget* widget,
                                           GdkEventFocus* event) {
+  BrowserWindowGtk::HandleFocusIn(widget, event);
+
   if (!is_drawing_attention_)
-    return FALSE;
+    return;
 
   is_drawing_attention_ = false;
   UpdateTitleBar();
@@ -570,7 +573,6 @@ gboolean PanelBrowserWindowGtk::OnFocusIn(GtkWidget* widget,
 
   disableMinimizeUntilTime_ =
       base::Time::Now() + kSuspendMinimizeOnClickIntervalMs;
-  return FALSE;
 }
 
 void PanelBrowserWindowGtk::OnDragBegin(GtkWidget* widget,

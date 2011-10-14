@@ -2198,8 +2198,13 @@ bool BrowserWindowGtk::HandleTitleBarLeftMousePress(
 
 gboolean BrowserWindowGtk::OnFocusIn(GtkWidget* widget,
                                      GdkEventFocus* event) {
-  BrowserList::SetLastActive(browser_.get());
+  HandleFocusIn(widget, event);
   return FALSE;
+}
+
+void BrowserWindowGtk::HandleFocusIn(GtkWidget* widget,
+                                     GdkEventFocus* event) {
+  BrowserList::SetLastActive(browser_.get());
 }
 
 gboolean BrowserWindowGtk::OnFocusOut(GtkWidget* widget,

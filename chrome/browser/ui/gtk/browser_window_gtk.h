@@ -263,6 +263,9 @@ class BrowserWindowGtk : public BrowserWindow,
   virtual void DrawCustomFrame(cairo_t* cr, GtkWidget* widget,
                                GdkEventExpose* event);
 
+  // 'focus-in-event' handler.
+  virtual void HandleFocusIn(GtkWidget* widget, GdkEventFocus* event);
+
   // Returns the size of the window frame around the client content area.
   gfx::Size GetNonClientFrameSize() const;
 
