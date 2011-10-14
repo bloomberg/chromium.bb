@@ -45,9 +45,26 @@ class GerritHelperTest(mox.MoxTestBase):
         '"lastUpdated":1311024529,'
         '"sortKey":"00166e8700001052",'
         '"open":true,"'
-        'status":"NEW"}'
+        'status":"NEW"}\n'
+        '{"type":"stats","rowCount":1,"runTimeMilliseconds":205}\n'
+        )
+    merged_change = (
+        '{"project":"tacos/chromite","branch":"master",'
+        '"id":"Iee5c89d929f1850d7d4e1a4ff5f21adda800025g",'
+        '"currentPatchSet":{"number":"2","ref":"refs/changes/72/5172/1",'
+            '"revision":"ff10979dd360e75ff21f5cf53b7f8647578785eg"},'
+        '"number":"1112",'
+        '"subject":"chromite commit",'
+        '"owner":{"name":"Chromite Master","email":"chromite@chromium.org"},'
+        '"url":"http://gerrit.chromium.org/gerrit/1112",'
+        '"lastUpdated":1311024529,'
+        '"sortKey":"00166e8700001052",'
+        '"open":true,"'
+        'status":"MERGED"}\n'
+        '{"type":"stats","rowCount":1,"runTimeMilliseconds":205}\n'
         )
 
+    self.merged_change = merged_change
     self.results = results
 
   def testParseFakeResults(self):
@@ -61,8 +78,8 @@ class GerritHelperTest(mox.MoxTestBase):
     helper = gerrit_helper.GerritHelper(False)
     changes = helper.GrabChangesReadyForCommit('master')
     self.assertEqual(len(changes), 2)
-    self.assertEqual(changes[0].id, 'Iee5c89d929f1850d7d4e1a4ff5f21adda800025e')
-    self.assertEqual(changes[1].id, 'Iee5c89d929f1850d7d4e1a4ff5f21adda800025f')
+    self.assertEqual(changes[1].id, 'Iee5c89d929f1850d7d4e1a4ff5f21adda800025e')
+    self.assertEqual(changes[0].id, 'Iee5c89d929f1850d7d4e1a4ff5f21adda800025f')
     self.mox.VerifyAll()
 
   def testParseFakeResultsWithInternalURL(self):
@@ -76,8 +93,8 @@ class GerritHelperTest(mox.MoxTestBase):
     helper = gerrit_helper.GerritHelper(True)
     changes = helper.GrabChangesReadyForCommit('master')
     self.assertEqual(len(changes), 2)
-    self.assertEqual(changes[0].id, 'Iee5c89d929f1850d7d4e1a4ff5f21adda800025e')
-    self.assertEqual(changes[1].id, 'Iee5c89d929f1850d7d4e1a4ff5f21adda800025f')
+    self.assertEqual(changes[1].id, 'Iee5c89d929f1850d7d4e1a4ff5f21adda800025e')
+    self.assertEqual(changes[0].id, 'Iee5c89d929f1850d7d4e1a4ff5f21adda800025f')
     self.mox.VerifyAll()
 
   def _PrintChanges(self, changes):
@@ -131,6 +148,19 @@ class GerritHelperTest(mox.MoxTestBase):
                                                        constants.SOURCE_ROOT)
     print 'Changes AFTER filtering ***'
     self._PrintChanges(new_changes)
+
+  def testIsRevisionCommitted(self):
+    """Tests that a revision that has status MERGED is shown as committed."""
+    revision = 'ff10979dd360e75ff21f5cf53b7f8647578785eg'
+    fake_result_from_gerrit = self.mox.CreateMock(cros_lib.CommandResult)
+    fake_result_from_gerrit.output = self.merged_change
+    self.mox.StubOutWithMock(cros_lib, 'RunCommand')
+    cros_lib.RunCommand(mox.In('commit:%s' % revision),
+                        redirect_stdout=True).AndReturn(fake_result_from_gerrit)
+    self.mox.ReplayAll()
+    helper = gerrit_helper.GerritHelper(False)
+    self.assertTrue(helper.IsRevisionCommitted('tacos/chromite', revision))
+    self.mox.VerifyAll()
 
 
 if __name__ == '__main__':

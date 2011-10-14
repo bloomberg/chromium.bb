@@ -127,3 +127,11 @@ class GerritHelper():
         logging.info('Filtered change %s' % change)
 
     return changes_to_return
+
+  def IsRevisionCommitted(self, project, revision):
+    """Checks to see whether a revision is committed."""
+    rev_cmd = self.GetGerritQueryCommand(['project:%s' % project,
+                                          'commit:%s' % revision])
+    raw_results = cros_build_lib.RunCommand(rev_cmd, redirect_stdout=True)
+    result_dict = json.loads(raw_results.output.splitlines()[0])
+    return result_dict['status'] not in ['NEW', 'ABANDONED']

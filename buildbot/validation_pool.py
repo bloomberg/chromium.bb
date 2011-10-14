@@ -193,10 +193,14 @@ class ValidationPool(object):
       for dep in deps:
         dep_change = change_map.get(dep)
         if not dep_change:
-          logging.info('Cannot apply change %s because dependent change %s '
-                       'is not ready to be committed.', change, dep)
-          apply_chain = False
-          break
+          # The dep may have been committed already.
+          if self.gerrit_helper.IsRevisionCommitted(change.project, dep):
+            logging.info('Dependency %s already submitted.', dep)
+          else:
+            logging.info('Cannot apply change %s because dependent change %s '
+                         'is not ready to be committed.', change, dep)
+            apply_chain = False
+            break
         else:
           change_stack.insert(0, dep_change)
 

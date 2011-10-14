@@ -15,6 +15,7 @@ import urllib
 import constants
 sys.path.append(constants.SOURCE_ROOT)
 
+from chromite.buildbot import gerrit_helper
 from chromite.buildbot import patch as cros_patch
 from chromite.buildbot import validation_pool
 
@@ -107,18 +108,46 @@ class TestValidationPool(mox.MoxTestBase):
 
     patch1.revision = 'ChangeId1'
     patch2.revision = 'ChangeId2'
+    patch2.project = 'fake_project'
     patch1.url = 'fake_url/1'
     patch2.url = 'fake_url/2'
     build_root = 'fakebuildroot'
 
     pool = validation_pool.ValidationPool(False, 1, False)
     pool.changes = [patch2]
-
+    helper = self.mox.CreateMock(gerrit_helper.GerritHelper)
+    pool.gerrit_helper = helper
     self.mox.StubOutWithMock(cros_patch.GerritPatch, 'GerritDependencies')
     patch2.GerritDependencies(build_root).AndReturn(['ChangeId1'])
+    helper.IsRevisionCommitted(patch2.project, patch1.revision).AndReturn(False)
 
     self.mox.ReplayAll()
     self.assertFalse(pool.ApplyPoolIntoRepo(build_root))
+    self.mox.VerifyAll()
+
+  def testSimpleDepApplyWhenAlreadySubmitted(self):
+    """Test that we apply a change with dependency already committed."""
+    patch1 = self.mox.CreateMock(cros_patch.GerritPatch)
+    patch2 = self.mox.CreateMock(cros_patch.GerritPatch)
+
+    patch1.revision = 'ChangeId1'
+    patch2.revision = 'ChangeId2'
+    patch2.project = 'fake_project'
+    patch1.url = 'fake_url/1'
+    patch2.url = 'fake_url/2'
+    build_root = 'fakebuildroot'
+
+    pool = validation_pool.ValidationPool(False, 1, False)
+    pool.changes = [patch2]
+    helper = self.mox.CreateMock(gerrit_helper.GerritHelper)
+    pool.gerrit_helper = helper
+    self.mox.StubOutWithMock(cros_patch.GerritPatch, 'GerritDependencies')
+    patch2.GerritDependencies(build_root).AndReturn(['ChangeId1'])
+    helper.IsRevisionCommitted(patch2.project, patch1.revision).AndReturn(True)
+    patch2.Apply(build_root, trivial=True)
+
+    self.mox.ReplayAll()
+    self.assertTrue(pool.ApplyPoolIntoRepo(build_root))
     self.mox.VerifyAll()
 
   def testSimpleDepFailedApplyPoolIntoRepo(self):
