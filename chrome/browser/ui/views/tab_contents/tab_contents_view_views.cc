@@ -339,8 +339,10 @@ void TabContentsViewViews::ShowCreatedFullscreenWidget(int route_id) {
 
 void TabContentsViewViews::ShowContextMenu(const ContextMenuParams& params) {
   // Allow delegates to handle the context menu operation first.
-  if (tab_contents_->delegate()->HandleContextMenu(params))
+  if (tab_contents_->delegate() &&
+      tab_contents_->delegate()->HandleContextMenu(params)) {
     return;
+  }
 
   context_menu_.reset(new RenderViewContextMenuViews(tab_contents_, params));
   context_menu_->Init();
