@@ -90,7 +90,7 @@ extern const char kChromeUIUserImageURL[];
 extern const char kChromeUIFileManagerURL[];
 #endif
 
-#if defined(OS_CHROMEOS) || defined(TOUCH_UI) || defined(USE_AURA)
+#if (defined(OS_LINUX) && defined(TOOLKIT_VIEWS)) || defined(USE_AURA)
 extern const char kChromeUICollectedCookiesURL[];
 extern const char kChromeUIHttpAuthURL[];
 extern const char kChromeUIRepostFormWarningURL[];
@@ -210,7 +210,7 @@ extern const char kOemEulaURLPath[];
 extern const char kChromeUIFileManagerHost[];
 #endif
 
-#if defined(OS_CHROMEOS) || defined(TOUCH_UI) || defined(USE_AURA)
+#if (defined(OS_LINUX) && defined(TOOLKIT_VIEWS)) || defined(USE_AURA)
 extern const char kChromeUICollectedCookiesHost[];
 extern const char kChromeUIHttpAuthHost[];
 extern const char kChromeUIRepostFormWarningHost[];

@@ -97,7 +97,7 @@ const char kChromeUIUserImageURL[] = "chrome://userimage/";
 const char kChromeUIFileManagerURL[] = "chrome://files/";
 #endif
 
-#if defined(OS_CHROMEOS) || defined(TOUCH_UI) || defined(USE_AURA)
+#if (defined(OS_LINUX) && defined(TOOLKIT_VIEWS)) || defined(USE_AURA)
 const char kChromeUICollectedCookiesURL[] = "chrome://collected-cookies/";
 const char kChromeUIHttpAuthURL[] = "chrome://http-auth/";
 const char kChromeUIRepostFormWarningURL[] = "chrome://repost-form-warning/";
@@ -219,7 +219,7 @@ const char kOemEulaURLPath[] = "oem";
 const char kChromeUIFileManagerHost[] = "files";
 #endif
 
-#if defined(OS_CHROMEOS) || defined(TOUCH_UI) || defined(USE_AURA)
+#if (defined(OS_LINUX) && defined(TOOLKIT_VIEWS)) || defined(USE_AURA)
 const char kChromeUICollectedCookiesHost[] = "collected-cookies";
 const char kChromeUIHttpAuthHost[] = "http-auth";
 const char kChromeUIRepostFormWarningHost[] = "repost-form-warning";

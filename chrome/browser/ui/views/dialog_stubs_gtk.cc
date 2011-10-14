@@ -41,16 +41,4 @@ void EditSearchEngine(gfx::NativeWindow parent,
   new EditSearchEngineDialog(GTK_WINDOW(parent), template_url, NULL, profile);
 }
 
-#if !defined(OS_CHROMEOS) && !defined(TOUCH_UI)
-void ShowRepostFormWarningDialog(gfx::NativeWindow parent_window,
-                                 TabContents* tab_contents) {
-  new RepostFormWarningGtk(GTK_WINDOW(parent_window), tab_contents);
-}
-
-void ShowCollectedCookiesDialog(gfx::NativeWindow parent_window,
-                                TabContentsWrapper* wrapper) {
-  new CollectedCookiesGtk(GTK_WINDOW(parent_window), wrapper);
-}
-#endif
-
 }  // namespace browser

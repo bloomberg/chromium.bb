@@ -228,7 +228,7 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
     return &NewWebUI<chromeos::EnterpriseEnrollmentUI>;
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(OS_CHROMEOS) || defined(TOUCH_UI)
+#if (defined(OS_LINUX) && defined(TOOLKIT_VIEWS)) || defined(USE_AURA)
   if (url.host() == chrome::kChromeUICollectedCookiesHost ||
       url.host() == chrome::kChromeUIHttpAuthHost ||
       url.host() == chrome::kChromeUIRepostFormWarningHost) {
@@ -256,7 +256,7 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
       return &NewWebUI<NewTabUI>;
   }
 #endif
-
+  DLOG(WARNING) << "Unknown WebUI:" << url;
   return NULL;
 }
 
