@@ -56,11 +56,6 @@ class GerritHelper():
                     'AND CommitReady=+1 '
                     'AND NOT CodeReview=-2 AND NOT Verified=-1 '
                     'AND branch:%s' % branch)
-    # Whitelist specific repositories.
-    query_string = (query_string + ' AND '
-                    '(project:chromiumos/chromite OR'
-                    ' project:chromiumos/platform/crosutils OR'
-                    ' project:chromiumos/third_party/autotest)')
     ready_for_commit = ['--current-patch-set', '"%s"' % query_string]
 
     query_cmd = self.GetGerritQueryCommand(ready_for_commit)
