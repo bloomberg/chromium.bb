@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "chrome/browser/sync/glue/generic_change_processor.h"
 #include "chrome/browser/sync/glue/frontend_data_type_controller.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
@@ -32,6 +33,9 @@ class SearchEngineDataTypeController : public FrontendDataTypeController,
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;
 
+ protected:
+  virtual GenericChangeProcessor* change_processor() const OVERRIDE;
+
  private:
   // FrontendDataTypeController implementations.
   virtual bool StartModels() OVERRIDE;
@@ -42,6 +46,8 @@ class SearchEngineDataTypeController : public FrontendDataTypeController,
       const std::string& message) OVERRIDE;
   virtual void RecordAssociationTime(base::TimeDelta time) OVERRIDE;
   virtual void RecordStartFailure(StartResult result) OVERRIDE;
+
+  scoped_ptr<GenericChangeProcessor> generic_change_processor_;
 
   NotificationRegistrar registrar_;
 

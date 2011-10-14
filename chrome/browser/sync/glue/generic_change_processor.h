@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
+#include "base/threading/non_thread_safe.h"
 #include "chrome/browser/sync/api/sync_change_processor.h"
 #include "chrome/browser/sync/glue/change_processor.h"
 
@@ -26,11 +28,16 @@ namespace browser_sync {
 // handles all interaction with the sync api, both translating pushes from the
 // local service into transactions and receiving changes from the sync model,
 // which then get converted into SyncChange's and sent to the local service.
+//
+// As a rule, the GenericChangeProcessor is not thread safe, and should only
+// be used on the same thread in which it was created.
 class GenericChangeProcessor : public ChangeProcessor,
-                               public SyncChangeProcessor {
+                               public SyncChangeProcessor,
+                               public base::NonThreadSafe {
  public:
-  GenericChangeProcessor(SyncableService* local_service,
-                         UnrecoverableErrorHandler* error_handler,
+  // Create a change processor and connect it to the syncer.
+  GenericChangeProcessor(UnrecoverableErrorHandler* error_handler,
+                         const base::WeakPtr<SyncableService>& local_service,
                          sync_api::UserShare* user_share);
   virtual ~GenericChangeProcessor();
 
@@ -49,22 +56,26 @@ class GenericChangeProcessor : public ChangeProcessor,
       const SyncChangeList& change_list) OVERRIDE;
 
   // Fills |current_sync_data| with all the syncer data for the specified type.
-  virtual SyncError GetSyncDataForType(syncable::ModelType type,
-                                       SyncDataList* current_sync_data);
+  SyncError GetSyncDataForType(syncable::ModelType type,
+                               SyncDataList* current_sync_data);
 
   // Generic versions of AssociatorInterface methods. Called by
-  // SyncableServiceAdapter.
+  // SyncableServiceAdapter or the DataTypeController.
   bool SyncModelHasUserCreatedNodes(syncable::ModelType type,
                                     bool* has_nodes);
   bool CryptoReadyIfNecessary(syncable::ModelType type);
+
  protected:
   // ChangeProcessor interface.
-  virtual void StartImpl(Profile* profile) OVERRIDE;  // Not implemented.
-  virtual void StopImpl() OVERRIDE;  // Not implemented.
-  virtual sync_api::UserShare* share_handle() OVERRIDE;
+  virtual void StartImpl(Profile* profile) OVERRIDE;           // Does nothing.
+  // Called from UI thread (as part of deactivating datatype), but does
+  // nothing and is guaranteed to still be alive, so it's okay.
+  virtual void StopImpl() OVERRIDE;                            // Does nothing.
+  virtual sync_api::UserShare* share_handle() const OVERRIDE;
+
  private:
   // The SyncableService this change processor will forward changes on to.
-  SyncableService* local_service_;
+  const base::WeakPtr<SyncableService> local_service_;
 
   // The current list of changes received from the syncer. We buffer because
   // we must ensure no syncapi transaction is held when we pass it on to
@@ -77,7 +88,9 @@ class GenericChangeProcessor : public ChangeProcessor,
   // listening to changes (the local_service_ will be interacting with us
   // when it starts up). As such we can't wait until Start(_) has been called,
   // and have to keep a local pointer to the user_share.
-  sync_api::UserShare* user_share_;
+  sync_api::UserShare* const share_handle_;
+
+  DISALLOW_COPY_AND_ASSIGN(GenericChangeProcessor);
 };
 
 }  // namespace browser_sync

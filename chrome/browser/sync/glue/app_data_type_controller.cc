@@ -36,7 +36,13 @@ void AppDataTypeController::CreateSyncComponents() {
       profile_sync_factory_->CreateAppSyncComponents(sync_service_,
                                                      this);
   set_model_associator(sync_components.model_associator);
-  set_change_processor(sync_components.change_processor);}
+  generic_change_processor_.reset(static_cast<GenericChangeProcessor*>(
+      sync_components.change_processor));
+}
+
+GenericChangeProcessor* AppDataTypeController::change_processor() const {
+  return generic_change_processor_.get();
+}
 
 void AppDataTypeController::RecordUnrecoverableError(
     const tracked_objects::Location& from_here,
