@@ -395,8 +395,18 @@ bool CreateWindowFunction::RunImpl() {
         return false;
       }
 
-      if (incognito)
+      if (incognito) {
+        // Guest session is an exception as it always opens in incognito mode.
+        for (size_t i = 0; i < urls.size();) {
+          if (browser::IsURLAllowedInIncognito(urls[i]) &&
+              !Profile::IsGuestSession()) {
+            urls.erase(urls.begin() + i);
+          } else {
+            i++;
+          }
+        }
         window_profile = window_profile->GetOffTheRecordProfile();
+      }
     }
 
     if (args->HasKey(keys::kFocusedKey)) {

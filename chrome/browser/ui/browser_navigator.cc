@@ -76,10 +76,7 @@ bool CompareURLsWithReplacements(
 // chrome://settings.
 void AdjustNavigateParamsForURL(browser::NavigateParams* params) {
   if (!params->target_contents &&
-      params->url.scheme() == chrome::kChromeUIScheme &&
-      (params->url.host() == chrome::kChromeUISettingsHost ||
-       params->url.host() == chrome::kChromeUIExtensionsHost ||
-       params->url.host() == chrome::kChromeUIBookmarksHost)) {
+      browser::IsURLAllowedInIncognito(params->url)) {
     Profile* profile =
         params->browser ? params->browser->profile() : params->profile;
 
@@ -616,6 +613,13 @@ int GetIndexOfSingletonTab(browser::NavigateParams* params) {
   }
 
   return -1;
+}
+
+bool IsURLAllowedInIncognito(const GURL& url) {
+  return url.scheme() == chrome::kChromeUIScheme &&
+      (url.host() == chrome::kChromeUISettingsHost ||
+       url.host() == chrome::kChromeUIExtensionsHost ||
+       url.host() == chrome::kChromeUIBookmarksHost);
 }
 
 }  // namespace browser

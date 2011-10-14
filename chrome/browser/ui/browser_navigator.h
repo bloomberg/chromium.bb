@@ -191,6 +191,11 @@ void Navigate(NavigateParams* params);
 // Otherwise, returns -1.
 int GetIndexOfSingletonTab(NavigateParams* params);
 
+// Returns true if the url is not allowed to open in incognito window.
+// Currently, chrome://settings, the bookmark manager, and chrome://extensions
+// are part this list.
+bool IsURLAllowedInIncognito(const GURL& url);
+
 }  // namespace browser
 
 #endif  // CHROME_BROWSER_UI_BROWSER_NAVIGATOR_H_
