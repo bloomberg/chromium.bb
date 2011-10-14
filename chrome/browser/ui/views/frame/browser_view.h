@@ -549,39 +549,38 @@ class BrowserView : public BrowserBubbleHost,
 
   // BrowserView layout (LTR one is pictured here).
   //
-  // --------------------------------------------------------------------------
-  // |         | Tabs (1)                                                     |
-  // |         |--------------------------------------------------------------|
-  // |         | Navigation buttons, menus and the address bar (toolbar_)     |
-  // |         |--------------------------------------------------------------|
-  // |         | All infobars (infobar_container_) *                          |
-  // |         |--------------------------------------------------------------|
-  // |         | Bookmarks (bookmark_bar_view_) *                             |
-  // |         |--------------------------------------------------------------|
-  // |         |Page content (contents_)              ||                      |
-  // |         |--------------------------------------|| Sidebar content      |
-  // |         || contents_container_ and/or         ||| (sidebar_container_) |
-  // |         || preview_container_                 |||                      |
-  // |         ||                                    |(3)                     |
-  // | Tabs (2)||                                    |||                      |
-  // |         ||                                    |||                      |
-  // |         ||                                    |||                      |
-  // |         ||                                    |||                      |
-  // |         |--------------------------------------||                      |
-  // |         |==(4)=========================================================|
-  // |         |                                                              |
-  // |         |                                                              |
-  // |         | Debugger (devtools_container_)                               |
-  // |         |                                                              |
-  // |         |                                                              |
-  // |         |--------------------------------------------------------------|
-  // |         | Active downloads (download_shelf_)                           |
-  // --------------------------------------------------------------------------
+  // ----------------------------------------------------------------
+  // | Tabs (1)                                                     |
+  // |--------------------------------------------------------------|
+  // | Navigation buttons, menus and the address bar (toolbar_)     |
+  // |--------------------------------------------------------------|
+  // | All infobars (infobar_container_) *                          |
+  // |--------------------------------------------------------------|
+  // | Bookmarks (bookmark_bar_view_) *                             |
+  // |--------------------------------------------------------------|
+  // |Page content (contents_)              ||                      |
+  // |--------------------------------------|| Sidebar content      |
+  // || contents_container_ and/or         ||| (sidebar_container_) |
+  // || preview_container_                 |||                      |
+  // ||                                    |(2)                     |
+  // ||                                    |||                      |
+  // ||                                    |||                      |
+  // ||                                    |||                      |
+  // ||                                    |||                      |
+  // |--------------------------------------||                      |
+  // |==(3)=========================================================|
+  // |                                                              |
+  // |                                                              |
+  // | Debugger (devtools_container_)                               |
+  // |                                                              |
+  // |                                                              |
+  // |--------------------------------------------------------------|
+  // | Active downloads (download_shelf_)                           |
+  // ----------------------------------------------------------------
   //
   // (1) - tabstrip_, default position
-  // (2) - tabstrip_, position when side tabs are enabled
-  // (3) - sidebar_split_
-  // (4) - contents_split_
+  // (2) - sidebar_split_
+  // (3) - contents_split_
   //
   // * - The bookmark bar and info bar are swapped when on the new tab page.
   //     Additionally contents_ is positioned on top of the bookmark bar when
