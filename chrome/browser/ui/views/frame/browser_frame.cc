@@ -99,7 +99,7 @@ void BrowserFrame::TabStripDisplayModeChanged() {
 // BrowserFrameWin, views::Window overrides:
 
 bool BrowserFrame::IsMaximized() const {
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) && !defined(USE_AURA)
   if (chromeos::system::runtime_environment::IsRunningOnChromeOS()) {
     return !IsFullscreen() &&
         (!browser_view_->IsBrowserTypePopup() || Widget::IsMaximized());
