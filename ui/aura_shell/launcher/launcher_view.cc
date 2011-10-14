@@ -7,6 +7,7 @@
 #include "base/utf_string_conversions.h"
 #include "grit/ui_resources.h"
 #include "ui/aura_shell/launcher/launcher_model.h"
+#include "ui/aura_shell/launcher/tabbed_launcher_button.h"
 #include "ui/aura_shell/shell.h"
 #include "ui/aura_shell/shell_delegate.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -22,9 +23,12 @@ namespace internal {
 // Padding between each view.
 static const int kHorizontalPadding = 12;
 
+// Amount content is inset on the left edge.
+static const int kLeadingInset = 8;
+
 // Height of the LauncherView. Hard coded to avoid resizing as items are
 // added/removed.
-static const int kPreferredHeight = 64;
+static const int kPreferredHeight = 48;
 
 LauncherView::LauncherView(LauncherModel* model)
     : model_(model),
@@ -58,7 +62,11 @@ void LauncherView::Init() {
 }
 
 views::View* LauncherView::CreateViewForItem(const LauncherItem& item) {
-  // TODO: need to support images.
+  if (item.type == TYPE_TABBED) {
+    TabbedLauncherButton* button = new TabbedLauncherButton(this);
+    button->SetImages(item.tab_images);
+    return button;
+  }
   views::ImageButton* button = new views::ImageButton(this);
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   button->SetImage(
@@ -74,8 +82,7 @@ void LauncherView::Resize() {
 }
 
 void LauncherView::Layout() {
-  // TODO: need to deal with overflow.
-  int x = kHorizontalPadding;
+  int x = kLeadingInset;
   for (int i = 0; i < child_count(); ++i) {
     View* child = child_at(i);
     if (child->IsVisible()) {
@@ -85,10 +92,12 @@ void LauncherView::Layout() {
       x += child->width() + kHorizontalPadding;
     }
   }
+  // TODO: remove this when we get a better image.
+  show_apps_button_->SetX(show_apps_button_->x() - 8);
 }
 
 gfx::Size LauncherView::GetPreferredSize() {
-  int x = kHorizontalPadding;
+  int x = kLeadingInset;
   for (int i = 0; i < child_count(); ++i) {
     View* child = child_at(i);
     if (child->IsVisible()) {
@@ -96,6 +105,8 @@ gfx::Size LauncherView::GetPreferredSize() {
       x += pref_size.width() + kHorizontalPadding;
     }
   }
+  // TODO: remove this when we get a better image.
+  x -= 10;
   return gfx::Size(x, kPreferredHeight);
 }
 

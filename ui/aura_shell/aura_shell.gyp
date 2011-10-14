@@ -45,6 +45,8 @@
         'launcher/launcher_types.h',
         'launcher/launcher_view.cc',
         'launcher/launcher_view.h',
+        'launcher/tabbed_launcher_button.cc',
+        'launcher/tabbed_launcher_button.h',
         'shell.cc',
         'shell.h',
         'shell_delegate.h',
