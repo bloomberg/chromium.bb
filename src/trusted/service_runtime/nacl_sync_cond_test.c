@@ -174,6 +174,7 @@ struct AlarmerState *SpawnAlarmer(uint64_t  timeout_usec,
   AlarmerStateCtor(sp, timeout_usec, cond_timeout_usec);
   if (!NaClThreadCtor(&sp->thr, Alarmer, (void *) sp, 4096)) {
     AlarmerStateDtor(sp);
+    free(sp);
     return 0;
   }
   return sp;
