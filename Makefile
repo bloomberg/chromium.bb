@@ -20,6 +20,7 @@ OBJECTS=\
 TEST_OBJECTS=\
 	$(OBJDIR)/accel_filter_interpreter_unittest.o \
 	$(OBJDIR)/activity_log_unittest.o \
+	$(OBJDIR)/activity_replay_unittest.o \
 	$(OBJDIR)/gestures_unittest.o \
 	$(OBJDIR)/immediate_interpreter_unittest.o \
 	$(OBJDIR)/integral_gesture_filter_interpreter_unittest.o \
@@ -78,6 +79,7 @@ LINK_FLAGS=\
 
 TEST_LINK_FLAGS=\
 	-lgcov \
+	-lglib-2.0 \
 	-lgtest
 
 # Local compilation needs these flags, esp for code coverage testing
