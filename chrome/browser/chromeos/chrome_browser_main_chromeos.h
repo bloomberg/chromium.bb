@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_CHROME_BROWSER_MAIN_CHROMEOS_H_
 #define CHROME_BROWSER_CHROMEOS_CHROME_BROWSER_MAIN_CHROMEOS_H_
 
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #if defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/chrome_browser_main_gtk.h"
 typedef ChromeBrowserMainPartsGtk ChromeBrowserMainPartsBase;
@@ -15,9 +15,9 @@ typedef ChromeBrowserMainPartsGtk ChromeBrowserMainPartsBase;
 typedef ChromeBrowserMainPartsPosix ChromeBrowserMainPartsBase;
 #endif
 
-namespace sensors {
-class SensorsSourceChromeos;
-}  // namespace sensors
+namespace chromeos {
+class BrightnessObserver;
+}  // namespace chromeos
 
 class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsBase {
  public:
@@ -31,6 +31,9 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsBase {
   virtual void PostMainMessageLoopStart() OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsChromeos);
+
+ private:
+  scoped_ptr<chromeos::BrightnessObserver> brightness_observer_;
 };
 
 #endif  // CHROME_BROWSER_CHROMEOS_CHROME_BROWSER_MAIN_CHROMEOS_H_

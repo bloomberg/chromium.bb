@@ -10,6 +10,7 @@
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
+#include "chrome/browser/chromeos/brightness_observer.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/net/cros_network_change_notifier_factory.h"
@@ -72,6 +73,11 @@ ChromeBrowserMainPartsChromeos::ChromeBrowserMainPartsChromeos(
 }
 
 ChromeBrowserMainPartsChromeos::~ChromeBrowserMainPartsChromeos() {
+  // We should remove observers attached to D-Bus clients before
+  // DBusThreadManager is shut down.
+  chromeos::DBusThreadManager::Get()->power_manager_client()->RemoveObserver(
+      brightness_observer_.get());
+
   chromeos::DBusThreadManager::Shutdown();
 
   if (!parameters().ui_task && chromeos::CrosLibrary::Get())
@@ -125,4 +131,10 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
   // Initialize DBusThreadManager for the browser. This must be done after
   // the main message loop is started, as it uses the message loop.
   chromeos::DBusThreadManager::Initialize();
+
+  // Initialize the brightness observer so that we'll display an onscreen
+  // indication of brightness changes during login.
+  brightness_observer_.reset(new chromeos::BrightnessObserver());
+  chromeos::DBusThreadManager::Get()->power_manager_client()->AddObserver(
+      brightness_observer_.get());
 }

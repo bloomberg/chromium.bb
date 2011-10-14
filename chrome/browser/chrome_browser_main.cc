@@ -131,7 +131,6 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/audio_handler.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
-#include "chrome/browser/chromeos/brightness_observer.h"
 #include "chrome/browser/chromeos/cros_settings_names.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/screen_lock_library.h"
@@ -1813,13 +1812,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunInternal() {
 
   // Initialize the audio handler on ChromeOS.
   chromeos::AudioHandler::Initialize();
-
-  // Initialize the brightness observer so that we'll display an onscreen
-  // indication of brightness changes during login.
-  static chromeos::BrightnessObserver* brightness_observer =
-      new chromeos::BrightnessObserver();
-  chromeos::DBusThreadManager::Get()->power_manager_client()->AddObserver(
-      brightness_observer);
 
   // Listen for system key events so that the user will be able to adjust the
   // volume on the login screen.
