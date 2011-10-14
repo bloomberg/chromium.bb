@@ -9,6 +9,7 @@
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/tabs/tab_strip_model_observer.h"
+#include "chrome/browser/ui/toolbar/bookmark_sub_menu_model.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "ui/base/models/accelerator.h"
@@ -70,18 +71,6 @@ class ToolsMenuModel : public ui::SimpleMenuModel {
   DISALLOW_COPY_AND_ASSIGN(ToolsMenuModel);
 };
 
-class BookmarkSubMenuModel : public ui::SimpleMenuModel {
- public:
-  BookmarkSubMenuModel(ui::SimpleMenuModel::Delegate* delegate,
-                       Browser* browser);
-  virtual ~BookmarkSubMenuModel();
-
- private:
-  void Build(Browser* browser);
-
-  DISALLOW_COPY_AND_ASSIGN(BookmarkSubMenuModel);
-};
-
 // A menu model that builds the contents of the wrench menu.
 class WrenchMenuModel : public ui::SimpleMenuModel,
                         public ui::SimpleMenuModel::Delegate,
@@ -126,6 +115,10 @@ class WrenchMenuModel : public ui::SimpleMenuModel,
 
   // Getters.
   Browser* browser() const { return browser_; }
+
+  BookmarkSubMenuModel* bookmark_sub_menu_model() const {
+    return bookmark_sub_menu_model_.get();
+  }
 
   // Calculates |zoom_label_| in response to a zoom change.
   void UpdateZoomControls();
