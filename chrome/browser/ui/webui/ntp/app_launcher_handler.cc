@@ -48,6 +48,7 @@
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "ui/base/animation/animation.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "webkit/glue/window_open_disposition.h"
 
@@ -455,7 +456,14 @@ void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
   if (NewTabUI::NTP4Enabled()) {
     PrefService* prefs = Profile::FromWebUI(web_ui_)->GetPrefs();
     const ListValue* app_page_names = prefs->GetList(prefs::kNTPAppPageNames);
-    if (app_page_names && app_page_names->GetSize()) {
+    if (!app_page_names || !app_page_names->GetSize()) {
+      ListPrefUpdate update(prefs, prefs::kNTPAppPageNames);
+      ListValue* list = update.Get();
+      list->Set(0, Value::CreateStringValue(
+          l10n_util::GetStringUTF16(IDS_APP_DEFAULT_PAGE_NAME)));
+      dictionary->Set("appPageNames",
+                      static_cast<ListValue*>(list->DeepCopy()));
+    } else {
       dictionary->Set("appPageNames",
                       static_cast<ListValue*>(app_page_names->DeepCopy()));
     }

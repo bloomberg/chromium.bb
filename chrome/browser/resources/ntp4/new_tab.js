@@ -314,9 +314,6 @@ cr.define('ntp4', function() {
       return true;
     }
 
-    if (!pageNames || stringListIsEmpty(pageNames))
-      pageNames = [localStrings.getString('appDefaultPageName')];
-
     // Sort by launch index
     apps.sort(function(a, b) {
       return a.app_launch_index - b.app_launch_index;
@@ -330,7 +327,7 @@ cr.define('ntp4', function() {
       var app = apps[i];
       var pageIndex = (app.page_index || 0);
       while (pageIndex >= appsPages.length) {
-        var pageName = '';
+        var pageName = localStrings.getString('appDefaultPageName');
         if (appsPages.length < pageNames.length)
           pageName = pageNames[appsPages.length];
 
@@ -378,7 +375,9 @@ cr.define('ntp4', function() {
 
     if (pageIndex >= appsPages.length) {
       while (pageIndex >= appsPages.length) {
-        appendTilePage(new ntp4.AppsPage(), '', true, bookmarksPage);
+        appendTilePage(new ntp4.AppsPage(),
+                       localStrings.getString('appDefaultPageName'), true,
+                       bookmarksPage);
       }
       updateSliderCards();
     }
@@ -441,7 +440,7 @@ cr.define('ntp4', function() {
     var dots = dotList.getElementsByClassName('dot');
     // TODO(csilv): Remove this calcluation if/when we remove the flag for
     // for the bookmarks page.
-    var length = bookmarksPage ? dots.length - 2 : dots.Length - 1;
+    var length = bookmarksPage ? dots.length - 1 : dots.length;
     for (var i = 1; i < length; ++i) {
       dots[i].displayTitle = data.appPageNames[i - 1] || '';
     }
@@ -542,7 +541,8 @@ cr.define('ntp4', function() {
   function enterRearrangeMode() {
     var tempPage = new ntp4.AppsPage();
     tempPage.classList.add('temporary');
-    appendTilePage(tempPage, '', true, bookmarksPage);
+    appendTilePage(tempPage, localStrings.getString('appDefaultPageName'),
+                   true, bookmarksPage);
     var tempIndex = Array.prototype.indexOf.call(tilePages, tempPage);
     if (cardSlider.currentCard >= tempIndex)
       cardSlider.currentCard += 1;
@@ -568,7 +568,7 @@ cr.define('ntp4', function() {
       updateSliderCards();
     } else {
       tempPage.classList.remove('temporary');
-      saveAppPageName(tempPage, '');
+      saveAppPageName(tempPage, localStrings.getString('appDefaultPageName'));
     }
 
     $('footer').classList.remove('showing-trash-mode');
