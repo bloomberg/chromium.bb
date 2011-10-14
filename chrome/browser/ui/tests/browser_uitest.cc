@@ -236,7 +236,12 @@ class NoStartupWindowTest : public UITest {
   }
 };
 
+// TODO(kbr): crbug.com/100298
+#if !defined(OS_MACOSX)
 TEST_F(NoStartupWindowTest, NoStartupWindowBasicTest) {
+#else
+TEST_F(NoStartupWindowTest, DISABLED_NoStartupWindowBasicTest) {
+#endif
   // No browser window should be started by default.
   int window_count;
   ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
