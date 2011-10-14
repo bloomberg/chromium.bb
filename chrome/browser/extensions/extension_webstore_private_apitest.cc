@@ -24,7 +24,7 @@ namespace {
 class WebstoreInstallListener : public WebstoreInstaller::Delegate {
  public:
   WebstoreInstallListener()
-      : received_failure_(false), received_success_(false) {}
+      : received_failure_(false), received_success_(false), waiting_(false) {}
 
   void OnExtensionInstallSuccess(const std::string& id) OVERRIDE;
   void OnExtensionInstallFailure(const std::string& id,
@@ -39,6 +39,7 @@ class WebstoreInstallListener : public WebstoreInstaller::Delegate {
  private:
   bool received_failure_;
   bool received_success_;
+  bool waiting_;
   std::string id_;
   std::string error_;
 };
@@ -46,7 +47,11 @@ class WebstoreInstallListener : public WebstoreInstaller::Delegate {
 void WebstoreInstallListener::OnExtensionInstallSuccess(const std::string& id) {
   received_success_ = true;
   id_ = id;
-  MessageLoopForUI::current()->Quit();
+
+  if (waiting_) {
+    waiting_ = false;
+    MessageLoopForUI::current()->Quit();
+  }
 }
 
 void WebstoreInstallListener::OnExtensionInstallFailure(
@@ -54,13 +59,18 @@ void WebstoreInstallListener::OnExtensionInstallFailure(
   received_failure_ = true;
   id_ = id;
   error_ = error;
-  MessageLoopForUI::current()->Quit();
+
+  if (waiting_) {
+    waiting_ = false;
+    MessageLoopForUI::current()->Quit();
+  }
 }
 
 void WebstoreInstallListener::Wait() {
   if (received_success_ || received_failure_)
     return;
 
+  waiting_ = true;
   ui_test_utils::RunMessageLoop();
 }
 
