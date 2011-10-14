@@ -156,15 +156,6 @@ class Logger {
   const LogLevel level_;
 };
 
-// This is a logger that does not do anything for release builds.
-class NoLogger {
- public:
-  template <typename T>
-  NoLogger& operator<<(const T& value) {
-    return *this;
-  }
-};
-
 }  // namespace gpu
 
 #define GPU_CHECK(X) ::gpu::Logger::CheckTrue( \
@@ -183,36 +174,45 @@ class NoLogger {
     (X), (Y), __FILE__, __LINE__, #X, #Y, "GPU_CHECK_LE")
 #define GPU_LOG(LEVEL) ::gpu::Logger(false, LEVEL)
 
+
 #if defined(NDEBUG)
+#define GPU_DEBUG_IS_ON false
+#else
+#define GPU_DEBUG_IS_ON true
+#endif
 
-#define GPU_DCHECK(X) ::gpu::NoLogger()
-#define GPU_DCHECK_EQ(X, Y) ::gpu::NoLogger()
-#define GPU_DCHECK_NE(X, Y) ::gpu::NoLogger()
-#define GPU_DCHECK_GT(X, Y) ::gpu::NoLogger()
-#define GPU_DCHECK_LT(X, Y) ::gpu::NoLogger()
-#define GPU_DCHECK_GE(X, Y) ::gpu::NoLogger()
-#define GPU_DCHECK_LE(X, Y) ::gpu::NoLogger()
-#define GPU_DLOG(LEVEL) ::gpu::NoLogger()
 
-#else  // NDEBUG
+#define GPU_DCHECK(X) \
+  if (GPU_DEBUG_IS_ON) \
+    ::gpu::Logger::CheckTrue( \
+        (X), __FILE__, __LINE__, #X, "GPU_DCHECK")
+#define GPU_DCHECK_EQ(X, Y) \
+  if (GPU_DEBUG_IS_ON) \
+    ::gpu::Logger::CheckEqual( \
+        (X), (Y), __FILE__, __LINE__, #X, #Y, "GPU_DCHECK_EQ")
+#define GPU_DCHECK_NE(X, Y) \
+  if (GPU_DEBUG_IS_ON) \
+    ::gpu::Logger::CheckNotEqual( \
+        (X), (Y), __FILE__, __LINE__, #X, #Y, "GPU_DCHECK_NE")
+#define GPU_DCHECK_GT(X, Y) \
+  if (GPU_DEBUG_IS_ON) \
+    ::gpu::Logger::CheckGreaterThan( \
+        (X), (Y), __FILE__, __LINE__, #X, #Y, "GPU_DCHECK_GT")
+#define GPU_DCHECK_LT(X, Y) \
+  if (GPU_DEBUG_IS_ON) \
+    ::gpu::Logger::CheckLessThan( \
+        (X), (Y), __FILE__, __LINE__, #X, #Y, "GPU_DCHECK_LT")
+#define GPU_DCHECK_GE(X, Y) \
+  if (GPU_DEBUG_IS_ON) \
+    ::gpu::Logger::CheckGreaterEqual( \
+        (X), (Y), __FILE__, __LINE__, #X, #Y, "GPU_DCHECK_GE")
+#define GPU_DCHECK_LE(X, Y) \
+  if (GPU_DEBUG_IS_ON) \
+    ::gpu::Logger::CheckLessEqual( \
+        (X), (Y), __FILE__, __LINE__, #X, #Y, "GPU_DCHECK_LE")
+#define GPU_DLOG(LEVEL) if (GPU_DEBUG_IS_ON) ::gpu::Logger(true, LEVEL)
 
-#define GPU_DCHECK(X) ::gpu::Logger::CheckTrue( \
-    (X), __FILE__, __LINE__, #X, "GPU_DCHECK")
-#define GPU_DCHECK_EQ(X, Y) ::gpu::Logger::CheckEqual( \
-    (X), (Y), __FILE__, __LINE__, #X, #Y, "GPU_DCHECK_EQ")
-#define GPU_DCHECK_NE(X, Y) ::gpu::Logger::CheckNotEqual( \
-    (X), (Y), __FILE__, __LINE__, #X, #Y, "GPU_DCHECK_NE")
-#define GPU_DCHECK_GT(X, Y) ::gpu::Logger::CheckGreaterThan( \
-    (X), (Y), __FILE__, __LINE__, #X, #Y, "GPU_DCHECK_GT")
-#define GPU_DCHECK_LT(X, Y) ::gpu::Logger::CheckLessThan( \
-    (X), (Y), __FILE__, __LINE__, #X, #Y, "GPU_DCHECK_LT")
-#define GPU_DCHECK_GE(X, Y) ::gpu::Logger::CheckGreaterEqual( \
-    (X), (Y), __FILE__, __LINE__, #X, #Y, "GPU_DCHECK_GE")
-#define GPU_DCHECK_LE(X, Y) ::gpu::Logger::CheckLessEqual( \
-    (X), (Y), __FILE__, __LINE__, #X, #Y, "GPU_DCHECK_LE")
-#define GPU_DLOG(LEVEL) ::gpu::Logger(true, LEVEL)
 
-#endif  // NDEBUG
 
 #define GPU_NOTREACHED() GPU_DCHECK(false)
 
