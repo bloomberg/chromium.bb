@@ -140,7 +140,6 @@ class Builder(object):
   def BuildLinkOptions(self, options):
     """Generates link options, called once by __init__."""
     options = ArgToList(options)
-    print 'LINK OPTIONS: >>%s<<' % '<< >>'.join(options)
     if self.toolname in ['glibc', 'newlib'] and self.mainarch == 'x86':
       options += ['-B' + self.toollib]
     self.link_options = options + ['-L' + name for name in self.lib_paths]
@@ -151,6 +150,10 @@ class Builder(object):
 
   def Run(self, cmd_line, out):
     """Helper which runs a command line."""
+
+    # For POSIX style path on windows for POSIX based toolchain
+    cmd_line = [cmd.replace('\\', '/') for cmd in cmd_line]
+
     if self.verbose:
       print ' '.join(cmd_line)
     try:
