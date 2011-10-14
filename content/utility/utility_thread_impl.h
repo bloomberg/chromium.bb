@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_UTILITY_UTILITY_THREAD_H_
-#define CONTENT_UTILITY_UTILITY_THREAD_H_
+#ifndef CONTENT_UTILITY_UTILITY_THREAD_IMPL_H_
+#define CONTENT_UTILITY_UTILITY_THREAD_IMPL_H_
 #pragma once
 
 #include <string>
@@ -14,6 +14,7 @@
 #include "base/string16.h"
 #include "content/common/child_thread.h"
 #include "content/common/content_export.h"
+#include "content/public/utility/utility_thread.h"
 
 class FilePath;
 class IndexedDBKey;
@@ -28,18 +29,15 @@ class WebKitPlatformSupportImpl;
 }
 
 // This class represents the background thread where the utility task runs.
-class UtilityThread : public ChildThread {
+class UtilityThreadImpl : public content::UtilityThread,
+                          public ChildThread {
  public:
-  UtilityThread();
-  virtual ~UtilityThread();
+  UtilityThreadImpl();
+  virtual ~UtilityThreadImpl();
 
-  // Releases the process if we are not (or no longer) in batch mode.
-  CONTENT_EXPORT void ReleaseProcessIfNeeded();
+  virtual bool Send(IPC::Message* msg) OVERRIDE;
 
-  // Returns the one utility thread.
-  static UtilityThread* current() {
-    return static_cast<UtilityThread*>(ChildThread::current());
-  }
+  virtual void ReleaseProcessIfNeeded() OVERRIDE;
 
  private:
   // ChildThread implementation.
@@ -68,7 +66,7 @@ class UtilityThread : public ChildThread {
 
   scoped_ptr<webkit_glue::WebKitPlatformSupportImpl> webkit_platform_support_;
 
-  DISALLOW_COPY_AND_ASSIGN(UtilityThread);
+  DISALLOW_COPY_AND_ASSIGN(UtilityThreadImpl);
 };
 
-#endif  // CONTENT_UTILITY_UTILITY_THREAD_H_
+#endif  // CONTENT_UTILITY_UTILITY_THREAD_IMPL_H_

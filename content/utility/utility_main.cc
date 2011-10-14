@@ -10,7 +10,7 @@
 #include "content/common/hi_res_timer_manager.h"
 #include "content/common/main_function_params.h"
 #include "content/public/common/content_switches.h"
-#include "content/utility/utility_thread.h"
+#include "content/utility/utility_thread_impl.h"
 
 #if defined(OS_WIN)
 #include "sandbox/src/sandbox.h"
@@ -26,7 +26,7 @@ int UtilityMain(const MainFunctionParams& parameters) {
   HighResolutionTimerManager hi_res_timer_manager;
 
   ChildProcess utility_process;
-  utility_process.set_main_thread(new UtilityThread());
+  utility_process.set_main_thread(new UtilityThreadImpl());
 
 #if defined(OS_WIN)
   bool no_sandbox = parameters.command_line_.HasSwitch(switches::kNoSandbox);

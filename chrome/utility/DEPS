@@ -1,6 +1,5 @@
 include_rules = [
   "+chrome/browser",  # For out of process profile import.
   "+content/public/utility",
-  "+content/utility",
   "+webkit/glue",
 ]

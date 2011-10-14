@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/utility/utility_thread.h"
+#include "content/utility/utility_thread_impl.h"
 
 #include <stddef.h>
 
@@ -29,7 +29,7 @@ void ConvertVector(const SRC& src, DEST* dest) {
 
 }  // namespace
 
-UtilityThread::UtilityThread()
+UtilityThreadImpl::UtilityThreadImpl()
     : batch_mode_(false) {
   ChildProcess::current()->AddRefProcess();
   webkit_platform_support_.reset(new webkit_glue::WebKitPlatformSupportImpl);
@@ -37,16 +37,25 @@ UtilityThread::UtilityThread()
   content::GetContentClient()->utility()->UtilityThreadStarted();
 }
 
-UtilityThread::~UtilityThread() {
+UtilityThreadImpl::~UtilityThreadImpl() {
   WebKit::shutdown();
 }
 
-bool UtilityThread::OnControlMessageReceived(const IPC::Message& msg) {
+bool UtilityThreadImpl::Send(IPC::Message* msg) {
+  return ChildThread::Send(msg);
+}
+
+void UtilityThreadImpl::ReleaseProcessIfNeeded() {
+  if (!batch_mode_)
+    ChildProcess::current()->ReleaseProcess();
+}
+
+bool UtilityThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
   if (content::GetContentClient()->utility()->OnMessageReceived(msg))
     return true;
 
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(UtilityThread, msg)
+  IPC_BEGIN_MESSAGE_MAP(UtilityThreadImpl, msg)
     IPC_MESSAGE_HANDLER(UtilityMsg_IDBKeysFromValuesAndKeyPath,
                         OnIDBKeysFromValuesAndKeyPath)
     IPC_MESSAGE_HANDLER(UtilityMsg_InjectIDBKey, OnInjectIDBKey)
@@ -60,7 +69,7 @@ bool UtilityThread::OnControlMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
-void UtilityThread::OnIDBKeysFromValuesAndKeyPath(
+void UtilityThreadImpl::OnIDBKeysFromValuesAndKeyPath(
     int id,
     const std::vector<SerializedScriptValue>& serialized_script_values,
     const string16& idb_key_path) {
@@ -79,7 +88,7 @@ void UtilityThread::OnIDBKeysFromValuesAndKeyPath(
   ReleaseProcessIfNeeded();
 }
 
-void UtilityThread::OnInjectIDBKey(const IndexedDBKey& key,
+void UtilityThreadImpl::OnInjectIDBKey(const IndexedDBKey& key,
                                    const SerializedScriptValue& value,
                                    const string16& key_path) {
   SerializedScriptValue new_value(webkit_glue::InjectIDBKey(key, value,
@@ -88,16 +97,16 @@ void UtilityThread::OnInjectIDBKey(const IndexedDBKey& key,
   ReleaseProcessIfNeeded();
 }
 
-void UtilityThread::OnBatchModeStarted() {
+void UtilityThreadImpl::OnBatchModeStarted() {
   batch_mode_ = true;
 }
 
-void UtilityThread::OnBatchModeFinished() {
+void UtilityThreadImpl::OnBatchModeFinished() {
   ChildProcess::current()->ReleaseProcess();
 }
 
 #if defined(OS_POSIX)
-void UtilityThread::OnLoadPlugins(
+void UtilityThreadImpl::OnLoadPlugins(
     const std::vector<FilePath>& extra_plugin_paths,
     const std::vector<FilePath>& extra_plugin_dirs,
     const std::vector<webkit::WebPluginInfo>& internal_plugins) {
@@ -126,11 +135,7 @@ void UtilityThread::OnLoadPlugins(
   plugin_list->GetPlugins(&plugins);
 
   Send(new UtilityHostMsg_LoadedPlugins(plugins));
-  UtilityThread::current()->ReleaseProcessIfNeeded();
+  ReleaseProcessIfNeeded();
 }
 #endif
 
-void UtilityThread::ReleaseProcessIfNeeded() {
-  if (!batch_mode_)
-    ChildProcess::current()->ReleaseProcess();
-}

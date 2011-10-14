@@ -17,7 +17,7 @@
 #include "chrome/common/extensions/extension_unpacker.h"
 #include "chrome/common/extensions/update_manifest.h"
 #include "chrome/common/web_resource/web_resource_unpacker.h"
-#include "content/utility/utility_thread.h"
+#include "content/public/utility/utility_thread.h"
 #include "printing/backend/print_backend.h"
 #include "printing/page_range.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -91,7 +91,7 @@ bool ChromeContentUtilityClient::OnMessageReceived(
 }
 
 bool ChromeContentUtilityClient::Send(IPC::Message* message) {
-  return UtilityThread::current()->Send(message);
+  return content::UtilityThread::Get()->Send(message);
 }
 
 void ChromeContentUtilityClient::OnUnpackExtension(
@@ -106,7 +106,7 @@ void ChromeContentUtilityClient::OnUnpackExtension(
         unpacker.error_message()));
   }
 
-  UtilityThread::current()->ReleaseProcessIfNeeded();
+  content::UtilityThread::Get()->ReleaseProcessIfNeeded();
 }
 
 void ChromeContentUtilityClient::OnUnpackWebResource(
@@ -123,7 +123,7 @@ void ChromeContentUtilityClient::OnUnpackWebResource(
         unpacker.error_message()));
   }
 
-  UtilityThread::current()->ReleaseProcessIfNeeded();
+  content::UtilityThread::Get()->ReleaseProcessIfNeeded();
 }
 
 void ChromeContentUtilityClient::OnParseUpdateManifest(const std::string& xml) {
@@ -135,7 +135,7 @@ void ChromeContentUtilityClient::OnParseUpdateManifest(const std::string& xml) {
     Send(new ChromeUtilityHostMsg_ParseUpdateManifest_Succeeded(
         manifest.results()));
   }
-  UtilityThread::current()->ReleaseProcessIfNeeded();
+  content::UtilityThread::Get()->ReleaseProcessIfNeeded();
 }
 
 void ChromeContentUtilityClient::OnDecodeImage(
@@ -148,7 +148,7 @@ void ChromeContentUtilityClient::OnDecodeImage(
   } else {
     Send(new ChromeUtilityHostMsg_DecodeImage_Succeeded(decoded_image));
   }
-  UtilityThread::current()->ReleaseProcessIfNeeded();
+  content::UtilityThread::Get()->ReleaseProcessIfNeeded();
 }
 
 void ChromeContentUtilityClient::OnDecodeImageBase64(
@@ -191,7 +191,7 @@ void ChromeContentUtilityClient::OnRenderPDFPagesToMetafile(
   if (!succeeded) {
     Send(new ChromeUtilityHostMsg_RenderPDFPagesToMetafile_Failed());
   }
-  UtilityThread::current()->ReleaseProcessIfNeeded();
+  content::UtilityThread::Get()->ReleaseProcessIfNeeded();
 }
 
 #if defined(OS_WIN)
@@ -234,10 +234,10 @@ DWORD WINAPI UtilityProcess_GetFontDataPatch(
     LOGFONT logfont;
     if (GetObject(font, sizeof(LOGFONT), &logfont)) {
       std::vector<char> font_data;
-      if (UtilityThread::current()->Send(
+      if (content::UtilityThread::Get()->Send(
               new ChildProcessHostMsg_PreCacheFont(logfont))) {
         rv = GetFontData(hdc, table, offset, buffer, length);
-        UtilityThread::current()->Send(
+        content::UtilityThread::Get()->Send(
             new ChildProcessHostMsg_ReleaseCachedFonts());
       }
     }
@@ -351,7 +351,7 @@ void ChromeContentUtilityClient::OnParseJSON(const std::string& json) {
   } else {
     Send(new ChromeUtilityHostMsg_ParseJSON_Failed(error));
   }
-  UtilityThread::current()->ReleaseProcessIfNeeded();
+  content::UtilityThread::Get()->ReleaseProcessIfNeeded();
 }
 
 void ChromeContentUtilityClient::OnGetPrinterCapsAndDefaults(
@@ -366,7 +366,7 @@ void ChromeContentUtilityClient::OnGetPrinterCapsAndDefaults(
     Send(new ChromeUtilityHostMsg_GetPrinterCapsAndDefaults_Failed(
         printer_name));
   }
-  UtilityThread::current()->ReleaseProcessIfNeeded();
+  content::UtilityThread::Get()->ReleaseProcessIfNeeded();
 }
 
 void ChromeContentUtilityClient::OnImportStart(
@@ -417,7 +417,7 @@ void ChromeContentUtilityClient::ImporterCleanup() {
   importer_ = NULL;
   bridge_ = NULL;
   import_thread_.reset();
-  UtilityThread::current()->ReleaseProcessIfNeeded();
+  content::UtilityThread::Get()->ReleaseProcessIfNeeded();
 }
 
 }  // namespace chrome
