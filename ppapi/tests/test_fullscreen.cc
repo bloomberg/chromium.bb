@@ -185,7 +185,11 @@ bool TestFullscreen::HandleInputEvent(const pp::InputEvent& event) {
 // When going to fullscreen, two DidChangeView calls are generated:
 // one for moving the plugin to the middle of window and one for stretching
 // the window and placing the plugin in the middle of the screen.
-// Plugin size does not change.
+// WebKit does not change the plugin size, but Pepper does explicitly set
+// it to screen width and height when SetFullscreen(true) is called and
+// resets it back when ViewChanged is received indicating that we exited
+// fullscreen.
+// NOTE: The number of DidChangeView calls for <object> might be different.
 void TestFullscreen::DidChangeView(const pp::Rect& position,
                                    const pp::Rect& clip) {
   if (normal_position_.IsEmpty())
@@ -195,8 +199,8 @@ void TestFullscreen::DidChangeView(const pp::Rect& position,
     saw_first_fullscreen_didchangeview = true;
     if (!screen_mode_.IsFullscreen())
       FailFullscreenTest("DidChangeView1 is not in fullscreen");
-    if (position.size() != normal_position_.size())
-      FailFullscreenTest("DidChangeView1 has different plugin size");
+    if (position.size() != screen_size_)
+      FailFullscreenTest("DidChangeView1 does not have screen size");
     // Wait for the 2nd DidChangeView.
   } else if (fullscreen_pending_) {
     fullscreen_pending_ = false;
@@ -205,8 +209,10 @@ void TestFullscreen::DidChangeView(const pp::Rect& position,
       FailFullscreenTest("DidChangeView2 is not in fullscreen");
     else if (!HasMidScreen(position, screen_size_))
       FailFullscreenTest("DidChangeView2 is not in the middle of the screen");
-    else if (position.size() != normal_position_.size())
-      FailFullscreenTest("DidChangeView2 has different plugin size");
+    else if (position.size() != screen_size_)
+      FailFullscreenTest("DidChangeView2 does not have screen size");
+    // NOTE: we cannot reliably test for clip size being equal to the screen
+    // because it might be affected by JS console, info bars, etc.
     else
       pp::Module::Get()->core()->CallOnMainThread(0, fullscreen_callback_);
   } else if (normal_pending_) {

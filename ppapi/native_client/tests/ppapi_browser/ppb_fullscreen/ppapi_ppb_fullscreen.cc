@@ -221,11 +221,8 @@ bool HasMidScreen(const PP_Rect* position) {
 }
 
 // DidChangeView completes transition to/from fullscreen mode.
-// In fact, we get two of them when going to fullscreen, one when the plugin
-// is placed in the middle of the window and one when the window is resized,
-// placing the plugin in the middle of the screen.
-// The size of the plugin is not affected.
-bool g_saw_first_didchangeview = false;
+// The plugin is resized to the size of the screen.
+// NOTE: The number of DidChangeView calls for <object> might be different.
 PP_Rect g_normal_position = PP_MakeRectFromXYWH(0, 0, 0, 0);
 void DidChangeView(PP_Instance instance,
                    const struct PP_Rect* position,
@@ -247,22 +244,17 @@ void DidChangeView(PP_Instance instance,
   }
 
   const char* test = NULL;
-  if (g_fullscreen_pending && !g_saw_first_didchangeview) {
-    g_saw_first_didchangeview = true;
-    EXPECT(PPBFullscreenDev()->IsFullscreen(pp_instance()) == PP_TRUE);
-    EXPECT(IsSizeEqual(position->size, g_normal_position.size));
-    // Wait for the 2nd DidChangeView.
-  } else if (g_fullscreen_pending) {
+  PP_Size screen_size = GetScreenSize();
+  if (g_fullscreen_pending && PPBFullscreenDev()->IsFullscreen(pp_instance())) {
     test = "TestSetFullscreenTrue";
     g_fullscreen_pending = false;
-    g_saw_first_didchangeview = false;  // Reset.
-    EXPECT(PPBFullscreenDev()->IsFullscreen(pp_instance()) == PP_TRUE);
-    EXPECT(HasMidScreen(position));
-    EXPECT(IsSizeEqual(position->size, g_normal_position.size));
-  } else if (g_normal_pending) {
+    EXPECT(IsSizeEqual(position->size, screen_size));
+    // NOTE: we cannot reliably test for clip size being equal to the screen
+    // because it might be affected by JS console, info bars, etc.
+  } else if (g_normal_pending &&
+             !PPBFullscreenDev()->IsFullscreen(pp_instance())) {
     test = "TestSetFullscreenFalse";
     g_normal_pending = false;
-    EXPECT(PPBFullscreenDev()->IsFullscreen(pp_instance()) == PP_FALSE);
     EXPECT(IsRectEqual(*position, g_normal_position));
   }
   if (test != NULL) {

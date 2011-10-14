@@ -32,6 +32,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCanvas.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/rect.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
@@ -450,6 +451,15 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
   // compositing path.
   bool IsViewAccelerated();
 
+  // Remember view parameters that were sent to the plugin.
+  void SetSentDidChangeView(const gfx::Rect& position, const gfx::Rect& clip);
+
+  // Track, set and reset size attributes to control the size of the plugin
+  // in and out of fullscreen mode.
+  void KeepSizeAttributesBeforeFullscreen();
+  void SetSizeAttributesForFullscreen();
+  void ResetSizeAttributesAfterFullscreen();
+
   PluginDelegate* delegate_;
   scoped_refptr<PluginModule> module_;
   scoped_ptr< ::ppapi::PPP_Instance_Combined> instance_interface_;
@@ -569,6 +579,15 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
   // True if we are in fullscreen mode. False if we are in normal mode.
   // It reflects the previous state when in transition.
   bool fullscreen_;
+
+  // WebKit does not resize the plugin when going into fullscreen mode, so we do
+  // this here by modifying the various plugin attributes and then restoring
+  // them on exit.
+  WebKit::WebString width_before_fullscreen_;
+  WebKit::WebString height_before_fullscreen_;
+  WebKit::WebString border_before_fullscreen_;
+  WebKit::WebString style_before_fullscreen_;
+  gfx::Size screen_size_for_fullscreen_;
 
   // The MessageChannel used to implement bidirectional postMessage for the
   // instance.

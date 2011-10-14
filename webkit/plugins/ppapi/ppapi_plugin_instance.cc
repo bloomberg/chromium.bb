@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/stringprintf.h"
 #include "base/utf_offset_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "ppapi/c/dev/ppb_console_dev.h"
@@ -99,6 +100,7 @@
 #include "skia/ext/skia_utils_mac.h"
 #endif
 
+using base::StringPrintf;
 using ppapi::InputEventImpl;
 using ppapi::StringVar;
 using ppapi::thunk::EnterResourceNoLock;
@@ -115,6 +117,7 @@ using WebKit::WebConsoleMessage;
 using WebKit::WebCursorInfo;
 using WebKit::WebDocument;
 using WebKit::WebFrame;
+using WebKit::WebElement;
 using WebKit::WebInputEvent;
 using WebKit::WebPluginContainer;
 using WebKit::WebString;
@@ -164,6 +167,12 @@ const ui::TextInputType kPluginDefaultTextInputType = ui::TEXT_INPUT_TYPE_NONE;
     COMPILE_ASSERT(static_cast<int>(WebCursorInfo::webkit_name) \
                        == static_cast<int>(np_name), \
                    mismatching_enums)
+
+// <embed>/<object> attributes.
+static const char kWidth[] = "width";
+static const char kHeight[] = "height";
+static const char kBorder[] = "border";  // According to w3c, deprecated.
+static const char kStyle[] = "style";
 
 COMPILE_ASSERT_MATCHING_ENUM(TypePointer, PP_CURSORTYPE_POINTER);
 COMPILE_ASSERT_MATCHING_ENUM(TypeCross, PP_CURSORTYPE_CROSS);
@@ -237,7 +246,7 @@ bool SecurityOriginForInstance(PP_Instance instance_id,
   if (!instance)
     return false;
 
-  WebKit::WebElement plugin_element = instance->container()->element();
+  WebElement plugin_element = instance->container()->element();
   *security_origin = plugin_element.document().securityOrigin();
   return true;
 }
@@ -736,10 +745,29 @@ void PluginInstance::ViewChanged(const gfx::Rect& position,
   if (sent_did_change_view_ && position == position_ && new_clip == clip_)
     return;
 
-  sent_did_change_view_ = true;
-  position_ = position;
-  clip_ = new_clip;
-  fullscreen_ = desired_fullscreen_state_;
+  // TODO(polina): fullscreen transition might take multiple ViewChanged,
+  // so this will update the state too early. Also, when F11 is used to
+  // exit fullscreen mode, desired_fullscreen_state_ is not properly set
+  // and cannot be relied on.
+  // Pending fix: http://codereview.chromium.org/8273029/
+  // WebKit: https://bugs.webkit.org/show_bug.cgi?id=70076.
+  if (desired_fullscreen_state_ && !fullscreen_) {
+    // Entered fullscreen. Only possible via SetFullscreen.
+    fullscreen_ = true;
+  } else if (!desired_fullscreen_state_ && fullscreen_) {
+    // Exited fullscreen. Possible via SetFullscreen or F11/link.
+    fullscreen_ = false;
+    // Reset the size attributes that we hacked to fill in the screen and
+    // retrigger ViewChanged. Make sure we don't forward duplicates of
+    // this view to the plugin.
+    ResetSizeAttributesAfterFullscreen();
+    SetSentDidChangeView(position, new_clip);
+    MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(&PluginInstance::ReportGeometry, this));
+    return;
+  }
+
+  SetSentDidChangeView(position, new_clip);
   flash_fullscreen_ = (fullscreen_container_ != NULL);
 
   PP_Rect pp_position, pp_clip;
@@ -1164,10 +1192,16 @@ bool PluginInstance::SetFullscreen(bool fullscreen, bool delay_report) {
 
   VLOG(1) << "Setting fullscreen to " << (fullscreen ? "on" : "off");
   desired_fullscreen_state_ = fullscreen;
-  if (fullscreen)
+
+  if (fullscreen) {
+    // WebKit does not resize the plugin to fill the screen in fullscreen mode,
+    // so we will tweak plugin's attributes to support the expected behavior.
+    KeepSizeAttributesBeforeFullscreen();
+    SetSizeAttributesForFullscreen();
     container_->element().requestFullScreen();
-  else
+  } else {
     container_->element().document().cancelFullScreen();
+  }
   if (!delay_report) {
     ReportGeometry();
   } else {
@@ -1901,7 +1935,7 @@ PP_Var PluginInstance::ResolveRelativeToDocument(
   if (!relative_string)
     return PP_MakeNull();
 
-  WebKit::WebElement plugin_element = container()->element();
+  WebElement plugin_element = container()->element();
   GURL document_url = plugin_element.document().baseURL();
   return ::ppapi::URLUtilImpl::GenerateURLReturn(
       module()->pp_module(),
@@ -1976,6 +2010,55 @@ bool PluginInstance::CanAccessMainFrame() const {
 
   return containing_document.securityOrigin().canAccess(
       main_document.securityOrigin());
+}
+
+void PluginInstance::SetSentDidChangeView(const gfx::Rect& position,
+                                          const gfx::Rect& clip) {
+  sent_did_change_view_ = true;
+  position_ = position;
+  clip_ = clip;
+}
+
+void PluginInstance::KeepSizeAttributesBeforeFullscreen() {
+  WebElement element = container_->element();
+  width_before_fullscreen_ = element.getAttribute(WebString::fromUTF8(kWidth));
+  height_before_fullscreen_ =
+      element.getAttribute(WebString::fromUTF8(kHeight));
+  border_before_fullscreen_ =
+      element.getAttribute(WebString::fromUTF8(kBorder));
+  style_before_fullscreen_ = element.getAttribute(WebString::fromUTF8(kStyle));
+}
+
+void PluginInstance::SetSizeAttributesForFullscreen() {
+  screen_size_for_fullscreen_ = delegate()->GetScreenSize();
+  std::string width = StringPrintf("%d", screen_size_for_fullscreen_.width());
+  std::string height = StringPrintf("%d", screen_size_for_fullscreen_.height());
+
+  WebElement element = container_->element();
+  element.setAttribute(WebString::fromUTF8(kWidth), WebString::fromUTF8(width));
+  element.setAttribute(WebString::fromUTF8(kHeight),
+                       WebString::fromUTF8(height));
+  element.setAttribute(WebString::fromUTF8(kBorder), WebString::fromUTF8("0"));
+
+  // There should be no style settings that matter in fullscreen mode,
+  // so just replace them instead of appending.
+  // NOTE: "position: fixed" and "display: block" reset the plugin and
+  // using %% settings might not work without them (e.g. if the plugin is a
+  // child of a container element).
+  std::string style;
+  style += StringPrintf("width: %s !important; ", width.c_str());
+  style += StringPrintf("height: %s !important; ", height.c_str());
+  style += "margin: 0 !important; padding: 0 !important; border: 0 !important";
+  container_->element().setAttribute(kStyle, WebString::fromUTF8(style));
+}
+
+void PluginInstance::ResetSizeAttributesAfterFullscreen() {
+  screen_size_for_fullscreen_ = gfx::Size();
+  WebElement element = container_->element();
+  element.setAttribute(WebString::fromUTF8(kWidth), width_before_fullscreen_);
+  element.setAttribute(WebString::fromUTF8(kHeight), height_before_fullscreen_);
+  element.setAttribute(WebString::fromUTF8(kBorder), border_before_fullscreen_);
+  element.setAttribute(WebString::fromUTF8(kStyle), style_before_fullscreen_);
 }
 
 }  // namespace ppapi
