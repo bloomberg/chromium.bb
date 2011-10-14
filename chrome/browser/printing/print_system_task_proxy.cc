@@ -148,6 +148,8 @@ bool getBasicColorModelSettings(
     *color_model_for_black = printing::BLACK;
   else if (ppdFindChoice(color_model, printing::kGray))
     *color_model_for_black = printing::GRAY;
+  else if (ppdFindChoice(color_model, printing::kGrayscale))
+    *color_model_for_black = printing::GRAYSCALE;
 
   if (ppdFindChoice(color_model, printing::kColor))
     *color_model_for_color = printing::COLOR;

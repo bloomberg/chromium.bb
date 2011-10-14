@@ -98,6 +98,7 @@ enum ColorModels {
   KCMY,
   CMY_K,  // CMY_K represents CMY+K.
   BLACK,
+  GRAYSCALE,
   RGB,
   RGB16,
   RGBA,

@@ -77,8 +77,12 @@ cr.define('print_preview', function() {
       this.colorOption_.setAttribute('aria-hidden', disableColorOption);
 
       var setColorAsDefault = e.printerCapabilities.setColorAsDefault;
-      this.printerColorModelForColor_ =
-          e.printerCapabilities.printerColorModelForColor;
+      if (e.printerCapabilities.printerColorModelForColor) {
+        this.printerColorModelForColor_ =
+            e.printerCapabilities.printerColorModelForColor;
+      } else {
+        this.printerColorModelForColor_ = ColorSettings.COLOR;
+      }
       if (e.printerCapabilities.printerColorModelForBlack) {
         this.printerColorModelForBlack_ =
             e.printerCapabilities.printerColorModelForBlack;
