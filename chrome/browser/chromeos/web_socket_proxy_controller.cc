@@ -83,10 +83,6 @@ class OriginValidator {
       const std::string& hostname,
       unsigned short port,
       chromeos::WebSocketProxyController::ConnectionFlags flags) {
-    if (flags & chromeos::WebSocketProxyController::TLS_OVER_TCP) {
-      NOTIMPLEMENTED();
-      return false;
-    }
     return std::binary_search(
         allowed_ids_.begin(), allowed_ids_.end(), extension_id);
   }
@@ -140,17 +136,8 @@ base::LazyInstance<ProxyLifetime> g_proxy_lifetime(base::LINKER_INITIALIZED);
 
 void ProxyTask::Run() {
   LOG(INFO) << "Attempt to run web socket proxy task";
-  const int kPort = 10101;
-
-  struct sockaddr_in sa;
-  memset(&sa, 0, sizeof(sa));
-  sa.sin_family = AF_INET;
-  sa.sin_port = htons(kPort);
-  sa.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
-
   chromeos::WebSocketProxy* server = new chromeos::WebSocketProxy(
-      g_validator.Get().allowed_origins(),
-      reinterpret_cast<sockaddr*>(&sa), sizeof(sa));
+      g_validator.Get().allowed_origins());
   {
     base::AutoLock alk(g_proxy_lifetime.Get().lock_);
     if (g_proxy_lifetime.Get().shutdown_requested_)

@@ -14,6 +14,10 @@ class ExtensionWebSocketProxyPrivateApiTest : public ExtensionApiTest {
 };
 
 IN_PROC_BROWSER_TEST_F(ExtensionWebSocketProxyPrivateApiTest, Pass) {
+  // Currently WebSocket-to-TCP proxy is operational only on ChromeOS platform.
+#if defined(OS_CHROMEOS)
+  ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionTest("web_socket_proxy_private")) << message_;
+#endif
 }
 

@@ -12,6 +12,7 @@
 #include "base/gtest_prod_util.h"
 
 class WebSocketProxyPrivateGetPassportForTCPFunction;
+class WebSocketProxyPrivateGetURLForTCPFunction;
 
 namespace browser {
 
@@ -59,6 +60,7 @@ class InternalAuthGeneration {
   static void GenerateNewKey();
 
   friend class ::WebSocketProxyPrivateGetPassportForTCPFunction;
+  friend class ::WebSocketProxyPrivateGetURLForTCPFunction;
 
   FRIEND_TEST_ALL_PREFIXES(InternalAuthTest, BasicGeneration);
   FRIEND_TEST_ALL_PREFIXES(InternalAuthTest, DoubleGeneration);

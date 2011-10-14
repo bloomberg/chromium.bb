@@ -11,13 +11,48 @@
 #include "content/common/notification_registrar.h"
 #include "chrome/browser/extensions/extension_function.h"
 
-class WebSocketProxyPrivateGetPassportForTCPFunction
+class WebSocketProxyPrivate
     : public AsyncExtensionFunction, public NotificationObserver {
+ public:
+  WebSocketProxyPrivate();
+
+  virtual ~WebSocketProxyPrivate();
+
+  // Finalizes async operation.
+  virtual void Finalize();
+
+ protected:
+  // NotificationObserver implementation.
+  virtual void Observe(
+      int type, const NotificationSource& source,
+      const NotificationDetails& details) OVERRIDE;
+
+  // Whether already finalized.
+  bool is_finalized_;
+
+  // Used to signal timeout (when waiting for proxy initial launch).
+  base::OneShotTimer<WebSocketProxyPrivate> timer_;
+
+  NotificationRegistrar registrar_;
+
+  // Proxy listens incoming websocket connection on this port.
+  int listening_port_;
+};
+
+class WebSocketProxyPrivateGetPassportForTCPFunction
+    : public WebSocketProxyPrivate {
  public:
   WebSocketProxyPrivateGetPassportForTCPFunction();
 
-  virtual ~WebSocketProxyPrivateGetPassportForTCPFunction();
+ private:
+  // ExtensionFunction implementation.
+  virtual bool RunImpl() OVERRIDE;
 
+  DECLARE_EXTENSION_FUNCTION_NAME("webSocketProxyPrivate.getPassportForTCP")
+};
+
+class WebSocketProxyPrivateGetURLForTCPFunction
+    : public WebSocketProxyPrivate {
  private:
   // ExtensionFunction implementation.
   virtual bool RunImpl() OVERRIDE;
@@ -28,17 +63,12 @@ class WebSocketProxyPrivateGetPassportForTCPFunction
       const NotificationDetails& details) OVERRIDE;
 
   // Finalizes async operation.
-  void Finalize();
+  virtual void Finalize() OVERRIDE;
 
-  // Whether already finalized.
-  bool is_finalized_;
+  // Query component of resulting URL.
+  std::string query_;
 
-  // Used to signal timeout (when waiting for proxy initial launch).
-  base::OneShotTimer<WebSocketProxyPrivateGetPassportForTCPFunction> timer_;
-
-  NotificationRegistrar registrar_;
-
-  DECLARE_EXTENSION_FUNCTION_NAME("webSocketProxyPrivate.getPassportForTCP")
+  DECLARE_EXTENSION_FUNCTION_NAME("webSocketProxyPrivate.getURLForTCP")
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_WEB_SOCKET_PROXY_PRIVATE_API_H_

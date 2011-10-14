@@ -415,6 +415,7 @@ void FactoryRegistry::ResetFunctions() {
 
   // Websocket to TCP proxy. Currently noop on anything other than ChromeOS.
   RegisterFunction<WebSocketProxyPrivateGetPassportForTCPFunction>();
+  RegisterFunction<WebSocketProxyPrivateGetURLForTCPFunction>();
 
   // Debugger
   RegisterFunction<AttachDebuggerFunction>();

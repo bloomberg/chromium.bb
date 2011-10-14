@@ -883,7 +883,8 @@ enum NotificationType {
   NOTIFICATION_APP_INSTALLED_TO_NTP,
 
 #if defined(OS_CHROMEOS)
-  // Sent when WebSocketProxy started accepting connections.
+  // Sent when WebSocketProxy started accepting connections; details is integer
+  // port on which proxy is listening.
   NOTIFICATION_WEB_SOCKET_PROXY_STARTED,
 #endif
 
