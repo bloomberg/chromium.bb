@@ -238,6 +238,10 @@ bool WebPluginImpl::supportsPaginatedPrint() {
   return instance_->SupportsPrintInterface();
 }
 
+bool WebPluginImpl::isPrintScalingDisabled() {
+  return instance_->IsPrintScalingDisabled();
+}
+
 int WebPluginImpl::printBegin(const WebKit::WebRect& printable_area,
                               int printer_dpi) {
   return instance_->PrintBegin(printable_area, printer_dpi);

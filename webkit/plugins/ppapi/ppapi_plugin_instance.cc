@@ -1065,6 +1065,13 @@ bool PluginInstance::SupportsPrintInterface() {
   return GetPreferredPrintOutputFormat(&format);
 }
 
+bool PluginInstance::IsPrintScalingDisabled() {
+  DCHECK(plugin_print_interface_);
+  if (!plugin_print_interface_)
+    return false;
+  return plugin_print_interface_->IsScalingDisabled(pp_instance()) == PP_TRUE;
+}
+
 int PluginInstance::PrintBegin(const gfx::Rect& printable_area,
                                int printer_dpi) {
   // Keep a reference on the stack. See NOTE above.
@@ -1123,6 +1130,9 @@ bool PluginInstance::PrintPageHelper(PP_PrintPageNumberRange_Dev* page_ranges,
                                      WebKit::WebCanvas* canvas) {
   // Keep a reference on the stack. See NOTE above.
   scoped_refptr<PluginInstance> ref(this);
+  DCHECK(plugin_print_interface_);
+  if (!plugin_print_interface_)
+    return false;
   PP_Resource print_output = plugin_print_interface_->PrintPages(
       pp_instance(), page_ranges, num_ranges);
   if (!print_output)

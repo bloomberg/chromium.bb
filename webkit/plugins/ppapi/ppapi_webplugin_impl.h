@@ -72,11 +72,12 @@ class WebPluginImpl : public WebKit::WebPlugin {
                          int identifier);
   virtual void selectFindResult(bool forward);
   virtual void stopFind();
-  virtual bool supportsPaginatedPrint();
+  virtual bool supportsPaginatedPrint() OVERRIDE;
+  virtual bool isPrintScalingDisabled() OVERRIDE;
   virtual int printBegin(const WebKit::WebRect& printable_area,
-                         int printer_dpi);
-  virtual bool printPage(int page_number, WebKit::WebCanvas* canvas);
-  virtual void printEnd();
+                         int printer_dpi) OVERRIDE;
+  virtual bool printPage(int page_number, WebKit::WebCanvas* canvas) OVERRIDE;
+  virtual void printEnd() OVERRIDE;
 
   struct InitData;
 

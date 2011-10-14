@@ -221,6 +221,7 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
   void StopFind();
 
   bool SupportsPrintInterface();
+  bool IsPrintScalingDisabled();
   int PrintBegin(const gfx::Rect& printable_area, int printer_dpi);
   bool PrintPage(int page_number, WebKit::WebCanvas* canvas);
   void PrintEnd();
