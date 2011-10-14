@@ -14,7 +14,7 @@
 }
 
 .app-contents:active:not(.suppress-active),
-.app:focus .app-contents:not(.suppress-active),
+.app:not(.click-focus):focus .app-contents:not(.suppress-active),
 .drag-representation:not(.placing) .app-contents {
   -webkit-transform: scale(1.1);
 }

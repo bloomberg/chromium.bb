@@ -234,6 +234,7 @@ cr.define('ntp4', function() {
 
       this.addEventListener('mousedown', this.onMousedown_, true);
       this.addEventListener('keydown', this.onKeydown_);
+      this.addEventListener('blur', this.onBlur_, true);
     },
 
     /**
@@ -476,6 +477,18 @@ cr.define('ntp4', function() {
       } else {
         this.appContents_.classList.remove('suppress-active');
       }
+
+      // This class is here so we don't show the focus state for apps that
+      // gain keyboard focus via mouse clicking.
+      this.classList.add('click-focus');
+    },
+
+    /**
+     * This app is losing keyboard focus.
+     * @param {Event} e The event.
+     */
+    onBlur_: function(e) {
+      this.classList.remove('click-focus');
     },
 
     /**

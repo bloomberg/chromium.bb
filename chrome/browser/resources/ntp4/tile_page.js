@@ -452,6 +452,7 @@ cr.define('ntp4', function() {
       this.addEventListener('carddeselected', this.handleCardDeselection_);
       this.addEventListener('focus', this.handleFocus_);
       this.addEventListener('keydown', this.handleKeyDown_);
+      this.addEventListener('mousedown', this.handleMouseDown_);
 
       this.focusElementIndex_ = -1;
     },
@@ -597,6 +598,22 @@ cr.define('ntp4', function() {
         return;
 
       this.updateFocusElement_();
+    },
+
+    /**
+     * Since we are doing custom focus handling, we have to manually
+     * set focusability on click (as well as keyboard nav above).
+     * @param {Event} e The focus event.
+     * @private
+     */
+    handleMouseDown_: function(e) {
+      var focusable = findAncestorByClass(e.target, 'focusable');
+      if (focusable) {
+        this.focusElementIndex_ =
+            Array.prototype.indexOf.call(this.focusableElements_,
+                                         focusable);
+        this.updateFocusElement_();
+      }
     },
 
     /**
