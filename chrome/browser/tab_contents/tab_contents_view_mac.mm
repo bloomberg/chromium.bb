@@ -56,6 +56,7 @@ COMPILE_ASSERT_MATCHING_ENUM(DragOperationEvery);
                         image:(NSImage*)image
                        offset:(NSPoint)offset;
 - (void)cancelDeferredClose;
+- (void)clearTabContentsView;
 - (void)closeTabAfterEvent;
 - (void)viewDidBecomeFirstResponder:(NSNotification*)notification;
 @end
@@ -79,6 +80,7 @@ TabContentsViewMac::~TabContentsViewMac() {
   // close.  In that case, the Cocoa view outlives the
   // TabContentsViewMac instance due to Cocoa retain count.
   [cocoa_view_ cancelDeferredClose];
+  [cocoa_view_ clearTabContentsView];
 }
 
 void TabContentsViewMac::CreateView(const gfx::Size& initial_size) {
@@ -459,12 +461,14 @@ void TabContentsViewMac::Observe(int type,
 }
 
 - (TabContents*)tabContents {
+  if (tabContentsView_ == NULL)
+    return NULL;
   return tabContentsView_->tab_contents();
 }
 
 - (void)mouseEvent:(NSEvent *)theEvent {
   TabContents* tabContents = [self tabContents];
-  if (tabContents->delegate()) {
+  if (tabContents && tabContents->delegate()) {
     NSPoint location = [NSEvent mouseLocation];
     if ([theEvent type] == NSMouseMoved)
       tabContents->delegate()->ContentsMouseEvent(
@@ -568,6 +572,10 @@ void TabContentsViewMac::Observe(int type,
   [NSObject cancelPreviousPerformRequestsWithTarget:self
                                            selector:aSel
                                              object:nil];
+}
+
+- (void)clearTabContentsView {
+  tabContentsView_ = NULL;
 }
 
 - (void)closeTabAfterEvent {
