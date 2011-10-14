@@ -12,6 +12,7 @@
 #include <sys/types.h>
 
 #include <base/string_util.h>
+#include <base/json/json_writer.h>
 
 #include "gestures/include/logging.h"
 #include "gestures/include/prop_registry.h"
@@ -22,7 +23,7 @@ using std::string;
 namespace gestures {
 
 ActivityLog::ActivityLog(PropRegistry* prop_reg)
-: head_idx_(0), size_(0), max_fingers_(0), prop_reg_(prop_reg) {}
+    : head_idx_(0), size_(0), max_fingers_(0), prop_reg_(prop_reg) {}
 
 void ActivityLog::SetHardwareProperties(const HardwareProperties& hwprops) {
   hwprops_ = hwprops;
@@ -99,190 +100,176 @@ const char kSubEntryPadding[] = "     ";
 const char kSubSubEntryPadding[] = "      ";
 }
 
-string ActivityLog::EncodeHardwareProperties() const {
-  static const char kTrue[] = "true";
-  static const char kFalse[] = "false";
-  return StringPrintf("{\"%s\": %f,\n%s\"%s\": %f,\n"
-                      "%s\"%s\": %f,\n%s\"%s\": %f,\n"
-                      "%s\"%s\": %f,\n%s\"%s\": %f,\n"
-                      "%s\"%s\": %f,\n%s\"%s\": %f,\n"
-                      "%s\"%s\": %d,\n%s\"%s\": %d"
-                      ",\n%s\"%s\": %s,\n%s\"%s\": %s,\n%s\"%s\": %s}",
-                      kKeyHardwarePropLeft, hwprops_.left,
-                      kEntryPadding,
-                      kKeyHardwarePropTop, hwprops_.top,
-                      kEntryPadding,
-                      kKeyHardwarePropRight, hwprops_.right,
-                      kEntryPadding,
-                      kKeyHardwarePropBottom, hwprops_.bottom,
-                      kEntryPadding,
-                      kKeyHardwarePropXResolution, hwprops_.res_x,
-                      kEntryPadding,
-                      kKeyHardwarePropYResolution, hwprops_.res_y,
-                      kEntryPadding,
-                      kKeyHardwarePropXDpi, hwprops_.screen_x_dpi,
-                      kEntryPadding,
-                      kKeyHardwarePropYDpi, hwprops_.screen_y_dpi,
-                      kEntryPadding,
-                      kKeyHardwarePropMaxFingerCount, hwprops_.max_finger_cnt,
-                      kEntryPadding,
-                      kKeyHardwarePropMaxTouchCount, hwprops_.max_touch_cnt,
-                      kEntryPadding,
-                      kKeyHardwarePropSupportsT5R2,
-                      hwprops_.supports_t5r2 ? kTrue : kFalse,
-                      kEntryPadding,
-                      kKeyHardwarePropSemiMt,
-                      hwprops_.support_semi_mt ? kTrue : kFalse,
-                      kEntryPadding,
-                      kKeyHardwarePropIsButtonPad,
-                      hwprops_.is_button_pad ? kTrue : kFalse);
-}
+::Value* ActivityLog::EncodeHardwareProperties() const {
+  DictionaryValue* ret = new DictionaryValue;
+  ret->Set(kKeyHardwarePropLeft, new FundamentalValue(hwprops_.left));
+  ret->Set(kKeyHardwarePropTop, new FundamentalValue(hwprops_.top));
+  ret->Set(kKeyHardwarePropRight, new FundamentalValue(hwprops_.right));
+  ret->Set(kKeyHardwarePropBottom, new FundamentalValue(hwprops_.bottom));
+  ret->Set(kKeyHardwarePropXResolution, new FundamentalValue(hwprops_.res_x));
+  ret->Set(kKeyHardwarePropYResolution, new FundamentalValue(hwprops_.res_y));
+  ret->Set(kKeyHardwarePropXDpi, new FundamentalValue(hwprops_.screen_x_dpi));
+  ret->Set(kKeyHardwarePropYDpi, new FundamentalValue(hwprops_.screen_y_dpi));
+  ret->Set(kKeyHardwarePropMaxFingerCount,
+          new FundamentalValue(hwprops_.max_finger_cnt));
+  ret->Set(kKeyHardwarePropMaxTouchCount,
+          new FundamentalValue(hwprops_.max_touch_cnt));
 
-string ActivityLog::EncodeHardwareState(const HardwareState& hwstate) {
-  string ret = StringPrintf("{\"%s\": \"%s\",\n%s\"%s\": %d,\n%s\"%s\": %d,\n"
-                            "%s\"%s\": %f,\n%s\"%s\": [%s",
-                            kKeyType, kKeyHardwareState,
-                            kEntryPadding,
-                            kKeyHardwareStateButtonsDown, hwstate.buttons_down,
-                            kEntryPadding,
-                            kKeyHardwareStateTouchCnt, hwstate.touch_cnt,
-                            kEntryPadding,
-                            kKeyHardwareStateTimestamp, hwstate.timestamp,
-                            kEntryPadding,
-                            kKeyHardwareStateFingers,
-                            hwstate.finger_cnt ? "\n" : "");
-  for (size_t i = 0; i < hwstate.finger_cnt; ++i) {
-    const FingerState& fs = hwstate.fingers[i];
-    ret += StringPrintf("%s%s{\"%s\": %f,\n%s\"%s\": %f,\n%s\"%s\": "
-                        "%f,\n%s\"%s\": %f,\n%s\"%s\": %f,\n%s\"%s\": "
-                        "%f,\n%s\"%s\": %f,\n%s\"%s\": %f"
-                        ",\n%s\"%s\": %d}",
-                        i == 0 ? "" : ",\n",
-                        kSubEntryPadding,
-                        kKeyFingerStateTouchMajor, fs.touch_major,
-                        kSubSubEntryPadding,
-                        kKeyFingerStateTouchMinor, fs.touch_minor,
-                        kSubSubEntryPadding,
-                        kKeyFingerStateWidthMajor, fs.width_major,
-                        kSubSubEntryPadding,
-                        kKeyFingerStateWidthMinor, fs.width_minor,
-                        kSubSubEntryPadding,
-                        kKeyFingerStatePressure, fs.pressure,
-                        kSubSubEntryPadding,
-                        kKeyFingerStateOrientation, fs.orientation,
-                        kSubSubEntryPadding,
-                        kKeyFingerStatePositionX, fs.position_x,
-                        kSubSubEntryPadding,
-                        kKeyFingerStatePositionY, fs.position_y,
-                        kSubSubEntryPadding,
-                        kKeyFingerStateTrackingId, fs.tracking_id);
-  }
-  ret += "]}";
+  ret->Set(kKeyHardwarePropSupportsT5R2,
+          new FundamentalValue(hwprops_.supports_t5r2 != 0));
+  ret->Set(kKeyHardwarePropSemiMt,
+          new FundamentalValue(hwprops_.support_semi_mt != 0));
+  ret->Set(kKeyHardwarePropIsButtonPad,
+          new FundamentalValue(hwprops_.is_button_pad != 0));
   return ret;
 }
 
-string ActivityLog::EncodeTimerCallback(stime_t timestamp) {
-  return StringPrintf("{\"%s\": \"%s\", \"%s\": %f}",
-                      kKeyType, kKeyTimerCallback,
-                      kKeyTimerCallbackNow, timestamp);
+::Value* ActivityLog::EncodeHardwareState(const HardwareState& hwstate) {
+  DictionaryValue* ret = new DictionaryValue;
+  ret->Set(kKeyType, new StringValue(kKeyHardwareState));
+  ret->Set(kKeyHardwareStateButtonsDown,
+           new FundamentalValue(hwstate.buttons_down));
+  ret->Set(kKeyHardwareStateTouchCnt,
+           new FundamentalValue(hwstate.touch_cnt));
+  ret->Set(kKeyHardwareStateTimestamp,
+           new FundamentalValue(hwstate.timestamp));
+  ListValue* fingers = new ListValue;
+  for (size_t i = 0; i < hwstate.finger_cnt; ++i) {
+    const FingerState& fs = hwstate.fingers[i];
+    DictionaryValue* finger = new DictionaryValue;
+    finger->Set(kKeyFingerStateTouchMajor,
+                new FundamentalValue(fs.touch_major));
+    finger->Set(kKeyFingerStateTouchMinor,
+                new FundamentalValue(fs.touch_minor));
+    finger->Set(kKeyFingerStateWidthMajor,
+                new FundamentalValue(fs.width_major));
+    finger->Set(kKeyFingerStateWidthMinor,
+                new FundamentalValue(fs.width_minor));
+    finger->Set(kKeyFingerStatePressure,
+                new FundamentalValue(fs.pressure));
+    finger->Set(kKeyFingerStateOrientation,
+                new FundamentalValue(fs.orientation));
+    finger->Set(kKeyFingerStatePositionX,
+                new FundamentalValue(fs.position_x));
+    finger->Set(kKeyFingerStatePositionY,
+                new FundamentalValue(fs.position_y));
+    finger->Set(kKeyFingerStateTrackingId,
+                new FundamentalValue(fs.tracking_id));
+    fingers->Append(finger);
+  }
+  ret->Set(kKeyHardwareStateFingers, fingers);
+  return ret;
 }
 
-string ActivityLog::EncodeCallbackRequest(stime_t timestamp) {
-  return StringPrintf("{\"%s\": \"%s\", \"%s\": %f}",
-                      kKeyType, kKeyCallbackRequest,
-                      kKeyCallbackRequestWhen, timestamp);
+::Value* ActivityLog::EncodeTimerCallback(stime_t timestamp) {
+  DictionaryValue* ret = new DictionaryValue;
+  ret->Set(kKeyType, new StringValue(kKeyTimerCallback));
+  ret->Set(kKeyTimerCallbackNow, new FundamentalValue(timestamp));
+  return ret;
 }
 
-string ActivityLog::EncodeGesture(const Gesture& gesture) {
-  string ret = StringPrintf("{\"%s\": \"%s\",\n%s\"%s\": %f,\n"
-                            "%s\"%s\": %f,\n%s",
-                            kKeyType, kKeyGesture,
-                            kEntryPadding,
-                            kKeyGestureStartTime, gesture.start_time,
-                            kEntryPadding,
-                            kKeyGestureEndTime, gesture.end_time,
-                            kEntryPadding);
+::Value* ActivityLog::EncodeCallbackRequest(stime_t timestamp) {
+  DictionaryValue* ret = new DictionaryValue;
+  ret->Set(kKeyType, new StringValue(kKeyCallbackRequest));
+  ret->Set(kKeyCallbackRequestWhen, new FundamentalValue(timestamp));
+  return ret;
+}
+
+::Value* ActivityLog::EncodeGesture(const Gesture& gesture) {
+  DictionaryValue* ret = new DictionaryValue;
+  ret->Set(kKeyType, new StringValue(kKeyGesture));
+  ret->Set(kKeyGestureStartTime, new FundamentalValue(gesture.start_time));
+  ret->Set(kKeyGestureEndTime, new FundamentalValue(gesture.end_time));
+
+  bool handled = false;
   switch (gesture.type) {
     case kGestureTypeNull:
-      return ret + StringPrintf("\"%s\": \"null\"}", kKeyGestureType);
+      handled = true;
+      ret->Set(kKeyGestureType, new StringValue("null"));
+      break;
     case kGestureTypeContactInitiated:
-      return ret + StringPrintf("\"%s\": \"%s\"}", kKeyGestureType,
-                                kValueGestureTypeContactInitiated);
+      handled = true;
+      ret->Set(kKeyGestureType,
+               new StringValue(kValueGestureTypeContactInitiated));
+      break;
     case kGestureTypeMove:
-      return ret + StringPrintf(
-          "\"%s\": \"%s\",\n%s\"%s\": %f,\n%s\"%s\": %f}",
-          kKeyGestureType, kValueGestureTypeMove,
-          kEntryPadding,
-          kKeyGestureMoveDX, gesture.details.move.dx,
-          kEntryPadding,
-          kKeyGestureMoveDY, gesture.details.move.dy);
+      handled = true;
+      ret->Set(kKeyGestureType,
+               new StringValue(kValueGestureTypeMove));
+      ret->Set(kKeyGestureMoveDX,
+               new FundamentalValue(gesture.details.move.dx));
+      ret->Set(kKeyGestureMoveDY,
+               new FundamentalValue(gesture.details.move.dy));
+      break;
     case kGestureTypeScroll:
-      return ret + StringPrintf(
-          "\"%s\": \"%s\",\n%s\"%s\": %f,\n%s\"%s\": %f}",
-          kKeyGestureType, kValueGestureTypeScroll,
-          kEntryPadding,
-          kKeyGestureScrollDX, gesture.details.scroll.dx,
-          kEntryPadding,
-          kKeyGestureScrollDY, gesture.details.scroll.dy);
+      handled = true;
+      ret->Set(kKeyGestureType,
+               new StringValue(kValueGestureTypeScroll));
+      ret->Set(kKeyGestureScrollDX,
+               new FundamentalValue(gesture.details.scroll.dx));
+      ret->Set(kKeyGestureScrollDY,
+               new FundamentalValue(gesture.details.scroll.dy));
+      break;
     case kGestureTypeButtonsChange:
-      return ret + StringPrintf(
-          "\"%s\": \"%s\",\n%s\"%s\": %d,\n%s\"%s\": %d}",
-          kKeyGestureType, kValueGestureTypeButtonsChange,
-          kEntryPadding,
-          kKeyGestureButtonsChangeDown, gesture.details.buttons.down,
-          kEntryPadding,
-          kKeyGestureButtonsChangeUp, gesture.details.buttons.up);
+      handled = true;
+      ret->Set(kKeyGestureType,
+               new StringValue(kValueGestureTypeButtonsChange));
+      ret->Set(kKeyGestureButtonsChangeDown,
+               new FundamentalValue(
+                   static_cast<int>(gesture.details.buttons.down)));
+      ret->Set(kKeyGestureButtonsChangeUp,
+               new FundamentalValue(
+                   static_cast<int>(gesture.details.buttons.up)));
+      break;
   }
-  return ret + StringPrintf("\"%s\": \"Unhandled %d\"}", kKeyGestureType,
-                            gesture.type);
+  if (!handled)
+    ret->Set(kKeyGestureType,
+             new StringValue(StringPrintf("Unhandled %d", gesture.type)));
+  return ret;
 }
 
-string ActivityLog::EncodePropRegistry() {
+::Value* ActivityLog::EncodePropRegistry() {
+  DictionaryValue* ret = new DictionaryValue;
   if (!prop_reg_)
-    return "{}";
-  string ret = "{";
+    return ret;
+
   const set<Property*>& props = prop_reg_->props();
-  bool first = true;
   for (set<Property*>::const_iterator it = props.begin(), e = props.end();
-       it != e; ++it, first = false) {
-    ret += StringPrintf("%s\"%s\": %s", !first ? ",\n   " : "",
-                        (*it)->name(), (*it)->Value().c_str());
+       it != e; ++it) {
+    ret->Set((*it)->name(), (*it)->NewValue());
   }
-  return ret + "}";
+  return ret;
 }
 
 string ActivityLog::Encode() {
-  string ret(StringPrintf("{\"version\": 1,\n  \"%s\":\n  %s,"
-                          "\n  \"%s\":\n  %s,\n  \"%s\": [",
-                          kKeyProperties,
-                          EncodePropRegistry().c_str(),
-                          kKeyHardwarePropRoot,
-                          EncodeHardwareProperties().c_str(),
-                          kKeyRoot));
+  DictionaryValue root;
+  root.Set("version", new FundamentalValue(1));
+  root.Set(kKeyProperties, EncodePropRegistry());
+  root.Set(kKeyHardwarePropRoot, EncodeHardwareProperties());
+
+  ListValue* entries = new ListValue;
   for (size_t i = 0; i < size_; ++i) {
-    size_t idx = (head_idx_ + i) % kBufferSize;
-    if (i != 0)
-      ret += ",";
-    ret += "\n  ";
-    const Entry& entry = buffer_[idx];
+    const Entry& entry = buffer_[i];
     switch (entry.type) {
       case kHardwareState:
-        ret += EncodeHardwareState(entry.details.hwstate);
+        entries->Append(EncodeHardwareState(entry.details.hwstate));
         continue;
       case kTimerCallback:
-        ret += EncodeTimerCallback(entry.details.timestamp);
+        entries->Append(EncodeTimerCallback(entry.details.timestamp));
         continue;
       case kCallbackRequest:
-        ret += EncodeCallbackRequest(entry.details.timestamp);
+        entries->Append(EncodeCallbackRequest(entry.details.timestamp));
         continue;
       case kGesture:
-        ret += EncodeGesture(entry.details.gesture);
+        entries->Append(EncodeGesture(entry.details.gesture));
         continue;
     }
     Err("Unknown entry type %d", entry.type);
   }
-  ret += "]}";
-  return ret;
+  root.Set(kKeyRoot, entries);
+  string out;
+  base::JSONWriter::Write(&root, true, &out);
+  return out;
 }
 
 const char ActivityLog::kKeyRoot[] = "entries";

@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include <base/values.h>
 #include <gtest/gtest.h>  // For FRIEND_TEST
 
 // This is a class that circularly buffers all incoming and outgoing activity
@@ -122,14 +123,14 @@ class ActivityLog {
   size_t TailIdx() const { return (head_idx_ + size_ - 1) % kBufferSize; }
 
   // JSON-encoders for various types
-  std::string EncodeHardwareProperties() const;
-  std::string EncodeHardwareState(const HardwareState& hwstate);
-  std::string EncodeTimerCallback(stime_t timestamp);
-  std::string EncodeCallbackRequest(stime_t timestamp);
-  std::string EncodeGesture(const Gesture& gesture);
+  ::Value* EncodeHardwareProperties() const;
+  ::Value* EncodeHardwareState(const HardwareState& hwstate);
+  ::Value* EncodeTimerCallback(stime_t timestamp);
+  ::Value* EncodeCallbackRequest(stime_t timestamp);
+  ::Value* EncodeGesture(const Gesture& gesture);
 
   // Encode user-configurable properties
-  std::string EncodePropRegistry();
+  ::Value* EncodePropRegistry();
 
   // Returns a JSON string representing all the state in the buffer
   std::string Encode();

@@ -81,8 +81,8 @@ void BoolProperty::CreatePropImpl() {
       val_);
 }
 
-std::string BoolProperty::Value() {
-  return StringPrintf("%s", val_ ? "true" : "false");
+::Value* BoolProperty::NewValue() const {
+  return new FundamentalValue(val_ != 0);
 }
 
 bool BoolProperty::SetValue(::Value* value) {
@@ -110,8 +110,8 @@ void DoubleProperty::CreatePropImpl() {
       val_);
 }
 
-std::string DoubleProperty::Value() {
-  return StringPrintf("%f", val_);
+::Value* DoubleProperty::NewValue() const {
+  return new FundamentalValue(val_);
 }
 
 bool DoubleProperty::SetValue(::Value* value) {
@@ -135,8 +135,8 @@ void IntProperty::CreatePropImpl() {
       val_);
 }
 
-std::string IntProperty::Value() {
-  return StringPrintf("%d", val_);
+::Value* IntProperty::NewValue() const {
+  return new FundamentalValue(val_);
 }
 
 bool IntProperty::SetValue(::Value* value) {
@@ -160,8 +160,8 @@ void ShortProperty::CreatePropImpl() {
       val_);
 }
 
-std::string ShortProperty::Value() {
-  return StringPrintf("%d", val_);
+::Value* ShortProperty::NewValue() const {
+  return new FundamentalValue(val_);
 }
 
 bool ShortProperty::SetValue(::Value* value) {
@@ -189,8 +189,8 @@ void StringProperty::CreatePropImpl() {
       val_);
 }
 
-std::string StringProperty::Value() {
-  return StringPrintf("\"%s\"", val_);
+::Value* StringProperty::NewValue() const {
+  return new StringValue(val_);
 }
 
 bool StringProperty::SetValue(::Value* value) {

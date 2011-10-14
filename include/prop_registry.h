@@ -55,7 +55,8 @@ class Property {
   void DestroyProp();
 
   const char* name() { return name_; }
-  virtual std::string Value() = 0;
+  // Returns a newly allocated Value object
+  virtual ::Value* NewValue() const = 0;
   // Returns true on success
   virtual bool SetValue(::Value* value) = 0;
 
@@ -94,7 +95,7 @@ class BoolProperty : public Property {
       parent_->Register(this);
   }
   virtual void CreatePropImpl();
-  virtual std::string Value();
+  virtual ::Value* NewValue() const;
   virtual bool SetValue(::Value* value);
   virtual void HandleGesturesPropWritten();
 
@@ -115,7 +116,7 @@ class DoubleProperty : public Property {
       parent_->Register(this);
   }
   virtual void CreatePropImpl();
-  virtual std::string Value();
+  virtual ::Value* NewValue() const;
   virtual bool SetValue(::Value* value);
   virtual void HandleGesturesPropWritten();
 
@@ -136,7 +137,7 @@ class IntProperty : public Property {
       parent_->Register(this);
   }
   virtual void CreatePropImpl();
-  virtual std::string Value();
+  virtual ::Value* NewValue() const;
   virtual bool SetValue(::Value* value);
   virtual void HandleGesturesPropWritten();
 
@@ -157,7 +158,7 @@ class ShortProperty : public Property {
       parent_->Register(this);
   }
   virtual void CreatePropImpl();
-  virtual std::string Value();
+  virtual ::Value* NewValue() const;
   virtual bool SetValue(::Value* value);
   virtual void HandleGesturesPropWritten();
 
@@ -178,7 +179,7 @@ class StringProperty : public Property {
       parent_->Register(this);
   }
   virtual void CreatePropImpl();
-  virtual std::string Value();
+  virtual ::Value* NewValue() const;
   virtual bool SetValue(::Value* value);
   virtual void HandleGesturesPropWritten();
 
