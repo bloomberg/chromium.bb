@@ -5,8 +5,8 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_fullscreen.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
-#include "ppapi/c/dev/ppb_fullscreen_dev.h"
 #include "ppapi/c/pp_size.h"
+#include "ppapi/c/ppb_fullscreen.h"
 #include "srpcgen/ppb_rpc.h"
 
 namespace ppapi_proxy {
@@ -76,8 +76,8 @@ PP_Bool GetScreenSize(PP_Instance instance, struct PP_Size* size) {
 
 }  // namespace
 
-const PPB_Fullscreen_Dev* PluginFullscreen::GetInterface() {
-  static const PPB_Fullscreen_Dev fullscreen_interface = {
+const PPB_Fullscreen* PluginFullscreen::GetInterface() {
+  static const PPB_Fullscreen fullscreen_interface = {
     IsFullscreen,
     SetFullscreen,
     GetScreenSize

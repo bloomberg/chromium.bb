@@ -1576,7 +1576,7 @@ PPB_Surface3D_Impl* PluginInstance::GetBoundSurface3D() const {
 
 void PluginInstance::setBackingTextureId(unsigned int id) {
   // If we have a fullscreen_container_ (under PPB_FlashFullscreen)
-  // or desired_fullscreen_state is true (under PPB_Fullscreen_Dev),
+  // or desired_fullscreen_state is true (under PPB_Fullscreen),
   // then the plugin is fullscreen or transitioning to fullscreen
   // and the parent context is not the one for the browser page,
   // but for the fullscreen window, and so the parent texture ID
@@ -1647,7 +1647,7 @@ PP_Bool PluginInstance::BindGraphics(PP_Instance instance,
   }
 
   // Refuse to bind if in transition to fullscreen with PPB_FlashFullscreen or
-  // to/from fullscreen with PPB_Fullscreen_Dev.
+  // to/from fullscreen with PPB_Fullscreen.
   if ((fullscreen_container_ && !flash_fullscreen_) ||
       desired_fullscreen_state_ != fullscreen_)
     return PP_FALSE;

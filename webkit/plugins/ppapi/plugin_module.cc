@@ -51,6 +51,7 @@
 #include "ppapi/c/ppb_file_io.h"
 #include "ppapi/c/ppb_file_ref.h"
 #include "ppapi/c/ppb_file_system.h"
+#include "ppapi/c/ppb_fullscreen.h"
 #include "ppapi/c/ppb_graphics_2d.h"
 #include "ppapi/c/ppb_graphics_3d.h"
 #include "ppapi/c/ppb_image_data.h"
@@ -275,6 +276,8 @@ const void* GetInterface(const char* name) {
     return ::ppapi::thunk::GetPPB_Flash_UDPSocket_Thunk();
   if (strcmp(name, PPB_FULLSCREEN_DEV_INTERFACE_0_4) == 0)
     return ::ppapi::thunk::GetPPB_FlashFullscreen_Thunk();
+  if (strcmp(name, PPB_FULLSCREEN_DEV_INTERFACE) == 0)
+    return ::ppapi::thunk::GetPPB_Fullscreen_Thunk();
   if (strcmp(name, PPB_GPU_BLACKLIST_INTERFACE) == 0)
     return PPB_GpuBlacklist_Private_Impl::GetInterface();
   if (strcmp(name, PPB_GRAPHICS_3D_TRUSTED_INTERFACE) == 0)

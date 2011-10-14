@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "ppapi/cpp/dev/fullscreen_dev.h"
+#include "ppapi/cpp/fullscreen.h"
 #include "ppapi/cpp/graphics_2d.h"
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/size.h"
@@ -39,7 +39,7 @@ class TestFullscreen : public TestCase {
 
   std::string error_;
 
-  pp::Fullscreen_Dev screen_mode_;
+  pp::Fullscreen screen_mode_;
   pp::Size screen_size_;
   pp::Rect normal_position_;
 

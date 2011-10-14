@@ -4,9 +4,9 @@
 
 #include "base/synchronization/waitable_event.h"
 #include "ipc/ipc_message_utils.h"
-#include "ppapi/c/dev/ppb_fullscreen_dev.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppb_core.h"
+#include "ppapi/c/ppb_fullscreen.h"
 #include "ppapi/c/ppb_url_loader.h"
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/c/private/ppb_flash_fullscreen.h"
@@ -95,7 +95,7 @@ PPP_Instance_1_0 ppp_instance_1_0 = {
 PP_Bool IsFullscreen(PP_Instance instance) {
   return PP_FALSE;
 }
-PPB_Fullscreen_Dev ppb_fullscreen = { &IsFullscreen };
+PPB_Fullscreen ppb_fullscreen = { &IsFullscreen };
 PPB_FlashFullscreen ppb_flash_fullscreen = { &IsFullscreen };
 
 }  // namespace
@@ -111,7 +111,7 @@ TEST_F(PPP_Instance_ProxyTest, PPPInstance1_0) {
   plugin().RegisterTestInterface(PPP_INSTANCE_INTERFACE_1_0, &ppp_instance_1_0);
   host().RegisterTestInterface(PPB_FLASHFULLSCREEN_INTERFACE,
                                &ppb_flash_fullscreen);
-  host().RegisterTestInterface(PPB_FULLSCREEN_DEV_INTERFACE,
+  host().RegisterTestInterface(PPB_FULLSCREEN_INTERFACE,
                                &ppb_fullscreen);
 
   // Grab the host-side proxy for the 1.0 interface.

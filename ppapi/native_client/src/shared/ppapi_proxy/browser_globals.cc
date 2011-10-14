@@ -387,10 +387,10 @@ const PPB_Font_Dev* PPBFontInterface() {
   return ppb;
 }
 
-const PPB_Fullscreen_Dev* PPBFullscreenInterface() {
-  static const PPB_Fullscreen_Dev* ppb =
-      static_cast<const PPB_Fullscreen_Dev*>(
-        GetBrowserInterfaceSafe(PPB_FULLSCREEN_DEV_INTERFACE));
+const PPB_Fullscreen* PPBFullscreenInterface() {
+  static const PPB_Fullscreen* ppb =
+      static_cast<const PPB_Fullscreen*>(
+        GetBrowserInterfaceSafe(PPB_FULLSCREEN_INTERFACE));
   return ppb;
 }
 

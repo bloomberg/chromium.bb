@@ -229,8 +229,8 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
   void Graphics3DContextLost();
 
   // There are 2 implementations of the fullscreen interface
-  // PPB_FlashFullscreen_Dev is used by Pepper Flash.
-  // PPB_Fullscreen_Dev is intended for other applications including NaCl.
+  // PPB_FlashFullscreen is used by Pepper Flash.
+  // PPB_Fullscreen is intended for other applications including NaCl.
   // The two interface are mutually exclusive.
 
   // Implementation of PPB_FlashFullscreen.
@@ -261,7 +261,7 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
     return fullscreen_container_;
   }
 
-  // Implementation of PPB_Fullscreen_Dev.
+  // Implementation of PPB_Fullscreen.
 
   // Because going to/from fullscreen is asynchronous, there are 4 states:
   // - normal            : desired_fullscreen_state_ == false
@@ -569,7 +569,7 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
   // in transition to fullscreen.
   bool flash_fullscreen_;
 
-  // Implementation of PPB_Fullscreen_Dev.
+  // Implementation of PPB_Fullscreen.
 
   // Since entering fullscreen mode is an asynchronous operation, we set this
   // variable to the desired state at the time we issue the fullscreen change

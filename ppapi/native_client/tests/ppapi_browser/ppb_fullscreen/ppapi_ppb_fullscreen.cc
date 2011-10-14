@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Tests PPB_Fullscreen_Dev.
+// Tests PPB_Fullscreen.
 
 #include <string.h>
 
@@ -11,8 +11,8 @@
 #include "native_client/tests/ppapi_test_lib/test_interface.h"
 #include "native_client/tests/ppapi_test_lib/testable_callback.h"
 
-#include "ppapi/c/dev/ppb_fullscreen_dev.h"
 #include "ppapi/c/ppb_core.h"
+#include "ppapi/c/ppb_fullscreen.h"
 #include "ppapi/c/ppb_graphics_2d.h"
 #include "ppapi/c/ppb_input_event.h"
 #include "ppapi/c/ppb_instance.h"
@@ -66,24 +66,17 @@ bool CreateGraphics2D(PP_Resource* graphics2d) {
 // Test cases
 ////////////////////////////////////////////////////////////////////////////////
 
-// Test for the availability of PPB_FULLSCREEN_DEV_INTERFACE.
-void TestGetInterface() {
-  printf("--- TestGetInterface\n");
-  EXPECT(PPBFullscreenDev() != NULL);
-  TEST_PASSED;
-}
-
 // Test
 //   PP_Bool (*IsFullscreen)(PP_Instance instance);
 void TestIsFullscreenTrue() {
   printf("--- TestIsFullscreenTrue\n");
-  EXPECT(PPBFullscreenDev()->IsFullscreen(pp_instance()) == PP_TRUE);
+  EXPECT(PPBFullscreen()->IsFullscreen(pp_instance()) == PP_TRUE);
   TEST_PASSED;
 }
 
 void TestIsFullscreenFalse() {
   printf("--- TestIsFullscreenFalse\n");
-  EXPECT(PPBFullscreenDev()->IsFullscreen(pp_instance()) == PP_FALSE);
+  EXPECT(PPBFullscreen()->IsFullscreen(pp_instance()) == PP_FALSE);
   TEST_PASSED;
 }
 
@@ -94,7 +87,7 @@ bool g_normal_pending = false;
 
 void TestSetFullscreenTrue() {
   printf("--- TestSetFullscreenTrue\n");
-  const PPB_Fullscreen_Dev* ppb = PPBFullscreenDev();
+  const PPB_Fullscreen* ppb = PPBFullscreen();
   if (ppb->IsFullscreen(pp_instance()) == PP_FALSE) {
     // Transition to fullscreen.
     // This can only be done when processing a user gesture -
@@ -113,7 +106,7 @@ void TestSetFullscreenTrue() {
 
 void TestSetFullscreenFalse() {
   printf("--- TestSetFullscreenFalse\n");
-  const PPB_Fullscreen_Dev* ppb = PPBFullscreenDev();
+  const PPB_Fullscreen* ppb = PPBFullscreen();
   if (ppb->IsFullscreen(pp_instance()) == PP_TRUE) {
     // Transition out of fullscreen.
     EXPECT(CreateGraphics2D(&g_graphics2d));
@@ -142,7 +135,7 @@ void TestSetFullscreenFalse() {
 
 void TestGetScreenSizeHelper(PP_Size min_size, PP_Size max_size) {
   PP_Size size = PP_MakeSize(0, 0);
-  EXPECT(PPBFullscreenDev()->GetScreenSize(pp_instance(), &size) == PP_TRUE);
+  EXPECT(PPBFullscreen()->GetScreenSize(pp_instance(), &size) == PP_TRUE);
   EXPECT(IsSizeInRange(size, min_size, max_size));
 }
 
@@ -179,15 +172,15 @@ PP_Bool HandleInputEvent(PP_Instance instance, PP_Resource event) {
   // We got the user gesture we needed, no need to handle events anymore.
   PPBInputEvent()->ClearInputEventRequest(pp_instance(),
                                           PP_INPUTEVENT_CLASS_MOUSE);
-  EXPECT(PPBFullscreenDev()->IsFullscreen(pp_instance()) == PP_FALSE);
+  EXPECT(PPBFullscreen()->IsFullscreen(pp_instance()) == PP_FALSE);
   EXPECT(CreateGraphics2D(&g_graphics2d));
-  EXPECT(PPBFullscreenDev()->SetFullscreen(pp_instance(), PP_TRUE) == PP_TRUE);
+  EXPECT(PPBFullscreen()->SetFullscreen(pp_instance(), PP_TRUE) == PP_TRUE);
   g_fullscreen_pending = true;
   // Transition is pending, so additional requests fail.
-  EXPECT(PPBFullscreenDev()->SetFullscreen(pp_instance(), PP_TRUE) == PP_FALSE);
-  EXPECT(PPBFullscreenDev()->SetFullscreen(pp_instance(), PP_FALSE) ==
+  EXPECT(PPBFullscreen()->SetFullscreen(pp_instance(), PP_TRUE) == PP_FALSE);
+  EXPECT(PPBFullscreen()->SetFullscreen(pp_instance(), PP_FALSE) ==
          PP_FALSE);
-  EXPECT(PPBFullscreenDev()->IsFullscreen(pp_instance()) == PP_FALSE);
+  EXPECT(PPBFullscreen()->IsFullscreen(pp_instance()) == PP_FALSE);
   // No 2D or 3D device can be bound during transition.
   EXPECT(PPBGraphics2D()->IsGraphics2D(g_graphics2d) == PP_TRUE);
   EXPECT(PPBInstance()->BindGraphics(pp_instance(), g_graphics2d) ==
@@ -206,7 +199,7 @@ const PPP_InputEvent ppp_input_event_interface = {
 
 PP_Size GetScreenSize() {
   PP_Size screen_size = PP_MakeSize(0, 0);
-  CHECK(PPBFullscreenDev()->GetScreenSize(pp_instance(), &screen_size));
+  CHECK(PPBFullscreen()->GetScreenSize(pp_instance(), &screen_size));
   return screen_size;
 }
 
@@ -245,14 +238,14 @@ void DidChangeView(PP_Instance instance,
 
   const char* test = NULL;
   PP_Size screen_size = GetScreenSize();
-  if (g_fullscreen_pending && PPBFullscreenDev()->IsFullscreen(pp_instance())) {
+  if (g_fullscreen_pending && PPBFullscreen()->IsFullscreen(pp_instance())) {
     test = "TestSetFullscreenTrue";
     g_fullscreen_pending = false;
     EXPECT(IsSizeEqual(position->size, screen_size));
     // NOTE: we cannot reliably test for clip size being equal to the screen
     // because it might be affected by JS console, info bars, etc.
   } else if (g_normal_pending &&
-             !PPBFullscreenDev()->IsFullscreen(pp_instance())) {
+             !PPBFullscreen()->IsFullscreen(pp_instance())) {
     test = "TestSetFullscreenFalse";
     g_normal_pending = false;
     EXPECT(IsRectEqual(*position, g_normal_position));
@@ -277,7 +270,6 @@ const PPP_Instance ppp_instance_interface = {
 }  // namespace
 
 void SetupTests() {
-  RegisterTest("TestGetInterface", TestGetInterface);
   RegisterTest("TestIsFullscreenTrue", TestIsFullscreenTrue);
   RegisterTest("TestIsFullscreenFalse", TestIsFullscreenFalse);
   RegisterTest("TestSetFullscreenTrue", TestSetFullscreenTrue);

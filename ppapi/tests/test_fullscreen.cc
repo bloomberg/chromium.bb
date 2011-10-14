@@ -9,7 +9,7 @@
 #include <string>
 
 #include "ppapi/c/dev/ppb_testing_dev.h"
-#include "ppapi/c/dev/ppb_fullscreen_dev.h"
+#include "ppapi/c/ppb_fullscreen.h"
 #include "ppapi/cpp/input_event.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"

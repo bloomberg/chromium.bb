@@ -7,7 +7,6 @@
 #include "ppapi/c/dev/ppb_context_3d_dev.h"
 #include "ppapi/c/dev/ppb_cursor_control_dev.h"
 #include "ppapi/c/dev/ppb_font_dev.h"
-#include "ppapi/c/dev/ppb_fullscreen_dev.h"
 #include "ppapi/c/dev/ppb_memory_dev.h"
 #include "ppapi/c/dev/ppb_scrollbar_dev.h"
 #include "ppapi/c/dev/ppb_surface_3d_dev.h"
@@ -18,6 +17,7 @@
 #include "ppapi/c/ppb_file_io.h"
 #include "ppapi/c/ppb_file_ref.h"
 #include "ppapi/c/ppb_file_system.h"
+#include "ppapi/c/ppb_fullscreen.h"
 #include "ppapi/c/ppb_graphics_2d.h"
 #include "ppapi/c/ppb_graphics_3d.h"
 #include "ppapi/c/ppb_image_data.h"
@@ -63,6 +63,11 @@ const PPB_FileRef* PPBFileRef() {
 const PPB_FileSystem* PPBFileSystem() {
   return reinterpret_cast<const PPB_FileSystem*>(
       GetBrowserInterface(PPB_FILESYSTEM_INTERFACE));
+}
+
+const PPB_Fullscreen* PPBFullscreen() {
+  return reinterpret_cast<const PPB_Fullscreen*>(
+      GetBrowserInterfaceSafe(PPB_FULLSCREEN_INTERFACE));
 }
 
 const PPB_Graphics2D* PPBGraphics2D() {
@@ -151,11 +156,6 @@ const PPB_CursorControl_Dev* PPBCursorControlDev() {
 const PPB_Font_Dev* PPBFontDev() {
   return reinterpret_cast<const PPB_Font_Dev*>(
       GetBrowserInterface(PPB_FONT_DEV_INTERFACE));
-}
-
-const PPB_Fullscreen_Dev* PPBFullscreenDev() {
-  return reinterpret_cast<const PPB_Fullscreen_Dev*>(
-      GetBrowserInterface(PPB_FULLSCREEN_DEV_INTERFACE));
 }
 
 const PPB_Memory_Dev* PPBMemoryDev() {
