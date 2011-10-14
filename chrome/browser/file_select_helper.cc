@@ -44,7 +44,11 @@ void NotifyRenderViewHost(RenderViewHost* render_view_host,
       base::PLATFORM_FILE_ASYNC;
 
   const int kWriteFilePermissions =
+      base::PLATFORM_FILE_CREATE |
+      base::PLATFORM_FILE_CREATE_ALWAYS |
+      base::PLATFORM_FILE_OPEN |
       base::PLATFORM_FILE_OPEN_ALWAYS |
+      base::PLATFORM_FILE_OPEN_TRUNCATED |
       base::PLATFORM_FILE_WRITE |
       base::PLATFORM_FILE_WRITE_ATTRIBUTES |
       base::PLATFORM_FILE_ASYNC;
