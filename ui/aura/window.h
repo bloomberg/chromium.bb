@@ -81,7 +81,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // Go into fullscreen mode.
   void Fullscreen();
 
-  // Restore the wnidow to its original bounds.
+  // Restore the window to its original bounds.
   void Restore();
 
   // Returns the window's show state.
@@ -174,16 +174,23 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
     stops_event_propagation_ = stops_event_propagation;
   }
 
-  // Returns true if the mouse pointer at the specified |point| can trigger an
-  // event for this Window.
-  // TODO(beng):
-  // A Window can supply a hit-test mask to cause some portions of itself to not
-  // trigger events, causing the events to fall through to the Window behind.
-  bool HitTest(const gfx::Point& point);
+  // Returns true if relative-to-this-Window's-origin |local_point| falls
+  // within this Window's bounds.
+  bool ContainsPoint(const gfx::Point& local_point);
 
-  // Returns the Window that most closely encloses |point| for the purposes of
-  // event targeting.
-  Window* GetEventHandlerForPoint(const gfx::Point& point);
+  // Returns true if the mouse pointer at relative-to-this-Window's-origin
+  // |local_point| can trigger an event for this Window.
+  // TODO(beng): A Window can supply a hit-test mask to cause some portions of
+  // itself to not trigger events, causing the events to fall through to the
+  // Window behind.
+  bool HitTest(const gfx::Point& local_point);
+
+  // Returns the Window that most closely encloses |local_point| for the
+  // purposes of event targeting.
+  Window* GetEventHandlerForPoint(const gfx::Point& local_point);
+
+  // Returns the topmost Window with a delegate containing |local_point|.
+  Window* GetTopWindowContainingPoint(const gfx::Point& local_point);
 
   // Claims or relinquishes the claim to focus.
   void Focus();
@@ -241,6 +248,16 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // Update the show state and restore bounds. Returns false
   // if |new_show_state| is same as current show state.
   bool UpdateShowStateAndRestoreBounds(ui::WindowShowState new_show_state);
+
+  // Gets a Window (either this one or a subwindow) containing |local_point|.
+  // If |return_tightest| is true, returns the tightest-containing (i.e.
+  // furthest down the hierarchy) Window containing the point; otherwise,
+  // returns the loosest.  If |for_event_handling| is true, then hit-test masks
+  // and StopsEventPropagation() are honored; otherwise, only bounds checks are
+  // performed.
+  Window* GetWindowForPoint(const gfx::Point& local_point,
+                            bool return_tightest,
+                            bool for_event_handling);
 
   // Overridden from ui::LayerDelegate:
   virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE;

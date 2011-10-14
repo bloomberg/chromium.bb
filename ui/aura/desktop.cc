@@ -10,6 +10,7 @@
 #include "ui/aura/desktop_delegate.h"
 #include "ui/aura/desktop_host.h"
 #include "ui/aura/desktop_observer.h"
+#include "ui/aura/event.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/screen_aura.h"
@@ -43,6 +44,7 @@ Desktop::Desktop()
   host_->SetDesktop(this);
   DCHECK(compositor_.get());
   window_.reset(new internal::RootWindow);
+  last_mouse_location_ = host_->QueryMouseLocation();
 }
 
 Desktop::~Desktop() {
@@ -88,6 +90,7 @@ void Desktop::Draw() {
 }
 
 bool Desktop::OnMouseEvent(const MouseEvent& event) {
+  last_mouse_location_ = event.location();
   return window_->HandleMouseEvent(event);
 }
 

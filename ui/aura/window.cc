@@ -270,29 +270,22 @@ void Window::RemoveObserver(WindowObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-bool Window::HitTest(const gfx::Point& point) {
+bool Window::ContainsPoint(const gfx::Point& local_point) {
   gfx::Rect local_bounds(gfx::Point(), bounds().size());
-  // TODO(beng): hittest masks.
-  return local_bounds.Contains(point);
+  return local_bounds.Contains(local_point);
 }
 
-Window* Window::GetEventHandlerForPoint(const gfx::Point& point) {
-  Windows::const_reverse_iterator i = children_.rbegin();
-  for (; i != children_.rend(); ++i) {
-    Window* child = *i;
-    if (!child->IsVisible())
-      continue;
-    gfx::Point point_in_child_coords(point);
-    Window::ConvertPointToWindow(this, child, &point_in_child_coords);
-    if (child->HitTest(point_in_child_coords)) {
-      Window* handler = child->GetEventHandlerForPoint(point_in_child_coords);
-      if (handler && handler->delegate())
-        return handler;
-    }
-    if (child->StopsEventPropagation())
-      return NULL;
-  }
-  return delegate_ ? this : NULL;
+bool Window::HitTest(const gfx::Point& local_point) {
+  // TODO(beng): hittest masks.
+  return ContainsPoint(local_point);
+}
+
+Window* Window::GetEventHandlerForPoint(const gfx::Point& local_point) {
+  return GetWindowForPoint(local_point, true, true);
+}
+
+Window* Window::GetTopWindowContainingPoint(const gfx::Point& local_point) {
+  return GetWindowForPoint(local_point, false, false);
 }
 
 void Window::Focus() {
@@ -410,6 +403,40 @@ bool Window::UpdateShowStateAndRestoreBounds(
   if (restore_bounds_.IsEmpty())
     restore_bounds_ = bounds();
   return true;
+}
+
+Window* Window::GetWindowForPoint(const gfx::Point& local_point,
+                                  bool return_tightest,
+                                  bool for_event_handling) {
+  if (!IsVisible())
+    return NULL;
+
+  if ((for_event_handling && !HitTest(local_point)) ||
+      (!for_event_handling && !ContainsPoint(local_point)))
+    return NULL;
+
+  if (!return_tightest && delegate_)
+    return this;
+
+  for (Windows::const_reverse_iterator it = children_.rbegin();
+       it != children_.rend(); ++it) {
+    Window* child = *it;
+    if (!child->IsVisible())
+      continue;
+
+    gfx::Point point_in_child_coords(local_point);
+    Window::ConvertPointToWindow(this, child, &point_in_child_coords);
+    Window* match = child->GetWindowForPoint(point_in_child_coords,
+                                             return_tightest,
+                                             for_event_handling);
+    if (match)
+      return match;
+
+    if (for_event_handling && child->StopsEventPropagation())
+      break;
+  }
+
+  return delegate_ ? this : NULL;
 }
 
 void Window::OnPaintLayer(gfx::Canvas* canvas) {

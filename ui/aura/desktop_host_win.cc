@@ -4,6 +4,8 @@
 
 #include "ui/aura/desktop_host_win.h"
 
+#include <windows.h>
+
 #include "base/message_loop.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura/event.h"
@@ -62,6 +64,13 @@ void DesktopHostWin::SetCursor(gfx::NativeCursor cursor) {
   if (!cursor)
     cursor = LoadCursor(NULL, IDC_ARROW);
   ::SetCursor(cursor);
+}
+
+gfx::Point DesktopHostWin::QueryMouseLocation() {
+  POINT pt;
+  GetCursorPos(&pt);
+  ScreenToClient(hwnd(), &pt);
+  return gfx::Point(pt);
 }
 
 void DesktopHostWin::OnClose() {

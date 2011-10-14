@@ -45,6 +45,7 @@ class UI_EXPORT Screen {
   static gfx::NativeWindow GetWindowAtCursorScreenPoint();
 
  protected:
+  virtual gfx::Point GetCursorScreenPointImpl() = 0;
   virtual gfx::Rect GetMonitorWorkAreaNearestWindowImpl(
       gfx::NativeView view) = 0;
   virtual gfx::Rect GetMonitorAreaNearestWindowImpl(

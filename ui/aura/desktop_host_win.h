@@ -27,6 +27,7 @@ class DesktopHostWin : public DesktopHost, public ui::WindowImpl {
   virtual gfx::Size GetSize() const OVERRIDE;
   virtual void SetSize(const gfx::Size& size) OVERRIDE;
   virtual void SetCursor(gfx::NativeCursor cursor) OVERRIDE;
+  virtual gfx::Point QueryMouseLocation() OVERRIDE;
 
  private:
   BEGIN_MSG_MAP_EX(DesktopHostWin)

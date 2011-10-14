@@ -17,6 +17,7 @@
 #include "ui/base/events.h"
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/point.h"
 
 namespace gfx {
 class Size;
@@ -34,6 +35,8 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate {
  public:
   Desktop();
   virtual ~Desktop();
+
+  gfx::Point last_mouse_location() const { return last_mouse_location_; }
 
   DesktopDelegate* delegate() { return delegate_.get(); }
   void SetDelegate(DesktopDelegate* delegate);
@@ -128,6 +131,9 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate {
   static ui::Compositor*(*compositor_factory_)();
 
   Window* active_window_;
+
+  // Last location seen in a mouse event.
+  gfx::Point last_mouse_location_;
 
   // Are we in the process of being destroyed? Used to avoid processing during
   // destruction.

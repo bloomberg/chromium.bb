@@ -11,6 +11,7 @@
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
+class Point;
 class Rect;
 class Size;
 }
@@ -44,6 +45,9 @@ class DesktopHost : public MessageLoop::Dispatcher {
 
   // Sets the currently displayed cursor.
   virtual void SetCursor(gfx::NativeCursor cursor) = 0;
+
+  // Queries the mouse's current position relative to the host window.
+  virtual gfx::Point QueryMouseLocation() = 0;
 };
 
 }  // namespace aura

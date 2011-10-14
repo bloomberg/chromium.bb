@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "ui/aura/desktop.h"
+#include "ui/aura/window.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace {
@@ -25,6 +26,10 @@ ScreenAura::ScreenAura() {
 }
 
 ScreenAura::~ScreenAura() {
+}
+
+gfx::Point ScreenAura::GetCursorScreenPointImpl() {
+  return Desktop::GetInstance()->last_mouse_location();
 }
 
 gfx::Rect ScreenAura::GetMonitorWorkAreaNearestWindowImpl(
@@ -51,8 +56,8 @@ gfx::Rect ScreenAura::GetMonitorAreaNearestPointImpl(const gfx::Point& point) {
 }
 
 gfx::NativeWindow ScreenAura::GetWindowAtCursorScreenPointImpl() {
-  NOTIMPLEMENTED();
-  return NULL;
+  const gfx::Point point = GetCursorScreenPoint();
+  return Desktop::GetInstance()->window()->GetTopWindowContainingPoint(point);
 }
 
 }  // namespace internal

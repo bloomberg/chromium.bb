@@ -222,19 +222,58 @@ TEST_F(WindowTest, GetEventHandlerForPoint) {
   scoped_ptr<Window> w13(
       CreateTestWindow(SK_ColorGRAY, 13, gfx::Rect(5, 470, 50, 50), w1.get()));
 
-  Window* desktop = Desktop::GetInstance()->window();
+  Window* root = Desktop::GetInstance()->window();
   w1->parent()->SetBounds(gfx::Rect(500, 500));
-  EXPECT_EQ(NULL, desktop->GetEventHandlerForPoint(gfx::Point(5, 5)));
-  EXPECT_EQ(w1.get(), desktop->GetEventHandlerForPoint(gfx::Point(11, 11)));
-  EXPECT_EQ(w11.get(), desktop->GetEventHandlerForPoint(gfx::Point(16, 16)));
-  EXPECT_EQ(w111.get(), desktop->GetEventHandlerForPoint(gfx::Point(21, 21)));
-  EXPECT_EQ(w1111.get(), desktop->GetEventHandlerForPoint(gfx::Point(26, 26)));
-  EXPECT_EQ(w12.get(), desktop->GetEventHandlerForPoint(gfx::Point(21, 431)));
-  EXPECT_EQ(w121.get(), desktop->GetEventHandlerForPoint(gfx::Point(26, 436)));
-  EXPECT_EQ(w13.get(), desktop->GetEventHandlerForPoint(gfx::Point(26, 481)));
+  EXPECT_EQ(NULL, root->GetEventHandlerForPoint(gfx::Point(5, 5)));
+  EXPECT_EQ(w1.get(), root->GetEventHandlerForPoint(gfx::Point(11, 11)));
+  EXPECT_EQ(w11.get(), root->GetEventHandlerForPoint(gfx::Point(16, 16)));
+  EXPECT_EQ(w111.get(), root->GetEventHandlerForPoint(gfx::Point(21, 21)));
+  EXPECT_EQ(w1111.get(), root->GetEventHandlerForPoint(gfx::Point(26, 26)));
+  EXPECT_EQ(w12.get(), root->GetEventHandlerForPoint(gfx::Point(21, 431)));
+  EXPECT_EQ(w121.get(), root->GetEventHandlerForPoint(gfx::Point(26, 436)));
+  EXPECT_EQ(w13.get(), root->GetEventHandlerForPoint(gfx::Point(26, 481)));
+}
+
+TEST_F(WindowTest, GetTopWindowContainingPoint) {
+  Window* root = Desktop::GetInstance()->window();
+  root->SetBounds(gfx::Rect(0, 0, 300, 300));
+
+  scoped_ptr<Window> w1(
+      CreateTestWindow(SK_ColorWHITE, 1, gfx::Rect(10, 10, 100, 100), NULL));
+  scoped_ptr<Window> w11(
+      CreateTestWindow(SK_ColorGREEN, 11, gfx::Rect(0, 0, 120, 120), w1.get()));
+
+  scoped_ptr<Window> w2(
+      CreateTestWindow(SK_ColorRED, 2, gfx::Rect(5, 5, 55, 55), NULL));
+
+  scoped_ptr<Window> w3(
+      CreateTestWindowWithDelegate(
+          NULL, 3, gfx::Rect(200, 200, 100, 100), NULL));
+  scoped_ptr<Window> w31(
+      CreateTestWindow(SK_ColorCYAN, 31, gfx::Rect(0, 0, 50, 50), w3.get()));
+  scoped_ptr<Window> w311(
+      CreateTestWindow(SK_ColorBLUE, 311, gfx::Rect(0, 0, 10, 10), w31.get()));
+
+  // The stop-event-propagation flag shouldn't have any effect on the behavior
+  // of this method.
+  w3->set_stops_event_propagation(true);
+
+  EXPECT_EQ(NULL, root->GetTopWindowContainingPoint(gfx::Point(0, 0)));
+  EXPECT_EQ(w2.get(), root->GetTopWindowContainingPoint(gfx::Point(5, 5)));
+  EXPECT_EQ(w2.get(), root->GetTopWindowContainingPoint(gfx::Point(10, 10)));
+  EXPECT_EQ(w2.get(), root->GetTopWindowContainingPoint(gfx::Point(59, 59)));
+  EXPECT_EQ(w1.get(), root->GetTopWindowContainingPoint(gfx::Point(60, 60)));
+  EXPECT_EQ(w1.get(), root->GetTopWindowContainingPoint(gfx::Point(109, 109)));
+  EXPECT_EQ(NULL, root->GetTopWindowContainingPoint(gfx::Point(110, 110)));
+  EXPECT_EQ(w31.get(), root->GetTopWindowContainingPoint(gfx::Point(200, 200)));
+  EXPECT_EQ(w31.get(), root->GetTopWindowContainingPoint(gfx::Point(220, 220)));
+  EXPECT_EQ(NULL, root->GetTopWindowContainingPoint(gfx::Point(260, 260)));
 }
 
 TEST_F(WindowTest, Focus) {
+  Desktop* desktop = Desktop::GetInstance();
+  desktop->window()->SetBounds(gfx::Rect(0, 0, 510, 510));
+
   scoped_ptr<Window> w1(
       CreateTestWindow(SK_ColorWHITE, 1, gfx::Rect(10, 10, 500, 500), NULL));
   scoped_ptr<Window> w11(
@@ -255,7 +294,6 @@ TEST_F(WindowTest, Focus) {
       CreateTestWindow(SK_ColorGRAY, 13, gfx::Rect(5, 470, 50, 50), w1.get()));
 
   // Click on a sub-window (w121) to focus it.
-  Desktop* desktop = Desktop::GetInstance();
   gfx::Point click_point = w121->bounds().CenterPoint();
   Window::ConvertPointToWindow(w121->parent(), desktop->window(), &click_point);
   desktop->OnMouseEvent(

@@ -20,6 +20,7 @@ class ScreenAura : public gfx::Screen {
   virtual ~ScreenAura();
 
  protected:
+  virtual gfx::Point GetCursorScreenPointImpl() OVERRIDE;
   virtual gfx::Rect GetMonitorWorkAreaNearestWindowImpl(
       gfx::NativeView view) OVERRIDE;
   virtual gfx::Rect GetMonitorAreaNearestWindowImpl(

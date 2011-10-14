@@ -31,6 +31,7 @@ class DesktopHostLinux : public DesktopHost {
   virtual gfx::Size GetSize() const OVERRIDE;
   virtual void SetSize(const gfx::Size& size) OVERRIDE;
   virtual void SetCursor(gfx::NativeCursor cursor_type) OVERRIDE;
+  virtual gfx::Point QueryMouseLocation() OVERRIDE;
 
   Desktop* desktop_;
 
@@ -140,6 +141,20 @@ void DesktopHostLinux::SetCursor(gfx::NativeCursor cursor_type) {
     return;
   xcursor_ = cursor_type;
   XDefineCursor(xdisplay_, xwindow_, cursor_type);
+}
+
+gfx::Point DesktopHostLinux::QueryMouseLocation() {
+  ::Window root_return, child_return;
+  int root_x_return, root_y_return, win_x_return, win_y_return;
+  unsigned int mask_return;
+  XQueryPointer(xdisplay_,
+                xwindow_,
+                &root_return,
+                &child_return,
+                &root_x_return, &root_y_return,
+                &win_x_return, &win_y_return,
+                &mask_return);
+  return gfx::Point(win_x_return, win_y_return);
 }
 
 }  // namespace

@@ -4,10 +4,6 @@
 
 #include "ui/gfx/screen.h"
 
-#if defined(OS_WIN)
-#include <windows.h>
-#endif
-
 #include "base/logging.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -28,13 +24,8 @@ void Screen::SetInstance(Screen* screen) {
 
 // static
 gfx::Point Screen::GetCursorScreenPoint() {
-#if defined(OS_WIN)
-  POINT pt;
-  GetCursorPos(&pt);
-  return gfx::Point(pt);
-#endif
-  NOTIMPLEMENTED();
-  return gfx::Point();
+  DCHECK(instance_);
+  return instance_->GetCursorScreenPointImpl();
 }
 
 // static
@@ -61,6 +52,7 @@ gfx::Rect Screen::GetMonitorAreaNearestPoint(const gfx::Point& point) {
   return instance_->GetMonitorAreaNearestPointImpl(point);
 }
 
+// static
 gfx::NativeWindow Screen::GetWindowAtCursorScreenPoint() {
   DCHECK(instance_);
   return instance_->GetWindowAtCursorScreenPointImpl();
