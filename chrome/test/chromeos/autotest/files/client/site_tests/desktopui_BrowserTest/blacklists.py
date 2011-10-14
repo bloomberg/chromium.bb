@@ -5,7 +5,10 @@
 # TODO(rkc): Tests currently failing on the PFQ - resolve these.
 # http://code.google.com/p/chromium-os/issues/detail?id=20128
 blacklist = ['FindInPageControllerTest.AcceleratorRestoring',
+
+             # crosbug.com/20347
              'FindInPageControllerTest.FindMovesWhenObscuring',
+
              'FindInPageControllerTest.FitWindow',
              'BrowserNavigatorTest.NavigateFromBlankToOptionsInSameTab',
              'BrowserNavigatorTest.NavigateFromOmniboxIntoNewTab',
@@ -17,6 +20,10 @@ blacklist = ['FindInPageControllerTest.AcceleratorRestoring',
              'NaClExtensionTest.WebStoreExtension',
              'NaClExtensionTest.ComponentExtension',
              'NaClExtensionTest.UnpackedExtension',
+
+             # crosbug.com/21440
+             'NotificationTest.TestStateTransition2',
+
              'ExtensionResourceRequestPolicyTest.Audio',
              'ExtensionResourceRequestPolicyTest.Video',
              'ExtensionCrashRecoveryTest.Basic',
