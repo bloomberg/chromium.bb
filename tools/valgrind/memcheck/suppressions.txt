@@ -4717,6 +4717,11 @@
    fun:_ZN7WebCore11RenderBlock11layoutBlockEbiNS0_15BlockLayoutPassE
    fun:_ZN7WebCore11RenderBlock6layoutEv
 }
+{
+   bug_100315
+   Memcheck:Cond
+   fun:_ZN7browser8NavigateEPNS_14NavigateParamsE
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
