@@ -276,6 +276,23 @@
     'browser_compositor': {
       'filepath': 'ui/gfx/compositor/.*'
     },
+    'textinput': {
+      'filepath': 'content/browser/renderer_host/gtk_im.*'\
+                  '|content/browser/renderer_host/gtk_key.*'\
+                  '|content/browser/renderer_host/render_widget_host_view.*'\
+                  '|content/browser/renderer_host/text_input.*'\
+                  '|ui/base/ime/.*'\
+                  '|ui/base/gtk/event.*'\
+                  '|ui/base/gtk/gtk_im.*'\
+                  '|ui/base/keycodes/.*'\
+                  '|ui/base/win/ime.*'\
+                  '|views/ime/.*'\
+                  '|views/controls/textfield/.*'
+    },
+    'omnibox': {
+      'filepath': 'chrome/browser/autocomplete/.*'\
+                  '|chrome/browser/ui/.*/omnibox/.*'
+    },
   },
 
   'WATCHLISTS': {
@@ -381,5 +398,7 @@
     'views_core': ['ben+watch@chromium.org'],
     'tools_emacs': ['fischman+watch@chromium.org'],
     'browser_compositor': ['backer@chromium.org'],
+    'textinput': ['suzhe@chromium.org'],
+    'omnibox': ['suzhe@chromium.org'],
   },
 }
