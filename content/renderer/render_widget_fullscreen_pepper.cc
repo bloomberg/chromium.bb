@@ -323,13 +323,14 @@ RenderWidgetFullscreenPepper::GetBitmapForOptimizedPluginPaint(
 }
 
 void RenderWidgetFullscreenPepper::OnResize(const gfx::Size& size,
-                                            const gfx::Rect& resizer_rect) {
+                                            const gfx::Rect& resizer_rect,
+                                            bool is_fullscreen) {
   if (context_) {
     gpu::gles2::GLES2Implementation* gl = context_->GetImplementation();
     gl->ResizeCHROMIUM(size.width(), size.height());
     gl->Viewport(0, 0, size.width(), size.height());
   }
-  RenderWidget::OnResize(size, resizer_rect);
+  RenderWidget::OnResize(size, resizer_rect, is_fullscreen);
 }
 
 WebWidget* RenderWidgetFullscreenPepper::CreateWebWidget() {

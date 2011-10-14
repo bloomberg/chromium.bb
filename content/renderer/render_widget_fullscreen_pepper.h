@@ -59,7 +59,8 @@ class RenderWidgetFullscreenPepper : public RenderWidgetFullscreen,
       gfx::Rect* location,
       gfx::Rect* clip);
   virtual void OnResize(const gfx::Size& new_size,
-                        const gfx::Rect& resizer_rect);
+                        const gfx::Rect& resizer_rect,
+                        bool is_fullscreen);
 
   // RenderWidgetFullscreen API.
   virtual WebKit::WebWidget* CreateWebWidget();

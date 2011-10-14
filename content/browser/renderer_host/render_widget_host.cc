@@ -353,7 +353,8 @@ void RenderWidgetHost::WasResized() {
   // only reserved area is changed.
   resize_ack_pending_ = !new_size.IsEmpty() && new_size != current_size_;
 
-  if (!Send(new ViewMsg_Resize(routing_id_, new_size, reserved_rect))) {
+  if (!Send(new ViewMsg_Resize(routing_id_, new_size, reserved_rect,
+                               IsFullscreen()))) {
     resize_ack_pending_ = false;
   } else {
     if (resize_ack_pending_) {
@@ -812,6 +813,10 @@ void RenderWidgetHost::UnlockMouseIfNecessary() {
 
 bool RenderWidgetHost::IsMouseLocked() const {
   return view_ ? view_->mouse_locked() : false;
+}
+
+bool RenderWidgetHost::IsFullscreen() const {
+  return false;
 }
 
 void RenderWidgetHost::Destroy() {

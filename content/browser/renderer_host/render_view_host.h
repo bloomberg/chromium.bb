@@ -463,6 +463,7 @@ class CONTENT_EXPORT RenderViewHost : public RenderWidgetHost {
   virtual void NotifyRendererUnresponsive() OVERRIDE;
   virtual void NotifyRendererResponsive() OVERRIDE;
   virtual bool CanLockMouse() const OVERRIDE;
+  virtual bool IsFullscreen() const OVERRIDE;
   virtual void OnMsgFocus() OVERRIDE;
   virtual void OnMsgBlur() OVERRIDE;
 

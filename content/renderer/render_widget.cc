@@ -77,6 +77,7 @@ RenderWidget::RenderWidget(WebKit::WebPopupType popup_type)
       num_swapbuffers_complete_pending_(0),
       did_show_(false),
       is_hidden_(false),
+      is_fullscreen_(false),
       needs_repainting_on_restore_(false),
       has_focus_(false),
       handling_input_event_(false),
@@ -257,7 +258,8 @@ void RenderWidget::OnClose() {
 }
 
 void RenderWidget::OnResize(const gfx::Size& new_size,
-                            const gfx::Rect& resizer_rect) {
+                            const gfx::Rect& resizer_rect,
+                            bool is_fullscreen) {
   // During shutdown we can just ignore this message.
   if (!webwidget_)
     return;
@@ -276,6 +278,7 @@ void RenderWidget::OnResize(const gfx::Size& new_size,
   needs_repainting_on_restore_ = false;
 
   size_ = new_size;
+  is_fullscreen_ = is_fullscreen;
 
   // We should not be sent a Resize message if we have not ACK'd the previous
   DCHECK(!next_paint_is_resize_ack());

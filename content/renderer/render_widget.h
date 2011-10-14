@@ -91,13 +91,11 @@ class CONTENT_EXPORT RenderWidget
 
   // May return NULL when the window is closing.
   WebKit::WebWidget* webwidget() const { return webwidget_; }
+
   gfx::NativeViewId host_window() const { return host_window_; }
   gfx::Size size() const { return size_; }
   bool has_focus() const { return has_focus_; }
-  // TODO(darin): add a boolean flag to ViewMsg_Resize indicating whether or
-  // not we are in fullscreen mode. Return the value that was reported via the
-  // ViewMsg_Resize IPC here.
-  bool is_fullscreen() const { return true; }
+  bool is_fullscreen() const { return is_fullscreen_; }
 
   // IPC::Channel::Listener
   virtual bool OnMessageReceived(const IPC::Message& msg);
@@ -197,7 +195,8 @@ class CONTENT_EXPORT RenderWidget
   void OnClose();
   void OnCreatingNewAck(gfx::NativeViewId parent);
   virtual void OnResize(const gfx::Size& new_size,
-                        const gfx::Rect& resizer_rect);
+                        const gfx::Rect& resizer_rect,
+                        bool is_fullscreen);
   virtual void OnWasHidden();
   virtual void OnWasRestored(bool needs_repainting);
   virtual void OnWasSwappedOut();
@@ -396,6 +395,9 @@ class CONTENT_EXPORT RenderWidget
 
   // Indicates that we shouldn't bother generated paint events.
   bool is_hidden_;
+
+  // Indicates that we are in fullscreen mode.
+  bool is_fullscreen_;
 
   // Indicates that we should be repainted when restored.  This flag is set to
   // true if we receive an invalidation / scroll event from webkit while our

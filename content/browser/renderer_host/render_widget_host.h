@@ -478,6 +478,9 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
   void UnlockMouseIfNecessary();
   bool IsMouseLocked() const;
 
+  // RenderViewHost overrides this method to report when in fullscreen mode.
+  virtual bool IsFullscreen() const;
+
  protected:
   // true if a renderer has once been valid. We use this flag to display a sad
   // tab only when we lose our renderer and not if a paint occurs during

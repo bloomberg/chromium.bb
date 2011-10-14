@@ -1139,6 +1139,10 @@ bool RenderViewHost::CanLockMouse() const {
   return delegate_->IsFullscreenForCurrentTab();
 }
 
+bool RenderViewHost::IsFullscreen() const {
+  return delegate_->IsFullscreenForCurrentTab();
+}
+
 void RenderViewHost::OnMsgFocus() {
   delegate_->Activate();
 }

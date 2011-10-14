@@ -617,7 +617,8 @@ class RenderViewImpl : public RenderWidget,
   // RenderWidget overrides:
   virtual void Close();
   virtual void OnResize(const gfx::Size& new_size,
-                        const gfx::Rect& resizer_rect);
+                        const gfx::Rect& resizer_rect,
+                        bool is_fullscreen);
   virtual void DidInitiatePaint();
   virtual webkit::ppapi::PluginInstance* GetBitmapForOptimizedPluginPaint(
       const gfx::Rect& paint_bounds,
