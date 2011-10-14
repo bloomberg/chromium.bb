@@ -179,6 +179,9 @@ void Profile::RegisterUserPrefs(PrefService* prefs) {
                             PrefService::UNSYNCABLE_PREF);
   prefs->RegisterDictionaryPref(prefs::kPerHostZoomLevels,
                                 PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterStringPref(prefs::kDefaultApps,
+                            "install",
+                            PrefService::UNSYNCABLE_PREF);
 #if defined(OS_CHROMEOS)
   // TODO(dilmah): For OS_CHROMEOS we maintain kApplicationLocale in both
   // local state and user's profile.  For other platforms we maintain

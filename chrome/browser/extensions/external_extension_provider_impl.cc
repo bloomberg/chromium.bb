@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/external_extension_provider_impl.h"
 
+#include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
@@ -20,6 +21,8 @@
 #include "chrome/browser/extensions/external_pref_extension_loader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -379,12 +382,26 @@ void ExternalExtensionProviderImpl::CreateExternalProviders(
               Extension::EXTERNAL_POLICY_DOWNLOAD)));
 
 #if !defined(OS_CHROMEOS)
-  // Install default apps, except for the experimental group of users that are
-  // to be excluded.
-  static bool install_apps = !base::FieldTrialList::TrialExists(
-      kDefaultAppsTrial_Name) || (base::FieldTrialList::Find(
-          kDefaultAppsTrial_Name)->group_name() !=
-              kDefaultAppsTrial_NoAppsGroup);
+  // We decide to install or not install default apps based on the following
+  // criteria, from highest priority to lowest priority:
+  //
+  // - if this instance of chrome is participating in the default apps
+  //   field trial, then install apps based on the group
+  // - the command line option.  Tests use this option to disable installation
+  //   of default apps in some cases
+  // - the preferences value in the profile.  This value is usually set in
+  //   the master_preferences file
+  bool install_apps =
+      profile->GetPrefs()->GetString(prefs::kDefaultApps) == "install";
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableDefaultApps)) {
+    install_apps = false;
+  }
+  if (base::FieldTrialList::TrialExists(kDefaultAppsTrial_Name)) {
+    install_apps = base::FieldTrialList::Find(
+        kDefaultAppsTrial_Name)->group_name() != kDefaultAppsTrial_NoAppsGroup;
+  }
+
   if (install_apps) {
     // Don't bother installing default apps in locales where its known that
     // they don't work.

@@ -16,6 +16,7 @@ namespace prefs {
 
 // Profile prefs. Please add Local State prefs below instead.
 extern const char kAppsPromoCounter[];
+extern const char kDefaultApps[];
 extern const char kDefaultAppsInstalled[];
 extern const char kHomePageIsNewTabPage[];
 extern const char kHomePage[];

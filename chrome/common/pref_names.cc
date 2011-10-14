@@ -15,6 +15,13 @@ namespace prefs {
 // or not.
 const char kAppsPromoCounter[] = "apps_promo_counter";
 
+// A string property indicating whether default apps should be installed
+// in this profile.  Use the value "install" to enable defaults apps, or
+// "noinstall" to disable them.  This property is usually set in the
+// master_preferences and copied into the profile preferences on first run.
+// Defaults apps are installed only when creating a new profile.
+const char kDefaultApps[] = "default_apps";
+
 // Whether we have installed default apps yet in this profile.
 const char kDefaultAppsInstalled[] = "default_apps_installed";
 

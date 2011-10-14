@@ -1079,10 +1079,7 @@ void ChromeBrowserMainParts::DefaultAppsFieldTrial() {
   google_util::GetBrand(&brand);
 
   // Create a 100% field trial based on the brand code.
-  // Do not install default apps if we are running unit tests as installation
-  // of default apps will cause extension-related browser tests to fail.
-  if (LowerCaseEqualsASCII(brand, "ecdb") ||
-      parsed_command_line().HasSwitch(switches::kDisableDefaultApps)) {
+  if (LowerCaseEqualsASCII(brand, "ecdb")) {
     base::FieldTrialList::CreateFieldTrial(kDefaultAppsTrial_Name,
                                            kDefaultAppsTrial_NoAppsGroup);
   } else if (LowerCaseEqualsASCII(brand, "ecda")) {
