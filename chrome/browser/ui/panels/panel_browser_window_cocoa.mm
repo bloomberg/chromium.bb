@@ -13,7 +13,7 @@
 #include "chrome/browser/ui/panels/panel_manager.h"
 #import "chrome/browser/ui/panels/panel_titlebar_view_cocoa.h"
 #import "chrome/browser/ui/panels/panel_window_controller_cocoa.h"
-#include "content/common/native_web_keyboard_event.h"
+#include "content/public/browser/native_web_keyboard_event.h"
 
 namespace {
 

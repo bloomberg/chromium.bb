@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/native_web_keyboard_event.h"
+#include "content/public/browser/native_web_keyboard_event.h"
 
 #if !defined(OS_WIN)
 

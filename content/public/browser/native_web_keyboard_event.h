@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_NATIVE_WEB_KEYBOARD_EVENT_H_
-#define CONTENT_COMMON_NATIVE_WEB_KEYBOARD_EVENT_H_
+#ifndef CONTENT_PUBLIC_BROWSER_NATIVE_WEB_KEYBOARD_EVENT_H_
+#define CONTENT_PUBLIC_BROWSER_NATIVE_WEB_KEYBOARD_EVENT_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -76,4 +76,4 @@ struct CONTENT_EXPORT NativeWebKeyboardEvent :
 #endif
 };
 
-#endif  // CONTENT_COMMON_NATIVE_WEB_KEYBOARD_EVENT_H_
+#endif  // CONTENT_PUBLIC_BROWSER_NATIVE_WEB_KEYBOARD_EVENT_H_

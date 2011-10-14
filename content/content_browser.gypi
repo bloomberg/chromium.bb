@@ -371,6 +371,9 @@
     'browser/renderer_host/pepper_message_filter.h',
     'browser/renderer_host/quota_dispatcher_host.cc',
     'browser/renderer_host/quota_dispatcher_host.h',
+    'browser/renderer_host/native_web_keyboard_event_gtk.cc',
+    'browser/renderer_host/native_web_keyboard_event_mac.mm',
+    'browser/renderer_host/native_web_keyboard_event_win.cc',
     'browser/renderer_host/redirect_to_file_resource_handler.cc',
     'browser/renderer_host/redirect_to_file_resource_handler.h',
     'browser/renderer_host/render_message_filter.cc',
@@ -548,6 +551,7 @@
     'browser/zygote_host_linux.cc',
     'browser/zygote_host_linux.h',
     'browser/zygote_main_linux.cc',
+    'public/browser/native_web_keyboard_event.h',
   ],
   'conditions': [
     ['p2p_apis==1', {

@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/memory/scoped_ptr.h"
-#include "content/common/native_web_keyboard_event.h"
+#include "content/public/browser/native_web_keyboard_event.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"

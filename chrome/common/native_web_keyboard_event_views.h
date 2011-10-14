@@ -6,7 +6,7 @@
 #define CHROME_COMMON_NATIVE_WEB_KEYBOARD_EVENT_VIEWS_H_
 #pragma once
 
-#include "content/common/native_web_keyboard_event.h"
+#include "content/public/browser/native_web_keyboard_event.h"
 
 namespace views {
 class KeyEvent;

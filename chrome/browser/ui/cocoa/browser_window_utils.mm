@@ -13,7 +13,7 @@
 #import "chrome/browser/ui/cocoa/chrome_event_processing_window.h"
 #import "chrome/browser/ui/cocoa/nsmenuitem_additions.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
-#include "content/common/native_web_keyboard_event.h"
+#include "content/public/browser/native_web_keyboard_event.h"
 
 @interface MenuWalker : NSObject
 + (NSMenuItem*)itemForKeyEquivalent:(NSEvent*)key

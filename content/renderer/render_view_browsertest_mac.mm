@@ -4,7 +4,7 @@
 
 #include "base/string_util.h"
 #include "base/string16.h"
-#include "content/common/native_web_keyboard_event.h"
+#include "content/public/browser/native_web_keyboard_event.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/test/render_view_test.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -16,7 +16,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/native_web_keyboard_event.h"
+#include "content/public/browser/native_web_keyboard_event.h"
 
 namespace browser {
 
