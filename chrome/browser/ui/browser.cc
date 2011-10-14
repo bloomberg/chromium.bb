@@ -446,7 +446,14 @@ Browser* Browser::CreateForApp(Type type,
     // the panel switch is not enabled.  See crbug/55943.
     type = TYPE_POPUP;
   }
-#endif
+#if defined(TOOLKIT_GTK)
+  // We require a window manager for panels to work correctly with GTK.
+  // See crbug/100381 for details.
+  std::string wm_name;
+  if (type == TYPE_PANEL && !ui::GetWindowManagerName(&wm_name))
+    type = TYPE_POPUP;
+#endif  // TOOLKIT_GTK
+#endif  // !OS_CHROMEOS
 
   CreateParams params(type, profile);
   params.app_name = app_name;
