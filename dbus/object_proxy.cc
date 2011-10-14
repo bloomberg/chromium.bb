@@ -341,8 +341,6 @@ DBusHandlerResult ObjectProxy::HandleMessage(
   scoped_ptr<Signal> signal(
       Signal::FromRawMessage(raw_message));
 
-  VLOG(1) << "Signal received: " << signal->ToString();
-
   const std::string interface = signal->GetInterface();
   const std::string member = signal->GetMember();
 
@@ -354,6 +352,7 @@ DBusHandlerResult ObjectProxy::HandleMessage(
     // Don't know about the signal.
     return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
   }
+  VLOG(1) << "Signal received: " << signal->ToString();
 
   const base::TimeTicks start_time = base::TimeTicks::Now();
   if (bus_->HasDBusThread()) {
