@@ -88,13 +88,32 @@ base::MessagePumpDispatcher::DispatchStatus DesktopHostLinux::Dispatch(
       break;
     }
     case ButtonPress:
-    case ButtonRelease:
-    case MotionNotify: {
+    case ButtonRelease: {
       MouseEvent mouseev(xev);
       handled = desktop_->OnMouseEvent(mouseev);
       break;
     }
-
+    case MotionNotify: {
+      // Discard all but the most recent motion event that targets the same
+      // window with unchanged state.
+      XEvent last_event;
+      while (XPending(xev->xany.display)) {
+        XEvent next_event;
+        XPeekEvent(xev->xany.display, &next_event);
+        if (next_event.type == MotionNotify &&
+            next_event.xmotion.window == xev->xmotion.window &&
+            next_event.xmotion.subwindow == xev->xmotion.subwindow &&
+            next_event.xmotion.state == xev->xmotion.state) {
+          XNextEvent(xev->xany.display, &last_event);
+          xev = &last_event;
+        } else {
+          break;
+        }
+      }
+      MouseEvent mouseev(xev);
+      handled = desktop_->OnMouseEvent(mouseev);
+      break;
+    }
     case ConfigureNotify: {
       DCHECK_EQ(xdisplay_, xev->xconfigure.display);
       DCHECK_EQ(xwindow_, xev->xconfigure.window);
