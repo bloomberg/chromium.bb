@@ -160,13 +160,20 @@ void AutomationProxy::InitializeChannel(const std::string& channel_id,
   // The shutdown event could be global on the same lines as the automation
   // provider, where we use the shutdown event provided by the chrome browser
   // process.
+  IPC::Channel::Mode mode =
+      use_named_interface ? IPC::Channel::MODE_NAMED_CLIENT
+                          : IPC::Channel::MODE_SERVER;
+  // Create the pipe immediately if we are serving, so that Chrome doesn't try
+  // to connect an unready server. Create it asynchronously if we are the
+  // client, otherwise the filter may not be in place before Chrome sends
+  // the first automation Hello message.
+  bool create_pipe_now = mode & IPC::Channel::MODE_SERVER_FLAG;
   channel_.reset(new IPC::SyncChannel(
     channel_id,
-    use_named_interface ? IPC::Channel::MODE_NAMED_CLIENT
-                        : IPC::Channel::MODE_SERVER,
+    mode,
     this,  // we are the listener
     thread_->message_loop_proxy(),
-    true,
+    create_pipe_now,
     shutdown_event_.get()));
   channel_->AddFilter(new AutomationMessageFilter(this));
 }
