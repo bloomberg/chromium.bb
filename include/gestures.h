@@ -272,6 +272,9 @@ struct GestureInterpreter {
   }
   void SetTimerProvider(GesturesTimerProvider* tp, void* data);
   void SetPropProvider(GesturesPropProvider* pp, void* data);
+
+  Interpreter* interpreter() const { return interpreter_.get(); }
+  PropRegistry* prop_reg() const { return prop_reg_.get(); }
  private:
   GestureReadyFunction callback_;
   void* callback_data_;
