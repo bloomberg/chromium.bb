@@ -17,6 +17,7 @@
 #include "gestures/include/prop_registry.h"
 #include "gestures/include/scaling_filter_interpreter.h"
 #include "gestures/include/stuck_button_inhibitor_filter_interpreter.h"
+#include "gestures/include/util.h"
 
 using std::string;
 
@@ -75,15 +76,6 @@ string Gesture::String() const {
   }
 }
 
-namespace {
-bool FloatEq(float a, float b) {
-  return fabsf(a - b) <= 1e-5;
-}
-bool DoubleEq(float a, float b) {
-  return fabsf(a - b) <= 1e-8;
-}
-}  // namespace {}
-
 bool Gesture::operator==(const Gesture& that) const {
   if (type != that.type)
     return false;
@@ -93,18 +85,18 @@ bool Gesture::operator==(const Gesture& that) const {
     case kGestureTypeContactInitiated:
       return true;
     case kGestureTypeMove:
-      return DoubleEq(start_time, that.start_time) &&
-          DoubleEq(end_time, that.end_time) &&
-          FloatEq(details.move.dx, that.details.move.dx) &&
-          FloatEq(details.move.dy, that.details.move.dy);
+      return gestures::DoubleEq(start_time, that.start_time) &&
+          gestures::DoubleEq(end_time, that.end_time) &&
+          gestures::FloatEq(details.move.dx, that.details.move.dx) &&
+          gestures::FloatEq(details.move.dy, that.details.move.dy);
     case kGestureTypeScroll:
-      return DoubleEq(start_time, that.start_time) &&
-          DoubleEq(end_time, that.end_time) &&
-          FloatEq(details.scroll.dx, that.details.scroll.dx) &&
-          FloatEq(details.scroll.dy, that.details.scroll.dy);
+      return gestures::DoubleEq(start_time, that.start_time) &&
+          gestures::DoubleEq(end_time, that.end_time) &&
+          gestures::FloatEq(details.scroll.dx, that.details.scroll.dx) &&
+          gestures::FloatEq(details.scroll.dy, that.details.scroll.dy);
     case kGestureTypeButtonsChange:
-      return DoubleEq(start_time, that.start_time) &&
-          DoubleEq(end_time, that.end_time) &&
+      return gestures::DoubleEq(start_time, that.start_time) &&
+          gestures::DoubleEq(end_time, that.end_time) &&
           details.buttons.down == that.details.buttons.down &&
           details.buttons.up == that.details.buttons.up;
   }
