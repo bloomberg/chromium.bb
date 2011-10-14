@@ -11,6 +11,7 @@
 
 #include "gestures/include/logging.h"
 #include "gestures/include/prop_registry.h"
+#include "gestures/include/util.h"
 
 using std::set;
 using std::string;
@@ -278,6 +279,16 @@ bool ActivityReplay::ParseGesture(DictionaryValue* entry) {
     return false;
   }
   Gesture gs;
+
+  if (!entry->GetDouble(ActivityLog::kKeyGestureStartTime, &gs.start_time)) {
+    Err("Failed to parse gesture start time");
+    return false;
+  }
+  if (!entry->GetDouble(ActivityLog::kKeyGestureEndTime, &gs.end_time)) {
+    Err("Failed to parse gesture end time");
+    return false;
+  }
+
   if (gesture_type == ActivityLog::kValueGestureTypeContactInitiated) {
     gs.type = kGestureTypeContactInitiated;
   } else if (gesture_type == ActivityLog::kValueGestureTypeMove) {
@@ -348,7 +359,8 @@ bool ActivityReplay::ParseGestureButtonsChange(DictionaryValue* entry,
   return true;
 }
 
-void ActivityReplay::Replay(Interpreter* interpreter) {
+bool ActivityReplay::Replay(Interpreter* interpreter) {
+  bool all_correct = true;
   interpreter->SetHardwareProperties(hwprops_);
   stime_t last_timeout_req = -1.0;
   Gesture* last_gs = NULL;
@@ -367,18 +379,23 @@ void ActivityReplay::Replay(Interpreter* interpreter) {
                                            &last_timeout_req);
         break;
       case ActivityLog::kCallbackRequest:
-        if (last_timeout_req != entry->details.timestamp)
+        if (!DoubleEq(last_timeout_req, entry->details.timestamp)) {
           Err("Expected timeout request of %f, but log has %f (entry idx %zu)",
               last_timeout_req, entry->details.timestamp, i);
+          all_correct = false;
+        }
         break;
       case ActivityLog::kGesture:
-        if (*last_gs != entry->details.gesture)
+        if (*last_gs != entry->details.gesture) {
           Err("Incorrect gesture. Expected %s, but log has %s",
               last_gs->String().c_str(),
               entry->details.gesture.String().c_str());
+          all_correct = false;
+        }
         break;
     }
   }
+  return all_correct;
 }
 
 }  // namespace gestures

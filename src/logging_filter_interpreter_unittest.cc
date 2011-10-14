@@ -108,11 +108,11 @@ TEST(LoggingFilterInterpreterTest, SimpleTest) {
   base_interpreter->expected_hwprops_ = hwprops;
   interpreter.SetHardwareProperties(hwprops);
   EXPECT_EQ(1, base_interpreter->set_hwprops_call_count_);
-  base_interpreter->return_value_ == Gesture(kGestureMove,
-                                             0,  // start time
-                                             1,  // end time
-                                             -4,  // dx
-                                             2.8);  // dy
+  base_interpreter->return_value_ = Gesture(kGestureMove,
+                                            0,  // start time
+                                            1,  // end time
+                                            -4,  // dx
+                                            2.8);  // dy
 
   FingerState finger_state = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
@@ -142,6 +142,7 @@ TEST(LoggingFilterInterpreterTest, SimpleTest) {
   PropRegistry prop_reg2;
   LoggingFilterInterpreterTestInterpreter* base_interpreter2 =
       new LoggingFilterInterpreterTestInterpreter(&prop_reg2);
+  base_interpreter2->return_value_ = base_interpreter->return_value_;
   LoggingFilterInterpreter interpreter2(&prop_reg2, base_interpreter2);
 
   ActivityReplay replay(&prop_reg2);
@@ -150,7 +151,7 @@ TEST(LoggingFilterInterpreterTest, SimpleTest) {
   base_interpreter2->expected_hwstate_ = &hardware_state;
   base_interpreter2->expected_hwprops_ = hwprops;
 
-  replay.Replay(&interpreter2);
+  EXPECT_TRUE(replay.Replay(&interpreter2));
   string final_log = interpreter2.log_.Encode();
   EXPECT_EQ(initial_log, final_log);
   EXPECT_EQ(1, base_interpreter2->interpret_call_count_);

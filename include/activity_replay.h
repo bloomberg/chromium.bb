@@ -25,7 +25,10 @@ class ActivityReplay {
   explicit ActivityReplay(PropRegistry* prop_reg);
   // Returns true on success.
   bool Parse(const std::string& data);
-  void Replay(Interpreter* interpreter);
+
+  // If there is any unexpected behavior, replay continues, but false is
+  // returned, otherwise true is returned.
+  bool Replay(Interpreter* interpreter);
 
  private:
   // These return true on success
