@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/automation/chrome_frame_automation_provider.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/automation_messages.h"
@@ -10,7 +11,17 @@
 #include "ipc/ipc_channel.h"
 
 ChromeFrameAutomationProvider::ChromeFrameAutomationProvider(Profile* profile)
-    : AutomationProvider(profile) {}
+    : AutomationProvider(profile) {
+  DCHECK(g_browser_process);
+  if (g_browser_process)
+    g_browser_process->AddRefModule();
+}
+
+ChromeFrameAutomationProvider::~ChromeFrameAutomationProvider() {
+  DCHECK(g_browser_process);
+  if (g_browser_process)
+    g_browser_process->ReleaseModule();
+}
 
 bool ChromeFrameAutomationProvider::OnMessageReceived(
     const IPC::Message& message) {
