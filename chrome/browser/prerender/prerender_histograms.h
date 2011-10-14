@@ -64,8 +64,6 @@ class PrerenderHistograms {
   // observed.
   bool WithinWindow() const;
 
-  // Returns the histogram name for the current window.
-  std::string GetDefaultHistogramName(const std::string& name) const;
   // Returns the current experiment.
   uint8 GetCurrentExperimentId() const;
   // Returns the current origin.

@@ -26,7 +26,9 @@ std::string ComposeHistogramName(const std::string& prefix_type,
 }
 
 std::string GetHistogramName(Origin origin, uint8 experiment_id,
-                             const std::string& name) {
+                             bool is_wash, const std::string& name) {
+  if (is_wash)
+    return ComposeHistogramName("wash", name);
   switch (origin) {
     case ORIGIN_OMNIBOX_ORIGINAL:
       if (experiment_id != kNoExperiment)
@@ -39,7 +41,7 @@ std::string GetHistogramName(Origin origin, uint8 experiment_id,
     case ORIGIN_LINK_REL_PRERENDER:
       if (experiment_id != kNoExperiment)
         return ComposeHistogramName("wash", name);
-      return ComposeHistogramName("", name);
+      return ComposeHistogramName("web", name);
     case ORIGIN_GWS_PRERENDER:
       if (experiment_id == kNoExperiment)
         return ComposeHistogramName("gws", name);
@@ -58,32 +60,47 @@ std::string GetHistogramName(Origin origin, uint8 experiment_id,
 }  // namespace
 
 // Helper macros for experiment-based and origin-based histogram reporting.
-#define PREFIXED_HISTOGRAM(histogram) \
+// All HISTOGRAM arguments must be UMA_HISTOGRAM... macros that contain an
+// argument "name" which these macros will eventually substitute for the
+// actual name used.
+#define PREFIXED_HISTOGRAM(histogram_name, HISTOGRAM) \
   PREFIXED_HISTOGRAM_INTERNAL(GetCurrentOrigin(), GetCurrentExperimentId(), \
-                              IsOriginExperimentWash(), histogram)
+                              IsOriginExperimentWash(), HISTOGRAM, \
+                              histogram_name)
 
-#define PREFIXED_HISTOGRAM_ORIGIN_EXPERIMENT(origin, experiment, histogram) \
-  PREFIXED_HISTOGRAM_INTERNAL(origin, experiment, false, histogram)
+#define PREFIXED_HISTOGRAM_ORIGIN_EXPERIMENT(histogram_name, origin, \
+                                             experiment, HISTOGRAM) \
+  PREFIXED_HISTOGRAM_INTERNAL(origin, experiment, false, HISTOGRAM, \
+                              histogram_name)
 
-#define PREFIXED_HISTOGRAM_INTERNAL(origin, experiment, wash, histogram) { \
+#define PREFIXED_HISTOGRAM_INTERNAL(origin, experiment, wash, HISTOGRAM, \
+                                    histogram_name) { \
+  { \
+    /* Do not rename.  HISTOGRAM expects a local variable "name". */ \
+    std::string name = ComposeHistogramName("", histogram_name); \
+    HISTOGRAM; \
+  } \
+  /* Do not rename.  HISTOGRAM expects a local variable "name". */ \
+  std::string name = GetHistogramName(origin, experiment, wash, \
+                                      histogram_name); \
   static uint8 recording_experiment = kNoExperiment; \
   if (recording_experiment == kNoExperiment && experiment != kNoExperiment) \
     recording_experiment = experiment; \
   if (wash) { \
-    histogram; \
+    HISTOGRAM; \
   } else if (experiment != kNoExperiment && \
              (origin != ORIGIN_GWS_PRERENDER || \
               experiment != recording_experiment)) { \
   } else if (origin == ORIGIN_LINK_REL_PRERENDER) { \
-    histogram; \
+    HISTOGRAM; \
   } else if (origin == ORIGIN_OMNIBOX_ORIGINAL) { \
-    histogram; \
+    HISTOGRAM; \
   } else if (origin == ORIGIN_OMNIBOX_CONSERVATIVE) { \
-    histogram; \
+    HISTOGRAM; \
   } else if (experiment != kNoExperiment) { \
-    histogram; \
+    HISTOGRAM; \
   } else { \
-    histogram; \
+    HISTOGRAM; \
   } \
 }
 
@@ -131,8 +148,9 @@ base::TimeTicks PrerenderHistograms::GetCurrentTimeTicks() const {
 // Helper macro for histograms.
 #define RECORD_PLT(tag, perceived_page_load_time) { \
   PREFIXED_HISTOGRAM( \
+    base::FieldTrial::MakeName(tag, "Prefetch"), \
     UMA_HISTOGRAM_CUSTOM_TIMES( \
-        base::FieldTrial::MakeName(GetDefaultHistogramName(tag), "Prefetch"), \
+        name, \
         perceived_page_load_time, \
         base::TimeDelta::FromMilliseconds(10), \
         base::TimeDelta::FromSeconds(60), \
@@ -200,43 +218,36 @@ bool PrerenderHistograms::WithinWindow() const {
 
 void PrerenderHistograms::RecordTimeUntilUsed(
     base::TimeDelta time_until_used, base::TimeDelta max_age) const {
-  PREFIXED_HISTOGRAM(UMA_HISTOGRAM_CUSTOM_TIMES(
-      GetDefaultHistogramName("TimeUntilUsed"),
-      time_until_used,
-      base::TimeDelta::FromMilliseconds(10),
-      max_age,
-      50));
+  PREFIXED_HISTOGRAM(
+      "TimeUntilUsed",
+      UMA_HISTOGRAM_CUSTOM_TIMES(
+          name,
+          time_until_used,
+          base::TimeDelta::FromMilliseconds(10),
+          max_age,
+          50));
 }
 
 void PrerenderHistograms::RecordPerSessionCount(int count) const {
-  PREFIXED_HISTOGRAM(UMA_HISTOGRAM_COUNTS(
-      GetDefaultHistogramName("PrerendersPerSessionCount"), count));
+  PREFIXED_HISTOGRAM(
+      "PrerendersPerSessionCount",
+      UMA_HISTOGRAM_COUNTS(name, count));
 }
 
 void PrerenderHistograms::RecordTimeBetweenPrerenderRequests(
     base::TimeDelta time) const {
-  PREFIXED_HISTOGRAM(UMA_HISTOGRAM_TIMES(
-      GetDefaultHistogramName("TimeBetweenPrerenderRequests"), time));
+  PREFIXED_HISTOGRAM(
+      "TimeBetweenPrerenderRequests",
+      UMA_HISTOGRAM_TIMES(name, time));
 }
 
 void PrerenderHistograms::RecordFinalStatus(Origin origin,
                                             uint8 experiment_id,
                                             FinalStatus final_status) const {
   DCHECK(final_status != FINAL_STATUS_MAX);
-  PREFIXED_HISTOGRAM_ORIGIN_EXPERIMENT(origin, experiment_id,
-                     UMA_HISTOGRAM_ENUMERATION(
-                         GetHistogramName(origin, experiment_id, "FinalStatus"),
-                         final_status,
-                         FINAL_STATUS_MAX));
-}
-
-std::string PrerenderHistograms::GetDefaultHistogramName(
-    const std::string& name) const {
-  if (!WithinWindow())
-    return ComposeHistogramName("", name);
-  if (origin_experiment_wash_)
-    return ComposeHistogramName("wash", name);
-  return GetHistogramName(last_origin_, last_experiment_id_, name);
+  PREFIXED_HISTOGRAM_ORIGIN_EXPERIMENT(
+      "FinalStatus", origin, experiment_id,
+      UMA_HISTOGRAM_ENUMERATION(name, final_status, FINAL_STATUS_MAX));
 }
 
 uint8 PrerenderHistograms::GetCurrentExperimentId() const {
