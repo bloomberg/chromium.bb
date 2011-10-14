@@ -57,18 +57,18 @@
              'variables': {
                 'tool_name': 'newlib',
                 'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib',
-                'outname': '<(PRODUCT_DIR)/>(nexe_target)_newlib_x64.nexe',
-                'objdir%': '>(INTERMEDIATE_DIR)/>(tool_name)-x86-64',
+                'out64%': '<(PRODUCT_DIR)/>(nexe_target)_newlib_x64.nexe',
+                'objdir%': '>(INTERMEDIATE_DIR)/>(tool_name)-x86-64/>(_target_name)',
              },
              'actions': [
                {
                  'action_name': 'build newlib x86-64 nexe',
                  'msvs_cygwin_shell': 0,
-                 'description': 'building >(outname)',
+                 'description': 'building >(out64)',
                  'inputs': [
                     '>!@(>(get_sources) -I. -I.. >(sources))',
                  ],
-                 'outputs': ['>(outname)'],
+                 'outputs': ['>(out64)'],
                  'action': [
                    '>(python_exe)',
                    '<(DEPTH)/native_client/build/build_nexe.py',
@@ -76,7 +76,7 @@
                    '--arch', 'x86-64',
                    '--build', 'newlib_nexe',
                    '--root', '<(DEPTH)',
-                   '--name', '>(outname)',
+                   '--name', '>(out64)',
                    '--objdir', '>(objdir)',
                    '--include-dirs', '>(inst_dir)/include >(include_dirs) >(include_dirs)',
                    '--lib-dirs', '>(lib_dirs) ',
@@ -98,18 +98,18 @@
              'variables': {
                 'tool_name': 'newlib',
                 'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib',
-                'outname': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/>(nlib_target)',
-                'objdir%': '>(INTERMEDIATE_DIR)/>(tool_name)-x86-64',
+                'objdir%': '>(INTERMEDIATE_DIR)/>(tool_name)-x86-64/>(_target_name)',
+                'out64%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/lib64/>(nlib_target)',
              },
              'actions': [
                {
                  'action_name': 'build newlib x86-64 nlib',
                  'msvs_cygwin_shell': 0,
-                 'description': 'building >(outname)',
+                 'description': 'building >(out64)',
                  'inputs': [
                     '>!@(>(get_sources) -I. -I.. >(sources))',
                  ],
-                 'outputs': ['>(outname)'],
+                 'outputs': ['>(out64)'],
                  'action': [
                    '>(python_exe)',
                    '<(DEPTH)/native_client/build/build_nexe.py',
@@ -117,7 +117,7 @@
                    '--arch', 'x86-64',
                    '--build', 'newlib_nlib',
                    '--root', '<(DEPTH)',
-                   '--name', '>(outname)',
+                   '--name', '>(out64)',
                    '--objdir', '>(objdir)',
                    '--include-dirs', '>(inst_dir)/include >(include_dirs) >(include_dirs)',
                    '--lib-dirs', '>(lib_dirs) ',
@@ -139,18 +139,18 @@
              'variables': {
                 'tool_name': 'newlib',
                 'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib',
-                'outname': '<(PRODUCT_DIR)/>(nexe_target)_newlib_x32.nexe',
-                'objdir%': '>(INTERMEDIATE_DIR)/>(tool_name)-x86-32',
+                'out32%': '<(PRODUCT_DIR)/>(nexe_target)_newlib_x32.nexe',
+                'objdir%': '>(INTERMEDIATE_DIR)/>(tool_name)-x86-32/>(_target_name)',
              },
              'actions': [
                {
                  'action_name': 'build newlib x86-32 nexe',
                  'msvs_cygwin_shell': 0,
-                 'description': 'building >(outname)',
+                 'description': 'building >(out32)',
                  'inputs': [
                     '>!@(>(get_sources) -I. -I.. >(sources))',
                  ],
-                 'outputs': ['>(outname)'],
+                 'outputs': ['>(out32)'],
                  'action': [
                    '>(python_exe)',
                    '<(DEPTH)/native_client/build/build_nexe.py',
@@ -158,7 +158,7 @@
                    '--arch', 'x86-32',
                    '--build', 'newlib_nexe',
                    '--root', '<(DEPTH)',
-                   '--name', '>(outname)',
+                   '--name', '>(out32)',
                    '--objdir', '>(objdir)',
                    '--include-dirs', '>(inst_dir)/include >(include_dirs) >(include_dirs)',
                    '--lib-dirs', '>(lib_dirs) ',
@@ -180,18 +180,18 @@
              'variables': {
                 'tool_name': 'newlib',
                 'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib',
-                'outname': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/>(nlib_target)',
-                'objdir%': '>(INTERMEDIATE_DIR)/>(tool_name)-x86-32',
+                'out32%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/lib32/>(nlib_target)',
+                'objdir%': '>(INTERMEDIATE_DIR)/>(tool_name)-x86-32/>(_target_name)',
              },
              'actions': [
                {
                  'action_name': 'build newlib x86-32 nlib',
                  'msvs_cygwin_shell': 0,
-                 'description': 'building >(outname)',
+                 'description': 'building >(out32)',
                  'inputs': [
                     '>!@(>(get_sources) -I. -I.. >(sources))',
                  ],
-                 'outputs': ['>(outname)'],
+                 'outputs': ['>(out32)'],
                  'action': [
                    '>(python_exe)',
                    '<(DEPTH)/native_client/build/build_nexe.py',
@@ -199,7 +199,7 @@
                    '--arch', 'x86-32',
                    '--build', 'newlib_nlib',
                    '--root', '<(DEPTH)',
-                   '--name', '>(outname)',
+                   '--name', '>(out32)',
                    '--objdir', '>(objdir)',
                    '--include-dirs', '>(inst_dir)/include >(include_dirs) >(include_dirs)',
                    '--lib-dirs', '>(lib_dirs) ',

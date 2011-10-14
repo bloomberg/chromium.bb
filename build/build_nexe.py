@@ -167,37 +167,13 @@ class Builder(object):
   def GetObjectName(self, src):
     if self.strip:
       src = src.replace(self.strip,'')
-    filename, ext = os.path.splitext(src)
+    filepath, filename = os.path.split(src)
+    filename, ext = os.path.splitext(filename)
     if self.suffix:
-      return os.path.join(self.outdir + '-' + self.arch, filename + '.o')
+      return os.path.join(self.outdir, filename + '.o')
     else:
       filename = os.path.split(src)[1]
       return os.path.join(self.outdir, os.path.splitext(filename)[0] + '.o')
-
-  def Assemble(self, src):
-    """Compile the source with pre-determined options."""
-    if self.verbose:
-      print '\Assemble %s' % src
-
-    filename, ext = os.path.splitext(src)
-    bin_name = self.GetBinName('as')
-    extra = []
-
-    if self.suffix:
-      out = os.path.join(self.outdir + '-' + self.arch, filename + '.o')
-    else:
-      filename = os.path.split(src)[1]
-      out = os.path.join(self.outdir, os.path.splitext(filename)[0] + '.o')
-
-    MakeDir(os.path.dirname(out))
-    cmd_line = [bin_name,  src, '-o', out] + extra + self.compile_options
-    err = self.Run(cmd_line, out)
-    if sys.platform.startswith('win') and err == 5:
-      # Try again on mystery windows failure.
-      err = self.Run(cmd_line, out)
-    if err:
-      ErrOut('\nFAILED with %d: %s\n\n' % (err, ' '.join(cmd_line)))
-    return out
 
   def Compile(self, src):
     """Compile the source with pre-determined options."""
@@ -209,8 +185,6 @@ class Builder(object):
     elif ext == '.cc':
       bin_name = self.GetBinName('g++')
       extra = []
-    elif ext == '.S':
-      return self.Assemble(src)
     else:
       if self.verbose:
         print 'Skipping unknown type %s.' % ext
@@ -235,9 +209,10 @@ class Builder(object):
     out = self.name
     if self.verbose:
       print '\nLink %s' % out
-    bin_name = self.GetBinName('gcc')
+    bin_name = self.GetBinName('g++')
     MakeDir(os.path.dirname(out))
-    cmd_line = [bin_name, '-o', out] + srcs + self.link_options
+    cmd_line = [bin_name, '-o', out, '-Wl,--as-needed'] + srcs
+    cmd_line += self.link_options
     err = self.Run(cmd_line, out)
     # TODO( Retry on windows
     if sys.platform.startswith('win') and err == 5:
@@ -252,9 +227,16 @@ class Builder(object):
     out = self.name
     if self.verbose:
       print '\nArchive %s' % out
-    bin_name = self.GetBinName('ar')
+
+    if '-r' in self.link_options:
+      bin_name = self.GetBinName('g++')
+      cmd_line = [bin_name, '-o', out, '-Wl,--as-needed'] + srcs
+      cmd_line += self.link_options
+    else:
+      bin_name = self.GetBinName('ar')
+      cmd_line = [bin_name, '-rc', out] + srcs
+
     MakeDir(os.path.dirname(out))
-    cmd_line = [bin_name, '-rc', out] + srcs
     err = self.Run(cmd_line, out)
     if sys.platform.startswith('win') and err == 5:
       # Try again on mystery windows failure.
@@ -307,7 +289,7 @@ def Main(argv):
   parser.add_option('-D', dest='defines', default=[], action='append')
   (options, files) = parser.parse_args(argv[1:])
 
-  if not files:
+  if not argv:
     parser.print_help()
     return -1
 

@@ -33,11 +33,11 @@
       'conditions': [
         ['disable_untrusted==0 and target_arch!="arm"', {
           'dependencies': [
-            '../src/untrusted/irt/irt.gyp:*',
+            '../src/untrusted/irt/irt.gyp:irt_core_nexe',
             '../src/untrusted/irt_stub/irt_stub.gyp:*',
-            '../src/untrusted/pthread/pthread.gyp:*',
             '../src/untrusted/nacl/nacl.gyp:*',
             '../src/untrusted/nosys/nosys.gyp:*',
+            '../src/untrusted/pthread/pthread.gyp:*',
             '../tests.gyp:*',
           ],
         }],

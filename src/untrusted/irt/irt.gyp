@@ -52,6 +52,7 @@
             'nexe_target': 'irt_core',
             'build_glibc': 0,
             'build_newlib': 1,
+            'suffix': '_,mainarch,subarch,nexe',
             'sources': ['<@(irt_sources)', '<@(irt_nonbrowser)'],
           },
           'conditions': [
@@ -70,37 +71,28 @@
           ],
         },
         {
-          'target_name': 'irt_nexe',
+          'target_name': 'irt_browser_lib',
           'type': 'none',
           'variables': {
-            'nexe_target': 'irt',
+            'nlib_target': 'libirt_browser.a',
             'build_glibc': 0,
-            'build_newlib': 0,
+            'build_newlib': 1,
             'sources': ['<@(irt_sources)', '<@(irt_browser)'],
           },
           'conditions': [
             ['target_arch == "x64" or target_arch == "ia32"', {
               'variables': {
                 'link_flags': [
-                  '-Wl,--section-start,.rodata=0x3ef00000',
-                  '-Wl,-Ttext-segment=0x0fc00000',
-                  '-lppapi_stub',
-                  '-lsrpc',
-                  '-limc_syscalls',
-                  '-lplatform',
-                  '-lgio',
-                  '-lm',
+                  '-r',
+                  '-nostartfiles',
                 ],
               },
             }],
           ],
           'dependencies': [
             '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
-            '<(DEPTH)/native_client/src/untrusted/irt_stub/irt_stub.gyp:ppapi_stub_lib',
-            '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:srpc_lib',
-            '<(DEPTH)/native_client/src/untrusted/nacl/nacl.gyp:imc_syscalls_lib',
+            '<(DEPTH)/native_client/src/untrusted/nacl/nacl.gyp:nacl_lib',
             '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform_lib',
-            '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio_lib',
           ],
         },
       ],
