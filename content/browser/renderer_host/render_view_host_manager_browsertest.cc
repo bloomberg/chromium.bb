@@ -16,7 +16,7 @@
 #include "content/common/notification_details.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
-#include "content/common/url_constants.h"
+#include "content/public/common/url_constants.h"
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"
 

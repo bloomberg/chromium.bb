@@ -11,8 +11,8 @@
 #include "content/browser/site_instance.h"
 #include "content/browser/webui/web_ui_factory.h"
 #include "content/common/content_client.h"
-#include "content/common/url_constants.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/url_constants.h"
 
 // static
 BrowsingInstance::ContextSiteInstanceMap

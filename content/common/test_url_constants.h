@@ -8,7 +8,7 @@
 #define CONTENT_COMMON_TEST_URL_CONSTANTS_H_
 #pragma once
 
-#include "content/common/url_constants.h"
+#include "content/public/common/url_constants.h"
 
 namespace chrome {
 

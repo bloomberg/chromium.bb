@@ -9,7 +9,7 @@
 #include "base/platform_file.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/common/test_url_constants.h"
-#include "content/common/url_constants.h"
+#include "content/public/common/url_constants.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_job.h"
 #include "testing/gtest/include/gtest/gtest.h"

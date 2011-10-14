@@ -37,7 +37,7 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
-#include "content/common/url_constants.h"
+#include "content/public/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/url_request/url_request_context.h"

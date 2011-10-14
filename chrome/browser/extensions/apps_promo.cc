@@ -15,8 +15,8 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
-#include "content/common/url_constants.h"
 #include "content/common/notification_service.h"
+#include "content/public/common/url_constants.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_status.h"
 

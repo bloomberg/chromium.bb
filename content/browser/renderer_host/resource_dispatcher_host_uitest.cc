@@ -18,7 +18,7 @@
 #include "content/browser/net/url_request_failed_dns_job.h"
 #include "content/browser/net/url_request_mock_http_job.h"
 #include "content/common/test_url_constants.h"
-#include "content/common/url_constants.h"
+#include "content/public/common/url_constants.h"
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"
 

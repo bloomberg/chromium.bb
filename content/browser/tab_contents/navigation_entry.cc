@@ -9,7 +9,7 @@
 #include "content/browser/content_browser_client.h"
 #include "content/browser/site_instance.h"
 #include "content/common/content_constants.h"
-#include "content/common/url_constants.h"
+#include "content/public/common/url_constants.h"
 #include "net/base/net_util.h"
 #include "ui/base/text/text_elider.h"
 

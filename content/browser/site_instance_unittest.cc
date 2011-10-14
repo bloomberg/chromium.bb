@@ -18,7 +18,7 @@
 #include "content/browser/webui/empty_web_ui_factory.h"
 #include "content/common/content_client.h"
 #include "content/common/content_constants.h"
-#include "content/common/url_constants.h"
+#include "content/public/common/url_constants.h"
 #include "content/test/test_browser_context.h"
 #include "googleurl/src/url_util.h"
 #include "testing/gtest/include/gtest/gtest.h"

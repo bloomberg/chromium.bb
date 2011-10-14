@@ -25,7 +25,7 @@
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_service.h"
-#include "content/common/url_constants.h"
+#include "content/public/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/network_change_notifier.h"
 

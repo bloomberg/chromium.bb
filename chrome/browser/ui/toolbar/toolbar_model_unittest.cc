@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/url_constants.h"
+#include "content/public/common/url_constants.h"
 
 class ToolbarModelTest : public BrowserWithTestWindowTest {
  public:

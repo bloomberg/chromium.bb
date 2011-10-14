@@ -17,7 +17,7 @@
 #include "chrome/browser/ssl/ssl_error_info.h"
 #include "content/browser/cert_store.h"
 #include "content/browser/ssl/ssl_manager.h"
-#include "content/common/url_constants.h"
+#include "content/public/common/url_constants.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"

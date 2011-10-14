@@ -7,7 +7,7 @@
 #include "base/string_util.h"
 #include "content/browser/content_browser_client.h"
 #include "content/browser/webui/web_ui.h"
-#include "content/common/url_constants.h"
+#include "content/public/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 
 // Handles rewriting view-source URLs for what we'll actually load.

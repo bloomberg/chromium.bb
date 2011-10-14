@@ -37,7 +37,7 @@
 #include "content/browser/browser_thread.h"
 #include "content/common/content_notification_types.h"
 #include "content/common/notification_service.h"
-#include "content/common/url_constants.h"
+#include "content/public/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/libevent/evdns.h"
 #include "third_party/libevent/event.h"

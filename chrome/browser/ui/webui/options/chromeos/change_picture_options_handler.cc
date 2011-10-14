@@ -22,7 +22,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "content/common/notification_service.h"
-#include "content/common/url_constants.h"
+#include "content/public/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"

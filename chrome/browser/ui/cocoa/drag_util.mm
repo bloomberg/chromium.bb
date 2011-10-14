@@ -9,7 +9,7 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/browser/plugin_service.h"
-#include "content/common/url_constants.h"
+#include "content/public/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"

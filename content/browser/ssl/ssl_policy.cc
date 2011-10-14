@@ -18,7 +18,7 @@
 #include "content/browser/ssl/ssl_request_info.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/url_constants.h"
+#include "content/public/common/url_constants.h"
 #include "net/base/cert_status_flags.h"
 #include "net/base/ssl_info.h"
 #include "webkit/glue/resource_type.h"

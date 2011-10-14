@@ -8,7 +8,7 @@
 #include "base/process_util.h"
 #include "base/threading/platform_thread.h"
 #include "chrome/common/about_handler.h"
-#include "content/common/url_constants.h"
+#include "content/public/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 
 typedef void (*AboutHandlerFuncPtr)();

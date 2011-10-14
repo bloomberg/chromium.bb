@@ -25,7 +25,7 @@
 #include "content/browser/download/download_manager.h"
 #include "content/browser/net/url_request_mock_http_job.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/url_constants.h"
+#include "content/public/common/url_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class PanelBrowserTest : public BasePanelBrowserTest {

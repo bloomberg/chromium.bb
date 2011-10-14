@@ -18,7 +18,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
-#include "content/common/url_constants.h"
+#include "content/public/common/url_constants.h"
 
 #if defined(OS_MACOSX)
 #include "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"

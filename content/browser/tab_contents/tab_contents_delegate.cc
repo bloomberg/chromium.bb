@@ -9,7 +9,7 @@
 #include "base/memory/singleton.h"
 #include "content/browser/javascript_dialogs.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/url_constants.h"
+#include "content/public/common/url_constants.h"
 #include "ui/gfx/rect.h"
 #include "webkit/glue/web_intent_data.h"
 

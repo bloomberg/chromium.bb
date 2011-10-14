@@ -16,7 +16,7 @@
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/extensions/url_pattern_set.h"
-#include "content/common/url_constants.h"
+#include "content/public/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "net/base/registry_controlled_domain.h"
 #include "ui/base/l10n/l10n_util.h"

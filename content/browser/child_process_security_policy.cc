@@ -9,8 +9,8 @@
 #include "base/platform_file.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
-#include "content/common/url_constants.h"
 #include "content/public/common/bindings_policy.h"
+#include "content/public/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request.h"
 

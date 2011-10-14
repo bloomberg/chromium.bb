@@ -4,8 +4,8 @@
 
 // Contains constants for known URLs and portions thereof.
 
-#ifndef CONTENT_COMMON_URL_CONSTANTS_H_
-#define CONTENT_COMMON_URL_CONSTANTS_H_
+#ifndef CONTENT_PUBLIC_COMMON_URL_CONSTANTS_H_
+#define CONTENT_PUBLIC_COMMON_URL_CONSTANTS_H_
 #pragma once
 
 #include "content/common/content_export.h"
@@ -55,4 +55,4 @@ void CONTENT_EXPORT RegisterContentSchemes(
 
 }  // namespace chrome
 
-#endif  // CONTENT_COMMON_URL_CONSTANTS_H_
+#endif  // CONTENT_PUBLIC_COMMON_URL_CONSTANTS_H_

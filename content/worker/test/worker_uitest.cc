@@ -14,7 +14,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/ui/ui_layout_test.h"
 #include "content/browser/worker_host/worker_service.h"
-#include "content/common/url_constants.h"
+#include "content/public/common/url_constants.h"
 #include "net/test/test_server.h"
 
 namespace {

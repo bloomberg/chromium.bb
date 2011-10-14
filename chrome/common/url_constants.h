@@ -9,7 +9,7 @@
 #pragma once
 
 #include "build/build_config.h"
-#include "content/common/url_constants.h"
+#include "content/public/common/url_constants.h"
 
 namespace chrome {
 
