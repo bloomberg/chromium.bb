@@ -15,9 +15,11 @@
 #include <utility>
 #include <vector>
 
+#include "base/compiler_specific.h"
+
 #include "native_client/src/include/portability_io.h"
-#include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/shared/imc/nacl_imc.h"
 #include "native_client/src/shared/platform/nacl_check.h"
@@ -90,7 +92,7 @@ void PluginReverseInterface::Log(nacl::string message) {
   plugin::WeakRefCallOnMainThread(
       anchor_,
       0,  /* delay in ms */
-      this,
+      ALLOW_THIS_IN_INITIALIZER_LIST(this),
       &plugin::PluginReverseInterface::Log_MainThreadContinuation,
       continuation);
 }
