@@ -43,7 +43,8 @@ class ExtensionSettingsLeveldbStorage : public ExtensionSettingsStorage {
 
  private:
   // Ownership of db is taken.
-  explicit ExtensionSettingsLeveldbStorage(leveldb::DB* db);
+  explicit ExtensionSettingsLeveldbStorage(
+      const FilePath& db_path, leveldb::DB* db);
 
   // Reads a setting from the database.  Returns whether the read was
   // successful, in which case |setting| will be reset to the Value read
@@ -53,6 +54,12 @@ class ExtensionSettingsLeveldbStorage : public ExtensionSettingsStorage {
       const std::string& key,
       // Will be reset() with the result, if any.
       scoped_ptr<Value>* setting);
+
+  // Returns whether the database is empty.
+  bool IsEmpty();
+
+  // The location of the leveldb backend.
+  const FilePath db_path_;
 
   // leveldb backend.
   scoped_ptr<leveldb::DB> db_;

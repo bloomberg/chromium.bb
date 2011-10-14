@@ -1291,6 +1291,7 @@
         'browser/extensions/extension_prefs_unittest.cc',
         'browser/extensions/extension_process_manager_unittest.cc',
         'browser/extensions/extension_proxy_api_helpers_unittest.cc',
+        'browser/extensions/extension_settings_frontend_unittest.cc',
         'browser/extensions/extension_settings_leveldb_storage_unittest.cc',
         'browser/extensions/extension_settings_quota_unittest.cc',
         'browser/extensions/extension_settings_storage_cache_unittest.cc',

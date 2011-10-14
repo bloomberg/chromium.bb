@@ -953,10 +953,11 @@ bool ExtensionService::UninstallExtension(
   if (extension->is_hosted_app() &&
       !profile_->GetExtensionSpecialStoragePolicy()->
           IsStorageProtected(launch_web_url_origin)) {
-    ClearExtensionData(extension_id, launch_web_url_origin,
-                       is_storage_isolated);
+    ExtensionDataDeleter::StartDeleting(
+        profile_, extension_id, launch_web_url_origin, is_storage_isolated);
   }
-  ClearExtensionData(extension_id, extension->url(), is_storage_isolated);
+  ExtensionDataDeleter::StartDeleting(
+      profile_, extension_id, extension->url(), is_storage_isolated);
 
   UntrackTerminatedExtension(extension_id);
 
@@ -991,14 +992,6 @@ bool ExtensionService::UninstallExtension(
   extension_warnings_.ClearWarnings(warnings);
 
   return true;
-}
-
-void ExtensionService::ClearExtensionData(const std::string& extension_id,
-                                          const GURL& storage_url,
-                                          bool is_storage_isolated) {
-  scoped_refptr<ExtensionDataDeleter> deleter(new ExtensionDataDeleter(
-      profile_, extension_id, storage_url, is_storage_isolated));
-  deleter->StartDeleting();
 }
 
 bool ExtensionService::IsExtensionEnabled(

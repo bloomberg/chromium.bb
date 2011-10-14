@@ -25,6 +25,7 @@ class URLRequestContextGetter;
 }
 
 class ChromeAppCacheService;
+class ExtensionSettingsBackend;
 class Profile;
 class WebKitContext;
 
@@ -35,21 +36,25 @@ class ExtensionDataDeleter
   : public base::RefCountedThreadSafe<ExtensionDataDeleter,
                                       BrowserThread::DeleteOnUIThread> {
  public:
-  ExtensionDataDeleter(Profile* profile,
-                       const std::string& extension_id,
-                       const GURL& storage_origin,
-                       bool is_storage_isolated);
-
-  // Start removing data. The extension should not be running when this is
+  // Starts removing data. The extension should not be running when this is
   // called. Cookies are deleted on the current thread, local storage and
-  // databases are deleted asynchronously on the webkit and file threads,
-  // respectively. This function must be called from the UI thread.
-  void StartDeleting();
+  // databases/settings are deleted asynchronously on the webkit and file
+  // threads, respectively. This function must be called from the UI thread.
+  static void StartDeleting(
+      Profile* profile,
+      const std::string& extension_id,
+      const GURL& storage_origin,
+      bool is_storage_isolated);
 
  private:
   friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
   friend class DeleteTask<ExtensionDataDeleter>;
 
+  ExtensionDataDeleter(
+      Profile* profile,
+      const std::string& extension_id,
+      const GURL& storage_origin,
+      bool is_storage_isolated);
   ~ExtensionDataDeleter();
 
   // Deletes the cookies for the extension. May only be called on the io
@@ -75,6 +80,13 @@ class ExtensionDataDeleter
   // Deletes appcache files for the extension. May only be called on the IO
   // thread.
   void DeleteAppcachesOnIOThread();
+
+  // Deletes extension settings for the extension. Will be called on the FILE
+  // thread via the ExtensionSettingsFrontend.
+  void DeleteExtensionSettingsOnFileThread(ExtensionSettingsBackend* backend);
+
+  // The ID of the extension being deleted.
+  const std::string extension_id_;
 
   // The database context for deleting the database.
   scoped_refptr<webkit_database::DatabaseTracker> database_tracker_;

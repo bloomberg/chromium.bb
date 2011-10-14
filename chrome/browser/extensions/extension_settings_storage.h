@@ -64,7 +64,7 @@ class ExtensionSettingsStorage {
       const std::string error_;
     };
 
-    const scoped_refptr<Inner> inner_;
+    scoped_refptr<Inner> inner_;
   };
 
   virtual ~ExtensionSettingsStorage() {}

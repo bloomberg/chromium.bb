@@ -4,8 +4,12 @@
 
 #include "chrome/browser/extensions/extension_data_deleter.h"
 
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_settings_backend.h"
+#include "chrome/browser/extensions/extension_settings_frontend.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
@@ -19,11 +23,59 @@
 #include "webkit/database/database_util.h"
 #include "webkit/fileapi/file_system_context.h"
 
-ExtensionDataDeleter::ExtensionDataDeleter(Profile* profile,
-                                           const std::string& extension_id,
-                                           const GURL& storage_origin,
-                                           bool is_storage_isolated) {
+/* static */
+void ExtensionDataDeleter::StartDeleting(
+    Profile* profile,
+    const std::string& extension_id,
+    const GURL& storage_origin,
+    bool is_storage_isolated) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(profile);
+  scoped_refptr<ExtensionDataDeleter> deleter =
+      new ExtensionDataDeleter(
+          profile, extension_id, storage_origin, is_storage_isolated);
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(
+          &ExtensionDataDeleter::DeleteCookiesOnIOThread, deleter));
+
+  BrowserThread::PostTask(
+      BrowserThread::WEBKIT, FROM_HERE,
+      base::Bind(
+          &ExtensionDataDeleter::DeleteLocalStorageOnWebkitThread, deleter));
+
+  BrowserThread::PostTask(
+      BrowserThread::WEBKIT, FROM_HERE,
+      base::Bind(
+          &ExtensionDataDeleter::DeleteIndexedDBOnWebkitThread, deleter));
+
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(
+          &ExtensionDataDeleter::DeleteDatabaseOnFileThread, deleter));
+
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(
+          &ExtensionDataDeleter::DeleteFileSystemOnFileThread, deleter));
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(
+          &ExtensionDataDeleter::DeleteAppcachesOnIOThread, deleter));
+
+  profile->GetExtensionService()->extension_settings_frontend()->RunWithBackend(
+      base::Bind(
+          &ExtensionDataDeleter::DeleteExtensionSettingsOnFileThread, deleter));
+}
+
+ExtensionDataDeleter::ExtensionDataDeleter(
+    Profile* profile,
+    const std::string& extension_id,
+    const GURL& storage_origin,
+    bool is_storage_isolated)
+    : extension_id_(extension_id) {
   appcache_service_ = profile->GetAppCacheService();
   webkit_context_ = profile->GetWebKitContext();
   database_tracker_ = profile->GetDatabaseTracker();
@@ -46,39 +98,6 @@ ExtensionDataDeleter::ExtensionDataDeleter(Profile* profile,
 }
 
 ExtensionDataDeleter::~ExtensionDataDeleter() {
-}
-
-void ExtensionDataDeleter::StartDeleting() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(this, &ExtensionDataDeleter::DeleteCookiesOnIOThread));
-
-  BrowserThread::PostTask(
-      BrowserThread::WEBKIT, FROM_HERE,
-      NewRunnableMethod(
-          this, &ExtensionDataDeleter::DeleteLocalStorageOnWebkitThread));
-
-  BrowserThread::PostTask(
-      BrowserThread::WEBKIT, FROM_HERE,
-      NewRunnableMethod(
-          this, &ExtensionDataDeleter::DeleteIndexedDBOnWebkitThread));
-
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(
-          this, &ExtensionDataDeleter::DeleteDatabaseOnFileThread));
-
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(
-          this, &ExtensionDataDeleter::DeleteFileSystemOnFileThread));
-
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(
-          this, &ExtensionDataDeleter::DeleteAppcachesOnIOThread));
 }
 
 void ExtensionDataDeleter::DeleteCookiesOnIOThread() {
@@ -123,4 +142,10 @@ void ExtensionDataDeleter::DeleteFileSystemOnFileThread() {
 void ExtensionDataDeleter::DeleteAppcachesOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   appcache_service_->DeleteAppCachesForOrigin(storage_origin_, NULL);
+}
+
+void ExtensionDataDeleter::DeleteExtensionSettingsOnFileThread(
+    ExtensionSettingsBackend* backend) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  backend->DeleteExtensionData(extension_id_);
 }

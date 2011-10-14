@@ -638,11 +638,6 @@ class ExtensionService
       const ExtensionSyncData& extension_sync_data,
       SyncBundle& bundle);
 
-  // Clear all persistent data that may have been stored by the extension.
-  void ClearExtensionData(const std::string& extension_id,
-                          const GURL& storage_url,
-                          bool is_storage_isolated);
-
   // Look up an extension by ID, optionally including either or both of enabled
   // and disabled extensions.
   const Extension* GetExtensionByIdInternal(const std::string& id,

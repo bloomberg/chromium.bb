@@ -34,6 +34,9 @@ class ExtensionSettingsBackend : public SyncableService {
   ExtensionSettingsStorage* GetStorage(
       const std::string& extension_id) const;
 
+  // Deletes all setting data for an extension.  Call on the FILE thread.
+  void DeleteExtensionData(const std::string& extension_id);
+
   // SyncableService implementation.
   virtual SyncDataList GetAllSyncData(syncable::ModelType type) const OVERRIDE;
   virtual SyncError MergeDataAndStartSyncing(

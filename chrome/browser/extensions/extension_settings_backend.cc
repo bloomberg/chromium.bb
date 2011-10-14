@@ -93,6 +93,21 @@ ExtensionSettingsBackend::GetOrCreateStorageWithSyncData(
   return syncable_storage.get();
 }
 
+void ExtensionSettingsBackend::DeleteExtensionData(
+    const std::string& extension_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  StorageObjMap::iterator maybe_storage = storage_objs_.find(extension_id);
+  if (maybe_storage == storage_objs_.end()) {
+    return;
+  }
+
+  // Clear settings when the extension is uninstalled.  Leveldb implementations
+  // will also delete the database from disk when the object is destroyed as
+  // a result of being removed from |storage_objs_|.
+  maybe_storage->second->Clear();
+  storage_objs_.erase(maybe_storage);
+}
+
 std::set<std::string> ExtensionSettingsBackend::GetKnownExtensionIDs() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   std::set<std::string> result;

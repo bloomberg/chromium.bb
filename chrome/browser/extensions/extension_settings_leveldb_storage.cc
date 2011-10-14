@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
@@ -64,16 +65,28 @@ ExtensionSettingsLeveldbStorage* ExtensionSettingsLeveldbStorage::Create(
       ": " << status.ToString();
     return NULL;
   }
-  return new ExtensionSettingsLeveldbStorage(db);
+  return new ExtensionSettingsLeveldbStorage(path, db);
 }
 
 ExtensionSettingsLeveldbStorage::ExtensionSettingsLeveldbStorage(
-    leveldb::DB* db) : db_(db) {
+    const FilePath& db_path, leveldb::DB* db)
+    : db_path_(db_path), db_(db) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 }
 
 ExtensionSettingsLeveldbStorage::~ExtensionSettingsLeveldbStorage() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  // Delete the database from disk if it's empty.  This is safe on destruction,
+  // assuming that we have exclusive access to the database.
+  if (IsEmpty()) {
+    // Close |db_| now to release any lock on the directory.
+    db_.reset();
+    if (!file_util::Delete(db_path_, true)) {
+      LOG(WARNING) << "Failed to delete extension settings directory " <<
+          db_path_.value();
+    }
+  }
 }
 
 ExtensionSettingsStorage::Result ExtensionSettingsLeveldbStorage::Get(
@@ -278,4 +291,17 @@ bool ExtensionSettingsLeveldbStorage::ReadFromDb(
 
   setting->reset(value);
   return true;
+}
+
+bool ExtensionSettingsLeveldbStorage::IsEmpty() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  scoped_ptr<leveldb::Iterator> it(db_->NewIterator(leveldb::ReadOptions()));
+
+  it->SeekToFirst();
+  bool is_empty = !it->Valid();
+  if (!it->status().ok()) {
+    LOG(ERROR) << "Checking DB emptiness failed: " << it->status().ToString();
+    return false;
+  }
+  return is_empty;
 }
