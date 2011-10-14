@@ -7,6 +7,7 @@
 #include <X11/Xlib.h>
 #include <X11/extensions/Xcomposite.h>
 
+#include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/angle/include/EGL/egl.h"
 #include "third_party/angle/include/EGL/eglext.h"
@@ -49,6 +50,11 @@ class AcceleratedSurfaceContainerTouchGLX
   virtual void Draw(const ui::TextureDrawParams& params,
                     const gfx::Rect& clip_bounds_in_texture) OVERRIDE;
 
+ protected:
+  static bool InitializeOneOff();
+
+  static base::LazyInstance<GLXFBConfig> fbconfig_;
+
  private:
   virtual ~AcceleratedSurfaceContainerTouchGLX();
 
@@ -89,6 +95,10 @@ class ScopedPtrXFree {
     ::XFree(x);
   }
 };
+
+// static
+base::LazyInstance<GLXFBConfig> AcceleratedSurfaceContainerTouchGLX::fbconfig_(
+    base::LINKER_INITIALIZED);
 
 AcceleratedSurfaceContainerTouchEGL::AcceleratedSurfaceContainerTouchEGL(
     const gfx::Size& size)
@@ -152,10 +162,72 @@ bool AcceleratedSurfaceContainerTouchGLX::Initialize(uint64* surface_id) {
   DCHECK(instance);
   instance->MakeSharedContextCurrent();
 
+  if (!AcceleratedSurfaceContainerTouchGLX::InitializeOneOff())
+    return false;
+
   // Create pixmap from window.
   // We receive a window here rather than a pixmap directly because drivers
   // require (or required) that the pixmap used to create the GL texture be
   // created in the same process as the texture.
+  Display* dpy = gfx::GLSurfaceGLX::GetDisplay();
+  pixmap_ = XCompositeNameWindowPixmap(dpy, *surface_id);
+
+  // Wrap the pixmap in a GLXPixmap
+  const int pixmapAttribs[] = {
+    GLX_TEXTURE_TARGET_EXT, GLX_TEXTURE_2D_EXT,
+    GLX_TEXTURE_FORMAT_EXT, GLX_TEXTURE_FORMAT_RGB_EXT,
+    0
+  };
+
+  glx_pixmap_ = glXCreatePixmap(
+      dpy, fbconfig_.Get(), pixmap_, pixmapAttribs);
+
+  // Create texture.
+  glGenTextures(1, &texture_id_);
+  glBindTexture(GL_TEXTURE_2D, texture_id_);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+  return true;
+}
+
+AcceleratedSurfaceContainerTouchGLX::~AcceleratedSurfaceContainerTouchGLX() {
+  ui::SharedResources* instance = ui::SharedResources::GetInstance();
+  DCHECK(instance);
+  instance->MakeSharedContextCurrent();
+
+  Display* dpy = gfx::GLSurfaceGLX::GetDisplay();
+  if (glx_pixmap_)
+    glXDestroyGLXPixmap(dpy, glx_pixmap_);
+  if (pixmap_)
+    XFreePixmap(dpy, pixmap_);
+}
+
+void AcceleratedSurfaceContainerTouchGLX::Draw(
+    const ui::TextureDrawParams& params,
+    const gfx::Rect& clip_bounds_in_texture) {
+  ui::SharedResources* instance = ui::SharedResources::GetInstance();
+  DCHECK(instance);
+
+  Display* dpy = gfx::GLSurfaceGLX::GetDisplay();
+
+  glBindTexture(GL_TEXTURE_2D, texture_id_);
+  glXBindTexImageEXT(dpy, glx_pixmap_, GLX_FRONT_LEFT_EXT, NULL);
+  DrawInternal(*instance->program_no_swizzle(),
+               params,
+               clip_bounds_in_texture);
+  glXReleaseTexImageEXT(dpy, glx_pixmap_, GLX_FRONT_LEFT_EXT);
+}
+
+// static
+bool AcceleratedSurfaceContainerTouchGLX::InitializeOneOff()
+{
+  static bool initialized = false;
+  if (initialized)
+    return true;
+
   Display* dpy = gfx::GLSurfaceGLX::GetDisplay();
   int event_base, error_base;
   if (XCompositeQueryExtension(dpy, &event_base, &error_base)) {
@@ -166,7 +238,6 @@ bool AcceleratedSurfaceContainerTouchGLX::Initialize(uint64* surface_id) {
       return false;
     }
   }
-  pixmap_ = XCompositeNameWindowPixmap(dpy, *surface_id);
 
   // Wrap the pixmap in a GLXPixmap
   int screen = DefaultScreen(dpy);
@@ -216,52 +287,10 @@ bool AcceleratedSurfaceContainerTouchGLX::Initialize(uint64* surface_id) {
     return false;
   }
 
-  const int pixmapAttribs[] = {
-    GLX_TEXTURE_TARGET_EXT, GLX_TEXTURE_2D_EXT,
-    GLX_TEXTURE_FORMAT_EXT, GLX_TEXTURE_FORMAT_RGB_EXT,
-    0
-  };
+  fbconfig_.Get() = fbconfigs.get()[config];
 
-  glx_pixmap_ = glXCreatePixmap(
-      dpy, fbconfigs.get()[config], pixmap_, pixmapAttribs);
-
-  // Create texture.
-  glGenTextures(1, &texture_id_);
-  glBindTexture(GL_TEXTURE_2D, texture_id_);
-  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-  return true;
-}
-
-AcceleratedSurfaceContainerTouchGLX::~AcceleratedSurfaceContainerTouchGLX() {
-  ui::SharedResources* instance = ui::SharedResources::GetInstance();
-  DCHECK(instance);
-  instance->MakeSharedContextCurrent();
-
-  Display* dpy = gfx::GLSurfaceGLX::GetDisplay();
-  if (glx_pixmap_)
-    glXDestroyGLXPixmap(dpy, glx_pixmap_);
-  if (pixmap_)
-    XFreePixmap(dpy, pixmap_);
-}
-
-void AcceleratedSurfaceContainerTouchGLX::Draw(
-    const ui::TextureDrawParams& params,
-    const gfx::Rect& clip_bounds_in_texture) {
-  ui::SharedResources* instance = ui::SharedResources::GetInstance();
-  DCHECK(instance);
-
-  Display* dpy = gfx::GLSurfaceGLX::GetDisplay();
-
-  glBindTexture(GL_TEXTURE_2D, texture_id_);
-  glXBindTexImageEXT(dpy, glx_pixmap_, GLX_FRONT_LEFT_EXT, NULL);
-  DrawInternal(*instance->program_no_swizzle(),
-               params,
-               clip_bounds_in_texture);
-  glXReleaseTexImageEXT(dpy, glx_pixmap_, GLX_FRONT_LEFT_EXT);
+  initialized = true;
+  return initialized;
 }
 
 AcceleratedSurfaceContainerTouchOSMesa::AcceleratedSurfaceContainerTouchOSMesa(
