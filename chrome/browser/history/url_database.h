@@ -168,11 +168,15 @@ class URLDatabase {
   // sorted by typed count, then by visit count, then by visit date (most recent
   // first) up to the given maximum number.  If |typed_only| is true, only urls
   // that have been typed once are returned.  For caller convenience, returns
-  // whether any results were found.  Called by HistoryURLProvider.
-  bool AutocompleteForPrefix(const string16& prefix,
+  // whether any results were found.
+  bool AutocompleteForPrefix(const std::string& prefix,
                              size_t max_results,
                              bool typed_only,
                              std::vector<URLRow>* results);
+
+  // Returns true if the database holds some past typed navigation to a URL on
+  // the provided hostname.
+  bool IsTypedHost(const std::string& host);
 
   // Tries to find the shortest URL beginning with |base| that strictly
   // prefixes |url|, and has minimum visit_ and typed_counts as specified.

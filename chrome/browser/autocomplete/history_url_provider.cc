@@ -400,7 +400,7 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
     // for more results than we need, of every prefix type, in hopes this will
     // give us far more than enough to work with.  CullRedirects() will then
     // reduce the list to the best kMaxMatches results.
-    db->AutocompleteForPrefix(i->prefix + params->input.text(),
+    db->AutocompleteForPrefix(UTF16ToUTF8(i->prefix + params->input.text()),
                               kMaxMatches * 2, (backend == NULL), &url_matches);
     for (URLRowVector::const_iterator j(url_matches.begin());
          j != url_matches.end(); ++j) {
@@ -750,22 +750,11 @@ bool HistoryURLProvider::CanFindIntranetURL(
       !LowerCaseEqualsASCII(input.scheme(), chrome::kHttpScheme) ||
       !input.parts().host.is_nonempty())
     return false;
-  const string16 host(input.text().substr(input.parts().host.begin,
-                                          input.parts().host.len));
-  if (net::RegistryControlledDomainService::GetRegistryLength(
-      UTF16ToUTF8(host), false) != 0)
+  const std::string host(UTF16ToUTF8(
+      input.text().substr(input.parts().host.begin, input.parts().host.len)));
+  if (net::RegistryControlledDomainService::GetRegistryLength(host, false) != 0)
     return false;
-  std::vector<history::URLRow> dummy;
-  for (history::Prefixes::const_iterator i(prefixes_.begin());
-       i != prefixes_.end(); ++i) {
-    if ((i->num_components == 1) &&
-        (db->AutocompleteForPrefix(i->prefix + host + ASCIIToUTF16("/"), 1,
-                                   true, &dummy) ||
-         db->AutocompleteForPrefix(i->prefix + host + ASCIIToUTF16(":"), 1,
-                                   true, &dummy)))
-      return true;
-  }
-  return false;
+  return db->IsTypedHost(host);
 }
 
 bool HistoryURLProvider::PromoteMatchForInlineAutocomplete(

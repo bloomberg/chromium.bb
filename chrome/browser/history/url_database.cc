@@ -291,7 +291,7 @@ bool URLDatabase::InitIconMappingEnumeratorForEverything(
   return true;
 }
 
-bool URLDatabase::AutocompleteForPrefix(const string16& prefix,
+bool URLDatabase::AutocompleteForPrefix(const std::string& prefix,
                                         size_t max_results,
                                         bool typed_only,
                                         std::vector<history::URLRow>* results) {
@@ -323,11 +323,10 @@ bool URLDatabase::AutocompleteForPrefix(const string16& prefix,
   // followed by the maximum character size. Use 8-bit strings for everything
   // so we can be sure sqlite is comparing everything in 8-bit mode. Otherwise,
   // it will have to convert strings either to UTF-8 or UTF-16 for comparison.
-  std::string prefix_utf8(UTF16ToUTF8(prefix));
-  std::string end_query(prefix_utf8);
+  std::string end_query(prefix);
   end_query.push_back(std::numeric_limits<unsigned char>::max());
 
-  statement.BindString(0, prefix_utf8);
+  statement.BindString(0, prefix);
   statement.BindString(1, end_query);
   statement.BindInt(2, static_cast<int>(max_results));
 
@@ -338,6 +337,23 @@ bool URLDatabase::AutocompleteForPrefix(const string16& prefix,
       results->push_back(info);
   }
   return !results->empty();
+}
+
+bool URLDatabase::IsTypedHost(const std::string& host) {
+  const char* schemes[] = {
+    chrome::kHttpScheme,
+    chrome::kHttpsScheme,
+    chrome::kFtpScheme
+  };
+  std::vector<history::URLRow> dummy;
+  for (size_t i = 0; i < arraysize(schemes); ++i) {
+    std::string scheme_and_host(schemes[i]);
+    scheme_and_host += chrome::kStandardSchemeSeparator + host;
+    if (AutocompleteForPrefix(scheme_and_host + '/', 1, true, &dummy) ||
+        AutocompleteForPrefix(scheme_and_host + ':', 1, true, &dummy))
+      return true;
+  }
+  return false;
 }
 
 bool URLDatabase::FindShortestURLFromBase(const std::string& base,
