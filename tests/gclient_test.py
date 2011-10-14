@@ -157,19 +157,11 @@ class GclientTest(trial_dir.TestCase):
         actual[3:])
 
     self.assertEquals(3, len(obj.dependencies))
-    self.assertEquals('bar', obj.dependencies[0].name)
-    self.assertEquals('bar/empty', obj.dependencies[1].name)
-    self.assertEquals('foo', obj.dependencies[2].name)
+    self.assertEquals('foo', obj.dependencies[0].name)
+    self.assertEquals('bar', obj.dependencies[1].name)
+    self.assertEquals('bar/empty', obj.dependencies[2].name)
     self._check_requirements(
         obj.dependencies[0],
-        {
-          'foo/dir1/dir2': ['bar', 'bar/empty', 'foo', 'foo/dir1'],
-        })
-    self._check_requirements(
-        obj.dependencies[1],
-        {})
-    self._check_requirements(
-        obj.dependencies[2],
         {
           'foo/dir1': ['bar', 'bar/empty', 'foo'],
           'foo/dir1/dir2/dir3':
@@ -181,6 +173,14 @@ class GclientTest(trial_dir.TestCase):
               [ 'bar', 'bar/empty', 'foo', 'foo/dir1', 'foo/dir1/dir2',
                 'foo/dir1/dir2/dir3/dir4'],
         })
+    self._check_requirements(
+        obj.dependencies[1],
+        {
+          'foo/dir1/dir2': ['bar', 'bar/empty', 'foo', 'foo/dir1'],
+        })
+    self._check_requirements(
+        obj.dependencies[2],
+        {})
     self._check_requirements(
         obj,
         {

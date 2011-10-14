@@ -465,12 +465,13 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       deps_to_add.append(Dependency(
           self, name, url, None, None, None, None,
           self.deps_file, should_process))
+    deps_to_add.sort(key=lambda x: x.name)
     self.add_dependencies_and_close(deps_to_add, local_scope.get('hooks', []))
     logging.info('ParseDepsFile(%s) done' % self.name)
 
   def add_dependencies_and_close(self, deps_to_add, hooks):
     """Adds the dependencies, hooks and mark the parsing as done."""
-    for dep in sorted(deps_to_add, key=lambda x: x.name):
+    for dep in deps_to_add:
       if dep.verify_validity():
         self.add_dependency(dep)
     self._mark_as_parsed(hooks)
