@@ -50,7 +50,7 @@
         },
       },
     }],
-    ['disable_untrusted==0 and target_arch=="x64"', {
+    ['disable_untrusted==0 and (target_arch=="x64" or OS=="win")', {
       'target_defaults': {
         'target_conditions': [
            ['nexe_target!="" and build_newlib!=0', {
@@ -91,7 +91,7 @@
         ],
       },
     }],
-    ['disable_untrusted==0 and target_arch=="x64"', {
+    ['disable_untrusted==0 and (target_arch=="x64" or OS=="win")', {
       'target_defaults': {
         'target_conditions': [
            ['nlib_target!="" and build_newlib!=0', {
