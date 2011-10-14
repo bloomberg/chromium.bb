@@ -282,19 +282,19 @@ void NaClLog2_Function(char const *module_name,
 # define NaClLogV(level, fmt, ap) \
   do { \
     int __log_level_temp = (level); \
-    if ((LOG_FATAL == __log_level_temp) || (LOG_INFO == __log_level_temp)) \
+    if (LOG_INFO >= __log_level_temp) \
       NaClLogV_Function(__log_level_temp, fmt, ap); \
   } while (0)
 # define NaClLog(level, ...) \
   do { \
     int __log_level_temp = (level); \
-    if ((LOG_FATAL == __log_level_temp) || (LOG_INFO == __log_level_temp)) \
+    if (LOG_INFO >= __log_level_temp) \
       NaClLog_Function(__log_level_temp, __VA_ARGS__); \
   } while (0)
 # define NaClLog2(module, level, ...) \
   do { \
     int __log_level_temp = (level); \
-    if ((LOG_FATAL == __log_level_temp) || (LOG_INFO == __log_level_temp)) \
+    if (LOG_INFO >= __log_level_temp) \
       NaClLog2_Function(module, __log_level_temp, __VA_ARGS__); \
   } while (0)
 #else
