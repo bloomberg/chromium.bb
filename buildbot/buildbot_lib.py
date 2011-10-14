@@ -77,6 +77,8 @@ def ParseStandardCommandLine(context):
   context['gyp_vars'] = []
   if context['clang']:
     context['gyp_vars'].append('clang=1')
+  if context['asan']:
+    context['gyp_vars'].append('asan=1')
   context['vc_arch'] = {'32': 'x86', '64': 'x64'}[bits]
   context['default_scons_platform'] = 'x86-'+bits
   context['default_scons_mode'] = [mode + '-host', 'nacl']

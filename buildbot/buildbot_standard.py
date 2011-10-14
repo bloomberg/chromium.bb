@@ -106,7 +106,8 @@ def BuildScript(status, context):
   # When off the trunk, we don't have anywhere to get Chrome binaries
   # from the appropriate branch, so we can't test the right Chrome.
   do_integration_tests = (not inside_toolchain and
-                          not context['off_trunk'])
+                          not context['off_trunk'] and
+                          not context['asan'])
   do_dso_tests = (context['use_glibc'] and
                   not inside_toolchain and
                   not context['off_trunk'])
