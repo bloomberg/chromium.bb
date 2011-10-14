@@ -268,13 +268,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kPpapiFlashInProcess)
   },
   {
-    "multi-profiles",
-    IDS_FLAGS_MULTI_PROFILES_NAME,
-    IDS_FLAGS_MULTI_PROFILES_DESCRIPTION,
-    kOsLinux,  // This switch is not available in CrOS.
-    SINGLE_VALUE_TYPE(switches::kMultiProfiles)
-  },
-  {
     "preload-instant-search",
     IDS_FLAGS_PRELOAD_INSTANT_SEARCH_NAME,
     IDS_FLAGS_PRELOAD_INSTANT_SEARCH_DESCRIPTION,
