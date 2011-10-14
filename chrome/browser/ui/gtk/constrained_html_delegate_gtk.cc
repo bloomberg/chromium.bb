@@ -23,39 +23,57 @@ class ConstrainedHtmlDelegateGtk : public ConstrainedWindowGtkDelegate,
   ConstrainedHtmlDelegateGtk(Profile* profile,
                              HtmlDialogUIDelegate* delegate);
 
-  virtual ~ConstrainedHtmlDelegateGtk();
+  virtual ~ConstrainedHtmlDelegateGtk() {
+    if (release_tab_on_close_)
+      ignore_result(tab_.release());
+  }
 
   // ConstrainedWindowGtkDelegate ----------------------------------------------
   virtual GtkWidget* GetWidgetRoot() OVERRIDE {
     return tab_contents_container_.widget();
   }
   virtual GtkWidget* GetFocusWidget() OVERRIDE {
-    return tab_.tab_contents()->GetContentNativeView();
+    return tab_->tab_contents()->GetContentNativeView();
   }
   virtual void DeleteDelegate() OVERRIDE {
     if (!closed_via_webui_)
       html_delegate_->OnDialogClosed("");
     delete this;
   }
-
-  // ConstrainedHtmlDelegate ---------------------------------------------
-  virtual HtmlDialogUIDelegate* GetHtmlDialogUIDelegate() OVERRIDE;
-  virtual void OnDialogCloseFromWebUI() OVERRIDE;
   virtual bool GetBackgroundColor(GdkColor* color) OVERRIDE {
     *color = ui::kGdkWhite;
     return true;
   }
 
+  // ConstrainedHtmlUIDelegate -------------------------------------------------
+  virtual HtmlDialogUIDelegate* GetHtmlDialogUIDelegate() OVERRIDE {
+    return html_delegate_;
+  }
+  virtual void OnDialogCloseFromWebUI() OVERRIDE {
+    closed_via_webui_ = true;
+    window_->CloseConstrainedWindow();
+  }
+  virtual void ReleaseTabContentsOnDialogClose() OVERRIDE {
+    release_tab_on_close_ = true;
+  }
+  virtual ConstrainedWindow* window() OVERRIDE {
+    return window_;
+  }
+  virtual TabContentsWrapper* tab() OVERRIDE {
+    return tab_.get();
+  }
+
   // HtmlDialogTabContentsDelegate ---------------------------------------------
-  virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event)
-      OVERRIDE {}
+  virtual void HandleKeyboardEvent(
+      const NativeWebKeyboardEvent& event) OVERRIDE {
+  }
 
   void set_window(ConstrainedWindow* window) {
     window_ = window;
   }
 
  private:
-  TabContentsWrapper tab_;
+  scoped_ptr<TabContentsWrapper> tab_;
   TabContentsContainerGtk tab_contents_container_;
   HtmlDialogUIDelegate* html_delegate_;
 
@@ -66,28 +84,34 @@ class ConstrainedHtmlDelegateGtk : public ConstrainedWindowGtkDelegate,
   // Was the dialog closed from WebUI (in which case |html_delegate_|'s
   // OnDialogClosed() method has already been called)?
   bool closed_via_webui_;
+
+  // If true, release |tab_| on close instead of destroying it.
+  bool release_tab_on_close_;
 };
 
 ConstrainedHtmlDelegateGtk::ConstrainedHtmlDelegateGtk(
     Profile* profile,
     HtmlDialogUIDelegate* delegate)
     : HtmlDialogTabContentsDelegate(profile),
-      tab_(new TabContents(profile, NULL, MSG_ROUTING_NONE, NULL, NULL)),
       tab_contents_container_(NULL),
       html_delegate_(delegate),
       window_(NULL),
-      closed_via_webui_(false) {
-  tab_.tab_contents()->set_delegate(this);
+      closed_via_webui_(false),
+      release_tab_on_close_(false) {
+  TabContents* tab_contents =
+      new TabContents(profile, NULL, MSG_ROUTING_NONE, NULL, NULL);
+  tab_.reset(new TabContentsWrapper(tab_contents));
+  tab_contents->set_delegate(this);
 
   // Set |this| as a property on the tab contents so that the ConstrainedHtmlUI
   // can get a reference to |this|.
   ConstrainedHtmlUI::GetPropertyAccessor().SetProperty(
-      tab_.tab_contents()->property_bag(), this);
+      tab_contents->property_bag(), this);
 
-  tab_.tab_contents()->controller().LoadURL(
-      delegate->GetDialogContentURL(), GURL(),
-      content::PAGE_TRANSITION_START_PAGE, std::string());
-  tab_contents_container_.SetTab(&tab_);
+  tab_contents->controller().LoadURL(delegate->GetDialogContentURL(), GURL(),
+                                     content::PAGE_TRANSITION_START_PAGE,
+                                     std::string());
+  tab_contents_container_.SetTab(tab_.get());
 
   gfx::Size dialog_size;
   delegate->GetDialogSize(&dialog_size);
@@ -98,21 +122,8 @@ ConstrainedHtmlDelegateGtk::ConstrainedHtmlDelegateGtk(
   gtk_widget_show_all(GetWidgetRoot());
 }
 
-ConstrainedHtmlDelegateGtk::~ConstrainedHtmlDelegateGtk() {
-}
-
-HtmlDialogUIDelegate*
-    ConstrainedHtmlDelegateGtk::GetHtmlDialogUIDelegate() {
-  return html_delegate_;
-}
-
-void ConstrainedHtmlDelegateGtk::OnDialogCloseFromWebUI() {
-  closed_via_webui_ = true;
-  window_->CloseConstrainedWindow();
-}
-
 // static
-ConstrainedWindow* ConstrainedHtmlUI::CreateConstrainedHtmlDialog(
+ConstrainedHtmlUIDelegate* ConstrainedHtmlUI::CreateConstrainedHtmlDialog(
     Profile* profile,
     HtmlDialogUIDelegate* delegate,
     TabContentsWrapper* overshadowed) {
@@ -121,5 +132,5 @@ ConstrainedWindow* ConstrainedHtmlUI::CreateConstrainedHtmlDialog(
   ConstrainedWindow* constrained_window =
       new ConstrainedWindowGtk(overshadowed, constrained_delegate);
   constrained_delegate->set_window(constrained_window);
-  return constrained_window;
+  return constrained_delegate;
 }

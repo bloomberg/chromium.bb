@@ -29,22 +29,32 @@ class ConstrainedHtmlDelegateGtk : public views::NativeWidgetGtk,
   // ConstrainedHtmlUIDelegate interface.
   virtual HtmlDialogUIDelegate* GetHtmlDialogUIDelegate() OVERRIDE;
   virtual void OnDialogCloseFromWebUI() OVERRIDE;
-  virtual bool GetBackgroundColor(GdkColor* color) OVERRIDE {
-    *color = ui::kGdkWhite;
-    return true;
+  virtual void ReleaseTabContentsOnDialogClose() OVERRIDE {
+    release_tab_on_close_ = true;
   }
+  virtual ConstrainedWindow* window() OVERRIDE {
+    return window_;
+  }
+  virtual TabContentsWrapper* tab() OVERRIDE {
+    return html_tab_contents_.get();
+  }
+
 
   // ConstrainedWindowGtkDelegate implementation.
   virtual GtkWidget* GetWidgetRoot() OVERRIDE {
     return GetNativeView();
   }
   virtual GtkWidget* GetFocusWidget() OVERRIDE {
-    return html_tab_contents_.GetContentNativeView();
+    return html_tab_contents_->tab_contents()->GetContentNativeView();
   }
   virtual void DeleteDelegate() OVERRIDE {
     if (!closed_via_webui_)
       html_delegate_->OnDialogClosed("");
     tab_container_->ChangeTabContents(NULL);
+  }
+  virtual bool GetBackgroundColor(GdkColor* color) OVERRIDE {
+    *color = ui::kGdkWhite;
+    return true;
   }
   virtual bool ShouldHaveBorderPadding() const OVERRIDE {
     return false;
@@ -58,7 +68,7 @@ class ConstrainedHtmlDelegateGtk : public views::NativeWidgetGtk,
   }
 
  private:
-  TabContents html_tab_contents_;
+  scoped_ptr<TabContentsWrapper> html_tab_contents_;
   TabContentsContainer* tab_container_;
 
   HtmlDialogUIDelegate* html_delegate_;
@@ -69,6 +79,9 @@ class ConstrainedHtmlDelegateGtk : public views::NativeWidgetGtk,
   // Was the dialog closed from WebUI (in which case |html_delegate_|'s
   // OnDialogClosed() method has already been called)?
   bool closed_via_webui_;
+
+  // If true, release |tab_| on close instead of destroying it.
+  bool release_tab_on_close_;
 };
 
 ConstrainedHtmlDelegateGtk::ConstrainedHtmlDelegateGtk(
@@ -76,21 +89,22 @@ ConstrainedHtmlDelegateGtk::ConstrainedHtmlDelegateGtk(
     HtmlDialogUIDelegate* delegate)
     : views::NativeWidgetGtk(new views::Widget),
       HtmlDialogTabContentsDelegate(profile),
-      html_tab_contents_(profile, NULL, MSG_ROUTING_NONE, NULL, NULL),
       tab_container_(NULL),
       html_delegate_(delegate),
       window_(NULL),
       closed_via_webui_(false) {
   CHECK(delegate);
-  html_tab_contents_.set_delegate(this);
+  TabContents* tab_contents =
+      new TabContents(profile, NULL, MSG_ROUTING_NONE, NULL, NULL);
+  html_tab_contents_.reset(new TabContentsWrapper(tab_contents));
+  tab_contents->set_delegate(this);
 
   // Set |this| as a property so the ConstrainedHtmlUI can retrieve it.
   ConstrainedHtmlUI::GetPropertyAccessor().SetProperty(
-      html_tab_contents_.property_bag(), this);
-  html_tab_contents_.controller().LoadURL(delegate->GetDialogContentURL(),
-                                          GURL(),
-                                          content::PAGE_TRANSITION_START_PAGE,
-                                          std::string());
+      tab_contents->property_bag(), this);
+  tab_contents->controller().LoadURL(delegate->GetDialogContentURL(), GURL(),
+                                     content::PAGE_TRANSITION_START_PAGE,
+                                     std::string());
 
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
   params.native_widget = this;
@@ -98,7 +112,7 @@ ConstrainedHtmlDelegateGtk::ConstrainedHtmlDelegateGtk(
 
   tab_container_ = new TabContentsContainer;
   GetWidget()->SetContentsView(tab_container_);
-  tab_container_->ChangeTabContents(&html_tab_contents_);
+  tab_container_->ChangeTabContents(html_tab_contents_->tab_contents());
 
   gfx::Size dialog_size;
   html_delegate_->GetDialogSize(&dialog_size);
@@ -120,7 +134,7 @@ void ConstrainedHtmlDelegateGtk::OnDialogCloseFromWebUI() {
 }
 
 // static
-ConstrainedWindow* ConstrainedHtmlUI::CreateConstrainedHtmlDialog(
+ConstrainedHtmlUIDelegate* ConstrainedHtmlUI::CreateConstrainedHtmlDialog(
     Profile* profile,
     HtmlDialogUIDelegate* delegate,
     TabContentsWrapper* wrapper) {
@@ -129,5 +143,5 @@ ConstrainedWindow* ConstrainedHtmlUI::CreateConstrainedHtmlDialog(
   ConstrainedWindow* constrained_window =
       new ConstrainedWindowGtk(wrapper, constrained_delegate);
   constrained_delegate->set_window(constrained_window);
-  return constrained_window;
+  return constrained_delegate;
 }

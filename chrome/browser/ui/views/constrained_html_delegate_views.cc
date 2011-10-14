@@ -28,6 +28,11 @@ class ConstrainedHtmlDelegateViews : public TabContentsContainer,
   // ConstrainedHtmlUIDelegate interface.
   virtual HtmlDialogUIDelegate* GetHtmlDialogUIDelegate() OVERRIDE;
   virtual void OnDialogCloseFromWebUI() OVERRIDE;
+  virtual void ReleaseTabContentsOnDialogClose() OVERRIDE;
+  virtual ConstrainedWindow* window() OVERRIDE { return window_; }
+  virtual TabContentsWrapper* tab() OVERRIDE {
+    return html_tab_contents_.get();
+  }
 
   // views::WidgetDelegate interface.
   virtual bool CanResize() const OVERRIDE { return true; }
@@ -64,7 +69,7 @@ class ConstrainedHtmlDelegateViews : public TabContentsContainer,
                                     views::View* child) OVERRIDE {
     TabContentsContainer::ViewHierarchyChanged(is_add, parent, child);
     if (is_add && child == this) {
-      ChangeTabContents(&html_tab_contents_);
+      ChangeTabContents(html_tab_contents_->tab_contents());
     }
   }
 
@@ -73,7 +78,7 @@ class ConstrainedHtmlDelegateViews : public TabContentsContainer,
   }
 
  private:
-  TabContents html_tab_contents_;
+  scoped_ptr<TabContentsWrapper> html_tab_contents_;
 
   HtmlDialogUIDelegate* html_delegate_;
 
@@ -83,30 +88,37 @@ class ConstrainedHtmlDelegateViews : public TabContentsContainer,
   // Was the dialog closed from WebUI (in which case |html_delegate_|'s
   // OnDialogClosed() method has already been called)?
   bool closed_via_webui_;
+
+  // If true, release |tab_| on close instead of destroying it.
+  bool release_tab_on_close_;
 };
 
 ConstrainedHtmlDelegateViews::ConstrainedHtmlDelegateViews(
     Profile* profile,
     HtmlDialogUIDelegate* delegate)
     : HtmlDialogTabContentsDelegate(profile),
-      html_tab_contents_(profile, NULL, MSG_ROUTING_NONE, NULL, NULL),
       html_delegate_(delegate),
       window_(NULL),
-      closed_via_webui_(false) {
+      closed_via_webui_(false),
+      release_tab_on_close_(false) {
   CHECK(delegate);
-  html_tab_contents_.set_delegate(this);
+  TabContents* tab_contents =
+      new TabContents(profile, NULL, MSG_ROUTING_NONE, NULL, NULL);
+  html_tab_contents_.reset(new TabContentsWrapper(tab_contents));
+  tab_contents->set_delegate(this);
 
   // Set |this| as a property so the ConstrainedHtmlUI can retrieve it.
   ConstrainedHtmlUI::GetPropertyAccessor().SetProperty(
-      html_tab_contents_.property_bag(), this);
-  html_tab_contents_.controller().LoadURL(
-      delegate->GetDialogContentURL(),
-      GURL(),
-      content::PAGE_TRANSITION_START_PAGE,
-      std::string());
+      html_tab_contents_->tab_contents()->property_bag(), this);
+  tab_contents->controller().LoadURL(delegate->GetDialogContentURL(),
+                                     GURL(),
+                                     content::PAGE_TRANSITION_START_PAGE,
+                                     std::string());
 }
 
 ConstrainedHtmlDelegateViews::~ConstrainedHtmlDelegateViews() {
+  if (release_tab_on_close_)
+    ignore_result(html_tab_contents_.release());
 }
 
 HtmlDialogUIDelegate* ConstrainedHtmlDelegateViews::GetHtmlDialogUIDelegate() {
@@ -118,8 +130,12 @@ void ConstrainedHtmlDelegateViews::OnDialogCloseFromWebUI() {
   window_->CloseConstrainedWindow();
 }
 
+void ConstrainedHtmlDelegateViews::ReleaseTabContentsOnDialogClose() {
+  release_tab_on_close_ = true;
+}
+
 // static
-ConstrainedWindow* ConstrainedHtmlUI::CreateConstrainedHtmlDialog(
+ConstrainedHtmlUIDelegate* ConstrainedHtmlUI::CreateConstrainedHtmlDialog(
     Profile* profile,
     HtmlDialogUIDelegate* delegate,
     TabContentsWrapper* container) {
@@ -128,5 +144,5 @@ ConstrainedWindow* ConstrainedHtmlUI::CreateConstrainedHtmlDialog(
   ConstrainedWindow* constrained_window =
       new ConstrainedWindowViews(container, constrained_delegate);
   constrained_delegate->set_window(constrained_window);
-  return constrained_window;
+  return constrained_delegate;
 }

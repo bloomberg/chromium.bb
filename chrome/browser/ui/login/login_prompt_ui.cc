@@ -58,7 +58,7 @@ class LoginHandlerSource : public ChromeURLDataManager::DataSource {
 
   static void RegisterDataSource(Profile *profile) {
     ChromeURLDataManager* url_manager = profile->GetChromeURLDataManager();
-    LoginHandlerSource *source = new LoginHandlerSource();
+    LoginHandlerSource* source = new LoginHandlerSource();
     url_manager->AddDataSource(source);
   }
 
@@ -141,7 +141,7 @@ class LoginHandlerHtmlDelegate : public HtmlDialogUIDelegate,
     SendAutofillData();
   }
 
-  LoginHandlerHtml *login_handler_;
+  LoginHandlerHtml* login_handler_;
   std::string explanation_;
   bool closed_;
 
@@ -180,7 +180,7 @@ class LoginHandlerHtml : public LoginHandler {
   virtual ~LoginHandlerHtml() {}
 
  private:
-  LoginHandlerHtmlDelegate *delegate_;
+  LoginHandlerHtmlDelegate* delegate_;
 
   void FreeAndRelease() {
     SetDialog(NULL);
@@ -245,8 +245,9 @@ void LoginHandlerHtml::BuildViewForPasswordManager(
   Profile* profile = wrapper->profile();
   LoginHandlerSource::RegisterDataSource(profile);
   delegate_ = new LoginHandlerHtmlDelegate(this, explanation);
-  ConstrainedWindow* dialog = ConstrainedHtmlUI::CreateConstrainedHtmlDialog(
-      profile, delegate_, wrapper);
+  ConstrainedWindow* dialog =
+      ConstrainedHtmlUI::CreateConstrainedHtmlDialog(
+          profile, delegate_, wrapper)->window();
 
   SetModel(manager);
   SetDialog(dialog);
