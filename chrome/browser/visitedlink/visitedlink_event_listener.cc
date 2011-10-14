@@ -103,11 +103,12 @@ class VisitedLinkUpdater {
   VisitedLinkCommon::Fingerprints pending_;
 };
 
-VisitedLinkEventListener::VisitedLinkEventListener() {
+VisitedLinkEventListener::VisitedLinkEventListener(Profile* profile)
+    : profile_(profile) {
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CREATED,
-                 NotificationService::AllSources());
+                 NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-                 NotificationService::AllSources());
+                 NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
                  NotificationService::AllBrowserContextsAndSources());
 }
@@ -166,13 +167,15 @@ void VisitedLinkEventListener::Observe(int type,
   switch (type) {
     case content::NOTIFICATION_RENDERER_PROCESS_CREATED: {
       RenderProcessHost* process = Source<RenderProcessHost>(source).ptr();
+      Profile* profile =
+          Profile::FromBrowserContext(process->browser_context());
+      if (!profile_->IsSameProfile(profile))
+        return;
       updaters_[process->id()] =
           make_linked_ptr(new VisitedLinkUpdater(process->id()));
 
       // Initialize support for visited links. Send the renderer process its
       // initial set of visited links.
-      Profile* profile =
-          Profile::FromBrowserContext(process->browser_context());
       VisitedLinkMaster* master = profile->GetVisitedLinkMaster();
       if (!master)
         return;

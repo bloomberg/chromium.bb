@@ -18,6 +18,7 @@
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 
+class Profile;
 class VisitedLinkUpdater;
 
 namespace base {
@@ -27,7 +28,7 @@ class SharedMemory;
 class VisitedLinkEventListener : public VisitedLinkMaster::Listener,
                                  public NotificationObserver {
  public:
-  VisitedLinkEventListener();
+  explicit VisitedLinkEventListener(Profile* profile);
   virtual ~VisitedLinkEventListener();
 
   virtual void NewTable(base::SharedMemory* table_memory);
@@ -50,6 +51,8 @@ class VisitedLinkEventListener : public VisitedLinkMaster::Listener,
   // Map between renderer child ids and their VisitedLinkUpdater.
   typedef std::map<int, linked_ptr<VisitedLinkUpdater> > Updaters;
   Updaters updaters_;
+
+  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(VisitedLinkEventListener);
 };

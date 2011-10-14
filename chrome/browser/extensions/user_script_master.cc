@@ -294,7 +294,7 @@ UserScriptMaster::UserScriptMaster(Profile* profile)
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  Source<Profile>(profile_));
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CREATED,
-                 NotificationService::AllSources());
+                 NotificationService::AllBrowserContextsAndSources());
 }
 
 UserScriptMaster::~UserScriptMaster() {
@@ -377,6 +377,10 @@ void UserScriptMaster::Observe(int type,
     }
     case content::NOTIFICATION_RENDERER_PROCESS_CREATED: {
       RenderProcessHost* process = Source<RenderProcessHost>(source).ptr();
+      Profile* profile = Profile::FromBrowserContext(
+          process->browser_context());
+      if (!profile_->IsSameProfile(profile))
+        return;
       if (ScriptsReady())
         SendUpdate(process, GetSharedMemory());
       break;

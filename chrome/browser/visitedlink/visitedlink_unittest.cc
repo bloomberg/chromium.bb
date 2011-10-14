@@ -454,15 +454,17 @@ TEST_F(VisitedLinkTest, Listener) {
 
 class VisitCountingProfile : public TestingProfile {
  public:
-  explicit VisitCountingProfile(VisitedLinkEventListener* event_listener)
+  VisitCountingProfile()
       : add_count_(0),
         add_event_count_(0),
         reset_event_count_(0),
-        event_listener_(event_listener) {}
+        event_listener_(ALLOW_THIS_IN_INITIALIZER_LIST(
+            new VisitedLinkEventListener(this))) {}
 
   virtual VisitedLinkMaster* GetVisitedLinkMaster() {
     if (!visited_link_master_.get()) {
-      visited_link_master_.reset(new VisitedLinkMaster(event_listener_, this));
+      visited_link_master_.reset(
+          new VisitedLinkMaster(event_listener_.get(), this));
       visited_link_master_->Init();
     }
     return visited_link_master_.get();
@@ -486,7 +488,7 @@ class VisitCountingProfile : public TestingProfile {
   int add_count_;
   int add_event_count_;
   int reset_event_count_;
-  VisitedLinkEventListener* event_listener_;
+  scoped_ptr<VisitedLinkEventListener> event_listener_;
   scoped_ptr<VisitedLinkMaster> visited_link_master_;
 };
 
@@ -572,9 +574,8 @@ class VisitedLinkEventsTest : public ChromeRenderViewHostTestHarness {
   virtual void SetFactoryMode() {}
   virtual void SetUp() {
     SetFactoryMode();
-    event_listener_.reset(new VisitedLinkEventListener());
     rvh_factory_.set_render_process_host_factory(&vc_rph_factory_);
-    browser_context_.reset(new VisitCountingProfile(event_listener_.get()));
+    browser_context_.reset(new VisitCountingProfile());
     ChromeRenderViewHostTestHarness::SetUp();
   }
 
@@ -593,7 +594,6 @@ class VisitedLinkEventsTest : public ChromeRenderViewHostTestHarness {
   VisitedLinkRenderProcessHostFactory vc_rph_factory_;
 
  private:
-  scoped_ptr<VisitedLinkEventListener> event_listener_;
   BrowserThread ui_thread_;
   BrowserThread file_thread_;
 

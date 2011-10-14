@@ -266,7 +266,8 @@ void ProfileImpl::RegisterUserPrefs(PrefService* prefs) {
 ProfileImpl::ProfileImpl(const FilePath& path,
                          Profile::Delegate* delegate)
     : path_(path),
-      visited_link_event_listener_(new VisitedLinkEventListener()),
+      ALLOW_THIS_IN_INITIALIZER_LIST(visited_link_event_listener_(
+          new VisitedLinkEventListener(this))),
       extension_devtools_manager_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(io_data_(this)),
       host_content_settings_map_(NULL),
