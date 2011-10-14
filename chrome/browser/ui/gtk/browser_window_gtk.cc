@@ -41,6 +41,7 @@
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/gtk/about_chrome_dialog.h"
 #include "chrome/browser/ui/gtk/accelerators_gtk.h"
+#include "chrome/browser/ui/gtk/avatar_menu_bubble_gtk.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_bar_gtk.h"
 #include "chrome/browser/ui/gtk/browser_titlebar.h"
 #include "chrome/browser/ui/gtk/browser_toolbar_gtk.h"
@@ -1173,7 +1174,9 @@ FindBar* BrowserWindowGtk::CreateFindBar() {
 
 void BrowserWindowGtk::ShowAvatarBubble(TabContents* tab_contents,
                                         const gfx::Rect& rect) {
-  // TODO(sail): Implement this once we have a avatar bubble on GTK.
+  GtkWidget* widget = tab_contents->GetContentNativeView();
+  new AvatarMenuBubbleGtk(browser_.get(), widget,
+      BubbleGtk::ARROW_LOCATION_TOP_LEFT, &rect);
 }
 
 void BrowserWindowGtk::ConfirmBrowserCloseWithPendingDownloads() {

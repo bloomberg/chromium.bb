@@ -33,7 +33,8 @@ const int kNewProfileLinkLeftPadding = 40;
 
 AvatarMenuBubbleGtk::AvatarMenuBubbleGtk(Browser* browser,
                                          GtkWidget* anchor,
-                                         BubbleGtk::ArrowLocationGtk arrow)
+                                         BubbleGtk::ArrowLocationGtk arrow,
+                                         const gfx::Rect* rect)
     : contents_(NULL),
       theme_service_(GtkThemeService::GetFrom(browser->profile())),
       minimum_width_(kBubbleMinWidth) {
@@ -46,7 +47,7 @@ AvatarMenuBubbleGtk::AvatarMenuBubbleGtk(Browser* browser,
   OnAvatarMenuModelChanged(avatar_menu_model_.get());
 
   bubble_ = BubbleGtk::Show(anchor,
-                            NULL,  // |rect|
+                            rect,
                             contents_,
                             arrow,
                             true,  // |match_system_theme|
