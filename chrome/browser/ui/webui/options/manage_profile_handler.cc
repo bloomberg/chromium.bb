@@ -116,6 +116,11 @@ void ManageProfileHandler::SetProfileNameAndIcon(const ListValue* args) {
     return;
 
   cache.SetNameOfProfileAtIndex(profile_index, new_profile_name);
+  // The index in the cache may have changed if a new name triggered an
+  // alphabetical resort.
+  profile_index = cache.GetIndexOfProfileWithPath(profile_file_path);
+  if (profile_index == std::string::npos)
+    return;
 
   string16 icon_url;
   size_t new_icon_index;

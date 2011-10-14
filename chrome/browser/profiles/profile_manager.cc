@@ -595,9 +595,11 @@ void ProfileManager::AddProfileToCache(Profile* profile) {
         profile->GetPath(),
         l10n_util::GetStringUTF16(IDS_DEFAULT_PROFILE_NAME), username, 0);
   } else {
-    cache.AddProfileToCache(
-        profile->GetPath(), cache.ChooseNameForNewProfile(), username,
-        cache.ChooseAvatarIconIndexForNewProfile());
+    size_t icon_index = cache.ChooseAvatarIconIndexForNewProfile();
+    cache.AddProfileToCache(profile->GetPath(),
+                            cache.ChooseNameForNewProfile(icon_index),
+                            username,
+                            icon_index);
   }
 }
 

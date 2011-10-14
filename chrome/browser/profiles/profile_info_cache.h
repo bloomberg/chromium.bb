@@ -42,6 +42,8 @@ class ProfileInfoCache : public ProfileInfoInterface {
 
   // ProfileInfoInterface:
   virtual size_t GetNumberOfProfiles() const OVERRIDE;
+  // Don't cache this value and reuse, because resorting the menu could cause
+  // the item being referred to to change out from under you.
   virtual size_t GetIndexOfProfileWithPath(
       const FilePath& profile_path) const OVERRIDE;
   virtual string16 GetNameOfProfileAtIndex(size_t index) const OVERRIDE;
@@ -61,7 +63,7 @@ class ProfileInfoCache : public ProfileInfoInterface {
                                            bool running_background_apps);
 
   // Returns unique name that can be assigned to a newly created profile.
-  string16 ChooseNameForNewProfile();
+  string16 ChooseNameForNewProfile(size_t icon_index);
 
   // Returns an avatar icon index that can be assigned to a newly created
   // profile. Note that the icon may not be unique since there are a limited
@@ -87,8 +89,8 @@ class ProfileInfoCache : public ProfileInfoInterface {
  private:
   const base::DictionaryValue* GetInfoForProfileAtIndex(size_t index) const;
   // Saves the profile info to a cache and takes ownership of |info|.
-  // Currently the only information that is cached is the profiles name and
-  // avatar icon.
+  // Currently the only information that is cached is the profiles name,
+  // user name, and avatar icon.
   void SetInfoForProfileAtIndex(size_t index, base::DictionaryValue* info);
   std::string CacheKeyFromProfilePath(const FilePath& profile_path) const;
   std::vector<std::string>::iterator FindPositionForProfile(

@@ -64,6 +64,28 @@ const size_t kDefaultAvatarIconsCount = arraysize(kDefaultAvatarIconResources);
 // The first 8 icons are generic.
 const size_t kGenericIconCount = 8;
 
+// First eight are generic icons, which use IDS_NUMBERED_PROFILE_NAME.
+const int kDefaultNames[] = {
+  IDS_DEFAULT_AVATAR_NAME_8,
+  IDS_DEFAULT_AVATAR_NAME_9,
+  IDS_DEFAULT_AVATAR_NAME_10,
+  IDS_DEFAULT_AVATAR_NAME_11,
+  IDS_DEFAULT_AVATAR_NAME_12,
+  IDS_DEFAULT_AVATAR_NAME_13,
+  IDS_DEFAULT_AVATAR_NAME_14,
+  IDS_DEFAULT_AVATAR_NAME_15,
+  IDS_DEFAULT_AVATAR_NAME_16,
+  IDS_DEFAULT_AVATAR_NAME_17,
+  IDS_DEFAULT_AVATAR_NAME_18,
+  IDS_DEFAULT_AVATAR_NAME_19,
+  IDS_DEFAULT_AVATAR_NAME_20,
+  IDS_DEFAULT_AVATAR_NAME_21,
+  IDS_DEFAULT_AVATAR_NAME_22,
+  IDS_DEFAULT_AVATAR_NAME_23,
+  IDS_DEFAULT_AVATAR_NAME_24,
+  IDS_DEFAULT_AVATAR_NAME_25
+};
+
 } // namespace
 
 ProfileInfoCache::ProfileInfoCache(PrefService* prefs,
@@ -196,6 +218,19 @@ void ProfileInfoCache::SetNameOfProfileAtIndex(size_t index,
   info->SetString(kNameKey, name);
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());
+
+  // Remove and reinsert key in |sorted_keys_| to alphasort.
+  std::string key = CacheKeyFromProfilePath(GetPathOfProfileAtIndex(index));
+  std::vector<std::string>::iterator key_it =
+      std::find(sorted_keys_.begin(), sorted_keys_.end(), key);
+  DCHECK(key_it != sorted_keys_.end());
+  sorted_keys_.erase(key_it);
+  sorted_keys_.insert(FindPositionForProfile(key, name), key);
+
+  NotificationService::current()->Notify(
+    chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
+    NotificationService::AllSources(),
+    NotificationService::NoDetails());
 }
 
 void ProfileInfoCache::SetUserNameOfProfileAtIndex(size_t index,
@@ -225,10 +260,20 @@ void ProfileInfoCache::SetBackgroundStatusOfProfileAtIndex(
   SetInfoForProfileAtIndex(index, info.release());
 }
 
-string16 ProfileInfoCache::ChooseNameForNewProfile() {
+string16 ProfileInfoCache::ChooseNameForNewProfile(size_t icon_index) {
+  string16 name;
   for (int name_index = 1; ; ++name_index) {
-    string16 name = l10n_util::GetStringFUTF16Int(
-        IDS_NUMBERED_PROFILE_NAME, name_index);
+    if (icon_index < kGenericIconCount) {
+      name = l10n_util::GetStringFUTF16Int(IDS_NUMBERED_PROFILE_NAME,
+                                           name_index);
+    } else {
+      name = l10n_util::GetStringUTF16(
+          kDefaultNames[icon_index - kGenericIconCount]);
+      if (name_index > 1)
+        name.append(UTF8ToUTF16(base::IntToString(name_index)));
+    }
+
+    // Loop through previously named profiles to ensure we're not duplicating.
     bool name_found = false;
     for (size_t i = 0; i < GetNumberOfProfiles(); ++i) {
       if (GetNameOfProfileAtIndex(i) == name) {

@@ -8835,6 +8835,62 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NUMBERED_PROFILE_NAME" desc="The name given to a newly created profile. Displayed in wrench menu and settings UI.">
         User <ph name="VALUE">$1<ex>1</ex></ph>
       </message>
+      
+      <message name="IDS_DEFAULT_AVATAR_NAME_8" desc="The default name given to a newly created profile with the female spy avatar.">
+        Agent X
+      </message>
+      <message name="IDS_DEFAULT_AVATAR_NAME_9" desc="The default name given to a newly created profile with the male hero avatar.">
+        Spandex
+      </message>
+      <message name="IDS_DEFAULT_AVATAR_NAME_10" desc="The default name given to a newly created profile with the female athlete avatar.">
+        Mia
+      </message>
+      <message name="IDS_DEFAULT_AVATAR_NAME_11" desc="The default name given to a newly created profile with the male businessman avatar.">
+        Buttondown
+      </message>
+      <message name="IDS_DEFAULT_AVATAR_NAME_12" desc="The default name given to a newly created profile with the ninja avatar.">
+        Sneaky
+      </message>
+      <message name="IDS_DEFAULT_AVATAR_NAME_13" desc="The default name given to a newly created profile with the alien avatar.">
+        Moonbeam
+      </message>
+      <message name="IDS_DEFAULT_AVATAR_NAME_14" desc="The default name given to a newly created profile with the awesome face avatar.">
+        Awesome
+      </message>
+      <message name="IDS_DEFAULT_AVATAR_NAME_15" desc="The default name given to a newly created profile with the flower avatar.">
+        Petals
+      </message>
+      <message name="IDS_DEFAULT_AVATAR_NAME_16" desc="The default name given to a newly created profile with the pizza avatar.">
+        Slice
+      </message>
+      <message name="IDS_DEFAULT_AVATAR_NAME_17" desc="The default name given to a newly created profile with the soccer ball avatar.">
+        Fritz
+      </message>
+      <message name="IDS_DEFAULT_AVATAR_NAME_18" desc="The default name given to a newly created profile with the hamburger avatar.">
+        Pickles
+      </message>
+      <message name="IDS_DEFAULT_AVATAR_NAME_19" desc="The default name given to a newly created profile with the cat avatar.">
+        Fluffy
+      </message>
+      <message name="IDS_DEFAULT_AVATAR_NAME_20" desc="The default name given to a newly created profile with the cupcake avatar.">
+        Sweetness
+      </message>
+      <message name="IDS_DEFAULT_AVATAR_NAME_21" desc="The default name given to a newly created profile with the dog avatar.">
+        Sparky
+      </message>
+      <message name="IDS_DEFAULT_AVATAR_NAME_22" desc="The default name given to a newly created profile with the horse avatar.">
+        Saratoga
+      </message>
+      <message name="IDS_DEFAULT_AVATAR_NAME_23" desc="The default name given to a newly created profile with the martini glass avatar.">
+        Lemonade
+      </message>
+      <message name="IDS_DEFAULT_AVATAR_NAME_24" desc="The default name given to a newly created profile with the musical notes avatar.">
+        Bluesy
+      </message>
+      <message name="IDS_DEFAULT_AVATAR_NAME_25" desc="The default name given to a newly created profile with the sun and cloud avatar.">
+        Shady
+      </message>
+
       <message name="IDS_NUMBERED_AVATAR_NAME" desc="The name for a profile avatar icon.">
         Icon <ph name="VALUE">$1<ex>1</ex></ph>
       </message>
