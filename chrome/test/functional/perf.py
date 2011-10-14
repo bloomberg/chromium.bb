@@ -534,6 +534,86 @@ class ScrollTest(BasePerfTest):
         'ScrollGooglePlusPage')
 
 
+class FlashTest(BasePerfTest):
+  """Tests to measure flash performance."""
+
+  def _RunFlashTestForAverageFPS(self, webpage_url, description):
+    """Runs a single flash test that measures an average FPS value.
+
+    Args:
+      webpage_url: The string URL to a webpage that will run the test.
+      description: A string description for this test.
+    """
+    # Open up the test webpage; it's assumed the test will start automatically.
+    self.assertTrue(self.AppendTab(pyauto.GURL(webpage_url)),
+                    msg='Failed to append tab for webpage.')
+
+    # Wait until the final result is computed, then retrieve and output it.
+    # TODO(dennisjeffrey): Have all tests in this class use JSON.stringify()
+    # to send results back from the Javascript.
+    js = 'window.domAutomationController.send("" + final_average_fps);'
+    self.assertTrue(
+        self.WaitUntil(
+            lambda: self.ExecuteJavascript(js, 0, 1) != '-1', timeout=300,
+            expect_retval=True, retry_sleep=0.25),
+        msg='Timed out when waiting for test result.')
+    result = float(self.ExecuteJavascript(js, 0, 1))
+    logging.info('Result for %s: %.2f FPS (average)' % (description, result))
+    self._OutputPerfGraphValue('%s_%s' % ('FPS', description), result)
+
+  def testFlashGaming(self):
+    """Runs a simple flash gaming benchmark test."""
+    webpage_url = self.GetHttpURLForDataPath('pyauto_private', 'flash',
+                                             'FlashGamingTest2.html')
+    self._RunFlashTestForAverageFPS(webpage_url, 'FlashGaming')
+
+  def testFlashText(self):
+    """Runs a simple flash text benchmark test."""
+    webpage_url = self.GetHttpURLForDataPath('pyauto_private', 'flash',
+                                             'FlashTextTest2.html')
+    self._RunFlashTestForAverageFPS(webpage_url, 'FlashText')
+
+  def testScimarkGui(self):
+    """Runs the ScimarkGui benchmark tests."""
+    webpage_url = self.GetHttpURLForDataPath('pyauto_private', 'flash',
+                                             'scimarkGui.html')
+    self.assertTrue(self.AppendTab(pyauto.GURL(webpage_url)),
+                    msg='Failed to append tab for webpage.')
+
+    js = 'window.domAutomationController.send("" + tests_done);'
+    self.assertTrue(
+        self.WaitUntil(
+            lambda: self.ExecuteJavascript(js, 0, 1), timeout=300,
+            expect_retval='true', retry_sleep=0.25),
+        msg='Timed out when waiting for tests to complete.')
+
+    js_result = """
+        var json_result = "{";
+        for (var i = 0; i < tests_results.length; ++i) {
+          var test_name = tests_results[i][0];
+          var mflops = tests_results[i][1];
+          var mem = tests_results[i][2];
+          json_result += "'" + test_name + "':" + "[" + mflops + "," +
+                         mem + "],";
+        }
+        json_result += "}";
+        window.domAutomationController.send(json_result);
+    """
+    result = eval(self.ExecuteJavascript(js_result, 0, 1))
+    for benchmark in result:
+      mflops = result[benchmark][0]
+      mem = result[benchmark][1]
+      if benchmark.endswith('_mflops'):
+        benchmark = benchmark[:benchmark.find('_mflops')]
+      logging.info('Results for ScimarkGui_' + benchmark + ':')
+      logging.info('  %.2f MFLOPS' % mflops)
+      logging.info('  %.2f MB' % mem)
+      self._OutputPerfGraphValue(
+          '%s_ScimarkGui-%s-MFLOPS' % ('MFLOPS', benchmark), mflops)
+      self._OutputPerfGraphValue(
+          '%s_ScimarkGui-%s-Mem' % ('MB', benchmark), mem)
+
+
 class PerfTestServerRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
   """Request handler for the local performance test server."""
 
