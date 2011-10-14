@@ -69,6 +69,7 @@ class EGLImageTransportSurface : public ImageTransportSurface,
   virtual gfx::Size GetSize() OVERRIDE;
   virtual void OnMakeCurrent(gfx::GLContext* context) OVERRIDE;
   virtual unsigned int GetBackingFrameBufferObject() OVERRIDE;
+  virtual void SetVisible(bool visible) OVERRIDE;
 
  protected:
   // ImageTransportSurface implementation
@@ -268,6 +269,15 @@ void EGLImageTransportSurface::OnMakeCurrent(gfx::GLContext* context) {
 
 unsigned int EGLImageTransportSurface::GetBackingFrameBufferObject() {
   return fbo_id_;
+}
+
+void EGLImageTransportSurface::SetVisible(bool visible) {
+  if (!visible && back_surface_.get() && front_surface_.get()) {
+    ReleaseSurface(&back_surface_);
+  } else if (visible && !back_surface_.get() && front_surface_.get()) {
+    // Leverage the OnResize hook because it does exactly what we want
+    OnResize(front_surface_->size());
+  }
 }
 
 void EGLImageTransportSurface::ReleaseSurface(

@@ -116,6 +116,8 @@ class GpuCommandBufferStub
       IPC::Message* reply_message);
   void OnDestroyVideoDecoder(int32 decoder_route_id);
 
+  void OnSetSurfaceVisible(bool visible);
+
 #if defined(OS_MACOSX)
   void OnSwapBuffers();
 

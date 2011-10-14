@@ -72,6 +72,8 @@ class WebGraphicsContext3DInProcessImpl : public WebGraphicsContext3D {
 
   virtual void reshape(int width, int height);
 
+  virtual void setVisibility(bool visible);
+
   virtual bool readBackFramebuffer(unsigned char* pixels, size_t bufferSize);
   virtual bool readBackFramebuffer(unsigned char* pixels, size_t buffer_size,
                                    WebGLId framebuffer, int width, int height);

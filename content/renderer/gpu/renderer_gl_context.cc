@@ -266,6 +266,10 @@ CommandBufferProxy* RendererGLContext::GetCommandBufferProxy() {
   return command_buffer_;
 }
 
+bool RendererGLContext::SetSurfaceVisible(bool visible) {
+  return GetCommandBufferProxy()->SetSurfaceVisible(visible);
+}
+
 // TODO(gman): Remove This
 void RendererGLContext::DisableShaderTranslation() {
   NOTREACHED();

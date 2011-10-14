@@ -367,6 +367,15 @@ bool CommandBufferProxy::Echo(const base::Closure& callback) {
   return true;
 }
 
+bool CommandBufferProxy::SetSurfaceVisible(bool visible) {
+  if (last_state_.error != gpu::error::kNoError) {
+    return false;
+  }
+
+  return Send(new GpuCommandBufferMsg_SetSurfaceVisible(route_id_, visible));
+}
+
+
 bool CommandBufferProxy::SetParent(CommandBufferProxy* parent_command_buffer,
                                    uint32 parent_texture_id) {
   if (last_state_.error != gpu::error::kNoError)

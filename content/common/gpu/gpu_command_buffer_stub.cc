@@ -108,6 +108,8 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
                                     OnCreateVideoDecoder)
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_DestroyVideoDecoder,
                         OnDestroyVideoDecoder)
+    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SetSurfaceVisible,
+                        OnSetSurfaceVisible)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -505,6 +507,10 @@ void GpuCommandBufferStub::OnCreateVideoDecoder(
 void GpuCommandBufferStub::OnDestroyVideoDecoder(int decoder_route_id) {
   channel_->RemoveRoute(decoder_route_id);
   video_decoders_.Remove(decoder_route_id);
+}
+
+void GpuCommandBufferStub::OnSetSurfaceVisible(bool visible) {
+  surface_->SetVisible(visible);
 }
 
 #endif  // defined(ENABLE_GPU)

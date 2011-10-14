@@ -24,6 +24,7 @@
 #include "base/metrics/histogram.h"
 #include "base/synchronization/lock.h"
 #include "content/public/common/content_switches.h"
+#include "content/renderer/gpu/command_buffer_proxy.h"
 #include "content/renderer/gpu/gpu_channel_host.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
@@ -298,6 +299,11 @@ void WebGraphicsContext3DCommandBufferImpl::reshape(int width, int height) {
 #ifdef FLIP_FRAMEBUFFER_VERTICALLY
   scanline_.reset(new uint8[width * 4]);
 #endif  // FLIP_FRAMEBUFFER_VERTICALLY
+}
+
+void WebGraphicsContext3DCommandBufferImpl::setVisibility(bool visible) {
+  gl_->Flush();
+  context_->SetSurfaceVisible(visible);
 }
 
 #ifdef FLIP_FRAMEBUFFER_VERTICALLY

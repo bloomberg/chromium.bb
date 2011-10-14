@@ -160,6 +160,9 @@ class RendererGLContext : public base::SupportsWeakPtr<RendererGLContext>,
   // task whether the echo succeeds or not.
   bool Echo(const base::Closure& task);
 
+  // Sends an IPC message with the new state of surface visibility
+  bool SetSurfaceVisible(bool visibility);
+
   // Create a TransportTextureHost object associated with the context.
   scoped_refptr<TransportTextureHost> CreateTransportTextureHost();
 

@@ -594,6 +594,9 @@ void WebGraphicsContext3DInProcessImpl::ClearRenderTarget() {
     glDisable(GL_DITHER);
 }
 
+void WebGraphicsContext3DInProcessImpl::setVisibility(bool visible) {
+}
+
 #ifdef FLIP_FRAMEBUFFER_VERTICALLY
 void WebGraphicsContext3DInProcessImpl::FlipVertically(
     unsigned char* framebuffer, unsigned int width, unsigned int height) {

@@ -420,6 +420,8 @@ IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_Destroyed,
 // Response to a GpuChannelMsg_Echo message.
 IPC_MESSAGE_ROUTED0(GpuCommandBufferMsg_EchoAck)
 
+IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_SetSurfaceVisible, bool /* visible */)
+
 // --------------------------------------------------------------------------
 // TransportTexture messages
 //

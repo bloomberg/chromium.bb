@@ -70,6 +70,9 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   // the task whether the echo succeeds or not.
   bool Echo(const base::Closure& callback);
 
+  // Sends an IPC message with the new state of surface visibility
+  bool SetSurfaceVisible(bool visible);
+
   // Reparent a command buffer. TODO(apatrick): going forward, the notion of
   // the parent / child relationship between command buffers is going away in
   // favor of the notion of surfaces that can be drawn to in one command buffer

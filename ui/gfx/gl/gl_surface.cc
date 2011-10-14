@@ -31,6 +31,9 @@ unsigned int GLSurface::GetBackingFrameBufferObject() {
 void GLSurface::OnMakeCurrent(GLContext* context) {
 }
 
+void GLSurface::SetVisible(bool visible) {
+}
+
 GLSurface* GLSurface::GetCurrent() {
   return current_surface_.Get();
 }
