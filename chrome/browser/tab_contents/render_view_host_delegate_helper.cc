@@ -104,11 +104,6 @@ RenderViewHostDelegateViewHelper::MaybeCreateBackgroundContents(
   if (!extension)
     return NULL;
 
-  // If the extension manifest specifies a background page, then don't allow one
-  // to be created here.
-  if (extension->background_url().is_valid())
-    return NULL;
-
   // No BackgroundContents allowed if BackgroundContentsService doesn't exist.
   BackgroundContentsService* service =
       BackgroundContentsServiceFactory::GetForProfile(profile);
@@ -123,7 +118,7 @@ RenderViewHostDelegateViewHelper::MaybeCreateBackgroundContents(
     return NULL;
 
   // Only allow a single background contents per app. If one already exists,
-  // close it.
+  // close it (even if it was specified in the manifest).
   BackgroundContents* existing =
       service->GetAppBackgroundContents(ASCIIToUTF16(extension->id()));
   if (existing) {

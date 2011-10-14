@@ -17,7 +17,7 @@
 
 class AppBackgroundPageApiTest : public ExtensionApiTest {
  public:
-  void SetUpCommandLine(CommandLine* command_line) {
+  void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kDisablePopupBlocking);
     command_line->AppendSwitch(switches::kAllowHTTPBackgroundPage);
@@ -162,4 +162,33 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, OpenTwoBackgroundPages) {
   ASSERT_TRUE(CreateApp(app_manifest, &app_dir));
   ASSERT_TRUE(LoadExtension(app_dir));
   ASSERT_TRUE(RunExtensionTest("app_background_page/two_pages")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, OpenTwoPagesWithManifest) {
+  host_resolver()->AddRule("a.com", "127.0.0.1");
+  ASSERT_TRUE(StartTestServer());
+
+  std::string app_manifest = base::StringPrintf(
+      "{"
+      "  \"name\": \"App\","
+      "  \"version\": \"0.1\","
+      "  \"app\": {"
+      "    \"urls\": ["
+      "      \"http://a.com/\""
+      "    ],"
+      "    \"launch\": {"
+      "      \"web_url\": \"http://a.com:%d/\""
+      "    }"
+      "  },"
+      "  \"background_page\": \"http://a.com:%d/bg.html\","
+      "  \"permissions\": [\"background\"]"
+      "}",
+      test_server()->host_port_pair().port(),
+      test_server()->host_port_pair().port());
+
+  FilePath app_dir;
+  ASSERT_TRUE(CreateApp(app_manifest, &app_dir));
+  ASSERT_TRUE(LoadExtension(app_dir));
+  ASSERT_TRUE(RunExtensionTest("app_background_page/two_with_manifest")) <<
+      message_;
 }
