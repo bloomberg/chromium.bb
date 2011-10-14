@@ -230,6 +230,8 @@
     ],
 
     'linux': [  # linux != chromeos
+      # Enabling here since it's disabled on other platforms.  crbug.com/88574
+      'special_tabs.SpecialTabsTest.testSpecialURLTabs',
       # ===========================
       # Permanently-disabled tests.
       # ===========================

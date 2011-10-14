@@ -63,7 +63,6 @@ class SpecialTabsTest(pyauto.PyUITest):
     'chrome://sync-internals': { 'title': 'Sync Internals' },
     'chrome://tasks': { 'title': 'Task Manager - Chromium' },
     'chrome://terms': {},
-    'chrome://textfields': { 'title': 'chrome://textfields', 'CSP': False },
     'chrome://version': { 'title': 'About Version' },
     'chrome://view-http-cache': {},
     'chrome://workers': { 'title': 'Workers' },
