@@ -20,3 +20,7 @@ SessionHistoryTest.BasicBackForward
 AutomatedUITestBase.FindInPage
 # Fails consistently. http://crbug.com/97107
 RunInBackgroundTest.RunInBackgroundBasicTest
+
+# Fail on CrOS on a chromium assertion
+BrowserMainTest.WarmConnectionFieldTrial_Random
+BrowserMainTest.WarmConnectionFieldTrial_WarmestSocket
