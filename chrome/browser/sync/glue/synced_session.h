@@ -9,6 +9,7 @@
 #include <map>
 #include <string>
 
+#include "base/time.h"
 #include "chrome/browser/sessions/session_id.h"
 
 struct SessionTab;
@@ -42,6 +43,9 @@ struct SyncedSession {
 
   // Type of device this session is from.
   DeviceType device_type;
+
+  // Last time this session was modified remotely.
+  base::Time modified_time;
 
   // Map of windows that make up this session. Windowws are owned by the session
   // itself and free'd on destruction.

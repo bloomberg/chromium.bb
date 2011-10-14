@@ -67,10 +67,12 @@ TEST_F(SessionModelAssociatorTest, PopulateSessionHeader) {
   header_s.set_device_type(sync_pb::SessionHeader_DeviceType_TYPE_WIN);
 
   SyncedSession session;
+  base::Time time = base::Time::Now();
   SessionModelAssociator::PopulateSessionHeaderFromSpecifics(
-      header_s, &session);
+      header_s, time, &session);
   ASSERT_EQ("Client 1", session.session_name);
   ASSERT_EQ(SyncedSession::TYPE_WIN, session.device_type);
+  ASSERT_EQ(time, session.modified_time);
 }
 
 TEST_F(SessionModelAssociatorTest, PopulateSessionWindow) {

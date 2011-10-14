@@ -11,6 +11,8 @@
 #include <utility>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
@@ -32,7 +34,7 @@
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/data_type_manager.h"
 #include "chrome/browser/sync/glue/session_data_type_controller.h"
-#include "chrome/browser/sync/glue/session_data_type_controller.h"
+#include "chrome/browser/sync/glue/session_model_associator.h"
 #include "chrome/browser/sync/glue/typed_url_data_type_controller.h"
 #include "chrome/browser/sync/internal_api/configure_reason.h"
 #include "chrome/browser/sync/internal_api/sync_manager.h"
@@ -587,6 +589,16 @@ void ProfileSyncService::OnBackendInitialized(
 
 void ProfileSyncService::OnSyncCycleCompleted() {
   UpdateLastSyncedTime();
+  if (GetSessionModelAssociator()) {
+    // Trigger garbage collection of old sessions now that we've downloaded
+    // any new session data. TODO(zea): Have this be a notification the session
+    // model associator listens too. Also consider somehow plumbing the current
+    // server time as last reported by CheckServerReachable, so we don't have to
+    // rely on the local clock, which may be off significantly.
+    MessageLoop::current()->PostTask(FROM_HERE,
+        base::Bind(&browser_sync::SessionModelAssociator::DeleteStaleSessions,
+                   GetSessionModelAssociator()->AsWeakPtr()));
+  }
   VLOG(2) << "Notifying observers sync cycle completed";
   NotifyObservers();
 }

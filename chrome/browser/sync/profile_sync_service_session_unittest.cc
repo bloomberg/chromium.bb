@@ -740,8 +740,7 @@ TEST_F(ProfileSyncServiceSessionTest, TabNodePoolNonEmpty) {
   ASSERT_TRUE(model_associator_->tab_pool_.full());
 }
 
-
-// Write a foreign session to a node, and then retrieve it.
+// Write a foreign session to a node, and then delete it.
 TEST_F(ProfileSyncServiceSessionTest, DeleteForeignSession) {
   CreateRootTask task(this);
   ASSERT_TRUE(StartSyncService(&task, false));
@@ -792,7 +791,114 @@ TEST_F(ProfileSyncServiceSessionTest, DeleteForeignSession) {
   // Now delete the foreign session.
   model_associator_->DeleteForeignSession(tag);
   ASSERT_FALSE(model_associator_->GetAllForeignSessions(&foreign_sessions));
+}
 
+// Associate both a non-stale foreign session and a stale foreign session.
+// Ensure only the stale session gets deleted.
+TEST_F(ProfileSyncServiceSessionTest, DeleteStaleSessions) {
+  CreateRootTask task(this);
+  ASSERT_TRUE(StartSyncService(&task, false));
+  ASSERT_TRUE(task.success());
+
+  // Fill two instances of session specifics with a foreign session's data.
+  std::string tag = "tag1";
+  sync_pb::SessionSpecifics meta;
+  BuildSessionSpecifics(tag, &meta);
+  SessionID::id_type tab_nums1[] = {5, 10, 13, 17};
+  std::vector<SessionID::id_type> tab_list1(
+      tab_nums1, tab_nums1 + arraysize(tab_nums1));
+  AddWindowSpecifics(0, tab_list1, &meta);
+  std::vector<sync_pb::SessionSpecifics> tabs1;
+  tabs1.resize(tab_list1.size());
+  for (size_t i = 0; i < tab_list1.size(); ++i) {
+    BuildTabSpecifics(tag, 0, tab_list1[i], &tabs1[i]);
+  }
+  std::string tag2 = "tag2";
+  sync_pb::SessionSpecifics meta2;
+  BuildSessionSpecifics(tag2, &meta2);
+  SessionID::id_type tab_nums2[] = {8, 15, 18, 20};
+  std::vector<SessionID::id_type> tab_list2(
+      tab_nums2, tab_nums2 + arraysize(tab_nums2));
+  AddWindowSpecifics(0, tab_list2, &meta2);
+  std::vector<sync_pb::SessionSpecifics> tabs2;
+  tabs2.resize(tab_list2.size());
+  for (size_t i = 0; i < tab_list2.size(); ++i) {
+    BuildTabSpecifics(tag2, 0, tab_list2[i], &tabs2[i]);
+  }
+
+  // Set the modification time for tag1 to be 21 days ago, tag2 to 5 days ago.
+  base::Time tag1_time = base::Time::Now() - base::TimeDelta::FromDays(21);
+  base::Time tag2_time = base::Time::Now() - base::TimeDelta::FromDays(5);
+
+  // Associate specifics.
+  model_associator_->AssociateForeignSpecifics(meta, tag1_time);
+  for (std::vector<sync_pb::SessionSpecifics>::iterator iter = tabs1.begin();
+       iter != tabs1.end(); ++iter) {
+    model_associator_->AssociateForeignSpecifics(*iter, tag1_time);
+  }
+  model_associator_->AssociateForeignSpecifics(meta2, tag2_time);
+  for (std::vector<sync_pb::SessionSpecifics>::iterator iter = tabs2.begin();
+       iter != tabs2.end(); ++iter) {
+    model_associator_->AssociateForeignSpecifics(*iter, tag2_time);
+  }
+
+  // Check that the foreign session was associated and retrieve the data.
+  std::vector<const SyncedSession*> foreign_sessions;
+  ASSERT_TRUE(model_associator_->GetAllForeignSessions(&foreign_sessions));
+  ASSERT_EQ(2U, foreign_sessions.size());
+
+  // Now delete the stale session and verify the non-stale one is still there.
+  model_associator_->DeleteStaleSessions();
+  ASSERT_TRUE(model_associator_->GetAllForeignSessions(&foreign_sessions));
+  ASSERT_EQ(1U, foreign_sessions.size());
+  std::vector<std::vector<SessionID::id_type> > session_reference;
+  session_reference.push_back(tab_list2);
+  VerifySyncedSession(tag2, session_reference, *(foreign_sessions[0]));
+}
+
+// Write a stale foreign session to a node. Then update one of it's tabs so
+// the session is no longer stale. Ensure it doesn't get deleted.
+TEST_F(ProfileSyncServiceSessionTest, StaleSessionRefresh) {
+  CreateRootTask task(this);
+  ASSERT_TRUE(StartSyncService(&task, false));
+  ASSERT_TRUE(task.success());
+
+  std::string tag = "tag1";
+  sync_pb::SessionSpecifics meta;
+  BuildSessionSpecifics(tag, &meta);
+  SessionID::id_type tab_nums1[] = {5, 10, 13, 17};
+  std::vector<SessionID::id_type> tab_list1(
+      tab_nums1, tab_nums1 + arraysize(tab_nums1));
+  AddWindowSpecifics(0, tab_list1, &meta);
+  std::vector<sync_pb::SessionSpecifics> tabs1;
+  tabs1.resize(tab_list1.size());
+  for (size_t i = 0; i < tab_list1.size(); ++i) {
+    BuildTabSpecifics(tag, 0, tab_list1[i], &tabs1[i]);
+  }
+
+  // Associate.
+  base::Time stale_time = base::Time::Now() - base::TimeDelta::FromDays(21);
+  model_associator_->AssociateForeignSpecifics(meta, stale_time);
+  for (std::vector<sync_pb::SessionSpecifics>::iterator iter = tabs1.begin();
+       iter != tabs1.end(); ++iter) {
+    model_associator_->AssociateForeignSpecifics(*iter, stale_time);
+  }
+
+  // Associate one of the tabs with a non-stale time.
+  model_associator_->AssociateForeignSpecifics(tabs1[0], base::Time::Now());
+
+  // Check that the foreign session was associated and retrieve the data.
+  std::vector<const SyncedSession*> foreign_sessions;
+  ASSERT_TRUE(model_associator_->GetAllForeignSessions(&foreign_sessions));
+  ASSERT_EQ(1U, foreign_sessions.size());
+
+  // Verify the now non-stale session does not get deleted.
+  model_associator_->DeleteStaleSessions();
+  ASSERT_TRUE(model_associator_->GetAllForeignSessions(&foreign_sessions));
+  ASSERT_EQ(1U, foreign_sessions.size());
+  std::vector<std::vector<SessionID::id_type> > session_reference;
+  session_reference.push_back(tab_list1);
+  VerifySyncedSession(tag, session_reference, *(foreign_sessions[0]));
 }
 
 }  // namespace browser_sync

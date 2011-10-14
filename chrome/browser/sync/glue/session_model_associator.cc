@@ -46,13 +46,18 @@ static const char kNoSessionsFolderError[] =
     "might be running against an out-of-date server.";
 
 // The maximum number of navigations in each direction we care to sync.
-static const int max_sync_navigation_count = 6;
+static const int kMaxSyncNavigationCount = 6;
+
+// Default number of days without activity after which a session is considered
+// stale and becomes a candidate for garbage collection.
+static const size_t kDefaultStaleSessionThresholdDays = 14;  // 2 weeks.
 }  // namespace
 
 SessionModelAssociator::SessionModelAssociator(ProfileSyncService* sync_service)
     : tab_pool_(sync_service),
       local_session_syncid_(sync_api::kInvalidId),
       sync_service_(sync_service),
+      stale_session_threshold_days_(kDefaultStaleSessionThresholdDays),
       setup_for_test_(false),
       waiting_for_change_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(test_method_factory_(this)) {
@@ -65,6 +70,7 @@ SessionModelAssociator::SessionModelAssociator(ProfileSyncService* sync_service,
     : tab_pool_(sync_service),
       local_session_syncid_(sync_api::kInvalidId),
       sync_service_(sync_service),
+      stale_session_threshold_days_(kDefaultStaleSessionThresholdDays),
       setup_for_test_(setup_for_test),
       waiting_for_change_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(test_method_factory_(this)) {
@@ -134,6 +140,7 @@ bool SessionModelAssociator::AssociateWindows(bool reload_tabs) {
   sync_pb::SessionHeader* header_s = specifics.mutable_header();
   SyncedSession* current_session =
       synced_session_tracker_.GetSession(local_tag);
+  current_session->modified_time = base::Time::Now();
   header_s->set_client_name(current_session_name_);
 #if defined(OS_LINUX)
   header_s->set_device_type(sync_pb::SessionHeader_DeviceType_TYPE_LINUX);
@@ -314,8 +321,8 @@ bool SessionModelAssociator::WriteTabContentsToSyncModel(
   tab_s->set_window_id(tab.GetWindowId());
   const int current_index = tab.GetCurrentEntryIndex();
   const int min_index = std::max(0,
-                                 current_index - max_sync_navigation_count);
-  const int max_index = std::min(current_index + max_sync_navigation_count,
+                                 current_index - kMaxSyncNavigationCount);
+  const int max_index = std::min(current_index + kMaxSyncNavigationCount,
                                  tab.GetEntryCount());
   const int pending_index = tab.GetPendingEntryIndex();
   tab_s->set_pinned(window.IsTabPinned(&tab));
@@ -344,6 +351,8 @@ bool SessionModelAssociator::WriteTabContentsToSyncModel(
   SessionTab* session_tab =
       synced_session_tracker_.GetTab(GetCurrentMachineTag(),
                                      tab_s->tab_id());
+  synced_session_tracker_.GetSession(GetCurrentMachineTag())->modified_time =
+      base::Time::Now();
   PopulateSessionTabFromSpecifics(*tab_s,
                                   base::Time::Now(),
                                   session_tab);
@@ -661,16 +670,18 @@ bool SessionModelAssociator::AssociateForeignSpecifics(
   if (foreign_session_tag == GetCurrentMachineTag() && !setup_for_test_)
     return false;
 
+  SyncedSession* foreign_session =
+      synced_session_tracker_.GetSession(foreign_session_tag);
   if (specifics.has_header()) {
     // Read in the header data for this foreign session.
     // Header data contains window information and ordered tab id's for each
     // window.
 
     // Load (or create) the SyncedSession object for this client.
-    SyncedSession* foreign_session =
-        synced_session_tracker_.GetSession(foreign_session_tag);
     const sync_pb::SessionHeader& header = specifics.header();
-    PopulateSessionHeaderFromSpecifics(header, foreign_session);
+    PopulateSessionHeaderFromSpecifics(header,
+                                       modification_time,
+                                       foreign_session);
 
     // Reset the tab/window tracking for this session (must do this before
     // we start calling PutWindowInSession and PutTabInWindow so that all
@@ -701,6 +712,8 @@ bool SessionModelAssociator::AssociateForeignSpecifics(
     SessionTab* tab =
         synced_session_tracker_.GetTab(foreign_session_tag, tab_id);
     PopulateSessionTabFromSpecifics(tab_s, modification_time, tab);
+    if (foreign_session->modified_time < modification_time)
+      foreign_session->modified_time = modification_time;
   } else {
     NOTREACHED();
     return false;
@@ -724,6 +737,7 @@ bool SessionModelAssociator::DisassociateForeignSession(
 // Static
 void SessionModelAssociator::PopulateSessionHeaderFromSpecifics(
     const sync_pb::SessionHeader& header_specifics,
+    const base::Time& mtime,
     SyncedSession* session_header) {
   if (header_specifics.has_client_name()) {
     session_header->session_name = header_specifics.client_name();
@@ -749,6 +763,7 @@ void SessionModelAssociator::PopulateSessionHeaderFromSpecifics(
         break;
     }
   }
+  session_header->modified_time = mtime;
 }
 
 // Static
@@ -986,7 +1001,46 @@ bool SessionModelAssociator::GetForeignTab(
   return synced_session_tracker_.LookupSessionTab(tag, tab_id, tab);
 }
 
+void SessionModelAssociator::DeleteStaleSessions() {
+  DCHECK(CalledOnValidThread());
+  std::vector<const SyncedSession*> sessions;
+  if (!GetAllForeignSessions(&sessions))
+    return;  // No foreign sessions.
+
+  // Iterate through all the sessions and delete any with age older than
+  // |stale_session_threshold_days_|.
+  for (std::vector<const SyncedSession*>::const_iterator iter =
+           sessions.begin(); iter != sessions.end(); ++iter) {
+    const SyncedSession* session = *iter;
+    int session_age_in_days =
+        (base::Time::Now() - session->modified_time).InDays();
+    std::string session_tag = session->session_tag;
+    if (session_age_in_days > 0 &&  // If false, local clock is not trustworty.
+        static_cast<size_t>(session_age_in_days) >
+            stale_session_threshold_days_) {
+      VLOG(1) << "Found stale session " << session_tag
+              << " with age " << session_age_in_days << ", deleting.";
+      DeleteForeignSession(session_tag);
+    }
+  }
+}
+
+void SessionModelAssociator::SetStaleSessionThreshold(
+    size_t stale_session_threshold_days) {
+  DCHECK(CalledOnValidThread());
+  if (stale_session_threshold_days_ == 0) {
+    NOTREACHED() << "Attempted to set invalid stale session threshold.";
+    return;
+  }
+  stale_session_threshold_days_ = stale_session_threshold_days;
+  // TODO(zea): maybe make this preference-based? Might be nice to let users be
+  // able to modify this once and forget about it. At the moment, if we want a
+  // different threshold we will need to call this everytime we create a new
+  // model associator and before we AssociateModels (probably from DTC).
+}
+
 void SessionModelAssociator::DeleteForeignSession(const std::string& tag) {
+  DCHECK(CalledOnValidThread());
   if (tag == GetCurrentMachineTag()) {
     LOG(ERROR) << "Attempting to delete local session. This is not currently "
                << "supported.";

@@ -175,6 +175,15 @@ class SessionModelAssociator
                      const SessionID::id_type tab_id,
                      const SessionTab** tab);
 
+  // Triggers garbage collection of stale sessions (as defined by
+  // |stale_session_threshold_days_|). This is called automatically every
+  // time we start up (via AssociateModels).
+  void DeleteStaleSessions();
+
+  // Set the threshold of inactivity (in days) at which we consider sessions
+  // stale.
+  void SetStaleSessionThreshold(size_t stale_session_threshold_days);
+
   // Delete a foreign session and all it's sync data.
   void DeleteForeignSession(const std::string& tag);
 
@@ -373,6 +382,7 @@ class SessionModelAssociator
   // provided.
   static void PopulateSessionHeaderFromSpecifics(
     const sync_pb::SessionHeader& header_specifics,
+    const base::Time& mtime,
     SyncedSession* session_header);
 
   // Used to populate a session window from the session specifics window
@@ -452,6 +462,10 @@ class SessionModelAssociator
 
   // Weak pointer.
   ProfileSyncService* sync_service_;
+
+  // Number of days without activity after which we consider a session to be
+  // stale and a candidate for garbage collection.
+  size_t stale_session_threshold_days_;
 
   // Consumer used to obtain the current session.
   CancelableRequestConsumer consumer_;
