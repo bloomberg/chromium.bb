@@ -79,7 +79,6 @@ PrintPreviewWebUITest.prototype = {
 
     mockHandler.stubs().getPrinters().
         will(callFunction(function() {
-          setUseCloudPrint(false, '');
           setPrinters([{
               printerName: 'FooName',
               deviceName: 'FooDevice',

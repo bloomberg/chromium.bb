@@ -189,13 +189,6 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnablePrintPreview)
   },
-  {
-    "cloud-print",  // FLAGS:RECORD_UMA
-    IDS_FLAGS_CLOUD_PRINT_NAME,
-    IDS_FLAGS_CLOUD_PRINT_DESCRIPTION,
-    kOsMac,
-    SINGLE_VALUE_TYPE(switches::kEnableCloudPrint)
-  },
   // TODO(dspringer): When NaCl is on by default, remove this flag entry.
   {
     "enable-nacl",  // FLAGS:RECORD_UMA

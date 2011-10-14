@@ -124,7 +124,6 @@ extern const char kEnableAutologin[];
 extern const char kEnableClearServerData[];
 extern const char kEnableClickToPlay[];
 extern const char kEnableCloudPrintProxy[];
-extern const char kEnableCloudPrint[];
 extern const char kEnableCompositeToTexture[];
 extern const char kEnableConnectBackupJobs[];
 extern const char kEnableCrxlessWebApps[];

@@ -73,12 +73,6 @@ void RenderParamsFromPrintSettings(const printing::PrintSettings& settings,
 
 PrintingMessageFilter::PrintingMessageFilter()
     : print_job_manager_(g_browser_process->print_job_manager()) {
-#if defined(OS_CHROMEOS)
-  cloud_print_enabled_ = true;
-#else
-  cloud_print_enabled_ = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableCloudPrint);
-#endif
 }
 
 PrintingMessageFilter::~PrintingMessageFilter() {
@@ -166,16 +160,13 @@ void PrintingMessageFilter::OnTempFileForPrintingWritten(int sequence_number) {
     return;
   }
 
-  if (cloud_print_enabled_)
-    print_dialog_cloud::CreatePrintDialogForFile(
-        it->second,
-        string16(),
-        string16(),
-        std::string("application/pdf"),
-        true,
-        false);
-  else
-    NOTIMPLEMENTED();
+  print_dialog_cloud::CreatePrintDialogForFile(
+      it->second,
+      string16(),
+      string16(),
+      std::string("application/pdf"),
+      true,
+      false);
 
   // Erase the entry in the map.
   map->erase(it);
