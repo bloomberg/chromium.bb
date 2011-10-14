@@ -116,7 +116,6 @@ void ExistingUserController::Init(const UserVector& users) {
   LoginUtils::Get()->PrewarmAuthentication();
   if (CrosLibrary::Get()->EnsureLoaded())
     CrosLibrary::Get()->GetLoginLibrary()->EmitLoginPromptReady();
-  StartAutomaticFreeDiskSpaceControl();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -170,6 +169,8 @@ void ExistingUserController::FixCaptivePortal() {
 
 void ExistingUserController::CompleteLogin(const std::string& username,
                                            const std::string& password) {
+  SetOwnerUserInCryptohome();
+
   GaiaAuthConsumer::ClientLoginResult credentials;
   if (!login_performer_.get()) {
     LoginPerformer::Delegate* delegate = this;
@@ -229,6 +230,7 @@ void ExistingUserController::LoginAsGuest() {
   SetStatusAreaEnabled(false);
   // Disable clicking on other windows.
   login_display_->SetUIEnabled(false);
+  SetOwnerUserInCryptohome();
 
   // Check allow_guest in case this call is fired from key accelerator.
   // Must not proceed without signature verification.
@@ -576,9 +578,9 @@ void ExistingUserController::ShowError(int error_id,
   login_display_->ShowError(error_id, num_login_attempts_, help_topic_id);
 }
 
-void ExistingUserController::StartAutomaticFreeDiskSpaceControl() {
+void ExistingUserController::SetOwnerUserInCryptohome() {
   bool trusted_owner_available = user_settings_->RequestTrustedOwner(
-      base::Bind(&ExistingUserController::StartAutomaticFreeDiskSpaceControl,
+      base::Bind(&ExistingUserController::SetOwnerUserInCryptohome,
                  weak_factory_.GetWeakPtr()));
   if (!trusted_owner_available) {
     // Value of owner email is still not verified.
@@ -589,7 +591,10 @@ void ExistingUserController::StartAutomaticFreeDiskSpaceControl() {
     CryptohomeLibrary* cryptohomed = CrosLibrary::Get()->GetCryptohomeLibrary();
     cryptohomed->AsyncSetOwnerUser(
         UserCrosSettingsProvider::cached_owner(), NULL);
-    cryptohomed->AsyncDoAutomaticFreeDiskSpaceControl(NULL);
+
+    // Do not invoke AsyncDoAutomaticFreeDiskSpaceControl(NULL) here
+    // so it does not delay the following mount. Cleanup will be
+    // started in Cryptohomed by timer.
   }
 }
 

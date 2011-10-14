@@ -147,9 +147,9 @@ class ExistingUserController : public LoginDisplay::Delegate,
     login_performer_delegate_.reset(d);
   }
 
-  // Passes owner user to cryptohomed and initiates disk control control check.
+  // Passes owner user to cryptohomed. Called right before mounting a user.
   // Subsequent disk space control checks are invoked by cryptohomed timer.
-  void StartAutomaticFreeDiskSpaceControl();
+  void SetOwnerUserInCryptohome();
 
   // Used to execute login operations.
   scoped_ptr<LoginPerformer> login_performer_;
