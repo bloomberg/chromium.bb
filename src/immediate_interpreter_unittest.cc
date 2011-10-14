@@ -80,6 +80,71 @@ TEST(ImmediateInterpreterTest, MoveDownTest) {
             ii.SyncInterpret(&hardware_states[4], NULL));
 }
 
+TEST(ImmediateInterpreterTest, MoveUpWithRestingThumbTest) {
+  ImmediateInterpreter ii(NULL);
+  HardwareProperties hwprops = {
+    0,  // left edge
+    0,  // top edge
+    1000,  // right edge
+    1000,  // bottom edge
+    50,  // pixels/TP width
+    50,  // pixels/TP height
+    96,  // screen DPI x
+    96,  // screen DPI y
+    2,  // max fingers
+    5,  // max touch
+    0,  // tripletap
+    0,  // semi-mt
+    1  // is button pad
+  };
+
+  FingerState finger_states[] = {
+    // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
+    {0, 0, 0, 0, 10, 0, 500, 999, 1},
+    {0, 0, 0, 0, 10, 0, 500, 950, 2},
+    {0, 0, 0, 0, 10, 0, 500, 999, 1},
+    {0, 0, 0, 0, 10, 0, 500, 940, 2},
+    {0, 0, 0, 0, 10, 0, 500, 999, 1},
+    {0, 0, 0, 0, 10, 0, 500, 930, 2}
+  };
+  HardwareState hardware_states[] = {
+    // time, buttons down, finger count, finger states pointer
+    { 200000, 0, 2, 2, &finger_states[0] },
+    { 210000, 0, 2, 2, &finger_states[2] },
+    { 220000, 0, 2, 2, &finger_states[4] },
+    { 230000, 0, 0, 0, NULL },
+    { 240000, 0, 0, 0, NULL }
+  };
+
+  // Should fail w/o hardware props set
+  EXPECT_EQ(NULL, ii.SyncInterpret(&hardware_states[0], NULL));
+
+  ii.SetHardwareProperties(hwprops);
+
+  EXPECT_EQ(NULL, ii.SyncInterpret(&hardware_states[0], NULL));
+
+  Gesture* gs = ii.SyncInterpret(&hardware_states[1], NULL);
+  ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
+  EXPECT_EQ(kGestureTypeMove, gs->type);
+  EXPECT_EQ(0, gs->details.move.dx);
+  EXPECT_EQ(-10, gs->details.move.dy);
+  EXPECT_EQ(200000, gs->start_time);
+  EXPECT_EQ(210000, gs->end_time);
+
+  gs = ii.SyncInterpret(&hardware_states[2], NULL);
+  EXPECT_NE(reinterpret_cast<Gesture*>(NULL), gs);
+  EXPECT_EQ(kGestureTypeMove, gs->type);
+  EXPECT_EQ(0, gs->details.move.dx);
+  EXPECT_EQ(-10, gs->details.move.dy);
+  EXPECT_EQ(210000, gs->start_time);
+  EXPECT_EQ(220000, gs->end_time);
+
+  EXPECT_EQ(reinterpret_cast<Gesture*>(NULL),
+            ii.SyncInterpret(&hardware_states[3], NULL));
+  EXPECT_EQ(reinterpret_cast<Gesture*>(NULL),
+            ii.SyncInterpret(&hardware_states[4], NULL));
+}
+
 TEST(ImmediateInterpreterTest, ScrollUpTest) {
   ImmediateInterpreter ii(NULL);
   HardwareProperties hwprops = {
@@ -100,14 +165,14 @@ TEST(ImmediateInterpreterTest, ScrollUpTest) {
 
   FingerState finger_states[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
-    {0, 0, 0, 0, 1, 0, 400, 900, 1},
-    {0, 0, 0, 0, 1, 0, 405, 900, 2},
+    {0, 0, 0, 0, 24, 0, 400, 900, 1},
+    {0, 0, 0, 0, 52, 0, 405, 900, 2},
 
-    {0, 0, 0, 0, 1, 0, 400, 800, 1},
-    {0, 0, 0, 0, 1, 0, 405, 800, 2},
+    {0, 0, 0, 0, 24, 0, 400, 800, 1},
+    {0, 0, 0, 0, 52, 0, 405, 800, 2},
 
-    {0, 0, 0, 0, 1, 0, 400, 700, 1},
-    {0, 0, 0, 0, 1, 0, 405, 700, 2},
+    {0, 0, 0, 0, 24, 0, 400, 700, 1},
+    {0, 0, 0, 0, 52, 0, 405, 700, 2},
   };
   HardwareState hardware_states[] = {
     // time, buttons, finger count, touch count, finger states pointer

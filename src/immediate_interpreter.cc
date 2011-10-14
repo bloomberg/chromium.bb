@@ -138,7 +138,7 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg)
       evaluation_timeout_(prop_reg, "Evaluation Timeout", 0.2),
       two_finger_pressure_diff_thresh_(prop_reg,
                                        "Two Finger Pressure Diff Thresh",
-                                       27.0),
+                                       32.0),
       two_finger_close_distance_thresh_(prop_reg,
                                         "Two Finger Close Distance Thresh",
                                         40.0),
@@ -362,7 +362,7 @@ bool ImmediateInterpreter::TwoFingersGesturing(
   if (pdiff > two_finger_pressure_diff_thresh_.val_)
     return false;
   float xdist = fabsf(finger1.position_x - finger2.position_x);
-  float ydist = fabsf(finger1.position_x - finger2.position_x);
+  float ydist = fabsf(finger1.position_y - finger2.position_y);
 
   // Next, make sure distance between fingers isn't too great
   if ((xdist * xdist + ydist * ydist) >
