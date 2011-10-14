@@ -54,8 +54,9 @@
         <include name="IDR_PROGRESS_VALUE" file="resources\linux-progress-value.png" type="BINDATA" />
       </if>
       
-      <!-- Images only used by ChromeOS. -->
-      <if expr="pp_ifdef('chromeos')">
+      <!-- Images used by ChromeOS. -->
+      <!-- TODO(jamescook): Replace Linux images with Aura-specific ones. -->
+      <if expr="pp_ifdef('chromeos') or pp_ifdef('use_aura')">
         <include name="IDR_SCROLL_ARROW_DOWN" file="resources\chromeos_scroll_arrow_down.png" type="BINDATA" />
         <include name="IDR_SCROLL_ARROW_DOWN_H" file="resources\chromeos_scroll_arrow_down_h.png" type="BINDATA" />
         <include name="IDR_SCROLL_ARROW_DOWN_P" file="resources\chromeos_scroll_arrow_down_p.png" type="BINDATA" />
