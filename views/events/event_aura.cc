@@ -32,7 +32,10 @@ uint16 KeyEvent::GetCharacter() const {
 }
 
 uint16 KeyEvent::GetUnmodifiedCharacter() const {
-  return unmodified_character_;
+  if (unmodified_character_)
+    return unmodified_character_;
+
+  return GetCharacterFromKeyCode(key_code_, flags() & ui::EF_SHIFT_DOWN);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
