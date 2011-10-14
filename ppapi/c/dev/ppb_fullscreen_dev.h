@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_fullscreen_dev.idl modified Tue Oct 11 15:45:41 2011. */
+/* From dev/ppb_fullscreen_dev.idl modified Fri Oct 14 05:00:39 2011. */
 
 #ifndef PPAPI_C_DEV_PPB_FULLSCREEN_DEV_H_
 #define PPAPI_C_DEV_PPB_FULLSCREEN_DEV_H_
@@ -36,13 +36,11 @@ struct PPB_Fullscreen_Dev {
    * Switches the plugin instance to/from fullscreen mode. Returns PP_TRUE on
    * success, PP_FALSE on failure.
    *
-   * This unbinds the current 2D or 3D devices. Pending flushes and swapbuffers
-   * will execute as if the resource was off-screen. The transition to and from
-   * fullscreen is asynchronous. During the transition, IsFullscreen will
-   * return the original value, and no 2D or 3D device can be bound.
-   * The transition ends at DidChangeView when IsFullscreen returns the new
-   * value. You might receive other DidChangeView calls while in
-   * transition.
+   * The transition to and from fullscreen is asynchronous.
+   * During the transition, IsFullscreen will return the original value, and
+   * no 2D or 3D device can be bound. The transition ends at DidChangeView
+   * when IsFullscreen returns the new value. You might receive other
+   * DidChangeView calls while in transition.
    *
    * The transition to fullscreen can only occur while the browser is
    * processing a user gesture, even if PP_TRUE is returned.

@@ -1204,9 +1204,6 @@ bool PluginInstance::SetFullscreen(bool fullscreen, bool delay_report) {
   if (fullscreen && !frame->isProcessingUserGesture())
     return false;
 
-  // Unbind current 2D or 3D graphics context.
-  BindGraphics(pp_instance(), 0);
-
   VLOG(1) << "Setting fullscreen to " << (fullscreen ? "on" : "off");
   desired_fullscreen_state_ = fullscreen;
 
@@ -1218,12 +1215,6 @@ bool PluginInstance::SetFullscreen(bool fullscreen, bool delay_report) {
     container_->element().requestFullScreen();
   } else {
     container_->element().document().cancelFullScreen();
-  }
-  if (!delay_report) {
-    ReportGeometry();
-  } else {
-    MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(&PluginInstance::ReportGeometry, this));
   }
   return true;
 }
