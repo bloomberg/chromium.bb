@@ -59,17 +59,12 @@ void BookmarkNodeMenuModel::PopulateMenu() {
   DCHECK(submenus_.empty());
   for (int i = 0; i < node_->child_count(); ++i) {
     const BookmarkNode* child = node_->GetChild(i);
-    // Ironically the label will end up getting converted back to UTF8 later...
-    const string16 label =
-        UTF8ToUTF16(bookmark_utils::BuildMenuLabelFor(child));
     if (child->is_folder()) {
-      // Don't pass in the delegate, if any. Bookmark submenus don't need one.
-      BookmarkNodeMenuModel* submenu =
-          new BookmarkNodeMenuModel(NULL, model_, child, page_navigator_);
-      // No command id. Nothing happens if you click on the submenu itself.
-      AddSubMenu(0, label, submenu);
-      submenus_.push_back(submenu);
+      AddSubMenuForNode(child);
     } else {
+      // Ironically the label will end up getting converted back to UTF8 later.
+      const string16 label =
+        UTF8ToUTF16(bookmark_utils::BuildMenuLabelFor(child));
       // No command id. We override ActivatedAt below to handle activations.
       AddItem(0, label);
       const SkBitmap& node_icon = model_->GetFavicon(child);
@@ -79,6 +74,18 @@ void BookmarkNodeMenuModel::PopulateMenu() {
       // the icons in response.
     }
   }
+}
+
+void BookmarkNodeMenuModel::AddSubMenuForNode(const BookmarkNode* node) {
+  DCHECK(node->is_folder());
+  // Ironically the label will end up getting converted back to UTF8 later.
+  const string16 label = UTF8ToUTF16(bookmark_utils::BuildMenuLabelFor(node));
+  // Don't pass in the delegate, if any. Bookmark submenus don't need one.
+  BookmarkNodeMenuModel* submenu =
+      new BookmarkNodeMenuModel(NULL, model_, node, page_navigator_);
+  // No command id. Nothing happens if you click on the submenu itself.
+  AddSubMenu(0, label, submenu);
+  submenus_.push_back(submenu);
 }
 
 void BookmarkNodeMenuModel::NavigateToMenuItem(
@@ -98,6 +105,7 @@ BookmarkSubMenuModel::BookmarkSubMenuModel(
     : BookmarkNodeMenuModel(delegate, NULL, NULL, browser),
       browser_(browser),
       fixed_items_(0),
+      bookmark_end_(0),
       menu_(NULL) {
 }
 
@@ -129,25 +137,31 @@ void BookmarkSubMenuModel::MenuWillShow() {
     if (model())
       model()->AddObserver(this);
   }
-  if (!model() ||
-      (model()->bookmark_bar_node()->GetTotalNodeCount() == 0 &&
-       model()->other_node()->GetTotalNodeCount() == 0)) {
+  if (!model()) {
     fixed_items_ = GetItemCount();
+    bookmark_end_ = GetItemCount();
     return;
   }
-  AddSeparator();
-  fixed_items_ = GetItemCount();
-  if (!node())
-    set_node(model()->bookmark_bar_node());
-  // PopulateMenu() won't clear the items we added above.
-  PopulateMenu();
-  // TODO(mdm): add a separator and the "other bookmarks" node here.
+  // The node count includes the node itself, so 1 means empty.
+  if (model()->bookmark_bar_node()->GetTotalNodeCount() > 1) {
+    AddSeparator();
+    fixed_items_ = GetItemCount();
+    if (!node())
+      set_node(model()->bookmark_bar_node());
+    // PopulateMenu() won't clear the items we added above.
+    PopulateMenu();
+  }
+  bookmark_end_ = GetItemCount();
+  if (model()->other_node()->GetTotalNodeCount() > 1) {
+    AddSeparator();
+    AddSubMenuForNode(model()->other_node());
+  }
 }
 
 void BookmarkSubMenuModel::ActivatedAt(int index) {
   // Because this is also overridden in BookmarkNodeMenuModel which doesn't know
   // we might be prepending items, we have to adjust the index for it.
-  if (index >= fixed_items_)
+  if (index >= fixed_items_ && index < bookmark_end_)
     BookmarkNodeMenuModel::ActivatedAt(index - fixed_items_);
   else
     SimpleMenuModel::ActivatedAt(index);
@@ -156,7 +170,7 @@ void BookmarkSubMenuModel::ActivatedAt(int index) {
 void BookmarkSubMenuModel::ActivatedAt(int index, int event_flags) {
   // Because this is also overridden in BookmarkNodeMenuModel which doesn't know
   // we might be prepending items, we have to adjust the index for it.
-  if (index >= fixed_items_)
+  if (index >= fixed_items_ && index < bookmark_end_)
     BookmarkNodeMenuModel::ActivatedAt(index - fixed_items_, event_flags);
   else
     SimpleMenuModel::ActivatedAt(index, event_flags);

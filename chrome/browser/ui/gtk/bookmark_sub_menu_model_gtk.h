@@ -42,6 +42,9 @@ class BookmarkNodeMenuModel : public ui::SimpleMenuModel {
   // Adds all bookmark items to the model. Does not clear the model first.
   void PopulateMenu();
 
+  // Add a submenu for the given bookmark folder node.
+  void AddSubMenuForNode(const BookmarkNode* node);
+
   BookmarkModel* model() const { return model_; }
   void set_model(BookmarkModel* model) { model_ = model; }
 
@@ -100,6 +103,8 @@ class BookmarkSubMenuModel : public BookmarkNodeMenuModel,
 
   // The number of fixed items shown before the bookmarks.
   int fixed_items_;
+  // The index of the first non-bookmark item after the bookmarks.
+  int bookmark_end_;
 
   // We need to be able to call Cancel() on the menu when bookmarks change. This
   // is a bit of an abstraction violation but it could be converted to an
