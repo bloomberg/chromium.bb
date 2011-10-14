@@ -270,10 +270,6 @@ def _SetEnvForPnacl(env, root):
     if env.Bit('sandboxed_translator_is_dynamic'):
       pnacl_ld_flags += ' --pnacl-sb-dynamic'
 
-  # TODO(pdox): Remove PNaCl's dependency on the gcc toolchain here.
-  platform = NACL_CANONICAL_PLATFORM_MAP[env['PLATFORM']]
-  nnacl_root = os.path.join(env['MAIN_DIR'], 'toolchain', '%s_x86' % platform)
-
   # NACL_SDK_LIB is prepended to LIBPATH in generate()
   env.Prepend(LIBPATH=pnacl_lib)
 
