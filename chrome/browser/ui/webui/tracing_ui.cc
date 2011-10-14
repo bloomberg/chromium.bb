@@ -81,11 +81,6 @@ class TracingMessageHandler
   void LoadTraceFileComplete(std::string* file_contents);
   void SaveTraceFileComplete();
 
-  // Executes the javascript function |function_name| in the renderer, passing
-  // it the argument |value|.
-  void CallJavascriptFunction(const std::wstring& function_name,
-                              const Value* value);
-
  private:
   // The file dialog to select a file for loading or saving traces.
   scoped_refptr<SelectFileDialog> select_trace_file_dialog_;
@@ -359,14 +354,11 @@ void TracingMessageHandler::OnLoadTraceFile(const ListValue* list) {
 
 void TracingMessageHandler::LoadTraceFileComplete(std::string* file_contents) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  std::wstring javascript;
-  javascript += L"tracingController.onLoadTraceFileComplete(";
-  javascript += UTF8ToWide(*file_contents);
-  javascript += L");";
+  std::string javascript = "tracingController.onLoadTraceFileComplete("
+      + *file_contents + ");";
 
   web_ui_->tab_contents()->render_view_host()->
-      ExecuteJavascriptInWebFrame(string16(),
-                                  WideToUTF16Hack(javascript));
+      ExecuteJavascriptInWebFrame(string16(), UTF8ToUTF16(javascript));
 }
 
 void TracingMessageHandler::OnSaveTraceFile(const ListValue* list) {
@@ -393,7 +385,6 @@ void TracingMessageHandler::OnSaveTraceFile(const ListValue* list) {
 
 void TracingMessageHandler::SaveTraceFileComplete() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  std::wstring javascript;
   web_ui_->CallJavascriptFunction("tracingController.onSaveTraceFileComplete");
 }
 
@@ -430,14 +421,11 @@ void TracingMessageHandler::OnEndTracingComplete() {
 void TracingMessageHandler::OnTraceDataCollected(
     const std::string& json_events) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  std::wstring javascript;
-  javascript += L"tracingController.onTraceDataCollected(";
-  javascript += UTF8ToWide(json_events);
-  javascript += L");";
+  std::string javascript = "tracingController.onTraceDataCollected("
+      + json_events + ");";
 
   web_ui_->tab_contents()->render_view_host()->
-      ExecuteJavascriptInWebFrame(string16(),
-                                  WideToUTF16Hack(javascript));
+      ExecuteJavascriptInWebFrame(string16(), UTF8ToUTF16(javascript));
 }
 
 void TracingMessageHandler::OnTraceBufferPercentFullReply(float percent_full) {
