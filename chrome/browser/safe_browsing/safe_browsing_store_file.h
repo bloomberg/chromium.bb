@@ -271,6 +271,10 @@ class SafeBrowsingStoreFile : public SafeBrowsingStore {
   base::hash_set<int32> add_del_cache_;
   base::hash_set<int32> sub_del_cache_;
 
+  // Count number of add_prefix items added during the course of an
+  // update, for purposes of optimizing vector sizing at commit time.
+  size_t add_prefixes_added_;
+
   base::Closure corruption_callback_;
 
   // Tracks whether corruption has already been seen in the current

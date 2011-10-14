@@ -393,6 +393,7 @@ bool SafeBrowsingStoreFile::BeginUpdate() {
   DCHECK(add_hashes_.empty());
   DCHECK(sub_hashes_.empty());
   DCHECK_EQ(chunks_written_, 0);
+  add_prefixes_added_ = 0;
 
   // Since the following code will already hit the profile looking for
   // database files, this is a reasonable to time delete any old
@@ -474,6 +475,7 @@ bool SafeBrowsingStoreFile::FinishChunk() {
     return false;
 
   ++chunks_written_;
+  add_prefixes_added_ += add_prefixes_.size();
 
   // Clear everything to save memory.
   return ClearChunkBuffers();
@@ -518,6 +520,8 @@ bool SafeBrowsingStoreFile::DoUpdate(
                         file_.get(), &context))
       return OnCorruptDatabase();
 
+    add_prefixes.reserve(header.add_prefix_count + add_prefixes_added_);
+
     if (!ReadToVector(&add_prefixes, header.add_prefix_count,
                       file_.get(), &context) ||
         !ReadToVector(&sub_prefixes, header.sub_prefix_count,
@@ -542,6 +546,8 @@ bool SafeBrowsingStoreFile::DoUpdate(
 
     // Close the file so we can later rename over it.
     file_.reset();
+  } else {
+    add_prefixes.reserve(add_prefixes_added_);
   }
   DCHECK(!file_.get());
 
