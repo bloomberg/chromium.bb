@@ -34,9 +34,9 @@ var tests = [
 
   function successfulInstall() {
     // See things through all the way to a successful install.
-    listenOnce(chrome.management.onInstalled, callbackPass(function(info) {
+    listenOnce(chrome.management.onInstalled, function(info) {
       assertEq(info.id, extensionId);
-    }));
+    });
 
     var manifest = getManifest();
     getIconData(function(icon) {

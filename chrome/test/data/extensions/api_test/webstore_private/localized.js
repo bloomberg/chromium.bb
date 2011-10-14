@@ -10,9 +10,9 @@ var tests = [
   // This tests an install passing a localized name.
   function localizeName() {
     // See things through all the way to a successful install.
-    listenOnce(chrome.management.onInstalled, callbackPass(function(info) {
+    listenOnce(chrome.management.onInstalled, function(info) {
       assertEq(info.id, localizedId);
-    }));
+    });
 
     var manifest = getManifest('localized_extension/manifest.json');
     var messages = getManifest('localized_extension/_locales/fr/messages.json');
