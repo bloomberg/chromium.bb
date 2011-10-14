@@ -197,8 +197,8 @@ void TestFullscreen::DidChangeView(const pp::Rect& position,
 
   if (fullscreen_pending_ && !saw_first_fullscreen_didchangeview) {
     saw_first_fullscreen_didchangeview = true;
-    if (!screen_mode_.IsFullscreen())
-      FailFullscreenTest("DidChangeView1 is not in fullscreen");
+    if (screen_mode_.IsFullscreen())
+      FailFullscreenTest("DidChangeView1 is in fullscreen");
     if (position.size() != screen_size_)
       FailFullscreenTest("DidChangeView1 does not have screen size");
     // Wait for the 2nd DidChangeView.
