@@ -471,6 +471,9 @@ class PluginDelegate {
 
   // Notifies that |instance| has received a mouse event.
   virtual void DidReceiveMouseEvent(PluginInstance* instance) = 0;
+
+  // Determines if the browser entered fullscreen mode.
+  virtual bool IsInFullscreenMode() = 0;
 };
 
 }  // namespace ppapi

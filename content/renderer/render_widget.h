@@ -94,6 +94,10 @@ class CONTENT_EXPORT RenderWidget
   gfx::NativeViewId host_window() const { return host_window_; }
   gfx::Size size() const { return size_; }
   bool has_focus() const { return has_focus_; }
+  // TODO(darin): add a boolean flag to ViewMsg_Resize indicating whether or
+  // not we are in fullscreen mode. Return the value that was reported via the
+  // ViewMsg_Resize IPC here.
+  bool is_fullscreen() const { return true; }
 
   // IPC::Channel::Listener
   virtual bool OnMessageReceived(const IPC::Message& msg);

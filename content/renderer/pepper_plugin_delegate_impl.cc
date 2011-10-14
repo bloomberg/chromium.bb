@@ -1740,6 +1740,10 @@ void PepperPluginDelegateImpl::DidReceiveMouseEvent(
   last_mouse_event_target_ = instance;
 }
 
+bool PepperPluginDelegateImpl::IsInFullscreenMode() {
+  return render_view_->is_fullscreen();
+}
+
 int PepperPluginDelegateImpl::GetRoutingId() const {
   return render_view_->routing_id();
 }

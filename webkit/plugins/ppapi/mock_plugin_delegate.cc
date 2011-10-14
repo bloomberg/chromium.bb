@@ -303,5 +303,9 @@ void MockPluginDelegate::DidChangeCursor(PluginInstance* instance,
 void MockPluginDelegate::DidReceiveMouseEvent(PluginInstance* instance) {
 }
 
+bool MockPluginDelegate::IsInFullscreenMode() {
+  return false;
+}
+
 }  // namespace ppapi
 }  // namespace webkit

@@ -341,6 +341,7 @@ class PepperPluginDelegateImpl
                                const WebKit::WebCursorInfo& cursor) OVERRIDE;
   virtual void DidReceiveMouseEvent(
       webkit::ppapi::PluginInstance* instance) OVERRIDE;
+  virtual bool IsInFullscreenMode() OVERRIDE;
 
   CONTENT_EXPORT int GetRoutingId() const;
 

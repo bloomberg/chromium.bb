@@ -745,26 +745,33 @@ void PluginInstance::ViewChanged(const gfx::Rect& position,
   if (sent_did_change_view_ && position == position_ && new_clip == clip_)
     return;
 
-  // TODO(polina): fullscreen transition might take multiple ViewChanged,
-  // so this will update the state too early. Also, when F11 is used to
-  // exit fullscreen mode, desired_fullscreen_state_ is not properly set
-  // and cannot be relied on.
-  // Pending fix: http://codereview.chromium.org/8273029/
-  // WebKit: https://bugs.webkit.org/show_bug.cgi?id=70076.
-  if (desired_fullscreen_state_ && !fullscreen_) {
-    // Entered fullscreen. Only possible via SetFullscreen.
-    fullscreen_ = true;
-  } else if (!desired_fullscreen_state_ && fullscreen_) {
-    // Exited fullscreen. Possible via SetFullscreen or F11/link.
-    fullscreen_ = false;
-    // Reset the size attributes that we hacked to fill in the screen and
-    // retrigger ViewChanged. Make sure we don't forward duplicates of
-    // this view to the plugin.
-    ResetSizeAttributesAfterFullscreen();
-    SetSentDidChangeView(position, new_clip);
-    MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(&PluginInstance::ReportGeometry, this));
-    return;
+  if (desired_fullscreen_state_ || fullscreen_) {
+    WebElement element = container_->element();
+    WebDocument document = element.document();
+    // TODO(polina): temporary hack to ease WebKit/Chromium commit sequence.
+#ifdef WEBKIT_WEBDOCUMENT_HAS_FULLSCREENELEMENT
+    bool is_fullscreen_element = (element == document.fullScreenElement());
+#else
+    bool is_fullscreen_element = desired_fullscreen_state_;
+#endif
+    if (!fullscreen_ && desired_fullscreen_state_ &&
+        delegate()->IsInFullscreenMode() && is_fullscreen_element) {
+      // Entered fullscreen. Only possible via SetFullscreen().
+      fullscreen_ = true;
+    } else if (fullscreen_ && !is_fullscreen_element) {
+      // Exited fullscreen. Possible via SetFullscreen() or F11/link,
+      // so desired_fullscreen_state might be out-of-date.
+      desired_fullscreen_state_ = false;
+      fullscreen_ = false;
+      // Reset the size attributes that we hacked to fill in the screen and
+      // retrigger ViewChanged. Make sure we don't forward duplicates of
+      // this view to the plugin.
+      ResetSizeAttributesAfterFullscreen();
+      SetSentDidChangeView(position, new_clip);
+      MessageLoop::current()->PostTask(
+          FROM_HERE, base::Bind(&PluginInstance::ReportGeometry, this));
+      return;
+    }
   }
 
   SetSentDidChangeView(position, new_clip);
