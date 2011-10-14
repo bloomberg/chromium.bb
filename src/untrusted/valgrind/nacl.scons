@@ -9,6 +9,7 @@
 Import('env')
 
 # we do not have proper arm support and definitely no bitcode support
+# BUG= http://code.google.com/p/nativeclient/issues/detail?id=2357
 if env.Bit('target_arm') or env.Bit('bitcode'):
   Return()
 

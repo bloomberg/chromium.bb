@@ -19,7 +19,12 @@ if env.IsRunningUnderValgrind():
 
 ANNOTATIONS_LIBS=[]
 if env.Bit('nacl_glibc'):
-  ANNOTATIONS_LIBS += ['dynamic_annotations']
+  if not env.Bit('bitcode'):
+    ANNOTATIONS_LIBS += ['dynamic_annotations']
+  else:
+    # Valgrind does not yet work with PNaCl.
+    # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2357
+    env.FilterOut(CPPDEFINES = [['DYNAMIC_ANNOTATIONS_ENABLED', '1']])
 
 thread_test_nexe = env.ComponentProgram(
     'thread_test',
