@@ -140,6 +140,65 @@ TEST_F(RenderTextTest, ApplyStyleRange) {
   EXPECT_EQ(ui::Range(0, 5), render_text->style_ranges()[0].range);
   EXPECT_FALSE(render_text->style_ranges()[0].underline);
   EXPECT_FALSE(render_text->style_ranges()[0].strike);
+
+  // Apply new style range that contains the 2nd last old style range.
+  render_text->SetText(ASCIIToUTF16("abcdefghi"));
+  underline.range = ui::Range(0, 3);
+  render_text->ApplyStyleRange(underline);
+  color.range = ui::Range(3, 6);
+  render_text->ApplyStyleRange(color);
+  strike.range = ui::Range(6, 9);
+  render_text->ApplyStyleRange(strike);
+  EXPECT_EQ(3U, render_text->style_ranges().size());
+
+  color.foreground = SK_ColorRED;
+  color.range = ui::Range(2, 8);
+  render_text->ApplyStyleRange(color);
+  EXPECT_EQ(3U, render_text->style_ranges().size());
+  EXPECT_EQ(ui::Range(0, 2), render_text->style_ranges()[0].range);
+  EXPECT_TRUE(render_text->style_ranges()[0].underline);
+  EXPECT_EQ(ui::Range(2, 8), render_text->style_ranges()[1].range);
+  EXPECT_EQ(SK_ColorRED, render_text->style_ranges()[1].foreground);
+  EXPECT_EQ(ui::Range(8, 9), render_text->style_ranges()[2].range);
+  EXPECT_TRUE(render_text->style_ranges()[2].strike);
+
+  // Apply new style range that contains multiple old style ranges.
+  render_text->SetText(ASCIIToUTF16("abcdefghiopq"));
+  underline.range = ui::Range(0, 3);
+  render_text->ApplyStyleRange(underline);
+  color.range = ui::Range(3, 6);
+  render_text->ApplyStyleRange(color);
+  strike.range = ui::Range(6, 9);
+  render_text->ApplyStyleRange(strike);
+  strike_underline.range = ui::Range(9, 12);
+  render_text->ApplyStyleRange(strike_underline);
+  EXPECT_EQ(4U, render_text->style_ranges().size());
+
+  color.foreground = SK_ColorRED;
+  color.range = ui::Range(2, 10);
+  render_text->ApplyStyleRange(color);
+  EXPECT_EQ(3U, render_text->style_ranges().size());
+  EXPECT_EQ(ui::Range(0, 2), render_text->style_ranges()[0].range);
+  EXPECT_TRUE(render_text->style_ranges()[0].underline);
+  EXPECT_EQ(ui::Range(2, 10), render_text->style_ranges()[1].range);
+  EXPECT_EQ(SK_ColorRED, render_text->style_ranges()[1].foreground);
+  EXPECT_EQ(ui::Range(10, 12), render_text->style_ranges()[2].range);
+  EXPECT_TRUE(render_text->style_ranges()[2].underline);
+  EXPECT_TRUE(render_text->style_ranges()[2].strike);
+}
+
+static void SetTextWith2ExtraStyles(RenderText* render_text) {
+  render_text->SetText(ASCIIToUTF16("abcdefghi"));
+
+  gfx::StyleRange strike;
+  strike.strike = true;
+  strike.range = ui::Range(0, 3);
+  render_text->ApplyStyleRange(strike);
+
+  gfx::StyleRange underline;
+  underline.underline = true;
+  underline.range = ui::Range(3, 6);
+  render_text->ApplyStyleRange(underline);
 }
 
 TEST_F(RenderTextTest, StyleRangesAdjust) {
@@ -176,6 +235,47 @@ TEST_F(RenderTextTest, StyleRangesAdjust) {
   EXPECT_EQ(1U, render_text->style_ranges().size());
   EXPECT_EQ(ui::Range(0, 6), render_text->style_ranges()[0].range);
   EXPECT_FALSE(render_text->style_ranges()[0].strike);
+
+  // Test that ranges are removed correctly if they are outside the range of
+  // shorter text.
+  SetTextWith2ExtraStyles(render_text.get());
+  EXPECT_EQ(3U, render_text->style_ranges().size());
+
+  render_text->SetText(ASCIIToUTF16("abcdefg"));
+  EXPECT_EQ(3U, render_text->style_ranges().size());
+  EXPECT_EQ(ui::Range(0, 3), render_text->style_ranges()[0].range);
+  EXPECT_EQ(ui::Range(3, 6), render_text->style_ranges()[1].range);
+  EXPECT_EQ(ui::Range(6, 7), render_text->style_ranges()[2].range);
+
+  SetTextWith2ExtraStyles(render_text.get());
+  EXPECT_EQ(3U, render_text->style_ranges().size());
+
+  render_text->SetText(ASCIIToUTF16("abcdef"));
+  EXPECT_EQ(2U, render_text->style_ranges().size());
+  EXPECT_EQ(ui::Range(0, 3), render_text->style_ranges()[0].range);
+  EXPECT_EQ(ui::Range(3, 6), render_text->style_ranges()[1].range);
+
+  SetTextWith2ExtraStyles(render_text.get());
+  EXPECT_EQ(3U, render_text->style_ranges().size());
+
+  render_text->SetText(ASCIIToUTF16("abcde"));
+  EXPECT_EQ(2U, render_text->style_ranges().size());
+  EXPECT_EQ(ui::Range(0, 3), render_text->style_ranges()[0].range);
+  EXPECT_EQ(ui::Range(3, 5), render_text->style_ranges()[1].range);
+
+  SetTextWith2ExtraStyles(render_text.get());
+  EXPECT_EQ(3U, render_text->style_ranges().size());
+
+  render_text->SetText(ASCIIToUTF16("abc"));
+  EXPECT_EQ(1U, render_text->style_ranges().size());
+  EXPECT_EQ(ui::Range(0, 3), render_text->style_ranges()[0].range);
+
+  SetTextWith2ExtraStyles(render_text.get());
+  EXPECT_EQ(3U, render_text->style_ranges().size());
+
+  render_text->SetText(ASCIIToUTF16("a"));
+  EXPECT_EQ(1U, render_text->style_ranges().size());
+  EXPECT_EQ(ui::Range(0, 1), render_text->style_ranges()[0].range);
 }
 
 void RunMoveCursorLeftRightTest(RenderText* render_text,

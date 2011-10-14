@@ -105,13 +105,14 @@ void RenderText::SetText(const string16& text) {
     StyleRanges::iterator i;
     for (i = style_ranges_.begin(); i != style_ranges_.end(); i++) {
       if (i->range.start() >= text_.length()) {
-        i = style_ranges_.erase(i);
-        if (i == style_ranges_.end())
-          break;
-      } else if (i->range.end() > text_.length()) {
-        i->range.set_end(text_.length());
+        // Style ranges are sorted and non-overlapping, so all the subsequent
+        // style ranges should be out of text_.length() as well.
+        style_ranges_.erase(i, style_ranges_.end());
+        break;
       }
     }
+    // Since style ranges are sorted and non-overlapping, if there is a style
+    // range ends beyond text_.length, it must be the last one.
     style_ranges_.back().range.set_end(text_.length());
   }
 #ifndef NDEBUG
