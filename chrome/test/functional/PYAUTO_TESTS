@@ -158,8 +158,7 @@
       # crbug.com/70694, crbug.com/73078
       '-passwords.PasswordTest.testInfoBarDisappearByReload',
       '-passwords.PasswordTest.testNeverSavePasswords',
-      # crbug.com/91887
-      '-passwords.PasswordTest.testInfoBarDisappearByNavigatingPage',
+      # crbug.com/91887      
       '-passwords.PasswordTest.testSavedPasswordInTabsAndWindows',
       '-passwords.PasswordTest.testClearFetchedCredForNewUserName',
       # causes browser crash?  crbug.com/99865
