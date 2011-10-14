@@ -4037,19 +4037,19 @@ are declared in build/common.gypi.
       <message name="IDS_EXTENSIONS_INSPECT_VIEWS" desc="The text for the label in front of the links to inspect active views.">
         Inspect active views:
       </message>
-      <message name="IDS_EXTENSIONS_DISABLE" desc="The link for disabling extensions.">
+      <message name="IDS_EXTENSIONS_DISABLE" desc="The link for disabling an extension.">
         Disable
       </message>
       <message name="IDS_EXTENSIONS_ENABLE" desc="The link for enabling extensions.">
         Enable
       </message>
-      <message name="IDS_EXTENSIONS_ENABLED" desc="The label for have been enabled extensions.">
+      <message name="IDS_EXTENSIONS_ENABLED" desc="The label for an enabled extension.">
         Enabled
       </message>
       <message name="IDS_EXTENSIONS_REMOVE" desc="The label for uninstalling an extension.">
         Remove
       </message>
-      <message name="IDS_EXTENSIONS_ENABLE_INCOGNITO" desc="The checkbox for enabling extensions in incognito.">
+      <message name="IDS_EXTENSIONS_ENABLE_INCOGNITO" desc="The checkbox for enabling an extension in incognito.">
         Allow in incognito
       </message>
       <message name="IDS_EXTENSIONS_ALLOW_FILE_ACCESS" desc="The checkbox for allowing an extension access to run scripts on file URLs.">
