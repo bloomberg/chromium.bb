@@ -215,6 +215,12 @@
               '../base/allocator/allocator.gyp:allocator',
           ],
         }],
+        ['input_speech==0', {
+          'sources!': [
+            'renderer/speech_input_dispatcher.cc',
+            'renderer/speech_input_dispatcher.h',
+          ]
+        }],
       ],
       'dependencies': [
         '../build/linux/system.gyp:gtk',

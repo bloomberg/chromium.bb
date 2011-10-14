@@ -1957,6 +1957,11 @@
             ['exclude', '^browser/policy/'],
           ],
         }],
+        ['input_speech==0', {
+          'sources/': [
+            ['exclude', '^browser/speech/'],
+          ],
+        }],
         ['safe_browsing==1', {
           'defines': [
             'ENABLE_SAFE_BROWSING',
@@ -2614,6 +2619,12 @@
         ['configuration_policy==0', {
           'sources/': [
             ['exclude', '^browser/policy/'],
+          ],
+        }],
+        ['input_speech==0', {
+          'sources/': [
+            ['exclude', '^browser/speech/'],
+            ['exclude', '^../content/browser/speech/'],
           ],
         }],
         ['safe_browsing==1', {

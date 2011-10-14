@@ -188,6 +188,11 @@
         'test/run_all_unittests.cc',
       ],
       'conditions': [
+        ['input_speech==0', {
+          'sources/': [
+            ['exclude', '^browser/speech/'],
+          ]
+        }],
         ['use_x11 == 1', {
           'dependencies': [
             '../build/linux/system.gyp:dbus',

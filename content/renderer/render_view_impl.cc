@@ -4385,8 +4385,10 @@ WebKit::WebGeolocationClient* RenderViewImpl::geolocationClient() {
 
 WebKit::WebSpeechInputController* RenderViewImpl::speechInputController(
     WebKit::WebSpeechInputListener* listener) {
+#if defined(ENABLE_INPUT_SPEECH)
   if (!speech_input_dispatcher_)
     speech_input_dispatcher_ = new SpeechInputDispatcher(this, listener);
+#endif
   return speech_input_dispatcher_;
 }
 

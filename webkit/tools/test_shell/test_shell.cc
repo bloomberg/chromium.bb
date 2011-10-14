@@ -606,8 +606,10 @@ WebKit::WebSpeechInputControllerMock*
 TestShell::CreateSpeechInputControllerMock(
     WebKit::WebSpeechInputListener* listener) {
   DCHECK(!speech_input_controller_mock_.get());
+#if defined(ENABLE_INPUT_SPEECH)
   speech_input_controller_mock_.reset(
       WebKit::WebSpeechInputControllerMock::create(listener));
+#endif
   return speech_input_controller_mock_.get();
 }
 
