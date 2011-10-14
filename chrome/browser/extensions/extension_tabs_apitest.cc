@@ -60,8 +60,6 @@
 #endif
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Tabs) {
-  ASSERT_TRUE(StartTestServer());
-
   // The test creates a tab and checks that the URL of the new tab
   // is that of the new tab page.  Make sure the pref that controls
   // this is set.
@@ -72,60 +70,43 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Tabs) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Tabs2) {
-  ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "crud2.html")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabUpdate) {
-  ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "update.html")) << message_;
 }
 
-// This times out regularly on all platforms. http://crbug.com/98383
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_TabUpdateNoPermissions) {
-  ASSERT_TRUE(StartTestServer());
-  ASSERT_TRUE(RunExtensionSubtest(
-      "tabs/no_permissions", "update.html")) << message_;
-}
-
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabPinned) {
-  ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "pinned.html")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_TabMove) {
-  ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "move.html")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_TabEvents) {
-  ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "events.html")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabRelativeURLs) {
-  ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "relative_urls.html"))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabQuery) {
-  ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "query.html")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabHighlight) {
-  ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "highlight.html")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabCrashBrowser) {
-  ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "crash.html")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabGetCurrent) {
-  ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionTest("tabs/get_current")) << message_;
 }
 
@@ -136,12 +117,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FLAKY_TabConnect) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_TabOnRemoved) {
-  ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionTest("tabs/on_removed")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabReload) {
-  ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionTest("tabs/reload")) << message_;
 }
 
@@ -182,7 +161,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_CaptureVisibleTabPng) {
 #define MAYBE_CaptureVisibleTabRace DISABLED_CaptureVisibleTabRace
 #endif
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_CaptureVisibleTabRace) {
-  ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionSubtest("tabs/capture_visible_tab",
                                   "test_race.html")) << message_;
 }
@@ -198,7 +176,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, CaptureVisibleNoFile) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabsOnUpdated) {
-  ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionTest("tabs/on_updated")) << message_;
 }
 
@@ -227,8 +204,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FocusWindowDoesNotUnmaximize) {
 #endif  // OS_WIN
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoDisabledByPref) {
-  ASSERT_TRUE(StartTestServer());
-
   IncognitoModePrefs::SetAvailability(browser()->profile()->GetPrefs(),
                                       IncognitoModePrefs::DISABLED);
 
@@ -238,12 +213,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoDisabledByPref) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_GetViewsOfCreatedPopup) {
-  ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "get_views_popup.html"))
       << message_;
 }
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_GetViewsOfCreatedWindow) {
-  ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "get_views_window.html"))
       << message_;
 }

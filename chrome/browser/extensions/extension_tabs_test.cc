@@ -109,5 +109,20 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetWindow) {
           browser(),
           INCLUDE_INCOGNITO)));
   EXPECT_TRUE(GetBoolean(result.get(), "incognito"));
+}
 
+IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, UpdateNoPermissions) {
+  // The test empty extension has no permissions, therefore it should not get
+  // tab data in the function result.
+  scoped_refptr<UpdateTabFunction> update_tab_function(new UpdateTabFunction());
+  scoped_refptr<Extension> empty_extension(CreateEmptyExtension());
+  update_tab_function->set_extension(empty_extension.get());
+  // Without a callback the function will not generate a result.
+  update_tab_function->set_has_callback(true);
+
+  scoped_ptr<base::Value> result(RunFunctionAndReturnResult(
+          update_tab_function.get(),
+          "[null, {\"url\": \"neutrinos\"}]",
+          browser()));
+  EXPECT_EQ(base::Value::TYPE_NULL, result->GetType());
 }

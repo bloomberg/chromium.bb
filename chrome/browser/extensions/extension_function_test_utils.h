@@ -9,7 +9,10 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/extensions/extension_function.h"
+
+class Browser;
+class Extension;
+class UIThreadExtensionFunction;
 
 namespace base {
 class Value;
@@ -34,6 +37,10 @@ std::string GetString(base::DictionaryValue* val, const std::string& key);
 
 // If |val| is a dictionary, return it as one, otherwise NULL.
 base::DictionaryValue* ToDictionary(base::Value* val);
+
+// Creates an extension instance that can be attached to an ExtensionFunction
+// before running it.
+scoped_refptr<Extension> CreateEmptyExtension();
 
 enum RunFunctionFlags {
   NONE = 0,

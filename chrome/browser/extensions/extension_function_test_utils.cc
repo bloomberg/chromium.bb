@@ -6,10 +6,41 @@
 
 #include <string>
 
+#include "base/file_path.h"
 #include "base/json/json_reader.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/extensions/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace {
+
+class TestFunctionDispatcherDelegate
+    : public ExtensionFunctionDispatcher::Delegate {
+ public:
+  explicit TestFunctionDispatcherDelegate(Browser* browser) :
+      browser_(browser) {}
+  virtual ~TestFunctionDispatcherDelegate() {}
+
+ private:
+  virtual Browser* GetBrowser() OVERRIDE {
+    return browser_;
+  }
+
+  virtual gfx::NativeView GetNativeViewOfHost() OVERRIDE {
+    return NULL;
+  }
+
+  virtual TabContents* GetAssociatedTabContents() const OVERRIDE {
+    return NULL;
+  }
+
+  Browser* browser_;
+};
+
+}  // namespace
 
 namespace extension_function_test_utils {
 
@@ -62,6 +93,22 @@ base::DictionaryValue* ToDictionary(base::Value* val) {
   return static_cast<base::DictionaryValue*>(val);
 }
 
+scoped_refptr<Extension> CreateEmptyExtension() {
+  std::string error;
+  const FilePath test_extension_path;
+  scoped_ptr<base::DictionaryValue> test_extension_value(
+      ParseDictionary("{\"name\": \"Test\", \"version\": \"1.0\"}"));
+  scoped_refptr<Extension> extension(Extension::Create(
+      test_extension_path,
+      Extension::INTERNAL,
+      *test_extension_value.get(),
+      Extension::NO_FLAGS,
+      &error));
+  if (!error.empty())
+    ADD_FAILURE() << "Could not parse test extension " << error;
+  return extension;
+}
+
 std::string RunFunctionAndReturnError(UIThreadExtensionFunction* function,
                                       const std::string& args,
                                       Browser* browser) {
@@ -90,7 +137,9 @@ base::Value* RunFunctionAndReturnResult(UIThreadExtensionFunction* function,
   scoped_refptr<ExtensionFunction> function_owner(function);
   RunFunction(function, args, browser, flags);
   if (!function->GetError().empty())
-    ADD_FAILURE() << function->GetError();
+    ADD_FAILURE() << "Unexpected error: " << function->GetError();
+  if (!function->GetResultValue())
+    ADD_FAILURE() << "No result value found";
   return function->GetResultValue()->DeepCopy();
 }
 
@@ -99,7 +148,16 @@ void RunFunction(UIThreadExtensionFunction* function,
                  Browser* browser,
                  RunFunctionFlags flags) {
   scoped_ptr<base::ListValue> parsed_args(ParseList(args));
+  if (!parsed_args.get()) {
+    ADD_FAILURE() << "Could not parse extension function arguments: " << args;
+  }
   function->SetArgs(parsed_args.get());
+
+  TestFunctionDispatcherDelegate dispatcher_delegate(browser);
+  ExtensionFunctionDispatcher dispatcher(
+      browser->profile(), &dispatcher_delegate);
+  function->set_dispatcher(dispatcher.AsWeakPtr());
+
   function->set_profile(browser->profile());
   function->set_include_incognito(flags & INCLUDE_INCOGNITO);
   function->Run();
