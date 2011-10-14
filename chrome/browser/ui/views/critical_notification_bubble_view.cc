@@ -6,8 +6,11 @@
 
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/upgrade_detector.h"
+#include "chrome/common/pref_names.h"
 #include "content/browser/user_metrics.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -92,10 +95,16 @@ int CriticalNotificationBubbleView::GetRemainingTime() {
 }
 
 void CriticalNotificationBubbleView::UpdateBubbleHeadline(int seconds) {
-  headline_->SetText(UTF16ToWide(
-      l10n_util::GetStringFUTF16(IDS_CRITICAL_NOTIFICATION_HEADLINE,
-          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
-          base::IntToString16(seconds))));
+  if (seconds > 0) {
+    headline_->SetText(UTF16ToWide(
+        l10n_util::GetStringFUTF16(IDS_CRITICAL_NOTIFICATION_HEADLINE,
+            l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
+            base::IntToString16(seconds))));
+  } else {
+    headline_->SetText(UTF16ToWide(
+        l10n_util::GetStringFUTF16(IDS_CRITICAL_NOTIFICATION_HEADLINE_ALTERNATE,
+            l10n_util::GetStringUTF16(IDS_PRODUCT_NAME))));
+  }
 }
 
 void CriticalNotificationBubbleView::OnCountdown() {
@@ -106,14 +115,17 @@ void CriticalNotificationBubbleView::OnCountdown() {
         UserMetricsAction("CriticalNotification_AutoRestart"));
     refresh_timer_.Stop();
     BrowserList::AttemptRestart();
-  } else {
-    // Update the counter.
-    UpdateBubbleHeadline(seconds);
-    // TODO(msw): figure out why SchedulePaint doesn't work here.
-#if !defined(USE_AURA)
-    bubble_->ScheduleDraw();
-#endif
   }
+
+  // Update the counter. It may seem counter-intuitive to update the message
+  // after we attempt restart, but remember that shutdown may be aborted by
+  // an onbeforeunload handler, leaving the bubble up when the browser should
+  // have restarted (giving the user another chance).
+  UpdateBubbleHeadline(seconds);
+  // TODO(msw): figure out why SchedulePaint doesn't work here.
+#if !defined(USE_AURA)
+  bubble_->ScheduleDraw();
+#endif
 }
 
 gfx::Size CriticalNotificationBubbleView::GetPreferredSize() {
@@ -173,6 +185,13 @@ void CriticalNotificationBubbleView::ButtonPressed(
   } else if (sender == dismiss_button_) {
     UserMetrics::RecordAction(UserMetricsAction("CriticalNotification_Ignore"));
     bubble_->Close();
+
+    // If the counter reaches 0, we set a restart flag that must be cleared if
+    // the user selects, for example, "Stay on this page" during an
+    // onbeforeunload handler.
+    PrefService* prefs = g_browser_process->local_state();
+    if (prefs->HasPrefPath(prefs::kRestartLastSessionOnShutdown))
+      prefs->ClearPref(prefs::kRestartLastSessionOnShutdown);
   } else {
     NOTREACHED();
   }

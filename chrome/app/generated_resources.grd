@@ -7226,6 +7226,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_CRITICAL_NOTIFICATION_HEADLINE" desc="The headline for the critical notification">
         <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will restart in <ph name="SECONDS">$2<ex>10</ex></ph> seconds.
       </message>
+      <message name="IDS_CRITICAL_NOTIFICATION_HEADLINE_ALTERNATE" desc="The headline for the critical notification when the countdown reaches 0 (will only be seen if an onbeforeunload handler on a web page cancels the shutdown sequence.">
+        You should restart <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> now.
+      </message>
       <message name="IDS_CRITICAL_NOTIFICATION_TEXT" desc="The text of the critical update notification">
         A special security update for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> was just applied; you should restart now for it to take effect (we'll restore your tabs).
       </message>
