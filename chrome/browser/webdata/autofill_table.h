@@ -279,6 +279,9 @@ class AutofillTable : public WebDatabaseTable {
   bool MigrateToVersion35GreatBritainCountryCodes();
   bool MigrateToVersion37MergeAndCullOlderProfiles();
 
+  // Max data length saved in the table;
+  static const size_t kMaxDataLength;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, Autofill);
   FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, Autofill_AddChanges);

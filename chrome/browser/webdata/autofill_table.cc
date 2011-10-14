@@ -42,12 +42,9 @@ T* address_of(T& v) {
   return &v;
 }
 
-// The maximum length allowed for form data.
-const size_t kMaxDataLength = 1024;
-
 string16 LimitDataSize(const string16& data) {
-  if (data.size() > kMaxDataLength)
-    return data.substr(0, kMaxDataLength);
+  if (data.size() > AutofillTable::kMaxDataLength)
+    return data.substr(0, AutofillTable::kMaxDataLength);
 
   return data;
 }
@@ -346,6 +343,8 @@ bool RemoveAutofillProfilePieces(const std::string& guid, sql::Connection* db) {
 
 }  // namespace
 
+// The maximum length allowed for form data.
+const size_t AutofillTable::kMaxDataLength = 1024;
 
 AutofillTable::AutofillTable(sql::Connection* db, sql::MetaTable* meta_table)
     : WebDatabaseTable(db, meta_table) {

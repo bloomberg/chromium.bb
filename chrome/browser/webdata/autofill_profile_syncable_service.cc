@@ -32,6 +32,13 @@ bool MergeField(FormGroup* form_group,
   return true;
 }
 
+std::string LimitData(const std::string& data) {
+  std::string sanitized_value(data);
+  if (sanitized_value.length() > AutofillTable::kMaxDataLength)
+    sanitized_value.resize(AutofillTable::kMaxDataLength);
+  return sanitized_value;
+}
+
 }  // namespace
 
 const char kAutofillProfileTag[] = "google_chrome_autofill_profiles";
@@ -267,25 +274,29 @@ void AutofillProfileSyncableService::WriteAutofillProfile(
   DCHECK(guid::IsValidGUID(profile.guid()));
 
   specifics->set_guid(profile.guid());
-  specifics->set_name_first(UTF16ToUTF8(profile.GetInfo(NAME_FIRST)));
-  specifics->set_name_middle(UTF16ToUTF8(profile.GetInfo(NAME_MIDDLE)));
-  specifics->set_name_last(UTF16ToUTF8(profile.GetInfo(NAME_LAST)));
+  specifics->set_name_first(
+      LimitData(UTF16ToUTF8(profile.GetInfo(NAME_FIRST))));
+  specifics->set_name_middle(
+      LimitData(UTF16ToUTF8(profile.GetInfo(NAME_MIDDLE))));
+  specifics->set_name_last(LimitData(UTF16ToUTF8(profile.GetInfo(NAME_LAST))));
   specifics->set_address_home_line1(
-      UTF16ToUTF8(profile.GetInfo(ADDRESS_HOME_LINE1)));
+      LimitData(UTF16ToUTF8(profile.GetInfo(ADDRESS_HOME_LINE1))));
   specifics->set_address_home_line2(
-      UTF16ToUTF8(profile.GetInfo(ADDRESS_HOME_LINE2)));
-  specifics->set_address_home_city(UTF16ToUTF8(profile.GetInfo(
-      ADDRESS_HOME_CITY)));
-  specifics->set_address_home_state(UTF16ToUTF8(profile.GetInfo(
-      ADDRESS_HOME_STATE)));
-  specifics->set_address_home_country(UTF16ToUTF8(profile.GetInfo(
-      ADDRESS_HOME_COUNTRY)));
-  specifics->set_address_home_zip(UTF16ToUTF8(profile.GetInfo(
-      ADDRESS_HOME_ZIP)));
-  specifics->set_email_address(UTF16ToUTF8(profile.GetInfo(EMAIL_ADDRESS)));
-  specifics->set_company_name(UTF16ToUTF8(profile.GetInfo(COMPANY_NAME)));
-  specifics->set_phone_home_whole_number(UTF16ToUTF8(profile.GetInfo(
-      PHONE_HOME_WHOLE_NUMBER)));
+      LimitData(UTF16ToUTF8(profile.GetInfo(ADDRESS_HOME_LINE2))));
+  specifics->set_address_home_city(
+      LimitData(UTF16ToUTF8(profile.GetInfo(ADDRESS_HOME_CITY))));
+  specifics->set_address_home_state(
+      LimitData(UTF16ToUTF8(profile.GetInfo(ADDRESS_HOME_STATE))));
+  specifics->set_address_home_country(
+      LimitData(UTF16ToUTF8(profile.GetInfo(ADDRESS_HOME_COUNTRY))));
+  specifics->set_address_home_zip(
+      LimitData(UTF16ToUTF8(profile.GetInfo(ADDRESS_HOME_ZIP))));
+  specifics->set_email_address(
+      LimitData(UTF16ToUTF8(profile.GetInfo(EMAIL_ADDRESS))));
+  specifics->set_company_name(
+      LimitData(UTF16ToUTF8(profile.GetInfo(COMPANY_NAME))));
+  specifics->set_phone_home_whole_number(
+      LimitData(UTF16ToUTF8(profile.GetInfo(PHONE_HOME_WHOLE_NUMBER))));
 }
 
 void AutofillProfileSyncableService::CreateGUIDToProfileMap(

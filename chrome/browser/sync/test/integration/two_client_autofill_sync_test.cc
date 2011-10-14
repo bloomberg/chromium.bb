@@ -8,6 +8,7 @@
 #include "chrome/browser/sync/test/integration/autofill_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/webdata/autofill_entry.h"
+#include "chrome/browser/webdata/autofill_table.h"
 
 using autofill_helper::AddKeys;
 using autofill_helper::AddProfile;
@@ -23,9 +24,6 @@ using autofill_helper::PROFILE_NULL;
 using autofill_helper::RemoveKey;
 using autofill_helper::RemoveProfile;
 using autofill_helper::UpdateProfile;
-
-// Autofill entry length is limited to 1024.  See http://crbug.com/49332.
-const size_t kMaxDataLength = 1024;
 
 class TwoClientAutofillSyncTest : public SyncTest {
  public:
@@ -354,7 +352,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, MaxLength) {
   ASSERT_TRUE(ProfilesMatch(0, 1));
   ASSERT_EQ(1U, GetAllProfiles(0).size());
 
-  string16 max_length_string(kMaxDataLength, '.');
+  string16 max_length_string(AutofillTable::kMaxDataLength, '.');
   UpdateProfile(0,
                 GetAllProfiles(0)[0]->guid(),
                 AutofillType(NAME_FIRST),
@@ -376,9 +374,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, MaxLength) {
   ASSERT_TRUE(ProfilesMatch(0, 1));
 }
 
-// TODO(braffert): Remove FAILS annotation when crbug.com/85769 is resolved.
-// TCM ID - 7735472.
-IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, FAILS_ExceedsMaxLength) {
+IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, ExceedsMaxLength) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
@@ -386,7 +382,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, FAILS_ExceedsMaxLength) {
   ASSERT_TRUE(ProfilesMatch(0, 1));
   ASSERT_EQ(1U, GetAllProfiles(0).size());
 
-  string16 exceeds_max_length_string(kMaxDataLength + 1, '.');
+  string16 exceeds_max_length_string(AutofillTable::kMaxDataLength + 1, '.');
   UpdateProfile(0,
                 GetAllProfiles(0)[0]->guid(),
                 AutofillType(NAME_FIRST),
