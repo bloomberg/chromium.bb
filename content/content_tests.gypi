@@ -114,6 +114,7 @@
         '..',
       ],
       'sources': [
+        'app/startup_helper_win.cc',
         'browser/appcache/chrome_appcache_service_unittest.cc',
         'browser/browser_thread_unittest.cc',
         'browser/browser_url_handler_unittest.cc',
@@ -214,6 +215,11 @@
             'closure_blocks_leopard_compat',
           ],
         }],
+        ['OS == "win" or (toolkit_uses_gtk == 1 and selinux == 0)', {
+          'dependencies': [
+            '../sandbox/sandbox.gyp:sandbox',
+          ],
+        }],
       ],
     },
     {
@@ -241,6 +247,7 @@
         'HAS_OUT_OF_PROC_TEST_RUNNER',
       ],
       'sources': [
+        'app/startup_helper_win.cc',
         'test/content_browser_test.h',
         'test/content_browser_test.cc',
         'test/content_test_launcher.cc',
@@ -269,7 +276,6 @@
             '<(DEPTH)/net/net.gyp:net_resources',
             '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_resources',
             '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_strings',
-            '../sandbox/sandbox.gyp:sandbox',
           ],
           'configurations': {
             'Debug_Base': {
@@ -284,6 +290,11 @@
         ['OS=="win" and win_use_allocator_shim==1', {
           'dependencies': [
             '../base/allocator/allocator.gyp:allocator',
+          ],
+        }],
+        ['OS == "win" or (toolkit_uses_gtk == 1 and selinux == 0)', {
+          'dependencies': [
+            '../sandbox/sandbox.gyp:sandbox',
           ],
         }],
       ],

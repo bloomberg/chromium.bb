@@ -118,6 +118,7 @@
         '..',
       ],
       'sources': [
+        'app/startup_helper_win.cc',
         'shell/shell_main.cc',
       ],
       'msvs_settings': {
@@ -141,6 +142,11 @@
               },
             },
           },
+        }],
+        ['OS == "win" or (toolkit_uses_gtk == 1 and selinux == 0)', {
+          'dependencies': [
+            '../sandbox/sandbox.gyp:sandbox',
+          ],
         }],
       ],
     },
