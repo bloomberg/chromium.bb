@@ -1150,6 +1150,51 @@ are declared in build/common.gypi.
         </message>
       </if>
 
+      <!-- Settings change error messages -->
+      <message name="IDS_SEARCH_ENGINE_CHANGE_WRENCH_MENU_ITEM" desc="The wrench menu item indicating a search engine change.">
+        Search engine change
+      </message>
+      <message name="IDS_SEARCH_ENGINE_CHANGE_BUBBLE_TITLE" desc="The title of the bubble view with a search engine change notification.">
+        Search Engine Change
+      </message>
+      <message name="IDS_SEARCH_ENGINE_CHANGE_BUBBLE_TEXT" desc="The text of the bubble view with a search engine change notification.">
+        A program on your computer tried to change your search engine from <ph name="PREV_ENGINE">$1<ex>OldSearchEngine</ex></ph> to <ph name="NEW_ENGINE">$2<ex>NewSearchEngine</ex></ph>. Would you like to make this change?
+      </message>
+      <message name="IDS_SEARCH_ENGINE_CHANGE_UNKNOWN_BUBBLE_TEXT" desc="The text of the bubble view with a search engine change notification when the previous search engine is unknown.">
+        A program on your computer tried to change your search engine to <ph name="NEW_ENGINE">$1<ex>NewSearchEngine</ex></ph>. Would you like to make this change?
+      </message>
+      <message name="IDS_SEARCH_ENGINE_CHANGE_OPEN_SETTINGS" desc="The title of the button that takes user to the search engine settings page instead of using the current search engine.">
+        No, take me to settings
+      </message>
+      <message name="IDS_SEARCH_ENGINE_CHANGE_RESTORE" desc="The title of the button that restores default search engine to its previous setting.">
+        Keep using <ph name="PREV_ENGINE">$1<ex>OldSearchEngine</ex></ph>
+      </message>
+      <message name="IDS_SEARCH_ENGINE_CHANGE_APPLY" desc="The title of the button that changes default Search engine to the new one.">
+        Change to <ph name="NEW_ENGINE">$1<ex>NewSearchEngine</ex></ph>
+      </message>
+
+      <message name="IDS_HOMEPAGE_CHANGE_WRENCH_MENU_ITEM" desc="The wrench menu item indicating a home page change.">
+        Home page change
+      </message>
+      <message name="IDS_HOMEPAGE_CHANGE_BUBBLE_TITLE" desc="The title of the bubble view with a home page change notification.">
+        Home Page Change
+      </message>
+      <message name="IDS_HOMEPAGE_CHANGE_BUBBLE_TEXT" desc="The text of the bubble view with a home page change notification.">
+        A program on your computer tried to change your home page from <ph name="PREV_HOMEPAGE">$1<ex>http://example.net/</ex></ph> to <ph name="NEW_HOMEPAGE">$2<ex>http://example.com/</ex></ph>. Would you like to make this change?
+      </message>
+      <message name="IDS_HOMEPAGE_CHANGE_UNKNOWN_BUBBLE_TEXT" desc="The text of the bubble view with a home page change notification when the previous home page is unknown.">
+        A program on your computer tried to change your home page to <ph name="NEW_HOMEPAGE">$1<ex>http://example.com/</ex></ph>. Would you like to make this change?
+      </message>
+      <message name="IDS_HOMEPAGE_CHANGE_OPEN_SETTINGS" desc="The title of the button that takes user to the home page settings page instead of using the current home page.">
+        No, take me to settings
+      </message>
+      <message name="IDS_HOMEPAGE_CHANGE_RESTORE" desc="The title of the button that restores home page to its previous setting.">
+        Keep using <ph name="PREV_HOMEPAGE">$1<ex>http://example.net/</ex></ph>
+      </message>
+      <message name="IDS_HOMEPAGE_CHANGE_APPLY" desc="The title of the button that changes home page to the new one.">
+        Change to <ph name="NEW_HOMEPAGE">$1<ex>http://example.com/</ex></ph>
+      </message>
+
       <!-- Keywords -->
       <message name="IDS_AUTOCOMPLETE_MATCH_DESCRIPTION_SEPARATOR" desc="The separator between a result in the autocomplete popup and its description.">
         ''' - '''
