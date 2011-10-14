@@ -8589,10 +8589,18 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NEW_TAB_APPS" desc="The 'Apps' heading on the new tab page">
         Apps
       </message>
-      <message name="IDS_NEW_TAB_TITLE"
-          desc="Title of the new tab page, this is only shown while loading, then the title comes from the page">
-        New Tab
-      </message>
+      <if expr="pp_ifdef('android')">
+        <message name="IDS_NEW_TAB_TITLE"
+            desc="For mobile devices. Do not use title case. Title of the new tab page, this is only shown while loading, then the title comes from the page.">
+          New tab
+        </message>
+      </if>
+      <if expr="not pp_ifdef('android')">
+        <message name="IDS_NEW_TAB_TITLE"
+            desc="Title of the new tab page, this is only shown while loading, then the title comes from the page">
+          New Tab
+        </message>
+      </if>
       <message name="IDS_NEW_TAB_MOST_VISITED"
                desc="The 'Most Visited' heading on the new tab page">
         Most visited
@@ -14054,17 +14062,30 @@ Keep your key file in a safe place. You will need it to create new versions of y
     </message>
 
     <!-- Quota messages -->
-    <message name="IDS_REQUEST_QUOTA_INFOBAR_QUESTION" desc="Question asked on the info bar whenever webapp requests new (larger) quota to persistently store data on the user's local computer (e.g. for persistent-type filesystem).">
-      <ph name="URL">
-        $1<ex>html5rocks.com</ex>
-      </ph> wants to permanently store data on your local computer.
-    </message>
-    <message name="IDS_REQUEST_LARGE_QUOTA_INFOBAR_QUESTION" desc="Question asked on the info bar whenever webapp requests new (larger) quota to persistently store large data on the user's local computer (e.g. for persistent-type filesystem).">
-      <ph name="URL">
-        $1<ex>html5rocks.com</ex>
-      </ph> wants to permanently store large data on your local computer.
-    </message>
-
+    <if expr="pp_ifdef('android')">
+      <message name="IDS_REQUEST_QUOTA_INFOBAR_QUESTION" desc="For mobile device. Question asked on the info bar whenever webapp requests new (larger) quota to persistently store data on the mobile device (e.g. for persistent-type filesystem).">
+        <ph name="URL">
+          $1<ex>html5rocks.com</ex>
+        </ph> wants to permanently store data on your mobile device.
+      </message>
+      <message name="IDS_REQUEST_LARGE_QUOTA_INFOBAR_QUESTION" desc="For mobile device. Question asked on the info bar whenever webapp requests new (larger) quota to persistently store large data on the user's mobile device (e.g. for persistent-type filesystem).">
+        <ph name="URL">
+          $1<ex>html5rocks.com</ex>
+        </ph> wants to permanently store large data on your mobile device.
+      </message>
+    </if>
+    <if expr="not pp_ifdef('android')">
+      <message name="IDS_REQUEST_QUOTA_INFOBAR_QUESTION" desc="Question asked on the info bar whenever webapp requests new (larger) quota to persistently store data on the user's local computer (e.g. for persistent-type filesystem).">
+        <ph name="URL">
+          $1<ex>html5rocks.com</ex>
+        </ph> wants to permanently store data on your local computer.
+      </message>
+      <message name="IDS_REQUEST_LARGE_QUOTA_INFOBAR_QUESTION" desc="Question asked on the info bar whenever webapp requests new (larger) quota to persistently store large data on the user's local computer (e.g. for persistent-type filesystem).">
+        <ph name="URL">
+          $1<ex>html5rocks.com</ex>
+        </ph> wants to permanently store large data on your local computer.
+      </message>
+    </if>
     <!-- Manage Profile Dialog -->
     <if expr="pp_ifdef('use_titlecase')">
       <message name="IDS_PROFILES_MANAGE_TITLE" desc="In Title Case: Title of the manage profile dialog">
