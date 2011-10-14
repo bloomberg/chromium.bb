@@ -38,7 +38,7 @@ class MultiprofileTest(pyauto.PyUITest):
     multi_profile = self.GetMultiProfileInfo()
     self.assertEqual(2, len(multi_profile['profiles']))
     new_profile = multi_profile['profiles'][1]
-    self.assertEqual('User 1', new_profile['name'])
+    self.assertTrue(new_profile['name'])
 
     # Verify browser windows.
     self.assertEqual(2, self.GetBrowserWindowCount(),
