@@ -29,7 +29,8 @@ class BookmarkNodeMenuModel : public ui::SimpleMenuModel {
   virtual ~BookmarkNodeMenuModel();
 
   // From SimpleMenuModel. Takes care of deleting submenus.
-  virtual void Clear() OVERRIDE;
+  // Note that this is not virtual. That's OK for our use.
+  void Clear();
 
   // From MenuModel via SimpleMenuModel.
   virtual void MenuWillShow() OVERRIDE;
