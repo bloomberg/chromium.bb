@@ -143,6 +143,9 @@ bool AllModelsMatch() WARN_UNUSED_RESULT;
 // if even one instance is found.
 bool ContainsDuplicateBookmarks(int profile);
 
+// Returns whether a node exists with the specified url.
+bool HasNodeWithURL(int profile, const GURL& url);
+
 // Gets the node in the bookmark model of profile |profile| that has the url
 // |url|. Note: Only one instance of |url| is assumed to be present.
 const BookmarkNode* GetUniqueNodeByURL(

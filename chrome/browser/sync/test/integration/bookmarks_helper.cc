@@ -531,6 +531,12 @@ bool ContainsDuplicateBookmarks(int profile) {
   return false;
 }
 
+bool HasNodeWithURL(int profile, const GURL& url) {
+  std::vector<const BookmarkNode*> nodes;
+  GetBookmarkModel(profile)->GetNodesByURL(url, &nodes);
+  return !nodes.empty();
+}
+
 const BookmarkNode* GetUniqueNodeByURL(int profile, const GURL& url) {
   std::vector<const BookmarkNode*> nodes;
   GetBookmarkModel(profile)->GetNodesByURL(url, &nodes);
