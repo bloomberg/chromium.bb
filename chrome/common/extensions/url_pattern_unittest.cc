@@ -295,6 +295,19 @@ TEST(ExtensionURLPatternTest, Match11) {
   EXPECT_TRUE(pattern.MatchesURL(GURL("http://127.0.0.1")));
   EXPECT_TRUE(pattern.MatchesURL(GURL("file:///foo/bar")));
   EXPECT_TRUE(pattern.MatchesURL(GURL("file://localhost/foo/bar")));
+
+  // Make sure the properties are the same when creating an <all_urls> pattern
+  // via SetMatchAllURLs and by parsing <all_urls>.
+  URLPattern pattern2(kAllSchemes);
+  pattern2.SetMatchAllURLs(true);
+
+  EXPECT_EQ(pattern.valid_schemes(), pattern2.valid_schemes());
+  EXPECT_EQ(pattern.match_subdomains(), pattern2.match_subdomains());
+  EXPECT_EQ(pattern.path(), pattern2.path());
+  EXPECT_EQ(pattern.match_all_urls(), pattern2.match_all_urls());
+  EXPECT_EQ(pattern.scheme(), pattern2.scheme());
+  EXPECT_EQ(pattern.port(), pattern2.port());
+  EXPECT_EQ(pattern.GetAsString(), pattern2.GetAsString());
 };
 
 // SCHEME_ALL matches all schemes.

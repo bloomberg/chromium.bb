@@ -66,7 +66,7 @@ const Extension* ExtensionBrowserTest::LoadExtensionWithOptions(
     NotificationRegistrar registrar;
     registrar.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                   NotificationService::AllSources());
-    service->LoadExtension(path);
+    service->LoadExtension(path, false);
     ui_test_utils::RunMessageLoop();
   }
 

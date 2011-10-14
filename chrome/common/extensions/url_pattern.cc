@@ -138,11 +138,7 @@ URLPattern::ParseResult URLPattern::Parse(const std::string& pattern,
 
   // Special case pattern to match every valid URL.
   if (pattern == kAllUrlsPattern) {
-    match_all_urls_ = true;
-    match_subdomains_ = true;
-    scheme_ = "*";
-    host_.clear();
-    SetPath("/*");
+    SetMatchAllURLs(true);
     return PARSE_SUCCESS;
   }
 
@@ -257,6 +253,13 @@ void URLPattern::SetHost(const std::string& host) {
 void URLPattern::SetMatchAllURLs(bool val) {
   spec_.clear();
   match_all_urls_ = val;
+
+  if (val) {
+    match_subdomains_ = true;
+    scheme_ = "*";
+    host_.clear();
+    SetPath("/*");
+  }
 }
 
 void URLPattern::SetMatchSubdomains(bool val) {

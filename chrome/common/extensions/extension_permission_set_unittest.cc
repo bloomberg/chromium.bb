@@ -345,8 +345,8 @@ TEST(ExtensionPermissionSetTest, CreateUnion) {
   AddPattern(&expected_explicit_hosts, "http://*.example.com/*");
   AddPattern(&expected_scriptable_hosts, "http://*.google.com/*");
 
-  effective_hosts.ClearPatterns();
-  AddPattern(&effective_hosts, "<all_urls>");
+  URLPatternSet::CreateUnion(
+      explicit_hosts2, scriptable_hosts2, &effective_hosts);
 
   set2 = new ExtensionPermissionSet(apis2, explicit_hosts2, scriptable_hosts2);
   union_set = ExtensionPermissionSet::CreateUnion(set1.get(), set2.get());

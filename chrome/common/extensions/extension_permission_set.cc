@@ -750,13 +750,6 @@ std::set<std::string> ExtensionPermissionSet::GetDistinctHosts(
 void ExtensionPermissionSet::InitEffectiveHosts() {
   effective_hosts_.ClearPatterns();
 
-  if (HasEffectiveAccessToAllHosts()) {
-    URLPattern all_urls(URLPattern::SCHEME_ALL);
-    all_urls.SetMatchAllURLs(true);
-    effective_hosts_.AddPattern(all_urls);
-    return;
-  }
-
   URLPatternSet::CreateUnion(
       explicit_hosts(), scriptable_hosts(), &effective_hosts_);
 }
