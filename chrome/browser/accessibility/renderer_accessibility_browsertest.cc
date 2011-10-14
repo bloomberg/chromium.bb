@@ -70,9 +70,11 @@ class RendererAccessibilityBrowserTest : public InProcessBrowserTest {
 
 void RendererAccessibilityBrowserTest::SetUpInProcessBrowserTestFixture() {
 #if defined(OS_WIN)
-  // ATL needs a pointer to a COM module.
-  static CComModule module;
-  _pAtlModule = &module;
+  // ATL might need a pointer to a COM module, depending on the build config.
+  if (!_pAtlModule) {
+    static CComModule module;
+    _pAtlModule = &module;
+  }
 
   // Make sure COM is initialized for this thread; it's safe to call twice.
   ::CoInitialize(NULL);

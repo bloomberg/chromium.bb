@@ -594,8 +594,8 @@ TEST(BrowserAccessibilityManagerTest, TestCreateEmptyDocument) {
   // Save for later comparison.
   BrowserAccessibility* acc1_2 = manager->GetFromRendererID(2);
 
-  // Verify the root has not changed.
-  EXPECT_EQ(root, manager->GetRoot());
+  // Verify the root has changed.
+  EXPECT_NE(root, manager->GetRoot());
 
   // And the proper child remains.
   EXPECT_EQ(WebAccessibility::ROLE_TEXT_FIELD, acc1_2->role());
@@ -621,8 +621,8 @@ TEST(BrowserAccessibilityManagerTest, TestCreateEmptyDocument) {
 
   BrowserAccessibility* acc2_2 = manager->GetFromRendererID(3);
 
-  // Verify the root has not changed.
-  EXPECT_EQ(root, manager->GetRoot());
+  // Verify the root has changed.
+  EXPECT_NE(root, manager->GetRoot());
 
   // And the new child exists.
   EXPECT_EQ(WebAccessibility::ROLE_BUTTON, acc2_2->role());
