@@ -4,7 +4,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/common/autofill_messages.h"
-#include "chrome/test/base/render_view_test.h"
+#include "chrome/test/base/chrome_render_view_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
@@ -21,7 +21,7 @@ using webkit_glue::FormField;
 
 namespace autofill {
 
-TEST_F(RenderViewTest, SendForms) {
+TEST_F(ChromeRenderViewTest, SendForms) {
   // Don't want any delay for form state sync changes. This will still post a
   // message so updates will get coalesced, but as soon as we spin the message
   // loop, it will generate an update.
@@ -41,7 +41,7 @@ TEST_F(RenderViewTest, SendForms) {
 
   // Verify that "FormsSeen" sends the expected number of fields.
   ProcessPendingMessages();
-  const IPC::Message* message = render_thread_.sink().GetFirstMessageMatching(
+  const IPC::Message* message = render_thread_->sink().GetFirstMessageMatching(
       AutofillHostMsg_FormsSeen::ID);
   ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
   AutofillHostMsg_FormsSeen::Param params;
@@ -94,8 +94,9 @@ TEST_F(RenderViewTest, SendForms) {
       -1);
 
   ProcessPendingMessages();
-  const IPC::Message* message2 = render_thread_.sink().GetUniqueMessageMatching(
-      AutofillHostMsg_FillAutofillFormData::ID);
+  const IPC::Message* message2 =
+      render_thread_->sink().GetUniqueMessageMatching(
+          AutofillHostMsg_FillAutofillFormData::ID);
   ASSERT_NE(static_cast<IPC::Message*>(NULL), message2);
   AutofillHostMsg_FillAutofillFormData::Param params2;
   AutofillHostMsg_FillAutofillFormData::Read(message2, &params2);
@@ -121,7 +122,7 @@ TEST_F(RenderViewTest, SendForms) {
   EXPECT_FORM_FIELD_EQUALS(expected, form2.fields[2]);
 }
 
-TEST_F(RenderViewTest, FillFormElement) {
+TEST_F(ChromeRenderViewTest, FillFormElement) {
   // Don't want any delay for form state sync changes. This will still post a
   // message so updates will get coalesced, but as soon as we spin the message
   // loop, it will generate an update.
@@ -134,7 +135,7 @@ TEST_F(RenderViewTest, FillFormElement) {
 
   // Verify that "FormsSeen" isn't sent, as there are too few fields.
   ProcessPendingMessages();
-  const IPC::Message* message = render_thread_.sink().GetFirstMessageMatching(
+  const IPC::Message* message = render_thread_->sink().GetFirstMessageMatching(
       AutofillHostMsg_FormsSeen::ID);
   ASSERT_EQ(static_cast<IPC::Message*>(NULL), message);
 
@@ -157,8 +158,9 @@ TEST_F(RenderViewTest, FillFormElement) {
                                                0);
 
   ProcessPendingMessages();
-  const IPC::Message* message2 = render_thread_.sink().GetUniqueMessageMatching(
-      AutofillHostMsg_FillAutofillFormData::ID);
+  const IPC::Message* message2 =
+      render_thread_->sink().GetUniqueMessageMatching(
+          AutofillHostMsg_FillAutofillFormData::ID);
 
   // No message should be sent in this case.  |firstname| is filled directly.
   ASSERT_EQ(static_cast<IPC::Message*>(NULL), message2);

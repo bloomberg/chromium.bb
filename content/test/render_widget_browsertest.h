@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
-#include "chrome/test/base/render_view_test.h"
+#include "content/test/render_view_test.h"
 
 namespace gfx {
 class Size;
@@ -17,7 +17,7 @@ class Size;
 class SkBitmap;
 class TransportDIB;
 
-class RenderWidgetTest : public RenderViewTest {
+class RenderWidgetTest : public content::RenderViewTest {
  public:
   RenderWidgetTest();
 

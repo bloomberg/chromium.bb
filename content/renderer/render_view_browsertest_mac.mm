@@ -4,13 +4,15 @@
 
 #include "base/string_util.h"
 #include "base/string16.h"
-#include "chrome/test/base/render_view_test.h"
 #include "content/common/native_web_keyboard_event.h"
 #include "content/renderer/render_view_impl.h"
+#include "content/test/render_view_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include <Cocoa/Cocoa.h>
 #include <Carbon/Carbon.h>  // for the kVK_* constants.
+
+using content::RenderViewTest;
 
 NSEvent* CmdDeadKeyEvent(NSEventType type, unsigned short code) {
   UniChar uniChar = 0;
@@ -98,7 +100,7 @@ TEST_F(RenderViewTest, MacTestCmdUp) {
   sprintf(htmlBuffer, kRawHtml, "true");
   view->set_send_content_state_immediately(true);
   LoadHTML(htmlBuffer);
-  render_thread_.sink().ClearMessages();
+  render_thread_->sink().ClearMessages();
 
   const char* kArrowDownScrollDown =
       "40,false,false,true,false\n1936\np1\n\np2";
@@ -123,7 +125,7 @@ TEST_F(RenderViewTest, MacTestCmdUp) {
   sprintf(htmlBuffer, kRawHtml, "false");
   view->set_send_content_state_immediately(true);
   LoadHTML(htmlBuffer);
-  render_thread_.sink().ClearMessages();
+  render_thread_->sink().ClearMessages();
 
   const char* kArrowDownNoScroll =
       "40,false,false,true,false\np1\n\np2";

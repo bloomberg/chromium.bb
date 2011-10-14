@@ -1,11 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/translate_helper.h"
-#include "chrome/test/base/render_view_test.h"
+#include "chrome/test/base/chrome_render_view_test.h"
 #include "content/public/renderer/render_view.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -39,21 +39,26 @@ class TestTranslateHelper : public TranslateHelper {
   DISALLOW_COPY_AND_ASSIGN(TestTranslateHelper);
 };
 
-class TranslateHelperTest : public RenderViewTest {
+class TranslateHelperTest : public ChromeRenderViewTest {
  public:
   TranslateHelperTest() : translate_helper_(NULL) {}
 
  protected:
   virtual void SetUp() {
-    RenderViewTest::SetUp();
+    ChromeRenderViewTest::SetUp();
     translate_helper_ = new TestTranslateHelper(view_);
+  }
+
+  virtual void TearDown() {
+    delete translate_helper_;
+    ChromeRenderViewTest::TearDown();
   }
 
   bool GetPageTranslatedMessage(int* page_id,
                                 std::string* original_lang,
                                 std::string* target_lang,
                                 TranslateErrors::Type* error) {
-    const IPC::Message* message = render_thread_.sink().
+    const IPC::Message* message = render_thread_->sink().
         GetUniqueMessageMatching(ChromeViewHostMsg_PageTranslated::ID);
     if (!message)
       return false;
@@ -299,37 +304,37 @@ TEST_F(TranslateHelperTest, MultipleDifferentTranslations) {
 
 // Tests that we send the right translatable for a page and that we respect the
 // "no translate" meta-tag.
-TEST_F(RenderViewTest, TranslatablePage) {
+TEST_F(ChromeRenderViewTest, TranslatablePage) {
   // Suppress the normal delay that occurs when the page is loaded before which
   // the renderer sends the page contents to the browser.
   SendContentStateImmediately();
 
   LoadHTML("<html><body>A random page with random content.</body></html>");
   ProcessPendingMessages();
-  const IPC::Message* message = render_thread_.sink().GetUniqueMessageMatching(
+  const IPC::Message* message = render_thread_->sink().GetUniqueMessageMatching(
       ChromeViewHostMsg_TranslateLanguageDetermined::ID);
   ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
   ChromeViewHostMsg_TranslateLanguageDetermined::Param params;
   ChromeViewHostMsg_TranslateLanguageDetermined::Read(message, &params);
   EXPECT_TRUE(params.b);  // Translatable should be true.
-  render_thread_.sink().ClearMessages();
+  render_thread_->sink().ClearMessages();
 
   // Now the page specifies the META tag to prevent translation.
   LoadHTML("<html><head><meta name=\"google\" value=\"notranslate\"></head>"
            "<body>A random page with random content.</body></html>");
   ProcessPendingMessages();
-  message = render_thread_.sink().GetUniqueMessageMatching(
+  message = render_thread_->sink().GetUniqueMessageMatching(
       ChromeViewHostMsg_TranslateLanguageDetermined::ID);
   ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
   ChromeViewHostMsg_TranslateLanguageDetermined::Read(message, &params);
   EXPECT_FALSE(params.b);  // Translatable should be false.
-  render_thread_.sink().ClearMessages();
+  render_thread_->sink().ClearMessages();
 
   // Try the alternate version of the META tag (content instead of value).
   LoadHTML("<html><head><meta name=\"google\" content=\"notranslate\"></head>"
            "<body>A random page with random content.</body></html>");
   ProcessPendingMessages();
-  message = render_thread_.sink().GetUniqueMessageMatching(
+  message = render_thread_->sink().GetUniqueMessageMatching(
       ChromeViewHostMsg_TranslateLanguageDetermined::ID);
   ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
   ChromeViewHostMsg_TranslateLanguageDetermined::Read(message, &params);
@@ -338,7 +343,7 @@ TEST_F(RenderViewTest, TranslatablePage) {
 
 // Tests that the language meta tag takes precedence over the CLD when reporting
 // the page's language.
-TEST_F(RenderViewTest, LanguageMetaTag) {
+TEST_F(ChromeRenderViewTest, LanguageMetaTag) {
   // Suppress the normal delay that occurs when the page is loaded before which
   // the renderer sends the page contents to the browser.
   SendContentStateImmediately();
@@ -346,20 +351,20 @@ TEST_F(RenderViewTest, LanguageMetaTag) {
   LoadHTML("<html><head><meta http-equiv=\"content-language\" content=\"es\">"
            "</head><body>A random page with random content.</body></html>");
   ProcessPendingMessages();
-  const IPC::Message* message = render_thread_.sink().GetUniqueMessageMatching(
+  const IPC::Message* message = render_thread_->sink().GetUniqueMessageMatching(
       ChromeViewHostMsg_TranslateLanguageDetermined::ID);
   ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
   ChromeViewHostMsg_TranslateLanguageDetermined::Param params;
   ChromeViewHostMsg_TranslateLanguageDetermined::Read(message, &params);
   EXPECT_EQ("es", params.a);
-  render_thread_.sink().ClearMessages();
+  render_thread_->sink().ClearMessages();
 
   // Makes sure we support multiple languages specified.
   LoadHTML("<html><head><meta http-equiv=\"content-language\" "
            "content=\" fr , es,en \">"
            "</head><body>A random page with random content.</body></html>");
   ProcessPendingMessages();
-  message = render_thread_.sink().GetUniqueMessageMatching(
+  message = render_thread_->sink().GetUniqueMessageMatching(
       ChromeViewHostMsg_TranslateLanguageDetermined::ID);
   ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
   ChromeViewHostMsg_TranslateLanguageDetermined::Read(message, &params);

@@ -2,16 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_MOCK_RENDER_THREAD_H_
-#define CHROME_RENDERER_MOCK_RENDER_THREAD_H_
+#ifndef CONTENT_TEST_MOCK_RENDER_THREAD_H_
+#define CONTENT_TEST_MOCK_RENDER_THREAD_H_
 #pragma once
 
-#include <string>
-
-#include "base/compiler_specific.h"
 #include "base/shared_memory.h"
-#include "chrome/common/extensions/extension_set.h"
-#include "chrome/renderer/mock_printer.h"
 #include "content/public/renderer/render_thread.h"
 #include "ipc/ipc_test_sink.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
@@ -20,17 +15,9 @@ namespace IPC {
 class MessageReplyDeserializer;
 }
 
-namespace base {
-class DictionaryValue;
-}
+namespace content {
 
-struct PrintHostMsg_DidGetPreviewPageCount_Params;
-struct PrintHostMsg_DidPreviewPage_Params;
-struct PrintHostMsg_ScriptedPrint_Params;
-struct PrintMsg_PrintPages_Params;
-struct PrintMsg_Print_Params;
-
-// This class is very simple mock of RenderThread. It simulates an IPC channel
+// This class is a very simple mock of RenderThread. It simulates an IPC channel
 // which supports only two messages:
 // ViewHostMsg_CreateWidget : sync message sent by the Widget.
 // ViewMsg_Close : async, send to the Widget.
@@ -98,66 +85,20 @@ class MockRenderThread : public content::RenderThread {
   // state.
   void SendCloseMessage();
 
-  // Returns the pseudo-printer instance.
-  MockPrinter* printer() const { return printer_.get(); }
-
-  // Call with |response| set to true if the user wants to print.
-  // False if the user decides to cancel.
-  void set_print_dialog_user_response(bool response);
-
-  // Cancel print preview when print preview has |page| remaining pages.
-  void set_print_preview_cancel_page_number(int page);
-
-  // Get the number of pages to generate for print preview.
-  int print_preview_pages_remaining();
-
- private:
-  // This function operates as a regular IPC listener.
-  bool OnMessageReceived(const IPC::Message& msg);
+ protected:
+  // This function operates as a regular IPC listener. Subclasses
+  // overriding this should first delegate to this implementation.
+  virtual bool OnMessageReceived(const IPC::Message& msg);
 
   // The Widget expects to be returned valid route_id.
   void OnMsgCreateWidget(int opener_id,
                          WebKit::WebPopupType popup_type,
                          int* route_id);
 
-  // The callee expects to be returned a valid channel_id.
-  void OnMsgOpenChannelToExtension(
-      int routing_id, const std::string& extension_id,
-      const std::string& source_extension_id,
-      const std::string& target_extension_id, int* port_id);
-
 #if defined(OS_WIN)
   void OnDuplicateSection(base::SharedMemoryHandle renderer_handle,
                           base::SharedMemoryHandle* browser_handle);
 #endif
-
-#if defined(OS_CHROMEOS)
-  void OnAllocateTempFileForPrinting(base::FileDescriptor* renderer_fd,
-                                     int* browser_fd);
-  void OnTempFileForPrintingWritten(int browser_fd);
-#endif
-
-  // PrintWebViewHelper expects default print settings.
-  void OnGetDefaultPrintSettings(PrintMsg_Print_Params* setting);
-
-  // PrintWebViewHelper expects final print settings from the user.
-  void OnScriptedPrint(const PrintHostMsg_ScriptedPrint_Params& params,
-                       PrintMsg_PrintPages_Params* settings);
-
-  void OnDidGetPrintedPagesCount(int cookie, int number_pages);
-  void OnDidPrintPage(const PrintHostMsg_DidPrintPage_Params& params);
-  void OnDidGetPreviewPageCount(
-      const PrintHostMsg_DidGetPreviewPageCount_Params& params);
-  void OnDidPreviewPage(const PrintHostMsg_DidPreviewPage_Params& params);
-  void OnCheckForCancel(const std::string& preview_ui_addr,
-                        int preview_request_id,
-                        bool* cancel);
-
-
-  // For print preview, PrintWebViewHelper will update settings.
-  void OnUpdatePrintSettings(int document_cookie,
-                             const base::DictionaryValue& job_settings,
-                             PrintMsg_PrintPages_Params* params);
 
   IPC::TestSink sink_;
 
@@ -173,19 +114,8 @@ class MockRenderThread : public content::RenderThread {
 
   // The last known good deserializer for sync messages.
   scoped_ptr<IPC::MessageReplyDeserializer> reply_deserializer_;
-
-  // A mock printer device used for printing tests.
-  scoped_ptr<MockPrinter> printer_;
-
-  // True to simulate user clicking print. False to cancel.
-  bool print_dialog_user_response_;
-
-  // Simulates cancelling print preview if |print_preview_pages_remaining_|
-  // equals this.
-  int print_preview_cancel_page_number_;
-
-  // Number of pages to generate for print preview.
-  int print_preview_pages_remaining_;
 };
 
-#endif  // CHROME_RENDERER_MOCK_RENDER_THREAD_H_
+}  // namespace content
+
+#endif  // CONTENT_TEST_MOCK_RENDER_THREAD_H_

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/page_click_listener.h"
 #include "chrome/renderer/page_click_tracker.h"
-#include "chrome/test/base/render_view_test.h"
+#include "chrome/test/base/chrome_render_view_test.h"
 #include "content/public/renderer/render_view.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
@@ -48,7 +48,7 @@ class TestPageClickListener : public PageClickListener {
 };
 
 // Tests that PageClickTracker does notify correctly when a node is clicked.
-TEST_F(RenderViewTest, PageClickTracker) {
+TEST_F(ChromeRenderViewTest, PageClickTracker) {
   // RenderView creates PageClickTracker but it doesn't keep it around.  Rather
   // than make it do so for the test, we create a new object.
   PageClickTracker* page_click_tracker = new PageClickTracker(view_);

@@ -11,7 +11,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/renderer/autofill/form_autofill_util.h"
 #include "chrome/renderer/autofill/form_cache.h"
-#include "chrome/test/base/render_view_test.h"
+#include "chrome/test/base/chrome_render_view_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
@@ -47,9 +47,9 @@ using autofill::WebFormControlElementToFormField;
 using webkit_glue::FormData;
 using webkit_glue::FormField;
 
-class FormAutofillTest : public RenderViewTest {
+class FormAutofillTest : public ChromeRenderViewTest {
  public:
-  FormAutofillTest() : RenderViewTest() {}
+  FormAutofillTest() : ChromeRenderViewTest() {}
   virtual ~FormAutofillTest() {}
 
   void ExpectLabels(const char* html,

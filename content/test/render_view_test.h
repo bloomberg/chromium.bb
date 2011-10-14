@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_BASE_RENDER_VIEW_TEST_H_
-#define CHROME_TEST_BASE_RENDER_VIEW_TEST_H_
+#ifndef CONTENT_TEST_RENDER_VIEW_TEST_H_
+#define CONTENT_TEST_RENDER_VIEW_TEST_H_
 #pragma once
 
 #include <string>
@@ -11,29 +11,22 @@
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "chrome/renderer/autofill/autofill_agent.h"
-#include "chrome/renderer/mock_keyboard.h"
-#include "chrome/renderer/mock_render_thread.h"
 #include "content/common/main_function_params.h"
 #include "content/common/native_web_keyboard_event.h"
 #include "content/common/sandbox_init_wrapper.h"
+#include "content/renderer/mock_content_renderer_client.h"
 #include "content/renderer/renderer_webkitplatformsupport_impl.h"
-#include "chrome/renderer/chrome_content_renderer_client.h"
+#include "content/test/mock_keyboard.h"
+#include "content/test/mock_render_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 
-class ExtensionDispatcher;
 class MockRenderProcess;
 class RendererMainPlatformDelegate;
 struct ViewMsg_Navigate_Params;
 
 namespace WebKit {
 class WebWidget;
-}
-
-namespace autofill {
-class AutofillAgent;
-class PasswordAutofillManager;
 }
 
 namespace content {
@@ -43,6 +36,8 @@ class RenderView;
 namespace gfx {
 class Rect;
 }
+
+namespace content {
 
 class RenderViewTest : public testing::Test {
  public:
@@ -113,24 +108,22 @@ class RenderViewTest : public testing::Test {
   virtual void TearDown();
 
   MessageLoop msg_loop_;
-  chrome::ChromeContentRendererClient chrome_content_renderer_client_;
-  ExtensionDispatcher* extension_dispatcher_;
-  MockRenderThread render_thread_;
   scoped_ptr<MockRenderProcess> mock_process_;
   // We use a naked pointer because we don't want to expose RenderViewImpl in
   // the embedder's namespace.
   content::RenderView* view_;
   RendererWebKitPlatformSupportImplNoSandbox webkit_platform_support_;
+  MockContentRendererClient mock_content_renderer_client_;
   scoped_ptr<MockKeyboard> mock_keyboard_;
+  scoped_ptr<MockRenderThread> render_thread_;
 
   // Used to setup the process so renderers can run.
   scoped_ptr<RendererMainPlatformDelegate> platform_;
   scoped_ptr<MainFunctionParams> params_;
   scoped_ptr<CommandLine> command_line_;
   scoped_ptr<SandboxInitWrapper> sandbox_init_wrapper_;
-
-  autofill::PasswordAutofillManager* password_autofill_;
-  autofill::AutofillAgent* autofill_agent_;
 };
 
-#endif  // CHROME_TEST_BASE_RENDER_VIEW_TEST_H_
+}  // namespace content
+
+#endif  // CONTENT_TEST_RENDER_VIEW_TEST_H_

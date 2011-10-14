@@ -51,12 +51,12 @@ void RenderWidgetTest::ResizeAndPaint(const gfx::Size& page_size,
   impl->OnMsgPaintAtSize(pixels->handle(), g_sequence_num, page_size,
                          desired_size);
   ProcessPendingMessages();
-  const IPC::Message* msg = render_thread_.sink().GetUniqueMessageMatching(
+  const IPC::Message* msg = render_thread_->sink().GetUniqueMessageMatching(
       ViewHostMsg_PaintAtSize_ACK::ID);
   ASSERT_NE(static_cast<IPC::Message*>(NULL), msg);
   ViewHostMsg_PaintAtSize_ACK::Param params;
   ViewHostMsg_PaintAtSize_ACK::Read(msg, &params);
-  render_thread_.sink().ClearMessages();
+  render_thread_->sink().ClearMessages();
   EXPECT_EQ(g_sequence_num, params.a);
   gfx::Size size = params.b;
   EXPECT_EQ(desired_size, size);

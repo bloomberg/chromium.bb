@@ -1,9 +1,9 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_MOCK_KEYBOARD_DRIVER_WIN_H_
-#define CHROME_RENDERER_MOCK_KEYBOARD_DRIVER_WIN_H_
+#ifndef CONTENT_TEST_MOCK_KEYBOARD_DRIVER_WIN_H_
+#define CONTENT_TEST_MOCK_KEYBOARD_DRIVER_WIN_H_
 #pragma once
 
 #include <windows.h>
@@ -39,4 +39,4 @@ class MockKeyboardDriverWin {
   DISALLOW_COPY_AND_ASSIGN(MockKeyboardDriverWin);
 };
 
-#endif  // CHROME_RENDERER_MOCK_KEYBOARD_DRIVER_WIN_H_
+#endif  // CONTENT_TEST_MOCK_KEYBOARD_DRIVER_WIN_H_

@@ -8,11 +8,12 @@
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "chrome/test/base/render_view_test.h"
+#include "chrome/test/base/chrome_render_view_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
+#include "content/test/render_view_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 
@@ -119,8 +120,8 @@ class TabRestoreServiceTest : public ChromeRenderViewHostTestHarness {
   GURL url3_;
   scoped_ptr<TabRestoreService> service_;
   TabRestoreTimeFactory* time_factory_;
-  RenderViewTest::RendererWebKitPlatformSupportImplNoSandbox
-        webkit_platform_support_;
+  content::RenderViewTest::RendererWebKitPlatformSupportImplNoSandbox
+      webkit_platform_support_;
 };
 
 TEST_F(TabRestoreServiceTest, Basic) {

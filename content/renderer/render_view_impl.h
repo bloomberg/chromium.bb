@@ -84,6 +84,7 @@ class WaitableEvent;
 }  // namespace base
 
 namespace content {
+class RenderViewTest;
 class NavigationState;
 class P2PSocketDispatcher;
 class RenderViewObserver;
@@ -649,7 +650,7 @@ class RenderViewImpl : public RenderWidget,
   // For unit tests.
   friend class ExternalPopupMenuTest;
   friend class PepperDeviceTest;
-  friend class RenderViewTest;
+  friend class content::RenderViewTest;
 
   FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuRemoveTest, RemoveOnChange);
   FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuTest, NormalCase);

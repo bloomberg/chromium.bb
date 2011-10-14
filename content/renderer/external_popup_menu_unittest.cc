@@ -1,11 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/utf_string_conversions.h"
-#include "chrome/test/base/render_view_test.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/render_view_impl.h"
+#include "content/test/render_view_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
@@ -19,7 +19,7 @@ const char* const kEmptySelectID = "myEmptySelect";
 
 }  // namespace
 
-class ExternalPopupMenuTest : public RenderViewTest {
+class ExternalPopupMenuTest : public content::RenderViewTest {
  public:
   ExternalPopupMenuTest() {}
 
@@ -28,7 +28,7 @@ class ExternalPopupMenuTest : public RenderViewTest {
   }
 
   virtual void SetUp() {
-    RenderViewTest::SetUp();
+    content::RenderViewTest::SetUp();
     // We need to set this explictly as RenderMain is not run.
     WebKit::WebView::setUseExternalPopupMenus(true);
 
@@ -71,7 +71,7 @@ class ExternalPopupMenuTest : public RenderViewTest {
 
 // Normal case: test showing a select popup, canceling/selecting an item.
 TEST_F(ExternalPopupMenuTest, NormalCase) {
-  IPC::TestSink& sink = render_thread_.sink();
+  IPC::TestSink& sink = render_thread_->sink();
 
   // Click the text field once.
   EXPECT_TRUE(SimulateElementClick(kSelectID));

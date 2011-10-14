@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/mock_render_thread.h"
+#include "chrome/renderer/chrome_mock_render_thread.h"
 
 #include <fcntl.h>
 
@@ -19,160 +19,24 @@
 #include "printing/page_range.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-MockRenderThread::MockRenderThread()
-    : routing_id_(0),
-      opener_id_(0),
-      widget_(NULL),
-      reply_deserializer_(NULL),
-      printer_(new MockPrinter),
+ChromeMockRenderThread::ChromeMockRenderThread()
+    : printer_(new MockPrinter),
       print_dialog_user_response_(true),
       print_preview_cancel_page_number_(-1),
       print_preview_pages_remaining_(0) {
 }
 
-MockRenderThread::~MockRenderThread() {
+ChromeMockRenderThread::~ChromeMockRenderThread() {
 }
 
-// Called by the Widget. Used to send messages to the browser.
-// We short-circuit the mechanism and handle the messages right here on this
-// class.
-bool MockRenderThread::Send(IPC::Message* msg) {
-  // We need to simulate a synchronous channel, thus we are going to receive
-  // through this function messages, messages with reply and reply messages.
-  // We can only handle one synchronous message at a time.
-  if (msg->is_reply()) {
-    if (reply_deserializer_.get()) {
-      reply_deserializer_->SerializeOutputParameters(*msg);
-      reply_deserializer_.reset();
-    }
-  } else {
-    if (msg->is_sync()) {
-      // We actually need to handle deleting the reply deserializer for sync
-      // messages.
-      reply_deserializer_.reset(
-          static_cast<IPC::SyncMessage*>(msg)->GetReplyDeserializer());
-    }
-    OnMessageReceived(*msg);
-  }
-  delete msg;
-  return true;
-}
-
-MessageLoop* MockRenderThread::GetMessageLoop() {
-  return NULL;
-}
-
-IPC::SyncChannel* MockRenderThread::GetChannel() {
-  return NULL;
-}
-
-std::string MockRenderThread::GetLocale() {
-  return std::string();
-}
-
-void MockRenderThread::AddRoute(int32 routing_id,
-                      IPC::Channel::Listener* listener) {
-  EXPECT_EQ(routing_id_, routing_id);
-  widget_ = listener;
-}
-
-void MockRenderThread::RemoveRoute(int32 routing_id) {
-  EXPECT_EQ(routing_id_, routing_id);
-  widget_ = NULL;
-}
-
-void MockRenderThread::AddFilter(IPC::ChannelProxy::MessageFilter* filter) {
-  filter->OnFilterAdded(&sink());
-}
-
-void MockRenderThread::RemoveFilter(IPC::ChannelProxy::MessageFilter* filter) {
-  filter->OnFilterRemoved();
-}
-
-void MockRenderThread::SetOutgoingMessageFilter(
-    IPC::ChannelProxy::OutgoingMessageFilter* filter) {
-}
-
-void MockRenderThread::AddObserver(content::RenderProcessObserver* observer) {
-}
-
-void MockRenderThread::RemoveObserver(
-    content::RenderProcessObserver* observer) {
-}
-
-void MockRenderThread::SetResourceDispatcherDelegate(
-    content::ResourceDispatcherDelegate* delegate) {
-}
-
-void MockRenderThread::WidgetHidden() {
-}
-
-void MockRenderThread::WidgetRestored() {
-}
-
-void MockRenderThread::EnsureWebKitInitialized() {
-}
-
-void MockRenderThread::RecordUserMetrics(const std::string& action) {
-}
-
-base::SharedMemoryHandle MockRenderThread::HostAllocateSharedMemoryBuffer(
-    uint32 buffer_size) {
-  base::SharedMemory shared_buf;
-  if (!shared_buf.CreateAndMapAnonymous(buffer_size)) {
-    NOTREACHED() << "Cannot map shared memory buffer";
-    return base::SharedMemory::NULLHandle();
-  }
-  base::SharedMemoryHandle handle;
-  shared_buf.GiveToProcess(base::GetCurrentProcessHandle(), &handle);
-  return handle;
-}
-
-void MockRenderThread::RegisterExtension(v8::Extension* extension) {
-}
-
-bool MockRenderThread::IsRegisteredExtension(
-    const std::string& v8_extension_name) const {
-  return false;
-}
-
-void MockRenderThread::ScheduleIdleHandler(double initial_delay_s) {
-}
-
-void MockRenderThread::IdleHandler() {
-}
-
-double MockRenderThread::GetIdleNotificationDelayInS() const {
-  return 0.0;
-}
-
-void MockRenderThread::SetIdleNotificationDelayInS(
-    double idle_notification_delay_in_s) {
-}
-
-#if defined(OS_WIN)
-void MockRenderThread::PreCacheFont(const LOGFONT& log_font) {
-}
-
-void MockRenderThread::ReleaseCachedFonts() {
-}
-
-#endif  // OS_WIN
-
-void MockRenderThread::SendCloseMessage() {
-  ViewMsg_Close msg(routing_id_);
-  widget_->OnMessageReceived(msg);
-}
-
-bool MockRenderThread::OnMessageReceived(const IPC::Message& msg) {
-  // Save the message in the sink.
-  sink_.OnMessageReceived(msg);
+bool ChromeMockRenderThread::OnMessageReceived(const IPC::Message& msg) {
+  if (content::MockRenderThread::OnMessageReceived(msg))
+    return true;
 
   // Some messages we do special handling.
   bool handled = true;
   bool msg_is_ok = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(MockRenderThread, msg, msg_is_ok)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWidget, OnMsgCreateWidget)
+  IPC_BEGIN_MESSAGE_MAP_EX(ChromeMockRenderThread, msg, msg_is_ok)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_OpenChannelToExtension,
                         OnMsgOpenChannelToExtension)
     IPC_MESSAGE_HANDLER(PrintHostMsg_GetDefaultPrintSettings,
@@ -200,33 +64,15 @@ bool MockRenderThread::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
-// The Widget expects to be returned valid route_id.
-void MockRenderThread::OnMsgCreateWidget(int opener_id,
-                                         WebKit::WebPopupType popup_type,
-                                         int* route_id) {
-  opener_id_ = opener_id;
-  *route_id = routing_id_;
-}
-
-void MockRenderThread::OnMsgOpenChannelToExtension(
+void ChromeMockRenderThread::OnMsgOpenChannelToExtension(
     int routing_id, const std::string& source_extension_id,
     const std::string& target_extension_id,
     const std::string& channel_name, int* port_id) {
   *port_id = 0;
 }
 
-#if defined(OS_WIN)
-void MockRenderThread::OnDuplicateSection(
-    base::SharedMemoryHandle renderer_handle,
-    base::SharedMemoryHandle* browser_handle) {
-  // We don't have to duplicate the input handles since RenderViewTest does not
-  // separate a browser process from a renderer process.
-  *browser_handle = renderer_handle;
-}
-#endif  // defined(OS_WIN)
-
 #if defined(OS_CHROMEOS)
-void MockRenderThread::OnAllocateTempFileForPrinting(
+void ChromeMockRenderThread::OnAllocateTempFileForPrinting(
     base::FileDescriptor* renderer_fd,
     int* browser_fd) {
   renderer_fd->fd = *browser_fd = -1;
@@ -240,18 +86,18 @@ void MockRenderThread::OnAllocateTempFileForPrinting(
   }
 }
 
-void MockRenderThread::OnTempFileForPrintingWritten(int browser_fd) {
+void ChromeMockRenderThread::OnTempFileForPrintingWritten(int browser_fd) {
   close(browser_fd);
 }
 #endif  // defined(OS_CHROMEOS)
 
-void MockRenderThread::OnGetDefaultPrintSettings(
+void ChromeMockRenderThread::OnGetDefaultPrintSettings(
     PrintMsg_Print_Params* params) {
   if (printer_.get())
     printer_->GetDefaultPrintSettings(params);
 }
 
-void MockRenderThread::OnScriptedPrint(
+void ChromeMockRenderThread::OnScriptedPrint(
     const PrintHostMsg_ScriptedPrint_Params& params,
     PrintMsg_PrintPages_Params* settings) {
   if (print_dialog_user_response_ && printer_.get()) {
@@ -262,36 +108,38 @@ void MockRenderThread::OnScriptedPrint(
   }
 }
 
-void MockRenderThread::OnDidGetPrintedPagesCount(int cookie, int number_pages) {
+void ChromeMockRenderThread::OnDidGetPrintedPagesCount(
+    int cookie, int number_pages) {
   if (printer_.get())
     printer_->SetPrintedPagesCount(cookie, number_pages);
 }
 
-void MockRenderThread::OnDidPrintPage(
+void ChromeMockRenderThread::OnDidPrintPage(
     const PrintHostMsg_DidPrintPage_Params& params) {
   if (printer_.get())
     printer_->PrintPage(params);
 }
 
-void MockRenderThread::OnDidGetPreviewPageCount(
+void ChromeMockRenderThread::OnDidGetPreviewPageCount(
     const PrintHostMsg_DidGetPreviewPageCount_Params& params) {
   print_preview_pages_remaining_ = params.page_count;
 }
 
-void MockRenderThread::OnDidPreviewPage(
+void ChromeMockRenderThread::OnDidPreviewPage(
     const PrintHostMsg_DidPreviewPage_Params& params) {
   DCHECK(params.page_number >= printing::FIRST_PAGE_INDEX);
   print_preview_pages_remaining_--;
 }
 
-void MockRenderThread::OnCheckForCancel(const std::string& preview_ui_addr,
-                                        int preview_request_id,
-                                        bool* cancel) {
+void ChromeMockRenderThread::OnCheckForCancel(
+    const std::string& preview_ui_addr,
+    int preview_request_id,
+    bool* cancel) {
   *cancel =
       (print_preview_pages_remaining_ == print_preview_cancel_page_number_);
 }
 
-void MockRenderThread::OnUpdatePrintSettings(
+void ChromeMockRenderThread::OnUpdatePrintSettings(
     int document_cookie,
     const base::DictionaryValue& job_settings,
     PrintMsg_PrintPages_Params* params) {
@@ -337,14 +185,14 @@ void MockRenderThread::OnUpdatePrintSettings(
   }
 }
 
-void MockRenderThread::set_print_dialog_user_response(bool response) {
+void ChromeMockRenderThread::set_print_dialog_user_response(bool response) {
   print_dialog_user_response_ = response;
 }
 
-void MockRenderThread::set_print_preview_cancel_page_number(int page) {
+void ChromeMockRenderThread::set_print_preview_cancel_page_number(int page) {
   print_preview_cancel_page_number_ = page;
 }
 
-int MockRenderThread::print_preview_pages_remaining() {
+int ChromeMockRenderThread::print_preview_pages_remaining() {
   return print_preview_pages_remaining_;
 }

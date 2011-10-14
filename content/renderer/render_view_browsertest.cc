@@ -7,10 +7,10 @@
 #include "base/shared_memory.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/test/base/render_view_test.h"
 #include "content/common/native_web_keyboard_event.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/render_view_impl.h"
+#include "content/test/render_view_test.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
@@ -26,7 +26,7 @@ using WebKit::WebString;
 using WebKit::WebTextDirection;
 using WebKit::WebURLError;
 
-class RenderViewImplTest : public RenderViewTest {
+class RenderViewImplTest : public content::RenderViewTest {
  public:
   RenderViewImpl* view() {
     return static_cast<RenderViewImpl*>(view_);
@@ -43,15 +43,15 @@ TEST_F(RenderViewImplTest, OnNavStateChanged) {
   LoadHTML("<input type=\"text\" id=\"elt_text\"></input>");
 
   // We should NOT have gotten a form state change notification yet.
-  EXPECT_FALSE(render_thread_.sink().GetFirstMessageMatching(
+  EXPECT_FALSE(render_thread_->sink().GetFirstMessageMatching(
       ViewHostMsg_UpdateState::ID));
-  render_thread_.sink().ClearMessages();
+  render_thread_->sink().ClearMessages();
 
   // Change the value of the input. We should have gotten an update state
   // notification. We need to spin the message loop to catch this update.
   ExecuteJavaScript("document.getElementById('elt_text').value = 'foo';");
   ProcessPendingMessages();
-  EXPECT_TRUE(render_thread_.sink().GetUniqueMessageMatching(
+  EXPECT_TRUE(render_thread_->sink().GetUniqueMessageMatching(
       ViewHostMsg_UpdateState::ID));
 }
 
@@ -65,20 +65,20 @@ TEST_F(RenderViewImplTest, LastCommittedUpdateState) {
   LoadHTML("<div>Page B</div>");
 
   // Check for a valid UpdateState message for page A.
-  const IPC::Message* msg_A = render_thread_.sink().GetUniqueMessageMatching(
+  const IPC::Message* msg_A = render_thread_->sink().GetUniqueMessageMatching(
       ViewHostMsg_UpdateState::ID);
   ASSERT_TRUE(msg_A);
   int page_id_A;
   std::string state_A;
   ViewHostMsg_UpdateState::Read(msg_A, &page_id_A, &state_A);
   EXPECT_EQ(1, page_id_A);
-  render_thread_.sink().ClearMessages();
+  render_thread_->sink().ClearMessages();
 
   // Load page C, which will trigger an UpdateState message for page B.
   LoadHTML("<div>Page C</div>");
 
   // Check for a valid UpdateState for page B.
-  const IPC::Message* msg_B = render_thread_.sink().GetUniqueMessageMatching(
+  const IPC::Message* msg_B = render_thread_->sink().GetUniqueMessageMatching(
       ViewHostMsg_UpdateState::ID);
   ASSERT_TRUE(msg_B);
   int page_id_B;
@@ -86,13 +86,13 @@ TEST_F(RenderViewImplTest, LastCommittedUpdateState) {
   ViewHostMsg_UpdateState::Read(msg_B, &page_id_B, &state_B);
   EXPECT_EQ(2, page_id_B);
   EXPECT_NE(state_A, state_B);
-  render_thread_.sink().ClearMessages();
+  render_thread_->sink().ClearMessages();
 
   // Load page D, which will trigger an UpdateState message for page C.
   LoadHTML("<div>Page D</div>");
 
   // Check for a valid UpdateState for page C.
-  const IPC::Message* msg_C = render_thread_.sink().GetUniqueMessageMatching(
+  const IPC::Message* msg_C = render_thread_->sink().GetUniqueMessageMatching(
       ViewHostMsg_UpdateState::ID);
   ASSERT_TRUE(msg_C);
   int page_id_C;
@@ -100,7 +100,7 @@ TEST_F(RenderViewImplTest, LastCommittedUpdateState) {
   ViewHostMsg_UpdateState::Read(msg_C, &page_id_C, &state_C);
   EXPECT_EQ(3, page_id_C);
   EXPECT_NE(state_B, state_C);
-  render_thread_.sink().ClearMessages();
+  render_thread_->sink().ClearMessages();
 
   // Go back to C and commit, preparing for our real test.
   ViewMsg_Navigate_Params params_C;
@@ -113,7 +113,7 @@ TEST_F(RenderViewImplTest, LastCommittedUpdateState) {
   params_C.state = state_C;
   view()->OnNavigate(params_C);
   ProcessPendingMessages();
-  render_thread_.sink().ClearMessages();
+  render_thread_->sink().ClearMessages();
 
   // Go back twice quickly, such that page B does not have a chance to commit.
   // This leads to two changes to the back/forward list but only one change to
@@ -144,7 +144,7 @@ TEST_F(RenderViewImplTest, LastCommittedUpdateState) {
 
   // Now ensure that the UpdateState message we receive is consistent
   // and represents page C in both page_id and state.
-  const IPC::Message* msg = render_thread_.sink().GetUniqueMessageMatching(
+  const IPC::Message* msg = render_thread_->sink().GetUniqueMessageMatching(
       ViewHostMsg_UpdateState::ID);
   ASSERT_TRUE(msg);
   int page_id;
@@ -173,14 +173,14 @@ TEST_F(RenderViewImplTest, StaleNavigationsIgnored) {
   EXPECT_EQ(2, view()->history_page_ids_[1]);
 
   // Check for a valid UpdateState message for page A.
-  const IPC::Message* msg_A = render_thread_.sink().GetUniqueMessageMatching(
+  const IPC::Message* msg_A = render_thread_->sink().GetUniqueMessageMatching(
       ViewHostMsg_UpdateState::ID);
   ASSERT_TRUE(msg_A);
   int page_id_A;
   std::string state_A;
   ViewHostMsg_UpdateState::Read(msg_A, &page_id_A, &state_A);
   EXPECT_EQ(1, page_id_A);
-  render_thread_.sink().ClearMessages();
+  render_thread_->sink().ClearMessages();
 
   // Back to page A (page_id 1) and commit.
   ViewMsg_Navigate_Params params_A;
@@ -237,14 +237,14 @@ TEST_F(RenderViewImplTest, DontIgnoreBackAfterNavEntryLimit) {
   EXPECT_EQ(2, view()->history_page_ids_[1]);
 
   // Check for a valid UpdateState message for page A.
-  const IPC::Message* msg_A = render_thread_.sink().GetUniqueMessageMatching(
+  const IPC::Message* msg_A = render_thread_->sink().GetUniqueMessageMatching(
       ViewHostMsg_UpdateState::ID);
   ASSERT_TRUE(msg_A);
   int page_id_A;
   std::string state_A;
   ViewHostMsg_UpdateState::Read(msg_A, &page_id_A, &state_A);
   EXPECT_EQ(1, page_id_A);
-  render_thread_.sink().ClearMessages();
+  render_thread_->sink().ClearMessages();
 
   // Load page C, which will trigger an UpdateState message for page B.
   LoadHTML("<div>Page C</div>");
@@ -253,14 +253,14 @@ TEST_F(RenderViewImplTest, DontIgnoreBackAfterNavEntryLimit) {
   EXPECT_EQ(3, view()->history_page_ids_[2]);
 
   // Check for a valid UpdateState message for page B.
-  const IPC::Message* msg_B = render_thread_.sink().GetUniqueMessageMatching(
+  const IPC::Message* msg_B = render_thread_->sink().GetUniqueMessageMatching(
       ViewHostMsg_UpdateState::ID);
   ASSERT_TRUE(msg_B);
   int page_id_B;
   std::string state_B;
   ViewHostMsg_UpdateState::Read(msg_B, &page_id_B, &state_B);
   EXPECT_EQ(2, page_id_B);
-  render_thread_.sink().ClearMessages();
+  render_thread_->sink().ClearMessages();
 
   // Suppose the browser has limited the number of NavigationEntries to 2.
   // It has now dropped the first entry, but the renderer isn't notified.
@@ -297,7 +297,7 @@ TEST_F(RenderViewImplTest, OnImeStateChanged) {
            "<input id=\"test2\" type=\"password\"></input>"
            "</body>"
            "</html>");
-  render_thread_.sink().ClearMessages();
+  render_thread_->sink().ClearMessages();
 
   const int kRepeatCount = 10;
   for (int i = 0; i < kRepeatCount; i++) {
@@ -305,12 +305,12 @@ TEST_F(RenderViewImplTest, OnImeStateChanged) {
     // activate IMEs.
     ExecuteJavaScript("document.getElementById('test1').focus();");
     ProcessPendingMessages();
-    render_thread_.sink().ClearMessages();
+    render_thread_->sink().ClearMessages();
 
     // Update the IME status and verify if our IME backend sends an IPC message
     // to activate IMEs.
     view()->UpdateInputMethod();
-    const IPC::Message* msg = render_thread_.sink().GetMessageAt(0);
+    const IPC::Message* msg = render_thread_->sink().GetMessageAt(0);
     EXPECT_TRUE(msg != NULL);
     EXPECT_EQ(ViewHostMsg_ImeUpdateTextInputState::ID, msg->type());
     ViewHostMsg_ImeUpdateTextInputState::Param params;
@@ -323,12 +323,12 @@ TEST_F(RenderViewImplTest, OnImeStateChanged) {
     // de-activate IMEs.
     ExecuteJavaScript("document.getElementById('test2').focus();");
     ProcessPendingMessages();
-    render_thread_.sink().ClearMessages();
+    render_thread_->sink().ClearMessages();
 
     // Update the IME status and verify if our IME backend sends an IPC message
     // to de-activate IMEs.
     view()->UpdateInputMethod();
-    msg = render_thread_.sink().GetMessageAt(0);
+    msg = render_thread_->sink().GetMessageAt(0);
     EXPECT_TRUE(msg != NULL);
     EXPECT_EQ(ViewHostMsg_ImeUpdateTextInputState::ID, msg->type());
     ViewHostMsg_ImeUpdateTextInputState::Read(msg, &params);
@@ -461,7 +461,7 @@ TEST_F(RenderViewImplTest, ImeComposition) {
     // TODO(hbono): we should verify messages to be sent from the back-end.
     view()->UpdateInputMethod();
     ProcessPendingMessages();
-    render_thread_.sink().ClearMessages();
+    render_thread_->sink().ClearMessages();
 
     if (ime_message->result) {
       // Retrieve the content of this page and compare it with the expected
@@ -490,7 +490,7 @@ TEST_F(RenderViewImplTest, OnSetTextDirection) {
            "<div id=\"result\" contenteditable=\"true\"></div>"
            "</body>"
            "</html>");
-  render_thread_.sink().ClearMessages();
+  render_thread_->sink().ClearMessages();
 
   static const struct {
     WebTextDirection direction;
@@ -565,7 +565,7 @@ TEST_F(RenderViewImplTest, OnHandleKeyboardEvent) {
            "</body>"
            "</html>");
   ExecuteJavaScript("document.getElementById('test').focus();");
-  render_thread_.sink().ClearMessages();
+  render_thread_->sink().ClearMessages();
 
   static const MockKeyboard::Layout kLayouts[] = {
 #if defined(OS_WIN)
@@ -826,7 +826,7 @@ TEST_F(RenderViewImplTest, InsertCharacters) {
              "</body>"
              "</html>");
     ExecuteJavaScript("document.getElementById('test').focus();");
-    render_thread_.sink().ClearMessages();
+    render_thread_->sink().ClearMessages();
 
     // For each key code, we send three keyboard events.
     //  * Pressing only the key;

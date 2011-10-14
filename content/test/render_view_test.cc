@@ -2,19 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/test/base/render_view_test.h"
+#include "content/test/render_view_test.h"
 
-#include "chrome/browser/extensions/extension_function_dispatcher.h"
-#include "chrome/common/extensions/extension.h"
-#include "chrome/common/print_messages.h"
-#include "chrome/common/render_messages.h"
-#include "chrome/renderer/autofill/password_autofill_manager.h"
-#include "chrome/renderer/extensions/chrome_v8_context_set.h"
-#include "chrome/renderer/extensions/chrome_v8_extension.h"
-#include "chrome/renderer/extensions/event_bindings.h"
-#include "chrome/renderer/extensions/extension_dispatcher.h"
-#include "chrome/renderer/extensions/extension_process_bindings.h"
-#include "chrome/renderer/extensions/renderer_extension_bindings.h"
 #include "content/common/dom_storage_common.h"
 #include "content/common/native_web_keyboard_event.h"
 #include "content/common/renderer_preferences.h"
@@ -22,7 +11,6 @@
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_main_platform_delegate.h"
 #include "content/test/mock_render_process.h"
-#include "grit/renderer_resources.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
@@ -43,15 +31,15 @@ using WebKit::WebScriptController;
 using WebKit::WebScriptSource;
 using WebKit::WebString;
 using WebKit::WebURLRequest;
-using autofill::AutofillAgent;
-using autofill::PasswordAutofillManager;
 
 namespace {
-const int32 kRouteId = 5;
 const int32 kOpenerId = 7;
+const int32 kRouteId = 5;
 }  // namespace
 
-RenderViewTest::RenderViewTest() : extension_dispatcher_(NULL), view_(NULL) {
+namespace content {
+
+RenderViewTest::RenderViewTest() : view_(NULL) {
 }
 
 RenderViewTest::~RenderViewTest() {
@@ -97,9 +85,17 @@ void RenderViewTest::LoadHTML(const char* html) {
 }
 
 void RenderViewTest::SetUp() {
-  content::GetContentClient()->set_renderer(&chrome_content_renderer_client_);
-  extension_dispatcher_ = new ExtensionDispatcher();
-  chrome_content_renderer_client_.SetExtensionDispatcher(extension_dispatcher_);
+  // Subclasses can set the ContentClient's renderer before calling
+  // RenderViewTest::SetUp().
+  if (!GetContentClient()->renderer())
+    GetContentClient()->set_renderer(&mock_content_renderer_client_);
+
+  // Subclasses can set render_thread_ with their own implementation before
+  // calling RenderViewTest::SetUp().
+  if (!render_thread_.get())
+    render_thread_.reset(new MockRenderThread());
+  render_thread_->set_routing_id(kRouteId);
+
   sandbox_init_wrapper_.reset(new SandboxInitWrapper());
   command_line_.reset(new CommandLine(CommandLine::NO_PROGRAM));
   params_.reset(new MainFunctionParams(*command_line_, *sandbox_init_wrapper_,
@@ -112,20 +108,7 @@ void RenderViewTest::SetUp() {
   webkit_glue::SetJavaScriptFlags(" --expose-gc");
   WebKit::initialize(&webkit_platform_support_);
 
-  WebScriptController::registerExtension(new ChromeV8Extension(
-      "extensions/json_schema.js", IDR_JSON_SCHEMA_JS, NULL));
-  WebScriptController::registerExtension(EventBindings::Get(
-      extension_dispatcher_));
-  WebScriptController::registerExtension(RendererExtensionBindings::Get(
-      extension_dispatcher_));
-  WebScriptController::registerExtension(ExtensionProcessBindings::Get(
-      extension_dispatcher_));
-  WebScriptController::registerExtension(new ChromeV8Extension(
-      "extensions/apitest.js", IDR_EXTENSION_APITEST_JS, NULL));
-
   mock_process_.reset(new MockRenderProcess);
-
-  render_thread_.set_routing_id(kRouteId);
 
   // This needs to pass the mock render thread to the view.
   RenderViewImpl* view = RenderViewImpl::Create(
@@ -142,20 +125,12 @@ void RenderViewTest::SetUp() {
 
   // Attach a pseudo keyboard device to this object.
   mock_keyboard_.reset(new MockKeyboard());
-
-  // RenderView doesn't expose it's PasswordAutofillManager or
-  // AutofillAgent objects, because it has no need to store them directly
-  // (they're stored as RenderViewObserver*).  So just create another set.
-  password_autofill_ = new PasswordAutofillManager(view_);
-  autofill_agent_ = new AutofillAgent(view_, password_autofill_);
 }
 
 void RenderViewTest::TearDown() {
   // Try very hard to collect garbage before shutting down.
   GetMainFrame()->collectGarbage();
   GetMainFrame()->collectGarbage();
-
-  render_thread_.SendCloseMessage();
 
   // Run the loop so the release task from the renderwidget executes.
   ProcessPendingMessages();
@@ -180,9 +155,6 @@ void RenderViewTest::TearDown() {
   params_.reset();
   command_line_.reset();
   sandbox_init_wrapper_.reset();
-
-  extension_dispatcher_->OnRenderProcessShutdown();
-  extension_dispatcher_ = NULL;
 }
 
 int RenderViewTest::SendKeyEvent(MockKeyboard::Layout layout,
@@ -362,3 +334,5 @@ WebKit::WebWidget* RenderViewTest::GetWebWidget() {
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
   return impl->webwidget();
 }
+
+}  // namespace content

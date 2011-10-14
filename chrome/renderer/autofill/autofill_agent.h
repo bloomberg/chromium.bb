@@ -177,8 +177,8 @@ class AutofillAgent : public content::RenderViewObserver,
   base::WeakPtrFactory<AutofillAgent> weak_ptr_factory_;
 
   friend class PasswordAutofillManagerTest;
-  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, SendForms);
-  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, FillFormElement);
+  FRIEND_TEST_ALL_PREFIXES(ChromeRenderViewTest, SendForms);
+  FRIEND_TEST_ALL_PREFIXES(ChromeRenderViewTest, FillFormElement);
   FRIEND_TEST_ALL_PREFIXES(PasswordAutofillManagerTest, WaitUsername);
   FRIEND_TEST_ALL_PREFIXES(PasswordAutofillManagerTest, SuggestionAccept);
   FRIEND_TEST_ALL_PREFIXES(PasswordAutofillManagerTest, SuggestionSelect);

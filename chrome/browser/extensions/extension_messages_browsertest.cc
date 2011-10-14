@@ -10,7 +10,7 @@
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
-#include "chrome/test/base/render_view_test.h"
+#include "chrome/test/base/chrome_render_view_test.h"
 #include "content/common/view_messages.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -47,9 +47,9 @@ void DispatchOnDisconnect(const ChromeV8ContextSet& v8_context_set,
 // TODO(aa): Refactor RendererProcessBindings to have fewer dependencies and
 // make this into a unit test. That will allow us to get rid of cruft like
 // SetTestExtensionId().
-TEST_F(RenderViewTest, ExtensionMessagesOpenChannel) {
+TEST_F(ChromeRenderViewTest, ExtensionMessagesOpenChannel) {
   extension_dispatcher_->SetTestExtensionId(kTestingExtensionId);
-  render_thread_.sink().ClearMessages();
+  render_thread_->sink().ClearMessages();
   LoadHTML("<body></body>");
   ExecuteJavaScript(
     "var port = chrome.extension.connect({name:'testName'});"
@@ -61,7 +61,7 @@ TEST_F(RenderViewTest, ExtensionMessagesOpenChannel) {
 
   // Verify that we opened a channel and sent a message through it.
   const IPC::Message* open_channel_msg =
-      render_thread_.sink().GetUniqueMessageMatching(
+      render_thread_->sink().GetUniqueMessageMatching(
           ExtensionHostMsg_OpenChannelToExtension::ID);
   ASSERT_TRUE(open_channel_msg);
   void* iter = IPC::SyncMessage::GetDataIterator(open_channel_msg);
@@ -70,7 +70,7 @@ TEST_F(RenderViewTest, ExtensionMessagesOpenChannel) {
   EXPECT_EQ("testName", open_params.d);
 
   const IPC::Message* post_msg =
-      render_thread_.sink().GetUniqueMessageMatching(
+      render_thread_->sink().GetUniqueMessageMatching(
           ExtensionHostMsg_PostMessage::ID);
   ASSERT_TRUE(post_msg);
   ExtensionHostMsg_PostMessage::Param post_params;
@@ -78,7 +78,7 @@ TEST_F(RenderViewTest, ExtensionMessagesOpenChannel) {
   EXPECT_EQ("{\"message\":\"content ready\"}", post_params.b);
 
   // Now simulate getting a message back from the other side.
-  render_thread_.sink().ClearMessages();
+  render_thread_->sink().ClearMessages();
   const int kPortId = 0;
   RendererExtensionBindings::DeliverMessage(
       extension_dispatcher_->v8_context_set().GetAll(),
@@ -86,7 +86,7 @@ TEST_F(RenderViewTest, ExtensionMessagesOpenChannel) {
 
   // Verify that we got it.
   const IPC::Message* alert_msg =
-      render_thread_.sink().GetUniqueMessageMatching(
+      render_thread_->sink().GetUniqueMessageMatching(
           ViewHostMsg_RunJavaScriptMessage::ID);
   ASSERT_TRUE(alert_msg);
   iter = IPC::SyncMessage::GetDataIterator(alert_msg);
@@ -97,7 +97,7 @@ TEST_F(RenderViewTest, ExtensionMessagesOpenChannel) {
 
 // Tests that the bindings for handling a new channel connection and channel
 // closing all works.
-TEST_F(RenderViewTest, ExtensionMessagesOnConnect) {
+TEST_F(ChromeRenderViewTest, ExtensionMessagesOnConnect) {
   extension_dispatcher_->SetTestExtensionId(kTestingExtensionId);
   LoadHTML("<body></body>");
   ExecuteJavaScript(
@@ -115,7 +115,7 @@ TEST_F(RenderViewTest, ExtensionMessagesOnConnect) {
     "  alert('disconnected: ' + port.test);"
     "}");
 
-  render_thread_.sink().ClearMessages();
+  render_thread_->sink().ClearMessages();
 
   // Simulate a new connection being opened.
   const int kPortId = 0;
@@ -125,7 +125,7 @@ TEST_F(RenderViewTest, ExtensionMessagesOnConnect) {
 
   // Verify that we handled the new connection by posting a message.
   const IPC::Message* post_msg =
-      render_thread_.sink().GetUniqueMessageMatching(
+      render_thread_->sink().GetUniqueMessageMatching(
           ExtensionHostMsg_PostMessage::ID);
   ASSERT_TRUE(post_msg);
   ExtensionHostMsg_PostMessage::Param post_params;
@@ -135,14 +135,14 @@ TEST_F(RenderViewTest, ExtensionMessagesOnConnect) {
   EXPECT_EQ(expected_msg, post_params.b);
 
   // Now simulate getting a message back from the channel opener.
-  render_thread_.sink().ClearMessages();
+  render_thread_->sink().ClearMessages();
   RendererExtensionBindings::DeliverMessage(
       extension_dispatcher_->v8_context_set().GetAll(),
       kPortId, "{\"val\": 42}", NULL);
 
   // Verify that we got it.
   const IPC::Message* alert_msg =
-      render_thread_.sink().GetUniqueMessageMatching(
+      render_thread_->sink().GetUniqueMessageMatching(
           ViewHostMsg_RunJavaScriptMessage::ID);
   ASSERT_TRUE(alert_msg);
   void* iter = IPC::SyncMessage::GetDataIterator(alert_msg);
@@ -151,12 +151,12 @@ TEST_F(RenderViewTest, ExtensionMessagesOnConnect) {
   EXPECT_EQ(ASCIIToUTF16("got: 42"), alert_param.a);
 
   // Now simulate the channel closing.
-  render_thread_.sink().ClearMessages();
+  render_thread_->sink().ClearMessages();
   DispatchOnDisconnect(extension_dispatcher_->v8_context_set(), kPortId);
 
   // Verify that we got it.
   alert_msg =
-      render_thread_.sink().GetUniqueMessageMatching(
+      render_thread_->sink().GetUniqueMessageMatching(
           ViewHostMsg_RunJavaScriptMessage::ID);
   ASSERT_TRUE(alert_msg);
   iter = IPC::SyncMessage::GetDataIterator(alert_msg);

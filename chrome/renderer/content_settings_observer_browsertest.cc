@@ -5,7 +5,7 @@
 #include "chrome/common/content_settings.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/content_settings_observer.h"
-#include "chrome/test/base/render_view_test.h"
+#include "chrome/test/base/chrome_render_view_test.h"
 #include "content/common/view_messages.h"
 #include "content/public/renderer/render_view.h"
 #include "ipc/ipc_message_macros.h"
@@ -50,7 +50,7 @@ bool MockContentSettingsObserver::Send(IPC::Message* message) {
 
 }  // namespace
 
-TEST_F(RenderViewTest, DidBlockContentType) {
+TEST_F(ChromeRenderViewTest, DidBlockContentType) {
   MockContentSettingsObserver observer(view_);
   EXPECT_CALL(observer,
               OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES, std::string()));
@@ -72,7 +72,7 @@ TEST_F(RenderViewTest, DidBlockContentType) {
 }
 
 // Tests that multiple invokations of AllowDOMStorage result in a single IPC.
-TEST_F(RenderViewTest, AllowDOMStorage) {
+TEST_F(ChromeRenderViewTest, AllowDOMStorage) {
   // Load some HTML, so we have a valid security origin.
   LoadHTML("<html></html>");
   MockContentSettingsObserver observer(view_);
@@ -89,7 +89,7 @@ TEST_F(RenderViewTest, AllowDOMStorage) {
 }
 
 // Regression test for http://crbug.com/35011
-TEST_F(RenderViewTest, JSBlockSentAfterPageLoad) {
+TEST_F(ChromeRenderViewTest, JSBlockSentAfterPageLoad) {
   // 1. Load page with JS.
   std::string html = "<html>"
                      "<head>"
@@ -98,7 +98,7 @@ TEST_F(RenderViewTest, JSBlockSentAfterPageLoad) {
                      "<body>"
                      "</body>"
                      "</html>";
-  render_thread_.sink().ClearMessages();
+  render_thread_->sink().ClearMessages();
   LoadHTML(html.c_str());
 
   // 2. Block JavaScript.
@@ -112,7 +112,7 @@ TEST_F(RenderViewTest, JSBlockSentAfterPageLoad) {
 
   // Make sure no pending messages are in the queue.
   ProcessPendingMessages();
-  render_thread_.sink().ClearMessages();
+  render_thread_->sink().ClearMessages();
 
   // 3. Reload page.
   ViewMsg_Navigate_Params params;
@@ -128,8 +128,8 @@ TEST_F(RenderViewTest, JSBlockSentAfterPageLoad) {
   //    the navigation notifiction is sent.
   int navigation_index = -1;
   int block_index = -1;
-  for (size_t i = 0; i < render_thread_.sink().message_count(); ++i) {
-    const IPC::Message* msg = render_thread_.sink().GetMessageAt(i);
+  for (size_t i = 0; i < render_thread_->sink().message_count(); ++i) {
+    const IPC::Message* msg = render_thread_->sink().GetMessageAt(i);
     if (msg->type() == ViewHostMsg_FrameNavigate::ID)
       navigation_index = i;
     if (msg->type() == ChromeViewHostMsg_ContentBlocked::ID)
@@ -140,7 +140,7 @@ TEST_F(RenderViewTest, JSBlockSentAfterPageLoad) {
   EXPECT_LT(navigation_index, block_index);
 }
 
-TEST_F(RenderViewTest, PluginsTemporarilyAllowed) {
+TEST_F(ChromeRenderViewTest, PluginsTemporarilyAllowed) {
   // Load some HTML.
   LoadHTML("<html>Foo</html>");
 
