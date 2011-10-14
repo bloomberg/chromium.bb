@@ -23,8 +23,6 @@ class MockWebClipboardImpl : public WebKit::WebClipboard {
 
   virtual WebKit::WebString readPlainText(WebKit::WebClipboard::Buffer);
   virtual WebKit::WebString readHTML(WebKit::WebClipboard::Buffer,
-                                     WebKit::WebURL*);
-  virtual WebKit::WebString readHTML(WebKit::WebClipboard::Buffer,
                                      WebKit::WebURL*,
                                      unsigned* fragmentStart,
                                      unsigned* fragmentEnd);

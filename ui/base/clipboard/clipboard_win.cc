@@ -453,17 +453,22 @@ void Clipboard::ReadHTML(Clipboard::Buffer buffer, string16* markup,
   size_t end_index = std::string::npos;
   ClipboardUtil::CFHtmlExtractMetadata(cf_html, src_url, &html_start,
                                        &start_index, &end_index);
-  if (markup) {
-    // Some sanity checks...
-    DCHECK(start_index != std::string::npos);
-    DCHECK(end_index != std::string::npos);
-    DCHECK((start_index - html_start) <= kuint32max);
-    DCHECK((end_index - html_start) <= kuint32max);
 
-    markup->assign(UTF8ToWide(cf_html.data() + html_start));
-    *fragment_start = static_cast<uint32>(start_index - html_start);
-    *fragment_end = static_cast<uint32>(end_index - html_start);
-  }
+  // This might happen if the contents of the clipboard changed and CF_HTML is
+  // no longer available.
+  if (start_index == std::string::npos ||
+      end_index == std::string::npos ||
+      html_start == std::string::npos)
+    return;
+
+  DCHECK(start_index - html_start >= 0);
+  DCHECK(end_index - html_start >= 0);
+  DCHECK((start_index - html_start) <= kuint32max);
+  DCHECK((end_index - html_start) <= kuint32max);
+
+  markup->assign(UTF8ToWide(cf_html.data() + html_start));
+  *fragment_start = static_cast<uint32>(start_index - html_start);
+  *fragment_end = static_cast<uint32>(end_index - html_start);
 }
 
 SkBitmap Clipboard::ReadImage(Buffer buffer) const {
