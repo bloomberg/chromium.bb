@@ -75,8 +75,10 @@ ChromeBrowserMainPartsChromeos::ChromeBrowserMainPartsChromeos(
 ChromeBrowserMainPartsChromeos::~ChromeBrowserMainPartsChromeos() {
   // We should remove observers attached to D-Bus clients before
   // DBusThreadManager is shut down.
-  chromeos::DBusThreadManager::Get()->power_manager_client()->RemoveObserver(
-      brightness_observer_.get());
+  if (brightness_observer_.get()) {
+    chromeos::DBusThreadManager::Get()->power_manager_client()->RemoveObserver(
+        brightness_observer_.get());
+  }
 
   chromeos::DBusThreadManager::Shutdown();
 
