@@ -194,31 +194,6 @@ void ToolsMenuModel::Build(Browser* browser) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// BookmarkSubMenuModel
-
-BookmarkSubMenuModel::BookmarkSubMenuModel(
-    ui::SimpleMenuModel::Delegate* delegate, Browser* browser)
-    : SimpleMenuModel(delegate) {
-  Build(browser);
-}
-
-BookmarkSubMenuModel::~BookmarkSubMenuModel() {}
-
-void BookmarkSubMenuModel::Build(Browser* browser) {
-  AddCheckItemWithStringId(IDC_SHOW_BOOKMARK_BAR, IDS_SHOW_BOOKMARK_BAR);
-  AddItemWithStringId(IDC_SHOW_BOOKMARK_MANAGER, IDS_BOOKMARK_MANAGER);
-#if !defined(OS_CHROMEOS)
-  AddItemWithStringId(IDC_IMPORT_SETTINGS, IDS_IMPORT_SETTINGS_MENU_LABEL);
-#endif
-#if defined(OS_MACOSX)
-  AddSeparator();
-#else
-  // TODO: add submenu for bookmarks themselves, restore separator.
-#endif
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
 // WrenchMenuModel
 
 WrenchMenuModel::WrenchMenuModel(ui::AcceleratorProvider* provider,

@@ -223,6 +223,9 @@ void BrowserToolbarGtk::Init(GtkWindow* top_level_window) {
   gtk_box_pack_start(GTK_BOX(toolbar_), wrench_box, FALSE, FALSE, 4);
 
   wrench_menu_.reset(new MenuGtk(this, wrench_menu_model_.get()));
+  // The bookmark menu model needs to be able to force the wrench menu to close.
+  wrench_menu_model_->bookmark_sub_menu_model()->SetMenuGtk(wrench_menu_.get());
+
   registrar_.Add(this, content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
       Source<HostZoomMap>(profile->GetHostZoomMap()));
 

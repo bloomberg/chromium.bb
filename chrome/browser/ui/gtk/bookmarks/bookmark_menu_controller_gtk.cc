@@ -27,9 +27,6 @@
 
 namespace {
 
-// TODO(estade): It might be a good idea to vary this by locale.
-const int kMaxChars = 50;
-
 void SetImageMenuItem(GtkWidget* menu_item,
                       const BookmarkNode* node,
                       BookmarkModel* model) {
