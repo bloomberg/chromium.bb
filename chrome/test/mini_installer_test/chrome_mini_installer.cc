@@ -190,11 +190,18 @@ void ChromeMiniInstaller::InstallMiniInstaller(bool over_install,
   VerifyInstall(over_install);
 }
 
-void ChromeMiniInstaller::InstallUsingMultiInstall() {
+CommandLine ChromeMiniInstaller::GetBaseMultiInstallCommand() {
   FilePath mini_installer;
-  ASSERT_TRUE(GetMiniInstaller(&mini_installer));
+  if (!GetMiniInstaller(&mini_installer))
+    return CommandLine(CommandLine::NO_PROGRAM);
   CommandLine cmd(mini_installer);
   cmd.AppendSwitch(installer::switches::kMultiInstall);
+  cmd.AppendSwitch(installer::switches::kDoNotLaunchChrome);
+  return cmd;
+}
+
+void ChromeMiniInstaller::InstallChromeUsingMultiInstall() {
+  CommandLine cmd = GetBaseMultiInstallCommand();
   cmd.AppendSwitch(installer::switches::kChrome);
   RunInstaller(cmd);
 
@@ -205,14 +212,11 @@ void ChromeMiniInstaller::InstallUsingMultiInstall() {
   ASSERT_TRUE(InstallUtil::IsMultiInstall(dist, system_install_));
   EXPECT_TRUE(type & InstallationValidator::ProductBits::CHROME_MULTI);
   FindChromeShortcut();
-  LaunchChrome(false);
+  LaunchChrome(true);
 }
 
 void ChromeMiniInstaller::InstallChromeFrameUsingMultiInstall() {
-  FilePath mini_installer;
-  ASSERT_TRUE(GetMiniInstaller(&mini_installer));
-  CommandLine cmd(mini_installer);
-  cmd.AppendSwitch(installer::switches::kMultiInstall);
+  CommandLine cmd = GetBaseMultiInstallCommand();
   cmd.AppendSwitch(installer::switches::kChromeFrame);
   RunInstaller(cmd);
 
@@ -227,6 +231,27 @@ void ChromeMiniInstaller::InstallChromeFrameUsingMultiInstall() {
   // Check if Chrome process got spawned.
   MiniInstallerTestUtil::VerifyProcessLaunch(installer::kChromeExe, false);
   FindChromeShortcut();
+}
+
+void ChromeMiniInstaller::InstallChromeAndChromeFrameReadyMode() {
+  CommandLine cmd = GetBaseMultiInstallCommand();
+  cmd.AppendSwitch(installer::switches::kChrome);
+  cmd.AppendSwitch(installer::switches::kChromeFrame);
+  cmd.AppendSwitch(installer::switches::kChromeFrameReadyMode);
+  RunInstaller(cmd);
+  // Verify installation.
+  InstallationValidator::InstallationType type =
+      installer::ExpectValidInstallation(system_install_);
+  BrowserDistribution* dist = GetCurrentBrowserDistribution();
+  ASSERT_TRUE(InstallUtil::IsMultiInstall(dist, system_install_));
+  EXPECT_TRUE(type & InstallationValidator::ProductBits::CHROME_MULTI);
+  EXPECT_TRUE(type &
+      InstallationValidator::ProductBits::CHROME_FRAME_READY_MODE);
+  FindChromeShortcut();
+  LaunchChrome(true);
+  LaunchIE(L"gcf:about:version");
+  // Check if Chrome process got spawned.
+  MiniInstallerTestUtil::VerifyProcessLaunch(L"chrome_frame.exe", false);
 }
 
 // This method tests the standalone installer by verifying the steps listed at:
@@ -722,8 +747,7 @@ void ChromeMiniInstaller::LaunchIE(const std::wstring& navigate_url) {
 
   CommandLine cmd_line(browser_path);
   cmd_line.AppendArgNative(navigate_url);
-
-  base::LaunchProcess(cmd_line, base::LaunchOptions(), NULL);
+  ASSERT_TRUE(base::LaunchProcess(cmd_line, base::LaunchOptions(), NULL));
 }
 
 // This method compares the registry keys after overinstall.

@@ -29,13 +29,15 @@ class ChromeMiniInstaller {
   // This method returns path to either program files
   // or documents and setting based on the install type.
   bool GetChromeInstallDirectoryLocation(FilePath* path);
+  // Get the base multi-install command.
+  CommandLine GetBaseMultiInstallCommand();
 
   // Installs the latest full installer.
   void InstallFullInstaller(bool over_install);
 
-  void InstallUsingMultiInstall();
-
+  void InstallChromeUsingMultiInstall();
   void InstallChromeFrameUsingMultiInstall();
+  void InstallChromeAndChromeFrameReadyMode();
 
   // Installs chrome.
   void Install();

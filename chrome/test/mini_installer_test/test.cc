@@ -135,12 +135,22 @@ TEST_F(MiniInstallTest,
 
 TEST_F(MiniInstallTest,
     InstallChromeUsingMultiInstallUser) {
-  chrome_user_installer_->InstallUsingMultiInstall();
+  chrome_user_installer_->InstallChromeUsingMultiInstall();
 }
 
 TEST_F(MiniInstallTest,
     InstallChromeUsingMultiInstallSys) {
-  chrome_user_installer_->InstallUsingMultiInstall();
+  chrome_user_installer_->InstallChromeUsingMultiInstall();
+}
+
+TEST_F(MiniInstallTest,
+    InstallChromeAndChromeFrameReadyModeUser) {
+  chrome_user_installer_->InstallChromeAndChromeFrameReadyMode();
+}
+
+TEST_F(MiniInstallTest,
+    InstallChromeAndChromeFrameReadyModeSys) {
+  chrome_sys_installer_->InstallChromeAndChromeFrameReadyMode();
 }
 
 TEST_F(MiniInstallTest, InstallChromeFrameUsingMultiInstallUser) {
