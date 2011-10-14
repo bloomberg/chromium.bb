@@ -47,7 +47,6 @@ class TapRecord {
 };
 
 class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
-  FRIEND_TEST(ImmediateInterpreterTest, SameFingersTest);
   FRIEND_TEST(ImmediateInterpreterTest, PalmTest);
   FRIEND_TEST(ImmediateInterpreterTest, PalmAtEdgeTest);
   FRIEND_TEST(ImmediateInterpreterTest, GetGesturingFingersTest);
@@ -77,9 +76,6 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   TapToClickState tap_to_click_state() const { return tap_to_click_state_; }
 
  private:
-  // Returns true iff the fingers in hwstate are the same ones in prev_state_
-  bool SameFingers(const HardwareState& hwstate) const;
-
   // Reset the member variables corresponding to same-finger state and
   // updates changed_time_ to |now|.
   void ResetSameFingersState(stime_t now);

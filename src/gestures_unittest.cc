@@ -12,6 +12,30 @@ namespace gestures {
 
 class GesturesTest : public ::testing::Test {};
 
+TEST(GesturesTest, SameFingersAsTest) {
+  FingerState finger_states[] = {
+    // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
+    {0, 0, 0, 0, 1, 0, 0, 0, 1},
+    {0, 0, 0, 0, 1, 0, 0, 0, 1},
+    {0, 0, 0, 0, 1, 0, 0, 0, 2},
+    {0, 0, 0, 0, 1, 0, 0, 0, 3},
+    {0, 0, 0, 0, 1, 0, 0, 0, 4},
+    {0, 0, 0, 0, 1, 0, 0, 0, 5}
+  };
+  HardwareState hardware_state[] = {
+    // time, buttons, finger count, finger states pointer
+    { 200000, 0, 1, 1, &finger_states[0] },
+    { 200001, 0, 1, 1, &finger_states[1] },
+    { 200001, 0, 2, 2, &finger_states[1] },
+    { 200001, 0, 2, 2, &finger_states[2] },
+  };
+
+  EXPECT_TRUE(hardware_state[0].SameFingersAs(hardware_state[1]));
+  EXPECT_FALSE(hardware_state[0].SameFingersAs(hardware_state[2]));
+  EXPECT_TRUE(hardware_state[2].SameFingersAs(hardware_state[2]));
+  EXPECT_FALSE(hardware_state[2].SameFingersAs(hardware_state[3]));
+}
+
 TEST(GesturesTest, GestureStringTest) {
   Gesture null;
   EXPECT_TRUE(strstr(null.String().c_str(), "null"));

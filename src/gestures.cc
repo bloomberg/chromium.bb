@@ -43,6 +43,16 @@ const FingerState* HardwareState::GetFingerState(short tracking_id) const {
   return NULL;
 }
 
+bool HardwareState::SameFingersAs(const HardwareState& that) const {
+  if (finger_cnt != that.finger_cnt || touch_cnt != that.touch_cnt)
+    return false;
+  // For now, require fingers to be in the same slots
+  for (size_t i = 0; i < finger_cnt; i++)
+    if (fingers[i].tracking_id != that.fingers[i].tracking_id)
+      return false;
+  return true;
+}
+
 string Gesture::String() const {
   switch (type) {
     default:

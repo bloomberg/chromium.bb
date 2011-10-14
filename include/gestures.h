@@ -76,6 +76,7 @@ struct HardwareState {
 #ifdef __cplusplus
   FingerState* GetFingerState(short tracking_id);
   const FingerState* GetFingerState(short tracking_id) const;
+  bool SameFingersAs(const HardwareState& that) const;
 #endif  // __cplusplus
   stime_t timestamp;  // 64-bit Wall clock time in microseconds (10^-6 s)
   int buttons_down;  // bit field, use GESTURES_BUTTON_*

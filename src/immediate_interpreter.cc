@@ -168,7 +168,7 @@ Gesture* ImmediateInterpreter::SyncInterpret(HardwareState* hwstate,
   }
 
   result_.type = kGestureTypeNull;
-  const bool same_fingers = SameFingers(*hwstate);
+  const bool same_fingers = prev_state_.SameFingersAs(*hwstate);
   if (!same_fingers) {
     // Fingers changed, do nothing this time
     ResetSameFingersState(hwstate->timestamp);
@@ -201,17 +201,6 @@ Gesture* ImmediateInterpreter::HandleTimer(stime_t now, stime_t* timeout) {
                    now,
                    timeout);
   return result_.type != kGestureTypeNull ? &result_ : NULL;
-}
-
-// For now, require fingers to be in the same slots
-bool ImmediateInterpreter::SameFingers(const HardwareState& hwstate) const {
-  if (hwstate.finger_cnt != prev_state_.finger_cnt)
-    return false;
-  for (int i = 0; i < hwstate.finger_cnt; ++i) {
-    if (hwstate.fingers[i].tracking_id != prev_state_.fingers[i].tracking_id)
-      return false;
-  }
-  return true;
 }
 
 void ImmediateInterpreter::ResetSameFingersState(stime_t now) {
@@ -726,6 +715,7 @@ void ImmediateInterpreter::UpdateTapState(
 void ImmediateInterpreter::SetPrevState(const HardwareState& hwstate) {
   prev_state_.timestamp = hwstate.timestamp;
   prev_state_.buttons_down = hwstate.buttons_down;
+  prev_state_.touch_cnt = hwstate.touch_cnt;
   prev_state_.finger_cnt = min(hwstate.finger_cnt, hw_props_.max_finger_cnt);
   memcpy(prev_state_.fingers,
          hwstate.fingers,
