@@ -357,10 +357,13 @@ void LocationBarView::InvalidatePageActions() {
 }
 
 void LocationBarView::OnFocus() {
-  // Focus the location entry native view.
-  location_entry_->SetFocus();
+  // Focus the view widget first which implements accessibility for Chrome OS.
   GetWidget()->NotifyAccessibilityEvent(
       this, ui::AccessibilityTypes::EVENT_FOCUS, true);
+
+  // Then focus the native location view which implements accessibility for
+  // Windows.
+  location_entry_->SetFocus();
 }
 
 void LocationBarView::SetPreviewEnabledPageAction(ExtensionAction* page_action,

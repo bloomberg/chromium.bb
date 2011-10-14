@@ -723,10 +723,6 @@ void OmniboxViewWin::ClosePopup() {
 
 void OmniboxViewWin::SetFocus() {
   ::SetFocus(m_hWnd);
-  parent_view_->GetWidget()->NotifyAccessibilityEvent(
-      parent_view_,
-      ui::AccessibilityTypes::EVENT_FOCUS,
-      false);
 }
 
 IAccessible* OmniboxViewWin::GetIAccessible() {
