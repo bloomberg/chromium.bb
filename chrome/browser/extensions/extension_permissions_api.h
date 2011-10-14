@@ -66,21 +66,21 @@ class ExtensionPermissionsManager {
 class ContainsPermissionsFunction : public SyncExtensionFunction {
   virtual ~ContainsPermissionsFunction() {}
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.permissions.contains")
+  DECLARE_EXTENSION_FUNCTION_NAME("permissions.contains")
 };
 
 // chrome.permissions.getAll
 class GetAllPermissionsFunction : public SyncExtensionFunction {
   virtual ~GetAllPermissionsFunction() {}
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.permissions.getAll")
+  DECLARE_EXTENSION_FUNCTION_NAME("permissions.getAll")
 };
 
 // chrome.permissions.remove
 class RemovePermissionsFunction : public SyncExtensionFunction {
   virtual ~RemovePermissionsFunction() {}
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.permissions.remove")
+  DECLARE_EXTENSION_FUNCTION_NAME("permissions.remove")
 };
 
 // chrome.permissions.request
@@ -105,7 +105,7 @@ class RequestPermissionsFunction : public AsyncExtensionFunction,
   scoped_ptr<ExtensionInstallUI> install_ui_;
   scoped_refptr<ExtensionPermissionSet> requested_permissions_;
   const Extension* extension_;
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.permissions.request")
+  DECLARE_EXTENSION_FUNCTION_NAME("permissions.request")
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_PERMISSIONS_API_H__

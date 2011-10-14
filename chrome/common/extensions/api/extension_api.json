@@ -1343,7 +1343,7 @@
     ]
   },
   {
-    "namespace": "experimental.permissions",
+    "namespace": "permissions",
     "types": [
       {
         "id": "Permissions",

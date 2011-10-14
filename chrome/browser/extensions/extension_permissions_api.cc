@@ -37,8 +37,8 @@ const char kUserGestureRequiredError[] =
 const char kInvalidOrigin[] =
     "Invalid value for origin pattern *: *";
 
-const char kOnAdded[] = "experimental.permissions.onAdded";
-const char kOnRemoved[] = "experimental.permissions.onRemoved";
+const char kOnAdded[] = "permissions.onAdded";
+const char kOnRemoved[] = "permissions.onRemoved";
 
 enum AutoConfirmForTest {
   DO_NOT_SKIP = 0,

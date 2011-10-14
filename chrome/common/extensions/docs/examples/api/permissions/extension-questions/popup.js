@@ -6,7 +6,7 @@ var PERMISSIONS = {origins: ['http://api.stackoverflow.com/']};
 var URL = 'http://api.stackoverflow.com/1.1/questions?max=10&sort=votes&tagged=google-chrome-extension';
 var ROOT = 'http://stackoverflow.com';
 
-chrome.experimental.permissions.contains(PERMISSIONS, function(result) {
+chrome.permissions.contains(PERMISSIONS, function(result) {
   if (!result) {
     // Open options page to request permissions.
     document.querySelector('#title').innerText =

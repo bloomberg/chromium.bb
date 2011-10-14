@@ -67,12 +67,6 @@
     "chrome.experimental.devtools.panels.create": "experimental.devtools.panels.html#method-create",
     "chrome.experimental.devtools.panels.setOpenResourceHandler": "experimental.devtools.panels.html#method-setOpenResourceHandler",
     "chrome.experimental.infobars.show": "experimental.infobars.html#method-show",
-    "chrome.experimental.permissions.contains": "experimental.permissions.html#method-contains",
-    "chrome.experimental.permissions.getAll": "experimental.permissions.html#method-getAll",
-    "chrome.experimental.permissions.onAdded": "experimental.permissions.html#event-onAdded",
-    "chrome.experimental.permissions.onRemoved": "experimental.permissions.html#event-onRemoved",
-    "chrome.experimental.permissions.remove": "experimental.permissions.html#method-remove",
-    "chrome.experimental.permissions.request": "experimental.permissions.html#method-request",
     "chrome.experimental.savePage.saveAsMHTML": "experimental.savePage.html#method-saveAsMHTML",
     "chrome.experimental.settings.clear": "experimental.settings.html#method-clear",
     "chrome.experimental.settings.get": "experimental.settings.html#method-get",
@@ -147,6 +141,12 @@
     "chrome.pageAction.setPopup": "pageAction.html#method-setPopup",
     "chrome.pageAction.setTitle": "pageAction.html#method-setTitle",
     "chrome.pageAction.show": "pageAction.html#method-show",
+    "chrome.permissions.contains": "permissions.html#method-contains",
+    "chrome.permissions.getAll": "permissions.html#method-getAll",
+    "chrome.permissions.onAdded": "permissions.html#event-onAdded",
+    "chrome.permissions.onRemoved": "permissions.html#event-onRemoved",
+    "chrome.permissions.remove": "permissions.html#method-remove",
+    "chrome.permissions.request": "permissions.html#method-request",
     "chrome.proxy.onProxyError": "proxy.html#event-onProxyError",
     "chrome.tabs.captureVisibleTab": "tabs.html#method-captureVisibleTab",
     "chrome.tabs.connect": "tabs.html#method-connect",
@@ -2157,11 +2157,11 @@
     },
     {
       "api_calls": [
-        "chrome.experimental.permissions.contains",
-        "chrome.experimental.permissions.onAdded",
-        "chrome.experimental.permissions.onRemoved",
-        "chrome.experimental.permissions.remove",
-        "chrome.experimental.permissions.request",
+        "chrome.permissions.contains",
+        "chrome.permissions.onAdded",
+        "chrome.permissions.onRemoved",
+        "chrome.permissions.remove",
+        "chrome.permissions.request",
         "chrome.tabs.create"
       ],
       "crx_path": "examples\/api\/permissions\/extension-questions.crx",
@@ -2177,7 +2177,7 @@
       "packaged_app": false,
       "path": "examples\/api\/permissions\/extension-questions\/",
       "protocols": [],
-      "search_string": "TOP CHROME EXTENSION QUESTIONS SAMPLE DEMONSTRATION OF THE OPTIONAL PERMISSIONS API. BROWSER_ACTION EXPERIMENTAL OPTIONS_PAGE CHROME.EXPERIMENTAL.PERMISSIONS.CONTAINS CHROME.EXPERIMENTAL.PERMISSIONS.ONADDED CHROME.EXPERIMENTAL.PERMISSIONS.ONREMOVED CHROME.EXPERIMENTAL.PERMISSIONS.REMOVE CHROME.EXPERIMENTAL.PERMISSIONS.REQUEST CHROME.TABS.CREATE",
+      "search_string": "TOP CHROME EXTENSION QUESTIONS SAMPLE DEMONSTRATION OF THE OPTIONAL PERMISSIONS API. BROWSER_ACTION EXPERIMENTAL OPTIONS_PAGE CHROME.PERMISSIONS.CONTAINS CHROME.PERMISSIONS.ONADDED CHROME.PERMISSIONS.ONREMOVED CHROME.PERMISSIONS.REMOVE CHROME.PERMISSIONS.REQUEST CHROME.TABS.CREATE",
       "source_files": [
         "manifest.json",
         "options.html",
@@ -2185,7 +2185,7 @@
         "popup.html",
         "popup.js"
       ],
-      "source_hash": "ea002a57e21073801c7ac2906e6c513337584d0a",
+      "source_hash": "100ad15bc7e23dc43bfa967ed7ab993fb9c93c6a",
       "zip_path": "examples\/api\/permissions\/extension-questions.zip"
     },
     {

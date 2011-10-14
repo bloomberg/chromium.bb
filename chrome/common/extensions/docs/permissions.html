@@ -16,7 +16,7 @@
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
     <script type="text/javascript" src="js/sidebar.js"></script>
-  <title>Permissions - Google Chrome Extensions - Google Code</title></head>
+  <title>Optional Permissions - Google Chrome Extensions - Google Code</title></head>
   <body>  <div id="gc-container" class="labs">
       <div id="devModeWarning">
         You are viewing extension docs in chrome via the 'file:' scheme: are you expecting to see local changes when you refresh? You'll need run chrome with --allow-file-access-from-files.
@@ -201,6 +201,7 @@
                   <li><a href="xhr.html">Cross-Origin XHR</a></li>
                   <li><a href="i18n.html">Internationalization</a></li>
                   <li><a href="messaging.html">Message Passing</a></li>
+                  <li class="leftNavSelected">Optional Permissions</li>
                   <li><a href="npapi.html">NPAPI Plugins</a></li>
                 </ul>
               </li>
@@ -250,7 +251,7 @@
 
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">Permissions</h1>
+        <h1 class="page_title">Optional Permissions</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
         <div id="toc">
@@ -275,7 +276,7 @@
               </ol>
             </li>
               <li>
-                <a href="#apiReference">API reference: chrome.experimental.permissions</a>
+                <a href="#apiReference">API reference: chrome.permissions</a>
                 <ol>
                   <li style="display: none; ">
                     <a href="#properties">Properties</a>
@@ -329,15 +330,21 @@
         </p>
 
         <!-- STATIC CONTENT PLACEHOLDER -->
-        <div id="static"><div id="pageData-name" class="pageData">Permissions</div>
+        <div id="static"><div id="pageData-name" class="pageData">Optional Permissions</div>
 
 <!-- BEGIN AUTHORED CONTENT -->
 <p id="classSummary">
-  Use the <code>chrome.experimental.permissions</code> module to implement
+  Use the <code>chrome.permissions</code> module to implement
   optional permissions. You can request optional permissions during your
   extension's regular application flow rather than at install time, so users
   understand why the permissions are needed and use only those that are
   necessary.
+</p>
+
+<p>
+  For general information about permissions and details about each permission,
+  see the <a href="manifest.html#permissions">permissions</a> section of the
+  manifest documentation.
 </p>
 
 <h2 id="howto"> Implementing optional permissions </h2>
@@ -428,7 +435,7 @@ You can specify any of the following as optional permissions:
 </p><pre>document.querySelector('#my-button').addEventListener('click', function(event) {
   // Permissions must be requested from inside a user gesture, like a button's
   // click handler.
-  chrome.experimental.permissions.request({
+  chrome.permissions.request({
     permissions: ['tabs'],
     origins: ['http://www.google.com/']
   }, function(granted) {
@@ -460,7 +467,7 @@ You can specify any of the following as optional permissions:
   permissions, use <code>permission.contains()</code>:
 </p>
 
-<pre>chrome.experimental.permissions.contains({
+<pre>chrome.permissions.contains({
   permissions: ['tabs'],
   origins: ['http://www.google.com/']
 }, function(result) {
@@ -480,7 +487,7 @@ You can specify any of the following as optional permissions:
   prompting the user.
 </p>
 
-<pre>chrome.experimental.permissions.remove({
+<pre>chrome.permissions.remove({
   permissions: ['tabs'],
   origins: ['http://www.google.com/']
 }, function(removed) {
@@ -499,7 +506,7 @@ You can specify any of the following as optional permissions:
         <!-- API PAGE -->
         <div class="apiPage">
         <a name="apiReference"></a>
-        <h2>API reference: chrome.experimental.permissions</h2>
+        <h2>API reference: chrome.permissions</h2>
 
           <!-- PROPERTIES -->
           <div class="apiGroup" style="display: none; ">
@@ -531,7 +538,7 @@ You can specify any of the following as optional permissions:
 
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.permissions.contains</span>(<span class="null"><span style="display: none; ">, </span><span>Permissions</span>
+                  <span>chrome.permissions.contains</span>(<span class="null"><span style="display: none; ">, </span><span>Permissions</span>
                       <var><span>permissions</span></var></span><span class="null"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
 
@@ -555,7 +562,7 @@ You can specify any of the following as optional permissions:
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.permissions.html#type-Permissions">Permissions</a>
+                        <a href="permissions.html#type-Permissions">Permissions</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -798,7 +805,7 @@ You can specify any of the following as optional permissions:
 
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.permissions.getAll</span>(<span class="null"><span style="display: none; ">, </span><span>function</span>
+                  <span>chrome.permissions.getAll</span>(<span class="null"><span style="display: none; ">, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
 
               <div class="description">
@@ -919,7 +926,7 @@ You can specify any of the following as optional permissions:
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.permissions.html#type-Permissions">Permissions</a>
+                        <a href="permissions.html#type-Permissions">Permissions</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -994,7 +1001,7 @@ You can specify any of the following as optional permissions:
 
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.permissions.remove</span>(<span class="null"><span style="display: none; ">, </span><span>Permissions</span>
+                  <span>chrome.permissions.remove</span>(<span class="null"><span style="display: none; ">, </span><span>Permissions</span>
                       <var><span>permissions</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
 
@@ -1018,7 +1025,7 @@ You can specify any of the following as optional permissions:
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.permissions.html#type-Permissions">Permissions</a>
+                        <a href="permissions.html#type-Permissions">Permissions</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -1261,7 +1268,7 @@ You can specify any of the following as optional permissions:
 
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.permissions.request</span>(<span class="null"><span style="display: none; ">, </span><span>Permissions</span>
+                  <span>chrome.permissions.request</span>(<span class="null"><span style="display: none; ">, </span><span>Permissions</span>
                       <var><span>permissions</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
 
@@ -1285,7 +1292,7 @@ You can specify any of the following as optional permissions:
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.permissions.html#type-Permissions">Permissions</a>
+                        <a href="permissions.html#type-Permissions">Permissions</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -1537,7 +1544,7 @@ You can specify any of the following as optional permissions:
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.experimental.permissions.</span><span>onAdded</span><span class="subdued">.addListener</span>(function(<span>Permissions permissions</span>) <span class="subdued">{...}</span><span></span>);
+                <span class="subdued">chrome.permissions.</span><span>onAdded</span><span class="subdued">.addListener</span>(function(<span>Permissions permissions</span>) <span class="subdued">{...}</span><span></span>);
               </div>
 
               <div class="description">
@@ -1561,7 +1568,7 @@ You can specify any of the following as optional permissions:
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.permissions.html#type-Permissions">Permissions</a>
+                        <a href="permissions.html#type-Permissions">Permissions</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -1647,7 +1654,7 @@ You can specify any of the following as optional permissions:
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.experimental.permissions.</span><span>onRemoved</span><span class="subdued">.addListener</span>(function(<span>Permissions permissions</span>) <span class="subdued">{...}</span><span></span>);
+                <span class="subdued">chrome.permissions.</span><span>onRemoved</span><span class="subdued">.addListener</span>(function(<span>Permissions permissions</span>) <span class="subdued">{...}</span><span></span>);
               </div>
 
               <div class="description">
@@ -1671,7 +1678,7 @@ You can specify any of the following as optional permissions:
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.permissions.html#type-Permissions">Permissions</a>
+                        <a href="permissions.html#type-Permissions">Permissions</a>
                       </span>
                       <span style="display: none; ">
                         <span>

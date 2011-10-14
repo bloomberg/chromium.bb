@@ -1,12 +1,18 @@
-<div id="pageData-name" class="pageData">Permissions</div>
+<div id="pageData-name" class="pageData">Optional Permissions</div>
 
 <!-- BEGIN AUTHORED CONTENT -->
 <p id="classSummary">
-  Use the <code>chrome.experimental.permissions</code> module to implement
+  Use the <code>chrome.permissions</code> module to implement
   optional permissions. You can request optional permissions during your
   extension's regular application flow rather than at install time, so users
   understand why the permissions are needed and use only those that are
   necessary.
+</p>
+
+<p>
+  For general information about permissions and details about each permission,
+  see the <a href="manifest.html#permissions">permissions</a> section of the
+  manifest documentation.
 </p>
 
 <h2 id="howto"> Implementing optional permissions </h2>
@@ -98,7 +104,7 @@ You can specify any of the following as optional permissions:
 document.querySelector('#my-button').addEventListener('click', function(event) {
   // Permissions must be requested from inside a user gesture, like a button's
   // click handler.
-  chrome.experimental.permissions.request({
+  chrome.permissions.request({
     permissions: ['tabs'],
     origins: ['http://www.google.com/']
   }, function(granted) {
@@ -133,7 +139,7 @@ document.querySelector('#my-button').addEventListener('click', function(event) {
 </p>
 
 <pre>
-chrome.experimental.permissions.contains({
+chrome.permissions.contains({
   permissions: ['tabs'],
   origins: ['http://www.google.com/']
 }, function(result) {
@@ -154,7 +160,7 @@ chrome.experimental.permissions.contains({
 </p>
 
 <pre>
-chrome.experimental.permissions.remove({
+chrome.permissions.remove({
   permissions: ['tabs'],
   origins: ['http://www.google.com/']
 }, function(removed) {

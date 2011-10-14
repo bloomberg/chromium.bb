@@ -25,17 +25,17 @@ var UNKNOWN_PERMISSIONS_ERROR =
 var emptyPermissions = {permissions: [], origins: []};
 
 var initialPermissions = {
-  permissions: ['experimental', 'management'],
+  permissions: ['management'],
   origins: ['http://a.com/*']
 };
 
 var permissionsWithTabs = {
-  permissions: ['experimental', 'management', 'tabs'],
+  permissions: ['management', 'tabs'],
   origins: ['http://a.com/*']
 }
 
 var permissionsWithOrigin = {
-  permissions: ['experimental', 'management'],
+  permissions: ['management'],
   origins: ['http://a.com/*', 'http://*.c.com/*']
 }
 
@@ -83,29 +83,29 @@ chrome.test.getConfig(function(config) {
 
   chrome.test.runTests([
     function contains() {
-      chrome.experimental.permissions.contains(
+      chrome.permissions.contains(
           {permissions: ['management'], origins: ['http://a.com/*']},
           pass(function(result) { assertTrue(result); }));
-      chrome.experimental.permissions.contains(
+      chrome.permissions.contains(
           {permissions: ['devtools'], origins: ['http://a.com/*']},
           pass(function(result) { assertFalse(result); }));
-      chrome.experimental.permissions.contains(
+      chrome.permissions.contains(
           {permissions: ['management']},
           pass(function(result) { assertTrue(result); }));
-      chrome.experimental.permissions.contains(
+      chrome.permissions.contains(
           {permissions: ['management']},
           pass(function(result) { assertTrue(result); }));
     },
 
     function getAll() {
-      chrome.experimental.permissions.getAll(pass(function(permissions) {
+      chrome.permissions.getAll(pass(function(permissions) {
         assertTrue(checkPermSetsEq(initialPermissions, permissions));
       }));
     },
 
     // Nothing should happen if we request permission we already have
     function requestNoOp() {
-      chrome.experimental.permissions.request(
+      chrome.permissions.request(
           {permissions:['management'], origins:['http://a.com/*']},
           pass(function(granted) { assertTrue(granted); }));
     },
@@ -113,11 +113,11 @@ chrome.test.getConfig(function(config) {
     // We should get an error when requesting permissions that haven't been
     // defined in "optional_permissions".
     function requestNonOptional() {
-      chrome.experimental.permissions.request(
+      chrome.permissions.request(
           {permissions: ['debugger']}, fail(NOT_OPTIONAL_ERROR));
-      chrome.experimental.permissions.request(
+      chrome.permissions.request(
           {origins: ['http://*.b.com/*']}, fail(NOT_OPTIONAL_ERROR));
-      chrome.experimental.permissions.request(
+      chrome.permissions.request(
           {permissions: ['tabs'], origins: ['http://*.b.com/*']},
           fail(NOT_OPTIONAL_ERROR));
     },
@@ -132,19 +132,19 @@ chrome.test.getConfig(function(config) {
       } catch (e) {
         assertTrue(e.message.indexOf(NO_TABS_PERMISSION) == 0);
       }
-      listenOnce(chrome.experimental.permissions.onAdded,
+      listenOnce(chrome.permissions.onAdded,
                  function(permissions) {
         assertTrue(permissions.permissions.length == 1);
         assertTrue(permissions.permissions[0] == 'tabs');
       });
-      chrome.experimental.permissions.request(
+      chrome.permissions.request(
           {permissions:['tabs']},
           pass(function(granted) {
             assertTrue(granted);
             chrome.windows.getAll({populate: true}, pass(function(windows) {
               assertTrue(true);
             }));
-            chrome.experimental.permissions.getAll(pass(function(permissions) {
+            chrome.permissions.getAll(pass(function(permissions) {
               assertTrue(checkPermSetsEq(permissionsWithTabs, permissions));
             }));
       }));
@@ -152,24 +152,24 @@ chrome.test.getConfig(function(config) {
 
     // You can't remove required permissions.
     function removeRequired() {
-      chrome.experimental.permissions.remove(
+      chrome.permissions.remove(
           {permissions: ['management']}, fail(REQUIRED_ERROR));
-      chrome.experimental.permissions.remove(
+      chrome.permissions.remove(
           {origins: ['http://a.com/*']}, fail(REQUIRED_ERROR));
-      chrome.experimental.permissions.remove(
+      chrome.permissions.remove(
           {permissions: ['tabs'], origins: ['http://a.com/*']},
           fail(REQUIRED_ERROR));
     },
 
     // You can remove permissions you don't have (nothing happens).
     function removeNoOp() {
-      chrome.experimental.permissions.remove(
+      chrome.permissions.remove(
           {permissions:['background']},
           pass(function(removed) { assertTrue(removed); }));
-      chrome.experimental.permissions.remove(
+      chrome.permissions.remove(
           {origins:['http://*.c.com/*']},
           pass(function(removed) { assertTrue(removed); }));
-      chrome.experimental.permissions.remove(
+      chrome.permissions.remove(
           {permissions:['background'], origins:['http://*.c.com/*']},
           pass(function(removed) { assertTrue(removed); }));
     },
@@ -178,15 +178,15 @@ chrome.test.getConfig(function(config) {
       chrome.windows.getAll({populate: true}, pass(function(windows) {
         assertTrue(true);
       }));
-      listenOnce(chrome.experimental.permissions.onRemoved,
+      listenOnce(chrome.permissions.onRemoved,
                  function(permissions) {
         assertTrue(permissions.permissions.length == 1);
         assertTrue(permissions.permissions[0] == 'tabs');
       });
-      chrome.experimental.permissions.remove(
+      chrome.permissions.remove(
           {permissions:['tabs']},
           pass(function() {
-            chrome.experimental.permissions.getAll(pass(function(permissions) {
+            chrome.permissions.getAll(pass(function(permissions) {
               assertTrue(checkPermSetsEq(initialPermissions, permissions));
             }));
             try {
@@ -201,13 +201,13 @@ chrome.test.getConfig(function(config) {
 
     // The user shouldn't have to approve permissions that have no warnings.
     function noPromptForNoWarnings() {
-      chrome.experimental.permissions.request(
+      chrome.permissions.request(
           {permissions: ['notifications']},
           pass(function(granted) {
         assertTrue(granted);
 
         // Remove the notifications permission to return to normal.
-        chrome.experimental.permissions.remove(
+        chrome.permissions.remove(
             {permissions: ['notifications']},
             pass(function(removed) { assertTrue(removed); }));
       }));
@@ -216,39 +216,39 @@ chrome.test.getConfig(function(config) {
     // Make sure you can only access the white listed permissions.
     function whitelist() {
       var error_msg = NOT_WHITE_LISTED_ERROR.replace('*', 'chromeAuthPrivate');
-      chrome.experimental.permissions.request(
+      chrome.permissions.request(
           {permissions: ['chromeAuthPrivate']}, fail(error_msg));
-      chrome.experimental.permissions.remove(
+      chrome.permissions.remove(
           {permissions: ['chromeAuthPrivate']}, fail(error_msg));
     },
 
     function unknownPermission() {
       var error_msg = UNKNOWN_PERMISSIONS_ERROR.replace('*', 'asdf');
-      chrome.experimental.permissions.request(
+      chrome.permissions.request(
           {permissions: ['asdf']}, fail(error_msg));
     },
 
     function requestOrigin() {
       doReq('http://c.com', pass(function(success) { assertFalse(success); }));
 
-      chrome.experimental.permissions.getAll(pass(function(permissions) {
+      chrome.permissions.getAll(pass(function(permissions) {
         assertTrue(checkPermSetsEq(initialPermissions, permissions));
       }));
 
-      listenOnce(chrome.experimental.permissions.onAdded,
+      listenOnce(chrome.permissions.onAdded,
                  function(permissions) {
         assertTrue(permissions.permissions.length == 0);
         assertTrue(permissions.origins.length == 1);
         assertTrue(permissions.origins[0] == 'http://*.c.com/*');
       });
-      chrome.experimental.permissions.request(
+      chrome.permissions.request(
           {origins: ['http://*.c.com/*']},
           pass(function(granted) {
         assertTrue(granted);
-        chrome.experimental.permissions.getAll(pass(function(permissions) {
+        chrome.permissions.getAll(pass(function(permissions) {
           assertTrue(checkPermSetsEq(permissionsWithOrigin, permissions));
         }));
-        chrome.experimental.permissions.contains(
+        chrome.permissions.contains(
             {origins:['http://*.c.com/*']},
             pass(function(result) { assertTrue(result); }));
         doReq('http://c.com', pass(function(result) { assertTrue(result); }));
@@ -258,20 +258,20 @@ chrome.test.getConfig(function(config) {
     function removeOrigin() {
       doReq('http://c.com', pass(function(result) { assertTrue(result); }));
 
-      listenOnce(chrome.experimental.permissions.onRemoved,
+      listenOnce(chrome.permissions.onRemoved,
                  function(permissions) {
         assertTrue(permissions.permissions.length == 0);
         assertTrue(permissions.origins.length == 1);
         assertTrue(permissions.origins[0] == 'http://*.c.com/*');
       });
-      chrome.experimental.permissions.remove(
+      chrome.permissions.remove(
           {origins: ['http://*.c.com/*']},
           pass(function(removed) {
         assertTrue(removed);
-        chrome.experimental.permissions.getAll(pass(function(permissions) {
+        chrome.permissions.getAll(pass(function(permissions) {
           assertTrue(checkPermSetsEq(initialPermissions, permissions));
         }));
-        chrome.experimental.permissions.contains(
+        chrome.permissions.contains(
             {origins:['http://*.c.com/*']},
             pass(function(result) { assertFalse(result); }));
         doReq('http://c.com', pass(function(result) { assertFalse(result); }));
@@ -281,13 +281,13 @@ chrome.test.getConfig(function(config) {
     // Tests that the changed permissions have taken effect from inside the
     // onAdded and onRemoved event listeners.
     function eventListenerPermissions() {
-      listenOnce(chrome.experimental.permissions.onAdded,
+      listenOnce(chrome.permissions.onAdded,
                  function(permissions) {
         chrome.windows.getAll({populate: true}, pass(function() {
           assertTrue(true);
         }));
       });
-      listenOnce(chrome.experimental.permissions.onRemoved,
+      listenOnce(chrome.permissions.onRemoved,
                  function(permissions) {
         try {
           chrome.windows.getAll({populate: true}, function() {
@@ -298,10 +298,10 @@ chrome.test.getConfig(function(config) {
         }
       });
 
-      chrome.experimental.permissions.request(
+      chrome.permissions.request(
           {permissions: ['tabs']}, pass(function(granted) {
         assertTrue(granted);
-        chrome.experimental.permissions.remove(
+        chrome.permissions.remove(
             {permissions: ['tabs']}, pass(function() {
           assertTrue(true);
         }));

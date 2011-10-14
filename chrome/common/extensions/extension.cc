@@ -1975,9 +1975,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
   // Initialize the optional permissions (optional).
   ExtensionAPIPermissionSet optional_api_permissions;
   URLPatternSet optional_host_permissions;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalExtensionApis) &&
-      !ParsePermissions(&source,
+  if (!ParsePermissions(&source,
                         keys::kOptionalPermissions,
                         flags,
                         error,

@@ -3,6 +3,6 @@
    "description": "permissions/optional_gesture",
    "version": "0.1",
    "background_page": "background.html",
-   "permissions": ["experimental", "permissions"],
+   "permissions": ["permissions"],
    "optional_permissions": ["tabs"]
 }

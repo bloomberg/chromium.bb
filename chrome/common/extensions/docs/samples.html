@@ -201,6 +201,7 @@
                   <li><a href="xhr.html">Cross-Origin XHR</a></li>
                   <li><a href="i18n.html">Internationalization</a></li>
                   <li><a href="messaging.html">Message Passing</a></li>
+                  <li><a href="permissions.html">Optional Permissions</a></li>
                   <li><a href="npapi.html">NPAPI Plugins</a></li>
                 </ul>
               </li>
@@ -370,7 +371,7 @@
   "230463f2d5c3d4d0ca13c230e1f00f2aae0a8a64": "TAB INSPECTOR UTILITY FOR WORKING WITH THE EXTENSION TABS API BACKGROUND_PAGE BROWSER_ACTION TABS CHROME.BROWSERACTION.ONCLICKED CHROME.EXTENSION.GETURL CHROME.TABS.CREATE CHROME.TABS.GET CHROME.TABS.GETALLINWINDOW CHROME.TABS.GETSELECTED CHROME.TABS.MOVE CHROME.TABS.ONATTACHED CHROME.TABS.ONCREATED CHROME.TABS.ONDETACHED CHROME.TABS.ONMOVED CHROME.TABS.ONREMOVED CHROME.TABS.ONSELECTIONCHANGED CHROME.TABS.ONUPDATED CHROME.TABS.REMOVE CHROME.TABS.UPDATE CHROME.WINDOWS.CREATE CHROME.WINDOWS.GET CHROME.WINDOWS.GETALL CHROME.WINDOWS.GETCURRENT CHROME.WINDOWS.GETLASTFOCUSED CHROME.WINDOWS.ONCREATED CHROME.WINDOWS.ONFOCUSCHANGED CHROME.WINDOWS.ONREMOVED CHROME.WINDOWS.REMOVE CHROME.WINDOWS.UPDATE",
   "04f5d2ddea95746b0200be1ea223ccb7a748a771": "TALKING ALARM CLOCK A CLOCK WITH TWO CONFIGURABLE ALARMS THAT WILL PLAY A SOUND AND SPEAK A PHRASE OF YOUR CHOICE. BACKGROUND BACKGROUND_PAGE BROWSER_ACTION TTS CHROME.BROWSERACTION.SETICON CHROME.EXTENSION.CONNECT CHROME.EXTENSION.ONCONNECT CHROME.TTS.GETVOICES CHROME.TTS.SPEAK CHROME.TTS.STOP",
   "e1697cacebad05218798bf3e8a0f724517f0e8c3": "TEST SCREENSHOT EXTENSION DEMONSTRATE SCREENSHOT FUNCTIONALITY IN THE CHROME.TABS API. NOTE: ONLY WORKS FOR CODE.GOOGLE.COM BACKGROUND_PAGE BROWSER_ACTION TABS CHROME.BROWSERACTION.ONCLICKED CHROME.EXTENSION.GETURL CHROME.EXTENSION.GETVIEWS CHROME.TABS.CAPTUREVISIBLETAB CHROME.TABS.CREATE CHROME.TABS.ONUPDATED",
-  "e8ac89b4015052cf11436985399129c927f972aa": "TOP CHROME EXTENSION QUESTIONS SAMPLE DEMONSTRATION OF THE OPTIONAL PERMISSIONS API. BROWSER_ACTION EXPERIMENTAL OPTIONS_PAGE CHROME.EXPERIMENTAL.PERMISSIONS.CONTAINS CHROME.EXPERIMENTAL.PERMISSIONS.ONADDED CHROME.EXPERIMENTAL.PERMISSIONS.ONREMOVED CHROME.EXPERIMENTAL.PERMISSIONS.REMOVE CHROME.EXPERIMENTAL.PERMISSIONS.REQUEST CHROME.TABS.CREATE",
+  "e8ac89b4015052cf11436985399129c927f972aa": "TOP CHROME EXTENSION QUESTIONS SAMPLE DEMONSTRATION OF THE OPTIONAL PERMISSIONS API. BROWSER_ACTION EXPERIMENTAL OPTIONS_PAGE CHROME.PERMISSIONS.CONTAINS CHROME.PERMISSIONS.ONADDED CHROME.PERMISSIONS.ONREMOVED CHROME.PERMISSIONS.REMOVE CHROME.PERMISSIONS.REQUEST CHROME.TABS.CREATE",
   "1d192cce77438e1a90383a6a3a6b28f29961ffa4": "TTS DEBUG TOOL FOR DEVELOPERS OF CHROME TTS ENGINE EXTENSIONS TO HELP THEM TEST THEIR ENGINES ARE IMPLEMENTING THE API CORRECTLY. TTS CHROME.TTS.GETVOICES CHROME.TTS.SPEAK CHROME.TTS.STOP",
   "3a1baf15462bdae4d886c2da4ff8f35f4e8ce02f": "TTS DEMO DEMO CHROMES SYNTHESIZED TEXT-TO-SPEECH CAPABILITIES. TTS CHROME.TTS.GETVOICES CHROME.TTS.ISSPEAKING CHROME.TTS.SPEAK CHROME.TTS.STOP",
   "b3de91ab04b7d7a2670ca7ee9d740eb42cead0b6": "TYPED URL HISTORY READS YOUR HISTORY, AND SHOWS THE TOP TEN PAGES YOU GO TO BY TYPING THE URL. BROWSER_ACTION HISTORY TABS CHROME.HISTORY.GETVISITS CHROME.HISTORY.SEARCH CHROME.TABS.CREATE",
@@ -420,6 +421,8 @@
         <a href="javascript:void(0);" onclick="setFilter('chrome.omnibox', this)">chrome.omnibox</a><span>, </span>
       </span><span>
         <a href="javascript:void(0);" onclick="setFilter('chrome.pageAction', this)">chrome.pageAction</a><span>, </span>
+      </span><span>
+        <a href="javascript:void(0);" onclick="setFilter('chrome.permissions', this)">chrome.permissions</a><span>, </span>
       </span><span>
         <a href="javascript:void(0);" onclick="setFilter('chrome.proxy', this)">chrome.proxy</a><span>, </span>
       </span><span>
@@ -3918,15 +3921,15 @@
   <div class="apicalls"><strong>Calls:</strong>
     <ul>
       <li>
-        <code><a href="experimental.permissions.html#method-contains">chrome.experimental.permissions.contains</a></code>
+        <code><a href="permissions.html#method-contains">chrome.permissions.contains</a></code>
       </li><li>
-        <code><a href="experimental.permissions.html#event-onAdded">chrome.experimental.permissions.onAdded</a></code>
+        <code><a href="permissions.html#event-onAdded">chrome.permissions.onAdded</a></code>
       </li><li>
-        <code><a href="experimental.permissions.html#event-onRemoved">chrome.experimental.permissions.onRemoved</a></code>
+        <code><a href="permissions.html#event-onRemoved">chrome.permissions.onRemoved</a></code>
       </li><li>
-        <code><a href="experimental.permissions.html#method-remove">chrome.experimental.permissions.remove</a></code>
+        <code><a href="permissions.html#method-remove">chrome.permissions.remove</a></code>
       </li><li>
-        <code><a href="experimental.permissions.html#method-request">chrome.experimental.permissions.request</a></code>
+        <code><a href="permissions.html#method-request">chrome.permissions.request</a></code>
       </li><li>
         <code><a href="tabs.html#method-create">chrome.tabs.create</a></code>
       </li>

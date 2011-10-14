@@ -7,22 +7,22 @@ var YES = 'ENABLED';
 var NO = 'DISABLED';
 
 var $status = document.querySelector('#status');
-chrome.experimental.permissions.onAdded.addListener(function(permissions) {
+chrome.permissions.onAdded.addListener(function(permissions) {
   $status.innerText = YES;
 });
-chrome.experimental.permissions.onRemoved.addListener(function(permissions) {
+chrome.permissions.onRemoved.addListener(function(permissions) {
   $status.innerText = NO;
 });
-chrome.experimental.permissions.contains(PERMISSIONS, function(contains) {
+chrome.permissions.contains(PERMISSIONS, function(contains) {
   $status.innerText = contains ? YES : NO;
 });
 
 document.querySelector('button#enable').addEventListener('click', function() {
-  chrome.experimental.permissions.contains(PERMISSIONS, function(allowed) {
+  chrome.permissions.contains(PERMISSIONS, function(allowed) {
     if (allowed) {
       alert('You already have SO host permission!');
     } else {
-      chrome.experimental.permissions.request(PERMISSIONS, function(result) {
+      chrome.permissions.request(PERMISSIONS, function(result) {
         if (result) {
           console.log('SO host permission granted!' +
                       'Open the browser action again.');
@@ -33,9 +33,9 @@ document.querySelector('button#enable').addEventListener('click', function() {
 });
 
 document.querySelector('button#disable').addEventListener('click', function() {
-  chrome.experimental.permissions.contains(PERMISSIONS, function(allowed) {
+  chrome.permissions.contains(PERMISSIONS, function(allowed) {
     if (allowed) {
-      chrome.experimental.permissions.remove(PERMISSIONS, function(result) {
+      chrome.permissions.remove(PERMISSIONS, function(result) {
         console.log('Revoked SO host permission.');
       });
     } else {
