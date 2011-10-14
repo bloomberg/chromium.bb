@@ -149,8 +149,6 @@ TEST_F(WrenchMenuModelTest, Basics) {
   EXPECT_GT(bookmarksModelIndex, -1);
   ui::MenuModel* bookmarksModel = model.GetSubmenuModelAt(bookmarksModelIndex);
   EXPECT_TRUE(bookmarksModel);
-  // The bookmarks model may be empty until we tell it we're going to show it.
-  bookmarksModel->MenuWillShow();
   EXPECT_GT(bookmarksModel->GetItemCount(), 1);
   bookmarksModel->ActivatedAt(1);
   EXPECT_TRUE(bookmarksModel->IsEnabledAt(1));

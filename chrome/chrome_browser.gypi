@@ -2885,8 +2885,6 @@
         'browser/ui/gtk/bookmarks/bookmark_tree_model.h',
         'browser/ui/gtk/bookmarks/bookmark_utils_gtk.cc',
         'browser/ui/gtk/bookmarks/bookmark_utils_gtk.h',
-        'browser/ui/gtk/bookmark_sub_menu_model_gtk.cc',
-        'browser/ui/gtk/bookmark_sub_menu_model_gtk.h',
         'browser/ui/gtk/browser_actions_toolbar_gtk.cc',
         'browser/ui/gtk/browser_actions_toolbar_gtk.h',
         'browser/ui/gtk/browser_titlebar.cc',
@@ -3182,8 +3180,6 @@
         'browser/ui/tabs/tab_resources.h',
         'browser/ui/toolbar/back_forward_menu_model.cc',
         'browser/ui/toolbar/back_forward_menu_model.h',
-        'browser/ui/toolbar/bookmark_sub_menu_model.cc',
-        'browser/ui/toolbar/bookmark_sub_menu_model.h',
         'browser/ui/toolbar/encoding_menu_controller.cc',
         'browser/ui/toolbar/encoding_menu_controller.h',
         'browser/ui/toolbar/toolbar_model.cc',
@@ -4927,9 +4923,6 @@
                 ['exclude', '^browser/ui/panels/panel_browser_frame_view.h'],
                 ['exclude', '^browser/ui/panels/panel_browser_view.cc'],
                 ['exclude', '^browser/ui/panels/panel_browser_view.h'],
-              ],
-              'sources!': [
-                'browser/ui/toolbar/bookmark_sub_menu_model.cc',
               ],
             }],
             # Touch build only
