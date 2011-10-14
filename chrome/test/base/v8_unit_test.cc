@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/stringprintf.h"
-#include "base/string_piece.h"
 #include "chrome/test/base/v8_unit_test.h"
+
+#include "base/string_piece.h"
+#include "base/stringprintf.h"
 
 V8UnitTest::V8UnitTest() {}
 
@@ -36,21 +37,20 @@ void V8UnitTest::ExecuteScriptInContext(const base::StringPiece& script_source,
   v8::TryCatch try_catch;
   v8::Handle<v8::Script> script = v8::Script::Compile(source, name);
   // Ensure the script compiled without errors.
-  if (script.IsEmpty()) {
-    FAIL() << ExceptionToString(&try_catch);
-  }
+  if (script.IsEmpty())
+    FAIL() << ExceptionToString(try_catch);
+
   v8::Handle<v8::Value> result = script->Run();
   // Ensure the script ran without errors.
-  if (result.IsEmpty()) {
-    FAIL() << ExceptionToString(&try_catch);
-  }
+  if (result.IsEmpty())
+    FAIL() << ExceptionToString(try_catch);
 }
 
-std::string V8UnitTest::ExceptionToString(v8::TryCatch* try_catch) {
+std::string V8UnitTest::ExceptionToString(const v8::TryCatch& try_catch) {
   std::string str;
   v8::HandleScope handle_scope;
-  v8::String::Utf8Value exception(try_catch->Exception());
-  v8::Handle<v8::Message> message = try_catch->Message();
+  v8::String::Utf8Value exception(try_catch.Exception());
+  v8::Local<v8::Message> message(try_catch.Message());
   if (message.IsEmpty()) {
     str.append(base::StringPrintf("%s\n", *exception));
   } else {
@@ -79,9 +79,8 @@ void V8UnitTest::TestFunction(const std::string& function_name) {
   v8::TryCatch try_catch;
   v8::Handle<v8::Value> result = function->Call(context_->Global(), 0, NULL);
   // The test fails if an exception was thrown.
-  if (result.IsEmpty()) {
-    FAIL() << ExceptionToString(&try_catch);
-  }
+  if (result.IsEmpty())
+    FAIL() << ExceptionToString(try_catch);
 }
 
 // static

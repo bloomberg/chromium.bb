@@ -36,7 +36,7 @@ class V8UnitTest : public testing::Test {
                                   const std::string& value);
 
   // Converts a v8::TryCatch into a human readable string.
-  virtual std::string ExceptionToString(v8::TryCatch* try_catch);
+  virtual std::string ExceptionToString(const v8::TryCatch& try_catch);
 
   // Calls the specified function that resides in the global scope of the
   // context.  If the function throws an exception, FAIL() is called to
