@@ -4722,6 +4722,12 @@
    Memcheck:Cond
    fun:_ZN7browser8NavigateEPNS_14NavigateParamsE
 }
+{
+   bug_100330
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN25TestingAutomationProvider42NavigateToURLBlockUntilNavigationsCompleteEiRK4GURLiPN3IPC7MessageE
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations

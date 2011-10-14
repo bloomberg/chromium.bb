@@ -1897,3 +1897,16 @@
    fun:_ZN7WebCore11RenderBlock11paintObjectERNS_9PaintInfoERKNS_8IntPointE
    fun:_ZN7WebCore11RenderBlock5paintERNS_9PaintInfoERKNS_8IntPointE
 }
+{
+   bug_100022
+   Memcheck:Addr4
+   ...
+   fun:_ZNK11ImageLoader15containsAddressEPKv
+   fun:_ZN4dyld14bindLazySymbolEPK11mach_headerPm
+   fun:stub_binding_helper_interface2
+   obj:/System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/CoreGraphics.framework/Versions/A/Resources/libRIP.A.dylib
+   obj:/System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/CoreGraphics.framework/Versions/A/Resources/libRIP.A.dylib
+   fun:CGContextDrawImage
+   fun:_Z23PlotISImageRefInContextPvP9CGContext6CGRectssPK8RGBColormPK20_ISImageRefCallbacks
+   fun:PlotIconRefInContext
+}
