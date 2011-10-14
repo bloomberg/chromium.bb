@@ -803,8 +803,24 @@ TEST_F(WindowTest, Deactivate) {
   EXPECT_EQ(w2.get(), parent->children()[1]);
 }
 
+TEST_F(WindowTest, IsOrContainsFullscreenWindow) {
+  scoped_ptr<Window> w1(
+      CreateTestWindowWithDelegate(NULL, 1, gfx::Rect(0, 0, 100, 100), NULL));
+  scoped_ptr<Window> w11(
+      CreateTestWindow(SK_ColorWHITE, 11, gfx::Rect(0, 0, 10, 10), w1.get()));
+
+  Window* root = Desktop::GetInstance()->window();
+  EXPECT_FALSE(root->IsOrContainsFullscreenWindow());
+
+  w11->Fullscreen();
+  EXPECT_TRUE(root->IsOrContainsFullscreenWindow());
+
+  w11->Hide();
+  EXPECT_FALSE(root->IsOrContainsFullscreenWindow());
+}
+
 class WindowObserverTest : public WindowTest,
-                     public WindowObserver {
+                           public WindowObserver {
  public:
   WindowObserverTest() : added_count_(0), removed_count_(0) {}
 

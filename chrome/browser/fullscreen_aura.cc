@@ -5,8 +5,9 @@
 #include "chrome/browser/fullscreen.h"
 
 #include "base/logging.h"
+#include "ui/aura/desktop.h"
+#include "ui/aura/window.h"
 
 bool IsFullScreenMode() {
-  NOTIMPLEMENTED();
-  return false;
+  return aura::Desktop::GetInstance()->window()->IsOrContainsFullscreenWindow();
 }

@@ -363,6 +363,18 @@ Window* Window::GetToplevelWindow() {
   return window && window->parent() ? window : NULL;
 }
 
+bool Window::IsOrContainsFullscreenWindow() const {
+  if (delegate_)
+    return IsVisible() && show_state_ == ui::SHOW_STATE_FULLSCREEN;
+
+  for (Windows::const_iterator it = children_.begin();
+       it != children_.end(); ++it) {
+    if ((*it)->IsOrContainsFullscreenWindow())
+      return true;
+  }
+  return false;
+}
+
 // static
 ui::Animation* Window::CreateDefaultAnimation() {
   std::vector<ui::MultiAnimation::Part> parts;

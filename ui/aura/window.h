@@ -69,6 +69,17 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   ui::Layer* layer() { return layer_.get(); }
   const ui::Layer* layer() const { return layer_.get(); }
 
+  WindowDelegate* delegate() { return delegate_; }
+
+  const gfx::Rect& bounds() const;
+
+  Window* parent() { return parent_; }
+  const Window* parent() const { return parent_; }
+
+  // The Window does not own this object.
+  void set_user_data(void* user_data) { user_data_ = user_data; }
+  void* user_data() const { return user_data_; }
+
   // Changes the visibility of the window.
   void Show();
   void Hide();
@@ -109,7 +120,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
 
   // Changes the bounds of the window.
   void SetBounds(const gfx::Rect& new_bounds);
-  const gfx::Rect& bounds() const;
 
   // Marks the a portion of window as needing to be painted.
   void SchedulePaintInRect(const gfx::Rect& rect);
@@ -120,8 +130,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // Sets the parent window of the window. If NULL, the window is parented to
   // the desktop's window.
   void SetParent(Window* parent);
-  Window* parent() { return parent_; }
-  const Window* parent() const { return parent_; }
 
   // Move the specified child of this Window to the front of the z-order.
   // TODO(beng): this is (obviously) feeble.
@@ -158,8 +166,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
 
   // Handles a key event. Returns true if handled.
   bool OnKeyEvent(KeyEvent* event);
-
-  WindowDelegate* delegate() { return delegate_; }
 
   // Add/remove observer.
   void AddObserver(WindowObserver* observer);
@@ -207,10 +213,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   virtual internal::FocusManager* GetFocusManager();
   virtual const internal::FocusManager* GetFocusManager() const;
 
-  // The Window does not own this object.
-  void set_user_data(void* user_data) { user_data_ = user_data; }
-  void* user_data() const { return user_data_; }
-
   // Does a mouse capture on the window. This does nothing if the window isn't
   // showing (VISIBILITY_SHOWN) or isn't contained in a valid window hierarchy.
   void SetCapture();
@@ -224,6 +226,9 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // Returns the first ancestor whose parent window returns true from
   // IsToplevelWindowContainer.
   Window* GetToplevelWindow();
+
+  // Returns true if this window is fullscreen or contains a fullscreen window.
+  bool IsOrContainsFullscreenWindow() const;
 
   // Returns an animation configured with the default duration. All animations
   // should use this. Caller owns returned value.
