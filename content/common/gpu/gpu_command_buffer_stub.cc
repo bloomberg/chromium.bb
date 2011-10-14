@@ -202,6 +202,9 @@ void GpuCommandBufferStub::OnInitialize(
   }
 
   if (!surface_.get()) {
+    // Ensure the decoder is not destroyed if it is not initialized.
+    decoder_.reset();
+
     LOG(ERROR) << "Failed to create surface.\n";
     OnInitializeFailed(reply_message);
     return;
@@ -216,6 +219,9 @@ void GpuCommandBufferStub::OnInitialize(
       surface_.get(),
       gpu_preference);
   if (!context_.get()) {
+    // Ensure the decoder is not destroyed if it is not initialized.
+    decoder_.reset();
+
     LOG(ERROR) << "Failed to create context.\n";
     OnInitializeFailed(reply_message);
     return;
