@@ -205,11 +205,6 @@ found in the LICENSE file.
           </div> <!-- code-entry-row -->
         </div> <!-- client.unconnected -->
 
-        <!-- TODO(jamiewalch): Implement Cancel, being careful when ignoring
-             the eventual server response not to ignore responses for any
-             subsequent requests. This should be unified with the host-side
-             Cancel button in the footer.
-          -->
         <div data-ui-mode="client.connecting" class="message"
              i18n-content="VERIFYING_CODE">
         </div> <!-- client.connecting -->
@@ -247,7 +242,7 @@ found in the LICENSE file.
         </div> <!-- client-footer-text-cros -->
 
         <div id="waiting-footer"
-             data-ui-mode="host.waiting-for-connection host.waiting-for-code">
+             data-ui-mode="host.waiting-for-connection host.waiting-for-code client.connecting">
           <img src="spinner.gif">
           <span class="waiting icon-label" i18n-content="FOOTER_WAITING"></span>
           <button id="cancel-button" class="big-button"

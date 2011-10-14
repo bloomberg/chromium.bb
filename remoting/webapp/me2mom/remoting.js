@@ -157,6 +157,8 @@ remoting.init = function() {
   remoting.oauth2 = new remoting.OAuth2();
   remoting.debug =
       new remoting.DebugLog(document.getElementById('debug-messages'));
+  /** @type {XMLHttpRequest} */
+  remoting.supportHostsXhr = null;
 
   refreshEmail_();
   var email = getEmail();
@@ -378,20 +380,20 @@ function onStateChanged_() {
 }
 
 /**
-* This is the callback that the host plugin invokes to indicate that there
-* is additional debug log info to display.
-* @param {string} msg The message (which will not be localized) to be logged.
-*/
+ * This is the callback that the host plugin invokes to indicate that there
+ * is additional debug log info to display.
+ * @param {string} msg The message (which will not be localized) to be logged.
+ */
 function debugInfoCallback_(msg) {
   remoting.debug.log('plugin: ' + msg);
 }
 
 /**
-* Show a host-side error message.
-*
-* @param {string} errorTag The error message to be localized and displayed.
-* @return {void} Nothing.
-*/
+ * Show a host-side error message.
+ *
+ * @param {string} errorTag The error message to be localized and displayed.
+ * @return {void} Nothing.
+ */
 function showShareError_(errorTag) {
   var errorDiv = document.getElementById('host-plugin-error');
   l10n.localizeElementFromTag(errorDiv, errorTag);
@@ -399,6 +401,11 @@ function showShareError_(errorTag) {
   remoting.setMode(remoting.AppMode.HOST_SHARE_FAILED);
 }
 
+/**
+ * Cancel an active or pending share operation.
+ *
+ * @return {void} Nothing.
+ */
 remoting.cancelShare = function() {
   remoting.debug.log('Canceling share...');
   remoting.lastShareWasCancelled = true;
@@ -416,6 +423,23 @@ remoting.cancelShare = function() {
     showShareError_(/*i18n-content*/'ERROR_GENERIC');
   }
   disableTimeoutCountdown_();
+}
+
+/**
+ * Cancel an incomplete connect operation.
+ *
+ * @return {void} Nothing.
+ */
+remoting.cancelConnect = function() {
+  if (remoting.supportHostsXhr) {
+    remoting.supportHostsXhr.abort();
+    remoting.supportHostsXhr = null;
+  }
+  if (remoting.session) {
+    remoting.session.removePlugin();
+    remoting.session = null;
+  }
+  remoting.setMode(remoting.AppMode.HOME);
 }
 
 function updateStatistics() {
@@ -460,6 +484,11 @@ function showToolbarPreview_() {
 }
 
 function onClientStateChange_(oldState) {
+  if (!remoting.session) {
+    // If the connection has been cancelled, then we no longer have a reference
+    // to the session object and should ignore any state changes.
+    return;
+  }
   var state = remoting.session.state;
   if (state == remoting.ClientSession.State.CREATED) {
     remoting.debug.log('Created plugin');
@@ -470,12 +499,12 @@ function onClientStateChange_(oldState) {
   } else if (state == remoting.ClientSession.State.INITIALIZING) {
     remoting.debug.log('Initializing connection');
   } else if (state == remoting.ClientSession.State.CONNECTED) {
-    remoting.setMode(remoting.AppMode.IN_SESSION);
-    recenterToolbar_();
-    showToolbarPreview_();
-    updateStatistics();
-    var accessCode = document.getElementById('access-code-entry');
-    accessCode.value = '';
+    if (remoting.session) {
+      remoting.setMode(remoting.AppMode.IN_SESSION);
+      recenterToolbar_();
+      showToolbarPreview_();
+      updateStatistics();
+    }
   } else if (state == remoting.ClientSession.State.CLOSED) {
     if (oldState == remoting.ClientSession.State.CONNECTED) {
       remoting.session.removePlugin();
@@ -515,6 +544,8 @@ function onClientStateChange_(oldState) {
 
 function startSession_() {
   remoting.debug.log('Starting session...');
+  var accessCode = document.getElementById('access-code-entry');
+  accessCode.value = '';  // The code has been validated and won't work again.
   remoting.username =
       /** @type {string} email must be non-NULL to get here */ getEmail();
   remoting.session =
@@ -547,7 +578,12 @@ function showConnectError_(errorTag) {
   remoting.setMode(remoting.AppMode.CLIENT_CONNECT_FAILED);
 }
 
+/**
+ * @param {XMLHttpRequest} xhr The XMLHttpRequest object.
+ * @return {void} Nothing.
+ */
 function parseServerResponse_(xhr) {
+  remoting.supportHostsXhr = null;
   remoting.debug.log('parseServerResponse: status = ' + xhr.status);
   if (xhr.status == 200) {
     var host = JSON.parse(xhr.responseText);
@@ -582,7 +618,7 @@ function resolveSupportId(supportId) {
     'Authorization': 'OAuth ' + remoting.oauth2.getAccessToken()
   };
 
-  remoting.xhr.get(
+  remoting.supportHostsXhr = remoting.xhr.get(
       'https://www.googleapis.com/chromoting/v1/support-hosts/' +
           encodeURIComponent(supportId),
       parseServerResponse_,
@@ -591,6 +627,7 @@ function resolveSupportId(supportId) {
 }
 
 remoting.tryConnect = function() {
+  document.getElementById('cancel-button').disabled = false;
   if (remoting.oauth2.needsNewAccessToken()) {
     remoting.oauth2.refreshAccessToken(function(xhr) {
       if (remoting.oauth2.needsNewAccessToken()) {
@@ -635,8 +672,13 @@ remoting.tryConnectWithWcs = function() {
 
 remoting.cancelPendingOperation = function() {
   document.getElementById('cancel-button').disabled = true;
-  if (remoting.getMajorMode() == remoting.AppMode.HOST) {
-    remoting.cancelShare();
+  switch (remoting.getMajorMode()) {
+    case remoting.AppMode.HOST:
+      remoting.cancelShare();
+      break;
+    case remoting.AppMode.CLIENT:
+      remoting.cancelConnect();
+      break;
   }
 }
 

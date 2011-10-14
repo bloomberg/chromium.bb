@@ -48,7 +48,7 @@ remoting.xhr.urlencodeParamHash = function(paramHash) {
  *     request.
  * @param {boolean} opt_withCredentials Set the withCredentials flags in the
  *     XHR.
- * @return {void} Nothing.
+ * @return {XMLHttpRequest} The request object.
  */
 remoting.xhr.get = function(url, onDone, opt_parameters, opt_headers,
                             opt_withCredentials) {
@@ -94,6 +94,7 @@ remoting.xhr.get = function(url, onDone, opt_parameters, opt_headers,
   }
 
   xhr.send(null);
+  return xhr;
 }
 
 /**
