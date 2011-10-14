@@ -40,12 +40,19 @@ AudioRendererImpl::AudioRendererImpl()
   // We are initializing only one variable and double initialization is Ok,
   // so there would not be any issues caused by CPU memory model.
   if (latency_type_ == kUninitializedLatency) {
+    // Urgent workaround for
+    // http://code.google.com/p/chromium-os/issues/detail?id=21491
+    // TODO(enal): Fix it properly.
+#if defined(OS_CHROMEOS)
+    latency_type_ = kHighLatency;
+#else
     if (!CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kHighLatencyAudio)) {
       latency_type_ = kLowLatency;
     } else {
       latency_type_ = kHighLatency;
     }
+#endif
   }
 }
 
