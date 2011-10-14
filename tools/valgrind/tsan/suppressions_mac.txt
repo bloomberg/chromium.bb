@@ -194,3 +194,12 @@
    fun:media::FFmpegVideoDecodeEngineTest::DecodeIFrameThenTestFile
    fun:media::FFmpegVideoDecodeEngineTest_DecodeFrame_SmallerWidth_Test::TestBody
 }
+{
+  bug_100313 TSan false positive
+  ThreadSanitizer:Race
+  ...
+  fun:__sfp
+  fun:fopen
+  fun:file_util::OpenFile
+  fun:base::SharedMemory::CreateNamed
+}
