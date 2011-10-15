@@ -334,7 +334,8 @@ void SyncSetupFlow::OnUserConfigured(const SyncConfiguration& configuration) {
   // need to hang around waiting for encryption to happen, just exit). This call
   // to IsPassphraseRequiredForDecryption() takes into account the data types
   // we just enabled/disabled.
-  if (!service_->IsPassphraseRequiredForDecryption()) {
+  if (!service_->IsPassphraseRequiredForDecryption() &&
+      !service_->encryption_pending()) {
     Advance(SyncSetupWizard::DONE);
   } else if (!set_new_decryption_passphrase) {
     // We need a passphrase, but the user did not provide one, so transition

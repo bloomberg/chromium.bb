@@ -817,10 +817,11 @@ void ProfileSyncService::ResolvePassphraseRequired() {
                                   sync_api::CONFIGURE_REASON_RECONFIGURATION);
   }
 
-  // No encryption is pending, our passphrase has been accepted, so tell the
+  // If No encryption is pending and our passphrase has been accepted, tell the
   // wizard we're done (no need to hang around waiting for the sync to
-  // complete).
-  if (WizardIsVisible())
+  // complete). If encryption is pending, its successful completion will trigger
+  // the done step.
+  if (WizardIsVisible() && !encryption_pending())
     wizard_.Step(SyncSetupWizard::DONE);
 
   NotifyObservers();
