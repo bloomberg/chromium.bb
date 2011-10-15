@@ -10,6 +10,7 @@
       'dependencies': [
         'app/policy/cloud_policy_codegen.gyp:policy',
         'browser/sync/protocol/sync_proto.gyp:sync_proto',
+        'cert_logger_proto',
         'chrome_extra_resources',
         'chrome_resources',
         'chrome_strings',
@@ -1552,6 +1553,8 @@
         'browser/net/chrome_dns_cert_provenance_checker.h',
         'browser/net/chrome_dns_cert_provenance_checker_factory.cc',
         'browser/net/chrome_dns_cert_provenance_checker_factory.h',
+        'browser/net/chrome_fraudulent_certificate_reporter.cc',
+        'browser/net/chrome_fraudulent_certificate_reporter.h',
         'browser/net/chrome_net_log.cc',
         'browser/net/chrome_net_log.h',
         'browser/net/chrome_network_delegate.cc',
@@ -5119,6 +5122,18 @@
           ]}
         ],
       ],
+    },
+    {
+      # Protobuf compiler / generator for the fraudulent certificate reporting
+      # protocol buffer.
+      'target_name': 'cert_logger_proto',
+      'type': 'static_library',
+      'sources': [ 'browser/net/cert_logger.proto', ],
+      'variables': {
+        'proto_in_dir': 'browser/net',
+        'proto_out_dir': 'chrome/browser/net',
+      },
+      'includes': [ '../build/protoc.gypi', ],
     },
     {
       # Protobuf compiler / generate rule for feedback
