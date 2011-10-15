@@ -122,6 +122,8 @@
       '-notifications.NotificationsTest.testOriginPrefsNotSavedInIncognito',
       # crbug.com/98918
       '-policy.PolicyTest.testBookmarkBarPolicy',
+      # crbug.com/100217
+      '-policy.PolicyTest.testBlacklistPolicy',
     ],
 
     'win': [
