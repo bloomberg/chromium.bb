@@ -486,6 +486,11 @@ class SyncBackendHost {
     DISALLOW_COPY_AND_ASSIGN(Core);
   };
 
+  // Checks if we have received a notice to turn on experimental datatypes
+  // (via the nigori node) and informs the frontend if that is the case.
+  // Note: it is illegal to call this before the backend is initialized.
+  void AddExperimentalTypes();
+
   // InitializationComplete passes through the SyncBackendHost to forward
   // on to |frontend_|, and so that tests can intercept here if they need to
   // set up initial conditions.

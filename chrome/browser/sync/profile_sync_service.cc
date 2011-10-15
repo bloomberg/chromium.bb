@@ -607,7 +607,8 @@ void ProfileSyncService::OnSyncCycleCompleted() {
 void ProfileSyncService::OnDataTypesChanged(
     const syncable::ModelTypeSet& to_add) {
   // We don't bother doing anything if the migrator is busy.
-  if (migrator_->state() != browser_sync::BackendMigrator::IDLE) {
+  if (migrator_.get() &&
+      migrator_->state() != browser_sync::BackendMigrator::IDLE) {
     VLOG(1) << "Dropping OnDataTypesChanged due to migrator busy.";
     return;
   }
@@ -627,12 +628,13 @@ void ProfileSyncService::OnDataTypesChanged(
 
   for (syncable::ModelTypeSet::const_iterator it = to_register.begin();
        it != to_register.end(); ++it) {
-    // Received notice to enable session sync. Check if sessions are
+    // Received notice to enable experimental type. Check if the type is
     // registered, and if not register a new datatype controller.
     RegisterNewDataType(*it);
-    // Enable the about:flags switch for sessions so we don't have to always
-    // perform this reconfiguration. Once we set this, sessions will remain
-    // registered, so we will no longer go down this code path.
+    // Enable the about:flags switch for the experimental type so we don't have
+    // to always perform this reconfiguration. Once we set this, the type will
+    // remain registered on restart, so we will no longer go down this code
+    // path.
     std::string experiment_name = GetExperimentNameForDataType(*it);
     if (experiment_name.empty())
       continue;
@@ -642,15 +644,18 @@ void ProfileSyncService::OnDataTypesChanged(
   }
 
   // Check if the user has "Keep Everything Synced" enabled. If so, we want
-  // to turn on sessions if it's not already on. Otherwise we leave it off.
-  // Note: if sessions are already registered, we don't turn it on. This
+  // to turn on all experimental types if they're not already on. Otherwise we
+  // leave them off.
+  // Note: if any types are already registered, we don't turn them on. This
   // covers the case where we're already in the process of reconfiguring
-  // to turn sessions on.
+  // to turn an experimental type on.
   if (sync_prefs_.HasKeepEverythingSynced()) {
     // Mark all data types as preferred.
     sync_prefs_.SetPreferredDataTypes(registered_types, registered_types);
 
-    if (!to_register.empty()) {
+    // Only automatically turn on types if we have already finished set up.
+    // Otherwise, just leave the experimental types on by default.
+    if (!to_register.empty() && HasSyncSetupCompleted() && migrator_.get()) {
       VLOG(1) << "Dynamically enabling new datatypes: "
               << syncable::ModelTypeSetToString(to_register);
       OnMigrationNeededForTypes(to_register);

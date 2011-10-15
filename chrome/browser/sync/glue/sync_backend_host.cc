@@ -819,11 +819,8 @@ void SyncBackendHost::Core::HandleSyncCycleCompletedOnFrontendLoop(
 
   // Process any changes to the datatypes we're syncing.
   // TODO(sync): add support for removing types.
-  syncable::ModelTypeSet to_add;
-  if (host_->initialized() &&
-      sync_manager()->ReceivedExperimentalTypes(&to_add)) {
-    host_->frontend_->OnDataTypesChanged(to_add);
-  }
+  if (host_->initialized())
+    host_->AddExperimentalTypes();
 
   // If we are waiting for a configuration change, check here to see
   // if this sync cycle has initialized all of the types we've been
@@ -872,6 +869,13 @@ void SyncBackendHost::Core::HandleClearServerDataFailedOnFrontendLoop() {
 
 void SyncBackendHost::Core::FinishConfigureDataTypesOnFrontendLoop() {
   host_->FinishConfigureDataTypesOnFrontendLoop();
+}
+
+void SyncBackendHost::AddExperimentalTypes() {
+  CHECK(initialized());
+  syncable::ModelTypeSet to_add;
+  if (core_->sync_manager()->ReceivedExperimentalTypes(&to_add))
+    frontend_->OnDataTypesChanged(to_add);
 }
 
 void SyncBackendHost::HandleInitializationCompletedOnFrontendLoop(
@@ -924,6 +928,10 @@ void SyncBackendHost::HandleInitializationCompletedOnFrontendLoop(
       break;
     case REFRESHING_ENCRYPTION:
       initialization_state_ = INITIALIZED;
+      // Now that we've downloaded the nigori node, we can see if there are any
+      // experimental types to enable. This should be done before we inform
+      // the frontend to ensure they're visible in the customize screen.
+      AddExperimentalTypes();
       frontend_->OnBackendInitialized(js_backend, true);
       // Now that we're fully initialized, kick off a server
       // reachability check.
