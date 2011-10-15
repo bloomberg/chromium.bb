@@ -53,14 +53,7 @@ class IsolatedAppTest : public ExtensionBrowserTest {
 
 // Tests that cookies set within an isolated app are not visible to normal
 // pages or other apps.
-//
-// Flaky on Mac/Win.  http://crbug.com/86562
-#if defined(OS_WIN) || defined(OS_MACOSX)
-#define MAYBE_CookieIsolation DISABLED_CookieIsolation
-#else
-#define MAYBE_CookieIsolation CookieIsolation
-#endif
-IN_PROC_BROWSER_TEST_F(IsolatedAppTest, MAYBE_CookieIsolation) {
+IN_PROC_BROWSER_TEST_F(IsolatedAppTest, CookieIsolation) {
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(test_server()->Start());
 
@@ -134,13 +127,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, MAYBE_CookieIsolation) {
 }
 
 // Ensure that cookies are not isolated if the isolated apps are not installed.
-#if defined(OS_WIN)
-// Disabled due to http://crbug.com/89090.
-#define MAYBE_NoCookieIsolationWithoutApp DISABLED_NoCookieIsolationWithoutApp
-#else
-#define MAYBE_NoCookieIsolationWithoutApp NoCookieIsolationWithoutApp
-#endif
-IN_PROC_BROWSER_TEST_F(IsolatedAppTest, MAYBE_NoCookieIsolationWithoutApp) {
+IN_PROC_BROWSER_TEST_F(IsolatedAppTest, NoCookieIsolationWithoutApp) {
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(test_server()->Start());
 
