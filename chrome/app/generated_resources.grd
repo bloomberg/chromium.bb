@@ -4946,6 +4946,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_MOBILE_COMPLETED_TEXT" desc="Message when cellular data service activation or payment is completed">
           Your mobile data service is activated and ready to use
         </message>
+        <message name="IDS_MOBILE_CANCEL_ACTIVATION" desc="Message when user attempts to cancel cellular data service activation proces">
+          Are you sure you want to cancel mobile data service setup process?
+        </message>
       </if>
 
       <!-- chrome://flash strings -->
