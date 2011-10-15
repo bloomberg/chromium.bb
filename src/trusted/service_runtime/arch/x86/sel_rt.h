@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -22,5 +22,11 @@
 #endif
 
 nacl_reg_t NaClGetStackPtr(void);
+
+/*
+ * This is the default state of the x87 FPU control word,
+ * as set by the "fninit" instruction.
+ */
+#define NACL_X87_FCW_DEFAULT    (0x37f)
 
 #endif /* __NATIVE_CLIENT_SERVICE_RUNTIME_ARCH_X86_SEL_RT_H__ */

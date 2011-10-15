@@ -110,9 +110,10 @@ MACROENTRY
         movq    %rdx, %r11
 
         /*
-         * Clear the x87 state.
+         * Clear the x87 state.  Then restore the untrusted code's control word.
          */
         fninit
+        fldcw   0xa4(%rcx)
 
         /*
          * Clear the vector registers.

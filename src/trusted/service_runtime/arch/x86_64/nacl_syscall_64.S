@@ -152,6 +152,14 @@ IDENTIFIER(NaClSyscallSeg):
         movq    %r14, 0x70(%rdx)
         /* r15 need not be saved, since it is immutable from user code */
 
+        /*
+         * Save the x87 FPU control word.  This is callee-saved,
+         * while all other x87 state is caller-saved.  Then reload
+         * the system default state to use while running trusted code.
+         */
+        fnstcw  0xa4(%rdx)
+        fldcw   0xa6(%rdx)
+
         /* restore system registers needed to call into C code */
         leaq    IDENTIFIER(nacl_sys)(%rip), %rdx
         leaq    0x0(%rdx,%rax,8), %rdx

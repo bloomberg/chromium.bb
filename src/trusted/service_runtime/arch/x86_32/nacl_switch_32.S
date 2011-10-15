@@ -62,11 +62,6 @@ MACROENTRY
         popl    %eax /* throw away the return addr */
 
         /*
-         * Clear the x87 state.
-         */
-        fninit
-
-        /*
          * Clear the vector registers.
          */
 .if MACROARG2 == DO_AVX
@@ -102,6 +97,12 @@ MACROENTRY
         movw    0x2e(%ecx), %gs /* gs */
         movw    0x2c(%ecx), %fs /* fs */
         movw    0x2a(%ecx), %es /* es */
+
+        /*
+         * Clear the x87 state.  Then restore the untrusted code's control word.
+         */
+        fninit
+        fldcw   0x22(%ecx)
 
         ljmp    *0x38(%ecx) /* springboard address */
 ENDMACRO

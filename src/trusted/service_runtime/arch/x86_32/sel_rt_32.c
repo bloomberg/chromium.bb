@@ -1,8 +1,10 @@
 /*
- * Copyright 2009 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
+
+#include <float.h>
 
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
@@ -76,6 +78,18 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
   ntcp->fs = 0;  /* windows use this for TLS and SEH; linux does not */
   ntcp->gs = (uint16_t) tls_idx;
   ntcp->ss = nap->data_seg_sel;
+
+  ntcp->fcw = NACL_X87_FCW_DEFAULT;
+
+  /*
+   * Save the system's state of the x87 FPU control word so we can restore
+   * the same state when returning to trusted code.
+   */
+#if NACL_WINDOWS
+  ntcp->sys_fcw = _control87(0, 0);
+#else
+  __asm__ __volatile__("fnstcw %0" : "=m" (ntcp->sys_fcw));
+#endif
 
   NaClLog(4, "user.cs: 0x%02x\n", ntcp->cs);
   NaClLog(4, "user.fs: 0x%02x\n", ntcp->fs);

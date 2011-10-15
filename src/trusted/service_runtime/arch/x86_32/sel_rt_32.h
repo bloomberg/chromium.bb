@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -91,7 +91,11 @@ struct NaClThreadContext {
   /*          18 */
   uint16_t    ss; /* stack_ptr and ss must be adjacent */
   /*          20 */
-  char        dummy[6];
+  uint16_t    fcw;
+  /*          22 */
+  uint16_t    sys_fcw;
+  /*          24 */
+  char        dummy[2];
   /*
    * gs is our TLS base in the app; on the host side it's either fs or gs.
    */

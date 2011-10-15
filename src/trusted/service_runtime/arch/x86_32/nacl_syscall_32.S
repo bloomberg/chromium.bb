@@ -70,6 +70,14 @@ IDENTIFIER(NaClSyscallSeg):
         movl    %esp, 0x1c(%edx)
 
         /*
+         * Save the x87 FPU control word.  This is callee-saved,
+         * while all other x87 state is caller-saved.  Then reload
+         * the system default state to use while running trusted code.
+         */
+        fnstcw  0x22(%edx)
+        fldcw   0x24(%edx)
+
+        /*
          * we do not save the registers (below) that the user is powerless
          * to change.  eip will be overwritten w/ the validated return
          * address pulled from the stack for the syscall return.

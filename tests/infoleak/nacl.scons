@@ -12,3 +12,16 @@ node = env.CommandSelLdrTestNacl('test_infoleak.out', nexe)
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],
                        'run_infoleak_test')
+
+if not env.Bit('bitcode') and (env.Bit('target_x86_32') or
+                               env.Bit('target_x86_64')):
+  nexe = env.ComponentProgram('test_fpu_control_word',
+                              'test_fpu_control_word.c',
+                              EXTRA_LIBS=['${NONIRT_LIBS}'])
+  node = env.CommandSelLdrTestNacl('test_fpu_control_word.out', nexe)
+  env.AddNodeToTestSuite(node,
+                         ['small_tests', 'sel_ldr_tests'],
+                         'run_fpu_control_word_test',
+                         # Valgrind apparenty doesn't implement
+                         # fnstcw;fldcw correctly.
+                         is_broken=env.IsRunningUnderValgrind())

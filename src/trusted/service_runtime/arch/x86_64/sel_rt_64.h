@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -37,7 +37,11 @@ struct NaClThreadContext {
   void        *tls_base;
   /*          0x98 */
   uint32_t    tls_idx;
-  /* 0xa0 */
+  /*          0xa0 */
+  uint16_t    fcw;
+  /*          0xa4 */
+  uint16_t    sys_fcw;
+  /*          0xa6 */
 };
 /* 0xa8 */
 
