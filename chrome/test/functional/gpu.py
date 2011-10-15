@@ -72,7 +72,7 @@ class GpuTest(pyauto.PyUITest):
 
   def testCompositing(self):
     """Verify gpu process in compositing example."""
-    self.assertTrue(self._IsHardwareAccelerated('Compositing'))
+    self.assertTrue(self._IsHardwareAccelerated('WebGL'))
     self._VerifyGPUProcessOnPage('WebGLTeapot.html')
 
   def testWebGL(self):
