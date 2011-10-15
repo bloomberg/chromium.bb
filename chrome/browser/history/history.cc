@@ -37,6 +37,7 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/in_memory_database.h"
 #include "chrome/browser/history/in_memory_history_backend.h"
+#include "chrome/browser/history/in_memory_url_index.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -182,6 +183,9 @@ void HistoryService::UnloadBackend() {
   // Get rid of the in-memory backend.
   in_memory_backend_.reset();
 
+  // Give the InMemoryURLIndex a chance to shutdown.
+  InMemoryIndex()->ShutDown();
+
   // The backend's destructor must run on the history thread since it is not
   // threadsafe. So this thread must not be the last thread holding a reference
   // to the backend, or a crash could happen.
@@ -249,8 +253,8 @@ history::InMemoryURLIndex* HistoryService::InMemoryIndex() {
   // LoadBackendIfNecessary() here even though it won't affect the return value
   // for this call.
   LoadBackendIfNecessary();
-  if (in_memory_backend_.get())
-    return in_memory_backend_->InMemoryIndex();
+  if (history_backend_.get())
+    return history_backend_->InMemoryIndex();
   return NULL;
 }
 
@@ -803,7 +807,8 @@ void HistoryService::LoadBackendIfNecessary() {
 
   ++current_backend_id_;
   scoped_refptr<HistoryBackend> backend(
-      new HistoryBackend(history_dir_,
+      new HistoryBackend(profile_,
+                         history_dir_,
                          current_backend_id_,
                          new BackendDelegate(this, profile_),
                          bookmark_service_));
