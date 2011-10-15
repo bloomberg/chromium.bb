@@ -805,7 +805,14 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_PageLanguageDetection) {
   EXPECT_EQ("fr", helper->language_state().original_language());
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserTest, TestNewTabExitsFullscreen) {
+#if defined(OS_MACOSX)
+// http://crbug.com/100467
+#define MAYBE_TestNewTabExitsFullscreen FAILS_TestNewTabExitsFullscreen
+#else
+#define MAYBE_TestNewTabExitsFullscreen TestNewTabExitsFullscreen
+#endif
+
+IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_TestNewTabExitsFullscreen) {
   ASSERT_TRUE(test_server()->Start());
 
   AddTabAtIndex(
@@ -833,7 +840,15 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, TestNewTabExitsFullscreen) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserTest, TestTabExitsItselfFromFullscreen) {
+#if defined(OS_MACOSX)
+// http://crbug.com/100467
+#define MAYBE_TestTabExitsItselfFromFullscreen \
+        FAILS_TestTabExitsItselfFromFullscreen
+#else
+#define MAYBE_TestTabExitsItselfFromFullscreen TestTabExitsItselfFromFullscreen
+#endif
+
+IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_TestTabExitsItselfFromFullscreen) {
   ASSERT_TRUE(test_server()->Start());
 
   AddTabAtIndex(
@@ -861,7 +876,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, TestTabExitsItselfFromFullscreen) {
 }
 
 #if defined(OS_MACOSX)
-IN_PROC_BROWSER_TEST_F(BrowserTest, TabEntersPresentationModeFromWindowed) {
+// http://crbug.com/100467
+IN_PROC_BROWSER_TEST_F(
+    BrowserTest, FAILS_TabEntersPresentationModeFromWindowed) {
   ASSERT_TRUE(test_server()->Start());
 
   AddTabAtIndex(
