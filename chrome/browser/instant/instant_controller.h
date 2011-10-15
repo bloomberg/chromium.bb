@@ -88,12 +88,14 @@ class InstantController : public InstantLoaderDelegate {
   // when showing results for a search provider that supports instant.
   void SetOmniboxBounds(const gfx::Rect& bounds);
 
-  // Destroys the preview TabContents. Does nothing if the preview TabContents
-  // has not been created.
+  // Notifies the delegate to hide the preview and destroys the preview
+  // TabContents. Does nothing if the preview TabContents has not been created.
   void DestroyPreviewContents();
 
-  // Destroys the current loaders but remains active.
-  void DestroyPreviewContentsAndLeaveActive();
+  // Notifies the delegate to hide the preview but leaves it around in hopes it
+  // can be subsequently used. The preview will not be used until Update() (with
+  // valid parameters) is invoked.
+  void Hide();
 
   // Returns true if we're showing the last URL passed to |Update|. If this is
   // false a commit does not result in committing the last url passed to update.
@@ -148,10 +150,6 @@ class InstantController : public InstantLoaderDelegate {
 
   // The preview TabContents; may be null.
   TabContentsWrapper* GetPreviewContents();
-
-  // Returns true if |Update| has been invoked without a corresponding call to
-  // |DestroyPreviewContents| or |CommitCurrentPreview|.
-  bool is_active() const { return is_active_; }
 
   // Returns true if the preview TabContents is ready to be displayed. In some
   // situations this may return false yet GetPreviewContents() returns non-NULL.
@@ -225,13 +223,14 @@ class InstantController : public InstantLoaderDelegate {
   // The TabContents last passed to |Update|.
   TabContentsWrapper* tab_contents_;
 
-  // See description above getter for details.
-  bool is_active_;
-
-  scoped_ptr<InstantLoader> loader_;
-
   // True if |loader_| is ready to be displayed.
   bool is_displayable_;
+
+  // Set to true in Hide() and false in UpdateLoader(). Used when we persist
+  // the |loader_|, but it isn't up to date.
+  bool is_out_of_date_;
+
+  scoped_ptr<InstantLoader> loader_;
 
   // See description above setter.
   gfx::Rect omnibox_bounds_;

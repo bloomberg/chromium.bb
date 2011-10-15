@@ -1019,7 +1019,7 @@ bool AutocompleteEditModel::DoInstant(const AutocompleteMatch& match,
     return instant->Update(tab, match, view_->GetText(), UseVerbatimInstant(),
                            suggested_text);
   } else {
-    instant->DestroyPreviewContentsAndLeaveActive();
+    instant->Hide();
     return false;
   }
 }

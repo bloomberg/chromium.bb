@@ -111,7 +111,7 @@ class BrowserWindowCocoa : public BrowserWindow,
                                    bool ask_permission);
   virtual bool InPresentationMode();
   virtual void ShowInstant(TabContentsWrapper* preview);
-  virtual void HideInstant(bool instant_is_active);
+  virtual void HideInstant();
   virtual gfx::Rect GetInstantBounds();
   virtual WindowOpenDisposition GetDispositionForPopupBounds(
       const gfx::Rect& bounds);

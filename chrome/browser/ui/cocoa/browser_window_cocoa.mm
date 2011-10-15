@@ -526,10 +526,8 @@ void BrowserWindowCocoa::ShowInstant(TabContentsWrapper* preview) {
   [controller_ showInstant:preview->tab_contents()];
 }
 
-void BrowserWindowCocoa::HideInstant(bool instant_is_active) {
+void BrowserWindowCocoa::HideInstant() {
   [controller_ hideInstant];
-
-  // TODO: add support for |instant_is_active|.
 }
 
 gfx::Rect BrowserWindowCocoa::GetInstantBounds() {

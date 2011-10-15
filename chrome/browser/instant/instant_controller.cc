@@ -39,8 +39,8 @@ InstantController::InstantController(Profile* profile,
                                      InstantDelegate* delegate)
     : delegate_(delegate),
       tab_contents_(NULL),
-      is_active_(false),
       is_displayable_(false),
+      is_out_of_date_(true),
       commit_on_mouse_up_(false),
       last_transition_type_(content::PAGE_TRANSITION_LINK),
       ALLOW_THIS_IN_INITIALIZER_LIST(destroy_factory_(this)) {
@@ -162,7 +162,7 @@ bool InstantController::Update(TabContentsWrapper* tab_contents,
   last_user_text_ = user_text;
 
   if (!ShouldUseInstant(match)) {
-    DestroyPreviewContentsAndLeaveActive();
+    Hide();
     return false;
   }
 
@@ -170,13 +170,15 @@ bool InstantController::Update(TabContentsWrapper* tab_contents,
   DCHECK(template_url);  // ShouldUseInstant returns false if no turl.
   if (!loader_.get())
     loader_.reset(new InstantLoader(this, template_url->id()));
-  is_active_ = true;
 
   // In some rare cases (involving group policy), Instant can go from the field
   // trial to normal mode, with no intervening call to DestroyPreviewContents()
   // This would leave the loader in a weird state, which would manifest if the
   // user pressed <Enter> without calling Update(). TODO(sreeram): Handle it.
   if (InstantFieldTrial::IsHiddenExperiment(tab_contents->profile())) {
+    // For the HIDDEN field trial we process |user_text| at commit time, which
+    // means we're never really out of date.
+    is_out_of_date_ = false;
     loader_->MaybeLoadInstantURL(tab_contents, template_url);
     return true;
   }
@@ -208,21 +210,17 @@ void InstantController::DestroyPreviewContents() {
     return;
   }
 
-  // ReleasePreviewContents sets is_active_ to false, but we need to set it
-  // before notifying the delegate, otherwise if the delegate asks for the state
-  // we'll still be active.
-  is_active_ = false;
   delegate_->HideInstant();
   delete ReleasePreviewContents(INSTANT_COMMIT_DESTROY);
 }
 
-void InstantController::DestroyPreviewContentsAndLeaveActive() {
+void InstantController::Hide() {
+  is_out_of_date_ = true;
   commit_on_mouse_up_ = false;
   if (is_displayable_) {
     is_displayable_ = false;
     delegate_->HideInstant();
   }
-  last_user_text_.clear();
 }
 
 bool InstantController::IsCurrent() {
@@ -243,7 +241,7 @@ bool InstantController::PrepareForCommit() {
     return false;
 
   const TemplateURL* template_url = model->GetDefaultSearchProvider();
-  if (last_user_text_.empty() ||
+  if (is_out_of_date_ ||
       !IsValidInstantTemplateURL(template_url) ||
       !loader_.get() ||
       loader_->template_url_id() != template_url->id() ||
@@ -393,7 +391,6 @@ TabContentsWrapper* InstantController::ReleasePreviewContents(
 
   TabContentsWrapper* tab = loader_->ReleasePreviewContents(type);
   ClearBlacklist();
-  is_active_ = false;
   is_displayable_ = false;
   commit_on_mouse_up_ = false;
   omnibox_bounds_ = gfx::Rect();
@@ -464,7 +461,8 @@ void InstantController::SwappedTabContents(InstantLoader* loader) {
 
 void InstantController::UpdateIsDisplayable() {
   bool displayable =
-      (loader_.get() && loader_->ready() && loader_->http_status_ok());
+      (!is_out_of_date_ && loader_.get() && loader_->ready() &&
+       loader_->http_status_ok());
   if (displayable == is_displayable_)
     return;
 
@@ -486,6 +484,7 @@ void InstantController::UpdateLoader(const TemplateURL* template_url,
                                      const string16& user_text,
                                      bool verbatim,
                                      string16* suggested_text) {
+  is_out_of_date_ = false;
   loader_->SetOmniboxBounds(omnibox_bounds_);
   loader_->Update(tab_contents_, template_url, url, transition_type, user_text,
                   verbatim, suggested_text);

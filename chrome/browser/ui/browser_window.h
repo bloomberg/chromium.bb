@@ -314,8 +314,7 @@ class BrowserWindow {
   virtual void ShowInstant(TabContentsWrapper* preview) = 0;
 
   // Invoked when the instant's tab contents should be hidden.
-  // |instant_is_active| indicates if instant is still active.
-  virtual void HideInstant(bool instant_is_active) = 0;
+  virtual void HideInstant() = 0;
 
   // Returns the desired bounds for instant in screen coordinates. Note that if
   // instant isn't currently visible this returns the bounds instant would be

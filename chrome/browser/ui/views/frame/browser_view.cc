@@ -1257,7 +1257,7 @@ void BrowserView::ShowInstant(TabContentsWrapper* preview) {
   preview_container_->ChangeTabContents(preview->tab_contents());
 }
 
-void BrowserView::HideInstant(bool instant_is_active) {
+void BrowserView::HideInstant() {
   if (!preview_container_)
     return;
 

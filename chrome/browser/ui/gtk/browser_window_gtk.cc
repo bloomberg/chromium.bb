@@ -1163,7 +1163,7 @@ void BrowserWindowGtk::ShowInstant(TabContentsWrapper* preview) {
   MaybeShowBookmarkBar(false);
 }
 
-void BrowserWindowGtk::HideInstant(bool instant_is_active) {
+void BrowserWindowGtk::HideInstant() {
   contents_container_->PopPreview();
   MaybeShowBookmarkBar(false);
 }

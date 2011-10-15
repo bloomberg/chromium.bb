@@ -150,7 +150,7 @@ class Panel : public BrowserWindow, public NotificationObserver {
   virtual bool InPresentationMode() OVERRIDE;
 #endif
   virtual void ShowInstant(TabContentsWrapper* preview) OVERRIDE;
-  virtual void HideInstant(bool instant_is_active) OVERRIDE;
+  virtual void HideInstant() OVERRIDE;
   virtual gfx::Rect GetInstantBounds() OVERRIDE;
   virtual WindowOpenDisposition GetDispositionForPopupBounds(
       const gfx::Rect& bounds) OVERRIDE;

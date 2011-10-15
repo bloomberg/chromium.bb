@@ -48,6 +48,7 @@
     DISABLED_SetSuggestionsEmptySuggestion
 #define MAYBE_ShowPreviewNonSearch DISABLED_ShowPreviewNonSearch
 #define MAYBE_NonSearchToSearch DISABLED_NonSearchToSearch
+#define MAYBE_SearchToNonSearch DISABLED_SearchToNonSearch
 #define MAYBE_ValidHeight DISABLED_ValidHeight
 #define MAYBE_OnSubmitEvent DISABLED_OnSubmitEvent
 #define MAYBE_OnCancelEvent DISABLED_OnCancelEvent
@@ -68,6 +69,7 @@
 #define MAYBE_SetSuggestionsEmptySuggestion SetSuggestionsEmptySuggestion
 #define MAYBE_ShowPreviewNonSearch ShowPreviewNonSearch
 #define MAYBE_NonSearchToSearch NonSearchToSearch
+#define MAYBE_SearchToNonSearch SearchToNonSearch
 #define MAYBE_ValidHeight ValidHeight
 #define MAYBE_OnSubmitEvent OnSubmitEvent
 #define MAYBE_OnCancelEvent OnCancelEvent
@@ -172,7 +174,7 @@ class InstantTest : public InProcessBrowserTest {
     WaitForPreviewToNavigate();
 
     ASSERT_FALSE(browser()->instant()->is_displayable());
-    ASSERT_TRUE(browser()->instant()->is_active());
+    ASSERT_TRUE(HasPreview());
 
     // When the page loads, the initial searchBox values are set and only a
     // resize will have been sent.
@@ -241,6 +243,10 @@ class InstantTest : public InProcessBrowserTest {
     return ui_test_utils::ExecuteJavaScriptAndExtractBool(
         tab_contents->render_view_host(),
         std::wstring(), UTF8ToWide(script), result);
+  }
+
+  bool HasPreview() {
+    return browser()->instant()->GetPreviewContents() != NULL;
   }
 
   // Returns the state of the search box as a string. This consists of the
@@ -505,7 +511,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_ShowPreviewNonSearch) {
   location_bar_->location_entry()->SetUserText(UTF8ToUTF16(url.spec()));
 
   // The preview should not be active or showing.
-  ASSERT_FALSE(browser()->instant()->is_active());
+  ASSERT_FALSE(HasPreview());
   ASSERT_FALSE(browser()->instant()->is_displayable());
   ASSERT_FALSE(browser()->instant()->IsCurrent());
   ASSERT_EQ(NULL, browser()->instant()->GetPreviewContents());
@@ -520,7 +526,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_NonSearchToSearch) {
   ASSERT_NO_FATAL_FAILURE(FindLocationBar());
   location_bar_->location_entry()->SetUserText(UTF8ToUTF16(url.spec()));
   // The preview not should be active and not showing.
-  ASSERT_FALSE(browser()->instant()->is_active());
+  ASSERT_FALSE(HasPreview());
   ASSERT_FALSE(browser()->instant()->is_displayable());
   ASSERT_EQ(NULL, browser()->instant()->GetPreviewContents());
 
@@ -537,7 +543,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_NonSearchToSearch) {
   ASSERT_TRUE(current_tab);
 
   // Instant should be active.
-  EXPECT_TRUE(browser()->instant()->is_active());
+  EXPECT_TRUE(HasPreview());
   EXPECT_FALSE(browser()->instant()->is_displayable());
 
   // Because we're waiting on the page, instant isn't current.
@@ -556,7 +562,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_NonSearchToSearch) {
 
   // We should have gotten a response back from the renderer that resulted in
   // committing.
-  ASSERT_TRUE(browser()->instant()->is_active());
+  ASSERT_TRUE(HasPreview());
   ASSERT_TRUE(browser()->instant()->is_displayable());
   TabContentsWrapper* new_tab = browser()->instant()->GetPreviewContents();
   ASSERT_TRUE(new_tab);
@@ -564,6 +570,37 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_NonSearchToSearch) {
       new_tab->tab_contents()->GetRenderWidgetHostView();
   ASSERT_TRUE(new_rwhv);
   ASSERT_TRUE(new_rwhv->IsShowing());
+}
+
+// Transition from search to non-search and make sure instant isn't displayable.
+// See bug http://crbug.com/100368 for details.
+IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_SearchToNonSearch) {
+  ASSERT_TRUE(test_server()->Start());
+  EnableInstant();
+  GURL url(test_server()->GetURL("files/instant/empty.html"));
+  ASSERT_NO_FATAL_FAILURE(FindLocationBar());
+
+  // Type in some search text.
+  ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
+  location_bar_->location_entry()->SetUserText(ASCIIToUTF16("def"));
+
+  // Load a non search url. Don't wait for the preview to navigate. It'll still
+  // end up loading in the background.
+  location_bar_->location_entry()->SetUserText(UTF8ToUTF16(url.spec()));
+
+  // Wait for the preview to navigate.
+  ASSERT_NO_FATAL_FAILURE(WaitForPreviewToNavigate());
+
+  // Send onchange so that the page sends up suggestions.
+  TabContentsWrapper* current_tab = browser()->instant()->GetPreviewContents();
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
+      current_tab->tab_contents()->render_view_host(), std::wstring(),
+      L"window.chrome.searchBox.onchange();"));
+  ASSERT_NO_FATAL_FAILURE(WaitForMessageToBeProcessedByRenderer(current_tab));
+
+  // Instant should be active, but not displaying
+  EXPECT_TRUE(HasPreview());
+  EXPECT_FALSE(browser()->instant()->is_displayable());
 }
 
 // Makes sure that if the server doesn't support the instant API we don't show
@@ -584,13 +621,13 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_SearchServerDoesntSupportInstant) {
   // we shouldn't be showing the preview.
   EXPECT_FALSE(browser()->instant()->is_displayable());
   // But instant should still be active.
-  EXPECT_TRUE(browser()->instant()->is_active());
+  EXPECT_TRUE(HasPreview());
 
   // When the response comes back that the page doesn't support instant the tab
   // should be closed.
   tab_closed_observer.Wait();
   EXPECT_FALSE(browser()->instant()->is_displayable());
-  EXPECT_TRUE(browser()->instant()->is_active());
+  EXPECT_FALSE(HasPreview());
   EXPECT_FALSE(browser()->instant()->IsCurrent());
 }
 
@@ -618,7 +655,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest,
   location_bar_->location_entry()->SetUserText(UTF8ToUTF16(url.spec()));
   // The preview should not be showing or active.
   EXPECT_FALSE(browser()->instant()->is_displayable());
-  EXPECT_FALSE(browser()->instant()->is_active());
+  EXPECT_FALSE(HasPreview());
 
   ui_test_utils::WindowedNotificationObserver tab_closed_observer(
       content::NOTIFICATION_TAB_CLOSED,
@@ -628,7 +665,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest,
   location_bar_->location_entry()->SetUserText(ASCIIToUTF16("d"));
 
   // Instant should be active.
-  ASSERT_TRUE(browser()->instant()->is_active());
+  ASSERT_TRUE(HasPreview());
   // Instant should not be current (it's still loading).
   EXPECT_FALSE(browser()->instant()->IsCurrent());
 
@@ -636,9 +673,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest,
   // should be closed.
   tab_closed_observer.Wait();
   EXPECT_FALSE(browser()->instant()->is_displayable());
-  // But because the omnibox is still open, instant should be active.
-  EXPECT_TRUE(browser()->instant()->is_active());
-  EXPECT_FALSE(browser()->instant()->is_displayable());
+  EXPECT_FALSE(HasPreview());
   EXPECT_FALSE(browser()->instant()->IsCurrent());
   EXPECT_EQ(NULL, browser()->instant()->GetPreviewContents());
 }
@@ -683,7 +718,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_OnSubmitEvent) {
 
   // Check that the preview contents have been committed.
   ASSERT_FALSE(browser()->instant()->GetPreviewContents());
-  ASSERT_FALSE(browser()->instant()->is_active());
+  ASSERT_FALSE(HasPreview());
   TabContents* contents = browser()->GetSelectedTabContents();
   ASSERT_TRUE(contents);
 
@@ -716,7 +751,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_OnCancelEvent) {
 
   // Check that the preview contents has been committed.
   ASSERT_FALSE(browser()->instant()->GetPreviewContents());
-  ASSERT_FALSE(browser()->instant()->is_active());
+  ASSERT_FALSE(HasPreview());
   TabContents* contents = browser()->GetSelectedTabContents();
   ASSERT_TRUE(contents);
 
@@ -797,7 +832,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_DontPersistSearchbox) {
 
   // Check that the preview contents have been committed.
   ASSERT_FALSE(browser()->instant()->GetPreviewContents());
-  ASSERT_FALSE(browser()->instant()->is_active());
+  ASSERT_FALSE(HasPreview());
 
   TabContents* contents = browser()->GetSelectedTabContents();
   ASSERT_TRUE(contents);
@@ -844,8 +879,8 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_PreloadsInstant) {
 
   instant_support_observer.Wait();
 
-  // However, instant should still not be active.
-  EXPECT_FALSE(browser()->instant()->is_active());
+  // Instant should have a preview, but not display it.
+  EXPECT_TRUE(HasPreview());
   EXPECT_FALSE(browser()->instant()->is_displayable());
 
   // Adding a new tab shouldn't delete (or recreate) the TabContentsWrapper.
@@ -857,7 +892,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_PreloadsInstant) {
   EXPECT_EQ(tab_contents, browser()->instant()->GetPreviewContents());
 
   // Verify that the preview is in fact showing instant search.
-  EXPECT_TRUE(browser()->instant()->is_active());
+  EXPECT_TRUE(HasPreview());
   EXPECT_TRUE(browser()->instant()->is_displayable());
   EXPECT_TRUE(browser()->instant()->IsCurrent());
 }
@@ -885,7 +920,7 @@ IN_PROC_BROWSER_TEST_F(InstantFieldTrialInstantTest, MAYBE_ExperimentEnabled) {
   SetLocationBarText("def");
 
   // Check that instant is active and showing a preview.
-  EXPECT_TRUE(browser()->instant()->is_active());
+  EXPECT_TRUE(HasPreview());
   EXPECT_TRUE(browser()->instant()->is_displayable());
   EXPECT_TRUE(browser()->instant()->IsCurrent());
 }
@@ -919,7 +954,7 @@ IN_PROC_BROWSER_TEST_F(InstantFieldTrialHiddenTest, MAYBE_ExperimentEnabled) {
   location_bar_->location_entry()->SetUserText(UTF8ToUTF16("def"));
 
   // Check that instant is active, but the preview is not showing.
-  EXPECT_TRUE(browser()->instant()->is_active());
+  EXPECT_TRUE(HasPreview());
   EXPECT_FALSE(browser()->instant()->is_displayable());
   EXPECT_FALSE(browser()->instant()->IsCurrent());
 
@@ -931,7 +966,7 @@ IN_PROC_BROWSER_TEST_F(InstantFieldTrialHiddenTest, MAYBE_ExperimentEnabled) {
 
   // The preview contents should now be the active tab contents.
   EXPECT_FALSE(browser()->instant()->GetPreviewContents());
-  EXPECT_FALSE(browser()->instant()->is_active());
+  EXPECT_FALSE(HasPreview());
   EXPECT_FALSE(browser()->instant()->is_displayable());
   EXPECT_FALSE(browser()->instant()->IsCurrent());
   EXPECT_EQ(tab_contents, browser()->GetSelectedTabContentsWrapper());

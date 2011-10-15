@@ -142,7 +142,7 @@ class BrowserWindowGtk : public BrowserWindow,
   virtual void Copy();
   virtual void Paste();
   virtual void ShowInstant(TabContentsWrapper* preview);
-  virtual void HideInstant(bool instant_is_active);
+  virtual void HideInstant();
   virtual gfx::Rect GetInstantBounds();
   virtual WindowOpenDisposition GetDispositionForPopupBounds(
       const gfx::Rect& bounds);

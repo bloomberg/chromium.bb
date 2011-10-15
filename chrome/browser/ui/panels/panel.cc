@@ -480,7 +480,7 @@ void Panel::ShowInstant(TabContentsWrapper* preview) {
   NOTIMPLEMENTED();
 }
 
-void Panel::HideInstant(bool instant_is_active) {
+void Panel::HideInstant() {
   NOTIMPLEMENTED();
 }
 

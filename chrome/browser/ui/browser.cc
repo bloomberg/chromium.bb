@@ -3254,7 +3254,7 @@ void Browser::TabDeactivated(TabContentsWrapper* contents) {
   if (contents == fullscreened_tab_)
     ExitTabbedFullscreenModeIfNecessary();
   if (instant())
-    instant()->DestroyPreviewContentsAndLeaveActive();
+    instant()->Hide();
 
   // Save what the user's currently typing, so it can be restored when we
   // switch back to this tab.
@@ -4268,7 +4268,7 @@ void Browser::ShowInstant(TabContentsWrapper* preview_contents) {
 }
 
 void Browser::HideInstant() {
-  window_->HideInstant(instant_->is_active());
+  window_->HideInstant();
 }
 
 void Browser::CommitInstant(TabContentsWrapper* preview_contents) {
@@ -5135,7 +5135,7 @@ TabContentsWrapper* Browser::TabContentsFactory(
 }
 
 bool Browser::OpenInstant(WindowOpenDisposition disposition) {
-  if (!instant() || !instant()->is_active() || !instant()->PrepareForCommit() ||
+  if (!instant() || !instant()->PrepareForCommit() ||
       disposition == NEW_BACKGROUND_TAB) {
     // NEW_BACKGROUND_TAB results in leaving the omnibox open, so we don't
     // attempt to use the instant preview.

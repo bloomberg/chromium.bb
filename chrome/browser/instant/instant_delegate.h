@@ -22,9 +22,7 @@ class InstantDelegate {
   // Invoked when the instant TabContents should be shown.
   virtual void ShowInstant(TabContentsWrapper* preview_contents) = 0;
 
-  // Invoked when the instant TabContents should be hidden. Instant still may be
-  // active at the time this is invoked. Use |is_active()| to determine if
-  // instant is still active.
+  // Invoked when the instant TabContents should be hidden.
   virtual void HideInstant() = 0;
 
   // Invoked when the user does something that should result in the preview
