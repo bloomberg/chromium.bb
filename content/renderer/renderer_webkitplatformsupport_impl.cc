@@ -555,7 +555,7 @@ RendererWebKitPlatformSupportImpl::createGraphicsContext3D() {
   // debugging and bringing up new ports.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessWebGL)) {
     return new webkit::gpu::WebGraphicsContext3DInProcessImpl(
-        gfx::kNullPluginWindow);
+        gfx::kNullPluginWindow, NULL);
   } else {
 #if defined(ENABLE_GPU)
     return new WebGraphicsContext3DCommandBufferImpl();

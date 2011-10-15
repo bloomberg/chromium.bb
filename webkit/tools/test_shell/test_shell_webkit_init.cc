@@ -298,5 +298,5 @@ TestShellWebKitInit::sharedWorkerRepository() {
 
 WebKit::WebGraphicsContext3D* TestShellWebKitInit::createGraphicsContext3D() {
   return new webkit::gpu::WebGraphicsContext3DInProcessImpl(
-      gfx::kNullPluginWindow);
+      gfx::kNullPluginWindow, NULL);
 }

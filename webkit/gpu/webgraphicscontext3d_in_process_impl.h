@@ -21,6 +21,7 @@
 namespace gfx {
 class GLContext;
 class GLSurface;
+class GLShareGroup;
 }
 
 using WebKit::WGC3Dchar;
@@ -54,7 +55,10 @@ class WebGraphicsContext3DInProcessImpl : public WebGraphicsContext3D {
  public:
   // Creates a WebGraphicsContext3DInProcessImpl for a given window. If window
   // is gfx::kNullPluginWindow, then it creates an offscreen context.
-  WebGraphicsContext3DInProcessImpl(gfx::PluginWindowHandle window);
+  // share_group is the group this context shares namespaces with. It's only
+  // used for window-bound countexts.
+  WebGraphicsContext3DInProcessImpl(gfx::PluginWindowHandle window,
+                                    gfx::GLShareGroup* share_group);
   virtual ~WebGraphicsContext3DInProcessImpl();
 
   //----------------------------------------------------------------------
@@ -493,6 +497,7 @@ class WebGraphicsContext3DInProcessImpl : public WebGraphicsContext3D {
   ShHandle fragment_compiler_;
   ShHandle vertex_compiler_;
   gfx::PluginWindowHandle window_;
+  scoped_refptr<gfx::GLShareGroup> share_group_;
 };
 
 }  // namespace gpu

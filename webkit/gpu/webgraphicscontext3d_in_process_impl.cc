@@ -43,7 +43,8 @@ struct WebGraphicsContext3DInProcessImpl::ShaderSourceEntry {
 };
 
 WebGraphicsContext3DInProcessImpl::WebGraphicsContext3DInProcessImpl(
-    gfx::PluginWindowHandle window)
+    gfx::PluginWindowHandle window,
+    gfx::GLShareGroup* share_group)
     : initialized_(false),
       render_directly_to_web_view_(false),
       is_gles2_(false),
@@ -66,7 +67,8 @@ WebGraphicsContext3DInProcessImpl::WebGraphicsContext3DInProcessImpl(
 #endif
       fragment_compiler_(0),
       vertex_compiler_(0),
-      window_(window) {
+      window_(window),
+      share_group_(share_group) {
 }
 
 WebGraphicsContext3DInProcessImpl::~WebGraphicsContext3DInProcessImpl() {
@@ -114,27 +116,27 @@ bool WebGraphicsContext3DInProcessImpl::initialize(
   render_directly_to_web_view_ = render_directly_to_web_view;
   gfx::GLShareGroup* share_group = 0;
 
-  if (!render_directly_to_web_view) {
-    // Pick up the compositor's context to share resources with.
-    WebGraphicsContext3D* view_context = webView ?
-                                         webView->graphicsContext3D() : NULL;
-    if (view_context) {
-      WebGraphicsContext3DInProcessImpl* contextImpl =
-          static_cast<WebGraphicsContext3DInProcessImpl*>(view_context);
-      share_group = contextImpl->gl_context_->share_group();
-    } else {
-      // The compositor's context didn't get created
-      // successfully, so conceptually there is no way we can
-      // render successfully to the WebView.
-      render_directly_to_web_view_ = false;
-    }
-  }
-
   is_gles2_ = gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2;
 
   if (window_ != gfx::kNullPluginWindow) {
+    share_group = share_group_;
     gl_surface_ = gfx::GLSurface::CreateViewGLSurface(false, window_);
   } else {
+    if (!render_directly_to_web_view) {
+      // Pick up the compositor's context to share resources with.
+      WebGraphicsContext3D* view_context = webView ?
+                                           webView->graphicsContext3D() : NULL;
+      if (view_context) {
+        WebGraphicsContext3DInProcessImpl* contextImpl =
+            static_cast<WebGraphicsContext3DInProcessImpl*>(view_context);
+        share_group = contextImpl->gl_context_->share_group();
+      } else {
+        // The compositor's context didn't get created
+        // successfully, so conceptually there is no way we can
+        // render successfully to the WebView.
+        render_directly_to_web_view_ = false;
+      }
+    }
     // This implementation always renders offscreen regardless of
     // whether render_directly_to_web_view is true. Both DumpRenderTree
     // and test_shell paint first to an intermediate offscreen buffer
