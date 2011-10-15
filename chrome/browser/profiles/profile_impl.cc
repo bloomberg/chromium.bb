@@ -1438,9 +1438,11 @@ void ProfileImpl::Observe(int type,
         ProfileManager* profile_manager = g_browser_process->profile_manager();
         ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
         size_t index = cache.GetIndexOfProfileWithPath(GetPath());
-        std::string user_name =
-            GetPrefs()->GetString(prefs::kGoogleServicesUsername);
-        cache.SetUserNameOfProfileAtIndex(index, UTF8ToUTF16(user_name));
+        if (index != std::string::npos) {
+          std::string user_name =
+              GetPrefs()->GetString(prefs::kGoogleServicesUsername);
+          cache.SetUserNameOfProfileAtIndex(index, UTF8ToUTF16(user_name));
+        }
       } else if (*pref_name_in == prefs::kDefaultZoomLevel) {
           GetHostZoomMap()->set_default_zoom_level(
               prefs->GetDouble(prefs::kDefaultZoomLevel));

@@ -326,9 +326,12 @@ void BackgroundModeManager::OnApplicationListChanged(Profile* profile) {
 
   // Update the profile cache with the fact whether background apps are running
   // for this profile.
-  profile_cache_->SetBackgroundStatusOfProfileAtIndex(
-      profile_cache_->GetIndexOfProfileWithPath(profile->GetPath()),
-      GetBackgroundAppCountForProfile(profile) != 0);
+  size_t profile_index = profile_cache_->GetIndexOfProfileWithPath(
+      profile->GetPath());
+  if (profile_index != std::string::npos) {
+    profile_cache_->SetBackgroundStatusOfProfileAtIndex(
+        profile_index, GetBackgroundAppCountForProfile(profile) != 0);
+  }
 
   if (count == 0) {
     // We've uninstalled our last background app, make sure we exit background
