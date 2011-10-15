@@ -13,12 +13,12 @@ class NetflixTest(pyauto.PyUITest):
   """Test case for Netflix player"""
 
   # Netflix player states
-  is_playing = '4'
+  _is_playing = '4'
 
-  title_homepage = 'http://movies.netflix.com/WiHome'
-  signout_page = 'https://account.netflix.com/Logout'
+  _title_homepage = 'http://movies.netflix.com/WiHome'
+  _signout_page = 'https://account.netflix.com/Logout'
   # 30 Rock
-  test_title = 'http://movies.netflix.com/WiPlayer?'+ \
+  _test_title = 'http://movies.netflix.com/WiPlayer?'+ \
                'movieid=70136124&trkid=2361637&t=30+Rock'
 
   def tearDown(self):
@@ -72,7 +72,7 @@ class NetflixTest(pyauto.PyUITest):
 
   def _SignOut(self):
     """Sing out from Netflix Login"""
-    self.NavigateToURL(self.signout_page)
+    self.NavigateToURL(self._signout_page)
 
   def _LoginAndStartPlaying(self):
     """Login and start playing the video"""
@@ -81,15 +81,15 @@ class NetflixTest(pyauto.PyUITest):
     self._LoginToNetflix()
     self.assertTrue(self.WaitUntil(
         lambda:self.GetActiveTabURL().spec(),
-        expect_retval=self.title_homepage),
+        expect_retval=self._title_homepage),
         msg='Login to Netflix failed')
-    self.NavigateToURL(self.test_title)
+    self.NavigateToURL(self._test_title)
     self._HandleInfobars()
     self.assertTrue(self.WaitUntil(
         lambda: self.ExecuteJavascript("""
             player_status = nrdp.video.readyState;
             window.domAutomationController.send(player_status + '');
-        """), expect_retval=self.is_playing),
+        """), expect_retval=self._is_playing),
         msg='Player did not start playing the title')
 
   def testPlayerLoadsAndPlays(self):
