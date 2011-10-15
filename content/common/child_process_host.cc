@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
+#include "base/process_util.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "content/common/child_process_info.h"
 #include "content/common/child_process_messages.h"
@@ -264,6 +265,9 @@ void ChildProcessHost::ReleaseCachedFonts(int pid) {
 }
 #endif  // OS_WIN
 
+void ChildProcessHost::ForceShutdown() {
+  Send(new ChildProcessMsg_Shutdown());
+}
 
 bool ChildProcessHost::CreateChannel() {
   channel_id_ = ChildProcessInfo::GenerateRandomChannelID(this);
@@ -310,6 +314,18 @@ bool ChildProcessHost::Send(IPC::Message* message) {
   return channel_->Send(message);
 }
 
+void ChildProcessHost::OnAllocateSharedMemory(
+      uint32 buffer_size, base::ProcessHandle child_process_handle,
+      base::SharedMemoryHandle* shared_memory_handle) {
+  base::SharedMemory shared_buf;
+  if (!shared_buf.CreateAndMapAnonymous(buffer_size)) {
+    *shared_memory_handle = base::SharedMemory::NULLHandle();
+    NOTREACHED() << "Cannot map shared memory buffer";
+    return;
+  }
+  shared_buf.GiveToProcess(child_process_handle, shared_memory_handle);
+}
+
 void ChildProcessHost::OnChildDied() {
   delete this;
 }
@@ -325,7 +341,11 @@ void ChildProcessHost::Notify(int type) {
 }
 
 ChildProcessHost::ListenerHook::ListenerHook(ChildProcessHost* host)
-    : host_(host) {
+    : host_(host), peer_handle_(base::kNullProcessHandle) {
+}
+
+ChildProcessHost::ListenerHook::~ListenerHook() {
+  base::CloseProcessHandle(peer_handle_);
 }
 
 void ChildProcessHost::ListenerHook::Shutdown() {
@@ -356,14 +376,20 @@ bool ChildProcessHost::ListenerHook::OnMessageReceived(
     }
   }
 
-  if (!handled && msg.type() == ChildProcessHostMsg_ShutdownRequest::ID) {
-    if (host_->CanShutdown())
-      host_->Send(new ChildProcessMsg_Shutdown());
+  if (!handled) {
+    bool msg_is_good = false;
     handled = true;
-  }
+    IPC_BEGIN_MESSAGE_MAP_EX(ListenerHook, msg, msg_is_good)
+      IPC_MESSAGE_HANDLER(ChildProcessHostMsg_ShutdownRequest,
+                          OnShutdownRequest)
+      IPC_MESSAGE_HANDLER(ChildProcessHostMsg_SyncAllocateSharedMemory,
+                          OnAllocateSharedMemory)
+      IPC_MESSAGE_UNHANDLED(handled = false)
+    IPC_END_MESSAGE_MAP_EX()
 
-  if (!handled)
-    handled = host_->OnMessageReceived(msg);
+    if (!handled)
+      handled = host_->OnMessageReceived(msg);
+  }
 
 #ifdef IPC_MESSAGE_LOG_ENABLED
   if (logger->Enabled())
@@ -375,6 +401,9 @@ bool ChildProcessHost::ListenerHook::OnMessageReceived(
 void ChildProcessHost::ListenerHook::OnChannelConnected(int32 peer_pid) {
   if (!host_)
     return;
+  if (!base::OpenProcessHandle(peer_pid, &peer_handle_)) {
+    NOTREACHED();
+  }
   host_->opening_channel_ = false;
   host_->OnChannelConnected(peer_pid);
   // Notify in the main loop of the connection.
@@ -397,6 +426,18 @@ void ChildProcessHost::ListenerHook::OnChannelError() {
   host_->OnChildDisconnected();
 }
 
-void ChildProcessHost::ForceShutdown() {
-  Send(new ChildProcessMsg_Shutdown());
+bool ChildProcessHost::ListenerHook::Send(IPC::Message* message) {
+  return host_->Send(message);
+}
+
+void ChildProcessHost::ListenerHook::OnAllocateSharedMemory(
+    uint32 buffer_size,
+    base::SharedMemoryHandle* handle) {
+  ChildProcessHost::OnAllocateSharedMemory(
+      buffer_size, peer_handle_, handle);
+}
+
+void ChildProcessHost::ListenerHook::OnShutdownRequest() {
+  if (host_->CanShutdown())
+    host_->Send(new ChildProcessMsg_Shutdown());
 }

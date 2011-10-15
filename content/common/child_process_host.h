@@ -19,6 +19,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
+#include "base/shared_memory.h"
 #include "base/string16.h"
 #include "content/common/content_export.h"
 #include "content/common/content_notification_types.h"
@@ -100,6 +101,11 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Channel::Listener,
   // Adds an IPC message filter.  A reference will be kept to the filter.
   void AddFilter(IPC::ChannelProxy::MessageFilter* filter);
 
+  // Public and static for reuse by RenderMessageFilter.
+  static void OnAllocateSharedMemory(
+      uint32 buffer_size, base::ProcessHandle child_process,
+      base::SharedMemoryHandle* handle);
+
  protected:
   ChildProcessHost();
 
@@ -146,6 +152,7 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Channel::Listener,
   class ListenerHook : public IPC::Channel::Listener {
    public:
     explicit ListenerHook(ChildProcessHost* host);
+    virtual ~ListenerHook();
 
     void Shutdown();
 
@@ -153,8 +160,15 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Channel::Listener,
     virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
     virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
     virtual void OnChannelError() OVERRIDE;
+
+    bool Send(IPC::Message* message);
+
    private:
+    void OnShutdownRequest();
+    void OnAllocateSharedMemory(uint32 buffer_size,
+                                base::SharedMemoryHandle* handle);
     ChildProcessHost* host_;
+    base::ProcessHandle peer_handle_;
     DISALLOW_COPY_AND_ASSIGN(ListenerHook);
   };
 

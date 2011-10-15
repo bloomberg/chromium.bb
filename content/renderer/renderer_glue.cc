@@ -51,37 +51,12 @@ void ScopedClipboardWriterGlue::WriteBitmapFromPixels(const void* pixels,
   uint32 buf_size = 4 * size.width() * size.height();
 
   // Allocate a shared memory buffer to hold the bitmap bits.
-#if defined(OS_POSIX)
-  // On POSIX, we need to ask the browser to create the shared memory for us,
-  // since this is blocked by the sandbox.
-  base::SharedMemoryHandle shared_mem_handle;
-  ViewHostMsg_AllocateSharedMemoryBuffer *msg =
-      new ViewHostMsg_AllocateSharedMemoryBuffer(buf_size,
-                                                 &shared_mem_handle);
-  if (RenderThreadImpl::current()->Send(msg)) {
-    if (base::SharedMemory::IsHandleValid(shared_mem_handle)) {
-      shared_buf_ = new base::SharedMemory(shared_mem_handle, false);
-      if (!shared_buf_ || !shared_buf_->Map(buf_size)) {
-        NOTREACHED() << "Map failed";
-        return;
-      }
-    } else {
-      NOTREACHED() << "Browser failed to allocate shared memory";
-      return;
-    }
-  } else {
-    NOTREACHED() << "Browser allocation request message failed";
+  shared_buf_ = ChildThread::current()->AllocateSharedMemory(buf_size);
+  if (!shared_buf_)
     return;
-  }
-#else  // !OS_POSIX
-  shared_buf_ = new base::SharedMemory;
-  if (!shared_buf_->CreateAndMapAnonymous(buf_size)) {
-    NOTREACHED();
-    return;
-  }
-#endif
 
   // Copy the bits into shared memory
+  DCHECK(shared_buf_->memory());
   memcpy(shared_buf_->memory(), pixels, buf_size);
   shared_buf_->Unmap();
 

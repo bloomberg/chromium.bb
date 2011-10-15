@@ -5,6 +5,7 @@
 // Common IPC messages used for child processes.
 // Multiply-included message file, hence no include guard.
 
+#include "base/shared_memory.h"
 #include "content/common/content_export.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
@@ -78,3 +79,9 @@ IPC_SYNC_MESSAGE_CONTROL1_0(ChildProcessHostMsg_PreCacheFont,
 // Release the cached font
 IPC_MESSAGE_CONTROL0(ChildProcessHostMsg_ReleaseCachedFonts)
 #endif  // defined(OS_WIN)
+
+// Asks the browser to create a block of shared memory for the child process to
+// fill in and pass back to the browser.
+IPC_SYNC_MESSAGE_CONTROL1_1(ChildProcessHostMsg_SyncAllocateSharedMemory,
+                            uint32 /* buffer size */,
+                            base::SharedMemoryHandle)

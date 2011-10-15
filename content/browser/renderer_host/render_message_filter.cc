@@ -29,6 +29,8 @@
 #include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/browser/resource_context.h"
 #include "content/browser/user_metrics.h"
+#include "content/common/child_process_host.h"
+#include "content/common/child_process_messages.h"
 #include "content/common/desktop_notification_messages.h"
 #include "content/common/notification_service.h"
 #include "content/common/view_messages.h"
@@ -61,10 +63,6 @@
 #endif
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
-#endif
-#if defined(OS_WIN)
-#include "content/common/child_process_host.h"
-#include "content/common/child_process_messages.h"
 #endif
 
 using net::CookieStore;
@@ -348,8 +346,8 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
         render_widget_helper_->DidReceiveUpdateMsg(message))
     IPC_MESSAGE_HANDLER(DesktopNotificationHostMsg_CheckPermission,
                         OnCheckNotificationPermission)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_AllocateSharedMemoryBuffer,
-                        OnAllocateSharedMemoryBuffer)
+    IPC_MESSAGE_HANDLER(ChildProcessHostMsg_SyncAllocateSharedMemory,
+                        OnAllocateSharedMemory)
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AllocTransportDIB, OnAllocTransportDIB)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FreeTransportDIB, OnFreeTransportDIB)
@@ -638,16 +636,11 @@ void RenderMessageFilter::OnCheckNotificationPermission(
       CheckDesktopNotificationPermission(source_url, resource_context_);
 }
 
-void RenderMessageFilter::OnAllocateSharedMemoryBuffer(
+void RenderMessageFilter::OnAllocateSharedMemory(
     uint32 buffer_size,
     base::SharedMemoryHandle* handle) {
-  base::SharedMemory shared_buf;
-  if (!shared_buf.CreateAndMapAnonymous(buffer_size)) {
-    *handle = base::SharedMemory::NULLHandle();
-    NOTREACHED() << "Cannot map shared memory buffer";
-    return;
-  }
-  shared_buf.GiveToProcess(peer_handle(), handle);
+  ChildProcessHost::OnAllocateSharedMemory(
+      buffer_size, peer_handle(), handle);
 }
 
 net::URLRequestContext* RenderMessageFilter::GetRequestContextForURL(

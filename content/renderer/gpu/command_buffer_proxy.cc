@@ -10,6 +10,7 @@
 #include "base/shared_memory.h"
 #include "base/stl_util.h"
 #include "base/task.h"
+#include "content/common/child_process_messages.h"
 #include "content/common/child_thread.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/plugin_messages.h"
@@ -100,7 +101,7 @@ bool CommandBufferProxy::Initialize(int32 size) {
     return false;
 
   base::SharedMemoryHandle handle;
-  if (!child_thread->Send(new ViewHostMsg_AllocateSharedMemoryBuffer(
+  if (!child_thread->Send(new ChildProcessHostMsg_SyncAllocateSharedMemory(
       size,
       &handle))) {
     return false;
@@ -221,7 +222,7 @@ int32 CommandBufferProxy::CreateTransferBuffer(size_t size, int32 id_request) {
     return -1;
 
   base::SharedMemoryHandle handle;
-  if (!child_thread->Send(new ViewHostMsg_AllocateSharedMemoryBuffer(
+  if (!child_thread->Send(new ChildProcessHostMsg_SyncAllocateSharedMemory(
       size,
       &handle))) {
     return -1;

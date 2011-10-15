@@ -187,8 +187,8 @@ class RenderMessageFilter : public BrowserMessageFilter {
   // Used to ask the browser to allocate a block of shared memory for the
   // renderer to send back data in, since shared memory can't be created
   // in the renderer on POSIX due to the sandbox.
-  void OnAllocateSharedMemoryBuffer(uint32 buffer_size,
-                                    base::SharedMemoryHandle* handle);
+  void OnAllocateSharedMemory(uint32 buffer_size,
+                              base::SharedMemoryHandle* handle);
   void OnResolveProxy(const GURL& url, IPC::Message* reply_msg);
 
   // Browser side transport DIB allocation

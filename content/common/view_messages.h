@@ -1756,12 +1756,6 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_UpdateZoomLimits,
                     int /* maximum_percent */,
                     bool /* remember */)
 
-// Asks the browser to create a block of shared memory for the renderer to
-// fill in and pass back to the browser.
-IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_AllocateSharedMemoryBuffer,
-                            uint32 /* buffer size */,
-                            base::SharedMemoryHandle /* browser handle */)
-
 // Notify the browser that this render process can or can't be suddenly
 // terminated.
 IPC_MESSAGE_CONTROL1(ViewHostMsg_SuddenTerminationChanged,

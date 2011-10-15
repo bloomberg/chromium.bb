@@ -22,6 +22,7 @@
 #include "base/threading/thread_local.h"
 #include "base/values.h"
 #include "content/common/appcache/appcache_dispatcher.h"
+#include "content/common/child_process_messages.h"
 #include "content/common/database_messages.h"
 #include "content/common/db_message_filter.h"
 #include "content/common/dom_storage_messages.h"
@@ -73,9 +74,7 @@
 #include "webkit/glue/webkit_glue.h"
 
 // TODO(port)
-#if defined(OS_WIN)
-#include "content/common/child_process_messages.h"
-#else
+#if !defined(OS_WIN)
 #include "base/memory/scoped_handle.h"
 #include "content/common/np_channel_base.h"
 #endif
@@ -523,9 +522,10 @@ void RenderThreadImpl::RecordUserMetrics(const std::string& action) {
 }
 
 base::SharedMemoryHandle RenderThreadImpl::HostAllocateSharedMemoryBuffer(
-  uint32 buffer_size) {
+    uint32 buffer_size) {
   base::SharedMemoryHandle mem_handle;
-  Send(new ViewHostMsg_AllocateSharedMemoryBuffer(buffer_size, &mem_handle));
+  Send(new ChildProcessHostMsg_SyncAllocateSharedMemory(
+                buffer_size, &mem_handle));
   return mem_handle;
 }
 

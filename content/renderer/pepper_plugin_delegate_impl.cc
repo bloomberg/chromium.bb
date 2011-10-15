@@ -19,6 +19,7 @@
 #include "base/task.h"
 #include "base/time.h"
 #include "content/common/child_process.h"
+#include "content/common/child_process_messages.h"
 #include "content/common/child_thread.h"
 #include "content/common/file_system/file_system_dispatcher.h"
 #include "content/common/file_system_messages.h"
@@ -1656,7 +1657,7 @@ base::SharedMemory* PepperPluginDelegateImpl::CreateAnonymousSharedMemory(
     return NULL;
   base::SharedMemoryHandle handle;
   if (!render_view_->Send(
-          new ViewHostMsg_AllocateSharedMemoryBuffer(size, &handle))) {
+          new ChildProcessHostMsg_SyncAllocateSharedMemory(size, &handle))) {
     DLOG(WARNING) << "Browser allocation request message failed";
     return NULL;
   }
