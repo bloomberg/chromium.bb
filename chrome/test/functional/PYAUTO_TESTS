@@ -135,10 +135,6 @@
       # when downloading the small zip file.
       # crbug.com/91225
       '-find_in_page.FindMatchTests.testSearchInPDF',
-      # crbug.com/94682
-      '-gpu.GpuTest.test2dCanvas',
-      # crbug.com/93423
-      '-gpu.GpuTest.test3dCss',
       # Disabled on vista in the actual test. crbug.com/89767
       # -imports.ImportsTest.testImportFirefoxDataTwice
       # Disabled on vista in the actual test. crbug.com/89767
@@ -458,8 +454,6 @@
     'win': [
       'enterprise',
       'gpu',
-      # crbug.com/92446
-      '-gpu.GpuTest.testGpuWithVideo',
       # Preloaded extensions affect process count: crbug.com/94350
       '-process_count',
 

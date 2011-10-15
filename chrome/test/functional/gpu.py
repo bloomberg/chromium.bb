@@ -24,13 +24,26 @@ class GpuTest(pyauto.PyUITest):
   def _IsHardwareAccelerated(self, feature):
     """Check if gpu is enabled in the machine before running any tests."""
     self.NavigateToURL('about:gpu')
+    def IsFeatureStatusLoaded():
+      """Returns whether the feature status UI has been loaded.
+
+      The about:gpu page fetches status for features asynchronously, so use
+      this to check if the fetch is done.
+      """
+      js = """
+        var list = document.querySelector(".feature-status-list");
+        domAutomationController.send(list.hasChildNodes() ? "done" : "");
+      """
+      return self.ExecuteJavascript(js)
+    self.assertTrue(self.WaitUntil(IsFeatureStatusLoaded, 10))
     search = feature + ': Hardware accelerated'
     find_result = self.FindInPage(search)['match_count']
     if find_result:
-      # about:gpu page starts a gpu process.
-      # Make sure to kill the GPU process after navigating to about:gpu page
-      pid = self._GetGpuPID()
-      self.Kill(pid)
+      # about:gpu page starts a gpu process. Restart the browser to clear
+      # the state. We could kill the gpu process, but navigating to a page
+      # after killing the gpu can lead to flakiness.
+      # See crbug.com/93423.
+      self.RestartBrowser()
       return True
     else:
       logging.warn('Hardware acceleration not available')
@@ -49,47 +62,47 @@ class GpuTest(pyauto.PyUITest):
 
   def test2dCanvas(self):
     """Verify that gpu process is spawned when viewing a 2D canvas."""
-    if self._IsHardwareAccelerated('Canvas'):
-      self._VerifyGPUProcessOnPage('CanvasDemo.html')
+    self.assertTrue(self._IsHardwareAccelerated('Canvas'))
+    self._VerifyGPUProcessOnPage('CanvasDemo.html')
 
   def test3dCss(self):
     """Verify that gpu process is spawned when viewing a 3D CSS page."""
-    if self._IsHardwareAccelerated('3D CSS'):
-      self._VerifyGPUProcessOnPage('3dCss.html')
+    self.assertTrue(self._IsHardwareAccelerated('3D CSS'))
+    self._VerifyGPUProcessOnPage('3dCss.html')
 
   def testCompositing(self):
     """Verify gpu process in compositing example."""
-    if self._IsHardwareAccelerated('Compositing'):
-      self._VerifyGPUProcessOnPage('WebGLTeapot.html')
+    self.assertTrue(self._IsHardwareAccelerated('Compositing'))
+    self._VerifyGPUProcessOnPage('WebGLTeapot.html')
 
   def testWebGL(self):
     """Verify that gpu process is spawned in webgl example."""
-    if self._IsHardwareAccelerated('WebGL'):
-      self._VerifyGPUProcessOnPage('WebGLField.html')
+    self.assertTrue(self._IsHardwareAccelerated('WebGL'))
+    self._VerifyGPUProcessOnPage('WebGLField.html')
 
   def testGpuWithVideo(self):
     """Verify that gpu process is started when viewing video."""
-    if self._IsHardwareAccelerated('WebGL'):
-      self._VerifyGPUProcessOnPage('color2.ogv')
+    self.assertTrue(self._IsHardwareAccelerated('WebGL'))
+    self._VerifyGPUProcessOnPage('color2.ogv')
 
   def testSingleGpuProcess(self):
     """Verify there's only one gpu process shared across all uses."""
-    if self._IsHardwareAccelerated('WebGL'):
-      url = self.GetFileURLForDataPath('pyauto_private',
-                                       'gpu', 'WebGLField.html')
-      self.AppendTab(pyauto.GURL(url))
-      # Open a new window.
-      self.OpenNewBrowserWindow(True)
-      self.NavigateToURL(url, 1, 0)
-      # Open a new incognito window.
-      self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
-      self.NavigateToURL(url, 1, 0)
-      # Verify there's only 1 gpu process.
-      gpu_process_count = 0
-      for x in self.GetBrowserInfo()['child_processes']:
-        if x['type'] == 'GPU':
-          gpu_process_count += 1
-      self.assertEqual(1, gpu_process_count)
+    self.assertTrue(self._IsHardwareAccelerated('WebGL'))
+    url = self.GetFileURLForDataPath('pyauto_private',
+                                     'gpu', 'WebGLField.html')
+    self.AppendTab(pyauto.GURL(url))
+    # Open a new window.
+    self.OpenNewBrowserWindow(True)
+    self.NavigateToURL(url, 1, 0)
+    # Open a new incognito window.
+    self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
+    self.NavigateToURL(url, 1, 0)
+    # Verify there's only 1 gpu process.
+    gpu_process_count = 0
+    for x in self.GetBrowserInfo()['child_processes']:
+      if x['type'] == 'GPU':
+        gpu_process_count += 1
+    self.assertEqual(1, gpu_process_count)
 
 
 if __name__ == '__main__':
