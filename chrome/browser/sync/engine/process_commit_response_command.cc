@@ -439,7 +439,10 @@ void ProcessCommitResponseCommand::OverrideClientFieldsAfterCommit(
     // value we got applies to the PARENT_ID we submitted.
     syncable::Id new_prev = local_entry->ComputePrevIdFromServerPosition(
         local_entry->Get(PARENT_ID));
-    CHECK(local_entry->PutPredecessor(new_prev));
+    if (!local_entry->PutPredecessor(new_prev)) {
+      // TODO(lipalani) : Propagate the error to caller. crbug.com/100444.
+      NOTREACHED();
+    }
   }
 }
 

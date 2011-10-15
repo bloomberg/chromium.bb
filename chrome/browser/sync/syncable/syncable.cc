@@ -1483,7 +1483,11 @@ bool MutableEntry::PutIsDel(bool is_del) {
   }
 
   if (!is_del)
-    CHECK(PutPredecessor(Id()));  // Restores position to the 0th index.
+    // Restores position to the 0th index.
+    if (!PutPredecessor(Id())) {
+      // TODO(lipalani) : Propagate the error to caller. crbug.com/100444.
+      NOTREACHED();
+    }
 
   return true;
 }
@@ -1521,7 +1525,11 @@ bool MutableEntry::Put(IdField field, const Id& value) {
         return false;
     } else if (PARENT_ID == field) {
       PutParentIdPropertyOnly(value);  // Makes sibling order inconsistent.
-      CHECK(PutPredecessor(Id()));  // Fixes up the sibling order inconsistency.
+      // Fixes up the sibling order inconsistency.
+      if (!PutPredecessor(Id())) {
+        // TODO(lipalani) : Propagate the error to caller. crbug.com/100444.
+        NOTREACHED();
+      }
     } else {
       kernel_->put(field, value);
     }
