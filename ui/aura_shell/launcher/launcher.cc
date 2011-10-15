@@ -43,25 +43,44 @@ Launcher::~Launcher() {
   window_container_->RemoveObserver(this);
 }
 
-void Launcher::OnWindowAdded(aura::Window* new_window) {
+void Launcher::MaybeAdd(aura::Window* window) {
+  if (known_windows_[window] == true)
+    return;  // We already tried to add this window.
+
+  known_windows_[window] = true;
   ShellDelegate* delegate = Shell::GetInstance()->delegate();
   if (!delegate)
     return;
   LauncherItem item;
-  item.window = new_window;
+  item.window = window;
   if (!delegate->ConfigureLauncherItem(&item))
     return;  // The delegate doesn't want to show this item in the launcher.
   model_->Add(model_->items().size(), item);
 }
 
+void Launcher::OnWindowAdded(aura::Window* new_window) {
+  DCHECK(known_windows_.find(new_window) == known_windows_.end());
+  known_windows_[new_window] = false;
+  new_window->AddObserver(this);
+  // Windows are created initially invisible. Wait until the window is made
+  // visible before asking, as othewise the delegate likely doesn't know about
+  // window (it's still creating it).
+  if (new_window->IsVisible())
+    MaybeAdd(new_window);
+}
+
 void Launcher::OnWillRemoveWindow(aura::Window* window) {
-  const LauncherItems& items(model_->items());
-  for (LauncherItems::const_iterator i = items.begin(); i != items.end(); ++i) {
-    if (i->window == window) {
-      model_->RemoveItemAt(i - items.begin());
-      break;
-    }
-  }
+  window->RemoveObserver(this);
+  known_windows_.erase(window);
+  LauncherItems::const_iterator i = model_->ItemByWindow(window);
+  if (i != model_->items().end())
+    model_->RemoveItemAt(i - model_->items().begin());
+}
+
+void Launcher::OnWindowVisibilityChanged(aura::Window* window,
+                                         bool visibile) {
+  if (visibile && !known_windows_[window])
+    MaybeAdd(window);
 }
 
 }  // namespace aura_shell

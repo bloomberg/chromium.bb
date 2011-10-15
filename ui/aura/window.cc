@@ -389,6 +389,9 @@ internal::RootWindow* Window::GetRoot() {
 }
 
 void Window::SetVisible(bool visible) {
+  if (visible == layer_->visible())
+    return;  // No change.
+
   bool was_visible = IsVisible();
   layer_->SetVisible(visible);
   bool is_visible = IsVisible();
@@ -397,6 +400,8 @@ void Window::SetVisible(bool visible) {
     if (delegate_)
       delegate_->OnWindowVisibilityChanged(is_visible);
   }
+  FOR_EACH_OBSERVER(WindowObserver, observers_,
+                    OnWindowVisibilityChanged(this, is_visible));
 }
 
 void Window::SchedulePaint() {

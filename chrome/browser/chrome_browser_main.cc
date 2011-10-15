@@ -201,6 +201,7 @@
 #endif
 
 #if defined(USE_AURA)
+#include "chrome/browser/ui/views/aura/chrome_shell_delegate.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura_shell/shell.h"
 #endif
@@ -1366,7 +1367,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunInternal() {
   child_process_logging::SetCommandLine(CommandLine::ForCurrentProcess());
 
 #if defined(USE_AURA)
-  aura_shell::Shell::GetInstance();
+  // Shell takes ownership of ChromeShellDelegate.
+  aura_shell::Shell::GetInstance()->SetDelegate(new ChromeShellDelegate);
 #elif defined(TOOLKIT_VIEWS)
   views::Widget::SetPureViews(
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kUsePureViews));

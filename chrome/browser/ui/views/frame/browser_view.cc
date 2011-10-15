@@ -105,11 +105,15 @@
 #include "views/window/dialog_delegate.h"
 
 #if defined(USE_AURA)
+#include "chrome/browser/ui/views/aura/launcher_icon_updater.h"
+#include "ui/aura_shell/launcher/launcher.h"
+#include "ui/aura_shell/launcher/launcher_model.h"
+#include "ui/aura_shell/shell.h"
+#include "ui/base/view_prop.h"
 #elif defined(OS_WIN)
 #include "chrome/browser/aeropeek_manager.h"
 #include "chrome/browser/jumplist_win.h"
 #include "ui/base/message_box_win.h"
-#include "ui/base/view_prop.h"
 #include "views/widget/native_widget_win.h"
 #elif defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/ui/views/accelerator_table_linux.h"
@@ -123,6 +127,10 @@
 #include "chrome/browser/ui/views/keyboard_overlay_dialog_view.h"
 #else
 #include "chrome/browser/ui/views/download/download_shelf_view.h"
+#endif
+
+#if defined(OS_WIN) && !defined(USE_AURA)
+#include "ui/base/view_prop.h"
 #endif
 
 #if defined(TOUCH_UI)
@@ -366,13 +374,12 @@ BrowserView::~BrowserView() {
   browser_.reset();
 }
 
-// Tab dragging code on windows needs this.
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN) || defined(USE_AURA)
 // static
 BrowserView* BrowserView::GetBrowserViewForNativeWindow(
     gfx::NativeWindow window) {
-  return IsWindow(window) ? reinterpret_cast<BrowserView*>(
-      ui::ViewProp::GetValue(window, kBrowserViewKey)) : NULL;
+  return reinterpret_cast<BrowserView*>(
+      ui::ViewProp::GetValue(window, kBrowserViewKey));
 }
 #endif
 
@@ -1920,6 +1927,13 @@ void BrowserView::Init() {
 
   // We're now initialized and ready to process Layout requests.
   ignore_layout_ = false;
+
+#if defined(USE_AURA)
+  icon_updater_.reset(new LauncherIconUpdater(
+      browser_->tabstrip_model(),
+      aura_shell::Shell::GetInstance()->launcher()->model(),
+      frame_->GetNativeWindow()));
+#endif
 }
 
 void BrowserView::LoadingAnimationCallback() {

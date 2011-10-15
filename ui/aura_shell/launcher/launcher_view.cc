@@ -123,7 +123,18 @@ void LauncherView::LauncherItemRemoved(int index) {
 }
 
 void LauncherView::LauncherItemImagesChanged(int index) {
-  // TODO: implement me.
+  // TODO: implement better coordinate conversion.
+  const LauncherItem& item(model_->items()[index]);
+  if (item.type == TYPE_TABBED) {
+    TabbedLauncherButton* button =
+        static_cast<TabbedLauncherButton*>(child_at(index + 1));
+    gfx::Size pref = button->GetPreferredSize();
+    button->SetImages(item.tab_images);
+    if (pref != button->GetPreferredSize())
+      Resize();
+    else
+      button->SchedulePaint();
+  }
 }
 
 void LauncherView::ButtonPressed(views::Button* sender,

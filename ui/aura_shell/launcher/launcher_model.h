@@ -12,8 +12,8 @@
 #include "ui/aura_shell/aura_shell_export.h"
 #include "ui/aura_shell/launcher/launcher_types.h"
 
-namespace views {
-class View;
+namespace aura {
+class Window;
 }
 
 namespace aura_shell {
@@ -35,6 +35,11 @@ class AURA_SHELL_EXPORT LauncherModel {
   // Changes the images of the specified item.
   void SetTabbedImages(int index, const LauncherTabbedImages& images);
   void SetAppImage(int index, const SkBitmap& image);
+
+  // Returns the index of the item with the specified window.
+  int ItemIndexByWindow(aura::Window* window);
+
+  LauncherItems::const_iterator ItemByWindow(aura::Window* window) const;
 
   const LauncherItems& items() const { return items_; }
   int item_count() const { return static_cast<int>(items_.size()); }

@@ -6,8 +6,7 @@
 #define VIEWS_WIDGET_NATIVE_WIDGET_AURA_H_
 #pragma once
 
-#include <map>
-
+#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/aura/window_delegate.h"
 #include "views/views_export.h"
@@ -18,6 +17,10 @@ class Window;
 }
 namespace gfx {
 class Font;
+}
+
+namespace ui {
+class ViewProp;
 }
 
 namespace views {
@@ -138,7 +141,7 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
   virtual void OnWindowVisibilityChanged(bool visible) OVERRIDE;
 
  private:
-  typedef std::map<const char*, void*> PropsMap;
+  typedef ScopedVector<ui::ViewProp> ViewProps;
 
   internal::NativeWidgetDelegate* delegate_;
 
@@ -153,10 +156,9 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
 
   bool can_activate_;
 
-  // Map used by Set/GetNativeWindowProperty.
-  PropsMap props_map_;
-
   gfx::NativeCursor cursor_;
+
+  ViewProps props_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetAura);
 };

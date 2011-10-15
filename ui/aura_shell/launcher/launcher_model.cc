@@ -4,6 +4,7 @@
 
 #include "ui/aura_shell/launcher/launcher_model.h"
 
+#include "ui/aura/window.h"
 #include "ui/aura_shell/launcher/launcher_model_observer.h"
 
 namespace aura_shell {
@@ -43,6 +44,21 @@ void LauncherModel::SetAppImage(int index, const SkBitmap& image) {
   items_[index].app_image = image;
   FOR_EACH_OBSERVER(LauncherModelObserver, observers_,
                     LauncherItemImagesChanged(index));
+}
+
+int LauncherModel::ItemIndexByWindow(aura::Window* window) {
+  LauncherItems::const_iterator i = ItemByWindow(window);
+  return i == items_.end() ? -1 : static_cast<int>((i - items_.begin()));
+}
+
+LauncherItems::const_iterator LauncherModel::ItemByWindow(
+    aura::Window* window) const {
+  for (LauncherItems::const_iterator i = items_.begin();
+       i != items_.end(); ++i) {
+    if (i->window == window)
+      return i;
+  }
+  return items_.end();
 }
 
 void LauncherModel::AddObserver(LauncherModelObserver* observer) {

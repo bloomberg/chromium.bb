@@ -105,6 +105,7 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimatorDelegate {
   // Sets the visibility of the Layer. A Layer may be visible but not
   // drawn. This happens if any ancestor of a Layer is not visible.
   void SetVisible(bool visible);
+  bool visible() const { return visible_; }
 
   // Returns true if this Layer is drawn. A Layer is drawn only if all ancestors
   // are visible.

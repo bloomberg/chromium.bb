@@ -6,6 +6,8 @@
 #define UI_AURA_SHELL_LAUNCHER_LAUNCHER_H_
 #pragma once
 
+#include <map>
+
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/window_observer.h"
@@ -32,9 +34,17 @@ class AURA_SHELL_EXPORT Launcher : public aura::WindowObserver {
   views::Widget* widget() { return widget_; }
 
  private:
+  typedef std::map<aura::Window*, bool> WindowMap;
+
+  // If necessary asks the delegate if an entry should be created in the
+  // launcher for |window|. This only asks the delegate once for a window.
+  void MaybeAdd(aura::Window* window);
+
   // WindowObserver overrides:
   virtual void OnWindowAdded(aura::Window* new_window) OVERRIDE;
   virtual void OnWillRemoveWindow(aura::Window* window) OVERRIDE;
+  virtual void OnWindowVisibilityChanged(aura::Window* window,
+                                         bool visibile) OVERRIDE;
 
   scoped_ptr<LauncherModel> model_;
 
@@ -42,6 +52,10 @@ class AURA_SHELL_EXPORT Launcher : public aura::WindowObserver {
   views::Widget* widget_;
 
   aura::ToplevelWindowContainer* window_container_;
+
+  // The set of windows we know about. The boolean indicates whether we've asked
+  // the delegate if the window should added to the launcher.
+  WindowMap known_windows_;
 
   DISALLOW_COPY_AND_ASSIGN(Launcher);
 };

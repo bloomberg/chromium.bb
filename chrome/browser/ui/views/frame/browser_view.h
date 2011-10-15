@@ -46,6 +46,7 @@ class BrowserViewLayout;
 class ContentsContainer;
 class DownloadShelfView;
 class EncodingMenuModel;
+class Extension;
 class FullscreenExitBubbleViews;
 class HtmlDialogUIDelegate;
 class InfoBarContainerView;
@@ -56,11 +57,14 @@ class TabContentsContainer;
 class TabStripModel;
 class ToolbarView;
 class ZoomMenuModel;
-class Extension;
 
 #if defined(OS_WIN)
 class AeroPeekManager;
 class JumpList;
+#endif
+
+#if defined(USE_AURA)
+class LauncherIconUpdater;
 #endif
 
 namespace views {
@@ -95,7 +99,7 @@ class BrowserView : public BrowserBubbleHost,
   void set_frame(BrowserFrame* frame) { frame_ = frame; }
   BrowserFrame* frame() const { return frame_; }
 
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN) || defined(USE_AURA)
   // Returns a pointer to the BrowserView* interface implementation (an
   // instance of this object, typically) for a given native window, or NULL if
   // there is no such association.
@@ -682,6 +686,10 @@ class BrowserView : public BrowserBubbleHost,
 
   // The custom AeroPeek manager for Windows 7.
   scoped_ptr<AeroPeekManager> aeropeek_manager_;
+#endif
+
+#if defined(USE_AURA)
+  scoped_ptr<LauncherIconUpdater> icon_updater_;
 #endif
 
   // The timer used to update frames for the Loading Animation.
