@@ -38,6 +38,8 @@ class FullscreenExitBubbleGtk : public FullscreenExitBubble {
 
  private:
   void InitWidgets();
+  std::string GetMessage(const GURL& url);
+  void HideButtons();
 
   GtkWidget* widget() const {
     return slide_widget_->widget();
@@ -46,12 +48,17 @@ class FullscreenExitBubbleGtk : public FullscreenExitBubble {
   CHROMEGTK_CALLBACK_1(FullscreenExitBubbleGtk, void, OnSetFloatingPosition,
                        GtkAllocation*);
   CHROMEGTK_CALLBACK_0(FullscreenExitBubbleGtk, void, OnLinkClicked);
+  CHROMEGTK_CALLBACK_0(FullscreenExitBubbleGtk, void, OnAllowClicked);
+  CHROMEGTK_CALLBACK_0(FullscreenExitBubbleGtk, void, OnDenyClicked);
 
   // A pointer to the floating container that is our parent.
   GtkFloatingContainer* container_;
 
-  // The widget that contains the link.
-  ui::OwnedWidgetGtk link_container_;
+  // The widget that contains the UI.
+  ui::OwnedWidgetGtk ui_container_;
+  GtkWidget* link_;
+  GtkWidget* allow_button_;
+  GtkWidget* deny_button_;
 
   // The widget that animates the slide-out of fullscreen exit bubble.
   scoped_ptr<SlideAnimatorGtk> slide_widget_;
@@ -61,7 +68,7 @@ class FullscreenExitBubbleGtk : public FullscreenExitBubble {
 
   ui::GtkSignalRegistrar signals_;
 
-  const GURL& url_;
+  const GURL url_;
   bool show_buttons_;
 };
 
