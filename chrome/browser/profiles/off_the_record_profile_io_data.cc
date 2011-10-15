@@ -164,8 +164,6 @@ void OffTheRecordProfileIOData::LazyInitializeInternal(
   main_context->set_http_auth_handler_factory(
       io_thread_globals->http_auth_handler_factory.get());
   main_context->set_dns_cert_checker(dns_cert_checker());
-  main_context->set_fraudulent_certificate_reporter(
-      fraudulent_certificate_reporter());
   main_context->set_proxy_service(proxy_service());
 
   // For incognito, we use the default non-persistent HttpServerPropertiesImpl.

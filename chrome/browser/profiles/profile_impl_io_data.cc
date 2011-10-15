@@ -291,11 +291,7 @@ void ProfileImplIOData::LazyInitializeInternal(
       io_thread_globals->http_auth_handler_factory.get());
 
   main_context->set_dns_cert_checker(dns_cert_checker());
-  main_context->set_fraudulent_certificate_reporter(
-      fraudulent_certificate_reporter());
   media_request_context_->set_dns_cert_checker(dns_cert_checker());
-  media_request_context_->set_fraudulent_certificate_reporter(
-      fraudulent_certificate_reporter());
 
   main_context->set_proxy_service(proxy_service());
   media_request_context_->set_proxy_service(proxy_service());
