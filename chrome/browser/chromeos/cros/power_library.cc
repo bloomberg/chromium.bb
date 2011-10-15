@@ -53,27 +53,27 @@ class PowerLibraryImpl : public PowerLibrary {
     observers_.RemoveObserver(observer);
   }
 
-  virtual bool line_power_on() const OVERRIDE {
+  virtual bool IsLinePowerOn() const OVERRIDE {
     return status_.line_power_on;
   }
 
-  virtual bool battery_fully_charged() const OVERRIDE {
+  virtual bool IsBatteryFullyCharged() const OVERRIDE {
     return status_.battery_state == chromeos::BATTERY_STATE_FULLY_CHARGED;
   }
 
-  virtual double battery_percentage() const OVERRIDE {
+  virtual double GetBatteryPercentage() const OVERRIDE {
     return status_.battery_percentage;
   }
 
-  virtual bool battery_is_present() const OVERRIDE {
+  virtual bool IsBatteryPresent() const OVERRIDE {
     return status_.battery_is_present;
   }
 
-  virtual base::TimeDelta battery_time_to_empty() const OVERRIDE {
+  virtual base::TimeDelta GetBatteryTimeToEmpty() const OVERRIDE {
     return base::TimeDelta::FromSeconds(status_.battery_time_to_empty);
   }
 
-  virtual base::TimeDelta battery_time_to_full() const OVERRIDE {
+  virtual base::TimeDelta GetBatteryTimeToFull() const OVERRIDE {
     return base::TimeDelta::FromSeconds(status_.battery_time_to_full);
   }
 
@@ -207,34 +207,34 @@ class PowerLibraryStubImpl : public PowerLibrary {
     observers_.RemoveObserver(observer);
   }
 
-  virtual bool line_power_on() const OVERRIDE {
+  virtual bool IsLinePowerOn() const OVERRIDE {
     return !discharging_;
   }
 
-  virtual bool battery_fully_charged() const OVERRIDE {
+  virtual bool IsBatteryFullyCharged() const OVERRIDE {
     return battery_percentage_ == 100;
   }
 
-  virtual double battery_percentage() const OVERRIDE {
+  virtual double GetBatteryPercentage() const OVERRIDE {
     return battery_percentage_;
   }
 
-  virtual bool battery_is_present() const OVERRIDE {
+  virtual bool IsBatteryPresent() const OVERRIDE {
     return true;
   }
 
-  virtual base::TimeDelta battery_time_to_empty() const OVERRIDE {
+  virtual base::TimeDelta GetBatteryTimeToEmpty() const OVERRIDE {
     if (battery_percentage_ == 0)
       return base::TimeDelta::FromSeconds(1);
     else
       return (base::TimeDelta::FromHours(3) * battery_percentage_) / 100;
   }
 
-  virtual base::TimeDelta battery_time_to_full() const OVERRIDE {
+  virtual base::TimeDelta GetBatteryTimeToFull() const OVERRIDE {
     if (battery_percentage_ == 100)
       return base::TimeDelta::FromSeconds(1);
     else
-      return base::TimeDelta::FromHours(3) - battery_time_to_empty();
+      return base::TimeDelta::FromHours(3) - GetBatteryTimeToEmpty();
   }
 
   virtual void CalculateIdleTime(CalculateIdleTimeCallback* callback) OVERRIDE {

@@ -239,27 +239,27 @@ void CrosMock::SetPowerLibraryStatusAreaExpectations() {
   EXPECT_CALL(*mock_power_library_, AddObserver(_))
       .Times(3)
       .RetiresOnSaturation();
-  EXPECT_CALL(*mock_power_library_, battery_fully_charged())
+  EXPECT_CALL(*mock_power_library_, IsBatteryFullyCharged())
       .Times(1)
       .WillRepeatedly((Return(false)))
       .RetiresOnSaturation();
-  EXPECT_CALL(*mock_power_library_, battery_is_present())
+  EXPECT_CALL(*mock_power_library_, IsBatteryPresent())
       .Times(1)
       .WillOnce((Return(true)))
       .RetiresOnSaturation();
-  EXPECT_CALL(*mock_power_library_, battery_percentage())
+  EXPECT_CALL(*mock_power_library_, GetBatteryPercentage())
       .Times(1)
       .WillRepeatedly((Return(42.0)))
       .RetiresOnSaturation();
-  EXPECT_CALL(*mock_power_library_, line_power_on())
+  EXPECT_CALL(*mock_power_library_, IsLinePowerOn())
       .Times(1)
       .WillRepeatedly((Return(false)))
       .RetiresOnSaturation();
-  EXPECT_CALL(*mock_power_library_, battery_time_to_empty())
+  EXPECT_CALL(*mock_power_library_, GetBatteryTimeToEmpty())
       .Times(1)
       .WillRepeatedly((Return(base::TimeDelta::FromMinutes(42))))
       .RetiresOnSaturation();
-  EXPECT_CALL(*mock_power_library_, battery_time_to_full())
+  EXPECT_CALL(*mock_power_library_, GetBatteryTimeToFull())
       .Times(1)
       .WillRepeatedly((Return(base::TimeDelta::FromMinutes(24))))
       .RetiresOnSaturation();

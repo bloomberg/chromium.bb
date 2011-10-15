@@ -358,22 +358,23 @@ void PowerMenuButton::PowerChanged(PowerLibrary* obj) {
 // PowerMenuButton, StatusAreaButton implementation:
 
 void PowerMenuButton::UpdateIconAndLabelInfo() {
-  PowerLibrary* cros = CrosLibrary::Get()->GetPowerLibrary();
+  PowerLibrary* power_lib = CrosLibrary::Get()->GetPowerLibrary();
 
-  battery_is_present_ = cros->battery_is_present();
-  line_power_on_ = cros->line_power_on();
+  battery_is_present_ = power_lib->IsBatteryPresent();
+  line_power_on_ = power_lib->IsLinePowerOn();
 
   // If fully charged, always show 100% even if internal number is a bit less.
-  if (cros->battery_fully_charged()) {
-    // We always call cros->battery_percentage() for test predictability.
-    cros->battery_percentage();
+  if (power_lib->IsBatteryFullyCharged()) {
+    // We always call power_lib->GetBatteryPercentage() for test predictability.
+    power_lib->GetBatteryPercentage();
     battery_percentage_ = 100.0;
   } else {
-    battery_percentage_ = cros->battery_percentage();
+    battery_percentage_ = power_lib->GetBatteryPercentage();
   }
 
-  UpdateBatteryTime(&battery_time_to_full_, cros->battery_time_to_full());
-  UpdateBatteryTime(&battery_time_to_empty_, cros->battery_time_to_empty());
+  UpdateBatteryTime(&battery_time_to_full_, power_lib->GetBatteryTimeToFull());
+  UpdateBatteryTime(&battery_time_to_empty_,
+                    power_lib->GetBatteryTimeToEmpty());
 
   string16 tooltip_text;
   if (!battery_is_present_) {

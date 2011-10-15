@@ -22,12 +22,12 @@ class MockPowerLibrary : public PowerLibrary {
   MOCK_METHOD1(AddObserver, void(Observer*));
   MOCK_METHOD1(RemoveObserver, void(Observer*));
 
-  MOCK_CONST_METHOD0(line_power_on, bool(void));
-  MOCK_CONST_METHOD0(battery_fully_charged, bool(void));
-  MOCK_CONST_METHOD0(battery_percentage, double(void));
-  MOCK_CONST_METHOD0(battery_is_present, bool(void));
-  MOCK_CONST_METHOD0(battery_time_to_empty, base::TimeDelta(void));
-  MOCK_CONST_METHOD0(battery_time_to_full, base::TimeDelta(void));
+  MOCK_CONST_METHOD0(IsLinePowerOn, bool(void));
+  MOCK_CONST_METHOD0(IsBatteryFullyCharged, bool(void));
+  MOCK_CONST_METHOD0(GetBatteryPercentage, double(void));
+  MOCK_CONST_METHOD0(IsBatteryPresent, bool(void));
+  MOCK_CONST_METHOD0(GetBatteryTimeToEmpty, base::TimeDelta(void));
+  MOCK_CONST_METHOD0(GetBatteryTimeToFull, base::TimeDelta(void));
 
   MOCK_METHOD1(CalculateIdleTime, void(CalculateIdleTimeCallback*));
 

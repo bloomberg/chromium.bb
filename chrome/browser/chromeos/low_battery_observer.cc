@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,7 +22,7 @@ LowBatteryObserver::~LowBatteryObserver() {
   Hide();
 }
 
-void LowBatteryObserver::PowerChanged(PowerLibrary* object) {
+void LowBatteryObserver::PowerChanged(PowerLibrary* power_lib) {
   const int limit_min = 15;   // Notification will show when remaining number
                               // of minutes is <= limit.
   const int limit_max = 30;   // Notification will hid when remaining number
@@ -30,14 +30,15 @@ void LowBatteryObserver::PowerChanged(PowerLibrary* object) {
   const int critical = 5;  // Notification will be forced visible if hidden
                            // by user when time remaining <= critical.
 
-  base::TimeDelta remaining = object->battery_time_to_empty();
+  base::TimeDelta remaining = power_lib->GetBatteryTimeToEmpty();
   int remaining_minutes = remaining.InMinutes();
 
   // To simplify the logic - we handle the case of calculating the remaining
   // time as if we were on line power.
   // remaining time of zero means still calculating, this is denoted by
   // base::TimeDelta().
-  bool line_power = object->line_power_on() || remaining == base::TimeDelta();
+  bool line_power = power_lib->IsLinePowerOn() ||
+                    remaining == base::TimeDelta();
 
   // The urgent flag is used to re-notify the user if the power level
   // goes critical. We only want to do this once even if the time remaining

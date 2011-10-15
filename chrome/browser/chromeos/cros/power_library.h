@@ -38,22 +38,22 @@ class PowerLibrary {
   virtual void RemoveObserver(Observer* observer) = 0;
 
   // Whether or not the line power is connected.
-  virtual bool line_power_on() const = 0;
+  virtual bool IsLinePowerOn() const = 0;
 
   // Whether or not the battery is fully charged.
-  virtual bool battery_fully_charged() const = 0;
+  virtual bool IsBatteryFullyCharged() const = 0;
 
   // The percentage [0-100] of remaining battery.
-  virtual double battery_percentage() const = 0;
+  virtual double GetBatteryPercentage() const = 0;
 
   // Whether there is a battery present.
-  virtual bool battery_is_present() const = 0;
+  virtual bool IsBatteryPresent() const = 0;
 
   // The amount of time until battery is empty.
-  virtual base::TimeDelta battery_time_to_empty() const = 0;
+  virtual base::TimeDelta GetBatteryTimeToEmpty() const = 0;
 
   // The amount of time until battery is full.
-  virtual base::TimeDelta battery_time_to_full() const = 0;
+  virtual base::TimeDelta GetBatteryTimeToFull() const = 0;
 
   // Calculates idle time asynchronously. If it encounters some error,
   // it returns -1.

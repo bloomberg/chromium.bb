@@ -346,19 +346,19 @@ void TestingAutomationProvider::GetBatteryInfo(DictionaryValue* args,
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
 
   return_value->SetBoolean("battery_is_present",
-                           power_library->battery_is_present());
-  return_value->SetBoolean("line_power_on", power_library->line_power_on());
-  if (power_library->battery_is_present()) {
+                           power_library->IsBatteryPresent());
+  return_value->SetBoolean("line_power_on", power_library->IsLinePowerOn());
+  if (power_library->IsBatteryPresent()) {
     return_value->SetBoolean("battery_fully_charged",
-                             power_library->battery_fully_charged());
+                             power_library->IsBatteryFullyCharged());
     return_value->SetDouble("battery_percentage",
-                            power_library->battery_percentage());
-    if (power_library->line_power_on()) {
-      int time = power_library->battery_time_to_full().InSeconds();
-      if (time > 0 || power_library->battery_fully_charged())
+                            power_library->GetBatteryPercentage());
+    if (power_library->IsLinePowerOn()) {
+      int time = power_library->GetBatteryTimeToFull().InSeconds();
+      if (time > 0 || power_library->IsBatteryFullyCharged())
         return_value->SetInteger("battery_time_to_full", time);
     } else {
-      int time = power_library->battery_time_to_empty().InSeconds();
+      int time = power_library->GetBatteryTimeToEmpty().InSeconds();
       if (time > 0)
         return_value->SetInteger("battery_time_to_empty", time);
     }
