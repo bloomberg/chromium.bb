@@ -157,7 +157,8 @@ class NetworkIcon {
         bottom_left_badge_(NULL),
         bottom_right_badge_(NULL),
         is_status_bar_(true),
-        connected_network_(NULL) {
+        connected_network_(NULL),
+        roaming_state_(ROAMING_STATE_UNKNOWN) {
   }
 
   // Service path constructor for cached network service icons.
@@ -170,7 +171,8 @@ class NetworkIcon {
         bottom_left_badge_(NULL),
         bottom_right_badge_(NULL),
         is_status_bar_(false),
-        connected_network_(NULL) {
+        connected_network_(NULL),
+        roaming_state_(ROAMING_STATE_UNKNOWN) {
   }
 
   ~NetworkIcon() {
@@ -223,7 +225,19 @@ class NetworkIcon {
         strength_index_ = index;
         dirty = true;
       }
-    } else if (type == TYPE_VPN) {
+    }
+    if (type == TYPE_CELLULAR) {
+      const CellularNetwork* cellular =
+          static_cast<const CellularNetwork*>(network);
+      const SkBitmap* technology_badge = BadgeForNetworkTechnology(cellular);
+      if (technology_badge != bottom_right_badge_)
+        dirty = true;
+      if (cellular->roaming_state() != roaming_state_) {
+        roaming_state_ = cellular->roaming_state();
+        dirty = true;
+      }
+    }
+    if (type == TYPE_VPN) {
       if (cros->connected_network() != connected_network_) {
         connected_network_ = cros->connected_network();
         dirty = true;
@@ -391,6 +405,7 @@ class NetworkIcon {
   const SkBitmap* bottom_right_badge_;
   bool is_status_bar_;
   const Network* connected_network_;  // weak pointer; used for VPN icons.
+  NetworkRoamingState roaming_state_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkIcon);
 };
@@ -403,7 +418,8 @@ NetworkMenuIcon::NetworkMenuIcon(Delegate* delegate, Mode mode)
     : mode_(mode),
       delegate_(delegate),
       ALLOW_THIS_IN_INITIALIZER_LIST(animation_connecting_(this)),
-      last_network_type_(TYPE_WIFI) {
+      last_network_type_(TYPE_WIFI),
+      connecting_network_(NULL) {
   // Generate empty images for blending.
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   const SkBitmap* vpn_badge = rb.GetBitmapNamed(kVpnBadgeId);
