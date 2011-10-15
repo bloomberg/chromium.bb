@@ -8,6 +8,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/printing/print_job_worker_owner.h"
+#include "printing/print_job_constants.h"
 #include "ui/gfx/native_widget_types.h"
 
 class CancelableTask;
@@ -49,7 +50,7 @@ class PrinterQuery : public PrintJobWorkerOwner {
                    gfx::NativeView parent_view,
                    int expected_page_count,
                    bool has_selection,
-                   bool use_overlays,
+                   MarginType margin_type,
                    CancelableTask* callback);
 
   // Updates the current settings with |new_settings| dictionary values.

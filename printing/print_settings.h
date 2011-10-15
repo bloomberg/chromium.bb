@@ -11,6 +11,7 @@
 #include "base/string16.h"
 #include "printing/page_range.h"
 #include "printing/page_setup.h"
+#include "printing/print_job_constants.h"
 #include "printing/printing_export.h"
 #include "ui/gfx/rect.h"
 
@@ -39,6 +40,8 @@ class PRINTING_EXPORT PrintSettings {
   void SetPrinterPrintableArea(gfx::Size const& physical_size_device_units,
                                gfx::Rect const& printable_area_device_units,
                                int units_per_inch);
+
+  void SetCustomMargins(const PageMargins& margins_in_points);
 
   // Equality operator.
   // NOTE: printer_name is NOT tested for equality since it doesn't affect the
@@ -95,10 +98,8 @@ class PRINTING_EXPORT PrintSettings {
   // Indicates if the user only wants to print the current selection.
   bool selection_only;
 
-  // Indicates whether we should use browser-controlled page overlays
-  // (header, footer, margins etc). If it is false, the overlays are
-  // controlled by the renderer.
-  bool use_overlays;
+  // Indicates what kind of margins should be applied to the printable area.
+  MarginType margin_type;
 
   // Cookie generator. It is used to initialize PrintedDocument with its
   // associated PrintSettings, to be sure that each generated PrintedPage is
@@ -137,6 +138,9 @@ class PRINTING_EXPORT PrintSettings {
 
   // True if this printer supports AlphaBlend.
   bool supports_alpha_blend_;
+
+  // If margin type is custom, these are the margins.
+  PageMargins custom_margins_in_points_;
 };
 
 }  // namespace printing

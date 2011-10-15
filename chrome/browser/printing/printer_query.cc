@@ -75,7 +75,7 @@ void PrinterQuery::GetSettings(GetSettingsAskParam ask_user_for_settings,
                                gfx::NativeView parent_view,
                                int expected_page_count,
                                bool has_selection,
-                               bool use_overlays,
+                               MarginType margin_type,
                                CancelableTask* callback) {
   DCHECK_EQ(io_message_loop_, MessageLoop::current());
   DCHECK(!is_print_dialog_box_shown_);
@@ -91,7 +91,7 @@ void PrinterQuery::GetSettings(GetSettingsAskParam ask_user_for_settings,
       parent_view,
       expected_page_count,
       has_selection,
-      use_overlays));
+      margin_type));
 }
 
 void PrinterQuery::SetSettings(const DictionaryValue& new_settings,

@@ -383,11 +383,6 @@ PrintingContext::Result PrintingContextWin::UpdatePrinterSettings(
     return OK;
   }
 
-  // Underlying |settings_| do not have these attributes, so we need to
-  // operate on printer directly, which involves reloading settings.
-  // Therefore, reset the settings anyway.
-  ResetSettings();
-
   HANDLE printer;
   LPWSTR device_name_wide = const_cast<wchar_t*>(device_name.c_str());
   if (!OpenPrinter(device_name_wide, &printer, NULL))

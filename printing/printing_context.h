@@ -98,9 +98,7 @@ class PRINTING_EXPORT PrintingContext {
   // caller owns the returned object.
   static PrintingContext* Create(const std::string& app_locale);
 
-  void set_use_overlays(bool use_overlays) {
-    settings_.use_overlays = use_overlays;
-  }
+  void set_margin_type(MarginType type);
 
   const PrintSettings& settings() const {
     return settings_;

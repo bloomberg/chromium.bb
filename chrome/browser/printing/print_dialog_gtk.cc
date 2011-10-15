@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "printing/metafile.h"
 #include "printing/print_job_constants.h"
+#include "printing/print_settings.h"
 #include "printing/print_settings_initializer_gtk.h"
 
 using printing::PageRanges;
@@ -146,11 +147,13 @@ void PrintDialogGtk::UseDefaultSettings() {
 
   // No page range to initialize for default settings.
   PageRanges ranges_vector;
-  InitPrintSettings(ranges_vector);
+  PrintSettings settings;
+  InitPrintSettings(ranges_vector, &settings);
 }
 
-bool PrintDialogGtk::UpdateSettings(const DictionaryValue& settings,
-                                    const printing::PageRanges& ranges) {
+bool PrintDialogGtk::UpdateSettings(const DictionaryValue& job_settings,
+                                    const printing::PageRanges& ranges,
+                                    printing::PrintSettings* settings) {
   bool collate;
   int color;
   bool landscape;
@@ -159,13 +162,13 @@ bool PrintDialogGtk::UpdateSettings(const DictionaryValue& settings,
   int duplex_mode;
   std::string device_name;
 
-  if (!settings.GetBoolean(printing::kSettingLandscape, &landscape) ||
-      !settings.GetBoolean(printing::kSettingCollate, &collate) ||
-      !settings.GetInteger(printing::kSettingColor, &color) ||
-      !settings.GetBoolean(printing::kSettingPrintToPDF, &print_to_pdf) ||
-      !settings.GetInteger(printing::kSettingDuplexMode, &duplex_mode) ||
-      !settings.GetInteger(printing::kSettingCopies, &copies) ||
-      !settings.GetString(printing::kSettingDeviceName, &device_name)) {
+  if (!job_settings.GetBoolean(printing::kSettingLandscape, &landscape) ||
+      !job_settings.GetBoolean(printing::kSettingCollate, &collate) ||
+      !job_settings.GetInteger(printing::kSettingColor, &color) ||
+      !job_settings.GetBoolean(printing::kSettingPrintToPDF, &print_to_pdf) ||
+      !job_settings.GetInteger(printing::kSettingDuplexMode, &duplex_mode) ||
+      !job_settings.GetInteger(printing::kSettingCopies, &copies) ||
+      !job_settings.GetString(printing::kSettingDeviceName, &device_name)) {
     return false;
   }
 
@@ -220,7 +223,7 @@ bool PrintDialogGtk::UpdateSettings(const DictionaryValue& settings,
       landscape ? GTK_PAGE_ORIENTATION_LANDSCAPE :
                   GTK_PAGE_ORIENTATION_PORTRAIT);
 
-  InitPrintSettings(ranges);
+  InitPrintSettings(ranges, settings);
   return true;
 }
 
@@ -395,9 +398,9 @@ void PrintDialogGtk::OnJobCompleted(GtkPrintJob* print_job, GError* error) {
   Release();
 }
 
-void PrintDialogGtk::InitPrintSettings(const PageRanges& page_ranges) {
-  PrintSettings settings;
+void PrintDialogGtk::InitPrintSettings(const PageRanges& page_ranges,
+                                       PrintSettings* settings) {
   printing::PrintSettingsInitializerGtk::InitPrintSettings(
-      gtk_settings_, page_setup_, page_ranges, false, &settings);
-  context_->InitWithSettings(settings);
+      gtk_settings_, page_setup_, page_ranges, false, settings);
+  context_->InitWithSettings(*settings);
 }

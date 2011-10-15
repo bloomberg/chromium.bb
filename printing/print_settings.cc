@@ -5,6 +5,7 @@
 #include "printing/print_settings.h"
 
 #include "base/atomic_sequence_num.h"
+#include "base/logging.h"
 #include "printing/print_job_constants.h"
 #include "printing/units.h"
 
@@ -114,7 +115,7 @@ PrintSettings::PrintSettings()
       max_shrink(2.0),
       desired_dpi(72),
       selection_only(false),
-      use_overlays(true),
+      margin_type(DEFAULT_MARGINS),
       display_header_footer(false),
       dpi_(0),
       landscape_(false),
@@ -146,34 +147,67 @@ void PrintSettings::SetPrinterPrintableArea(
     gfx::Size const& physical_size_device_units,
     gfx::Rect const& printable_area_device_units,
     int units_per_inch) {
-
   int header_footer_text_height = 0;
-  int margin_printer_units = 0;
-  if (use_overlays) {
+  if (display_header_footer) {
     // Hard-code text_height = 0.5cm = ~1/5 of inch.
     header_footer_text_height = ConvertUnit(kSettingHeaderFooterInterstice,
                                             kPointsPerInch, units_per_inch);
-    // Default margins 1.0cm = ~2/5 of an inch.
-    margin_printer_units = ConvertUnit(1000, kHundrethsMMPerInch,
-                                       units_per_inch);
   }
-  // Start by setting the user configuration
   page_setup_device_units_.Init(physical_size_device_units,
                                 printable_area_device_units,
                                 header_footer_text_height);
 
-
-  // Apply default margins (not user configurable just yet).
-  // Since the font height is half the margin we put the header and footers at
-  // the font height from the margins.
   PageMargins margins;
   margins.header = header_footer_text_height;
   margins.footer = header_footer_text_height;
-  margins.left = margin_printer_units;
-  margins.top = margin_printer_units;
-  margins.right = margin_printer_units;
-  margins.bottom = margin_printer_units;
-  page_setup_device_units_.SetRequestedMargins(margins);
+  switch (margin_type) {
+    case DEFAULT_MARGINS: {
+      // Default margins 1.0cm = ~2/5 of an inch.
+      int margin_printer_units = ConvertUnit(1000, kHundrethsMMPerInch,
+                                             units_per_inch);
+      margins.top = margin_printer_units;
+      margins.bottom = margin_printer_units;
+      margins.left = margin_printer_units;
+      margins.right = margin_printer_units;
+      break;
+    }
+    case NO_MARGINS:
+    case PRINTABLE_AREA_MARGINS: {
+      margins.top = 0;
+      margins.bottom = 0;
+      margins.left = 0;
+      margins.right = 0;
+      break;
+    }
+    case CUSTOM_MARGINS: {
+      margins.top = ConvertUnitDouble(custom_margins_in_points_.top,
+                                      printing::kPointsPerInch,
+                                      units_per_inch);
+      margins.bottom = ConvertUnitDouble(custom_margins_in_points_.bottom,
+                                         printing::kPointsPerInch,
+                                         units_per_inch);
+      margins.left = ConvertUnitDouble(custom_margins_in_points_.left,
+                                       printing::kPointsPerInch,
+                                       units_per_inch);
+      margins.right = ConvertUnitDouble(custom_margins_in_points_.right,
+                                        printing::kPointsPerInch,
+                                        units_per_inch);
+      break;
+    }
+    default: {
+      NOTREACHED();
+    }
+  }
+
+  if (margin_type == DEFAULT_MARGINS || margin_type == PRINTABLE_AREA_MARGINS)
+    page_setup_device_units_.SetRequestedMargins(margins);
+  else
+    page_setup_device_units_.ForceRequestedMargins(margins);
+}
+
+void PrintSettings::SetCustomMargins(const PageMargins& margins_in_points) {
+  custom_margins_in_points_ = margins_in_points;
+  margin_type = CUSTOM_MARGINS;
 }
 
 bool PrintSettings::Equals(const PrintSettings& rhs) const {

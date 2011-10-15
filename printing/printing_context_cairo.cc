@@ -163,7 +163,7 @@ PrintingContext::Result PrintingContextCairo::UpdatePrinterSettings(
     print_dialog_->AddRefToDialog();
   }
 
-  if (!print_dialog_->UpdateSettings(job_settings, ranges))
+  if (!print_dialog_->UpdateSettings(job_settings, ranges, &settings_))
     return OnError();
 
   return OK;

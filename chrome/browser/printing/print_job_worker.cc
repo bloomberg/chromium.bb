@@ -77,7 +77,7 @@ void PrintJobWorker::GetSettings(bool ask_user_for_settings,
                                  gfx::NativeView parent_view,
                                  int document_page_count,
                                  bool has_selection,
-                                 bool use_overlays) {
+                                 MarginType margin_type) {
   DCHECK_EQ(message_loop(), MessageLoop::current());
   DCHECK_EQ(page_number_, PageNumber::npos());
 
@@ -87,7 +87,7 @@ void PrintJobWorker::GetSettings(bool ask_user_for_settings,
   // on the thread where the PrintDlgEx is called, and definitely both calls
   // should happen on the same thread. See http://crbug.com/73466
   // MessageLoop::current()->SetNestableTasksAllowed(true);
-  printing_context_->set_use_overlays(use_overlays);
+  printing_context_->set_margin_type(margin_type);
 
   if (ask_user_for_settings) {
     BrowserThread::PostTask(

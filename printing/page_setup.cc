@@ -37,7 +37,8 @@ bool PageMargins::Equals(const PageMargins& rhs) const {
       bottom == rhs.bottom;
 }
 
-PageSetup::PageSetup() : text_height_(0) {
+PageSetup::PageSetup() {
+  Clear();
 }
 
 PageSetup::~PageSetup() {}
@@ -75,56 +76,19 @@ void PageSetup::Init(const gfx::Size& physical_size,
   printable_area_ = printable_area;
   text_height_ = text_height;
 
-  // Calculate the effective margins. The tricky part.
-  effective_margins_.header = std::max(requested_margins_.header,
-                                       printable_area_.y());
-  effective_margins_.footer = std::max(requested_margins_.footer,
-                                       physical_size.height() -
-                                           printable_area_.bottom());
-  effective_margins_.left = std::max(requested_margins_.left,
-                                     printable_area_.x());
-  effective_margins_.top = std::max(std::max(requested_margins_.top,
-                                             printable_area_.y()),
-                                    effective_margins_.header + text_height);
-  effective_margins_.right = std::max(requested_margins_.right,
-                                      physical_size.width() -
-                                          printable_area_.right());
-  effective_margins_.bottom = std::max(std::max(requested_margins_.bottom,
-                                                physical_size.height() -
-                                                    printable_area_.bottom()),
-                                       effective_margins_.footer + text_height);
-
-  // Calculate the overlay area. If the margins are excessive, the overlay_area
-  // size will be (0, 0).
-  overlay_area_.set_x(effective_margins_.left);
-  overlay_area_.set_y(effective_margins_.header);
-  overlay_area_.set_width(std::max(0,
-                                   physical_size.width() -
-                                       effective_margins_.right -
-                                       overlay_area_.x()));
-  overlay_area_.set_height(std::max(0,
-                                    physical_size.height() -
-                                        effective_margins_.footer -
-                                        overlay_area_.y()));
-
-  // Calculate the content area. If the margins are excessive, the content_area
-  // size will be (0, 0).
-  content_area_.set_x(effective_margins_.left);
-  content_area_.set_y(effective_margins_.top);
-  content_area_.set_width(std::max(0,
-                                   physical_size.width() -
-                                       effective_margins_.right -
-                                       content_area_.x()));
-  content_area_.set_height(std::max(0,
-                                    physical_size.height() -
-                                        effective_margins_.bottom -
-                                        content_area_.y()));
+  CalculateSizesWithinRect(printable_area_);
 }
 
 void PageSetup::SetRequestedMargins(const PageMargins& requested_margins) {
   requested_margins_ = requested_margins;
+  if (printable_area_.width() && printable_area_.height())
+    CalculateSizesWithinRect(printable_area_);
+}
+
+void PageSetup::ForceRequestedMargins(const PageMargins& requested_margins) {
+  requested_margins_ = requested_margins;
   if (physical_size_.width() && physical_size_.height())
-    Init(physical_size_, printable_area_, text_height_);
+    CalculateSizesWithinRect(gfx::Rect(physical_size_));
 }
 
 void PageSetup::FlipOrientation() {
@@ -138,6 +102,53 @@ void PageSetup::FlipOrientation() {
                                  printable_area_.width());
     Init(new_size, new_printable_area, text_height_);
   }
+}
+
+void PageSetup::CalculateSizesWithinRect(const gfx::Rect& bounds) {
+  // Calculate the effective margins. The tricky part.
+  effective_margins_.header = std::max(requested_margins_.header,
+                                       bounds.y());
+  effective_margins_.footer = std::max(requested_margins_.footer,
+                                       physical_size_.height() -
+                                           bounds.bottom());
+  effective_margins_.left = std::max(requested_margins_.left,
+                                     bounds.x());
+  effective_margins_.top = std::max(std::max(requested_margins_.top,
+                                             bounds.y()),
+                                    effective_margins_.header + text_height_);
+  effective_margins_.right = std::max(requested_margins_.right,
+                                      physical_size_.width() -
+                                          bounds.right());
+  effective_margins_.bottom =
+      std::max(std::max(requested_margins_.bottom,
+                        physical_size_.height() - bounds.bottom()),
+               effective_margins_.footer + text_height_);
+
+  // Calculate the overlay area. If the margins are excessive, the overlay_area
+  // size will be (0, 0).
+  overlay_area_.set_x(effective_margins_.left);
+  overlay_area_.set_y(effective_margins_.header);
+  overlay_area_.set_width(std::max(0,
+                                   physical_size_.width() -
+                                       effective_margins_.right -
+                                       overlay_area_.x()));
+  overlay_area_.set_height(std::max(0,
+                                    physical_size_.height() -
+                                        effective_margins_.footer -
+                                        overlay_area_.y()));
+
+  // Calculate the content area. If the margins are excessive, the content_area
+  // size will be (0, 0).
+  content_area_.set_x(effective_margins_.left);
+  content_area_.set_y(effective_margins_.top);
+  content_area_.set_width(std::max(0,
+                                   physical_size_.width() -
+                                       effective_margins_.right -
+                                       content_area_.x()));
+  content_area_.set_height(std::max(0,
+                                    physical_size_.height() -
+                                        effective_margins_.bottom -
+                                        content_area_.y()));
 }
 
 }  // namespace printing

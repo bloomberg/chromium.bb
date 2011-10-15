@@ -9,6 +9,7 @@
 #include <gtk/gtk.h>
 #include <gtk/gtkprintunixdialog.h>
 
+#include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -19,6 +20,7 @@
 
 namespace printing {
 class Metafile;
+class PrintSettings;
 }
 
 using printing::PrintingContextCairo;
@@ -34,15 +36,16 @@ class PrintDialogGtk
       PrintingContextCairo* context);
 
   // printing::PrintDialogGtkInterface implementation.
-  virtual void UseDefaultSettings();
-  virtual bool UpdateSettings(const base::DictionaryValue& settings,
-                              const printing::PageRanges& ranges);
+  virtual void UseDefaultSettings() OVERRIDE;
+  virtual bool UpdateSettings(const base::DictionaryValue& job_settings,
+                              const printing::PageRanges& ranges,
+                              printing::PrintSettings* settings) OVERRIDE;
   virtual void ShowDialog(
-      PrintingContextCairo::PrintSettingsCallback* callback);
+      PrintingContextCairo::PrintSettingsCallback* callback) OVERRIDE;
   virtual void PrintDocument(const printing::Metafile* metafile,
-                             const string16& document_name);
-  virtual void AddRefToDialog();
-  virtual void ReleaseDialog();
+                             const string16& document_name) OVERRIDE;
+  virtual void AddRefToDialog() OVERRIDE;
+  virtual void ReleaseDialog() OVERRIDE;
 
  private:
   friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
@@ -64,8 +67,9 @@ class PrintDialogGtk
   void OnJobCompleted(GtkPrintJob* print_job, GError* error);
 
   // Helper function for initializing |context_|'s PrintSettings with a given
-  // set of |page_ranges|.
-  void InitPrintSettings(const printing::PageRanges& page_ranges);
+  // set of |page_ranges| and |settings|.
+  void InitPrintSettings(const printing::PageRanges& page_ranges,
+                         printing::PrintSettings* settings);
 
   // Printing dialog callback.
   PrintingContextCairo::PrintSettingsCallback* callback_;

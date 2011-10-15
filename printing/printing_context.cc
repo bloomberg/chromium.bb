@@ -4,7 +4,9 @@
 
 #include "printing/printing_context.h"
 
+#include "base/logging.h"
 #include "base/values.h"
+#include "printing/page_setup.h"
 #include "printing/print_settings_initializer.h"
 
 namespace printing {
@@ -17,6 +19,11 @@ PrintingContext::PrintingContext(const std::string& app_locale)
 }
 
 PrintingContext::~PrintingContext() {
+}
+
+void PrintingContext::set_margin_type(MarginType type) {
+  DCHECK(type != CUSTOM_MARGINS);
+  settings_.margin_type = type;
 }
 
 void PrintingContext::ResetSettings() {
@@ -37,6 +44,51 @@ PrintingContext::Result PrintingContext::OnError() {
 PrintingContext::Result PrintingContext::UpdatePrintSettings(
     const base::DictionaryValue& job_settings,
     const PageRanges& ranges) {
+  ResetSettings();
+
+  if (!job_settings.GetBoolean(printing::kSettingHeaderFooterEnabled,
+                               &settings_.display_header_footer)) {
+    NOTREACHED();
+  }
+
+  int margin_type = DEFAULT_MARGINS;
+  if (!job_settings.GetInteger(printing::kSettingMarginsType, &margin_type) ||
+      (margin_type != DEFAULT_MARGINS &&
+       margin_type != NO_MARGINS &&
+       margin_type != CUSTOM_MARGINS &&
+       margin_type != PRINTABLE_AREA_MARGINS)) {
+    NOTREACHED();
+  }
+  settings_.margin_type = static_cast<MarginType>(margin_type);
+
+  if (margin_type == CUSTOM_MARGINS) {
+    double top_margin_in_points = 0;
+    double bottom_margin_in_points = 0;
+    double left_margin_in_points = 0;
+    double right_margin_in_points = 0;
+    DictionaryValue* custom_margins;
+    if (!job_settings.GetDictionary(printing::kSettingMarginsCustom,
+                                    &custom_margins) ||
+        !custom_margins->GetDouble(printing::kSettingMarginTop,
+                                   &top_margin_in_points) ||
+        !custom_margins->GetDouble(printing::kSettingMarginBottom,
+                                   &bottom_margin_in_points) ||
+        !custom_margins->GetDouble(printing::kSettingMarginLeft,
+                                   &left_margin_in_points) ||
+        !custom_margins->GetDouble(printing::kSettingMarginRight,
+                                   &right_margin_in_points)) {
+      NOTREACHED();
+    }
+    PageMargins margins_in_points;
+    margins_in_points.Clear();
+    margins_in_points.top = top_margin_in_points;
+    margins_in_points.bottom = bottom_margin_in_points;
+    margins_in_points.left = left_margin_in_points;
+    margins_in_points.right = right_margin_in_points;
+
+    settings_.SetCustomMargins(margins_in_points);
+  }
+
   PrintingContext::Result result = UpdatePrinterSettings(job_settings, ranges);
   printing::PrintSettingsInitializer::InitHeaderFooterStrings(job_settings,
                                                               &settings_);

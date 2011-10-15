@@ -12,6 +12,7 @@
 #include "base/threading/thread.h"
 #include "printing/page_number.h"
 #include "printing/printing_context.h"
+#include "printing/print_job_constants.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace base {
@@ -44,7 +45,7 @@ class PrintJobWorker : public base::Thread {
                    gfx::NativeView parent_view,
                    int document_page_count,
                    bool has_selection,
-                   bool use_overlays);
+                   MarginType margin_type);
 
   // Set the new print settings. This function takes ownership of
   // |new_settings|.

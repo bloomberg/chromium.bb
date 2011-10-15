@@ -46,7 +46,11 @@ class PRINTING_EXPORT PageSetup {
   void Init(const gfx::Size& physical_size, const gfx::Rect& printable_area,
             int text_height);
 
+  // Use |requested_margins| as long as they fall inside the printable area.
   void SetRequestedMargins(const PageMargins& requested_margins);
+
+  // Ignore the printable area, and set the margins to |requested_margins|.
+  void ForceRequestedMargins(const PageMargins& requested_margins);
 
   // Flips the orientation of the page and recalculates all page areas.
   void FlipOrientation();
@@ -60,6 +64,10 @@ class PRINTING_EXPORT PageSetup {
   }
 
  private:
+  // Calculate overlay_area_, effective_margins_, and content_area_, based on
+  // a constraint of |bounds|.
+  void CalculateSizesWithinRect(const gfx::Rect& bounds);
+
   // Physical size of the page, including non-printable margins.
   gfx::Size physical_size_;
 

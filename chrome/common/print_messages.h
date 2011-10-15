@@ -12,6 +12,7 @@
 #include "base/shared_memory.h"
 #include "ipc/ipc_message_macros.h"
 #include "printing/page_size_margins.h"
+#include "printing/print_job_constants.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 
@@ -59,6 +60,8 @@ struct PrintMsg_PrintPages_Params {
 #endif  // CHROME_COMMON_PRINT_MESSAGES_H_
 
 #define IPC_MESSAGE_START PrintMsgStart
+
+IPC_ENUM_TRAITS(printing::MarginType)
 
 // Parameters for a render request.
 IPC_STRUCT_TRAITS_BEGIN(PrintMsg_Print_Params)
@@ -239,7 +242,7 @@ IPC_STRUCT_BEGIN(PrintHostMsg_ScriptedPrint_Params)
   IPC_STRUCT_MEMBER(int, cookie)
   IPC_STRUCT_MEMBER(int, expected_pages_count)
   IPC_STRUCT_MEMBER(bool, has_selection)
-  IPC_STRUCT_MEMBER(bool, use_overlays)
+  IPC_STRUCT_MEMBER(printing::MarginType, margin_type)
 IPC_STRUCT_END()
 
 

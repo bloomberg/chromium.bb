@@ -152,83 +152,17 @@ bool PrintingNodeOrPdfFrame(const WebFrame* frame, const WebNode& node) {
   return mime == "application/pdf";
 }
 
-void SetMarginsForPDF(PrintMsg_Print_Params* settings) {
-  // This is the wrong way to do this.  But the pipeline for the right way is
-  // too long.  This will be removed soon. http://crbug.com/92000
-  settings->margin_top = 0;
-  settings->margin_left = 0;
-  settings->printable_size.set_width(settings->page_size.width());
-  settings->printable_size.set_height(settings->page_size.height());
-}
-
-// Get the margins option selected and set custom margins appropriately.
-void SetCustomMarginsIfSelected(const DictionaryValue& job_settings,
-                                PrintMsg_PrintPages_Params* settings) {
-  int margin_type = printing::DEFAULT_MARGINS;
-  if (!job_settings.GetInteger(printing::kSettingMarginsType, &margin_type)) {
-    NOTREACHED();
+void SetMarginsForPdf(DictionaryValue* job_settings, bool force_no_margins) {
+  // TODO(vandebo) When it's plumbed through, check if the plugin wants us to
+  // scale or not.  For now, assume the answer is yes.
+  if (force_no_margins) {
+    job_settings->SetInteger(printing::kSettingMarginsType,
+                             printing::NO_MARGINS);
+  } else {
+    job_settings->SetInteger(printing::kSettingMarginsType,
+                             printing::PRINTABLE_AREA_MARGINS);
   }
 
-  if (margin_type == printing::DEFAULT_MARGINS)
-    return;
-
-  double custom_margin_top_in_points = 0;
-  double custom_margin_left_in_points = 0;
-  double custom_margin_right_in_points = 0;
-  double custom_margin_bottom_in_points = 0;
-  if (margin_type == printing::CUSTOM_MARGINS) {
-    DictionaryValue* custom_margins;
-    if (!job_settings.GetDictionary(printing::kSettingMarginsCustom,
-                                    &custom_margins)) {
-      NOTREACHED();
-      return;
-    }
-    if (!custom_margins->GetDouble(printing::kSettingMarginTop,
-                                   &custom_margin_top_in_points) ||
-        !custom_margins->GetDouble(printing::kSettingMarginLeft,
-                                   &custom_margin_left_in_points) ||
-        !custom_margins->GetDouble(printing::kSettingMarginRight,
-                                   &custom_margin_right_in_points) ||
-        !custom_margins->GetDouble(printing::kSettingMarginBottom,
-                                   &custom_margin_bottom_in_points)) {
-      NOTREACHED();
-      return;
-    }
-  }
-
-  int dpi = GetDPI(&settings->params);
-  double custom_margin_top_in_dots = ConvertUnitDouble(
-      custom_margin_top_in_points, printing::kPointsPerInch, dpi);
-  double custom_margin_left_in_dots = ConvertUnitDouble(
-      custom_margin_left_in_points, printing::kPointsPerInch, dpi);
-  double custom_margin_right_in_dots = ConvertUnitDouble(
-      custom_margin_right_in_points, printing::kPointsPerInch, dpi);
-  double custom_margin_bottom_in_dots = ConvertUnitDouble(
-      custom_margin_bottom_in_points, printing::kPointsPerInch, dpi);
-
-
-  if (custom_margin_left_in_dots < 0 || custom_margin_right_in_dots < 0 ||
-      custom_margin_top_in_dots < 0 || custom_margin_bottom_in_dots < 0) {
-    NOTREACHED();
-    return;
-  }
-
-  if (settings->params.page_size.width() < custom_margin_left_in_dots +
-          custom_margin_right_in_dots ||
-      settings->params.page_size.height() < custom_margin_top_in_dots +
-          custom_margin_bottom_in_dots) {
-    NOTREACHED();
-    return;
-  }
-
-  settings->params.margin_top = custom_margin_top_in_dots;
-  settings->params.margin_left = custom_margin_left_in_dots;
-  settings->params.printable_size.set_width(
-      settings->params.page_size.width() - custom_margin_right_in_dots -
-          custom_margin_left_in_dots);
-  settings->params.printable_size.set_height(
-      settings->params.page_size.height() - custom_margin_bottom_in_dots -
-          custom_margin_top_in_dots);
 }
 
 // Get the (x, y) coordinate from where printing of the current text should
@@ -582,13 +516,13 @@ void PrintWebViewHelper::OnPrintForPrintPreview(
     return;
   }
 
-  if (!UpdatePrintSettings(job_settings, false)) {
+  WebFrame* pdf_frame = pdf_element.document().frame();
+  if (!UpdatePrintSettings(pdf_frame, pdf_element, job_settings, false)) {
     LOG(ERROR) << "UpdatePrintSettings failed";
     DidFinishPrinting(FAIL_PRINT);
     return;
   }
 
-  WebFrame* pdf_frame = pdf_element.document().frame();
   scoped_ptr<PrepareFrameAndViewForPrint> prepare;
   prepare.reset(new PrepareFrameAndViewForPrint(print_pages_params_->params,
                                                 pdf_frame, pdf_element));
@@ -636,7 +570,8 @@ void PrintWebViewHelper::OnPrintPreview(const DictionaryValue& settings) {
   DCHECK(is_preview_);
   print_preview_context_.OnPrintPreview();
 
-  if (!UpdatePrintSettings(settings, true)) {
+  if (!UpdatePrintSettings(print_preview_context_.frame(),
+                           print_preview_context_.node(), settings, true)) {
     if (print_preview_context_.last_error() != PREVIEW_ERROR_BAD_SETTING) {
       Send(new PrintHostMsg_PrintPreviewInvalidPrinterSettings(
           routing_id(), print_pages_params_->params.document_cookie));
@@ -1109,11 +1044,26 @@ bool PrintWebViewHelper::InitPrintSettingsAndPrepareFrame(
 }
 
 bool PrintWebViewHelper::UpdatePrintSettings(
-    const DictionaryValue& job_settings, bool generating_preview) {
-  if (job_settings.empty()) {
+    WebKit::WebFrame* frame, const WebKit::WebNode& node,
+    const DictionaryValue& passed_job_settings, bool generating_preview) {
+  DCHECK(is_preview_);
+  const DictionaryValue* job_settings = &passed_job_settings;
+  DictionaryValue modified_job_settings;
+  if (job_settings->empty()) {
     if (generating_preview)
       print_preview_context_.set_error(PREVIEW_ERROR_BAD_SETTING);
     return false;
+  }
+
+  bool is_pdf = PrintingNodeOrPdfFrame(frame, node);
+  if (is_pdf || !generating_preview) {
+    modified_job_settings.MergeDictionary(job_settings);
+    SetMarginsForPdf(&modified_job_settings, !generating_preview);
+    if (is_pdf) {
+      modified_job_settings.SetBoolean(printing::kSettingHeaderFooterEnabled,
+                                       false);
+    }
+    job_settings = &modified_job_settings;
   }
 
   // Send the cookie so that UpdatePrintSettings can reuse PrinterQuery when
@@ -1122,7 +1072,7 @@ bool PrintWebViewHelper::UpdatePrintSettings(
       print_pages_params_->params.document_cookie : 0;
   PrintMsg_PrintPages_Params settings;
   Send(new PrintHostMsg_UpdatePrintSettings(routing_id(),
-      cookie, job_settings, &settings));
+      cookie, *job_settings, &settings));
   print_pages_params_.reset(new PrintMsg_PrintPages_Params(settings));
 
   if (PrintMsg_Print_Params_IsEmpty(settings.params)) {
@@ -1150,20 +1100,15 @@ bool PrintWebViewHelper::UpdatePrintSettings(
 
   if (generating_preview) {
     // Validate expected print preview settings.
-    if (!job_settings.GetString(printing::kPreviewUIAddr,
-                                &(settings.params.preview_ui_addr)) ||
-        !job_settings.GetInteger(printing::kPreviewRequestID,
-                                 &(settings.params.preview_request_id)) ||
-        !job_settings.GetBoolean(printing::kIsFirstRequest,
-                                 &(settings.params.is_first_request))) {
+    if (!job_settings->GetString(printing::kPreviewUIAddr,
+                                 &(settings.params.preview_ui_addr)) ||
+        !job_settings->GetInteger(printing::kPreviewRequestID,
+                                  &(settings.params.preview_request_id)) ||
+        !job_settings->GetBoolean(printing::kIsFirstRequest,
+                                  &(settings.params.is_first_request))) {
       NOTREACHED();
       print_preview_context_.set_error(PREVIEW_ERROR_BAD_SETTING);
       return false;
-    }
-
-    if (settings.params.is_first_request &&
-        !print_preview_context_.IsModifiable()) {
-      settings.params.display_header_footer = false;
     }
 
     // Margins: Send default page layout to browser process.
@@ -1175,7 +1120,6 @@ bool PrintWebViewHelper::UpdatePrintSettings(
       Send(new PrintHostMsg_DidGetDefaultPageLayout(routing_id(),
                                                     default_page_layout));
     }
-    SetCustomMarginsIfSelected(job_settings, &settings);
 
     // Header/Footer: Set |header_footer_info_|.
     if (settings.params.display_header_footer) {
@@ -1187,12 +1131,6 @@ bool PrintWebViewHelper::UpdatePrintSettings(
       header_footer_info_->SetString(printing::kSettingHeaderFooterTitle,
                                      settings.params.title);
     }
-  }
-
-  if ((is_preview_ && !generating_preview) ||
-      PrintingNodeOrPdfFrame(print_preview_context_.frame(),
-                             print_preview_context_.node())) {
-    SetMarginsForPDF(&settings.params);
   }
 
   print_pages_params_.reset(new PrintMsg_PrintPages_Params(settings));
@@ -1218,7 +1156,7 @@ bool PrintWebViewHelper::GetPrintSettingsFromUser(WebKit::WebFrame* frame,
   params.cookie = print_pages_params_->params.document_cookie;
   params.has_selection = frame->hasSelection();
   params.expected_pages_count = expected_pages_count;
-  params.use_overlays = use_browser_overlays;
+  params.margin_type = printing::DEFAULT_MARGINS;
 
   Send(new PrintHostMsg_DidShowPrintDialog(routing_id()));
 

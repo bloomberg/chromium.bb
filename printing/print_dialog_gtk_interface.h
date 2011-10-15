@@ -11,6 +11,7 @@
 namespace printing {
 
 class Metafile;
+class PrintSettings;
 
 // An interface for GTK printing dialogs. Classes that live outside of
 // printing/ can implement this interface and get threading requirements
@@ -20,12 +21,13 @@ class PrintDialogGtkInterface {
   // Tell the dialog to use the default print setting.
   virtual void UseDefaultSettings() = 0;
 
-  // Update the dialog to use |settings| and |ranges|, where |settings| is a
-  // dictionary of settings with possible keys from
+  // Update the dialog to use |job_settings| and |ranges|, where |job_settings|
+  // is a dictionary of settings with possible keys from
   // printing/print_job_constants.h. Only used when printing without the system
   // print dialog. E.g. for Print Preview. Returns false on error.
-  virtual bool UpdateSettings(const base::DictionaryValue& settings,
-                              const PageRanges& ranges) = 0;
+  virtual bool UpdateSettings(const base::DictionaryValue& job_settings,
+                              const PageRanges& ranges,
+                              PrintSettings* settings) = 0;
 
   // Shows the dialog and handles the response with |callback|. Only used when
   // printing with the native print dialog.
