@@ -12,6 +12,7 @@
 #include "base/metrics/histogram.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/tracked_objects.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/content_browser_client.h"
 #include "content/common/hi_res_timer_manager.h"
@@ -241,11 +242,10 @@ void BrowserMainParts::MainMessageLoopStart() {
 
   main_message_loop_.reset(new MessageLoop(MessageLoop::TYPE_UI));
 
-  // TODO(viettrungluu): should these really go before setting the thread name?
+  InitializeMainThread();
+
   system_monitor_.reset(new base::SystemMonitor);
   hi_res_timer_manager_.reset(new HighResolutionTimerManager);
-
-  InitializeMainThread();
 
   network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
 
@@ -273,6 +273,10 @@ void BrowserMainParts::InitializeMainThread() {
   const char* kThreadName = "CrBrowserMain";
   base::PlatformThread::SetName(kThreadName);
   main_message_loop().set_thread_name(kThreadName);
+
+#if defined(TRACK_ALL_TASK_OBJECTS)
+  tracked_objects::ThreadData::InitializeThreadContext(kThreadName);
+#endif  // TRACK_ALL_TASK_OBJECTS
 
   // Register the main thread by instantiating it, but don't call any methods.
   main_thread_.reset(new BrowserThread(BrowserThread::UI,
