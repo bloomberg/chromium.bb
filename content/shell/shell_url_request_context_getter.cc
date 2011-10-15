@@ -13,12 +13,13 @@
 #include "net/base/dnsrr_resolver.h"
 #include "net/base/host_resolver.h"
 #include "net/http/http_auth_handler_factory.h"
+#include "net/http/http_server_properties_impl.h"
 #include "net/http/http_cache.h"
 #include "net/base/origin_bound_cert_service.h"
 #include "net/base/ssl_config_service_defaults.h"
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "net/url_request/url_request_context_storage.h"
 #include "net/url_request/url_request_job_factory.h"
 
 namespace content {
@@ -38,6 +39,35 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (!url_request_context_) {
+    url_request_context_ = new net::URLRequestContext();
+    storage_.reset(new net::URLRequestContextStorage(url_request_context_));
+
+    storage_->set_cookie_store(new net::CookieMonster(NULL, NULL));
+    storage_->set_origin_bound_cert_service(new net::OriginBoundCertService(
+        new net::DefaultOriginBoundCertStore(NULL)));
+    url_request_context_->set_accept_language("en-us,en");
+    url_request_context_->set_accept_charset("iso-8859-1,*,utf-8");
+
+    scoped_ptr<net::ProxyConfigService> proxy_config_service(
+        net::ProxyService::CreateSystemProxyConfigService(
+            io_loop_, file_loop_));
+    storage_->set_host_resolver(
+        net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism,
+                                      net::HostResolver::kDefaultRetryAttempts,
+                                      NULL));
+    storage_->set_cert_verifier(new net::CertVerifier);
+    // TODO(jam): use v8 if possible, look at chrome code.
+    storage_->set_proxy_service(
+        net::ProxyService::CreateUsingSystemProxyResolver(
+        proxy_config_service.release(),
+        0,
+        NULL));
+    storage_->set_ssl_config_service(new net::SSLConfigServiceDefaults);
+    storage_->set_http_auth_handler_factory(
+        net::HttpAuthHandlerFactory::CreateDefault(
+            url_request_context_->host_resolver()));
+    storage_->set_http_server_properties(new net::HttpServerPropertiesImpl);
+
     FilePath cache_path = base_path_.Append(FILE_PATH_LITERAL("Cache"));
     net::HttpCache::DefaultBackend* main_backend =
         new net::HttpCache::DefaultBackend(
@@ -47,71 +77,24 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
             BrowserThread::GetMessageLoopProxyForThread(
                 BrowserThread::CACHE));
 
-    net::NetLog* net_log = NULL;
-    host_resolver_.reset(net::CreateSystemHostResolver(
-        net::HostResolver::kDefaultParallelism,
-        net::HostResolver::kDefaultRetryAttempts,
-        net_log));
-
-    cert_verifier_.reset(new net::CertVerifier());
-
-    origin_bound_cert_service_.reset(new net::OriginBoundCertService(
-        new net::DefaultOriginBoundCertStore(NULL)));
-
-    dnsrr_resolver_.reset(new net::DnsRRResolver());
-
-    net::ProxyConfigService* proxy_config_service =
-        net::ProxyService::CreateSystemProxyConfigService(
-            io_loop_,
-            file_loop_);
-
-    // TODO(jam): use v8 if possible, look at chrome code.
-    proxy_service_.reset(
-        net::ProxyService::CreateUsingSystemProxyResolver(
-        proxy_config_service,
-        0,
-        net_log));
-
-    url_security_manager_.reset(net::URLSecurityManager::Create(NULL, NULL));
-
-    std::vector<std::string> supported_schemes;
-    base::SplitString("basic,digest,ntlm,negotiate", ',', &supported_schemes);
-    http_auth_handler_factory_.reset(
-        net::HttpAuthHandlerRegistryFactory::Create(
-            supported_schemes,
-            url_security_manager_.get(),
-            host_resolver_.get(),
-            std::string(),  // gssapi_library_name
-            false,  // negotiate_disable_cname_lookup
-            false)); // negotiate_enable_port
+    storage_->set_dnsrr_resolver(new net::DnsRRResolver());
 
     net::HttpCache* main_cache = new net::HttpCache(
-        host_resolver_.get(),
-        cert_verifier_.get(),
-        origin_bound_cert_service_.get(),
-        dnsrr_resolver_.get(),
+        url_request_context_->host_resolver(),
+        url_request_context_->cert_verifier(),
+        url_request_context_->origin_bound_cert_service(),
+        url_request_context_->dnsrr_resolver(),
         NULL, //dns_cert_checker
-        proxy_service_.get(),
-        new net::SSLConfigServiceDefaults(),
-        http_auth_handler_factory_.get(),
+        url_request_context_->proxy_service(),
+        url_request_context_->ssl_config_service(),
+        url_request_context_->http_auth_handler_factory(),
         NULL,  // network_delegate
-        NULL,  // http_server_properties
-        net_log,
+        url_request_context_->http_server_properties(),
+        NULL,
         main_backend);
-    main_http_factory_.reset(main_cache);
+    storage_->set_http_transaction_factory(main_cache);
 
-    scoped_refptr<net::CookieStore> cookie_store =
-        new net::CookieMonster(NULL, NULL);
-
-    url_request_context_ = new net::URLRequestContext();
-    job_factory_.reset(new net::URLRequestJobFactory);
-    url_request_context_->set_job_factory(job_factory_.get());
-    url_request_context_->set_http_transaction_factory(main_cache);
-    url_request_context_->set_origin_bound_cert_service(
-        origin_bound_cert_service_.get());
-    url_request_context_->set_dnsrr_resolver(dnsrr_resolver_.get());
-    url_request_context_->set_proxy_service(proxy_service_.get());
-    url_request_context_->set_cookie_store(cookie_store);
+    storage_->set_job_factory(new net::URLRequestJobFactory);
   }
 
   return url_request_context_;
@@ -127,6 +110,10 @@ net::CookieStore* ShellURLRequestContextGetter::DONTUSEME_GetCookieStore() {
 scoped_refptr<base::MessageLoopProxy>
     ShellURLRequestContextGetter::GetIOMessageLoopProxy() const {
   return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
+}
+
+net::HostResolver* ShellURLRequestContextGetter::host_resolver() {
+  return url_request_context_->host_resolver();
 }
 
 }  // namespace content

@@ -15,15 +15,8 @@
 class MessageLoop;
 
 namespace net {
-class CertVerifier;
-class DnsRRResolver;
 class HostResolver;
-class HttpAuthHandlerFactory;
-class HttpTransactionFactory;
-class ProxyService;
-class OriginBoundCertService;
-class URLRequestJobFactory;
-class URLSecurityManager;
+class URLRequestContextStorage;
 }
 
 namespace content {
@@ -42,24 +35,15 @@ class ShellURLRequestContextGetter : public net::URLRequestContextGetter {
   virtual scoped_refptr<base::MessageLoopProxy>
       GetIOMessageLoopProxy() const OVERRIDE;
 
-  net::HostResolver* host_resolver() { return host_resolver_.get(); }
+  net::HostResolver* host_resolver();
 
  private:
   FilePath base_path_;
   MessageLoop* io_loop_;
   MessageLoop* file_loop_;
 
-  scoped_ptr<net::URLRequestJobFactory> job_factory_;
   scoped_refptr<net::URLRequestContext> url_request_context_;
-
-  scoped_ptr<net::HttpTransactionFactory> main_http_factory_;
-  scoped_ptr<net::HostResolver> host_resolver_;
-  scoped_ptr<net::CertVerifier> cert_verifier_;
-  scoped_ptr<net::OriginBoundCertService> origin_bound_cert_service_;
-  scoped_ptr<net::DnsRRResolver> dnsrr_resolver_;
-  scoped_ptr<net::ProxyService> proxy_service_;
-  scoped_ptr<net::HttpAuthHandlerFactory> http_auth_handler_factory_;
-  scoped_ptr<net::URLSecurityManager> url_security_manager_;
+  scoped_ptr<net::URLRequestContextStorage> storage_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellURLRequestContextGetter);
 };
