@@ -3707,6 +3707,12 @@ void Browser::ViewSourceForFrame(TabContents* source,
 
 bool Browser::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
                                      bool* is_keyboard_shortcut) {
+  // Escape exits tabbed fullscreen mode.
+  // TODO(koz): Write a test for this http://crbug.com/100441.
+  if (event.windowsKeyCode == 27 && fullscreened_tab_) {
+    ExitTabbedFullscreenModeIfNecessary();
+    return true;
+  }
   return window()->PreHandleKeyboardEvent(event, is_keyboard_shortcut);
 }
 
