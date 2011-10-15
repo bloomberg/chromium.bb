@@ -203,11 +203,6 @@ class RenderWidgetHostViewGtkWidget {
   static gboolean OnKeyPressReleaseEvent(GtkWidget* widget,
                                          GdkEventKey* event,
                                          RenderWidgetHostViewGtk* host_view) {
-    // ESC exits mouse lock.
-    if (host_view->mouse_locked_ && event->keyval == GDK_Escape) {
-      host_view->UnlockMouse();
-      return TRUE;
-    }
     // Force popups or fullscreen windows to close on Escape so they won't keep
     // the keyboard grabbed or be stuck onscreen if the renderer is hanging.
     bool should_close_on_escape =

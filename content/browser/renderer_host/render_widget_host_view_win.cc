@@ -1284,20 +1284,12 @@ LRESULT RenderWidgetHostViewWin::OnKeyEvent(UINT message, WPARAM wparam,
                                             LPARAM lparam, BOOL& handled) {
   handled = TRUE;
 
-  // When Escape is pressed, unlock the mouse or force fullscreen windows to
-  // close if necessary.
+  // When Escape is pressed, force fullscreen windows to close if necessary.
   if ((message == WM_KEYDOWN || message == WM_KEYUP) && wparam == VK_ESCAPE) {
-    bool absorbed = false;
-    if (mouse_locked_) {
-      UnlockMouse();
-      absorbed = true;
-    }
     if (is_fullscreen_) {
       SendMessage(WM_CANCELMODE);
-      absorbed = true;
-    }
-    if (absorbed)
       return 0;
+    }
   }
 
   // If we are a pop-up, forward tab related messages to our parent HWND, so
