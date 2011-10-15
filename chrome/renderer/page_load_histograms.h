@@ -21,8 +21,8 @@ class PageLoadHistograms : public content::RenderViewObserver {
 
  private:
   // RenderViewObserver implementation.
-  virtual void FrameWillClose(WebKit::WebFrame* frame);
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual void FrameWillClose(WebKit::WebFrame* frame) OVERRIDE;
+  virtual void ClosePage() OVERRIDE;
 
   // Dump all page load histograms appropriate for the given frame.
   //

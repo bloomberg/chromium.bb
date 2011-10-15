@@ -43,15 +43,12 @@ class PageClickTracker : public content::RenderViewObserver,
 
  private:
   // RenderView::Observer implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message);
-  virtual void DidFinishDocumentLoad(WebKit::WebFrame* frame);
-  virtual void FrameDetached(WebKit::WebFrame* frame);
+  virtual void DidFinishDocumentLoad(WebKit::WebFrame* frame) OVERRIDE;
+  virtual void FrameDetached(WebKit::WebFrame* frame) OVERRIDE;
+  virtual void DidHandleMouseEvent(const WebKit::WebMouseEvent& event) OVERRIDE;
 
   // WebKit::WebDOMEventListener implementation.
   virtual void handleEvent(const WebKit::WebDOMEvent& event);
-
-  // Called after the mouse event |event| has been processed by WebKit.
-  virtual void DidHandleMouseEvent(const WebKit::WebMouseEvent& event);
 
   // The last node that was clicked and had focus.
   WebKit::WebNode last_node_clicked_;

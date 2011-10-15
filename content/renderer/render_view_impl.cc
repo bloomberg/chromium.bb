@@ -3830,6 +3830,7 @@ void RenderViewImpl::OnSwapOut(const ViewMsg_SwapOut_Params& params) {
 }
 
 void RenderViewImpl::OnClosePage() {
+  FOR_EACH_OBSERVER(RenderViewObserver, observers_, ClosePage());
   // TODO(creis): We'd rather use webview()->Close() here, but that currently
   // sets the WebView's delegate_ to NULL, preventing any JavaScript dialogs
   // in the onunload handler from appearing.  For now, we're bypassing that and

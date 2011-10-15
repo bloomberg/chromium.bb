@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "content/public/renderer/render_thread.h"
-#include "content/common/view_messages.h"
 
 using content::RenderThread;
 
@@ -22,10 +21,8 @@ ChromeV8ExtensionHandler::~ChromeV8ExtensionHandler() {
 
 int ChromeV8ExtensionHandler::GetRoutingId() {
   if (routing_id_ == MSG_ROUTING_NONE) {
-    RenderThread* render_thread = RenderThread::Get();
-    CHECK(render_thread);
-    render_thread->Send(new ViewHostMsg_GenerateRoutingID(&routing_id_));
-    render_thread->AddRoute(routing_id_, this);
+    routing_id_ = RenderThread::Get()->GenerateRoutingID();
+    RenderThread::Get()->AddRoute(routing_id_, this);
   }
 
   return routing_id_;

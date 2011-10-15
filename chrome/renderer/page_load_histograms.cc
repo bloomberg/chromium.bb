@@ -12,7 +12,6 @@
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/renderer/prerender/prerender_helper.h"
 #include "chrome/renderer/renderer_histogram_snapshots.h"
-#include "content/common/view_messages.h"
 #include "content/public/renderer/navigation_state.h"
 #include "content/public/renderer/render_view.h"
 #include "googleurl/src/gurl.h"
@@ -777,15 +776,12 @@ void PageLoadHistograms::FrameWillClose(WebFrame* frame) {
   Dump(frame);
 }
 
-bool PageLoadHistograms::OnMessageReceived(const IPC::Message& message) {
-  if (message.type() == ViewMsg_ClosePage::ID) {
-    // TODO(davemoore) This code should be removed once willClose() gets
-    // called when a page is destroyed. page_load_histograms_.Dump() is safe
-    // to call multiple times for the same frame, but it will simplify things.
-    Dump(render_view()->GetWebView()->mainFrame());
-    ResetCrossFramePropertyAccess();
-  }
-  return false;
+void PageLoadHistograms::ClosePage() {
+  // TODO(davemoore) This code should be removed once willClose() gets
+  // called when a page is destroyed. page_load_histograms_.Dump() is safe
+  // to call multiple times for the same frame, but it will simplify things.
+  Dump(render_view()->GetWebView()->mainFrame());
+  ResetCrossFramePropertyAccess();
 }
 
 void PageLoadHistograms::LogPageLoadTime(const NavigationState* state,

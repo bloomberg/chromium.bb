@@ -21,7 +21,6 @@
 #include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/renderer/content_settings_observer.h"
 #include "chrome/renderer/security_filter_peer.h"
-#include "content/common/view_messages.h"
 #include "content/public/common/resource_dispatcher_delegate.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view_visitor.h"

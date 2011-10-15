@@ -67,6 +67,11 @@ void MockRenderThread::RemoveRoute(int32 routing_id) {
   widget_ = NULL;
 }
 
+int MockRenderThread::GenerateRoutingID() {
+  NOTREACHED();
+  return MSG_ROUTING_NONE;
+}
+
 void MockRenderThread::AddFilter(IPC::ChannelProxy::MessageFilter* filter) {
   filter->OnFilterAdded(&sink());
 }

@@ -46,6 +46,7 @@ class CONTENT_EXPORT RenderThread : public IPC::Message::Sender {
   // These methods normally get delegated to a MessageRouter.
   virtual void AddRoute(int32 routing_id, IPC::Channel::Listener* listener) = 0;
   virtual void RemoveRoute(int32 routing_id) = 0;
+  virtual int GenerateRoutingID() = 0;
 
   // These map to IPC::ChannelProxy methods.
   virtual void AddFilter(IPC::ChannelProxy::MessageFilter* filter) = 0;

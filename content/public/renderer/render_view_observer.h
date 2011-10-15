@@ -69,15 +69,17 @@ class CONTENT_EXPORT RenderViewObserver : public IPC::Channel::Listener,
                                    WebKit::WebDataSource* ds) {}
   virtual void PrintPage(WebKit::WebFrame* frame) {}
   virtual void FocusedNodeChanged(const WebKit::WebNode& node) {}
+  virtual void WillCreateMediaPlayer(WebKit::WebFrame* frame,
+                                     WebKit::WebMediaPlayerClient* client) {}
 
   // These match the RenderView methods.
   virtual void DidHandleMouseEvent(const WebKit::WebMouseEvent& event) {}
   virtual void DidHandleTouchEvent(const WebKit::WebTouchEvent& event) {}
 
-  virtual void WillCreateMediaPlayer(WebKit::WebFrame* frame,
-                                     WebKit::WebMediaPlayerClient* client) {}
+  // These match incoming IPCs.
   virtual void ContextMenuAction(unsigned id) {}
   virtual void Navigate(const GURL& url) {}
+  virtual void ClosePage() {}
 
   // IPC::Channel::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message);

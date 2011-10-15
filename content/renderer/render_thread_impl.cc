@@ -364,6 +364,12 @@ void RenderThreadImpl::RemoveRoute(int32 routing_id) {
   return ChildThread::RemoveRoute(routing_id);
 }
 
+int RenderThreadImpl::GenerateRoutingID() {
+  int routing_id = MSG_ROUTING_NONE;
+  Send(new ViewHostMsg_GenerateRoutingID(&routing_id));
+  return routing_id;
+}
+
 void RenderThreadImpl::AddFilter(IPC::ChannelProxy::MessageFilter* filter) {
   channel()->AddFilter(filter);
 }

@@ -6,7 +6,6 @@
 
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/page_click_listener.h"
-#include "content/common/view_messages.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDOMMouseEvent.h"
@@ -90,21 +89,6 @@ void PageClickTracker::AddListener(PageClickListener* listener) {
 
 void PageClickTracker::RemoveListener(PageClickListener* listener) {
   listeners_.RemoveObserver(listener);
-}
-
-bool PageClickTracker::OnMessageReceived(const IPC::Message& message) {
-  if (message.type() == ViewMsg_HandleInputEvent::ID) {
-    void* iter = NULL;
-    const char* data;
-    int data_length;
-    if (message.ReadData(&iter, &data, &data_length)) {
-      const WebInputEvent* input_event =
-          reinterpret_cast<const WebInputEvent*>(data);
-      if (WebInputEvent::isMouseEventType(input_event->type))
-        DidHandleMouseEvent(*(static_cast<const WebMouseEvent*>(input_event)));
-    }
-  }
-  return false;
 }
 
 void PageClickTracker::DidFinishDocumentLoad(WebKit::WebFrame* frame) {

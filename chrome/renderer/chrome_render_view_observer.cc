@@ -24,7 +24,6 @@
 #include "chrome/renderer/prerender/prerender_helper.h"
 #include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
 #include "chrome/renderer/translate_helper.h"
-#include "content/common/view_messages.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/content_renderer_client.h"

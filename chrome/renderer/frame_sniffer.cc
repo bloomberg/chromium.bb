@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "chrome/common/render_messages.h"
-#include "content/common/view_messages.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLError.h"
 

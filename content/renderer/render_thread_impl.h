@@ -97,6 +97,7 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
   virtual void AddRoute(int32 routing_id,
                         IPC::Channel::Listener* listener) OVERRIDE;
   virtual void RemoveRoute(int32 routing_id) OVERRIDE;
+  virtual int GenerateRoutingID() OVERRIDE;
   virtual void AddFilter(IPC::ChannelProxy::MessageFilter* filter) OVERRIDE;
   virtual void RemoveFilter(IPC::ChannelProxy::MessageFilter* filter) OVERRIDE;
   virtual void SetOutgoingMessageFilter(
