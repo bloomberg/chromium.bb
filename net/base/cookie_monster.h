@@ -8,13 +8,16 @@
 #define NET_BASE_COOKIE_MONSTER_H_
 #pragma once
 
+#include <deque>
 #include <map>
 #include <queue>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -29,7 +32,7 @@ class GURL;
 namespace base {
 class Histogram;
 class TimeTicks;
-}
+}  // namespace base
 
 namespace net {
 
@@ -43,10 +46,17 @@ class CookieList;
 // This class IS thread-safe. Normally, it is only used on the I/O thread, but
 // is also accessed directly through Automation for UI testing.
 //
-// Several methods exist in asynchronous forms. Calls may be deferred if all
-// affected cookies are not yet loaded from the backing store. Otherwise, the
-// callback may be invoked immediately (prior to return of the asynchronous
+// All cookie tasks are handled asynchronously. Tasks may be deferred if
+// all affected cookies are not yet loaded from the backing store. Otherwise,
+// the callback may be invoked immediately (prior to return of the asynchronous
 // function).
+//
+// A cookie task is either pending loading of the entire cookie store, or
+// loading of cookies for a specfic domain key(eTLD+1). In the former case, the
+// cookie task will be queued in queue_ while PersistentCookieStore chain loads
+// the cookie store on DB thread. In the latter case, the cookie task will be
+// queued in tasks_queued_ while PermanentCookieStore loads cookies for the
+// specified domain key(eTLD+1) on DB thread.
 //
 // Callbacks are guaranteed to be invoked on the calling thread.
 //
@@ -450,8 +460,18 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // Stores cookies loaded from the backing store and invokes any deferred
   // calls. |beginning_time| should be the moment PersistentCookieStore::Load
   // was invoked and is used for reporting histogram_time_load_.
+  // See PersistentCookieStore::Load for details on the contents of cookies.
   void OnLoaded(base::TimeTicks beginning_time,
                 const std::vector<CanonicalCookie*>& cookies);
+
+  // Stores cookies loaded from the backing store and invokes the deferred
+  // task(s) pending loading of cookies associated with the domain key
+  // (eTLD+1). Called when all cookies for the domain key(eTLD+1) have been
+  // loaded from DB. See PersistentCookieStore::Load for details on the contents
+  // of cookies.
+  void OnKeyLoaded(
+    const std::string& key,
+    const std::vector<CanonicalCookie*>& cookies);
 
   // Stores the loaded cookies.
   void StoreLoadedCookies(const std::vector<CanonicalCookie*>& cookies);
@@ -568,9 +588,14 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // ugly and increment when we've seen the same time twice.
   base::Time CurrentTime();
 
-  // Run the cookie request task if cookie loaded, otherwise added the task
-  // to task queue.
+  // Runs the task if, or defers the task until, the full cookie database is
+  // loaded.
   void DoCookieTask(const scoped_refptr<CookieMonsterTask>& task_item);
+
+  // Runs the task if, or defers the task until, the cookies for the given URL
+  // are loaded.
+  void DoCookieTaskForURL(const scoped_refptr<CookieMonsterTask>& task_item,
+    const GURL& url);
 
   // Histogram variables; see CookieMonster::InitializeHistograms() in
   // cookie_monster.cc for details.
@@ -597,8 +622,17 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // calls may be immediately processed.
   bool loaded_;
 
-  // Queues calls to CookieMonster until loading from the backend store is
-  // completed.
+  // List of domain keys that have been loaded from the DB.
+  std::set<std::string> keys_loaded_;
+
+  // Map of domain keys to their associated task queues. These tasks are blocked
+  // until all cookies for the associated domain key eTLD+1 are loaded from the
+  // backend store.
+  std::map<std::string, std::deque<scoped_refptr<CookieMonsterTask> > >
+    tasks_queued_;
+
+  // Queues tasks that are blocked until all cookies are loaded from the backend
+  // store.
   std::queue<scoped_refptr<CookieMonsterTask> > queue_;
 
   // Indicates whether this cookie monster uses the new effective domain
@@ -620,9 +654,15 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // This value is used to determine whether global garbage collection might
   // find cookies to purge.
   // Note: The default Time() constructor will create a value that compares
-  // earlier than any other time value, which is is wanted.  Thus this
+  // earlier than any other time value, which is wanted.  Thus this
   // value is not initialized.
   base::Time earliest_access_time_;
+
+  // During loading, holds the set of all loaded cookie creation times. Used to
+  // avoid ever letting cookies with duplicate creation times into the store;
+  // that way we don't have to worry about what sections of code are safe
+  // to call while it's in that state.
+  std::set<int64> creation_times_;
 
   std::vector<std::string> cookieable_schemes_;
 
@@ -919,8 +959,17 @@ class CookieMonster::PersistentCookieStore
       CookieMonster::CanonicalCookie*>&)> LoadedCallback;
 
   // Initializes the store and retrieves the existing cookies. This will be
-  // called only once at startup.
-  virtual bool Load(const LoadedCallback& loaded_callback) = 0;
+  // called only once at startup. The callback will return all the cookies
+  // that are not yet returned to CookieMonster by previous priority loads.
+  virtual void Load(const LoadedCallback& loaded_callback) = 0;
+
+  // Does a priority load of all cookies for the domain key (eTLD+1). The
+  // callback will return all the cookies that are not yet returned by previous
+  // loads, which includes cookies for the requested domain key if they are not
+  // already returned, plus all cookies that are chain-loaded and not yet
+  // returned to CookieMonster.
+  virtual void LoadCookiesForKey(const std::string& key,
+    const LoadedCallback& loaded_callback) = 0;
 
   virtual void AddCookie(const CanonicalCookie& cc) = 0;
   virtual void UpdateCookieAccessTime(const CanonicalCookie& cc) = 0;

@@ -4,6 +4,7 @@
 
 #include "net/base/cookie_monster_store_test.h"
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
@@ -11,9 +12,17 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
+LoadedCallbackTask::LoadedCallbackTask(LoadedCallback loaded_callback,
+                   std::vector<CookieMonster::CanonicalCookie*> cookies)
+    : loaded_callback_(loaded_callback),
+      cookies_(cookies) {
+}
+
+LoadedCallbackTask::~LoadedCallbackTask() {}
 
 MockPersistentCookieStore::MockPersistentCookieStore()
-    : load_return_value_(true) {
+    : load_return_value_(true),
+      loaded_(false) {
 }
 
 MockPersistentCookieStore::~MockPersistentCookieStore() {}
@@ -25,14 +34,27 @@ void MockPersistentCookieStore::SetLoadExpectation(
   load_result_ = result;
 }
 
-bool MockPersistentCookieStore::Load(const LoadedCallback& loaded_callback) {
-  bool ok = load_return_value_;
+void MockPersistentCookieStore::Load(const LoadedCallback& loaded_callback) {
   std::vector<CookieMonster::CanonicalCookie*> out_cookies;
-  if (ok) {
+  if (load_return_value_) {
     out_cookies = load_result_;
+    loaded_ = true;
   }
-  loaded_callback.Run(out_cookies);
-  return ok;
+  MessageLoop::current()->PostTask(FROM_HERE,
+    base::Bind(&LoadedCallbackTask::Run,
+               new LoadedCallbackTask(loaded_callback, out_cookies)));
+}
+
+void MockPersistentCookieStore::LoadCookiesForKey(const std::string& key,
+    const LoadedCallback& loaded_callback) {
+  if (!loaded_) {
+    Load(loaded_callback);
+  } else {
+    MessageLoop::current()->PostTask(FROM_HERE,
+      base::Bind(&LoadedCallbackTask::Run,
+        new LoadedCallbackTask(loaded_callback,
+          std::vector<CookieMonster::CanonicalCookie*>())));
+  }
 }
 
 void MockPersistentCookieStore::AddCookie(
@@ -113,19 +135,36 @@ CookieMonster::CanonicalCookie BuildCanonicalCookie(
       !cookie_expires.is_null());
 }
 
-MockSimplePersistentCookieStore::MockSimplePersistentCookieStore() {}
+MockSimplePersistentCookieStore::MockSimplePersistentCookieStore()
+    : loaded_(false) {}
 
 MockSimplePersistentCookieStore::~MockSimplePersistentCookieStore() {}
 
-bool MockSimplePersistentCookieStore::Load(
+void MockSimplePersistentCookieStore::Load(
     const LoadedCallback& loaded_callback) {
   std::vector<CookieMonster::CanonicalCookie*> out_cookies;
+
   for (CanonicalCookieMap::const_iterator it = cookies_.begin();
        it != cookies_.end(); it++)
     out_cookies.push_back(
         new CookieMonster::CanonicalCookie(it->second));
-  loaded_callback.Run(out_cookies);
-  return true;
+
+  MessageLoop::current()->PostTask(FROM_HERE,
+    base::Bind(&LoadedCallbackTask::Run,
+               new LoadedCallbackTask(loaded_callback, out_cookies)));
+  loaded_ = true;
+}
+
+void MockSimplePersistentCookieStore::LoadCookiesForKey(const std::string& key,
+    const LoadedCallback& loaded_callback) {
+  if (!loaded_) {
+    Load(loaded_callback);
+  } else {
+    MessageLoop::current()->PostTask(FROM_HERE,
+      base::Bind(&LoadedCallbackTask::Run,
+        new LoadedCallbackTask(loaded_callback,
+          std::vector<CookieMonster::CanonicalCookie*>())));
+  }
 }
 
 void MockSimplePersistentCookieStore::AddCookie(

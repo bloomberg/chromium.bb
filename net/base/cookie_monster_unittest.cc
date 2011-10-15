@@ -37,7 +37,9 @@ namespace {
 class NewMockPersistentCookieStore
     : public CookieMonster::PersistentCookieStore {
  public:
-  MOCK_METHOD1(Load, bool(const LoadedCallback& loaded_callback));
+  MOCK_METHOD1(Load, void(const LoadedCallback& loaded_callback));
+  MOCK_METHOD2(LoadCookiesForKey, void(const std::string& key,
+                                       const LoadedCallback& loaded_callback));
   MOCK_METHOD1(AddCookie, void(const CookieMonster::CanonicalCookie& cc));
   MOCK_METHOD1(UpdateCookieAccessTime,
                void(const CookieMonster::CanonicalCookie& cc));
@@ -1008,12 +1010,16 @@ ACTION_P3(GetAllCookiesForUrlAction, cookie_monster, url, callback) {
   cookie_monster->GetAllCookiesForURLAsync(url, callback->AsCallback());
 }
 
+ACTION_P(PushCallbackAction, callback_vector) {
+  callback_vector->push(arg1);
+}
 }  // namespace
 
 // This test suite verifies the task deferral behaviour of the CookieMonster.
 // Specifically, for each asynchronous method, verify that:
 // 1. invoking it on an uninitialized cookie store causes the store to begin
-//    loading its backing data.
+//    chain-loading its backing data or loading data for a specific domain key
+//    (eTLD+1).
 // 2. The initial invocation does not complete until the loading completes.
 // 3. Invocations after the loading has completed complete immediately.
 class DeferredCookieTaskTest : public CookieMonsterTest {
@@ -1039,9 +1045,16 @@ class DeferredCookieTaskTest : public CookieMonsterTest {
     testing::Mock::VerifyAndClear(persistent_store_.get());
   }
 
-  // Invokes the PersistentCookieStore::Load completion callback and waits
+  // Invokes the PersistentCookieStore::LoadCookiesForKey completion callbacks
+  // and PersistentCookieStore::Load completion callback and waits
   // until the message loop is quit.
   void CompleteLoadingAndWait() {
+    while (!loaded_for_key_callbacks_.empty()) {
+      loaded_for_key_callbacks_.front().Run(loaded_cookies_);
+      loaded_cookies_.clear();
+      loaded_for_key_callbacks_.pop();
+    }
+
     loaded_callback_.Run(loaded_cookies_);
     RunFor(kTimeout);
   }
@@ -1055,13 +1068,34 @@ class DeferredCookieTaskTest : public CookieMonsterTest {
     Begin();
   }
 
+  void BeginWithForDomainKey(std::string key,
+                             testing::Action<void(void)> action) {
+    EXPECT_CALL(*this, Begin()).WillOnce(action);
+    ExpectLoadCall();
+    ExpectLoadForKeyCall(key, false);
+    Begin();
+  }
+
   // Declares an expectation that PersistentCookieStore::Load will be called,
   // saving the provided callback and sending a quit to the message loop.
   void ExpectLoadCall() {
     EXPECT_CALL(*persistent_store_, Load(testing::_)).WillOnce(testing::DoAll(
         testing::SaveArg<0>(&loaded_callback_),
-        QuitCurrentMessageLoop(),
-        testing::Return(true)));
+        QuitCurrentMessageLoop()));
+  }
+
+  // Declares an expectation that PersistentCookieStore::LoadCookiesForKey
+  // will be called, saving the provided callback and sending a quit to the
+  // message loop.
+  void ExpectLoadForKeyCall(std::string key, bool quit_queue) {
+    if (quit_queue)
+      EXPECT_CALL(*persistent_store_, LoadCookiesForKey(key, testing::_)).
+          WillOnce(testing::DoAll(
+                   PushCallbackAction(&loaded_for_key_callbacks_),
+                   QuitCurrentMessageLoop()));
+    else
+      EXPECT_CALL(*persistent_store_, LoadCookiesForKey(key, testing::_)).
+          WillOnce(PushCallbackAction(&loaded_for_key_callbacks_));
   }
 
   // Invokes the initial action.
@@ -1073,11 +1107,17 @@ class DeferredCookieTaskTest : public CookieMonsterTest {
  private:
   // Declares that mock expectations in this test suite are strictly ordered.
   testing::InSequence in_sequence_;
-  // Holds cookies to be returned from PersistentCookieStore::Load.
+  // Holds cookies to be returned from PersistentCookieStore::Load or
+  // PersistentCookieStore::LoadCookiesForKey.
   std::vector<CookieMonster::CanonicalCookie*> loaded_cookies_;
   // Stores the callback passed from the CookieMonster to the
-  // PersistentCookieStore
+  // PersistentCookieStore::Load
   CookieMonster::PersistentCookieStore::LoadedCallback loaded_callback_;
+  // Stores the callback passed from the CookieMonster to the
+  // PersistentCookieStore::LoadCookiesForKey
+  std::queue<CookieMonster::PersistentCookieStore::LoadedCallback>
+    loaded_for_key_callbacks_;
+
   // Stores the CookieMonster under test.
   scoped_refptr<CookieMonster> cookie_monster_;
   // Stores the mock PersistentCookieStore.
@@ -1091,7 +1131,7 @@ TEST_F(DeferredCookieTaskTest, DeferredGetCookies) {
 
   MockGetCookiesCallback get_cookies_callback;
 
-  BeginWith(GetCookiesAction(
+  BeginWithForDomainKey("google.izzle", GetCookiesAction(
       &cookie_monster(), url_google_, &get_cookies_callback));
 
   WaitForLoadCall();
@@ -1111,7 +1151,7 @@ TEST_F(DeferredCookieTaskTest, DeferredGetCookiesWithInfo) {
 
   MockGetCookieInfoCallback get_cookie_info_callback;
 
-  BeginWith(GetCookiesWithInfoAction(
+  BeginWithForDomainKey("google.izzle", GetCookiesWithInfoAction(
       &cookie_monster(), url_google_, &get_cookie_info_callback));
 
   WaitForLoadCall();
@@ -1128,7 +1168,7 @@ TEST_F(DeferredCookieTaskTest, DeferredGetCookiesWithInfo) {
 TEST_F(DeferredCookieTaskTest, DeferredSetCookie) {
   MockSetCookiesCallback set_cookies_callback;
 
-  BeginWith(SetCookieAction(
+  BeginWithForDomainKey("google.izzle", SetCookieAction(
       &cookie_monster(), url_google_, "A=B", &set_cookies_callback));
 
   WaitForLoadCall();
@@ -1145,7 +1185,7 @@ TEST_F(DeferredCookieTaskTest, DeferredSetCookie) {
 TEST_F(DeferredCookieTaskTest, DeferredDeleteCookie) {
   MockClosure delete_cookie_callback;
 
-  BeginWith(DeleteCookieAction(
+  BeginWithForDomainKey("google.izzle", DeleteCookieAction(
       &cookie_monster(), url_google_, "A", &delete_cookie_callback));
 
   WaitForLoadCall();
@@ -1162,7 +1202,7 @@ TEST_F(DeferredCookieTaskTest, DeferredDeleteCookie) {
 TEST_F(DeferredCookieTaskTest, DeferredSetCookieWithDetails) {
   MockSetCookiesCallback set_cookies_callback;
 
-  BeginWith(SetCookieWithDetailsAction(
+  BeginWithForDomainKey("google.izzle", SetCookieWithDetailsAction(
       &cookie_monster(), url_google_foo_, "A", "B", std::string(), "/foo",
       base::Time(), false, false, &set_cookies_callback));
 
@@ -1205,7 +1245,7 @@ TEST_F(DeferredCookieTaskTest, DeferredGetAllForUrlCookies) {
 
   MockGetCookieListCallback get_cookie_list_callback;
 
-  BeginWith(GetAllCookiesForUrlAction(
+  BeginWithForDomainKey("google.izzle", GetAllCookiesForUrlAction(
       &cookie_monster(), url_google_, &get_cookie_list_callback));
 
   WaitForLoadCall();
@@ -1227,7 +1267,7 @@ TEST_F(DeferredCookieTaskTest, DeferredGetAllForUrlWithOptionsCookies) {
 
   MockGetCookieListCallback get_cookie_list_callback;
 
-  BeginWith(GetAllCookiesForUrlWithOptionsAction(
+  BeginWithForDomainKey("google.izzle", GetAllCookiesForUrlWithOptionsAction(
       &cookie_monster(), url_google_, &get_cookie_list_callback));
 
   WaitForLoadCall();
@@ -1278,7 +1318,7 @@ TEST_F(DeferredCookieTaskTest, DeferredDeleteAllCreatedBetweenCookies) {
 TEST_F(DeferredCookieTaskTest, DeferredDeleteAllForHostCookies) {
   MockDeleteCallback delete_callback;
 
-  BeginWith(DeleteAllForHostAction(
+  BeginWithForDomainKey("google.izzle", DeleteAllForHostAction(
       &cookie_monster(), url_google_, &delete_callback));
 
   WaitForLoadCall();
@@ -1334,17 +1374,17 @@ TEST_F(DeferredCookieTaskTest, DeferredTaskOrder) {
       DeleteCookieAction(
           &cookie_monster(), url_google_, "A", &delete_cookie_callback)));
   ExpectLoadCall();
+  ExpectLoadForKeyCall("google.izzle", false);
   Begin();
 
   WaitForLoadCall();
   EXPECT_CALL(get_cookies_callback, Invoke("X=1")).WillOnce(
       GetCookiesWithInfoAction(
           &cookie_monster(), url_google_, &get_cookie_info_callback));
-
-  EXPECT_CALL(set_cookies_callback, Invoke(true));
-  EXPECT_CALL(delete_cookie_callback, Invoke());
   EXPECT_CALL(get_cookie_info_callback, Invoke("X=1", testing::_)).WillOnce(
       QuitCurrentMessageLoop());
+  EXPECT_CALL(set_cookies_callback, Invoke(true));
+  EXPECT_CALL(delete_cookie_callback, Invoke());
 
   CompleteLoadingAndWait();
 }
@@ -2970,10 +3010,16 @@ class FlushablePersistentStore : public CookieMonster::PersistentCookieStore {
  public:
   FlushablePersistentStore() : flush_count_(0) {}
 
-  bool Load(const LoadedCallback& loaded_callback) {
+  void Load(const LoadedCallback& loaded_callback) {
     std::vector<CookieMonster::CanonicalCookie*> out_cookies;
-    loaded_callback.Run(out_cookies);
-    return false;
+    MessageLoop::current()->PostTask(FROM_HERE,
+      base::Bind(&net::LoadedCallbackTask::Run,
+                 new net::LoadedCallbackTask(loaded_callback, out_cookies)));
+  }
+
+  void LoadCookiesForKey(const std::string& key,
+      const LoadedCallback& loaded_callback) {
+    Load(loaded_callback);
   }
 
   void AddCookie(const CookieMonster::CanonicalCookie&) {}

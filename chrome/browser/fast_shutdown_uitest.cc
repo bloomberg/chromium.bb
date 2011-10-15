@@ -42,11 +42,11 @@ class FastShutdown : public UITest {
            user_data_dir_.AppendASCII(chrome::kInitialProfile)
                          .Append(chrome::kCookieFilename)));
     std::vector<net::CookieMonster::CanonicalCookie*> cookies;
-    ASSERT_TRUE(cookie_store->Load(
+    cookie_store->Load(
         base::Bind(&FastShutdown::LoadCookiesCallback,
                    base::Unretained(this),
                    MessageLoop::current(),
-                   base::Unretained(&cookies))));
+                   base::Unretained(&cookies)));
     // Will receive a QuitTask when LoadCookiesCallback is invoked.
     MessageLoop::current()->Run();
     *has_cookie = false;

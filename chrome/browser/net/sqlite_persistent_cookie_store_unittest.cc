@@ -23,23 +23,34 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
       : ui_thread_(BrowserThread::UI),
         db_thread_(BrowserThread::DB),
         io_thread_(BrowserThread::IO),
-        event_(false, false) {
+        loaded_event_(false, false),
+        key_loaded_event_(false, false),
+        db_thread_event_(true, false) {
   }
 
- protected:
   void OnLoaded(
       const std::vector<net::CookieMonster::CanonicalCookie*>& cookies) {
     cookies_ = cookies;
-    event_.Signal();
+    loaded_event_.Signal();
   }
 
-  bool Load(std::vector<net::CookieMonster::CanonicalCookie*>* cookies) {
-    bool result =
-        store_->Load(base::Bind(&SQLitePersistentCookieStoreTest::OnLoaded,
+  void OnKeyLoaded(
+      const std::vector<net::CookieMonster::CanonicalCookie*>& cookies) {
+    cookies_ = cookies;
+    key_loaded_event_.Signal();
+  }
+
+  void Load(std::vector<net::CookieMonster::CanonicalCookie*>* cookies) {
+    store_->Load(base::Bind(&SQLitePersistentCookieStoreTest::OnLoaded,
                                 base::Unretained(this)));
-    event_.Wait();
+    loaded_event_.Wait();
     *cookies = cookies_;
-    return result;
+  }
+
+  // We have to create this method to wrap WaitableEvent::Wait, since we cannot
+  // bind a non-void returning method as a Closure.
+  void WaitOnDBEvent() {
+    db_thread_event_.Wait();
   }
 
   virtual void SetUp() {
@@ -50,7 +61,7 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
     store_ = new SQLitePersistentCookieStore(
         temp_dir_.path().Append(chrome::kCookieFilename));
     std::vector<net::CookieMonster::CanonicalCookie*> cookies;
-    ASSERT_TRUE(Load(&cookies));
+    Load(&cookies);
     ASSERT_EQ(0u, cookies.size());
     // Make sure the store gets written at least once.
     store_->AddCookie(
@@ -62,10 +73,13 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
                                             false, false, true));
   }
 
+ protected:
   BrowserThread ui_thread_;
   BrowserThread db_thread_;
   BrowserThread io_thread_;
-  base::WaitableEvent event_;
+  base::WaitableEvent loaded_event_;
+  base::WaitableEvent key_loaded_event_;
+  base::WaitableEvent db_thread_event_;
   std::vector<net::CookieMonster::CanonicalCookie*> cookies_;
   ScopedTempDir temp_dir_;
   scoped_refptr<SQLitePersistentCookieStore> store_;
@@ -118,7 +132,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestPersistance) {
       temp_dir_.path().Append(chrome::kCookieFilename));
 
   // Reload and test for persistence
-  ASSERT_TRUE(Load(&cookies));
+  Load(&cookies);
   ASSERT_EQ(1U, cookies.size());
   ASSERT_STREQ("http://foo.bar", cookies[0]->Domain().c_str());
   ASSERT_STREQ("A", cookies[0]->Name().c_str());
@@ -135,8 +149,84 @@ TEST_F(SQLitePersistentCookieStoreTest, TestPersistance) {
       temp_dir_.path().Append(chrome::kCookieFilename));
 
   // Reload and check if the cookie has been removed.
-  ASSERT_TRUE(Load(&cookies));
+  Load(&cookies);
   ASSERT_EQ(0U, cookies.size());
+}
+
+// Test that priority load of cookies for a specfic domain key could be
+// completed before the entire store is loaded
+TEST_F(SQLitePersistentCookieStoreTest, TestLoadCookiesForKey) {
+  base::Time t = base::Time::Now() + base::TimeDelta::FromInternalValue(10);
+  // A foo.bar cookie was already added in setup.
+  store_->AddCookie(
+    net::CookieMonster::CanonicalCookie(GURL(), "A", "B",
+                                        "www.aaa.com", "/",
+                                        std::string(), std::string(),
+                                        t, t, t, false, false, true));
+  t += base::TimeDelta::FromInternalValue(10);
+  store_->AddCookie(
+    net::CookieMonster::CanonicalCookie(GURL(), "A", "B",
+                                        "travel.aaa.com", "/",
+                                        std::string(), std::string(),
+                                        t, t, t, false, false, true));
+  t += base::TimeDelta::FromInternalValue(10);
+  store_->AddCookie(
+    net::CookieMonster::CanonicalCookie(GURL(), "A", "B",
+                                        "www.bbb.com", "/",
+                                        std::string(), std::string(),
+                                        t, t, t, false, false, true));
+  store_ = NULL;
+
+  scoped_refptr<base::ThreadTestHelper> helper(
+      new base::ThreadTestHelper(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB)));
+  // Make sure we wait until the destructor has run.
+  ASSERT_TRUE(helper->Run());
+
+  store_ = new SQLitePersistentCookieStore(
+    temp_dir_.path().Append(chrome::kCookieFilename));
+  // Posting a blocking task to db_thread_ makes sure that the DB thread waits
+  // until both Load and LoadCookiesForKey have been posted to its task queue.
+  db_thread_.PostTask(BrowserThread::DB, FROM_HERE,
+    base::Bind(&SQLitePersistentCookieStoreTest::WaitOnDBEvent,
+               base::Unretained(this)));
+  store_->Load(base::Bind(&SQLitePersistentCookieStoreTest::OnLoaded,
+                          base::Unretained(this)));
+  store_->LoadCookiesForKey("aaa.com",
+    base::Bind(&SQLitePersistentCookieStoreTest::OnKeyLoaded,
+               base::Unretained(this)));
+  db_thread_.PostTask(BrowserThread::DB, FROM_HERE,
+    base::Bind(&SQLitePersistentCookieStoreTest::WaitOnDBEvent,
+               base::Unretained(this)));
+
+  // Now the DB-thread queue contains:
+  // (active:)
+  // 1. Wait (on db_event)
+  // (pending:)
+  // 2. "Init And Chain-Load First Domain"
+  // 3. Priority Load (aaa.com)
+  // 4. Wait (on db_event)
+  db_thread_event_.Signal();
+  key_loaded_event_.Wait();
+  ASSERT_EQ(loaded_event_.IsSignaled(), false);
+  std::set<std::string> cookies_loaded;
+  for (std::vector<net::CookieMonster::CanonicalCookie*>::iterator
+       it = cookies_.begin(); it != cookies_.end(); ++it)
+    cookies_loaded.insert((*it)->Domain().c_str());
+  ASSERT_GT(4U, cookies_loaded.size());
+  ASSERT_EQ(cookies_loaded.find("www.aaa.com") != cookies_loaded.end(), true);
+  ASSERT_EQ(cookies_loaded.find("travel.aaa.com") != cookies_loaded.end(),
+            true);
+
+  db_thread_event_.Signal();
+  loaded_event_.Wait();
+  for (std::vector<net::CookieMonster::CanonicalCookie*>::iterator
+       it = cookies_.begin(); it != cookies_.end(); ++it)
+    cookies_loaded.insert((*it)->Domain().c_str());
+  ASSERT_EQ(4U, cookies_loaded.size());
+  ASSERT_EQ(cookies_loaded.find("http://foo.bar") != cookies_loaded.end(),
+            true);
+  ASSERT_EQ(cookies_loaded.find("www.bbb.com") != cookies_loaded.end(), true);
 }
 
 // Test that we can force the database to be written by calling Flush().
