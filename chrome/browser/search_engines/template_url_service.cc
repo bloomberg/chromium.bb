@@ -631,6 +631,9 @@ SyncDataList TemplateURLService::GetAllSyncData(
     // We don't sync extension keywords.
     if ((*iter)->IsExtensionKeyword())
       continue;
+    // We don't sync keywords managed by policy.
+    if ((*iter)->created_by_policy())
+      continue;
     current_data.push_back(CreateSyncDataFromTemplateURL(**iter));
   }
 
@@ -819,6 +822,10 @@ void TemplateURLService::ProcessTemplateURLChange(
   if (turl->IsExtensionKeyword())
     return;
 
+  // Avoid syncing keywords managed by policy.
+  if (turl->created_by_policy())
+    return;
+
   SyncChangeList changes;
 
   SyncData sync_data = CreateSyncDataFromTemplateURL(*turl);
@@ -846,7 +853,6 @@ SyncData TemplateURLService::CreateSyncDataFromTemplateURL(
       turl.suggestions_url()->url() : std::string());
   se_specifics->set_prepopulate_id(turl.prepopulate_id());
   se_specifics->set_autogenerate_keyword(turl.autogenerate_keyword());
-  se_specifics->set_created_by_policy(turl.created_by_policy());
   se_specifics->set_instant_url(turl.instant_url() ?
       turl.instant_url()->url() : std::string());
   se_specifics->set_last_modified(turl.last_modified().ToInternalValue());
@@ -877,7 +883,6 @@ TemplateURL* TemplateURLService::CreateTemplateURLFromSyncData(
   turl->SetSuggestionsURL(specifics.suggestions_url(), 0, 0);
   turl->SetPrepopulateId(specifics.prepopulate_id());
   turl->set_autogenerate_keyword(specifics.autogenerate_keyword());
-  turl->set_created_by_policy(specifics.created_by_policy());
   turl->SetInstantURL(specifics.instant_url(), 0, 0);
   turl->set_last_modified(
       base::Time::FromInternalValue(specifics.last_modified()));
@@ -1656,7 +1661,8 @@ bool TemplateURLService::ResolveSyncKeywordConflict(
   if (!existing_turl)
     return false;
 
-  if (existing_turl->last_modified() > sync_turl->last_modified())  {
+  if (existing_turl->last_modified() > sync_turl->last_modified() ||
+      existing_turl->created_by_policy()) {
     string16 new_keyword = UniquifyKeyword(*sync_turl);
     DCHECK(!GetTemplateURLForKeyword(new_keyword));
     sync_turl->set_keyword(new_keyword);

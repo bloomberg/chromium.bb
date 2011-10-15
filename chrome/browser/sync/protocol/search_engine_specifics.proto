@@ -46,9 +46,11 @@ message SearchEngineSpecifics {
   // Whether to autogenerate a keyword for the search engine or not.
   optional bool autogenerate_keyword = 12;
   // ID 13 reserved - previously used by |logo_id|, now deprecated.
-  // Whether or not this search engine entry was created automatically by an
-  // administrator via group policy.
-  optional bool created_by_policy = 14;
+  // Obsolete field. This used to represent whether or not this search engine
+  // entry was created automatically by an administrator via group policy. This
+  // notion no longer exists amongst synced search engines as we do not want to
+  // sync managed search engines.
+  // optional bool deprecated_created_by_policy = 14;
   // The parameterized URL that is used for Instant results.
   optional string instant_url = 15;
   // ID 16 reserved - previously used by |id|, now deprecated.

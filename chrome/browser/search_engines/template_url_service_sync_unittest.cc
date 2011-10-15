@@ -277,6 +277,29 @@ TEST_F(TemplateURLServiceSyncTest, GetAllSyncDataNoExtensions) {
   }
 }
 
+TEST_F(TemplateURLServiceSyncTest, GetAllSyncDataNoManagedEngines) {
+  model()->Add(CreateTestTemplateURL("key1", "http://key1.com"));
+  model()->Add(CreateTestTemplateURL("key2", "http://key2.com"));
+  TemplateURL* managed_turl = CreateTestTemplateURL(
+      "key3", "http://key3.com");
+  managed_turl->set_created_by_policy(true);
+  model()->Add(managed_turl);
+  SyncDataList all_sync_data =
+      model()->GetAllSyncData(syncable::SEARCH_ENGINES);
+
+  EXPECT_EQ(2U, all_sync_data.size());
+
+  for (SyncDataList::const_iterator iter = all_sync_data.begin();
+      iter != all_sync_data.end(); ++iter) {
+    std::string guid = GetGUID(*iter);
+    const TemplateURL* service_turl = model()->GetTemplateURLForGUID(guid);
+    scoped_ptr<TemplateURL> deserialized(
+        TemplateURLService::CreateTemplateURLFromSyncData(*iter));
+    ASSERT_FALSE(service_turl->created_by_policy());
+    AssertEquals(*service_turl, *deserialized);
+  }
+}
+
 TEST_F(TemplateURLServiceSyncTest, UniquifyKeyword) {
   model()->Add(CreateTestTemplateURL("key1", "http://key1.com"));
   // Create a key that conflicts with something in the model.
@@ -363,6 +386,19 @@ TEST_F(TemplateURLServiceSyncTest, ResolveSyncKeywordConflict) {
   EXPECT_NE(original_turl_keyword, original_turl->keyword());
   EXPECT_EQ(NULL, model()->GetTemplateURLForKeyword(sync_turl->keyword()));
   EXPECT_EQ(0U, changes.size());
+
+  // Sync is newer, but original TemplateURL is created by policy, so it wins.
+  // Sync keyword is uniquified, and a SyncChange is added.
+  original_turl_keyword = original_turl->keyword();
+  sync_turl->set_keyword(original_turl->keyword());
+  sync_turl->set_last_modified(Time::FromTimeT(9999));
+  original_turl->set_created_by_policy(true);
+  EXPECT_TRUE(model()->ResolveSyncKeywordConflict(sync_turl.get(), &changes));
+  EXPECT_NE(sync_keyword, sync_turl->keyword());
+  EXPECT_EQ(original_turl_keyword, original_turl->keyword());
+  EXPECT_EQ(NULL, model()->GetTemplateURLForKeyword(sync_turl->keyword()));
+  EXPECT_EQ(1U, changes.size());
+  changes.clear();
 }
 
 TEST_F(TemplateURLServiceSyncTest, FindDuplicateOfSyncTemplateURL) {
