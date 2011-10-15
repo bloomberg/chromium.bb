@@ -200,7 +200,7 @@ class SyncerTest : public testing::Test,
     std::vector<SyncEngineEventListener*> listeners;
     listeners.push_back(this);
     context_.reset(new SyncSessionContext(mock_server_.get(),
-        syncdb_.manager(), this, listeners));
+        syncdb_.manager(), this, listeners, NULL));
     context_->set_account_name(syncdb_.name());
     ASSERT_FALSE(context_->resolver());
     syncer_ = new Syncer();

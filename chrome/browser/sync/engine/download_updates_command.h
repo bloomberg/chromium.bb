@@ -7,8 +7,10 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/engine/syncer_command.h"
+#include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 
 namespace sync_pb {
@@ -47,6 +49,9 @@ class DownloadUpdatesCommand : public SyncerCommand {
                          sync_pb::EntitySpecifics* filter_protobuf);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(DownloadUpdatesCommandTest, VerifyAppendDebugInfo);
+  void AppendClientDebugInfoIfNeeded(sessions::SyncSession* session,
+      sync_pb::DebugInfo* debug_info);
   DISALLOW_COPY_AND_ASSIGN(DownloadUpdatesCommand);
 };
 

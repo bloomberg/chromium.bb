@@ -239,6 +239,10 @@ class StatusController {
 
   void SetSyncInProgressAndUpdateStartTime(bool sync_in_progress);
 
+  void set_debug_info_sent();
+
+  bool debug_info_sent();
+
  private:
   friend class ScopedModelSafeGroupRestriction;
 
