@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,6 @@
 #include "chrome/browser/sync/test/engine/proto_extension_validator.h"
 #include "chrome/browser/sync/test/engine/syncer_command_test.h"
 
-using ::testing::_;
 namespace browser_sync {
 
 using syncable::FIRST_REAL_MODEL_TYPE;
@@ -131,17 +130,6 @@ TEST_F(DownloadUpdatesCommandTest, ExecuteWithPayloads) {
   mock_server()->ExpectGetUpdatesRequestTypes(ModelTypeBitSetFromSet(types));
   mock_server()->ExpectGetUpdatesRequestPayloads(source.types);
   command_.ExecuteImpl(session(source));
-}
-
-TEST_F(DownloadUpdatesCommandTest, VerifyAppendDebugInfo) {
-  sync_pb::DebugInfo debug_info;
-  EXPECT_CALL(*(mock_debug_info_getter()), GetAndClearDebugInfo(_))
-      .Times(1);
-  command_.AppendClientDebugInfoIfNeeded(session(), &debug_info);
-
-  // Now try to add it once more and make sure |GetAndClearDebugInfo| is not
-  // called.
-  command_.AppendClientDebugInfoIfNeeded(session(), &debug_info);
 }
 
 }  // namespace browser_sync

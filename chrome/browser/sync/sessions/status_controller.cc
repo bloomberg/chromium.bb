@@ -242,13 +242,5 @@ bool StatusController::ServerSaysNothingMoreToDownload() const {
   return updates_response().get_updates().changes_remaining() == 0;
 }
 
-void StatusController::set_debug_info_sent() {
-  shared_.control_params.debug_info_sent = true;
-}
-
-bool StatusController::debug_info_sent() {
-  return shared_.control_params.debug_info_sent;
-}
-
 }  // namespace sessions
 }  // namespace browser_sync

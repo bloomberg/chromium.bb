@@ -12,24 +12,13 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
-#include "chrome/browser/sync/sessions/debug_info_getter.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/sessions/sync_session_context.h"
 #include "chrome/browser/sync/test/engine/mock_connection_manager.h"
 #include "chrome/browser/sync/test/engine/test_directory_setter_upper.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/gmock/include/gmock/gmock.h"
-
-using ::testing::NiceMock;
 
 namespace browser_sync {
-
-class MockDebugInfoGetter : public browser_sync::sessions::DebugInfoGetter {
- public:
-  MockDebugInfoGetter();
-  virtual ~MockDebugInfoGetter();
-  MOCK_METHOD1(GetAndClearDebugInfo, void(sync_pb::DebugInfo* debug_info));
-};
 
 // A test fixture that simplifies writing unit tests for individual
 // SyncerCommands, providing convenient access to a test directory
@@ -128,7 +117,7 @@ class SyncerCommandTestWithParam : public testing::TestWithParam<T>,
   void ResetContext() {
     context_.reset(new sessions::SyncSessionContext(
         mock_server_.get(), syncdb_->manager(), registrar(),
-        std::vector<SyncEngineEventListener*>(), &mock_debug_info_getter_));
+        std::vector<SyncEngineEventListener*>()));
     context_->set_account_name(syncdb_->name());
     ClearSession();
   }
@@ -152,10 +141,6 @@ class SyncerCommandTestWithParam : public testing::TestWithParam<T>,
     return mock_server_.get();
   }
 
-  MockDebugInfoGetter* mock_debug_info_getter() {
-    return &mock_debug_info_getter_;
-  }
-
  private:
   scoped_ptr<TestDirectorySetterUpper> syncdb_;
   scoped_ptr<sessions::SyncSessionContext> context_;
@@ -163,7 +148,6 @@ class SyncerCommandTestWithParam : public testing::TestWithParam<T>,
   scoped_ptr<sessions::SyncSession> session_;
   std::vector<scoped_refptr<ModelSafeWorker> > workers_;
   ModelSafeRoutingInfo routing_info_;
-  NiceMock<MockDebugInfoGetter> mock_debug_info_getter_;
   DISALLOW_COPY_AND_ASSIGN(SyncerCommandTestWithParam);
 };
 

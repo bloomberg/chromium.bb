@@ -24,7 +24,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/engine/syncer_types.h"
-#include "chrome/browser/sync/sessions/debug_info_getter.h"
 
 namespace syncable {
 class DirectoryManager;
@@ -50,8 +49,7 @@ class SyncSessionContext {
   SyncSessionContext(ServerConnectionManager* connection_manager,
                      syncable::DirectoryManager* directory_manager,
                      ModelSafeWorkerRegistrar* model_safe_worker_registrar,
-                     const std::vector<SyncEngineEventListener*>& listeners,
-                     DebugInfoGetter* debug_info_getter);
+                     const std::vector<SyncEngineEventListener*>& listeners);
   ~SyncSessionContext();
 
   ConflictResolver* resolver() { return resolver_; }
@@ -66,10 +64,6 @@ class SyncSessionContext {
   }
   ExtensionsActivityMonitor* extensions_monitor() {
     return extensions_activity_monitor_;
-  }
-
-  DebugInfoGetter* debug_info_getter() {
-    return debug_info_getter_;
   }
 
   // Talk notification status.
@@ -142,10 +136,6 @@ class SyncSessionContext {
 
   // Cache of last session snapshot information.
   scoped_ptr<sessions::SyncSessionSnapshot> previous_session_snapshot_;
-
-  // We use this to get debug info to send to the server for debugging
-  // client behavior on server side.
-  DebugInfoGetter* const debug_info_getter_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSessionContext);
 };
