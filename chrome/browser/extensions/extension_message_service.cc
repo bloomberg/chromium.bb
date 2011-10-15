@@ -116,11 +116,11 @@ void ExtensionMessageService::AllocatePortIdPair(int* port1, int* port2) {
 ExtensionMessageService::ExtensionMessageService(Profile* profile)
     : profile_(profile) {
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-                 NotificationService::AllSources());
+                 NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
-                 NotificationService::AllSources());
+                 NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_DELETED,
-                 NotificationService::AllSources());
+                 NotificationService::AllBrowserContextsAndSources());
 }
 
 ExtensionMessageService::~ExtensionMessageService() {
