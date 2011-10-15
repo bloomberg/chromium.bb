@@ -222,6 +222,7 @@ class SSLUITestBlock : public SSLUITest {
   // Browser will neither run nor display insecure content.
   virtual void SetUpCommandLine(CommandLine* command_line) {
     command_line->AppendSwitch(switches::kNoDisplayingInsecureContent);
+    command_line->AppendSwitch(switches::kNoRunningInsecureContent);
   }
 };
 
