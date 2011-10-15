@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/first_run_bubble.h"
 
+#include "base/bind.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/search_engines/util.h"
@@ -522,7 +523,7 @@ FirstRunBubble::FirstRunBubble()
 }
 
 FirstRunBubble::~FirstRunBubble() {
-  enable_window_method_factory_.RevokeAll();
+  enable_window_method_factory_.InvalidateWeakPtrs();
   GetWidget()->GetFocusManager()->RemoveFocusChangeListener(view_);
 }
 
@@ -556,9 +557,10 @@ void FirstRunBubble::OnActivate(UINT action, BOOL minimized, HWND window) {
 
     ::EnableWindow(GetParent(), false);
 
-    MessageLoop::current()->PostDelayedTask(FROM_HERE,
-        enable_window_method_factory_.NewRunnableMethod(
-            &FirstRunBubble::EnableParent),
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&FirstRunBubble::EnableParent,
+                   enable_window_method_factory_.GetWeakPtr()),
         kLingerTime);
     return;
   }

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/browser_actions_container.h"
 
+#include "base/bind.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -602,7 +603,7 @@ int BrowserActionsContainer::OnDragUpdated(
     const views::DropTargetEvent& event) {
   // First check if we are above the chevron (overflow) menu.
   if (GetEventHandlerForPoint(event.location()) == chevron_) {
-    if (show_menu_task_factory_.empty() && !overflow_menu_)
+    if (!show_menu_task_factory_.HasWeakPtrs() && !overflow_menu_)
       StartShowFolderDropMenuTimer();
     return ui::DragDropTypes::DRAG_MOVE;
   }
@@ -1011,14 +1012,15 @@ void BrowserActionsContainer::CloseOverflowMenu() {
 }
 
 void BrowserActionsContainer::StopShowFolderDropMenuTimer() {
-  show_menu_task_factory_.RevokeAll();
+  show_menu_task_factory_.InvalidateWeakPtrs();
 }
 
 void BrowserActionsContainer::StartShowFolderDropMenuTimer() {
   int delay = views::GetMenuShowDelay();
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      show_menu_task_factory_.NewRunnableMethod(
-          &BrowserActionsContainer::ShowDropFolder),
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&BrowserActionsContainer::ShowDropFolder,
+                 show_menu_task_factory_.GetWeakPtr()),
       delay);
 }
 

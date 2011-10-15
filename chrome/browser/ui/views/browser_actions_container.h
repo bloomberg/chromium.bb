@@ -10,8 +10,9 @@
 #include <string>
 #include <vector>
 
+#include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/task.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
@@ -513,10 +514,10 @@ class BrowserActionsContainer
   // The x position for where to draw the drop indicator. -1 if no indicator.
   int drop_indicator_position_;
 
-  ScopedRunnableMethodFactory<BrowserActionsContainer> task_factory_;
+  base::WeakPtrFactory<BrowserActionsContainer> task_factory_;
 
   // Handles delayed showing of the overflow menu when hovering.
-  ScopedRunnableMethodFactory<BrowserActionsContainer> show_menu_task_factory_;
+  base::WeakPtrFactory<BrowserActionsContainer> show_menu_task_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserActionsContainer);
 };

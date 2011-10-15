@@ -8,7 +8,7 @@
 
 #include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/task.h"
+#include "base/memory/weak_ptr.h"
 #include "views/focus/focus_manager.h"
 #include "views/view.h"
 
@@ -74,7 +74,7 @@ class AccessiblePaneView : public views::View,
 
   bool pane_has_focus_;
 
-  ScopedRunnableMethodFactory<AccessiblePaneView> method_factory_;
+  base::WeakPtrFactory<AccessiblePaneView> method_factory_;
 
   // Save the focus manager rather than calling GetFocusManager(),
   // so that we can remove focus listeners in the destructor.

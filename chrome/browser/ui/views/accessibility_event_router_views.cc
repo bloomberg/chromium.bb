@@ -23,8 +23,7 @@
 using views::FocusManager;
 
 AccessibilityEventRouterViews::AccessibilityEventRouterViews()
-    : most_recent_profile_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+    : most_recent_profile_(NULL) {
 }
 
 AccessibilityEventRouterViews::~AccessibilityEventRouterViews() {

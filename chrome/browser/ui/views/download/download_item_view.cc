@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/file_path.h"
 #include "base/i18n/break_iterator.h"
@@ -393,7 +394,8 @@ void DownloadItemView::OnDownloadOpened(DownloadItem* download) {
   SetEnabled(false);
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      reenable_method_factory_.NewRunnableMethod(&DownloadItemView::Reenable),
+      base::Bind(&DownloadItemView::Reenable,
+                 reenable_method_factory_.GetWeakPtr()),
       kDisabledOnOpenDuration);
 
   // Notify our parent.

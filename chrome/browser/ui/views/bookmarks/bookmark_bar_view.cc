@@ -9,6 +9,7 @@
 #include <set>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
@@ -1381,7 +1382,7 @@ void BookmarkBarView::ShowDropFolderForNode(const BookmarkNode* node) {
 }
 
 void BookmarkBarView::StopShowFolderDropMenuTimer() {
-  show_folder_method_factory_.RevokeAll();
+  show_folder_method_factory_.InvalidateWeakPtrs();
 }
 
 void BookmarkBarView::StartShowFolderDropMenuTimer(const BookmarkNode* node) {
@@ -1391,11 +1392,12 @@ void BookmarkBarView::StartShowFolderDropMenuTimer(const BookmarkNode* node) {
     ShowDropFolderForNode(node);
     return;
   }
-  show_folder_method_factory_.RevokeAll();
+  show_folder_method_factory_.InvalidateWeakPtrs();
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      show_folder_method_factory_.NewRunnableMethod(
-          &BookmarkBarView::ShowDropFolderForNode, node),
+      base::Bind(&BookmarkBarView::ShowDropFolderForNode,
+                 show_folder_method_factory_.GetWeakPtr(),
+                 node),
       views::GetMenuShowDelay());
 }
 

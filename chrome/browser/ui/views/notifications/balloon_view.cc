@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/notifications/balloon.h"
@@ -116,8 +117,9 @@ BalloonViewImpl::~BalloonViewImpl() {
 
 void BalloonViewImpl::Close(bool by_user) {
   MessageLoop::current()->PostTask(FROM_HERE,
-      method_factory_.NewRunnableMethod(
-          &BalloonViewImpl::DelayedClose, by_user));
+                                   base::Bind(&BalloonViewImpl::DelayedClose,
+                                              method_factory_.GetWeakPtr(),
+                                              by_user));
 }
 
 gfx::Size BalloonViewImpl::GetSize() const {

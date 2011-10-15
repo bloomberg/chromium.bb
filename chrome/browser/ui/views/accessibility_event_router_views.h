@@ -120,10 +120,6 @@ class AccessibilityEventRouterViews {
   // figure out where to route a few events that can't be directly traced
   // to a window with a profile (like menu events).
   Profile* most_recent_profile_;
-
-  // Used to defer handling of some events until the next time
-  // through the event loop.
-  ScopedRunnableMethodFactory<AccessibilityEventRouterViews> method_factory_;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_ACCESSIBILITY_EVENT_ROUTER_VIEWS_H_

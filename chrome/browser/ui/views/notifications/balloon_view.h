@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/task.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/ui/views/notifications/balloon_view_host.h"
 #include "content/common/notification_registrar.h"
@@ -141,7 +141,7 @@ class BalloonViewImpl : public BalloonView,
   scoped_ptr<BalloonViewHost> html_contents_;
 
   // The following factory is used to call methods at a later time.
-  ScopedRunnableMethodFactory<BalloonViewImpl> method_factory_;
+  base::WeakPtrFactory<BalloonViewImpl> method_factory_;
 
   // Pointer to sub-view is owned by the View sub-class.
   views::ImageButton* close_button_;

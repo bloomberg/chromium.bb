@@ -8,9 +8,10 @@
 
 #include <set>
 
+#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "base/task.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -382,7 +383,7 @@ class BookmarkBarView : public DetachableToolbarView,
   views::MenuButton* other_bookmarked_button_;
 
   // Task used to delay showing of the drop menu.
-  ScopedRunnableMethodFactory<BookmarkBarView> show_folder_method_factory_;
+  base::WeakPtrFactory<BookmarkBarView> show_folder_method_factory_;
 
   // Used to track drops on the bookmark bar view.
   scoped_ptr<DropInfo> drop_info_;

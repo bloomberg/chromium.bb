@@ -9,8 +9,8 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/string16.h"
-#include "base/task.h"
 #include "chrome/browser/ui/status_bubble.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/rect.h"
@@ -132,7 +132,7 @@ class StatusBubbleViews : public StatusBubble {
   bool is_expanded_;
 
   // Times expansion of status bubble when URL is too long for standard width.
-  ScopedRunnableMethodFactory<StatusBubbleViews> expand_timer_factory_;
+  base::WeakPtrFactory<StatusBubbleViews> expand_timer_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(StatusBubbleViews);
 };

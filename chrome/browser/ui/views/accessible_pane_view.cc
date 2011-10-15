@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/views/accessible_pane_view.h"
+
+#include "base/bind.h"
 #include "base/logging.h"
 #include "chrome/browser/ui/view_ids.h"
-#include "chrome/browser/ui/views/accessible_pane_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "ui/base/accessibility/accessible_view_state.h"
@@ -217,8 +219,9 @@ void AccessiblePaneView::FocusWillChange(views::View* focused_before,
     // Tabbing to the location bar should select all. Defer so that it happens
     // after the focus.
     MessageLoop::current()->PostTask(
-        FROM_HERE, method_factory_.NewRunnableMethod(
-            &AccessiblePaneView::LocationBarSelectAll));
+        FROM_HERE,
+        base::Bind(&AccessiblePaneView::LocationBarSelectAll,
+                   method_factory_.GetWeakPtr()));
   }
 
   if (!Contains(focused_now) ||
@@ -232,8 +235,9 @@ void AccessiblePaneView::FocusWillChange(views::View* focused_before,
     // remove |this| as a focus change listener while FocusManager is in the
     // middle of iterating over the list of listeners.
     MessageLoop::current()->PostTask(
-        FROM_HERE, method_factory_.NewRunnableMethod(
-            &AccessiblePaneView::RemovePaneFocus));
+        FROM_HERE,
+        base::Bind(&AccessiblePaneView::RemovePaneFocus,
+                   method_factory_.GetWeakPtr()));
   }
 }
 

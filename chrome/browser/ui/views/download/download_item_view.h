@@ -21,6 +21,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/timer.h"
@@ -273,7 +274,7 @@ class DownloadItemView : public views::ButtonListener,
 
   // Method factory used to delay reenabling of the item when opening the
   // downloaded file.
-  ScopedRunnableMethodFactory<DownloadItemView> reenable_method_factory_;
+  base::WeakPtrFactory<DownloadItemView> reenable_method_factory_;
 
   // The currently running download context menu.
   scoped_ptr<DownloadShelfContextMenuView> context_menu_;
