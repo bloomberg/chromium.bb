@@ -754,9 +754,10 @@ void AddInstallWorkItems(const InstallationState& original_state,
       target_path.Append(installer::kDictionaries).value(),
       temp_path.value(), WorkItem::IF_NOT_PRESENT);
 
-  // Delete any old_chrome.exe if present.
+  // Delete any old_chrome.exe if present (ignore failure if it's in use).
   install_list->AddDeleteTreeWorkItem(
-      target_path.Append(installer::kChromeOldExe), temp_path);
+      target_path.Append(installer::kChromeOldExe), temp_path)
+      ->set_ignore_failure(true);
 
   // Copy installer in install directory and
   // add shortcut in Control Panel->Add/Remove Programs.

@@ -53,6 +53,9 @@ class DeleteTreeWorkItem : public WorkItem {
 
   // The temporary directory into which the original root_path_ has been moved.
   ScopedTempDir backup_path_;
+
+  // Set to true once root_path_ has been copied into backup_path_.
+  bool copied_to_backup_;
 };
 
 #endif  // CHROME_INSTALLER_UTIL_DELETE_TREE_WORK_ITEM_H_

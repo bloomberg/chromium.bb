@@ -448,50 +448,42 @@ void InstallerState::RemoveOldVersionDirectories(
     const Version& new_version,
     Version* existing_version,
     const FilePath& temp_path) const {
-  file_util::FileEnumerator version_enum(target_path(), false,
-      file_util::FileEnumerator::DIRECTORIES);
   scoped_ptr<Version> version;
   std::vector<FilePath> key_files;
+  scoped_ptr<WorkItem> item;
 
-  // We try to delete all directories whose versions are lower than
-  // latest_version.
-  FilePath next_version = version_enum.Next();
-  while (!next_version.empty()) {
-    file_util::FileEnumerator::FindInfo find_data = {0};
-    version_enum.GetFindInfo(&find_data);
-    VLOG(1) << "directory found: " << find_data.cFileName;
-    version.reset(Version::GetVersionFromString(
-                      WideToASCII(find_data.cFileName)));
-    if (version.get()) {
-      // Delete the version folder if it is less than the new version and not
-      // equal to the old version (if we have an old version).
-      if (version->CompareTo(new_version) < 0 &&
-          (existing_version == NULL ||
-           version->CompareTo(*existing_version) != 0)) {
-        key_files.clear();
-        std::for_each(products_.begin(), products_.end(),
-                      std::bind2nd(std::mem_fun(&Product::AddKeyFiles),
-                                   &key_files));
-        const std::vector<FilePath>::iterator end = key_files.end();
-        for (std::vector<FilePath>::iterator scan = key_files.begin();
-             scan != end; ++scan) {
-          *scan = next_version.Append(*scan);
-        }
-
-        VLOG(1) << "Deleting directory: " << next_version.value();
-
-        scoped_ptr<WorkItem> item(
-            WorkItem::CreateDeleteTreeWorkItem(next_version, temp_path,
-                                               key_files));
-        if (!item->Do()) {
-          LOG(ERROR) << "Failed to delete old version directory: "
-                     << next_version.value();
-          item->Rollback();
-        }
+  // Try to delete all directories whose versions are lower than latest_version
+  // and not equal to the existing version (opv).
+  file_util::FileEnumerator version_enum(target_path(), false,
+      file_util::FileEnumerator::DIRECTORIES);
+  for (FilePath next_version = version_enum.Next(); !next_version.empty();
+       next_version = version_enum.Next()) {
+    FilePath dir_name(next_version.BaseName());
+    version.reset(Version::GetVersionFromString(WideToASCII(dir_name.value())));
+    // Delete the version folder if it is less than the new version and not
+    // equal to the old version (if we have an old version).
+    if (version.get() &&
+        version->CompareTo(new_version) < 0 &&
+        (existing_version == NULL || !version->Equals(*existing_version))) {
+      // Collect the key files (relative to the version dir) for all products.
+      key_files.clear();
+      std::for_each(products_.begin(), products_.end(),
+                    std::bind2nd(std::mem_fun(&Product::AddKeyFiles),
+                                 &key_files));
+      // Make the key_paths absolute.
+      const std::vector<FilePath>::iterator end = key_files.end();
+      for (std::vector<FilePath>::iterator scan = key_files.begin();
+           scan != end; ++scan) {
+        *scan = next_version.Append(*scan);
       }
-    }
 
-    next_version = version_enum.Next();
+      VLOG(1) << "Deleting old version directory: " << next_version.value();
+
+      item.reset(WorkItem::CreateDeleteTreeWorkItem(next_version, temp_path,
+                                                    key_files));
+      item->set_ignore_failure(true);
+      item->Do();
+    }
   }
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,7 +32,8 @@ DeleteTreeWorkItem::DeleteTreeWorkItem(
     const FilePath& temp_path,
     const std::vector<FilePath>& key_paths)
     : root_path_(root_path),
-      temp_path_(temp_path) {
+      temp_path_(temp_path),
+      copied_to_backup_(false) {
   if (!SafeCast(key_paths.size(), &num_key_files_)) {
     NOTREACHED() << "Impossibly large key_paths collection";
   } else if (num_key_files_ != 0) {
@@ -57,15 +58,19 @@ bool DeleteTreeWorkItem::Do() {
   for (ptrdiff_t i = 0; !abort && i != num_key_files_; ++i) {
     FilePath& key_file = key_paths_[i];
     ScopedTempDir& backup = key_backup_paths_[i];
-    if (!backup.CreateUniqueTempDirUnderPath(temp_path_)) {
-      PLOG(ERROR) << "Could not create temp dir in " << temp_path_.value();
-      abort = true;
-    } else if (!file_util::CopyFile(key_file,
-                   backup.path().Append(key_file.BaseName()))) {
-      PLOG(ERROR) << "Could not back up " << key_file.value()
-                  << " to directory " << backup.path().value();
-      abort = true;
-    } else {
+    if (!ignore_failure_) {
+      if (!backup.CreateUniqueTempDirUnderPath(temp_path_)) {
+        PLOG(ERROR) << "Could not create temp dir in " << temp_path_.value();
+        abort = true;
+      } else if (!file_util::CopyFile(key_file,
+                     backup.path().Append(key_file.BaseName()))) {
+        PLOG(ERROR) << "Could not back up " << key_file.value()
+                    << " to directory " << backup.path().value();
+        abort = true;
+        backup.Delete();
+      }
+    }
+    if (!abort) {
       HANDLE file = ::CreateFile(key_file.value().c_str(), FILE_ALL_ACCESS,
                                  FILE_SHARE_DELETE, NULL, OPEN_EXISTING, 0,
                                  NULL);
@@ -115,6 +120,8 @@ bool DeleteTreeWorkItem::Do() {
           LOG(ERROR) << "can not copy " << root_path_.value()
                      << " to backup path " << backup.value();
           return false;
+        } else {
+          copied_to_backup_ = true;
         }
       }
     }
@@ -132,7 +139,8 @@ void DeleteTreeWorkItem::Rollback() {
   if (ignore_failure_)
     return;
 
-  if (!backup_path_.path().empty()) {
+  if (copied_to_backup_) {
+    DCHECK(!backup_path_.path().empty());
     FilePath backup = backup_path_.path().Append(root_path_.BaseName());
     if (file_util::PathExists(backup))
       file_util::Move(backup, root_path_);
