@@ -3907,11 +3907,7 @@ bool Browser::IsFullscreenForTab(const TabContents* tab) const {
       TabContentsWrapper::GetCurrentWrapperForContents(tab);
   bool result = wrapper && wrapper == fullscreened_tab_;
   DCHECK(!result || tab == GetSelectedTabContents());
-#if defined(OS_MACOSX)
-  DCHECK(!result || window_->InPresentationMode());
-#else
   DCHECK(!result || window_->IsFullscreen());
-#endif
 
   return result;
 }

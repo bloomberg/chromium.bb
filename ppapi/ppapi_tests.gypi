@@ -222,6 +222,39 @@
         'shared_impl/resource_tracker_unittest.cc',
       ],
     },
+    {
+      'target_name': 'ppapi_example_skeleton',
+      'suppress_wildcard': 1,
+      'type': 'none',
+      'direct_dependent_settings': {
+        'product_name': '>(_target_name)',
+        'conditions': [
+          ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris" or OS=="android"', {
+            'cflags': ['-fvisibility=hidden'],
+            'type': 'shared_library',
+            # -gstabs, used in the official builds, causes an ICE. Simply remove
+            # it.
+            'cflags!': ['-gstabs'],
+          }],
+          ['OS=="win"', {
+            'type': 'shared_library',
+          }],
+          ['OS=="mac"', {
+            'type': 'loadable_module',
+          }],
+        ],
+      },
+    },
+    {
+      'target_name': 'ppapi_example_mouse_lock',
+      'dependencies': [
+        'ppapi_example_skeleton',
+        'ppapi.gyp:ppapi_cpp',
+      ],
+      'sources': [
+        'examples/mouse_lock/mouse_lock.cc',
+      ],
+    },
   ],
 
   'conditions': [
@@ -229,29 +262,6 @@
     # http://code.google.com/p/chromium/issues/detail?id=54005 tracks mac.
     ['OS!="mac"', {
       'targets': [
-        {
-          'target_name': 'ppapi_example_skeleton',
-          'suppress_wildcard': 1,
-          'type': 'none',
-          'direct_dependent_settings': {
-            'product_name': '>(_target_name)',
-            'conditions': [
-              ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris" or OS=="android"', {
-                'cflags': ['-fvisibility=hidden'],
-                'type': 'shared_library',
-                # -gstabs, used in the official builds, causes an ICE. Simply remove
-                # it.
-                'cflags!': ['-gstabs'],
-              }],
-              ['OS=="win"', {
-                'type': 'shared_library',
-              }],
-              ['OS=="mac"', {
-                'type': 'loadable_module',
-              }],
-            ],
-          },
-        },
         {
           'target_name': 'ppapi_example_c_stub',
           'dependencies': [
@@ -280,16 +290,6 @@
           ],
           'sources': [
             'examples/audio/audio.cc',
-          ],
-        },
-        {
-          'target_name': 'ppapi_example_mouse_lock',
-          'dependencies': [
-            'ppapi_example_skeleton',
-            'ppapi.gyp:ppapi_cpp',
-          ],
-          'sources': [
-            'examples/mouse_lock/mouse_lock.cc',
           ],
         },
         {

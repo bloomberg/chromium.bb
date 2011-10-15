@@ -420,6 +420,7 @@ void RenderWidgetHostViewMac::Focus() {
 }
 
 void RenderWidgetHostViewMac::Blur() {
+  UnlockMouse();
   [[cocoa_view_ window] makeFirstResponder:nil];
 }
 
@@ -1007,12 +1008,32 @@ void RenderWidgetHostViewMac::SetScrollOffsetPinning(
 }
 
 bool RenderWidgetHostViewMac::LockMouse() {
-  NOTIMPLEMENTED();
-  return false;
+  if (mouse_locked_)
+    return true;
+
+  mouse_locked_ = true;
+
+  // Lock position of mouse cursor and hide it.
+  CGAssociateMouseAndMouseCursorPosition(NO);
+  [NSCursor hide];
+
+  // Clear the tooltip window.
+  SetTooltipText(string16());
+
+  return true;
 }
 
 void RenderWidgetHostViewMac::UnlockMouse() {
-  NOTIMPLEMENTED();
+  if (!mouse_locked_)
+    return;
+  mouse_locked_ = false;
+
+  // Unlock position of mouse cursor and unhide it.
+  CGAssociateMouseAndMouseCursorPosition(YES);
+  [NSCursor unhide];
+
+  if (render_widget_host_)
+    render_widget_host_->LostMouseLock();
 }
 
 void RenderWidgetHostViewMac::ShutdownHost() {
@@ -1032,8 +1053,10 @@ void RenderWidgetHostViewMac::SetActive(bool active) {
   }
   if (HasFocus())
     SetTextInputActive(active);
-  if (!active)
+  if (!active) {
     [cocoa_view_ setPluginImeActive:NO];
+    UnlockMouse();
+  }
 }
 
 void RenderWidgetHostViewMac::SetWindowVisibility(bool visible) {
