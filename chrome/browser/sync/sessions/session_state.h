@@ -271,7 +271,8 @@ class UpdateProgress {
 struct SyncCycleControlParameters {
   SyncCycleControlParameters() : conflict_sets_built(false),
                                  conflicts_resolved(false),
-                                 items_committed(false) {}
+                                 items_committed(false),
+                                 debug_info_sent(false) {}
   // Set to true by BuildAndProcessConflictSetsCommand if the RESOLVE_CONFLICTS
   // step is needed.
   bool conflict_sets_built;
@@ -281,6 +282,9 @@ struct SyncCycleControlParameters {
 
   // Set to true by PostCommitMessageCommand if any commits were successful.
   bool items_committed;
+
+  // True indicates debug info has been sent once this session.
+  bool debug_info_sent;
 };
 
 // DirtyOnWrite wraps a value such that any write operation will update a

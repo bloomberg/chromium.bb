@@ -24,6 +24,7 @@
 #include "chrome/browser/sync/internal_api/base_node.h"
 #include "chrome/browser/sync/internal_api/change_reorder_buffer.h"
 #include "chrome/browser/sync/internal_api/configure_reason.h"
+#include "chrome/browser/sync/internal_api/debug_info_event_listener.h"
 #include "chrome/browser/sync/internal_api/read_node.h"
 #include "chrome/browser/sync/internal_api/read_transaction.h"
 #include "chrome/browser/sync/internal_api/syncapi_server_connection_manager.h"
@@ -551,6 +552,9 @@ class SyncManager::SyncInternal
   JsSyncManagerObserver js_sync_manager_observer_;
   JsMutationEventObserver js_mutation_event_observer_;
 
+  // This is for keeping track of client events to send to the server.
+  DebugInfoEventListener debug_info_event_listener_;
+
   MessageLoop* const created_on_loop_;
 };
 const int SyncManager::SyncInternal::kDefaultNudgeDelayMilliseconds = 200;
@@ -766,6 +770,8 @@ bool SyncManager::SyncInternal::Init(
   AddObserver(&js_sync_manager_observer_);
   SetJsEventHandler(event_handler);
 
+  AddObserver(&debug_info_event_listener_);
+
   share_.dir_manager.reset(new DirectoryManager(database_location));
 
   connection_manager_.reset(new SyncAPIServerConnectionManager(
@@ -787,7 +793,8 @@ bool SyncManager::SyncInternal::Init(
         connection_manager_.get(),
         dir_manager(),
         model_safe_worker_registrar,
-        listeners);
+        listeners,
+        &debug_info_event_listener_);
     context->set_account_name(credentials.email);
     // The SyncScheduler takes ownership of |context|.
     scheduler_.reset(new SyncScheduler(name_, context, new Syncer()));
@@ -1270,6 +1277,8 @@ void SyncManager::SyncInternal::ShutdownOnSyncThread() {
 
   SetJsEventHandler(WeakHandle<JsEventHandler>());
   RemoveObserver(&js_sync_manager_observer_);
+
+  RemoveObserver(&debug_info_event_listener_);
 
   if (sync_notifier_.get()) {
     sync_notifier_->RemoveObserver(this);

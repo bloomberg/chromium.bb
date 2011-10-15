@@ -16,6 +16,8 @@
 
 using syncable::ScopedDirLookup;
 
+using sync_pb::DebugInfo;
+
 namespace browser_sync {
 using sessions::StatusController;
 using sessions::SyncSession;
@@ -83,6 +85,10 @@ void DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
 
   SyncerProtoUtil::AddRequestBirthday(dir, &client_to_server_message);
 
+  DebugInfo* debug_info = client_to_server_message.mutable_debug_info();
+
+  AppendClientDebugInfoIfNeeded(session, debug_info);
+
   bool ok = SyncerProtoUtil::PostClientToServerMessage(
       client_to_server_message,
       &update_response,
@@ -125,5 +131,22 @@ void DownloadUpdatesCommand::SetRequestedTypes(
   }
   DCHECK_LT(0, requested_type_count) << "Doing GetUpdates with empty filter.";
 }
+
+void DownloadUpdatesCommand::AppendClientDebugInfoIfNeeded(
+    sessions::SyncSession* session,
+    DebugInfo* debug_info) {
+  // We want to send the debug info only once per sync cycle. Check if it has
+  // already been sent.
+  if (!session->status_controller()->debug_info_sent()) {
+    VLOG(1) << "Sending client debug info ...";
+    // could be null in some unit tests.
+    if (session->context()->debug_info_getter()) {
+      session->context()->debug_info_getter()->GetAndClearDebugInfo(
+          debug_info);
+    }
+    session->status_controller()->set_debug_info_sent();
+  }
+}
+
 
 }  // namespace browser_sync

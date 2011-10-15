@@ -15,6 +15,7 @@ option retain_unknown_fields = true;
 package sync_pb;
 
 import "encryption.proto";
+import "client_debug_info.proto";
 
 // Used for inspecting how long we spent performing operations in different
 // backends. All times must be in millis.
@@ -438,6 +439,11 @@ message ClientToServerMessage {
   // The client sets this if it detects a sync issue. The server will tell it
   // if it should perform a refresh.
   optional bool sync_problem_detected = 8 [default = false];
+
+  // Client side state information for debugging purpose.
+  // This is only sent on the first getupdates of every sync cycle,
+  // as an optimization to save bandwidth.
+  optional DebugInfo debug_info = 10;
 };
 
 message CommitResponse {

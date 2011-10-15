@@ -37,7 +37,7 @@ class SyncSessionTest : public testing::Test,
 
   virtual void SetUp() {
     context_.reset(new SyncSessionContext(NULL, NULL, this,
-        std::vector<SyncEngineEventListener*>()));
+        std::vector<SyncEngineEventListener*>(), NULL));
     routes_.clear();
     routes_[syncable::BOOKMARKS] = GROUP_UI;
     routes_[syncable::AUTOFILL] = GROUP_UI;
@@ -122,7 +122,7 @@ TEST_F(SyncSessionTest, SetWriteTransaction) {
   db.SetUp();
   session_.reset();
   context_.reset(new SyncSessionContext(NULL, db.manager(), this,
-      std::vector<SyncEngineEventListener*>()));
+      std::vector<SyncEngineEventListener*>(), NULL));
   session_.reset(MakeSession());
   context_->set_account_name(db.name());
   syncable::ScopedDirLookup dir(context_->directory_manager(),
