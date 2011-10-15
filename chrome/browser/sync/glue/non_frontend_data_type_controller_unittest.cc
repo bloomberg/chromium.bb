@@ -118,7 +118,7 @@ class NonFrontendDataTypeControllerTest : public testing::Test {
     EXPECT_CALL(profile_, GetProfileSyncService()).WillRepeatedly(
         Return(&service_));
     db_thread_.Start();
-    profile_sync_factory_.reset(new ProfileSyncFactoryMock());
+    profile_sync_factory_.reset(new StrictMock<ProfileSyncFactoryMock>());
 
     // Both of these are refcounted, so don't need to be released.
     dtc_mock_ = new StrictMock<NonFrontendDataTypeControllerMock>();

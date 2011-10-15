@@ -124,8 +124,7 @@ void NonFrontendDataTypeController::StartAssociation() {
 void NonFrontendDataTypeController::StartFailed(StartResult result,
                                                 const SyncError& error) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
-  model_associator_.reset();
-  change_processor_.reset();
+  StopAssociation();
   StartDone(result,
             result == ASSOCIATION_FAILED ? DISABLED : NOT_RUNNING,
             error);
@@ -180,31 +179,39 @@ void NonFrontendDataTypeController::StartDoneImpl(
 // locking (see implementation in AutofillProfileDataTypeController).
 void NonFrontendDataTypeController::Stop() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_NE(state_, NOT_RUNNING);
   // If Stop() is called while Start() is waiting for association to
   // complete, we need to abort the association and wait for the DB
   // thread to finish the StartImpl() task.
-  if (state_ == ASSOCIATING) {
-    state_ = STOPPING;
-    {
-      base::AutoLock lock(abort_association_lock_);
-      abort_association_ = true;
-      if (model_associator_.get())
-        model_associator_->AbortAssociation();
-    }
-    // Wait for the model association to abort.
-    abort_association_complete_.Wait();
-    StartDoneImpl(ABORTED, STOPPING, SyncError());
-  } else if (state_ == MODEL_STARTING) {
-    state_ = STOPPING;
-    // If Stop() is called while Start() is waiting for the models to start,
-    // abort the start. We don't need to continue on since it means we haven't
-    // kicked off the association, and once we call StopModels, we never will.
-    StartDoneImpl(ABORTED, NOT_RUNNING, SyncError());
-    return;
-  } else {
-    state_ = STOPPING;
-
-    StopModels();
+  switch (state_) {
+    case ASSOCIATING:
+      state_ = STOPPING;
+      {
+        base::AutoLock lock(abort_association_lock_);
+        abort_association_ = true;
+        if (model_associator_.get())
+          model_associator_->AbortAssociation();
+      }
+      // Wait for the model association to abort.
+      abort_association_complete_.Wait();
+      StartDoneImpl(ABORTED, STOPPING, SyncError());
+      break;
+    case MODEL_STARTING:
+      state_ = STOPPING;
+      // If Stop() is called while Start() is waiting for the models to start,
+      // abort the start. We don't need to continue on since it means we haven't
+      // kicked off the association, and once we call StopModels, we never will.
+      StartDoneImpl(ABORTED, NOT_RUNNING, SyncError());
+      return;
+    case DISABLED:
+      state_ = NOT_RUNNING;
+      StopModels();
+      return;
+    default:
+      DCHECK_EQ(state_, RUNNING);
+      state_ = STOPPING;
+      StopModels();
+      break;
   }
   DCHECK(!start_callback_.get());
 
