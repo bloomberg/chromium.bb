@@ -75,19 +75,23 @@ void ResourceQueue::RemoveRequest(const GlobalRequestID& request_id) {
   requests_.erase(request_id);
 }
 
-void ResourceQueue::StartDelayedRequest(ResourceQueueDelegate* delegate,
-                                        const GlobalRequestID& request_id) {
+void ResourceQueue::StartDelayedRequests(ResourceQueueDelegate* delegate) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!shutdown_);
 
-  DCHECK(ContainsKey(interested_delegates_, request_id));
-  DCHECK(ContainsKey(interested_delegates_[request_id], delegate));
-  interested_delegates_[request_id].erase(delegate);
-  if (interested_delegates_[request_id].empty()) {
-    interested_delegates_.erase(request_id);
+  for (RequestMap::iterator i = requests_.begin(); i != requests_.end(); ++i) {
+    GlobalRequestID request_id = i->first;
+    // Ignore requests that this delegate never asked to delay.
+    if (!ContainsKey(interested_delegates_, request_id) ||
+        !ContainsKey(interested_delegates_[request_id], delegate)) {
+      continue;
+    }
+    interested_delegates_[request_id].erase(delegate);
 
-    if (ContainsKey(requests_, request_id)) {
-      net::URLRequest* request = requests_[request_id];
+    // If no more delegates want a delay, start the request.
+    if (interested_delegates_[request_id].empty()) {
+      interested_delegates_.erase(request_id);
+      net::URLRequest* request = i->second;
       // The request shouldn't have started (SUCCESS is the initial state).
       DCHECK_EQ(net::URLRequestStatus::SUCCESS, request->status().status());
       request->Start();

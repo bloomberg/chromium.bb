@@ -3835,7 +3835,7 @@ are declared in build/common.gypi.
       <message name="IDS_EXTENSION_PROMPT_WARNING_CLIPBOARD" desc="Permission string for access to clipboard.">
         Data you copy and paste
       </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_TTS_ENGINE" desc="Permission string for access to clipboard.">
+      <message name="IDS_EXTENSION_PROMPT_WARNING_TTS_ENGINE" desc="Permission string for access to text-to-speech.">
         Any text spoken using synthesized speech
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_CONTENT_SETTINGS" desc="Permission string for access to content settings.">

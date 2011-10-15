@@ -422,6 +422,11 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Whether context menu should be shown for page and browser actions.
   bool ShowConfigureContextMenus() const;
 
+  // Whether network requests should be delayed on browser startup until the
+  // extension's background page has loaded, even if the extension doesn't
+  // explicitly request a delay.
+  bool ImplicitlyDelaysNetworkStartup() const;
+
   // Returns the Homepage URL for this extension. If homepage_url was not
   // specified in the manifest, this returns the Google Gallery URL. For
   // third-party extensions, this returns a blank GURL.
