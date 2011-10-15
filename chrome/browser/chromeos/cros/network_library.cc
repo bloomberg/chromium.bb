@@ -390,6 +390,8 @@ void Network::SetState(ConnectionState new_state) {
     return;
   ConnectionState old_state = state_;
   state_ = new_state;
+  if (!IsConnectingState(new_state))
+    set_connection_started(false);
   if (new_state == STATE_FAILURE) {
     if (old_state != STATE_UNKNOWN &&
         old_state != STATE_IDLE) {
@@ -397,10 +399,12 @@ void Network::SetState(ConnectionState new_state) {
       // Transition STATE_IDLE -> STATE_FAILURE sometimes happens on resume
       // but is not an actual failure as network device is not ready yet.
       notify_failure_ = true;
+      // Normally error_ should be set, but if it is not we need to set it to
+      // something here so that the retry logic will be triggered.
+      if (error_ == ERROR_NO_ERROR)
+        error_ = ERROR_UNKNOWN;
     }
   } else {
-    if (!IsConnectingState(new_state))
-      set_connection_started(false);
     // State changed, so refresh IP address.
     // Note: blocking DBus call. TODO(stevenjb): refactor this.
     InitIPAddress();
@@ -587,6 +591,8 @@ std::string Network::GetErrorString() const {
     case ERROR_PPP_AUTH_FAILED:
       return l10n_util::GetStringUTF8(
           IDS_CHROMEOS_NETWORK_ERROR_PPP_AUTH_FAILED);
+    case ERROR_UNKNOWN:
+      return l10n_util::GetStringUTF8(IDS_CHROMEOS_NETWORK_ERROR_UNKNOWN);
   }
   return l10n_util::GetStringUTF8(IDS_CHROMEOS_NETWORK_STATE_UNRECOGNIZED);
 }
@@ -678,15 +684,25 @@ void VirtualNetwork::CopyCredentialsFromRemembered(Network* remembered) {
 bool VirtualNetwork::NeedMoreInfoToConnect() const {
   if (server_hostname_.empty() || username_.empty() || user_passphrase_.empty())
     return true;
+  if (error() != ERROR_NO_ERROR)
+    return true;
   switch (provider_type_) {
     case PROVIDER_TYPE_L2TP_IPSEC_PSK:
       if (psk_passphrase_.empty())
         return true;
       break;
     case PROVIDER_TYPE_L2TP_IPSEC_USER_CERT:
+      if (client_cert_id_.empty())
+        return true;
+      break;
     case PROVIDER_TYPE_OPEN_VPN:
       if (client_cert_id_.empty())
         return true;
+      // For now we always need additional info for OpenVPN.
+      // TODO(stevenjb): Check connectable() once flimflam sets that state
+      // properly, or define another mechanism to determine when additional
+      // credentials are required.
+      return true;
       break;
     case PROVIDER_TYPE_MAX:
       NOTREACHED();

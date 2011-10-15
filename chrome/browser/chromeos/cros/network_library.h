@@ -279,6 +279,7 @@ enum ConnectionError {
   ERROR_IPSEC_PSK_AUTH_FAILED  = 15,
   ERROR_IPSEC_CERT_AUTH_FAILED = 16,
   ERROR_PPP_AUTH_FAILED        = 17,
+  ERROR_UNKNOWN                = 255
 };
 
 // We are currently only supporting setting a single EAP Method.
