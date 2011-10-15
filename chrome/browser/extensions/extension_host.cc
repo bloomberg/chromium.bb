@@ -157,22 +157,6 @@ ExtensionHost::ExtensionHost(const Extension* extension,
                  Source<Profile>(profile_));
 }
 
-// This "mock" constructor should only be used by unit tests.
-ExtensionHost::ExtensionHost(const Extension* extension,
-                             content::ViewType host_type)
-    : extension_(extension),
-      extension_id_(extension->id()),
-      profile_(NULL),
-      render_view_host_(NULL),
-      did_stop_loading_(false),
-      document_element_available_(false),
-      url_(GURL()),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          extension_function_dispatcher_(profile_, this)),
-      extension_host_type_(host_type),
-      associated_tab_contents_(NULL) {
-}
-
 ExtensionHost::~ExtensionHost() {
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
@@ -180,9 +164,7 @@ ExtensionHost::~ExtensionHost() {
       Details<ExtensionHost>(this));
   ProcessCreationQueue::GetInstance()->Remove(this);
   GetJavaScriptDialogCreatorInstance()->ResetJavaScriptState(this);
-  // render_view_host_ may be NULL in unit tests.
-  if (render_view_host_)
-    render_view_host_->Shutdown();  // deletes render_view_host
+  render_view_host_->Shutdown();  // deletes render_view_host
 }
 
 void ExtensionHost::CreateView(Browser* browser) {

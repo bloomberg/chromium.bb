@@ -78,6 +78,7 @@ class AlwaysDelayingDelegate : public ResourceQueueDelegate {
       net::URLRequest* request,
       const ResourceDispatcherHostRequestInfo& request_info,
       const GlobalRequestID& request_id) {
+    delayed_requests_.push_back(request_id);
     return true;
   }
 
@@ -86,14 +87,21 @@ class AlwaysDelayingDelegate : public ResourceQueueDelegate {
   }
 
   void StartDelayedRequests() {
-    if (resource_queue_)
-      resource_queue_->StartDelayedRequests(this);
+    if (!resource_queue_)
+      return;
+
+    for (RequestList::iterator i = delayed_requests_.begin();
+         i != delayed_requests_.end(); ++i) {
+      resource_queue_->StartDelayedRequest(this, *i);
+    }
   }
 
  private:
   typedef std::vector<GlobalRequestID> RequestList;
 
   ResourceQueue* resource_queue_;
+
+  RequestList delayed_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(AlwaysDelayingDelegate);
 };
@@ -203,32 +211,6 @@ TEST_F(ResourceQueueTest, TwoDelegates) {
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(0, response_started_count_);
   always_delaying_delegate.StartDelayedRequests();
-  MessageLoop::current()->RunAllPending();
-  EXPECT_EQ(1, response_started_count_);
-
-  queue.Shutdown();
-}
-
-TEST_F(ResourceQueueTest, TwoDelayingDelegates) {
-  ResourceQueue queue;
-
-  AlwaysDelayingDelegate always_delaying_delegate1;
-  AlwaysDelayingDelegate always_delaying_delegate2;
-  InitializeQueue(
-      &queue, &always_delaying_delegate1, &always_delaying_delegate2);
-
-  net::URLRequest request(GURL(kTestUrl), this);
-  scoped_ptr<ResourceDispatcherHostRequestInfo> request_info(GetRequestInfo(0));
-  EXPECT_EQ(0, response_started_count_);
-  queue.AddRequest(&request, *request_info.get());
-  MessageLoop::current()->RunAllPending();
-  EXPECT_EQ(0, response_started_count_);
-
-  always_delaying_delegate1.StartDelayedRequests();
-  MessageLoop::current()->RunAllPending();
-  EXPECT_EQ(0, response_started_count_);
-
-  always_delaying_delegate2.StartDelayedRequests();
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(1, response_started_count_);
 

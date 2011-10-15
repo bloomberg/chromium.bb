@@ -313,11 +313,9 @@ ExtensionPermissionsInfo::ExtensionPermissionsInfo()
       IDS_EXTENSION_PROMPT_WARNING_TTS_ENGINE,
       ExtensionPermissionMessage::kTtsEngine, none);
   RegisterPermission(
-      ExtensionAPIPermission::kWebNavigation, "webNavigation", 0,
-      ExtensionPermissionMessage::kNone, none);
-  RegisterPermission(
-      ExtensionAPIPermission::kWebRequest, "webRequest", 0,
-      ExtensionPermissionMessage::kNone, none);
+      ExtensionAPIPermission::kWebNavigation, "webNavigation",
+      IDS_EXTENSION_PROMPT_WARNING_TABS,
+      ExtensionPermissionMessage::kTabs, none);
   RegisterPermission(
       ExtensionAPIPermission::kWebSocketProxyPrivate,
       "webSocketProxyPrivate", 0,

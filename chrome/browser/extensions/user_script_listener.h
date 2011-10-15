@@ -37,7 +37,6 @@ class UserScriptListener
  public:
   UserScriptListener();
 
- private:
   // ResourceQueueDelegate:
   virtual void Initialize(ResourceQueue* resource_queue) OVERRIDE;
   virtual bool ShouldDelayRequest(
@@ -46,6 +45,7 @@ class UserScriptListener
       const GlobalRequestID& request_id) OVERRIDE;
   virtual void WillShutdownResourceQueue() OVERRIDE;
 
+ private:
   friend class base::RefCountedThreadSafe<UserScriptListener>;
 
   typedef std::list<URLPattern> URLPatterns;
@@ -74,6 +74,11 @@ class UserScriptListener
   void Cleanup();
 
   ResourceQueue* resource_queue_;
+
+  // A list of every request that we delayed. Will be flushed when user scripts
+  // are ready.
+  typedef std::list<GlobalRequestID> DelayedRequests;
+  DelayedRequests delayed_request_ids_;
 
   // True if all user scripts from all profiles are ready.
   bool user_scripts_ready_;

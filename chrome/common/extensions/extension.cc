@@ -2835,13 +2835,6 @@ bool Extension::ShowConfigureContextMenus() const {
   return location() != Extension::COMPONENT;
 }
 
-bool Extension::ImplicitlyDelaysNetworkStartup() const {
-  // Network requests should be deferred until any extensions that might want
-  // to observe or modify them are loaded.
-  return HasAPIPermission(ExtensionAPIPermission::kWebNavigation) ||
-      HasAPIPermission(ExtensionAPIPermission::kWebRequest);
-}
-
 bool Extension::IsDisallowedExperimentalPermission(
     ExtensionAPIPermission::ID permission) const {
   return permission == ExtensionAPIPermission::kExperimental &&

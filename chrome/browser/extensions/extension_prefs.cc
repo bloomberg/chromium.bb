@@ -89,12 +89,6 @@ const char kPrefAllowFileAccess[] = "newAllowFileAccess";
 // the old flag and possibly go back to that name.
 // const char kPrefAllowFileAccessOld[] = "allowFileAccess";
 
-// A preference indicating that the extension wants to delay network requests
-// on browser launch until it indicates it's ready. For example, an extension
-// using the webRequest API might want to ensure that no requests are sent
-// before it has registered its event handlers.
-const char kPrefDelayNetworkRequests[] = "delayNetworkRequests";
-
 // A preference set by the web store to indicate login information for
 // purchased apps.
 const char kWebStoreLogin[] = "extensions.webstore_login";
@@ -883,21 +877,6 @@ bool ExtensionPrefs::HasAllowFileAccessSetting(
   return ext && ext->HasKey(kPrefAllowFileAccess);
 }
 
-void ExtensionPrefs::SetDelaysNetworkRequests(const std::string& extension_id,
-                                              bool does_delay) {
-  if (does_delay) {
-    UpdateExtensionPref(extension_id, kPrefDelayNetworkRequests,
-                        Value::CreateBooleanValue(true));
-  } else {
-    // Remove the pref.
-    UpdateExtensionPref(extension_id, kPrefDelayNetworkRequests, NULL);
-  }
-}
-
-bool ExtensionPrefs::DelaysNetworkRequests(const std::string& extension_id) {
-  return ReadExtensionPrefBoolean(extension_id, kPrefDelayNetworkRequests);
-}
-
 ExtensionPrefs::LaunchType ExtensionPrefs::GetLaunchType(
     const std::string& extension_id,
     ExtensionPrefs::LaunchType default_pref_value) {
@@ -1662,7 +1641,6 @@ void ExtensionPrefs::InitPrefStore(bool extensions_disabled) {
           value->DeepCopy());
     }
 
-    // Set content settings.
     const DictionaryValue* extension_prefs = GetExtensionPref(*ext_id);
     DCHECK(extension_prefs);
     ListValue* content_settings = NULL;
