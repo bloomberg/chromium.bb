@@ -63,7 +63,6 @@ class BaseCallback {
     // Therefore, callbacks will actually always complete synchronously. If the
     // tests get more advanced we need to add other means of signaling
     // completion.
-    MessageLoop::current()->RunAllPending();
     EXPECT_TRUE(has_run_);
     has_run_ = false;
   }
