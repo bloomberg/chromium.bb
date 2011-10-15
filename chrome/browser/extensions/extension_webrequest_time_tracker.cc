@@ -151,7 +151,7 @@ void ExtensionWebRequestTimeTracker::LogRequestEndTime(
   if (log.extension_block_durations.empty())
     return;
 
-  HISTOGRAM_TIMES("Extensions.NetworkDelay", log.block_duration);
+  UMA_HISTOGRAM_TIMES("Extensions.NetworkDelay", log.block_duration);
 
   Analyze(request_id);
 }

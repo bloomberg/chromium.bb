@@ -28,8 +28,7 @@ class CONTENT_EXPORT ResourceQueueDelegate {
   virtual void Initialize(ResourceQueue* resource_queue) = 0;
 
   // Should return true if it wants the |request| to not be started at this
-  // point. To start the delayed request, ResourceQueue::StartDelayedRequest
-  // should be used.
+  // point. Use ResourceQueue::StartDelayedRequests to restart requests.
   virtual bool ShouldDelayRequest(
       net::URLRequest* request,
       const ResourceDispatcherHostRequestInfo& request_info,
@@ -74,11 +73,10 @@ class CONTENT_EXPORT ResourceQueue {
   // |request_id| is no longer valid.
   void RemoveRequest(const GlobalRequestID& request_id);
 
-  // A delegate should call StartDelayedRequest when it wants to allow the
-  // request to start. If it was the last delegate that demanded the request
-  // to be delayed, the request will be started.
-  void StartDelayedRequest(ResourceQueueDelegate* delegate,
-                           const GlobalRequestID& request_id);
+  // A delegate should call StartDelayedRequests when it wants to allow all
+  // its delayed requests to start. If it was the last delegate that required
+  // a request to be delayed, that request will be started.
+  void StartDelayedRequests(ResourceQueueDelegate* delegate);
 
  private:
   typedef std::map<GlobalRequestID, net::URLRequest*> RequestMap;

@@ -239,6 +239,15 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer {
   void SetAllowFileAccess(const std::string& extension_id, bool allow);
   bool HasAllowFileAccessSetting(const std::string& extension_id) const;
 
+  // Sets the extension preference indicating that an extension wants to delay
+  // network requests on browser startup.
+  void SetDelaysNetworkRequests(const std::string& extension_id,
+                                bool does_delay);
+
+  // Returns true if an extension has registered to delay network requests on
+  // browser startup.
+  bool DelaysNetworkRequests(const std::string& extension_id);
+
   // Get the launch type preference.  If no preference is set, return
   // |default_pref_value|.
   LaunchType GetLaunchType(const std::string& extension_id,
@@ -252,7 +261,6 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer {
   extension_misc::LaunchContainer GetLaunchContainer(
       const Extension* extension,
       LaunchType default_pref_value);
-
 
   // Saves ExtensionInfo for each installed extension with the path to the
   // version directory and the location. Blacklisted extensions won't be saved

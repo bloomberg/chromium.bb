@@ -195,6 +195,9 @@ class ExtensionHost : public RenderViewHostDelegate,
   virtual gfx::NativeWindow GetDialogRootWindow() OVERRIDE;
 
  protected:
+  // This should only be used by unit tests.
+  ExtensionHost(const Extension* extension, content::ViewType host_type);
+
   // Internal functions used to support the CreateNewWidget() method. If a
   // platform requires plugging into widget creation at a lower level, then a
   // subclass might want to override these functions, but otherwise they should

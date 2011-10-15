@@ -11,7 +11,6 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "content/browser/browser_thread.h"
-#include "content/browser/renderer_host/global_request_id.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/common/notification_service.h"
 #include "net/url_request/url_request.h"
@@ -30,7 +29,7 @@ struct UserScriptListener::ProfileData {
 UserScriptListener::UserScriptListener()
     : resource_queue_(NULL),
       user_scripts_ready_(false) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  NotificationService::AllSources());
@@ -51,7 +50,7 @@ bool UserScriptListener::ShouldDelayRequest(
     net::URLRequest* request,
     const ResourceDispatcherHostRequestInfo& request_info,
     const GlobalRequestID& request_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   // If it's a frame load, then we need to check the URL against the list of
   // user scripts to see if we need to wait.
@@ -74,7 +73,6 @@ bool UserScriptListener::ShouldDelayRequest(
       if ((*it).MatchesURL(request->url())) {
         // One of the user scripts wants to inject into this request, but the
         // script isn't ready yet. Delay the request.
-        delayed_request_ids_.push_front(request_id);
         return true;
       }
     }
@@ -84,7 +82,7 @@ bool UserScriptListener::ShouldDelayRequest(
 }
 
 void UserScriptListener::WillShutdownResourceQueue() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   resource_queue_ = NULL;
 
   BrowserThread::PostTask(
@@ -96,7 +94,7 @@ UserScriptListener::~UserScriptListener() {
 }
 
 void UserScriptListener::CheckIfAllUserScriptsReady() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   bool was_ready = user_scripts_ready_;
 
   user_scripts_ready_ = true;
@@ -107,14 +105,8 @@ void UserScriptListener::CheckIfAllUserScriptsReady() {
   }
 
   if (user_scripts_ready_ && !was_ready) {
-    if (resource_queue_) {
-      for (DelayedRequests::iterator it = delayed_request_ids_.begin();
-           it != delayed_request_ids_.end(); ++it) {
-        resource_queue_->StartDelayedRequest(this, *it);
-      }
-    }
-
-    delayed_request_ids_.clear();
+    if (resource_queue_)
+      resource_queue_->StartDelayedRequests(this);
   }
 }
 
@@ -126,7 +118,7 @@ void UserScriptListener::UserScriptsReady(void* profile_id) {
 }
 
 void UserScriptListener::ProfileDestroyed(void* profile_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   profile_data_.erase(profile_id);
 
   // We may have deleted the only profile we were waiting on.
@@ -148,21 +140,21 @@ void UserScriptListener::AppendNewURLPatterns(void* profile_id,
 
 void UserScriptListener::ReplaceURLPatterns(void* profile_id,
                                             const URLPatterns& patterns) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   ProfileData& data = profile_data_[profile_id];
   data.url_patterns = patterns;
 }
 
 void UserScriptListener::Cleanup() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   registrar_.RemoveAll();
   Release();
 }
 
 void UserScriptListener::CollectURLPatterns(const Extension* extension,
                                             URLPatterns* patterns) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   const UserScriptList& scripts = extension->content_scripts();
   for (UserScriptList::const_iterator iter = scripts.begin();
@@ -176,7 +168,7 @@ void UserScriptListener::CollectURLPatterns(const Extension* extension,
 void UserScriptListener::Observe(int type,
                                  const NotificationSource& source,
                                  const NotificationDetails& details) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_LOADED: {
