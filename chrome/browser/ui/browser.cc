@@ -19,8 +19,8 @@
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
-#include "base/stringprintf.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time.h"
@@ -75,6 +75,7 @@
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
@@ -1043,6 +1044,64 @@ void Browser::InProgressDownloadResponse(bool cancel_downloads) {
   // Show the download page so the user can figure-out what downloads are still
   // in-progress.
   ShowDownloadsTab();
+}
+
+Browser::DownloadClosePreventionType Browser::OkToCloseWithInProgressDownloads(
+    int* num_downloads_blocking) const {
+  DCHECK(num_downloads_blocking);
+  *num_downloads_blocking = 0;
+
+  if (is_attempting_to_close_browser_)
+    return DOWNLOAD_CLOSE_OK;
+
+  // If we're not running a full browser process with a profile manager
+  // (testing), it's ok to close the browser.
+  if (!g_browser_process->profile_manager())
+    return DOWNLOAD_CLOSE_OK;
+
+  int total_download_count = DownloadService::DownloadCountAllProfiles();
+  if (total_download_count == 0)
+    return DOWNLOAD_CLOSE_OK;   // No downloads; can definitely close.
+
+  // Figure out how many windows are open total, and associated with this
+  // profile, that are relevant for the ok-to-close decision.
+  int profile_window_count = 0;
+  int total_window_count = 0;
+  for (BrowserList::const_iterator iter = BrowserList::begin();
+       iter != BrowserList::end(); ++iter) {
+    // Don't count this browser window or any other in the process of closing.
+    Browser* const browser = *iter;
+    // Check is_attempting_to_close_browser_ as window closing may be
+    // delayed, and windows that are in the process of closing don't
+    // count against our totals.
+    if (browser == this || browser->is_attempting_to_close_browser_)
+      continue;
+
+    if ((*iter)->profile() == profile())
+      profile_window_count++;
+    total_window_count++;
+  }
+
+  // If there aren't any other windows, we're at browser shutdown,
+  // which would cancel all current downloads.
+  if (total_window_count == 0) {
+    *num_downloads_blocking = total_download_count;
+    return DOWNLOAD_CLOSE_BROWSER_SHUTDOWN;
+  }
+
+  // If there aren't any other windows on our profile, and we're an incognito
+  // profile, and there are downloads associated with that profile,
+  // those downloads would be cancelled by our window (-> profile) close.
+  DownloadService* download_service =
+      DownloadServiceFactory::GetForProfile(profile());
+  if (profile_window_count == 0 && download_service->DownloadCount() > 0 &&
+      profile()->IsOffTheRecord()) {
+    *num_downloads_blocking = download_service->DownloadCount();
+    return DOWNLOAD_CLOSE_LAST_WINDOW_IN_INCOGNITO_PROFILE;
+  }
+
+  // Those are the only conditions under which we will block shutdown.
+  return DOWNLOAD_CLOSE_OK;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -4926,100 +4985,19 @@ void Browser::ClearUnloadState(TabContents* tab, bool process_now) {
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, In-progress download termination handling (private):
 
-void Browser::CheckDownloadsInProgress(bool* normal_downloads_are_present,
-                                       bool* incognito_downloads_are_present) {
-  *normal_downloads_are_present = false;
-  *incognito_downloads_are_present = false;
-
-  // If there are no download in-progress, our job is done.
-  DownloadManager* download_manager = NULL;
-  DownloadService* download_service =
-      DownloadServiceFactory::GetForProfile(profile());
-  // But first we need to check for the existence of the download manager, as
-  // GetDownloadManager() will unnecessarily try to create one if it does not
-  // exist.
-  if (download_service->HasCreatedDownloadManager())
-    download_manager = download_service->GetDownloadManager();
-  if (profile()->IsOffTheRecord()) {
-    // Browser is incognito and so download_manager if present is for incognito
-    // downloads.
-    *incognito_downloads_are_present =
-        (download_manager && download_manager->in_progress_count() != 0);
-    // Check original profile.
-    DownloadService* download_service = DownloadServiceFactory::GetForProfile(
-        profile()->GetOriginalProfile());
-    if (download_service->HasCreatedDownloadManager())
-      download_manager = download_service->GetDownloadManager();
-  }
-
-  *normal_downloads_are_present =
-      (download_manager && download_manager->in_progress_count() != 0);
-}
-
 bool Browser::CanCloseWithInProgressDownloads() {
-  if (cancel_download_confirmation_state_ != NOT_PROMPTED) {
-    if (cancel_download_confirmation_state_ == WAITING_FOR_RESPONSE) {
-      // We need to hear from the user before we can close.
-      return false;
-    }
-    // RESPONSE_RECEIVED case, the user decided to go along with the closing.
-    return true;
-  }
-  // Indicated that normal (non-incognito) downloads are pending.
-  bool normal_downloads_are_present = false;
-  bool incognito_downloads_are_present = false;
-  CheckDownloadsInProgress(&normal_downloads_are_present,
-                           &incognito_downloads_are_present);
-  if (!normal_downloads_are_present && !incognito_downloads_are_present)
+  // If we've prompted, we need to hear from the user before we
+  // can close.
+  if (cancel_download_confirmation_state_ != NOT_PROMPTED)
+    return cancel_download_confirmation_state_ != WAITING_FOR_RESPONSE;
+
+  int num_downloads_blocking;
+  if (DOWNLOAD_CLOSE_OK ==
+      OkToCloseWithInProgressDownloads(&num_downloads_blocking))
     return true;
 
-  if (is_attempting_to_close_browser_)
-    return true;
-
-  if ((!normal_downloads_are_present && !profile()->IsOffTheRecord()) ||
-      (!incognito_downloads_are_present && profile()->IsOffTheRecord()))
-    return true;
-
-  // Let's figure out if we are the last window for our profile.
-  // Note that we cannot just use BrowserList::GetBrowserCount as browser
-  // windows closing is delayed and the returned count might include windows
-  // that are being closed.
-  // The browser allowed to be closed only if:
-  // 1. It is a regular browser and there are no regular downloads present or
-  //    this is not the last regular browser window.
-  // 2. It is an incognito browser and there are no incognito downloads present
-  //    or this is not the last incognito browser window.
-  int count = 0;
-  for (BrowserList::const_iterator iter = BrowserList::begin();
-       iter != BrowserList::end(); ++iter) {
-    // Don't count this browser window or any other in the process of closing.
-    // Only consider tabbed browser windows, not popups.
-    Browser* const browser = *iter;
-    if (browser == this
-        || browser->is_attempting_to_close_browser_
-        || !browser->is_type_tabbed())
-      continue;
-
-    // Verify that this is not the last non-incognito or incognito browser,
-    // depending on the pending downloads.
-    if (normal_downloads_are_present && !profile()->IsOffTheRecord() &&
-        browser->profile()->IsOffTheRecord())
-      continue;
-    if (incognito_downloads_are_present && profile()->IsOffTheRecord() &&
-        !browser->profile()->IsOffTheRecord())
-      continue;
-
-    // We test the original profile, because an incognito browser window keeps
-    // the original profile alive (and its DownloadManager).
-    // We also need to test explicitly the profile directly so that 2 incognito
-    // profiles count as a match.
-    if ((*iter)->profile() == profile() ||
-        (*iter)->profile()->GetOriginalProfile() == profile())
-      count++;
-  }
-  if (count > 0)
-    return true;
-
+  // Closing this window will kill some downloads; prompt to make sure
+  // that's ok.
   cancel_download_confirmation_state_ = WAITING_FOR_RESPONSE;
   window_->ConfirmBrowserCloseWithPendingDownloads();
 

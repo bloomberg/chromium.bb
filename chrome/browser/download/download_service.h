@@ -29,6 +29,12 @@ class DownloadService : public ProfileKeyedService {
   // Has a download manager been created?  (By calling above function.)
   bool HasCreatedDownloadManager();
 
+  // Number of downloads associated with this instance of the service.
+  int DownloadCount() const;
+
+  // Number of downloads associated with all profiles.
+  static int DownloadCountAllProfiles();
+
   // Sets the DownloadManagerDelegate associated with this object and
   // its DownloadManager.  Takes ownership of |delegate|, and destroys
   // the previous delegate.  For testing.
