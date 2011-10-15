@@ -19,7 +19,7 @@
 
 NetworkDelayListener::NetworkDelayListener()
     : resource_queue_(NULL),
-      extensions_ready_(false),
+      extensions_ready_(true),
       recorded_startup_delay_(false) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -28,8 +28,6 @@ NetworkDelayListener::NetworkDelayListener()
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
-                 NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSIONS_READY,
                  NotificationService::AllSources());
   AddRef();  // Will be balanced in Cleanup().
 }
@@ -162,13 +160,6 @@ void NetworkDelayListener::Observe(int type,
             base::Bind(&NetworkDelayListener::OnExtensionReady,
                        this, extension->id()));
       }
-      break;
-    }
-
-    case chrome::NOTIFICATION_EXTENSIONS_READY: {
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
-          base::Bind(&NetworkDelayListener::StartDelayedRequestsIfReady, this));
       break;
     }
 

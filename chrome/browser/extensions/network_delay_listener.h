@@ -71,6 +71,12 @@ class NetworkDelayListener
   // True if the extensions are ready for network requests to proceed. In
   // practice this means that the background pages of any pending extensions
   // have been run.
+  // This flag starts out true, until the first extension that is registered to
+  // delay network requests starts loading. That's safe because the profile
+  // must be created, and thus extensions loaded, before a browser session is
+  // restored. It's also necessary, because Chrome Frame doesn't support
+  // extensions, and therefore doesn't send any notification that they're all
+  // done loading.
   bool extensions_ready_;
 
   // Which extension IDs have registered to delay network requests on startup,

@@ -141,14 +141,6 @@ class NetworkDelayListenerTest
     MessageLoop::current()->RunAllPending();
   }
 
-  void SendExtensionsReadyNotification() {
-    NotificationService::current()->Notify(
-        chrome::NOTIFICATION_EXTENSIONS_READY,
-        Source<Profile>(profile_.get()),
-        NotificationService::NoDetails());
-    MessageLoop::current()->RunAllPending();
-  }
-
   scoped_refptr<NetworkDelayListener> listener_;
 
   // Weak reference.
@@ -234,28 +226,10 @@ TEST_F(NetworkDelayListenerTest, ExtensionReadyTwice) {
   MessageLoop::current()->RunAllPending();
 }
 
-// Tests that the misleadingly named NOTIFICATION_EXTENSIONS_READY doesn't
-// release network requests.
-TEST_F(NetworkDelayListenerTest, ExtensionsReadyNotReady) {
-  LoadTestExtension1();
-
-  TestDelegate delegate;
-  scoped_ptr<TestURLRequest> request(StartTestRequest(&delegate, kTestUrl));
-  ASSERT_FALSE(request->is_pending());
-
-  SendExtensionsReadyNotification();
-  ASSERT_FALSE(request->is_pending());
-
-  SendExtensionLoadedNotification(extension1_);
-  EXPECT_EQ(kTestData, delegate.data_received());
-}
-
 // Tests that there's no delay if no loaded extension needs one.
 TEST_F(NetworkDelayListenerTest, NoDelayNoWebRequest) {
   LoadTestExtension(kTestExtensionNoNetworkDelay);
   ASSERT_FALSE(service_->extensions()->empty());
-
-  SendExtensionsReadyNotification();
 
   TestDelegate delegate;
   scoped_ptr<TestURLRequest> request(StartTestRequest(&delegate, kTestUrl));
@@ -269,8 +243,6 @@ TEST_F(NetworkDelayListenerTest, NoDelayNoWebRequest) {
 
 // Tests that there's no delay if no extensions are loaded.
 TEST_F(NetworkDelayListenerTest, NoDelayNoExtensions) {
-  SendExtensionsReadyNotification();
-
   TestDelegate delegate;
   scoped_ptr<TestURLRequest> request(StartTestRequest(&delegate, kTestUrl));
 
