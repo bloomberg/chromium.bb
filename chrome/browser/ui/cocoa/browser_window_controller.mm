@@ -1913,7 +1913,9 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 // "Enter Full Screen" menu item.  On Snow Leopard, this function is never
 // called by the UI directly, but it provides the implementation for
 // |-setPresentationMode:|.
-- (void)setFullscreen:(BOOL)fullscreen {
+- (void)setFullscreen:(BOOL)fullscreen
+                  url:(const GURL&)url
+        askPermission:(BOOL)askPermission {
   if (fullscreen == [self isFullscreen])
     return;
 
@@ -1931,8 +1933,9 @@ willAnimateFromState:(bookmarks::VisualState)oldState
       [self exitFullscreenForSnowLeopardOrEarlier];
   }
 
-  if (fullscreen) {
-    [self showFullscreenExitBubbleIfNecessary];
+  if (fullscreen && !url.is_empty()) {
+    [self showFullscreenExitBubbleIfNecessaryWithURL:url
+                                       askPermission:askPermission];
   } else {
     [self destroyFullscreenExitBubbleIfNecessary];
   }
@@ -1956,11 +1959,15 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 // set presentation mode.  On Snow Leopard, this function is called by the
 // "Enter Presentation Mode" menu item, and triggering presentation mode always
 // moves the user into fullscreen mode.
-- (void)setPresentationMode:(BOOL)presentationMode {
+- (void)setPresentationMode:(BOOL)presentationMode
+                        url:(const GURL&)url
+              askPermission:(BOOL)askPermission {
   // Presentation mode on Leopard and Snow Leopard maps directly to fullscreen
   // mode.
   if (base::mac::IsOSSnowLeopardOrEarlier()) {
-    [self setFullscreen:presentationMode];
+    [self setFullscreen:presentationMode
+                    url:url
+          askPermission:askPermission];
     return;
   }
 
@@ -1991,7 +1998,8 @@ willAnimateFromState:(bookmarks::VisualState)oldState
         [static_cast<FramedBrowserWindow*>(window) toggleSystemFullScreen];
     }
 
-    [self showFullscreenExitBubbleIfNecessary];
+    [self showFullscreenExitBubbleIfNecessaryWithURL:url
+                                       askPermission:askPermission];
   } else {
     if (enteredPresentationModeFromFullscreen_) {
       // The window is currently in fullscreen mode, but the user is choosing to

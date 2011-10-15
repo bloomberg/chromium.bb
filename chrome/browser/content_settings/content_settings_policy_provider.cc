@@ -32,6 +32,7 @@ const char* kPrefToManageType[CONTENT_SETTINGS_NUM_TYPES] = {
   prefs::kManagedDefaultNotificationsSetting,
   NULL,  // No policy for default value of content type intents
   NULL,  // No policy for default value of content type auto-select-certificate
+  NULL,  // No policy for default value of fullscreen requests
 };
 
 struct PrefsForManagedContentSettingsMapEntry {

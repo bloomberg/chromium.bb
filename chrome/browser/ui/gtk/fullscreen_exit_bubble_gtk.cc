@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/gtk/fullscreen_exit_bubble_gtk.h"
 
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/rounded_window.h"
@@ -15,9 +16,13 @@
 
 FullscreenExitBubbleGtk::FullscreenExitBubbleGtk(
     GtkFloatingContainer* container,
-    CommandUpdater::CommandUpdaterDelegate* delegate)
-    : FullscreenExitBubble(delegate),
-      container_(container) {
+    Browser* browser,
+    const GURL& url,
+    bool ask_permission)
+    : FullscreenExitBubble(browser),
+      container_(container),
+      url_(url),
+      show_buttons_(ask_permission) {
   InitWidgets();
   StartWatchingMouse();
 }
@@ -42,6 +47,7 @@ void FullscreenExitBubbleGtk::InitWidgets() {
   gtk_chrome_link_button_set_use_gtk_theme(GTK_CHROME_LINK_BUTTON(link),
                                            FALSE);
   signals_.Connect(link, "clicked", G_CALLBACK(OnLinkClickedThunk), this);
+
 
   link_container_.Own(gtk_util::CreateGtkBorderBin(
       link, &ui::kGdkBlack,

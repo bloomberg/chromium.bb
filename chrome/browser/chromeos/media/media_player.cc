@@ -177,7 +177,7 @@ void MediaPlayer::SetPlaybackRequest() {
 
 void MediaPlayer::ToggleFullscreen() {
   if (mediaplayer_browser_) {
-    mediaplayer_browser_->ToggleFullscreenMode();
+    mediaplayer_browser_->ToggleFullscreenMode(false);
   }
 }
 

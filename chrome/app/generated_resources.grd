@@ -14028,6 +14028,23 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
     </if>
 
+    <!-- Fullscreen Strings -->
+    <message name="IDS_FULLSCREEN_INFOBAR_REQUEST_PERMISSION" desc="Text displayed in the infobar that requests permission for a site to go fullscreen after it has gone fullscreen.">
+      <ph name="FULLSCREEN_ORIGIN">$1<ex>google.com</ex></ph> has gone fullscreen.
+    </message>
+    <message name="IDS_FULLSCREEN_INFOBAR_FILE_PAGE_NAME" desc="Message displayed when a local page goes fullscreen.">
+      This page has gone full screen.
+    </message>
+    <message name="IDS_FULLSCREEN_INFOBAR_USER_ENTERED_FULLSCREEN" desc="Message for the user telling them that they have entered fullscreen mode.">
+      You have gone full screen.
+    </message>
+    <message name="IDS_FULLSCREEN_INFOBAR_ALLOW" desc="Text in the infobar button that grants permission for a site to enter fullscreen without asking the user for permission.">
+      Allow
+    </message>
+    <message name="IDS_FULLSCREEN_INFOBAR_DENY" desc="Text in the infobar button that forces a webpage out of fullscreen mode.">
+      Exit full screen
+    </message>
+
     <!-- Register Protocol Handler Strings -->
     <message name="IDS_REGISTER_PROTOCOL_HANDLER_MAILTO_NAME" desc="A more user friendly way of describing mailto: links.">
       email

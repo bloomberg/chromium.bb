@@ -157,6 +157,8 @@ TEST_F(HostContentSettingsMapTest, IndividualSettings) {
       CONTENT_SETTING_ASK;
   desired_settings.settings[CONTENT_SETTINGS_TYPE_INTENTS] =
       CONTENT_SETTING_ASK;
+  desired_settings.settings[CONTENT_SETTINGS_TYPE_FULLSCREEN] =
+      CONTENT_SETTING_ASK;
   ContentSettings settings =
       host_content_settings_map->GetContentSettings(host, host);
   EXPECT_TRUE(SettingsEqual(desired_settings, settings));
@@ -609,6 +611,8 @@ TEST_F(HostContentSettingsMapTest, NestedSettings) {
       CONTENT_SETTING_ASK;
   desired_settings.settings[CONTENT_SETTINGS_TYPE_INTENTS] =
       CONTENT_SETTING_ASK;
+  desired_settings.settings[CONTENT_SETTINGS_TYPE_FULLSCREEN] =
+      CONTENT_SETTING_ASK;
   ContentSettings settings =
       host_content_settings_map->GetContentSettings(host, host);
   EXPECT_TRUE(SettingsEqual(desired_settings, settings));
@@ -626,6 +630,8 @@ TEST_F(HostContentSettingsMapTest, NestedSettings) {
             settings.settings[CONTENT_SETTINGS_TYPE_COOKIES]);
   EXPECT_EQ(desired_settings.settings[CONTENT_SETTINGS_TYPE_INTENTS],
             settings.settings[CONTENT_SETTINGS_TYPE_INTENTS]);
+  EXPECT_EQ(desired_settings.settings[CONTENT_SETTINGS_TYPE_FULLSCREEN],
+            settings.settings[CONTENT_SETTINGS_TYPE_FULLSCREEN]);
 }
 
 TEST_F(HostContentSettingsMapTest, OffTheRecord) {

@@ -34,6 +34,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/character_encoding.h"
+#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/register_protocol_handler_infobar_delegate.h"
 #include "chrome/browser/debugger/devtools_toggle_action.h"
@@ -753,7 +754,7 @@ TabContents* Browser::OpenApplicationTab(Profile* profile,
   // full screen mode in this case?
   if (launch_type == ExtensionPrefs::LAUNCH_FULLSCREEN &&
       !browser->window()->IsFullscreen())
-    browser->ToggleFullscreenMode();
+    browser->ToggleFullscreenMode(false);
 
   return contents;
 }
@@ -1654,7 +1655,10 @@ void Browser::ConvertPopupToTabbedBrowser() {
   browser->window()->Show();
 }
 
-void Browser::ToggleFullscreenMode() {
+// TODO(koz): Change |for_tab| to an enum.
+void Browser::ToggleFullscreenMode(bool for_tab) {
+  bool entering_fullscreen = !window_->IsFullscreen();
+
 #if !defined(OS_MACOSX)
   // In kiosk mode, we always want to be fullscreen. When the browser first
   // starts we're not yet fullscreen, so let the initial toggle go through.
@@ -1664,12 +1668,23 @@ void Browser::ToggleFullscreenMode() {
 #endif
 
   UserMetrics::RecordAction(UserMetricsAction("ToggleFullscreen"));
-  window_->SetFullscreen(!window_->IsFullscreen());
+  GURL url;
+  bool ask_permission = false;
+  if (for_tab) {
+    url = GetSelectedTabContents()->GetURL();
+    ask_permission = !url.SchemeIsFile() &&
+        (GetFullscreenSetting(url) == CONTENT_SETTING_ASK);
+  }
+  if (entering_fullscreen) {
+    window_->EnterFullscreen(url, ask_permission);
+  } else {
+    window_->ExitFullscreen();
+  }
 
   // Once the window has become fullscreen it'll call back to
   // WindowFullscreenStateChanged(). We don't do this immediately as
-  // BrowserWindow::SetFullscreen() asks for bookmark_bar_state_, so we let the
-  // BrowserWindow invoke WindowFullscreenStateChanged when appropriate.
+  // BrowserWindow::EnterFullscreen() asks for bookmark_bar_state_, so we let
+  // the BrowserWindow invoke WindowFullscreenStateChanged when appropriate.
 
   // TODO: convert mac to invoke WindowFullscreenStateChanged once it updates
   // the necessary state of the frame.
@@ -1686,8 +1701,16 @@ void Browser::NotifyTabOfFullscreenExitIfNecessary() {
 }
 
 #if defined(OS_MACOSX)
-void Browser::TogglePresentationMode() {
-  window_->SetPresentationMode(!window_->InPresentationMode());
+void Browser::TogglePresentationMode(bool for_tab) {
+  bool entering_fullscreen = !window_->InPresentationMode();
+  GURL url;
+  bool ask_permission = false;
+  if (for_tab) {
+    url = GetSelectedTabContents()->GetURL();
+    ask_permission = !url.SchemeIsFile() &&
+        (GetFullscreenSetting(url) == CONTENT_SETTING_ASK);
+  }
+  window_->SetPresentationMode(entering_fullscreen, url, ask_permission);
   WindowFullscreenStateChanged();
 }
 #endif
@@ -1696,7 +1719,7 @@ void Browser::TogglePresentationMode() {
 void Browser::Search() {
   // Exit fullscreen to show omnibox.
   if (window_->IsFullscreen()) {
-    ToggleFullscreenMode();
+    ToggleFullscreenMode(false);
     // ToggleFullscreenMode is asynchronous, so we don't have omnibox
     // visible at this point. Wait for next event cycle which toggles
     // the visibility of omnibox before creating new tab.
@@ -2623,9 +2646,9 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_RESTORE_TAB:           RestoreTab();                     break;
     case IDC_COPY_URL:              WriteCurrentURLToClipboard();     break;
     case IDC_SHOW_AS_TAB:           ConvertPopupToTabbedBrowser();    break;
-    case IDC_FULLSCREEN:            ToggleFullscreenMode();           break;
+    case IDC_FULLSCREEN:            ToggleFullscreenMode(false);      break;
 #if defined(OS_MACOSX)
-    case IDC_PRESENTATION_MODE:     TogglePresentationMode();         break;
+    case IDC_PRESENTATION_MODE:     TogglePresentationMode(false);    break;
 #endif
     case IDC_EXIT:                  Exit();                           break;
 #if defined(OS_CHROMEOS)
@@ -3807,9 +3830,9 @@ void Browser::ToggleFullscreenModeForTab(TabContents* tab,
 
   if (tab_caused_fullscreen_) {
 #if defined(OS_MACOSX)
-    TogglePresentationMode();
+    TogglePresentationMode(true);
 #else
-    ToggleFullscreenMode();
+    ToggleFullscreenMode(true);
 #endif
   } else if (!enter_fullscreen) {
     // If currently there is a tab in "tab fullscreen" mode and fullscreen was
@@ -3885,7 +3908,7 @@ void Browser::CrashedPlugin(TabContents* tab, const FilePath& plugin_path) {
 
 void Browser::ExitTabbedFullscreenModeIfNecessary() {
   if (tab_caused_fullscreen_)
-    ToggleFullscreenMode();
+    ToggleFullscreenMode(false);
   else
     NotifyTabOfFullscreenExitIfNecessary();
 }
@@ -3893,6 +3916,25 @@ void Browser::ExitTabbedFullscreenModeIfNecessary() {
 void Browser::UpdatePreferredSize(TabContents* source,
                                   const gfx::Size& pref_size) {
   window_->UpdatePreferredSize(source, pref_size);
+}
+
+void Browser::OnAcceptFullscreenPermission(const GURL& url) {
+  HostContentSettingsMap* settings_map = profile()->GetHostContentSettingsMap();
+
+  settings_map->SetContentSetting(
+      ContentSettingsPattern::FromString(url.host()),
+      ContentSettingsPattern::Wildcard(), CONTENT_SETTINGS_TYPE_FULLSCREEN,
+      std::string(), CONTENT_SETTING_ALLOW);
+}
+
+void Browser::OnDenyFullscreenPermission() {
+  ExitTabbedFullscreenModeIfNecessary();
+}
+
+ContentSetting Browser::GetFullscreenSetting(const GURL& url) {
+  HostContentSettingsMap* settings_map = profile()->GetHostContentSettingsMap();
+  return settings_map->GetContentSetting(url, url,
+      CONTENT_SETTINGS_TYPE_FULLSCREEN, std::string());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

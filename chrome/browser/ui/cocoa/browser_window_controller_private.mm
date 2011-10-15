@@ -256,6 +256,7 @@ willPositionSheet:(NSWindow*)sheet
   // presentation mode, it hangs off the top of the screen when the bar is
   // hidden.  The find bar is unaffected by the side tab positioning.
   [findBarCocoaController_ positionFindBarViewAtMaxY:maxY maxWidth:width];
+  [fullscreenExitBubbleController_ positionInWindowAtTop:maxY width:width];
 
   // If in presentation mode, reset |maxY| to top of screen, so that the
   // floating bar slides over the things which appear to be in the content area.
@@ -781,7 +782,8 @@ willPositionSheet:(NSWindow*)sheet
                                      : [toolbarController_ view]];
 }
 
-- (void)showFullscreenExitBubbleIfNecessary {
+- (void)showFullscreenExitBubbleIfNecessaryWithURL:(const GURL&)url
+                                     askPermission:(BOOL)askPermission {
   if (!browser_->is_fullscreen_for_tab()) {
     return;
   }
@@ -790,18 +792,19 @@ willPositionSheet:(NSWindow*)sheet
 
   fullscreenExitBubbleController_.reset(
       [[FullscreenExitBubbleController alloc] initWithOwner:self
-                                                    browser:browser_.get()]);
+                                                    browser:browser_.get()
+                                                        url:url
+                                              askPermission:askPermission]);
   NSView* contentView = [[self window] contentView];
   CGFloat maxWidth = NSWidth([contentView frame]);
   CGFloat maxY = NSMaxY([[[self window] contentView] frame]);
   [fullscreenExitBubbleController_
       positionInWindowAtTop:maxY width:maxWidth];
-  [contentView addSubview:[fullscreenExitBubbleController_ view]
-      positioned:NSWindowAbove relativeTo:[self tabContentArea]];
+  [fullscreenExitBubbleController_ showWindow];
 }
 
 - (void)destroyFullscreenExitBubbleIfNecessary {
-  [[fullscreenExitBubbleController_ view] removeFromSuperview];
+  [fullscreenExitBubbleController_ close];
   fullscreenExitBubbleController_.reset();
 }
 

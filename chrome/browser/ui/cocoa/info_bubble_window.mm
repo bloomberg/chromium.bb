@@ -94,6 +94,7 @@ class AppNotificationBridge : public NotificationObserver {
 @implementation InfoBubbleWindow
 
 @synthesize delayOnClose = delayOnClose_;
+@synthesize canBecomeKeyWindow = canBecomeKeyWindow_;
 
 - (id)initWithContentRect:(NSRect)contentRect
                 styleMask:(NSUInteger)aStyle
@@ -108,6 +109,7 @@ class AppNotificationBridge : public NotificationObserver {
     [self setOpaque:NO];
     [self setHasShadow:YES];
     delayOnClose_ = YES;
+    canBecomeKeyWindow_ = YES;
     notificationBridge_.reset(new AppNotificationBridge(self));
 
     // Start invisible. Will be made visible when ordered front.
@@ -133,10 +135,10 @@ class AppNotificationBridge : public NotificationObserver {
 // According to
 // http://www.cocoabuilder.com/archive/message/cocoa/2006/6/19/165953,
 // NSBorderlessWindowMask windows cannot become key or main. In this
-// case, this is not a desired behavior. As an example, the bubble could have
-// buttons.
+// case, this is not necessarily a desired behavior. As an example, the
+// bubble could have buttons.
 - (BOOL)canBecomeKeyWindow {
-  return YES;
+  return canBecomeKeyWindow_;
 }
 
 // Lets the traffic light buttons on the browser window keep their "active"

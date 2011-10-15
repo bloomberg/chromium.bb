@@ -361,7 +361,9 @@ class TabContents;
 
 // Enters (or exits) fullscreen mode.  This method is safe to call on all OS
 // versions.
-- (void)setFullscreen:(BOOL)fullscreen;
+- (void)setFullscreen:(BOOL)fullscreen
+                  url:(const GURL&)url
+        askPermission:(BOOL)askPermission;
 
 // Returns fullscreen state.  This method is safe to call on all OS versions.
 - (BOOL)isFullscreen;
@@ -374,7 +376,9 @@ class TabContents;
 // Enters (or exits) presentation mode.  Also enters fullscreen mode if this
 // window is not already fullscreen.  This method is safe to call on all OS
 // versions.
-- (void)setPresentationMode:(BOOL)presentationMode;
+- (void)setPresentationMode:(BOOL)presentationMode
+                        url:(const GURL&)url
+              askPermission:(BOOL)askPermission;
 
 // Returns presentation mode state.  This method is safe to call on all OS
 // versions.

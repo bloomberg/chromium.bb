@@ -1089,7 +1089,7 @@ void ScreenLocker::Show() {
   // browser can be NULL if we receive a lock request before the first browser
   // window is shown.
   if (browser && browser->window()->IsFullscreen()) {
-    browser->ToggleFullscreenMode();
+    browser->ToggleFullscreenMode(false);
   }
 
   if (!screen_locker_) {

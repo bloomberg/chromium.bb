@@ -246,7 +246,11 @@ bool Panel::IsMinimized() const {
   return expansion_state_ != EXPANDED;
 }
 
-void Panel::SetFullscreen(bool fullscreen) {
+void Panel::EnterFullscreen(const GURL& url, bool ask_permission) {
+  NOTIMPLEMENTED();
+}
+
+void Panel::ExitFullscreen() {
   NOTIMPLEMENTED();
 }
 
@@ -460,7 +464,9 @@ void Panel::OpenTabpose() {
   NOTIMPLEMENTED();
 }
 
-void Panel::SetPresentationMode(bool presentation_mode) {
+void Panel::SetPresentationMode(bool presentation_mode,
+                                const GURL& url,
+                                bool ask_permission) {
   NOTIMPLEMENTED();
 }
 

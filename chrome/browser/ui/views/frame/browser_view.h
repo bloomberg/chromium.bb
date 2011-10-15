@@ -254,7 +254,8 @@ class BrowserView : public BrowserBubbleHost,
   virtual gfx::Rect GetBounds() const OVERRIDE;
   virtual bool IsMaximized() const OVERRIDE;
   virtual bool IsMinimized() const OVERRIDE;
-  virtual void SetFullscreen(bool fullscreen) OVERRIDE;
+  virtual void EnterFullscreen(const GURL& url, bool ask_permission) OVERRIDE;
+  virtual void ExitFullscreen() OVERRIDE;
   virtual bool IsFullscreen() const OVERRIDE;
   virtual LocationBar* GetLocationBar() const OVERRIDE;
   virtual void SetFocusToLocationBar(bool select_all) OVERRIDE;
@@ -498,7 +499,11 @@ class BrowserView : public BrowserBubbleHost,
   // full screen state. On Linux changing the fullscreen state is async, so we
   // ask the window to change it's fullscreen state, then when we get
   // notification that it succeeded this method is invoked.
-  void ProcessFullscreen(bool fullscreen);
+  // If |url| is not empty, it is the URL of the page that requested fullscreen
+  // (via the fullscreen JS API).
+  // |ask_permission| determines whether the user should be asked to allow the
+  // site to remain fullscreen.
+  void ProcessFullscreen(bool fullscreen, const GURL& url, bool ask_permission);
 
   // Copy the accelerator table from the app resources into something we can
   // use.

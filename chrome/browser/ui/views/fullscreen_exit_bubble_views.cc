@@ -7,6 +7,7 @@
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/ui/views/bubble/bubble.h"
 #include "grit/generated_resources.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/keycodes/keyboard_codes.h"
@@ -14,6 +15,8 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/screen.h"
+#include "views/bubble/bubble_border.h"
+#include "views/controls/button/text_button.h"
 #include "views/controls/link.h"
 #include "views/widget/widget.h"
 
@@ -23,99 +26,199 @@
 
 // FullscreenExitView ----------------------------------------------------------
 
-class FullscreenExitBubbleViews::FullscreenExitView : public views::View {
+namespace {
+// Space between the site info label and the buttons / link.
+const int kMiddlePaddingPx = 30;
+}  // namespace
+
+class FullscreenExitBubbleViews::FullscreenExitView
+    : public views::View,
+      public views::ButtonListener {
  public:
   FullscreenExitView(FullscreenExitBubbleViews* bubble,
-                     const std::wstring& accelerator);
+                     const string16& accelerator,
+                     const GURL& url,
+                     bool ask_permission);
   virtual ~FullscreenExitView();
 
   // views::View
   virtual gfx::Size GetPreferredSize();
 
+  // views::ButtonListener
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
+
+  // Hide the accept and deny buttons, exposing the exit link.
+  void HideButtons();
+
  private:
+  string16 GetMessage(const GURL& url);
+
   // views::View
   virtual void Layout();
-  virtual void OnPaint(gfx::Canvas* canvas);
+
+  FullscreenExitBubbleViews* bubble_;
 
   // Clickable hint text to show in the bubble.
   views::Link link_;
+  views::Label message_label_;
+  views::NativeTextButton* accept_button_;
+  views::NativeTextButton* deny_button_;
+
+  bool show_buttons_;
 };
 
 FullscreenExitBubbleViews::FullscreenExitView::FullscreenExitView(
     FullscreenExitBubbleViews* bubble,
-    const std::wstring& accelerator) {
+    const string16& accelerator,
+    const GURL& url,
+    bool ask_permission)
+    : bubble_(bubble),
+      accept_button_(NULL),
+      deny_button_(NULL),
+      show_buttons_(ask_permission) {
+  views::BubbleBorder* bubble_border =
+      new views::BubbleBorder(views::BubbleBorder::NONE);
+  bubble_border->set_background_color(Bubble::kBackgroundColor);
+  set_background(new views::BubbleBackground(bubble_border));
+  set_border(bubble_border);
+  set_focusable(false);
+
+  message_label_.set_parent_owned(false);
+  message_label_.SetText(GetMessage(url));
+  message_label_.SetFont(ResourceBundle::GetSharedInstance().GetFont(
+      ResourceBundle::MediumFont));
+
   link_.set_parent_owned(false);
+  link_.set_collapse_when_hidden(false);
+  link_.set_focusable(false);
 #if !defined(OS_CHROMEOS)
   link_.SetText(
       l10n_util::GetStringFUTF16(IDS_EXIT_FULLSCREEN_MODE,
-                                 WideToUTF16(accelerator)));
+                                 accelerator));
 #else
   link_.SetText(l10n_util::GetStringUTF16(IDS_EXIT_FULLSCREEN_MODE));
 #endif
   link_.set_listener(bubble);
   link_.SetFont(ResourceBundle::GetSharedInstance().GetFont(
-      ResourceBundle::LargeFont));
-  link_.SetBackgroundColor(SK_ColorBLACK);
-  link_.SetEnabledColor(SK_ColorWHITE);
-  link_.SetPressedColor(SK_ColorWHITE);
+      ResourceBundle::MediumFont));
+  link_.SetPressedColor(message_label_.enabled_color());
+  link_.SetEnabledColor(message_label_.enabled_color());
+  link_.SetVisible(false);
+
+  link_.SetBackgroundColor(background()->get_color());
+  message_label_.SetBackgroundColor(background()->get_color());
+  AddChildView(&message_label_);
   AddChildView(&link_);
+
+  accept_button_ = new views::NativeTextButton(this,
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_FULLSCREEN_INFOBAR_ALLOW)));
+  accept_button_->set_focusable(false);
+  AddChildView(accept_button_);
+
+  deny_button_ = new views::NativeTextButton(this,
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_FULLSCREEN_INFOBAR_DENY)));
+  deny_button_->set_focusable(false);
+  AddChildView(deny_button_);
+
+  if (!show_buttons_)
+    HideButtons();
+}
+
+string16 FullscreenExitBubbleViews::FullscreenExitView::GetMessage(
+    const GURL& url) {
+  if (url.is_empty()) {
+    return l10n_util::GetStringUTF16(
+        IDS_FULLSCREEN_INFOBAR_USER_ENTERED_FULLSCREEN);
+  }
+  if (url.SchemeIsFile())
+    return l10n_util::GetStringUTF16(IDS_FULLSCREEN_INFOBAR_FILE_PAGE_NAME);
+  return l10n_util::GetStringFUTF16(IDS_FULLSCREEN_INFOBAR_REQUEST_PERMISSION,
+      UTF8ToUTF16(url.host()));
 }
 
 FullscreenExitBubbleViews::FullscreenExitView::~FullscreenExitView() {
 }
 
+void FullscreenExitBubbleViews::FullscreenExitView::ButtonPressed(
+    views::Button* sender, const views::Event& event) {
+  if (sender == accept_button_)
+    bubble_->OnAcceptFullscreen();
+  else
+    bubble_->OnCancelFullscreen();
+}
+
+void FullscreenExitBubbleViews::FullscreenExitView::HideButtons() {
+  show_buttons_ = false;
+  accept_button_->SetVisible(false);
+  deny_button_->SetVisible(false);
+  link_.SetVisible(true);
+}
+
 gfx::Size FullscreenExitBubbleViews::FullscreenExitView::GetPreferredSize() {
-  gfx::Size preferred_size(link_.GetPreferredSize());
-  preferred_size.Enlarge(kPaddingPx * 2, kPaddingPx * 2);
-  return preferred_size;
+  gfx::Size link_size(link_.GetPreferredSize());
+  gfx::Size message_label_size(message_label_.GetPreferredSize());
+  gfx::Size accept_size(accept_button_->GetPreferredSize());
+  gfx::Size deny_size(deny_button_->GetPreferredSize());
+  gfx::Insets insets(GetInsets());
+
+  int buttons_width = accept_size.width() + kPaddingPx +
+      deny_size.width();
+  int button_box_width = std::max(buttons_width, link_size.width());
+  int width = kPaddingPx + message_label_size.width() + kMiddlePaddingPx +
+      button_box_width + kPaddingPx;
+
+  gfx::Size result(width + insets.width(),
+      kPaddingPx * 2 + accept_size.height() + insets.height());
+  return result;
 }
 
 void FullscreenExitBubbleViews::FullscreenExitView::Layout() {
-  gfx::Size link_preferred_size(link_.GetPreferredSize());
-  link_.SetBounds(kPaddingPx,
-                  height() - kPaddingPx - link_preferred_size.height(),
-                  link_preferred_size.width(), link_preferred_size.height());
-}
+  gfx::Size link_size(link_.GetPreferredSize());
+  gfx::Size message_label_size(message_label_.GetPreferredSize());
+  gfx::Size accept_size(accept_button_->GetPreferredSize());
+  gfx::Size deny_size(deny_button_->GetPreferredSize());
+  gfx::Insets insets(GetInsets());
 
-void FullscreenExitBubbleViews::FullscreenExitView::OnPaint(
-    gfx::Canvas* canvas) {
-  // Create a round-bottomed rect to fill the whole View.
-  SkRect rect;
-  SkScalar padding = SkIntToScalar(kPaddingPx);
-  // The "-padding" top coordinate ensures that the rect is always tall enough
-  // to contain the complete rounded corner radius.  If we set this to 0, as the
-  // popup slides offscreen (in reality, squishes to 0 height), the corners will
-  // flatten out as the height becomes less than the corner radius.
-  rect.set(0, -padding, SkIntToScalar(width()), SkIntToScalar(height()));
-  SkScalar rad[8] = { 0, 0, 0, 0, padding, padding, padding, padding };
-  SkPath path;
-  path.addRoundRect(rect, rad, SkPath::kCW_Direction);
+  int inner_height = height() - insets.height();
+  int button_box_x = insets.left() + kPaddingPx +
+      message_label_size.width() + kMiddlePaddingPx;
+  int message_label_y = insets.top() +
+      (inner_height - message_label_size.height()) / 2;
+  int link_x = width() - insets.right() - kPaddingPx -
+      link_size.width();
+  int link_y = insets.top() + (inner_height - link_size.height()) / 2;
 
-  // Fill it black.
-  SkPaint paint;
-  paint.setStyle(SkPaint::kFill_Style);
-  paint.setFlags(SkPaint::kAntiAlias_Flag);
-  paint.setColor(SK_ColorBLACK);
-  canvas->GetSkCanvas()->drawPath(path, paint);
+  message_label_.SetPosition(gfx::Point(insets.left() + kPaddingPx,
+                             message_label_y));
+  link_.SetPosition(gfx::Point(link_x, link_y));
+  if (show_buttons_) {
+    accept_button_->SetPosition(gfx::Point(button_box_x,
+        insets.top() + kPaddingPx));
+    deny_button_->SetPosition(gfx::Point(
+        button_box_x + accept_size.width() + kPaddingPx,
+        insets.top() + kPaddingPx));
+  }
 }
 
 // FullscreenExitBubbleViews ---------------------------------------------------
 
-FullscreenExitBubbleViews::FullscreenExitBubbleViews(
-    views::Widget* frame,
-    CommandUpdater::CommandUpdaterDelegate* delegate)
-    : FullscreenExitBubble(delegate),
+FullscreenExitBubbleViews::FullscreenExitBubbleViews(views::Widget* frame,
+                                                     Browser* browser,
+                                                     const GURL& url,
+                                                     bool ask_permission)
+    : FullscreenExitBubble(browser),
       root_view_(frame->GetRootView()),
       popup_(NULL),
-      size_animation_(new ui::SlideAnimation(this)) {
+      size_animation_(new ui::SlideAnimation(this)),
+      url_(url) {
   size_animation_->Reset(1);
 
   // Create the contents view.
   views::Accelerator accelerator(ui::VKEY_UNKNOWN, false, false, false);
   bool got_accelerator = frame->GetAccelerator(IDC_FULLSCREEN, &accelerator);
   DCHECK(got_accelerator);
-  view_ = new FullscreenExitView(
-      this, UTF16ToWideHack(accelerator.GetShortcutText()));
+  view_ = new FullscreenExitView(this,
+      accelerator.GetShortcutText(), url, ask_permission);
 
   // Initialize the popup.
   popup_ = new views::Widget;
@@ -126,11 +229,18 @@ FullscreenExitBubbleViews::FullscreenExitBubbleViews(
   params.parent = frame->GetNativeView();
   params.bounds = GetPopupRect(false);
   popup_->Init(params);
+  gfx::Size size = GetPopupRect(true).size();
   popup_->SetContentsView(view_);
-  popup_->SetOpacity(static_cast<unsigned char>(0xff * kOpacity));
+  // We set layout manager to NULL to prevent the widget from sizing its
+  // contents to the same size as itself. This prevents the widget contents from
+  // shrinking while we animate the height of the popup to give the impression
+  // that it is sliding off the top of the screen.
+  popup_->GetRootView()->SetLayoutManager(NULL);
+  view_->SetBounds(0, 0, size.width(), size.height());
   popup_->Show();  // This does not activate the popup.
 
-  StartWatchingMouse();
+  if (!ask_permission)
+    StartWatchingMouse();
 }
 
 FullscreenExitBubbleViews::~FullscreenExitBubbleViews() {
@@ -152,6 +262,16 @@ void FullscreenExitBubbleViews::LinkClicked(
   ToggleFullscreen();
 }
 
+void FullscreenExitBubbleViews::OnAcceptFullscreen() {
+  AcceptFullscreen(url_);
+  view_->HideButtons();
+  StartWatchingMouse();
+}
+
+void FullscreenExitBubbleViews::OnCancelFullscreen() {
+  CancelFullscreen();
+}
+
 void FullscreenExitBubbleViews::AnimationProgressed(
     const ui::Animation* animation) {
   gfx::Rect popup_rect(GetPopupRect(false));
@@ -159,9 +279,11 @@ void FullscreenExitBubbleViews::AnimationProgressed(
     popup_->Hide();
   } else {
     popup_->SetBounds(popup_rect);
+    view_->SetY(popup_rect.height() - view_->height());
     popup_->Show();
   }
 }
+
 void FullscreenExitBubbleViews::AnimationEnded(
     const ui::Animation* animation) {
   AnimationProgressed(animation);
@@ -199,16 +321,20 @@ gfx::Point FullscreenExitBubbleViews::GetCursorScreenPoint() {
 gfx::Rect FullscreenExitBubbleViews::GetPopupRect(
     bool ignore_animation_state) const {
   gfx::Size size(view_->GetPreferredSize());
-  if (!ignore_animation_state) {
-    size.set_height(static_cast<int>(static_cast<double>(size.height()) *
-        size_animation_->GetCurrentValue()));
-  }
   // NOTE: don't use the bounds of the root_view_. On linux changing window
   // size is async. Instead we use the size of the screen.
   gfx::Rect screen_bounds = gfx::Screen::GetMonitorAreaNearestWindow(
       root_view_->GetWidget()->GetNativeView());
   gfx::Point origin(screen_bounds.x() +
                     (screen_bounds.width() - size.width()) / 2,
-                    screen_bounds.y());
+                    kPopupTopPx + screen_bounds.y());
+  if (!ignore_animation_state) {
+    int total_height = size.height() + kPopupTopPx;
+    int popup_bottom = size_animation_->CurrentValueBetween(
+        static_cast<double>(total_height), 0.0f);
+    int y_offset = std::min(popup_bottom, kPopupTopPx);
+    size.set_height(size.height() - popup_bottom + y_offset);
+    origin.set_y(origin.y() - y_offset);
+  }
   return gfx::Rect(origin, size);
 }

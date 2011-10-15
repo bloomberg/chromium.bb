@@ -688,7 +688,7 @@ void BrowserWindowGtk::SetBoundsImpl(const gfx::Rect& bounds,
 
 void BrowserWindowGtk::SetBounds(const gfx::Rect& bounds) {
   if (IsFullscreen())
-    SetFullscreen(false);
+    ExitFullscreen();
   SetBoundsImpl(bounds, true, true);
 }
 
@@ -850,27 +850,36 @@ bool BrowserWindowGtk::ShouldDrawContentDropShadow() {
   return !IsMaximized() && UseCustomFrame();
 }
 
-void BrowserWindowGtk::SetFullscreen(bool fullscreen) {
+void BrowserWindowGtk::EnterFullscreen(const GURL& url, bool ask_permission) {
   // gtk_window_(un)fullscreen asks the window manager to toggle the EWMH
   // for fullscreen windows.  Not all window managers support this.
-  if (fullscreen) {
-    gtk_window_fullscreen(window_);
-  } else {
-    // Work around a bug where if we try to unfullscreen, metacity immediately
-    // fullscreens us again.  This is a little flickery and not necessary if
-    // there's a gnome-panel, but it's not easy to detect whether there's a
-    // panel or not.
-    std::string wm_name;
-    bool unmaximize_before_unfullscreen = IsMaximized() &&
-        ui::GetWindowManagerName(&wm_name) && wm_name == "Metacity";
-    if (unmaximize_before_unfullscreen)
-      UnMaximize();
-
-    gtk_window_unfullscreen(window_);
-
-    if (unmaximize_before_unfullscreen)
-      gtk_window_maximize(window_);
+  gtk_window_fullscreen(window_);
+  bool is_kiosk =
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode);
+  if (!is_kiosk) {
+    fullscreen_exit_bubble_.reset(new FullscreenExitBubbleGtk(
+        GTK_FLOATING_CONTAINER(render_area_floating_container_),
+        browser(),
+        url,
+        ask_permission));
   }
+}
+
+void BrowserWindowGtk::ExitFullscreen() {
+  // Work around a bug where if we try to unfullscreen, metacity immediately
+  // fullscreens us again.  This is a little flickery and not necessary if
+  // there's a gnome-panel, but it's not easy to detect whether there's a
+  // panel or not.
+  std::string wm_name;
+  bool unmaximize_before_unfullscreen = IsMaximized() &&
+      ui::GetWindowManagerName(&wm_name) && wm_name == "Metacity";
+  if (unmaximize_before_unfullscreen)
+    UnMaximize();
+
+  gtk_window_unfullscreen(window_);
+
+  if (unmaximize_before_unfullscreen)
+    gtk_window_maximize(window_);
 }
 
 bool BrowserWindowGtk::IsFullscreen() const {
@@ -1431,10 +1440,12 @@ gboolean BrowserWindowGtk::OnWindowState(GtkWidget* sender,
         gtk_widget_hide(bookmark_bar_->widget());
       bool is_kiosk =
           CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode);
-      if (!is_kiosk) {
+      if (!is_kiosk && !fullscreen_exit_bubble_.get()) {
         fullscreen_exit_bubble_.reset(new FullscreenExitBubbleGtk(
             GTK_FLOATING_CONTAINER(render_area_floating_container_),
-            browser()));
+            browser(),
+            GURL(),
+            false));
       }
       gtk_widget_hide(toolbar_border_);
     } else {

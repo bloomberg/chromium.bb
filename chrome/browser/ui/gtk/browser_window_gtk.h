@@ -91,7 +91,8 @@ class BrowserWindowGtk : public BrowserWindow,
   virtual gfx::Rect GetBounds() const;
   virtual bool IsMaximized() const;
   virtual bool IsMinimized() const;
-  virtual void SetFullscreen(bool fullscreen);
+  virtual void EnterFullscreen(const GURL& url, bool ask_permission);
+  virtual void ExitFullscreen();
   virtual bool IsFullscreen() const;
   virtual bool IsFullscreenBubbleVisible() const;
   virtual LocationBar* GetLocationBar() const;

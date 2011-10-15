@@ -7,23 +7,37 @@
 #include "base/logging.h"  // for NOTREACHED()
 #include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#import "chrome/browser/ui/cocoa/animatable_view.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/event_utils.h"
 #import "chrome/browser/ui/cocoa/fullscreen_exit_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/hyperlink_text_view.h"
+#import "chrome/browser/ui/cocoa/info_bubble_view.h"
+#import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #include "grit/generated_resources.h"
 #include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
+#import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #include "ui/base/models/accelerator_cocoa.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
-const int kPaddingPx = 8;
-const int kInitialDelayMs = 3800;
-const int kSlideOutDurationMs = 700;
+
+namespace {
+const int kBubbleOffsetY = 10;
+const float kInitialDelay = 3.8;
+const float kHideDuration = 0.7;
+} // namespace
+
+@interface OneClickHyperlinkTextView : HyperlinkTextView
+@end
+@implementation OneClickHyperlinkTextView
+- (BOOL)acceptsFirstMouse:(NSEvent*)event {
+  return YES;
+}
+@end
 
 @interface FullscreenExitBubbleController (PrivateMethods)
 // Sets |exitLabel_| based on |exitLabelPlaceholder_|,
@@ -44,25 +58,77 @@ const int kSlideOutDurationMs = 700;
 
 @implementation FullscreenExitBubbleController
 
-- (id)initWithOwner:(BrowserWindowController*)owner browser:(Browser*)browser {
-  if ((self = [super initWithNibName:@"FullscreenExitBubble"
-                              bundle:base::mac::MainAppBundle()])) {
+- (id)initWithOwner:(BrowserWindowController*)owner
+            browser:(Browser*)browser
+                url:(const GURL&)url
+      askPermission:(BOOL)askPermission {
+  NSString* nibPath =
+      [base::mac::MainAppBundle() pathForResource:@"FullscreenExitBubble"
+                                          ofType:@"nib"];
+  if ((self = [super initWithWindowNibPath:nibPath owner:self])) {
     browser_ = browser;
     owner_ = owner;
+    url_ = url;
+    showButtons_ = askPermission;
   }
   return self;
 }
 
-- (void)awakeFromNib {
-  [self initializeLabel];
+- (void)allow:(id)sender {
+  [self hideButtons];
+  browser_->OnAcceptFullscreenPermission(url_);
   [self hideSoon];
 }
 
+- (void)deny:(id)sender {
+  browser_->ToggleFullscreenMode(false);
+}
+
+- (void)hideButtons {
+  [allowButton_ setHidden:YES];
+  [denyButton_ setHidden:YES];
+  [exitLabel_ setHidden:NO];
+}
+
+// We want this to be a child of a browser window.  addChildWindow:
+// (called from this function) will bring the window on-screen;
+// unfortunately, [NSWindowController showWindow:] will also bring it
+// on-screen (but will cause unexpected changes to the window's
+// position).  We cannot have an addChildWindow: and a subsequent
+// showWindow:. Thus, we have our own version.
+- (void)showWindow {
+  // Completes nib load.
+  InfoBubbleWindow* info_bubble = static_cast<InfoBubbleWindow*>([self window]);
+  [bubble_ setArrowLocation:info_bubble::kNoArrow];
+  [info_bubble setCanBecomeKeyWindow:NO];
+  if (!showButtons_) {
+    [self hideButtons];
+    [self hideSoon];
+  }
+  NSRect windowFrame = [owner_ window].frame;
+  [tweaker_ tweakUI:info_bubble];
+  [self positionInWindowAtTop:NSHeight(windowFrame) width:NSWidth(windowFrame)];
+  [[owner_ window] addChildWindow:info_bubble ordered:NSWindowAbove];
+
+  [info_bubble orderFront:self];
+}
+
+- (void)awakeFromNib {
+  DCHECK([[self window] isKindOfClass:[InfoBubbleWindow class]]);
+  NSString* title =
+      l10n_util::GetNSStringF(IDS_FULLSCREEN_INFOBAR_REQUEST_PERMISSION,
+          UTF8ToUTF16(url_.host()));
+  [messageLabel_ setStringValue:title];
+  [self initializeLabel];
+}
+
 - (void)positionInWindowAtTop:(CGFloat)maxY width:(CGFloat)maxWidth {
-  NSRect bubbleFrame = [[self view] frame];
-  bubbleFrame.origin.x = (int)(maxWidth/2 - NSWidth(bubbleFrame)/2);
-  bubbleFrame.origin.y = maxY - NSHeight(bubbleFrame);
-  [[self view] setFrame:bubbleFrame];
+  NSRect windowFrame = [self window].frame;
+  NSPoint origin;
+  origin.x = (int)(maxWidth/2 - NSWidth(windowFrame)/2);
+  origin.y = maxY - NSHeight(windowFrame);
+  origin.y -= kBubbleOffsetY;
+  [[self window] setFrameOrigin:origin];
 }
 
 // Called when someone clicks on the embedded link.
@@ -74,31 +140,18 @@ const int kSlideOutDurationMs = 700;
 }
 
 - (void)hideTimerFired:(NSTimer*)timer {
-  NSRect endFrame = [[self view] frame];
-  endFrame.origin.y += endFrame.size.height;
-  endFrame.size.height = 0;
-  NSDictionary* dict = [NSDictionary dictionaryWithObjectsAndKeys:
-      [self view], NSViewAnimationTargetKey,
-      [NSValue valueWithRect:endFrame], NSViewAnimationEndFrameKey, nil];
-
-  NSViewAnimation* animation =
-      [[NSViewAnimation alloc]
-        initWithViewAnimations:[NSArray arrayWithObjects:dict, nil]];
-  [animation gtm_setDuration:kSlideOutDurationMs/1000.0
-                   eventMask:NSLeftMouseUpMask];
-  [animation setDelegate:self];
-  [animation startAnimation];
-  hideAnimation_.reset(animation);
+  [NSAnimationContext beginGrouping];
+  [[NSAnimationContext currentContext]
+      gtm_setDuration:kHideDuration
+            eventMask:NSLeftMouseUpMask|NSLeftMouseDownMask];
+  [[[self window] animator] setAlphaValue:0.0];
+  [NSAnimationContext endGrouping];
 }
 
 - (void)animationDidEnd:(NSAnimation*)animation {
   if (animation == hideAnimation_.get()) {
     hideAnimation_.reset();
   }
-}
-
-- (AnimatableView*)animatableView {
-  return static_cast<AnimatableView*>([self view]);
 }
 
 - (void)dealloc {
@@ -116,10 +169,11 @@ const int kSlideOutDurationMs = 700;
   // The former doesn't show links in a nice way, but the latter can't be added
   // in IB without a containing scroll view, so create the NSTextView
   // programmatically.
-  exitLabel_.reset([[HyperlinkTextView alloc]
+  exitLabel_.reset([[OneClickHyperlinkTextView alloc]
       initWithFrame:[exitLabelPlaceholder_ frame]]);
   [exitLabel_.get() setAutoresizingMask:
       [exitLabelPlaceholder_ autoresizingMask]];
+  [exitLabel_.get() setHidden:[exitLabelPlaceholder_ isHidden]];
   [[exitLabelPlaceholder_ superview]
       replaceSubview:exitLabelPlaceholder_ with:exitLabel_.get()];
   exitLabelPlaceholder_ = nil;  // Now released.
@@ -128,25 +182,31 @@ const int kSlideOutDurationMs = 700;
   NSString *message = l10n_util::GetNSStringF(IDS_EXIT_FULLSCREEN_MODE,
       base::SysNSStringToUTF16([[self class] keyCommandString]));
 
+  NSFont* font = [NSFont systemFontOfSize:
+      [NSFont systemFontSizeForControlSize:NSRegularControlSize]];
   [(HyperlinkTextView*)exitLabel_.get()
         setMessageAndLink:@""
                  withLink:message
                  atOffset:0
-                     font:[NSFont systemFontOfSize:18]
-             messageColor:[NSColor whiteColor]
-                linkColor:[NSColor whiteColor]];
+                     font:font
+             messageColor:[NSColor blackColor]
+                linkColor:[NSColor blueColor]];
+  [exitLabel_.get() setAlignment:NSRightTextAlignment];
 
-  [exitLabel_.get() sizeToFit];
-  NSLayoutManager* layoutManager = [exitLabel_.get() layoutManager];
-  NSTextContainer* textContainer = [exitLabel_.get() textContainer];
+  NSRect labelFrame = [exitLabel_ frame];
+
+  // NSTextView's sizeToFit: method seems to enjoy wrapping lines. Temporarily
+  // set the size large to force it not to.
+  NSRect windowFrame = [[self window] frame];
+  [exitLabel_ setFrameSize:windowFrame.size];
+  NSLayoutManager* layoutManager = [exitLabel_ layoutManager];
+  NSTextContainer* textContainer = [exitLabel_ textContainer];
   [layoutManager ensureLayoutForTextContainer:textContainer];
   NSRect textFrame = [layoutManager usedRectForTextContainer:textContainer];
-  NSRect frame = [[self view] frame];
-  NSSize textSize = textFrame.size;
-  frame.size.width = textSize.width + 2 * kPaddingPx;
-  [[self view] setFrame:frame];
-  textFrame.origin.x = textFrame.origin.y = kPaddingPx;
-  [exitLabel_.get() setFrame:textFrame];
+
+  labelFrame.origin.x += NSWidth(labelFrame) - NSWidth(textFrame);
+  labelFrame.size = textFrame.size;
+  [exitLabel_ setFrame:labelFrame];
 }
 
 // This looks at the Main Menu and determines what the user has set as the
@@ -198,7 +258,7 @@ const int kSlideOutDurationMs = 700;
 
 - (void)hideSoon {
   hideTimer_.reset(
-      [[NSTimer scheduledTimerWithTimeInterval:kInitialDelayMs/1000.0
+      [[NSTimer scheduledTimerWithTimeInterval:kInitialDelay
                                         target:self
                                       selector:@selector(hideTimerFired:)
                                       userInfo:nil

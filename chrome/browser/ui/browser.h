@@ -38,6 +38,7 @@
 #include "chrome/browser/ui/shell_dialogs.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper_delegate.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
+#include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/browser/tab_contents/page_navigator.h"
@@ -469,7 +470,7 @@ class Browser : public TabHandlerDelegate,
   browser::NavigateParams GetSingletonTabNavigateParams(const GURL& url);
 
   // Invoked when the fullscreen state of the window changes.
-  // BrowserWindow::SetFullscreen invokes this after the window has become
+  // BrowserWindow::EnterFullscreen invokes this after the window has become
   // fullscreen.
   void WindowFullscreenStateChanged();
 
@@ -508,9 +509,9 @@ class Browser : public TabHandlerDelegate,
   void WriteCurrentURLToClipboard();
   void ConvertPopupToTabbedBrowser();
   // In kiosk mode, the first toggle is valid, the rest is discarded.
-  void ToggleFullscreenMode();
+  void ToggleFullscreenMode(bool from_tab);
 #if defined(OS_MACOSX)
-  void TogglePresentationMode();
+  void TogglePresentationMode(bool from_tab);
 #endif
   void Exit();
 #if defined(OS_CHROMEOS)
@@ -812,6 +813,11 @@ class Browser : public TabHandlerDelegate,
                              int index);
   virtual void TabPinnedStateChanged(TabContentsWrapper* contents, int index);
   virtual void TabStripEmpty();
+
+  // Fullscreen permission infobar callbacks.
+  void OnAcceptFullscreenPermission(const GURL& url);
+  void OnDenyFullscreenPermission();
+  ContentSetting GetFullscreenSetting(const GURL& url);
 
   // Figure out if there are tabs that have beforeunload handlers.
   bool TabsNeedBeforeUnloadFired();

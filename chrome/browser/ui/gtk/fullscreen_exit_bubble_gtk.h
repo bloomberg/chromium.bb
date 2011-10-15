@@ -21,7 +21,9 @@ class FullscreenExitBubbleGtk : public FullscreenExitBubble {
   // We place the bubble in |container|.
   FullscreenExitBubbleGtk(
       GtkFloatingContainer* container,
-      CommandUpdater::CommandUpdaterDelegate* delegate);
+      Browser* delegate,
+      const GURL& url,
+      bool ask_permission);
   virtual ~FullscreenExitBubbleGtk();
 
  protected:
@@ -58,6 +60,9 @@ class FullscreenExitBubbleGtk : public FullscreenExitBubble {
   base::OneShotTimer<FullscreenExitBubbleGtk> initial_delay_;
 
   ui::GtkSignalRegistrar signals_;
+
+  const GURL& url_;
+  bool show_buttons_;
 };
 
 #endif  // CHROME_BROWSER_UI_GTK_FULLSCREEN_EXIT_BUBBLE_GTK_H_

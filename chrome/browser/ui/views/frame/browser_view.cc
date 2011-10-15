@@ -598,7 +598,7 @@ void BrowserView::ShowInactive() {
 }
 
 void BrowserView::SetBounds(const gfx::Rect& bounds) {
-  SetFullscreen(false);
+  ExitFullscreen();
   GetWidget()->SetBounds(bounds);
 }
 
@@ -759,16 +759,29 @@ bool BrowserView::IsMinimized() const {
   return frame_->IsMinimized();
 }
 
-void BrowserView::SetFullscreen(bool fullscreen) {
-  if (IsFullscreen() == fullscreen)
+void BrowserView::EnterFullscreen(const GURL& url, bool ask_permission) {
+  if (IsFullscreen())
     return;  // Nothing to do.
 
-#if defined(OS_WIN) && !defined(USE_AURA)
-  ProcessFullscreen(fullscreen);
+#if defined(OS_WIN)
+  ProcessFullscreen(true, url, ask_permission);
 #else
   // On Linux changing fullscreen is async. Ask the window to change it's
   // fullscreen state, and when done invoke ProcessFullscreen.
-  frame_->SetFullscreen(fullscreen);
+  frame_->SetFullscreen(true);
+#endif
+}
+
+void BrowserView::ExitFullscreen() {
+  if (!IsFullscreen())
+    return;  // Nothing to do.
+
+#if defined(OS_WIN)
+  ProcessFullscreen(false, GURL(), false);
+#else
+  // On Linux changing fullscreen is async. Ask the window to change it's
+  // fullscreen state, and when done invoke ProcessFullscreen.
+  frame_->SetFullscreen(false);
 #endif
 }
 
@@ -781,7 +794,7 @@ bool BrowserView::IsFullscreenBubbleVisible() const {
 }
 
 void BrowserView::FullScreenStateChanged() {
-  ProcessFullscreen(IsFullscreen());
+  ProcessFullscreen(IsFullscreen(), GURL(), false);
 }
 
 void BrowserView::RestoreFocus() {
@@ -2164,7 +2177,9 @@ bool BrowserView::UpdateChildViewAndLayout(views::View* new_view,
   return changed;
 }
 
-void BrowserView::ProcessFullscreen(bool fullscreen) {
+void BrowserView::ProcessFullscreen(bool fullscreen,
+                                    const GURL& url,
+                                    bool ask_permission) {
   // Reduce jankiness during the following position changes by:
   //   * Hiding the window until it's in the final position
   //   * Ignoring all intervening Layout() calls, which resize the webpage and
@@ -2213,8 +2228,8 @@ void BrowserView::ProcessFullscreen(bool fullscreen) {
     bool is_kiosk =
         CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode);
     if (!is_kiosk) {
-      fullscreen_bubble_.reset(new FullscreenExitBubbleViews(GetWidget(),
-                                                             browser_.get()));
+      fullscreen_bubble_.reset(new FullscreenExitBubbleViews(
+          GetWidget(), browser_.get(), url, ask_permission));
     }
   } else {
 #if defined(OS_WIN) && !defined(USE_AURA)
@@ -2233,7 +2248,6 @@ void BrowserView::ProcessFullscreen(bool fullscreen) {
       PopForceHidden();
 #endif
 }
-
 
 void BrowserView::LoadAccelerators() {
 #if defined(USE_AURA)

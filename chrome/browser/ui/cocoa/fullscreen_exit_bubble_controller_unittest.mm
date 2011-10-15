@@ -35,16 +35,21 @@ class FullscreenExitBubbleControllerTest : public CocoaTest {
     CocoaTest::SetUp();
 
     controller_.reset(
-        [[FullscreenExitBubbleController alloc] initWithOwner:nil browser:nil]);
-    EXPECT_TRUE([controller_ view]);
+        [[FullscreenExitBubbleController alloc] initWithOwner:nil
+                                                      browser:nil
+                                                          url:GURL()
+                                                askPermission:NO]);
+    EXPECT_TRUE([controller_ window]);
+  }
 
-    [[test_window() contentView] addSubview:[controller_ view]];
+  virtual void TearDown() {
+    [controller_ close];
+    controller_.reset();
+    CocoaTest::TearDown();
   }
 
   scoped_nsobject<FullscreenExitBubbleController> controller_;
 };
-
-TEST_VIEW(FullscreenExitBubbleControllerTest, [controller_ view])
 
 TEST_F(FullscreenExitBubbleControllerTest, LabelWasReplaced) {
   EXPECT_FALSE([controller_ exitLabelPlaceholder]);

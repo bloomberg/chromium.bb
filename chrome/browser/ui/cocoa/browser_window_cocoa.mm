@@ -134,7 +134,7 @@ void BrowserWindowCocoa::ShowInactive() {
 void BrowserWindowCocoa::SetBounds(const gfx::Rect& bounds) {
   gfx::Rect real_bounds = [controller_ enforceMinWindowSize:bounds];
 
-  SetFullscreen(false);
+  ExitFullscreen();
   NSRect cocoa_bounds = NSMakeRect(real_bounds.x(), 0,
                                    real_bounds.width(),
                                    real_bounds.height());
@@ -255,8 +255,16 @@ bool BrowserWindowCocoa::IsMinimized() const {
   return [window() isMiniaturized];
 }
 
-void BrowserWindowCocoa::SetFullscreen(bool fullscreen) {
-  [controller_ setFullscreen:fullscreen];
+void BrowserWindowCocoa::EnterFullscreen(const GURL& url, bool ask_permission) {
+  [controller_ setFullscreen:YES
+                         url:url
+               askPermission:ask_permission];
+}
+
+void BrowserWindowCocoa::ExitFullscreen() {
+  [controller_ setFullscreen:NO
+                         url:GURL()
+               askPermission:NO];
 }
 
 bool BrowserWindowCocoa::IsFullscreen() const {
@@ -502,8 +510,12 @@ void BrowserWindowCocoa::OpenTabpose() {
   [controller_ openTabpose];
 }
 
-void BrowserWindowCocoa::SetPresentationMode(bool presentation_mode) {
-  [controller_ setPresentationMode:presentation_mode];
+void BrowserWindowCocoa::SetPresentationMode(bool presentation_mode,
+                                             const GURL& url,
+                                             bool ask_permission) {
+  [controller_ setPresentationMode:presentation_mode
+                               url:url
+                     askPermission:ask_permission];
 }
 
 bool BrowserWindowCocoa::InPresentationMode() {

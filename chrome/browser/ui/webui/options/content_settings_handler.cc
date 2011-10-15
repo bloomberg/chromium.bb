@@ -63,6 +63,7 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
   {CONTENT_SETTINGS_TYPE_NOTIFICATIONS, "notifications"},
   {CONTENT_SETTINGS_TYPE_INTENTS, "intents"},
   {CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE, "auto-select-certificate"},
+  {CONTENT_SETTINGS_TYPE_FULLSCREEN, "fullscreen"},
 };
 COMPILE_ASSERT(arraysize(kContentSettingsTypeGroupNames) ==
                    CONTENT_SETTINGS_NUM_TYPES,
@@ -415,6 +416,9 @@ void ContentSettingsHandler::UpdateAllExceptionsViewsFromModel() {
     // is supposed to be set by policy only. Hence there is no user facing UI
     // for this content type and we skip it here.
     if (type == CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE)
+      continue;
+    // TODO(koz): Implement fullscreen content settings UI.
+    if (type == CONTENT_SETTINGS_TYPE_FULLSCREEN)
       continue;
     UpdateExceptionsViewFromModel(static_cast<ContentSettingsType>(type));
   }

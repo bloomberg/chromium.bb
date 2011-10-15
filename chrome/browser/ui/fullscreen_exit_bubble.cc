@@ -5,9 +5,9 @@
 #include "chrome/browser/ui/fullscreen_exit_bubble.h"
 
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/ui/browser.h"
 #include "ui/gfx/rect.h"
 
-const double FullscreenExitBubble::kOpacity = 0.7;
 const int FullscreenExitBubble::kPaddingPx = 8;
 const int FullscreenExitBubble::kInitialDelayMs = 3800;
 const int FullscreenExitBubble::kIdleTimeMs = 2300;
@@ -15,10 +15,10 @@ const int FullscreenExitBubble::kPositionCheckHz = 10;
 const int FullscreenExitBubble::kSlideInRegionHeightPx = 4;
 const int FullscreenExitBubble::kSlideInDurationMs = 350;
 const int FullscreenExitBubble::kSlideOutDurationMs = 700;
+const int FullscreenExitBubble::kPopupTopPx = 15;
 
-FullscreenExitBubble::FullscreenExitBubble(
-    CommandUpdater::CommandUpdaterDelegate* delegate)
-    : delegate_(delegate) {
+FullscreenExitBubble::FullscreenExitBubble(Browser* browser)
+    : browser_(browser) {
 }
 
 FullscreenExitBubble::~FullscreenExitBubble() {
@@ -86,5 +86,13 @@ void FullscreenExitBubble::CheckMousePosition() {
 }
 
 void FullscreenExitBubble::ToggleFullscreen() {
-  delegate_->ExecuteCommand(IDC_FULLSCREEN);
+  browser_->ExecuteCommand(IDC_FULLSCREEN);
+}
+
+void FullscreenExitBubble::AcceptFullscreen(const GURL& url) {
+  browser_->OnAcceptFullscreenPermission(url);
+}
+
+void FullscreenExitBubble::CancelFullscreen() {
+  browser_->OnDenyFullscreenPermission();
 }

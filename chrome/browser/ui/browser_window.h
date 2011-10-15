@@ -136,7 +136,8 @@ class BrowserWindow {
   virtual bool IsMinimized() const = 0;
 
   // Accessors for fullscreen mode state.
-  virtual void SetFullscreen(bool fullscreen) = 0;
+  virtual void EnterFullscreen(const GURL& url, bool ask_permission) = 0;
+  virtual void ExitFullscreen() = 0;
   virtual bool IsFullscreen() const = 0;
 
   // Returns true if the fullscreen bubble is visible.
@@ -303,7 +304,9 @@ class BrowserWindow {
 
   // Sets the presentation mode for the window.  If the window is not already in
   // fullscreen, also enters fullscreen mode.
-  virtual void SetPresentationMode(bool presentation_mode) = 0;
+  virtual void SetPresentationMode(bool presentation_mode,
+                                   const GURL& url,
+                                   bool ask_permission) = 0;
   virtual bool InPresentationMode() = 0;
 #endif
 

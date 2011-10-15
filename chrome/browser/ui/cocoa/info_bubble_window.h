@@ -18,11 +18,15 @@ class AppNotificationBridge;
   // If NO the window will close immediately instead of fading out.
   // Default YES.
   BOOL delayOnClose_;
+  // If NO the window will never become key.
+  // Default YES.
+  BOOL canBecomeKeyWindow_;
   // Bridge to proxy Chrome notifications to the window.
   scoped_ptr<AppNotificationBridge> notificationBridge_;
 }
 
 @property(nonatomic) BOOL delayOnClose;
+@property(nonatomic) BOOL canBecomeKeyWindow;
 
 // Returns YES if the window is in the process of closing.
 // Can't use "windowWillClose" notification because that will be sent

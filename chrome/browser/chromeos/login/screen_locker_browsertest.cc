@@ -225,7 +225,7 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, DISABLED_TestFullscreenExit) {
   scoped_ptr<test::ScreenLockerTester> tester(ScreenLocker::GetTester());
   {
     Waiter waiter(browser());
-    browser()->ToggleFullscreenMode();
+    browser()->ToggleFullscreenMode(false);
     waiter.Wait(false /* not locked */, true /* full screen */);
     EXPECT_TRUE(browser()->window()->IsFullscreen());
     EXPECT_FALSE(tester->IsLocked());

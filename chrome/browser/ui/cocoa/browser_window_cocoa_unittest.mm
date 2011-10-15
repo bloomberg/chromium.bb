@@ -94,7 +94,9 @@ TEST_F(BrowserWindowCocoaTest, TestBookmarkBarVisible) {
 @end
 
 @implementation FakeController
-- (void)setFullscreen:(BOOL)fullscreen {
+- (void)setFullscreen:(BOOL)fullscreen
+                  url:(const GURL&)url
+        askPermission:(BOOL)askPermission {
   fullscreen_ = fullscreen;
 }
 - (BOOL)isFullscreen {
@@ -114,9 +116,9 @@ TEST_F(BrowserWindowCocoaTest, TestFullscreen) {
   scoped_ptr<BrowserWindowCocoaPong> scoped_bwc(bwc);
 
   EXPECT_FALSE(bwc->IsFullscreen());
-  bwc->SetFullscreen(true);
+  bwc->EnterFullscreen(GURL(), false);
   EXPECT_TRUE(bwc->IsFullscreen());
-  bwc->SetFullscreen(false);
+  bwc->ExitFullscreen();
   EXPECT_FALSE(bwc->IsFullscreen());
   [fake_controller close];
 }

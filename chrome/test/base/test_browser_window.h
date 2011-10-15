@@ -43,7 +43,9 @@ class TestBrowserWindow : public BrowserWindow {
   virtual gfx::Rect GetBounds() const OVERRIDE;
   virtual bool IsMaximized() const OVERRIDE;
   virtual bool IsMinimized() const OVERRIDE;
-  virtual void SetFullscreen(bool fullscreen) OVERRIDE {}
+  virtual void EnterFullscreen(const GURL& url,
+                               bool ask_permission) OVERRIDE {}
+  virtual void ExitFullscreen() OVERRIDE {}
   virtual bool IsFullscreen() const OVERRIDE;
   virtual bool IsFullscreenBubbleVisible() const OVERRIDE;
   virtual LocationBar* GetLocationBar() const OVERRIDE;
@@ -100,7 +102,9 @@ class TestBrowserWindow : public BrowserWindow {
   virtual void Paste() OVERRIDE {}
 #if defined(OS_MACOSX)
   virtual void OpenTabpose() OVERRIDE {}
-  virtual void SetPresentationMode(bool presentation_mode) OVERRIDE {}
+  virtual void SetPresentationMode(bool presentation_mode,
+                                   const GURL& url,
+                                   bool ask_permission) OVERRIDE {}
   virtual bool InPresentationMode() OVERRIDE;
 #endif
 
