@@ -14032,6 +14032,55 @@ Keep your key file in a safe place. You will need it to create new versions of y
     </if>
 
     <!-- Fullscreen Strings -->
+    <message name="IDS_FULLSCREEN_USER_ENTERED_FULLSCREEN" desc="Message for the user telling them that they have entered fullscreen mode.">
+      You have gone full screen.
+    </message>
+    <message name="IDS_FULLSCREEN_SITE_ENTERED_FULLSCREEN" desc="Text displayed in the bubble when a page has gone fullscreen.">
+      <ph name="FULLSCREEN_ORIGIN">$1<ex>google.com</ex></ph> has gone full screen.
+    </message>
+    <message name="IDS_FULLSCREEN_ENTERED_FULLSCREEN" desc="Text displayed in the bubble when a page has gone fullscreen.">
+      This page has gone full screen.
+    </message>
+    <message name="IDS_FULLSCREEN_SITE_REQUEST_FULLSCREEN_MOUSELOCK" desc="Text displayed in the bubble that requests permission for staying in fullscreen mode and locking the mouse.">
+      <ph name="FULLSCREEN_ORIGIN">$1<ex>google.com</ex></ph> has gone full screen and wants to hide your mouse cursor.
+    </message>
+    <message name="IDS_FULLSCREEN_REQUEST_FULLSCREEN_MOUSELOCK" desc="Text displayed in the bubble that requests permission for staying in fullscreen mode and locking the mouse.">
+      This page has gone full screen and wants to hide your mouse cursor.
+    </message>
+    <message name="IDS_FULLSCREEN_SITE_REQUEST_MOUSELOCK" desc="Text displayed in the bubble that requests permission for locking the mouse.">
+      <ph name="FULLSCREEN_ORIGIN">$1<ex>google.com</ex></ph> wants to hide your mouse cursor.
+    </message>
+    <message name="IDS_FULLSCREEN_REQUEST_MOUSELOCK" desc="Text displayed in the bubble that requests permission for locking the mouse.">
+      This page wants to hide your mouse cursor.
+    </message>
+    <message name="IDS_FULLSCREEN_SITE_ENTERED_FULLSCREEN_MOUSELOCK" desc="Text displayed in the bubble to inform the user that the page has gone fullscreen and locked the mouse.">
+      <ph name="FULLSCREEN_ORIGIN">$1<ex>google.com</ex></ph> has gone full screen and is hiding your mouse cursor.
+    </message>
+    <message name="IDS_FULLSCREEN_ENTERED_FULLSCREEN_MOUSELOCK" desc="Text displayed in the bubble to inform the user that the page has gone fullscreen and locked the mouse.">
+      This page has gone full screen and is hiding your mouse cursor.
+    </message>
+    <message name="IDS_FULLSCREEN_SITE_ENTERED_MOUSELOCK" desc="Text displayed in the bubble to inform the user that the page has locked the mouse.">
+      <ph name="FULLSCREEN_ORIGIN">$1<ex>google.com</ex></ph> is hiding your mouse cursor.
+    </message>
+    <message name="IDS_FULLSCREEN_ENTERED_MOUSELOCK" desc="Text displayed in the bubble to inform the user that the page has locked the mouse.">
+      This page is hiding your mouse cursor.
+    </message>
+    <message name="IDS_FULLSCREEN_PRESS_ESC_TO_EXIT" desc="Text displayed in the bubble to tell users how to return to normal mode">
+      Press Esc to exit.
+    </message>
+    <message name="IDS_FULLSCREEN_ALLOW" desc="Text in the bubble button that grants permission for a site to enter fullscreen and/or lock the mouse.">
+      Allow
+    </message>
+    <message name="IDS_FULLSCREEN_EXIT_FULLSCREEN" desc="Text in the bubble button that forces a webpage out of fullscreen mode.">
+      Exit full screen
+    </message>
+    <message name="IDS_FULLSCREEN_EXIT" desc="Text in the bubble button that denies to lock the mouse and forces a webpage out of fullscreen mode.">
+      Exit
+    </message>
+    <message name="IDS_FULLSCREEN_DENY" desc="Text in the bubble button that denies to lock the mouse.">
+      Deny
+    </message>
+    <!-- TODO: Remove the strings below once the new fullscreen UI has landed. -->
     <message name="IDS_FULLSCREEN_INFOBAR_REQUEST_PERMISSION" desc="Text displayed in the infobar that requests permission for a site to go fullscreen after it has gone fullscreen.">
       <ph name="FULLSCREEN_ORIGIN">$1<ex>google.com</ex></ph> has gone fullscreen.
     </message>
