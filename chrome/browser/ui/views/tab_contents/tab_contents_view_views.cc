@@ -190,15 +190,20 @@ void TabContentsViewViews::Focus() {
     }
   }
 
+  // Give focus to this tab content view.
   RenderWidgetHostView* rwhv = tab_contents_->GetRenderWidgetHostView();
   if (rwhv) {
     rwhv->Focus();
-  } else {
-    views::FocusManager* focus_manager = GetFocusManager();
-    // TODO(oshima): There is no native view for RWHVViews.
-    // Consider Widget::Focus().
-    if (focus_manager)
-      focus_manager->FocusNativeView(GetNativeView());
+    // rwhvv may not have a focus manager, so we try with our focus manager
+    // also if rwhvv cannot acquire focus.
+    if (rwhv->HasFocus())
+      return;
+  }
+  views::FocusManager* focus_manager = GetFocusManager();
+  if (focus_manager) {
+    // if rwhvv cannot focus, or we don't have a rwhv, we try focusing
+    // on the current tab content view.
+    focus_manager->SetFocusedView(GetContentsView());
   }
 }
 
