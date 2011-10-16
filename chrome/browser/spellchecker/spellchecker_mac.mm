@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -245,12 +245,12 @@ bool CheckSpelling(const string16& word_to_check, int tag) {
 void FillSuggestionList(const string16& wrong_word,
                         std::vector<string16>* optional_suggestions) {
   NSString* NS_wrong_word = base::SysUTF16ToNSString(wrong_word);
-  TimeTicks begin_time = TimeTicks::Now();
+  TimeTicks debug_begin_time = base::Histogram::DebugNow();
   // The suggested words for |wrong_word|.
   NSArray* guesses =
       [[NSSpellChecker sharedSpellChecker] guessesForWord:NS_wrong_word];
   DHISTOGRAM_TIMES("Spellcheck.SuggestTime",
-                   TimeTicks::Now() - begin_time);
+                   base::Histogram::DebugNow() - debug_begin_time);
 
   for (int i = 0; i < static_cast<int>([guesses count]); i++) {
     if (i < SpellCheckCommon::kMaxSuggestions) {

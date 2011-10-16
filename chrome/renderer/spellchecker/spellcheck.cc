@@ -195,7 +195,7 @@ void SpellCheck::InitializeHunspell() {
   bdict_file_.reset(new file_util::MemoryMappedFile);
 
   if (bdict_file_->Initialize(file_)) {
-    TimeTicks start_time = TimeTicks::Now();
+    TimeTicks debug_start_time = base::Histogram::DebugNow();
 
     hunspell_.reset(
         new Hunspell(bdict_file_->data(), bdict_file_->length()));
@@ -207,7 +207,7 @@ void SpellCheck::InitializeHunspell() {
     }
 
     DHISTOGRAM_TIMES("Spellcheck.InitTime",
-                     TimeTicks::Now() - start_time);
+                     base::Histogram::DebugNow() - debug_start_time);
   } else {
     NOTREACHED() << "Could not mmap spellchecker dictionary.";
   }
