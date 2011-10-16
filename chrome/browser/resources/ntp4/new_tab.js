@@ -157,13 +157,6 @@ cr.define('ntp4', function() {
     // invoked at some point after this function returns.
     chrome.send('getApps');
 
-    chrome.send('initializeSyncLogin');
-    $('login-container').addEventListener('click', function() {
-      var rect = $('login-container').getBoundingClientRect();
-      chrome.send('showSyncLoginUI',
-                  [rect.left, rect.top, rect.width, rect.height]);
-    });
-
     document.addEventListener('keydown', onKeyDown);
     // Prevent touch events from triggering any sort of native scrolling
     document.addEventListener('touchmove', function(e) {
@@ -241,6 +234,14 @@ cr.define('ntp4', function() {
       }, 60000);
       chrome.send('notificationPromoViewed');
     }
+
+    chrome.send('initializeSyncLogin');
+    sliderFrame.classList.add('showing-sync-promo');
+    $('login-container').addEventListener('click', function() {
+      var rect = $('login-container').getBoundingClientRect();
+      chrome.send('showSyncLoginUI',
+                  [rect.left, rect.top, rect.width, rect.height]);
+    });
   }
 
   /**

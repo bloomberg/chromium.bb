@@ -174,31 +174,26 @@ html[dir='rtl'] #attribution {
 #login-container {
   background: transparent none;
   border: none;
-  color: black;
   cursor: pointer;
-  float: right;
   font-size: 84%;
   /* Leave room for the scrollbar. */
   margin-right: 13px;
   margin-top: 5px;
-  position: relative;
+  position: fixed;
+  right: 0;
   text-align: right;
   text-decoration: none;
+  top: 0;
   z-index: 100;
   -webkit-box-shadow: none;
 }
 
 html[dir='rtl'] #login-container {
-  float: left;
-  text-align: left;
-}
-
-#login-status-sub-header {
-  color: #777;
+  left: 0;
+  right: auto;
 }
 
 .link-span {
-  color: #06c;
   text-decoration: underline;
 }
 
@@ -252,10 +247,4 @@ html[dir='rtl'] #login-container {
   top: 0;
   z-index: 5;
   -webkit-transition: width 150ms, right 150ms, background-color 150ms;
-}
-
-.page-switcher:hover,
-.page-switcher:focus,
-.page-switcher.drag-target {
-  background-color: rgba(0, 0, 0, 0.2);
 }
