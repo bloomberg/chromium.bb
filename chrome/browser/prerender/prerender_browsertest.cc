@@ -860,7 +860,13 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderAlertAfterOnload) {
 
 // Checks that plugins are not loaded while a page is being preloaded, but
 // are loaded when the page is displayed.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDelayLoadPlugin) {
+#if defined(OS_MACOSX)
+// http://crbug.com/100514
+#define MAYBE_PrerenderDelayLoadPlugin FAILS_PrerenderDelayLoadPlugin
+#else
+#define MAYBE_PrerenderDelayLoadPlugin PrerenderDelayLoadPlugin
+#endif
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MAYBE_PrerenderDelayLoadPlugin) {
   PrerenderTestURL("files/prerender/plugin_delay_load.html",
                    FINAL_STATUS_USED,
                    1);
@@ -882,7 +888,15 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClickToPlay) {
 
 // Checks that plugins in an iframe are not loaded while a page is
 // being preloaded, but are loaded when the page is displayed.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderIframeDelayLoadPlugin) {
+#if defined(OS_MACOSX)
+// http://crbug.com/100514
+#define MAYBE_PrerenderIframeDelayLoadPlugin \
+        FAILS_PrerenderIframeDelayLoadPlugin
+#else
+#define MAYBE_PrerenderIframeDelayLoadPlugin PrerenderIframeDelayLoadPlugin
+#endif
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       MAYBE_PrerenderIframeDelayLoadPlugin) {
   PrerenderTestURL("files/prerender/prerender_iframe_plugin_delay_load.html",
                    FINAL_STATUS_USED,
                    1);
