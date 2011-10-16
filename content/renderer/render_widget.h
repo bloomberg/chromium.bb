@@ -281,9 +281,13 @@ class CONTENT_EXPORT RenderWidget
   void set_next_paint_is_restore_ack();
   void set_next_paint_is_repaint_ack();
 
-  // Checks if the input method state and caret position have been changed.
+  // Checks if the text input state and compose inline mode have been changed.
   // If they are changed, the new value will be sent to the browser process.
-  void UpdateInputMethod();
+  void UpdateTextInputState();
+
+  // Checks if the selection bounds have been changed. If they are changed,
+  // the new value will be sent to the browser process.
+  void UpdateSelectionBounds();
 
   // Override point to obtain that the current input method state and caret
   // position.
@@ -430,8 +434,9 @@ class CONTENT_EXPORT RenderWidget
   // Stores the current type of composition text rendering of |webwidget_|.
   bool can_compose_inline_;
 
-  // Stores the current caret bounds of input focus.
-  WebKit::WebRect caret_bounds_;
+  // Stores the current selection bounds.
+  gfx::Rect selection_start_rect_;
+  gfx::Rect selection_end_rect_;
 
   // The kind of popup this widget represents, NONE if not a popup.
   WebKit::WebPopupType popup_type_;

@@ -520,9 +520,8 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
   virtual void OnMsgBlur();
 
   void OnMsgSetCursor(const WebCursor& cursor);
-  void OnMsgImeUpdateTextInputState(ui::TextInputType type,
-                                    bool can_compose_inline,
-                                    const gfx::Rect& caret_rect);
+  void OnMsgTextInputStateChanged(ui::TextInputType type,
+                                  bool can_compose_inline);
   void OnMsgImeCompositionRangeChanged(const ui::Range& range);
   void OnMsgImeCancelComposition();
 

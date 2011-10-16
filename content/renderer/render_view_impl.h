@@ -1072,7 +1072,9 @@ class RenderViewImpl : public RenderWidget,
   GURL pending_target_url_;
 
   // The text selection the last time DidChangeSelection got called.
-  RenderViewSelection last_selection_;
+  string16 selection_text_;
+  size_t selection_text_offset_;
+  ui::Range selection_range_;
 
   // View ----------------------------------------------------------------------
 

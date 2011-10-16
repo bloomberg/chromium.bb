@@ -216,8 +216,7 @@ void GtkIMContextWrapper::ProcessKeyEvent(GdkEventKey* event) {
 
 void GtkIMContextWrapper::UpdateInputMethodState(
     ui::TextInputType type,
-    bool can_compose_inline,
-    const gfx::Rect& caret_rect) {
+    bool can_compose_inline) {
   suppress_next_commit_ = false;
 
   // The renderer has updated its IME status.
@@ -242,11 +241,17 @@ void GtkIMContextWrapper::UpdateInputMethodState(
     // we receive and send related events to it. Otherwise, the events related
     // to the updates of composition text are directed to the candidate window.
     gtk_im_context_set_use_preedit(context_, can_compose_inline);
+  }
+}
+
+void GtkIMContextWrapper::UpdateCaretBounds(
+    const gfx::Rect& caret_bounds) {
+  if (is_enabled_) {
     // Updates the position of the IME candidate window.
     // The position sent from the renderer is a relative one, so we need to
     // attach the GtkIMContext object to this window before changing the
     // position.
-    GdkRectangle cursor_rect(caret_rect.ToGdkRectangle());
+    GdkRectangle cursor_rect(caret_bounds.ToGdkRectangle());
     gtk_im_context_set_cursor_location(context_, &cursor_rect);
   }
 }

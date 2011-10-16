@@ -129,9 +129,8 @@ class RenderWidgetHostView {
   virtual void SetIsLoading(bool is_loading) = 0;
 
   // Updates the state of the input method attached to the view.
-  virtual void ImeUpdateTextInputState(ui::TextInputType type,
-                                       bool can_compose_inline,
-                                       const gfx::Rect& caret_rect) = 0;
+  virtual void TextInputStateChanged(ui::TextInputType type,
+                                     bool can_compose_inline) = 0;
 
   // Cancel the ongoing composition of the input method attached to the view.
   virtual void ImeCancelComposition() = 0;
@@ -172,13 +171,16 @@ class RenderWidgetHostView {
   // the page has changed.
   virtual void SetTooltipText(const string16& tooltip_text) = 0;
 
-  // Notifies the View that the renderer text selection has changed. |start|
-  // and |end| are the visual end points of the selection in the coordinate
-  // system of the render view.
-  virtual void SelectionChanged(const std::string& text,
-                                const ui::Range& range,
-                                const gfx::Point& start,
-                                const gfx::Point& end) {}
+  // Notifies the View that the renderer text selection has changed.
+  virtual void SelectionChanged(const string16& text,
+                                size_t offset,
+                                const ui::Range& range) {}
+
+  // Notifies the View that the renderer selection bounds has changed.
+  // |start_rect| and |end_rect| are the bounds end of the selection in the
+  // coordinate system of the render view.
+  virtual void SelectionBoundsChanged(const gfx::Rect& start_rect,
+                                      const gfx::Rect& end_rect) {}
 
   // Tells the View whether the context menu is showing. This is used on Linux
   // to suppress updates to webkit focus for the duration of the show.

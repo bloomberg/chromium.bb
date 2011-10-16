@@ -1656,11 +1656,17 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_SetTooltipText,
                     WebKit::WebTextDirection /* text direction hint */)
 
 // Notification that the text selection has changed.
-IPC_MESSAGE_ROUTED4(ViewHostMsg_SelectionChanged,
-                    std::string /* currently selected text */,
-                    ui::Range /* selection range */,
-                    gfx::Point,
-                    gfx::Point /* visual end points of selection */)
+// Note: The secound parameter is the character based offset of the string16
+// text in the document.
+IPC_MESSAGE_ROUTED3(ViewHostMsg_SelectionChanged,
+                    string16 /* text covers the selection range */,
+                    size_t /* the offset of the text in the document */,
+                    ui::Range /* selection range in the document */)
+
+// Notification that the selection bounds have changed.
+IPC_MESSAGE_ROUTED2(ViewHostMsg_SelectionBoundsChanged,
+                    gfx::Rect /* start rect */,
+                    gfx::Rect /* end rect */)
 
 // Asks the browser to display the file chooser.  The result is returned in a
 // ViewHost_RunFileChooserResponse message.
@@ -1688,11 +1694,9 @@ IPC_SYNC_MESSAGE_ROUTED1_1(ViewHostMsg_GetRootWindowRect,
                            gfx::Rect /* Out: Window location */)
 
 // Required for updating text input state.
-IPC_MESSAGE_ROUTED3(ViewHostMsg_ImeUpdateTextInputState,
+IPC_MESSAGE_ROUTED2(ViewHostMsg_TextInputStateChanged,
                     ui::TextInputType, /* text_input_type */
-                    bool, /* can_compose_inline */
-                    gfx::Rect /* caret_rect */)
-
+                    bool /* can_compose_inline */)
 
 // Message sent when the IME text composition range changes.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_ImeCompositionRangeChanged,

@@ -790,11 +790,10 @@ void RenderWidgetHostViewGtk::SetIsLoading(bool is_loading) {
     ShowCurrentCursor();
 }
 
-void RenderWidgetHostViewGtk::ImeUpdateTextInputState(
+void RenderWidgetHostViewGtk::TextInputStateChanged(
     ui::TextInputType type,
-    bool can_compose_inline,
-    const gfx::Rect& caret_rect) {
-  im_context_->UpdateInputMethodState(type, can_compose_inline, caret_rect);
+    bool can_compose_inline) {
+  im_context_->UpdateInputMethodState(type, can_compose_inline);
 }
 
 void RenderWidgetHostViewGtk::ImeCancelComposition() {
@@ -895,14 +894,34 @@ void RenderWidgetHostViewGtk::SetTooltipText(const string16& tooltip_text) {
   }
 }
 
-void RenderWidgetHostViewGtk::SelectionChanged(const std::string& text,
-                                               const ui::Range& range,
-                                               const gfx::Point& start,
-                                               const gfx::Point& end) {
-  if (!text.empty()) {
-    GtkClipboard* x_clipboard = gtk_clipboard_get(GDK_SELECTION_PRIMARY);
-    gtk_clipboard_set_text(x_clipboard, text.c_str(), text.length());
+void RenderWidgetHostViewGtk::SelectionChanged(const string16& text,
+                                               size_t offset,
+                                               const ui::Range& range) {
+  if (text.empty() || range.is_empty())
+    return;
+  size_t pos = range.GetMin() - offset;
+  size_t n = range.length();
+
+  DCHECK(pos + n <= text.length()) << "The text can not fully cover range.";
+  if (pos >= text.length()) {
+    NOTREACHED() << "The text can not cover range.";
+    return;
   }
+
+  selection_text_ = text;
+  selection_text_offset_ = offset;
+  selection_range_ = range;
+
+  std::string utf8_selection = UTF16ToUTF8(text.substr(pos, n));
+  GtkClipboard* x_clipboard = gtk_clipboard_get(GDK_SELECTION_PRIMARY);
+  gtk_clipboard_set_text(
+      x_clipboard, utf8_selection.c_str(), utf8_selection.length());
+}
+
+void RenderWidgetHostViewGtk::SelectionBoundsChanged(
+    const gfx::Rect& start_rect,
+    const gfx::Rect& end_rect) {
+  im_context_->UpdateCaretBounds(start_rect.Union(end_rect));
 }
 
 void RenderWidgetHostViewGtk::ShowingContextMenu(bool showing) {

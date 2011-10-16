@@ -154,9 +154,10 @@ class RenderWidgetHostViewWin
   virtual gfx::Rect GetViewBounds() const OVERRIDE;
   virtual void UpdateCursor(const WebCursor& cursor) OVERRIDE;
   virtual void SetIsLoading(bool is_loading) OVERRIDE;
-  virtual void ImeUpdateTextInputState(ui::TextInputType type,
-                                       bool can_compose_inline,
-                                       const gfx::Rect& caret_rect) OVERRIDE;
+  virtual void TextInputStateChanged(ui::TextInputType type,
+                                     bool can_compose_inline) OVERRIDE;
+  virtual void SelectionBoundsChanged(const gfx::Rect& start_rect,
+                                      const gfx::Rect& end_rect) OVERRIDE;
   virtual void ImeCancelComposition() OVERRIDE;
   virtual void DidUpdateBackingStore(
       const gfx::Rect& scroll_rect, int scroll_dx, int scroll_dy,
@@ -385,7 +386,7 @@ class RenderWidgetHostViewWin
   // Registrar so we can listen to RENDERER_PROCESS_TERMINATED events.
   NotificationRegistrar registrar_;
 
-  // Stores the current text input type received by ImeUpdateTextInputState()
+  // Stores the current text input type received by TextInputStateChanged()
   // method.
   ui::TextInputType text_input_type_;
 

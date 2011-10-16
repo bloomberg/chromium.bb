@@ -309,15 +309,14 @@ TEST_F(RenderViewImplTest, OnImeStateChanged) {
 
     // Update the IME status and verify if our IME backend sends an IPC message
     // to activate IMEs.
-    view()->UpdateInputMethod();
+    view()->UpdateTextInputState();
     const IPC::Message* msg = render_thread_->sink().GetMessageAt(0);
     EXPECT_TRUE(msg != NULL);
-    EXPECT_EQ(ViewHostMsg_ImeUpdateTextInputState::ID, msg->type());
-    ViewHostMsg_ImeUpdateTextInputState::Param params;
-    ViewHostMsg_ImeUpdateTextInputState::Read(msg, &params);
+    EXPECT_EQ(ViewHostMsg_TextInputStateChanged::ID, msg->type());
+    ViewHostMsg_TextInputStateChanged::Param params;
+    ViewHostMsg_TextInputStateChanged::Read(msg, &params);
     EXPECT_EQ(params.a, ui::TEXT_INPUT_TYPE_TEXT);
     EXPECT_EQ(params.b, true);
-    EXPECT_TRUE(params.c.x() > 0 && params.c.y() > 0);
 
     // Move the input focus to the second <input> element, where we should
     // de-activate IMEs.
@@ -327,11 +326,11 @@ TEST_F(RenderViewImplTest, OnImeStateChanged) {
 
     // Update the IME status and verify if our IME backend sends an IPC message
     // to de-activate IMEs.
-    view()->UpdateInputMethod();
+    view()->UpdateTextInputState();
     msg = render_thread_->sink().GetMessageAt(0);
     EXPECT_TRUE(msg != NULL);
-    EXPECT_EQ(ViewHostMsg_ImeUpdateTextInputState::ID, msg->type());
-    ViewHostMsg_ImeUpdateTextInputState::Read(msg, &params);
+    EXPECT_EQ(ViewHostMsg_TextInputStateChanged::ID, msg->type());
+    ViewHostMsg_TextInputStateChanged::Read(msg, &params);
     EXPECT_EQ(params.a, ui::TEXT_INPUT_TYPE_PASSWORD);
   }
 }
@@ -459,7 +458,7 @@ TEST_F(RenderViewImplTest, ImeComposition) {
 
     // Update the status of our IME back-end.
     // TODO(hbono): we should verify messages to be sent from the back-end.
-    view()->UpdateInputMethod();
+    view()->UpdateTextInputState();
     ProcessPendingMessages();
     render_thread_->sink().ClearMessages();
 

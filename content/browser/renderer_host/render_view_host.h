@@ -504,8 +504,11 @@ class CONTENT_EXPORT RenderViewHost : public RenderWidgetHost {
   void OnMsgDidChangeScrollOffsetPinningForMainFrame(bool is_pinned_to_left,
                                                      bool is_pinned_to_right);
   void OnMsgDidChangeNumWheelEvents(int count);
-  void OnMsgSelectionChanged(const std::string& text, const ui::Range& range,
-                             const gfx::Point& start, const gfx::Point& end);
+  void OnMsgSelectionChanged(const string16& text,
+                             size_t offset,
+                             const ui::Range& range);
+  void OnMsgSelectionBoundsChanged(const gfx::Rect& start_rect,
+                                   const gfx::Rect& end_rect);
   void OnMsgPasteFromSelectionClipboard();
   void OnMsgRunJavaScriptMessage(const string16& message,
                                  const string16& default_prompt,

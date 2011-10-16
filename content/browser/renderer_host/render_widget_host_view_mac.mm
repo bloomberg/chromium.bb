@@ -16,6 +16,7 @@
 #include "base/string_util.h"
 #include "base/sys_info.h"
 #include "base/sys_string_conversions.h"
+#include "base/utf_string_conversions.h"
 #import "content/browser/accessibility/browser_accessibility_cocoa.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/gpu/gpu_process_host.h"
@@ -487,10 +488,9 @@ void RenderWidgetHostViewMac::SetIsLoading(bool is_loading) {
   // like Chrome does on Windows, call |UpdateCursorIfNecessary()| here.
 }
 
-void RenderWidgetHostViewMac::ImeUpdateTextInputState(
+void RenderWidgetHostViewMac::TextInputStateChanged(
     ui::TextInputType type,
-    bool can_compose_inline,
-    const gfx::Rect& caret_rect) {
+    bool can_compose_inline) {
   // TODO(kinaba): currently, can_compose_inline is ignored and always treated
   // as true. We need to support "can_compose_inline=false" for PPAPI plugins
   // that may want to avoid drawing composition-text by themselves and pass
@@ -505,6 +505,11 @@ void RenderWidgetHostViewMac::ImeUpdateTextInputState(
       [NSApp updateWindows];
     }
   }
+}
+
+void RenderWidgetHostViewMac::SelectionBoundsChanged(
+    const gfx::Rect& start_rect,
+    const gfx::Rect& end_rect) {
 }
 
 void RenderWidgetHostViewMac::ImeCancelComposition() {
@@ -634,11 +639,23 @@ void RenderWidgetHostViewMac::SetTooltipText(const string16& tooltip_text) {
 // RenderWidgetHostViewCocoa uses the stored selection text,
 // which implements NSServicesRequests protocol.
 //
-void RenderWidgetHostViewMac::SelectionChanged(const std::string& text,
-                                               const ui::Range& range,
-                                               const gfx::Point& start,
-                                               const gfx::Point& end) {
-  selected_text_ = text;
+void RenderWidgetHostViewMac::SelectionChanged(const string16& text,
+                                               size_t offset,
+                                               const ui::Range& range) {
+  if (range.is_empty() || text.empty()) {
+      selected_text_.clear();
+  } else {
+    size_t pos = range.GetMin() - offset;
+    size_t n = range.length();
+
+    DCHECK(pos + n <= text.length()) << "The text can not fully cover range.";
+    if (pos >= text.length()) {
+      DCHECK(false) << "The text can not cover range.";
+      return;
+    }
+    selected_text_ = UTF16ToUTF8(text.substr(pos, n));
+  }
+
   [cocoa_view_ setSelectedRange:range.ToNSRange()];
   // Updaes markedRange when there is no marked text so that retrieving
   // markedRange immediately after calling setMarkdText: returns the current

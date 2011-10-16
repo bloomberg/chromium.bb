@@ -192,8 +192,8 @@ bool RenderWidgetHost::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_Focus, OnMsgFocus)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Blur, OnMsgBlur)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetCursor, OnMsgSetCursor)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ImeUpdateTextInputState,
-                        OnMsgImeUpdateTextInputState)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_TextInputStateChanged,
+                        OnMsgTextInputStateChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ImeCompositionRangeChanged,
                         OnMsgImeCompositionRangeChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ImeCancelComposition,
@@ -1117,12 +1117,11 @@ void RenderWidgetHost::OnMsgSetCursor(const WebCursor& cursor) {
   view_->UpdateCursor(cursor);
 }
 
-void RenderWidgetHost::OnMsgImeUpdateTextInputState(
+void RenderWidgetHost::OnMsgTextInputStateChanged(
     ui::TextInputType type,
-    bool can_compose_inline,
-    const gfx::Rect& caret_rect) {
+    bool can_compose_inline) {
   if (view_)
-    view_->ImeUpdateTextInputState(type, can_compose_inline, caret_rect);
+    view_->TextInputStateChanged(type, can_compose_inline);
 }
 
 void RenderWidgetHost::OnMsgImeCompositionRangeChanged(const ui::Range& range) {

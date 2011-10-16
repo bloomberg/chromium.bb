@@ -666,6 +666,8 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShouldClose_ACK, OnMsgShouldCloseACK)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ClosePage_ACK, OnMsgClosePageACK)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SelectionChanged, OnMsgSelectionChanged)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_SelectionBoundsChanged,
+                        OnMsgSelectionBoundsChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AccessibilityNotifications,
                         OnAccessibilityNotifications)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ScriptEvalResponse, OnScriptEvalResponse)
@@ -982,12 +984,18 @@ void RenderViewHost::OnMsgDidChangeScrollOffsetPinningForMainFrame(
 void RenderViewHost::OnMsgDidChangeNumWheelEvents(int count) {
 }
 
-void RenderViewHost::OnMsgSelectionChanged(const std::string& text,
-                                           const ui::Range& range,
-                                           const gfx::Point& start,
-                                           const gfx::Point& end) {
+void RenderViewHost::OnMsgSelectionChanged(const string16& text,
+                                           size_t offset,
+                                           const ui::Range& range) {
   if (view())
-    view()->SelectionChanged(text, range, start, end);
+    view()->SelectionChanged(text, offset, range);
+}
+
+void RenderViewHost::OnMsgSelectionBoundsChanged(
+    const gfx::Rect& start_rect,
+    const gfx::Rect& end_rect) {
+  if (view())
+    view()->SelectionBoundsChanged(start_rect, end_rect);
 }
 
 void RenderViewHost::OnMsgRunJavaScriptMessage(

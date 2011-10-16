@@ -276,10 +276,9 @@ void RenderWidgetHostViewViews::SetIsLoading(bool is_loading) {
 #endif  // TOOLKIT_USES_GTK
 }
 
-void RenderWidgetHostViewViews::ImeUpdateTextInputState(
+void RenderWidgetHostViewViews::TextInputStateChanged(
     ui::TextInputType type,
-    bool can_compose_inline,
-    const gfx::Rect& caret_rect) {
+    bool can_compose_inline) {
   // TODO(kinaba): currently, can_compose_inline is ignored and always treated
   // as true. We need to support "can_compose_inline=false" for PPAPI plugins
   // that may want to avoid drawing composition-text by themselves and pass
@@ -294,11 +293,6 @@ void RenderWidgetHostViewViews::ImeUpdateTextInputState(
     text_input_type_ = type;
     if (input_method)
       input_method->OnTextInputTypeChanged(this);
-  }
-  if (caret_bounds_ != caret_rect) {
-    caret_bounds_ = caret_rect;
-    if (input_method)
-      input_method->OnCaretBoundsChanged(this);
   }
 }
 
@@ -387,14 +381,30 @@ void RenderWidgetHostViewViews::SetTooltipText(const string16& tip) {
     GetWidget()->TooltipTextChanged(this);
 }
 
-void RenderWidgetHostViewViews::SelectionChanged(const std::string& text,
-                                                 const ui::Range& range,
-                                                 const gfx::Point& start,
-                                                 const gfx::Point& end) {
+void RenderWidgetHostViewViews::SelectionChanged(const string16& text,
+                                                 size_t offset,
+                                                 const ui::Range& range) {
+  selection_text_ = text;
+  selection_text_offset_ = offset;
+  selection_range_ = range;
+
   // TODO(anicolao): deal with the clipboard without GTK
   NOTIMPLEMENTED();
-  selection_start_ = start;
-  selection_end_ = end;
+}
+
+void RenderWidgetHostViewViews::SelectionBoundsChanged(
+    const gfx::Rect& start_rect,
+    const gfx::Rect& end_rect) {
+  views::InputMethod* input_method = GetInputMethod();
+
+  if (selection_start_rect_ == start_rect && selection_end_rect_ == end_rect)
+    return;
+
+  selection_start_rect_ = start_rect;
+  selection_end_rect_ = end_rect;
+
+  if (input_method)
+    input_method->OnCaretBoundsChanged(this);
 
   // TODO(sad): This is a workaround for a webkit bug:
   // https://bugs.webkit.org/show_bug.cgi?id=67464
@@ -497,7 +507,7 @@ bool RenderWidgetHostViewViews::IsCommandIdChecked(int command_id) const {
 
 bool RenderWidgetHostViewViews::IsCommandIdEnabled(int command_id) const {
   bool editable = GetTextInputType() != ui::TEXT_INPUT_TYPE_NONE;
-  bool has_selection = selection_start_ != selection_end_;
+  bool has_selection = !selection_range_.is_empty();
   string16 result;
   switch (command_id) {
     case IDS_APP_CUT:
@@ -733,7 +743,7 @@ ui::TextInputType RenderWidgetHostViewViews::GetTextInputType() const {
 }
 
 gfx::Rect RenderWidgetHostViewViews::GetCaretBounds() {
-  return caret_bounds_;
+  return selection_start_rect_.Union(selection_end_rect_);
 }
 
 bool RenderWidgetHostViewViews::HasCompositionText() {
@@ -970,9 +980,13 @@ void RenderWidgetHostViewViews::FinishImeCompositionSession() {
 }
 
 void RenderWidgetHostViewViews::UpdateTouchSelectionController() {
+  gfx::Point start = selection_start_rect_.origin();
+  start.Offset(0, selection_start_rect_.height());
+  gfx::Point end = selection_end_rect_.origin();
+  end.Offset(0, selection_end_rect_.height());
+
   if (touch_selection_controller_.get())
-    touch_selection_controller_->SelectionChanged(selection_start_,
-                                                  selection_end_);
+    touch_selection_controller_->SelectionChanged(start, end);
 }
 
 #if !defined(OS_WIN)

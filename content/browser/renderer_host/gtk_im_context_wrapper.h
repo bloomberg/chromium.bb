@@ -46,8 +46,8 @@ class GtkIMContextWrapper {
   void ProcessKeyEvent(GdkEventKey* event);
 
   void UpdateInputMethodState(ui::TextInputType type,
-                              bool can_compose_inline,
-                              const gfx::Rect& caret_rect);
+                              bool can_compose_inline);
+  void UpdateCaretBounds(const gfx::Rect& caret_bounds);
   void OnFocusIn();
   void OnFocusOut();
   bool is_focused() const { return is_focused_; }

@@ -592,10 +592,9 @@ void RenderWidgetHostViewWin::SetIsLoading(bool is_loading) {
   UpdateCursorIfOverSelf();
 }
 
-void RenderWidgetHostViewWin::ImeUpdateTextInputState(
+void RenderWidgetHostViewWin::TextInputStateChanged(
     ui::TextInputType type,
-    bool can_compose_inline,
-    const gfx::Rect& caret_rect) {
+    bool can_compose_inline) {
   // TODO(kinaba): currently, can_compose_inline is ignored and always treated
   // as true. We need to support "can_compose_inline=false" for PPAPI plugins
   // that may want to avoid drawing composition-text by themselves and pass
@@ -609,10 +608,16 @@ void RenderWidgetHostViewWin::ImeUpdateTextInputState(
     else
       ime_input_.DisableIME(m_hWnd);
   }
+}
 
+void RenderWidgetHostViewWin::SelectionBoundsChanged(
+    const gfx::Rect& start_rect,
+    const gfx::Rect& end_rect) {
+  bool is_enabled = (text_input_type_ != ui::TEXT_INPUT_TYPE_NONE &&
+      text_input_type_ != ui::TEXT_INPUT_TYPE_PASSWORD);
   // Only update caret position if the input method is enabled.
   if (is_enabled)
-    ime_input_.UpdateCaretRect(m_hWnd, caret_rect);
+    ime_input_.UpdateCaretRect(m_hWnd, start_rect.Union(end_rect));
 }
 
 void RenderWidgetHostViewWin::ImeCancelComposition() {

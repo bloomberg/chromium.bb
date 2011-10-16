@@ -80,9 +80,8 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   virtual gfx::Rect GetViewBounds() const OVERRIDE;
   virtual void UpdateCursor(const WebCursor& cursor) OVERRIDE;
   virtual void SetIsLoading(bool is_loading) OVERRIDE;
-  virtual void ImeUpdateTextInputState(ui::TextInputType type,
-                                       bool can_compose_inline,
-                                       const gfx::Rect& caret_rect) OVERRIDE;
+  virtual void TextInputStateChanged(ui::TextInputType type,
+                                     bool can_compose_inline) OVERRIDE;
   virtual void ImeCancelComposition() OVERRIDE;
   virtual void DidUpdateBackingStore(
       const gfx::Rect& scroll_rect, int scroll_dx, int scroll_dy,
@@ -91,10 +90,11 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
                               int error_code) OVERRIDE;
   virtual void Destroy() OVERRIDE;
   virtual void SetTooltipText(const string16& tooltip_text) OVERRIDE;
-  virtual void SelectionChanged(const std::string& text,
-                                const ui::Range& range,
-                                const gfx::Point& start,
-                                const gfx::Point& end) OVERRIDE;
+  virtual void SelectionChanged(const string16& text,
+                                size_t offset,
+                                const ui::Range& range) OVERRIDE;
+  virtual void SelectionBoundsChanged(const gfx::Rect& start_rect,
+                                      const gfx::Rect& end_rect) OVERRIDE;
   virtual void ShowingContextMenu(bool showing) OVERRIDE;
   virtual BackingStore* AllocBackingStore(const gfx::Size& size) OVERRIDE;
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
@@ -289,8 +289,11 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   // The current text input type.
   ui::TextInputType text_input_type_;
 
-  // The current caret bounds.
-  gfx::Rect caret_bounds_;
+  string16 selection_text_;
+  size_t selection_text_offset_;
+  ui::Range selection_range_;
+  gfx::Rect selection_start_rect_;
+  gfx::Rect selection_end_rect_;
 
   // Indicates if there is onging composition text.
   bool has_composition_text_;
@@ -302,8 +305,6 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
 #endif
 
   scoped_ptr<views::TouchSelectionController> touch_selection_controller_;
-  gfx::Point selection_start_;
-  gfx::Point selection_end_;
   ScopedRunnableMethodFactory<RenderWidgetHostViewViews>
       update_touch_selection_;
 

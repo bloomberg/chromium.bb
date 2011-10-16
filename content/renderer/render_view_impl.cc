@@ -265,6 +265,8 @@ static base::LazyInstance<ViewMap> g_view_map(base::LINKER_INITIALIZED);
 static const int kDelaySecondsForContentStateSyncHidden = 5;
 static const int kDelaySecondsForContentStateSync = 1;
 
+static const size_t kExtraCharsBeforeAndAfterSelection = 100;
+
 // The maximum number of popups that can be spawned from one page.
 static const int kMaximumNumberOfUnacknowledgedPopups = 25;
 
@@ -1504,6 +1506,8 @@ bool RenderViewImpl::isSelectTrailingWhitespaceEnabled() {
 }
 
 void RenderViewImpl::didChangeSelection(bool is_empty_selection) {
+  // TODO(penghuang): Enable this on Window to support IME reconversion.
+  // http://crbug.com/100220
 #if defined(OS_POSIX)
   if (!handling_input_event_ && !handling_select_range_)
       return;
@@ -3189,29 +3193,45 @@ void RenderViewImpl::SyncNavigationState() {
 
 void RenderViewImpl::SyncSelectionIfRequired() {
   WebFrame* frame = webview()->focusedFrame();
-  const std::string& text = frame->selectionAsText().utf8();
+  if (!frame)
+    return;
 
-  ui::Range range(ui::Range::InvalidRange());
   size_t location, length;
-  if (webview()->caretOrSelectionRange(&location, &length)) {
-    range.set_start(location);
-    range.set_end(location + length);
+  if (!webview()->caretOrSelectionRange(&location, &length))
+    return;
+
+  string16 text;
+  size_t offset;
+  ui::Range range(location, location + length);
+
+  if (webview()->textInputType() != WebKit::WebTextInputTypeNone) {
+    // If current focused element is editable, we will send 100 more chars
+    // before and after selection. It is for input method surrounding text
+    // feature.
+    if (location > kExtraCharsBeforeAndAfterSelection)
+      offset = location - kExtraCharsBeforeAndAfterSelection;
+    else
+      offset = 0;
+    length = location + length - offset + kExtraCharsBeforeAndAfterSelection;
+    WebRange webrange = WebRange::fromDocumentRange(frame, offset, length);
+    if (!webrange.isNull())
+      text = WebRange::fromDocumentRange(frame, offset, length).toPlainText();
+  } else {
+    offset = location;
+    text = frame->selectionAsText();
   }
-
-  WebPoint start, end;
-  webview()->selectionRange(start, end);
-
-  RenderViewSelection this_selection(text, range, start, end);
 
   // Sometimes we get repeated didChangeSelection calls from webkit when
   // the selection hasn't actually changed. We don't want to report these
   // because it will cause us to continually claim the X clipboard.
-  if (this_selection.Equals(last_selection_))
-    return;
-  last_selection_ = this_selection;
-
-  Send(new ViewHostMsg_SelectionChanged(routing_id_, text, range,
-                                        start, end));
+  if (selection_text_offset_ != offset ||
+      selection_range_ != range ||
+      selection_text_ != text) {
+    selection_text_ = text;
+    selection_text_offset_ = offset;
+    selection_range_ = range;
+    Send(new ViewHostMsg_SelectionChanged(routing_id_, text, offset, range));
+  }
 }
 
 GURL RenderViewImpl::GetAlternateErrorPageURL(const GURL& failed_url,
@@ -3969,10 +3989,6 @@ void RenderViewImpl::DidFlushPaint() {
       navigation_state->set_first_paint_after_load_time(now);
     }
   }
-
-#if defined(TOUCH_UI)
-  SyncSelectionIfRequired();
-#endif
 }
 
 void RenderViewImpl::OnViewContextSwapBuffersPosted() {
@@ -4159,11 +4175,11 @@ void RenderViewImpl::OnSetFocus(bool enable) {
 }
 
 void RenderViewImpl::PpapiPluginFocusChanged() {
-  UpdateInputMethod();
+  UpdateTextInputState();
 }
 
 void RenderViewImpl::PpapiPluginTextInputTypeChanged() {
-  UpdateInputMethod();
+  UpdateTextInputState();
 }
 
 void RenderViewImpl::PpapiPluginCancelComposition() {

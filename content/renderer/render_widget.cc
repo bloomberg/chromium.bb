@@ -23,6 +23,7 @@
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebPoint.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupMenu.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupMenuInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRange.h"
@@ -51,6 +52,7 @@ using WebKit::WebCursorInfo;
 using WebKit::WebInputEvent;
 using WebKit::WebMouseEvent;
 using WebKit::WebNavigationPolicy;
+using WebKit::WebPoint;
 using WebKit::WebPopupMenu;
 using WebKit::WebPopupMenuInfo;
 using WebKit::WebPopupType;
@@ -839,7 +841,8 @@ void RenderWidget::DoDeferredUpdate() {
   Send(new ViewHostMsg_UpdateRect(routing_id_, params));
   next_paint_flags_ = 0;
 
-  UpdateInputMethod();
+  UpdateTextInputState();
+  UpdateSelectionBounds();
 
   // Let derived classes know we've painted.
   DidInitiatePaint();
@@ -1293,23 +1296,20 @@ void RenderWidget::set_next_paint_is_repaint_ack() {
   next_paint_flags_ |= ViewHostMsg_UpdateRect_Flags::IS_REPAINT_ACK;
 }
 
-void RenderWidget::UpdateInputMethod() {
+void RenderWidget::UpdateTextInputState() {
   if (!input_method_is_active_)
     return;
 
   ui::TextInputType new_type = GetTextInputType();
   bool new_can_compose_inline = CanComposeInline();
-  WebRect new_caret_bounds = GetCaretBounds();
-
-  // Only sends text input type and caret bounds to the browser process if they
-  // are changed.
-  if (text_input_type_ != new_type || caret_bounds_ != new_caret_bounds ||
+  // Only sends text input type and compose inline to the browser process if
+  // they are changed.
+  if (text_input_type_ != new_type ||
       can_compose_inline_ != new_can_compose_inline) {
     text_input_type_ = new_type;
     can_compose_inline_ = new_can_compose_inline;
-    caret_bounds_ = new_caret_bounds;
-    Send(new ViewHostMsg_ImeUpdateTextInputState(
-        routing_id(), new_type, new_can_compose_inline, new_caret_bounds));
+    Send(new ViewHostMsg_TextInputStateChanged(
+        routing_id(), new_type, new_can_compose_inline));
   }
 }
 
@@ -1317,6 +1317,25 @@ gfx::Rect RenderWidget::GetCaretBounds() {
   if (!webwidget_)
     return gfx::Rect();
   return webwidget_->caretOrSelectionBounds();
+}
+
+void RenderWidget::UpdateSelectionBounds() {
+  if (!webwidget_)
+    return;
+
+  WebRect start;
+  WebRect end;
+  webwidget_->selectionBounds(start, end);
+
+  gfx::Rect start_rect = start;
+  gfx::Rect end_rect = end;
+  if (selection_start_rect_ == start_rect && selection_end_rect_ == end_rect)
+    return;
+
+  selection_start_rect_ = start_rect;
+  selection_end_rect_ = end_rect;
+  Send(new ViewHostMsg_SelectionBoundsChanged(
+      routing_id_, selection_start_rect_, selection_end_rect_));
 }
 
 // Check WebKit::WebTextInputType and ui::TextInputType is kept in sync.
