@@ -984,6 +984,8 @@ void PepperPluginDelegateImpl::InstanceDeleted(
   }
   if (last_mouse_event_target_ == instance)
     last_mouse_event_target_ = NULL;
+  if (focused_plugin_ == instance)
+    PluginFocusChanged(instance, false);
 }
 
 SkBitmap* PepperPluginDelegateImpl::GetSadPluginBitmap() {
