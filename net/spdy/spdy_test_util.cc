@@ -196,6 +196,13 @@ spdy::SpdyFrame* ConstructSpdySettings(spdy::SpdySettings settings) {
   return framer.CreateSettings(settings);
 }
 
+// Construct a SPDY PING frame.
+// Returns the constructed frame.  The caller takes ownership of the frame.
+spdy::SpdyFrame* ConstructSpdyPing() {
+  spdy::SpdyFramer framer;
+  return framer.CreatePingFrame(1);
+}
+
 // Construct a SPDY GOAWAY frame.
 // Returns the constructed frame.  The caller takes ownership of the frame.
 spdy::SpdyFrame* ConstructSpdyGoAway() {
