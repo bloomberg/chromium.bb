@@ -285,6 +285,8 @@ class URLFetcher::Core
   bool automatically_retry_on_5xx_;
   // Maximum retries allowed.
   int max_retries_;
+  // Back-off time delay. 0 by default.
+  base::TimeDelta backoff_delay_;
 
   static base::LazyInstance<Registry> g_registry;
 
@@ -479,7 +481,7 @@ void URLFetcher::Delegate::OnURLFetchComplete(
     int response_code,
     const net::ResponseCookies& cookies,
     const std::string& data) {
-  NOTREACHED() << "If you don't implemnt this, the no-params version "
+  NOTREACHED() << "If you don't implement this, the no-params version "
                << "should also be implemented, in which case this "
                << "method won't be called...";
 }
@@ -729,7 +731,7 @@ void URLFetcher::Core::RetryOrCompleteUrlFetch() {
     // after backoff time.
     ++num_retries_;
 
-    // Note that backoff_delay_ may be 0 because (a) the URLRequestThrottler
+    // Note that backoff_delay may be 0 because (a) the URLRequestThrottler
     // code does not necessarily back off on the first error, and (b) it
     // only backs off on some of the 5xx status codes.
     base::TimeTicks backoff_release_time = GetBackoffReleaseTime();
@@ -881,7 +883,7 @@ void URLFetcher::Core::OnCompletedURLRequest(
 
   // Save the status and backoff_delay so that delegates can read it.
   if (delegate_) {
-    fetcher_->backoff_delay_ = backoff_delay;
+    backoff_delay_ = backoff_delay;
     InformDelegateFetchIsComplete();
   }
 }
@@ -995,6 +997,15 @@ int URLFetcher::max_retries() const {
 
 void URLFetcher::set_max_retries(int max_retries) {
   core_->max_retries_ = max_retries;
+}
+
+base::TimeDelta URLFetcher::backoff_delay() const {
+  return core_->backoff_delay_;
+}
+
+void URLFetcher::set_backoff_delay_for_testing(
+    base::TimeDelta backoff_delay) {
+  core_->backoff_delay_ = backoff_delay;
 }
 
 void URLFetcher::SaveResponseToTemporaryFile(

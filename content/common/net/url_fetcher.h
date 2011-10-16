@@ -47,7 +47,7 @@ typedef std::vector<std::string> ResponseCookies;
 //
 // Then, optionally set properties on this object, like the request context or
 // extra headers:
-//   fetcher->SetExtraRequestHeaders("X-Foo: bar");
+//   fetcher->set_extra_request_headers("X-Foo: bar");
 //
 // Finally, start the request:
 //   fetcher->Start();
@@ -184,12 +184,10 @@ class CONTENT_EXPORT URLFetcher {
 
   // Returns the back-off delay before the request will be retried,
   // when a 5xx response was received.
-  base::TimeDelta backoff_delay() const { return backoff_delay_; }
+  base::TimeDelta backoff_delay() const;
 
   // Sets the back-off delay, allowing to mock 5xx requests in unit-tests.
-  void set_backoff_delay_for_testing(base::TimeDelta backoff_delay) {
-    backoff_delay_ = backoff_delay;
-  }
+  void set_backoff_delay_for_testing(base::TimeDelta backoff_delay);
 
   // By default, the response is saved in a string. Call this method to save the
   // response to a temporary file instead. Must be called before Start().
@@ -314,9 +312,6 @@ class CONTENT_EXPORT URLFetcher {
   scoped_refptr<Core> core_;
 
   static Factory* factory_;
-
-  // Back-off time delay. 0 by default.
-  base::TimeDelta backoff_delay_;
 
   static bool g_interception_enabled;
 
