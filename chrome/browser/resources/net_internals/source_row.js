@@ -2,283 +2,291 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * A SourceRow represents the row corresponding to a single SourceEntry
- * displayed by the EventsView.
- *
- * @constructor
- */
-function SourceRow(parentView, sourceEntry) {
-  this.parentView_ = parentView;
+var SourceRow = (function() {
+  'use strict';
 
-  this.sourceEntry_ = sourceEntry;
-  this.isSelected_ = false;
-  this.isMatchedByFilter_ = false;
+  /**
+   * A SourceRow represents the row corresponding to a single SourceEntry
+   * displayed by the EventsView.
+   *
+   * @constructor
+   */
+  function SourceRow(parentView, sourceEntry) {
+    this.parentView_ = parentView;
 
-  // Used to set CSS class for display.  Must only be modified by calling
-  // corresponding set functions.
-  this.isSelected_ = false;
-  this.isMouseOver_ = false;
+    this.sourceEntry_ = sourceEntry;
+    this.isSelected_ = false;
+    this.isMatchedByFilter_ = false;
 
-  // Mirror sourceEntry's values, so we only update the DOM when necessary.
-  this.isError_ = sourceEntry.isError();
-  this.isInactive_ = sourceEntry.isInactive();
-  this.description_ = sourceEntry.getDescription();
+    // Used to set CSS class for display.  Must only be modified by calling
+    // corresponding set functions.
+    this.isSelected_ = false;
+    this.isMouseOver_ = false;
 
-  this.createRow_();
-  this.onSourceUpdated();
-}
+    // Mirror sourceEntry's values, so we only update the DOM when necessary.
+    this.isError_ = sourceEntry.isError();
+    this.isInactive_ = sourceEntry.isInactive();
+    this.description_ = sourceEntry.getDescription();
 
-SourceRow.prototype.createRow_ = function() {
-  // Create a row.
-  var tr = addNode(this.parentView_.tableBody_, 'tr');
-  tr._id = this.sourceEntry_.getSourceId();
-  tr.style.display = 'none';
-  this.row_ = tr;
-
-  var selectionCol = addNode(tr, 'td');
-  var checkbox = addNode(selectionCol, 'input');
-  checkbox.type = 'checkbox';
-
-  var idCell = addNode(tr, 'td');
-  idCell.style.textAlign = 'right';
-
-  var typeCell = addNode(tr, 'td');
-  var descriptionCell = addNode(tr, 'td');
-  this.descriptionCell_ = descriptionCell;
-
-  // Connect listeners.
-  checkbox.onchange = this.onCheckboxToggled_.bind(this);
-
-  var onclick = this.onClicked_.bind(this);
-  idCell.onclick = onclick;
-  typeCell.onclick = onclick;
-  descriptionCell.onclick = onclick;
-
-  tr.onmouseover = this.onMouseover_.bind(this);
-  tr.onmouseout = this.onMouseout_.bind(this);
-
-  // Set the cell values to match this source's data.
-  if (this.sourceEntry_.getSourceId() >= 0) {
-    addTextNode(idCell, this.sourceEntry_.getSourceId());
-  } else {
-    addTextNode(idCell, '-');
-  }
-  var sourceTypeString = this.sourceEntry_.getSourceTypeString();
-  addTextNode(typeCell, sourceTypeString);
-  this.updateDescription_();
-
-  // Add a CSS classname specific to this source type (so CSS can specify
-  // different stylings for different types).
-  changeClassName(this.row_, 'source_' + sourceTypeString, true);
-
-  this.updateClass_();
-};
-
-SourceRow.prototype.onSourceUpdated = function() {
-  if (this.sourceEntry_.isInactive() != this.isInactive_ ||
-      this.sourceEntry_.isError() != this.isError_) {
-    this.updateClass_();
+    this.createRow_();
+    this.onSourceUpdated();
   }
 
-  if (this.description_ != this.sourceEntry_.getDescription())
-    this.updateDescription_();
+  SourceRow.prototype = {
+    createRow_: function() {
+      // Create a row.
+      var tr = addNode(this.parentView_.tableBody_, 'tr');
+      tr._id = this.sourceEntry_.getSourceId();
+      tr.style.display = 'none';
+      this.row_ = tr;
 
-  // Update filters.
-  var matchesFilter = this.matchesFilter(this.parentView_.currentFilter_);
-  this.setIsMatchedByFilter(matchesFilter);
-};
+      var selectionCol = addNode(tr, 'td');
+      var checkbox = addNode(selectionCol, 'input');
+      checkbox.type = 'checkbox';
 
-/**
- * Changes |row_|'s class based on currently set flags.  Clears any previous
- * class set by this method.  This method is needed so that some styles
- * override others.
- */
-SourceRow.prototype.updateClass_ = function() {
-  this.isInactive_ = this.sourceEntry_.isInactive();
-  this.isError_ = this.sourceEntry_.isError();
+      var idCell = addNode(tr, 'td');
+      idCell.style.textAlign = 'right';
 
-  // Each element of this list contains a property of |this| and the
-  // corresponding class name to set if that property is true.  Entries earlier
-  // in the list take precedence.
-  var propertyNames = [
-    ['isSelected_', 'selected'],
-    ['isMouseOver_', 'mouseover'],
-    ['isError_', 'error'],
-    ['isInactive_', 'inactive'],
-  ];
+      var typeCell = addNode(tr, 'td');
+      var descriptionCell = addNode(tr, 'td');
+      this.descriptionCell_ = descriptionCell;
 
-  // Loop through |propertyNames| in order, checking if each property
-  // is true.  For the first such property found, if any, add the
-  // corresponding class to the SourceEntry's row.  Remove classes
-  // that correspond to any other property.
-  var noStyleSet = true;
-  for (var i = 0; i < propertyNames.length; ++i) {
-    var setStyle = noStyleSet && this[propertyNames[i][0]];
-    changeClassName(this.row_, propertyNames[i][1], setStyle);
-    if (setStyle)
-      noStyleSet = false;
-  }
-};
+      // Connect listeners.
+      checkbox.onchange = this.onCheckboxToggled_.bind(this);
 
-SourceRow.prototype.getSourceEntry = function() {
-  return this.sourceEntry_;
-};
+      var onclick = this.onClicked_.bind(this);
+      idCell.onclick = onclick;
+      typeCell.onclick = onclick;
+      descriptionCell.onclick = onclick;
 
-SourceRow.prototype.setIsMatchedByFilter = function(isMatchedByFilter) {
-  if (this.isMatchedByFilter() == isMatchedByFilter)
-    return;  // No change.
+      tr.onmouseover = this.onMouseover_.bind(this);
+      tr.onmouseout = this.onMouseout_.bind(this);
 
-  this.isMatchedByFilter_ = isMatchedByFilter;
+      // Set the cell values to match this source's data.
+      if (this.sourceEntry_.getSourceId() >= 0) {
+        addTextNode(idCell, this.sourceEntry_.getSourceId());
+      } else {
+        addTextNode(idCell, '-');
+      }
+      var sourceTypeString = this.sourceEntry_.getSourceTypeString();
+      addTextNode(typeCell, sourceTypeString);
+      this.updateDescription_();
 
-  this.setFilterStyles(isMatchedByFilter);
+      // Add a CSS classname specific to this source type (so CSS can specify
+      // different stylings for different types).
+      changeClassName(this.row_, 'source_' + sourceTypeString, true);
 
-  if (isMatchedByFilter) {
-    this.parentView_.incrementPostfilterCount(1);
-  } else {
-    this.parentView_.incrementPostfilterCount(-1);
-    // If we are filtering an entry away, make sure it is no longer
-    // part of the selection.
-    this.setSelected(false);
-  }
-};
+      this.updateClass_();
+    },
 
-SourceRow.prototype.isMatchedByFilter = function() {
-  return this.isMatchedByFilter_;
-};
+    onSourceUpdated: function() {
+      if (this.sourceEntry_.isInactive() != this.isInactive_ ||
+          this.sourceEntry_.isError() != this.isError_) {
+        this.updateClass_();
+      }
 
-SourceRow.prototype.setFilterStyles = function(isMatchedByFilter) {
-  // Hide rows which have been filtered away.
-  if (isMatchedByFilter) {
-    this.row_.style.display = '';
-  } else {
-    this.row_.style.display = 'none';
-  }
-};
+      if (this.description_ != this.sourceEntry_.getDescription())
+        this.updateDescription_();
 
-SourceRow.prototype.matchesFilter = function(filter) {
-  if (filter.isActive && this.isInactive_)
-    return false;
-  if (filter.isInactive && !this.isInactive_)
-    return false;
-  if (filter.isError && !this.isError_)
-    return false;
-  if (filter.isNotError && this.isError_)
-    return false;
+      // Update filters.
+      var matchesFilter = this.matchesFilter(this.parentView_.currentFilter_);
+      this.setIsMatchedByFilter(matchesFilter);
+    },
 
-  // Check source type, if needed.
-  if (filter.type) {
-    var sourceType = this.sourceEntry_.getSourceTypeString().toLowerCase();
-    if (filter.type.indexOf(sourceType) == -1)
-      return false;
-  }
+    /**
+     * Changes |row_|'s class based on currently set flags.  Clears any previous
+     * class set by this method.  This method is needed so that some styles
+     * override others.
+     */
+    updateClass_: function() {
+      this.isInactive_ = this.sourceEntry_.isInactive();
+      this.isError_ = this.sourceEntry_.isError();
 
-  // Check source ID, if needed.
-  if (filter.id) {
-    if (filter.id.indexOf(this.sourceEntry_.getSourceId() + '') == -1)
-      return false;
-  }
+      // Each element of this list contains a property of |this| and the
+      // corresponding class name to set if that property is true.  Entries
+      // earlier in the list take precedence.
+      var propertyNames = [
+        ['isSelected_', 'selected'],
+        ['isMouseOver_', 'mouseover'],
+        ['isError_', 'error'],
+        ['isInactive_', 'inactive'],
+      ];
 
-  if (filter.text == '')
-    return true;
+      // Loop through |propertyNames| in order, checking if each property
+      // is true.  For the first such property found, if any, add the
+      // corresponding class to the SourceEntry's row.  Remove classes
+      // that correspond to any other property.
+      var noStyleSet = true;
+      for (var i = 0; i < propertyNames.length; ++i) {
+        var setStyle = noStyleSet && this[propertyNames[i][0]];
+        changeClassName(this.row_, propertyNames[i][1], setStyle);
+        if (setStyle)
+          noStyleSet = false;
+      }
+    },
 
-  var filterText = filter.text;
-  var entryText = this.sourceEntry_.printAsText().toLowerCase();
+    getSourceEntry: function() {
+      return this.sourceEntry_;
+    },
 
-  return entryText.indexOf(filterText) != -1;
-};
+    setIsMatchedByFilter: function(isMatchedByFilter) {
+      if (this.isMatchedByFilter() == isMatchedByFilter)
+        return;  // No change.
 
-SourceRow.prototype.isSelected = function() {
-  return this.isSelected_;
-};
+      this.isMatchedByFilter_ = isMatchedByFilter;
 
-SourceRow.prototype.setSelected = function(isSelected) {
-  if (isSelected == this.isSelected())
-    return;
+      this.setFilterStyles(isMatchedByFilter);
 
-  this.isSelected_ = isSelected;
+      if (isMatchedByFilter) {
+        this.parentView_.incrementPostfilterCount(1);
+      } else {
+        this.parentView_.incrementPostfilterCount(-1);
+        // If we are filtering an entry away, make sure it is no longer
+        // part of the selection.
+        this.setSelected(false);
+      }
+    },
 
-  this.setSelectedStyles(isSelected);
-  this.parentView_.modifySelectionArray(this, isSelected);
-  this.parentView_.onSelectionChanged();
-};
+    isMatchedByFilter: function() {
+      return this.isMatchedByFilter_;
+    },
 
-SourceRow.prototype.setSelectedStyles = function(isSelected) {
-  this.isSelected_ = isSelected;
-  this.getSelectionCheckbox().checked = isSelected;
-  this.updateClass_();
-};
+    setFilterStyles: function(isMatchedByFilter) {
+      // Hide rows which have been filtered away.
+      if (isMatchedByFilter) {
+        this.row_.style.display = '';
+      } else {
+        this.row_.style.display = 'none';
+      }
+    },
 
-SourceRow.prototype.setMouseoverStyle = function(isMouseOver) {
-  this.isMouseOver_ = isMouseOver;
-  this.updateClass_();
-};
+    matchesFilter: function(filter) {
+      if (filter.isActive && this.isInactive_)
+        return false;
+      if (filter.isInactive && !this.isInactive_)
+        return false;
+      if (filter.isError && !this.isError_)
+        return false;
+      if (filter.isNotError && this.isError_)
+        return false;
 
-SourceRow.prototype.onClicked_ = function() {
-  this.parentView_.clearSelection();
-  this.setSelected(true);
-};
+      // Check source type, if needed.
+      if (filter.type) {
+        var sourceType = this.sourceEntry_.getSourceTypeString().toLowerCase();
+        if (filter.type.indexOf(sourceType) == -1)
+          return false;
+      }
 
-SourceRow.prototype.onMouseover_ = function() {
-  this.setMouseoverStyle(true);
-};
+      // Check source ID, if needed.
+      if (filter.id) {
+        if (filter.id.indexOf(this.sourceEntry_.getSourceId() + '') == -1)
+          return false;
+      }
 
-SourceRow.prototype.onMouseout_ = function() {
-  this.setMouseoverStyle(false);
-};
+      if (filter.text == '')
+        return true;
 
-SourceRow.prototype.updateDescription_ = function() {
-  this.description_ = this.sourceEntry_.getDescription();
-  this.descriptionCell_.innerHTML = '';
-  addTextNode(this.descriptionCell_, this.description_);
-};
+      var filterText = filter.text;
+      var entryText = this.sourceEntry_.printAsText().toLowerCase();
 
-SourceRow.prototype.onCheckboxToggled_ = function() {
-  this.setSelected(this.getSelectionCheckbox().checked);
-};
+      return entryText.indexOf(filterText) != -1;
+    },
 
-SourceRow.prototype.getSelectionCheckbox = function() {
-  return this.row_.childNodes[0].firstChild;
-};
+    isSelected: function() {
+      return this.isSelected_;
+    },
 
-/**
- * Returns source ID of the entry whose row is currently above this one's.
- * Returns null if no such node exists.
- */
-SourceRow.prototype.getPreviousNodeSourceId = function() {
-  var prevNode = this.row_.previousSibling;
-  if (prevNode == null)
-    return null;
-  return prevNode._id;
-};
+    setSelected: function(isSelected) {
+      if (isSelected == this.isSelected())
+        return;
 
-/**
- * Returns source ID of the entry whose row is currently below this one's.
- * Returns null if no such node exists.
- */
-SourceRow.prototype.getNextNodeSourceId = function() {
-  var nextNode = this.row_.nextSibling;
-  if (nextNode == null)
-    return null;
-  return nextNode._id;
-};
+      this.isSelected_ = isSelected;
 
-/**
- * Moves current object's row before |entry|'s row.
- */
-SourceRow.prototype.moveBefore = function(entry) {
-  this.row_.parentNode.insertBefore(this.row_, entry.row_);
-};
+      this.setSelectedStyles(isSelected);
+      this.parentView_.modifySelectionArray(this, isSelected);
+      this.parentView_.onSelectionChanged();
+    },
 
-/**
- * Moves current object's row after |entry|'s row.
- */
-SourceRow.prototype.moveAfter = function(entry) {
-  this.row_.parentNode.insertBefore(this.row_, entry.row_.nextSibling);
-};
+    setSelectedStyles: function(isSelected) {
+      this.isSelected_ = isSelected;
+      this.getSelectionCheckbox().checked = isSelected;
+      this.updateClass_();
+    },
 
-SourceRow.prototype.remove = function() {
-  this.setSelected(false);
-  this.setIsMatchedByFilter(false);
-  this.row_.parentNode.removeChild(this.row_);
-};
+    setMouseoverStyle: function(isMouseOver) {
+      this.isMouseOver_ = isMouseOver;
+      this.updateClass_();
+    },
+
+    onClicked_: function() {
+      this.parentView_.clearSelection();
+      this.setSelected(true);
+    },
+
+    onMouseover_: function() {
+      this.setMouseoverStyle(true);
+    },
+
+    onMouseout_: function() {
+      this.setMouseoverStyle(false);
+    },
+
+    updateDescription_: function() {
+      this.description_ = this.sourceEntry_.getDescription();
+      this.descriptionCell_.innerHTML = '';
+      addTextNode(this.descriptionCell_, this.description_);
+    },
+
+    onCheckboxToggled_: function() {
+      this.setSelected(this.getSelectionCheckbox().checked);
+    },
+
+    getSelectionCheckbox: function() {
+      return this.row_.childNodes[0].firstChild;
+    },
+
+    /**
+     * Returns source ID of the entry whose row is currently above this one's.
+     * Returns null if no such node exists.
+     */
+    getPreviousNodeSourceId: function() {
+      var prevNode = this.row_.previousSibling;
+      if (prevNode == null)
+        return null;
+      return prevNode._id;
+    },
+
+    /**
+     * Returns source ID of the entry whose row is currently below this one's.
+     * Returns null if no such node exists.
+     */
+    getNextNodeSourceId: function() {
+      var nextNode = this.row_.nextSibling;
+      if (nextNode == null)
+        return null;
+      return nextNode._id;
+    },
+
+    /**
+     * Moves current object's row before |entry|'s row.
+     */
+    moveBefore: function(entry) {
+      this.row_.parentNode.insertBefore(this.row_, entry.row_);
+    },
+
+    /**
+     * Moves current object's row after |entry|'s row.
+     */
+    moveAfter: function(entry) {
+      this.row_.parentNode.insertBefore(this.row_, entry.row_.nextSibling);
+    },
+
+    remove: function() {
+      this.setSelected(false);
+      this.setIsMatchedByFilter(false);
+      this.row_.parentNode.removeChild(this.row_);
+    }
+  };
+
+  return SourceRow;
+})();
