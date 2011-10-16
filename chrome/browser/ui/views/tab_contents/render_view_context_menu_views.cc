@@ -89,6 +89,10 @@ bool RenderViewContextMenuViews::GetAcceleratorForCommandId(
       *accel = views::Accelerator(ui::VKEY_V, false, true, false);
       return true;
 
+    case IDC_CONTENT_CONTEXT_PASTE_AND_MATCH_STYLE:
+      *accel = views::Accelerator(ui::VKEY_V, true, true, false);
+      return true;
+
     case IDC_CONTENT_CONTEXT_SELECTALL:
       *accel = views::Accelerator(ui::VKEY_A, false, true, false);
       return true;

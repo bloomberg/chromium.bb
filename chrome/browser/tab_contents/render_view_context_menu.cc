@@ -872,6 +872,8 @@ void RenderViewContextMenu::AppendEditableItems() {
                                   IDS_CONTENT_CONTEXT_COPY);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_PASTE,
                                   IDS_CONTENT_CONTEXT_PASTE);
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_PASTE_AND_MATCH_STYLE,
+                                  IDS_CONTENT_CONTEXT_PASTE_AND_MATCH_STYLE);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_DELETE,
                                   IDS_CONTENT_CONTEXT_DELETE);
   menu_model_.AddSeparator();
@@ -1234,6 +1236,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       return !!(params_.edit_flags & WebContextMenuData::CanCopy);
 
     case IDC_CONTENT_CONTEXT_PASTE:
+    case IDC_CONTENT_CONTEXT_PASTE_AND_MATCH_STYLE:
       return !!(params_.edit_flags & WebContextMenuData::CanPaste);
 
     case IDC_CONTENT_CONTEXT_DELETE:
@@ -1712,6 +1715,10 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
     case IDC_CONTENT_CONTEXT_PASTE:
       rvh->Paste();
+      break;
+
+    case IDC_CONTENT_CONTEXT_PASTE_AND_MATCH_STYLE:
+      rvh->PasteAndMatchStyle();
       break;
 
     case IDC_CONTENT_CONTEXT_DELETE:

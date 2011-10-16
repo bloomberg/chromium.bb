@@ -1911,7 +1911,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
       action == @selector(copy:) ||
       action == @selector(copyToFindPboard:) ||
       action == @selector(paste:) ||
-      action == @selector(pasteAsPlainText:)) {
+      action == @selector(pasteAndMatchStyle:)) {
     return renderWidgetHostView_->render_widget_host_->IsRenderView();
   }
 
@@ -2566,50 +2566,49 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 - (void)undo:(id)sender {
   if (renderWidgetHostView_->render_widget_host_->IsRenderView()) {
     static_cast<RenderViewHost*>(renderWidgetHostView_->render_widget_host_)->
-      Undo();
+        Undo();
   }
 }
 
 - (void)redo:(id)sender {
   if (renderWidgetHostView_->render_widget_host_->IsRenderView()) {
     static_cast<RenderViewHost*>(renderWidgetHostView_->render_widget_host_)->
-      Redo();
+        Redo();
   }
 }
 
 - (void)cut:(id)sender {
   if (renderWidgetHostView_->render_widget_host_->IsRenderView()) {
     static_cast<RenderViewHost*>(renderWidgetHostView_->render_widget_host_)->
-      Cut();
+        Cut();
   }
 }
 
 - (void)copy:(id)sender {
   if (renderWidgetHostView_->render_widget_host_->IsRenderView()) {
     static_cast<RenderViewHost*>(renderWidgetHostView_->render_widget_host_)->
-      Copy();
+        Copy();
   }
 }
 
 - (void)copyToFindPboard:(id)sender {
   if (renderWidgetHostView_->render_widget_host_->IsRenderView()) {
     static_cast<RenderViewHost*>(renderWidgetHostView_->render_widget_host_)->
-      CopyToFindPboard();
+        CopyToFindPboard();
   }
 }
 
 - (void)paste:(id)sender {
   if (renderWidgetHostView_->render_widget_host_->IsRenderView()) {
     static_cast<RenderViewHost*>(renderWidgetHostView_->render_widget_host_)->
-      Paste();
+        Paste();
   }
 }
 
-- (void)pasteAsPlainText:(id)sender {
+- (void)pasteAndMatchStyle:(id)sender {
   if (renderWidgetHostView_->render_widget_host_->IsRenderView()) {
-      RenderWidgetHost* rwh = renderWidgetHostView_->render_widget_host_;
-    rwh->Send(new ViewMsg_ExecuteEditCommand(
-        rwh->routing_id(), "PasteAndMatchStyle", ""));
+    static_cast<RenderViewHost*>(renderWidgetHostView_->render_widget_host_)->
+        PasteAndMatchStyle();
   }
 }
 

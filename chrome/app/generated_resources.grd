@@ -734,6 +734,23 @@ are declared in build/common.gypi.
         </message>
       </if>
 
+      <!-- Paste and Match Style / Paste as Plain Text -->
+      <if expr="is_macosx">
+        <message name="IDS_CONTENT_CONTEXT_PASTE_AND_MATCH_STYLE" desc="Mac/In Title Case: The name of the 'Paste and Match Style' command in the content area context menu">
+          Paste and Match Style
+        </message>
+      </if>
+      <if expr="not is_macosx and pp_ifdef('use_titlecase')">
+        <message name="IDS_CONTENT_CONTEXT_PASTE_AND_MATCH_STYLE" desc="In Title Case: The name of the 'Paste as plain text' command in the content area context menu">
+          Paste As Plain Text
+        </message>
+      </if>
+      <if expr="not is_macosx and not pp_ifdef('use_titlecase')">
+        <message name="IDS_CONTENT_CONTEXT_PASTE_AND_MATCH_STYLE" desc="The name of the 'Paste as plain text' command in the content area context menu">
+          Paste as plain text
+        </message>
+      </if>
+
       <!-- Page menu -->
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_NEW_TAB" desc="The text label of the New Tab menu item">

@@ -844,6 +844,7 @@ IPC_MESSAGE_ROUTED0(ViewMsg_Copy)
 IPC_MESSAGE_ROUTED0(ViewMsg_CopyToFindPboard)
 #endif
 IPC_MESSAGE_ROUTED0(ViewMsg_Paste)
+IPC_MESSAGE_ROUTED0(ViewMsg_PasteAndMatchStyle)
 // Replaces the selected region or a word around the cursor with the
 // specified string.
 IPC_MESSAGE_ROUTED1(ViewMsg_Replace,

@@ -805,6 +805,7 @@ class RenderViewImpl : public RenderWidget,
   void OnMoveOrResizeStarted();
   CONTENT_EXPORT void OnNavigate(const ViewMsg_Navigate_Params& params);
   void OnPaste();
+  void OnPasteAndMatchStyle();
 #if defined(OS_MACOSX)
   void OnPluginImeCompositionCompleted(const string16& text, int plugin_id);
 #endif

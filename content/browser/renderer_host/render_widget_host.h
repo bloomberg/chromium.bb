@@ -419,6 +419,7 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
   void Copy();
   void CopyToFindPboard();
   void Paste();
+  void PasteAndMatchStyle();
   void Delete();
   void SelectAll();
 

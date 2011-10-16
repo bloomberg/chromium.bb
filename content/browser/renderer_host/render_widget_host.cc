@@ -1377,6 +1377,11 @@ void RenderWidgetHost::Paste() {
   UserMetrics::RecordAction(UserMetricsAction("Paste"));
 }
 
+void RenderWidgetHost::PasteAndMatchStyle() {
+  Send(new ViewMsg_PasteAndMatchStyle(routing_id()));
+  UserMetrics::RecordAction(UserMetricsAction("PasteAndMatchStyle"));
+}
+
 void RenderWidgetHost::Delete() {
   Send(new ViewMsg_Delete(routing_id()));
   UserMetrics::RecordAction(UserMetricsAction("DeleteSelection"));

@@ -581,6 +581,7 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_CopyToFindPboard, OnCopyToFindPboard)
 #endif
     IPC_MESSAGE_HANDLER(ViewMsg_Paste, OnPaste)
+    IPC_MESSAGE_HANDLER(ViewMsg_PasteAndMatchStyle, OnPasteAndMatchStyle)
     IPC_MESSAGE_HANDLER(ViewMsg_Replace, OnReplace)
     IPC_MESSAGE_HANDLER(ViewMsg_Delete, OnDelete)
     IPC_MESSAGE_HANDLER(ViewMsg_SelectAll, OnSelectAll)
@@ -940,6 +941,14 @@ void RenderViewImpl::OnPaste() {
     return;
 
   webview()->focusedFrame()->executeCommand(WebString::fromUTF8("Paste"));
+}
+
+void RenderViewImpl::OnPasteAndMatchStyle() {
+  if (!webview())
+    return;
+
+  webview()->focusedFrame()->executeCommand(
+      WebString::fromUTF8("PasteAndMatchStyle"));
 }
 
 void RenderViewImpl::OnReplace(const string16& text) {
