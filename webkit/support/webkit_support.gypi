@@ -83,6 +83,7 @@
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/ui/ui.gyp:ui',
         'glue',
+        'webkit_support_gfx',
       ],
       'export_dependent_settings': [
         '<(DEPTH)/base/base.gyp:base',
@@ -113,8 +114,6 @@
         '<(DEPTH)/webkit/tools/test_shell/test_shell_webmimeregistry_impl.h',
         'simple_database_system.cc',
         'simple_database_system.h',
-        'webkit_support_gfx.h',
-        'webkit_support_gfx.cc',
       ],
       'conditions': [
         ['inside_chromium_build==0', {
@@ -122,6 +121,26 @@
             'setup_third_party.gyp:third_party_headers',
           ],
         }],
+      ],
+    },
+
+    {
+      'target_name': 'webkit_support_gfx',
+      'type': 'static_library',
+      'dependencies': [
+        '<(DEPTH)/third_party/libpng/libpng.gyp:libpng',
+      ],
+      'sources': [
+        'webkit_support_gfx.h',
+        'webkit_support_gfx.cc',
+      ],
+      'include_dirs': [
+        '<(DEPTH)',
+      ],
+      'conditions': [
+          ['OS=="android"', {
+              'toolsets': ['target', 'host'],
+          }],
       ],
     },
   ],
