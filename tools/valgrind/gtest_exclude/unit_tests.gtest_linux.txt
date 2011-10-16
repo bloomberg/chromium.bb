@@ -4,7 +4,3 @@ URLFetcherBadHTTPSTest.BadHTTPSTest
 RenderViewTest.OnHandleKeyboardEvent
 # http://crbug.com/88221
 ConnectionTesterTest.DeleteWhileInProgress
-
-# Fail on CrOS on a chromium assertion http://crbug.com/100331
-BrowserMainTest.WarmConnectionFieldTrial_Random
-BrowserMainTest.WarmConnectionFieldTrial_WarmestSocket
