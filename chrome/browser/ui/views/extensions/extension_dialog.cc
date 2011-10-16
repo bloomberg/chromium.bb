@@ -27,7 +27,9 @@ namespace {
 
 views::Widget* CreateWindow(gfx::NativeWindow parent,
                             views::WidgetDelegate* delegate) {
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) && defined(TOOLKIT_USES_GTK)
+  // TODO(msw): revert to BubbleWindow for all ChromeOS cases when CL
+  // for crbug.com/98322 is landed.
   // On Chrome OS we need to override the style to suppress padding around
   // the borders.
   return chromeos::BubbleWindow::Create(parent,
