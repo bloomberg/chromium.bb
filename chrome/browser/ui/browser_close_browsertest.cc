@@ -508,7 +508,8 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseTest, DownloadsCloseCheck_2) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserCloseTest, DownloadsCloseCheck_3) {
+// This test is disabled, see http://crbug.com/100517
+IN_PROC_BROWSER_TEST_F(BrowserCloseTest, DISABLED_DownloadsCloseCheck_3) {
   ASSERT_TRUE(SetupForDownloadCloseCheck());
   for (size_t i = 3 * arraysize(download_close_check_cases) / 6;
        i < 4 * arraysize(download_close_check_cases) / 6; ++i) {
