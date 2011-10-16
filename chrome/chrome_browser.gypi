@@ -3997,6 +3997,8 @@
             ['exclude', '^browser/chromeos'],
             ['exclude', '^browser/ui/webui/chromeos'],
             ['exclude', '^browser/ui/webui/options/chromeos'],
+            ['exclude', 'browser/extensions/extension_input_ime_api.cc'],
+            ['exclude', 'browser/extensions/extension_input_ime_api.h'],
             ['exclude', 'browser/extensions/extension_input_method_api.cc'],
             ['exclude', 'browser/extensions/extension_input_method_api.h'],
             ['exclude', 'browser/extensions/extension_input_ui_api.cc'],
