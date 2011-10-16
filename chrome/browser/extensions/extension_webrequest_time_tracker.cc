@@ -73,10 +73,13 @@ void DefaultDelegate::NotifyExcessiveDelays(
     size_t num_delayed_messages,
     size_t total_num_messages,
     const std::set<std::string>& extension_ids) {
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&NotifyNetworkDelaysOnUI, profile, extension_ids));
+  // TODO(battre) Enable warning the user if extensions misbehave as soon as we
+  // have data that allows us to decide on reasonable limits for triggering the
+  // warnings.
+  // BrowserThread::PostTask(
+  //     BrowserThread::UI,
+  //     FROM_HERE,
+  //     base::Bind(&NotifyNetworkDelaysOnUI, profile, extension_ids));
 }
 
 void DefaultDelegate::NotifyModerateDelays(
@@ -84,10 +87,13 @@ void DefaultDelegate::NotifyModerateDelays(
     size_t num_delayed_messages,
     size_t total_num_messages,
     const std::set<std::string>& extension_ids) {
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&NotifyNetworkDelaysOnUI, profile, extension_ids));
+  // TODO(battre) Enable warning the user if extensions misbehave as soon as we
+  // have data that allows us to decide on reasonable limits for triggering the
+  // warnings.
+  // BrowserThread::PostTask(
+  //     BrowserThread::UI,
+  //     FROM_HERE,
+  //     base::Bind(&NotifyNetworkDelaysOnUI, profile, extension_ids));
 }
 
 }  // namespace
@@ -179,7 +185,7 @@ void ExtensionWebRequestTimeTracker::Analyze(int64 request_id) {
   double percentage =
       log.block_duration.InMillisecondsF() /
       log.request_duration.InMillisecondsF();
-  LOG(ERROR) << "WR percent " << request_id << ": " << log.url << ": " <<
+  VLOG(1) << "WR percent " << request_id << ": " << log.url << ": " <<
       log.block_duration.InMilliseconds() << "/" <<
       log.request_duration.InMilliseconds() << " = " << percentage;
 
@@ -188,7 +194,7 @@ void ExtensionWebRequestTimeTracker::Analyze(int64 request_id) {
   if (percentage > kThresholdExcessiveDelay) {
     excessive_delays_.insert(request_id);
     if (excessive_delays_.size() > kNumExcessiveDelaysBeforeWarning) {
-      LOG(ERROR) << "WR excessive delays:" << excessive_delays_.size();
+      VLOG(1) << "WR excessive delays:" << excessive_delays_.size();
       if (delegate_.get()) {
         delegate_->NotifyExcessiveDelays(log.profile,
                                          excessive_delays_.size(),
@@ -200,7 +206,7 @@ void ExtensionWebRequestTimeTracker::Analyze(int64 request_id) {
     moderate_delays_.insert(request_id);
     if (moderate_delays_.size() + excessive_delays_.size() >
             kNumModerateDelaysBeforeWarning) {
-      LOG(ERROR) << "WR moderate delays:" << moderate_delays_.size();
+      VLOG(1) << "WR moderate delays:" << moderate_delays_.size();
       if (delegate_.get()) {
         delegate_->NotifyModerateDelays(
             log.profile,
