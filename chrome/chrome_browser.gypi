@@ -2858,6 +2858,8 @@
         'browser/ui/find_bar/find_tab_helper.h',
         'browser/ui/fullscreen_exit_bubble.cc',
         'browser/ui/fullscreen_exit_bubble.h',
+        'browser/ui/fullscreen_exit_bubble_type.cc',
+        'browser/ui/fullscreen_exit_bubble_type.h',
         'browser/ui/global_error.cc',
         'browser/ui/global_error.h',
         'browser/ui/global_error_service.cc',
