@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,80 +14,89 @@
 
 // TODO(eroman): document these methods!
 
-function LogGroupEntry(origEntry, index) {
-  this.orig = origEntry;
-  this.index = index;
-}
+var LogGroupEntry = (function() {
+  'use strict';
 
-LogGroupEntry.prototype.isBegin = function() {
-  return this.orig.phase == LogEventPhase.PHASE_BEGIN;
-};
-
-LogGroupEntry.prototype.isEnd = function() {
-  return this.orig.phase == LogEventPhase.PHASE_END
-};
-
-LogGroupEntry.prototype.getDepth = function() {
-  var depth = 0;
-  var p = this.parentEntry;
-  while (p) {
-    depth += 1;
-    p = p.parentEntry;
+  function LogGroupEntry(origEntry, index) {
+    this.orig = origEntry;
+    this.index = index;
   }
-  return depth;
-};
 
-function findParentIndex(parentStack, eventType) {
-  for (var i = parentStack.length - 1; i >= 0; --i) {
-    if (parentStack[i].orig.type == eventType)
-      return i;
+  LogGroupEntry.prototype = {
+    isBegin: function() {
+      return this.orig.phase == LogEventPhase.PHASE_BEGIN;
+    },
+
+    isEnd: function() {
+      return this.orig.phase == LogEventPhase.PHASE_END
+    },
+
+    getDepth: function() {
+      var depth = 0;
+      var p = this.parentEntry;
+      while (p) {
+        depth += 1;
+        p = p.parentEntry;
+      }
+      return depth;
+    }
+  };
+
+  function findParentIndex(parentStack, eventType) {
+    for (var i = parentStack.length - 1; i >= 0; --i) {
+      if (parentStack[i].orig.type == eventType)
+        return i;
+    }
+    return -1;
   }
-  return -1;
-}
 
-/**
- * Returns a list of LogGroupEntrys. This basically wraps the original log
- * entry, but makes it easier to find the start/end of the event.
- */
-LogGroupEntry.createArrayFrom = function(origEntries) {
-  var groupedEntries = [];
+  /**
+   * Returns a list of LogGroupEntrys. This basically wraps the original log
+   * entry, but makes it easier to find the start/end of the event.
+   */
+  LogGroupEntry.createArrayFrom = function(origEntries) {
+    var groupedEntries = [];
 
-  // Stack of enclosing PHASE_BEGIN elements.
-  var parentStack = [];
+    // Stack of enclosing PHASE_BEGIN elements.
+    var parentStack = [];
 
-  for (var i = 0; i < origEntries.length; ++i) {
-    var origEntry = origEntries[i];
+    for (var i = 0; i < origEntries.length; ++i) {
+      var origEntry = origEntries[i];
 
-    var groupEntry = new LogGroupEntry(origEntry, i);
-    groupedEntries.push(groupEntry);
+      var groupEntry = new LogGroupEntry(origEntry, i);
+      groupedEntries.push(groupEntry);
 
-    // If this is the end of an event, match it to the start.
-    if (groupEntry.isEnd()) {
-      // Walk up the parent stack to find the corresponding BEGIN for this END.
-      var parentIndex =
-          findParentIndex(parentStack, groupEntry.orig.type);
+      // If this is the end of an event, match it to the start.
+      if (groupEntry.isEnd()) {
+        // Walk up the parent stack to find the corresponding BEGIN for this
+        // END.
+        var parentIndex =
+            findParentIndex(parentStack, groupEntry.orig.type);
 
-      if (parentIndex == -1) {
-        // Unmatched end.
-      } else {
-        groupEntry.begin = parentStack[parentIndex];
+        if (parentIndex == -1) {
+          // Unmatched end.
+        } else {
+          groupEntry.begin = parentStack[parentIndex];
 
-        // Consider this as the terminator for all open BEGINs up until
-        // parentIndex.
-        while (parentIndex < parentStack.length) {
-          var p = parentStack.pop();
-          p.end = groupEntry;
+          // Consider this as the terminator for all open BEGINs up until
+          // parentIndex.
+          while (parentIndex < parentStack.length) {
+            var p = parentStack.pop();
+            p.end = groupEntry;
+          }
         }
       }
+
+      // Inherit the current parent.
+      if (parentStack.length > 0)
+        groupEntry.parentEntry = parentStack[parentStack.length - 1];
+
+      if (groupEntry.isBegin())
+        parentStack.push(groupEntry);
     }
 
-    // Inherit the current parent.
-    if (parentStack.length > 0)
-      groupEntry.parentEntry = parentStack[parentStack.length - 1];
+    return groupedEntries;
+  };
 
-    if (groupEntry.isBegin())
-      parentStack.push(groupEntry);
-  }
-
-  return groupedEntries;
-}
+  return LogGroupEntry;
+})();
