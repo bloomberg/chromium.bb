@@ -4,6 +4,7 @@
 
 #include "webkit/tools/test_shell/test_shell_webblobregistry_impl.h"
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/task.h"
 #include "googleurl/src/gurl.h"
@@ -55,15 +56,13 @@ TestShellWebBlobRegistryImpl::TestShellWebBlobRegistryImpl() {
 void TestShellWebBlobRegistryImpl::registerBlobURL(
     const WebURL& url, WebBlobData& data) {
   DCHECK(g_io_thread);
-  CancelableTask* task;
+  base::Closure task;
   {
     scoped_refptr<webkit_blob::BlobData> blob_data(
       new webkit_blob::BlobData(data));
     WebURL url_copy = GetWebURLThreadsafeCopy(url);
-    task =
-      NewRunnableMethod(
-          this, &TestShellWebBlobRegistryImpl::DoRegisterBlobUrl, url_copy,
-          blob_data);
+    task = base::Bind(&TestShellWebBlobRegistryImpl::DoRegisterBlobUrl, this,
+                      url_copy, blob_data);
     // After this block exits, url_copy is disposed, and
     // the underlying WebCString will have a refcount=1 and will
     // only be accessible from the task object.
@@ -74,15 +73,12 @@ void TestShellWebBlobRegistryImpl::registerBlobURL(
 void TestShellWebBlobRegistryImpl::registerBlobURL(
     const WebURL& url, const WebURL& src_url) {
   DCHECK(g_io_thread);
-  CancelableTask* task;
+  base::Closure task;
   {
     WebURL url_copy = GetWebURLThreadsafeCopy(url);
     WebURL src_url_copy = GetWebURLThreadsafeCopy(src_url);
-    task =
-      NewRunnableMethod(this,
-                        &TestShellWebBlobRegistryImpl::DoRegisterBlobUrlFrom,
-                        url_copy,
-                        src_url_copy);
+    task = base::Bind(&TestShellWebBlobRegistryImpl::DoRegisterBlobUrlFrom,
+                      this, url_copy, src_url_copy);
     // After this block exits, url_copy and src_url_copy are disposed, and
     // the underlying WebCStrings will have a refcount=1 and will
     // only be accessible from the task object.
@@ -92,13 +88,11 @@ void TestShellWebBlobRegistryImpl::registerBlobURL(
 
 void TestShellWebBlobRegistryImpl::unregisterBlobURL(const WebURL& url) {
   DCHECK(g_io_thread);
-  CancelableTask* task;
+  base::Closure task;
   {
     WebURL url_copy = GetWebURLThreadsafeCopy(url);
-    task =
-      NewRunnableMethod(this,
-                        &TestShellWebBlobRegistryImpl::DoUnregisterBlobUrl,
-                        url_copy);
+    task = base::Bind(&TestShellWebBlobRegistryImpl::DoUnregisterBlobUrl, this,
+                      url_copy);
     // After this block exits, url_copy is disposed, and
     // the underlying WebCString will have a refcount=1 and will
     // only be accessible from the task object.

@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/i18n/case_conversion.h"
 #include "base/string_util.h"
 #include "base/task.h"
@@ -48,8 +50,9 @@ bool ShortcutsBackend::Init() {
       current_state_ = INITIALIZED;
       return true;
     } else {
-      return BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-          NewRunnableMethod(this, &ShortcutsBackend::InitInternal));
+      return BrowserThread::PostTask(
+          BrowserThread::DB, FROM_HERE,
+          base::Bind(&ShortcutsBackend::InitInternal, this));
     }
   } else {
     return false;
@@ -67,8 +70,9 @@ bool ShortcutsBackend::AddShortcut(
                     OnShortcutsChanged());
   if (no_db_access_)
     return true;
-  return BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      NewRunnableMethod(db_.get(), &ShortcutsDatabase::AddShortcut, shortcut));
+  return BrowserThread::PostTask(
+      BrowserThread::DB, FROM_HERE, base::IgnoreReturn<bool>(
+          base::Bind(&ShortcutsDatabase::AddShortcut, db_.get(), shortcut)));
 }
 
 bool ShortcutsBackend::UpdateShortcut(
@@ -85,9 +89,9 @@ bool ShortcutsBackend::UpdateShortcut(
                     OnShortcutsChanged());
   if (no_db_access_)
     return true;
-  return BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      NewRunnableMethod(db_.get(), &ShortcutsDatabase::UpdateShortcut,
-                        shortcut));
+  return BrowserThread::PostTask(
+      BrowserThread::DB, FROM_HERE, base::IgnoreReturn<bool>(
+          base::Bind(&ShortcutsDatabase::UpdateShortcut, db_.get(), shortcut)));
 }
 
 bool ShortcutsBackend::DeleteShortcutsWithIds(
@@ -106,9 +110,10 @@ bool ShortcutsBackend::DeleteShortcutsWithIds(
                     OnShortcutsChanged());
   if (no_db_access_)
     return true;
-  return BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      NewRunnableMethod(db_.get(), &ShortcutsDatabase::DeleteShortcutsWithIds,
-                        shortcut_ids));
+  return BrowserThread::PostTask(
+      BrowserThread::DB, FROM_HERE, base::IgnoreReturn<bool>(
+          base::Bind(&ShortcutsDatabase::DeleteShortcutsWithIds, db_.get(),
+                     shortcut_ids)));
 }
 
 bool ShortcutsBackend::DeleteShortcutsWithUrl(const GURL& shortcut_url) {
@@ -130,9 +135,10 @@ bool ShortcutsBackend::DeleteShortcutsWithUrl(const GURL& shortcut_url) {
                     OnShortcutsChanged());
   if (no_db_access_)
     return true;
-  return BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      NewRunnableMethod(db_.get(), &ShortcutsDatabase::DeleteShortcutsWithUrl,
-                        shortcut_url.spec()));
+  return BrowserThread::PostTask(
+      BrowserThread::DB, FROM_HERE, base::IgnoreReturn<bool>(
+          base::Bind(&ShortcutsDatabase::DeleteShortcutsWithUrl, db_.get(),
+                     shortcut_url.spec())));
 }
 
 bool ShortcutsBackend::DeleteAllShortcuts() {
@@ -144,8 +150,9 @@ bool ShortcutsBackend::DeleteAllShortcuts() {
                     OnShortcutsChanged());
   if (no_db_access_)
     return true;
-  return BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      NewRunnableMethod(db_.get(), &ShortcutsDatabase::DeleteAllShortcuts));
+  return BrowserThread::PostTask(
+      BrowserThread::DB, FROM_HERE, base::IgnoreReturn<bool>(
+          base::Bind(&ShortcutsDatabase::DeleteAllShortcuts, db_.get())));
 }
 
 void ShortcutsBackend::InitInternal() {
@@ -160,8 +167,9 @@ void ShortcutsBackend::InitInternal() {
     (*temp_guid_map_)[it->first] = temp_shortcuts_map_->insert(
         std::make_pair(base::i18n::ToLower(it->second.text), it->second));
   }
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &ShortcutsBackend::InitCompleted));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&ShortcutsBackend::InitCompleted, this));
 }
 
 void ShortcutsBackend::InitCompleted() {
