@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// SRPC-abstraction wrappers around PPB_MouseLock_Dev functions.
+// SRPC-abstraction wrappers around PPB_MouseLock functions.
 
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_scoped_ptr.h"
@@ -11,8 +11,8 @@
 #include "native_client/src/shared/ppapi_proxy/browser_globals.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
-#include "ppapi/c/dev/ppb_mouse_lock_dev.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/c/ppb_mouse_lock.h"
 #include "srpcgen/ppb_rpc.h"
 
 using ppapi_proxy::DebugPrintf;

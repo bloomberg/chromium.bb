@@ -4,7 +4,7 @@
 
 #include "ppapi/proxy/ppp_mouse_lock_proxy.h"
 
-#include "ppapi/c/dev/ppp_mouse_lock_dev.h"
+#include "ppapi/c/ppp_mouse_lock.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"
 
@@ -22,10 +22,10 @@ void MouseLockLost(PP_Instance instance) {
   }
 
   dispatcher->Send(new PpapiMsg_PPPMouseLock_MouseLockLost(
-      INTERFACE_ID_PPP_MOUSE_LOCK_DEV, instance));
+      INTERFACE_ID_PPP_MOUSE_LOCK, instance));
 }
 
-static const PPP_MouseLock_Dev mouse_lock_interface = {
+static const PPP_MouseLock mouse_lock_interface = {
   &MouseLockLost
 };
 
@@ -38,8 +38,8 @@ InterfaceProxy* CreateMouseLockProxy(Dispatcher* dispatcher) {
 PPP_MouseLock_Proxy::PPP_MouseLock_Proxy(Dispatcher* dispatcher)
     : InterfaceProxy(dispatcher) {
   if (dispatcher->IsPlugin()) {
-    ppp_mouse_lock_impl_ = static_cast<const PPP_MouseLock_Dev*>(
-        dispatcher->local_get_interface()(PPP_MOUSELOCK_DEV_INTERFACE));
+    ppp_mouse_lock_impl_ = static_cast<const PPP_MouseLock*>(
+        dispatcher->local_get_interface()(PPP_MOUSELOCK_INTERFACE));
   }
 }
 
@@ -50,8 +50,8 @@ PPP_MouseLock_Proxy::~PPP_MouseLock_Proxy() {
 const InterfaceProxy::Info* PPP_MouseLock_Proxy::GetInfo() {
   static const Info info = {
     &mouse_lock_interface,
-    PPP_MOUSELOCK_DEV_INTERFACE,
-    INTERFACE_ID_PPP_MOUSE_LOCK_DEV,
+    PPP_MOUSELOCK_INTERFACE,
+    INTERFACE_ID_PPP_MOUSE_LOCK,
     false,
     &CreateMouseLockProxy,
   };

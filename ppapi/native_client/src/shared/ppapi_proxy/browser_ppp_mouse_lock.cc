@@ -29,8 +29,8 @@ void MouseLockLost(PP_Instance instance) {
 
 }  // namespace
 
-const PPP_MouseLock_Dev* BrowserMouseLock::GetInterface() {
-  static const PPP_MouseLock_Dev mouse_lock_interface = {
+const PPP_MouseLock* BrowserMouseLock::GetInterface() {
+  static const PPP_MouseLock mouse_lock_interface = {
     MouseLockLost
   };
   return &mouse_lock_interface;

@@ -3,22 +3,22 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_mouse_lock_dev.idl modified Tue Sep  6 16:06:47 2011. */
+/* From ppb_mouse_lock.idl modified Fri Oct 14 18:59:25 2011. */
 
-#ifndef PPAPI_C_DEV_PPB_MOUSE_LOCK_DEV_H_
-#define PPAPI_C_DEV_PPB_MOUSE_LOCK_DEV_H_
+#ifndef PPAPI_C_PPB_MOUSE_LOCK_H_
+#define PPAPI_C_PPB_MOUSE_LOCK_H_
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_stdint.h"
 
-#define PPB_MOUSELOCK_DEV_INTERFACE_0_1 "PPB_MouseLock(Dev);0.1"
-#define PPB_MOUSELOCK_DEV_INTERFACE PPB_MOUSELOCK_DEV_INTERFACE_0_1
+#define PPB_MOUSELOCK_INTERFACE_1_0 "PPB_MouseLock;1.0"
+#define PPB_MOUSELOCK_INTERFACE PPB_MOUSELOCK_INTERFACE_1_0
 
 /**
  * @file
- * This file defines the <code>PPB_MouseLock_Dev</code> interface.
+ * This file defines the <code>PPB_MouseLock</code> interface.
  */
 
 
@@ -27,13 +27,13 @@
  * @{
  */
 /**
- * The <code>PPB_MouseLock_Dev</code> interface is implemented by the browser.
+ * The <code>PPB_MouseLock</code> interface is implemented by the browser.
  * It provides a way of locking the target of mouse events to a single plugin
  * instance and removing the cursor from view. This is a useful input mode for
  * certain classes of applications, especially first person perspective 3D
  * applications and 3D modelling software.
  */
-struct PPB_MouseLock_Dev {
+struct PPB_MouseLock {
   /**
    * Requests the mouse to be locked. The browser will permit mouse lock only
    * while the tab is in fullscreen mode.
@@ -73,5 +73,5 @@ struct PPB_MouseLock_Dev {
  * @}
  */
 
-#endif  /* PPAPI_C_DEV_PPB_MOUSE_LOCK_DEV_H_ */
+#endif  /* PPAPI_C_PPB_MOUSE_LOCK_H_ */
 

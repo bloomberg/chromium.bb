@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// SRPC-abstraction wrappers around PPP_MouseLock_Dev functions.
+// SRPC-abstraction wrappers around PPP_MouseLock functions.
 
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_process.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
-#include "ppapi/c/dev/ppp_mouse_lock_dev.h"
+#include "ppapi/c/ppp_mouse_lock.h"
 #include "srpcgen/ppp_rpc.h"
 
 using ppapi_proxy::DebugPrintf;

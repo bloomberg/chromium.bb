@@ -9,21 +9,21 @@
 #include "ppapi/c/dev/ppb_console_dev.h"
 #include "ppapi/c/ppb_input_event.h"
 #include "ppapi/cpp/completion_callback.h"
-#include "ppapi/cpp/dev/mouse_lock_dev.h"
 #include "ppapi/cpp/graphics_2d.h"
 #include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/input_event.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/logging.h"
 #include "ppapi/cpp/module.h"
+#include "ppapi/cpp/mouse_lock.h"
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/var.h"
 
-class MyInstance : public pp::Instance, public pp::MouseLock_Dev {
+class MyInstance : public pp::Instance, public pp::MouseLock {
  public:
   explicit MyInstance(PP_Instance instance)
       : pp::Instance(instance),
-        pp::MouseLock_Dev(this),
+        pp::MouseLock(this),
         width_(0),
         height_(0),
         mouse_locked_(false),

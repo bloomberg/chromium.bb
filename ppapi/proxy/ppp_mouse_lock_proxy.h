@@ -8,7 +8,7 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/proxy/interface_proxy.h"
 
-struct PPP_MouseLock_Dev;
+struct PPP_MouseLock;
 
 namespace ppapi {
 namespace proxy {
@@ -30,7 +30,7 @@ class PPP_MouseLock_Proxy : public InterfaceProxy {
   // When this proxy is in the plugin side, this value caches the interface
   // pointer so we don't have to retrieve it from the dispatcher each time.
   // In the host, this value is always NULL.
-  const PPP_MouseLock_Dev* ppp_mouse_lock_impl_;
+  const PPP_MouseLock* ppp_mouse_lock_impl_;
 
   DISALLOW_COPY_AND_ASSIGN(PPP_MouseLock_Proxy);
 };

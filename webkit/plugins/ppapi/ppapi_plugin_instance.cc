@@ -18,7 +18,6 @@
 #include "ppapi/c/dev/ppb_memory_dev.h"
 #include "ppapi/c/dev/ppb_zoom_dev.h"
 #include "ppapi/c/dev/ppp_find_dev.h"
-#include "ppapi/c/dev/ppp_mouse_lock_dev.h"
 #include "ppapi/c/dev/ppp_policy_update_dev.h"
 #include "ppapi/c/dev/ppp_selection_dev.h"
 #include "ppapi/c/dev/ppp_zoom_dev.h"
@@ -32,6 +31,7 @@
 #include "ppapi/c/ppp_input_event.h"
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/c/ppp_messaging.h"
+#include "ppapi/c/ppp_mouse_lock.h"
 #include "ppapi/c/private/ppb_instance_private.h"
 #include "ppapi/c/private/ppp_instance_private.h"
 #include "ppapi/shared_impl/input_event_impl.h"
@@ -966,8 +966,8 @@ bool PluginInstance::LoadMessagingInterface() {
 bool PluginInstance::LoadMouseLockInterface() {
   if (!plugin_mouse_lock_interface_) {
     plugin_mouse_lock_interface_ =
-        static_cast<const PPP_MouseLock_Dev*>(module_->GetPluginInterface(
-            PPP_MOUSELOCK_DEV_INTERFACE));
+        static_cast<const PPP_MouseLock*>(module_->GetPluginInterface(
+            PPP_MOUSELOCK_INTERFACE));
   }
 
   return !!plugin_mouse_lock_interface_;

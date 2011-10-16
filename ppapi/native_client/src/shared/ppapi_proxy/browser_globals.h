@@ -9,7 +9,6 @@
 #include "ppapi/c/dev/ppb_find_dev.h"
 #include "ppapi/c/dev/ppb_font_dev.h"
 #include "ppapi/c/dev/ppb_memory_dev.h"
-#include "ppapi/c/dev/ppb_mouse_lock_dev.h"
 #include "ppapi/c/dev/ppb_scrollbar_dev.h"
 #include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/dev/ppb_var_deprecated.h"
@@ -29,6 +28,7 @@
 #include "ppapi/c/ppb_input_event.h"
 #include "ppapi/c/ppb_instance.h"
 #include "ppapi/c/ppb_messaging.h"
+#include "ppapi/c/ppb_mouse_lock.h"
 #include "ppapi/c/ppb_url_loader.h"
 #include "ppapi/c/ppb_url_request_info.h"
 #include "ppapi/c/ppb_url_response_info.h"
@@ -117,7 +117,7 @@ const PPB_KeyboardInputEvent* PPBKeyboardInputEventInterface();
 const PPB_Memory_Dev* PPBMemoryInterface();  // shared
 const PPB_MouseInputEvent* PPBMouseInputEventInterface();
 const PPB_Messaging* PPBMessagingInterface();
-const PPB_MouseLock_Dev* PPBMouseLockInterface();
+const PPB_MouseLock* PPBMouseLockInterface();
 const PPB_PDF* PPBPDFInterface();
 const PPB_Scrollbar_Dev* PPBScrollbarInterface();
 const PPB_Testing_Dev* PPBTestingInterface();

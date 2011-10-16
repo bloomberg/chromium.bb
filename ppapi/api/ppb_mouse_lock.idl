@@ -4,21 +4,21 @@
  */
 
 /**
- * This file defines the <code>PPB_MouseLock_Dev</code> interface.
+ * This file defines the <code>PPB_MouseLock</code> interface.
  */
 
 label Chrome {
-  M15 = 0.1
+  M16 = 1.0
 };
 
 /**
- * The <code>PPB_MouseLock_Dev</code> interface is implemented by the browser.
+ * The <code>PPB_MouseLock</code> interface is implemented by the browser.
  * It provides a way of locking the target of mouse events to a single plugin
  * instance and removing the cursor from view. This is a useful input mode for
  * certain classes of applications, especially first person perspective 3D
  * applications and 3D modelling software.
  */
-interface PPB_MouseLock_Dev {
+interface PPB_MouseLock {
   /**
    * Requests the mouse to be locked. The browser will permit mouse lock only
    * while the tab is in fullscreen mode.

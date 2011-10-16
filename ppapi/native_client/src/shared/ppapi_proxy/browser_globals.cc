@@ -394,10 +394,9 @@ const PPB_Fullscreen* PPBFullscreenInterface() {
   return ppb;
 }
 
-const PPB_MouseLock_Dev* PPBMouseLockInterface() {
-  static const PPB_MouseLock_Dev* ppb =
-      static_cast<const PPB_MouseLock_Dev*>(
-          GetBrowserInterfaceSafe(PPB_MOUSELOCK_DEV_INTERFACE));
+const PPB_MouseLock* PPBMouseLockInterface() {
+  static const PPB_MouseLock* ppb = static_cast<const PPB_MouseLock*>(
+      GetBrowserInterfaceSafe(PPB_MOUSELOCK_INTERFACE));
   return ppb;
 }
 

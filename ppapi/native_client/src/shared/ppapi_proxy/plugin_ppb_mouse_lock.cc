@@ -8,9 +8,9 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_callback.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
-#include "ppapi/c/dev/ppb_mouse_lock_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/c/ppb_mouse_lock.h"
 #include "srpcgen/ppb_rpc.h"
 
 namespace ppapi_proxy {
@@ -57,8 +57,8 @@ void UnlockMouse(PP_Instance instance) {
 
 }  // namespace
 
-const PPB_MouseLock_Dev* PluginMouseLock::GetInterface() {
-  static const PPB_MouseLock_Dev mouse_lock_interface = {
+const PPB_MouseLock* PluginMouseLock::GetInterface() {
+  static const PPB_MouseLock mouse_lock_interface = {
     LockMouse,
     UnlockMouse
   };

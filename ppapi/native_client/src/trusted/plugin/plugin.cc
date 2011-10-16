@@ -53,7 +53,6 @@
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"
 
 #include "ppapi/c/dev/ppp_find_dev.h"
-#include "ppapi/c/dev/ppp_mouse_lock_dev.h"
 #include "ppapi/c/dev/ppp_printing_dev.h"
 #include "ppapi/c/dev/ppp_scrollbar_dev.h"
 #include "ppapi/c/dev/ppp_selection_dev.h"
@@ -62,9 +61,9 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppp_input_event.h"
 #include "ppapi/c/ppp_instance.h"
+#include "ppapi/c/ppp_mouse_lock.h"
 #include "ppapi/c/private/ppb_uma_private.h"
 #include "ppapi/cpp/dev/find_dev.h"
-#include "ppapi/cpp/dev/mouse_lock_dev.h"
 #include "ppapi/cpp/dev/printing_dev.h"
 #include "ppapi/cpp/dev/scrollbar_dev.h"
 #include "ppapi/cpp/dev/selection_dev.h"
@@ -74,6 +73,7 @@
 #include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/input_event.h"
 #include "ppapi/cpp/module.h"
+#include "ppapi/cpp/mouse_lock.h"
 #include "ppapi/cpp/rect.h"
 
 using ppapi_proxy::BrowserPpp;
@@ -306,17 +306,17 @@ class FindAdapter : public pp::Find_Dev {
 };
 
 
-// Derive a class from pp::MouseLock_Dev to forward PPP_MouseLock_Dev calls to
+// Derive a class from pp::MouseLock to forward PPP_MouseLock calls to
 // the plugin.
-class MouseLockAdapter : public pp::MouseLock_Dev {
+class MouseLockAdapter : public pp::MouseLock {
  public:
   explicit MouseLockAdapter(Plugin* plugin)
-    : pp::MouseLock_Dev(plugin),
+    : pp::MouseLock(plugin),
       plugin_(plugin) {
     BrowserPpp* proxy = plugin_->ppapi_proxy();
     CHECK(proxy != NULL);
-    ppp_mouse_lock_ = static_cast<const PPP_MouseLock_Dev*>(
-        proxy->GetPluginInterface(PPP_MOUSELOCK_DEV_INTERFACE));
+    ppp_mouse_lock_ = static_cast<const PPP_MouseLock*>(
+        proxy->GetPluginInterface(PPP_MOUSELOCK_INTERFACE));
   }
 
   void MouseLockLost() {
@@ -326,7 +326,7 @@ class MouseLockAdapter : public pp::MouseLock_Dev {
 
  private:
   Plugin* plugin_;
-  const PPP_MouseLock_Dev* ppp_mouse_lock_;
+  const PPP_MouseLock* ppp_mouse_lock_;
 
   NACL_DISALLOW_COPY_AND_ASSIGN(MouseLockAdapter);
 };

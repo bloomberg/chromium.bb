@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
-# RPC methods used to implement PPB_MouseLock_Dev calls from the plugin.
-# See ppapi/c/dev/ppb_mouse_lock_dev.h for interface details.
+# RPC methods used to implement PPB_MouseLock calls from the plugin.
+# See ppapi/c/ppb_mouse_lock.h for interface details.
 
 {
  'name': 'PpbMouseLockRpc',

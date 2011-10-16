@@ -119,9 +119,9 @@ const PPP_Messaging* PPPMessagingInterface() {
   return static_cast<const PPP_Messaging*>(ppp);
 }
 
-const PPP_MouseLock_Dev* PPPMouseLockInterface() {
-  static const void* ppp = GetPluginInterfaceSafe(PPP_MOUSELOCK_DEV_INTERFACE);
-  return static_cast<const PPP_MouseLock_Dev*>(ppp);
+const PPP_MouseLock* PPPMouseLockInterface() {
+  static const void* ppp = GetPluginInterfaceSafe(PPP_MOUSELOCK_INTERFACE);
+  return static_cast<const PPP_MouseLock*>(ppp);
 }
 
 const PPP_Printing_Dev* PPPPrintingInterface() {

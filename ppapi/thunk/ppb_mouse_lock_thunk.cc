@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ppapi/c/dev/ppb_mouse_lock_dev.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/c/ppb_mouse_lock.h"
 #include "ppapi/thunk/common.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_instance_api.h"
@@ -29,14 +29,14 @@ void UnlockMouse(PP_Instance instance) {
   enter.functions()->UnlockMouse(instance);
 }
 
-const PPB_MouseLock_Dev g_ppb_mouse_lock_thunk = {
+const PPB_MouseLock g_ppb_mouse_lock_thunk = {
   &LockMouse,
   &UnlockMouse
 };
 
 }  // namespace
 
-const PPB_MouseLock_Dev* GetPPB_MouseLock_Dev_Thunk() {
+const PPB_MouseLock* GetPPB_MouseLock_Thunk() {
   return &g_ppb_mouse_lock_thunk;
 }
 

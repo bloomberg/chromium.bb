@@ -27,7 +27,6 @@
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/plugin/plugin.h"
 #include "ppapi/c/dev/ppp_find_dev.h"
-#include "ppapi/c/dev/ppp_mouse_lock_dev.h"
 #include "ppapi/c/dev/ppp_printing_dev.h"
 #include "ppapi/c/dev/ppp_scrollbar_dev.h"
 #include "ppapi/c/dev/ppp_selection_dev.h"
@@ -36,6 +35,7 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppp.h"
 #include "ppapi/c/ppp_input_event.h"
+#include "ppapi/c/ppp_mouse_lock.h"
 #include "ppapi/c/private/ppb_nacl_private.h"
 
 namespace ppapi_proxy {
@@ -173,7 +173,7 @@ const void* BrowserPpp::GetPluginInterface(const char* interface_name) {
   } else if (strcmp(interface_name, PPP_MESSAGING_INTERFACE) == 0) {
     ppp_interface =
         reinterpret_cast<const void*>(BrowserMessaging::GetInterface());
-  } else if (strcmp(interface_name, PPP_MOUSELOCK_DEV_INTERFACE) == 0) {
+  } else if (strcmp(interface_name, PPP_MOUSELOCK_INTERFACE) == 0) {
     ppp_interface =
        reinterpret_cast<const void*>(BrowserMouseLock::GetInterface());
   } else if (strcmp(interface_name, PPP_INPUT_EVENT_INTERFACE) == 0) {

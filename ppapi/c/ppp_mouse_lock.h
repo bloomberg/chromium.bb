@@ -3,21 +3,21 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppp_mouse_lock_dev.idl modified Tue Sep  6 16:07:16 2011. */
+/* From ppp_mouse_lock.idl modified Fri Oct 14 19:00:26 2011. */
 
-#ifndef PPAPI_C_DEV_PPP_MOUSE_LOCK_DEV_H_
-#define PPAPI_C_DEV_PPP_MOUSE_LOCK_DEV_H_
+#ifndef PPAPI_C_PPP_MOUSE_LOCK_H_
+#define PPAPI_C_PPP_MOUSE_LOCK_H_
 
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_stdint.h"
 
-#define PPP_MOUSELOCK_DEV_INTERFACE_0_1 "PPP_MouseLock(Dev);0.1"
-#define PPP_MOUSELOCK_DEV_INTERFACE PPP_MOUSELOCK_DEV_INTERFACE_0_1
+#define PPP_MOUSELOCK_INTERFACE_1_0 "PPP_MouseLock;1.0"
+#define PPP_MOUSELOCK_INTERFACE PPP_MOUSELOCK_INTERFACE_1_0
 
 /**
  * @file
- * This file defines the <code>PPP_MouseLock_Dev</code> interface.
+ * This file defines the <code>PPP_MouseLock</code> interface.
  */
 
 
@@ -26,10 +26,10 @@
  * @{
  */
 /**
- * The <code>PPP_MouseLock_Dev</code> interface contains pointers to functions
+ * The <code>PPP_MouseLock</code> interface contains pointers to functions
  * that you must implement to receive mouse lock events from the browser.
  */
-struct PPP_MouseLock_Dev {
+struct PPP_MouseLock {
   /**
    * Called when the instance loses the mouse lock, e.g. because the user
    * pressed the ESC key.
@@ -43,5 +43,5 @@ struct PPP_MouseLock_Dev {
  * @}
  */
 
-#endif  /* PPAPI_C_DEV_PPP_MOUSE_LOCK_DEV_H_ */
+#endif  /* PPAPI_C_PPP_MOUSE_LOCK_H_ */
 

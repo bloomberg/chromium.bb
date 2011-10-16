@@ -4,11 +4,11 @@
 
 #include "ppapi/proxy/ppb_instance_proxy.h"
 
-#include "ppapi/c/dev/ppb_mouse_lock_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppb_instance.h"
 #include "ppapi/c/ppb_messaging.h"
+#include "ppapi/c/ppb_mouse_lock.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"

@@ -42,7 +42,7 @@ struct PPP_Find_Dev;
 struct PPP_InputEvent;
 struct PPP_Instance_Private;
 struct PPP_Messaging;
-struct PPP_MouseLock_Dev;
+struct PPP_MouseLock;
 struct PPP_Pdf;
 struct PPP_PolicyUpdate_Dev;
 struct PPP_Selection_Dev;
@@ -508,7 +508,7 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
   // The plugin-provided interfaces.
   const PPP_Find_Dev* plugin_find_interface_;
   const PPP_Messaging* plugin_messaging_interface_;
-  const PPP_MouseLock_Dev* plugin_mouse_lock_interface_;
+  const PPP_MouseLock* plugin_mouse_lock_interface_;
   const PPP_InputEvent* plugin_input_event_interface_;
   const PPP_Instance_Private* plugin_private_interface_;
   const PPP_Pdf* plugin_pdf_interface_;

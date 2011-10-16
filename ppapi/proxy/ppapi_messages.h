@@ -399,7 +399,7 @@ IPC_MESSAGE_ROUTED2(PpapiMsg_PPPMessaging_HandleMessage,
                     PP_Instance /* instance */,
                     ppapi::proxy::SerializedVar /* message */)
 
-// PPP_MouseLock_Dev.
+// PPP_MouseLock.
 IPC_MESSAGE_ROUTED1(PpapiMsg_PPPMouseLock_MouseLockLost,
                     PP_Instance /* instance */)
 

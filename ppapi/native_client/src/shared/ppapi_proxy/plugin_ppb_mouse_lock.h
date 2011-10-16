@@ -6,15 +6,15 @@
 #define NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_PLUGIN_PPB_MOUSE_LOCK_H_
 
 #include "native_client/src/include/nacl_macros.h"
-#include "ppapi/c/dev/ppb_mouse_lock_dev.h"
+#include "ppapi/c/ppb_mouse_lock.h"
 
 namespace ppapi_proxy {
 
-// Implements the untrusted side of the PPB_MouseLock_Dev interface.
+// Implements the untrusted side of the PPB_MouseLock interface.
 class PluginMouseLock {
  public:
   PluginMouseLock();
-  static const PPB_MouseLock_Dev* GetInterface();
+  static const PPB_MouseLock* GetInterface();
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(PluginMouseLock);
