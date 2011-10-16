@@ -681,6 +681,11 @@ class ExtensionService
 
   NaClModuleInfoList::iterator FindNaClModule(const GURL& url);
 
+  // Returns the flags that should be used with Extension::Create() for an
+  // extension that is already installed.
+  int GetExtensionCreateFlagsForInstalledExtension(
+      const ExtensionInfo* info);
+
   base::WeakPtrFactory<ExtensionService> weak_ptr_factory_;
 
   ScopedRunnableMethodFactory<ExtensionService> method_factory_;

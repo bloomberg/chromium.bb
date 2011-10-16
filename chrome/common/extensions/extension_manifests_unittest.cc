@@ -48,8 +48,8 @@ class ExtensionManifestTest : public testing::Test {
   ExtensionManifestTest() : enable_apps_(true) {}
 
  protected:
-  DictionaryValue* LoadManifestFile(const std::string& filename,
-                                    std::string* error) {
+  static DictionaryValue* LoadManifestFile(const std::string& filename,
+                                           std::string* error) {
     FilePath path;
     PathService::Get(chrome::DIR_TEST_DATA, &path);
     path = path.AppendASCII("extensions")
@@ -61,70 +61,59 @@ class ExtensionManifestTest : public testing::Test {
     return static_cast<DictionaryValue*>(serializer.Deserialize(NULL, error));
   }
 
-  scoped_refptr<Extension> LoadExtensionWithLocation(
-      DictionaryValue* value,
-      Extension::Location location,
-      bool strict_error_checks,
-      std::string* error) {
+  // Helper class that simplifies creating methods that take either a filename
+  // to a manifest or the manifest itself.
+  class Manifest {
+   public:
+    // Purposely not marked explicit for convenience. The vast majority of
+    // callers pass string literal.
+    Manifest(const char* name)
+        : name_(name), manifest_(NULL) {
+    }
+    Manifest(DictionaryValue* manifest, const char* name)
+        : name_(name), manifest_(manifest) {
+    }
+
+    const std::string& name() const { return name_; }
+
+    DictionaryValue* GetManifest(std::string* error) const {
+      if (manifest_)
+        return manifest_;
+
+      manifest_ = LoadManifestFile(name_, error);
+      manifest_holder_.reset(manifest_);
+      return manifest_;
+    }
+
+   private:
+    std::string name_;
+    mutable DictionaryValue* manifest_;
+    mutable scoped_ptr<DictionaryValue> manifest_holder_;
+  };
+
+  scoped_refptr<Extension> LoadExtension(
+      const Manifest& manifest,
+      std::string* error,
+      Extension::Location location = Extension::INTERNAL,
+      int flags = Extension::NO_FLAGS) {
+    DictionaryValue* value = manifest.GetManifest(error);
+    if (!value)
+      return NULL;
     FilePath path;
     PathService::Get(chrome::DIR_TEST_DATA, &path);
     path = path.AppendASCII("extensions").AppendASCII("manifest_tests");
-    int flags = Extension::NO_FLAGS;
-    if (strict_error_checks)
-      flags |= Extension::STRICT_ERROR_CHECKS;
     return Extension::Create(path.DirName(), location, *value, flags, error);
   }
 
-  scoped_refptr<Extension> LoadExtension(const std::string& name,
-                                         std::string* error) {
-    return LoadExtensionWithLocation(name, Extension::INTERNAL, false, error);
-  }
-
-  scoped_refptr<Extension> LoadExtensionStrict(const std::string& name,
-                                               std::string* error) {
-    return LoadExtensionWithLocation(name, Extension::INTERNAL, true, error);
-  }
-
-  scoped_refptr<Extension> LoadExtension(DictionaryValue* value,
-                                         std::string* error) {
-    // Loading as an installed extension disables strict error checks.
-    return LoadExtensionWithLocation(value, Extension::INTERNAL, false, error);
-  }
-
-  scoped_refptr<Extension> LoadExtensionWithLocation(
-      const std::string& name,
-      Extension::Location location,
-      bool strict_error_checks,
-      std::string* error) {
-    scoped_ptr<DictionaryValue> value(LoadManifestFile(name, error));
-    if (!value.get())
-      return NULL;
-    return LoadExtensionWithLocation(value.get(), location,
-                                     strict_error_checks, error);
-  }
-
-  scoped_refptr<Extension> LoadAndExpectSuccess(const std::string& name) {
+  scoped_refptr<Extension> LoadAndExpectSuccess(
+      const Manifest& manifest,
+      Extension::Location location = Extension::INTERNAL,
+      int flags = Extension::NO_FLAGS) {
     std::string error;
-    scoped_refptr<Extension> extension = LoadExtension(name, &error);
-    EXPECT_TRUE(extension) << name;
-    EXPECT_EQ("", error) << name;
-    return extension;
-  }
-
-  scoped_refptr<Extension> LoadStrictAndExpectSuccess(const std::string& name) {
-    std::string error;
-    scoped_refptr<Extension> extension = LoadExtensionStrict(name, &error);
-    EXPECT_TRUE(extension) << name;
-    EXPECT_EQ("", error) << name;
-    return extension;
-  }
-
-  scoped_refptr<Extension> LoadAndExpectSuccess(DictionaryValue* manifest,
-                                                const std::string& name) {
-    std::string error;
-    scoped_refptr<Extension> extension = LoadExtension(manifest, &error);
-    EXPECT_TRUE(extension) << "Unexpected failure for " << name;
-    EXPECT_EQ("", error) << "Unexpected error for " << name;
+    scoped_refptr<Extension> extension =
+        LoadExtension(manifest, &error, location, flags);
+    EXPECT_TRUE(extension) << manifest.name();
+    EXPECT_EQ("", error) << manifest.name();
     return extension;
   }
 
@@ -139,26 +128,15 @@ class ExtensionManifestTest : public testing::Test {
         " expected '" << expected_error << "' but got '" << error << "'";
   }
 
-  void LoadAndExpectError(const std::string& name,
-                          const std::string& expected_error) {
+  void LoadAndExpectError(const Manifest& manifest,
+                          const std::string& expected_error,
+                          Extension::Location location = Extension::INTERNAL,
+                          int flags = Extension::NO_FLAGS) {
     std::string error;
-    scoped_refptr<Extension> extension(LoadExtension(name, &error));
-    VerifyExpectedError(extension.get(), name, error, expected_error);
-  }
-
-  void LoadAndExpectErrorStrict(const std::string& name,
-                                const std::string& expected_error) {
-    std::string error;
-    scoped_refptr<Extension> extension(LoadExtensionStrict(name, &error));
-    VerifyExpectedError(extension.get(), name, error, expected_error);
-  }
-
-  void LoadAndExpectError(DictionaryValue* manifest,
-                          const std::string& name,
-                          const std::string& expected_error) {
-    std::string error;
-    scoped_refptr<Extension> extension(LoadExtension(manifest, &error));
-    VerifyExpectedError(extension.get(), name, error, expected_error);
+    scoped_refptr<Extension> extension(
+        LoadExtension(manifest, &error, location, flags));
+    VerifyExpectedError(extension.get(), manifest.name(), error,
+                        expected_error);
   }
 
   struct Testcase {
@@ -168,7 +146,8 @@ class ExtensionManifestTest : public testing::Test {
 
   void RunTestcases(const Testcase* testcases, size_t num_testcases) {
     for (size_t i = 0; i < num_testcases; ++i) {
-      LoadAndExpectError(testcases[i].manifest, testcases[i].expected_error);
+      LoadAndExpectError(testcases[i].manifest.c_str(),
+                         testcases[i].expected_error);
     }
   }
 
@@ -295,25 +274,30 @@ TEST_F(ExtensionManifestTest, InitFromValueValidNameInRTL) {
 
 TEST_F(ExtensionManifestTest, UpdateUrls) {
   // Test several valid update urls
-  LoadStrictAndExpectSuccess("update_url_valid_1.json");
-  LoadStrictAndExpectSuccess("update_url_valid_2.json");
-  LoadStrictAndExpectSuccess("update_url_valid_3.json");
-  LoadStrictAndExpectSuccess("update_url_valid_4.json");
+  LoadAndExpectSuccess("update_url_valid_1.json", Extension::INTERNAL,
+                       Extension::STRICT_ERROR_CHECKS);
+  LoadAndExpectSuccess("update_url_valid_2.json", Extension::INTERNAL,
+                       Extension::STRICT_ERROR_CHECKS);
+  LoadAndExpectSuccess("update_url_valid_3.json", Extension::INTERNAL,
+                       Extension::STRICT_ERROR_CHECKS);
+  LoadAndExpectSuccess("update_url_valid_4.json", Extension::INTERNAL,
+                       Extension::STRICT_ERROR_CHECKS);
 
   // Test some invalid update urls
-  LoadAndExpectErrorStrict("update_url_invalid_1.json",
-      errors::kInvalidUpdateURL);
-  LoadAndExpectErrorStrict("update_url_invalid_2.json",
-      errors::kInvalidUpdateURL);
-  LoadAndExpectErrorStrict("update_url_invalid_3.json",
-      errors::kInvalidUpdateURL);
+  LoadAndExpectError("update_url_invalid_1.json", errors::kInvalidUpdateURL,
+                     Extension::INTERNAL, Extension::STRICT_ERROR_CHECKS);
+  LoadAndExpectError("update_url_invalid_2.json", errors::kInvalidUpdateURL,
+                     Extension::INTERNAL, Extension::STRICT_ERROR_CHECKS);
+  LoadAndExpectError("update_url_invalid_3.json", errors::kInvalidUpdateURL,
+                     Extension::INTERNAL, Extension::STRICT_ERROR_CHECKS);
 }
 
 // Tests that the old permission name "unlimited_storage" still works for
 // backwards compatibility (we renamed it to "unlimitedStorage").
 TEST_F(ExtensionManifestTest, OldUnlimitedStoragePermission) {
-  scoped_refptr<Extension> extension = LoadStrictAndExpectSuccess(
-      "old_unlimited_storage.json");
+  scoped_refptr<Extension> extension = LoadAndExpectSuccess(
+      "old_unlimited_storage.json", Extension::INTERNAL,
+      Extension::STRICT_ERROR_CHECKS);
   EXPECT_TRUE(extension->HasAPIPermission(
       ExtensionAPIPermission::kUnlimitedStorage));
 }
@@ -370,13 +354,14 @@ TEST_F(ExtensionManifestTest, AppWebUrls) {
   // Ports in app.urls only raise an error when loading as a
   // developer would.
   LoadAndExpectSuccess("web_urls_invalid_has_port.json");
-  LoadAndExpectErrorStrict(
+  LoadAndExpectError(
       "web_urls_invalid_has_port.json",
       ExtensionErrorUtils::FormatErrorMessage(
           errors::kInvalidWebURL,
           base::IntToString(1),
-          URLPattern::GetParseResultString(URLPattern::PARSE_ERROR_HAS_COLON)));
-
+          URLPattern::GetParseResultString(URLPattern::PARSE_ERROR_HAS_COLON)),
+      Extension::INTERNAL,
+      Extension::STRICT_ERROR_CHECKS);
 
   scoped_refptr<Extension> extension(
       LoadAndExpectSuccess("web_urls_default.json"));
@@ -477,11 +462,11 @@ TEST_F(ExtensionManifestTest, ChromeResourcesPermissionValidOnlyForComponents) {
       errors::kInvalidPermissionScheme);
   std::string error;
   scoped_refptr<Extension> extension;
-  extension = LoadExtensionWithLocation(
+  extension = LoadExtension(
       "permission_chrome_resources_url.json",
+      &error,
       Extension::COMPONENT,
-      true,  // Strict error checking
-      &error);
+      Extension::STRICT_ERROR_CHECKS);
   EXPECT_EQ("", error);
 }
 
@@ -511,14 +496,16 @@ TEST_F(ExtensionManifestTest, InvalidContentScriptMatchPattern) {
   LoadAndExpectSuccess("forbid_ports_in_content_scripts.json");
 
   // Loading as a developer would should give an error.
-  LoadAndExpectErrorStrict(
+  LoadAndExpectError(
       "forbid_ports_in_content_scripts.json",
       ExtensionErrorUtils::FormatErrorMessage(
           errors::kInvalidMatch,
           base::IntToString(1),
           base::IntToString(0),
           URLPattern::GetParseResultString(
-              URLPattern::PARSE_ERROR_HAS_COLON)));
+              URLPattern::PARSE_ERROR_HAS_COLON)),
+      Extension::INTERNAL,
+      Extension::STRICT_ERROR_CHECKS);
 }
 
 TEST_F(ExtensionManifestTest, ExcludeMatchPatterns) {
@@ -536,6 +523,9 @@ TEST_F(ExtensionManifestTest, ExcludeMatchPatterns) {
 
 TEST_F(ExtensionManifestTest, ExperimentalPermission) {
   LoadAndExpectError("experimental.json", errors::kExperimentalFlagRequired);
+  LoadAndExpectSuccess("experimental.json", Extension::COMPONENT);
+  LoadAndExpectSuccess("experimental.json", Extension::INTERNAL,
+                       Extension::FROM_WEBSTORE);
   CommandLine old_command_line = *CommandLine::ForCurrentProcess();
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
@@ -659,7 +649,8 @@ TEST_F(ExtensionManifestTest, AllowUnrecognizedPermissions) {
     // Extensions are allowed to contain unrecognized API permissions,
     // so there shouldn't be any errors.
     scoped_refptr<Extension> extension;
-    extension = LoadAndExpectSuccess(manifest.get(), message_name);
+    extension = LoadAndExpectSuccess(
+        Manifest(manifest.get(), message_name.c_str()));
   }
   *CommandLine::ForCurrentProcess() = old_command_line;
 }
@@ -808,7 +799,8 @@ TEST_F(ExtensionManifestTest, ForbidPortsInPermissions) {
   // To ensure that we do not error out on a valid permission
   // in a future version of chrome, validation is to loose
   // to flag this case.
-  LoadStrictAndExpectSuccess("forbid_ports_in_permissions.json");
+  LoadAndExpectSuccess("forbid_ports_in_permissions.json",
+                       Extension::INTERNAL, Extension::STRICT_ERROR_CHECKS);
 }
 
 TEST_F(ExtensionManifestTest, IsolatedApps) {
@@ -864,11 +856,11 @@ TEST_F(ExtensionManifestTest, FileManagerURLOverride) {
   // A component extention can override chrome://files/ URL.
   std::string error;
   scoped_refptr<Extension> extension;
-  extension = LoadExtensionWithLocation(
+  extension = LoadExtension(
       "filebrowser_url_override.json",
+      &error,
       Extension::COMPONENT,
-      true,  // Strict error checking
-      &error);
+      Extension::STRICT_ERROR_CHECKS);
 #if defined(FILE_MANAGER_EXTENSION)
   EXPECT_EQ("", error);
 #else

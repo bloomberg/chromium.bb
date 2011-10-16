@@ -1257,21 +1257,12 @@ void ExtensionService::LoadAllExtensions() {
       // thread.
       base::ThreadRestrictions::ScopedAllowIO allow_io;
 
-      int flags = Extension::NO_FLAGS;
-      if (Extension::ShouldDoStrictErrorChecking(info->extension_location))
-        flags |= Extension::STRICT_ERROR_CHECKS;
-      if (extension_prefs_->AllowFileAccess(info->extension_id))
-        flags |= Extension::ALLOW_FILE_ACCESS;
-      if (extension_prefs_->IsFromWebStore(info->extension_id))
-        flags |= Extension::FROM_WEBSTORE;
-      if (extension_prefs_->IsFromBookmark(info->extension_id))
-        flags |= Extension::FROM_BOOKMARK;
       std::string error;
       scoped_refptr<const Extension> extension(
           extension_file_util::LoadExtension(
               info->extension_path,
               info->extension_location,
-              flags,
+              GetExtensionCreateFlagsForInstalledExtension(info),
               &error));
 
       if (extension.get()) {
@@ -1428,22 +1419,11 @@ void ExtensionService::LoadInstalledExtension(const ExtensionInfo& info,
   if (!extension_prefs_->IsExtensionAllowedByPolicy(info.extension_id)) {
     error = errors::kDisabledByPolicy;
   } else if (info.extension_manifest.get()) {
-    int flags = Extension::NO_FLAGS;
-    if (info.extension_location != Extension::LOAD)
-      flags |= Extension::REQUIRE_KEY;
-    if (Extension::ShouldDoStrictErrorChecking(info.extension_location))
-      flags |= Extension::STRICT_ERROR_CHECKS;
-    if (extension_prefs_->AllowFileAccess(info.extension_id))
-      flags |= Extension::ALLOW_FILE_ACCESS;
-    if (extension_prefs_->IsFromWebStore(info.extension_id))
-      flags |= Extension::FROM_WEBSTORE;
-    if (extension_prefs_->IsFromBookmark(info.extension_id))
-      flags |= Extension::FROM_BOOKMARK;
     extension = Extension::Create(
         info.extension_path,
         info.extension_location,
         *info.extension_manifest,
-        flags,
+        GetExtensionCreateFlagsForInstalledExtension(&info),
         &error);
   } else {
     error = errors::kManifestUnreadable;
@@ -1468,6 +1448,22 @@ void ExtensionService::LoadInstalledExtension(const ExtensionInfo& info,
     extension_prefs_->UpdateManifest(extension);
 
   AddExtension(extension);
+}
+
+int ExtensionService::GetExtensionCreateFlagsForInstalledExtension(
+    const ExtensionInfo* info) {
+    int flags = Extension::NO_FLAGS;
+    if (info->extension_location != Extension::LOAD)
+      flags |= Extension::REQUIRE_KEY;
+    if (Extension::ShouldDoStrictErrorChecking(info->extension_location))
+      flags |= Extension::STRICT_ERROR_CHECKS;
+    if (extension_prefs_->AllowFileAccess(info->extension_id))
+      flags |= Extension::ALLOW_FILE_ACCESS;
+    if (extension_prefs_->IsFromWebStore(info->extension_id))
+      flags |= Extension::FROM_WEBSTORE;
+    if (extension_prefs_->IsFromBookmark(info->extension_id))
+      flags |= Extension::FROM_BOOKMARK;
+    return flags;
 }
 
 void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {

@@ -1129,11 +1129,6 @@ bool Extension::LoadLaunchContainer(const DictionaryValue* manifest,
 
 bool Extension::LoadAppIsolation(const DictionaryValue* manifest,
                                  std::string* error) {
-  // Only parse app isolation features if this switch is present.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalExtensionApis))
-    return true;
-
   Value* temp = NULL;
   if (!manifest->Get(keys::kIsolation, &temp))
     return true;
@@ -1496,6 +1491,30 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
   base::i18n::AdjustStringForLocaleDirection(&localized_name);
   name_ = UTF16ToUTF8(localized_name);
 
+  // Initialize the permissions (optional).
+  ExtensionAPIPermissionSet api_permissions;
+  URLPatternSet host_permissions;
+  if (!ParsePermissions(&source,
+                        keys::kPermissions,
+                        flags,
+                        error,
+                        &api_permissions,
+                        &host_permissions)) {
+    return false;
+  }
+
+  // Initialize the optional permissions (optional).
+  ExtensionAPIPermissionSet optional_api_permissions;
+  URLPatternSet optional_host_permissions;
+  if (!ParsePermissions(&source,
+                        keys::kOptionalPermissions,
+                        flags,
+                        error,
+                        &optional_api_permissions,
+                        &optional_host_permissions)) {
+    return false;
+  }
+
   // Initialize description (if present).
   if (source.HasKey(keys::kDescription)) {
     if (!source.GetString(keys::kDescription,
@@ -1783,11 +1802,10 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
     }
   }
 
-  // Initialize toolstrips.  This is deprecated for public use.
-  // NOTE(erikkay) Although deprecated, we intend to preserve this parsing
-  // code indefinitely.  Please contact me or Joi for details as to why.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalExtensionApis) &&
+  // Initialize toolstrips.
+  // TODO(aa): Remove this and all the related tests, docs, etc.
+  // See: crbug.com/100488.
+  if (api_permissions.count(ExtensionAPIPermission::kExperimental) &&
       source.HasKey(keys::kToolstrips)) {
     ListValue* list_value = NULL;
     if (!source.GetList(keys::kToolstrips, &list_value)) {
@@ -1923,9 +1941,12 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
                   parse_strictness, error) ||
       !EnsureNotHybridApp(manifest_value_.get(), error) ||
       !LoadLaunchURL(manifest_value_.get(), error) ||
-      !LoadLaunchContainer(manifest_value_.get(), error) ||
-      !LoadAppIsolation(manifest_value_.get(), error)) {
+      !LoadLaunchContainer(manifest_value_.get(), error))
     return false;
+
+  if (api_permissions.count(ExtensionAPIPermission::kExperimental)) {
+    if (!LoadAppIsolation(manifest_value_.get(), error))
+      return false;
   }
 
   // Initialize options page url (optional).
@@ -1958,30 +1979,6 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
         return false;
       }
     }
-  }
-
-  // Initialize the permissions (optional).
-  ExtensionAPIPermissionSet api_permissions;
-  URLPatternSet host_permissions;
-  if (!ParsePermissions(&source,
-                        keys::kPermissions,
-                        flags,
-                        error,
-                        &api_permissions,
-                        &host_permissions)) {
-    return false;
-  }
-
-  // Initialize the optional permissions (optional).
-  ExtensionAPIPermissionSet optional_api_permissions;
-  URLPatternSet optional_host_permissions;
-  if (!ParsePermissions(&source,
-                        keys::kOptionalPermissions,
-                        flags,
-                        error,
-                        &optional_api_permissions,
-                        &optional_host_permissions)) {
-    return false;
   }
 
   // Initialize background url (optional).
@@ -2070,8 +2067,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
     }
   }
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalExtensionApis) &&
+  if (api_permissions.count(ExtensionAPIPermission::kExperimental) &&
       source.HasKey(keys::kInputComponents)) {
     ListValue* list_value = NULL;
     if (!source.GetList(keys::kInputComponents, &list_value)) {
@@ -2598,41 +2594,16 @@ bool Extension::ParsePermissions(const DictionaryValue* source,
       ExtensionAPIPermission* permission =
           ExtensionPermissionsInfo::GetInstance()->GetByName(permission_str);
 
-      // Only COMPONENT extensions can use private APIs.
-      // TODO(asargent) - We want a more general purpose mechanism for this,
-      // and better error messages. (http://crbug.com/54013)
-      if (!IsComponentOnlyPermission(permission)
-#ifndef NDEBUG
-           && !CommandLine::ForCurrentProcess()->HasSwitch(
-                 switches::kExposePrivateExtensionApi)
-#endif
-          ) {
-        continue;
-      }
+      if (permission != NULL) {
+        if (CanSpecifyAPIPermission(permission, error))
+          api_permissions->insert(permission->id());
 
-      if (web_extent().is_empty() || location() == Extension::COMPONENT) {
-        // Check if it's a module permission.  If so, enable that permission.
-        if (permission != NULL) {
-          // Only allow the experimental API permission if the command line
-          // flag is present, or if the extension is a component of Chrome.
-          if (IsDisallowedExperimentalPermission(permission->id()) &&
-              location() != Extension::COMPONENT) {
-            *error = errors::kExperimentalFlagRequired;
-            return false;
-          }
-          api_permissions->insert(permission->id());
-          continue;
-        }
-      } else {
-        // Hosted apps only get access to a subset of the valid permissions.
-        if (permission != NULL && permission->is_hosted_app()) {
-          if (IsDisallowedExperimentalPermission(permission->id())) {
-            *error = errors::kExperimentalFlagRequired;
-            return false;
-          }
-          api_permissions->insert(permission->id());
-          continue;
-        }
+        // Sometimes when you can't specify an API permission we ignore it
+        // silently. This seems like a bug. Specifically, crbug.com/100489.
+        if (!error->empty())
+          return false;
+
+        continue;
       }
 
       // Check if it's a host pattern permission.
@@ -2760,17 +2731,6 @@ scoped_refptr<const ExtensionPermissionSet>
   return runtime_data_.GetActivePermissions();
 }
 
-bool Extension::IsComponentOnlyPermission(
-    const ExtensionAPIPermission* api) const {
-  if (location() == Extension::COMPONENT)
-    return true;
-
-  if (api == NULL)
-    return true;
-
-  return !api->is_component_only();
-}
-
 bool Extension::HasMultipleUISurfaces() const {
   int num_surfaces = 0;
 
@@ -2842,11 +2802,73 @@ bool Extension::ImplicitlyDelaysNetworkStartup() const {
       HasAPIPermission(ExtensionAPIPermission::kWebRequest);
 }
 
-bool Extension::IsDisallowedExperimentalPermission(
-    ExtensionAPIPermission::ID permission) const {
-  return permission == ExtensionAPIPermission::kExperimental &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableExperimentalExtensionApis);
+bool Extension::CanSpecifyAPIPermission(
+    const ExtensionAPIPermission* permission,
+    std::string* error) const {
+  if (permission->is_component_only()) {
+    if (!CanSpecifyComponentOnlyPermission())
+      return false;
+  }
+
+  if (permission->id() == ExtensionAPIPermission::kExperimental) {
+    if (!CanSpecifyExperimentalPermission()) {
+      *error = errors::kExperimentalFlagRequired;
+      return false;
+    }
+  }
+
+  if (is_hosted_app()) {
+    if (!CanSpecifyPermissionForHostedApp(permission))
+      return false;
+  }
+
+  return true;
+}
+
+bool Extension::CanSpecifyComponentOnlyPermission() const {
+  // Only COMPONENT extensions can use private APIs.
+  // TODO(asargent) - We want a more general purpose mechanism for this,
+  // and better error messages. (http://crbug.com/54013)
+  if (location_ == Extension::COMPONENT)
+    return true;
+
+#ifndef NDEBUG
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kExposePrivateExtensionApi)) {
+    return true;
+  }
+#endif
+
+  return false;
+}
+
+bool Extension::CanSpecifyExperimentalPermission() const {
+  if (location_ == Extension::COMPONENT)
+    return true;
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExperimentalExtensionApis)) {
+    return true;
+  }
+
+  // We rely on the webstore to check access to experimental. This way we can
+  // whitelist extensions to have access to experimental in just the store, and
+  // not have to push a new version of the client.
+  if (from_webstore())
+    return true;
+
+  return false;
+}
+
+bool Extension::CanSpecifyPermissionForHostedApp(
+    const ExtensionAPIPermission* permission) const {
+  if (location_ == Extension::COMPONENT)
+    return true;
+
+  if (permission->is_hosted_app())
+    return true;
+
+  return false;
 }
 
 bool Extension::CanExecuteScriptEverywhere() const {

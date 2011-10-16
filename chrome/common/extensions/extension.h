@@ -384,6 +384,14 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // mechanisms that are implicitly trusted.
   bool CanSilentlyIncreasePermissions() const;
 
+  // Returns true if this extension can specify |api|.
+  bool CanSpecifyAPIPermission(const ExtensionAPIPermission* api,
+                               std::string* error) const;
+  bool CanSpecifyComponentOnlyPermission() const;
+  bool CanSpecifyExperimentalPermission() const;
+  bool CanSpecifyPermissionForHostedApp(
+      const ExtensionAPIPermission* api) const;
+
   // Whether or not the extension is allowed permission for a URL pattern from
   // the manifest.  http, https, and chrome://favicon/ is allowed for all
   // extensions, while component extensions are allowed access to
@@ -678,15 +686,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Figures out if a source contains keys not associated with themes - we
   // don't want to allow scripts and such to be bundled with themes.
   bool ContainsNonThemeKeys(const base::DictionaryValue& source) const;
-
-  // Only allow the experimental API permission if the command line
-  // flag is present.
-  bool IsDisallowedExperimentalPermission(
-      ExtensionAPIPermission::ID permission) const;
-
-  // Returns true if this is a component, or we are not attempting to access a
-  // component-private permission.
-  bool IsComponentOnlyPermission(const ExtensionAPIPermission* api) const;
 
   // Updates the launch URL and extents for the extension using the given
   // |override_url|.
