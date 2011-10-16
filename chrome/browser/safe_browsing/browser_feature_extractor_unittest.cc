@@ -25,7 +25,6 @@
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/page_transition_types.h"
-#include "crypto/sha2.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -497,53 +496,5 @@ TEST_F(BrowserFeatureExtractorTest, SafeBrowsingFeatures) {
                                           "http://www.good.com/")));
   EXPECT_DOUBLE_EQ(1.0, features[features::kSafeBrowsingIsSubresource]);
   EXPECT_DOUBLE_EQ(2.0, features[features::kSafeBrowsingThreatType]);
-}
-
-TEST_F(BrowserFeatureExtractorTest, URLHashes) {
-  ClientPhishingRequest request;
-  request.set_url("http://host.com/");
-  request.set_client_score(0.8f);
-
-  history_service()->AddPage(GURL("http://host.com/"),
-                             history::SOURCE_BROWSED);
-  SimpleNavigateAndCommit(GURL("http://host.com/"));
-
-  EXPECT_TRUE(ExtractFeatures(&request));
-  EXPECT_EQ(crypto::SHA256HashString("host.com/").substr(
-      0, BrowserFeatureExtractor::kHashPrefixLength),
-            request.hash_prefix());
-
-  request.set_url("http://www.host.com/path/");
-  history_service()->AddPage(GURL("http://www.host.com/path/"),
-                             history::SOURCE_BROWSED);
-  SimpleNavigateAndCommit(GURL("http://www.host.com/path/"));
-
-  EXPECT_TRUE(ExtractFeatures(&request));
-  EXPECT_EQ(crypto::SHA256HashString("host.com/path/").substr(
-      0, BrowserFeatureExtractor::kHashPrefixLength),
-            request.hash_prefix());
-
-  request.set_url("http://user@www.host.com:1111/path/123?args");
-  history_service()->AddPage(
-      GURL("http://user@www.host.com:1111/path/123?args"),
-      history::SOURCE_BROWSED);
-  SimpleNavigateAndCommit(
-      GURL("http://user@www.host.com:1111/path/123?args"));
-
-  EXPECT_TRUE(ExtractFeatures(&request));
-  EXPECT_EQ(crypto::SHA256HashString("host.com/path/").substr(
-      0, BrowserFeatureExtractor::kHashPrefixLength),
-            request.hash_prefix());
-
-  // Check that escaping matches the SafeBrowsing specification.
-  request.set_url("http://www.host.com/A%21//B");
-  history_service()->AddPage(GURL("http://www.host.com/A%21//B"),
-                             history::SOURCE_BROWSED);
-  SimpleNavigateAndCommit(GURL("http://www.host.com/A%21//B"));
-
-  EXPECT_TRUE(ExtractFeatures(&request));
-  EXPECT_EQ(crypto::SHA256HashString("host.com/a!/").substr(
-      0, BrowserFeatureExtractor::kHashPrefixLength),
-            request.hash_prefix());
 }
 }  // namespace safe_browsing

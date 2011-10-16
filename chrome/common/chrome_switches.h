@@ -89,7 +89,6 @@ extern const char kDisablePreconnect[];
 extern const char kDisablePromptOnRepost[];
 extern const char kDisableRemoteFonts[];
 extern const char kDisableRestoreBackgroundContents[];
-extern const char kDisableSanitizedClientSidePhishingDetection[];
 extern const char kDisableSiteSpecificQuirks[];
 extern const char kDisableSSL3[];
 extern const char kDisableSync[];

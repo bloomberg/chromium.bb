@@ -170,10 +170,7 @@ SafeBrowsingService::SafeBrowsingService()
       download_hashcheck_timeout_ms_(kDownloadHashCheckTimeoutMs) {
 #if !defined(OS_CHROMEOS)
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableClientSidePhishingDetection) &&
-      (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableSanitizedClientSidePhishingDetection) ||
-       CanReportStats())) {
+          switches::kDisableClientSidePhishingDetection)) {
     csd_service_.reset(
         safe_browsing::ClientSideDetectionService::Create(
             g_browser_process->system_request_context()));
@@ -917,20 +914,14 @@ void SafeBrowsingService::Start() {
       !cmdline->HasSwitch(switches::kSbDisableDownloadProtection);
 
   // We only download the csd-whitelist if client-side phishing detection is
-  // enabled and if the user has opted in with stats collection.  Note: we
-  // cannot check whether the metrics_service() object is created because it
-  // may be initialized after this method is called.
+  // enabled.
 #ifdef OS_CHROMEOS
   // Client-side detection is disabled on ChromeOS for now, so don't bother
   // downloading the whitelist.
   enable_csd_whitelist_ = false;
 #else
   enable_csd_whitelist_ =
-      (!cmdline->HasSwitch(switches::kDisableClientSidePhishingDetection) &&
-       (!cmdline->HasSwitch(
-           switches::kDisableSanitizedClientSidePhishingDetection) ||
-        (local_state &&
-         local_state->GetBoolean(prefs::kMetricsReportingEnabled))));
+      !cmdline->HasSwitch(switches::kDisableClientSidePhishingDetection);
 #endif
 
   enable_download_whitelist_ = cmdline->HasSwitch(

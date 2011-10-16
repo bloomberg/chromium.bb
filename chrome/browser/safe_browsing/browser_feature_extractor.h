@@ -82,10 +82,6 @@ class BrowserFeatureExtractor {
                                ClientPhishingRequest* request,
                                DoneCallback* callback);
 
-  // The size of hash prefix to use for ClientPhishingRequest.hash_prefix.
-  // Public for testing.
-  static const int kHashPrefixLength;
-
  private:
   friend class DeleteTask<BrowserFeatureExtractor>;
   typedef std::pair<ClientPhishingRequest*, DoneCallback*> ExtractionData;
@@ -146,10 +142,6 @@ class BrowserFeatureExtractor {
   // Helper function which gets the history server if possible.  If the pointer
   // is set it will return true and false otherwise.
   bool GetHistoryService(HistoryService** history);
-
-  // Computes the SHA-256 hash prefix for the URL and adds it to the
-  // ClientPhishingRequest.
-  void ComputeURLHash(ClientPhishingRequest* request);
 
   TabContents* tab_;
   ClientSideDetectionService* service_;
