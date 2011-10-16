@@ -785,4 +785,38 @@ void ChromeContentRendererClient::OnPurgeMemory() {
   thread->AddObserver(new_spellcheck);
 }
 
+bool ChromeContentRendererClient::IsAdblockInstalled() {
+  return extension_dispatcher_->extensions()->Contains(
+      "gighmmpiobklfepjocnamgkkbiglidom");
+}
+
+bool ChromeContentRendererClient::IsAdblockPlusInstalled() {
+  return extension_dispatcher_->extensions()->Contains(
+      "cfhdojbkjhnklbpkdaibdccddilifddb");
+}
+
+bool ChromeContentRendererClient::IsAdblockWithWebRequestInstalled() {
+  const ExtensionSet& extensions = *extension_dispatcher_->extensions();
+  for (ExtensionSet::const_iterator it = extensions.begin();
+       it != extensions.end(); ++it) {
+    if (it->second->HasAPIPermission(ExtensionAPIPermission::kExperimental) &&
+        it->second->name().find("Adblock") != std::string::npos &&
+        it->second->name().find("Plus") == std::string::npos)
+      return true;
+  }
+  return false;
+}
+
+bool ChromeContentRendererClient::IsAdblockPlusWithWebRequestInstalled() {
+  const ExtensionSet& extensions = *extension_dispatcher_->extensions();
+  for (ExtensionSet::const_iterator it = extensions.begin();
+       it != extensions.end(); ++it) {
+    if (it->second->HasAPIPermission(ExtensionAPIPermission::kExperimental) &&
+        it->second->name().find("Adblock") != std::string::npos &&
+        it->second->name().find("Plus") != std::string::npos)
+      return true;
+  }
+  return false;
+}
+
 }  // namespace chrome

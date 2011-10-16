@@ -90,6 +90,13 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
                                       const std::string& value) OVERRIDE;
   virtual bool IsProtocolSupportedForMedia(const GURL& url) OVERRIDE;
 
+  // TODO(mpcomplete): remove after we collect histogram data.
+  // http://crbug.com/100411
+  bool IsAdblockInstalled();
+  bool IsAdblockPlusInstalled();
+  bool IsAdblockWithWebRequestInstalled();
+  bool IsAdblockPlusWithWebRequestInstalled();
+
   // For testing.
   void SetExtensionDispatcher(ExtensionDispatcher* extension_dispatcher);
 

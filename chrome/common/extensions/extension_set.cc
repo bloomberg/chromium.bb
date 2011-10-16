@@ -17,7 +17,7 @@ size_t ExtensionSet::size() const {
   return extensions_.size();
 }
 
-bool ExtensionSet::Contains(const std::string& extension_id) {
+bool ExtensionSet::Contains(const std::string& extension_id) const {
   return extensions_.find(extension_id) != extensions_.end();
 }
 

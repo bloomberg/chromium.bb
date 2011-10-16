@@ -10,6 +10,7 @@
 #include "base/time.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/extensions/url_pattern.h"
+#include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/renderer/prerender/prerender_helper.h"
 #include "chrome/renderer/renderer_histogram_snapshots.h"
 #include "content/public/renderer/navigation_state.h"
@@ -574,6 +575,138 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
       PLT_HISTOGRAM(base::FieldTrial::MakeName(
           "PLT.BeginToFinish", "CacheListSize"),
            begin_to_finish_all_loads);
+    }
+  }
+
+  // TODO(mpcomplete): remove the extension-related histograms after we collect
+  // enough data. http://crbug.com/100411
+  chrome::ChromeContentRendererClient* client =
+      static_cast<chrome::ChromeContentRendererClient*>(
+          content::GetContentClient()->renderer());
+
+  const bool use_adblock_histogram = client->IsAdblockInstalled();
+  if (use_adblock_histogram) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "PLT.Abandoned_ExtensionAdblock",
+        abandoned_page ? 1 : 0, 2);
+    switch (load_type) {
+      case NavigationState::NORMAL_LOAD:
+        PLT_HISTOGRAM(
+            "PLT.BeginToFinish_NormalLoad_ExtensionAdblock",
+            begin_to_finish_all_loads);
+        break;
+      case NavigationState::LINK_LOAD_NORMAL:
+        PLT_HISTOGRAM(
+            "PLT.BeginToFinish_LinkLoadNormal_ExtensionAdblock",
+            begin_to_finish_all_loads);
+        break;
+      case NavigationState::LINK_LOAD_RELOAD:
+        PLT_HISTOGRAM(
+            "PLT.BeginToFinish_LinkLoadReload_ExtensionAdblock",
+            begin_to_finish_all_loads);
+        break;
+      case NavigationState::LINK_LOAD_CACHE_STALE_OK:
+        PLT_HISTOGRAM(
+            "PLT.BeginToFinish_LinkLoadStaleOk_ExtensionAdblock",
+            begin_to_finish_all_loads);
+        break;
+      default:
+        break;
+    }
+  }
+
+  const bool use_adblockplus_histogram = client->IsAdblockPlusInstalled();
+  if (use_adblockplus_histogram) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "PLT.Abandoned_ExtensionAdblock",
+        abandoned_page ? 1 : 0, 2);
+    switch (load_type) {
+      case NavigationState::NORMAL_LOAD:
+        PLT_HISTOGRAM(
+            "PLT.BeginToFinish_NormalLoad_ExtensionAdblockPlus",
+            begin_to_finish_all_loads);
+        break;
+      case NavigationState::LINK_LOAD_NORMAL:
+        PLT_HISTOGRAM(
+            "PLT.BeginToFinish_LinkLoadNormal_ExtensionAdblockPlus",
+            begin_to_finish_all_loads);
+        break;
+      case NavigationState::LINK_LOAD_RELOAD:
+        PLT_HISTOGRAM(
+            "PLT.BeginToFinish_LinkLoadReload_ExtensionAdblockPlus",
+            begin_to_finish_all_loads);
+        break;
+      case NavigationState::LINK_LOAD_CACHE_STALE_OK:
+        PLT_HISTOGRAM(
+            "PLT.BeginToFinish_LinkLoadStaleOk_ExtensionAdblockPlus",
+            begin_to_finish_all_loads);
+        break;
+      default:
+        break;
+    }
+  }
+
+  const bool use_webrequest_adblock_histogram =
+      client->IsAdblockWithWebRequestInstalled();
+  if (use_webrequest_adblock_histogram) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "PLT.Abandoned_ExtensionWebRequestAdblock",
+        abandoned_page ? 1 : 0, 2);
+    switch (load_type) {
+      case NavigationState::NORMAL_LOAD:
+        PLT_HISTOGRAM(
+            "PLT.BeginToFinish_NormalLoad_ExtensionWebRequestAdblock",
+            begin_to_finish_all_loads);
+        break;
+      case NavigationState::LINK_LOAD_NORMAL:
+        PLT_HISTOGRAM(
+            "PLT.BeginToFinish_LinkLoadNormal_ExtensionWebRequestAdblock",
+            begin_to_finish_all_loads);
+        break;
+      case NavigationState::LINK_LOAD_RELOAD:
+        PLT_HISTOGRAM(
+            "PLT.BeginToFinish_LinkLoadReload_ExtensionWebRequestAdblock",
+            begin_to_finish_all_loads);
+        break;
+      case NavigationState::LINK_LOAD_CACHE_STALE_OK:
+        PLT_HISTOGRAM(
+            "PLT.BeginToFinish_LinkLoadStaleOk_ExtensionWebRequestAdblock",
+            begin_to_finish_all_loads);
+        break;
+      default:
+        break;
+    }
+  }
+
+  const bool use_webrequest_adblockplus_histogram =
+      client->IsAdblockPlusWithWebRequestInstalled();
+  if (use_webrequest_adblockplus_histogram) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "PLT.Abandoned_ExtensionWebRequestAdblockPlus",
+        abandoned_page ? 1 : 0, 2);
+    switch (load_type) {
+      case NavigationState::NORMAL_LOAD:
+        PLT_HISTOGRAM(
+            "PLT.BeginToFinish_NormalLoad_ExtensionWebRequestAdblockPlus",
+            begin_to_finish_all_loads);
+        break;
+      case NavigationState::LINK_LOAD_NORMAL:
+        PLT_HISTOGRAM(
+            "PLT.BeginToFinish_LinkLoadNormal_ExtensionWebRequestAdblockPlus",
+            begin_to_finish_all_loads);
+        break;
+      case NavigationState::LINK_LOAD_RELOAD:
+        PLT_HISTOGRAM(
+            "PLT.BeginToFinish_LinkLoadReload_ExtensionWebRequestAdblockPlus",
+            begin_to_finish_all_loads);
+        break;
+      case NavigationState::LINK_LOAD_CACHE_STALE_OK:
+        PLT_HISTOGRAM(
+            "PLT.BeginToFinish_LinkLoadStaleOk_ExtensionWebRequestAdblockPlus",
+            begin_to_finish_all_loads);
+        break;
+      default:
+        break;
     }
   }
 

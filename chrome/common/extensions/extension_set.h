@@ -20,6 +20,8 @@
 class ExtensionSet {
  public:
   typedef std::pair<FilePath, std::string> ExtensionPathAndDefaultLocale;
+  typedef std::map<std::string, scoped_refptr<const Extension> > ExtensionMap;
+  typedef ExtensionMap::const_iterator const_iterator;
 
   ExtensionSet();
   ~ExtensionSet();
@@ -27,8 +29,12 @@ class ExtensionSet {
   // Gets the number of extensions contained.
   size_t size() const;
 
+  // Iteration support.
+  const_iterator begin() const { return extensions_.begin(); }
+  const_iterator end() const { return extensions_.end(); }
+
   // Returns true if the set contains the specified extension.
-  bool Contains(const std::string& id);
+  bool Contains(const std::string& id) const;
 
   // Adds the specified extension to the set. The set becomes an owner. Any
   // previous extension with the same ID is removed.
@@ -63,8 +69,6 @@ class ExtensionSet {
  private:
   FRIEND_TEST_ALL_PREFIXES(ExtensionSetTest, ExtensionSet);
 
-  // static
-  typedef std::map<std::string, scoped_refptr<const Extension> > ExtensionMap;
   ExtensionMap extensions_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionSet);
