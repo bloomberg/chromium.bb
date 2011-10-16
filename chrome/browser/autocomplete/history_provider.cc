@@ -31,16 +31,17 @@ void HistoryProvider::DeleteMatch(const AutocompleteMatch& match) {
       profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
 
   // Delete the match from the history DB.
-  DCHECK(history_service);
-  DCHECK(match.destination_url.is_valid());
-  history_service->DeleteURL(match.destination_url);
-  DeleteMatchFromMatches(match);
-}
+  GURL selected_url(match.destination_url);
+  if (!history_service || !selected_url.is_valid()) {
+    NOTREACHED() << "Can't delete requested URL";
+    return;
+  }
+  history_service->DeleteURL(selected_url);
 
-void HistoryProvider::DeleteMatchFromMatches(const AutocompleteMatch& match) {
+  // Delete the match from the current set of matches.
   bool found = false;
   for (ACMatches::iterator i(matches_.begin()); i != matches_.end(); ++i) {
-    if (i->destination_url == match.destination_url && i->type == match.type) {
+    if (i->destination_url == selected_url && i->type == match.type) {
       found = true;
       if (i->is_history_what_you_typed_match || i->starred) {
         // We can't get rid of What-You-Typed or Bookmarked matches,

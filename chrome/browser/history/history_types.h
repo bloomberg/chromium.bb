@@ -74,7 +74,6 @@ class URLRow {
   URLRow& operator=(const URLRow& other);
 
   URLID id() const { return id_; }
-  void set_id(URLID id) { id_ = id; }  // Note: Use for unittesting only.
   const GURL& url() const { return url_; }
 
   const string16& title() const {
