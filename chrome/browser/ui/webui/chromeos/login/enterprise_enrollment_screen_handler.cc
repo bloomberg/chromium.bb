@@ -187,10 +187,10 @@ void EnterpriseEnrollmentScreenHandler::GetLocalizedStrings(
       "signinsuffix", l10n_util::GetStringUTF16(IDS_SYNC_LOGIN_SIGNIN_SUFFIX));
   localized_strings->SetString(
       "cannotbeblank", l10n_util::GetStringUTF16(IDS_SYNC_CANNOT_BE_BLANK));
-  localized_strings->SetString("emaillabel",
-                               l10n_util::GetStringUTF16(IDS_SYNC_LOGIN_EMAIL));
-  localized_strings->SetString(
-      "passwordlabel", l10n_util::GetStringUTF16(IDS_SYNC_LOGIN_PASSWORD));
+  localized_strings->SetString("emaillabel", l10n_util::GetStringUTF16(
+      IDS_SYNC_LOGIN_EMAIL_SAME_LINE));
+  localized_strings->SetString("passwordlabel", l10n_util::GetStringUTF16(
+      IDS_SYNC_LOGIN_PASSWORD_SAME_LINE));
   localized_strings->SetString(
       "invalidcredentials",
       l10n_util::GetStringUTF16(IDS_SYNC_INVALID_USER_CREDENTIALS));

@@ -204,9 +204,6 @@ void SyncSetupHandler::GetStaticLocalizedValues(
       "cannotAccessAccountURL",
       google_util::StringAppendGoogleLocaleParam(kCanNotAccessAccountUrl));
   localized_strings->SetString(
-      "createNewAccountURL",
-      google_util::StringAppendGoogleLocaleParam(kCreateNewAccountUrl));
-  localized_strings->SetString(
       "introduction",
       GetStringFUTF16(IDS_SYNC_LOGIN_INTRODUCTION,
                       GetStringUTF16(IDS_PRODUCT_NAME)));
@@ -239,14 +236,21 @@ void SyncSetupHandler::GetStaticLocalizedValues(
       GetStringFUTF16(IDS_SYNC_PROMO_MESSAGE_TITLE,
                       GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
 
+  std::string create_account_url =
+      google_util::StringAppendGoogleLocaleParam(kCreateNewAccountUrl);
+  string16 create_account = GetStringUTF16(IDS_SYNC_CREATE_ACCOUNT);
+  create_account= UTF8ToUTF16("<a id='create-account-link' target='_blank' "
+      "class='account-link' href='" + create_account_url + "'>") +
+      create_account + UTF8ToUTF16("</a>");
+  localized_strings->SetString("createAccountLinkHTML",
+      GetStringFUTF16(IDS_SYNC_CREATE_ACCOUNT_PREFIX, create_account));
+
   static OptionsStringResource resources[] = {
     { "syncSetupOverlayTitle", IDS_SYNC_SETUP_TITLE },
     { "syncSetupConfigureTitle", IDS_SYNC_SETUP_CONFIGURE_TITLE },
-    { "signinPrefix", IDS_SYNC_LOGIN_SIGNIN_PREFIX },
-    { "signinSuffix", IDS_SYNC_LOGIN_SIGNIN_SUFFIX },
     { "cannotBeBlank", IDS_SYNC_CANNOT_BE_BLANK },
-    { "emailLabel", IDS_SYNC_LOGIN_EMAIL },
-    { "passwordLabel", IDS_SYNC_LOGIN_PASSWORD },
+    { "emailLabel", IDS_SYNC_LOGIN_EMAIL_NEW_LINE },
+    { "passwordLabel", IDS_SYNC_LOGIN_PASSWORD_NEW_LINE },
     { "invalidCredentials", IDS_SYNC_INVALID_USER_CREDENTIALS },
     { "signin", IDS_SYNC_SIGNIN },
     { "couldNotConnect", IDS_SYNC_LOGIN_COULD_NOT_CONNECT },
@@ -254,10 +258,10 @@ void SyncSetupHandler::GetStaticLocalizedValues(
     { "errorLearnMore", IDS_LEARN_MORE },
     { "unrecoverableErrorHelpURL", IDS_SYNC_UNRECOVERABLE_ERROR_HELP_URL },
     { "cannotAccessAccount", IDS_SYNC_CANNOT_ACCESS_ACCOUNT },
-    { "createAccount", IDS_SYNC_CREATE_ACCOUNT },
     { "cancel", IDS_CANCEL },
     { "settingUp", IDS_SYNC_LOGIN_SETTING_UP },
     { "errorSigningIn", IDS_SYNC_ERROR_SIGNING_IN },
+    { "signinHeader", IDS_SYNC_PROMO_SIGNIN_HEADER},
     { "captchaInstructions", IDS_SYNC_GAIA_CAPTCHA_INSTRUCTIONS },
     { "invalidAccessCode", IDS_SYNC_INVALID_ACCESS_CODE_LABEL },
     { "enterAccessCode", IDS_SYNC_ENTER_ACCESS_CODE_LABEL },

@@ -23,8 +23,8 @@ TEST(EnterpriseEnrollmentResources, SharedStringsCheck) {
   TestStringStillOkForEnterpriseEnrollment(IDS_SYNC_LOGIN_SIGNIN_PREFIX);
   TestStringStillOkForEnterpriseEnrollment(IDS_SYNC_LOGIN_SIGNIN_SUFFIX);
   TestStringStillOkForEnterpriseEnrollment(IDS_SYNC_CANNOT_BE_BLANK);
-  TestStringStillOkForEnterpriseEnrollment(IDS_SYNC_LOGIN_EMAIL);
-  TestStringStillOkForEnterpriseEnrollment(IDS_SYNC_LOGIN_PASSWORD);
+  TestStringStillOkForEnterpriseEnrollment(IDS_SYNC_LOGIN_EMAIL_SAME_LINE);
+  TestStringStillOkForEnterpriseEnrollment(IDS_SYNC_LOGIN_PASSWORD_SAME_LINE);
   TestStringStillOkForEnterpriseEnrollment(IDS_SYNC_INVALID_USER_CREDENTIALS);
   TestStringStillOkForEnterpriseEnrollment(IDS_SYNC_SIGNIN);
   TestStringStillOkForEnterpriseEnrollment(IDS_SYNC_LOGIN_COULD_NOT_CONNECT);

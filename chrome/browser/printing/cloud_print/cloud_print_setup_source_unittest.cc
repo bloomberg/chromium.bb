@@ -26,8 +26,8 @@ TEST(CloudPrintResources, SharedStringsCheck) {
   TestStringStillOkForCloudPrint(IDS_SYNC_LOGIN_SIGNIN_PREFIX);
   TestStringStillOkForCloudPrint(IDS_SYNC_LOGIN_SIGNIN_SUFFIX);
   TestStringStillOkForCloudPrint(IDS_SYNC_CANNOT_BE_BLANK);
-  TestStringStillOkForCloudPrint(IDS_SYNC_LOGIN_EMAIL);
-  TestStringStillOkForCloudPrint(IDS_SYNC_LOGIN_PASSWORD);
+  TestStringStillOkForCloudPrint(IDS_SYNC_LOGIN_EMAIL_SAME_LINE);
+  TestStringStillOkForCloudPrint(IDS_SYNC_LOGIN_PASSWORD_SAME_LINE);
   TestStringStillOkForCloudPrint(IDS_SYNC_INVALID_USER_CREDENTIALS);
   TestStringStillOkForCloudPrint(IDS_SYNC_SIGNIN);
   TestStringStillOkForCloudPrint(IDS_SYNC_LOGIN_COULD_NOT_CONNECT);

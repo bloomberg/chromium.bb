@@ -9979,13 +9979,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Invalid user name or password.
       </message>
       <message name="IDS_SYNC_GAIA_CAPTCHA_INSTRUCTIONS" desc="Explanatory message shown when the user must type letters shown in a captcha image to reauthenticate.">
-        Enter the correct password above and then type the characters you see in the picture below.
+        Enter the letters above
       </message>
       <message name="IDS_SYNC_GAIA_CAPTCHA_CASE_INSENSITIVE_TIP" desc="Message shown below a GAIA captcha explaining that the letters typed are not case sensitive">
         Letters are not case sensitive
       </message>
       <message name="IDS_SYNC_ERROR_SIGNING_IN" desc="An error was encountered while signing the user in.">
         Error signing in.
+      </message>
+      <message name="IDS_SYNC_PROMO_SIGNIN_HEADER" desc="The header at the top of the GAIA sign in box.">
+        Sign in
       </message>
       <message name="IDS_SYNC_UNRECOVERABLE_ERROR" desc="Message shown when sync
         setup failed due to an unrecoverable error and can't continue.">
@@ -10320,17 +10323,26 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SYNC_LOGIN_SIGNIN_SUFFIX" desc="The second part of the sentence. Google will be replaced by the Google logo. The translation of 'Account' will be display in bold">
         Google Account
       </message>
-      <message name="IDS_SYNC_LOGIN_EMAIL" desc="The user Email address of the Google account">
+      <message name="IDS_SYNC_LOGIN_EMAIL_NEW_LINE" desc="The user Email address of the Google account. This label appears on a separate line from the text field.">
+        Email
+      </message>
+      <message name="IDS_SYNC_LOGIN_EMAIL_SAME_LINE" desc="The user Email address of the Google account. This label appears on the same line as the text field.">
         Email:
       </message>
-      <message name="IDS_SYNC_LOGIN_PASSWORD" desc="The user password of the Google account">
+      <message name="IDS_SYNC_LOGIN_PASSWORD_NEW_LINE" desc="The user password of the Google account. This label appears on a separate line from the text field.">
+        Password
+      </message>
+      <message name="IDS_SYNC_LOGIN_PASSWORD_SAME_LINE" desc="The user password of the Google account. This labe appears on the same line as the text field.">
         Password:
       </message>
       <message name="IDS_SYNC_SIGNIN" desc="The label of the button to log to your Google account">
         Sign in
       </message>
       <message name="IDS_SYNC_CANNOT_ACCESS_ACCOUNT" desc="The text of a hyperlink">
-        I cannot access my account
+        Can't access your account?
+      </message>
+      <message name="IDS_SYNC_CREATE_ACCOUNT_PREFIX" desc="The text before the create account link">
+        or <ph name="IDS_SYNC_CREATE_ACCOUNT">$1<ex>Create a Google account</ex></ph>
       </message>
       <message name="IDS_SYNC_CREATE_ACCOUNT" desc="The text of a hyperlink to create a Google account">
         Create a Google account

@@ -5,6 +5,7 @@
 
 html {
   font-family: segoe ui, arial, helvetica, sans-serif;
+  font-size: 13px;
   height: 100%;
 }
 
@@ -19,9 +20,10 @@ body {
 }
 
 #sync-setup-login {
-  margin-left: auto;
-  margin-right: auto;
-  width: 800px;
+  margin: 0 auto;
+  max-width: 900px;
+  min-width: 830px;
+  width: auto;
 }
 
 #sync-setup-configure {
@@ -32,14 +34,21 @@ body {
 }
 
 #sync-setup-login-promo-column {
-  display: block;
-  float: left;
-  width: 500px;
+  margin-right: 385px;
+}
+
+html[dir='rtl'] #sync-setup-login-promo-column {
+  margin-left: 385px;
+  margin-right: 0;
 }
 
 #sync-setup-login-content-column {
   float: right;
-  width: 275px;
+  width: 335px;
+}
+
+html[dir='rtl'] #sync-setup-login-content-column {
+  float: left;
 }
 
 #promo-title {
@@ -49,19 +58,8 @@ body {
   text-align: center;
 }
 
-h1 {
-  font-size: 180%;
-  font-weight: normal;
-}
-
-#promo-message-title {
-  font-size: 120%;
-}
-
-#promo-message-body {
-  font-size: 85%;
-  margin-top: 8px;
-  margin-bottom: 28px;
+#promo-infographic {
+  margin-top: 14px;
 }
 
 #promo-skip {
@@ -71,20 +69,33 @@ h1 {
   text-align: center;
 }
 
-#promo-information > h3 {
-  font-size: 85%;
-  margin-bottom: 0;
-  margin-top: 0;
-}
-
-#promo-information > p {
-  font-size: 85%;
-  margin-top: 0;
-}
-
 #promo-advanced-link {
   font-size: 85%;
   margin: 0 10px;
+}
+
+#sync-setup-login h1 {
+  color: #222;
+  font-size: 27px;
+  font-weight: normal;
+}
+
+#sync-setup-login-promo-column h2 {
+  color: #222;
+  font-size: 18px;
+  font-weight: normal;
+}
+
+#sync-setup-login-promo-column h3 {
+  color: #222;
+  font-size: 13px;
+  line-height: 13px;
+}
+
+#sync-setup-login-promo-column p {
+  color: #222;
+  font-size: 13px;
+  line-height: 20px;
 }
 
 #promo-info-pane {

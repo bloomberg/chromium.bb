@@ -41,19 +41,6 @@ cr.define('options', function() {
     initializePage: function() {
       OptionsPage.prototype.initializePage.call(this);
 
-      var acct_text = $('gaia-account-text');
-      var translated_text = acct_text.textContent;
-      var posGoogle = translated_text.indexOf('Google');
-      if (posGoogle != -1) {
-        var googleIsAtEndOfSentence = posGoogle != 0;
-
-        if (googleIsAtEndOfSentence) {
-          var logo_td = $('gaia-logo');
-          logo_td.parentNode.appendChild(logo_td);
-        }
-        acct_text.textContent = translated_text.replace('Google','');
-      }
-
       var self = this;
       $('gaia-login-form').onsubmit = function() {
         self.sendCredentialsAndClose_();
@@ -577,11 +564,8 @@ cr.define('options', function() {
     showAccessCodeRequired_: function() {
       $('password-row').hidden = true;
       $('email-row').hidden = true;
-      $('create-account-cell').style.visibility = "hidden";
 
-      $('access-code-label-row').hidden = false;
       $('access-code-input-row').hidden = false;
-      $('access-code-help-row').hidden = false;
       $('access-code').disabled = false;
     },
 
@@ -591,7 +575,6 @@ cr.define('options', function() {
       // The captcha takes up lots of space, so make room.
       $('top-blurb-error').hidden = true;
       $('create-account-div').hidden = true;
-      $('create-account-cell').hidden = true;
 
       // It's showtime for the captcha now.
       $('captcha-div').hidden = false;

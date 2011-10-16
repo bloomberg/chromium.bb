@@ -82,8 +82,8 @@ void CloudPrintSetupSource::StartDataRequest(const std::string& path_raw,
     AddString(dict, "signinprefix", IDS_SYNC_LOGIN_SIGNIN_PREFIX);
     AddString(dict, "signinsuffix", IDS_SYNC_LOGIN_SIGNIN_SUFFIX);
     AddString(dict, "cannotbeblank", IDS_SYNC_CANNOT_BE_BLANK);
-    AddString(dict, "emaillabel", IDS_SYNC_LOGIN_EMAIL);
-    AddString(dict, "passwordlabel", IDS_SYNC_LOGIN_PASSWORD);
+    AddString(dict, "emaillabel", IDS_SYNC_LOGIN_EMAIL_SAME_LINE);
+    AddString(dict, "passwordlabel", IDS_SYNC_LOGIN_PASSWORD_SAME_LINE);
     AddString(dict, "invalidcredentials", IDS_SYNC_INVALID_USER_CREDENTIALS);
     AddString(dict, "signin", IDS_SYNC_SIGNIN);
     AddString(dict, "couldnotconnect", IDS_SYNC_LOGIN_COULD_NOT_CONNECT);
