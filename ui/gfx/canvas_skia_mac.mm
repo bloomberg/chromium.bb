@@ -67,7 +67,7 @@ void CanvasSkia::DrawStringInt(const string16& text,
           base::mac::NSToCFCast(ns_string)));
 
   CGRect text_bounds = CGRectMake(x, y, w, h);
-  CGMutablePathRef path = CGPathCreateMutable();
+  base::mac::ScopedCFTypeRef<CGMutablePathRef> path(CGPathCreateMutable());
   CGPathAddRect(path, NULL, text_bounds);
 
   base::mac::ScopedCFTypeRef<CTFrameRef> frame(
