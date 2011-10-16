@@ -1277,13 +1277,16 @@
       "search_string": "IMAGEINFO GET IMAGE INFO FOR IMAGES, INCLUDING EXIF DATA BACKGROUND_PAGE CONTEXTMENUS TABS CHROME.CONTEXTMENUS.CREATE CHROME.TABS.GET CHROME.TABS.GETCURRENT CHROME.WINDOWS.CREATE CHROME.WINDOWS.UPDATE",
       "source_files": [
         "background.html",
+        "background.js",
         "imageinfo\/binaryajax.js",
         "imageinfo\/exif.js",
         "imageinfo\/imageinfo.js",
+        "info.css",
         "info.html",
+        "info.js",
         "manifest.json"
       ],
-      "source_hash": "c746d9114348f4b414c1ec05e988e2807feb963a",
+      "source_hash": "3a61d1ad772ef01e0d3cc01a8bedbe7da452dd0b",
       "zip_path": "examples\/extensions\/imageinfo.zip"
     },
     {
