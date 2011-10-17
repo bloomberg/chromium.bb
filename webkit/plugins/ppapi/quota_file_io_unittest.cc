@@ -366,14 +366,14 @@ class QuotaFileIOTest : public PpapiUnittest {
   void SetLength(int64_t length, bool will_operation) {
     if (will_operation) {
       ASSERT_TRUE(quota_file_io_->WillSetLength(
-                      length,
-                      callback_factory_.NewCallback(
-                          &QuotaFileIOTest::DidSetLength)));
+          length,
+          base::Bind(&QuotaFileIOTest::DidSetLength,
+                     weak_factory_.GetWeakPtr())));
     } else {
       ASSERT_TRUE(quota_file_io_->SetLength(
-                      length,
-                      callback_factory_.NewCallback(
-                          &QuotaFileIOTest::DidSetLength)));
+          length,
+          base::Bind(&QuotaFileIOTest::DidSetLength,
+                     weak_factory_.GetWeakPtr())));
     }
   }
 

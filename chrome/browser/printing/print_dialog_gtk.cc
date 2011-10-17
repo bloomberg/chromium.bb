@@ -391,9 +391,7 @@ void PrintDialogGtk::OnJobCompleted(GtkPrintJob* print_job, GError* error) {
     g_object_unref(print_job);
   base::FileUtilProxy::Delete(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
-      path_to_pdf_,
-      false,
-      NULL);
+      path_to_pdf_, false, base::FileUtilProxy::StatusCallback());
   // Printing finished. Matches AddRef() in PrintDocument();
   Release();
 }

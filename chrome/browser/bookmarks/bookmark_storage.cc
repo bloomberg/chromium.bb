@@ -235,9 +235,7 @@ void BookmarkStorage::OnLoadFinished(bool file_exists, const FilePath& path) {
     // Clean up after migration from history.
     base::FileUtilProxy::Delete(
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
-        tmp_history_path_,
-        false,
-        NULL);
+        tmp_history_path_, false, base::FileUtilProxy::StatusCallback());
   }
 }
 

@@ -426,10 +426,9 @@ void URLFetcher::Core::TempFileWriter::CloseTempFileAndCompleteRequest() {
 
   if (temp_file_handle_ != base::kInvalidPlatformFileValue) {
     base::FileUtilProxy::Close(
-        file_message_loop_proxy_,
-        temp_file_handle_,
-        callback_factory_.NewCallback(
-            &URLFetcher::Core::TempFileWriter::DidCloseTempFile));
+        file_message_loop_proxy_, temp_file_handle_,
+        base::Bind(&URLFetcher::Core::TempFileWriter::DidCloseTempFile,
+                   weak_factory_.GetWeakPtr()));
     temp_file_handle_ = base::kInvalidPlatformFileValue;
   }
 }
@@ -457,18 +456,16 @@ void URLFetcher::Core::TempFileWriter::RemoveTempFile() {
   // Close the temp file if it is open.
   if (temp_file_handle_ != base::kInvalidPlatformFileValue) {
     base::FileUtilProxy::Close(
-        file_message_loop_proxy_,
-        temp_file_handle_,
-        NULL);  // No callback: Ignore errors.
+        file_message_loop_proxy_, temp_file_handle_,
+        base::FileUtilProxy::StatusCallback());  // No callback: Ignore errors.
     temp_file_handle_ = base::kInvalidPlatformFileValue;
   }
 
   if (!temp_file_.empty()) {
     base::FileUtilProxy::Delete(
-        file_message_loop_proxy_,
-        temp_file_,
+        file_message_loop_proxy_, temp_file_,
         false,  // No need to recurse, as the path is to a file.
-        NULL);  // No callback: Ignore errors.
+        base::FileUtilProxy::StatusCallback());  // No callback: Ignore errors.
     DisownTempFile();
   }
 }

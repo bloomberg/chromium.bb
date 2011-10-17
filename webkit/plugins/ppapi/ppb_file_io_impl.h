@@ -10,7 +10,6 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_callback_factory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
@@ -125,7 +124,6 @@ class PPB_FileIO_Impl : public ::ppapi::Resource,
   void WriteCallback(base::PlatformFileError error_code, int bytes_written);
   void WillWriteCallback(base::PlatformFileError error_code, int bytes_written);
 
-  base::ScopedCallbackFactory<PPB_FileIO_Impl> callback_factory_;
   base::WeakPtrFactory<PPB_FileIO_Impl> weak_factory_;
 
   base::PlatformFile file_;

@@ -51,7 +51,6 @@ PPB_FileIO_Impl::CallbackEntry::~CallbackEntry() {
 
 PPB_FileIO_Impl::PPB_FileIO_Impl(PP_Instance instance)
     : Resource(instance),
-      ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       file_(base::kInvalidPlatformFileValue),
       file_system_type_(PP_FILESYSTEMTYPE_INVALID),
@@ -156,7 +155,8 @@ int32_t PPB_FileIO_Impl::Touch(PP_Time last_access_time,
           plugin_delegate->GetFileThreadMessageLoopProxy(),
           file_, PPTimeToTime(last_access_time),
           PPTimeToTime(last_modified_time),
-          callback_factory_.NewCallback(&PPB_FileIO_Impl::StatusCallback)))
+          base::Bind(&PPB_FileIO_Impl::StatusCallback,
+                     weak_factory_.GetWeakPtr())))
     return PP_ERROR_FAILED;
 
   RegisterCallback(OPERATION_EXCLUSIVE, callback, NULL);
@@ -230,13 +230,14 @@ int32_t PPB_FileIO_Impl::SetLength(int64_t length,
   if (quota_file_io_.get()) {
     if (!quota_file_io_->SetLength(
             length,
-            callback_factory_.NewCallback(&PPB_FileIO_Impl::StatusCallback)))
+            base::Bind(&PPB_FileIO_Impl::StatusCallback,
+                       weak_factory_.GetWeakPtr())))
       return PP_ERROR_FAILED;
   } else {
     if (!base::FileUtilProxy::Truncate(
-            plugin_delegate->GetFileThreadMessageLoopProxy(),
-            file_, length,
-            callback_factory_.NewCallback(&PPB_FileIO_Impl::StatusCallback)))
+            plugin_delegate->GetFileThreadMessageLoopProxy(), file_, length,
+            base::Bind(&PPB_FileIO_Impl::StatusCallback,
+                       weak_factory_.GetWeakPtr())))
       return PP_ERROR_FAILED;
   }
 
@@ -255,7 +256,8 @@ int32_t PPB_FileIO_Impl::Flush(PP_CompletionCallback callback) {
 
   if (!base::FileUtilProxy::Flush(
           plugin_delegate->GetFileThreadMessageLoopProxy(), file_,
-          callback_factory_.NewCallback(&PPB_FileIO_Impl::StatusCallback)))
+          base::Bind(&PPB_FileIO_Impl::StatusCallback,
+                     weak_factory_.GetWeakPtr())))
     return PP_ERROR_FAILED;
 
   RegisterCallback(OPERATION_EXCLUSIVE, callback, NULL);
@@ -266,7 +268,8 @@ void PPB_FileIO_Impl::Close() {
   PluginDelegate* plugin_delegate = ResourceHelper::GetPluginDelegate(this);
   if (file_ != base::kInvalidPlatformFileValue && plugin_delegate) {
     base::FileUtilProxy::Close(
-        plugin_delegate->GetFileThreadMessageLoopProxy(), file_, NULL);
+        plugin_delegate->GetFileThreadMessageLoopProxy(), file_,
+        base::FileUtilProxy::StatusCallback());
     file_ = base::kInvalidPlatformFileValue;
     quota_file_io_.reset();
   }
@@ -313,7 +316,8 @@ int32_t PPB_FileIO_Impl::WillSetLength(int64_t length,
 
   if (!quota_file_io_->WillSetLength(
           length,
-          callback_factory_.NewCallback(&PPB_FileIO_Impl::StatusCallback)))
+          base::Bind(&PPB_FileIO_Impl::StatusCallback,
+                     weak_factory_.GetWeakPtr())))
     return PP_ERROR_FAILED;
 
   RegisterCallback(OPERATION_EXCLUSIVE, callback, NULL);

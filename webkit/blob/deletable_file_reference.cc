@@ -72,7 +72,8 @@ DeletableFileReference::~DeletableFileReference() {
 
   DCHECK(g_deletable_file_map.Get().find(path_)->second == this);
   g_deletable_file_map.Get().erase(path_);
-  base::FileUtilProxy::Delete(file_thread_, path_, false /* recursive */, NULL);
+  base::FileUtilProxy::Delete(file_thread_, path_, false /* recursive */,
+                              base::FileUtilProxy::StatusCallback());
 }
 
 }  // namespace webkit_blob

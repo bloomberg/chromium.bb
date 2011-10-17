@@ -76,8 +76,8 @@ FileSystemOperation::FileSystemOperation(
 FileSystemOperation::~FileSystemOperation() {
   if (file_writer_delegate_.get())
     FileSystemFileUtilProxy::Close(
-        file_system_operation_context_,
-        proxy_, file_writer_delegate_->file(), NULL);
+        file_system_operation_context_, proxy_, file_writer_delegate_->file(),
+        FileSystemFileUtilProxy::StatusCallback());
 }
 
 void FileSystemOperation::OpenFileSystem(
@@ -184,8 +184,8 @@ void FileSystemOperation::DelayedCreateDirectoryForQuota(
   FileSystemFileUtilProxy::CreateDirectory(
       file_system_operation_context_, proxy_, src_virtual_path_, exclusive_,
       recursive_,
-      callback_factory_.NewCallback(
-          &FileSystemOperation::DidFinishFileOperation));
+      base::Bind(&FileSystemOperation::DidFinishFileOperation,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void FileSystemOperation::Copy(const GURL& src_path,
@@ -231,12 +231,10 @@ void FileSystemOperation::DelayedCopyForQuota(quota::QuotaStatusCode status,
       file_system_operation_context_.dest_type()));
 
   FileSystemFileUtilProxy::Copy(
-      file_system_operation_context_,
-      proxy_,
-      src_virtual_path_,
+      file_system_operation_context_, proxy_, src_virtual_path_,
       dest_virtual_path_,
-      callback_factory_.NewCallback(
-        &FileSystemOperation::DidFinishFileOperation));
+      base::Bind(&FileSystemOperation::DidFinishFileOperation,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void FileSystemOperation::Move(const GURL& src_path,
@@ -282,12 +280,10 @@ void FileSystemOperation::DelayedMoveForQuota(quota::QuotaStatusCode status,
       file_system_operation_context_.dest_type()));
 
   FileSystemFileUtilProxy::Move(
-      file_system_operation_context_,
-      proxy_,
-      src_virtual_path_,
+      file_system_operation_context_, proxy_, src_virtual_path_,
       dest_virtual_path_,
-      callback_factory_.NewCallback(
-        &FileSystemOperation::DidFinishFileOperation));
+      base::Bind(&FileSystemOperation::DidFinishFileOperation,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void FileSystemOperation::DirectoryExists(const GURL& path) {
@@ -410,9 +406,9 @@ void FileSystemOperation::Remove(const GURL& path, bool recursive) {
   if (!file_system_operation_context_.src_file_util())
     file_system_operation_context_.set_src_file_util(file_util);
   FileSystemFileUtilProxy::Delete(
-      file_system_operation_context_,
-      proxy_, virtual_path, recursive, callback_factory_.NewCallback(
-          &FileSystemOperation::DidFinishFileOperation));
+      file_system_operation_context_, proxy_, virtual_path, recursive,
+      base::Bind(&FileSystemOperation::DidFinishFileOperation,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void FileSystemOperation::Write(
@@ -498,11 +494,9 @@ void FileSystemOperation::DelayedTruncateForQuota(quota::QuotaStatusCode status,
       file_system_operation_context_.src_type()));
 
   FileSystemFileUtilProxy::Truncate(
-      file_system_operation_context_,
-      proxy_,
-      src_virtual_path_,
-      length_, callback_factory_.NewCallback(
-          &FileSystemOperation::DidFinishFileOperation));
+      file_system_operation_context_, proxy_, src_virtual_path_, length_,
+      base::Bind(&FileSystemOperation::DidFinishFileOperation,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void FileSystemOperation::TouchFile(const GURL& path,
@@ -527,9 +521,10 @@ void FileSystemOperation::TouchFile(const GURL& path,
   if (!file_system_operation_context_.src_file_util())
     file_system_operation_context_.set_src_file_util(file_util);
   FileSystemFileUtilProxy::Touch(
-      file_system_operation_context_,
-      proxy_, virtual_path, last_access_time, last_modified_time,
-      callback_factory_.NewCallback(&FileSystemOperation::DidTouchFile));
+      file_system_operation_context_, proxy_, virtual_path, last_access_time,
+      last_modified_time,
+      base::Bind(&FileSystemOperation::DidTouchFile,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void FileSystemOperation::OpenFile(const GURL& path,

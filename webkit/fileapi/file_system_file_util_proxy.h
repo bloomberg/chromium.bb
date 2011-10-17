@@ -62,7 +62,7 @@ class FileSystemFileUtilProxy {
   static bool Close(const FileSystemOperationContext& context,
                     scoped_refptr<MessageLoopProxy> message_loop_proxy,
                     PlatformFile,
-                    StatusCallback* callback);
+                    const StatusCallback& callback);
 
   // Ensures that the given |file_path| exist.  This creates a empty new file
   // at |file_path| if the |file_path| does not exist.
@@ -107,7 +107,7 @@ class FileSystemFileUtilProxy {
       const FilePath& file_path,
       bool exclusive,
       bool recursive,
-      StatusCallback* callback);
+      const StatusCallback& callback);
 
   // Copies a file or a directory from |src_file_path| to |dest_file_path|
   // Error cases:
@@ -121,7 +121,7 @@ class FileSystemFileUtilProxy {
                    scoped_refptr<MessageLoopProxy> message_loop_proxy,
                    const FilePath& src_file_path,
                    const FilePath& dest_file_path,
-                   StatusCallback* callback);
+                   const StatusCallback& callback);
 
   // Moves a file or a directory from src_file_path to dest_file_path.
   // Error cases are similar to Copy method's error cases.
@@ -130,7 +130,7 @@ class FileSystemFileUtilProxy {
       scoped_refptr<MessageLoopProxy> message_loop_proxy,
       const FilePath& src_file_path,
       const FilePath& dest_file_path,
-      StatusCallback* callback);
+      const StatusCallback& callback);
 
   // Deletes a file or a directory.
   // It is an error to delete a non-empty directory with recursive=false.
@@ -138,7 +138,7 @@ class FileSystemFileUtilProxy {
                      scoped_refptr<MessageLoopProxy> message_loop_proxy,
                      const FilePath& file_path,
                      bool recursive,
-                     StatusCallback* callback);
+                     const StatusCallback& callback);
 
   // Touches a file. The callback can be NULL.
   static bool Touch(
@@ -147,7 +147,7 @@ class FileSystemFileUtilProxy {
       const FilePath& file_path,
       const base::Time& last_access_time,
       const base::Time& last_modified_time,
-      StatusCallback* callback);
+      const StatusCallback& callback);
 
   // Truncates a file to the given length. If |length| is greater than the
   // current length of the file, the file will be extended with zeroes.
@@ -157,7 +157,7 @@ class FileSystemFileUtilProxy {
       scoped_refptr<MessageLoopProxy> message_loop_proxy,
       const FilePath& path,
       int64 length,
-      StatusCallback* callback);
+      const StatusCallback& callback);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(FileSystemFileUtilProxy);

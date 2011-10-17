@@ -52,8 +52,8 @@ class QuotaFileIO {
                  int32_t bytes_to_write,
                  const WriteCallback& callback);
 
-  bool SetLength(int64_t length, StatusCallback* callback);
-  bool WillSetLength(int64_t length, StatusCallback* callback);
+  bool SetLength(int64_t length, const StatusCallback& callback);
+  bool WillSetLength(int64_t length, const StatusCallback& callback);
 
   // Returns the plugin delegate or NULL if the resource has outlived the
   // instance.

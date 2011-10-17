@@ -157,11 +157,11 @@ class QuotaFileIO::SetLengthOperation : public PendingOperationBase {
   SetLengthOperation(QuotaFileIO* quota_io,
                      bool is_will_operation,
                      int64_t length,
-                     StatusCallback* callback)
+                     const StatusCallback& callback)
       : PendingOperationBase(quota_io, is_will_operation),
         length_(length),
         callback_(callback),
-        callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
+        ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {}
 
   virtual ~SetLengthOperation() {}
 
@@ -183,9 +183,10 @@ class QuotaFileIO::SetLengthOperation : public PendingOperationBase {
     }
 
     if (!base::FileUtilProxy::Truncate(
-            plugin_delegate->GetFileThreadMessageLoopProxy(),
-            quota_io_->file_, length_,
-            callback_factory_.NewCallback(&SetLengthOperation::DidFinish))) {
+            plugin_delegate->GetFileThreadMessageLoopProxy(), quota_io_->file_,
+            length_,
+            base::Bind(&SetLengthOperation::DidFinish,
+                       weak_factory_.GetWeakPtr()))) {
       DidFail(base::PLATFORM_FILE_ERROR_FAILED);
       return;
     }
@@ -198,15 +199,13 @@ class QuotaFileIO::SetLengthOperation : public PendingOperationBase {
  private:
   void DidFinish(PlatformFileError status) {
     quota_io_->DidSetLength(status, length_);
-    DCHECK(callback_.get());
-    callback_->Run(status);
-    callback_.reset();
-    delete this;
+    DCHECK_EQ(false, callback_.is_null());
+    callback_.Run(status);
   }
 
   int64_t length_;
-  scoped_ptr<StatusCallback> callback_;
-  base::ScopedCallbackFactory<SetLengthOperation> callback_factory_;
+  StatusCallback callback_;
+  base::WeakPtrFactory<SetLengthOperation> weak_factory_;
 };
 
 // QuotaFileIO --------------------------------------------------------------
@@ -250,7 +249,7 @@ bool QuotaFileIO::Write(
   return RegisterOperationForQuotaChecks(op);
 }
 
-bool QuotaFileIO::SetLength(int64_t length, StatusCallback* callback) {
+bool QuotaFileIO::SetLength(int64_t length, const StatusCallback& callback) {
   DCHECK(pending_operations_.empty());
   SetLengthOperation* op = new SetLengthOperation(
       this, false, length, callback);
@@ -264,7 +263,8 @@ bool QuotaFileIO::WillWrite(
   return RegisterOperationForQuotaChecks(op);
 }
 
-bool QuotaFileIO::WillSetLength(int64_t length, StatusCallback* callback) {
+bool QuotaFileIO::WillSetLength(int64_t length,
+                                const StatusCallback& callback) {
   DCHECK(pending_operations_.empty());
   SetLengthOperation* op = new SetLengthOperation(this, true, length, callback);
   return RegisterOperationForQuotaChecks(op);
