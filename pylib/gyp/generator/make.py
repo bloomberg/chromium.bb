@@ -1547,6 +1547,13 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
 
         outputs = [self.ExpandInputRoot(out, rule_source_root)
                    for out in rule['outputs']]
+
+        # If an output is just the file name, turn it into a path so
+        # FixupArgPath() will know to Absolutify() it.
+        outputs = map(
+            lambda x : os.path.dirname(x) and x or os.path.join('.', x),
+            outputs)
+
         for out in outputs:
           dir = os.path.dirname(out)
           if dir:
@@ -2478,10 +2485,6 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     if '%(INPUT_ROOT)s' not in template:
       return template
     path = template % { 'INPUT_ROOT': expansion }
-    if not os.path.dirname(path):
-      # If it's just the file name, turn it into a path so FixupArgPath()
-      # will know to Absolutify() it.
-      path = os.path.join('.', path)
     return path
 
 
