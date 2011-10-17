@@ -46,6 +46,32 @@ COMPILE_ASSERT(arraysize(kDefaultSettings) == CONTENT_SETTINGS_NUM_TYPES,
 
 namespace content_settings {
 
+namespace {
+
+class DefaultRuleIterator : public RuleIterator {
+ public:
+  explicit DefaultRuleIterator(ContentSetting setting)
+      : setting_(setting) {}
+
+  bool HasNext() const {
+    return (setting_ != CONTENT_SETTING_DEFAULT);
+  }
+
+  Rule Next() {
+    DCHECK(setting_ != CONTENT_SETTING_DEFAULT);
+    ContentSetting setting_to_return = setting_;
+    setting_ = CONTENT_SETTING_DEFAULT;
+    return Rule(ContentSettingsPattern::Wildcard(),
+                ContentSettingsPattern::Wildcard(),
+                Value::CreateIntegerValue(setting_to_return));
+  }
+
+ private:
+  ContentSetting setting_;
+};
+
+}  // namespace
+
 // static
 void DefaultProvider::RegisterUserPrefs(PrefService* prefs) {
   // The registration of the preference prefs::kDefaultContentSettings should
@@ -158,34 +184,13 @@ void DefaultProvider::SetContentSetting(
                   std::string());
 }
 
-ContentSetting DefaultProvider::GetContentSetting(
-    const GURL& primary_url,
-    const GURL& secondary_url,
-    ContentSettingsType content_type,
-    const ResourceIdentifier& resource_identifier) const {
-  base::AutoLock lock(lock_);
-  return default_content_settings_.settings[content_type];
-}
-
-Value* DefaultProvider::GetContentSettingValue(
-    const GURL& primary_url,
-    const GURL& secondary_url,
-    ContentSettingsType content_type,
-    const ResourceIdentifier& resource_identifier) const {
-  base::AutoLock lock(lock_);
-  return Value::CreateIntegerValue(
-      default_content_settings_.settings[content_type]);
-}
-
-void DefaultProvider::GetAllContentSettingsRules(
+RuleIterator* DefaultProvider::GetRuleIterator(
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
-    std::vector<Rule>* content_setting_rules) const {
+    bool incognito) const {
   base::AutoLock lock(lock_);
-  content_setting_rules->push_back(Rule(
-      ContentSettingsPattern::Wildcard(),
-      ContentSettingsPattern::Wildcard(),
-      default_content_settings_.settings[content_type]));
+  return new DefaultRuleIterator(
+      default_content_settings_.settings[content_type]);
 }
 
 void DefaultProvider::ClearAllContentSettingsRules(

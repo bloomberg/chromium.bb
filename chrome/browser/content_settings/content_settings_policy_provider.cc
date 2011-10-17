@@ -198,6 +198,13 @@ PolicyProvider::~PolicyProvider() {
   DCHECK(!prefs_);
 }
 
+RuleIterator* PolicyProvider::GetRuleIterator(
+    ContentSettingsType content_type,
+    const ResourceIdentifier& resource_identifier,
+    bool incognito) const {
+  return value_map_.GetRuleIterator(content_type, resource_identifier, &lock_);
+}
+
 void PolicyProvider::GetContentSettingsFromPreferences(
     OriginIdentifierValueMap* value_map) {
   for (size_t i = 0; i < arraysize(kPrefsForManagedContentSettingsMap); ++i) {
@@ -381,49 +388,6 @@ void PolicyProvider::SetContentSetting(
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
     ContentSetting content_setting) {
-}
-
-ContentSetting PolicyProvider::GetContentSetting(
-    const GURL& primary_url,
-    const GURL& secondary_url,
-    ContentSettingsType content_type,
-    const ResourceIdentifier& resource_identifier) const {
-  DCHECK_NE(CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE, content_type);
-  // Resource identifier are not supported by policies as long as the feature is
-  // behind a flag. So resource identifiers are simply ignored.
-  base::AutoLock auto_lock(lock_);
-  return ValueToContentSetting(value_map_.GetValue(primary_url,
-                                                   secondary_url,
-                                                   content_type,
-                                                   resource_identifier));
-}
-
-base::Value* PolicyProvider::GetContentSettingValue(
-    const GURL& primary_url,
-    const GURL& secondary_url,
-    ContentSettingsType content_type,
-    const ResourceIdentifier& resource_identifier) const {
-  // Resource identifier are not supported by policies as long as the feature is
-  // behind a flag. So resource identifiers are simply ignored.
-  base::AutoLock auto_lock(lock_);
-  base::Value* value = value_map_.GetValue(primary_url,
-                                     secondary_url,
-                                     content_type,
-                                     resource_identifier);
-  return value ? value->DeepCopy() : NULL;
-}
-
-void PolicyProvider::GetAllContentSettingsRules(
-    ContentSettingsType content_type,
-    const ResourceIdentifier& resource_identifier,
-    std::vector<Rule>* content_setting_rules) const {
-  DCHECK(content_setting_rules);
-
-  base::AutoLock auto_lock(lock_);
-  scoped_ptr<RuleIterator> rule(
-      value_map_.GetRuleIterator(content_type, resource_identifier));
-  while (rule->HasNext())
-    content_setting_rules->push_back(rule->Next());
 }
 
 void PolicyProvider::ClearAllContentSettingsRules(

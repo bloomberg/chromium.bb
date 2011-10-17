@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/platform_thread.h"
 #include "chrome/browser/content_settings/content_settings_mock_observer.h"
-#include "chrome/browser/content_settings/content_settings_rule.h"
+#include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/default_pref_store.h"
 #include "chrome/browser/prefs/incognito_user_pref_store.h"
@@ -190,12 +190,14 @@ TEST_F(PrefProviderTest, Incognito) {
   GURL host("http://example.com/");
   // The value should of course be visible in the regular PrefProvider.
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            pref_content_settings_provider.GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+            GetContentSetting(
+                &pref_content_settings_provider,
+                host, host, CONTENT_SETTINGS_TYPE_IMAGES, "", false));
   // And also in the OTR version.
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            pref_content_settings_provider_incognito.GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+            GetContentSetting(
+                &pref_content_settings_provider_incognito,
+                host, host, CONTENT_SETTINGS_TYPE_IMAGES, "", false));
   // But the value should not be overridden in the OTR user prefs accidentally.
   EXPECT_FALSE(otr_user_prefs->IsSetInOverlay(prefs::kContentSettingsPatterns));
 
@@ -211,11 +213,14 @@ TEST_F(PrefProviderTest, GetContentSettingsValue) {
   ContentSettingsPattern primary_pattern =
       ContentSettingsPattern::FromString("[*.]example.com");
 
-  EXPECT_EQ(CONTENT_SETTING_DEFAULT, provider.GetContentSetting(
-      primary_url, primary_url, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+  EXPECT_EQ(CONTENT_SETTING_DEFAULT,
+            GetContentSetting(&provider, primary_url, primary_url,
+                              CONTENT_SETTINGS_TYPE_IMAGES, "", false));
 
-  EXPECT_EQ(NULL, provider.GetContentSettingValue(
-      primary_url, primary_url, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+  EXPECT_EQ(NULL,
+            GetContentSettingValue(
+                &provider, primary_url, primary_url,
+                CONTENT_SETTINGS_TYPE_IMAGES, "", false));
 
   provider.SetContentSetting(primary_pattern,
                              primary_pattern,
@@ -223,10 +228,11 @@ TEST_F(PrefProviderTest, GetContentSettingsValue) {
                              "",
                              CONTENT_SETTING_BLOCK);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            provider.GetContentSetting(
-                primary_url, primary_url, CONTENT_SETTINGS_TYPE_IMAGES, ""));
-  scoped_ptr<Value> value_ptr(provider.GetContentSettingValue(
-                primary_url, primary_url, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+            GetContentSetting(&provider, primary_url, primary_url,
+                              CONTENT_SETTINGS_TYPE_IMAGES, "", false));
+  scoped_ptr<Value> value_ptr(
+      GetContentSettingValue(&provider, primary_url, primary_url,
+                             CONTENT_SETTINGS_TYPE_IMAGES, "", false));
   int int_value = -1;
   value_ptr->GetAsInteger(&int_value);
   EXPECT_EQ(CONTENT_SETTING_BLOCK, IntToContentSetting(int_value));
@@ -236,9 +242,10 @@ TEST_F(PrefProviderTest, GetContentSettingsValue) {
                              CONTENT_SETTINGS_TYPE_IMAGES,
                              "",
                              CONTENT_SETTING_DEFAULT);
-  EXPECT_EQ(NULL, provider.GetContentSettingValue(
-      primary_url, primary_url, CONTENT_SETTINGS_TYPE_IMAGES, ""));
-
+  EXPECT_EQ(NULL,
+            GetContentSettingValue(
+                &provider, primary_url, primary_url,
+                CONTENT_SETTINGS_TYPE_IMAGES, "", false));
   provider.ShutdownOnUIThread();
 }
 
@@ -259,8 +266,9 @@ TEST_F(PrefProviderTest, Patterns) {
       ContentSettingsPattern::FromString("file:///tmp/test.html");
 
   EXPECT_EQ(CONTENT_SETTING_DEFAULT,
-            pref_content_settings_provider.GetContentSetting(
-                host1, host1, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+            GetContentSetting(
+                &pref_content_settings_provider,
+                host1, host1, CONTENT_SETTINGS_TYPE_IMAGES, "", false));
   pref_content_settings_provider.SetContentSetting(
       pattern1,
       pattern1,
@@ -268,15 +276,18 @@ TEST_F(PrefProviderTest, Patterns) {
       "",
       CONTENT_SETTING_BLOCK);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            pref_content_settings_provider.GetContentSetting(
-                host1, host1, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+            GetContentSetting(
+                &pref_content_settings_provider,
+                host1, host1, CONTENT_SETTINGS_TYPE_IMAGES, "", false));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            pref_content_settings_provider.GetContentSetting(
-                host2, host2, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+            GetContentSetting(
+                &pref_content_settings_provider,
+                host2, host2, CONTENT_SETTINGS_TYPE_IMAGES, "", false));
 
   EXPECT_EQ(CONTENT_SETTING_DEFAULT,
-            pref_content_settings_provider.GetContentSetting(
-                host3, host3, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+            GetContentSetting(
+                &pref_content_settings_provider,
+                host3, host3, CONTENT_SETTINGS_TYPE_IMAGES, "", false));
   pref_content_settings_provider.SetContentSetting(
       pattern2,
       pattern2,
@@ -284,12 +295,14 @@ TEST_F(PrefProviderTest, Patterns) {
       "",
       CONTENT_SETTING_BLOCK);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            pref_content_settings_provider.GetContentSetting(
-                host3, host3, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+            GetContentSetting(
+                &pref_content_settings_provider,
+                host3, host3, CONTENT_SETTINGS_TYPE_IMAGES, "", false));
 
   EXPECT_EQ(CONTENT_SETTING_DEFAULT,
-            pref_content_settings_provider.GetContentSetting(
-                host4, host4, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+            GetContentSetting(&pref_content_settings_provider,
+                              host4, host4, CONTENT_SETTINGS_TYPE_IMAGES, "",
+                              false));
   pref_content_settings_provider.SetContentSetting(
       pattern3,
       pattern3,
@@ -297,8 +310,9 @@ TEST_F(PrefProviderTest, Patterns) {
       "",
       CONTENT_SETTING_BLOCK);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            pref_content_settings_provider.GetContentSetting(
-                host4, host4, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+            GetContentSetting(
+                &pref_content_settings_provider,
+                host4, host4, CONTENT_SETTINGS_TYPE_IMAGES, "", false));
 
   pref_content_settings_provider.ShutdownOnUIThread();
 }
@@ -315,8 +329,10 @@ TEST_F(PrefProviderTest, ResourceIdentifier) {
   std::string resource2("otherplugin");
 
   EXPECT_EQ(CONTENT_SETTING_DEFAULT,
-            pref_content_settings_provider.GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_PLUGINS, resource1));
+            GetContentSetting(
+                &pref_content_settings_provider,
+                host, host, CONTENT_SETTINGS_TYPE_PLUGINS,
+                resource1, false));
   pref_content_settings_provider.SetContentSetting(
       pattern,
       pattern,
@@ -324,11 +340,15 @@ TEST_F(PrefProviderTest, ResourceIdentifier) {
       resource1,
       CONTENT_SETTING_BLOCK);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            pref_content_settings_provider.GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_PLUGINS, resource1));
+            GetContentSetting(
+                &pref_content_settings_provider,
+                host, host, CONTENT_SETTINGS_TYPE_PLUGINS,
+                resource1, false));
   EXPECT_EQ(CONTENT_SETTING_DEFAULT,
-            pref_content_settings_provider.GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_PLUGINS, resource2));
+            GetContentSetting(
+                &pref_content_settings_provider,
+                host, host, CONTENT_SETTINGS_TYPE_PLUGINS,
+                resource2, false));
 
   pref_content_settings_provider.ShutdownOnUIThread();
 }
@@ -360,16 +380,20 @@ TEST_F(PrefProviderTest, MigrateObsoleteContentSettingsPatternPref) {
   EXPECT_TRUE(const_all_settings_dictionary->HasKey(
       pattern.ToString() + "," +
       ContentSettingsPattern::Wildcard().ToString()));
-  EXPECT_EQ(CONTENT_SETTING_BLOCK,  provider.GetContentSetting(
+  EXPECT_EQ(CONTENT_SETTING_BLOCK, GetContentSetting(
+      &provider,
       GURL("http://www.example.com"),
       GURL("http://www.example.com"),
       CONTENT_SETTINGS_TYPE_IMAGES,
-      ""));
-  EXPECT_EQ(CONTENT_SETTING_BLOCK,  provider.GetContentSetting(
+      "",
+      false));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK, GetContentSetting(
+      &provider,
       GURL("http://www.example.com"),
       GURL("http://www.example.com"),
       CONTENT_SETTINGS_TYPE_POPUPS,
-      ""));
+      "",
+      false));
   // Test if single pattern settings are properly migrated.
   const_all_settings_dictionary = prefs->GetDictionary(
       prefs::kContentSettingsPatternPairs);
@@ -430,10 +454,12 @@ TEST_F(PrefProviderTest, SyncObsoletePref) {
   }
 
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            provider.GetContentSetting(GURL("http://www.example.com"),
-                                       GURL("http://www.example.com"),
-                                       CONTENT_SETTINGS_TYPE_JAVASCRIPT,
-                                       std::string()));
+            GetContentSetting(&provider,
+                              GURL("http://www.example.com"),
+                              GURL("http://www.example.com"),
+                              CONTENT_SETTINGS_TYPE_JAVASCRIPT,
+                              std::string(),
+                              false));
   // Test whether the obsolete preference was synced correctly.
   settings = NULL;
   patterns->GetDictionaryWithoutPathExpansion(primary_pattern.ToString(),
@@ -535,16 +561,20 @@ TEST_F(PrefProviderTest, MigrateObsoleteGeolocationPref) {
   content_settings::PrefProvider provider(prefs, false);
 
   // Test if the migrated settings are loaded and available.
-  EXPECT_EQ(CONTENT_SETTING_BLOCK, provider.GetContentSetting(
+  EXPECT_EQ(CONTENT_SETTING_BLOCK, GetContentSetting(
+      &provider,
       primary_url,
       secondary_url,
       CONTENT_SETTINGS_TYPE_GEOLOCATION,
-      ""));
-  EXPECT_EQ(CONTENT_SETTING_DEFAULT, provider.GetContentSetting(
+      "",
+      false));
+  EXPECT_EQ(CONTENT_SETTING_DEFAULT, GetContentSetting(
+      &provider,
       GURL("http://www.example.com"),
       secondary_url,
       CONTENT_SETTINGS_TYPE_GEOLOCATION,
-      ""));
+      "",
+      false));
   // Check if the settings where migrated correctly.
   const DictionaryValue* const_all_settings_dictionary =
       prefs->GetDictionary(prefs::kContentSettingsPatternPairs);
@@ -571,11 +601,13 @@ TEST_F(PrefProviderTest, MigrateObsoleteGeolocationPref) {
              *geolocation_settings_dictionary);
 
   // Test if the changed obsolete preference was migrated correctly.
-  EXPECT_EQ(CONTENT_SETTING_ALLOW, provider.GetContentSetting(
+  EXPECT_EQ(CONTENT_SETTING_ALLOW, GetContentSetting(
+      &provider,
       primary_url,
       secondary_url,
       CONTENT_SETTINGS_TYPE_GEOLOCATION,
-      ""));
+      "",
+      false));
   // Check that geolocation settings were not synced to the obsolete content
   // settings pattern preference.
   const_obsolete_patterns_dictionary =
@@ -647,11 +679,13 @@ TEST_F(PrefProviderTest, AutoSubmitCertificateContentSetting) {
   PrefProvider provider(prefs, false);
 
   EXPECT_EQ(CONTENT_SETTING_DEFAULT,
-            provider.GetContentSetting(
+            GetContentSetting(
+                &provider,
                 primary_url,
                 primary_url,
                 CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
-                std::string()));
+                std::string(),
+                false));
 
   provider.SetContentSetting(
       ContentSettingsPattern::FromURL(primary_url),
@@ -660,11 +694,13 @@ TEST_F(PrefProviderTest, AutoSubmitCertificateContentSetting) {
       std::string(),
       CONTENT_SETTING_ALLOW);
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            provider.GetContentSetting(
+            GetContentSetting(
+                &provider,
                 primary_url,
                 secondary_url,
                 CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
-                std::string()));
+                std::string(),
+                false));
   provider.ShutdownOnUIThread();
 }
 
@@ -691,21 +727,27 @@ TEST_F(PrefProviderTest, MigrateObsoleteNotificationsPref) {
   content_settings::PrefProvider provider(prefs, false);
 
   // Test if the migrated settings are loaded and available.
-  EXPECT_EQ(CONTENT_SETTING_ALLOW, provider.GetContentSetting(
+  EXPECT_EQ(CONTENT_SETTING_ALLOW, GetContentSetting(
+      &provider,
       allowed_url,
       allowed_url,
       CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-      ""));
-  EXPECT_EQ(CONTENT_SETTING_BLOCK, provider.GetContentSetting(
+      "",
+      false));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK, GetContentSetting(
+      &provider,
       denied_url,
       denied_url,
       CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-      ""));
-  EXPECT_EQ(CONTENT_SETTING_DEFAULT, provider.GetContentSetting(
+      "",
+      false));
+  EXPECT_EQ(CONTENT_SETTING_DEFAULT, GetContentSetting(
+      &provider,
       allowed_url2,
       allowed_url2,
       CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-      ""));
+      "",
+      false));
   // Check if the settings where migrated correctly.
   const DictionaryValue* const_all_settings_dictionary =
       prefs->GetDictionary(prefs::kContentSettingsPatternPairs);
@@ -732,21 +774,27 @@ TEST_F(PrefProviderTest, MigrateObsoleteNotificationsPref) {
              *allowed_origin_list);
 
   // Test if the changed obsolete preference was migrated correctly.
-  EXPECT_EQ(CONTENT_SETTING_ALLOW, provider.GetContentSetting(
+  EXPECT_EQ(CONTENT_SETTING_ALLOW, GetContentSetting(
+      &provider,
       allowed_url2,
       allowed_url2,
       CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-      ""));
-  EXPECT_EQ(CONTENT_SETTING_DEFAULT, provider.GetContentSetting(
+      "",
+      false));
+  EXPECT_EQ(CONTENT_SETTING_DEFAULT, GetContentSetting(
+      &provider,
       allowed_url,
       allowed_url,
       CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-      ""));
-  EXPECT_EQ(CONTENT_SETTING_BLOCK, provider.GetContentSetting(
+      "",
+      false));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK, GetContentSetting(
+      &provider,
       denied_url,
       denied_url,
       CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-      ""));
+      "",
+      false));
   // Check that geolocation settings were not synced to the obsolete content
   // settings pattern preference.
   const_obsolete_patterns_dictionary =

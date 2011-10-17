@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_CONTENT_SETTINGS_STORE_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_CONTENT_SETTINGS_STORE_H_
 
-#include <list>
 #include <map>
 #include <string>
 
@@ -26,6 +25,7 @@ class ListValue;
 
 namespace content_settings {
 class OriginIdentifierValueMap;
+class RuleIterator;
 }
 
 // This class is the backend for extension-defined content settings. It is used
@@ -50,6 +50,11 @@ class ExtensionContentSettingsStore
 
   // //////////////////////////////////////////////////////////////////////////
 
+  content_settings::RuleIterator* GetRuleIterator(
+      ContentSettingsType type,
+      const content_settings::ResourceIdentifier& identifier,
+      bool incognito) const;
+
   // Sets the content |setting| for |pattern| of extension |ext_id|. The
   // |incognito| flag allow to set whether the provided setting is for
   // incognito mode only.
@@ -64,26 +69,9 @@ class ExtensionContentSettingsStore
       ContentSetting setting,
       ExtensionPrefsScope scope);
 
-  // Caller takes ownership of the returned value.
-  base::Value* GetEffectiveContentSetting(
-      const GURL& embedded_url,
-      const GURL& top_level_url,
-      ContentSettingsType type,
-      const content_settings::ResourceIdentifier& identifier,
-      bool incognito) const;
-
   // Clears all contents settings set by the extension |ext_id|.
   void ClearContentSettingsForExtension(const std::string& ext_id,
                                         ExtensionPrefsScope scope);
-
-  // Returns a list of all content setting rules for the content type |type|
-  // and the resource identifier (if specified and the content type uses
-  // resource identifiers).
-  void GetContentSettingsForContentType(
-      ContentSettingsType type,
-      const content_settings::ResourceIdentifier& identifier,
-      bool incognito,
-      std::vector<content_settings::Rule>* rules) const;
 
   // Serializes all content settings set by the extension with ID |extension_id|
   // and returns them as a ListValue. The caller takes ownership of the returned
@@ -122,7 +110,7 @@ class ExtensionContentSettingsStore
 
   struct ExtensionEntry;
 
-  typedef std::map<std::string, ExtensionEntry*> ExtensionEntryMap;
+  typedef std::multimap<base::Time, ExtensionEntry*> ExtensionEntryMap;
 
   virtual ~ExtensionContentSettingsStore();
 
@@ -134,17 +122,13 @@ class ExtensionContentSettingsStore
       const std::string& ext_id,
       ExtensionPrefsScope scope) const;
 
-  // Adds all content setting rules for |type| and |identifier| found in
-  // |map| to |rules|.
-  static void AddRules(ContentSettingsType type,
-                       const content_settings::ResourceIdentifier& identifier,
-                       const content_settings::OriginIdentifierValueMap* map,
-                       std::vector<content_settings::Rule>* rules);
-
   void NotifyOfContentSettingChanged(const std::string& extension_id,
                                      bool incognito);
 
   bool OnCorrectThread();
+
+  ExtensionEntryMap::iterator FindEntry(const std::string& ext_id);
+  ExtensionEntryMap::const_iterator FindEntry(const std::string& ext_id) const;
 
   ExtensionEntryMap entries_;
 

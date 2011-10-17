@@ -16,7 +16,12 @@ namespace base {
 class Value;
 }
 
+class GURL;
+
 namespace content_settings {
+
+class ProviderInterface;
+class RuleIterator;
 
 typedef std::pair<ContentSettingsPattern, ContentSettingsPattern> PatternPair;
 
@@ -45,6 +50,33 @@ PatternPair ParsePatternString(const std::string& pattern_str);
 std::string CreatePatternString(
     const ContentSettingsPattern& item_pattern,
     const ContentSettingsPattern& top_level_frame_pattern);
+
+// Caller takes the ownership of the returned |base::Value*|.
+base::Value* GetContentSettingValue(
+    RuleIterator* rule_iterator,
+    const GURL& primary_url,
+    const GURL& secondary_url);
+
+ContentSetting GetContentSetting(
+    RuleIterator* rule_iterator,
+    const GURL& primary_url,
+    const GURL& secondary_url);
+
+base::Value* GetContentSettingValue(
+    const ProviderInterface* provider,
+    const GURL& primary_url,
+    const GURL& secondary_url,
+    ContentSettingsType content_type,
+    const std::string& resource_identifier,
+    bool include_incognito);
+
+ContentSetting GetContentSetting(
+    const ProviderInterface* provider,
+    const GURL& primary_url,
+    const GURL& secondary_url,
+    ContentSettingsType content_type,
+    const std::string& resource_identifier,
+    bool include_incognito);
 
 }  // namespace content_settings
 

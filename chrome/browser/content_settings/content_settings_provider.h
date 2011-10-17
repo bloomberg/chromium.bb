@@ -22,6 +22,7 @@ class GURL;
 namespace content_settings {
 
 struct Rule;
+class RuleIterator;
 
 typedef std::string ResourceIdentifier;
 
@@ -29,32 +30,18 @@ class ProviderInterface {
  public:
   virtual ~ProviderInterface() {}
 
-  // Returns a single ContentSetting which applies to a given |primary_url|,
-  // |secondary_url| pair or CONTENT_SETTING_DEFAULT, if no rule applies. For
-  // ContentSettingsTypes that require a resource identifier to be specified,
-  // the |resource_identifier| must be non-empty.
-  //
-  // This may be called on any thread.
-  virtual ContentSetting GetContentSetting(
-      const GURL& primary_url,
-      const GURL& secondary_url,
+  // Returns a |RuleIterator| over the content setting rules stored by this
+  // provider. If |incognito| is true, the iterator returns only the content
+  // settings which are applicable to the incognito mode and differ from the
+  // normal mode. Otherwise, it returns the content settings for the normal
+  // mode. The caller takes the ownership of the returned |RuleIterator|. It is
+  // not allowed to call other |ProviderInterface| functions (including
+  // |GetRuleIterator|) for the same provider until the |RuleIterator| is
+  // destroyed.
+  virtual RuleIterator* GetRuleIterator(
       ContentSettingsType content_type,
-      const ResourceIdentifier& resource_identifier) const = 0;
-
-  // Returns the content setting |Value| for the given |content_type| which
-  // applies to the given |primary_url|, |secondary_url| pair. The ownership of
-  // the returned |Value| pointer is transfered to the caller. If no content
-  // settings value is available for the given parameters then NULL is returned.
-  // For ContentSettingsTypes that require a resource identifier to be
-  // specified, the |resource_identifier| must be non-empty.
-  //
-  // This may be called on any thread.
-  virtual Value* GetContentSettingValue(
-      const GURL& primary_url,
-      const GURL& secondary_url,
-      ContentSettingsType content_type,
-      const ResourceIdentifier& resource_identifier) const = 0;
-
+      const ResourceIdentifier& resource_identifier,
+      bool incognito) const = 0;
 
   // Sets the content setting for a particular |primary_pattern|,
   // |secondary_pattern|, |content_type| tuple. For ContentSettingsTypes that
@@ -70,24 +57,8 @@ class ProviderInterface {
       const ResourceIdentifier& resource_identifier,
       ContentSetting content_setting) = 0;
 
-  // For a given content type, returns all content setting rules with a
-  // non-default setting, mapped to their actual settings.
-  // |content_setting_rules| must be non-NULL. If this provider was created for
-  // the incognito profile, it will only return those settings differing
-  // from the corresponding regular provider. For ContentSettingsTypes that
-  // require a resource identifier to be specified, the |resource_identifier|
-  // must be non-empty.
-  //
-  // This may be called on any thread.
-  virtual void GetAllContentSettingsRules(
-      ContentSettingsType content_type,
-      const ResourceIdentifier& resource_identifier,
-      std::vector<Rule>* content_setting_rules) const = 0;
-
-  // Resets all content settings for the given |content_type| to
-  // CONTENT_SETTING_DEFAULT. For content types that require a resource
-  // identifier all content settings for any resource identifiers of the given
-  // |content_type| will be reset to CONTENT_SETTING_DEFAULT.
+  // Resets all content settings for the given |content_type| and empty resource
+  // identifier to CONTENT_SETTING_DEFAULT.
   //
   // This should only be called on the UI thread, and not after
   // ShutdownOnUIThread has been called.

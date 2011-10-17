@@ -7,18 +7,19 @@
 
 namespace content_settings {
 
-Rule::Rule()
-    : content_setting(CONTENT_SETTING_DEFAULT) { }
+Rule::Rule() {}
 
 Rule::Rule(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,
-    ContentSetting setting)
+    base::Value* value)
     : primary_pattern(primary_pattern),
       secondary_pattern(secondary_pattern),
-      content_setting(setting) {
-  DCHECK(setting != CONTENT_SETTING_DEFAULT);
+      value(value) {
+  DCHECK(value);
 }
+
+Rule::~Rule() {}
 
 RuleIterator::~RuleIterator() {}
 
@@ -31,6 +32,38 @@ bool EmptyRuleIterator::HasNext() const {
 Rule EmptyRuleIterator::Next() {
   NOTREACHED();
   return Rule();
+}
+
+ConcatenationIterator::ConcatenationIterator(
+    ScopedVector<RuleIterator>* iterators,
+    base::AutoLock* auto_lock)
+    : auto_lock_(auto_lock) {
+  iterators_.swap(*iterators);
+
+  ScopedVector<RuleIterator>::iterator it = iterators_.begin();
+  while (it != iterators_.end()) {
+    if (!(*it)->HasNext())
+      it = iterators_.erase(it);
+    else
+      ++it;
+  }
+}
+
+ConcatenationIterator::~ConcatenationIterator() {}
+
+bool ConcatenationIterator::HasNext() const {
+  return (!iterators_.empty());
+}
+
+Rule ConcatenationIterator::Next() {
+  ScopedVector<RuleIterator>::iterator current_iterator =
+      iterators_.begin();
+  DCHECK(current_iterator != iterators_.end());
+  DCHECK((*current_iterator)->HasNext());
+  const Rule& to_return = (*current_iterator)->Next();
+  if (!(*current_iterator)->HasNext())
+    iterators_.erase(current_iterator);
+  return to_return;
 }
 
 }  // namespace content_settings

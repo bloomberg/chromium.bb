@@ -6,9 +6,12 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/synchronization/lock.h"
 #include "base/values.h"
 #include "chrome/browser/content_settings/content_settings_rule.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
+#include "chrome/common/content_settings_types.h"
 #include "googleurl/src/gurl.h"
 
 namespace content_settings {
@@ -19,11 +22,14 @@ namespace {
 // |resource_identifier| in the precedence order of the rules.
 class RuleIteratorImpl : public RuleIterator {
  public:
+  // |RuleIteratorImpl| takes the ownership of |auto_lock|.
   RuleIteratorImpl(
       const OriginIdentifierValueMap::Rules::const_iterator& current_rule,
-      const OriginIdentifierValueMap::Rules::const_iterator& rule_end)
+      const OriginIdentifierValueMap::Rules::const_iterator& rule_end,
+      base::AutoLock* auto_lock)
       : current_rule_(current_rule),
-        rule_end_(rule_end) {
+        rule_end_(rule_end),
+        auto_lock_(auto_lock) {
   }
   virtual ~RuleIteratorImpl() {}
 
@@ -33,11 +39,10 @@ class RuleIteratorImpl : public RuleIterator {
 
   virtual Rule Next() OVERRIDE {
     DCHECK(current_rule_ != rule_end_);
-    ContentSetting setting = ValueToContentSetting(current_rule_->second.get());
-    DCHECK(setting != CONTENT_SETTING_DEFAULT);
+    DCHECK(current_rule_->second.get());
     Rule to_return(current_rule_->first.primary_pattern,
                    current_rule_->first.secondary_pattern,
-                   setting);
+                   current_rule_->second.get()->DeepCopy());
     ++current_rule_;
     return to_return;
   }
@@ -45,6 +50,7 @@ class RuleIteratorImpl : public RuleIterator {
  private:
   OriginIdentifierValueMap::Rules::const_iterator current_rule_;
   OriginIdentifierValueMap::Rules::const_iterator rule_end_;
+  scoped_ptr<base::AutoLock> auto_lock_;
 };
 
 }  // namespace
@@ -84,13 +90,22 @@ bool OriginIdentifierValueMap::PatternPair::operator<(
 
 RuleIterator* OriginIdentifierValueMap::GetRuleIterator(
     ContentSettingsType content_type,
-    ResourceIdentifier resource_identifier) const {
+    ResourceIdentifier resource_identifier,
+    base::Lock* lock) const {
   EntryMapKey key(content_type, resource_identifier);
+  // We access |entries_| here, so we need to lock |lock_| first. The lock must
+  // be passed to the |RuleIteratorImpl| in a locked state, so that nobody can
+  // access |entries_| after |find()| but before the |RuleIteratorImpl| is
+  // created.
+  scoped_ptr<base::AutoLock> auto_lock;
+  if (lock)
+    auto_lock.reset(new base::AutoLock(*lock));
   EntryMap::const_iterator it = entries_.find(key);
   if (it == entries_.end())
     return new EmptyRuleIterator();
   return new RuleIteratorImpl(it->second.begin(),
-                              it->second.end());
+                              it->second.end(),
+                              auto_lock.release());
 }
 
 size_t OriginIdentifierValueMap::size() const {
@@ -153,19 +168,16 @@ void OriginIdentifierValueMap::DeleteValue(
   }
 }
 
+void OriginIdentifierValueMap::DeleteValues(
+      ContentSettingsType content_type,
+      const ResourceIdentifier& resource_identifier) {
+  EntryMapKey key(content_type, resource_identifier);
+  entries_.erase(key);
+}
+
 void OriginIdentifierValueMap::clear() {
   // Delete all owned value objects.
   entries_.clear();
-}
-
-
-OriginIdentifierValueMap::EntryMap::iterator OriginIdentifierValueMap::erase(
-    OriginIdentifierValueMap::EntryMap::iterator entry) {
-  // Erasing from the map doesn't invalidate other iterators than the erased
-  // one.
-  OriginIdentifierValueMap::EntryMap::iterator to_erase = entry++;
-  entries_.erase(to_erase);
-  return entry;
 }
 
 }  // namespace content_settings

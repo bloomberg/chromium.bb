@@ -15,6 +15,7 @@
 class GURL;
 
 namespace base {
+class Lock;
 class Value;
 }
 
@@ -66,9 +67,15 @@ class OriginIdentifierValueMap {
 
   size_t size() const;
 
-  // Caller takes ownership of the iterator.
+  // Returns an iterator for reading the rules for |content_type| and
+  // |resource_identifier|. The caller takes the ownership of the iterator. It
+  // is not allowed to call functions of |OriginIdentifierValueMap| (also
+  // |GetRuleIterator|) before the iterator has been destroyed. If |lock| is
+  // non-NULL, the returned |RuleIterator| locks it and releases it when it is
+  // destroyed.
   RuleIterator* GetRuleIterator(ContentSettingsType content_type,
-                                ResourceIdentifier resource_identifier) const;
+                                ResourceIdentifier resource_identifier,
+                                base::Lock* lock) const;
 
   OriginIdentifierValueMap();
   ~OriginIdentifierValueMap();
@@ -100,9 +107,11 @@ class OriginIdentifierValueMap {
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier);
 
-  // Deletes the map entry at the passed position. The method returns the
-  // position of the next entry in the map.
-  EntryMap::iterator erase(EntryMap::iterator entry);
+  // Deletes all map entries for the given |content_type| and
+  // |resource_identifier|.
+  void DeleteValues(
+      ContentSettingsType content_type,
+      const ResourceIdentifier& resource_identifier);
 
   // Clears all map entries.
   void clear();

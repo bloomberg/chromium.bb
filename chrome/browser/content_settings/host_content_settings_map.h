@@ -51,10 +51,11 @@ class HostContentSettingsMap
 
   // TODO(markusheintz): I sold my soul to the devil on order to add this tuple.
   // I really want my soul back, so I really will change this ASAP.
-  typedef Tuple4<ContentSettingsPattern,
+  typedef Tuple5<ContentSettingsPattern,
                  ContentSettingsPattern,
                  ContentSetting,
-                 std::string> PatternSettingSourceTuple;
+                 std::string,
+                 bool> PatternSettingSourceTuple;
   typedef std::vector<PatternSettingSourceTuple> SettingsForOneType;
 
   HostContentSettingsMap(PrefService* prefs,
@@ -219,6 +220,19 @@ class HostContentSettingsMap
   // Various migration methods (old cookie, popup and per-host data gets
   // migrated to the new format).
   void MigrateObsoleteCookiePref();
+
+  // Adds content settings for |content_type| and |resource_identifier|,
+  // provided by |provider|, into |settings|. If |incognito| is true, adds only
+  // the content settings which are applicable to the incognito mode and differ
+  // from the normal mode. Otherwise, adds the content settings for the normal
+  // mode.
+  void AddSettingsForOneType(
+      const content_settings::ProviderInterface* provider,
+      ProviderType provider_type,
+      ContentSettingsType content_type,
+      const std::string& resource_identifier,
+      SettingsForOneType* settings,
+      bool incognito) const;
 
   // Weak; owned by the Profile.
   PrefService* prefs_;

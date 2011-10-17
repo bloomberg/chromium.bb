@@ -5,6 +5,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/content_settings/content_settings_default_provider.h"
 #include "chrome/browser/content_settings/content_settings_mock_observer.h"
+#include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service.h"
@@ -35,36 +36,44 @@ class DefaultProviderTest : public testing::Test {
 TEST_F(DefaultProviderTest, DefaultValues) {
   // Check setting defaults.
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            provider_.GetContentSetting(GURL(),
-                                        GURL(),
-                                        CONTENT_SETTINGS_TYPE_COOKIES,
-                                        std::string()));
+            GetContentSetting(&provider_,
+                              GURL(),
+                              GURL(),
+                              CONTENT_SETTINGS_TYPE_COOKIES,
+                              std::string(),
+                              false));
   provider_.SetContentSetting(ContentSettingsPattern::Wildcard(),
                               ContentSettingsPattern::Wildcard(),
                               CONTENT_SETTINGS_TYPE_COOKIES,
                               std::string(),
                               CONTENT_SETTING_BLOCK);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            provider_.GetContentSetting(GURL(),
-                                        GURL(),
-                                        CONTENT_SETTINGS_TYPE_COOKIES,
-                                        std::string()));
+            GetContentSetting(&provider_,
+                              GURL(),
+                              GURL(),
+                              CONTENT_SETTINGS_TYPE_COOKIES,
+                              std::string(),
+                              false));
 
   EXPECT_EQ(CONTENT_SETTING_ASK,
-            provider_.GetContentSetting(GURL(),
-                                        GURL(),
-                                        CONTENT_SETTINGS_TYPE_GEOLOCATION,
-                                        std::string()));
+            GetContentSetting(&provider_,
+                              GURL(),
+                              GURL(),
+                              CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                              std::string(),
+                              false));
   provider_.SetContentSetting(ContentSettingsPattern::Wildcard(),
                               ContentSettingsPattern::Wildcard(),
                               CONTENT_SETTINGS_TYPE_GEOLOCATION,
                               std::string(),
                               CONTENT_SETTING_BLOCK);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            provider_.GetContentSetting(GURL(),
-                                        GURL(),
-                                        CONTENT_SETTINGS_TYPE_GEOLOCATION,
-                                        std::string()));
+            GetContentSetting(&provider_,
+                              GURL(),
+                              GURL(),
+                              CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                              std::string(),
+                              false));
 }
 
 TEST_F(DefaultProviderTest, IgnoreNonDefaultSettings) {
@@ -72,22 +81,25 @@ TEST_F(DefaultProviderTest, IgnoreNonDefaultSettings) {
   GURL secondary_url("http://www.google.com");
 
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            provider_.GetContentSetting(primary_url,
-                                        secondary_url,
-                                        CONTENT_SETTINGS_TYPE_COOKIES,
-                                        std::string()));
+            GetContentSetting(&provider_,
+                              primary_url,
+                              secondary_url,
+                              CONTENT_SETTINGS_TYPE_COOKIES,
+                              std::string(),
+                              false));
   provider_.SetContentSetting(ContentSettingsPattern::FromURL(primary_url),
                               ContentSettingsPattern::FromURL(secondary_url),
                               CONTENT_SETTINGS_TYPE_COOKIES,
                               std::string(),
                               CONTENT_SETTING_BLOCK);
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            provider_.GetContentSetting(primary_url,
-                                        secondary_url,
-                                        CONTENT_SETTINGS_TYPE_COOKIES,
-                                        std::string()));
+            GetContentSetting(&provider_,
+                              primary_url,
+                              secondary_url,
+                              CONTENT_SETTINGS_TYPE_COOKIES,
+                              std::string(),
+                              false));
 }
-
 
 TEST_F(DefaultProviderTest, Observer) {
   content_settings::MockObserver mock_observer;
@@ -125,10 +137,12 @@ TEST_F(DefaultProviderTest, ObserveDefaultPref) {
                               std::string(),
                               CONTENT_SETTING_BLOCK);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            provider_.GetContentSetting(GURL(),
-                                        GURL(),
-                                        CONTENT_SETTINGS_TYPE_COOKIES,
-                                        std::string()));
+            GetContentSetting(&provider_,
+                              GURL(),
+                              GURL(),
+                              CONTENT_SETTINGS_TYPE_COOKIES,
+                              std::string(),
+                              false));
 
   // Make a copy of the pref's new value so we can reset it later.
   scoped_ptr<Value> new_value(prefs->FindPreference(
@@ -137,32 +151,40 @@ TEST_F(DefaultProviderTest, ObserveDefaultPref) {
   // Clearing the backing pref should also clear the internal cache.
   prefs->Set(prefs::kDefaultContentSettings, *default_value);
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            provider_.GetContentSetting(GURL(),
-                                        GURL(),
-                                        CONTENT_SETTINGS_TYPE_COOKIES,
-                                        std::string()));
+            GetContentSetting(&provider_,
+                              GURL(),
+                              GURL(),
+                              CONTENT_SETTINGS_TYPE_COOKIES,
+                              std::string(),
+                              false));
   // Reseting the pref to its previous value should update the cache.
   prefs->Set(prefs::kDefaultContentSettings, *new_value);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            provider_.GetContentSetting(GURL(),
-                                        GURL(),
-                                        CONTENT_SETTINGS_TYPE_COOKIES,
-                                        std::string()));
+            GetContentSetting(&provider_,
+                              GURL(),
+                              GURL(),
+                              CONTENT_SETTINGS_TYPE_COOKIES,
+                              std::string(),
+                              false));
 }
 
 TEST_F(DefaultProviderTest, OffTheRecord) {
   content_settings::DefaultProvider otr_provider(profile_.GetPrefs(), true);
 
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            provider_.GetContentSetting(GURL(),
-                                        GURL(),
-                                        CONTENT_SETTINGS_TYPE_COOKIES,
-                                        std::string()));
+            GetContentSetting(&provider_,
+                              GURL(),
+                              GURL(),
+                              CONTENT_SETTINGS_TYPE_COOKIES,
+                              std::string(),
+                              false));
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            otr_provider.GetContentSetting(GURL(),
-                                           GURL(),
-                                           CONTENT_SETTINGS_TYPE_COOKIES,
-                                           std::string()));
+            GetContentSetting(&otr_provider,
+                              GURL(),
+                              GURL(),
+                              CONTENT_SETTINGS_TYPE_COOKIES,
+                              std::string(),
+                              true));
 
   // Changing content settings on the main provider should also affect the
   // incognito map.
@@ -172,16 +194,20 @@ TEST_F(DefaultProviderTest, OffTheRecord) {
                               std::string(),
                               CONTENT_SETTING_BLOCK);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            provider_.GetContentSetting(GURL(),
-                            GURL(),
-                            CONTENT_SETTINGS_TYPE_COOKIES,
-                            std::string()));
+            GetContentSetting(&provider_,
+                              GURL(),
+                              GURL(),
+                              CONTENT_SETTINGS_TYPE_COOKIES,
+                              std::string(),
+                              false));
 
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            otr_provider.GetContentSetting(GURL(),
-                                           GURL(),
-                                           CONTENT_SETTINGS_TYPE_COOKIES,
-                                           std::string()));
+            GetContentSetting(&otr_provider,
+                              GURL(),
+                              GURL(),
+                              CONTENT_SETTINGS_TYPE_COOKIES,
+                              std::string(),
+                              true));
 
   // Changing content settings on the incognito provider should be ignored.
   otr_provider.SetContentSetting(ContentSettingsPattern::Wildcard(),
@@ -190,25 +216,31 @@ TEST_F(DefaultProviderTest, OffTheRecord) {
                                  std::string(),
                                  CONTENT_SETTING_ALLOW);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            provider_.GetContentSetting(GURL(),
-                            GURL(),
-                            CONTENT_SETTINGS_TYPE_COOKIES,
-                            std::string()));
+            GetContentSetting(&provider_,
+                              GURL(),
+                              GURL(),
+                              CONTENT_SETTINGS_TYPE_COOKIES,
+                              std::string(),
+                              false));
 
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            otr_provider.GetContentSetting(GURL(),
-                                           GURL(),
-                                           CONTENT_SETTINGS_TYPE_COOKIES,
-                                           std::string()));
+            GetContentSetting(&otr_provider,
+                              GURL(),
+                              GURL(),
+                              CONTENT_SETTINGS_TYPE_COOKIES,
+                              std::string(),
+                              true));
   otr_provider.ShutdownOnUIThread();
 }
 
 TEST_F(DefaultProviderTest, MigrateDefaultGeolocationContentSettingAfterSync) {
   EXPECT_EQ(CONTENT_SETTING_ASK,
-            provider_.GetContentSetting(GURL(),
-                                        GURL(),
-                                        CONTENT_SETTINGS_TYPE_GEOLOCATION,
-                                        std::string()));
+            GetContentSetting(&provider_,
+                              GURL(),
+                              GURL(),
+                              CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                              std::string(),
+                              false));
 
   content_settings::MockObserver mock_observer;
   EXPECT_CALL(mock_observer,
@@ -224,10 +256,12 @@ TEST_F(DefaultProviderTest, MigrateDefaultGeolocationContentSettingAfterSync) {
                     CONTENT_SETTING_ALLOW);
 
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            provider_.GetContentSetting(GURL(),
-                                        GURL(),
-                                        CONTENT_SETTINGS_TYPE_GEOLOCATION,
-                                        std::string()));
+            GetContentSetting(&provider_,
+                              GURL(),
+                              GURL(),
+                              CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                              std::string(),
+                              false));
 }
 
 TEST_F(DefaultProviderTest, MigrateDefaultGeolocationContentSettingAtStartup) {
@@ -243,9 +277,11 @@ TEST_F(DefaultProviderTest, MigrateDefaultGeolocationContentSettingAtStartup) {
   content_settings::DefaultProvider provider(prefs, false);
 
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            provider.GetContentSetting(GURL(),
-                                        GURL(),
-                                        CONTENT_SETTINGS_TYPE_GEOLOCATION,
-                                        std::string()));
+            GetContentSetting(&provider,
+                              GURL(),
+                              GURL(),
+                              CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                              std::string(),
+                              false));
   provider.ShutdownOnUIThread();
 }

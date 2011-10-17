@@ -30,29 +30,17 @@ class PolicyProvider : public ObservableProvider,
   static void RegisterUserPrefs(PrefService* prefs);
 
   // ProviderInterface implementations.
+  virtual RuleIterator* GetRuleIterator(
+      ContentSettingsType content_type,
+      const ResourceIdentifier& resource_identifier,
+      bool incognito) const OVERRIDE;
+
   virtual void SetContentSetting(
       const ContentSettingsPattern& primary_pattern,
       const ContentSettingsPattern& secondary_pattern,
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier,
       ContentSetting content_setting) OVERRIDE;
-
-  virtual ContentSetting GetContentSetting(
-      const GURL& primary_url,
-      const GURL& secondary_url,
-      ContentSettingsType content_type,
-      const ResourceIdentifier& resource_identifier) const OVERRIDE;
-
-  virtual Value* GetContentSettingValue(
-      const GURL& primary_url,
-      const GURL& secondary_url,
-      ContentSettingsType content_type,
-      const ResourceIdentifier& resource_identifier) const OVERRIDE;
-
-  virtual void GetAllContentSettingsRules(
-      ContentSettingsType content_type,
-      const ResourceIdentifier& resource_identifier,
-      std::vector<Rule>* content_setting_rules) const OVERRIDE;
 
   virtual void ClearAllContentSettingsRules(
       ContentSettingsType content_type) OVERRIDE;

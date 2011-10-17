@@ -39,29 +39,17 @@ class PrefProvider : public ObservableProvider,
   virtual ~PrefProvider();
 
   // ProviderInterface implementations.
+  virtual RuleIterator* GetRuleIterator(
+      ContentSettingsType content_type,
+      const ResourceIdentifier& resource_identifier,
+      bool incognito) const OVERRIDE;
+
   virtual void SetContentSetting(
       const ContentSettingsPattern& primary_pattern,
       const ContentSettingsPattern& secondary_pattern,
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier,
       ContentSetting content_setting) OVERRIDE;
-
-  virtual ContentSetting GetContentSetting(
-      const GURL& primary_url,
-      const GURL& secondary_url,
-      ContentSettingsType content_type,
-      const ResourceIdentifier& resource_identifier) const OVERRIDE;
-
-  virtual Value* GetContentSettingValue(
-      const GURL& primary_url,
-      const GURL& secondary_url,
-      ContentSettingsType content_type,
-      const ResourceIdentifier& resource_identifier) const OVERRIDE;
-
-  virtual void GetAllContentSettingsRules(
-      ContentSettingsType content_type,
-      const ResourceIdentifier& resource_identifier,
-      std::vector<Rule>* content_setting_rules) const OVERRIDE;
 
   virtual void ClearAllContentSettingsRules(
       ContentSettingsType content_type) OVERRIDE;
@@ -81,7 +69,9 @@ class PrefProvider : public ObservableProvider,
   void ReadContentSettingsFromPref(bool overwrite);
 
   // Update the preference that stores content settings exceptions and syncs the
-  // value to the obsolete preference.
+  // value to the obsolete preference. When calling this function, |lock_|
+  // should not be held, since this function will send out notifications of
+  // preference changes.
   void UpdatePref(
       const ContentSettingsPattern& primary_pattern,
       const ContentSettingsPattern& secondary_pattern,
@@ -164,8 +154,7 @@ class PrefProvider : public ObservableProvider,
 
   OriginIdentifierValueMap incognito_value_map_;
 
-  // Used around accesses to the value map objects to guarantee
-  // thread safety.
+  // Used around accesses to the value map objects to guarantee thread safety.
   mutable base::Lock lock_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefProvider);

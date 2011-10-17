@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/content_settings/content_settings_observable_provider.h"
+#include "chrome/browser/content_settings/content_settings_origin_identifier_value_map.h"
 #include "chrome/common/content_settings_pattern.h"
 
 namespace content_settings {
@@ -27,18 +28,10 @@ class MockProvider : public ObservableProvider {
                bool is_managed);
   virtual ~MockProvider();
 
-  // ProviderInterface implementation
-  virtual ContentSetting GetContentSetting(
-      const GURL& primary_url,
-      const GURL& secondary_url,
+  virtual RuleIterator* GetRuleIterator(
       ContentSettingsType content_type,
-      const ResourceIdentifier& resource_identifier) const;
-
-  virtual Value* GetContentSettingValue(
-      const GURL& primary_url,
-      const GURL& secondary_url,
-      ContentSettingsType content_type,
-      const ResourceIdentifier& resource_identifier) const;
+      const ResourceIdentifier& resource_identifier,
+      bool incognito) const OVERRIDE;
 
   // The MockProvider is only able to store one content setting. So every time
   // this method is called the previously set content settings is overwritten.
@@ -47,58 +40,12 @@ class MockProvider : public ObservableProvider {
       const ContentSettingsPattern& embedding_url_pattern,
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier,
-      ContentSetting content_setting);
-
-  virtual void GetAllContentSettingsRules(
-      ContentSettingsType content_type,
-      const ResourceIdentifier& resource_identifier,
-      std::vector<Rule>* content_setting_rules) const {}
+      ContentSetting content_setting) OVERRIDE;
 
   virtual void ClearAllContentSettingsRules(
-      ContentSettingsType content_type) {}
+      ContentSettingsType content_type) OVERRIDE {}
 
-  virtual void ShutdownOnUIThread();
-
-  // Accessors
-  void set_requesting_url_pattern(ContentSettingsPattern pattern) {
-    requesting_url_pattern_ = pattern;
-  }
-
-  ContentSettingsPattern requesting_url_pattern() const {
-    return requesting_url_pattern_;
-  }
-
-  void set_embedding_url_pattern(ContentSettingsPattern pattern) {
-    embedding_url_pattern_ = pattern;
-  }
-
-  ContentSettingsPattern embedding_url_pattern() const {
-    return embedding_url_pattern_;
-  }
-
-  void set_content_type(ContentSettingsType content_type) {
-    content_type_ = content_type;
-  }
-
-  ContentSettingsType content_type() const {
-    return content_type_;
-  }
-
-  void set_resource_identifier(ResourceIdentifier resource_identifier) {
-    resource_identifier_ = resource_identifier;
-  }
-
-  ResourceIdentifier resource_identifier() const {
-    return resource_identifier_;
-  }
-
-  void set_setting(ContentSetting setting) {
-    setting_ = setting;
-  }
-
-  ContentSetting setting() const {
-    return setting_;
-  }
+  virtual void ShutdownOnUIThread() OVERRIDE;
 
   void set_read_only(bool read_only) {
     read_only_ = read_only;
@@ -109,11 +56,7 @@ class MockProvider : public ObservableProvider {
   }
 
  private:
-  ContentSettingsPattern requesting_url_pattern_;
-  ContentSettingsPattern embedding_url_pattern_;
-  ContentSettingsType content_type_;
-  ResourceIdentifier resource_identifier_;
-  ContentSetting setting_;
+  OriginIdentifierValueMap value_map_;
   bool read_only_;
 
   DISALLOW_COPY_AND_ASSIGN(MockProvider);

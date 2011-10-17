@@ -7,6 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/content_settings/content_settings_rule.h"
+#include "chrome/browser/content_settings/content_settings_utils.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -175,7 +176,7 @@ TEST(OriginIdentifierValueMapTest, ListEntryPrecedences) {
 TEST(OriginIdentifierValueMapTest, IterateEmpty) {
   content_settings::OriginIdentifierValueMap map;
   scoped_ptr<content_settings::RuleIterator> rule_iterator(
-      map.GetRuleIterator(CONTENT_SETTINGS_TYPE_COOKIES, ""));
+      map.GetRuleIterator(CONTENT_SETTINGS_TYPE_COOKIES, "", NULL));
   EXPECT_FALSE(rule_iterator->HasNext());
 }
 
@@ -200,14 +201,14 @@ TEST(OriginIdentifierValueMapTest, IterateNonempty) {
       Value::CreateIntegerValue(2));
 
   scoped_ptr<content_settings::RuleIterator> rule_iterator(
-      map.GetRuleIterator(CONTENT_SETTINGS_TYPE_COOKIES, ""));
+      map.GetRuleIterator(CONTENT_SETTINGS_TYPE_COOKIES, "", NULL));
   ASSERT_TRUE(rule_iterator->HasNext());
   content_settings::Rule rule = rule_iterator->Next();
   EXPECT_EQ(sub_pattern, rule.primary_pattern);
-  EXPECT_EQ(2, rule.content_setting);
+  EXPECT_EQ(2, content_settings::ValueToContentSetting(rule.value.get()));
 
   ASSERT_TRUE(rule_iterator->HasNext());
   rule = rule_iterator->Next();
   EXPECT_EQ(pattern, rule.primary_pattern);
-  EXPECT_EQ(1, rule.content_setting);
+  EXPECT_EQ(1, content_settings::ValueToContentSetting(rule.value.get()));
 }

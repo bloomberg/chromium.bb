@@ -149,61 +149,6 @@ PrefProvider::PrefProvider(PrefService* prefs,
   pref_change_registrar_.Add(prefs::kDesktopNotificationDeniedOrigins, this);
 }
 
-ContentSetting PrefProvider::GetContentSetting(
-    const GURL& primary_url,
-    const GURL& secondary_url,
-    ContentSettingsType content_type,
-    const ResourceIdentifier& resource_identifier) const {
-  scoped_ptr<Value> value(GetContentSettingValue(primary_url,
-                                                 secondary_url,
-                                                 content_type,
-                                                 resource_identifier));
-  return ValueToContentSetting(value.get());
-}
-
-Value* PrefProvider::GetContentSettingValue(
-    const GURL& primary_url,
-    const GURL& secondary_url,
-    ContentSettingsType content_type,
-    const ResourceIdentifier& resource_identifier) const {
-  // For a |PrefProvider| used in a |HostContentSettingsMap| of a non incognito
-  // profile, this will always return NULL.
-  // TODO(markusheintz): I don't like this. I'd like to have an
-  // IncognitoProviderWrapper that wrapps the pref provider for a host content
-  // settings map of an incognito profile.
-  base::AutoLock auto_lock(lock_);
-  Value* incognito_value = incognito_value_map_.GetValue(
-      primary_url,
-      secondary_url,
-      content_type,
-      resource_identifier);
-  if (incognito_value)
-    return incognito_value->DeepCopy();
-
-  Value* value = value_map_.GetValue(
-      primary_url,
-      secondary_url,
-      content_type,
-      resource_identifier);
-  return value ? value->DeepCopy() : NULL;
-}
-
-void PrefProvider::GetAllContentSettingsRules(
-    ContentSettingsType content_type,
-    const ResourceIdentifier& resource_identifier,
-    std::vector<Rule>* content_setting_rules) const {
-  DCHECK(content_setting_rules);
-
-  const OriginIdentifierValueMap* map_to_return =
-      is_incognito_ ? &incognito_value_map_ : &value_map_;
-
-  base::AutoLock auto_lock(lock_);
-  scoped_ptr<RuleIterator> rule(
-      map_to_return->GetRuleIterator(content_type, resource_identifier));
-  while (rule->HasNext())
-    content_setting_rules->push_back(rule->Next());
-}
-
 void PrefProvider::SetContentSetting(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,
@@ -235,7 +180,6 @@ void PrefProvider::SetContentSetting(
           Value::CreateIntegerValue(setting));
     }
   }
-
   // Update the content settings preference.
   if (!is_incognito_) {
     UpdatePref(primary_pattern,
@@ -259,32 +203,28 @@ void PrefProvider::ClearAllContentSettingsRules(
   if (!is_incognito_)
     map_to_modify = &value_map_;
 
+  std::vector<Rule> rules_to_delete;
   {
     base::AutoLock auto_lock(lock_);
-    OriginIdentifierValueMap::EntryMap::iterator entry(map_to_modify->begin());
-    while (entry != map_to_modify->end()) {
-      if (entry->first.content_type == content_type) {
-        scoped_ptr<RuleIterator> rule_iterator(
-            map_to_modify->GetRuleIterator(
-                entry->first.content_type,
-                entry->first.resource_identifier));
-        while (rule_iterator->HasNext()) {
-          const Rule& rule = rule_iterator->Next();
-          UpdatePref(
-              rule.primary_pattern,
-              rule.secondary_pattern,
-              entry->first.content_type,
-              entry->first.resource_identifier,
-              CONTENT_SETTING_DEFAULT);
-        }
-        // Delete current |entry| and set |entry| to the next value map entry.
-        entry = map_to_modify->erase(entry);
-      } else {
-        ++entry;
-      }
-    }
+    scoped_ptr<RuleIterator> rule_iterator(
+        map_to_modify->GetRuleIterator(content_type, "", NULL));
+    // Copy the rules; we cannot call |UpdatePref| while holding |lock_|.
+    while (rule_iterator->HasNext())
+      rules_to_delete.push_back(rule_iterator->Next());
+
+    map_to_modify->DeleteValues(content_type, "");
+    prefs_->ScheduleSavePersistentPrefs();
   }
-  prefs_->ScheduleSavePersistentPrefs();
+
+  for (std::vector<Rule>::const_iterator it = rules_to_delete.begin();
+       it != rules_to_delete.end(); ++it) {
+    UpdatePref(
+        it->primary_pattern,
+        it->secondary_pattern,
+        content_type,
+        "",
+        CONTENT_SETTING_DEFAULT);
+  }
   NotifyObservers(ContentSettingsPattern(),
                   ContentSettingsPattern(),
                   content_type,
@@ -336,6 +276,17 @@ PrefProvider::~PrefProvider() {
   DCHECK(!prefs_);
 }
 
+RuleIterator* PrefProvider::GetRuleIterator(
+    ContentSettingsType content_type,
+    const ResourceIdentifier& resource_identifier,
+    bool incognito) const {
+  if (incognito)
+    return incognito_value_map_.GetRuleIterator(content_type,
+                                                resource_identifier,
+                                                &lock_);
+  return value_map_.GetRuleIterator(content_type, resource_identifier, &lock_);
+}
+
 // ////////////////////////////////////////////////////////////////////////////
 // Private
 
@@ -345,6 +296,13 @@ void PrefProvider::UpdatePref(
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
     ContentSetting setting) {
+#ifndef NDEBUG
+  // Ensure that |lock_| is not held, since this function will send out
+  // notifications (by |~DictionaryPrefUpdate|).
+  DCHECK(lock_.Try());
+  lock_.Release();
+#endif
+
   AutoReset<bool> auto_reset(&updating_preferences_, true);
   {
     DictionaryPrefUpdate update(prefs_,
@@ -482,6 +440,12 @@ void PrefProvider::UpdateObsoletePatternsPref(
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier,
       ContentSetting setting) {
+#ifndef NDEBUG
+  // Ensure that |lock_| is not held, since this function will send out
+  // notifications (by |~DictionaryPrefUpdate|).
+  DCHECK(lock_.Try());
+  lock_.Release();
+#endif
   DictionaryPrefUpdate update(prefs_,
                               prefs::kContentSettingsPatterns);
   DictionaryValue* all_settings_dictionary = update.Get();
@@ -608,6 +572,12 @@ void PrefProvider::UpdateObsoleteGeolocationPref(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,
     ContentSetting setting) {
+#ifndef NDEBUG
+  // Ensure that |lock_| is not held, since this function will send out
+  // notifications (by |~DictionaryPrefUpdate|).
+  DCHECK(lock_.Try());
+  lock_.Release();
+#endif
   if (!prefs_)
     return;
 
@@ -792,6 +762,12 @@ void PrefProvider::MigrateObsoletePopupsPref() {
 }
 
 void PrefProvider::MigrateObsoleteContentSettingsPatternPref() {
+#ifndef NDEBUG
+  // Ensure that |lock_| is not held, since this function will send out
+  // notifications (by |~DictionaryPrefUpdate|).
+  DCHECK(lock_.Try());
+  lock_.Release();
+#endif
   if (prefs_->HasPrefPath(prefs::kContentSettingsPatterns) && !is_incognito_) {
     const DictionaryValue* patterns_dictionary =
         prefs_->GetDictionary(prefs::kContentSettingsPatterns);
@@ -871,6 +847,12 @@ void PrefProvider::MigrateObsoleteContentSettingsPatternPref() {
 }
 
 void PrefProvider::SyncObsoletePatternPref() {
+#ifndef NDEBUG
+  // Ensure that |lock_| is not held, since this function will send out
+  // notifications (by |~DictionaryPrefUpdate|).
+  DCHECK(lock_.Try());
+  lock_.Release();
+#endif
   if (prefs_->HasPrefPath(prefs::kContentSettingsPatternPairs) &&
       !is_incognito_) {
     const DictionaryValue* pattern_pairs_dictionary =
@@ -924,6 +906,12 @@ void PrefProvider::SyncObsoletePatternPref() {
 }
 
 void PrefProvider::MigrateObsoleteGeolocationPref() {
+#ifndef NDEBUG
+  // Ensure that |lock_| is not held, since this function will send out
+  // notifications (by |~DictionaryPrefUpdate|).
+  DCHECK(lock_.Try());
+  lock_.Release();
+#endif
   if (!prefs_->HasPrefPath(prefs::kGeolocationContentSettings))
     return;
 
@@ -976,6 +964,12 @@ void PrefProvider::MigrateObsoleteGeolocationPref() {
 }
 
 void PrefProvider::MigrateObsoleteNotificationsPrefs() {
+#ifndef NDEBUG
+  // Ensure that |lock_| is not held, since this function will send out
+  // notifications (by |~DictionaryPrefUpdate|).
+  DCHECK(lock_.Try());
+  lock_.Release();
+#endif
   // The notifications settings in the preferences
   // prefs::kContentSettingsPatternPairs do not contain the latest
   // notifications settings. So all notification settings are cleared and
@@ -1021,6 +1015,12 @@ void PrefProvider::MigrateObsoleteNotificationsPrefs() {
 }
 
 void PrefProvider::SyncObsoletePrefs() {
+#ifndef NDEBUG
+  // Ensure that |lock_| is not held, since this function will send out
+  // notifications (by |~DictionaryPrefUpdate|).
+  DCHECK(lock_.Try());
+  lock_.Release();
+#endif
   DCHECK(prefs_);
   DCHECK(prefs_->HasPrefPath(prefs::kContentSettingsPatternPairs));
 

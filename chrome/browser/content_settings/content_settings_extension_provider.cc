@@ -22,40 +22,13 @@ ExtensionProvider::ExtensionProvider(
 ExtensionProvider::~ExtensionProvider() {
 }
 
-ContentSetting ExtensionProvider::GetContentSetting(
-    const GURL& primary_url,
-    const GURL& secondary_url,
-    ContentSettingsType content_type,
-    const ResourceIdentifier& resource_identifier) const {
-  scoped_ptr<base::Value> value(GetContentSettingValue(primary_url,
-                                                       secondary_url,
-                                                       content_type,
-                                                       resource_identifier));
-  return ValueToContentSetting(value.get());
-}
-
-base::Value* ExtensionProvider::GetContentSettingValue(
-    const GURL& primary_url,
-    const GURL& secondary_url,
-    ContentSettingsType content_type,
-    const ResourceIdentifier& resource_identifier) const {
-  DCHECK(extensions_settings_);
-  // TODO(markusheintz): Instead of getting the effective setting every time
-  // effective patterns could be cached in here.
-  return extensions_settings_->GetEffectiveContentSetting(
-      primary_url,
-      secondary_url,
-      content_type,
-      resource_identifier,
-      incognito_);
-}
-
-void ExtensionProvider::GetAllContentSettingsRules(
+RuleIterator* ExtensionProvider::GetRuleIterator(
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
-    std::vector<Rule>* content_setting_rules) const {
-  return extensions_settings_->GetContentSettingsForContentType(
-      content_type, resource_identifier, incognito_, content_setting_rules);
+    bool incognito) const {
+  return extensions_settings_->GetRuleIterator(content_type,
+                                               resource_identifier,
+                                               incognito);
 }
 
 void ExtensionProvider::ShutdownOnUIThread() {

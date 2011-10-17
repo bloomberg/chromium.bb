@@ -597,6 +597,11 @@ void ContentSettingsHandler::UpdateExceptionsViewFromOTRHostContentSettingsMap(
 
   ListValue otr_exceptions;
   for (size_t i = 0; i < otr_entries.size(); ++i) {
+    // Off-the-record HostContentSettingsMap contains incognito content settings
+    // as well as normal content settings. Here, we use the incongnito settings
+    // only.
+    if (!otr_entries[i].e)
+      continue;
     // The content settings UI does not support secondary content settings
     // pattern yet. For content settings set through the content settings UI the
     // secondary pattern is by default a wildcard pattern. Hence users are not

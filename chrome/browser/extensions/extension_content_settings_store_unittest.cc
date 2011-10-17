@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/extension_content_settings_store.h"
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/content_settings/content_settings_rule.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -20,15 +20,7 @@ void CheckRule(const content_settings::Rule& rule,
                ContentSetting setting) {
   EXPECT_EQ(primary_pattern.ToString(), rule.primary_pattern.ToString());
   EXPECT_EQ(secondary_pattern.ToString(), rule.secondary_pattern.ToString());
-  EXPECT_EQ(setting, rule.content_setting);
-}
-
-// Takes ownership of |value|.
-ContentSetting ValueToContentSetting(base::Value* value) {
-  scoped_ptr<base::Value> owned_value(value);
-  ContentSetting setting = CONTENT_SETTING_DEFAULT;
-  EXPECT_TRUE(content_settings::ParseContentSettingValue(value, &setting));
-  return setting;
+  EXPECT_EQ(setting, content_settings::ValueToContentSetting(rule.value.get()));
 }
 
 // Helper class which returns monotonically-increasing base::Time objects.
@@ -51,7 +43,32 @@ class MockExtensionContentSettingsStoreObserver
                void(const std::string& extension_id, bool incognito));
 };
 
+ContentSetting GetContentSettingFromStore(
+    const ExtensionContentSettingsStore* store,
+    const GURL& primary_url, const GURL& secondary_url,
+    ContentSettingsType content_type,
+    const std::string& resource_identifier,
+    bool incognito) {
+  scoped_ptr<content_settings::RuleIterator> rule_iterator (
+      store->GetRuleIterator(content_type, resource_identifier, incognito));
+  return content_settings::GetContentSetting(
+      rule_iterator.get(), primary_url, secondary_url);
 }
+
+void GetSettingsForOneTypeFromStore(
+    const ExtensionContentSettingsStore* store,
+    ContentSettingsType content_type,
+    const std::string& resource_identifier,
+    bool incognito,
+    std::vector<content_settings::Rule>* rules) {
+  rules->clear();
+  scoped_ptr<content_settings::RuleIterator> rule_iterator(
+      store->GetRuleIterator(content_type, resource_identifier, incognito));
+  while (rule_iterator->HasNext())
+    rules->push_back(rule_iterator->Next());
+}
+
+}  // namespace
 
 class ExtensionContentSettingsStoreTest : public ::testing::Test {
  public:
@@ -80,16 +97,16 @@ TEST_F(ExtensionContentSettingsStoreTest, RegisterUnregister) {
   GURL url("http://www.youtube.com");
 
   EXPECT_EQ(CONTENT_SETTING_DEFAULT,
-            ValueToContentSetting(store()->GetEffectiveContentSetting(
-                url, url, CONTENT_SETTINGS_TYPE_COOKIES, "", false)));
+            GetContentSettingFromStore(
+                store(), url, url, CONTENT_SETTINGS_TYPE_COOKIES, "", false));
 
   // Register first extension
   std::string ext_id("my_extension");
   RegisterExtension(ext_id);
 
   EXPECT_EQ(CONTENT_SETTING_DEFAULT,
-            ValueToContentSetting(store()->GetEffectiveContentSetting(
-                url, url, CONTENT_SETTINGS_TYPE_COOKIES, "", false)));
+            GetContentSettingFromStore(
+                store(), url, url, CONTENT_SETTINGS_TYPE_COOKIES, "", false));
 
   // Set setting
   ContentSettingsPattern pattern =
@@ -106,12 +123,13 @@ TEST_F(ExtensionContentSettingsStoreTest, RegisterUnregister) {
   Mock::VerifyAndClear(&observer);
 
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            ValueToContentSetting(store()->GetEffectiveContentSetting(
+            GetContentSettingFromStore(
+                store(),
                 url,
                 url,
                 CONTENT_SETTINGS_TYPE_COOKIES,
                 "",
-                false)));
+                false));
 
   // Register second extension.
   std::string ext_id_2("my_second_extension");
@@ -127,23 +145,25 @@ TEST_F(ExtensionContentSettingsStoreTest, RegisterUnregister) {
       kExtensionPrefsScopeRegular);
 
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            ValueToContentSetting(store()->GetEffectiveContentSetting(
+            GetContentSettingFromStore(
+                store(),
                 url,
                 url,
                 CONTENT_SETTINGS_TYPE_COOKIES,
                 "",
-                false)));
+                false));
 
   // Unregister first extension. This shouldn't change the setting.
   EXPECT_CALL(observer, OnContentSettingChanged(ext_id, false));
   store()->UnregisterExtension(ext_id);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            ValueToContentSetting(store()->GetEffectiveContentSetting(
+            GetContentSettingFromStore(
+                store(),
                 url,
                 url,
                 CONTENT_SETTINGS_TYPE_COOKIES,
                 "",
-                false)));
+                false));
   Mock::VerifyAndClear(&observer);
 
   // Unregister second extension. This should reset the setting to its default
@@ -151,12 +171,13 @@ TEST_F(ExtensionContentSettingsStoreTest, RegisterUnregister) {
   EXPECT_CALL(observer, OnContentSettingChanged(ext_id_2, false));
   store()->UnregisterExtension(ext_id_2);
   EXPECT_EQ(CONTENT_SETTING_DEFAULT,
-            ValueToContentSetting(store()->GetEffectiveContentSetting(
+            GetContentSettingFromStore(
+                store(),
                 url,
                 url,
                 CONTENT_SETTINGS_TYPE_COOKIES,
                 "",
-                false)));
+                false));
 
   store()->RemoveObserver(&observer);
 }
@@ -164,8 +185,8 @@ TEST_F(ExtensionContentSettingsStoreTest, RegisterUnregister) {
 TEST_F(ExtensionContentSettingsStoreTest, GetAllSettings) {
   bool incognito = false;
   std::vector<content_settings::Rule> rules;
-  store()->GetContentSettingsForContentType(
-      CONTENT_SETTINGS_TYPE_COOKIES, "", incognito, &rules);
+  GetSettingsForOneTypeFromStore(
+      store(), CONTENT_SETTINGS_TYPE_COOKIES, "", incognito, &rules);
   ASSERT_EQ(0u, rules.size());
 
   // Register first extension.
@@ -182,8 +203,8 @@ TEST_F(ExtensionContentSettingsStoreTest, GetAllSettings) {
       CONTENT_SETTING_ALLOW,
       kExtensionPrefsScopeRegular);
 
-  store()->GetContentSettingsForContentType(
-      CONTENT_SETTINGS_TYPE_COOKIES, "", incognito, &rules);
+  GetSettingsForOneTypeFromStore(
+      store(), CONTENT_SETTINGS_TYPE_COOKIES, "", incognito, &rules);
   ASSERT_EQ(1u, rules.size());
   CheckRule(rules[0], pattern, pattern, CONTENT_SETTING_ALLOW);
 
@@ -201,27 +222,28 @@ TEST_F(ExtensionContentSettingsStoreTest, GetAllSettings) {
       CONTENT_SETTING_BLOCK,
       kExtensionPrefsScopeRegular);
 
-  rules.clear();
-  store()->GetContentSettingsForContentType(
-      CONTENT_SETTINGS_TYPE_COOKIES, "", incognito, &rules);
+  GetSettingsForOneTypeFromStore(store(),
+                                 CONTENT_SETTINGS_TYPE_COOKIES,
+                                 "",
+                                 incognito,
+                                 &rules);
   ASSERT_EQ(2u, rules.size());
-  CheckRule(rules[0], pattern, pattern, CONTENT_SETTING_ALLOW);
-  CheckRule(rules[1], pattern_2, pattern_2, CONTENT_SETTING_BLOCK);
+  // Rules appear in the reverse installation order of the extensions.
+  CheckRule(rules[0], pattern_2, pattern_2, CONTENT_SETTING_BLOCK);
+  CheckRule(rules[1], pattern, pattern, CONTENT_SETTING_ALLOW);
 
   // Disable first extension.
   store()->SetExtensionState(ext_id, false);
 
-  rules.clear();
-  store()->GetContentSettingsForContentType(
-      CONTENT_SETTINGS_TYPE_COOKIES, "", incognito, &rules);
+  GetSettingsForOneTypeFromStore(
+      store(), CONTENT_SETTINGS_TYPE_COOKIES, "", incognito, &rules);
   ASSERT_EQ(1u, rules.size());
   CheckRule(rules[0], pattern_2, pattern_2, CONTENT_SETTING_BLOCK);
 
   // Uninstall second extension.
   store()->UnregisterExtension(ext_id_2);
 
-  rules.clear();
-  store()->GetContentSettingsForContentType(
-      CONTENT_SETTINGS_TYPE_COOKIES, "", incognito, &rules);
+  GetSettingsForOneTypeFromStore(
+      store(), CONTENT_SETTINGS_TYPE_COOKIES, "", incognito, &rules);
   ASSERT_EQ(0u, rules.size());
 }

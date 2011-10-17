@@ -23,17 +23,10 @@ class ExtensionProvider : public ObservableProvider,
   virtual ~ExtensionProvider();
 
   // ProviderInterface methods:
-  virtual ContentSetting GetContentSetting(
-      const GURL& primary_url,
-      const GURL& secondary_url,
+  virtual RuleIterator* GetRuleIterator(
       ContentSettingsType content_type,
-      const ResourceIdentifier& resource_identifier) const OVERRIDE;
-
-  virtual base::Value* GetContentSettingValue(
-      const GURL& primary_url,
-      const GURL& secondary_url,
-      ContentSettingsType content_type,
-      const ResourceIdentifier& resource_identifier) const OVERRIDE;
+      const ResourceIdentifier& resource_identifier,
+      bool incognito) const OVERRIDE;
 
   virtual void SetContentSetting(
       const ContentSettingsPattern& embedded_url_pattern,
@@ -41,11 +34,6 @@ class ExtensionProvider : public ObservableProvider,
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier,
       ContentSetting content_setting) OVERRIDE {}
-
-  virtual void GetAllContentSettingsRules(
-      ContentSettingsType content_type,
-      const ResourceIdentifier& resource_identifier,
-      std::vector<Rule>* content_setting_rules) const OVERRIDE;
 
   virtual void ClearAllContentSettingsRules(ContentSettingsType content_type)
       OVERRIDE {}
