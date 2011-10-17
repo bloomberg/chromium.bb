@@ -1,7 +1,0 @@
-{
-  "name": "chrome.experimental.clipboard.extension",
-  "version": "0.1",
-  "description": "end-to-end browser test for experimental clipboard api",
-  "background_page": "test.html",
-  "permissions": ["experimental", "clipboard"]
-}
