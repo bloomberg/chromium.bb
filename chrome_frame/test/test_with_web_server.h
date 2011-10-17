@@ -13,11 +13,13 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_handle.h"
-#include "chrome_frame/chrome_tab.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/test/test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
+
+// Include without path to make GYP build see it.
+#include "chrome_tab.h"  // NOLINT
 
 // Specifies the invocation method for CF.
 class CFInvocation {

@@ -14,9 +14,11 @@
 #include <vector>
 
 #include "chrome_frame/chrome_frame_activex_base.h"
-#include "chrome_frame/chrome_tab.h"
 #include "chrome_frame/com_type_info_holder.h"
 #include "grit/chrome_frame_resources.h"
+
+// Include without path to make GYP build see it.
+#include "chrome_tab.h"  // NOLINT
 
 #define WM_HOST_MOVED_NOTIFICATION (WM_APP + 1)
 

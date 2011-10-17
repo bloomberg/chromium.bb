@@ -20,10 +20,13 @@
 #include "base/test/test_reg_util_win.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_comptr.h"
-#include "chrome_frame/chrome_tab.h"
+
 #include "chrome_frame/test/simulate_input.h"
 #include "chrome_frame/test_utils.h"
 #include "chrome_frame/utils.h"
+
+// Include without path to make GYP build see it.
+#include "chrome_tab.h"  // NOLINT
 
 #include "gtest/gtest.h"
 

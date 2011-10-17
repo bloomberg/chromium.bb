@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,10 +7,11 @@
 
 #include <atlbase.h>
 #include <atlcom.h>
-
-#include "chrome_frame/chrome_tab.h"
 #include "chrome_frame/resource.h"
 #include "grit/chrome_frame_resources.h"
+
+// Include without path to make GYP build see it.
+#include "chrome_tab.h"  // NOLINT
 
 // ChromeProtocol
 class ATL_NO_VTABLE ChromeProtocol
