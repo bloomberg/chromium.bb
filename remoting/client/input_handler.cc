@@ -62,6 +62,16 @@ void InputHandler::SendMouseButtonEvent(bool button_down,
   }
 }
 
+void InputHandler::SendMouseWheelEvent(int dx, int dy) {
+  protocol::InputStub* stub = connection_->input_stub();
+  if (stub) {
+    MouseEvent event;
+    event.set_wheel_offset_x(dx);
+    event.set_wheel_offset_y(dy);
+    stub->InjectMouseEvent(event);
+  }
+}
+
 void InputHandler::ReleaseAllKeys() {
   std::set<int> pressed_keys_copy = pressed_keys_;
   std::set<int>::iterator i;

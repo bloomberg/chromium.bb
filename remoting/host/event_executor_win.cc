@@ -127,12 +127,12 @@ void EventExecutorWin::HandleMouse(const MouseEvent& event) {
     int dy = event.wheel_offset_y();
 
     if (dx != 0) {
-      wheel.mi.mouseData = dx;
+      wheel.mi.mouseData = dx * WHEEL_DELTA;
       wheel.mi.dwFlags = MOUSEEVENTF_HWHEEL;
       SendInput(1, &wheel, sizeof(INPUT));
     }
     if (dy != 0) {
-      wheel.mi.mouseData = dy;
+      wheel.mi.mouseData = dy * WHEEL_DELTA;
       wheel.mi.dwFlags = MOUSEEVENTF_WHEEL;
       SendInput(1, &wheel, sizeof(INPUT));
     }

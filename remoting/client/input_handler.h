@@ -36,6 +36,7 @@ class InputHandler {
   void SendMouseMoveEvent(int x, int y);
   void SendMouseButtonEvent(bool down,
                             protocol::MouseEvent::MouseButton button);
+  void SendMouseWheelEvent(int dx, int dy);
 
   ClientContext* context_;
   protocol::ConnectionToHost* connection_;

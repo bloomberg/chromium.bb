@@ -11,7 +11,6 @@ option optimize_for = LITE_RUNTIME;
 package remoting.protocol;
 
 // Defines a keyboard event.
-// NEXT ID: 3
 message KeyEvent {
   // The POSIX key code.
   required int32 keycode = 1;
@@ -34,6 +33,9 @@ message MouseEvent {
   optional int32 y = 2;
 
   // Mouse wheel information.
+  // These values encode the number of wheel 'ticks' (sometimes called
+  // 'clicks' although 'ticks' is the most common cross-platform term).
+  // Additional fields may be added later to support high-resolution devices.
   optional int32 wheel_offset_x = 3;
   optional int32 wheel_offset_y = 4;
 

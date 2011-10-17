@@ -258,6 +258,11 @@ bool ChromotingInstance::HandleInputEvent(const pp::InputEvent& event) {
       return true;
     }
 
+    case PP_INPUTEVENT_TYPE_WHEEL: {
+      pih->HandleMouseWheelEvent(pp::WheelInputEvent(event));
+      return true;
+    }
+
     case PP_INPUTEVENT_TYPE_CONTEXTMENU: {
       // We need to return true here or else we'll get a local (plugin) context
       // menu instead of the mouseup event for the right click.

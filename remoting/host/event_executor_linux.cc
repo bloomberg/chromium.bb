@@ -36,6 +36,8 @@ class EventExecutorLinux : public EventExecutor {
   virtual void InjectMouseEvent(const MouseEvent& event) OVERRIDE;
 
  private:
+  void InjectScrollWheelClicks(int button, int count);
+
   MessageLoop* message_loop_;
   Capturer* capturer_;
 
@@ -66,6 +68,16 @@ int MouseButtonToX11ButtonNumber(MouseEvent::MouseButton button) {
     default:
       return -1;
   }
+}
+
+int ScrollWheelToX11ButtonNumber(int dx, int dy) {
+  // Horizontal scroll wheel.
+  if (dx != 0)
+    return (dx > 0 ? 6 : 7);
+
+  // Positive y-values are wheel scroll-up events (button 4), negative y-values
+  // are wheel scroll-down events (button 5).
+  return (dy > 0 ? 4 : 5);
 }
 
 // Hard-coded mapping from Virtual Key codes to X11 KeySyms.
@@ -309,6 +321,15 @@ void EventExecutorLinux::InjectKeyEvent(const KeyEvent& event) {
   XFlush(display_);
 }
 
+void EventExecutorLinux::InjectScrollWheelClicks(int button, int count) {
+  for (int i = 0; i < count; i++) {
+    // Generate a button-down and a button-up to simulate a wheel click.
+    XTestFakeButtonEvent(display_, button, true, CurrentTime);
+    XTestFakeButtonEvent(display_, button, false, CurrentTime);
+  }
+  XFlush(display_);
+}
+
 void EventExecutorLinux::InjectMouseEvent(const MouseEvent& event) {
   if (MessageLoop::current() != message_loop_) {
     message_loop_->PostTask(
@@ -339,8 +360,7 @@ void EventExecutorLinux::InjectMouseEvent(const MouseEvent& event) {
     int button_number = MouseButtonToX11ButtonNumber(event.button());
 
     if (button_number < 0) {
-      LOG(WARNING) << "Ignoring unknown button type: "
-                   << event.button();
+      LOG(WARNING) << "Ignoring unknown button type: " << event.button();
       return;
     }
 
@@ -353,8 +373,15 @@ void EventExecutorLinux::InjectMouseEvent(const MouseEvent& event) {
     XFlush(display_);
   }
 
-  if (event.has_wheel_offset_x() && event.has_wheel_offset_y()) {
-    NOTIMPLEMENTED() << "No scroll wheel support yet.";
+  if (event.has_wheel_offset_y() && event.wheel_offset_y() != 0) {
+    int dy = event.wheel_offset_y();
+    InjectScrollWheelClicks(ScrollWheelToX11ButtonNumber(0, dy),
+                            (dy > 0) ? dy : -dy);
+  }
+  if (event.has_wheel_offset_x() && event.wheel_offset_x() != 0) {
+    int dx = event.wheel_offset_x();
+    InjectScrollWheelClicks(ScrollWheelToX11ButtonNumber(dx, 0),
+                            (dx > 0) ? dx : -dx);
   }
 }
 

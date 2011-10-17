@@ -10,16 +10,15 @@
 
 namespace remoting {
 
-using pp::KeyboardInputEvent;
-using pp::MouseInputEvent;
-using protocol::KeyEvent;
 using protocol::MouseEvent;
 
 PepperInputHandler::PepperInputHandler(ClientContext* context,
                                        protocol::ConnectionToHost* connection,
                                        PepperViewProxy* view)
     : InputHandler(context, connection, view),
-      pepper_view_(view) {
+      pepper_view_(view),
+      wheel_ticks_x_(0),
+      wheel_ticks_y_(0) {
 }
 
 PepperInputHandler::~PepperInputHandler() {
@@ -75,6 +74,20 @@ void PepperInputHandler::HandleMouseButtonEvent(
 
   if (button != MouseEvent::BUTTON_UNDEFINED) {
     SendMouseButtonEvent(button_down, button);
+  }
+}
+
+void PepperInputHandler::HandleMouseWheelEvent(
+    const pp::WheelInputEvent& event) {
+  pp::FloatPoint ticks = event.GetTicks();
+  wheel_ticks_x_ += ticks.x();
+  wheel_ticks_y_ += ticks.y();
+  int ticks_x = static_cast<int>(wheel_ticks_x_);
+  int ticks_y = static_cast<int>(wheel_ticks_y_);
+  if (ticks_x != 0 || ticks_y != 0) {
+    wheel_ticks_x_ -= ticks_x;
+    wheel_ticks_y_ -= ticks_y;
+    SendMouseWheelEvent(ticks_x, ticks_y);
   }
 }
 

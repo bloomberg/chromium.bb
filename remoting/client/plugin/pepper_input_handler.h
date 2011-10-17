@@ -13,11 +13,6 @@ class MouseInputEvent;
 class WheelInputEvent;
 }
 
-namespace pp {
-class KeyboardInputEvent;
-class MouseInputEvent;
-}  // namespace pp
-
 namespace remoting {
 
 class PepperViewProxy;
@@ -37,9 +32,13 @@ class PepperInputHandler : public InputHandler {
   void HandleMouseMoveEvent(const pp::MouseInputEvent& event);
   void HandleMouseButtonEvent(bool button_down,
                               const pp::MouseInputEvent& event);
+  void HandleMouseWheelEvent(const pp::WheelInputEvent& event);
 
  private:
   PepperViewProxy* pepper_view_;
+
+  float wheel_ticks_x_;
+  float wheel_ticks_y_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperInputHandler);
 };
