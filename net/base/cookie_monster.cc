@@ -49,6 +49,7 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -66,6 +67,26 @@
 using base::Time;
 using base::TimeDelta;
 using base::TimeTicks;
+
+// In steady state, most cookie requests can be satisfied by the in memory
+// cookie monster store.  However, if a request comes in during the initial
+// cookie load, it must be delayed until that load completes. That is done by
+// queueing it on CookieMonster::queue_ and running it when notification of
+// cookie load completion is received via CookieMonster::OnLoaded. This callback
+// is passed to the persistent store from CookieMonster::InitStore(), which is
+// called on the first operation invoked on the CookieMonster.
+//
+// On the browser critical paths (e.g. for loading initial web pages in a
+// session restore) it may take too long to wait for the full load. If a cookie
+// request is for a specific URL, DoCookieTaskForURL is called, which triggers a
+// priority load if the key is not loaded yet by calling PersistentCookieStore
+// :: LoadCookiesForKey. The request is queued in CookieMonster::tasks_queued
+// and executed upon receiving notification of key load completion via
+// CookieMonster::OnKeyLoaded(). If multiple requests for the same eTLD+1 are
+// received before key load completion, only the first request calls
+// PersistentCookieStore::LoadCookiesForKey, all subsequent requests are queued
+// in CookieMonster::tasks_queued and executed upon receiving notification of
+// key load completion triggered by the first request for the same eTLD+1.
 
 static const int kMinutesInTenYears = 10 * 365 * 24 * 60;
 
@@ -993,7 +1014,7 @@ void CookieMonster::SetCookieWithDetailsAsync(
                                    expiration_time, secure, http_only,
                                    callback);
 
-  DoCookieTask(task);
+  DoCookieTaskForURL(task, url);
 }
 
 void CookieMonster::GetAllCookiesAsync(const GetCookieListCallback& callback) {
@@ -1011,7 +1032,7 @@ void CookieMonster::GetAllCookiesForURLWithOptionsAsync(
   scoped_refptr<GetAllCookiesForURLWithOptionsTask> task =
       new GetAllCookiesForURLWithOptionsTask(this, url, options, callback);
 
-  DoCookieTask(task);
+  DoCookieTaskForURL(task, url);
 }
 
 void CookieMonster::GetAllCookiesForURLAsync(
@@ -1021,7 +1042,7 @@ void CookieMonster::GetAllCookiesForURLAsync(
   scoped_refptr<GetAllCookiesForURLWithOptionsTask> task =
       new GetAllCookiesForURLWithOptionsTask(this, url, options, callback);
 
-  DoCookieTask(task);
+  DoCookieTaskForURL(task, url);
 }
 
 void CookieMonster::DeleteAllAsync(const DeleteCallback& callback) {
@@ -1046,7 +1067,7 @@ void CookieMonster::DeleteAllForHostAsync(
   scoped_refptr<DeleteAllForHostTask> task =
       new DeleteAllForHostTask(this, url, callback);
 
-  DoCookieTask(task);
+  DoCookieTaskForURL(task, url);
 }
 
 void CookieMonster::DeleteCanonicalCookieAsync(
@@ -1066,7 +1087,7 @@ void CookieMonster::SetCookieWithOptionsAsync(
   scoped_refptr<SetCookieWithOptionsTask> task =
       new SetCookieWithOptionsTask(this, url, cookie_line, options, callback);
 
-  DoCookieTask(task);
+  DoCookieTaskForURL(task, url);
 }
 
 void CookieMonster::GetCookiesWithOptionsAsync(
@@ -1076,7 +1097,7 @@ void CookieMonster::GetCookiesWithOptionsAsync(
   scoped_refptr<GetCookiesWithOptionsTask> task =
       new GetCookiesWithOptionsTask(this, url, options, callback);
 
-  DoCookieTask(task);
+  DoCookieTaskForURL(task, url);
 }
 
 void CookieMonster::GetCookiesWithInfoAsync(
@@ -1086,7 +1107,7 @@ void CookieMonster::GetCookiesWithInfoAsync(
   scoped_refptr<GetCookiesWithInfoTask> task =
       new GetCookiesWithInfoTask(this, url, options, callback);
 
-  DoCookieTask(task);
+  DoCookieTaskForURL(task, url);
 }
 
 void CookieMonster::DeleteCookieAsync(const GURL& url,
@@ -1095,21 +1116,48 @@ void CookieMonster::DeleteCookieAsync(const GURL& url,
   scoped_refptr<DeleteCookieTask> task =
       new DeleteCookieTask(this, url, cookie_name, callback);
 
-  DoCookieTask(task);
+  DoCookieTaskForURL(task, url);
 }
 
 void CookieMonster::DoCookieTask(
     const scoped_refptr<CookieMonsterTask>& task_item) {
-  InitIfNecessary();
-
   {
     base::AutoLock autolock(lock_);
+    InitIfNecessary();
     if (!loaded_) {
       queue_.push(task_item);
       return;
     }
   }
 
+  task_item->Run();
+}
+
+void CookieMonster::DoCookieTaskForURL(
+    const scoped_refptr<CookieMonsterTask>& task_item,
+    const GURL& url) {
+  {
+    base::AutoLock autolock(lock_);
+    InitIfNecessary();
+    // If cookies for the requested domain key (eTLD+1) have been loaded from DB
+    // then run the task, otherwise load from DB.
+    if (!loaded_) {
+      // Checks if the domain key has been loaded.
+      std::string key(GetEffectiveDomain(url.scheme(), url.host()));
+      if (keys_loaded_.find(key) == keys_loaded_.end()) {
+        std::map<std::string, std::deque<scoped_refptr<CookieMonsterTask> > >
+          ::iterator it = tasks_queued_.find(key);
+        if (it == tasks_queued_.end()) {
+          store_->LoadCookiesForKey(key,
+            base::Bind(&CookieMonster::OnKeyLoaded, this, key));
+          it = tasks_queued_.insert(std::make_pair(key,
+            std::deque<scoped_refptr<CookieMonsterTask> >())).first;
+        }
+        it->second.push_back(task_item);
+        return;
+      }
+    }
+  }
   task_item->Run();
 }
 
@@ -1470,6 +1518,30 @@ void CookieMonster::OnLoaded(TimeTicks beginning_time,
   InvokeQueue();
 }
 
+void CookieMonster::OnKeyLoaded(const std::string& key,
+                                const std::vector<CanonicalCookie*>& cookies) {
+  // This function does its own separate locking.
+  StoreLoadedCookies(cookies);
+
+  std::deque<scoped_refptr<CookieMonsterTask> > tasks_queued;
+  {
+    base::AutoLock autolock(lock_);
+    keys_loaded_.insert(key);
+    std::map<std::string, std::deque<scoped_refptr<CookieMonsterTask> > >
+      ::iterator it = tasks_queued_.find(key);
+    if (it == tasks_queued_.end())
+      return;
+    it->second.swap(tasks_queued);
+    tasks_queued_.erase(it);
+  }
+
+  while (!tasks_queued.empty()) {
+    scoped_refptr<CookieMonsterTask> task = tasks_queued.front();
+    task->Run();
+    tasks_queued.pop_front();
+  }
+}
+
 void CookieMonster::StoreLoadedCookies(
     const std::vector<CanonicalCookie*>& cookies) {
   // Initialize the store and sync in any saved persistent cookies.  We don't
@@ -1477,24 +1549,16 @@ void CookieMonster::StoreLoadedCookies(
   // and sync'd.
   base::AutoLock autolock(lock_);
 
-  // Avoid ever letting cookies with duplicate creation times into the store;
-  // that way we don't have to worry about what sections of code are safe
-  // to call while it's in that state.
-  std::set<int64> creation_times;
-
-  // Presumably later than any access time in the store.
-  Time earliest_access_time;
-
   for (std::vector<CanonicalCookie*>::const_iterator it = cookies.begin();
        it != cookies.end(); ++it) {
     int64 cookie_creation_time = (*it)->CreationDate().ToInternalValue();
 
-    if (creation_times.insert(cookie_creation_time).second) {
+    if (creation_times_.insert(cookie_creation_time).second) {
       InternalInsertCookie(GetKey((*it)->Domain()), *it, false);
       const Time cookie_access_time((*it)->LastAccessDate());
-      if (earliest_access_time.is_null() ||
-          cookie_access_time < earliest_access_time)
-        earliest_access_time = cookie_access_time;
+      if (earliest_access_time_.is_null() ||
+          cookie_access_time < earliest_access_time_)
+        earliest_access_time_ = cookie_access_time;
     } else {
       LOG(ERROR) << base::StringPrintf("Found cookies with duplicate creation "
                                        "times in backing store: "
@@ -1507,12 +1571,14 @@ void CookieMonster::StoreLoadedCookies(
       delete (*it);
     }
   }
-  earliest_access_time_= earliest_access_time;
 
   // After importing cookies from the PersistentCookieStore, verify that
   // none of our other constraints are violated.
-  //
   // In particular, the backing store might have given us duplicate cookies.
+
+  // This method could be called multiple times due to priority loading, thus
+  // cookies loaded in previous runs will be validated again, but this is OK
+  // since they are expected to be much fewer than total DB.
   EnsureCookiesMapIsValid();
 }
 
@@ -1523,6 +1589,8 @@ void CookieMonster::InvokeQueue() {
       base::AutoLock autolock(lock_);
       if (queue_.empty()) {
         loaded_ = true;
+        creation_times_.clear();
+        keys_loaded_.clear();
         break;
       }
       request_task = queue_.front();
