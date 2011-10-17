@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/hash_tables.h"
+#include "base/logging.h"
 #include "base/stringprintf.h"
 #include "base/task.h"
 #include "base/values.h"
@@ -181,12 +182,19 @@ bool NetworkStateInformer::UpdateState(NetworkLibrary* cros) {
     network_name_.clear();
   } else {
     const Network* active_network = cros->active_network();
-    new_active_network = active_network->unique_id();
-    network_name_ = active_network->name();
-    if (active_network && active_network->restricted_pool()) {
-      new_state = CAPTIVE_PORTAL;
+    if (active_network) {
+      new_active_network = active_network->unique_id();
+      network_name_ = active_network->name();
+      if (active_network->restricted_pool()) {
+        new_state = CAPTIVE_PORTAL;
+      } else {
+        new_state = ONLINE;
+      }
     } else {
-      new_state = ONLINE;
+      // Bogus network situation:
+      // Connected() returns true but no active network.
+      new_state = OFFLINE;
+      NOTREACHED();
     }
   }
   bool updated = (new_state != state_) ||
