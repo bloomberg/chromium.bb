@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/tab_contents/web_drag_dest_gtk.h"
+#include "content/browser/tab_contents/web_drag_dest_gtk.h"
 
 #include <string>
 
 #include "base/file_path.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/tab_contents/web_drag_dest_delegate_gtk.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/drag_utils_gtk.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/tab_contents/web_drag_dest_delegate_gtk.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/net_util.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
@@ -20,6 +20,8 @@
 
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationNone;
+
+namespace content {
 
 WebDragDestGtk::WebDragDestGtk(TabContents* tab_contents, GtkWidget* widget)
     : tab_contents_(tab_contents),
@@ -257,3 +259,5 @@ gboolean WebDragDestGtk::OnDragDrop(GtkWidget* sender, GdkDragContext* context,
 
   return TRUE;
 }
+
+}  // namespace content

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TAB_CONTENTS_WEB_DRAG_DEST_GTK_H_
-#define CHROME_BROWSER_TAB_CONTENTS_WEB_DRAG_DEST_GTK_H_
+#ifndef CONTENT_BROWSER_TAB_CONTENTS_WEB_DRAG_DEST_GTK_H_
+#define CONTENT_BROWSER_TAB_CONTENTS_WEB_DRAG_DEST_GTK_H_
 #pragma once
 
 #include <gtk/gtk.h>
@@ -11,16 +11,20 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
+#include "content/common/content_export.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "webkit/glue/webdropdata.h"
 
 class TabContents;
+
+namespace content {
+
 class WebDragDestDelegateGtk;
 
 // A helper class that handles DnD for drops in the renderer. In GTK parlance,
 // this handles destination-side DnD, but not source-side DnD.
-class WebDragDestGtk {
+class CONTENT_EXPORT WebDragDestGtk {
  public:
   WebDragDestGtk(TabContents* tab_contents, GtkWidget* widget);
   virtual ~WebDragDestGtk();
@@ -97,4 +101,6 @@ class WebDragDestGtk {
   DISALLOW_COPY_AND_ASSIGN(WebDragDestGtk);
 };
 
-#endif  // CHROME_BROWSER_TAB_CONTENTS_WEB_DRAG_DEST_GTK_H_
+}  // namespace content
+
+#endif  // CONTENT_BROWSER_TAB_CONTENTS_WEB_DRAG_DEST_GTK_H_

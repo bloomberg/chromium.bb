@@ -7,11 +7,13 @@
 #pragma once
 
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
-#include "chrome/browser/tab_contents/web_drag_dest_delegate_gtk.h"
+#include "content/browser/tab_contents/web_drag_dest_delegate_gtk.h"
 
 class TabContentsWrapper;
 
-class WebDragBookmarkHandlerGtk : public WebDragDestDelegateGtk {
+// Chrome needs to intercept content drag events so it can dispatch them to the
+// bookmarks and extensions system.
+class WebDragBookmarkHandlerGtk : public content::WebDragDestDelegateGtk {
  public:
   WebDragBookmarkHandlerGtk();
   virtual ~WebDragBookmarkHandlerGtk();

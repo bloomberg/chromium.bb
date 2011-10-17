@@ -2,19 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TAB_CONTENTS_WEB_DRAG_DEST_DELEGATE_GTK_H_
-#define CHROME_BROWSER_TAB_CONTENTS_WEB_DRAG_DEST_DELEGATE_GTK_H_
+#ifndef CONTENT_BROWSER_TAB_CONTENTS_WEB_DRAG_DEST_DELEGATE_GTK_H_
+#define CONTENT_BROWSER_TAB_CONTENTS_WEB_DRAG_DEST_DELEGATE_GTK_H_
 #pragma once
 
 #include <gtk/gtk.h>
 
 #include "base/string16.h"
+#include "content/common/content_export.h"
 
 class GURL;
 class TabContents;
 
+namespace content {
+
 // An optional delegate that listens for drags of bookmark data.
-class WebDragDestDelegateGtk {
+class CONTENT_EXPORT WebDragDestDelegateGtk {
  public:
   // Announces that a drag has started. It's valid that a drag starts, along
   // with over/enter/leave/drop notifications without receiving any bookmark
@@ -38,7 +41,9 @@ class WebDragDestDelegateGtk {
   // This should also clear any state kept about this drag.
   virtual void OnDragLeave() = 0;
 
-  virtual ~WebDragDestDelegateGtk();
+  virtual ~WebDragDestDelegateGtk() {}
 };
 
-#endif  // CHROME_BROWSER_TAB_CONTENTS_WEB_DRAG_DEST_DELEGATE_GTK_H_
+}  // namespace content
+
+#endif  // CONTENT_BROWSER_TAB_CONTENTS_WEB_DRAG_DEST_DELEGATE_GTK_H_

@@ -13,7 +13,10 @@ class ConstrainedWindowGtk;
 class TabContents;
 class TabContentsDragSource;
 class WebDragBookmarkHandlerGtk;
+
+namespace content {
 class WebDragDestGtk;
+}
 
 class NativeTabContentsViewGtk : public views::NativeWidgetGtk,
                                  public NativeTabContentsView {
@@ -72,7 +75,7 @@ class NativeTabContentsViewGtk : public views::NativeWidgetGtk,
 
   // The helper object that handles drag destination related interactions with
   // GTK.
-  scoped_ptr<WebDragDestGtk> drag_dest_;
+  scoped_ptr<content::WebDragDestGtk> drag_dest_;
 
   // The chrome specific delegate that receives events from WebDragDestGtk.
   scoped_ptr<WebDragBookmarkHandlerGtk> bookmark_handler_gtk_;

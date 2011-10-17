@@ -16,9 +16,7 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/tab_contents/render_view_context_menu_gtk.h"
 #include "chrome/browser/tab_contents/web_drag_bookmark_handler_gtk.h"
-#include "chrome/browser/tab_contents/web_drag_dest_gtk.h"
 #include "chrome/browser/ui/gtk/constrained_window_gtk.h"
-#include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/sad_tab_gtk.h"
 #include "chrome/browser/ui/gtk/tab_contents_drag_source.h"
 #include "content/browser/renderer_host/render_process_host.h"
@@ -28,6 +26,7 @@
 #include "content/browser/tab_contents/interstitial_page.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
+#include "content/browser/tab_contents/web_drag_dest_gtk.h"
 #include "content/common/content_notification_types.h"
 #include "content/common/notification_source.h"
 #include "ui/base/gtk/gtk_expanded_container.h"
@@ -154,7 +153,7 @@ RenderWidgetHostView* TabContentsViewGtk::CreateViewForWidget(
   InsertIntoContentArea(content_view);
 
   // Renderer target DnD.
-  drag_dest_.reset(new WebDragDestGtk(tab_contents_, content_view));
+  drag_dest_.reset(new content::WebDragDestGtk(tab_contents_, content_view));
   bookmark_handler_gtk_.reset(new WebDragBookmarkHandlerGtk);
   drag_dest_->set_delegate(bookmark_handler_gtk_.get());
 
