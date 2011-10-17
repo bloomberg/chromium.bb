@@ -41,13 +41,17 @@ int32_t GetURLLoaderBufferedBytes(PP_Resource url_loader) {
 
 void AddRefModule(PP_Module module) {}
 void ReleaseModule(PP_Module module) {}
+PP_Bool IsInModuleDestructor(PP_Module module) { return PP_FALSE; }
 
-PPB_Proxy_Private ppb_proxy_private = { PluginCrashed,
-                                        GetInstanceForResource,
-                                        SetReserveInstanceIDCallback,
-                                        GetURLLoaderBufferedBytes,
-                                        AddRefModule,
-                                        ReleaseModule };
+PPB_Proxy_Private ppb_proxy_private = {
+  &PluginCrashed,
+  &GetInstanceForResource,
+  &SetReserveInstanceIDCallback,
+  &GetURLLoaderBufferedBytes,
+  &AddRefModule,
+  &ReleaseModule,
+  &IsInModuleDestructor
+};
 
 // We allow multiple harnesses at a time to respond to 'GetInterface' calls.
 // We assume that only 1 harness's GetInterface function will ever support a
