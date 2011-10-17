@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -139,7 +140,7 @@ BootTimesLoader::Handle BootTimesLoader::GetBootTimes(
   BrowserThread::PostTask(
       BrowserThread::FILE,
       FROM_HERE,
-      NewRunnableMethod(backend_.get(), &Backend::GetBootTimes, request));
+      base::Bind(&Backend::GetBootTimes, backend_, request));
   return request->handle();
 }
 
@@ -228,7 +229,7 @@ void BootTimesLoader::Backend::GetBootTimes(
     BrowserThread::PostDelayedTask(
         BrowserThread::FILE,
         FROM_HERE,
-        NewRunnableMethod(this, &Backend::GetBootTimes, request),
+        base::Bind(&Backend::GetBootTimes, this, request),
         kReadAttemptDelayMs);
     return;
   }
@@ -356,11 +357,11 @@ void BootTimesLoader::LoginDone() {
       BrowserThread::FILE, FROM_HERE,
       // This doesn't compile without std::string(...), as
       // NewRunnableFunction doesn't accept arrays.
-      NewRunnableFunction(WriteTimes,
-                          std::string(kLoginTimes),
-                          std::string(kUmaLogin),
-                          std::string(kUmaLoginPrefix),
-                          login_time_markers_),
+      base::Bind(WriteTimes,
+                 std::string(kLoginTimes),
+                 std::string(kUmaLogin),
+                 std::string(kUmaLoginPrefix),
+                 login_time_markers_),
       kLoginTimeWriteDelayMs);
 }
 
@@ -374,8 +375,7 @@ void BootTimesLoader::WriteLogoutTimes() {
 void BootTimesLoader::RecordStats(const std::string& name, const Stats& stats) {
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableFunction(
-          RecordStatsDelayed, name, stats.uptime, stats.disk));
+      base::Bind(RecordStatsDelayed, name, stats.uptime, stats.disk));
 }
 
 BootTimesLoader::Stats BootTimesLoader::GetCurrentStats() {
