@@ -489,14 +489,11 @@ class VMTestStageTest(AbstractStageTest):
 
     os.path.isdir(self.build_root + '/.repo').AndReturn(True)
     stages.VMTestStage._CreateTestRoot().AndReturn(self.fake_results_dir)
-    stages.VMTestStage._CreateTestRoot().AndReturn(self.fake_results_dir)
     commands.RunTestSuite(self.build_root,
                           self.build_config['board'],
                           mox.IgnoreArg(),
                           os.path.join(self.fake_results_dir,
                                        'test_harness'),
-                          build_config=self.bot_id,
-                          nplus1_archive_dir=self.fake_results_dir,
                           test_type=constants.FULL_AU_TEST_TYPE)
     commands.ArchiveTestResults(self.build_root, self.fake_results_dir)
 
@@ -516,14 +513,11 @@ class VMTestStageTest(AbstractStageTest):
 
     os.path.isdir(self.build_root + '/.repo').AndReturn(True)
     stages.VMTestStage._CreateTestRoot().AndReturn(self.fake_results_dir)
-    stages.VMTestStage._CreateTestRoot().AndReturn(self.fake_results_dir)
     commands.RunTestSuite(self.build_root,
                           self.build_config['board'],
                           mox.IgnoreArg(),
                           os.path.join(self.fake_results_dir,
                                        'test_harness'),
-                          build_config=self.bot_id,
-                          nplus1_archive_dir=self.fake_results_dir,
                           test_type=constants.SIMPLE_AU_TEST_TYPE)
     commands.ArchiveTestResults(self.build_root, self.fake_results_dir)
 

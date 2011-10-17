@@ -75,9 +75,7 @@ class CBuildBotTest(mox.MoxTestBase):
 
     self.mox.ReplayAll()
     commands.RunTestSuite(self._work_dir, self._test_board, self._buildroot,
-                           '/tmp/taco', build_config='test_config',
-                           nplus1_archive_dir='/tmp/taco',
-                           test_type=constants.FULL_AU_TEST_TYPE)
+                           '/tmp/taco', test_type=constants.FULL_AU_TEST_TYPE)
     self.mox.VerifyAll()
     self.mox.ResetAll()
 
@@ -87,9 +85,7 @@ class CBuildBotTest(mox.MoxTestBase):
 
     self.mox.ReplayAll()
     commands.RunTestSuite(self._work_dir, self._test_board, self._buildroot,
-                          '/tmp/taco', build_config='test_config',
-                          nplus1_archive_dir='/tmp/taco',
-                          test_type=constants.SIMPLE_AU_TEST_TYPE)
+                          '/tmp/taco', test_type=constants.SIMPLE_AU_TEST_TYPE)
     self.mox.VerifyAll()
     self.mox.ResetAll()
 
@@ -99,8 +95,7 @@ class CBuildBotTest(mox.MoxTestBase):
 
     self.mox.ReplayAll()
     commands.RunTestSuite(self._work_dir, self._test_board, self._buildroot,
-                          '/tmp/taco', build_config='test_config',
-                           nplus1_archive_dir='/tmp/taco',
+                          '/tmp/taco',
                           test_type=constants.SMOKE_SUITE_TEST_TYPE)
     self.mox.VerifyAll()
 
