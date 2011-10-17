@@ -106,26 +106,30 @@ class QuotaDatabaseTest : public testing::Test {
     QuotaDatabase db(kDbFile);
     ASSERT_TRUE(db.LazyOpen(true));
 
-    const int kQuota1 = 9999;
-    const int kQuota2 = 86420;
+    const char* kTempQuotaKey = QuotaDatabase::kTemporaryQuotaOverrideKey;
+    const char* kAvailSpaceKey = QuotaDatabase::kDesiredAvailableSpaceKey;
 
-    int64 quota = -1;
-    EXPECT_FALSE(db.GetGlobalQuota(kStorageTypeTemporary, &quota));
-    EXPECT_FALSE(db.GetGlobalQuota(kStorageTypePersistent, &quota));
+    int64 value = 0;
+    const int64 kValue1 = 456;
+    const int64 kValue2 = 123000;
+    EXPECT_FALSE(db.GetQuotaConfigValue(kTempQuotaKey, &value));
+    EXPECT_FALSE(db.GetQuotaConfigValue(kAvailSpaceKey, &value));
 
-    EXPECT_TRUE(db.SetGlobalQuota(kStorageTypeTemporary, kQuota1));
-    EXPECT_TRUE(db.GetGlobalQuota(kStorageTypeTemporary, &quota));
-    EXPECT_EQ(kQuota1, quota);
+    EXPECT_TRUE(db.SetQuotaConfigValue(kTempQuotaKey, kValue1));
+    EXPECT_TRUE(db.GetQuotaConfigValue(kTempQuotaKey, &value));
+    EXPECT_EQ(kValue1, value);
 
-    EXPECT_TRUE(db.SetGlobalQuota(kStorageTypeTemporary, kQuota1 + 1024));
-    EXPECT_TRUE(db.GetGlobalQuota(kStorageTypeTemporary, &quota));
-    EXPECT_EQ(kQuota1 + 1024, quota);
+    EXPECT_TRUE(db.SetQuotaConfigValue(kTempQuotaKey, kValue2));
+    EXPECT_TRUE(db.GetQuotaConfigValue(kTempQuotaKey, &value));
+    EXPECT_EQ(kValue2, value);
 
-    EXPECT_FALSE(db.GetGlobalQuota(kStorageTypePersistent, &quota));
+    EXPECT_TRUE(db.SetQuotaConfigValue(kAvailSpaceKey, kValue1));
+    EXPECT_TRUE(db.GetQuotaConfigValue(kAvailSpaceKey, &value));
+    EXPECT_EQ(kValue1, value);
 
-    EXPECT_TRUE(db.SetGlobalQuota(kStorageTypePersistent, kQuota2));
-    EXPECT_TRUE(db.GetGlobalQuota(kStorageTypePersistent, &quota));
-    EXPECT_EQ(kQuota2, quota);
+    EXPECT_TRUE(db.SetQuotaConfigValue(kAvailSpaceKey, kValue2));
+    EXPECT_TRUE(db.GetQuotaConfigValue(kAvailSpaceKey, &value));
+    EXPECT_EQ(kValue2, value);
   }
 
   void OriginLastAccessTimeLRU(const FilePath& kDbFile) {
