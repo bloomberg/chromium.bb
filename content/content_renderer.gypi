@@ -70,6 +70,8 @@
     'renderer/indexed_db_dispatcher.h',
     'renderer/intents_dispatcher.cc',
     'renderer/intents_dispatcher.h',
+    'renderer/java_bridge_channel.cc',
+    'renderer/java_bridge_channel.h',
     'renderer/load_progress_tracker.cc',
     'renderer/load_progress_tracker.h',
     'renderer/media/audio_device.cc',

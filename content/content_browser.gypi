@@ -335,6 +335,8 @@
     'browser/renderer_host/gtk_key_bindings_handler.h',
     'browser/renderer_host/gtk_window_utils.cc',
     'browser/renderer_host/gtk_window_utils.h',
+    'browser/renderer_host/java_bridge_channel_host.cc',
+    'browser/renderer_host/java_bridge_channel_host.h',
     'browser/renderer_host/media/audio_common.cc',
     'browser/renderer_host/media/audio_common.h',
     'browser/renderer_host/media/audio_input_device_manager.cc',
