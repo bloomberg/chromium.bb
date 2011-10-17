@@ -123,6 +123,7 @@ AutomatedUITestBase.OpenCloseBrowserWindowWithAccelerator
 AutomatedUITestBase.DuplicateTab
 
 # Flaky failure on Linux/ChromeOS, http://crbug.com/96553
+GuestModeOptionsUITest.LoadOptionsByURL
 OptionsUITest.LoadOptionsByURL
 
 # Flaky failure on Linux/ChromeOS, http://crbug.com/100031
