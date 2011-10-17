@@ -10,6 +10,7 @@
 #include <fcntl.h>
 #endif
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/stringprintf.h"
@@ -56,7 +57,7 @@ NaClProcessHost::NaClProcessHost(const std::wstring& url)
       reply_msg_(NULL),
       internal_(new NaClInternal()),
       running_on_wow64_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   set_name(WideToUTF16Hack(url));
 #if defined(OS_WIN)
   running_on_wow64_ = (base::win::OSInfo::GetInstance()->wow64_status() ==
@@ -263,8 +264,8 @@ void NaClProcessHost::OnProcessLaunched() {
     irt_path = plugin_dir.Append(GetIrtLibraryFilename());
   }
 
-  base::FileUtilProxy::CreateOrOpenCallback* callback =
-      callback_factory_.NewCallback(&NaClProcessHost::OpenIrtFileDone);
+  base::FileUtilProxy::CreateOrOpenCallback callback =
+      base::Bind(&NaClProcessHost::OpenIrtFileDone, weak_factory_.GetWeakPtr());
   if (!base::FileUtilProxy::CreateOrOpen(
            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
            irt_path,

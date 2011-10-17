@@ -79,7 +79,7 @@ class RelayCreateOrOpen : public MessageLoopRelay {
       scoped_refptr<base::MessageLoopProxy> message_loop_proxy,
       const FilePath& file_path,
       int file_flags,
-      fileapi::FileSystemFileUtilProxy::CreateOrOpenCallback* callback)
+      const fileapi::FileSystemFileUtilProxy::CreateOrOpenCallback& callback)
       : MessageLoopRelay(context),
         message_loop_proxy_(message_loop_proxy),
         file_path_(file_path),
@@ -87,7 +87,7 @@ class RelayCreateOrOpen : public MessageLoopRelay {
         callback_(callback),
         file_handle_(base::kInvalidPlatformFileValue),
         created_(false) {
-    DCHECK(callback);
+    DCHECK_EQ(false, callback.is_null());
   }
 
  protected:
@@ -103,16 +103,15 @@ class RelayCreateOrOpen : public MessageLoopRelay {
   }
 
   virtual void RunCallback() {
-    callback_->Run(error_code(), base::PassPlatformFile(&file_handle_),
-                   created_);
-    delete callback_;
+    callback_.Run(error_code(), base::PassPlatformFile(&file_handle_),
+                  created_);
   }
 
  private:
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
   FilePath file_path_;
   int file_flags_;
-  fileapi::FileSystemFileUtilProxy::CreateOrOpenCallback* callback_;
+  fileapi::FileSystemFileUtilProxy::CreateOrOpenCallback callback_;
   base::PlatformFile file_handle_;
   bool created_;
 };
@@ -432,7 +431,7 @@ bool FileSystemFileUtilProxy::CreateOrOpen(
     const FileSystemOperationContext& context,
     scoped_refptr<MessageLoopProxy> message_loop_proxy,
     const FilePath& file_path, int file_flags,
-    CreateOrOpenCallback* callback) {
+    const CreateOrOpenCallback& callback) {
   return Start(FROM_HERE, message_loop_proxy, new RelayCreateOrOpen(context,
       message_loop_proxy, file_path, file_flags, callback));
 }

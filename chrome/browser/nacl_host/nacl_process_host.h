@@ -11,7 +11,7 @@
 #include "base/file_path.h"
 #include "base/file_util_proxy.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_callback_factory.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/common/nacl_types.h"
 #include "content/browser/browser_child_process_host.h"
 
@@ -76,7 +76,7 @@ class NaClProcessHost : public BrowserChildProcessHost {
   // Windows platform flag
   bool running_on_wow64_;
 
-  base::ScopedCallbackFactory<NaClProcessHost> callback_factory_;
+  base::WeakPtrFactory<NaClProcessHost> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NaClProcessHost);
 };

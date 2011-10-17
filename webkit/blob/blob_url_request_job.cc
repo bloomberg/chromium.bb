@@ -52,7 +52,8 @@ BlobURLRequestJob::BlobURLRequestJob(
     BlobData* blob_data,
     base::MessageLoopProxy* file_thread_proxy)
     : net::URLRequestJob(request),
-      callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       blob_data_(blob_data),
       file_thread_proxy_(file_thread_proxy),
       item_index_(0),
@@ -111,6 +112,7 @@ void BlobURLRequestJob::Kill() {
 
   net::URLRequestJob::Kill();
   callback_factory_.RevokeAll();
+  weak_factory_.InvalidateWeakPtrs();
   method_factory_.RevokeAll();
 }
 
@@ -316,7 +318,7 @@ bool BlobURLRequestJob::DispatchReadFile(const BlobData::Item& item) {
 
   base::FileUtilProxy::CreateOrOpen(
       file_thread_proxy_, item.file_path(), kFileOpenFlags,
-      callback_factory_.NewCallback(&BlobURLRequestJob::DidOpen));
+      base::Bind(&BlobURLRequestJob::DidOpen, weak_factory_.GetWeakPtr()));
   SetStatus(net::URLRequestStatus(net::URLRequestStatus::IO_PENDING, 0));
   return false;
 }

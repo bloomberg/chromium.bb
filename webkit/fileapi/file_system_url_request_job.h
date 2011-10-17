@@ -8,8 +8,8 @@
 
 #include <string>
 
-#include "base/memory/scoped_callback_factory.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
 #include "base/task.h"
@@ -62,7 +62,7 @@ class FileSystemURLRequestJob : public net::URLRequestJob {
   FileSystemContext* file_system_context_;
   scoped_refptr<base::MessageLoopProxy> file_thread_proxy_;
   ScopedRunnableMethodFactory<FileSystemURLRequestJob> method_factory_;
-  base::ScopedCallbackFactory<FileSystemURLRequestJob> callback_factory_;
+  base::WeakPtrFactory<FileSystemURLRequestJob> weak_factory_;
   scoped_ptr<net::FileStream> stream_;
   bool is_directory_;
   scoped_ptr<net::HttpResponseInfo> response_info_;

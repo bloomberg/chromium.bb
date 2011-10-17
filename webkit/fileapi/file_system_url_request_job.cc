@@ -107,7 +107,7 @@ FileSystemURLRequestJob::FileSystemURLRequestJob(
       file_system_context_(file_system_context),
       file_thread_proxy_(file_thread_proxy),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       stream_(NULL),
       is_directory_(false),
       remaining_bytes_(0) {
@@ -133,7 +133,7 @@ void FileSystemURLRequestJob::Kill() {
   }
   URLRequestJob::Kill();
   method_factory_.RevokeAll();
-  callback_factory_.RevokeAll();
+  weak_factory_.InvalidateWeakPtrs();
 }
 
 bool FileSystemURLRequestJob::ReadRawData(net::IOBuffer* dest, int dest_size,
@@ -239,7 +239,8 @@ void FileSystemURLRequestJob::DidGetMetadata(
   if (!is_directory_) {
     base::FileUtilProxy::CreateOrOpen(
         file_thread_proxy_, platform_path, kFileFlags,
-        callback_factory_.NewCallback(&FileSystemURLRequestJob::DidOpen));
+        base::Bind(&FileSystemURLRequestJob::DidOpen,
+                   weak_factory_.GetWeakPtr()));
   } else {
     NotifyHeadersComplete();
   }

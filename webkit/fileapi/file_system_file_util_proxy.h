@@ -54,7 +54,7 @@ class FileSystemFileUtilProxy {
                            scoped_refptr<MessageLoopProxy> message_loop_proxy,
                            const FilePath& file_path,
                            int file_flags,
-                           CreateOrOpenCallback* callback);
+                           const CreateOrOpenCallback& callback);
 
   // Close the given file handle.
   static bool Close(const FileSystemOperationContext& context,

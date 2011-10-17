@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_callback_factory.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
 #include "base/process.h"
@@ -241,6 +242,7 @@ class FileSystemOperation {
   FileSystemOperationContext file_system_operation_context_;
 
   base::ScopedCallbackFactory<FileSystemOperation> callback_factory_;
+  base::WeakPtrFactory<FileSystemOperation> weak_factory_;
 
   scoped_ptr<ScopedQuotaUtilHelper> quota_util_helper_;
 

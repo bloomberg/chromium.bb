@@ -4,6 +4,7 @@
 
 #include "webkit/fileapi/file_system_operation.h"
 
+#include "base/bind.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "net/base/escape.h"
@@ -64,7 +65,8 @@ FileSystemOperation::FileSystemOperation(
     : proxy_(proxy),
       dispatcher_(dispatcher),
       file_system_operation_context_(file_system_context, file_util),
-      callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   DCHECK(dispatcher);
 #ifndef NDEBUG
   pending_operation_ = kOperationNone;
@@ -179,10 +181,7 @@ void FileSystemOperation::DelayedCreateDirectoryForQuota(
       file_system_operation_context_.src_type()));
 
   FileSystemFileUtilProxy::CreateDirectory(
-      file_system_operation_context_,
-      proxy_,
-      src_virtual_path_,
-      exclusive_,
+      file_system_operation_context_, proxy_, src_virtual_path_, exclusive_,
       recursive_,
       callback_factory_.NewCallback(
           &FileSystemOperation::DidFinishFileOperation));
@@ -461,8 +460,8 @@ void FileSystemOperation::DelayedWriteForQuota(quota::QuotaStatusCode status,
       src_virtual_path_,
       base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_WRITE |
           base::PLATFORM_FILE_ASYNC,
-      callback_factory_.NewCallback(
-          &FileSystemOperation::OnFileOpenedForWrite));
+      base::Bind(&FileSystemOperation::OnFileOpenedForWrite,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void FileSystemOperation::Truncate(const GURL& path, int64 length) {
@@ -588,12 +587,9 @@ void FileSystemOperation::DelayedOpenFileForQuota(quota::QuotaStatusCode status,
       file_system_operation_context_.src_type()));
 
   FileSystemFileUtilProxy::CreateOrOpen(
-      file_system_operation_context_,
-      proxy_,
-      src_virtual_path_,
-      file_flags_,
-      callback_factory_.NewCallback(
-          &FileSystemOperation::DidOpenFile));
+      file_system_operation_context_, proxy_, src_virtual_path_, file_flags_,
+      base::Bind(&FileSystemOperation::DidOpenFile,
+                 weak_factory_.GetWeakPtr()));
 }
 
 // We can only get here on a write or truncate that's not yet completed.
