@@ -11,12 +11,15 @@ information on how to use experimental APIs, see the
 <h2 id="manifest">Manifest</h2>
 <p>You must declare the "experimental" permission in the <a
   href="manifest.html">extension manifest</a> to use the webRequest settings
-API.  For example:</p>
+API, along with <a href="manifest.html#permissions">host permissions</a>
+for any hosts whose network requests you want to access.
+For example:</p>
 <pre>{
   "name": "My extension",
   ...
   <b>"permissions": [
-    "experimental"
+    "experimental",
+    "*://*.google.com"
   ]</b>,
   ...
 }</pre>

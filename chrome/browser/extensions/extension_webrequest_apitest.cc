@@ -44,7 +44,6 @@ class ExtensionWebRequestApiTest : public ExtensionApiTest {
  public:
   virtual void SetUpInProcessBrowserTestFixture() {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
-    ExtensionWebRequestEventRouter::SetAllowChromeExtensionScheme();
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(StartTestServer());
   }

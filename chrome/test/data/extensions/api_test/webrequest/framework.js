@@ -24,10 +24,11 @@ function runTests(tests) {
 
 // Returns an URL from the test server, fixing up the port. Must be called
 // from within a test case passed to runTests.
-function getServerURL(path) {
+function getServerURL(path, opt_host) {
   if (!testServerPort)
     throw new Error("Called getServerURL outside of runTests.");
-  return "http://" + testServer + ":" + testServerPort + "/" + path;
+  var host = opt_host || testServer;
+  return "http://" + host + ":" + testServerPort + "/" + path;
 }
 
 // Helper to advance to the next test only when the tab has finished loading.

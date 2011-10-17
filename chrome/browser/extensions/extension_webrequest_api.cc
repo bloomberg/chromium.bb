@@ -155,15 +155,23 @@ bool IsWebRequestEvent(const std::string& event_name) {
                    event_name) != ARRAYEND(kWebRequestEvents);
 }
 
-bool allow_extension_scheme = false;
+// Returns true if the scheme is one we want to allow extensions to have access
+// to. Extensions still need specific permissions for a given URL, which is
+// covered by CanExtensionAccessURL.
 bool HasWebRequestScheme(const GURL& url) {
-  if (allow_extension_scheme && url.SchemeIs(chrome::kExtensionScheme))
-    return true;
   return (url.SchemeIs(chrome::kAboutScheme) ||
           url.SchemeIs(chrome::kFileScheme) ||
           url.SchemeIs(chrome::kFtpScheme) ||
           url.SchemeIs(chrome::kHttpScheme) ||
-          url.SchemeIs(chrome::kHttpsScheme));
+          url.SchemeIs(chrome::kHttpsScheme) ||
+          url.SchemeIs(chrome::kExtensionScheme));
+}
+
+bool CanExtensionAccessURL(const Extension* extension, const GURL& url) {
+  // about: URLs are not covered in host permissions, but are allowed anyway.
+  return (url.SchemeIs(chrome::kAboutScheme) ||
+          extension->HasHostPermission(url) ||
+          url.GetOrigin() == extension->url());
 }
 
 const char* ResourceTypeToString(ResourceType::Type type) {
@@ -463,11 +471,6 @@ ExtensionWebRequestEventRouter::RequestFilter::~RequestFilter() {
 //
 // ExtensionWebRequestEventRouter
 //
-
-// static
-void ExtensionWebRequestEventRouter::SetAllowChromeExtensionScheme() {
-  allow_extension_scheme = true;
-}
 
 // static
 ExtensionWebRequestEventRouter* ExtensionWebRequestEventRouter::GetInstance() {
@@ -1063,14 +1066,19 @@ void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
                   resource_type) == it->filter.types.end())
       continue;
 
-    // Check if this event crosses incognito boundaries when it shouldn't.
     // extension_info_map can be NULL if this is a system-level request.
     if (extension_info_map) {
       const Extension* extension =
           extension_info_map->extensions().GetByID(it->extension_id);
+
+      // Check if this event crosses incognito boundaries when it shouldn't.
       if (!extension ||
           (crosses_incognito &&
            !extension_info_map->CanCrossIncognito(extension)))
+        continue;
+
+      // Only send webRequest events for URLs the extension has access to.
+      if (!CanExtensionAccessURL(extension, url))
         continue;
     }
 

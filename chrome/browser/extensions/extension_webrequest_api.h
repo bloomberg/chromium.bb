@@ -150,9 +150,6 @@ class ExtensionWebRequestEventRouter {
 
   typedef std::list<linked_ptr<EventResponseDelta> > EventResponseDeltas;
 
-  // Used in testing to allow chrome-extension URLs to be intercepted.
-  static void SetAllowChromeExtensionScheme();
-
   static ExtensionWebRequestEventRouter* GetInstance();
 
   // Dispatches the OnBeforeRequest event to any extensions whose filters match
