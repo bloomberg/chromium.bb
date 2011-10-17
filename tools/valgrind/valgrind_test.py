@@ -39,6 +39,14 @@ class BaseTool(object):
     self.temp_dir = tempfile.mkdtemp(prefix="vg_logs_")  # Generated every time
     self.log_dir = self.temp_dir  # overridable by --keep_logs
     self.option_parser_hooks = []
+    # TODO(glider): we may not need some of the env vars on some of the
+    # platforms.
+    self._env = {
+      "G_SLICE" : "always-malloc",
+      "NSS_DISABLE_UNLOAD" : "1",
+      "NSS_DISABLE_ARENA_FREE_LIST" : "1",
+      "GTEST_DEATH_TEST_USE_FORK": "1",
+    }
 
   def ToolName(self):
     raise NotImplementedError, "This method should be implemented " \
@@ -148,19 +156,9 @@ class BaseTool(object):
     """ Execute the app to be tested after successful instrumentation.
     Full execution command-line provided by subclassers via proc."""
     logging.info("starting execution...")
-
     proc = self.ToolCommand()
-
-    add_env = {
-      "G_SLICE" : "always-malloc",
-      "NSS_DISABLE_UNLOAD" : "1",
-      "NSS_DISABLE_ARENA_FREE_LIST" : "1",
-      "GTEST_DEATH_TEST_USE_FORK" : "1",
-    }
-    for k,v in add_env.iteritems():
-      logging.info("export %s=%s", k, v)
-      os.putenv(k, v)
-
+    for var in self._env:
+      common.PutEnvAndLog(var, self._env[var])
     return common.RunSubprocess(proc, self._timeout)
 
   def RunTestsAndAnalyze(self, check_sanity):
@@ -452,6 +450,7 @@ class ValgrindTool(BaseTool):
 
     return ret
 
+
 # TODO(timurrrr): Split into a separate file.
 class Memcheck(ValgrindTool):
   """Memcheck
@@ -511,6 +510,7 @@ class Memcheck(ValgrindTool):
                    "using-valgrind for the info on Memcheck/Valgrind")
     return ret
 
+
 class PinTool(BaseTool):
   """Abstract class for running PIN tools.
 
@@ -544,6 +544,7 @@ class PinTool(BaseTool):
 
     proc += self._args
     return proc
+
 
 class ThreadSanitizerBase(object):
   """ThreadSanitizer
@@ -647,6 +648,7 @@ class ThreadSanitizerBase(object):
 
     return ret
 
+
 class ThreadSanitizerPosix(ThreadSanitizerBase, ValgrindTool):
   def ToolSpecificFlags(self):
     proc = ThreadSanitizerBase.ToolSpecificFlags(self)
@@ -665,6 +667,7 @@ class ThreadSanitizerPosix(ThreadSanitizerBase, ValgrindTool):
     if ret != 0:
       logging.info(self.INFO_MESSAGE)
     return ret
+
 
 class ThreadSanitizerWindows(ThreadSanitizerBase, PinTool):
 
@@ -860,7 +863,6 @@ class DrMemory(BaseTool):
 
 # RaceVerifier support. See
 # http://code.google.com/p/data-race-test/wiki/RaceVerifier for more details.
-
 class ThreadSanitizerRV1Analyzer(tsan_analyze.TsanAnalyzer):
   """ TsanAnalyzer that saves race reports to a file. """
 
@@ -905,6 +907,7 @@ class ThreadSanitizerRV1Mixin(object):
     super(ThreadSanitizerRV1Mixin, self).Cleanup()
     self.analyzer.CloseOutputFile()
 
+
 class ThreadSanitizerRV2Mixin(object):
   """RaceVerifier second pass."""
 
@@ -932,16 +935,20 @@ class ThreadSanitizerRV2Mixin(object):
 class ThreadSanitizerRV1Posix(ThreadSanitizerRV1Mixin, ThreadSanitizerPosix):
   pass
 
+
 class ThreadSanitizerRV2Posix(ThreadSanitizerRV2Mixin, ThreadSanitizerPosix):
   pass
+
 
 class ThreadSanitizerRV1Windows(ThreadSanitizerRV1Mixin,
                                 ThreadSanitizerWindows):
   pass
 
+
 class ThreadSanitizerRV2Windows(ThreadSanitizerRV2Mixin,
                                 ThreadSanitizerWindows):
   pass
+
 
 class RaceVerifier(object):
   """Runs tests under RaceVerifier/Valgrind."""
@@ -984,31 +991,15 @@ class RaceVerifier(object):
   def Run(self, args, module):
    return self.Main(args, False)
 
+
 class EmbeddedTool(BaseTool):
   """Abstract class for tools embedded directly into the test binary.
-
-  Attributes:
-    _env: dictionary of environment variable names and their values.
   """
-  def __init__(self):
-    super(EmbeddedTool, self).__init__()
-    self._env = {}
+  # TODO(glider): need to override Execute() and support process chaining here.
 
   def ToolCommand(self):
     # In the simplest case just the args of the script.
     return self._args
-
-  def Execute(self):
-    for var in self._env:
-      self.PutEnvAndLog(var, self._env[var])
-    proc = self.ToolCommand()
-    logging.info('starting execution...')
-    # TODO(glider): need to support process chaining here.
-    return common.RunSubprocess(proc, self._timeout)
-
-  def PutEnvAndLog(self, env_name, env_value):
-    os.putenv(env_name, env_value)
-    logging.info('export %s=%s', env_name, env_value)
 
 
 class Asan(EmbeddedTool):
@@ -1037,6 +1028,56 @@ class Asan(EmbeddedTool):
   def Analyze(sels, unused_check_sanity):
     return 0
 
+
+class TsanGcc(EmbeddedTool):
+  """ThreadSanitizer with compile-time instrumentation done using GCC.
+
+  More information at
+  code.google.com/p/data-race-test/wiki/GccInstrumentation
+  """
+  def __init__(self):
+    super(TsanGcc, self).__init__()
+    self.RegisterOptionParserHook(TsanGcc.ExtendOptionParser)
+
+  def ExtendOptionParser(self, parser):
+    parser.add_option("", "--suppressions", default=[],
+                      action="append",
+                      help="path to TSan suppression file")
+
+  def Setup(self, args):
+    if not super(TsanGcc, self).Setup(args):
+      return False
+    ld_library_paths = []
+    for tail in "lib32", "lib64":
+      ld_library_paths.append(os.path.join(self._source_dir, "third_party",
+                                           "compiler-tsan", "gcc-4.5.3", tail))
+    # LD_LIBRARY_PATH will be overriden.
+    self._env["LD_LIBRARY_PATH"] = ":".join(ld_library_paths)
+
+    # TODO(glider): this is a temporary solution until Analyze is implemented.
+    env_options = ["--error-exitcode=1"]
+    # TODO(glider): merge this with other TSan suppressions code.
+    suppression_count = 0
+    for suppression_file in self._options.suppressions:
+      if os.path.exists(suppression_file):
+        suppression_count += 1
+        env_options += ["--suppressions=%s" % suppression_file]
+    if not suppression_count:
+      logging.warning("WARNING: NOT USING SUPPRESSIONS!")
+
+    self._env["TSAN_ARGS"] = " ".join(env_options)
+    return True
+
+  def ToolName(self):
+    return "tsan"
+
+  def Analyze(self, unused_check_sanity):
+    # TODO(glider): this should use tsan_analyze.TsanAnalyzer. As a temporary
+    # solution we set the exit code to 1 when a report occurs, because TSan-GCC
+    # does not support the --log-file flag yet.
+    return 0
+
+
 class ToolFactory:
   def Create(self, tool_name):
     if tool_name == "memcheck":
@@ -1055,6 +1096,8 @@ class ToolFactory:
       return DrMemory(True)
     if tool_name == "tsan_rv":
       return RaceVerifier()
+    if tool_name == "tsan_gcc":
+      return TsanGcc()
     if tool_name == "asan":
       return Asan()
     try:
