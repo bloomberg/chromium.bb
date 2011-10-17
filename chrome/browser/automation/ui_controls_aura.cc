@@ -25,7 +25,7 @@ bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
                                 bool shift,
                                 bool alt,
                                 bool command,
-                                Task* task) {
+                                const base::Closure& task) {
   NOTIMPLEMENTED();
   return true;
 }
@@ -35,7 +35,7 @@ bool SendMouseMove(long x, long y) {
   return true;
 }
 
-bool SendMouseMoveNotifyWhenDone(long x, long y, Task* task) {
+bool SendMouseMoveNotifyWhenDone(long x, long y, const base::Closure& task) {
   NOTIMPLEMENTED();
   return true;
 }
@@ -45,7 +45,8 @@ bool SendMouseEvents(MouseButton type, int state) {
   return true;
 }
 
-bool SendMouseEventsNotifyWhenDone(MouseButton type, int state, Task* task) {
+bool SendMouseEventsNotifyWhenDone(MouseButton type, int state,
+    const base::Closure& task) {
   NOTIMPLEMENTED();
   return true;
 }
@@ -55,7 +56,7 @@ bool SendMouseClick(MouseButton type) {
 }
 
 void MoveMouseToCenterAndPress(views::View* view, MouseButton button,
-                               int state, Task* task) {
+                               int state, const base::Closure& task) {
   NOTIMPLEMENTED();
 }
 
