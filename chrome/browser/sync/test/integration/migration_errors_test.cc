@@ -177,7 +177,7 @@ class MigrationTest : public SyncTest {
     }
 
     // Phase 3: Wait for all clients to catch up.
-    AwaitQuiescence();
+    ASSERT_TRUE(AwaitQuiescence());
 
     // Re-enable notifications if we disabled it.
     if (do_test_without_notifications) {
@@ -340,8 +340,9 @@ class MigrationTwoClientTest : public MigrationTest {
 
 // Easiest possible test of migration errors: triggers a server
 // migration on one datatype, then modifies some other datatype.
+// Flaky. crbug.com/100382.
 IN_PROC_BROWSER_TEST_F(MigrationTwoClientTest,
-                       MigratePrefsThenModifyBookmark) {
+                       FLAKY_MigratePrefsThenModifyBookmark) {
   RunTwoClientMigrationTest(MakeList(syncable::PREFERENCES),
                             MODIFY_BOOKMARK);
 }
@@ -423,7 +424,8 @@ IN_PROC_BROWSER_TEST_F(MigrationReconfigureTest, SetSyncTabs) {
   ASSERT_TRUE(GetClient(0)->IsTypePreferred(syncable::SESSIONS));
 }
 
-IN_PROC_BROWSER_TEST_F(MigrationReconfigureTest, SetSyncTabsAndMigrate) {
+// Flaky. crbug.com/100382.
+IN_PROC_BROWSER_TEST_F(MigrationReconfigureTest, FLAKY_SetSyncTabsAndMigrate) {
   if (!ServerSupportsErrorTriggering()) {
     LOG(WARNING) << "Test skipped in this server environment.";
     return;
