@@ -7,6 +7,7 @@
 #include "base/win/windows_version.h"
 #endif  // defined (OS_WIN)
 
+#include "base/bind.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_webstore_private_api.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -39,9 +40,9 @@ class GalleryInstallApiTestObserver :
     ExtensionInstallUI* prompt = Source<ExtensionInstallUI>(source).ptr();
     CHECK(prompt->delegate_);
     MessageLoop::current()->PostTask(
-        FROM_HERE, NewRunnableMethod(
-            this,
+        FROM_HERE, base::Bind(
             &GalleryInstallApiTestObserver::InstallUIProceed,
+            this,
             prompt->delegate_));
   }
 

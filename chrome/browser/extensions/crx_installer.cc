@@ -7,6 +7,7 @@
 #include <map>
 #include <set>
 
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/field_trial.h"
@@ -15,7 +16,6 @@
 #include "base/scoped_temp_dir.h"
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
-#include "base/task.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -139,7 +139,7 @@ CrxInstaller::~CrxInstaller() {
   if (!temp_dir_.value().empty()) {
     if (!BrowserThread::PostTask(
             BrowserThread::FILE, FROM_HERE,
-            NewRunnableFunction(
+            base::Bind(
                 &extension_file_util::DeleteFile, temp_dir_, true)))
       NOTREACHED();
   }
@@ -147,7 +147,7 @@ CrxInstaller::~CrxInstaller() {
   if (delete_source_) {
     if (!BrowserThread::PostTask(
             BrowserThread::FILE, FROM_HERE,
-            NewRunnableFunction(
+            base::Bind(
                 &extension_file_util::DeleteFile, source_file_, false)))
       NOTREACHED();
   }
@@ -168,8 +168,8 @@ void CrxInstaller::InstallCrx(const FilePath& source_file) {
 
   if (!BrowserThread::PostTask(
           BrowserThread::FILE, FROM_HERE,
-          NewRunnableMethod(
-              unpacker.get(), &SandboxedExtensionUnpacker::Start)))
+          base::Bind(
+              &SandboxedExtensionUnpacker::Start, unpacker.get())))
     NOTREACHED();
 }
 
@@ -182,8 +182,7 @@ void CrxInstaller::InstallUserScript(const FilePath& source_file,
 
   if (!BrowserThread::PostTask(
           BrowserThread::FILE, FROM_HERE,
-          NewRunnableMethod(this,
-                            &CrxInstaller::ConvertUserScriptOnFileThread)))
+          base::Bind(&CrxInstaller::ConvertUserScriptOnFileThread, this)))
     NOTREACHED();
 }
 
@@ -202,8 +201,7 @@ void CrxInstaller::ConvertUserScriptOnFileThread() {
 void CrxInstaller::InstallWebApp(const WebApplicationInfo& web_app) {
   if (!BrowserThread::PostTask(
           BrowserThread::FILE, FROM_HERE,
-          NewRunnableMethod(this, &CrxInstaller::ConvertWebAppOnFileThread,
-                            web_app)))
+          base::Bind(&CrxInstaller::ConvertWebAppOnFileThread, this, web_app)))
     NOTREACHED();
 }
 
@@ -359,7 +357,7 @@ void CrxInstaller::OnUnpackSuccess(const FilePath& temp_dir,
 
   if (!BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          NewRunnableMethod(this, &CrxInstaller::ConfirmInstall)))
+          base::Bind(&CrxInstaller::ConfirmInstall, this)))
     NOTREACHED();
 }
 
@@ -423,7 +421,7 @@ void CrxInstaller::ConfirmInstall() {
   } else {
     if (!BrowserThread::PostTask(
             BrowserThread::FILE, FROM_HERE,
-            NewRunnableMethod(this, &CrxInstaller::CompleteInstall)))
+            base::Bind(&CrxInstaller::CompleteInstall, this)))
       NOTREACHED();
   }
   return;
@@ -432,7 +430,7 @@ void CrxInstaller::ConfirmInstall() {
 void CrxInstaller::InstallUIProceed() {
   if (!BrowserThread::PostTask(
           BrowserThread::FILE, FROM_HERE,
-          NewRunnableMethod(this, &CrxInstaller::CompleteInstall)))
+          base::Bind(&CrxInstaller::CompleteInstall, this)))
     NOTREACHED();
 
   Release();  // balanced in ConfirmInstall().
@@ -513,9 +511,7 @@ void CrxInstaller::ReportFailureFromFileThread(const std::string& error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   if (!BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          NewRunnableMethod(this,
-                            &CrxInstaller::ReportFailureFromUIThread,
-                            error)))
+          base::Bind(&CrxInstaller::ReportFailureFromUIThread, this, error)))
     NOTREACHED();
 }
 
@@ -559,8 +555,7 @@ void CrxInstaller::ReportSuccessFromFileThread() {
 
   if (!BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          NewRunnableMethod(this,
-                            &CrxInstaller::ReportSuccessFromUIThread)))
+          base::Bind(&CrxInstaller::ReportSuccessFromUIThread, this)))
     NOTREACHED();
 }
 

@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <set>
 
+#include "base/bind.h"
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -316,9 +317,8 @@ void ExtensionServiceBackend::LoadSingleExtension(const FilePath& path_in,
   file_util::AbsolutePath(&extension_path);
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this,
-                        &ExtensionServiceBackend::CheckExtensionFileAccess,
-                        extension_path, prompt_for_plugins));
+      base::Bind(&ExtensionServiceBackend::CheckExtensionFileAccess,
+                 this, extension_path, prompt_for_plugins));
 }
 
 void ExtensionServiceBackend::CheckExtensionFileAccess(
@@ -333,10 +333,9 @@ void ExtensionServiceBackend::CheckExtensionFileAccess(
     allow_file_access = frontend_->extension_prefs()->AllowFileAccess(id);
 
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(
-          this,
+      base::Bind(
           &ExtensionServiceBackend::LoadSingleExtensionWithFileAccess,
-          extension_path, allow_file_access, prompt_for_plugins));
+          this, extension_path, allow_file_access, prompt_for_plugins));
 }
 
 void ExtensionServiceBackend::LoadSingleExtensionWithFileAccess(
@@ -357,9 +356,9 @@ void ExtensionServiceBackend::LoadSingleExtensionWithFileAccess(
 
   if (!extension) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(
-            this,
+        base::Bind(
             &ExtensionServiceBackend::ReportExtensionLoadError,
+            this,
             extension_path, error));
     return;
   }
@@ -367,10 +366,9 @@ void ExtensionServiceBackend::LoadSingleExtensionWithFileAccess(
   // Report this as an installed extension so that it gets remembered in the
   // prefs.
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(
-          this,
+      base::Bind(
           &ExtensionServiceBackend::OnLoadSingleExtension,
-          extension, prompt_for_plugins));
+          this, extension, prompt_for_plugins));
 }
 
 void ExtensionServiceBackend::ReportExtensionLoadError(
@@ -591,7 +589,6 @@ ExtensionService::ExtensionService(Profile* profile,
                                    bool autoupdate_enabled,
                                    bool extensions_enabled)
     : weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-      method_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       profile_(profile),
       extension_prefs_(extension_prefs),
       extension_settings_frontend_(
@@ -796,7 +793,7 @@ bool ExtensionService::UpdateExtension(
     // that would do it for us.
     if (!BrowserThread::PostTask(
             BrowserThread::FILE, FROM_HERE,
-            NewRunnableFunction(
+            base::Bind(
                 extension_file_util::DeleteFile, extension_path, false)))
       NOTREACHED();
 
@@ -937,7 +934,7 @@ bool ExtensionService::UninstallExtension(
   if (Extension::LOAD != extension->location()) {
     if (!BrowserThread::PostTask(
             BrowserThread::FILE, FROM_HERE,
-            NewRunnableFunction(
+            base::Bind(
                 &extension_file_util::UninstallExtension,
                 install_directory_,
                 extension_id)))
@@ -1127,9 +1124,8 @@ void ExtensionService::LoadExtension(const FilePath& extension_path) {
 void ExtensionService::LoadExtension(const FilePath& extension_path,
                                      bool prompt_for_plugins) {
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(backend_.get(),
-                        &ExtensionServiceBackend::LoadSingleExtension,
-                        extension_path, prompt_for_plugins));
+      base::Bind(&ExtensionServiceBackend::LoadSingleExtension, backend_.get(),
+                 extension_path, prompt_for_plugins));
 }
 
 void ExtensionService::LoadExtensionFromCommandLine(
@@ -1628,8 +1624,7 @@ void ExtensionService::NotifyExtensionUnloaded(
   for (size_t i = 0; i < extension->plugins().size(); ++i) {
     const Extension::PluginInfo& plugin = extension->plugins()[i];
     if (!BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                                 NewRunnableFunction(&ForceShutdownPlugin,
-                                                     plugin.path)))
+                                 base::Bind(&ForceShutdownPlugin, plugin.path)))
       NOTREACHED();
     webkit::npapi::PluginList::Singleton()->RefreshPlugins();
     webkit::npapi::PluginList::Singleton()->RemoveExtraPluginPath(
@@ -2333,7 +2328,7 @@ void ExtensionService::GarbageCollectExtensions() {
 
   if (!BrowserThread::PostTask(
           BrowserThread::FILE, FROM_HERE,
-          NewRunnableFunction(
+          base::Bind(
               &extension_file_util::GarbageCollectExtensions,
               install_directory_,
               extension_paths)))
@@ -2570,8 +2565,8 @@ void ExtensionService::OnExtensionInstalled(
       // load it.
       if (!BrowserThread::PostTask(
               BrowserThread::FILE, FROM_HERE,
-              NewRunnableFunction(&extension_file_util::DeleteFile,
-                                  extension->path(), true)))
+              base::Bind(&extension_file_util::DeleteFile,
+                         extension->path(), true)))
         NOTREACHED();
       return;
     }
@@ -2827,8 +2822,9 @@ void ExtensionService::Observe(int type,
       // access to the Extension and ExtensionHost.
       MessageLoop::current()->PostTask(
           FROM_HERE,
-          method_factory_.NewRunnableMethod(
+          base::Bind(
               &ExtensionService::TrackTerminatedExtension,
+              weak_ptr_factory_.GetWeakPtr(),
               host->extension()));
       break;
     }

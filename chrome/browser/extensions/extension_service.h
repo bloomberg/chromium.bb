@@ -18,7 +18,6 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/task.h"
 #include "base/time.h"
 #include "base/tuple.h"
 #include "chrome/browser/extensions/apps_promo.h"
@@ -687,8 +686,6 @@ class ExtensionService
       const ExtensionInfo* info);
 
   base::WeakPtrFactory<ExtensionService> weak_ptr_factory_;
-
-  ScopedRunnableMethodFactory<ExtensionService> method_factory_;
 
   // The profile this ExtensionService is part of.
   Profile* profile_;

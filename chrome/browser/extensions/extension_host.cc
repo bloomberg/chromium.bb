@@ -6,7 +6,9 @@
 
 #include <list>
 
+#include "base/bind.h"
 #include "base/memory/singleton.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
@@ -93,14 +95,14 @@ class ExtensionHost::ProcessCreationQueue {
   friend struct DefaultSingletonTraits<ProcessCreationQueue>;
   ProcessCreationQueue()
       : pending_create_(false),
-        ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) { }
+        ALLOW_THIS_IN_INITIALIZER_LIST(ptr_factory_(this)) { }
 
   // Queue up a delayed task to process the next ExtensionHost in the queue.
   void PostTask() {
     if (!pending_create_) {
       MessageLoop::current()->PostTask(FROM_HERE,
-          method_factory_.NewRunnableMethod(
-             &ProcessCreationQueue::ProcessOneHost));
+          base::Bind(&ProcessCreationQueue::ProcessOneHost,
+                     ptr_factory_.GetWeakPtr()));
       pending_create_ = true;
     }
   }
@@ -121,7 +123,7 @@ class ExtensionHost::ProcessCreationQueue {
   typedef std::list<ExtensionHost*> Queue;
   Queue queue_;
   bool pending_create_;
-  ScopedRunnableMethodFactory<ProcessCreationQueue> method_factory_;
+  base::WeakPtrFactory<ProcessCreationQueue> ptr_factory_;
 };
 
 ////////////////

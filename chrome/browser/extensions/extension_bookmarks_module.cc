@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/extension_bookmarks_module.h"
 
+#include "base/bind.h"
 #include "base/file_path.h"
 #include "base/i18n/file_util_icu.h"
 #include "base/i18n/time_formatting.h"
@@ -851,7 +852,7 @@ void BookmarksIOFunction::SelectFile(SelectFileDialog::Type type) {
   // (stat or access, for example), so this requires a thread with IO allowed.
   if (!BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
     BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-        NewRunnableMethod(this, &BookmarksIOFunction::SelectFile, type));
+        base::Bind(&BookmarksIOFunction::SelectFile, this, type));
     return;
   }
 
@@ -865,8 +866,8 @@ void BookmarksIOFunction::SelectFile(SelectFileDialog::Type type) {
 
   // After getting the |default_path|, ask the UI to display the file dialog.
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &BookmarksIOFunction::ShowSelectFileDialog,
-                        type, default_path));
+      base::Bind(&BookmarksIOFunction::ShowSelectFileDialog, this,
+                 type, default_path));
 }
 
 void BookmarksIOFunction::ShowSelectFileDialog(SelectFileDialog::Type type,

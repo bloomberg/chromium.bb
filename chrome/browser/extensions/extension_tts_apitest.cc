@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/command_line.h"
-#include "base/task.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_tts_api.h"
 #include "chrome/browser/extensions/extension_tts_api_controller.h"
@@ -32,7 +33,7 @@ using ::testing::_;
 class MockExtensionTtsPlatformImpl : public ExtensionTtsPlatformImpl {
  public:
   MockExtensionTtsPlatformImpl()
-      : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {}
+      : ALLOW_THIS_IN_INITIALIZER_LIST(ptr_factory_(this)) {}
 
   virtual bool PlatformImplAvailable() {
     return true;
@@ -60,8 +61,9 @@ class MockExtensionTtsPlatformImpl : public ExtensionTtsPlatformImpl {
                     const std::string& lang,
                     const UtteranceContinuousParameters& params) {
     MessageLoop::current()->PostDelayedTask(
-        FROM_HERE, method_factory_.NewRunnableMethod(
+        FROM_HERE, base::Bind(
             &MockExtensionTtsPlatformImpl::SendEvent,
+            ptr_factory_.GetWeakPtr(),
             false, utterance_id, TTS_EVENT_END, utterance.size(),
             std::string()),
         0);
@@ -73,8 +75,9 @@ class MockExtensionTtsPlatformImpl : public ExtensionTtsPlatformImpl {
       const std::string& lang,
       const UtteranceContinuousParameters& params) {
     MessageLoop::current()->PostDelayedTask(
-        FROM_HERE, method_factory_.NewRunnableMethod(
+        FROM_HERE, base::Bind(
             &MockExtensionTtsPlatformImpl::SendEvent,
+            ptr_factory_.GetWeakPtr(),
             true, utterance_id, TTS_EVENT_END, utterance.size(), std::string()),
         0);
   }
@@ -86,8 +89,9 @@ class MockExtensionTtsPlatformImpl : public ExtensionTtsPlatformImpl {
     for (int i = 0; i < static_cast<int>(utterance.size()); i++) {
       if (i == 0 || utterance[i - 1] == ' ') {
         MessageLoop::current()->PostDelayedTask(
-            FROM_HERE, method_factory_.NewRunnableMethod(
+            FROM_HERE, base::Bind(
                 &MockExtensionTtsPlatformImpl::SendEvent,
+                ptr_factory_.GetWeakPtr(),
                 false, utterance_id, TTS_EVENT_WORD, i,
                 std::string()),
             0);
@@ -103,8 +107,9 @@ class MockExtensionTtsPlatformImpl : public ExtensionTtsPlatformImpl {
     ExtensionTtsController* controller = ExtensionTtsController::GetInstance();
     if (wait_for_non_empty_queue && controller->QueueSize() == 0) {
       MessageLoop::current()->PostDelayedTask(
-          FROM_HERE, method_factory_.NewRunnableMethod(
+          FROM_HERE, base::Bind(
               &MockExtensionTtsPlatformImpl::SendEvent,
+              ptr_factory_.GetWeakPtr(),
               true, utterance_id, event_type, char_index, message),
           100);
       return;
@@ -114,7 +119,7 @@ class MockExtensionTtsPlatformImpl : public ExtensionTtsPlatformImpl {
   }
 
  private:
-  ScopedRunnableMethodFactory<MockExtensionTtsPlatformImpl> method_factory_;
+  base::WeakPtrFactory<MockExtensionTtsPlatformImpl> ptr_factory_;
 };
 
 class TtsApiTest : public ExtensionApiTest {

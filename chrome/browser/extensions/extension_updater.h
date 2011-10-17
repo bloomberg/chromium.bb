@@ -19,7 +19,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_temp_dir.h"
-#include "base/task.h"
 #include "base/time.h"
 #include "base/timer.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -362,8 +361,6 @@ class ExtensionUpdater : public URLFetcher::Delegate,
 
   base::OneShotTimer<ExtensionUpdater> timer_;
   int frequency_seconds_;
-
-  ScopedRunnableMethodFactory<ExtensionUpdater> method_factory_;
 
   bool will_check_soon_;
 
