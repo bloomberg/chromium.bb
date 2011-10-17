@@ -92,13 +92,6 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer {
   // ExtensionService::IsExtensionEnabled instead.
   bool IsExtensionDisabled(const std::string& id) const;
 
-  // Get the order that toolstrip URLs appear in the shelf.
-  typedef std::vector<GURL> URLList;
-  URLList GetShelfToolstripOrder();
-
-  // Sets the order that toolstrip URLs appear in the shelf.
-  void SetShelfToolstripOrder(const URLList& urls);
-
   // Get the order that the browser actions appear in the toolbar.
   std::vector<std::string> GetToolbarOrder();
 
@@ -526,9 +519,6 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer {
   ExtensionPrefValueMap* extension_pref_value_map_;
 
   scoped_refptr<ExtensionContentSettingsStore> content_settings_store_;
-
-  // The URLs of all of the toolstrips.
-  URLList shelf_order_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionPrefs);
 };

@@ -94,8 +94,6 @@ const char* kThemeColors = "colors";
 const char* kThemeDisplayProperties = "properties";
 const char* kThemeImages = "images";
 const char* kThemeTints = "tints";
-const char* kToolstripPath = "path";
-const char* kToolstrips = "toolstrips";
 const char* kTtsEngine = "tts_engine";
 const char* kTtsGenderFemale = "female";
 const char* kTtsGenderMale = "male";
@@ -362,10 +360,6 @@ const char* kInvalidThemeImagesMissing =
     "An image specified in the theme is missing.";
 const char* kInvalidThemeTints =
     "Invalid value for theme images - tints must be decimal numbers.";
-const char* kInvalidToolstrip =
-    "Invalid value for 'toolstrips[*]'";
-const char* kInvalidToolstrips =
-    "Invalid value for 'toolstrips'.";
 const char* kInvalidTts =
     "Invalid value for 'tts_engine'.";
 const char* kInvalidTtsVoices =

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,10 +35,6 @@ class ExtensionViewMac {
   // Returns the browser the extension belongs to.
   Browser* browser() const { return browser_; }
 
-  // Does this extension live as a toolstrip in an extension shelf?
-  bool is_toolstrip() const { return is_toolstrip_; }
-  void set_is_toolstrip(bool is_toolstrip) { is_toolstrip_ = is_toolstrip; }
-
   // Sets the extensions's background image.
   void SetBackground(const SkBitmap& background);
 
@@ -66,9 +62,6 @@ class ExtensionViewMac {
   RenderViewHost* render_view_host() const;
 
   void CreateWidgetHostView();
-
-  // True if the contents are being displayed inside the extension shelf.
-  bool is_toolstrip_;
 
   Browser* browser_;  // weak
 

@@ -94,7 +94,6 @@
     "chrome.extension.connect": "extension.html#method-connect",
     "chrome.extension.getBackgroundPage": "extension.html#method-getBackgroundPage",
     "chrome.extension.getExtensionTabs": "extension.html#method-getExtensionTabs",
-    "chrome.extension.getToolstrips": "extension.html#method-getToolstrips",
     "chrome.extension.getURL": "extension.html#method-getURL",
     "chrome.extension.getViews": "extension.html#method-getViews",
     "chrome.extension.isAllowedFileSchemeAccess": "extension.html#method-isAllowedFileSchemeAccess",

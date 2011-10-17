@@ -57,8 +57,8 @@ class DetachableToolbarView : public AccessiblePaneView {
                                     DetachableToolbarView* view);
 
   // Paint the background of the content area (the surface behind the
-  // bookmarks or extension toolstrips). |rect| is the rectangle to paint
-  // the background within. |roundness| describes the roundness of the corners.
+  // bookmarks). |rect| is the rectangle to paint the background within.
+  // |roundness| describes the roundness of the corners.
   static void PaintContentAreaBackground(gfx::Canvas* canvas,
                                          ui::ThemeProvider* theme_provider,
                                          const SkRect& rect,

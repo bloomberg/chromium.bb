@@ -25,8 +25,8 @@ class TabContents;
 // open channels.
 //
 // Messaging works this way:
-// - An extension-owned script context (like a toolstrip or a content script)
-// adds an event listener to the "onConnect" event.
+// - An extension-owned script context (like a background page or a content
+//   script) adds an event listener to the "onConnect" event.
 // - Another context calls "extension.connect()" to open a channel to the
 // extension process, or an extension context calls "tabs.connect(tabId)" to
 // open a channel to the content scripts for the given tab.  The EMS notifies
@@ -49,7 +49,8 @@ class ExtensionMessageService
       public NotificationObserver {
  public:
   // A messaging channel. Note that the opening port can be the same as the
-  // receiver, if an extension toolstrip wants to talk to its tab (for example).
+  // receiver, if an extension background page wants to talk to its tab (for
+  // example).
   struct MessageChannel;
   struct MessagePort;
 

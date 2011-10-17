@@ -528,7 +528,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   const GURL& background_url() const { return background_url_; }
   const GURL& options_url() const { return options_url_; }
   const GURL& devtools_url() const { return devtools_url_; }
-  const std::vector<GURL>& toolstrips() const { return toolstrips_; }
   const ExtensionPermissionSet* optional_permission_set() const {
     return optional_permission_set_.get();
   }
@@ -785,9 +784,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Optional URL to a devtools extension page.
   GURL devtools_url_;
-
-  // Optional list of toolstrips and associated properties.
-  std::vector<GURL> toolstrips_;
 
   // The public key used to sign the contents of the crx package.
   std::string public_key_;

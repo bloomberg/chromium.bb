@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -189,25 +189,21 @@ class MainPage(webapp.RequestHandler):
     self.check("/trunk/", "http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/index.html", Channel.TRUNK)
     self.check("/trunk/index.html", "http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/index.html", Channel.TRUNK)
     self.check("/trunk/getstarted.html", "http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/getstarted.html", Channel.TRUNK)
-    self.check("/trunk/images/toolstrip.png", "http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/images/toolstrip.png", Channel.TRUNK)
 
     self.response.out.write("<br/>Testing DEV<br/>")
     self.check("/dev/", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/common/extensions/docs/index.html", Channel.DEV)
     self.check("/dev/index.html", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/common/extensions/docs/index.html", Channel.DEV)
     self.check("/dev/getstarted.html", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/common/extensions/docs/getstarted.html", Channel.DEV)
-    self.check("/dev/images/toolstrip.png", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/common/extensions/docs/images/toolstrip.png", Channel.DEV)
 
     self.response.out.write("<br/>Testing BETA<br/>")
     self.check("/beta/", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/common/extensions/docs/index.html", Channel.BETA)
     self.check("/beta/index.html", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/common/extensions/docs/index.html", Channel.BETA)
     self.check("/beta/getstarted.html", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/common/extensions/docs/getstarted.html", Channel.BETA)
-    self.check("/beta/images/toolstrip.png", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/common/extensions/docs/images/toolstrip.png", Channel.BETA)
 
     self.response.out.write("<br/>Testing STABLE<br/>")
     self.check("/stable/", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/common/extensions/docs/index.html", Channel.STABLE)
     self.check("/stable/index.html", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/common/extensions/docs/index.html", Channel.STABLE)
     self.check("/stable/getstarted.html", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/common/extensions/docs/getstarted.html", Channel.STABLE)
-    self.check("/stable/images/toolstrip.png", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/common/extensions/docs/images/toolstrip.png", Channel.STABLE)
 
     self.response.out.write("<br/>Testing jstemplate_compiled.js<br/>")
     self.check("/trunk/third_party/jstemplate/jstemplate_compiled.js", "http://src.chromium.org/viewvc/chrome/trunk/src/chrome/third_party/jstemplate/jstemplate_compiled.js", Channel.TRUNK)
@@ -233,7 +229,6 @@ class MainPage(webapp.RequestHandler):
     self.check("/", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/common/extensions/docs/index.html", Channel.DEV)
     self.check("/index.html", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/common/extensions/docs/index.html", Channel.DEV)
     self.check("/getstarted.html", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/common/extensions/docs/getstarted.html", Channel.DEV)
-    self.check("/images/toolstrip.png", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/common/extensions/docs/images/toolstrip.png", Channel.DEV)
     self.check("/third_party/jstemplate/jstemplate_compiled.js", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/third_party/jstemplate/jstemplate_compiled.js", Channel.DEV)
     self.check("/api/extension_api.json", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/common/extensions/api/extension_api.json", Channel.DEV)
     self.check("/css/ApiRefStyles.css", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/common/extensions/docs/css/ApiRefStyles.css", Channel.DEV)
@@ -244,7 +239,6 @@ class MainPage(webapp.RequestHandler):
     self.check("/", "http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/index.html", Channel.TRUNK)
     self.check("/index.html", "http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/index.html", Channel.TRUNK)
     self.check("/getstarted.html", "http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/getstarted.html", Channel.TRUNK)
-    self.check("/images/toolstrip.png", "http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/images/toolstrip.png", Channel.TRUNK)
     self.check("/third_party/jstemplate/jstemplate_compiled.js", "http://src.chromium.org/viewvc/chrome/trunk/src/chrome/third_party/jstemplate/jstemplate_compiled.js", Channel.TRUNK)
     self.check("/api/extension_api.json", "http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/api/extension_api.json", Channel.TRUNK)
     self.check("/css/ApiRefStyles.css", "http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/css/ApiRefStyles.css", Channel.TRUNK)

@@ -32,7 +32,7 @@ class DictionaryValue;
 class ListValue;
 }
 
-// Information about a page running in an extension, for example a toolstrip,
+// Information about a page running in an extension, for example a popup bubble,
 // a background page, or a tab contents.
 struct ExtensionPage {
   ExtensionPage(const GURL& url, int render_process_id, int render_view_id,

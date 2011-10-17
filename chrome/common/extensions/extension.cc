@@ -1802,41 +1802,6 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
     }
   }
 
-  // Initialize toolstrips.
-  // TODO(aa): Remove this and all the related tests, docs, etc.
-  // See: crbug.com/100488.
-  if (api_permissions.count(ExtensionAPIPermission::kExperimental) &&
-      source.HasKey(keys::kToolstrips)) {
-    ListValue* list_value = NULL;
-    if (!source.GetList(keys::kToolstrips, &list_value)) {
-      *error = errors::kInvalidToolstrips;
-      return false;
-    }
-
-    for (size_t i = 0; i < list_value->GetSize(); ++i) {
-      GURL toolstrip;
-      DictionaryValue* toolstrip_value = NULL;
-      std::string toolstrip_path;
-      if (list_value->GetString(i, &toolstrip_path)) {
-        // Support a simple URL value for backwards compatibility.
-        toolstrip = GetResourceURL(toolstrip_path);
-      } else if (list_value->GetDictionary(i, &toolstrip_value)) {
-        if (!toolstrip_value->GetString(keys::kToolstripPath,
-                                        &toolstrip_path)) {
-          *error = ExtensionErrorUtils::FormatErrorMessage(
-              errors::kInvalidToolstrip, base::IntToString(i));
-          return false;
-        }
-        toolstrip = GetResourceURL(toolstrip_path);
-      } else {
-        *error = ExtensionErrorUtils::FormatErrorMessage(
-            errors::kInvalidToolstrip, base::IntToString(i));
-        return false;
-      }
-      toolstrips_.push_back(toolstrip);
-    }
-  }
-
   // Initialize content scripts (optional).
   if (source.HasKey(keys::kContentScripts)) {
     ListValue* list_value;

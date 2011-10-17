@@ -316,7 +316,7 @@ void ExtensionPortsRemoteService::ConnectCommand(
     DCHECK(service_);
     port_id = service_->OpenSpecialChannelToTab(
         extension_id, channel_name, tab_contents, this);
-  } else {  // no tab: channel to an extension' background page / toolstrip.
+  } else {  // no tab: channel to an extension page.
     // Ask the ExtensionMessageService to open the channel.
     VLOG(1) << "Connect: extension_id <" << extension_id
             << ">, channel_name <" << channel_name << ">";

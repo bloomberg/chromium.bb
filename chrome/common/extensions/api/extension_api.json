@@ -160,20 +160,6 @@
          }
       },
       {
-        "name": "getToolstrips",
-        "nodoc": true,
-        "type": "function",
-        "description": "Deprecated. Please use getViews({type: 'TOOLSTRIP'}). Returns an array of the JavaScript 'window' objects for each of the toolstrip views running inside the current extension. If windowId is specified, returns only the 'window' objects of toolstrips attached to the specified window.",
-        "parameters": [
-          {"type": "integer", "name": "windowId", "optional": true}
-        ],
-        "returns": {
-          "type": "array",
-          "description": "Array of global window objects",
-          "items": { "type": "object", "isInstanceOf": "DOMWindow", "properties": {}, "additionalProperties": { "type": "any" } }
-        }
-      },
-      {
         "name": "getExtensionTabs",
         "nodoc": true,
         "type": "function",

@@ -595,7 +595,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, LastError) {
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("browsertest").AppendASCII("last_error")));
 
-  // Get the ExtensionHost that is hosting our toolstrip page.
+  // Get the ExtensionHost that is hosting our background page.
   ExtensionProcessManager* manager =
       browser()->profile()->GetExtensionProcessManager();
   ExtensionHost* host = FindHostWithPath(manager, "/bg.html", 1);

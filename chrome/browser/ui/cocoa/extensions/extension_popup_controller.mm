@@ -99,8 +99,6 @@ class DevtoolsNotificationBridge : public NotificationObserver {
     return nil;
   [view setArrowLocation:arrowLocation];
 
-  host->view()->set_is_toolstrip(NO);
-
   extensionView_ = host->view()->native_view();
   NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
   [center addObserver:self

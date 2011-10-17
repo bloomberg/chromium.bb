@@ -105,7 +105,7 @@ TEST_F(UtilTests, IsValidUrlScheme) {
     { L"https://www.google.ca", false, true },
     { L"about:config", false, true },
     { L"view-source:http://www.google.ca", false, true },
-    { L"chrome-extension://aaaaaaaaaaaaaaaaaaa/toolstrip.html", false, false },
+    { L"chrome-extension://aaaaaaaaaaaaaaaaaaa/monkey.html", false, false },
     { L"ftp://www.google.ca", false, false },
     { L"file://www.google.ca", false, false },
     { L"file://C:\boot.ini", false, false },
@@ -115,7 +115,7 @@ TEST_F(UtilTests, IsValidUrlScheme) {
     { L"https://www.google.ca", true, true },
     { L"about:config", true, true },
     { L"view-source:http://www.google.ca", true, true },
-    { L"chrome-extension://aaaaaaaaaaaaaaaaaaa/toolstrip.html", true, true },
+    { L"chrome-extension://aaaaaaaaaaaaaaaaaaa/monkey.html", true, true },
     { L"ftp://www.google.ca", true, false },
     { L"file://www.google.ca", true, false },
     { L"file://C:\boot.ini", true, false },
@@ -296,7 +296,7 @@ TEST_F(UtilTests, CanNavigateTest) {
     { "about:blank", true, true, false },
     { "About:Version", true, true, false },
     { "about:config", false, true, false },
-    { "chrome-extension://aaaaaaaaaaaaaaaaaaa/toolstrip.html", false, true,
+    { "chrome-extension://aaaaaaaaaaaaaaaaaaa/monkey.html", false, true,
        false },
     { "ftp://www.google.ca", false, true, false },
     { "file://www.google.ca", false, true, false },
@@ -304,9 +304,9 @@ TEST_F(UtilTests, CanNavigateTest) {
     { "SIP:someone@10.1.2.3", false, true, false },
 
     // privileged test cases
-    { "chrome-extension://aaaaaaaaaaaaaaaaaaa/toolstrip.html", true, true,
+    { "chrome-extension://aaaaaaaaaaaaaaaaaaa/monkey.html", true, true,
        true },
-    { "data://aaaaaaaaaaaaaaaaaaa/toolstrip.html", true, true, true },
+    { "data://aaaaaaaaaaaaaaaaaaa/monkey.html", true, true, true },
   };
 
   for (int i = 0; i < arraysize(test_cases); ++i) {
@@ -344,7 +344,7 @@ TEST_F(UtilTests, CanNavigateTestDenyAll) {
     { "about:blank"},
     { "About:Version"},
     { "about:config"},
-    { "chrome-extension://aaaaaaaaaaaaaaaaaaa/toolstrip.html"},
+    { "chrome-extension://aaaaaaaaaaaaaaaaaaa/monkey.html"},
     { "ftp://www.google.ca"},
     { "file://www.google.ca"},
     { "file://C:\boot.ini"},
@@ -381,7 +381,7 @@ TEST_F(UtilTests, CanNavigateTestAllowAll) {
     { "about:blank"},
     { "About:Version"},
     { "about:config"},
-    { "chrome-extension://aaaaaaaaaaaaaaaaaaa/toolstrip.html"},
+    { "chrome-extension://aaaaaaaaaaaaaaaaaaa/monkey.html"},
     { "ftp://www.google.ca"},
     { "file://www.google.ca"},
     { "file://C:\boot.ini"},

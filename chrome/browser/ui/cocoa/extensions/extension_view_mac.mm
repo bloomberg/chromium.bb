@@ -16,8 +16,7 @@ const CGFloat ExtensionViewMac::kMaxHeight = 600.0;
 
 ExtensionViewMac::ExtensionViewMac(ExtensionHost* extension_host,
                                    Browser* browser)
-    : is_toolstrip_(true),
-      browser_(browser),
+    : browser_(browser),
       extension_host_(extension_host),
       render_widget_host_view_(NULL) {
   DCHECK(extension_host_);

@@ -16,7 +16,7 @@ namespace {
 
 // There are two separate caches, |large_cache| and |small_cache|.  large_cache
 // is meant for large items (tabs, popup windows), while small_cache is meant
-// for small items (extension toolstrips and buttons, etc.).  The idea is that
+// for small items (extension popups, HTML5 notifications). The idea is that
 // we'll almost always try to evict from large_cache first since small_cache
 // items will tend to be visible more of the time.
 typedef base::OwningMRUCache<RenderWidgetHost*, BackingStore*>
@@ -26,7 +26,11 @@ static BackingStoreCache* small_cache = NULL;
 
 // Threshold is based on a single large-monitor-width toolstrip.
 // (32bpp, 32 pixels high, 1920 pixels wide)
-// TODO(erikkay) 32bpp assumption isn't great.
+// TODO(aa): The extension system no longer supports toolstrips, but we think
+// this might be helping for other examples of small HTML views in Chrome.
+// Maybe this cache should be redesigned to simply prefer smaller objects to
+// larger ones, rather than having a fixed threshold.
+// For more background, see: crbug.com/100506.
 const size_t kSmallThreshold = 4 * 32 * 1920;
 
 // Pick a large monitor size to use as a multiplier.  This is multiplied by the

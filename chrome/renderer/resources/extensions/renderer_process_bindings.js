@@ -4,7 +4,7 @@
 
 // This script contains unprivileged javascript APIs related to chrome
 // extensions.  It is loaded by any extension-related context, such as content
-// scripts or toolstrips.
+// scripts or background pages.
 // See user_script_slave.cc for script that is loaded by content scripts only.
 // TODO(mpcomplete): we also load this in regular web pages, but don't need to.
 
@@ -358,7 +358,6 @@ var chrome = chrome || {};
       "proxy",
       "tabs",
       "test",
-      "toolstrip",
       "tts",
       "ttsEngine",
       "types",
@@ -370,7 +369,6 @@ var chrome = chrome || {};
       // Functions/events/properties within the extension namespace.
       "extension.getBackgroundPage",
       "extension.getExtensionTabs",
-      "extension.getToolstrips",
       "extension.getViews",
       "extension.isAllowedIncognitoAccess",
       "extension.isAllowedFileSchemeAccess",

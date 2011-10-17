@@ -95,8 +95,6 @@ namespace extension_manifest_keys {
   extern const char* kThemeDisplayProperties;
   extern const char* kThemeImages;
   extern const char* kThemeTints;
-  extern const char* kToolstripPath;
-  extern const char* kToolstrips;
   extern const char* kTtsEngine;
   extern const char* kTtsGenderFemale;
   extern const char* kTtsGenderMale;
@@ -247,8 +245,6 @@ namespace extension_manifest_errors {
   extern const char* kInvalidThemeImages;
   extern const char* kInvalidThemeImagesMissing;
   extern const char* kInvalidThemeTints;
-  extern const char* kInvalidToolstrip;
-  extern const char* kInvalidToolstrips;
   extern const char* kInvalidTts;
   extern const char* kInvalidTtsVoices;
   extern const char* kInvalidTtsVoicesEventTypes;

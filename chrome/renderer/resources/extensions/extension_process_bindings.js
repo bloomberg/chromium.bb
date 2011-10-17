@@ -412,14 +412,6 @@ var chrome = chrome || {};
     }
   }
 
-  function setupToolstripEvents(renderViewId) {
-    chrome.toolstrip = chrome.toolstrip || {};
-    chrome.toolstrip.onExpanded =
-        new chrome.Event("toolstrip.onExpanded." + renderViewId);
-    chrome.toolstrip.onCollapsed =
-        new chrome.Event("toolstrip.onCollapsed." + renderViewId);
-  }
-
   function setupHiddenContextMenuEvent(extensionId) {
     chromeHidden.contextMenus = {};
     chromeHidden.contextMenus.handlers = {};
@@ -792,13 +784,6 @@ var chrome = chrome || {};
       return GetExtensionViews(-1, "BACKGROUND")[0] || null;
     };
 
-    apiFunctions["extension.getToolstrips"].handleRequest =
-        function(windowId) {
-      if (typeof(windowId) == "undefined")
-        windowId = -1;
-      return GetExtensionViews(windowId, "TOOLSTRIP");
-    };
-
     apiFunctions["extension.getExtensionTabs"].handleRequest =
         function(windowId) {
       if (typeof(windowId) == "undefined")
@@ -1020,7 +1005,6 @@ var chrome = chrome || {};
     }
 
     setupPageActionEvents(extensionId);
-    setupToolstripEvents(GetRenderViewId());
     setupHiddenContextMenuEvent(extensionId);
     setupInputEvents();
     setupOmniboxEvents();
