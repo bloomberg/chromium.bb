@@ -177,7 +177,7 @@ cr.define('login', function() {
         this.passwordElement.hidden = needSignin;
         this.passwordElement.setAttribute('aria-label',
                                           localStrings.getStringF(
-                                              'passwordFieldAriaLabel',
+                                              'passwordFieldAccessibleName',
                                               userDict.emailAddress));
         this.signinButtonElement.hidden = !needSignin;
       }

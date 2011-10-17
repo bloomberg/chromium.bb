@@ -235,12 +235,15 @@ void SigninScreenHandler::GetLocalizedStrings(
       l10n_util::GetStringUTF16(IDS_SIGNIN_SCREEN_TITLE));
   localized_strings->SetString("passwordHint",
       l10n_util::GetStringUTF16(IDS_LOGIN_POD_EMPTY_PASSWORD_TEXT));
-  localized_strings->SetString("passwordFieldAriaLabel",
-      l10n_util::GetStringUTF16(IDS_LOGIN_POD_PASSWORD_FIELD_ARIA_LABEL));
+  localized_strings->SetString("passwordFieldAccessibleName",
+      l10n_util::GetStringUTF16(IDS_LOGIN_POD_PASSWORD_FIELD_ACCESSIBLE_NAME));
   localized_strings->SetString("signinButton",
       l10n_util::GetStringUTF16(IDS_LOGIN_BUTTON));
   localized_strings->SetString("enterGuestButton",
       l10n_util::GetStringUTF16(IDS_ENTER_GUEST_SESSION_BUTTON));
+  localized_strings->SetString("enterGuestButtonAccessibleName",
+      l10n_util::GetStringUTF16(
+          IDS_ENTER_GUEST_SESSION_BUTTON_ACCESSIBLE_NAME));
   localized_strings->SetString("shutDown",
       l10n_util::GetStringUTF16(IDS_SHUTDOWN_BUTTON));
   localized_strings->SetString("addUser",
