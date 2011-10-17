@@ -527,7 +527,7 @@ IN_PROC_BROWSER_TEST_F(WorkerDevToolsSanityTest, MAYBE_InspectSharedWorker) {
 #if defined(OS_MACOSX)
 #define MAYBE_PauseInSharedWorkerInitialization DISABLED_PauseInSharedWorkerInitialization
 #else
-#define MAYBE_PauseInSharedWorkerInitialization PauseInSharedWorkerInitialization
+#define MAYBE_PauseInSharedWorkerInitialization FLAKY_PauseInSharedWorkerInitialization
 #endif
 // See http://crbug.com/100538
 IN_PROC_BROWSER_TEST_F(WorkerDevToolsSanityTest,
