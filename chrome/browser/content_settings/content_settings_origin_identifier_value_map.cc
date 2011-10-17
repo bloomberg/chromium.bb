@@ -58,10 +58,8 @@ OriginIdentifierValueMap::EntryMapKey::EntryMapKey(
 
 bool OriginIdentifierValueMap::EntryMapKey::operator<(
     const OriginIdentifierValueMap::EntryMapKey& other) const {
-  if (content_type < other.content_type)
-    return true;
-  else if (other.content_type > content_type)
-    return false;
+  if (content_type != other.content_type)
+    return content_type < other.content_type;
   return (resource_identifier < other.resource_identifier);
 }
 
