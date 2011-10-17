@@ -620,6 +620,9 @@ void MenuGtk::OnMenuItemActivated(GtkWidget* menuitem) {
     BuildSubmenuFromModel(submenu_model, submenu);
     gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuitem), submenu);
 
+    // Update all the menu item info in the newly-generated menu.
+    gtk_container_foreach(GTK_CONTAINER(submenu), SetMenuItemInfo, this);
+
     // Hook up the hide signal so the submenu knows when it is hidden.
     g_signal_connect(submenu, "hide", G_CALLBACK(OnSubmenuHidden),
                      implicit_cast<gpointer>(menuitem));
