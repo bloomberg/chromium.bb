@@ -187,14 +187,11 @@ void GpuDataManager::UserFlags::ApplyPolicies() {
 }
 
 GpuDataManager::GpuDataManager()
-    : complete_gpu_info_already_requested_(false),
-      initialized_(false) {
+    : complete_gpu_info_already_requested_(false) {
+  Initialize();
 }
 
 void GpuDataManager::Initialize() {
-  if (initialized_)
-    return;
-
   // Certain tests doesn't go through the browser startup path that
   // initializes GpuDataManager on FILE thread; therefore, it is initialized
   // on UI thread later, and we skip the preliminary gpu info collection
@@ -210,8 +207,6 @@ void GpuDataManager::Initialize() {
 #if defined(OS_MACOSX)
   CGDisplayRegisterReconfigurationCallback(DisplayReconfigCallback, this);
 #endif
-
-  initialized_ = true;
 }
 
 GpuDataManager::~GpuDataManager() {
@@ -222,9 +217,7 @@ GpuDataManager::~GpuDataManager() {
 
 // static
 GpuDataManager* GpuDataManager::GetInstance() {
-  GpuDataManager* manager = Singleton<GpuDataManager>::get();
-  manager->Initialize();
-  return manager;
+  return Singleton<GpuDataManager>::get();
 }
 
 void GpuDataManager::RequestCompleteGpuInfoIfNeeded() {

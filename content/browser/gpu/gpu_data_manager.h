@@ -180,8 +180,6 @@ class CONTENT_EXPORT GpuDataManager {
 
   bool complete_gpu_info_already_requested_;
 
-  bool initialized_;
-
   GpuFeatureFlags gpu_feature_flags_;
   GpuFeatureFlags preliminary_gpu_feature_flags_;
 
