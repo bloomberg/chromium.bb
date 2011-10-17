@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/bind.h"
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
@@ -111,8 +112,8 @@ void ExtensionPopup::BubbleLostFocus(BrowserBubble* bubble,
   // action button that opened the popup. If we closed immediately, the
   // browser action container would fail to discover that the same button
   // was pressed.
-  MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(this,
-      &ExtensionPopup::Close));
+  MessageLoop::current()->PostTask(FROM_HERE,
+                                   base::Bind(&ExtensionPopup::Close, this));
 }
 
 
@@ -152,9 +153,9 @@ void ExtensionPopup::Observe(int type,
       // If the devtools window is closing, we post a task to ourselves to
       // close the popup. This gives the devtools window a chance to finish
       // detaching from the inspected RenderViewHost.
-      MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(this,
-          &ExtensionPopup::Close));
-
+      MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(&ExtensionPopup::Close, this));
       break;
     default:
       NOTREACHED() << L"Received unexpected notification";

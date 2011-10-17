@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <string>
 
+#include "base/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
@@ -319,8 +320,9 @@ void ExtensionInstalledBubble::Observe(int type,
     if (extension == extension_) {
       animation_wait_retries_ = 0;
       // PostTask to ourself to allow all EXTENSION_LOADED Observers to run.
-      MessageLoopForUI::current()->PostTask(FROM_HERE, NewRunnableMethod(this,
-          &ExtensionInstalledBubble::ShowInternal));
+      MessageLoopForUI::current()->PostTask(
+          FROM_HERE,
+          base::Bind(&ExtensionInstalledBubble::ShowInternal, this));
     }
   } else if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED) {
     const Extension* extension =
@@ -355,8 +357,9 @@ void ExtensionInstalledBubble::ShowInternal() {
       // We don't know where the view will be until the container has stopped
       // animating, so check back in a little while.
       MessageLoopForUI::current()->PostDelayedTask(
-          FROM_HERE, NewRunnableMethod(this,
-          &ExtensionInstalledBubble::ShowInternal), kAnimationWaitTime);
+          FROM_HERE,
+          base::Bind(&ExtensionInstalledBubble::ShowInternal, this),
+          kAnimationWaitTime);
       return;
     }
     reference_view = container->GetBrowserActionView(

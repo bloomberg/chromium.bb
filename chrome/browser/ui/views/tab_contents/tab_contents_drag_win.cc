@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/file_path.h"
 #include "base/message_loop.h"
 #include "base/task.h"
@@ -176,8 +177,9 @@ void TabContentsDragWin::StartBackgroundDragging(
 
   DoDragging(drop_data, ops, page_url, page_encoding, image, image_offset);
   BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &TabContentsDragWin::EndDragging, true));
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&TabContentsDragWin::EndDragging, this, true));
 }
 
 void TabContentsDragWin::PrepareDragForDownload(
@@ -351,8 +353,9 @@ void TabContentsDragWin::OnWaitForData() {
   // the dragging before DoDragDrop returns. This makes the page leave the drag
   // mode so that it can start to process the normal input events.
   BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &TabContentsDragWin::EndDragging, true));
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&TabContentsDragWin::EndDragging, this, true));
 }
 
 void TabContentsDragWin::OnDataObjectDisposed() {
@@ -361,6 +364,7 @@ void TabContentsDragWin::OnDataObjectDisposed() {
   // The drag-and-drop thread is only closed after OLE is done with
   // DataObjectImpl.
   BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &TabContentsDragWin::CloseThread));
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&TabContentsDragWin::CloseThread, this));
 }

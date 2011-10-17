@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <set>
 
+#include "base/bind.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/i18n/case_conversion.h"
@@ -663,9 +664,10 @@ void SelectFileDialogImpl::SelectFileImpl(
                                      file_types, file_type_index,
                                      default_extension, BeginRun(owning_window),
                                      owning_window, params);
-  execute_params.run_state.dialog_thread->message_loop()->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &SelectFileDialogImpl::ExecuteSelectFile,
-                        execute_params));
+  execute_params.run_state.dialog_thread->message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&SelectFileDialogImpl::ExecuteSelectFile, this,
+                 execute_params));
 }
 
 bool SelectFileDialogImpl::IsRunning(HWND owning_hwnd) const {
@@ -721,26 +723,26 @@ void SelectFileDialogImpl::ExecuteSelectFile(
     if (RunOpenMultiFileDialog(params.title, filter,
                                params.run_state.owner, &paths)) {
       BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          NewRunnableMethod(
-              this, &SelectFileDialogImpl::MultiFilesSelected, paths,
-              params.params, params.run_state));
+          BrowserThread::UI,
+          FROM_HERE,
+          base::Bind(&SelectFileDialogImpl::MultiFilesSelected, this, paths,
+                     params.params, params.run_state));
       return;
     }
   }
 
   if (success) {
     BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(
-            this, &SelectFileDialogImpl::FileSelected, path, filter_index,
-            params.params, params.run_state));
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&SelectFileDialogImpl::FileSelected, this, path,
+                   filter_index, params.params, params.run_state));
   } else {
     BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(
-            this, &SelectFileDialogImpl::FileNotSelected, params.params,
-            params.run_state));
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&SelectFileDialogImpl::FileNotSelected, this, params.params,
+                   params.run_state));
   }
 }
 
