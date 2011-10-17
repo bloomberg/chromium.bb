@@ -7,8 +7,8 @@
 
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_callback_factory.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
 #include "content/browser/renderer_host/resource_handler.h"
 #include "net/url_request/url_request_status.h"
@@ -57,7 +57,7 @@ class RedirectToFileResourceHandler : public ResourceHandler {
   bool WriteMore();
   bool BufIsFull() const;
 
-  base::ScopedCallbackFactory<RedirectToFileResourceHandler> callback_factory_;
+  base::WeakPtrFactory<RedirectToFileResourceHandler> weak_factory_;
 
   ResourceDispatcherHost* host_;
   scoped_refptr<ResourceHandler> next_handler_;

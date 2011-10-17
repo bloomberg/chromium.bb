@@ -27,7 +27,7 @@ RedirectToFileResourceHandler::RedirectToFileResourceHandler(
     ResourceHandler* next_handler,
     int process_id,
     ResourceDispatcherHost* host)
-    : callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       host_(host),
       next_handler_(next_handler),
       process_id_(process_id),
@@ -77,8 +77,8 @@ bool RedirectToFileResourceHandler::OnWillStart(int request_id,
     base::FileUtilProxy::CreateTemporary(
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
         base::PLATFORM_FILE_ASYNC,
-        callback_factory_.NewCallback(
-            &RedirectToFileResourceHandler::DidCreateTemporaryFile));
+        base::Bind(&RedirectToFileResourceHandler::DidCreateTemporaryFile,
+                   weak_factory_.GetWeakPtr()));
     return true;
   }
   return next_handler_->OnWillStart(request_id, url, defer);
