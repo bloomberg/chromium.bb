@@ -139,9 +139,10 @@ void FileSystemOperation::DelayedCreateFileForQuota(
       file_system_operation_context_,
       proxy_,
       src_virtual_path_,
-      callback_factory_.NewCallback(
+      base::Bind(
           exclusive_ ? &FileSystemOperation::DidEnsureFileExistsExclusive
-                     : &FileSystemOperation::DidEnsureFileExistsNonExclusive));
+                     : &FileSystemOperation::DidEnsureFileExistsNonExclusive,
+          weak_factory_.GetWeakPtr()));
 }
 
 void FileSystemOperation::CreateDirectory(const GURL& path,
