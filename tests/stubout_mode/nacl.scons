@@ -5,7 +5,7 @@
 
 Import('env')
 
-# TODO(robertm): explore if/why this overly restrictive guard is necessary
+# The file partly_invalid.c contains inline assembler
 if env.Bit('bitcode'):
   Return()
 
