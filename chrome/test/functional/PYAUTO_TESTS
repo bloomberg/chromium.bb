@@ -156,7 +156,7 @@
       # crbug.com/70694, crbug.com/73078
       '-passwords.PasswordTest.testInfoBarDisappearByReload',
       '-passwords.PasswordTest.testNeverSavePasswords',
-      # crbug.com/91887      
+      # crbug.com/91887
       '-passwords.PasswordTest.testSavedPasswordInTabsAndWindows',
       '-passwords.PasswordTest.testClearFetchedCredForNewUserName',
       # causes browser crash?  crbug.com/99865
@@ -301,6 +301,9 @@
       # crbug.com/81271
       '-autofill.AutofillTest.testMergeAggregatedProfilesWithSameAddress',
       '-autofill.AutofillTest.testProfilesNotMergedWhenNoMinAddressData',
+      # crosbug.com/19556
+      '-autofill.AutofillTest.testDisplayLineItemForEntriesWithNoCCNum',
+      '-autofill.AutofillTest.testPostalCodeAndStateLabelsBasedOnCountry',
       # Downloads panel stays even after declining a download.
       # crosbug.com/14728
       '-downloads.DownloadsTest.testDeclineDangerousDownload',
