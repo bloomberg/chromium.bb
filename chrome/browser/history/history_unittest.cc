@@ -193,9 +193,11 @@ class HistoryTest : public testing::Test {
         GURL("foo-url"),
         GURL(""),
         time,
+        time,
         0,
         512,
         state,
+        0,
         0);
     return db_->CreateDownload(download);
   }
@@ -369,8 +371,16 @@ TEST_F(HistoryTest, ClearBrowsingData_Downloads) {
             downloads[2].start_time.ToInternalValue());
 
   // Change state so we can delete the downloads.
-  EXPECT_TRUE(db_->UpdateDownload(512, DownloadItem::COMPLETE, in_progress));
-  EXPECT_TRUE(db_->UpdateDownload(512, DownloadItem::CANCELLED, removing));
+  DownloadPersistentStoreInfo data;
+  data.received_bytes = 512;
+  data.state = DownloadItem::COMPLETE;
+  data.end_time = base::Time::Now();
+  data.opened = false;
+  data.db_handle = in_progress;
+  EXPECT_TRUE(db_->UpdateDownload(data));
+  data.state = DownloadItem::CANCELLED;
+  data.db_handle = removing;
+  EXPECT_TRUE(db_->UpdateDownload(data));
 
   // Try removing from Time=0. This should delete all.
   db_->RemoveDownloadsBetween(Time(), Time());

@@ -94,10 +94,7 @@ void DownloadHistory::UpdateEntry(DownloadItem* download_item) {
   HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
   if (!hs)
     return;
-
-  hs->UpdateDownload(download_item->received_bytes(),
-                     download_item->state(),
-                     download_item->db_handle());
+  hs->UpdateDownload(download_item->GetPersistentStoreInfo());
 }
 
 void DownloadHistory::UpdateDownloadPath(DownloadItem* download_item,

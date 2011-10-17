@@ -556,11 +556,8 @@ void HistoryService::CleanUpInProgressEntries() {
 
 // Handle updates for a particular download. This is a 'fire and forget'
 // operation, so we don't need to be called back.
-void HistoryService::UpdateDownload(int64 received_bytes,
-                                    int32 state,
-                                    int64 db_handle) {
-  ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::UpdateDownload,
-                    received_bytes, state, db_handle);
+void HistoryService::UpdateDownload(const DownloadPersistentStoreInfo& data) {
+  ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::UpdateDownload, data);
 }
 
 void HistoryService::UpdateDownloadPath(const FilePath& path,

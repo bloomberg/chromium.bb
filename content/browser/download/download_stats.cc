@@ -177,4 +177,57 @@ void RecordDownloadMimeType(const std::string& mime_type_string) {
                             DOWNLOAD_CONTENT_MAX);
 }
 
+void RecordOpen(const base::Time& end, bool first) {
+  if (!end.is_null()) {
+    UMA_HISTOGRAM_LONG_TIMES("Download.OpenTime", (base::Time::Now() - end));
+    if (first) {
+      UMA_HISTOGRAM_LONG_TIMES("Download.FirstOpenTime",
+                              (base::Time::Now() - end));
+    }
+  }
+}
+
+void RecordHistorySize(int size) {
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Download.HistorySize",
+                              size,
+                              0/*min*/,
+                              (1 << 10)/*max*/,
+                              32/*num_buckets*/);
+}
+
+void RecordShelfClose(int size, int in_progress, bool autoclose) {
+  static const int kMaxShelfSize = 16;
+  if (autoclose) {
+    UMA_HISTOGRAM_ENUMERATION("Download.ShelfSizeOnAutoClose",
+                              size,
+                              kMaxShelfSize);
+    UMA_HISTOGRAM_ENUMERATION("Download.ShelfInProgressSizeOnAutoClose",
+                              in_progress,
+                              kMaxShelfSize);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("Download.ShelfSizeOnUserClose",
+                              size,
+                              kMaxShelfSize);
+    UMA_HISTOGRAM_ENUMERATION("Download.ShelfInProgressSizeOnUserClose",
+                              in_progress,
+                              kMaxShelfSize);
+  }
+}
+
+void RecordClearAllSize(int size) {
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Download.ClearAllSize",
+                              size,
+                              0/*min*/,
+                              (1 << 10)/*max*/,
+                              32/*num_buckets*/);
+}
+
+void RecordOpensOutstanding(int size) {
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Download.OpensOutstanding",
+                              size,
+                              0/*min*/,
+                              (1 << 10)/*max*/,
+                              64/*num_buckets*/);
+}
+
 }  // namespace download_stats

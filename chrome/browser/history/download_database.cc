@@ -5,6 +5,7 @@
 #include "chrome/browser/history/download_database.h"
 
 #include <limits>
+#include <string>
 #include <vector>
 
 #include "base/file_path.h"
@@ -15,21 +16,21 @@
 #include "content/browser/download/download_persistent_store_info.h"
 #include "sql/statement.h"
 
-// Download schema:
-//
-//   id             SQLite-generated primary key.
-//   full_path      Location of the download on disk.
-//   url            URL of the downloaded file.
-//   start_time     When the download was started.
-//   received_bytes Total size downloaded.
-//   total_bytes    Total size of the download.
-//   state          Identifies if this download is completed or not. Not used
-//                  directly by the history system. See DownloadItem's
-//                  DownloadState for where this is used.
-
 namespace history {
 
 namespace {
+
+static const char kSchema[] =
+  "CREATE TABLE downloads ("
+  "id INTEGER PRIMARY KEY,"           // SQLite-generated primary key.
+  "full_path LONGVARCHAR NOT NULL,"   // Location of the download on disk.
+  "url LONGVARCHAR NOT NULL,"         // URL of the downloaded file.
+  "start_time INTEGER NOT NULL,"      // When the download was started.
+  "received_bytes INTEGER NOT NULL,"  // Total size downloaded.
+  "total_bytes INTEGER NOT NULL,"     // Total size of the download.
+  "state INTEGER NOT NULL,"           // 1=complete, 2=cancelled, 4=interrupted
+  "end_time INTEGER NOT NULL,"        // When the download completed.
+  "opened INTEGER NOT NULL)";         // 1 if it has ever been opened else 0
 
 #if defined(OS_POSIX)
 
@@ -68,22 +69,22 @@ DownloadDatabase::DownloadDatabase()
 DownloadDatabase::~DownloadDatabase() {
 }
 
+bool DownloadDatabase::EnsureColumnExists(
+    const std::string& name, const std::string& type) {
+  std::string add_col = "ALTER TABLE downloads ADD COLUMN " + name + " " + type;
+  return GetDB().DoesColumnExist("downloads", name.c_str()) ||
+         GetDB().Execute(add_col.c_str());
+}
+
 bool DownloadDatabase::InitDownloadTable() {
-  if (!GetDB().DoesTableExist("downloads")) {
-    if (!GetDB().Execute(
-        "CREATE TABLE downloads ("
-        "id INTEGER PRIMARY KEY,"
-        "full_path LONGVARCHAR NOT NULL,"
-        "url LONGVARCHAR NOT NULL,"
-        "start_time INTEGER NOT NULL,"
-        "received_bytes INTEGER NOT NULL,"
-        "total_bytes INTEGER NOT NULL,"
-        "state INTEGER NOT NULL)"))
-      return false;
-  }
   meta_table_.Init(&GetDB(), 0, 0);
   meta_table_.GetValue(kNextDownloadId, &next_id_);
-  return true;
+  if (GetDB().DoesTableExist("downloads")) {
+    return EnsureColumnExists("end_time", "INTEGER NOT NULL DEFAULT 0") &&
+           EnsureColumnExists("opened", "INTEGER NOT NULL DEFAULT 0");
+  } else {
+    return GetDB().Execute(kSchema);
+  }
 }
 
 bool DownloadDatabase::DropDownloadTable() {
@@ -96,7 +97,7 @@ void DownloadDatabase::QueryDownloads(
 
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "SELECT id, full_path, url, start_time, received_bytes, "
-        "total_bytes, state "
+        "total_bytes, state, end_time, opened "
       "FROM downloads "
       "ORDER BY start_time"));
   if (!statement)
@@ -112,23 +113,25 @@ void DownloadDatabase::QueryDownloads(
     info.received_bytes = statement.ColumnInt64(4);
     info.total_bytes = statement.ColumnInt64(5);
     info.state = statement.ColumnInt(6);
+    info.end_time = base::Time::FromTimeT(statement.ColumnInt64(7));
+    info.opened = statement.ColumnInt(8) != 0;
     results->push_back(info);
   }
 }
 
-bool DownloadDatabase::UpdateDownload(int64 received_bytes,
-                                      int32 state,
-                                      DownloadID db_handle) {
-  DCHECK(db_handle > 0);
+bool DownloadDatabase::UpdateDownload(const DownloadPersistentStoreInfo& data) {
+  DCHECK(data.db_handle > 0);
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "UPDATE downloads "
-      "SET received_bytes=?, state=? WHERE id=?"));
+      "SET received_bytes=?, state=?, end_time=?, opened=? WHERE id=?"));
   if (!statement)
     return false;
 
-  statement.BindInt64(0, received_bytes);
-  statement.BindInt(1, state);
-  statement.BindInt64(2, db_handle);
+  statement.BindInt64(0, data.received_bytes);
+  statement.BindInt(1, data.state);
+  statement.BindInt64(2, data.end_time.ToTimeT());
+  statement.BindInt(3, (data.opened ? 1 : 0));
+  statement.BindInt64(4, data.db_handle);
   return statement.Run();
 }
 
@@ -166,8 +169,9 @@ int64 DownloadDatabase::CreateDownload(
 
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "INSERT INTO downloads "
-      "(full_path, url, start_time, received_bytes, total_bytes, state) "
-      "VALUES (?, ?, ?, ?, ?, ?)"));
+      "(full_path, url, start_time, received_bytes, total_bytes, state, "
+      "end_time, opened) "
+      "VALUES (?, ?, ?, ?, ?, ?, ?, ?)"));
   if (!statement)
     return 0;
 
@@ -177,6 +181,8 @@ int64 DownloadDatabase::CreateDownload(
   statement.BindInt64(3, info.received_bytes);
   statement.BindInt64(4, info.total_bytes);
   statement.BindInt(5, info.state);
+  statement.BindInt64(6, info.end_time.ToTimeT());
+  statement.BindInt(7, info.opened ? 1 : 0);
 
   if (statement.Run()) {
     int64 id = GetDB().GetLastInsertRowId();

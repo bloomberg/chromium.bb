@@ -25,6 +25,7 @@
 #include "content/browser/download/download_item.h"
 #include "content/browser/download/download_manager_delegate.h"
 #include "content/browser/download/download_persistent_store_info.h"
+#include "content/browser/download/download_stats.h"
 #include "content/browser/download/download_status_updater.h"
 #include "content/browser/download/interrupt_reasons.h"
 #include "content/browser/renderer_host/render_process_host.h"
@@ -689,6 +690,7 @@ int DownloadManager::RemoveDownloads(const base::Time remove_begin) {
 }
 
 int DownloadManager::RemoveAllDownloads() {
+  download_stats::RecordClearAllSize(history_downloads_.size());
   // The null times make the date range unbounded.
   return RemoveDownloadsBetween(base::Time(), base::Time());
 }
@@ -847,6 +849,8 @@ void DownloadManager::AddDownloadItemToHistory(DownloadItem* download,
   // TODO(rdsmith): Convert to DCHECK() when http://crbug.com/85408
   // is fixed.
   CHECK_NE(DownloadItem::kUninitializedHandle, db_handle);
+
+  download_stats::RecordHistorySize(history_downloads_.size());
 
   DCHECK(download->db_handle() == DownloadItem::kUninitializedHandle);
   download->set_db_handle(db_handle);
@@ -1074,4 +1078,15 @@ void DownloadManager::SavePageDownloadFinished(DownloadItem* download) {
           Source<DownloadManager>(this),
           Details<DownloadItem>(download));
   }
+}
+
+void DownloadManager::MarkDownloadOpened(DownloadItem* download) {
+  delegate_->UpdateItemInPersistentStore(download);
+  int num_unopened = 0;
+  for (DownloadMap::iterator it = history_downloads_.begin();
+       it != history_downloads_.end(); ++it) {
+    if (it->second->IsComplete() && !it->second->opened())
+      ++num_unopened;
+  }
+  download_stats::RecordOpensOutstanding(num_unopened);
 }

@@ -279,6 +279,7 @@ class CONTENT_EXPORT DownloadItem {
   int32 id() const { return download_id_; }
   DownloadId global_id() const;
   base::Time start_time() const { return start_time_; }
+  base::Time end_time() const { return end_time_; }
   void set_db_handle(int64 handle) { db_handle_ = handle; }
   int64 db_handle() const { return db_handle_; }
   DownloadManager* download_manager() { return download_manager_; }
@@ -432,6 +433,9 @@ class CONTENT_EXPORT DownloadItem {
 
   // Time the download was started
   base::Time start_time_;
+
+  // Time the download completed
+  base::Time end_time_;
 
   // Our persistent store handle
   int64 db_handle_;

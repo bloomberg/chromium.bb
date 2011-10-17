@@ -20,6 +20,7 @@
 #import "chrome/browser/ui/cocoa/presentation_mode_controller.h"
 #include "content/browser/download/download_item.h"
 #include "content/browser/download/download_manager.h"
+#include "content/browser/download/download_stats.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -243,10 +244,19 @@ const NSSize kHoverCloseButtonDefaultSize = { 16, 16 };
   // If |sender| isn't nil, then we're being closed from the UI by the user and
   // we need to tell our shelf implementation to close. Otherwise, we're being
   // closed programmatically by our shelf implementation.
-  if (sender)
-    bridge_->Close();
-  else
+  bool auto_closed = (sender == nil);
+
+  int numInProgress = 0;
+  for (NSUInteger i = 0; i < [downloadItemControllers_ count]; ++i) {
+    if ([[downloadItemControllers_ objectAtIndex:i]download]->IsInProgress())
+      ++numInProgress;
+  }
+  download_stats::RecordShelfClose(
+      [downloadItemControllers_ count], numInProgress, auto_closed);
+  if (auto_closed)
     [self showDownloadShelf:NO];
+  else
+    bridge_->Close();
 }
 
 - (void)animationDidEnd:(NSAnimation*)animation {

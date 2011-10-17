@@ -265,6 +265,9 @@ class CONTENT_EXPORT DownloadManager
   // DownloadManagerDelegate::ShouldStartDownload and now is ready.
   void RestartDownload(int32 download_id);
 
+  // Mark the download opened in the persistent store.
+  void MarkDownloadOpened(DownloadItem* download);
+
   // Checks whether downloaded files still exist. Updates state of downloads
   // that refer to removed files. The check runs in the background and may
   // finish asynchronously after this method returns.

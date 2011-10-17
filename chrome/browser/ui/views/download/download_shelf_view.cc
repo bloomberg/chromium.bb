@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/views/download/download_item_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "content/browser/download/download_item.h"
+#include "content/browser/download/download_stats.h"
 #include "content/browser/download/download_manager.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "grit/generated_resources.h"
@@ -88,6 +89,7 @@ int CenterPosition(int size, int target_size) {
 DownloadShelfView::DownloadShelfView(Browser* browser, BrowserView* parent)
     : browser_(browser),
       parent_(parent),
+      auto_closed_(true),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           mouse_watcher_(this, this, gfx::Insets())) {
   mouse_watcher_.set_notify_on_exit_time_ms(kNotifyOnExitTimeMS);
@@ -371,6 +373,7 @@ void DownloadShelfView::LinkClicked(views::Link* source, int event_flags) {
 
 void DownloadShelfView::ButtonPressed(
     views::Button* button, const views::Event& event) {
+  auto_closed_ = false;
   Close();
 }
 
@@ -387,8 +390,16 @@ void DownloadShelfView::Show() {
 }
 
 void DownloadShelfView::Close() {
+  int num_in_progress = 0;
+  for (size_t i = 0; i < download_views_.size(); ++i) {
+    if (download_views_[i]->download()->IsInProgress())
+      ++num_in_progress;
+  }
+  download_stats::RecordShelfClose(
+      download_views_.size(), num_in_progress, auto_closed_);
   parent_->SetDownloadShelfVisible(false);
   shelf_animation_->Hide();
+  auto_closed_ = true;
 }
 
 Browser* DownloadShelfView::browser() const {

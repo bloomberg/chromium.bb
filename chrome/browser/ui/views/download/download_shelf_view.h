@@ -154,6 +154,9 @@ class DownloadShelfView : public AccessiblePaneView,
   // The window this shelf belongs to.
   BrowserView* parent_;
 
+  // Whether we are auto-closing.
+  bool auto_closed_;
+
   views::MouseWatcher mouse_watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadShelfView);

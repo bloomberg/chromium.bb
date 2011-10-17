@@ -1150,11 +1150,9 @@ void HistoryBackend::CleanUpInProgressEntries() {
 }
 
 // Update a particular download entry.
-void HistoryBackend::UpdateDownload(int64 received_bytes,
-                                    int32 state,
-                                    int64 db_handle) {
+void HistoryBackend::UpdateDownload(const DownloadPersistentStoreInfo& data) {
   if (db_.get())
-    db_->UpdateDownload(received_bytes, state, db_handle);
+    db_->UpdateDownload(data);
 }
 
 // Update the path of a particular download entry.

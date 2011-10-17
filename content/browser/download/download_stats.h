@@ -15,6 +15,7 @@
 #include "content/browser/download/interrupt_reasons.h"
 
 namespace base {
+class Time;
 class TimeTicks;
 }
 
@@ -90,6 +91,25 @@ void RecordDownloadWriteSize(size_t data_len);
 
 // Record WRITE_LOOP_COUNT and number of loops.
 void RecordDownloadWriteLoopCount(int count);
+
+// Record the time of both the first open and all subsequent opens since the
+// download completed.
+void RecordOpen(const base::Time& end, bool first);
+
+// Record the number of items that are in the history at the time that a
+// new download is added to the history.
+void RecordHistorySize(int size);
+
+// Record the total number of items and the number of in-progress items showing
+// in the shelf when it closes.  Set |autoclose| to true when the shelf is
+// closing itself, false when the user explicitly closed it.
+void RecordShelfClose(int size, int in_progress, bool autoclose);
+
+// Record the number of downloads removed by ClearAll.
+void RecordClearAllSize(int size);
+
+// Record the number of completed unopened downloads when a download is opened.
+void RecordOpensOutstanding(int size);
 
 }  // namespace download_stats
 

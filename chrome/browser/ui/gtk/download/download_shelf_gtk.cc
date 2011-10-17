@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/download/download_item.h"
+#include "content/browser/download/download_stats.h"
 #include "content/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -195,6 +196,13 @@ void DownloadShelfGtk::Close() {
   gdk_window_raise(shelf_.get()->window);
   slide_widget_->Close();
   browser_->UpdateDownloadShelfVisibility(false);
+  int num_in_progress = 0;
+  for (size_t i = 0; i < download_items_.size(); ++i) {
+    if (download_items_[i]->get_download()->IsInProgress())
+      ++num_in_progress;
+  }
+  download_stats::RecordShelfClose(
+      download_items_.size(), num_in_progress, close_on_mouse_out_);
   SetCloseOnMouseOut(false);
 }
 

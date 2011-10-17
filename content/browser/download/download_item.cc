@@ -130,6 +130,7 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
       start_tick_(base::TimeTicks()),
       state_(static_cast<DownloadState>(info.state)),
       start_time_(info.start_time),
+      end_time_(info.end_time),
       db_handle_(info.db_handle),
       download_manager_(download_manager),
       is_paused_(false),
@@ -140,7 +141,7 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
       is_otr_(false),
       is_temporary_(false),
       all_data_saved_(false),
-      opened_(false),
+      opened_(info.opened),
       open_enabled_(true),
       delegate_delayed_complete_(false) {
   if (IsInProgress())
@@ -285,8 +286,10 @@ void DownloadItem::OpenDownload() {
   // program that opens the file.  So instead we spawn a check to update
   // the UI if the file has been deleted in parallel with the open.
   download_manager_->CheckForFileRemoval(this);
+  download_stats::RecordOpen(end_time(), !opened());
   opened_ = true;
   FOR_EACH_OBSERVER(Observer, observers_, OnDownloadOpened(this));
+  download_manager_->MarkDownloadOpened(this);
 
   // For testing: If download opening is disabled on this item,
   // make the rest of the routine a no-op.
@@ -390,6 +393,7 @@ void DownloadItem::MarkAsComplete() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DCHECK(all_data_saved_);
+  end_time_ = base::Time::Now();
   TransitionTo(COMPLETE);
 }
 
@@ -420,6 +424,7 @@ void DownloadItem::Completed() {
   VLOG(20) << __FUNCTION__ << "() " << DebugString(false);
 
   DCHECK(all_data_saved_);
+  end_time_ = base::Time::Now();
   TransitionTo(COMPLETE);
   download_manager_->DownloadCompleted(id());
   download_stats::RecordDownloadCompleted(start_tick_, received_bytes_);
@@ -688,10 +693,12 @@ DownloadPersistentStoreInfo DownloadItem::GetPersistentStoreInfo() const {
                                      GetURL(),
                                      referrer_url(),
                                      start_time(),
+                                     end_time(),
                                      received_bytes(),
                                      total_bytes(),
                                      state(),
-                                     db_handle());
+                                     db_handle(),
+                                     opened());
 }
 
 FilePath DownloadItem::GetTargetFilePath() const {

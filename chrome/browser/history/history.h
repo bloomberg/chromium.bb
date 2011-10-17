@@ -446,7 +446,7 @@ class HistoryService : public CancelableRequestProvider,
   // Called to update the history service about the current state of a download.
   // This is a 'fire and forget' query, so just pass the relevant state info to
   // the database with no need for a callback.
-  void UpdateDownload(int64 received_bytes, int32 state, int64 db_handle);
+  void UpdateDownload(const DownloadPersistentStoreInfo& data);
 
   // Called to update the history service about the path of a download.
   // This is a 'fire and forget' query.
