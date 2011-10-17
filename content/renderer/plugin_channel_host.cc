@@ -134,7 +134,7 @@ void PluginChannelHost::OnSetException(const std::string& message) {
   WebKit::WebBindings::setException(NULL, message.c_str());
 }
 
-void PluginChannelHost::OnPluginShuttingDown(const IPC::Message& message) {
+void PluginChannelHost::OnPluginShuttingDown() {
   expecting_shutdown_ = true;
 }
 

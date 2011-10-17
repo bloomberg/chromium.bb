@@ -53,7 +53,7 @@ class PluginChannelHost : public NPChannelBase {
 
   virtual bool OnControlMessageReceived(const IPC::Message& message);
   void OnSetException(const std::string& message);
-  void OnPluginShuttingDown(const IPC::Message& message);
+  void OnPluginShuttingDown();
 
   // Keep track of all the registered WebPluginDelegeProxies to
   // inform about OnChannelError

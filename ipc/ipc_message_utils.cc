@@ -472,7 +472,7 @@ LogData::~LogData() {
 void ParamTraits<LogData>::Write(Message* m, const param_type& p) {
   WriteParam(m, p.channel);
   WriteParam(m, p.routing_id);
-  WriteParam(m, static_cast<int>(p.type));
+  WriteParam(m, p.type);
   WriteParam(m, p.flags);
   WriteParam(m, p.sent);
   WriteParam(m, p.receive);
@@ -481,18 +481,15 @@ void ParamTraits<LogData>::Write(Message* m, const param_type& p) {
 }
 
 bool ParamTraits<LogData>::Read(const Message* m, void** iter, param_type* r) {
-  int type = -1;
-  bool result =
+  return
       ReadParam(m, iter, &r->channel) &&
       ReadParam(m, iter, &r->routing_id) &&
-      ReadParam(m, iter, &type) &&
+      ReadParam(m, iter, &r->type) &&
       ReadParam(m, iter, &r->flags) &&
       ReadParam(m, iter, &r->sent) &&
       ReadParam(m, iter, &r->receive) &&
       ReadParam(m, iter, &r->dispatch) &&
       ReadParam(m, iter, &r->params);
-  r->type = static_cast<uint16>(type);
-  return result;
 }
 
 }  // namespace IPC

@@ -600,6 +600,7 @@
     typedef IPC::Message Schema;                                              \
     enum { ID = IPC_MESSAGE_ID() };                                           \
     msg_class() : IPC::Message(MSG_ROUTING_CONTROL, ID, PRIORITY_NORMAL) {}   \
+    static void Log(std::string* name, const Message* msg, std::string* l);   \
   };
 
 #define IPC_EMPTY_ROUTED_DECL(msg_class, in_cnt, out_cnt, in_list, out_list)  \
@@ -609,6 +610,7 @@
     enum { ID = IPC_MESSAGE_ID() };                                           \
     msg_class(int32 routing_id)                                               \
         : IPC::Message(routing_id, ID, PRIORITY_NORMAL) {}                    \
+    static void Log(std::string* name, const Message* msg, std::string* l);   \
   };
 
 #define IPC_ASYNC_CONTROL_DECL(msg_class, in_cnt, out_cnt, in_list, out_list) \
@@ -753,7 +755,13 @@
     return Schema::ReadReplyParam(msg, p);                                    \
   }
 
-#define IPC_EMPTY_MESSAGE_LOG(msg_class)
+#define IPC_EMPTY_MESSAGE_LOG(msg_class)                                \
+  void msg_class::Log(std::string* name,                                \
+                      const Message* msg,                               \
+                      std::string* l) {                                 \
+    if (name)                                                           \
+      *name = #msg_class;                                               \
+  }
 
 #define IPC_ASYNC_MESSAGE_LOG(msg_class)                                \
   void msg_class::Log(std::string* name,                                \

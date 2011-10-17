@@ -4,12 +4,16 @@
 
 // Need to include this before any other file because it defines
 // IPC_MESSAGE_LOG_ENABLED. We need to use it to define
-// IPC_MESSAGE_MACROS_LOG_ENABLED so render_messages.h will generate the
+// IPC_MESSAGE_MACROS_LOG_ENABLED so that all_messages.h will generate the
 // ViewMsgLog et al. functions.
 #include "ipc/ipc_message.h"
 
 #ifdef IPC_MESSAGE_LOG_ENABLED
 #define IPC_MESSAGE_MACROS_LOG_ENABLED
+
+// We need to do this real early to be sure IPC_MESSAGE_MACROS_LOG_ENABLED
+// doesn't get undefined.
+#include "chrome/common/all_messages.h"
 
 #include "chrome/browser/ui/views/about_ipc_dialog.h"
 
@@ -24,9 +28,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/render_messages.h"
-#include "content/common/devtools_messages.h"
-#include "content/common/plugin_messages.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
 #include "views/controls/button/text_button.h"
