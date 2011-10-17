@@ -5,20 +5,14 @@
 
 Import('env')
 
-# tests in this directory contain c++ which does not work on pnacl/x86
-if env.Bit('bitcode'):
-  Return()
-
 nacl_log_nexe = env.ComponentProgram('nacl_log', 'nacl_log.c',
                                      EXTRA_LIBS=['platform',
                                                  'gio',
                                                  '${PTHREAD_LIBS}',
                                                  '${NONIRT_LIBS}'])
-
-node = env.CommandSelLdrTestNacl(
-    'nacl_log_test.out',
-    nacl_log_nexe,
-    )
+node = env.CommandSelLdrTestNacl('nacl_log_test.out',
+                                 nacl_log_nexe,
+                                 )
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],
                        'run_nacl_log_test')
