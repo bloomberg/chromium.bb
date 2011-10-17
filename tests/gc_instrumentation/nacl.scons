@@ -6,19 +6,24 @@
 Import('env')
 
 # PNaCl doesn't have -finstrument-for-thread-suspension currently
-if not env.Bit('bitcode'):
-  inputs = ['gc_noinst.c']
+# BUG http://code.google.com/p/nativeclient/issues/detail?id=2363
 
-  # Compile gc_instrumentation.c with -finstrument-for-thread-suspension
-  env_inst = env.Clone()
-  env_inst.Append(CFLAGS=['-finstrument-for-thread-suspension'])
-  inputs += env_inst.ComponentObject('gc_instrumentation.c')
+if env.Bit('bitcode'):
+  Return()
 
-  nexe = env.ComponentProgram('gc_instrumentation', inputs,
-                              EXTRA_LIBS=['${DYNCODE_LIBS}',
-                                          '${PTHREAD_LIBS}',
-                                          '${NONIRT_LIBS}'])
 
-  node = env.CommandSelLdrTestNacl('gc_instrumentation.out', nexe)
+inputs = ['gc_noinst.c']
 
-  env.AddNodeToTestSuite(node, ['small_tests'], 'run_gc_instrumentation_test')
+# Compile gc_instrumentation.c with -finstrument-for-thread-suspension
+env_inst = env.Clone()
+env_inst.Append(CFLAGS=['-finstrument-for-thread-suspension'])
+inputs += env_inst.ComponentObject('gc_instrumentation.c')
+
+nexe = env.ComponentProgram('gc_instrumentation', inputs,
+                            EXTRA_LIBS=['${DYNCODE_LIBS}',
+                                        '${PTHREAD_LIBS}',
+                                        '${NONIRT_LIBS}'])
+
+node = env.CommandSelLdrTestNacl('gc_instrumentation.out', nexe)
+
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_gc_instrumentation_test')
