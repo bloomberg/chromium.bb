@@ -97,7 +97,7 @@ class FileSystemFileUtilProxy {
   static bool ReadDirectory(const FileSystemOperationContext& context,
                             scoped_refptr<MessageLoopProxy> message_loop_proxy,
                             const FilePath& file_path,
-                            ReadDirectoryCallback* callback);
+                            const ReadDirectoryCallback& callback);
 
   // Creates directory at given path. It's an error to create
   // if |exclusive| is true and dir already exists.

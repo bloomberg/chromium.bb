@@ -385,9 +385,9 @@ void FileSystemOperation::ReadDirectory(const GURL& path) {
   if (!file_system_operation_context_.src_file_util())
     file_system_operation_context_.set_src_file_util(file_util);
   FileSystemFileUtilProxy::ReadDirectory(
-      file_system_operation_context_,
-      proxy_, virtual_path, callback_factory_.NewCallback(
-          &FileSystemOperation::DidReadDirectory));
+      file_system_operation_context_, proxy_, virtual_path,
+      base::Bind(&FileSystemOperation::DidReadDirectory,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void FileSystemOperation::Remove(const GURL& path, bool recursive) {
