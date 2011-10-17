@@ -61,9 +61,13 @@ def FindChrome(src_dir, options):
       'build/%s/chrome.exe' % mode,
       'chrome/%s/chrome.exe' % mode,
       'out/%s/chrome' % mode,
-      # Mac Chromium builder
+      # Mac Chromium make builder
+      'out/%s/Chromium.app/Contents/MacOS/Chromium' % mode,
+      # Mac release make builder
+      'out/%s/Google Chrome.app/Contents/MacOS/Google Chrome' % mode,
+      # Mac Chromium xcode builder
       'xcodebuild/%s/Chromium.app/Contents/MacOS/Chromium' % mode,
-      # Mac release builder
+      # Mac release xcode builder
       'xcodebuild/%s/Google Chrome.app/Contents/MacOS/Google Chrome' % mode,
   ]
 
