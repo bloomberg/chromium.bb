@@ -37,9 +37,8 @@ class FileThreadDeserializer
     DCHECK(origin_loop_proxy_->BelongsToCurrentThread());
     file_loop_proxy_->PostTask(
         FROM_HERE,
-        NewRunnableMethod(this,
-                          &FileThreadDeserializer::ReadFileAndReport,
-                          path));
+        base::Bind(&FileThreadDeserializer::ReadFileAndReport,
+                   this, path));
   }
 
   // Deserializes JSON on the file thread.
@@ -50,7 +49,7 @@ class FileThreadDeserializer
 
     origin_loop_proxy_->PostTask(
         FROM_HERE,
-        NewRunnableMethod(this, &FileThreadDeserializer::ReportOnOriginThread));
+        base::Bind(&FileThreadDeserializer::ReportOnOriginThread, this));
   }
 
   // Reports deserialization result on the origin thread.
