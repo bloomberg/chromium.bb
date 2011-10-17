@@ -79,7 +79,7 @@ bool NameValuePairsParser::GetSingleValueFromTool(int argc,
   CommandLine command_line(argc, argv);
   std::string output_string;
   if (!base::GetAppOutput(command_line, &output_string)) {
-    LOG(ERROR) << "Error excuting: " << command_line.GetCommandLineString();
+    LOG(ERROR) << "Error executing: " << command_line.GetCommandLineString();
     return false;
   }
   TrimWhitespaceASCII(output_string, TRIM_ALL, &output_string);

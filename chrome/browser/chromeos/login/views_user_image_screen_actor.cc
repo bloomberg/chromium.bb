@@ -54,6 +54,9 @@ void ViewsUserImageScreenActor::ShowCameraInitializing() {
   view()->ShowCameraInitializing();
 }
 
+void ViewsUserImageScreenActor::CheckCameraPresence() {
+}
+
 bool ViewsUserImageScreenActor::IsCapturing() const {
   return view()->IsCapturing();
 }
@@ -79,4 +82,3 @@ void ViewsUserImageScreenActor::OnDefaultImageSelected(int index) {
 }
 
 }  // namespace chromeos
-

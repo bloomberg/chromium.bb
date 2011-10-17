@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_USER_IMAGE_SCREEN_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_USER_IMAGE_SCREEN_HANDLER_H_
 
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/user_image_screen_actor.h"
 #include "chrome/browser/chromeos/options/take_photo_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
@@ -42,6 +43,7 @@ class UserImageScreenHandler : public UserImageScreenActor,
   virtual void UpdateVideoFrame(const SkBitmap& frame) OVERRIDE;
   virtual void ShowCameraError() OVERRIDE;
   virtual void ShowCameraInitializing() OVERRIDE;
+  virtual void CheckCameraPresence() OVERRIDE;
   virtual bool IsCapturing() const OVERRIDE;
   virtual void AddProfileImage(const SkBitmap& image) OVERRIDE;
 
@@ -61,6 +63,9 @@ class UserImageScreenHandler : public UserImageScreenActor,
   // Called when user accept the image closing the screen.
   void HandleImageAccepted(const base::ListValue* args);
 
+  // Called when the camera presence check has been completed.
+  void OnCameraPresenceCheckDone();
+
   UserImageScreenActor::Delegate* screen_;
 
   // Keeps whether screen should be shown right after initialization.
@@ -77,6 +82,8 @@ class UserImageScreenHandler : public UserImageScreenActor,
 
   // Its data URL.
   std::string profile_picture_data_url_;
+
+  base::WeakPtrFactory<UserImageScreenHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UserImageScreenHandler);
 };

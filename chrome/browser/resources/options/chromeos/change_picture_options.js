@@ -51,14 +51,10 @@ cr.define('options', function() {
       imageGrid.addEventListener('dblclick',
                                  this.handleImageDblClick_.bind(this));
 
-      // Add "Take photo" and "Choose a file" buttons in a uniform way with
-      // other buttons.
+      // Add the "Choose file" button.
       imageGrid.addItem(ButtonImages.CHOOSE_FILE,
                         localStrings.getString('chooseFile'),
                         this.handleChooseFile_.bind(this));
-      imageGrid.addItem(ButtonImages.TAKE_PHOTO,
-                        localStrings.getString('takePhoto'),
-                        this.handleTakePhoto_.bind(this));
 
       // Profile image data.
       this.profileImage_ = imageGrid.addItem(
@@ -160,6 +156,25 @@ cr.define('options', function() {
     },
 
     /**
+     * Notifies about camera presence change.
+     * @param {boolean} present Whether a camera is present or not.
+     * @private
+     */
+    setCameraPresent_: function(present) {
+      var imageGrid = $('images-grid');
+      if (present && !this.takePhotoButton_) {
+        this.takePhotoButton_ = imageGrid.addItem(
+            ButtonImages.TAKE_PHOTO,
+            localStrings.getString('takePhoto'),
+            this.handleTakePhoto_.bind(this),
+            1);
+      } else if (!present && this.takePhotoButton_) {
+        imageGrid.removeItem(this.takePhotoButton_);
+        this.takePhotoButton_ = null;
+      }
+    },
+
+    /**
      * Adds or updates old user image taken from file/camera (neither a profile
      * image nor a default one).
      * @private
@@ -170,7 +185,9 @@ cr.define('options', function() {
       if (this.oldImage_) {
         this.oldImage_ = imageGrid.updateItem(this.oldImage_, url);
       } else {
-        this.oldImage_ = imageGrid.addItem(url, undefined, undefined, 3);
+        // Insert next to the profile image.
+        var pos = imageGrid.findItem(this.profileImage_) + 1;
+        this.oldImage_ = imageGrid.addItem(url, undefined, undefined, pos);
         imageGrid.selectedItem = this.oldImage_;
       }
     },
@@ -213,6 +230,7 @@ cr.define('options', function() {
 
   // Forward public APIs to private implementations.
   [
+    'setCameraPresent',
     'setOldImage',
     'setProfileImage',
     'setSelectedImage',

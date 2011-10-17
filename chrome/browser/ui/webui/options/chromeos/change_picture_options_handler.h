@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS_CHROMEOS_CHANGE_PICTURE_OPTIONS_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_CHROMEOS_CHANGE_PICTURE_OPTIONS_HANDLER_H_
 
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/profile_image_downloader.h"
 #include "chrome/browser/chromeos/options/take_photo_dialog.h"
 #include "chrome/browser/ui/shell_dialogs.h"
@@ -46,6 +47,12 @@ class ChangePictureOptionsHandler : public OptionsPageUIHandler,
   // Starts download of user profile image.
   void DownloadProfileImage();
 
+  // Starts camera presence check.
+  void CheckCameraPresence();
+
+  // Updates UI with camera presence state.
+  void SetCameraPresent(bool present);
+
   // Opens a file selection dialog to choose user image from file.
   void HandleChooseFile(const base::ListValue* args);
 
@@ -77,6 +84,9 @@ class ChangePictureOptionsHandler : public OptionsPageUIHandler,
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;
 
+  // Called when the camera presence check has been completed.
+  void OnCameraPresenceCheckDone();
+
   // Returns handle to browser window or NULL if it can't be found.
   gfx::NativeWindow GetBrowserWindow() const;
 
@@ -97,6 +107,8 @@ class ChangePictureOptionsHandler : public OptionsPageUIHandler,
   scoped_ptr<ProfileImageDownloader> profile_image_downloader_;
 
   NotificationRegistrar registrar_;
+
+  base::WeakPtrFactory<ChangePictureOptionsHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChangePictureOptionsHandler);
 };

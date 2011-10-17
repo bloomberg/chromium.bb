@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/status/status_area_view.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/views/dom_view.h"
+#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/renderer_host/render_view_host_observer.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -161,7 +162,7 @@ bool WebUILoginView::AcceleratorPressed(
   if (!webui_login_)
     return true;
 
-  WebUI* web_ui = webui_login_->dom_contents()->tab_contents()->web_ui();
+  WebUI* web_ui = GetWebUI();
   if (web_ui) {
     base::StringValue accel_name(entry->second);
     web_ui->CallJavascriptFunction("cr.ui.Oobe.handleAccelerator",
@@ -296,7 +297,7 @@ void WebUILoginView::OnTabMainFrameFirstRender() {
   if (host_window_frozen_) {
     host_window_frozen_ = false;
 
-    // Unfreezes the host window since tab is rendereed now.
+    // Unfreezes the host window since tab is rendered now.
     views::NativeWidgetGtk::UpdateFreezeUpdatesProperty(
         GetNativeWindow(), false);
   }
@@ -316,6 +317,10 @@ void WebUILoginView::OnTabMainFrameFirstRender() {
   if (emit_login_visible && chromeos::CrosLibrary::Get()->EnsureLoaded())
     chromeos::CrosLibrary::Get()->GetLoginLibrary()->EmitLoginPromptVisible();
 
+  OobeUI* oobe_ui = static_cast<OobeUI*>(GetWebUI());
+  // Notify OOBE that the login frame has been rendered. Currently
+  // this is used to start camera presence check.
+  oobe_ui->OnLoginPromptVisible();
 }
 
 void WebUILoginView::InitStatusArea() {

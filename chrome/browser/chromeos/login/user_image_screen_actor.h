@@ -59,6 +59,9 @@ class UserImageScreenActor {
   // Shows initialization throbber telling that camera is initializing.
   virtual void ShowCameraInitializing() = 0;
 
+  // Starts camera presence check.
+  virtual void CheckCameraPresence() = 0;
+
   // Indicates if the capturing is in progress or not.
   virtual bool IsCapturing() const = 0;
 
@@ -69,4 +72,3 @@ class UserImageScreenActor {
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_USER_IMAGE_SCREEN_ACTOR_H_
-

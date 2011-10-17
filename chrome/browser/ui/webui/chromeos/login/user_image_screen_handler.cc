@@ -8,12 +8,14 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/login/camera_detector.h"
 #include "chrome/browser/chromeos/login/default_user_images.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/chromeos/options/take_photo_dialog.h"
 #include "chrome/browser/ui/views/window.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
+#include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "views/widget/widget.h"
@@ -30,7 +32,9 @@ namespace chromeos {
 UserImageScreenHandler::UserImageScreenHandler()
     : screen_(NULL),
       show_on_init_(false),
-      selected_image_(UserManager::User::kInvalidImageIndex) {
+      selected_image_(UserManager::User::kInvalidImageIndex),
+      profile_picture_data_url_(chrome::kAboutBlankURL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
 }
 
 UserImageScreenHandler::~UserImageScreenHandler() {
@@ -80,6 +84,9 @@ void UserImageScreenHandler::Show() {
     return;
   }
   ShowScreen(kUserImageScreen, NULL);
+  // When shown, query camera presence again (first-time query is done by
+  // OobeUI::OnLoginPromptVisible).
+  CheckCameraPresence();
 }
 
 void UserImageScreenHandler::Hide() {
@@ -105,6 +112,12 @@ void UserImageScreenHandler::ShowCameraError() {
 }
 
 void UserImageScreenHandler::ShowCameraInitializing() {
+}
+
+void UserImageScreenHandler::CheckCameraPresence() {
+  CameraDetector::StartPresenceCheck(
+      base::Bind(&UserImageScreenHandler::OnCameraPresenceCheckDone,
+                 weak_factory_.GetWeakPtr()));
 }
 
 bool UserImageScreenHandler::IsCapturing() const {
@@ -181,6 +194,13 @@ void UserImageScreenHandler::HandleImageAccepted(const base::ListValue* args) {
     DCHECK(selected_image_ >= 0);
     screen_->OnDefaultImageSelected(selected_image_);
   }
+}
+
+void UserImageScreenHandler::OnCameraPresenceCheckDone() {
+  base::FundamentalValue present_value(
+      CameraDetector::camera_presence() == CameraDetector::kCameraPresent);
+  web_ui_->CallJavascriptFunction("oobe.UserImageScreen.setCameraPresent",
+                                  present_value);
 }
 
 }  // namespace chromeos

@@ -31,15 +31,14 @@ cr.define('options', function() {
       var imageEl = cr.doc.createElement('img');
       imageEl.src = this.dataItem.url;
       imageEl.title = this.dataItem.title || '';
-      imageEl.setAttribute(
-          'aria-label',
-          imageEl.src.replace(/(.*\/|\.png)/g, '').replace(/_/g, ' '));
+      var label = imageEl.src.replace(/(.*\/|\.png)/g, '');
+      imageEl.setAttribute('aria-label', label.replace(/_/g, ' '));
       if (typeof this.dataItem.clickHandler == 'function')
         imageEl.addEventListener('click', this.dataItem.clickHandler);
       // Remove any garbage added by GridItem and ListItem decorators.
       this.textContent = '';
       this.appendChild(imageEl);
-    },
+    }
   };
 
   /**
@@ -140,7 +139,7 @@ cr.define('options', function() {
       return index != -1 ? this.dataModel.item(index) : null;
     },
     set selectedItem(selectedItem) {
-      var index = this.dataModel.indexOf(selectedItem);
+      var index = this.findItem(selectedItem);
       this.inProgramSelection_ = true;
       this.selectionModel.selectedIndex = index;
       this.selectionModel.leadIndex = index;
@@ -162,11 +161,22 @@ cr.define('options', function() {
         title: opt_title,
         clickHandler: opt_clickHandler
       };
-      if (opt_position)
+      this.inProgramSelection_ = true;
+      if (opt_position !== undefined)
         this.dataModel.splice(opt_position, 0, imageInfo);
       else
         this.dataModel.push(imageInfo);
+      this.inProgramSelection_ = false;
       return imageInfo;
+    },
+
+    /**
+     * Returns index of an image in grid.
+     * @param {Object} imageInfo Image data returned from addItem() call.
+     * @return {number} Image index (0-based) or -1 if image was not found.
+     */
+    findItem: function(imageInfo) {
+      return this.dataModel.indexOf(imageInfo);
     },
 
     /**
@@ -178,7 +188,7 @@ cr.define('options', function() {
      * @return {!Object} Image data of the added or updated image.
      */
     updateItem: function(imageInfo, imageUrl, opt_title) {
-      var imageIndex = this.dataModel.indexOf(imageInfo);
+      var imageIndex = this.findItem(imageInfo);
       var wasSelected = this.selectionModel.selectedIndex == imageIndex;
       this.removeItem(imageInfo);
       var newInfo = this.addItem(
@@ -196,9 +206,12 @@ cr.define('options', function() {
      * @param {Object} imageInfo Image data returned from the addItem() call.
      */
     removeItem: function(imageInfo) {
-      var index = this.dataModel.indexOf(imageInfo);
-      if (index != -1)
+      var index = this.findItem(imageInfo);
+      if (index != -1) {
+        this.inProgramSelection_ = true;
         this.dataModel.splice(index, 1);
+        this.inProgramSelection_ = false;
+      }
     },
 
     /**

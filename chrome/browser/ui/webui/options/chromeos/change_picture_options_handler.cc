@@ -10,6 +10,7 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/login/camera_detector.h"
 #include "chrome/browser/chromeos/login/default_user_images.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/options/take_photo_dialog.h"
@@ -58,7 +59,8 @@ SelectFileDialog::FileTypeInfo GetUserImageFileTypeInfo() {
 
 ChangePictureOptionsHandler::ChangePictureOptionsHandler()
     : previous_image_data_url_(chrome::kAboutBlankURL),
-      profile_image_data_url_(chrome::kAboutBlankURL) {
+      profile_image_data_url_(chrome::kAboutBlankURL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_IMAGE_UPDATED,
       NotificationService::AllSources());
 }
@@ -70,6 +72,17 @@ ChangePictureOptionsHandler::~ChangePictureOptionsHandler() {
 
 void ChangePictureOptionsHandler::Initialize() {
   const UserManager::User& user = UserManager::Get()->logged_in_user();
+
+  // If no camera presence check has been performed in this session,
+  // start one now.
+  if (CameraDetector::camera_presence() ==
+      CameraDetector::kCameraPresenceUnknown)
+    CheckCameraPresence();
+
+  // While the check is in progress, use previous camera presence state and
+  // presume it is present if no check has been performed yet.
+  SetCameraPresent(CameraDetector::camera_presence() !=
+                   CameraDetector::kCameraAbsent);
 
   // Save previous profile image as data URL, if any.
   if (user.default_image_index() == UserManager::User::kProfileImageIndex)
@@ -165,7 +178,10 @@ void ChangePictureOptionsHandler::HandleTakePhoto(const ListValue* args) {
 
 void ChangePictureOptionsHandler::HandleGetSelectedImage(
     const base::ListValue* args) {
+  // TODO(ivankr): rename this function as it has become much bigger
+  // than just querying the currently selected image.
   DCHECK(args && args->empty());
+  CheckCameraPresence();
   SendSelectedImage();
   DownloadProfileImage();
 }
@@ -301,6 +317,23 @@ void ChangePictureOptionsHandler::OnDownloadSuccess(const SkBitmap& image) {
     web_ui_->CallJavascriptFunction("ChangePictureOptions.setProfileImage",
                                     image_data_url, select);
   }
+}
+
+void ChangePictureOptionsHandler::CheckCameraPresence() {
+  CameraDetector::StartPresenceCheck(
+      base::Bind(&ChangePictureOptionsHandler::OnCameraPresenceCheckDone,
+                 weak_factory_.GetWeakPtr()));
+}
+
+void ChangePictureOptionsHandler::SetCameraPresent(bool present) {
+  base::FundamentalValue present_value(present);
+  web_ui_->CallJavascriptFunction("ChangePictureOptions.setCameraPresent",
+                                  present_value);
+}
+
+void ChangePictureOptionsHandler::OnCameraPresenceCheckDone() {
+  SetCameraPresent(CameraDetector::camera_presence() ==
+                   CameraDetector::kCameraPresent);
 }
 
 void ChangePictureOptionsHandler::Observe(int type,

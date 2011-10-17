@@ -111,4 +111,3 @@ void CameraController::OnCaptureFailure() {
 }
 
 }  // namespace chromeos
-

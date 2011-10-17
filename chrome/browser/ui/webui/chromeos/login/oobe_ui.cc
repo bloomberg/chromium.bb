@@ -240,4 +240,8 @@ void OobeUI::ShowSigninScreen() {
   signin_screen_handler_->Show(core_handler_->show_oobe_ui());
 }
 
+void OobeUI::OnLoginPromptVisible() {
+  user_image_screen_actor_->CheckCameraPresence();
+}
+
 }  // namespace chromeos

@@ -28,26 +28,26 @@ class UserImageScreen: public WizardScreen,
   virtual ~UserImageScreen();
 
   // WizardScreen implementation:
-  virtual void PrepareToShow();
-  virtual void Show();
-  virtual void Hide();
+  virtual void PrepareToShow() OVERRIDE;
+  virtual void Show() OVERRIDE;
+  virtual void Hide() OVERRIDE;
 
   // CameraController::Delegate implementation:
-  virtual void OnCaptureSuccess();
-  virtual void OnCaptureFailure();
+  virtual void OnCaptureSuccess() OVERRIDE;
+  virtual void OnCaptureFailure() OVERRIDE;
 
   // UserImageScreenActor::Delegate implementation:
-  virtual void StartCamera();
-  virtual void StopCamera();
-  virtual void OnPhotoTaken(const SkBitmap& image);
-  virtual void OnProfileImageSelected(const SkBitmap& image);
-  virtual void OnDefaultImageSelected(int index);
-  virtual void OnActorDestroyed(UserImageScreenActor* actor);
+  virtual void StartCamera() OVERRIDE;
+  virtual void StopCamera() OVERRIDE;
+  virtual void OnPhotoTaken(const SkBitmap& image) OVERRIDE;
+  virtual void OnProfileImageSelected(const SkBitmap& image) OVERRIDE;
+  virtual void OnDefaultImageSelected(int index) OVERRIDE;
+  virtual void OnActorDestroyed(UserImageScreenActor* actor) OVERRIDE;
 
   // NotificationObserver implementation:
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
   // ProfileImageDownloader::Delegate implementation.
   virtual void OnDownloadSuccess(const SkBitmap& profile_image) OVERRIDE;
@@ -70,4 +70,3 @@ class UserImageScreen: public WizardScreen,
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_USER_IMAGE_SCREEN_H_
-

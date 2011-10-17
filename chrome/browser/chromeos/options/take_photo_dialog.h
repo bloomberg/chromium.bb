@@ -39,24 +39,24 @@ class TakePhotoDialog : public views::DialogDelegateView,
 
   // views::DialogDelegateView overrides.
   virtual bool IsDialogButtonEnabled(
-      MessageBoxFlags::DialogButton button) const;
-  virtual bool Cancel();
-  virtual bool Accept();
+      MessageBoxFlags::DialogButton button) const OVERRIDE;
+  virtual bool Cancel() OVERRIDE;
+  virtual bool Accept() OVERRIDE;
 
   // views::WidgetDelegate overrides.
-  virtual bool IsModal() const;
-  virtual views::View* GetContentsView();
+  virtual bool IsModal() const OVERRIDE;
+  virtual views::View* GetContentsView() OVERRIDE;
 
   // views::View overrides.
-  virtual void GetAccessibleState(ui::AccessibleViewState* state);
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
   // TakePhotoView::Delegate overrides.
-  virtual void OnCapturingStarted();
-  virtual void OnCapturingStopped();
+  virtual void OnCapturingStarted() OVERRIDE;
+  virtual void OnCapturingStopped() OVERRIDE;
 
   // CameraController::Delegate implementation:
-  virtual void OnCaptureSuccess();
-  virtual void OnCaptureFailure();
+  virtual void OnCaptureSuccess() OVERRIDE;
+  virtual void OnCaptureFailure() OVERRIDE;
 
   // Interface that observers of this dialog must implement in order
   // to receive notification for capture success/failure.

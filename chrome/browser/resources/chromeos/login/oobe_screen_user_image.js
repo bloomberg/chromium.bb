@@ -12,6 +12,14 @@ cr.define('oobe', function() {
   var ButtonImages = UserImagesGrid.ButtonImages;
 
   /**
+   * Array of button URLs used on this page.
+   * @type {Array.<string>}
+   */
+  const ButtonImageUrls = [
+    ButtonImages.TAKE_PHOTO
+  ];
+
+  /**
    * Creates a new oobe screen div.
    * @constructor
    * @extends {HTMLDivElement}
@@ -49,11 +57,6 @@ cr.define('oobe', function() {
       imageGrid.addEventListener('dblclick',
                                  this.handleImageDblClick_.bind(this));
 
-      this.buttonImages_ = [
-        imageGrid.addItem(ButtonImages.TAKE_PHOTO,
-                          undefined,
-                          this.handleTakePhoto_.bind(this))
-      ];
       // Whether a button image is selected.
       this.buttonImageSelected_ = false;
 
@@ -114,7 +117,6 @@ cr.define('oobe', function() {
           value ? 'add' : 'remove']('profile-image-loading');
       this.profileImageCaption = localStrings.getString(
           value ? 'profilePhotoLoading' : 'profilePhoto');
-      this.updateButtons_();
     },
 
     /**
@@ -180,9 +182,8 @@ cr.define('oobe', function() {
       this.defaultImageSelected = /^chrome:\/\/theme\//.test(url);
       // Cannot compare this.profileImage_ itself because it is updated
       // by setProfileImage_ after the selection event is fired programmaticaly.
-      this.profileImageSelected = selectedItem.url == this.profileImageUrl_;
-      this.buttonImageSelected_ =
-          this.buttonImages_.indexOf(selectedItem) != -1;
+      this.profileImageSelected = url == this.profileImageUrl_;
+      this.buttonImageSelected_ = ButtonImageUrls.indexOf(url) != -1;
 
       this.updateButtons_();
 
@@ -219,6 +220,25 @@ cr.define('oobe', function() {
     acceptImage_: function() {
       if (!$('ok-button').disabled)
         chrome.send('onUserImageAccepted');
+    },
+
+    /**
+     * Notifies about camera presence change.
+     * @param {boolean} present Whether a camera is present or not.
+     * @private
+     */
+    setCameraPresent_: function(present) {
+      var imageGrid = $('user-image-grid');
+      if (present && !this.takePhotoButton_) {
+        this.takePhotoButton_ = imageGrid.addItem(
+            ButtonImages.TAKE_PHOTO,
+            undefined,
+            this.handleTakePhoto_.bind(this),
+            0);
+      } else if (!present && this.takePhotoButton_) {
+        imageGrid.removeItem(this.takePhotoButton_);
+        this.takePhotoButton_ = null;
+      }
     },
 
     /**
@@ -296,6 +316,7 @@ cr.define('oobe', function() {
 
   // Forward public APIs to private implementations.
   [
+    'setCameraPresent',
     'setProfileImage',
     'setSelectedImage',
     'setUserImages',

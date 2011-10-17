@@ -23,24 +23,25 @@ class ViewsUserImageScreenActor : public ViewScreen<UserImageView>,
   UserImageScreenActor::Delegate* screen() { return screen_; }
 
   // ViewScreen<UserImageView> implementation.
-  virtual UserImageView* AllocateView();
+  virtual UserImageView* AllocateView() OVERRIDE;
 
   // UserImageScreenActor implementation:
-  virtual void PrepareToShow();
-  virtual void Show();
-  virtual void Hide();
-  virtual void SetDelegate(UserImageScreenActor::Delegate* screen);
-  virtual void SelectImage(int index);
-  virtual void UpdateVideoFrame(const SkBitmap& frame);
-  virtual void ShowCameraError();
-  virtual void ShowCameraInitializing();
-  virtual bool IsCapturing() const;
+  virtual void PrepareToShow() OVERRIDE;
+  virtual void Show() OVERRIDE;
+  virtual void Hide() OVERRIDE;
+  virtual void SetDelegate(UserImageScreenActor::Delegate* screen) OVERRIDE;
+  virtual void SelectImage(int index) OVERRIDE;
+  virtual void UpdateVideoFrame(const SkBitmap& frame) OVERRIDE;
+  virtual void ShowCameraError() OVERRIDE;
+  virtual void ShowCameraInitializing() OVERRIDE;
+  virtual void CheckCameraPresence() OVERRIDE;
+  virtual bool IsCapturing() const OVERRIDE;
 
   // UserImageView::Delegate implementation:
-  virtual void StartCamera();
-  virtual void StopCamera();
-  virtual void OnPhotoTaken(const SkBitmap& image);
-  virtual void OnDefaultImageSelected(int index);
+  virtual void StartCamera() OVERRIDE;
+  virtual void StopCamera() OVERRIDE;
+  virtual void OnPhotoTaken(const SkBitmap& image) OVERRIDE;
+  virtual void OnDefaultImageSelected(int index) OVERRIDE;
 
  private:
   UserImageScreenActor::Delegate* screen_;
@@ -51,4 +52,3 @@ class ViewsUserImageScreenActor : public ViewScreen<UserImageView>,
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_VIEWS_USER_IMAGE_SCREEN_ACTOR_H_
-
