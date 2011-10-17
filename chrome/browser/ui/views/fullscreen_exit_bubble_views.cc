@@ -188,15 +188,23 @@ void FullscreenExitBubbleViews::FullscreenExitView::Layout() {
       link_size.width();
   int link_y = insets.top() + (inner_height - link_size.height()) / 2;
 
-  message_label_.SetPosition(gfx::Point(insets.left() + kPaddingPx,
-                             message_label_y));
-  link_.SetPosition(gfx::Point(link_x, link_y));
+  message_label_.SetBounds(insets.left() + kPaddingPx,
+                           message_label_y,
+                           message_label_size.width(),
+                           message_label_size.height());
+  link_.SetBounds(link_x,
+                  link_y,
+                  link_size.width(),
+                  link_size.height());
   if (show_buttons_) {
-    accept_button_->SetPosition(gfx::Point(button_box_x,
-        insets.top() + kPaddingPx));
-    deny_button_->SetPosition(gfx::Point(
-        button_box_x + accept_size.width() + kPaddingPx,
-        insets.top() + kPaddingPx));
+    accept_button_->SetBounds(button_box_x,
+                              insets.top() + kPaddingPx,
+                              accept_size.width(),
+                              accept_size.height());
+    deny_button_->SetBounds(button_box_x + accept_size.width() + kPaddingPx,
+                            insets.top() + kPaddingPx,
+                            deny_size.width(),
+                            deny_size.height());
   }
 }
 
