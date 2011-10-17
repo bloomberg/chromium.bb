@@ -359,7 +359,7 @@ Download.prototype.update = function(download) {
       this.nodeFileLink_.textContent = this.fileName_;
       this.nodeFileLink_.href = this.fileUrl_;
       this.nodeFileLink_.oncontextmenu = null;
-    } else {
+    } else if (this.nodeFileName_.textContent != this.fileName_) {
       this.nodeFileName_.textContent = this.fileName_;
     }
 
