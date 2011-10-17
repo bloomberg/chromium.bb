@@ -17,6 +17,16 @@ cr.define('ntp4', function() {
     NTP_APP_RE_ENABLE: 16
   };
 
+  // Histogram buckets for UMA tracking of where a DnD drop came from.
+  var DRAG_SOURCE = {
+    SAME_APPS_PANE: 0,
+    OTHER_APPS_PANE: 1,
+    MOST_VISITED_PANE: 2,
+    BOOKMARKS_PANE: 3,
+    OUTSIDE_NTP: 4
+  };
+  var DRAG_SOURCE_LIMIT = DRAG_SOURCE.OUTSIDE_NTP + 1;
+
   /**
    * App context menu. The class is designed to be used as a singleton with
    * the app that is currently showing a context menu stored in this.app_.
@@ -656,21 +666,32 @@ cr.define('ntp4', function() {
 
     /** @inheritDoc */
     addDragData: function(dataTransfer, index) {
+      var sourceId = -1;
       var currentlyDraggingTile = ntp4.getCurrentlyDraggingTile();
       if (currentlyDraggingTile) {
         var tileContents = currentlyDraggingTile.firstChild;
         if (tileContents.classList.contains('app')) {
+          sourceId = currentlyDraggingTile.tilePage == this ?
+              DRAG_SOURCE.SAME_APPS_PANE : DRAG_SOURCE.OTHER_APPS_PANE;
           this.tileGrid_.insertBefore(
               currentlyDraggingTile,
               this.tileElements_[index]);
           this.tileMoved(currentlyDraggingTile);
-        } else if (currentlyDraggingTile.querySelector(
-                       '.most-visited, .bookmark')) {
+        } else if (currentlyDraggingTile.querySelector('.most-visited') {
           this.generateAppForLink(tileContents.data);
+          sourceId = DRAG_SOURCE.MOST_VISITED_PANE,
+        } else if (currentlyDraggingTile.querySelector('.bookmark')) {
+          this.generateAppForLink(tileContents.data);
+          sourceId = DRAG_SOURCE.BOOKMARK_PANE,
         }
       } else {
         this.addOutsideData_(dataTransfer, index);
+        sourceId = DRAG_SOURCE.OUTSIDE_NTP;
       }
+
+      assert(sourceId != -1);
+      chrome.send('metricsHandler:recordInHistogram',
+          ['NewTabPage.AppsPageDragSource', sourceId, DRAG_SOURCE_LIMIT]);
     },
 
     /**

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/ntp/metrics_handler.h"
+#include "chrome/browser/ui/webui/metrics_handler.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
