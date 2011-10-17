@@ -10,8 +10,8 @@
 #include "base/file_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/string16.h"
-#include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
+#include "base/stringprintf.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/webui/ntp/new_tab_page_handler.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/ntp/shown_sections_handler.h"
+#include "chrome/browser/ui/webui/sync_promo_ui.h"
 #include "chrome/browser/ui/webui/sync_setup_handler.h"
 #include "chrome/browser/web_resource/promo_resource_service.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -420,6 +421,10 @@ void NTPResourceCache::CreateNewTabHTML() {
         profile_->GetPrefs()->GetString(prefs::kNTPPromoLine));
     UserMetrics::RecordAction(UserMetricsAction("NTPPromoShown"));
   }
+
+  // Tell the NTP whether or not it should show the sync promotion.
+  localized_strings.SetBoolean("showSyncPromo",
+      SyncPromoUI::ShouldShowSyncPromo(profile_));
 
   // Enable or disable bookmark features based on an about flag.
   localized_strings.SetString("bookmark_features",

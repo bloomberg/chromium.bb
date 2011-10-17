@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/json/json_reader.h"
+#include "base/string_number_conversions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -12,10 +13,12 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/web_resource/notification_promo.h"
 #include "chrome/browser/web_resource/promo_resource_service.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/common/notification_registrar.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -31,6 +34,75 @@ class PromoResourceServiceTest : public testing::Test {
   ScopedTestingLocalState local_state_;
   scoped_refptr<PromoResourceService> web_resource_service_;
   MessageLoop loop_;
+};
+
+class SyncPromoTest : public PromoResourceServiceTest,
+                      public NotificationObserver {
+ public:
+  SyncPromoTest() : PromoResourceServiceTest(), notifications_allowed_(false) {
+    web_resource_service_->set_channel(chrome::VersionInfo::CHANNEL_DEV);
+    registrar_.Add(this,
+                   chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED,
+                   NotificationService::AllSources());
+  }
+
+  virtual void Observe(int type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) {
+    // If we get any unexpected notifications we should fail.
+    EXPECT_TRUE(notifications_allowed_);
+  }
+
+  void allow_notifications(bool allowed) { notifications_allowed_ = allowed; }
+
+ protected:
+  void ClearSyncPromoPrefs() {
+    PrefService* prefs = profile_.GetPrefs();
+    prefs->ClearPref(prefs::kNTPSyncPromoGroup);
+    prefs->ClearPref(prefs::kNTPSyncPromoGroupMax);
+    ASSERT_FALSE(prefs->HasPrefPath(prefs::kNTPSyncPromoGroup));
+    ASSERT_FALSE(prefs->HasPrefPath(prefs::kNTPSyncPromoGroupMax));
+  }
+
+  void InvalidTestCase(const std::string& question) {
+    PrefService* prefs = profile_.GetPrefs();
+    ASSERT_TRUE(prefs != NULL);
+    prefs->SetInteger(prefs::kNTPSyncPromoGroup, 50);
+    prefs->SetInteger(prefs::kNTPSyncPromoGroupMax, 75);
+    UnpackSyncPromo(question);
+    EXPECT_FALSE(prefs->HasPrefPath(prefs::kNTPSyncPromoGroup));
+    EXPECT_FALSE(prefs->HasPrefPath(prefs::kNTPSyncPromoGroupMax));
+  }
+
+  void SetupSyncPromoCase(int build, int max_group) {
+    std::string question = base::IntToString(build) + ":" +
+                           base::IntToString(max_group);
+    UnpackSyncPromo(question);
+  }
+
+  void UnpackSyncPromo(const std::string& question) {
+    std::string json_header =
+      "{ "
+      "  \"topic\": {"
+      "    \"answers\": ["
+      "       {"
+      "        \"name\": \"sync_promo\","
+      "        \"question\": \"";
+
+    std::string json_footer = "\""
+      "       }"
+      "    ]"
+      "  }"
+      "}";
+
+   scoped_ptr<DictionaryValue> test_json(static_cast<DictionaryValue*>(
+        base::JSONReader::Read(json_header + question + json_footer, false)));
+   web_resource_service_->UnpackSyncPromoSignal(*(test_json.get()));
+  }
+
+  private:
+    bool notifications_allowed_;
+    NotificationRegistrar registrar_;
 };
 
 // Verifies that custom dates read from a web resource server are written to
@@ -51,8 +123,8 @@ TEST_F(PromoResourceServiceTest, UnpackLogoSignal) {
                      "    ]"
                      "  }"
                      "}";
-  scoped_ptr<DictionaryValue> test_json(static_cast<DictionaryValue*>(
-      base::JSONReader::Read(json, false)));
+  scoped_ptr<DictionaryValue> test_json(
+      static_cast<DictionaryValue*>(base::JSONReader::Read(json, false)));
 
   // Check that prefs are set correctly.
   web_resource_service_->UnpackLogoSignal(*(test_json.get()));
@@ -669,6 +741,121 @@ TEST_F(PromoResourceServiceTest, UnpackWebStoreSignalHttpLogo) {
   EXPECT_EQ(GURL(""), AppsPromo::GetSourcePromoLogoURL());
 }
 
+// Don't run sync promo unpacking tests on ChromeOS as on that plaform
+// PromoResourceService::UnpackSyncPromoSignal() basically just no-ops.
+#if !defined(OS_CHROMEOS)
+TEST_F(SyncPromoTest, UnpackSyncPromoSignal) {
+  PrefService* prefs = profile_.GetPrefs();
+  ASSERT_TRUE(prefs != NULL);
+
+  // It's OK if we get notifications now, so just allow all.
+  allow_notifications(true);
+
+  // Test on by default (currently should be false).
+  EXPECT_FALSE(PromoResourceService::CanShowSyncPromo(&profile_));
+  EXPECT_FALSE(prefs->HasPrefPath(prefs::kNTPSyncPromoGroup));
+  EXPECT_FALSE(prefs->HasPrefPath(prefs::kNTPSyncPromoGroupMax));
+
+  // Non-targeted build.
+  ClearSyncPromoPrefs();
+  SetupSyncPromoCase(2, 50);
+  EXPECT_FALSE(PromoResourceService::CanShowSyncPromo(&profile_));
+  EXPECT_FALSE(prefs->HasPrefPath(prefs::kNTPSyncPromoGroup));
+  EXPECT_FALSE(prefs->HasPrefPath(prefs::kNTPSyncPromoGroupMax));
+
+  // Targeted build, doesn't create bucket and doesn't show promo because
+  // groupMax < group.
+  ClearSyncPromoPrefs();
+  SetupSyncPromoCase(1, 0);
+  EXPECT_FALSE(PromoResourceService::CanShowSyncPromo(&profile_));
+  EXPECT_EQ(prefs->GetInteger(prefs::kNTPSyncPromoGroupMax), 0);
+  EXPECT_FALSE(prefs->HasPrefPath(prefs::kNTPSyncPromoGroup));
+
+  // Targeted build, max_group = 50, ensure group pref created and within the
+  // group bounds.
+  ClearSyncPromoPrefs();
+  SetupSyncPromoCase(1, 50);
+  PromoResourceService::CanShowSyncPromo(&profile_);
+  EXPECT_EQ(prefs->GetInteger(prefs::kNTPSyncPromoGroupMax), 50);
+  EXPECT_TRUE(prefs->HasPrefPath(prefs::kNTPSyncPromoGroup));
+  EXPECT_GT(prefs->GetInteger(prefs::kNTPSyncPromoGroup), 0);
+  EXPECT_LE(prefs->GetInteger(prefs::kNTPSyncPromoGroup), 100);
+
+  // Set user group = 50, now shows promo.
+  prefs->SetInteger(prefs::kNTPSyncPromoGroup, 50);
+  EXPECT_TRUE(PromoResourceService::CanShowSyncPromo(&profile_));
+  EXPECT_EQ(prefs->GetInteger(prefs::kNTPSyncPromoGroup), 50);
+  EXPECT_EQ(prefs->GetInteger(prefs::kNTPSyncPromoGroupMax), 50);
+
+  // Bump user group, ensure that we should not show promo.
+  prefs->SetInteger(prefs::kNTPSyncPromoGroup, 51);
+  EXPECT_FALSE(PromoResourceService::CanShowSyncPromo(&profile_));
+  EXPECT_EQ(prefs->GetInteger(prefs::kNTPSyncPromoGroup), 51);
+  EXPECT_EQ(prefs->GetInteger(prefs::kNTPSyncPromoGroupMax), 50);
+
+  // If the max group gets bumped to the user's group (or above), it should
+  // show.
+  prefs->SetInteger(prefs::kNTPSyncPromoGroupMax, 51);
+  EXPECT_TRUE(PromoResourceService::CanShowSyncPromo(&profile_));
+  EXPECT_EQ(prefs->GetInteger(prefs::kNTPSyncPromoGroup), 51);
+  EXPECT_EQ(prefs->GetInteger(prefs::kNTPSyncPromoGroupMax), 51);
+
+  // Reduce max group.
+  prefs->SetInteger(prefs::kNTPSyncPromoGroupMax, 49);
+  EXPECT_FALSE(PromoResourceService::CanShowSyncPromo(&profile_));
+  EXPECT_EQ(prefs->GetInteger(prefs::kNTPSyncPromoGroup), 51);
+  EXPECT_EQ(prefs->GetInteger(prefs::kNTPSyncPromoGroupMax), 49);
+
+  // Ignore non-targeted builds.
+  prefs->SetInteger(prefs::kNTPSyncPromoGroup, 50);
+  prefs->SetInteger(prefs::kNTPSyncPromoGroupMax, 75);
+  EXPECT_TRUE(PromoResourceService::CanShowSyncPromo(&profile_));
+  SetupSyncPromoCase(2, 25);
+  // Make sure the prefs are deleted.
+  EXPECT_FALSE(PromoResourceService::CanShowSyncPromo(&profile_));
+  EXPECT_FALSE(prefs->HasPrefPath(prefs::kNTPSyncPromoGroup));
+  EXPECT_FALSE(prefs->HasPrefPath(prefs::kNTPSyncPromoGroupMax));
+}
+
+// Throw random stuff at UnpackSyncPromoSignal and make sure no segfaults or
+// other issues and that the prefs were cleared.
+TEST_F(SyncPromoTest, UnpackSyncPromoSignalInvalid) {
+  // We're not testing these here, so ignore them.
+  allow_notifications(true);
+
+  // Empty.
+  InvalidTestCase("");
+
+  // Negative numbers.
+  InvalidTestCase("-5:-6");
+
+  // An extra field.
+  InvalidTestCase("1:0:1");
+
+  // A ton of separators.
+  InvalidTestCase("::::::");
+
+  // Really big numbers.
+  InvalidTestCase("68719476737:68719476737");
+
+  // UTF-8 chars.
+  InvalidTestCase("だからって馬鹿に:してるの？怒る友人");
+}
+
+TEST_F(SyncPromoTest, UnpackSyncPromoSignalNotify) {
+  // Ensure no notifications are sent.
+  ClearSyncPromoPrefs();
+  allow_notifications(false);
+  SetupSyncPromoCase(2, 50);
+  SetupSyncPromoCase(1, 0);
+  SetupSyncPromoCase(1, 100);
+
+  // Expect a notification to be called when the promo is disabled.
+  allow_notifications(true);
+  SetupSyncPromoCase(2, 0);
+}
+#endif  // !defined(OS_CHROMEOS)
+
 TEST_F(PromoResourceServiceTest, IsBuildTargetedTest) {
   // canary
   const chrome::VersionInfo::Channel canary =
@@ -710,4 +897,8 @@ TEST_F(PromoResourceServiceTest, IsBuildTargetedTest) {
   EXPECT_FALSE(PromoResourceService::IsBuildTargeted(stable, 8));
   EXPECT_FALSE(PromoResourceService::IsBuildTargeted(stable, 11));
   EXPECT_TRUE(PromoResourceService::IsBuildTargeted(stable, 12));
+
+  // invalid
+  EXPECT_FALSE(PromoResourceService::IsBuildTargeted(stable, -1));
+  EXPECT_FALSE(PromoResourceService::IsBuildTargeted(stable, INT_MAX));
 }

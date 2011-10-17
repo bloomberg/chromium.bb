@@ -5,6 +5,7 @@
 #include "chrome/browser/web_resource/promo_resource_service.h"
 
 #include "base/command_line.h"
+#include "base/rand_util.h"
 #include "base/string_number_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time.h"
@@ -35,6 +36,10 @@ static const int kTestCacheUpdateDelay = 3 * 60 * 1000;
 // The version of the service (used to expire the cache when upgrading Chrome
 // to versions with different types of promos).
 static const int kPromoServiceVersion = 2;
+
+// The number of groups sync promo users will be divided into (which gives us a
+// 1/N granularity when targeting more groups).
+static const int kSyncPromoNumberOfGroups = 100;
 
 // Properties used by the server.
 static const char kAnswerIdProperty[] = "answer_id";
@@ -79,6 +84,12 @@ void PromoResourceService::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterDoublePref(prefs::kNTPCustomLogoEnd,
                             0,
                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterIntegerPref(prefs::kNTPSyncPromoGroup,
+                             0,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterIntegerPref(prefs::kNTPSyncPromoGroupMax,
+                             0,
+                             PrefService::UNSYNCABLE_PREF);
   NotificationPromo::RegisterUserPrefs(prefs);
 }
 
@@ -92,8 +103,11 @@ chrome::VersionInfo::Channel PromoResourceService::GetChannel() {
 // static
 bool PromoResourceService::IsBuildTargeted(chrome::VersionInfo::Channel channel,
                                            int builds_allowed) {
-  if (builds_allowed == NO_BUILD)
+  if (builds_allowed == NO_BUILD ||
+      builds_allowed < 0 ||
+      builds_allowed > ALL_BUILDS) {
     return false;
+  }
   switch (channel) {
     case chrome::VersionInfo::CHANNEL_CANARY:
       return (CANARY_BUILD & builds_allowed) != 0;
@@ -140,6 +154,7 @@ void PromoResourceService::Unpack(const DictionaryValue& parsed_json) {
   UnpackLogoSignal(parsed_json);
   UnpackNotificationSignal(parsed_json);
   UnpackWebStoreSignal(parsed_json);
+  UnpackSyncPromoSignal(parsed_json);
 }
 
 void PromoResourceService::OnNewNotification(double start, double end) {
@@ -358,4 +373,84 @@ void PromoResourceService::UnpackLogoSignal(
                     Source<WebResourceService>(this),
                     NotificationService::NoDetails());
   }
+}
+
+void PromoResourceService::UnpackSyncPromoSignal(
+    const DictionaryValue& parsed_json) {
+#if defined(OS_CHROMEOS)
+  // Don't bother with this signal on ChromeOS. Users are already synced.
+  return;
+#endif
+
+  DictionaryValue* topic_dict;
+  if (!parsed_json.GetDictionary("topic", &topic_dict))
+    return;
+
+  ListValue* answer_list;
+  if (!topic_dict->GetList("answers", &answer_list))
+    return;
+
+  std::string question;
+  for (ListValue::const_iterator answer_iter = answer_list->begin();
+       answer_iter != answer_list->end(); ++answer_iter) {
+    if (!(*answer_iter)->IsType(Value::TYPE_DICTIONARY))
+      continue;
+    DictionaryValue* a_dic = static_cast<DictionaryValue*>(*answer_iter);
+    std::string name;
+    if (a_dic->GetString("name", &name) && name == "sync_promo") {
+      a_dic->GetString("question", &question);
+      break;
+    }
+  }
+
+  int new_build;
+  int new_group_max;
+  size_t build_index = question.find(":");
+  if (std::string::npos == build_index ||
+      !base::StringToInt(question.substr(0, build_index), &new_build) ||
+      !IsBuildTargeted(new_build) ||
+      !base::StringToInt(question.substr(build_index + 1), &new_group_max)) {
+    // If anything about the response was invalid or this build is no longer
+    // targeted and there are existing prefs, clear them and notify.
+    if (prefs_->HasPrefPath(prefs::kNTPSyncPromoGroup) ||
+        prefs_->HasPrefPath(prefs::kNTPSyncPromoGroupMax)) {
+      // Make sure we clear first, as the following notification may possibly
+      // depend on calling CanShowSyncPromo synchronously.
+      prefs_->ClearPref(prefs::kNTPSyncPromoGroup);
+      prefs_->ClearPref(prefs::kNTPSyncPromoGroupMax);
+      // Notify the NTP resource cache if the promo has been disabled.
+      NotificationService::current()->Notify(
+          chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED,
+          Source<WebResourceService>(this),
+          NotificationService::NoDetails());
+    }
+    return;
+  }
+
+  // TODO(dbeam): Add automagic hour group bumper to parsing?
+
+  // If we successfully parsed a response and it differs from our user prefs,
+  // set pref for next time to compare.
+  if (new_group_max != prefs_->GetInteger(prefs::kNTPSyncPromoGroupMax))
+    prefs_->SetInteger(prefs::kNTPSyncPromoGroupMax, new_group_max);
+}
+
+// static
+bool PromoResourceService::CanShowSyncPromo(Profile* profile) {
+  DCHECK(profile);
+  PrefService* prefs = profile->GetPrefs();
+
+  if (!prefs->HasPrefPath(prefs::kNTPSyncPromoGroupMax))
+    return false;
+
+  // If there's a max group set and the user hasn't been bucketed yet, do it.
+  if (!prefs->HasPrefPath(prefs::kNTPSyncPromoGroup)) {
+    prefs->SetInteger(prefs::kNTPSyncPromoGroup,
+                      base::RandInt(1, kSyncPromoNumberOfGroups));
+  }
+
+  // A response is not kept if the build wasn't targeted, so the only thing
+  // required to check is the group this client has been tagged in.
+  return prefs->GetInteger(prefs::kNTPSyncPromoGroupMax) >=
+         prefs->GetInteger(prefs::kNTPSyncPromoGroup);
 }

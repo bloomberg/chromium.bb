@@ -1300,6 +1300,13 @@ const char kNTPPromoLine[] = "ntp.promo_line";
 const char kNTPPromoStart[] = "ntp.promo_start";
 const char kNTPPromoEnd[] = "ntp.promo_end";
 
+// A randomly generated group created to control the number of users we show the
+// sync promo to on the NTP.
+const char kNTPSyncPromoGroup[] = "ntp.sync_promo.group";
+
+// The maximum allowable group that can be shown the sync promotion on the NTP.
+const char kNTPSyncPromoGroupMax[] = "ntp.sync_promo.group_max";
+
 // Boolean indicating whether the web store is active for the current locale.
 const char kNTPWebStoreEnabled[] = "ntp.webstore_enabled";
 

@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/webui/options/core_options_handler.h"
 #include "chrome/browser/ui/webui/sync_promo_handler.h"
 #include "chrome/browser/ui/webui/theme_source.h"
+#include "chrome/browser/web_resource/promo_resource_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -90,7 +91,9 @@ bool SyncPromoUI::ShouldShowSyncPromo(Profile* profile) {
   if (!service || service->HasSyncSetupCompleted())
     return false;
 
-  return true;
+  // If we're not excluded from showing sync, let's check to see if the remote
+  // data from the promo server says we should show a promo now.
+  return PromoResourceService::CanShowSyncPromo(profile);
 }
 
 // static
