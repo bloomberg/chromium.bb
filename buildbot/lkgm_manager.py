@@ -361,8 +361,9 @@ class LKGMManager(manifest_version.BuildSpecsManager):
         manifest_version.CreateSymlink(path_to_candidate, path_to_lkgm)
         cros_lib.RunCommand(['git', 'add', self.LKGM_PATH],
                             cwd=self._TMP_MANIFEST_DIR)
-        self._PushSpecChanges('Automatic: %s promoting %s to LKGM' % (
-                                  self.build_name, self.current_version))
+        self._PushSpecChanges(
+            'Automatic: %s promoting %s to LKGM' % (self.build_name,
+                                                    self.current_version))
         return
       except (manifest_version.GitCommandException,
               cros_lib.RunCommandError) as e:
