@@ -97,6 +97,8 @@
       'sources': [
         'test/aura_test_base.cc',
         'test/aura_test_base.h',
+        'test/event_generator.cc',
+        'test/event_generator.h',
         'test/run_all_unittests.cc',
         'test/test_desktop_delegate.cc',
         'test/test_desktop_delegate.h',

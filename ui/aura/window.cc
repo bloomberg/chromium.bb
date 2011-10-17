@@ -96,18 +96,18 @@ bool Window::IsVisible() const {
 
 void Window::Maximize() {
   if (UpdateShowStateAndRestoreBounds(ui::SHOW_STATE_MAXIMIZED))
-    SetBounds(gfx::Screen::GetMonitorWorkAreaNearestWindow(this));
+    SetBoundsInternal(gfx::Screen::GetMonitorWorkAreaNearestWindow(this));
 }
 
 void Window::Fullscreen() {
   if (UpdateShowStateAndRestoreBounds(ui::SHOW_STATE_FULLSCREEN))
-    SetBounds(gfx::Screen::GetMonitorAreaNearestWindow(this));
+    SetBoundsInternal(gfx::Screen::GetMonitorAreaNearestWindow(this));
 }
 
 void Window::Restore() {
   if (show_state_ != ui::SHOW_STATE_NORMAL) {
     show_state_ = ui::SHOW_STATE_NORMAL;
-    SetBounds(restore_bounds_);
+    SetBoundsInternal(restore_bounds_);
     restore_bounds_.SetRect(0, 0, 0, 0);
   }
 }
@@ -138,21 +138,12 @@ void Window::SetLayoutManager(LayoutManager* layout_manager) {
 }
 
 void Window::SetBounds(const gfx::Rect& new_bounds) {
-  // TODO: funnel this through the Desktop.
-  gfx::Rect old_bounds = bounds();
-  bool was_move = old_bounds.size() == new_bounds.size();
-  layer_->SetBounds(new_bounds);
-
-  if (layout_manager_.get())
-    layout_manager_->OnWindowResized();
-  if (delegate_)
-    delegate_->OnBoundsChanged(old_bounds, new_bounds);
-  if (IsVisible()) {
-    if (was_move)
-      layer()->ScheduleDraw();
-    else
-      layer()->SchedulePaint(gfx::Rect());
+  if (show_state_ == ui::SHOW_STATE_MAXIMIZED ||
+      show_state_ == ui::SHOW_STATE_FULLSCREEN) {
+    restore_bounds_ = new_bounds;
+    return;
   }
+  SetBoundsInternal(new_bounds);
 }
 
 const gfx::Rect& Window::bounds() const {
@@ -399,6 +390,23 @@ ui::Animation* Window::CreateDefaultAnimation() {
 
 internal::RootWindow* Window::GetRoot() {
   return parent_ ? parent_->GetRoot() : NULL;
+}
+
+void Window::SetBoundsInternal(const gfx::Rect& new_bounds) {
+  const gfx::Rect old_bounds = bounds();
+  bool was_move = old_bounds.size() == new_bounds.size();
+  layer_->SetBounds(new_bounds);
+
+  if (layout_manager_.get())
+    layout_manager_->OnWindowResized();
+  if (delegate_)
+    delegate_->OnBoundsChanged(old_bounds, new_bounds);
+  if (IsVisible()) {
+    if (was_move)
+      layer()->ScheduleDraw();
+    else
+      layer()->SchedulePaint(gfx::Rect());
+  }
 }
 
 void Window::SetVisible(bool visible) {

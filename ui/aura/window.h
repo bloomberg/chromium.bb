@@ -123,6 +123,13 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // Changes the bounds of the window.
   void SetBounds(const gfx::Rect& new_bounds);
 
+  // Sets the minimum size of the window that a user can resize it to.
+  // A smaller size can still be set using SetBounds().
+  void set_minimum_size(const gfx::Size& minimum_size) {
+    minimum_size_ = minimum_size;
+  }
+  const gfx::Size& minimum_size() const { return minimum_size_; }
+
   // Marks the a portion of window as needing to be painted.
   void SchedulePaintInRect(const gfx::Rect& rect);
 
@@ -244,6 +251,9 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   virtual internal::RootWindow* GetRoot();
 
  private:
+  // Changes the bounds of the window without condition.
+  void SetBoundsInternal(const gfx::Rect& new_bounds);
+
   // Updates the visible state of the layer, but does not make visible-state
   // specific changes. Called from Show()/Hide().
   void SetVisible(bool visible);
@@ -280,6 +290,9 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
 
   // The original bounds of a maximized/fullscreen window.
   gfx::Rect restore_bounds_;
+
+  // The minimum size of the window a user can resize to.
+  gfx::Size minimum_size_;
 
   scoped_ptr<ui::Layer> layer_;
 

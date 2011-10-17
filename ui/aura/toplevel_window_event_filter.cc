@@ -130,10 +130,13 @@ bool ToplevelWindowEventFilter::OnMouseEvent(Window* target,
 
   switch (event->type()) {
     case ui::ET_MOUSE_MOVED:
-      window_component_ =
-          target->delegate()->GetNonClientComponent(event->location());
+      UpdateWindowComponentForEvent(target, event);
       break;
     case ui::ET_MOUSE_PRESSED:
+      // We also update the current window component here because for the
+      // mouse-drag-release-press case, where the mouse is released and
+      // pressed without mouse move event.
+      UpdateWindowComponentForEvent(target, event);
       mouse_down_bounds_ = target->bounds();
       mouse_down_offset_in_target_ = event->location();
       mouse_down_offset_in_parent_ = mouse_down_offset_in_target_;
@@ -192,6 +195,12 @@ bool ToplevelWindowEventFilter::HandleDrag(Window* target, MouseEvent* event) {
   return true;
 }
 
+void ToplevelWindowEventFilter::UpdateWindowComponentForEvent(
+    Window* target, MouseEvent* event) {
+  window_component_ =
+      target->delegate()->GetNonClientComponent(event->location());
+}
+
 gfx::Point ToplevelWindowEventFilter::GetOriginForDrag(
     int bounds_change,
     Window* target,
@@ -240,10 +249,18 @@ gfx::Size ToplevelWindowEventFilter::GetSizeForDrag(int bounds_change,
 
     int x_multiplier = GetXMultiplierForWindowComponent(window_component_);
     int y_multiplier = GetYMultiplierForWindowComponent(window_component_);
-    size.Enlarge(size_change_direction & kBoundsChangeDirection_Horizontal ?
-                     x_multiplier * (first_x - second_x) : 0,
-                 size_change_direction & kBoundsChangeDirection_Vertical ?
-                     y_multiplier * (first_y - second_y) : 0);
+
+    int width = size.width() +
+        (size_change_direction & kBoundsChangeDirection_Horizontal ?
+         x_multiplier * (first_x - second_x) : 0);
+    int height = size.height() +
+        (size_change_direction & kBoundsChangeDirection_Vertical ?
+         y_multiplier * (first_y - second_y) : 0);
+
+    // Enforce minimum window size.
+    const gfx::Size min_size = target->minimum_size();
+    size.SetSize(std::max(width, min_size.width()),
+                 std::max(height, min_size.height()));
   }
   return size;
 }

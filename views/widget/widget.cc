@@ -904,7 +904,7 @@ void Widget::OnNativeWidgetDestroyed() {
 }
 
 gfx::Size Widget::GetMinimumSize() {
-  return non_client_view_ ? non_client_view_->GetMinimumSize() : gfx::Size();
+  return non_client_view_ ? non_client_view_->GetMinimumSize() : minimum_size_;
 }
 
 void Widget::OnNativeWidgetSizeChanged(const gfx::Size& new_size) {
@@ -1160,12 +1160,13 @@ bool Widget::GetSavedWindowPlacement(gfx::Rect* bounds,
     if (!widget_delegate_->ShouldRestoreWindowSize()) {
       bounds->set_size(non_client_view_->GetPreferredSize());
     } else {
+      gfx::Size minimum_size = GetMinimumSize();
       // Make sure the bounds are at least the minimum size.
-      if (bounds->width() < minimum_size_.width())
-        bounds->set_width(minimum_size_.width());
+      if (bounds->width() < minimum_size.width())
+        bounds->set_width(minimum_size.width());
 
-      if (bounds->height() < minimum_size_.height())
-        bounds->set_height(minimum_size_.height());
+      if (bounds->height() < minimum_size.height())
+        bounds->set_height(minimum_size.height());
     }
     return true;
   }

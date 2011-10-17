@@ -102,6 +102,7 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   // TODO(beng): respect |params| authoritah wrt transparency.
   window_->layer()->SetFillsBoundsOpaquely(false);
   delegate_->OnNativeWidgetCreated();
+  window_->set_minimum_size(delegate_->GetMinimumSize());
   window_->SetBounds(params.bounds);
   window_->SetParent(
       params.type == Widget::InitParams::TYPE_MENU ? NULL : params.parent);

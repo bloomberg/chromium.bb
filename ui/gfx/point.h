@@ -66,6 +66,10 @@ class UI_EXPORT Point {
     return copy;
   }
 
+  Point Middle(const Point& other) const {
+    return Point((x_ + other.x_) / 2, (y_ + other.y_) / 2);
+  }
+
   bool operator==(const Point& rhs) const {
     return x_ == rhs.x_ && y_ == rhs.y_;
   }

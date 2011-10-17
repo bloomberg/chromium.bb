@@ -36,6 +36,9 @@ class ToplevelWindowEventFilter : public EventFilter {
   // The return value is returned by OnMouseEvent() above.
   bool HandleDrag(Window* target, MouseEvent* event);
 
+  // Updates the |window_component_| using the |event|'s location.
+  void UpdateWindowComponentForEvent(Window* window, MouseEvent* event);
+
   // Calculates the new origin of the window during a drag.
   gfx::Point GetOriginForDrag(int bounds_change,
                               Window* target,

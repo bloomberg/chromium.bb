@@ -9,8 +9,10 @@
 #include "ui/aura/event.h"
 #include "ui/aura/hit_test.h"
 #include "ui/aura/test/aura_test_base.h"
+#include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_desktop_delegate.h"
 #include "ui/aura/test/test_window_delegate.h"
+#include "ui/gfx/screen.h"
 
 #if defined(OS_WIN)
 // Windows headers define macros for these function names which screw with us.
@@ -65,15 +67,9 @@ class ToplevelWindowEventFilterTest : public AuraTestBase {
     return w1;
   }
 
-  void DragFromCenterBy(Window* window, int x, int y) {
-    gfx::Point click = window->bounds().CenterPoint();
-    Desktop* desktop= Desktop::GetInstance();
-    Window::ConvertPointToWindow(window->parent(), desktop->window(), &click);
-    desktop->OnMouseEvent(MouseEvent(ui::ET_MOUSE_MOVED, click, 0));
-    desktop->OnMouseEvent(MouseEvent(ui::ET_MOUSE_PRESSED, click, 0));
-    click.Offset(x, y);
-    desktop->OnMouseEvent(MouseEvent(ui::ET_MOUSE_DRAGGED, click, 0));
-    desktop->OnMouseEvent(MouseEvent(ui::ET_MOUSE_RELEASED, click, 0));
+  void DragFromCenterBy(Window* window, int dx, int dy) {
+    EventGenerator generator(window);
+    generator.DragMouseBy(dx, dy);
   }
 
  private:
@@ -105,11 +101,26 @@ TEST_F(ToplevelWindowEventFilterTest, BottomRight) {
 TEST_F(ToplevelWindowEventFilterTest, GrowBox) {
   scoped_ptr<Window> w1(CreateWindow(HTGROWBOX));
   gfx::Point position = w1->bounds().origin();
-  DragFromCenterBy(w1.get(), 100, 100);
+  w1->set_minimum_size(gfx::Size(50, 50));
+  EventGenerator generator;
+  generator.MoveMouseToCenterOf(w1.get());
+  generator.DragMouseBy(100, 100);
   // Position should not have changed.
   EXPECT_EQ(position, w1->bounds().origin());
   // Size should have increased by 100,100.
   EXPECT_EQ(gfx::Size(200, 200), w1->bounds().size());
+
+  // Shrink the wnidow by (-100, -100).
+  generator.DragMouseBy(-100, -100);
+  // Position should not have changed.
+  EXPECT_EQ(position, w1->bounds().origin());
+  // Size should have decreased by 100,100.
+  EXPECT_EQ(gfx::Size(100, 100), w1->bounds().size());
+
+  // Enforce minimum size.
+  generator.DragMouseBy(-60, -60);
+  EXPECT_EQ(position, w1->bounds().origin());
+  EXPECT_EQ(gfx::Size(50, 50), w1->bounds().size());
 }
 
 TEST_F(ToplevelWindowEventFilterTest, Right) {
@@ -183,6 +194,32 @@ TEST_F(ToplevelWindowEventFilterTest, Client) {
   DragFromCenterBy(w1.get(), 100, 100);
   // Neither position nor size should have changed.
   EXPECT_EQ(bounds, w1->bounds());
+}
+
+TEST_F(ToplevelWindowEventFilterTest, Maximized) {
+  scoped_ptr<Window> w1(CreateWindow(HTCLIENT));
+  gfx::Rect workarea = gfx::Screen::GetMonitorWorkAreaNearestWindow(w1.get());
+  // Maximized window cannot be dragged.
+  gfx::Rect original_bounds = w1->bounds();
+  w1->Maximize();
+  EXPECT_EQ(workarea, w1->bounds());
+  DragFromCenterBy(w1.get(), 100, 100);
+  EXPECT_EQ(workarea, w1->bounds());
+  w1->Restore();
+  EXPECT_EQ(original_bounds, w1->bounds());
+}
+
+TEST_F(ToplevelWindowEventFilterTest, Fullscreen) {
+  scoped_ptr<Window> w1(CreateWindow(HTCLIENT));
+  gfx::Rect monitor = gfx::Screen::GetMonitorAreaNearestWindow(w1.get());
+  // Fullscreen window cannot be dragged.
+  gfx::Rect original_bounds = w1->bounds();
+  w1->Fullscreen();
+  EXPECT_EQ(monitor, w1->bounds());
+  DragFromCenterBy(w1.get(), 100, 100);
+  EXPECT_EQ(monitor, w1->bounds());
+  w1->Restore();
+  EXPECT_EQ(original_bounds, w1->bounds());
 }
 
 }  // namespace test

@@ -15,6 +15,7 @@
 #include "ui/aura/hit_test.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/aura_test_base.h"
+#include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_desktop_delegate.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window_delegate.h"
@@ -375,7 +376,7 @@ TEST_F(WindowTest, MoveChildToFront) {
 
 // Various destruction assertions.
 TEST_F(WindowTest, CaptureTests) {
-  Desktop* desktop = Desktop::GetInstance();
+  aura::Desktop* desktop = aura::Desktop::GetInstance();
   CaptureWindowDelegateImpl delegate;
   scoped_ptr<Window> window(CreateTestWindowWithDelegate(
       &delegate, 0, gfx::Rect(0, 0, 20, 20), NULL));
@@ -385,12 +386,11 @@ TEST_F(WindowTest, CaptureTests) {
   window->SetCapture();
   EXPECT_TRUE(window->HasCapture());
   EXPECT_EQ(0, delegate.capture_lost_count());
-
-  desktop->OnMouseEvent(MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(50, 50),
-                                   ui::EF_LEFT_BUTTON_DOWN));
+  EventGenerator generator(gfx::Point(50, 50));
+  generator.PressLeftButton();
   EXPECT_EQ(1, delegate.mouse_event_count());
-  desktop->OnMouseEvent(MouseEvent(ui::ET_MOUSE_RELEASED, gfx::Point(50, 50),
-                                   ui::EF_LEFT_BUTTON_DOWN));
+  generator.ReleaseLeftButton();
+
   EXPECT_EQ(2, delegate.mouse_event_count());
   delegate.set_mouse_event_count(0);
 
@@ -403,8 +403,7 @@ TEST_F(WindowTest, CaptureTests) {
   EXPECT_FALSE(window->HasCapture());
   EXPECT_EQ(1, delegate.capture_lost_count());
 
-  desktop->OnMouseEvent(MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(50, 50),
-                                   ui::EF_LEFT_BUTTON_DOWN));
+  generator.PressLeftButton();
   EXPECT_EQ(0, delegate.mouse_event_count());
 
   desktop->OnTouchEvent(TouchEvent(ui::ET_TOUCH_PRESSED, gfx::Point(50, 50),
@@ -503,6 +502,13 @@ class ActivateWindowDelegate : public TestWindowDelegate {
         should_activate_count_(0) {
   }
 
+  ActivateWindowDelegate(bool activate)
+      : activate_(activate),
+        activated_count_(0),
+        lost_active_count_(0),
+        should_activate_count_(0) {
+  }
+
   void set_activate(bool v) { activate_ = v; }
   int activated_count() const { return activated_count_; }
   int lost_active_count() const { return lost_active_count_; }
@@ -557,8 +563,8 @@ TEST_F(WindowTest, ActivateOnMouse) {
   // Click on window2.
   gfx::Point press_point = w2->bounds().CenterPoint();
   Window::ConvertPointToWindow(w2->parent(), desktop->window(), &press_point);
-  desktop->OnMouseEvent(MouseEvent(ui::ET_MOUSE_PRESSED, press_point, 0));
-  desktop->OnMouseEvent(MouseEvent(ui::ET_MOUSE_RELEASED, press_point, 0));
+  EventGenerator generator(press_point);
+  generator.ClickLeftButton();
 
   // Window2 should have become active.
   EXPECT_EQ(w2.get(), desktop->active_window());
@@ -574,8 +580,7 @@ TEST_F(WindowTest, ActivateOnMouse) {
   press_point = w1->bounds().CenterPoint();
   Window::ConvertPointToWindow(w1->parent(), desktop->window(), &press_point);
   d1.set_activate(false);
-  desktop->OnMouseEvent(MouseEvent(ui::ET_MOUSE_PRESSED, press_point, 0));
-  desktop->OnMouseEvent(MouseEvent(ui::ET_MOUSE_RELEASED, press_point, 0));
+  generator.ClickLeftButton();
 
   // Window2 should still be active and focused.
   EXPECT_EQ(w2.get(), desktop->active_window());
@@ -820,13 +825,22 @@ TEST_F(WindowTest, Fullscreen) {
   EXPECT_EQ(ui::SHOW_STATE_NORMAL, w->show_state());
   EXPECT_EQ(original_bounds, w->bounds());
 
-  // Fullscreen twice
+  // Calling Fullscreen() twice should have no additional effect.
   w->Fullscreen();
   w->Fullscreen();
   EXPECT_EQ(desktop_bounds, w->bounds());
   w->Restore();
   EXPECT_EQ(ui::SHOW_STATE_NORMAL, w->show_state());
   EXPECT_EQ(original_bounds, w->bounds());
+
+  // Calling SetBounds() in fullscreen mode should only update the
+  // restore bounds not change the bounds of the window.
+  gfx::Rect new_bounds(50, 50, 50, 50);
+  w->Fullscreen();
+  w->SetBounds(new_bounds);
+  EXPECT_EQ(desktop_bounds, w->bounds());
+  w->Restore();
+  EXPECT_EQ(new_bounds, w->bounds());
 }
 
 TEST_F(WindowTest, Maximized) {
@@ -868,6 +882,15 @@ TEST_F(WindowTest, Maximized) {
   w->Restore();
   EXPECT_EQ(ui::SHOW_STATE_NORMAL, w->show_state());
   EXPECT_EQ(original_bounds, w->bounds());
+
+  // Calling SetBounds() in maximized mode mode should only update the
+  // restore bounds not change the bounds of the window.
+  gfx::Rect new_bounds(50, 50, 50, 50);
+  w->Maximize();
+  w->SetBounds(new_bounds);
+  EXPECT_EQ(max_bounds, w->bounds());
+  w->Restore();
+  EXPECT_EQ(new_bounds, w->bounds());
 }
 
 // Various assertions for activating/deactivating.
@@ -915,6 +938,48 @@ TEST_F(WindowTest, IsOrContainsFullscreenWindow) {
 
   w11->Hide();
   EXPECT_FALSE(root->IsOrContainsFullscreenWindow());
+}
+
+class ToplevelWindowTest : public WindowTest {
+ public:
+  ToplevelWindowTest() {}
+  virtual ~ToplevelWindowTest() {}
+
+  virtual void SetUp() OVERRIDE {
+    WindowTest::SetUp();
+    toplevel_container_.Init();
+    toplevel_container_.SetParent(aura::Desktop::GetInstance()->window());
+    toplevel_container_.SetBounds(
+        aura::Desktop::GetInstance()->window()->bounds());
+    toplevel_container_.Show();
+  }
+
+  virtual void TearDown() OVERRIDE {
+    toplevel_container_.Hide();
+    toplevel_container_.SetParent(NULL);
+    WindowTest::TearDown();
+  }
+
+  Window* CreateTestToplevelWindow(
+      WindowDelegate* delegate, const gfx::Rect& bounds) {
+    return CreateTestWindowWithDelegate(
+        delegate, 0 /* id */, bounds, &toplevel_container_);
+  }
+
+  ToplevelWindowContainer toplevel_container_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ToplevelWindowTest);
+};
+
+TEST_F(ToplevelWindowTest, TopMostActivate) {
+  ActivateWindowDelegate activate;
+  ActivateWindowDelegate non_activate(false);
+
+  scoped_ptr<Window> w1(CreateTestToplevelWindow(&non_activate, gfx::Rect()));
+  scoped_ptr<Window> w2(CreateTestToplevelWindow(&activate, gfx::Rect()));
+  scoped_ptr<Window> w3(CreateTestToplevelWindow(&non_activate, gfx::Rect()));
+  EXPECT_EQ(w2.get(), toplevel_container_.GetTopmostWindowToActivate(NULL));
 }
 
 class WindowObserverTest : public WindowTest,
