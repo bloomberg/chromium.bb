@@ -1915,7 +1915,7 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 // |-setPresentationMode:|.
 - (void)setFullscreen:(BOOL)fullscreen
                   url:(const GURL&)url
-        askPermission:(BOOL)askPermission {
+           bubbleType:(FullscreenExitBubbleType)bubbleType {
   if (fullscreen == [self isFullscreen])
     return;
 
@@ -1935,10 +1935,25 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 
   if (fullscreen && !url.is_empty()) {
     [self showFullscreenExitBubbleIfNecessaryWithURL:url
-                                       askPermission:askPermission];
+                                          bubbleType:bubbleType];
   } else {
     [self destroyFullscreenExitBubbleIfNecessary];
   }
+}
+
+- (void)enterFullscreenForURL:(const GURL&)url
+                   bubbleType:(FullscreenExitBubbleType)bubbleType {
+  [self setFullscreen:YES url:url bubbleType:bubbleType];
+}
+
+- (void)exitFullscreen {
+  // url: and bubbleType: are ignored when leaving fullscreen.
+  [self setFullscreen:NO url:GURL() bubbleType:FEB_TYPE_NONE];
+}
+
+- (void)updateFullscreenExitBubbleURL:(const GURL&)url
+                           bubbleType:(FullscreenExitBubbleType)bubbleType {
+  [fullscreenExitBubbleController_.get() updateURL:url bubbleType:bubbleType];
 }
 
 - (BOOL)isFullscreen {
@@ -1961,13 +1976,11 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 // moves the user into fullscreen mode.
 - (void)setPresentationMode:(BOOL)presentationMode
                         url:(const GURL&)url
-              askPermission:(BOOL)askPermission {
+                 bubbleType:(FullscreenExitBubbleType)bubbleType {
   // Presentation mode on Leopard and Snow Leopard maps directly to fullscreen
   // mode.
   if (base::mac::IsOSSnowLeopardOrEarlier()) {
-    [self setFullscreen:presentationMode
-                    url:url
-          askPermission:askPermission];
+    [self setFullscreen:presentationMode url:url bubbleType:bubbleType];
     return;
   }
 
@@ -1999,7 +2012,7 @@ willAnimateFromState:(bookmarks::VisualState)oldState
     }
 
     [self showFullscreenExitBubbleIfNecessaryWithURL:url
-                                       askPermission:askPermission];
+                                          bubbleType:bubbleType];
   } else {
     if (enteredPresentationModeFromFullscreen_) {
       // The window is currently in fullscreen mode, but the user is choosing to
@@ -2020,6 +2033,16 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 
     [self destroyFullscreenExitBubbleIfNecessary];
   }
+}
+
+- (void)enterPresentationModeForURL:(const GURL&)url
+                         bubbleType:(FullscreenExitBubbleType)bubbleType {
+  [self setPresentationMode:YES url:url bubbleType:bubbleType];
+}
+
+- (void)exitPresentationMode {
+  // url: and bubbleType: are ignored when leaving presentation mode.
+ [self setPresentationMode:NO url:GURL() bubbleType:FEB_TYPE_NONE];
 }
 
 - (BOOL)inPresentationMode {

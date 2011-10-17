@@ -61,7 +61,7 @@ const float kHideDuration = 0.7;
 - (id)initWithOwner:(BrowserWindowController*)owner
             browser:(Browser*)browser
                 url:(const GURL&)url
-      askPermission:(BOOL)askPermission {
+         bubbleType:(FullscreenExitBubbleType)bubbleType {
   NSString* nibPath =
       [base::mac::MainAppBundle() pathForResource:@"FullscreenExitBubble"
                                           ofType:@"nib"];
@@ -69,7 +69,7 @@ const float kHideDuration = 0.7;
     browser_ = browser;
     owner_ = owner;
     url_ = url;
-    showButtons_ = askPermission;
+    showButtons_ = bubbleType == FEB_TYPE_FULLSCREEN_BUTTONS;
   }
   return self;
 }
@@ -129,6 +129,11 @@ const float kHideDuration = 0.7;
   origin.y = maxY - NSHeight(windowFrame);
   origin.y -= kBubbleOffsetY;
   [[self window] setFrameOrigin:origin];
+}
+
+- (void)updateURL:(const GURL&)url
+       bubbleType:(FullscreenExitBubbleType)bubbleType {
+  NOTIMPLEMENTED();
 }
 
 // Called when someone clicks on the embedded link.

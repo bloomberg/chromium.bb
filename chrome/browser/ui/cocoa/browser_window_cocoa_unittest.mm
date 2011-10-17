@@ -94,10 +94,12 @@ TEST_F(BrowserWindowCocoaTest, TestBookmarkBarVisible) {
 @end
 
 @implementation FakeController
-- (void)setFullscreen:(BOOL)fullscreen
-                  url:(const GURL&)url
-        askPermission:(BOOL)askPermission {
-  fullscreen_ = fullscreen;
+- (void)enterFullscreenForURL:(const GURL&)url
+                   bubbleType:(FullscreenExitBubbleType)bubbleType {
+  fullscreen_ = YES;
+}
+- (void)exitFullscreen {
+  fullscreen_ = NO;
 }
 - (BOOL)isFullscreen {
   return fullscreen_;

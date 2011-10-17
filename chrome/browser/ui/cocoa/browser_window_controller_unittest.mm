@@ -689,9 +689,10 @@ static bool IsFrontWindow(NSWindow *window) {
 
 TEST_F(BrowserWindowFullScreenControllerTest, TestFullscreenNotLion) {
   EXPECT_FALSE([controller_ isFullscreen]);
-  [controller_ setFullscreen:YES url:GURL() askPermission:NO];
+  [controller_ enterFullscreenForURL:GURL()
+                       bubbleType:FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION];
   EXPECT_TRUE([controller_ isFullscreen]);
-  [controller_ setFullscreen:NO url:GURL() askPermission:NO];
+  [controller_ exitFullscreen];
   EXPECT_FALSE([controller_ isFullscreen]);
 }
 
@@ -705,12 +706,13 @@ TEST_F(BrowserWindowFullScreenControllerTest, TestActivateNotLion) {
   [controller_ activate];
   EXPECT_TRUE(IsFrontWindow([controller_ window]));
 
-  [controller_ setFullscreen:YES url:GURL() askPermission:NO];
+  [controller_ enterFullscreenForURL:GURL()
+                       bubbleType:FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION];
   [controller_ activate];
   EXPECT_TRUE(IsFrontWindow([controller_ createFullscreenWindow]));
 
   // We have to cleanup after ourselves by unfullscreening.
-  [controller_ setFullscreen:NO url:GURL() askPermission:NO];
+  [controller_ exitFullscreen];
 }
 
 @implementation BrowserWindowControllerFakeFullscreen

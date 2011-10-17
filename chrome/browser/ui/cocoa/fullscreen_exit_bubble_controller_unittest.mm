@@ -38,7 +38,7 @@ class FullscreenExitBubbleControllerTest : public CocoaTest {
         [[FullscreenExitBubbleController alloc] initWithOwner:nil
                                                       browser:nil
                                                           url:GURL()
-                                                askPermission:NO]);
+                      bubbleType:FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION]);
     EXPECT_TRUE([controller_ window]);
   }
 

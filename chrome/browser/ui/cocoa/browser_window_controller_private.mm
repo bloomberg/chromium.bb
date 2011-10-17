@@ -783,7 +783,7 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (void)showFullscreenExitBubbleIfNecessaryWithURL:(const GURL&)url
-                                     askPermission:(BOOL)askPermission {
+    bubbleType:(FullscreenExitBubbleType)bubbleType {
   if (!browser_->is_fullscreen_for_tab()) {
     return;
   }
@@ -794,7 +794,7 @@ willPositionSheet:(NSWindow*)sheet
       [[FullscreenExitBubbleController alloc] initWithOwner:self
                                                     browser:browser_.get()
                                                         url:url
-                                              askPermission:askPermission]);
+                                                 bubbleType:bubbleType]);
   NSView* contentView = [[self window] contentView];
   CGFloat maxWidth = NSWidth([contentView frame]);
   CGFloat maxY = NSMaxY([[[self window] contentView] frame]);

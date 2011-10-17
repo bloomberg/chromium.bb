@@ -6,6 +6,7 @@
 
 #import "base/mac/cocoa_protocols.h"
 #include "base/memory/scoped_nsobject.h"
+#include "chrome/browser/ui/fullscreen_exit_bubble_type.h"
 #include "googleurl/src/gurl.h"
 
 class TabContentsWrapper;
@@ -47,7 +48,7 @@ class Browser;
 - (id)initWithOwner:(BrowserWindowController*)owner
             browser:(Browser*)browser
                 url:(const GURL&)url
-      askPermission:(BOOL)askPermission;
+         bubbleType:(FullscreenExitBubbleType)bubbleType;
 
 - (void)allow:(id)sender;
 - (void)deny:(id)sender;
@@ -56,5 +57,9 @@ class Browser;
 
 // Positions the fullscreen exit bubble in the top-center of the window.
 - (void)positionInWindowAtTop:(CGFloat)maxY width:(CGFloat)maxWidth;
+
+// Updates the bubble contents with |url| and |bubbleType|.
+- (void)updateURL:(const GURL&)url
+       bubbleType:(FullscreenExitBubbleType)bubbleType;
 
 @end

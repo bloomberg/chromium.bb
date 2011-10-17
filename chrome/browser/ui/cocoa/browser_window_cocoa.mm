@@ -256,20 +256,19 @@ bool BrowserWindowCocoa::IsMinimized() const {
 }
 
 void BrowserWindowCocoa::EnterFullscreen(
-      const GURL& url, FullscreenExitBubbleType type) {
-  [controller_ setFullscreen:YES
-                         url:url
-               askPermission:type == FEB_TYPE_FULLSCREEN_BUTTONS];
+      const GURL& url, FullscreenExitBubbleType bubble_type) {
+  [controller_ enterFullscreenForURL:url
+                          bubbleType:bubble_type];
 }
 
 void BrowserWindowCocoa::ExitFullscreen() {
-  [controller_ setFullscreen:NO url:GURL() askPermission:NO];
+  [controller_ exitFullscreen];
 }
 
 void BrowserWindowCocoa::UpdateFullscreenExitBubbleContent(
       const GURL& url,
       FullscreenExitBubbleType bubble_type) {
-  NOTIMPLEMENTED();
+  [controller_ updateFullscreenExitBubbleURL:url bubbleType:bubble_type];
 }
 
 bool BrowserWindowCocoa::IsFullscreen() const {
@@ -518,13 +517,12 @@ void BrowserWindowCocoa::OpenTabpose() {
 void BrowserWindowCocoa::EnterPresentationMode(
       const GURL& url,
       FullscreenExitBubbleType bubble_type) {
-  [controller_ setPresentationMode:YES
-                               url:url
-                     askPermission:bubble_type == FEB_TYPE_FULLSCREEN_BUTTONS];
+  [controller_ enterPresentationModeForURL:url
+                                bubbleType:bubble_type];
 }
 
 void BrowserWindowCocoa::ExitPresentationMode() {
-  [controller_ setPresentationMode:NO url:GURL() askPermission:NO];
+  [controller_ exitPresentationMode];
 }
 
 bool BrowserWindowCocoa::InPresentationMode() {
