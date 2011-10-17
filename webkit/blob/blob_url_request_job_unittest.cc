@@ -317,13 +317,6 @@ class BlobURLRequestJobTest : public testing::Test {
     TestErrorRequest(blob_data, 404);
   }
 
-  void TestGetSlicedDataRequest() {
-    scoped_refptr<BlobData> blob_data(new BlobData());
-    blob_data->AppendData(kTestData2, 2, 4);
-    std::string result(kTestData2 + 2, 4);
-    TestSuccessRequest(blob_data, result);
-  }
-
   void TestGetSlicedFileRequest() {
     scoped_refptr<BlobData> blob_data(new BlobData());
     blob_data->AppendFile(temp_file1_, 2, 4, temp_file_modification_time1_);
@@ -333,9 +326,9 @@ class BlobURLRequestJobTest : public testing::Test {
 
   scoped_refptr<BlobData> BuildComplicatedData(std::string* expected_result) {
     scoped_refptr<BlobData> blob_data(new BlobData());
-    blob_data->AppendData(kTestData1, 1, 2);
+    blob_data->AppendData(kTestData1 + 1, 2);
     blob_data->AppendFile(temp_file1_, 2, 3, temp_file_modification_time1_);
-    blob_data->AppendData(kTestData2, 3, 4);
+    blob_data->AppendData(kTestData2 + 3, 4);
     blob_data->AppendFile(temp_file2_, 4, 5, temp_file_modification_time2_);
     *expected_result = std::string(kTestData1 + 1, 2);
     *expected_result += std::string(kTestFileData1 + 2, 3);
@@ -429,10 +422,6 @@ TEST_F(BlobURLRequestJobTest, TestGetSimpleFileRequest) {
 
 TEST_F(BlobURLRequestJobTest, TestGetLargeFileRequest) {
   RunTestOnIOThread(&BlobURLRequestJobTest::TestGetLargeFileRequest);
-}
-
-TEST_F(BlobURLRequestJobTest, TestGetSlicedDataRequest) {
-  RunTestOnIOThread(&BlobURLRequestJobTest::TestGetSlicedDataRequest);
 }
 
 TEST_F(BlobURLRequestJobTest, TestGetSlicedFileRequest) {

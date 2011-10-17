@@ -35,45 +35,44 @@ TEST(BlobStorageControllerTest, RegisterBlobUrl) {
 
   scoped_refptr<BlobData> canonicalized_blob_data2(new BlobData());
   canonicalized_blob_data2->AppendData("Data3");
-  canonicalized_blob_data2->AppendData("Data2", 3, 2);
+  canonicalized_blob_data2->AppendData("a2___", 2);
   canonicalized_blob_data2->AppendFile(FilePath(FILE_PATH_LITERAL("File1.txt")),
       10, 98, time1);
   canonicalized_blob_data2->AppendFile(FilePath(FILE_PATH_LITERAL("File2.txt")),
       0, 20, time2);
 
-  scoped_ptr<BlobStorageController> blob_storage_controller(
-      new BlobStorageController());
+  BlobStorageController blob_storage_controller;
 
   // Test registering a blob URL referring to the blob data containing only
   // data and file.
   GURL blob_url1("blob://url_1");
-  blob_storage_controller->RegisterBlobUrl(blob_url1, blob_data1);
+  blob_storage_controller.AddFinishedBlob(blob_url1, blob_data1);
 
   BlobData* blob_data_found =
-      blob_storage_controller->GetBlobDataFromUrl(blob_url1);
+      blob_storage_controller.GetBlobDataFromUrl(blob_url1);
   ASSERT_TRUE(blob_data_found != NULL);
   EXPECT_TRUE(*blob_data_found == *blob_data1);
 
   // Test registering a blob URL referring to the blob data containing data,
   // file and blob.
   GURL blob_url2("blob://url_2");
-  blob_storage_controller->RegisterBlobUrl(blob_url2, blob_data2);
+  blob_storage_controller.AddFinishedBlob(blob_url2, blob_data2);
 
-  blob_data_found = blob_storage_controller->GetBlobDataFromUrl(blob_url2);
+  blob_data_found = blob_storage_controller.GetBlobDataFromUrl(blob_url2);
   ASSERT_TRUE(blob_data_found != NULL);
   EXPECT_TRUE(*blob_data_found == *canonicalized_blob_data2);
 
   // Test registering a blob URL referring to existent blob URL.
   GURL blob_url3("blob://url_3");
-  blob_storage_controller->RegisterBlobUrlFrom(blob_url3, blob_url1);
+  blob_storage_controller.CloneBlob(blob_url3, blob_url1);
 
-  blob_data_found = blob_storage_controller->GetBlobDataFromUrl(blob_url3);
+  blob_data_found = blob_storage_controller.GetBlobDataFromUrl(blob_url3);
   ASSERT_TRUE(blob_data_found != NULL);
   EXPECT_TRUE(*blob_data_found == *blob_data1);
 
   // Test unregistering a blob URL.
-  blob_storage_controller->UnregisterBlobUrl(blob_url3);
-  blob_data_found = blob_storage_controller->GetBlobDataFromUrl(blob_url3);
+  blob_storage_controller.RemoveBlob(blob_url3);
+  blob_data_found = blob_storage_controller.GetBlobDataFromUrl(blob_url3);
   EXPECT_TRUE(!blob_data_found);
 }
 
@@ -83,38 +82,36 @@ TEST(BlobStorageControllerTest, ResolveBlobReferencesInUploadData) {
   base::Time::FromString("Tue, 15 Nov 1994, 12:45:26 GMT", &time1);
   base::Time::FromString("Mon, 14 Nov 1994, 11:30:49 GMT", &time2);
 
-  scoped_ptr<BlobStorageController> blob_storage_controller(
-      new BlobStorageController());
-
+  BlobStorageController blob_storage_controller;
   scoped_refptr<BlobData> blob_data(new BlobData());
 
   GURL blob_url0("blob://url_0");
-  blob_storage_controller->RegisterBlobUrl(blob_url0, blob_data);
+  blob_storage_controller.AddFinishedBlob(blob_url0, blob_data);
 
   blob_data->AppendData("BlobData");
   blob_data->AppendFile(
       FilePath(FILE_PATH_LITERAL("BlobFile.txt")), 0, 20, time1);
 
   GURL blob_url1("blob://url_1");
-  blob_storage_controller->RegisterBlobUrl(blob_url1, blob_data);
+  blob_storage_controller.AddFinishedBlob(blob_url1, blob_data);
 
   GURL blob_url2("blob://url_2");
-  blob_storage_controller->RegisterBlobUrlFrom(blob_url2, blob_url1);
+  blob_storage_controller.CloneBlob(blob_url2, blob_url1);
 
   GURL blob_url3("blob://url_3");
-  blob_storage_controller->RegisterBlobUrlFrom(blob_url3, blob_url2);
+  blob_storage_controller.CloneBlob(blob_url3, blob_url2);
 
   // Setup upload data elements for comparison.
   UploadData::Element blob_element1, blob_element2;
   blob_element1.SetToBytes(
-      blob_data->items().at(0).data().c_str() +
-          static_cast<int>(blob_data->items().at(0).offset()),
-      static_cast<int>(blob_data->items().at(0).length()));
+      blob_data->items().at(0).data.c_str() +
+          static_cast<int>(blob_data->items().at(0).offset),
+      static_cast<int>(blob_data->items().at(0).length));
   blob_element2.SetToFilePathRange(
-      blob_data->items().at(1).file_path(),
-      blob_data->items().at(1).offset(),
-      blob_data->items().at(1).length(),
-      blob_data->items().at(1).expected_modification_time());
+      blob_data->items().at(1).file_path,
+      blob_data->items().at(1).offset,
+      blob_data->items().at(1).length,
+      blob_data->items().at(1).expected_modification_time);
 
   UploadData::Element upload_element1, upload_element2;
   upload_element1.SetToBytes("Hello", 5);
@@ -132,7 +129,7 @@ TEST(BlobStorageControllerTest, ResolveBlobReferencesInUploadData) {
       upload_element2.file_range_length(),
       upload_element2.expected_file_modification_time());
 
-  blob_storage_controller->ResolveBlobReferencesInUploadData(upload_data.get());
+  blob_storage_controller.ResolveBlobReferencesInUploadData(upload_data.get());
   ASSERT_EQ(upload_data->elements()->size(), 2U);
   EXPECT_TRUE(upload_data->elements()->at(0) == upload_element1);
   EXPECT_TRUE(upload_data->elements()->at(1) == upload_element2);
@@ -141,14 +138,14 @@ TEST(BlobStorageControllerTest, ResolveBlobReferencesInUploadData) {
   upload_data = new UploadData();
   upload_data->AppendBlob(blob_url0);
 
-  blob_storage_controller->ResolveBlobReferencesInUploadData(upload_data.get());
+  blob_storage_controller.ResolveBlobReferencesInUploadData(upload_data.get());
   ASSERT_EQ(upload_data->elements()->size(), 0U);
 
   // Test having only one blob reference.
   upload_data = new UploadData();
   upload_data->AppendBlob(blob_url1);
 
-  blob_storage_controller->ResolveBlobReferencesInUploadData(upload_data.get());
+  blob_storage_controller.ResolveBlobReferencesInUploadData(upload_data.get());
   ASSERT_EQ(upload_data->elements()->size(), 2U);
   EXPECT_TRUE(upload_data->elements()->at(0) == blob_element1);
   EXPECT_TRUE(upload_data->elements()->at(1) == blob_element2);
@@ -165,7 +162,7 @@ TEST(BlobStorageControllerTest, ResolveBlobReferencesInUploadData) {
       upload_element2.file_range_length(),
       upload_element2.expected_file_modification_time());
 
-  blob_storage_controller->ResolveBlobReferencesInUploadData(upload_data.get());
+  blob_storage_controller.ResolveBlobReferencesInUploadData(upload_data.get());
   ASSERT_EQ(upload_data->elements()->size(), 4U);
   EXPECT_TRUE(upload_data->elements()->at(0) == blob_element1);
   EXPECT_TRUE(upload_data->elements()->at(1) == blob_element2);
@@ -184,7 +181,7 @@ TEST(BlobStorageControllerTest, ResolveBlobReferencesInUploadData) {
       upload_element2.expected_file_modification_time());
   upload_data->AppendBlob(blob_url1);
 
-  blob_storage_controller->ResolveBlobReferencesInUploadData(upload_data.get());
+  blob_storage_controller.ResolveBlobReferencesInUploadData(upload_data.get());
   ASSERT_EQ(upload_data->elements()->size(), 4U);
   EXPECT_TRUE(upload_data->elements()->at(0) == upload_element1);
   EXPECT_TRUE(upload_data->elements()->at(1) == upload_element2);
@@ -203,7 +200,7 @@ TEST(BlobStorageControllerTest, ResolveBlobReferencesInUploadData) {
       upload_element2.file_range_length(),
       upload_element2.expected_file_modification_time());
 
-  blob_storage_controller->ResolveBlobReferencesInUploadData(upload_data.get());
+  blob_storage_controller.ResolveBlobReferencesInUploadData(upload_data.get());
   ASSERT_EQ(upload_data->elements()->size(), 4U);
   EXPECT_TRUE(upload_data->elements()->at(0) == upload_element1);
   EXPECT_TRUE(upload_data->elements()->at(1) == blob_element1);
@@ -224,7 +221,7 @@ TEST(BlobStorageControllerTest, ResolveBlobReferencesInUploadData) {
       upload_element2.file_range_length(),
       upload_element2.expected_file_modification_time());
 
-  blob_storage_controller->ResolveBlobReferencesInUploadData(upload_data.get());
+  blob_storage_controller.ResolveBlobReferencesInUploadData(upload_data.get());
   ASSERT_EQ(upload_data->elements()->size(), 8U);
   EXPECT_TRUE(upload_data->elements()->at(0) == blob_element1);
   EXPECT_TRUE(upload_data->elements()->at(1) == blob_element2);

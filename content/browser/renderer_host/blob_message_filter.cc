@@ -11,6 +11,8 @@
 #include "webkit/blob/blob_data.h"
 #include "webkit/blob/blob_storage_controller.h"
 
+using webkit_blob::BlobData;
+
 BlobMessageFilter::BlobMessageFilter(
     int process_id,
     ChromeBlobStorageContext* blob_storage_context)
@@ -28,7 +30,7 @@ void BlobMessageFilter::OnChannelClosing() {
   // process.
   for (base::hash_set<std::string>::const_iterator iter = blob_urls_.begin();
        iter != blob_urls_.end(); ++iter) {
-    blob_storage_context_->controller()->UnregisterBlobUrl(GURL(*iter));
+    blob_storage_context_->controller()->RemoveBlob(GURL(*iter));
   }
 }
 
@@ -38,48 +40,70 @@ bool BlobMessageFilter::OnMessageReceived(const IPC::Message& message,
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(BlobMessageFilter, message, *message_was_ok)
-    IPC_MESSAGE_HANDLER(BlobHostMsg_RegisterBlobUrl, OnRegisterBlobUrl)
-    IPC_MESSAGE_HANDLER(BlobHostMsg_RegisterBlobUrlFrom, OnRegisterBlobUrlFrom)
-    IPC_MESSAGE_HANDLER(BlobHostMsg_UnregisterBlobUrl, OnUnregisterBlobUrl)
+    IPC_MESSAGE_HANDLER(BlobHostMsg_StartBuildingBlob, OnStartBuildingBlob)
+    IPC_MESSAGE_HANDLER(BlobHostMsg_AppendBlobDataItem, OnAppendBlobDataItem)
+    IPC_MESSAGE_HANDLER(BlobHostMsg_SyncAppendSharedMemory,
+                        OnAppendSharedMemory)
+    IPC_MESSAGE_HANDLER(BlobHostMsg_FinishBuildingBlob, OnFinishBuildingBlob)
+    IPC_MESSAGE_HANDLER(BlobHostMsg_CloneBlob, OnCloneBlob)
+    IPC_MESSAGE_HANDLER(BlobHostMsg_RemoveBlob, OnRemoveBlob)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
 }
 
-// Check if the child process has been granted permission to register the files.
-bool BlobMessageFilter::CheckPermission(
-    webkit_blob::BlobData* blob_data) const {
-  ChildProcessSecurityPolicy* policy =
-      ChildProcessSecurityPolicy::GetInstance();
-  for (std::vector<webkit_blob::BlobData::Item>::const_iterator iter =
-           blob_data->items().begin();
-       iter != blob_data->items().end(); ++iter) {
-    if (iter->type() == webkit_blob::BlobData::TYPE_FILE) {
-      if (!policy->CanReadFile(process_id_, iter->file_path()))
-        return false;
-    }
-  }
-  return true;
-}
-
-void BlobMessageFilter::OnRegisterBlobUrl(
-    const GURL& url, const scoped_refptr<webkit_blob::BlobData>& blob_data) {
+void BlobMessageFilter::OnStartBuildingBlob(const GURL& url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (!CheckPermission(blob_data.get()))
-    return;
-  blob_storage_context_->controller()->RegisterBlobUrl(url, blob_data);
+  blob_storage_context_->controller()->StartBuildingBlob(url);
   blob_urls_.insert(url.spec());
 }
 
-void BlobMessageFilter::OnRegisterBlobUrlFrom(
+void BlobMessageFilter::OnAppendBlobDataItem(
+    const GURL& url, const BlobData::Item& item) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (item.type == BlobData::TYPE_FILE &&
+      !ChildProcessSecurityPolicy::GetInstance()->CanReadFile(
+          process_id_, item.file_path)) {
+    OnRemoveBlob(url);
+    return;
+  }
+  blob_storage_context_->controller()->AppendBlobDataItem(url, item);
+}
+
+void BlobMessageFilter::OnAppendSharedMemory(
+    const GURL& url, base::SharedMemoryHandle handle, size_t buffer_size) {
+  DCHECK(base::SharedMemory::IsHandleValid(handle));
+#if defined(OS_WIN)
+  base::SharedMemory shared_memory(handle, true, peer_handle());
+#else
+  base::SharedMemory shared_memory(handle, true);
+#endif
+  if (!shared_memory.Map(buffer_size)) {
+    OnRemoveBlob(url);
+    return;
+  }
+
+  BlobData::Item item;
+  item.SetToDataExternal(static_cast<char*>(shared_memory.memory()),
+                        buffer_size);
+  blob_storage_context_->controller()->AppendBlobDataItem(url, item);
+}
+
+void BlobMessageFilter::OnFinishBuildingBlob(
+    const GURL& url, const std::string& content_type) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  blob_storage_context_->controller()->FinishBuildingBlob(url, content_type);
+}
+
+void BlobMessageFilter::OnCloneBlob(
     const GURL& url, const GURL& src_url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  blob_storage_context_->controller()->RegisterBlobUrlFrom(url, src_url);
+  blob_storage_context_->controller()->CloneBlob(url, src_url);
   blob_urls_.insert(url.spec());
 }
 
-void BlobMessageFilter::OnUnregisterBlobUrl(const GURL& url) {
+void BlobMessageFilter::OnRemoveBlob(const GURL& url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  blob_storage_context_->controller()->UnregisterBlobUrl(url);
+  blob_storage_context_->controller()->RemoveBlob(url);
   blob_urls_.erase(url.spec());
 }

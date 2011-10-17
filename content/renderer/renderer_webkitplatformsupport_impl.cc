@@ -604,9 +604,9 @@ RendererWebKitPlatformSupportImpl::signedPublicKeyAndChallengeString(
 //------------------------------------------------------------------------------
 
 WebBlobRegistry* RendererWebKitPlatformSupportImpl::blobRegistry() {
-  // RenderThreadImpl::current can be NULL when running some tests.
-  if (!blob_registry_.get() && RenderThreadImpl::current()) {
-    blob_registry_.reset(new WebBlobRegistryImpl(RenderThreadImpl::Get()));
+  // ChildThread::current can be NULL when running some tests.
+  if (!blob_registry_.get() && ChildThread::current()) {
+    blob_registry_.reset(new WebBlobRegistryImpl(ChildThread::current()));
   }
   return blob_registry_.get();
 }

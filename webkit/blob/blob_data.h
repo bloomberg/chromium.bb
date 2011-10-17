@@ -24,82 +24,70 @@ class BlobData : public base::RefCounted<BlobData> {
  public:
   enum Type {
     TYPE_DATA,
+    TYPE_DATA_EXTERNAL,
     TYPE_FILE,
     TYPE_BLOB
   };
 
-  class Item {
-   public:
+  struct Item {
     Item();
     ~Item();
 
-    Type type() const { return type_; }
-    const std::string& data() const { return data_; }
-    const FilePath& file_path() const { return file_path_; }
-    const GURL& blob_url() const { return blob_url_; }
-    uint64 offset() const { return offset_; }
-    uint64 length() const { return length_; }
-    const base::Time& expected_modification_time() const {
-      return expected_modification_time_;
-    }
-
     void SetToData(const std::string& data) {
-      SetToData(data, 0, static_cast<uint32>(data.size()));
+      SetToData(data.c_str(), data.size());
     }
 
-    void SetToData(const std::string& data, uint32 offset, uint32 length) {
-      // TODO(jianli): Need to implement ref-counting vector storage.
-      type_ = TYPE_DATA;
-      data_ = data;
-      offset_ = offset;
-      length_ = length;
+    void SetToData(const char* data, size_t length) {
+      type = TYPE_DATA;
+      this->data.assign(data, length);
+      this->offset = 0;
+      this->length = length;
+    }
+
+    void SetToDataExternal(const char* data, size_t length) {
+      type = TYPE_DATA_EXTERNAL;
+      this->data_external = data;
+      this->offset = 0;
+      this->length = length;
     }
 
     void SetToFile(const FilePath& file_path, uint64 offset, uint64 length,
                    const base::Time& expected_modification_time) {
-      type_ = TYPE_FILE;
-      file_path_ = file_path;
-      offset_ = offset;
-      length_ = length;
-      expected_modification_time_ = expected_modification_time;
+      type = TYPE_FILE;
+      this->file_path = file_path;
+      this->offset = offset;
+      this->length = length;
+      this->expected_modification_time = expected_modification_time;
     }
 
     void SetToBlob(const GURL& blob_url, uint64 offset, uint64 length) {
-      type_ = TYPE_BLOB;
-      blob_url_ = blob_url;
-      offset_ = offset;
-      length_ = length;
+      type = TYPE_BLOB;
+      this->blob_url = blob_url;
+      this->offset = offset;
+      this->length = length;
     }
 
-   private:
-    Type type_;
-
-    // For Data type.
-    std::string data_;
-
-    // For File type.
-    FilePath file_path_;
-
-    // For Blob typ.
-    GURL blob_url_;
-
-    uint64 offset_;
-    uint64 length_;
-    base::Time expected_modification_time_;
+    Type type;
+    std::string data;  // For Data type.
+    const char* data_external;  // For DataExternal type.
+    GURL blob_url;  // For Blob type.
+    FilePath file_path;  // For File type.
+    base::Time expected_modification_time;  // Also for File type.
+    uint64 offset;
+    uint64 length;
   };
 
   BlobData();
   explicit BlobData(const WebKit::WebBlobData& data);
 
   void AppendData(const std::string& data) {
-    // TODO(jianli): Consider writing the big data to the disk.
-    AppendData(data, 0, static_cast<uint32>(data.size()));
+    AppendData(data.c_str(), data.size());
   }
 
-  void AppendData(const std::string& data, uint32 offset, uint32 length) {
+  void AppendData(const char* data, size_t length) {
     if (length > 0) {
       items_.push_back(Item());
-      items_.back().SetToData(data, offset, length);
+      items_.back().SetToData(data, length);
     }
   }
 
@@ -133,9 +121,14 @@ class BlobData : public base::RefCounted<BlobData> {
     content_disposition_ = content_disposition;
   }
 
-  // Should only be called by the IPC ParamTraits for this class.
-  void swap_items(std::vector<Item>* items) {
-    items_.swap(*items);
+  int64 GetMemoryUsage() const {
+    int64 memory = 0;
+    for (std::vector<Item>::const_iterator iter = items_.begin();
+         iter != items_.end(); ++iter) {
+      if (iter->type == TYPE_DATA)
+        memory += iter->data.size();
+    }
+    return memory;
   }
 
  private:
@@ -153,23 +146,23 @@ class BlobData : public base::RefCounted<BlobData> {
 
 #if defined(UNIT_TEST)
 inline bool operator==(const BlobData::Item& a, const BlobData::Item& b) {
-  if (a.type() != b.type())
+  if (a.type != b.type)
     return false;
-  if (a.type() == BlobData::TYPE_DATA) {
-    return a.data() == b.data() &&
-           a.offset() == b.offset() &&
-           a.length() == b.length();
+  if (a.type == BlobData::TYPE_DATA) {
+    return a.data == b.data &&
+           a.offset == b.offset &&
+           a.length == b.length;
   }
-  if (a.type() == BlobData::TYPE_FILE) {
-    return a.file_path() == b.file_path() &&
-           a.offset() == b.offset() &&
-           a.length() == b.length() &&
-           a.expected_modification_time() == b.expected_modification_time();
+  if (a.type == BlobData::TYPE_FILE) {
+    return a.file_path == b.file_path &&
+           a.offset == b.offset &&
+           a.length == b.length &&
+           a.expected_modification_time == b.expected_modification_time;
   }
-  if (a.type() == BlobData::TYPE_BLOB) {
-    return a.blob_url() == b.blob_url() &&
-           a.offset() == b.offset() &&
-           a.length() == b.length();
+  if (a.type == BlobData::TYPE_BLOB) {
+    return a.blob_url == b.blob_url &&
+           a.offset == b.offset &&
+           a.length == b.length;
   }
   return false;
 }

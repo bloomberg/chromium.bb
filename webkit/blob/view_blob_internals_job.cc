@@ -135,7 +135,7 @@ void ViewBlobInternalsJob::DoWorkAsync() {
     std::string blob_url = request_->url().query().substr(strlen("remove="));
     blob_url = net::UnescapeURLComponent(blob_url,
         UnescapeRule::NORMAL | UnescapeRule::URL_SPECIAL_CHARS);
-    blob_storage_controller_->UnregisterBlobUrl(GURL(blob_url));
+    blob_storage_controller_->RemoveBlob(GURL(blob_url));
   }
 
   StartAsync();
@@ -190,37 +190,38 @@ void ViewBlobInternalsJob::GenerateHTMLForBlobData(const BlobData& blob_data,
     }
     const BlobData::Item& item = blob_data.items().at(i);
 
-    switch (item.type()) {
+    switch (item.type) {
       case BlobData::TYPE_DATA:
+      case BlobData::TYPE_DATA_EXTERNAL:
         AddHTMLListItem(kType, "data", out);
         break;
       case BlobData::TYPE_FILE:
         AddHTMLListItem(kType, "file", out);
         AddHTMLListItem(kPath,
 #if defined(OS_WIN)
-                 net::EscapeForHTML(WideToUTF8(item.file_path().value())),
+                 net::EscapeForHTML(WideToUTF8(item.file_path.value())),
 #else
-                 net::EscapeForHTML(item.file_path().value()),
+                 net::EscapeForHTML(item.file_path.value()),
 #endif
                  out);
-        if (!item.expected_modification_time().is_null()) {
+        if (!item.expected_modification_time.is_null()) {
           AddHTMLListItem(kModificationTime, UTF16ToUTF8(
-              TimeFormatFriendlyDateAndTime(item.expected_modification_time())),
+              TimeFormatFriendlyDateAndTime(item.expected_modification_time)),
               out);
         }
         break;
       case BlobData::TYPE_BLOB:
         AddHTMLListItem(kType, "blob", out);
-        AddHTMLListItem(kURL, item.blob_url().spec(), out);
+        AddHTMLListItem(kURL, item.blob_url.spec(), out);
         break;
     }
-    if (item.offset()) {
+    if (item.offset) {
       AddHTMLListItem(kOffset, UTF16ToUTF8(base::FormatNumber(
-          static_cast<int64>(item.offset()))), out);
+          static_cast<int64>(item.offset))), out);
     }
-    if (static_cast<int64>(item.length()) != -1) {
+    if (static_cast<int64>(item.length) != -1) {
       AddHTMLListItem(kLength, UTF16ToUTF8(base::FormatNumber(
-          static_cast<int64>(item.length()))), out);
+          static_cast<int64>(item.length))), out);
     }
 
     if (has_multi_items)

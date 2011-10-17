@@ -6,17 +6,15 @@
 #define CONTENT_BROWSER_RENDERER_HOST_BLOB_MESSAGE_FILTER_H_
 
 #include "base/hash_tables.h"
+#include "base/shared_memory.h"
 #include "content/browser/browser_message_filter.h"
+#include "webkit/blob/blob_data.h"
 
 class ChromeBlobStorageContext;
 class GURL;
 
 namespace IPC {
 class Message;
-}
-
-namespace webkit_blob {
-class BlobData;
 }
 
 class BlobMessageFilter : public BrowserMessageFilter {
@@ -31,12 +29,14 @@ class BlobMessageFilter : public BrowserMessageFilter {
                                  bool* message_was_ok);
 
  private:
-  void OnRegisterBlobUrl(const GURL& url,
-                         const scoped_refptr<webkit_blob::BlobData>& blob_data);
-  void OnRegisterBlobUrlFrom(const GURL& url, const GURL& src_url);
-  void OnUnregisterBlobUrl(const GURL& url);
-
-  bool CheckPermission(webkit_blob::BlobData* blob_data) const;
+  void OnStartBuildingBlob(const GURL& url);
+  void OnAppendBlobDataItem(const GURL& url,
+                            const webkit_blob::BlobData::Item& item);
+  void OnAppendSharedMemory(const GURL& url, base::SharedMemoryHandle handle,
+                            size_t buffer_size);
+  void OnFinishBuildingBlob(const GURL& url, const std::string& content_type);
+  void OnCloneBlob(const GURL& url, const GURL& src_url);
+  void OnRemoveBlob(const GURL& url);
 
   int process_id_;
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;

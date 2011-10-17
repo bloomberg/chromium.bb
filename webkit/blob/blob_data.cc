@@ -18,9 +18,10 @@ using WebKit::WebString;
 namespace webkit_blob {
 
 BlobData::Item::Item()
-    : type_(TYPE_DATA),
-      offset_(0),
-      length_(0) {
+    : type(TYPE_DATA),
+      data_external(NULL),
+      offset(0),
+      length(0) {
 }
 
 BlobData::Item::~Item() {}
