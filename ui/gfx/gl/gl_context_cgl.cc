@@ -101,7 +101,11 @@ bool GLContextCGL::MakeCurrent(GLSurface* surface) {
   }
 
   SetCurrent(this, surface);
-  surface->OnMakeCurrent(this);
+  if (!surface->OnMakeCurrent(this)) {
+    LOG(ERROR) << "Unable to make gl context current.";
+    return false;
+  }
+
   return true;
 }
 

@@ -50,8 +50,9 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
 
   static bool InitializeOneOff();
 
-  // Called after a context is made current with this surface.
-  virtual void OnMakeCurrent(GLContext* context);
+  // Called after a context is made current with this surface. Returns false
+  // on error.
+  virtual bool OnMakeCurrent(GLContext* context);
 
   virtual void SetVisible(bool visible);
 

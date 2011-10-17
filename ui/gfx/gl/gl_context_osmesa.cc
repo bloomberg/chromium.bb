@@ -70,7 +70,11 @@ bool GLContextOSMesa::MakeCurrent(GLSurface* surface) {
   OSMesaPixelStore(OSMESA_Y_UP, 0);
 
   SetCurrent(this, surface);
-  surface->OnMakeCurrent(this);
+  if (!surface->OnMakeCurrent(this)) {
+    LOG(ERROR) << "Could not make current.";
+    return false;
+  }
+
   return true;
 }
 

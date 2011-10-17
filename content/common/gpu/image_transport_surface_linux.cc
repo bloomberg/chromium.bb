@@ -67,7 +67,7 @@ class EGLImageTransportSurface : public ImageTransportSurface,
   virtual bool IsOffscreen() OVERRIDE;
   virtual bool SwapBuffers() OVERRIDE;
   virtual gfx::Size GetSize() OVERRIDE;
-  virtual void OnMakeCurrent(gfx::GLContext* context) OVERRIDE;
+  virtual bool OnMakeCurrent(gfx::GLContext* context) OVERRIDE;
   virtual unsigned int GetBackingFrameBufferObject() OVERRIDE;
   virtual void SetVisible(bool visible) OVERRIDE;
 
@@ -86,6 +86,9 @@ class EGLImageTransportSurface : public ImageTransportSurface,
 
   scoped_refptr<EGLAcceleratedSurface> back_surface_;
   scoped_refptr<EGLAcceleratedSurface> front_surface_;
+
+  // Whether or not we've successfully made the surface current once.
+  bool made_current_;
 
   scoped_ptr<ImageTransportHelper> helper_;
 
@@ -107,7 +110,7 @@ class GLXImageTransportSurface : public ImageTransportSurface,
   virtual void Destroy() OVERRIDE;
   virtual bool SwapBuffers() OVERRIDE;
   virtual gfx::Size GetSize() OVERRIDE;
-  virtual void OnMakeCurrent(gfx::GLContext* context) OVERRIDE;
+  virtual bool OnMakeCurrent(gfx::GLContext* context) OVERRIDE;
 
  protected:
   // ImageTransportSurface implementation:
@@ -128,8 +131,8 @@ class GLXImageTransportSurface : public ImageTransportSurface,
   // Whether or not the image has been bound on the browser side.
   bool bound_;
 
-  // Whether or not we've set the swap interval on the associated context.
-  bool swap_interval_set_;
+  // Whether or not we've successfully made the surface current once.
+  bool made_current_;
 
   scoped_ptr<ImageTransportHelper> helper_;
 
@@ -218,7 +221,8 @@ EGLImageTransportSurface::EGLImageTransportSurface(
     int32 renderer_id,
     int32 command_buffer_id)
       : gfx::PbufferGLSurfaceEGL(false, gfx::Size(1, 1)),
-        fbo_id_(0) {
+        fbo_id_(0),
+        made_current_(false) {
   helper_.reset(new ImageTransportHelper(this,
                                          manager,
                                          render_view_id,
@@ -253,9 +257,15 @@ bool EGLImageTransportSurface::IsOffscreen() {
   return false;
 }
 
-void EGLImageTransportSurface::OnMakeCurrent(gfx::GLContext* context) {
-  if (fbo_id_)
-    return;
+bool EGLImageTransportSurface::OnMakeCurrent(gfx::GLContext* context) {
+  if (made_current_)
+    return true;
+
+  if (!context->HasExtension("EGL_KHR_image") &&
+      !context->HasExtension("EGL_KHR_image_pixmap")) {
+    LOG(ERROR) << "EGLImage from X11 pixmap not supported";
+    return false;
+  }
 
   glGenFramebuffersEXT(1, &fbo_id_);
   glBindFramebufferEXT(GL_FRAMEBUFFER, fbo_id_);
@@ -264,7 +274,11 @@ void EGLImageTransportSurface::OnMakeCurrent(gfx::GLContext* context) {
   GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER);
   if (status != GL_FRAMEBUFFER_COMPLETE) {
     LOG(ERROR) << "Framebuffer incomplete.";
+    return false;
   }
+
+  made_current_ = true;
+  return true;
 }
 
 unsigned int EGLImageTransportSurface::GetBackingFrameBufferObject() {
@@ -364,7 +378,7 @@ GLXImageTransportSurface::GLXImageTransportSurface(
         dummy_parent_(0),
         size_(1, 1),
         bound_(false),
-        swap_interval_set_(false) {
+        made_current_(false) {
   helper_.reset(new ImageTransportHelper(this,
                                          manager,
                                          render_view_id,
@@ -477,11 +491,26 @@ gfx::Size GLXImageTransportSurface::GetSize() {
   return size_;
 }
 
-void GLXImageTransportSurface::OnMakeCurrent(gfx::GLContext* context) {
-  if (!swap_interval_set_) {
-    context->SetSwapInterval(0);
-    swap_interval_set_ = true;
+bool GLXImageTransportSurface::OnMakeCurrent(gfx::GLContext* context) {
+  if (made_current_)
+    return true;
+
+  // Check for driver support.
+  Display* dpy = gfx::GLSurfaceGLX::GetDisplay();
+  int event_base, error_base;
+  if (XCompositeQueryExtension(dpy, &event_base, &error_base)) {
+    int major = 0, minor = 2;
+    XCompositeQueryVersion(dpy, &major, &minor);
+    if (major == 0 && minor < 2) {
+      LOG(ERROR) << "Pixmap from window not supported.";
+      return false;
+    }
   }
+
+  context->SetSwapInterval(0);
+
+  made_current_ = true;
+  return true;
 }
 
 void GLXImageTransportSurface::OnNewSurfaceACK(

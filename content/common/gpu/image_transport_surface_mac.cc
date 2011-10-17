@@ -35,7 +35,7 @@ class IOSurfaceImageTransportSurface : public gfx::PbufferGLSurfaceCGL,
   virtual bool IsOffscreen() OVERRIDE;
   virtual bool SwapBuffers() OVERRIDE;
   virtual gfx::Size GetSize() OVERRIDE;
-  virtual void OnMakeCurrent(gfx::GLContext* context) OVERRIDE;
+  virtual bool OnMakeCurrent(gfx::GLContext* context) OVERRIDE;
   virtual unsigned int GetBackingFrameBufferObject() OVERRIDE;
 
  protected:
@@ -61,6 +61,9 @@ class IOSurfaceImageTransportSurface : public gfx::PbufferGLSurfaceCGL,
 
   gfx::Size size_;
 
+  // Whether or not we've successfully made the surface current once.
+  bool made_current_;
+
   scoped_ptr<ImageTransportHelper> helper_;
 
   DISALLOW_COPY_AND_ASSIGN(IOSurfaceImageTransportSurface);
@@ -83,7 +86,7 @@ class TransportDIBImageTransportSurface : public gfx::PbufferGLSurfaceCGL,
   virtual bool IsOffscreen() OVERRIDE;
   virtual bool SwapBuffers() OVERRIDE;
   virtual gfx::Size GetSize() OVERRIDE;
-  virtual void OnMakeCurrent(gfx::GLContext* context) OVERRIDE;
+  virtual bool OnMakeCurrent(gfx::GLContext* context) OVERRIDE;
   virtual unsigned int GetBackingFrameBufferObject() OVERRIDE;
 
  protected:
@@ -104,6 +107,9 @@ class TransportDIBImageTransportSurface : public gfx::PbufferGLSurfaceCGL,
   gfx::Size size_;
 
   static uint32 next_id_;
+
+  // Whether or not we've successfully made the surface current once.
+  bool made_current_;
 
   scoped_ptr<ImageTransportHelper> helper_;
 
@@ -137,7 +143,8 @@ IOSurfaceImageTransportSurface::IOSurfaceImageTransportSurface(
           fbo_id_(0),
           texture_id_(0),
           io_surface_id_(0),
-          context_(NULL) {
+          context_(NULL),
+          made_current_(false) {
   helper_.reset(new ImageTransportHelper(this,
                                          manager,
                                          render_view_id,
@@ -182,11 +189,11 @@ bool IOSurfaceImageTransportSurface::IsOffscreen() {
   return false;
 }
 
-void IOSurfaceImageTransportSurface::OnMakeCurrent(gfx::GLContext* context) {
+bool IOSurfaceImageTransportSurface::OnMakeCurrent(gfx::GLContext* context) {
   context_ = context;
 
-  if (fbo_id_)
-    return;
+  if (made_current_)
+    return true;
 
   glGenFramebuffersEXT(1, &fbo_id_);
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo_id_);
@@ -195,7 +202,11 @@ void IOSurfaceImageTransportSurface::OnMakeCurrent(gfx::GLContext* context) {
   GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
   if (status != GL_FRAMEBUFFER_COMPLETE) {
     LOG(ERROR) << "Framebuffer incomplete.";
+    return false;
   }
+
+  made_current_ = true;
+  return true;
 }
 
 unsigned int IOSurfaceImageTransportSurface::GetBackingFrameBufferObject() {
@@ -325,7 +336,8 @@ TransportDIBImageTransportSurface::TransportDIBImageTransportSurface(
     gfx::PluginWindowHandle handle)
         : gfx::PbufferGLSurfaceCGL(gfx::Size(1, 1)),
           fbo_id_(0),
-          render_buffer_id_(0) {
+          render_buffer_id_(0),
+          made_current_(false) {
   helper_.reset(new ImageTransportHelper(this,
                                          manager,
                                          render_view_id,
@@ -364,9 +376,9 @@ bool TransportDIBImageTransportSurface::IsOffscreen() {
   return false;
 }
 
-void TransportDIBImageTransportSurface::OnMakeCurrent(gfx::GLContext* context) {
-  if (fbo_id_)
-    return;
+bool TransportDIBImageTransportSurface::OnMakeCurrent(gfx::GLContext* context) {
+  if (made_current_)
+    return true;
 
   glGenFramebuffersEXT(1, &fbo_id_);
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo_id_);
@@ -375,7 +387,11 @@ void TransportDIBImageTransportSurface::OnMakeCurrent(gfx::GLContext* context) {
   GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
   if (status != GL_FRAMEBUFFER_COMPLETE) {
     LOG(ERROR) << "Framebuffer incomplete.";
+    return false;
   }
+
+  made_current_ = true;
+  return true;
 }
 
 unsigned int TransportDIBImageTransportSurface::GetBackingFrameBufferObject() {

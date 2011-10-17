@@ -177,7 +177,11 @@ bool GLContextGLX::MakeCurrent(GLSurface* surface) {
   }
 
   SetCurrent(this, surface);
-  surface->OnMakeCurrent(this);
+  if (!surface->OnMakeCurrent(this)) {
+    LOG(ERROR) << "Could not make current.";
+    return false;
+  }
+
   return true;
 }
 

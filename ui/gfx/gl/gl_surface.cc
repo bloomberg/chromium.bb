@@ -28,7 +28,8 @@ unsigned int GLSurface::GetBackingFrameBufferObject() {
   return 0;
 }
 
-void GLSurface::OnMakeCurrent(GLContext* context) {
+bool GLSurface::OnMakeCurrent(GLContext* context) {
+  return true;
 }
 
 void GLSurface::SetVisible(bool visible) {
