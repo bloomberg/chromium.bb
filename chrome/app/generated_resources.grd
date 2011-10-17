@@ -1175,18 +1175,15 @@ are declared in build/common.gypi.
         Search Engine Change
       </message>
       <message name="IDS_SEARCH_ENGINE_CHANGE_BUBBLE_TEXT" desc="The text of the bubble view with a search engine change notification.">
-        A program on your computer tried to change your search engine from <ph name="PREV_ENGINE">$1<ex>OldSearchEngine</ex></ph> to <ph name="NEW_ENGINE">$2<ex>NewSearchEngine</ex></ph>. Would you like to make this change?
+        A program on your computer tried to change your search engine from <ph name="PREV_ENGINE">$1<ex>OldSearchEngine</ex></ph> to <ph name="NEW_ENGINE">$2<ex>NewSearchEngine</ex></ph>. Would you like to keep using <ph name="PREV_ENGINE">$1<ex>OldSearchEngine</ex></ph>?
       </message>
       <message name="IDS_SEARCH_ENGINE_CHANGE_UNKNOWN_BUBBLE_TEXT" desc="The text of the bubble view with a search engine change notification when the previous search engine is unknown.">
-        A program on your computer tried to change your search engine to <ph name="NEW_ENGINE">$1<ex>NewSearchEngine</ex></ph>. Would you like to make this change?
+        A program on your computer tried to change your search engine to <ph name="NEW_ENGINE">$1<ex>NewSearchEngine</ex></ph>. Would you like to go to settings?
       </message>
-      <message name="IDS_SEARCH_ENGINE_CHANGE_OPEN_SETTINGS" desc="The title of the button that takes user to the search engine settings page instead of using the current search engine.">
-        No, take me to settings
-      </message>
-      <message name="IDS_SEARCH_ENGINE_CHANGE_RESTORE" desc="The title of the button that restores default search engine to its previous setting.">
+      <message name="IDS_SEARCH_ENGINE_CHANGE_RESTORE" desc="The title of the button that restores previous default search engine setting value.">
         Keep using <ph name="PREV_ENGINE">$1<ex>OldSearchEngine</ex></ph>
       </message>
-      <message name="IDS_SEARCH_ENGINE_CHANGE_APPLY" desc="The title of the button that changes default Search engine to the new one.">
+      <message name="IDS_SEARCH_ENGINE_CHANGE_APPLY" desc="The title of the button that accepts new default search engine setting value.">
         Change to <ph name="NEW_ENGINE">$1<ex>NewSearchEngine</ex></ph>
       </message>
 
@@ -1197,19 +1194,26 @@ are declared in build/common.gypi.
         Home Page Change
       </message>
       <message name="IDS_HOMEPAGE_CHANGE_BUBBLE_TEXT" desc="The text of the bubble view with a home page change notification.">
-        A program on your computer tried to change your home page from <ph name="PREV_HOMEPAGE">$1<ex>http://example.net/</ex></ph> to <ph name="NEW_HOMEPAGE">$2<ex>http://example.com/</ex></ph>. Would you like to make this change?
+        A program on your computer tried to change your home page from <ph name="PREV_HOMEPAGE">$1<ex>http://example.net/</ex></ph> to <ph name="NEW_HOMEPAGE">$2<ex>http://example.com/</ex></ph>. Would you like to keep using <ph name="PREV_HOMEPAGE">$1<ex>http://example.net/</ex></ph>?
       </message>
       <message name="IDS_HOMEPAGE_CHANGE_UNKNOWN_BUBBLE_TEXT" desc="The text of the bubble view with a home page change notification when the previous home page is unknown.">
-        A program on your computer tried to change your home page to <ph name="NEW_HOMEPAGE">$1<ex>http://example.com/</ex></ph>. Would you like to make this change?
+        A program on your computer tried to change your home page to <ph name="NEW_HOMEPAGE">$1<ex>http://example.com/</ex></ph>. Would you like to go to settings?
       </message>
-      <message name="IDS_HOMEPAGE_CHANGE_OPEN_SETTINGS" desc="The title of the button that takes user to the home page settings page instead of using the current home page.">
-        No, take me to settings
-      </message>
-      <message name="IDS_HOMEPAGE_CHANGE_RESTORE" desc="The title of the button that restores home page to its previous setting.">
+      <message name="IDS_HOMEPAGE_CHANGE_RESTORE" desc="The title of the button that restores previous home page setting value.">
         Keep using <ph name="PREV_HOMEPAGE">$1<ex>http://example.net/</ex></ph>
       </message>
-      <message name="IDS_HOMEPAGE_CHANGE_APPLY" desc="The title of the button that changes home page to the new one.">
+      <message name="IDS_HOMEPAGE_CHANGE_APPLY" desc="The title of the button that accepts new home page setting value.">
         Change to <ph name="NEW_HOMEPAGE">$1<ex>http://example.com/</ex></ph>
+      </message>
+
+      <message name="IDS_SETTINGS_CHANGE_OPEN_SETTINGS" desc="The title of the button that takes user to the settings page to restore settings.">
+        Yes, take me to settings
+      </message>
+      <message name="IDS_SETTINGS_CHANGE_RESTORE" desc="The title of the button that restores previous setting values.">
+        Keep settings
+      </message>
+      <message name="IDS_SETTINGS_CHANGE_APPLY" desc="The title of the button that accepts new setting values.">
+        Accept changes
       </message>
 
       <!-- Keywords -->
