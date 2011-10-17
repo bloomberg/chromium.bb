@@ -26,11 +26,10 @@ class FullscreenExitBubbleViews : public views::LinkListener,
   FullscreenExitBubbleViews(views::Widget* frame,
                             Browser* browser,
                             const GURL& url,
-                            bool ask_permission);
+                            FullscreenExitBubbleType bubble_type);
   virtual ~FullscreenExitBubbleViews();
 
-  void OnAcceptFullscreen();
-  void OnCancelFullscreen();
+  void UpdateContent(const GURL& url, FullscreenExitBubbleType bubble_type);
 
  protected:
   // FullScreenExitBubble
@@ -44,6 +43,8 @@ class FullscreenExitBubbleViews : public views::LinkListener,
 
  private:
   class FullscreenExitView;
+
+  void StartWatchingMouseIfNecessary();
 
   // views::LinkListener:
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
@@ -62,8 +63,6 @@ class FullscreenExitBubbleViews : public views::LinkListener,
 
   // The contents of the popup.
   FullscreenExitView* view_;
-
-  const GURL url_;
 
   DISALLOW_COPY_AND_ASSIGN(FullscreenExitBubbleViews);
 };

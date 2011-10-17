@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
 #include "chrome/browser/command_updater.h"
+#include "chrome/browser/ui/fullscreen_exit_bubble_type.h"
 #include "googleurl/src/gurl.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/gfx/point.h"
@@ -25,7 +26,9 @@ class Rect;
 
 class FullscreenExitBubble : public ui::AnimationDelegate {
  public:
-  explicit FullscreenExitBubble(Browser* browser);
+  explicit FullscreenExitBubble(Browser* browser,
+                                const GURL& url,
+                                FullscreenExitBubbleType bubble_type);
   virtual ~FullscreenExitBubble();
 
  protected:
@@ -33,8 +36,9 @@ class FullscreenExitBubble : public ui::AnimationDelegate {
   static const int kInitialDelayMs;      // Initial time bubble remains onscreen
   static const int kIdleTimeMs;          // Time before mouse idle triggers hide
   static const int kPositionCheckHz;     // How fast to check the mouse position
-  static const int kSlideInRegionHeightPx; // Height of region triggering
-                                           // slide-in
+  static const int kSlideInRegionHeightPx;
+                                         // Height of region triggering
+                                         // slide-in
   static const int kPopupTopPx;          // Space between the popup and the top
                                          // of the screen.
   static const int kSlideInDurationMs;   // Duration of slide-in animation
@@ -64,10 +68,19 @@ class FullscreenExitBubble : public ui::AnimationDelegate {
   void CheckMousePosition();
 
   void StartWatchingMouse();
+  void StopWatchingMouse();
 
   void ToggleFullscreen();
-  void AcceptFullscreen(const GURL& url);
-  void CancelFullscreen();
+  void Accept();
+  void Cancel();
+
+  // The following strings may change according to the content type and URL.
+  string16 GetCurrentMessageText() const;
+  string16 GetCurrentDenyButtonText() const;
+
+  // The following strings never change.
+  string16 GetAllowButtonText() const;
+  string16 GetInstructionText() const;
 
   // The browser this bubble is in.
   Browser* browser_;
@@ -89,6 +102,13 @@ class FullscreenExitBubble : public ui::AnimationDelegate {
   // The most recently seen mouse position, in screen coordinates.  Used to see
   // if the mouse has moved since our last check.
   gfx::Point last_mouse_pos_;
+
+ protected:
+  // The host the bubble is for, can be empty.
+  GURL url_;
+
+  // The type of the bubble; controls e.g. which buttons to show.
+  FullscreenExitBubbleType bubble_type_;
 };
 
 #endif  // CHROME_BROWSER_UI_FULLSCREEN_EXIT_BUBBLE_H_

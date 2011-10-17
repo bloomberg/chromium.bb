@@ -259,7 +259,7 @@ class BrowserView : public BrowserBubbleHost,
   virtual bool IsMaximized() const OVERRIDE;
   virtual bool IsMinimized() const OVERRIDE;
   virtual void EnterFullscreen(
-      const GURL& url, FullscreenExitBubbleType type) OVERRIDE;
+      const GURL& url, FullscreenExitBubbleType bubble_type) OVERRIDE;
   virtual void ExitFullscreen() OVERRIDE;
   virtual void UpdateFullscreenExitBubbleContent(
       const GURL& url,
@@ -509,9 +509,11 @@ class BrowserView : public BrowserBubbleHost,
   // notification that it succeeded this method is invoked.
   // If |url| is not empty, it is the URL of the page that requested fullscreen
   // (via the fullscreen JS API).
-  // |ask_permission| determines whether the user should be asked to allow the
-  // site to remain fullscreen.
-  void ProcessFullscreen(bool fullscreen, const GURL& url, bool ask_permission);
+  // |bubble_type| determines what should be shown in the fullscreen exit
+  // bubble.
+  void ProcessFullscreen(bool fullscreen,
+                         const GURL& url,
+                         FullscreenExitBubbleType bubble_type);
 
   // Copy the accelerator table from the app resources into something we can
   // use.

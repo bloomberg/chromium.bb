@@ -4,8 +4,11 @@
 
 #include "chrome/browser/ui/fullscreen_exit_bubble.h"
 
+#include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/browser.h"
+#include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/rect.h"
 
 const int FullscreenExitBubble::kPaddingPx = 8;
@@ -17,8 +20,13 @@ const int FullscreenExitBubble::kSlideInDurationMs = 350;
 const int FullscreenExitBubble::kSlideOutDurationMs = 700;
 const int FullscreenExitBubble::kPopupTopPx = 15;
 
-FullscreenExitBubble::FullscreenExitBubble(Browser* browser)
-    : browser_(browser) {
+FullscreenExitBubble::FullscreenExitBubble(Browser* browser,
+                                           const GURL& url,
+                                           FullscreenExitBubbleType bubble_type)
+    : browser_(browser),
+      url_(url),
+      bubble_type_(bubble_type) {
+  DCHECK_NE(FEB_TYPE_NONE, bubble_type_);
 }
 
 FullscreenExitBubble::~FullscreenExitBubble() {
@@ -34,6 +42,12 @@ void FullscreenExitBubble::StartWatchingMouse() {
   mouse_position_checker_.Start(FROM_HERE,
       base::TimeDelta::FromMilliseconds(1000 / kPositionCheckHz), this,
       &FullscreenExitBubble::CheckMousePosition);
+}
+
+void FullscreenExitBubble::StopWatchingMouse() {
+  initial_delay_.Stop();
+  idle_timeout_.Stop();
+  mouse_position_checker_.Stop();
 }
 
 void FullscreenExitBubble::CheckMousePosition() {
@@ -89,10 +103,30 @@ void FullscreenExitBubble::ToggleFullscreen() {
   browser_->ExecuteCommand(IDC_FULLSCREEN);
 }
 
-void FullscreenExitBubble::AcceptFullscreen(const GURL& url) {
-  browser_->OnAcceptFullscreenPermission(url);
+void FullscreenExitBubble::Accept() {
+  // TODO(yzshen): Pass bubble_type_ to OnAcceptFullscreenPermission() once it
+  // accepts it.
+  browser_->OnAcceptFullscreenPermission(url_);
 }
 
-void FullscreenExitBubble::CancelFullscreen() {
+void FullscreenExitBubble::Cancel() {
+  // TODO(yzshen): Pass bubble_type_ to OnDenyFullscreenPermission() once it
+  // accepts it.
   browser_->OnDenyFullscreenPermission();
+}
+
+string16 FullscreenExitBubble::GetCurrentMessageText() const {
+  return fullscreen_bubble::GetLabelTextForType(bubble_type_, url_);
+}
+
+string16 FullscreenExitBubble::GetCurrentDenyButtonText() const {
+  return fullscreen_bubble::GetDenyButtonTextForType(bubble_type_);
+}
+
+string16 FullscreenExitBubble::GetAllowButtonText() const {
+  return l10n_util::GetStringUTF16(IDS_FULLSCREEN_ALLOW);
+}
+
+string16 FullscreenExitBubble::GetInstructionText() const {
+  return l10n_util::GetStringUTF16(IDS_FULLSCREEN_PRESS_ESC_TO_EXIT);
 }

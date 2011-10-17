@@ -38,7 +38,7 @@ class FullscreenExitBubbleViews::FullscreenExitView
   FullscreenExitView(FullscreenExitBubbleViews* bubble,
                      const string16& accelerator,
                      const GURL& url,
-                     bool ask_permission);
+                     FullscreenExitBubbleType bubble_type);
   virtual ~FullscreenExitView();
 
   // views::View
@@ -47,35 +47,31 @@ class FullscreenExitBubbleViews::FullscreenExitView
   // views::ButtonListener
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
-  // Hide the accept and deny buttons, exposing the exit link.
-  void HideButtons();
+  void UpdateContent(const GURL& url, FullscreenExitBubbleType bubble_type);
 
  private:
-  string16 GetMessage(const GURL& url);
-
   // views::View
   virtual void Layout();
 
   FullscreenExitBubbleViews* bubble_;
 
-  // Clickable hint text to show in the bubble.
+  // Clickable hint text for exiting browser fullscreen mode.
   views::Link link_;
+  // Instruction for exiting tab fullscreen mode.
+  views::Label instruction_label_;
   views::Label message_label_;
   views::NativeTextButton* accept_button_;
   views::NativeTextButton* deny_button_;
-
-  bool show_buttons_;
 };
 
 FullscreenExitBubbleViews::FullscreenExitView::FullscreenExitView(
     FullscreenExitBubbleViews* bubble,
     const string16& accelerator,
     const GURL& url,
-    bool ask_permission)
+    FullscreenExitBubbleType bubble_type)
     : bubble_(bubble),
       accept_button_(NULL),
-      deny_button_(NULL),
-      show_buttons_(ask_permission) {
+      deny_button_(NULL) {
   views::BubbleBorder* bubble_border =
       new views::BubbleBorder(views::BubbleBorder::NONE);
   bubble_border->set_background_color(Bubble::kBackgroundColor);
@@ -84,8 +80,12 @@ FullscreenExitBubbleViews::FullscreenExitView::FullscreenExitView(
   set_focusable(false);
 
   message_label_.set_parent_owned(false);
-  message_label_.SetText(GetMessage(url));
   message_label_.SetFont(ResourceBundle::GetSharedInstance().GetFont(
+      ResourceBundle::MediumFont));
+
+  instruction_label_.set_parent_owned(false);
+  instruction_label_.SetText(bubble_->GetInstructionText());
+  instruction_label_.SetFont(ResourceBundle::GetSharedInstance().GetFont(
       ResourceBundle::MediumFont));
 
   link_.set_parent_owned(false);
@@ -107,33 +107,21 @@ FullscreenExitBubbleViews::FullscreenExitView::FullscreenExitView(
 
   link_.SetBackgroundColor(background()->get_color());
   message_label_.SetBackgroundColor(background()->get_color());
+  instruction_label_.SetBackgroundColor(background()->get_color());
   AddChildView(&message_label_);
+  AddChildView(&instruction_label_);
   AddChildView(&link_);
 
   accept_button_ = new views::NativeTextButton(this,
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_FULLSCREEN_INFOBAR_ALLOW)));
+      UTF16ToWideHack(bubble->GetAllowButtonText()));
   accept_button_->set_focusable(false);
   AddChildView(accept_button_);
 
-  deny_button_ = new views::NativeTextButton(this,
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_FULLSCREEN_INFOBAR_DENY)));
+  deny_button_ = new views::NativeTextButton(this);
   deny_button_->set_focusable(false);
   AddChildView(deny_button_);
 
-  if (!show_buttons_)
-    HideButtons();
-}
-
-string16 FullscreenExitBubbleViews::FullscreenExitView::GetMessage(
-    const GURL& url) {
-  if (url.is_empty()) {
-    return l10n_util::GetStringUTF16(
-        IDS_FULLSCREEN_INFOBAR_USER_ENTERED_FULLSCREEN);
-  }
-  if (url.SchemeIsFile())
-    return l10n_util::GetStringUTF16(IDS_FULLSCREEN_INFOBAR_FILE_PAGE_NAME);
-  return l10n_util::GetStringFUTF16(IDS_FULLSCREEN_INFOBAR_REQUEST_PERMISSION,
-      UTF8ToUTF16(url.host()));
+  UpdateContent(url, bubble_type);
 }
 
 FullscreenExitBubbleViews::FullscreenExitView::~FullscreenExitView() {
@@ -142,91 +130,111 @@ FullscreenExitBubbleViews::FullscreenExitView::~FullscreenExitView() {
 void FullscreenExitBubbleViews::FullscreenExitView::ButtonPressed(
     views::Button* sender, const views::Event& event) {
   if (sender == accept_button_)
-    bubble_->OnAcceptFullscreen();
+    bubble_->Accept();
   else
-    bubble_->OnCancelFullscreen();
-}
-
-void FullscreenExitBubbleViews::FullscreenExitView::HideButtons() {
-  show_buttons_ = false;
-  accept_button_->SetVisible(false);
-  deny_button_->SetVisible(false);
-  link_.SetVisible(true);
+    bubble_->Cancel();
 }
 
 gfx::Size FullscreenExitBubbleViews::FullscreenExitView::GetPreferredSize() {
-  gfx::Size link_size(link_.GetPreferredSize());
-  gfx::Size message_label_size(message_label_.GetPreferredSize());
-  gfx::Size accept_size(accept_button_->GetPreferredSize());
-  gfx::Size deny_size(deny_button_->GetPreferredSize());
+  gfx::Size message_size(message_label_.GetPreferredSize());
+
+  gfx::Size button_instruction_area;
+  if (instruction_label_.IsVisible()) {
+    button_instruction_area = instruction_label_.GetPreferredSize();
+  } else if (link_.IsVisible()) {
+    button_instruction_area = link_.GetPreferredSize();
+  } else {
+    gfx::Size accept_size(accept_button_->GetPreferredSize());
+    gfx::Size deny_size(deny_button_->GetPreferredSize());
+    button_instruction_area.set_height(accept_size.height());
+    button_instruction_area.set_width(
+        accept_size.width() + kPaddingPx + deny_size.width());
+  }
+
   gfx::Insets insets(GetInsets());
-
-  int buttons_width = accept_size.width() + kPaddingPx +
-      deny_size.width();
-  int button_box_width = std::max(buttons_width, link_size.width());
-  int width = kPaddingPx + message_label_size.width() + kMiddlePaddingPx +
-      button_box_width + kPaddingPx;
-
-  gfx::Size result(width + insets.width(),
-      kPaddingPx * 2 + accept_size.height() + insets.height());
+  gfx::Size result(
+      message_size.width() + kMiddlePaddingPx + button_instruction_area.width(),
+      std::max(message_size.height(), button_instruction_area.height()));
+  result.Enlarge(insets.width() + 2 * kPaddingPx,
+                 insets.height() + 2 * kPaddingPx);
   return result;
 }
 
+void FullscreenExitBubbleViews::FullscreenExitView::UpdateContent(
+    const GURL& url,
+    FullscreenExitBubbleType bubble_type) {
+  DCHECK_NE(FEB_TYPE_NONE, bubble_type);
+
+  message_label_.SetText(bubble_->GetCurrentMessageText());
+  if (fullscreen_bubble::ShowButtonsForType(bubble_type)) {
+    link_.SetVisible(false);
+    instruction_label_.SetVisible(false);
+    accept_button_->SetVisible(true);
+    deny_button_->SetText(UTF16ToWideHack(bubble_->GetCurrentDenyButtonText()));
+    deny_button_->SetVisible(true);
+    deny_button_->ClearMaxTextSize();
+  } else {
+    bool link_visible =
+        bubble_type == FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION;
+    link_.SetVisible(link_visible);
+    instruction_label_.SetVisible(!link_visible);
+    accept_button_->SetVisible(false);
+    deny_button_->SetVisible(false);
+  }
+}
+
 void FullscreenExitBubbleViews::FullscreenExitView::Layout() {
-  gfx::Size link_size(link_.GetPreferredSize());
-  gfx::Size message_label_size(message_label_.GetPreferredSize());
-  gfx::Size accept_size(accept_button_->GetPreferredSize());
-  gfx::Size deny_size(deny_button_->GetPreferredSize());
+  // TODO(thakis): Use a LayoutManager instead of doing manual layout.
+  gfx::Size message_size(message_label_.GetPreferredSize());
   gfx::Insets insets(GetInsets());
-
+  int x = insets.left() + kPaddingPx;
   int inner_height = height() - insets.height();
-  int button_box_x = insets.left() + kPaddingPx +
-      message_label_size.width() + kMiddlePaddingPx;
-  int message_label_y = insets.top() +
-      (inner_height - message_label_size.height()) / 2;
-  int link_x = width() - insets.right() - kPaddingPx -
-      link_size.width();
-  int link_y = insets.top() + (inner_height - link_size.height()) / 2;
 
-  message_label_.SetBounds(insets.left() + kPaddingPx,
-                           message_label_y,
-                           message_label_size.width(),
-                           message_label_size.height());
-  link_.SetBounds(link_x,
-                  link_y,
-                  link_size.width(),
-                  link_size.height());
-  if (show_buttons_) {
-    accept_button_->SetBounds(button_box_x,
-                              insets.top() + kPaddingPx,
-                              accept_size.width(),
-                              accept_size.height());
-    deny_button_->SetBounds(button_box_x + accept_size.width() + kPaddingPx,
-                            insets.top() + kPaddingPx,
-                            deny_size.width(),
-                            deny_size.height());
+  message_label_.SetBounds(
+      x, insets.top() + (inner_height - message_size.height()) / 2,
+      message_size.width(), message_size.height());
+  x += message_size.width() + kMiddlePaddingPx;
+
+  if (instruction_label_.IsVisible()) {
+    gfx::Size instruction_size(instruction_label_.GetPreferredSize());
+    instruction_label_.SetBounds(
+        x, insets.top() + (inner_height - instruction_size.height()) / 2,
+        instruction_size.width(), instruction_size.height());
+  } else if (link_.IsVisible()) {
+    gfx::Size link_size(link_.GetPreferredSize());
+    link_.SetBounds(x, insets.top() + (inner_height - link_size.height()) / 2,
+                    link_size.width(), link_size.height());
+  } else {
+    gfx::Size accept_size(accept_button_->GetPreferredSize());
+    gfx::Size deny_size(deny_button_->GetPreferredSize());
+    int button_y = insets.top() + (inner_height - accept_size.height()) / 2;
+    accept_button_->SetBounds(
+        x, button_y, accept_size.width(), accept_size.height());
+    x += accept_size.width() + kPaddingPx;
+    deny_button_->SetBounds(
+        x, button_y, deny_size.width(), deny_size.height());
   }
 }
 
 // FullscreenExitBubbleViews ---------------------------------------------------
 
-FullscreenExitBubbleViews::FullscreenExitBubbleViews(views::Widget* frame,
-                                                     Browser* browser,
-                                                     const GURL& url,
-                                                     bool ask_permission)
-    : FullscreenExitBubble(browser),
+FullscreenExitBubbleViews::FullscreenExitBubbleViews(
+    views::Widget* frame,
+    Browser* browser,
+    const GURL& url,
+    FullscreenExitBubbleType bubble_type)
+    : FullscreenExitBubble(browser, url, bubble_type),
       root_view_(frame->GetRootView()),
       popup_(NULL),
-      size_animation_(new ui::SlideAnimation(this)),
-      url_(url) {
+      size_animation_(new ui::SlideAnimation(this)) {
   size_animation_->Reset(1);
 
   // Create the contents view.
   views::Accelerator accelerator(ui::VKEY_UNKNOWN, false, false, false);
   bool got_accelerator = frame->GetAccelerator(IDC_FULLSCREEN, &accelerator);
   DCHECK(got_accelerator);
-  view_ = new FullscreenExitView(this,
-      accelerator.GetShortcutText(), url, ask_permission);
+  view_ = new FullscreenExitView(
+      this, accelerator.GetShortcutText(), url, bubble_type_);
 
   // Initialize the popup.
   popup_ = new views::Widget;
@@ -247,8 +255,7 @@ FullscreenExitBubbleViews::FullscreenExitBubbleViews(views::Widget* frame,
   view_->SetBounds(0, 0, size.width(), size.height());
   popup_->Show();  // This does not activate the popup.
 
-  if (!ask_permission)
-    StartWatchingMouse();
+  StartWatchingMouseIfNecessary();
 }
 
 FullscreenExitBubbleViews::~FullscreenExitBubbleViews() {
@@ -270,14 +277,24 @@ void FullscreenExitBubbleViews::LinkClicked(
   ToggleFullscreen();
 }
 
-void FullscreenExitBubbleViews::OnAcceptFullscreen() {
-  AcceptFullscreen(url_);
-  view_->HideButtons();
-  StartWatchingMouse();
-}
+void FullscreenExitBubbleViews::UpdateContent(
+    const GURL& url,
+    FullscreenExitBubbleType bubble_type) {
+  DCHECK_NE(FEB_TYPE_NONE, bubble_type);
+  if (bubble_type_ == bubble_type && url_ == url)
+    return;
 
-void FullscreenExitBubbleViews::OnCancelFullscreen() {
-  CancelFullscreen();
+  url_ = url;
+  bubble_type_ = bubble_type;
+  view_->UpdateContent(url_, bubble_type_);
+
+  gfx::Size size = GetPopupRect(true).size();
+  view_->SetSize(size);
+  popup_->SetBounds(GetPopupRect(false));
+  Show();
+
+  StopWatchingMouse();
+  StartWatchingMouseIfNecessary();
 }
 
 void FullscreenExitBubbleViews::AnimationProgressed(
@@ -345,4 +362,9 @@ gfx::Rect FullscreenExitBubbleViews::GetPopupRect(
     origin.set_y(origin.y() - y_offset);
   }
   return gfx::Rect(origin, size);
+}
+
+void FullscreenExitBubbleViews::StartWatchingMouseIfNecessary() {
+  if (!fullscreen_bubble::ShowButtonsForType(bubble_type_))
+    StartWatchingMouse();
 }
