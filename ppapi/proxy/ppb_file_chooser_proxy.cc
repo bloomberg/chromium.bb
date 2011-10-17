@@ -125,7 +125,7 @@ int32_t FileChooser::Show(bool require_user_gesture,
           INTERFACE_ID_PPB_FILE_CHOOSER,
           host_resource(),
           save_as,
-          suggested_file_name,
+          suggested_file_name ? suggested_file_name : "",
           require_user_gesture));
   return PP_OK_COMPLETIONPENDING;
 }
@@ -191,7 +191,7 @@ PP_Resource PPB_FileChooser_Proxy::CreateProxyResource(
   dispatcher->Send(new PpapiHostMsg_PPBFileChooser_Create(
       INTERFACE_ID_PPB_FILE_CHOOSER, instance,
       mode,
-      accept_mime_types,
+      accept_mime_types ? accept_mime_types : "",
       &result));
 
   if (result.is_null())
