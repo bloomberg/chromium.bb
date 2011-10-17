@@ -201,13 +201,15 @@ int32_t PPB_FileIO_Impl::Write(int64_t offset,
   if (quota_file_io_.get()) {
     if (!quota_file_io_->Write(
             offset, buffer, bytes_to_write,
-            callback_factory_.NewCallback(&PPB_FileIO_Impl::WriteCallback)))
+            base::Bind(&PPB_FileIO_Impl::WriteCallback,
+                       weak_factory_.GetWeakPtr())))
       return PP_ERROR_FAILED;
   } else {
     if (!base::FileUtilProxy::Write(
-            plugin_delegate->GetFileThreadMessageLoopProxy(),
-            file_, offset, buffer, bytes_to_write,
-            callback_factory_.NewCallback(&PPB_FileIO_Impl::WriteCallback)))
+            plugin_delegate->GetFileThreadMessageLoopProxy(), file_, offset,
+            buffer, bytes_to_write,
+            base::Bind(&PPB_FileIO_Impl::WriteCallback,
+                       weak_factory_.GetWeakPtr())))
       return PP_ERROR_FAILED;
   }
 
@@ -292,7 +294,8 @@ int32_t PPB_FileIO_Impl::WillWrite(int64_t offset,
 
   if (!quota_file_io_->WillWrite(
           offset, bytes_to_write,
-          callback_factory_.NewCallback(&PPB_FileIO_Impl::WillWriteCallback)))
+          base::Bind(&PPB_FileIO_Impl::WillWriteCallback,
+                     weak_factory_.GetWeakPtr())))
     return PP_ERROR_FAILED;
 
   RegisterCallback(OPERATION_EXCLUSIVE, callback, NULL);

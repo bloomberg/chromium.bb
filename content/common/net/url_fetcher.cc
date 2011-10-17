@@ -399,13 +399,11 @@ void URLFetcher::Core::TempFileWriter::ContinueWrite(
 
   if (pending_bytes_ > 0) {
     base::FileUtilProxy::Write(
-        file_message_loop_proxy_,
-        temp_file_handle_,
+        file_message_loop_proxy_, temp_file_handle_,
         total_bytes_written_,  // Append to the end
-        (core_->buffer_->data() + buffer_offset_),
-        pending_bytes_,
-        callback_factory_.NewCallback(
-            &URLFetcher::Core::TempFileWriter::ContinueWrite));
+        (core_->buffer_->data() + buffer_offset_), pending_bytes_,
+        base::Bind(&URLFetcher::Core::TempFileWriter::ContinueWrite,
+                   weak_factory_.GetWeakPtr()));
   } else {
     // Finished writing core_->buffer_ to the file. Read some more.
     core_->ReadResponse();

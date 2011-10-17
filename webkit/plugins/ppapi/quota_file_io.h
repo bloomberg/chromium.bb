@@ -47,10 +47,10 @@ class QuotaFileIO {
   bool Write(int64_t offset,
              const char* buffer,
              int32_t bytes_to_write,
-             WriteCallback* callback);
+             const WriteCallback& callback);
   bool WillWrite(int64_t offset,
                  int32_t bytes_to_write,
-                 WriteCallback* callback);
+                 const WriteCallback& callback);
 
   bool SetLength(int64_t length, StatusCallback* callback);
   bool WillSetLength(int64_t length, StatusCallback* callback);

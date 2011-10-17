@@ -35,7 +35,7 @@ class QuotaMockPluginDelegate : public MockPluginDelegate {
       : available_space_(0),
         will_update_count_(0),
         file_thread_(MessageLoopProxy::current()),
-        weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+        ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   }
   virtual ~QuotaMockPluginDelegate() {}
 
@@ -47,12 +47,11 @@ class QuotaMockPluginDelegate : public MockPluginDelegate {
       const GURL& origin,
       quota::StorageType type,
       const Callback& callback) OVERRIDE {
-    DCHECK(!callback.is_null());
+    DCHECK_EQ(false, callback.is_null());
     MessageLoopProxy::current()->PostTask(
         FROM_HERE, base::Bind(
             &QuotaMockPluginDelegate::RunAvailableSpaceCallback,
-            weak_ptr_factory_.GetWeakPtr(),
-            callback));
+            weak_factory_.GetWeakPtr(), callback));
   }
 
   virtual void WillUpdateFile(const GURL& file_path) OVERRIDE {
@@ -79,14 +78,15 @@ class QuotaMockPluginDelegate : public MockPluginDelegate {
   int will_update_count_;
   GURL file_path_;
   scoped_refptr<MessageLoopProxy> file_thread_;
-  base::WeakPtrFactory<QuotaMockPluginDelegate> weak_ptr_factory_;
+  base::WeakPtrFactory<QuotaMockPluginDelegate> weak_factory_;
 };
 }  // namespace
 
 class QuotaFileIOTest : public PpapiUnittest {
  public:
   QuotaFileIOTest()
-      : callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
+      : ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)),
+        ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {}
 
   virtual void SetUp() OVERRIDE {
     PpapiUnittest::SetUp();
@@ -123,14 +123,13 @@ class QuotaFileIOTest : public PpapiUnittest {
 
   void WriteTestBody(bool will_operation) {
     // Attempt to write zero bytes.
-    EXPECT_FALSE(quota_file_io_->Write(0, "data", 0,
-                                       callback_factory_.NewCallback(
-                                           &QuotaFileIOTest::DidWrite)));
+    EXPECT_FALSE(quota_file_io_->Write(
+        0, "data", 0,
+        base::Bind(&QuotaFileIOTest::DidWrite, weak_factory_.GetWeakPtr())));
     // Attempt to write negative number of bytes.
-    EXPECT_FALSE(quota_file_io_->Write(0, "data",
-                                       std::numeric_limits<int32_t>::min(),
-                                       callback_factory_.NewCallback(
-                                           &QuotaFileIOTest::DidWrite)));
+    EXPECT_FALSE(quota_file_io_->Write(
+        0, "data", std::numeric_limits<int32_t>::min(),
+        base::Bind(&QuotaFileIOTest::DidWrite, weak_factory_.GetWeakPtr())));
 
     quota_plugin_delegate()->set_available_space(100);
     std::string read_buffer;
@@ -355,14 +354,12 @@ class QuotaFileIOTest : public PpapiUnittest {
   void Write(int64_t offset, const std::string& data, bool will_operation) {
     if (will_operation) {
       ASSERT_TRUE(quota_file_io_->WillWrite(
-                      offset, data.size(),
-                      callback_factory_.NewCallback(
-                          &QuotaFileIOTest::DidWrite)));
+          offset, data.size(),
+          base::Bind(&QuotaFileIOTest::DidWrite, weak_factory_.GetWeakPtr())));
     } else {
       ASSERT_TRUE(quota_file_io_->Write(
-                      offset, data.c_str(), data.size(),
-                      callback_factory_.NewCallback(
-                          &QuotaFileIOTest::DidWrite)));
+          offset, data.c_str(), data.size(),
+          base::Bind(&QuotaFileIOTest::DidWrite, weak_factory_.GetWeakPtr())));
     }
   }
 
@@ -434,6 +431,7 @@ class QuotaFileIOTest : public PpapiUnittest {
   std::deque<int> bytes_written_;
   std::deque<PlatformFileError> status_;
   base::ScopedCallbackFactory<QuotaFileIOTest> callback_factory_;
+  base::WeakPtrFactory<QuotaFileIOTest> weak_factory_;
 };
 
 TEST_F(QuotaFileIOTest, Write) {

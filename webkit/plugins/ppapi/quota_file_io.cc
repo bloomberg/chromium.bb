@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_callback_factory.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop_proxy.h"
 #include "base/stl_util.h"
 #include "base/task.h"
@@ -64,7 +65,7 @@ class QuotaFileIO::WriteOperation : public PendingOperationBase {
                  int64_t offset,
                  const char* buffer,
                  int32_t bytes_to_write,
-                 WriteCallback* callback)
+                 const WriteCallback& callback)
       : PendingOperationBase(quota_io, is_will_operation),
         offset_(offset),
         bytes_to_write_(bytes_to_write),
@@ -72,8 +73,8 @@ class QuotaFileIO::WriteOperation : public PendingOperationBase {
         finished_(false),
         status_(base::PLATFORM_FILE_OK),
         bytes_written_(0),
-        callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-        runnable_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+        ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+        ALLOW_THIS_IN_INITIALIZER_LIST(runnable_factory_(this)) {
     if (!is_will_operation) {
       // TODO(kinuko): check the API convention if we really need to keep a
       // copy of the buffer during the async write operations.
@@ -104,7 +105,8 @@ class QuotaFileIO::WriteOperation : public PendingOperationBase {
     if (!base::FileUtilProxy::Write(
             plugin_delegate->GetFileThreadMessageLoopProxy(),
             quota_io_->file_, offset_, buffer_.get(), bytes_to_write_,
-            callback_factory_.NewCallback(&WriteOperation::DidFinish))) {
+            base::Bind(&WriteOperation::DidFinish,
+                       weak_factory_.GetWeakPtr()))) {
       DidFail(base::PLATFORM_FILE_ERROR_FAILED);
       return;
     }
@@ -134,20 +136,19 @@ class QuotaFileIO::WriteOperation : public PendingOperationBase {
   }
 
   virtual void RunCallback() {
-    DCHECK(callback_.get());
-    callback_->Run(status_, bytes_written_);
-    callback_.reset();
+    DCHECK_EQ(false, callback_.is_null());
+    callback_.Run(status_, bytes_written_);
     delete this;
   }
 
   const int64_t offset_;
   scoped_array<char> buffer_;
   const int32_t bytes_to_write_;
-  scoped_ptr<WriteCallback> callback_;
+  WriteCallback callback_;
   bool finished_;
   PlatformFileError status_;
   int64_t bytes_written_;
-  base::ScopedCallbackFactory<WriteOperation> callback_factory_;
+  base::WeakPtrFactory<WriteOperation> weak_factory_;
   ScopedRunnableMethodFactory<WriteOperation> runnable_factory_;
 };
 
@@ -240,11 +241,10 @@ QuotaFileIO::~QuotaFileIO() {
 
 bool QuotaFileIO::Write(
     int64_t offset, const char* buffer, int32_t bytes_to_write,
-    WriteCallback* callback) {
-  if (bytes_to_write <= 0) {
-    delete callback;
+    const WriteCallback& callback) {
+  if (bytes_to_write <= 0)
     return false;
-  }
+
   WriteOperation* op = new WriteOperation(
       this, false, offset, buffer, bytes_to_write, callback);
   return RegisterOperationForQuotaChecks(op);
@@ -258,7 +258,7 @@ bool QuotaFileIO::SetLength(int64_t length, StatusCallback* callback) {
 }
 
 bool QuotaFileIO::WillWrite(
-    int64_t offset, int32_t bytes_to_write, WriteCallback* callback) {
+    int64_t offset, int32_t bytes_to_write, const WriteCallback& callback) {
   WriteOperation* op = new WriteOperation(
       this, true, offset, NULL, bytes_to_write, callback);
   return RegisterOperationForQuotaChecks(op);
