@@ -296,8 +296,8 @@ var ntp = (function() {
       id: '',   // Empty ID signifies this is a special synthesized app
       page_index: 0,
       app_launch_index: -1,   // always first
-      name: templateData.web_store_title,
-      launch_url: templateData.web_store_url,
+      title: templateData.web_store_title,
+      url: templateData.web_store_url,
       icon_big: getThemeUrl('IDR_WEBSTORE_ICON')
     };
   }
@@ -362,7 +362,7 @@ var ntp = (function() {
     // Find the span element (if any) and fill it in with the app name
     var span = appElement.querySelector('span');
     if (span)
-      span.textContent = app.name;
+      span.textContent = app.title;
 
     // Fill in the image
     // We use a mask of the same image so CSS rules can highlight just the image
@@ -382,7 +382,7 @@ var ntp = (function() {
         // would be better for the back-end to just create virtual apps for such
         // cases.
         appEvents.add(appImg, 'click', function(e) {
-          window.location = app.launch_url;
+          window.location = app.url;
         }, false);
       }
     }

@@ -53,8 +53,8 @@ chrome.send = (function() {
     id: 'mcbkbpnkkkipelfledbfocopglifcfmi',
     launch_container: 2,
     launch_type: 1,
-    launch_url: 'http://poppit.pogo.com/hd/PoppitHD.html',
-    name: 'Poppit',
+    url: 'http://poppit.pogo.com/hd/PoppitHD.html',
+    title: 'Poppit',
     options_url: ''
   },
   {
@@ -65,8 +65,8 @@ chrome.send = (function() {
     id: 'pjkljhegncpnkpknbcohdijeoejaedia',
     launch_container: 2,
     launch_type: 1,
-    launch_url: 'https://mail.google.com/',
-    name: 'Gmail',
+    url: 'https://mail.google.com/',
+    title: 'Gmail',
     options_url: 'https://mail.google.com/mail/#settings'
   },
   {
@@ -77,8 +77,8 @@ chrome.send = (function() {
     id: 'mmimngoggfoobjdlefbcabngfnmieonb',
     launch_container: 2,
     launch_type: 1,
-    launch_url: 'http://books.google.com/ebooks?source=chrome-app',
-    name: 'Google Books',
+    url: 'http://books.google.com/ebooks?source=chrome-app',
+    title: 'Google Books',
     options_url: ''
   },
   {
@@ -90,8 +90,8 @@ chrome.send = (function() {
     id: 'lneaknkopdijkpnocmklfnjbeapigfbh',
     launch_container: 2,
     launch_type: 1,
-    launch_url: 'http://maps.google.com/',
-    name: 'Google Maps',
+    url: 'http://maps.google.com/',
+    title: 'Google Maps',
     options_url: ''
   },
   {
@@ -102,19 +102,19 @@ chrome.send = (function() {
     id: 'aciahcmjmecflokailenpkdchphgkefd',
     launch_container: 2,
     launch_type: 1,
-    launch_url: 'http://entanglement.gopherwoodstudios.com/',
-    name: 'Entanglement',
+    url: 'http://entanglement.gopherwoodstudios.com/',
+    title: 'Entanglement',
     options_url: ''
   },
   {
-    name: 'NYTimes',
+    title: 'NYTimes',
     app_launch_index: 6,
     description: 'The New York Times App for the Chrome Web Store.',
     icon_big: 'standalone/nytimes-icon.png',
     id: 'ecmphppfkcfflgglcokcbdkofpfegoel',
     launch_container: 2,
     launch_type: 1,
-    launch_url: 'http://www.nytimes.com/chrome/',
+    url: 'http://www.nytimes.com/chrome/',
     options_url: '',
     page_index: 2
   },
@@ -125,8 +125,8 @@ chrome.send = (function() {
     icon_big: 'standalone/youtube-icon.png',
     launch_container: 2,
     launch_type: 1,
-    launch_url: 'http://www.youtube.com/',
-    name: 'YouTube',
+    url: 'http://www.youtube.com/',
+    title: 'YouTube',
     options_url: '',
     page_index: 3
   }];
@@ -243,14 +243,14 @@ chrome.send = (function() {
         // Replace the current tab with the app.
         // Pinned seems to omit the tab title, but I doubt it's
         // possible for us to do that here
-        window.location = (app.launch_url);
+        window.location = (app.url);
         break;
 
       case 2: // fullscreen
       case 3: // window
         // attempt to launch in a new window
         window.close();
-        window.open(app.launch_url, app.name,
+        window.open(app.url, app.title,
             'resizable=yes,scrollbars=yes,status=yes');
         break;
 
@@ -267,7 +267,7 @@ chrome.send = (function() {
     var i = getAppIndex(id);
     // This confirmation dialog doesn't look exactly the same as the
     // standard NTP one, but it's close enough.
-    if (window.confirm('Uninstall \"' + apps[i].name + '\"?')) {
+    if (window.confirm('Uninstall \"' + apps[i].title + '\"?')) {
       apps.splice(i, 1);
       sendGetAppsCallback();
     }
