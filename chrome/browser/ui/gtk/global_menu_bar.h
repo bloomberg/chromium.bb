@@ -16,7 +16,6 @@
 #include "ui/base/gtk/owned_widget_gtk.h"
 
 class Browser;
-class GlobalBookmarkMenu;
 struct GlobalMenuBarCommand;
 class GlobalMenuOwner;
 
@@ -90,9 +89,6 @@ class GlobalMenuBar : public CommandUpdater::CommandObserver,
   // Listens to the TabRestoreService and the HistoryService and keeps the
   // history menu fresh.
   GlobalHistoryMenu history_menu_;
-
-  // Listens to the bookmark model and updates the menu.
-  scoped_ptr<GlobalBookmarkMenu> bookmark_menu_;
 
   // For some menu items, we want to show the accelerator, but not actually
   // explicitly handle it. To this end we connect those menu items' accelerators

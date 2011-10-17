@@ -2966,8 +2966,6 @@
         'browser/ui/gtk/fullscreen_exit_bubble_gtk.h',
         'browser/ui/gtk/gconf_titlebar_listener.cc',
         'browser/ui/gtk/gconf_titlebar_listener.h',
-        'browser/ui/gtk/global_bookmark_menu.cc',
-        'browser/ui/gtk/global_bookmark_menu.h',
         'browser/ui/gtk/global_error_bubble.cc',
         'browser/ui/gtk/global_error_bubble.h',
         'browser/ui/gtk/global_history_menu.cc',

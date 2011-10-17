@@ -12,7 +12,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/gtk/accelerators_gtk.h"
-#include "chrome/browser/ui/gtk/global_bookmark_menu.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -118,14 +117,6 @@ GlobalMenuBarCommand history_menu[] = {
   { MENU_END, MENU_END }
 };
 
-GlobalMenuBarCommand bookmark_menu[] = {
-  { IDS_BOOKMARK_MANAGER, IDC_SHOW_BOOKMARK_MANAGER },
-  { IDS_BOOKMARK_CURRENT_PAGE_LINUX, IDC_BOOKMARK_PAGE },
-  { IDS_BOOKMARK_ALL_TABS_LINUX, IDC_BOOKMARK_ALL_TABS },
-
-  { MENU_END, MENU_END }
-};
-
 GlobalMenuBarCommand tools_menu[] = {
   { IDS_SHOW_DOWNLOADS, IDC_SHOW_DOWNLOADS },
   { IDS_SHOW_HISTORY, IDC_SHOW_HISTORY },
@@ -172,22 +163,6 @@ GlobalMenuBar::GlobalMenuBar(Browser* browser)
   BuildGtkMenuFrom(IDS_VIEW_MENU_LINUX, &id_to_menu_item_, view_menu, NULL);
   BuildGtkMenuFrom(IDS_HISTORY_MENU_LINUX, &id_to_menu_item_,
                    history_menu, &history_menu_);
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableGlobalBookmarkMenu)) {
-    // TODO(erg): dbusmenu-glib in Ubuntu Natty does not like it when we shove
-    // 100k or more of favicon data over it. Users have reported that the
-    // browser hangs on startup for over a minute and breaking during this time
-    // shows a stack entirely of dbus/glib code (See #86715).  For now, just
-    // hide the menu until appmenu-gtk catches up and doesn't hang if we throw
-    // (potentially) megs of icon data at it. (Some of our users have thousands
-    // of bookmarks and we're already unacceptably laggy at 100.)
-    //
-    // http://crbug.com/86715, http://crbug.com/85466
-    bookmark_menu_.reset(new GlobalBookmarkMenu(browser_));
-    BuildGtkMenuFrom(IDS_BOOKMARKS_MENU_LINUX, &id_to_menu_item_, bookmark_menu,
-                     bookmark_menu_.get());
-  }
 
   BuildGtkMenuFrom(IDS_TOOLS_MENU_LINUX, &id_to_menu_item_, tools_menu, NULL);
   BuildGtkMenuFrom(IDS_HELP_MENU_LINUX, &id_to_menu_item_, help_menu, NULL);
