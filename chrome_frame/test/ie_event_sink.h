@@ -11,12 +11,9 @@
 #include <string>
 
 #include "base/win/scoped_comptr.h"
-
+#include "chrome_frame/chrome_tab.h"
 #include "chrome_frame/test/simulate_input.h"
 #include "chrome_frame/test_utils.h"
-
-// Include without path to make GYP build see it.
-#include "chrome_tab.h"  // NOLINT
 
 namespace chrome_frame_test {
 

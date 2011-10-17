@@ -15,7 +15,7 @@
 
 #include <string>
 
-#include "chrome_tab.h"  // NOLINT
+#include "chrome_frame/chrome_tab.h"
 #include "chrome_frame/delete_chrome_history.h"
 #include "chrome_frame/resource.h"
 #include "chrome_frame/urlmon_moniker.h"

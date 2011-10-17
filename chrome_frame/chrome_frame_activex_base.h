@@ -28,6 +28,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/common/url_constants.h"
 #include "chrome_frame/chrome_frame_plugin.h"
+#include "chrome_frame/chrome_tab.h"
 #include "chrome_frame/com_message_event.h"
 #include "chrome_frame/com_type_info_holder.h"
 #include "chrome_frame/simple_resource_loader.h"
@@ -36,9 +37,6 @@
 #include "chrome_frame/utils.h"
 #include "grit/generated_resources.h"
 #include "net/base/cookie_monster.h"
-
-// Include without path to make GYP build see it.
-#include "chrome_tab.h"  // NOLINT
 
 // Connection point class to support firing IChromeFrameEvents (dispinterface).
 template<class T>

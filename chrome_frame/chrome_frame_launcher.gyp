@@ -104,11 +104,6 @@
         '<(INTERMEDIATE_DIR)',
         '<(SHARED_INTERMEDIATE_DIR)',
       ],
-      'include_dirs': [
-        # To allow including "chrome_tab.h"
-        '<(INTERMEDIATE_DIR)',
-        '<(INTERMEDIATE_DIR)/../chrome_frame',
-      ],
       'sources': [
         'chrome_frame_helper_main.cc',
         'chrome_frame_helper_version.rc',
@@ -133,18 +128,13 @@
         '<(INTERMEDIATE_DIR)',
         '<(SHARED_INTERMEDIATE_DIR)',
       ],
-      'include_dirs': [
-        # To allow including "chrome_tab.h"
-        '<(INTERMEDIATE_DIR)',
-        '<(INTERMEDIATE_DIR)/../chrome_frame',
-      ],
       'sources': [
         'bho_loader.cc',
         'bho_loader.h',
         'chrome_frame_helper_dll.cc',
         'chrome_frame_helper_dll.def',
         'chrome_frame_helper_version.rc',
-        '<(SHARED_INTERMEDIATE_DIR)/chrome_tab.h',
+        '<(SHARED_INTERMEDIATE_DIR)/chrome_frame/chrome_tab.h',
         'chrome_tab.idl',
         'event_hooker.cc',
         'event_hooker.h',
@@ -169,17 +159,12 @@
         '<(INTERMEDIATE_DIR)',
         '<(SHARED_INTERMEDIATE_DIR)',
       ],
-      'include_dirs': [
-        # To allow including "chrome_tab.h"
-        '<(INTERMEDIATE_DIR)',
-        '<(INTERMEDIATE_DIR)/../chrome_frame',
-      ],
       'sources': [
         'chrome_frame_helper_util.cc',
         'chrome_frame_helper_util.h',
         'registry_watcher.cc',
         'registry_watcher.h',
-        '<(SHARED_INTERMEDIATE_DIR)/chrome_tab.h',
+        '<(SHARED_INTERMEDIATE_DIR)/chrome_frame/chrome_tab.h',
         'chrome_tab.idl',
         'iids.cc',
       ],
