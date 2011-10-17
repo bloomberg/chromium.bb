@@ -17,11 +17,8 @@
 
 typedef GoogleServiceAuthError AuthError;
 
-using namespace sync_ui_util;
-
 SyncGlobalError::SyncGlobalError(ProfileSyncService* service)
-    : has_error_(false),
-      service_(service) {
+    : service_(service) {
   OnStateChanged();
 }
 
@@ -29,8 +26,7 @@ SyncGlobalError::~SyncGlobalError() {
 }
 
 bool SyncGlobalError::HasBadge() {
-  return GetStatusLabelsForSyncGlobalError(service_, NULL, NULL, NULL) ==
-      SYNC_ERROR;
+  return !menu_label_.empty();
 }
 
 bool SyncGlobalError::HasMenuItem() {
@@ -38,8 +34,7 @@ bool SyncGlobalError::HasMenuItem() {
   // menu to the show the error. On other platforms we can just reuse the
   // "Sign in to Chrome..." menu item to show the error.
 #if defined(OS_CHROMEOS)
-  return GetStatusLabelsForSyncGlobalError(service_, NULL, NULL, NULL) ==
-      SYNC_ERROR;
+  return !menu_label_.empty();
 #else
   return false;
 #endif
@@ -50,9 +45,7 @@ int SyncGlobalError::MenuItemCommandID() {
 }
 
 string16 SyncGlobalError::MenuItemLabel() {
-  string16 label;
-  GetStatusLabelsForSyncGlobalError(service_, &label, NULL, NULL);
-  return label;
+  return menu_label_;
 }
 
 void SyncGlobalError::ExecuteMenuItem(Browser* browser) {
@@ -60,8 +53,7 @@ void SyncGlobalError::ExecuteMenuItem(Browser* browser) {
 }
 
 bool SyncGlobalError::HasBubbleView() {
-  return GetStatusLabelsForSyncGlobalError(service_, NULL, NULL, NULL) ==
-      SYNC_ERROR;
+  return !bubble_message_.empty() && !bubble_accept_label_.empty();
 }
 
 string16 SyncGlobalError::GetBubbleViewTitle() {
@@ -69,15 +61,11 @@ string16 SyncGlobalError::GetBubbleViewTitle() {
 }
 
 string16 SyncGlobalError::GetBubbleViewMessage() {
-  string16 label;
-  GetStatusLabelsForSyncGlobalError(service_, NULL, &label, NULL);
-  return label;
+  return bubble_message_;
 }
 
 string16 SyncGlobalError::GetBubbleViewAcceptButtonLabel() {
-  string16 label;
-  GetStatusLabelsForSyncGlobalError(service_, NULL, NULL, &label);
-  return label;
+  return bubble_accept_label_;
 }
 
 string16 SyncGlobalError::GetBubbleViewCancelButtonLabel() {
@@ -96,16 +84,33 @@ void SyncGlobalError::BubbleViewCancelButtonPressed() {
 }
 
 void SyncGlobalError::OnStateChanged() {
-  bool new_has_error = GetStatusLabelsForSyncGlobalError(
-      service_, NULL, NULL, NULL) == SYNC_ERROR;
-  if (new_has_error != has_error_) {
-    has_error_ = new_has_error;
-    GlobalErrorServiceFactory::GetForProfile(
-        service_->profile())->NotifyErrorsChanged(this);
+  string16 menu_label;
+  string16 bubble_message;
+  string16 bubble_accept_label;
+  sync_ui_util::GetStatusLabelsForSyncGlobalError(
+      service_, &menu_label, &bubble_message, &bubble_accept_label);
+
+  // All the labels should be empty or all of them non-empty.
+  DCHECK((menu_label.empty() && bubble_message.empty() &&
+          bubble_accept_label.empty()) ||
+         (!menu_label.empty() && !bubble_message.empty() &&
+          !bubble_accept_label.empty()));
+
+  if (menu_label != menu_label_ || bubble_message != bubble_message_ ||
+      bubble_accept_label != bubble_accept_label_) {
+    menu_label_ = menu_label;
+    bubble_message_ = bubble_message;
+    bubble_accept_label_ = bubble_accept_label;
+
+    // Profile can be NULL during tests.
+    Profile* profile = service_->profile();
+    if (profile) {
+      GlobalErrorServiceFactory::GetForProfile(
+          profile)->NotifyErrorsChanged(this);
+    }
   }
 }
 
 bool SyncGlobalError::HasCustomizedSyncMenuItem() {
-  return GetStatusLabelsForSyncGlobalError(service_, NULL, NULL, NULL) ==
-      SYNC_ERROR;
+  return !menu_label_.empty();
 }

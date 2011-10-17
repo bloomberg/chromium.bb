@@ -340,44 +340,42 @@ MessageType GetStatusLabelsForNewTabPage(ProfileSyncService* service,
       service, status_label, link_label);
 }
 
-MessageType GetStatusLabelsForSyncGlobalError(ProfileSyncService* service,
-                                              string16* menu_label,
-                                              string16* bubble_message,
-                                              string16* bubble_accept_label) {
+void GetStatusLabelsForSyncGlobalError(ProfileSyncService* service,
+                                       string16* menu_label,
+                                       string16* bubble_message,
+                                       string16* bubble_accept_label) {
+  DCHECK(menu_label);
+  DCHECK(bubble_message);
+  DCHECK(bubble_accept_label);
+  *menu_label = string16();
+  *bubble_message = string16();
+  *bubble_accept_label = string16();
+
   if (!service->HasSyncSetupCompleted())
-    return PRE_SYNCED;
+    return;
 
   if (service->IsPassphraseRequired() &&
       service->IsPassphraseRequiredForDecryption()) {
     // This is not the first machine so ask user to enter passphrase.
-    if (menu_label) {
-      *menu_label = l10n_util::GetStringUTF16(
-          IDS_SYNC_PASSPHRASE_ERROR_WRENCH_MENU_ITEM);
-    }
-    if (bubble_message) {
-      string16 product_name = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
-      *bubble_message = l10n_util::GetStringFUTF16(
-          IDS_SYNC_PASSPHRASE_ERROR_BUBBLE_VIEW_MESSAGE, product_name);
-    }
-    if (bubble_accept_label) {
-      *bubble_accept_label = l10n_util::GetStringUTF16(
-          IDS_SYNC_PASSPHRASE_ERROR_BUBBLE_VIEW_ACCEPT);
-    }
-    return SYNC_ERROR;
+    *menu_label = l10n_util::GetStringUTF16(
+        IDS_SYNC_PASSPHRASE_ERROR_WRENCH_MENU_ITEM);
+    string16 product_name = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
+    *bubble_message = l10n_util::GetStringFUTF16(
+        IDS_SYNC_PASSPHRASE_ERROR_BUBBLE_VIEW_MESSAGE, product_name);
+    *bubble_accept_label = l10n_util::GetStringUTF16(
+        IDS_SYNC_PASSPHRASE_ERROR_BUBBLE_VIEW_ACCEPT);
+    return;
   }
 
   MessageType status = GetStatus(service);
   if (status != SYNC_ERROR)
-    return status;
+    return;
 
   const AuthError& auth_error = service->GetAuthError();
   if (auth_error.state() != AuthError::NONE) {
     GetStatusLabelsForAuthError(auth_error, *service, NULL, NULL,
         menu_label, bubble_message, bubble_accept_label);
-    return SYNC_ERROR;
   }
-
-  return SYNCED;
 }
 
 MessageType GetStatus(ProfileSyncService* service) {

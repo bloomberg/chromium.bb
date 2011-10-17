@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/sync/sync_global_error.h"
+
 #include "base/basictypes.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "content/browser/browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -16,9 +17,10 @@ using ::testing::NiceMock;
 
 namespace {
 
-// Utility function to test that GetStatusLabelsForSyncGlobalError returns
-// the correct results for the given states.
+// Utility function to test that SyncGlobalError behaves correct for the given
+// error condition.
 void VerifySyncGlobalErrorResult(NiceMock<ProfileSyncServiceMock>* service,
+                                 SyncGlobalError* error,
                                  GoogleServiceAuthError::State error_state,
                                  bool is_signed_in,
                                  bool is_error) {
@@ -35,66 +37,60 @@ void VerifySyncGlobalErrorResult(NiceMock<ProfileSyncServiceMock>* service,
                 .WillRepeatedly(Return(UTF8ToUTF16("foo")));
   }
 
-  string16 label1, label2, label3;
-  sync_ui_util::GetStatusLabelsForSyncGlobalError(
-      service, &label1, &label2, &label3);
-  EXPECT_EQ(label1.empty(), !is_error);
-  EXPECT_EQ(label2.empty(), !is_error);
-  EXPECT_EQ(label3.empty(), !is_error);
+  error->OnStateChanged();
+
+  // If there is an error then a wrench button badge, menu item, and bubble view
+  // should be shown.
+  EXPECT_EQ(error->HasBadge(), is_error);
+  EXPECT_EQ(error->HasMenuItem() || error->HasCustomizedSyncMenuItem(),
+            is_error);
+  EXPECT_EQ(error->HasBubbleView(), is_error);
+
+  // If there is an error then labels should not be empty.
+  EXPECT_NE(error->MenuItemCommandID(), 0);
+  EXPECT_NE(error->MenuItemLabel().empty(), is_error);
+  EXPECT_NE(error->GetBubbleViewAcceptButtonLabel().empty(), is_error);
+
+  // We never have a cancel button.
+  EXPECT_TRUE(error->GetBubbleViewCancelButtonLabel().empty());
+  // We always return a hardcoded title.
+  EXPECT_FALSE(error->GetBubbleViewTitle().empty());
+
+  // Test message handler.
+  if (is_error) {
+    EXPECT_CALL(*service, ShowErrorUI());
+    error->ExecuteMenuItem(NULL);
+    EXPECT_CALL(*service, ShowErrorUI());
+    error->BubbleViewAcceptButtonPressed();
+    error->BubbleViewDidClose();
+  }
 }
 
 } // namespace
 
-TEST(SyncUIUtilTest, ConstructAboutInformationWithUnrecoverableErrorTest) {
+// Test that SyncGlobalError shows an error if a passphrase is required.
+TEST(SyncGlobalErrorTest, PassphraseGlobalError) {
   MessageLoopForUI message_loop;
   BrowserThread ui_thread(BrowserThread::UI, &message_loop);
   NiceMock<ProfileSyncServiceMock> service;
-  DictionaryValue strings;
-
-  // Will be released when the dictionary is destroyed
-  string16 str(ASCIIToUTF16("none"));
-
-  browser_sync::SyncBackendHost::Status status;
-  status.summary = browser_sync::SyncBackendHost::Status::OFFLINE_UNUSABLE;
-
-  EXPECT_CALL(service, HasSyncSetupCompleted())
-              .WillOnce(Return(true));
-  EXPECT_CALL(service, QueryDetailedSyncStatus())
-              .WillOnce(Return(status));
-
-  EXPECT_CALL(service, unrecoverable_error_detected())
-             .WillOnce(Return(true));
-
-  EXPECT_CALL(service, GetLastSyncedTimeString())
-             .WillOnce(Return(str));
-
-  sync_ui_util::ConstructAboutInformation(&service, &strings);
-
-  EXPECT_TRUE(strings.HasKey("unrecoverable_error_detected"));
-}
-
-// Test that GetStatusLabelsForSyncGlobalError returns an error if a
-// passphrase is required.
-TEST(SyncUIUtilTest, PassphraseGlobalError) {
-  MessageLoopForUI message_loop;
-  BrowserThread ui_thread(BrowserThread::UI, &message_loop);
-  NiceMock<ProfileSyncServiceMock> service;
+  SyncGlobalError error(&service);
 
   EXPECT_CALL(service, IsPassphraseRequired())
-              .WillOnce(Return(true));
+              .WillRepeatedly(Return(true));
   EXPECT_CALL(service, IsPassphraseRequiredForDecryption())
-              .WillOnce(Return(true));
+              .WillRepeatedly(Return(true));
   VerifySyncGlobalErrorResult(
-      &service, GoogleServiceAuthError::NONE, true, true);
+      &service, &error, GoogleServiceAuthError::NONE, true, true);
 }
 
-// Test that GetStatusLabelsForSyncGlobalError indicates errors for conditions
-// that can be resolved by the user and suppresses errors for conditions that
-// cannot be resolved by the user.
-TEST(SyncUIUtilTest, AuthStateGlobalError) {
+// Test that SyncGlobalError shows an error for conditions that can be resolved
+// by the user and suppresses errors for conditions that  cannot be resolved by
+// the user.
+TEST(SyncGlobalErrorTest, AuthStateGlobalError) {
   MessageLoopForUI message_loop;
   BrowserThread ui_thread(BrowserThread::UI, &message_loop);
   NiceMock<ProfileSyncServiceMock> service;
+  SyncGlobalError error(&service);
 
   browser_sync::SyncBackendHost::Status status;
   EXPECT_CALL(service, QueryDetailedSyncStatus())
@@ -119,8 +115,8 @@ TEST(SyncUIUtilTest, AuthStateGlobalError) {
 
   for (size_t i = 0; i < sizeof(table)/sizeof(*table); ++i) {
     VerifySyncGlobalErrorResult(
-        &service, table[i].error_state, true, table[i].is_error);
+        &service, &error, table[i].error_state, true, table[i].is_error);
     VerifySyncGlobalErrorResult(
-        &service, table[i].error_state, false, false);
+        &service, &error, table[i].error_state, false, false);
   }
 }
