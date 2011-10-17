@@ -21,18 +21,9 @@
 
 DownloadInProgressDialogGtk::DownloadInProgressDialogGtk(Browser* browser)
     : browser_(browser) {
-  int download_count;
-  Browser::DownloadClosePreventionType type =
-      browser_->OkToCloseWithInProgressDownloads(&download_count);
-
-  // This dialog should have been created within the same thread invocation
-  // as the original test that lead to us, so it should always not be ok
-  // to close.
-  DCHECK_NE(Browser::DOWNLOAD_CLOSE_OK, type);
-
-  // TODO(rdsmith): This dialog should be different depending on whether we're
-  // closing the last incognito window of a profile or doing browser shutdown.
-  // See http://crbug.com/88421.
+  int download_count =
+      DownloadServiceFactory::GetForProfile(
+          browser->profile())->GetDownloadManager()->in_progress_count();
 
   std::string warning_text;
   std::string explanation_text;

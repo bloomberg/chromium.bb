@@ -6,9 +6,7 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
-#include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "content/browser/download/download_manager.h"
 
 DownloadService::DownloadService(Profile* profile)
@@ -34,27 +32,6 @@ DownloadManager* DownloadService::GetDownloadManager() {
 
 bool DownloadService::HasCreatedDownloadManager() {
   return download_manager_created_;
-}
-
-int DownloadService::DownloadCount() const {
-  return download_manager_created_ ? manager_->in_progress_count() : 0;
-}
-
-// static
-int DownloadService::DownloadCountAllProfiles() {
-  std::vector<Profile*> profiles(
-      g_browser_process->profile_manager()->GetLoadedProfiles());
-
-  int count = 0;
-  for (std::vector<Profile*>::iterator it = profiles.begin();
-       it < profiles.end(); ++it) {
-    count += DownloadServiceFactory::GetForProfile(*it)->DownloadCount();
-    if ((*it)->HasOffTheRecordProfile())
-      count += DownloadServiceFactory::GetForProfile(
-          (*it)->GetOffTheRecordProfile())->DownloadCount();
-  }
-
-  return count;
 }
 
 void DownloadService::SetDownloadManagerDelegateForTesting(
