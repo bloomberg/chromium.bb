@@ -28,6 +28,7 @@
 #include "content/browser/worker_host/worker_service_observer.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_service.h"
+#include "content/common/worker_messages.h"
 #include "net/test/test_server.h"
 
 namespace {
@@ -70,6 +71,8 @@ const char kSlowTestPage[] =
     "chunked?waitBeforeHeaders=100&waitBetweenChunks=100&chunksNumber=2";
 const char kSharedWorkerTestPage[] =
     "files/workers/workers_ui_shared_worker.html";
+const char kReloadSharedWorkerTestPage[] =
+    "files/workers/debug_shared_worker_initialization.html";
 
 void RunTestFuntion(DevToolsWindow* window, const char* test_name) {
   std::string result;
@@ -302,14 +305,65 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
     scoped_refptr<WorkerData> worker_data_;
   };
 
+  class WorkerTerminationObserver : public WorkerServiceObserver {
+   public:
+    explicit WorkerTerminationObserver(WorkerData* worker_data)
+        : worker_data_(worker_data) {
+    }
+
+   private:
+    virtual ~WorkerTerminationObserver() {}
+
+    virtual void WorkerCreated (
+        WorkerProcessHost* process,
+        const WorkerProcessHost::WorkerInstance& instance) OVERRIDE {}
+    virtual void WorkerDestroyed(
+        WorkerProcessHost* process,
+        const WorkerProcessHost::WorkerInstance& instance) OVERRIDE {
+      ASSERT_EQ(worker_data_->worker_process_id, process->id());
+      ASSERT_EQ(worker_data_->worker_route_id, instance.worker_route_id());
+      WorkerService::GetInstance()->RemoveObserver(this);
+      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+          new MessageLoop::QuitTask);
+      delete this;
+    }
+    virtual void WorkerContextStarted(
+        WorkerProcessHost*,
+        int worker_route_id) OVERRIDE {}
+    scoped_refptr<WorkerData> worker_data_;
+  };
+
   void RunTest(const char* test_name, const char* test_page) {
     ASSERT_TRUE(test_server()->Start());
     GURL url = test_server()->GetURL(test_page);
     ui_test_utils::NavigateToURL(browser(), url);
 
-    OpenDevToolsWindowForFirstSharedWorker();
+    scoped_refptr<WorkerData> worker_data = WaitForFirstSharedWorker();
+    OpenDevToolsWindowForSharedWorker(worker_data.get());
     RunTestFuntion(window_, test_name);
     CloseDevToolsWindow();
+  }
+
+  static void TerminateWorkerOnIOThread(
+      scoped_refptr<WorkerData> worker_data) {
+    for (BrowserChildProcessHost::Iterator iter(
+             ChildProcessInfo::WORKER_PROCESS);
+         !iter.Done(); ++iter) {
+      if (iter->id() == worker_data->worker_process_id) {
+        (*iter)->Send(new WorkerMsg_TerminateWorkerContext(
+            worker_data->worker_route_id));
+        WorkerService::GetInstance()->AddObserver(
+            new WorkerTerminationObserver(worker_data));
+        return;
+      }
+    }
+    FAIL() << "Failed to terminate worker.\n";
+  }
+
+  static void TerminateWorker(scoped_refptr<WorkerData> worker_data) {
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, NewRunnableFunction(
+        &TerminateWorkerOnIOThread, worker_data));
+    ui_test_utils::RunMessageLoop();
   }
 
   static void WaitForFirstSharedWorkerOnIOThread(
@@ -334,12 +388,15 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
         new WorkerCreationObserver(worker_data.get()));
   }
 
-  void OpenDevToolsWindowForFirstSharedWorker() {
+  static scoped_refptr<WorkerData> WaitForFirstSharedWorker() {
     scoped_refptr<WorkerData> worker_data(new WorkerData());
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, NewRunnableFunction(
         &WaitForFirstSharedWorkerOnIOThread, worker_data));
     ui_test_utils::RunMessageLoop();
+    return worker_data;
+  }
 
+  void OpenDevToolsWindowForSharedWorker(WorkerData* worker_data) {
     Profile* profile = browser()->profile();
     window_ = DevToolsWindow::CreateDevToolsWindowForWorker(profile);
     window_->Show(DEVTOOLS_TOGGLE_ACTION_NONE);
@@ -459,6 +516,25 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPageWithNoJavaScript) {
 // Flakily fails with 25s timeout: http://crbug.com/89845
 IN_PROC_BROWSER_TEST_F(WorkerDevToolsSanityTest, DISABLED_InspectSharedWorker) {
   RunTest("testSharedWorker", kSharedWorkerTestPage);
+}
+
+IN_PROC_BROWSER_TEST_F(WorkerDevToolsSanityTest,
+                       PauseInSharedWorkerInitialization) {
+    ASSERT_TRUE(test_server()->Start());
+    GURL url = test_server()->GetURL(kReloadSharedWorkerTestPage);
+    ui_test_utils::NavigateToURL(browser(), url);
+
+    scoped_refptr<WorkerData> worker_data = WaitForFirstSharedWorker();
+    OpenDevToolsWindowForSharedWorker(worker_data.get());
+
+    TerminateWorker(worker_data);
+
+    // Reload page to restart the worker.
+    ui_test_utils::NavigateToURL(browser(), url);
+
+    // Wait until worker script is paused on the debugger statement.
+    RunTestFuntion(window_, "testPauseInSharedWorkerInitialization");
+    CloseDevToolsWindow();
 }
 
 }  // namespace
