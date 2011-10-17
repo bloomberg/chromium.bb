@@ -124,6 +124,10 @@
       '-policy.PolicyTest.testBookmarkBarPolicy',
       # crbug.com/100217
       '-policy.PolicyTest.testBlacklistPolicy',
+      # crbug.com/100591
+      '-pdf.PDFTest.testPDFRunner',
+      # crbug.com/100593
+      '-nacl_sdk.NaClSDKTest.testVerifyNaClPlugin',
     ],
 
     'win': [
@@ -216,6 +220,8 @@
       '-ntp.NTPTest.testLaunchAppRegularTab',
       '-ntp.NTPTest.testLaunchAppWithDefaultSettings',
       '-ntp.NTPTest.testUninstallApp',
+      # crbug.com/100595
+      '-plugins.PluginsTest.testBlockPluginException',
     ],
 
     'linux': [  # linux != chromeos
