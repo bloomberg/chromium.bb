@@ -307,7 +307,8 @@ def RunChromeSuite(buildroot, board, image_dir, results_dir):
                          ], cwd=cwd, error_ok=True, enter_chroot=False)
 
 
-def RunTestSuite(buildroot, board, image_dir, results_dir, test_type):
+def RunTestSuite(buildroot, board, image_dir, results_dir, test_type,
+                 nplus1_archive_dir, build_config):
   """Runs the test harness suite."""
   results_dir_in_chroot = os.path.join(buildroot, 'chroot',
                                        results_dir.lstrip('/'))
@@ -329,6 +330,9 @@ def RunTestSuite(buildroot, board, image_dir, results_dir, test_type):
     cmd.append('--quick')
     if test_type == constants.SMOKE_SUITE_TEST_TYPE:
       cmd.append('--only_verify')
+  else:
+    cmd.append('--nplus1_archive_dir=%s' % nplus1_archive_dir)
+    cmd.append('--build_config=%s' % build_config)
 
   code = cros_lib.OldRunCommand(cmd, cwd=cwd, error_ok=True, exit_code=True)
   if code:
