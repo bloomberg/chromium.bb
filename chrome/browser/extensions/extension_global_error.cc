@@ -84,7 +84,7 @@ void ExtensionGlobalError::ShowBubbleView(Browser* browser) {
 }
 
 string16 ExtensionGlobalError::GetBubbleViewTitle() {
-  return l10n_util::GetStringUTF16(IDS_EXTENSION_NOTIFICATION_TITLE);
+  return l10n_util::GetStringUTF16(IDS_EXTENSION_ALERT_TITLE);
 }
 
 string16 ExtensionGlobalError::GenerateMessageSection(
@@ -105,14 +105,13 @@ string16 ExtensionGlobalError::GenerateMessageSection(
 
 string16 ExtensionGlobalError::GenerateMessage() {
   if (extension_service_.get()) {
-    return l10n_util::GetStringFUTF16(
-        IDS_EXTENSION_NOTIFICATION_BODY_TEMPLATE,
+    return
         GenerateMessageSection(external_extension_ids_.get(),
-                               IDS_EXTENSION_NOTIFICATION_ITEM_EXTERNAL) +
+                               IDS_EXTENSION_ALERT_ITEM_EXTERNAL) +
         GenerateMessageSection(blacklisted_extension_ids_.get(),
-                               IDS_EXTENSION_NOTIFICATION_ITEM_EXTERNAL) +
+                               IDS_EXTENSION_ALERT_ITEM_EXTERNAL) +
         GenerateMessageSection(orphaned_extension_ids_.get(),
-                               IDS_EXTENSION_NOTIFICATION_ITEM_EXTERNAL));
+                               IDS_EXTENSION_ALERT_ITEM_EXTERNAL);
   } else {
     return string16();
   }
@@ -126,11 +125,11 @@ string16 ExtensionGlobalError::GetBubbleViewMessage() {
 }
 
 string16 ExtensionGlobalError::GetBubbleViewAcceptButtonLabel() {
-  return l10n_util::GetStringUTF16(IDS_EXTENSION_NOTIFICATION_ITEM_OK);
+  return l10n_util::GetStringUTF16(IDS_EXTENSION_ALERT_ITEM_OK);
 }
 
 string16 ExtensionGlobalError::GetBubbleViewCancelButtonLabel() {
-  return l10n_util::GetStringUTF16(IDS_EXTENSION_NOTIFICATION_ITEM_DETAILS);
+  return l10n_util::GetStringUTF16(IDS_EXTENSION_ALERT_ITEM_DETAILS);
 }
 
 void ExtensionGlobalError::BubbleViewDidClose() {
