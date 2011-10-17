@@ -156,7 +156,7 @@ const PerScriptFontDefault kPerScriptFontDefaults[] = {
     IDS_SERIF_FONT_FAMILY_TRADITIONAL_HAN, "zh-TW" },
   { prefs::kWebKitSansSerifFontFamilyTraditionalHan,
     IDS_SANS_SERIF_FONT_FAMILY_TRADITIONAL_HAN, "zh-TW" }
-#elif defined(OS_MAC)
+#elif defined(OS_MACOSX)
   { prefs::kWebKitStandardFontFamilyJapanese,
     IDS_STANDARD_FONT_FAMILY_JAPANESE, "ja" },
   { prefs::kWebKitFixedFontFamilyJapanese, IDS_FIXED_FONT_FAMILY_JAPANESE,
@@ -218,7 +218,7 @@ const PerScriptFontDefault kPerScriptFontDefaults[] = {
 #endif
 };
 
-#if defined(OS_CHROMEOS) || defined(OS_MAC) || defined(OS_WIN)
+#if defined(OS_CHROMEOS) || defined(OS_MACOSX) || defined(OS_WIN)
 // To avoid Clang warning, only define kPerScriptFontDefaultsLength when it is
 // non-zero.  When it is zero, code like
 //  for (size_t i = 0; i < kPerScriptFontDefaultsLength; ++i)
@@ -408,7 +408,7 @@ void TabContentsWrapper::RegisterUserPrefs(PrefService* prefs) {
                                      PrefService::UNSYNCABLE_PREF);
 
   // Register per-script font prefs that have defaults.
-#if defined(OS_CHROMEOS) || defined(OS_MAC) || defined(OS_WIN)
+#if defined(OS_CHROMEOS) || defined(OS_MACOSX) || defined(OS_WIN)
   // As explained by its definition, kPerScriptFontDefaultsLength is only
   // defined for platforms where it would be non-zero.
   std::string locale = g_browser_process->GetApplicationLocale();

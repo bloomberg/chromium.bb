@@ -161,7 +161,7 @@
       </message>
 
       <!-- The default value for |WebPreference::standard_font_family_map| for
-           Japanese script on Windows. -->
+           Japanese script. -->
       <message name="IDS_STANDARD_FONT_FAMILY_JAPANESE" use_name_for_id="true">
         MS PGothic
       </message>
