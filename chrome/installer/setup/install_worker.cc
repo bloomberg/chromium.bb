@@ -182,11 +182,11 @@ void AddUninstallShortcutWorkItems(const InstallerState& installer_state,
                                          true);
 
     // DisplayIcon, NoModify and NoRepair
-    FilePath chrome_icon(install_path.Append(installer::kChromeExe));
-    ShellUtil::GetChromeIcon(product.distribution(), chrome_icon.value());
+    std::wstring chrome_icon = ShellUtil::GetChromeIcon(
+        product.distribution(),
+        install_path.Append(installer::kChromeExe).value());
     install_list->AddSetRegValueWorkItem(reg_root, uninstall_reg,
-                                         L"DisplayIcon", chrome_icon.value(),
-                                         true);
+                                         L"DisplayIcon", chrome_icon, true);
     install_list->AddSetRegValueWorkItem(reg_root, uninstall_reg,
                                          L"NoModify", static_cast<DWORD>(1),
                                          true);
