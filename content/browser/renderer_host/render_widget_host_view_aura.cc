@@ -157,10 +157,9 @@ void RenderWidgetHostViewAura::SetIsLoading(bool is_loading) {
   UpdateCursorIfOverSelf();
 }
 
-void RenderWidgetHostViewAura::ImeUpdateTextInputState(
+void RenderWidgetHostViewAura::TextInputStateChanged(
     ui::TextInputType type,
-    bool can_compose_inline,
-    const gfx::Rect& caret_rect) {
+    bool can_compose_inline) {
   NOTIMPLEMENTED();
 }
 
