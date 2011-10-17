@@ -4438,6 +4438,7 @@
                   'app/nibs/SpeechInputBubble.xib',
                   'app/nibs/TaskManager.xib',
                   'app/nibs/Toolbar.xib',
+                  'app/nibs/WrenchMenu.xib',
                 ],
               },
               'action_name': 'Process xibs for localization',

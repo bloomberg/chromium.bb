@@ -22,10 +22,8 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
-#import "chrome/browser/ui/cocoa/accelerators_cocoa.h"
 #import "chrome/browser/ui/cocoa/background_gradient_view.h"
 #include "chrome/browser/ui/cocoa/drag_util.h"
-#import "chrome/browser/ui/cocoa/encoding_menu_controller_delegate_mac.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_action_button.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_container_view.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_controller.h"
@@ -59,8 +57,6 @@
 #include "grit/theme_resources_standard.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
-#include "ui/base/models/accelerator_cocoa.h"
-#include "ui/base/models/menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/rect.h"
@@ -99,26 +95,6 @@ const CGFloat kWrenchMenuLeftPadding = 3.0;
 @end
 
 namespace ToolbarControllerInternal {
-
-// A C++ delegate that handles the accelerators in the wrench menu.
-class WrenchAcceleratorDelegate : public ui::AcceleratorProvider {
- public:
-  virtual bool GetAcceleratorForCommandId(int command_id,
-      ui::Accelerator* accelerator_generic) {
-    // Downcast so that when the copy constructor is invoked below, the key
-    // string gets copied, too.
-    ui::AcceleratorCocoa* out_accelerator =
-        static_cast<ui::AcceleratorCocoa*>(accelerator_generic);
-    AcceleratorsCocoa* keymap = AcceleratorsCocoa::GetInstance();
-    const ui::AcceleratorCocoa* accelerator =
-        keymap->GetAcceleratorForCommand(command_id);
-    if (accelerator) {
-      *out_accelerator = *accelerator;
-      return true;
-    }
-    return false;
-  }
-};
 
 // A class registered for C++ notifications. This is used to detect changes in
 // preferences and upgrade available notifications. Bridges the notification
@@ -551,14 +527,11 @@ class NotificationBridge : public NotificationObserver {
 // Install the menu wrench buttons. Calling this repeatedly is inexpensive so it
 // can be done every time the buttons are shown.
 - (void)installWrenchMenu {
-  if (wrenchMenuModel_.get())
+  if (wrenchMenuController_.get())
     return;
-  acceleratorDelegate_.reset(
-      new ToolbarControllerInternal::WrenchAcceleratorDelegate());
 
-  wrenchMenuModel_.reset(new WrenchMenuModel(
-      acceleratorDelegate_.get(), browser_));
-  [wrenchMenuController_ setModel:wrenchMenuModel_.get()];
+  wrenchMenuController_.reset(
+      [[WrenchMenuController alloc] initWithBrowser:browser_]);
   [wrenchMenuController_ setUseWithPopUpButtonCell:YES];
   [wrenchButton_ setAttachedMenu:[wrenchMenuController_ menu]];
 }

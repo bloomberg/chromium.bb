@@ -13,11 +13,14 @@
 #import "chrome/browser/ui/cocoa/menu_controller.h"
 
 class BookmarkMenuBridge;
+class Browser;
 @class MenuTrackedRootView;
 @class ToolbarController;
+@class WrenchMenuButtonViewController;
 class WrenchMenuModel;
 
 namespace WrenchMenuControllerInternal {
+class AcceleratorDelegate;
 class ZoomLevelObserver;
 }  // namespace WrenchMenuControllerInternal
 
@@ -27,26 +30,33 @@ class ZoomLevelObserver;
 // subclass the generic MenuController implementation and special-case the two
 // items that require specific layout and load them from the NIB.
 //
-// This object is instantiated in Toolbar.xib and is configured by the
-// ToolbarController.
+// This object is owned by the ToolbarController and receives its NIB-based
+// views using the shim view controller below.
 @interface WrenchMenuController : MenuController<NSMenuDelegate> {
-  IBOutlet MenuTrackedRootView* editItem_;
-  IBOutlet NSButton* editCut_;
-  IBOutlet NSButton* editCopy_;
-  IBOutlet NSButton* editPaste_;
+ @private
+  // Used to provide accelerators for the menu.
+  scoped_ptr<WrenchMenuControllerInternal::AcceleratorDelegate>
+      acceleratorDelegate_;
 
-  IBOutlet MenuTrackedRootView* zoomItem_;
-  IBOutlet NSButton* zoomPlus_;
-  IBOutlet NSButton* zoomDisplay_;
-  IBOutlet NSButton* zoomMinus_;
-  IBOutlet NSButton* zoomFullScreen_;
+  // The model, rebuilt each time the |-menuNeedsUpdate:|.
+  scoped_ptr<WrenchMenuModel> wrenchMenuModel_;
 
+  // A shim NSViewController that loads the buttons from the NIB because ObjC
+  // doesn't have multiple inheritance as this class is a MenuController.
+  scoped_nsobject<WrenchMenuButtonViewController> buttonViewController_;
+
+  // The browser for which this controller exists.
+  Browser* browser_;  // weak
+
+  // Used to build the bookmark submenu.
   scoped_ptr<BookmarkMenuBridge> bookmarkMenuBridge_;
+
+  // Observer for page zoom level change notifications.
   scoped_ptr<WrenchMenuControllerInternal::ZoomLevelObserver> observer_;
 }
 
-// Designated initializer; called within the NIB.
-- (id)init;
+// Designated initializer.
+- (id)initWithBrowser:(Browser*)browser;
 
 // Used to dispatch commands from the Wrench menu. The custom items within the
 // menu cannot be hooked up directly to First Responder because the window in
@@ -60,5 +70,37 @@ class ZoomLevelObserver;
 @end
 
 ////////////////////////////////////////////////////////////////////////////////
+
+// Shim view controller that merely unpacks objects from a NIB.
+@interface WrenchMenuButtonViewController : NSViewController {
+ @private
+  WrenchMenuController* controller_;
+
+  MenuTrackedRootView* editItem_;
+  NSButton* editCut_;
+  NSButton* editCopy_;
+  NSButton* editPaste_;
+
+  MenuTrackedRootView* zoomItem_;
+  NSButton* zoomPlus_;
+  NSButton* zoomDisplay_;
+  NSButton* zoomMinus_;
+  NSButton* zoomFullScreen_;
+}
+
+@property(assign, nonatomic) IBOutlet MenuTrackedRootView* editItem;
+@property(assign, nonatomic) IBOutlet NSButton* editCut;
+@property(assign, nonatomic) IBOutlet NSButton* editCopy;
+@property(assign, nonatomic) IBOutlet NSButton* editPaste;
+@property(assign, nonatomic) IBOutlet MenuTrackedRootView* zoomItem;
+@property(assign, nonatomic) IBOutlet NSButton* zoomPlus;
+@property(assign, nonatomic) IBOutlet NSButton* zoomDisplay;
+@property(assign, nonatomic) IBOutlet NSButton* zoomMinus;
+@property(assign, nonatomic) IBOutlet NSButton* zoomFullScreen;
+
+- (id)initWithController:(WrenchMenuController*)controller;
+- (IBAction)dispatchWrenchMenuCommand:(id)sender;
+
+@end
 
 #endif  // CHROME_BROWSER_UI_COCOA_WRENCH_MENU_WRENCH_MENU_CONTROLLER_H_

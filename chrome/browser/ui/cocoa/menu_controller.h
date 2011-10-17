@@ -69,6 +69,7 @@ class MenuModel;
               atIndex:(NSInteger)index
             fromModel:(ui::MenuModel*)model
            modelIndex:(int)modelIndex;
+- (NSMenu*)menuFromModel:(ui::MenuModel*)model;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_MENU_CONTROLLER_H_

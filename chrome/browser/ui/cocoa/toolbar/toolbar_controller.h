@@ -27,16 +27,16 @@ class LocationBar;
 class LocationBarViewMac;
 @class MenuButton;
 @class ToolbarButton;
-namespace ToolbarControllerInternal {
-class NotificationBridge;
-class WrenchAcceleratorDelegate;
-}  // namespace ToolbarControllerInternal
 class Profile;
 @class ReloadButton;
 class TabContents;
 class ToolbarModel;
 @class WrenchMenuController;
 class WrenchMenuModel;
+
+namespace ToolbarControllerInternal {
+class NotificationBridge;
+}
 
 // A controller for the toolbar in the browser window. Manages
 // updating the state for location bar and back/fwd/reload/go buttons.
@@ -56,7 +56,6 @@ class WrenchMenuModel;
   IBOutlet MenuButton* wrenchButton_;
   IBOutlet AutocompleteTextField* locationBar_;
   IBOutlet BrowserActionsContainerView* browserActionsContainerView_;
-  IBOutlet WrenchMenuController* wrenchMenuController_;
 
  @private
   ToolbarModel* toolbarModel_;  // weak, one per window
@@ -71,12 +70,8 @@ class WrenchMenuModel;
   scoped_nsobject<BackForwardMenuController> forwardMenuController_;
   scoped_nsobject<BrowserActionsController> browserActionsController_;
 
-  // Lazily-instantiated model and delegate for the menu on the
-  // wrench button.  Once visible, it will be non-null, but will not
-  // reaped when the menu is hidden once it is initially shown.
-  scoped_ptr<ToolbarControllerInternal::WrenchAcceleratorDelegate>
-      acceleratorDelegate_;
-  scoped_ptr<WrenchMenuModel> wrenchMenuModel_;
+  // Lazily-instantiated menu controller.
+  scoped_nsobject<WrenchMenuController> wrenchMenuController_;
 
   // Used for monitoring the optional toolbar button prefs.
   scoped_ptr<ToolbarControllerInternal::NotificationBridge> notificationBridge_;

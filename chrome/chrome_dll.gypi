@@ -270,6 +270,7 @@
                 'app/nibs/TabView.xib',
                 'app/nibs/TaskManager.xib',
                 'app/nibs/Toolbar.xib',
+                'app/nibs/WrenchMenu.xib',
                 'app/theme/balloon_wrench.pdf',
                 'app/theme/chevron.pdf',
                 'app/theme/find_next_Template.pdf',

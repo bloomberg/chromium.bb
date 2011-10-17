@@ -4,12 +4,17 @@
 
 #import "chrome/browser/ui/cocoa/wrench_menu/wrench_menu_controller.h"
 
+#include "base/basictypes.h"
+#include "base/mac/mac_util.h"
+#include "base/string16.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#import "chrome/browser/ui/cocoa/accelerators_cocoa.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_bridge.h"
+#import "chrome/browser/ui/cocoa/encoding_menu_controller_delegate_mac.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #import "chrome/browser/ui/cocoa/wrench_menu/menu_tracked_root_view.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
@@ -22,15 +27,38 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/accelerator_cocoa.h"
 #include "ui/base/models/menu_model.h"
 
 @interface WrenchMenuController (Private)
+- (void)createModel;
 - (void)adjustPositioning;
 - (void)performCommandDispatch:(NSNumber*)tag;
 - (NSButton*)zoomDisplay;
+- (void)removeAllItems:(NSMenu*)menu;
 @end
 
 namespace WrenchMenuControllerInternal {
+
+// A C++ delegate that handles the accelerators in the wrench menu.
+class AcceleratorDelegate : public ui::AcceleratorProvider {
+ public:
+  virtual bool GetAcceleratorForCommandId(int command_id,
+      ui::Accelerator* accelerator_generic) {
+    // Downcast so that when the copy constructor is invoked below, the key
+    // string gets copied, too.
+    ui::AcceleratorCocoa* out_accelerator =
+        static_cast<ui::AcceleratorCocoa*>(accelerator_generic);
+    AcceleratorsCocoa* keymap = AcceleratorsCocoa::GetInstance();
+    const ui::AcceleratorCocoa* accelerator =
+        keymap->GetAcceleratorForCommand(command_id);
+    if (accelerator) {
+      *out_accelerator = *accelerator;
+      return true;
+    }
+    return false;
+  }
+};
 
 class ZoomLevelObserver : public NotificationObserver {
  public:
@@ -65,9 +93,13 @@ class ZoomLevelObserver : public NotificationObserver {
 
 @implementation WrenchMenuController
 
-- (id)init {
+- (id)initWithBrowser:(Browser*)browser {
   if ((self = [super init])) {
+    browser_ = browser;
     observer_.reset(new WrenchMenuControllerInternal::ZoomLevelObserver(self));
+    acceleratorDelegate_.reset(
+        new WrenchMenuControllerInternal::AcceleratorDelegate());
+    [self createModel];
   }
   return self;
 }
@@ -92,16 +124,19 @@ class ZoomLevelObserver : public NotificationObserver {
       [[NSMenuItem alloc] initWithTitle:@""
                                  action:nil
                           keyEquivalent:@""]);
+  MenuTrackedRootView* view;
   switch (command_id) {
     case IDC_EDIT_MENU:
-      DCHECK(editItem_);
-      [customItem setView:editItem_];
-      [editItem_ setMenuItem:customItem];
+      view = [buttonViewController_ editItem];
+      DCHECK(view);
+      [customItem setView:view];
+      [view setMenuItem:customItem];
       break;
     case IDC_ZOOM_MENU:
-      DCHECK(zoomItem_);
-      [customItem setView:zoomItem_];
-      [zoomItem_ setMenuItem:customItem];
+      view = [buttonViewController_ zoomItem];
+      DCHECK(view);
+      [customItem setView:view];
+      [view setMenuItem:customItem];
       break;
     default:
       NOTREACHED();
@@ -136,15 +171,31 @@ class ZoomLevelObserver : public NotificationObserver {
 
   NSString* title = base::SysUTF16ToNSString(
       [self wrenchMenuModel]->GetLabelForCommandId(IDC_ZOOM_PERCENT_DISPLAY));
-  [[zoomItem_ viewWithTag:IDC_ZOOM_PERCENT_DISPLAY] setTitle:title];
+  [[[buttonViewController_ zoomItem] viewWithTag:IDC_ZOOM_PERCENT_DISPLAY]
+      setTitle:title];
   UserMetrics::RecordAction(UserMetricsAction("ShowAppMenu"));
 
   NSImage* icon = [self wrenchMenuModel]->browser()->window()->IsFullscreen() ?
       [NSImage imageNamed:NSImageNameExitFullScreenTemplate] :
           [NSImage imageNamed:NSImageNameEnterFullScreenTemplate];
-  [zoomFullScreen_ setImage:icon];
+  [[buttonViewController_ zoomFullScreen] setImage:icon];
 
   [self updateBookmarkSubMenu];
+}
+
+- (void)menuNeedsUpdate:(NSMenu*)menu {
+  // First empty out the menu and create a new model.
+  [self removeAllItems:menu];
+  [self createModel];
+
+  // Create a new menu, which cannot be swapped because the tracking is about to
+  // start, so simply copy the items.
+  NSMenu* newMenu = [self menuFromModel:model_];
+  NSArray* itemArray = [newMenu itemArray];
+  [self removeAllItems:newMenu];
+  for (NSMenuItem* item in itemArray) {
+    [menu addItem:item];
+  }
 }
 
 // Used to dispatch commands from the Wrench menu. The custom items within the
@@ -153,7 +204,8 @@ class ZoomLevelObserver : public NotificationObserver {
 // NSCarbonMenuWindow; this screws up the typical |-commandDispatch:| system.
 - (IBAction)dispatchWrenchMenuCommand:(id)sender {
   NSInteger tag = [sender tag];
-  if (sender == zoomPlus_ || sender == zoomMinus_) {
+  if (sender == [buttonViewController_ zoomPlus] ||
+      sender == [buttonViewController_ zoomMinus]) {
     // Do a direct dispatch rather than scheduling on the outermost run loop,
     // which would not get hit until after the menu had closed.
     [self performCommandDispatch:[NSNumber numberWithInt:tag]];
@@ -183,7 +235,18 @@ class ZoomLevelObserver : public NotificationObserver {
 }
 
 - (WrenchMenuModel*)wrenchMenuModel {
+  // Don't use |wrenchMenuModel_| so that a test can override the generic one.
   return static_cast<WrenchMenuModel*>(model_);
+}
+
+- (void)createModel {
+  wrenchMenuModel_.reset(
+      new WrenchMenuModel(acceleratorDelegate_.get(), browser_));
+  [self setModel:wrenchMenuModel_.get()];
+
+  buttonViewController_.reset(
+      [[WrenchMenuButtonViewController alloc] initWithController:self]);
+  [buttonViewController_ view];
 }
 
 // Fit the localized strings into the Cut/Copy/Paste control, then resize the
@@ -195,9 +258,12 @@ class ZoomLevelObserver : public NotificationObserver {
   // Go through the three buttons from right-to-left, adjusting the size to fit
   // the localized strings while keeping them all aligned on their horizontal
   // edges.
-  const size_t kAdjustViewCount = 3;
-  NSButton* views[kAdjustViewCount] = { editPaste_, editCopy_, editCut_ };
-  for (size_t i = 0; i < kAdjustViewCount; ++i) {
+  NSButton* views[] = {
+      [buttonViewController_ editPaste],
+      [buttonViewController_ editCopy],
+      [buttonViewController_ editCut]
+  };
+  for (size_t i = 0; i < arraysize(views); ++i) {
     NSButton* button = views[i];
     CGFloat originalWidth = NSWidth([button frame]);
 
@@ -217,20 +283,55 @@ class ZoomLevelObserver : public NotificationObserver {
 
   // Resize the menu item by the total amound the buttons changed so that the
   // spacing between the buttons and the title remains the same.
-  NSRect itemFrame = [editItem_ frame];
+  NSRect itemFrame = [[buttonViewController_ editItem] frame];
   itemFrame.size.width += delta;
-  [editItem_ setFrame:itemFrame];
+  [[buttonViewController_ editItem] setFrame:itemFrame];
 
   // Also resize the superview of the buttons, which is an NSView used to slide
   // when the item title is too big and GTM resizes it.
-  NSRect parentFrame = [[editCut_ superview] frame];
+  NSRect parentFrame = [[[buttonViewController_ editCut] superview] frame];
   parentFrame.size.width += delta;
   parentFrame.origin.x -= delta;
-  [[editCut_ superview] setFrame:parentFrame];
+  [[[buttonViewController_ editCut] superview] setFrame:parentFrame];
 }
 
 - (NSButton*)zoomDisplay {
-  return zoomDisplay_;
+  return [buttonViewController_ zoomDisplay];
+}
+
+// -[NSMenu removeAllItems] is only available on 10.6+.
+- (void)removeAllItems:(NSMenu*)menu {
+  while ([menu numberOfItems]) {
+    [menu removeItemAtIndex:0];
+  }
 }
 
 @end  // @implementation WrenchMenuController
+
+////////////////////////////////////////////////////////////////////////////////
+
+@implementation WrenchMenuButtonViewController
+
+@synthesize editItem = editItem_;
+@synthesize editCut = editCut_;
+@synthesize editCopy = editCopy_;
+@synthesize editPaste = editPaste_;
+@synthesize zoomItem = zoomItem_;
+@synthesize zoomPlus = zoomPlus_;
+@synthesize zoomDisplay = zoomDisplay_;
+@synthesize zoomMinus = zoomMinus_;
+@synthesize zoomFullScreen = zoomFullScreen_;
+
+- (id)initWithController:(WrenchMenuController*)controller {
+  if ((self = [super initWithNibName:@"WrenchMenu"
+                              bundle:base::mac::MainAppBundle()])) {
+    controller_ = controller;
+  }
+  return self;
+}
+
+- (IBAction)dispatchWrenchMenuCommand:(id)sender {
+  [controller_ dispatchWrenchMenuCommand:sender];
+}
+
+@end  // @implementation WrenchMenuButtonViewController

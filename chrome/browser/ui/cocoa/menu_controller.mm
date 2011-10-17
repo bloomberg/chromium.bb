@@ -13,7 +13,6 @@
 #include "ui/base/models/simple_menu_model.h"
 
 @interface MenuController (Private)
-- (NSMenu*)menuFromModel:(ui::MenuModel*)model;
 - (void)addSeparatorToMenu:(NSMenu*)menu
                    atIndex:(int)index;
 @end
@@ -69,8 +68,10 @@
     if (model->GetTypeAt(modelIndex) == ui::MenuModel::TYPE_SEPARATOR) {
       [self addSeparatorToMenu:menu atIndex:index];
     } else {
-      [self addItemToMenu:menu atIndex:index fromModel:model
-          modelIndex:modelIndex];
+      [self addItemToMenu:menu
+                  atIndex:index
+                fromModel:model
+               modelIndex:modelIndex];
     }
   }
 

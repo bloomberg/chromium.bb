@@ -37,25 +37,15 @@ class WrenchMenuControllerTest : public CocoaProfileTest {
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(browser());
 
-    resize_delegate_.reset([[ViewResizerPong alloc] init]);
-    toolbar_controller_.reset(
-        [[ToolbarController alloc] initWithModel:browser()->toolbar_model()
-                                        commands:browser()->command_updater()
-                                         profile:profile()
-                                         browser:browser()
-                                  resizeDelegate:resize_delegate_.get()]);
-    EXPECT_TRUE([toolbar_controller_ view]);
-    NSView* parent = [test_window() contentView];
-    [parent addSubview:[toolbar_controller_ view]];
+    controller_.reset([[WrenchMenuController alloc] initWithBrowser:browser()]);
   }
 
   WrenchMenuController* controller() {
-    return [toolbar_controller_ wrenchMenuController];
+    return controller_.get();
   }
 
-  scoped_nsobject<ViewResizerPong> resize_delegate_;
   MockWrenchMenuModel fake_model_;
-  scoped_nsobject<ToolbarController> toolbar_controller_;
+  scoped_nsobject<WrenchMenuController> controller_;
 };
 
 TEST_F(WrenchMenuControllerTest, Initialized) {
