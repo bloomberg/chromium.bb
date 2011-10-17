@@ -759,7 +759,8 @@ class DepGraphGenerator(object):
         for dep, mycycles in cycles.iteritems():
           for basedep, mycycle in mycycles.iteritems():
             if deps_info[basedep]["idx"] >= deps_info[dep]["idx"]:
-              PrintCycleBreak(basedep, dep, mycycle)
+              if "--quiet" not in emerge.opts:
+                PrintCycleBreak(basedep, dep, mycycle)
               del deps_map[dep]["needs"][basedep]
               deps_map[basedep]["provides"].remove(dep)
         cycles = FindCycles()

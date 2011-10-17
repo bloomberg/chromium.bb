@@ -5,7 +5,6 @@
 
 """Perform various tasks related to updating Portage packages."""
 
-import cStringIO
 import filecmp
 import logging
 import optparse
@@ -1116,22 +1115,12 @@ class Upgrader(object):
     emerge_args = [info['package'] for info in target_infolist]
     argv = self._GenParallelEmergeArgv(emerge_args)
 
-    # Except in verbose mode, turn off stdout/stderr while parallel_emerge
-    # finds dependencies, which can be very noisy.
-    out_and_err = (sys.stdout, sys.stderr)
-    if not self._verbose:
-      (sys.stdout, sys.stderr) = (cStringIO.StringIO(), cStringIO.StringIO())
-
     deps = parallel_emerge.DepGraphGenerator()
     deps.Initialize(argv)
 
     deps_tree, deps_info = deps.GenDependencyTree()
     self._SetPortTree(deps.emerge.settings, deps.emerge.trees)
     self._deps_graph = deps.GenDependencyGraph(deps_tree, deps_info)
-
-    if not self._verbose:
-      # Re-enable stdout/stderr.
-      (sys.stdout, sys.stderr) = out_and_err
 
     cpvlist = Upgrader._GetPreOrderDepGraph(self._deps_graph)
     cpvlist.reverse()
