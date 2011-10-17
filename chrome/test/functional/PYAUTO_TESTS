@@ -411,6 +411,8 @@
       # Netflix tests
       '-netflix.NetflixTest.testPlayerLoadsAndPlays',
       '-netflix.NetflixTest.testPlaying',
+      # Youtube perf test
+      '-perf.YoutubePerfTest.testYoutubeDroppedFrames',
     ],
   },
 

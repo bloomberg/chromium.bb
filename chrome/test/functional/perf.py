@@ -26,10 +26,12 @@ import logging
 import math
 import os
 import posixpath
+import re
 import SimpleHTTPServer
 import SocketServer
 import tempfile
 import threading
+import time
 import timeit
 import urllib
 import urllib2
@@ -39,6 +41,8 @@ import pyauto_functional  # Must be imported before pyauto.
 import pyauto
 import pyauto_utils
 import test_utils
+
+from youtube import YoutubeTestHelper
 
 
 class BasePerfTest(pyauto.PyUITest):
@@ -327,6 +331,39 @@ class LiveWebappLoadTest(BasePerfTest):
 
     self._LoginToGoogleAccount()
     self._RunNewTabTest('NewTabDocs', _RunSingleDocsTabOpen)
+
+
+class YoutubePerfTest(BasePerfTest, YoutubeTestHelper):
+  """Test Youtube video performance."""
+
+  def __init__(self, methodName='runTest', **kwargs):
+    pyauto.PyUITest.__init__(self, methodName, **kwargs)
+    YoutubeTestHelper.__init__(self, self)
+
+  def testYoutubeDroppedFrames(self):
+    """Measures the Youtube video dropped frames. Runs for 60 secs."""
+    self.PlayVideoAndAssert()
+    self.ExecuteJavascript("""
+        ytplayer.setPlaybackQuality('hd720');
+        window.domAutomationController.send('');
+    """)
+    total_dropped_frames = 0
+    dropped_fps = []
+    youtube_apis = self.GetPrivateInfo()['youtube_api']
+    youtube_debug_text = youtube_apis['GetDebugText']
+    for _ in xrange(60):
+      video_data = self.ExecuteJavascript(
+          'window.domAutomationController.send(%s);' % youtube_debug_text)
+      # Video data returns total dropped frames so far, so calculating
+      # the dropped frames for the last second.
+      matched = re.search('droppedFrames=([\d\.]+)', video_data)
+      if matched:
+        frames = int(matched.group(1))
+      current_dropped_frames = frames - total_dropped_frames 
+      dropped_fps.append(current_dropped_frames)
+      total_dropped_frames = frames
+      time.sleep(1)
+    self._PrintSummaryResults('YoutubeDroppedFrames', dropped_fps, 'frames')
 
 
 class FileUploadDownloadTest(BasePerfTest):
