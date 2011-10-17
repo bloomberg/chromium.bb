@@ -2,13 +2,13 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.10">
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
-		<string key="IBDocument.SystemVersion">10K549</string>
-		<string key="IBDocument.InterfaceBuilderVersion">823</string>
-		<string key="IBDocument.AppKitVersion">1038.36</string>
-		<string key="IBDocument.HIToolboxVersion">461.00</string>
+		<string key="IBDocument.SystemVersion">10J567</string>
+		<string key="IBDocument.InterfaceBuilderVersion">851</string>
+		<string key="IBDocument.AppKitVersion">1038.35</string>
+		<string key="IBDocument.HIToolboxVersion">462.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin</string>
-			<string key="NS.object.0">823</string>
+			<string key="NS.object.0">851</string>
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -71,13 +71,13 @@
 										<object class="NSButton" id="436635720">
 											<reference key="NSNextResponder" ref="1031271207"/>
 											<int key="NSvFlags">268</int>
-											<string key="NSFrame">{{102, 1}, {125, 32}}</string>
+											<string key="NSFrame">{{27, 1}, {125, 32}}</string>
 											<reference key="NSSuperview" ref="1031271207"/>
 											<bool key="NSEnabled">YES</bool>
 											<object class="NSButtonCell" key="NSCell" id="39119561">
 												<int key="NSCellFlags">67239424</int>
 												<int key="NSCellFlags2">134217728</int>
-												<string key="NSContents">^IDS_FULLSCREEN_INFOBAR_DENY</string>
+												<string key="NSContents">^IDS_FULLSCREEN_EXIT_FULLSCREEN</string>
 												<object class="NSFont" key="NSSupport" id="199487396">
 													<string key="NSName">LucidaGrande</string>
 													<double key="NSSize">13</double>
@@ -95,13 +95,13 @@
 										<object class="NSButton" id="292228158">
 											<reference key="NSNextResponder" ref="1031271207"/>
 											<int key="NSvFlags">268</int>
-											<string key="NSFrame">{{27, 1}, {75, 32}}</string>
+											<string key="NSFrame">{{152, 1}, {75, 32}}</string>
 											<reference key="NSSuperview" ref="1031271207"/>
 											<bool key="NSEnabled">YES</bool>
 											<object class="NSButtonCell" key="NSCell" id="1040089538">
 												<int key="NSCellFlags">67239424</int>
 												<int key="NSCellFlags2">134217728</int>
-												<string key="NSContents">^IDS_FULLSCREEN_INFOBAR_ALLOW</string>
+												<string key="NSContents">^IDS_FULLSCREEN_ALLOW</string>
 												<reference key="NSSupport" ref="199487396"/>
 												<reference key="NSControlView" ref="292228158"/>
 												<int key="NSButtonFlags">-2033303297</int>
@@ -497,10 +497,10 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{1130, 1457}, {499, 39}}</string>
+					<string>{{802, 1395}, {499, 39}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<boolean value="YES"/>
-					<string>{{1130, 1457}, {499, 39}}</string>
+					<string>{{802, 1395}, {499, 39}}</string>
 					<boolean value="NO"/>
 					<string>{196, 240}</string>
 					<string>{{357, 418}, {480, 270}}</string>
@@ -522,7 +522,7 @@
 					<object class="NSAffineTransform"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<object class="NSAffineTransform">
-						<bytes key="NSTransformStruct">P4AAAL+AAABCFAAAwfgAAA</bytes>
+						<bytes key="NSTransformStruct">P4AAAL+AAABB2AAAwfgAAA</bytes>
 					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<object class="NSAffineTransform">
