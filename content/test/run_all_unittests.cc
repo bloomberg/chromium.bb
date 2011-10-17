@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 #include "content/test/content_test_suite.h"
+#include "content/test/unittest_test_suite.h"
 
 int main(int argc, char** argv) {
-  return ContentTestSuite(argc, argv).Run();
+  return UnitTestTestSuite(new ContentTestSuite(argc, argv)).Run();
 }

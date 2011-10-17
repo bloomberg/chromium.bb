@@ -1905,8 +1905,6 @@
         'test/base/v8_unit_test.h',
         'test/data/resource.rc',
         'tools/convert_dict/convert_dict_unittest.cc',
-        '../content/browser/in_process_webkit/dom_storage_unittest.cc',
-        '../content/browser/in_process_webkit/indexed_db_quota_client_unittest.cc',
         '../content/browser/renderer_host/render_widget_host_unittest.cc',
         '../content/browser/renderer_host/text_input_client_mac_unittest.mm',
         '../content/browser/tab_contents/navigation_controller_unittest.cc',

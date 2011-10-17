@@ -9,10 +9,11 @@
 #include "base/memory/scoped_callback_factory.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
-#include "chrome/test/base/testing_profile.h"
+#include "base/scoped_temp_dir.h"
 #include "content/browser/in_process_webkit/indexed_db_context.h"
 #include "content/browser/in_process_webkit/indexed_db_quota_client.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
+#include "content/test/test_browser_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/database/database_util.h"
 
@@ -38,8 +39,8 @@ class IndexedDBQuotaClientTest : public testing::Test {
         message_loop_(MessageLoop::TYPE_IO),
         webkit_thread_(BrowserThread::WEBKIT, &message_loop_),
         io_thread_(BrowserThread::IO, &message_loop_) {
-    TestingProfile profile;
-    idb_context_ = profile.GetWebKitContext()->indexed_db_context();
+    TestBrowserContext browser_context;
+    idb_context_ = browser_context.GetWebKitContext()->indexed_db_context();
     setup_temp_dir();
   }
   void setup_temp_dir() {

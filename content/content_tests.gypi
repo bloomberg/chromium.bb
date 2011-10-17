@@ -82,6 +82,8 @@
         'test/test_tab_contents_view.h',
         'test/test_url_fetcher_factory.cc',
         'test/test_url_fetcher_factory.h',
+        'test/unittest_test_suite.cc',
+        'test/unittest_test_suite.h',
 
         # TODO(phajdan.jr): Those files should be moved to webkit
         # test support target.
@@ -145,6 +147,8 @@
         'browser/geolocation/win7_location_api_unittest_win.cc',
         'browser/geolocation/win7_location_provider_unittest_win.cc',
         'browser/gpu/gpu_blacklist_unittest.cc',
+        'browser/in_process_webkit/dom_storage_unittest.cc',
+        'browser/in_process_webkit/indexed_db_quota_client_unittest.cc',
         'browser/in_process_webkit/webkit_context_unittest.cc',
         'browser/in_process_webkit/webkit_thread_unittest.cc',
         'browser/mac/closure_blocks_leopard_compat_unittest.cc',
