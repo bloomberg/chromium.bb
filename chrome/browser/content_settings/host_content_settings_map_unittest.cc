@@ -803,7 +803,7 @@ TEST_F(HostContentSettingsMapTest, ResourceIdentifier) {
   std::string resource1("someplugin");
   std::string resource2("otherplugin");
 
-  // If resource content settings are enabled GetContentSettings should return
+  // If resource content settings are enabled, GetContentSettings should return
   // the default values for all plugins
   ContentSetting default_plugin_setting =
       host_content_settings_map->GetDefaultContentSetting(
@@ -813,7 +813,9 @@ TEST_F(HostContentSettingsMapTest, ResourceIdentifier) {
   EXPECT_EQ(default_plugin_setting,
             settings.settings[CONTENT_SETTINGS_TYPE_PLUGINS]);
 
-  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+  // If no resource-specific content settings are defined, the setting should be
+  // DEFAULT.
+  EXPECT_EQ(CONTENT_SETTING_DEFAULT,
             host_content_settings_map->GetContentSetting(
                 host, host, CONTENT_SETTINGS_TYPE_PLUGINS, resource1));
 
@@ -826,7 +828,7 @@ TEST_F(HostContentSettingsMapTest, ResourceIdentifier) {
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             host_content_settings_map->GetContentSetting(
                 host, host, CONTENT_SETTINGS_TYPE_PLUGINS, resource1));
-  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+  EXPECT_EQ(CONTENT_SETTING_DEFAULT,
             host_content_settings_map->GetContentSetting(
                 host, host, CONTENT_SETTINGS_TYPE_PLUGINS, resource2));
 }

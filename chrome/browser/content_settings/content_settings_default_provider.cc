@@ -189,8 +189,12 @@ RuleIterator* DefaultProvider::GetRuleIterator(
     const ResourceIdentifier& resource_identifier,
     bool incognito) const {
   base::AutoLock lock(lock_);
-  return new DefaultRuleIterator(
-      default_content_settings_.settings[content_type]);
+  if (resource_identifier.empty()) {
+    return new DefaultRuleIterator(
+        default_content_settings_.settings[content_type]);
+  } else {
+    return new EmptyRuleIterator();
+  }
 }
 
 void DefaultProvider::ClearAllContentSettingsRules(
