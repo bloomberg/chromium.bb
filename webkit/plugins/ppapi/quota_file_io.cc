@@ -201,6 +201,7 @@ class QuotaFileIO::SetLengthOperation : public PendingOperationBase {
     quota_io_->DidSetLength(status, length_);
     DCHECK_EQ(false, callback_.is_null());
     callback_.Run(status);
+    delete this;
   }
 
   int64_t length_;
