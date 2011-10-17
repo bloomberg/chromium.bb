@@ -232,8 +232,10 @@ bool InstantController::IsCurrent() {
 
 bool InstantController::PrepareForCommit() {
   // If we are not in the HIDDEN field trial, return the status of the preview.
-  if (!InstantFieldTrial::IsHiddenExperiment(tab_contents_->profile()))
+  if (!tab_contents_ ||
+      !InstantFieldTrial::IsHiddenExperiment(tab_contents_->profile())) {
     return IsCurrent();
+  }
 
   TemplateURLService* model = TemplateURLServiceFactory::GetForProfile(
       tab_contents_->profile());
