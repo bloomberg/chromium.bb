@@ -38,7 +38,7 @@ SiteInstance::SiteInstance(BrowsingInstance* browsing_instance)
   DCHECK(browsing_instance);
 
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-                 NotificationService::AllSources());
+                 NotificationService::AllBrowserContextsAndSources());
 }
 
 SiteInstance::~SiteInstance() {
