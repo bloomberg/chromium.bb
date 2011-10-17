@@ -4,6 +4,7 @@
 
 #include "chrome/browser/speech/speech_input_bubble_controller.h"
 
+#include "base/bind.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -31,7 +32,7 @@ void SpeechInputBubbleController::CreateBubble(int caller_id,
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this, &SpeechInputBubbleController::CreateBubble,
+        base::Bind(&SpeechInputBubbleController::CreateBubble, this,
                           caller_id, render_process_id, render_view_id,
                           element_rect));
     return;
@@ -48,10 +49,9 @@ void SpeechInputBubbleController::CreateBubble(int caller_id,
     // Simulate the cancel button being clicked to inform the delegate.
     BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
-          NewRunnableMethod(
-              this,
+          base::Bind(
               &SpeechInputBubbleController::InvokeDelegateButtonClicked,
-              caller_id, SpeechInputBubble::BUTTON_CANCEL));
+              this, caller_id, SpeechInputBubble::BUTTON_CANCEL));
     return;
   }
 
@@ -128,10 +128,9 @@ void SpeechInputBubbleController::Observe(int type,
     while (iter != bubbles_.end()) {
       if (iter->second->tab_contents() == tab_contents) {
         BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-            NewRunnableMethod(
-                this,
+            base::Bind(
                 &SpeechInputBubbleController::InvokeDelegateButtonClicked,
-                iter->first, SpeechInputBubble::BUTTON_CANCEL));
+                this, iter->first, SpeechInputBubble::BUTTON_CANCEL));
         CloseBubble(iter->first);
         // We expect to have a very small number of items in this map so
         // redo-ing from start is ok.
@@ -149,8 +148,8 @@ void SpeechInputBubbleController::ProcessRequestInUiThread(
     int caller_id, RequestType type, const string16& text, float volume,
     float noise_volume) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, NewRunnableMethod(
-        this, &SpeechInputBubbleController::ProcessRequestInUiThread,
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
+        &SpeechInputBubbleController::ProcessRequestInUiThread, this,
         caller_id, type, text, volume, noise_volume));
     return;
   }
@@ -208,10 +207,9 @@ void SpeechInputBubbleController::InfoBubbleButtonClicked(
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(
-          this,
+      base::Bind(
           &SpeechInputBubbleController::InvokeDelegateButtonClicked,
-          current_bubble_caller_id_, button));
+          this, current_bubble_caller_id_, button));
 }
 
 void SpeechInputBubbleController::InfoBubbleFocusChanged() {
@@ -223,10 +221,9 @@ void SpeechInputBubbleController::InfoBubbleFocusChanged() {
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(
-          this,
+      base::Bind(
           &SpeechInputBubbleController::InvokeDelegateFocusChanged,
-          old_bubble_caller_id));
+          this, old_bubble_caller_id));
 }
 
 void SpeechInputBubbleController::InvokeDelegateButtonClicked(

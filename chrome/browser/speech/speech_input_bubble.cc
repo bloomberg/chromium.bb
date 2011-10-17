@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
 #include "chrome/browser/speech/speech_input_bubble.h"
@@ -118,7 +119,7 @@ SpeechInputBubble* SpeechInputBubble::Create(TabContents* tab_contents,
 }
 
 SpeechInputBubbleBase::SpeechInputBubbleBase(TabContents* tab_contents)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)),
+    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       display_mode_(DISPLAY_MODE_RECORDING),
       tab_contents_(tab_contents) {
   mic_image_.reset(new SkBitmap());
@@ -141,7 +142,7 @@ SpeechInputBubbleBase::~SpeechInputBubbleBase() {
 }
 
 void SpeechInputBubbleBase::SetWarmUpMode() {
-  task_factory_.RevokeAll();
+  weak_factory_.InvalidateWeakPtrs();
   display_mode_ = DISPLAY_MODE_WARM_UP;
   animation_step_ = 0;
   DoWarmingUpAnimationStep();
@@ -152,8 +153,8 @@ void SpeechInputBubbleBase::DoWarmingUpAnimationStep() {
   SetImage(g_images.Get().warm_up()[animation_step_]);
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      task_factory_.NewRunnableMethod(
-          &SpeechInputBubbleBase::DoWarmingUpAnimationStep),
+      base::Bind(&SpeechInputBubbleBase::DoWarmingUpAnimationStep,
+          weak_factory_.GetWeakPtr()),
       animation_step_ == 0 ? kWarmingUpAnimationStartMs
                            : kWarmingUpAnimationStepMs);
   if (++animation_step_ >= static_cast<int>(g_images.Get().warm_up().size()))
@@ -161,7 +162,7 @@ void SpeechInputBubbleBase::DoWarmingUpAnimationStep() {
 }
 
 void SpeechInputBubbleBase::SetRecordingMode() {
-  task_factory_.RevokeAll();
+  weak_factory_.InvalidateWeakPtrs();
   display_mode_ = DISPLAY_MODE_RECORDING;
   SetInputVolume(0, 0);
   UpdateLayout();
@@ -180,13 +181,13 @@ void SpeechInputBubbleBase::DoRecognizingAnimationStep() {
     animation_step_ = 0;
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      task_factory_.NewRunnableMethod(
-          &SpeechInputBubbleBase::DoRecognizingAnimationStep),
+      base::Bind(&SpeechInputBubbleBase::DoRecognizingAnimationStep,
+          weak_factory_.GetWeakPtr()),
       kRecognizingAnimationStepMs);
 }
 
 void SpeechInputBubbleBase::SetMessage(const string16& text) {
-  task_factory_.RevokeAll();
+  weak_factory_.InvalidateWeakPtrs();
   message_text_ = text;
   display_mode_ = DISPLAY_MODE_MESSAGE;
   UpdateLayout();

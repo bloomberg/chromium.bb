@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/speech/speech_input_bubble_controller.h"
 #include "chrome/browser/ui/browser.h"
@@ -31,7 +32,7 @@ class MockSpeechInputBubble : public SpeechInputBubbleBase {
       : SpeechInputBubbleBase(tab_contents) {
     VLOG(1) << "MockSpeechInputBubble created";
     MessageLoop::current()->PostTask(
-        FROM_HERE, NewRunnableFunction(&InvokeDelegate, delegate));
+        FROM_HERE, base::Bind(&InvokeDelegate, delegate));
   }
 
   static void InvokeDelegate(Delegate* delegate) {
@@ -138,7 +139,7 @@ class SpeechInputBubbleControllerTest
     // events sent by the bubble and those are handled only when the bubble is
     // active.
     MessageLoop::current()->PostTask(FROM_HERE,
-                                     NewRunnableFunction(&ActivateBubble));
+                                     base::Bind(&ActivateBubble));
 
     // The |tab_contents| parameter would be NULL since the dummy caller id
     // passed to CreateBubble would not have matched any active tab. So get a

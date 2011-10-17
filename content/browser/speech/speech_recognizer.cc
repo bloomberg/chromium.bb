@@ -4,6 +4,7 @@
 
 #include "content/browser/speech/speech_recognizer.h"
 
+#include "base/bind.h"
 #include "base/time.h"
 #include "content/browser/browser_thread.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -173,9 +174,8 @@ void SpeechRecognizer::StopRecording() {
 void SpeechRecognizer::OnError(AudioInputController* controller,
                                int error_code) {
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                         NewRunnableMethod(this,
-                                           &SpeechRecognizer::HandleOnError,
-                                           error_code));
+                         base::Bind(&SpeechRecognizer::HandleOnError,
+                                    this, error_code));
 }
 
 void SpeechRecognizer::HandleOnError(int error_code) {
@@ -197,9 +197,8 @@ void SpeechRecognizer::OnData(AudioInputController* controller,
 
   string* str_data = new string(reinterpret_cast<const char*>(data), size);
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                         NewRunnableMethod(this,
-                                           &SpeechRecognizer::HandleOnData,
-                                           str_data));
+                          base::Bind(&SpeechRecognizer::HandleOnData,
+                                     this, str_data));
 }
 
 void SpeechRecognizer::HandleOnData(string* data) {

@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
@@ -37,8 +38,7 @@ class ChromeSpeechInputManager::OptionalRequestInfo
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     // UMA opt-in can be checked only from the UI thread, so switch to that.
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this,
-                          &OptionalRequestInfo::CheckUMAAndGetHardwareInfo));
+        base::Bind(&OptionalRequestInfo::CheckUMAAndGetHardwareInfo, this));
   }
 
   void CheckUMAAndGetHardwareInfo() {
@@ -47,7 +47,7 @@ class ChromeSpeechInputManager::OptionalRequestInfo
         prefs::kMetricsReportingEnabled)) {
       // Access potentially slow OS calls from the FILE thread.
       BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-          NewRunnableMethod(this, &OptionalRequestInfo::GetHardwareInfo));
+          base::Bind(&OptionalRequestInfo::GetHardwareInfo, this));
     }
   }
 

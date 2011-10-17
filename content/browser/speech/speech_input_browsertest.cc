@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/string_number_conversions.h"
@@ -19,12 +20,6 @@
 namespace speech_input {
 class FakeSpeechInputManager;
 }
-
-// This class does not need to be refcounted (typically done by PostTask) since
-// it will outlive the test and gets released only when the test shuts down.
-// Disabling refcounting here saves a bit of unnecessary code and the factory
-// method can return a plain pointer below as required by the real code.
-DISABLE_RUNNABLE_METHOD_REFCOUNT(speech_input::FakeSpeechInputManager);
 
 namespace speech_input {
 
@@ -70,8 +65,14 @@ class FakeSpeechInputManager : public SpeechInputManager {
     grammar_ = grammar;
     if (send_fake_response_) {
       // Give the fake result in a short while.
-      MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(this,
-          &FakeSpeechInputManager::SetFakeRecognitionResult));
+      MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+          &FakeSpeechInputManager::SetFakeRecognitionResult,
+          // This class does not need to be refcounted (typically done by
+          // PostTask) since it will outlive the test and gets released only
+          // when the test shuts down. Disabling refcounting here saves a bit
+          // of unnecessary code and the factory method can return a plain
+          // pointer below as required by the real code.
+          base::Unretained(this)));
     }
   }
   virtual void CancelRecognition(int caller_id) {

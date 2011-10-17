@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/string16.h"
-#include "base/task.h"
 
 namespace gfx {
 class Canvas;
@@ -167,7 +167,7 @@ class SpeechInputBubbleBase : public SpeechInputBubble {
                          float volume);
 
   // Task factory used for animation timer.
-  ScopedRunnableMethodFactory<SpeechInputBubbleBase> task_factory_;
+  base::WeakPtrFactory<SpeechInputBubbleBase> weak_factory_;
   int animation_step_;  // Current index/step of the animation.
   std::vector<SkBitmap> animation_frames_;
   std::vector<SkBitmap> warming_up_frames_;
