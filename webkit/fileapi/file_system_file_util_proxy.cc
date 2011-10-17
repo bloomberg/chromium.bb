@@ -162,7 +162,8 @@ class RelayEnsureFileExists : public MessageLoopRelay {
       const fileapi::FileSystemOperationContext& context,
       scoped_refptr<base::MessageLoopProxy> message_loop_proxy,
       const FilePath& file_path,
-      const fileapi::FileSystemFileUtilProxy::EnsureFileExistsCallback callback)
+      const fileapi::FileSystemFileUtilProxy::EnsureFileExistsCallback&
+          callback)
       : MessageLoopRelay(context),
         message_loop_proxy_(message_loop_proxy),
         file_path_(file_path),
