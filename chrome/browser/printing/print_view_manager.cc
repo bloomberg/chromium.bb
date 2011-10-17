@@ -4,6 +4,7 @@
 
 #include "chrome/browser/printing/print_view_manager.h"
 
+#include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -51,8 +52,7 @@ void ReleasePrinterQuery(int cookie) {
   if (printer_query.get()) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(printer_query.get(),
-                          &printing::PrinterQuery::StopWorker));
+        base::Bind(&printing::PrinterQuery::StopWorker, printer_query.get()));
   }
 }
 
