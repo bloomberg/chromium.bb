@@ -92,13 +92,13 @@ OomPriorityManager::OomPriorityManager()
   : focused_tab_pid_(0) {
   registrar_.Add(this,
       content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
-      NotificationService::AllSources());
+      NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this,
       content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-      NotificationService::AllSources());
+      NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this,
       content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
-      NotificationService::AllSources());
+      NotificationService::AllBrowserContextsAndSources());
 }
 
 OomPriorityManager::~OomPriorityManager() {
