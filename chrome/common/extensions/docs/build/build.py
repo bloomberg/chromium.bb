@@ -124,8 +124,8 @@ def FindDumpRenderTree():
 
   if (sys.platform in ('cygwin', 'win32')):
     home_dir = os.path.normpath(os.getenv("HOMEDRIVE") + os.getenv("HOMEPATH"))
-    search_locations.append(chrome_dir + "/Release/DumpRenderTree.exe")
-    search_locations.append(chrome_dir + "/Debug/DumpRenderTree.exe")
+    search_locations.append(src_dir + "/build/Release/DumpRenderTree.exe")
+    search_locations.append(src_dir + "/build/Debug/DumpRenderTree.exe")
     search_locations.append(home_dir + "/bin/DumpRenderTree/"
                             "DumpRenderTree.exe")
 
