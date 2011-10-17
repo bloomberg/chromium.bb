@@ -9,6 +9,10 @@ Import('env')
 if env.Bit('bitcode'):
   env.PNaClForceNative()
 
+# Newlib + PIC doesn't provide native ___tls_get_addr, so gold complains.
+if env.Bit('bitcode') and env.Bit('nacl_pic'):
+  Return()
+
 # TODO(mseaborn): Extend the ARM validator to support this.
 # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2369
 if env.Bit('build_arm'):
