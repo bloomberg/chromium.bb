@@ -215,7 +215,6 @@ willPositionSheet:(NSWindow*)sheet
       (std::floor((1 - floatingBarShownFraction_) * floatingBarHeight) -
           [presentationModeController_ floatingBarVerticalOffset]) : 0;
   CGFloat maxY = NSMaxY(contentBounds) + yOffset;
-  CGFloat startMaxY = maxY;
 
   CGFloat overlayMaxY =
       NSMaxY([window frame]) +
@@ -224,10 +223,8 @@ willPositionSheet:(NSWindow*)sheet
                                       overlayMaxY:overlayMaxY];
 
   if ([self hasTabStrip]) {
-    // If we need to lay out the top tab strip, replace |maxY| and |startMaxY|
-    // with higher values, and then lay out the tab strip.
-    NSRect windowFrame = [contentView convertRect:[window frame] fromView:nil];
-    startMaxY = maxY = NSHeight(windowFrame) + yOffset;
+    // If we need to lay out the top tab strip, replace |maxY| with a higher
+    // value, and then lay out the tab strip.
     maxY = [self layoutTabStripAtMaxY:maxY
                                 width:width
                            fullscreen:[self isFullscreen]];

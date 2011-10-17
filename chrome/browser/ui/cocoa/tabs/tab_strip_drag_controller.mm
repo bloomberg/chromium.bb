@@ -214,8 +214,6 @@ const NSTimeInterval kTearDuration = 0.333;
 
   // Do not start dragging until the user has "torn" the tab off by
   // moving more than 3 pixels.
-  NSDate* targetDwellDate = nil;  // The date this target was first chosen.
-
   NSPoint thisPoint = [NSEvent mouseLocation];
 
   // Iterate over possible targets checking for the one the mouse is in.
@@ -242,7 +240,6 @@ const NSTimeInterval kTearDuration = 0.333;
   // If we're now targeting a new window, re-layout the tabs in the old
   // target and reset how long we've been hovering over this new one.
   if (targetController_ != newTarget) {
-    targetDwellDate = [NSDate date];
     [targetController_ removePlaceholder];
     targetController_ = newTarget;
     if (!newTarget) {
@@ -354,11 +351,8 @@ const NSTimeInterval kTearDuration = 0.333;
   // opaque. Otherwise, find where the tab might be dropped and insert
   // a placeholder so it appears like it's part of that window.
   if (targetController_) {
-    if (![[targetController_ window] isKeyWindow]) {
-      // && ([targetDwellDate timeIntervalSinceNow] < -REQUIRED_DWELL)) {
+    if (![[targetController_ window] isKeyWindow])
       [[targetController_ window] orderFront:nil];
-      targetDwellDate = nil;
-    }
 
     // Compute where placeholder should go and insert it into the
     // destination tab strip.

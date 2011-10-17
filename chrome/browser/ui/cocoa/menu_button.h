@@ -26,7 +26,6 @@
 @interface MenuButton : ToolbarButton {
  @private
   scoped_nsobject<NSMenu> attachedMenu_;
-  BOOL attachedMenuEnabled_;
   BOOL openMenuOnClick_;
   BOOL openMenuOnRightClick_;
   scoped_nsobject<NSPopUpButtonCell> popUpCell_;

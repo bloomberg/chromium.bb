@@ -14,10 +14,7 @@ class BookmarkNode;
 // bookmark bar.  This cell forwards mouseEntered/mouseExited events
 // to its control view so that pseudo-menu operations
 // (e.g. hover-over to open) can be implemented.
-@interface BookmarkBarFolderButtonCell : BookmarkButtonCell {
- @private
-  scoped_nsobject<NSColor> frameColor_;
-}
+@interface BookmarkBarFolderButtonCell : BookmarkButtonCell
 
 // Create a button cell which draws without a theme and with a frame
 // color provided by the ThemeService defaults.
