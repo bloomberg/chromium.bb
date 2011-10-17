@@ -15,6 +15,10 @@ Import('env')
 if not env.Bit('bitcode'):
   Return()
 
+# The PNaCl coordinator cannot yet handle GLibC-based pexe.
+if env.Bit('nacl_glibc'):
+  Return()
+
 #----------------------------------------------------------------------
 # Get list of translator files
 
