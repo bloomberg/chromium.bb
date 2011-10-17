@@ -99,7 +99,8 @@ RenderWidgetHost::RenderWidgetHost(RenderProcessHost* process,
       text_direction_updated_(false),
       text_direction_(WebKit::WebTextDirectionLeftToRight),
       text_direction_canceled_(false),
-      suppress_next_char_events_(false) {
+      suppress_next_char_events_(false),
+      pending_mouse_lock_request_(false) {
   if (routing_id_ == MSG_ROUTING_NONE)
     routing_id_ = process_->GetNextRoutingID();
 
@@ -380,7 +381,11 @@ void RenderWidgetHost::Focus() {
 }
 
 void RenderWidgetHost::Blur() {
-  UnlockMouseIfNecessary();
+  // If there is a pending mouse lock request, we don't want to reject it at
+  // this point. The user can switch focus back to this view and approve the
+  // request later.
+  if (IsMouseLocked())
+    view_->UnlockMouse();
 
   Send(new ViewMsg_SetFocus(routing_id_, false));
 }
@@ -394,7 +399,7 @@ void RenderWidgetHost::LostMouseLock() {
 }
 
 void RenderWidgetHost::ViewDestroyed() {
-  UnlockMouseIfNecessary();
+  RejectMouseLockOrUnlockIfNecessary();
 
   // TODO(evanm): tracking this may no longer be necessary;
   // eliminate this function if so.
@@ -802,13 +807,20 @@ void RenderWidgetHost::ImeCancelComposition() {
             std::vector<WebKit::WebCompositionUnderline>(), 0, 0));
 }
 
-bool RenderWidgetHost::CanLockMouse() const {
-  return false;
+void RenderWidgetHost::RequestToLockMouse() {
+  // Directly reject to lock the mouse. Subclass can override this method to
+  // decide whether to allow mouse lock or not.
+  GotResponseToLockMouseRequest(false);
 }
 
-void RenderWidgetHost::UnlockMouseIfNecessary() {
-  if (IsMouseLocked())
+void RenderWidgetHost::RejectMouseLockOrUnlockIfNecessary() {
+  DCHECK(!pending_mouse_lock_request_ || !IsMouseLocked());
+  if (pending_mouse_lock_request_) {
+    pending_mouse_lock_request_ = false;
+    Send(new ViewMsg_LockMouse_ACK(routing_id_, false));
+  } else if (IsMouseLocked()) {
     view_->UnlockMouse();
+  }
 }
 
 bool RenderWidgetHost::IsMouseLocked() const {
@@ -1152,15 +1164,20 @@ void RenderWidgetHost::OnMsgDidActivateAcceleratedCompositing(bool activated) {
 }
 
 void RenderWidgetHost::OnMsgLockMouse() {
-  if (!CanLockMouse() || !view_ || !view_->HasFocus()|| !view_->LockMouse()) {
+  if (pending_mouse_lock_request_) {
     Send(new ViewMsg_LockMouse_ACK(routing_id_, false));
-  } else {
+    return;
+  } else if (IsMouseLocked()) {
     Send(new ViewMsg_LockMouse_ACK(routing_id_, true));
+    return;
   }
+
+  pending_mouse_lock_request_ = true;
+  RequestToLockMouse();
 }
 
 void RenderWidgetHost::OnMsgUnlockMouse() {
-  UnlockMouseIfNecessary();
+  RejectMouseLockOrUnlockIfNecessary();
 }
 
 #if defined(OS_POSIX)
@@ -1390,4 +1407,25 @@ void RenderWidgetHost::Delete() {
 void RenderWidgetHost::SelectAll() {
   Send(new ViewMsg_SelectAll(routing_id()));
   UserMetrics::RecordAction(UserMetricsAction("SelectAll"));
+}
+bool RenderWidgetHost::GotResponseToLockMouseRequest(bool allowed) {
+  if (!allowed) {
+    RejectMouseLockOrUnlockIfNecessary();
+    return false;
+  } else {
+    if (!pending_mouse_lock_request_) {
+      // This is possible, e.g., the plugin sends us an unlock request before
+      // the user allows to lock to mouse.
+      return false;
+    }
+
+    pending_mouse_lock_request_ = false;
+    if (!view_ || !view_->HasFocus()|| !view_->LockMouse()) {
+      Send(new ViewMsg_LockMouse_ACK(routing_id_, false));
+      return false;
+    } else {
+      Send(new ViewMsg_LockMouse_ACK(routing_id_, true));
+      return true;
+    }
+  }
 }

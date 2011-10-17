@@ -423,6 +423,11 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
   void Delete();
   void SelectAll();
 
+  // Called when the reponse to a pending mouse lock request has arrived.
+  // Returns true if |allowed| is true and the mouse has been successfully
+  // locked.
+  bool GotResponseToLockMouseRequest(bool allowed);
+
  protected:
   // Internal implementation of the public Forward*Event() methods.
   void ForwardInputEvent(const WebKit::WebInputEvent& input_event,
@@ -472,11 +477,12 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
   virtual void NotifyRendererResponsive() {}
 
   // RenderViewHost overrides this method to impose further restrictions on when
-  // to allow mouse lock. For now, it only allows to lock the mouse when the
-  // current tab is in fullscreen mode.
-  virtual bool CanLockMouse() const;
+  // to allow mouse lock.
+  // Once the request is approved or rejected, GotResponseToLockMouseRequest()
+  // will be called.
+  virtual void RequestToLockMouse();
 
-  void UnlockMouseIfNecessary();
+  void RejectMouseLockOrUnlockIfNecessary();
   bool IsMouseLocked() const;
 
   // RenderViewHost overrides this method to report when in fullscreen mode.
@@ -741,6 +747,8 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
 
   // The last scroll offset of the render widget.
   gfx::Point last_scroll_offset_;
+
+  bool pending_mouse_lock_request_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHost);
 };

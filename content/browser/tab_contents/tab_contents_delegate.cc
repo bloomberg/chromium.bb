@@ -327,6 +327,9 @@ void TabContentsDelegate::UpdatePreferredSize(TabContents* source,
                                               const gfx::Size& pref_size) {
 }
 
+void TabContentsDelegate::RequestToLockMouse(TabContents* tab) {
+}
+
 TabContentsDelegate::~TabContentsDelegate() {
   while (!attached_contents_.empty()) {
     TabContents* tab_contents = *attached_contents_.begin();
@@ -343,4 +346,7 @@ void TabContentsDelegate::Attach(TabContents* tab_contents) {
 void TabContentsDelegate::Detach(TabContents* tab_contents) {
   DCHECK(attached_contents_.find(tab_contents) != attached_contents_.end());
   attached_contents_.erase(tab_contents);
+}
+
+void TabContentsDelegate::LostMouseLock() {
 }

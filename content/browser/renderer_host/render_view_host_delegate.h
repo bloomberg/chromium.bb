@@ -385,6 +385,14 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
                          const GURL& source_url,
                          const std::string& name,
                          const base::ListValue& args) {}
+  // Requests to lock the mouse. Once the request is approved or rejected,
+  // GotResponseToLockMouseRequest() will be called on the requesting render
+  // view host.
+  virtual void RequestToLockMouse() {}
+
+  // Notification that the view has lost the mouse lock.
+  virtual void LostMouseLock() {}
+
  protected:
   virtual ~RenderViewHostDelegate() {}
 };

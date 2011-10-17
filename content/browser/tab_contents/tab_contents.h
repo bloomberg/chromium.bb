@@ -470,6 +470,11 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
   // the pending WebUI, the committed WebUI, or NULL.
   WebUI* GetWebUIForCurrentState();
 
+  // Called when the reponse to a pending mouse lock request has arrived.
+  // Returns true if |allowed| is true and the mouse has been successfully
+  // locked.
+  bool GotResponseToLockMouseRequest(bool allowed);
+
  protected:
   friend class TabContentsObserver;
 
@@ -692,6 +697,8 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
   virtual void ToggleFullscreenMode(bool enter_fullscreen) OVERRIDE;
   virtual bool IsFullscreenForCurrentTab() const OVERRIDE;
   virtual void UpdatePreferredSize(const gfx::Size& pref_size) OVERRIDE;
+  virtual void RequestToLockMouse() OVERRIDE;
+  virtual void LostMouseLock() OVERRIDE;
 
   // RenderViewHostManager::Delegate -------------------------------------------
 

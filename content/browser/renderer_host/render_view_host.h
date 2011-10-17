@@ -334,6 +334,7 @@ class CONTENT_EXPORT RenderViewHost : public RenderWidgetHost {
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
   virtual void GotFocus() OVERRIDE;
   virtual void LostCapture() OVERRIDE;
+  virtual void LostMouseLock() OVERRIDE;
   virtual void ForwardMouseEvent(
       const WebKit::WebMouseEvent& mouse_event) OVERRIDE;
   virtual void OnMouseActivate() OVERRIDE;
@@ -462,7 +463,7 @@ class CONTENT_EXPORT RenderViewHost : public RenderWidgetHost {
   virtual void OnUserGesture() OVERRIDE;
   virtual void NotifyRendererUnresponsive() OVERRIDE;
   virtual void NotifyRendererResponsive() OVERRIDE;
-  virtual bool CanLockMouse() const OVERRIDE;
+  virtual void RequestToLockMouse() OVERRIDE;
   virtual bool IsFullscreen() const OVERRIDE;
   virtual void OnMsgFocus() OVERRIDE;
   virtual void OnMsgBlur() OVERRIDE;

@@ -348,6 +348,14 @@ class CONTENT_EXPORT TabContentsDelegate {
   virtual void UpdatePreferredSize(TabContents* source,
                                    const gfx::Size& pref_size);
 
+  // Requests to lock the mouse. Once the request is approved or rejected,
+  // GotResponseToLockMouseRequest() will be called on the requesting tab
+  // contents.
+  virtual void RequestToLockMouse(TabContents* tab);
+
+  // Notification that the page has lost the mouse lock.
+  virtual void LostMouseLock();
+
  protected:
   virtual ~TabContentsDelegate();
 

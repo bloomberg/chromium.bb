@@ -503,6 +503,19 @@ bool TabContents::IsFullscreenForCurrentTab() const {
   return delegate_ ? delegate_->IsFullscreenForTab(this) : false;
 }
 
+void TabContents::RequestToLockMouse() {
+  if (delegate_) {
+    delegate_->RequestToLockMouse(this);
+  } else {
+    GotResponseToLockMouseRequest(false);
+  }
+}
+
+void TabContents::LostMouseLock() {
+  if (delegate_)
+    delegate_->LostMouseLock();
+}
+
 void TabContents::UpdatePreferredSize(const gfx::Size& pref_size) {
   if (delegate_)
     delegate_->UpdatePreferredSize(this, pref_size);
@@ -1983,3 +1996,9 @@ void TabContents::CreateViewAndSetSizeForRVH(RenderViewHost* rvh) {
   RenderWidgetHostView* rwh_view = view()->CreateViewForWidget(rvh);
   rwh_view->SetSize(view()->GetContainerSize());
 }
+
+bool TabContents::GotResponseToLockMouseRequest(bool allowed) {
+  return render_view_host() ?
+      render_view_host()->GotResponseToLockMouseRequest(allowed) : false;
+}
+

@@ -551,6 +551,11 @@ void RenderViewHost::LostCapture() {
   delegate_->LostCapture();
 }
 
+void RenderViewHost::LostMouseLock() {
+  RenderWidgetHost::LostMouseLock();
+  delegate_->LostMouseLock();
+}
+
 void RenderViewHost::SetInitialFocus(bool reverse) {
   Send(new ViewMsg_SetInitialFocus(routing_id(), reverse));
 }
@@ -1142,9 +1147,9 @@ void RenderViewHost::NotifyRendererResponsive() {
   delegate_->RendererResponsive(this);
 }
 
-bool RenderViewHost::CanLockMouse() const {
+void RenderViewHost::RequestToLockMouse() {
   // Only allow to lock the mouse when the current tab is in fullscreen mode.
-  return delegate_->IsFullscreenForCurrentTab();
+  GotResponseToLockMouseRequest(delegate_->IsFullscreenForCurrentTab());
 }
 
 bool RenderViewHost::IsFullscreen() const {
@@ -1243,7 +1248,7 @@ void RenderViewHost::SetAltErrorPageURL(const GURL& url) {
 }
 
 void RenderViewHost::ExitFullscreen() {
-  UnlockMouseIfNecessary();
+  RejectMouseLockOrUnlockIfNecessary();
 
   Send(new ViewMsg_ExitFullscreen(routing_id()));
 }
