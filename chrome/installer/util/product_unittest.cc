@@ -45,7 +45,14 @@ class ProductTest : public TestWithTempDirAndDeleteTempOverrideKeys {
  protected:
 };
 
-TEST_F(ProductTest, ProductInstallBasic) {
+// This test is flaky on Win, see http://crbug.com/100567
+#if defined(OS_WIN)
+#define MAYBE_ProductInstallBasic FLAKY_ProductInstallBasic
+#else
+#define MAYBE_ProductInstallBasic ProductInstallBasic
+#endif
+
+TEST_F(ProductTest, MAYBE_ProductInstallBasic) {
   // TODO(tommi): We should mock this and use our mocked distribution.
   const bool multi_install = false;
   const bool system_level = true;
