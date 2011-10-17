@@ -33,10 +33,6 @@ class SpecialStoragePolicy;
 // All the methods of this class must run on the DB thread.
 class QuotaDatabase {
  public:
-  // Constants for {Get,Set}QuotaConfigValue keys.
-  static const char kDesiredAvailableSpaceKey[];
-  static const char kTemporaryQuotaOverrideKey[];
-
   // If 'path' is empty, an in memory database will be used.
   explicit QuotaDatabase(const FilePath& path);
   ~QuotaDatabase();
@@ -63,8 +59,8 @@ class QuotaDatabase {
 
   bool DeleteOriginInfo(const GURL& origin, StorageType type);
 
-  bool GetQuotaConfigValue(const char* key, int64* value);
-  bool SetQuotaConfigValue(const char* key, int64 value);
+  bool GetGlobalQuota(StorageType type, int64* quota);
+  bool SetGlobalQuota(StorageType type, int64 quota);
 
   // Sets |origin| to the least recently used origin of origins not included
   // in |exceptions| and not granted the special unlimited storage right.

@@ -4,7 +4,6 @@
 
 #include "webkit/quota/quota_temporary_storage_evictor.h"
 
-#include "base/bind.h"
 #include "base/metrics/histogram.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/quota/quota_manager.h"
@@ -22,16 +21,17 @@
 
 namespace {
 const int64 kMBytes = 1024 * 1024;
-const double kUsageRatioToStartEviction = 0.7;
-const int kThresholdOfErrorsToStopEviction = 5;
-const base::TimeDelta kHistogramReportInterval =
-    base::TimeDelta::FromMilliseconds(60 * 60 * 1000);  // 1 hour
 }
 
 namespace quota {
 
+const double QuotaTemporaryStorageEvictor::kUsageRatioToStartEviction = 0.7;
 const int QuotaTemporaryStorageEvictor::
     kMinAvailableDiskSpaceToStartEvictionNotSpecified = -1;
+const int QuotaTemporaryStorageEvictor::kThresholdOfErrorsToStopEviction = 5;
+
+const base::TimeDelta QuotaTemporaryStorageEvictor::kHistogramReportInterval =
+  base::TimeDelta::FromMilliseconds(60 * 60 * 1000);  // 1 hour
 
 QuotaTemporaryStorageEvictor::QuotaTemporaryStorageEvictor(
     QuotaEvictionHandler* quota_eviction_handler,
@@ -41,8 +41,7 @@ QuotaTemporaryStorageEvictor::QuotaTemporaryStorageEvictor(
       quota_eviction_handler_(quota_eviction_handler),
       interval_ms_(interval_ms),
       repeated_eviction_(true),
-      callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(quota_eviction_handler);
 }
 
@@ -144,33 +143,32 @@ void QuotaTemporaryStorageEvictor::ConsiderEviction() {
   OnEvictionRoundStarted();
 
   // Get usage and disk space, then continue.
-  quota_eviction_handler_->GetUsageAndQuotaForEviction(
-      base::Bind(&QuotaTemporaryStorageEvictor::OnGotUsageAndQuotaForEviction,
-                 weak_factory_.GetWeakPtr()));
+  quota_eviction_handler_->GetUsageAndQuotaForEviction(callback_factory_.
+      NewCallback(
+          &QuotaTemporaryStorageEvictor::OnGotUsageAndQuotaForEviction));
 }
 
 void QuotaTemporaryStorageEvictor::OnGotUsageAndQuotaForEviction(
     QuotaStatusCode status,
-    const QuotaAndUsage& qau) {
+    int64 usage,
+    int64 unlimited_usage,
+    int64 quota,
+    int64 available_disk_space) {
   DCHECK(CalledOnValidThread());
+  DCHECK_GE(usage, unlimited_usage);  // unlimited_usage is a subset of usage
 
-  // unlimited_usage is a subset of usage
-  DCHECK_GE(qau.usage, qau.unlimited_usage);
-
-  int64 usage = qau.usage - qau.unlimited_usage;
+  usage -= unlimited_usage;
 
   if (status != kQuotaStatusOk)
     ++statistics_.num_errors_on_getting_usage_and_quota;
 
   int64 usage_overage = std::max(
       static_cast<int64>(0),
-      usage - static_cast<int64>(qau.quota * kUsageRatioToStartEviction));
+      usage - static_cast<int64>(quota * kUsageRatioToStartEviction));
 
-  // min_available_disk_space_to_start_eviction_ might be < 0 if no value
-  // is explicitly configured yet.
   int64 diskspace_shortage = std::max(
       static_cast<int64>(0),
-      min_available_disk_space_to_start_eviction_ - qau.available_disk_space);
+      min_available_disk_space_to_start_eviction_ - available_disk_space);
 
   if (!round_statistics_.is_initialized) {
     round_statistics_.usage_overage_at_round = usage_overage;

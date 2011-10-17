@@ -23,11 +23,12 @@ namespace {
 
 // Definitions for database schema.
 
-const int kCurrentVersion = 4;
+const int kCurrentVersion = 3;
 const int kCompatibleVersion = 2;
 
 const char kHostQuotaTable[] = "HostQuotaTable";
 const char kOriginInfoTable[] = "OriginInfoTable";
+const char kGlobalQuotaKeyPrefix[] = "GlobalQuota-";
 const char kIsOriginTableBootstrapped[] = "IsOriginTableBootstrapped";
 
 class HistogramUniquifier {
@@ -47,10 +48,13 @@ bool PrepareCachedStatement(
   return true;
 }
 
-bool VerifyValidQuotaConfig(const char* key) {
-  return (key != NULL &&
-          (!strcmp(key, QuotaDatabase::kDesiredAvailableSpaceKey) ||
-           !strcmp(key, QuotaDatabase::kTemporaryQuotaOverrideKey)));
+std::string GetGlobalQuotaKey(quota::StorageType type) {
+  if (type == quota::kStorageTypeTemporary)
+    return std::string(kGlobalQuotaKeyPrefix) + "temporary";
+  else if (type == quota::kStorageTypePersistent)
+    return std::string(kGlobalQuotaKeyPrefix) + "persistent";
+  NOTREACHED() << "Unknown storage type " << type;
+  return std::string();
 }
 
 const int kCommitIntervalMs = 30000;
@@ -58,10 +62,6 @@ const int kCommitIntervalMs = 30000;
 }  // anonymous namespace
 
 // static
-const char QuotaDatabase::kDesiredAvailableSpaceKey[] = "DesiredAvailableSpace";
-const char QuotaDatabase::kTemporaryQuotaOverrideKey[] =
-    "TemporaryQuotaOverride";
-
 const QuotaDatabase::TableSchema QuotaDatabase::kTables[] = {
   { kHostQuotaTable,
     "(host TEXT NOT NULL,"
@@ -334,18 +334,16 @@ bool QuotaDatabase::DeleteOriginInfo(
   return true;
 }
 
-bool QuotaDatabase::GetQuotaConfigValue(const char* key, int64* value) {
+bool QuotaDatabase::GetGlobalQuota(StorageType type, int64* quota) {
   if (!LazyOpen(false))
     return false;
-  DCHECK(VerifyValidQuotaConfig(key));
-  return meta_table_->GetValue(key, value);
+  return meta_table_->GetValue(GetGlobalQuotaKey(type).c_str(), quota);
 }
 
-bool QuotaDatabase::SetQuotaConfigValue(const char* key, int64 value) {
+bool QuotaDatabase::SetGlobalQuota(StorageType type, int64 quota) {
   if (!LazyOpen(true))
     return false;
-  DCHECK(VerifyValidQuotaConfig(key));
-  return meta_table_->SetValue(key, value);
+  return meta_table_->SetValue(GetGlobalQuotaKey(type).c_str(), quota);
 }
 
 bool QuotaDatabase::GetLRUOrigin(

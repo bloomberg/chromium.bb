@@ -7,7 +7,6 @@
 #include <list>
 #include <map>
 
-#include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
@@ -49,16 +48,17 @@ class MockQuotaEvictionHandler : public quota::QuotaEvictionHandler {
   }
 
   virtual void GetUsageAndQuotaForEviction(
-      const GetUsageAndQuotaForEvictionCallback& callback) OVERRIDE {
+      GetUsageAndQuotaForEvictionCallback* callback) OVERRIDE {
     if (error_on_get_usage_and_quota_) {
-      callback.Run(quota::kQuotaErrorInvalidAccess, QuotaAndUsage());
+      callback->Run(quota::kQuotaErrorInvalidAccess, 0, 0, 0, 0);
+      delete callback;
       return;
     }
     if (task_for_get_usage_and_quota_.get())
       task_for_get_usage_and_quota_->Run();
-    QuotaAndUsage quota_and_usage = {
-        GetUsage(), unlimited_usage_, quota_, available_space_ };
-    callback.Run(quota::kQuotaStatusOk, quota_and_usage);
+    callback->Run(quota::kQuotaStatusOk, GetUsage(), unlimited_usage_,
+                  quota_, available_space_);
+    delete callback;
   }
 
   virtual void GetLRUOrigin(

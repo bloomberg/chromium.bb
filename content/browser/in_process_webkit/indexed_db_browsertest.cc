@@ -225,6 +225,18 @@ class IndexedDBBrowserTestWithLowQuota : public IndexedDBBrowserTest {
         kTemporaryStorageQuotaMaxSize, browser()->profile()->GetQuotaManager());
   }
 
+  class SetTempQuotaCallback : public quota::QuotaCallback {
+   public:
+    void Run(quota::QuotaStatusCode, quota::StorageType, int64) {
+      DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    }
+
+    void RunWithParams(const Tuple3<quota::QuotaStatusCode,
+                       quota::StorageType, int64>& params) {
+      Run(params.a, params.b, params.c);
+    }
+  };
+
   static void SetTempQuota(int64 bytes, scoped_refptr<QuotaManager> qm) {
     if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
       BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
@@ -233,7 +245,7 @@ class IndexedDBBrowserTestWithLowQuota : public IndexedDBBrowserTest {
       return;
     }
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    qm->SetTemporaryGlobalOverrideQuota(bytes, NULL);
+    qm->SetTemporaryGlobalQuota(bytes, new SetTempQuotaCallback);
     // Don't return until the quota has been set.
     scoped_refptr<base::ThreadTestHelper> helper(
         new base::ThreadTestHelper(
