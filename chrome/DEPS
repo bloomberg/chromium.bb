@@ -13,9 +13,11 @@ include_rules = [
   "+chrome/test",
   "-content",
   "+content/common",
-  "+content/public/browser",
   "+content/public/common",
   "+content/test",
+
+  # TODO(ben): remove this
+  "+content/public/browser/native_web_keyboard_event.h",
 
   # Don't allow inclusion of these other libs we shouldn't be calling directly.
   "-v8",

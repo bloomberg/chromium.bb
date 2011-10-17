@@ -19,9 +19,11 @@ include_rules = [
   # directories in content/ so we disallow all of them.
   "-content",
   "+content/common",
-  "+content/public/browser",
   "+content/public/common",
   "+content/test",
+
+  # TODO(ben): remove this
+  "+content/public/browser/native_web_keyboard_event.h",
 
   "+dbus",
   "+grit",

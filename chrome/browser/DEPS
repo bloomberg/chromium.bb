@@ -8,6 +8,7 @@ include_rules = [
   "+chrome/views",
   "+content/browser",
   "+content/plugin/plugin_interpose_util_mac.h",
+  "+content/public/browser",
   "+grit",  # For generated headers
   "+media/audio",  # For audio input for speech input feature.
   "+policy",  # For generated headers and source
