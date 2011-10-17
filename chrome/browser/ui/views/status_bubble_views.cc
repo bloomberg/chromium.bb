@@ -576,7 +576,6 @@ void StatusBubbleViews::Init() {
     popup_->SetOpacity(0x00);
     popup_->SetContentsView(view_);
     Reposition();
-    popup_->Show();
   }
 }
 
