@@ -232,13 +232,14 @@ GCCPatterns = [
   # For example: gcc foo.c -Wl,--start-group -lx -ly -Wl,--end-group
   #
   ( '(-l.+)',             "env.append('INPUTS', $0)"),
+  ( ('(-l)','(.+)'),      "env.append('INPUTS', $0+$1)"),
   ( ('-Xlinker','(.*)'),  "env.append('INPUTS', '-Xlinker=' + $0)"),
   ( '(-Wl,.*)',           "env.append('INPUTS', $0)"),
   ( '(-Bstatic)',         "env.append('INPUTS', $0)"),
   ( '(-Bdynamic)',        "env.append('INPUTS', $0)"),
 
   ( '-O([0-4s])',         "env.set('OPT_LEVEL', $0)\n"),
-  ( '-O',                 "env.set('OPT_LEVEL', 1)\n"),
+  ( '-O',                 "env.set('OPT_LEVEL', '1')\n"),
 
   ( ('-isystem', '(.*)'),
                        "env.append('ISYSTEM_USER', pathtools.normalize($0))"),
@@ -248,9 +249,13 @@ GCCPatterns = [
   ( '(-g)',                   AddCCFlag),
   ( '(-W.*)',                 AddCCFlag),
   ( '(-std=.*)',              AddCCFlag),
-  ( '(-D.*)',                 AddCCFlag),
+  ( ('(-D)','(.*)'),          AddCCFlag),
+  ( '(-D.+)',                 AddCCFlag),
+  ( ('(-U)','(.*)'),          AddCCFlag),
+  ( '(-U.+)',                 AddCCFlag),
   ( '(-f.*)',                 AddCCFlag),
   ( '(-pedantic)',            AddCCFlag),
+  ( '(-pedantic-errors)',     AddCCFlag),
   ( '(-g.*)',                 AddCCFlag),
   ( '(-xassembler-with-cpp)', AddCCFlag),
 
