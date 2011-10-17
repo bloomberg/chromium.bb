@@ -547,7 +547,7 @@ class NaClSDKTest(pyauto.PyUITest):
     success = self.WaitUntil(
         lambda: self.GetDOMValue(
                     'document.getElementById("statusField").innerHTML',
-                    0, tab_index),
+                    tab_index),
         timeout=60, expect_retval='SUCCESS')
     self.assertTrue(success, msg='Example %s failed. URL: %s' % (name, url))
 
@@ -557,15 +557,15 @@ class NaClSDKTest(pyauto.PyUITest):
       }
       window.domAutomationController.send("done");
     """
-    self.ExecuteJavascript(js_code, 0, tab_index)
+    self.ExecuteJavascript(js_code, tab_index)
 
     result = self.ExecuteJavascript('document.helloForm.elements[1].click();',
-                                    0, tab_index)
+                                    tab_index)
     self.assertEqual(result, '42',
                      msg='Example %s failed. URL: %s' % (name, url))
 
     result = self.ExecuteJavascript('document.helloForm.elements[2].click();',
-                                    0, tab_index)
+                                    tab_index)
     self.assertEqual(result, 'dlrow olleH',
                      msg='Example %s failed. URL: %s' % (name, url))
 
@@ -592,7 +592,7 @@ class NaClSDKTest(pyauto.PyUITest):
       } while (obj = obj.offsetParent);
       window.domAutomationController.send(curleft + ", " + curtop);
     """
-    result = self.ExecuteJavascript(js_code, 0, tab_index)
+    result = self.ExecuteJavascript(js_code, tab_index)
     result_split = result.split(', ')
     x = int(result_split[0])
     y = int(result_split[1])
@@ -618,14 +618,14 @@ class NaClSDKTest(pyauto.PyUITest):
     success = self.WaitUntil(
         lambda: self.GetDOMValue(
                     'document.getElementById("frequency_field").value',
-                    0, tab_index),
+                    tab_index),
         timeout=30, expect_retval='440')
     self.assertTrue(success, msg='Example %s failed. URL: %s' % (name, url))
 
     self.ExecuteJavascript(
         'document.body.getElementsByTagName("button")[0].click();'
         'window.domAutomationController.send("done")',
-        0, tab_index)
+        tab_index)
 
     # TODO(chrisphan): Verify sound.
 
@@ -640,14 +640,14 @@ class NaClSDKTest(pyauto.PyUITest):
     success = self.WaitUntil(
         lambda: self.GetDOMValue(
                     'document.getElementById("status_field").innerHTML',
-                    0, tab_index),
+                    tab_index),
         timeout=60, expect_retval='SUCCESS')
     self.assertTrue(success, msg='Example %s failed. URL: %s' % (name, url))
 
     self.ExecuteJavascript(
         'document.geturl_form.elements[0].click();'
         'window.domAutomationController.send("done")',
-        0, tab_index)
+        tab_index)
 
     js_code = """
       var output = document.getElementById("general_output").innerHTML;
@@ -659,7 +659,7 @@ class NaClSDKTest(pyauto.PyUITest):
       window.domAutomationController.send(result);
     """
     success = self.WaitUntil(
-        lambda: self.ExecuteJavascript(js_code, 0, tab_index),
+        lambda: self.ExecuteJavascript(js_code, tab_index),
         timeout=30, expect_retval='pass')
     self.assertTrue(success, msg='Example %s failed. URL: %s' % (name, url))
 
@@ -815,7 +815,7 @@ class NaClSDKTest(pyauto.PyUITest):
     tabs = info['windows'][0]['tabs']
     for tab in tabs:
       if tab['url'] != 'about:blank':
-        if not self.GetDOMValue('document.body.innerHTML', 0, tab['index']):
+        if not self.GetDOMValue('document.body.innerHTML', tab['index']):
           self.fail(msg='Tab crashed on %s' % tab['url'])
 
     # TODO(chrisphan): Check for tab hangs and browser hangs.

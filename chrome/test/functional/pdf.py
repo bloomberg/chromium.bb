@@ -28,7 +28,7 @@ class PDFTest(pyauto.PyUITest):
     js = 'document.getElementsByName("plugin")[0].%s()' % action
     # Add an empty string so that there's something to return back
     # (or else it hangs)
-    return self.GetDOMValue('%s + ""' % js, 0, tab_index)
+    return self.GetDOMValue('%s + ""' % js, tab_index)
 
 
   def testPDFRunner(self):

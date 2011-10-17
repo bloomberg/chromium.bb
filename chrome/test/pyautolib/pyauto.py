@@ -710,7 +710,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     def __init__(self, ui_test, tab_index=0, windex=0, frame_xpath=''):
       """Initialize.
 
-        Refer to ExecuteJavascriptInTab() for the complete argument list
+        Refer to ExecuteJavascript() for the complete argument list
         description.
 
       Args:
@@ -723,10 +723,10 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
 
     def Execute(self, script):
       """Execute script in the tab."""
-      return self._ui_test.ExecuteJavascriptInTab(script,
-                                                  self.tab_index,
-                                                  self.windex,
-                                                  self.frame_xpath)
+      return self._ui_test.ExecuteJavascript(script,
+                                             self.tab_index,
+                                             self.windex,
+                                             self.frame_xpath)
 
   class JavascriptExecutorInRenderView(JavascriptExecutor):
     """Wrapper for injecting JavaScript in an extension view."""
@@ -2485,16 +2485,18 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     return self._GetResultFromJSONRequest(cmd_dict, windex=windex)
 
-  def ExecuteJavascriptInTab(self, js, tab_index=0, windex=0, frame_xpath=''):
+  def ExecuteJavascript(self, js, tab_index=0, windex=0, frame_xpath=''):
     """Executes a script in the specified frame of a tab.
 
-    The invoked javascript function must send a result back via the
-    domAutomationController.send function, or this function will never return.
+    By default, execute the script in the top frame of the first tab in the
+    first window. The invoked javascript function must send a result back via
+    the domAutomationController.send function, or this function will never
+    return.
 
     Args:
-      js: script to be executed
-      windex: index of the window
-      tab_index: index of the tab
+      js: script to be executed.
+      windex: index of the window.
+      tab_index: index of the tab.
       frame_xpath: XPath of the frame to execute the script.  Default is no
       frame. Example: '//frames[1]'.
 
@@ -2524,9 +2526,9 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     domAutomationController.send function, or this function will never return.
 
     Args:
-      js: script to be executed
+      js: script to be executed.
       view: A dictionary representing a unique id for the render view as
-      returned for example by
+      returned for example by.
       self.GetBrowserInfo()['extension_views'][]['view'].
       Example:
       { 'render_process_id': 1,
@@ -2554,6 +2556,25 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     json_string = '[' + result + ']'
     return json.loads(json_string)[0]
 
+  def GetDOMValue(self, expr, tab_index=0, windex=0, frame_xpath=''):
+    """Executes a Javascript expression and returns the value.
+
+    This is a wrapper for ExecuteJavascript, eliminating the need to
+    explicitly call domAutomationController.send function.
+
+    Args:
+      expr: expression value to be returned.
+      tab_index: index of the tab.
+      windex: index of the window.
+      frame_xpath: XPath of the frame to execute the script.  Default is no
+      frame. Example: '//frames[1]'.
+
+    Returns:
+      a string that was sent back via the domAutomationController.send method.
+    """
+    js = 'window.domAutomationController.send(%s);' % expr
+    return self.ExecuteJavascript(js, tab_index, windex, frame_xpath)
+
   def CallJavascriptFunc(self, function, args=[], tab_index=0, windex=0):
     """Executes a script which calls a given javascript function.
 
@@ -2563,11 +2584,11 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     Defaults to first tab in first window.
 
     Args:
-      function: name of the function
+      function: name of the function.
       args: list of all the arguments to pass into the called function. These
             should be able to be converted to a string using the |str| function.
-      tab_index: index of the tab within the given window
-      windex: index of the window
+      tab_index: index of the tab within the given window.
+      windex: index of the window.
 
     Returns:
       a string that was sent back via the domAutomationController.send method
@@ -2575,7 +2596,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     converted_args = map(lambda arg: json.dumps(arg), args)
     js = '%s(%s)' % (function, ', '.join(converted_args))
     logging.debug('Executing javascript: %s', js)
-    return self.ExecuteJavascript(js, windex, tab_index)
+    return self.ExecuteJavascript(js, tab_index, windex)
 
   def JavascriptFocusElementById(self, field_id, tab_index=0, windex=0):
     """Uses Javascript to focus an element with the given ID in a webpage.
@@ -2598,7 +2619,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
           window.domAutomationController.send("done");
         }
     """ % field_id
-    return self.ExecuteJavascript(focus_field_js, windex, tab_index) == 'done'
+    return self.ExecuteJavascript(focus_field_js, tab_index, windex) == 'done'
 
   def SignInToSync(self, username, password):
     """Signs in to sync using the given username and password.

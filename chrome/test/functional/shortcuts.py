@@ -96,7 +96,7 @@ class ShortcutsTest(pyauto.PyUITest):
         self.ExecuteJavascript(
         'var element = document.getElementById("clearBrowserDataOverlay");'
         'if(element) window.domAutomationController.send(element.nodeName);'
-        'else window.domAutomationController.send("")', 0, 1),
+        'else window.domAutomationController.send("")', 1),
         expect_retval='DIV'), msg='Could not find the DOM UI window element.')
 
   def testViewSourceShortcut(self):

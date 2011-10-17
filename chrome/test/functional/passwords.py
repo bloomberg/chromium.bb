@@ -62,7 +62,7 @@ class PasswordTest(pyauto.PyUITest):
       }
       window.domAutomationController.send("done");
     """
-    self.ExecuteJavascript(click_js, window_index, tab_index)
+    self.ExecuteJavascript(click_js, tab_index, window_index)
 
     # Wait until username/password is filled by the Password manager on the
     # login page.
@@ -75,9 +75,9 @@ class PasswordTest(pyauto.PyUITest):
     """
     self.assertTrue(self.WaitUntil(
         lambda: self.ExecuteJavascript(js_template % 'Email',
-                                      window_index, tab_index) != '' and
+                                      tab_index, window_index) != '' and
                 self.ExecuteJavascript(js_template % 'Passwd',
-                                      window_index, tab_index) != ''))
+                                      tab_index, window_index) != ''))
 
   def testSavePassword(self):
     """Test saving a password and getting saved passwords."""

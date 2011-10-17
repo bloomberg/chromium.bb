@@ -27,7 +27,7 @@ class ChromotingMixIn(object):
     """Helper that returns immediately after running a Javascript command."""
     return self.ExecuteJavascript(
         '%s; window.domAutomationController.send("done");' % command,
-        windex, tab_index)
+        tab_index, windex)
 
   def _WaitForJavascriptCondition(self, condition, tab_index, windex):
     """Waits until the Javascript condition is true.
@@ -36,7 +36,7 @@ class ChromotingMixIn(object):
     because it uses Javascript to check the condition instead of Python.
     """
     return self.WaitUntil(lambda: self.GetDOMValue(
-        '(%s) ? "1" : ""' % condition, windex, tab_index))
+        '(%s) ? "1" : ""' % condition, tab_index, windex))
 
   def _ExecuteAndWaitForMode(self, command, mode, tab_index, windex):
     self.assertTrue(self._ExecuteJavascript(command, tab_index, windex),
@@ -157,7 +157,7 @@ class ChromotingMixIn(object):
         'HOST_WAITING_FOR_CONNECTION', tab_index, windex)
     return self.GetDOMValue(
         'document.getElementById("access-code-display").innerText',
-        windex, tab_index)
+        tab_index, windex)
 
   def Connect(self, access_code, tab_index=1, windex=0):
     """Connects to a Chromoting host and starts the session.

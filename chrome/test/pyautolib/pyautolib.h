@@ -173,25 +173,6 @@ class PyUITestBase : public UITestBase {
                                const std::string& request,
                                int timeout);
 
-  // Execute javascript in a given tab, and return the response. This is
-  // a low-level method intended for use mostly by GetDOMValue(). Note that
-  // any complicated manipulation of the page should be done by something
-  // like WebDriver, not PyAuto. Also note that in order for the script to
-  // return a value to the calling code, it invokes
-  // window.domAutomationController.send(), passing in the intended return
-  // value.
-  std::wstring ExecuteJavascript(const std::wstring& script,
-                                 int window_index = 0,
-                                 int tab_index = 0,
-                                 const std::wstring& frame_xpath = L"");
-
-  // Evaluate a Javascript expression and return the result as a string. This
-  // method is intended largely to read values out of the frame DOM.
-  std::wstring GetDOMValue(const std::wstring& expr,
-                           int window_index = 0,
-                           int tab_index = 0,
-                           const std::wstring& frame_xpath = L"");
-
   // Resets to the default theme. Returns true on success.
   bool ResetToDefaultTheme();
 

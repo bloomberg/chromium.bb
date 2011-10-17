@@ -347,36 +347,6 @@ std::string PyUITestBase::_SendJSONRequest(int window_index,
   return response;
 }
 
-std::wstring PyUITestBase::ExecuteJavascript(const std::wstring& script,
-                                             int window_index,
-                                             int tab_index,
-                                             const std::wstring& frame_xpath) {
-  scoped_refptr<BrowserProxy> browser_proxy =
-      automation()->GetBrowserWindow(window_index);
-  EXPECT_TRUE(browser_proxy.get());
-  std::wstring response;
-  if (!browser_proxy.get())
-    return response;
-  scoped_refptr<TabProxy> tab_proxy =
-      browser_proxy->GetTab(tab_index);
-  EXPECT_TRUE(tab_proxy.get());
-  if (!tab_proxy.get())
-    return response;
-
-  EXPECT_TRUE(tab_proxy->ExecuteAndExtractString(frame_xpath, script,
-                                                 &response));
-  return response;
-}
-
-std::wstring PyUITestBase::GetDOMValue(const std::wstring& expr,
-                                       int window_index,
-                                       int tab_index,
-                                       const std::wstring& frame_xpath) {
-  std::wstring script = std::wstring(L"window.domAutomationController.send(") +
-      expr + std::wstring(L")");
-  return ExecuteJavascript(script, window_index, tab_index, frame_xpath);
-}
-
 bool PyUITestBase::ResetToDefaultTheme() {
   return automation()->ResetToDefaultTheme();
 }
