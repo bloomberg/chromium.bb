@@ -76,8 +76,8 @@ void ChildTraceMessageFilter::OnTraceDataCollected(
         json_events_str_ptr) {
   if (MessageLoop::current() != ChildProcess::current()->io_message_loop()) {
     ChildProcess::current()->io_message_loop()->PostTask(FROM_HERE,
-        NewRunnableMethod(this, &ChildTraceMessageFilter::OnTraceDataCollected,
-                          json_events_str_ptr));
+        base::Bind(&ChildTraceMessageFilter::OnTraceDataCollected, this,
+                   json_events_str_ptr));
     return;
   }
 
@@ -88,7 +88,7 @@ void ChildTraceMessageFilter::OnTraceDataCollected(
 void ChildTraceMessageFilter::OnTraceBufferFull() {
   if (MessageLoop::current() != ChildProcess::current()->io_message_loop()) {
     ChildProcess::current()->io_message_loop()->PostTask(FROM_HERE,
-        NewRunnableMethod(this, &ChildTraceMessageFilter::OnTraceBufferFull));
+        base::Bind(&ChildTraceMessageFilter::OnTraceBufferFull, this));
     return;
   }
 

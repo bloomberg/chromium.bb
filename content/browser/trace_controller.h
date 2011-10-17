@@ -10,9 +10,7 @@
 #include <vector>
 
 #include "base/debug/trace_event.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
-#include "base/task.h"
 #include "content/common/content_export.h"
 
 class TraceMessageFilter;
@@ -155,8 +153,6 @@ class CONTENT_EXPORT TraceController {
 
   DISALLOW_COPY_AND_ASSIGN(TraceController);
 };
-
-DISABLE_RUNNABLE_METHOD_REFCOUNT(TraceController);
 
 #endif  // CONTENT_BROWSER_TRACE_CONTROLLER_H_
 

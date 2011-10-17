@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
-#include "base/task.h"
 #include "content/browser/browser_message_filter.h"
 #include "content/browser/trace_message_filter.h"
 #include "content/common/child_process_messages.h"
@@ -99,7 +98,8 @@ bool TraceController::EndTracingAsync(TraceSubscriber* subscriber) {
     std::vector<std::string> categories;
     base::debug::TraceLog::GetInstance()->GetKnownCategories(&categories);
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this, &TraceController::OnEndTracingAck, categories));
+        base::Bind(&TraceController::OnEndTracingAck, base::Unretained(this),
+                   categories));
   }
 
   // Notify all child processes.
@@ -125,9 +125,8 @@ bool TraceController::GetTraceBufferPercentFullAsync(
     // Ack asynchronously now, because we don't have any children to wait for.
     float bpf = base::debug::TraceLog::GetInstance()->GetBufferPercentFull();
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this,
-                          &TraceController::OnTraceBufferPercentFullReply,
-                          bpf));
+        base::Bind(&TraceController::OnTraceBufferPercentFullReply,
+                   base::Unretained(this), bpf));
   }
 
   // Message all child processes.
@@ -152,8 +151,8 @@ void TraceController::CancelSubscriber(TraceSubscriber* subscriber) {
 void TraceController::AddFilter(TraceMessageFilter* filter) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this, &TraceController::AddFilter,
-                          make_scoped_refptr(filter)));
+        base::Bind(&TraceController::AddFilter, base::Unretained(this),
+                   make_scoped_refptr(filter)));
     return;
   }
 
@@ -166,8 +165,8 @@ void TraceController::AddFilter(TraceMessageFilter* filter) {
 void TraceController::RemoveFilter(TraceMessageFilter* filter) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this, &TraceController::RemoveFilter,
-                          make_scoped_refptr(filter)));
+        base::Bind(&TraceController::RemoveFilter, base::Unretained(this),
+                   make_scoped_refptr(filter)));
     return;
   }
 
@@ -178,8 +177,8 @@ void TraceController::OnEndTracingAck(
     const std::vector<std::string>& known_categories) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this, &TraceController::OnEndTracingAck,
-                          known_categories));
+        base::Bind(&TraceController::OnEndTracingAck, base::Unretained(this),
+                   known_categories));
     return;
   }
 
@@ -218,7 +217,8 @@ void TraceController::OnEndTracingAck(
     std::vector<std::string> categories;
     base::debug::TraceLog::GetInstance()->GetKnownCategories(&categories);
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this, &TraceController::OnEndTracingAck, categories));
+        base::Bind(&TraceController::OnEndTracingAck, base::Unretained(this),
+                   categories));
   }
 }
 
@@ -229,9 +229,8 @@ void TraceController::OnTraceDataCollected(
   // local event trace system or from child processes via TraceMessageFilter.
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this,
-                          &TraceController::OnTraceDataCollected,
-                          json_events_str_ptr));
+        base::Bind(&TraceController::OnTraceDataCollected,
+                   base::Unretained(this), json_events_str_ptr));
     return;
   }
 
@@ -245,7 +244,8 @@ void TraceController::OnTraceBufferFull() {
   // local event trace system or from child processes via TraceMessageFilter.
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this, &TraceController::OnTraceBufferFull));
+        base::Bind(&TraceController::OnTraceBufferFull,
+                   base::Unretained(this)));
     return;
   }
 
@@ -257,9 +257,8 @@ void TraceController::OnTraceBufferFull() {
 void TraceController::OnTraceBufferPercentFullReply(float percent_full) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this,
-                          &TraceController::OnTraceBufferPercentFullReply,
-                          percent_full));
+        base::Bind(&TraceController::OnTraceBufferPercentFullReply,
+                   base::Unretained(this), percent_full));
     return;
   }
 
@@ -279,9 +278,8 @@ void TraceController::OnTraceBufferPercentFullReply(float percent_full) {
     // this code only executes if there were child processes.
     float bpf = base::debug::TraceLog::GetInstance()->GetBufferPercentFull();
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this,
-                          &TraceController::OnTraceBufferPercentFullReply,
-                          bpf));
+        base::Bind(&TraceController::OnTraceBufferPercentFullReply,
+                   base::Unretained(this), bpf));
   }
 }
 
