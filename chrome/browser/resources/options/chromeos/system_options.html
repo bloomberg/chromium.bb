@@ -21,6 +21,18 @@
         </div>
       </div>
     </section>
+    <if expr="pp_ifdef('touchui')">
+      <section>
+        <h3 i18n-content="screen"></h3>
+        <div id="brightness-value">
+          <span i18n-content="brightness"></span>
+          <button id="brightness-decrease-button"
+              i18n-content="brightnessDecrease"></button>
+          <button id="brightness-increase-button"
+              i18n-content="brightnessIncrease"></button>
+        </div>
+      </section>
+    </if>
     <section>
       <h3 i18n-content="touchpad"></h3>
       <div class="option-control-table">

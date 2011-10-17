@@ -44,8 +44,8 @@ cr.define('options', function() {
       options.system.bluetooth.BluetoothListElement.decorate(
           $('bluetooth-device-list'));
 
-      // TODO (kevers) - Populate list of connected bluetooth devices.
-      //                 Set state of 'Enable bluetooth' checkbox.
+      // TODO(kevers): Populate list of connected bluetooth devices.
+      //               Set state of 'Enable bluetooth' checkbox.
 
       $('bluetooth-find-devices').disabled =
           $('enable-bluetooth-label') ? false : true;
@@ -63,8 +63,28 @@ cr.define('options', function() {
         chrome.send('accessibilityChange',
                     [String($('accesibility-check').checked)]);
       };
+
+      if (cr.isTouch) {
+        initializeBrightnessButton_('brightness-decrease-button',
+            'decreaseScreenBrightness');
+        initializeBrightnessButton_('brightness-increase-button',
+            'increaseScreenBrightness');
+      }
     }
   };
+
+  /**
+   * Initializes a button for controlling screen brightness on touch builds of
+   * ChromeOS.
+   * @param {string} id Button ID.
+   * @param {string} callback Name of the callback function.
+   */
+  function initializeBrightnessButton_(id, callback) {
+    // TODO(kevers): Make brightness buttons auto-repeat if held.
+    $(id).onclick = function(event) {
+      chrome.send(callback);
+    }
+  }
 
   /**
    * Scan for bluetooth devices.
@@ -82,8 +102,8 @@ cr.define('options', function() {
       if (!data || data.status !== 'connected')
         $('bluetooth-device-list').removeChild(device);
     }
-    // TODO (kevers) - Set arguments to a list of the currently connected
-    //                 devices.
+    // TODO(kevers): Set arguments to a list of the currently connected
+    //               devices.
     chrome.send('findBluetoothDevices');
   }
 

@@ -29,6 +29,12 @@ class SystemOptionsHandler : public chromeos::CrosOptionsPageUIHandler {
   // ("true" or "false").
   void AccessibilityChangeCallback(const base::ListValue* args);
 
+  // Called when the System configuration screen is used to adjust
+  // the screen brightness.
+  // |args| will be an empty list.
+  void DecreaseScreenBrightnessCallback(const base::ListValue* args);
+  void IncreaseScreenBrightnessCallback(const base::ListValue* args);
+
   // Called when the 'Enable bluetooth' checkbox value is changed.
   // |args| will contain the checkbox checked state as a string
   // ("true" or "false").

@@ -17,6 +17,8 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/accessibility_util.h"
+#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
+#include "chrome/browser/chromeos/dbus/power_manager_client.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -53,6 +55,15 @@ void SystemOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("use24HourClock",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_USE_24HOUR_CLOCK_DESCRIPTION));
+
+  localized_strings->SetString("screen",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_SECTION_TITLE_SCREEN));
+  localized_strings->SetString("brightness",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_BRIGHTNESS_DESCRIPTION));
+  localized_strings->SetString("brightnessDecrease",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_BRIGHTNESS_DECREASE));
+  localized_strings->SetString("brightnessIncrease",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_BRIGHTNESS_INCREASE));
 
   localized_strings->SetString("touchpad",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_SECTION_TITLE_TOUCHPAD));
@@ -125,6 +136,13 @@ void SystemOptionsHandler::RegisterMessages() {
       base::Bind(&SystemOptionsHandler::AccessibilityChangeCallback,
                  base::Unretained(this)));
 
+  web_ui_->RegisterMessageCallback("decreaseScreenBrightness",
+      base::Bind(&SystemOptionsHandler::DecreaseScreenBrightnessCallback,
+                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("increaseScreenBrightness",
+      base::Bind(&SystemOptionsHandler::IncreaseScreenBrightnessCallback,
+                 base::Unretained(this)));
+
   web_ui_->RegisterMessageCallback("bluetoothEnableChange",
       base::Bind(&SystemOptionsHandler::BluetoothEnableChangeCallback,
                  base::Unretained(this)));
@@ -139,6 +157,20 @@ void SystemOptionsHandler::AccessibilityChangeCallback(const ListValue* args) {
   bool accessibility_enabled = (checked_str == "true");
 
   chromeos::accessibility::EnableAccessibility(accessibility_enabled, NULL);
+}
+
+void SystemOptionsHandler::DecreaseScreenBrightnessCallback(
+    const ListValue* args) {
+  // Do not allow the options button to turn off the backlight, as that
+  // can make it very difficult to see the increase brightness button.
+  chromeos::DBusThreadManager::Get()->power_manager_client()->
+      DecreaseScreenBrightness(false);
+}
+
+void SystemOptionsHandler::IncreaseScreenBrightnessCallback(
+    const ListValue* args) {
+  chromeos::DBusThreadManager::Get()->power_manager_client()->
+      IncreaseScreenBrightness();
 }
 
 void SystemOptionsHandler::BluetoothEnableChangeCallback(
