@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/external_registry_extension_loader_win.h"
 
+#include "base/bind.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_handle.h"
@@ -37,9 +38,7 @@ void ExternalRegistryExtensionLoader::StartLoading() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(
-          this,
-          &ExternalRegistryExtensionLoader::LoadOnFileThread));
+      base::Bind(&ExternalRegistryExtensionLoader::LoadOnFileThread, this));
 }
 
 void ExternalRegistryExtensionLoader::LoadOnFileThread() {
@@ -145,7 +144,5 @@ void ExternalRegistryExtensionLoader::LoadOnFileThread() {
   prefs_.reset(prefs.release());
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(
-          this,
-          &ExternalRegistryExtensionLoader::LoadFinished));
+      base::Bind(&ExternalRegistryExtensionLoader::LoadFinished, this));
 }

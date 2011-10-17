@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/external_pref_extension_loader.h"
 
+#include "base/bind.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/json/json_value_serializer.h"
@@ -54,9 +55,7 @@ void ExternalPrefExtensionLoader::StartLoading() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(
-          this,
-          &ExternalPrefExtensionLoader::LoadOnFileThread));
+      base::Bind(&ExternalPrefExtensionLoader::LoadOnFileThread, this));
 }
 
 DictionaryValue* ExternalPrefExtensionLoader::ReadJsonPrefsFile() {
@@ -134,9 +133,7 @@ void ExternalPrefExtensionLoader::LoadOnFileThread() {
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(
-          this,
-          &ExternalPrefExtensionLoader::LoadFinished));
+      base::Bind(&ExternalPrefExtensionLoader::LoadFinished, this));
 }
 
 ExternalTestingExtensionLoader::ExternalTestingExtensionLoader(

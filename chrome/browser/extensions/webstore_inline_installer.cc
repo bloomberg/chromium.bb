@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/bind.h"
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -64,8 +65,7 @@ class SafeWebstoreResponseParser : public UtilityProcessHost::Client {
     BrowserThread::PostTask(
         BrowserThread::IO,
         FROM_HERE,
-        NewRunnableMethod(this,
-                          &SafeWebstoreResponseParser::StartWorkOnIOThread));
+        base::Bind(&SafeWebstoreResponseParser::StartWorkOnIOThread, this));
   }
 
   void StartWorkOnIOThread() {
@@ -116,8 +116,7 @@ class SafeWebstoreResponseParser : public UtilityProcessHost::Client {
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
-        NewRunnableMethod(this,
-                          &SafeWebstoreResponseParser::ReportResultOnUIThread));
+        base::Bind(&SafeWebstoreResponseParser::ReportResultOnUIThread, this));
   }
 
   void ReportResultOnUIThread() {

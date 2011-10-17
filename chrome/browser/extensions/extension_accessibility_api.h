@@ -7,9 +7,7 @@
 #pragma once
 
 #include <string>
-#include <vector>
 
-#include "base/callback_old.h"
 #include "base/compiler_specific.h"
 #include "base/memory/singleton.h"
 #include "base/values.h"
@@ -33,14 +31,10 @@ class ExtensionAccessibilityEventRouter : public NotificationObserver {
 
   // Accessibility support is disabled until an extension expicitly enables
   // it, so that this extension api has no impact on Chrome's performance
-  // otherwise.  These methods handle enabling, disabling, querying the
-  // status, and installing callbacks to execute when accessibility support
-  // is enabled or disabled.
+  // otherwise.  These methods handle enabling, disabling, and querying the
+  // status.
   void SetAccessibilityEnabled(bool enabled);
   bool IsAccessibilityEnabled() const;
-  typedef Callback0::Type Callback;
-  void AddOnEnabledListener(Callback* callback);
-  void AddOnDisabledListener(Callback* callback);
 
  private:
   friend struct DefaultSingletonTraits<ExtensionAccessibilityEventRouter>;
@@ -72,8 +66,6 @@ class ExtensionAccessibilityEventRouter : public NotificationObserver {
   DictionaryValue last_focused_control_dict_;
 
   bool enabled_;
-  std::vector<Callback*> on_enabled_listeners_;
-  std::vector<Callback*> on_disabled_listeners_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionAccessibilityEventRouter);
 };

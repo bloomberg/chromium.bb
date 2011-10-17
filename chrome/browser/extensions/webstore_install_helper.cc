@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "base/task.h"
+#include "base/bind.h"
 #include "base/values.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "content/browser/browser_thread.h"
@@ -47,8 +47,7 @@ void WebstoreInstallHelper::Start() {
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
-      NewRunnableMethod(this,
-                        &WebstoreInstallHelper::StartWorkOnIOThread));
+      base::Bind(&WebstoreInstallHelper::StartWorkOnIOThread, this));
 
   if (!icon_url_.is_empty()) {
     CHECK(context_getter_);
@@ -80,8 +79,7 @@ void WebstoreInstallHelper::OnURLFetchComplete(const URLFetcher* source) {
     BrowserThread::PostTask(
         BrowserThread::IO,
         FROM_HERE,
-        NewRunnableMethod(this,
-                          &WebstoreInstallHelper::OnDecodeImageFailed));
+        base::Bind(&WebstoreInstallHelper::OnDecodeImageFailed, this));
   } else {
     std::string response_data;
     source->GetResponseAsString(&response_data);
@@ -91,8 +89,7 @@ void WebstoreInstallHelper::OnURLFetchComplete(const URLFetcher* source) {
     BrowserThread::PostTask(
         BrowserThread::IO,
         FROM_HERE,
-        NewRunnableMethod(this,
-                          &WebstoreInstallHelper::StartFetchedImageDecode));
+        base::Bind(&WebstoreInstallHelper::StartFetchedImageDecode, this));
   }
   url_fetcher_.reset();
 }
@@ -173,8 +170,7 @@ void WebstoreInstallHelper::ReportResultsIfComplete() {
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
-      NewRunnableMethod(this,
-                        &WebstoreInstallHelper::ReportResultFromUIThread));
+      base::Bind(&WebstoreInstallHelper::ReportResultFromUIThread, this));
 }
 
 void WebstoreInstallHelper::ReportResultFromUIThread() {

@@ -6,6 +6,7 @@
 
 #include <set>
 
+#include "base/bind.h"
 #include "base/base64.h"
 #include "base/file_util.h"
 #include "base/file_util_proxy.h"
@@ -14,7 +15,6 @@
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
-#include "base/task.h"
 #include "base/utf_string_conversions.h"  // TODO(viettrungluu): delete me.
 #include "crypto/signature_verifier.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -206,9 +206,9 @@ void SandboxedExtensionUnpacker::Start() {
 
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(
-            this,
+        base::Bind(
             &SandboxedExtensionUnpacker::StartProcessOnIOThread,
+            this,
             link_free_crx_path));
   } else {
     // Otherwise, unpack the extension in this process.

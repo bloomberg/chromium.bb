@@ -1,13 +1,13 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/pack_extension_job.h"
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "base/task.h"
 #include "chrome/browser/extensions/extension_creator.h"
 #include "chrome/common/chrome_constants.h"
 #include "grit/generated_resources.h"
@@ -25,7 +25,7 @@ void PackExtensionJob::Start() {
   if (asynchronous_) {
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
-        NewRunnableMethod(this, &PackExtensionJob::Run));
+        base::Bind(&PackExtensionJob::Run, this));
   } else {
     Run();
   }
@@ -52,8 +52,7 @@ void PackExtensionJob::Run() {
     if (asynchronous_) {
       BrowserThread::PostTask(
           client_thread_id_, FROM_HERE,
-          NewRunnableMethod(this,
-                            &PackExtensionJob::ReportSuccessOnClientThread));
+          base::Bind(&PackExtensionJob::ReportSuccessOnClientThread, this));
     } else {
       ReportSuccessOnClientThread();
     }
@@ -61,8 +60,8 @@ void PackExtensionJob::Run() {
     if (asynchronous_) {
       BrowserThread::PostTask(
           client_thread_id_, FROM_HERE,
-          NewRunnableMethod(
-              this, &PackExtensionJob::ReportFailureOnClientThread,
+          base::Bind(
+              &PackExtensionJob::ReportFailureOnClientThread, this,
               creator.error_message()));
     } else {
       ReportFailureOnClientThread(creator.error_message());

@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/pickle.h"
@@ -149,8 +150,8 @@ void UserScriptMaster::ScriptReloader::StartLoad(
   this->extensions_info_ = extensions_info_;
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(
-          this, &UserScriptMaster::ScriptReloader::RunLoad, user_scripts));
+      base::Bind(
+          &UserScriptMaster::ScriptReloader::RunLoad, this, user_scripts));
 }
 
 void UserScriptMaster::ScriptReloader::NotifyMaster(
@@ -278,8 +279,8 @@ void UserScriptMaster::ScriptReloader::RunLoad(
   // back even if no scripts ware found to balance the AddRef/Release calls.
   BrowserThread::PostTask(
       master_thread_id_, FROM_HERE,
-      NewRunnableMethod(
-          this, &ScriptReloader::NotifyMaster, Serialize(user_scripts)));
+      base::Bind(
+          &ScriptReloader::NotifyMaster, this, Serialize(user_scripts)));
 }
 
 

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/image_loading_tracker.h"
 
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_resource.h"
@@ -43,8 +44,8 @@ class ImageLoadingTracker::ImageLoader
     DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::FILE));
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
-        NewRunnableMethod(this, &ImageLoader::LoadOnFileThread, resource,
-                          max_size, id));
+        base::Bind(&ImageLoader::LoadOnFileThread, this, resource,
+                   max_size, id));
   }
 
   void LoadOnFileThread(const ExtensionResource& resource,
@@ -90,8 +91,8 @@ class ImageLoadingTracker::ImageLoader
 
     BrowserThread::PostTask(
         callback_thread_id_, FROM_HERE,
-        NewRunnableMethod(this, &ImageLoader::ReportOnUIThread,
-                          image, resource, original_size, id));
+        base::Bind(&ImageLoader::ReportOnUIThread, this,
+                   image, resource, original_size, id));
   }
 
   void ReportOnUIThread(SkBitmap* image, const ExtensionResource& resource,

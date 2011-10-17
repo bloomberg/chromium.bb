@@ -5,7 +5,6 @@
 #include "chrome/browser/extensions/extension_tabs_module.h"
 
 #include "base/json/json_writer.h"
-#include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_accessibility_api.h"
@@ -69,8 +68,6 @@ ExtensionAccessibilityEventRouter::ExtensionAccessibilityEventRouter()
 }
 
 ExtensionAccessibilityEventRouter::~ExtensionAccessibilityEventRouter() {
-  STLDeleteElements(&on_enabled_listeners_);
-  STLDeleteElements(&on_disabled_listeners_);
 }
 
 void ExtensionAccessibilityEventRouter::Observe(
@@ -108,32 +105,11 @@ void ExtensionAccessibilityEventRouter::Observe(
 }
 
 void ExtensionAccessibilityEventRouter::SetAccessibilityEnabled(bool enabled) {
-  if (enabled_ != enabled) {
-    enabled_ = enabled;
-    if (enabled_) {
-      for (unsigned int i = 0; i < on_enabled_listeners_.size(); i++) {
-        on_enabled_listeners_[i]->Run();
-      }
-    } else {
-      for (unsigned int i = 0; i < on_disabled_listeners_.size(); i++) {
-        on_disabled_listeners_[i]->Run();
-      }
-    }
-  }
+  enabled_ = enabled;
 }
 
 bool ExtensionAccessibilityEventRouter::IsAccessibilityEnabled() const {
   return enabled_;
-}
-
-void ExtensionAccessibilityEventRouter::AddOnEnabledListener(
-    Callback* callback) {
-  on_enabled_listeners_.push_back(callback);
-}
-
-void ExtensionAccessibilityEventRouter::AddOnDisabledListener(
-    Callback* callback) {
-  on_disabled_listeners_.push_back(callback);
 }
 
 void ExtensionAccessibilityEventRouter::OnWindowOpened(

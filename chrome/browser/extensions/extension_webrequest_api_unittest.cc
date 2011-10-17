@@ -4,6 +4,8 @@
 
 #include <queue>
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/file_util.h"
 #include "base/json/json_value_serializer.h"
 #include "base/path_service.h"
@@ -46,7 +48,7 @@ class TestIPCSender : public IPC::Message::Sender {
 
   // Adds a Task to the queue. We will fire these in order as events are
   // dispatched.
-  void PushTask(Task* task) {
+  void PushTask(base::Closure task) {
     task_queue_.push(task);
   }
 
@@ -73,7 +75,7 @@ class TestIPCSender : public IPC::Message::Sender {
     return true;
   }
 
-  std::queue<Task*> task_queue_;
+  std::queue<base::Closure> task_queue_;
   SentMessages sent_messages_;
 };
 
@@ -135,7 +137,7 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceRedirect) {
         extension1_id, base::Time::FromDoubleT(1));
     response->new_url = not_chosen_redirect_url;
     ipc_sender_.PushTask(
-        NewRunnableFunction(&EventHandledOnIOThread,
+        base::Bind(&EventHandledOnIOThread,
             &profile_, extension1_id, kEventName, kEventName + "/1",
             request.identifier(), response));
 
@@ -144,7 +146,7 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceRedirect) {
         extension2_id, base::Time::FromDoubleT(2));
     response->new_url = redirect_url;
     ipc_sender_.PushTask(
-        NewRunnableFunction(&EventHandledOnIOThread,
+        base::Bind(&EventHandledOnIOThread,
             &profile_, extension2_id, kEventName, kEventName + "/2",
             request.identifier(), response));
 
@@ -152,7 +154,7 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceRedirect) {
     response = new ExtensionWebRequestEventRouter::EventResponse(
         extension2_id, base::Time::FromDoubleT(2));
     ipc_sender_.PushTask(
-        NewRunnableFunction(&EventHandledOnIOThread,
+        base::Bind(&EventHandledOnIOThread,
             &profile_, extension2_id, kEventName, kEventName + "/2",
             request.identifier(), response));
 
@@ -160,7 +162,7 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceRedirect) {
     response = new ExtensionWebRequestEventRouter::EventResponse(
         extension1_id, base::Time::FromDoubleT(1));
     ipc_sender_.PushTask(
-        NewRunnableFunction(&EventHandledOnIOThread,
+        base::Bind(&EventHandledOnIOThread,
             &profile_, extension1_id, kEventName, kEventName + "/1",
             request.identifier(), response));
 
@@ -186,7 +188,7 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceRedirect) {
         extension2_id, base::Time::FromDoubleT(2));
     response->new_url = redirect_url;
     ipc_sender_.PushTask(
-        NewRunnableFunction(&EventHandledOnIOThread,
+        base::Bind(&EventHandledOnIOThread,
             &profile_, extension2_id, kEventName, kEventName + "/2",
             request2.identifier(), response));
 
@@ -195,7 +197,7 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceRedirect) {
         extension1_id, base::Time::FromDoubleT(1));
     response->new_url = not_chosen_redirect_url;
     ipc_sender_.PushTask(
-        NewRunnableFunction(&EventHandledOnIOThread,
+        base::Bind(&EventHandledOnIOThread,
             &profile_, extension1_id, kEventName, kEventName + "/1",
             request2.identifier(), response));
 
@@ -203,7 +205,7 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceRedirect) {
     response = new ExtensionWebRequestEventRouter::EventResponse(
         extension2_id, base::Time::FromDoubleT(2));
     ipc_sender_.PushTask(
-        NewRunnableFunction(&EventHandledOnIOThread,
+        base::Bind(&EventHandledOnIOThread,
             &profile_, extension2_id, kEventName, kEventName + "/2",
             request2.identifier(), response));
 
@@ -211,7 +213,7 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceRedirect) {
     response = new ExtensionWebRequestEventRouter::EventResponse(
         extension1_id, base::Time::FromDoubleT(1));
     ipc_sender_.PushTask(
-        NewRunnableFunction(&EventHandledOnIOThread,
+        base::Bind(&EventHandledOnIOThread,
             &profile_, extension1_id, kEventName, kEventName + "/1",
             request2.identifier(), response));
 
@@ -265,7 +267,7 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceCancel) {
       extension1_id, base::Time::FromDoubleT(1));
   response->cancel = true;
   ipc_sender_.PushTask(
-      NewRunnableFunction(&EventHandledOnIOThread,
+      base::Bind(&EventHandledOnIOThread,
           &profile_, extension1_id, kEventName, kEventName + "/1",
           request.identifier(), response));
 
@@ -275,7 +277,7 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceCancel) {
       extension2_id, base::Time::FromDoubleT(2));
   response->new_url = redirect_url;
   ipc_sender_.PushTask(
-      NewRunnableFunction(&EventHandledOnIOThread,
+      base::Bind(&EventHandledOnIOThread,
           &profile_, extension2_id, kEventName, kEventName + "/2",
           request.identifier(), response));
 
@@ -345,10 +347,8 @@ class ExtensionWebRequestHeaderModificationTest :
   scoped_refptr<TestURLRequestContext> context_;
 };
 
-class DoNothingTask : public Task {
-  virtual ~DoNothingTask() {};
-  virtual void Run() {};
-};
+static void DoNothing() {
+}
 
 TEST_P(ExtensionWebRequestHeaderModificationTest, TestModifications) {
   std::string extension1_id("1");
@@ -416,7 +416,7 @@ TEST_P(ExtensionWebRequestHeaderModificationTest, TestModifications) {
     if (i+1 == test.modification_size ||
         mod.extension_id != test.modification[i+1].extension_id) {
       ipc_sender_.PushTask(
-          NewRunnableFunction(&EventHandledOnIOThread,
+          base::Bind(&EventHandledOnIOThread,
               &profile_, mod.extension_id == 1 ? extension1_id : extension2_id,
               kEventName, kEventName + (mod.extension_id == 1 ? "/1" : "/2"),
               request.identifier(), response));
@@ -425,7 +425,7 @@ TEST_P(ExtensionWebRequestHeaderModificationTest, TestModifications) {
   }
 
   // Don't do anything for the onSendHeaders message.
-  ipc_sender_.PushTask(new DoNothingTask);
+  ipc_sender_.PushTask(base::Bind(&DoNothing));
 
   // Note that we mess up the headers slightly:
   // request.Start() will first add additional headers (e.g. the User-Agent)

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 #include "chrome/browser/extensions/file_manager_util.h"
 
+#include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -232,7 +233,7 @@ void FileManagerUtil::ViewItem(const FilePath& full_path, bool enqueue) {
     if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
       bool result = BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          NewRunnableFunction(&ViewItem, full_path, enqueue));
+          base::Bind(&ViewItem, full_path, enqueue));
       DCHECK(result);
       return;
     }
@@ -273,7 +274,7 @@ void FileManagerUtil::ViewItem(const FilePath& full_path, bool enqueue) {
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableFunction(
+      base::Bind(
           &browser::ShowErrorBox,
           static_cast<gfx::NativeWindow>(NULL),
           l10n_util::GetStringFUTF16(
