@@ -7,9 +7,10 @@ Import('env')
 
 # The file partly_invalid.c contains inline assembler
 if env.Bit('bitcode'):
-  Return()
+  env.PNaClForceNative()
 
 # TODO(mseaborn): Extend the ARM validator to support this.
+# BUG= http://code.google.com/p/nativeclient/issues/detail?id=2369
 if env.Bit('build_arm'):
   Return()
 
