@@ -4752,6 +4752,16 @@
    fun:_ZNK4base8CallbackIFvvEE3RunEv
    fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
 }
+{
+   bug_100647
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN18WebResourceService19UpdateResourceCacheERKSs
+   fun:_ZN18WebResourceService18WebResourceFetcher18OnURLFetchCompleteEPK10URLFetcherRK4GURLRKN3net16URLRequestStatusEiRKSt6vectorISsSaISsEERKSs
+   fun:_ZN10URLFetcher8Delegate18OnURLFetchCompleteEPKS_
+   fun:_ZN10URLFetcher4Core29InformDelegateFetchIsCompleteEv
+   fun:_ZN10URLFetcher4Core21OnCompletedURLRequestEN4base9TimeDeltaE
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
