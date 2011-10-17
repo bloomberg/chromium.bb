@@ -92,17 +92,4 @@ bool ShowButtonsForType(FullscreenExitBubbleType type) {
          type == FEB_TYPE_MOUSELOCK_BUTTONS;
 }
 
-void PermissionRequestedByType(FullscreenExitBubbleType type,
-                               bool* tab_fullscreen,
-                               bool* mouse_lock) {
-  if (tab_fullscreen) {
-    *tab_fullscreen = type == FEB_TYPE_FULLSCREEN_BUTTONS ||
-                      type == FEB_TYPE_FULLSCREEN_MOUSELOCK_BUTTONS;
-  }
-  if (mouse_lock) {
-    *mouse_lock = type == FEB_TYPE_FULLSCREEN_MOUSELOCK_BUTTONS ||
-                  type == FEB_TYPE_MOUSELOCK_BUTTONS;
-  }
-}
-
 }  // namespace

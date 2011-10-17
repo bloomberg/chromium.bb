@@ -68,6 +68,7 @@ class FullscreenExitBubbleGtk : public FullscreenExitBubble {
 
   ui::GtkSignalRegistrar signals_;
 
+  const GURL url_;
   bool show_buttons_;
 };
 

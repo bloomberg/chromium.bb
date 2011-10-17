@@ -767,12 +767,12 @@ bool BrowserView::IsMinimized() const {
 }
 
 void BrowserView::EnterFullscreen(
-    const GURL& url, FullscreenExitBubbleType bubble_type) {
+      const GURL& url, FullscreenExitBubbleType type) {
   if (IsFullscreen())
     return;  // Nothing to do.
 
 #if defined(OS_WIN)
-  ProcessFullscreen(true, url, bubble_type);
+  ProcessFullscreen(true, url, type == FEB_TYPE_FULLSCREEN_BUTTONS);
 #else
   // On Linux changing fullscreen is async. Ask the window to change it's
   // fullscreen state, and when done invoke ProcessFullscreen.
@@ -785,7 +785,7 @@ void BrowserView::ExitFullscreen() {
     return;  // Nothing to do.
 
 #if defined(OS_WIN)
-  ProcessFullscreen(false, GURL(), FEB_TYPE_NONE);
+  ProcessFullscreen(false, GURL(), false);
 #else
   // On Linux changing fullscreen is async. Ask the window to change it's
   // fullscreen state, and when done invoke ProcessFullscreen.
@@ -794,10 +794,9 @@ void BrowserView::ExitFullscreen() {
 }
 
 void BrowserView::UpdateFullscreenExitBubbleContent(
-    const GURL& url,
-    FullscreenExitBubbleType bubble_type) {
-  if (fullscreen_bubble_.get())
-    fullscreen_bubble_->UpdateContent(url, bubble_type);
+      const GURL& url,
+      FullscreenExitBubbleType bubble_type) {
+  NOTIMPLEMENTED();
 }
 
 bool BrowserView::IsFullscreen() const {
@@ -809,9 +808,7 @@ bool BrowserView::IsFullscreenBubbleVisible() const {
 }
 
 void BrowserView::FullScreenStateChanged() {
-  bool is_fullscreen = IsFullscreen();
-  ProcessFullscreen(is_fullscreen, GURL(), is_fullscreen ?
-      FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION : FEB_TYPE_NONE);
+  ProcessFullscreen(IsFullscreen(), GURL(), false);
 }
 
 void BrowserView::RestoreFocus() {
@@ -2203,7 +2200,7 @@ bool BrowserView::UpdateChildViewAndLayout(views::View* new_view,
 
 void BrowserView::ProcessFullscreen(bool fullscreen,
                                     const GURL& url,
-                                    FullscreenExitBubbleType bubble_type) {
+                                    bool ask_permission) {
   // Reduce jankiness during the following position changes by:
   //   * Hiding the window until it's in the final position
   //   * Ignoring all intervening Layout() calls, which resize the webpage and
@@ -2253,7 +2250,7 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
         CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode);
     if (!is_kiosk) {
       fullscreen_bubble_.reset(new FullscreenExitBubbleViews(
-          GetWidget(), browser_.get(), url, bubble_type));
+          GetWidget(), browser_.get(), url, ask_permission));
     }
   } else {
 #if defined(OS_WIN) && !defined(USE_AURA)
