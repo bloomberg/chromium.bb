@@ -50,6 +50,7 @@ void CreatePrintSettingsDictionary(DictionaryValue* dict) {
   dict->SetInteger(printing::kPreviewRequestID, 12345);
   dict->SetBoolean(printing::kIsFirstRequest, true);
   dict->SetInteger(printing::kSettingMarginsType, printing::DEFAULT_MARGINS);
+  dict->SetBoolean(printing::kSettingPreviewModifiable, false);
   dict->SetBoolean(printing::kSettingHeaderFooterEnabled, false);
   dict->SetBoolean(printing::kSettingGenerateDraftData, true);
 }

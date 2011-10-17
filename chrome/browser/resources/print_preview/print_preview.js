@@ -348,7 +348,8 @@ function getSettings() {
        'headerFooterEnabled': headerFooterSettings.hasHeaderFooter(),
        'marginsType': marginSettings.selectedMarginsValue,
        'requestID': -1,
-       'generateDraftData': generateDraftData};
+       'generateDraftData': generateDraftData,
+       'previewModifiable': previewModifiable};
 
   if (marginSettings.isCustomMarginsSelected())
     settings['marginsCustom'] = marginSettings.customMargins;

@@ -152,17 +152,11 @@ bool PrintingNodeOrPdfFrame(const WebFrame* frame, const WebNode& node) {
   return mime == "application/pdf";
 }
 
-void SetMarginsForPdf(DictionaryValue* job_settings, bool force_no_margins) {
-  // TODO(vandebo) When it's plumbed through, check if the plugin wants us to
-  // scale or not.  For now, assume the answer is yes.
-  if (force_no_margins) {
-    job_settings->SetInteger(printing::kSettingMarginsType,
-                             printing::NO_MARGINS);
-  } else {
-    job_settings->SetInteger(printing::kSettingMarginsType,
-                             printing::PRINTABLE_AREA_MARGINS);
-  }
-
+printing::MarginType GetMarginsForPdf(WebFrame* frame, const WebNode& node) {
+  if (frame->isPrintScalingDisabledForPlugin(node))
+    return printing::NO_MARGINS;
+  else
+    return printing::PRINTABLE_AREA_MARGINS;
 }
 
 // Get the (x, y) coordinate from where printing of the current text should
@@ -444,7 +438,7 @@ PrintWebViewHelper::PrintWebViewHelper(content::RenderView* render_view)
     : content::RenderViewObserver(render_view),
       content::RenderViewObserverTracker<PrintWebViewHelper>(render_view),
       print_web_view_(NULL),
-      is_preview_(switches::IsPrintPreviewEnabled()),
+      is_preview_enabled_(switches::IsPrintPreviewEnabled()),
       is_print_ready_metafile_sent_(false),
       user_cancelled_scripted_print_count_(0),
       notify_browser_of_print_failure_(true) {
@@ -466,7 +460,7 @@ void PrintWebViewHelper::PrintPage(WebKit::WebFrame* frame) {
     return;
   IncrementScriptedPrintCount();
 
-  if (is_preview_) {
+  if (is_preview_enabled_) {
     print_preview_context_.InitWithFrame(frame);
     RequestPrintPreview();
   } else {
@@ -496,7 +490,7 @@ bool PrintWebViewHelper::OnMessageReceived(const IPC::Message& message) {
 
 void PrintWebViewHelper::OnPrintForPrintPreview(
     const DictionaryValue& job_settings) {
-  DCHECK(is_preview_);
+  DCHECK(is_preview_enabled_);
   // If still not finished with earlier print request simply ignore.
   if (print_web_view_)
     return;
@@ -517,7 +511,7 @@ void PrintWebViewHelper::OnPrintForPrintPreview(
   }
 
   WebFrame* pdf_frame = pdf_element.document().frame();
-  if (!UpdatePrintSettings(pdf_frame, pdf_element, job_settings, false)) {
+  if (!UpdatePrintSettings(pdf_frame, pdf_element, job_settings, true)) {
     LOG(ERROR) << "UpdatePrintSettings failed";
     DidFinishPrinting(FAIL_PRINT);
     return;
@@ -567,11 +561,11 @@ void PrintWebViewHelper::OnPrintForSystemDialog() {
 }
 
 void PrintWebViewHelper::OnPrintPreview(const DictionaryValue& settings) {
-  DCHECK(is_preview_);
+  DCHECK(is_preview_enabled_);
   print_preview_context_.OnPrintPreview();
 
   if (!UpdatePrintSettings(print_preview_context_.frame(),
-                           print_preview_context_.node(), settings, true)) {
+                           print_preview_context_.node(), settings, false)) {
     if (print_preview_context_.last_error() != PREVIEW_ERROR_BAD_SETTING) {
       Send(new PrintHostMsg_PrintPreviewInvalidPrinterSettings(
           routing_id(), print_pages_params_->params.document_cookie));
@@ -716,7 +710,7 @@ void PrintWebViewHelper::OnPrintNodeUnderContextMenu() {
 
   // Make a copy of the node, in case RenderView::OnContextMenuClosed resets
   // its |context_menu_node_|.
-  if (is_preview_) {
+  if (is_preview_enabled_) {
     print_preview_context_.InitWithNode(context_menu_node);
     RequestPrintPreview();
   } else {
@@ -726,7 +720,7 @@ void PrintWebViewHelper::OnPrintNodeUnderContextMenu() {
 }
 
 void PrintWebViewHelper::OnInitiatePrintPreview() {
-  DCHECK(is_preview_);
+  DCHECK(is_preview_enabled_);
   WebFrame* frame;
   if (GetPrintFrame(&frame)) {
     print_preview_context_.InitWithFrame(frame);
@@ -765,7 +759,7 @@ void PrintWebViewHelper::Print(WebKit::WebFrame* frame,
   }
 
   // Ask the browser to show UI to retrieve the final print settings.
-  if (!GetPrintSettingsFromUser(frame, expected_page_count,
+  if (!GetPrintSettingsFromUser(frame, node, expected_page_count,
                                 use_browser_overlays)) {
     DidFinishPrinting(OK);  // Release resources and fail silently.
     return;
@@ -789,7 +783,7 @@ void PrintWebViewHelper::DidFinishPrinting(PrintingResult result) {
       Send(new PrintHostMsg_PrintingFailed(routing_id(), cookie));
     }
   } else if (result == FAIL_PREVIEW) {
-    DCHECK(is_preview_);
+    DCHECK(is_preview_enabled_);
     store_print_pages_params = false;
     int cookie = print_pages_params_.get() ?
                      print_pages_params_->params.document_cookie : 0;
@@ -1045,24 +1039,50 @@ bool PrintWebViewHelper::InitPrintSettingsAndPrepareFrame(
 
 bool PrintWebViewHelper::UpdatePrintSettings(
     WebKit::WebFrame* frame, const WebKit::WebNode& node,
-    const DictionaryValue& passed_job_settings, bool generating_preview) {
-  DCHECK(is_preview_);
+    const DictionaryValue& passed_job_settings, bool print_for_preview) {
+  DCHECK(is_preview_enabled_);
   const DictionaryValue* job_settings = &passed_job_settings;
   DictionaryValue modified_job_settings;
   if (job_settings->empty()) {
-    if (generating_preview)
+    if (!print_for_preview)
       print_preview_context_.set_error(PREVIEW_ERROR_BAD_SETTING);
     return false;
   }
 
-  bool is_pdf = PrintingNodeOrPdfFrame(frame, node);
-  if (is_pdf || !generating_preview) {
-    modified_job_settings.MergeDictionary(job_settings);
-    SetMarginsForPdf(&modified_job_settings, !generating_preview);
-    if (is_pdf) {
-      modified_job_settings.SetBoolean(printing::kSettingHeaderFooterEnabled,
-                                       false);
+  bool source_is_html = true;
+  if (print_for_preview) {
+    if (!job_settings->GetBoolean(printing::kSettingPreviewModifiable,
+                                  &source_is_html)) {
+      NOTREACHED();
     }
+  } else {
+    source_is_html = !PrintingNodeOrPdfFrame(frame, node);
+  }
+
+  if (print_for_preview || !source_is_html) {
+    modified_job_settings.MergeDictionary(job_settings);
+    modified_job_settings.SetBoolean(printing::kSettingHeaderFooterEnabled,
+                                     false);
+
+    // - On Windows, we don't add a margin until we turn it into an EMF when
+    //   printing for print preview (We could add it in the plugin).
+    // - On Mac with Skia, we don't add a margin until we send it to the printer
+    //   using the CG PDF class (We could add it in the plugin).
+    // - On Mac with CG, we can add a margin when generating the preview.
+    // - On Linux, we never add a margin (We Could add it in the plugin).
+#if defined(OS_MACOSX) && !defined(USE_SKIA)
+    bool get_margins_from_pdf = !source_is_html && !print_for_preview;
+#elif defined(OS_WIN) || defined(OS_MACOSX)
+    bool get_margins_from_pdf = !source_is_html && print_for_preview;
+#else
+    bool get_margins_from_pdf = false;
+#endif
+
+    printing::MarginType margin_type = printing::NO_MARGINS;
+    if (get_margins_from_pdf)
+      margin_type = GetMarginsForPdf(frame, node);
+    modified_job_settings.SetInteger(printing::kSettingMarginsType,
+                                     margin_type);
     job_settings = &modified_job_settings;
   }
 
@@ -1076,7 +1096,7 @@ bool PrintWebViewHelper::UpdatePrintSettings(
   print_pages_params_.reset(new PrintMsg_PrintPages_Params(settings));
 
   if (PrintMsg_Print_Params_IsEmpty(settings.params)) {
-    if (generating_preview) {
+    if (!print_for_preview) {
       print_preview_context_.set_error(PREVIEW_ERROR_INVALID_PRINTER_SETTINGS);
     } else {
       WebKit::WebFrame* frame = print_preview_context_.frame();
@@ -1098,7 +1118,7 @@ bool PrintWebViewHelper::UpdatePrintSettings(
     return false;
   }
 
-  if (generating_preview) {
+  if (!print_for_preview) {
     // Validate expected print preview settings.
     if (!job_settings->GetString(printing::kPreviewUIAddr,
                                  &(settings.params.preview_ui_addr)) ||
@@ -1140,6 +1160,7 @@ bool PrintWebViewHelper::UpdatePrintSettings(
 }
 
 bool PrintWebViewHelper::GetPrintSettingsFromUser(WebKit::WebFrame* frame,
+                                                  const WebKit::WebNode& node,
                                                   int expected_pages_count,
                                                   bool use_browser_overlays) {
   PrintHostMsg_ScriptedPrint_Params params;
@@ -1156,7 +1177,10 @@ bool PrintWebViewHelper::GetPrintSettingsFromUser(WebKit::WebFrame* frame,
   params.cookie = print_pages_params_->params.document_cookie;
   params.has_selection = frame->hasSelection();
   params.expected_pages_count = expected_pages_count;
-  params.margin_type = printing::DEFAULT_MARGINS;
+  printing::MarginType margin_type = printing::DEFAULT_MARGINS;
+  if (PrintingNodeOrPdfFrame(frame, node))
+    margin_type = GetMarginsForPdf(frame, node);
+  params.margin_type = margin_type;
 
   Send(new PrintHostMsg_DidShowPrintDialog(routing_id()));
 
@@ -1331,6 +1355,7 @@ PrintWebViewHelper::PrintPreviewContext::~PrintPreviewContext() {
 void PrintWebViewHelper::PrintPreviewContext::InitWithFrame(
     WebKit::WebFrame* web_frame) {
   DCHECK(web_frame);
+  DCHECK(!IsRendering());
   state_ = INITIALIZED;
   frame_ = web_frame;
   node_.reset();
@@ -1339,20 +1364,21 @@ void PrintWebViewHelper::PrintPreviewContext::InitWithFrame(
 void PrintWebViewHelper::PrintPreviewContext::InitWithNode(
     const WebKit::WebNode& web_node) {
   DCHECK(!web_node.isNull());
+  DCHECK(!IsRendering());
   state_ = INITIALIZED;
   frame_ = web_node.document().frame();
   node_ = web_node;
 }
 
 void PrintWebViewHelper::PrintPreviewContext::OnPrintPreview() {
-  DCHECK(IsReadyToRender());
+  DCHECK_EQ(INITIALIZED, state_);
   ClearContext();
 }
 
 bool PrintWebViewHelper::PrintPreviewContext::CreatePreviewDocument(
     PrintMsg_Print_Params* print_params,
     const std::vector<int>& pages) {
-  DCHECK(IsReadyToRender());
+  DCHECK_EQ(INITIALIZED, state_);
   state_ = RENDERING;
 
   print_params_.reset(new PrintMsg_Print_Params(*print_params));
@@ -1418,8 +1444,7 @@ void PrintWebViewHelper::PrintPreviewContext::AllPagesRendered() {
 }
 
 void PrintWebViewHelper::PrintPreviewContext::FinalizePrintReadyDocument() {
-  if (state_ != DONE && state_ != RENDERING)
-    NOTREACHED();
+  DCHECK(IsRendering());
 
   base::TimeTicks begin_time = base::TimeTicks::Now();
   metafile_->FinishDocument();
@@ -1441,6 +1466,7 @@ void PrintWebViewHelper::PrintPreviewContext::FinalizePrintReadyDocument() {
 
 void PrintWebViewHelper::PrintPreviewContext::Finished() {
   DCHECK_EQ(DONE, state_);
+  state_ = INITIALIZED;
   ClearContext();
 }
 
@@ -1462,8 +1488,8 @@ int PrintWebViewHelper::PrintPreviewContext::GetNextPageNumber() {
   return pages_to_render_[current_page_index_++];
 }
 
-bool PrintWebViewHelper::PrintPreviewContext::IsReadyToRender() const {
-  return state_ != UNINITIALIZED;
+bool PrintWebViewHelper::PrintPreviewContext::IsRendering() const {
+  return state_ == RENDERING || state_ == DONE;
 }
 
 bool PrintWebViewHelper::PrintPreviewContext::IsModifiable() const {
@@ -1473,15 +1499,18 @@ bool PrintWebViewHelper::PrintPreviewContext::IsModifiable() const {
 
 bool PrintWebViewHelper::PrintPreviewContext::IsLastPageOfPrintReadyMetafile()
     const {
+  DCHECK(IsRendering());
   return current_page_index_ == print_ready_metafile_page_count_;
 }
 
 bool  PrintWebViewHelper::PrintPreviewContext::IsFinalPageRendered() const {
+  DCHECK(IsRendering());
   return static_cast<size_t>(current_page_index_) == pages_to_render_.size();
 }
 
 void PrintWebViewHelper::PrintPreviewContext::set_generate_draft_pages(
     bool generate_draft_pages) {
+  DCHECK_EQ(INITIALIZED, state_);
   generate_draft_pages_ = generate_draft_pages;
 }
 
@@ -1495,11 +1524,12 @@ WebKit::WebFrame* PrintWebViewHelper::PrintPreviewContext::frame() const {
 }
 
 const WebKit::WebNode& PrintWebViewHelper::PrintPreviewContext::node() const {
+  DCHECK(state_ != UNINITIALIZED);
   return node_;
 }
 
 int PrintWebViewHelper::PrintPreviewContext::total_page_count() const {
-  DCHECK(IsReadyToRender());
+  DCHECK(IsRendering());
   return total_page_count_;
 }
 
@@ -1509,11 +1539,13 @@ bool PrintWebViewHelper::PrintPreviewContext::generate_draft_pages() {
 
 printing::PreviewMetafile*
 PrintWebViewHelper::PrintPreviewContext::metafile() const {
+  DCHECK(IsRendering());
   return metafile_.get();
 }
 
 const PrintMsg_Print_Params&
 PrintWebViewHelper::PrintPreviewContext::print_params() const {
+  DCHECK(state_ != UNINITIALIZED);
   return *print_params_;
 }
 
@@ -1523,6 +1555,7 @@ int PrintWebViewHelper::PrintPreviewContext::last_error() const {
 
 const gfx::Size&
 PrintWebViewHelper::PrintPreviewContext::GetPrintCanvasSize() const {
+  DCHECK(IsRendering());
   return prep_frame_view_->GetPrintCanvasSize();
 }
 

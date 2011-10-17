@@ -111,6 +111,8 @@ const char kSettingPageRangeFrom[] = "from";
 // The last page of a page range. (1-based)
 const char kSettingPageRangeTo[] = "to";
 
+const char kSettingPreviewModifiable[] = "previewModifiable";
+
 // Printer name.
 const char kSettingPrinterName[] = "printerName";
 

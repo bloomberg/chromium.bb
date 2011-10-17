@@ -181,11 +181,12 @@ class PrintWebViewHelper
   bool UpdatePrintSettings(WebKit::WebFrame* frame,
                            const WebKit::WebNode& node,
                            const base::DictionaryValue& passed_job_settings,
-                           bool generating_preview);
+                           bool print_for_preview);
 
   // Get final print settings from the user.
   // Return false if the user cancels or on error.
   bool GetPrintSettingsFromUser(WebKit::WebFrame* frame,
+                                const WebKit::WebNode& node,
                                 int expected_pages_count,
                                 bool use_browser_overlays);
 
@@ -302,7 +303,7 @@ class PrintWebViewHelper
   WebKit::WebView* print_web_view_;
 
   scoped_ptr<PrintMsg_PrintPages_Params> print_pages_params_;
-  bool is_preview_;
+  bool is_preview_enabled_;
   bool is_print_ready_metafile_sent_;
 
   // Used for scripted initiated printing blocking.
@@ -368,7 +369,7 @@ class PrintWebViewHelper
 
     // Helper functions
     int GetNextPageNumber();
-    bool IsReadyToRender() const;
+    bool IsRendering() const;
     bool IsModifiable() const;
     bool IsLastPageOfPrintReadyMetafile() const;
     bool IsFinalPageRendered() const;
