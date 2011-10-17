@@ -126,6 +126,10 @@ EnumMapper<PropertyIndex>::Pair property_index_table[] = {
   { flimflam::kTechnologyFamilyProperty, PROPERTY_INDEX_TECHNOLOGY_FAMILY },
   { flimflam::kTypeProperty, PROPERTY_INDEX_TYPE },
   { flimflam::kUsageURLProperty, PROPERTY_INDEX_USAGE_URL },
+  { flimflam::kOpenVPNUserProperty, PROPERTY_INDEX_OPEN_VPN_USER },
+  { flimflam::kOpenVPNPasswordProperty, PROPERTY_INDEX_OPEN_VPN_PASSWORD },
+  { flimflam::kOpenVPNClientCertIdProperty,
+    PROPERTY_INDEX_OPEN_VPN_CLIENT_CERT_ID },
   { flimflam::kPaymentPortalProperty, PROPERTY_INDEX_OLP },
   { flimflam::kWifiAuthMode, PROPERTY_INDEX_WIFI_AUTH_MODE },
   { flimflam::kWifiFrequency, PROPERTY_INDEX_WIFI_FREQUENCY },
@@ -1163,21 +1167,24 @@ bool NativeVirtualNetworkParser::ParseProviderValue(PropertyIndex index,
       network->set_psk_passphrase(psk_passphrase);
       return true;
     }
-    case PROPERTY_INDEX_L2TPIPSEC_CLIENT_CERT_ID: {
+    case PROPERTY_INDEX_L2TPIPSEC_CLIENT_CERT_ID:
+    case PROPERTY_INDEX_OPEN_VPN_CLIENT_CERT_ID: {
       std::string client_cert_id;
       if (!value.GetAsString(&client_cert_id))
         break;
       network->set_client_cert_id(client_cert_id);
       return true;
     }
-    case PROPERTY_INDEX_L2TPIPSEC_USER: {
+    case PROPERTY_INDEX_L2TPIPSEC_USER:
+    case PROPERTY_INDEX_OPEN_VPN_USER: {
       std::string username;
       if (!value.GetAsString(&username))
         break;
       network->set_username(username);
       return true;
     }
-    case PROPERTY_INDEX_L2TPIPSEC_PASSWORD: {
+    case PROPERTY_INDEX_L2TPIPSEC_PASSWORD:
+    case PROPERTY_INDEX_OPEN_VPN_PASSWORD: {
       std::string user_passphrase;
       if (!value.GetAsString(&user_passphrase))
         break;

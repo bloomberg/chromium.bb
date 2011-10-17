@@ -66,6 +66,7 @@ class VPNConfigView : public ChildNetworkConfigView,
   void Refresh();
 
   // Update various controls.
+  void UpdateControlsToEnable();
   void UpdateControls();
   void UpdateErrorLabel();
 
@@ -101,9 +102,17 @@ class VPNConfigView : public ChildNetworkConfigView,
   std::string server_hostname_;
   string16 service_name_from_server_;
   bool service_text_modified_;
+
+  // Initialized in Init():
+
   ProviderType provider_type_;
 
-  views::Label* server_text_;
+  bool enable_psk_passphrase_;
+  bool enable_user_cert_;
+  bool enable_server_ca_cert_;
+  bool enable_otp_;
+  bool enable_group_name_;
+
   views::Textfield* server_textfield_;
   views::Label* service_text_;
   views::Textfield* service_textfield_;
