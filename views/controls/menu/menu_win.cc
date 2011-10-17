@@ -160,7 +160,6 @@ class MenuHostWindow : public ui::WindowImpl {
       gfx::Font font;
       HGDIOBJ old_font =
           static_cast<HFONT>(SelectObject(hDC, font.GetNativeFont()));
-      int fontsize = font.GetFontSize();
 
       // If an accelerator is specified (with a tab delimiting the rest of the
       // label from the accelerator), we have to justify the fist part on the
