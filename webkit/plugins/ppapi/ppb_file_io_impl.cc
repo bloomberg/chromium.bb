@@ -176,9 +176,10 @@ int32_t PPB_FileIO_Impl::Read(int64_t offset,
     return PP_ERROR_FAILED;
 
   if (!base::FileUtilProxy::Read(
-          plugin_delegate->GetFileThreadMessageLoopProxy(),
-          file_, offset, bytes_to_read,
-          callback_factory_.NewCallback(&PPB_FileIO_Impl::ReadCallback)))
+          plugin_delegate->GetFileThreadMessageLoopProxy(), file_, offset,
+          bytes_to_read,
+          base::Bind(&PPB_FileIO_Impl::ReadCallback,
+                     weak_factory_.GetWeakPtr())))
     return PP_ERROR_FAILED;
 
   RegisterCallback(OPERATION_READ, callback, buffer);
