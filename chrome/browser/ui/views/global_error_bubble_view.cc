@@ -49,20 +49,22 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(Browser* browser,
   title_label->SetFont(title_label->font().DeriveFont(1));
 
   string16 message_string(error_->GetBubbleViewMessage());
-  scoped_ptr<views::Label> message_label(new views::Label(message_string));
-  message_label->SetMultiLine(true);
-  message_label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  message_label_ = new views::Label(message_string);
+  message_label_->SetMultiLine(true);
+  message_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
 
   string16 accept_string(error_->GetBubbleViewAcceptButtonLabel());
   scoped_ptr<views::TextButton> accept_button(
       new views::NativeTextButton(this, UTF16ToWideHack(accept_string)));
   accept_button->SetIsDefault(true);
+  accept_button->set_tag(TAG_ACCEPT_BUTTON);
 
   string16 cancel_string(error_->GetBubbleViewCancelButtonLabel());
   scoped_ptr<views::TextButton> cancel_button;
   if (!cancel_string.empty()) {
     cancel_button.reset(
         new views::NativeTextButton(this, UTF16ToWideHack(cancel_string)));
+    cancel_button->set_tag(TAG_CANCEL_BUTTON);
   }
 
   views::GridLayout* layout = new views::GridLayout(this);
@@ -96,7 +98,7 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(Browser* browser,
   layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
 
   layout->StartRow(1, 1);
-  layout->AddView(message_label.release());
+  layout->AddView(message_label_);
   layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
 
   layout->StartRow(0, 2);
@@ -113,18 +115,30 @@ GlobalErrorBubbleView::~GlobalErrorBubbleView() {
 gfx::Size GlobalErrorBubbleView::GetPreferredSize() {
   views::GridLayout* layout =
       static_cast<views::GridLayout*>(GetLayoutManager());
-  int height = layout->GetPreferredHeightForWidth(this, kBubbleViewWidth);
-  return gfx::Size(kBubbleViewWidth, height);
+  // Buttons row may require bigger width than |kBubbleViewWidth|. To support
+  // this case, we first set the message label to fit our preferred width.
+  // Then, get the desired width from GridLayout (it may be bigger than
+  // |kBubbleViewWidth| if button text is long enough). This width is used as
+  // the final width for our view, so message label's preferred width is reset
+  // back to 0.
+  message_label_->SizeToFit(kBubbleViewWidth);
+  int width = std::max(layout->GetPreferredSize(this).width(),
+                       kBubbleViewWidth);
+  message_label_->SizeToFit(0);
+  int height = layout->GetPreferredHeightForWidth(this, width);
+  return gfx::Size(width, height);
 }
 
 void GlobalErrorBubbleView::ButtonPressed(views::Button* sender,
                                           const views::Event& event) {
+  DCHECK(bubble_);
   if (sender->tag() == TAG_ACCEPT_BUTTON)
     error_->BubbleViewAcceptButtonPressed();
   else if (sender->tag() == TAG_CANCEL_BUTTON)
     error_->BubbleViewCancelButtonPressed();
   else
     NOTREACHED();
+  bubble_->Close();
 }
 
 void GlobalErrorBubbleView::BubbleClosing(Bubble* bubble,
@@ -155,6 +169,8 @@ void GlobalError::ShowBubbleView(Browser* browser, GlobalError* error) {
   GlobalErrorBubbleView* bubble_view =
       new GlobalErrorBubbleView(browser, error);
   // Bubble::Show() takes ownership of the view.
-  Bubble::Show(browser_view->GetWidget(), bounds,
-               views::BubbleBorder::TOP_RIGHT, bubble_view, bubble_view);
+  Bubble* bubble = Bubble::Show(
+      browser_view->GetWidget(), bounds,
+      views::BubbleBorder::TOP_RIGHT, bubble_view, bubble_view);
+  bubble_view->set_bubble(bubble);
 }

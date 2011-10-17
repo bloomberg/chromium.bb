@@ -12,6 +12,10 @@
 class Browser;
 class GlobalError;
 
+namespace views {
+class Label;
+}
+
 class GlobalErrorBubbleView : public views::View,
                               public views::ButtonListener,
                               public BubbleDelegate {
@@ -31,9 +35,14 @@ class GlobalErrorBubbleView : public views::View,
   virtual bool CloseOnEscape() OVERRIDE;
   virtual bool FadeInOnShow() OVERRIDE;
 
+  void set_bubble(Bubble* bubble) { bubble_ = bubble; }
+
  private:
   Browser* browser_;
   GlobalError* error_;
+
+  views::Label* message_label_;
+  Bubble* bubble_;
 
   DISALLOW_COPY_AND_ASSIGN(GlobalErrorBubbleView);
 };
