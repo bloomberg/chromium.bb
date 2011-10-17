@@ -140,7 +140,7 @@ class AutomationResourceMessageFilter
       bool pending_view);
   static void UnRegisterRenderViewInIOThread(int renderer_pid, int renderer_id);
 
-  static bool ResumePendingRenderViewInIOThread(
+  static void ResumePendingRenderViewInIOThread(
       int renderer_pid, int renderer_id, int tab_handle,
       AutomationResourceMessageFilter* filter);
 

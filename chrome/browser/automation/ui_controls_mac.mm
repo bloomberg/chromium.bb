@@ -8,6 +8,8 @@
 #include <mach/mach_time.h>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/message_loop.h"
 #include "chrome/browser/automation/ui_controls_internal.h"
 #include "content/browser/browser_thread.h"
@@ -187,36 +189,28 @@ void SynthesizeKeyEventsSequence(NSWindow* window,
   }
 }
 
-// A task class to watch for the event queue. The specific task will be fired
-// when there is no more event in the queue.
-class EventQueueWatcher : public Task {
- public:
-  EventQueueWatcher(Task* task) : task_(task) {}
-
-  virtual ~EventQueueWatcher() {}
-
-  virtual void Run() {
-    NSEvent* event = [NSApp nextEventMatchingMask:NSAnyEventMask
-                                        untilDate:nil
-                                           inMode:NSDefaultRunLoopMode
-                                          dequeue:NO];
-    // If there is still event in the queue, then we need to check again.
-    if (event)
-      MessageLoop::current()->PostTask(FROM_HERE, new EventQueueWatcher(task_));
-    else
-      MessageLoop::current()->PostTask(FROM_HERE, task_);
+// A helper function to watch for the event queue. The specific task will be
+// fired when there is no more event in the queue.
+void EventQueueWatcher(const base::Closure& task) {
+  NSEvent* event = [NSApp nextEventMatchingMask:NSAnyEventMask
+                                      untilDate:nil
+                                         inMode:NSDefaultRunLoopMode
+                                        dequeue:NO];
+  // If there is still event in the queue, then we need to check again.
+  if (event) {
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&EventQueueWatcher, task));
+  } else {
+    MessageLoop::current()->PostTask(FROM_HERE, task);
   }
-
- private:
-  Task* task_;
-};
+}
 
 // Stores the current mouse location on the screen. So that we can use it
 // when firing keyboard and mouse click events.
 NSPoint g_mouse_location = { 0, 0 };
 
 }  // anonymous namespace
-
 
 namespace ui_controls {
 
@@ -228,7 +222,7 @@ bool SendKeyPress(gfx::NativeWindow window,
                   bool command) {
   return SendKeyPressNotifyWhenDone(window, key,
                                     control, shift, alt, command,
-                                    NULL);
+                                    base::Closure());
 }
 
 // Win and Linux implement a SendKeyPress() this as a
@@ -239,7 +233,7 @@ bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
                                 bool shift,
                                 bool alt,
                                 bool command,
-                                Task* task) {
+                                const base::Closure& task) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   std::vector<NSEvent*> events;
@@ -255,21 +249,23 @@ bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
        iter != events.end(); ++iter)
     [[NSApplication sharedApplication] sendEvent:*iter];
 
-  if (task)
-    MessageLoop::current()->PostTask(FROM_HERE, new EventQueueWatcher(task));
+  if (!task.is_null()) {
+    MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(&EventQueueWatcher, task));
+  }
 
   return true;
 }
 
 bool SendMouseMove(long x, long y) {
-  return SendMouseMoveNotifyWhenDone(x, y, NULL);
+  return SendMouseMoveNotifyWhenDone(x, y, base::Closure());
 }
 
 // Input position is in screen coordinates.  However, NSMouseMoved
 // events require them window-relative, so we adjust.  We *DO* flip
 // the coordinate space, so input events can be the same for all
 // platforms.  E.g. (0,0) is upper-left.
-bool SendMouseMoveNotifyWhenDone(long x, long y, Task* task) {
+bool SendMouseMoveNotifyWhenDone(long x, long y, const base::Closure& task) {
   NSWindow* window = [[NSApplication sharedApplication] keyWindow];
   CGFloat screenHeight =
     [[[NSScreen screens] objectAtIndex:0] frame].size.height;
@@ -291,21 +287,24 @@ bool SendMouseMoveNotifyWhenDone(long x, long y, Task* task) {
                          pressure:0.0];
   [[NSApplication sharedApplication] postEvent:event atStart:NO];
 
-  if (task)
-    MessageLoop::current()->PostTask(FROM_HERE, new EventQueueWatcher(task));
+  if (!task.is_null()) {
+    MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(&EventQueueWatcher, task));
+  }
 
   return true;
 }
 
 bool SendMouseEvents(MouseButton type, int state) {
-  return SendMouseEventsNotifyWhenDone(type, state, NULL);
+  return SendMouseEventsNotifyWhenDone(type, state, base::Closure());
 }
 
-bool SendMouseEventsNotifyWhenDone(MouseButton type, int state, Task* task) {
+bool SendMouseEventsNotifyWhenDone(MouseButton type, int state,
+                                   const base::Closure& task) {
   // On windows it appears state can be (UP|DOWN).  It is unclear if
   // that'll happen here but prepare for it just in case.
   if (state == (UP|DOWN)) {
-    return (SendMouseEventsNotifyWhenDone(type, DOWN, NULL) &&
+    return (SendMouseEventsNotifyWhenDone(type, DOWN, base::Closure()) &&
             SendMouseEventsNotifyWhenDone(type, UP, task));
   }
   NSEventType etype = 0;
@@ -347,21 +346,23 @@ bool SendMouseEventsNotifyWhenDone(MouseButton type, int state, Task* task) {
                          pressure:(state == DOWN ? 1.0 : 0.0 )];
   [[NSApplication sharedApplication] postEvent:event atStart:NO];
 
-  if (task)
-    MessageLoop::current()->PostTask(FROM_HERE, new EventQueueWatcher(task));
+  if (!task.is_null()) {
+    MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(&EventQueueWatcher, task));
+  }
 
   return true;
 }
 
 bool SendMouseClick(MouseButton type) {
- return SendMouseEventsNotifyWhenDone(type, UP|DOWN, NULL);
+ return SendMouseEventsNotifyWhenDone(type, UP|DOWN, base::Closure());
 }
 
 void MoveMouseToCenterAndPress(
     NSView* view,
     MouseButton button,
     int state,
-    Task* task) {
+    const base::Closure& task) {
   DCHECK(view);
   NSWindow* window = [view window];
   DCHECK(window);
@@ -376,8 +377,9 @@ void MoveMouseToCenterAndPress(
   center = [window convertBaseToScreen:center];
   center = NSMakePoint(center.x, [screen frame].size.height - center.y);
 
-  SendMouseMoveNotifyWhenDone(center.x, center.y,
-                              new ClickTask(button, state, task));
+  SendMouseMoveNotifyWhenDone(
+      center.x, center.y,
+      base::Bind(&ui_controls::ClickTask, button, state, task));
 }
 
 }  // ui_controls

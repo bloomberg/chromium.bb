@@ -6,17 +6,11 @@
 
 namespace ui_controls {
 
-ClickTask::ClickTask(MouseButton button, int state, Task* followup)
-    : button_(button), state_(state), followup_(followup)  {
-}
-
-ClickTask::~ClickTask() {}
-
-void ClickTask::Run() {
-  if (followup_)
-    SendMouseEventsNotifyWhenDone(button_, state_, followup_);
+void ClickTask(MouseButton button, int state, const base::Closure& followup) {
+  if (!followup.is_null())
+    SendMouseEventsNotifyWhenDone(button, state, followup);
   else
-    SendMouseEvents(button_, state_);
+    SendMouseEvents(button, state);
 }
 
 }  // ui_controls

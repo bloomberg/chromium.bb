@@ -4,6 +4,7 @@
 
 #include "chrome/browser/automation/automation_resource_message_filter.h"
 
+#include "base/bind.h"
 #include "base/path_service.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
@@ -64,8 +65,7 @@ AutomationResourceMessageFilter::AutomationResourceMessageFilter()
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableFunction(
-          URLRequestAutomationJob::EnsureProtocolFactoryRegistered));
+      base::Bind(&URLRequestAutomationJob::EnsureProtocolFactoryRegistered));
 }
 
 AutomationResourceMessageFilter::~AutomationResourceMessageFilter() {
@@ -223,13 +223,9 @@ bool AutomationResourceMessageFilter::RegisterRenderView(
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableFunction(
-          AutomationResourceMessageFilter::RegisterRenderViewInIOThread,
-          renderer_pid,
-          renderer_id,
-          tab_handle,
-          make_scoped_refptr(filter),
-          pending_view));
+      base::Bind(&AutomationResourceMessageFilter::RegisterRenderViewInIOThread,
+                 renderer_pid, renderer_id, tab_handle,
+                 make_scoped_refptr(filter), pending_view));
   return true;
 }
 
@@ -237,8 +233,8 @@ void AutomationResourceMessageFilter::UnRegisterRenderView(
     int renderer_pid, int renderer_id) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableFunction(
-          AutomationResourceMessageFilter::UnRegisterRenderViewInIOThread,
+      base::Bind(
+          &AutomationResourceMessageFilter::UnRegisterRenderViewInIOThread,
           renderer_pid, renderer_id));
 }
 
@@ -252,12 +248,9 @@ bool AutomationResourceMessageFilter::ResumePendingRenderView(
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableFunction(
-          AutomationResourceMessageFilter::ResumePendingRenderViewInIOThread,
-          renderer_pid,
-          renderer_id,
-          tab_handle,
-          make_scoped_refptr(filter)));
+      base::Bind(
+          &AutomationResourceMessageFilter::ResumePendingRenderViewInIOThread,
+          renderer_pid, renderer_id, tab_handle, make_scoped_refptr(filter)));
   return true;
 }
 
@@ -299,7 +292,7 @@ void AutomationResourceMessageFilter::UnRegisterRenderViewInIOThread(
 }
 
 // static
-bool AutomationResourceMessageFilter::ResumePendingRenderViewInIOThread(
+void AutomationResourceMessageFilter::ResumePendingRenderViewInIOThread(
     int renderer_pid, int renderer_id, int tab_handle,
     AutomationResourceMessageFilter* filter) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -314,7 +307,6 @@ bool AutomationResourceMessageFilter::ResumePendingRenderViewInIOThread(
                  << renderer_pid
                  << ", render view id:"
                  << renderer_id;
-    return false;
   }
 
   DCHECK(automation_details_iter->second.is_pending_render_view);
@@ -327,7 +319,6 @@ bool AutomationResourceMessageFilter::ResumePendingRenderViewInIOThread(
       AutomationDetails(tab_handle, filter, false);
 
   ResumeJobsForPendingView(tab_handle, old_filter, filter);
-  return true;
 }
 
 bool AutomationResourceMessageFilter::LookupRegisteredRenderView(

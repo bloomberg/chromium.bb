@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/callback.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/automation/ui_controls.h"
 #include "chrome/test/base/view_event_test_base.h"
@@ -86,7 +87,7 @@ class TestViewsDelegate : public views::ViewsDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestViewsDelegate);
 };
 
-// Implement most of the ui::MenuModel pure virtuals for subclasses
+// Implement most of the ui::MenuModel pure virtual methods for subclasses
 //
 // Exceptions:
 //  virtual int GetItemCount() const = 0;
@@ -351,7 +352,7 @@ class MenuModelAdapterTest : public ViewEventTestBase,
 
  private:
   // Generate a mouse click on the specified view and post a new task.
-  virtual void Click(views::View* view, Task* next) {
+  virtual void Click(views::View* view, const base::Closure& next) {
     ui_controls::MoveMouseToCenterAndPress(
         view,
         ui_controls::LEFT,

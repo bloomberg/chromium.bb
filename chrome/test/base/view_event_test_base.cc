@@ -8,6 +8,8 @@
 #include <ole2.h>
 #endif
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
@@ -70,7 +72,7 @@ void ViewEventTestBase::Done() {
 
   // If we're in a nested message loop, as is the case with menus, we need
   // to quit twice. The second quit does that for us.
-  MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+  MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
 }
 
 void ViewEventTestBase::SetUp() {
@@ -86,7 +88,7 @@ void ViewEventTestBase::TearDown() {
     DestroyWindow(window_->GetNativeWindow());
 #else
     window_->Close();
-    MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+    MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
     ui_test_utils::RunMessageLoop();
 #endif
     window_ = NULL;
@@ -138,7 +140,7 @@ void ViewEventTestBase::StartMessageLoopAndRunTest() {
   // run the message loop.
   MessageLoop::current()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &ViewEventTestBase::DoTestOnMessageLoop));
+      base::Bind(&ViewEventTestBase::DoTestOnMessageLoop, this));
 
   MessageLoop::current()->Run();
 }
@@ -153,7 +155,8 @@ void ViewEventTestBase::ScheduleMouseMoveInBackground(int x, int y) {
     dnd_thread_->Start();
   }
   dnd_thread_->message_loop()->PostDelayedTask(
-      FROM_HERE, NewRunnableFunction(&ui_controls::SendMouseMove, x, y),
+      FROM_HERE,
+      base::IgnoreReturn<bool>(base::Bind(&ui_controls::SendMouseMove, x, y)),
       kMouseMoveDelayMS);
 }
 
@@ -161,11 +164,10 @@ void ViewEventTestBase::StopBackgroundThread() {
   dnd_thread_.reset(NULL);
 }
 
-void ViewEventTestBase::RunTestMethod(Task* task) {
+void ViewEventTestBase::RunTestMethod(const base::Closure& task) {
   StopBackgroundThread();
 
-  scoped_ptr<Task> task_deleter(task);
-  task->Run();
+  task.Run();
   if (HasFatalFailure())
     Done();
 }

@@ -11,13 +11,12 @@
 // This way if a test hangs the test launcher can reliably terminate it.
 #if defined(HAS_OUT_OF_PROC_TEST_RUNNER)
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/message_loop.h"
-#include "base/task.h"
 #include "base/threading/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "views/widget/widget_delegate.h"
-
-class Task;
 
 namespace gfx {
 class Size;
@@ -81,7 +80,7 @@ class ViewEventTestBase : public views::WidgetDelegate,
   virtual const views::Widget* GetWidget() const OVERRIDE;
   virtual views::Widget* GetWidget() OVERRIDE;
 
-  // Overriden to do nothing so that this class can be used in runnable tasks.
+  // Overridden to do nothing so that this class can be used in runnable tasks.
   void AddRef() {}
   void Release() {}
   static bool ImplementsThreadSafeReferenceCounting() { return false; }
@@ -108,9 +107,9 @@ class ViewEventTestBase : public views::WidgetDelegate,
   // method is called in such a way that if there are any test failures
   // Done is invoked.
   template <class T, class Method>
-  Task* CreateEventTask(T* target, Method method) {
-    return NewRunnableMethod(this, &ViewEventTestBase::RunTestMethod,
-                             NewRunnableMethod(target, method));
+  base::Closure CreateEventTask(T* target, Method method) {
+    return base::Bind(&ViewEventTestBase::RunTestMethod, this,
+                      base::Bind(method, target));
   }
 
   // Spawns a new thread posts a MouseMove in the background.
@@ -124,7 +123,7 @@ class ViewEventTestBase : public views::WidgetDelegate,
 
   // Callback from CreateEventTask. Stops the background thread, runs the
   // supplied task and if there are failures invokes Done.
-  void RunTestMethod(Task* task);
+  void RunTestMethod(const base::Closure& task);
 
   // The content of the Window.
   views::View* content_view_;

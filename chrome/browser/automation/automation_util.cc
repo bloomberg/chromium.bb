@@ -152,9 +152,8 @@ void GetCookies(const GURL& url,
     base::WaitableEvent event(true /* manual reset */,
                               false /* not initially signaled */);
     CHECK(BrowserThread::PostTask(
-              BrowserThread::IO, FROM_HERE,
-              NewRunnableFunction(&GetCookiesOnIOThread,
-                                  url, context_getter, &event, value)));
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&GetCookiesOnIOThread, url, context_getter, &event, value)));
     event.Wait();
 
     *value_size = static_cast<int>(value->size());
@@ -174,10 +173,9 @@ void SetCookie(const GURL& url,
                               false /* not initially signaled */);
     bool success = false;
     CHECK(BrowserThread::PostTask(
-              BrowserThread::IO, FROM_HERE,
-              NewRunnableFunction(&SetCookieOnIOThread,
-                                  url, value, context_getter, &event,
-                                  &success)));
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&SetCookieOnIOThread, url, value, context_getter, &event,
+                   &success)));
     event.Wait();
     if (success)
       *response_value = 1;
@@ -195,9 +193,9 @@ void DeleteCookie(const GURL& url,
     base::WaitableEvent event(true /* manual reset */,
                               false /* not initially signaled */);
     CHECK(BrowserThread::PostTask(
-              BrowserThread::IO, FROM_HERE,
-              NewRunnableFunction(&DeleteCookieOnIOThread,
-                                  url, cookie_name, context_getter, &event)));
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&DeleteCookieOnIOThread, url, cookie_name, context_getter,
+                   &event)));
     event.Wait();
     *success = true;
   }
@@ -220,9 +218,8 @@ void GetCookiesJSON(AutomationProvider* provider,
   net::CookieList cookie_list;
   base::WaitableEvent event(true /* manual reset */,
                             false /* not initially signaled */);
-  Task* task = NewRunnableFunction(
-      &GetCanonicalCookiesOnIOThread,
-      GURL(url), context_getter, &event, &cookie_list);
+  base::Closure task = base::Bind(&GetCanonicalCookiesOnIOThread, GURL(url),
+                                  context_getter, &event, &cookie_list);
   if (!BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, task)) {
     reply.SendError("Couldn't post task to get the cookies");
     return;
@@ -268,9 +265,8 @@ void DeleteCookieJSON(AutomationProvider* provider,
 
   base::WaitableEvent event(true /* manual reset */,
                             false /* not initially signaled */);
-  Task* task = NewRunnableFunction(
-      &DeleteCookieOnIOThread,
-      GURL(url), name, context_getter, &event);
+  base::Closure task = base::Bind(&DeleteCookieOnIOThread, GURL(url), name,
+                                  context_getter, &event);
   if (!BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, task)) {
     reply.SendError("Couldn't post task to delete the cookie");
     return;
@@ -358,9 +354,9 @@ void SetCookieJSON(AutomationProvider* provider,
   base::WaitableEvent event(true /* manual reset */,
                             false /* not initially signaled */);
   bool success = false;
-  Task* task = NewRunnableFunction(
-      &SetCookieWithDetailsOnIOThread,
-      GURL(url), *cookie.get(), domain, context_getter, &event, &success);
+  base::Closure task = base::Bind(
+      &SetCookieWithDetailsOnIOThread, GURL(url), *cookie.get(), domain,
+      context_getter, &event, &success);
   if (!BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, task)) {
     reply.SendError("Couldn't post task to set the cookie");
     return;

@@ -12,6 +12,7 @@
 #include <wtypes.h>
 #endif
 
+#include "base/callback.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
@@ -22,16 +23,14 @@ class View;
 }
 #endif
 
-class Task;
-
 namespace ui_controls {
 
-// Many of the functions in this class include a variant that takes a Task.
-// The version that takes a Task waits until the generated event is processed.
-// Once the generated event is processed the Task is Run (and deleted). Note
-// that this is a somewhat fragile process in that any event of the correct
-// type (key down, mouse click, etc.) will trigger the Task to be run. Hence
-// a usage such as
+// Many of the functions in this class include a variant that takes a Closure.
+// The version that takes a Closure waits until the generated event is
+// processed. Once the generated event is processed the Closure is Run (and
+// deleted). Note that this is a somewhat fragile process in that any event of
+// the correct type (key down, mouse click, etc.) will trigger the Closure to be
+// run. Hence a usage such as
 //
 //   SendKeyPress(...);
 //   SendKeyPressNotifyWhenDone(..., task);
@@ -57,11 +56,11 @@ bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
                                 bool shift,
                                 bool alt,
                                 bool command,
-                                Task* task);
+                                const base::Closure& task);
 
 // Simulate a mouse move. (x,y) are absolute screen coordinates.
 bool SendMouseMove(long x, long y);
-bool SendMouseMoveNotifyWhenDone(long x, long y, Task* task);
+bool SendMouseMoveNotifyWhenDone(long x, long y, const base::Closure& task);
 
 enum MouseButton {
   LEFT = 0,
@@ -79,7 +78,8 @@ enum MouseButtonState {
 // the cursor currently is, so be sure to move the cursor before calling this
 // (and be sure the cursor has arrived!).
 bool SendMouseEvents(MouseButton type, int state);
-bool SendMouseEventsNotifyWhenDone(MouseButton type, int state, Task* task);
+bool SendMouseEventsNotifyWhenDone(MouseButton type, int state,
+                                   const base::Closure& task);
 // Same as SendMouseEvents with UP | DOWN.
 bool SendMouseClick(MouseButton type);
 
@@ -95,7 +95,7 @@ void MoveMouseToCenterAndPress(
 #endif
     MouseButton button,
     int state,
-    Task* task);
+    const base::Closure& task);
 
 }  // ui_controls
 

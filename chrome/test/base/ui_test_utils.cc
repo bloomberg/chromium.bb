@@ -604,7 +604,7 @@ bool SendKeyPressSync(const Browser* browser,
 
   if (!ui_controls::SendKeyPressNotifyWhenDone(
           window, key, control, shift, alt, command,
-          new MessageLoop::QuitTask())) {
+          MessageLoop::QuitClosure())) {
     LOG(ERROR) << "ui_controls::SendKeyPressNotifyWhenDone failed";
     return false;
   }

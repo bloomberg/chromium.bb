@@ -7,6 +7,7 @@
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "chrome/browser/automation/ui_controls_internal.h"
@@ -31,7 +32,7 @@ guint32 XTimeNow() {
 
 class EventWaiter : public MessageLoopForUI::Observer {
  public:
-  EventWaiter(Task* task, GdkEventType type, int count)
+  EventWaiter(const base::Closure& task, GdkEventType type, int count)
       : task_(task),
         type_(type),
         count_(count) {
@@ -71,9 +72,7 @@ class EventWaiter : public MessageLoopForUI::Observer {
 #endif
 
  private:
-  // We pass ownership of task_ to MessageLoop when the current event is
-  // received.
-  Task* task_;
+  base::Closure task_;
   GdkEventType type_;
   // The number of events of this type to wait for.
   int count_;
@@ -161,7 +160,7 @@ bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
                                 bool shift,
                                 bool alt,
                                 bool command,
-                                Task* task) {
+                                const base::Closure& task) {
   DCHECK(!command);  // No command key on Linux
   int release_count = 1;
   if (control)
@@ -185,7 +184,7 @@ bool SendMouseMove(long x, long y) {
   return true;
 }
 
-bool SendMouseMoveNotifyWhenDone(long x, long y, Task* task) {
+bool SendMouseMoveNotifyWhenDone(long x, long y, const base::Closure& task) {
   bool rv = SendMouseMove(x, y);
   new EventWaiter(task, GDK_MOTION_NOTIFY, 1);
   return rv;
@@ -241,7 +240,8 @@ bool SendMouseEvents(MouseButton type, int state) {
   return false;
 }
 
-bool SendMouseEventsNotifyWhenDone(MouseButton type, int state, Task* task) {
+bool SendMouseEventsNotifyWhenDone(MouseButton type, int state,
+                                   const base::Closure& task) {
   bool rv = SendMouseEvents(type, state);
   GdkEventType wait_type;
   if (state & UP) {
@@ -291,7 +291,7 @@ void SynchronizeWidgetSize(views::Widget* widget) {
 #endif
 
 void MoveMouseToCenterAndPress(views::View* view, MouseButton button,
-                               int state, Task* task) {
+                               int state, const base::Closure& task) {
 #if defined(OS_LINUX) && !defined(USE_AURA)
   // X is asynchronous and we need to wait until the window gets
   // resized to desired size.
@@ -300,18 +300,20 @@ void MoveMouseToCenterAndPress(views::View* view, MouseButton button,
 
   gfx::Point view_center(view->width() / 2, view->height() / 2);
   views::View::ConvertPointToScreen(view, &view_center);
-  SendMouseMoveNotifyWhenDone(view_center.x(), view_center.y(),
-                              new ClickTask(button, state, task));
+  SendMouseMoveNotifyWhenDone(
+      view_center.x(), view_center.y(),
+      base::Bind(&ui_controls::ClickTask, button, state, task));
 }
 #else
 void MoveMouseToCenterAndPress(GtkWidget* widget,
                                MouseButton button,
                                int state,
-                               Task* task) {
+                               const base::Closure& task) {
   gfx::Rect bounds = gtk_util::GetWidgetScreenBounds(widget);
-  SendMouseMoveNotifyWhenDone(bounds.x() + bounds.width() / 2,
-                              bounds.y() + bounds.height() / 2,
-                              new ClickTask(button, state, task));
+  SendMouseMoveNotifyWhenDone(
+      bounds.x() + bounds.width() / 2,
+      bounds.y() + bounds.height() / 2,
+      base::Bind(&ui_controls::ClickTask, button, state, task));
 }
 #endif
 

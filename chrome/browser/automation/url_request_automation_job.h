@@ -7,6 +7,7 @@
 #define CHROME_BROWSER_AUTOMATION_URL_REQUEST_AUTOMATION_JOB_H_
 #pragma once
 
+#include "base/memory/weak_ptr.h"
 #include "base/task.h"
 #include "chrome/common/ref_counted_util.h"
 #include "net/url_request/url_request.h"
@@ -34,7 +35,7 @@ class URLRequestAutomationJob : public net::URLRequestJob {
                           bool is_pending);
 
   // Register our factory for HTTP/HTTPs requests.
-  static bool EnsureProtocolFactoryRegistered();
+  static void EnsureProtocolFactoryRegistered();
 
   static net::URLRequest::ProtocolFactory Factory;
 
@@ -128,7 +129,7 @@ class URLRequestAutomationJob : public net::URLRequestJob {
   // Contains the ip address and port of the destination host.
   net::HostPortPair socket_address_;
 
-  ScopedRunnableMethodFactory<URLRequestAutomationJob> method_factory_;
+  base::WeakPtrFactory<URLRequestAutomationJob> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestAutomationJob);
 };

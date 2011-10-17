@@ -216,8 +216,9 @@ void TestingAutomationProvider::OnBrowserRemoved(const Browser* browser) {
           switches::kKeepAliveForTest)) {
     // If you change this, update Observer for chrome::SESSION_END
     // below.
-    MessageLoop::current()->PostTask(FROM_HERE,
-        NewRunnableMethod(this, &TestingAutomationProvider::OnRemoveProvider));
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&TestingAutomationProvider::OnRemoveProvider, this));
   }
 }
 
@@ -876,7 +877,7 @@ void TestingAutomationProvider::WindowSimulateClick(const IPC::Message& message,
   if (window_tracker_->ContainsHandle(handle)) {
     // TODO(phajdan.jr): This is flaky. We should wait for the final click.
     ui_controls::SendMouseMoveNotifyWhenDone(
-        click.x(), click.y(), NewRunnableFunction(&SendMouseClick, flags));
+        click.x(), click.y(), base::Bind(&SendMouseClick, flags));
   }
 }
 
@@ -5542,8 +5543,8 @@ void TestingAutomationProvider::SendOSLevelKeyEventToTab(
   if (!ui_controls::SendKeyPressNotifyWhenDone(
           window, static_cast<ui::KeyboardCode>(keycode),
           control, shift, alt, meta,
-          NewRunnableMethod(this,
-              &TestingAutomationProvider::SendSuccessReply, reply_message))) {
+          base::Bind(&TestingAutomationProvider::SendSuccessReply, this,
+                     reply_message))) {
     AutomationJSONReply(this, reply_message)
         .SendError("Could not send the native key event");
   }

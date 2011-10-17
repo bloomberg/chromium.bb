@@ -4,6 +4,7 @@
 
 #include "chrome/browser/automation/automation_provider.h"
 
+#include "base/callback.h"
 #include "base/debug/trace_event.h"
 #include "base/json/json_reader.h"
 #include "base/utf_string_conversions.h"
@@ -211,7 +212,7 @@ void AutomationProvider::WindowSimulateDrag(
            ui::EF_SHIFT_DOWN),
           ((flags & ui::EF_ALT_DOWN) == ui::EF_ALT_DOWN),
           false,
-          new MessageLoop::QuitTask());
+          MessageLoop::QuitClosure());
       MessageLoopForUI* loop = MessageLoopForUI::current();
       bool did_allow_task_nesting = loop->NestableTasksAllowed();
       loop->SetNestableTasksAllowed(true);

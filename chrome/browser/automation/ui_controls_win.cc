@@ -4,6 +4,8 @@
 
 #include "chrome/browser/automation/ui_controls.h"
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
@@ -22,7 +24,7 @@ namespace {
 // appropriate event is received the task is notified.
 class InputDispatcher : public base::RefCounted<InputDispatcher> {
  public:
-  InputDispatcher(Task* task, WPARAM message_waiting_for);
+  InputDispatcher(const base::Closure& task, WPARAM message_waiting_for);
 
   // Invoked from the hook. If mouse_message matches message_waiting_for_
   // MatchingMessageFound is invoked.
@@ -41,7 +43,7 @@ class InputDispatcher : public base::RefCounted<InputDispatcher> {
   void NotifyTask();
 
   // The task we notify.
-  scoped_ptr<Task> task_;
+  base::Closure task_;
 
   // Message we're waiting for. Not used for keyboard events.
   const WPARAM message_waiting_for_;
@@ -107,7 +109,8 @@ void UninstallHook(InputDispatcher* dispatcher) {
   }
 }
 
-InputDispatcher::InputDispatcher(Task* task, UINT message_waiting_for)
+InputDispatcher::InputDispatcher(const base::Closure& task,
+                                 UINT message_waiting_for)
     : task_(task), message_waiting_for_(message_waiting_for) {
   InstallHook(this, message_waiting_for == WM_KEYUP);
 }
@@ -126,12 +129,12 @@ void InputDispatcher::MatchingMessageFound() {
   UninstallHook(this);
   // At the time we're invoked the event has not actually been processed.
   // Use PostTask to make sure the event has been processed before notifying.
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE, NewRunnableMethod(this, &InputDispatcher::NotifyTask), 0);
+  MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(&InputDispatcher::NotifyTask, this));
 }
 
 void InputDispatcher::NotifyTask() {
-  task_->Run();
+  task_.Run();
   Release();
 }
 
@@ -164,9 +167,9 @@ bool SendKeyEvent(ui::KeyboardCode key, bool up) {
 
 bool SendKeyPressImpl(ui::KeyboardCode key,
                       bool control, bool shift, bool alt,
-                      Task* task) {
+                      const base::Closure& task) {
   scoped_refptr<InputDispatcher> dispatcher(
-      task ? new InputDispatcher(task, WM_KEYUP) : NULL);
+      !task.is_null() ? new InputDispatcher(task, WM_KEYUP) : NULL);
 
   // If a pop-up menu is open, it won't receive events sent using SendInput.
   // Check for a pop-up menu using its window class (#32768) and if one
@@ -239,12 +242,12 @@ bool SendKeyPressImpl(ui::KeyboardCode key,
   return true;
 }
 
-bool SendMouseMoveImpl(long x, long y, Task* task) {
+bool SendMouseMoveImpl(long x, long y, const base::Closure& task) {
   // First check if the mouse is already there.
   POINT current_pos;
   ::GetCursorPos(&current_pos);
   if (x == current_pos.x && y == current_pos.y) {
-    if (task)
+    if (!task.is_null())
       MessageLoop::current()->PostTask(FROM_HERE, task);
     return true;
   }
@@ -262,7 +265,7 @@ bool SendMouseMoveImpl(long x, long y, Task* task) {
   input.mi.dy = pixel_y;
 
   scoped_refptr<InputDispatcher> dispatcher(
-      task ? new InputDispatcher(task, WM_MOUSEMOVE) : NULL);
+      !task.is_null() ? new InputDispatcher(task, WM_MOUSEMOVE) : NULL);
 
   if (!::SendInput(1, &input, sizeof(INPUT)))
     return false;
@@ -273,7 +276,8 @@ bool SendMouseMoveImpl(long x, long y, Task* task) {
   return true;
 }
 
-bool SendMouseEventsImpl(MouseButton type, int state, Task* task) {
+bool SendMouseEventsImpl(MouseButton type, int state,
+                         const base::Closure& task) {
   DWORD down_flags = MOUSEEVENTF_ABSOLUTE;
   DWORD up_flags = MOUSEEVENTF_ABSOLUTE;
   UINT last_event;
@@ -303,7 +307,7 @@ bool SendMouseEventsImpl(MouseButton type, int state, Task* task) {
   }
 
   scoped_refptr<InputDispatcher> dispatcher(
-      task ? new InputDispatcher(task, last_event) : NULL);
+      !task.is_null() ? new InputDispatcher(task, last_event) : NULL);
 
   INPUT input = { 0 };
   input.type = INPUT_MOUSE;
@@ -332,7 +336,7 @@ bool SendKeyPress(gfx::NativeWindow window,
                   bool alt,
                   bool command) {
   DCHECK(!command);  // No command key on Windows
-  return SendKeyPressImpl(key, control, shift, alt, NULL);
+  return SendKeyPressImpl(key, control, shift, alt, base::Closure());
 }
 
 bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
@@ -341,35 +345,36 @@ bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
                                 bool shift,
                                 bool alt,
                                 bool command,
-                                Task* task) {
+                                const base::Closure& task) {
   DCHECK(!command);  // No command key on Windows
   return SendKeyPressImpl(key, control, shift, alt, task);
 }
 
 bool SendMouseMove(long x, long y) {
-  return SendMouseMoveImpl(x, y, NULL);
+  return SendMouseMoveImpl(x, y, base::Closure());
 }
 
-bool SendMouseMoveNotifyWhenDone(long x, long y, Task* task) {
+bool SendMouseMoveNotifyWhenDone(long x, long y, const base::Closure& task) {
   return SendMouseMoveImpl(x, y, task);
 }
 
 bool SendMouseEvents(MouseButton type, int state) {
-  return SendMouseEventsImpl(type, state, NULL);
+  return SendMouseEventsImpl(type, state, base::Closure());
 }
 
-bool SendMouseEventsNotifyWhenDone(MouseButton type, int state, Task* task) {
+bool SendMouseEventsNotifyWhenDone(MouseButton type, int state,
+                                   const base::Closure& task) {
   return SendMouseEventsImpl(type, state, task);
 }
 
 bool SendMouseClick(MouseButton type) {
-  return SendMouseEventsImpl(type, UP | DOWN, NULL);
+  return SendMouseEventsImpl(type, UP | DOWN, base::Closure());
 }
 
 void MoveMouseToCenterAndPress(views::View* view,
                                MouseButton button,
                                int state,
-                               Task* task) {
+                               const base::Closure& task) {
   DCHECK(view);
   DCHECK(view->GetWidget());
   gfx::Point view_center(view->width() / 2, view->height() / 2);
