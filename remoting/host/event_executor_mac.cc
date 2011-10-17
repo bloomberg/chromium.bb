@@ -219,7 +219,10 @@ void EventExecutorMac::InjectKeyEvent(const KeyEvent& event) {
     if (key_sym != -1) {
       // We use the deprecated event injection API because the new one doesn't
       // work with switched-out sessions (curtain mode).
-      CGPostKeyboardEvent(0, key_sym, event.pressed());
+      CGError error = CGPostKeyboardEvent(0, key_sym, event.pressed());
+      if (error != kCGErrorSuccess) {
+        LOG(WARNING) << "CGPostKeyboardEvent error " << error;
+      }
     }
   }
 }
@@ -266,15 +269,22 @@ void EventExecutorMac::InjectMouseEvent(const MouseEvent& event) {
     MiddleBit = 1 << (MouseEvent::BUTTON_MIDDLE - 1),
     RightBit = 1 << (MouseEvent::BUTTON_RIGHT - 1)
   };
-  CGPostMouseEvent(position, true, 3,
-                   (mouse_buttons_ & LeftBit) != 0,
-                   (mouse_buttons_ & RightBit) != 0,
-                   (mouse_buttons_ & MiddleBit) != 0);
+  CGError error = CGPostMouseEvent(position, true, 3,
+                                   (mouse_buttons_ & LeftBit) != 0,
+                                   (mouse_buttons_ & RightBit) != 0,
+                                   (mouse_buttons_ & MiddleBit) != 0);
+  if (error != kCGErrorSuccess) {
+    LOG(WARNING) << "CGPostMouseEvent error " << error;
+  }
 
   if (event.has_wheel_offset_x() && event.has_wheel_offset_y()) {
-    // TODO(jamiewalch): Use either CGPostScrollWheelEvent() or
-    // CGEventCreateScrollWheelEvent() to inject scroll events.
-    NOTIMPLEMENTED() << "No scroll wheel support yet.";
+    int dx = event.wheel_offset_x();
+    int dy = event.wheel_offset_y();
+    // Note that |dy| (the vertical wheel) is the primary wheel.
+    error = CGPostScrollWheelEvent(2, dy, dx);
+    if (error != kCGErrorSuccess) {
+      LOG(WARNING) << "CGPostScrollWheelEvent error " << error;
+    }
   }
 }
 
