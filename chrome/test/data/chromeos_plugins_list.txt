@@ -40,10 +40,5 @@
     u'enabled': 1,
     u'name': 'Native Client',
     u'version': u''
-  }, {
-    u'boards': ['x86-mario', 'x86-alex', 'x86-zgb'],
-    u'enabled': 1,
-    u'name': 'Default Plug-in',
-    u'version': u'1'
   },
 ]
