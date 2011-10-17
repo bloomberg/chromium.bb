@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <set>
 
-#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -106,7 +105,7 @@ void RecordCRXWriteHistogram(bool success, const FilePath& crx_path) {
     // can not be read. Try reading.
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
-        base::Bind(CheckThatCRXIsReadable, crx_path));
+        NewRunnableFunction(CheckThatCRXIsReadable, crx_path));
   }
 }
 
@@ -126,7 +125,7 @@ void CheckThatCRXIsReadable(const FilePath& crx_path) {
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(RecordFileUpdateHistogram, file_write_result));
+      NewRunnableFunction(RecordFileUpdateHistogram, file_write_result));
 }
 
 void RecordFileUpdateHistogram(FileWriteResult file_write_result) {
@@ -478,6 +477,7 @@ ExtensionUpdater::ExtensionUpdater(ExtensionServiceInterface* service,
     : alive_(false),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       service_(service), frequency_seconds_(frequency_seconds),
+      method_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       will_check_soon_(false), extension_prefs_(extension_prefs),
       prefs_(prefs), profile_(profile), blacklist_checks_enabled_(true),
       crx_install_is_running_(false) {
@@ -583,6 +583,7 @@ void ExtensionUpdater::Stop() {
   profile_ = NULL;
   timer_.Stop();
   will_check_soon_ = false;
+  method_factory_.RevokeAll();
   manifest_fetcher_.reset();
   extension_fetcher_.reset();
   STLDeleteElements(&manifests_pending_);
@@ -630,8 +631,8 @@ class SafeManifestParser : public UtilityProcessHost::Client {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     if (!BrowserThread::PostTask(
             BrowserThread::IO, FROM_HERE,
-            base::Bind(
-                &SafeManifestParser::ParseInSandbox, this,
+            NewRunnableMethod(
+                this, &SafeManifestParser::ParseInSandbox,
                 g_browser_process->resource_dispatcher_host()))) {
       NOTREACHED();
     }
@@ -654,16 +655,16 @@ class SafeManifestParser : public UtilityProcessHost::Client {
       if (manifest.Parse(xml_)) {
         if (!BrowserThread::PostTask(
                 BrowserThread::UI, FROM_HERE,
-                base::Bind(
-                    &SafeManifestParser::OnParseUpdateManifestSucceeded, this,
+                NewRunnableMethod(
+                    this, &SafeManifestParser::OnParseUpdateManifestSucceeded,
                     manifest.results()))) {
           NOTREACHED();
         }
       } else {
         if (!BrowserThread::PostTask(
                 BrowserThread::UI, FROM_HERE,
-                base::Bind(
-                    &SafeManifestParser::OnParseUpdateManifestFailed, this,
+                NewRunnableMethod(
+                    this, &SafeManifestParser::OnParseUpdateManifestFailed,
                     manifest.errors()))) {
           NOTREACHED();
         }
@@ -983,8 +984,8 @@ void ExtensionUpdater::CheckSoon() {
   }
   if (BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          base::Bind(&ExtensionUpdater::DoCheckSoon,
-                     weak_ptr_factory_.GetWeakPtr()))) {
+          method_factory_.NewRunnableMethod(
+              &ExtensionUpdater::DoCheckSoon))) {
     will_check_soon_ = true;
   } else {
     NOTREACHED();

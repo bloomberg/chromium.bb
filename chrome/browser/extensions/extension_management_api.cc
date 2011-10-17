@@ -7,7 +7,6 @@
 #include <map>
 #include <string>
 
-#include "base/bind.h"
 #include "base/basictypes.h"
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram.h"
@@ -212,7 +211,7 @@ class SafeManifestJSONParser : public UtilityProcessHost::Client {
     BrowserThread::PostTask(
         BrowserThread::IO,
         FROM_HERE,
-        base::Bind(&SafeManifestJSONParser::StartWorkOnIOThread, this));
+        NewRunnableMethod(this, &SafeManifestJSONParser::StartWorkOnIOThread));
   }
 
   void StartWorkOnIOThread() {
@@ -246,7 +245,8 @@ class SafeManifestJSONParser : public UtilityProcessHost::Client {
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
-        base::Bind(&SafeManifestJSONParser::ReportResultFromUIThread, this));
+        NewRunnableMethod(this,
+                          &SafeManifestJSONParser::ReportResultFromUIThread));
   }
 
   void OnJSONParseFailed(const std::string& error) {
@@ -256,7 +256,8 @@ class SafeManifestJSONParser : public UtilityProcessHost::Client {
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
-        base::Bind(&SafeManifestJSONParser::ReportResultFromUIThread, this));
+        NewRunnableMethod(this,
+                          &SafeManifestJSONParser::ReportResultFromUIThread));
   }
 
   void ReportResultFromUIThread() {

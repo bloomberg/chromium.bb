@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 
-#include "base/bind.h"
 #include "base/logging.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/common/content_settings.h"
@@ -122,7 +121,8 @@ void ExtensionSpecialStoragePolicy::RevokeRightsForAllExtensions() {
 void ExtensionSpecialStoragePolicy::NotifyChanged() {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-        base::Bind(&ExtensionSpecialStoragePolicy::NotifyChanged, this));
+        NewRunnableMethod(this,
+            &ExtensionSpecialStoragePolicy::NotifyChanged));
     return;
   }
   SpecialStoragePolicy::NotifyObservers();

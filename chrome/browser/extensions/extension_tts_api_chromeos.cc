@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/bind.h"
 #include "base/memory/singleton.h"
-#include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
+#include "base/task.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/speech_synthesis_library.h"
 #include "chrome/browser/extensions/extension_tts_api_controller.h"
@@ -40,7 +39,7 @@ class ExtensionTtsPlatformImplChromeOs : public ExtensionTtsPlatformImpl {
 
  private:
   ExtensionTtsPlatformImplChromeOs()
-      : ALLOW_THIS_IN_INITIALIZER_LIST(ptr_factory_(this)) {}
+      : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {}
   virtual ~ExtensionTtsPlatformImplChromeOs() {}
 
   void PollUntilSpeechFinishes(int utterance_id);
@@ -51,7 +50,7 @@ class ExtensionTtsPlatformImplChromeOs : public ExtensionTtsPlatformImpl {
 
   int utterance_id_;
   int utterance_length_;
-  base::WeakPtrFactory<ExtensionTtsPlatformImplChromeOs> ptr_factory_;
+  ScopedRunnableMethodFactory<ExtensionTtsPlatformImplChromeOs> method_factory_;
 
   friend struct DefaultSingletonTraits<ExtensionTtsPlatformImplChromeOs>;
 
@@ -166,9 +165,8 @@ void ExtensionTtsPlatformImplChromeOs::PollUntilSpeechFinishes(
   }
 
   MessageLoop::current()->PostDelayedTask(
-      FROM_HERE, base::Bind(
+      FROM_HERE, method_factory_.NewRunnableMethod(
           &ExtensionTtsPlatformImplChromeOs::PollUntilSpeechFinishes,
-          ptr_factory_.GetWeakPtr(),
           utterance_id),
       kSpeechCheckDelayIntervalMs);
 }

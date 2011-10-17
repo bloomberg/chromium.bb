@@ -6,12 +6,15 @@
 
 #include "build/build_config.h"
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/simple_message_box.h"
+
+// No AddRef required when using ExtensionErrorReporter with RunnableMethod.
+// This is okay since the ExtensionErrorReporter is a singleton that lives until
+// the end of the process.
+DISABLE_RUNNABLE_METHOD_REFCOUNT(ExtensionErrorReporter);
 
 ExtensionErrorReporter* ExtensionErrorReporter::instance_ = NULL;
 
@@ -39,13 +42,9 @@ void ExtensionErrorReporter::ReportError(const std::string& message,
                                          bool be_noisy) {
   // NOTE: There won't be a ui_loop_ in the unit test environment.
   if (ui_loop_ && MessageLoop::current() != ui_loop_) {
-    // base::Unretained is okay since the ExtensionErrorReporter is a singleton
-    // that lives until the end of the process.
     ui_loop_->PostTask(FROM_HERE,
-        base::Bind(&ExtensionErrorReporter::ReportError,
-                   base::Unretained(this),
-                   message,
-                   be_noisy));
+        NewRunnableMethod(this, &ExtensionErrorReporter::ReportError, message,
+                          be_noisy));
     return;
   }
 

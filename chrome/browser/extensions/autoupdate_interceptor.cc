@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/autoupdate_interceptor.h"
 
-#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/browser/browser_thread.h"
@@ -87,5 +86,5 @@ void AutoUpdateInterceptor::SetResponseOnIOThread(const std::string url,
                                                   const FilePath& path) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&AutoUpdateInterceptor::SetResponse, this, url, path));
+      NewRunnableMethod(this, &AutoUpdateInterceptor::SetResponse, url, path));
 }

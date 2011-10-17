@@ -22,6 +22,7 @@
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
@@ -334,9 +335,9 @@ class ExtensionTestingProfile : public TestingProfile {
       appcache_service_ = new ChromeAppCacheService(NULL);
       if (!BrowserThread::PostTask(
               BrowserThread::IO, FROM_HERE,
-              base::Bind(
-                  &ChromeAppCacheService::InitializeOnIOThread,
+              NewRunnableMethod(
                   appcache_service_.get(),
+                  &ChromeAppCacheService::InitializeOnIOThread,
                   IsOffTheRecord()
                   ? FilePath() : GetPath().Append(chrome::kAppCacheDirname),
                   &GetResourceContext(),

@@ -5,13 +5,13 @@
 #include "chrome/browser/extensions/extension_file_browser_private_api.h"
 
 #include "base/base64.h"
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/stringprintf.h"
 #include "base/string_util.h"
+#include "base/task.h"
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/extensions/file_browser_event_router.h"
@@ -347,9 +347,8 @@ class LocalFileSystemCallbackDispatcher
 
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(
+        NewRunnableMethod(function_,
             &RequestLocalFileSystemFunction::RespondSuccessOnUIThread,
-            function_,
             name,
             root_path));
   }
@@ -357,9 +356,8 @@ class LocalFileSystemCallbackDispatcher
   virtual void DidFail(base::PlatformFileError error_code) OVERRIDE {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(
+        NewRunnableMethod(function_,
             &RequestLocalFileSystemFunction::RespondFailedOnUIThread,
-            function_,
             error_code));
   }
 
@@ -437,9 +435,8 @@ bool RequestLocalFileSystemFunction::RunImpl() {
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(
+      NewRunnableMethod(this,
           &RequestLocalFileSystemFunction::RequestOnFileThread,
-          this,
           source_url_,
           render_view_host()->process()->id()));
   // Will finish asynchronously.
@@ -507,9 +504,8 @@ bool FileWatchBrowserFunctionBase::RunImpl() {
   GURL file_watch_url(url);
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(
+      NewRunnableMethod(this,
           &FileWatchBrowserFunctionBase::RunFileWatchOperationOnFileThread,
-          this,
           file_watch_url,
           extension_id()));
 
@@ -524,24 +520,21 @@ void FileWatchBrowserFunctionBase::RunFileWatchOperationOnFileThread(
       local_path == FilePath()) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(
+        NewRunnableMethod(this,
             &FileWatchBrowserFunctionBase::RespondOnUIThread,
-            this,
             false));
   }
   if (!PerformFileWatchOperation(local_path, virtual_path, extension_id)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(
+        NewRunnableMethod(this,
             &FileWatchBrowserFunctionBase::RespondOnUIThread,
-            this,
             false));
   }
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(
+      NewRunnableMethod(this,
           &FileWatchBrowserFunctionBase::RespondOnUIThread,
-          this,
           true));
 }
 
@@ -678,17 +671,15 @@ class ExecuteTasksFileSystemCallbackDispatcher
     if (file_list.empty()) {
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          base::Bind(
-              &ExecuteTasksFileBrowserFunction::ExecuteFailedOnUIThread,
-              function_));
+          NewRunnableMethod(function_,
+              &ExecuteTasksFileBrowserFunction::ExecuteFailedOnUIThread));
       return;
     }
 
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(
+        NewRunnableMethod(function_,
             &ExecuteTasksFileBrowserFunction::ExecuteFileActionsOnUIThread,
-            function_,
             task_id_,
             file_system_name,
             file_system_root,
@@ -698,9 +689,8 @@ class ExecuteTasksFileSystemCallbackDispatcher
   virtual void DidFail(base::PlatformFileError error_code) OVERRIDE {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(
-            &ExecuteTasksFileBrowserFunction::ExecuteFailedOnUIThread,
-            function_));
+        NewRunnableMethod(function_,
+            &ExecuteTasksFileBrowserFunction::ExecuteFailedOnUIThread));
   }
 
  private:
@@ -849,9 +839,8 @@ bool ExecuteTasksFileBrowserFunction::InitiateFileTaskExecution(
   // Get local file system instance on file thread.
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(
+      NewRunnableMethod(this,
           &ExecuteTasksFileBrowserFunction::RequestFileEntryOnFileThread,
-          this,
           source_url_,
           task_id,
           file_urls));
@@ -1025,9 +1014,8 @@ void FileBrowserFunction::GetLocalPathsOnFileThread(const UrlList& file_urls,
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(
+      NewRunnableMethod(this,
           &FileBrowserFunction::GetLocalPathsResponseOnUIThread,
-          this,
           selected_files, context));
 }
 
@@ -1042,9 +1030,8 @@ bool SelectFileFunction::RunImpl() {
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(
+      NewRunnableMethod(this,
           &SelectFileFunction::GetLocalPathsOnFileThread,
-          this,
           file_paths, reinterpret_cast<void*>(NULL)));
 
   return true;
@@ -1095,9 +1082,8 @@ bool ViewFilesFunction::RunImpl() {
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(
+      NewRunnableMethod(this,
           &ViewFilesFunction::GetLocalPathsOnFileThread,
-          this,
           file_urls,
           reinterpret_cast<void*>(new std::string(internal_task_id))));
 
@@ -1147,9 +1133,8 @@ bool SelectFilesFunction::RunImpl() {
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(
+      NewRunnableMethod(this,
           &SelectFilesFunction::GetLocalPathsOnFileThread,
-          this,
           file_urls, reinterpret_cast<void*>(NULL)));
 
   return true;
@@ -1220,9 +1205,8 @@ bool AddMountFunction::RunImpl() {
   MountParamaters* params = new MountParamaters(mount_type_str, options);
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(
+      NewRunnableMethod(this,
           &AddMountFunction::GetLocalPathsOnFileThread,
-          this,
           file_paths, reinterpret_cast<void*>(params)));
 #endif  // OS_CHROMEOS
 
@@ -1283,9 +1267,8 @@ bool RemoveMountFunction::RunImpl() {
   file_paths.push_back(GURL(mount_path));
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(
+      NewRunnableMethod(this,
           &RemoveMountFunction::GetLocalPathsOnFileThread,
-          this,
           file_paths, reinterpret_cast<void*>(NULL)));
   return true;
 }
@@ -1358,9 +1341,8 @@ bool GetSizeStatsFunction::RunImpl() {
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(
+      NewRunnableMethod(this,
           &GetSizeStatsFunction::GetLocalPathsOnFileThread,
-          this,
           mount_paths, reinterpret_cast<void*>(NULL)));
   return true;
 }
@@ -1376,9 +1358,8 @@ void GetSizeStatsFunction::GetLocalPathsResponseOnUIThread(
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(
+      NewRunnableMethod(this,
           &GetSizeStatsFunction::CallGetSizeStatsOnFileThread,
-          this,
           files[0].value().c_str()));
 }
 
@@ -1395,9 +1376,8 @@ void GetSizeStatsFunction::CallGetSizeStatsOnFileThread(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      bsae::Bind(
+      NewRunnableMethod(this,
           &GetSizeStatsFunction::GetSizeStatsCallbackOnUIThread,
-          this,
           mount_path, total_size_kb, remaining_size_kb));
 }
 
@@ -1436,9 +1416,8 @@ bool FormatDeviceFunction::RunImpl() {
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(
+      NewRunnableMethod(this,
           &FormatDeviceFunction::GetLocalPathsOnFileThread,
-          this,
           file_paths, reinterpret_cast<void*>(NULL)));
   return true;
 }

@@ -163,8 +163,8 @@ bool DownloadsDownloadFunction::ParseArgs() {
 
 void DownloadsDownloadFunction::RunInternal() {
   VLOG(1) << __FUNCTION__ << " " << iodata_->url.spec();
-  if (!BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
-          &DownloadsDownloadFunction::BeginDownloadOnIOThread, this))) {
+  if (!BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, NewRunnableMethod(
+          this, &DownloadsDownloadFunction::BeginDownloadOnIOThread))) {
     error_ = constants::kGenericError;
     SendResponse(error_.empty());
   }
@@ -207,8 +207,8 @@ void DownloadsDownloadFunction::BeginDownloadOnIOThread() {
 void DownloadsDownloadFunction::OnStarted(DownloadId dl_id, net::Error error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   VLOG(1) << __FUNCTION__ << " " << dl_id << " " << error;
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
-      &DownloadsDownloadFunction::RespondOnUIThread, this,
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, NewRunnableMethod(
+      this, &DownloadsDownloadFunction::RespondOnUIThread,
       dl_id.local(), error));
 }
 
