@@ -18,6 +18,18 @@ LocatedEvent::LocatedEvent(const NativeEvent& native_event)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// TouchEvent, public:
+
+TouchEvent::TouchEvent(const NativeEvent& event)
+    : LocatedEvent(event),
+      touch_id_(static_cast<aura::TouchEvent*>(event)->touch_id()),
+      radius_x_(static_cast<aura::TouchEvent*>(event)->radius_x()),
+      radius_y_(static_cast<aura::TouchEvent*>(event)->radius_y()),
+      rotation_angle_(static_cast<aura::TouchEvent*>(event)->rotation_angle()),
+      force_(static_cast<aura::TouchEvent*>(event)->force()) {
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // KeyEvent, public:
 
 KeyEvent::KeyEvent(const NativeEvent& native_event)

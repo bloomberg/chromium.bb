@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/string16.h"
+#include "ui/base/events.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/aura/aura_export.h"
 #include "ui/gfx/compositor/layer_delegate.h"
@@ -34,6 +35,7 @@ class KeyEvent;
 class LayoutManager;
 class MouseEvent;
 class ToplevelWindowContainer;
+class TouchEvent;
 class WindowDelegate;
 class WindowObserver;
 
@@ -166,6 +168,9 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
 
   // Handles a key event. Returns true if handled.
   bool OnKeyEvent(KeyEvent* event);
+
+  // Handles a touch event.
+  ui::TouchStatus OnTouchEvent(TouchEvent* event);
 
   // Add/remove observer.
   void AddObserver(WindowObserver* observer);

@@ -96,7 +96,8 @@ class RenderWidgetHostViewAura : public RenderWidgetHostView,
   virtual gfx::NativeCursor GetCursor(const gfx::Point& point) OVERRIDE;
   virtual int GetNonClientComponent(const gfx::Point& point) const OVERRIDE;
   virtual bool OnMouseEvent(aura::MouseEvent* event) OVERRIDE;
-  virtual bool ShouldActivate(aura::MouseEvent* event) OVERRIDE;
+  virtual ui::TouchStatus OnTouchEvent(aura::TouchEvent* event) OVERRIDE;
+  virtual bool ShouldActivate(aura::Event* event) OVERRIDE;
   virtual void OnActivated() OVERRIDE;
   virtual void OnLostActive() OVERRIDE;
   virtual void OnCaptureLost() OVERRIDE;

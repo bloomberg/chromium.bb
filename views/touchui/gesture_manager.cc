@@ -49,7 +49,7 @@ bool GestureManager::ProcessTouchEventForGesture(const TouchEvent& event,
   } else {
     Widget* source_widget = source->GetWidget();
     Widget* top_widget = source_widget->GetTopLevelWidget();
-    if (source_widget != top_widget) {
+    if (source_widget != top_widget && top_widget) {
       // This is necessary as TYPE_CHILD widget is still NativeWidgetGtk.
       // Fix this once TYPE_CHILD is switched to NativeWidgetViews.
       MouseEvent converted(mouseev,

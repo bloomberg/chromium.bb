@@ -521,7 +521,13 @@ bool NativeWidgetAura::OnMouseEvent(aura::MouseEvent* event) {
   return delegate_->OnMouseEvent(mouse_event);
 }
 
-bool NativeWidgetAura::ShouldActivate(aura::MouseEvent* event) {
+ui::TouchStatus NativeWidgetAura::OnTouchEvent(aura::TouchEvent* event) {
+  DCHECK(window_->IsVisible());
+  TouchEvent touch_event(event);
+  return delegate_->OnTouchEvent(touch_event);
+}
+
+bool NativeWidgetAura::ShouldActivate(aura::Event* event) {
   return can_activate_;
 }
 

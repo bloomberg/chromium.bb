@@ -84,6 +84,37 @@ MouseEvent::MouseEvent(ui::EventType type,
     : LocatedEvent(type, location, flags) {
 }
 
+TouchEvent::TouchEvent(const base::NativeEvent& native_event)
+    : LocatedEvent(native_event),
+      touch_id_(ui::GetTouchId(native_event)),
+      radius_x_(ui::GetTouchRadiusX(native_event)),
+      radius_y_(ui::GetTouchRadiusY(native_event)),
+      rotation_angle_(ui::GetTouchAngle(native_event)),
+      force_(ui::GetTouchForce(native_event)) {
+}
+
+TouchEvent::TouchEvent(const TouchEvent& model,
+                       Window* source,
+                       Window* target)
+    : LocatedEvent(model, source, target),
+      touch_id_(model.touch_id_),
+      radius_x_(model.radius_x_),
+      radius_y_(model.radius_y_),
+      rotation_angle_(model.rotation_angle_),
+      force_(model.force_) {
+}
+
+TouchEvent::TouchEvent(ui::EventType type,
+                       const gfx::Point& location,
+                       int touch_id)
+    : LocatedEvent(type, location, 0),
+      touch_id_(touch_id),
+      radius_x_(1.0f),
+      radius_y_(1.0f),
+      rotation_angle_(0.0f),
+      force_(0.0f) {
+}
+
 KeyEvent::KeyEvent(const base::NativeEvent& native_event)
     : Event(native_event,
             ui::EventTypeFromNative(native_event),

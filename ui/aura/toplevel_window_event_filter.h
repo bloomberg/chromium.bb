@@ -23,6 +23,8 @@ class ToplevelWindowEventFilter : public EventFilter {
 
   // Overridden from EventFilter:
   virtual bool OnMouseEvent(Window* target, MouseEvent* event) OVERRIDE;
+  virtual ui::TouchStatus OnTouchEvent(Window* target,
+                                       TouchEvent* event) OVERRIDE;
 
  private:
   // Moves the target window and all of its parents to the front of their

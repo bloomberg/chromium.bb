@@ -363,7 +363,13 @@ bool RenderWidgetHostViewAura::OnMouseEvent(aura::MouseEvent* event) {
   return true;
 }
 
-bool RenderWidgetHostViewAura::ShouldActivate(aura::MouseEvent* event) {
+ui::TouchStatus RenderWidgetHostViewAura::OnTouchEvent(
+    aura::TouchEvent* event) {
+  NOTIMPLEMENTED();
+  return ui::TOUCH_STATUS_UNKNOWN;
+}
+
+bool RenderWidgetHostViewAura::ShouldActivate(aura::Event* event) {
   return false;
 }
 
@@ -399,6 +405,7 @@ void RenderWidgetHostViewAura::OnWindowDestroyed() {
 void RenderWidgetHostViewAura::OnWindowVisibilityChanged(bool visible) {
 }
 
+#if !defined(TOUCH_UI)
 ////////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewAura, private:
 
@@ -406,3 +413,4 @@ void RenderWidgetHostViewAura::UpdateCursorIfOverSelf() {
   //NOTIMPLEMENTED();
   // TODO(beng): See RenderWidgetHostViewWin.
 }
+#endif

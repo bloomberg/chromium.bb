@@ -28,7 +28,9 @@ namespace aura {
 class DesktopDelegate;
 class DesktopHost;
 class DesktopObserver;
+class KeyEvent;
 class MouseEvent;
+class TouchEvent;
 
 // Desktop is responsible for hosting a set of windows.
 class AURA_EXPORT Desktop : public ui::CompositorDelegate {
@@ -65,6 +67,9 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate {
 
   // Handles a key event. Returns true if handled.
   bool OnKeyEvent(const KeyEvent& event);
+
+  // Handles a touch event. Returns true if handled.
+  bool OnTouchEvent(const TouchEvent& event);
 
   // Called when the host changes size.
   void OnHostResized(const gfx::Size& size);

@@ -7,6 +7,7 @@
 #pragma once
 
 #include "ui/aura/aura_export.h"
+#include "ui/base/events.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
@@ -17,8 +18,10 @@ class Rect;
 
 namespace aura {
 
+class Event;
 class KeyEvent;
 class MouseEvent;
+class TouchEvent;
 
 // Delegate interface for aura::Window.
 class AURA_EXPORT WindowDelegate {
@@ -43,10 +46,13 @@ class AURA_EXPORT WindowDelegate {
 
   virtual bool OnMouseEvent(MouseEvent* event) = 0;
 
-  // Returns true if the window should be activated |event| is either the mouse
-  // event supplied if the activation is the result of a mouse, or NULL if
-  // activation is attempted for another reason.
-  virtual bool ShouldActivate(MouseEvent* event) = 0;
+  virtual ui::TouchStatus OnTouchEvent(TouchEvent* event) = 0;
+
+  // Returns true if the window should be activated. |event| is either the mouse
+  // event supplied if the activation is the result of a mouse, or the touch
+  // event if the activation is the result of a touch, or NULL if activation is
+  // attempted for another reason.
+  virtual bool ShouldActivate(Event* event) = 0;
 
   // Sent when the window is activated.
   virtual void OnActivated() = 0;

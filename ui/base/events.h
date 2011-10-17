@@ -87,8 +87,21 @@ UI_EXPORT KeyboardCode KeyboardCodeFromNative(
 // Returns true if the message is a mouse event.
 UI_EXPORT bool IsMouseEvent(const base::NativeEvent& native_event);
 
-// Get the mouse wheel offset from a native event.
+// Gets the mouse wheel offset from a native event.
 UI_EXPORT int GetMouseWheelOffset(const base::NativeEvent& native_event);
+
+// Gets the touch id from a native event.
+UI_EXPORT int GetTouchId(const base::NativeEvent& native_event);
+
+// Gets the radius along the X/Y axis from a native event. Default is 1.0.
+UI_EXPORT float GetTouchRadiusX(const base::NativeEvent& native_event);
+UI_EXPORT float GetTouchRadiusY(const base::NativeEvent& native_event);
+
+// Gets the angle of the major axis away from the X axis. Default is 0.0.
+UI_EXPORT float GetTouchAngle(const base::NativeEvent& native_event);
+
+// Gets the force from a native_event. Normalized to be [0, 1]. Default is 0.0.
+UI_EXPORT float GetTouchForce(const base::NativeEvent& native_event);
 
 }  // namespace ui
 

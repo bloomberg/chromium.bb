@@ -7,11 +7,14 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "ui/base/events.h"
 
 namespace aura {
 
-class Window;
+class Event;
 class MouseEvent;
+class TouchEvent;
+class Window;
 
 // An object that filters events sent to an owner window, potentially performing
 // adjustments to the window's position, size and z-index.
@@ -23,15 +26,17 @@ class EventFilter {
   // Try to handle |event| (before the owner's delegate gets a chance to).
   // Returns true if the event was handled by the WindowManager and should not
   // be forwarded to the owner's delegate.
-  // Default implementation for ET_MOUSE_PRESSED focuses the window.
+  // Default implementation for ET_MOUSE_PRESSED and ET_TOUCH_PRESSED focuses
+  // the window.
   virtual bool OnMouseEvent(Window* target, MouseEvent* event);
+  virtual ui::TouchStatus OnTouchEvent(Window* target, TouchEvent* event);
 
  protected:
   Window* owner() { return owner_; }
 
  private:
   // If necessary, activates |window| and changes focus.
-  void ActivateIfNecessary(Window* window, MouseEvent* event);
+  void ActivateIfNecessary(Window* window, Event* event);
 
   Window* owner_;
 

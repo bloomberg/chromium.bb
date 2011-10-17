@@ -11,7 +11,9 @@
 
 namespace aura {
 
+class KeyEvent;
 class MouseEvent;
+class TouchEvent;
 
 namespace internal {
 
@@ -28,6 +30,9 @@ class RootWindow : public Window,
 
   // Handles a key event. Returns true if handled.
   bool HandleKeyEvent(const KeyEvent& event);
+
+  // Handles a touch event. Returns true if handled.
+  bool HandleTouchEvent(const TouchEvent& event);
 
   // Sets capture to the specified window.
   void SetCapture(Window* window);
@@ -67,6 +72,7 @@ class RootWindow : public Window,
   Window* mouse_moved_handler_;
   Window* focused_window_;
   Window* capture_window_;
+  Window* touch_event_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(RootWindow);
 };

@@ -98,6 +98,10 @@ bool Desktop::OnKeyEvent(const KeyEvent& event) {
   return window_->HandleKeyEvent(event);
 }
 
+bool Desktop::OnTouchEvent(const TouchEvent& event) {
+  return window_->HandleTouchEvent(event);
+}
+
 void Desktop::OnHostResized(const gfx::Size& size) {
   gfx::Rect bounds(0, 0, size.width(), size.height());
   compositor_->WidgetSizeChanged(size);

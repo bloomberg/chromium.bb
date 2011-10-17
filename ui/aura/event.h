@@ -87,6 +87,44 @@ class AURA_EXPORT MouseEvent : public LocatedEvent {
   DISALLOW_COPY_AND_ASSIGN(MouseEvent);
 };
 
+class AURA_EXPORT TouchEvent : public LocatedEvent {
+ public:
+  explicit TouchEvent(const base::NativeEvent& native_event);
+
+  // Create a new TouchEvent which is identical to the provided model.
+  // If source / target windows are provided, the model location will be
+  // converted from |source| coordinate system to |target| coordinate system.
+  TouchEvent(const TouchEvent& model, Window* source, Window* target);
+
+  // Used for synthetic events in testing.
+  TouchEvent(ui::EventType type, const gfx::Point& location, int touch_id);
+
+  int touch_id() const { return touch_id_; }
+  float radius_x() const { return radius_x_; }
+  float radius_y() const { return radius_y_; }
+  float rotation_angle() const { return rotation_angle_; }
+  float force() const { return force_; }
+
+ private:
+  // The identity (typically finger) of the touch starting at 0 and incrementing
+  // for each separable additional touch that the hardware can detect.
+  const int touch_id_;
+
+  // Radius of the X (major) axis of the touch ellipse. 1.0 if unknown.
+  const float radius_x_;
+
+  // Radius of the Y (minor) axis of the touch ellipse. 1.0 if unknown.
+  const float radius_y_;
+
+  // Angle of the major axis away from the X axis. Default 0.0.
+  const float rotation_angle_;
+
+  // Force (pressure) of the touch. Normalized to be [0, 1]. Default to be 0.0.
+  const float force_;
+
+  DISALLOW_COPY_AND_ASSIGN(TouchEvent);
+};
+
 class AURA_EXPORT KeyEvent : public Event {
  public:
   explicit KeyEvent(const base::NativeEvent& native_event);

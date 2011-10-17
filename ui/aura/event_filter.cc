@@ -32,9 +32,15 @@ bool EventFilter::OnMouseEvent(Window* target, MouseEvent* event) {
   return false;
 }
 
+ui::TouchStatus EventFilter::OnTouchEvent(Window* target, TouchEvent* event) {
+  if (event->type() == ui::ET_TOUCH_PRESSED)
+    ActivateIfNecessary(target, event);
+  return ui::TOUCH_STATUS_UNKNOWN;
+}
+
 void EventFilter::ActivateIfNecessary(
     Window* window,
-    MouseEvent* event) {
+    Event* event) {
   // TODO(beng): some windows (e.g. disabled ones, tooltips, etc) may not be
   //             focusable.
 

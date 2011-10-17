@@ -8,6 +8,7 @@
 #include "base/message_pump_x.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura/event.h"
+#include "ui/base/touch/touch_factory.h"
 
 #include <X11/Xlib.h>
 
@@ -67,6 +68,9 @@ DesktopHostLinux::DesktopHostLinux(const gfx::Rect& bounds)
                     PointerMotionMask;
   XSelectInput(xdisplay_, xwindow_, event_mask);
   XFlush(xdisplay_);
+
+  if (base::MessagePumpForUI::HasXInput2())
+    ui::TouchFactory::GetInstance()->SetupXI2ForXWindow(xwindow_);
 }
 
 DesktopHostLinux::~DesktopHostLinux() {
@@ -128,6 +132,37 @@ base::MessagePumpDispatcher::DispatchStatus DesktopHostLinux::Dispatch(
       desktop_->OnHostResized(size);
       handled = true;
       break;
+    }
+
+    case GenericEvent: {
+      ui::TouchFactory* factory = ui::TouchFactory::GetInstance();
+      if (!factory->ShouldProcessXI2Event(xev))
+        break;
+      ui::EventType type = ui::EventTypeFromNative(xev);
+      switch (type) {
+        case ui::ET_TOUCH_PRESSED:
+        case ui::ET_TOUCH_RELEASED:
+        case ui::ET_TOUCH_MOVED: {
+          TouchEvent touchev(xev);
+          handled = desktop_->OnTouchEvent(touchev);
+          break;
+        }
+        case ui::ET_MOUSE_PRESSED:
+        case ui::ET_MOUSE_RELEASED:
+        case ui::ET_MOUSE_MOVED:
+        case ui::ET_MOUSE_DRAGGED:
+        case ui::ET_MOUSE_ENTERED:
+        case ui::ET_MOUSE_EXITED: {
+          MouseEvent mouseev(xev);
+          handled = desktop_->OnMouseEvent(mouseev);
+          break;
+        }
+        case ui::ET_UNKNOWN:
+          handled = false;
+          break;
+        default:
+          NOTREACHED();
+      }
     }
   }
   return handled ? EVENT_PROCESSED : EVENT_IGNORED;

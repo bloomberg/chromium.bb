@@ -158,6 +158,14 @@ bool ToplevelWindowEventFilter::OnMouseEvent(Window* target,
   return false;
 }
 
+ui::TouchStatus ToplevelWindowEventFilter::OnTouchEvent(Window* target,
+                                                        TouchEvent* event) {
+  // Process EventFilters implementation first so that it processes
+  // activation/focus first.
+  // TODO(sad): Allow moving/resizing/maximizing etc. from touch?
+  return EventFilter::OnTouchEvent(target, event);
+}
+
 void ToplevelWindowEventFilter::MoveWindowToFront(Window* target) {
   Window* parent = target->parent();
   Window* child = target;

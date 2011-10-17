@@ -19,7 +19,8 @@ RootWindow::RootWindow()
       mouse_pressed_handler_(NULL),
       mouse_moved_handler_(NULL),
       focused_window_(NULL),
-      capture_window_(NULL) {
+      capture_window_(NULL),
+      touch_event_handler_(NULL) {
   set_name("RootWindow");
 }
 
@@ -60,6 +61,25 @@ bool RootWindow::HandleKeyEvent(const KeyEvent& event) {
   return false;
 }
 
+bool RootWindow::HandleTouchEvent(const TouchEvent& event) {
+  bool handled = false;
+  Window* target =
+      touch_event_handler_ ? touch_event_handler_ : capture_window_;
+  if (!target)
+    target = GetEventHandlerForPoint(event.location());
+  if (target) {
+    TouchEvent translated_event(event, this, target);
+    ui::TouchStatus status = target->OnTouchEvent(&translated_event);
+    if (status == ui::TOUCH_STATUS_START)
+      touch_event_handler_ = target;
+    else if (status == ui::TOUCH_STATUS_END ||
+             status == ui::TOUCH_STATUS_CANCEL)
+      touch_event_handler_ = NULL;
+    handled = status != ui::TOUCH_STATUS_UNKNOWN;
+  }
+  return handled;
+}
+
 void RootWindow::SetCapture(Window* window) {
   if (capture_window_ == window)
     return;
@@ -68,10 +88,14 @@ void RootWindow::SetCapture(Window* window) {
     capture_window_->delegate()->OnCaptureLost();
   capture_window_ = window;
 
-  if (capture_window_ && mouse_pressed_handler_) {
-    // Make all subsequent mouse events go to the capture window. We shouldn't
-    // need to send an event here as OnCaptureLost should take care of that.
-    mouse_pressed_handler_ = capture_window_;
+  if (capture_window_) {
+    // Make all subsequent mouse events and touch go to the capture window. We
+    // shouldn't need to send an event here as OnCaptureLost should take care of
+    // that.
+    if (mouse_pressed_handler_)
+      mouse_pressed_handler_ = capture_window_;
+    if (touch_event_handler_)
+      touch_event_handler_ = capture_window_;
   }
 }
 
@@ -100,6 +124,8 @@ void RootWindow::WindowDestroying(Window* window) {
     mouse_moved_handler_ = NULL;
   if (capture_window_ == window)
     capture_window_ = NULL;
+  if (touch_event_handler_ == window)
+    touch_event_handler_ = NULL;
 }
 
 void RootWindow::SetFocusedWindow(Window* focused_window) {

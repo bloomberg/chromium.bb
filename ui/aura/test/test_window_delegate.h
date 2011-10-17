@@ -27,7 +27,8 @@ class TestWindowDelegate : public WindowDelegate {
   virtual gfx::NativeCursor GetCursor(const gfx::Point& point) OVERRIDE;
   virtual int GetNonClientComponent(const gfx::Point& point) const OVERRIDE;
   virtual bool OnMouseEvent(MouseEvent* event) OVERRIDE;
-  virtual bool ShouldActivate(MouseEvent* event) OVERRIDE;
+  virtual ui::TouchStatus OnTouchEvent(TouchEvent* event) OVERRIDE;
+  virtual bool ShouldActivate(Event* event) OVERRIDE;
   virtual void OnActivated() OVERRIDE;
   virtual void OnLostActive() OVERRIDE;
   virtual void OnCaptureLost() OVERRIDE;

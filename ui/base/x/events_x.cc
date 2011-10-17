@@ -127,6 +127,13 @@ ui::EventType GetTouchEventType(const base::NativeEvent& native_event) {
 #endif  // defined(USE_XI2_MT)
 }
 
+float GetTouchParamFromXEvent(XEvent* xev,
+                              ui::TouchFactory::TouchParam tp,
+                              float default_value) {
+  ui::TouchFactory::GetInstance()->ExtractTouchParam(*xev, tp, &default_value);
+  return default_value;
+}
+
 }  // namespace
 
 namespace ui {
@@ -174,7 +181,6 @@ EventType EventTypeFromNative(const base::NativeEvent& native_event) {
       }
     }
     default:
-      NOTREACHED() << "Unknown Event Type:" << native_event->type;
       break;
   }
   return ET_UNKNOWN;
@@ -255,6 +261,59 @@ int GetMouseWheelOffset(const base::NativeEvent& native_event) {
   }
   return native_event->xbutton.button == 4 ?
       kWheelScrollAmount : -kWheelScrollAmount;
+}
+
+int GetTouchId(const base::NativeEvent& xev) {
+  float slot = 0;
+  ui::TouchFactory* factory = ui::TouchFactory::GetInstance();
+  XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(xev->xcookie.data);
+  if (!factory->IsRealTouchDevice(xievent->sourceid)) {
+    // TODO(sad): Come up with a way to generate touch-ids for multi-touch
+    // events when touch-events are generated from a mouse.
+    return slot;
+  }
+
+#if defined(USE_XI2_MT)
+  float tracking_id;
+  if (!factory->ExtractTouchParam(
+         *xev, ui::TouchFactory::TP_TRACKING_ID, &tracking_id))
+    LOG(ERROR) << "Could not get the slot ID for the event. Using 0.";
+  else
+    slot = factory->GetSlotForTrackingID(tracking_id);
+#else
+  if (!factory->ExtractTouchParam(
+         *xev, ui::TouchFactory::TP_SLOT_ID, &slot))
+    LOG(ERROR) << "Could not get the slot ID for the event. Using 0.";
+#endif
+  return slot;
+}
+
+float GetTouchRadiusX(const base::NativeEvent& native_event) {
+  return GetTouchParamFromXEvent(native_event,
+      ui::TouchFactory::TP_TOUCH_MAJOR, 2.0) / 2.0;
+}
+
+float GetTouchRadiusY(const base::NativeEvent& native_event) {
+  return GetTouchParamFromXEvent(native_event,
+      ui::TouchFactory::TP_TOUCH_MINOR, 2.0) / 2.0;
+}
+
+float GetTouchAngle(const base::NativeEvent& native_event) {
+  return GetTouchParamFromXEvent(native_event,
+      ui::TouchFactory::TP_ORIENTATION, 0.0) / 2.0;
+}
+
+float GetTouchForce(const base::NativeEvent& native_event) {
+  float force = 0.0;
+  force = GetTouchParamFromXEvent(native_event, ui::TouchFactory::TP_PRESSURE,
+                                  0.0);
+  unsigned int deviceid =
+      static_cast<XIDeviceEvent*>(native_event->xcookie.data)->sourceid;
+  // Force is normalized to fall into [0, 1]
+  if (!ui::TouchFactory::GetInstance()->NormalizeTouchParam(
+      deviceid, ui::TouchFactory::TP_PRESSURE, &force))
+    force = 0.0;
+  return force;
 }
 
 }  // namespace ui

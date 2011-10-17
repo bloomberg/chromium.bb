@@ -218,4 +218,29 @@ int GetMouseWheelOffset(const base::NativeEvent& native_event) {
   return GET_WHEEL_DELTA_WPARAM(native_event.wParam);
 }
 
+int GetTouchId(const base::NativeEvent& xev) {
+  NOTIMPLEMENTED();
+  return 0;
+}
+
+float GetTouchRadiusX(const base::NativeEvent& native_event) {
+  NOTIMPLEMENTED();
+  return 1.0;
+}
+
+float GetTouchRadiusY(const base::NativeEvent& native_event) {
+  NOTIMPLEMENTED();
+  return 1.0;
+}
+
+float GetTouchAngle(const base::NativeEvent& native_event) {
+  NOTIMPLEMENTED();
+  return 0.0;
+}
+
+float GetTouchForce(const base::NativeEvent& native_event) {
+  NOTIMPLEMENTED();
+  return 0.0;
+}
+
 }  // namespace ui

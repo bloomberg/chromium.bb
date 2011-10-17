@@ -41,7 +41,11 @@ bool TestWindowDelegate::OnMouseEvent(MouseEvent* event) {
   return false;
 }
 
-bool TestWindowDelegate::ShouldActivate(MouseEvent* event) {
+ui::TouchStatus TestWindowDelegate::OnTouchEvent(TouchEvent* event) {
+  return ui::TOUCH_STATUS_UNKNOWN;
+}
+
+bool TestWindowDelegate::ShouldActivate(Event* event) {
   return true;
 }
 

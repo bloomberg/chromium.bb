@@ -89,17 +89,24 @@ class CaptureWindowDelegateImpl : public TestWindowDelegate {
  public:
   explicit CaptureWindowDelegateImpl()
       : capture_lost_count_(0),
-        mouse_event_count_(0) {
+        mouse_event_count_(0),
+        touch_event_count_(0) {
   }
 
   int capture_lost_count() const { return capture_lost_count_; }
   void set_capture_lost_count(int value) { capture_lost_count_ = value; }
   int mouse_event_count() const { return mouse_event_count_; }
   void set_mouse_event_count(int value) { mouse_event_count_ = value; }
+  int touch_event_count() const { return touch_event_count_; }
+  void set_touch_event_count(int value) { touch_event_count_ = value; }
 
   virtual bool OnMouseEvent(MouseEvent* event) OVERRIDE {
     mouse_event_count_++;
     return false;
+  }
+  virtual ui::TouchStatus OnTouchEvent(TouchEvent* event) OVERRIDE {
+    touch_event_count_++;
+    return ui::TOUCH_STATUS_UNKNOWN;
   }
   virtual void OnCaptureLost() OVERRIDE {
     capture_lost_count_++;
@@ -108,6 +115,7 @@ class CaptureWindowDelegateImpl : public TestWindowDelegate {
  private:
   int capture_lost_count_;
   int mouse_event_count_;
+  int touch_event_count_;
 
   DISALLOW_COPY_AND_ASSIGN(CaptureWindowDelegateImpl);
 };
@@ -290,6 +298,11 @@ TEST_F(WindowTest, Focus) {
   scoped_ptr<Window> w121(
       CreateTestWindowWithDelegate(w121delegate, 121, gfx::Rect(5, 5, 5, 5),
                                    w12.get()));
+  ColorTestWindowDelegate* w122delegate =
+      new ColorTestWindowDelegate(SK_ColorRED);
+  scoped_ptr<Window> w122(
+      CreateTestWindowWithDelegate(w122delegate, 121, gfx::Rect(10, 5, 5, 5),
+                                   w12.get()));
   scoped_ptr<Window> w13(
       CreateTestWindow(SK_ColorGRAY, 13, gfx::Rect(5, 470, 50, 50), w1.get()));
 
@@ -304,6 +317,17 @@ TEST_F(WindowTest, Focus) {
   // The key press should be sent to the focused sub-window.
   desktop->OnKeyEvent(KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_E, 0));
   EXPECT_EQ(ui::VKEY_E, w121delegate->last_key_code());
+
+  // Touch on a sub-window (w122) to focus it.
+  click_point = w122->bounds().CenterPoint();
+  Window::ConvertPointToWindow(w122->parent(), desktop->window(), &click_point);
+  desktop->OnTouchEvent(TouchEvent(ui::ET_TOUCH_PRESSED, click_point, 0));
+  focus_manager = w122->GetFocusManager();
+  EXPECT_EQ(w122.get(), focus_manager->GetFocusedWindow());
+
+  // The key press should be sent to the focused sub-window.
+  desktop->OnKeyEvent(KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_F, 0));
+  EXPECT_EQ(ui::VKEY_F, w122delegate->last_key_code());
 }
 
 // Various destruction assertions.
@@ -370,6 +394,11 @@ TEST_F(WindowTest, CaptureTests) {
   EXPECT_EQ(2, delegate.mouse_event_count());
   delegate.set_mouse_event_count(0);
 
+  desktop->OnTouchEvent(TouchEvent(ui::ET_TOUCH_PRESSED, gfx::Point(50, 50),
+                                   0));
+  EXPECT_EQ(1, delegate.touch_event_count());
+  delegate.set_touch_event_count(0);
+
   window->ReleaseCapture();
   EXPECT_FALSE(window->HasCapture());
   EXPECT_EQ(1, delegate.capture_lost_count());
@@ -377,6 +406,10 @@ TEST_F(WindowTest, CaptureTests) {
   desktop->OnMouseEvent(MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(50, 50),
                                    ui::EF_LEFT_BUTTON_DOWN));
   EXPECT_EQ(0, delegate.mouse_event_count());
+
+  desktop->OnTouchEvent(TouchEvent(ui::ET_TOUCH_PRESSED, gfx::Point(50, 50),
+                                   0));
+  EXPECT_EQ(0, delegate.touch_event_count());
 }
 
 // Verifies capture is reset when a window is destroyed.
@@ -478,7 +511,7 @@ class ActivateWindowDelegate : public TestWindowDelegate {
     activated_count_ = lost_active_count_ = should_activate_count_ = 0;
   }
 
-  virtual bool ShouldActivate(MouseEvent* event) OVERRIDE {
+  virtual bool ShouldActivate(Event* event) OVERRIDE {
     should_activate_count_++;
     return activate_;
   }
@@ -543,6 +576,71 @@ TEST_F(WindowTest, ActivateOnMouse) {
   d1.set_activate(false);
   desktop->OnMouseEvent(MouseEvent(ui::ET_MOUSE_PRESSED, press_point, 0));
   desktop->OnMouseEvent(MouseEvent(ui::ET_MOUSE_RELEASED, press_point, 0));
+
+  // Window2 should still be active and focused.
+  EXPECT_EQ(w2.get(), desktop->active_window());
+  EXPECT_EQ(w2.get(), focus_manager->GetFocusedWindow());
+  EXPECT_EQ(0, d1.activated_count());
+  EXPECT_EQ(0, d1.lost_active_count());
+  EXPECT_EQ(0, d2.activated_count());
+  EXPECT_EQ(0, d2.lost_active_count());
+  d1.Clear();
+  d2.Clear();
+
+  // Destroy window2, this should make window1 active.
+  d1.set_activate(true);
+  w2.reset();
+  EXPECT_EQ(0, d2.activated_count());
+  EXPECT_EQ(0, d2.lost_active_count());
+  EXPECT_EQ(w1.get(), desktop->active_window());
+  EXPECT_EQ(w1.get(), focus_manager->GetFocusedWindow());
+  EXPECT_EQ(1, d1.activated_count());
+  EXPECT_EQ(0, d1.lost_active_count());
+}
+
+// Essentially the same as ActivateOnMouse, but for touch events.
+TEST_F(WindowTest, ActivateOnTouch) {
+  Desktop* desktop = Desktop::GetInstance();
+
+  ActivateWindowDelegate d1;
+  scoped_ptr<Window> w1(
+      CreateTestWindowWithDelegate(&d1, 1, gfx::Rect(10, 10, 50, 50), NULL));
+  ActivateWindowDelegate d2;
+  scoped_ptr<Window> w2(
+      CreateTestWindowWithDelegate(&d2, 2, gfx::Rect(70, 70, 50, 50), NULL));
+  internal::FocusManager* focus_manager = w1->GetFocusManager();
+
+  d1.Clear();
+  d2.Clear();
+
+  // Activate window1.
+  desktop->SetActiveWindow(w1.get(), NULL);
+  EXPECT_EQ(w1.get(), desktop->active_window());
+  EXPECT_EQ(w1.get(), focus_manager->GetFocusedWindow());
+  EXPECT_EQ(1, d1.activated_count());
+  EXPECT_EQ(0, d1.lost_active_count());
+  d1.Clear();
+
+  // Touch window2.
+  gfx::Point press_point = w2->bounds().CenterPoint();
+  Window::ConvertPointToWindow(w2->parent(), desktop->window(), &press_point);
+  desktop->OnTouchEvent(TouchEvent(ui::ET_TOUCH_PRESSED, press_point, 0));
+
+  // Window2 should have become active.
+  EXPECT_EQ(w2.get(), desktop->active_window());
+  EXPECT_EQ(w2.get(), focus_manager->GetFocusedWindow());
+  EXPECT_EQ(0, d1.activated_count());
+  EXPECT_EQ(1, d1.lost_active_count());
+  EXPECT_EQ(1, d2.activated_count());
+  EXPECT_EQ(0, d2.lost_active_count());
+  d1.Clear();
+  d2.Clear();
+
+  // Touch window1, but set it up so w1 doesn't activate on touch.
+  press_point = w1->bounds().CenterPoint();
+  Window::ConvertPointToWindow(w1->parent(), desktop->window(), &press_point);
+  d1.set_activate(false);
+  desktop->OnTouchEvent(TouchEvent(ui::ET_TOUCH_PRESSED, press_point, 0));
 
   // Window2 should still be active and focused.
   EXPECT_EQ(w2.get(), desktop->active_window());
