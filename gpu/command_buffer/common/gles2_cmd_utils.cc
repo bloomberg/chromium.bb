@@ -274,6 +274,8 @@ int GLES2Util::GLGetNumValuesReturned(int id) const {
     //   return 1;
     case GL_SHADER_SOURCE_LENGTH:
       return 1;
+    case GL_TRANSLATED_SHADER_SOURCE_LENGTH_ANGLE:
+      return 1;
 
     // -- glGetTexParameterfv, glGetTexParameteriv
     case GL_TEXTURE_MAG_FILTER:

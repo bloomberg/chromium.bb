@@ -428,6 +428,8 @@ class WebGraphicsContext3DCommandBufferImpl
       WGC3Denum target, WGC3Dsizei samples, WGC3Denum internalformat,
       WGC3Dsizei width, WGC3Dsizei height);
 
+  virtual WebKit::WebString getTranslatedShaderSourceANGLE(WebGLId shader);
+
   RendererGLContext* context() { return context_; }
 
   virtual void setContextLostCallback(

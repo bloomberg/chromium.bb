@@ -421,6 +421,8 @@ class WebGraphicsContext3DInProcessCommandBufferImpl
       WGC3Denum target, WGC3Dsizei samples, WGC3Denum internalformat,
       WGC3Dsizei width, WGC3Dsizei height);
 
+  virtual WebKit::WebString getTranslatedShaderSourceANGLE(WebGLId shader);
+
   virtual WebGLId createCompositorTexture(WGC3Dsizei width, WGC3Dsizei height);
   virtual void deleteCompositorTexture(WebGLId parent_texture);
   virtual void copyTextureToCompositor(WebGLId texture,
