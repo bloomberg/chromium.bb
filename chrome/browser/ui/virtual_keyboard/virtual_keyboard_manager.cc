@@ -103,6 +103,9 @@ class KeyboardWidget
   // widget.
   views::Widget* GetBrowserWidget();
 
+  // Update layer opacity and transform with values in animation_.
+  void UpdateForAnimation();
+
   // Overridden from views::Widget.
   virtual bool OnKeyEvent(const views::KeyEvent& event) OVERRIDE;
 
@@ -253,6 +256,7 @@ void KeyboardWidget::ShowKeyboardForWidget(views::Widget* widget) {
   transform_.reset(new ui::InterpolatedTranslation(
       gfx::Point(0, keyboard_height_), gfx::Point()));
 
+  UpdateForAnimation();
   animation_->Show();
 
   Show();
@@ -306,11 +310,15 @@ bool KeyboardWidget::OnKeyEvent(const views::KeyEvent& event) {
   return target_ ? target_->OnKeyEvent(event) : false;
 }
 
-void KeyboardWidget::AnimationProgressed(const ui::Animation* animation) {
+void KeyboardWidget::UpdateForAnimation() {
   float t = static_cast<float>(animation_->GetCurrentValue());
+  GetRootView()->SetTransform(transform_->Interpolate(t));
   if (GetRootView()->layer())
     GetRootView()->layer()->SetOpacity(t * t);
-  GetRootView()->SetTransform(transform_->Interpolate(t));
+}
+
+void KeyboardWidget::AnimationProgressed(const ui::Animation* animation) {
+  UpdateForAnimation();
 }
 
 void KeyboardWidget::AnimationEnded(const ui::Animation* animation) {
