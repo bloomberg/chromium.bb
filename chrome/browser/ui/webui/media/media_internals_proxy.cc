@@ -26,7 +26,7 @@ MediaInternalsProxy::MediaInternalsProxy()
     : ThreadSafeObserverImpl(net::NetLog::LOG_ALL_BUT_BYTES) {
   io_thread_ = g_browser_process->io_thread();
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-                 NotificationService::AllSources());
+                 NotificationService::AllBrowserContextsAndSources());
 }
 
 void MediaInternalsProxy::Observe(int type, const NotificationSource& source,
