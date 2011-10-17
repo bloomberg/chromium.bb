@@ -35,7 +35,10 @@ string16 GetLabelTextForType(
     FullscreenExitBubbleType type, const GURL& url);
 string16 GetDenyButtonTextForType(FullscreenExitBubbleType type);
 bool ShowButtonsForType(FullscreenExitBubbleType type);
+void PermissionRequestedByType(FullscreenExitBubbleType type,
+                               bool* tab_fullscreen,
+                               bool* mouse_lock);
 
-}  // namespace fullscreen
+}  // namespace fullscreen_bubble
 
 #endif  // CHROME_BROWSER_UI_FULLSCREEN_EXIT_BUBBLE_TYPE_H_

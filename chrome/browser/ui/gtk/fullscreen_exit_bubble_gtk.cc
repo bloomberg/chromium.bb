@@ -25,9 +25,11 @@ FullscreenExitBubbleGtk::FullscreenExitBubbleGtk(
     Browser* browser,
     const GURL& url,
     bool ask_permission)
-    : FullscreenExitBubble(browser),
+    : FullscreenExitBubble(
+          browser, url,
+          ask_permission ? FEB_TYPE_FULLSCREEN_BUTTONS :
+                           FEB_TYPE_FULLSCREEN_EXIT_INSTRUCTION),
       container_(container),
-      url_(url),
       show_buttons_(ask_permission) {
   InitWidgets();
 }
@@ -53,9 +55,9 @@ void FullscreenExitBubbleGtk::InitWidgets() {
 
   GtkWidget* button_link_hbox = gtk_hbox_new(false, ui::kControlSpacing);
   allow_button_ = gtk_button_new_with_label(
-      l10n_util::GetStringUTF8(IDS_FULLSCREEN_INFOBAR_ALLOW).c_str());
+      l10n_util::GetStringUTF8(IDS_FULLSCREEN_ALLOW).c_str());
   deny_button_ = gtk_button_new_with_label(
-      l10n_util::GetStringUTF8(IDS_FULLSCREEN_INFOBAR_DENY).c_str());
+      l10n_util::GetStringUTF8(IDS_FULLSCREEN_DENY).c_str());
   gtk_box_pack_end(GTK_BOX(button_link_hbox), deny_button_, FALSE, FALSE, 0);
   gtk_box_pack_end(GTK_BOX(button_link_hbox), allow_button_, FALSE, FALSE, 0);
   gtk_box_pack_end(GTK_BOX(button_link_hbox), link_, FALSE, FALSE, 0);
@@ -119,11 +121,11 @@ void FullscreenExitBubbleGtk::InitWidgets() {
 std::string FullscreenExitBubbleGtk::GetMessage(const GURL& url) {
   if (url.is_empty()) {
     return l10n_util::GetStringUTF8(
-        IDS_FULLSCREEN_INFOBAR_USER_ENTERED_FULLSCREEN);
+        IDS_FULLSCREEN_USER_ENTERED_FULLSCREEN);
   }
   if (url.SchemeIsFile())
-    return l10n_util::GetStringUTF8(IDS_FULLSCREEN_INFOBAR_FILE_PAGE_NAME);
-  return l10n_util::GetStringFUTF8(IDS_FULLSCREEN_INFOBAR_REQUEST_PERMISSION,
+    return l10n_util::GetStringUTF8(IDS_FULLSCREEN_ENTERED_FULLSCREEN);
+  return l10n_util::GetStringFUTF8(IDS_FULLSCREEN_SITE_ENTERED_FULLSCREEN,
       UTF8ToUTF16(url.host()));
 }
 
@@ -210,9 +212,9 @@ void FullscreenExitBubbleGtk::HideButtons() {
 }
 
 void FullscreenExitBubbleGtk::OnAllowClicked(GtkWidget* button) {
-  AcceptFullscreen(url_);
+  Accept();
   HideButtons();
 }
 void FullscreenExitBubbleGtk::OnDenyClicked(GtkWidget* button) {
-  CancelFullscreen();
+  Cancel();
 }
