@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/shared_memory.h"
@@ -38,8 +39,7 @@ void StopWorker(int document_cookie) {
   if (printer_query.get()) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(printer_query.get(),
-                          &printing::PrinterQuery::StopWorker));
+        base::Bind(&printing::PrinterQuery::StopWorker, printer_query.get()));
   }
 }
 
