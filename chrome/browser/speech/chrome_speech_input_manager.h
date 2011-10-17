@@ -39,7 +39,8 @@ class ChromeSpeechInputManager : public SpeechInputManager,
   virtual void ShowInputVolume(int caller_id,
                                float volume,
                                float noise_volume) OVERRIDE;
-  virtual void ShowNoMicError(int caller_id) OVERRIDE;
+  virtual void ShowMicError(int caller_id,
+                            SpeechInputManager::MicError error) OVERRIDE;
   virtual void ShowRecognizerError(int caller_id,
                                    SpeechInputError error) OVERRIDE;
   virtual void DoClose(int caller_id) OVERRIDE;

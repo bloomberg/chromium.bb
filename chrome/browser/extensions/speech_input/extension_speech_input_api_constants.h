@@ -11,7 +11,8 @@ extern const char kLanguageKey[];
 extern const char kGrammarKey[];
 extern const char kFilterProfanitiesKey[];
 
-extern const char kErrorNoDevicesAvailable[];
+extern const char kErrorNoRecordingDeviceFound[];
+extern const char kErrorRecordingDeviceInUse[];
 extern const char kErrorUnableToStart[];
 extern const char kErrorRequestDenied[];
 extern const char kErrorRequestInProgress[];

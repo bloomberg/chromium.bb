@@ -477,10 +477,17 @@ void ExtensionSpeechInputManager::StartOnIOThread(
   if (state_ == kShutdown)
     return;
 
-  if (!GetExtensionSpeechInterface()->CheckForAvailableDevices()) {
+  if (!GetExtensionSpeechInterface()->HasAudioInputDevices()) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
         base::Bind(&ExtensionSpeechInputManager::DispatchError, this,
-        std::string(constants::kErrorNoDevicesAvailable), false));
+        std::string(constants::kErrorNoRecordingDeviceFound), false));
+    return;
+  }
+
+  if (GetExtensionSpeechInterface()->IsRecordingInProcess()) {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+        base::Bind(&ExtensionSpeechInputManager::DispatchError, this,
+        std::string(constants::kErrorRecordingDeviceInUse), false));
     return;
   }
 
@@ -488,10 +495,17 @@ void ExtensionSpeechInputManager::StartOnIOThread(
       kSpeechCallerId, language, grammar, filter_profanities);
 }
 
-bool ExtensionSpeechInputManager::CheckForAvailableDevices() {
-  // TODO(leandrogracia): ensure recording exclusivity with other features
-  // in Chrome like web speech input.
+bool ExtensionSpeechInputManager::HasAudioInputDevices() {
   return AudioManager::GetAudioManager()->HasAudioInputDevices();
+}
+
+bool ExtensionSpeechInputManager::IsRecordingInProcess() {
+  // Thread-safe query.
+  return AudioManager::GetAudioManager()->IsRecordingInProcess();
+}
+
+bool ExtensionSpeechInputManager::IsRecording() {
+  return GetExtensionSpeechInterface()->IsRecordingInProcess();
 }
 
 void ExtensionSpeechInputManager::StartRecording(
@@ -505,7 +519,7 @@ void ExtensionSpeechInputManager::StartRecording(
   recognizer_->StartRecording();
 }
 
-bool ExtensionSpeechInputManager::HasValidRecognizer() const {
+bool ExtensionSpeechInputManager::HasValidRecognizer() {
   // Conditional expression used to avoid a performance warning on windows.
   return recognizer_ ? true : false;
 }

@@ -10,7 +10,8 @@ const char kLanguageKey[] = "language";
 const char kGrammarKey[] = "grammar";
 const char kFilterProfanitiesKey[] = "filterProfanities";
 
-const char kErrorNoDevicesAvailable[] = "noDevicesAvailable";
+const char kErrorNoRecordingDeviceFound[] = "noRecordingDeviceFound";
+const char kErrorRecordingDeviceInUse[] = "recordingDeviceInUse";
 const char kErrorUnableToStart[] = "unableToStart";
 const char kErrorRequestDenied[] = "requestDenied";
 const char kErrorRequestInProgress[] = "requestInProgress";

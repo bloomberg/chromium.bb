@@ -23,13 +23,13 @@ namespace net {
 class URLRequestContextGetter;
 }
 
-// Used for API tests. All methods run on the IO thread.
+// Used for API tests.
 class ExtensionSpeechInterface {
  public:
   ExtensionSpeechInterface();
   virtual ~ExtensionSpeechInterface();
 
-  virtual bool CheckForAvailableDevices() = 0;
+  // Called from the IO thread.
   virtual void StartRecording(
       speech_input::SpeechRecognizerDelegate* delegate,
       net::URLRequestContextGetter* context_getter,
@@ -39,7 +39,13 @@ class ExtensionSpeechInterface {
       bool filter_profanities) = 0;
 
   virtual void StopRecording(bool recognition_failed) = 0;
-  virtual bool HasValidRecognizer() const = 0;
+  virtual bool HasAudioInputDevices() = 0;
+
+  // Called from the UI thread.
+  virtual bool HasValidRecognizer() = 0;
+
+  // Called from both IO and UI threads.
+  virtual bool IsRecordingInProcess() = 0;
 
  protected:
   scoped_refptr<speech_input::SpeechRecognizer> recognizer_;
@@ -93,6 +99,9 @@ class ExtensionSpeechInputManager
   // Retrieve the actual state of the API manager.
   State state() const { return state_; }
 
+  // Check if recording is currently ongoing in Chrome.
+  bool IsRecording();
+
   // Called by internal ProfileKeyedService class.
   void ShutdownOnUIThread();
 
@@ -124,8 +133,9 @@ class ExtensionSpeechInputManager
 
  private:
   // ExtensionSpeechInterface methods:
-  virtual bool CheckForAvailableDevices() OVERRIDE;
-  virtual bool HasValidRecognizer() const OVERRIDE;
+  virtual bool IsRecordingInProcess() OVERRIDE;
+  virtual bool HasAudioInputDevices() OVERRIDE;
+  virtual bool HasValidRecognizer() OVERRIDE;
 
   virtual void StartRecording(
       speech_input::SpeechRecognizerDelegate* delegate,

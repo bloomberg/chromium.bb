@@ -81,7 +81,9 @@ void SpeechInputManager::StartRecognitionForRequest(int caller_id) {
     CancelRecognitionAndInformDelegate(recording_caller_id_);
 
   if (!AudioManager::GetAudioManager()->HasAudioInputDevices()) {
-    ShowNoMicError(caller_id);
+    ShowMicError(caller_id, kNoDeviceAvailable);
+  } else if (AudioManager::GetAudioManager()->IsRecordingInProcess()) {
+    ShowMicError(caller_id, kDeviceInUse);
   } else {
     recording_caller_id_ = caller_id;
     requests_[caller_id].is_active = true;

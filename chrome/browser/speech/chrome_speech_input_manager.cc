@@ -142,9 +142,23 @@ void ChromeSpeechInputManager::ShowInputVolume(
   bubble_controller_->SetBubbleInputVolume(caller_id, volume, noise_volume);
 }
 
-void ChromeSpeechInputManager::ShowNoMicError(int caller_id) {
-  bubble_controller_->SetBubbleMessage(
-      caller_id, l10n_util::GetStringUTF16(IDS_SPEECH_INPUT_NO_MIC));
+void ChromeSpeechInputManager::ShowMicError(
+    int caller_id,
+    SpeechInputManager::MicError error) {
+  switch (error) {
+    case SpeechInputManager::kNoDeviceAvailable:
+      bubble_controller_->SetBubbleMessage(
+          caller_id, l10n_util::GetStringUTF16(IDS_SPEECH_INPUT_NO_MIC));
+      break;
+
+    case SpeechInputManager::kDeviceInUse:
+      bubble_controller_->SetBubbleMessage(
+          caller_id, l10n_util::GetStringUTF16(IDS_SPEECH_INPUT_MIC_IN_USE));
+      break;
+
+    default:
+      NOTREACHED();
+  }
 }
 
 void ChromeSpeechInputManager::ShowRecognizerError(

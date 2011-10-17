@@ -13963,6 +13963,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
     <message name="IDS_SPEECH_INPUT_NO_MIC" desc="Message shown when speech recognizer could not find a suitable microphone or other audio input device.">
       No microphone found.
     </message>
+    <message name="IDS_SPEECH_INPUT_MIC_IN_USE" desc="Message shown when audio input is already in use by something else in Chrome.">
+      Microphone already in use.
+    </message>
     <message name="IDS_SPEECH_INPUT_NO_SPEECH" desc="Message shown when speech recognizer detected no speech in the recorded audio.">
       No speech heard.
     </message>

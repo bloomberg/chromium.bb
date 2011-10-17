@@ -108,7 +108,8 @@ class FakeSpeechInputManager : public SpeechInputManager {
   virtual void ShowInputVolume(int caller_id,
                                float volume,
                                float noise_volume) {}
-  virtual void ShowNoMicError(int caller_id) {}
+  virtual void ShowMicError(int caller_id,
+                            SpeechInputManager::MicError error) {}
   virtual void ShowRecognizerError(int caller_id,
                                    SpeechInputError error) {}
   virtual void DoClose(int caller_id) {}

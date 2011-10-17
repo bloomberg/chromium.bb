@@ -37,6 +37,12 @@ class CONTENT_EXPORT SpeechInputManager : public SpeechRecognizerDelegate {
     virtual ~Delegate() {}
   };
 
+  // Describes the microphone errors that are reported via ShowMicError.
+  enum MicError {
+    kNoDeviceAvailable = 0,
+    kDeviceInUse
+  };
+
   SpeechInputManager();
 
   // Invokes the platform provided microphone settings UI in a non-blocking way,
@@ -112,7 +118,7 @@ class CONTENT_EXPORT SpeechInputManager : public SpeechRecognizerDelegate {
                                float noise_volume) = 0;
 
   // Called when no microphone has been found.
-  virtual void ShowNoMicError(int caller_id) = 0;
+  virtual void ShowMicError(int caller_id, MicError error) = 0;
 
   // Called when there has been a error with the recognition.
   virtual void ShowRecognizerError(int caller_id,

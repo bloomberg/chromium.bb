@@ -152,7 +152,9 @@ bool StopSpeechInputFunction::RunImpl() {
 }
 
 bool IsRecordingSpeechInputFunction::RunImpl() {
-  // TODO(leandrogracia): to be implemented.
-  result_.reset(Value::CreateBooleanValue(false));
+  // Do not access the AudioManager directly here to ensure the proper
+  // IsRecording behaviour in the API tests.
+  result_.reset(Value::CreateBooleanValue(
+      ExtensionSpeechInputManager::GetForProfile(profile())->IsRecording()));
   return true;
 }
