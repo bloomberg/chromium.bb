@@ -15,7 +15,7 @@ class ExtensionClipboardApiTest : public ExtensionApiTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(ExtensionClipboardApiTest, WriteAndReadTest) {
+IN_PROC_BROWSER_TEST_F(ExtensionClipboardApiTest, DISABLED_WriteAndReadTest) {
 #if defined(OS_WIN)
   ASSERT_TRUE(RunExtensionTest("clipboard_api/extension_win")) << message_;
 #else  // !defined(OS_WIN)
