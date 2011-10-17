@@ -29,6 +29,7 @@ cr.define('print_preview', function() {
     this.SIMPLEX = 0;
     this.LONG_EDGE = 1;
     this.UNKNOWN_DUPLEX_MODE = -1;
+    this.addEventListeners_();
   }
 
   cr.addSingletonGetter(CopiesSettings);
@@ -139,8 +140,9 @@ cr.define('print_preview', function() {
     /**
      * Adding listeners to all copies related controls. The listeners take care
      * of altering their behavior depending on |hasPendingPreviewRequest|.
+     * @private
      */
-    addEventListeners: function() {
+    addEventListeners_: function() {
       this.textfield_.oninput = this.onTextfieldChanged_.bind(this);
       this.incrementButton_.onclick = this.onIncrementButtonClicked_.bind(this);
       this.decrementButton_.onclick = this.onDecrementButtonClicked_.bind(this);

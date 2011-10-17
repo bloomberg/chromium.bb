@@ -24,6 +24,7 @@ cr.define('print_preview', function() {
     //     before a new preview is requested so that the scroll amount can be
     //     restored later.
     this.pageOffset_ = null;
+    this.addEventListeners_();
   }
 
   cr.addSingletonGetter(PreviewArea);
@@ -108,7 +109,7 @@ cr.define('print_preview', function() {
      * Adds event listeners for various events.
      * @private
      */
-    addEventListeners: function() {
+    addEventListeners_: function() {
       document.addEventListener('PDFLoaded',
                                 this.onPDFLoaded_.bind(this));
     },

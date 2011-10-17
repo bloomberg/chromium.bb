@@ -113,7 +113,6 @@ function onLoad() {
   lastPreviewRequestID = initialPreviewRequestID;
 
   printHeader = print_preview.PrintHeader.getInstance();
-  printHeader.addEventListeners();
 
   if (!checkCompatiblePluginExists()) {
     disableInputElementsInSidebar();
@@ -136,13 +135,6 @@ function onLoad() {
   headerFooterSettings = print_preview.HeaderFooterSettings.getInstance();
   colorSettings = print_preview.ColorSettings.getInstance();
   previewArea = print_preview.PreviewArea.getInstance();
-  pageSettings.addEventListeners();
-  copiesSettings.addEventListeners();
-  headerFooterSettings.addEventListeners();
-  layoutSettings.addEventListeners();
-  marginSettings.addEventListeners();
-  colorSettings.addEventListeners();
-  previewArea.addEventListeners();
   $('printer-list').onchange = updateControlsWithSelectedPrinterCapabilities;
 
   showLoadingAnimation();

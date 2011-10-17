@@ -135,6 +135,7 @@ cr.define('print_preview', function() {
 
     // True if the margins UI should be shown regardless of mouse position.
     this.forceDisplayingMarginLines_ = true;
+    this.addEventListeners_();
   }
 
   // Number of points per inch.
@@ -238,8 +239,9 @@ cr.define('print_preview', function() {
 
     /**
      * Adds listeners to all margin related controls.
+     * @private
      */
-    addEventListeners: function() {
+    addEventListeners_: function() {
       this.marginList_.onchange = this.onMarginsChanged_.bind(this);
       document.addEventListener('PDFLoaded', this.onPDFLoaded_.bind(this));
     },

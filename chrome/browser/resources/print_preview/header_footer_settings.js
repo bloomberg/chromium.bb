@@ -13,6 +13,7 @@ cr.define('print_preview', function() {
   function HeaderFooterSettings() {
     this.headerFooterOption_ = $('header-footer-option');
     this.headerFooterCheckbox_ = $('header-footer');
+    this.addEventListeners_();
   }
 
   cr.addSingletonGetter(HeaderFooterSettings);
@@ -36,8 +37,9 @@ cr.define('print_preview', function() {
 
     /**
      * Adding listeners to header footer related controls.
+     * @private
      */
-    addEventListeners: function() {
+    addEventListeners_: function() {
       this.headerFooterCheckbox_.onclick =
           this.onHeaderFooterChanged_.bind(this);
       document.addEventListener('PDFLoaded', this.onPDFLoaded_.bind(this));

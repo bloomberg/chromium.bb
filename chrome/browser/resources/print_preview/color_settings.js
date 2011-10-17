@@ -17,6 +17,7 @@ cr.define('print_preview', function() {
 
     this.printerColorModelForColor_ = ColorSettings.COLOR;
     this.printerColorModelForBlack_ = ColorSettings.GRAY;
+    this.addEventListeners_();
   }
 
   ColorSettings.GRAY = 1;
@@ -52,8 +53,9 @@ cr.define('print_preview', function() {
     /**
      * Adding listeners to all color related controls. The listeners take care
      * of altering their behavior depending on |hasPendingPreviewRequest|.
+     * @private
      */
-    addEventListeners: function() {
+    addEventListeners_: function() {
       this.colorRadioButton_.onclick = function() {
         setColor(true);
       };

@@ -16,6 +16,7 @@ cr.define('print_preview', function() {
     this.landscapeRadioButton_ = $('landscape');
     this.wasLandscape_ = false;
     this.updateState();
+    this.addEventListeners_();
   }
 
   cr.addSingletonGetter(LayoutSettings);
@@ -63,8 +64,9 @@ cr.define('print_preview', function() {
     /**
      * Adding listeners to all layout related controls. The listeners take care
      * of altering their behavior depending on |hasPendingPreviewRequest|.
+     * @private
      */
-    addEventListeners: function() {
+    addEventListeners_: function() {
       this.landscapeRadioButton_.onclick = this.onLayoutButtonClick_.bind(this);
       this.portraitRadioButton_.onclick = this.onLayoutButtonClick_.bind(this);
       document.addEventListener('PDFLoaded', this.onPDFLoaded_.bind(this));

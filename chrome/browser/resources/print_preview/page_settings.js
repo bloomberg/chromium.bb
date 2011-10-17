@@ -29,6 +29,7 @@ cr.define('print_preview', function() {
     // The total page count of the previewed document regardless of which pages
     // the user has selected.
     this.totalPageCount_ = undefined;
+    this.addEventListeners_();
   }
 
   cr.addSingletonGetter(PageSettings);
@@ -343,8 +344,9 @@ cr.define('print_preview', function() {
     /**
      * Adding listeners to all pages related controls. The listeners take care
      * of altering their behavior depending on |hasPendingPreviewRequest|.
+     * @private
      */
-    addEventListeners: function() {
+    addEventListeners_: function() {
       this.allPagesRadioButton.onclick =
           this.onSelectedPagesMayHaveChanged_.bind(this);
       this.selectedPagesRadioButton.onclick =

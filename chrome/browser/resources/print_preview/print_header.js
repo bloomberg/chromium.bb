@@ -15,6 +15,7 @@ cr.define('print_preview', function() {
     this.cancelButton_ = $('cancel-button');
     this.summary_ = $('print-summary');
     this.printButton_.focus();
+    this.addEventListeners_();
   }
 
   cr.addSingletonGetter(PrintHeader);
@@ -35,8 +36,9 @@ cr.define('print_preview', function() {
     /**
      * Adding event listeners where necessary. Listeners take care of changing
      * their behavior depending on the current state, no need to remove them.
+     * @private
      */
-    addEventListeners: function() {
+    addEventListeners_: function() {
       this.cancelButton_.onclick = function() {
         this.disableCancelButton();
         closePrintPreviewTab();
