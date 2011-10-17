@@ -126,6 +126,7 @@ class PPB_FileIO_Impl : public ::ppapi::Resource,
   void WillWriteCallback(base::PlatformFileError error_code, int bytes_written);
 
   base::ScopedCallbackFactory<PPB_FileIO_Impl> callback_factory_;
+  base::WeakPtrFactory<PPB_FileIO_Impl> weak_factory_;
 
   base::PlatformFile file_;
   PP_FileSystemType file_system_type_;

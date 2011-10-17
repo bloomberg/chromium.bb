@@ -310,9 +310,9 @@ void FileSystemOperation::DirectoryExists(const GURL& path) {
   if (!file_system_operation_context_.src_file_util())
     file_system_operation_context_.set_src_file_util(file_util);
   FileSystemFileUtilProxy::GetFileInfo(
-      file_system_operation_context_,
-      proxy_, virtual_path, callback_factory_.NewCallback(
-          &FileSystemOperation::DidDirectoryExists));
+      file_system_operation_context_, proxy_, virtual_path,
+      base::Bind(&FileSystemOperation::DidDirectoryExists,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void FileSystemOperation::FileExists(const GURL& path) {
@@ -335,9 +335,9 @@ void FileSystemOperation::FileExists(const GURL& path) {
   if (!file_system_operation_context_.src_file_util())
     file_system_operation_context_.set_src_file_util(file_util);
   FileSystemFileUtilProxy::GetFileInfo(
-      file_system_operation_context_,
-      proxy_, virtual_path, callback_factory_.NewCallback(
-          &FileSystemOperation::DidFileExists));
+      file_system_operation_context_, proxy_, virtual_path,
+      base::Bind(&FileSystemOperation::DidFileExists,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void FileSystemOperation::GetMetadata(const GURL& path) {
@@ -360,9 +360,9 @@ void FileSystemOperation::GetMetadata(const GURL& path) {
   if (!file_system_operation_context_.src_file_util())
     file_system_operation_context_.set_src_file_util(file_util);
   FileSystemFileUtilProxy::GetFileInfo(
-      file_system_operation_context_,
-      proxy_, virtual_path, callback_factory_.NewCallback(
-          &FileSystemOperation::DidGetMetadata));
+      file_system_operation_context_, proxy_, virtual_path,
+      base::Bind(&FileSystemOperation::DidGetMetadata,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void FileSystemOperation::ReadDirectory(const GURL& path) {

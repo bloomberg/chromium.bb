@@ -52,7 +52,6 @@ BlobURLRequestJob::BlobURLRequestJob(
     BlobData* blob_data,
     base::MessageLoopProxy* file_thread_proxy)
     : net::URLRequestJob(request),
-      ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       blob_data_(blob_data),
       file_thread_proxy_(file_thread_proxy),
@@ -111,16 +110,14 @@ void BlobURLRequestJob::Kill() {
   CloseStream();
 
   net::URLRequestJob::Kill();
-  callback_factory_.RevokeAll();
   weak_factory_.InvalidateWeakPtrs();
   method_factory_.RevokeAll();
 }
 
 void BlobURLRequestJob::ResolveFile(const FilePath& file_path) {
   base::FileUtilProxy::GetFileInfo(
-        file_thread_proxy_,
-        file_path,
-        callback_factory_.NewCallback(&BlobURLRequestJob::DidResolve));
+        file_thread_proxy_, file_path,
+        base::Bind(&BlobURLRequestJob::DidResolve, weak_factory_.GetWeakPtr()));
 }
 
 void BlobURLRequestJob::DidResolve(base::PlatformFileError rv,

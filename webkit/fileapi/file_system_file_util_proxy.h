@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/callback_old.h"
 #include "base/file_path.h"
 #include "base/file_util_proxy.h"
 #include "base/memory/ref_counted.h"
@@ -36,10 +37,11 @@ class FileSystemFileUtilProxy {
   typedef base::FileUtilProxy::CreateOrOpenCallback CreateOrOpenCallback;
   typedef base::FileUtilProxy::EnsureFileExistsCallback
     EnsureFileExistsCallback;
-  typedef Callback3<PlatformFileError /* error code */,
-                    const PlatformFileInfo& /* file_info */,
-                    const FilePath& /* platform_path, where possible */
-                    >::Type GetFileInfoCallback;
+  typedef base::Callback<
+      void(PlatformFileError /* error code */,
+           const PlatformFileInfo& /* file_info */,
+           const FilePath& /* platform_path, where possible */)>
+      GetFileInfoCallback;
   typedef Callback2<PlatformFileError /* error code */,
                     const FilePath& /* local_path, where possible */
                     >::Type GetLocalPathCallback;
@@ -90,7 +92,7 @@ class FileSystemFileUtilProxy {
       const FileSystemOperationContext& context,
       scoped_refptr<MessageLoopProxy> message_loop_proxy,
       const FilePath& file_path,
-      GetFileInfoCallback* callback);
+      const GetFileInfoCallback& callback);
 
   static bool ReadDirectory(const FileSystemOperationContext& context,
                             scoped_refptr<MessageLoopProxy> message_loop_proxy,

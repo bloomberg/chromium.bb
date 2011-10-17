@@ -224,11 +224,11 @@ class RelayGetFileInfo : public MessageLoopRelay {
   RelayGetFileInfo(
       const fileapi::FileSystemOperationContext& context,
       const FilePath& file_path,
-      fileapi::FileSystemFileUtilProxy::GetFileInfoCallback* callback)
+      const fileapi::FileSystemFileUtilProxy::GetFileInfoCallback& callback)
       : MessageLoopRelay(context),
         callback_(callback),
         file_path_(file_path) {
-    DCHECK(callback);
+    DCHECK_EQ(false, callback.is_null());
   }
 
  protected:
@@ -238,12 +238,11 @@ class RelayGetFileInfo : public MessageLoopRelay {
   }
 
   virtual void RunCallback() {
-    callback_->Run(error_code(), file_info_, platform_path_);
-    delete callback_;
+    callback_.Run(error_code(), file_info_, platform_path_);
   }
 
  private:
-  fileapi::FileSystemFileUtilProxy::GetFileInfoCallback* callback_;
+  fileapi::FileSystemFileUtilProxy::GetFileInfoCallback callback_;
   FilePath file_path_;
   base::PlatformFileInfo file_info_;
   FilePath platform_path_;
@@ -470,7 +469,7 @@ bool FileSystemFileUtilProxy::GetFileInfo(
     const FileSystemOperationContext& context,
     scoped_refptr<MessageLoopProxy> message_loop_proxy,
     const FilePath& file_path,
-    GetFileInfoCallback* callback) {
+    const GetFileInfoCallback& callback) {
   return Start(FROM_HERE, message_loop_proxy, new RelayGetFileInfo(context,
                file_path, callback));
 }

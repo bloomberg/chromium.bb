@@ -52,6 +52,7 @@ PPB_FileIO_Impl::CallbackEntry::~CallbackEntry() {
 PPB_FileIO_Impl::PPB_FileIO_Impl(PP_Instance instance)
     : Resource(instance),
       ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       file_(base::kInvalidPlatformFileValue),
       file_system_type_(PP_FILESYSTEMTYPE_INVALID),
       pending_op_(OPERATION_NONE),
@@ -132,7 +133,8 @@ int32_t PPB_FileIO_Impl::Query(PP_FileInfo* info,
 
   if (!base::FileUtilProxy::GetFileInfoFromPlatformFile(
           plugin_delegate->GetFileThreadMessageLoopProxy(), file_,
-          callback_factory_.NewCallback(&PPB_FileIO_Impl::QueryInfoCallback)))
+          base::Bind(&PPB_FileIO_Impl::QueryInfoCallback,
+                     weak_factory_.GetWeakPtr())))
     return PP_ERROR_FAILED;
 
   RegisterCallback(OPERATION_EXCLUSIVE, callback, NULL);

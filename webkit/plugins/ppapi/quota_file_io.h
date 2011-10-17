@@ -8,7 +8,6 @@
 #include <deque>
 
 #include "base/file_util_proxy.h"
-#include "base/memory/scoped_callback_factory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
 #include "googleurl/src/gurl.h"
@@ -42,7 +41,7 @@ class QuotaFileIO {
   // Otherwise it returns false and |callback| will not be dispatched.
   // |callback| will not be dispatched either when this instance is
   // destroyed before the operation completes.
-  // SetLength/WillSetLength cannot be called while there're any inflight
+  // SetLength/WillSetLength cannot be called while there're any in-flight
   // operations.  For Write/WillWrite it is guaranteed that |callback| are
   // always dispatched in the same order as Write being called.
   bool Write(int64_t offset,
@@ -96,7 +95,7 @@ class QuotaFileIO {
   int64_t cached_file_size_;
   int64_t cached_available_space_;
 
-  // Quota-related queries and errors occured during inflight quota checks.
+  // Quota-related queries and errors occurred during in-flight quota checks.
   int outstanding_quota_queries_;
   int outstanding_errors_;
 
@@ -104,8 +103,8 @@ class QuotaFileIO {
   int64_t max_written_offset_;
   int inflight_operations_;
 
-  base::ScopedCallbackFactory<QuotaFileIO> callback_factory_;
-  base::WeakPtrFactory<QuotaFileIO> weak_ptr_factory_;
+  base::WeakPtrFactory<QuotaFileIO> weak_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(QuotaFileIO);
 };
 

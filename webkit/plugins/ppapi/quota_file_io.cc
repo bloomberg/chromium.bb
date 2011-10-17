@@ -7,8 +7,9 @@
 #include <algorithm>
 
 #include "base/bind.h"
-#include "base/stl_util.h"
+#include "base/memory/scoped_callback_factory.h"
 #include "base/message_loop_proxy.h"
+#include "base/stl_util.h"
 #include "base/task.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
@@ -224,8 +225,7 @@ QuotaFileIO::QuotaFileIO(
       outstanding_errors_(0),
       max_written_offset_(0),
       inflight_operations_(0),
-      callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   DCHECK_NE(base::kInvalidPlatformFileValue, file_);
   DCHECK_NE(quota::kStorageTypeUnknown, storage_type_);
 }
@@ -294,8 +294,8 @@ bool QuotaFileIO::RegisterOperationForQuotaChecks(
     ++outstanding_quota_queries_;
     if (!base::FileUtilProxy::GetFileInfoFromPlatformFile(
             plugin_delegate->GetFileThreadMessageLoopProxy(), file_,
-            callback_factory_.NewCallback(
-                &QuotaFileIO::DidQueryInfoForQuota))) {
+            base::Bind(&QuotaFileIO::DidQueryInfoForQuota,
+                       weak_factory_.GetWeakPtr()))) {
       // This makes the call fail synchronously; we do not fire the callback
       // here but just delete the operation and return false.
       return false;
@@ -306,7 +306,7 @@ bool QuotaFileIO::RegisterOperationForQuotaChecks(
     plugin_delegate->QueryAvailableSpace(
         GURL(file_url_.path()).GetOrigin(), storage_type_,
         base::Bind(&QuotaFileIO::DidQueryAvailableSpace,
-                   weak_ptr_factory_.GetWeakPtr()));
+                   weak_factory_.GetWeakPtr()));
   }
   pending_operations_.push_back(op.release());
   return true;
