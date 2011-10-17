@@ -10,7 +10,6 @@
     function gotUrl(url) {
       var url_regex = /^ws:\/\//
       chrome.test.assertEq(0, url.search(url_regex));
-console.log(url);
       ws = new WebSocket(url);
 
       function gotMessage(msg) {
