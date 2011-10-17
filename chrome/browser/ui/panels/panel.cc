@@ -246,11 +246,18 @@ bool Panel::IsMinimized() const {
   return expansion_state_ != EXPANDED;
 }
 
-void Panel::EnterFullscreen(const GURL& url, bool ask_permission) {
+void Panel::EnterFullscreen(
+      const GURL& url, FullscreenExitBubbleType type) {
   NOTIMPLEMENTED();
 }
 
 void Panel::ExitFullscreen() {
+  NOTIMPLEMENTED();
+}
+
+void Panel::UpdateFullscreenExitBubbleContent(
+      const GURL& url,
+      FullscreenExitBubbleType bubble_type) {
   NOTIMPLEMENTED();
 }
 
@@ -464,9 +471,13 @@ void Panel::OpenTabpose() {
   NOTIMPLEMENTED();
 }
 
-void Panel::SetPresentationMode(bool presentation_mode,
-                                const GURL& url,
-                                bool ask_permission) {
+void Panel::EnterPresentationMode(
+      const GURL& url,
+      FullscreenExitBubbleType content_type) {
+  NOTIMPLEMENTED();
+}
+
+void Panel::ExitPresentationMode() {
   NOTIMPLEMENTED();
 }
 

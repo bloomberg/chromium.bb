@@ -85,8 +85,12 @@ class Panel : public BrowserWindow, public NotificationObserver {
   virtual gfx::Rect GetBounds() const OVERRIDE;
   virtual bool IsMaximized() const OVERRIDE;
   virtual bool IsMinimized() const OVERRIDE;
-  virtual void EnterFullscreen(const GURL& url, bool ask_permission) OVERRIDE;
+  virtual void EnterFullscreen(
+      const GURL& url, FullscreenExitBubbleType type) OVERRIDE;
   virtual void ExitFullscreen() OVERRIDE;
+  virtual void UpdateFullscreenExitBubbleContent(
+      const GURL& url,
+      FullscreenExitBubbleType bubble_type) OVERRIDE;
   virtual bool IsFullscreen() const OVERRIDE;
   virtual bool IsFullscreenBubbleVisible() const OVERRIDE;
   virtual LocationBar* GetLocationBar() const OVERRIDE;
@@ -144,9 +148,10 @@ class Panel : public BrowserWindow, public NotificationObserver {
   virtual void Paste() OVERRIDE;
 #if defined(OS_MACOSX)
   virtual void OpenTabpose() OVERRIDE;
-  virtual void SetPresentationMode(bool presentation_mode,
-                                   const GURL& url,
-                                   bool ask_permission) OVERRIDE;
+  virtual void EnterPresentationMode(
+      const GURL& url,
+      FullscreenExitBubbleType bubble_type) OVERRIDE;
+  virtual void ExitPresentationMode() OVERRIDE;
   virtual bool InPresentationMode() OVERRIDE;
 #endif
   virtual void ShowInstant(TabContentsWrapper* preview) OVERRIDE;

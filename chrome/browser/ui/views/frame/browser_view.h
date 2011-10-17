@@ -258,8 +258,12 @@ class BrowserView : public BrowserBubbleHost,
   virtual gfx::Rect GetBounds() const OVERRIDE;
   virtual bool IsMaximized() const OVERRIDE;
   virtual bool IsMinimized() const OVERRIDE;
-  virtual void EnterFullscreen(const GURL& url, bool ask_permission) OVERRIDE;
+  virtual void EnterFullscreen(
+      const GURL& url, FullscreenExitBubbleType type) OVERRIDE;
   virtual void ExitFullscreen() OVERRIDE;
+  virtual void UpdateFullscreenExitBubbleContent(
+      const GURL& url,
+      FullscreenExitBubbleType bubble_type) OVERRIDE;
   virtual bool IsFullscreen() const OVERRIDE;
   virtual LocationBar* GetLocationBar() const OVERRIDE;
   virtual void SetFocusToLocationBar(bool select_all) OVERRIDE;

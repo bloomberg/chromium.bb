@@ -1735,7 +1735,13 @@ void Browser::ToggleFullscreenMode(bool for_tab) {
         (GetFullscreenSetting(url) == CONTENT_SETTING_ASK);
   }
   if (entering_fullscreen) {
-    window_->EnterFullscreen(url, ask_permission);
+    FullscreenExitBubbleType type =
+        FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION;
+    if (for_tab) {
+      type = ask_permission ? FEB_TYPE_FULLSCREEN_BUTTONS :
+                              FEB_TYPE_FULLSCREEN_EXIT_INSTRUCTION;
+    }
+    window_->EnterFullscreen(url, type);
   } else {
     window_->ExitFullscreen();
   }
@@ -1769,7 +1775,17 @@ void Browser::TogglePresentationMode(bool for_tab) {
     ask_permission = !url.SchemeIsFile() &&
         (GetFullscreenSetting(url) == CONTENT_SETTING_ASK);
   }
-  window_->SetPresentationMode(entering_fullscreen, url, ask_permission);
+  if (entering_fullscreen) {
+    FullscreenExitBubbleType type =
+        FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION;
+    if (for_tab) {
+      type = ask_permission ? FEB_TYPE_FULLSCREEN_BUTTONS :
+                              FEB_TYPE_FULLSCREEN_EXIT_INSTRUCTION;
+    }
+    window_->EnterPresentationMode(url, type);
+  } else {
+    window_->ExitPresentationMode();
+  }
   WindowFullscreenStateChanged();
 }
 #endif

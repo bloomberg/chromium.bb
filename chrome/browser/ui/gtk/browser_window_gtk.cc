@@ -850,7 +850,8 @@ bool BrowserWindowGtk::ShouldDrawContentDropShadow() {
   return !IsMaximized() && UseCustomFrame();
 }
 
-void BrowserWindowGtk::EnterFullscreen(const GURL& url, bool ask_permission) {
+void BrowserWindowGtk::EnterFullscreen(
+      const GURL& url, FullscreenExitBubbleType type) {
   // gtk_window_(un)fullscreen asks the window manager to toggle the EWMH
   // for fullscreen windows.  Not all window managers support this.
   gtk_window_fullscreen(window_);
@@ -861,8 +862,14 @@ void BrowserWindowGtk::EnterFullscreen(const GURL& url, bool ask_permission) {
         GTK_FLOATING_CONTAINER(render_area_floating_container_),
         browser(),
         url,
-        ask_permission));
+        type == FEB_TYPE_FULLSCREEN_BUTTONS));
   }
+}
+
+void BrowserWindowGtk::UpdateFullscreenExitBubbleContent(
+      const GURL& url,
+      FullscreenExitBubbleType bubble_type) {
+  NOTIMPLEMENTED();
 }
 
 void BrowserWindowGtk::ExitFullscreen() {

@@ -116,7 +116,7 @@ TEST_F(BrowserWindowCocoaTest, TestFullscreen) {
   scoped_ptr<BrowserWindowCocoaPong> scoped_bwc(bwc);
 
   EXPECT_FALSE(bwc->IsFullscreen());
-  bwc->EnterFullscreen(GURL(), false);
+  bwc->EnterFullscreen(GURL(), FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION);
   EXPECT_TRUE(bwc->IsFullscreen());
   bwc->ExitFullscreen();
   EXPECT_FALSE(bwc->IsFullscreen());

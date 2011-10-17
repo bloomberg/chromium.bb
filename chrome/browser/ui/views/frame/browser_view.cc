@@ -766,12 +766,13 @@ bool BrowserView::IsMinimized() const {
   return frame_->IsMinimized();
 }
 
-void BrowserView::EnterFullscreen(const GURL& url, bool ask_permission) {
+void BrowserView::EnterFullscreen(
+      const GURL& url, FullscreenExitBubbleType type) {
   if (IsFullscreen())
     return;  // Nothing to do.
 
 #if defined(OS_WIN)
-  ProcessFullscreen(true, url, ask_permission);
+  ProcessFullscreen(true, url, type == FEB_TYPE_FULLSCREEN_BUTTONS);
 #else
   // On Linux changing fullscreen is async. Ask the window to change it's
   // fullscreen state, and when done invoke ProcessFullscreen.
@@ -790,6 +791,12 @@ void BrowserView::ExitFullscreen() {
   // fullscreen state, and when done invoke ProcessFullscreen.
   frame_->SetFullscreen(false);
 #endif
+}
+
+void BrowserView::UpdateFullscreenExitBubbleContent(
+      const GURL& url,
+      FullscreenExitBubbleType bubble_type) {
+  NOTIMPLEMENTED();
 }
 
 bool BrowserView::IsFullscreen() const {

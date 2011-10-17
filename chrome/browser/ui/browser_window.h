@@ -7,6 +7,7 @@
 #pragma once
 
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
+#include "chrome/browser/ui/fullscreen_exit_bubble_type.h"
 #include "chrome/common/content_settings_types.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "ui/gfx/native_widget_types.h"
@@ -136,8 +137,12 @@ class BrowserWindow {
   virtual bool IsMinimized() const = 0;
 
   // Accessors for fullscreen mode state.
-  virtual void EnterFullscreen(const GURL& url, bool ask_permission) = 0;
+  virtual void EnterFullscreen(const GURL& url,
+                               FullscreenExitBubbleType bubble_type) = 0;
   virtual void ExitFullscreen() = 0;
+  virtual void UpdateFullscreenExitBubbleContent(
+      const GURL& url,
+      FullscreenExitBubbleType bubble_type) = 0;
   virtual bool IsFullscreen() const = 0;
 
   // Returns true if the fullscreen bubble is visible.
@@ -304,9 +309,10 @@ class BrowserWindow {
 
   // Sets the presentation mode for the window.  If the window is not already in
   // fullscreen, also enters fullscreen mode.
-  virtual void SetPresentationMode(bool presentation_mode,
-                                   const GURL& url,
-                                   bool ask_permission) = 0;
+  virtual void EnterPresentationMode(
+      const GURL& url,
+      FullscreenExitBubbleType bubble_type) = 0;
+  virtual void ExitPresentationMode() = 0;
   virtual bool InPresentationMode() = 0;
 #endif
 

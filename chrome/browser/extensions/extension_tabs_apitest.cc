@@ -181,7 +181,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabsOnUpdated) {
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
                        MAYBE_FocusWindowDoesNotExitFullscreen) {
-  browser()->window()->EnterFullscreen(GURL(), false);
+  browser()->window()->EnterFullscreen(
+      GURL(), FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION);
   bool is_fullscreen = browser()->window()->IsFullscreen();
   ASSERT_TRUE(RunExtensionTest("window_update/focus")) << message_;
   ASSERT_EQ(is_fullscreen, browser()->window()->IsFullscreen());
@@ -189,7 +190,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
                        MAYBE_UpdateWindowSizeExitsFullscreen) {
-  browser()->window()->EnterFullscreen(GURL(), false);
+  browser()->window()->EnterFullscreen(
+      GURL(), FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION);
   ASSERT_TRUE(RunExtensionTest("window_update/sizing")) << message_;
   ASSERT_FALSE(browser()->window()->IsFullscreen());
 }

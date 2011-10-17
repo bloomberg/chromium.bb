@@ -55,8 +55,12 @@ class BrowserWindowCocoa : public BrowserWindow,
   virtual gfx::Rect GetBounds() const;
   virtual bool IsMaximized() const;
   virtual bool IsMinimized() const;
-  virtual void EnterFullscreen(const GURL& url, bool ask_permission);
-  virtual void ExitFullscreen();
+  virtual void EnterFullscreen(
+      const GURL& url, FullscreenExitBubbleType type) OVERRIDE;
+  virtual void ExitFullscreen() OVERRIDE;
+  virtual void UpdateFullscreenExitBubbleContent(
+      const GURL& url,
+      FullscreenExitBubbleType bubble_type) OVERRIDE;
   virtual bool IsFullscreen() const;
   virtual bool IsFullscreenBubbleVisible() const;
   virtual LocationBar* GetLocationBar() const;
@@ -106,9 +110,10 @@ class BrowserWindowCocoa : public BrowserWindow,
   virtual void Copy();
   virtual void Paste();
   virtual void OpenTabpose();
-  virtual void SetPresentationMode(bool presentation_mode,
-                                   const GURL& url,
-                                   bool ask_permission);
+  virtual void EnterPresentationMode(
+      const GURL& url,
+      FullscreenExitBubbleType bubble_type) OVERRIDE;
+  virtual void ExitPresentationMode() OVERRIDE;
   virtual bool InPresentationMode();
   virtual void ShowInstant(TabContentsWrapper* preview);
   virtual void HideInstant();
