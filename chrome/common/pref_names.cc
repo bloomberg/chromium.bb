@@ -1625,4 +1625,12 @@ const char kCustomHandlersEnabled[] = "custom_handlers.enabled";
 const char kDevicePolicyRefreshRate[] = "policy.device_refresh_rate";
 const char kUserPolicyRefreshRate[] = "policy.user_refresh_rate";
 
+// String that represents the recovery component last downloaded version. This
+// takes the usual 'a.b.c.d' notation.
+const char kRecoveryComponentVersion[] = "recovery_component.version";
+
+// String that stores the component updater last known state. This is used for
+// troubleshooting.
+const char kComponentUpdaterState[] = "component_updater.state";
+
 }  // namespace prefs

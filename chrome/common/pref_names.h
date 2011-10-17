@@ -603,6 +603,9 @@ extern const char kBackgroundModeEnabled[];
 extern const char kDevicePolicyRefreshRate[];
 extern const char kUserPolicyRefreshRate[];
 
+extern const char kRecoveryComponentVersion[];
+extern const char kComponentUpdaterState[];
+
 }  // namespace prefs
 
 #endif  // CHROME_COMMON_PREF_NAMES_H_
