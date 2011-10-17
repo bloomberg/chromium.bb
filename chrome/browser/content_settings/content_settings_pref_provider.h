@@ -115,7 +115,9 @@ class PrefProvider : public ObservableProvider,
       ListValue* denied_sites);
 
   // Various migration methods (old cookie, popup and per-host data gets
-  // migrated to the new format).
+  // migrated to the new format). When calling these functions, |lock_|
+  // should not be held, since these functions will send out notifications of
+  // preference changes.
   void MigrateObsoletePerhostPref();
   void MigrateObsoletePopupsPref();
   void MigrateObsoleteContentSettingsPatternPref();

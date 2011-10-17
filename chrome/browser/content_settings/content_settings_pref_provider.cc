@@ -296,7 +296,7 @@ void PrefProvider::UpdatePref(
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
     ContentSetting setting) {
-#ifndef NDEBUG
+#if !defined(NDEBUG)
   // Ensure that |lock_| is not held, since this function will send out
   // notifications (by |~DictionaryPrefUpdate|).
   DCHECK(lock_.Try());
@@ -440,7 +440,7 @@ void PrefProvider::UpdateObsoletePatternsPref(
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier,
       ContentSetting setting) {
-#ifndef NDEBUG
+#if !defined(NDEBUG)
   // Ensure that |lock_| is not held, since this function will send out
   // notifications (by |~DictionaryPrefUpdate|).
   DCHECK(lock_.Try());
@@ -572,7 +572,7 @@ void PrefProvider::UpdateObsoleteGeolocationPref(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,
     ContentSetting setting) {
-#ifndef NDEBUG
+#if !defined(NDEBUG)
   // Ensure that |lock_| is not held, since this function will send out
   // notifications (by |~DictionaryPrefUpdate|).
   DCHECK(lock_.Try());
@@ -762,7 +762,7 @@ void PrefProvider::MigrateObsoletePopupsPref() {
 }
 
 void PrefProvider::MigrateObsoleteContentSettingsPatternPref() {
-#ifndef NDEBUG
+#if !defined(NDEBUG)
   // Ensure that |lock_| is not held, since this function will send out
   // notifications (by |~DictionaryPrefUpdate|).
   DCHECK(lock_.Try());
@@ -847,7 +847,7 @@ void PrefProvider::MigrateObsoleteContentSettingsPatternPref() {
 }
 
 void PrefProvider::SyncObsoletePatternPref() {
-#ifndef NDEBUG
+#if !defined(NDEBUG)
   // Ensure that |lock_| is not held, since this function will send out
   // notifications (by |~DictionaryPrefUpdate|).
   DCHECK(lock_.Try());
@@ -906,7 +906,7 @@ void PrefProvider::SyncObsoletePatternPref() {
 }
 
 void PrefProvider::MigrateObsoleteGeolocationPref() {
-#ifndef NDEBUG
+#if !defined(NDEBUG)
   // Ensure that |lock_| is not held, since this function will send out
   // notifications (by |~DictionaryPrefUpdate|).
   DCHECK(lock_.Try());
@@ -964,7 +964,7 @@ void PrefProvider::MigrateObsoleteGeolocationPref() {
 }
 
 void PrefProvider::MigrateObsoleteNotificationsPrefs() {
-#ifndef NDEBUG
+#if !defined(NDEBUG)
   // Ensure that |lock_| is not held, since this function will send out
   // notifications (by |~DictionaryPrefUpdate|).
   DCHECK(lock_.Try());
@@ -1015,7 +1015,7 @@ void PrefProvider::MigrateObsoleteNotificationsPrefs() {
 }
 
 void PrefProvider::SyncObsoletePrefs() {
-#ifndef NDEBUG
+#if !defined(NDEBUG)
   // Ensure that |lock_| is not held, since this function will send out
   // notifications (by |~DictionaryPrefUpdate|).
   DCHECK(lock_.Try());
