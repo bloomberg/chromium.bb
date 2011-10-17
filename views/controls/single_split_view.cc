@@ -17,6 +17,10 @@
 #include "ui/gfx/gtk_util.h"
 #endif
 
+#if defined(USE_AURA)
+#include "ui/aura/cursor.h"
+#endif
+
 namespace views {
 
 // static
@@ -96,16 +100,16 @@ gfx::Size SingleSplitView::GetPreferredSize() {
 gfx::NativeCursor SingleSplitView::GetCursor(const MouseEvent& event) {
   if (!IsPointInDivider(event.location()))
     return gfx::kNullCursor;
-#if defined(OS_WIN)
+#if defined(USE_AURA)
+  return is_horizontal_ ?
+      aura::kCursorEastWestResize : aura::kCursorNorthSouthResize;
+#elif defined(OS_WIN)
   static HCURSOR we_resize_cursor = LoadCursor(NULL, IDC_SIZEWE);
   static HCURSOR ns_resize_cursor = LoadCursor(NULL, IDC_SIZENS);
   return is_horizontal_ ? we_resize_cursor : ns_resize_cursor;
 #elif defined(TOOLKIT_USES_GTK)
   return gfx::GetCursor(is_horizontal_ ? GDK_SB_H_DOUBLE_ARROW :
                                          GDK_SB_V_DOUBLE_ARROW);
-#else
-  // TODO(saintlou):
-  return gfx::kNullCursor;
 #endif
 }
 

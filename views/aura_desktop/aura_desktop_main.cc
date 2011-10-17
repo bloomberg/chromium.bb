@@ -41,7 +41,7 @@ class DemoWindowDelegate : public aura::WindowDelegate {
     return false;
   }
   virtual gfx::NativeCursor GetCursor(const gfx::Point& point) OVERRIDE {
-    return NULL;
+    return gfx::kNullCursor;
   }
   virtual int GetNonClientComponent(const gfx::Point& point) const OVERRIDE {
     return HTCLIENT;

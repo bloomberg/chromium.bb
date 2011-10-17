@@ -12,6 +12,7 @@
 #include <sys/shm.h>
 
 #include <list>
+#include <map>
 #include <vector>
 
 #include "base/command_line.h"
@@ -105,6 +106,38 @@ bool GetProperty(XID window, const std::string& property_name, long max_length,
                             property);
 }
 
+// A process wide singleton that manages the usage of X cursors.
+class XCursorCache {
+ public:
+   XCursorCache() {}
+  ~XCursorCache() {
+    Display* display = base::MessagePumpForUI::GetDefaultXDisplay();
+    for (std::map<int, Cursor>::iterator it =
+        cache_.begin(); it != cache_.end(); ++it) {
+      XFreeCursor(display, it->second);
+    }
+    cache_.clear();
+  }
+
+  Cursor GetCursor(int cursor_shape) {
+    // Lookup cursor by attempting to insert a null value, which avoids
+    // a second pass through the map after a cache miss.
+    std::pair<std::map<int, Cursor>::iterator, bool> it = cache_.insert(
+        std::make_pair(cursor_shape, 0));
+    if (it.second) {
+      Display* display = base::MessagePumpForUI::GetDefaultXDisplay();
+      it.first->second = XCreateFontCursor(display, cursor_shape);
+    }
+    return it.first->second;
+  }
+
+ private:
+  // Maps X11 font cursor shapes to Cursor IDs.
+  std::map<int, Cursor> cache_;
+
+  DISALLOW_COPY_AND_ASSIGN(XCursorCache);
+};
+
 }  // namespace
 
 bool XDisplayExists() {
@@ -178,6 +211,11 @@ bool QueryRenderSupport(Display* dpy) {
 
 int GetDefaultScreen(Display* display) {
   return XDefaultScreen(display);
+}
+
+Cursor GetXCursor(int cursor_shape) {
+  static XCursorCache cache;
+  return cache.GetCursor(cursor_shape);
 }
 
 XID GetX11RootWindow() {

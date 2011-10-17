@@ -727,7 +727,7 @@ View* View::GetEventHandlerForPoint(const gfx::Point& point) {
 }
 
 gfx::NativeCursor View::GetCursor(const MouseEvent& event) {
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   static HCURSOR arrow = LoadCursor(NULL, IDC_ARROW);
   return arrow;
 #else

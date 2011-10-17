@@ -37,6 +37,10 @@
 #include "ui/gfx/gtk_util.h"
 #endif
 
+#if defined(USE_AURA)
+#include "ui/aura/cursor.h"
+#endif
+
 namespace {
 
 // Text color for read only.
@@ -291,14 +295,12 @@ gfx::NativeCursor NativeTextfieldViews::GetCursor(const MouseEvent& event) {
   bool in_selection = GetRenderText()->IsPointInSelection(event.location());
   bool drag_event = event.type() == ui::ET_MOUSE_DRAGGED;
   bool text_cursor = !initiating_drag_ && (drag_event || !in_selection);
-#if defined(OS_WIN)
+#if defined(USE_AURA)
+  return text_cursor ? aura::kCursorIBeam : aura::kCursorNull;
+#elif defined(OS_WIN)
   static HCURSOR ibeam = LoadCursor(NULL, IDC_IBEAM);
   static HCURSOR arrow = LoadCursor(NULL, IDC_ARROW);
   return text_cursor ? ibeam : arrow;
-#elif defined(USE_AURA)
-  // TODO(saintlou):
-  (void)text_cursor;
-  return gfx::kNullCursor;
 #else
   return text_cursor ? gfx::GetCursor(GDK_XTERM) : NULL;
 #endif

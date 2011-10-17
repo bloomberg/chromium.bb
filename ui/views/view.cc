@@ -416,7 +416,7 @@ View* View::GetEventHandlerForPoint(const gfx::Point& point) {
 }
 
 gfx::NativeCursor View::GetCursorForPoint(const gfx::Point& point) const {
-  return NULL;
+  return gfx::kNullCursor;
 }
 
 bool View::OnKeyPressed(const KeyEvent& event) {

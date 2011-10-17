@@ -23,6 +23,10 @@
 #include "ui/gfx/gtk_util.h"
 #endif
 
+#if defined(USE_AURA)
+#include "ui/aura/cursor.h"
+#endif
+
 namespace views {
 
 const char Link::kViewClassName[] = "views/Link";
@@ -50,14 +54,13 @@ std::string Link::GetClassName() const {
 gfx::NativeCursor Link::GetCursor(const MouseEvent& event) {
   if (!IsEnabled())
     return gfx::kNullCursor;
-#if defined(OS_WIN)
+#if defined(USE_AURA)
+  return aura::kCursorHand;
+#elif defined(OS_WIN)
   static HCURSOR g_hand_cursor = LoadCursor(NULL, IDC_HAND);
   return g_hand_cursor;
 #elif defined(TOOLKIT_USES_GTK)
   return gfx::GetCursor(GDK_HAND2);
-#else
-  // TODO(saintlou):
-  return gfx::kNullCursor;
 #endif
 }
 

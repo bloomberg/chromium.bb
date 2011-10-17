@@ -38,6 +38,10 @@
 #include "ui/gfx/gtk_util.h"
 #endif
 
+#if defined(USE_AURA)
+#include "ui/aura/cursor.h"
+#endif
+
 // If we don't clamp the maximum width, then very long URLs and titles can make
 // the bubble arbitrarily wide.
 const int kMaxContentsWidth = 500;
@@ -90,12 +94,11 @@ void ContentSettingBubbleContents::Favicon::OnMouseReleased(
 
 gfx::NativeCursor ContentSettingBubbleContents::Favicon::GetCursor(
     const views::MouseEvent& event) {
-#if defined(OS_WIN)
+#if defined(USE_AURA)
+  return aura::kCursorHand;
+#elif defined(OS_WIN)
   static HCURSOR g_hand_cursor = LoadCursor(NULL, IDC_HAND);
   return g_hand_cursor;
-#elif defined(USE_AURA)
-  // TODO(saintlou):
-  return gfx::kNullCursor;
 #elif defined(TOOLKIT_USES_GTK)
   return gfx::GetCursor(GDK_HAND2);
 #endif

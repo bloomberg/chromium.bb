@@ -69,7 +69,7 @@ class WebCursor {
   // Returns a native cursor representing the current WebCursor instance.
   gfx::NativeCursor GetNativeCursor();
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   // Returns a HCURSOR representing the current WebCursor instance.
   // The ownership of the HCURSOR (does not apply to external cursors) remains
   // with the WebCursor instance.

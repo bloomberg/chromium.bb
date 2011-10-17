@@ -41,10 +41,6 @@ class SkRegion;
 namespace aura {
 class Window;
 }
-
-#if defined(USE_X11)
-typedef unsigned long Cursor;
-#endif
 #endif  // defined(USE_AURA)
 
 #if defined(OS_WIN)
@@ -95,27 +91,34 @@ class SkBitmap;
 namespace gfx {
 
 #if defined(USE_AURA)
+// See ui/aura/cursor.h for values.
+typedef int NativeCursor;
 typedef aura::Window* NativeView;
 typedef aura::Window* NativeWindow;
 typedef SkRegion* NativeRegion;
 #elif defined(OS_WIN)
+typedef HCURSOR NativeCursor;
 typedef HWND NativeView;
 typedef HWND NativeWindow;
 typedef HRGN NativeRegion;
 #elif defined(OS_MACOSX)
+typedef void* NativeCursor;
 typedef NSView* NativeView;
 typedef NSWindow* NativeWindow;
 #elif defined(USE_WAYLAND)
+typedef void* NativeCursor;
 typedef ui::WaylandWindow* NativeView;
 typedef ui::WaylandWindow* NativeWindow;
 // TODO(dnicoara) This should be replaced with a cairo region or maybe
 // a Wayland specific region
 typedef GdkRegion* NativeRegion;
 #elif defined(USE_X11)
+typedef GdkCursor* NativeCursor;
 typedef GtkWidget* NativeView;
 typedef GtkWindow* NativeWindow;
 typedef GdkRegion* NativeRegion;
 #elif defined(OS_ANDROID)
+typedef void* NativeCursor;
 typedef ChromeView* NativeView;
 typedef ChromeView* NativeWindow;
 typedef void* NativeRegion;
@@ -125,42 +128,36 @@ typedef void* NativeRegion;
 typedef HFONT NativeFont;
 typedef HWND NativeEditView;
 typedef HDC NativeDrawingContext;
-typedef HCURSOR NativeCursor;
 typedef HMENU NativeMenu;
 typedef IAccessible* NativeViewAccessible;
 #elif defined(OS_MACOSX)
 typedef NSFont* NativeFont;
 typedef NSTextField* NativeEditView;
 typedef CGContext* NativeDrawingContext;
-typedef void* NativeCursor;
 typedef void* NativeMenu;
 typedef void* NativeViewAccessible;
 #elif defined(USE_WAYLAND)
 typedef PangoFontDescription* NativeFont;
 typedef void* NativeEditView;
 typedef cairo_t* NativeDrawingContext;
-typedef void* NativeCursor;
 typedef void* NativeMenu;
 typedef void* NativeViewAccessible;
 #elif defined(TOOLKIT_USES_GTK)
 typedef PangoFontDescription* NativeFont;
 typedef GtkWidget* NativeEditView;
 typedef cairo_t* NativeDrawingContext;
-typedef GdkCursor* NativeCursor;
 typedef GtkWidget* NativeMenu;
 typedef void* NativeViewAccessible;
 #elif defined(USE_AURA)
 typedef PangoFontDescription* NativeFont;
 typedef void* NativeEditView;
 typedef cairo_t* NativeDrawingContext;
-typedef Cursor NativeCursor;
 typedef void* NativeMenu;
 typedef void* NativeViewAccessible;
 #elif defined(OS_ANDROID)
 typedef void* NativeFont;
 typedef void* NativeEditView;
 typedef void* NativeDrawingContext;
-typedef void* NativeCursor;
 typedef void* NativeMenu;
 typedef void* NativeViewAccessible;
 #endif

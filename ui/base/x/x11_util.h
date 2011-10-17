@@ -22,6 +22,7 @@ typedef unsigned long Atom;
 typedef unsigned long XID;
 typedef unsigned long XSharedMemoryId;  // ShmSeg in the X headers.
 typedef struct _XDisplay Display;
+typedef unsigned long Cursor;
 
 #if defined(TOOLKIT_USES_GTK)
 typedef struct _GdkDrawable GdkWindow;
@@ -66,6 +67,10 @@ UI_EXPORT bool QueryRenderSupport(Display* dpy);
 
 // Return the default screen number for the display
 int GetDefaultScreen(Display* display);
+
+// Returns an X11 Cursor, sharable across the process.
+// |cursor_shape| is an X font cursor shape, see XCreateFontCursor().
+UI_EXPORT Cursor GetXCursor(int cursor_shape);
 
 // These functions do not cache their results --------------------------
 

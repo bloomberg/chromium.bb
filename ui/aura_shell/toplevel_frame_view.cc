@@ -5,6 +5,7 @@
 #include "ui/aura_shell/toplevel_frame_view.h"
 
 #include "grit/ui_resources.h"
+#include "ui/aura/cursor.h"
 #include "ui/base/animation/throb_animation.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -472,28 +473,26 @@ views::View* ToplevelFrameView::GetEventHandlerForPoint(
 }
 
 gfx::NativeCursor ToplevelFrameView::GetCursor(const views::MouseEvent& event) {
-#if defined(OS_WIN)
   switch (current_hittest_code_) {
-    case HTTOPLEFT:
-    case HTBOTTOMRIGHT:
-      return LoadCursor(NULL, IDC_SIZENWSE);
-    case HTTOP:
     case HTBOTTOM:
-      return LoadCursor(NULL, IDC_SIZENS);
-    case HTTOPRIGHT:
+      return aura::kCursorSouthResize;
     case HTBOTTOMLEFT:
-      return LoadCursor(NULL, IDC_SIZENESW);
-    case HTRIGHT:
+      return aura::kCursorSouthWestResize;
+    case HTBOTTOMRIGHT:
+      return aura::kCursorSouthEastResize;
     case HTLEFT:
-      return LoadCursor(NULL, IDC_SIZEWE);
+      return aura::kCursorWestResize;
+    case HTRIGHT:
+      return aura::kCursorEastResize;
+    case HTTOP:
+      return aura::kCursorNorthResize;
+    case HTTOPLEFT:
+      return aura::kCursorNorthWestResize;
+    case HTTOPRIGHT:
+      return aura::kCursorNorthEastResize;
     default:
-      break;
+      return aura::kCursorNull;
   }
-  return NULL;
-#elif defined(OS_LINUX)
-  NOTIMPLEMENTED();
-  return gfx::kNullCursor;
-#endif
 }
 
 }  // namespace internal

@@ -30,7 +30,7 @@ bool TestWindowDelegate::OnKeyEvent(KeyEvent* event) {
 }
 
 gfx::NativeCursor TestWindowDelegate::GetCursor(const gfx::Point& point) {
-  return NULL;
+  return gfx::kNullCursor;
 }
 
 int TestWindowDelegate::GetNonClientComponent(const gfx::Point& point) const {

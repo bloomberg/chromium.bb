@@ -6,15 +6,106 @@
 
 #include "base/message_loop.h"
 #include "base/message_pump_x.h"
+#include "ui/aura/cursor.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura/event.h"
 #include "ui/base/touch/touch_factory.h"
+#include "ui/base/x/x11_util.h"
 
+#include <X11/cursorfont.h>
 #include <X11/Xlib.h>
 
 namespace aura {
 
 namespace {
+
+// Returns X font cursor shape from an Aura cursor.
+int CursorShapeFromNative(gfx::NativeCursor native_cursor) {
+  switch (native_cursor) {
+    case aura::kCursorNull:
+      return XC_left_ptr;
+    case aura::kCursorPointer:
+      return XC_left_ptr;
+    case aura::kCursorCross:
+      return XC_crosshair;
+    case aura::kCursorHand:
+      return XC_hand2;
+    case aura::kCursorIBeam:
+      return XC_xterm;
+    case aura::kCursorWait:
+      return XC_watch;
+    case aura::kCursorHelp:
+      return XC_question_arrow;
+    case aura::kCursorEastResize:
+      return XC_right_side;
+    case aura::kCursorNorthResize:
+      return XC_top_side;
+    case aura::kCursorNorthEastResize:
+      return XC_top_right_corner;
+    case aura::kCursorNorthWestResize:
+      return XC_top_left_corner;
+    case aura::kCursorSouthResize:
+      return XC_bottom_side;
+    case aura::kCursorSouthEastResize:
+      return XC_bottom_right_corner;
+    case aura::kCursorSouthWestResize:
+      return XC_bottom_left_corner;
+    case aura::kCursorWestResize:
+      return XC_left_side;
+    case aura::kCursorNorthSouthResize:
+      return XC_sb_v_double_arrow;
+    case aura::kCursorEastWestResize:
+      return XC_sb_h_double_arrow;
+    case aura::kCursorNorthEastSouthWestResize:
+    case aura::kCursorNorthWestSouthEastResize:
+      // There isn't really a useful cursor available for these.
+      NOTIMPLEMENTED();
+      return XC_left_ptr;
+    case aura::kCursorColumnResize:
+      return XC_sb_h_double_arrow;
+    case aura::kCursorRowResize:
+      return XC_sb_v_double_arrow;
+    case aura::kCursorMiddlePanning:
+      return XC_fleur;
+    case aura::kCursorEastPanning:
+      return XC_sb_right_arrow;
+    case aura::kCursorNorthPanning:
+      return XC_sb_up_arrow;
+    case aura::kCursorNorthEastPanning:
+      return XC_top_right_corner;
+    case aura::kCursorNorthWestPanning:
+      return XC_top_left_corner;
+    case aura::kCursorSouthPanning:
+      return XC_sb_down_arrow;
+    case aura::kCursorSouthEastPanning:
+      return XC_bottom_right_corner;
+    case aura::kCursorSouthWestPanning:
+      return XC_bottom_left_corner;
+    case aura::kCursorWestPanning:
+      return XC_sb_left_arrow;
+    case aura::kCursorMove:
+      return XC_fleur;
+    case aura::kCursorVerticalText:
+    case aura::kCursorCell:
+    case aura::kCursorContextMenu:
+    case aura::kCursorAlias:
+    case aura::kCursorProgress:
+    case aura::kCursorNoDrop:
+    case aura::kCursorCopy:
+    case aura::kCursorNone:
+    case aura::kCursorNotAllowed:
+    case aura::kCursorZoomIn:
+    case aura::kCursorZoomOut:
+    case aura::kCursorGrab:
+    case aura::kCursorGrabbing:
+    case aura::kCursorCustom:
+      // TODO(jamescook): Need cursors for these.
+      NOTIMPLEMENTED();
+      return XC_left_ptr;
+  }
+  NOTREACHED();
+  return XC_left_ptr;
+}
 
 class DesktopHostLinux : public DesktopHost {
  public:
@@ -39,7 +130,9 @@ class DesktopHostLinux : public DesktopHost {
   // The display and the native X window hosting the desktop.
   Display* xdisplay_;
   ::Window xwindow_;
-  Cursor xcursor_;
+
+  // Current Aura cursor.
+  gfx::NativeCursor current_cursor_;
 
   // The size of |xwindow_|.
   gfx::Rect bounds_;
@@ -51,7 +144,7 @@ DesktopHostLinux::DesktopHostLinux(const gfx::Rect& bounds)
     : desktop_(NULL),
       xdisplay_(NULL),
       xwindow_(0),
-      xcursor_(0),
+      current_cursor_(aura::kCursorNull),
       bounds_(bounds) {
   // This assumes that the message-pump creates and owns the display.
   xdisplay_ = base::MessagePumpX::GetDefaultXDisplay();
@@ -190,11 +283,16 @@ void DesktopHostLinux::SetSize(const gfx::Size& size) {
   XResizeWindow(xdisplay_, xwindow_, size.width(), size.height());
 }
 
-void DesktopHostLinux::SetCursor(gfx::NativeCursor cursor_type) {
-  if (xcursor_ == cursor_type)
+void DesktopHostLinux::SetCursor(gfx::NativeCursor cursor) {
+  if (current_cursor_ == cursor)
     return;
-  xcursor_ = cursor_type;
-  XDefineCursor(xdisplay_, xwindow_, cursor_type);
+  current_cursor_ = cursor;
+  // Custom web cursors are handled directly.
+  if (cursor == kCursorCustom)
+    return;
+  int cursor_shape = CursorShapeFromNative(cursor);
+  ::Cursor xcursor = ui::GetXCursor(cursor_shape);
+  XDefineCursor(xdisplay_, xwindow_, xcursor);
 }
 
 gfx::Point DesktopHostLinux::QueryMouseLocation() {

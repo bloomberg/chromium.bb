@@ -13,6 +13,10 @@
 #include "ui/gfx/gtk_util.h"
 #endif
 
+#if defined(USE_AURA)
+#include "ui/aura/cursor.h"
+#endif
+
 namespace views {
 
 const char ResizeArea::kViewClassName[] = "views/ResizeArea";
@@ -35,12 +39,11 @@ std::string ResizeArea::GetClassName() const {
 gfx::NativeCursor ResizeArea::GetCursor(const MouseEvent& event) {
   if (!IsEnabled())
     return gfx::kNullCursor;
-#if defined(OS_WIN)
+#if defined(USE_AURA)
+  return aura::kCursorEastWestResize;
+#elif defined(OS_WIN)
   static HCURSOR g_resize_cursor = LoadCursor(NULL, IDC_SIZEWE);
   return g_resize_cursor;
-#elif defined(USE_AURA)
-  // TODO(saintlou):
-  return gfx::kNullCursor;
 #elif defined(OS_LINUX)
   return gfx::GetCursor(GDK_SB_H_DOUBLE_ARROW);
 #endif

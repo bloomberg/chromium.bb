@@ -384,7 +384,7 @@
         'webcookie.h',
         'webcursor.cc',
         'webcursor.h',
-        'webcursor_aurax11.cc',
+        'webcursor_aura.cc',
         'webcursor_gtk.cc',
         'webcursor_gtk_data.h',
         'webcursor_mac.mm',
@@ -461,6 +461,9 @@
         ['use_aura==1', {
           'sources/': [
             ['exclude', '^../plugins/npapi/webplugin_delegate_impl_win.cc'],
+          ],
+          'sources!': [
+            'webcursor_win.cc',
           ],
         }],
         ['OS!="mac"', {

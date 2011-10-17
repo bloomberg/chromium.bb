@@ -12,6 +12,90 @@
 
 namespace aura {
 
+namespace {
+
+const wchar_t* GetCursorId(gfx::NativeCursor native_cursor) {
+  switch (native_cursor) {
+    case kCursorNull:
+      return IDC_ARROW;
+    case kCursorPointer:
+      return IDC_ARROW;
+    case kCursorCross:
+      return IDC_CROSS;
+    case kCursorHand:
+      return IDC_HAND;
+    case kCursorIBeam:
+      return IDC_IBEAM;
+    case kCursorWait:
+      return IDC_WAIT;
+    case kCursorHelp:
+      return IDC_HELP;
+    case kCursorEastResize:
+      return IDC_SIZEWE;
+    case kCursorNorthResize:
+      return IDC_SIZENS;
+    case kCursorNorthEastResize:
+      return IDC_SIZENESW;
+    case kCursorNorthWestResize:
+      return IDC_SIZENWSE;
+    case kCursorSouthResize:
+      return IDC_SIZENS;
+    case kCursorSouthEastResize:
+      return IDC_SIZENWSE;
+    case kCursorSouthWestResize:
+      return IDC_SIZENESW;
+    case kCursorWestResize:
+      return IDC_SIZEWE;
+    case kCursorNorthSouthResize:
+      return IDC_SIZENS;
+    case kCursorEastWestResize:
+      return IDC_SIZEWE;
+    case kCursorNorthEastSouthWestResize:
+      return IDC_SIZENESW;
+    case kCursorNorthWestSouthEastResize:
+      return IDC_SIZENWSE;
+    case kCursorMove:
+      return IDC_SIZEALL;
+    case kCursorProgress:
+      return IDC_APPSTARTING;
+    case kCursorNoDrop:
+      return IDC_NO;
+    case kCursorNotAllowed:
+      return IDC_NO;
+    case kCursorColumnResize:
+    case kCursorRowResize:
+    case kCursorMiddlePanning:
+    case kCursorEastPanning:
+    case kCursorNorthPanning:
+    case kCursorNorthEastPanning:
+    case kCursorNorthWestPanning:
+    case kCursorSouthPanning:
+    case kCursorSouthEastPanning:
+    case kCursorSouthWestPanning:
+    case kCursorWestPanning:
+    case kCursorVerticalText:
+    case kCursorCell:
+    case kCursorContextMenu:
+    case kCursorAlias:
+    case kCursorCopy:
+    case kCursorNone:
+    case kCursorZoomIn:
+    case kCursorZoomOut:
+    case kCursorGrab:
+    case kCursorGrabbing:
+    case kCursorCustom:
+      // TODO(jamescook): Should we use WebKit glue resources for these?
+      // Or migrate those resources to someplace ui/aura can share?
+      NOTIMPLEMENTED();
+      return IDC_ARROW;
+    default:
+      NOTREACHED();
+      return IDC_ARROW;
+  }
+}
+
+}  // namespace
+
 // static
 DesktopHost* DesktopHost::Create(const gfx::Rect& bounds) {
   return new DesktopHostWin(bounds);
@@ -60,10 +144,14 @@ void DesktopHostWin::SetSize(const gfx::Size& size) {
       SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOREDRAW | SWP_NOREPOSITION);
 }
 
-void DesktopHostWin::SetCursor(gfx::NativeCursor cursor) {
-  if (!cursor)
-    cursor = LoadCursor(NULL, IDC_ARROW);
-  ::SetCursor(cursor);
+void DesktopHostWin::SetCursor(gfx::NativeCursor native_cursor) {
+  // Custom web cursors are handled directly.
+  if (native_cursor == kCursorCustom)
+    return;
+  const wchar_t* cursor_id = GetCursorId(native_cursor);
+  // TODO(jamescook): Support for non-system cursors will require finding
+  // the appropriate module to pass to LoadCursor().
+  ::SetCursor(LoadCursor(NULL, cursor_id));
 }
 
 gfx::Point DesktopHostWin::QueryMouseLocation() {
