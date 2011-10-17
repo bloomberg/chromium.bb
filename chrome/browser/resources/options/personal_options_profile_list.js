@@ -83,6 +83,11 @@ cr.define('options.personal_options', function() {
     deleteItemAtIndex: function(index) {
       ManageProfileOverlay.showDeleteDialog(this.dataModel.item(index));
     },
+
+    /** @inheritDoc */
+    activateItemAtIndex: function(index) {
+      ManageProfileOverlay.showManageDialog(this.dataModel.item(index));
+    },
   };
 
   return {

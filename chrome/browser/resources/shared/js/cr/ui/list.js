@@ -348,6 +348,7 @@ cr.define('cr.ui', function() {
       var length = this.dataModel ? this.dataModel.length : 0;
       this.selectionModel = new ListSelectionModel(length);
 
+      this.addEventListener('dblclick', this.handleDoubleClick_);
       this.addEventListener('mousedown', this.handleMouseDownUp_);
       this.addEventListener('mouseup', this.handleMouseDownUp_);
       this.addEventListener('keydown', this.handleKeyDown);
@@ -387,6 +388,20 @@ cr.define('cr.ui', function() {
         this.measured_ = measureItem(this);
       }
       return this.measured_;
+    },
+
+    /**
+     * Callback for the double click event.
+     * @param {Event} e The mouse event object.
+     * @private
+     */
+    handleDoubleClick_: function(e) {
+      if (this.disabled)
+        return;
+
+      var target = this.getListItemAncestor(e.target);
+      if (target)
+        this.activateItemAtIndex(this.getIndexOfListItem(target));
     },
 
     /**
@@ -929,6 +944,14 @@ cr.define('cr.ui', function() {
         delete this.cachedItems_[index];
         this.redraw();
       }
+    },
+
+    /**
+     * Called when a list item is activated, currently only by a double click
+     * event.
+     * @param {number} index The index of the activated item.
+     */
+    activateItemAtIndex: function(index) {
     },
   };
 
