@@ -551,8 +551,10 @@ bool NativeBackendGnome::RemoveLogin(const PasswordForm& form) {
                                      form, app_string_.c_str()));
   GnomeKeyringResult result = method.WaitResult();
   if (result != GNOME_KEYRING_RESULT_OK) {
-    LOG(ERROR) << "Keyring delete failed: "
-               << gnome_keyring_result_to_message(result);
+    // Warning, not error, because this can sometimes happen due to the user
+    // racing with the daemon to delete the password a second time.
+    LOG(WARNING) << "Keyring delete failed: "
+                 << gnome_keyring_result_to_message(result);
     return false;
   }
   // Successful write. Try migration if necessary. Note that presumably if we've
