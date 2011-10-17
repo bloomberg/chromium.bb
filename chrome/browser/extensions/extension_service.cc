@@ -619,11 +619,11 @@ ExtensionService::ExtensionService(Profile* profile,
   }
 
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
-                 NotificationService::AllSources());
+                 NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CREATED,
-                 NotificationService::AllSources());
+                 NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-                 NotificationService::AllSources());
+                 NotificationService::AllBrowserContextsAndSources());
   pref_change_registrar_.Init(profile->GetPrefs());
   pref_change_registrar_.Add(prefs::kExtensionInstallAllowList, this);
   pref_change_registrar_.Add(prefs::kExtensionInstallDenyList, this);
