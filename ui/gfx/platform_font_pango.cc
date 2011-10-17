@@ -261,6 +261,7 @@ int PlatformFontPango::GetBaseline() const {
 }
 
 int PlatformFontPango::GetAverageCharacterWidth() const {
+  const_cast<PlatformFontPango*>(this)->InitPangoMetrics();
   return SkScalarRound(average_width_pixels_);
 }
 

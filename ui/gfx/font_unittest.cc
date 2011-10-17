@@ -96,6 +96,11 @@ TEST_F(FontTest, AvgWidths) {
   ASSERT_GT(cf.GetExpectedTextWidth(3), cf.GetExpectedTextWidth(2));
 }
 
+TEST_F(FontTest, AvgCharWidth) {
+  Font cf(ASCIIToUTF16("Arial"), 16);
+  ASSERT_GT(cf.GetAverageCharacterWidth(), 0);
+}
+
 TEST_F(FontTest, Widths) {
   Font cf(ASCIIToUTF16("Arial"), 16);
   ASSERT_EQ(cf.GetStringWidth(ASCIIToUTF16("")), 0);
