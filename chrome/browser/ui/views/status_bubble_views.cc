@@ -265,6 +265,7 @@ void StatusBubbleViews::StatusView::StartHiding() {
     StartTimer(kHideDelay);
   } else if (stage_ == BUBBLE_SHOWING_TIMER) {
     stage_ = BUBBLE_HIDDEN;
+    popup_->Hide();
     CancelTimer();
   } else if (stage_ == BUBBLE_SHOWING_FADE) {
     stage_ = BUBBLE_HIDING_FADE;
