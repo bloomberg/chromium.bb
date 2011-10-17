@@ -65,6 +65,8 @@ class NullVideoFrame : public cricket::VideoFrame {
   virtual void SetElapsedTime(int64 elapsed_time) OVERRIDE {}
   virtual void SetTimeStamp(int64 time_stamp) OVERRIDE {}
 
+  virtual int GetRotation() const OVERRIDE { return 0; }
+
   virtual VideoFrame *Copy() const OVERRIDE { return NULL; }
 
   virtual bool MakeExclusive() OVERRIDE { return true; }
