@@ -67,10 +67,6 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, Whitelisting) {
-  // We're deprecating this whitelist mechanism, but right now we just assert
-  // that it actually did prompt.
-  EXPECT_TRUE(DidWhitelistInstallPrompt("good.crx",
-                                        "ldnnhddmnhbkjipkidpdiheffobcpfmf"));
 #if !defined(OS_CHROMEOS)
   // An extension with NPAPI should give a prompt.
   EXPECT_TRUE(DidWhitelistInstallPrompt("uitest/plugins.crx",

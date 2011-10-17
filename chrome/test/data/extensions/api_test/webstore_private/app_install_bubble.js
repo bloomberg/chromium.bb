@@ -11,7 +11,7 @@ var tests = [
 
     var manifest = getManifest("app/manifest.json");
     // Begin installing.
-    chrome.webstorePrivate.beginInstallWithManifest2(
+    chrome.webstorePrivate.beginInstallWithManifest3(
         {'id': appId,'manifest': manifest, 'appInstallBubble':true},
         callbackPass(function(result) {
       assertEq(result, "");

@@ -13,7 +13,7 @@ var tests = [
   function IconUrlFailure() {
     var manifest = getManifest();
     var loadFailureUrl = makeAbsoluteUrl("does_not_exist.png");
-    chrome.webstorePrivate.beginInstallWithManifest2(
+    chrome.webstorePrivate.beginInstallWithManifest3(
         {'id': extensionId,'iconUrl': loadFailureUrl, 'manifest': manifest },
         callbackFail("Image decode failed", function(result) {
       assertEq(result, "icon_error");
@@ -28,7 +28,7 @@ var tests = [
     function runSuccessTest(absoluteIconUrl) {
       var iconPath = "extension/icon.png";
       var iconUrl = absoluteIconUrl ? makeAbsoluteUrl(iconPath) : iconPath;
-      chrome.webstorePrivate.beginInstallWithManifest2(
+      chrome.webstorePrivate.beginInstallWithManifest3(
           {'id': extensionId,'iconUrl': iconUrl, 'manifest': manifest },
           callbackPass());
     }

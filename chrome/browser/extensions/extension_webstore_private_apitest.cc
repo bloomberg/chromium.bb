@@ -90,7 +90,6 @@ class ExtensionWebstorePrivateApiTest : public ExtensionApiTest {
     // API functions.
     host_resolver()->AddRule("www.example.com", "127.0.0.1");
     ASSERT_TRUE(test_server()->Start());
-    BeginInstallWithManifestFunction::SetIgnoreUserGestureForTests(true);
     SetExtensionInstallDialogForManifestAutoConfirmForTests(true);
     ExtensionInstallUI::DisableFailureUIForTests();
   }
@@ -141,11 +140,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, InstallLocalized) {
 IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, InstallCancelled) {
   SetExtensionInstallDialogForManifestAutoConfirmForTests(false);
   ASSERT_TRUE(RunInstallTest("cancelled.html", "extension.crx"));
-}
-
-IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, InstallNoGesture) {
-  BeginInstallFunction::SetIgnoreUserGestureForTests(false);
-  ASSERT_TRUE(RunInstallTest("no_user_gesture.html", "extension.crx"));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,

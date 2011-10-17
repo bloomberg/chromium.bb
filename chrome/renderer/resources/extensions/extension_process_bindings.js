@@ -705,11 +705,16 @@ var chrome = chrome || {};
       }
 
       addProperties(module, apiDef);
-
-      // getTabContentses is retained for backwards compatibility
-      // See http://crbug.com/21433
-      chrome.extension.getTabContentses = chrome.extension.getExtensionTabs;
     });
+
+    // getTabContentses is retained for backwards compatibility
+    // See http://crbug.com/21433
+    chrome.extension.getTabContentses = chrome.extension.getExtensionTabs;
+    // TOOD(mihaip): remove this alias once the webstore stops calling
+    // beginInstallWithManifest2.
+    // See http://crbug.com/100242
+    chrome.webstorePrivate.beginInstallWithManifest2 =
+        chrome.webstorePrivate.beginInstallWithManifest3;
 
     apiFunctions["tabs.connect"].handleRequest = function(tabId, connectInfo) {
       var name = "";

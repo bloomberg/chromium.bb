@@ -54,6 +54,8 @@ class CrxInstaller
   // *by the web store only* which should not get the permissions install
   // prompt. This should only be called on the UI thread.
   // crbug.com/54916
+  // TODO(asargent): This should be removed now that SetWhitelistEntry exists
+  // http://crbug.com/100584
   static void SetWhitelistedInstallId(const std::string& id);
 
   struct WhitelistEntry {
@@ -70,7 +72,7 @@ class CrxInstaller
 
   // Exempt the next extension install with |id| from displaying a confirmation
   // prompt, since the user already agreed to the install via
-  // beginInstallWithManifest. We require that the extension manifest matches
+  // beginInstallWithManifest3. We require that the extension manifest matches
   // the manifest in |entry|, which is what was used to prompt with. Ownership
   // of |entry| is transferred here.
   static void SetWhitelistEntry(const std::string& id, WhitelistEntry* entry);

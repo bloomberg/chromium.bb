@@ -18,7 +18,7 @@ var tests = [
     var messages = getManifest('localized_extension/_locales/fr/messages.json');
     getIconData(function(icon) {
       // Begin installing.
-      chrome.webstorePrivate.beginInstallWithManifest2(
+      chrome.webstorePrivate.beginInstallWithManifest3(
         { 'id':localizedId, 'iconData': icon, 'manifest': manifest,
           'localizedName': 'Le Title', 'locale': 'fr' },
         callbackPass(function(result) {

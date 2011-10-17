@@ -29,18 +29,6 @@ class WebstorePrivateApi {
       WebstoreInstaller::Delegate* delegate);
 };
 
-// TODO(asargent): this is being deprecated in favor of
-// BeginInstallWithManifestFunction. See crbug.com/75821 for details.
-class BeginInstallFunction : public SyncExtensionFunction {
- public:
-  // For use only in tests - sets a flag that can cause this function to ignore
-  // the normal requirement that it is called during a user gesture.
-  static void SetIgnoreUserGestureForTests(bool ignore);
- protected:
-  virtual bool RunImpl();
-  DECLARE_EXTENSION_FUNCTION_NAME("webstorePrivate.beginInstall");
-};
-
 class BeginInstallWithManifestFunction
     : public AsyncExtensionFunction,
       public ExtensionInstallUI::Delegate,
@@ -49,7 +37,7 @@ class BeginInstallWithManifestFunction
   BeginInstallWithManifestFunction();
 
   // Result codes for the return value. If you change this, make sure to
-  // update the description for the beginInstallWithManifest callback in
+  // update the description for the beginInstallWithManifest3 callback in
   // extension_api.json.
   enum ResultCode {
     ERROR_NONE = 0,
@@ -72,16 +60,9 @@ class BeginInstallWithManifestFunction
     // The page does not have permission to call this function.
     PERMISSION_DENIED,
 
-    // The function was not called during a user gesture.
-    NO_GESTURE,
-
     // Invalid icon url.
     INVALID_ICON_URL
   };
-
-  // For use only in tests - sets a flag that can cause this function to ignore
-  // the normal requirement that it is called during a user gesture.
-  static void SetIgnoreUserGestureForTests(bool ignore);
 
   // Implementing WebstoreInstallHelper::Delegate interface.
   virtual void OnWebstoreParseSuccess(
@@ -118,7 +99,7 @@ class BeginInstallWithManifestFunction
   // ExtensionInstallUI to prompt for confirmation of the install.
   scoped_refptr<Extension> dummy_extension_;
 
-  DECLARE_EXTENSION_FUNCTION_NAME("webstorePrivate.beginInstallWithManifest2");
+  DECLARE_EXTENSION_FUNCTION_NAME("webstorePrivate.beginInstallWithManifest3");
 };
 
 class CompleteInstallFunction : public SyncExtensionFunction {

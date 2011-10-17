@@ -2381,7 +2381,6 @@
         'browser/extensions/extension_fileapi_apitest.cc',
         'browser/extensions/extension_function_test_utils.cc',
         'browser/extensions/extension_function_test_utils.h',
-        'browser/extensions/extension_gallery_install_apitest.cc',
         'browser/extensions/extension_geolocation_apitest.cc',
         'browser/extensions/extension_get_views_apitest.cc',
         'browser/extensions/extension_history_apitest.cc',

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Tests where the beginInstallWithManifest2 dialog would be auto-accepted
+// Tests where the beginInstallWithManifest3 dialog would be auto-accepted
 // (including a few cases where this does not matter).
 
 var tests = [
 
   function completeBeforeBegin() {
-    var expectedError =
-        extensionId + " does not match a previous call to beginInstall";
+    var expectedError = extensionId +
+        " does not match a previous call to beginInstallWithManifest3";
     chrome.webstorePrivate.completeInstall(extensionId,
                                            callbackFail(expectedError));
   },
@@ -17,7 +17,7 @@ var tests = [
   function invalidID() {
     var expectedError = "Invalid id";
     var id = "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz";
-    chrome.webstorePrivate.beginInstallWithManifest2(
+    chrome.webstorePrivate.beginInstallWithManifest3(
         { 'id':id, 'manifest':getManifest() }, callbackFail(expectedError));
   },
 
@@ -25,7 +25,7 @@ var tests = [
     var manifestObj = JSON.parse(getManifest());
     delete manifestObj["version"];
     var manifest = JSON.stringify(manifestObj);
-    chrome.webstorePrivate.beginInstallWithManifest2(
+    chrome.webstorePrivate.beginInstallWithManifest3(
         { 'id':extensionId, 'manifest': manifest },
         callbackFail("Invalid manifest", function(result) {
       assertEq("manifest_error", result);
@@ -42,7 +42,7 @@ var tests = [
     getIconData(function(icon) {
 
       // Begin installing.
-      chrome.webstorePrivate.beginInstallWithManifest2(
+      chrome.webstorePrivate.beginInstallWithManifest3(
           {'id': extensionId,'iconData': icon, 'manifest': manifest },
           function(result) {
         assertNoLastError();
