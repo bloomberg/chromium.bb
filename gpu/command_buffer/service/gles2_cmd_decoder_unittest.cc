@@ -4365,6 +4365,31 @@ TEST_F(GLES2DecoderManualInitTest, GetNoCompressedTextureFormats) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
+TEST_F(GLES2DecoderManualInitTest, CompressedTexImage2DBucketBadBucket) {
+  InitDecoder(
+      "GL_EXT_texture_compression_s3tc",  // extensions
+      false,   // has alpha
+      false,   // has depth
+      false,   // has stencil
+      false,   // request alpha
+      false,   // request depth
+      false,   // request stencil
+      true);   // bind generates resource
+
+  const uint32 kBadBucketId = 123;
+  DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
+  CompressedTexImage2DBucket cmd;
+  cmd.Init(
+      GL_TEXTURE_2D, 0, GL_COMPRESSED_RGBA_S3TC_DXT5_EXT, 4, 4, 0,
+      kBadBucketId);
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
+  CompressedTexSubImage2DBucket cmd2;
+  cmd2.Init(
+      GL_TEXTURE_2D, 0, 0, 0, 4, 4, GL_COMPRESSED_RGBA_S3TC_DXT5_EXT,
+      kBadBucketId);
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
+}
+
 TEST_F(GLES2DecoderWithShaderTest, GetProgramInfoCHROMIUMValidArgs) {
   const uint32 kBucketId = 123;
   GetProgramInfoCHROMIUM cmd;
@@ -4869,6 +4894,20 @@ TEST_F(GLES2DecoderManualInitTest, StreamTextureCHROMIUMNullMgr) {
   cmd2.Init(client_texture_id_);
   EXPECT_EQ(error::kInvalidArguments, ExecuteCmd(cmd2));
   GetGLError(); // ignore internal error
+}
+
+TEST_F(GLES2DecoderTest, EnableFeatureCHROMIUMBadBucket) {
+  const uint32 kBadBucketId = 123;
+  EnableFeatureCHROMIUM cmd;
+  cmd.Init(kBadBucketId, shared_memory_id_, shared_memory_offset_);
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
+}
+
+TEST_F(GLES2DecoderTest, RequestExtensionCHROMIUMBadBucket) {
+  const uint32 kBadBucketId = 123;
+  RequestExtensionCHROMIUM cmd;
+  cmd.Init(kBadBucketId);
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 }
 
 // TODO(gman): Complete this test.

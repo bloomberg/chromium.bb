@@ -5812,9 +5812,18 @@ error::Error GLES2DecoderImpl::HandleCompressedTexImage2DBucket(
   GLsizei height = static_cast<GLsizei>(c.height);
   GLint border = static_cast<GLint>(c.border);
   Bucket* bucket = GetBucket(c.bucket_id);
+  if (!bucket) {
+    return error::kInvalidArguments;
+  }
+  uint32 data_size = bucket->size();
+  GLsizei imageSize = data_size;
+  const void* data = bucket->GetData(0, data_size);
+  if (!data) {
+    return error::kInvalidArguments;
+  }
   return DoCompressedTexImage2D(
       target, level, internal_format, width, height, border,
-      bucket->size(), bucket->GetData(0, bucket->size()));
+      imageSize, data);
 }
 
 error::Error GLES2DecoderImpl::HandleCompressedTexSubImage2DBucket(
@@ -5828,9 +5837,15 @@ error::Error GLES2DecoderImpl::HandleCompressedTexSubImage2DBucket(
   GLsizei height = static_cast<GLsizei>(c.height);
   GLenum format = static_cast<GLenum>(c.format);
   Bucket* bucket = GetBucket(c.bucket_id);
+  if (!bucket) {
+    return error::kInvalidArguments;
+  }
   uint32 data_size = bucket->size();
   GLsizei imageSize = data_size;
   const void* data = bucket->GetData(0, data_size);
+  if (!data) {
+    return error::kInvalidArguments;
+  }
   if (!validators_->texture_target.IsValid(target)) {
     SetGLError(
         GL_INVALID_ENUM, "glCompressedTexSubImage2D: target GL_INVALID_ENUM");
@@ -6811,6 +6826,9 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
 error::Error GLES2DecoderImpl::HandleEnableFeatureCHROMIUM(
     uint32 immediate_data_size, const gles2::EnableFeatureCHROMIUM& c) {
   Bucket* bucket = GetBucket(c.bucket_id);
+  if (!bucket || bucket->size() == 0) {
+    return error::kInvalidArguments;
+  }
   typedef gles2::EnableFeatureCHROMIUM::Result Result;
   Result* result = GetSharedMemoryAs<Result*>(
       c.result_shm_id, c.result_shm_offset, sizeof(*result));
@@ -6865,6 +6883,9 @@ error::Error GLES2DecoderImpl::HandleGetRequestableExtensionsCHROMIUM(
 error::Error GLES2DecoderImpl::HandleRequestExtensionCHROMIUM(
     uint32 immediate_data_size, const gles2::RequestExtensionCHROMIUM& c) {
   Bucket* bucket = GetBucket(c.bucket_id);
+  if (!bucket || bucket->size() == 0) {
+    return error::kInvalidArguments;
+  }
   std::string feature_str;
   if (!bucket->GetAsString(&feature_str)) {
     return error::kInvalidArguments;
