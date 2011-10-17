@@ -86,7 +86,10 @@ int CheckSizes() {
   CHECK_SIZEOF(struct stat, 104);
 
   CHECK_SIZEOF(struct NaClImcMsgHdr, 20);
+
+  CHECK_SIZEOF(va_list, 16);
 #ifdef PNACL_ABI_TEST
+  /* BUG: http://code.google.com/p/nativeclient/issues/detail?id=2203 */
   /* the idea behind picking such an insanely high value
      is to be prepapared for crazy architectures */
   /* current values are:
@@ -95,8 +98,6 @@ int CheckSizes() {
      Note: Itanium uses 560 bytes
   */
   CHECK_SIZEOF(jmp_buf, 1024);
-
-  CHECK_SIZEOF(va_list, 16);
 #endif
   return nerror;
 }
@@ -118,12 +119,14 @@ int CheckAlignment() {
   CHECK_ALIGNMENT(Pointer, 4);
   CHECK_ALIGNMENT(FunctionPointer, 4);
   CHECK_ALIGNMENT(long_long, 8);
+
+  CHECK_ALIGNMENT(va_list, 4);
 #ifdef PNACL_ABI_TEST
+  /* BUG: http://code.google.com/p/nativeclient/issues/detail?id=2203 */
   /* TODO: we may want to switch this 16 (used by Itanium) */
   /* NOTE: alignment for nacl-gcc differs between x86-32/64 */
   CHECK_ALIGNMENT(jmp_buf, 8);
 #endif
-  CHECK_ALIGNMENT(va_list, 4);
   return nerror;
 }
 

@@ -102,7 +102,7 @@ node = env.CommandSelLdrTestNacl(
     misc_math_nexe)
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_misc_math_test')
 
-
+# BUG: http://code.google.com/p/nativeclient/issues/detail?id=2203
 if env.Bit('bitcode'):
   env.Append(CPPDEFINES=['PNACL_ABI_TEST=1'])
 else:
