@@ -8,13 +8,6 @@ include_rules = [
   # make use of it.
   "+chrome/test",
 
-  # The following directories have been refactored, so no new dependencies
-  # should be added from these directories.
-  "-chrome/browser/printing",
-  "-chrome/browser/extensions",
-  "-chrome/common/extensions",
-  "-chrome/renderer/extensions",
-
   # The subdirectories in content/ will manually allow their own include
   # directories in content/ so we disallow all of them.
   "-content",

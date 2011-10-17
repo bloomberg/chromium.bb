@@ -2,36 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_CHILD_PROCESS_SANDBOX_SUPPORT_LINUX_H_
-#define CONTENT_COMMON_CHILD_PROCESS_SANDBOX_SUPPORT_LINUX_H_
+#ifndef CONTENT_PULIC_COMMON_CHILD_PROCESS_SANDBOX_SUPPORT_LINUX_H_
+#define CONTENT_PULIC_COMMON_CHILD_PROCESS_SANDBOX_SUPPORT_LINUX_H_
 #pragma once
 
 #include <stdint.h>
-
 #include <string>
 
 #include "content/common/content_export.h"
 
-namespace WebKit {
-struct WebFontRenderStyle;
-}
-
-namespace child_process_sandbox_support {
-
-// Return a font family which provides glyphs for the Unicode code points
-// specified by |utf16|
-//   utf16: a native-endian UTF16 string
-//   num_utf16: the number of 16-bit words in |utf16|
-//   preferred_locale: preferred locale identifier for the |utf16|
-//
-// Returns: the font family or an empty string if the request could not be
-// satisfied.
-std::string getFontFamilyForCharacters(const uint16_t* utf16,
-                                       size_t num_utf16,
-                                       const char* preferred_locale);
-
-void getRenderStyleForStrike(const char* family, int sizeAndStyle,
-                             WebKit::WebFontRenderStyle* out);
+namespace content {
 
 // Returns a file descriptor for a shared memory segment.
 // The second argument is ignored because SHM segments are always
@@ -57,6 +37,6 @@ CONTENT_EXPORT int MatchFontWithFallback(const std::string& face, bool bold,
 CONTENT_EXPORT bool GetFontTable(int fd, uint32_t table, uint8_t* output,
                                  size_t* output_length);
 
-};  // namespace child_process_sandbox_support
+};  // namespace content
 
-#endif  // CONTENT_COMMON_CHILD_PROCESS_SANDBOX_SUPPORT_LINUX_H_
+#endif  // CONTENT_PULIC_COMMON_CHILD_PROCESS_SANDBOX_SUPPORT_LINUX_H_

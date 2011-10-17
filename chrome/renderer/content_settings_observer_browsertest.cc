@@ -6,7 +6,6 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/content_settings_observer.h"
 #include "chrome/test/base/chrome_render_view_test.h"
-#include "content/common/view_messages.h"
 #include "content/public/renderer/render_view.h"
 #include "ipc/ipc_message_macros.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -115,13 +114,10 @@ TEST_F(ChromeRenderViewTest, JSBlockSentAfterPageLoad) {
   render_thread_->sink().ClearMessages();
 
   // 3. Reload page.
-  ViewMsg_Navigate_Params params;
   std::string url_str = "data:text/html;charset=utf-8,";
   url_str.append(html);
   GURL url(url_str);
-  params.url = url;
-  params.navigation_type = ViewMsg_Navigate_Type::RELOAD;
-  OnNavigate(params);
+  Reload(url);
   ProcessPendingMessages();
 
   // 4. Verify that the notification that javascript was blocked is sent after
@@ -130,7 +126,7 @@ TEST_F(ChromeRenderViewTest, JSBlockSentAfterPageLoad) {
   int block_index = -1;
   for (size_t i = 0; i < render_thread_->sink().message_count(); ++i) {
     const IPC::Message* msg = render_thread_->sink().GetMessageAt(i);
-    if (msg->type() == ViewHostMsg_FrameNavigate::ID)
+    if (msg->type() == GetNavigationIPCType())
       navigation_index = i;
     if (msg->type() == ChromeViewHostMsg_ContentBlocked::ID)
       block_index = i;

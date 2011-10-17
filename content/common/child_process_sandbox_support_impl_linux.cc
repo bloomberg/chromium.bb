@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/child_process_sandbox_support_linux.h"
+#include "content/common/child_process_sandbox_support_impl_linux.h"
 
 #include <sys/stat.h>
 
@@ -19,9 +19,9 @@ static int GetSandboxFD() {
   return kSandboxIPCChannel + base::GlobalDescriptors::kBaseDescriptor;
 }
 
-namespace child_process_sandbox_support {
+namespace content {
 
-std::string getFontFamilyForCharacters(const uint16_t* utf16,
+std::string GetFontFamilyForCharacters(const uint16_t* utf16,
                                        size_t num_utf16,
                                        const char* preferred_locale) {
   Pickle request;
@@ -45,7 +45,7 @@ std::string getFontFamilyForCharacters(const uint16_t* utf16,
   return family_name;
 }
 
-void getRenderStyleForStrike(const char* family, int sizeAndStyle,
+void GetRenderStyleForStrike(const char* family, int sizeAndStyle,
                              WebKit::WebFontRenderStyle* out) {
   Pickle request;
   request.WriteInt(LinuxSandbox::METHOD_GET_STYLE_FOR_STRIKE);
@@ -185,4 +185,4 @@ bool GetFontTable(int fd, uint32_t table, uint8_t* output,
   return true;
 }
 
-}  // namespace child_process_sandbox_support
+}  // namespace content

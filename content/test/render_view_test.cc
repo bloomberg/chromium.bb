@@ -309,14 +309,21 @@ void RenderViewTest::ClearHistory() {
   impl->history_page_ids_.clear();
 }
 
+void RenderViewTest::Reload(const GURL& url) {
+  ViewMsg_Navigate_Params params;
+  params.url = url;
+  params.navigation_type = ViewMsg_Navigate_Type::RELOAD;
+  RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
+  impl->OnNavigate(params);
+}
+
+uint32 RenderViewTest::GetNavigationIPCType() {
+  return ViewHostMsg_FrameNavigate::ID;
+}
+
 bool RenderViewTest::OnMessageReceived(const IPC::Message& msg) {
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
   return impl->OnMessageReceived(msg);
-}
-
-void RenderViewTest::OnNavigate(const ViewMsg_Navigate_Params& params) {
-  RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
-  impl->OnNavigate(params);
 }
 
 void RenderViewTest::DidNavigateWithinPage(WebKit::WebFrame* frame,

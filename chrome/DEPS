@@ -12,6 +12,8 @@ include_rules = [
   "+chrome/common",
   "+chrome/test",
   "-content",
+  # TODO(jam): remove me once chrome only consumes content/common through its
+  # public headers.
   "+content/common",
   "+content/public/common",
   "+content/test",

@@ -36,10 +36,6 @@
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/websocketstreamhandle_bridge.h"
 
-#if defined(OS_LINUX)
-#include "content/common/child_process_sandbox_support_linux.h"
-#endif
-
 // This definition of WriteBitmapFromPixels uses shared memory to communicate
 // across processes.
 void ScopedClipboardWriterGlue::WriteBitmapFromPixels(const void* pixels,
@@ -204,20 +200,6 @@ WebSocketStreamHandleBridge* WebSocketStreamHandleBridge::Create(
       ChildThread::current()->socket_stream_dispatcher();
   return dispatcher->CreateBridge(handle, delegate);
 }
-
-#if defined(OS_LINUX)
-int MatchFontWithFallback(const std::string& face, bool bold,
-                          bool italic, int charset) {
-  return child_process_sandbox_support::MatchFontWithFallback(
-      face, bold, italic, charset);
-}
-
-bool GetFontTable(int fd, uint32_t table, uint8_t* output,
-                  size_t* output_length) {
-  return child_process_sandbox_support::GetFontTable(
-      fd, table, output, output_length);
-}
-#endif
 
 string16 GetLocalizedString(int message_id) {
   return content::GetContentClient()->GetLocalizedString(message_id);

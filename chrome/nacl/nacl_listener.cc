@@ -16,7 +16,7 @@
 #include "native_client/src/shared/imc/nacl_imc.h"
 
 #if defined(OS_LINUX)
-#include "content/common/child_process_sandbox_support_linux.h"
+#include "content/public/common/child_process_sandbox_support_linux.h"
 #endif
 
 #if defined(OS_WIN)
@@ -100,8 +100,7 @@ void NaClListener::OnStartSelLdr(
     std::vector<nacl::FileDescriptor> handles,
     bool have_irt_file) {
 #if defined(OS_LINUX)
-  nacl::SetCreateMemoryObjectFunc(
-      child_process_sandbox_support::MakeSharedMemorySegmentViaIPC);
+  nacl::SetCreateMemoryObjectFunc(content::MakeSharedMemorySegmentViaIPC);
 #elif defined(OS_MACOSX)
   nacl::SetCreateMemoryObjectFunc(CreateMemoryObject);
   CHECK(handles.size() >= 1);

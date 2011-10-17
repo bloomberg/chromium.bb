@@ -95,9 +95,14 @@ class RenderViewTest : public testing::Test {
   // Clears anything associated with the browsing history.
   void ClearHistory();
 
+  // Simulates a navigation with a type of reload to the given url.
+  void Reload(const GURL& url);
+
+  // Returns the IPC message ID of the navigation message.
+  uint32 GetNavigationIPCType();
+
   // These are all methods from RenderViewImpl that we expose to testing code.
   bool OnMessageReceived(const IPC::Message& msg);
-  void OnNavigate(const ViewMsg_Navigate_Params& params);
   void DidNavigateWithinPage(WebKit::WebFrame* frame, bool is_new_navigation);
   void SendContentStateImmediately();
   WebKit::WebWidget* GetWebWidget();

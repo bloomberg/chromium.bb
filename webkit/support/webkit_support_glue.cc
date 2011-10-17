@@ -64,16 +64,4 @@ void EnableSpdy(bool enable) {
 void UserMetricsRecordAction(const std::string& action) {
 }
 
-#if defined(OS_LINUX)
-int MatchFontWithFallback(const std::string& face, bool bold,
-                          bool italic, int charset) {
-  return -1;
-}
-
-bool GetFontTable(int fd, uint32_t table, uint8_t* output,
-                  size_t* output_length) {
-  return false;
-}
-#endif
-
 }  // namespace webkit_glue

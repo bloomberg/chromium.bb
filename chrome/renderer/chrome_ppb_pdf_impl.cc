@@ -8,7 +8,7 @@
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/common/render_messages.h"
-#include "content/common/child_process_sandbox_support_linux.h"
+#include "content/public/common/child_process_sandbox_support_linux.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "grit/webkit_resources.h"
@@ -52,7 +52,7 @@ class PrivateFontFile : public ppapi::Resource {
                     void* output,
                     uint32_t* output_length) {
     size_t temp_size = static_cast<size_t>(*output_length);
-    bool rv = child_process_sandbox_support::GetFontTable(
+    bool rv = content::GetFontTable(
         fd_, table, static_cast<uint8_t*>(output), &temp_size);
     *output_length = static_cast<uint32_t>(temp_size);
     return rv;
@@ -195,7 +195,7 @@ PP_Resource GetFontFileWithFallback(
   if (!face_name)
     return 0;
 
-  int fd = child_process_sandbox_support::MatchFontWithFallback(
+  int fd = content::MatchFontWithFallback(
       face_name->value().c_str(),
       description->weight >= PP_FONTWEIGHT_BOLD,
       description->italic,

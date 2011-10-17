@@ -12,7 +12,6 @@
 #include "chrome/common/print_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
-#include "content/common/view_messages.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_sync_message.h"
 #include "printing/print_job_constants.h"
