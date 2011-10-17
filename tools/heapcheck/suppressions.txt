@@ -1620,3 +1620,13 @@
    fun:scoped_ptr::reset
    fun:ProfileManagerTest::TearDown
 }
+{
+   bug_100608
+   Heapcheck:Leak
+   ...
+   fun:SQLitePersistentCookieStore::Backend::LoadCookiesForDomains
+   ...
+   fun:base::internal::Invoker*::DoInvoke
+   fun:base::Callback::Run
+   fun:MessageLoop::RunTask
+}
