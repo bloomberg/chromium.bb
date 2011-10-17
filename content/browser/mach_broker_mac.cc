@@ -35,16 +35,16 @@ class RegisterNotificationTask : public Task {
   virtual void Run() {
     broker_->registrar_.Add(broker_,
         content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
-        NotificationService::AllSources());
+        NotificationService::AllBrowserContextsAndSources());
     broker_->registrar_.Add(broker_,
         content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-        NotificationService::AllSources());
+        NotificationService::AllBrowserContextsAndSources());
     broker_->registrar_.Add(broker_,
         content::NOTIFICATION_CHILD_PROCESS_CRASHED,
-        NotificationService::AllSources());
+        NotificationService::AllBrowserContextsAndSources());
     broker_->registrar_.Add(broker_,
         content::NOTIFICATION_CHILD_PROCESS_HOST_DISCONNECTED,
-        NotificationService::AllSources());
+        NotificationService::AllBrowserContextsAndSources());
   }
 
  private:
