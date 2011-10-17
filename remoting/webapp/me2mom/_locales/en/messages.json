@@ -71,6 +71,18 @@
     "message": "Disconnect",
     "description": "Label for the host-side disconnect button, without keyboard shortcuts. Only used in case we aren't able to enable hot-key support. Clicking this button disconnects the remote user."
   },
+  "ERROR_AUTHENTICATION_FAILED": {
+    "message": "Authentication failed. Please sign out of Chromoting and try again.",
+    "description": "Error displayed if authentication fails. This can be caused by stale credentials, in which logging out of the web-app and retrying can fix the problem."
+  },
+  "ERROR_BAD_PLUGIN_VERSION": {
+    "message": "Some components required for Chromoting are missing. Please make sure you have installed the latest version and try again.",
+    "description": "Error displayed if the host or client plugin are missing or if they could not be loaded."
+  },
+  "ERROR_GENERIC": {
+    "message": "An unknown error occurred. Please sign out of Chromoting and try again.",
+    "description": "Generic error message, displayed if something went wrong, but we aren't able to determine what, or the cause is too technical to be of use to a typical user."
+  },
   "ERROR_HOST_IS_OFFLINE": {
     "message": "The remote computer is not responding to connection requests. Please verify that it is online and try again.",
     "description": "Error that is shown on the client side when we don't get a response from the host."
@@ -79,25 +91,17 @@
     "message": "An incompatible version of Chromoting was detected. Please make sure that you have the latest version of Chromium and Chromoting on both computers and try again.",
     "description": "Error that is shown on the client side when incompatible Chromoting versions are installed on host and client."
   },
-  "ERROR_GENERIC": {
-    "message": "An unknown error occurred. Please sign out of Chromoting and try again.",
-    "description": "Generic error message, displayed if something went wrong, but we aren't able to determine what, or the cause is too technical to be of use to a typical user."
-  },
   "ERROR_INVALID_ACCESS_CODE": {
     "message": "The access code is invalid. Please try again.",
     "description": "Error displayed if an invalid access code is entered."
   },
   "ERROR_MISSING_PLUGIN": {
-    "message": "Some components required for Chromoting are missing or out-of-date. Please make sure you're running the latest version of Chromium and try again.",
-    "description": "Error displayed if the client plugin fails to load. The most common reason for this is that the web-app is being used in a version of Chromium that doesn't support it."
+    "message": "Some components required for Chromoting are missing. Please make sure you're running the latest version of Chromium and try again.",
+    "description": "Error displayed if the client plugin fails to load."
   },
   "ERROR_NO_RESPONSE": {
     "message": "The server failed to respond to the network request.",
     "description": "Error displayed by the client if the server does not respond to a network request."
-  },
-  "ERROR_AUTHENTICATION_FAILED": {
-    "message": "Authentication failed. Please sign out of Chromoting and try again.",
-    "description": "Error displayed if authentication fails. This can be caused by stale credentials, in which logging out of the web-app and retrying can fix the problem."
   },
   "ERROR_UNABLE_TO_GET_TOKEN": {
     "message": "There was a problem accessing the server. Please try again.",
@@ -143,10 +147,6 @@
     "message": "Connected:",
     "description": "String displayed in front of the host when a connection is active informing the client user who they are connected to."
   },
-  "SIGN_OUT_BUTTON": {
-    "message": "Sign out",
-    "description": "Sign out button, visible if the user has authenticated. Clicking this clears authentication credentials and returns the web-app to the initial 'unauthenticated' state."
-  },
   "MESSAGE_GENERATING": {
     "message": "Generating access code\u2026",
     "description": "Text shown while generating an access code."
@@ -188,6 +188,10 @@
   "PRODUCT_NAME": {
     "message": "Chromoting",
     "description": "The product name. Displayed in various Chromium pages, including the New Tab page, and displayed prominently on the app's main page."
+  },
+  "SIGN_OUT_BUTTON": {
+    "message": "Sign out",
+    "description": "Sign out button, visible if the user has authenticated. Clicking this clears authentication credentials and returns the web-app to the initial 'unauthenticated' state."
   },
   "STOP_SHARING_BUTTON": {
     "message": "Stop Sharing",

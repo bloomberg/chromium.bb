@@ -47,6 +47,7 @@ remoting.ClientError = {
   OAUTH_FETCH_FAILED: /*i18n-content*/'ERROR_AUTHENTICATION_FAILED',
   HOST_IS_OFFLINE: /*i18n-content*/'ERROR_HOST_IS_OFFLINE',
   INCOMPATIBLE_PROTOCOL: /*i18n-content*/'ERROR_INCOMPATIBLE_PROTOCOL',
+  BAD_PLUGIN_VERSION: /*i18n-content*/'ERROR_BAD_PLUGIN_VERSION',
   OTHER_ERROR: /*i18n-content*/'ERROR_GENERIC'
 };
 
@@ -493,7 +494,7 @@ function onClientStateChange_(oldState) {
   if (state == remoting.ClientSession.State.CREATED) {
     remoting.debug.log('Created plugin');
   } else if (state == remoting.ClientSession.State.BAD_PLUGIN_VERSION) {
-    showConnectError_(remoting.ClientError.MISSING_PLUGIN);
+    showConnectError_(remoting.ClientError.BAD_PLUGIN_VERSION);
   } else if (state == remoting.ClientSession.State.CONNECTING) {
     remoting.debug.log('Connecting as ' + remoting.username);
   } else if (state == remoting.ClientSession.State.INITIALIZING) {

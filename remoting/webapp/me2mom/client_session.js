@@ -88,16 +88,6 @@ remoting.ClientSession.prototype.error =
 remoting.ClientSession.prototype.API_VERSION_ = 2;
 
 /**
- * Server used to bridge into the Jabber network for establishing Jingle
- * connections.
- *
- * @const
- * @private
- */
-remoting.ClientSession.prototype.HTTP_XMPP_PROXY_ =
-    'https://chromoting-httpxmpp-oauth2-dev.corp.google.com';
-
-/**
  * The oldest API version that we support.
  * This will differ from the |API_VERSION_| if we maintain backward
  * compatibility with older API versions.
@@ -106,6 +96,16 @@ remoting.ClientSession.prototype.HTTP_XMPP_PROXY_ =
  * @private
  */
 remoting.ClientSession.prototype.API_MIN_VERSION_ = 1;
+
+/**
+ * Server used to bridge into the Jabber network for establishing Jingle
+ * connections.
+ *
+ * @const
+ * @private
+ */
+remoting.ClientSession.prototype.HTTP_XMPP_PROXY_ =
+    'https://chromoting-httpxmpp-oauth2-dev.corp.google.com';
 
 /**
  * The id of the client plugin
