@@ -45,19 +45,23 @@ class QuotaTemporaryStorageEvictor;
 class UsageTracker;
 class MockQuotaManager;
 
+struct QuotaAndUsage {
+  int64 usage;
+  int64 unlimited_usage;
+  int64 quota;
+  int64 available_disk_space;
+};
+
 // An interface called by QuotaTemporaryStorageEvictor.
 class QuotaEvictionHandler {
  public:
-  virtual ~QuotaEvictionHandler() {}
-
   typedef Callback1<const GURL&>::Type GetLRUOriginCallback;
   typedef StatusCallback EvictOriginDataCallback;
-  typedef Callback5<QuotaStatusCode,
-                    int64 /* usage */,
-                    int64 /* unlimited_usage */,
-                    int64 /* quota */,
-                    int64 /* physical_available */ >::Type
+  typedef base::Callback<void(QuotaStatusCode,
+                              const QuotaAndUsage& quota_and_usage)>
       GetUsageAndQuotaForEvictionCallback;
+
+  virtual ~QuotaEvictionHandler() {}
 
   // Returns the least recently used origin.  It might return empty
   // GURL when there are no evictable origins.
@@ -71,7 +75,7 @@ class QuotaEvictionHandler {
       EvictOriginDataCallback* callback) = 0;
 
   virtual void GetUsageAndQuotaForEviction(
-      GetUsageAndQuotaForEvictionCallback* callback) = 0;
+      const GetUsageAndQuotaForEvictionCallback& callback) = 0;
 };
 
 struct UsageInfo {
@@ -149,7 +153,11 @@ class QuotaManager : public QuotaTaskObserver,
   // Called by UI and internal modules.
   void GetAvailableSpace(AvailableSpaceCallback* callback);
   void GetTemporaryGlobalQuota(QuotaCallback* callback);
-  void SetTemporaryGlobalQuota(int64 new_quota, QuotaCallback* callback);
+
+  // Ok to call with NULL callback.
+  void SetTemporaryGlobalOverrideQuota(int64 new_quota,
+                                       QuotaCallback* callback);
+
   void GetPersistentHostQuota(const std::string& host,
                               HostQuotaCallback* callback);
   void SetPersistentHostQuota(const std::string& host,
@@ -172,11 +180,6 @@ class QuotaManager : public QuotaTaskObserver,
 
   bool ResetUsageTracker(StorageType type);
 
-  // Used to determine the total size of the temp pool.
-  static const int64 kTemporaryStorageQuotaDefaultSize;
-  static const int64 kTemporaryStorageQuotaMaxSize;
-  static const int64 kIncognitoDefaultTemporaryQuota;
-
   // Determines the portion of the temp pool that can be
   // utilized by a single host (ie. 5 for 20%).
   static const int kPerHostTemporaryPortion;
@@ -186,12 +189,11 @@ class QuotaManager : public QuotaTaskObserver,
   static const int kThresholdOfErrorsToBeBlacklisted;
 
   static const int kEvictionIntervalInMilliSeconds;
-  static const base::TimeDelta kReportHistogramInterval;
 
  private:
   class DatabaseTaskBase;
   class InitializeTask;
-  class UpdateTemporaryGlobalQuotaTask;
+  class UpdateTemporaryQuotaOverrideTask;
   class GetPersistentHostQuotaTask;
   class UpdatePersistentHostQuotaTask;
   class GetLRUOriginTask;
@@ -205,6 +207,7 @@ class QuotaManager : public QuotaTaskObserver,
   class UsageAndQuotaDispatcherTask;
   class UsageAndQuotaDispatcherTaskForTemporary;
   class UsageAndQuotaDispatcherTaskForPersistent;
+  class UsageAndQuotaDispatcherTaskForTemporaryGlobal;
 
   class OriginDataDeleter;
 
@@ -222,28 +225,19 @@ class QuotaManager : public QuotaTaskObserver,
       DumpOriginInfoTableCallback;
 
   struct EvictionContext {
-    EvictionContext()
-        : evicted_type(kStorageTypeUnknown),
-          usage(0),
-          unlimited_usage(0),
-          quota(0) {}
+    EvictionContext() : evicted_type(kStorageTypeUnknown) {}
     virtual ~EvictionContext() {}
-
     GURL evicted_origin;
     StorageType evicted_type;
-
     scoped_ptr<EvictOriginDataCallback> evict_origin_data_callback;
-
-    scoped_ptr<GetUsageAndQuotaForEvictionCallback>
-        get_usage_and_quota_callback;
-    int64 usage;
-    int64 unlimited_usage;
-    int64 quota;
   };
 
   typedef std::pair<std::string, StorageType> HostAndType;
   typedef std::map<HostAndType, UsageAndQuotaDispatcherTask*>
       UsageAndQuotaDispatcherTaskMap;
+
+  typedef QuotaEvictionHandler::GetUsageAndQuotaForEvictionCallback
+      UsageAndQuotaDispatcherCallback;
 
   friend class quota_internals::QuotaInternalsProxy;
   friend struct QuotaManagerDeleter;
@@ -283,6 +277,13 @@ class QuotaManager : public QuotaTaskObserver,
       int64 delta,
       base::Time modified_time);
 
+  // |origin| can be empty if |global| is true.
+  void GetUsageAndQuotaInternal(
+      const GURL& origin,
+      StorageType type,
+      bool global,
+      const UsageAndQuotaDispatcherCallback& callback);
+
   void DumpQuotaTable(DumpQuotaTableCallback* callback);
   void DumpOriginInfoTable(DumpOriginInfoTableCallback* callback);
 
@@ -291,16 +292,12 @@ class QuotaManager : public QuotaTaskObserver,
   void DeleteOriginFromDatabase(const GURL& origin, StorageType type);
 
   void DidOriginDataEvicted(QuotaStatusCode status);
-  void DidGetAvailableSpaceForEviction(
-      QuotaStatusCode status,
-      int64 available_space);
-  void DidGetGlobalQuotaForEviction(
-      QuotaStatusCode status,
-      StorageType type,
-      int64 quota);
-  void DidGetGlobalUsageForEviction(StorageType type,
-                                    int64 usage,
-                                    int64 unlimited_usage);
+  void DidGetGlobalUsageAndQuotaForEviction(QuotaStatusCode status,
+                                            StorageType type,
+                                            int64 usage,
+                                            int64 unlimited_usage,
+                                            int64 quota,
+                                            int64 available_space);
 
   void ReportHistogram();
   void DidGetTemporaryGlobalUsageForHistogram(StorageType type,
@@ -319,11 +316,12 @@ class QuotaManager : public QuotaTaskObserver,
       StorageType type,
       EvictOriginDataCallback* callback) OVERRIDE;
   virtual void GetUsageAndQuotaForEviction(
-      GetUsageAndQuotaForEvictionCallback* callback) OVERRIDE;
+      const GetUsageAndQuotaForEvictionCallback& callback) OVERRIDE;
 
-  void DidInitializeTemporaryGlobalQuota(int64 quota);
-  void DidRunInitialGetTemporaryGlobalUsage(StorageType type, int64 usage,
-                                            int64 unlimited_usage);
+  void DidRunInitializeTask();
+  void DidGetInitialTemporaryGlobalQuota(QuotaStatusCode status,
+                                         StorageType type,
+                                         int64 quota_unused);
   void DidGetDatabaseLRUOrigin(const GURL& origin);
 
   void DeleteOnCorrectThread() const;
@@ -338,7 +336,6 @@ class QuotaManager : public QuotaTaskObserver,
   scoped_refptr<base::MessageLoopProxy> db_thread_;
   mutable scoped_ptr<QuotaDatabase> database_;
 
-  bool need_initialize_origins_;
   scoped_ptr<GetLRUOriginCallback> lru_origin_callback_;
   std::set<GURL> access_notified_origins_;
 
@@ -354,8 +351,10 @@ class QuotaManager : public QuotaTaskObserver,
 
   UsageAndQuotaDispatcherTaskMap usage_and_quota_dispatchers_;
 
-  int64 temporary_global_quota_;
-  QuotaCallbackQueue temporary_global_quota_callbacks_;
+  bool temporary_quota_initialized_;
+  int64 temporary_quota_override_;
+
+  int64 desired_available_space_;
 
   // Map from origin to count.
   std::map<GURL, int> origins_in_use_;

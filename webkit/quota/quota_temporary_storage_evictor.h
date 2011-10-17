@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/memory/scoped_callback_factory.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/timer.h"
 #include "webkit/quota/quota_types.h"
@@ -23,6 +24,7 @@ class MessageLoopProxy;
 namespace quota {
 
 class QuotaEvictionHandler;
+struct QuotaAndUsage;
 
 class QuotaTemporaryStorageEvictor : public base::NonThreadSafe {
  public:
@@ -100,10 +102,7 @@ class QuotaTemporaryStorageEvictor : public base::NonThreadSafe {
   void ConsiderEviction();
   void OnGotUsageAndQuotaForEviction(
       QuotaStatusCode status,
-      int64 usage,
-      int64 unlimited_usage,
-      int64 quota,
-      int64 available_disk_space);
+      const QuotaAndUsage& quota_and_usage);
   void OnGotLRUOrigin(const GURL& origin);
   void OnEvictionComplete(QuotaStatusCode status);
 
@@ -115,10 +114,7 @@ class QuotaTemporaryStorageEvictor : public base::NonThreadSafe {
     repeated_eviction_ = repeated_eviction;
   }
 
-  static const double kUsageRatioToStartEviction;
   static const int kMinAvailableDiskSpaceToStartEvictionNotSpecified;
-  static const int kThresholdOfErrorsToStopEviction;
-  static const base::TimeDelta kHistogramReportInterval;
 
   int64 min_available_disk_space_to_start_eviction_;
 
@@ -138,6 +134,7 @@ class QuotaTemporaryStorageEvictor : public base::NonThreadSafe {
   base::RepeatingTimer<QuotaTemporaryStorageEvictor> histogram_timer_;
 
   base::ScopedCallbackFactory<QuotaTemporaryStorageEvictor> callback_factory_;
+  base::WeakPtrFactory<QuotaTemporaryStorageEvictor> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(QuotaTemporaryStorageEvictor);
 };
