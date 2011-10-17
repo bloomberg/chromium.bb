@@ -85,7 +85,13 @@ class TestPrintNotifObserv : public NotificationObserver {
 
 typedef testing::Test PrintJobTest;
 
-TEST_F(PrintJobTest, SimplePrint) {
+// Crashes under Linux Aura, see http://crbug.com/100340
+#if defined(USE_AURA) && !defined(OS_WIN)
+#define MAYBE_SimplePrint DISABLED_SimplePrint
+#else
+#define MAYBE_SimplePrint SimplePrint
+#endif
+TEST_F(PrintJobTest, MAYBE_SimplePrint) {
   // Test the multi-threaded nature of PrintJob to make sure we can use it with
   // known lifetime.
 

@@ -288,7 +288,14 @@ TEST_F(BookmarkContextMenuControllerTest, EmptyNodesNullParent) {
       controller.IsCommandIdEnabled(IDC_BOOKMARK_BAR_NEW_FOLDER));
 }
 
-TEST_F(BookmarkContextMenuControllerTest, CutCopyPasteNode) {
+// Fails on Linux Aura, probably because clipboard isn't built yet.
+// See http://crbug.com/100347
+#if defined(USE_AURA) && !defined(OS_WIN)
+#define MAYBE_CutCopyPasteNode FAILS_CutCopyPasteNode
+#else
+#define MAYBE_CutCopyPasteNode CutCopyPasteNode
+#endif
+TEST_F(BookmarkContextMenuControllerTest, MAYBE_CutCopyPasteNode) {
   const BookmarkNode* bb_node = model_->bookmark_bar_node();
   std::vector<const BookmarkNode*> nodes;
   nodes.push_back(bb_node->GetChild(0));

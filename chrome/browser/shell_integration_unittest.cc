@@ -159,7 +159,13 @@ TEST(ShellIntegrationTest, GetDesktopShortcutFilename) {
   }
 }
 
-TEST(ShellIntegrationTest, GetDesktopFileContents) {
+// Fails on Linux Aura, see http://crbug.com/100346
+#if defined(USE_AURA) && !defined(OS_WIN)
+#define MAYBE_GetDesktopFileContents FAILS_GetDesktopFileContents
+#else
+#define MAYBE_GetDesktopFileContents GetDesktopFileContents
+#endif
+TEST(ShellIntegrationTest, MAYBE_GetDesktopFileContents) {
   const struct {
     const char* url;
     const char* title;

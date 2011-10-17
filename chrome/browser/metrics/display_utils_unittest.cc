@@ -7,7 +7,14 @@
 #include "content/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-TEST(DisplayUtilsTest, GetPrimaryDisplayDimensions) {
+// Crashes on Linux Aura, probably because we need to initialize a Screen
+// object. See http://crbug.com/100341
+#if defined(USE_AURA) && !defined(OS_WIN)
+#define MAYBE_GetPrimaryDisplayDimensions DISABLED_GetPrimaryDisplayDimensions
+#else
+#define MAYBE_GetPrimaryDisplayDimensions GetPrimaryDisplayDimensions
+#endif
+TEST(DisplayUtilsTest, MAYBE_GetPrimaryDisplayDimensions) {
   MessageLoop message_loop;
   BrowserThread ui_thread(BrowserThread::UI, &message_loop);
   int width = 0, height = 0;
