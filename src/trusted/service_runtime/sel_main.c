@@ -170,8 +170,6 @@ int main(int  argc,
   struct DynArray               env_vars;
 
   char                          *log_file = NULL;
-  struct GioFile                *log_gio;
-  int                           log_desc;
   int                           verbosity = 0;
   int                           fuzzing_quit_after_load = 0;
   int                           debug_mode_bypass_acl_checks = 0;
@@ -417,20 +415,6 @@ int main(int  argc,
     NaClLogSetFile(log_file);
   }
 
-  /*
-   * NB: the following cast is okay since we only ever permit GioFile
-   * objects to be used -- NaClLogModuleInit and NaClLogSetFile both
-   * can only assign the log output to a file.  If neither were
-   * called, logging goes to stderr.
-   */
-  log_gio = (struct GioFile *) NaClLogGetGio();
-  /*
-   * By default, the logging module logs to stderr, or descriptor 2.
-   * If NaClLogSetFile was performed above, then log_desc will have
-   * the non-default value.
-   */
-  log_desc = fileno(log_gio->iop);
-  UNREFERENCED_PARAMETER(log_desc);
   if (rpc_supplies_nexe) {
     if (NULL != nacl_file) {
       fprintf(stderr,
