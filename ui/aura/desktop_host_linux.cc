@@ -244,6 +244,7 @@ base::MessagePumpDispatcher::DispatchStatus DesktopHostLinux::Dispatch(
         case ui::ET_MOUSE_RELEASED:
         case ui::ET_MOUSE_MOVED:
         case ui::ET_MOUSE_DRAGGED:
+        case ui::ET_MOUSEWHEEL:
         case ui::ET_MOUSE_ENTERED:
         case ui::ET_MOUSE_EXITED: {
           MouseEvent mouseev(xev);

@@ -135,6 +135,7 @@ TouchFactory::TouchFactory()
       keep_mouse_cursor_(false),
       cursor_timer_(),
       pointer_device_lookup_(),
+      touch_device_available_(false),
       touch_device_list_(),
 #if defined(USE_XI2_MT)
       min_available_slot_(0),
@@ -202,6 +203,7 @@ void TouchFactory::UpdateDeviceList(Display* display) {
   // If XInput2 is not supported, this will return null (with count of -1) so
   // we assume there cannot be any touch devices.
   int count = 0;
+  touch_device_available_ = false;
   touch_device_lookup_.reset();
   touch_device_list_.clear();
 #if !defined(USE_XI2_MT)
@@ -212,6 +214,7 @@ void TouchFactory::UpdateDeviceList(Display* display) {
       if (devtype && !strcmp(devtype, XI_TOUCHSCREEN)) {
         touch_device_lookup_[devlist[i].id] = true;
         touch_device_list_[devlist[i].id] = true;
+        touch_device_available_ = true;
       }
     }
   }
@@ -245,6 +248,7 @@ void TouchFactory::UpdateDeviceList(Display* display) {
         if (tci->mode == XIDirectTouch) {
           touch_device_lookup_[devinfo->deviceid] = true;
           touch_device_list_[devinfo->deviceid] = true;
+          touch_device_available_ = true;
         }
       }
     }
@@ -455,11 +459,12 @@ void TouchFactory::SetCursorVisible(bool show, bool start_timer) {
   Display* display = ui::GetXDisplay();
   Window window = DefaultRootWindow(display);
 
-  if (is_cursor_visible_) {
+  // Hide the cursor only if there's a chance that the user will be using touch
+  // (i.e. if a touch device is available).
+  if (is_cursor_visible_)
     XDefineCursor(display, window, arrow_cursor_);
-  } else {
+  else if (touch_device_available_)
     XDefineCursor(display, window, invisible_cursor_);
-  }
 }
 
 void TouchFactory::SetupValuator() {

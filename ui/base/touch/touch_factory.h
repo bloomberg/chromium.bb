@@ -188,6 +188,9 @@ class UI_EXPORT TouchFactory {
   // A quick lookup table for determining if a device is a touch device.
   std::bitset<kMaxDeviceNum> touch_device_lookup_;
 
+  // Indicates whether a touch device is currently available or not.
+  bool touch_device_available_;
+
   // The list of touch devices. For testing/debugging purposes, a mouse-device
   // can sometimes be treated as a touch device. The key in the map represents
   // the device id, and the value represents if the device is a real touch
