@@ -132,15 +132,12 @@ void BookmarkSubMenuModel::MenuWillShow() {
   AddCheckItemWithStringId(IDC_SHOW_BOOKMARK_BAR, IDS_SHOW_BOOKMARK_BAR);
   AddItemWithStringId(IDC_SHOW_BOOKMARK_MANAGER, IDS_BOOKMARK_MANAGER);
   AddItemWithStringId(IDC_IMPORT_SETTINGS, IDS_IMPORT_SETTINGS_MENU_LABEL);
+  fixed_items_ = bookmark_end_ = GetItemCount();
   if (!model()) {
     set_model(browser_->profile()->GetBookmarkModel());
-    if (model())
-      model()->AddObserver(this);
-  }
-  if (!model()) {
-    fixed_items_ = GetItemCount();
-    bookmark_end_ = GetItemCount();
-    return;
+    if (!model())
+      return;
+    model()->AddObserver(this);
   }
   // The node count includes the node itself, so 1 means empty.
   if (model()->bookmark_bar_node()->GetTotalNodeCount() > 1) {
