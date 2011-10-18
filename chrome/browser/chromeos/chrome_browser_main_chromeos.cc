@@ -13,6 +13,8 @@
 #include "chrome/browser/chromeos/brightness_observer.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
+#include "chrome/browser/chromeos/dbus/session_manager_client.h"
+#include "chrome/browser/chromeos/login/session_manager_observer.h"
 #include "chrome/browser/chromeos/net/cros_network_change_notifier_factory.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/defaults.h"
@@ -75,6 +77,10 @@ ChromeBrowserMainPartsChromeos::ChromeBrowserMainPartsChromeos(
 ChromeBrowserMainPartsChromeos::~ChromeBrowserMainPartsChromeos() {
   // We should remove observers attached to D-Bus clients before
   // DBusThreadManager is shut down.
+  if (session_manager_observer_.get()) {
+    chromeos::DBusThreadManager::Get()->session_manager_client()->
+        RemoveObserver(session_manager_observer_.get());
+  }
   if (brightness_observer_.get()) {
     chromeos::DBusThreadManager::Get()->power_manager_client()->RemoveObserver(
         brightness_observer_.get());
@@ -139,4 +145,9 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
   brightness_observer_.reset(new chromeos::BrightnessObserver());
   chromeos::DBusThreadManager::Get()->power_manager_client()->AddObserver(
       brightness_observer_.get());
+  // Initialize the session manager observer so that we'll take actions
+  // per signals sent from the session manager.
+  session_manager_observer_.reset(new chromeos::SessionManagerObserver);
+  chromeos::DBusThreadManager::Get()->session_manager_client()->
+      AddObserver(session_manager_observer_.get());
 }

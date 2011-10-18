@@ -6,6 +6,7 @@
 
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros_settings_names.h"
+#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/login/mock_ownership_service.h"
 #include "chrome/browser/chromeos/login/owner_manager.h"
 #include "chrome/browser/chromeos/login/signed_settings.h"
@@ -62,9 +63,11 @@ class SignedSettingsHelperTest : public testing::Test,
   virtual void SetUp() {
     file_thread_.Start();
     SignedSettingsHelper::Get()->set_test_delegate(this);
+    DBusThreadManager::Initialize();
   }
 
   virtual void TearDown() {
+    DBusThreadManager::Shutdown();
     SignedSettingsHelper::Get()->set_test_delegate(NULL);
   }
 

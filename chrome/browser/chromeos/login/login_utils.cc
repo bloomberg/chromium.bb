@@ -24,8 +24,9 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
-#include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
+#include "chrome/browser/chromeos/dbus/session_manager_client.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/background_view.h"
@@ -384,7 +385,7 @@ class JobRestartRequest
  private:
   void RestartJob() {
     if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-      CrosLibrary::Get()->GetLoginLibrary()->RestartJob(
+      DBusThreadManager::Get()->session_manager_client()->RestartJob(
           pid_, command_line_);
     } else {
       // This function can be called on FILE thread. See PostTask in the
@@ -577,7 +578,8 @@ void LoginUtilsImpl::PrepareProfile(
 
   if (CrosLibrary::Get()->EnsureLoaded()) {
     btl->AddLoginTimeMarker("StartSession-Start", false);
-    CrosLibrary::Get()->GetLoginLibrary()->StartSession(username, "");
+    DBusThreadManager::Get()->session_manager_client()->StartSession(
+        username);
     btl->AddLoginTimeMarker("StartSession-End", false);
   }
 

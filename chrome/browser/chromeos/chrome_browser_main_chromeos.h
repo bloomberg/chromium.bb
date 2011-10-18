@@ -17,6 +17,7 @@ typedef ChromeBrowserMainPartsPosix ChromeBrowserMainPartsBase;
 
 namespace chromeos {
 class BrightnessObserver;
+class SessionManagerObserver;
 }  // namespace chromeos
 
 class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsBase {
@@ -30,10 +31,10 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsBase {
   virtual void PreMainMessageLoopRun() OVERRIDE;
   virtual void PostMainMessageLoopStart() OVERRIDE;
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsChromeos);
-
  private:
   scoped_ptr<chromeos::BrightnessObserver> brightness_observer_;
+  scoped_ptr<chromeos::SessionManagerObserver> session_manager_observer_;
+  DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsChromeos);
 };
 
 #endif  // CHROME_BROWSER_CHROMEOS_CHROME_BROWSER_MAIN_CHROMEOS_H_

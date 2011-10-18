@@ -17,9 +17,10 @@
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
-#include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/customization_document.h"
+#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
+#include "chrome/browser/chromeos/dbus/session_manager_client.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/login_display_host.h"
 #include "chrome/browser/chromeos/login/views_login_display.h"
@@ -114,8 +115,7 @@ void ExistingUserController::Init(const UserVector& users) {
   login_display_->Init(filtered_users, show_guest, show_new_user);
 
   LoginUtils::Get()->PrewarmAuthentication();
-  if (CrosLibrary::Get()->EnsureLoaded())
-    CrosLibrary::Get()->GetLoginLibrary()->EmitLoginPromptReady();
+  DBusThreadManager::Get()->session_manager_client()->EmitLoginPromptReady();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

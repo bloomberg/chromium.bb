@@ -21,6 +21,7 @@ namespace chromeos {
 
 class CrosDBusService;
 class PowerManagerClient;
+class SessionManagerClient;
 class SensorsSource;
 
 // DBusThreadManager manages the D-Bus thread, the thread dedicated to
@@ -55,11 +56,22 @@ class DBusThreadManager {
   static DBusThreadManager* Get();
 
   // Returns the power manager client, owned by DBusThreadManager.
-  // Do not cache this pointer and use it after DBusThreadManager is shut
-  // down.
+  // See also comments at session_manager_client().
   PowerManagerClient* power_manager_client() {
     return power_manager_client_.get();
   }
+
+  // Returns the session manager client, owned by DBusThreadManager.
+  // Do not cache this pointer and use it after DBusThreadManager is shut
+  // down.
+  SessionManagerClient* session_manager_client() {
+    return session_manager_client_.get();
+  }
+
+  // Sets the session manager client. Takes the ownership.
+  // The function is exported for testing.
+  void set_session_manager_client_for_testing(
+      SessionManagerClient* session_manager_client);
 
  private:
   DBusThreadManager();
@@ -70,6 +82,7 @@ class DBusThreadManager {
   CrosDBusService* cros_dbus_service_;
   scoped_ptr<SensorsSource> sensors_source_;
   scoped_ptr<PowerManagerClient> power_manager_client_;
+  scoped_ptr<SessionManagerClient> session_manager_client_;
 
   DISALLOW_COPY_AND_ASSIGN(DBusThreadManager);
 };

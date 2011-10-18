@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/cros/mock_login_library.h"
 #include "chrome/browser/chromeos/cros/mock_network_library.h"
 #include "chrome/browser/chromeos/cros/mock_update_library.h"
+#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
+#include "chrome/browser/chromeos/dbus/mock_session_manager_client.h"
 #include "chrome/browser/chromeos/login/mock_screen_observer.h"
 #include "chrome/browser/chromeos/login/update_screen.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -26,20 +27,22 @@ static void RequestUpdateCheckSuccess(UpdateCallback callback, void* userdata) {
 class UpdateScreenTest : public WizardInProcessBrowserTest {
  public:
   UpdateScreenTest() : WizardInProcessBrowserTest("update"),
-                       mock_login_library_(NULL),
+                       mock_session_manager_client_(NULL),
                        mock_update_library_(NULL),
                        mock_network_library_(NULL) {}
 
  protected:
   virtual void SetUpInProcessBrowserTestFixture() {
+    DBusThreadManager::Initialize();
     WizardInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
     cros_mock_->InitStatusAreaMocks();
     cros_mock_->SetStatusAreaMocksExpectations();
     ASSERT_TRUE(CrosLibrary::Get()->EnsureLoaded());
 
-    mock_login_library_ = new MockLoginLibrary();
-    cros_mock_->test_api()->SetLoginLibrary(mock_login_library_, true);
-    EXPECT_CALL(*mock_login_library_, EmitLoginPromptReady())
+    mock_session_manager_client_ = new MockSessionManagerClient();
+    DBusThreadManager::Get()->set_session_manager_client_for_testing(
+        mock_session_manager_client_);
+    EXPECT_CALL(*mock_session_manager_client_, EmitLoginPromptReady())
         .Times(1);
 
     mock_update_library_ = new MockUpdateLibrary();
@@ -83,9 +86,10 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
     update_screen_->screen_observer_ = (controller());
     cros_mock_->test_api()->SetUpdateLibrary(NULL, true);
     WizardInProcessBrowserTest::TearDownInProcessBrowserTestFixture();
+    DBusThreadManager::Shutdown();
   }
 
-  MockLoginLibrary* mock_login_library_;
+  MockSessionManagerClient* mock_session_manager_client_;
   MockUpdateLibrary* mock_update_library_;
   MockNetworkLibrary* mock_network_library_;
 

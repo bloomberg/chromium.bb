@@ -13,8 +13,9 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/cros_settings_names.h"
+#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
+#include "chrome/browser/chromeos/dbus/session_manager_client.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/login/signed_settings_temp_storage.h"
@@ -231,7 +232,7 @@ class StorePolicyOp : public SignedSettings {
                        const std::vector<uint8>& payload);
 
  private:
-  static void OnBoolComplete(void* delegate, bool success);
+  void OnBoolComplete(bool success);
   // Always call d_->OnSettingOpCompleted() via this call.
   // It guarantees that the callback will not be triggered until _after_
   // Execute() returns, which is implicitly assumed by SignedSettingsHelper
@@ -257,9 +258,7 @@ class RetrievePolicyOp : public SignedSettings {
                        const std::vector<uint8>& payload);
 
  private:
-  static void OnStringComplete(void* delegate,
-                               const char* policy,
-                               const unsigned int len);
+  void OnStringComplete(const std::string& serialized_proto);
   // Always call d_->OnSettingOpCompleted() via this call.
   // It guarantees that the callback will not be triggered until _after_
   // Execute() returns, which is implicitly assumed by SignedSettingsHelper
@@ -267,7 +266,7 @@ class RetrievePolicyOp : public SignedSettings {
   void PerformCallback(SignedSettings::ReturnCode code,
                        const em::PolicyFetchResponse& value);
 
-  void ProcessPolicy(const char* out, const unsigned int len);
+  void ProcessPolicy(const std::string& serialized_proto);
 
   em::PolicyFetchResponse policy_;
   SignedSettings::Delegate<const em::PolicyFetchResponse&>* d_;
@@ -784,13 +783,11 @@ StorePolicyOp::StorePolicyOp(em::PolicyFetchResponse* policy,
 
 StorePolicyOp::~StorePolicyOp() {}
 
-// static
-void StorePolicyOp::OnBoolComplete(void* delegate, bool success) {
-  StorePolicyOp* op = static_cast<StorePolicyOp*>(delegate);
+void StorePolicyOp::OnBoolComplete(bool success) {
   if (success)
-    op->Succeed(true);
+    Succeed(true);
   else
-    op->Fail(NOT_FOUND);
+    Fail(NOT_FOUND);
 }
 
 void StorePolicyOp::Execute() {
@@ -847,12 +844,10 @@ void StorePolicyOp::OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
 
 void StorePolicyOp::RequestStorePolicy() {
   std::string serialized;
-  if (policy_->SerializeToString(&serialized) &&
-      CrosLibrary::Get()->EnsureLoaded()) {
-    CrosLibrary::Get()->GetLoginLibrary()->RequestStorePolicy(
+  if (policy_->SerializeToString(&serialized)) {
+    DBusThreadManager::Get()->session_manager_client()->StorePolicy(
         serialized,
-        &StorePolicyOp::OnBoolComplete,
-        this);
+        base::Bind(&StorePolicyOp::OnBoolComplete, this));
   } else {
     Fail(OPERATION_FAILED);
   }
@@ -871,12 +866,8 @@ RetrievePolicyOp::RetrievePolicyOp(
 RetrievePolicyOp::~RetrievePolicyOp() {}
 
 void RetrievePolicyOp::Execute() {
-  if (CrosLibrary::Get()->EnsureLoaded()) {
-    CrosLibrary::Get()->GetLoginLibrary()->RequestRetrievePolicy(
-        &RetrievePolicyOp::OnStringComplete, this);
-  } else {
-    Fail(OPERATION_FAILED);
-  }
+  DBusThreadManager::Get()->session_manager_client()->RetrievePolicy(
+      base::Bind(&RetrievePolicyOp::OnStringComplete, this));
 }
 
 void RetrievePolicyOp::Fail(SignedSettings::ReturnCode code) {
@@ -916,16 +907,12 @@ void RetrievePolicyOp::OnKeyOpComplete(
     Fail(SignedSettings::MapKeyOpCode(return_code));
 }
 
-// static
-void RetrievePolicyOp::OnStringComplete(void* delegate,
-                                        const char* out,
-                                        const unsigned int len) {
-  RetrievePolicyOp* op = static_cast<RetrievePolicyOp*>(delegate);
-  op->ProcessPolicy(out, len);
+void RetrievePolicyOp::OnStringComplete(const std::string& serialized_proto) {
+  ProcessPolicy(serialized_proto);
 }
 
-void RetrievePolicyOp::ProcessPolicy(const char* out, const unsigned int len) {
-  if (!out || !policy_.ParseFromString(std::string(out, len)) ||
+void RetrievePolicyOp::ProcessPolicy(const std::string& serialized_proto) {
+  if (!policy_.ParseFromString(serialized_proto) ||
       (!policy_.has_policy_data() && !policy_.has_policy_data_signature())) {
     Fail(NOT_FOUND);
     return;

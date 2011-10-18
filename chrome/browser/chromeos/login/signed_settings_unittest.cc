@@ -10,8 +10,9 @@
 #include "base/stringprintf.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/mock_library_loader.h"
-#include "chrome/browser/chromeos/cros/mock_login_library.h"
 #include "chrome/browser/chromeos/cros_settings_names.h"
+#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
+#include "chrome/browser/chromeos/dbus/mock_session_manager_client.h"
 #include "chrome/browser/chromeos/login/mock_owner_key_utils.h"
 #include "chrome/browser/chromeos/login/mock_ownership_service.h"
 #include "chrome/browser/chromeos/login/owner_manager_unittest.h"
@@ -24,7 +25,6 @@
 
 using ::testing::A;
 using ::testing::AnyNumber;
-using ::testing::InvokeArgument;
 using ::testing::Return;
 using ::testing::ReturnRef;
 using ::testing::SaveArg;
@@ -116,10 +116,12 @@ class SignedSettingsTest : public testing::Test {
 
   virtual void SetUp() {
     file_thread_.Start();
+    DBusThreadManager::Initialize();
   }
 
   virtual void TearDown() {
     OwnerKeyUtils::set_factory(NULL);
+    DBusThreadManager::Shutdown();
   }
 
   void mock_service(SignedSettings* s, MockOwnershipService* m) {
@@ -229,35 +231,6 @@ class SignedSettingsTest : public testing::Test {
     s->Execute();
     s->OnKeyOpComplete(return_code, std::vector<uint8>());
     message_loop_.RunAllPending();
-  }
-
-  MockLoginLibrary* MockLoginLib() {
-    chromeos::CrosLibrary::TestApi* test_api =
-        chromeos::CrosLibrary::Get()->GetTestApi();
-
-    // Mocks, ownership transferred to CrosLibrary class on creation.
-    MockLoginLibrary* mock_library;
-    MockLibraryLoader* loader;
-
-    loader = new MockLibraryLoader();
-    ON_CALL(*loader, Load(_))
-        .WillByDefault(Return(true));
-    EXPECT_CALL(*loader, Load(_))
-        .Times(AnyNumber());
-
-    test_api->SetLibraryLoader(loader, true);
-
-    mock_library = new MockLoginLibrary();
-    test_api->SetLoginLibrary(mock_library, true);
-    return mock_library;
-  }
-
-  void UnMockLoginLib() {
-    // Prevent bogus gMock leak check from firing.
-    chromeos::CrosLibrary::TestApi* test_api =
-        chromeos::CrosLibrary::Get()->GetTestApi();
-    test_api->SetLibraryLoader(NULL, false);
-    test_api->SetLoginLibrary(NULL, false);
   }
 
   em::PolicyFetchResponse BuildProto(const std::string& data,
@@ -540,7 +513,8 @@ TEST_F(SignedSettingsTest, RetrievePropertyNotFound) {
   message_loop_.RunAllPending();
 }
 
-ACTION_P(Retrieve, s) { (*arg0)((void*)arg1, s.c_str(), s.length()); }
+ACTION_P(Retrieve, policy_blob) { arg0.Run(policy_blob); }
+ACTION_P(Store, success) { arg1.Run(success); }
 ACTION_P(FinishKeyOp, s) { arg2->OnKeyOpComplete(OwnerManager::SUCCESS, s); }
 
 TEST_F(SignedSettingsTest, RetrievePolicyToRetrieveProperty) {
@@ -555,8 +529,9 @@ TEST_F(SignedSettingsTest, RetrievePolicyToRetrieveProperty) {
   em::PolicyFetchResponse signed_policy = BuildProto(data,
                                                      fake_value_,
                                                      &signed_serialized);
-  MockLoginLibrary* lib = MockLoginLib();
-  EXPECT_CALL(*lib, RequestRetrievePolicy(_, _))
+  MockSessionManagerClient* client = new MockSessionManagerClient;
+  DBusThreadManager::Get()->set_session_manager_client_for_testing(client);
+  EXPECT_CALL(*client, RetrievePolicy(_))
       .WillOnce(Retrieve(signed_serialized))
       .RetiresOnSaturation();
 
@@ -582,7 +557,6 @@ TEST_F(SignedSettingsTest, RetrievePolicyToRetrieveProperty) {
 
   s->Execute();
   message_loop_.RunAllPending();
-  UnMockLoginLib();
 }
 
 TEST_F(SignedSettingsTest, SignAndStorePolicy) {
@@ -617,13 +591,13 @@ TEST_F(SignedSettingsTest, SignAndStorePolicy) {
   std::vector<uint8> fake_sig(fake_value_.c_str(),
                               fake_value_.c_str() + fake_value_.length());
 
-  MockLoginLibrary* lib = MockLoginLib();
-  EXPECT_CALL(*lib, RequestStorePolicy(StrEq(signed_serialized), _, s.get()))
-      .WillOnce(InvokeArgument<1>(static_cast<void*>(s.get()), true))
+  MockSessionManagerClient* client = new MockSessionManagerClient;;
+  DBusThreadManager::Get()->set_session_manager_client_for_testing(client);
+  EXPECT_CALL(*client, StorePolicy(signed_serialized, _))
+      .WillOnce(Store(true))
       .RetiresOnSaturation();
   s->OnKeyOpComplete(OwnerManager::SUCCESS, fake_sig);
   message_loop_.RunAllPending();
-  UnMockLoginLib();
 }
 
 TEST_F(SignedSettingsTest, StoreSignedPolicy) {
@@ -638,9 +612,10 @@ TEST_F(SignedSettingsTest, StoreSignedPolicy) {
                                                      &signed_serialized);
   scoped_refptr<SignedSettings> s(
       SignedSettings::CreateStorePolicyOp(&signed_policy, &d));
-  MockLoginLibrary* lib = MockLoginLib();
-  EXPECT_CALL(*lib, RequestStorePolicy(StrEq(signed_serialized), _, s.get()))
-      .WillOnce(InvokeArgument<1>(static_cast<void*>(s.get()), true))
+  MockSessionManagerClient* client = new MockSessionManagerClient;;
+  DBusThreadManager::Get()->set_session_manager_client_for_testing(client);
+  EXPECT_CALL(*client, StorePolicy(signed_serialized, _))
+      .WillOnce(Store(true))
       .RetiresOnSaturation();
 
   mock_service(s.get(), &m_);
@@ -650,7 +625,6 @@ TEST_F(SignedSettingsTest, StoreSignedPolicy) {
 
   s->Execute();
   message_loop_.RunAllPending();
-  UnMockLoginLib();
 }
 
 TEST_F(SignedSettingsTest, StorePolicyNoKey) {
@@ -687,11 +661,10 @@ TEST_F(SignedSettingsTest, RetrievePolicy) {
   d.expect_success();
   scoped_refptr<SignedSettings> s(SignedSettings::CreateRetrievePolicyOp(&d));
 
-  MockLoginLibrary* lib = MockLoginLib();
-  EXPECT_CALL(*lib, RequestRetrievePolicy(_, s.get()))
-      .WillOnce(InvokeArgument<0>(static_cast<void*>(s.get()),
-                                  signed_serialized.c_str(),
-                                  signed_serialized.length()))
+  MockSessionManagerClient* client = new MockSessionManagerClient;;
+  DBusThreadManager::Get()->set_session_manager_client_for_testing(client);
+  EXPECT_CALL(*client, RetrievePolicy(_))
+      .WillOnce(Retrieve(signed_serialized))
       .RetiresOnSaturation();
 
   mock_service(s.get(), &m_);
@@ -705,7 +678,6 @@ TEST_F(SignedSettingsTest, RetrievePolicy) {
 
   s->Execute();
   message_loop_.RunAllPending();
-  UnMockLoginLib();
 
   s->OnKeyOpComplete(OwnerManager::SUCCESS, std::vector<uint8>());
   message_loop_.RunAllPending();
@@ -717,16 +689,14 @@ TEST_F(SignedSettingsTest, RetrieveNullPolicy) {
   d.expect_failure(SignedSettings::NOT_FOUND);
   scoped_refptr<SignedSettings> s(SignedSettings::CreateRetrievePolicyOp(&d));
 
-  MockLoginLibrary* lib = MockLoginLib();
-  EXPECT_CALL(*lib, RequestRetrievePolicy(_, s.get()))
-      .WillOnce(InvokeArgument<0>(static_cast<void*>(s.get()),
-                                  static_cast<const char*>(NULL),
-                                  0))
+  MockSessionManagerClient* client = new MockSessionManagerClient;;
+  DBusThreadManager::Get()->set_session_manager_client_for_testing(client);
+  EXPECT_CALL(*client, RetrievePolicy(_))
+      .WillOnce(Retrieve(""))
       .RetiresOnSaturation();
 
   s->Execute();
   message_loop_.RunAllPending();
-  UnMockLoginLib();
 }
 
 TEST_F(SignedSettingsTest, RetrieveEmptyPolicy) {
@@ -736,14 +706,14 @@ TEST_F(SignedSettingsTest, RetrieveEmptyPolicy) {
   d.expect_failure(SignedSettings::NOT_FOUND);
   scoped_refptr<SignedSettings> s(SignedSettings::CreateRetrievePolicyOp(&d));
 
-  MockLoginLibrary* lib = MockLoginLib();
-  EXPECT_CALL(*lib, RequestRetrievePolicy(_, s.get()))
-      .WillOnce(InvokeArgument<0>(static_cast<void*>(s.get()), "", 0))
+  MockSessionManagerClient* client = new MockSessionManagerClient;;
+  DBusThreadManager::Get()->set_session_manager_client_for_testing(client);
+  EXPECT_CALL(*client, RetrievePolicy(_))
+      .WillOnce(Retrieve(""))
       .RetiresOnSaturation();
 
   s->Execute();
   message_loop_.RunAllPending();
-  UnMockLoginLib();
 }
 
 TEST_F(SignedSettingsTest, RetrieveUnsignedPolicy) {
@@ -755,16 +725,14 @@ TEST_F(SignedSettingsTest, RetrieveUnsignedPolicy) {
   d.expect_failure(SignedSettings::BAD_SIGNATURE);
   scoped_refptr<SignedSettings> s(SignedSettings::CreateRetrievePolicyOp(&d));
 
-  MockLoginLibrary* lib = MockLoginLib();
-  EXPECT_CALL(*lib, RequestRetrievePolicy(_, s.get()))
-      .WillOnce(InvokeArgument<0>(static_cast<void*>(s.get()),
-                                  serialized.c_str(),
-                                  serialized.length()))
+  MockSessionManagerClient* client = new MockSessionManagerClient;;
+  DBusThreadManager::Get()->set_session_manager_client_for_testing(client);
+  EXPECT_CALL(*client, RetrievePolicy(_))
+      .WillOnce(Retrieve(serialized))
       .RetiresOnSaturation();
 
   s->Execute();
   message_loop_.RunAllPending();
-  UnMockLoginLib();
 }
 
 TEST_F(SignedSettingsTest, RetrieveMalsignedPolicy) {
@@ -776,11 +744,10 @@ TEST_F(SignedSettingsTest, RetrieveMalsignedPolicy) {
   d.expect_failure(SignedSettings::BAD_SIGNATURE);
   scoped_refptr<SignedSettings> s(SignedSettings::CreateRetrievePolicyOp(&d));
 
-  MockLoginLibrary* lib = MockLoginLib();
-  EXPECT_CALL(*lib, RequestRetrievePolicy(_, s.get()))
-      .WillOnce(InvokeArgument<0>(static_cast<void*>(s.get()),
-                                  signed_serialized.c_str(),
-                                  signed_serialized.length()))
+  MockSessionManagerClient* client = new MockSessionManagerClient;;
+  DBusThreadManager::Get()->set_session_manager_client_for_testing(client);
+  EXPECT_CALL(*client, RetrievePolicy(_))
+      .WillOnce(Retrieve(signed_serialized))
       .RetiresOnSaturation();
 
   mock_service(s.get(), &m_);
@@ -791,7 +758,6 @@ TEST_F(SignedSettingsTest, RetrieveMalsignedPolicy) {
 
   s->Execute();
   message_loop_.RunAllPending();
-  UnMockLoginLib();
 
   s->OnKeyOpComplete(OwnerManager::OPERATION_FAILED, std::vector<uint8>());
   message_loop_.RunAllPending();

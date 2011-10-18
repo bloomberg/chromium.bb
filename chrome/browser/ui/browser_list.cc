@@ -31,8 +31,9 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/cros/update_library.h"
+#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
+#include "chrome/browser/chromeos/dbus/session_manager_client.h"
 #if defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/chromeos/wm_ipc.h"
 #endif
@@ -307,7 +308,8 @@ void BrowserList::NotifyAndTerminate(bool fast_path) {
           chromeos::UPDATE_STATUS_UPDATED_NEED_REBOOT) {
       cros_library->GetUpdateLibrary()->RebootAfterUpdate();
     } else {
-      cros_library->GetLoginLibrary()->StopSession("");
+      chromeos::DBusThreadManager::Get()->session_manager_client()
+          ->StopSession();
     }
     return;
   }

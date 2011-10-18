@@ -11,7 +11,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/login_library.h"
+#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
+#include "chrome/browser/chromeos/dbus/session_manager_client.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
@@ -349,8 +350,8 @@ void ShowLoginWizard(const std::string& first_screen_name,
   display_host->StartWizard(first_screen_name, GURL());
 
   chromeos::LoginUtils::Get()->PrewarmAuthentication();
-  if (chromeos::CrosLibrary::Get()->EnsureLoaded())
-    chromeos::CrosLibrary::Get()->GetLoginLibrary()->EmitLoginPromptReady();
+  chromeos::DBusThreadManager::Get()->session_manager_client()
+      ->EmitLoginPromptReady();
 
   // Set initial timezone if specified by customization.
   const std::string timezone_name = startup_manifest->initial_timezone();

@@ -6,7 +6,8 @@
 
 #include "base/file_util.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/login_library.h"
+#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
+#include "chrome/browser/chromeos/dbus/session_manager_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/browser_thread.h"
@@ -57,10 +58,7 @@ void EnterpriseExtensionObserver::CheckExtensionAndNotifyEntd(
 // static
 void EnterpriseExtensionObserver::NotifyEntd() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (CrosLibrary::Get()->EnsureLoaded()) {
-    CrosLibrary::Get()->GetLoginLibrary()->RestartEntd();
-    return;
-  }
+  DBusThreadManager::Get()->session_manager_client()->RestartEntd();
 }
 
 }  // namespace chromeos

@@ -17,8 +17,9 @@
 #include "base/timer.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/cros/screen_lock_library.h"
+#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
+#include "chrome/browser/chromeos/dbus/session_manager_client.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
@@ -317,8 +318,7 @@ void ScreenLocker::Signout() {
 #if defined(TOOLKIT_USES_GTK)
   WmIpc::instance()->NotifyAboutSignout();
 #endif
-  if (CrosLibrary::Get()->EnsureLoaded())
-    CrosLibrary::Get()->GetLoginLibrary()->StopSession("");
+  DBusThreadManager::Get()->session_manager_client()->StopSession();
 
   // Don't hide yet the locker because the chrome screen may become visible
   // briefly.

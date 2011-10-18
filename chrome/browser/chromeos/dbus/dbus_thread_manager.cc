@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/chromeos/dbus/cros_dbus_service.h"
+#include "chrome/browser/chromeos/dbus/session_manager_client.h"
 #include "chrome/browser/chromeos/dbus/power_manager_client.h"
 #include "chrome/browser/chromeos/dbus/sensors_source.h"
 #include "chrome/common/chrome_switches.h"
@@ -44,6 +45,9 @@ DBusThreadManager::DBusThreadManager() {
 
   // Create the power manager client.
   power_manager_client_.reset(PowerManagerClient::Create(system_bus_.get()));
+  // Create the session manager client.
+  session_manager_client_.reset(
+      SessionManagerClient::Create(system_bus_.get()));
 }
 
 DBusThreadManager::~DBusThreadManager() {
@@ -60,7 +64,11 @@ DBusThreadManager::~DBusThreadManager() {
 }
 
 void DBusThreadManager::Initialize() {
-  CHECK(!g_dbus_thread_manager);
+  if (g_dbus_thread_manager) {
+    // This can happen in tests.
+    LOG(WARNING) << "DBusThreadManager::Initialize() was already called";
+    return;
+  }
   g_dbus_thread_manager = new DBusThreadManager;
   VLOG(1) << "DBusThreadManager initialized";
 }
@@ -80,6 +88,11 @@ DBusThreadManager* DBusThreadManager::Get() {
   CHECK(g_dbus_thread_manager)
       << "DBusThreadManager::Get() called before Initialize()";
   return g_dbus_thread_manager;
+}
+
+void DBusThreadManager::set_session_manager_client_for_testing(
+    SessionManagerClient* session_manager_client) {
+  session_manager_client_.reset(session_manager_client);
 }
 
 }  // namespace chromeos

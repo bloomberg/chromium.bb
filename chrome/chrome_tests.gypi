@@ -90,6 +90,8 @@
         'browser/chromeos/cros/mock_login_library.h',
         'browser/chromeos/cros/mock_network_library.cc',
         'browser/chromeos/cros/mock_network_library.h',
+        'browser/chromeos/dbus/mock_session_manager_client.cc',
+        'browser/chromeos/dbus/mock_session_manager_client.h',
         'browser/chromeos/login/mock_signed_settings_helper.cc',
         'browser/chromeos/login/mock_signed_settings_helper.h',
         # The only thing used from browser is Browser::Type.

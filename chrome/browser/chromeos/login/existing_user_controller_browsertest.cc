@@ -7,8 +7,9 @@
 #include "chrome/browser/chromeos/cros/cros_mock.h"
 #include "chrome/browser/chromeos/cros/cros_in_process_browser_test.h"
 #include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
-#include "chrome/browser/chromeos/cros/mock_login_library.h"
 #include "chrome/browser/chromeos/cros/mock_network_library.h"
+#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
+#include "chrome/browser/chromeos/dbus/mock_session_manager_client.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/login_display.h"
@@ -103,7 +104,7 @@ class ExistingUserControllerTest : public CrosInProcessBrowserTest {
  protected:
   ExistingUserControllerTest()
       : mock_cryptohome_library_(NULL),
-        mock_login_library_(NULL),
+        mock_session_manager_client_(NULL),
         mock_network_library_(NULL),
         mock_login_display_(NULL),
         mock_login_display_host_(NULL) {
@@ -114,17 +115,19 @@ class ExistingUserControllerTest : public CrosInProcessBrowserTest {
   }
 
   virtual void SetUpInProcessBrowserTestFixture() {
+    DBusThreadManager::Initialize();
     CrosInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
     cros_mock_->InitStatusAreaMocks();
     cros_mock_->SetStatusAreaMocksExpectations();
 
     mock_network_library_ = cros_mock_->mock_network_library();
-    mock_login_library_ = new MockLoginLibrary();
-    EXPECT_CALL(*mock_login_library_, EmitLoginPromptReady())
+    mock_session_manager_client_ = new MockSessionManagerClient();
+    DBusThreadManager::Get()->set_session_manager_client_for_testing(
+        mock_session_manager_client_);
+    EXPECT_CALL(*mock_session_manager_client_, EmitLoginPromptReady())
         .Times(1);
-    EXPECT_CALL(*mock_login_library_, RequestRetrievePolicy(_, _))
+    EXPECT_CALL(*mock_session_manager_client_, RetrievePolicy(_))
         .Times(AnyNumber());
-    cros_mock_->test_api()->SetLoginLibrary(mock_login_library_, true);
 
     cros_mock_->InitMockCryptohomeLibrary();
     mock_cryptohome_library_ = cros_mock_->mock_cryptohome_library();
@@ -157,12 +160,12 @@ class ExistingUserControllerTest : public CrosInProcessBrowserTest {
 
   virtual void TearDownInProcessBrowserTestFixture() {
     CrosInProcessBrowserTest::TearDownInProcessBrowserTestFixture();
-    cros_mock_->test_api()->SetLoginLibrary(NULL, false);
+    DBusThreadManager::Shutdown();
   }
 
   // These mocks are owned by CrosLibrary class.
   MockCryptohomeLibrary* mock_cryptohome_library_;
-  MockLoginLibrary* mock_login_library_;
+  MockSessionManagerClient* mock_session_manager_client_;
   MockNetworkLibrary* mock_network_library_;
 
   scoped_ptr<MockLoginDisplay> mock_login_display_;

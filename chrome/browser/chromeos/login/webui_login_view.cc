@@ -11,7 +11,8 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/accessibility_util.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/login_library.h"
+#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
+#include "chrome/browser/chromeos/dbus/session_manager_client.h"
 #include "chrome/browser/chromeos/login/proxy_settings_dialog.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/chromeos/status/clock_menu_button.h"
@@ -314,8 +315,9 @@ void WebUILoginView::OnTabMainFrameFirstRender() {
   if (views::desktop::DesktopWindowView::desktop_window_view)
     emit_login_visible = true;
 #endif
-  if (emit_login_visible && chromeos::CrosLibrary::Get()->EnsureLoaded())
-    chromeos::CrosLibrary::Get()->GetLoginLibrary()->EmitLoginPromptVisible();
+  if (emit_login_visible)
+    chromeos::DBusThreadManager::Get()->session_manager_client()
+        ->EmitLoginPromptVisible();
 
   OobeUI* oobe_ui = static_cast<OobeUI*>(GetWebUI());
   // Notify OOBE that the login frame has been rendered. Currently
