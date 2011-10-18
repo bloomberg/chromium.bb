@@ -677,12 +677,12 @@ cr.define('ntp4', function() {
               currentlyDraggingTile,
               this.tileElements_[index]);
           this.tileMoved(currentlyDraggingTile);
-        } else if (currentlyDraggingTile.querySelector('.most-visited') {
+        } else if (currentlyDraggingTile.querySelector('.most-visited')) {
           this.generateAppForLink(tileContents.data);
-          sourceId = DRAG_SOURCE.MOST_VISITED_PANE,
+          sourceId = DRAG_SOURCE.MOST_VISITED_PANE;
         } else if (currentlyDraggingTile.querySelector('.bookmark')) {
           this.generateAppForLink(tileContents.data);
-          sourceId = DRAG_SOURCE.BOOKMARK_PANE,
+          sourceId = DRAG_SOURCE.BOOKMARK_PANE;
         }
       } else {
         this.addOutsideData_(dataTransfer, index);
