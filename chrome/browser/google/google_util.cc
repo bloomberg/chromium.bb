@@ -105,23 +105,6 @@ bool GetReactivationBrand(std::string* brand) {
   return ret;
 }
 
-#elif defined(OS_MACOSX)
-
-bool GetBrand(std::string* brand) {
-  if (brand_for_testing) {
-    brand->assign(brand_for_testing);
-    return true;
-  }
-
-  brand->assign(keystone_glue::BrandCode());
-  return true;
-}
-
-bool GetReactivationBrand(std::string* brand) {
-  brand->clear();
-  return true;
-}
-
 #else
 
 bool GetBrand(std::string* brand) {
@@ -130,7 +113,11 @@ bool GetBrand(std::string* brand) {
     return true;
   }
 
+#if defined(OS_MACOSX)
+  brand->assign(keystone_glue::BrandCode());
+#else
   brand->clear();
+#endif
   return true;
 }
 
@@ -146,20 +133,29 @@ bool IsOrganic(const std::string& brand) {
   if (command_line.HasSwitch(switches::kOrganicInstall))
     return true;
 
-  static const char* kBrands[] = {
+#if defined(OS_MACOSX)
+  if (brand.empty()) {
+    // An empty brand string on Mac is used for channels other than stable,
+    // which are always organic.
+    return true;
+  }
+#endif
+
+  const char* const kBrands[] = {
       "CHFO", "CHFT", "CHHS", "CHHM", "CHMA", "CHMB", "CHME", "CHMF",
       "CHMG", "CHMH", "CHMI", "CHMQ", "CHMV", "CHNB", "CHNC", "CHNG",
       "CHNH", "CHNI", "CHOA", "CHOB", "CHOC", "CHON", "CHOO", "CHOP",
       "CHOQ", "CHOR", "CHOS", "CHOT", "CHOU", "CHOX", "CHOY", "CHOZ",
       "CHPD", "CHPE", "CHPF", "CHPG", "EUBB", "EUBC", "GGLA", "GGLS"
   };
-  const char** end = &kBrands[arraysize(kBrands)];
-  const char** found = std::find(&kBrands[0], end, brand);
+  const char* const* end = &kBrands[arraysize(kBrands)];
+  const char* const* found = std::find(&kBrands[0], end, brand);
   if (found != end)
     return true;
-  return (StartsWithASCII(brand, "EUB", true) ||
-          StartsWithASCII(brand, "EUC", true) ||
-          StartsWithASCII(brand, "GGR", true));
+
+  return StartsWithASCII(brand, "EUB", true) ||
+         StartsWithASCII(brand, "EUC", true) ||
+         StartsWithASCII(brand, "GGR", true);
 }
 
 bool IsOrganicFirstRun(const std::string& brand) {
@@ -168,8 +164,16 @@ bool IsOrganicFirstRun(const std::string& brand) {
   if (command_line.HasSwitch(switches::kOrganicInstall))
     return true;
 
-  return (StartsWithASCII(brand, "GG", true) ||
-          StartsWithASCII(brand, "EU", true));
+#if defined(OS_MACOSX)
+  if (brand.empty()) {
+    // An empty brand string on Mac is used for channels other than stable,
+    // which are always organic.
+    return true;
+  }
+#endif
+
+  return StartsWithASCII(brand, "GG", true) ||
+         StartsWithASCII(brand, "EU", true);
 }
 
 }  // namespace google_util

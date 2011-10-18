@@ -38,12 +38,14 @@ TEST_F(GoogleUpdateTest, LastRunTime) {
 TEST_F(GoogleUpdateTest, ShouldShowSearchEngineDialog) {
   // Test some brand codes to ensure that future changes to this method won't
   // go unnoticed.
-  const char* false_brand1 = "CHFO";
-  EXPECT_FALSE(google_util::IsOrganicFirstRun(false_brand1));
-  const char* false_brand2 = "CHMA";
-  EXPECT_FALSE(google_util::IsOrganicFirstRun(false_brand2));
-  const char* good_brand1 = "EUBA";
-  EXPECT_TRUE(google_util::IsOrganicFirstRun(good_brand1));
-  const char* good_brand2 = "GGRA";
-  EXPECT_TRUE(google_util::IsOrganicFirstRun(good_brand2));
+  EXPECT_FALSE(google_util::IsOrganicFirstRun("CHFO"));
+  EXPECT_FALSE(google_util::IsOrganicFirstRun("CHMA"));
+  EXPECT_TRUE(google_util::IsOrganicFirstRun("EUBA"));
+  EXPECT_TRUE(google_util::IsOrganicFirstRun("GGRA"));
+
+#if defined(OS_MACOSX)
+  // An empty brand string on Mac is used for channels other than stable,
+  // which are always organic.
+  EXPECT_TRUE(google_util::IsOrganicFirstRun(""));
+#endif
 }
