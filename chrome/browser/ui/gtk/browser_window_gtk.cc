@@ -862,14 +862,15 @@ void BrowserWindowGtk::EnterFullscreen(
         GTK_FLOATING_CONTAINER(render_area_floating_container_),
         browser(),
         url,
-        type == FEB_TYPE_FULLSCREEN_BUTTONS));
+        type));
   }
 }
 
 void BrowserWindowGtk::UpdateFullscreenExitBubbleContent(
       const GURL& url,
       FullscreenExitBubbleType bubble_type) {
-  NOTIMPLEMENTED();
+  if (fullscreen_exit_bubble_.get())
+    fullscreen_exit_bubble_->UpdateContent(url, bubble_type);
 }
 
 void BrowserWindowGtk::ExitFullscreen() {
@@ -1452,7 +1453,7 @@ gboolean BrowserWindowGtk::OnWindowState(GtkWidget* sender,
             GTK_FLOATING_CONTAINER(render_area_floating_container_),
             browser(),
             GURL(),
-            false));
+            FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION));
       }
       gtk_widget_hide(toolbar_border_);
     } else {

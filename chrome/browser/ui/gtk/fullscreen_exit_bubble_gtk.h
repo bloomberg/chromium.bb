@@ -7,6 +7,7 @@
 #pragma once
 
 #include "chrome/browser/ui/fullscreen_exit_bubble.h"
+#include "chrome/browser/ui/fullscreen_exit_bubble_type.h"
 #include "chrome/browser/ui/gtk/slide_animator_gtk.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/gtk_signal_registrar.h"
@@ -23,9 +24,11 @@ class FullscreenExitBubbleGtk : public FullscreenExitBubble {
       GtkFloatingContainer* container,
       Browser* delegate,
       const GURL& url,
-      bool ask_permission);
+      FullscreenExitBubbleType bubble_type);
   virtual ~FullscreenExitBubbleGtk();
 
+  void UpdateContent(const GURL& url,
+                     FullscreenExitBubbleType bubble_type);
  protected:
   // FullScreenExitBubble
   virtual gfx::Rect GetPopupRect(bool ignore_animation_state) const OVERRIDE;
@@ -39,7 +42,7 @@ class FullscreenExitBubbleGtk : public FullscreenExitBubble {
  private:
   void InitWidgets();
   std::string GetMessage(const GURL& url);
-  void HideButtons();
+  void StartWatchingMouseIfNecessary();
 
   GtkWidget* widget() const {
     return slide_widget_->widget();
@@ -53,9 +56,14 @@ class FullscreenExitBubbleGtk : public FullscreenExitBubble {
 
   // A pointer to the floating container that is our parent.
   GtkFloatingContainer* container_;
+  GtkWidget* render_widget_host_view_widget_;
 
   // The widget that contains the UI.
   ui::OwnedWidgetGtk ui_container_;
+  GtkWidget* instruction_label_;
+  GtkWidget* hbox_;
+  GtkWidget* message_label_;
+  GtkWidget* button_link_hbox_;
   GtkWidget* link_;
   GtkWidget* allow_button_;
   GtkWidget* deny_button_;
@@ -67,8 +75,6 @@ class FullscreenExitBubbleGtk : public FullscreenExitBubble {
   base::OneShotTimer<FullscreenExitBubbleGtk> initial_delay_;
 
   ui::GtkSignalRegistrar signals_;
-
-  bool show_buttons_;
 };
 
 #endif  // CHROME_BROWSER_UI_GTK_FULLSCREEN_EXIT_BUBBLE_GTK_H_
