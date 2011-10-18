@@ -620,82 +620,39 @@ TEST_F(ExtensionManifestTest, OptionsPageInApps) {
                      errors::kInvalidOptionsPageExpectUrlInPackage);
 }
 
-TEST_F(ExtensionManifestTest, HostedAppPermissions) {
-  std::string error;
-  scoped_ptr<DictionaryValue> manifest(
-      LoadManifestFile("hosted_app_absolute_options.json", &error));
-  ASSERT_TRUE(manifest.get());
-  ListValue* permissions = NULL;
-  ASSERT_TRUE(manifest->GetList("permissions", &permissions));
-
-  ExtensionPermissionsInfo* info = ExtensionPermissionsInfo::GetInstance();
-  ExtensionAPIPermissionSet api_perms = info->GetAll();
-  for (ExtensionAPIPermissionSet::iterator i = api_perms.begin();
-       i != api_perms.end(); ++i) {
-    if (*i == ExtensionAPIPermission::kExperimental)
-      continue;
-
-    ExtensionAPIPermission* permission = info->GetByID(*i);
-    const char* name = permission->name();
-    StringValue* p = new StringValue(name);
-    permissions->Clear();
-    permissions->Append(p);
-    Extension::Location location = Extension::INTERNAL;
-
-    // Many permissions are not available to hosted apps.
-    if (!permission->is_hosted_app() || permission->is_component_only()) {
-      LoadAndExpectError(Manifest(manifest.get(), name),
-                         errors::kPermissionNotAllowed);
-
-      // ... unless the hosted app is a component app.
-      location = Extension::COMPONENT;
-    }
-
-    LoadAndExpectSuccess(Manifest(manifest.get(), name), location);
-  }
-}
-
-TEST_F(ExtensionManifestTest, ComponentOnlyPermission) {
-  std::string error;
-  scoped_ptr<DictionaryValue> manifest(
-      LoadManifestFile("init_valid_minimal.json", &error));
-  ASSERT_TRUE(manifest.get());
-  ListValue* permissions = new ListValue();
-  manifest->Set("permissions", permissions);
-
-  ExtensionPermissionsInfo* info = ExtensionPermissionsInfo::GetInstance();
-  ExtensionAPIPermissionSet api_perms = info->GetAll();
-  for (ExtensionAPIPermissionSet::iterator i = api_perms.begin();
-       i != api_perms.end(); ++i) {
-    if (*i == ExtensionAPIPermission::kExperimental)
-      continue;
-
-    ExtensionAPIPermission* permission = info->GetByID(*i);
-    const char* name = permission->name();
-    StringValue* p = new StringValue(name);
-    permissions->Clear();
-    permissions->Append(p);
-
-    if (!permission->is_component_only())
-      continue;
-
-    // Component-only extensions should only be enabled for component
-    // extensions.
-    LoadAndExpectError(Manifest(manifest.get(), name),
-                       errors::kPermissionNotAllowed);
-    LoadAndExpectSuccess(Manifest(manifest.get(), name),
-                         Extension::COMPONENT);
-  }
-}
-
 TEST_F(ExtensionManifestTest, AllowUnrecognizedPermissions) {
   std::string error;
   scoped_ptr<DictionaryValue> manifest(
       LoadManifestFile("valid_app.json", &error));
-  ListValue* permissions = NULL;
-  ASSERT_TRUE(manifest->GetList("permissions", &permissions));
-  permissions->Append(new StringValue("not-a-valid-permission"));
-  LoadAndExpectSuccess(Manifest(manifest.get(), ""));
+  ASSERT_TRUE(manifest.get());
+  CommandLine old_command_line = *CommandLine::ForCurrentProcess();
+
+  ListValue *permissions = new ListValue();
+  manifest->Set(keys::kPermissions, permissions);
+  ExtensionPermissionsInfo* info = ExtensionPermissionsInfo::GetInstance();
+  ExtensionAPIPermissionSet api_perms = info->GetAll();
+  for (ExtensionAPIPermissionSet::iterator i = api_perms.begin();
+       i != api_perms.end(); ++i) {
+    ExtensionAPIPermission* permission = info->GetByID(*i);
+    const char* name = permission->name();
+    StringValue* p = new StringValue(name);
+    permissions->Clear();
+    permissions->Append(p);
+    std::string message_name = base::StringPrintf("permission-%s", name);
+
+    if (*i == ExtensionAPIPermission::kExperimental) {
+      // Experimental permission is allowed, but requires this switch.
+      CommandLine::ForCurrentProcess()->AppendSwitch(
+          switches::kEnableExperimentalExtensionApis);
+    }
+
+    // Extensions are allowed to contain unrecognized API permissions,
+    // so there shouldn't be any errors.
+    scoped_refptr<Extension> extension;
+    extension = LoadAndExpectSuccess(
+        Manifest(manifest.get(), message_name.c_str()));
+  }
+  *CommandLine::ForCurrentProcess() = old_command_line;
 }
 
 TEST_F(ExtensionManifestTest, NormalizeIconPaths) {

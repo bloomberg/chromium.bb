@@ -270,7 +270,6 @@ namespace extension_manifest_errors {
   extern const char* kMissingFile;
   extern const char* kMultipleOverrides;
   extern const char* kNoWildCardsInPaths;
-  extern const char* kPermissionNotAllowed;
   extern const char* kOneUISurfaceOnly;
   extern const char* kReservedMessageFound;
   extern const char* kSidebarExperimental;
