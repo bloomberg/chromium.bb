@@ -139,7 +139,6 @@ class ProfileImplIOData : public ProfileIOData {
 
   mutable scoped_ptr<net::HttpTransactionFactory> main_http_factory_;
   mutable scoped_ptr<net::HttpTransactionFactory> media_http_factory_;
-  mutable scoped_ptr<net::FtpTransactionFactory> ftp_factory_;
 
   mutable scoped_ptr<chrome_browser_net::Predictor> predictor_;
   mutable scoped_ptr<chrome_browser_net::HttpServerPropertiesManager>
