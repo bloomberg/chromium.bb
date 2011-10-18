@@ -81,10 +81,10 @@ void TranslateInfoBarBase::UpdateLanguageButtonText(
     LanguagesMenuModel::LanguageType language_type) {
   DCHECK(button);
   TranslateInfoBarDelegate* delegate = GetDelegate();
-  button->SetText(UTF16ToWideHack(delegate->GetLanguageDisplayableNameAt(
-      (language_type == LanguagesMenuModel::ORIGINAL) ?
-          delegate->original_language_index() :
-          delegate->target_language_index())));
+  bool is_original = language_type == LanguagesMenuModel::ORIGINAL;
+  int index = is_original ? delegate->original_language_index()
+                          : delegate->target_language_index();
+  button->SetText(delegate->GetLanguageDisplayableNameAt(index));
   // The button may have to grow to show the new text.
   Layout();
   SchedulePaint();

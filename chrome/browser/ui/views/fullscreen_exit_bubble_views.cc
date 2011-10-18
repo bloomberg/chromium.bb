@@ -170,7 +170,7 @@ void FullscreenExitBubbleViews::FullscreenExitView::UpdateContent(
     link_.SetVisible(false);
     instruction_label_.SetVisible(false);
     accept_button_->SetVisible(true);
-    deny_button_->SetText(UTF16ToWideHack(bubble_->GetCurrentDenyButtonText()));
+    deny_button_->SetText(bubble_->GetCurrentDenyButtonText());
     deny_button_->SetVisible(true);
     deny_button_->ClearMaxTextSize();
   } else {

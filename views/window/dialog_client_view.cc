@@ -47,7 +47,7 @@ void UpdateButtonHelper(NativeTextButton* button_view,
                         MessageBoxFlags::DialogButton button) {
   string16 label = delegate->GetDialogButtonLabel(button);
   if (!label.empty())
-    button_view->SetText(UTF16ToWideHack(label));
+    button_view->SetText(label);
   button_view->SetEnabled(delegate->IsDialogButtonEnabled(button));
   button_view->SetVisible(delegate->IsDialogButtonVisible(button));
 }

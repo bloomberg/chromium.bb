@@ -264,8 +264,7 @@ void TextButtonNativeThemeBorder::GetInsets(gfx::Insets* insets) const {
 ////////////////////////////////////////////////////////////////////////////////
 // TextButtonBase, public:
 
-TextButtonBase::TextButtonBase(ButtonListener* listener,
-                               const std::wstring& text)
+TextButtonBase::TextButtonBase(ButtonListener* listener, const string16& text)
     : CustomButton(listener),
       alignment_(ALIGN_LEFT),
       font_(ResourceBundle::GetSharedInstance().GetFont(
@@ -304,9 +303,9 @@ void TextButtonBase::SetIsDefault(bool is_default) {
   SchedulePaint();
 }
 
-void TextButtonBase::SetText(const std::wstring& text) {
-  text_ = WideToUTF16Hack(text);
-  SetAccessibleName(WideToUTF16Hack(text));
+void TextButtonBase::SetText(const string16& text) {
+  text_ = text;
+  SetAccessibleName(text);
   UpdateTextSize();
 }
 
@@ -653,7 +652,7 @@ gfx::NativeTheme::State TextButtonBase::GetForegroundThemeState(
 
 TextButton::TextButton(ButtonListener* listener,
                        const std::wstring& text)
-    : TextButtonBase(listener, text),
+    : TextButtonBase(listener, WideToUTF16Hack(text)),
       icon_placement_(ICON_ON_LEFT),
       has_hover_icon_(false),
       has_pushed_icon_(false),

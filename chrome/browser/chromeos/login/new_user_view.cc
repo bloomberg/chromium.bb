@@ -298,8 +298,7 @@ void NewUserView::UpdateLocalizedStringsAndFonts() {
   SetAndCorrectTextfieldFont(password_field_, base_font);
   password_field_->set_text_to_display_when_empty(
       l10n_util::GetStringUTF16(IDS_LOGIN_PASSWORD));
-  sign_in_button_->SetText(UTF16ToWide(
-      l10n_util::GetStringUTF16(IDS_LOGIN_BUTTON)));
+  sign_in_button_->SetText(l10n_util::GetStringUTF16(IDS_LOGIN_BUTTON));
   if (need_guest_link_) {
     guest_link_->SetFont(base_font);
     guest_link_->SetText(
@@ -311,8 +310,7 @@ void NewUserView::UpdateLocalizedStringsAndFonts() {
         l10n_util::GetStringUTF16(IDS_CREATE_ACCOUNT_BUTTON));
   }
   delegate_->ClearErrors();
-  languages_menubutton_->SetText(
-      UTF16ToWide(language_switch_menu_.GetCurrentLocaleName()));
+  languages_menubutton_->SetText(language_switch_menu_.GetCurrentLocaleName());
 }
 
 void NewUserView::OnLocaleChanged() {
