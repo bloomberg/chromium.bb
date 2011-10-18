@@ -39,7 +39,8 @@ class CrosMountPointProvider
       const GURL& origin_url,
       fileapi::FileSystemType type,
       bool create,
-      fileapi::FileSystemPathManager::GetRootPathCallback* callback) OVERRIDE;
+      const fileapi::FileSystemPathManager::GetRootPathCallback& callback)
+          OVERRIDE;
   virtual FilePath ValidateFileSystemRootAndGetPathOnFileThread(
       const GURL& origin_url,
       fileapi::FileSystemType type,

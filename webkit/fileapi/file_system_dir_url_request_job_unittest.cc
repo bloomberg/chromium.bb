@@ -16,6 +16,7 @@
 
 #include "base/file_path.h"
 #include "base/format_macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/platform_file.h"
 #include "base/scoped_temp_dir.h"
@@ -48,10 +49,10 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
  protected:
   FileSystemDirURLRequestJobTest()
     : message_loop_(MessageLoop::TYPE_IO),  // simulate an IO thread
-      ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   }
 
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     file_thread_proxy_ = base::MessageLoopProxy::current();
@@ -69,15 +70,15 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
 
     file_system_context_->path_manager()->ValidateFileSystemRootAndGetURL(
         GURL("http://remote/"), kFileSystemTypeTemporary, true,  // create
-        callback_factory_.NewCallback(
-            &FileSystemDirURLRequestJobTest::OnGetRootPath));
+        base::Bind(&FileSystemDirURLRequestJobTest::OnGetRootPath,
+                   weak_factory_.GetWeakPtr()));
     MessageLoop::current()->RunAllPending();
 
     net::URLRequest::Deprecated::RegisterProtocolFactory(
         "filesystem", &FileSystemDirURLRequestJobFactory);
   }
 
-  virtual void TearDown() {
+  virtual void TearDown() OVERRIDE {
     // NOTE: order matters, request must die before delegate
     request_.reset(NULL);
     delegate_.reset(NULL);
@@ -216,7 +217,7 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
   scoped_ptr<TestDelegate> delegate_;
   scoped_refptr<quota::MockSpecialStoragePolicy> special_storage_policy_;
   scoped_refptr<FileSystemContext> file_system_context_;
-  base::ScopedCallbackFactory<FileSystemDirURLRequestJobTest> callback_factory_;
+  base::WeakPtrFactory<FileSystemDirURLRequestJobTest> weak_factory_;
 
   static net::URLRequestJob* job_;
 };

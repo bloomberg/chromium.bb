@@ -4,6 +4,8 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browsing_data_file_system_helper.h"
 #include "chrome/test/base/testing_profile.h"
@@ -87,8 +89,10 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
   bool FileSystemContainsOriginAndType(const GURL& origin,
                                        fileapi::FileSystemType type) {
     sandbox_->ValidateFileSystemRootAndGetURL(
-        origin, type, false, NewCallback(this,
-            &BrowsingDataFileSystemHelperTest::CallbackFindFileSystemPath));
+        origin, type, false,
+        base::Bind(
+            &BrowsingDataFileSystemHelperTest::CallbackFindFileSystemPath,
+            base::Unretained(this)));
     BlockUntilNotified();
     return found_file_system_;
   }

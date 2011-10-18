@@ -84,15 +84,14 @@ void CrosMountPointProvider::ValidateFileSystemRootAndGetURL(
     const GURL& origin_url,
     fileapi::FileSystemType type,
     bool create,
-    fileapi::FileSystemPathManager::GetRootPathCallback* callback) {
+    const fileapi::FileSystemPathManager::GetRootPathCallback& callback) {
   DCHECK(type == fileapi::kFileSystemTypeExternal);
   std::string name(GetOriginIdentifierFromURL(origin_url));
   name += ':';
   name += fileapi::kExternalName;
   FilePath root_path;
   root_path = FilePath(fileapi::kExternalDir);
-  callback->Run(true, root_path, name);
-  delete callback;
+  callback.Run(true, root_path, name);
 }
 
 FilePath CrosMountPointProvider::ValidateFileSystemRootAndGetPathOnFileThread(

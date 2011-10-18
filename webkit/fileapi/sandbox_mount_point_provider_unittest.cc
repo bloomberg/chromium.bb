@@ -8,10 +8,11 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_callback_factory.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
@@ -133,7 +134,7 @@ const MigrationTestCaseRecord kMigrationTestRecords[] = {
 class SandboxMountPointProviderMigrationTest : public testing::Test {
  public:
   SandboxMountPointProviderMigrationTest() :
-      ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   }
 
   void SetUp() {
@@ -171,9 +172,9 @@ class SandboxMountPointProviderMigrationTest : public testing::Test {
     EXPECT_FALSE(success);  // We told it not to create.
   }
 
-  FileSystemPathManager::GetRootPathCallback* GetRootPathCallback() {
-    return callback_factory_.NewCallback(
-        &SandboxMountPointProviderMigrationTest::OnGetRootPath);
+  FileSystemPathManager::GetRootPathCallback GetRootPathCallback() {
+    return base::Bind(&SandboxMountPointProviderMigrationTest::OnGetRootPath,
+                      weak_factory_.GetWeakPtr());
   }
 
   void EnsureFileExists(const FilePath& path) {
@@ -286,16 +287,14 @@ class SandboxMountPointProviderMigrationTest : public testing::Test {
     std::set<GURL> origins;
     std::string host = "the host with the most";
     int64 delta = 0;
-    scoped_ptr<FileSystemPathManager::GetRootPathCallback> callback;
 
     // We want to make sure that all the public methods of
     // SandboxMountPointProvider which might access the filesystem will cause a
     // migration if one is needed.
     switch (method) {
     case 0:
-      callback.reset(GetRootPathCallback());
       sandbox_provider()->ValidateFileSystemRootAndGetURL(
-          origin_url, type, create, callback.release());
+          origin_url, type, create, GetRootPathCallback());
       MessageLoop::current()->RunAllPending();
       break;
     case 1:
@@ -360,8 +359,7 @@ class SandboxMountPointProviderMigrationTest : public testing::Test {
   ScopedTempDir data_dir_;
   FileSystemPathManager* path_manager_;
   scoped_refptr<FileSystemContext> file_system_context_;
-  base::ScopedCallbackFactory<SandboxMountPointProviderMigrationTest>
-      callback_factory_;
+  base::WeakPtrFactory<SandboxMountPointProviderMigrationTest> weak_factory_;
 };
 
 TEST_F(SandboxMountPointProviderMigrationTest, TestMigrateViaMethod0) {
