@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/string_piece.h"
@@ -161,7 +162,12 @@ std::string ResourceBundle::LoadLocaleResources(
     return std::string();
   }
   locale_resources_data_.reset(LoadResourcesDataPak(locale_file_path));
-  CHECK(locale_resources_data_.get()) << "failed to load locale.pak";
+  if (!locale_resources_data_.get()) {
+    UMA_HISTOGRAM_ENUMERATION("ResourceBundle.LoadLocaleResourcesError",
+                              logging::GetLastSystemErrorCode(), 16000);
+    NOTREACHED() << "failed to load locale.pak";
+    return std::string();
+  }
   return app_locale;
 }
 

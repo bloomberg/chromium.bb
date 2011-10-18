@@ -51,6 +51,8 @@ enum LoadErrors {
   BAD_VERSION,
   INDEX_TRUNCATED,
   ENTRY_NOT_FOUND,
+  HEADER_TRUNCATED,
+  WRONG_ENCODING,
 
   LOAD_ERRORS_COUNT,
 };
@@ -78,6 +80,8 @@ bool DataPack::Load(const FilePath& path) {
   // Sanity check the header of the file.
   if (kHeaderLength > mmap_->length()) {
     DLOG(ERROR) << "Data pack file corruption: incomplete file header.";
+    UMA_HISTOGRAM_ENUMERATION("DataPack.Load", HEADER_TRUNCATED,
+                              LOAD_ERRORS_COUNT);
     mmap_.reset();
     return false;
   }
@@ -103,6 +107,8 @@ bool DataPack::Load(const FilePath& path) {
       text_encoding_type_ != BINARY) {
     LOG(ERROR) << "Bad data pack text encoding: got " << text_encoding_type_
                << ", expected between " << BINARY << " and " << UTF16;
+    UMA_HISTOGRAM_ENUMERATION("DataPack.Load", WRONG_ENCODING,
+                              LOAD_ERRORS_COUNT);
     mmap_.reset();
     return false;
   }
