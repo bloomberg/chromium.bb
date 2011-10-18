@@ -1046,22 +1046,20 @@ void TaskManager::OpenAboutMemory() {
     browser = Browser::Create(profile);
     browser->OpenURL(GURL(chrome::kChromeUIMemoryURL), GURL(),
                      NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK);
-    browser->window()->Show();
   } else {
     browser->OpenURL(GURL(chrome::kChromeUIMemoryURL), GURL(),
                      NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK);
 
-    // In case the browser window is minimzed, show it. If |browser| is a
+    // In case the browser window is minimized, show it. If |browser| is a
     // non-tabbed window, the call to OpenURL above will have opened a
-    // TabContents in a tabbed browser, so we need to grab it with GetLastActive
-    // before the call to show().
+    // TabContents in a tabbed browser, so we need to grab it with
+    // GetLastActive before the call to show().
     if (!browser->is_type_tabbed()) {
       browser = BrowserList::GetLastActive();
       DCHECK(browser);
     }
-
-    browser->window()->Show();
   }
+  browser->window()->Show();
 }
 
 bool TaskManagerModel::GetAndCacheMemoryMetrics(
