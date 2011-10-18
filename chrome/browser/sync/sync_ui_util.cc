@@ -23,6 +23,7 @@
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -187,8 +188,17 @@ MessageType GetStatusInfo(ProfileSyncService* service,
     ProfileSyncService::Status status(service->QueryDetailedSyncStatus());
     const AuthError& auth_error = service->GetAuthError();
 
-    // The order or priority is going to be: 1. Auth errors. 2. Protocol errors.
-    // 3. Passphrase errors.
+    // The order or priority is going to be: 1. Unrecoverable errors.
+    // 2. Auth errors. 3. Protocol errors. 4. Passphrase errors.
+
+    if (service->unrecoverable_error_detected()) {
+      if (status_label) {
+        status_label->assign(l10n_util::GetStringFUTF16(
+            IDS_SYNC_STATUS_UNRECOVERABLE_ERROR,
+            l10n_util::GetStringUTF16(IDS_SYNC_UNRECOVERABLE_ERROR_HELP_URL)));
+      }
+      return SYNC_ERROR;
+    }
 
     // For auth errors first check if an auth is in progress.
     if (service->UIShouldDepictAuthInProgress()) {
@@ -383,11 +393,19 @@ MessageType GetStatus(ProfileSyncService* service) {
 }
 
 bool ShouldShowSyncErrorButton(ProfileSyncService* service) {
-  return service &&
-         ((!service->IsManaged() &&
-           service->HasSyncSetupCompleted()) &&
-         (GetStatus(service) == sync_ui_util::SYNC_ERROR ||
-          service->IsPassphraseRequired()));
+  if (!service)
+    return false;
+
+  if (service->IsManaged() || !service->HasSyncSetupCompleted())
+    return false;
+
+  // Don't display error button for unrecoverable errors; they are not
+  // actionable.
+  if (service->unrecoverable_error_detected())
+    return false;
+
+  return GetStatus(service) == sync_ui_util::SYNC_ERROR ||
+      service->IsPassphraseRequired();
 }
 
 string16 GetSyncMenuLabel(ProfileSyncService* service) {

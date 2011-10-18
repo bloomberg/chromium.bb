@@ -10033,6 +10033,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
         setup failed due to an unrecoverable error and can't continue.">
         Oops, Sync has stopped working.
       </message>
+      <message name="IDS_SYNC_STATUS_UNRECOVERABLE_ERROR" desc="Message shown on the personal options page when there is an unrecoverable error.">
+        Oops, Sync has stopped working. <ph name="BEGIN_LINK">&lt;a href="$1" target="_blank"&gt;</ph>Learn More<ph name="END_LINK">&lt;/a&gt;</ph>
+      </message>
       <message name="IDS_SYNC_CONFIGURE_ENCRYPTION" desc="Link to configure sync encryption for passwords">
         Please update your sync passphrase.
       </message>
