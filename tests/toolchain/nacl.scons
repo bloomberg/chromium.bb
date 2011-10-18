@@ -41,9 +41,14 @@ TESTS_TO_RUN = [
      ('llvm_math_intrinsics.c', '0', True, env.Bit('bitcode')),
      # NOTE: this test uses bitcode asm's
      ('llvm_bitmanip_intrinsics.c', '0', True, env.Bit('bitcode')),
-     # NOTE: this currently only works for PNaCl, c.f:
+
+     # NOTE: Statically, this currently only works for PNaCl, c.f:
      # http://code.google.com/p/nativeclient/issues/detail?id=968
-     ('initfini.c', '0', True, env.Bit('bitcode')),
+     # This works on X86-32 glibc but not X86-64.
+     # http://code.google.com/p/nativeclient/issues/detail?id=1096
+     ('initfini.c', '0', True,
+         (env.Bit('nacl_glibc') and env.Bit('target_x86_32')) or
+         (env.Bit('bitcode') and not env.Bit('nacl_glibc')))
 ]
 
 for src, exit_status, golden_file, cond in TESTS_TO_RUN:
