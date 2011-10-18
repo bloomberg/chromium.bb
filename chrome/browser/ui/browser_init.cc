@@ -534,7 +534,7 @@ void RegisterComponentsForUpdate() {
   // Registration can be before of after cus->Start() so it is ok to post
   // a task to the UI thread to do registration once you done the necessary
   // file IO to know you existing component version.
-  RegisterRecoveryComponent(cus, chrome::VersionInfo().Version().c_str());
+  RegisterRecoveryComponent(cus, g_browser_process->local_state());
   RegisterPepperFlashComponent(cus);
   RegisterNPAPIFlashComponent(cus);
 

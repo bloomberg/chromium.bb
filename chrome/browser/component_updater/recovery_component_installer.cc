@@ -4,6 +4,7 @@
 
 #include "chrome/browser/component_updater/recovery_component_installer.h"
 
+#include "base/bind.h"
 #include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -15,7 +16,9 @@
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
 
 namespace {
@@ -40,7 +43,8 @@ const char kRecoveryManifestName[] = "ChromeRecovery";
 
 class RecoveryComponentInstaller : public ComponentInstaller {
  public:
-  explicit RecoveryComponentInstaller(const Version& version);
+  explicit RecoveryComponentInstaller(const Version& version,
+                                      PrefService* prefs);
 
   virtual ~RecoveryComponentInstaller() {}
 
@@ -51,10 +55,36 @@ class RecoveryComponentInstaller : public ComponentInstaller {
 
  private:
   Version current_version_;
+  PrefService* prefs_;
 };
 
+void RecoveryRegisterHelper(ComponentUpdateService* cus, PrefService* prefs) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  prefs->RegisterStringPref(prefs::kRecoveryComponentVersion, "0.0.0.0");
+  Version version(prefs->GetString(prefs::kRecoveryComponentVersion));
+  if (!version.IsValid()) {
+    NOTREACHED();
+    return;
+  }
+
+  CrxComponent recovery;
+  recovery.name = "recovery";
+  recovery.installer = new RecoveryComponentInstaller(version, prefs);
+  recovery.version = version;
+  recovery.pk_hash.assign(sha2_hash, &sha2_hash[sizeof(sha2_hash)]);
+  if (cus->RegisterComponent(recovery) != ComponentUpdateService::kOk) {
+    NOTREACHED() << "Recovery component registration failed.";
+  }
+}
+
+void RecoveryUpdateVersionHelper(const Version& version, PrefService* prefs) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  prefs->SetString(prefs::kRecoveryComponentVersion, version.GetString());
+}
+
 RecoveryComponentInstaller::RecoveryComponentInstaller(
-    const Version& version) : current_version_(version) {
+      const Version& version, PrefService* prefs)
+    : current_version_(version), prefs_(prefs){
   DCHECK(version.IsValid());
 }
 
@@ -90,26 +120,19 @@ bool RecoveryComponentInstaller::Install(base::DictionaryValue* manifest,
       cmdline.AppendSwitchASCII("version", current_version_.GetString());
   }
   current_version_ = version;
+  if (prefs_) {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+        base::Bind(&RecoveryUpdateVersionHelper, version, prefs_));
+  }
   return base::LaunchProcess(cmdline, base::LaunchOptions(), NULL);
 }
 
 void RegisterRecoveryComponent(ComponentUpdateService* cus,
-                               const char* chrome_version) {
+                               PrefService* prefs) {
 #if !defined(OS_CHROMEOS)
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  CrxComponent recovery;
-  recovery.name = "recovery";
-  Version version(chrome_version);
-  if (!version.IsValid()) {
-    NOTREACHED() << "Need valid chrome version.";
-    return;
-  }
-
-  recovery.installer = new RecoveryComponentInstaller(version);
-  recovery.version = version;
-  recovery.pk_hash.assign(sha2_hash, &sha2_hash[sizeof(sha2_hash)]);
-  if (cus->RegisterComponent(recovery) != ComponentUpdateService::kOk) {
-    NOTREACHED() << "Recovery component registration failed.";
-  }
+  // We delay execute the registration because we are not required in
+  // the critical path during browser startup.
+  BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE,
+      base::Bind(&RecoveryRegisterHelper, cus, prefs), 6000);
 #endif
 }
