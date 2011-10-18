@@ -30,7 +30,7 @@ bool WebPageScreen::IsPopup(TabContents* source) {
 
 bool WebPageScreen::ShouldAddNavigationToHistory(
     const history::HistoryAddPageArgs& add_page_args,
-    NavigationType::Type navigation_type) {
+    content::NavigationType navigation_type) {
   return false;
 }
 

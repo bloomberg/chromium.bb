@@ -281,7 +281,7 @@ void TranslateManager::Observe(int type,
         return;
       }
       if (entry->transition_type() != content::PAGE_TRANSITION_RELOAD &&
-          load_details->type != NavigationType::SAME_PAGE) {
+          load_details->type != content::NAVIGATION_TYPE_SAME_PAGE) {
         return;
       }
       // When doing a page reload, we don't get a TAB_LANGUAGE_DETERMINED

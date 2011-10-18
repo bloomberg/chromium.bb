@@ -111,7 +111,7 @@ class PrintPreviewTabController
   NotificationRegistrar registrar_;
 
   // True if the controller is waiting for a new preview tab via
-  // NavigationType::NEW_PAGE.
+  // content::NAVIGATION_TYPE_NEW_PAGE.
   bool waiting_for_new_preview_page_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewTabController);

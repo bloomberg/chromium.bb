@@ -9,7 +9,6 @@
 
 #include "base/string16.h"
 #include "chrome/common/content_settings.h"
-#include "content/common/navigation_types.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
 #include "net/base/cert_status_flags.h"
@@ -29,6 +28,7 @@
 //       remain the same.  This means that you should not change the line number
 //       of any of the messages below.  This will be fixed once Xcode supports
 //       __COUNTER__, in which case we can get rid of the __LINE__.
+
 
 
 #define IPC_MESSAGE_START AutomationMsgStart

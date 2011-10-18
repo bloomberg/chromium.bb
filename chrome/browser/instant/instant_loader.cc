@@ -221,7 +221,7 @@ class InstantLoader::TabContentsDelegateImpl
   virtual bool OnGoToEntryOffset(int offset) OVERRIDE;
   virtual bool ShouldAddNavigationToHistory(
       const history::HistoryAddPageArgs& add_page_args,
-      NavigationType::Type navigation_type) OVERRIDE;
+      content::NavigationType navigation_type) OVERRIDE;
 
   // TabContentsWrapperDelegate:
   virtual void SwapTabContents(TabContentsWrapper* old_tc,
@@ -490,9 +490,11 @@ bool InstantLoader::TabContentsDelegateImpl::OnGoToEntryOffset(int offset) {
 
 bool InstantLoader::TabContentsDelegateImpl::ShouldAddNavigationToHistory(
     const history::HistoryAddPageArgs& add_page_args,
-    NavigationType::Type navigation_type) {
-  if (waiting_for_new_page_ && navigation_type == NavigationType::NEW_PAGE)
+    content::NavigationType navigation_type) {
+  if (waiting_for_new_page_ &&
+      navigation_type == content::NAVIGATION_TYPE_NEW_PAGE) {
     waiting_for_new_page_ = false;
+  }
 
   if (!waiting_for_new_page_) {
     add_page_vector_.push_back(

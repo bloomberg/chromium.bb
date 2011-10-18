@@ -3776,7 +3776,7 @@ void Browser::ShowCollectedCookiesDialog(TabContentsWrapper* wrapper) {
 
 bool Browser::ShouldAddNavigationToHistory(
     const history::HistoryAddPageArgs& add_page_args,
-    NavigationType::Type navigation_type) {
+    content::NavigationType navigation_type) {
   // Don't update history if running as app.
   return !IsApplication();
 }

@@ -26,7 +26,7 @@ void LanguageState::DidNavigate(
 
   bool reload =
       details.entry->transition_type() == content::PAGE_TRANSITION_RELOAD ||
-      details.type == NavigationType::SAME_PAGE;
+      details.type == content::NAVIGATION_TYPE_SAME_PAGE;
   if (reload) {
     // We might not get a LanguageDetermined notifications on reloads. Make sure
     // to keep the original language and to set current_lang_ so

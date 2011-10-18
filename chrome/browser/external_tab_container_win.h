@@ -21,7 +21,7 @@
 #include "chrome/browser/ui/views/unhandled_keyboard_event_handler.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
-#include "content/common/navigation_types.h"
+#include "content/public/browser/navigation_types.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "views/accelerator.h"
@@ -243,7 +243,7 @@ class ExternalTabContainer : public TabContentsDelegate,
   virtual void OnFinalMessage(HWND window);
 
   bool InitNavigationInfo(NavigationInfo* nav_info,
-                          NavigationType::Type nav_type,
+                          content::NavigationType nav_type,
                           int relative_offset);
   void Navigate(const GURL& url, const GURL& referrer);
 
