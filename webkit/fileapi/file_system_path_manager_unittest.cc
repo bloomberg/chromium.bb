@@ -8,11 +8,10 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_callback_factory.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/scoped_temp_dir.h"
@@ -211,7 +210,7 @@ FilePath UTF8ToFilePath(const std::string& str) {
 class FileSystemPathManagerTest : public testing::Test {
  public:
   FileSystemPathManagerTest()
-      : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      : callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   }
 
   void SetUp() {
@@ -253,10 +252,9 @@ class FileSystemPathManagerTest : public testing::Test {
                    fileapi::FileSystemType type,
                    bool create,
                    FilePath* root_path) {
-    manager->ValidateFileSystemRootAndGetURL(
-        origin_url, type, create,
-        base::Bind(&FileSystemPathManagerTest::OnGetRootPath,
-                   weak_factory_.GetWeakPtr()));
+    manager->ValidateFileSystemRootAndGetURL(origin_url, type, create,
+        callback_factory_.NewCallback(
+            &FileSystemPathManagerTest::OnGetRootPath));
     MessageLoop::current()->RunAllPending();
     if (root_path)
       *root_path = root_path_;
@@ -277,7 +275,7 @@ class FileSystemPathManagerTest : public testing::Test {
 
  private:
   ScopedTempDir data_dir_;
-  base::WeakPtrFactory<FileSystemPathManagerTest> weak_factory_;
+  base::ScopedCallbackFactory<FileSystemPathManagerTest> callback_factory_;
 
   bool root_path_callback_status_;
   FilePath root_path_;

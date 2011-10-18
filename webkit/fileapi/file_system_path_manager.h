@@ -6,7 +6,7 @@
 #define WEBKIT_FILEAPI_FILE_SYSTEM_PATH_MANAGER_H_
 #pragma once
 
-#include "base/callback.h"
+#include "base/callback_old.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "webkit/fileapi/file_system_types.h"
@@ -40,10 +40,9 @@ class FileSystemPathManager {
   // If the request is accepted, |create| is specified for
   // GetFileSystemRootPath, and the root directory does not exist, it creates
   // a new one and calls back with success=true if the creation has succeeded.
-  typedef base::Callback<void(bool /* success */,
-                              const FilePath& /* root_path */,
-                              const std::string& /* name */)>
-      GetRootPathCallback;
+  typedef Callback3<bool /* success */,
+                    const FilePath& /* root_path */,
+                    const std::string& /* name */>::Type GetRootPathCallback;
 
   // Retrieves the root path for the given |origin_url| and |type|, and
   // calls the given |callback| with the root path and name.
@@ -52,7 +51,7 @@ class FileSystemPathManager {
      const GURL& origin_url,
      FileSystemType type,
      bool create,
-     const FileSystemPathManager::GetRootPathCallback& callback);
+     FileSystemPathManager::GetRootPathCallback* callback);
 
   // Like GetFileSystemRootPath, but synchronous, and can be called only while
   // running on the file thread.

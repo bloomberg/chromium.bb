@@ -56,26 +56,27 @@ FileSystemPathManager::FileSystemPathManager(
 FileSystemPathManager::~FileSystemPathManager() {}
 
 void FileSystemPathManager::ValidateFileSystemRootAndGetURL(
-    const GURL& origin_url, fileapi::FileSystemType type, bool create,
-    const GetRootPathCallback& callback) {
+    const GURL& origin_url, fileapi::FileSystemType type,
+    bool create, GetRootPathCallback* callback_ptr) {
+  scoped_ptr<GetRootPathCallback> callback(callback_ptr);
   switch (type) {
-    case kFileSystemTypeTemporary:
-    case kFileSystemTypePersistent:
-      sandbox_provider_->ValidateFileSystemRootAndGetURL(
-          origin_url, type, create, callback);
-      break;
-    case kFileSystemTypeExternal:
-      if (external_provider_.get()) {
-        external_provider_->ValidateFileSystemRootAndGetURL(
-            origin_url, type, create, callback);
-      } else {
-        callback.Run(false, FilePath(), std::string());
-      }
-      break;
-    case kFileSystemTypeUnknown:
-    default:
-      NOTREACHED();
-      callback.Run(false, FilePath(), std::string());
+  case kFileSystemTypeTemporary:
+  case kFileSystemTypePersistent:
+    sandbox_provider_->ValidateFileSystemRootAndGetURL(
+        origin_url, type, create, callback.release());
+    break;
+  case kFileSystemTypeExternal:
+    if (external_provider_.get()) {
+      external_provider_->ValidateFileSystemRootAndGetURL(
+          origin_url, type, create, callback.release());
+    } else {
+      callback->Run(false, FilePath(), std::string());
+    }
+    break;
+  case kFileSystemTypeUnknown:
+  default:
+    NOTREACHED();
+    callback->Run(false, FilePath(), std::string());
   }
 }
 

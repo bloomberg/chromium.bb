@@ -241,6 +241,7 @@ class FileSystemOperation {
 
   FileSystemOperationContext file_system_operation_context_;
 
+  base::ScopedCallbackFactory<FileSystemOperation> callback_factory_;
   base::WeakPtrFactory<FileSystemOperation> weak_factory_;
 
   scoped_ptr<ScopedQuotaUtilHelper> quota_util_helper_;

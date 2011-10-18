@@ -66,7 +66,7 @@ class SandboxMountPointProvider
       const GURL& origin_url,
       FileSystemType type,
       bool create,
-      const FileSystemPathManager::GetRootPathCallback& callback);
+      FileSystemPathManager::GetRootPathCallback* callback);
 
   // Like GetFileSystemRootPath, but synchronous, and can be called only while
   // running on the file thread.

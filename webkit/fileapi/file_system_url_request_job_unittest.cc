@@ -14,11 +14,10 @@
 
 #include <string>
 
-#include "base/bind.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/format_macros.h"
-#include "base/memory/weak_ptr.h"
+#include "base/memory/scoped_callback_factory.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
@@ -69,7 +68,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
  protected:
   FileSystemURLRequestJobTest()
     : message_loop_(MessageLoop::TYPE_IO),  // simulate an IO thread
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)) {
   }
 
   virtual void SetUp() {
@@ -90,8 +89,8 @@ class FileSystemURLRequestJobTest : public testing::Test {
 
     file_system_context_->path_manager()->ValidateFileSystemRootAndGetURL(
         GURL("http://remote/"), kFileSystemTypeTemporary, true,  // create
-        base::Bind(&FileSystemURLRequestJobTest::OnGetRootPath,
-                   weak_factory_.GetWeakPtr()));
+        callback_factory_.NewCallback(
+            &FileSystemURLRequestJobTest::OnGetRootPath));
     MessageLoop::current()->RunAllPending();
 
     net::URLRequest::Deprecated::RegisterProtocolFactory(
@@ -203,7 +202,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
   FilePath origin_root_path_;
   scoped_refptr<quota::MockSpecialStoragePolicy> special_storage_policy_;
   scoped_refptr<FileSystemContext> file_system_context_;
-  base::WeakPtrFactory<FileSystemURLRequestJobTest> weak_factory_;
+  base::ScopedCallbackFactory<FileSystemURLRequestJobTest> callback_factory_;
 
   // NOTE: order matters, request must die before delegate
   scoped_ptr<TestDelegate> delegate_;

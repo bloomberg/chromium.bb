@@ -306,7 +306,7 @@ class SandboxMountPointProvider::GetFileSystemRootPathTask
       FileSystemType type,
       ObfuscatedFileUtil* file_util,
       const FilePath& old_base_path,
-      const FileSystemPathManager::GetRootPathCallback& callback)
+      FileSystemPathManager::GetRootPathCallback* callback)
       : file_message_loop_(file_message_loop),
         origin_message_loop_proxy_(
             base::MessageLoopProxy::current()),
@@ -350,8 +350,8 @@ class SandboxMountPointProvider::GetFileSystemRootPathTask
         FileSystemPathManager::GetFileSystemTypeString(type_);
     DCHECK(!type_string.empty());
     std::string name = origin_identifier + ":" + type_string;
-    callback_.Run(!root_path.empty(), root_path, name);
-    callback_.Reset();
+    callback_->Run(!root_path.empty(), root_path, name);
+    callback_.reset();
   }
 
   scoped_refptr<base::MessageLoopProxy> file_message_loop_;
@@ -360,7 +360,7 @@ class SandboxMountPointProvider::GetFileSystemRootPathTask
   FileSystemType type_;
   scoped_refptr<ObfuscatedFileUtil> file_util_;
   FilePath old_base_path_;
-  FileSystemPathManager::GetRootPathCallback callback_;
+  scoped_ptr<FileSystemPathManager::GetRootPathCallback> callback_;
 };
 
 FilePath SandboxMountPointProvider::old_base_path() const {
@@ -413,25 +413,29 @@ SandboxMountPointProvider::CreateOriginEnumerator() const {
 }
 
 void SandboxMountPointProvider::ValidateFileSystemRootAndGetURL(
-    const GURL& origin_url, fileapi::FileSystemType type, bool create,
-    const FileSystemPathManager::GetRootPathCallback& callback) {
+    const GURL& origin_url, fileapi::FileSystemType type,
+    bool create, FileSystemPathManager::GetRootPathCallback* callback_ptr) {
+  scoped_ptr<FileSystemPathManager::GetRootPathCallback> callback(callback_ptr);
   FilePath origin_base_path;
 
   if (path_manager_->is_incognito()) {
     // TODO(kinuko): return an isolated temporary directory.
-    callback.Run(false, FilePath(), std::string());
+    callback->Run(false, FilePath(), std::string());
     return;
   }
 
   if (!path_manager_->IsAllowedScheme(origin_url)) {
-    callback.Run(false, FilePath(), std::string());
+    callback->Run(false, FilePath(), std::string());
     return;
   }
 
   scoped_refptr<GetFileSystemRootPathTask> task(
-      new GetFileSystemRootPathTask(
-          file_message_loop_, origin_url, type, sandbox_file_util_.get(),
-          old_base_path(), callback));
+      new GetFileSystemRootPathTask(file_message_loop_,
+                                    origin_url,
+                                    type,
+                                    sandbox_file_util_.get(),
+                                    old_base_path(),
+                                    callback.release()));
   task->Start(create);
 };
 
