@@ -63,6 +63,9 @@ namespace chromeos {
 
 //////////////////////////////////////////////////////////////////////////////
 
+// base::Unretained(this) in the class is safe. By the time this object is
+// deleted as part of CrosLibrary, the DB thread and the UI message loop
+// are already terminated.
 class CertLibraryImpl
     : public CertLibrary,
       public net::CertDatabase::Observer {
@@ -71,7 +74,6 @@ class CertLibraryImpl
 
   CertLibraryImpl() :
       observer_list_(new CertLibraryObserverList),
-      request_task_(NULL),
       user_logged_in_(false),
       certificates_loaded_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(certs_(this)),
@@ -83,9 +85,7 @@ class CertLibraryImpl
   }
 
   ~CertLibraryImpl() {
-    // CertLibraryImpl is a singleton, so do not attempt to cleanup
-    // request_task_ on destruction.
-    DCHECK(request_task_ == NULL);
+    DCHECK(request_task_.is_null());
     net::CertDatabase::RemoveObserver(this);
   }
 
@@ -120,11 +120,11 @@ class CertLibraryImpl
     } else {
       if (crypto::IsTPMTokenAvailable()) {
         VLOG(1) << "TPM token not ready.";
-        if (request_task_ == NULL) {
+        if (request_task_.is_null()) {
           // Cryptohome does not notify us when the token is ready, so call
           // this again after a delay.
-          request_task_ = NewRunnableMethod(
-              this, &CertLibraryImpl::RequestCertificatesTask);
+          request_task_ = base::Bind(&CertLibraryImpl::RequestCertificatesTask,
+                                     base::Unretained(this));
           BrowserThread::PostDelayedTask(
               BrowserThread::UI, FROM_HERE, request_task_, kRequestDelayMs);
         }
@@ -137,7 +137,8 @@ class CertLibraryImpl
     // tpm_token_name_ is set, load the certificates on the DB thread.
     BrowserThread::PostTask(
         BrowserThread::DB, FROM_HERE,
-        NewRunnableMethod(this, &CertLibraryImpl::LoadCertificates));
+        base::Bind(&CertLibraryImpl::LoadCertificates,
+                   base::Unretained(this)));
   }
 
   virtual void AddObserver(CertLibrary::Observer* observer) OVERRIDE {
@@ -195,7 +196,8 @@ class CertLibraryImpl
       // ref counted list directly. Instead, re-load the certificate list.
       BrowserThread::PostTask(
           BrowserThread::DB, FROM_HERE,
-          NewRunnableMethod(this, &CertLibraryImpl::LoadCertificates));
+          base::Bind(&CertLibraryImpl::LoadCertificates,
+                     base::Unretained(this)));
     }
   }
 
@@ -213,8 +215,8 @@ class CertLibraryImpl
     // Pass the list to the UI thread to safely update the local lists.
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this, &CertLibraryImpl::UpdateCertificates,
-                          cert_list));
+        base::Bind(&CertLibraryImpl::UpdateCertificates,
+                   base::Unretained(this), cert_list));
   }
 
   // Comparison functor for locale-sensitive sorting of certificates by name.
@@ -238,8 +240,8 @@ class CertLibraryImpl
 
   void RequestCertificatesTask() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    // This will only get called from request_task_ which will delete itself.
-    request_task_ = NULL;
+    // Reset the task to the initial state so is_null() returns true.
+    request_task_ = base::Closure();
     RequestCertificates();
   }
 
@@ -319,7 +321,7 @@ class CertLibraryImpl
   const scoped_refptr<CertLibraryObserverList> observer_list_;
 
   // Active request task for re-requests while waiting for TPM init.
-  CancelableTask* request_task_;
+  base::Closure request_task_;
 
   // Cached TPM token name.
   std::string tpm_token_name_;
@@ -406,7 +408,3 @@ int CertLibrary::CertList::FindCertByPkcs11Id(
 }
 
 }  // chromeos
-
-// Allows InvokeLater without adding refcounting. This class is a singleton and
-// won't be deleted until it's last InvokeLater is run.
-DISABLE_RUNNABLE_METHOD_REFCOUNT(chromeos::CertLibraryImpl);
