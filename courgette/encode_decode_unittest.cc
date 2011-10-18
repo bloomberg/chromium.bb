@@ -2,46 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <string>
-
-#include "base/path_service.h"
-#include "base/file_util.h"
-#include "base/string_util.h"
-
+#include "courgette/base_test_unittest.h"
 #include "courgette/courgette.h"
 #include "courgette/streams.h"
 
-#include "testing/gtest/include/gtest/gtest.h"
-
-class EncodeDecodeTest : public testing::Test {
+class EncodeDecodeTest : public BaseTest {
  public:
   void TestExe(const char *) const;
-
- private:
-  void SetUp() {
-    PathService::Get(base::DIR_SOURCE_ROOT, &testdata_dir_);
-    testdata_dir_ = testdata_dir_.AppendASCII("courgette");
-    testdata_dir_ = testdata_dir_.AppendASCII("testdata");
-  }
-
-  void TearDown() { }
-
-  // Returns contents of |file_name| as uninterprested bytes stored in a string.
-  std::string FileContents(const char* file_name) const;
-
-  FilePath testdata_dir_;  // Full path name of testdata directory
 };
-
-//  Reads a test file into a string.
-std::string EncodeDecodeTest::FileContents(const char* file_name) const {
-  FilePath file_path = testdata_dir_;
-  file_path = file_path.AppendASCII(file_name);
-  std::string file_contents;
-  if (!file_util::ReadFileToString(file_path, &file_contents)) {
-    EXPECT_TRUE(!"Could not read test data");
-  }
-  return file_contents;
-}
 
 void EncodeDecodeTest::TestExe(const char* file_name) const {
   // Test top-level Courgette API for converting an a file to a binary

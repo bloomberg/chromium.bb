@@ -2,49 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "courgette/base_test_unittest.h"
 #include "courgette/image_info.h"
 
-#include <string>
-
-#include "base/path_service.h"
-#include "base/file_util.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/string_util.h"
-#include "testing/gtest/include/gtest/gtest.h"
-
-class ImageInfoTest : public testing::Test {
+class ImageInfoTest : public BaseTest {
  public:
 
   void TestExe() const;
   void TestResourceDll() const;
 
  private:
-  void SetUp() {
-    PathService::Get(base::DIR_SOURCE_ROOT, &test_dir_);
-    test_dir_ = test_dir_.AppendASCII("courgette");
-    test_dir_ = test_dir_.AppendASCII("testdata");
-  }
-
-  void TearDown() {
-  }
-
   void ExpectExecutable(courgette::PEInfo* info) const;
 
-  std::string FileContents(const char* file_name) const;
-
-  FilePath test_dir_;
 };
-
-//  Reads a test file into a string.
-std::string ImageInfoTest::FileContents(const char* file_name) const {
-  FilePath file_path = test_dir_;
-  file_path = file_path.AppendASCII(file_name);
-  std::string file_bytes;
-  if (!file_util::ReadFileToString(file_path, &file_bytes)) {
-    EXPECT_TRUE(!"Could not read test data");
-  }
-  return file_bytes;
-}
 
 void ImageInfoTest::ExpectExecutable(courgette::PEInfo* info) const {
   EXPECT_TRUE(info->ok());

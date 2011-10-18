@@ -1,47 +1,19 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "courgette/third_party/bsdiff.h"
 
-#include <string>
-
-#include "base/file_util.h"
-#include "base/path_service.h"
-#include "base/string_util.h"
-
+#include "courgette/base_test_unittest.h"
 #include "courgette/courgette.h"
 #include "courgette/streams.h"
 
-#include "testing/gtest/include/gtest/gtest.h"
-
-class BSDiffMemoryTest : public testing::Test {
+class BSDiffMemoryTest : public BaseTest {
  public:
-  std::string FileContents(const char* file_name) const;
   void GenerateAndTestPatch(const std::string& a, const std::string& b) const;
 
   std::string GenerateSyntheticInput(size_t length, int seed) const;
-
- private:
-  void SetUp() {
-    PathService::Get(base::DIR_SOURCE_ROOT, &test_dir_);
-    test_dir_ = test_dir_.AppendASCII("courgette");
-    test_dir_ = test_dir_.AppendASCII("testdata");
-  }
-
-  FilePath test_dir_;
 };
-
-//  Reads a test file into a string.
-std::string BSDiffMemoryTest::FileContents(const char* file_name) const {
-  FilePath file_path = test_dir_;
-  file_path = file_path.AppendASCII(file_name);
-  std::string file_bytes;
-  if (!file_util::ReadFileToString(file_path, &file_bytes)) {
-    EXPECT_TRUE(!"Could not read test data");
-  }
-  return file_bytes;
-}
 
 void BSDiffMemoryTest::GenerateAndTestPatch(const std::string& old_text,
                                             const std::string& new_text) const {

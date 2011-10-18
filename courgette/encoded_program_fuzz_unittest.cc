@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,31 +11,17 @@
 // We try a lot of arbitrary modifications to the serialized form and make sure
 // that the outcome is not a crash.
 
-#include <string>
-
-#include "base/path_service.h"
-#include "base/file_util.h"
-#include "base/string_util.h"
 #include "base/test/test_suite.h"
 
+#include "courgette/base_test_unittest.h"
 #include "courgette/courgette.h"
 #include "courgette/streams.h"
 
-#include "testing/gtest/include/gtest/gtest.h"
-
-class DecodeFuzzTest : public testing::Test {
+class DecodeFuzzTest : public BaseTest {
  public:
   void FuzzExe(const char *) const;
 
  private:
-  virtual void SetUp() {
-    PathService::Get(base::DIR_SOURCE_ROOT, &testdata_dir_);
-    testdata_dir_ = testdata_dir_.AppendASCII("courgette");
-    testdata_dir_ = testdata_dir_.AppendASCII("testdata");
-  }
-
-  virtual void TearDown() { }
-
   void FuzzByte(const std::string& buffer, const std::string& output,
                 size_t index) const;
   void FuzzBits(const std::string& buffer, const std::string& output,
@@ -43,23 +29,7 @@ class DecodeFuzzTest : public testing::Test {
 
   // Returns true if could assemble, false if rejected.
   bool TryAssemble(const std::string& buffer, std::string* output) const;
-
-  // Returns contents of |file_name| as uninterprested bytes stored in a string.
-  std::string FileContents(const char* file_name) const;
-
-  // Full path name of testdata directory
-  FilePath testdata_dir_;
 };
-
-//  Reads a test file into a string.
-std::string DecodeFuzzTest::FileContents(const char* file_name) const {
-  FilePath file_path = testdata_dir_.AppendASCII(file_name);
-  std::string file_contents;
-  if (!file_util::ReadFileToString(file_path, &file_contents)) {
-    EXPECT_TRUE(!"Could not read test data");
-  }
-  return file_contents;
-}
 
 // Loads an executable and does fuzz testing in the serialized format.
 void DecodeFuzzTest::FuzzExe(const char* file_name) const {
