@@ -35,6 +35,7 @@ remoting.HostPlugin.prototype.localize = function(callback) {};
 /** @type {number} */ remoting.HostPlugin.prototype.DISCONNECTING;
 /** @type {number} */ remoting.HostPlugin.prototype.ERROR;
 
+/** @type {string} */ remoting.HostPlugin.prototype.accessCode;
 /** @type {number} */ remoting.HostPlugin.prototype.accessCodeLifetime;
 
 /** @type {string} */ remoting.HostPlugin.prototype.client;

@@ -16,7 +16,6 @@
 /** @suppress {duplicate} */
 var remoting = remoting || {};
 
-(function() {
 /**
  * @param {string} hostJid The jid of the host to connect to.
  * @param {string} hostPublicKey The base64 encoded version of the host's
@@ -38,6 +37,9 @@ remoting.ClientSession = function(hostJid, hostPublicKey, accessCode, email,
   this.accessCode = accessCode;
   this.email = email;
   this.clientJid = '';
+  this.sessionId = '';
+  /** @type {remoting.ViewerPlugin} */ this.plugin = null;
+
   this.onStateChange = onStateChange;
 };
 
@@ -117,7 +119,7 @@ remoting.ClientSession.prototype.PLUGIN_ID = 'session-client-plugin';
 /**
  * Callback to invoke when the state is changed.
  *
- * @type {function(remoting.ClientSession.State):void}
+ * @param {remoting.ClientSession.State} state The previous state.
  */
 remoting.ClientSession.prototype.onStateChange = function(state) { };
 
@@ -146,8 +148,10 @@ remoting.ClientSession.prototype.createPluginAndConnect =
     return;
   }
 
-  var that = this;
+  /** @type {remoting.ClientSession} */ var that = this;
+  /** @param {string} msg The IQ stanza to send. */
   this.plugin.sendIq = function(msg) { that.sendIq_(msg); };
+  /** @param {string} msg The message to log. */
   this.plugin.debugInfo = function(msg) {
     remoting.debug.log('plugin: ' + msg);
   };
@@ -180,13 +184,12 @@ remoting.ClientSession.prototype.createPluginAndConnect =
  * @return {void} Nothing.
  */
 remoting.ClientSession.prototype.removePlugin = function() {
-  var plugin = document.getElementById(this.PLUGIN_ID);
-  if (plugin) {
+  if (this.plugin) {
     var parentNode = this.plugin.parentNode;
-    parentNode.removeChild(plugin);
-    plugin = null;
+    parentNode.removeChild(this.plugin);
+    this.plugin = null;
   }
-}
+};
 
 /**
  * Deletes the <embed> element from the container and disconnects.
@@ -266,11 +269,13 @@ remoting.ClientSession.prototype.connectPluginToWcs_ =
   if (this.clientJid == '') {
     remoting.debug.log('Tried to connect without a full JID.');
   }
-  var that = this;
-  remoting.wcs.setOnIq(function(stanza) {
-      remoting.debug.log('Receiving Iq: ' + stanza);
-      that.plugin.onIq(stanza);
-  });
+  /** @type {remoting.ClientSession} */ var that = this;
+  /** @param {string} stanza The IQ stanza received. */
+  var onIq = function(stanza) {
+    remoting.debug.log('Receiving Iq: ' + stanza);
+    that.plugin.onIq(stanza);
+  }
+  remoting.wcs.setOnIq(onIq);
   that.plugin.connect(this.hostJid, this.hostPublicKey, this.clientJid,
                       this.accessCode);
 };
@@ -302,7 +307,7 @@ remoting.ClientSession.prototype.connectionInfoUpdateCallback = function() {
       error = remoting.ClientSession.ConnectionError.SESSION_REJECTED;
     } else if (error == this.plugin.ERROR_INCOMPATIBLE_PROTOCOL) {
       error = remoting.ClientSession.ConnectionError.INCOMPATIBLE_PROTOCOL;
-    } else if (error == this.plugin.NETWORK_FAILURE) {
+    } else if (error == this.plugin.ERROR_NETWORK_FAILURE) {
       error = remoting.ClientSession.ConnectionError.NETWORK_FAILURE;
     } else {
       error = remoting.ClientSession.ConnectionError.OTHER;
@@ -327,7 +332,6 @@ remoting.ClientSession.prototype.setState_ = function(state) {
 /**
  * This is a callback that gets called when the window is resized.
  *
- * @private
  * @return {void} Nothing.
  */
 remoting.ClientSession.prototype.onWindowSizeChanged = function() {
@@ -382,11 +386,11 @@ remoting.ClientSession.prototype.updateDimensions = function() {
   if (this.plugin.width < windowWidth)
     parentNode.style.left = (windowWidth - this.plugin.width) / 2 + 'px';
   else
-    parentNode.style.left = 0;
+    parentNode.style.left = '0';
   if (this.plugin.height < windowHeight)
     parentNode.style.top = (windowHeight - this.plugin.height) / 2 + 'px';
   else
-    parentNode.style.top = 0;
+    parentNode.style.top = '0';
 
   remoting.debug.log('plugin dimensions: ' +
                      parentNode.style.left + ',' +
@@ -398,7 +402,7 @@ remoting.ClientSession.prototype.updateDimensions = function() {
 /**
  * Returns an associative array with a set of stats for this connection.
  *
- * @return {Object} The connection statistics.
+ * @return {Object.<string, number>} The connection statistics.
  */
 remoting.ClientSession.prototype.stats = function() {
   return {
@@ -410,5 +414,3 @@ remoting.ClientSession.prototype.stats = function() {
     'roundtrip_latency': this.plugin.roundTripLatency
   };
 };
-
-}());

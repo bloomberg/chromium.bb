@@ -12,16 +12,17 @@
 /** @suppress {duplicate} */
 var remoting = remoting || {};
 
-(function() {
-
-/** @constructor */
+/**
+ * @constructor
+ * @param {Element} logElement The HTML div to which to add log messages.
+ */
 remoting.DebugLog = function(logElement) {
   this.debugLog = logElement;
-}
+};
 
-// Maximum numer of lines to record in the debug log.
-// Only the most recent <n> lines are displayed.
-var MAX_DEBUG_LOG_SIZE = 1000;
+/** Maximum number of lines to record in the debug log. Only the most
+ *  recent <n> lines are displayed. */
+remoting.DebugLog.prototype.MAX_DEBUG_LOG_SIZE = 1000;
 
 /**
  * Add the given message to the debug log.
@@ -30,7 +31,7 @@ var MAX_DEBUG_LOG_SIZE = 1000;
  */
 remoting.DebugLog.prototype.log = function(message) {
   // Remove lines from top if we've hit our max log size.
-  if (this.debugLog.childNodes.length == MAX_DEBUG_LOG_SIZE) {
+  if (this.debugLog.childNodes.length == this.MAX_DEBUG_LOG_SIZE) {
     this.debugLog.removeChild(this.debugLog.firstChild);
   }
 
@@ -41,6 +42,7 @@ remoting.DebugLog.prototype.log = function(message) {
 
   // Scroll to bottom of div
   this.debugLog.scrollTop = this.debugLog.scrollHeight;
-}
+};
 
-}());
+/** @type {remoting.DebugLog} */
+remoting.debug = null;

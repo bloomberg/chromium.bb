@@ -5,18 +5,26 @@
 /** @suppress {duplicate} */
 var remoting = remoting || {};
 
-(function() {
 'use strict';
 
-window.addEventListener('blur', pluginLostFocus_, false);
+/**
+ * Whether or not the plugin should scale itself.
+ * @type {boolean}
+ */
+remoting.scaleToFit = false;
 
-function pluginLostFocus_() {
-  // If the plug loses input focus, release all keys as a precaution against
-  // leaving them 'stuck down' on the host.
-  if (remoting.session && remoting.session.plugin) {
-    remoting.session.plugin.releaseAllKeys();
-  }
-}
+/** @type {remoting.ClientSession} */
+remoting.session = null;
+
+/** @type {string} */ remoting.accessCode = '';
+/** @type {number} */ remoting.accessCodeTimerId = 0;
+/** @type {number} */ remoting.accessCodeExpiresIn = 0;
+/** @type {remoting.AppMode} */ remoting.currentMode;
+/** @type {string} */ remoting.hostJid = '';
+/** @type {string} */ remoting.hostPublicKey = '';
+/** @type {boolean} */ remoting.lastShareWasCancelled = false;
+/** @type {boolean} */ remoting.timerRunning = false;
+/** @type {string} */ remoting.username = '';
 
 /** @enum {string} */
 remoting.AppMode = {
@@ -36,7 +44,19 @@ remoting.AppMode = {
   IN_SESSION: 'in-session'
 };
 
-remoting.EMAIL = 'email';
+(function() {
+
+window.addEventListener('blur', pluginLostFocus_, false);
+
+function pluginLostFocus_() {
+  // If the plug loses input focus, release all keys as a precaution against
+  // leaving them 'stuck down' on the host.
+  if (remoting.session && remoting.session.plugin) {
+    remoting.session.plugin.releaseAllKeys();
+  }
+}
+
+/** @type {string} */
 remoting.HOST_PLUGIN_ID = 'host-plugin-id';
 
 /** @enum {string} */
@@ -51,27 +71,31 @@ remoting.ClientError = {
   OTHER_ERROR: /*i18n-content*/'ERROR_GENERIC'
 };
 
-/**
- * Whether or not the plugin should scale itself.
- * @type {boolean}
- */
-remoting.scaleToFit = false;
-
 // Constants representing keys used for storing persistent application state.
 var KEY_APP_MODE_ = 'remoting-app-mode';
 var KEY_EMAIL_ = 'remoting-email';
 var KEY_USE_P2P_API_ = 'remoting-use-p2p-api';
 
 // Some constants for pretty-printing the access code.
-var kSupportIdLen = 7;
-var kHostSecretLen = 5;
-var kAccessCodeLen = kSupportIdLen + kHostSecretLen;
-var kDigitsPerGroup = 4;
+/** @type {number} */ var kSupportIdLen = 7;
+/** @type {number} */ var kHostSecretLen = 5;
+/** @type {number} */ var kAccessCodeLen = kSupportIdLen + kHostSecretLen;
+/** @type {number} */ var kDigitsPerGroup = 4;
 
+/**
+ * @param {string} classes A space-separated list of classes.
+ * @param {string} cls The class to check for.
+ * @return {boolean} True if |cls| is found within |classes|.
+ */
 function hasClass(classes, cls) {
-  return classes.match(new RegExp('(\\s|^)' + cls + '(\\s|$)'));
+  return classes.match(new RegExp('(\\s|^)' + cls + '(\\s|$)')) != null;
 }
 
+/**
+ * @param {Element} element The element to which to add the class.
+ * @param {string} cls The new class.
+ * @return {void} Nothing.
+ */
 function addClass(element, cls) {
   if (!hasClass(element.className, cls)) {
     var padded = element.className == '' ? '' : element.className + ' ';
@@ -79,6 +103,11 @@ function addClass(element, cls) {
   }
 }
 
+/**
+ * @param {Element} element The element from which to remove the class.
+ * @param {string} cls The new class.
+ * @return {void} Nothing.
+ */
 function removeClass(element, cls) {
   element.className =
       element.className.replace(new RegExp('\\b' + cls + '\\b', 'g'), '')
@@ -90,6 +119,7 @@ function retrieveEmail_(access_token) {
     'Authorization': 'OAuth ' + remoting.oauth2.getAccessToken()
   };
 
+  /** @param {XMLHttpRequest} xhr The XHR response. */
   var onResponse = function(xhr) {
     if (xhr.status != 200) {
       // TODO(ajwong): Have a better way of showing an error.
@@ -113,6 +143,10 @@ function refreshEmail_() {
   }
 }
 
+/**
+ * @param {string} value The email address to place in local storage.
+ * @return {void} Nothing.
+ */
 function setEmail(value) {
   window.localStorage.setItem(KEY_EMAIL_, value);
   document.getElementById('current-email').innerText = value;
@@ -130,9 +164,9 @@ function exchangedCodeForToken_() {
   if (!remoting.oauth2.isAuthenticated()) {
     alert('Your OAuth2 token was invalid. Please try again.');
   }
-  remoting.oauth2.callWithToken(function(token) {
-      retrieveEmail_(token);
-  });
+  /** @param {string} token The auth token. */
+  var retrieveEmail = function(token) { retrieveEmail_(token); }
+  remoting.oauth2.callWithToken(retrieveEmail);
 }
 
 remoting.clearOAuth2 = function() {
@@ -194,7 +228,7 @@ remoting.setMode = function(mode) {
     modes[i] = modes[i - 1] + '.' + modes[i];
   var elements = document.querySelectorAll('[data-ui-mode]');
   for (var i = 0; i < elements.length; ++i) {
-    var element = elements[i];
+    /** @type {Element} */ var element = elements[i];
     var hidden = true;
     for (var m = 0; m < modes.length; ++m) {
       if (hasClass(element.getAttribute('data-ui-mode'), modes[m])) {
@@ -215,7 +249,7 @@ remoting.setMode = function(mode) {
 
 /**
  * Get the major mode that the app is running in.
- * @return {remoting.AppMode} The app's current major mode.
+ * @return {string} The app's current major mode.
  */
 remoting.getMajorMode = function() {
   return remoting.currentMode.split('.')[0];
@@ -309,6 +343,11 @@ remoting.updateAccessCodeTimeoutElement_ = function() {
   }
 }
 
+/**
+ * Callback to show or hide the NAT traversal warning when the policy changes.
+ * @param {boolean} enabled True if NAT traversal is enabled.
+ * @return {void} Nothing.
+ */
 function onNatTraversalPolicyChanged_(enabled) {
   var container = document.getElementById('nat-box-container');
   container.hidden = enabled;
@@ -415,7 +454,9 @@ remoting.cancelShare = function() {
   try {
     plugin.disconnect();
   } catch (error) {
-    remoting.debug.log('Error disconnecting: ' + error.description +
+    // Hack to force JSCompiler type-safety.
+    var errorTyped = /** @type {{description: string}} */ error;
+    remoting.debug.log('Error disconnecting: ' + errorTyped.description +
                        '. The host plugin probably crashed.');
     // TODO(jamiewalch): Clean this up. We should have a class representing
     // the host plugin, like we do for the client, which should handle crash
@@ -484,6 +525,7 @@ function showToolbarPreview_() {
   window.setTimeout(removeClass, 3000, toolbar, 'toolbar-preview');
 }
 
+/** @param {number} oldState The previous state of the plugin. */
 function onClientStateChange_(oldState) {
   if (!remoting.session) {
     // If the connection has been cancelled, then we no longer have a reference
@@ -553,11 +595,13 @@ function startSession_() {
       new remoting.ClientSession(remoting.hostJid, remoting.hostPublicKey,
                                  remoting.accessCode, remoting.username,
                                  onClientStateChange_);
-  remoting.oauth2.callWithToken(function(token) {
+  /** @param {string} token The auth token. */
+  var createPluginAndConnect = function(token) {
     remoting.session.createPluginAndConnect(
         document.getElementById('session-mode'),
         token);
-  });
+  };
+  remoting.oauth2.callWithToken(createPluginAndConnect);
 }
 
 /**
@@ -587,8 +631,9 @@ function parseServerResponse_(xhr) {
   remoting.supportHostsXhr = null;
   remoting.debug.log('parseServerResponse: status = ' + xhr.status);
   if (xhr.status == 200) {
-    var host = JSON.parse(xhr.responseText);
-    if (host.data && host.data.jabberId) {
+    var host = /** @type {{data: {jabberId: string, publicKey: string}}} */
+        JSON.parse(xhr.responseText);
+    if (host.data && host.data.jabberId && host.data.publicKey) {
       remoting.hostJid = host.data.jabberId;
       remoting.hostPublicKey = host.data.publicKey;
       var split = remoting.hostJid.split('/');
@@ -608,12 +653,15 @@ function parseServerResponse_(xhr) {
   showConnectError_(errorMsg);
 }
 
+/** @param {string} accessCode The access code, as entered by the user.
+ *  @return {string} The normalized form of the code (whitespace removed). */
 function normalizeAccessCode_(accessCode) {
   // Trim whitespace.
   // TODO(sergeyu): Do we need to do any other normalization here?
   return accessCode.replace(/\s/g, '');
 }
 
+/** @param {string} supportId The canonicalized support ID. */
 function resolveSupportId(supportId) {
   var headers = {
     'Authorization': 'OAuth ' + remoting.oauth2.getAccessToken()
@@ -648,11 +696,13 @@ remoting.tryConnectWithAccessToken = function() {
   if (!remoting.wcsLoader) {
     remoting.wcsLoader = new remoting.WcsLoader();
   }
+  /** @param {function(string):void} setToken The callback function. */
+  var callWithToken = function(setToken) {
+    remoting.oauth2.callWithToken(setToken);
+  };
   remoting.wcsLoader.start(
       remoting.oauth2.getAccessToken(),
-      function(setToken) {
-        remoting.oauth2.callWithToken(setToken);
-      },
+      callWithToken,
       remoting.tryConnectWithWcs);
 }
 
@@ -770,6 +820,10 @@ remoting.promptClose = function() {
   }
 }
 
+/**
+ * @param {Event} event The keyboard event.
+ * @return {void} Nothing.
+ */
 remoting.checkHotkeys = function(event) {
   if (String.fromCharCode(event.which) == 'D') {
     remoting.toggleDebugLog();

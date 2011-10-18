@@ -14,7 +14,9 @@
 /** @suppress {duplicate} */
 var remoting = remoting || {};
 
-(function() {
+/** @type {remoting.WcsLoader} */
+remoting.wcsLoader = null;
+
 /**
  * @constructor
  */
@@ -28,14 +30,14 @@ remoting.WcsLoader = function() {
 
   /**
    * A callback that gets an updated access token asynchronously.
-   * @type {function(function(string): void): void}
+   * @param {function(string): void} setToken The function to call when the
+   *     token is available.
    * @private
    */
   this.refreshToken_ = function(setToken) {};
 
   /**
    * The function called when WCS is ready.
-   * @type {function(): void}
    * @private
    */
   this.onReady_ = function() {};
@@ -59,7 +61,7 @@ remoting.WcsLoader = function() {
 
   /**
    * The WCS client that will be downloaded.
-   * @type {Object}
+   * @type {remoting.WcsIqClient}
    */
   this.wcsIqClient = null;
 };
@@ -103,6 +105,7 @@ remoting.WcsLoader.prototype.start = function(token, refreshToken, onReady) {
   var node = document.createElement('script');
   node.src = this.TALK_GADGET_URL_ + 'iq?access_token=' + this.token_;
   node.type = 'text/javascript';
+  /** @type {remoting.WcsLoader} */
   var that = this;
   node.onload = function() { that.constructWcs_(); };
   document.body.insertBefore(node, document.body.firstChild);
@@ -116,12 +119,16 @@ remoting.WcsLoader.prototype.start = function(token, refreshToken, onReady) {
  * @private
  */
 remoting.WcsLoader.prototype.constructWcs_ = function() {
+  /** @type {remoting.WcsLoader} */
   var that = this;
+  /** @param {function(string): void} setToken The function to call when the
+      token is available. */
+  var refreshToken = function(setToken) { that.refreshToken_(setToken); };
   remoting.wcs = new remoting.Wcs(
       remoting.wcsLoader.wcsIqClient,
       this.token_,
       function() { that.onWcsReady_(); },
-      function(setToken) { that.refreshToken_(setToken); });
+      refreshToken);
 };
 
 /**
@@ -135,5 +142,3 @@ remoting.WcsLoader.prototype.onWcsReady_ = function() {
   this.onReady_();
   this.onReady_ = function() {};
 };
-
-}());

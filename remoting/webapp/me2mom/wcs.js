@@ -13,7 +13,9 @@
 /** @suppress {duplicate} */
 var remoting = remoting || {};
 
-(function() {
+/** @type {remoting.Wcs} */
+remoting.wcs = null;
+
 /**
  * @constructor
  *
@@ -55,6 +57,7 @@ remoting.Wcs = function(wcsIqClient, token, onReady, refreshToken) {
    */
   this.clientFullJid_ = '';
 
+  /** @type {remoting.Wcs} */
   var that = this;
   /**
    * A timer that polls for an updated access token.
@@ -67,13 +70,15 @@ remoting.Wcs = function(wcsIqClient, token, onReady, refreshToken) {
 
   /**
    * A function called when an IQ stanza is received.
-   * @type {function(string): void}
+   * @param {string} stanza The IQ stanza.
    * @private
    */
   this.onIq_ = function(stanza) {};
 
   // Handle messages from the WcsIqClient.
-  this.wcsIqClient_.setOnMessage(function(msg) { that.onMessage_(msg); });
+  /** @param {Array.<string>} msg An array of message strings. */
+  var onMessage = function(msg) { that.onMessage_(msg); };
+  this.wcsIqClient_.setOnMessage(onMessage);
 
   // Start the WcsIqClient.
   this.wcsIqClient_.connectChannel();
@@ -96,7 +101,7 @@ remoting.Wcs.prototype.setToken_ = function(tokenNew) {
 /**
  * Handles a message coming from the WcsIqClient.
  *
- * @param {Array} msg The message.
+ * @param {Array.<string>} msg The message.
  * @return {void} Nothing.
  * @private
  */
@@ -140,5 +145,3 @@ remoting.Wcs.prototype.sendIq = function(stanza) {
 remoting.Wcs.prototype.setOnIq = function(onIq) {
   this.onIq_ = onIq;
 };
-
-}());

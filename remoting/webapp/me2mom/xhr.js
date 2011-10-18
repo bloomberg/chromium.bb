@@ -13,9 +13,8 @@
 var remoting = remoting || {};
 
 /** Namespace for XHR functions */
+/** @type {Object} */
 remoting.xhr = remoting.xhr || {};
-
-(function() {
 
 /**
  * Takes an associative array of parameters and urlencodes it.
@@ -33,7 +32,7 @@ remoting.xhr.urlencodeParamHash = function(paramHash) {
     return paramArray.join('&');
   }
   return '';
-}
+};
 
 /**
  * Execute an XHR GET asynchronously.
@@ -41,17 +40,18 @@ remoting.xhr.urlencodeParamHash = function(paramHash) {
  * @param {string} url The base URL to GET, excluding parameters.
  * @param {function(XMLHttpRequest):void} onDone The function to call on
  *     completion.
- * @param {(string|Object.<string>)} opt_parameters The request parameters,
+ * @param {(string|Object.<string>)=} opt_parameters The request parameters,
  *     either as an associative array, or a string.  If it is a string, do
  *     not include the ? and be sure it is correctly URLEncoded.
- * @param {Object.<string>} opt_headers Additional headers to include on the
+ * @param {Object.<string>=} opt_headers Additional headers to include on the
  *     request.
- * @param {boolean} opt_withCredentials Set the withCredentials flags in the
+ * @param {boolean=} opt_withCredentials Set the withCredentials flags in the
  *     XHR.
  * @return {XMLHttpRequest} The request object.
  */
 remoting.xhr.get = function(url, onDone, opt_parameters, opt_headers,
                             opt_withCredentials) {
+  /** @type {XMLHttpRequest} */
   var xhr = new XMLHttpRequest();
   xhr.onreadystatechange = function() {
     if (xhr.readyState != 4) {
@@ -95,7 +95,7 @@ remoting.xhr.get = function(url, onDone, opt_parameters, opt_headers,
 
   xhr.send(null);
   return xhr;
-}
+};
 
 /**
  * Execute an XHR POST asynchronously.
@@ -103,17 +103,18 @@ remoting.xhr.get = function(url, onDone, opt_parameters, opt_headers,
  * @param {string} url The base URL to POST, excluding parameters.
  * @param {function(XMLHttpRequest):void} onDone The function to call on
  *     completion.
- * @param {(string|Object.<string>)} opt_parameters The request parameters,
+ * @param {(string|Object.<string>)=} opt_parameters The request parameters,
  *     either as an associative array, or a string.  If it is a string, be
  *     sure it is correctly URLEncoded.
- * @param {Object.<string>} opt_headers Additional headers to include on the
+ * @param {Object.<string>=} opt_headers Additional headers to include on the
  *     request.
- * @param {boolean} opt_withCredentials Set the withCredentials flags in the
+ * @param {boolean=} opt_withCredentials Set the withCredentials flags in the
  *     XHR.
  * @return {void} Nothing.
  */
 remoting.xhr.post = function(url, onDone, opt_parameters, opt_headers,
                              opt_withCredentials) {
+  /** @type {XMLHttpRequest} */
   var xhr = new XMLHttpRequest();
   xhr.onreadystatechange = function() {
     if (xhr.readyState != 4) {
@@ -153,6 +154,4 @@ remoting.xhr.post = function(url, onDone, opt_parameters, opt_headers,
   }
 
   xhr.send(postData);
-}
-
-}());
+};
