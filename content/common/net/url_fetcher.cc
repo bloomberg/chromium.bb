@@ -11,7 +11,6 @@
 #include "base/file_path.h"
 #include "base/file_util_proxy.h"
 #include "base/lazy_instance.h"
-#include "base/memory/scoped_callback_factory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop_proxy.h"
@@ -149,11 +148,9 @@ class URLFetcher::Core
     base::PlatformFileError error_code_;
 
     // Callbacks are created for use with base::FileUtilProxy.
-    base::ScopedCallbackFactory<URLFetcher::Core::TempFileWriter>
-        callback_factory_;
     base::WeakPtrFactory<URLFetcher::Core::TempFileWriter> weak_factory_;
 
-    // Message loop on which file opperations should happen.
+    // Message loop on which file operations should happen.
     scoped_refptr<base::MessageLoopProxy> file_message_loop_proxy_;
 
     // Path to the temporary file.  This path is empty when there
@@ -324,7 +321,6 @@ URLFetcher::Core::TempFileWriter::TempFileWriter(
     scoped_refptr<base::MessageLoopProxy> file_message_loop_proxy)
     : core_(core),
       error_code_(base::PLATFORM_FILE_OK),
-      ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       file_message_loop_proxy_(file_message_loop_proxy),
       temp_file_handle_(base::kInvalidPlatformFileValue) {
