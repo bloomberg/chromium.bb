@@ -43,6 +43,8 @@
         'platform_support_win.cc',
         'test_webkit_platform_support.cc',
         'test_webkit_platform_support.h',
+        'test_webmessageportchannel.cc',
+        'test_webmessageportchannel.h',
         'test_webplugin_page_delegate.cc',
         'test_webplugin_page_delegate.h',
         'webkit_support.cc',

@@ -43,6 +43,7 @@
 #include "webkit/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 #include "webkit/gpu/webgraphicscontext3d_in_process_impl.h"
 #include "webkit/support/simple_database_system.h"
+#include "webkit/support/test_webmessageportchannel.h"
 #include "webkit/support/webkit_support.h"
 #include "webkit/support/weburl_loader_mock_factory.h"
 #include "webkit/support/web_audio_device_mock.h"
@@ -224,7 +225,7 @@ bool TestWebKitPlatformSupport::isLinkVisited(unsigned long long linkHash) {
 
 WebKit::WebMessagePortChannel*
 TestWebKitPlatformSupport::createMessagePortChannel() {
-  return NULL;
+  return new TestWebMessagePortChannel();
 }
 
 void TestWebKitPlatformSupport::prefetchHostName(const WebKit::WebString&) {
