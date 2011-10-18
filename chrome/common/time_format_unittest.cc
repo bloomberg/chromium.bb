@@ -1,39 +1,19 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <time.h>
+#include "chrome/common/time_format.h"
 
-#include "base/basictypes.h"
 #include "base/string16.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/common/time_format.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::Time;
+namespace {
+
 using base::TimeDelta;
 
-TEST(TimeFormat, RelativeDate) {
-  Time now = Time::Now();
-  string16 today_str = TimeFormat::RelativeDate(now, NULL);
-  EXPECT_EQ(ASCIIToUTF16("Today"), today_str);
-
-  Time yesterday = now - TimeDelta::FromDays(1);
-  string16 yesterday_str = TimeFormat::RelativeDate(yesterday, NULL);
-  EXPECT_EQ(ASCIIToUTF16("Yesterday"), yesterday_str);
-
-  Time two_days_ago = now - TimeDelta::FromDays(2);
-  string16 two_days_ago_str = TimeFormat::RelativeDate(two_days_ago, NULL);
-  EXPECT_TRUE(two_days_ago_str.empty());
-
-  Time a_week_ago = now - TimeDelta::FromDays(7);
-  string16 a_week_ago_str = TimeFormat::RelativeDate(a_week_ago, NULL);
-  EXPECT_TRUE(a_week_ago_str.empty());
-}
-
-namespace {
-void TestTimeFormats(const TimeDelta delta, const char* expected_ascii) {
+void TestTimeFormats(const TimeDelta& delta, const char* expected_ascii) {
   string16 expected = ASCIIToUTF16(expected_ascii);
   string16 expected_left = expected + ASCIIToUTF16(" left");
   string16 expected_ago = expected + ASCIIToUTF16(" ago");
@@ -41,8 +21,6 @@ void TestTimeFormats(const TimeDelta delta, const char* expected_ascii) {
   EXPECT_EQ(expected_left, TimeFormat::TimeRemaining(delta));
   EXPECT_EQ(expected_ago, TimeFormat::TimeElapsed(delta));
 }
-
-} // namespace
 
 TEST(TimeFormat, FormatTime) {
   const TimeDelta one_day = TimeDelta::FromDays(1);
@@ -69,3 +47,23 @@ TEST(TimeFormat, FormatTime) {
   TestTimeFormats(three_days, "3 days");
   TestTimeFormats(three_days + four_hours, "3 days");
 }
+
+TEST(TimeFormat, RelativeDate) {
+  base::Time now = base::Time::Now();
+  string16 today_str = TimeFormat::RelativeDate(now, NULL);
+  EXPECT_EQ(ASCIIToUTF16("Today"), today_str);
+
+  base::Time yesterday = now - TimeDelta::FromDays(1);
+  string16 yesterday_str = TimeFormat::RelativeDate(yesterday, NULL);
+  EXPECT_EQ(ASCIIToUTF16("Yesterday"), yesterday_str);
+
+  base::Time two_days_ago = now - TimeDelta::FromDays(2);
+  string16 two_days_ago_str = TimeFormat::RelativeDate(two_days_ago, NULL);
+  EXPECT_TRUE(two_days_ago_str.empty());
+
+  base::Time a_week_ago = now - TimeDelta::FromDays(7);
+  string16 a_week_ago_str = TimeFormat::RelativeDate(a_week_ago, NULL);
+  EXPECT_TRUE(a_week_ago_str.empty());
+}
+
+}  // namespace
