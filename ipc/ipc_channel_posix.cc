@@ -12,6 +12,10 @@
 #include <sys/stat.h>
 #include <sys/un.h>
 
+#if defined(OS_OPENBSD)
+#include <sys/uio.h>
+#endif
+
 #include <string>
 #include <map>
 
@@ -944,7 +948,7 @@ bool Channel::ChannelImpl::HasAcceptedConnection() const {
 
 bool Channel::ChannelImpl::GetClientEuid(uid_t* client_euid) const {
   DCHECK(HasAcceptedConnection());
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_OPENBSD)
   uid_t peer_euid;
   gid_t peer_gid;
   if (getpeereid(pipe_, &peer_euid, &peer_gid) != 0) {
