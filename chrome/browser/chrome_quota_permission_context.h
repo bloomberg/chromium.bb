@@ -20,10 +20,10 @@ class ChromeQuotaPermissionContext : public QuotaPermissionContext {
       int64 new_quota,
       int render_process_id,
       int render_view_id,
-      PermissionCallback* callback) OVERRIDE;
+      const PermissionCallback& callback) OVERRIDE;
 
   void DispatchCallbackOnIOThread(
-      PermissionCallback* callback,
+      const PermissionCallback& callback,
       Response response);
 };
 

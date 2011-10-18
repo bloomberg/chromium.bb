@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_QUOTA_PERMISSION_CONTEXT_H_
 #define CONTENT_BROWSER_QUOTA_PERMISSION_CONTEXT_H_
 
-#include "base/callback_old.h"
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "webkit/quota/quota_types.h"
 
@@ -20,7 +20,8 @@ class QuotaPermissionContext
     kResponseDisallow,
     kResponseCancelled,
   };
-  typedef Callback1<Response>::Type PermissionCallback;
+
+  typedef base::Callback<void(Response)> PermissionCallback;
 
   virtual void RequestQuotaPermission(
       const GURL& origin_url,
@@ -28,7 +29,7 @@ class QuotaPermissionContext
       int64 new_quota,
       int render_process_id,
       int render_view_id,
-      PermissionCallback* callback) = 0;
+      const PermissionCallback& callback) = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<QuotaPermissionContext>;

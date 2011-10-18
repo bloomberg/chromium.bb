@@ -5,7 +5,7 @@
 #include "content/browser/renderer_host/quota_dispatcher_host.h"
 
 #include "base/bind.h"
-#include "base/memory/scoped_callback_factory.h"
+#include "base/memory/weak_ptr.h"
 #include "content/browser/quota_permission_context.h"
 #include "content/common/quota_messages.h"
 #include "googleurl/src/gurl.h"
@@ -102,8 +102,7 @@ class QuotaDispatcherHost::RequestQuotaDispatcher
         current_quota_(0),
         requested_quota_(requested_quota),
         render_view_id_(render_view_id),
-        weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-        callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
+        weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
   virtual ~RequestQuotaDispatcher() {}
 
   void Start() {
@@ -144,7 +143,8 @@ class QuotaDispatcherHost::RequestQuotaDispatcher
     DCHECK(permission_context());
     permission_context()->RequestQuotaPermission(
         origin_, type_, requested_quota_, render_process_id(), render_view_id_,
-        callback_factory_.NewCallback(&self_type::DidGetPermissionResponse));
+        base::Bind(&self_type::DidGetPermissionResponse,
+                   weak_factory_.GetWeakPtr()));
   }
 
   void DidGetTemporaryUsageAndQuota(QuotaStatusCode status,
@@ -193,7 +193,6 @@ class QuotaDispatcherHost::RequestQuotaDispatcher
   const int64 requested_quota_;
   const int render_view_id_;
   base::WeakPtrFactory<self_type> weak_factory_;
-  base::ScopedCallbackFactory<self_type> callback_factory_;
 };
 
 QuotaDispatcherHost::QuotaDispatcherHost(
