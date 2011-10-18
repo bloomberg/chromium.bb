@@ -16,6 +16,7 @@ var stripCookiesAndLoginInfo;
 
 // Start of anonymous namespace.
 (function() {
+'use strict';
 
 PaintLogView = function(sourceEntries, node) {
   for (var i = 0; i < sourceEntries.length; ++i) {

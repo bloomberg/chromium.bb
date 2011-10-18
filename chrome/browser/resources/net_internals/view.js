@@ -7,6 +7,8 @@
  * the page.
  */
 var View = (function() {
+  'use strict';
+
   /**
    * @constructor
    */
@@ -100,6 +102,8 @@ var View = (function() {
  * DivView is an implementation of View that wraps a DIV.
  */
 var DivView = (function() {
+  'use strict';
+
   // We inherit from View.
   var superClass = View;
 
@@ -156,6 +160,8 @@ var DivView = (function() {
  * @param {!View} childView
  */
 var WindowView = (function() {
+  'use strict';
+
   // We inherit from View.
   var superClass = View;
 
@@ -210,6 +216,8 @@ var WindowView = (function() {
  *  +-----------------------------------+
  */
 var VerticalSplitView = (function() {
+  'use strict';
+
   // We inherit from View.
   var superClass = View;
 

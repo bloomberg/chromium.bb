@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 var timeutil = (function() {
+  'use strict';
+
   /**
    * Offset needed to convert event times to Date objects.
    * Updated whenever constants are loaded.
