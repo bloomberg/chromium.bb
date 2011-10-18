@@ -238,6 +238,11 @@
                   ],
                 },
               }],
+              [ 'OS == "openbsd"', {
+                'cflags': [
+                  '<!@(python cups_config_helper.py --cflags)',
+                ],
+              }],
             ],
           },
         }],
