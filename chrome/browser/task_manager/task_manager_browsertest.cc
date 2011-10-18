@@ -207,6 +207,8 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeExtensionTabs) {
   // Show the task manager. This populates the model, and helps with debugging
   // (you see the task manager).
   browser()->window()->ShowTaskManager();
+  // Wait for loading of task manager.
+  TaskManagerBrowserTestUtil::WaitForResourceChange(2);
 
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("good").AppendASCII("Extensions")
@@ -246,6 +248,8 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeAppTabs) {
   // Show the task manager. This populates the model, and helps with debugging
   // (you see the task manager).
   browser()->window()->ShowTaskManager();
+  // Wait for loading of task manager.
+  TaskManagerBrowserTestUtil::WaitForResourceChange(2);
 
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("packaged_app")));
@@ -330,6 +334,8 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, MAYBE_KillExtension) {
   // Show the task manager. This populates the model, and helps with debugging
   // (you see the task manager).
   browser()->window()->ShowTaskManager();
+  // Wait for loading of task manager.
+  TaskManagerBrowserTestUtil::WaitForResourceChange(2);
 
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("common").AppendASCII("background_page")));
@@ -355,6 +361,8 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
   // Show the task manager. This populates the model, and helps with debugging
   // (you see the task manager).
   browser()->window()->ShowTaskManager();
+  // Wait for loading of task manager.
+  TaskManagerBrowserTestUtil::WaitForResourceChange(2);
 
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("common").AppendASCII("background_page")));
@@ -396,6 +404,8 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, MAYBE_ReloadExtension) {
   // Show the task manager. This populates the model, and helps with debugging
   // (you see the task manager).
   browser()->window()->ShowTaskManager();
+  // Wait for loading of task manager.
+  TaskManagerBrowserTestUtil::WaitForResourceChange(2);
 
   LOG(INFO) << "loading extension";
   ASSERT_TRUE(LoadExtension(
