@@ -2491,11 +2491,6 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
         'INPUT_ROOT': expansion,
         'INPUT_DIRNAME': dirname,
         }
-    if not os.path.dirname(path):
-      # If it's just the file name, turn it into a path so FixupArgPath()
-      # will know to Absolutify() it.
-      path = os.path.join('.', path)
-
     return path
 
 
