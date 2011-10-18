@@ -4793,9 +4793,7 @@
    Memcheck:Leak
    fun:calloc
    fun:PR_Calloc
-   fun:nss_ZAlloc
-   fun:nssArena_Create
-   fun:NSSArena_Create
+   ...
    fun:STAN_GetNSSCertificate
    fun:CERT_DupCertificate
    fun:_ZN3net15X509Certificate15DupOSCertHandleEP18CERTCertificateStr
