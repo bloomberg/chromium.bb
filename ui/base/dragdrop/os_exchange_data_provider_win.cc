@@ -871,7 +871,8 @@ static void CreateValidFileNameFromTitle(const GURL& url,
                                          string16* validated) {
   if (title.empty()) {
     if (url.is_valid()) {
-      *validated = net::GetSuggestedFilename(url, "", "", "", "", string16());
+      *validated = net::GetSuggestedFilename(url, "", "", "", "",
+                                             std::string());
     } else {
       // Nothing else can be done, just use a default.
       *validated =

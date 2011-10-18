@@ -10,7 +10,7 @@
 #include "base/mime_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/download/download_util.h"
+#include "content/browser/content_browser_client.h"
 #include "content/browser/download/drag_download_file.h"
 #include "content/browser/download/drag_download_util.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -289,12 +289,15 @@ void TabContentsDragSource::OnDragBegin(GtkWidget* sender,
                                         GdkDragContext* drag_context) {
   if (!download_url_.is_empty()) {
     // Generate the file name based on both mime type and proposed file name.
-    FilePath generated_download_file_name;
-    download_util::GenerateFileNameFromSuggestedName(
-        download_url_,
-        download_file_name_.value(),
-        UTF16ToUTF8(wide_download_mime_type_),
-        &generated_download_file_name);
+    std::string default_name =
+        content::GetContentClient()->browser()->GetDefaultDownloadName();
+    FilePath generated_download_file_name =
+        net::GenerateFileName(download_url_,
+                              std::string(),
+                              std::string(),
+                              download_file_name_.value(),
+                              UTF16ToUTF8(wide_download_mime_type_),
+                              default_name);
 
     // Pass the file name to the drop target by setting the source window's
     // XdndDirectSave0 property.

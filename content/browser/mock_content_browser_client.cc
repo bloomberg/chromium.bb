@@ -278,6 +278,10 @@ FilePath MockContentBrowserClient::GetDefaultDownloadDirectory() {
   return download_dir_.path();
 }
 
+std::string MockContentBrowserClient::GetDefaultDownloadName() {
+  return std::string();
+}
+
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 int MockContentBrowserClient::GetCrashSignalFD(
     const CommandLine& command_line) {

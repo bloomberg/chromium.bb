@@ -143,6 +143,7 @@ class ShellContentBrowserClient : public ContentBrowserClient
   virtual void ClearCache(RenderViewHost* rvh)  OVERRIDE;
   virtual void ClearCookies(RenderViewHost* rvh)  OVERRIDE;
   virtual FilePath GetDefaultDownloadDirectory() OVERRIDE;
+  virtual std::string GetDefaultDownloadName() OVERRIDE;
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   virtual int GetCrashSignalFD(const CommandLine& command_line) OVERRIDE;

@@ -53,7 +53,7 @@ bool ShellDownloadManagerDelegate::ShouldStartDownload(int32 download_id) {
       download->referrer_charset(),
       download->suggested_filename(),
       download->mime_type(),
-      string16(UTF8ToUTF16("download")));
+      "download");
 
   // Since we have no download UI, show the user a dialog always.
   state.prompt_user_for_save_location = true;

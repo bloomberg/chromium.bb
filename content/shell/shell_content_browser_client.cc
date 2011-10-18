@@ -287,6 +287,10 @@ FilePath ShellContentBrowserClient::GetDefaultDownloadDirectory() {
   return FilePath();
 }
 
+std::string ShellContentBrowserClient::GetDefaultDownloadName() {
+  return "download";
+}
+
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 int ShellContentBrowserClient::GetCrashSignalFD(
     const CommandLine& command_line) {

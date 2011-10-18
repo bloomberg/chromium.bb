@@ -67,9 +67,11 @@
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/worker_host/worker_process_host.h"
 #include "content/common/desktop_notification_messages.h"
+#include "grit/generated_resources.h"
 #include "grit/ui_resources.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/cookie_options.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_CHROMEOS)
@@ -906,6 +908,10 @@ void ChromeContentBrowserClient::ClearCookies(RenderViewHost* rvh) {
 
 FilePath ChromeContentBrowserClient::GetDefaultDownloadDirectory() {
   return download_util::GetDefaultDownloadDirectory();
+}
+
+std::string ChromeContentBrowserClient::GetDefaultDownloadName() {
+  return l10n_util::GetStringUTF8(IDS_DEFAULT_DOWNLOAD_FILENAME);
 }
 
 #if defined(OS_LINUX)

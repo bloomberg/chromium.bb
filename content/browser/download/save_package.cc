@@ -364,7 +364,7 @@ bool SavePackage::GenerateFileName(const std::string& disposition,
   // TODO(jungshik): Figure out the referrer charset when having one
   // makes sense and pass it to GenerateFileName.
   FilePath file_path = net::GenerateFileName(url, disposition, "", "", "",
-                                             ASCIIToUTF16(kDefaultSaveName));
+                                             kDefaultSaveName);
 
   DCHECK(!file_path.empty());
   FilePath::StringType pure_file_name =

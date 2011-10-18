@@ -97,8 +97,8 @@ void GenerateFileNameInternal(const GURL& url,
                               const std::string& suggested_name,
                               const std::string& mime_type,
                               FilePath* generated_name) {
-  string16 default_file_name(
-      l10n_util::GetStringUTF16(IDS_DEFAULT_DOWNLOAD_FILENAME));
+  std::string default_file_name(
+      l10n_util::GetStringUTF8(IDS_DEFAULT_DOWNLOAD_FILENAME));
 
   *generated_name = net::GenerateFileName(url, content_disposition,
                                           referrer_charset, suggested_name,

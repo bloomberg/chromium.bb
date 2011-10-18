@@ -322,6 +322,10 @@ class ContentBrowserClient {
   // This can be called on any thread.
   virtual FilePath GetDefaultDownloadDirectory() = 0;
 
+  // Returns the default filename used in downloads when we have no idea what
+  // else we should do with the file.
+  virtual std::string GetDefaultDownloadName() = 0;
+
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Can return an optional fd for crash handling, otherwise returns -1. The
   // passed |command_line| will be used to start the process in question.
