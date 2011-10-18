@@ -88,8 +88,8 @@ std::string GetString(base::DictionaryValue* val, const std::string& key) {
 }
 
 base::DictionaryValue* ToDictionary(base::Value* val) {
-  if (!val || !val->IsType(base::Value::TYPE_DICTIONARY))
-    ADD_FAILURE() << "value is null or not a dictionary.";
+  EXPECT_TRUE(val);
+  EXPECT_EQ(base::Value::TYPE_DICTIONARY, val->GetType());
   return static_cast<base::DictionaryValue*>(val);
 }
 
@@ -104,8 +104,7 @@ scoped_refptr<Extension> CreateEmptyExtension() {
       *test_extension_value.get(),
       Extension::NO_FLAGS,
       &error));
-  if (!error.empty())
-    ADD_FAILURE() << "Could not parse test extension " << error;
+  EXPECT_TRUE(error.empty()) << "Could not parse test extension " << error;
   return extension;
 }
 
@@ -120,8 +119,8 @@ std::string RunFunctionAndReturnError(UIThreadExtensionFunction* function,
                                       RunFunctionFlags flags) {
   scoped_refptr<ExtensionFunction> function_owner(function);
   RunFunction(function, args, browser, flags);
-  if (function->GetResultValue())
-    ADD_FAILURE() << function->GetResult();
+  EXPECT_FALSE(function->GetResultValue()) << "Unexpected function result " <<
+      function->GetResult();
   return function->GetError();
 }
 
@@ -136,10 +135,9 @@ base::Value* RunFunctionAndReturnResult(UIThreadExtensionFunction* function,
                                         RunFunctionFlags flags) {
   scoped_refptr<ExtensionFunction> function_owner(function);
   RunFunction(function, args, browser, flags);
-  if (!function->GetError().empty())
-    ADD_FAILURE() << "Unexpected error: " << function->GetError();
-  if (!function->GetResultValue())
-    ADD_FAILURE() << "No result value found";
+  EXPECT_TRUE(function->GetError().empty()) << "Unexpected error: "
+      << function->GetError();
+  EXPECT_TRUE(function->GetResultValue()) << "No result value found";
   return function->GetResultValue()->DeepCopy();
 }
 
@@ -148,9 +146,8 @@ void RunFunction(UIThreadExtensionFunction* function,
                  Browser* browser,
                  RunFunctionFlags flags) {
   scoped_ptr<base::ListValue> parsed_args(ParseList(args));
-  if (!parsed_args.get()) {
-    ADD_FAILURE() << "Could not parse extension function arguments: " << args;
-  }
+  ASSERT_TRUE(parsed_args.get()) <<
+      "Could not parse extension function arguments: " << args;
   function->SetArgs(parsed_args.get());
 
   TestFunctionDispatcherDelegate dispatcher_delegate(browser);
