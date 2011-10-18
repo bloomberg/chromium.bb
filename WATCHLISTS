@@ -344,7 +344,7 @@
     'gpu': ['apatrick@chromium.org'],
     'locale_settings': ['finnur+watch@chromium.org'],
     'options_dialog_content': ['finnur+watch@chromium.org'],
-    'chromeos': ['davemoore+watch@chromium.org', 'stevenjb@chromium.org',
+    'chromeos': ['davemoore+watch@chromium.org', 'stevenjb+watch@chromium.org',
                  'nkostylev+watch@chromium.org'],
     'chromeos_webui': ['nkostylev+watch@chromium.org'],
     'npapi_headers': ['stuartmorgan@chromium.org'],
