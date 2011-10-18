@@ -19,6 +19,9 @@ namespace test {
 
 class TestDesktopDelegate : public DesktopDelegate {
  public:
+  // Callers should allocate a TestDesktopDelegate on the heap and then forget
+  // about it -- the c'tor passes ownership of the TestDesktopDelegate to the
+  // static Desktop object.
   TestDesktopDelegate();
   virtual ~TestDesktopDelegate();
 

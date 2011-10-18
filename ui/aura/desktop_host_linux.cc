@@ -4,6 +4,13 @@
 
 #include "ui/aura/desktop_host.h"
 
+#include <X11/Xlib.h>
+
+// Get rid of a macro from Xlib.h that conflicts with Aura's RootWindow class.
+#undef RootWindow
+
+#include <algorithm>
+
 #include "base/message_loop.h"
 #include "base/message_pump_x.h"
 #include "ui/aura/cursor.h"
@@ -152,7 +159,6 @@ DesktopHostLinux::DesktopHostLinux(const gfx::Rect& bounds)
                                  bounds.x(), bounds.y(),
                                  bounds.width(), bounds.height(),
                                  0, 0, 0);
-  XMapWindow(xdisplay_, xwindow_);
 
   long event_mask = ButtonPressMask | ButtonReleaseMask |
                     KeyPressMask | KeyReleaseMask |
@@ -271,6 +277,8 @@ gfx::AcceleratedWidget DesktopHostLinux::GetAcceleratedWidget() {
 }
 
 void DesktopHostLinux::Show() {
+  XMapWindow(xdisplay_, xwindow_);
+  XFlush(xdisplay_);
 }
 
 gfx::Size DesktopHostLinux::GetSize() const {

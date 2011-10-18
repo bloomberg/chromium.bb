@@ -29,7 +29,6 @@ ui::Compositor*(*Desktop::compositor_factory_)() = NULL;
 
 Desktop::Desktop()
     : Window(NULL),
-      delegate_(NULL),
       host_(aura::DesktopHost::Create(gfx::Rect(200, 200, 1280, 1024))),
       ALLOW_THIS_IN_INITIALIZER_LIST(schedule_paint_factory_(this)),
       active_window_(NULL),
@@ -59,15 +58,23 @@ Desktop::~Desktop() {
     instance_ = NULL;
 }
 
-void Desktop::SetDelegate(DesktopDelegate* delegate) {
-  delegate_.reset(delegate);
+// static
+Desktop* Desktop::GetInstance() {
+  if (!instance_) {
+    instance_ = new Desktop;
+    instance_->Init();
+  }
+  return instance_;
 }
 
-void Desktop::Init() {
-  Window::Init();
-  SetBounds(gfx::Rect(gfx::Point(), host_->GetSize()));
-  Show();
-  compositor()->SetRootLayer(layer());
+// static
+void Desktop::DeleteInstanceForTesting() {
+  delete instance_;
+  instance_ = NULL;
+}
+
+void Desktop::SetDelegate(DesktopDelegate* delegate) {
+  delegate_.reset(delegate);
 }
 
 void Desktop::ShowDesktop() {
@@ -155,14 +162,6 @@ void Desktop::OnHostResized(const gfx::Size& size) {
   compositor_->WidgetSizeChanged(size);
   SetBounds(bounds);
   FOR_EACH_OBSERVER(DesktopObserver, observers_, OnDesktopResized(size));
-}
-
-void Desktop::ScheduleDraw() {
-  if (!schedule_paint_factory_.HasWeakPtrs()) {
-    MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&Desktop::Draw, schedule_paint_factory_.GetWeakPtr()));
-  }
 }
 
 void Desktop::SetActiveWindow(Window* window, Window* to_focus) {
@@ -294,6 +293,14 @@ void Desktop::HandleMouseMoved(const MouseEvent& event, Window* target) {
   }
 }
 
+void Desktop::ScheduleDraw() {
+  if (!schedule_paint_factory_.HasWeakPtrs()) {
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&Desktop::Draw, schedule_paint_factory_.GetWeakPtr()));
+  }
+}
+
 bool Desktop::CanFocus() const {
   return IsVisible();
 }
@@ -326,13 +333,11 @@ bool Desktop::IsFocusedWindow(const Window* window) const {
   return focused_window_ == window;
 }
 
-// static
-Desktop* Desktop::GetInstance() {
-  if (!instance_) {
-    instance_ = new Desktop;
-    instance_->Init();
-  }
-  return instance_;
+void Desktop::Init() {
+  Window::Init();
+  SetBounds(gfx::Rect(gfx::Point(), host_->GetSize()));
+  Show();
+  compositor()->SetRootLayer(layer());
 }
 
 }  // namespace aura

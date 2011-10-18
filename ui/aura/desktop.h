@@ -41,13 +41,24 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate,
   Desktop();
   virtual ~Desktop();
 
+  static Desktop* GetInstance();
+  static void DeleteInstanceForTesting();
+
+  static void set_compositor_factory_for_testing(ui::Compositor*(*factory)()) {
+    compositor_factory_ = factory;
+  }
+  static ui::Compositor* (*compositor_factory())() {
+    return compositor_factory_;
+  }
+
+  ui::Compositor* compositor() { return compositor_.get(); }
   gfx::Point last_mouse_location() const { return last_mouse_location_; }
-
   DesktopDelegate* delegate() { return delegate_.get(); }
-  void SetDelegate(DesktopDelegate* delegate);
+  Window* active_window() { return active_window_; }
+  Window* mouse_pressed_handler() { return mouse_pressed_handler_; }
+  Window* capture_window() { return capture_window_; }
 
-  // Initializes the desktop.
-  void Init();
+  void SetDelegate(DesktopDelegate* delegate);
 
   // Shows the desktop host.
   void ShowDesktop();
@@ -77,20 +88,9 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate,
   // Called when the host changes size.
   void OnHostResized(const gfx::Size& size);
 
-  // Compositor we're drawing to.
-  ui::Compositor* compositor() { return compositor_.get(); }
-
-  static void set_compositor_factory_for_testing(ui::Compositor*(*factory)()) {
-    compositor_factory_ = factory;
-  }
-  static ui::Compositor* (*compositor_factory())() {
-    return compositor_factory_;
-  }
-
   // Sets the active window to |window| and the focused window to |to_focus|.
   // If |to_focus| is NULL, |window| is focused.
   void SetActiveWindow(Window* window, Window* to_focus);
-  Window* active_window() { return active_window_; }
 
   // Activates the topmost window. Does nothing if the topmost window is already
   // active.
@@ -114,21 +114,11 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate,
   void AddObserver(DesktopObserver* observer);
   void RemoveObserver(DesktopObserver* observer);
 
-  // Current handler for mouse events.
-  Window* mouse_pressed_handler() { return mouse_pressed_handler_; }
-
-  // Capture -------------------------------------------------------------------
-
   // Sets capture to the specified window.
   void SetCapture(Window* window);
 
   // If |window| has mouse capture, the current capture window is set to NULL.
   void ReleaseCapture(Window* window);
-
-  // Returns the window that has mouse capture.
-  Window* capture_window() { return capture_window_; }
-
-  static Desktop* GetInstance();
 
  private:
   // Called whenever the mouse moves, tracks the current |mouse_moved_handler_|,
@@ -148,11 +138,14 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate,
   virtual Window* GetFocusedWindow() OVERRIDE;
   virtual bool IsFocusedWindow(const Window* window) const OVERRIDE;
 
-  scoped_ptr<DesktopDelegate> delegate_;
+  // Initializes the desktop.
+  void Init();
 
   scoped_refptr<ui::Compositor> compositor_;
 
   scoped_ptr<DesktopHost> host_;
+
+  scoped_ptr<DesktopDelegate> delegate_;
 
   static Desktop* instance_;
 

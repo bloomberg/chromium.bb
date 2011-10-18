@@ -20,10 +20,6 @@ class AuraTestBase : public testing::Test {
   AuraTestBase();
   virtual ~AuraTestBase();
 
-  void RunPendingMessages() {
-    message_loop_.RunAllPending();
-  }
-
   // testing::Test:
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;

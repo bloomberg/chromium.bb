@@ -25,6 +25,12 @@ AuraTestBase::AuraTestBase()
 #if defined(OS_WIN)
   OleInitialize(NULL);
 #endif
+
+  aura::Desktop::set_compositor_factory_for_testing(&TestCreateCompositor);
+  // TestDesktopDelegate is owned by the desktop.
+  new TestDesktopDelegate();
+  Desktop::GetInstance()->Show();
+  Desktop::GetInstance()->SetHostSize(gfx::Size(600, 600));
 }
 
 AuraTestBase::~AuraTestBase() {
@@ -35,25 +41,25 @@ AuraTestBase::~AuraTestBase() {
       << "You have overridden SetUp but never called super class's SetUp";
   CHECK(teardown_called_)
       << "You have overridden TearDown but never called super class's TearDown";
+
+  // Flush the message loop because we have pending release tasks
+  // and these tasks if un-executed would upset Valgrind.
+  message_loop_.RunAllPending();
+
+  // Ensure that we don't use the previously-allocated static Desktop object
+  // later -- on Linux, it holds a reference to our message loop's X connection.
+  aura::Desktop::DeleteInstanceForTesting();
+  aura::Desktop::set_compositor_factory_for_testing(NULL);
 }
 
 void AuraTestBase::SetUp() {
   testing::Test::SetUp();
   setup_called_ = true;
-  aura::Desktop::set_compositor_factory_for_testing(&TestCreateCompositor);
-  // TestDesktopDelegate is owned by the desktop.
-  new TestDesktopDelegate();
-  Desktop::GetInstance()->Show();
-  Desktop::GetInstance()->SetHostSize(gfx::Size(600, 600));
 }
 
 void AuraTestBase::TearDown() {
-  // Flush the message loop because we have pending release tasks
-  // and these tasks if un-executed would upset Valgrind.
-  RunPendingMessages();
   teardown_called_ = true;
   testing::Test::TearDown();
-  aura::Desktop::set_compositor_factory_for_testing(NULL);
 }
 
 }  // namespace test
