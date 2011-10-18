@@ -173,6 +173,9 @@
       '-sync.SyncTest.testDisableAndEnableDatatypes',
       # crbug.com/95621
       '-youtube.YoutubeTest.testPlayerStatus',
+      # crbug.com/98526
+      '-pyauto_webdriver.PyAutoWebDriverTest.testCanConnectToRestartedBrowser',
+      '-pyauto_webdriver.PyAutoWebDriverTest.testTypeIntoTextBox',
     ],
 
     'mac': [
@@ -222,6 +225,9 @@
       '-ntp.NTPTest.testUninstallApp',
       # crbug.com/100595
       '-plugins.PluginsTest.testBlockPluginException',
+      # crbug.com/98526
+      '-pyauto_webdriver.PyAutoWebDriverTest.testCanConnectToRestartedBrowser',
+      '-pyauto_webdriver.PyAutoWebDriverTest.testTypeIntoTextBox',
     ],
 
     'linux': [  # linux != chromeos
