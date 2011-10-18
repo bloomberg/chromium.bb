@@ -624,10 +624,8 @@ cr.define('ntp4', function() {
         this.content_.scrollTop = this.content_.scrollHeight;
       }
       var app = new App(appData);
-      if (this.classList.contains('selected-card')) {
+      if (this.classList.contains('selected-card'))
         app.loadIcon();
-        app.setTileContentsFocusable(true);
-      }
       this.appendTile(app, animate);
     },
 
