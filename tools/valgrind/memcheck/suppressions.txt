@@ -3127,13 +3127,6 @@
    fun:_ZN13ProfileIOData20InitializeOnUIThreadEP7Profile
 }
 {
-   bug_72698_b
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZNK13ProfileIOData14LazyInitializeEv
-}
-{
    bug_73132
    Memcheck:Leak
    fun:_Znw*
