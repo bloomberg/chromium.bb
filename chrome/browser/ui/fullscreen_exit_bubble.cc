@@ -104,15 +104,11 @@ void FullscreenExitBubble::ToggleFullscreen() {
 }
 
 void FullscreenExitBubble::Accept() {
-  // TODO(yzshen): Pass bubble_type_ to OnAcceptFullscreenPermission() once it
-  // accepts it.
-  browser_->OnAcceptFullscreenPermission(url_);
+  browser_->OnAcceptFullscreenPermission(url_, bubble_type_);
 }
 
 void FullscreenExitBubble::Cancel() {
-  // TODO(yzshen): Pass bubble_type_ to OnDenyFullscreenPermission() once it
-  // accepts it.
-  browser_->OnDenyFullscreenPermission();
+  browser_->OnDenyFullscreenPermission(bubble_type_);
 }
 
 string16 FullscreenExitBubble::GetCurrentMessageText() const {

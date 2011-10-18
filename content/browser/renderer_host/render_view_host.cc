@@ -1148,8 +1148,7 @@ void RenderViewHost::NotifyRendererResponsive() {
 }
 
 void RenderViewHost::RequestToLockMouse() {
-  // Only allow to lock the mouse when the current tab is in fullscreen mode.
-  GotResponseToLockMouseRequest(delegate_->IsFullscreenForCurrentTab());
+  delegate_->RequestToLockMouse();
 }
 
 bool RenderViewHost::IsFullscreen() const {

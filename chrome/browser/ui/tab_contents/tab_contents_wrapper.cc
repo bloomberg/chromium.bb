@@ -675,5 +675,6 @@ void TabContentsWrapper::UpdateSafebrowsingDetectionHost() {
 }
 
 void TabContentsWrapper::ExitFullscreenMode() {
-  tab_contents()->render_view_host()->ExitFullscreen();
+  if (tab_contents() && render_view_host())
+    tab_contents()->render_view_host()->ExitFullscreen();
 }

@@ -17,6 +17,7 @@
 #import "chrome/browser/ui/cocoa/hyperlink_text_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
+#include "chrome/browser/ui/fullscreen_exit_bubble_type.h"
 #include "grit/generated_resources.h"
 #include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
@@ -84,14 +85,14 @@ const float kHideDuration = 0.7;
 
   DCHECK(fullscreen_bubble::ShowButtonsForType(bubbleType_));
   browser_->OnAcceptFullscreenPermission(
-      url_ /*, bubbleType_*/);  // TODO(yzshen)
+      url_, bubbleType_);
   [self showButtons:NO];
   [self hideSoon];
 }
 
 - (void)deny:(id)sender {
   DCHECK(fullscreen_bubble::ShowButtonsForType(bubbleType_));
-  browser_->OnDenyFullscreenPermission(/* bubbleType_ */);  // TODO(yzshen)
+  browser_->OnDenyFullscreenPermission(bubbleType_);
   [self hideSoon];
 }
 

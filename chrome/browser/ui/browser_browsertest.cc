@@ -29,6 +29,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/fullscreen_exit_bubble_type.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -873,6 +874,43 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_TestTabExitsItselfFromFullscreen) {
     fullscreen_observer.Wait();
     ASSERT_FALSE(browser()->window()->IsFullscreen());
   }
+}
+
+#if defined(OS_LINUX)
+// http://crbug.com/100680.
+#define MAYBE_TestFullscreenBubbleMouseLockState \
+        FAILS_TestFullscreenBubbleMouseLockState
+#else
+#define MAYBE_TestFullscreenBubbleMouseLockState \
+        TestFullscreenBubbleMouseLockState
+#endif
+
+IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_TestFullscreenBubbleMouseLockState) {
+  ASSERT_TRUE(test_server()->Start());
+
+  AddTabAtIndex(0, GURL(chrome::kAboutBlankURL),
+                content::PAGE_TRANSITION_TYPED);
+
+  TabContents* fullscreen_tab = browser()->GetSelectedTabContents();
+
+  {
+    ui_test_utils::WindowedNotificationObserver fullscreen_observer(
+        chrome::NOTIFICATION_FULLSCREEN_CHANGED,
+        NotificationService::AllSources());
+    browser()->ToggleFullscreenModeForTab(fullscreen_tab, true);
+    fullscreen_observer.Wait();
+    ASSERT_TRUE(browser()->window()->IsFullscreen());
+  }
+
+  browser()->RequestToLockMouse(fullscreen_tab);
+  FullscreenExitBubbleType type = browser()->GetFullscreenExitBubbleType();
+  bool mouse_lock = false;
+  fullscreen_bubble::PermissionRequestedByType(type, NULL, &mouse_lock);
+  ASSERT_TRUE(mouse_lock);
+
+  browser()->OnAcceptFullscreenPermission(fullscreen_tab->GetURL(), type);
+  type = browser()->GetFullscreenExitBubbleType();
+  ASSERT_FALSE(fullscreen_bubble::ShowButtonsForType(type));
 }
 
 #if defined(OS_MACOSX)

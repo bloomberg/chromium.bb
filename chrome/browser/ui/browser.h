@@ -34,6 +34,7 @@
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper_delegate.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/constrained_window_tab_helper_delegate.h"
+#include "chrome/browser/ui/fullscreen_exit_bubble_type.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper_delegate.h"
 #include "chrome/browser/ui/shell_dialogs.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper_delegate.h"
@@ -815,8 +816,9 @@ class Browser : public TabHandlerDelegate,
   virtual void TabStripEmpty();
 
   // Fullscreen permission infobar callbacks.
-  void OnAcceptFullscreenPermission(const GURL& url);
-  void OnDenyFullscreenPermission();
+  void OnAcceptFullscreenPermission(const GURL& url,
+                                    FullscreenExitBubbleType bubble_type);
+  void OnDenyFullscreenPermission(FullscreenExitBubbleType bubble_type);
   ContentSetting GetFullscreenSetting(const GURL& url);
 
   // Figure out if there are tabs that have beforeunload handlers.
@@ -849,6 +851,7 @@ class Browser : public TabHandlerDelegate,
   FRIEND_TEST_ALL_PREFIXES(BrowserTest, AppIdSwitch);
   FRIEND_TEST_ALL_PREFIXES(BrowserTest, TestNewTabExitsFullscreen);
   FRIEND_TEST_ALL_PREFIXES(BrowserTest, TestTabExitsItselfFromFullscreen);
+  FRIEND_TEST_ALL_PREFIXES(BrowserTest, TestFullscreenBubbleMouseLockState);
   FRIEND_TEST_ALL_PREFIXES(BrowserTest, TabEntersPresentationModeFromWindowed);
   FRIEND_TEST_ALL_PREFIXES(BrowserInitTest, OpenAppShortcutNoPref);
   FRIEND_TEST_ALL_PREFIXES(BrowserInitTest, OpenAppShortcutWindowPref);
@@ -884,6 +887,15 @@ class Browser : public TabHandlerDelegate,
 
     // Change is the result of window toggling in/out of fullscreen mode.
     BOOKMARK_BAR_STATE_CHANGE_TOGGLE_FULLSCREEN,
+  };
+
+  enum MouseLockState {
+    MOUSELOCK_NOT_REQUESTED,
+    // The page requests to lock the mouse and the user hasn't responded to the
+    // request.
+    MOUSELOCK_REQUESTED,
+    // Mouse lock has been allowed by the user.
+    MOUSELOCK_ACCEPTED
   };
 
   // Overridden from TabContentsDelegate:
@@ -989,6 +1001,9 @@ class Browser : public TabHandlerDelegate,
 
   virtual void CrashedPlugin(TabContents* tab,
                              const FilePath& plugin_path) OVERRIDE;
+
+  virtual void RequestToLockMouse(TabContents* tab) OVERRIDE;
+  virtual void LostMouseLock() OVERRIDE;
 
   // Overridden from TabContentsWrapperDelegate:
   virtual void OnDidGetApplicationInfo(TabContentsWrapper* source,
@@ -1261,6 +1276,12 @@ class Browser : public TabHandlerDelegate,
   // Notifies the tab that it has been forced out of fullscreen mode.
   void NotifyTabOfFullscreenExit();
 
+  // Determines what should be shown in the fullscreen exit bubble.
+  FullscreenExitBubbleType GetFullscreenExitBubbleType() const;
+
+  // Updates the content of the fullscreen exit bubble.
+  void UpdateFullscreenExitBubbleContent();
+
   // Data members /////////////////////////////////////////////////////////////
 
   NotificationRegistrar registrar_;
@@ -1407,6 +1428,11 @@ class Browser : public TabHandlerDelegate,
 
   // True if the current tab entered fullscreen mode via webkitRequestFullScreen
   bool tab_caused_fullscreen_;
+  // True if tab fullscreen has been allowed, either by settings or by user
+  // clicking the allow button on the fullscreen infobar.
+  bool tab_fullscreen_accepted_;
+
+  MouseLockState mouse_lock_state_;
 
   // True if the browser window has been shown at least once.
   bool window_has_shown_;
