@@ -13,7 +13,6 @@
 #include "content/browser/content_browser_client.h"
 #include "content/browser/webui/web_ui_factory.h"
 #include "content/common/child_process_info.h"
-#include "content/common/content_client.h"
 #include "content/common/content_constants.h"
 #include "content/common/notification_service.h"
 #include "content/public/browser/notification_types.h"

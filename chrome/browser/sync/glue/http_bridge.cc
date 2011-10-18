@@ -8,7 +8,7 @@
 #include "base/message_loop_proxy.h"
 #include "base/string_number_conversions.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/content_client.h"
+#include "content/public/common/content_client.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/host_resolver.h"
 #include "net/base/load_flags.h"

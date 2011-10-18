@@ -6,10 +6,10 @@
 
 #include "base/command_line.h"
 #include "content/common/child_thread.h"
-#include "content/common/content_client.h"
 #include "content/common/file_system/file_system_dispatcher.h"
 #include "content/common/webmessageportchannel_impl.h"
 #include "content/common/worker_messages.h"
+#include "content/public/common/content_client.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebWorker.h"

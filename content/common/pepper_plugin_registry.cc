@@ -10,7 +10,7 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "content/common/content_client.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 

@@ -7,7 +7,6 @@
 #include "content/browser/content_browser_client.h"
 #include "content/browser/geolocation/access_token_store.h"
 #include "content/browser/geolocation/location_provider.h"
-#include "content/common/content_client.h"
 
 // GeolocationArbitratorDependencyFactory
 GeolocationArbitratorDependencyFactory::

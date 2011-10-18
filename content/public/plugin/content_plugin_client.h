@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/string16.h"
-#include "content/common/content_client.h"
+#include "content/public/common/content_client.h"
 
 namespace content {
 

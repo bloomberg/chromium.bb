@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/compiler_specific.h"
-#include "content/common/content_client.h"
+#include "content/public/common/content_client.h"
 
 class TestContentClient : public content::ContentClient {
  public:

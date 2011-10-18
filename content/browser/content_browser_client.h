@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/callback.h"
-#include "content/common/content_client.h"
 #include "content/common/window_container_type.h"
+#include "content/public/common/content_client.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNotificationPresenter.h"
 
 class AccessTokenStore;

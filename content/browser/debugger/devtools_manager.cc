@@ -16,7 +16,6 @@
 #include "content/browser/debugger/render_view_devtools_agent_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/content_client.h"
 #include "googleurl/src/gurl.h"
 
 // static

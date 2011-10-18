@@ -12,7 +12,7 @@
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
-#include "content/common/content_client.h"
+#include "content/public/common/content_client.h"
 #include "grit/webkit_strings.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
 

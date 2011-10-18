@@ -17,7 +17,6 @@
 #include "base/shared_memory.h"
 #include "base/string_util.h"
 #include "content/common/clipboard_messages.h"
-#include "content/common/content_client.h"
 #include "content/common/npobject_util.h"
 #include "content/common/socket_stream_dispatcher.h"
 #include "content/common/view_messages.h"

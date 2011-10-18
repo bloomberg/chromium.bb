@@ -5,10 +5,10 @@
 #include "content/common/npobject_stub.h"
 
 #include "base/command_line.h"
-#include "content/common/content_client.h"
 #include "content/common/np_channel_base.h"
 #include "content/common/npobject_util.h"
 #include "content/common/plugin_messages.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npruntime.h"

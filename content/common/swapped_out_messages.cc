@@ -4,8 +4,8 @@
 
 #include "content/common/swapped_out_messages.h"
 
-#include "content/common/content_client.h"
 #include "content/common/view_messages.h"
+#include "content/public/common/content_client.h"
 
 namespace content {
 

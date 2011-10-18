@@ -39,7 +39,6 @@
 #include "content/browser/tab_contents/title_updated_details.h"
 #include "content/browser/user_metrics.h"
 #include "content/browser/webui/web_ui_factory.h"
-#include "content/common/content_client.h"
 #include "content/common/content_constants.h"
 #include "content/common/content_restriction.h"
 #include "content/common/intents_messages.h"

@@ -10,7 +10,7 @@
 
 #include "base/string16.h"
 #include "ipc/ipc_message.h"
-#include "content/common/content_client.h"
+#include "content/public/common/content_client.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPageVisibilityState.h"
 
 class FilePath;

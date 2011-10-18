@@ -68,8 +68,6 @@
     'common/content_message_generator.cc',
     'common/content_message_generator.h',
     'common/content_export.h',
-    'common/content_client.cc',
-    'common/content_client.h',
     'common/content_constants.cc',
     'common/content_constants.h',
     'common/content_counters.cc',
@@ -257,6 +255,8 @@
     'common/window_container_type.cc',
     'common/window_container_type.h',
     'common/worker_messages.h',
+    'public/common/content_client.cc',
+    'public/common/content_client.h',
   ],
   'conditions': [
     ['OS!="win"', {

@@ -25,7 +25,7 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
-#include "content/common/content_client.h"
+#include "content/public/common/content_client.h"
 #include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"

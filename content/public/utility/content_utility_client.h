@@ -6,7 +6,7 @@
 #define CONTENT_PUBLIC_UTILITY_CONTENT_UTILITY_CLIENT_H_
 #pragma once
 
-#include "content/common/content_client.h"
+#include "content/public/common/content_client.h"
 
 namespace content {
 
