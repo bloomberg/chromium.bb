@@ -1273,6 +1273,7 @@
         'browser/event_disposition.cc',
         'browser/event_disposition.h',
         'browser/extensions/app_notification_manager_unittest.cc',
+        'browser/extensions/app_notification_manager_sync_unittest.cc',
         'browser/extensions/app_notification_storage_unittest.cc',
         'browser/extensions/app_notification_test_util.cc',
         'browser/extensions/app_notify_channel_setup_unittest.cc',
