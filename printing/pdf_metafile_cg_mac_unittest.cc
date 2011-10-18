@@ -16,7 +16,7 @@ namespace printing {
 
 TEST(PdfMetafileCgTest, Pdf) {
   // Test in-renderer constructor.
-  printing::PdfMetafileCg pdf;
+  PdfMetafileCg pdf;
   EXPECT_TRUE(pdf.Init());
   EXPECT_TRUE(pdf.context() != NULL);
 
@@ -43,7 +43,7 @@ TEST(PdfMetafileCgTest, Pdf) {
   pdf.GetData(&buffer.front(), size);
 
   // Test browser-side constructor.
-  printing::PdfMetafileCg pdf2;
+  PdfMetafileCg pdf2;
   EXPECT_TRUE(pdf2.InitFromData(&buffer.front(), size));
 
   // Get the first 4 characters from pdf2.

@@ -46,13 +46,13 @@ PrintingContext::Result PrintingContext::UpdatePrintSettings(
     const PageRanges& ranges) {
   ResetSettings();
 
-  if (!job_settings.GetBoolean(printing::kSettingHeaderFooterEnabled,
+  if (!job_settings.GetBoolean(kSettingHeaderFooterEnabled,
                                &settings_.display_header_footer)) {
     NOTREACHED();
   }
 
   int margin_type = DEFAULT_MARGINS;
-  if (!job_settings.GetInteger(printing::kSettingMarginsType, &margin_type) ||
+  if (!job_settings.GetInteger(kSettingMarginsType, &margin_type) ||
       (margin_type != DEFAULT_MARGINS &&
        margin_type != NO_MARGINS &&
        margin_type != CUSTOM_MARGINS &&
@@ -67,15 +67,13 @@ PrintingContext::Result PrintingContext::UpdatePrintSettings(
     double left_margin_in_points = 0;
     double right_margin_in_points = 0;
     DictionaryValue* custom_margins;
-    if (!job_settings.GetDictionary(printing::kSettingMarginsCustom,
-                                    &custom_margins) ||
-        !custom_margins->GetDouble(printing::kSettingMarginTop,
-                                   &top_margin_in_points) ||
-        !custom_margins->GetDouble(printing::kSettingMarginBottom,
+    if (!job_settings.GetDictionary(kSettingMarginsCustom, &custom_margins) ||
+        !custom_margins->GetDouble(kSettingMarginTop, &top_margin_in_points) ||
+        !custom_margins->GetDouble(kSettingMarginBottom,
                                    &bottom_margin_in_points) ||
-        !custom_margins->GetDouble(printing::kSettingMarginLeft,
+        !custom_margins->GetDouble(kSettingMarginLeft,
                                    &left_margin_in_points) ||
-        !custom_margins->GetDouble(printing::kSettingMarginRight,
+        !custom_margins->GetDouble(kSettingMarginRight,
                                    &right_margin_in_points)) {
       NOTREACHED();
     }
@@ -90,8 +88,7 @@ PrintingContext::Result PrintingContext::UpdatePrintSettings(
   }
 
   PrintingContext::Result result = UpdatePrinterSettings(job_settings, ranges);
-  printing::PrintSettingsInitializer::InitHeaderFooterStrings(job_settings,
-                                                              &settings_);
+  PrintSettingsInitializer::InitHeaderFooterStrings(job_settings, &settings_);
   return result;
 }
 

@@ -249,7 +249,7 @@ PdfMetafileSkia* PdfMetafileSkia::GetMetafileForCurrentPage() {
   if (data.size() == 0)
     return NULL;
 
-  PdfMetafileSkia* metafile = new printing::PdfMetafileSkia;
+  PdfMetafileSkia* metafile = new PdfMetafileSkia;
   metafile->InitFromData(data.bytes(), data.size());
   return metafile;
 }

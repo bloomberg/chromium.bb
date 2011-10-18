@@ -45,8 +45,7 @@ void PrintedDocument::RenderPrintedPage(
 
   DCHECK(context);
 
-  const printing::PageSetup& page_setup(
-      immutable_.settings_.page_setup_device_units());
+  const PageSetup& page_setup(immutable_.settings_.page_setup_device_units());
   gfx::Rect content_area;
   page.GetCenteredPageContentRect(page_setup.physical_size(), &content_area);
 

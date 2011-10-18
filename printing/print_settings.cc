@@ -28,83 +28,83 @@ void GetColorModelForMode(
 
   color_setting_name->assign(kCUPSColorModel);
   switch (color_mode) {
-    case printing::COLOR:
-      color_value->assign(printing::kColor);
+    case COLOR:
+      color_value->assign(kColor);
       break;
-    case printing::CMYK:
-      color_value->assign(printing::kCMYK);
+    case CMYK:
+      color_value->assign(kCMYK);
       break;
-    case printing::PRINTOUTMODE_NORMAL:
-      color_value->assign(printing::kNormal);
+    case PRINTOUTMODE_NORMAL:
+      color_value->assign(kNormal);
       color_setting_name->assign(kCUPSPrintoutMode);
       break;
-    case printing::PRINTOUTMODE_NORMAL_GRAY:
-      color_value->assign(printing::kNormalGray);
+    case PRINTOUTMODE_NORMAL_GRAY:
+      color_value->assign(kNormalGray);
       color_setting_name->assign(kCUPSPrintoutMode);
       break;
-    case printing::RGB16:
-      color_value->assign(printing::kRGB16);
+    case RGB16:
+      color_value->assign(kRGB16);
       break;
-    case printing::RGBA:
-      color_value->assign(printing::kRGBA);
+    case RGBA:
+      color_value->assign(kRGBA);
       break;
-    case printing::RGB:
-      color_value->assign(printing::kRGB);
+    case RGB:
+      color_value->assign(kRGB);
       break;
-    case printing::CMY:
-      color_value->assign(printing::kCMY);
+    case CMY:
+      color_value->assign(kCMY);
       break;
-    case printing::CMY_K:
-      color_value->assign(printing::kCMY_K);
+    case CMY_K:
+      color_value->assign(kCMY_K);
       break;
-    case printing::BLACK:
-      color_value->assign(printing::kBlack);
+    case BLACK:
+      color_value->assign(kBlack);
       break;
-    case printing::GRAY:
-      color_value->assign(printing::kGray);
+    case GRAY:
+      color_value->assign(kGray);
       break;
-    case printing::COLORMODE_COLOR:
+    case COLORMODE_COLOR:
       color_setting_name->assign(kCUPSColorMode);
-      color_value->assign(printing::kColor);
+      color_value->assign(kColor);
       break;
-    case printing::COLORMODE_MONOCHROME:
+    case COLORMODE_MONOCHROME:
       color_setting_name->assign(kCUPSColorMode);
-      color_value->assign(printing::kMonochrome);
+      color_value->assign(kMonochrome);
       break;
-    case printing::HP_COLOR_COLOR:
+    case HP_COLOR_COLOR:
       color_setting_name->assign(kColor);
-      color_value->assign(printing::kColor);
+      color_value->assign(kColor);
       break;
-    case printing::HP_COLOR_BLACK:
+    case HP_COLOR_BLACK:
       color_setting_name->assign(kColor);
-      color_value->assign(printing::kBlack);
+      color_value->assign(kBlack);
       break;
-    case printing::PROCESSCOLORMODEL_CMYK:
+    case PROCESSCOLORMODEL_CMYK:
       color_setting_name->assign(kCUPSProcessColorModel);
-      color_value->assign(printing::kCMYK);
+      color_value->assign(kCMYK);
       break;
-    case printing::PROCESSCOLORMODEL_GREYSCALE:
+    case PROCESSCOLORMODEL_GREYSCALE:
       color_setting_name->assign(kCUPSProcessColorModel);
-      color_value->assign(printing::kGreyscale);
+      color_value->assign(kGreyscale);
       break;
-    case printing::PROCESSCOLORMODEL_RGB:
+    case PROCESSCOLORMODEL_RGB:
       color_setting_name->assign(kCUPSProcessColorModel);
-      color_value->assign(printing::kRGB);
+      color_value->assign(kRGB);
       break;
     default:
-      color_value->assign(printing::kGrayscale);
+      color_value->assign(kGrayscale);
       break;
   }
 }
 #endif
 
 bool isColorModelSelected(int model) {
-  return (model != printing::GRAY &&
-          model != printing::BLACK &&
-          model != printing::PRINTOUTMODE_NORMAL_GRAY &&
-          model != printing::COLORMODE_MONOCHROME &&
-          model != printing::PROCESSCOLORMODEL_GREYSCALE &&
-          model != printing::HP_COLOR_BLACK);
+  return (model != GRAY &&
+          model != BLACK &&
+          model != PRINTOUTMODE_NORMAL_GRAY &&
+          model != COLORMODE_MONOCHROME &&
+          model != PROCESSCOLORMODEL_GREYSCALE &&
+          model != HP_COLOR_BLACK);
 }
 
 // Global SequenceNumber used for generating unique cookie values.
@@ -185,16 +185,16 @@ void PrintSettings::SetPrinterPrintableArea(
       margins.header = 0;
       margins.footer = 0;
       margins.top = ConvertUnitDouble(custom_margins_in_points_.top,
-                                      printing::kPointsPerInch,
+                                      kPointsPerInch,
                                       units_per_inch);
       margins.bottom = ConvertUnitDouble(custom_margins_in_points_.bottom,
-                                         printing::kPointsPerInch,
+                                         kPointsPerInch,
                                          units_per_inch);
       margins.left = ConvertUnitDouble(custom_margins_in_points_.left,
-                                       printing::kPointsPerInch,
+                                       kPointsPerInch,
                                        units_per_inch);
       margins.right = ConvertUnitDouble(custom_margins_in_points_.right,
-                                        printing::kPointsPerInch,
+                                        kPointsPerInch,
                                         units_per_inch);
       break;
     }

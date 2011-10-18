@@ -346,7 +346,7 @@ PrintingContext::Result PrintingContextWin::UpdatePrinterSettings(
     return OnError();
   }
 
-  bool print_to_cloud = job_settings.HasKey(printing::kSettingCloudPrintId);
+  bool print_to_cloud = job_settings.HasKey(kSettingCloudPrintId);
 
   if (print_to_pdf || print_to_cloud || is_cloud_dialog) {
     // Default fallback to Letter size.
@@ -409,7 +409,7 @@ PrintingContext::Result PrintingContextWin::UpdatePrinterSettings(
     return OnError();
   }
 
-  if (color == printing::GRAY)
+  if (color == GRAY)
     dev_mode->dmColor = DMCOLOR_MONOCHROME;
   else
     dev_mode->dmColor = DMCOLOR_COLOR;

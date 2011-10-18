@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <string>
 
 #include "base/i18n/time_formatting.h"
 #include "base/string_number_conversions.h"
@@ -19,38 +20,33 @@
 #include "ui/base/text/text_elider.h"
 
 using base::DictionaryValue;
-using base::Time;
-using printing::ConvertPointsToPixelDouble;
-using printing::ConvertUnitDouble;
-using printing::GetHeaderFooterSegmentWidth;
 
 namespace printing {
 
 void PrintSettingsInitializer::InitHeaderFooterStrings(
       const DictionaryValue& job_settings,
       PrintSettings* print_settings) {
-  if (!job_settings.GetBoolean(printing::kSettingHeaderFooterEnabled,
+  if (!job_settings.GetBoolean(kSettingHeaderFooterEnabled,
                                &print_settings->display_header_footer)) {
     NOTREACHED();
   }
   if (!print_settings->display_header_footer)
     return;
 
-  string16 date = base::TimeFormatShortDateNumeric(Time::Now());
+  string16 date = base::TimeFormatShortDateNumeric(base::Time::Now());
   string16 title;
   std::string url;
-  if (!job_settings.GetString(printing::kSettingHeaderFooterTitle, &title) ||
-      !job_settings.GetString(printing::kSettingHeaderFooterURL, &url)) {
+  if (!job_settings.GetString(kSettingHeaderFooterTitle, &title) ||
+      !job_settings.GetString(kSettingHeaderFooterURL, &url)) {
     NOTREACHED();
   }
 
-  gfx::Font font(UTF8ToUTF16(printing::kSettingHeaderFooterFontName),
-                 ceil(ConvertPointsToPixelDouble(
-                     printing::kSettingHeaderFooterFontSize)));
+  gfx::Font font(
+      UTF8ToUTF16(kSettingHeaderFooterFontName),
+      ceil(ConvertPointsToPixelDouble(kSettingHeaderFooterFontSize)));
   double segment_width = GetHeaderFooterSegmentWidth(ConvertUnitDouble(
       print_settings->page_setup_device_units().physical_size().width(),
-      print_settings->device_units_per_inch(),
-      printing::kPixelsPerInch));
+      print_settings->device_units_per_inch(), kPixelsPerInch));
   date = ui::ElideText(date, font, segment_width, false);
   print_settings->date = date;
 
@@ -69,4 +65,3 @@ void PrintSettingsInitializer::InitHeaderFooterStrings(
 }
 
 }  // namespace printing
-

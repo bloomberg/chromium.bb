@@ -4,6 +4,8 @@
 
 #include "printing/image.h"
 
+#include <algorithm>
+
 #include "base/file_util.h"
 #include "base/md5.h"
 #include "base/string_number_conversions.h"
@@ -146,7 +148,7 @@ bool Image::LoadPng(const std::string& compressed) {
 
 bool Image::LoadMetafile(const std::string& data) {
   DCHECK(!data.empty());
-  printing::NativeMetafile metafile;
+  NativeMetafile metafile;
   if (!metafile.InitFromData(data.data(), data.size()))
     return false;
   return LoadMetafile(metafile);
