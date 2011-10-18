@@ -288,7 +288,14 @@
                 </li>
               </ol>
             </li><li>
-              <a href="#H2-6">A note about timestamps</a>
+              <a href="#H2-6">A note about caching</a>
+              <ol>
+                <li style="display: none; ">
+                  <a>h3Name</a>
+                </li>
+              </ol>
+            </li><li>
+              <a href="#H2-7">A note about timestamps</a>
               <ol>
                 <li style="display: none; ">
                   <a>h3Name</a>
@@ -378,7 +385,7 @@
 <!-- BEGIN AUTHORED CONTENT -->
 <p id="classSummary">
 Use the <code>chrome.experimental.webRequest</code> module to intercept, block,
-or modify requests in-flight. This module is still very much experimental. For
+or modify requests in-flight. This module is still experimental. For
 information on how to use experimental APIs, see the
 <a href="experimental.html">chrome.experimental.* APIs</a> page.
 </p>
@@ -419,16 +426,26 @@ The webRequest API defines the following events:
   event is triggered, before the headers are sent to the network. This event is
   informational and handled asynchronously. It does not allow to modify or
   cancel the request.</dd>
+  <dt><code>onHeadersReceived (optionally synchronous)</code></dt>
+  <dd>Fires each time when a HTTP(S) response header has been received. Due
+  to redirects and authentication requests this can happen multiple times per
+  request. This event is intended to allow extensions to add, modify and delete
+  response headers, like incoming Set-Cookie headers for example.</dd>
+  <dt><code>onAuthRequired (optionally synchronous)</code></dt>
+  <dd>Fires when a request requires authentication of the user. This signal can
+  be handled synchronously to provide authentication credentials. Note that
+  extensions may provide invalid credentials. Take care not to enter an infinite
+  loop by repeatedly providing invalid credentials.</dd>
+  <dt><code>onBeforeRedirect</code></dt>
+  <dd>Fires before a redirect is about to be executed. A redirection can be
+  triggered by a HTTP response code or by an extension. This event is
+  informational and handled asynchronously. It does not allow you to modify or
+  cancel the request. </dd>
   <dt><code>onResponseStarted</code></dt>
   <dd>Fires when the first byte of the response body is received. For HTTP
   requests, this means that the status line and response headers are
   available. This event is informational and handled asynchronously. It does not
   allow to modify or cancel the request.</dd>
-  <dt><code>onBeforeRedirect</code></dt>
-  <dd>Fires before a redirect is about to be executed. A redirection can be
-  triggered by a HTTP response code or by an extension. This event is
-  informational and handled asynchronously. It does not allow to modify or
-  cancel the request. </dd>
   <dt><code>onCompleted</code></dt>
   <dd>Fires when a request has been processed successfully.</dd>
   <dt><code>onErrorOccurred</code></dt>
@@ -446,24 +463,25 @@ The life-cycle of successful requests can be illustrated as follows:
 onBeforeRequest --------------------------------
   |          ^             |                    | [data and file URLs]
   |          |             | [redirection       |
-  |           -------      |  from extension]   |
-  v                  |     |                    |
-onBeforeSendHeaders  |     |                    |
-  |     ^            |     |                    |
-  v     | [auth]     |     |                    |
-onSendHeaders        |     |                    |
-  |     |            |     |                    |
-  |     v            |     |                    |
-  |    onBeforeRedirect &lt;--                     |
-  |                                             |
+  |           ----------   |  from extension]   |
+  v                     |  |                    |
+onBeforeSendHeaders     |  |                    |
+  |               ^     |  |                    |
+  v               |     |  |                    |
+onSendHeaders     |     |  |                    |
+  |               |     |  |                    |
+  v               |     |  |                    |
+onHeadersReceived |     |  |                    |
+  |  |  |         |     |  |                    |
+  |  |  v         |     |  |                    |
+  |  |  onAuthRequired /   |                    |
+  |  v                /    |                    |
+  |  onBeforeRedirect &lt;----                     |
   v                                             |
 onResponseStarted &lt;-----------------------------
   |
   v
 onCompleted
-
-[auth] = In case of an basic/digest authentication request from server, we send
-another HTTP request with the respective headers.
 </pre>
 <em>Note that this diagram does not capture a bug that will be fixed soon: If
 extensions redirect a URL request via the webRequest API, this redirection does
@@ -509,7 +527,8 @@ shall be described in the following.</p>
 <p>Each request is identified by a request ID. This ID is unique within a
 browser session and the context of an extension. It remains constant during the
 the life-cycle of a request and can be used to match signals for the same
-request.</p>
+request. Note that several HTTP requests are mapped to one webRequest in case of
+HTTP redirection or HTTP authentication.</p>
 
 <h3 id="subscription">Subscription</h3>
 
@@ -536,8 +555,9 @@ depends on the specific event type as well as the content of
 function is handled synchronously. That means that the request is blocked until
 the callback function returns. In this case, the callback can return a <a href="#type-BlockingResponse">BlockingResponse</a> that determines the further
 life-cycle of the request. Depending on the context, this response allows
-cancelling or redirecting a request (onBeforeRequest), or cancelling or modifying
-headers (onBeforeSendHeaders).</p>
+cancelling or redirecting a request (onBeforeRequest), cancelling or
+modifying headers (onBeforeSendHeaders, onHeadersReceived), or providing
+authentication credentials (onAuthRequired).</p>
 
 <p>Depending on the specific signal, <code>opt_extraInfoSpec</code> may contain
 further strings that indicate that specific information shall be passed to the
@@ -572,7 +592,20 @@ request, the most recently installed extension wins while all others are
 ignored. An extension is currently not notified, if its instruction to modify or
 redirect has been ignored.</p>
 
-<a name="H2-6"></a><h2>A note about timestamps</h2>
+<a name="H2-6"></a><h2>A note about caching</h2>
+<p>
+Chrome employs two caches, an on-disk cache and a very fast in-memory cache.
+The life-time of an in-memory cache is attached to the life-time of a render
+process which roughly corresponds to a tab. Requests that are answered from the
+in-memory cache are invisible to the webRequest API. If a request handler
+changes its behavior (for example the behavior according to which requests are
+blocked), a simple page refresh might not respect this changed behavior.
+<code>chrome.experimental.webRequest.handlerBehaviorChanged()</code> needs to be
+called to flush the in-memory cache. This is a very expensive operation and
+should not be done often.
+</p>
+
+<a name="H2-7"></a><h2>A note about timestamps</h2>
 <p>
 It's important to note that some technical oddities in the OS's handling
 of distinct Chrome processes can cause the clock to be skewed between the
@@ -616,12 +649,17 @@ from all requests:</p>
   ["blocking"]);
 </pre>
 
+<!--
+TODO(mkwst): update this section. We do not pass windowIds any more.
+http://crbug.com/98937
+
 <h3 id="tracking_frames">Tracking frames</h3>
 <p>For efficiency reason, the webRequest API does not pass the URL of the frame
 that issued a request to each request. If this information is required, for
 example to distinguish between first and third party requests, this example
 shows how to track the URLs of frames.</p>
-<pre>// dictionary "windowId" -&gt; "tabId"-"frameId" -&gt; "frameUrl"
+<pre>
+// dictionary "windowId" -> "tabId"-"frameId" -> "frameUrl"
 var frameUrl = {};
 
 function recordFrameUrl(windowId, tabId, frameId, frameUrl) {
@@ -650,6 +688,7 @@ chrome.windows.onRemoved.addListener(
   function(windowId) {delete frameUrl[windowId];}
   );
 </pre>
+-->
 <!-- END AUTHORED CONTENT -->
 </dl></div>
 
@@ -1459,7 +1498,7 @@ chrome.windows.onRemoved.addListener(
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The time when the browser was about to make the request, in milliseconds since the epoch.</dd>
+          <dd>The time when this signal is triggered, in milliseconds since the epoch.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -2800,7 +2839,7 @@ chrome.windows.onRemoved.addListener(
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The time when the browser was about to make the request, in milliseconds since the epoch.</dd>
+          <dd>The time when this signal is triggered, in milliseconds since the epoch.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -3939,7 +3978,7 @@ chrome.windows.onRemoved.addListener(
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The time when the browser was about to make the request, in milliseconds since the epoch.</dd>
+          <dd>The time when this signal is triggered, in milliseconds since the epoch.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -4735,7 +4774,7 @@ chrome.windows.onRemoved.addListener(
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The time when the browser was about to make the request, in milliseconds since the epoch.</dd>
+          <dd>The time when this signal is triggered, in milliseconds since the epoch.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -5599,7 +5638,7 @@ chrome.windows.onRemoved.addListener(
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The time when the browser was about to make the request, in milliseconds since the epoch.</dd>
+          <dd>The time when this signal is triggered, in milliseconds since the epoch.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -6670,7 +6709,7 @@ chrome.windows.onRemoved.addListener(
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The time when the browser was about to make the request, in milliseconds since the epoch.</dd>
+          <dd>The time when this signal is triggered, in milliseconds since the epoch.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -7526,7 +7565,7 @@ chrome.windows.onRemoved.addListener(
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The time when the browser was about to make the request, in milliseconds since the epoch.</dd>
+          <dd>The time when this signal is triggered, in milliseconds since the epoch.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -8458,7 +8497,7 @@ chrome.windows.onRemoved.addListener(
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The time when the browser was about to make the request, in milliseconds since the epoch.</dd>
+          <dd>The time when this signal is triggered, in milliseconds since the epoch.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -9529,7 +9568,7 @@ chrome.windows.onRemoved.addListener(
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The time when the browser was about to make the request, in milliseconds since the epoch.</dd>
+          <dd>The time when this signal is triggered, in milliseconds since the epoch.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.

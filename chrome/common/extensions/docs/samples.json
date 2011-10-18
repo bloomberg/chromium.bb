@@ -475,14 +475,17 @@
       "name": "CatBlock",
       "packaged_app": false,
       "path": "examples\/extensions\/catblock\/",
-      "protocols": [],
+      "protocols": [
+        "http:\/\/",
+        "http:\/\/"
+      ],
       "search_string": "CATBLOCK I CANT HAS CHEEZBURGER! BACKGROUND_PAGE EXPERIMENTAL CHROME.EXPERIMENTAL.WEBREQUEST.ONBEFOREREQUEST",
       "source_files": [
         "background.html",
         "loldogs.js",
         "manifest.json"
       ],
-      "source_hash": "8d164e0de05f62e751308b546d39ef9eb4587239",
+      "source_hash": "4070880eb00534fe9a5220293b9c798c0994a196",
       "zip_path": "examples\/extensions\/catblock.zip"
     },
     {

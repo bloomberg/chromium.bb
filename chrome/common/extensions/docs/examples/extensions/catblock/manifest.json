@@ -2,6 +2,8 @@
   "name": "CatBlock",
   "version": "1.0",
   "description": "I can't has cheezburger!",
-  "permissions": ["experimental"],
+  "permissions": ["experimental",
+                  "http://icanhascheezburger.files.wordpress.com/*",
+                  "http://chzmemebase.files.wordpress.com/*"],
   "background_page": "background.html"
 }
