@@ -70,11 +70,12 @@ int MouseButtonToX11ButtonNumber(MouseEvent::MouseButton button) {
   }
 }
 
-int ScrollWheelToX11ButtonNumber(int dx, int dy) {
-  // Horizontal scroll wheel.
-  if (dx != 0)
-    return (dx > 0 ? 6 : 7);
+int HorizontalScrollWheelToX11ButtonNumber(int dx) {
+  return (dx > 0 ? 6 : 7);
+}
 
+
+int VerticalScrollWheelToX11ButtonNumber(int dy) {
   // Positive y-values are wheel scroll-up events (button 4), negative y-values
   // are wheel scroll-down events (button 5).
   return (dy > 0 ? 4 : 5);
@@ -375,13 +376,12 @@ void EventExecutorLinux::InjectMouseEvent(const MouseEvent& event) {
 
   if (event.has_wheel_offset_y() && event.wheel_offset_y() != 0) {
     int dy = event.wheel_offset_y();
-    InjectScrollWheelClicks(ScrollWheelToX11ButtonNumber(0, dy),
-                            (dy > 0) ? dy : -dy);
+    InjectScrollWheelClicks(VerticalScrollWheelToX11ButtonNumber(dy), abs(dy));
   }
   if (event.has_wheel_offset_x() && event.wheel_offset_x() != 0) {
     int dx = event.wheel_offset_x();
-    InjectScrollWheelClicks(ScrollWheelToX11ButtonNumber(dx, 0),
-                            (dx > 0) ? dx : -dx);
+    InjectScrollWheelClicks(HorizontalScrollWheelToX11ButtonNumber(dx),
+                            abs(dx));
   }
 }
 
