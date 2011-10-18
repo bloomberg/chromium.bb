@@ -28,6 +28,10 @@ Widget* BubbleDelegateView::CreateBubble(BubbleDelegateView* bubble_delegate,
   return bubble_widget;
 }
 
+View* BubbleDelegateView::GetContentsView() {
+  return this;
+}
+
 ClientView* BubbleDelegateView::CreateClientView(Widget* widget) {
   return new BubbleView(widget, GetContentsView());
 }
@@ -41,6 +45,16 @@ NonClientFrameView* BubbleDelegateView::CreateNonClientFrameView() {
 gfx::Point BubbleDelegateView::GetAnchorPoint() const {
   return gfx::Point();
 }
+
+BubbleBorder::ArrowLocation BubbleDelegateView::GetArrowLocation() const {
+  return BubbleBorder::TOP_LEFT;
+}
+
+SkColor BubbleDelegateView::GetColor() const {
+  return SK_ColorWHITE;
+}
+
+void BubbleDelegateView::Init() {}
 
 const BubbleView* BubbleDelegateView::GetBubbleView() const {
   return GetWidget()->client_view()->AsBubbleView();

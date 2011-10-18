@@ -27,7 +27,7 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView {
                               Widget* parent_widget);
 
   // WidgetDelegate overrides:
-  virtual View* GetContentsView() OVERRIDE { return this; }
+  virtual View* GetContentsView() OVERRIDE;
   virtual ClientView* CreateClientView(Widget* widget) OVERRIDE;
   virtual NonClientFrameView* CreateNonClientFrameView() OVERRIDE;
 
@@ -35,16 +35,14 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView {
   virtual gfx::Point GetAnchorPoint() const;
 
   // Get the arrow's location on the bubble.
-  virtual BubbleBorder::ArrowLocation GetArrowLocation() const {
-    return BubbleBorder::TOP_LEFT;
-  }
+  virtual BubbleBorder::ArrowLocation GetArrowLocation() const;
 
   // Get the color used for the background and border.
-  virtual SkColor GetColor() const { return SK_ColorWHITE; }
+  virtual SkColor GetColor() const;
 
  protected:
   // Perform view initialization on the contents for bubble sizing.
-  virtual void Init() {}
+  virtual void Init();
 
  private:
   const BubbleView* GetBubbleView() const;

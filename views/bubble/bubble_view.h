@@ -23,8 +23,8 @@ class VIEWS_EXPORT BubbleView : public ClientView,
   virtual ~BubbleView();
 
   // ClientView overrides:
-  virtual BubbleView* AsBubbleView() OVERRIDE { return this; }
-  virtual const BubbleView* AsBubbleView() const OVERRIDE { return this; }
+  virtual BubbleView* AsBubbleView() OVERRIDE;
+  virtual const BubbleView* AsBubbleView() const OVERRIDE;
 
   void set_close_on_esc(bool close_on_esc) { close_on_esc_ = close_on_esc; }
 

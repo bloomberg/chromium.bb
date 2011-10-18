@@ -21,6 +21,14 @@ BubbleView::BubbleView(Widget* owner, View* contents_view)
 
 BubbleView::~BubbleView() {}
 
+BubbleView* BubbleView::AsBubbleView() {
+  return this;
+}
+
+const BubbleView* BubbleView::AsBubbleView() const {
+  return this;
+}
+
 void BubbleView::StartFade(bool fade_in) {
   fade_animation_.reset(new ui::SlideAnimation(this));
   fade_animation_->SetSlideDuration(kHideFadeDurationMS);
