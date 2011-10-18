@@ -125,6 +125,10 @@ ScreenLocker::ScreenLocker(const UserManager::User& user) {
   NOTIMPLEMENTED();
 }
 
+ScreenLocker::~ScreenLocker() {
+  NOTIMPLEMENTED();
+}
+
 void ScreenLocker::Init() {
   NOTIMPLEMENTED();
 }
@@ -139,25 +143,6 @@ void ScreenLocker::OnLoginSuccess(
     const GaiaAuthConsumer::ClientLoginResult&,
     bool,
     bool) {
-  NOTIMPLEMENTED();
-}
-
-void ScreenLocker::BubbleClosing(Bubble* bubble, bool closed_by_escape) {
-  NOTIMPLEMENTED();
-}
-
-bool ScreenLocker::CloseOnEscape() {
-  return true;
-}
-
-bool ScreenLocker::FadeInOnShow() {
-  return false;
-}
-
-void ScreenLocker::OnLinkActivated(size_t index) {
-}
-
-void ScreenLocker::OnCaptchaEntered(const std::string& captcha) {
   NOTIMPLEMENTED();
 }
 
@@ -178,21 +163,13 @@ void ScreenLocker::Signout() {
 }
 
 void ScreenLocker::ShowCaptchaAndErrorMessage(const GURL& captcha_url,
-                                              const std::wstring& message) {
+                                              const string16& message) {
   NOTIMPLEMENTED();
 }
 
-void ScreenLocker::ShowErrorMessage(const std::wstring& message,
+void ScreenLocker::ShowErrorMessage(const string16& message,
                                     bool sign_out_only) {
   NOTIMPLEMENTED();
-}
-
-void ScreenLocker::OnGrabInputs() {
-  NOTIMPLEMENTED();
-}
-
-views::View* ScreenLocker::GetViewByID(int id) {
-  return NULL;
 }
 
 void ScreenLocker::SetLoginStatusConsumer(
@@ -217,6 +194,10 @@ void ScreenLocker::UnlockScreenFailed() {
 
 // static
 void ScreenLocker::InitClass() {
+  NOTIMPLEMENTED();
+}
+
+void ScreenLocker::ScreenLockReady() {
   NOTIMPLEMENTED();
 }
 

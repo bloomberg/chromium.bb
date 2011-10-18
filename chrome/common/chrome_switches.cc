@@ -1058,6 +1058,9 @@ const char kVersion[]                       = "version";
 const char kWinHttpProxyResolver[]          = "winhttp-proxy-resolver";
 
 #if defined(OS_CHROMEOS)
+// Enable WebUI based lock screen.
+const char kWebUILockScreen[]               = "webui-lock-screen";
+
 // Enable WebUI based OOBE and login.
 const char kWebUILogin[]                    = "webui-login";
 

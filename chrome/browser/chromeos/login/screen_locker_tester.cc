@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/login/mock_authenticator.h"
 #include "chrome/browser/chromeos/login/screen_lock_view.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
+#include "chrome/browser/chromeos/login/screen_locker_views.h"
 #include "views/controls/button/button.h"
 #include "views/controls/label.h"
 #include "views/controls/textfield/textfield.h"
@@ -55,29 +56,36 @@ void ScreenLockerTester::EnterPassword(const std::string& password) {
   GdkEvent* event = gdk_event_new(GDK_KEY_PRESS);
   event->key.keyval = GDK_Return;
   views::KeyEvent key_event(event);
-  ScreenLocker::screen_locker_->screen_lock_view_->HandleKeyEvent(
-      pass, key_event);
+  screen_locker_views()->screen_lock_view_->HandleKeyEvent(pass, key_event);
   gdk_event_free(event);
 }
 
 void ScreenLockerTester::EmulateWindowManagerReady() {
   DCHECK(ScreenLocker::screen_locker_);
-  ScreenLocker::screen_locker_->OnWindowManagerReady();
+  screen_locker_views()->OnWindowManagerReady();
 }
 
 views::Textfield* ScreenLockerTester::GetPasswordField() const {
   DCHECK(ScreenLocker::screen_locker_);
-  return ScreenLocker::screen_locker_->screen_lock_view_->password_field_;
+  return screen_locker_views()->screen_lock_view_->password_field_;
 }
 
 views::Widget* ScreenLockerTester::GetWidget() const {
   DCHECK(ScreenLocker::screen_locker_);
-  return ScreenLocker::screen_locker_->lock_window_;
+  return screen_locker_views()->lock_window_;
 }
 
 views::Widget* ScreenLockerTester::GetChildWidget() const {
   DCHECK(ScreenLocker::screen_locker_);
-  return ScreenLocker::screen_locker_->lock_widget_;
+  return screen_locker_views()->lock_widget_;
+}
+
+ScreenLockerViews* ScreenLockerTester::screen_locker_views() const {
+  DCHECK(ScreenLocker::screen_locker_);
+  // TODO(flackr): Generalize testing infrastructure to work with WebUI.
+  DCHECK(!ScreenLocker::UseWebUILockScreen());
+  return static_cast<ScreenLockerViews*>(
+      ScreenLocker::screen_locker_->delegate_.get());
 }
 
 }  // namespace test

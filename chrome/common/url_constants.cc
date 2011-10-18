@@ -80,6 +80,7 @@ const char kChromeUIEnterpriseEnrollmentURL[] =
     "chrome://enterprise-enrollment/";
 const char kChromeUIImageBurnerURL[] = "chrome://imageburner/";
 const char kChromeUIKeyboardOverlayURL[] = "chrome://keyboardoverlay/";
+const char kChromeUILockScreenURL[] = "chrome://lock/";
 const char kChromeUIMediaplayerURL[] = "chrome://mediaplayer/";
 const char kChromeUIMobileSetupURL[] = "chrome://mobilesetup/";
 const char kChromeUIOSCreditsURL[] = "chrome://os-credits/";
@@ -192,6 +193,7 @@ const char kChromeUIDiscardsHost[] = "discards";
 const char kChromeUIEnterpriseEnrollmentHost[] = "enterprise-enrollment";
 const char kChromeUIImageBurnerHost[] = "imageburner";
 const char kChromeUIKeyboardOverlayHost[] = "keyboardoverlay";
+const char kChromeUILockScreenHost[] = "lock";
 const char kChromeUILoginContainerHost[] = "login-container";
 const char kChromeUILoginHost[] = "login";
 const char kChromeUIMediaplayerHost[] = "mediaplayer";

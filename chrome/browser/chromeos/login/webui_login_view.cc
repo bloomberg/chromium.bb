@@ -330,7 +330,7 @@ void WebUILoginView::InitStatusArea() {
   status_area_->Init();
   status_area_->SetVisible(status_area_visibility_on_init_);
 
-  views::Widget* login_window = WebUILoginDisplay::GetLoginWindow();
+  views::Widget* login_window = GetLoginWindow();
   // Width of |status_window| is meant to be large enough.
   // The current value of status_area_->GetPreferredSize().width()
   // will be too small when button status is changed.
@@ -413,6 +413,10 @@ void WebUILoginView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
   WebUI* web_ui = GetWebUI();
   if (web_ui)
     web_ui->CallJavascriptFunction("cr.ui.Oobe.clearErrors");
+}
+
+views::Widget* WebUILoginView::GetLoginWindow() {
+  return WebUILoginDisplay::GetLoginWindow();
 }
 
 }  // namespace chromeos

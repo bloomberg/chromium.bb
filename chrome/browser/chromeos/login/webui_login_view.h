@@ -98,6 +98,9 @@ class WebUILoginView : public views::View,
   // Creates and adds the status area (separate window).
   virtual void InitStatusArea();
 
+  // Get the views widget hosting this WebUILoginView.
+  virtual views::Widget* GetLoginWindow();
+
   StatusAreaView* status_area_;
 
   // DOMView for rendering a webpage as a webui login.

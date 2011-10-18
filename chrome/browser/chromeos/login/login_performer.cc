@@ -513,8 +513,7 @@ void LoginPerformer::ResolveLockNetworkAuthFailure() {
       captcha_token_ = last_login_failure_.error().captcha().token;
       msg = l10n_util::GetStringUTF16(IDS_LOGIN_ERROR_PASSWORD_CHANGED);
       ScreenLocker::default_screen_locker()->ShowCaptchaAndErrorMessage(
-          last_login_failure_.error().captcha().image_url,
-          UTF16ToWide(msg));
+          last_login_failure_.error().captcha().image_url, msg);
       return;
     default:
       // Unless there's new GoogleServiceAuthError state has been added.
@@ -522,8 +521,7 @@ void LoginPerformer::ResolveLockNetworkAuthFailure() {
       break;
   }
 
-  ScreenLocker::default_screen_locker()->ShowErrorMessage(UTF16ToWide(msg),
-                                                          sign_out_only);
+  ScreenLocker::default_screen_locker()->ShowErrorMessage(msg, sign_out_only);
 }
 
 void LoginPerformer::ResolveScreenLocked() {

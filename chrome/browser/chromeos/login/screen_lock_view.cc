@@ -17,7 +17,6 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_service.h"
 #include "grit/generated_resources.h"
-#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "views/background.h"
@@ -27,6 +26,7 @@
 #include "views/controls/textfield/native_textfield_wrapper.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/layout/grid_layout.h"
+#include "views/widget/native_widget_gtk.h"
 
 namespace chromeos {
 

@@ -396,6 +396,17 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kUseMoreWebUI)
   },
   {
+    "webui-lock-screen",
+    IDS_FLAGS_WEBUI_LOCK_NAME,
+    IDS_FLAGS_WEBUI_LOCK_DESCRIPTION,
+    kOsCrOS,
+#if defined(OS_CHROMEOS)
+    SINGLE_VALUE_TYPE(switches::kWebUILockScreen)
+#else
+    SINGLE_VALUE_TYPE("")
+#endif
+  },
+  {
     "enable-ntp-bookmark-features",
     IDS_FLAGS_ENABLE_NTP_BOOKMARK_FEATURES_NAME,
     IDS_FLAGS_ENABLE_NTP_BOOKMARK_FEATURES_DESCRIPTION,
