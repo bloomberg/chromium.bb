@@ -53,7 +53,7 @@ void DatabaseMessageFilter::OnChannelClosing() {
     observer_added_ = false;
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
-        NewRunnableMethod(this, &DatabaseMessageFilter::RemoveObserver));
+        base::Bind(&DatabaseMessageFilter::RemoveObserver, this));
   }
 }
 
@@ -84,7 +84,7 @@ void DatabaseMessageFilter::OverrideThreadForMessage(
     observer_added_ = true;
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
-        NewRunnableMethod(this, &DatabaseMessageFilter::AddObserver));
+        base::Bind(&DatabaseMessageFilter::AddObserver, this));
   }
 }
 
@@ -207,12 +207,8 @@ void DatabaseMessageFilter::DatabaseDeleteFile(const string16& vfs_file_name,
       // If the file could not be deleted, try again.
       BrowserThread::PostDelayedTask(
           BrowserThread::FILE, FROM_HERE,
-          NewRunnableMethod(this,
-                            &DatabaseMessageFilter::DatabaseDeleteFile,
-                            vfs_file_name,
-                            sync_dir,
-                            reply_msg,
-                            reschedule_count - 1),
+          base::Bind(&DatabaseMessageFilter::DatabaseDeleteFile, this,
+                     vfs_file_name, sync_dir, reply_msg, reschedule_count - 1),
           kDelayDeleteRetryMs);
       return;
     }
