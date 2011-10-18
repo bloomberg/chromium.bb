@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,20 +12,13 @@ using WebKit::WebInputEventFactory;
 
 namespace {
 
-void CopyEventTo(const GdkEventKey* in, GdkEventKey** out) {
-  if (in) {
-    *out = reinterpret_cast<GdkEventKey*>(
-        gdk_event_copy(
-            reinterpret_cast<GdkEvent*>(const_cast<GdkEventKey*>(in))));
-  } else {
-    *out = NULL;
-  }
+void CopyEventTo(gfx::NativeEvent in, gfx::NativeEvent* out) {
+  *out = in ? gdk_event_copy(in) : NULL;
 }
 
-void FreeEvent(GdkEventKey* event) {
-  if (event) {
-    gdk_event_free(reinterpret_cast<GdkEvent*>(event));
-  }
+void FreeEvent(gfx::NativeEvent event) {
+  if (event)
+    gdk_event_free(event);
 }
 
 }  // namespace
@@ -37,8 +30,8 @@ NativeWebKeyboardEvent::NativeWebKeyboardEvent()
       match_edit_command(false) {
 }
 
-NativeWebKeyboardEvent::NativeWebKeyboardEvent(const GdkEventKey* native_event)
-    : WebKeyboardEvent(WebInputEventFactory::keyboardEvent(native_event)),
+NativeWebKeyboardEvent::NativeWebKeyboardEvent(gfx::NativeEvent native_event)
+    : WebKeyboardEvent(WebInputEventFactory::keyboardEvent(&native_event->key)),
       skip_in_browser(false),
       match_edit_command(false) {
   CopyEventTo(native_event, &os_event);

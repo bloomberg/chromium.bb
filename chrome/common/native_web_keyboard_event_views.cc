@@ -50,9 +50,8 @@ NativeWebKeyboardEventViews::NativeWebKeyboardEventViews(
   os_event = event.native_event();
 #elif defined(TOOLKIT_USES_GTK)
   if (event.gdk_event()) {
-    os_event =
-        reinterpret_cast<GdkEventKey*>(gdk_event_copy(event.gdk_event()));
-    nativeKeyCode = os_event->keyval;
+    os_event = gdk_event_copy(event.gdk_event());
+    nativeKeyCode = os_event->key.keyval;
   } else {
     os_event = NULL;
   }

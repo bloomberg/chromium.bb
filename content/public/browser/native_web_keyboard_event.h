@@ -11,18 +11,7 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
-
-#if defined(OS_WIN)
-#include <windows.h>
-#elif defined(OS_MACOSX)
-#ifdef __OBJC__
-@class NSEvent;
-#else
-class NSEvent;
-#endif  // __OBJC__
-#elif defined(OS_POSIX)
-typedef struct _GdkEventKey GdkEventKey;
-#endif
+#include "ui/gfx/native_widget_types.h"
 
 // Owns a platform specific event; used to pass own and pass event through
 // platform independent code.
@@ -30,19 +19,12 @@ struct CONTENT_EXPORT NativeWebKeyboardEvent :
   NON_EXPORTED_BASE(public WebKit::WebKeyboardEvent) {
   NativeWebKeyboardEvent();
 
-#if defined(OS_WIN)
-  NativeWebKeyboardEvent(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
-#elif defined(OS_MACOSX)
-  explicit NativeWebKeyboardEvent(NSEvent *event);
-  NativeWebKeyboardEvent(wchar_t character,
-                         int state,
-                         double time_stamp_seconds);
-#elif defined(TOOLKIT_USES_GTK)
+  explicit NativeWebKeyboardEvent(gfx::NativeEvent native_event);
+#if defined(OS_MACOSX) || defined(TOOLKIT_USES_GTK)
   // TODO(suzhe): Limit these constructors to Linux native Gtk port.
   // For Linux Views port, after using RenderWidgetHostViewViews to replace
   // RenderWidgetHostViewGtk, we can use constructors for TOOLKIT_VIEWS defined
   // below.
-  explicit NativeWebKeyboardEvent(const GdkEventKey* event);
   NativeWebKeyboardEvent(wchar_t character,
                          int state,
                          double time_stamp_seconds);
@@ -53,13 +35,7 @@ struct CONTENT_EXPORT NativeWebKeyboardEvent :
 
   NativeWebKeyboardEvent& operator=(const NativeWebKeyboardEvent& event);
 
-#if defined(OS_WIN)
-  MSG os_event;
-#elif defined(OS_MACOSX)
-  NSEvent* os_event;
-#elif defined(TOOLKIT_USES_GTK)
-  GdkEventKey* os_event;
-#endif
+  gfx::NativeEvent os_event;
 
   // True if the browser should ignore this event if it's not handled by the
   // renderer. This happens for RawKeyDown events that are created while IME is

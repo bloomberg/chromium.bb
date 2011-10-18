@@ -67,7 +67,7 @@ class GtkKeyBindingsHandlerTest : public testing::Test {
       event.group = keys[0].group;
       event.is_modifier = 0;
       g_free(keys);
-      return NativeWebKeyboardEvent(&event);
+      return NativeWebKeyboardEvent(reinterpret_cast<GdkEvent*>(&event));
     }
     LOG(ERROR) << "Failed to create key event for keyval:" << keyval;
     return NativeWebKeyboardEvent();

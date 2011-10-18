@@ -143,7 +143,7 @@ bool HtmlDialogGtk::ShouldShowDialogTitle() const {
 // We don't handle global keyboard shortcuts here, but that's fine since
 // they're all browser-specific. (This may change in the future.)
 void HtmlDialogGtk::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
-  GdkEventKey* os_event = event.os_event;
+  GdkEventKey* os_event = &event.os_event->key;
   if (!os_event || event.type == WebKit::WebInputEvent::Char)
     return;
 

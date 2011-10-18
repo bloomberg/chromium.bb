@@ -33,7 +33,7 @@ bool GtkKeyBindingsHandler::Match(const NativeWebKeyboardEvent& wke,
   edit_commands_.clear();
   // If this key event matches a predefined key binding, corresponding signal
   // will be emitted.
-  gtk_bindings_activate_event(GTK_OBJECT(handler_.get()), wke.os_event);
+  gtk_bindings_activate_event(GTK_OBJECT(handler_.get()), &wke.os_event->key);
 
   bool matched = !edit_commands_.empty();
   if (edit_commands)

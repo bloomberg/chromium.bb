@@ -179,13 +179,16 @@ int RenderViewTest::SendKeyEvent(MockKeyboard::Layout layout,
   // WM_KEYDOWN, WM_CHAR, and WM_KEYUP.
   // WM_KEYDOWN and WM_KEYUP sends virtual-key codes. On the other hand,
   // WM_CHAR sends a composed Unicode character.
-  NativeWebKeyboardEvent keydown_event(NULL, WM_KEYDOWN, key_code, 0);
+  MSG msg1 = { NULL, WM_KEYDOWN, key_code, 0 };
+  NativeWebKeyboardEvent keydown_event(msg1);
   SendNativeKeyEvent(keydown_event);
 
-  NativeWebKeyboardEvent char_event(NULL, WM_CHAR, (*output)[0], 0);
+  MSG msg2 = { NULL, WM_CHAR, (*output)[0], 0 };
+  NativeWebKeyboardEvent char_event(msg2);
   SendNativeKeyEvent(char_event);
 
-  NativeWebKeyboardEvent keyup_event(NULL, WM_KEYUP, key_code, 0);
+  MSG msg3 = { NULL, WM_KEYUP, key_code, 0 };
+  NativeWebKeyboardEvent keyup_event(msg3);
   SendNativeKeyEvent(keyup_event);
 
   return length;
@@ -206,7 +209,7 @@ int RenderViewTest::SendKeyEvent(MockKeyboard::Layout layout,
     // events for the modifier keys).
     if ((i + 1) == (events.size() / 2) || i == (events.size() / 2)) {
       unicode_key = gdk_keyval_to_unicode(events[i]->key.keyval);
-      NativeWebKeyboardEvent webkit_event(&events[i]->key);
+      NativeWebKeyboardEvent webkit_event(events[i]);
       SendNativeKeyEvent(webkit_event);
 
       // Need to add a char event after the key down.

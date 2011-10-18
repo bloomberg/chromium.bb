@@ -154,7 +154,7 @@ void GtkIMContextWrapper::ProcessKeyEvent(GdkEventKey* event) {
   // Reset this flag here, as it's only used in input method callbacks.
   is_in_key_event_handler_ = false;
 
-  NativeWebKeyboardEvent wke(event);
+  NativeWebKeyboardEvent wke(reinterpret_cast<GdkEvent*>(event));
 
   // If the key event was handled by the input method, then we need to prevent
   // RenderView::UnhandledKeyboardEvent() from processing it.

@@ -1065,7 +1065,7 @@ void BrowserWindowGtk::ShowAppMenu() {
 
 bool BrowserWindowGtk::PreHandleKeyboardEvent(
     const NativeWebKeyboardEvent& event, bool* is_keyboard_shortcut) {
-  GdkEventKey* os_event = event.os_event;
+  GdkEventKey* os_event = &event.os_event->key;
 
   if (!os_event || event.type != WebKit::WebInputEvent::RawKeyDown)
     return false;
@@ -1125,7 +1125,7 @@ bool BrowserWindowGtk::PreHandleKeyboardEvent(
 
 void BrowserWindowGtk::HandleKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
-  GdkEventKey* os_event = event.os_event;
+  GdkEventKey* os_event = &event.os_event->key;
 
   if (!os_event || event.type != WebKit::WebInputEvent::RawKeyDown)
     return;

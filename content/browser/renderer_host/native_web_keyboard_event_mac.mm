@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,9 +15,9 @@ NativeWebKeyboardEvent::NativeWebKeyboardEvent()
       skip_in_browser(false) {
 }
 
-NativeWebKeyboardEvent::NativeWebKeyboardEvent(NSEvent* event)
-    : WebKeyboardEvent(WebInputEventFactory::keyboardEvent(event)),
-      os_event([event retain]),
+NativeWebKeyboardEvent::NativeWebKeyboardEvent(gfx::NativeEvent native_event)
+    : WebKeyboardEvent(WebInputEventFactory::keyboardEvent(native_event)),
+      os_event([native_event retain]),
       skip_in_browser(false) {
 }
 

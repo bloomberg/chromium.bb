@@ -39,6 +39,7 @@
 #if defined(USE_AURA)
 class SkRegion;
 namespace aura {
+class Event;
 class Window;
 }
 #endif  // defined(USE_AURA)
@@ -50,12 +51,14 @@ struct IAccessible;
 #elif defined(OS_MACOSX)
 struct CGContext;
 #ifdef __OBJC__
+@class NSEvent;
 @class NSFont;
 @class NSImage;
 @class NSView;
 @class NSWindow;
 @class NSTextField;
 #else
+class NSEvent;
 class NSFont;
 class NSImage;
 class NSView;
@@ -79,6 +82,7 @@ class WaylandCursor;
 typedef struct _GdkRegion GdkRegion;
 #elif defined(TOOLKIT_USES_GTK)
 typedef struct _GdkCursor GdkCursor;
+typedef union _GdkEvent GdkEvent;
 typedef struct _GdkPixbuf GdkPixbuf;
 typedef struct _GdkRegion GdkRegion;
 typedef struct _GtkWidget GtkWidget;
@@ -96,15 +100,18 @@ typedef int NativeCursor;
 typedef aura::Window* NativeView;
 typedef aura::Window* NativeWindow;
 typedef SkRegion* NativeRegion;
+typedef aura::Event* NativeEvent;
 #elif defined(OS_WIN)
 typedef HCURSOR NativeCursor;
 typedef HWND NativeView;
 typedef HWND NativeWindow;
 typedef HRGN NativeRegion;
+typedef MSG NativeEvent;
 #elif defined(OS_MACOSX)
 typedef void* NativeCursor;
 typedef NSView* NativeView;
 typedef NSWindow* NativeWindow;
+typedef NSEvent* NativeEvent;
 #elif defined(USE_WAYLAND)
 typedef void* NativeCursor;
 typedef ui::WaylandWindow* NativeView;
@@ -112,16 +119,19 @@ typedef ui::WaylandWindow* NativeWindow;
 // TODO(dnicoara) This should be replaced with a cairo region or maybe
 // a Wayland specific region
 typedef GdkRegion* NativeRegion;
-#elif defined(USE_X11)
+typedef void* NativeEvent;
+#elif defined(TOOLKIT_USES_GTK)
 typedef GdkCursor* NativeCursor;
 typedef GtkWidget* NativeView;
 typedef GtkWindow* NativeWindow;
 typedef GdkRegion* NativeRegion;
+typedef GdkEvent* NativeEvent;
 #elif defined(OS_ANDROID)
 typedef void* NativeCursor;
 typedef ChromeView* NativeView;
 typedef ChromeView* NativeWindow;
 typedef void* NativeRegion;
+typedef void* NativeEvent;
 #endif
 
 #if defined(OS_WIN)

@@ -260,9 +260,6 @@
           ],
         }],  
         ['use_aura==1', {
-          'sources': [
-            'common/native_web_keyboard_event_aura.cc',
-          ],
           'dependencies!': [
            'default_plugin/default_plugin.gyp:default_plugin',
           ],

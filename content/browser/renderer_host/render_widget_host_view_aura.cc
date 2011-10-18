@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "content/browser/renderer_host/backing_store_skia.h"
+#include "content/browser/renderer_host/web_input_event_aura.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
@@ -301,15 +302,8 @@ void RenderWidgetHostViewAura::OnBlur() {
 }
 
 bool RenderWidgetHostViewAura::OnKeyEvent(aura::KeyEvent* event) {
-  host_->ForwardKeyboardEvent(
-      NativeWebKeyboardEvent(
-#if defined(OS_WIN)
-          event->native_event().hwnd,
-          event->native_event().message,
-          event->native_event().wParam,
-          event->native_event().lParam
-#endif
-      ));
+  NativeWebKeyboardEvent webkit_event(event);
+  host_->ForwardKeyboardEvent(webkit_event);
   return true;
 }
 
@@ -325,38 +319,7 @@ int RenderWidgetHostViewAura::GetNonClientComponent(
 }
 
 bool RenderWidgetHostViewAura::OnMouseEvent(aura::MouseEvent* event) {
-  // TODO(beng): replace with construction using WebInputEventFactories for
-  //             Windows/X using |event|'s native_event() field.
-
-  WebKit::WebMouseEvent webkit_event;
-  webkit_event.timeStampSeconds = base::Time::Now().ToDoubleT();
-  webkit_event.modifiers = WebInputEventFlagsFromAuraEvent(*event);
-  webkit_event.windowX = webkit_event.x = event->x();
-  webkit_event.windowY = webkit_event.y = event->y();
-
-  webkit_event.globalX = webkit_event.x;
-  webkit_event.globalY = webkit_event.y;
-
-  if (event->type() == ui::ET_MOUSE_PRESSED ||
-      event->type() == ui::ET_MOUSE_RELEASED) {
-    webkit_event.clickCount = 1;
-  }
-
-  if (event->flags() & ui::EF_MIDDLE_BUTTON_DOWN) {
-    webkit_event.modifiers |= WebKit::WebInputEvent::MiddleButtonDown;
-    webkit_event.button = WebKit::WebMouseEvent::ButtonMiddle;
-  }
-  if (event->flags() & ui::EF_LEFT_BUTTON_DOWN) {
-    webkit_event.modifiers |= WebKit::WebInputEvent::LeftButtonDown;
-    webkit_event.button = WebKit::WebMouseEvent::ButtonLeft;
-  }
-  if (event->flags() & ui::EF_RIGHT_BUTTON_DOWN) {
-    webkit_event.modifiers |= WebKit::WebInputEvent::RightButtonDown;
-    webkit_event.button = WebKit::WebMouseEvent::ButtonRight;
-  }
-
-  webkit_event.type = WebInputEventTypeFromAuraEvent(*event);
-  host_->ForwardMouseEvent(webkit_event);
+  host_->ForwardMouseEvent(content::MakeWebMouseEvent(event));
 
   // Return true so that we receive released/drag events.
   return true;

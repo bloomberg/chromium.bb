@@ -305,8 +305,7 @@ void ExternalTabContainer::SetTabHandle(int handle) {
 }
 
 void ExternalTabContainer::ProcessUnhandledAccelerator(const MSG& msg) {
-  NativeWebKeyboardEvent keyboard_event(msg.hwnd, msg.message, msg.wParam,
-                                        msg.lParam);
+  NativeWebKeyboardEvent keyboard_event(msg);
   unhandled_keyboard_event_handler_.HandleKeyboardEvent(keyboard_event,
                                                         focus_manager_);
 }

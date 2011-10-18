@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,36 +14,28 @@ NativeWebKeyboardEvent::NativeWebKeyboardEvent()
   memset(&os_event, 0, sizeof(os_event));
 }
 
-NativeWebKeyboardEvent::NativeWebKeyboardEvent(
-    HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
+NativeWebKeyboardEvent::NativeWebKeyboardEvent(gfx::NativeEvent native_event)
     : WebKeyboardEvent(
-          WebInputEventFactory::keyboardEvent(hwnd, message, wparam, lparam)),
+          WebInputEventFactory::keyboardEvent(native_event.hwnd,
+                                              native_event.message,
+                                              native_event.wParam,
+                                              native_event.lParam)),
+      os_event(native_event),
       skip_in_browser(false) {
-  os_event.hwnd = hwnd;
-  os_event.message = message;
-  os_event.wParam = wparam;
-  os_event.lParam = lparam;
 }
 
 NativeWebKeyboardEvent::NativeWebKeyboardEvent(
     const NativeWebKeyboardEvent& other)
     : WebKeyboardEvent(other),
+      os_event(other.os_event),
       skip_in_browser(other.skip_in_browser) {
-  os_event.hwnd = other.os_event.hwnd;
-  os_event.message = other.os_event.message;
-  os_event.wParam = other.os_event.wParam;
-  os_event.lParam = other.os_event.lParam;
 }
 
 NativeWebKeyboardEvent& NativeWebKeyboardEvent::operator=(
     const NativeWebKeyboardEvent& other) {
   WebKeyboardEvent::operator=(other);
 
-  os_event.hwnd = other.os_event.hwnd;
-  os_event.message = other.os_event.message;
-  os_event.wParam = other.os_event.wParam;
-  os_event.lParam = other.os_event.lParam;
-
+  os_event = other.os_event;
   skip_in_browser = other.skip_in_browser;
 
   return *this;

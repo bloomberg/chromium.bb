@@ -1378,8 +1378,8 @@ LRESULT RenderWidgetHostViewWin::OnKeyEvent(UINT message, WPARAM wparam,
   }
 
   if (render_widget_host_ && !ignore_keyboard_event) {
-    render_widget_host_->ForwardKeyboardEvent(
-        NativeWebKeyboardEvent(m_hWnd, message, wparam, lparam));
+    MSG msg = { m_hWnd, message, wparam, lparam };
+    render_widget_host_->ForwardKeyboardEvent(NativeWebKeyboardEvent(msg));
   }
   return 0;
 }
