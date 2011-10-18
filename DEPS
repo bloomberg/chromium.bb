@@ -330,10 +330,10 @@ deps_os = {
     "src/third_party/yasm/binaries":
       "/trunk/deps/third_party/yasm/binaries@74228",
 
-    # Binary level profile guided optimizations.  This points to the
+    # Binary level profile guided optimizations. This points to the
     # latest release binaries for the toolchain.
     "src/third_party/syzygy/binaries":
-      (Var("googlecode_url") % "sawbuck") + "/trunk/syzygy/binaries@427",
+      (Var("googlecode_url") % "sawbuck") + "/trunk/syzygy/binaries@477",
   },
   "mac": {
     "src/chrome/tools/test/reference_build/chrome_mac":
