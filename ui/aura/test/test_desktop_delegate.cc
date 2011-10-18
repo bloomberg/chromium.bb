@@ -14,8 +14,8 @@ TestDesktopDelegate::TestDesktopDelegate()
   Desktop::GetInstance()->SetDelegate(this);
   default_container_->Init();
   default_container_->SetBounds(
-      gfx::Rect(gfx::Point(), Desktop::GetInstance()->GetSize()));
-  Desktop::GetInstance()->window()->AddChild(default_container_.get());
+      gfx::Rect(gfx::Point(), Desktop::GetInstance()->GetHostSize()));
+  Desktop::GetInstance()->AddChild(default_container_.get());
   default_container_->Show();
 }
 

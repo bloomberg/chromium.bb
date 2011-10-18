@@ -13,7 +13,6 @@
 #include "ui/aura/event.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/hit_test.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_desktop_delegate.h"
@@ -231,7 +230,7 @@ TEST_F(WindowTest, GetEventHandlerForPoint) {
   scoped_ptr<Window> w13(
       CreateTestWindow(SK_ColorGRAY, 13, gfx::Rect(5, 470, 50, 50), w1.get()));
 
-  Window* root = Desktop::GetInstance()->window();
+  Window* root = Desktop::GetInstance();
   w1->parent()->SetBounds(gfx::Rect(500, 500));
   EXPECT_EQ(NULL, root->GetEventHandlerForPoint(gfx::Point(5, 5)));
   EXPECT_EQ(w1.get(), root->GetEventHandlerForPoint(gfx::Point(11, 11)));
@@ -244,7 +243,7 @@ TEST_F(WindowTest, GetEventHandlerForPoint) {
 }
 
 TEST_F(WindowTest, GetTopWindowContainingPoint) {
-  Window* root = Desktop::GetInstance()->window();
+  Window* root = Desktop::GetInstance();
   root->SetBounds(gfx::Rect(0, 0, 300, 300));
 
   scoped_ptr<Window> w1(
@@ -281,7 +280,7 @@ TEST_F(WindowTest, GetTopWindowContainingPoint) {
 
 TEST_F(WindowTest, Focus) {
   Desktop* desktop = Desktop::GetInstance();
-  desktop->window()->SetBounds(gfx::Rect(0, 0, 510, 510));
+  desktop->SetBounds(gfx::Rect(0, 0, 510, 510));
 
   scoped_ptr<Window> w1(
       CreateTestWindow(SK_ColorWHITE, 1, gfx::Rect(10, 10, 500, 500), NULL));
@@ -309,7 +308,7 @@ TEST_F(WindowTest, Focus) {
 
   // Click on a sub-window (w121) to focus it.
   gfx::Point click_point = w121->bounds().CenterPoint();
-  Window::ConvertPointToWindow(w121->parent(), desktop->window(), &click_point);
+  Window::ConvertPointToWindow(w121->parent(), desktop, &click_point);
   desktop->OnMouseEvent(
       MouseEvent(ui::ET_MOUSE_PRESSED, click_point, ui::EF_LEFT_BUTTON_DOWN));
   internal::FocusManager* focus_manager = w121->GetFocusManager();
@@ -321,7 +320,7 @@ TEST_F(WindowTest, Focus) {
 
   // Touch on a sub-window (w122) to focus it.
   click_point = w122->bounds().CenterPoint();
-  Window::ConvertPointToWindow(w122->parent(), desktop->window(), &click_point);
+  Window::ConvertPointToWindow(w122->parent(), desktop, &click_point);
   desktop->OnTouchEvent(TouchEvent(ui::ET_TOUCH_PRESSED, click_point, 0));
   focus_manager = w122->GetFocusManager();
   EXPECT_EQ(w122.get(), focus_manager->GetFocusedWindow());
@@ -414,8 +413,6 @@ TEST_F(WindowTest, CaptureTests) {
 // Verifies capture is reset when a window is destroyed.
 TEST_F(WindowTest, ReleaseCaptureOnDestroy) {
   Desktop* desktop = Desktop::GetInstance();
-  internal::RootWindow* root =
-      static_cast<internal::RootWindow*>(desktop->window());
   CaptureWindowDelegateImpl delegate;
   scoped_ptr<Window> window(CreateTestWindowWithDelegate(
       &delegate, 0, gfx::Rect(0, 0, 20, 20), NULL));
@@ -428,9 +425,9 @@ TEST_F(WindowTest, ReleaseCaptureOnDestroy) {
   // Destroy the window.
   window.reset();
 
-  // Make sure the root doesn't reference the window anymore.
-  EXPECT_EQ(NULL, root->mouse_pressed_handler());
-  EXPECT_EQ(NULL, root->capture_window());
+  // Make sure the desktop doesn't reference the window anymore.
+  EXPECT_EQ(NULL, desktop->mouse_pressed_handler());
+  EXPECT_EQ(NULL, desktop->capture_window());
 }
 
 class MouseEnterExitWindowDelegate : public TestWindowDelegate {
@@ -475,7 +472,7 @@ TEST_F(WindowTest, MouseEnterExit) {
       CreateTestWindowWithDelegate(&d2, 2, gfx::Rect(70, 70, 50, 50), NULL));
 
   gfx::Point move_point = w1->bounds().CenterPoint();
-  Window::ConvertPointToWindow(w1->parent(), desktop->window(), &move_point);
+  Window::ConvertPointToWindow(w1->parent(), desktop, &move_point);
   desktop->OnMouseEvent(MouseEvent(ui::ET_MOUSE_MOVED, move_point, 0));
 
   EXPECT_TRUE(d1.entered());
@@ -484,7 +481,7 @@ TEST_F(WindowTest, MouseEnterExit) {
   EXPECT_FALSE(d2.exited());
 
   move_point = w2->bounds().CenterPoint();
-  Window::ConvertPointToWindow(w2->parent(), desktop->window(), &move_point);
+  Window::ConvertPointToWindow(w2->parent(), desktop, &move_point);
   desktop->OnMouseEvent(MouseEvent(ui::ET_MOUSE_MOVED, move_point, 0));
 
   EXPECT_TRUE(d1.entered());
@@ -562,7 +559,7 @@ TEST_F(WindowTest, ActivateOnMouse) {
 
   // Click on window2.
   gfx::Point press_point = w2->bounds().CenterPoint();
-  Window::ConvertPointToWindow(w2->parent(), desktop->window(), &press_point);
+  Window::ConvertPointToWindow(w2->parent(), desktop, &press_point);
   EventGenerator generator(press_point);
   generator.ClickLeftButton();
 
@@ -578,7 +575,7 @@ TEST_F(WindowTest, ActivateOnMouse) {
 
   // Click back on window1, but set it up so w1 doesn't activate on click.
   press_point = w1->bounds().CenterPoint();
-  Window::ConvertPointToWindow(w1->parent(), desktop->window(), &press_point);
+  Window::ConvertPointToWindow(w1->parent(), desktop, &press_point);
   d1.set_activate(false);
   generator.ClickLeftButton();
 
@@ -628,7 +625,7 @@ TEST_F(WindowTest, ActivateOnTouch) {
 
   // Touch window2.
   gfx::Point press_point = w2->bounds().CenterPoint();
-  Window::ConvertPointToWindow(w2->parent(), desktop->window(), &press_point);
+  Window::ConvertPointToWindow(w2->parent(), desktop, &press_point);
   desktop->OnTouchEvent(TouchEvent(ui::ET_TOUCH_PRESSED, press_point, 0));
 
   // Window2 should have become active.
@@ -643,7 +640,7 @@ TEST_F(WindowTest, ActivateOnTouch) {
 
   // Touch window1, but set it up so w1 doesn't activate on touch.
   press_point = w1->bounds().CenterPoint();
-  Window::ConvertPointToWindow(w1->parent(), desktop->window(), &press_point);
+  Window::ConvertPointToWindow(w1->parent(), desktop, &press_point);
   d1.set_activate(false);
   desktop->OnTouchEvent(TouchEvent(ui::ET_TOUCH_PRESSED, press_point, 0));
 
@@ -807,7 +804,7 @@ TEST_F(WindowTest, StopsEventPropagation) {
 
 TEST_F(WindowTest, Fullscreen) {
   gfx::Rect original_bounds = gfx::Rect(100, 100, 100, 100);
-  gfx::Rect desktop_bounds(Desktop::GetInstance()->GetSize());
+  gfx::Rect desktop_bounds(Desktop::GetInstance()->GetHostSize());
   scoped_ptr<Window> w(CreateTestWindowWithDelegate(
       NULL, 1, original_bounds, NULL));
   EXPECT_EQ(original_bounds, w->bounds());
@@ -845,7 +842,7 @@ TEST_F(WindowTest, Fullscreen) {
 
 TEST_F(WindowTest, Maximized) {
   gfx::Rect original_bounds = gfx::Rect(100, 100, 100, 100);
-  gfx::Rect desktop_bounds(Desktop::GetInstance()->GetSize());
+  gfx::Rect desktop_bounds(Desktop::GetInstance()->GetHostSize());
   scoped_ptr<Window> w(CreateTestWindowWithDelegate(
       NULL, 1, original_bounds, NULL));
   EXPECT_EQ(original_bounds, w->bounds());
@@ -930,7 +927,7 @@ TEST_F(WindowTest, IsOrContainsFullscreenWindow) {
   scoped_ptr<Window> w11(
       CreateTestWindow(SK_ColorWHITE, 11, gfx::Rect(0, 0, 10, 10), w1.get()));
 
-  Window* root = Desktop::GetInstance()->window();
+  Window* root = Desktop::GetInstance();
   EXPECT_FALSE(root->IsOrContainsFullscreenWindow());
 
   w11->Fullscreen();
@@ -948,9 +945,9 @@ class ToplevelWindowTest : public WindowTest {
   virtual void SetUp() OVERRIDE {
     WindowTest::SetUp();
     toplevel_container_.Init();
-    toplevel_container_.SetParent(aura::Desktop::GetInstance()->window());
+    toplevel_container_.SetParent(aura::Desktop::GetInstance());
     toplevel_container_.SetBounds(
-        aura::Desktop::GetInstance()->window()->bounds());
+        aura::Desktop::GetInstance()->bounds());
     toplevel_container_.Show();
   }
 

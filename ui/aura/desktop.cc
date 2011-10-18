@@ -12,7 +12,6 @@
 #include "ui/aura/desktop_observer.h"
 #include "ui/aura/event.h"
 #include "ui/aura/focus_manager.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/screen_aura.h"
 #include "ui/aura/toplevel_window_container.h"
 #include "ui/aura/window.h"
@@ -29,11 +28,19 @@ Desktop* Desktop::instance_ = NULL;
 ui::Compositor*(*Desktop::compositor_factory_)() = NULL;
 
 Desktop::Desktop()
-    : delegate_(NULL),
+    : Window(NULL),
+      delegate_(NULL),
       host_(aura::DesktopHost::Create(gfx::Rect(200, 200, 1280, 1024))),
       ALLOW_THIS_IN_INITIALIZER_LIST(schedule_paint_factory_(this)),
       active_window_(NULL),
-      in_destructor_(false) {
+      in_destructor_(false),
+      capture_window_(NULL),
+      mouse_pressed_handler_(NULL),
+      mouse_moved_handler_(NULL),
+      focused_window_(NULL),
+      touch_event_handler_(NULL) {
+
+  set_name("RootWindow");
   if (compositor_factory_) {
     compositor_ = (*Desktop::compositor_factory())();
   } else {
@@ -43,7 +50,6 @@ Desktop::Desktop()
   gfx::Screen::SetInstance(new internal::ScreenAura);
   host_->SetDesktop(this);
   DCHECK(compositor_.get());
-  window_.reset(new internal::RootWindow);
   last_mouse_location_ = host_->QueryMouseLocation();
 }
 
@@ -58,21 +64,21 @@ void Desktop::SetDelegate(DesktopDelegate* delegate) {
 }
 
 void Desktop::Init() {
-  window_->Init();
-  window_->SetBounds(gfx::Rect(gfx::Point(), host_->GetSize()));
-  window_->Show();
-  compositor()->SetRootLayer(window_->layer());
+  Window::Init();
+  SetBounds(gfx::Rect(gfx::Point(), host_->GetSize()));
+  Show();
+  compositor()->SetRootLayer(layer());
 }
 
-void Desktop::Show() {
+void Desktop::ShowDesktop() {
   host_->Show();
 }
 
-void Desktop::SetSize(const gfx::Size& size) {
+void Desktop::SetHostSize(const gfx::Size& size) {
   host_->SetSize(size);
 }
 
-gfx::Size Desktop::GetSize() const {
+gfx::Size Desktop::GetHostSize() const {
   return host_->GetSize();
 }
 
@@ -81,7 +87,7 @@ void Desktop::SetCursor(gfx::NativeCursor cursor) {
 }
 
 void Desktop::Run() {
-  Show();
+  ShowDesktop();
   MessageLoopForUI::current()->Run(host_.get());
 }
 
@@ -91,21 +97,63 @@ void Desktop::Draw() {
 
 bool Desktop::OnMouseEvent(const MouseEvent& event) {
   last_mouse_location_ = event.location();
-  return window_->HandleMouseEvent(event);
+
+  Window* target =
+      mouse_pressed_handler_ ? mouse_pressed_handler_ : capture_window_;
+  if (!target)
+    target = GetEventHandlerForPoint(event.location());
+  switch (event.type()) {
+    case ui::ET_MOUSE_MOVED:
+      HandleMouseMoved(event, target);
+      break;
+    case ui::ET_MOUSE_PRESSED:
+      if (!mouse_pressed_handler_)
+        mouse_pressed_handler_ = target;
+      break;
+    case ui::ET_MOUSE_RELEASED:
+      mouse_pressed_handler_ = NULL;
+      break;
+    default:
+      break;
+  }
+  if (target && target->delegate()) {
+    MouseEvent translated_event(event, this, target);
+    return target->OnMouseEvent(&translated_event);
+  }
+  return false;
 }
 
 bool Desktop::OnKeyEvent(const KeyEvent& event) {
-  return window_->HandleKeyEvent(event);
+  if (focused_window_) {
+    KeyEvent translated_event(event);
+    return focused_window_->OnKeyEvent(&translated_event);
+  }
+  return false;
 }
 
 bool Desktop::OnTouchEvent(const TouchEvent& event) {
-  return window_->HandleTouchEvent(event);
+  bool handled = false;
+  Window* target =
+      touch_event_handler_ ? touch_event_handler_ : capture_window_;
+  if (!target)
+    target = GetEventHandlerForPoint(event.location());
+  if (target) {
+    TouchEvent translated_event(event, this, target);
+    ui::TouchStatus status = target->OnTouchEvent(&translated_event);
+    if (status == ui::TOUCH_STATUS_START)
+      touch_event_handler_ = target;
+    else if (status == ui::TOUCH_STATUS_END ||
+             status == ui::TOUCH_STATUS_CANCEL)
+      touch_event_handler_ = NULL;
+    handled = status != ui::TOUCH_STATUS_UNKNOWN;
+  }
+  return handled;
 }
 
 void Desktop::OnHostResized(const gfx::Size& size) {
   gfx::Rect bounds(0, 0, size.width(), size.height());
   compositor_->WidgetSizeChanged(size);
-  window_->SetBounds(bounds);
+  SetBounds(bounds);
   FOR_EACH_OBSERVER(DesktopObserver, observers_, OnDesktopResized(size));
 }
 
@@ -162,6 +210,22 @@ void Desktop::Deactivate(Window* window) {
 }
 
 void Desktop::WindowDestroying(Window* window) {
+  // Update the focused window state if the window was focused.
+  if (focused_window_ == window)
+    SetFocusedWindow(NULL);
+
+  // When a window is being destroyed it's likely that the WindowDelegate won't
+  // want events, so we reset the mouse_pressed_handler_ and capture_window_ and
+  // don't sent it release/capture lost events.
+  if (mouse_pressed_handler_ == window)
+    mouse_pressed_handler_ = NULL;
+  if (mouse_moved_handler_ == window)
+    mouse_moved_handler_ = NULL;
+  if (capture_window_ == window)
+    capture_window_ = NULL;
+  if (touch_event_handler_ == window)
+    touch_event_handler_ = NULL;
+
   if (in_destructor_ || window != active_window_)
     return;
 
@@ -181,6 +245,85 @@ void Desktop::AddObserver(DesktopObserver* observer) {
 
 void Desktop::RemoveObserver(DesktopObserver* observer) {
   observers_.RemoveObserver(observer);
+}
+
+void Desktop::SetCapture(Window* window) {
+  if (capture_window_ == window)
+    return;
+
+  if (capture_window_ && capture_window_->delegate())
+    capture_window_->delegate()->OnCaptureLost();
+  capture_window_ = window;
+
+  if (capture_window_) {
+    // Make all subsequent mouse events and touch go to the capture window. We
+    // shouldn't need to send an event here as OnCaptureLost should take care of
+    // that.
+    if (mouse_pressed_handler_)
+      mouse_pressed_handler_ = capture_window_;
+    if (touch_event_handler_)
+      touch_event_handler_ = capture_window_;
+  }
+}
+
+void Desktop::ReleaseCapture(Window* window) {
+  if (capture_window_ != window)
+    return;
+
+  if (capture_window_ && capture_window_->delegate())
+    capture_window_->delegate()->OnCaptureLost();
+  capture_window_ = NULL;
+}
+
+void Desktop::HandleMouseMoved(const MouseEvent& event, Window* target) {
+  if (target == mouse_moved_handler_)
+    return;
+
+  // Send an exited event.
+  if (mouse_moved_handler_ && mouse_moved_handler_->delegate()) {
+    MouseEvent translated_event(event, this, mouse_moved_handler_,
+                                ui::ET_MOUSE_EXITED);
+    mouse_moved_handler_->OnMouseEvent(&translated_event);
+  }
+  mouse_moved_handler_ = target;
+  // Send an entered event.
+  if (mouse_moved_handler_ && mouse_moved_handler_->delegate()) {
+    MouseEvent translated_event(event, this, mouse_moved_handler_,
+                                ui::ET_MOUSE_ENTERED);
+    mouse_moved_handler_->OnMouseEvent(&translated_event);
+  }
+}
+
+bool Desktop::CanFocus() const {
+  return IsVisible();
+}
+
+internal::FocusManager* Desktop::GetFocusManager() {
+  return this;
+}
+
+Desktop* Desktop::GetDesktop() {
+  return this;
+}
+
+void Desktop::SetFocusedWindow(Window* focused_window) {
+  if (focused_window == focused_window_ ||
+      (focused_window && !focused_window->CanFocus())) {
+    return;
+  }
+  if (focused_window_ && focused_window_->delegate())
+    focused_window_->delegate()->OnBlur();
+  focused_window_ = focused_window;
+  if (focused_window_ && focused_window_->delegate())
+    focused_window_->delegate()->OnFocus();
+}
+
+Window* Desktop::GetFocusedWindow() {
+  return focused_window_;
+}
+
+bool Desktop::IsFocusedWindow(const Window* window) const {
+  return focused_window_ == window;
 }
 
 // static

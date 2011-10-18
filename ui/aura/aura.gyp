@@ -38,8 +38,6 @@
         'focus_manager.h',
         'hit_test.h',
         'layout_manager.h',
-        'root_window.cc',
-        'root_window.h',
         'screen_aura.cc',
         'screen_aura.h',
         'toplevel_window_container.cc',

@@ -44,7 +44,7 @@ void AuraTestBase::SetUp() {
   // TestDesktopDelegate is owned by the desktop.
   new TestDesktopDelegate();
   Desktop::GetInstance()->Show();
-  Desktop::GetInstance()->SetSize(gfx::Size(600, 600));
+  Desktop::GetInstance()->SetHostSize(gfx::Size(600, 600));
 }
 
 void AuraTestBase::TearDown() {

@@ -13,7 +13,8 @@
 #include "base/task.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/cursor.h"
-#include "ui/aura/root_window.h"
+#include "ui/aura/focus_manager.h"
+#include "ui/aura/window.h"
 #include "ui/base/events.h"
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/native_widget_types.h"
@@ -33,7 +34,9 @@ class MouseEvent;
 class TouchEvent;
 
 // Desktop is responsible for hosting a set of windows.
-class AURA_EXPORT Desktop : public ui::CompositorDelegate {
+class AURA_EXPORT Desktop : public ui::CompositorDelegate,
+                            public Window,
+                            public internal::FocusManager {
  public:
   Desktop();
   virtual ~Desktop();
@@ -47,11 +50,11 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate {
   void Init();
 
   // Shows the desktop host.
-  void Show();
+  void ShowDesktop();
 
   // Sets the size of the desktop.
-  void SetSize(const gfx::Size& size);
-  gfx::Size GetSize() const;
+  void SetHostSize(const gfx::Size& size);
+  gfx::Size GetHostSize() const;
 
   // Shows the specified cursor.
   void SetCursor(gfx::NativeCursor cursor);
@@ -77,8 +80,6 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate {
   // Compositor we're drawing to.
   ui::Compositor* compositor() { return compositor_.get(); }
 
-  Window* window() { return window_.get(); }
-
   static void set_compositor_factory_for_testing(ui::Compositor*(*factory)()) {
     compositor_factory_ = factory;
   }
@@ -100,7 +101,7 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate {
   // activate.
   void Deactivate(Window* window);
 
-  // Invoked from RootWindow when |window| is being destroyed.
+  // Invoked when |window| is being destroyed.
   void WindowDestroying(Window* window);
 
   // Returns the desktop's dispatcher. The result should only be passed to
@@ -113,17 +114,43 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate {
   void AddObserver(DesktopObserver* observer);
   void RemoveObserver(DesktopObserver* observer);
 
+  // Current handler for mouse events.
+  Window* mouse_pressed_handler() { return mouse_pressed_handler_; }
+
+  // Capture -------------------------------------------------------------------
+
+  // Sets capture to the specified window.
+  void SetCapture(Window* window);
+
+  // If |window| has mouse capture, the current capture window is set to NULL.
+  void ReleaseCapture(Window* window);
+
+  // Returns the window that has mouse capture.
+  Window* capture_window() { return capture_window_; }
+
   static Desktop* GetInstance();
 
  private:
+  // Called whenever the mouse moves, tracks the current |mouse_moved_handler_|,
+  // sending exited and entered events as its value changes.
+  void HandleMouseMoved(const MouseEvent& event, Window* target);
+
   // Overridden from ui::CompositorDelegate
   virtual void ScheduleDraw();
+
+  // Overridden from Window:
+  virtual bool CanFocus() const OVERRIDE;
+  virtual internal::FocusManager* GetFocusManager() OVERRIDE;
+  virtual Desktop* GetDesktop() OVERRIDE;
+
+  // Overridden from FocusManager:
+  virtual void SetFocusedWindow(Window* window) OVERRIDE;
+  virtual Window* GetFocusedWindow() OVERRIDE;
+  virtual bool IsFocusedWindow(const Window* window) const OVERRIDE;
 
   scoped_ptr<DesktopDelegate> delegate_;
 
   scoped_refptr<ui::Compositor> compositor_;
-
-  scoped_ptr<internal::RootWindow> window_;
 
   scoped_ptr<DesktopHost> host_;
 
@@ -145,6 +172,15 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate {
   bool in_destructor_;
 
   ObserverList<DesktopObserver> observers_;
+
+  // The capture window. When not-null, this window receives all the mouse and
+  // touch events.
+  Window* capture_window_;
+
+  Window* mouse_pressed_handler_;
+  Window* mouse_moved_handler_;
+  Window* focused_window_;
+  Window* touch_event_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(Desktop);
 };

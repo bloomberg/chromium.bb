@@ -9,5 +9,5 @@
 #include "ui/aura/window.h"
 
 bool IsFullScreenMode() {
-  return aura::Desktop::GetInstance()->window()->IsOrContainsFullscreenWindow();
+  return aura::Desktop::GetInstance()->IsOrContainsFullscreenWindow();
 }

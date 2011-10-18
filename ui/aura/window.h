@@ -41,7 +41,6 @@ class WindowObserver;
 
 namespace internal {
 class FocusManager;
-class RootWindow;
 }
 
 // Aura window implementation. Interesting events are sent to the
@@ -247,8 +246,8 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   static ui::Animation* CreateDefaultAnimation();
 
  protected:
-  // Returns the RootWindow or NULL if we don't yet have a RootWindow.
-  virtual internal::RootWindow* GetRoot();
+  // Returns the desktop or NULL if we aren't yet attached to a desktop.
+  virtual Desktop* GetDesktop();
 
  private:
   // Changes the bounds of the window without condition.

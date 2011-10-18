@@ -55,9 +55,9 @@ void CreateLock() {
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
   gfx::Size ps = lock_view->GetPreferredSize();
 
-  gfx::Rect desktop_bounds = aura::Desktop::GetInstance()->window()->bounds();
-  params.bounds = gfx::Rect((desktop_bounds.width() - ps.width()) / 2,
-                            (desktop_bounds.height() - ps.height()) / 2,
+  gfx::Size desktop_size  = aura::Desktop::GetInstance()->GetHostSize();
+  params.bounds = gfx::Rect((desktop_size.width() - ps.width()) / 2,
+                            (desktop_size.height() - ps.height()) / 2,
                             ps.width(), ps.height());
   params.delegate = lock_view;
   params.parent = Shell::GetInstance()->GetContainer(

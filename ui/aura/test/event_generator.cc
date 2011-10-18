@@ -12,8 +12,7 @@ namespace {
 gfx::Point CenterOfWindowInDesktopCoordinate(aura::Window* window) {
   gfx::Point center = window->bounds().CenterPoint();
   aura::Desktop* desktop = aura::Desktop::GetInstance();
-  aura::Window::ConvertPointToWindow(
-      window->parent(), desktop->window(), &center);
+  aura::Window::ConvertPointToWindow(window->parent(), desktop, &center);
   return center;
 }
 

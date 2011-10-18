@@ -140,16 +140,16 @@ void Shell::Init() {
   aura::Window::Windows containers;
   CreateSpecialContainers(&containers);
   aura::Window::Windows::const_iterator i;
+  aura::Desktop* desktop_window = aura::Desktop::GetInstance();
   for (i = containers.begin(); i != containers.end(); ++i) {
     (*i)->Init();
-    aura::Desktop::GetInstance()->window()->AddChild(*i);
+    desktop_window->AddChild(*i);
     (*i)->Show();
   }
 
-  aura::Window* root_window = aura::Desktop::GetInstance()->window();
   internal::DesktopLayoutManager* desktop_layout =
-      new internal::DesktopLayoutManager(root_window);
-  root_window->SetLayoutManager(desktop_layout);
+      new internal::DesktopLayoutManager(desktop_window);
+  desktop_window->SetLayoutManager(desktop_layout);
 
   desktop_layout->set_background_widget(internal::CreateDesktopBackground());
   aura::ToplevelWindowContainer* toplevel_container =
@@ -170,13 +170,13 @@ aura::Window* Shell::GetContainer(int container_id) {
 }
 
 const aura::Window* Shell::GetContainer(int container_id) const {
-  return aura::Desktop::GetInstance()->window()->GetChildById(container_id);
+  return aura::Desktop::GetInstance()->GetChildById(container_id);
 }
 
 void Shell::TileWindows() {
   to_restore_.clear();
   aura::Window* window_container =
-      aura::Desktop::GetInstance()->window()->GetChildById(
+      aura::Desktop::GetInstance()->GetChildById(
           internal::kShellWindowId_DefaultContainer);
   const aura::Window::Windows& windows = window_container->children();
   if (windows.empty())

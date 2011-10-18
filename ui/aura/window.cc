@@ -23,8 +23,6 @@
 
 namespace aura {
 
-using internal::RootWindow;
-
 Window::Window(WindowDelegate* delegate)
     : type_(kWindowType_Toplevel),
       delegate_(delegate),
@@ -41,9 +39,9 @@ Window::~Window() {
     delegate_->OnWindowDestroying();
 
   // Let the root know so that it can remove any references to us.
-  RootWindow* root = GetRoot();
-  if (root)
-    root->WindowDestroying(this);
+  Desktop* desktop = GetDesktop();
+  if (desktop)
+    desktop->WindowDestroying(this);
 
   // Then destroy the children.
   while (!children_.empty()) {
@@ -339,24 +337,24 @@ void Window::SetCapture() {
   if (!IsVisible())
     return;
 
-  RootWindow* root = GetRoot();
-  if (!root)
+  Desktop* desktop = GetDesktop();
+  if (!desktop)
     return;
 
-  root->SetCapture(this);
+  desktop->SetCapture(this);
 }
 
 void Window::ReleaseCapture() {
-  RootWindow* root = GetRoot();
-  if (!root)
+  Desktop* desktop = GetDesktop();
+  if (!desktop)
     return;
 
-  root->ReleaseCapture(this);
+  desktop->ReleaseCapture(this);
 }
 
 bool Window::HasCapture() {
-  RootWindow* root = GetRoot();
-  return root && root->capture_window() == this;
+  Desktop* desktop = GetDesktop();
+  return desktop && desktop->capture_window() == this;
 }
 
 Window* Window::GetToplevelWindow() {
@@ -388,8 +386,8 @@ ui::Animation* Window::CreateDefaultAnimation() {
   return multi_animation;
 }
 
-internal::RootWindow* Window::GetRoot() {
-  return parent_ ? parent_->GetRoot() : NULL;
+Desktop* Window::GetDesktop() {
+  return parent_ ? parent_->GetDesktop() : NULL;
 }
 
 void Window::SetBoundsInternal(const gfx::Rect& new_bounds) {

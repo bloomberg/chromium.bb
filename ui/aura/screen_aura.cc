@@ -14,7 +14,7 @@ namespace {
 gfx::Rect GetMonitorAreaOrWorkAreaNearestPoint(const gfx::Point& point,
                                                bool work_area) {
   // TODO(oshima): Take point/work_area into account. Support multiple monitors.
-  return gfx::Rect(aura::Desktop::GetInstance()->GetSize());
+  return gfx::Rect(aura::Desktop::GetInstance()->GetHostSize());
 }
 
 }  // namespace
@@ -43,7 +43,7 @@ gfx::Rect ScreenAura::GetMonitorWorkAreaNearestWindowImpl(
 gfx::Rect ScreenAura::GetMonitorAreaNearestWindowImpl(
     gfx::NativeWindow window) {
   // TODO(oshima): Take point/work_area into account. Support multiple monitors.
-  return gfx::Rect(aura::Desktop::GetInstance()->GetSize());
+  return gfx::Rect(aura::Desktop::GetInstance()->GetHostSize());
 }
 
 gfx::Rect ScreenAura::GetMonitorWorkAreaNearestPointImpl(
@@ -57,7 +57,7 @@ gfx::Rect ScreenAura::GetMonitorAreaNearestPointImpl(const gfx::Point& point) {
 
 gfx::NativeWindow ScreenAura::GetWindowAtCursorScreenPointImpl() {
   const gfx::Point point = GetCursorScreenPoint();
-  return Desktop::GetInstance()->window()->GetTopWindowContainingPoint(point);
+  return Desktop::GetInstance()->GetTopWindowContainingPoint(point);
 }
 
 }  // namespace internal
