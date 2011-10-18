@@ -69,7 +69,7 @@ int GpuMain(const MainFunctionParams& parameters) {
   // watchdog because this can take a lot of time and the GPU watchdog might
   // terminate the GPU process.
   if (!gfx::GLSurface::InitializeOneOff()) {
-    LOG(INFO) << "GLContext::InitializeOneOff failed";
+    LOG(INFO) << "gfx::GLSurface::InitializeOneOff failed";
     dead_on_arrival = true;
   }
 

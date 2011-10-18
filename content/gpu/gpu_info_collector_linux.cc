@@ -213,7 +213,7 @@ bool CollectPreliminaryGraphicsInfo(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
   if (!gfx::GLSurface::InitializeOneOff()) {
-    LOG(ERROR) << "gfx::GLContext::InitializeOneOff() failed";
+    LOG(ERROR) << "gfx::GLSurface::InitializeOneOff() failed";
     return false;
   }
 
