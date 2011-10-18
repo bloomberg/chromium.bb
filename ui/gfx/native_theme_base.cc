@@ -61,6 +61,30 @@ gfx::Size NativeThemeBase::GetPartSize(Part part,
                                        State state,
                                        const ExtraParams& extra) const {
   switch (part) {
+    // Please keep these in the order of NativeTheme::Part.
+    case kCheckbox:
+      return gfx::Size(kCheckboxAndRadioWidth, kCheckboxAndRadioHeight);
+    case kInnerSpinButton:
+      return gfx::Size(scrollbar_width_, 0);
+    case kMenuList:
+      return gfx::Size();  // No default size.
+    case kMenuCheck:
+    case kMenuCheckBackground:
+    case kMenuPopupArrow:
+      NOTIMPLEMENTED();
+      break;
+    case kMenuPopupBackground:
+      return gfx::Size();  // No default size.
+    case kMenuPopupGutter:
+    case kMenuPopupSeparator:
+      NOTIMPLEMENTED();
+      break;
+    case kMenuItemBackground:
+    case kProgressBar:
+    case kPushButton:
+      return gfx::Size();  // No default size.
+    case kRadio:
+      return gfx::Size(kCheckboxAndRadioWidth, kCheckboxAndRadioHeight);
     case kScrollbarDownArrow:
     case kScrollbarUpArrow:
       return gfx::Size(scrollbar_width_, button_length_);
@@ -73,33 +97,28 @@ gfx::Size NativeThemeBase::GetPartSize(Part part,
     case kScrollbarVerticalThumb:
       // This matches Firefox on Linux.
       return gfx::Size(scrollbar_width_, 2 * scrollbar_width_);
-      break;
     case kScrollbarHorizontalTrack:
       return gfx::Size(0, scrollbar_width_);
     case kScrollbarVerticalTrack:
       return gfx::Size(scrollbar_width_, 0);
-    case kCheckbox:
-    case kRadio:
-      return gfx::Size(kCheckboxAndRadioWidth, kCheckboxAndRadioHeight);
+    case kScrollbarHorizontalGripper:
+    case kScrollbarVerticalGripper:
+      NOTIMPLEMENTED();
+      break;
+    case kSliderTrack:
+      return gfx::Size();  // No default size.
     case kSliderThumb:
       // These sizes match the sizes in Chromium Win.
       return gfx::Size(kSliderThumbWidth, kSliderThumbHeight);
-    case kInnerSpinButton:
-      return gfx::Size(scrollbar_width_, 0);
-    case kPushButton:
+    case kTabPanelBackground:
+      NOTIMPLEMENTED();
+      break;
     case kTextField:
-    case kMenuList:
-    case kSliderTrack:
-    case kProgressBar:
       return gfx::Size();  // No default size.
-    case kMenuCheck:
-    case kMenuCheckBackground:
-    case kMenuPopupArrow:
-    case kMenuPopupBackground:
-    case kMenuPopupGutter:
-    case kMenuPopupSeparator:
-    case kMenuItemBackground:
-      NOTIMPLEMENTED() << " theme part: " << part;
+    case kTrackbarThumb:
+    case kTrackbarTrack:
+    case kWindowResizeGripper:
+      NOTIMPLEMENTED();
       break;
     default:
       NOTREACHED() << "Unknown theme part: " << part;
@@ -240,6 +259,40 @@ void NativeThemeBase::Paint(SkCanvas* canvas,
                             const gfx::Rect& rect,
                             const ExtraParams& extra) const {
   switch (part) {
+    // Please keep these in the order of NativeTheme::Part.
+    case kCheckbox:
+      PaintCheckbox(canvas, state, rect, extra.button);
+      break;
+    case kInnerSpinButton:
+      PaintInnerSpinButton(canvas, state, rect, extra.inner_spin);
+      break;
+    case kMenuList:
+      PaintMenuList(canvas, state, rect, extra.menu_list);
+      break;
+    case kMenuCheck:
+    case kMenuCheckBackground:
+    case kMenuPopupArrow:
+      NOTIMPLEMENTED();
+      break;
+    case kMenuPopupBackground:
+      PaintMenuPopupBackground(canvas, state, rect, extra.menu_list);
+      break;
+    case kMenuPopupGutter:
+    case kMenuPopupSeparator:
+      NOTIMPLEMENTED();
+      break;
+    case kMenuItemBackground:
+      PaintMenuItemBackground(canvas, state, rect, extra.menu_list);
+      break;
+    case kProgressBar:
+      PaintProgressBar(canvas, state, rect, extra.progress_bar);
+      break;
+    case kPushButton:
+      PaintButton(canvas, state, rect, extra.button);
+      break;
+    case kRadio:
+      PaintRadio(canvas, state, rect, extra.button);
+      break;
     case kScrollbarDownArrow:
     case kScrollbarUpArrow:
     case kScrollbarLeftArrow:
@@ -254,20 +307,9 @@ void NativeThemeBase::Paint(SkCanvas* canvas,
     case kScrollbarVerticalTrack:
       PaintScrollbarTrack(canvas, part, state, extra.scrollbar_track, rect);
       break;
-    case kCheckbox:
-      PaintCheckbox(canvas, state, rect, extra.button);
-      break;
-    case kRadio:
-      PaintRadio(canvas, state, rect, extra.button);
-      break;
-    case kPushButton:
-      PaintButton(canvas, state, rect, extra.button);
-      break;
-    case kTextField:
-      PaintTextField(canvas, state, rect, extra.text_field);
-      break;
-    case kMenuList:
-      PaintMenuList(canvas, state, rect, extra.menu_list);
+    case kScrollbarHorizontalGripper:
+    case kScrollbarVerticalGripper:
+      NOTIMPLEMENTED();
       break;
     case kSliderTrack:
       PaintSliderTrack(canvas, state, rect, extra.slider);
@@ -275,11 +317,16 @@ void NativeThemeBase::Paint(SkCanvas* canvas,
     case kSliderThumb:
       PaintSliderThumb(canvas, state, rect, extra.slider);
       break;
-    case kInnerSpinButton:
-      PaintInnerSpinButton(canvas, state, rect, extra.inner_spin);
+    case kTabPanelBackground:
+      NOTIMPLEMENTED();
       break;
-    case kProgressBar:
-      PaintProgressBar(canvas, state, rect, extra.progress_bar);
+    case kTextField:
+      PaintTextField(canvas, state, rect, extra.text_field);
+      break;
+    case kTrackbarThumb:
+    case kTrackbarTrack:
+    case kWindowResizeGripper:
+      NOTIMPLEMENTED();
       break;
     default:
       NOTREACHED() << "Unknown theme part: " << part;
@@ -617,6 +664,24 @@ void NativeThemeBase::PaintMenuList(
   path.rLineTo(-3, 6);
   path.close();
   canvas->drawPath(path, paint);
+}
+
+void NativeThemeBase::PaintMenuPopupBackground(
+    SkCanvas* canvas,
+    State state,
+    const gfx::Rect& rect,
+    const MenuListExtraParams& menu_list) const {
+  // This is the same as COLOR_TOOLBAR.
+  canvas->drawColor(SkColorSetRGB(210, 225, 246),
+                    SkXfermode::kSrc_Mode);
+}
+
+void NativeThemeBase::PaintMenuItemBackground(
+    SkCanvas* canvas,
+    State state,
+    const gfx::Rect& rect,
+    const MenuListExtraParams& menu_list) const {
+  // By default don't draw anything over the normal background.
 }
 
 void NativeThemeBase::PaintSliderTrack(SkCanvas* canvas,

@@ -580,6 +580,43 @@ void NativeThemeChromeos::PaintInnerSpinButton(SkCanvas* canvas,
   NativeThemeBase::PaintInnerSpinButton(canvas, state, bounds, spin_button);
 }
 
+void NativeThemeChromeos::PaintMenuPopupBackground(
+    SkCanvas* canvas,
+    State state,
+    const gfx::Rect& rect,
+    const MenuListExtraParams& menu_list) const {
+  static const SkColor kGradientColors[2] = {
+      SK_ColorWHITE,
+      SkColorSetRGB(0xF0, 0xF0, 0xF0)
+  };
+
+  static const SkScalar kGradientPoints[2] = {
+      SkIntToScalar(0),
+      SkIntToScalar(1)
+  };
+
+  SkPoint points[2];
+  points[0].set(SkIntToScalar(0), SkIntToScalar(0));
+  points[1].set(SkIntToScalar(0), SkIntToScalar(rect.height()));
+
+  SkShader* shader = SkGradientShader::CreateLinear(points,
+      kGradientColors, kGradientPoints, arraysize(kGradientPoints),
+      SkShader::kRepeat_TileMode);
+  DCHECK(shader);
+
+  SkPaint paint;
+  paint.setShader(shader);
+  shader->unref();
+
+  paint.setStyle(SkPaint::kFill_Style);
+  paint.setXfermodeMode(SkXfermode::kSrc_Mode);
+
+  SkRect sk_rect;
+  sk_rect.set(SkIntToScalar(0), SkIntToScalar(0),
+              SkIntToScalar(rect.width()), SkIntToScalar(rect.height()));
+  canvas->drawRect(sk_rect, paint);
+}
+
 void NativeThemeChromeos::PaintProgressBar(SkCanvas* canvas,
     State state,
     const gfx::Rect& rect,

@@ -17,22 +17,6 @@ using gfx::NativeTheme;
 
 namespace views {
 
-gfx::Size MenuItemView::CalculatePreferredSize() {
-  gfx::Size child_size = GetChildPreferredSize();
-  if (child_count() == 1 && title_.empty()) {
-    return gfx::Size(
-        child_size.width(),
-        child_size.height() + GetBottomMargin() + GetTopMargin());
-  }
-
-  const gfx::Font& font = GetFont();
-  return gfx::Size(
-      font.GetStringWidth(title_) + label_start_ + item_right_margin_ +
-          child_size.width(),
-      std::max(child_size.height(), font.GetHeight()) + GetBottomMargin() +
-          GetTopMargin());
-}
-
 void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   const MenuConfig& config = MenuConfig::instance();
   bool render_selection =
@@ -95,14 +79,9 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   // Render the foreground.
   // Menu color is specific to Vista, fallback to classic colors if can't
   // get color.
-#if defined(USE_AURA)
-  // TODO(jamescook): Create menu_item_view_aura.cc
-  SkColor fg_color = SK_ColorBLACK;
-#else
   SkColor fg_color = gfx::NativeThemeWin::instance()->GetThemeColorWithDefault(
       gfx::NativeThemeWin::MENU, MENU_POPUPITEM, state, TMT_TEXTCOLOR,
       default_sys_color);
-#endif
   const gfx::Font& font = GetFont();
   int accel_width = parent_menu_item_->GetSubmenu()->max_accelerator_width();
   int width = this->width() - item_right_margin_ - label_start_ - accel_width;

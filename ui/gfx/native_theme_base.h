@@ -38,58 +38,81 @@ class NativeThemeBase : public NativeTheme {
       State state) const;
   // Paint the scrollbar track. Done before the thumb so that it can contain
   // alpha.
-  virtual void PaintScrollbarTrack(SkCanvas* canvas,
+  virtual void PaintScrollbarTrack(
+      SkCanvas* canvas,
       Part part,
       State state,
       const ScrollbarTrackExtraParams& extra_params,
       const gfx::Rect& rect) const;
   // Draw the scrollbar thumb over the track.
-  virtual void PaintScrollbarThumb(SkCanvas* canvas,
+  virtual void PaintScrollbarThumb(
+      SkCanvas* canvas,
       Part part,
       State state,
       const gfx::Rect& rect) const;
 
-  virtual void PaintCheckbox(SkCanvas* canvas,
+  virtual void PaintCheckbox(
+      SkCanvas* canvas,
       State state,
       const gfx::Rect& rect,
       const ButtonExtraParams& button) const;
 
-  virtual void PaintRadio(SkCanvas* canvas,
+  virtual void PaintRadio(
+      SkCanvas* canvas,
       State state,
       const gfx::Rect& rect,
       const ButtonExtraParams& button) const;
 
-  virtual void PaintButton(SkCanvas* canvas,
+  virtual void PaintButton(
+      SkCanvas* canvas,
       State state,
       const gfx::Rect& rect,
       const ButtonExtraParams& button) const;
 
-  virtual void PaintTextField(SkCanvas* canvas,
+  virtual void PaintTextField(
+      SkCanvas* canvas,
       State state,
       const gfx::Rect& rect,
       const TextFieldExtraParams& text) const;
 
-  virtual void PaintMenuList(SkCanvas* canvas,
+  virtual void PaintMenuList(
+      SkCanvas* canvas,
       State state,
       const gfx::Rect& rect,
       const MenuListExtraParams& menu_list) const;
 
-  virtual void PaintSliderTrack(SkCanvas* canvas,
+  virtual void PaintMenuPopupBackground(
+      SkCanvas* canvas,
+      State state,
+      const gfx::Rect& rect,
+      const MenuListExtraParams& menu_list) const;
+
+  virtual void PaintMenuItemBackground(
+      SkCanvas* canvas,
+      State state,
+      const gfx::Rect& rect,
+      const MenuListExtraParams& menu_list) const;
+
+  virtual void PaintSliderTrack(
+      SkCanvas* canvas,
       State state,
       const gfx::Rect& rect,
       const SliderExtraParams& slider) const;
 
-  virtual void PaintSliderThumb(SkCanvas* canvas,
+  virtual void PaintSliderThumb(
+      SkCanvas* canvas,
       State state,
       const gfx::Rect& rect,
       const SliderExtraParams& slider) const;
 
-  virtual void PaintInnerSpinButton(SkCanvas* canvas,
+  virtual void PaintInnerSpinButton(
+      SkCanvas* canvas,
       State state,
       const gfx::Rect& rect,
       const InnerSpinButtonExtraParams& spin_button) const;
 
-  virtual void PaintProgressBar(SkCanvas* canvas,
+  virtual void PaintProgressBar(
+      SkCanvas* canvas,
       State state,
       const gfx::Rect& rect,
       const ProgressBarExtraParams& progress_bar) const;

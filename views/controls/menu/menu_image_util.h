@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_CONTROLS_MENU_MENU_IMAGE_UTIL_LINUX_H_
-#define VIEWS_CONTROLS_MENU_MENU_IMAGE_UTIL_LINUX_H_
+#ifndef VIEWS_CONTROLS_MENU_MENU_IMAGE_UTIL_H_
+#define VIEWS_CONTROLS_MENU_MENU_IMAGE_UTIL_H_
 #pragma once
 
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -21,4 +21,4 @@ const SkBitmap* GetSubmenuArrowImage();
 
 }  // namespace views
 
-#endif  // VIEWS_CONTROLS_MENU_MENU_IMAGE_UTIL_LINUX_H_
+#endif  // VIEWS_CONTROLS_MENU_MENU_IMAGE_UTIL_H_

@@ -7,6 +7,7 @@
 #pragma once
 
 #include <map>
+
 #include "base/compiler_specific.h"
 #include "ui/gfx/native_theme_base.h"
 #include "ui/gfx/rect.h"
@@ -25,14 +26,30 @@ class NativeThemeAura : public NativeThemeBase {
   virtual ~NativeThemeAura();
 
   // NativeThemeBase overrides
-  virtual void PaintScrollbarTrack(SkCanvas* canvas,
-      Part part, State state,
+  virtual void PaintMenuPopupBackground(
+      SkCanvas* canvas,
+      State state,
+      const gfx::Rect& rect,
+      const MenuListExtraParams& menu_list) const OVERRIDE;
+
+  virtual void PaintScrollbarTrack(
+      SkCanvas* canvas,
+      Part part,
+      State state,
       const ScrollbarTrackExtraParams& extra_params,
       const gfx::Rect& rect) const OVERRIDE;
-  virtual void PaintArrowButton(SkCanvas* canvas,
-      const gfx::Rect& rect, Part direction, State state) const OVERRIDE;
-  virtual void PaintScrollbarThumb(SkCanvas* canvas,
-      Part part, State state, const gfx::Rect& rect) const OVERRIDE;
+
+  virtual void PaintArrowButton(
+      SkCanvas* canvas,
+      const gfx::Rect& rect,
+      Part direction,
+      State state) const OVERRIDE;
+
+  virtual void PaintScrollbarThumb(
+      SkCanvas* canvas,
+      Part part,
+      State state,
+      const gfx::Rect& rect) const OVERRIDE;
 
   SkBitmap* GetHorizontalBitmapNamed(int resource_id) const;
 

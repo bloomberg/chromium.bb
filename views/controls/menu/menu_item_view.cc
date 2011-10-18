@@ -54,6 +54,10 @@ class EmptyMenuMenuItem : public MenuItemView {
 // Padding between child views.
 static const int kChildXPadding = 8;
 
+#if defined(TOUCH_UI)
+const int kMinItemHeightTouch = 40;
+#endif
+
 // MenuItemView ---------------------------------------------------------------
 
 // static
@@ -680,6 +684,27 @@ gfx::Size MenuItemView::GetChildPreferredSize() {
   // Return a height of 0 to indicate that we should use the title height
   // instead.
   return gfx::Size(width, 0);
+}
+
+gfx::Size MenuItemView::CalculatePreferredSize() {
+  gfx::Size child_size = GetChildPreferredSize();
+  if (child_count() == 1 && title_.empty()) {
+    return gfx::Size(
+        child_size.width(),
+        child_size.height() + GetBottomMargin() + GetTopMargin());
+  }
+
+  const gfx::Font& font = GetFont();
+#if defined(TOUCH_UI)
+  int height = std::max(font.GetHeight(), kMinItemHeightTouch);
+#else
+  int height = font.GetHeight();
+#endif
+  return gfx::Size(
+      font.GetStringWidth(title_) + label_start_ +
+          item_right_margin_ + child_size.width(),
+      std::max(height, child_size.height()) + GetBottomMargin() +
+          GetTopMargin());
 }
 
 string16 MenuItemView::GetAcceleratorText() {

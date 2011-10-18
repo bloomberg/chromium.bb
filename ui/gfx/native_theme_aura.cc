@@ -9,6 +9,12 @@
 #include "ui/gfx/size.h"
 #include "ui/gfx/skbitmap_operations.h"
 
+namespace {
+
+const SkColor kMenuBackgroundColor = SkColorSetRGB(0xed, 0xed, 0xed);
+
+}  // namespace
+
 namespace gfx {
 
 // static
@@ -26,6 +32,14 @@ NativeThemeAura::NativeThemeAura() {
 }
 
 NativeThemeAura::~NativeThemeAura() {
+}
+
+void NativeThemeAura::PaintMenuPopupBackground(
+    SkCanvas* canvas,
+    State state,
+    const gfx::Rect& rect,
+    const MenuListExtraParams& menu_list) const {
+  canvas->drawColor(kMenuBackgroundColor, SkXfermode::kSrc_Mode);
 }
 
 void NativeThemeAura::PaintScrollbarTrack(
