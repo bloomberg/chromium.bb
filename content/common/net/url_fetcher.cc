@@ -350,8 +350,7 @@ void URLFetcher::Core::TempFileWriter::DidCreateTempFile(
     error_code_ = error_code;
     RemoveTempFile();
     core_->delegate_loop_proxy_->PostTask(
-        FROM_HERE,
-        NewRunnableMethod(core_, &Core::InformDelegateFetchIsComplete));
+        FROM_HERE, base::Bind(&Core::InformDelegateFetchIsComplete, core_));
     return;
   }
 
@@ -360,8 +359,7 @@ void URLFetcher::Core::TempFileWriter::DidCreateTempFile(
   total_bytes_written_ = 0;
 
   core_->io_message_loop_proxy_->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(core_, &Core::StartURLRequestWhenAppropriate));
+      FROM_HERE, base::Bind(&Core::StartURLRequestWhenAppropriate, core_));
 }
 
 void URLFetcher::Core::TempFileWriter::WriteBuffer(int num_bytes) {
@@ -384,8 +382,7 @@ void URLFetcher::Core::TempFileWriter::ContinueWrite(
     error_code_ = error_code;
     RemoveTempFile();
     core_->delegate_loop_proxy_->PostTask(
-        FROM_HERE,
-        NewRunnableMethod(core_, &Core::InformDelegateFetchIsComplete));
+        FROM_HERE, base::Bind(&Core::InformDelegateFetchIsComplete, core_));
     return;
   }
 
@@ -437,8 +434,7 @@ void URLFetcher::Core::TempFileWriter::DidCloseTempFile(
     error_code_ = error_code;
     RemoveTempFile();
     core_->delegate_loop_proxy_->PostTask(
-        FROM_HERE,
-        NewRunnableMethod(core_, &Core::InformDelegateFetchIsComplete));
+        FROM_HERE, base::Bind(&Core::InformDelegateFetchIsComplete, core_));
     return;
   }
 
@@ -562,8 +558,7 @@ void URLFetcher::Core::Start() {
   CHECK(io_message_loop_proxy_.get()) << "We need an IO message loop proxy";
 
   io_message_loop_proxy_->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(this, &Core::StartOnIOThread));
+      FROM_HERE, base::Bind(&Core::StartOnIOThread, this));
 }
 
 void URLFetcher::Core::StartOnIOThread() {
@@ -597,7 +592,7 @@ void URLFetcher::Core::Stop() {
   fetcher_ = NULL;
   if (io_message_loop_proxy_.get()) {
     io_message_loop_proxy_->PostTask(
-        FROM_HERE, NewRunnableMethod(this, &Core::CancelURLRequest));
+        FROM_HERE, base::Bind(&Core::CancelURLRequest, this));
   }
 }
 
@@ -605,7 +600,7 @@ void URLFetcher::Core::ReceivedContentWasMalformed() {
   DCHECK(delegate_loop_proxy_->BelongsToCurrentThread());
   if (io_message_loop_proxy_.get()) {
     io_message_loop_proxy_->PostTask(
-        FROM_HERE, NewRunnableMethod(this, &Core::NotifyMalformedContent));
+        FROM_HERE, base::Bind(&Core::NotifyMalformedContent, this));
   }
 }
 
@@ -642,8 +637,8 @@ void URLFetcher::Core::AppendChunkToUpload(const std::string& content,
   CHECK(io_message_loop_proxy_.get());
   io_message_loop_proxy_->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &Core::CompleteAddingUploadDataChunk, content,
-                        is_last_chunk));
+      base::Bind(&Core::CompleteAddingUploadDataChunk, this, content,
+                 is_last_chunk));
 }
 
 // Return true if the write was done and reading may continue.
@@ -744,10 +739,7 @@ void URLFetcher::Core::RetryOrCompleteUrlFetch() {
   }
   request_context_getter_ = NULL;
   bool posted = delegate_loop_proxy_->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(this,
-                        &Core::OnCompletedURLRequest,
-                        backoff_delay));
+      FROM_HERE, base::Bind(&Core::OnCompletedURLRequest, this, backoff_delay));
 
   // If the delegate message loop does not exist any more, then the delegate
   // should be gone too.
@@ -850,9 +842,7 @@ void URLFetcher::Core::StartURLRequestWhenAppropriate() {
     StartURLRequest();
   } else {
     MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        NewRunnableMethod(this, &Core::StartURLRequest),
-        delay);
+        FROM_HERE, base::Bind(&Core::StartURLRequest, this), delay);
   }
 }
 
@@ -1117,8 +1107,7 @@ bool URLFetcher::GetResponseAsFilePath(bool take_ownership,
 
   if (take_ownership) {
     core_->io_message_loop_proxy_->PostTask(
-        FROM_HERE,
-        NewRunnableMethod(core_.get(), &Core::DisownTempFile));
+        FROM_HERE, base::Bind(&Core::DisownTempFile, core_.get()));
   }
   return true;
 }
