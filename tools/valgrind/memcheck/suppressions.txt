@@ -4815,6 +4815,13 @@
    fun:_ZN3net9x509_util20CreateSelfSignedCertEP18SECKEYPublicKeyStrP19SECKEYPrivateKeyStrRKSsjN4base9TimeDeltaE
    fun:_ZN3net15X509Certificate16CreateSelfSignedEPN6crypto13RSAPrivateKeyERKSsjN4base9TimeDeltaE
 }
+{
+   bug_100777
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN12_GLOBAL__N_119MakeContextDelegateI16CrxUpdateServiceNS1_13UpdateContextEEEPN10URLFetcher8DelegateEPT_PT0_
+   fun:_ZN16CrxUpdateService19ProcessPendingItemsEv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
