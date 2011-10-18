@@ -1070,6 +1070,10 @@ void BookmarkBarView::ButtonPressed(views::Button* sender,
     bookmark_utils::OpenAll(GetWidget()->GetNativeWindow(), profile,
         page_navigator_, node, disposition_from_event_flags);
   }
+
+  bookmark_utils::RecordBookmarkLaunch(IsDetached() ?
+      bookmark_utils::LAUNCH_DETACHED_BAR :
+      bookmark_utils::LAUNCH_ATTACHED_BAR);
   UserMetrics::RecordAction(UserMetricsAction("ClickedBookmarkBarURLButton"));
 }
 

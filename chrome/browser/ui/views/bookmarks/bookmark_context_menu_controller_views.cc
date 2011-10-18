@@ -116,6 +116,7 @@ void BookmarkContextMenuControllerViews::ExecuteCommand(int id) {
       bookmark_utils::OpenAll(parent_widget_->GetNativeWindow(),
                               profile_, navigator_, selection_,
                               initial_disposition);
+      bookmark_utils::RecordBookmarkLaunch(bookmark_utils::LAUNCH_CONTEXT_MENU);
       break;
     }
 

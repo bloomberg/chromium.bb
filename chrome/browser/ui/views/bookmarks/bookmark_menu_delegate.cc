@@ -51,11 +51,13 @@ BookmarkMenuDelegate::~BookmarkMenuDelegate() {
   profile_->GetBookmarkModel()->RemoveObserver(this);
 }
 
-void BookmarkMenuDelegate::Init(views::MenuDelegate* real_delegate,
-                                MenuItemView* parent,
-                                const BookmarkNode* node,
-                                int start_child_index,
-                                ShowOptions show_options) {
+void BookmarkMenuDelegate::Init(
+    views::MenuDelegate* real_delegate,
+    MenuItemView* parent,
+    const BookmarkNode* node,
+    int start_child_index,
+    ShowOptions show_options,
+    bookmark_utils::BookmarkLaunchLocation location) {
   profile_->GetBookmarkModel()->AddObserver(this);
   real_delegate_ = real_delegate;
   if (parent) {
@@ -78,6 +80,8 @@ void BookmarkMenuDelegate::Init(views::MenuDelegate* real_delegate,
   } else {
     menu_ = CreateMenu(node, start_child_index, show_options);
   }
+
+  location_ = location;
 }
 
 void BookmarkMenuDelegate::SetPageNavigator(PageNavigator* navigator) {
@@ -123,6 +127,7 @@ void BookmarkMenuDelegate::ExecuteCommand(int id, int mouse_event_flags) {
 
   bookmark_utils::OpenAll(parent_->GetNativeWindow(), profile_, page_navigator_,
                           selection, initial_disposition);
+  bookmark_utils::RecordBookmarkLaunch(location_);
 }
 
 bool BookmarkMenuDelegate::GetDropFormats(

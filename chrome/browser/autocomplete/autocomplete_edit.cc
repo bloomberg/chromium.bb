@@ -17,6 +17,7 @@
 #include "chrome/browser/autocomplete/autocomplete_popup_view.h"
 #include "chrome/browser/autocomplete/keyword_provider.h"
 #include "chrome/browser/autocomplete/search_provider.h"
+#include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/extensions/extension_omnibox_api.h"
 #include "chrome/browser/google/google_url_tracker.h"
@@ -568,6 +569,9 @@ void AutocompleteEditModel::OpenMatch(const AutocompleteMatch& match,
     controller_->OnAutocompleteAccept(match.destination_url, disposition,
                                       match.transition, alternate_nav_url);
   }
+
+  if (match.starred)
+    bookmark_utils::RecordBookmarkLaunch(bookmark_utils::LAUNCH_OMNIBOX);
 
   InstantController* instant = controller_->GetInstant();
   if (instant && !popup_->IsOpen())

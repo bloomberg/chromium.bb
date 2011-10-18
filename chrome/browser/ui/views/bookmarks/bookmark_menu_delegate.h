@@ -11,6 +11,7 @@
 
 #include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
+#include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_context_menu.h"
 #include "views/controls/menu/menu_delegate.h"
 
@@ -56,7 +57,8 @@ class BookmarkMenuDelegate : public BaseBookmarkModelObserver,
             views::MenuItemView* parent,
             const BookmarkNode* node,
             int start_child_index,
-            ShowOptions show_options);
+            ShowOptions show_options,
+            bookmark_utils::BookmarkLaunchLocation);
 
   // Sets the PageNavigator.
   void SetPageNavigator(PageNavigator* navigator);
@@ -183,6 +185,9 @@ class BookmarkMenuDelegate : public BaseBookmarkModelObserver,
 
   // Is the model being changed?
   bool is_mutating_model_;
+
+  // The location where this bookmark menu will be displayed (for UMA).
+  bookmark_utils::BookmarkLaunchLocation location_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkMenuDelegate);
 };

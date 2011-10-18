@@ -246,6 +246,7 @@ list.addEventListener('dblclick', function(e) {
 // folder part.
 list.addEventListener('urlClicked', function(e) {
   getLinkController().openUrlFromEvent(e.url, e.originalEvent);
+  chrome.experimental.bookmarkManager.recordLaunch();
 });
 
 $('term').onsearch = function(e) {
@@ -1415,6 +1416,7 @@ function openBookmarks(kind) {
         addNodes(v);
     });
     getLinkController().openUrls(urls, kind);
+    chrome.experimental.bookmarkManager.recordLaunch();
   });
 }
 

@@ -10,6 +10,7 @@
 #include "base/file_path.h"
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/string_search.h"
+#include "base/metrics/histogram.h"
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/time.h"
@@ -766,6 +767,15 @@ void RemoveAllBookmarks(BookmarkModel* model, const GURL& url) {
     if (index > -1)
       model->Remove(node->parent(), index);
   }
+}
+
+void RecordBookmarkLaunch(BookmarkLaunchLocation location) {
+#if defined(OS_WIN)
+  // TODO(estade): do this on other platforms too. For now it's compiled out
+  // so that stats from platforms for which this is incompletely implemented
+  // don't mix in with Windows, where it should be implemented exhaustively.
+  UMA_HISTOGRAM_ENUMERATION("Bookmarks.LaunchLocation", location, LAUNCH_LIMIT);
+#endif
 }
 
 }  // namespace bookmark_utils

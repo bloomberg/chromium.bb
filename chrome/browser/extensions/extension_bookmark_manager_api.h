@@ -138,4 +138,12 @@ class CanEditBookmarkManagerFunction : public BookmarksFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.bookmarkManager.canEdit");
 };
 
+class RecordLaunchBookmarkFunction : public BookmarksFunction {
+ public:
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.bookmarkManager.recordLaunch")
+};
+
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_BOOKMARK_MANAGER_API_H_

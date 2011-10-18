@@ -480,3 +480,8 @@ bool CanEditBookmarkManagerFunction::RunImpl() {
       profile_->GetPrefs()->GetBoolean(prefs::kEditBookmarksEnabled)));
   return true;
 }
+
+bool RecordLaunchBookmarkFunction::RunImpl() {
+  bookmark_utils::RecordBookmarkLaunch(bookmark_utils::LAUNCH_MANAGER);
+  return true;
+}
