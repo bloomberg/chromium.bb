@@ -35,6 +35,7 @@ enum AutoupdateStatus {
   kAutoupdateCheckFailed,     // no version
   kAutoupdateInstallFailed,   // no version
   kAutoupdatePromoteFailed,   // no version
+  kAutoupdateNeedsPromotion,  // no version
 };
 
 // kAutoupdateStatusNotification is the name of the notification posted when

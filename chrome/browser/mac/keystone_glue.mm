@@ -158,6 +158,17 @@ class PerformBridge : public base::RefCountedThreadSafe<PerformBridge> {
 // of Keystone being used), returns NO.
 - (BOOL)isUserTicket;
 
+// Returns YES if Keystone is definitely installed at the system level,
+// determined by the presence of an executable ksadmin program at the expected
+// system location.
+- (BOOL)isSystemKeystone;
+
+// Returns YES if on a system ticket but system Keystone is not present.
+// Returns NO otherwise. The "doomed" condition will result in the
+// registration framework appearing to have registered Chrome, but no updates
+// ever actually taking place.
+- (BOOL)isSystemTicketDoomed;
+
 // Called when ticket promotion completes.
 - (void)promotionComplete:(NSNotification*)notification;
 
@@ -490,7 +501,11 @@ NSString* const kVersionKey = @"KSVersion";
 - (void)registrationComplete:(NSNotification*)notification {
   NSDictionary* userInfo = [notification userInfo];
   if ([[userInfo objectForKey:ksr::KSRegistrationStatusKey] boolValue]) {
-    [self updateStatus:kAutoupdateRegistered version:nil];
+    if ([self isSystemTicketDoomed]) {
+      [self updateStatus:kAutoupdateNeedsPromotion version:nil];
+    } else {
+      [self updateStatus:kAutoupdateRegistered version:nil];
+    }
   } else {
     // Dump registration_?
     [self updateStatus:kAutoupdateRegisterFailed version:nil];
@@ -669,6 +684,26 @@ NSString* const kVersionKey = @"KSVersion";
   return [registration_ ticketType] == ksr::kKSRegistrationUserTicket;
 }
 
+- (BOOL)isSystemKeystone {
+  struct stat statbuf;
+  if (stat("/Library/Google/GoogleSoftwareUpdate/GoogleSoftwareUpdate.bundle/"
+           "Contents/MacOS/ksadmin",
+           &statbuf) != 0) {
+    return NO;
+  }
+
+  if (!(statbuf.st_mode & S_IXUSR)) {
+    return NO;
+  }
+
+  return YES;
+}
+
+- (BOOL)isSystemTicketDoomed {
+  BOOL isSystemTicket = ![self isUserTicket];
+  return isSystemTicket && ![self isSystemKeystone];
+}
+
 - (BOOL)isOnReadOnlyFilesystem {
   const char* appPathC = [appPath_ fileSystemRepresentation];
   struct statfs statfsBuf;
@@ -683,7 +718,20 @@ NSString* const kVersionKey = @"KSVersion";
 }
 
 - (BOOL)needsPromotion {
-  if (![self isUserTicket] || [self isOnReadOnlyFilesystem]) {
+  // Don't promote when on a read-only filesystem.
+  if ([self isOnReadOnlyFilesystem]) {
+    return NO;
+  }
+
+  // Promotion is required when a system ticket is present but system Keystone
+  // is not.
+  if ([self isSystemTicketDoomed]) {
+    return YES;
+  }
+
+  // If on a system ticket and system Keystone is present, promotion is not
+  // required.
+  if (![self isUserTicket]) {
     return NO;
   }
 
@@ -704,15 +752,13 @@ NSString* const kVersionKey = @"KSVersion";
 }
 
 - (BOOL)wantsPromotion {
-  // -needsPromotion checks these too, but this method doesn't necessarily
-  // return NO just becuase -needsPromotion returns NO, so another check is
-  // needed here.
-  if (![self isUserTicket] || [self isOnReadOnlyFilesystem]) {
-    return NO;
-  }
-
   if ([self needsPromotion]) {
     return YES;
+  }
+
+  // These are the same unpromotable cases as in -needsPromotion.
+  if ([self isOnReadOnlyFilesystem] || ![self isUserTicket]) {
+    return NO;
   }
 
   return [appPath_ hasPrefix:@"/Applications/"];
