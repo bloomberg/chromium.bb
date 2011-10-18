@@ -85,6 +85,8 @@ struct wlsc_output {
 	struct wl_list mode_list;
 	struct wl_buffer *scanout_buffer;
 	struct wl_listener scanout_buffer_destroy_listener;
+	struct wl_buffer *old_scanout_buffer;
+	struct wl_listener old_scanout_buffer_destroy_listener;
 
 	int (*prepare_render)(struct wlsc_output *output);
 	int (*present)(struct wlsc_output *output);

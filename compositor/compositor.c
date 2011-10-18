@@ -227,6 +227,21 @@ output_handle_scanout_buffer_destroy(struct wl_listener *listener,
 		output->scanout_buffer = NULL;
 }
 
+static void
+output_handle_old_scanout_buffer_destroy(struct wl_listener *listener,
+					 struct wl_resource *resource,
+					 uint32_t time)
+{
+	struct wlsc_output *output =
+		container_of(listener, struct wlsc_output,
+			     old_scanout_buffer_destroy_listener);
+	struct wl_buffer *buffer = (struct wl_buffer *) resource;
+
+	if (output->old_scanout_buffer == buffer)
+		output->old_scanout_buffer = NULL;
+}
+
+
 WL_EXPORT struct wlsc_surface *
 wlsc_surface_create(struct wlsc_compositor *compositor,
 		    int32_t x, int32_t y, int32_t width, int32_t height)
@@ -846,8 +861,15 @@ setup_scanout_surface(struct wlsc_output *output, struct wlsc_surface *es)
 	    output->prepare_scanout_surface(output, es) != 0)
 		return 0;
 
+	output->old_scanout_buffer = output->scanout_buffer;
 	output->scanout_buffer = es->buffer;
 	output->scanout_buffer->busy_count++;
+
+	if (output->old_scanout_buffer) {
+		wl_list_remove(&output->old_scanout_buffer_destroy_listener.link);
+		wl_list_insert(output->old_scanout_buffer->resource.destroy_listener_list.prev,
+			       &output->old_scanout_buffer_destroy_listener.link);
+	}
 
 	wl_list_remove(&output->scanout_buffer_destroy_listener.link);
 	wl_list_insert(output->scanout_buffer->resource.destroy_listener_list.prev,
@@ -968,8 +990,8 @@ idle_repaint(void *data)
 WL_EXPORT void
 wlsc_output_finish_frame(struct wlsc_output *output, int msecs)
 {
-	wlsc_buffer_post_release(output->scanout_buffer);
-	output->scanout_buffer = NULL;
+	wlsc_buffer_post_release(output->old_scanout_buffer);
+	output->old_scanout_buffer = NULL;
 	output->repaint_scheduled = 0;
 
 	if (output->repaint_needed)
@@ -1920,6 +1942,11 @@ wlsc_output_init(struct wlsc_output *output, struct wlsc_compositor *c,
 	output->scanout_buffer_destroy_listener.func =
 		output_handle_scanout_buffer_destroy;
 	wl_list_init(&output->scanout_buffer_destroy_listener.link);
+
+	output->old_scanout_buffer_destroy_listener.func =
+		output_handle_old_scanout_buffer_destroy;
+	wl_list_init(&output->old_scanout_buffer_destroy_listener.link);
+
 	wl_list_init(&output->frame_callback_list);
 
 	output->resource.object.interface = &wl_output_interface;
