@@ -22,8 +22,9 @@ class WebstoreInstaller : public NotificationObserver {
   enum Flag {
     FLAG_NONE = 0,
 
-    // Sets the download's referral to the extension's page in the gallery.
-    FLAG_OVERRIDE_REFERRER = 1 << 0
+    // Inline installs trigger slightly different behavior (install source
+    // is different, download referrers are the item's page in the gallery).
+    FLAG_INLINE_INSTALL = 1 << 0
   };
 
   class Delegate {
@@ -56,7 +57,7 @@ class WebstoreInstaller : public NotificationObserver {
 
   // Creates the PendingInstall for the specified extension.
   const PendingInstall& CreatePendingInstall(
-      const std::string& id, Delegate* delegate);
+      const std::string& id, GURL install_url, Delegate* delegate);
 
   // Gets the extension id for the given gallery install |url|.
   std::string GetPendingInstallId(const GURL& url);

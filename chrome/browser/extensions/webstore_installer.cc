@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/webstore_installer.h"
 
+#include "base/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/profiles/profile.h"
@@ -12,15 +13,38 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/escape.h"
 
 namespace {
 
 const char kInvalidIdError[] = "Invalid id";
 const char kNoBrowserError[] = "No browser found";
+
+const char kInlineInstallSource[] = "inline";
+const char kDefaultInstallSource[] = "";
+
+GURL GetWebstoreInstallUrl(
+    const std::string& extension_id, const std::string& install_source) {
+  std::vector<std::string> params;
+  params.push_back("id=" + extension_id);
+  if (!install_source.empty()) {
+    params.push_back("installsource=" + install_source);
+  }
+  params.push_back("lang=" + g_browser_process->GetApplicationLocale());
+  params.push_back("uc");
+  std::string url_string = extension_urls::GetWebstoreUpdateUrl(true).spec();
+
+  GURL url(url_string + "?response=redirect&x=" +
+      net::EscapeQueryParamValue(JoinString(params, '&'), true));
+  DCHECK(url.is_valid());
+
+  return url;
+}
 
 }  // namespace
 
@@ -64,7 +88,10 @@ void WebstoreInstaller::InstallExtension(
     return;
   }
 
-  PendingInstall pending_install = CreatePendingInstall(id, delegate);
+  GURL install_url = GetWebstoreInstallUrl(id, flags & FLAG_INLINE_INSTALL ?
+      kInlineInstallSource : kDefaultInstallSource);
+  PendingInstall pending_install = CreatePendingInstall(
+      id, install_url, delegate);
 
   // The download url for the given |id| is now contained in
   // |pending_install.download_url|. We navigate the current tab to this url
@@ -80,10 +107,10 @@ void WebstoreInstaller::InstallExtension(
   // whitelist entry and look that up when checking that this is a valid
   // download.
   GURL referrer = controller.GetActiveEntry()->url();
-  if (flags & FLAG_OVERRIDE_REFERRER)
+  if (flags & FLAG_INLINE_INSTALL)
     referrer = GURL(extension_urls::GetWebstoreItemDetailURLPrefix() + id);
 
-  controller.LoadURL(pending_install.download_url,
+  controller.LoadURL(install_url,
                      referrer,
                      content::PAGE_TRANSITION_LINK,
                      std::string());
@@ -133,10 +160,7 @@ bool WebstoreInstaller::ClearPendingInstall(
 
 const WebstoreInstaller::PendingInstall&
     WebstoreInstaller::CreatePendingInstall(
-        const std::string& id, Delegate* delegate) {
-  GURL install_url = extension_urls::GetWebstoreInstallUrl(
-      id, g_browser_process->GetApplicationLocale());
-
+        const std::string& id, GURL install_url, Delegate* delegate) {
   PendingInstall pending_install(id, install_url, delegate);
   pending_installs_.push_back(pending_install);
 

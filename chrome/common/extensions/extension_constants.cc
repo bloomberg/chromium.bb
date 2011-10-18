@@ -9,7 +9,6 @@
 #include "base/command_line.h"
 #include "base/string_util.h"
 #include "chrome/common/chrome_switches.h"
-#include "net/base/escape.h"
 
 namespace extension_manifest_keys {
 
@@ -459,21 +458,6 @@ GURL GetWebstoreUpdateUrl(bool secure) {
     return GURL(cmdline->GetSwitchValueASCII(switches::kAppsGalleryUpdateURL));
   else
     return GURL(secure ? kGalleryUpdateHttpsUrl : kGalleryUpdateHttpUrl);
-}
-
-GURL GetWebstoreInstallUrl(const std::string& extension_id,
-                           const std::string& locale) {
-  std::vector<std::string> params;
-  params.push_back("id=" + extension_id);
-  params.push_back("lang=" + locale);
-  params.push_back("uc");
-  std::string url_string = extension_urls::GetWebstoreUpdateUrl(true).spec();
-
-  GURL url(url_string + "?response=redirect&x=" +
-      net::EscapeQueryParamValue(JoinString(params, '&'), true));
-  DCHECK(url.is_valid());
-
-  return url;
 }
 
 const char* kGalleryBrowsePrefix = "https://chrome.google.com/webstore";

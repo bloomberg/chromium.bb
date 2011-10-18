@@ -383,7 +383,7 @@ void WebstoreInlineInstaller::InstallUIProceed() {
   WebstoreInstaller* installer =
       profile->GetExtensionService()->webstore_installer();
   installer->InstallExtension(id_, NULL,
-                              WebstoreInstaller::FLAG_OVERRIDE_REFERRER);
+                              WebstoreInstaller::FLAG_INLINE_INSTALL);
 
   // TODO(mihaip): the success message should happen later, when the extension
   // is actually downloaded and installed (by using the callbacks on

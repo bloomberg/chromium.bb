@@ -303,11 +303,6 @@ namespace extension_urls {
   // --apps-gallery-update-url.
   GURL GetWebstoreUpdateUrl(bool secure);
 
-  // Return the URL for an extension/app's .crx file that is hosted by the
-  // webstore.
-  GURL GetWebstoreInstallUrl(const std::string& extension_id,
-                             const std::string& locale);
-
   // The greatest common prefixes of the main extensions gallery's browse and
   // download URLs.
   extern const char* kGalleryBrowsePrefix;
