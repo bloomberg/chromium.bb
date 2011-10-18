@@ -158,13 +158,13 @@ void PrintSettings::SetPrinterPrintableArea(
                                 header_footer_text_height);
 
   PageMargins margins;
-  margins.header = header_footer_text_height;
-  margins.footer = header_footer_text_height;
   switch (margin_type) {
     case DEFAULT_MARGINS: {
       // Default margins 1.0cm = ~2/5 of an inch.
       int margin_printer_units = ConvertUnit(1000, kHundrethsMMPerInch,
                                              units_per_inch);
+      margins.header = header_footer_text_height;
+      margins.footer = header_footer_text_height;
       margins.top = margin_printer_units;
       margins.bottom = margin_printer_units;
       margins.left = margin_printer_units;
@@ -173,6 +173,8 @@ void PrintSettings::SetPrinterPrintableArea(
     }
     case NO_MARGINS:
     case PRINTABLE_AREA_MARGINS: {
+      margins.header = 0;
+      margins.footer = 0;
       margins.top = 0;
       margins.bottom = 0;
       margins.left = 0;
@@ -180,6 +182,8 @@ void PrintSettings::SetPrinterPrintableArea(
       break;
     }
     case CUSTOM_MARGINS: {
+      margins.header = 0;
+      margins.footer = 0;
       margins.top = ConvertUnitDouble(custom_margins_in_points_.top,
                                       printing::kPointsPerInch,
                                       units_per_inch);

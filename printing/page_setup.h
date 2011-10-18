@@ -65,8 +65,8 @@ class PRINTING_EXPORT PageSetup {
 
  private:
   // Calculate overlay_area_, effective_margins_, and content_area_, based on
-  // a constraint of |bounds|.
-  void CalculateSizesWithinRect(const gfx::Rect& bounds);
+  // a constraint of |bounds| and |text_height|.
+  void CalculateSizesWithinRect(const gfx::Rect& bounds, int text_height);
 
   // Physical size of the page, including non-printable margins.
   gfx::Size physical_size_;

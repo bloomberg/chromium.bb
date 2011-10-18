@@ -76,19 +76,19 @@ void PageSetup::Init(const gfx::Size& physical_size,
   printable_area_ = printable_area;
   text_height_ = text_height;
 
-  CalculateSizesWithinRect(printable_area_);
+  CalculateSizesWithinRect(printable_area_, text_height_);
 }
 
 void PageSetup::SetRequestedMargins(const PageMargins& requested_margins) {
   requested_margins_ = requested_margins;
   if (printable_area_.width() && printable_area_.height())
-    CalculateSizesWithinRect(printable_area_);
+    CalculateSizesWithinRect(printable_area_, text_height_);
 }
 
 void PageSetup::ForceRequestedMargins(const PageMargins& requested_margins) {
   requested_margins_ = requested_margins;
   if (physical_size_.width() && physical_size_.height())
-    CalculateSizesWithinRect(gfx::Rect(physical_size_));
+    CalculateSizesWithinRect(gfx::Rect(physical_size_), 0);
 }
 
 void PageSetup::FlipOrientation() {
@@ -104,7 +104,8 @@ void PageSetup::FlipOrientation() {
   }
 }
 
-void PageSetup::CalculateSizesWithinRect(const gfx::Rect& bounds) {
+void PageSetup::CalculateSizesWithinRect(const gfx::Rect& bounds,
+                                         int text_height) {
   // Calculate the effective margins. The tricky part.
   effective_margins_.header = std::max(requested_margins_.header,
                                        bounds.y());
@@ -115,14 +116,14 @@ void PageSetup::CalculateSizesWithinRect(const gfx::Rect& bounds) {
                                      bounds.x());
   effective_margins_.top = std::max(std::max(requested_margins_.top,
                                              bounds.y()),
-                                    effective_margins_.header + text_height_);
+                                    effective_margins_.header + text_height);
   effective_margins_.right = std::max(requested_margins_.right,
                                       physical_size_.width() -
                                           bounds.right());
   effective_margins_.bottom =
       std::max(std::max(requested_margins_.bottom,
                         physical_size_.height() - bounds.bottom()),
-               effective_margins_.footer + text_height_);
+               effective_margins_.footer + text_height);
 
   // Calculate the overlay area. If the margins are excessive, the overlay_area
   // size will be (0, 0).
