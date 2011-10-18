@@ -59,7 +59,7 @@ class TaskManagerBrowserTest : public ExtensionBrowserTest {
 
 // Flaky crashes on ChromeOS (triggers pure virtual function call), see
 // http://crbug.com/92297 for details
-#if defined(OS_CHROMEOS) || defined(OS_MACOSX)
+#if defined(OS_CHROMEOS) || defined(OS_MACOSX) || defined(OS_LINUX)
 #define MAYBE_ShutdownWhileOpen DISABLED_ShutdownWhileOpen
 #else
 #define MAYBE_ShutdownWhileOpen ShutdownWhileOpen
