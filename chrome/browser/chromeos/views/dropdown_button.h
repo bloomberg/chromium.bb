@@ -27,7 +27,7 @@ class DropDownButton : public views::MenuButton {
   // Override SetText to set the accessible value, rather than the
   // accessible name, since this acts more like a combo box than a
   // menu.
-  virtual void SetText(const string16& text);
+  virtual void SetText(const std::wstring& text);
 
   virtual string16 GetAccessibleValue();
 

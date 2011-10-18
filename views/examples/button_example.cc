@@ -4,7 +4,6 @@
 
 #include "views/examples/button_example.h"
 
-#include "base/utf_string_conversions.h"
 #include "grit/ui_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "views/controls/button/checkbox.h"
@@ -35,18 +34,18 @@ void ButtonExample::CreateExampleView(views::View* container) {
 
 void ButtonExample::ButtonPressed(views::Button* sender,
                                   const views::Event& event) {
-  PrintStatus("Pressed! count: %d", ++count_);
+  PrintStatus("Pressed! count:%d", ++count_);
 
   if (event.IsControlDown()) {
     if (event.IsShiftDown()) {
       if (event.IsAltDown()) {
         button_->SetMultiLine(!button_->multi_line());
         if (button_->multi_line()) {
-          button_->SetText(ASCIIToUTF16("Multi-line text\n") +
-                           ASCIIToUTF16("is here to stay all the way!\n") +
-                           ASCIIToUTF16("123"));
+          button_->SetText(L"Multi-line text\n"
+                           L"is here to stay all the way!\n"
+                           L"123");
         } else {
-          button_->SetText(ASCIIToUTF16("Button"));
+          button_->SetText(L"Button");
         }
       } else {
         switch(button_->icon_placement()) {
@@ -80,14 +79,13 @@ void ButtonExample::ButtonPressed(views::Button* sender,
   } else if (event.IsShiftDown()) {
     if (event.IsAltDown()) {
       if (button_->text().length() < 10) {
-        button_->SetText(
-            ASCIIToUTF16("Startof") +
-            ASCIIToUTF16("ReallyReallyReallyReallyReallyReallyReally") +
-            ASCIIToUTF16("ReallyReallyReallyReallyReallyReallyReally") +
-            ASCIIToUTF16("ReallyReallyReallyReallyReallyReallyReally") +
-            ASCIIToUTF16("LongButtonText"));
+        button_->SetText(L"Startof"
+                         L"ReallyReallyReallyReallyReallyReallyReally"
+                         L"ReallyReallyReallyReallyReallyReallyReally"
+                         L"ReallyReallyReallyReallyReallyReallyReally"
+                         L"LongButtonText");
       } else {
-        button_->SetText(ASCIIToUTF16("Button"));
+        button_->SetText(L"Button");
       }
     } else {
       use_native_theme_border_ = !use_native_theme_border_;

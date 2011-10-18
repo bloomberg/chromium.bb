@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_CHROMEOS_STATUS_STATUS_AREA_BUTTON_H_
 #pragma once
 
-#include "base/string16.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/menu/view_menu_delegate.h"
@@ -24,7 +23,7 @@ class StatusAreaButton : public views::MenuButton {
 
   // Overrides TextButton's SetText to clear max text size before seting new
   // text content so that the button size would fit the new text size.
-  virtual void SetText(const string16& text);
+  virtual void SetText(const std::wstring& text);
 
   void set_use_menu_button_paint(bool use_menu_button_paint) {
     use_menu_button_paint_ = use_menu_button_paint;

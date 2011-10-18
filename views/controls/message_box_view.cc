@@ -73,7 +73,7 @@ void MessageBoxView::SetCheckBoxLabel(const string16& label) {
   if (!checkbox_)
     checkbox_ = new Checkbox(label);
   else
-    checkbox_->SetText(label);
+    checkbox_->SetText(UTF16ToWideHack(label));
   ResetLayoutManager();
 }
 

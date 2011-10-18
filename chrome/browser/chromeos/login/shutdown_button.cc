@@ -105,7 +105,7 @@ gfx::NativeCursor ShutdownButton::GetCursor(const views::MouseEvent& event) {
 }
 
 void ShutdownButton::OnLocaleChanged() {
-  SetText(l10n_util::GetStringUTF16(IDS_SHUTDOWN_BUTTON));
+  SetText(UTF8ToWide(l10n_util::GetStringUTF8(IDS_SHUTDOWN_BUTTON)));
   if (parent()) {
     parent()->Layout();
     parent()->SchedulePaint();

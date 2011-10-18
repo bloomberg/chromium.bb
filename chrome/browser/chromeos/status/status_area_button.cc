@@ -78,7 +78,7 @@ void StatusAreaButton::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   }
 }
 
-void StatusAreaButton::SetText(const string16& text) {
+void StatusAreaButton::SetText(const std::wstring& text) {
   // TextButtons normally remember the max text size, so the button's preferred
   // size will always be as large as the largest text ever put in it.
   // We clear that max text size, so we can adjust the size to fit the text.
@@ -90,10 +90,11 @@ void StatusAreaButton::SetText(const string16& text) {
 }
 
 bool StatusAreaButton::Activate() {
-  if (active_)
+  if (active_) {
     return views::MenuButton::Activate();
-  else
+  } else {
     return true;
+  }
 }
 
 gfx::Size StatusAreaButton::GetPreferredSize() {

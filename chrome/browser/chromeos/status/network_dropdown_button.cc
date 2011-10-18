@@ -123,7 +123,7 @@ void NetworkDropdownButton::SetNetworkIconAndText() {
   string16 text;
   const SkBitmap bitmap = network_icon_->GetIconAndText(&text);
   SetIcon(bitmap);
-  SetText(text);
+  SetText(UTF16ToWide(text));
 }
 
 }  // namespace chromeos

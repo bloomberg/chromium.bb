@@ -1139,7 +1139,8 @@ void OpaqueBrowserFrameView::UpdateAvatarInfo() {
     size_t index = cache.GetIndexOfProfileWithPath(profile->GetPath());
     if (index != std::string::npos) {
       avatar_button_->SetIcon(cache.GetAvatarIconOfProfileAtIndex(index));
-      avatar_button_->SetText(cache.GetNameOfProfileAtIndex(index));
+      avatar_button_->SetText(UTF16ToWideHack(
+          cache.GetNameOfProfileAtIndex(index)));
     }
   }
 }

@@ -116,7 +116,7 @@ class RemoveButton : public views::TextButton {
  public:
   RemoveButton(views::ButtonListener* listener,
                const SkBitmap& icon,
-               const string16& text,
+               const std::wstring& text,
                const gfx::Point& top_right)
     : views::TextButton(listener, std::wstring()),
       icon_(icon),
@@ -135,7 +135,7 @@ class RemoveButton : public views::TextButton {
   // Overridden from View:
   virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE {
     SetIcon(icon_);
-    views::TextButton::SetText(string16());
+    views::TextButton::SetText(std::wstring());
     ClearMaxTextSize();
     set_background(NULL);
     set_border(new views::TextButtonBorder);
@@ -171,7 +171,7 @@ class RemoveButton : public views::TextButton {
     }
   }
 
-  virtual void SetText(const string16& text) OVERRIDE {
+  virtual void SetText(const std::wstring& text) OVERRIDE {
     text_ = text;
   }
 
@@ -188,7 +188,7 @@ class RemoveButton : public views::TextButton {
   }
 
   SkBitmap icon_;
-  string16 text_;
+  std::wstring text_;
   gfx::Point top_right_;
   bool was_first_click_;
 
@@ -265,7 +265,7 @@ void UserView::Init(bool need_background) {
   remove_button_ = new RemoveButton(
       this,
       *ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_CLOSE_BAR_H),
-      l10n_util::GetStringUTF16(IDS_LOGIN_REMOVE),
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_LOGIN_REMOVE)),
       gfx::Point(kUserImageSize - kRemoveButtonPadding, kRemoveButtonPadding));
   remove_button_->SetVisible(false);
   AddChildView(remove_button_);
@@ -314,7 +314,8 @@ void UserView::ButtonPressed(views::Button* sender, const views::Event& event) {
 }
 
 void UserView::OnLocaleChanged() {
-  remove_button_->SetText(l10n_util::GetStringUTF16(IDS_LOGIN_REMOVE));
+  remove_button_->SetText(
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_LOGIN_REMOVE)));
   delegate_->OnLocaleChanged();
 }
 

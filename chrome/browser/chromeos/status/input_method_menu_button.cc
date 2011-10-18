@@ -120,7 +120,7 @@ void InputMethodMenuButton::UpdateUI(const std::string& input_method_id,
       input_method::InputMethodUtil::IsKeyboardLayout(input_method_id) &&
       host_->GetScreenMode() == StatusAreaHost::kBrowserMode;
   SetVisible(!hide_button);
-  SetText(name);
+  SetText(UTF16ToWideHack(name));
   SetTooltipText(tooltip);
   SetAccessibleName(tooltip);
 
