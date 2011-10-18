@@ -108,7 +108,13 @@ MetricsLogBase::MetricsLogBase(const std::string& client_id, int session_id,
 }
 
 MetricsLogBase::~MetricsLogBase() {
+  if (!locked_) {
+    locked_ = true;
+    int result = xmlTextWriterEndDocument(xml_wrapper_->writer());
+    DCHECK_GE(result, 0);
+  }
   delete xml_wrapper_;
+  xml_wrapper_ = NULL;
 }
 
 void MetricsLogBase::CloseLog() {
