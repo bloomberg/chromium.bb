@@ -1151,7 +1151,9 @@ TEST_F(GLES2DecoderTest, ShaderSourceAndGetShaderSourceValidArgs) {
 
 TEST_F(GLES2DecoderTest, ShaderSourceInvalidArgs) {
   const char kSource[] = "hello";
+  const char kBadSource[] = "hello\a";
   const uint32 kSourceSize = sizeof(kSource) - 1;
+  const uint32 kBadSourceSize = sizeof(kBadSource) - 1;
   memcpy(shared_memory_address_, kSource, kSourceSize);
   ShaderSource cmd;
   cmd.Init(kInvalidClientId,
@@ -1173,6 +1175,11 @@ TEST_F(GLES2DecoderTest, ShaderSourceInvalidArgs) {
   cmd.Init(client_shader_id_,
            kSharedMemoryId, kSharedMemoryOffset, kSharedBufferSize);
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
+  memcpy(shared_memory_address_, kBadSource, kBadSourceSize);
+  cmd.Init(client_program_id_,
+           kSharedMemoryId, kSharedMemoryOffset, kBadSourceSize);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest, ShaderSourceImmediateAndGetShaderSourceValidArgs) {
@@ -1924,8 +1931,11 @@ TEST_F(GLES2DecoderTest, BindAttribLocation) {
 TEST_F(GLES2DecoderTest, BindAttribLocationInvalidArgs) {
   const GLint kLocation = 2;
   const char* kName = "testing";
+  const char* kBadName = "test\aing";
   const uint32 kNameSize = strlen(kName);
+  const uint32 kBadNameSize = strlen(kBadName);
   EXPECT_CALL(*gl_, BindAttribLocation(_, _, _)).Times(0);
+  memcpy(shared_memory_address_, kName, kNameSize);
   BindAttribLocation cmd;
   cmd.Init(kInvalidClientId, kLocation,
            kSharedMemoryId, kSharedMemoryOffset, kNameSize);
@@ -1940,6 +1950,11 @@ TEST_F(GLES2DecoderTest, BindAttribLocationInvalidArgs) {
   cmd.Init(client_program_id_, kLocation,
            kSharedMemoryId, kSharedMemoryOffset, kSharedBufferSize);
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
+  memcpy(shared_memory_address_, kBadName, kBadNameSize);
+  cmd.Init(client_program_id_, kLocation,
+           kSharedMemoryId, kSharedMemoryOffset, kBadNameSize);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest, BindAttribLocationImmediate) {
@@ -2029,6 +2044,8 @@ TEST_F(GLES2DecoderWithShaderTest, GetAttribLocation) {
 
 TEST_F(GLES2DecoderWithShaderTest, GetAttribLocationInvalidArgs) {
   const uint32 kNameSize = strlen(kAttrib2Name);
+  const char* kBadName = "foo\abar";
+  const uint32 kBadNameSize = strlen(kBadName);
   typedef GetAttribLocation::Result Result;
   Result* result = GetSharedMemoryAs<Result*>();
   *result = -1;
@@ -2074,6 +2091,13 @@ TEST_F(GLES2DecoderWithShaderTest, GetAttribLocationInvalidArgs) {
            kSharedBufferSize);
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(-1, *result);
+  memcpy(name, kBadName, kBadNameSize);
+  cmd.Init(client_program_id_,
+           kSharedMemoryId, kNameOffset,
+           kSharedMemoryId, kSharedMemoryOffset,
+           kBadNameSize);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
 
 TEST_F(GLES2DecoderWithShaderTest, GetAttribLocationImmediate) {
@@ -2196,6 +2220,8 @@ TEST_F(GLES2DecoderWithShaderTest, GetUniformLocation) {
 
 TEST_F(GLES2DecoderWithShaderTest, GetUniformLocationInvalidArgs) {
   const uint32 kNameSize = strlen(kUniform2Name);
+  const char* kBadName = "foo\abar";
+  const uint32 kBadNameSize = strlen(kBadName);
   typedef GetUniformLocation::Result Result;
   Result* result = GetSharedMemoryAs<Result*>();
   *result = -1;
@@ -2241,6 +2267,13 @@ TEST_F(GLES2DecoderWithShaderTest, GetUniformLocationInvalidArgs) {
            kSharedBufferSize);
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(-1, *result);
+  memcpy(name, kBadName, kBadNameSize);
+  cmd.Init(client_program_id_,
+           kSharedMemoryId, kNameOffset,
+           kSharedMemoryId, kSharedMemoryOffset,
+           kBadNameSize);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
 
 TEST_F(GLES2DecoderWithShaderTest, GetUniformLocationImmediate) {

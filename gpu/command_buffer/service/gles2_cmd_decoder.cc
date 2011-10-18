@@ -131,6 +131,37 @@ static bool IsAngle() {
 #endif
 }
 
+// Return true if a character belongs to the ASCII subset as defined in
+// GLSL ES 1.0 spec section 3.1.
+static bool CharacterIsValidForGLES(unsigned char c) {
+  // Printing characters are valid except " $ ` @ \ ' DEL.
+  if (c >= 32 && c <= 126 &&
+      c != '"' &&
+      c != '$' &&
+      c != '`' &&
+      c != '@' &&
+      c != '\\' &&
+      c != '\'') {
+    return true;
+  }
+  // Horizontal tab, line feed, vertical tab, form feed, carriage return
+  // are also valid.
+  if (c >= 9 && c <= 13) {
+    return true;
+  }
+
+  return false;
+}
+
+static bool StringIsValidForGLES(const char* str) {
+  for (; *str; ++str) {
+    if (!CharacterIsValidForGLES(*str)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 static void WrappedTexImage2D(
     GLenum target,
     GLint level,
@@ -798,6 +829,8 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   void RemoveRenderbufferInfo(GLuint client_id) {
     renderbuffer_manager()->RemoveRenderbufferInfo(client_id);
   }
+
+  void DoBindAttribLocation(GLuint client_id, GLuint index, const char* name);
 
   error::Error GetAttribLocationHelper(
     GLuint client_id, uint32 location_shm_id, uint32 location_shm_offset,
@@ -3317,14 +3350,23 @@ void GLES2DecoderImpl::DoGetProgramiv(
   info->GetProgramiv(pname, params);
 }
 
-error::Error GLES2DecoderImpl::HandleBindAttribLocation(
-    uint32 immediate_data_size, const gles2::BindAttribLocation& c) {
-  GLuint program = static_cast<GLuint>(c.program);
+void GLES2DecoderImpl::DoBindAttribLocation(
+    GLuint program, GLuint index, const char* name) {
+  if (!StringIsValidForGLES(name)) {
+    SetGLError(GL_INVALID_VALUE, "glBindAttribLocation: Invalid character");
+    return;
+  }
   ProgramManager::ProgramInfo* info = GetProgramInfoNotShader(
       program, "glBindAttribLocation");
   if (!info) {
-    return error::kNoError;
+    return;
   }
+  glBindAttribLocation(info->service_id(), index, name);
+}
+
+error::Error GLES2DecoderImpl::HandleBindAttribLocation(
+    uint32 immediate_data_size, const gles2::BindAttribLocation& c) {
+  GLuint program = static_cast<GLuint>(c.program);
   GLuint index = static_cast<GLuint>(c.index);
   uint32 name_size = c.data_size;
   const char* name = GetSharedMemoryAs<const char*>(
@@ -3333,18 +3375,13 @@ error::Error GLES2DecoderImpl::HandleBindAttribLocation(
     return error::kOutOfBounds;
   }
   String name_str(name, name_size);
-  glBindAttribLocation(info->service_id(), index, name_str.c_str());
+  DoBindAttribLocation(program, index, name_str.c_str());
   return error::kNoError;
 }
 
 error::Error GLES2DecoderImpl::HandleBindAttribLocationImmediate(
     uint32 immediate_data_size, const gles2::BindAttribLocationImmediate& c) {
   GLuint program = static_cast<GLuint>(c.program);
-  ProgramManager::ProgramInfo* info = GetProgramInfoNotShader(
-      program, "glBindAttribLocation");
-  if (!info) {
-    return error::kNoError;
-  }
   GLuint index = static_cast<GLuint>(c.index);
   uint32 name_size = c.data_size;
   const char* name = GetImmediateDataAs<const char*>(
@@ -3353,18 +3390,13 @@ error::Error GLES2DecoderImpl::HandleBindAttribLocationImmediate(
     return error::kOutOfBounds;
   }
   String name_str(name, name_size);
-  glBindAttribLocation(info->service_id(), index, name_str.c_str());
+  DoBindAttribLocation(program, index, name_str.c_str());
   return error::kNoError;
 }
 
 error::Error GLES2DecoderImpl::HandleBindAttribLocationBucket(
     uint32 immediate_data_size, const gles2::BindAttribLocationBucket& c) {
   GLuint program = static_cast<GLuint>(c.program);
-  ProgramManager::ProgramInfo* info = GetProgramInfoNotShader(
-      program, "glBindAttribLocation");
-  if (!info) {
-    return error::kNoError;
-  }
   GLuint index = static_cast<GLuint>(c.index);
   Bucket* bucket = GetBucket(c.name_bucket_id);
   if (!bucket || bucket->size() == 0) {
@@ -3374,7 +3406,7 @@ error::Error GLES2DecoderImpl::HandleBindAttribLocationBucket(
   if (!bucket->GetAsString(&name_str)) {
     return error::kInvalidArguments;
   }
-  glBindAttribLocation(info->service_id(), index, name_str.c_str());
+  DoBindAttribLocation(program, index, name_str.c_str());
   return error::kNoError;
 }
 
@@ -4680,6 +4712,11 @@ GLuint GLES2DecoderImpl::DoGetMaxValueInBufferCHROMIUM(
 // memory.)
 error::Error GLES2DecoderImpl::ShaderSourceHelper(
     GLuint client_id, const char* data, uint32 data_size) {
+  std::string str(data, data + data_size);
+  if (!StringIsValidForGLES(str.c_str())) {
+    SetGLError(GL_INVALID_VALUE, "glShaderSource: Invalid character");
+    return error::kNoError;
+  }
   ShaderManager::ShaderInfo* info = GetShaderInfoNotProgram(
       client_id, "glShaderSource");
   if (!info) {
@@ -4687,7 +4724,7 @@ error::Error GLES2DecoderImpl::ShaderSourceHelper(
   }
   // Note: We don't actually call glShaderSource here. We wait until
   // the call to glCompileShader.
-  info->UpdateSource(std::string(data, data + data_size).c_str());
+  info->UpdateSource(str.c_str());
   return error::kNoError;
 }
 
@@ -5440,6 +5477,10 @@ error::Error GLES2DecoderImpl::HandlePixelStorei(
 error::Error GLES2DecoderImpl::GetAttribLocationHelper(
     GLuint client_id, uint32 location_shm_id, uint32 location_shm_offset,
     const std::string& name_str) {
+  if (!StringIsValidForGLES(name_str.c_str())) {
+    SetGLError(GL_INVALID_VALUE, "glGetAttribLocation: Invalid character");
+    return error::kNoError;
+  }
   ProgramManager::ProgramInfo* info = GetProgramInfoNotShader(
       client_id, "glGetAttribLocation");
   if (!info) {
@@ -5506,6 +5547,10 @@ error::Error GLES2DecoderImpl::HandleGetAttribLocationBucket(
 error::Error GLES2DecoderImpl::GetUniformLocationHelper(
     GLuint client_id, uint32 location_shm_id, uint32 location_shm_offset,
     const std::string& name_str) {
+  if (!StringIsValidForGLES(name_str.c_str())) {
+    SetGLError(GL_INVALID_VALUE, "glGetUniformLocation: Invalid character");
+    return error::kNoError;
+  }
   ProgramManager::ProgramInfo* info = GetProgramInfoNotShader(
       client_id, "glUniformLocation");
   if (!info) {
