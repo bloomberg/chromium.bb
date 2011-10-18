@@ -18,6 +18,7 @@
 #include "base/values.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/content_browser_client.h"
+#include "content/browser/plugin_loader_posix.h"
 #include "content/browser/plugin_service_filter.h"
 #include "content/browser/ppapi_plugin_process_host.h"
 #include "content/browser/renderer_host/render_process_host.h"
@@ -72,72 +73,6 @@ void WillLoadPluginsCallback() {
   CHECK(false) << "Plugin loading should happen out-of-process.";
 #endif
 }
-
-#if defined(OS_POSIX)
-// Utility child process client that manages the IPC for loading plugins out of
-// process.
-class PluginLoaderClient : public UtilityProcessHost::Client {
- public:
-  // Meant to be called on the IO thread. Will invoke the callback on the target
-  // loop when the plugins have been loaded.
-  static void LoadPluginsOutOfProcess(
-      base::MessageLoopProxy* target_loop,
-      const PluginService::GetPluginsCallback& callback) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-    PluginLoaderClient* client = new PluginLoaderClient(target_loop, callback);
-    UtilityProcessHost* process_host =
-        new UtilityProcessHost(client, BrowserThread::IO);
-    process_host->set_no_sandbox(true);
-#if defined(OS_MACOSX)
-    process_host->set_child_flags(ChildProcessHost::CHILD_ALLOW_HEAP_EXECUTION);
-#endif
-
-    std::vector<FilePath> extra_plugin_paths;
-    std::vector<FilePath> extra_plugin_dirs;
-    std::vector<webkit::WebPluginInfo> internal_plugins;
-    webkit::npapi::PluginList::Singleton()->GetPluginPathListsToLoad(
-        &extra_plugin_paths, &extra_plugin_dirs, &internal_plugins);
-
-    process_host->Send(new UtilityMsg_LoadPlugins(
-        extra_plugin_paths, extra_plugin_dirs, internal_plugins));
-  }
-
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
-    bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP(PluginLoaderClient, message)
-      IPC_MESSAGE_HANDLER(UtilityHostMsg_LoadedPlugins, OnGotPlugins)
-      IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP()
-    return handled;
-  }
-
-  virtual void OnProcessCrashed(int exit_code) OVERRIDE {
-    LOG(ERROR) << "Out-of-process plugin loader crashed with code " << exit_code
-               << ". You will have no plugins!";
-    // Don't leave callers hanging.
-    OnGotPlugins(std::vector<webkit::WebPluginInfo>());
-  }
-
-  virtual void OnGotPlugins(const std::vector<webkit::WebPluginInfo>& plugins) {
-    webkit::npapi::PluginList::Singleton()->SetPlugins(plugins);
-    target_loop_->PostTask(FROM_HERE,
-        base::Bind(&RunGetPluginsCallback, callback_, plugins));
-  }
-
- private:
-  PluginLoaderClient(base::MessageLoopProxy* target_loop,
-                     const PluginService::GetPluginsCallback& callback)
-      : target_loop_(target_loop),
-        callback_(callback) {
-  }
-
-  scoped_refptr<base::MessageLoopProxy> target_loop_;
-  PluginService::GetPluginsCallback callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(PluginLoaderClient);
-};
-#endif  // OS_POSIX
 
 }  // namespace
 
@@ -574,8 +509,7 @@ void PluginService::GetPlugins(const GetPluginsCallback& callback) {
         base::Bind(&RunGetPluginsCallback, callback, cached_plugins));
   } else {
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-        base::Bind(&PluginLoaderClient::LoadPluginsOutOfProcess,
-            target_loop, callback));
+        base::Bind(&PluginLoaderPosix::LoadPlugins, target_loop, callback));
   }
 #endif
 }
