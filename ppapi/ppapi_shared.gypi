@@ -56,6 +56,8 @@
         'shared_impl/memory_impl.cc',
         'shared_impl/opengles2_impl.cc',
         'shared_impl/opengles2_impl.h',
+        'shared_impl/ppapi_globals.cc',
+        'shared_impl/ppapi_globals.h',
         'shared_impl/ppapi_preferences.cc',
         'shared_impl/ppapi_preferences.h',
         'shared_impl/ppp_instance_combined.cc',

@@ -151,9 +151,7 @@ Dispatcher* PluginProxyTestHarness::GetDispatcher() {
 
 void PluginProxyTestHarness::SetUpHarness() {
   // These must be first since the dispatcher set-up uses them.
-  resource_tracker_.DidCreateInstance(pp_instance());
-  PluginResourceTracker::SetInstanceForTest(&resource_tracker_);
-  resource_tracker_.set_var_tracker_test_override(&var_tracker_);
+  resource_tracker().DidCreateInstance(pp_instance());
 
   plugin_dispatcher_.reset(new PluginDispatcher(
       base::Process::Current().handle(),
@@ -168,9 +166,7 @@ void PluginProxyTestHarness::SetUpHarnessWithChannel(
     base::WaitableEvent* shutdown_event,
     bool is_client) {
   // These must be first since the dispatcher set-up uses them.
-  resource_tracker_.DidCreateInstance(pp_instance());
-  PluginResourceTracker::SetInstanceForTest(&resource_tracker_);
-  resource_tracker_.set_var_tracker_test_override(&var_tracker_);
+  resource_tracker().DidCreateInstance(pp_instance());
   plugin_delegate_mock_.Init(ipc_message_loop, shutdown_event);
 
   plugin_dispatcher_.reset(new PluginDispatcher(
@@ -186,8 +182,7 @@ void PluginProxyTestHarness::TearDownHarness() {
   plugin_dispatcher_->DidDestroyInstance(pp_instance());
   plugin_dispatcher_.reset();
 
-  resource_tracker_.DidDeleteInstance(pp_instance());
-  PluginResourceTracker::SetInstanceForTest(NULL);
+  resource_tracker().DidDeleteInstance(pp_instance());
 }
 
 base::MessageLoopProxy*

@@ -29,12 +29,15 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "unicode/usearch.h"
+#include "webkit/plugins/ppapi/host_globals.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
 #include "webkit/plugins/ppapi/resource_tracker.h"
 
+using ppapi::PpapiGlobals;
+using webkit::ppapi::HostGlobals;
 using WebKit::WebView;
 using content::RenderThread;
 
@@ -123,7 +126,7 @@ static const ResourceImageInfo kResourceImageMap[] = {
 PP_Var GetLocalizedString(PP_Instance instance_id,
                           PP_ResourceString string_id) {
   webkit::ppapi::PluginInstance* instance =
-      webkit::ppapi::ResourceTracker::Get()->GetInstance(instance_id);
+      HostGlobals::Get()->host_resource_tracker()->GetInstance(instance_id);
   if (!instance)
     return PP_MakeUndefined();
 
@@ -159,7 +162,7 @@ PP_Resource GetResourceImage(PP_Instance instance_id,
       ResourceBundle::GetSharedInstance().GetBitmapNamed(res_id);
 
   // Validate the instance.
-  if (!webkit::ppapi::ResourceTracker::Get()->GetInstance(instance_id))
+  if (!HostGlobals::Get()->host_resource_tracker()->GetInstance(instance_id))
     return 0;
   scoped_refptr<webkit::ppapi::PPB_ImageData_Impl> image_data(
       new webkit::ppapi::PPB_ImageData_Impl(instance_id));
@@ -187,7 +190,7 @@ PP_Resource GetFontFileWithFallback(
     PP_PrivateFontCharset charset) {
 #if defined(OS_LINUX)
   // Validate the instance before using it below.
-  if (!webkit::ppapi::ResourceTracker::Get()->GetInstance(instance_id))
+  if (!HostGlobals::Get()->host_resource_tracker()->GetInstance(instance_id))
     return 0;
 
   scoped_refptr<ppapi::StringVar> face_name(ppapi::StringVar::FromPPVar(
@@ -219,7 +222,7 @@ bool GetFontTableForPrivateFontFile(PP_Resource font_file,
                                     uint32_t* output_length) {
 #if defined(OS_LINUX)
   ppapi::Resource* resource =
-      ppapi::TrackerBase::Get()->GetResourceTracker()->GetResource(font_file);
+      PpapiGlobals::Get()->GetResourceTracker()->GetResource(font_file);
   if (!resource)
     return false;
 
@@ -282,7 +285,7 @@ void SearchString(PP_Instance instance,
 
 void DidStartLoading(PP_Instance instance_id) {
   webkit::ppapi::PluginInstance* instance =
-      webkit::ppapi::ResourceTracker::Get()->GetInstance(instance_id);
+      HostGlobals::Get()->host_resource_tracker()->GetInstance(instance_id);
   if (!instance)
     return;
   instance->delegate()->DidStartLoading();
@@ -290,7 +293,7 @@ void DidStartLoading(PP_Instance instance_id) {
 
 void DidStopLoading(PP_Instance instance_id) {
   webkit::ppapi::PluginInstance* instance =
-      webkit::ppapi::ResourceTracker::Get()->GetInstance(instance_id);
+      HostGlobals::Get()->host_resource_tracker()->GetInstance(instance_id);
   if (!instance)
     return;
   instance->delegate()->DidStopLoading();
@@ -298,7 +301,7 @@ void DidStopLoading(PP_Instance instance_id) {
 
 void SetContentRestriction(PP_Instance instance_id, int restrictions) {
   webkit::ppapi::PluginInstance* instance =
-      webkit::ppapi::ResourceTracker::Get()->GetInstance(instance_id);
+      HostGlobals::Get()->host_resource_tracker()->GetInstance(instance_id);
   if (!instance)
     return;
   instance->delegate()->SetContentRestriction(restrictions);
@@ -317,7 +320,7 @@ void UserMetricsRecordAction(PP_Var action) {
 
 void HasUnsupportedFeature(PP_Instance instance_id) {
   webkit::ppapi::PluginInstance* instance =
-      webkit::ppapi::ResourceTracker::Get()->GetInstance(instance_id);
+      HostGlobals::Get()->host_resource_tracker()->GetInstance(instance_id);
   if (!instance)
     return;
 
@@ -333,7 +336,7 @@ void HasUnsupportedFeature(PP_Instance instance_id) {
 
 void SaveAs(PP_Instance instance_id) {
   webkit::ppapi::PluginInstance* instance =
-      webkit::ppapi::ResourceTracker::Get()->GetInstance(instance_id);
+      HostGlobals::Get()->host_resource_tracker()->GetInstance(instance_id);
   if (!instance)
     return;
   instance->delegate()->SaveURLAs(instance->plugin_url());

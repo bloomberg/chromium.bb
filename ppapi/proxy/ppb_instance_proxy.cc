@@ -11,9 +11,9 @@
 #include "ppapi/c/ppb_mouse_lock.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
-#include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/serialized_var.h"
+#include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/url_util_impl.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/thunk.h"
@@ -123,7 +123,8 @@ PPB_Instance_FunctionAPI* PPB_Instance_Proxy::AsPPB_Instance_FunctionAPI() {
 
 PP_Bool PPB_Instance_Proxy::BindGraphics(PP_Instance instance,
                                          PP_Resource device) {
-  Resource* object = PluginResourceTracker::GetInstance()->GetResource(device);
+  Resource* object =
+      PpapiGlobals::Get()->GetResourceTracker()->GetResource(device);
   if (!object || object->pp_instance() != instance)
     return PP_FALSE;
 

@@ -16,6 +16,7 @@
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/audio_impl.h"
+#include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_audio_config_api.h"
 #include "ppapi/thunk/enter.h"
@@ -64,11 +65,11 @@ Audio::Audio(const HostResource& audio_id,
     : Resource(audio_id),
       config_(config_id) {
   SetCallback(callback, user_data);
-  PluginResourceTracker::GetInstance()->AddRefResource(config_);
+  PpapiGlobals::Get()->GetResourceTracker()->AddRefResource(config_);
 }
 
 Audio::~Audio() {
-  PluginResourceTracker::GetInstance()->ReleaseResource(config_);
+  PpapiGlobals::Get()->GetResourceTracker()->ReleaseResource(config_);
 }
 
 PPB_Audio_API* Audio::AsPPB_Audio_API() {
@@ -77,7 +78,7 @@ PPB_Audio_API* Audio::AsPPB_Audio_API() {
 
 PP_Resource Audio::GetCurrentConfig() {
   // AddRef for the caller.
-  PluginResourceTracker::GetInstance()->AddRefResource(config_);
+  PpapiGlobals::Get()->GetResourceTracker()->AddRefResource(config_);
   return config_;
 }
 

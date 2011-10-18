@@ -156,7 +156,7 @@ TEST_F(PPP_Instance_Private_ProxyTest, PPPInstancePrivate) {
 
   // Now instance_obj is valid and should have a ref-count of 1.
   PluginVarTracker& plugin_var_tracker =
-      PluginResourceTracker::GetInstance()->var_tracker();
+      *PluginGlobals::Get()->plugin_var_tracker();
   // Check the plugin-side reference count.
   EXPECT_EQ(1, plugin_var_tracker.GetRefCountForObject(instance_obj));
   // Check the host-side var and reference count.

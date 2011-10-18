@@ -5,6 +5,7 @@
 #include "ppapi/shared_impl/url_util_impl.h"
 
 #include "googleurl/src/gurl.h"
+#include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/tracker_base.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/shared_impl/var_tracker.h"
@@ -106,7 +107,7 @@ PP_Var URLUtilImpl::ConvertComponentsAndReturnURL(
     return url;
 
   PP_Var result = Canonicalize(url, components);
-  TrackerBase::Get()->GetVarTracker()->ReleaseVar(url);
+  PpapiGlobals::Get()->GetVarTracker()->ReleaseVar(url);
   return result;
 }
 

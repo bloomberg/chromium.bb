@@ -15,6 +15,7 @@
 #include "ppapi/shared_impl/id_assignment.h"
 #include "ppapi/shared_impl/tracker_base.h"
 #include "webkit/plugins/ppapi/callbacks.h"
+#include "webkit/plugins/ppapi/host_globals.h"
 #include "webkit/plugins/ppapi/npobject_var.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
@@ -36,7 +37,7 @@ namespace ppapi {
 namespace {
 
 ::ppapi::TrackerBase* GetTrackerBase() {
-  return ResourceTracker::Get();
+  return HostGlobals::Get()->host_resource_tracker();
 }
 
 }  // namespace
@@ -61,25 +62,12 @@ struct ResourceTracker::InstanceData {
       function_proxies[::ppapi::proxy::INTERFACE_ID_COUNT];
 };
 
-// static
-ResourceTracker* ResourceTracker::global_tracker_ = NULL;
-ResourceTracker* ResourceTracker::singleton_override_ = NULL;
-
 ResourceTracker::ResourceTracker() {
   // Wire up the new shared resource tracker base to use our implementation.
   ::ppapi::TrackerBase::Init(&GetTrackerBase);
 }
 
 ResourceTracker::~ResourceTracker() {
-}
-
-// static
-ResourceTracker* ResourceTracker::Get() {
-  if (singleton_override_)
-    return singleton_override_;
-  if (!global_tracker_)
-    global_tracker_ = new ResourceTracker;
-  return global_tracker_;
 }
 
 void ResourceTracker::CleanupInstanceData(PP_Instance instance,
@@ -152,14 +140,6 @@ void ResourceTracker::CleanupInstanceData(PP_Instance instance,
   }
 
   return proxy.get();
-}
-
-::ppapi::VarTracker* ResourceTracker::GetVarTracker() {
-  return &var_tracker_;
-}
-
-::ppapi::ResourceTracker* ResourceTracker::GetResourceTracker() {
-  return this;
 }
 
 PP_Module ResourceTracker::GetModuleForInstance(PP_Instance instance) {
@@ -307,18 +287,6 @@ PluginModule* ResourceTracker::GetModule(PP_Module module) {
   if (found == module_map_.end())
     return NULL;
   return found->second;
-}
-
-// static
-void ResourceTracker::SetSingletonOverride(ResourceTracker* tracker) {
-  DCHECK(!singleton_override_);
-  singleton_override_ = tracker;
-}
-
-// static
-void ResourceTracker::ClearSingletonOverride() {
-  DCHECK(singleton_override_);
-  singleton_override_ = NULL;
 }
 
 }  // namespace ppapi

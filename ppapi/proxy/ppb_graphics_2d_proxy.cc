@@ -87,8 +87,8 @@ PP_Bool Graphics2D::Describe(PP_Size* size, PP_Bool* is_always_opaque) {
 void Graphics2D::PaintImageData(PP_Resource image_data,
                                 const PP_Point* top_left,
                                 const PP_Rect* src_rect) {
-  Resource* image_object = PluginResourceTracker::GetInstance()->
-      GetResource(image_data);
+  Resource* image_object =
+      PpapiGlobals::Get()->GetResourceTracker()->GetResource(image_data);
   if (!image_object || pp_instance() != image_object->pp_instance())
     return;
 
@@ -110,8 +110,8 @@ void Graphics2D::Scroll(const PP_Rect* clip_rect,
 }
 
 void Graphics2D::ReplaceContents(PP_Resource image_data) {
-  Resource* image_object = PluginResourceTracker::GetInstance()->
-      GetResource(image_data);
+  Resource* image_object =
+      PpapiGlobals::Get()->GetResourceTracker()->GetResource(image_data);
   if (!image_object || pp_instance() != image_object->pp_instance())
     return;
 

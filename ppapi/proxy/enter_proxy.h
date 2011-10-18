@@ -9,6 +9,7 @@
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
+#include "ppapi/proxy/plugin_globals.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/thunk/enter.h"
 
@@ -32,8 +33,8 @@ class EnterPluginFromHostResource
  public:
   EnterPluginFromHostResource(const HostResource& host_resource)
       : thunk::EnterResourceNoLock<ResourceT>(
-            PluginResourceTracker::GetInstance()->PluginResourceForHostResource(
-                host_resource),
+            PluginGlobals::Get()->plugin_resource_tracker()->
+                PluginResourceForHostResource(host_resource),
             false) {
     // Validate that we're in the plugin rather than the host. Otherwise this
     // object will do the wrong thing. In the plugin, the instance should have
