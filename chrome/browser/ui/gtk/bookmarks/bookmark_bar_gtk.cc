@@ -255,16 +255,18 @@ void BookmarkBarGtk::Init() {
   // We pack the button manually (rather than using gtk_button_set_*) so that
   // we can have finer control over its label.
   other_bookmarks_button_ = theme_service_->BuildChromeButton();
+  gtk_widget_show_all(other_bookmarks_button_);
   ConnectFolderButtonEvents(other_bookmarks_button_, false);
-  GtkWidget* other_padding = gtk_alignment_new(0, 0, 1, 1);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(other_padding),
+  other_padding_ = gtk_alignment_new(0, 0, 1, 1);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(other_padding_),
                             kOtherBookmarksPaddingVertical,
                             kOtherBookmarksPaddingVertical,
                             kOtherBookmarksPaddingHorizontal,
                             kOtherBookmarksPaddingHorizontal);
-  gtk_container_add(GTK_CONTAINER(other_padding), other_bookmarks_button_);
-  gtk_box_pack_start(GTK_BOX(bookmark_hbox_), other_padding,
+  gtk_container_add(GTK_CONTAINER(other_padding_), other_bookmarks_button_);
+  gtk_box_pack_start(GTK_BOX(bookmark_hbox_), other_padding_,
                      FALSE, FALSE, 0);
+  gtk_widget_set_no_show_all(other_padding_, TRUE);
 
   sync_error_button_ = theme_service_->BuildChromeButton();
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
@@ -527,10 +529,8 @@ void BookmarkBarGtk::SetChevronState() {
 
 void BookmarkBarGtk::UpdateOtherBookmarksVisibility() {
   bool has_other_children = !model_->other_node()->empty();
-  if (has_other_children == gtk_widget_get_visible(other_bookmarks_button_))
-    return;
 
-  gtk_widget_set_visible(other_bookmarks_button_, has_other_children);
+  gtk_widget_set_visible(other_padding_, has_other_children);
   gtk_widget_set_visible(other_bookmarks_separator_, has_other_children);
 }
 
@@ -880,6 +880,8 @@ void BookmarkBarGtk::BookmarkNodeMoved(BookmarkModel* model,
 void BookmarkBarGtk::BookmarkNodeAdded(BookmarkModel* model,
                                        const BookmarkNode* parent,
                                        int index) {
+  UpdateOtherBookmarksVisibility();
+
   const BookmarkNode* node = parent->GetChild(index);
   if (parent != model_->bookmark_bar_node()) {
     StartThrobbing(node);
@@ -893,7 +895,6 @@ void BookmarkBarGtk::BookmarkNodeAdded(BookmarkModel* model,
   if (node->is_folder())
     menu_bar_helper_.Add(gtk_bin_get_child(GTK_BIN(item)));
 
-  UpdateOtherBookmarksVisibility();
   SetInstructionState();
   SetChevronState();
 
@@ -904,6 +905,8 @@ void BookmarkBarGtk::BookmarkNodeRemoved(BookmarkModel* model,
                                          const BookmarkNode* parent,
                                          int old_index,
                                          const BookmarkNode* node) {
+  UpdateOtherBookmarksVisibility();
+
   if (parent != model_->bookmark_bar_node()) {
     // We only care about nodes on the bookmark bar.
     return;
@@ -917,7 +920,6 @@ void BookmarkBarGtk::BookmarkNodeRemoved(BookmarkModel* model,
   gtk_container_remove(GTK_CONTAINER(bookmark_toolbar_.get()),
                        to_remove);
 
-  UpdateOtherBookmarksVisibility();
   SetInstructionState();
   SetChevronState();
 }

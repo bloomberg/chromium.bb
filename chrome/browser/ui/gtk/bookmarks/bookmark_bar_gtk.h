@@ -351,6 +351,9 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
   // The other bookmarks button.
   GtkWidget* other_bookmarks_button_;
 
+  // Padding for the other bookmarks button.
+  GtkWidget* other_padding_;
+
   // The sync error button.
   GtkWidget* sync_error_button_;
 
