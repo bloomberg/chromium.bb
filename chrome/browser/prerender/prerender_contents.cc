@@ -253,7 +253,7 @@ void PrerenderContents::StartPrerendering(
     // Try to get the active tab of the active browser and use that for tab
     // bounds. If the browser has never been active, we will fail to get a size
     // but we shouldn't be prerendering in that case anyway.
-    Browser* active_browser = BrowserList::GetLastActive();
+    Browser* active_browser = BrowserList::GetLastActiveWithProfile(profile_);
     if (active_browser) {
       TabContents* active_tab_contents = active_browser->GetTabContentsAt(
           active_browser->active_index());
