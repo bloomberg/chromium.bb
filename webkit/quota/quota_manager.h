@@ -19,6 +19,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_callback_factory.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "webkit/quota/quota_database.h"
 #include "webkit/quota/quota_client.h"
 #include "webkit/quota/quota_task.h"
@@ -55,7 +56,7 @@ struct QuotaAndUsage {
 // An interface called by QuotaTemporaryStorageEvictor.
 class QuotaEvictionHandler {
  public:
-  typedef Callback1<const GURL&>::Type GetLRUOriginCallback;
+  typedef base::Callback<void(const GURL&)> GetLRUOriginCallback;
   typedef StatusCallback EvictOriginDataCallback;
   typedef base::Callback<void(QuotaStatusCode,
                               const QuotaAndUsage& quota_and_usage)>
@@ -67,7 +68,7 @@ class QuotaEvictionHandler {
   // GURL when there are no evictable origins.
   virtual void GetLRUOrigin(
       StorageType type,
-      GetLRUOriginCallback* callback) = 0;
+      const GetLRUOriginCallback& callback) = 0;
 
   virtual void EvictOriginData(
       const GURL& origin,
@@ -310,7 +311,7 @@ class QuotaManager : public QuotaTaskObserver,
   // QuotaEvictionHandler.
   virtual void GetLRUOrigin(
       StorageType type,
-      GetLRUOriginCallback* callback) OVERRIDE;
+      const GetLRUOriginCallback& callback) OVERRIDE;
   virtual void EvictOriginData(
       const GURL& origin,
       StorageType type,
@@ -336,7 +337,7 @@ class QuotaManager : public QuotaTaskObserver,
   scoped_refptr<base::MessageLoopProxy> db_thread_;
   mutable scoped_ptr<QuotaDatabase> database_;
 
-  scoped_ptr<GetLRUOriginCallback> lru_origin_callback_;
+  GetLRUOriginCallback lru_origin_callback_;
   std::set<GURL> access_notified_origins_;
 
   QuotaClientList clients_;
@@ -364,6 +365,7 @@ class QuotaManager : public QuotaTaskObserver,
   scoped_refptr<SpecialStoragePolicy> special_storage_policy_;
 
   base::ScopedCallbackFactory<QuotaManager> callback_factory_;
+  base::WeakPtrFactory<QuotaManager> weak_factory_;
   base::RepeatingTimer<QuotaManager> histogram_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(QuotaManager);

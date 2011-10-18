@@ -171,7 +171,7 @@ class QuotaManager::UsageAndQuotaDispatcherTask : public QuotaTask {
         available_space_(-1),
         quota_status_(kQuotaStatusUnknown),
         waiting_callbacks_(1),
-        callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
+        ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)) {}
 
   virtual ~UsageAndQuotaDispatcherTask() {}
 
@@ -307,7 +307,7 @@ class QuotaManager::GetUsageInfoTask : public QuotaTask {
       GetUsageInfoCallback* callback)
       : QuotaTask(manager),
         callback_(callback),
-        callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+        ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)) {
   }
  protected:
   virtual void Run() OVERRIDE {
@@ -471,7 +471,7 @@ class QuotaManager::OriginDataDeleter : public QuotaTask {
         error_count_(0),
         remaining_clients_(-1),
         callback_(callback),
-        callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
+        ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)) {}
 
  protected:
   virtual void Run() OVERRIDE {
@@ -700,7 +700,7 @@ class QuotaManager::GetLRUOriginTask
       StorageType type,
       const std::map<GURL, int>& origins_in_use,
       const std::map<GURL, int>& origins_in_error,
-      GetLRUOriginCallback *callback)
+      const GetLRUOriginCallback& callback)
       : DatabaseTaskBase(manager),
         type_(type),
         callback_(callback),
@@ -726,17 +726,17 @@ class QuotaManager::GetLRUOriginTask
   }
 
   virtual void DatabaseTaskCompleted() OVERRIDE {
-    callback_->Run(url_);
+    callback_.Run(url_);
   }
 
   virtual void Aborted() OVERRIDE {
-    callback_.reset();
+    callback_.Reset();
   }
 
  private:
   StorageType type_;
   std::set<GURL> exceptions_;
-  scoped_ptr<GetLRUOriginCallback> callback_;
+  GetLRUOriginCallback callback_;
   scoped_refptr<SpecialStoragePolicy> special_storage_policy_;
   GURL url_;
 };
@@ -1025,7 +1025,8 @@ QuotaManager::QuotaManager(bool is_incognito,
     temporary_quota_override_(-1),
     desired_available_space_(-1),
     special_storage_policy_(special_storage_policy),
-    callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+    ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)),
+    ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
 }
 
 QuotaManager::~QuotaManager() {
@@ -1298,7 +1299,7 @@ void QuotaManager::NotifyStorageAccessedInternal(
     const GURL& origin, StorageType type,
     base::Time accessed_time) {
   LazyInitialize();
-  if (type == kStorageTypeTemporary && lru_origin_callback_.get()) {
+  if (type == kStorageTypeTemporary && !lru_origin_callback_.is_null()) {
     // Record the accessed origins while GetLRUOrigin task is runing
     // to filter out them from eviction.
     access_notified_origins_.insert(origin);
@@ -1384,20 +1385,20 @@ void QuotaManager::DeleteOriginFromDatabase(
 
 void QuotaManager::GetLRUOrigin(
     StorageType type,
-    GetLRUOriginCallback* callback) {
+    const GetLRUOriginCallback& callback) {
   LazyInitialize();
   // This must not be called while there's an in-flight task.
-  DCHECK(!lru_origin_callback_.get());
-  lru_origin_callback_.reset(callback);
+  DCHECK(lru_origin_callback_.is_null());
+  lru_origin_callback_ = callback;
   if (db_disabled_) {
-    lru_origin_callback_->Run(GURL());
-    lru_origin_callback_.reset();
+    lru_origin_callback_.Run(GURL());
+    lru_origin_callback_.Reset();
     return;
   }
   scoped_refptr<GetLRUOriginTask> task(new GetLRUOriginTask(
-      this, type, origins_in_use_,
-      origins_in_error_, callback_factory_.NewCallback(
-          &QuotaManager::DidGetDatabaseLRUOrigin)));
+      this, type, origins_in_use_, origins_in_error_,
+      base::Bind(&QuotaManager::DidGetDatabaseLRUOrigin,
+                 weak_factory_.GetWeakPtr())));
   task->Start();
 }
 
@@ -1544,11 +1545,11 @@ void QuotaManager::DidGetDatabaseLRUOrigin(const GURL& origin) {
   // and has not been accessed since we posted the task.
   if (origins_in_use_.find(origin) != origins_in_use_.end() ||
       access_notified_origins_.find(origin) != access_notified_origins_.end())
-    lru_origin_callback_->Run(GURL());
+    lru_origin_callback_.Run(GURL());
   else
-    lru_origin_callback_->Run(origin);
+    lru_origin_callback_.Run(origin);
   access_notified_origins_.clear();
-  lru_origin_callback_.reset();
+  lru_origin_callback_.Reset();
 }
 
 void QuotaManager::DeleteOnCorrectThread() const {

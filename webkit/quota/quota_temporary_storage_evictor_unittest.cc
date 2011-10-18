@@ -63,12 +63,11 @@ class MockQuotaEvictionHandler : public quota::QuotaEvictionHandler {
 
   virtual void GetLRUOrigin(
       StorageType type,
-      GetLRUOriginCallback* callback) OVERRIDE {
+      const GetLRUOriginCallback& callback) OVERRIDE {
     if (origin_order_.empty())
-      callback->Run(GURL());
+      callback.Run(GURL());
     else
-      callback->Run(GURL(origin_order_.front()));
-    delete callback;
+      callback.Run(GURL(origin_order_.front()));
   }
 
   int64 GetUsage() const {

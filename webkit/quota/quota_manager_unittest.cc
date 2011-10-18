@@ -217,8 +217,10 @@ class QuotaManagerTest : public testing::Test {
 
   void GetLRUOrigin(StorageType type) {
     lru_origin_ = GURL();
-    quota_manager_->GetLRUOrigin(type,
-        callback_factory_.NewCallback(&QuotaManagerTest::DidGetLRUOrigin));
+    quota_manager_->GetLRUOrigin(
+        type,
+        base::Bind(&QuotaManagerTest::DidGetLRUOrigin,
+                   weak_factory_.GetWeakPtr()));
   }
 
   void NotifyOriginInUse(const GURL& origin) {

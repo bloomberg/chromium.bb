@@ -185,9 +185,10 @@ void QuotaTemporaryStorageEvictor::OnGotUsageAndQuotaForEviction(
     // Space is getting tight. Get the least recently used origin and continue.
     // TODO(michaeln): if the reason for eviction is low physical disk space,
     // make 'unlimited' origins subject to eviction too.
-    quota_eviction_handler_->GetLRUOrigin(kStorageTypeTemporary,
-        callback_factory_.NewCallback(
-            &QuotaTemporaryStorageEvictor::OnGotLRUOrigin));
+    quota_eviction_handler_->GetLRUOrigin(
+        kStorageTypeTemporary,
+        base::Bind(&QuotaTemporaryStorageEvictor::OnGotLRUOrigin,
+                   weak_factory_.GetWeakPtr()));
   } else {
     if (repeated_eviction_) {
       // No action required, sleep for a while and check again later.
