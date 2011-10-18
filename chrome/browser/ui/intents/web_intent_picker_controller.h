@@ -45,8 +45,8 @@ class WebIntentPickerController : public NotificationObserver,
                  const webkit_glue::WebIntentData& intent,
                  int intent_id);
 
-  // Shows the web intent picker for |browser|, given the intent |action| and
-  // MIME-type |type|.
+  // Shows the web intent picker for |browser|, given the intent
+  // |action| and MIME-type |type|.
   void ShowDialog(Browser* browser,
                   const string16& action,
                   const string16& type);

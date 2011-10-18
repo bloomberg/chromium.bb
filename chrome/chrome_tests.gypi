@@ -1747,6 +1747,7 @@
         'browser/ui/cocoa/vertical_gradient_view_unittest.mm',
         'browser/ui/cocoa/view_resizer_pong.h',
         'browser/ui/cocoa/view_resizer_pong.mm',
+        'browser/ui/cocoa/web_intent_bubble_controller_unittest.mm',
         'browser/ui/cocoa/window_size_autosaver_unittest.mm',
         'browser/ui/cocoa/wrench_menu/menu_tracked_button_unittest.mm',
         'browser/ui/cocoa/wrench_menu/menu_tracked_root_view_unittest.mm',

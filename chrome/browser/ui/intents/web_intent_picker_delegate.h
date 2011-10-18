@@ -10,6 +10,9 @@
 // service.
 class WebIntentPickerDelegate {
  public:
+  // Base destructor.
+  virtual ~WebIntentPickerDelegate() {}
+
   // Callback called when the user has chosen a service.
   virtual void OnServiceChosen(size_t index) = 0;
 
