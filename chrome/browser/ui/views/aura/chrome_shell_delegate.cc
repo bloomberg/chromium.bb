@@ -6,12 +6,28 @@
 
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "ui/aura/window.h"
 #include "ui/aura_shell/launcher/launcher_types.h"
 
 ChromeShellDelegate::ChromeShellDelegate() {
 }
 
 ChromeShellDelegate::~ChromeShellDelegate() {
+}
+
+// static
+bool ChromeShellDelegate::ShouldCreateLauncherItemForBrowser(
+    Browser* browser,
+    aura_shell::LauncherItemType* type) {
+  if (browser->type() == Browser::TYPE_TABBED) {
+    *type = aura_shell::TYPE_TABBED;
+    return true;
+  }
+  if (browser->is_app()) {
+    *type = aura_shell::TYPE_APP;
+    return true;
+  }
+  return false;
 }
 
 void ChromeShellDelegate::CreateNewWindow() {
@@ -22,14 +38,12 @@ void ChromeShellDelegate::ShowApps() {
 
 void ChromeShellDelegate::LauncherItemClicked(
     const aura_shell::LauncherItem& item) {
+  item.window->Activate();
 }
 
 bool ChromeShellDelegate::ConfigureLauncherItem(
     aura_shell::LauncherItem* item) {
   BrowserView* view = BrowserView::GetBrowserViewForNativeWindow(item->window);
-  if (!view)
-    return false;
-  item->type = (view->browser()->type() == Browser::TYPE_TABBED) ?
-      aura_shell::TYPE_TABBED : aura_shell::TYPE_APP;
-  return true;
+  return view &&
+      ShouldCreateLauncherItemForBrowser(view->browser(), &(item->type));
 }

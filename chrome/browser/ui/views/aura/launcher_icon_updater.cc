@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -92,6 +93,17 @@ void LauncherIconUpdater::UpdateLauncher() {
   int item_index = launcher_model_->ItemIndexByWindow(window_);
   if (item_index == -1)
     return;
+
+  if (launcher_model_->items()[item_index].type == aura_shell::TYPE_APP) {
+    // Use the app icon if we can.
+    SkBitmap image;
+    if (tabs_[0]->extension_tab_helper()->GetExtensionAppIcon())
+      image = *tabs_[0]->extension_tab_helper()->GetExtensionAppIcon();
+    else
+      image = tabs_[0]->favicon_tab_helper()->GetFavicon();
+    launcher_model_->SetAppImage(item_index, image);
+    return;
+  }
 
   aura_shell::LauncherTabbedImages images;
   size_t count = std::min(static_cast<size_t>(kMaxCount), tabs_.size());

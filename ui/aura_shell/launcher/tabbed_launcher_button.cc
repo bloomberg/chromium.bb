@@ -21,6 +21,9 @@ namespace internal {
 // the edge.
 const int kBgImageContentInset = 12;
 
+// Padding between each of the images.
+const int kImagePadding = 8;
+
 // Insets used in painting the background if it's rendered bigger than the size
 // of the background image. See ImagePainter::CreateImagePainter for how these
 // are interpreted.
@@ -54,8 +57,10 @@ gfx::Size TabbedLauncherButton::GetPreferredSize() {
 
   // Assume all images are the same size.
   int num_images = static_cast<int>(images_.size());
+  int padding = (num_images - 1) * kImagePadding;
   return gfx::Size(
-      std::max(kBgImageContentInset * 2 + images_[0].image.width() * num_images,
+      std::max(kBgImageContentInset * 2 +
+               images_[0].image.width() * num_images + padding,
                bg_image_->width()),
       bg_image_->height());
 }
@@ -74,13 +79,14 @@ void TabbedLauncherButton::OnPaint(gfx::Canvas* canvas) {
     return;
 
   int num_images = static_cast<int>(images_.size());
+  int padding = (num_images - 1) * kImagePadding;
   int x = std::max(kBgImageContentInset,
-                   (width() - num_images * images_[0].image.width()) / 2);
+      (width() - num_images * images_[0].image.width() - padding) / 2);
   int y = (height() - images_[0].image.height()) / 2;
   for (LauncherTabbedImages::const_iterator i = images_.begin();
        i != images_.end(); ++i) {
     canvas->DrawBitmapInt(i->image, x, y);
-    x += i->image.width();
+    x += i->image.width() + kImagePadding;
   }
 }
 

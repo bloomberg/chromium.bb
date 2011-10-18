@@ -105,6 +105,7 @@
 #include "views/window/dialog_delegate.h"
 
 #if defined(USE_AURA)
+#include "chrome/browser/ui/views/aura/chrome_shell_delegate.h"
 #include "chrome/browser/ui/views/aura/launcher_icon_updater.h"
 #include "ui/aura_shell/launcher/launcher.h"
 #include "ui/aura_shell/launcher/launcher_model.h"
@@ -1939,10 +1940,14 @@ void BrowserView::Init() {
   ignore_layout_ = false;
 
 #if defined(USE_AURA)
-  icon_updater_.reset(new LauncherIconUpdater(
-      browser_->tabstrip_model(),
-      aura_shell::Shell::GetInstance()->launcher()->model(),
-      frame_->GetNativeWindow()));
+  aura_shell::LauncherItemType type;
+  if (ChromeShellDelegate::ShouldCreateLauncherItemForBrowser(browser_.get(),
+                                                              &type)) {
+    icon_updater_.reset(new LauncherIconUpdater(
+        browser_->tabstrip_model(),
+        aura_shell::Shell::GetInstance()->launcher()->model(),
+        frame_->GetNativeWindow()));
+  }
 #endif
 }
 

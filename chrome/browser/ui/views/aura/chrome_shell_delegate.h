@@ -8,12 +8,21 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "ui/aura_shell/launcher/launcher_types.h"
 #include "ui/aura_shell/shell_delegate.h"
+
+class Browser;
 
 class ChromeShellDelegate : public aura_shell::ShellDelegate {
  public:
   ChromeShellDelegate();
   virtual ~ChromeShellDelegate();
+
+  // Returns whether a launcher item should be created for |browser|. If an item
+  // should be created |type| is set to the launcher type to create.
+  static bool ShouldCreateLauncherItemForBrowser(
+      Browser* browser,
+      aura_shell::LauncherItemType* type);
 
   // aura_shell::ShellDelegate overrides;
   virtual void CreateNewWindow() OVERRIDE;

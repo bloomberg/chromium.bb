@@ -67,11 +67,14 @@ views::View* LauncherView::CreateViewForItem(const LauncherItem& item) {
     button->SetImages(item.tab_images);
     return button;
   }
-  views::ImageButton* button = new views::ImageButton(this);
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  button->SetImage(
-      views::CustomButton::BS_NORMAL,
-      rb.GetImageNamed(IDR_AURA_LAUNCHER_TABBED_BROWSER).ToSkBitmap());
+  const SkBitmap* image =
+      rb.GetImageNamed(IDR_AURA_LAUNCHER_ICON_CHROME).ToSkBitmap();
+  views::ImageButton* button = new views::ImageButton(this);
+  button->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
+                            views::ImageButton::ALIGN_MIDDLE);
+  button->SetPreferredSize(gfx::Size(image->width(), image->height()));
+  button->SetImage(views::CustomButton::BS_NORMAL, &item.app_image);
   return button;
 }
 
@@ -79,6 +82,7 @@ void LauncherView::Resize() {
   int y = GetWidget()->GetClientAreaScreenBounds().y();
   gfx::Size pref(GetPreferredSize());
   GetWidget()->SetBounds(gfx::Rect(0, y, pref.width(), pref.height()));
+  Layout();
 }
 
 void LauncherView::Layout() {
@@ -134,6 +138,12 @@ void LauncherView::LauncherItemImagesChanged(int index) {
       Resize();
     else
       button->SchedulePaint();
+  } else {
+    DCHECK_EQ(TYPE_APP, item.type);
+    views::ImageButton* button =
+        static_cast<views::ImageButton*>(child_at(index + 1));
+    button->SetImage(views::CustomButton::BS_NORMAL, &item.app_image);
+    button->SchedulePaint();
   }
 }
 
