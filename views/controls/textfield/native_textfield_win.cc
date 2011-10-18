@@ -209,8 +209,10 @@ string16 NativeTextfieldWin::GetSelectedText() const {
   GetSel(start, end);
 
   // Grab the selected text.
-  std::wstring str;
-  GetSelText(WriteInto(&str, end - start + 1));
+  string16 str;
+  long length = end - start;
+  if (length > 0)
+    GetSelText(WriteInto(&str, length + 1));
 
   return str;
 }
