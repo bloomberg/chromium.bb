@@ -9,7 +9,7 @@
 #include <string>
 
 #include "content/browser/utility_process_host.h"
-#include "content/common/content_notification_types.h"
+#include "content/public/browser/notification_types.h"
 
 class PrefService;
 class ResourceDispatcherHost;

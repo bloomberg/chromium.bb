@@ -32,9 +32,9 @@
 #include "chrome/browser/sync/sync_setup_wizard.h"
 #include "chrome/browser/sync/unrecoverable_error_handler.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
-#include "content/common/content_notification_types.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_types.h"
 #include "googleurl/src/gurl.h"
 
 class NotificationDetails;

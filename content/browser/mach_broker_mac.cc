@@ -16,6 +16,7 @@
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/common/child_process_info.h"
 #include "content/common/notification_service.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/common/content_switches.h"
 
 namespace {

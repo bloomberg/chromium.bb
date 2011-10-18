@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
-#include "content/common/content_notification_types.h"
+#include "content/public/browser/notification_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace browser_sync {

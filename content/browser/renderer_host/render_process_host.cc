@@ -16,6 +16,7 @@
 #include "content/common/content_client.h"
 #include "content/common/content_constants.h"
 #include "content/common/notification_service.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/common/content_switches.h"
 
 namespace {

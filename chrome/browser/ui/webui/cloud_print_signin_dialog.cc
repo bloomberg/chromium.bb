@@ -17,10 +17,10 @@
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
-#include "content/common/content_notification_types.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_source.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/notification_types.h"
 
 // This module implements a sign in dialog for cloud print.
 // it is based heavily off "chrome/browser/printing/print_dialog_cloud.cc".

@@ -20,7 +20,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
-#include "content/common/content_notification_types.h"
+#include "content/public/browser/notification_types.h"
 
 namespace {
 

@@ -20,6 +20,7 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
+#include "content/public/browser/notification_types.h"
 #include "googleurl/src/gurl.h"
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"

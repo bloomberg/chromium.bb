@@ -12,9 +12,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
-#include "content/common/content_notification_types.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_types.h"
 
 class GURL;
 class PrefService;

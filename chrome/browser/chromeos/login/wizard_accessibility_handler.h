@@ -9,9 +9,9 @@
 #include <string>
 
 #include "base/gtest_prod_util.h"
-#include "content/common/content_notification_types.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_source.h"
+#include "content/public/browser/notification_types.h"
 
 class AccessibilityControlInfo;
 class AccessibilityTextBoxInfo;

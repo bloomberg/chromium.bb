@@ -6,7 +6,6 @@
 #define CONTENT_COMMON_NOTIFICATION_OBSERVER_MOCK_H_
 #pragma once
 
-#include "content/common/content_notification_types.h"
 #include "content/common/notification_observer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

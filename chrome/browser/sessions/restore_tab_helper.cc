@@ -7,8 +7,8 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/common/content_notification_types.h"
 #include "content/common/notification_service.h"
+#include "content/public/browser/notification_types.h"
 
 RestoreTabHelper::RestoreTabHelper(TabContentsWrapper* tab)
     : TabContentsObserver(tab->tab_contents()),

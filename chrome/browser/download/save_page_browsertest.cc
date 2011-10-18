@@ -27,8 +27,8 @@
 #include "content/browser/download/download_persistent_store_info.h"
 #include "content/browser/net/url_request_mock_http_job.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/content_notification_types.h"
 #include "content/common/notification_service.h"
+#include "content/public/browser/notification_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

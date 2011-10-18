@@ -18,11 +18,11 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/content_notification_types.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_source.h"
+#include "content/public/browser/notification_types.h"
 #include "googleurl/src/gurl.h"
 #include "skia/ext/image_operations.h"
 

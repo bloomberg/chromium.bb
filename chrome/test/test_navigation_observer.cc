@@ -6,6 +6,7 @@
 
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host_observer.h"
+#include "content/public/browser/notification_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // This class observes |rvh| and calls OnJsInjectionReady() of

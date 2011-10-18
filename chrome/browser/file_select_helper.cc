@@ -23,6 +23,7 @@
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/notification_types.h"
 #include "grit/generated_resources.h"
 #include "net/base/mime_util.h"
 #include "ui/base/l10n/l10n_util.h"

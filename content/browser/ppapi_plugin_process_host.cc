@@ -197,6 +197,7 @@ bool PpapiPluginProcessHost::OnMessageReceived(const IPC::Message& msg) {
 
 // Called when the browser <--> plugin channel has been established.
 void PpapiPluginProcessHost::OnChannelConnected(int32 peer_pid) {
+  BrowserChildProcessHost::OnChannelConnected(peer_pid);
   // This will actually load the plugin. Errors will actually not be reported
   // back at this point. Instead, the plugin will fail to establish the
   // connections when we request them on behalf of the renderer(s).

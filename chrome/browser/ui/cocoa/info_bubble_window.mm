@@ -7,10 +7,10 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_nsobject.h"
-#include "content/common/content_notification_types.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_service.h"
+#include "content/public/browser/notification_types.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 
 namespace {

@@ -9,10 +9,10 @@
 #include <map>
 
 #include "base/basictypes.h"
-#include "content/common/content_notification_types.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_source.h"
+#include "content/public/browser/notification_types.h"
 #include "ipc/ipc_message.h"
 
 // Template trick so that AutomationResourceTracker can be used with non-pointer

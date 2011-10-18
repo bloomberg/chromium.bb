@@ -10,7 +10,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/download/mhtml_generation_manager.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/content_notification_types.h"
+#include "content/public/browser/notification_types.h"
 #include "net/test/test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

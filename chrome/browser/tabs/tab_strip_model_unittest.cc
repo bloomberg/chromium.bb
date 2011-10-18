@@ -37,6 +37,7 @@
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_source.h"
 #include "content/common/property_bag.h"
+#include "content/public/browser/notification_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;

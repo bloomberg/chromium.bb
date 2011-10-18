@@ -21,6 +21,7 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
+#include "content/public/browser/notification_types.h"
 #include "net/test/test_server.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 

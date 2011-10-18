@@ -5,7 +5,7 @@
 #include "chrome/browser/prefs/pref_set_observer.h"
 
 #include "chrome/common/pref_names.h"
-#include "content/common/content_notification_types.h"
+#include "content/public/browser/notification_types.h"
 
 PrefSetObserver::PrefSetObserver(PrefService* pref_service,
                                  NotificationObserver* observer)

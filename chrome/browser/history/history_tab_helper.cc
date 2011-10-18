@@ -15,6 +15,7 @@
 #include "content/browser/tab_contents/title_updated_details.h"
 #include "content/common/notification_service.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/notification_types.h"
 
 HistoryTabHelper::HistoryTabHelper(TabContents* tab_contents)
     : TabContentsObserver(tab_contents),

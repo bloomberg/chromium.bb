@@ -26,7 +26,7 @@
 #include "content/browser/renderer_host/resource_queue.h"
 #include "content/common/child_process_info.h"
 #include "content/common/content_export.h"
-#include "content/common/content_notification_types.h"
+#include "content/public/browser/notification_types.h"
 #include "ipc/ipc_message.h"
 #include "net/url_request/url_request.h"
 #include "webkit/glue/resource_type.h"

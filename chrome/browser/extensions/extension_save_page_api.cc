@@ -12,8 +12,8 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/download/mhtml_generation_manager.h"
-#include "content/common/content_notification_types.h"
 #include "content/common/notification_service.h"
+#include "content/public/browser/notification_types.h"
 
 // Error messages.
 const char* const kFileTooBigError = "The MHTML file generated is too big.";

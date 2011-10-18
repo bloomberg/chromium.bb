@@ -21,6 +21,7 @@
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/browser_render_process_host.h"
 #include "content/common/notification_service.h"
+#include "content/public/browser/notification_types.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -14,6 +14,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_types.h"
 
 WebUITestHandler::WebUITestHandler()
     : test_done_(false),

@@ -27,6 +27,7 @@
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/notification_types.h"
 #include "content/test/test_notification_tracker.h"
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"

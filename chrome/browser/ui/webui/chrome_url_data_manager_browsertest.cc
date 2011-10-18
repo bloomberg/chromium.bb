@@ -9,6 +9,7 @@
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_source.h"
+#include "content/public/browser/notification_types.h"
 
 namespace {
 

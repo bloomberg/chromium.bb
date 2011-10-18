@@ -10,8 +10,8 @@
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper_delegate.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/content_notification_types.h"
 #include "content/common/notification_source.h"
+#include "content/public/browser/notification_types.h"
 
 TemplateURLFetcherUICallbacks::TemplateURLFetcherUICallbacks(
     SearchEngineTabHelper* tab_helper,

@@ -32,7 +32,7 @@
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/content_notification_types.h"
+#include "content/public/browser/notification_types.h"
 #include "content/renderer/mock_content_renderer_client.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/test/test_server.h"

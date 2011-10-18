@@ -1,3 +1,6 @@
 include_rules = [
   "+media/base/media_log_event.h",
+  
+  # TODO(jam): remove me once notification_service.cc moves to browser
+  "+content/public/browser/notification_types.h",
 ]

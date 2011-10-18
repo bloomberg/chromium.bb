@@ -12,9 +12,9 @@
 #include "chrome/browser/sync/glue/non_frontend_data_type_controller.h"
 #include "content/browser/cancelable_request.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
-#include "content/common/content_notification_types.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_types.h"
 
 class NotificationSource;
 class NotificationDetails;

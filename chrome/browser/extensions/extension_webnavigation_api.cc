@@ -20,6 +20,7 @@
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
+#include "content/public/browser/notification_types.h"
 #include "net/base/net_errors.h"
 
 namespace keys = extension_webnavigation_api_constants;

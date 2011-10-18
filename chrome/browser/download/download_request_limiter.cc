@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper_delegate.h"
 #include "content/common/notification_source.h"
+#include "content/public/browser/notification_types.h"
 
 // TabDownloadState ------------------------------------------------------------
 

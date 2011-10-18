@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_NOTIFICATION_TYPE_H_
-#define CONTENT_COMMON_NOTIFICATION_TYPE_H_
+#ifndef CONTENT_PUBLIC_BROWSER_NOTIFICATION_TYPE_H_
+#define CONTENT_PUBLIC_BROWSER_NOTIFICATION_TYPE_H_
 #pragma once
 
 // This file describes various types used to describe and filter notifications
@@ -447,4 +447,4 @@ enum NotificationType {
 
 }  // namespace content
 
-#endif  // CONTENT_COMMON_NOTIFICATION_TYPE_H_
+#endif  // CONTENT_PUBLIC_BROWSER_NOTIFICATION_TYPE_H_

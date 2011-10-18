@@ -7,6 +7,7 @@
 #include "chrome/browser/ui/constrained_window.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_source.h"
+#include "content/public/browser/notification_types.h"
 
 RepostFormWarningController::RepostFormWarningController(
     TabContents* tab_contents)

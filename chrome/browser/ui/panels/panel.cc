@@ -16,8 +16,8 @@
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/content_notification_types.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/notification_types.h"
 #include "ui/gfx/rect.h"
 
 // static

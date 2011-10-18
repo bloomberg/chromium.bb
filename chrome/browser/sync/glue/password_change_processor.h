@@ -12,9 +12,9 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/sync/glue/password_model_associator.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
-#include "content/common/content_notification_types.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_types.h"
 
 class PasswordStore;
 class MessageLoop;

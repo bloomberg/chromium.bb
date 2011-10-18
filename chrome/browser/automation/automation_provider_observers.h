@@ -49,9 +49,9 @@
 #include "content/browser/cancelable_request.h"
 #include "content/browser/download/download_item.h"
 #include "content/browser/download/download_manager.h"
-#include "content/common/content_notification_types.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_types.h"
 #include "ui/gfx/size.h"
 
 class AutocompleteEditModel;

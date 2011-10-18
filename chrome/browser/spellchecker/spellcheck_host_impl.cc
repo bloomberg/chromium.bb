@@ -24,6 +24,7 @@
 #include "chrome/common/spellcheck_messages.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/common/notification_service.h"
+#include "content/public/browser/notification_types.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "third_party/hunspell/google/bdict.h"

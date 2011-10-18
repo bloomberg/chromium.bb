@@ -25,6 +25,7 @@
 #include "content/browser/user_metrics.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
+#include "content/public/browser/notification_types.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/animation/animation.h"

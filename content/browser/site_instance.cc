@@ -10,6 +10,7 @@
 #include "content/browser/webui/web_ui_factory.h"
 #include "content/common/content_client.h"
 #include "content/common/notification_service.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/registry_controlled_domain.h"
 

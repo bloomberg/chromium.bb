@@ -292,10 +292,6 @@ bool ChildProcessHost::CreateChannel() {
   return true;
 }
 
-void ChildProcessHost::InstanceCreated() {
-  Notify(content::NOTIFICATION_CHILD_INSTANCE_CREATED);
-}
-
 bool ChildProcessHost::OnMessageReceived(const IPC::Message& msg) {
   return false;
 }
@@ -335,9 +331,6 @@ void ChildProcessHost::OnChildDisconnected() {
 }
 
 void ChildProcessHost::ShutdownStarted() {
-}
-
-void ChildProcessHost::Notify(int type) {
 }
 
 ChildProcessHost::ListenerHook::ListenerHook(ChildProcessHost* host)
@@ -406,9 +399,6 @@ void ChildProcessHost::ListenerHook::OnChannelConnected(int32 peer_pid) {
   }
   host_->opening_channel_ = false;
   host_->OnChannelConnected(peer_pid);
-  // Notify in the main loop of the connection.
-  host_->Notify(content::NOTIFICATION_CHILD_PROCESS_HOST_CONNECTED);
-
   for (size_t i = 0; i < host_->filters_.size(); ++i)
     host_->filters_[i]->OnChannelConnected(peer_pid);
 }

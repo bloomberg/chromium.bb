@@ -9,10 +9,10 @@
 #include <string>
 
 #include "chrome/browser/prefs/pref_service.h"
-#include "content/common/content_notification_types.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_source.h"
+#include "content/public/browser/notification_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::Pointee;

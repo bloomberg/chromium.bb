@@ -9,9 +9,9 @@
 #include "chrome/browser/sync/api/sync_error.h"
 #include "chrome/browser/sync/glue/data_type_manager.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
-#include "content/common/content_notification_types.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_service.h"
+#include "content/public/browser/notification_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 ACTION_P2(InvokeCallback, datatype, callback_result) {

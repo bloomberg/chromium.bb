@@ -29,6 +29,7 @@
 #include "content/common/plugin_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/common/content_switches.h"
 #include "skia/ext/skia_utils_win.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"

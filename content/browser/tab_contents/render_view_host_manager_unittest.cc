@@ -15,6 +15,7 @@
 #include "content/common/notification_source.h"
 #include "content/common/test_url_constants.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/test/test_notification_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"

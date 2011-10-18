@@ -13,9 +13,9 @@
 #include "base/file_path.h"
 #include "base/scoped_temp_dir.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "content/common/content_notification_types.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_observer.h"
+#include "content/public/browser/notification_types.h"
 
 class Extension;
 

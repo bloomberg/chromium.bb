@@ -18,10 +18,10 @@
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
-#include "content/common/content_notification_types.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_source.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/common/page_transition_types.h"
 
 class TabFinder::TabContentsObserverImpl : public TabContentsObserver {

@@ -11,9 +11,10 @@
 #include "chrome/browser/sessions/session_backend.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sync/glue/change_processor.h"
-#include "content/common/content_notification_types.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_types.h"
+
 
 class NotificationDetails;
 class NotificationSource;

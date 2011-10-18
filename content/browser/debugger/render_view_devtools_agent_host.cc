@@ -14,6 +14,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/devtools_messages.h"
 #include "content/common/notification_service.h"
+#include "content/public/browser/notification_types.h"
 
 RenderViewDevToolsAgentHost::Instances RenderViewDevToolsAgentHost::instances_;
 

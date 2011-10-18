@@ -9,11 +9,11 @@
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/content_notification_types.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_source.h"
+#include "content/public/browser/notification_types.h"
 
 @interface TabContentsController(Private)
 // Forwards frame update to |delegate_| (ResizeNotificationView calls it).

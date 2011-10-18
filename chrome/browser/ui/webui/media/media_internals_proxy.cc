@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/webui/media/media_internals_handler.h"
 #include "content/common/notification_service.h"
 #include "content/browser/renderer_host/render_process_host.h"
+#include "content/public/browser/notification_types.h"
 
 static const int kMediaInternalsProxyEventDelayMilliseconds = 100;
 

@@ -308,6 +308,7 @@ bool PluginProcessHost::OnMessageReceived(const IPC::Message& msg) {
 }
 
 void PluginProcessHost::OnChannelConnected(int32 peer_pid) {
+  BrowserChildProcessHost::OnChannelConnected(peer_pid);
   for (size_t i = 0; i < pending_requests_.size(); ++i) {
     RequestPluginChannel(pending_requests_[i]);
   }
@@ -354,7 +355,7 @@ void PluginProcessHost::CancelPendingRequestsForResourceContext(
 }
 
 void PluginProcessHost::OpenChannelToPlugin(Client* client) {
-  InstanceCreated();
+  Notify(content::NOTIFICATION_CHILD_INSTANCE_CREATED);
   client->SetPluginInfo(info_);
   if (opening_channel()) {
     // The channel is already in the process of being opened.  Put

@@ -7,11 +7,11 @@
 #pragma once
 
 #include "chrome/common/extensions/extension.h"
-#include "content/common/content_notification_types.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_source.h"
+#include "content/public/browser/notification_types.h"
 
 class FilePath;
 class Profile;

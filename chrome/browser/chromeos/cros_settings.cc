@@ -11,9 +11,9 @@
 #include "chrome/browser/chromeos/cros_settings_provider.h"
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/common/content_notification_types.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
+#include "content/public/browser/notification_types.h"
 
 namespace chromeos {
 

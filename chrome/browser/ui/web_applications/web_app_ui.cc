@@ -18,6 +18,7 @@
 #include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_types.h"
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 #include "base/environment.h"

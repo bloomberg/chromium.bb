@@ -21,6 +21,7 @@
 #include "content/common/plugin_messages.h"
 #include "content/common/process_watcher.h"
 #include "content/common/result_codes.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/common/content_switches.h"
 
 #if defined(OS_WIN)
@@ -126,6 +127,10 @@ void BrowserChildProcessHost::Notify(int type) {
 base::TerminationStatus BrowserChildProcessHost::GetChildTerminationStatus(
     int* exit_code) {
   return child_process_->GetChildTerminationStatus(exit_code);
+}
+
+void BrowserChildProcessHost::OnChannelConnected(int32 peer_pid) {
+  Notify(content::NOTIFICATION_CHILD_PROCESS_HOST_CONNECTED);
 }
 
 // The ChildProcessHost default implementation calls OnChildDied() always

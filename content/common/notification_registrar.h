@@ -10,7 +10,6 @@
 
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
-#include "content/common/content_notification_types.h"
 
 class NotificationObserver;
 class NotificationSource;

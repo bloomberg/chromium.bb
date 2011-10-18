@@ -6,7 +6,7 @@
 
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
-
+#include "content/public/browser/notification_types.h"
 
 void UserMetrics::RecordAction(const UserMetricsAction& action) {
   Record(action.str_);

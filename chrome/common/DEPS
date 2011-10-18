@@ -11,6 +11,9 @@ include_rules = [
   "+webkit/glue",
   "+webkit/plugins",
 
+  # TODO(jam): remove me once chrome_notifcation_types.h moves to browser
+  "+content/public/browser/notification_types.h",
+
   # Other libraries.
   "+chrome/third_party/xdg_user_dirs",
   "+third_party/bzip2",

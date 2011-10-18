@@ -12,6 +12,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
 #import "content/common/chrome_application_mac.h"
 #include "content/common/notification_source.h"
+#include "content/public/browser/notification_types.h"
 #import "ui/base/cocoa/base_view.h"
 #include "webkit/glue/webmenurunner_mac.h"
 

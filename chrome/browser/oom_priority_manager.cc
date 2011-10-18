@@ -25,8 +25,8 @@
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/zygote_host_linux.h"
-#include "content/common/content_notification_types.h"
 #include "content/common/notification_service.h"
+#include "content/public/browser/notification_types.h"
 
 #if !defined(OS_CHROMEOS)
 #error This file only meant to be compiled on ChromeOS

@@ -15,6 +15,7 @@
 #include "content/browser/tab_contents/render_view_host_manager.h"
 #include "content/common/notification_service.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/notification_types.h"
 #include "skia/ext/platform_canvas.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColorPriv.h"

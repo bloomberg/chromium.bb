@@ -22,7 +22,6 @@
 #include "base/shared_memory.h"
 #include "base/string16.h"
 #include "content/common/content_export.h"
-#include "content/common/content_notification_types.h"
 #include "ipc/ipc_channel_proxy.h"
 
 class CommandLine;
@@ -119,9 +118,6 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Channel::Listener,
   // Creates the IPC channel.  Returns true iff it succeeded.
   virtual bool CreateChannel();
 
-  // Notifies us that an instance has been created on this child process.
-  virtual void InstanceCreated();
-
   // IPC::Channel::Listener implementation:
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
@@ -141,9 +137,6 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Channel::Listener,
 
   // Notifies the derived class that we told the child process to kill itself.
   virtual void ShutdownStarted();
-
-  // Subclasses can implement specific notification methods.
-  virtual void Notify(int type);
 
  private:
   // By using an internal class as the IPC::Channel::Listener, we can intercept

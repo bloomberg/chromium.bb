@@ -7,7 +7,7 @@
 
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "content/common/content_notification_types.h"
+#include "content/public/browser/notification_types.h"
 
 class GURL;
 class NotificationDetails;

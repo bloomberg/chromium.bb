@@ -24,6 +24,7 @@
 #include "content/common/navigation_types.h"
 #include "content/common/notification_service.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/notification_types.h"
 #include "net/base/escape.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"

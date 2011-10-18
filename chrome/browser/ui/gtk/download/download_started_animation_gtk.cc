@@ -10,6 +10,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_source.h"
+#include "content/public/browser/notification_types.h"
 #include "grit/theme_resources.h"
 #include "ui/base/animation/linear_animation.h"
 #include "ui/base/resource/resource_bundle.h"

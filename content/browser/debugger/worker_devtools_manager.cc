@@ -14,11 +14,11 @@
 #include "content/browser/debugger/worker_devtools_message_filter.h"
 #include "content/browser/worker_host/worker_process_host.h"
 #include "content/browser/worker_host/worker_service.h"
-#include "content/common/content_notification_types.h"
 #include "content/common/devtools_messages.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_service.h"
+#include "content/public/browser/notification_types.h"
 
 class WorkerDevToolsManager::AgentHosts : private NotificationObserver {
 public:

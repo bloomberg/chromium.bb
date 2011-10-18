@@ -10,6 +10,7 @@
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/common/notification_service.h"
+#include "content/public/browser/notification_types.h"
 
 using base::Time;
 using base::TimeDelta;

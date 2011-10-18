@@ -14,7 +14,6 @@
 
 #include "base/observer_list.h"
 #include "content/common/content_export.h"
-#include "content/common/content_notification_types.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
 

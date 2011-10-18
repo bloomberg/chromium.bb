@@ -6,6 +6,7 @@
 #include "chrome/browser/ui/views/dom_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/notification_types.h"
 #include "views/widget/widget.h"
 
 using views::Widget;

@@ -9,10 +9,10 @@
 #include "base/memory/scoped_nsobject.h"
 #include "base/string_util.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
-#include "content/common/content_notification_types.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_service.h"
+#include "content/public/browser/notification_types.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 

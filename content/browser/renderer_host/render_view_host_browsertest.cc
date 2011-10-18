@@ -12,6 +12,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/notification_types.h"
 #include "net/base/host_port_pair.h"
 #include "net/test/test_server.h"
 

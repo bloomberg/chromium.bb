@@ -6,9 +6,9 @@
 
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/common/content_notification_types.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
+#include "content/public/browser/notification_types.h"
 
 namespace chromeos {
 

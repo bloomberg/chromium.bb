@@ -13,6 +13,7 @@
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_service.h"
+#include "content/public/browser/notification_types.h"
 
 // ExtensionTabIdMap is a Singleton, so it doesn't need refcounting.
 DISABLE_RUNNABLE_METHOD_REFCOUNT(ExtensionTabIdMap);

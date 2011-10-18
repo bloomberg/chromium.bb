@@ -6,7 +6,7 @@
 #define CHROME_COMMON_CHROME_NOTIFICATION_TYPES_H_
 #pragma once
 
-#include "content/common/content_notification_types.h"
+#include "content/public/browser/notification_types.h"
 
 namespace chrome {
 

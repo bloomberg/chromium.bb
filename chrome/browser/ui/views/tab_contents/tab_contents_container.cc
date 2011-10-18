@@ -12,8 +12,8 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
+#include "content/public/browser/notification_types.h"
 #include "ui/base/accessibility/accessible_view_state.h"
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // TabContentsContainer, public:

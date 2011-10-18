@@ -96,16 +96,19 @@ class CONTENT_EXPORT BrowserChildProcessHost :
   virtual base::TerminationStatus GetChildTerminationStatus(int* exit_code);
 
   // Overrides from ChildProcessHost
-  virtual void OnChildDisconnected();
-  virtual void ShutdownStarted();
-  virtual void Notify(int type);
+  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
+  virtual void OnChildDisconnected() OVERRIDE;
+  virtual void ShutdownStarted() OVERRIDE;
   // Extends the base class implementation and removes this host from
   // the host list. Calls ChildProcessHost::ForceShutdown
-  virtual void ForceShutdown();
+  virtual void ForceShutdown() OVERRIDE;
 
   // Controls whether the child process should be terminated on browser
   // shutdown. Default is to always terminate.
   void SetTerminateChildOnShutdown(bool terminate_on_shutdown);
+
+  // Sends the given notification on the UI thread.
+  void Notify(int type);
 
  private:
   // By using an internal class as the ChildProcessLauncher::Client, we can
@@ -118,6 +121,7 @@ class CONTENT_EXPORT BrowserChildProcessHost :
    private:
     BrowserChildProcessHost* host_;
   };
+
   ClientHook client_;
   scoped_ptr<ChildProcessLauncher> child_process_;
 #if defined(OS_WIN)

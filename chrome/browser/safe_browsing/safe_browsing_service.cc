@@ -32,8 +32,8 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/content_notification_types.h"
 #include "content/common/notification_service.h"
+#include "content/public/browser/notification_types.h"
 #include "net/base/registry_controlled_domain.h"
 #include "net/url_request/url_request_context_getter.h"
 

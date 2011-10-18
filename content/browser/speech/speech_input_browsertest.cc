@@ -14,6 +14,7 @@
 #include "content/browser/speech/speech_input_dispatcher_host.h"
 #include "content/browser/speech/speech_input_manager.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/common/content_switches.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 
