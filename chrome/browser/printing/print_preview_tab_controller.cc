@@ -197,11 +197,11 @@ void PrintPreviewTabController::OnNavEntryCommitted(
   bool source_tab_is_preview_tab = (tab == preview_tab);
   if (details) {
     content::PageTransition transition_type = details->entry->transition_type();
-    NavigationType::Type nav_type = details->type;
+    content::NavigationType nav_type = details->type;
 
     // Don't update/erase the map entry if the page has not changed.
     if (transition_type == content::PAGE_TRANSITION_RELOAD ||
-        nav_type == NavigationType::SAME_PAGE) {
+        nav_type == content::NAVIGATION_TYPE_SAME_PAGE) {
       if (source_tab_is_preview_tab)
         SetInitiatorTabURLAndTitle(preview_tab);
       return;
@@ -210,7 +210,7 @@ void PrintPreviewTabController::OnNavEntryCommitted(
     // New |preview_tab| is created. Don't update/erase map entry.
     if (waiting_for_new_preview_page_ &&
         transition_type == content::PAGE_TRANSITION_LINK &&
-        nav_type == NavigationType::NEW_PAGE &&
+        nav_type == content::NAVIGATION_TYPE_NEW_PAGE &&
         source_tab_is_preview_tab) {
       waiting_for_new_preview_page_ = false;
       SetInitiatorTabURLAndTitle(preview_tab);
@@ -220,7 +220,7 @@ void PrintPreviewTabController::OnNavEntryCommitted(
     // User navigated to a preview tab using forward/back button.
     if (source_tab_is_preview_tab &&
         transition_type == content::PAGE_TRANSITION_FORWARD_BACK &&
-        nav_type == NavigationType::EXISTING_PAGE) {
+        nav_type == content::NAVIGATION_TYPE_EXISTING_PAGE) {
       return;
     }
   }

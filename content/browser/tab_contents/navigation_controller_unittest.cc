@@ -889,7 +889,7 @@ TEST_F(NavigationControllerTest, Redirect) {
   EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
 
-  EXPECT_TRUE(details.type == NavigationType::SAME_PAGE);
+  EXPECT_TRUE(details.type == content::NAVIGATION_TYPE_SAME_PAGE);
   EXPECT_EQ(controller().entry_count(), 1);
   EXPECT_EQ(controller().last_committed_entry_index(), 0);
   EXPECT_TRUE(controller().GetLastCommittedEntry());
@@ -947,7 +947,7 @@ TEST_F(NavigationControllerTest, PostThenRedirect) {
   EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
 
-  EXPECT_TRUE(details.type == NavigationType::SAME_PAGE);
+  EXPECT_TRUE(details.type == content::NAVIGATION_TYPE_SAME_PAGE);
   EXPECT_EQ(controller().entry_count(), 1);
   EXPECT_EQ(controller().last_committed_entry_index(), 0);
   EXPECT_TRUE(controller().GetLastCommittedEntry());
@@ -994,7 +994,7 @@ TEST_F(NavigationControllerTest, ImmediateRedirect) {
   EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
 
-  EXPECT_TRUE(details.type == NavigationType::NEW_PAGE);
+  EXPECT_TRUE(details.type == content::NAVIGATION_TYPE_NEW_PAGE);
   EXPECT_EQ(controller().entry_count(), 1);
   EXPECT_EQ(controller().last_committed_entry_index(), 0);
   EXPECT_TRUE(controller().GetLastCommittedEntry());

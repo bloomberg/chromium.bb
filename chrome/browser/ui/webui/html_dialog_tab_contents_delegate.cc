@@ -91,6 +91,6 @@ bool HtmlDialogTabContentsDelegate::IsPopup(const TabContents* source) const {
 
 bool HtmlDialogTabContentsDelegate::ShouldAddNavigationToHistory(
     const history::HistoryAddPageArgs& add_page_args,
-    NavigationType::Type navigation_type) {
+    content::NavigationType navigation_type) {
   return false;
 }

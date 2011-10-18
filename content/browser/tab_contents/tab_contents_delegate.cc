@@ -205,7 +205,7 @@ bool TabContentsDelegate::OnGoToEntryOffset(int offset) {
 
 bool TabContentsDelegate::ShouldAddNavigationToHistory(
     const history::HistoryAddPageArgs& add_page_args,
-    NavigationType::Type navigation_type) {
+    content::NavigationType navigation_type) {
   return true;
 }
 

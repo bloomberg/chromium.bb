@@ -207,7 +207,7 @@ bool EULATabContentsDelegate::IsPopup(TabContents* source) {
 
 bool EULATabContentsDelegate::ShouldAddNavigationToHistory(
     const history::HistoryAddPageArgs& add_page_args,
-    NavigationType::Type navigation_type) {
+    content::NavigationType navigation_type) {
   return false;
 }
 

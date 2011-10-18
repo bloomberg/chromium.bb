@@ -28,7 +28,7 @@ class WebPageScreen : public TabContentsDelegate {
   virtual bool IsPopup(TabContents* source);
   virtual bool ShouldAddNavigationToHistory(
       const history::HistoryAddPageArgs& add_page_args,
-      NavigationType::Type navigation_type);
+      content::NavigationType navigation_type);
   virtual bool HandleContextMenu(const ContextMenuParams& params);
 
   // Called by |timeout_timer_|. Stops page fetching and closes screen.

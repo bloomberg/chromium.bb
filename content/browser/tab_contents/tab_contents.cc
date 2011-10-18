@@ -43,9 +43,9 @@
 #include "content/common/content_constants.h"
 #include "content/common/content_restriction.h"
 #include "content/common/intents_messages.h"
-#include "content/common/navigation_types.h"
 #include "content/common/notification_service.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/navigation_types.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/view_types.h"
@@ -1500,7 +1500,7 @@ void TabContents::DidNavigate(RenderViewHost* rvh,
   // Send notification about committed provisional loads. This notification is
   // different from the NAV_ENTRY_COMMITTED notification which doesn't include
   // the actual URL navigated to and isn't sent for AUTO_SUBFRAME navigations.
-  if (details.type != NavigationType::NAV_IGNORE) {
+  if (details.type != content::NAVIGATION_TYPE_NAV_IGNORE) {
     // For AUTO_SUBFRAME navigations, an event for the main frame is generated
     // that is not recorded in the navigation history. For the purpose of
     // tracking navigation events, we treat this event as a sub frame navigation

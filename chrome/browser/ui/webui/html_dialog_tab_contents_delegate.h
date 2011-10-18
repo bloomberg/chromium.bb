@@ -53,7 +53,7 @@ class HtmlDialogTabContentsDelegate : public TabContentsDelegate {
   virtual bool IsPopup(const TabContents* source) const;
   virtual bool ShouldAddNavigationToHistory(
       const history::HistoryAddPageArgs& add_page_args,
-      NavigationType::Type navigation_type);
+      content::NavigationType navigation_type);
 
  private:
   Profile* profile_;  // Weak pointer.  Always an original profile.

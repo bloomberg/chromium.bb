@@ -159,7 +159,6 @@
     'common/message_router.h',
     'common/mime_registry_messages.h',
     'common/navigation_gesture.h',
-    'common/navigation_types.h',
     'common/net/url_fetcher.cc',
     'common/net/url_fetcher.h',
     'common/notification_details.cc',

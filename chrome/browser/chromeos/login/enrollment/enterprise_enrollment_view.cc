@@ -50,7 +50,7 @@ class EnrollmentDomView : public WebPageDomView,
   virtual bool IsPopup(TabContents* source) { return false; }
   virtual bool ShouldAddNavigationToHistory(
       const history::HistoryAddPageArgs& add_page_args,
-      NavigationType::Type navigation_type) {
+      content::NavigationType navigation_type) {
     return false;
   }
   virtual bool HandleContextMenu(const ContextMenuParams& params) {
