@@ -16,7 +16,7 @@ import test_utils
 
 
 class OmniboxTest(pyauto.PyUITest):
-  """TestCase for Omnibox."""
+  """Test cases for the omnibox."""
 
   def Debug(self):
     """Test method for experimentation.
@@ -29,49 +29,50 @@ class OmniboxTest(pyauto.PyUITest):
       time.sleep(1)
 
   def testFocusOnStartup(self):
-    """Verify that omnibox has focus on startup."""
+    """Verify that the omnibox has focus on startup."""
     self.WaitUntilOmniboxReadyHack()
     self.assertTrue(self.GetOmniboxInfo().Properties('has_focus'))
 
   def testHistoryResult(self):
-    """Verify that omnibox can fetch items from history."""
+    """Verify that the omnibox can fetch items from the history."""
     url = self.GetFileURLForDataPath('title2.html')
     title = 'Title Of Awesomeness'
     self.AppendTab(pyauto.GURL(url))
     def _VerifyHistoryResult(query_list, description, windex=0):
       """Verify result matching given description for given list of queries."""
       for query_text in query_list:
-        matches = test_utils.GetOmniboxMatchesFor(self,
-            query_text, windex=windex, attr_dict={'description': description})
+        matches = test_utils.GetOmniboxMatchesFor(
+            self, query_text, windex=windex,
+            attr_dict={'description': description})
         self.assertTrue(matches)
         self.assertEqual(1, len(matches))
         item = matches[0]
         self.assertEqual(url, item['destination_url'])
-    # Query using URL & title
+    # Query using URL & title.
     _VerifyHistoryResult([url, title], title)
-    # Verify results in another tab
+    # Verify results in another tab.
     self.AppendTab(pyauto.GURL())
     _VerifyHistoryResult([url, title], title)
-    # Verify results in another window
+    # Verify results in another window.
     self.OpenNewBrowserWindow(True)
     self.WaitUntilOmniboxReadyHack(windex=1)
     _VerifyHistoryResult([url, title], title, windex=1)
-    # Verify results in an incognito window
+    # Verify results in an incognito window.
     self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
     self.WaitUntilOmniboxReadyHack(windex=2)
     _VerifyHistoryResult([url, title], title, windex=2)
 
   def _VerifyOmniboxURLMatches(self, url, description, windex=0):
-    """Verify URL match results from the Omnibox.
+    """Verify URL match results from the omnibox.
 
     Args:
-      url: the url to use
-      description: the string description within history page and google search
-                   to match against
-      windex: the window index to work on. Defaults to 0 (first window)
+      url: The URL to use.
+      description: The string description within the history page and Google
+                   search to match against.
+      windex: The window index to work on. Defaults to 0 (first window).
     """
-    matches_description = test_utils.GetOmniboxMatchesFor(self,
-        url, windex=windex, attr_dict={'description': description})
+    matches_description = test_utils.GetOmniboxMatchesFor(
+        self, url, windex=windex, attr_dict={'description': description})
     self.assertEqual(1, len(matches_description))
     if description == 'Google Search':
       self.assertTrue(re.match('http://www.google.com/search.+',
@@ -80,18 +81,18 @@ class OmniboxTest(pyauto.PyUITest):
       self.assertEqual(url, matches_description[0]['destination_url'])
 
   def testFetchHistoryResultItems(self):
-    """Verify omnibox fetches history items in second tab, win and Incognito."""
+    """Verify omnibox fetches history items in 2nd tab, window and incognito."""
     url = self.GetFileURLForDataPath('title2.html')
     title = 'Title Of Awesomeness'
     desc = 'Google Search'
-    # fetch history page item in the second tab.
+    # Fetch history page item in the second tab.
     self.AppendTab(pyauto.GURL(url))
     self._VerifyOmniboxURLMatches(url, title)
-    # fetch history page items in the second window.
+    # Fetch history page items in the second window.
     self.OpenNewBrowserWindow(True)
     self.NavigateToURL(url, 1, 0)
     self._VerifyOmniboxURLMatches(url, title, windex=1)
-    # fetch google search items in Incognito window.
+    # Fetch google search items in incognito window.
     self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
     self.NavigateToURL(url, 2, 0)
     self._VerifyOmniboxURLMatches(url, desc, windex=2)
@@ -105,13 +106,13 @@ class OmniboxTest(pyauto.PyUITest):
     self.NavigateToURL(url2)
     matches = test_utils.GetOmniboxMatchesFor(self, 'file://')
     self.assertTrue(matches)
-    # Find the index of match for url1
+    # Find the index of match for |url1|.
     index = None
     for i, match in enumerate(matches):
       if match['description'] == title1:
         index = i
     self.assertTrue(index is not None)
-    self.OmniboxMovePopupSelection(index)  # Select url1 line in popup
+    self.OmniboxMovePopupSelection(index)  # Select |url1| line in popup.
     self.assertEqual(url1, self.GetOmniboxInfo().Text())
     self.OmniboxAcceptInput()
     self.assertEqual(title1, self.GetActiveTabTitle())
@@ -121,8 +122,8 @@ class OmniboxTest(pyauto.PyUITest):
     search_text = 'hello world'
     verify_str = 'Google Search'
     url_re = 'http://www.google.com/search\?.*q=hello\+world.*'
-    matches_description = test_utils.GetOmniboxMatchesFor(self,
-        search_text, attr_dict={'description': verify_str})
+    matches_description = test_utils.GetOmniboxMatchesFor(
+        self, search_text, attr_dict={'description': verify_str})
     self.assertTrue(matches_description)
     # There should be a least one entry with the description Google. Suggest
     # results may end up having 'Google Search' in them, so use >=.
@@ -131,16 +132,16 @@ class OmniboxTest(pyauto.PyUITest):
     self.assertTrue(re.search(url_re, item['destination_url']))
     self.assertEqual('search-what-you-typed', item['type'])
 
-  def testInlinAutoComplete(self):
-    """Verify inline autocomplete for a pre-visited url."""
+  def testInlineAutoComplete(self):
+    """Verify inline autocomplete for a pre-visited URL."""
     self.NavigateToURL('http://www.google.com')
     matches = test_utils.GetOmniboxMatchesFor(self, 'goog')
     self.assertTrue(matches)
-    # Omnibox should suggest auto completed url as the first item
+    # Omnibox should suggest auto completed URL as the first item.
     matches_description = matches[0]
     self.assertTrue('www.google.com' in matches_description['contents'])
     self.assertEqual('history-url', matches_description['type'])
-    # The url should be inline-autocompleted in the omnibox
+    # The URL should be inline-autocompleted in the omnibox.
     self.assertTrue('google.com' in self.GetOmniboxInfo().Text())
 
   def testCrazyFilenames(self):
@@ -150,13 +151,13 @@ class OmniboxTest(pyauto.PyUITest):
     """
     filename = os.path.join(self.DataDir(), 'downloads', 'crazy_filenames.txt')
     zip_names = self.EvalDataFrom(filename)
-    # We got .zip filenames. Change them to .html
+    # We got .zip filenames. Change them to .html.
     crazy_filenames = [x.replace('.zip', '.html') for x in zip_names]
     title = 'given title'
 
     def _CreateFile(name):
       """Create the given html file."""
-      fp = open(name, 'w')  # name could be unicode
+      fp = open(name, 'w')  # |name| could be unicode.
       print >>fp, '<html><title>%s</title><body>' % title
       print >>fp, 'This is a junk file named <h2>%s</h2>' % repr(name)
       print >>fp, '</body></html>'
@@ -173,7 +174,7 @@ class OmniboxTest(pyauto.PyUITest):
     # be given unicode strings to "do the right thing" on win.
     # Ref: http://boodebr.org/main/python/all-about-python-and-unicode
     try:
-      for filename in crazy_filenames:  # filename is unicode.
+      for filename in crazy_filenames:  # |filename| is unicode.
         file_path = os.path.join(temp_dir, filename.encode('utf-8'))
         _CreateFile(os.path.join(temp_dir, filename))
         file_url = self.GetFileURLForPath(file_path)
@@ -190,7 +191,7 @@ class OmniboxTest(pyauto.PyUITest):
         self.assertTrue(os.path.basename(file_url) in
                         matches[0]['destination_url'])
     finally:
-      shutil.rmtree(unicode(temp_dir))  # unicode so that win treats nicely.
+      shutil.rmtree(unicode(temp_dir))  # Unicode so that Win treats nicely.
 
   def testSuggest(self):
     """Verify suggested results in omnibox."""
@@ -206,12 +207,12 @@ class OmniboxTest(pyauto.PyUITest):
     url = 'http://www.google.com/'
     title = 'Google'
     search_string = 'google'
-    self.AddBookmarkURL(  # Add a bookmark
+    self.AddBookmarkURL(  # Add a bookmark.
         self.GetBookmarkModel().BookmarkBar()['id'], 0, title, url)
-    self.NavigateToURL(url)  # Build up history
+    self.NavigateToURL(url)  # Build up history.
     matches = test_utils.GetOmniboxMatchesFor(self, search_string)
     self.assertTrue(matches)
-    # Verify starred result (indicating bookmarked url)
+    # Verify starred result (indicating bookmarked url).
     self.assertTrue([x for x in matches if x['starred'] == True])
     for item_type in ('history-url', 'search-what-you-typed',
                       'search-suggest',):
@@ -224,12 +225,12 @@ class OmniboxTest(pyauto.PyUITest):
     matches = test_utils.GetOmniboxMatchesFor(self, search_string)
     self.assertTrue(matches)
     self.assertTrue([x for x in matches if x['type'] == 'search-suggest'])
-    # Disable suggest-service
+    # Disable suggest-service.
     self.SetPrefs(pyauto.kSearchSuggestEnabled, False)
     self.assertFalse(self.GetPrefsInfo().Prefs(pyauto.kSearchSuggestEnabled))
     matches = test_utils.GetOmniboxMatchesFor(self, search_string)
     self.assertTrue(matches)
-    # Verify there are no suggest results
+    # Verify there are no suggest results.
     self.assertFalse([x for x in matches if x['type'] == 'search-suggest'])
 
   def testAutoCompleteForSearch(self):
@@ -237,33 +238,20 @@ class OmniboxTest(pyauto.PyUITest):
     search_string = 'youtu'
     verify_string = 'youtube'
     matches = test_utils.GetOmniboxMatchesFor(self, search_string)
-    # retrieve last contents element.
+    # Retrieve last contents element.
     matches_description = matches[-1]['contents'].split()
     self.assertEqual(verify_string, matches_description[0])
 
-  def _CheckBookmarkResultForVariousInputs(self, url, title, windex=0):
-    """Check if we get the Bookmark for complete and partial inputs."""
-    # Check if the complete URL would get the bookmark.
-    url_matches = test_utils.GetOmniboxMatchesFor(self, url, windex=windex)
-    self._VerifyHasBookmarkResult(url_matches)
-    # Check if the complete title would get the bookmark.
-    title_matches = test_utils.GetOmniboxMatchesFor(self, title, windex=windex)
-    self._VerifyHasBookmarkResult(title_matches)
-    # Check if the partial URL would get the bookmark.
-    split_url = urlparse.urlsplit(url)
-    partial_url = test_utils.GetOmniboxMatchesFor(self,
-        split_url.scheme, windex=windex)
-    self._VerifyHasBookmarkResult(partial_url)
-    # Check if the partial title would get the bookmark.
-    split_title = title.split()
-    search_term = split_title[len(split_title) - 1]
-    partial_title = test_utils.GetOmniboxMatchesFor(self,
-        search_term, windex=windex)
-    self._VerifyHasBookmarkResult(partial_title)
-
   def _GotContentHistory(self, search_text, url):
-    """Determines if omnibox returns a previously visited page for given
-       search text
+    """Check if omnibox returns a previously-visited page for given search text.
+
+    Args:
+      search_text: The string search text.
+      url: The string URL to look for in the omnibox matches.
+
+    Returns:
+      True, if the omnibox returns the previously-visited page for the given
+      search text, or False otherwise.
     """
     # Omnibox doesn't change results if searching the same text repeatedly.
     # So setting '' in omnibox before the next repeated search.
@@ -273,7 +261,7 @@ class OmniboxTest(pyauto.PyUITest):
     return 1 == len(matches_description)
 
   def testContentHistory(self):
-    """Verify omnibox results when entering page content
+    """Verify omnibox results when entering page content.
 
     Test verifies that visited page shows up in omnibox on entering page
     content.
@@ -285,7 +273,7 @@ class OmniboxTest(pyauto.PyUITest):
         lambda: self._GotContentHistory('British throne', url)))
 
   def testOmniboxSearchHistory(self):
-    """Verify Page navigation/search from omnibox are added to the history."""
+    """Verify page navigation/search from omnibox are added to the history."""
     url = self.GetFileURLForDataPath('title2.html')
     self.NavigateToURL(url)
     self.AppendTab(pyauto.GURL('about:blank'))
@@ -298,14 +286,44 @@ class OmniboxTest(pyauto.PyUITest):
     self.assertEqual('java - Google Search', history[0]['title'])
 
   def _VerifyHasBookmarkResult(self, matches):
-    """Verify that we have a bookmark result."""
+    """Verify that we have a bookmark result.
+
+    Args:
+      matches: A list of match items, as returned by
+               test_utils.GetOmniboxMatchesFor().
+    """
     matches_starred = [result for result in matches if result['starred']]
     self.assertTrue(matches_starred)
     self.assertEqual(1, len(matches_starred))
 
+  def _CheckBookmarkResultForVariousInputs(self, url, title, windex=0):
+    """Check if we get the bookmark for complete and partial inputs.
+
+    Args:
+      url: A string URL.
+      title: A string title for the given URL.
+      windex: The window index to use.  Defaults to 0 (first window).
+    """
+    # Check if the complete URL would get the bookmark.
+    url_matches = test_utils.GetOmniboxMatchesFor(self, url, windex=windex)
+    self._VerifyHasBookmarkResult(url_matches)
+    # Check if the complete title would get the bookmark.
+    title_matches = test_utils.GetOmniboxMatchesFor(self, title, windex=windex)
+    self._VerifyHasBookmarkResult(title_matches)
+    # Check if the partial URL would get the bookmark.
+    split_url = urlparse.urlsplit(url)
+    partial_url = test_utils.GetOmniboxMatchesFor(
+        self, split_url.scheme, windex=windex)
+    self._VerifyHasBookmarkResult(partial_url)
+    # Check if the partial title would get the bookmark.
+    split_title = title.split()
+    search_term = split_title[len(split_title) - 1]
+    partial_title = test_utils.GetOmniboxMatchesFor(
+        self, search_term, windex=windex)
+    self._VerifyHasBookmarkResult(partial_title)
+
   def testBookmarkResultInNewTabAndWindow(self):
-    """Verify that omnibox can recognize a bookmark within search options
-    in new tabs and windows."""
+    """Verify omnibox finds bookmarks in search options of new tabs/windows."""
     url = self.GetFileURLForDataPath('title2.html')
     self.NavigateToURL(url)
     title = 'This is Awesomeness'
@@ -326,8 +344,7 @@ class OmniboxTest(pyauto.PyUITest):
     self._CheckBookmarkResultForVariousInputs(url, title, windex=2)
 
   def testAutoCompleteForNonAsciiSearch(self):
-    """Verify that able to search and autocomplete with non-ASCII incomplete
-    search keyword."""
+    """Verify can search/autocomplete with non-ASCII incomplete keywords."""
     search_string = u'\u767e'
     verify_string = u'\u767e\u5ea6\u4e00\u4e0b'
     matches = test_utils.GetOmniboxMatchesFor(self, search_string)
@@ -352,8 +369,8 @@ class OmniboxTest(pyauto.PyUITest):
 
     Args:
       search_str: Search keyword to find app matches.
-      app_url: Chrome App launch URL.
-      is_incognito: A boolean indicating if omnibox matches are from
+      app_url: Chrome app launch URL.
+      is_incognito: A boolean indicating if omnibox matches are from an
                     incognito window.
     """
     def OminiboxMatchFound():
@@ -372,9 +389,9 @@ class OmniboxTest(pyauto.PyUITest):
     """Verify app can be searched and launched in omnibox of current window.
 
     Args:
-      app_name: The name of installed app.
+      app_name: The name of an installed app.
       search_str: The search string to find the app from auto suggest.
-      app_url: Chrome App launch URL.
+      app_url: Chrome app launch URL.
     """
     # Assume current window is at index 0.
     self._InstallAndVerifyApp(app_name)
@@ -390,7 +407,7 @@ class OmniboxTest(pyauto.PyUITest):
     Args:
       app_name: The name of installed app.
       search_str: The search string to find the app from auto suggest.
-      app_url: Chrome App launch URL.
+      app_url: Chrome app launch URL.
     """
     # Assume current window is at index 0.
     self._InstallAndVerifyApp(app_name)
@@ -417,7 +434,7 @@ class OmniboxTest(pyauto.PyUITest):
     Args:
       app_name: The name of installed app.
       search_str: The search string to find the app from auto suggest.
-      app_url: Chrome App launch URL.
+      app_url: Chrome app launch URL.
     """
     self._InstallAndVerifyApp(app_name)
     # Get app matches in omnibox of the 2nd tab.
@@ -425,7 +442,7 @@ class OmniboxTest(pyauto.PyUITest):
     self._VerifyOminiboxMatches(search_str, app_url, False)
 
   def testBasicAppSearch(self):
-    """Verify that we can search for installed apps"""
+    """Verify that we can search for installed apps."""
     app_name = 'countdown.crx'
     search_str = 'countdown'
     app_url = 'chrome-extension:' \
@@ -496,7 +513,7 @@ class OmniboxTest(pyauto.PyUITest):
     self.assertTrue(re.search(app_url, self.GetActiveTabURL().spec()))
 
   def testEndPartAppNameSearchInNewTab(self):
-    """Verify that we can search app with partial app name(end part)."""
+    """Verify that we can search app with partial app name (end part)."""
     app_name = 'countdown.crx'
     search_str = 'own'
     app_url = 'chrome-extension:' \
@@ -504,7 +521,7 @@ class OmniboxTest(pyauto.PyUITest):
     self._VerifyAppSearchNewTab(app_name, search_str, app_url)
 
   def testBeginningPartAppNameSearchInNewTab(self):
-    """Verify that we can search app with partial app name(beginning part)."""
+    """Verify that we can search app with partial app name (beginning part)."""
     app_name = 'cargo_bridge.crx'
     search_str = 'Car'
     app_url = 'http://webstore.limexgames.com/cargo_bridge'
