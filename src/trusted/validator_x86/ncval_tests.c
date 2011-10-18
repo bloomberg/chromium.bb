@@ -1155,6 +1155,8 @@ static void TestValidator(struct NCValTestCase *vtest) {
   NCValidateSegment(byte0, (uint32_t)vtest->vaddr, data_size - 1, vstate);
   free(byte0);
   rc = NCValidateFinish(vstate);
+  assert(rc == 0);
+  (void) rc;  /* assert needs to be fixed! */
   do {
     printf("vtest->sawfailure = %d, vstate->stats.sawfailure = %d\n",
            vtest->sawfailure, vstate->stats.sawfailure);
