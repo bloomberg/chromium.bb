@@ -17,7 +17,12 @@
  */
 
 #include <stdio.h>		/* needed to define "FILE", "NULL" */
+
+#if defined(USE_SYSTEM_LIBJPEG)
+#include <jpeglib.h>
+#else
 #include "jpeglib.h"
+#endif
 
 
 /*

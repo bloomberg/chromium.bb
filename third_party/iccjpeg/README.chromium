@@ -2,6 +2,7 @@ Name: iccjpeg
 URL: http://www.ijg.org
 Version: unknown
 License File: LICENSE
+Security Critical: yes
 
 Description:
 Contain support for ICC color profile on top of jpeg6b (and up) library.
@@ -10,3 +11,8 @@ We include the relevant part of the original IJG licensing term
 in the file LICENSE.
 
 Documentation for ICC profile can be found at: http://www.color.org
+
+Local Modifications:
+* On at least OpenBSD we might need to include to correct header file from
+  the system, so a USE_SYSTEM_LIBJPEG ifdef is added to iccjpeg.h in order
+  to be able to decide which jpeglib.h header to include.
