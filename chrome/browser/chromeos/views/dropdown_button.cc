@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/views/dropdown_button.h"
 
-#include "base/utf_string_conversions.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
@@ -78,8 +77,8 @@ void DropDownButton::OnPaintFocusBorder(gfx::Canvas* canvas) {
                           height() - kFocusFrameBottomOffset);
 }
 
-void DropDownButton::SetText(const std::wstring& text) {
-  text_ = WideToUTF16Hack(text);
+void DropDownButton::SetText(const string16& text) {
+  text_ = text;
   UpdateTextSize();
 }
 

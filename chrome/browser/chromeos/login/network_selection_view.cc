@@ -347,10 +347,10 @@ void NetworkSelectionView::UpdateLocalizedStringsAndFonts() {
 
   SetMenuButtonFont(languages_menubutton_, base_font);
   languages_menubutton_->SetText(
-      UTF16ToWide(actor_->language_switch_menu()->GetCurrentLocaleName()));
+      actor_->language_switch_menu()->GetCurrentLocaleName());
   SetMenuButtonFont(keyboards_menubutton_, base_font);
   keyboards_menubutton_->SetText(
-      UTF16ToWide(actor_->keyboard_switch_menu()->GetCurrentKeyboardName()));
+      actor_->keyboard_switch_menu()->GetCurrentKeyboardName());
   welcome_label_->SetFont(welcome_label_font);
   welcome_label_->SetText(
       l10n_util::GetStringUTF16(IDS_NETWORK_SELECTION_TITLE));

@@ -78,15 +78,14 @@ void MemoryMenuButton::UpdateText() {
   // represents memory that has been dynamically allocated to a process.
   // It thus approximates heap memory usage across all processes.
   int anon_kb = meminfo_->active_anon + meminfo_->inactive_anon;
-  std::wstring label = base::StringPrintf(L"%d MB (%d)",
-                                          anon_kb / 1024,
-                                          renderer_kills_);
-  SetText(label);
-  std::string tooltip = base::StringPrintf(
-      "%d MB allocated (anonymous)\n"
-      "%d renderer kill(s)",
-      anon_kb / 1024,
-      renderer_kills_);
+  std::string label = base::StringPrintf("%d MB (%d)",
+                                         anon_kb / 1024,
+                                         renderer_kills_);
+  SetText(ASCIIToUTF16(label));
+  std::string tooltip = base::StringPrintf("%d MB allocated (anonymous)\n"
+                                           "%d renderer kill(s)",
+                                           anon_kb / 1024,
+                                           renderer_kills_);
   SetTooltipText(ASCIIToUTF16(tooltip));
   SchedulePaint();
 }

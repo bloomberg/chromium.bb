@@ -1276,7 +1276,7 @@ views::View* BookmarkBarView::CreateBookmarkButton(const BookmarkNode* node) {
 
 void BookmarkBarView::ConfigureButton(const BookmarkNode* node,
                                       views::TextButton* button) {
-  button->SetText(UTF16ToWide(node->GetTitle()));
+  button->SetText(node->GetTitle());
   button->SetAccessibleName(node->GetTitle());
   button->set_id(VIEW_ID_BOOKMARK_BAR_ELEMENT);
   // We don't always have a theme provider (ui tests, for example).

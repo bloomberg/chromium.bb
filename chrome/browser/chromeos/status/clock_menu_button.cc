@@ -91,10 +91,10 @@ void ClockMenuButton::UpdateText() {
   const bool use_24hour_clock = host_->GetProfile() ?
       host_->GetProfile()->GetPrefs()->GetBoolean(prefs::kUse24HourClock) :
       default_use_24hour_clock_;
-  SetText(UTF16ToWide(base::TimeFormatTimeOfDayWithHourClockType(
+  SetText(base::TimeFormatTimeOfDayWithHourClockType(
       time,
       use_24hour_clock ? base::k24HourClock : base::k12HourClock,
-      base::kDropAmPm)));
+      base::kDropAmPm));
   SetTooltipText(base::TimeFormatFriendlyDateAndTime(time));
   SetAccessibleName(base::TimeFormatFriendlyDateAndTime(time));
   SchedulePaint();

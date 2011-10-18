@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/string16.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/font.h"
@@ -139,7 +140,7 @@ class VIEWS_EXPORT TextButtonBase : public CustomButton,
   // Call SetText once per string in your set of possible values at button
   // creation time, so that it can contain the largest of them and avoid
   // resizing the button when the text changes.
-  virtual void SetText(const std::wstring& text);
+  virtual void SetText(const string16& text);
   const string16& text() const { return text_; }
 
   enum TextAlignment {
@@ -215,7 +216,7 @@ class VIEWS_EXPORT TextButtonBase : public CustomButton,
   virtual std::string GetClassName() const OVERRIDE;
 
  protected:
-  TextButtonBase(ButtonListener* listener, const std::wstring& text);
+  TextButtonBase(ButtonListener* listener, const string16& text);
 
   // Called when enabled or disabled state changes, or the colors for those
   // states change.
