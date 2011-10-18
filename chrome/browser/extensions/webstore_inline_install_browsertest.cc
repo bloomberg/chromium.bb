@@ -78,14 +78,7 @@ class WebstoreInlineInstallTest : public InProcessBrowserTest {
   std::string test_gallery_url_;
 };
 
-// Flakily fails on linux.  http://crbug.com/95246
-#if defined(OS_LINUX)
-#define MAYBE_Install FLAKY_Install
-#else
-#define MAYBE_Install Install
-#endif
-
-IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, MAYBE_Install) {
+IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, Install) {
   SetExtensionInstallDialogForManifestAutoConfirmForTests(true);
 
   ui_test_utils::WindowedNotificationObserver load_signal(
@@ -104,15 +97,8 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, MAYBE_Install) {
   EXPECT_TRUE(extension != NULL);
 }
 
-// Flakily fails on Linux.  http://crbug.com/95246
-#if defined(OS_LINUX)
-#define MAYBE_InstallNotAllowedFromNonVerifiedDomains FLAKY_InstallNotAllowedFromNonVerifiedDomains
-#else
-#define MAYBE_InstallNotAllowedFromNonVerifiedDomains InstallNotAllowedFromNonVerifiedDomains
-#endif
-
 IN_PROC_BROWSER_TEST_F(
-    WebstoreInlineInstallTest, MAYBE_InstallNotAllowedFromNonVerifiedDomains) {
+    WebstoreInlineInstallTest, InstallNotAllowedFromNonVerifiedDomains) {
   SetExtensionInstallDialogForManifestAutoConfirmForTests(false);
   ui_test_utils::NavigateToURL(
       browser(),
@@ -122,28 +108,14 @@ IN_PROC_BROWSER_TEST_F(
   RunInlineInstallTest("runTest2");
 }
 
-// Flakily fails on Linux.  http://crbug.com/95246
-#if defined(OS_LINUX)
-#define MAYBE_FindLink FLAKY_FindLink
-#else
-#define MAYBE_FindLink FindLink
-#endif
-
-IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, MAYBE_FindLink) {
+IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, FindLink) {
   ui_test_utils::NavigateToURL(
       browser(), GenerateTestServerUrl(kAppDomain, "find_link.html"));
 
   RunInlineInstallTest("runTest");
 }
 
-// Flakily fails on Linux and Mac.  http://crbug.com/95246
-#if defined(OS_LINUX) || defined(OS_MACOSX)
-#define MAYBE_ArgumentValidation FLAKY_ArgumentValidation
-#else
-#define MAYBE_ArgumentValidation ArgumentValidation
-#endif
-
-IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, MAYBE_ArgumentValidation) {
+IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, ArgumentValidation) {
   SetExtensionInstallDialogForManifestAutoConfirmForTests(false);
   ui_test_utils::NavigateToURL(
       browser(), GenerateTestServerUrl(kAppDomain, "argument_validation.html"));
