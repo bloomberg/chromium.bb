@@ -36,7 +36,7 @@ cr.define('print_preview', function() {
     marginsUI.lastClickedMarginsUIPair = null;
 
     // @type {EventTracker} Used to keep track of certain event listeners.
-    marginsUI.eventTracker = new EventTracker();
+    marginsUI.eventTracker_ = new EventTracker();
 
     marginsUI.addEventListeners_();
     return marginsUI;
@@ -152,7 +152,7 @@ cr.define('print_preview', function() {
       this.bringToFront(this.lastClickedMarginsUIPair);
       // Note: Capturing mouse events at a higher level in the DOM than |this|,
       // so that the plugin can still receive mouse events.
-      this.eventTracker.add(
+      this.eventTracker_.add(
           window.document, 'mousemove', this.onMouseMove_.bind(this), false);
     },
 
@@ -165,7 +165,7 @@ cr.define('print_preview', function() {
         return;
       this.lastClickedMarginsUIPair.onMouseUp();
       this.lastClickedMarginsUIPair = null;
-      this.eventTracker.remove(window.document, 'mousemove');
+      this.eventTracker_.remove(window.document, 'mousemove');
     },
 
     /**

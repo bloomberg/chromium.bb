@@ -162,7 +162,7 @@ cr.define('print_preview', function() {
     this.forceDisplayingMarginLines_ = true;
 
     // @type {EventTracker} Used to keep track of certain event listeners.
-    this.eventTracker = new EventTracker();
+    this.eventTracker_ = new EventTracker();
 
     this.addEventListeners_();
   }
@@ -414,7 +414,7 @@ cr.define('print_preview', function() {
     addCustomMarginEventListeners_: function() {
       $('mainview').onmouseover = this.onMainviewMouseOver_.bind(this);
       $('sidebar').onmouseover = this.onSidebarMouseOver_.bind(this);
-      this.eventTracker.add(
+      this.eventTracker_.add(
           this.marginsUI, 'DragEvent', this.onDragEvent_.bind(this), false);
     },
 
@@ -425,7 +425,7 @@ cr.define('print_preview', function() {
     removeCustomMarginEventListeners_: function() {
       $('mainview').onmouseover = null;
       $('sidebar').onmouseover = null;
-      this.eventTracker.remove(this.marginsUI, 'DragEvent');
+      this.eventTracker_.remove(this.marginsUI, 'DragEvent');
       this.marginsUI.hide();
     },
 

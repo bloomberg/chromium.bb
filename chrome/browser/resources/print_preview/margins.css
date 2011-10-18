@@ -74,6 +74,22 @@
   position: absolute;
 }
 
+.margins-ui-pair.top .margin-line,
+.margins-ui-pair.bottom .margin-line {
+  height: 0;
+  left: 0;
+  top: 50%;
+  width: 100%;
+}
+
+.margins-ui-pair.left .margin-line,
+.margins-ui-pair.right .margin-line {
+  height: 100%;
+  left: 50%;
+  top: 0;
+  width: 0;
+}
+
 #customized-margins {
   position: absolute;
   top: 0;

@@ -23,8 +23,9 @@ cr.define('print_preview', function() {
     marginsUIPair.rectangle = null;
     // @type {print_preview.Rect} A rectangle describing the four margins.
     marginsUIPair.marginsRectangle = null;
-    // @type {print_preview.MarginLine} The line representing the margin.
-    marginsUIPair.line_ = new print_preview.MarginLine(groupName);
+    // @type {HTMLDivElement} The line representing the margin.
+    marginsUIPair.line_ = document.createElement('div');
+    marginsUIPair.line_.className = 'margin-line';
     // @type {print_preview.MarginTextbox} The textbox corresponding to this
     //     margin.
     marginsUIPair.box_ = new print_preview.MarginTextbox(groupName);
@@ -65,7 +66,6 @@ cr.define('print_preview', function() {
      */
     draw: function() {
       this.drawDraggableArea_();
-      this.line_.draw();
       this.box_.draw();
     },
 

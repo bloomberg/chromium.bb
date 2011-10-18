@@ -28,31 +28,10 @@ cr.define('print_preview', function() {
   }
 
   MarginTextbox.CSS_CLASS_MARGIN_TEXTBOX = 'margin-box';
-  MarginTextbox.MARGIN_BOX_HEIGHT = 15;
-  MarginTextbox.MARGIN_BOX_VERTICAL_PADDING = 5;
-  MarginTextbox.MARGIN_BOX_WIDTH = 40;
-  MarginTextbox.MARGIN_BOX_HORIZONTAL_PADDING = 10;
-
   // Keycode for the "Escape" key.
   MarginTextbox.ESCAPE_KEYCODE = 27;
   // Keycode for the "Enter" key.
   MarginTextbox.ENTER_KEYCODE = 13;
-
-  /**
-   * @return {number} The total height of a margin textbox (including padding).
-   */
-  MarginTextbox.totalHeight = function() {
-    return MarginTextbox.MARGIN_BOX_HEIGHT +
-        2 * MarginTextbox.MARGIN_BOX_VERTICAL_PADDING;
-  }
-
-  /**
-   * @return {number} The total width of a margin textbox (including padding).
-   */
-  MarginTextbox.totalWidth = function() {
-    return MarginTextbox.MARGIN_BOX_WIDTH +
-        2 * MarginTextbox.MARGIN_BOX_HORIZONTAL_PADDING;
-  }
 
   MarginTextbox.prototype = {
     __proto__: HTMLInputElement.prototype,
@@ -142,38 +121,6 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * @return {boolean} True if |this| refers to the top margin.
-     * @private
-     */
-    isTop_: function() {
-      return this.marginGroup == print_preview.MarginSettings.TOP_GROUP;
-    },
-
-    /**
-     * @return {boolean} True if |this| refers to the bottom margin.
-     * @private
-     */
-    isBottom_: function() {
-      return this.marginGroup == print_preview.MarginSettings.BOTTOM_GROUP;
-    },
-
-    /**
-     * @return {boolean} True if |this| refers to the left margin.
-     * @private
-     */
-    isLeft_: function() {
-      return this.marginGroup == print_preview.MarginSettings.LEFT_GROUP;
-    },
-
-    /**
-     * @return {boolean} True if |this| refers to the bottom margin.
-     * @private
-     */
-    isRight_: function() {
-      return this.marginGroup == print_preview.MarginSettings.RIGHT_GROUP;
-    },
-
-    /**
      * Adds event listeners for various events.
      * @private
      */
@@ -240,7 +187,7 @@ cr.define('print_preview', function() {
     resetTimer_: function() {
       clearTimeout(this.timerId_);
       this.timerId_ = window.setTimeout(
-          this.onTextValueMayHaveChanged.bind(this), 500);
+          this.onTextValueMayHaveChanged.bind(this), 1000);
     },
 
     /**

@@ -1103,7 +1103,6 @@ window.onkeydown = onKeyDown;
 <include src="color_settings.js"/>
 <include src="margin_settings.js"/>
 <include src="margin_textbox.js"/>
-<include src="margin_line.js"/>
 <include src="margin_utils.js"/>
 <include src="margins_ui.js"/>
 <include src="margins_ui_pair.js"/>

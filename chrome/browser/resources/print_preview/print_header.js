@@ -109,6 +109,9 @@ cr.define('print_preview', function() {
 
       var pageSet = pageSettings.selectedPagesSet;
       var numOfSheets = pageSet.length;
+      if (numOfSheets == 0)
+        return;
+
       var summaryLabel =
           localStrings.getString('printPreviewSheetsLabelSingular');
       var numOfPagesText = '';
