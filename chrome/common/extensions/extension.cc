@@ -1491,6 +1491,20 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
   base::i18n::AdjustStringForLocaleDirection(&localized_name);
   name_ = UTF16ToUTF8(localized_name);
 
+  // Load App settings. LoadExtent at least has to be done before
+  // ParsePermissions(), because the valid permissions depend on what type of
+  // package this is.
+  if (!LoadIsApp(manifest_value_.get(), error) ||
+      !LoadExtent(manifest_value_.get(), keys::kWebURLs,
+                  &extent_,
+                  errors::kInvalidWebURLs, errors::kInvalidWebURL,
+                  parse_strictness, error) ||
+      !EnsureNotHybridApp(manifest_value_.get(), error) ||
+      !LoadLaunchURL(manifest_value_.get(), error) ||
+      !LoadLaunchContainer(manifest_value_.get(), error)) {
+    return false;
+  }
+
   // Initialize the permissions (optional).
   ExtensionAPIPermissionSet api_permissions;
   URLPatternSet host_permissions;
@@ -1898,17 +1912,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
       return false;  // Failed to parse file browser actions definition.
   }
 
-  // Load App settings.
-  if (!LoadIsApp(manifest_value_.get(), error) ||
-      !LoadExtent(manifest_value_.get(), keys::kWebURLs,
-                  &extent_,
-                  errors::kInvalidWebURLs, errors::kInvalidWebURL,
-                  parse_strictness, error) ||
-      !EnsureNotHybridApp(manifest_value_.get(), error) ||
-      !LoadLaunchURL(manifest_value_.get(), error) ||
-      !LoadLaunchContainer(manifest_value_.get(), error))
-    return false;
-
+  // App isolation.
   if (api_permissions.count(ExtensionAPIPermission::kExperimental)) {
     if (!LoadAppIsolation(manifest_value_.get(), error))
       return false;
@@ -2560,14 +2564,9 @@ bool Extension::ParsePermissions(const DictionaryValue* source,
           ExtensionPermissionsInfo::GetInstance()->GetByName(permission_str);
 
       if (permission != NULL) {
-        if (CanSpecifyAPIPermission(permission, error))
-          api_permissions->insert(permission->id());
-
-        // Sometimes when you can't specify an API permission we ignore it
-        // silently. This seems like a bug. Specifically, crbug.com/100489.
-        if (!error->empty())
+        if (!CanSpecifyAPIPermission(permission, error))
           return false;
-
+        api_permissions->insert(permission->id());
         continue;
       }
 
@@ -2771,8 +2770,11 @@ bool Extension::CanSpecifyAPIPermission(
     const ExtensionAPIPermission* permission,
     std::string* error) const {
   if (permission->is_component_only()) {
-    if (!CanSpecifyComponentOnlyPermission())
+    if (!CanSpecifyComponentOnlyPermission()) {
+      *error = ExtensionErrorUtils::FormatErrorMessage(
+          errors::kPermissionNotAllowed, permission->name());
       return false;
+    }
   }
 
   if (permission->id() == ExtensionAPIPermission::kExperimental) {
@@ -2783,8 +2785,11 @@ bool Extension::CanSpecifyAPIPermission(
   }
 
   if (is_hosted_app()) {
-    if (!CanSpecifyPermissionForHostedApp(permission))
+    if (!CanSpecifyPermissionForHostedApp(permission)) {
+      *error = ExtensionErrorUtils::FormatErrorMessage(
+          errors::kPermissionNotAllowed, permission->name());
       return false;
+    }
   }
 
   return true;
