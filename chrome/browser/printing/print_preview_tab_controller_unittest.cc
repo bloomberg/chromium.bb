@@ -97,7 +97,7 @@ TEST_F(PrintPreviewTabControllerUnitTest, TitleAfterReload) {
   entry.reset(new NavigationEntry());
   entry->set_transition_type(content::PAGE_TRANSITION_RELOAD);
   content::LoadCommittedDetails details;
-  details.type = content::NAVIGATION_TYPE_SAME_PAGE;
+  details.type = NavigationType::SAME_PAGE;
   details.entry = entry.get();
   NotificationService::current()->Notify(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,

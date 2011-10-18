@@ -91,7 +91,7 @@ class PrerenderContents::TabContentsDelegateImpl
   // TabContentsDelegate implementation:
   virtual bool ShouldAddNavigationToHistory(
       const history::HistoryAddPageArgs& add_page_args,
-      content::NavigationType navigation_type) OVERRIDE {
+      NavigationType::Type navigation_type) OVERRIDE {
     add_page_vector_.push_back(
         scoped_refptr<history::HistoryAddPageArgs>(add_page_args.Clone()));
     return false;

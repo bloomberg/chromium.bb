@@ -16,7 +16,7 @@
 #include "googleurl/src/gurl.h"
 #include "content/browser/ssl/ssl_manager.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/navigation_types.h"
+#include "content/common/navigation_types.h"
 #include "content/public/common/page_transition_types.h"
 
 class NavigationEntry;
@@ -348,7 +348,7 @@ class CONTENT_EXPORT NavigationController {
   friend class TabContents;  // For invoking OnReservedPageIDRange.
 
   // Classifies the given renderer navigation (see the NavigationType enum).
-  content::NavigationType ClassifyNavigation(
+  NavigationType::Type ClassifyNavigation(
       const ViewHostMsg_FrameNavigate_Params& params) const;
 
   // Causes the controller to load the specified entry. The function assumes

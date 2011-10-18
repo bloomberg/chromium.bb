@@ -666,7 +666,7 @@ TEST_F(TranslateManagerTest, Reload) {
   const content::LoadCommittedDetails& nav_details =
       nav_observer.get_load_commited_details();
   EXPECT_TRUE(nav_details.entry != NULL);  // There was a navigation.
-  EXPECT_EQ(content::NAVIGATION_TYPE_EXISTING_PAGE, nav_details.type);
+  EXPECT_EQ(NavigationType::EXISTING_PAGE, nav_details.type);
 
   // The TranslateManager class processes the navigation entry committed
   // notification in a posted task; process that task.
@@ -697,7 +697,7 @@ TEST_F(TranslateManagerTest, ReloadFromLocationBar) {
   const content::LoadCommittedDetails& nav_details =
       nav_observer.get_load_commited_details();
   EXPECT_TRUE(nav_details.entry != NULL);  // There was a navigation.
-  EXPECT_EQ(content::NAVIGATION_TYPE_SAME_PAGE, nav_details.type);
+  EXPECT_EQ(NavigationType::SAME_PAGE, nav_details.type);
 
   // The TranslateManager class processes the navigation entry committed
   // notification in a posted task; process that task.

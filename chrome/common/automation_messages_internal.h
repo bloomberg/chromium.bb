@@ -9,6 +9,7 @@
 
 #include "base/string16.h"
 #include "chrome/common/content_settings.h"
+#include "content/common/navigation_types.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
 #include "net/base/cert_status_flags.h"

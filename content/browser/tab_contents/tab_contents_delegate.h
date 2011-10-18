@@ -12,7 +12,7 @@
 #include "base/basictypes.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/navigation_types.h"
+#include "content/common/navigation_types.h"
 #include "content/public/common/page_transition_types.h"
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/glue/window_open_disposition.h"
@@ -259,7 +259,7 @@ class CONTENT_EXPORT TabContentsDelegate {
   // history.
   virtual bool ShouldAddNavigationToHistory(
       const history::HistoryAddPageArgs& add_page_args,
-      content::NavigationType navigation_type);
+      NavigationType::Type navigation_type);
 
   // Returns the native window framing the view containing the tab contents.
   virtual gfx::NativeWindow GetFrameNativeWindow();

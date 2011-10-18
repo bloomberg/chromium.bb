@@ -621,8 +621,8 @@ void SessionService::Observe(int type,
           current_entry_index,
           *tab->controller().GetEntryAtIndex(current_entry_index));
       Details<content::LoadCommittedDetails> changed(details);
-      if (changed->type == content::NAVIGATION_TYPE_NEW_PAGE ||
-        changed->type == content::NAVIGATION_TYPE_EXISTING_PAGE) {
+      if (changed->type == NavigationType::NEW_PAGE ||
+        changed->type == NavigationType::EXISTING_PAGE) {
         RecordSessionUpdateHistogramData(
             content::NOTIFICATION_NAV_ENTRY_COMMITTED,
             &last_updated_nav_entry_commit_time_);

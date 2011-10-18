@@ -42,7 +42,7 @@ class EULATabContentsDelegate : public TabContentsDelegate {
   virtual bool IsPopup(TabContents* source);
   virtual bool ShouldAddNavigationToHistory(
       const history::HistoryAddPageArgs& add_page_args,
-      content::NavigationType navigation_type);
+      NavigationType::Type navigation_type);
   virtual bool HandleContextMenu(const ContextMenuParams& params);
 
  private:

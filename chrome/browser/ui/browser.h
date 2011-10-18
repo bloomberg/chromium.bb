@@ -958,7 +958,7 @@ class Browser : public TabHandlerDelegate,
   virtual void ShowRepostFormWarningDialog(TabContents* tab_contents) OVERRIDE;
   virtual bool ShouldAddNavigationToHistory(
       const history::HistoryAddPageArgs& add_page_args,
-      content::NavigationType navigation_type) OVERRIDE;
+      NavigationType::Type navigation_type) OVERRIDE;
   virtual void ContentRestrictionsChanged(TabContents* source) OVERRIDE;
   virtual void RendererUnresponsive(TabContents* source) OVERRIDE;
   virtual void RendererResponsive(TabContents* source) OVERRIDE;

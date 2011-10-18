@@ -35,6 +35,7 @@
 #include "chrome_frame/crash_reporting/crash_metrics.h"
 #include "chrome_frame/utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/navigation_types.h"
 #include "content/common/page_zoom.h"
 #include "grit/generated_resources.h"
 

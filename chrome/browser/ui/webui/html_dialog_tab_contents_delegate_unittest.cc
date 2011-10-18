@@ -59,7 +59,7 @@ TEST_F(HtmlDialogTabContentsDelegateTest, DoNothingMethodsTest) {
           GURL(), base::Time::Now(), 0, 0, GURL(), history::RedirectList(),
           content::PAGE_TRANSITION_TYPED, history::SOURCE_SYNCED, false));
   EXPECT_FALSE(test_tab_contents_delegate_->ShouldAddNavigationToHistory(
-                   *should_add_args, content::NAVIGATION_TYPE_NEW_PAGE));
+                   *should_add_args, NavigationType::NEW_PAGE));
   test_tab_contents_delegate_->NavigationStateChanged(NULL, 0);
   test_tab_contents_delegate_->ActivateContents(NULL);
   test_tab_contents_delegate_->LoadingStateChanged(NULL);

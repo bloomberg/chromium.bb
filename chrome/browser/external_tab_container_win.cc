@@ -425,7 +425,7 @@ void ExternalTabContainer::NavigationStateChanged(const TabContents* source,
                                                   unsigned changed_flags) {
   if (automation_) {
     NavigationInfo nav_info;
-    if (InitNavigationInfo(&nav_info, content::NAVIGATION_TYPE_NAV_IGNORE, 0))
+    if (InitNavigationInfo(&nav_info, NavigationType::NAV_IGNORE, 0))
       automation_->Send(new AutomationMsg_NavigationStateChanged(
           tab_handle_, changed_flags, nav_info));
   }
@@ -971,7 +971,7 @@ bool ExternalTabContainer::ProcessUnhandledKeyStroke(HWND window,
 }
 
 bool ExternalTabContainer::InitNavigationInfo(NavigationInfo* nav_info,
-                                              content::NavigationType nav_type,
+                                              NavigationType::Type nav_type,
                                               int relative_offset) {
   DCHECK(nav_info);
   NavigationEntry* entry = tab_contents_->controller().GetActiveEntry();

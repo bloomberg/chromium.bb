@@ -8,7 +8,7 @@ namespace content {
 
 LoadCommittedDetails::LoadCommittedDetails()
     : entry(NULL),
-      type(content::NAVIGATION_TYPE_UNKNOWN),
+      type(NavigationType::UNKNOWN),
       previous_entry_index(-1),
       did_replace_entry(false),
       is_in_page(false),

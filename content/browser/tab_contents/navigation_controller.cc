@@ -21,6 +21,7 @@
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/browser/user_metrics.h"
 #include "content/common/content_constants.h"
+#include "content/common/navigation_types.h"
 #include "content/common/notification_service.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/notification_types.h"
@@ -556,26 +557,26 @@ bool NavigationController::RendererDidNavigate(
   details->type = ClassifyNavigation(params);
 
   switch (details->type) {
-    case content::NAVIGATION_TYPE_NEW_PAGE:
+    case NavigationType::NEW_PAGE:
       RendererDidNavigateToNewPage(params, &(details->did_replace_entry));
       break;
-    case content::NAVIGATION_TYPE_EXISTING_PAGE:
+    case NavigationType::EXISTING_PAGE:
       RendererDidNavigateToExistingPage(params);
       break;
-    case content::NAVIGATION_TYPE_SAME_PAGE:
+    case NavigationType::SAME_PAGE:
       RendererDidNavigateToSamePage(params);
       break;
-    case content::NAVIGATION_TYPE_IN_PAGE:
+    case NavigationType::IN_PAGE:
       RendererDidNavigateInPage(params, &(details->did_replace_entry));
       break;
-    case content::NAVIGATION_TYPE_NEW_SUBFRAME:
+    case NavigationType::NEW_SUBFRAME:
       RendererDidNavigateNewSubframe(params);
       break;
-    case content::NAVIGATION_TYPE_AUTO_SUBFRAME:
+    case NavigationType::AUTO_SUBFRAME:
       if (!RendererDidNavigateAutoSubframe(params))
         return false;
       break;
-    case content::NAVIGATION_TYPE_NAV_IGNORE:
+    case NavigationType::NAV_IGNORE:
       // If a pending navigation was in progress, this canceled it.  We should
       // discard it and make sure it is removed from the URL bar.  After that,
       // there is nothing we can do with this navigation, so we just return to
@@ -614,7 +615,7 @@ bool NavigationController::RendererDidNavigate(
   return true;
 }
 
-content::NavigationType NavigationController::ClassifyNavigation(
+NavigationType::Type NavigationController::ClassifyNavigation(
     const ViewHostMsg_FrameNavigate_Params& params) const {
   if (params.page_id == -1) {
     // The renderer generates the page IDs, and so if it gives us the invalid
@@ -635,7 +636,7 @@ content::NavigationType NavigationController::ClassifyNavigation(
     //   list.
     //
     // In these cases, there's nothing we can do with them, so ignore.
-    return content::NAVIGATION_TYPE_NAV_IGNORE;
+    return NavigationType::NAV_IGNORE;
   }
 
   if (params.page_id > tab_contents_->GetMaxPageID()) {
@@ -643,7 +644,7 @@ content::NavigationType NavigationController::ClassifyNavigation(
     // not have a pending entry for the page, and this may or may not be the
     // main frame.
     if (content::PageTransitionIsMainFrame(params.transition))
-      return content::NAVIGATION_TYPE_NEW_PAGE;
+      return NavigationType::NEW_PAGE;
 
     // When this is a new subframe navigation, we should have a committed page
     // for which it's a suframe in. This may not be the case when an iframe is
@@ -651,10 +652,10 @@ content::NavigationType NavigationController::ClassifyNavigation(
     // written into the popup by script on the main page). For these cases,
     // there isn't any navigation stuff we can do, so just ignore it.
     if (!GetLastCommittedEntry())
-      return content::NAVIGATION_TYPE_NAV_IGNORE;
+      return NavigationType::NAV_IGNORE;
 
     // Valid subframe navigation.
-    return content::NAVIGATION_TYPE_NEW_SUBFRAME;
+    return NavigationType::NEW_SUBFRAME;
   }
 
   // Now we know that the notification is for an existing page. Find that entry.
@@ -673,7 +674,7 @@ content::NavigationType NavigationController::ClassifyNavigation(
     UserMetrics::RecordAction(UserMetricsAction("BadMessageTerminate_NC"));
     if (tab_contents_->GetSiteInstance()->HasProcess())
       tab_contents_->GetSiteInstance()->GetProcess()->ReceivedBadMessage();
-    return content::NAVIGATION_TYPE_NAV_IGNORE;
+    return NavigationType::NAV_IGNORE;
   }
   NavigationEntry* existing_entry = entries_[existing_entry_index].get();
 
@@ -682,7 +683,7 @@ content::NavigationType NavigationController::ClassifyNavigation(
     // know this is auto. Since the current page was found in the navigation
     // entry list, we're guaranteed to have a last committed entry.
     DCHECK(GetLastCommittedEntry());
-    return content::NAVIGATION_TYPE_AUTO_SUBFRAME;
+    return NavigationType::AUTO_SUBFRAME;
   }
 
   // Anything below here we know is a main frame navigation.
@@ -697,7 +698,7 @@ content::NavigationType NavigationController::ClassifyNavigation(
     // (the user doesn't want to have a new back/forward entry when they do
     // this). If this matches the last committed entry, we want to just ignore
     // the pending entry and go back to where we were (the "existing entry").
-    return content::NAVIGATION_TYPE_SAME_PAGE;
+    return NavigationType::SAME_PAGE;
   }
 
   // Any toplevel navigations with the same base (minus the reference fragment)
@@ -706,11 +707,11 @@ content::NavigationType NavigationController::ClassifyNavigation(
   // navigations that don't actually navigate, but it can happen when there is
   // an encoding override (it always sends a navigation request).
   if (AreURLsInPageNavigation(existing_entry->url(), params.url))
-    return content::NAVIGATION_TYPE_IN_PAGE;
+    return NavigationType::IN_PAGE;
 
   // Since we weeded out "new" navigations above, we know this is an existing
   // (back/forward) navigation.
-  return content::NAVIGATION_TYPE_EXISTING_PAGE;
+  return NavigationType::EXISTING_PAGE;
 }
 
 bool NavigationController::IsRedirect(
