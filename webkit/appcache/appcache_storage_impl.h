@@ -11,7 +11,9 @@
 #include <utility>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/file_path.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop_proxy.h"
 #include "base/task.h"
 #include "webkit/appcache/appcache_database.h"
@@ -94,7 +96,7 @@ class AppCacheStorageImpl : public AppCacheStorage {
   void GetPendingForeignMarkingsForCache(
       int64 cache_id, std::vector<GURL>* urls);
 
-  void ScheduleSimpleTask(Task* task);
+  void ScheduleSimpleTask(const base::Closure& task);
   void RunOnePendingSimpleTask();
 
   void DelayedStartDeletingUnusedResponses();
@@ -127,8 +129,8 @@ class AppCacheStorageImpl : public AppCacheStorage {
   FilePath cache_directory_;
   bool is_incognito_;
 
-  // This class operates primarily on the io thread, but schedules
-  // its DatabaseTasks on the db thread. Seperately, the disk_cache uses
+  // This class operates primarily on the IO thread, but schedules
+  // its DatabaseTasks on the db thread. Separately, the disk_cache uses
   // the cache_thread.
   scoped_refptr<base::MessageLoopProxy> db_thread_;
   scoped_refptr<base::MessageLoopProxy> cache_thread_;
@@ -154,7 +156,7 @@ class AppCacheStorageImpl : public AppCacheStorage {
   // Created on the IO thread, but only used on the DB thread.
   AppCacheDatabase* database_;
 
-  // Set if we discover a fatal error like a corrupt sql database or
+  // Set if we discover a fatal error like a corrupt SQL database or
   // disk cache and cannot continue.
   bool is_disabled_;
 
@@ -163,8 +165,8 @@ class AppCacheStorageImpl : public AppCacheStorage {
 
   // Used to short-circuit certain operations without having to schedule
   // any tasks on the background database thread.
-  std::deque<Task*> pending_simple_tasks_;
-  ScopedRunnableMethodFactory<AppCacheStorageImpl> method_factory_;
+  std::deque<base::Closure> pending_simple_tasks_;
+  base::WeakPtrFactory<AppCacheStorageImpl> weak_factory_;
 
   friend class ChromeAppCacheServiceTest;
 };

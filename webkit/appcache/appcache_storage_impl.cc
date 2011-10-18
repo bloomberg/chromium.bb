@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -42,6 +43,7 @@ static const FilePath::CharType kDiskCacheDirectoryName[] =
     FILE_PATH_LITERAL("Cache");
 
 namespace {
+
 // Helper with no return value for use with NewRunnableFunction.
 void DeleteDirectory(const FilePath& path) {
   file_util::Delete(path, true);
@@ -180,8 +182,9 @@ class AppCacheStorageImpl::DatabaseTask
 void AppCacheStorageImpl::DatabaseTask::Schedule() {
   DCHECK(storage_);
   DCHECK(io_thread_->BelongsToCurrentThread());
-  if (storage_->db_thread_->PostTask(FROM_HERE,
-          NewRunnableMethod(this, &DatabaseTask::CallRun))) {
+  if (storage_->db_thread_->PostTask(
+      FROM_HERE,
+      base::Bind(&DatabaseTask::CallRun, this))) {
     storage_->scheduled_database_tasks_.push_back(this);
   } else {
     NOTREACHED() << "The database thread is not running.";
@@ -198,12 +201,14 @@ void AppCacheStorageImpl::DatabaseTask::CallRun() {
   if (!database_->is_disabled()) {
     Run();
     if (database_->is_disabled()) {
-      io_thread_->PostTask(FROM_HERE,
-          NewRunnableMethod(this, &DatabaseTask::CallDisableStorage));
+      io_thread_->PostTask(
+          FROM_HERE,
+          base::Bind(&DatabaseTask::CallDisableStorage, this));
     }
   }
-  io_thread_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &DatabaseTask::CallRunCompleted));
+  io_thread_->PostTask(
+      FROM_HERE,
+      base::Bind(&DatabaseTask::CallRunCompleted, this));
 }
 
 void AppCacheStorageImpl::DatabaseTask::CallRunCompleted() {
@@ -258,10 +263,11 @@ void AppCacheStorageImpl::InitTask::RunCompleted() {
   if (!storage_->is_disabled()) {
     storage_->usage_map_.swap(usage_map_);
     const int kDelayMillis = 5 * 60 * 1000;  // Five minutes.
-    MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      storage_->method_factory_.NewRunnableMethod(
-          &AppCacheStorageImpl::DelayedStartDeletingUnusedResponses),
-      kDelayMillis);
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&AppCacheStorageImpl::DelayedStartDeletingUnusedResponses,
+                   storage_->weak_factory_.GetWeakPtr()),
+        kDelayMillis);
   }
 
   if (storage_->service()->quota_client())
@@ -1157,12 +1163,10 @@ AppCacheStorageImpl::AppCacheStorageImpl(AppCacheService* service)
       ALLOW_THIS_IN_INITIALIZER_LIST(init_callback_(
           this, &AppCacheStorageImpl::OnDiskCacheInitialized)),
       database_(NULL), is_disabled_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
 }
 
 AppCacheStorageImpl::~AppCacheStorageImpl() {
-  STLDeleteElements(&pending_simple_tasks_);
-
   std::for_each(pending_quota_queries_.begin(),
                 pending_quota_queries_.end(),
                 std::mem_fun(&DatabaseTask::CancelCompletion));
@@ -1173,11 +1177,9 @@ AppCacheStorageImpl::~AppCacheStorageImpl() {
   if (database_) {
     db_thread_->PostTask(
         FROM_HERE,
-        NewRunnableFunction(
-            CleanUpOnDatabaseThread,
-            database_,
-            make_scoped_refptr(service_->special_storage_policy()),
-            service()->clear_local_state_on_exit()));
+        base::Bind(&CleanUpOnDatabaseThread, database_,
+                   make_scoped_refptr(service_->special_storage_policy()),
+                   service()->clear_local_state_on_exit()));
   }
 }
 
@@ -1348,10 +1350,11 @@ void AppCacheStorageImpl::FindResponseForMainRequest(
     // the DB thread.
     scoped_refptr<AppCacheGroup> no_group;
     scoped_refptr<AppCache> no_cache;
-    ScheduleSimpleTask(method_factory_.NewRunnableMethod(
-        &AppCacheStorageImpl::DeliverShortCircuitedFindMainResponse,
-        url, AppCacheEntry(), no_group, no_cache,
-        make_scoped_refptr(GetOrCreateDelegateReference(delegate))));
+    ScheduleSimpleTask(
+        base::Bind(&AppCacheStorageImpl::DeliverShortCircuitedFindMainResponse,
+                   weak_factory_.GetWeakPtr(), url, AppCacheEntry(), no_group,
+                   no_cache,
+                   make_scoped_refptr(GetOrCreateDelegateReference(delegate))));
     return;
   }
 
@@ -1373,10 +1376,11 @@ bool AppCacheStorageImpl::FindResponseForMainRequestInGroup(
   if (!entry || entry->IsForeign())
     return false;
 
-  ScheduleSimpleTask(method_factory_.NewRunnableMethod(
-      &AppCacheStorageImpl::DeliverShortCircuitedFindMainResponse,
-      url, *entry, make_scoped_refptr(group), make_scoped_refptr(cache),
-      make_scoped_refptr(GetOrCreateDelegateReference(delegate))));
+  ScheduleSimpleTask(
+      base::Bind(&AppCacheStorageImpl::DeliverShortCircuitedFindMainResponse,
+                 weak_factory_.GetWeakPtr(), url, *entry,
+                 make_scoped_refptr(group), make_scoped_refptr(cache),
+                 make_scoped_refptr(GetOrCreateDelegateReference(delegate))));
   return true;
 }
 
@@ -1518,9 +1522,10 @@ void AppCacheStorageImpl::StartDeletingResponses(
 void AppCacheStorageImpl::ScheduleDeleteOneResponse() {
   DCHECK(!is_response_deletion_scheduled_);
   const int kDelayMillis = 10;
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      method_factory_.NewRunnableMethod(
-          &AppCacheStorageImpl::DeleteOneResponse),
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&AppCacheStorageImpl::DeleteOneResponse,
+                 weak_factory_.GetWeakPtr()),
       kDelayMillis);
   is_response_deletion_scheduled_ = true;
 }
@@ -1598,19 +1603,19 @@ void AppCacheStorageImpl::GetPendingForeignMarkingsForCache(
   }
 }
 
-void AppCacheStorageImpl::ScheduleSimpleTask(Task* task) {
+void AppCacheStorageImpl::ScheduleSimpleTask(const base::Closure& task) {
   pending_simple_tasks_.push_back(task);
-  MessageLoop::current()->PostTask(FROM_HERE,
-      method_factory_.NewRunnableMethod(
-          &AppCacheStorageImpl::RunOnePendingSimpleTask));
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&AppCacheStorageImpl::RunOnePendingSimpleTask,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void AppCacheStorageImpl::RunOnePendingSimpleTask() {
   DCHECK(!pending_simple_tasks_.empty());
-  Task* task = pending_simple_tasks_.front();
+  base::Closure task = pending_simple_tasks_.front();
   pending_simple_tasks_.pop_front();
-  task->Run();
-  delete task;
+  task.Run();
 }
 
 AppCacheDiskCache* AppCacheStorageImpl::disk_cache() {
@@ -1652,8 +1657,8 @@ void AppCacheStorageImpl::OnDiskCacheInitialized(int rv) {
     Disable();
     if (!is_incognito_) {
       VLOG(1) << "Deleting existing appcache data and starting over.";
-      db_thread_->PostTask(FROM_HERE,
-          NewRunnableFunction(DeleteDirectory, cache_directory_));
+      db_thread_->PostTask(
+          FROM_HERE, base::Bind(&DeleteDirectory, cache_directory_));
     }
   }
 }
