@@ -60,37 +60,37 @@ float llvm_intrinsic_cosf(float) __asm__("llvm.cos.f32");
 double llvm_intrinsic_pow(double, double) __asm__("llvm.pow.f64");
 float llvm_intrinsic_powf(float, float) __asm__("llvm.pow.f32");
 
-#define print_op1(op, x) \
-  printf("%s: %.6f\n", #op, llvm_intrinsic_ ## op(x))
-#define print_op2(op, x, y) \
-  printf("%s: %.6f\n", #op, llvm_intrinsic_ ## op(x, y))
+#define print_op1(prec, op, x) \
+  printf("%s: %." #prec "f\n", #op, llvm_intrinsic_ ## op(x))
+#define print_op2(prec, op, x, y) \
+  printf("%s: %." #prec "f\n", #op, llvm_intrinsic_ ## op(x, y))
 
 int main(int argc, char* argv[]) {
   int i;
   for (i = 0; i < ARRAY_SIZE_UNSAFE(f32); ++i) {
     printf("\nf32 value is: %.6f\n",  f32[i]);
-    print_op1(sqrtf, f32[i]);
-    print_op1(logf, f32[i]);
-    print_op1(log2f, f32[i]);
-    print_op1(log10f, f32[i]);
-    print_op1(expf, f32[i]);
-    print_op1(exp2f, f32[i]);
-    print_op1(sinf, f32[i]);
-    print_op1(cosf, f32[i]);
-    print_op2(powf, base32, f32[i]);
+    print_op1(5, sqrtf, f32[i]);
+    print_op1(5, logf, f32[i]);
+    print_op1(5, log2f, f32[i]);
+    print_op1(5, log10f, f32[i]);
+    print_op1(4, expf, f32[i]);
+    print_op1(4, exp2f, f32[i]);
+    print_op1(5, sinf, f32[i]);
+    print_op1(5, cosf, f32[i]);
+    print_op2(5, powf, base32, f32[i]);
   }
 
   for (i = 0; i < ARRAY_SIZE_UNSAFE(f64); ++i) {
     printf("\nf64 value is: %.6f\n",  f64[i]);
-    print_op1(sqrt, f64[i]);
-    print_op1(log, f64[i]);
-    print_op1(log2, f64[i]);
-    print_op1(log10, f64[i]);
-    print_op1(exp, f64[i]);
-    print_op1(exp2, f64[i]);
-    print_op1(sin, f64[i]);
-    print_op1(cos, f64[i]);
-    print_op2(pow, base64, f64[i]);
+    print_op1(6, sqrt, f64[i]);
+    print_op1(6, log, f64[i]);
+    print_op1(6, log2, f64[i]);
+    print_op1(6, log10, f64[i]);
+    print_op1(6, exp, f64[i]);
+    print_op1(6, exp2, f64[i]);
+    print_op1(6, sin, f64[i]);
+    print_op1(6, cos, f64[i]);
+    print_op2(6, pow, base64, f64[i]);
   }
 
   return 0;
