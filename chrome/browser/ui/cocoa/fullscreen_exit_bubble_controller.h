@@ -54,6 +54,7 @@ class Browser;
 - (void)deny:(id)sender;
 
 - (void)showWindow;
+- (void)closeImmediately;
 
 // Positions the fullscreen exit bubble in the top-center of the window.
 - (void)positionInWindowAtTop:(CGFloat)maxY width:(CGFloat)maxWidth;

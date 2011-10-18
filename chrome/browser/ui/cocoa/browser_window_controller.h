@@ -149,6 +149,12 @@ class TabContents;
   // Bar visibility locks and releases only result (when appropriate) in changes
   // in visible state when the following is |YES|.
   BOOL barVisibilityUpdatesEnabled_;
+
+  // When going fullscreen for a tab, we need to store the URL and the
+  // fullscreen type, since we can't show the bubble until
+  // -windowDidEnterFullScreen: gets called.
+  GURL fullscreenUrl_;
+  FullscreenExitBubbleType fullscreenBubbleType_;
 }
 
 // A convenience class method which gets the |BrowserWindowController| for a

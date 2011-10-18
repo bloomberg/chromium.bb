@@ -714,6 +714,8 @@ willPositionSheet:(NSWindow*)sheet
   [self setPresentationModeInternal:YES forceDropdown:NO];
   [self layoutSubviews];
 
+  [self windowDidEnterFullScreen:nil];
+
   // Fade back in.
   if (didFadeOut) {
     CGDisplayFade(token, kFadeDurationSeconds / 2, kCGDisplayBlendSolidColor,
@@ -736,7 +738,8 @@ willPositionSheet:(NSWindow*)sheet
         kCGDisplayBlendSolidColor, 0.0, 0.0, 0.0, /*synchronous=*/true);
   }
 
-  [self setPresentationModeInternal:NO forceDropdown:NO];
+  [self windowWillExitFullScreen:nil];
+
   [self moveViewsForFullscreenForSnowLeopardOrEarlier:NO
                                         regularWindow:savedRegularWindow_
                                      fullscreenWindow:fullscreenWindow_.get()];
@@ -779,8 +782,7 @@ willPositionSheet:(NSWindow*)sheet
                                      : [toolbarController_ view]];
 }
 
-- (void)showFullscreenExitBubbleIfNecessaryWithURL:(const GURL&)url
-    bubbleType:(FullscreenExitBubbleType)bubbleType {
+- (void)showFullscreenExitBubbleIfNecessary {
   if (!browser_->is_fullscreen_for_tab()) {
     return;
   }
@@ -788,10 +790,11 @@ willPositionSheet:(NSWindow*)sheet
   [presentationModeController_ ensureOverlayHiddenWithAnimation:NO delay:NO];
 
   fullscreenExitBubbleController_.reset(
-      [[FullscreenExitBubbleController alloc] initWithOwner:self
-                                                    browser:browser_.get()
-                                                        url:url
-                                                 bubbleType:bubbleType]);
+      [[FullscreenExitBubbleController alloc]
+          initWithOwner:self
+                browser:browser_.get()
+                    url:fullscreenUrl_
+             bubbleType:fullscreenBubbleType_]);
   NSView* contentView = [[self window] contentView];
   CGFloat maxWidth = NSWidth([contentView frame]);
   CGFloat maxY = NSMaxY([[[self window] contentView] frame]);
@@ -801,7 +804,7 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (void)destroyFullscreenExitBubbleIfNecessary {
-  [fullscreenExitBubbleController_ close];
+  [fullscreenExitBubbleController_ closeImmediately];
   fullscreenExitBubbleController_.reset();
 }
 
@@ -847,11 +850,15 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (void)windowDidEnterFullScreen:(NSNotification*)notification {
-  [self deregisterForContentViewResizeNotifications];
+  if (base::mac::IsOSLionOrLater())
+    [self deregisterForContentViewResizeNotifications];
+  [self showFullscreenExitBubbleIfNecessary];
 }
 
 - (void)windowWillExitFullScreen:(NSNotification*)notification {
-  [self registerForContentViewResizeNotifications];
+  if (base::mac::IsOSLionOrLater())
+    [self registerForContentViewResizeNotifications];
+  [self destroyFullscreenExitBubbleIfNecessary];
   [self setPresentationModeInternal:NO forceDropdown:NO];
 }
 

@@ -1932,13 +1932,6 @@ willAnimateFromState:(bookmarks::VisualState)oldState
     else
       [self exitFullscreenForSnowLeopardOrEarlier];
   }
-
-  if (fullscreen && !url.is_empty()) {
-    [self showFullscreenExitBubbleIfNecessaryWithURL:url
-                                          bubbleType:bubbleType];
-  } else {
-    [self destroyFullscreenExitBubbleIfNecessary];
-  }
 }
 
 - (void)enterFullscreenForURL:(const GURL&)url
@@ -1977,6 +1970,9 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 - (void)setPresentationMode:(BOOL)presentationMode
                         url:(const GURL&)url
                  bubbleType:(FullscreenExitBubbleType)bubbleType {
+  fullscreenUrl_ = url;
+  fullscreenBubbleType_ = bubbleType;
+
   // Presentation mode on Leopard and Snow Leopard maps directly to fullscreen
   // mode.
   if (base::mac::IsOSSnowLeopardOrEarlier()) {
@@ -2002,6 +1998,9 @@ willAnimateFromState:(bookmarks::VisualState)oldState
       [self focusTabContents];
       [self setPresentationModeInternal:YES forceDropdown:YES];
       [self releaseBarVisibilityForOwner:self withAnimation:YES delay:YES];
+      // Since -windowDidEnterFullScreen: won't be called in the
+      // fullscreen --> presentation mode case, manually show the exit bubble.
+      [self showFullscreenExitBubbleIfNecessary];
     } else {
       // If not in fullscreen mode, trigger the Lion fullscreen mode machinery.
       // Presentation mode will automatically be enabled in
@@ -2010,9 +2009,6 @@ willAnimateFromState:(bookmarks::VisualState)oldState
       if ([window isKindOfClass:[FramedBrowserWindow class]])
         [static_cast<FramedBrowserWindow*>(window) toggleSystemFullScreen];
     }
-
-    [self showFullscreenExitBubbleIfNecessaryWithURL:url
-                                          bubbleType:bubbleType];
   } else {
     if (enteredPresentationModeFromFullscreen_) {
       // The window is currently in fullscreen mode, but the user is choosing to
@@ -2021,6 +2017,9 @@ willAnimateFromState:(bookmarks::VisualState)oldState
       // window that goes fullscreen.
       [self setShouldUsePresentationModeWhenEnteringFullscreen:NO];
       [self setPresentationModeInternal:NO forceDropdown:NO];
+      // Since -windowWillExitFullScreen: won't be called in the
+      // presentation mode --> fullscreen case, manually hide the exit bubble.
+      [self destroyFullscreenExitBubbleIfNecessary];
     } else {
       // The user entered presentation mode directly from non-fullscreen mode
       // using the "Enter Presentation Mode" menu item and is using that same
@@ -2030,8 +2029,6 @@ willAnimateFromState:(bookmarks::VisualState)oldState
       if ([window isKindOfClass:[FramedBrowserWindow class]])
         [static_cast<FramedBrowserWindow*>(window) toggleSystemFullScreen];
     }
-
-    [self destroyFullscreenExitBubbleIfNecessary];
   }
 }
 

@@ -44,8 +44,7 @@
 - (CGFloat)floatingBarHeight;
 
 // Shows the informational "how to exit fullscreen" bubble.
-- (void)showFullscreenExitBubbleIfNecessaryWithURL:(const GURL&)url
-    bubbleType:(FullscreenExitBubbleType)bubleType;
+- (void)showFullscreenExitBubbleIfNecessary;
 - (void)destroyFullscreenExitBubbleIfNecessary;
 
 // Lays out the presentation mode toggle button at the top right corner of the

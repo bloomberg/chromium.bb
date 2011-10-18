@@ -159,6 +159,17 @@ const float kHideDuration = 0.7;
   }
 }
 
+- (void)closeImmediately {
+  // Without this, quitting fullscreen with esc will let the bubble reappear
+  // once the "exit fullscreen" animation is done on lion.
+  InfoBubbleWindow* infoBubble = static_cast<InfoBubbleWindow*>([self window]);
+  [[infoBubble parentWindow] removeChildWindow:infoBubble];
+  [hideAnimation_.get() stopAnimation];
+  [hideTimer_ invalidate];
+  [infoBubble setDelayOnClose:NO];
+  [self close];
+}
+
 - (void)dealloc {
   [hideAnimation_.get() stopAnimation];
   [hideTimer_ invalidate];
