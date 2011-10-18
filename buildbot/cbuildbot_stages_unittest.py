@@ -465,7 +465,6 @@ class VMTestStageTest(AbstractStageTest):
     mox.MoxTestBase.setUp(self)
     AbstractStageTest.setUp(self)
     self.fake_results_dir = '/tmp/fake_results_dir'
-    self.fake_chroot_results_dir = '/my/fake_chroot/tmp/fake_results_dir'
     self.mox.StubOutWithMock(commands, 'SetNiceness')
     commands.SetNiceness(foreground=True)
     self.mox.StubOutWithMock(commands, 'BuildAutotestTarball')
@@ -489,17 +488,12 @@ class VMTestStageTest(AbstractStageTest):
     self.mox.StubOutWithMock(stages.VMTestStage, '_CreateTestRoot')
 
     os.path.isdir(self.build_root + '/.repo').AndReturn(True)
-    stages.VMTestStage._CreateTestRoot().AndReturn(
-        (self.fake_results_dir, self.fake_chroot_results_dir))
-    stages.VMTestStage._CreateTestRoot().AndReturn((
-        self.fake_results_dir, self.fake_chroot_results_dir))
+    stages.VMTestStage._CreateTestRoot().AndReturn(self.fake_results_dir)
     commands.RunTestSuite(self.build_root,
                           self.build_config['board'],
                           mox.IgnoreArg(),
                           os.path.join(self.fake_results_dir,
                                        'test_harness'),
-                          build_config=self.bot_id,
-                          nplus1_archive_dir=self.fake_results_dir,
                           test_type=constants.FULL_AU_TEST_TYPE)
     commands.ArchiveTestResults(self.build_root, self.fake_results_dir)
 
@@ -518,17 +512,12 @@ class VMTestStageTest(AbstractStageTest):
     self.mox.StubOutWithMock(stages.VMTestStage, '_CreateTestRoot')
 
     os.path.isdir(self.build_root + '/.repo').AndReturn(True)
-    stages.VMTestStage._CreateTestRoot().AndReturn(
-        (self.fake_results_dir, self.fake_chroot_results_dir))
-    stages.VMTestStage._CreateTestRoot().AndReturn(
-        (self.fake_results_dir, self.fake_chroot_results_dir))
+    stages.VMTestStage._CreateTestRoot().AndReturn(self.fake_results_dir)
     commands.RunTestSuite(self.build_root,
                           self.build_config['board'],
                           mox.IgnoreArg(),
                           os.path.join(self.fake_results_dir,
                                        'test_harness'),
-                          build_config=self.bot_id,
-                          nplus1_archive_dir=self.fake_results_dir,
                           test_type=constants.SIMPLE_AU_TEST_TYPE)
     commands.ArchiveTestResults(self.build_root, self.fake_results_dir)
 
