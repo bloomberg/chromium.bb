@@ -19,6 +19,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/origin_bound_cert_store.h"
 #include "net/base/x509_certificate.h"
+#include "net/base/x509_util.h"
 
 #if defined(USE_NSS)
 #include <private/pprthred.h>  // PR_DetachThread
@@ -324,20 +325,13 @@ int OriginBoundCertService::GenerateCert(const std::string& origin,
     LOG(WARNING) << "Unable to create key pair for client";
     return ERR_KEY_GENERATION_FAILED;
   }
-#if defined(USE_NSS)
-  scoped_refptr<X509Certificate> x509_cert = X509Certificate::CreateOriginBound(
+  std::string der_cert;
+  if (!x509_util::CreateOriginBoundCert(
       key.get(),
       origin,
       serial_number,
-      base::TimeDelta::FromDays(kValidityPeriodInDays));
-#else
-  scoped_refptr<X509Certificate> x509_cert = X509Certificate::CreateSelfSigned(
-      key.get(),
-      "CN=anonymous.invalid",
-      serial_number,
-      base::TimeDelta::FromDays(kValidityPeriodInDays));
-#endif
-  if (!x509_cert) {
+      base::TimeDelta::FromDays(kValidityPeriodInDays),
+      &der_cert)) {
     LOG(WARNING) << "Unable to create x509 cert for client";
     return ERR_ORIGIN_BOUND_CERT_GENERATION_FAILED;
   }
@@ -350,12 +344,6 @@ int OriginBoundCertService::GenerateCert(const std::string& origin,
   // TODO(rkn): Perhaps ExportPrivateKey should be changed to output a
   // std::string* to prevent this copying.
   std::string key_out(private_key_info.begin(), private_key_info.end());
-
-  std::string der_cert;
-  if (!x509_cert->GetDEREncoded(&der_cert)) {
-    LOG(WARNING) << "Unable to get DER-encoded cert";
-    return ERR_GET_CERT_BYTES_FAILED;
-  }
 
   private_key->swap(key_out);
   cert->swap(der_cert);
