@@ -30,19 +30,70 @@ cr.define('print_preview', function() {
     return -1;
   }
 
+  var marginValidationStates = {
+    TOO_SMALL: 0,
+    WITHIN_RANGE: 1,
+    TOO_BIG: 2,
+    NOT_A_NUMBER: 3
+  }
+
+  /**
+   * Checks  whether |value| is within range [0, limit].
+   * @return {number} An appropriate value from enum |marginValidationStates|.
+   */
+  function validateMarginValue(value, limit) {
+    if (value <= limit && value >= 0)
+      return marginValidationStates.WITHIN_RANGE;
+    else if (value < 0)
+      return marginValidationStates.TOO_SMALL;
+    else (value > limit)
+      return marginValidationStates.TOO_BIG;
+  }
+
   /**
    * @param {sting} text The text to check (in inches).
    * @param {number} limit The upper bound of the valid margin range (in
    *     points).
-   * @return {boolean} True of |text| can be parsed and it is within the allowed
-   *     range.
+   * @return {number} An appropriate value from enum |marginValidationStates|.
    */
-  function isMarginTextValid(text, limit) {
+  function validateMarginText(text, limit) {
     var value = extractMarginValue(text);
-    if (value ==  -1)
-      return false;
+    if (value == -1)
+      return marginValidationStates.NOT_A_NUMBER;
     value = convertInchesToPoints(value);
-    return value <= limit;
+    return validateMarginValue(value, limit);
+  }
+
+  /**
+   * @param {number} toConvert The value to convert in points
+   * @return {string} The equivalent text in inches.
+   */
+  function convertPointsToInchesText(toConvert) {
+    var inInches = convertPointsToInches(toConvert);
+    return convertInchesToInchesText(inInches);
+  }
+
+  /**
+   * @param {number} toConvert The value to convert in inches.
+   * @return {string} The equivalent text in inches with precision of two
+   *     digits.
+   */
+  function convertInchesToInchesText(toConvert) {
+    return toConvert.toFixed(2) + '"';
+  }
+
+  /**
+   * Converts |value| to inches text (keeping 2 decimal digits) and then back to
+   * points. Note: Because of the precision the return value might be different
+   * than |value|.
+   * @param {number} value The value in points to convert.
+   * @return {number} The value in points after converting to inches with a
+   *     certain precision and back.
+   */
+  function convertPointsToInchesTextAndBack(value) {
+    var text = convertPointsToInchesText(value);
+    var inches = extractMarginValue(text);
+    return convertInchesToPoints(inches);
   }
 
   /**
@@ -62,26 +113,37 @@ cr.define('print_preview', function() {
   };
 
   Rect.prototype = {
+    /**
+     * @type {number} The x coordinate of the right-most point.
+     */
     get right() {
       return this.x + this.width;
     },
 
+    /**
+     * @type {number} The y coordinate of the lower-most point.
+     */
     get bottom() {
       return this.y + this.height;
     },
 
-    get middleX() {
-      return this.x + this.width / 2;
-    },
-
-    get middleY() {
-      return this.y + this.height / 2;
+    /**
+     * Clones |this| and returns the cloned object.
+     * @return {Rect} A copy of |this|.
+     */
+    clone: function() {
+      return new Rect(this.x, this.y, this.width, this.height);
     }
   };
 
   return {
+    convertInchesToInchesText: convertInchesToInchesText,
+    convertPointsToInchesTextAndBack:convertPointsToInchesTextAndBack,
+    convertPointsToInchesText: convertPointsToInchesText,
     extractMarginValue: extractMarginValue,
-    isMarginTextValid: isMarginTextValid,
+    marginValidationStates: marginValidationStates,
     Rect: Rect,
+    validateMarginText: validateMarginText,
+    validateMarginValue: validateMarginValue
   };
 });

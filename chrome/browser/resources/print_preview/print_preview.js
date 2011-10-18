@@ -1106,4 +1106,5 @@ window.onkeydown = onKeyDown;
 <include src="margin_line.js"/>
 <include src="margin_utils.js"/>
 <include src="margins_ui.js"/>
+<include src="margins_ui_pair.js"/>
 <include src="preview_area.js"/>

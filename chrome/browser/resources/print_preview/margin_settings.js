@@ -60,6 +60,31 @@ cr.define('print_preview', function() {
     },
 
     /**
+     * Helper method returning an array of the string indices used for accessing
+     * all margins.
+     * @return {array} An array of string indices.
+     * @private
+     */
+    indicesAsArray_: function() {
+      return [MarginSettings.LEFT_GROUP, MarginSettings.TOP_GROUP,
+          MarginSettings.RIGHT_GROUP, MarginSettings.BOTTOM_GROUP];
+    },
+
+    /**
+     * Rounds |this| based on the precision used when displaying the margins in
+     * inches. This is done by converting from points to inches and back to
+     * points.
+     */
+    roundToInches: function() {
+      var indicesAsArray = this.indicesAsArray_();
+      for (var i = 0; i < indicesAsArray.length; i++) {
+        this[indicesAsArray[i]] =
+            print_preview.convertPointsToInchesTextAndBack(
+                this[indicesAsArray[i]]);
+      }
+    },
+
+    /**
      * Converts |this| to inches and returns the result in a new Margins object.
      * |this| is not affected. It assumes that |this| is currently expressed in
      * points.
@@ -135,11 +160,17 @@ cr.define('print_preview', function() {
 
     // True if the margins UI should be shown regardless of mouse position.
     this.forceDisplayingMarginLines_ = true;
+
+    // @type {EventTracker} Used to keep track of certain event listeners.
+    this.eventTracker = new EventTracker();
+
     this.addEventListeners_();
   }
 
   // Number of points per inch.
   MarginSettings.POINTS_PER_INCH = 72;
+  // Minimum allowed distance in points between top-bottom, left-right margins.
+  MarginSettings.MINIMUM_MARGINS_DISTANCE = 36;
   // Margin list values.
   MarginSettings.MARGINS_VALUE_DEFAULT = 0;
   MarginSettings.MARGINS_VALUE_NO_MARGINS = 1;
@@ -177,6 +208,22 @@ cr.define('print_preview', function() {
     get selectedMarginsValue() {
       var val = this.marginList_.options[this.marginList_.selectedIndex].value;
       return parseInt(val, 10);
+    },
+
+    /**
+     * @return {number} The total width of the plugin in points.
+     */
+    get totalWidthInPoints() {
+      var pageInformation = previewArea.pageLocationNormalized;
+      return this.pageWidth_ / pageInformation.width;
+    },
+
+    /**
+     * @return {number} The total height of the plugin in points.
+     */
+    get totalHeightInPoints() {
+      var pageInformation = previewArea.pageLocationNormalized;
+      return this.pageHeight_ / pageInformation.height;
     },
 
     /**
@@ -247,6 +294,31 @@ cr.define('print_preview', function() {
     },
 
     /**
+     * Executes whenever a "DragEvent" occurs.
+     * @param {cr.Event} e The event that triggered this listener.
+     */
+    onDragEvent_: function(e) {
+      var dragDeltaInPoints = this.convertDragDeltaToPoints_(e.dragDelta);
+      this.marginsUI.lastClickedMarginsUIPair.updateWhileDragging(
+          dragDeltaInPoints, e.destinationPoint);
+    },
+
+    /**
+     * @param {number} dragDelta The difference in pixels between the original
+     *     and current postion of the last clicked margin line.
+     * @return {number} The difference in points.
+     * @private
+     */
+    convertDragDeltaToPoints_: function(dragDelta) {
+      if (this.marginsUI.lastClickedMarginsUIPair.isTop_() ||
+          this.marginsUI.lastClickedMarginsUIPair.isBottom_()) {
+        return dragDelta * this.totalHeightInPoints;
+      } else {
+        return dragDelta * this.totalWidthInPoints;
+      }
+    },
+
+    /**
      * @return {boolean} True if the margin settings are valid.
      */
     areMarginSettingsValid: function() {
@@ -260,17 +332,49 @@ cr.define('print_preview', function() {
     /**
      * Calculates the maximum allowable value of the selected margin text for
      * every margin.
-     * @return {array} The maximum allowable value in order top, left, right,
-     *     bottom.
+     * @return {array} The maximum allowable value in points in order top, left,
+     *     right, bottom.
      * @private
      */
     getMarginValueLimits_: function() {
       var marginValueLimits = [];
-      marginValueLimits[0] = this.pageHeight_ - this.customMargins_.bottom;
-      marginValueLimits[1] = this.pageWidth_ - this.customMargins_.right;
-      marginValueLimits[2] = this.pageWidth_ - this.customMargins_.left;
-      marginValueLimits[3] = this.pageHeight_ - this.customMargins_.top;
+      marginValueLimits[0] = this.pageHeight_ - this.customMargins_.bottom -
+          MarginSettings.MINIMUM_MARGINS_DISTANCE;
+      marginValueLimits[1] = this.pageWidth_ - this.customMargins_.right -
+          MarginSettings.MINIMUM_MARGINS_DISTANCE;
+      marginValueLimits[2] = this.pageWidth_ - this.customMargins_.left -
+          MarginSettings.MINIMUM_MARGINS_DISTANCE;
+      marginValueLimits[3] = this.pageHeight_ - this.customMargins_.top -
+          MarginSettings.MINIMUM_MARGINS_DISTANCE;
+
+      for (var i = 0; i < marginValueLimits.length; i++) {
+        marginValueLimits[i] = Math.max(marginValueLimits[i], 0);
+        marginValueLimits[i] = print_preview.convertPointsToInchesTextAndBack(
+            marginValueLimits[i]);
+      }
       return marginValueLimits;
+    },
+
+    /**
+     * @return {array} The margin value limits positions normalized to the total
+     *     width and height of the plugin and with respect to the top left
+     *     corner of the plugin.
+     */
+    getMarginValueLimitsInPercent_: function() {
+      var pageInformation = previewArea.pageLocationNormalized;
+      var totalWidthInPoints = this.pageWidth_ / pageInformation.width;
+      var totalHeightInPoints = this.pageHeight_ / pageInformation.height;
+      var marginValueLimits = this.getMarginValueLimits_();
+      var marginValueLimitsInPercent = [];
+      marginValueLimitsInPercent[0] = pageInformation.y + marginValueLimits[0] /
+          totalHeightInPoints;
+      marginValueLimitsInPercent[1] = pageInformation.x + marginValueLimits[1] /
+          totalWidthInPoints;
+      marginValueLimitsInPercent[2] = pageInformation.x +
+          pageInformation.width - marginValueLimits[2] / totalWidthInPoints;
+      marginValueLimitsInPercent[3] = pageInformation.y +
+          pageInformation.height - marginValueLimits[3] / totalHeightInPoints;
+      return marginValueLimitsInPercent;
     },
 
     /**
@@ -295,7 +399,8 @@ cr.define('print_preview', function() {
      */
     get marginsUI() {
       if (!this.marginsUI_) {
-        this.marginsUI_ = new print_preview.MarginsUI($('mainview'));
+        this.marginsUI_ = new print_preview.MarginsUI();
+        $('mainview').appendChild(this.marginsUI_);
         this.marginsUI_.addObserver(
             this.onMarginTextValueMayHaveChanged_.bind(this));
       }
@@ -309,6 +414,8 @@ cr.define('print_preview', function() {
     addCustomMarginEventListeners_: function() {
       $('mainview').onmouseover = this.onMainviewMouseOver_.bind(this);
       $('sidebar').onmouseover = this.onSidebarMouseOver_.bind(this);
+      this.eventTracker.add(
+          this.marginsUI, 'DragEvent', this.onDragEvent_.bind(this), false);
     },
 
     /**
@@ -318,6 +425,7 @@ cr.define('print_preview', function() {
     removeCustomMarginEventListeners_: function() {
       $('mainview').onmouseover = null;
       $('sidebar').onmouseover = null;
+      this.eventTracker.remove(this.marginsUI, 'DragEvent');
       this.marginsUI.hide();
     },
 
@@ -331,11 +439,13 @@ cr.define('print_preview', function() {
       // directly produces the opposite value even though
       // |this.getMarginsRectangleInPercent_()| and
       // |this.getMarginValueLimits_()| have no side effects.
+      previewArea.update();
       var keepDisplayedValue = !this.areMarginSettingsValid();
       this.marginsUI.update(this.getMarginsRectangleInPercent_(),
                             this.customMargins_,
                             this.getMarginValueLimits_(),
-                            keepDisplayedValue);
+                            keepDisplayedValue,
+                            this.getMarginValueLimitsInPercent_());
       this.marginsUI.draw();
     },
 
@@ -393,8 +503,10 @@ cr.define('print_preview', function() {
     onCustomMarginsSelected_: function() {
       this.addCustomMarginEventListeners_();
 
-      if (this.lastSelectedOption_ == MarginSettings.MARGINS_VALUE_DEFAULT)
+      if (this.lastSelectedOption_ == MarginSettings.MARGINS_VALUE_DEFAULT) {
         this.customMargins_ = this.currentDefaultPageLayout.margins_;
+        this.customMargins_.roundToInches();
+      }
       this.previousCustomMargins_.copy(this.customMargins_);
 
       if (this.previousDefaultPageLayout_ != this.currentDefaultPageLayout) {
@@ -417,7 +529,7 @@ cr.define('print_preview', function() {
      * @private
      */
     getMarginsRectangleInPercent_: function() {
-      var pageLocation = previewArea.getPageLocationNormalized();
+      var pageLocation = previewArea.pageLocationNormalized;
       var marginsInPercent = this.getMarginsInPercent_();
       var leftX = pageLocation.x + marginsInPercent.left;
       var topY = pageLocation.y + marginsInPercent.top;
@@ -435,14 +547,24 @@ cr.define('print_preview', function() {
      * @private
      */
     getMarginsInPercent_: function() {
-      var pageInformation = previewArea.getPageLocationNormalized();
+      return this.convertMarginsInPointsToPercent(this.customMargins_);
+    },
+
+    /**
+     * Converts |marginsToConvert| to points and normalizes it to the height and
+     * width of the plugin.
+     * @return {print_preview.Margins} The margins in percent.
+     * @private
+     */
+    convertMarginsInPointsToPercent: function(marginsToConvert) {
+      var pageInformation = previewArea.pageLocationNormalized;
       var totalWidthInPoints = this.pageWidth_ / pageInformation.width;
       var totalHeightInPoints = this.pageHeight_ / pageInformation.height;
       var marginsInPercent = new Margins(
-          this.customMargins_.left / totalWidthInPoints,
-          this.customMargins_.top / totalHeightInPoints,
-          this.customMargins_.right / totalWidthInPoints,
-          this.customMargins_.bottom / totalHeightInPoints);
+          marginsToConvert.left / totalWidthInPoints,
+          marginsToConvert.top / totalHeightInPoints,
+          marginsToConvert.right / totalWidthInPoints,
+          marginsToConvert.bottom / totalHeightInPoints);
       return marginsInPercent;
     },
 
@@ -456,6 +578,7 @@ cr.define('print_preview', function() {
         this.marginList_.options[
             MarginSettings.DEFAULT_MARGINS_OPTION_INDEX].selected = true;
         this.removeCustomMarginEventListeners_();
+        this.forceDisplayingMarginLines_ = true;
         this.lastSelectedOption_ = MarginSettings.MARGINS_VALUE_DEFAULT;
       }
     },

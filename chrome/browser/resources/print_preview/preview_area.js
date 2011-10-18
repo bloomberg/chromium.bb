@@ -24,6 +24,12 @@ cr.define('print_preview', function() {
     //     before a new preview is requested so that the scroll amount can be
     //     restored later.
     this.pageOffset_ = null;
+
+    // @type {print_preview.Rect} A rectangle describing the postion of the
+    // most visible page normalized with respect to the total height and width
+    // of the plugin.
+    this.pageLocationNormalized = null;
+
     this.addEventListeners_();
   }
 
@@ -78,17 +84,19 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * @return {print_preview.Rect} A rectangle describing the postion of the
-     *   most visible page normalized with respect to the total height and width
-     *   of the plugin.
+     * Queries the plugin for the location of the most visible page and updates
+     * |this.pageLocationNormalized|.
      */
-    getPageLocationNormalized: function() {
+    update: function() {
+      if (!this.pdfLoaded_)
+        return;
       var pluginLocation =
           this.pdfPlugin_.getPageLocationNormalized().split(';');
-      return new print_preview.Rect(parseFloat(pluginLocation[0]),
-                                    parseFloat(pluginLocation[1]),
-                                    parseFloat(pluginLocation[2]),
-                                    parseFloat(pluginLocation[3]));
+      this.pageLocationNormalized = new print_preview.Rect(
+          parseFloat(pluginLocation[0]),
+          parseFloat(pluginLocation[1]),
+          parseFloat(pluginLocation[2]),
+          parseFloat(pluginLocation[3]));
     },
 
     /**

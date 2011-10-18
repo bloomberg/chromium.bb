@@ -1,3 +1,8 @@
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
 html {
   height: 100%;
 }
@@ -389,6 +394,8 @@ input[type='radio']:checked::before {
   border-radius: 10px;
   content: '';
   display: inline-block;
+  font-size: 13px;
+  font-weight: 400;
   height: 5px;
   left: 0;
   margin-top: 4px;
@@ -407,7 +414,7 @@ input[type='radio']:active:checked::before {
   background: #606060;
 }
 
-input[type='text'] {
+#sidebar input[type='text'] {
   -webkit-box-shadow: inset 0 2px 2px rgba(0, 0, 0, .1),
                       0 1px 0 white,
                       0 0 1px transparent,
@@ -416,27 +423,29 @@ input[type='text'] {
   -webkit-margin-end: 7px;
   -webkit-margin-start: 2px;
   -webkit-transition: -webkit-box-shadow 100ms, background 100ms, border 500ms;
-  border-radius: 3px;
   border: 1px solid #a0a0a0;
-  font-size: 13px;
-  font-weight: 400;
   margin: 0;
   padding: 4px 6px 4px 6px;
 }
 
-input[type='text']:-webkit-input-placeholder {
+input[type='text'] {
+  border-radius: 3px;
+  outline: none;
+}
+
+#sidebar input[type='text']:-webkit-input-placeholder {
   color: #a0a0a0;
 }
 
-input[type='text']:first-child {
+#sidebar input[type='text']:first-child {
   -webkit-margin-start: 0;
 }
 
-input[type='text']:last-child {
+#sidebar input[type='text']:last-child {
   -webkit-margin-end: 0;
 }
 
-input[type='text']:focus {
+#sidebar input[type='text']:focus {
   -webkit-box-shadow: inset 0 2px 2px rgba(0, 0, 0, .15),
                       0 1px 0 transparent,
                       0 0 1px #c0c0c0,
@@ -445,19 +454,18 @@ input[type='text']:focus {
   -webkit-transition: -webkit-box-shadow 200ms, background 200ms, border 200ms;
   background: #f8f8f8;
   border-color: #4080fa;
-  outline: none;
 }
 
-input[type='text']:disabled {
+#sidebar input[type='text']:disabled {
   background: #f8f8f8;
   border-color: #c0c0c0;
 }
 
-input[type='text'].small {
+#sidebar input[type='text'].small {
   width: 2em;
 }
 
-input[type='text'].invalid {
+#sidebar input[type='text'].invalid {
   background: #fff0f0;
   color: #8c1414;
 }
@@ -672,6 +680,7 @@ select {
   -webkit-box-flex: 1;
   -webkit-user-select: none;
   background-color: #ccc;
+  overflow: hidden;
   position: relative;
 }
 
@@ -720,45 +729,6 @@ select {
   -webkit-transition: opacity 0.1s linear;
   opacity: 0;
   pointer-events: none;
-}
-
-input[type='text'].margin-box {
-  background-color: #2a2a2a;
-  color: #fff;
-  cursor: auto;
-  font-family: arial;
-  font-size: 10px;
-  height: 15px;
-  padding: 5px 10px;
-  position: absolute;
-  text-align: center;
-  width: 40px;
-  z-index: 3;
-}
-
-input[type='text'].margin-box.invalid {
-  background-color: #c11b17;
-}
-
-.draggable-area {
-  background-color: transparent;
-  border-color: transparent;
-  pointer-events: none;
-  position: absolute;
-  z-index: 2;
-}
-
-.margin-line {
-  border-color: #4080FA;
-  border-style: dashed;
-  border-width: 1px;
-  position: absolute;
-  z-index: 2;
-}
-
-#customized-margins {
-  position: absolute;
-  top: 0;
 }
 
 #messages {

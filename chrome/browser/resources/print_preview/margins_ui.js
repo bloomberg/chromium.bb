@@ -5,57 +5,53 @@
 cr.define('print_preview', function() {
   'strict';
 
-  /**
-   * @constructor
-   * This class represents a margin line and a textbox corresponding to that
-   * margin.
-   */
-  function MarginsUIPair(groupName) {
-    this.line_ = new print_preview.MarginLine(groupName);
-    this.box_ = new print_preview.MarginTextbox(groupName);
-  }
-
-  MarginsUIPair.prototype = {
-    __proto__: MarginsUIPair.prototype,
-
-    /**
-     * Updates the state.
-     */
-    update: function(marginsRectangle, value, valueLimit, keepDisplayedValue) {
-      this.line_.update(marginsRectangle);
-      this.box_.update(marginsRectangle, value, valueLimit, keepDisplayedValue);
-    },
-
-    /**
-     * Draws |this| based on the state.
-     */
-    draw: function() {
-      this.line_.draw();
-      this.box_.draw();
-    }
-  };
-
-  function MarginsUI(parentNode) {
+  function MarginsUI() {
     var marginsUI = document.createElement('div');
     marginsUI.__proto__ = MarginsUI.prototype;
     marginsUI.id = 'customized-margins';
 
-    marginsUI.topPair_ = new MarginsUIPair(
+    // @type {print_preview.MarginsUIPair} The object corresponding to the top
+    //     margin.
+    marginsUI.topPair_ = new print_preview.MarginsUIPair(
         print_preview.MarginSettings.TOP_GROUP);
-    marginsUI.leftPair_ = new MarginsUIPair(
+    // @type {print_preview.MarginsUIPair} The object corresponding to the left
+    //     margin.
+    marginsUI.leftPair_ = new print_preview.MarginsUIPair(
         print_preview.MarginSettings.LEFT_GROUP);
-    marginsUI.rightPair_ = new MarginsUIPair(
+    // @type {print_preview.MarginsUIPair} The object corresponding to the right
+    //     margin.
+    marginsUI.rightPair_ = new print_preview.MarginsUIPair(
         print_preview.MarginSettings.RIGHT_GROUP);
-    marginsUI.bottomPair_ = new MarginsUIPair(
+    // @type {print_preview.MarginsUIPair} The object corresponding to the
+    //     bottom margin.
+    marginsUI.bottomPair_ = new print_preview.MarginsUIPair(
         print_preview.MarginSettings.BOTTOM_GROUP);
-    parentNode.appendChild(marginsUI);
 
     var uiPairs = marginsUI.pairsAsList;
-    for (var i = 0; i < uiPairs.length; i++) {
-      marginsUI.appendChild(uiPairs[i].line_);
-      marginsUI.appendChild(uiPairs[i].box_);
-    }
+    for (var i = 0; i < uiPairs.length; i++)
+      marginsUI.appendChild(uiPairs[i]);
+
+    // @type {print_preview.MarginsUIPair} The object that is being dragged.
+    //     null if no drag session is in progress.
+    marginsUI.lastClickedMarginsUIPair = null;
+
+    // @type {EventTracker} Used to keep track of certain event listeners.
+    marginsUI.eventTracker = new EventTracker();
+
+    marginsUI.addEventListeners_();
     return marginsUI;
+  }
+
+  /**
+   * @param {{x: number, y: number}} point The point with respect to the top
+   *     left corner of the webpage.
+   * @return {{x: number: y: number}} The point with respect to the top left
+   *     corner of the plugin area.
+   */
+  MarginsUI.convert = function(point) {
+    var mainview = $('mainview');
+    return { x: point.x - mainview.offsetLeft,
+             y: point.y - mainview.offsetTop };
   }
 
   MarginsUI.prototype = {
@@ -86,14 +82,15 @@ cr.define('print_preview', function() {
      * @param {array} valueLimits
      */
     update: function(marginsRectangle, marginValues, valueLimits,
-        keepDisplayedValue) {
+        keepDisplayedValue, valueLimitsInPercent) {
       var uiPairs = this.pairsAsList;
       var order = ['top', 'left', 'right', 'bottom'];
       for (var i = 0; i < uiPairs.length; i++) {
         uiPairs[i].update(marginsRectangle,
                           marginValues[order[i]],
                           valueLimits[i],
-                          keepDisplayedValue);
+                          keepDisplayedValue,
+                          valueLimitsInPercent[i]);
       }
     },
 
@@ -127,7 +124,75 @@ cr.define('print_preview', function() {
       var bottom = previewArea.height;
       var right = previewArea.width;
       this.style.clip = "rect(0, " + right + "px, " + bottom + "px, 0)";
-    }
+    },
+
+    /**
+     * Adds event listeners for various events.
+     * @private
+     */
+    addEventListeners_: function() {
+      var uiPairs = this.pairsAsList;
+      for (var i = 0; i < uiPairs.length; i++) {
+        uiPairs[i].addEventListener('MarginsLineMouseDown',
+                                    this.onMarginLineMouseDown.bind(this));
+      }
+      // After snapping to min/max the MarginUIPair might not receive the
+      // mouseup event since it is not under the mouse pointer, so it is handled
+      // here.
+      window.document.addEventListener('mouseup',
+                                       this.onMarginLineMouseUp.bind(this));
+    },
+
+    /**
+     * Executes when a "MarginLineMouseDown" event occurs.
+     * @param {cr.Event} e The event that triggered this listener.
+     */
+    onMarginLineMouseDown: function(e) {
+      this.lastClickedMarginsUIPair = e.target;
+      this.bringToFront(this.lastClickedMarginsUIPair);
+      // Note: Capturing mouse events at a higher level in the DOM than |this|,
+      // so that the plugin can still receive mouse events.
+      this.eventTracker.add(
+          window.document, 'mousemove', this.onMouseMove_.bind(this), false);
+    },
+
+    /**
+     * Executes when a "MarginLineMouseUp" event occurs.
+     * @param {cr.Event} e The event that triggered this listener.
+     */
+    onMarginLineMouseUp: function(e) {
+      if (this.lastClickedMarginsUIPair == null)
+        return;
+      this.lastClickedMarginsUIPair.onMouseUp();
+      this.lastClickedMarginsUIPair = null;
+      this.eventTracker.remove(window.document, 'mousemove');
+    },
+
+    /**
+     * Brings |uiPair| in front of the other pairs. Used to make sure that the
+     * dragged pair is visible when overlapping with a not dragged pair.
+     * @param {print_preview.MarginsUIPair} uiPair The pair to bring in front.
+     */
+    bringToFront: function(uiPair) {
+      this.pairsAsList.forEach(function(pair) {
+        pair.classList.remove('dragging');
+      });
+      uiPair.classList.add('dragging');
+    },
+
+    /**
+     * Executes when a mousemove event occurs.
+     * @param {MouseEvent} e The event that triggered this listener.
+     */
+    onMouseMove_: function(e) {
+      var point = MarginsUI.convert({ x: e.x, y: e.y });
+
+      var dragEvent = new cr.Event('DragEvent');
+      dragEvent.dragDelta =
+          this.lastClickedMarginsUIPair.getDragDisplacementFrom(point);
+      dragEvent.destinationPoint = point;
+      this.dispatchEvent(dragEvent);
+    },
   };
 
   return {
