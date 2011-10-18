@@ -4,6 +4,8 @@
 
 #include "chrome/browser/browsing_data_appcache_helper.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/stl_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -43,8 +45,8 @@ TEST_F(CannedBrowsingDataAppCacheHelperTest, SetInfo) {
   helper->AddAppCache(manifest3);
 
   TestCompletionCallback callback;
-  helper->StartFetching(
-      NewCallback(&callback, &TestCompletionCallback::callback));
+  helper->StartFetching(base::Bind(&TestCompletionCallback::callback,
+                                   base::Unretained(&callback)));
   ASSERT_TRUE(callback.have_result());
 
   std::map<GURL, appcache::AppCacheInfoVector>& collection =
@@ -75,8 +77,8 @@ TEST_F(CannedBrowsingDataAppCacheHelperTest, Unique) {
   helper->AddAppCache(manifest);
 
   TestCompletionCallback callback;
-  helper->StartFetching(
-      NewCallback(&callback, &TestCompletionCallback::callback));
+  helper->StartFetching(base::Bind(&TestCompletionCallback::callback,
+                                   base::Unretained(&callback)));
   ASSERT_TRUE(callback.have_result());
 
   std::map<GURL, appcache::AppCacheInfoVector>& collection =

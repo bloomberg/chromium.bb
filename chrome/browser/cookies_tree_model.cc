@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/memory/linked_ptr.h"
 #include "base/string_util.h"
@@ -642,8 +643,9 @@ CookiesTreeModel::CookiesTreeModel(
   // TODO(michaeln): when all of the ui impls have been updated,
   // make this a required parameter.
   if (appcache_helper_) {
-    appcache_helper_->StartFetching(NewCallback(
-        this, &CookiesTreeModel::OnAppCacheModelInfoLoaded));
+    appcache_helper_->StartFetching(
+        base::Bind(&CookiesTreeModel::OnAppCacheModelInfoLoaded,
+                   base::Unretained(this)));
   }
 
   if (indexed_db_helper_) {

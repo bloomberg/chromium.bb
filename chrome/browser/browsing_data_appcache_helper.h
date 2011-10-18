@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_BROWSING_DATA_APPCACHE_HELPER_H_
 #pragma once
 
+#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/task.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "googleurl/src/gurl.h"
 
@@ -20,7 +20,7 @@ class BrowsingDataAppCacheHelper
  public:
   explicit BrowsingDataAppCacheHelper(Profile* profile);
 
-  virtual void StartFetching(Callback0::Type* completion_callback);
+  virtual void StartFetching(const base::Closure& completion_callback);
   virtual void CancelNotification();
   virtual void DeleteAppCacheGroup(const GURL& manifest_url);
 
@@ -33,7 +33,7 @@ class BrowsingDataAppCacheHelper
   friend class base::RefCountedThreadSafe<BrowsingDataAppCacheHelper>;
   virtual ~BrowsingDataAppCacheHelper();
 
-  scoped_ptr<Callback0::Type> completion_callback_;
+  base::Closure completion_callback_;
   scoped_refptr<appcache::AppCacheInfoCollection> info_collection_;
 
  private:
@@ -56,7 +56,7 @@ class CannedBrowsingDataAppCacheHelper : public BrowsingDataAppCacheHelper {
 
   // Return a copy of the appcache helper. Only one consumer can use the
   // StartFetching method at a time, so we need to create a copy of the helper
-  // everytime we instantiate a cookies tree model for it.
+  // every time we instantiate a cookies tree model for it.
   CannedBrowsingDataAppCacheHelper* Clone();
 
   // Add an appcache to the set of canned caches that is returned by this
@@ -70,8 +70,8 @@ class CannedBrowsingDataAppCacheHelper : public BrowsingDataAppCacheHelper {
   bool empty() const;
 
   // BrowsingDataAppCacheHelper methods.
-  virtual void StartFetching(Callback0::Type* completion_callback);
-  virtual void CancelNotification() {}
+  virtual void StartFetching(const base::Closure& completion_callback) OVERRIDE;
+  virtual void CancelNotification() OVERRIDE {}
 
  private:
   virtual ~CannedBrowsingDataAppCacheHelper();

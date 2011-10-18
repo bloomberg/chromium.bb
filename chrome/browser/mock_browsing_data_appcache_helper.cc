@@ -15,12 +15,12 @@ MockBrowsingDataAppCacheHelper::~MockBrowsingDataAppCacheHelper() {
 }
 
 void MockBrowsingDataAppCacheHelper::StartFetching(
-    Callback0::Type* completion_callback) {
-  completion_callback_.reset(completion_callback);
+    const base::Closure& completion_callback) {
+  completion_callback_ = completion_callback;
 }
 
 void MockBrowsingDataAppCacheHelper::CancelNotification() {
-  completion_callback_.reset(NULL);
+  completion_callback_.Reset();
 }
 
 void MockBrowsingDataAppCacheHelper::DeleteAppCacheGroup(

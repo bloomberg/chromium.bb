@@ -18,13 +18,13 @@ BrowsingDataAppCacheHelper::BrowsingDataAppCacheHelper(Profile* profile)
       appcache_service_(profile->GetAppCacheService()) {
 }
 
-void BrowsingDataAppCacheHelper::StartFetching(Callback0::Type* callback) {
+void BrowsingDataAppCacheHelper::StartFetching(const base::Closure& callback) {
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     DCHECK(!is_fetching_);
-    DCHECK(callback);
+    DCHECK_EQ(false, callback.is_null());
     is_fetching_ = true;
     info_collection_ = new appcache::AppCacheInfoCollection;
-    completion_callback_.reset(callback);
+    completion_callback_ = callback;
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, NewRunnableMethod(
         this, &BrowsingDataAppCacheHelper::StartFetching, callback));
     return;
@@ -40,7 +40,7 @@ void BrowsingDataAppCacheHelper::StartFetching(Callback0::Type* callback) {
 
 void BrowsingDataAppCacheHelper::CancelNotification() {
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    completion_callback_.reset();
+    completion_callback_.Reset();
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, NewRunnableMethod(
         this, &BrowsingDataAppCacheHelper::CancelNotification));
     return;
@@ -86,9 +86,9 @@ void BrowsingDataAppCacheHelper::OnFetchComplete(int rv) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(is_fetching_);
   is_fetching_ = false;
-  if (completion_callback_ != NULL) {
-    completion_callback_->Run();
-    completion_callback_.reset();
+  if (!completion_callback_.is_null()) {
+    completion_callback_.Run();
+    completion_callback_.Reset();
   }
 }
 
@@ -135,9 +135,8 @@ bool CannedBrowsingDataAppCacheHelper::empty() const {
 }
 
 void CannedBrowsingDataAppCacheHelper::StartFetching(
-    Callback0::Type* completion_callback) {
-  completion_callback->Run();
-  delete completion_callback;
+    const base::Closure& completion_callback) {
+  completion_callback.Run();
 }
 
 CannedBrowsingDataAppCacheHelper::~CannedBrowsingDataAppCacheHelper() {}
