@@ -6,7 +6,7 @@
 # NOTE: run this in native_client/hg/ like so
 #
 # ../tools/llvm/unsupported/build-libstdc++.sh download
-# ../tools/llvm/unsupported/build-libstdc++.sh patch
+# ../tools/llvm/unsupported/build-libstdc++.sh libstdcpp-patch
 # ../tools/llvm/unsupported/build-libstdc++.sh libstdcpp-configure
 # ../tools/llvm/unsupported/build-libstdc++.sh libstdcpp-make -k
 #
@@ -16,7 +16,7 @@ set -o errexit
 readonly INSTALL_BIN="$(pwd)/../toolchain/pnacl_linux_x86_64_newlib/bin/"
 
 CC=gcc
-TARBALL_URL=http://ftp.gnu.org/gnu/gcc/gcc-4.6.1/gcc-g++-4.6.1.tar.bz2
+TARBALL_URL=http://ftp.gnu.org/gnu/gcc/gcc-4.6.1/gcc-4.6.1.tar.bz2
 
 
 
@@ -66,16 +66,18 @@ STD_ENV_FOR_LIBSTDCPP_CLANG=(
   OBJDUMP_FOR_TARGET="${ILLEGAL_TOOL}" )
 
 
-mkdir -p build
-
-
 download() {
-  wget ${TARBALL_URL} -O gcc-g++-4.6.1.tar.bz2
-  tar jxf gcc-g++-4.6.1.tar.bz2
+  wget ${TARBALL_URL} -O gcc-4.6.1.tar.bz2
+  tar jxf gcc-4.6.1.tar.bz2
+  pushd  gcc-4.6.1
+  hg init .
+  hg add .
+  hg commit -m "initial"
+  popd
 }
 
 
-patch() {
+libstdcpp-patch() {
   pushd gcc-4.6.1
   patch -p1 < ../../tools/llvm/unsupported/patch-libstdc++
   popd
@@ -85,6 +87,7 @@ patch() {
 libstdcpp-configure() {
   mkdir -p build
   pushd build
+
   env -i PATH=/usr/bin/:/bin  "${STD_ENV_FOR_LIBSTDCPP_CLANG[@]}" \
     ../gcc-4.6.1/libstdc++-v3/configure \
     --host=arm-none-linux-gnueabi \
@@ -94,6 +97,8 @@ libstdcpp-configure() {
     --disable-libstdcxx-pch \
     --enable-linux-futex=no \
     --with-newlib \
+    --enable-cxx-flags="-D__SIZE_MAX__=4294967295"\
+    --enable-libstdcxx-time=no \
     --enable-sjlj-exceptions=no \
     "$@"
   popd
