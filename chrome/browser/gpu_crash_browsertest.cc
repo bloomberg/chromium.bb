@@ -35,9 +35,17 @@ class GPUCrashTest : public InProcessBrowserTest {
     EnableDOMAutomation();
     InProcessBrowserTest::SetUpCommandLine(command_line);
 
-    // GPU tests require gpu acceleration.
-    // We do not care which GL backend is used.
-    command_line->AppendSwitchASCII(switches::kUseGL, "any");
+    // OverrideGLImplementation and kDisableAcceleratedCompositing for
+    // OS_MACOSX are Taken verbatim from gpu_pixel_browsertest.cc and
+    // gpu_browsertest.cc.
+    EXPECT_TRUE(test_launcher_utils::OverrideGLImplementation(
+        command_line,
+        gfx::kGLImplementationOSMesaName));
+#if defined(OS_MACOSX)
+    // Accelerated compositing does not work with OSMesa. AcceleratedSurface
+    // assumes GL contexts are native.
+    command_line->AppendSwitch(switches::kDisableAcceleratedCompositing);
+#endif
   }
   virtual void SetUpInProcessBrowserTestFixture() {
     FilePath test_dir;

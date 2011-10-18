@@ -33,15 +33,39 @@ class GPUBrowserTest : public InProcessBrowserTest {
   virtual void SetUpCommandLine(CommandLine* command_line) {
     InProcessBrowserTest::SetUpCommandLine(command_line);
 
-    // GPU tests require gpu acceleration.
-    // We do not care which GL backend is used.
-    command_line->AppendSwitchASCII(switches::kUseGL, "any");
+    EXPECT_TRUE(test_launcher_utils::OverrideGLImplementation(
+        command_line,
+        gfx::kGLImplementationOSMesaName));
 
     command_line->AppendSwitch(switches::kDisablePopupBlocking);
+
+#if defined(OS_MACOSX)
+    // Accelerated compositing does not work with OSMesa. AcceleratedSurface
+    // assumes GL contexts are native.
+    command_line->AppendSwitch(switches::kDisableAcceleratedCompositing);
+#endif
   }
 
   FilePath gpu_test_dir_;
 };
+
+#if defined(TOOLKIT_VIEWS)
+// Flaky on Windows (dbg): http://crbug.com/72608
+// For ChromeOS: http://crbug.com/76217
+#define MAYBE_BrowserTestCanLaunchWithOSMesa DISABLED_BrowserTestCanLaunchWithOSMesa
+#else
+#define MAYBE_BrowserTestCanLaunchWithOSMesa BrowserTestCanLaunchWithOSMesa
+#endif
+
+IN_PROC_BROWSER_TEST_F(GPUBrowserTest, MAYBE_BrowserTestCanLaunchWithOSMesa) {
+  // Check the webgl test reports success and that the renderer was OSMesa.
+  ui_test_utils::NavigateToURL(
+      browser(),
+      net::FilePathToFileURL(gpu_test_dir_.AppendASCII("webgl.html")));
+
+  EXPECT_EQ(ASCIIToUTF16("SUCCESS: WebKit WebGL"),
+            browser()->GetSelectedTabContents()->GetTitle());
+}
 
 // Test is flaky and timing out.  See crbug.com/99883
 IN_PROC_BROWSER_TEST_F(GPUBrowserTest,

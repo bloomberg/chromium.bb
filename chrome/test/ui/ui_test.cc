@@ -50,6 +50,7 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "ui/gfx/gl/gl_implementation.h"
+#include "ui/gfx/gl/gl_switches.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -88,7 +89,9 @@ UITestBase::UITestBase()
       clear_profile_(true),
       include_testing_id_(true),
       enable_file_cookies_(true),
-      profile_type_(UITestBase::DEFAULT_THEME) {
+      profile_type_(UITestBase::DEFAULT_THEME),
+      force_use_osmesa_(true),
+      disable_accelerated_compositing_(true) {
   PathService::Get(chrome::DIR_APP, &browser_directory_);
   PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory_);
 }
@@ -103,7 +106,9 @@ UITestBase::UITestBase(MessageLoop::Type msg_loop_type)
       clear_profile_(true),
       include_testing_id_(true),
       enable_file_cookies_(true),
-      profile_type_(UITestBase::DEFAULT_THEME) {
+      profile_type_(UITestBase::DEFAULT_THEME),
+      force_use_osmesa_(true),
+      disable_accelerated_compositing_(true) {
   PathService::Get(chrome::DIR_APP, &browser_directory_);
   PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory_);
 }
@@ -512,6 +517,27 @@ void UITest::SetUp() {
     set_test_name(test_info->test_case_name() + std::string(".") +
                   test_info->name());
   }
+
+  // UI tests force the use of OSMesa by default because of various bad
+  // interactions between the GPU infrastructure, how our bots are configured,
+  // and existing performance expectations.  The goal to slowly remove these
+  // special cases, as covered by:
+  // http://code.google.com/p/chromium/issues/detail?id=95782
+  //
+  // Note also that this disabling is done in UITest to avoid affecting
+  // pyautolib, which runs tests that do not work with OSMesa.
+  if (force_use_osmesa_) {
+    launch_arguments_.AppendSwitchASCII(switches::kUseGL,
+                                        gfx::kGLImplementationOSMesaName);
+  }
+
+  // Disable acclerated compositing for tests unless they directly opt-in. The
+  // rationale for this is identical to the use of OSMesa: bad interactions
+  // between tests and the accelerated compositing system. The goal is to slowly
+  // remove this flag, as covered by:
+  // http://code.google.com/p/chromium/issues/detail?id=95782
+  if (disable_accelerated_compositing_)
+    launch_arguments_.AppendSwitch(switches::kDisableAcceleratedCompositing);
 
   UITestBase::SetUp();
   PlatformTest::SetUp();

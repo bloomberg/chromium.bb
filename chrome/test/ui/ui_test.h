@@ -356,6 +356,12 @@ class UITestBase {
   // PID file for websocket server.
   FilePath websocket_pid_file_;
 
+  // Whether to force use of mesa for GL rendering.
+  bool force_use_osmesa_;
+
+  // Whether to disable accelerated compositing for this test.
+  bool disable_accelerated_compositing_;
+
  private:
   // Time the test was started (so we can check for new crash dumps)
   base::Time test_start_time_;
