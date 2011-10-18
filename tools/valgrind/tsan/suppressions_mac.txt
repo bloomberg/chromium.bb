@@ -203,3 +203,36 @@
   fun:file_util::OpenFile
   fun:base::SharedMemory::CreateNamed
 }
+{
+  bug_100772a
+  ThreadSanitizer:Race
+  fun:CAGuard::Wait
+  fun:MIO::DAL::RunLoop::StartOwnThread
+  fun:MIO::DAL::RunLoop::Start
+  fun:MIO::DAL::System::CheckOutInstance
+  fun:TundraObjectGetPropertyDataSize
+  fun:+[QTCaptureDALDevice _refreshDevices]
+  fun:+[QTCaptureDALDevice devicesWithIOType:]
+  fun:+[QTCaptureDevice devicesWithIOType:]
+  fun:+[QTCaptureDevice inputDevices]
+  fun:+[QTCaptureDevice inputDevicesWithMediaType:]
+  fun:+[VideoCaptureDeviceQTKit deviceNames]
+  fun:media::VideoCaptureDevice::GetDeviceNames
+  fun:media::VideoCaptureDeviceMac::Init
+  fun:media::VideoCaptureDevice::Create
+  fun:media::VideoCaptureDeviceTest_OpenInvalidDevice_Test::TestBody
+}
+{
+  bug_100772b
+  ThreadSanitizer:Race
+  fun:DVDeviceTerminate
+}
+{
+  bug_100772c
+  ThreadSanitizer:Race
+  fun:MIO::DAL::RunLoop::StopOwnThread
+  fun:MIO::DAL::RunLoop::Teardown
+  fun:MIO::DAL::System::TeardownShell
+  fun:MIO::DAL::System::AtExitHandler
+  fun:MIO::DAL::AtExit::AtExitHandler
+}

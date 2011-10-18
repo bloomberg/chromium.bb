@@ -4683,7 +4683,7 @@
    bug_100133
    Memcheck:Leak
    fun:_Znw*
-   fun:_Z25RegisterRecoveryComponentP22ComponentUpdateServicePKc
+   fun:_Z22RecoveryRegisterHelperP22ComponentUpdateServiceP11PrefService
 }
 {
    bug_100154
