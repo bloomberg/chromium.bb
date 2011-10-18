@@ -6,8 +6,9 @@
 #define CHROME_BROWSER_SYNC_GLUE_BROWSER_THREAD_MODEL_WORKER_H_
 #pragma once
 
-#include "base/callback.h"
 #include "base/basictypes.h"
+#include "base/callback.h"
+#include "base/compiler_specific.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "content/browser/browser_thread.h"
 
@@ -29,10 +30,14 @@ class BrowserThreadModelWorker : public browser_sync::ModelSafeWorker {
   virtual void DoWorkAndWaitUntilDone(Callback0::Type* work);
   virtual ModelSafeGroup GetModelSafeGroup();
 
- private:
-  void CallDoWorkAndSignalTask(
-      Callback0::Type* work, base::WaitableEvent* done);
+ protected:
+  // Marked pure virtual so subclasses have to override, but there is
+  // an implementation that subclasses should use.  This is so that
+  // (subclass)::CallDoWorkAndSignalTask shows up in callstacks.
+  virtual void CallDoWorkAndSignalTask(
+      Callback0::Type* work, base::WaitableEvent* done) = 0;
 
+ private:
   BrowserThread::ID thread_;
   ModelSafeGroup group_;
 
@@ -46,12 +51,20 @@ class DatabaseModelWorker : public BrowserThreadModelWorker {
  public:
   DatabaseModelWorker();
   virtual ~DatabaseModelWorker();
+
+ protected:
+  virtual void CallDoWorkAndSignalTask(
+      Callback0::Type* work, base::WaitableEvent* done) OVERRIDE;
 };
 
 class FileModelWorker : public BrowserThreadModelWorker {
  public:
   FileModelWorker();
   virtual ~FileModelWorker();
+
+ protected:
+  virtual void CallDoWorkAndSignalTask(
+      Callback0::Type* work, base::WaitableEvent* done) OVERRIDE;
 };
 
 }  // namespace browser_sync

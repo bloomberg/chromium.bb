@@ -15,8 +15,8 @@
 using base::OneShotTimer;
 using base::Thread;
 using base::TimeDelta;
-using browser_sync::BrowserThreadModelWorker;
-using browser_sync::GROUP_DB;
+
+namespace browser_sync {
 
 namespace {
 
@@ -68,7 +68,7 @@ class BrowserThreadModelWorkerTest : public testing::Test {
  protected:
   virtual void SetUp() {
     db_thread_.Start();
-    worker_ = new BrowserThreadModelWorker(BrowserThread::DB, GROUP_DB);
+    worker_ = new DatabaseModelWorker();
   }
 
   virtual void Teardown() {
@@ -96,3 +96,5 @@ TEST_F(BrowserThreadModelWorkerTest, DoesWorkOnDatabaseThread) {
 }
 
 }  // namespace
+
+}  // namespace browser_sync

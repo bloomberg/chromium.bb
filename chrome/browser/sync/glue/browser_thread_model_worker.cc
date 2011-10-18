@@ -54,9 +54,19 @@ DatabaseModelWorker::DatabaseModelWorker()
 
 DatabaseModelWorker::~DatabaseModelWorker() {}
 
+void DatabaseModelWorker::CallDoWorkAndSignalTask(
+    Callback0::Type* work, WaitableEvent* done) {
+  BrowserThreadModelWorker::CallDoWorkAndSignalTask(work, done);
+}
+
 FileModelWorker::FileModelWorker()
     : BrowserThreadModelWorker(BrowserThread::FILE, GROUP_FILE) {}
 
 FileModelWorker::~FileModelWorker() {}
+
+void FileModelWorker::CallDoWorkAndSignalTask(
+    Callback0::Type* work, WaitableEvent* done) {
+  BrowserThreadModelWorker::CallDoWorkAndSignalTask(work, done);
+}
 
 }  // namespace browser_sync
