@@ -123,9 +123,8 @@ void WindowTypeLauncher::ButtonPressed(views::Button* sender,
     ToplevelWindow::CreateToplevelWindow(ToplevelWindow::CreateParams());
   } else if (sender == bubble_button_) {
     gfx::Point origin = bubble_button_->bounds().origin();
-    views::View::ConvertPointToWidget(bubble_button_->parent(), &origin);
-    origin.Offset(10, bubble_button_->height() - 10);
-    CreatePointyBubble(GetWidget()->GetNativeWindow(), origin);
+    views::View::ConvertPointToScreen(bubble_button_->parent(), &origin);
+    CreatePointyBubble(GetWidget(), origin);
   } else if (sender == lock_button_) {
     CreateLock();
   } else if (sender == widgets_button_) {

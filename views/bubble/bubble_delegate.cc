@@ -3,64 +3,59 @@
 // found in the LICENSE file.
 
 #include "views/bubble/bubble_delegate.h"
+
 #include "views/bubble/bubble_frame_view.h"
 #include "views/bubble/bubble_view.h"
-
-#include "base/logging.h"
 #include "views/widget/widget.h"
 
 namespace views {
 
-BubbleDelegate* BubbleDelegate::AsBubbleDelegate() { return this; }
+BubbleDelegateView::~BubbleDelegateView() {}
 
-ClientView* BubbleDelegate::CreateClientView(Widget* widget) {
-  BubbleView* bubble_view = new BubbleView(widget, GetContentsView());
-  bubble_view->SetBounds(0, 0, GetBounds().width(), GetBounds().height());
-  if (widget->GetFocusManager()) {
-    widget->GetFocusManager()->RegisterAccelerator(
-        views::Accelerator(ui::VKEY_ESCAPE, false, false, false),
-        bubble_view);
-  }
-  return bubble_view;
+// static
+Widget* BubbleDelegateView::CreateBubble(BubbleDelegateView* bubble_delegate,
+                                         Widget* parent_widget) {
+  bubble_delegate->Init();
+  views::Widget* bubble_widget = new views::Widget();
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_BUBBLE);
+  params.delegate = bubble_delegate;
+  params.transparent = true;
+  if (!parent_widget)
+    params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.parent_widget = parent_widget;
+  bubble_widget->Init(params);
+  bubble_widget->SetBounds(bubble_delegate->GetBubbleBounds());
+  return bubble_widget;
 }
 
-NonClientFrameView* BubbleDelegate::CreateNonClientFrameView() {
-  return new BubbleFrameView(GetWidget(),
-                             GetBounds(),
-                             GetFrameBackgroundColor(),
-                             GetFrameArrowLocation());
+ClientView* BubbleDelegateView::CreateClientView(Widget* widget) {
+  return new BubbleView(widget, GetContentsView());
 }
 
-const BubbleView* BubbleDelegate::GetBubbleView() const {
+NonClientFrameView* BubbleDelegateView::CreateNonClientFrameView() {
+  return new BubbleFrameView(GetArrowLocation(),
+                             GetPreferredSize(),
+                             GetColor());
+}
+
+gfx::Point BubbleDelegateView::GetAnchorPoint() const {
+  return gfx::Point();
+}
+
+const BubbleView* BubbleDelegateView::GetBubbleView() const {
   return GetWidget()->client_view()->AsBubbleView();
 }
 
-BubbleView* BubbleDelegate::GetBubbleView() {
-  return GetWidget()->client_view()->AsBubbleView();
-}
-
-const BubbleFrameView* BubbleDelegate::GetBubbleFrameView() const {
+const BubbleFrameView* BubbleDelegateView::GetBubbleFrameView() const {
   return static_cast<BubbleFrameView*>(
       GetWidget()->non_client_view()->frame_view());
 }
 
-BubbleFrameView* BubbleDelegate::GetBubbleFrameView() {
-  return static_cast<BubbleFrameView*>(
-      GetWidget()->non_client_view()->frame_view());
-}
-
-BubbleDelegateView::BubbleDelegateView(Widget* frame):frame_(frame) {
-}
-
-BubbleDelegateView::~BubbleDelegateView() {
-}
-
-Widget* BubbleDelegateView::GetWidget() {
-  return frame_;
-}
-
-const Widget* BubbleDelegateView::GetWidget() const {
-  return frame_;
+gfx::Rect BubbleDelegateView::GetBubbleBounds() {
+  // The argument rect has its origin at the bubble's arrow anchor point;
+  // its size is the preferred size of the bubble's client view (this view).
+  return GetBubbleFrameView()->GetWindowBoundsForClientBounds(
+      gfx::Rect(GetAnchorPoint(), GetPreferredSize()));
 }
 
 }  // namespace views

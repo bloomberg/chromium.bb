@@ -7,6 +7,7 @@
 #include "views/bubble/bubble_delegate.h"
 #include "views/bubble/bubble_view.h"
 #include "views/controls/label.h"
+#include "views/layout/fill_layout.h"
 #include "views/widget/widget.h"
 
 namespace aura_shell {
@@ -15,54 +16,47 @@ namespace examples {
 struct BubbleConfig {
   string16 label;
   SkColor color;
-  gfx::Rect bound;
+  gfx::Point anchor_point;
   views::BubbleBorder::ArrowLocation arrow;
-  bool fade_out;
 };
 
 class ExampleBubbleDelegateView : public views::BubbleDelegateView {
  public:
-  ExampleBubbleDelegateView(const BubbleConfig& config, views::Widget* widget)
-      : BubbleDelegateView(widget),
-        config_(config) {}
-  virtual ~ExampleBubbleDelegateView() {}
+  ExampleBubbleDelegateView(const BubbleConfig& config)
+      : config_(config) {}
 
-  // Overridden from views::BubbleDelegateView
-  virtual views::View* GetContentsView() OVERRIDE { return this; }
-  virtual SkColor GetFrameBackgroundColor() OVERRIDE { return config_.color; }
-  virtual gfx::Rect GetBounds() OVERRIDE { return config_.bound; }
-  virtual views::BubbleBorder::ArrowLocation GetFrameArrowLocation() OVERRIDE {
+  virtual gfx::Point GetAnchorPoint() const OVERRIDE {
+    return config_.anchor_point;
+  }
+
+  views::BubbleBorder::ArrowLocation GetArrowLocation() const OVERRIDE {
     return config_.arrow;
+  }
+
+  SkColor GetColor() const OVERRIDE {
+    return config_.color;
+}
+
+  virtual void Init() OVERRIDE {
+    SetLayoutManager(new views::FillLayout());
+    views::Label* label = new views::Label(config_.label);
+    label->set_border(views::Border::CreateSolidBorder(10, config_.color));
+    AddChildView(label);
   }
 
  private:
   const BubbleConfig config_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExampleBubbleDelegateView);
 };
 
-void CreateBubble(const BubbleConfig& config,
-                  gfx::NativeWindow parent) {
-  views::Widget* bubble_widget = new views::Widget;
-  views::Widget::InitParams params(views::Widget::InitParams::TYPE_BUBBLE);
-  params.delegate = new ExampleBubbleDelegateView(config, bubble_widget);
-  params.transparent = true;
-  params.bounds = config.bound;
-  params.parent = parent;
-  bubble_widget->Init(params);
-  bubble_widget->client_view()->AsBubbleView()->AddChildView(
-      new views::Label(ASCIIToUTF16("I am a ") + config.label));
-  bubble_widget->Show();
-}
-
-void CreatePointyBubble(gfx::NativeWindow parent, const gfx::Point& origin) {
+void CreatePointyBubble(views::Widget* parent, const gfx::Point& origin) {
   BubbleConfig config;
   config.label = ASCIIToUTF16("PointyBubble");
   config.color = SK_ColorWHITE;
-  config.bound = gfx::Rect(origin.x(), origin.y(), 180, 180);
+  config.anchor_point = origin;
   config.arrow = views::BubbleBorder::TOP_LEFT;
-  config.fade_out = false;
-  CreateBubble(config, parent);
+  views::Widget* bubble = views::BubbleDelegateView::CreateBubble(
+      new ExampleBubbleDelegateView(config), parent);
+  bubble->Show();
 }
 
 }  // namespace examples

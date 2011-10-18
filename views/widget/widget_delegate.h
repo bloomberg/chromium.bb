@@ -50,7 +50,6 @@ class VIEWS_EXPORT WidgetDelegate {
   // Moved from WindowDelegate: ------------------------------------------------
   // TODO(beng): sort
 
-  virtual BubbleDelegate* AsBubbleDelegate();
   virtual DialogDelegate* AsDialogDelegate();
 
   // Returns true if the window can ever be resized.

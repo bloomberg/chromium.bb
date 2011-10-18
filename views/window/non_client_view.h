@@ -70,7 +70,6 @@ class VIEWS_EXPORT NonClientFrameView : public View {
 
   NonClientFrameView() : paint_as_active_(false) {}
 
-
   // Helper for non-client view implementations to determine which area of the
   // window border the specified |point| falls within. The other parameters are
   // the size of the sizing edges, and whether or not the window can be

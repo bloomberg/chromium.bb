@@ -6,56 +6,52 @@
 #define VIEWS_BUBBLE_BUBBLE_DELEGATE_H_
 #pragma once
 
-#include <string>
-
 #include "views/bubble/bubble_border.h"
-#include "views/view.h"
 #include "views/widget/widget_delegate.h"
 
 namespace views {
-class BubbleBorder;
+
 class BubbleFrameView;
 class BubbleView;
-class View;
 
-// BubbleDelegate interface to create bubble frame view and bubble client view.
+// BubbleDelegateView creates frame and client views for bubble Widgets.
+// BubbleDelegateView itself is the client's contents view.
 //
 ///////////////////////////////////////////////////////////////////////////////
-class VIEWS_EXPORT BubbleDelegate : public WidgetDelegate {
+class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView {
  public:
-  virtual BubbleDelegate* AsBubbleDelegate() OVERRIDE;
+  virtual ~BubbleDelegateView();
+
+  // Create a bubble Widget from the argument BubbleDelegateView.
+  static Widget* CreateBubble(BubbleDelegateView* bubble_delegate,
+                              Widget* parent_widget);
+
+  // WidgetDelegate overrides:
+  virtual View* GetContentsView() OVERRIDE { return this; }
   virtual ClientView* CreateClientView(Widget* widget) OVERRIDE;
   virtual NonClientFrameView* CreateNonClientFrameView() OVERRIDE;
 
-  virtual SkColor GetFrameBackgroundColor() = 0;
-  virtual gfx::Rect GetBounds() = 0;
-  virtual BubbleBorder::ArrowLocation GetFrameArrowLocation() = 0;
+  // Get the arrow's anchor point in screen space.
+  virtual gfx::Point GetAnchorPoint() const;
 
-  const BubbleView* GetBubbleView() const;
-  BubbleView* GetBubbleView();
+  // Get the arrow's location on the bubble.
+  virtual BubbleBorder::ArrowLocation GetArrowLocation() const {
+    return BubbleBorder::TOP_LEFT;
+  }
 
-  const BubbleFrameView* GetBubbleFrameView() const;
-  BubbleFrameView* GetBubbleFrameView();
+  // Get the color used for the background and border.
+  virtual SkColor GetColor() const { return SK_ColorWHITE; }
 
  protected:
-  virtual ~BubbleDelegate() {}
-};
-
-// BubbleDelegateView to create bubble frame view and bubble client view.
-//
-///////////////////////////////////////////////////////////////////////////////
-class VIEWS_EXPORT BubbleDelegateView : public BubbleDelegate, public View {
- public:
-  explicit BubbleDelegateView(Widget* frame);
-  virtual ~BubbleDelegateView();
-
-  // Overridden from WidgetDelegate:
-  virtual Widget* GetWidget() OVERRIDE;
-  virtual const Widget* GetWidget() const OVERRIDE;
+  // Perform view initialization on the contents for bubble sizing.
+  virtual void Init() {}
 
  private:
-  Widget* frame_;
-  DISALLOW_COPY_AND_ASSIGN(BubbleDelegateView);
+  const BubbleView* GetBubbleView() const;
+  const BubbleFrameView* GetBubbleFrameView() const;
+
+  // Get bubble bounds from the anchor point and client view's preferred size.
+  gfx::Rect GetBubbleBounds();
 };
 
 }  // namespace views

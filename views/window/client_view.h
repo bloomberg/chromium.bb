@@ -46,8 +46,7 @@ class VIEWS_EXPORT ClientView : public View {
   // dialog, etc.
   virtual bool CanClose();
 
-  // Notification that the widget is closing.  The default implementation
-  // forwards the notification to the delegate.
+  // Notification that the widget is closing.
   virtual void WidgetClosing();
 
   // Tests to see if the specified point (in view coordinates) is within the
@@ -68,10 +67,11 @@ class VIEWS_EXPORT ClientView : public View {
 
  protected:
   // Overridden from View:
-  virtual void ViewHierarchyChanged(
-      bool is_add, View* parent, View* child) OVERRIDE;
-  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
+  virtual void ViewHierarchyChanged(bool is_add,
+                                    View* parent,
+                                    View* child) OVERRIDE;
 
   // Accessors for private data members.
   View* contents_view() const { return contents_view_; }

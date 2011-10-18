@@ -200,6 +200,8 @@ void BubbleBorder::InitClass() {
   }
 }
 
+BubbleBorder::~BubbleBorder() {}
+
 void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) const {
   // Convenience shorthand variables.
   const int tl_width = top_left_->width();

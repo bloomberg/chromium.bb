@@ -12,10 +12,14 @@ namespace gfx {
 class Point;
 }
 
+namespace views {
+class Widget;
+}
+
 namespace aura_shell {
 namespace examples {
 
-void CreatePointyBubble(gfx::NativeWindow parent, const gfx::Point& origin);
+void CreatePointyBubble(views::Widget* parent, const gfx::Point& origin);
 
 void CreateLock();
 

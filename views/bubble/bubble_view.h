@@ -6,14 +6,8 @@
 #define VIEWS_BUBBLE_BUBBLE_VIEW_H_
 #pragma once
 
-#include <string>
-
-#include "base/gtest_prod_util.h"
-#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "views/accelerator.h"
-#include "views/focus/focus_manager.h"
-#include "views/view.h"
 #include "views/window/client_view.h"
 
 namespace ui {
@@ -22,61 +16,35 @@ class SlideAnimation;
 
 namespace views {
 
-// To show a bubble:
-// - Call Show() explicitly. This will not start a fading animation.
-// - Call StartFade() this starts a fading out sequence that will be
-//   cut short on VKEY_ESCAPE.
 class VIEWS_EXPORT BubbleView : public ClientView,
                                 public ui::AnimationDelegate {
  public:
   BubbleView(Widget* widget, View* contents_view);
   virtual ~BubbleView();
 
-  // Starts a fade (out) animation. Unless this method is called, bubble will
-  // stay until ui::VKEY_ESCAPE is sent.
-  void StartFade();
+  // ClientView overrides:
+  virtual BubbleView* AsBubbleView() OVERRIDE { return this; }
+  virtual const BubbleView* AsBubbleView() const OVERRIDE { return this; }
 
-  // Shows the bubble.
-  void Show();
+  void set_close_on_esc(bool close_on_esc) { close_on_esc_ = close_on_esc; }
 
-  void set_animation_delegate(ui::AnimationDelegate* delegate);
-
-  virtual BubbleView* AsBubbleView() OVERRIDE;
-  virtual const BubbleView* AsBubbleView() const OVERRIDE;
+  // Starts a fade animation, fade out closes the widget upon completion.
+  void StartFade(bool fade_in);
 
  protected:
-  virtual void ViewHierarchyChanged(bool is_add,
-                                    views::View* parent,
-                                    views::View* child) OVERRIDE;
-
+  // View overrides:
   virtual bool AcceleratorPressed(const Accelerator& accelerator) OVERRIDE;
-  virtual void Layout() OVERRIDE;
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
 
  private:
-  FRIEND_TEST(BubbleViewTest, FadeAnimation);
-
-  void InitAnimation();
-
-  // Sets up the layout manager based on currently initialized views. Should be
-  // called when a view is initialized or changed.
-  void ResetLayoutManager();
-
-  // Close bubble when animation ended.
+  // ui::AnimationDelegate overrides:
   virtual void AnimationEnded(const ui::Animation* animation);
-
-  // notify on animation progress.
   virtual void AnimationProgressed(const ui::Animation* animation);
 
   // Fade animation for bubble.
   scoped_ptr<ui::SlideAnimation> fade_animation_;
 
-  // Not owned.
-  ui::AnimationDelegate* animation_delegate_;
-
-  bool registered_accelerator_;
-
-  bool should_fade_;
+  // Should this bubble close on the escape key?
+  bool close_on_esc_;
 
   DISALLOW_COPY_AND_ASSIGN(BubbleView);
 };

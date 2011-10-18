@@ -6,29 +6,15 @@
 #define VIEWS_EXAMPLES_BUBBLE_EXAMPLE_H_
 #pragma once
 
-#include <string>
-
-#include "base/basictypes.h"
-#include "base/compiler_specific.h"
-#include "ui/base/animation/animation_delegate.h"
-#include "views/controls/button/text_button.h"
 #include "views/examples/example_base.h"
-#include "views/layout/box_layout.h"
-#include "views/layout/grid_layout.h"
-#include "views/widget/widget.h"
-
-namespace views {
-class BubbleDelegateView;
-class Button;
-class ColumnSet;
-}  // namespace views
+#include "views/controls/button/button.h"
 
 namespace examples {
+
 struct BubbleConfig;
 
 // A Bubble example.
 class BubbleExample : public ExampleBase,
-                      public ui::AnimationDelegate,
                       public views::ButtonListener {
  public:
   explicit BubbleExample(ExamplesMain* main);
@@ -38,22 +24,13 @@ class BubbleExample : public ExampleBase,
   virtual void CreateExampleView(views::View* container) OVERRIDE;
 
  private:
-  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
-
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event) OVERRIDE;
 
-  // Add a bubble view in the example
-  views::Widget* AddBubbleButton(const BubbleConfig& config);
-
   views::Button* round_;
-  views::Button* pointy_;
-  views::Button* fade_;
-  views::BoxLayout* layout_;
-
-  views::Widget* round_bubble_;
-  views::Widget* pointy_bubble_;
-  views::Widget* fade_bubble_;
+  views::Button* arrow_;
+  views::Button* fade_in_;
+  views::Button* fade_out_;
 
   DISALLOW_COPY_AND_ASSIGN(BubbleExample);
 };

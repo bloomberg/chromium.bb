@@ -6,7 +6,6 @@
 #define VIEWS_BUBBLE_BUBBLE_BORDER_H_
 #pragma once
 
-#include "third_party/skia/include/core/SkColor.h"
 #include "views/background.h"
 #include "views/border.h"
 
@@ -108,7 +107,7 @@ class VIEWS_EXPORT BubbleBorder : public views::Border {
   // Loads images if necessary.
   static void InitClass();
 
-  virtual ~BubbleBorder() { }
+  virtual ~BubbleBorder();
 
   // Overridden from views::Border:
   virtual void Paint(const views::View& view, gfx::Canvas* canvas) const;
