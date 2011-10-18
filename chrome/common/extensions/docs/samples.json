@@ -1426,16 +1426,20 @@
       "packaged_app": false,
       "path": "examples\/extensions\/mappy\/",
       "protocols": [
-        "http:\/\/"
+        "https:\/\/",
+        "https:\/\/"
       ],
       "search_string": "MAPPY FINDS ADDRESSES IN THE WEB PAGE YOURE ON AND POPS UP A MAP WINDOW. BACKGROUND_PAGE PAGE_ACTION POPUP TABS CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.EXTENSION.ONREQUEST CHROME.PAGEACTION.HIDE CHROME.PAGEACTION.SETTITLE CHROME.PAGEACTION.SHOW CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.TABS.ONSELECTIONCHANGED CHROME.TABS.ONUPDATED CHROME.TABS.SENDREQUEST",
       "source_files": [
         "background.html",
+        "background.js",
         "manifest.json",
         "mappy_content_script.js",
-        "popup.html"
+        "popup.css",
+        "popup.html",
+        "popup.js"
       ],
-      "source_hash": "81cf2d3975d7df8b58e5226c5b2b6df026446511",
+      "source_hash": "175f010b7eacb72207b7018732d3e6dca4e8d164",
       "zip_path": "examples\/extensions\/mappy.zip"
     },
     {
