@@ -81,20 +81,14 @@ class WebstoreInlineInstallTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, Install) {
   SetExtensionInstallDialogForManifestAutoConfirmForTests(true);
 
-  ui_test_utils::WindowedNotificationObserver load_signal(
-        chrome::NOTIFICATION_EXTENSION_LOADED,
-        Source<Profile>(browser()->profile()));
-
   ui_test_utils::NavigateToURL(
       browser(), GenerateTestServerUrl(kAppDomain, "install.html"));
 
   RunInlineInstallTest("runTest");
 
-  load_signal.Wait();
-
   const Extension* extension = browser()->profile()->GetExtensionService()->
       GetExtensionById("ecglahbcnmdpdciemllbhojghbkagdje", false);
-  EXPECT_TRUE(extension != NULL);
+  EXPECT_TRUE(extension);
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -102,7 +96,7 @@ IN_PROC_BROWSER_TEST_F(
   SetExtensionInstallDialogForManifestAutoConfirmForTests(false);
   ui_test_utils::NavigateToURL(
       browser(),
-      GenerateTestServerUrl(kNonAppDomain, "install-non-verified-domain.html"));
+      GenerateTestServerUrl(kNonAppDomain, "install_non_verified_domain.html"));
 
   RunInlineInstallTest("runTest1");
   RunInlineInstallTest("runTest2");
@@ -127,7 +121,7 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, InstallNotSupported) {
   SetExtensionInstallDialogForManifestAutoConfirmForTests(false);
   ui_test_utils::NavigateToURL(
       browser(),
-      GenerateTestServerUrl(kAppDomain, "install-not-supported.html"));
+      GenerateTestServerUrl(kAppDomain, "install_not_supported.html"));
 
   RunInlineInstallTest("runTest");
 
@@ -138,4 +132,28 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, InstallNotSupported) {
   }
   TabContents* tab_contents = browser()->GetSelectedTabContents();
   EXPECT_EQ(GURL("http://cws.com/show-me-the-money"), tab_contents->GetURL());
+}
+
+// The unpack failure test needs to use a different install .crx, which is
+// specified via a command-line flag, so it needs its own test subclass.
+class WebstoreInlineInstallUnpackFailureTest
+    : public WebstoreInlineInstallTest {
+ public:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    WebstoreInlineInstallTest::SetUpCommandLine(command_line);
+
+    GURL crx_url = GenerateTestServerUrl(
+        kWebstoreDomain, "malformed_extension.crx");
+    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kAppsGalleryUpdateURL, crx_url.spec());
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallUnpackFailureTest, Test) {
+  SetExtensionInstallDialogForManifestAutoConfirmForTests(true);
+
+  ui_test_utils::NavigateToURL(browser(),
+      GenerateTestServerUrl(kAppDomain, "install_unpack_failure.html"));
+
+  RunInlineInstallTest("runTest");
 }
