@@ -55,10 +55,17 @@ class ResourceChangeObserver : public TaskManagerModelObserver {
 void TaskManagerBrowserTestUtil::WaitForResourceChange(int target_count) {
   TaskManagerModel* model = TaskManager::GetInstance()->model();
 
-  if (model->ResourceCount() == target_count)
-    return;
   ResourceChangeObserver observer(model, target_count);
   model->AddObserver(&observer);
+
+  // Checks that the condition has not been satisfied yet.
+  // This check has to be placed after the installation of the observer,
+  // because resources may change before that.
+  if (model->ResourceCount() == target_count) {
+    model->RemoveObserver(&observer);
+    return;
+  }
+
   ui_test_utils::RunMessageLoop();
   model->RemoveObserver(&observer);
 }

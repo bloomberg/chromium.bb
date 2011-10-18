@@ -258,7 +258,7 @@ void TaskManagerHandler::OnItemsAdded(const int start, const int length) {
 
 void TaskManagerHandler::OnItemsRemoved(const int start, const int length) {
   // Returns if this is called before updating |resource_to_group_table_|.
-  if (resource_to_group_table_.size() < static_cast<size_t>(start + length))
+  if (resource_to_group_table_.size() <= static_cast<size_t>(start + length))
     return;
 
   // Converts from an index of resources to an index of groups.
