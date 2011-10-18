@@ -16,6 +16,10 @@
 
 Import('env')
 
+# http://code.google.com/p/nativeclient/issues/detail?id=2359
+if env.Bit('bitcode') and env.Bit('nacl_glibc'):
+  Return()
+
 env.Prepend(CPPDEFINES=['XP_UNIX'])
 env.Replace(TEST_DIR='${SOURCE_ROOT}/ppapi/native_client/tests/' +
                      'ppapi_geturl/')
