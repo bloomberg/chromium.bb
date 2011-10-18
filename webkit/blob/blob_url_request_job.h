@@ -5,7 +5,6 @@
 #ifndef WEBKIT_BLOB_BLOB_URL_REQUEST_JOB_H_
 #define WEBKIT_BLOB_BLOB_URL_REQUEST_JOB_H_
 
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
@@ -87,7 +86,6 @@ class BlobURLRequestJob : public net::URLRequestJob {
   bool byte_range_set_;
   net::HttpByteRange byte_range_;
   scoped_ptr<net::HttpResponseInfo> response_info_;
-  ScopedRunnableMethodFactory<BlobURLRequestJob> method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BlobURLRequestJob);
 };

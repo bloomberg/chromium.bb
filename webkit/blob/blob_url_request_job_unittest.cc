@@ -5,6 +5,8 @@
 #include <stack>
 #include <utility>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/memory/ref_counted.h"
@@ -12,7 +14,6 @@
 #include "base/message_loop_proxy.h"
 #include "base/scoped_temp_dir.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task.h"
 #include "base/threading/thread.h"
 #include "base/time.h"
 #include "net/base/file_stream.h"
@@ -193,9 +194,10 @@ class BlobURLRequestJobTest : public testing::Test {
     // We unwind the stack prior to finishing up to let stack
     // based objects get deleted.
     DCHECK(MessageLoop::current() == io_thread_->message_loop());
-    MessageLoop::current()->PostTask(FROM_HERE,
-        NewRunnableMethod(
-            this, &BlobURLRequestJobTest::TestFinishedUnwound));
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&BlobURLRequestJobTest::TestFinishedUnwound,
+                   base::Unretained(this)));
   }
 
   void TestFinishedUnwound() {
@@ -203,12 +205,12 @@ class BlobURLRequestJobTest : public testing::Test {
     test_finished_event_->Signal();
   }
 
-  void PushNextTask(Task* task) {
-    task_stack_.push(std::pair<Task*, bool>(task, false));
+  void PushNextTask(const base::Closure& task) {
+    task_stack_.push(std::pair<base::Closure, bool>(task, false));
   }
 
-  void PushNextTaskAsImmediate(Task* task) {
-    task_stack_.push(std::pair<Task*, bool>(task, true));
+  void PushNextTaskAsImmediate(const base::Closure& task) {
+    task_stack_.push(std::pair<base::Closure, bool>(task, true));
   }
 
   void ScheduleNextTask() {
@@ -217,19 +219,20 @@ class BlobURLRequestJobTest : public testing::Test {
       TestFinished();
       return;
     }
-    scoped_ptr<Task> task(task_stack_.top().first);
+
+    base::Closure task = task_stack_.top().first;
     bool immediate = task_stack_.top().second;
     task_stack_.pop();
     if (immediate)
-      task->Run();
+      task.Run();
     else
-      MessageLoop::current()->PostTask(FROM_HERE, task.release());
+      MessageLoop::current()->PostTask(FROM_HERE, task);
   }
 
   void TestSuccessRequest(BlobData* blob_data,
                           const std::string& expected_response) {
-    PushNextTask(NewRunnableMethod(
-        this, &BlobURLRequestJobTest::VerifyResponse));
+    PushNextTask(base::Bind(&BlobURLRequestJobTest::VerifyResponse,
+                            base::Unretained(this)));
     expected_status_code_ = 200;
     expected_response_ = expected_response;
     return TestRequest("GET", net::HttpRequestHeaders(), blob_data);
@@ -237,8 +240,8 @@ class BlobURLRequestJobTest : public testing::Test {
 
   void TestErrorRequest(BlobData* blob_data,
                         int expected_status_code) {
-    PushNextTask(NewRunnableMethod(
-        this, &BlobURLRequestJobTest::VerifyResponse));
+    PushNextTask(base::Bind(&BlobURLRequestJobTest::VerifyResponse,
+                            base::Unretained(this)));
     expected_status_code_ = expected_status_code;
     expected_response_ = "";
     return TestRequest("GET", net::HttpRequestHeaders(), blob_data);
@@ -348,8 +351,8 @@ class BlobURLRequestJobTest : public testing::Test {
     scoped_refptr<BlobData> blob_data = BuildComplicatedData(&result);
     net::HttpRequestHeaders extra_headers;
     extra_headers.SetHeader(net::HttpRequestHeaders::kRange, "bytes=5-10");
-    PushNextTask(NewRunnableMethod(
-        this, &BlobURLRequestJobTest::VerifyResponse));
+    PushNextTask(base::Bind(&BlobURLRequestJobTest::VerifyResponse,
+                            base::Unretained(this)));
     expected_status_code_ = 206;
     expected_response_ = result.substr(5, 10 - 5 + 1);
     return TestRequest("GET", extra_headers, blob_data);
@@ -360,8 +363,8 @@ class BlobURLRequestJobTest : public testing::Test {
     scoped_refptr<BlobData> blob_data = BuildComplicatedData(&result);
     net::HttpRequestHeaders extra_headers;
     extra_headers.SetHeader(net::HttpRequestHeaders::kRange, "bytes=-10");
-    PushNextTask(NewRunnableMethod(
-        this, &BlobURLRequestJobTest::VerifyResponse));
+    PushNextTask(base::Bind(&BlobURLRequestJobTest::VerifyResponse,
+                            base::Unretained(this)));
     expected_status_code_ = 206;
     expected_response_ = result.substr(result.length() - 10);
     return TestRequest("GET", extra_headers, blob_data);
@@ -372,8 +375,9 @@ class BlobURLRequestJobTest : public testing::Test {
     blob_data->set_content_type(kTestContentType);
     blob_data->set_content_disposition(kTestContentDisposition);
     blob_data->AppendData(kTestData1);
-    PushNextTask(NewRunnableMethod(
-        this, &BlobURLRequestJobTest::VerifyResponseForTestExtraHeaders));
+    PushNextTask(
+        base::Bind(&BlobURLRequestJobTest::VerifyResponseForTestExtraHeaders,
+                   base::Unretained(this)));
     TestRequest("GET", net::HttpRequestHeaders(), blob_data);
   }
 
@@ -402,7 +406,7 @@ class BlobURLRequestJobTest : public testing::Test {
   static BlobURLRequestJob* blob_url_request_job_;
 
   scoped_ptr<base::WaitableEvent> test_finished_event_;
-  std::stack<std::pair<Task*, bool> > task_stack_;
+  std::stack<std::pair<base::Closure, bool> > task_stack_;
   scoped_ptr<net::URLRequest> request_;
   scoped_ptr<MockURLRequestDelegate> url_request_delegate_;
   int expected_status_code_;
@@ -454,7 +458,3 @@ TEST_F(BlobURLRequestJobTest, TestExtraHeaders) {
 }
 
 }  // namespace webkit_blob
-
-// BlobURLRequestJobTest is expected to always live longer than the
-// runnable methods.  This lets us call NewRunnableMethod on its instances.
-DISABLE_RUNNABLE_METHOD_REFCOUNT(webkit_blob::BlobURLRequestJobTest);

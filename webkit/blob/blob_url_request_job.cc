@@ -65,8 +65,7 @@ BlobURLRequestJob::BlobURLRequestJob(
       bytes_to_read_(0),
       error_(false),
       headers_set_(false),
-      byte_range_set_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+      byte_range_set_(false) {
   DCHECK(file_thread_proxy_);
 }
 
@@ -80,7 +79,7 @@ void BlobURLRequestJob::Start() {
   // Continue asynchronously.
   MessageLoop::current()->PostTask(
       FROM_HERE,
-      method_factory_.NewRunnableMethod(&BlobURLRequestJob::DidStart));
+      base::Bind(&BlobURLRequestJob::DidStart, weak_factory_.GetWeakPtr()));
 }
 
 void BlobURLRequestJob::DidStart() {
@@ -111,7 +110,6 @@ void BlobURLRequestJob::Kill() {
 
   net::URLRequestJob::Kill();
   weak_factory_.InvalidateWeakPtrs();
-  method_factory_.RevokeAll();
 }
 
 void BlobURLRequestJob::ResolveFile(const FilePath& file_path) {
