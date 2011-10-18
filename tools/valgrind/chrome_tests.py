@@ -276,7 +276,7 @@ class ChromeTests:
     return self.SimpleTest("views", "views_unittests")
 
   # Valgrind timeouts are in seconds.
-  UI_VALGRIND_ARGS = ["--timeout=10000", "--trace_children", "--indirect"]
+  UI_VALGRIND_ARGS = ["--timeout=14400", "--trace_children", "--indirect"]
   # UI test timeouts are in milliseconds.
   UI_TEST_ARGS = ["--ui-test-action-timeout=80000",
                   "--ui-test-action-max-timeout=200000"]
