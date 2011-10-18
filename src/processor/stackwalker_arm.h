@@ -90,14 +90,14 @@ class StackwalkerARM : public Stackwalker {
   // be returned by GetContextFrame.
   const MDRawContextARM *context_;
 
+  // The register to use a as frame pointer. The value is -1 if frame pointer
+  // cannot be used.
+  int fp_register_;
+
   // Validity mask for youngest stack frame. This is always
   // CONTEXT_VALID_ALL in real use; it is only changeable for the sake of
   // unit tests.
   int context_frame_validity_;
-
-  // The register to use a as frame pointer. The value is -1 if frame pointer
-  // cannot be used.
-  int fp_register_;
 };
 
 
