@@ -167,7 +167,7 @@ ContentSetting HostContentSettingsMap::GetDefaultContentSettingFromProvider(
 
 ContentSetting HostContentSettingsMap::GetDefaultContentSetting(
     ContentSettingsType content_type) const {
-  DCHECK_NE(content_type, CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE);
+  DCHECK(!ContentTypeHasCompoundValue(content_type));
 
   // First check if there is a default setting set by policy.
   ContentSetting default_setting = GetDefaultContentSettingFromProvider(
@@ -181,7 +181,7 @@ ContentSetting HostContentSettingsMap::GetDefaultContentSetting(
 
   // The method GetDefaultContentSetting always has to return an explicit
   // value that is to be used as default. We here rely on the
-  // PrefContentSettingProvider to always provide a value.
+  // DefaultProvider to always provide a value.
   CHECK_NE(CONTENT_SETTING_DEFAULT, default_setting);
   return default_setting;
 }
@@ -286,11 +286,6 @@ Value* HostContentSettingsMap::GetContentSettingValue(
   for (ConstProviderIterator provider = content_settings_providers_.begin();
        provider != content_settings_providers_.end();
        ++provider) {
-    // TODO(marja): Make DefaultProvider return NULL for
-    // CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE, un-skip default provider
-    // here and remove the code below this loop.
-    if (provider->first == DEFAULT_PROVIDER)
-      continue;
     base::Value* value = content_settings::GetContentSettingValue(
         provider->second, primary_url, secondary_url, content_type,
         resource_identifier, is_off_the_record_);
@@ -298,13 +293,10 @@ Value* HostContentSettingsMap::GetContentSettingValue(
       return value;
   }
 
-  // If no specific settings were found for the |primary_url|, |secondary_url|
-  // pair, then the default value for the given |content_type| should be
-  // returned. For CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE the default is
-  // 'no filter available'. That's why we return |NULL| for this content type.
-  if (content_type == CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE)
-    return NULL;
-  return Value::CreateIntegerValue(GetDefaultContentSetting(content_type));
+  // For simple content types, the DefaultProvider should always return
+  // a setting.
+  DCHECK(ContentTypeHasCompoundValue(content_type));
+  return NULL;
 }
 
 ContentSettings HostContentSettingsMap::GetContentSettings(
