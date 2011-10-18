@@ -46,7 +46,8 @@ class SessionFileReader {
         buffer_position_(0),
         available_count_(0) {
     file_.reset(new net::FileStream());
-    file_->Open(path, base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ);
+    if (file_util::PathExists(path))
+      file_->Open(path, base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ);
   }
   // Reads the contents of the file specified in the constructor, returning
   // true on success. It is up to the caller to free all SessionCommands
