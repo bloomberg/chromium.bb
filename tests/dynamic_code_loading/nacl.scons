@@ -8,9 +8,21 @@ Import('env')
 # The test works with PNaCl-ARM but not with PNaCl-x86, because the
 # assembler #defines __arm__ rather than __i386__ or __x86_64__ even
 # when we are targetting x86.
-# See http://code.google.com/p/nativeclient/issues/detail?id=833
+# http://code.google.com/p/nativeclient/issues/detail?id=2368
 if env.Bit('bitcode') and not env.Bit('target_arm'):
   Return()
+
+# there is fair amount of assembly code in these tests
+asm_env = env.Clone()
+if env.Bit('bitcode'):
+  asm_env.PNaClForceNative()
+  asm_env.AddBiasForPNaCl()
+if env.Bit('bitcode'):
+  # NOTE: we cannot use PNaClForceNative here as we want the
+  #       the .c files to actually go to bc files - but this is not
+  #       completely understood.
+  env.AddBiasForPNaCl()
+  env.Append(LINKFLAGS=['--pnacl-allow-native'])
 
 # When using the IRT, this value must be at least IRT_DATA_REGION_START.
 # Otherwise, it can be smaller.
@@ -28,22 +40,12 @@ def GetTemplate(env):
   else:
     return 'templates_x86.S'
 
-asm_env = env.Clone()
-if asm_env.Bit('bitcode'):
-  asm_env.Replace(OBJSUFFIX='.o')
-  asm_env.Append(ASFLAGS=['-arch', '${TARGET_FULLARCH}'])
 
 template_obj = asm_env.ComponentObject(GetTemplate(env))
 
-prog_env = env.Clone()
-
-if env.Bit('bitcode'):
-  prog_env.AddBiasForPNaCl()
-  prog_env.Append(LINKFLAGS=['--pnacl-allow-native'])
-
 dynamic_load_test_nexe_name = ('dynamic_load_test_%s' %
                                env.get('TARGET_FULLARCH'))
-dynamic_load_test_nexe = prog_env.ComponentProgram(
+dynamic_load_test_nexe = env.ComponentProgram(
     dynamic_load_test_nexe_name,
     ['dynamic_load_test.c',
     template_obj],
@@ -60,7 +62,7 @@ dynamic_load_test_nexe = prog_env.ComponentProgram(
 
 dynamic_modify_test_nexe_name = ('dynamic_modify_test_%s' %
                                  env.get('TARGET_FULLARCH'))
-dynamic_modify_test_nexe = prog_env.ComponentProgram(
+dynamic_modify_test_nexe = env.ComponentProgram(
     dynamic_modify_test_nexe_name,
     ['dynamic_modify_test.c',
     template_obj],
@@ -74,29 +76,29 @@ dynamic_modify_test_nexe = prog_env.ComponentProgram(
         '${PTHREAD_LIBS}',
         '${NONIRT_LIBS}'])
 
-write_to_dyncode_nexe = prog_env.ComponentProgram(
+write_to_dyncode_nexe = env.ComponentProgram(
     'write_to_dyncode',
     ['write_to_dyncode.c'],
     EXTRA_LIBS=['${NONIRT_LIBS}'])
 
-dyncode_disabled_test_nexe = prog_env.ComponentProgram(
+dyncode_disabled_test_nexe = env.ComponentProgram(
     'dyncode_disabled_test',
     ['dyncode_disabled_test.c'],
     EXTRA_LIBS=['${DYNCODE_LIBS}', '${NONIRT_LIBS}'])
 
-debug_mode_test_nexe = prog_env.ComponentProgram('debug_mode_test',
-                                                 ['debug_mode_test.c',
-                                                  template_obj],
-                                                 EXTRA_LIBS=['${DYNCODE_LIBS}',
-                                                             '${NONIRT_LIBS}'])
+debug_mode_test_nexe = env.ComponentProgram('debug_mode_test',
+                                            ['debug_mode_test.c',
+                                             template_obj],
+                                            EXTRA_LIBS=['${DYNCODE_LIBS}',
+                                                        '${NONIRT_LIBS}'])
 
-dyncode_demand_alloc_test_nexe = prog_env.ComponentProgram(
+dyncode_demand_alloc_test_nexe = env.ComponentProgram(
     'dyncode_demand_alloc_test',
     ['dyncode_demand_alloc_test.c'],
     EXTRA_LIBS=['${DYNCODE_LIBS}', '${NONIRT_LIBS}'])
 
 tests = [
-    prog_env.CommandSelLdrTestNacl(
+    env.CommandSelLdrTestNacl(
         'dynamic_load_test.out',
         dynamic_load_test_nexe,
         # We need to set this because the test needs to behave
@@ -105,13 +107,13 @@ tests = [
         # See http://code.google.com/p/nativeclient/issues/detail?id=889
         sel_ldr_flags=['-E', 'NACL_SRPC_STANDALONE=1'],
         ),
-    prog_env.CommandSelLdrTestNacl(
+    env.CommandSelLdrTestNacl(
         'write_to_dyncode.out',
         write_to_dyncode_nexe,
         exit_status='untrusted_segfault',
-        stdout_golden=prog_env.File('write_to_dyncode.stdout'),
+        stdout_golden=env.File('write_to_dyncode.stdout'),
         ),
-    prog_env.CommandSelLdrTestNacl(
+    env.CommandSelLdrTestNacl(
         'debug_mode_test.out',
         debug_mode_test_nexe,
         # NOTE: the data we are loading does not pass the validator
@@ -119,33 +121,33 @@ tests = [
         ),
     # This tests, from untrusted code, that dyncode pages are
     # inaccessible before they are allocated.
-    prog_env.CommandSelLdrTestNacl(
+    env.CommandSelLdrTestNacl(
         'dyncode_demand_alloc_test.out',
         dyncode_demand_alloc_test_nexe,
         exit_status='untrusted_segfault',
-        stdout_golden=prog_env.File('dyncode_demand_alloc_test.stdout'),
+        stdout_golden=env.File('dyncode_demand_alloc_test.stdout'),
         ),
   ]
 
 # The IRT itself counts as dynamic code loading, so we cannot disable
 # dynamic loading when using the IRT.
-if not prog_env.Bit('tests_use_irt'):
-  tests.append(prog_env.CommandSelLdrTestNacl(
+if not env.Bit('tests_use_irt'):
+  tests.append(env.CommandSelLdrTestNacl(
       'dyncode_disabled_test.out',
       dyncode_disabled_test_nexe,
       osenv='NACL_DISABLE_DYNAMIC_LOADING=1',
       ))
 
-if not prog_env.Bit('target_arm'):
-  tests.append(prog_env.CommandSelLdrTestNacl(
+if not env.Bit('target_arm'):
+  tests.append(env.CommandSelLdrTestNacl(
        'dynamic_modify_test.out',
        dynamic_modify_test_nexe,
        sel_ldr_flags=['-E', 'NACL_SRPC_STANDALONE=1']))
 
 # TODO(kcc): non-standard linking options confuse Valgrind debug info reader.
 # See http://code.google.com/p/nativeclient/issues/detail?id=1606
-is_broken = prog_env.IsRunningUnderValgrind()
-prog_env.AddNodeToTestSuite(tests,
-                            ['small_tests', 'sel_ldr_tests'],
-                            'run_dynamic_load_test',
-                            is_broken=is_broken)
+is_broken = env.IsRunningUnderValgrind()
+env.AddNodeToTestSuite(tests,
+                       ['small_tests', 'sel_ldr_tests'],
+                       'run_dynamic_load_test',
+                       is_broken=is_broken)

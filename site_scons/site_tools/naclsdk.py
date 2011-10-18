@@ -355,13 +355,13 @@ def AddBiasForPNaCl(env):
 
   if env.Bit('target_arm'):
     env.AppendUnique(CCFLAGS=['--pnacl-arm-bias'],
-                     CXXFLAGS=['--pnacl-arm-bias'])
+                     ASPPFLAGS=['--pnacl-arm-bias'])
   elif env.Bit('target_x86_32'):
     env.AppendUnique(CCFLAGS=['--pnacl-i686-bias'],
-                     CXXFLAGS=['--pnacl-i686-bias'])
+                     ASPPFLAGS=['--pnacl-i686-bias'])
   elif env.Bit('target_x86_64'):
     env.AppendUnique(CCFLAGS=['--pnacl-x86_64-bias'],
-                     CXXFLAGS=['--pnacl-x86_64-bias'])
+                     ASPPFLAGS=['--pnacl-x86_64-bias'])
   else:
     raise Exception("Unknown architecture!")
 
