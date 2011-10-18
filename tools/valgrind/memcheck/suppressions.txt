@@ -4755,6 +4755,59 @@
    fun:_ZN10URLFetcher4Core29InformDelegateFetchIsCompleteEv
    fun:_ZN10URLFetcher4Core21OnCompletedURLRequestEN4base9TimeDeltaE
 }
+{
+   bug_100661
+   Memcheck:Cond
+   fun:_ZN7WebCoreL28setHasDirAutoFlagRecursivelyEPNS_4NodeEbS1_
+   fun:_ZN7WebCore11HTMLElement32calculateAndAdjustDirectionalityEv
+   fun:_ZN7WebCore19HTMLTextAreaElement17subtreeHasChangedEv
+   fun:_ZN7WebCore26HTMLTextFormControlElement19defaultEventHandlerEPNS_5EventE
+   fun:_ZN7WebCore19HTMLTextAreaElement19defaultEventHandlerEPNS_5EventE
+   fun:_ZN7WebCore27TextControlInnerTextElement19defaultEventHandlerEPNS_5EventE
+   fun:_ZN7WebCore15EventDispatcher13dispatchEventEN3WTF10PassRefPtrINS_5EventEEE
+   fun:_ZNK7WebCore21EventDispatchMediator13dispatchEventEPNS_15EventDispatcherE
+   fun:_ZN7WebCore15EventDispatcher13dispatchEventEPNS_4NodeEN3WTF10PassRefPtrINS_21EventDispatchMediatorEEE
+   fun:_ZN7WebCore4Node13dispatchEventEN3WTF10PassRefPtrINS_5EventEEE
+   fun:_ZN7WebCore11EventTarget13dispatchEventEN3WTF10PassRefPtrINS_5EventEEERi
+   fun:_ZN7WebCoreL36dispatchEditableContentChangedEventsERKNS_11EditCommandE
+   fun:_ZN7WebCore6Editor14appliedEditingEN3WTF10PassRefPtrINS_11EditCommandEEE
+   fun:_ZN7WebCore13TypingCommand24typingAddedToOpenCommandENS0_14ETypingCommandE
+   fun:_ZN7WebCore13TypingCommand16deleteKeyPressedENS_15TextGranularityEb
+   fun:_ZN7WebCore13TypingCommand7doApplyEv
+   fun:_ZN7WebCore11EditCommand5applyEv
+   fun:_ZN7WebCore13TypingCommand16deleteKeyPressedEPNS_8DocumentEjNS_15TextGranularityE
+   fun:_ZN7WebCore6Editor19deleteWithDirectionENS_18SelectionDirectionENS_15TextGranularityEbb
+   fun:_ZN7WebCoreL20executeDeleteForwardEPNS_5FrameEPNS_5EventENS_19EditorCommandSourceERKN3WTF6StringE
+   fun:_ZNK7WebCore6Editor7Command7executeERKN3WTF6StringEPNS_5EventE
+   fun:_ZNK7WebCore6Editor7Command7executeEPNS_5EventE
+}
+{
+   bug_100761a
+   Memcheck:Leak
+   fun:calloc
+   fun:PR_Calloc
+   fun:nss_ZAlloc
+   fun:nssArena_Create
+   fun:NSSArena_Create
+   fun:STAN_GetNSSCertificate
+   fun:CERT_DupCertificate
+   fun:_ZN3net15X509Certificate15DupOSCertHandleEP18CERTCertificateStr
+   fun:_ZN3net15X509CertificateC1EP18CERTCertificateStrRKSt6vectorIS2_SaIS2_EE
+   fun:_ZN3net15X509Certificate16CreateFromHandleEP18CERTCertificateStrRKSt6vectorIS2_SaIS2_EE
+   fun:_ZN3net15X509Certificate16CreateSelfSignedEPN6crypto13RSAPrivateKeyERKSsjN4base9TimeDeltaE
+}
+{
+   bug_100761b
+   Memcheck:Leak
+   fun:calloc
+   fun:PR_Calloc
+   fun:PORT_ZAlloc_Util
+   fun:PORT_NewArena_Util
+   fun:CERT_CreateCertificate
+   fun:_ZN12_GLOBAL__N_117CreateCertificateEP18SECKEYPublicKeyStrRKSsjN4base9TimeDeltaE
+   fun:_ZN3net9x509_util20CreateSelfSignedCertEP18SECKEYPublicKeyStrP19SECKEYPrivateKeyStrRKSsjN4base9TimeDeltaE
+   fun:_ZN3net15X509Certificate16CreateSelfSignedEPN6crypto13RSAPrivateKeyERKSsjN4base9TimeDeltaE
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
