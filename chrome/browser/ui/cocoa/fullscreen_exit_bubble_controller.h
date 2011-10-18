@@ -25,6 +25,7 @@ class Browser;
   Browser* browser_; // weak
   GURL url_;
   BOOL showButtons_;
+  FullscreenExitBubbleType bubbleType_;
 
  @protected
   IBOutlet NSTextField* exitLabelPlaceholder_;

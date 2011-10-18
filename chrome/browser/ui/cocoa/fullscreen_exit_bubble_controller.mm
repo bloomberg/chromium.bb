@@ -69,25 +69,36 @@ const float kHideDuration = 0.7;
     browser_ = browser;
     owner_ = owner;
     url_ = url;
-    showButtons_ = bubbleType == FEB_TYPE_FULLSCREEN_BUTTONS;
+    bubbleType_ = bubbleType;
   }
   return self;
 }
 
 - (void)allow:(id)sender {
-  [self hideButtons];
-  browser_->OnAcceptFullscreenPermission(url_);
+  // The mouselock code expects that mouse events reach the main window
+  // immediately, but the cursor is still over the bubble, which eats the
+  // mouse events. Make the bubble transparent for mouse events.
+  if (bubbleType_ == FEB_TYPE_FULLSCREEN_MOUSELOCK_BUTTONS ||
+      bubbleType_ == FEB_TYPE_MOUSELOCK_BUTTONS)
+    [[self window] setIgnoresMouseEvents:YES];
+
+  DCHECK(fullscreen_bubble::ShowButtonsForType(bubbleType_));
+  browser_->OnAcceptFullscreenPermission(
+      url_ /*, bubbleType_*/);  // TODO(yzshen)
+  [self showButtons:NO];
   [self hideSoon];
 }
 
 - (void)deny:(id)sender {
-  browser_->ToggleFullscreenMode(false);
+  DCHECK(fullscreen_bubble::ShowButtonsForType(bubbleType_));
+  browser_->OnDenyFullscreenPermission(/* bubbleType_ */);  // TODO(yzshen)
+  [self hideSoon];
 }
 
-- (void)hideButtons {
-  [allowButton_ setHidden:YES];
-  [denyButton_ setHidden:YES];
-  [exitLabel_ setHidden:NO];
+- (void)showButtons:(BOOL)show {
+  [allowButton_ setHidden:!show];
+  [denyButton_ setHidden:!show];
+  [exitLabel_ setHidden:show];
 }
 
 // We want this to be a child of a browser window.  addChildWindow:
@@ -101,8 +112,8 @@ const float kHideDuration = 0.7;
   InfoBubbleWindow* info_bubble = static_cast<InfoBubbleWindow*>([self window]);
   [bubble_ setArrowLocation:info_bubble::kNoArrow];
   [info_bubble setCanBecomeKeyWindow:NO];
-  if (!showButtons_) {
-    [self hideButtons];
+  if (!fullscreen_bubble::ShowButtonsForType(bubbleType_)) {
+    [self showButtons:NO];
     [self hideSoon];
   }
   NSRect windowFrame = [owner_ window].frame;
@@ -115,9 +126,8 @@ const float kHideDuration = 0.7;
 
 - (void)awakeFromNib {
   DCHECK([[self window] isKindOfClass:[InfoBubbleWindow class]]);
-  NSString* title =
-      l10n_util::GetNSStringF(IDS_FULLSCREEN_INFOBAR_REQUEST_PERMISSION,
-          UTF8ToUTF16(url_.host()));
+  NSString* title = SysUTF16ToNSString(
+      fullscreen_bubble::GetLabelTextForType(bubbleType_, url_));
   [messageLabel_ setStringValue:title];
   [self initializeLabel];
 }
@@ -133,7 +143,34 @@ const float kHideDuration = 0.7;
 
 - (void)updateURL:(const GURL&)url
        bubbleType:(FullscreenExitBubbleType)bubbleType {
-  NOTIMPLEMENTED();
+  bubbleType_ = bubbleType;
+
+  NSString* title = SysUTF16ToNSString(
+      fullscreen_bubble::GetLabelTextForType(bubbleType_, url_));
+  [messageLabel_ setStringValue:title];
+
+  // Make sure the bubble is visible.
+  [hideAnimation_.get() stopAnimation];
+  [hideTimer_ invalidate];
+  [[[self window] animator] setAlphaValue:1.0];
+
+  if (fullscreen_bubble::ShowButtonsForType(bubbleType)) {
+    [denyButton_ setTitle:SysUTF16ToNSString(
+        fullscreen_bubble::GetDenyButtonTextForType(bubbleType))];
+    [self showButtons:YES];
+
+    // Reenable mouse events if they were disabled previously.
+    [[self window] setIgnoresMouseEvents:NO];
+  } else {
+    [self showButtons:NO];
+    // Only button-less bubbles auto-hide.
+    [self hideSoon];
+  }
+
+  // Relayout. A bit jumpy, but functional.
+  [tweaker_ tweakUI:[self window]];
+  NSRect windowFrame = [owner_ window].frame;
+  [self positionInWindowAtTop:NSHeight(windowFrame) width:NSWidth(windowFrame)];
 }
 
 // Called when someone clicks on the embedded link.
@@ -145,6 +182,11 @@ const float kHideDuration = 0.7;
 }
 
 - (void)hideTimerFired:(NSTimer*)timer {
+  // This might fire racily for buttoned bubbles, even though the timer is
+  // cancelled for them. Explicitly check for this case.
+  if (fullscreen_bubble::ShowButtonsForType(bubbleType_))
+    return;
+
   [NSAnimationContext beginGrouping];
   [[NSAnimationContext currentContext]
       gtm_setDuration:kHideDuration
