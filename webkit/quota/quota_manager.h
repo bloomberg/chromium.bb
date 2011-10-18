@@ -11,13 +11,14 @@
 #include <map>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_callback_factory.h"
+#include "base/memory/weak_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "webkit/quota/quota_database.h"
@@ -73,7 +74,7 @@ class QuotaEvictionHandler {
   virtual void EvictOriginData(
       const GURL& origin,
       StorageType type,
-      EvictOriginDataCallback* callback) = 0;
+      const EvictOriginDataCallback& callback) = 0;
 
   virtual void GetUsageAndQuotaForEviction(
       const GetUsageAndQuotaForEvictionCallback& callback) = 0;
@@ -97,9 +98,10 @@ class QuotaManager : public QuotaTaskObserver,
                      public base::RefCountedThreadSafe<
                          QuotaManager, QuotaManagerDeleter> {
  public:
-  typedef Callback3<QuotaStatusCode,
-                    int64 /* usage */,
-                    int64 /* quota */>::Type GetUsageAndQuotaCallback;
+  typedef base::Callback<void(QuotaStatusCode,
+                              int64 /* usage */,
+                              int64 /* quota */)>
+      GetUsageAndQuotaCallback;
 
   QuotaManager(bool is_incognito,
                const FilePath& profile_path,
@@ -113,14 +115,14 @@ class QuotaManager : public QuotaTaskObserver,
   QuotaManagerProxy* proxy() { return proxy_.get(); }
 
   // Called by clients or webapps. Returns usage per host.
-  void GetUsageInfo(GetUsageInfoCallback* callback);
+  void GetUsageInfo(const GetUsageInfoCallback& callback);
 
   // Called by clients or webapps.
   // This method is declared as virtual to allow test code to override it.
   // note: returns host usage and quota
   virtual void GetUsageAndQuota(const GURL& origin,
                                 StorageType type,
-                                GetUsageAndQuotaCallback* callback);
+                                const GetUsageAndQuotaCallback& callback);
 
   // Called by clients via proxy.
   // Client storage should call this method when storage is accessed.
@@ -149,24 +151,24 @@ class QuotaManager : public QuotaTaskObserver,
   // Called by UI.
   virtual void DeleteOriginData(const GURL& origin,
                                 StorageType type,
-                                StatusCallback* callback);
+                                const StatusCallback& callback);
 
   // Called by UI and internal modules.
-  void GetAvailableSpace(AvailableSpaceCallback* callback);
-  void GetTemporaryGlobalQuota(QuotaCallback* callback);
+  void GetAvailableSpace(const AvailableSpaceCallback& callback);
+  void GetTemporaryGlobalQuota(const QuotaCallback& callback);
 
   // Ok to call with NULL callback.
   void SetTemporaryGlobalOverrideQuota(int64 new_quota,
-                                       QuotaCallback* callback);
+                                       const QuotaCallback& callback);
 
   void GetPersistentHostQuota(const std::string& host,
-                              HostQuotaCallback* callback);
+                              const HostQuotaCallback& callback);
   void SetPersistentHostQuota(const std::string& host,
                               int64 new_quota,
-                              HostQuotaCallback* callback);
-  void GetGlobalUsage(StorageType type, GlobalUsageCallback* callback);
+                              const HostQuotaCallback& callback);
+  void GetGlobalUsage(StorageType type, const GlobalUsageCallback& callback);
   void GetHostUsage(const std::string& host, StorageType type,
-                    HostUsageCallback* callback);
+                    const HostUsageCallback& callback);
 
   void GetStatistics(std::map<std::string, std::string>* statistics);
 
@@ -177,7 +179,7 @@ class QuotaManager : public QuotaTaskObserver,
 
   virtual void GetOriginsModifiedSince(StorageType type,
                                        base::Time modified_since,
-                                       GetOriginsCallback* callback);
+                                       const GetOriginsCallback& callback);
 
   bool ResetUsageTracker(StorageType type);
 
@@ -221,8 +223,9 @@ class QuotaManager : public QuotaTaskObserver,
   typedef std::vector<QuotaTableEntry> QuotaTableEntries;
   typedef std::vector<OriginInfoTableEntry> OriginInfoTableEntries;
 
-  typedef Callback1<const QuotaTableEntries&>::Type DumpQuotaTableCallback;
-  typedef Callback1<const OriginInfoTableEntries&>::Type
+  typedef base::Callback<void(const QuotaTableEntries&)>
+      DumpQuotaTableCallback;
+  typedef base::Callback<void(const OriginInfoTableEntries&)>
       DumpOriginInfoTableCallback;
 
   struct EvictionContext {
@@ -230,7 +233,8 @@ class QuotaManager : public QuotaTaskObserver,
     virtual ~EvictionContext() {}
     GURL evicted_origin;
     StorageType evicted_type;
-    scoped_ptr<EvictOriginDataCallback> evict_origin_data_callback;
+
+    EvictOriginDataCallback evict_origin_data_callback;
   };
 
   typedef std::pair<std::string, StorageType> HostAndType;
@@ -285,8 +289,8 @@ class QuotaManager : public QuotaTaskObserver,
       bool global,
       const UsageAndQuotaDispatcherCallback& callback);
 
-  void DumpQuotaTable(DumpQuotaTableCallback* callback);
-  void DumpOriginInfoTable(DumpOriginInfoTableCallback* callback);
+  void DumpQuotaTable(const DumpQuotaTableCallback& callback);
+  void DumpOriginInfoTable(const DumpOriginInfoTableCallback& callback);
 
   // Methods for eviction logic.
   void StartEviction();
@@ -315,7 +319,7 @@ class QuotaManager : public QuotaTaskObserver,
   virtual void EvictOriginData(
       const GURL& origin,
       StorageType type,
-      EvictOriginDataCallback* callback) OVERRIDE;
+      const EvictOriginDataCallback& callback) OVERRIDE;
   virtual void GetUsageAndQuotaForEviction(
       const GetUsageAndQuotaForEvictionCallback& callback) OVERRIDE;
 
@@ -364,7 +368,6 @@ class QuotaManager : public QuotaTaskObserver,
 
   scoped_refptr<SpecialStoragePolicy> special_storage_policy_;
 
-  base::ScopedCallbackFactory<QuotaManager> callback_factory_;
   base::WeakPtrFactory<QuotaManager> weak_factory_;
   base::RepeatingTimer<QuotaManager> histogram_timer_;
 

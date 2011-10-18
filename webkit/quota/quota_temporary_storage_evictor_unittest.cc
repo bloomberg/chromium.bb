@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "testing/gtest/include/gtest/gtest.h"
-
 #include <list>
 #include <map>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/task.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/quota/mock_storage_client.h"
 #include "webkit/quota/quota_manager.h"
 #include "webkit/quota/quota_temporary_storage_evictor.h"
@@ -24,7 +24,7 @@ namespace {
 
 class MockQuotaEvictionHandler : public quota::QuotaEvictionHandler {
  public:
-  MockQuotaEvictionHandler(QuotaTemporaryStorageEvictorTest *test)
+  explicit MockQuotaEvictionHandler(QuotaTemporaryStorageEvictorTest *test)
       : quota_(0),
         unlimited_usage_(0),
         available_space_(0),
@@ -35,17 +35,15 @@ class MockQuotaEvictionHandler : public quota::QuotaEvictionHandler {
   virtual void EvictOriginData(
       const GURL& origin,
       StorageType type,
-      EvictOriginDataCallback* callback) OVERRIDE {
+      const EvictOriginDataCallback& callback) OVERRIDE {
     if (error_on_evict_origin_data_) {
-      callback->Run(quota::kQuotaErrorInvalidModification);
-      delete callback;
+      callback.Run(quota::kQuotaErrorInvalidModification);
       return;
     }
     int64 origin_usage = EnsureOriginRemoved(origin);
     if (origin_usage >= 0)
       available_space_ += origin_usage;
-    callback->Run(quota::kQuotaStatusOk);
-    delete callback;
+    callback.Run(quota::kQuotaStatusOk);
   }
 
   virtual void GetUsageAndQuotaForEviction(

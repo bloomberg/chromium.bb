@@ -69,7 +69,7 @@ class BrowsingDataQuotaHelperImpl : public BrowsingDataQuotaHelper {
 
   scoped_refptr<base::MessageLoopProxy> ui_thread_;
   scoped_refptr<base::MessageLoopProxy> io_thread_;
-  base::ScopedCallbackFactory<BrowsingDataQuotaHelperImpl> callback_factory_;
+  base::WeakPtrFactory<BrowsingDataQuotaHelperImpl> weak_factory_;
 
   friend class BrowsingDataQuotaHelper;
   friend class BrowsingDataQuotaHelperTest;

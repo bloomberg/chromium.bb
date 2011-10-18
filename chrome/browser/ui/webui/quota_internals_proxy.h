@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "content/browser/browser_thread.h"
 #include "webkit/quota/quota_manager.h"
 #include "webkit/quota/quota_types.h"
@@ -69,7 +70,7 @@ class QuotaInternalsProxy
   QuotaInternalsHandler* handler_;
 
   // Used on IO Thread.
-  base::ScopedCallbackFactory<QuotaInternalsProxy> callback_factory_;
+  base::WeakPtrFactory<QuotaInternalsProxy> weak_factory_;
   scoped_refptr<quota::QuotaManager> quota_manager_;
   std::set<std::pair<std::string, quota::StorageType> >
       hosts_visited_, hosts_pending_;

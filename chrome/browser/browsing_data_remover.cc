@@ -489,8 +489,9 @@ void BrowsingDataRemover::ClearQuotaManagedDataOnIOThread() {
     // timeframe, and deal with the resulting set in
     // OnGotPersistentQuotaManagedOrigins.
     profile_->GetQuotaManager()->GetOriginsModifiedSince(
-        quota::kStorageTypePersistent, delete_begin_, NewCallback(this,
-            &BrowsingDataRemover::OnGotQuotaManagedOrigins));
+        quota::kStorageTypePersistent, delete_begin_,
+        base::Bind(&BrowsingDataRemover::OnGotQuotaManagedOrigins,
+                   base::Unretained(this)));
   } else {
     // Otherwise, we don't need to deal with persistent storage.
     --quota_managed_storage_types_to_delete_count_;
@@ -499,8 +500,9 @@ void BrowsingDataRemover::ClearQuotaManagedDataOnIOThread() {
   // Do the same for temporary quota, regardless, passing the resulting set into
   // OnGotTemporaryQuotaManagedOrigins.
   profile_->GetQuotaManager()->GetOriginsModifiedSince(
-      quota::kStorageTypeTemporary, delete_begin_, NewCallback(this,
-          &BrowsingDataRemover::OnGotQuotaManagedOrigins));
+      quota::kStorageTypeTemporary, delete_begin_,
+      base::Bind(&BrowsingDataRemover::OnGotQuotaManagedOrigins,
+                 base::Unretained(this)));
 }
 
 void BrowsingDataRemover::OnGotQuotaManagedOrigins(
@@ -513,9 +515,10 @@ void BrowsingDataRemover::OnGotQuotaManagedOrigins(
     if (special_storage_policy_->IsStorageProtected(origin->GetOrigin()))
       continue;
     ++quota_managed_origins_to_delete_count_;
-    quota_manager_->DeleteOriginData(origin->GetOrigin(),
-        type, NewCallback(this,
-                          &BrowsingDataRemover::OnQuotaManagedOriginDeletion));
+    quota_manager_->DeleteOriginData(
+        origin->GetOrigin(), type,
+        base::Bind(&BrowsingDataRemover::OnQuotaManagedOriginDeletion,
+                   base::Unretained(this)));
   }
 
   --quota_managed_storage_types_to_delete_count_;

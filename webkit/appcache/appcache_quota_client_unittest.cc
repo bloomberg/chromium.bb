@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include <map>
+#include <set>
 
+#include "base/bind.h"
 #include "base/memory/scoped_callback_factory.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
@@ -34,7 +36,7 @@ class AppCacheQuotaClientTest : public testing::Test {
         num_get_origin_usage_completions_(0),
         num_get_origins_completions_(0),
         num_delete_origins_completions_(0),
-        callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+        weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   }
 
   int64 GetOriginUsage(
@@ -80,35 +82,39 @@ class AppCacheQuotaClientTest : public testing::Test {
       quota::QuotaClient* client,
       const GURL& origin,
       quota::StorageType type) {
-    client->GetOriginUsage(origin, type,
-        callback_factory_.NewCallback(
-            &AppCacheQuotaClientTest::OnGetOriginUsageComplete));
+    client->GetOriginUsage(
+        origin, type,
+        base::Bind(&AppCacheQuotaClientTest::OnGetOriginUsageComplete,
+                   weak_factory_.GetWeakPtr()));
   }
 
   void AsyncGetOriginsForType(
       quota::QuotaClient* client,
       quota::StorageType type) {
-    client->GetOriginsForType(type,
-        callback_factory_.NewCallback(
-            &AppCacheQuotaClientTest::OnGetOriginsComplete));
+    client->GetOriginsForType(
+        type,
+        base::Bind(&AppCacheQuotaClientTest::OnGetOriginsComplete,
+                   weak_factory_.GetWeakPtr()));
   }
 
   void AsyncGetOriginsForHost(
       quota::QuotaClient* client,
       quota::StorageType type,
       const std::string& host) {
-    client->GetOriginsForHost(type, host,
-        callback_factory_.NewCallback(
-            &AppCacheQuotaClientTest::OnGetOriginsComplete));
+    client->GetOriginsForHost(
+        type, host,
+        base::Bind(&AppCacheQuotaClientTest::OnGetOriginsComplete,
+                   weak_factory_.GetWeakPtr()));
   }
 
   void AsyncDeleteOriginData(
       quota::QuotaClient* client,
       quota::StorageType type,
       const GURL& origin) {
-    client->DeleteOriginData(origin, type,
-        callback_factory_.NewCallback(
-            &AppCacheQuotaClientTest::OnDeleteOriginDataComplete));
+    client->DeleteOriginData(
+        origin, type,
+        base::Bind(&AppCacheQuotaClientTest::OnDeleteOriginDataComplete,
+                   weak_factory_.GetWeakPtr()));
   }
 
   void SetUsageMapEntry(const GURL& origin, int64 usage) {
@@ -157,7 +163,7 @@ class AppCacheQuotaClientTest : public testing::Test {
   int num_get_origins_completions_;
   int num_delete_origins_completions_;
   MockAppCacheService mock_service_;
-  base::ScopedCallbackFactory<AppCacheQuotaClientTest> callback_factory_;
+  base::WeakPtrFactory<AppCacheQuotaClientTest> weak_factory_;
 };
 
 

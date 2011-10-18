@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
@@ -71,7 +72,7 @@ class FileSystemBrowserTestWithLowQuota : public FileSystemBrowserTest {
       return;
     }
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    qm->SetTemporaryGlobalOverrideQuota(bytes, NULL);
+    qm->SetTemporaryGlobalOverrideQuota(bytes, quota::QuotaCallback());
     // Don't return until the quota has been set.
     scoped_refptr<base::ThreadTestHelper> helper(
         new base::ThreadTestHelper(

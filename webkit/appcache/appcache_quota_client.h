@@ -39,15 +39,15 @@ class AppCacheQuotaClient : public quota::QuotaClient {
   virtual void OnQuotaManagerDestroyed();
   virtual void GetOriginUsage(const GURL& origin,
                               quota::StorageType type,
-                              GetUsageCallback* callback) OVERRIDE;
+                              const GetUsageCallback& callback) OVERRIDE;
   virtual void GetOriginsForType(quota::StorageType type,
-                                 GetOriginsCallback* callback) OVERRIDE;
+                                 const GetOriginsCallback& callback) OVERRIDE;
   virtual void GetOriginsForHost(quota::StorageType type,
                                  const std::string& host,
-                                 GetOriginsCallback* callback) OVERRIDE;
+                                 const GetOriginsCallback& callback) OVERRIDE;
   virtual void DeleteOriginData(const GURL& origin,
                                 quota::StorageType type,
-                                DeletionCallback* callback) OVERRIDE;
+                                const DeletionCallback& callback) OVERRIDE;
 
  private:
   friend class AppCacheService;  // for NotifyAppCacheIsDestroyed
@@ -57,17 +57,26 @@ class AppCacheQuotaClient : public quota::QuotaClient {
   struct UsageRequest {
     GURL origin;
     quota::StorageType type;
-    GetUsageCallback* callback;
+    GetUsageCallback callback;
+
+    UsageRequest();
+    ~UsageRequest();
   };
   struct OriginsRequest {
     quota::StorageType type;
     std::string opt_host;
-    GetOriginsCallback* callback;
+    GetOriginsCallback callback;
+
+    OriginsRequest();
+    ~OriginsRequest();
   };
   struct DeleteRequest {
     GURL origin;
     quota::StorageType type;
-    DeletionCallback* callback;
+    DeletionCallback callback;
+
+    DeleteRequest();
+    ~DeleteRequest();
   };
   typedef std::deque<UsageRequest> UsageRequestQueue;
   typedef std::deque<OriginsRequest> OriginsRequestQueue;
@@ -78,7 +87,7 @@ class AppCacheQuotaClient : public quota::QuotaClient {
   void DidDeleteAppCachesForOrigin(int rv);
   void GetOriginsHelper(quota::StorageType type,
                         const std::string& opt_host,
-                        GetOriginsCallback* callback_ptr);
+                        const GetOriginsCallback& callback);
   void ProcessPendingRequests();
   void AbortPendingRequests();
   void DeletePendingRequests();
@@ -96,7 +105,7 @@ class AppCacheQuotaClient : public quota::QuotaClient {
 
   // And once it's ready, we can only handle one delete request at a time,
   // so we queue up additional requests while one is in already in progress.
-  scoped_ptr<DeletionCallback> current_delete_request_callback_;
+  DeletionCallback current_delete_request_callback_;
   scoped_refptr<net::CancelableOldCompletionCallback<AppCacheQuotaClient> >
       service_delete_callback_;
 

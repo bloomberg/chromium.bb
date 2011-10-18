@@ -55,13 +55,7 @@ MockStorageClient::MockStorageClient(
   }
 }
 
-MockStorageClient::~MockStorageClient() {
-  STLDeleteContainerPointers(usage_callbacks_.begin(), usage_callbacks_.end());
-  STLDeleteContainerPointers(
-      origins_callbacks_.begin(), origins_callbacks_.end());
-  STLDeleteContainerPointers(
-      deletion_callbacks_.begin(), deletion_callbacks_.end());
-}
+MockStorageClient::~MockStorageClient() {}
 
 void MockStorageClient::AddOriginAndNotify(
     const GURL& origin_url, StorageType type, int64 size) {
@@ -113,8 +107,7 @@ void MockStorageClient::OnQuotaManagerDestroyed() {
 
 void MockStorageClient::GetOriginUsage(const GURL& origin_url,
                                        StorageType type,
-                                       GetUsageCallback* callback) {
-  usage_callbacks_.insert(callback);
+                                       const GetUsageCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE, runnable_factory_.NewRunnableMethod(
           &MockStorageClient::RunGetOriginUsage,
@@ -122,8 +115,7 @@ void MockStorageClient::GetOriginUsage(const GURL& origin_url,
 }
 
 void MockStorageClient::GetOriginsForType(
-    StorageType type, GetOriginsCallback* callback) {
-  origins_callbacks_.insert(callback);
+    StorageType type, const GetOriginsCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE, runnable_factory_.NewRunnableMethod(
           &MockStorageClient::RunGetOriginsForType,
@@ -132,8 +124,7 @@ void MockStorageClient::GetOriginsForType(
 
 void MockStorageClient::GetOriginsForHost(
     StorageType type, const std::string& host,
-    GetOriginsCallback* callback) {
-  origins_callbacks_.insert(callback);
+    const GetOriginsCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE, runnable_factory_.NewRunnableMethod(
           &MockStorageClient::RunGetOriginsForHost,
@@ -142,8 +133,7 @@ void MockStorageClient::GetOriginsForHost(
 
 void MockStorageClient::DeleteOriginData(
     const GURL& origin, StorageType type,
-    DeletionCallback* callback) {
-  deletion_callbacks_.insert(callback);
+    const DeletionCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE, runnable_factory_.NewRunnableMethod(
           &MockStorageClient::RunDeleteOriginData,
@@ -151,35 +141,30 @@ void MockStorageClient::DeleteOriginData(
 }
 
 void MockStorageClient::RunGetOriginUsage(
-    const GURL& origin_url, StorageType type, GetUsageCallback* callback_ptr) {
-  usage_callbacks_.erase(callback_ptr);
-  scoped_ptr<GetUsageCallback> callback(callback_ptr);
+    const GURL& origin_url, StorageType type,
+    const GetUsageCallback& callback) {
   OriginDataMap::iterator find = origin_data_.find(make_pair(origin_url, type));
   if (find == origin_data_.end()) {
-    callback->Run(0);
+    callback.Run(0);
   } else {
-    callback->Run(find->second);
+    callback.Run(find->second);
   }
 }
 
 void MockStorageClient::RunGetOriginsForType(
-    StorageType type, GetOriginsCallback* callback_ptr) {
-  scoped_ptr<GetOriginsCallback> callback(callback_ptr);
-  origins_callbacks_.erase(callback_ptr);
+    StorageType type, const GetOriginsCallback& callback) {
   std::set<GURL> origins;
   for (OriginDataMap::iterator iter = origin_data_.begin();
        iter != origin_data_.end(); ++iter) {
     if (type == iter->first.second)
       origins.insert(iter->first.first);
   }
-  callback->Run(origins, type);
+  callback.Run(origins, type);
 }
 
 void MockStorageClient::RunGetOriginsForHost(
     StorageType type, const std::string& host,
-    GetOriginsCallback* callback_ptr) {
-  scoped_ptr<GetOriginsCallback> callback(callback_ptr);
-  origins_callbacks_.erase(callback_ptr);
+    const GetOriginsCallback& callback) {
   std::set<GURL> origins;
   for (OriginDataMap::iterator iter = origin_data_.begin();
        iter != origin_data_.end(); ++iter) {
@@ -187,19 +172,17 @@ void MockStorageClient::RunGetOriginsForHost(
     if (type == iter->first.second && host == host_or_spec)
       origins.insert(iter->first.first);
   }
-  callback->Run(origins, type);
+  callback.Run(origins, type);
 }
 
 void MockStorageClient::RunDeleteOriginData(
     const GURL& origin_url,
     StorageType type,
-    DeletionCallback* callback_ptr) {
-  scoped_ptr<DeletionCallback> callback(callback_ptr);
+    const DeletionCallback& callback) {
   ErrorOriginSet::iterator itr_error =
       error_origins_.find(make_pair(origin_url, type));
   if (itr_error != error_origins_.end()) {
-    deletion_callbacks_.erase(callback_ptr);
-    callback->Run(kQuotaErrorInvalidModification);
+    callback.Run(kQuotaErrorInvalidModification);
     return;
   }
 
@@ -212,8 +195,7 @@ void MockStorageClient::RunDeleteOriginData(
     origin_data_.erase(itr);
   }
 
-  deletion_callbacks_.erase(callback_ptr);
-  callback->Run(kQuotaStatusOk);
+  callback.Run(kQuotaStatusOk);
 }
 
 }  // namespace quota

@@ -6,10 +6,10 @@
 #include <set>
 #include <string>
 
+#include "base/bind.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_callback_factory.h"
 #include "base/message_loop.h"
 #include "base/platform_file.h"
 #include "base/scoped_temp_dir.h"
@@ -133,7 +133,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
   ObfuscatedFileUtilTest()
       : origin_(GURL("http://www.example.com")),
         type_(kFileSystemTypeTemporary),
-        callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+        weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
         test_helper_(origin_, type_),
         quota_status_(quota::kQuotaStatusUnknown),
         usage_(-1) {
@@ -212,8 +212,8 @@ class ObfuscatedFileUtilTest : public testing::Test {
   void GetUsageFromQuotaManager() {
     quota_manager_->GetUsageAndQuota(
       origin(), test_helper_.storage_type(),
-      callback_factory_.NewCallback(
-          &ObfuscatedFileUtilTest::OnGetUsage));
+      base::Bind(&ObfuscatedFileUtilTest::OnGetUsage,
+                 weak_factory_.GetWeakPtr()));
     MessageLoop::current()->RunAllPending();
     EXPECT_EQ(quota::kQuotaStatusOk, quota_status_);
   }
@@ -483,8 +483,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
   scoped_refptr<FileSystemContext> file_system_context_;
   GURL origin_;
   fileapi::FileSystemType type_;
-  base::ScopedCallbackFactory<ObfuscatedFileUtilTest>
-      callback_factory_;
+  base::WeakPtrFactory<ObfuscatedFileUtilTest> weak_factory_;
   FileSystemTestOriginHelper test_helper_;
   quota::QuotaStatusCode quota_status_;
   int64 usage_;

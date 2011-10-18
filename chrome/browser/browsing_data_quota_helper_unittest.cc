@@ -4,6 +4,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+#include "base/bind.h"
 #include "base/memory/scoped_callback_factory.h"
 #include "base/message_loop_proxy.h"
 #include "base/scoped_temp_dir.h"
@@ -22,6 +23,7 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
         io_thread_(BrowserThread::IO, &message_loop_),
         fetching_completed_(true),
         quota_(-1),
+        weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
         callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
 
   virtual ~BrowsingDataQuotaHelperTest() {}
@@ -73,15 +75,17 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
   void SetPersistentHostQuota(const std::string& host, int64 quota) {
     quota_ = -1;
     quota_manager_->SetPersistentHostQuota(
-        host, quota, callback_factory_.NewCallback(
-            &BrowsingDataQuotaHelperTest::GotPersistentHostQuota));
+        host, quota,
+        base::Bind(&BrowsingDataQuotaHelperTest::GotPersistentHostQuota,
+                   weak_factory_.GetWeakPtr()));
   }
 
   void GetPersistentHostQuota(const std::string& host) {
     quota_ = -1;
     quota_manager_->GetPersistentHostQuota(
-        host, callback_factory_.NewCallback(
-            &BrowsingDataQuotaHelperTest::GotPersistentHostQuota));
+        host,
+        base::Bind(&BrowsingDataQuotaHelperTest::GotPersistentHostQuota,
+                   weak_factory_.GetWeakPtr()));
   }
 
   void GotPersistentHostQuota(quota::QuotaStatusCode status,
@@ -119,6 +123,7 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
   bool fetching_completed_;
   QuotaInfoArray quota_info_;
   int64 quota_;
+  base::WeakPtrFactory<BrowsingDataQuotaHelperTest> weak_factory_;
   base::ScopedCallbackFactory<BrowsingDataQuotaHelperTest> callback_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataQuotaHelperTest);

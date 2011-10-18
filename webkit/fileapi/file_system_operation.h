@@ -112,7 +112,7 @@ class FileSystemOperation {
 
   void GetUsageAndQuotaThenCallback(
       const GURL& origin_url,
-      quota::QuotaManager::GetUsageAndQuotaCallback* callback);
+      const quota::QuotaManager::GetUsageAndQuotaCallback& callback);
 
   void DelayedCreateFileForQuota(quota::QuotaStatusCode status,
                                  int64 usage, int64 quota);

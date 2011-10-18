@@ -7,6 +7,7 @@
 // 2) the described size in .usage, and
 // 3) the result of QuotaManager::GetUsageAndQuota.
 
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_callback_factory.h"
@@ -32,7 +33,7 @@ class FileSystemQuotaTest : public testing::Test {
  public:
   FileSystemQuotaTest()
       : local_file_util_(new LocalFileUtil(QuotaFileUtil::CreateDefault())),
-        callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+        weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
         status_(kFileOperationStatusNotSet),
         quota_status_(quota::kQuotaStatusUnknown),
         usage_(-1),
@@ -74,8 +75,8 @@ class FileSystemQuotaTest : public testing::Test {
   void GetUsageAndQuotaFromQuotaManager() {
     quota_manager_->GetUsageAndQuota(
         test_helper_.origin(), test_helper_.storage_type(),
-        callback_factory_.NewCallback(
-            &FileSystemQuotaTest::OnGetUsageAndQuota));
+        base::Bind(&FileSystemQuotaTest::OnGetUsageAndQuota,
+                   weak_factory_.GetWeakPtr()));
     MessageLoop::current()->RunAllPending();
   }
 
@@ -122,7 +123,7 @@ class FileSystemQuotaTest : public testing::Test {
   scoped_refptr<quota::QuotaManager> quota_manager_;
   scoped_ptr<LocalFileUtil> local_file_util_;
 
-  base::ScopedCallbackFactory<FileSystemQuotaTest> callback_factory_;
+  base::WeakPtrFactory<FileSystemQuotaTest> weak_factory_;
 
   // For post-operation status.
   int status_;

@@ -7,6 +7,7 @@
 #include <map>
 #include <set>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "chrome/browser/profiles/profile.h"
 #include "webkit/quota/quota_manager.h"
@@ -46,8 +47,9 @@ void BrowsingDataQuotaHelperImpl::RevokeHostQuota(const std::string& host) {
   }
 
   quota_manager_->SetPersistentHostQuota(
-      host, 0, callback_factory_.NewCallback(
-          &BrowsingDataQuotaHelperImpl::DidRevokeHostQuota));
+      host, 0,
+      base::Bind(&BrowsingDataQuotaHelperImpl::DidRevokeHostQuota,
+                 weak_factory_.GetWeakPtr()));
 }
 
 BrowsingDataQuotaHelperImpl::BrowsingDataQuotaHelperImpl(
@@ -59,7 +61,7 @@ BrowsingDataQuotaHelperImpl::BrowsingDataQuotaHelperImpl(
       is_fetching_(false),
       ui_thread_(ui_thread),
       io_thread_(io_thread),
-      callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(quota_manager);
 }
 
@@ -78,8 +80,8 @@ void BrowsingDataQuotaHelperImpl::FetchQuotaInfo() {
   quota_manager_->GetOriginsModifiedSince(
       quota::kStorageTypeTemporary,
       base::Time(),
-      callback_factory_.NewCallback(
-          &BrowsingDataQuotaHelperImpl::GotOrigins));
+      base::Bind(&BrowsingDataQuotaHelperImpl::GotOrigins,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void BrowsingDataQuotaHelperImpl::GotOrigins(
@@ -96,8 +98,8 @@ void BrowsingDataQuotaHelperImpl::GotOrigins(
     quota_manager_->GetOriginsModifiedSince(
         quota::kStorageTypePersistent,
         base::Time(),
-        callback_factory_.NewCallback(
-            &BrowsingDataQuotaHelperImpl::GotOrigins));
+        base::Bind(&BrowsingDataQuotaHelperImpl::GotOrigins,
+                   weak_factory_.GetWeakPtr()));
   } else {
     // type == quota::kStorageTypePersistent
     ProcessPendingHosts();
@@ -122,8 +124,8 @@ void BrowsingDataQuotaHelperImpl::GetHostUsage(const std::string& host,
   DCHECK(quota_manager_.get());
   quota_manager_->GetHostUsage(
       host, type,
-      callback_factory_.NewCallback(
-          &BrowsingDataQuotaHelperImpl::GotHostUsage));
+      base::Bind(&BrowsingDataQuotaHelperImpl::GotHostUsage,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void BrowsingDataQuotaHelperImpl::GotHostUsage(const std::string& host,

@@ -122,8 +122,10 @@ void FileSystemOperation::CreateFile(const GURL& path,
     file_system_operation_context_.set_src_file_util(file_util);
   exclusive_ = exclusive;
 
-  GetUsageAndQuotaThenCallback(origin_url, callback_factory_.NewCallback(
-      &FileSystemOperation::DelayedCreateFileForQuota));
+  GetUsageAndQuotaThenCallback(
+      origin_url,
+      base::Bind(&FileSystemOperation::DelayedCreateFileForQuota,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void FileSystemOperation::DelayedCreateFileForQuota(
@@ -168,8 +170,10 @@ void FileSystemOperation::CreateDirectory(const GURL& path,
   exclusive_ = exclusive;
   recursive_ = recursive;
 
-  GetUsageAndQuotaThenCallback(origin_url, callback_factory_.NewCallback(
-      &FileSystemOperation::DelayedCreateDirectoryForQuota));
+  GetUsageAndQuotaThenCallback(
+      origin_url,
+      base::Bind(&FileSystemOperation::DelayedCreateDirectoryForQuota,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void FileSystemOperation::DelayedCreateDirectoryForQuota(
@@ -217,8 +221,10 @@ void FileSystemOperation::Copy(const GURL& src_path,
   if (!file_system_operation_context_.dest_file_util())
     file_system_operation_context_.set_dest_file_util(dest_file_util);
 
-  GetUsageAndQuotaThenCallback(dest_origin_url, callback_factory_.NewCallback(
-      &FileSystemOperation::DelayedCopyForQuota));
+  GetUsageAndQuotaThenCallback(
+      dest_origin_url,
+      base::Bind(&FileSystemOperation::DelayedCopyForQuota,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void FileSystemOperation::DelayedCopyForQuota(quota::QuotaStatusCode status,
@@ -266,8 +272,10 @@ void FileSystemOperation::Move(const GURL& src_path,
   if (!file_system_operation_context_.dest_file_util())
     file_system_operation_context_.set_dest_file_util(dest_file_util);
 
-  GetUsageAndQuotaThenCallback(dest_origin_url, callback_factory_.NewCallback(
-      &FileSystemOperation::DelayedMoveForQuota));
+  GetUsageAndQuotaThenCallback(
+      dest_origin_url,
+      base::Bind(&FileSystemOperation::DelayedMoveForQuota,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void FileSystemOperation::DelayedMoveForQuota(quota::QuotaStatusCode status,
@@ -438,8 +446,10 @@ void FileSystemOperation::Write(
       new net::URLRequest(blob_url, file_writer_delegate_.get()));
   blob_request_->set_context(url_request_context);
 
-  GetUsageAndQuotaThenCallback(origin_url, callback_factory_.NewCallback(
-      &FileSystemOperation::DelayedWriteForQuota));
+  GetUsageAndQuotaThenCallback(
+      origin_url,
+      base::Bind(&FileSystemOperation::DelayedWriteForQuota,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void FileSystemOperation::DelayedWriteForQuota(quota::QuotaStatusCode status,
@@ -480,8 +490,10 @@ void FileSystemOperation::Truncate(const GURL& path, int64 length) {
     file_system_operation_context_.set_src_file_util(file_util);
   length_ = length;
 
-  GetUsageAndQuotaThenCallback(origin_url, callback_factory_.NewCallback(
-      &FileSystemOperation::DelayedTruncateForQuota));
+  GetUsageAndQuotaThenCallback(
+      origin_url,
+      base::Bind(&FileSystemOperation::DelayedTruncateForQuota,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void FileSystemOperation::DelayedTruncateForQuota(quota::QuotaStatusCode status,
@@ -569,8 +581,10 @@ void FileSystemOperation::OpenFile(const GURL& path,
     file_system_operation_context_.set_src_file_util(file_util);
   file_flags_ = file_flags;
 
-  GetUsageAndQuotaThenCallback(origin_url, callback_factory_.NewCallback(
-      &FileSystemOperation::DelayedOpenFileForQuota));
+  GetUsageAndQuotaThenCallback(
+      origin_url,
+      base::Bind(&FileSystemOperation::DelayedOpenFileForQuota,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void FileSystemOperation::DelayedOpenFileForQuota(quota::QuotaStatusCode status,
@@ -623,7 +637,7 @@ void FileSystemOperation::Cancel(FileSystemOperation* cancel_operation_ptr) {
 
 void FileSystemOperation::GetUsageAndQuotaThenCallback(
     const GURL& origin_url,
-    quota::QuotaManager::GetUsageAndQuotaCallback* callback) {
+    const quota::QuotaManager::GetUsageAndQuotaCallback& callback) {
   quota::QuotaManagerProxy* quota_manager_proxy =
       file_system_context()->quota_manager_proxy();
   if (!quota_manager_proxy ||
@@ -631,8 +645,7 @@ void FileSystemOperation::GetUsageAndQuotaThenCallback(
           file_system_operation_context_.src_type())) {
     // If we don't have the quota manager or the requested filesystem type
     // does not support quota, we should be able to let it go.
-    callback->Run(quota::kQuotaStatusOk, 0, kint64max);
-    delete callback;
+    callback.Run(quota::kQuotaStatusOk, 0, kint64max);
     return;
   }
   DCHECK(quota_manager_proxy);

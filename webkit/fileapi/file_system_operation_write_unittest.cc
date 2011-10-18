@@ -50,10 +50,10 @@ class MockQuotaManager : public QuotaManager {
         usage_(0),
         quota_(quota) {}
 
-  virtual void GetUsageAndQuota(const GURL& origin, quota::StorageType type,
-                                GetUsageAndQuotaCallback* callback) {
-    callback->Run(quota::kQuotaStatusOk, usage_, quota_);
-    delete callback;
+  virtual void GetUsageAndQuota(
+      const GURL& origin, quota::StorageType type,
+      const GetUsageAndQuotaCallback& callback) OVERRIDE {
+    callback.Run(quota::kQuotaStatusOk, usage_, quota_);
   }
 
   void set_usage(int64 usage) { usage_ = usage; }

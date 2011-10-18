@@ -23,7 +23,7 @@ class MockQuotaManager::GetModifiedSinceTask : public QuotaThreadTask {
   GetModifiedSinceTask(MockQuotaManager* manager,
                        const std::set<GURL>& origins,
                        StorageType type,
-                       GetOriginsCallback* callback)
+                       const GetOriginsCallback& callback)
       : QuotaThreadTask(manager, manager->io_thread_),
         origins_(origins),
         type_(type),
@@ -33,17 +33,17 @@ class MockQuotaManager::GetModifiedSinceTask : public QuotaThreadTask {
   virtual void RunOnTargetThread() OVERRIDE {}
 
   virtual void Completed() OVERRIDE {
-    callback_->Run(origins_, type_);
+    callback_.Run(origins_, type_);
   }
 
   virtual void Aborted() OVERRIDE {
-    callback_->Run(std::set<GURL>(), type_);
+    callback_.Run(std::set<GURL>(), type_);
   }
 
  private:
   std::set<GURL> origins_;
   StorageType type_;
-  scoped_ptr<GetOriginsCallback> callback_;
+  GetOriginsCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(GetModifiedSinceTask);
 };
@@ -51,7 +51,7 @@ class MockQuotaManager::GetModifiedSinceTask : public QuotaThreadTask {
 class MockQuotaManager::DeleteOriginDataTask : public QuotaThreadTask {
  public:
   DeleteOriginDataTask(MockQuotaManager* manager,
-                       StatusCallback* callback)
+                       const StatusCallback& callback)
       : QuotaThreadTask(manager, manager->io_thread_),
         callback_(callback) {}
 
@@ -59,15 +59,15 @@ class MockQuotaManager::DeleteOriginDataTask : public QuotaThreadTask {
   virtual void RunOnTargetThread() OVERRIDE {}
 
   virtual void Completed() OVERRIDE {
-    callback_->Run(quota::kQuotaStatusOk);
+    callback_.Run(quota::kQuotaStatusOk);
   }
 
   virtual void Aborted() OVERRIDE {
-    callback_->Run(quota::kQuotaErrorAbort);
+    callback_.Run(quota::kQuotaErrorAbort);
   }
 
  private:
-  scoped_ptr<StatusCallback> callback_;
+  StatusCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(DeleteOriginDataTask);
 };
@@ -110,8 +110,10 @@ bool MockQuotaManager::OriginHasData(const GURL& origin,
   return false;
 }
 
-void MockQuotaManager::GetOriginsModifiedSince(StorageType type,
-    base::Time modified_since, GetOriginsCallback* callback) {
+void MockQuotaManager::GetOriginsModifiedSince(
+    StorageType type,
+    base::Time modified_since,
+    const GetOriginsCallback& callback) {
   std::set<GURL> origins_to_return;
   for (std::vector<OriginInfo>::const_iterator current = origins_.begin();
        current != origins_.end();
@@ -124,7 +126,7 @@ void MockQuotaManager::GetOriginsModifiedSince(StorageType type,
 }
 
 void MockQuotaManager::DeleteOriginData(const GURL& origin, StorageType type,
-    StatusCallback* callback) {
+                                        const StatusCallback& callback) {
   for (std::vector<OriginInfo>::iterator current = origins_.begin();
        current != origins_.end();
        ++current) {

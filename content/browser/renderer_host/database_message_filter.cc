@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/platform_file.h"
 #include "base/string_util.h"
 #include "base/threading/thread.h"
@@ -33,32 +34,6 @@ using webkit_database::DatabaseUtil;
 using webkit_database::VfsBackend;
 
 namespace {
-
-class MyGetUsageAndQuotaCallback
-    : public QuotaManager::GetUsageAndQuotaCallback  {
- public:
-  MyGetUsageAndQuotaCallback(
-      DatabaseMessageFilter* sender, IPC::Message* reply_msg)
-      : sender_(sender), reply_msg_(reply_msg) {}
-
-  virtual void RunWithParams(
-        const Tuple3<QuotaStatusCode, int64, int64>& params) {
-    Run(params.a, params.b, params.c);
-  }
-
-  void Run(QuotaStatusCode status, int64 usage, int64 quota) {
-    int64 available = 0;
-    if ((status == quota::kQuotaStatusOk) && (usage < quota))
-      available = quota - usage;
-    DatabaseHostMsg_GetSpaceAvailable::WriteReplyParams(
-        reply_msg_.get(), available);
-    sender_->Send(reply_msg_.release());
-  }
-
- private:
-  scoped_refptr<DatabaseMessageFilter> sender_;
-  scoped_ptr<IPC::Message> reply_msg_;
-};
 
 const int kNumDeleteRetries = 2;
 const int kDelayDeleteRetryMs = 100;
@@ -293,7 +268,20 @@ void DatabaseMessageFilter::OnDatabaseGetSpaceAvailable(
   quota_manager->GetUsageAndQuota(
       DatabaseUtil::GetOriginFromIdentifier(origin_identifier),
       quota::kStorageTypeTemporary,
-      new MyGetUsageAndQuotaCallback(this, reply_msg));
+      base::Bind(&DatabaseMessageFilter::OnDatabaseGetUsageAndQuota,
+                 this, reply_msg));
+}
+
+void DatabaseMessageFilter::OnDatabaseGetUsageAndQuota(
+    IPC::Message* reply_msg,
+    quota::QuotaStatusCode status,
+    int64 usage,
+    int64 quota) {
+  int64 available = 0;
+  if ((status == quota::kQuotaStatusOk) && (usage < quota))
+    available = quota - usage;
+  DatabaseHostMsg_GetSpaceAvailable::WriteReplyParams(reply_msg, available);
+  Send(reply_msg);
 }
 
 void DatabaseMessageFilter::OnDatabaseOpened(const string16& origin_identifier,

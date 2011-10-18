@@ -16,7 +16,7 @@ namespace quota_internals {
 
 QuotaInternalsProxy::QuotaInternalsProxy(QuotaInternalsHandler* handler)
     : handler_(handler),
-      callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
 QuotaInternalsProxy::~QuotaInternalsProxy() {}
@@ -55,30 +55,30 @@ void QuotaInternalsProxy::RequestInfo(
 
   quota_manager_ = quota_manager;
   quota_manager_->GetAvailableSpace(
-      callback_factory_.NewCallback(
-          &QuotaInternalsProxy::DidGetAvailableSpace));
+      base::Bind(&QuotaInternalsProxy::DidGetAvailableSpace,
+                 weak_factory_.GetWeakPtr()));
 
   quota_manager_->GetTemporaryGlobalQuota(
-      callback_factory_.NewCallback(
-          &QuotaInternalsProxy::DidGetGlobalQuota));
+      base::Bind(&QuotaInternalsProxy::DidGetGlobalQuota,
+                 weak_factory_.GetWeakPtr()));
 
   quota_manager_->GetGlobalUsage(
       quota::kStorageTypeTemporary,
-      callback_factory_.NewCallback(
-          &QuotaInternalsProxy::DidGetGlobalUsage));
+      base::Bind(&QuotaInternalsProxy::DidGetGlobalUsage,
+                 weak_factory_.GetWeakPtr()));
 
   quota_manager_->GetGlobalUsage(
       quota::kStorageTypePersistent,
-      callback_factory_.NewCallback(
-          &QuotaInternalsProxy::DidGetGlobalUsage));
+      base::Bind(&QuotaInternalsProxy::DidGetGlobalUsage,
+                 weak_factory_.GetWeakPtr()));
 
   quota_manager_->DumpQuotaTable(
-      callback_factory_.NewCallback(
-          &QuotaInternalsProxy::DidDumpQuotaTable));
+      base::Bind(&QuotaInternalsProxy::DidDumpQuotaTable,
+                 weak_factory_.GetWeakPtr()));
 
   quota_manager_->DumpOriginInfoTable(
-      callback_factory_.NewCallback(
-          &QuotaInternalsProxy::DidDumpOriginInfoTable));
+      base::Bind(&QuotaInternalsProxy::DidDumpOriginInfoTable,
+                 weak_factory_.GetWeakPtr()));
 
   std::map<std::string, std::string> stats;
   quota_manager_->GetStatistics(&stats);
@@ -180,8 +180,8 @@ void QuotaInternalsProxy::GetHostUsage(const std::string& host,
   DCHECK(quota_manager_);
   quota_manager_->GetHostUsage(
       host, type,
-      callback_factory_.NewCallback(
-          &QuotaInternalsProxy::DidGetHostUsage));
+      base::Bind(&QuotaInternalsProxy::DidGetHostUsage,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void QuotaInternalsProxy::RequestPerOriginInfo(quota::StorageType type) {

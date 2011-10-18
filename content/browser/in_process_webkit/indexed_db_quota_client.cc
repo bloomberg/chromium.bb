@@ -36,7 +36,7 @@ class IndexedDBQuotaClient::DeleteOriginTask : public HelperTask {
   DeleteOriginTask(IndexedDBQuotaClient* client,
                    base::MessageLoopProxy* webkit_thread_message_loop,
                    const GURL& origin_url,
-                   DeletionCallback* callback)
+                   const DeletionCallback& callback)
       : HelperTask(client, webkit_thread_message_loop),
         origin_url_(origin_url), callback_(callback) {
   }
@@ -45,14 +45,14 @@ class IndexedDBQuotaClient::DeleteOriginTask : public HelperTask {
     indexed_db_context_->DeleteIndexedDBForOrigin(origin_url_);
   }
   virtual void Aborted() OVERRIDE {
-    callback_.reset();
+    callback_.Reset();
   }
   virtual void Completed() OVERRIDE {
-    callback_->Run(quota::kQuotaStatusOk);
-    callback_.reset();
+    callback_.Run(quota::kQuotaStatusOk);
+    callback_.Reset();
   }
   GURL origin_url_;
-  scoped_ptr<DeletionCallback> callback_;
+  DeletionCallback callback_;
 };
 
 class IndexedDBQuotaClient::GetOriginUsageTask : public HelperTask {
@@ -168,18 +168,17 @@ void IndexedDBQuotaClient::OnQuotaManagerDestroyed() {
 void IndexedDBQuotaClient::GetOriginUsage(
     const GURL& origin_url,
     quota::StorageType type,
-    GetUsageCallback* callback_ptr) {
-  DCHECK(callback_ptr);
+    const GetUsageCallback& callback) {
+  DCHECK(!callback.is_null());
   DCHECK(indexed_db_context_.get());
-  scoped_ptr<GetUsageCallback> callback(callback_ptr);
 
   // IndexedDB is in the temp namespace for now.
   if (type != quota::kStorageTypeTemporary) {
-    callback->Run(0);
+    callback.Run(0);
     return;
   }
 
-  if (usage_for_origin_callbacks_.Add(origin_url, callback.release())) {
+  if (usage_for_origin_callbacks_.Add(origin_url, callback)) {
     scoped_refptr<GetOriginUsageTask> task(
         new GetOriginUsageTask(this, webkit_thread_message_loop_, origin_url));
     task->Start();
@@ -188,18 +187,17 @@ void IndexedDBQuotaClient::GetOriginUsage(
 
 void IndexedDBQuotaClient::GetOriginsForType(
     quota::StorageType type,
-    GetOriginsCallback* callback_ptr) {
-  DCHECK(callback_ptr);
+    const GetOriginsCallback& callback) {
+  DCHECK(!callback.is_null());
   DCHECK(indexed_db_context_.get());
-  scoped_ptr<GetOriginsCallback> callback(callback_ptr);
 
   // All databases are in the temp namespace for now.
   if (type != quota::kStorageTypeTemporary) {
-    callback->Run(std::set<GURL>(), type);
+    callback.Run(std::set<GURL>(), type);
     return;
   }
 
-  if (origins_for_type_callbacks_.Add(callback.release())) {
+  if (origins_for_type_callbacks_.Add(callback)) {
     scoped_refptr<GetAllOriginsTask> task(
         new GetAllOriginsTask(this, webkit_thread_message_loop_, type));
     task->Start();
@@ -209,18 +207,17 @@ void IndexedDBQuotaClient::GetOriginsForType(
 void IndexedDBQuotaClient::GetOriginsForHost(
     quota::StorageType type,
     const std::string& host,
-    GetOriginsCallback* callback_ptr) {
-  DCHECK(callback_ptr);
+    const GetOriginsCallback& callback) {
+  DCHECK(!callback.is_null());
   DCHECK(indexed_db_context_.get());
-  scoped_ptr<GetOriginsCallback> callback(callback_ptr);
 
   // All databases are in the temp namespace for now.
   if (type != quota::kStorageTypeTemporary) {
-    callback->Run(std::set<GURL>(), type);
+    callback.Run(std::set<GURL>(), type);
     return;
   }
 
-  if (origins_for_host_callbacks_.Add(host, callback.release())) {
+  if (origins_for_host_callbacks_.Add(host, callback)) {
     scoped_refptr<GetOriginsForHostTask> task(
         new GetOriginsForHostTask(
             this, webkit_thread_message_loop_, host, type));
@@ -228,11 +225,12 @@ void IndexedDBQuotaClient::GetOriginsForHost(
   }
 }
 
-void IndexedDBQuotaClient::DeleteOriginData(const GURL& origin,
-                                           quota::StorageType type,
-                                           DeletionCallback* callback) {
+void IndexedDBQuotaClient::DeleteOriginData(
+    const GURL& origin,
+    quota::StorageType type,
+    const DeletionCallback& callback) {
   if (type != quota::kStorageTypeTemporary) {
-    callback->Run(quota::kQuotaErrorNotSupported);
+    callback.Run(quota::kQuotaErrorNotSupported);
     return;
   }
   scoped_refptr<DeleteOriginTask> task(

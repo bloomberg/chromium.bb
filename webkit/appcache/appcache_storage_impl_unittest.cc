@@ -131,21 +131,20 @@ class AppCacheStorageImplTest : public testing::Test {
 
     virtual void GetUsageAndQuota(
         const GURL& origin, quota::StorageType type,
-        GetUsageAndQuotaCallback* callback) {
+        const GetUsageAndQuotaCallback& callback) OVERRIDE {
       EXPECT_EQ(kOrigin, origin);
       EXPECT_EQ(quota::kStorageTypeTemporary, type);
       if (async_) {
         MessageLoop::current()->PostTask(FROM_HERE,
-            NewRunnableMethod(this, &MockQuotaManager::CallCallbackAndDelete,
+            NewRunnableMethod(this, &MockQuotaManager::CallCallback,
                               callback));
         return;
       }
-      CallCallbackAndDelete(callback);
+      CallCallback(callback);
     }
 
-    void CallCallbackAndDelete(GetUsageAndQuotaCallback* callback) {
-      callback->Run(quota::kQuotaStatusOk, 0, kMockQuota);
-      delete callback;
+    void CallCallback(const GetUsageAndQuotaCallback& callback) {
+      callback.Run(quota::kQuotaStatusOk, 0, kMockQuota);
     }
 
     bool async_;
@@ -164,7 +163,7 @@ class AppCacheStorageImplTest : public testing::Test {
 
     virtual void NotifyStorageAccessed(quota::QuotaClient::ID client_id,
                                        const GURL& origin,
-                                       quota::StorageType type) {
+                                       quota::StorageType type) OVERRIDE {
       EXPECT_EQ(quota::QuotaClient::kAppcache, client_id);
       EXPECT_EQ(quota::kStorageTypeTemporary, type);
       ++notify_storage_accessed_count_;
@@ -174,7 +173,7 @@ class AppCacheStorageImplTest : public testing::Test {
     virtual void NotifyStorageModified(quota::QuotaClient::ID client_id,
                                        const GURL& origin,
                                        quota::StorageType type,
-                                       int64 delta) {
+                                       int64 delta) OVERRIDE {
       EXPECT_EQ(quota::QuotaClient::kAppcache, client_id);
       EXPECT_EQ(quota::kStorageTypeTemporary, type);
       ++notify_storage_modified_count_;
@@ -183,9 +182,9 @@ class AppCacheStorageImplTest : public testing::Test {
     }
 
     // Not needed for our tests.
-    virtual void RegisterClient(quota::QuotaClient* client) {}
-    virtual void NotifyOriginInUse(const GURL& origin) {}
-    virtual void NotifyOriginNoLongerInUse(const GURL& origin) {}
+    virtual void RegisterClient(quota::QuotaClient* client) OVERRIDE {}
+    virtual void NotifyOriginInUse(const GURL& origin) OVERRIDE {}
+    virtual void NotifyOriginNoLongerInUse(const GURL& origin) OVERRIDE {}
 
     int notify_storage_accessed_count_;
     int notify_storage_modified_count_;
@@ -203,7 +202,7 @@ class AppCacheStorageImplTest : public testing::Test {
         : test_(test), method_(method) {
     }
 
-    virtual void Run() {
+    virtual void Run() OVERRIDE {
       test_->SetUpTest();
 
       // Ensure InitTask execution prior to conducting a test.

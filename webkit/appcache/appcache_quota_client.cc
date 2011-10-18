@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <map>
+#include <set>
 
 #include "webkit/appcache/appcache_service.h"
 
@@ -36,7 +37,7 @@ AppCacheQuotaClient::~AppCacheQuotaClient() {
   DCHECK(pending_usage_requests_.empty());
   DCHECK(pending_origins_requests_.empty());
   DCHECK(pending_delete_requests_.empty());
-  DCHECK(!current_delete_request_callback_.get());
+  DCHECK(current_delete_request_callback_.is_null());
 }
 
 QuotaClient::ID AppCacheQuotaClient::id() const {
@@ -45,8 +46,8 @@ QuotaClient::ID AppCacheQuotaClient::id() const {
 
 void AppCacheQuotaClient::OnQuotaManagerDestroyed() {
   DeletePendingRequests();
-  if (current_delete_request_callback_.get()) {
-    current_delete_request_callback_.reset();
+  if (!current_delete_request_callback_.is_null()) {
+    current_delete_request_callback_.Reset();
     service_delete_callback_.release()->Cancel();
   } else {
     service_delete_callback_ = NULL;
@@ -59,13 +60,12 @@ void AppCacheQuotaClient::OnQuotaManagerDestroyed() {
 void AppCacheQuotaClient::GetOriginUsage(
     const GURL& origin,
     quota::StorageType type,
-    GetUsageCallback* callback_ptr) {
-  DCHECK(callback_ptr);
+    const GetUsageCallback& callback) {
+  DCHECK(!callback.is_null());
   DCHECK(!quota_manager_is_destroyed_);
 
-  scoped_ptr<GetUsageCallback> callback(callback_ptr);
   if (!service_) {
-    callback->Run(0);
+    callback.Run(0);
     return;
   }
 
@@ -73,64 +73,61 @@ void AppCacheQuotaClient::GetOriginUsage(
     pending_usage_requests_.push_back(UsageRequest());
     pending_usage_requests_.back().origin = origin;
     pending_usage_requests_.back().type = type;
-    pending_usage_requests_.back().callback = callback.release();
+    pending_usage_requests_.back().callback = callback;
     return;
   }
 
   if (type == quota::kStorageTypePersistent) {
-    callback->Run(0);
+    callback.Run(0);
     return;
   }
 
   const AppCacheStorage::UsageMap* map = GetUsageMap();
   AppCacheStorage::UsageMap::const_iterator found = map->find(origin);
   if (found == map->end()) {
-    callback->Run(0);
+    callback.Run(0);
     return;
   }
-  callback->Run(found->second);
+  callback.Run(found->second);
 }
 
 void AppCacheQuotaClient::GetOriginsForType(
     quota::StorageType type,
-    GetOriginsCallback* callback_ptr) {
-  GetOriginsHelper(type, std::string(), callback_ptr);
+    const GetOriginsCallback& callback) {
+  GetOriginsHelper(type, std::string(), callback);
 }
 
 void AppCacheQuotaClient::GetOriginsForHost(
     quota::StorageType type,
     const std::string& host,
-    GetOriginsCallback* callback_ptr) {
-  DCHECK(callback_ptr);
+    const GetOriginsCallback& callback) {
+  DCHECK(!callback.is_null());
   if (host.empty()) {
-    callback_ptr->Run(std::set<GURL>(), type);
-    delete callback_ptr;
+    callback.Run(std::set<GURL>(), type);
     return;
   }
-  GetOriginsHelper(type, host, callback_ptr);
+  GetOriginsHelper(type, host, callback);
 }
 
 void AppCacheQuotaClient::DeleteOriginData(const GURL& origin,
                                            quota::StorageType type,
-                                           DeletionCallback* callback_ptr) {
-  DCHECK(callback_ptr);
+                                           const DeletionCallback& callback) {
   DCHECK(!quota_manager_is_destroyed_);
 
-  scoped_ptr<DeletionCallback> callback(callback_ptr);
   if (!service_) {
-    callback->Run(quota::kQuotaErrorAbort);
+    callback.Run(quota::kQuotaErrorAbort);
     return;
   }
 
-  if (!appcache_is_ready_ || current_delete_request_callback_.get()) {
+  if (!appcache_is_ready_ || !current_delete_request_callback_.is_null()) {
     pending_delete_requests_.push_back(DeleteRequest());
     pending_delete_requests_.back().origin = origin;
     pending_delete_requests_.back().type = type;
-    pending_delete_requests_.back().callback = callback.release();
+    pending_delete_requests_.back().callback = callback;
     return;
   }
 
-  current_delete_request_callback_.swap(callback);
+  current_delete_request_callback_ = callback;
   if (type == quota::kStorageTypePersistent) {
     DidDeleteAppCachesForOrigin(net::OK);
     return;
@@ -138,20 +135,29 @@ void AppCacheQuotaClient::DeleteOriginData(const GURL& origin,
   service_->DeleteAppCachesForOrigin(origin, service_delete_callback_);
 }
 
+AppCacheQuotaClient::UsageRequest::UsageRequest() {}
+AppCacheQuotaClient::UsageRequest::~UsageRequest() {}
+
+AppCacheQuotaClient::OriginsRequest::OriginsRequest() {}
+AppCacheQuotaClient::OriginsRequest::~OriginsRequest() {}
+
+AppCacheQuotaClient::DeleteRequest::DeleteRequest() {}
+AppCacheQuotaClient::DeleteRequest::~DeleteRequest() {}
+
 void AppCacheQuotaClient::DidDeleteAppCachesForOrigin(int rv) {
   DCHECK(service_);
   if (quota_manager_is_destroyed_)
     return;
 
   // Finish the request by calling our callers callback.
-  current_delete_request_callback_->Run(NetErrorCodeToQuotaStatus(rv));
-  current_delete_request_callback_.reset();
+  current_delete_request_callback_.Run(NetErrorCodeToQuotaStatus(rv));
+  current_delete_request_callback_.Reset();
   if (pending_delete_requests_.empty())
     return;
 
   // Start the next in the queue.
   DeleteRequest& next_request = pending_delete_requests_.front();
-  current_delete_request_callback_.reset(next_request.callback);
+  current_delete_request_callback_ = next_request.callback;
   service_->DeleteAppCachesForOrigin(next_request.origin,
                                      service_delete_callback_);
   pending_delete_requests_.pop_front();
@@ -160,13 +166,12 @@ void AppCacheQuotaClient::DidDeleteAppCachesForOrigin(int rv) {
 void AppCacheQuotaClient::GetOriginsHelper(
     quota::StorageType type,
     const std::string& opt_host,
-    GetOriginsCallback* callback_ptr) {
-  DCHECK(callback_ptr);
+    const GetOriginsCallback& callback) {
+  DCHECK(!callback.is_null());
   DCHECK(!quota_manager_is_destroyed_);
 
-  scoped_ptr<GetOriginsCallback> callback(callback_ptr);
   if (!service_) {
-    callback->Run(std::set<GURL>(), type);
+    callback.Run(std::set<GURL>(), type);
     return;
   }
 
@@ -174,12 +179,12 @@ void AppCacheQuotaClient::GetOriginsHelper(
     pending_origins_requests_.push_back(OriginsRequest());
     pending_origins_requests_.back().opt_host = opt_host;
     pending_origins_requests_.back().type = type;
-    pending_origins_requests_.back().callback = callback.release();
+    pending_origins_requests_.back().callback = callback;
     return;
   }
 
   if (type == quota::kStorageTypePersistent) {
-    callback->Run(std::set<GURL>(), type);
+    callback.Run(std::set<GURL>(), type);
     return;
   }
 
@@ -190,7 +195,7 @@ void AppCacheQuotaClient::GetOriginsHelper(
     if (opt_host.empty() || iter->first.host() == opt_host)
       origins.insert(iter->first);
   }
-  callback->Run(origins, type);
+  callback.Run(origins, type);
 }
 
 void AppCacheQuotaClient::ProcessPendingRequests() {
@@ -215,34 +220,28 @@ void AppCacheQuotaClient::ProcessPendingRequests() {
 
 void AppCacheQuotaClient::AbortPendingRequests() {
   while (!pending_usage_requests_.empty()) {
-    pending_usage_requests_.front().callback->Run(0);
-    delete pending_usage_requests_.front().callback;
+    pending_usage_requests_.front().callback.Run(0);
     pending_usage_requests_.pop_front();
   }
   while (!pending_origins_requests_.empty()) {
-    pending_origins_requests_.front().callback->Run(std::set<GURL>(),
+    pending_origins_requests_.front().callback.Run(std::set<GURL>(),
         pending_origins_requests_.front().type);
-    delete pending_origins_requests_.front().callback;
     pending_origins_requests_.pop_front();
   }
   while (!pending_delete_requests_.empty()) {
-    pending_delete_requests_.front().callback->Run(quota::kQuotaErrorAbort);
-    delete pending_delete_requests_.front().callback;
+    pending_delete_requests_.front().callback.Run(quota::kQuotaErrorAbort);
     pending_delete_requests_.pop_front();
   }
 }
 
 void AppCacheQuotaClient::DeletePendingRequests() {
   while (!pending_usage_requests_.empty()) {
-    delete pending_usage_requests_.front().callback;
     pending_usage_requests_.pop_front();
   }
   while (!pending_origins_requests_.empty()) {
-    delete pending_origins_requests_.front().callback;
     pending_origins_requests_.pop_front();
   }
   while (!pending_delete_requests_.empty()) {
-    delete pending_delete_requests_.front().callback;
     pending_delete_requests_.pop_front();
   }
 }
@@ -260,9 +259,9 @@ void AppCacheQuotaClient::NotifyAppCacheReady() {
 void AppCacheQuotaClient::NotifyAppCacheDestroyed() {
   service_ = NULL;
   AbortPendingRequests();
-  if (current_delete_request_callback_.get()) {
-    current_delete_request_callback_->Run(quota::kQuotaErrorAbort);
-    current_delete_request_callback_.reset();
+  if (!current_delete_request_callback_.is_null()) {
+    current_delete_request_callback_.Run(quota::kQuotaErrorAbort);
+    current_delete_request_callback_.Reset();
     service_delete_callback_.release()->Cancel();
   } else {
     service_delete_callback_ = NULL;

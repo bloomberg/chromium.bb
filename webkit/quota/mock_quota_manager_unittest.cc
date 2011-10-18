@@ -5,8 +5,8 @@
 
 #include <set>
 
+#include "base/bind.h"
 #include "base/file_util.h"
-#include "base/memory/scoped_callback_factory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
@@ -29,7 +29,7 @@ const GURL kOrigin3(kTestOrigin3);
 class MockQuotaManagerTest : public testing::Test {
  public:
   MockQuotaManagerTest()
-    : callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+    : weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       deletion_callback_count_(0) {
   }
 
@@ -51,9 +51,10 @@ class MockQuotaManagerTest : public testing::Test {
   }
 
   void GetModifiedOrigins(StorageType type, base::Time since) {
-    manager_->GetOriginsModifiedSince(type, since,
-        callback_factory_.NewCallback(
-            &MockQuotaManagerTest::GotModifiedOrigins));
+    manager_->GetOriginsModifiedSince(
+        type, since,
+        base::Bind(&MockQuotaManagerTest::GotModifiedOrigins,
+                   weak_factory_.GetWeakPtr()));
   }
 
   void GotModifiedOrigins(const std::set<GURL>& origins, StorageType type) {
@@ -62,9 +63,10 @@ class MockQuotaManagerTest : public testing::Test {
   }
 
   void DeleteOriginData(const GURL& origin, StorageType type) {
-    manager_->DeleteOriginData(origin, type,
-        callback_factory_.NewCallback(
-            &MockQuotaManagerTest::DeletedOriginData));
+    manager_->DeleteOriginData(
+        origin, type,
+        base::Bind(&MockQuotaManagerTest::DeletedOriginData,
+                   weak_factory_.GetWeakPtr()));
   }
 
   void DeletedOriginData(QuotaStatusCode status) {
@@ -90,7 +92,7 @@ class MockQuotaManagerTest : public testing::Test {
 
  private:
   ScopedTempDir data_dir_;
-  base::ScopedCallbackFactory<MockQuotaManagerTest> callback_factory_;
+  base::WeakPtrFactory<MockQuotaManagerTest> weak_factory_;
   scoped_refptr<MockQuotaManager> manager_;
   scoped_refptr<MockSpecialStoragePolicy> policy_;
 

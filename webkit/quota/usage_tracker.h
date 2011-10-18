@@ -13,7 +13,6 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/memory/scoped_callback_factory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "googleurl/src/gurl.h"
@@ -38,8 +37,8 @@ class UsageTracker : public QuotaTaskObserver {
   StorageType type() const { return type_; }
   ClientUsageTracker* GetClientTracker(QuotaClient::ID client_id);
 
-  void GetGlobalUsage(GlobalUsageCallback* callback);
-  void GetHostUsage(const std::string& host, HostUsageCallback* callback);
+  void GetGlobalUsage(const GlobalUsageCallback& callback);
+  void GetHostUsage(const std::string& host, const HostUsageCallback& callback);
   void UpdateUsageCache(QuotaClient::ID client_id,
                         const GURL& origin,
                         int64 delta);
@@ -75,7 +74,7 @@ class UsageTracker : public QuotaTaskObserver {
   GlobalUsageCallbackQueue global_usage_callbacks_;
   HostUsageCallbackMap host_usage_callbacks_;
 
-  base::ScopedCallbackFactory<UsageTracker> callback_factory_;
+  base::WeakPtrFactory<UsageTracker> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(UsageTracker);
 };
 
@@ -90,8 +89,8 @@ class ClientUsageTracker : public SpecialStoragePolicy::Observer,
                      SpecialStoragePolicy* special_storage_policy);
   virtual ~ClientUsageTracker();
 
-  void GetGlobalUsage(GlobalUsageCallback* callback);
-  void GetHostUsage(const std::string& host, HostUsageCallback* callback);
+  void GetGlobalUsage(const GlobalUsageCallback& callback);
+  void GetHostUsage(const std::string& host, const HostUsageCallback& callback);
   void UpdateUsageCache(const GURL& origin, int64 delta);
   void GetCachedHostsUsage(std::map<std::string, int64>* host_usage) const;
   void GetCachedOrigins(std::set<GURL>* origins) const;

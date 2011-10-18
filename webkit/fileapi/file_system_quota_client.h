@@ -43,15 +43,18 @@ class FileSystemQuotaClient : public quota::QuotaClient,
   virtual void OnQuotaManagerDestroyed() OVERRIDE;
   virtual void GetOriginUsage(const GURL& origin_url,
                               quota::StorageType type,
-                              GetUsageCallback* callback) OVERRIDE;
-  virtual void GetOriginsForType(quota::StorageType type,
-                                 GetOriginsCallback* callback) OVERRIDE;
-  virtual void GetOriginsForHost(quota::StorageType type,
-                                 const std::string& host,
-                                 GetOriginsCallback* callback) OVERRIDE;
-  virtual void DeleteOriginData(const GURL& origin,
-                                quota::StorageType type,
-                                DeletionCallback* callback) OVERRIDE;
+                              const GetUsageCallback& callback) OVERRIDE;
+  virtual void GetOriginsForType(
+      quota::StorageType type,
+      const GetOriginsCallback& callback) OVERRIDE;
+  virtual void GetOriginsForHost(
+      quota::StorageType type,
+      const std::string& host,
+      const GetOriginsCallback& callback) OVERRIDE;
+  virtual void DeleteOriginData(
+      const GURL& origin,
+      quota::StorageType type,
+      const DeletionCallback& callback) OVERRIDE;
 
  private:
   class GetOriginUsageTask;
@@ -61,16 +64,16 @@ class FileSystemQuotaClient : public quota::QuotaClient,
   class DeleteOriginTask;
 
   typedef std::pair<fileapi::FileSystemType, std::string> TypeAndHostOrOrigin;
-  typedef quota::CallbackQueueMap1<GetUsageCallback*,
+  typedef quota::CallbackQueueMap1<GetUsageCallback,
                                    TypeAndHostOrOrigin,
                                    int64
                                    > UsageCallbackMap;
-  typedef quota::CallbackQueueMap2<GetOriginsCallback*,
+  typedef quota::CallbackQueueMap2<GetOriginsCallback,
                                    fileapi::FileSystemType,
                                    const std::set<GURL>&,
                                    quota::StorageType
                                    > OriginsForTypeCallbackMap;
-  typedef quota::CallbackQueueMap2<GetOriginsCallback*,
+  typedef quota::CallbackQueueMap2<GetOriginsCallback,
                                    TypeAndHostOrOrigin,
                                    const std::set<GURL>&,
                                    quota::StorageType

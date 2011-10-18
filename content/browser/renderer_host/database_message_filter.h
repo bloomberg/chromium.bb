@@ -11,6 +11,7 @@
 #include "content/browser/browser_message_filter.h"
 #include "webkit/database/database_connections.h"
 #include "webkit/database/database_tracker.h"
+#include "webkit/quota/quota_types.h"
 
 class DatabaseMessageFilter
     : public BrowserMessageFilter,
@@ -52,6 +53,10 @@ class DatabaseMessageFilter
   // Quota message handler (io thread)
   void OnDatabaseGetSpaceAvailable(const string16& origin_identifier,
                                    IPC::Message* reply_msg);
+  void OnDatabaseGetUsageAndQuota(IPC::Message* reply_msg,
+                                  quota::QuotaStatusCode status,
+                                  int64 usage,
+                                  int64 quota);
 
   // Database tracker message handlers (file thread)
   void OnDatabaseOpened(const string16& origin_identifier,

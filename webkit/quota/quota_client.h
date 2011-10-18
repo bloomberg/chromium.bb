@@ -9,7 +9,7 @@
 #include <set>
 #include <string>
 
-#include "base/callback_old.h"
+#include "base/callback.h"
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/quota/quota_types.h"
@@ -22,10 +22,10 @@ namespace quota {
 // All the methods are assumed to be called on the IO thread in the browser.
 class QuotaClient {
  public:
-  typedef Callback1<int64>::Type GetUsageCallback;
-  typedef Callback2<const std::set<GURL>&, StorageType>::Type
+  typedef base::Callback<void(int64)> GetUsageCallback;  // NOLINT
+  typedef base::Callback<void(const std::set<GURL>&, StorageType)>
       GetOriginsCallback;
-  typedef Callback1<QuotaStatusCode>::Type DeletionCallback;
+  typedef base::Callback<void(QuotaStatusCode)> DeletionCallback;
 
   virtual ~QuotaClient() {}
 
@@ -48,23 +48,23 @@ class QuotaClient {
   // |origin_url| and |type|.
   virtual void GetOriginUsage(const GURL& origin_url,
                               StorageType type,
-                              GetUsageCallback* callback) = 0;
+                              const GetUsageCallback& callback) = 0;
 
   // Called by the QuotaManager.
   // Returns a list of origins that has data in the |type| storage.
   virtual void GetOriginsForType(StorageType type,
-                                 GetOriginsCallback* callback) = 0;
+                                 const GetOriginsCallback& callback) = 0;
 
   // Called by the QuotaManager.
   // Returns a list of origins that match the |host|.
   virtual void GetOriginsForHost(StorageType type,
                                  const std::string& host,
-                                 GetOriginsCallback* callback) = 0;
+                                 const GetOriginsCallback& callback) = 0;
 
   // Called by the QuotaManager.
   virtual void DeleteOriginData(const GURL& origin,
                                 StorageType type,
-                                DeletionCallback* callback) = 0;
+                                const DeletionCallback& callback) = 0;
 };
 
 // TODO(dmikurube): Replace it to std::vector for efficiency.

@@ -4,8 +4,8 @@
 
 #include <map>
 
+#include "base/bind.h"
 #include "base/file_path.h"
-#include "base/memory/scoped_callback_factory.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/utf_string_conversions.h"
@@ -126,7 +126,7 @@ class DatabaseQuotaClientTest : public testing::Test {
         kOriginOther("http://other"),
         usage_(0),
         mock_tracker_(new MockDatabaseTracker),
-        callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+        weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   }
 
   int64 GetOriginUsage(
@@ -134,9 +134,10 @@ class DatabaseQuotaClientTest : public testing::Test {
       const GURL& origin,
       quota::StorageType type) {
     usage_ = 0;
-    client->GetOriginUsage(origin, type,
-        callback_factory_.NewCallback(
-            &DatabaseQuotaClientTest::OnGetOriginUsageComplete));
+    client->GetOriginUsage(
+        origin, type,
+        base::Bind(&DatabaseQuotaClientTest::OnGetOriginUsageComplete,
+                   weak_factory_.GetWeakPtr()));
     MessageLoop::current()->RunAllPending();
     return usage_;
   }
@@ -145,9 +146,10 @@ class DatabaseQuotaClientTest : public testing::Test {
       quota::QuotaClient* client,
       quota::StorageType type) {
     origins_.clear();
-    client->GetOriginsForType(type,
-        callback_factory_.NewCallback(
-            &DatabaseQuotaClientTest::OnGetOriginsComplete));
+    client->GetOriginsForType(
+        type,
+        base::Bind(&DatabaseQuotaClientTest::OnGetOriginsComplete,
+                   weak_factory_.GetWeakPtr()));
     MessageLoop::current()->RunAllPending();
     return origins_;
   }
@@ -157,9 +159,10 @@ class DatabaseQuotaClientTest : public testing::Test {
       quota::StorageType type,
       const std::string& host) {
     origins_.clear();
-    client->GetOriginsForHost(type, host,
-        callback_factory_.NewCallback(
-            &DatabaseQuotaClientTest::OnGetOriginsComplete));
+    client->GetOriginsForHost(
+        type, host,
+        base::Bind(&DatabaseQuotaClientTest::OnGetOriginsComplete,
+                   weak_factory_.GetWeakPtr()));
     MessageLoop::current()->RunAllPending();
     return origins_;
   }
@@ -169,9 +172,10 @@ class DatabaseQuotaClientTest : public testing::Test {
       quota::StorageType type,
       const GURL& origin) {
     delete_status_ = quota::kQuotaStatusUnknown;
-    client->DeleteOriginData(origin, type,
-        callback_factory_.NewCallback(
-            &DatabaseQuotaClientTest::OnDeleteOriginDataComplete));
+    client->DeleteOriginData(
+        origin, type,
+        base::Bind(&DatabaseQuotaClientTest::OnDeleteOriginDataComplete,
+                   weak_factory_.GetWeakPtr()));
     MessageLoop::current()->RunAllPending();
     return delete_status_ == quota::kQuotaStatusOk;
   }
@@ -199,7 +203,7 @@ class DatabaseQuotaClientTest : public testing::Test {
   quota::StorageType type_;
   quota::QuotaStatusCode delete_status_;
   scoped_refptr<MockDatabaseTracker> mock_tracker_;
-  base::ScopedCallbackFactory<DatabaseQuotaClientTest> callback_factory_;
+  base::WeakPtrFactory<DatabaseQuotaClientTest> weak_factory_;
 };
 
 

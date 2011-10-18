@@ -8,7 +8,9 @@
 #include <deque>
 #include <set>
 #include <string>
+#include <vector>
 
+#include "base/bind.h"
 #include "base/message_loop_proxy.h"
 #include "base/stl_util.h"
 #include "net/base/net_util.h"
@@ -31,7 +33,7 @@ class ClientUsageTracker::GatherUsageTaskBase : public QuotaTask {
       : QuotaTask(tracker),
         client_(client),
         tracker_(tracker),
-        callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+        weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
     DCHECK(tracker_);
     DCHECK(client_);
     client_tracker_ = tracker_->GetClientTracker(client_->id());
@@ -75,7 +77,8 @@ class ClientUsageTracker::GatherUsageTaskBase : public QuotaTask {
       client_->GetOriginUsage(
           *iter,
           tracker_->type(),
-          callback_factory_.NewCallback(&GatherUsageTaskBase::DidGetUsage));
+          base::Bind(&GatherUsageTaskBase::DidGetUsage,
+                     weak_factory_.GetWeakPtr()));
   }
 
  protected:
@@ -121,7 +124,7 @@ class ClientUsageTracker::GatherUsageTaskBase : public QuotaTask {
   ClientUsageTracker* client_tracker_;
   std::deque<GURL> pending_origins_;
   std::map<GURL, int64> origin_usage_map_;
-  base::ScopedCallbackFactory<GatherUsageTaskBase> callback_factory_;
+  base::WeakPtrFactory<GatherUsageTaskBase> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GatherUsageTaskBase);
 };
@@ -136,7 +139,7 @@ class ClientUsageTracker::GatherGlobalUsageTask
       QuotaClient* client)
       : GatherUsageTaskBase(tracker, client),
         client_(client),
-        callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+        weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
     DCHECK(tracker);
     DCHECK(client);
   }
@@ -145,8 +148,8 @@ class ClientUsageTracker::GatherGlobalUsageTask
  protected:
   virtual void Run() OVERRIDE {
     client_->GetOriginsForType(tracker()->type(),
-          callback_factory_.NewCallback(
-              &GatherUsageTaskBase::GetUsageForOrigins));
+        base::Bind(&GatherUsageTaskBase::GetUsageForOrigins,
+                   weak_factory_.GetWeakPtr()));
   }
 
   virtual void Completed() OVERRIDE {
@@ -155,7 +158,7 @@ class ClientUsageTracker::GatherGlobalUsageTask
 
  private:
   QuotaClient* client_;
-  base::ScopedCallbackFactory<GatherUsageTaskBase> callback_factory_;
+  base::WeakPtrFactory<GatherUsageTaskBase> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GatherGlobalUsageTask);
 };
@@ -172,7 +175,7 @@ class ClientUsageTracker::GatherHostUsageTask
       : GatherUsageTaskBase(tracker, client),
         client_(client),
         host_(host),
-        callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+        weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
     DCHECK(client_);
   }
   virtual ~GatherHostUsageTask() {}
@@ -180,8 +183,8 @@ class ClientUsageTracker::GatherHostUsageTask
  protected:
   virtual void Run() OVERRIDE {
     client_->GetOriginsForHost(tracker()->type(), host_,
-          callback_factory_.NewCallback(
-              &GatherUsageTaskBase::GetUsageForOrigins));
+        base::Bind(&GatherUsageTaskBase::GetUsageForOrigins,
+                   weak_factory_.GetWeakPtr()));
   }
 
   virtual void Completed() OVERRIDE {
@@ -191,7 +194,7 @@ class ClientUsageTracker::GatherHostUsageTask
  private:
   QuotaClient* client_;
   std::string host_;
-  base::ScopedCallbackFactory<GatherUsageTaskBase> callback_factory_;
+  base::WeakPtrFactory<GatherUsageTaskBase> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GatherHostUsageTask);
 };
@@ -201,7 +204,7 @@ class ClientUsageTracker::GatherHostUsageTask
 UsageTracker::UsageTracker(const QuotaClientList& clients, StorageType type,
                            SpecialStoragePolicy* special_storage_policy)
     : type_(type),
-      callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   for (QuotaClientList::const_iterator iter = clients.begin();
       iter != clients.end();
       ++iter) {
@@ -222,11 +225,10 @@ ClientUsageTracker* UsageTracker::GetClientTracker(QuotaClient::ID client_id) {
   return NULL;
 }
 
-void UsageTracker::GetGlobalUsage(GlobalUsageCallback* callback) {
+void UsageTracker::GetGlobalUsage(const GlobalUsageCallback& callback) {
   if (client_tracker_map_.size() == 0) {
     // No clients registered.
-    callback->Run(type_, 0, 0);
-    delete callback;
+    callback.Run(type_, 0, 0);
     return;
   }
   if (global_usage_callbacks_.Add(callback)) {
@@ -238,18 +240,18 @@ void UsageTracker::GetGlobalUsage(GlobalUsageCallback* callback) {
     for (ClientTrackerMap::iterator iter = client_tracker_map_.begin();
          iter != client_tracker_map_.end();
          ++iter) {
-      iter->second->GetGlobalUsage(callback_factory_.NewCallback(
-          &UsageTracker::DidGetClientGlobalUsage));
+      iter->second->GetGlobalUsage(
+          base::Bind(&UsageTracker::DidGetClientGlobalUsage,
+                     weak_factory_.GetWeakPtr()));
     }
   }
 }
 
 void UsageTracker::GetHostUsage(
-    const std::string& host, HostUsageCallback* callback) {
+    const std::string& host, const HostUsageCallback& callback) {
   if (client_tracker_map_.size() == 0) {
     // No clients registered.
-    callback->Run(host, type_, 0);
-    delete callback;
+    callback.Run(host, type_, 0);
     return;
   }
   if (host_usage_callbacks_.Add(host, callback)) {
@@ -259,8 +261,9 @@ void UsageTracker::GetHostUsage(
     for (ClientTrackerMap::iterator iter = client_tracker_map_.begin();
          iter != client_tracker_map_.end();
          ++iter) {
-      iter->second->GetHostUsage(host, callback_factory_.NewCallback(
-          &UsageTracker::DidGetClientHostUsage));
+      iter->second->GetHostUsage(host,
+          base::Bind(&UsageTracker::DidGetClientHostUsage,
+                     weak_factory_.GetWeakPtr()));
     }
   }
 }
@@ -357,10 +360,9 @@ ClientUsageTracker::~ClientUsageTracker() {
     special_storage_policy_->RemoveObserver(this);
 }
 
-void ClientUsageTracker::GetGlobalUsage(GlobalUsageCallback* callback) {
+void ClientUsageTracker::GetGlobalUsage(const GlobalUsageCallback& callback) {
   if (global_usage_retrieved_) {
-    callback->Run(type_, global_usage_, GetCachedGlobalUnlimitedUsage());
-    delete callback;
+    callback.Run(type_, global_usage_, GetCachedGlobalUnlimitedUsage());
     return;
   }
   DCHECK(!global_usage_callback_.HasCallbacks());
@@ -370,12 +372,11 @@ void ClientUsageTracker::GetGlobalUsage(GlobalUsageCallback* callback) {
 }
 
 void ClientUsageTracker::GetHostUsage(
-    const std::string& host, HostUsageCallback* callback) {
+    const std::string& host, const HostUsageCallback& callback) {
   HostSet::const_iterator found = cached_hosts_.find(host);
   if (found != cached_hosts_.end()) {
     // TODO(kinuko): Drop host_usage_map_ cache periodically.
-    callback->Run(host, type_, GetCachedHostUsage(host));
-    delete callback;
+    callback.Run(host, type_, GetCachedHostUsage(host));
     return;
   }
   if (!host_usage_callbacks_.Add(host, callback) || global_usage_task_)
@@ -400,7 +401,8 @@ void ClientUsageTracker::UpdateUsageCache(
 
   // We don't know about this host yet, so populate our cache for it.
   GetHostUsage(host,
-               NewCallback(this, &ClientUsageTracker::NoopHostUsageCallback));
+               base::Bind(&ClientUsageTracker::NoopHostUsageCallback,
+                          base::Unretained(this)));
 }
 
 void ClientUsageTracker::GetCachedHostsUsage(

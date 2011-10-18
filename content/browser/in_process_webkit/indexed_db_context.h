@@ -18,6 +18,7 @@
 #include "content/browser/browser_thread.h"
 #include "content/common/content_export.h"
 #include "googleurl/src/gurl.h"
+#include "webkit/quota/quota_types.h"
 
 class GURL;
 class FilePath;
@@ -94,6 +95,8 @@ class CONTENT_EXPORT IndexedDBContext
   int64 ReadUsageFromDisk(const GURL& origin_url) const;
   void EnsureDiskUsageCacheInitialized(const GURL& origin_url);
   void QueryDiskAndUpdateQuotaUsage(const GURL& origin_url);
+  void GotUsageAndQuota(const GURL& origin_url, quota::QuotaStatusCode,
+                        int64 usage, int64 quota);
   void GotUpdatedQuota(const GURL& origin_url, int64 usage, int64 quota);
   void QueryAvailableQuota(const GURL& origin_url);
 

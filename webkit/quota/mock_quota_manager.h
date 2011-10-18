@@ -59,15 +59,17 @@ class MockQuotaManager : public QuotaManager {
   // Overrides QuotaManager's implementation with a canned implementation that
   // allows clients to set up the origin database that should be queried. This
   // method will only search through the origins added explicitly via AddOrigin.
-  virtual void GetOriginsModifiedSince(StorageType type,
-                                       base::Time modified_since,
-                                       GetOriginsCallback* callback) OVERRIDE;
+  virtual void GetOriginsModifiedSince(
+      StorageType type,
+      base::Time modified_since,
+      const GetOriginsCallback& callback) OVERRIDE;
 
   // Removes an origin from the canned list of origins, but doesn't touch
   // anything on disk.
   virtual void DeleteOriginData(const GURL& origin,
                                 StorageType type,
-                                StatusCallback* callback) OVERRIDE;
+                                const StatusCallback& callback) OVERRIDE;
+
  private:
   class GetModifiedSinceTask;
   class DeleteOriginDataTask;
@@ -80,4 +82,4 @@ class MockQuotaManager : public QuotaManager {
 
 }  // namespace quota
 
-#endif // WEBKIT_QUOTA_MOCK_QUOTA_MANAGER_H_
+#endif  // WEBKIT_QUOTA_MOCK_QUOTA_MANAGER_H_

@@ -51,11 +51,10 @@ class MockQuotaManager : public QuotaManager {
 
   virtual void GetUsageAndQuota(
       const GURL& origin, quota::StorageType type,
-      GetUsageAndQuotaCallback* callback) {
+      const GetUsageAndQuotaCallback& callback) OVERRIDE {
     EXPECT_EQ(origin_, origin);
     EXPECT_EQ(type_, type);
-    callback->Run(quota::kQuotaStatusOk, usage_, quota_);
-    delete callback;
+    callback.Run(quota::kQuotaStatusOk, usage_, quota_);
   }
 
  private:
@@ -97,7 +96,7 @@ class MockQuotaManagerProxy : public QuotaManagerProxy {
     EXPECT_FALSE(registered_client_);
   }
 
-  virtual void RegisterClient(QuotaClient* client) {
+  virtual void RegisterClient(QuotaClient* client) OVERRIDE {
     EXPECT_FALSE(registered_client_);
     registered_client_ = client;
   }

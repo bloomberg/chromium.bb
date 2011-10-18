@@ -4,6 +4,8 @@
 
 #include "webkit/quota/quota_temporary_storage_evictor.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/metrics/histogram.h"
 #include "googleurl/src/gurl.h"
@@ -41,7 +43,6 @@ QuotaTemporaryStorageEvictor::QuotaTemporaryStorageEvictor(
       quota_eviction_handler_(quota_eviction_handler),
       interval_ms_(interval_ms),
       repeated_eviction_(true),
-      callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(quota_eviction_handler);
 }
@@ -218,8 +219,9 @@ void QuotaTemporaryStorageEvictor::OnGotLRUOrigin(const GURL& origin) {
   }
 
   quota_eviction_handler_->EvictOriginData(origin, kStorageTypeTemporary,
-      callback_factory_.NewCallback(
-          &QuotaTemporaryStorageEvictor::OnEvictionComplete));
+      base::Bind(
+          &QuotaTemporaryStorageEvictor::OnEvictionComplete,
+          weak_factory_.GetWeakPtr()));
 }
 
 void QuotaTemporaryStorageEvictor::OnEvictionComplete(

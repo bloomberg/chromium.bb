@@ -4,8 +4,12 @@
 
 #include "webkit/appcache/appcache_storage_impl.h"
 
+#include <algorithm>
+#include <functional>
 #include <set>
+#include <vector>
 
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -549,7 +553,8 @@ void AppCacheStorageImpl::StoreGroupAndCacheTask::GetQuotaThenSchedule() {
   storage_->pending_quota_queries_.insert(this);
   quota_manager->GetUsageAndQuota(
       group_record_.origin, quota::kStorageTypeTemporary,
-      NewCallback(this, &StoreGroupAndCacheTask::OnQuotaCallback));
+      base::Bind(&StoreGroupAndCacheTask::OnQuotaCallback,
+                 base::Unretained(this)));
 }
 
 void AppCacheStorageImpl::StoreGroupAndCacheTask::OnQuotaCallback(

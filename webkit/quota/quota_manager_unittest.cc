@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
-#include "base/memory/scoped_callback_factory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
@@ -40,8 +39,7 @@ class QuotaManagerTest : public testing::Test {
 
  public:
   QuotaManagerTest()
-      : callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-        weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      : weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
         mock_time_counter_(0) {
   }
 
@@ -78,25 +76,27 @@ class QuotaManagerTest : public testing::Test {
 
   void GetUsageInfo() {
     usage_info_.clear();
-    quota_manager_->GetUsageInfo(callback_factory_.NewCallback(
-        &QuotaManagerTest::DidGetUsageInfo));
+    quota_manager_->GetUsageInfo(
+        base::Bind(&QuotaManagerTest::DidGetUsageInfo,
+                   weak_factory_.GetWeakPtr()));
   }
 
   void GetUsageAndQuota(const GURL& origin, StorageType type) {
     quota_status_ = kQuotaStatusUnknown;
     usage_ = -1;
     quota_ = -1;
-    quota_manager_->GetUsageAndQuota(origin, type,
-        callback_factory_.NewCallback(
-            &QuotaManagerTest::DidGetUsageAndQuota));
+    quota_manager_->GetUsageAndQuota(
+        origin, type,
+        base::Bind(&QuotaManagerTest::DidGetUsageAndQuota,
+                   weak_factory_.GetWeakPtr()));
   }
 
   void GetTemporaryGlobalQuota() {
     quota_status_ = kQuotaStatusUnknown;
     quota_ = -1;
     quota_manager_->GetTemporaryGlobalQuota(
-        callback_factory_.NewCallback(
-            &QuotaManagerTest::DidGetQuota));
+        base::Bind(&QuotaManagerTest::DidGetQuota,
+                   weak_factory_.GetWeakPtr()));
   }
 
   void SetTemporaryGlobalQuota(int64 new_quota) {
@@ -104,8 +104,8 @@ class QuotaManagerTest : public testing::Test {
     quota_ = -1;
     quota_manager_->SetTemporaryGlobalOverrideQuota(
         new_quota,
-        callback_factory_.NewCallback(
-            &QuotaManagerTest::DidGetQuota));
+        base::Bind(&QuotaManagerTest::DidGetQuota,
+                   weak_factory_.GetWeakPtr()));
   }
 
   void GetPersistentHostQuota(const std::string& host) {
@@ -113,9 +113,10 @@ class QuotaManagerTest : public testing::Test {
     host_.clear();
     type_ = kStorageTypeUnknown;
     quota_ = -1;
-    quota_manager_->GetPersistentHostQuota(host,
-        callback_factory_.NewCallback(
-            &QuotaManagerTest::DidGetHostQuota));
+    quota_manager_->GetPersistentHostQuota(
+        host,
+        base::Bind(&QuotaManagerTest::DidGetHostQuota,
+                   weak_factory_.GetWeakPtr()));
   }
 
   void SetPersistentHostQuota(const std::string& host, int64 new_quota) {
@@ -123,33 +124,37 @@ class QuotaManagerTest : public testing::Test {
     host_.clear();
     type_ = kStorageTypeUnknown;
     quota_ = -1;
-    quota_manager_->SetPersistentHostQuota(host, new_quota,
-        callback_factory_.NewCallback(
-            &QuotaManagerTest::DidGetHostQuota));
+    quota_manager_->SetPersistentHostQuota(
+        host, new_quota,
+        base::Bind(&QuotaManagerTest::DidGetHostQuota,
+                   weak_factory_.GetWeakPtr()));
   }
 
   void GetGlobalUsage(StorageType type) {
     type_ = kStorageTypeUnknown;
     usage_ = -1;
     unlimited_usage_ = -1;
-    quota_manager_->GetGlobalUsage(type,
-        callback_factory_.NewCallback(
-            &QuotaManagerTest::DidGetGlobalUsage));
+    quota_manager_->GetGlobalUsage(
+        type,
+        base::Bind(&QuotaManagerTest::DidGetGlobalUsage,
+                   weak_factory_.GetWeakPtr()));
   }
 
   void GetHostUsage(const std::string& host, StorageType type) {
     host_.clear();
     type_ = kStorageTypeUnknown;
     usage_ = -1;
-    quota_manager_->GetHostUsage(host, type,
-        callback_factory_.NewCallback(
-            &QuotaManagerTest::DidGetHostUsage));
+    quota_manager_->GetHostUsage(
+        host, type,
+        base::Bind(&QuotaManagerTest::DidGetHostUsage,
+                   weak_factory_.GetWeakPtr()));
   }
 
   void RunAdditionalUsageAndQuotaTask(const GURL& origin, StorageType type) {
-    quota_manager_->GetUsageAndQuota(origin, type,
-        callback_factory_.NewCallback(
-            &QuotaManagerTest::DidGetUsageAndQuotaAdditional));
+    quota_manager_->GetUsageAndQuota(
+        origin, type,
+        base::Bind(&QuotaManagerTest::DidGetUsageAndQuotaAdditional,
+                   weak_factory_.GetWeakPtr()));
   }
 
   void DeleteClientOriginData(QuotaClient* client,
@@ -157,33 +162,36 @@ class QuotaManagerTest : public testing::Test {
                         StorageType type) {
     DCHECK(client);
     quota_status_ = kQuotaStatusUnknown;
-    client->DeleteOriginData(origin, type,
-        callback_factory_.NewCallback(
-            &QuotaManagerTest::StatusCallback));
+    client->DeleteOriginData(
+        origin, type,
+        base::Bind(&QuotaManagerTest::StatusCallback,
+                   weak_factory_.GetWeakPtr()));
   }
 
   void EvictOriginData(const GURL& origin,
                        StorageType type) {
     quota_status_ = kQuotaStatusUnknown;
-    quota_manager_->EvictOriginData(origin, type,
-        callback_factory_.NewCallback(
-            &QuotaManagerTest::StatusCallback));
+    quota_manager_->EvictOriginData(
+        origin, type,
+        base::Bind(&QuotaManagerTest::StatusCallback,
+                   weak_factory_.GetWeakPtr()));
   }
 
   void DeleteOriginData(const GURL& origin,
                         StorageType type) {
     quota_status_ = kQuotaStatusUnknown;
-    quota_manager_->DeleteOriginData(origin, type,
-        callback_factory_.NewCallback(
-            &QuotaManagerTest::StatusCallback));
+    quota_manager_->DeleteOriginData(
+        origin, type,
+        base::Bind(&QuotaManagerTest::StatusCallback,
+                   weak_factory_.GetWeakPtr()));
   }
 
   void GetAvailableSpace() {
     quota_status_ = kQuotaStatusUnknown;
     available_space_ = -1;
     quota_manager_->GetAvailableSpace(
-        callback_factory_.NewCallback(
-            &QuotaManagerTest::DidGetAvailableSpace));
+        base::Bind(&QuotaManagerTest::DidGetAvailableSpace,
+                   weak_factory_.GetWeakPtr()));
   }
 
   void GetUsageAndQuotaForEviction() {
@@ -234,23 +242,24 @@ class QuotaManagerTest : public testing::Test {
   void GetOriginsModifiedSince(StorageType type, base::Time modified_since) {
     modified_origins_.clear();
     modified_origins_type_ = kStorageTypeUnknown;
-    quota_manager_->GetOriginsModifiedSince(type, modified_since,
-        callback_factory_.NewCallback(
-            &QuotaManagerTest::DidGetModifiedOrigins));
+    quota_manager_->GetOriginsModifiedSince(
+        type, modified_since,
+        base::Bind(&QuotaManagerTest::DidGetModifiedOrigins,
+                   weak_factory_.GetWeakPtr()));
   }
 
   void DumpQuotaTable() {
     quota_entries_.clear();
     quota_manager_->DumpQuotaTable(
-        callback_factory_.NewCallback(
-            &QuotaManagerTest::DidDumpQuotaTable));
+        base::Bind(&QuotaManagerTest::DidDumpQuotaTable,
+                   weak_factory_.GetWeakPtr()));
   }
 
   void DumpOriginInfoTable() {
     origin_info_entries_.clear();
     quota_manager_->DumpOriginInfoTable(
-        callback_factory_.NewCallback(
-            &QuotaManagerTest::DidDumpOriginInfoTable));
+        base::Bind(&QuotaManagerTest::DidDumpOriginInfoTable,
+                   weak_factory_.GetWeakPtr()));
   }
 
   void DidGetUsageInfo(const UsageInfoEntries& entries) {
@@ -376,7 +385,6 @@ class QuotaManagerTest : public testing::Test {
   }
 
   ScopedTempDir data_dir_;
-  base::ScopedCallbackFactory<QuotaManagerTest> callback_factory_;
   base::WeakPtrFactory<QuotaManagerTest> weak_factory_;
 
   scoped_refptr<QuotaManager> quota_manager_;

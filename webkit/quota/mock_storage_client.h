@@ -8,6 +8,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <utility>
 
 #include "base/compiler_specific.h"
 #include "base/task.h"
@@ -48,27 +49,27 @@ class MockStorageClient : public QuotaClient {
   virtual void OnQuotaManagerDestroyed() OVERRIDE;
   virtual void GetOriginUsage(const GURL& origin_url,
                               StorageType type,
-                              GetUsageCallback* callback) OVERRIDE;
+                              const GetUsageCallback& callback) OVERRIDE;
   virtual void GetOriginsForType(StorageType type,
-                                 GetOriginsCallback* callback) OVERRIDE;
+                                 const GetOriginsCallback& callback) OVERRIDE;
   virtual void GetOriginsForHost(StorageType type, const std::string& host,
-                                 GetOriginsCallback* callback) OVERRIDE;
+                                 const GetOriginsCallback& callback) OVERRIDE;
   virtual void DeleteOriginData(const GURL& origin,
                                 StorageType type,
-                                DeletionCallback* callback) OVERRIDE;
+                                const DeletionCallback& callback) OVERRIDE;
 
  private:
   void RunGetOriginUsage(const GURL& origin_url,
                          StorageType type,
-                         GetUsageCallback* callback);
+                         const GetUsageCallback& callback);
   void RunGetOriginsForType(StorageType type,
-                            GetOriginsCallback* callback);
+                            const GetOriginsCallback& callback);
   void RunGetOriginsForHost(StorageType type,
                             const std::string& host,
-                            GetOriginsCallback* callback);
+                            const GetOriginsCallback& callback);
   void RunDeleteOriginData(const GURL& origin_url,
                            StorageType type,
-                           DeletionCallback* callback);
+                           const DeletionCallback& callback);
 
   scoped_refptr<QuotaManagerProxy> quota_manager_proxy_;
   const ID id_;
@@ -77,10 +78,6 @@ class MockStorageClient : public QuotaClient {
   OriginDataMap origin_data_;
   typedef std::set<std::pair<GURL, StorageType> > ErrorOriginSet;
   ErrorOriginSet error_origins_;
-
-  std::set<GetUsageCallback*> usage_callbacks_;
-  std::set<GetOriginsCallback*> origins_callbacks_;
-  std::set<DeletionCallback*> deletion_callbacks_;
 
   int mock_time_counter_;
 
