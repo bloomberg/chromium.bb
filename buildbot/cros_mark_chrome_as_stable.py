@@ -282,7 +282,7 @@ def _AnnotateAndPrint(text, url):
     text: Anchor text for the link
     url: the URL to which to link
   """
-  print >> sys.stderr, '@@@STEP_LINK@%(text)s@%(url)s@@@' % { 'text': text,
+  print >> sys.stderr, '\n@@@STEP_LINK@%(text)s@%(url)s@@@' % { 'text': text,
                                                               'url': url }
 
 def GetChromeRevisionLinkFromVersions(old_chrome_version, chrome_version):

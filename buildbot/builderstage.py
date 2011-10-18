@@ -182,7 +182,7 @@ class BuilderStage(object):
     """Can be overridden.  Called before a stage is performed."""
 
     # Tell the buildbot we are starting a new step for the waterfall
-    print '@@@BUILD_STEP %s@@@\n' % self.name
+    print '\n@@@BUILD_STEP %s@@@\n' % self.name
 
     self._PrintLoudly('Start Stage %s - %s\n\n%s' % (
         self.name, time.strftime('%H:%M:%S'), self.__doc__))
@@ -205,7 +205,7 @@ class BuilderStage(object):
     is not an exception.
     """
     # Tell the user about the exception, and record it
-    print '@@@STEP_FAILURE@@@'
+    print '\n@@@STEP_FAILURE@@@'
     description = None
     if isinstance(exception, NonBacktraceBuildException):
       description = str(exception)

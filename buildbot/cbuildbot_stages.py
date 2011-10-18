@@ -44,7 +44,7 @@ class ForgivingBuilderStage(NonHaltingBuilderStage):
   """Build stage that turns a build step red but not a build."""
   def _HandleStageException(self, exception):
     """Override and don't set status to FAIL but FORGIVEN instead."""
-    print '@@@STEP_WARNINGS@@@'
+    print '\n@@@STEP_WARNINGS@@@'
     description = traceback.format_exc()
     print >> sys.stderr, description
     return results_lib.Results.FORGIVEN, None

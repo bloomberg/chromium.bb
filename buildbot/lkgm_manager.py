@@ -32,7 +32,7 @@ class PromoteCandidateException(Exception):
 
 def PrintLink(text, url):
   """Prints out a link to buildbot."""
-  print '@@@STEP_LINK@%(text)s@%(url)s@@@' % { 'text': text, 'url': url }
+  print '\n@@@STEP_LINK@%(text)s@%(url)s@@@' % { 'text': text, 'url': url }
 
 
 def _SyncGitRepo(local_dir):
