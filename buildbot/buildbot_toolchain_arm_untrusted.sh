@@ -66,8 +66,9 @@ case ${BUILD_OS}-${BUILD_ARCH}-${BUILD_LIBMODE} in
   linux-64-glibc)
     TOOLCHAIN_LABEL=pnacl_linux_x86_64_glibc
     UTMAN="tools/llvm/gutman.sh"
-    # TODO(pdox): Determine which tests should be run.
     RUN_TESTS=""
+    #RUN_TESTS="x86-32-glibc x86-32-browser-glibc"
+    #RUN_TESTS+=" x86-64-glibc x86-64-browser-glibc"
     ;;
   mac-32-newlib)
     export UTMAN_VERBOSE=true  # To avoid timing out, since this bot is slow.

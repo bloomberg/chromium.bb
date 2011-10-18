@@ -3,12 +3,31 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
-#@                 Untrusted Toolchain Test Helper
+#@                   PNaCl Test Helper
 #@-------------------------------------------------------------------
-#@ It MUST be run from the native_client/ directory.
+#@
+#@ SCons Test Usage:
+#@
+#@   utman-test.sh test-<arch>-<mode> [extra_arguments_to_scons]
+#@
+#@      Runs the SCons tests with selected arch and mode.
+#@      Valid arches:
+#@          x86-32
+#@          x86-64
+#@          arm
+#@      Available modes:
+#@          newlib (same as omitting mode)
+#@          pic
+#@          sbtc
+#@          glibc
+#@          browser
+#@          browser-glibc
+#@
+#@      For example: tools/llvm/utman-test.sh test-x86-32-glibc
 #@
 #@ The env variables: UTMAN_CONCURRENCY, UTMAN_BUILDBOT, UTMAN_DEBUG
 #@ control behavior of this script
+#@
 #@
 
 ######################################################################
@@ -27,6 +46,9 @@ if [[ $(basename "$(pwd)") != "native_client" ]] ; then
 fi
 readonly NACL_ROOT="$(pwd)"
 
+readonly DRYRUN=${DRYRUN:-false}
+
+# This is only used by Spec2K test scripts.
 readonly PNACL_LIBMODE=${LIBMODE:-newlib}
 export PNACL_LIBMODE
 
@@ -52,14 +74,12 @@ readonly OTHER_TEST_SCRIPT="${NACL_ROOT}/buildbot/buildbot_pnacl.sh"
 if ${UTMAN_DEBUG} || ${UTMAN_BUILDBOT}; then
   readonly SCONS_ARGS=(MODE=nacl,opt-host
                        bitcode=1
-                       sdl=none
                        --verbose
                        -j${UTMAN_CONCURRENCY})
 else
   readonly SCONS_ARGS=(MODE=nacl,opt-host
                        bitcode=1
                        naclsdk_validate=0
-                       sdl=none
                        sysinfo=0
                        -j${UTMAN_CONCURRENCY})
 fi
@@ -70,173 +90,140 @@ show-tests() {
   cat $(find tests -name nacl.scons) | grep -o 'run_[A-Za-z_-]*' | sort | uniq
 }
 
-#+ scons-determine-tests  - returns:
-#+    (a) "true smoke_tests [-k]" if all smoke_tests should be built and run.
-#+ or (b) "false $@" if not all tests should be built because specific tests
-#+        are already identified in $@. The test must be the first element
-#+        of $@, but we don't check that here.
-scons-determine-tests() {
-  if [ $# -eq 0 ] || ([ $# -eq 1 ] && [ "$1" == "-k" ]); then
-    # $@ should only tack on the -k flag or nothing
-    echo "true smoke_tests $@"
+Run() {
+  if ${DRYRUN}; then
+    echo "$@"
   else
-    echo "false $@"
+    "$@"
   fi
 }
 
-scons-build-sbtc-prerequisites() {
-  local platform=$1
+RunScons() {
+  local arch="$1"
+  shift 1
+  Run ./scons "${SCONS_ARGS[@]}" platform=${arch} "$@"
+}
+
+# Returns true if the arguments specify a test
+# or target name to SCons.
+has-target-name() {
+  while [ $# -gt 0 ]; do
+    # Skip arguments of the form -foo, --foo, or foo=bar.
+    if [[ "$1" =~ ^-.* ]] || [[ "$1" =~ = ]]; then
+      shift 1
+      continue
+    fi
+    return 0
+  done
+  return 1
+}
+
+scons-clean () {
+  local arch=$1
+  local mode=$2
+  local frontend=clang
+  if [ "${mode}" == "newlib" ] ; then
+    Run rm -rf scons-out/nacl-${arch}-pnacl-${frontend}
+  else
+    Run rm -rf scons-out/nacl-${arch}-pnacl-${mode}-${frontend}
+  fi
+}
+
+build-sbtc-prerequisites() {
+  local arch=$1
   # Sandboxed translators currently only require irt_core since they do not
   # use PPAPI.
-  ./scons platform=${platform} ${SCONS_ARGS[@]} sel_ldr sel_universal \
-    irt_core
+  RunScons ${arch} sel_ldr sel_universal irt_core
 }
 
-scons-clean-pnacl-build-dir () {
-  rm -rf scons-out/nacl-$1-pnacl
+# TODO(pdox):
+# "mode" is presently a combination of multiple bits:
+# Newlib vs. GLibC, sandboxed vs unsandboxed, PIC vs non-PIC
+# These options should be isolated and kept separate.
+get-mode-flags() {
+  local mode="$1"
+  local modeflags=""
+  case ${mode} in
+  newlib)
+    ;;
+  sbtc)
+    modeflags="use_sandboxed_translator=1"
+    ;;
+  pic)
+    modeflags="nacl_pic=1"
+    ;;
+  glibc)
+    modeflags="--nacl_glibc"
+    ;;
+  *)
+    echo "Unknown mode" 1>&2
+    exit -1
+  esac
+  echo ${modeflags}
 }
 
-scons-clean-pnacl-pic-build-dir () {
-  rm -rf scons-out/nacl-$1-pnacl-pic
-}
+scons-tests () {
+  local arch="$1"
+  local mode="$2"
+  shift 2
+  scons-clean ${arch} ${mode}
 
-scons-clean-pnacl-sbtc-build-dir () {
-  rm -rf scons-out/nacl-$1-pnacl-sbtc
-}
-
-scons-pnacl-build () {
-  local platform=$1
-  shift
-  ./scons ${SCONS_ARGS[@]} platform=${platform} "$@"
-}
-
-run-scons-tests() {
-  local platform=$1
-  local should_build_all=$2
-  local testname=$3
-  shift 3
-  # The rest of the arguments should be flags!
-
-  # See if we should build all the tests.
-  if ${should_build_all}; then
-    scons-pnacl-build ${platform} $@
+  if [ ${mode} == "sbtc" ]; then
+    build-sbtc-prerequisites "${arch}"
   fi
 
-  # Then run the listed tests.
-  scons-pnacl-build ${platform} ${testname} $@
+  local modeflags=$(get-mode-flags ${mode})
+
+  if has-target-name "$@" ; then
+    RunScons ${arch} ${modeflags} "$@"
+  else
+    RunScons ${arch} ${modeflags} "$@"
+    RunScons ${arch} ${modeflags} "$@" smoke_tests
+  fi
 }
 
-test-scons-common () {
-  local platform=$1
-  shift
-  scons-clean-pnacl-build-dir ${platform}
-
-  test_setup=$(scons-determine-tests "$@")
-  run-scons-tests ${platform} ${test_setup}
+browser-tests() {
+  local arch="$1"
+  local extra="$2"
+  # This calls out to the other buildbot test script. We should have
+  # buildbot_toolchain_arm_untrusted.sh use the same tests directly.
+  # TODO(jvoung): remove these when unified.
+  # scons browser-tests are currently broken with concurrency, so use -j1
+  # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2019
+  Run ${OTHER_TEST_SCRIPT} browser-tests \
+    "${arch}" "--mode=opt-host,nacl -j1 ${extra}"
 }
 
-test-scons-pic-common () {
-  local platform=$1
-  shift
-  scons-clean-pnacl-pic-build-dir ${platform}
+test-arm()        { scons-tests arm newlib "$@" ; }
+test-x86-32()     { scons-tests x86-32 newlib "$@" ; }
+test-x86-64()     { scons-tests x86-64 newlib "$@" ; }
 
-  test_setup=$(scons-determine-tests "$@")
-  run-scons-tests ${platform} ${test_setup} nacl_pic=1
-}
+test-arm-newlib()    { scons-tests arm newlib "$@" ; }
+test-x86-32-newlib() { scons-tests x86-32 newlib "$@" ; }
+test-x86-64-newlib() { scons-tests x86-64 newlib "$@" ; }
 
-test-scons-sbtc-common () {
-  local platform=$1
-  shift
-  scons-clean-pnacl-sbtc-build-dir ${platform}
-  scons-build-sbtc-prerequisites ${platform}
+test-arm-pic()    { scons-tests arm pic "$@" ; }
+test-x86-32-pic() { scons-tests x86-32 pic "$@" ; }
+test-x86-64-pic() { scons-tests x86-64 pic "$@" ; }
 
-  test_setup=$(scons-determine-tests "$@")
-  run-scons-tests ${platform} ${test_setup} use_sandboxed_translator=1
-}
+test-arm-sbtc()    { scons-tests arm sbtc "$@" ; }
+test-x86-32-sbtc() { scons-tests x86-32 sbtc "$@" ; }
+test-x86-64-sbtc() { scons-tests x86-64 sbtc "$@" ; }
 
-#@ test-arm              - run arm tests via pnacl toolchain
-#@ test-arm <test>       - run a single arm test via pnacl toolchain
-test-arm() {
-  test-scons-common arm "$@"
-}
+test-arm-glibc()    { scons-tests arm glibc "$@" ; }
+test-x86-32-glibc() { scons-tests x86-32 glibc "$@" ; }
+test-x86-64-glibc() { scons-tests x86-64 glibc "$@" ; }
 
-#@ test-x86-32           - run x86-32 tests via pnacl toolchain
-#@ test-x86-32 <test>    - run a single x86-32 test via pnacl toolchain
-test-x86-32() {
-  test-scons-common x86-32 "$@"
-}
+test-arm-browser()    { browser-tests "arm" "" ; }
+test-x86-32-browser() { browser-tests "x86-32" "" ; }
+test-x86-64-browser() { browser-tests "x86-64" "" ; }
 
-#@ test-x86-64           - run all x86-64 tests via pnacl toolchain
-#@ test-x86-64 <test>    - run a single x86-64 test via pnacl toolchain
-test-x86-64() {
-  test-scons-common x86-64 "$@"
-}
+test-arm-browser-glibc() { browser-tests "arm" "--nacl_glibc" ; }
+test-x86-32-browser-glibc() { browser-tests "x86-32" "--nacl_glibc" ; }
+test-x86-64-browser-glibc() { browser-tests "x86-64" "--nacl_glibc" ; }
 
-#@ test-arm-pic           - run all arm pic tests via pnacl toolchain
-#@ test-arm-pic <test>    - run a single arm pic test via pnacl toolchain
-test-arm-pic() {
-  test-scons-pic-common arm "$@"
-}
-
-#@ test-x86-32-pic        - run all x86-32 pic tests via pnacl toolchain
-#@ test-x86-32-pic <test> - run a single x86-32 pic test via pnacl toolchain
-test-x86-32-pic() {
-  test-scons-pic-common x86-32 "$@"
-}
-
-#@ test-x86-64-pic        - run all x86-64 pic tests via pnacl toolchain
-#@ test-x86-64-pic <test> - run a single x86-64 pic test via pnacl toolchain
-test-x86-64-pic() {
-  test-scons-pic-common x86-64 "$@"
-}
-
-#@ test-arm-sbtc           - run all arm tests via sandboxed pnacl toolchain
-#@ test-arm-sbtc <test>    - run a single arm test
-test-arm-sbtc() {
-  test-scons-sbtc-common arm "$@"
-}
-
-#@ test-x86-32-sbtc        - run all x86-32 tests via sandboxed pnacl toolchain
-#@ test-x86-32-sbtc <test> - run a single x86-32 test
-test-x86-32-sbtc() {
-  test-scons-sbtc-common x86-32 "$@"
-}
-
-#@ test-x86-64-sbtc        - run all x86-64 tests via sandboxed pnacl toolchain
-#@ test-x86-64-sbtc <test> - run a single x86-64 test
-test-x86-64-sbtc() {
-  test-scons-sbtc-common x86-64 "$@"
-}
-
-#@ --- Displayless chrome browser tests (for bots / interruption-free testing).
-#@ --- To run a browser test with a display, use plain test-${arch} instead.
-
-# These call out to the other buildbot test script. We should have
-# buildbot_toolchain_arm_untrusted.sh use the same tests directly.
-# TODO(jvoung): remove these when unified.
-
-# scons browser-tests are currently broken with concurrency, so use -j1
-# BUG= http://code.google.com/p/nativeclient/issues/detail?id=2019
-
-#@ test-arm-browser      - run arm browser tests via pnacl toolchain.
-test-arm-browser() {
-  ${OTHER_TEST_SCRIPT} browser-tests "arm" \
-    "--mode=opt-host,nacl -j1"
-}
-
-#@ test-x86-32-browser   - run x86-32 browser tests via pnacl toolchain.
-test-x86-32-browser() {
-  ${OTHER_TEST_SCRIPT} browser-tests "x86-32" \
-    "--mode=opt-host,nacl -j1"
-}
-
-#@ test-x86-64-browser   - run all x86-64 browser tests via pnacl toolchain.
-test-x86-64-browser() {
-  ${OTHER_TEST_SCRIPT} browser-tests "x86-64" \
-    "--mode=opt-host,nacl -j1"
-}
-
-#@ test-all              - run arm, x86-32, and x86-64 tests. (all should pass)
+#@
+#@ test-all  - Run arm, x86-32, and x86-64 tests. (all should pass)
 test-all() {
   if [ $# -ne 0 ]; then
     echo "test-all does not take any arguments"
@@ -246,12 +233,9 @@ test-all() {
   FAIL_FAST=true ${OTHER_TEST_SCRIPT} mode-test-all ${UTMAN_CONCURRENCY}
 }
 
-#####
-
-
+#@
 #@ test-spec <official-spec-dir> <setup> [ref|train] [<benchmarks>]*
 #@                       - run spec tests
-#@
 test-spec() {
   if [[ $# -lt 2 ]]; then
     echo "not enough arguments for test-spec"
@@ -268,10 +252,10 @@ test-spec() {
   spopd
 }
 
-#@ CollectTimingInfo <directory> <timing_result_file> <tagtype...>
-#@  CD's into the directory in a subshell and collects all the
-#@  relevant timed run info
-#@  tagtype just gets printed out.
+#+ CollectTimingInfo <directory> <timing_result_file> <tagtype...>
+#+  CD's into the directory in a subshell and collects all the
+#+  relevant timed run info
+#+  tagtype just gets printed out.
 CollectTimingInfo() {
   wd=$1
   result_file=$2
@@ -296,7 +280,7 @@ CollectTimingInfo() {
   )
 }
 
-
+#@
 #@ timed-test-spec <result-file> <official-spec-dir> <setup> ... - run spec and
 #@  measure time / size data. Data is emitted to stdout, but also collected
 #@  in <result-file>. <result-file> is not cleared across runs (but temp files
@@ -324,14 +308,6 @@ timed-test-spec() {
   CollectTimingInfo $(pwd) ${result_file} ${setup}
   spopd
 }
-
-
-#@ test-bot-base         - tests that must pass on the bots to validate a TC
-test-bot-base() {
-  # TODO(robertm): this is missing adhoc tests.
-  test-all
-}
-
 
 #@ help                  - Usage information.
 help() {
