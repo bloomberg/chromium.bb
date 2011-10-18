@@ -75,6 +75,17 @@ var SourceTracker = (function() {
     },
 
     /**
+     * Returns the description of the specified SourceEntry, or an empty string
+     * if it doesn't exist.
+     */
+    getDescription: function(id) {
+      var entry = this.getSourceEntry(id);
+      if (entry)
+        return entry.getDescription();
+      return '';
+    },
+
+    /**
      * Returns the specified SourceEntry.
      */
     getSourceEntry: function(id) {

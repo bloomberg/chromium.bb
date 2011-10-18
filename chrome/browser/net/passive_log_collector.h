@@ -384,6 +384,22 @@ class PassiveLogCollector : public ChromeNetLog::ThreadSafeObserverImpl {
     DISALLOW_COPY_AND_ASSIGN(AsyncHostResolverRequestTracker);
   };
 
+
+  // Tracks the log entries for the last seen SOURCE_UDP_SOCKET.
+  class UDPSocketTracker : public SourceTracker {
+   public:
+    static const size_t kMaxNumSources;
+    static const size_t kMaxGraveyardSize;
+
+    UDPSocketTracker();
+
+   private:
+    virtual Action DoAddEntry(const ChromeNetLog::Entry& entry,
+                              SourceInfo* out_info);
+
+    DISALLOW_COPY_AND_ASSIGN(UDPSocketTracker);
+  };
+
   PassiveLogCollector();
   virtual ~PassiveLogCollector();
 
@@ -426,6 +442,7 @@ class PassiveLogCollector : public ChromeNetLog::ThreadSafeObserverImpl {
   ExponentialBackoffThrottlingTracker exponential_backoff_throttling_tracker_;
   DnsTransactionTracker dns_transaction_tracker_;
   AsyncHostResolverRequestTracker async_host_resolver_request_tracker_;
+  UDPSocketTracker udp_socket_tracker_;
 
   // This array maps each NetLog::SourceType to one of the tracker instances
   // defined above. Use of this array avoid duplicating the list of trackers

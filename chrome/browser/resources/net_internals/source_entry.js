@@ -99,12 +99,28 @@ var SourceEntry = (function() {
             this.description_ = e.params.host + ' (' + e.params.proxy + ')';
           break;
         case LogSourceType.SOCKET:
+          // Use description of parent source, if any.
           if (e.params.source_dependency != undefined) {
-            var connectJobId = e.params.source_dependency.id;
-            var connectJob =
-                g_browser.sourceTracker.getSourceEntry(connectJobId);
-            if (connectJob)
-              this.description_ = connectJob.getDescription();
+            var parentId = e.params.source_dependency.id;
+            this.description_ =
+                g_browser.sourceTracker.getDescription(parentId);
+          }
+          break;
+        case LogSourceType.UDP_SOCKET:
+          if (e.params.address != undefined) {
+            this.description_ = e.params.address;
+            // If the parent of |this| is a DNS_TRANSACTION, use
+            // '<DNS Server IP> [<DNS we're resolving>]'.
+            if (this.entries_[0].type == LogEventType.SOCKET_ALIVE &&
+                this.entries_[0].params.source_dependency != undefined) {
+              var parentId = this.entries_[0].params.source_dependency.id;
+              var parent = g_browser.sourceTracker.getSourceEntry(parentId);
+              if (parent &&
+                  parent.getSourceType() == LogSourceType.DNS_TRANSACTION &&
+                  parent.getDescription().length > 0) {
+                this.description_ += ' [' + parent.getDescription() + ']';
+              }
+            }
           }
           break;
         case LogSourceType.ASYNC_HOST_RESOLVER_REQUEST:
@@ -137,8 +153,10 @@ var SourceEntry = (function() {
         return undefined;
       if (this.entries_.length >= 2) {
         if (this.entries_[0].type == LogEventType.REQUEST_ALIVE ||
-            this.entries_[0].type == LogEventType.SOCKET_POOL_CONNECT_JOB)
+            this.entries_[0].type == LogEventType.SOCKET_POOL_CONNECT_JOB ||
+            this.entries_[1].type == LogEventType.UDP_CONNECT) {
           return this.entries_[1];
+        }
       }
       return this.entries_[0];
     },
