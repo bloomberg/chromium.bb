@@ -231,11 +231,14 @@ bool InstantController::IsCurrent() {
 }
 
 bool InstantController::PrepareForCommit() {
+  // Basic checks to prevent accessing a dangling |tab_contents_| pointer.
+  // http://crbug.com/100521.
+  if (is_out_of_date_ || !loader_.get())
+    return false;
+
   // If we are not in the HIDDEN field trial, return the status of the preview.
-  if (!tab_contents_ ||
-      !InstantFieldTrial::IsHiddenExperiment(tab_contents_->profile())) {
+  if (!InstantFieldTrial::IsHiddenExperiment(tab_contents_->profile()))
     return IsCurrent();
-  }
 
   TemplateURLService* model = TemplateURLServiceFactory::GetForProfile(
       tab_contents_->profile());
@@ -243,9 +246,7 @@ bool InstantController::PrepareForCommit() {
     return false;
 
   const TemplateURL* template_url = model->GetDefaultSearchProvider();
-  if (is_out_of_date_ ||
-      !IsValidInstantTemplateURL(template_url) ||
-      !loader_.get() ||
+  if (!IsValidInstantTemplateURL(template_url) ||
       loader_->template_url_id() != template_url->id() ||
       loader_->IsNavigationPending() ||
       loader_->is_determining_if_page_supports_instant()) {
@@ -393,6 +394,7 @@ TabContentsWrapper* InstantController::ReleasePreviewContents(
 
   TabContentsWrapper* tab = loader_->ReleasePreviewContents(type);
   ClearBlacklist();
+  is_out_of_date_ = true;
   is_displayable_ = false;
   commit_on_mouse_up_ = false;
   omnibox_bounds_ = gfx::Rect();
