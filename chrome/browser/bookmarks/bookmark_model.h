@@ -117,7 +117,7 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
   // representation but we may want to suppress some nodes.
   // TODO(yfriedman): Remove this when enable-synced-bookmarks-folder is
   // no longer a command line flag.
-  bool IsVisible() const;
+  virtual bool IsVisible() const;
 
   // TODO(sky): Consider adding last visit time here, it'll greatly simplify
   // HistoryContentsProvider.
@@ -158,6 +158,25 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
   HistoryService::Handle favicon_load_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkNode);
+};
+
+// BookmarkPermanentNode ------------------------------------------------------
+
+// The permanent nodes are the three special top level nodes "bookmark_bar",
+// "synced" and "other". Their visibility is dependent on information from the
+// profile, hence this special subclass to accomodate them.
+class BookmarkPermanentNode : public BookmarkNode {
+ public:
+  // Creates a new node with |id| and |url|.
+  BookmarkPermanentNode(int64 id, const GURL& url, Profile* profile);
+
+  virtual ~BookmarkPermanentNode();
+  virtual bool IsVisible() const;
+
+ private:
+  Profile* profile_;
+
+  DISALLOW_COPY_AND_ASSIGN(BookmarkPermanentNode);
 };
 
 // BookmarkModel --------------------------------------------------------------

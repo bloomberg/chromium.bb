@@ -57,14 +57,7 @@ BookmarkNode::~BookmarkNode() {
 }
 
 bool BookmarkNode::IsVisible() const {
-  // The synced bookmark folder is invisible if the flag isn't set and there are
-  // no bookmarks under it.
-  if (type_ != BookmarkNode::SYNCED ||
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableSyncedBookmarksFolder) || !empty()) {
-    return true;
-  }
-  return false;
+  return true;
 }
 
 void BookmarkNode::Initialize(int64 id) {
@@ -78,6 +71,27 @@ void BookmarkNode::Initialize(int64 id) {
 void BookmarkNode::InvalidateFavicon() {
   favicon_ = SkBitmap();
   is_favicon_loaded_ = false;
+}
+
+// BookmarkPermanentNode ------------------------------------------------------
+
+BookmarkPermanentNode::BookmarkPermanentNode(int64 id,
+                                             const GURL& url,
+                                             Profile* profile)
+    : BookmarkNode(id, url),
+      profile_(profile) {
+}
+
+BookmarkPermanentNode::~BookmarkPermanentNode() {
+}
+
+bool BookmarkPermanentNode::IsVisible() const {
+  // The synced bookmark folder is invisible if the flag isn't set and there are
+  // no bookmarks under it.
+  return type() != BookmarkNode::SYNCED ||
+         CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kEnableSyncedBookmarksFolder) ||
+         !empty();
 }
 
 // BookmarkModel --------------------------------------------------------------
@@ -185,7 +199,8 @@ bool BookmarkModel::IsLoaded() const {
 const BookmarkNode* BookmarkModel::GetParentForNewNodes() {
   std::vector<const BookmarkNode*> nodes =
       bookmark_utils::GetMostRecentlyModifiedFolders(this, 1);
-  return nodes.empty() ? bookmark_bar_node_ : nodes[0];
+  DCHECK(!nodes.empty());  // This list is always padded with default folders.
+  return nodes[0];
 }
 
 void BookmarkModel::AddObserver(BookmarkModelObserver* observer) {
@@ -579,8 +594,8 @@ void BookmarkModel::DoneLoading(
   synced_node_ = details->release_synced_folder_node();
   index_.reset(details->release_index());
 
-  // WARNING: order is important here, various places assume bookmark bar then
-  // other node.
+  // WARNING: order is important here, various places assume the order is
+  // constant.
   root_.Add(bookmark_bar_node_, 0);
   root_.Add(other_node_, 1);
   root_.Add(synced_node_, 2);
@@ -708,7 +723,8 @@ BookmarkNode* BookmarkModel::CreatePermanentNode(BookmarkNode::Type type) {
   DCHECK(type == BookmarkNode::BOOKMARK_BAR ||
          type == BookmarkNode::OTHER_NODE ||
          type == BookmarkNode::SYNCED);
-  BookmarkNode* node = new BookmarkNode(generate_next_node_id(), GURL());
+  BookmarkPermanentNode* node = new BookmarkPermanentNode(
+      generate_next_node_id(), GURL(), profile_);
   node->set_type(type);
   if (type == BookmarkNode::BOOKMARK_BAR) {
     node->set_title(l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_FOLDER_NAME));

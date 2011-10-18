@@ -468,11 +468,18 @@ string16 GetNameForURL(const GURL& url) {
   }
 }
 
+// This is used with a tree iterator to skip subtrees which are not visible.
+static bool PruneInvisibleFolders(const BookmarkNode* node) {
+  return !node->IsVisible();
+}
+
 std::vector<const BookmarkNode*> GetMostRecentlyModifiedFolders(
     BookmarkModel* model,
     size_t max_count) {
   std::vector<const BookmarkNode*> nodes;
-  ui::TreeNodeIterator<const BookmarkNode> iterator(model->root_node());
+  ui::TreeNodeIterator<const BookmarkNode>
+      iterator(model->root_node(), PruneInvisibleFolders);
+
   while (iterator.has_next()) {
     const BookmarkNode* parent = iterator.Next();
     if (parent->is_folder() && parent->date_folder_modified() > base::Time()) {
@@ -493,21 +500,19 @@ std::vector<const BookmarkNode*> GetMostRecentlyModifiedFolders(
   }
 
   if (nodes.size() < max_count) {
-    // Add the bookmark bar and other nodes if there is space.
-    if (find(nodes.begin(), nodes.end(), model->bookmark_bar_node()) ==
-        nodes.end()) {
-      nodes.push_back(model->bookmark_bar_node());
-    }
+    // Add the permanent nodes if there is space. The permanent nodes are the
+    // only children of the root_node.
+    const BookmarkNode* root_node = model->root_node();
 
-    if (nodes.size() < max_count &&
-        find(nodes.begin(), nodes.end(), model->other_node()) == nodes.end()) {
-      nodes.push_back(model->other_node());
-    }
+    for (int i = 0; i < root_node->child_count(); ++i) {
+      const BookmarkNode* node = root_node->GetChild(i);
+      if (node->IsVisible() &&
+          find(nodes.begin(), nodes.end(), node) == nodes.end()) {
+        nodes.push_back(node);
 
-    if (nodes.size() < max_count && model->synced_node()->IsVisible() &&
-        find(nodes.begin(), nodes.end(),
-             model->synced_node()) == nodes.end()) {
-      nodes.push_back(model->synced_node());
+        if (nodes.size() == max_count)
+          break;
+      }
     }
   }
   return nodes;
