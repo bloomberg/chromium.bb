@@ -412,6 +412,8 @@ class NotificationsTest(pyauto.PyUITest):
     self.assertTrue(self.WaitForInfobarCount(1, windex=1))
     self.PerformActionOnInfobar('cancel', 0, windex=1)
 
+    self.CloseBrowserWindow(1)
+    self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
     self.NavigateToURL(self.TEST_PAGE_URL, 1, 0)
     self._RequestPermission(windex=1)
     self.assertTrue(self.WaitForInfobarCount(1, windex=1))
@@ -419,6 +421,8 @@ class NotificationsTest(pyauto.PyUITest):
     self._CreateHTMLNotification(self.EMPTY_PAGE_URL, windex=1)
     self.assertEquals(1, len(self.GetActiveNotifications()))
 
+    self.CloseBrowserWindow(1)
+    self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
     self.NavigateToURL(self.TEST_PAGE_URL, 1, 0)
     self._RequestPermission(windex=1)
     self.assertTrue(self.WaitForInfobarCount(1, windex=1))
@@ -465,7 +469,7 @@ class NotificationsTest(pyauto.PyUITest):
     """Test a page cannot create a notification to a chrome: url."""
     self._AllowAllOrigins()
     self.NavigateToURL(self.TEST_PAGE_URL)
-    self._CreateHTMLNotification('chrome://extensions/',
+    self._CreateHTMLNotification('chrome://settings',
                                  wait_for_display=False);
     self.assertFalse(self.GetActiveNotifications())
 
@@ -514,13 +518,13 @@ class NotificationsTest(pyauto.PyUITest):
     self._CreateSimpleNotification('', 'Title1', '')
     self._CreateSimpleNotification('', 'Title2', '')
     self._CreateSimpleNotification('', 'Title3', '')
-    self.assertEquals(3, len(self.GetActiveNotifications()))
-    old_notifications = self.GetActiveNotifications()
+    old_notifications = self.GetAllNotifications()
+    self.assertEquals(3, len(old_notifications))
     self.CloseNotification(1)
-    self.assertEquals(2, len(self.GetActiveNotifications()))
-    new_notifications = self.GetActiveNotifications()
-    self.assertEquals(old_notifications[0], new_notifications[0])
-    self.assertEquals(old_notifications[2], new_notifications[1])
+    new_notifications = self.GetAllNotifications()
+    self.assertEquals(2, len(new_notifications))
+    self.assertEquals(old_notifications[0]['id'], new_notifications[0]['id'])
+    self.assertEquals(old_notifications[2]['id'], new_notifications[1]['id'])
 
   def testNotificationReplacement(self):
     """Test that we can replace a notification using the replaceId."""

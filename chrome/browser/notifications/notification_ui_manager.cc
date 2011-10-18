@@ -231,6 +231,15 @@ void NotificationUIManager::SetPositionPreference(
   balloon_collection_->SetPositionPreference(preference);
 }
 
+void NotificationUIManager::GetQueuedNotificationsForTesting(
+    std::vector<const Notification*>* notifications) {
+  NotificationDeque::const_iterator queued_iter;
+  for (queued_iter = show_queue_.begin(); queued_iter != show_queue_.end();
+       ++queued_iter) {
+    notifications->push_back(&(*queued_iter)->notification());
+  }
+}
+
 void NotificationUIManager::Observe(int type,
                                     const NotificationSource& source,
                                     const NotificationDetails& details) {

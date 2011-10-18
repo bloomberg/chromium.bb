@@ -63,6 +63,7 @@ class ExtensionProcessManager;
 class ExtensionService;
 class InfoBarTabHelper;
 class NavigationController;
+class Notification;
 class Profile;
 class RenderViewHost;
 class SavePackage;
@@ -1532,11 +1533,11 @@ class AutofillFormSubmittedObserver
 
 // Allows the automation provider to wait until all the notification
 // processes are ready.
-class GetActiveNotificationsObserver : public NotificationObserver {
+class GetAllNotificationsObserver : public NotificationObserver {
  public:
-  GetActiveNotificationsObserver(AutomationProvider* automation,
-                                 IPC::Message* reply_message);
-  virtual ~GetActiveNotificationsObserver();
+  GetAllNotificationsObserver(AutomationProvider* automation,
+                              IPC::Message* reply_message);
+  virtual ~GetAllNotificationsObserver();
 
   virtual void Observe(int type,
                        const NotificationSource& source,
@@ -1546,12 +1547,33 @@ class GetActiveNotificationsObserver : public NotificationObserver {
   // Sends a message via the |AutomationProvider|. |automation_| must be valid.
   // Deletes itself after the message is sent.
   void SendMessage();
+  // Returns a new dictionary describing the given notification.
+  base::DictionaryValue* NotificationToJson(const Notification* note);
 
   NotificationRegistrar registrar_;
   base::WeakPtr<AutomationProvider> automation_;
   scoped_ptr<IPC::Message> reply_message_;
 
-  DISALLOW_COPY_AND_ASSIGN(GetActiveNotificationsObserver);
+  DISALLOW_COPY_AND_ASSIGN(GetAllNotificationsObserver);
+};
+
+// Allows the automation provider to wait for a new notification balloon
+// to appear and be ready.
+class NewNotificationBalloonObserver : public NotificationObserver {
+ public:
+  NewNotificationBalloonObserver(AutomationProvider* provider,
+                                 IPC::Message* reply_message);
+  virtual ~NewNotificationBalloonObserver();
+  virtual void Observe(int type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
+ private:
+  NotificationRegistrar registrar_;
+  base::WeakPtr<AutomationProvider> automation_;
+  scoped_ptr<IPC::Message> reply_message_;
+
+  DISALLOW_COPY_AND_ASSIGN(NewNotificationBalloonObserver);
 };
 
 // Allows the automation provider to wait for a given number of

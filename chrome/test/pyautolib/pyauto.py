@@ -2399,8 +2399,8 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       a list containing info about each active notification, with the
       first item in the list being the notification on the bottom of the
       notification stack. The 'content_url' key can refer to a URL or a data
-      URI. The 'pid' key-value pair may be omitted or invalid if the
-      notification is closing.
+      URI. The 'pid' key-value pair may be invalid if the notification is
+      closing.
 
     SAMPLE:
     [ { u'content_url': u'data:text/html;charset=utf-8,%3C!DOCTYPE%l%3E%0Atm...'
@@ -2415,8 +2415,38 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     Raises:
       pyauto_errors.JSONInterfaceError if the automation call returns an error.
     """
+    return [x for x in self.GetAllNotifications() if 'pid' in x]
+
+  def GetAllNotifications(self):
+    """Gets a list of all active and queued HTML5 notifications.
+
+    An active notification is one that is currently shown to the user. Chrome's
+    notification system will limit the number of notifications shown (currently
+    by only allowing a certain percentage of the screen to be taken up by them).
+    A notification will be queued if there are too many active notifications.
+    Once other notifications are closed, another will be shown from the queue.
+
+    Returns:
+      a list containing info about each notification, with the first
+      item in the list being the notification on the bottom of the
+      notification stack. The 'content_url' key can refer to a URL or a data
+      URI. The 'pid' key-value pair will only be present for active
+      notifications.
+
+    SAMPLE:
+    [ { u'content_url': u'data:text/html;charset=utf-8,%3C!DOCTYPE%l%3E%0Atm...'
+        u'display_source': 'www.corp.google.com',
+        u'origin_url': 'http://www.corp.google.com/',
+        u'pid': 8505},
+      { u'content_url': 'http://www.gmail.com/special_notification.html',
+        u'display_source': 'www.gmail.com',
+        u'origin_url': 'http://www.gmail.com/'}]
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
     cmd_dict = {
-      'command': 'GetActiveNotifications',
+      'command': 'GetAllNotifications',
     }
     return self._GetResultFromJSONRequest(cmd_dict)['notifications']
 

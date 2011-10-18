@@ -2504,8 +2504,8 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
   browser_handler_map["AutofillAcceptSelection"] =
       &TestingAutomationProvider::AutofillAcceptSelection;
 
-  browser_handler_map["GetActiveNotifications"] =
-      &TestingAutomationProvider::GetActiveNotifications;
+  browser_handler_map["GetAllNotifications"] =
+      &TestingAutomationProvider::GetAllNotifications;
   browser_handler_map["CloseNotification"] =
       &TestingAutomationProvider::CloseNotification;
   browser_handler_map["WaitForNotificationCount"] =
@@ -5187,13 +5187,13 @@ std::map<AutofillFieldType, std::string>
   return credit_card_type_to_string;
 }
 
-// Refer to GetActiveNotifications() in chrome/test/pyautolib/pyauto.py for
+// Refer to GetAllNotifications() in chrome/test/pyautolib/pyauto.py for
 // sample json input/output.
-void TestingAutomationProvider::GetActiveNotifications(
+void TestingAutomationProvider::GetAllNotifications(
     Browser* browser,
     DictionaryValue* args,
     IPC::Message* reply_message) {
-  new GetActiveNotificationsObserver(this, reply_message);
+  new GetAllNotificationsObserver(this, reply_message);
 }
 
 // Refer to CloseNotification() in chrome/test/pyautolib/pyauto.py for
@@ -5218,9 +5218,14 @@ void TestingAutomationProvider::CloseNotification(
         .SendError(StringPrintf("No notification at index %d", index));
     return;
   }
-  // This will delete itself when finished.
-  new OnNotificationBalloonCountObserver(
-      this, reply_message, balloon_count - 1);
+  std::vector<const Notification*> queued_notes;
+  manager->GetQueuedNotificationsForTesting(&queued_notes);
+  if (queued_notes.empty()) {
+    new OnNotificationBalloonCountObserver(
+        this, reply_message, balloon_count - 1);
+  } else {
+    new NewNotificationBalloonObserver(this, reply_message);
+  }
   manager->CancelById(balloons[index]->notification().notification_id());
 }
 

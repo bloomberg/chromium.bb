@@ -2412,7 +2412,7 @@ bool AreActiveNotificationProcessesReady() {
 
 }  // namespace
 
-GetActiveNotificationsObserver::GetActiveNotificationsObserver(
+GetAllNotificationsObserver::GetAllNotificationsObserver(
     AutomationProvider* automation,
     IPC::Message* reply_message)
     : automation_(automation->AsWeakPtr()),
@@ -2425,9 +2425,9 @@ GetActiveNotificationsObserver::GetActiveNotificationsObserver(
   }
 }
 
-GetActiveNotificationsObserver::~GetActiveNotificationsObserver() {}
+GetAllNotificationsObserver::~GetAllNotificationsObserver() {}
 
-void GetActiveNotificationsObserver::Observe(
+void GetAllNotificationsObserver::Observe(
     int type,
     const NotificationSource& source,
     const NotificationDetails& details) {
@@ -2439,7 +2439,17 @@ void GetActiveNotificationsObserver::Observe(
     SendMessage();
 }
 
-void GetActiveNotificationsObserver::SendMessage() {
+base::DictionaryValue* GetAllNotificationsObserver::NotificationToJson(
+    const Notification* note) {
+  DictionaryValue* dict = new base::DictionaryValue();
+  dict->SetString("content_url", note->content_url().spec());
+  dict->SetString("origin_url", note->origin_url().spec());
+  dict->SetString("display_source", note->display_source());
+  dict->SetString("id", note->notification_id());
+  return dict;
+}
+
+void GetAllNotificationsObserver::SendMessage() {
   NotificationUIManager* manager =
       g_browser_process->notification_ui_manager();
   const BalloonCollection::Balloons& balloons =
@@ -2447,20 +2457,47 @@ void GetActiveNotificationsObserver::SendMessage() {
   DictionaryValue return_value;
   ListValue* list = new ListValue;
   return_value.Set("notifications", list);
-  BalloonCollection::Balloons::const_iterator iter;
-  for (iter = balloons.begin(); iter != balloons.end(); ++iter) {
-    const Notification& notification = (*iter)->notification();
-    DictionaryValue* balloon = new DictionaryValue;
-    balloon->SetString("content_url", notification.content_url().spec());
-    balloon->SetString("origin_url", notification.origin_url().spec());
-    balloon->SetString("display_source", notification.display_source());
-    BalloonView* view = (*iter)->view();
-    balloon->SetInteger("pid", base::GetProcId(
+  BalloonCollection::Balloons::const_iterator balloon_iter;
+  for (balloon_iter = balloons.begin(); balloon_iter != balloons.end();
+       ++balloon_iter) {
+    base::DictionaryValue* note = NotificationToJson(
+        &(*balloon_iter)->notification());
+    BalloonView* view = (*balloon_iter)->view();
+    note->SetInteger("pid", base::GetProcId(
         view->GetHost()->render_view_host()->process()->GetHandle()));
-    list->Append(balloon);
+    list->Append(note);
+  }
+  std::vector<const Notification*> queued_notes;
+  manager->GetQueuedNotificationsForTesting(&queued_notes);
+  std::vector<const Notification*>::const_iterator queued_iter;
+  for (queued_iter = queued_notes.begin(); queued_iter != queued_notes.end();
+       ++queued_iter) {
+    list->Append(NotificationToJson(*queued_iter));
   }
   AutomationJSONReply(automation_,
                       reply_message_.release()).SendSuccess(&return_value);
+  delete this;
+}
+
+NewNotificationBalloonObserver::NewNotificationBalloonObserver(
+    AutomationProvider* provider,
+    IPC::Message* reply_message)
+    : automation_(provider->AsWeakPtr()),
+      reply_message_(reply_message) {
+  registrar_.Add(this, chrome::NOTIFICATION_NOTIFY_BALLOON_CONNECTED,
+                 NotificationService::AllSources());
+}
+
+NewNotificationBalloonObserver::~NewNotificationBalloonObserver() { }
+
+void NewNotificationBalloonObserver::Observe(
+    int type,
+    const NotificationSource& source,
+    const NotificationDetails& details) {
+  if (automation_) {
+    AutomationJSONReply(automation_,
+                        reply_message_.release()).SendSuccess(NULL);
+  }
   delete this;
 }
 

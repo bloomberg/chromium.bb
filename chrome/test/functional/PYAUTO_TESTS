@@ -118,8 +118,6 @@
       '-special_tabs.SpecialTabsTest.testSpecialURLTabs',
       # crbug.com/88593
       '-sync.SyncTest.testPersonalStuffSyncSection',
-      # crbug.com/95031
-      '-notifications.NotificationsTest.testOriginPrefsNotSavedInIncognito',
       # crbug.com/98918
       '-policy.PolicyTest.testBookmarkBarPolicy',
       # crbug.com/100217
@@ -147,8 +145,6 @@
       # -imports.ImportsTest.testFirefoxImportFromPrefs
       # Disabled on vista in the actual test. crbug.com/89767
       # -imports.ImportsTest.testImportFirefoxPasswordsFromPrefs
-      # crbug.com/66072
-      '-notifications.NotificationsTest.testNotificationOrderAfterClosingOne',
       # crbug.com/85598
       '-ntp.NTPTest.testGetAppsWhenInstallApp',
       '-ntp.NTPTest.testLaunchAppFullScreen',
@@ -195,8 +191,6 @@
       '-downloads.DownloadsTest.testSaveDangerousFile',
       # crbug.com/93956
        '-find_in_page.FindMatchTests.testSearchInPDF',
-      # crbug.com/66072
-      '-notifications.NotificationsTest.testNotificationOrderAfterClosingOne',
       '-ntp.NTPTest.testLaunchAppNewWindow',  # crbug.com/79812
       # Causes browser crash.  crbug.com/93548
       '-notifications.NotificationsTest.testIncognitoNotification',
@@ -269,10 +263,6 @@
       '-find_in_page.FindMatchTests.testSearchInPDF',
       # crbug.com/85310
       '-instant',
-      # crbug.com/66072
-      '-notifications.NotificationsTest.testNotificationOrderAfterClosingOne',
-      # Plugin block exception broken.  crbug.com/100273
-      '-plugins.PluginsTest.testBlockPluginException',
       # Gnome / kwallet popups on linux break sync tests.  crbug.com/80329
       '-sync',
       # crbug.com/87837

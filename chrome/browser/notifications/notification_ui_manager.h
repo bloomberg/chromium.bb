@@ -79,6 +79,11 @@ class NotificationUIManager
   // be placed on the screen.
   void SetPositionPreference(BalloonCollection::PositionPreference preference);
 
+  // Retrieves an ordered list of all queued notifications.
+  // Used only for automation/testing.
+  void GetQueuedNotificationsForTesting(
+      std::vector<const Notification*>* notifications);
+
  private:
   explicit NotificationUIManager(PrefService* local_state);
 
