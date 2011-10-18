@@ -12,7 +12,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
-#include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/browser/extensions/webstore_install_helper.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/common/net/url_fetcher.h"
@@ -33,7 +32,6 @@ class WebstoreInlineInstaller
       public ExtensionInstallUI::Delegate,
       public TabContentsObserver,
       public URLFetcher::Delegate,
-      public WebstoreInstaller::Delegate,
       public WebstoreInstallHelper::Delegate {
  public:
   class Delegate {
@@ -90,11 +88,6 @@ class WebstoreInlineInstaller
 
   // TabContentsObserver interface implementation.
   virtual void TabContentsDestroyed(TabContents* tab_contents) OVERRIDE;
-
-  // WebstoreInstaller::Delegate interface implementation.
-  virtual void OnExtensionInstallSuccess(const std::string& id) OVERRIDE;
-  virtual void OnExtensionInstallFailure(const std::string& id,
-                                         const std::string& error) OVERRIDE;
 
   void CompleteInstall(const std::string& error);
 

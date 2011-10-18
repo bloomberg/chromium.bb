@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_install_dialog.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/extensions/extension.h"
@@ -381,8 +382,13 @@ void WebstoreInlineInstaller::InstallUIProceed() {
 
   WebstoreInstaller* installer =
       profile->GetExtensionService()->webstore_installer();
-  installer->InstallExtension(
-      id_, this, WebstoreInstaller::FLAG_INLINE_INSTALL);
+  installer->InstallExtension(id_, NULL,
+                              WebstoreInstaller::FLAG_INLINE_INSTALL);
+
+  // TODO(mihaip): the success message should happen later, when the extension
+  // is actually downloaded and installed (by using the callbacks on
+  // ExtensionInstaller::Delegate).
+  CompleteInstall("");
 }
 
 void WebstoreInlineInstaller::InstallUIAbort(bool user_initiated) {
@@ -395,17 +401,6 @@ void WebstoreInlineInstaller::TabContentsDestroyed(TabContents* tab_contents) {
     webstore_data_url_fetcher_.reset();
     Release(); // Matches the AddRef in BeginInstall.
   }
-}
-
-void WebstoreInlineInstaller::OnExtensionInstallSuccess(const std::string& id) {
-  CHECK_EQ(id_, id);
-  CompleteInstall("");
-}
-
-void WebstoreInlineInstaller::OnExtensionInstallFailure(
-    const std::string& id, const std::string& error) {
-  CHECK_EQ(id_, id);
-  CompleteInstall(error);
 }
 
 void WebstoreInlineInstaller::CompleteInstall(const std::string& error) {
