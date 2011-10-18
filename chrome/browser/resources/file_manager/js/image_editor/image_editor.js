@@ -126,6 +126,13 @@ ImageEditor.prototype.requestImage = function(callback) {
 
 ImageEditor.prototype.undo = function() {
   if (this.isLocked()) return;
+
+  // First undo click should dismiss the uncommitted modifications.
+  if (this.currentMode_ && this.currentMode_.isUpdated()) {
+    this.currentMode_.reset();
+    return;
+  }
+
   this.getPrompt().hide();
   this.leaveMode(false);
   this.commandQueue_.undo();
@@ -243,8 +250,17 @@ ImageEditor.Mode.prototype.update = function(options) {
 };
 
 ImageEditor.Mode.prototype.markUpdated = function() {
-  this.editor_.getPrompt().hide();
   this.updated_ = true;
+};
+
+ImageEditor.Mode.prototype.isUpdated= function() { return this.updated_ };
+
+/**
+ * Resets the mode to a clean state.
+ */
+ImageEditor.Mode.prototype.reset = function() {
+  this.editor_.modeToolbar_.reset();
+  this.updated_ = false;
 };
 
 /**
@@ -374,14 +390,21 @@ ImageEditor.prototype.onKeyDown = function(event) {
   return false;
 };
 
-ImageEditor.prototype.hideOverlappingTools = function(rect) {
-  for (var element = this.rootContainer_.firstElementChild;
-       element;
-       element = element.nextElementSibling) {
-    if (element != this.container_) {
-      ImageUtil.setAttribute(element, 'dimmed',
-          rect && rect.intersects(element.getBoundingClientRect()));
-    }
+/**
+ * Hide the tools that overlap the given rectangular frame.
+ *
+ * @param {Rect} frame Hide the tool that overlaps this rect.
+ * @param {Rect} transparent But do not hide the tool that is completely inside
+ *                           this rect.
+ */
+ImageEditor.prototype.hideOverlappingTools = function(frame, transparent) {
+  var tools = this.rootContainer_.ownerDocument.querySelectorAll('.dimmable');
+  for (var i = 0; i != tools.length; i++) {
+    var tool = tools[i];
+    var toolRect = tool.getBoundingClientRect();
+    ImageUtil.setAttribute(tool, 'dimmed',
+        (frame && frame.intersects(toolRect)) &&
+        !(transparent && transparent.contains(toolRect)));
   }
 };
 
@@ -769,7 +792,12 @@ ImageEditor.Prompt.prototype.show = function(text, timeout) {
 
   this.prompt_ = document.createElement('div');
   this.prompt_.className = 'prompt';
-  this.wrapper_.appendChild(this.prompt_);
+
+  // Create an extra wrapper which opacity can be manipulated separately.
+  var tool = document.createElement('div');
+  tool.className = 'dimmable';
+  this.wrapper_.appendChild(tool);
+  tool.appendChild(this.prompt_);
 
   this.prompt_.textContent = this.displayStringFunction_(text);
 

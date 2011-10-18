@@ -28,6 +28,10 @@ ImageEditor.Mode.Adjust.prototype.getCommand = function() {
 
 ImageEditor.Mode.Adjust.prototype.cleanUpUI = function() {
   ImageEditor.Mode.prototype.cleanUpUI.apply(this, arguments);
+  this.hidePreview();
+};
+
+ImageEditor.Mode.Adjust.prototype.hidePreview = function() {
   if (this.canvas_) {
     this.canvas_.parentNode.removeChild(this.canvas_);
     this.canvas_ = null;
@@ -37,6 +41,12 @@ ImageEditor.Mode.Adjust.prototype.cleanUpUI = function() {
 ImageEditor.Mode.Adjust.prototype.cleanUpCaches = function() {
   this.filter_ = null;
   this.previewImageData_ = null;
+};
+
+ImageEditor.Mode.Adjust.prototype.reset = function() {
+  ImageEditor.Mode.prototype.reset.call(this);
+  this.hidePreview();
+  this.cleanUpCaches();
 };
 
 ImageEditor.Mode.Adjust.prototype.update = function(options) {
@@ -103,21 +113,23 @@ ImageEditor.Mode.ColorFilter = function() {
 ImageEditor.Mode.ColorFilter.prototype =
     {__proto__: ImageEditor.Mode.Adjust.prototype};
 
-ImageEditor.Mode.ColorFilter.prototype.setUp = function() {
-  ImageEditor.Mode.Adjust.prototype.setUp.apply(this, arguments);
-  this.histogram_ = new ImageEditor.Mode.Histogram(
-      this.getViewport(), this.getImageView().getCanvas());
+ImageEditor.Mode.ColorFilter.prototype.getHistogram = function() {
+  if (!this.histogram_) {
+    this.histogram_ = new ImageEditor.Mode.Histogram(
+        this.getViewport(), this.getImageView().getCanvas());
+  }
+  return this.histogram_;
 };
 
 ImageEditor.Mode.ColorFilter.prototype.createFilter = function(options) {
   var filterFunc =
       ImageEditor.Mode.Adjust.prototype.createFilter.apply(this, arguments);
-  this.histogram_.update(filterFunc);
+  this.getHistogram().update(filterFunc);
   return filterFunc;
 };
 
-ImageEditor.Mode.ColorFilter.prototype.cleanUpUI = function() {
-  ImageEditor.Mode.Adjust.prototype.cleanUpUI.apply(this, arguments);
+ImageEditor.Mode.ColorFilter.prototype.cleanUpCaches = function() {
+  ImageEditor.Mode.Adjust.prototype.cleanUpCaches.apply(this, arguments);
   this.histogram_ = null;
 };
 
@@ -242,7 +254,7 @@ ImageEditor.Mode.Autofix.prototype.createTools = function(toolbar) {
 };
 
 ImageEditor.Mode.Autofix.prototype.apply = function() {
-  this.update({histogram: this.histogram_.getData()});
+  this.update({histogram: this.getHistogram().getData()});
 };
 
 /**

@@ -24,18 +24,27 @@ body {
   position: absolute;
   right: 5px;
   top: 5px;
-  height: 20px;
-  width: 20px;
-  color: white;
   cursor: pointer;
-  opacity: 0.4;
   z-index: 200;
+}
+
+/* The close icon is in a nested div so that its opacity can be manipulated
+   independently from its parent (which can be dimmed when the crop frame
+   overlaps it) */
+.gallery > .close div {
+  opacity: 0;
+  width: 20px;
+  height: 20px;
   background-image: url(../../images/gallery/close_x.png);
   background-repeat: no-repeat;
   background-position: center center;
 }
 
-.gallery > .close:hover {
+.gallery[tools] > .close div {
+  opacity: 0.4;
+}
+
+.gallery[tools] > .close div:hover {
   opacity: 0.7;
   background-color: rgba(81,81,81,1);
 }
@@ -154,12 +163,7 @@ body {
 }
 
 .gallery .arrow-box .arrow {
-  width: 105px;
-  height: 193px;
-  background-repeat: no-repeat;
-  background-position: center center;
   pointer-events: none;
-  opacity: 0;
 }
 
 .gallery .arrow-box .arrow-spacer {
@@ -170,18 +174,32 @@ body {
 .gallery[tools] .arrow[active] {
   pointer-events: auto;
   cursor: pointer;
+}
+
+/* The arrow icons are in nested divs so that their opacity can be manipulated
+   independently from their parent (which can be dimmed when the crop frame
+   overlaps it) */
+.gallery .arrow div{
+  width: 105px;
+  height: 193px;
+  background-repeat: no-repeat;
+  background-position: center center;
+  opacity: 0;
+}
+
+.gallery[tools] .arrow[active] div{
   opacity: 0.17;
 }
 
-.gallery[tools] .arrow[active]:hover {
+.gallery[tools] .arrow[active] div:hover{
   opacity: 1;
 }
 
-.gallery .arrow-box .arrow.left {
+.gallery .arrow.left div{
   background-image: url(../../images/gallery/arrow_left.png);
 }
 
-.gallery .arrow-box .arrow.right {
+.gallery .arrow.right div{
   background-image: url(../../images/gallery/arrow_right.png);
 }
 
@@ -199,12 +217,12 @@ body {
 
 /* The editor marks elements with 'dimmed' attribute to get them out of the way
  of the crop frame */
-.gallery[tools][editing] > *[dimmed],
-.gallery[tools][editing] > *[dimmed] * {
+.gallery[tools][editing] *[dimmed],
+.gallery[tools][editing] *[dimmed] * {
   pointer-events: none;
 }
 
-.gallery[tools][editing] > *[dimmed] {
+.gallery[tools][editing] *[dimmed] {
   opacity: 0.2;
 }
 
@@ -606,6 +624,11 @@ body {
   -webkit-box-orient: horizontal;
   -webkit-box-align: center;
   -webkit-box-pack: center;
+}
+
+.gallery .prompt-wrapper > div.dimmable {
+  opacity: 1;
+  -webkit-transition: opacity 220ms ease;
 }
 
 .gallery .prompt {

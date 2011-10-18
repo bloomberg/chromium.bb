@@ -68,7 +68,8 @@ Gallery.prototype.initDom_ = function(shareActions) {
   doc.body.addEventListener('mousemove', window.galleryMouseMove);
 
   this.closeButton_ = doc.createElement('div');
-  this.closeButton_.className = 'close';
+  this.closeButton_.className = 'close tool dimmable';
+  this.closeButton_.appendChild(doc.createElement('div'));
   this.closeButton_.addEventListener('click', this.onClose_.bind(this));
   this.container_.appendChild(this.closeButton_);
 
@@ -77,7 +78,7 @@ Gallery.prototype.initDom_ = function(shareActions) {
   this.container_.appendChild(this.imageContainer_);
 
   this.toolbar_ = doc.createElement('div');
-  this.toolbar_.className = 'toolbar';
+  this.toolbar_.className = 'toolbar tool dimmable';
   this.container_.appendChild(this.toolbar_);
 
   this.ribbonSpacer_ = doc.createElement('div');
@@ -89,7 +90,8 @@ Gallery.prototype.initDom_ = function(shareActions) {
   this.container_.appendChild(this.arrowBox_);
 
   this.arrowLeft_ = this.document_.createElement('div');
-  this.arrowLeft_.className = 'arrow left';
+  this.arrowLeft_.className = 'arrow left tool dimmable';
+  this.arrowLeft_.appendChild(doc.createElement('div'));
   this.arrowBox_.appendChild(this.arrowLeft_);
 
   this.arrowSpacer_ = this.document_.createElement('div');
@@ -97,7 +99,8 @@ Gallery.prototype.initDom_ = function(shareActions) {
   this.arrowBox_.appendChild(this.arrowSpacer_);
 
   this.arrowRight_ = this.document_.createElement('div');
-  this.arrowRight_.className = 'arrow right';
+  this.arrowRight_.className = 'arrow right tool dimmable';
+  this.arrowRight_.appendChild(doc.createElement('div'));
   this.arrowBox_.appendChild(this.arrowRight_);
 
   this.ribbon_ = new Ribbon(this.ribbonSpacer_, this.onSelect_.bind(this),
@@ -320,10 +323,7 @@ Gallery.prototype.onMouseMove_ = function(e) {
 
   this.mouseOverTool_ = false;
   for (var elem = e.target; elem != this.container_; elem = elem.parentNode) {
-    // TODO(kaznacheev): generalize, perhaps mark tools with a special class.
-    if (elem == this.toolbar_ ||
-        elem == this.arrowLeft_ ||
-        elem == this.arrowRight_) {
+    if (elem.classList.contains('tool')) {
       this.mouseOverTool_ = true;
       break;
     }
@@ -484,13 +484,13 @@ Ribbon.prototype.redraw = function() {
   var lastIndex = firstIndex + fullItems - 1;
 
   if (this.selectedIndex_ <= firstIndex && firstIndex > 0) {
-    firstIndex = Math.max(0, this.selectedIndex_ - fullItems + 2);
+    firstIndex = Math.max(0, this.selectedIndex_ - (fullItems >> 1));
     lastIndex = firstIndex + fullItems - 1;
   }
 
   if (this.selectedIndex_ >= lastIndex && lastIndex < this.items_.length - 1) {
     lastIndex = Math.min(this.items_.length - 1,
-                         this.selectedIndex_ + fullItems - 2);
+                         this.selectedIndex_ + (fullItems >> 1));
     firstIndex = lastIndex - fullItems + 1;
   }
 

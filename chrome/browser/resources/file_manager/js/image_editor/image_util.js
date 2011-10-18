@@ -159,6 +159,13 @@ Rect.prototype.intersects = function(rect) {
          (rect.top + rect.height) > this.top;
 };
 
+Rect.prototype.contains = function(rect) {
+  return (this.left <= rect.left) &&
+         (rect.left + rect.width) <= (this.left + this.width) &&
+         (this.top <= rect.top) &&
+         (rect.top + rect.height) <= (this.top + this.height);
+};
+
 /**
  * Clamp the rectangle to the bounds by moving it.
  * Decrease the size only if necessary.

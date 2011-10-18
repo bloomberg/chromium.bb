@@ -15,8 +15,6 @@ ImageEditor.Mode.Crop.prototype = {__proto__: ImageEditor.Mode.prototype};
 ImageEditor.Mode.Crop.prototype.setUp = function() {
   ImageEditor.Mode.prototype.setUp.apply(this, arguments);
 
-  this.createDefaultCrop();
-
   var container = this.getImageView().container_;
   var doc = container.ownerDocument;
 
@@ -64,40 +62,45 @@ ImageEditor.Mode.Crop.prototype.setUp = function() {
   addCropFrame('bottom horizontal');
   addCropFrame('right bottom corner');
 
-  this.positionDOM();
+  this.createDefaultCrop();
+};
+
+ImageEditor.Mode.Crop.prototype.reset = function() {
+  ImageEditor.Mode.prototype.reset.call(this);
+  this.createDefaultCrop();
 };
 
 ImageEditor.Mode.Crop.prototype.positionDOM = function() {
   var screenClipped = this.viewport_.getScreenClipped();
 
+  var screenCrop = this.viewport_.imageToScreenRect(this.cropRect_.getRect());
   this.editor_.hideOverlappingTools(
-      this.viewport_.imageToScreenRect(this.cropRect_.getRect()));
+      screenCrop.inflate(ImageEditor.Mode.Crop.GRAB_RADIUS,
+                         ImageEditor.Mode.Crop.GRAB_RADIUS),
+      screenCrop.inflate(-ImageEditor.Mode.Crop.GRAB_RADIUS,
+                         -ImageEditor.Mode.Crop.GRAB_RADIUS));
 
   this.domOverlay_.style.left = screenClipped.left + 'px';
   this.domOverlay_.style.top  = screenClipped.top + 'px';
   this.domOverlay_.style.width = screenClipped.width + 'px';
   this.domOverlay_.style.height = screenClipped.height + 'px';
 
-  this.shadowLeft_.style.width =
-      this.viewport_.imageToScreenX(this.cropRect_.getLeft())
-          - screenClipped.left + 'px';
+  this.shadowLeft_.style.width = screenCrop.left - screenClipped.left + 'px';
 
-  this.shadowTop_.style.height  =
-      this.viewport_.imageToScreenY(this.cropRect_.getTop())
-          - screenClipped.top + 'px';
+  this.shadowTop_.style.height  = screenCrop.top - screenClipped.top + 'px';
 
   this.shadowRight_.style.width = screenClipped.left + screenClipped.width -
-      this.viewport_.imageToScreenX(this.cropRect_.getRight()) + 'px';
+      (screenCrop.left + screenCrop.width) + 'px';
 
   this.shadowBottom_.style.height = screenClipped.top + screenClipped.height -
-      this.viewport_.imageToScreenY(this.cropRect_.getBottom()) + 'px';
+      (screenCrop.top + screenCrop.height) + 'px';
 };
 
 ImageEditor.Mode.Crop.prototype.cleanUpUI = function() {
   ImageEditor.Mode.prototype.cleanUpUI.apply(this, arguments);
   this.domOverlay_.parentNode.removeChild(this.domOverlay_);
   this.domOverlay_ = null;
-  this.editor_.hideOverlappingTools(null);
+  this.editor_.hideOverlappingTools();
 };
 
 ImageEditor.Mode.Crop.GRAB_RADIUS = 6;
@@ -114,6 +117,7 @@ ImageEditor.Mode.Crop.prototype.createDefaultCrop = function() {
       -Math.round(rect.width / 6), -Math.round(rect.height / 6));
   this.cropRect_ = new DraggableRect(
       rect, this.getViewport(), ImageEditor.Mode.Crop.GRAB_RADIUS);
+  this.positionDOM();
 };
 
 ImageEditor.Mode.Crop.prototype.getCursorStyle = function(x, y, mouseDown) {
