@@ -879,7 +879,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_TestTabExitsItselfFromFullscreen) {
 #if defined(OS_LINUX)
 // http://crbug.com/100680.
 #define MAYBE_TestFullscreenBubbleMouseLockState \
-        FAILS_TestFullscreenBubbleMouseLockState
+        DISABLED_TestFullscreenBubbleMouseLockState
 #else
 #define MAYBE_TestFullscreenBubbleMouseLockState \
         TestFullscreenBubbleMouseLockState
