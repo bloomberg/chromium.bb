@@ -33,7 +33,7 @@ class FileSystemMountPointProvider {
       const GURL& origin_url,
       FileSystemType type,
       bool create,
-      FileSystemPathManager::GetRootPathCallback* callback) = 0;
+      const FileSystemPathManager::GetRootPathCallback& callback) = 0;
 
   // Like GetFileSystemRootPath, but synchronous, and can be called only while
   // running on the file thread.

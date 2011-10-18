@@ -65,7 +65,6 @@ FileSystemOperation::FileSystemOperation(
     : proxy_(proxy),
       dispatcher_(dispatcher),
       file_system_operation_context_(file_system_context, file_util),
-      ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   DCHECK(dispatcher);
 #ifndef NDEBUG
@@ -99,7 +98,8 @@ void FileSystemOperation::OpenFileSystem(
   // return GetFileSystemRootURI() here.
   file_system_context()->path_manager()->ValidateFileSystemRootAndGetURL(
       origin_url, type, create,
-      callback_factory_.NewCallback(&FileSystemOperation::DidGetRootPath));
+      base::Bind(&FileSystemOperation::DidGetRootPath,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void FileSystemOperation::CreateFile(const GURL& path,
