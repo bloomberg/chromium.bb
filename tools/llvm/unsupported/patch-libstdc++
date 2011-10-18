@@ -1,0 +1,102 @@
+diff -r 15dc82da1897 libstdc++-v3/configure
+--- a/libstdc++-v3/configure	Tue Oct 18 11:20:53 2011 -0400
++++ b/libstdc++-v3/configure	Tue Oct 18 16:06:41 2011 -0400
+@@ -10780,6 +10780,14 @@
+   dynamic_linker=no
+   ;;
+ 
++#@ LOCALMOD
++linux-gnueabi)
++  echo "################## YEAH"
++  dynamic_linker=no
++  hardcode_direct=no
++  hardcode_shlibpath_var=no
++  ;;
++
+ # This must be Linux ELF.
+ linux* | k*bsd*-gnu | kopensolaris*-gnu)
+   version_type=linux
+@@ -11201,6 +11209,11 @@
+     lt_cv_dlopen_self=yes
+     ;;
+ 
++  #@ LOCALMOD
++  linux-gnueabi)
++      lt_cv_dlopen=no
++      lt_cv_dlopen_libs=
++      ;;
+   mingw* | pw32* | cegcc*)
+     lt_cv_dlopen="LoadLibrary"
+     lt_cv_dlopen_libs=
+@@ -14463,6 +14476,11 @@
+   dynamic_linker=no
+   ;;
+ 
++# @LOCALMOD
++linux-gnueabi)
++  dynamic_linker=no
++  ;;
++
+ # This must be Linux ELF.
+ linux* | k*bsd*-gnu | kopensolaris*-gnu)
+   version_type=linux
+@@ -44854,6 +44872,8 @@
+ 
+     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for sin in -lm" >&5
+ $as_echo_n "checking for sin in -lm... " >&6; }
++
++
+ if test "${ac_cv_lib_m_sin+set}" = set; then :
+   $as_echo_n "(cached) " >&6
+ else
+diff -r 15dc82da1897 libstdc++-v3/include/bits/regex_constants.h
+--- a/libstdc++-v3/include/bits/regex_constants.h	Tue Oct 18 11:20:53 2011 -0400
++++ b/libstdc++-v3/include/bits/regex_constants.h	Tue Oct 18 16:06:41 2011 -0400
+@@ -30,6 +30,9 @@
+  *  Do not attempt to use it directly. @headername{regex}
+  */
+ 
++// @LOCALMOD
++#define constexpr const
++
+ namespace std _GLIBCXX_VISIBILITY(default)
+ {
+ /**
+@@ -298,4 +301,3 @@
+ _GLIBCXX_END_NAMESPACE_VERSION
+ } // namespace regex_constants
+ } // namespace
+-
+diff -r 15dc82da1897 libstdc++-v3/libsupc++/eh_call.cc
+--- a/libstdc++-v3/libsupc++/eh_call.cc	Tue Oct 18 11:20:53 2011 -0400
++++ b/libstdc++-v3/libsupc++/eh_call.cc	Tue Oct 18 16:06:41 2011 -0400
+@@ -31,6 +31,11 @@
+ 
+ using namespace __cxxabiv1;
+ 
++// @LOCALMOD-START
++typedef unsigned long _uleb128_t;
++typedef long _sleb128_t;
++// @LOCALMOD-END
++
+ #include "unwind-pe.h"
+ 
+ 
+diff -r 15dc82da1897 libstdc++-v3/libsupc++/eh_personality.cc
+--- a/libstdc++-v3/libsupc++/eh_personality.cc	Tue Oct 18 11:20:53 2011 -0400
++++ b/libstdc++-v3/libsupc++/eh_personality.cc	Tue Oct 18 16:06:41 2011 -0400
+@@ -36,6 +36,14 @@
+ #define NO_SIZE_OF_ENCODED_VALUE
+ #endif
+ 
++// @LOCALMOD-START
++#ifdef __ARM_EABI_UNWINDER__
++#error "no arm unwinder please"
++#endif
++typedef unsigned long _uleb128_t;
++typedef long _sleb128_t;
++// @LOCALMOD-END
++
+ #include "unwind-pe.h"
+ 
+ 
