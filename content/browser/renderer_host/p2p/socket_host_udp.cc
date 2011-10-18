@@ -14,6 +14,9 @@ namespace {
 // UDP packets cannot be bigger than 64k.
 const int kReadBufferSize = 65536;
 
+// Send buffer size for the socket.
+const int kSendBufferSize = 65536;
+
 }  // namespace
 
 namespace content {
@@ -47,6 +50,9 @@ bool P2PSocketHostUdp::Init(const net::IPEndPoint& local_address,
     return false;
   }
 
+  if (!socket_->SetSendBufferSize(kSendBufferSize))
+    LOG(WARNING) << "Failed to set send buffer size for UDP socket.";
+
   net::IPEndPoint address;
   result = socket_->GetLocalAddress(&address);
   if (result < 0) {
@@ -55,7 +61,6 @@ bool P2PSocketHostUdp::Init(const net::IPEndPoint& local_address,
     OnError();
     return false;
   }
-
   VLOG(1) << "Local address: " << address.ToString();
 
   state_ = STATE_OPEN;

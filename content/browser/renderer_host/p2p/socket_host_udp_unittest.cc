@@ -81,6 +81,14 @@ class FakeDatagramServerSocket : public net::DatagramServerSocket {
     return buf_len;
   }
 
+  virtual bool SetReceiveBufferSize(int32 size) OVERRIDE {
+    return true;
+  }
+
+  virtual bool SetSendBufferSize(int32 size) OVERRIDE {
+    return true;
+  }
+
   void ReceivePacket(const net::IPEndPoint& address, std::vector<char> data) {
     if (recv_callback_) {
       int size = std::min(recv_size_, static_cast<int>(data.size()));
