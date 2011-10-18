@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/extension_tab_id_map.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/browser_thread.h"
@@ -14,9 +16,6 @@
 #include "content/common/notification_observer.h"
 #include "content/common/notification_service.h"
 #include "content/public/browser/notification_types.h"
-
-// ExtensionTabIdMap is a Singleton, so it doesn't need refcounting.
-DISABLE_RUNNABLE_METHOD_REFCOUNT(ExtensionTabIdMap);
 
 //
 // ExtensionTabIdMap::TabObserver
@@ -68,9 +67,9 @@ void ExtensionTabIdMap::TabObserver::Observe(
       // have been set yet.
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
-          NewRunnableMethod(
-              ExtensionTabIdMap::GetInstance(),
+          base::Bind(
               &ExtensionTabIdMap::SetTabAndWindowId,
+              base::Unretained(ExtensionTabIdMap::GetInstance()),
               host->process()->id(), host->routing_id(),
               tab->restore_tab_helper()->session_id().id(),
               tab->restore_tab_helper()->window_id().id()));
@@ -81,9 +80,9 @@ void ExtensionTabIdMap::TabObserver::Observe(
       RenderViewHost* host = tab->render_view_host();
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
-          NewRunnableMethod(
-              ExtensionTabIdMap::GetInstance(),
+          base::Bind(
               &ExtensionTabIdMap::SetTabAndWindowId,
+              base::Unretained(ExtensionTabIdMap::GetInstance()),
               host->process()->id(), host->routing_id(),
               tab->restore_tab_helper()->session_id().id(),
               tab->restore_tab_helper()->window_id().id()));
@@ -93,9 +92,9 @@ void ExtensionTabIdMap::TabObserver::Observe(
       RenderViewHost* host = Source<RenderViewHost>(source).ptr();
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
-          NewRunnableMethod(
-              ExtensionTabIdMap::GetInstance(),
+          base::Bind(
               &ExtensionTabIdMap::ClearTabAndWindowId,
+              base::Unretained(ExtensionTabIdMap::GetInstance()),
               host->process()->id(), host->routing_id()));
       break;
     }

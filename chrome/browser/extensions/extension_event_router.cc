@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/extension_event_router.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_devtools_manager.h"
@@ -140,7 +141,7 @@ void ExtensionEventRouter::RemoveEventListener(
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableFunction(
+      base::Bind(
           &NotifyEventListenerRemovedOnIOThread,
           profile_, listener.extension_id, event_name));
 }

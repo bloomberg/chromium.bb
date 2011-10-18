@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/extension_event_router_forwarder.h"
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/test/thread_test_helper.h"
@@ -117,9 +118,9 @@ TEST_F(ExtensionEventRouterForwarderTest, BroadcastRendererIO) {
       CallExtensionEventRouter(
           profile2_, "", kEventName, kEventArgs, profile2_, url));
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(
-          event_router.get(),
+      base::Bind(
           &MockExtensionEventRouterForwarder::BroadcastEventToRenderers,
+          event_router.get(),
           std::string(kEventName), std::string(kEventArgs), url));
 
   // Wait for IO thread's message loop to be processed

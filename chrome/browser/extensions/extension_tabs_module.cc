@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/stl_util.h"
 #include "base/string16.h"
@@ -1494,8 +1495,8 @@ bool DetectTabLanguageFunction::RunImpl() {
   if (!helper->language_state().original_language().empty()) {
     // Delay the callback invocation until after the current JS call has
     // returned.
-    MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &DetectTabLanguageFunction::GotLanguage,
+    MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+        &DetectTabLanguageFunction::GotLanguage, this,
         helper->language_state().original_language()));
     return true;
   }
