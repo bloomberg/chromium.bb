@@ -839,6 +839,23 @@ out:
 	pixman_region32_fini(&cursor_region);
 }
 
+static int
+setup_scanout_surface(struct wlsc_output *output, struct wlsc_surface *es)
+{
+	if (es->visual != WLSC_RGB_VISUAL ||
+	    output->prepare_scanout_surface(output, es) != 0)
+		return 0;
+
+	output->scanout_buffer = es->buffer;
+	output->scanout_buffer->busy_count++;
+
+	wl_list_remove(&output->scanout_buffer_destroy_listener.link);
+	wl_list_insert(output->scanout_buffer->resource.destroy_listener_list.prev,
+		       &output->scanout_buffer_destroy_listener.link);
+
+	return 1;
+}
+
 static void
 wlsc_output_repaint(struct wlsc_output *output)
 {
@@ -881,18 +898,10 @@ wlsc_output_repaint(struct wlsc_output *output)
 
 	es = container_of(ec->surface_list.next, struct wlsc_surface, link);
 
-	if (es->visual == WLSC_RGB_VISUAL &&
-	    output->prepare_scanout_surface(output, es) == 0) {
+	if (setup_scanout_surface(output, es)) {
 		/* We're drawing nothing now,
 		 * draw the damaged regions later. */
 		pixman_region32_union(&ec->damage, &ec->damage, &total_damage);
-
-		output->scanout_buffer = es->buffer;
-		output->scanout_buffer->busy_count++;
-
-		wl_list_remove(&output->scanout_buffer_destroy_listener.link);
-		wl_list_insert(output->scanout_buffer->resource.destroy_listener_list.prev,
-			       &output->scanout_buffer_destroy_listener.link);
 
 		return;
 	}
