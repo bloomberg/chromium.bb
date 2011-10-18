@@ -10750,8 +10750,7 @@ var keyboardOverlayData = {
           "p5": "74"
         },
         "15": {
-          "p5": "79",
-          "p6": "7a"
+          "p5": "79"
         },
         "16": {
           "p5": "75"
@@ -10841,8 +10840,7 @@ var keyboardOverlayData = {
           "p9": "148"
         },
         "2C": {
-          "p5": "7a",
-          "p6": "79"
+          "p5": "7a"
         },
         "2D": {
           "p5": "78"
@@ -15791,6 +15789,7 @@ var keyboardOverlayData = {
     "9<>CTRL": "keyboardOverlayActivateLastTab",
     "ALT": "keyboardOverlayFocusWrenchMenu",
     "ALT<>SHIFT": "keyboardOverlayCycleThroughInputMethods",
+    "SHIFT<>SHIFT": "keyboardOverlayToggleCapsLock",
     "a<>CTRL": "keyboardOverlaySelectAll",
     "arrowkeys<>CTRL": "keyboardOverlayWordMove",
     "b<>ALT<>SHIFT": "keyboardOverlayFocusBookmarks",

@@ -272,6 +272,16 @@ function update(modifiers) {
     var classes = getKeyClasses(identifier, modifiers, keyData);
     var keyLabel = getKeyLabel(keyData, modifiers);
     var shortcutId = shortcutData[getAction(keyLabel, modifiers)];
+    if (modifiers.length == 1 && modifiers[0] == 'SHIFT' &&
+        identifier == '2A') {
+      // Currently there is no way to identify whether the left shift or the
+      // right shift is preesed from the key event, so I assume the left shift
+      // key is pressed here and do not show keyboard shortcut description for
+      // 'Shift - Shift' (Toggle caps lock) on the left shift key, the
+      // identifier of which is '2A'.
+      // TODO(mazda): Remove this workaround (http://crosbug.com/18047)
+      shortcutId = null;
+    }
     if (shortcutId) {
       classes.push('is-shortcut');
     }
