@@ -61,6 +61,8 @@ class NewTabPageHandler : public WebUIMessageHandler {
     BOOKMARKS_PAGE_ID = 3 << kPageIdOffset,
     LAST_PAGE_ID = BOOKMARKS_PAGE_ID
   };
+  static const int kHistogramEnumerationMax =
+      (LAST_PAGE_ID >> kPageIdOffset) + 1;
 
   // Helper to send out promo resource change notification.
   void NotifyPromoResourceChanged();

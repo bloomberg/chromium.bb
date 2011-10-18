@@ -33,7 +33,7 @@ WebUIMessageHandler* NewTabPageHandler::Attach(WebUI* web_ui) {
   int shown_page_type = prefs->GetInteger(prefs::kNTPShownPage) >>
       kPageIdOffset;
   UMA_HISTOGRAM_ENUMERATION("NewTabPage.DefaultPageType",
-                            shown_page_type, 4);
+                            shown_page_type, kHistogramEnumerationMax);
 
   static bool default_apps_trial_exists =
       base::FieldTrialList::TrialExists(kDefaultAppsTrial_Name);
@@ -41,7 +41,7 @@ WebUIMessageHandler* NewTabPageHandler::Attach(WebUI* web_ui) {
     UMA_HISTOGRAM_ENUMERATION(
         base::FieldTrial::MakeName("NewTabPage.DefaultPageType",
                                    kDefaultAppsTrial_Name),
-        shown_page_type, 4);
+        shown_page_type, kHistogramEnumerationMax);
   }
 
   return WebUIMessageHandler::Attach(web_ui);
@@ -94,7 +94,7 @@ void NewTabPageHandler::HandlePageSelected(const ListValue* args) {
 
   int shown_page_type = page_id >> kPageIdOffset;
   UMA_HISTOGRAM_ENUMERATION("NewTabPage.SelectedPageType",
-                            shown_page_type, 4);
+                            shown_page_type, kHistogramEnumerationMax);
 
   static bool default_apps_trial_exists =
       base::FieldTrialList::TrialExists(kDefaultAppsTrial_Name);
@@ -102,7 +102,7 @@ void NewTabPageHandler::HandlePageSelected(const ListValue* args) {
     UMA_HISTOGRAM_ENUMERATION(
         base::FieldTrial::MakeName("NewTabPage.SelectedPageType",
                                    kDefaultAppsTrial_Name),
-        shown_page_type, 4);
+        shown_page_type, kHistogramEnumerationMax);
   }
 }
 
