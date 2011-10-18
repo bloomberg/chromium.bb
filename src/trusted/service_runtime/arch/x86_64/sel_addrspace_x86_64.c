@@ -19,11 +19,8 @@
 NaClErrorCode NaClMprotectGuards(struct NaClApp *nap) {
   uintptr_t start_addr;
   int       err;
-  void      *guard[2];
 
   start_addr = nap->mem_start;
-  guard[0] = (void *)(start_addr - GUARDSIZE);
-  guard[1] = (void *)(start_addr + FOURGIG);
 
   NaClLog(3,
           ("NULL detection region start 0x%08"NACL_PRIxPTR", "

@@ -103,10 +103,8 @@ NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,
 
 NORETURN void NaClSwitchToApp(struct NaClAppThread  *natp,
                               nacl_reg_t            new_prog_ctr) {
-  struct NaClApp            *nap;
   struct NaClThreadContext  *context;
 
-  nap = natp->nap;
   context = &natp->user;
   context->new_prog_ctr = new_prog_ctr;
   context->sysret = natp->sysret;
