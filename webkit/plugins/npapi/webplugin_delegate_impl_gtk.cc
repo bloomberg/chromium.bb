@@ -442,8 +442,7 @@ void WebPluginDelegateImpl::WindowlessPaint(cairo_t* context,
     // Tell the plugin to paint into the pixmap.
     base::StatsRate plugin_paint("Plugin.Paint");
     base::StatsScope<base::StatsRate> scope(plugin_paint);
-    NPError err = instance()->NPP_HandleEvent(&np_event);
-    DCHECK_EQ(err, NPERR_NO_ERROR);
+    instance()->NPP_HandleEvent(&np_event);
 
     if (pixmap != None) {
       // Copy the rendered image pixmap back into the shm pixmap
@@ -473,8 +472,7 @@ void WebPluginDelegateImpl::WindowlessPaint(cairo_t* context,
     // Tell the plugin to paint into the pixmap.
     base::StatsRate plugin_paint("Plugin.Paint");
     base::StatsScope<base::StatsRate> scope(plugin_paint);
-    NPError err = instance()->NPP_HandleEvent(&np_event);
-    DCHECK_EQ(err, NPERR_NO_ERROR);
+    instance()->NPP_HandleEvent(&np_event);
 
     cairo_save(context);
     // Now copy the rendered image pixmap back into the drawing buffer.
