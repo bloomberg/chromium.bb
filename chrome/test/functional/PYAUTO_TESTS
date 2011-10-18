@@ -195,6 +195,7 @@
       # Causes browser crash.  crbug.com/93548
       '-notifications.NotificationsTest.testIncognitoNotification',
       '-notifications.NotificationsTest.testOriginPrefsNotSavedInIncognito',
+      '-notifications.NotificationsTest.testNotificationOrderAfterClosingOne',
       # crbug.com/70437
       '-omnibox.OmniboxTest.testHistoryResult',
       # crbug.com/91617
@@ -439,6 +440,11 @@
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
+      # TODO(kkania): Re-enable notification tests once new build is in.
+      # Disabling for all because hook was changed in non-backwards
+      # compatible way.
+      # crbug.com/100790
+      '-notifications',
       # This test fails due to crbug.com/35485
       '-translate.TranslateTest.testBarNotVisibleOnSSLErrorPage',
       # This test fails due to crbug.com/50706
