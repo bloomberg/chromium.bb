@@ -135,9 +135,9 @@ bool ImportSingleProfile(FormGroup* profile,
   // Phones need to be rebuilt.
   PhoneNumber::PhoneCombineHelper phone;
 
-  for (uint32 value_index = 0; value_index < key->ValueCount(); ++value_index) {
+  for (uint32 i = 0; i < key->GetValueCount(); ++i) {
     std::wstring value_name;
-    if (key->ReadName(value_index, &value_name) != ERROR_SUCCESS)
+    if (key->GetValueNameAt(i, &value_name) != ERROR_SUCCESS)
       continue;
     RegToFieldMap::const_iterator it = reg_to_field.find(value_name);
     if (it == reg_to_field.end())

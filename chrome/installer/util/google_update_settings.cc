@@ -102,7 +102,7 @@ bool RemoveGoogleUpdateStrKey(const wchar_t* const name) {
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   std::wstring reg_path = dist->GetStateKey();
   RegKey key(HKEY_CURRENT_USER, reg_path.c_str(), KEY_READ | KEY_WRITE);
-  if (!key.ValueExists(name))
+  if (!key.HasValue(name))
     return true;
   return (key.DeleteValue(name) == ERROR_SUCCESS);
 }

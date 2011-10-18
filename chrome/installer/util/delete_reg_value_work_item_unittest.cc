@@ -71,9 +71,9 @@ TEST_F(DeleteRegValueWorkItemTest, DeleteExistingValue) {
   EXPECT_TRUE(work_item2->Do());
   EXPECT_TRUE(work_item3->Do());
 
-  EXPECT_FALSE(key.ValueExists(name_str.c_str()));
-  EXPECT_FALSE(key.ValueExists(name_dword.c_str()));
-  EXPECT_FALSE(key.ValueExists(name_empty.c_str()));
+  EXPECT_FALSE(key.HasValue(name_str.c_str()));
+  EXPECT_FALSE(key.HasValue(name_dword.c_str()));
+  EXPECT_FALSE(key.HasValue(name_empty.c_str()));
 
   work_item1->Rollback();
   work_item2->Rollback();
@@ -104,8 +104,8 @@ TEST_F(DeleteRegValueWorkItemTest, DeleteNonExistentValue) {
       key.Create(HKEY_CURRENT_USER, parent_key.c_str(), KEY_READ | KEY_WRITE));
   std::wstring name_str(L"name_str");
   std::wstring name_dword(L"name_dword");
-  EXPECT_FALSE(key.ValueExists(name_str.c_str()));
-  EXPECT_FALSE(key.ValueExists(name_dword.c_str()));
+  EXPECT_FALSE(key.HasValue(name_str.c_str()));
+  EXPECT_FALSE(key.HasValue(name_dword.c_str()));
 
   scoped_ptr<DeleteRegValueWorkItem> work_item1(
       WorkItem::CreateDeleteRegValueWorkItem(HKEY_CURRENT_USER, parent_key,
@@ -117,12 +117,12 @@ TEST_F(DeleteRegValueWorkItemTest, DeleteNonExistentValue) {
   EXPECT_TRUE(work_item1->Do());
   EXPECT_TRUE(work_item2->Do());
 
-  EXPECT_FALSE(key.ValueExists(name_str.c_str()));
-  EXPECT_FALSE(key.ValueExists(name_dword.c_str()));
+  EXPECT_FALSE(key.HasValue(name_str.c_str()));
+  EXPECT_FALSE(key.HasValue(name_dword.c_str()));
 
   work_item1->Rollback();
   work_item2->Rollback();
 
-  EXPECT_FALSE(key.ValueExists(name_str.c_str()));
-  EXPECT_FALSE(key.ValueExists(name_dword.c_str()));
+  EXPECT_FALSE(key.HasValue(name_str.c_str()));
+  EXPECT_FALSE(key.HasValue(name_dword.c_str()));
 }

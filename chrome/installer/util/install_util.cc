@@ -375,7 +375,7 @@ bool InstallUtil::DeleteRegistryValue(HKEY reg_root,
                                       const std::wstring& value_name) {
   RegKey key(reg_root, key_path.c_str(), KEY_ALL_ACCESS);
   VLOG(1) << "Deleting registry value " << value_name;
-  if (key.ValueExists(value_name.c_str())) {
+  if (key.HasValue(value_name.c_str())) {
     LONG result = key.DeleteValue(value_name.c_str());
     if (result != ERROR_SUCCESS) {
       LOG(ERROR) << "Failed to delete registry value: " << value_name

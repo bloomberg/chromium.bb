@@ -75,8 +75,8 @@ TEST_F(SetRegValueWorkItemTest, WriteNewNonOverwrite) {
   work_item2->Rollback();
 
   // Rollback should delete the value.
-  EXPECT_FALSE(key.ValueExists(name_str.c_str()));
-  EXPECT_FALSE(key.ValueExists(name_dword.c_str()));
+  EXPECT_FALSE(key.HasValue(name_str.c_str()));
+  EXPECT_FALSE(key.HasValue(name_dword.c_str()));
 }
 
 // Write a new value with overwrite flag. The value should be set.
@@ -113,8 +113,8 @@ TEST_F(SetRegValueWorkItemTest, WriteNewOverwrite) {
   work_item2->Rollback();
 
   // Rollback should delete the value.
-  EXPECT_FALSE(key.ValueExists(name_str.c_str()));
-  EXPECT_FALSE(key.ValueExists(name_dword.c_str()));
+  EXPECT_FALSE(key.HasValue(name_str.c_str()));
+  EXPECT_FALSE(key.HasValue(name_dword.c_str()));
 }
 
 // Write to an existing value without overwrite flag. There should be
@@ -144,7 +144,7 @@ TEST_F(SetRegValueWorkItemTest, WriteExistingNonOverwrite) {
   EXPECT_EQ(0, read_out.compare(data_str_1));
 
   work_item->Rollback();
-  EXPECT_TRUE(key.ValueExists(name.c_str()));
+  EXPECT_TRUE(key.HasValue(name.c_str()));
   EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(name.c_str(), &read_out));
   EXPECT_EQ(read_out, data_str_1);
 
@@ -161,7 +161,7 @@ TEST_F(SetRegValueWorkItemTest, WriteExistingNonOverwrite) {
   EXPECT_EQ(read_dword, dword1);
 
   work_item->Rollback();
-  EXPECT_TRUE(key.ValueExists(name.c_str()));
+  EXPECT_TRUE(key.HasValue(name.c_str()));
   EXPECT_EQ(ERROR_SUCCESS, key.ReadValueDW(name.c_str(), &read_dword));
   EXPECT_EQ(read_dword, dword1);
 }
@@ -207,7 +207,7 @@ TEST_F(SetRegValueWorkItemTest, WriteExistingOverwrite) {
   work_item1->Rollback();
   work_item2->Rollback();
 
-  EXPECT_TRUE(key.ValueExists(name.c_str()));
+  EXPECT_TRUE(key.HasValue(name.c_str()));
   EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(name.c_str(), &read_out));
   EXPECT_EQ(read_out, data_str_1);
 
@@ -232,7 +232,7 @@ TEST_F(SetRegValueWorkItemTest, WriteExistingOverwrite) {
   EXPECT_EQ(read_dword, dword2);
 
   work_item3->Rollback();
-  EXPECT_TRUE(key.ValueExists(name.c_str()));
+  EXPECT_TRUE(key.HasValue(name.c_str()));
   EXPECT_EQ(ERROR_SUCCESS, key.ReadValueDW(name.c_str(), &read_dword));
   EXPECT_EQ(read_dword, dword1);
 }

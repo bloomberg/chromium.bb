@@ -293,7 +293,7 @@ TEST_F(InstallUtilTest, DeleteRegistryValueIf) {
           root, key_path.c_str(), value_name, pred));
       EXPECT_TRUE(RegKey(root, key_path.c_str(), KEY_QUERY_VALUE).Valid());
       EXPECT_TRUE(RegKey(root, key_path.c_str(),
-                         KEY_QUERY_VALUE).ValueExists(value_name));
+                         KEY_QUERY_VALUE).HasValue(value_name));
     }
 
     // Value exists, and matches: delete.
@@ -308,7 +308,7 @@ TEST_F(InstallUtilTest, DeleteRegistryValueIf) {
           root, key_path.c_str(), value_name, pred));
       EXPECT_TRUE(RegKey(root, key_path.c_str(), KEY_QUERY_VALUE).Valid());
       EXPECT_FALSE(RegKey(root, key_path.c_str(),
-                          KEY_QUERY_VALUE).ValueExists(value_name));
+                          KEY_QUERY_VALUE).HasValue(value_name));
     }
   }
 
@@ -327,7 +327,7 @@ TEST_F(InstallUtilTest, DeleteRegistryValueIf) {
           root, key_path.c_str(), L"", pred));
       EXPECT_TRUE(RegKey(root, key_path.c_str(), KEY_QUERY_VALUE).Valid());
       EXPECT_FALSE(RegKey(root, key_path.c_str(),
-                          KEY_QUERY_VALUE).ValueExists(L""));
+                          KEY_QUERY_VALUE).HasValue(L""));
     }
   }
 }

@@ -40,7 +40,7 @@ void DisableLaunchOnStartupTask::Run() {
                              kBackgroundModeRegistrySubkey, KEY_READ);
   base::win::RegKey write_key(kBackgroundModeRegistryRootKey,
                               kBackgroundModeRegistrySubkey, KEY_WRITE);
-  if (read_key.ValueExists(key_name)) {
+  if (read_key.HasValue(key_name)) {
     LONG result = write_key.DeleteValue(key_name);
     DCHECK_EQ(ERROR_SUCCESS, result) <<
         "Failed to deregister launch on login. error: " << result;
@@ -60,7 +60,7 @@ void EnableLaunchOnStartupTask::Run() {
     return;
   std::wstring new_value = executable.value() +
       L" --" + ASCIIToUTF16(switches::kNoStartupWindow);
-  if (read_key.ValueExists(key_name)) {
+  if (read_key.HasValue(key_name)) {
     std::wstring current_value;
     if ((read_key.ReadValue(key_name, &current_value) == ERROR_SUCCESS) &&
         (current_value == new_value)) {

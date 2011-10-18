@@ -375,7 +375,7 @@ HRESULT SetChromeFrameUA(bool is_system, const wchar_t* value) {
     wchar_t value_data[MAX_PATH + 1] = {};
 
     DWORD value_index = 0;
-    while (value_index < ua_key.ValueCount()) {
+    while (value_index < ua_key.GetValueCount()) {
       DWORD name_size = arraysize(value_name);
       DWORD value_size = arraysize(value_data);
       DWORD type = 0;
