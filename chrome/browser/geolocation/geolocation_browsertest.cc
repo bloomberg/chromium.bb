@@ -444,7 +444,13 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoInfobarForDeniedOrigin) {
   CheckStringValueFromJavascript("1", "geoGetLastError()");
 }
 
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoInfobarForAllowedOrigin) {
+// http://crbug.com/100763. Crashes occasionally on XP.
+#if defined(OS_WIN)
+#define MAYBE_NoInfobarForAllowedOrigin DISABLED_NoInfobarForAllowedOrigin
+#else
+#define MAYBE_NoInfobarForAllowedOrigin NoInfobarForAllowedOrigin
+#endif
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoInfobarForAllowedOrigin) {
   ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
   current_browser_->profile()->GetHostContentSettingsMap()->
       SetContentSetting(ContentSettingsPattern::FromURLNoWildcard(current_url_),
