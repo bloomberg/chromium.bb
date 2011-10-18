@@ -22,7 +22,7 @@ LookaheadFilterInterpreter::LookaheadFilterInterpreter(
       last_interpreted_time_(0.0),
       min_nonsuppress_speed_(prop_reg, "Input Queue Min Nonsuppression Speed",
                              200.0),
-      delay_(prop_reg, "Input Queue Delay", 0.05),
+      delay_(prop_reg, "Input Queue Delay", 0.017),
       split_min_period_(prop_reg, "Min Interpolate Period", 0.021) {
   next_.reset(next);
 }

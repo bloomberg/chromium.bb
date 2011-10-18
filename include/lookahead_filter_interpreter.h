@@ -20,6 +20,7 @@ namespace gestures {
 class LookaheadFilterInterpreter : public Interpreter {
   FRIEND_TEST(LookaheadFilterInterpreterTest, CombineGesturesTest);
   FRIEND_TEST(LookaheadFilterInterpreterTest, InterpolateHwStateTest);
+  FRIEND_TEST(LookaheadFilterInterpreterTest, InterpolateTest);
   FRIEND_TEST(LookaheadFilterInterpreterTest, SimpleTest);
  public:
   LookaheadFilterInterpreter(PropRegistry* prop_reg, Interpreter* next);

@@ -9,6 +9,7 @@
 #include <base/string_util.h>
 
 #include "gestures/include/accel_filter_interpreter.h"
+#include "gestures/include/iir_filter_interpreter.h"
 #include "gestures/include/immediate_interpreter.h"
 #include "gestures/include/integral_gesture_filter_interpreter.h"
 #include "gestures/include/logging.h"
@@ -164,14 +165,16 @@ GestureInterpreter::GestureInterpreter(int version)
       prop_provider_(NULL),
       prop_provider_data_(NULL) {
   prop_reg_.reset(new PropRegistry);
-  interpreter_.reset(
-      new LoggingFilterInterpreter(prop_reg_.get(),
-          new StuckButtonInhibitorFilterInterpreter(
-              new IntegralGestureFilterInterpreter(
-                  new ScalingFilterInterpreter(prop_reg_.get(),
-                      new AccelFilterInterpreter(prop_reg_.get(),
-                          new LookaheadFilterInterpreter(prop_reg_.get(),
-                              new ImmediateInterpreter(prop_reg_.get()))))))));
+  Interpreter* temp = new ImmediateInterpreter(prop_reg_.get());
+  temp = new IirFilterInterpreter(prop_reg_.get(), temp);
+  temp = new LookaheadFilterInterpreter(prop_reg_.get(), temp);
+  temp = new AccelFilterInterpreter(prop_reg_.get(), temp);
+  temp = new ScalingFilterInterpreter(prop_reg_.get(), temp);
+  temp = new IntegralGestureFilterInterpreter(temp);
+  temp = new StuckButtonInhibitorFilterInterpreter(temp);
+  temp = new LoggingFilterInterpreter(prop_reg_.get(), temp);
+  interpreter_.reset(temp);
+  temp = NULL;
 }
 
 GestureInterpreter::~GestureInterpreter() {

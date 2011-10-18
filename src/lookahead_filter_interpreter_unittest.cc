@@ -106,6 +106,7 @@ TEST(LookaheadFilterInterpreterTest, SimpleTest) {
 
       interpreter.reset(new LookaheadFilterInterpreter(NULL, base_interpreter));
       interpreter->SetHardwareProperties(initial_hwprops);
+      interpreter->delay_.val_ = 0.05;
       EXPECT_TRUE(base_interpreter->set_hwprops_called_);
       expected_timeout = interpreter->delay_.val_;
     }
@@ -394,6 +395,7 @@ TEST(LookaheadFilterInterpreterTest, InterpolateTest) {
                 3));  // dy
     interpreter.reset(new LookaheadFilterInterpreter(NULL, base_interpreter));
     interpreter->SetHardwareProperties(initial_hwprops);
+    interpreter->delay_.val_ = 0.05;
 
     stime_t timeout = -1.0;
     Gesture* out = interpreter->SyncInterpret(&hs[0], &timeout);

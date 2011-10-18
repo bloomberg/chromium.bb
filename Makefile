@@ -9,6 +9,7 @@ OBJECTS=\
 	$(OBJDIR)/activity_log.o \
 	$(OBJDIR)/activity_replay.o \
 	$(OBJDIR)/gestures.o \
+	$(OBJDIR)/iir_filter_interpreter.o \
 	$(OBJDIR)/immediate_interpreter.o \
 	$(OBJDIR)/integral_gesture_filter_interpreter.o \
 	$(OBJDIR)/logging_filter_interpreter.o \
@@ -22,6 +23,7 @@ TEST_OBJECTS=\
 	$(OBJDIR)/activity_log_unittest.o \
 	$(OBJDIR)/activity_replay_unittest.o \
 	$(OBJDIR)/gestures_unittest.o \
+	$(OBJDIR)/iir_filter_interpreter_unittest.o \
 	$(OBJDIR)/immediate_interpreter_unittest.o \
 	$(OBJDIR)/integral_gesture_filter_interpreter_unittest.o \
 	$(OBJDIR)/list_unittest.o \
