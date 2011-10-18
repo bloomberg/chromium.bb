@@ -2256,6 +2256,7 @@ void Browser::RegisterPrefs(PrefService* prefs) {
   prefs->RegisterIntegerPref(prefs::kOptionsWindowLastTabIndex, 0);
   prefs->RegisterIntegerPref(prefs::kExtensionSidebarWidth, -1);
   prefs->RegisterBooleanPref(prefs::kAllowFileSelectionDialogs, true);
+  prefs->RegisterBooleanPref(prefs::kShouldShowFirstRunBubble, false);
 }
 
 // static
@@ -5429,10 +5430,14 @@ void Browser::OnWindowDidShow() {
     return;
   window_has_shown_ = true;
 
+  // Suppress the first run bubble if we're showing the sync promo.
+  TabContents* contents = GetSelectedTabContents();
+  bool is_showing_promo =
+      contents && contents->GetURL() == GURL(chrome::kChromeUISyncPromoURL);
+
   // Show the First Run information bubble if we've been told to.
   PrefService* local_state = g_browser_process->local_state();
-  if (local_state &&
-      local_state->FindPreference(prefs::kShouldShowFirstRunBubble) &&
+  if (!is_showing_promo && local_state &&
       local_state->GetBoolean(prefs::kShouldShowFirstRunBubble)) {
     FirstRun::BubbleType bubble_type = FirstRun::LARGE_BUBBLE;
     if (local_state->
@@ -5444,8 +5449,9 @@ void Browser::OnWindowDidShow() {
         local_state->GetBoolean(prefs::kShouldUseMinimalFirstRunBubble)) {
       bubble_type = FirstRun::MINIMAL_BUBBLE;
     }
-    // Reset the preference so we don't show the bubble for subsequent windows.
-    local_state->ClearPref(prefs::kShouldShowFirstRunBubble);
+    // Reset the preference so we don't show the bubble for subsequent
+    // windows.
+    local_state->SetBoolean(prefs::kShouldShowFirstRunBubble, false);
     window_->GetLocationBar()->ShowFirstRunBubble(bubble_type);
   } else if (is_type_tabbed()) {
     GlobalErrorService* service =

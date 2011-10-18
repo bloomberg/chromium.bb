@@ -12,7 +12,7 @@
 typedef InProcessBrowserTest FirstRunBrowserTest;
 
 IN_PROC_BROWSER_TEST_F(FirstRunBrowserTest, SetShowFirstRunBubblePref) {
-  EXPECT_FALSE(g_browser_process->local_state()->FindPreference(
+  EXPECT_TRUE(g_browser_process->local_state()->FindPreference(
       prefs::kShouldShowFirstRunBubble));
   EXPECT_TRUE(FirstRun::SetShowFirstRunBubblePref(true));
   ASSERT_TRUE(g_browser_process->local_state()->FindPreference(
