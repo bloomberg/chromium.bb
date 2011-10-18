@@ -98,6 +98,9 @@ class BookmarkSubMenuModel : public BookmarkNodeMenuModel,
   virtual bool IsEnabledAt(int index) const OVERRIDE;
   virtual bool IsVisibleAt(int index) const OVERRIDE;
 
+  // Returns true if the command id is for a bookmark item.
+  static bool IsBookmarkItemCommandId(int command_id);
+
  private:
   Browser* browser_;
 

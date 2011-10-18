@@ -17,6 +17,12 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+// Per chrome/app/chrome_command_ids.h, values < 4000 are for "dynamic menu
+// items". We only use one command id for all the bookmarks, because we handle
+// bookmark item activations directly. So we pick a suitably large random value
+// and use that to avoid accidental conflicts with other dynamic items.
+static const int kBookmarkItemCommandId = 1759;
+
 BookmarkNodeMenuModel::BookmarkNodeMenuModel(
     ui::SimpleMenuModel::Delegate* delegate,
     BookmarkModel* model,
@@ -66,7 +72,7 @@ void BookmarkNodeMenuModel::PopulateMenu() {
       const string16 label =
         UTF8ToUTF16(bookmark_utils::BuildMenuLabelFor(child));
       // No command id. We override ActivatedAt below to handle activations.
-      AddItem(0, label);
+      AddItem(kBookmarkItemCommandId, label);
       const SkBitmap& node_icon = model_->GetFavicon(child);
       if (node_icon.width() > 0)
         SetIcon(GetItemCount() - 1, node_icon);
@@ -84,7 +90,7 @@ void BookmarkNodeMenuModel::AddSubMenuForNode(const BookmarkNode* node) {
   BookmarkNodeMenuModel* submenu =
       new BookmarkNodeMenuModel(NULL, model_, node, page_navigator_);
   // No command id. Nothing happens if you click on the submenu itself.
-  AddSubMenu(0, label, submenu);
+  AddSubMenu(kBookmarkItemCommandId, label, submenu);
   submenus_.push_back(submenu);
 }
 
@@ -181,4 +187,9 @@ bool BookmarkSubMenuModel::IsEnabledAt(int index) const {
 bool BookmarkSubMenuModel::IsVisibleAt(int index) const {
   // We don't want the delegate interfering with bookmark items.
   return index >= fixed_items_ || SimpleMenuModel::IsVisibleAt(index);
+}
+
+// static
+bool BookmarkSubMenuModel::IsBookmarkItemCommandId(int command_id) {
+  return command_id == kBookmarkItemCommandId;
 }

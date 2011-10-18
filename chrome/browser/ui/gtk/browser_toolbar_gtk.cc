@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/global_error_service_factory.h"
 #include "chrome/browser/ui/gtk/accelerators_gtk.h"
 #include "chrome/browser/ui/gtk/back_forward_button_gtk.h"
+#include "chrome/browser/ui/gtk/bookmark_sub_menu_model_gtk.h"
 #include "chrome/browser/ui/gtk/browser_actions_toolbar_gtk.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/cairo_cached_surface.h"
@@ -337,7 +338,8 @@ GtkIconSet* BrowserToolbarGtk::GetIconSetForId(int idr) {
 // Always show images because we desire that some icons always show
 // regardless of the system setting.
 bool BrowserToolbarGtk::AlwaysShowIconForCmd(int command_id) const {
-  return command_id == IDC_UPGRADE_DIALOG;
+  return command_id == IDC_UPGRADE_DIALOG ||
+      BookmarkSubMenuModel::IsBookmarkItemCommandId(command_id);
 }
 
 // ui::AcceleratorProvider
