@@ -352,7 +352,7 @@ void NavigationNotificationObserver::ConditionMet(
       AutomationJSONReply(automation_, reply_message_.release())
           .SendSuccess(&dict);
     } else {
-      IPC::ParamTraits<AutomationMsg_NavigationResponseValues>::Write(
+      IPC::ParamTraits<int>::Write(
           reply_message_.get(), navigation_result);
       automation_->Send(reply_message_.release());
     }

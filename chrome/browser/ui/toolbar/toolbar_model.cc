@@ -72,8 +72,10 @@ bool ToolbarModel::ShouldDisplayURL() const {
   NavigationController* controller = GetNavigationController();
   NavigationEntry* entry = controller ? controller->GetVisibleEntry() : NULL;
   if (entry) {
-    if (entry->IsViewSourceMode() || entry->page_type() == INTERSTITIAL_PAGE)
+    if (entry->IsViewSourceMode() ||
+        entry->page_type() == content::PAGE_TYPE_INTERSTITIAL) {
       return true;
+    } 
   }
 
   TabContents* tab_contents = browser_->GetSelectedTabContents();

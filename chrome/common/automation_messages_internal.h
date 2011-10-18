@@ -573,7 +573,7 @@ IPC_SYNC_MESSAGE_CONTROL1_4(AutomationMsg_GetSecurityState,
 IPC_SYNC_MESSAGE_CONTROL1_2(AutomationMsg_GetPageType,
                             int,
                             bool,
-                            PageType)
+                            content::PageType)
 
 // This message simulates the user action on the SSL blocking page showing in
 // the specified tab.  This message is only effective if an interstitial page

@@ -48,7 +48,7 @@ class SSLUITest : public InProcessBrowserTest {
                                bool displayed_insecure_content) {
     NavigationEntry* entry = tab->controller().GetActiveEntry();
     ASSERT_TRUE(entry);
-    EXPECT_EQ(NORMAL_PAGE, entry->page_type());
+    EXPECT_EQ(content::PAGE_TYPE_NORMAL, entry->page_type());
     EXPECT_EQ(SECURITY_STYLE_AUTHENTICATED, entry->ssl().security_style());
     EXPECT_EQ(0U, entry->ssl().cert_status() & net::CERT_STATUS_ALL_ERRORS);
     EXPECT_EQ(displayed_insecure_content,
@@ -59,7 +59,7 @@ class SSLUITest : public InProcessBrowserTest {
   void CheckUnauthenticatedState(TabContents* tab) {
     NavigationEntry* entry = tab->controller().GetActiveEntry();
     ASSERT_TRUE(entry);
-    EXPECT_EQ(NORMAL_PAGE, entry->page_type());
+    EXPECT_EQ(content::PAGE_TYPE_NORMAL, entry->page_type());
     EXPECT_EQ(SECURITY_STYLE_UNAUTHENTICATED, entry->ssl().security_style());
     EXPECT_EQ(0U, entry->ssl().cert_status() & net::CERT_STATUS_ALL_ERRORS);
     EXPECT_FALSE(entry->ssl().displayed_insecure_content());
@@ -72,7 +72,8 @@ class SSLUITest : public InProcessBrowserTest {
                                       bool interstitial) {
     NavigationEntry* entry = tab->controller().GetActiveEntry();
     ASSERT_TRUE(entry);
-    EXPECT_EQ(interstitial ? INTERSTITIAL_PAGE : NORMAL_PAGE,
+    EXPECT_EQ(interstitial ?
+                  content::PAGE_TYPE_INTERSTITIAL : content::PAGE_TYPE_NORMAL,
               entry->page_type());
     EXPECT_EQ(SECURITY_STYLE_AUTHENTICATION_BROKEN,
               entry->ssl().security_style());

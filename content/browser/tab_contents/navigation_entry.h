@@ -11,9 +11,9 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
-#include "content/common/page_type.h"
 #include "content/common/security_style.h"
 #include "content/public/common/page_transition_types.h"
+#include "content/public/common/page_type.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/cert_status_flags.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -217,10 +217,10 @@ class CONTENT_EXPORT NavigationEntry {
 
   // The page type tells us if this entry is for an interstitial or error page.
   // See the PageType enum above.
-  void set_page_type(PageType page_type) {
+  void set_page_type(content::PageType page_type) {
     page_type_ = page_type;
   }
-  PageType page_type() const {
+  content::PageType page_type() const {
     return page_type_;
   }
 
@@ -422,7 +422,7 @@ class CONTENT_EXPORT NavigationEntry {
   // See the accessors above for descriptions.
   int unique_id_;
   scoped_refptr<SiteInstance> site_instance_;
-  PageType page_type_;
+  content::PageType page_type_;
   GURL url_;
   GURL referrer_;
   GURL virtual_url_;

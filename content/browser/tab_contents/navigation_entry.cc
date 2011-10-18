@@ -37,7 +37,7 @@ NavigationEntry::FaviconStatus::FaviconStatus() : valid_(false) {
 NavigationEntry::NavigationEntry()
     : unique_id_(GetUniqueID()),
       site_instance_(NULL),
-      page_type_(NORMAL_PAGE),
+      page_type_(content::PAGE_TYPE_NORMAL),
       update_virtual_url_with_url_(false),
       page_id_(-1),
       transition_type_(content::PAGE_TRANSITION_LINK),
@@ -55,7 +55,7 @@ NavigationEntry::NavigationEntry(SiteInstance* instance,
                                  bool is_renderer_initiated)
     : unique_id_(GetUniqueID()),
       site_instance_(instance),
-      page_type_(NORMAL_PAGE),
+      page_type_(content::PAGE_TYPE_NORMAL),
       url_(url),
       referrer_(referrer),
       update_virtual_url_with_url_(false),

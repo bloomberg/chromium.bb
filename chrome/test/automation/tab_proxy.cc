@@ -587,7 +587,7 @@ bool TabProxy::GetSecurityState(SecurityStyle* security_style,
   return succeeded;
 }
 
-bool TabProxy::GetPageType(PageType* type) {
+bool TabProxy::GetPageType(content::PageType* type) {
   DCHECK(type);
 
   if (!is_valid())

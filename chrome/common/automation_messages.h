@@ -11,9 +11,9 @@
 #include "chrome/common/automation_constants.h"
 #include "chrome/common/content_settings.h"
 #include "content/common/common_param_traits.h"
-#include "content/common/page_type.h"
 #include "content/common/security_style.h"
 #include "content/common/webkit_param_traits.h"
+#include "content/public/common/page_type.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
 #include "net/base/host_port_pair.h"
@@ -256,35 +256,23 @@ struct ParamTraits<AutomationMsg_Find_Params> {
 };
 
 template <>
-struct ParamTraits<AutomationMsg_NavigationResponseValues> {
-  typedef AutomationMsg_NavigationResponseValues param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
+struct SimilarTypeTraits<AutomationMsg_NavigationResponseValues> {
+  typedef int Type;
 };
 
 template <>
-struct ParamTraits<AutomationMsg_ExtensionProperty> {
-  typedef AutomationMsg_ExtensionProperty param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
+struct SimilarTypeTraits<AutomationMsg_ExtensionProperty> {
+  typedef int Type;
 };
 
 template <>
-struct ParamTraits<SecurityStyle> {
-  typedef SecurityStyle param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
+struct SimilarTypeTraits<SecurityStyle> {
+  typedef int Type;
 };
 
 template <>
-struct ParamTraits<PageType> {
-  typedef PageType param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
+struct SimilarTypeTraits<content::PageType> {
+  typedef int Type;
 };
 
 #if defined(OS_WIN) && !defined(USE_AURA)

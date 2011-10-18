@@ -18,7 +18,7 @@
 #include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "content/common/notification_registrar.h"
-#include "content/common/page_type.h"
+#include "content/public/common/page_type.h"
 #include "net/base/cert_status_flags.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 
@@ -208,7 +208,7 @@ class TestingAutomationProvider : public AutomationProvider,
                         int* insecure_content_status);
 
   // Gets the page type for the tab associated to the specified |handle|.
-  void GetPageType(int handle, bool* success, PageType* page_type);
+  void GetPageType(int handle, bool* success, content::PageType* page_type);
 
   // Gets the duration in ms of the last event matching |event_name|.
   // |duration_ms| is -1 if the event hasn't occurred yet.

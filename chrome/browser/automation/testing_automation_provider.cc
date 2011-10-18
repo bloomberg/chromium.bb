@@ -1560,7 +1560,7 @@ void TestingAutomationProvider::GetSecurityState(
 void TestingAutomationProvider::GetPageType(
     int handle,
     bool* success,
-    PageType* page_type) {
+    content::PageType* page_type) {
   if (tab_tracker_->ContainsHandle(handle)) {
     NavigationController* tab = tab_tracker_->GetResource(handle);
     NavigationEntry* entry = tab->GetActiveEntry();
@@ -1568,12 +1568,12 @@ void TestingAutomationProvider::GetPageType(
     *success = true;
     // In order to return the proper result when an interstitial is shown and
     // no navigation entry were created for it we need to ask the TabContents.
-    if (*page_type == NORMAL_PAGE &&
+    if (*page_type == content::PAGE_TYPE_NORMAL &&
         tab->tab_contents()->showing_interstitial_page())
-      *page_type = INTERSTITIAL_PAGE;
+      *page_type = content::PAGE_TYPE_INTERSTITIAL;
   } else {
     *success = false;
-    *page_type = NORMAL_PAGE;
+    *page_type = content::PAGE_TYPE_NORMAL;
   }
 }
 
@@ -1591,7 +1591,7 @@ void TestingAutomationProvider::ActionOnSSLBlockingPage(
   if (tab_tracker_->ContainsHandle(handle)) {
     NavigationController* tab = tab_tracker_->GetResource(handle);
     NavigationEntry* entry = tab->GetActiveEntry();
-    if (entry->page_type() == INTERSTITIAL_PAGE) {
+    if (entry->page_type() == content::PAGE_TYPE_INTERSTITIAL) {
       TabContents* tab_contents = tab->tab_contents();
       InterstitialPage* ssl_blocking_page =
           InterstitialPage::GetInterstitialPage(tab_contents);
@@ -2998,10 +2998,11 @@ void TestingAutomationProvider::GetNavigationInfo(
   return_value->Set("ssl", ssl);
 
   // Page type.
-  std::map<PageType, std::string> pagetype_to_string;
-  pagetype_to_string[NORMAL_PAGE] = "NORMAL_PAGE";
-  pagetype_to_string[ERROR_PAGE] = "ERROR_PAGE";
-  pagetype_to_string[INTERSTITIAL_PAGE] = "INTERSTITIAL_PAGE";
+  std::map<content::PageType, std::string> pagetype_to_string;
+  pagetype_to_string[content::PAGE_TYPE_NORMAL] = "NORMAL_PAGE";
+  pagetype_to_string[content::PAGE_TYPE_ERROR] = "ERROR_PAGE";
+  pagetype_to_string[content::PAGE_TYPE_INTERSTITIAL] =
+      "INTERSTITIAL_PAGE";
   return_value->SetString("page_type",
                           pagetype_to_string[nav_entry->page_type()]);
 
