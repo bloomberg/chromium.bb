@@ -15,6 +15,7 @@
 #include <map>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -67,7 +68,8 @@ const size_t kMaxCacheSize = 5;
 
 int DefaultX11ErrorHandler(Display* d, XErrorEvent* e) {
   MessageLoop::current()->PostTask(
-       FROM_HERE, NewRunnableFunction(LogErrorEventDescription, d, *e));
+       FROM_HERE,
+       base::Bind(&LogErrorEventDescription, d, *e));
   return 0;
 }
 
