@@ -1181,8 +1181,8 @@ ListValue* InternetOptionsHandler::GetWirelessList() {
   if (cros_->wifi_enabled()) {
     list->Append(GetNetwork(
         kOtherNetworksFakePath,
-        chromeos::NetworkMenuIcon::GetBitmap(
-            chromeos::NetworkMenuIcon::ARCS, 1),
+        chromeos::NetworkMenuIcon::GetConnectedBitmap(
+            chromeos::NetworkMenuIcon::ARCS),
         l10n_util::GetStringUTF8(IDS_OPTIONS_SETTINGS_OTHER_WIFI_NETWORKS),
         false,
         false,

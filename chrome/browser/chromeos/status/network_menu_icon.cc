@@ -606,11 +606,11 @@ void NetworkMenuIcon::SetIconAndText(string16* text) {
           rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED));
       break;
     case TYPE_WIFI:
-      icon_->set_icon(GetBitmap(ARCS, 0));
+      icon_->set_icon(GetDisconnectedBitmap(ARCS));
       break;
     case TYPE_CELLULAR:
     default:
-      icon_->set_icon(GetBitmap(BARS, 0));
+      icon_->set_icon(GetDisconnectedBitmap(BARS));
       icon_->set_bottom_right_badge(
           rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED));
       break;
@@ -753,6 +753,10 @@ const SkBitmap NetworkMenuIcon::GetBitmap(BitmapType type, int index) {
 
 const SkBitmap NetworkMenuIcon::GetDisconnectedBitmap(BitmapType type) {
   return GetBitmap(type, 0);
+}
+
+const SkBitmap NetworkMenuIcon::GetConnectedBitmap(BitmapType type) {
+  return GetBitmap(type, NumBitmaps(type) - 1);
 }
 
 int NetworkMenuIcon::NumBitmaps(BitmapType type) {

@@ -603,9 +603,7 @@ void MainMenuModel::InitMenuItems(bool is_browser_mode,
     menu_items_.push_back(MenuItem(
         ui::MenuModel::TYPE_COMMAND,
         l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_OTHER_WIFI_NETWORKS),
-        NetworkMenuIcon::GetBitmap(
-            NetworkMenuIcon::ARCS,
-            NetworkMenuIcon::NumBitmaps(NetworkMenuIcon::ARCS)),
+        NetworkMenuIcon::GetConnectedBitmap(NetworkMenuIcon::ARCS),
         std::string(), FLAG_ADD_WIFI));
   }
 

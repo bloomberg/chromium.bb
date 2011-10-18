@@ -73,7 +73,14 @@ class NetworkMenuIcon : public ui::AnimationDelegate {
   // Access a specific bitmap. If index is out of range an empty bitmap
   // will be returned.
   static const SkBitmap GetBitmap(BitmapType type, int index);
+
+  // Gets the disconnected bitmap for given type.
   static const SkBitmap GetDisconnectedBitmap(BitmapType type);
+
+  // Gets the connected bitmap for given type.
+  static const SkBitmap GetConnectedBitmap(BitmapType type);
+
+  // Returns total number of bitmaps for given type.
   static int NumBitmaps(BitmapType type);
 
  protected:
