@@ -282,14 +282,14 @@ def _SetEnvForPnacl(env, root):
               CXX=pnacl_cxx + pnacl_cxx_flags,
               LIBPREFIX="lib",
               SHLIBPREFIX="lib",
-              SHLIBSUFFIX=".pso",
+              SHLIBSUFFIX=".so",
               OBJSUFFIX=".bc",
               LINK=pnacl_cxx + arch_flag + pnacl_ld_flags,
               # Although we are currently forced to produce native output
               # for LINK, we are free to produce bitcode for SHLINK
               # (SharedLibrary linking) because scons doesn't do anything
               # with shared libraries except use them with the toolchain.
-              SHLINK=pnacl_cxx + pnacl_ld_flags,
+              SHLINK=pnacl_cxx + arch_flag + pnacl_ld_flags,
               # C_ONLY_LINK is needed when building libehsupport,
               # because libstdc++ is not yet available.
               C_ONLY_LINK=pnacl_cc + arch_flag + pnacl_ld_flags,
