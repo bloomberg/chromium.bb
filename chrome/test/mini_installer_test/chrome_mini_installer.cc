@@ -233,11 +233,12 @@ void ChromeMiniInstaller::InstallChromeFrameUsingMultiInstall() {
   FindChromeShortcut();
 }
 
-void ChromeMiniInstaller::InstallChromeAndChromeFrameReadyMode() {
+void ChromeMiniInstaller::InstallChromeAndChromeFrame(bool ready_mode) {
   CommandLine cmd = GetBaseMultiInstallCommand();
   cmd.AppendSwitch(installer::switches::kChrome);
   cmd.AppendSwitch(installer::switches::kChromeFrame);
-  cmd.AppendSwitch(installer::switches::kChromeFrameReadyMode);
+  if (ready_mode)
+    cmd.AppendSwitch(installer::switches::kChromeFrameReadyMode);
   RunInstaller(cmd);
   // Verify installation.
   InstallationValidator::InstallationType type =
@@ -245,8 +246,10 @@ void ChromeMiniInstaller::InstallChromeAndChromeFrameReadyMode() {
   BrowserDistribution* dist = GetCurrentBrowserDistribution();
   ASSERT_TRUE(InstallUtil::IsMultiInstall(dist, system_install_));
   EXPECT_TRUE(type & InstallationValidator::ProductBits::CHROME_MULTI);
-  EXPECT_TRUE(type &
-      InstallationValidator::ProductBits::CHROME_FRAME_READY_MODE);
+  if (ready_mode) {
+    EXPECT_TRUE(type &
+        InstallationValidator::ProductBits::CHROME_FRAME_READY_MODE);
+  }
   FindChromeShortcut();
   LaunchChrome(true);
   LaunchIE(L"gcf:about:version");

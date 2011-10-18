@@ -37,7 +37,7 @@ class ChromeMiniInstaller {
 
   void InstallChromeUsingMultiInstall();
   void InstallChromeFrameUsingMultiInstall();
-  void InstallChromeAndChromeFrameReadyMode();
+  void InstallChromeAndChromeFrame(bool ready_mode);
 
   // Installs chrome.
   void Install();
