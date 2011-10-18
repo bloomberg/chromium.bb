@@ -32,7 +32,8 @@
 
 namespace {
 
-#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_ANDROID)
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_ANDROID) || \
+    defined(OS_OPENBSD)
 // The following are glibc-specific
 
 size_t fread_unlocked(void *ptr, size_t size, size_t n, FILE *file) {
