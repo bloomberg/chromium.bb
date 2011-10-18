@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
 #include "base/task.h"
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
@@ -81,7 +82,7 @@ class MockStorageClient : public QuotaClient {
 
   int mock_time_counter_;
 
-  ScopedRunnableMethodFactory<MockStorageClient> runnable_factory_;
+  base::WeakPtrFactory<MockStorageClient> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MockStorageClient);
 };

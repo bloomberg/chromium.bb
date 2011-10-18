@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <functional>
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 
@@ -61,15 +62,17 @@ QuotaThreadTask::~QuotaThreadTask() {
 }
 
 void QuotaThreadTask::Run() {
-  target_message_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &QuotaThreadTask::CallRunOnTargetThread));
+  target_message_loop_->PostTask(
+      FROM_HERE,
+      base::Bind(&QuotaThreadTask::CallRunOnTargetThread, this));
 }
 
 void QuotaThreadTask::CallRunOnTargetThread() {
   DCHECK(target_message_loop_->BelongsToCurrentThread());
   if (RunOnTargetThreadAsync())
     original_message_loop()->PostTask(
-        FROM_HERE, NewRunnableMethod(this, &QuotaThreadTask::CallCompleted));
+        FROM_HERE,
+        base::Bind(&QuotaThreadTask::CallCompleted, this));
 }
 
 bool QuotaThreadTask::RunOnTargetThreadAsync() {

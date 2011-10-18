@@ -73,11 +73,10 @@ class QuotaFileIO::WriteOperation : public PendingOperationBase {
         finished_(false),
         status_(base::PLATFORM_FILE_OK),
         bytes_written_(0),
-        ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
-        ALLOW_THIS_IN_INITIALIZER_LIST(runnable_factory_(this)) {
+        ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
     if (!is_will_operation) {
-      // TODO(kinuko): check the API convention if we really need to keep a
-      // copy of the buffer during the async write operations.
+      // TODO(kinuko): Check the API convention if we really need to keep a copy
+      // of the buffer during the async write operations.
       buffer_.reset(new char[bytes_to_write]);
       memcpy(buffer_.get(), buffer, bytes_to_write);
     }
@@ -120,8 +119,8 @@ class QuotaFileIO::WriteOperation : public PendingOperationBase {
 
   virtual void WillRunCallback() {
     base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE, runnable_factory_.NewRunnableMethod(
-            &WriteOperation::RunCallback));
+        FROM_HERE,
+        base::Bind(&WriteOperation::RunCallback, weak_factory_.GetWeakPtr()));
   }
 
  private:
@@ -149,7 +148,6 @@ class QuotaFileIO::WriteOperation : public PendingOperationBase {
   PlatformFileError status_;
   int64_t bytes_written_;
   base::WeakPtrFactory<WriteOperation> weak_factory_;
-  ScopedRunnableMethodFactory<WriteOperation> runnable_factory_;
 };
 
 class QuotaFileIO::SetLengthOperation : public PendingOperationBase {

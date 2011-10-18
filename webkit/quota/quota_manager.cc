@@ -12,7 +12,6 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
-#include "base/memory/ref_counted.h"
 #include "base/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
@@ -1559,10 +1558,12 @@ void QuotaManager::DeleteOnCorrectThread() const {
 
 void QuotaManagerProxy::RegisterClient(QuotaClient* client) {
   if (!io_thread_->BelongsToCurrentThread()) {
-    io_thread_->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &QuotaManagerProxy::RegisterClient, client));
+    io_thread_->PostTask(
+        FROM_HERE,
+        base::Bind(&QuotaManagerProxy::RegisterClient, this, client));
     return;
   }
+
   if (manager_)
     manager_->RegisterClient(client);
   else
@@ -1574,11 +1575,13 @@ void QuotaManagerProxy::NotifyStorageAccessed(
     const GURL& origin,
     StorageType type) {
   if (!io_thread_->BelongsToCurrentThread()) {
-    io_thread_->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &QuotaManagerProxy::NotifyStorageAccessed,
-        client_id, origin, type));
+    io_thread_->PostTask(
+        FROM_HERE,
+        base::Bind(&QuotaManagerProxy::NotifyStorageAccessed, this, client_id,
+                   origin, type));
     return;
   }
+
   if (manager_)
     manager_->NotifyStorageAccessed(client_id, origin, type);
 }
@@ -1589,11 +1592,13 @@ void QuotaManagerProxy::NotifyStorageModified(
     StorageType type,
     int64 delta) {
   if (!io_thread_->BelongsToCurrentThread()) {
-    io_thread_->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &QuotaManagerProxy::NotifyStorageModified,
-        client_id, origin, type, delta));
+    io_thread_->PostTask(
+        FROM_HERE,
+        base::Bind(&QuotaManagerProxy::NotifyStorageModified, this, client_id,
+                   origin, type, delta));
     return;
   }
+
   if (manager_)
     manager_->NotifyStorageModified(client_id, origin, type, delta);
 }
@@ -1601,10 +1606,12 @@ void QuotaManagerProxy::NotifyStorageModified(
 void QuotaManagerProxy::NotifyOriginInUse(
     const GURL& origin) {
   if (!io_thread_->BelongsToCurrentThread()) {
-    io_thread_->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &QuotaManagerProxy::NotifyOriginInUse, origin));
+    io_thread_->PostTask(
+        FROM_HERE,
+        base::Bind(&QuotaManagerProxy::NotifyOriginInUse, this, origin));
     return;
   }
+
   if (manager_)
     manager_->NotifyOriginInUse(origin);
 }
@@ -1612,8 +1619,10 @@ void QuotaManagerProxy::NotifyOriginInUse(
 void QuotaManagerProxy::NotifyOriginNoLongerInUse(
     const GURL& origin) {
   if (!io_thread_->BelongsToCurrentThread()) {
-    io_thread_->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &QuotaManagerProxy::NotifyOriginNoLongerInUse, origin));
+    io_thread_->PostTask(
+        FROM_HERE,
+        base::Bind(&QuotaManagerProxy::NotifyOriginNoLongerInUse, this,
+                   origin));
     return;
   }
   if (manager_)
