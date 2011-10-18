@@ -52,7 +52,6 @@
             'nexe_target': 'irt_core',
             'build_glibc': 0,
             'build_newlib': 1,
-            'suffix': '_,mainarch,subarch,nexe',
             'sources': ['<@(irt_sources)', '<@(irt_nonbrowser)'],
           },
           'conditions': [
