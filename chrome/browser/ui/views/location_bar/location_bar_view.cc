@@ -359,7 +359,7 @@ void LocationBarView::InvalidatePageActions() {
 void LocationBarView::OnFocus() {
   // Focus the view widget first which implements accessibility for Chrome OS.
   GetWidget()->NotifyAccessibilityEvent(
-      this, ui::AccessibilityTypes::EVENT_FOCUS, true);
+      this, ui::AccessibilityTypes::EVENT_FOCUS, false);
 
   // Then focus the native location view which implements accessibility for
   // Windows.
