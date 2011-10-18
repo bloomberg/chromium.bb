@@ -3,17 +3,6 @@
 // found in the LICENSE file.
 
 /**
- * Inherit the prototype methods from one constructor into another.
- */
-function inherits(childCtor, parentCtor) {
-  function tempCtor() {};
-  tempCtor.prototype = parentCtor.prototype;
-  childCtor.superClass_ = parentCtor.prototype;
-  childCtor.prototype = new tempCtor();
-  childCtor.prototype.constructor = childCtor;
-};
-
-/**
  * Sets the width (in pixels) on a DOM node.
  */
 function setNodeWidth(node, widthPx) {
