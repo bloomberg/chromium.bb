@@ -20,15 +20,16 @@ void ExpectListsEqual(const AppNotificationList& one,
 // Helper for inserting |count| dummy notifications with |prefix| in their
 // title and body into |list|.
 void AddNotifications(AppNotificationList* list,
-                      const std::string& extension_id,
                       int count,
-                      const std::string& prefix);
+                      std::string prefix);
 
 // Copy the contents of |source| into a new object.
 AppNotification* CopyAppNotification(const AppNotification& source);
 
-// Adds a copy of each item in |list| to |manager|.
-bool AddCopiesFromList(AppNotificationManager* manager,
+// Adds a copy of each item in |list| to |manager| using |extension_id| as the
+// extension id.
+void AddCopiesFromList(AppNotificationManager* manager,
+                       const std::string& extension_id,
                        const AppNotificationList& list);
 
 }  // namespace app_notification_test_util

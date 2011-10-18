@@ -45,8 +45,7 @@ bool AppNotifyFunction::RunImpl() {
   if (details->HasKey(kBodyTextKey))
     EXTENSION_FUNCTION_VALIDATE(details->GetString(kBodyTextKey, &body));
 
-  scoped_ptr<AppNotification> item(new AppNotification(
-      true, "", id, title, body));
+  scoped_ptr<AppNotification> item(new AppNotification(title, body));
 
   if (details->HasKey(kLinkUrlKey)) {
     std::string link_url;
@@ -69,7 +68,7 @@ bool AppNotifyFunction::RunImpl() {
   AppNotificationManager* manager =
       profile()->GetExtensionService()->app_notification_manager();
 
-  manager->Add(item.release());
+  manager->Add(id, item.release());
 
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_APP_NOTIFICATION_STATE_CHANGED,

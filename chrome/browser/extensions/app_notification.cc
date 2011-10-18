@@ -5,13 +5,15 @@
 #include "chrome/browser/extensions/app_notification.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/common/guid.h"
+
+AppNotification::AppNotification(const std::string& title,
+                                 const std::string& body)
+    : title_(title), body_(body) {}
+
+AppNotification::~AppNotification() {}
 
 namespace {
 
-const char* kIsLocalKey = "is_local";
-const char* kGuidKey = "guid";
-const char* kExtensionIdKey = "extension_id";
 const char* kTitleKey = "title";
 const char* kBodyKey = "body";
 const char* kLinkUrlKey = "link_url";
@@ -19,27 +21,8 @@ const char* kLinkTextKey = "link_text";
 
 }  // namespace
 
-AppNotification::AppNotification(bool is_local,
-                                 const std::string& guid,
-                                 const std::string& extension_id,
-                                 const std::string& title,
-                                 const std::string& body)
-    : is_local_(is_local),
-      extension_id_(extension_id),
-      title_(title),
-      body_(body) {
-  guid_ = guid.empty() ? guid::GenerateGUID() : guid;
-}
-
-AppNotification::~AppNotification() {}
-
 void AppNotification::ToDictionaryValue(DictionaryValue* result) {
   CHECK(result);
-  result->SetBoolean(kIsLocalKey, is_local_);
-  if (!guid_.empty())
-    result->SetString(kGuidKey, guid_);
-  if (!extension_id_.empty())
-    result->SetString(kExtensionIdKey, extension_id_);
   if (!title_.empty())
     result->SetString(kTitleKey, title_);
   if (!body_.empty())
@@ -53,17 +36,9 @@ void AppNotification::ToDictionaryValue(DictionaryValue* result) {
 // static
 AppNotification* AppNotification::FromDictionaryValue(
     const DictionaryValue& value) {
-  scoped_ptr<AppNotification> result(new AppNotification(true, "", "", "", ""));
 
-  if (value.HasKey(kIsLocalKey) && !value.GetBoolean(
-      kIsLocalKey, &result->is_local_)) {
-    return NULL;
-  }
-  if (value.HasKey(kGuidKey) && !value.GetString(kGuidKey, &result->guid_))
-    return NULL;
-  if (value.HasKey(kExtensionIdKey) &&
-      !value.GetString(kExtensionIdKey, &result->extension_id_))
-    return NULL;
+  scoped_ptr<AppNotification> result(new AppNotification("", ""));
+
   if (value.HasKey(kTitleKey) && !value.GetString(kTitleKey, &result->title_))
     return NULL;
   if (value.HasKey(kBodyKey) && !value.GetString(kBodyKey, &result->body_))
@@ -85,10 +60,7 @@ AppNotification* AppNotification::FromDictionaryValue(
 }
 
 bool AppNotification::Equals(const AppNotification& other) const {
-  return (is_local_ == other.is_local_ &&
-          guid_ == other.guid_ &&
-          extension_id_ == other.extension_id_ &&
-          title_ == other.title_ &&
+  return (title_ == other.title_ &&
           body_ == other.body_ &&
           link_url_ == other.link_url_ &&
           link_text_ == other.link_text_);
