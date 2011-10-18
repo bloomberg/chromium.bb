@@ -1174,10 +1174,13 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetSpdyStatus(
                        net::HttpStreamFactory::force_spdy_always()));
 
   // The next_protos may not be specified for certain configurations of SPDY.
-  Value* next_protos_value = net::HttpStreamFactory::next_protos() ?
-      Value::CreateStringValue(*net::HttpStreamFactory::next_protos()) :
-      Value::CreateStringValue("");
-
+  Value* next_protos_value;
+  if (net::HttpStreamFactory::has_next_protos()) {
+    next_protos_value = Value::CreateStringValue(
+        JoinString(net::HttpStreamFactory::next_protos(), ','));
+  } else {
+    next_protos_value = Value::CreateStringValue("");
+  }
   status_dict->Set("next_protos", next_protos_value);
 
   SendJavascriptCommand("receivedSpdyStatus", status_dict);

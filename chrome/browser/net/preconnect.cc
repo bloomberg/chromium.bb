@@ -94,8 +94,8 @@ void PreconnectOnIOThread(
   // Setup the SSL Configuration.
   net::SSLConfig ssl_config;
   session->ssl_config_service()->GetSSLConfig(&ssl_config);
-  if (session->http_stream_factory()->next_protos())
-    ssl_config.next_protos = *session->http_stream_factory()->next_protos();
+  if (session->http_stream_factory()->has_next_protos())
+    ssl_config.next_protos = session->http_stream_factory()->next_protos();
 
   // All preconnects should perform EV certificate verification.
   ssl_config.verify_ev_cert = true;
