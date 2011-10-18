@@ -5,11 +5,13 @@
 
 Import('env')
 
+# valgrind has problems with minimal_test_guest
+if env.IsRunningUnderValgrind():
+  Return()
 
 # This test case tests an experimental profile of NaCl.  If you make a
 # change which breaks this test which is difficult to fix, you can
-# disable the test, but please CC mseaborn+cbiffle+krasin.
-
+# disable the test, but please CC mseaborn,krasin.
 
 if 'TRUSTED_ENV' not in env:
   Return()
@@ -45,15 +47,11 @@ runner = trusted_env.ComponentProgram(
                 'gio',
                 ] + VALIDATOR_LIBS + DEBUG_LIBS)
 
-if env.Bit('bitcode'):
-  # The PNaCl compiler driver does not yet accept -nostartfiles or
-  # -Wl,--entry.
-  # TODO(mseaborn): Add support for these to the PNaCl compiler driver.
-  Return()
-guest_env = env.Clone()
-guest_env.Append(LINKFLAGS=['-nostartfiles', '-Wl,--entry=EntryPoint'])
-test_prog = guest_env.ComponentProgram(
-    'minimal_test_guest', ['minimal_test_guest.c'])
+
+test_prog = env.ComponentProgram(
+    'minimal_test_guest',
+    ['minimal_test_guest.c'],
+    EXTRA_LINKFLAGS=['-nostdlib'])
 
 node = env.CommandTest('minimal_test.out', [runner, test_prog],
                        stdout_golden=env.File('minimal_test.stdout'))
