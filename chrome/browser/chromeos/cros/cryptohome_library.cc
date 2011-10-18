@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/hash_tables.h"
 #include "base/message_loop.h"
@@ -284,7 +285,7 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
                              Delegate* callback) OVERRIDE {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableFunction(&DoStubCallback, callback));
+        base::Bind(&DoStubCallback, callback));
     return true;
   }
 
@@ -300,7 +301,7 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
                                Delegate* callback) OVERRIDE {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableFunction(&DoStubCallback, callback));
+        base::Bind(&DoStubCallback, callback));
     return true;
   }
 
@@ -324,7 +325,7 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
                           Delegate* callback) OVERRIDE {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableFunction(&DoStubCallback, callback));
+        base::Bind(&DoStubCallback, callback));
     return true;
   }
 
@@ -335,7 +336,7 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
   virtual bool AsyncMountForBwsi(Delegate* callback) OVERRIDE {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableFunction(&DoStubCallback, callback));
+        base::Bind(&DoStubCallback, callback));
     return true;
   }
 
@@ -351,7 +352,7 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
       const std::string& user_email, Delegate* callback) OVERRIDE {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableFunction(&DoStubCallback, callback));
+        base::Bind(&DoStubCallback, callback));
     return true;
   }
 
@@ -371,7 +372,7 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
       Delegate* callback) OVERRIDE {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableFunction(&DoStubCallback, callback));
+        base::Bind(&DoStubCallback, callback));
     return true;
   }
 
@@ -379,7 +380,7 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
       const std::string& username, Delegate* callback) OVERRIDE {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableFunction(&DoStubCallback, callback));
+        base::Bind(&DoStubCallback, callback));
     return true;
   }
 

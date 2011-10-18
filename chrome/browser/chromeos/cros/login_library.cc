@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/cros/login_library.h"
 
 #include "base/message_loop.h"
-#include "base/task.h"
 #include "base/timer.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"

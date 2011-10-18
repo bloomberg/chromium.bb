@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/cros/burn_library.h"
 
 #include <cstring>
+#include "base/bind.h"
 #include "base/memory/linked_ptr.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/common/zip.h"
@@ -145,7 +146,8 @@ void BurnLibraryImpl::DoBurn(const FilePath& source_path,
   scoped_refptr<BurnLibraryTaskProxy> task =
       new BurnLibraryTaskProxy(AsWeakPtr());
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(task.get(), &BurnLibraryTaskProxy::UnzipImage));
+                          base::Bind(&BurnLibraryTaskProxy::UnzipImage,
+                                     task));
 }
 
 void BurnLibraryImpl::UnzipImage() {
@@ -159,7 +161,8 @@ void BurnLibraryImpl::UnzipImage() {
   scoped_refptr<BurnLibraryTaskProxy> task =
       new BurnLibraryTaskProxy(AsWeakPtr());
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(task.get(), &BurnLibraryTaskProxy::ImageUnzipped));
+                          base::Bind(&BurnLibraryTaskProxy::ImageUnzipped,
+                                     task));
 }
 
 void BurnLibraryImpl::OnImageUnzipped() {
@@ -276,7 +279,3 @@ BurnLibrary* BurnLibrary::GetImpl(bool stub) {
 }
 
 }  // namespace chromeos
-
-// Allows InvokeLater without adding refcounting. This class is a Singleton and
-// won't be deleted until it's last InvokeLater is run.
-DISABLE_RUNNABLE_METHOD_REFCOUNT(chromeos::BurnLibraryImpl);

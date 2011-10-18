@@ -77,13 +77,9 @@ class UpdateLibraryImpl : public UpdateLibrary {
   }
 
   void UpdateStatus(const Status& status) {
-    // Make sure we run on UI thread.
-    if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          NewRunnableMethod(this, &UpdateLibraryImpl::UpdateStatus, status));
-      return;
-    }
+    // Called from UpdateStatusHandler, a libcros callback which should
+    // always run on UI thread.
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
     status_ = status;
     FOR_EACH_OBSERVER(Observer, observers_, UpdateStatusChanged(this));
@@ -145,7 +141,3 @@ UpdateLibrary* UpdateLibrary::GetImpl(bool stub) {
 }
 
 }  // namespace chromeos
-
-// Allows InvokeLater without adding refcounting. This class is a Singleton and
-// won't be deleted until it's last InvokeLater is run.
-DISABLE_RUNNABLE_METHOD_REFCOUNT(chromeos::UpdateLibraryImpl);

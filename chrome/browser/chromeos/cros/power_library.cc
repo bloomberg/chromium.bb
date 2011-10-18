@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/cros/power_library.h"
 
+#include "base/bind.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
@@ -84,16 +85,14 @@ class PowerLibraryImpl : public PowerLibrary {
   }
 
   virtual void EnableScreenLock(bool enable) OVERRIDE {
-    // Make sure we run on FILE thread becuase chromeos::EnableScreenLock
+    // Called when the screen preference is changed, which should always
+    // run on UI thread.
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    // Post the task to FILE thread as chromeos::EnableScreenLock
     // would write power manager config file to disk.
-    if (!BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
-      BrowserThread::PostTask(
-          BrowserThread::FILE, FROM_HERE,
-          NewRunnableMethod(this, &PowerLibraryImpl::EnableScreenLock, enable));
-      return;
-    }
-
-    chromeos::EnableScreenLock(enable);
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+        base::Bind(&PowerLibraryImpl::DoEnableScreenLock, enable));
   }
 
   virtual void RequestRestart() OVERRIDE {
@@ -113,6 +112,10 @@ class PowerLibraryImpl : public PowerLibrary {
   // End PowerLibrary implementation.
 
  private:
+  static void DoEnableScreenLock(bool enable) {
+    chromeos::EnableScreenLock(enable);
+  }
+
   static void GetIdleTimeCallback(void* object,
                                  int64_t time_idle_ms,
                                  bool success) {
@@ -140,14 +143,9 @@ class PowerLibraryImpl : public PowerLibrary {
   }
 
   void UpdatePowerStatus(const chromeos::PowerStatus& status) {
-    // Make sure we run on UI thread.
-    if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          NewRunnableMethod(
-              this, &PowerLibraryImpl::UpdatePowerStatus, status));
-      return;
-    }
+    // Called from PowerStatusChangedHandler, a libcros callback which
+    // should always run on UI thread.
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
     DVLOG(1) << "Power lpo=" << status.line_power_on
              << " sta=" << status.battery_state
@@ -159,14 +157,9 @@ class PowerLibraryImpl : public PowerLibrary {
   }
 
   void SystemResumed() {
-    // Make sure we run on the UI thread.
-    if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          NewRunnableMethod(this, &PowerLibraryImpl::SystemResumed));
-      return;
-    }
-
+    // Called from SystemResumedHandler, a libcros callback which should
+    // always run on UI thread.
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     FOR_EACH_OBSERVER(Observer, observers_, SystemResumed());
   }
 
@@ -302,7 +295,3 @@ PowerLibrary* PowerLibrary::GetImpl(bool stub) {
 }
 
 }  // namespace chromeos
-
-// Allows InvokeLater without adding refcounting. This class is a Singleton and
-// won't be deleted until it's last InvokeLater is run.
-DISABLE_RUNNABLE_METHOD_REFCOUNT(chromeos::PowerLibraryImpl);
