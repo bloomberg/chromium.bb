@@ -619,7 +619,7 @@ WatchDogThread* WatchDogThread::watchdog_thread_ = NULL;
 // before the Quit task.
 DISABLE_RUNNABLE_METHOD_REFCOUNT(WatchDogThread);
 
-WatchDogThread::WatchDogThread() : Thread("WATCHDOG") {
+WatchDogThread::WatchDogThread() : Thread("BrowserWatchdog") {
 }
 
 WatchDogThread::~WatchDogThread() {
