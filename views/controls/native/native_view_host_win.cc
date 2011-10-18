@@ -130,10 +130,11 @@ gfx::NativeViewAccessible NativeViewHostWin::GetNativeViewAccessible() {
   if (!IsWindow(hwnd))
     return NULL;
 
-  LRESULT ret = SendMessage(hwnd, WM_GETOBJECT, 0, OBJID_CLIENT);
   IAccessible* accessible = NULL;
-  HRESULT success = ObjectFromLresult(
-      ret, IID_IDispatch, 0, reinterpret_cast<void**>(accessible));
+  HRESULT success = ::AccessibleObjectFromWindow(
+      hwnd, OBJID_CLIENT, IID_IAccessible,
+      reinterpret_cast<void**>(&accessible));
+
   if (success == S_OK) {
     return accessible;
   } else {
