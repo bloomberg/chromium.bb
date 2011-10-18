@@ -2153,14 +2153,11 @@ void ExtensionService::OnExternalProviderReady() {
     if (Extension::IsExternalLocation(info->extension_location))
       CheckExternalUninstall(info->extension_id);
   }
-
-#if 0
-  // TODO(miket): enable upon completion of feature.
   IdentifyAlertableExtensions();
-#endif
 }
 
 void ExtensionService::IdentifyAlertableExtensions() {
+#if 0  // TODO(miket): enable upon completion of feature.
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Build up the lists of extensions that require acknowledgment.
@@ -2211,6 +2208,7 @@ void ExtensionService::IdentifyAlertableExtensions() {
       HandleExtensionAlertAccept(*global_error.get(), NULL);
     }
   }
+#endif
 }
 
 void ExtensionService::ShowExtensionAlert(ExtensionGlobalError* global_error) {
@@ -2405,6 +2403,7 @@ void ExtensionService::AddExtension(const Extension* extension) {
   extensions_.push_back(scoped_extension);
   SyncExtensionChangeIfNeeded(*extension);
   NotifyExtensionLoaded(extension);
+  IdentifyAlertableExtensions();
 }
 
 void ExtensionService::InitializePermissions(const Extension* extension) {
