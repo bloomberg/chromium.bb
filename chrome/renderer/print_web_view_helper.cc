@@ -1099,13 +1099,14 @@ bool PrintWebViewHelper::UpdatePrintSettings(
     if (!print_for_preview) {
       print_preview_context_.set_error(PREVIEW_ERROR_INVALID_PRINTER_SETTINGS);
     } else {
-      WebKit::WebFrame* frame = print_preview_context_.frame();
-      if (!frame) {
-        GetPrintFrame(&frame);
-      }
-      if (frame) {
+      // PrintForPrintPreview
+      WebKit::WebFrame* print_frame = NULL;
+      // This may not be the right frame, but the alert will be modal,
+      // therefore it works well enough.
+      GetPrintFrame(&print_frame);
+      if (print_frame) {
         render_view()->RunModalAlertDialog(
-            frame,
+            print_frame,
             l10n_util::GetStringUTF16(
                 IDS_PRINT_PREVIEW_INVALID_PRINTER_SETTINGS));
       }
@@ -1520,6 +1521,7 @@ void PrintWebViewHelper::PrintPreviewContext::set_error(
 }
 
 WebKit::WebFrame* PrintWebViewHelper::PrintPreviewContext::frame() const {
+  DCHECK(state_ != UNINITIALIZED);
   return frame_;
 }
 
