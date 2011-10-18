@@ -80,7 +80,7 @@ def PrepareCSVRoot():
 def RefreshPackageStatus(board, upstream, csv_root, test, cred_file):
   """Run through steps to refresh package status spreadsheet.
 
-  |board| is a comma-separated list of chromeos boards to use.
+  |board| is a colon-separated list of chromeos boards to use.
   |upstream| is a path to origin/gentoo upstream.  Can be None.
   Put all csv files under the |csv_root| directory.
   If |test| is True, upload to test spreadsheet instead of real one.

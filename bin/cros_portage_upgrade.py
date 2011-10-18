@@ -45,8 +45,6 @@ class PInfo(object):
       # TODO(mtennant): Rename 'cpv' to 'curr_cpv' or similar.
       'cpv',                 # Current full cpv (revision included)
       'cpv_cmp_upstream',    # 0 = current, >0 = outdated, <0 = futuristic
-      'emerge_ok',           # True if upgraded_cpv is emergeable
-      'emerge_output',       # Output from pretend emerge of upgraded_cpv
       'latest_upstream_cpv', # Latest (non-stable ok) upstream cpv
       'overlay',             # Overlay package currently in
       'package',             # category/package_name
@@ -384,29 +382,28 @@ class Upgrader(object):
   def _GetBoardCmd(self, cmd):
     """Return the board-specific version of |cmd|, if applicable."""
     if cmd in self.BOARD_CMDS:
-      # Host "board is a special case.
+      # Host "board" is a special case.
       if self._curr_board != self.HOST_BOARD:
         return '%s-%s' % (cmd, self._curr_board)
 
     return cmd
 
-  def _IsEmergeable(self, cpv, stable_only):
-    """Indicate whether |cpv| can be emerged on current board.
+  def _AreEmergeable(self, cpvlist, stable_only):
+    """Indicate whether cpvs in |cpvlist| can be emerged on current board.
 
     This essentially runs emerge with the --pretend option to verify
-    that all dependencies for this package version are satisfied.
+    that all dependencies for these package versions are satisfied.
 
     The |stable_only| argument determines whether an unstable version
     is acceptable.
 
     Return tuple with two elements:
-    [0] True if |cpv| can be emerged.
+    [0] True if |cpvlist| can be emerged.
     [1] Output from the emerge command.
     """
     envvars = self._GenPortageEnvvars(self._curr_arch, not stable_only)
-
     emerge = self._GetBoardCmd(self.EMERGE_CMD)
-    cmd = [emerge, '-p', '=' + cpv]
+    cmd = [emerge, '-p'] + ['=' + cpv for cpv in cpvlist]
     result = cros_lib.RunCommand(cmd, exit_code=True, error_ok=True,
                                  extra_env=envvars, print_cmd=False,
                                  redirect_stdout=True,
@@ -541,51 +538,38 @@ class Upgrader(object):
     return None
 
   def _GiveMaskedError(self, upgraded_cpv, emerge_output):
-    """Raise RuntimeError saying that |upgraded_cpv| is masked off.
+    """Print error saying that |upgraded_cpv| is masked off.
 
     See if hint found in |emerge_output| to improve error emssage.
     """
 
     # Expecting emerge_output to have lines like this:
     #  The following mask changes are necessary to proceed:
-    # #required by =sys-fs/lvm2-2.02.73-r1 (argument)
+    # #required by ... =somecategory/somepackage (some reason)
     # # /home/mtennant/trunk/src/third_party/chromiumos-overlay/profiles\
     # /targets/chromeos/package.mask:
+    # >=upgraded_cp
     package_mask = None
 
-    regex_line1 = re.compile(r'#\s*required by =%s' % upgraded_cpv)
-    regex_line2 = re.compile(r'#\s*(\S+/package\.mask):')
+    upgraded_cp = Upgrader._GetCatPkgFromCpv(upgraded_cpv)
+    regexp = re.compile(r'#\s*required by.+=\S+.*\n'
+                        '#\s*(\S+/package\.mask):\s*\n'
+                        '[<>=]+%s' % upgraded_cp)
 
-    emerge_lines = emerge_output.split('\n')
-    for ix1 in range(len(emerge_lines)):
-      line = emerge_lines[ix1]
-
-      # Look for first line.
-      if regex_line1.search(line):
-        # Look for second line within range_limit lines of first one.
-        range_limit = 3
-        for ix2 in range(ix1 + 1, min(ix1 + range_limit, len(emerge_lines))):
-          line = emerge_lines[ix2]
-          match = regex_line2.search(line)
-          if match:
-            package_mask = match.group(1)
-            break
-        break
-
-    oper.Error("Emerge output for %s on %s follows:" %
-               (upgraded_cpv, self._curr_arch))
-    print emerge_output
+    match = regexp.search(emerge_output)
+    if match:
+      package_mask = match.group(1)
 
     if package_mask:
-      raise RuntimeError("Upgraded package '%s' appears to be masked by a line "
-                         "in\n'%s'\n"
-                         "Full emerge output is above. Address mask issue, "
-                         "then run this again." %
-                         (upgraded_cpv, package_mask))
+      oper.Error("\nUpgraded package '%s' appears to be masked by a line in\n"
+                 "'%s'\n"
+                 "Full emerge output is above. Address mask issue, "
+                 "then run this again." %
+                 (upgraded_cpv, package_mask))
     else:
-      raise RuntimeError("Upgraded package '%s' is masked somehow (See full "
-                         "emerge output above). Address that and then run this "
-                         "again." % upgraded_cpv)
+      oper.Error("\nUpgraded package '%s' is masked somehow (See full "
+                 "emerge output above). Address that and then run this "
+                 "again." % upgraded_cpv)
 
   def _PkgUpgradeStaged(self, upstream_cpv):
     """Return True if package upgrade is already staged."""
@@ -748,10 +732,7 @@ class Upgrader(object):
     """Print a brief one-line report of package status."""
     upstream_cpv = info['upstream_cpv']
     if info['upgraded_cpv']:
-      if info['emerge_ok']:
-        action_stat = ' (UPGRADED, EMERGE WORKS)'
-      else:
-        action_stat = ' (UPGRADED, BUT EMERGE FAILS)'
+      action_stat = ' (UPGRADED)'
     else:
       action_stat = ''
 
@@ -782,9 +763,6 @@ class Upgrader(object):
       # "~" Prefix means the upgraded version is not stable on this arch.
       if not info['upgraded_stable']:
         upgraded_ver = '~' + upgraded_ver
-
-      if not info['emerge_ok']:
-        upgraded_ver = '(emerge fails)' + upgraded_ver
 
     # Assemble 'depends on' and 'required by' strings.
     depsstr = NOT_APPLICABLE
@@ -879,23 +857,7 @@ class Upgrader(object):
     info['upgraded_unmasked'] = unmasked
     info['upgraded_stable'] = stable
 
-    (em_ok, em_cmd, em_out) = self._IsEmergeable(info['upgraded_cpv'],
-                                                 info['upgraded_stable'])
-    info['emerge_ok'] = em_ok
-    info['emerge_cmd'] = em_cmd
-    info['emerge_output'] = em_out
-
-    if not info['upgraded_unmasked']:
-      # If the package is masked, then emerge should have failed.
-      if info['emerge_ok']:
-        oper.Error("Emerge passed for masked package!  Something "
-                   "fishy here. Emerge output follows:")
-        print info['emerge_output']
-        raise RuntimeError("Show this to the build team.")
-
-      self._GiveMaskedError(info['upgraded_cpv'], info['emerge_output'])
-
-    self._VerifyEbuildOverlay(info['upstream_cpv'], self.STABLE_OVERLAY_NAME,
+    self._VerifyEbuildOverlay(info['upgraded_cpv'], self.STABLE_OVERLAY_NAME,
                               info['upgraded_stable'])
 
   def _PackageReport(self, info):
@@ -976,23 +938,42 @@ class Upgrader(object):
     return self._CreateCommitMessage(upgrade_lines)
 
   def _GiveEmergeResults(self, infolist):
-    """Summarize emerge checks, raise RuntimeError if there was a problem."""
-    emerge_ok = True
-    for info in infolist:
-      if info['upgraded_cpv']:
-        if info['emerge_ok']:
-          oper.Info('Confirmed %s can be emerged on %s after upgrade.' %
-                    (info['upgraded_cpv'], self._curr_board))
-        else:
-          emerge_ok = False
-          oper.Error('Unable to emerge %s after upgrade.\n'
-                     'The output of "%s" follows:' %
-                     (info['upgraded_cpv'], info['emerge_cmd']))
-          print info['emerge_output']
+    """Summarize emerge checks, raise RuntimeError if there is a problem."""
 
-    if not emerge_ok:
-      raise RuntimeError('Failed to complete upgrades on %s (see above). '
-                         'Address the emerge errors before continuing.' %
+    upgraded_infos = [info for info in infolist if info['upgraded_cpv']]
+    upgraded_cpvs = [info['upgraded_cpv'] for info in upgraded_infos]
+    masked_cpvs = set([info['upgraded_cpv'] for info in upgraded_infos
+                       if not info['upgraded_unmasked']])
+
+    (ok, cmd, output) = self._AreEmergeable(upgraded_cpvs, self._unstable_ok)
+
+    if masked_cpvs:
+      # If any of the upgraded_cpvs are masked, then emerge should have
+      # failed.  Give a helpful message.  If it didn't fail then panic.
+      if ok:
+        oper.Error("\nEmerge passed for masked package(s)!  Something "
+                   "fishy here. Emerge output follows:")
+        print output
+        raise RuntimeError("Show this to the build team.")
+
+      else:
+        oper.Error("\nEmerge output for '%s' on %s follows:" %
+                   (cmd, self._curr_arch))
+        print output
+        for masked_cpv in masked_cpvs:
+          self._GiveMaskedError(masked_cpv, output)
+        raise RuntimeError("\nOne or more upgraded packages are masked "
+                           "(see above).")
+
+    if ok:
+      oper.Info("Confirmed that all upgraded packages can be emerged "
+                "on %s after upgrade." % self._curr_board)
+    else:
+      oper.Error("Packages cannot be emerged after upgraded.  The output "
+                 "of '%s' follows:" % cmd)
+      print output
+      raise RuntimeError("Failed to complete upgrades on %s (see above). "
+                         "Address the emerge errors before continuing." %
                          self._curr_board)
 
   def _UpgradePackages(self, infolist):
@@ -1334,7 +1315,6 @@ class Upgrader(object):
     # Trying to create commit message body lines that look like these:
     # Upgraded foo/bar-1.2.3 to version 1.2.4
     # Upgraded foo/bar-1.2.3 to version 1.2.4 (arm) AND version 1.2.4-r1 (x86)
-    # Upgraded foo/bar-1.2.3 to version 1.2.4 (but emerge fails)
 
     commit_lines = [] # Lines for the body of the commit message
     key_lines = []    # Lines needed in package.keywords
@@ -1555,8 +1535,8 @@ def _BoardIsSetUp(board):
   """Return true if |board| has been setup."""
   return os.path.isdir('/build/%s' % board)
 
-def main():
-  """Main function."""
+def _CreateOptParser():
+  """Create the optparser.parser object for command-line args."""
   usage = 'Usage: %prog [options] packages...'
   epilog = ('\n'
             'There are essentially two "modes": status report mode and '
@@ -1645,6 +1625,12 @@ def main():
                     default=False,
                     help="Enable verbose output (for debugging)")
 
+  return parser
+
+
+def main():
+  """Main function."""
+  parser = _CreateOptParser()
   (options, args) = parser.parse_args()
 
   if (options.verbose): logging.basicConfig(level=logging.DEBUG)

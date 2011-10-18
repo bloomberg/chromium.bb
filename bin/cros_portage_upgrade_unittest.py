@@ -26,6 +26,9 @@ ERROR_PREFIX = re.compile('^\033\[1;31m')
 
 # Configuration for generating a temporary valid ebuild hierarchy.
 # TODO(mtennant): Wrap this mechanism to create multiple overlays.
+# ResolverPlayground sets up a default profile with ARCH=x86, so
+# other architectures are irrelevant for now.
+DEFAULT_ARCH = 'x86'
 EBUILDS = {
   "dev-libs/A-1": {"RDEPEND" : "dev-libs/B"},
   "dev-libs/A-2": {"RDEPEND" : "dev-libs/B"},
@@ -33,16 +36,39 @@ EBUILDS = {
   "dev-libs/B-2": {"RDEPEND" : "dev-libs/C"},
   "dev-libs/C-1": {},
   "dev-libs/C-2": {},
-  "dev-libs/D-1": {},
+  "dev-libs/D-1": {"RDEPEND": "!dev-libs/E"},
   "dev-libs/D-2": {},
-  "dev-libs/E-2": {},
+  "dev-libs/D-3": {},
+  "dev-libs/E-2": {"RDEPEND": "!dev-libs/D"},
   "dev-libs/E-3": {},
+
+  "dev-libs/F-1": {"SLOT": "1"},
+  "dev-libs/F-2": {"SLOT": "2"},
+
+  "dev-apps/X-1": {
+    "EAPI": "3",
+    "SLOT": "0",
+    "KEYWORDS": "amd64 arm x86",
+    "RDEPEND": "=dev-libs/C-1",
+    },
+  "dev-apps/Y-2": {
+    "EAPI": "3",
+    "SLOT": "0",
+    "KEYWORDS": "amd64 arm x86",
+    "RDEPEND": "=dev-libs/C-2",
+    },
 
   "chromeos-base/flimflam-0.0.1-r228": {
     "EAPI" : "2",
     "SLOT" : "0",
     "KEYWORDS" : "amd64 x86 arm",
     "RDEPEND" : ">=dev-libs/D-2",
+    },
+  "chromeos-base/flimflam-0.0.2-r123": {
+    "EAPI" : "2",
+    "SLOT" : "0",
+    "KEYWORDS" : "~amd64 ~x86 ~arm",
+    "RDEPEND" : ">=dev-libs/D-3",
     },
   "chromeos-base/libchrome-57098-r4": {
     "EAPI" : "2",
@@ -59,7 +85,7 @@ EBUILDS = {
     "dev-libs/B dev-libs/C chromeos-base/flimflam chromeos-base/libchrome",
     },
 
-  "Virtual/libusb-0"         : {
+  "virtual/libusb-0"         : {
     "EAPI" :"2", "SLOT" : "0",
     "RDEPEND" :
     "|| ( >=dev-libs/libusb-0.1.12-r1:0 dev-libs/libusb-compat " +
@@ -111,9 +137,15 @@ EBUILDS = {
   "dev-db/hsqldb-1.8"       : {"RDEPEND" : ">=virtual/jre-1.6"},
   }
 
+WORLD = [
+  "dev-libs/A",
+  "dev-libs/D",
+  "virtual/jre",
+  ]
+
 INSTALLED = {
-  "dev-libs/A-1": {"RDEPEND" : "dev-libs/B"},
-  "dev-libs/B-1": {"RDEPEND" : "dev-libs/C"},
+  "dev-libs/A-1": {},
+  "dev-libs/B-1": {},
   "dev-libs/C-1": {},
   "dev-libs/D-1": {},
 
@@ -244,10 +276,189 @@ def _IsErrorLine(line):
   """Return True if |line| has prefix associated with error output."""
   return ERROR_PREFIX.search(line)
 
+def _SetUpEmerge(world=None):
+  """Prepare the temporary ebuild playground and emerge variables.
+
+  This leverages test code in existing Portage modules to create an ebuild
+  hierarchy.  This can be a little slow."""
+
+  # TODO(mtennant): Support multiple overlays?  This essentially
+  # creates just a default overlay.
+  # Also note that ResolverPlayground assumes ARCH=x86 for the
+  # default profile it creates.
+  if world is None:
+    world = WORLD
+  playground = respgnd.ResolverPlayground(ebuilds=EBUILDS,
+                                          installed=INSTALLED,
+                                          world=world)
+
+  # Set all envvars needed by emerge, since --board is being skipped.
+  eroot = playground.eroot
+  if eroot[-1:] == '/':
+    eroot = eroot[:-1]
+  os.environ["PORTAGE_CONFIGROOT"] = eroot
+  os.environ["ROOT"] = eroot
+  os.environ["PORTDIR"] = "%s/usr/portage" % eroot
+
+  return playground
+
+def _GetPortageDBAPI(playground):
+  portroot = playground.settings["ROOT"]
+  porttree = playground.trees[portroot]['porttree']
+  return porttree.dbapi
+
+def _TearDownEmerge(playground):
+  """Delete the temporary ebuild playground files."""
+  try:
+    playground.cleanup()
+  except AttributeError:
+    pass
+
+# Use this to configure Upgrader using standard command
+# line options and arguments.
+def _ParseCmdArgs(cmdargs):
+  """Returns (options, args) tuple."""
+  parser = cpu._CreateOptParser()
+  return parser.parse_args(args=cmdargs)
+
+UpgraderSlotDefaults = {
+    '_curr_arch':   DEFAULT_ARCH,
+    '_curr_board':  'some_board',
+    '_unstable_ok': False,
+    '_verbose':     False,
+    }
+def _MockUpgrader(mox, cmdargs=None, **kwargs):
+  """Set up a mocked Upgrader object with the given args."""
+  upgrader = mox.CreateMock(cpu.Upgrader)
+
+  for slot in cpu.Upgrader.__slots__:
+    upgrader.__setattr__(slot, None)
+
+  # Initialize with command line if given.
+  if cmdargs:
+    (options, args) = _ParseCmdArgs(cmdargs)
+    cpu.Upgrader.__init__(upgrader, options, args)
+
+  # Override Upgrader attributes if requested.
+  for slot in cpu.Upgrader.__slots__:
+    value = None
+    if slot in kwargs:
+      value = kwargs[slot]
+    elif slot in UpgraderSlotDefaults:
+      value = UpgraderSlotDefaults[slot]
+
+    if value is not None:
+      upgrader.__setattr__(slot, value)
+
+  return upgrader
+
+
+class EmergeableTest(mox.MoxTestBase):
+  """Test Upgrader._AreEmergeable."""
+
+  def setUp(self):
+    mox.MoxTestBase.setUp(self)
+
+  def _TestAreEmergeable(self, cpvlist, expect,
+                         stable_only=True, debug=False,
+                         world=None):
+    """Test the Upgrader._AreEmergeable method.
+
+    |cpvlist| and |stable_only| are passed to _AreEmergeable.
+    |expect| is boolean, expected return value of _AreEmergeable
+    |debug| requests that emerge output in _AreEmergeable be shown.
+    |world| is list of lines to override default world contents.
+    """
+
+    cmdargs = ['--upgrade'] + cpvlist
+    mocked_upgrader = _MockUpgrader(self.mox, cmdargs=cmdargs)
+    playground = _SetUpEmerge(world=world)
+
+    # Add test-specific mocks/stubs
+
+    # Replay script
+    envvars = cpu.Upgrader._GenPortageEnvvars(mocked_upgrader,
+                                              mocked_upgrader._curr_arch,
+                                              not stable_only)
+    mocked_upgrader._GenPortageEnvvars(mocked_upgrader._curr_arch,
+                                       not stable_only).AndReturn(envvars)
+    mocked_upgrader._GetBoardCmd('emerge').AndReturn('emerge')
+    self.mox.ReplayAll()
+
+    # Verify
+    result = cpu.Upgrader._AreEmergeable(mocked_upgrader, cpvlist, stable_only)
+    self.mox.VerifyAll()
+
+    (code, cmd, output) = result
+    if debug or code != expect:
+      print("\nTest ended with success==%r (expected==%r)" % (code, expect))
+      print("Emerge output:\n%s" % output)
+
+    self.assertEquals(code, expect)
+
+    _TearDownEmerge(playground)
+
+  def testAreEmergeableOnePkg(self):
+    """Should pass, one cpv target."""
+    cpvlist = ['dev-libs/A-1']
+    return self._TestAreEmergeable(cpvlist, True)
+
+  def testAreEmergeableTwoPkgs(self):
+    """Should pass, two cpv targets."""
+    cpvlist = ['dev-libs/A-1', 'dev-libs/B-1']
+    return self._TestAreEmergeable(cpvlist, True)
+
+  def testAreEmergeableOnePkgTwoVersions(self):
+    """Should fail, targets two versions of same package."""
+    cpvlist = ['dev-libs/A-1', 'dev-libs/A-2']
+    return self._TestAreEmergeable(cpvlist, False)
+
+  def testAreEmergeableStableFlimFlam(self):
+    """Should pass, target stable version of pkg."""
+    cpvlist = ['chromeos-base/flimflam-0.0.1-r228']
+    return self._TestAreEmergeable(cpvlist, True)
+
+  def testAreEmergeableUnstableFlimFlam(self):
+    """Should fail, target unstable version of pkg."""
+    cpvlist = ['chromeos-base/flimflam-0.0.2-r123']
+    return self._TestAreEmergeable(cpvlist, False)
+
+  def testAreEmergeableUnstableFlimFlamUnstableOk(self):
+    """Should pass, target unstable version of pkg with stable_only=False."""
+    cpvlist = ['chromeos-base/flimflam-0.0.2-r123']
+    return self._TestAreEmergeable(cpvlist, True, stable_only=False)
+
+  def testAreEmergeableBlockedPackages(self):
+    """Should fail, targets have blocking deps on each other."""
+    cpvlist = ['dev-libs/D-1', 'dev-libs/E-2']
+    return self._TestAreEmergeable(cpvlist, False)
+
+  def testAreEmergeableBlockedByInstalledPkg(self):
+    """Should fail because of installed D-1 pkg."""
+    cpvlist = ['dev-libs/E-2']
+    return self._TestAreEmergeable(cpvlist, False)
+
+  def testAreEmergeableNotBlockedByInstalledPkgNotInWorld(self):
+    """Should pass because installed D-1 pkg not in world."""
+    cpvlist = ['dev-libs/E-2']
+    return self._TestAreEmergeable(cpvlist, True, world=[])
+
+  def testAreEmergeableSamePkgDiffSlots(self):
+    """Should pass, same package but different slots."""
+    cpvlist = ['dev-libs/F-1', 'dev-libs/F-2']
+    return self._TestAreEmergeable(cpvlist, True)
+
+  def testAreEmergeableTwoPackagesIncompatibleDeps(self):
+    """Should fail, targets depend on two versions of same pkg."""
+    cpvlist = ['dev-apps/X-1', 'dev-apps/Y-2']
+    return self._TestAreEmergeable(cpvlist, False)
+
 
 ####################
 ### UpgraderTest ###
 ####################
+
+# TODO: This test class no longer works.  Replace its pieces one by one.
 
 class UpgraderTest(mox.MoxTestBase):
   """Test the Upgrader class from cros_portage_upgrade."""
