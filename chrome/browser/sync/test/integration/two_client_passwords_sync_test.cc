@@ -26,6 +26,7 @@ using passwords_helper::UpdateLogin;
 using webkit_glue::PasswordForm;
 
 static const char* kValidPassphrase = "passphrase!";
+static const char* kAnotherValidPassphrase = "another passphrase!";
 
 class TwoClientPasswordsSyncTest : public SyncTest {
  public:
@@ -320,4 +321,43 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,
   SetPassphrase(1, kValidPassphrase);
   ASSERT_TRUE(GetClient(1)->AwaitPassphraseAccepted());
   ASSERT_TRUE(GetClient(1)->AwaitFullSyncCompletion("Set passphrase again."));
+}
+
+// TODO(sync): Enable after MockKeychain is fixed. http://crbug.com/89808.
+#if defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,
+                       DISABLED_SetDifferentPassphraseAndThenSetupSync) {
+#else
+IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,
+                       SetDifferentPassphraseAndThenSetupSync) {
+#endif
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+
+  ASSERT_TRUE(GetClient(0)->SetupSync());
+  SetPassphrase(0, kValidPassphrase);
+  ASSERT_TRUE(GetClient(0)->AwaitPassphraseAccepted());
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Initial sync."));
+
+  // Setup 1 with a different passphrase, so that it fails to sync.
+  ASSERT_FALSE(GetClient(1)->SetupSync());
+  SetPassphrase(1, kAnotherValidPassphrase);
+  ASSERT_TRUE(GetClient(1)->AwaitPassphraseRequired());
+  ASSERT_FALSE(GetClient(1)->AwaitFullSyncCompletion("Initial sync."));
+
+  // Add a password on 0 while clients have different passphrases.
+  PasswordForm form0 = CreateTestPasswordForm(0);
+  AddLogin(GetVerifierPasswordStore(), form0);
+  AddLogin(GetPasswordStore(0), form0);
+
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Added a password."));
+
+  // Password hasn't been synced to 1 yet.
+  ASSERT_FALSE(AllProfilesContainSamePasswordFormsAsVerifier());
+
+  // Update 1 with the correct passphrase, the password should now sync over.
+  SetPassphrase(1, kValidPassphrase);
+  ASSERT_TRUE(GetClient(1)->AwaitPassphraseAccepted());
+
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
 }
