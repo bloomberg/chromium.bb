@@ -42,6 +42,7 @@ generator_default_variables = {
   # We generate definitions for these variables on the fly when processing a
   # rule.
   'RULE_INPUT_ROOT': '${root}',
+  'RULE_INPUT_DIRNAME': '${dirname}',
   'RULE_INPUT_PATH': '${source}',
   'RULE_INPUT_EXT': '${ext}',
   'RULE_INPUT_NAME': '${name}',
@@ -335,7 +336,7 @@ class NinjaWriter:
       # Rules can potentially make use of some special variables which
       # must vary per source file.
       # Compute the list of variables we'll need to provide.
-      special_locals = ('source', 'root', 'ext', 'name')
+      special_locals = ('source', 'root', 'dirname', 'ext', 'name')
       needed_variables = set(['source'])
       for argument in args:
         for var in special_locals:
@@ -344,14 +345,15 @@ class NinjaWriter:
 
       # For each source file, write an edge that generates all the outputs.
       for source in rule.get('rule_sources', []):
-        basename = os.path.basename(source)
+        dirname, basename = os.path.split(source)
         root, ext = os.path.splitext(basename)
 
         # Gather the list of outputs, expanding $vars if possible.
         outputs = []
         for output in rule['outputs']:
           outputs.append(output.replace(
-              generator_default_variables['RULE_INPUT_ROOT'], root))
+              generator_default_variables['RULE_INPUT_ROOT'], root).replace(
+                  generator_default_variables['RULE_INPUT_DIRNAME'], dirname))
 
         if int(rule.get('process_outputs_as_sources', False)):
           extra_sources += outputs
@@ -360,6 +362,8 @@ class NinjaWriter:
         for var in needed_variables:
           if var == 'root':
             extra_bindings.append(('root', root))
+          elif var == 'dirname':
+            extra_bindings.append(('dirname', dirname))
           elif var == 'source':
             # '$source' is a parameter to the rule action, which means
             # it shouldn't be converted to a Ninja path.  But we don't

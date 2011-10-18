@@ -58,6 +58,7 @@ generator_default_variables = {
     # TODO(jeanluc)  I had:  'LIB_DIR': '$(OutDir)lib',
     'LIB_DIR': '$(OutDir)/lib',
     'RULE_INPUT_ROOT': '$(InputName)',
+    'RULE_INPUT_DIRNAME': '$(InputDir)',
     'RULE_INPUT_EXT': '$(InputExt)',
     'RULE_INPUT_NAME': '$(InputFileName)',
     'RULE_INPUT_PATH': '$(InputPath)',
@@ -254,6 +255,16 @@ def _ConfigFullName(config_name, config_data):
 
 def _BuildCommandLineForRuleRaw(spec, cmd, cygwin_shell, has_input_path,
                                 quote_cmd):
+
+  if [x for x in cmd if '$(InputDir)' in x]:
+    input_dir_preamble = (
+      'set INPUTDIR=$(InputDir)\n'
+      'set INPUTDIR=%INPUTDIR:$(ProjectDir)=%\n'
+      'set INPUTDIR=%INPUTDIR:~0,-1%\n'
+      )
+  else:
+    input_dir_preamble = ''
+
   if cygwin_shell:
     # Find path to cygwin.
     cygwin_dir = _FixPath(spec.get('msvs_cygwin_dirs', ['.'])[0])
@@ -263,6 +274,8 @@ def _BuildCommandLineForRuleRaw(spec, cmd, cygwin_shell, has_input_path,
                             '`cygpath -m "${INTDIR}"`') for i in direct_cmd]
     direct_cmd = [i.replace('$(OutDir)',
                             '`cygpath -m "${OUTDIR}"`') for i in direct_cmd]
+    direct_cmd = [i.replace('$(InputDir)',
+                            '`cygpath -m "${INPUTDIR}"`') for i in direct_cmd]
     if has_input_path:
       direct_cmd = [i.replace('$(InputPath)',
                               '`cygpath -m "${INPUTPATH}"`')
@@ -286,7 +299,7 @@ def _BuildCommandLineForRuleRaw(spec, cmd, cygwin_shell, has_input_path,
     cmd += 'bash -c "%(cmd)s"'
     cmd = cmd % {'cygwin_dir': cygwin_dir,
                  'cmd': direct_cmd}
-    return cmd
+    return input_dir_preamble + cmd
   else:
     # Convert cat --> type to mimic unix.
     if cmd[0] == 'cat':
@@ -296,13 +309,14 @@ def _BuildCommandLineForRuleRaw(spec, cmd, cygwin_shell, has_input_path,
     # Fix the paths
     # If the argument starts with a slash, it's probably a command line switch
     arguments = [i.startswith('/') and i or _FixPath(i) for i in cmd[1:]]
+    arguments = [i.replace('$(InputDir)','%INPUTDIR%') for i in arguments]
     if quote_cmd:
       # Support a mode for using cmd directly.
       # Convert any paths to native form (first element is used directly).
       # TODO(quote):  regularize quoting path names throughout the module
       arguments = ['"%s"' % i for i in arguments]
     # Collapse into a single command.
-    return ' '.join(command + arguments)
+    return input_dir_preamble + ' '.join(command + arguments)
 
 
 def _BuildCommandLineForRule(spec, rule, has_input_path):
@@ -427,6 +441,7 @@ def _RuleExpandPath(path, input_file):
   """
   path = path.replace('$(InputName)',
                       os.path.splitext(os.path.split(input_file)[1])[0])
+  path = path.replace('$(InputDir)', os.path.dirname(input_file))
   path = path.replace('$(InputExt)',
                       os.path.splitext(os.path.split(input_file)[1])[1])
   path = path.replace('$(InputFileName)', os.path.split(input_file)[1])
@@ -2645,7 +2660,8 @@ def _VerifySourcesExist(sources, root_dir):
       if '$' not in source:
         full_path = os.path.join(root_dir, source)
         if not os.path.exists(full_path):
-          print 'Warning: Missing input file ' + full_path
+          print 'Warning: Missing input file ' + full_path + ' pwd=' +\
+              os.getcwd()
 
 
 def _GetMSBuildSources(spec, sources, exclusions, extension_to_rule_name,

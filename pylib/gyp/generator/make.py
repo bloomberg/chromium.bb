@@ -44,6 +44,7 @@ generator_default_variables = {
   'SHARED_INTERMEDIATE_DIR': '$(obj)/gen',
   'PRODUCT_DIR': '$(builddir)',
   'RULE_INPUT_ROOT': '%(INPUT_ROOT)s',  # This gets expanded by Python.
+  'RULE_INPUT_DIRNAME': '%(INPUT_DIRNAME)s',  # This gets expanded by Python.
   'RULE_INPUT_PATH': '$(abspath $<)',
   'RULE_INPUT_EXT': '$(suffix $<)',
   'RULE_INPUT_NAME': '$(notdir $<)',
@@ -1541,11 +1542,12 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
 
       for rule_source in rule.get('rule_sources', []):
         dirs = set()
-        rule_source_basename = os.path.basename(rule_source)
+        (rule_source_dirname, rule_source_basename) = os.path.split(rule_source)
         (rule_source_root, rule_source_ext) = \
             os.path.splitext(rule_source_basename)
 
-        outputs = [self.ExpandInputRoot(out, rule_source_root)
+        outputs = [self.ExpandInputRoot(out, rule_source_root,
+                                        rule_source_dirname)
                    for out in rule['outputs']]
 
         # If an output is just the file name, turn it into a path so
@@ -1588,7 +1590,8 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
         self.WriteLn('all_deps += %s' % ' '.join(outputs))
         self._num_outputs += len(outputs)
 
-        action = [self.ExpandInputRoot(ac, rule_source_root)
+        action = [self.ExpandInputRoot(ac, rule_source_root,
+                                       rule_source_dirname)
                   for ac in rule['action']]
         mkdirs = ''
         if len(dirs) > 0:
@@ -2481,10 +2484,18 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     return arg
 
 
-  def ExpandInputRoot(self, template, expansion):
-    if '%(INPUT_ROOT)s' not in template:
+  def ExpandInputRoot(self, template, expansion, dirname):
+    if '%(INPUT_ROOT)s' not in template and '%(INPUT_DIRNAME)s' not in template:
       return template
-    path = template % { 'INPUT_ROOT': expansion }
+    path = template % {
+        'INPUT_ROOT': expansion,
+        'INPUT_DIRNAME': dirname,
+        }
+    if not os.path.dirname(path):
+      # If it's just the file name, turn it into a path so FixupArgPath()
+      # will know to Absolutify() it.
+      path = os.path.join('.', path)
+
     return path
 
 
