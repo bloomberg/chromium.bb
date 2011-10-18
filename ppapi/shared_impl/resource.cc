@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "ppapi/shared_impl/resource_tracker.h"
-#include "ppapi/shared_impl/ppapi_globals.h"
+#include "ppapi/shared_impl/tracker_base.h"
 
 namespace ppapi {
 
@@ -20,21 +20,21 @@ Resource::Resource(PP_Instance instance) {
   // the host resource, so we need to fill that first even though we don't
   // have a resource ID yet, then fill the resource in later.
   host_resource_ = HostResource::MakeInstanceOnly(instance);
-  pp_resource_ = PpapiGlobals::Get()->GetResourceTracker()->AddResource(this);
+  pp_resource_ = TrackerBase::Get()->GetResourceTracker()->AddResource(this);
   host_resource_.SetHostResource(instance, pp_resource_);
 }
 
 Resource::Resource(const HostResource& host_resource)
     : host_resource_(host_resource) {
-  pp_resource_ = PpapiGlobals::Get()->GetResourceTracker()->AddResource(this);
+  pp_resource_ = TrackerBase::Get()->GetResourceTracker()->AddResource(this);
 }
 
 Resource::~Resource() {
-  PpapiGlobals::Get()->GetResourceTracker()->RemoveResource(this);
+  TrackerBase::Get()->GetResourceTracker()->RemoveResource(this);
 }
 
 PP_Resource Resource::GetReference() {
-  PpapiGlobals::Get()->GetResourceTracker()->AddRefResource(pp_resource());
+  TrackerBase::Get()->GetResourceTracker()->AddRefResource(pp_resource());
   return pp_resource();
 }
 

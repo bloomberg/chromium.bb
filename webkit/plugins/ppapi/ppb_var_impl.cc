@@ -11,7 +11,6 @@
 #include "ppapi/c/pp_var.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "webkit/plugins/ppapi/common.h"
-#include "webkit/plugins/ppapi/host_globals.h"
 #include "webkit/plugins/ppapi/npapi_glue.h"
 #include "webkit/plugins/ppapi/npobject_var.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
@@ -21,7 +20,6 @@
 #include "v8/include/v8.h"
 
 using ppapi::NPObjectVar;
-using ppapi::PpapiGlobals;
 using ppapi::StringVar;
 using ppapi::Var;
 using WebKit::WebBindings;
@@ -126,8 +124,7 @@ class ObjectAccessorTryCatch : public TryCatch {
   NPObjectVar* object() { return object_.get(); }
 
   PluginInstance* GetPluginInstance() {
-    return HostGlobals::Get()->host_resource_tracker()->GetInstance(
-      object()->pp_instance());
+    return ResourceTracker::Get()->GetInstance(object()->pp_instance());
   }
 
  protected:
@@ -173,11 +170,11 @@ class ObjectAccessorWithIdentifierTryCatch : public ObjectAccessorTryCatch {
 // PPB_Var methods -------------------------------------------------------------
 
 void AddRefVar(PP_Var var) {
-  PpapiGlobals::Get()->GetVarTracker()->AddRefVar(var);
+  ResourceTracker::Get()->GetVarTracker()->AddRefVar(var);
 }
 
 void ReleaseVar(PP_Var var) {
-  PpapiGlobals::Get()->GetVarTracker()->ReleaseVar(var);
+  ResourceTracker::Get()->GetVarTracker()->ReleaseVar(var);
 }
 
 PP_Var VarFromUtf8(PP_Module module, const char* data, uint32_t len) {
@@ -407,11 +404,10 @@ bool IsInstanceOfDeprecated(PP_Var var,
                                     ppp_class, ppp_class_data);
 }
 
-PP_Var CreateObjectDeprecated(PP_Instance pp_instance,
+PP_Var CreateObjectDeprecated(PP_Instance instance_id,
                               const PPP_Class_Deprecated* ppp_class,
                               void* ppp_class_data) {
-  PluginInstance* instance =
-      HostGlobals::Get()->host_resource_tracker()->GetInstance(pp_instance);
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance) {
     DLOG(ERROR) << "Create object passed an invalid instance.";
     return PP_MakeNull();
@@ -419,11 +415,10 @@ PP_Var CreateObjectDeprecated(PP_Instance pp_instance,
   return PluginObject::Create(instance, ppp_class, ppp_class_data);
 }
 
-PP_Var CreateObjectWithModuleDeprecated(PP_Module pp_module,
+PP_Var CreateObjectWithModuleDeprecated(PP_Module module_id,
                                         const PPP_Class_Deprecated* ppp_class,
                                         void* ppp_class_data) {
-  PluginModule* module =
-      HostGlobals::Get()->host_resource_tracker()->GetModule(pp_module);
+  PluginModule* module = ResourceTracker::Get()->GetModule(module_id);
   if (!module)
     return PP_MakeNull();
   return PluginObject::Create(module->GetSomeInstance(),

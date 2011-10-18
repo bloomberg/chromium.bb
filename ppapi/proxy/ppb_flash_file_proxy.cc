@@ -21,10 +21,9 @@
 #include "ppapi/c/pp_file_info.h"
 #include "ppapi/c/private/ppb_flash_file.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
+#include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
-#include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/resource.h"
-#include "ppapi/shared_impl/resource_tracker.h"
 
 namespace ppapi {
 namespace proxy {
@@ -632,7 +631,7 @@ int32_t OpenFileRefFile(PP_Resource file_ref_id,
                         int32_t mode,
                         PP_FileHandle* file) {
   Resource* file_ref =
-      PpapiGlobals::Get()->GetResourceTracker()->GetResource(file_ref_id);
+      PluginResourceTracker::GetInstance()->GetResource(file_ref_id);
   if (!file_ref)
     return PP_ERROR_BADRESOURCE;
 
@@ -652,7 +651,7 @@ int32_t OpenFileRefFile(PP_Resource file_ref_id,
 int32_t QueryFileRefFile(PP_Resource file_ref_id,
                          PP_FileInfo* info) {
   Resource* file_ref =
-      PpapiGlobals::Get()->GetResourceTracker()->GetResource(file_ref_id);
+      PluginResourceTracker::GetInstance()->GetResource(file_ref_id);
   if (!file_ref)
     return PP_ERROR_BADRESOURCE;
 

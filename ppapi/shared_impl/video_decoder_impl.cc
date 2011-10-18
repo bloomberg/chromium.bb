@@ -32,14 +32,14 @@ void VideoDecoderImpl::InitCommon(
   DCHECK(graphics_context);
   DCHECK(!gles2_impl_ && !graphics_context_);
   gles2_impl_ = gles2_impl;
-  PpapiGlobals::Get()->GetResourceTracker()->AddRefResource(graphics_context);
+  TrackerBase::Get()->GetResourceTracker()->AddRefResource(graphics_context);
   graphics_context_ = graphics_context;
 }
 
 void VideoDecoderImpl::Destroy() {
   graphics_context_ = 0;
   gles2_impl_ = NULL;
-  PpapiGlobals::Get()->GetResourceTracker()->ReleaseResource(graphics_context_);
+  TrackerBase::Get()->GetResourceTracker()->ReleaseResource(graphics_context_);
 }
 
 bool VideoDecoderImpl::SetFlushCallback(PP_CompletionCallback callback) {

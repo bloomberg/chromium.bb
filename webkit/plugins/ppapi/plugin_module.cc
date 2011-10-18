@@ -90,7 +90,6 @@
 #include "webkit/plugins/plugin_switches.h"
 #include "webkit/plugins/ppapi/callbacks.h"
 #include "webkit/plugins/ppapi/common.h"
-#include "webkit/plugins/ppapi/host_globals.h"
 #include "webkit/plugins/ppapi/ppapi_interface_factory.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_directory_reader_impl.h"
@@ -115,7 +114,6 @@
 #include "webkit/plugins/ppapi/resource_tracker.h"
 #include "webkit/plugins/ppapi/webkit_forwarding_impl.h"
 
-using ppapi::PpapiGlobals;
 using ppapi::TimeTicksToPPTimeTicks;
 using ppapi::TimeToPPTime;
 using ppapi::thunk::EnterResource;
@@ -125,14 +123,6 @@ namespace webkit {
 namespace ppapi {
 
 namespace {
-
-// Global tracking info for PPAPI plugins. This is lazily created before the
-// first plugin is allocated, and leaked on shutdown.
-//
-// Note that we don't want a Singleton here since destroying this object will
-// try to free some stuff that requires WebKit, and Singletons are destroyed
-// after WebKit.
-webkit::ppapi::HostGlobals* host_globals = NULL;
 
 // Maintains all currently loaded plugin libs for validating PP_Module
 // identifiers.
@@ -152,11 +142,11 @@ base::MessageLoopProxy* GetMainThreadMessageLoop() {
 // PPB_Core --------------------------------------------------------------------
 
 void AddRefResource(PP_Resource resource) {
-  PpapiGlobals::Get()->GetResourceTracker()->AddRefResource(resource);
+  ResourceTracker::Get()->AddRefResource(resource);
 }
 
 void ReleaseResource(PP_Resource resource) {
-  PpapiGlobals::Get()->GetResourceTracker()->ReleaseResource(resource);
+  ResourceTracker::Get()->ReleaseResource(resource);
 }
 
 PP_Time GetTime() {
@@ -215,8 +205,7 @@ void QuitMessageLoop(PP_Instance instance) {
 }
 
 uint32_t GetLiveObjectsForInstance(PP_Instance instance_id) {
-  return HostGlobals::Get()->host_resource_tracker()->GetLiveObjectsForInstance(
-      instance_id);
+  return ResourceTracker::Get()->GetLiveObjectsForInstance(instance_id);
 }
 
 PP_Bool IsOutOfProcess() {
@@ -382,12 +371,8 @@ PluginModule::PluginModule(const std::string& name,
       name_(name),
       path_(path),
       reserve_instance_id_(NULL) {
-  // Ensure the globals object is created.
-  if (!host_globals)
-    host_globals = new HostGlobals;
-
   memset(&entry_points_, 0, sizeof(entry_points_));
-  pp_module_ = HostGlobals::Get()->host_resource_tracker()->AddModule(this);
+  pp_module_ = ResourceTracker::Get()->AddModule(this);
   GetMainThreadMessageLoop();  // Initialize the main thread message loop.
   GetLivePluginSet()->insert(this);
 }
@@ -413,7 +398,7 @@ PluginModule::~PluginModule() {
     base::UnloadNativeLibrary(library_);
 
   // Notifications that we've been deleted should be last.
-  HostGlobals::Get()->host_resource_tracker()->ModuleDeleted(pp_module_);
+  ResourceTracker::Get()->ModuleDeleted(pp_module_);
   if (!is_crashed_) {
     // When the plugin crashes, we immediately tell the lifetime delegate that
     // we're gone, so we don't want to tell it again.

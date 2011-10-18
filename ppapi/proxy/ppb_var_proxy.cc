@@ -6,10 +6,10 @@
 
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppb_var.h"
-#include "ppapi/shared_impl/ppapi_globals.h"
+#include "ppapi/proxy/plugin_resource_tracker.h"
+#include "ppapi/proxy/plugin_var_tracker.h"
 #include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/shared_impl/var.h"
-#include "ppapi/shared_impl/var_tracker.h"
 
 namespace ppapi {
 namespace proxy {
@@ -20,12 +20,12 @@ namespace {
 
 void AddRefVar(PP_Var var) {
   ppapi::ProxyAutoLock lock;
-  PpapiGlobals::Get()->GetVarTracker()->AddRefVar(var);
+  PluginResourceTracker::GetInstance()->var_tracker().AddRefVar(var);
 }
 
 void ReleaseVar(PP_Var var) {
   ppapi::ProxyAutoLock lock;
-  PpapiGlobals::Get()->GetVarTracker()->ReleaseVar(var);
+  PluginResourceTracker::GetInstance()->var_tracker().ReleaseVar(var);
 }
 
 PP_Var VarFromUtf8(PP_Module module, const char* data, uint32_t len) {

@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/string_util.h"
-#include "webkit/plugins/ppapi/host_globals.h"
 #include "webkit/plugins/ppapi/npobject_var.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/plugin_object.h"
@@ -18,7 +17,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 
 using ppapi::NPObjectVar;
-using ppapi::PpapiGlobals;
 using ppapi::StringVar;
 using ppapi::Var;
 using WebKit::WebBindings;
@@ -134,8 +132,8 @@ PP_Var NPIdentifierToPPVar(PP_Module module, NPIdentifier id) {
 PP_Var NPObjectToPPVar(PluginInstance* instance, NPObject* object) {
   DCHECK(object);
   scoped_refptr<NPObjectVar> object_var(
-      HostGlobals::Get()->host_resource_tracker()->NPObjectVarForNPObject(
-          instance->pp_instance(), object));
+      ResourceTracker::Get()->NPObjectVarForNPObject(instance->pp_instance(),
+                                                     object));
   if (!object_var) {  // No object for this module yet, make a new one.
     object_var = new NPObjectVar(instance->module()->pp_module(),
                                  instance->pp_instance(), object);
@@ -161,7 +159,7 @@ PPResultAndExceptionToNPResult::~PPResultAndExceptionToNPResult() {
   // been lost.
   DCHECK(checked_exception_);
 
-  PpapiGlobals::Get()->GetVarTracker()->ReleaseVar(exception_);
+  ResourceTracker::Get()->GetVarTracker()->ReleaseVar(exception_);
 }
 
 // Call this with the return value of the PPAPI function. It will convert
@@ -186,7 +184,7 @@ bool PPResultAndExceptionToNPResult::SetResult(PP_Var result) {
   // No matter what happened, we need to release the reference to the
   // value passed in. On success, a reference to this value will be in
   // the np_result_.
-  PpapiGlobals::Get()->GetVarTracker()->ReleaseVar(result);
+  ResourceTracker::Get()->GetVarTracker()->ReleaseVar(result);
   return success_;
 }
 
@@ -238,7 +236,7 @@ PPVarArrayFromNPVariantArray::PPVarArrayFromNPVariantArray(
 }
 
 PPVarArrayFromNPVariantArray::~PPVarArrayFromNPVariantArray() {
-  ::ppapi::VarTracker* var_tracker = PpapiGlobals::Get()->GetVarTracker();
+  ::ppapi::VarTracker* var_tracker = ResourceTracker::Get()->GetVarTracker();
   for (size_t i = 0; i < size_; i++)
     var_tracker->ReleaseVar(array_[i]);
 }
@@ -250,7 +248,7 @@ PPVarFromNPObject::PPVarFromNPObject(PluginInstance* instance, NPObject* object)
 }
 
 PPVarFromNPObject::~PPVarFromNPObject() {
-  PpapiGlobals::Get()->GetVarTracker()->ReleaseVar(var_);
+  ResourceTracker::Get()->GetVarTracker()->ReleaseVar(var_);
 }
 
 // NPObjectAccessorWithIdentifier ----------------------------------------------
@@ -270,7 +268,7 @@ NPObjectAccessorWithIdentifier::NPObjectAccessorWithIdentifier(
 }
 
 NPObjectAccessorWithIdentifier::~NPObjectAccessorWithIdentifier() {
-  PpapiGlobals::Get()->GetVarTracker()->ReleaseVar(identifier_);
+  ResourceTracker::Get()->GetVarTracker()->ReleaseVar(identifier_);
 }
 
 // TryCatch --------------------------------------------------------------------

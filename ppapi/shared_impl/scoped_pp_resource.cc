@@ -4,9 +4,9 @@
 
 #include "ppapi/shared_impl/scoped_pp_resource.h"
 
-#include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/shared_impl/resource_tracker.h"
+#include "ppapi/shared_impl/tracker_base.h"
 
 namespace ppapi {
 
@@ -64,12 +64,12 @@ PP_Resource ScopedPPResource::Release() {
 
 void ScopedPPResource::CallAddRef() {
   if (id_)
-    PpapiGlobals::Get()->GetResourceTracker()->AddRefResource(id_);
+    TrackerBase::Get()->GetResourceTracker()->AddRefResource(id_);
 }
 
 void ScopedPPResource::CallRelease() {
   if (id_)
-    PpapiGlobals::Get()->GetResourceTracker()->ReleaseResource(id_);
+    TrackerBase::Get()->GetResourceTracker()->ReleaseResource(id_);
 }
 
 }  // namespace ppapi

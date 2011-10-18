@@ -45,8 +45,8 @@ class ResourceTrackerTest;
 class ResourceTracker : public ::ppapi::TrackerBase,
                         public ::ppapi::ResourceTracker {
  public:
-  ResourceTracker();
-  virtual ~ResourceTracker();
+  // Returns the pointer to the singleton object.
+  static ResourceTracker* Get();
 
   // PP_Resources --------------------------------------------------------------
 
@@ -54,6 +54,8 @@ class ResourceTracker : public ::ppapi::TrackerBase,
   virtual ::ppapi::FunctionGroupBase* GetFunctionAPI(
       PP_Instance pp_instance,
       ::ppapi::proxy::InterfaceID id) OVERRIDE;
+  virtual ::ppapi::VarTracker* GetVarTracker() OVERRIDE;
+  virtual ::ppapi::ResourceTracker* GetResourceTracker() OVERRIDE;
   virtual PP_Module GetModuleForInstance(PP_Instance instance) OVERRIDE;
 
   // ppapi::ResourceTracker overrides.
@@ -117,10 +119,45 @@ class ResourceTracker : public ::ppapi::TrackerBase,
   // Per-instance data we track.
   struct InstanceData;
 
+  // Prohibit creation other then by the Singleton class.
+  ResourceTracker();
+  virtual ~ResourceTracker();
+
   // Force frees all vars and resources associated with the given instance.
   // If delete_instance is true, the instance tracking information will also
   // be deleted.
   void CleanupInstanceData(PP_Instance instance, bool delete_instance);
+
+  // Overrides the singleton object. This is used for tests which want to
+  // specify their own tracker (otherwise, you can get cross-talk between
+  // tests since the data will live into the subsequent tests).
+  static void SetSingletonOverride(ResourceTracker* tracker);
+  static void ClearSingletonOverride();
+
+  // The lazy-initialized global instance of this object. This is created in
+  // ::Get() if there is no singleton_override_ specified.
+  //
+  // It would be nice to use LazyInstance for this since it manages the
+  // creation properly, and also cleans up on shutdown. However, the shutdown
+  // cleanup causes problems in some cases.
+  //
+  // For example, say the browser crashes or is killed. The renderer then
+  // decides to exit. Normally resources are bound to an instance and are
+  // cleaned up when WebKit deletes the instance (when you go to a different
+  // page or close that view). In this case, WebKit doesn't clean up. If the
+  // ResourceTracker was cleaned up by the AtExitManager (which would be the
+  // case with LazyInstance/Singleton) then we'd try to call up to the renderer
+  // layer via the delegate, which may be in a random state of shutdown.
+  //
+  // So effectively our rule is: any resources still around at shutdown are
+  // associated with leaked plugins in WebKit, so it's also OK to leak those
+  // resources from here (avoiding the shutdown race).
+  static ResourceTracker* global_tracker_;
+
+  // See SetSingletonOverride above.
+  static ResourceTracker* singleton_override_;
+
+  ::ppapi::VarTracker var_tracker_;
 
   // Like ResourceAndRefCount but for vars, which are associated with modules.
   typedef std::pair<scoped_refptr< ::ppapi::Var>, size_t> VarAndRefCount;

@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "ppapi/shared_impl/resource.h"
-#include "webkit/plugins/ppapi/host_globals.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
@@ -18,7 +17,7 @@ namespace ppapi {
 // static
 PluginInstance* ResourceHelper::GetPluginInstance(
     const ::ppapi::Resource* resource) {
-  ResourceTracker* tracker = HostGlobals::Get()->host_resource_tracker();
+  ResourceTracker* tracker = ResourceTracker::Get();
   return tracker->GetInstance(resource->pp_instance());
 }
 

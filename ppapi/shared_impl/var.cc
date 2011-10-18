@@ -10,7 +10,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "ppapi/c/pp_var.h"
-#include "ppapi/shared_impl/ppapi_globals.h"
+#include "ppapi/shared_impl/tracker_base.h"
 #include "ppapi/shared_impl/var_tracker.h"
 
 namespace ppapi {
@@ -78,7 +78,7 @@ int32 Var::GetExistingVarID() const {
 }
 
 int32 Var::GetOrCreateVarID() {
-  VarTracker* tracker = PpapiGlobals::Get()->GetVarTracker();
+  VarTracker* tracker = TrackerBase::Get()->GetVarTracker();
   if (var_id_) {
     if (!tracker->AddRefVar(var_id_))
       return 0;
@@ -148,7 +148,7 @@ StringVar* StringVar::FromPPVar(PP_Var var) {
   if (var.type != PP_VARTYPE_STRING)
     return NULL;
   scoped_refptr<Var> var_object(
-      PpapiGlobals::Get()->GetVarTracker()->GetVar(var));
+      TrackerBase::Get()->GetVarTracker()->GetVar(var));
   if (!var_object)
     return NULL;
   return var_object->AsStringVar();

@@ -18,7 +18,6 @@
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
-#include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/shared_impl/time_conversion.h"
 
@@ -35,12 +34,12 @@ base::MessageLoopProxy* GetMainThreadMessageLoop() {
 
 void AddRefResource(PP_Resource resource) {
   ppapi::ProxyAutoLock lock;
-  PpapiGlobals::Get()->GetResourceTracker()->AddRefResource(resource);
+  PluginResourceTracker::GetInstance()->AddRefResource(resource);
 }
 
 void ReleaseResource(PP_Resource resource) {
   ppapi::ProxyAutoLock lock;
-  PpapiGlobals::Get()->GetResourceTracker()->ReleaseResource(resource);
+  PluginResourceTracker::GetInstance()->ReleaseResource(resource);
 }
 
 double GetTime() {

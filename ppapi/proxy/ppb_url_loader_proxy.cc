@@ -172,7 +172,7 @@ URLLoader::~URLLoader() {
   }
 
   if (response_info_)
-    PpapiGlobals::Get()->GetResourceTracker()->ReleaseResource(response_info_);
+    PluginResourceTracker::GetInstance()->ReleaseResource(response_info_);
 }
 
 PPB_URLLoader_API* URLLoader::AsPPB_URLLoader_API() {
@@ -240,7 +240,7 @@ PP_Resource URLLoader::GetResponseInfo() {
   }
 
   // The caller expects to get a ref, and we want to keep holding ours.
-  PpapiGlobals::Get()->GetResourceTracker()->AddRefResource(response_info_);
+  PluginResourceTracker::GetInstance()->AddRefResource(response_info_);
   return response_info_;
 }
 

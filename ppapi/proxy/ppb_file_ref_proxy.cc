@@ -90,7 +90,7 @@ int32_t FileRef::Delete(PP_CompletionCallback callback) {
 int32_t FileRef::Rename(PP_Resource new_file_ref,
                         PP_CompletionCallback callback) {
   Resource* new_file_ref_object =
-      PpapiGlobals::Get()->GetResourceTracker()->GetResource(new_file_ref);
+      PluginResourceTracker::GetInstance()->GetResource(new_file_ref);
   if (!new_file_ref_object ||
       new_file_ref_object->host_resource().instance() != pp_instance())
     return PP_ERROR_BADRESOURCE;
@@ -113,7 +113,7 @@ PPB_FileRef_Proxy::~PPB_FileRef_Proxy() {
 PP_Resource PPB_FileRef_Proxy::CreateProxyResource(PP_Resource file_system,
                                                    const char* path) {
   Resource* file_system_object =
-      PpapiGlobals::Get()->GetResourceTracker()->GetResource(file_system);
+      PluginResourceTracker::GetInstance()->GetResource(file_system);
   if (!file_system_object)
     return 0;
 

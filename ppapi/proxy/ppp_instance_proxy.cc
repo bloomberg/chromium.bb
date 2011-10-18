@@ -15,7 +15,6 @@
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppb_url_loader_proxy.h"
-#include "ppapi/shared_impl/ppapi_globals.h"
 
 namespace ppapi {
 namespace proxy {
@@ -176,7 +175,7 @@ void PPP_Instance_Proxy::OnMsgDidCreate(
   PluginDispatcher* plugin_dispatcher =
       static_cast<PluginDispatcher*>(dispatcher());
   plugin_dispatcher->DidCreateInstance(instance);
-  PpapiGlobals::Get()->GetResourceTracker()->DidCreateInstance(instance);
+  ppapi::TrackerBase::Get()->GetResourceTracker()->DidCreateInstance(instance);
 
   // Make sure the arrays always have at least one element so we can take the
   // address below.
@@ -197,7 +196,7 @@ void PPP_Instance_Proxy::OnMsgDidCreate(
 
 void PPP_Instance_Proxy::OnMsgDidDestroy(PP_Instance instance) {
   combined_interface_->DidDestroy(instance);
-  PpapiGlobals::Get()->GetResourceTracker()->DidDeleteInstance(instance);
+  ppapi::TrackerBase::Get()->GetResourceTracker()->DidDeleteInstance(instance);
   static_cast<PluginDispatcher*>(dispatcher())->DidDestroyInstance(instance);
 }
 
@@ -236,7 +235,7 @@ void PPP_Instance_Proxy::OnMsgHandleDocumentLoad(PP_Instance instance,
   // representing all plugin references).
   // Once all references at the plugin side are released, the renderer side will
   // be notified and release the reference added in HandleDocumentLoad() above.
-  PpapiGlobals::Get()->GetResourceTracker()->ReleaseResource(plugin_loader);
+  PluginResourceTracker::GetInstance()->ReleaseResource(plugin_loader);
 }
 
 }  // namespace proxy

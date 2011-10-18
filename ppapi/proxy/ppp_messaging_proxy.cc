@@ -12,8 +12,6 @@
 #include "ppapi/proxy/plugin_var_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/serialized_var.h"
-#include "ppapi/shared_impl/ppapi_globals.h"
-#include "ppapi/shared_impl/var_tracker.h"
 
 namespace ppapi {
 namespace proxy {
@@ -84,7 +82,7 @@ void PPP_Messaging_Proxy::OnMsgHandleMessage(
   PP_Var received_var(message_data.Get(dispatcher()));
   // SerializedVarReceiveInput will decrement the reference count, but we want
   // to give the recipient a reference.
-  PpapiGlobals::Get()->GetVarTracker()->AddRefVar(received_var);
+  PluginResourceTracker::GetInstance()->var_tracker().AddRefVar(received_var);
   ppp_messaging_impl_->HandleMessage(instance, received_var);
 }
 

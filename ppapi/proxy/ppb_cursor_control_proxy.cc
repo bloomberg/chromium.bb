@@ -9,7 +9,6 @@
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
-#include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/thunk.h"
 
@@ -38,8 +37,8 @@ PP_Bool PPB_CursorControl_Proxy::SetCursor(PP_Instance instance,
   // It's legal for the image ID to be null if the type is not custom.
   HostResource cursor_image_resource;
   if (type == PP_CURSORTYPE_CUSTOM) {
-    Resource* cursor_image =
-        PpapiGlobals::Get()->GetResourceTracker()->GetResource(custom_image_id);
+    Resource* cursor_image = PluginResourceTracker::GetInstance()->
+        GetResource(custom_image_id);
     if (!cursor_image || cursor_image->pp_instance() != instance)
       return PP_FALSE;
     cursor_image_resource = cursor_image->host_resource();

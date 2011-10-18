@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
-#include "ppapi/proxy/plugin_globals.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/serialized_var.h"
 #include "ppapi/shared_impl/proxy_lock.h"
@@ -20,13 +19,17 @@ namespace proxy {
 
 namespace {
 
+// When non-NULL, this object overrides the ResourceTrackerSingleton.
+PluginResourceTracker* g_resource_tracker_override = NULL;
+
 TrackerBase* GetTrackerBase() {
-  return PluginGlobals::Get()->plugin_resource_tracker();
+  return PluginResourceTracker::GetInstance();
 }
 
 }  // namespace
 
-PluginResourceTracker::PluginResourceTracker() {
+PluginResourceTracker::PluginResourceTracker()
+    : var_tracker_test_override_(NULL) {
 #ifdef ENABLE_PEPPER_THREADING
   // Set the global proxy lock, since the plugin-side of the proxy needs to be
   // synchronized.
@@ -41,8 +44,20 @@ PluginResourceTracker::~PluginResourceTracker() {
 }
 
 // static
+void PluginResourceTracker::SetInstanceForTest(PluginResourceTracker* tracker) {
+  g_resource_tracker_override = tracker;
+}
+
+// static
+PluginResourceTracker* PluginResourceTracker::GetInstance() {
+  if (g_resource_tracker_override)
+    return g_resource_tracker_override;
+  return Singleton<PluginResourceTracker>::get();
+}
+
+// static
 TrackerBase* PluginResourceTracker::GetTrackerBaseInstance() {
-  return GetTrackerBase();
+  return GetInstance();
 }
 
 PP_Resource PluginResourceTracker::PluginResourceForHostResource(
@@ -59,6 +74,14 @@ FunctionGroupBase* PluginResourceTracker::GetFunctionAPI(PP_Instance inst,
   if (dispatcher)
     return dispatcher->GetFunctionAPI(id);
   return NULL;
+}
+
+VarTracker* PluginResourceTracker::GetVarTracker() {
+  return &var_tracker();
+}
+
+ResourceTracker* PluginResourceTracker::GetResourceTracker() {
+  return this;
 }
 
 PP_Module PluginResourceTracker::GetModuleForInstance(PP_Instance instance) {

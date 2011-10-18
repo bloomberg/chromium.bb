@@ -17,7 +17,6 @@
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
 
-using ppapi::PpapiGlobals;
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_Audio_API;
 using ppapi::thunk::PPB_AudioConfig_API;
@@ -95,7 +94,7 @@ bool PPB_Audio_Impl::Init(PP_Resource config,
 
 PP_Resource PPB_Audio_Impl::GetCurrentConfig() {
   // AddRef on behalf of caller, while keeping a ref for ourselves.
-  PpapiGlobals::Get()->GetResourceTracker()->AddRefResource(config_);
+  ::ppapi::TrackerBase::Get()->GetResourceTracker()->AddRefResource(config_);
   return config_;
 }
 

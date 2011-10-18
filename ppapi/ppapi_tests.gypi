@@ -220,8 +220,6 @@
         'proxy/ppp_messaging_proxy_unittest.cc',
         'proxy/serialized_var_unittest.cc',
         'shared_impl/resource_tracker_unittest.cc',
-        'shared_impl/test_globals.cc',
-        'shared_impl/test_globals.h',
       ],
     },
     {
