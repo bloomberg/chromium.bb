@@ -407,9 +407,37 @@
       "description": "Sample extension which demonstrates how to access a preference.",
       "features": [
         "browser_action",
-        "contentSettings",
         "experimental",
-        "popup"
+        "popup",
+        "privacy"
+      ],
+      "icon": null,
+      "id": "0bf0930a32829dfb77170535ecb27adc2de3998a",
+      "name": "Block\/allow referrer API example extension",
+      "packaged_app": false,
+      "path": "examples\/api\/preferences\/enableReferrer\/",
+      "protocols": [],
+      "search_string": "BLOCK\/ALLOW REFERRER API EXAMPLE EXTENSION SAMPLE EXTENSION WHICH DEMONSTRATES HOW TO ACCESS A PREFERENCE. BROWSER_ACTION EXPERIMENTAL POPUP PRIVACY CHROME.EXTENSION.ISALLOWEDINCOGNITOACCESS",
+      "source_files": [
+        "manifest.json",
+        "popup.css",
+        "popup.html",
+        "popup.js"
+      ],
+      "source_hash": "c2114f2faf51a5fdc08002cab3a5bdaefb2073cd",
+      "zip_path": "examples\/api\/preferences\/enableReferrer.zip"
+    },
+    {
+      "api_calls": [
+        "chrome.extension.isAllowedIncognitoAccess"
+      ],
+      "crx_path": null,
+      "description": "Sample extension which demonstrates how to access a preference.",
+      "features": [
+        "browser_action",
+        "experimental",
+        "popup",
+        "privacy"
       ],
       "icon": null,
       "id": "7da105f28e200d42510aff3591dfa5aeb0b82605",
@@ -417,12 +445,14 @@
       "packaged_app": false,
       "path": "examples\/api\/preferences\/allowThirdPartyCookies\/",
       "protocols": [],
-      "search_string": "BLOCK\/ALLOW THIRD-PARTY COOKIES API EXAMPLE EXTENSION SAMPLE EXTENSION WHICH DEMONSTRATES HOW TO ACCESS A PREFERENCE. BROWSER_ACTION CONTENTSETTINGS EXPERIMENTAL POPUP CHROME.EXTENSION.ISALLOWEDINCOGNITOACCESS",
+      "search_string": "BLOCK\/ALLOW THIRD-PARTY COOKIES API EXAMPLE EXTENSION SAMPLE EXTENSION WHICH DEMONSTRATES HOW TO ACCESS A PREFERENCE. BROWSER_ACTION EXPERIMENTAL POPUP PRIVACY CHROME.EXTENSION.ISALLOWEDINCOGNITOACCESS",
       "source_files": [
         "manifest.json",
-        "popup.html"
+        "popup.css",
+        "popup.html",
+        "popup.js"
       ],
-      "source_hash": "67648790a6ee68e071627e870868d5582e1ef2b5",
+      "source_hash": "7ccf3f2ab08bbde36f62df34e93fc57eaff2fa3a",
       "zip_path": "examples\/api\/preferences\/allowThirdPartyCookies.zip"
     },
     {
@@ -803,32 +833,6 @@
       ],
       "source_hash": "54b5469031ddcb2097f39dbaae1bcd81ae650154",
       "zip_path": "examples\/extensions\/email_this_page.zip"
-    },
-    {
-      "api_calls": [
-        "chrome.extension.isAllowedIncognitoAccess"
-      ],
-      "crx_path": null,
-      "description": "Sample extension which demonstrates how to access a preference.",
-      "features": [
-        "browser_action",
-        "contentSettings",
-        "experimental",
-        "popup"
-      ],
-      "icon": null,
-      "id": "0bf0930a32829dfb77170535ecb27adc2de3998a",
-      "name": "Enable\/disable referrers API example extension",
-      "packaged_app": false,
-      "path": "examples\/api\/preferences\/enableReferrer\/",
-      "protocols": [],
-      "search_string": "ENABLE\/DISABLE REFERRERS API EXAMPLE EXTENSION SAMPLE EXTENSION WHICH DEMONSTRATES HOW TO ACCESS A PREFERENCE. BROWSER_ACTION CONTENTSETTINGS EXPERIMENTAL POPUP CHROME.EXTENSION.ISALLOWEDINCOGNITOACCESS",
-      "source_files": [
-        "manifest.json",
-        "popup.html"
-      ],
-      "source_hash": "e3514a32b04876d79e64f31ffe7beb4bbae98d33",
-      "zip_path": "examples\/api\/preferences\/enableReferrer.zip"
     },
     {
       "api_calls": [],
@@ -1439,7 +1443,7 @@
         "popup.html",
         "popup.js"
       ],
-      "source_hash": "175f010b7eacb72207b7018732d3e6dca4e8d164",
+      "source_hash": "8446b89f4eb2d8cb6b49e306e87845b9dd385af5",
       "zip_path": "examples\/extensions\/mappy.zip"
     },
     {

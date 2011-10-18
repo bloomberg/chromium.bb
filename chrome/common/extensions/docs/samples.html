@@ -321,7 +321,8 @@
   "9a6e4ec46997fb92b324974afa08a3d007e2537f": "ANIMATED PAGE ACTION THIS EXTENSION ADDS AN ANIMATED BROWSER ACTION TO THE TOOLBAR. BACKGROUND_PAGE PAGE_ACTION TABS CHROME.PAGEACTION.HIDE CHROME.PAGEACTION.ONCLICKED CHROME.PAGEACTION.SETICON CHROME.PAGEACTION.SETTITLE CHROME.PAGEACTION.SHOW CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.TABS.ONSELECTIONCHANGED",
   "a1f7cf79dd555b04fa8d603247a040e644996293": "APP LAUNCHER  BROWSER_ACTION MANAGEMENT CHROME.EXTENSION.GETURL CHROME.MANAGEMENT.GET CHROME.MANAGEMENT.GETALL CHROME.MANAGEMENT.LAUNCHAPP CHROME.TABS.CREATE",
   "9747e3d6a3eab39bc7c17f11a80573c62d44c7e5": "BLANK NEW TAB PAGE  CHROME_URL_OVERRIDES",
-  "7da105f28e200d42510aff3591dfa5aeb0b82605": "BLOCK/ALLOW THIRD-PARTY COOKIES API EXAMPLE EXTENSION SAMPLE EXTENSION WHICH DEMONSTRATES HOW TO ACCESS A PREFERENCE. BROWSER_ACTION CONTENTSETTINGS EXPERIMENTAL POPUP CHROME.EXTENSION.ISALLOWEDINCOGNITOACCESS",
+  "0bf0930a32829dfb77170535ecb27adc2de3998a": "BLOCK/ALLOW REFERRER API EXAMPLE EXTENSION SAMPLE EXTENSION WHICH DEMONSTRATES HOW TO ACCESS A PREFERENCE. BROWSER_ACTION EXPERIMENTAL POPUP PRIVACY CHROME.EXTENSION.ISALLOWEDINCOGNITOACCESS",
+  "7da105f28e200d42510aff3591dfa5aeb0b82605": "BLOCK/ALLOW THIRD-PARTY COOKIES API EXAMPLE EXTENSION SAMPLE EXTENSION WHICH DEMONSTRATES HOW TO ACCESS A PREFERENCE. BROWSER_ACTION EXPERIMENTAL POPUP PRIVACY CHROME.EXTENSION.ISALLOWEDINCOGNITOACCESS",
   "9004d1a1b975859d07bdff94ea0a4baa106c4fd1": "BROKEN LINKS EXTENDS THE DEVELOPER TOOLS, ADDING AN AUDIT CATEGORY THAT FINDS BROKEN LINKS ON THE INSPECTED PAGE. BACKGROUND_PAGE DEVTOOLS_PAGE EXPERIMENTAL TABS CHROME.EXPERIMENTAL.DEVTOOLS.AUDITS.ADDCATEGORY CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.TABS.EXECUTESCRIPT CHROME.TABS.SENDREQUEST",
   "7f4d3fac7ae1ad4d514a15cd0b2c48c57a58c55e": "CATBLOCK I CANT HAS CHEEZBURGER! BACKGROUND_PAGE EXPERIMENTAL CHROME.EXPERIMENTAL.WEBREQUEST.ONBEFOREREQUEST",
   "924f75a201bb0ec8d6c0b1c9c88c679ea211c93d": "CHROME QUERY EXTENDS THE DEVELOPER TOOLS, ADDING A SIDEBAR THAT DISPLAYS THE JQUERY DATA ASSOCIATED WITH THE SELECTED DOM ELEMENT. DEVTOOLS_PAGE EXPERIMENTAL",
@@ -334,7 +335,6 @@
   "5d81304a17cf7ac2887484f730fbd2b01e51e166": "CONTEXT MENUS SAMPLE SHOWS SOME OF THE FEATURES OF THE CONTEXT MENUS API BACKGROUND_PAGE CONTEXTMENUS CHROME.CONTEXTMENUS.CREATE",
   "4daa6becd0899a54776d9cf7f09613ed1a9f4d77": "COOKIE API TEST EXTENSION TESTING COOKIE API BACKGROUND_PAGE BROWSER_ACTION COOKIES TABS CHROME.BROWSERACTION.ONCLICKED CHROME.COOKIES.GET CHROME.COOKIES.GETALL CHROME.COOKIES.ONCHANGED CHROME.COOKIES.REMOVE CHROME.EXTENSION.GETURL CHROME.TABS.CREATE CHROME.TABS.UPDATE CHROME.WINDOWS.GET CHROME.WINDOWS.GETALL",
   "028eb5364924344029bcbe1d527f132fc72b34e5": "EMAIL THIS PAGE (BY GOOGLE) THIS EXTENSION ADDS AN EMAIL BUTTON TO THE TOOLBAR WHICH ALLOWS YOU TO EMAIL THE PAGE LINK USING YOUR DEFAULT MAIL CLIENT OR GMAIL. BACKGROUND_PAGE BROWSER_ACTION OPTIONS_PAGE TABS CHROME.BROWSERACTION.ONCLICKED CHROME.EXTENSION.CONNECT CHROME.EXTENSION.ONCONNECT CHROME.TABS.CREATE CHROME.TABS.EXECUTESCRIPT CHROME.TABS.UPDATE",
-  "0bf0930a32829dfb77170535ecb27adc2de3998a": "ENABLE/DISABLE REFERRERS API EXAMPLE EXTENSION SAMPLE EXTENSION WHICH DEMONSTRATES HOW TO ACCESS A PREFERENCE. BROWSER_ACTION CONTENTSETTINGS EXPERIMENTAL POPUP CHROME.EXTENSION.ISALLOWEDINCOGNITOACCESS",
   "763a08e9b06595d785568a8d392b95a2f3700258": "EVENT TRACKING WITH GOOGLE ANALYTICS A SAMPLE EXTENSION WHICH USES GOOGLE ANALYTICS TO TRACK USAGE. BACKGROUND_PAGE BROWSER_ACTION POPUP",
   "e3df888a89e35bdeb9c8bc8d03be5e1851b97c68": "EXTENSION DOCS SEARCH SEARCH THE CHROME EXTENSIONS DOCUMENTATION.  TO USE, TYPE CRDOC PLUS A SEARCH TERM INTO THE OMNIBOX. BACKGROUND_PAGE TABS CHROME.OMNIBOX.ONINPUTCHANGED CHROME.OMNIBOX.ONINPUTENTERED CHROME.TABS.CREATE CHROME.TABS.GET CHROME.TABS.ONREMOVED CHROME.TABS.UPDATE",
   "4efa12eaaa442b6b7c880e7a38ceeb0cff7e8b77": "FIREPHP FOR CHROME EXTENDS THE DEVELOPER TOOLS, ADDING SUPPORT FOR PARSING FIREPHP MESSAGES FROM SERVER BACKGROUND_PAGE DEVTOOLS_PAGE EXPERIMENTAL TABS CHROME.EXPERIMENTAL.DEVTOOLS.NETWORK.GETHAR CHROME.EXPERIMENTAL.DEVTOOLS.NETWORK.ONREQUESTFINISHED CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.TABS.EXECUTESCRIPT",
@@ -780,6 +780,57 @@
     - <a>Install extension</a>
     </span>
   </div>
+</div><div class="sample" id="0bf0930a32829dfb77170535ecb27adc2de3998a">
+  <img class="icon" style="display: none; ">
+  <img class="icon" src="images/sample-default-icon.png">
+  <h2 class="name">
+    <a href="#0bf0930a32829dfb77170535ecb27adc2de3998a">Block/allow referrer API example extension</a>
+    <span style="display: none; ">(packaged app)</span>
+  </h2>
+  <p class="metadata features">Uses
+    <span>
+      <strong>browser_action</strong><span>, </span>
+      <span style="display: none; "> and</span>
+    </span><span>
+      <strong>experimental</strong><span>, </span>
+      <span style="display: none; "> and</span>
+    </span><span>
+      <strong>popup</strong><span style="display: none; ">, </span>
+      <span> and</span>
+    </span><span>
+      <strong>privacy</strong><span style="display: none; ">, </span>
+      <span style="display: none; "> and</span>
+    </span>
+  </p>
+  <p>Sample extension which demonstrates how to access a preference.</p>
+  <div class="apicalls"><strong>Calls:</strong>
+    <ul>
+      <li>
+        <code><a href="extension.html#method-isAllowedIncognitoAccess">chrome.extension.isAllowedIncognitoAccess</a></code>
+      </li>
+    </ul>
+  </div>
+  <div class="sourcefiles"><strong>Source files:</strong>
+    <ul>
+      <li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/preferences/enableReferrer/manifest.json?content-type=text/plain">manifest.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/preferences/enableReferrer/popup.css?content-type=text/plain">popup.css</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/preferences/enableReferrer/popup.html?content-type=text/plain">popup.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/preferences/enableReferrer/popup.js?content-type=text/plain">popup.js</a></code>
+      </li>
+    </ul>
+  </div>
+  <div>
+    <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/preferences/enableReferrer/">Browse source</a>
+    - <a href="examples/api/preferences/enableReferrer.zip">Download source</a>
+    <!-- Only show the Install CRX link if a CRX file is provided -->
+    <span style="display: none; ">
+    - <a>Install extension</a>
+    </span>
+  </div>
 </div><div class="sample" id="7da105f28e200d42510aff3591dfa5aeb0b82605">
   <img class="icon" style="display: none; ">
   <img class="icon" src="images/sample-default-icon.png">
@@ -792,13 +843,13 @@
       <strong>browser_action</strong><span>, </span>
       <span style="display: none; "> and</span>
     </span><span>
-      <strong>contentSettings</strong><span>, </span>
+      <strong>experimental</strong><span>, </span>
       <span style="display: none; "> and</span>
     </span><span>
-      <strong>experimental</strong><span style="display: none; ">, </span>
+      <strong>popup</strong><span style="display: none; ">, </span>
       <span> and</span>
     </span><span>
-      <strong>popup</strong><span style="display: none; ">, </span>
+      <strong>privacy</strong><span style="display: none; ">, </span>
       <span style="display: none; "> and</span>
     </span>
   </p>
@@ -815,7 +866,11 @@
       <li>
         <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/preferences/allowThirdPartyCookies/manifest.json?content-type=text/plain">manifest.json</a></code>
       </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/preferences/allowThirdPartyCookies/popup.css?content-type=text/plain">popup.css</a></code>
+      </li><li>
         <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/preferences/allowThirdPartyCookies/popup.html?content-type=text/plain">popup.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/preferences/allowThirdPartyCookies/popup.js?content-type=text/plain">popup.js</a></code>
       </li>
     </ul>
   </div>
@@ -1477,53 +1532,6 @@
   <div>
     <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/email_this_page/">Browse source</a>
     - <a href="examples/extensions/email_this_page.zip">Download source</a>
-    <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
-    </span>
-  </div>
-</div><div class="sample" id="0bf0930a32829dfb77170535ecb27adc2de3998a">
-  <img class="icon" style="display: none; ">
-  <img class="icon" src="images/sample-default-icon.png">
-  <h2 class="name">
-    <a href="#0bf0930a32829dfb77170535ecb27adc2de3998a">Enable/disable referrers API example extension</a>
-    <span style="display: none; ">(packaged app)</span>
-  </h2>
-  <p class="metadata features">Uses
-    <span>
-      <strong>browser_action</strong><span>, </span>
-      <span style="display: none; "> and</span>
-    </span><span>
-      <strong>contentSettings</strong><span>, </span>
-      <span style="display: none; "> and</span>
-    </span><span>
-      <strong>experimental</strong><span style="display: none; ">, </span>
-      <span> and</span>
-    </span><span>
-      <strong>popup</strong><span style="display: none; ">, </span>
-      <span style="display: none; "> and</span>
-    </span>
-  </p>
-  <p>Sample extension which demonstrates how to access a preference.</p>
-  <div class="apicalls"><strong>Calls:</strong>
-    <ul>
-      <li>
-        <code><a href="extension.html#method-isAllowedIncognitoAccess">chrome.extension.isAllowedIncognitoAccess</a></code>
-      </li>
-    </ul>
-  </div>
-  <div class="sourcefiles"><strong>Source files:</strong>
-    <ul>
-      <li>
-        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/preferences/enableReferrer/manifest.json?content-type=text/plain">manifest.json</a></code>
-      </li><li>
-        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/preferences/enableReferrer/popup.html?content-type=text/plain">popup.html</a></code>
-      </li>
-    </ul>
-  </div>
-  <div>
-    <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/preferences/enableReferrer/">Browse source</a>
-    - <a href="examples/api/preferences/enableReferrer.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
     <span style="display: none; ">
     - <a>Install extension</a>
