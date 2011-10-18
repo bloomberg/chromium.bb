@@ -172,7 +172,7 @@ bool InstantController::Update(TabContentsWrapper* tab_contents,
     loader_.reset(new InstantLoader(this, template_url->id()));
 
   // In some rare cases (involving group policy), Instant can go from the field
-  // trial to normal mode, with no intervening call to DestroyPreviewContents()
+  // trial to normal mode, with no intervening call to DestroyPreviewContents().
   // This would leave the loader in a weird state, which would manifest if the
   // user pressed <Enter> without calling Update(). TODO(sreeram): Handle it.
   if (InstantFieldTrial::IsHiddenExperiment(tab_contents->profile())) {
@@ -450,10 +450,6 @@ void InstantController::InstantLoaderDoesntSupportInstant(
 void InstantController::AddToBlacklist(InstantLoader* loader, const GURL& url) {
   // Don't attempt to use instant for this search engine again.
   BlacklistFromInstant();
-
-  // Because of the state of the stack we can't destroy the loader now.
-  ScheduleDestroy(loader_.release());
-  UpdateIsDisplayable();
 }
 
 void InstantController::SwappedTabContents(InstantLoader* loader) {

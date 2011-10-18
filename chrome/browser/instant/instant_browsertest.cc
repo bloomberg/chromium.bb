@@ -971,3 +971,28 @@ IN_PROC_BROWSER_TEST_F(InstantFieldTrialHiddenTest, MAYBE_ExperimentEnabled) {
   EXPECT_FALSE(browser()->instant()->IsCurrent());
   EXPECT_EQ(tab_contents, browser()->GetSelectedTabContentsWrapper());
 }
+
+// Tests the SearchToNonSearch scenario under the HIDDEN field trial.
+IN_PROC_BROWSER_TEST_F(InstantFieldTrialHiddenTest, MAYBE_SearchToNonSearch) {
+  ASSERT_TRUE(test_server()->Start());
+  ui_test_utils::WindowedNotificationObserver instant_support_observer(
+      chrome::NOTIFICATION_INSTANT_SUPPORT_DETERMINED,
+      NotificationService::AllSources());
+
+  // Type in some search text.
+  SetupInstantProvider("search.html");
+  SetupLocationBar();
+
+  // Load a non-search URL; don't wait for the preview to navigate.
+  GURL url(test_server()->GetURL("files/instant/empty.html"));
+  location_bar_->location_entry()->SetUserText(UTF8ToUTF16(url.spec()));
+
+  // Wait for the preview to navigate.
+  WaitForPreviewToNavigate();
+  instant_support_observer.Wait();
+
+  // Instant should be active, but not displayable or committable.
+  EXPECT_TRUE(HasPreview());
+  EXPECT_FALSE(browser()->instant()->is_displayable());
+  EXPECT_FALSE(browser()->instant()->PrepareForCommit());
+}
