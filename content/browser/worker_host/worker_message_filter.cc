@@ -14,11 +14,11 @@ WorkerMessageFilter::WorkerMessageFilter(
     int render_process_id,
     const content::ResourceContext* resource_context,
     ResourceDispatcherHost* resource_dispatcher_host,
-    CallbackWithReturnValue<int>::Type* next_routing_id)
+    const NextRoutingIDCallback& callback)
     : render_process_id_(render_process_id),
       resource_context_(resource_context),
       resource_dispatcher_host_(resource_dispatcher_host),
-      next_routing_id_(next_routing_id) {
+      next_routing_id_(callback) {
   DCHECK(resource_context);
 }
 
@@ -72,14 +72,14 @@ bool WorkerMessageFilter::OnMessageReceived(const IPC::Message& message,
 }
 
 int WorkerMessageFilter::GetNextRoutingID() {
-  return next_routing_id_->Run();
+  return next_routing_id_.Run();
 }
 
 void WorkerMessageFilter::OnCreateWorker(
     const ViewHostMsg_CreateWorker_Params& params,
     int* route_id) {
   *route_id = params.route_id != MSG_ROUTING_NONE ?
-      params.route_id : next_routing_id_->Run();
+      params.route_id : next_routing_id_.Run();
   WorkerService::GetInstance()->CreateWorker(
       params, *route_id, this, *resource_context_);
 }
@@ -89,7 +89,7 @@ void WorkerMessageFilter::OnLookupSharedWorker(
     bool* exists,
     int* route_id,
     bool* url_error) {
-  *route_id = next_routing_id_->Run();
+  *route_id = next_routing_id_.Run();
 
   WorkerService::GetInstance()->LookupSharedWorker(
       params, *route_id, this, resource_context_, exists, url_error);
@@ -109,6 +109,6 @@ void WorkerMessageFilter::OnDocumentDetached(unsigned long long document_id) {
 
 void WorkerMessageFilter::OnCreateMessagePort(int *route_id,
                                               int* message_port_id) {
-  *route_id = next_routing_id_->Run();
+  *route_id = next_routing_id_.Run();
   MessagePortService::GetInstance()->Create(*route_id, this, message_port_id);
 }

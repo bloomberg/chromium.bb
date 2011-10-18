@@ -16,6 +16,8 @@
 #endif
 
 #include "base/base_switches.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -414,8 +416,8 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
           id(),
           &browser_context()->GetResourceContext(),
           content::GetContentClient()->browser()->GetResourceDispatcherHost(),
-          NewCallbackWithReturnValue(
-              widget_helper_.get(), &RenderWidgetHelper::GetNextRoutingID)));
+          base::Bind(&RenderWidgetHelper::GetNextRoutingID,
+                     base::Unretained(widget_helper_.get()))));
 
 #if defined(ENABLE_P2P_APIS)
   channel_->AddFilter(new content::P2PSocketDispatcherHost(

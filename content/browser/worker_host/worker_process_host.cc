@@ -8,6 +8,8 @@
 #include <vector>
 
 #include "base/base_switches.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
@@ -248,11 +250,9 @@ void WorkerProcessHost::CreateMessageFilters(int render_process_id) {
   AddFilter(resource_message_filter);
 
   worker_message_filter_ = new WorkerMessageFilter(
-      render_process_id,
-      resource_context_,
-      resource_dispatcher_host_,
-      NewCallbackWithReturnValue(
-          WorkerService::GetInstance(), &WorkerService::next_worker_route_id));
+      render_process_id, resource_context_, resource_dispatcher_host_,
+      base::Bind(&WorkerService::next_worker_route_id,
+                 base::Unretained(WorkerService::GetInstance())));
   AddFilter(worker_message_filter_);
   AddFilter(new AppCacheDispatcherHost(
       resource_context_->appcache_service(), id()));
