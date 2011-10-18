@@ -56,26 +56,6 @@ bool enable_3d_interfaces = true;
 
 }  // namespace
 
-// By default, disable developer (Dev) interfaces.  To enable developer
-// interfaces, set the environment variable NACL_ENABLE_PPAPI_DEV to 1.
-// Also, the plugin can request whether or not to enable dev interfaces.
-bool AreDevInterfacesEnabled() {
-  static bool first = true;
-  static bool env_dev_enabled = false;
-  if (first) {
-    const char *nacl_enable_ppapi_dev = getenv("NACL_ENABLE_PPAPI_DEV");
-    if (NULL != nacl_enable_ppapi_dev) {
-      int v = strtol(nacl_enable_ppapi_dev, (char **) 0, 0);
-      if (v != 0) {
-        env_dev_enabled = true;
-      }
-    }
-    first = false;
-  }
-  return env_dev_enabled || enable_dev_interfaces;
-}
-
-
 void SetBrowserPppForInstance(PP_Instance instance, BrowserPpp* browser_ppp) {
   // If there was no map, create one.
   if (instance_to_ppp_map == NULL) {
@@ -202,7 +182,7 @@ const void* GetBrowserInterface(const char* interface_name) {
     return NULL;
   }
   // If dev interface is not enabled, reject interfaces containing "(Dev)"
-  if (!AreDevInterfacesEnabled() && strstr(interface_name, "(Dev)") != NULL) {
+  if (!enable_dev_interfaces && strstr(interface_name, "(Dev)") != NULL) {
     return NULL;
   }
   if (!enable_3d_interfaces) {

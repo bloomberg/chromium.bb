@@ -374,9 +374,6 @@ class Plugin : public pp::InstancePrivate {
 
   MethodInfo* GetMethodInfo(uintptr_t method_id, CallType call_type);
 
-  // Check url and decide if PPAPI Dev interfaces are required.
-  bool RequiresDevInterfaces(const nacl::string& manifest_url);
-
   // Callback used when getting the URL for the .nexe file.  If the URL loading
   // is successful, the file descriptor is opened and can be passed to sel_ldr
   // with the sandbox on.

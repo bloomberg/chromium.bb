@@ -16,7 +16,6 @@
 #include "ppapi/c/pp_completion_callback.h"
 #include "srpcgen/ppb_rpc.h"
 
-using ppapi_proxy::AreDevInterfacesEnabled;
 using ppapi_proxy::DebugPrintf;
 using ppapi_proxy::LookupBrowserPppForInstance;
 using ppapi_proxy::MakeRemoteCompletionCallback;
@@ -63,8 +62,8 @@ void NaClFileRpcServer::GetFileDesc(
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
-  if (AreDevInterfacesEnabled()) {
-    plugin::Plugin* plugin = LookupBrowserPppForInstance(instance)->plugin();
+  plugin::Plugin* plugin = LookupBrowserPppForInstance(instance)->plugin();
+  if (plugin->enable_dev_interfaces()) {
     int32_t posix_file_desc = plugin->GetPOSIXFileDesc(url);
     DebugPrintf("NaClFile::GetFileDesc: posix_file_desc=%"NACL_PRId32"\n",
                 posix_file_desc);

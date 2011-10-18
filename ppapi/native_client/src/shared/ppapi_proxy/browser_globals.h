@@ -43,7 +43,7 @@ struct NaClSrpcChannel;
 namespace ppapi_proxy {
 
 // These functions handle the browser-side (trusted code) mapping of a browser
-// Instance to instance-specific data, such as the SRPC communication channel.
+// instance to instance-specific data, such as the SRPC communication channel.
 // These functions are called by the in-browser (trusted) plugin code, and are
 // always called from the main (foreground, UI, ...) thread. As such, they are
 // not thread-safe (they do not need to be).
@@ -51,11 +51,6 @@ namespace ppapi_proxy {
 // BrowserPpp keeps browser side PPP_Instance specific information, such as the
 // channel used to talk to the instance.
 class BrowserPpp;
-
-// Returns true if the PPAPI Developer interfaces are enabled.
-// To enable, set the environment variable NACL_ENABLE_PPAPI_DEV=1
-// Note: Developer interfaces are _not_ enabled by default.
-bool AreDevInterfacesEnabled();
 
 // Associate a particular BrowserPpp with a PP_Instance value.  This allows the
 // browser side to look up information it needs to communicate with the stub.

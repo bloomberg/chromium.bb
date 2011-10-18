@@ -103,6 +103,10 @@ const char* const kNaClManifestAttribute = "nacl";
 // for the null termination character.
 const size_t kNaClManifestMaxFileBytes = 1024 * 1024;
 
+// Define an argument name to enable 'dev' interfaces. To make sure it doesn't
+// collide with any user-defined HTML attribute, make the first character '@'.
+const char* const kDevAttribute = "@dev";
+
 // URL schemes that we treat in special ways.
 const char* const kChromeExtensionUriScheme = "chrome-extension";
 const char* const kDataUriScheme = "data";
@@ -892,6 +896,11 @@ bool Plugin::Init(uint32_t argc, const char* argn[], const char* argv[]) {
       const_cast<char**>(argn),
       const_cast<char**>(argv));
   if (status) {
+    // Look for the developer attribute; if it's present, enable 'dev'
+    // interfaces.
+    const char* dev_settings = LookupArgument(kDevAttribute);
+    enable_dev_interfaces_ = (dev_settings != NULL);
+
     const char* type_attr = LookupArgument(kTypeAttribute);
     if (type_attr != NULL) {
       mime_type_ = nacl::string(type_attr);
@@ -904,7 +913,6 @@ bool Plugin::Init(uint32_t argc, const char* argn[], const char* argv[]) {
     // and 'nacl' will be the URL for the manifest.
     if (IsForeignMIMEType()) {
       manifest_url = LookupArgument(kNaClManifestAttribute);
-      enable_dev_interfaces_ = RequiresDevInterfaces(manifest_url);
     }
     // Use the document URL as the base for resolving relative URLs to find the
     // manifest.  This takes into account the setting of <base> tags that
@@ -1298,21 +1306,6 @@ void Plugin::BitcodeDidTranslateContinuation(int32_t pp_error) {
   } else {
     ReportLoadError(error_info);
   }
-}
-
-// Check manifest_url and return whether or not to enable PPAPI Dev interfaces.
-// Returning true here will enable the PPAPI Dev interfaces regardless of
-// the environment variable NACL_ENABLE_PPAPI_DEV.
-bool Plugin::RequiresDevInterfaces(const nacl::string& manifest_url) {
-  const char* extensions[] = {
-      "chrome-extension://acadkphlmlegjaadjagenfimbpphcgnh/",  // PDF
-  };
-  for (size_t i = 0; i < sizeof(extensions) / sizeof(const char*); ++i) {
-    if (manifest_url.find(extensions[i]) == 0) {
-      return true;
-    }
-  }
-  return false;
 }
 
 bool Plugin::StartProxiedExecution(NaClSrpcChannel* srpc_channel,

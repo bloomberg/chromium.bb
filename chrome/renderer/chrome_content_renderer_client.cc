@@ -417,54 +417,15 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
           IDR_CLICK_TO_PLAY_PLUGIN_HTML, IDS_PLUGIN_LOAD, true, true);
     }
 
-    // Enforce the Chrome WebStore restriction on the Native Client plugin.
-    if (is_nacl_plugin) {
-      bool allow_nacl = cmd->HasSwitch(switches::kEnableNaCl);
-      if (!allow_nacl) {
-        const char* kNaClPluginMimeType = "application/x-nacl";
-        const char* kNaClPluginManifestAttribute = "nacl";
-
-        GURL nexe_url;
-        if (actual_mime_type == kNaClPluginMimeType) {
-          nexe_url = url;  // Normal embedded NaCl plugin.
-        } else {
-          // Content type handling NaCl plugin; the "nacl" param on the
-          // MIME type holds the nexe URL.
-          string16 nacl_attr = ASCIIToUTF16(kNaClPluginManifestAttribute);
-          for (size_t i = 0; i < plugin.mime_types.size(); ++i) {
-            if (plugin.mime_types[i].mime_type == actual_mime_type) {
-              const webkit::WebPluginMimeType& content_type =
-                  plugin.mime_types[i];
-              for (size_t i = 0;
-                  i < content_type.additional_param_names.size(); ++i) {
-                if (content_type.additional_param_names[i] == nacl_attr) {
-                  nexe_url = GURL(content_type.additional_param_values[i]);
-                  break;
-                }
-              }
-              break;
-            }
-          }
-        }
-
-        // Create the NaCl plugin only if the .nexe is part of an extension
-        // that was installed from the Chrome Web Store, or part of a component
-        // extension, or part of an unpacked extension.
-        const Extension* extension =
-            extension_dispatcher_->extensions()->GetByURL(nexe_url);
-        allow_nacl = extension &&
-            (extension->from_webstore() ||
-            extension->location() == Extension::COMPONENT ||
-            extension->location() == Extension::LOAD);
-      }
-
-      if (!allow_nacl) {
-        // TODO(bbudge) Webkit will crash if this is a full-frame plug-in and
-        // we return NULL. Prepare a patch to fix that, and return NULL here.
+    if (is_nacl_plugin &&
+        !IsNaClAllowed(plugin,
+                       url,
+                       actual_mime_type,
+                       cmd->HasSwitch(switches::kEnableNaCl),
+                       params)) {
         return CreatePluginPlaceholder(
             render_view, frame, plugin, params, group.get(),
             IDR_BLOCKED_PLUGIN_HTML, IDS_PLUGIN_BLOCKED, false, false);
-      }
     }
 
     return render_view->CreatePlugin(frame, plugin, params);
@@ -482,6 +443,88 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         render_view, frame, plugin, params, group.get(),
         IDR_BLOCKED_PLUGIN_HTML, IDS_PLUGIN_BLOCKED, false, true);
   }
+}
+
+bool ChromeContentRendererClient::IsNaClAllowed(
+    const webkit::WebPluginInfo& plugin,
+    const GURL& url,
+    const std::string& actual_mime_type,
+    bool enable_nacl,
+    WebKit::WebPluginParams& params) {
+  const char* kNaClPluginMimeType = "application/x-nacl";
+  const char* kNaClPluginManifestAttribute = "nacl";
+
+  GURL manifest_url;
+  if (actual_mime_type == kNaClPluginMimeType) {
+    manifest_url = url;  // Normal embedded NaCl plugin.
+  } else {
+    // This is a content type handling NaCl plugin; look for the .nexe URL
+    // among the MIME type's additonal parameters.
+    string16 nacl_attr = ASCIIToUTF16(kNaClPluginManifestAttribute);
+    for (size_t i = 0; i < plugin.mime_types.size(); ++i) {
+      if (plugin.mime_types[i].mime_type == actual_mime_type) {
+        const webkit::WebPluginMimeType& content_type =
+            plugin.mime_types[i];
+        for (size_t i = 0;
+            i < content_type.additional_param_names.size(); ++i) {
+          if (content_type.additional_param_names[i] == nacl_attr) {
+            manifest_url = GURL(content_type.additional_param_values[i]);
+            break;
+          }
+        }
+        break;
+      }
+    }
+  }
+
+  // Determine if the manifest URL is part of an extension.
+  const Extension* extension =
+      extension_dispatcher_->extensions()->GetByURL(manifest_url);
+  // Only component, unpacked, and Chrome Web Store extensions are allowed.
+  bool allowed_extension = extension &&
+      (extension->from_webstore() ||
+      extension->location() == Extension::COMPONENT ||
+      extension->location() == Extension::LOAD);
+
+  // Block any other use of NaCl plugin, unless --enable-nacl is set.
+  if (!allowed_extension && !enable_nacl)
+    return false;
+
+  // Allow dev interfaces for non-extension apps.
+  bool allow_dev_interfaces = true;
+  if (allowed_extension) {
+    // Allow dev interfaces for component and unpacked extensions.
+    if (extension->location() != Extension::COMPONENT &&
+        extension->location() != Extension::LOAD) {
+      // Whitelist all other allowed extensions.
+      allow_dev_interfaces =
+          // PDF Viewer plugin
+          (manifest_url.scheme() == "chrome-extension" &&
+          manifest_url.host() == "acadkphlmlegjaadjagenfimbpphcgnh");
+    }
+  }
+
+  WebString dev_attribute = WebString::fromUTF8("@dev");
+  if (allow_dev_interfaces) {
+    std::vector<string16> param_names;
+    std::vector<string16> param_values;
+    param_names.push_back(dev_attribute);
+    param_values.push_back(WebString());
+    AppendParams(
+        param_names,
+        param_values,
+        &params.attributeNames,
+        &params.attributeValues);
+  } else {
+    // If the params somehow contain this special attribute, remove it.
+    size_t attribute_count = params.attributeNames.size();
+    for (size_t i = 0; i < attribute_count; ++i) {
+      if (params.attributeNames[i].equals(dev_attribute))
+        params.attributeNames[i] = WebString();
+    }
+  }
+
+  return true;
 }
 
 WebPlugin* ChromeContentRendererClient::CreatePluginPlaceholder(

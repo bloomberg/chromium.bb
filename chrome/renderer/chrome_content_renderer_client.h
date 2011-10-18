@@ -127,6 +127,14 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
                                const GURL& new_url,
                                bool is_initial_navigation);
 
+  // Returns true if the NaCl plugin can be created. If it returns true, as a
+  // side effect, it may add special attributes to params.
+  bool IsNaClAllowed(const webkit::WebPluginInfo& plugin,
+                     const GURL& url,
+                     const std::string& actual_mime_type,
+                     bool enable_nacl,
+                     WebKit::WebPluginParams& params);
+
   scoped_ptr<ChromeRenderProcessObserver> chrome_observer_;
   scoped_ptr<ExtensionDispatcher> extension_dispatcher_;
   scoped_ptr<RendererHistogramSnapshots> histogram_snapshots_;
