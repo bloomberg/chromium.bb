@@ -452,12 +452,11 @@ def FindFileUpwards(filename, path=None):
 def GetGClientRootAndEntries(path=None):
   """Returns the gclient root and the dict of entries."""
   config_file = '.gclient_entries'
-  config_path = os.path.join(FindFileUpwards(config_file, path), config_file)
-
-  if not config_path:
+  root = FindFileUpwards(config_file, path)
+  if not root:
     print "Can't find %s" % config_file
     return None
-
+  config_path = os.path.join(root, config_file)
   env = {}
   execfile(config_path, env)
   config_dir = os.path.dirname(config_path)
