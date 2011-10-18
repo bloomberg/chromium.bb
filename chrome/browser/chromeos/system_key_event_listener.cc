@@ -282,8 +282,11 @@ bool SystemKeyEventListener::ProcessedXEvent(XEvent* xevent) {
   if (xevent->type == xkb_event_base_) {
     XkbEvent* xkey_event = reinterpret_cast<XkbEvent*>(xevent);
     if (xkey_event->any.xkb_type == XkbStateNotify) {
-      caps_lock_is_on_ = (xkey_event->state.locked_mods) & LockMask;
-      OnCapsLock(caps_lock_is_on_);
+      const bool new_lock_state = (xkey_event->state.locked_mods) & LockMask;
+      if (caps_lock_is_on_ != new_lock_state) {
+        caps_lock_is_on_ = new_lock_state;
+        OnCapsLock(caps_lock_is_on_);
+      }
       return true;
     }
   } else if (xevent->type == KeyPress) {
