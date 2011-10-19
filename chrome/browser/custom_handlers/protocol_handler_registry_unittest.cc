@@ -22,6 +22,8 @@
 #include "content/common/notification_service.h"
 #include "net/url_request/url_request.h"
 
+namespace {
+
 class FakeDelegate : public ProtocolHandlerRegistry::Delegate {
  public:
   FakeDelegate() : force_os_failure_(false) {}
@@ -186,6 +188,8 @@ class QueryProtocolHandlerOnChange
   bool called_;
   content::NotificationRegistrar notification_registrar_;
 };
+
+}  // namespace
 
 class ProtocolHandlerRegistryTest : public testing::Test {
  protected:
