@@ -23,7 +23,7 @@ class AURA_EXPORT WindowObserver {
   // Invoked when the SetVisible() is invoked on a window. |visible| is the
   // value supplied to SetVisible(). If |visible| is true, window->IsVisible()
   // may still return false. See description in Window::IsVisible() for details.
-  virtual void OnWindowVisibilityChanged(Window* window, bool visibile) {}
+  virtual void OnWindowVisibilityChanged(Window* window, bool visible) {}
 
  protected:
   virtual ~WindowObserver() {}

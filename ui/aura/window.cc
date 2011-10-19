@@ -420,7 +420,7 @@ void Window::SetVisible(bool visible) {
       delegate_->OnWindowVisibilityChanged(is_visible);
   }
   FOR_EACH_OBSERVER(WindowObserver, observers_,
-                    OnWindowVisibilityChanged(this, is_visible));
+                    OnWindowVisibilityChanged(this, visible));
 }
 
 void Window::SchedulePaint() {

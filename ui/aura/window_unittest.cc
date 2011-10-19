@@ -983,9 +983,22 @@ TEST_F(ToplevelWindowTest, TopMostActivate) {
 class WindowObserverTest : public WindowTest,
                            public WindowObserver {
  public:
+  struct VisibilityInfo {
+    bool window_visible;
+    bool visible_param;
+  };
+
   WindowObserverTest() : added_count_(0), removed_count_(0) {}
 
   virtual ~WindowObserverTest() {}
+
+  const VisibilityInfo* GetVisibilityInfo() const {
+    return visibility_info_.get();
+  }
+
+  void ResetVisibilityInfo() {
+    visibility_info_.reset();
+  }
 
   // Returns a description of the WindowObserver methods that have been invoked.
   std::string WindowObserverCountStateAndClear() {
@@ -1005,8 +1018,16 @@ class WindowObserverTest : public WindowTest,
     removed_count_++;
   }
 
+  virtual void OnWindowVisibilityChanged(Window* window,
+                                         bool visible) OVERRIDE {
+    visibility_info_.reset(new VisibilityInfo);
+    visibility_info_->window_visible = window->IsVisible();
+    visibility_info_->visible_param = visible;
+  }
+
   int added_count_;
   int removed_count_;
+  scoped_ptr<VisibilityInfo> visibility_info_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowObserverTest);
 };
@@ -1033,6 +1054,48 @@ TEST_F(WindowObserverTest, WindowObserver) {
   w3.reset();
   EXPECT_EQ("added=0 removed=0", WindowObserverCountStateAndClear());
   w1->RemoveObserver(this);
+}
+
+// Test if OnWindowVisibilityChagned is invoked with expected
+// parameters.
+TEST_F(WindowObserverTest, WindowVisibility) {
+  scoped_ptr<Window> w1(CreateTestWindowWithId(1, NULL));
+  scoped_ptr<Window> w2(CreateTestWindowWithId(1, w1.get()));
+  w2->AddObserver(this);
+
+  // Hide should make the window invisible and the passed visible
+  // parameter is false.
+  w2->Hide();
+  EXPECT_FALSE(!GetVisibilityInfo());
+  EXPECT_FALSE(!GetVisibilityInfo());
+  if (!GetVisibilityInfo())
+    return;
+  EXPECT_FALSE(GetVisibilityInfo()->window_visible);
+  EXPECT_FALSE(GetVisibilityInfo()->visible_param);
+
+  // If parent isn't visible, showing window won't make the window visible, but
+  // passed visible value must be true.
+  w1->Hide();
+  ResetVisibilityInfo();
+  EXPECT_TRUE(!GetVisibilityInfo());
+  w2->Show();
+  EXPECT_FALSE(!GetVisibilityInfo());
+  if (!GetVisibilityInfo())
+    return;
+  EXPECT_FALSE(GetVisibilityInfo()->window_visible);
+  EXPECT_TRUE(GetVisibilityInfo()->visible_param);
+
+  // If parent is visible, showing window will make the window
+  // visible and the passed visible value is true.
+  w1->Show();
+  w2->Hide();
+  ResetVisibilityInfo();
+  w2->Show();
+  EXPECT_FALSE(!GetVisibilityInfo());
+  if (!GetVisibilityInfo())
+    return;
+  EXPECT_TRUE(GetVisibilityInfo()->window_visible);
+  EXPECT_TRUE(GetVisibilityInfo()->visible_param);
 }
 
 class DesktopObserverTest : public WindowTest,
