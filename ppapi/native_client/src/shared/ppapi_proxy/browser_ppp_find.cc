@@ -27,7 +27,7 @@ PP_Bool StartFind(PP_Instance instance,
   DebugPrintf("PPP_Find::StartFind: instance=%"NACL_PRIu32"\n", instance);
 
   int32_t supports_find = 0;
-  nacl_abi_size_t text_bytes = static_cast<nacl_abi_size_t>(strlen(text));
+  nacl_abi_size_t text_bytes = static_cast<nacl_abi_size_t>(strlen(text)) + 1;
   NaClSrpcError srpc_result = PppFindRpcClient::PPP_Find_StartFind(
       GetMainSrpcChannel(instance),
       instance,
