@@ -127,10 +127,9 @@ void SyncPromoHandler::ShowSetupUI() {
 void SyncPromoHandler::HandleCloseSyncPromo(const base::ListValue* args) {
   CloseSyncSetup();
 
-  // If there's no previous page on this tab then it means that the promo was
-  // displayed at startup. In this case we want to close the browser tab that
-  // the promo is in.
-  if (!web_ui_->tab_contents()->controller().CanGoBack()) {
+  // If the promo is being used as a welcome page then we want to close the
+  // browser tab that the promo is in.
+  if (IsWelcomePage()) {
     Browser* browser =
         BrowserList::FindBrowserWithTabContents(web_ui_->tab_contents());
     browser->CloseTabContents(web_ui_->tab_contents());
@@ -142,6 +141,10 @@ void SyncPromoHandler::HandleCloseSyncPromo(const base::ListValue* args) {
 }
 
 void SyncPromoHandler::HandleInitializeSyncPromo(const base::ListValue* args) {
+  base::FundamentalValue visible(IsWelcomePage());
+  web_ui_->CallJavascriptFunction("SyncSetupOverlay.setPromoTitleVisible",
+                                  visible);
+
   OpenSyncSetup();
   // We don't need to compute anything for this, just do this every time.
   RecordUserFlowAction(extension_misc::SYNC_PROMO_VIEWED);
@@ -194,4 +197,10 @@ void SyncPromoHandler::RecordUserFlowAction(int action) {
   // Send an enumeration to our single user flow histogram.
   UMA_HISTOGRAM_ENUMERATION("SyncPromo.UserFlow", action,
                             extension_misc::SYNC_PROMO_BUCKET_BOUNDARY);
+}
+
+bool SyncPromoHandler::IsWelcomePage() {
+  // If there's no previous page on this tab then it means that the promo was
+  // displayed at startup.
+  return !web_ui_->tab_contents()->controller().CanGoBack();
 }

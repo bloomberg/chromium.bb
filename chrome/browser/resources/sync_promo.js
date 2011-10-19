@@ -56,7 +56,6 @@ cr.define('sync_promo', function() {
 
       // Hide parts of the login UI and show the promo UI.
       this.hideOuterLoginUI_();
-      $('promo-title').hidden = false;
       $('sync-setup-login-promo-column').hidden = false;
       $('promo-skip').hidden = false;
 
@@ -180,6 +179,16 @@ cr.define('sync_promo', function() {
       options.SyncSetupOverlay.prototype.sendConfiguration_.apply(this,
           arguments);
     },
+
+    /**
+     * Shows or hides the title of the promo page.
+     * @param {Boolean} visible true if the title should be visible, false
+     *     otherwise.
+     * @private
+     */
+    setPromoTitleVisible_: function(visible) {
+      $('promo-title').hidden = !visible;
+    }
   };
 
   SyncPromo.showErrorUI = function() {
@@ -210,6 +219,10 @@ cr.define('sync_promo', function() {
   SyncPromo.initialize = function() {
     SyncPromo.getInstance().initializePage();
   };
+
+  SyncPromo.setPromoTitleVisible = function(visible) {
+    SyncPromo.getInstance().setPromoTitleVisible_(visible);
+  }
 
   // Export
   return {

@@ -52,10 +52,13 @@ html[dir='rtl'] #sync-setup-login-content-column {
 }
 
 #promo-title {
-  display: block;
   margin-top: 33px;
   margin-bottom: 64px;
   text-align: center;
+}
+
+#promo-title[hidden] + div {
+  margin-top: 30px;
 }
 
 #promo-infographic {
