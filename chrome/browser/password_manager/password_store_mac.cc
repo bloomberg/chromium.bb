@@ -813,7 +813,7 @@ void PasswordStoreMac::UpdateLoginImpl(const PasswordForm& form) {
       NotificationService::current()->Notify(
           chrome::NOTIFICATION_LOGINS_CHANGED,
           content::Source<PasswordStore>(this),
-          Details<PasswordStoreChangeList>(&changes));
+          content::Details<PasswordStoreChangeList>(&changes));
     }
   }
 }
@@ -844,7 +844,7 @@ void PasswordStoreMac::RemoveLoginImpl(const PasswordForm& form) {
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_LOGINS_CHANGED,
         content::Source<PasswordStore>(this),
-        Details<PasswordStoreChangeList>(&changes));
+        content::Details<PasswordStoreChangeList>(&changes));
   }
 }
 
@@ -878,7 +878,7 @@ void PasswordStoreMac::RemoveLoginsCreatedBetweenImpl(
       NotificationService::current()->Notify(
           chrome::NOTIFICATION_LOGINS_CHANGED,
           content::Source<PasswordStore>(this),
-          Details<PasswordStoreChangeList>(&changes));
+          content::Details<PasswordStoreChangeList>(&changes));
     }
   }
 }

@@ -287,7 +287,7 @@ void GlobalMenuBar::Observe(int type,
                             const content::NotificationSource& source,
                             const content::NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_PREF_CHANGED, type);
-  const std::string& pref_name = *Details<std::string>(details).ptr();
+  const std::string& pref_name = *content::Details<std::string>(details).ptr();
   DCHECK_EQ(prefs::kShowBookmarkBar, pref_name);
   OnBookmarkBarVisibilityChanged();
 }

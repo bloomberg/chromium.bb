@@ -44,13 +44,15 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
                const content::NotificationDetails& details) {
     switch (type) {
       case chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING: {
-        if (Details<ExtensionHost>([controller_ extensionHost]) == details)
+        if (content::Details<ExtensionHost>([controller_ extensionHost]) ==
+                details) {
           [controller_ showDevTools];
+        }
         break;
       }
       case content::NOTIFICATION_DEVTOOLS_WINDOW_CLOSING: {
         RenderViewHost* rvh = [controller_ extensionHost]->render_view_host();
-        if (Details<RenderViewHost>(rvh) == details)
+        if (content::Details<RenderViewHost>(rvh) == details)
           // Allow the devtools to finish detaching before we close the popup
           [controller_ performSelector:@selector(close)
                             withObject:nil

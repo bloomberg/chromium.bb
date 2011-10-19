@@ -35,7 +35,7 @@ class InfoBarNotificationObserver : public content::NotificationObserver {
         content::Source<InfoBarTabHelper>(source).ptr();
     switch (type) {
       case chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED:
-        [controller_ addInfoBar:Details<InfoBarAddedDetails>(details)->
+        [controller_ addInfoBar:content::Details<InfoBarAddedDetails>(details)->
                                     CreateInfoBar(infobar_helper)
                         animate:YES];
         break;

@@ -1,3 +1,4 @@
+
 // Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -371,7 +372,8 @@ void GtkThemeService::Observe(int type,
                               const content::NotificationSource& source,
                               const content::NotificationDetails& details) {
   if ((type == chrome::NOTIFICATION_PREF_CHANGED) &&
-      (*Details<std::string>(details).ptr() == prefs::kUsesSystemTheme)) {
+      (*content::Details<std::string>(details).ptr() ==
+          prefs::kUsesSystemTheme)) {
 #if !defined(OS_CHROMEOS)
     use_gtk_ = profile()->GetPrefs()->GetBoolean(prefs::kUsesSystemTheme);
 #endif

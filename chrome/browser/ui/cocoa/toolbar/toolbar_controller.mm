@@ -115,7 +115,7 @@ class NotificationBridge : public content::NotificationObserver {
                        const content::NotificationDetails& details) {
     switch (type) {
       case chrome::NOTIFICATION_PREF_CHANGED:
-        [controller_ prefChanged:Details<std::string>(details).ptr()];
+        [controller_ prefChanged:content::Details<std::string>(details).ptr()];
         break;
       case chrome::NOTIFICATION_UPGRADE_RECOMMENDED:
       case chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED:

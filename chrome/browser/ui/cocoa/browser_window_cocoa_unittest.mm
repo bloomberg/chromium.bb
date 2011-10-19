@@ -30,7 +30,8 @@ class BrowserWindowCocoaPong : public BrowserWindowCocoa {
                const content::NotificationSource& source,
                const content::NotificationDetails& details) {
     if (type == chrome::NOTIFICATION_PREF_CHANGED) {
-      const std::string& pref_name = *Details<std::string>(details).ptr();
+      const std::string& pref_name =
+          *content::Details<std::string>(details).ptr();
       if (pref_name == prefs::kShowBookmarkBar)
         pong_ = true;
     }

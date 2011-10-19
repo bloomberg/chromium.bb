@@ -108,7 +108,7 @@ class ProfileObserverBridge : public content::NotificationObserver {
   // Overridden from content::NotificationObserver
   void Observe(int type,
                const content::NotificationSource& source,
-               const NotificationDetails& details) {
+               const content::NotificationDetails& details) {
     if (type == chrome::NOTIFICATION_PROFILE_DESTROYED &&
         source == content::Source<Profile>(profile_)) {
       [owner_ invalidateProfile];

@@ -166,7 +166,7 @@ class TabRendererGtk : public ui::AnimationDelegate,
   // Provide NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationDetails& details);
 
   // Advance the loading animation to the next frame, or hide the animation if
   // the tab isn't loading.  Returns |true| if the icon area needs to be

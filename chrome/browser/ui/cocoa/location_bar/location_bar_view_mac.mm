@@ -485,7 +485,7 @@ void LocationBarViewMac::Observe(int type,
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED: {
       TabContents* contents = GetTabContents();
-      if (Details<TabContents>(contents) != details)
+      if (content::Details<TabContents>(contents) != details)
         return;
 
       [field_ updateCursorAndToolTipRects];

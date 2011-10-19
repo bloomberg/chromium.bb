@@ -557,7 +557,7 @@ void TabRendererGtk::SetBounds(const gfx::Rect& bounds) {
 
 void TabRendererGtk::Observe(int type,
                              const content::NotificationSource& source,
-                             const NotificationDetails& details) {
+                             const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_BROWSER_THEME_CHANGED);
 
   // Clear our cache when we receive a theme change notification because it

@@ -168,8 +168,8 @@ class InstantTest : public InProcessBrowserTest {
     ASSERT_TRUE(preview_);
     // TODO(gbillock): This should really be moved into calling code. It is
     // still race-prone here.
-    TestNavigationObserver observer(
-        Source<NavigationController>(&preview_->controller()), NULL, 1);
+    TestNavigationObserver observer(content::Source<NavigationController>(
+        &preview_->controller()), NULL, 1);
     observer.WaitForObservation();
   }
 

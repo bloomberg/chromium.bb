@@ -568,7 +568,8 @@ void BrowserWindowCocoa::Observe(int type,
                                  const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_PREF_CHANGED: {
-      const std::string& pref_name = *Details<std::string>(details).ptr();
+      const std::string& pref_name =
+          *content::Details<std::string>(details).ptr();
       DCHECK(pref_name == prefs::kShowBookmarkBar);
       [controller_ updateBookmarkBarVisibilityWithAnimation:YES];
       break;

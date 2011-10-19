@@ -84,16 +84,16 @@ void ExtensionPopupGtk::Observe(int type,
                                 const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING:
-      if (Details<ExtensionHost>(host_.get()) == details)
+      if (content::Details<ExtensionHost>(host_.get()) == details)
         ShowPopup();
       break;
     case chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE:
-      if (Details<ExtensionHost>(host_.get()) == details)
+      if (content::Details<ExtensionHost>(host_.get()) == details)
         DestroyPopup();
       break;
     case content::NOTIFICATION_DEVTOOLS_WINDOW_CLOSING:
       // Make sure its the devtools window that inspecting our popup.
-      if (Details<RenderViewHost>(host_->render_view_host()) != details)
+      if (content::Details<RenderViewHost>(host_->render_view_host()) != details)
         break;
 
       // If the devtools window is closing, we post a task to ourselves to

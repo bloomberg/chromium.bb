@@ -43,7 +43,7 @@ TEST_F(NotificationServiceTest, Basic) {
 
   // Check the equality operators defined for NotificationSource
   EXPECT_TRUE(content::Source<TestSource>(&test_source) ==
-              Source<TestSource>(&test_source));
+              content::Source<TestSource>(&test_source));
   EXPECT_TRUE(content::Source<TestSource>(&test_source) !=
               content::Source<TestSource>(&other_source));
 

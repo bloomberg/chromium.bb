@@ -565,7 +565,9 @@
     'public/browser/navigation_types.h',
     'public/browser/notification_details.h',
     'public/browser/notification_observer.h',
-    'public/browser/notification_source.h',    
+    'public/browser/notification_registrar.cc',
+    'public/browser/notification_registrar.h',
+    'public/browser/notification_source.h',
     'public/browser/notification_types.h',
   ],
   'conditions': [
