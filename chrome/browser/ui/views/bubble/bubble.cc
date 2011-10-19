@@ -175,7 +175,9 @@ Bubble::Bubble(views::Widget::InitParams::Type type,
       delegate_(NULL),
       show_status_(kOpen),
       fade_away_on_close_(false),
+#if defined(TOOLKIT_USES_GTK)
       type_(type),
+#endif
       show_while_screen_is_locked_(show_while_screen_is_locked),
       arrow_location_(views::BubbleBorder::NONE),
       contents_(NULL),

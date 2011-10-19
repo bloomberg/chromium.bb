@@ -250,7 +250,7 @@ class Bubble
   // true.
   bool close_on_deactivate_;
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
   // Some callers want the bubble to be a child control instead of a window.
   views::Widget::InitParams::Type type_;
 #endif
