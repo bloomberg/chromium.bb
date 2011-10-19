@@ -20,7 +20,8 @@ class GclTestsBase(SuperMoxTestBase):
   def setUp(self):
     SuperMoxTestBase.setUp(self)
     self.fake_root_dir = self.RootDir()
-    self.mox.StubOutWithMock(gcl, 'RunShell')
+    self.mox.StubOutWithMock(gcl.subprocess2, 'call')
+    self.mox.StubOutWithMock(gcl.subprocess2, 'check_output')
     self.mox.StubOutWithMock(gcl.SVN, 'CaptureInfo')
     self.mox.StubOutWithMock(gcl.SVN, 'GetCheckoutRoot')
     self.mox.StubOutWithMock(gcl, 'tempfile')
@@ -88,8 +89,7 @@ class GclUnittest(GclTestsBase):
         'GetModifiedFiles', 'GetRepositoryRoot', 'ListFiles',
         'LoadChangelistInfoForMultiple', 'MISSING_TEST_MSG',
         'OptionallyDoPresubmitChecks', 'REPOSITORY_ROOT', 'REVIEWERS_REGEX',
-        'RunShell', 'RunShellWithReturnCode', 'SVN',
-        'TryChange', 'UnknownFiles', 'Warn',
+        'SVN', 'TryChange', 'UnknownFiles', 'Warn',
         'attrs', 'breakpad', 'defer_attributes', 'fix_encoding',
         'gclient_utils', 'json', 'main', 'need_change', 'need_change_and_args',
         'no_args', 'optparse', 'os', 'presubmit_support', 'random', 're',
@@ -527,8 +527,9 @@ class CMDCommitUnittest(GclTestsBase):
 
     gcl.os.getcwd().AndReturn('prev')
     gcl.os.chdir(change_info.GetLocalRoot())
-    gcl.RunShell(['svn', 'commit', '--file=commit', '--targets=files'],
-        True).AndReturn(shell_output)
+    gcl.subprocess2.check_output(
+        ['svn', 'commit', '--file=commit', '--targets=files']
+        ).AndReturn(shell_output)
     if 'Committed' in shell_output:
       self.mox.StubOutWithMock(gcl, 'GetCodeReviewSetting')
       gcl.GetCodeReviewSetting('VIEW_VC').AndReturn('http://view/')

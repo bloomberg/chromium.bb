@@ -38,7 +38,7 @@ from scm import SVN
 import subprocess2
 from third_party import upload
 
-__version__ = '1.2.1'
+__version__ = '1.2.2'
 
 
 CODEREVIEW_SETTINGS = {
@@ -68,6 +68,7 @@ DEFAULT_LINT_REGEX = r"(.*\.cpp|.*\.cc|.*\.h)"
 DEFAULT_LINT_IGNORE_REGEX = r"$^"
 
 REVIEWERS_REGEX = r'\s*R=(.+)'
+
 
 def CheckHomeForFile(filename):
   """Checks the users home dir for the existence of the given file.  Returns
@@ -225,33 +226,6 @@ def Warn(msg):
 def ErrorExit(msg):
   print >> sys.stderr, msg
   sys.exit(1)
-
-
-def RunShellWithReturnCode(command, print_output=False):
-  """Executes a command and returns the output and the return code."""
-  p = subprocess2.Popen(
-      command, stdout=subprocess2.PIPE,
-      stderr=subprocess2.STDOUT, universal_newlines=True)
-  if print_output:
-    output_array = []
-    while True:
-      line = p.stdout.readline()
-      if not line:
-        break
-      if print_output:
-        print line.strip('\n')
-      output_array.append(line)
-    output = "".join(output_array)
-  else:
-    output = p.stdout.read()
-  p.wait()
-  p.stdout.close()
-  return output, p.returncode
-
-
-def RunShell(command, print_output=False):
-  """Executes a command and returns the output."""
-  return RunShellWithReturnCode(command, print_output)[0]
 
 
 def FilterFlag(args, flag):
@@ -1014,19 +988,25 @@ def CMDcommit(change_info, args):
   handle, commit_filename = tempfile.mkstemp(text=True)
   os.write(handle, commit_message)
   os.close(handle)
-
-  handle, targets_filename = tempfile.mkstemp(text=True)
-  os.write(handle, "\n".join(change_info.GetFileNames()))
-  os.close(handle)
-
-  commit_cmd += ['--file=' + commit_filename]
-  commit_cmd += ['--targets=' + targets_filename]
-  # Change the current working directory before calling commit.
-  previous_cwd = os.getcwd()
-  os.chdir(change_info.GetLocalRoot())
-  output = RunShell(commit_cmd, True)
-  os.remove(commit_filename)
-  os.remove(targets_filename)
+  try:
+    handle, targets_filename = tempfile.mkstemp(text=True)
+    os.write(handle, "\n".join(change_info.GetFileNames()))
+    os.close(handle)
+    try:
+      commit_cmd += ['--file=' + commit_filename]
+      commit_cmd += ['--targets=' + targets_filename]
+      # Change the current working directory before calling commit.
+      previous_cwd = os.getcwd()
+      os.chdir(change_info.GetLocalRoot())
+      output = ''
+      try:
+        output = subprocess2.check_output(commit_cmd)
+      except subprocess2.CalledProcessError, e:
+        ErrorExit('Commit failed.\n%s' % e)
+    finally:
+      os.remove(commit_filename)
+  finally:
+    os.remove(targets_filename)
   if output.find("Committed revision") != -1:
     change_info.Delete()
 
@@ -1304,7 +1284,7 @@ def CMDdiff(args):
   cmd = ['svn', 'diff']
   cmd.extend([os.path.join(root, x) for x in files])
   cmd.extend(args)
-  return RunShellWithReturnCode(cmd, print_output=True)[1]
+  return subprocess2.call(cmd)
 
 
 @no_args
@@ -1387,7 +1367,7 @@ def CMDpassthru(args):
     root = GetRepositoryRoot()
     change_info = ChangeInfo.Load(args[1], root, True, True)
     args.extend([os.path.join(root, x) for x in change_info.GetFileNames()])
-  return RunShellWithReturnCode(args, print_output=True)[1]
+  return subprocess2.call(args)
 
 
 def Command(name):
