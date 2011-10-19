@@ -167,8 +167,10 @@ void ImporterHost::OnGoogleGAIACookieChecked(bool result) {
         MB_OK | MB_TOPMOST);
 
     GURL url("https://www.google.com/accounts/ServiceLogin");
-    BrowserList::GetLastActive()->AddSelectedTabWithURL(
-        url, content::PAGE_TRANSITION_TYPED);
+    DCHECK(profile_);
+    Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
+    if (browser)
+      browser->AddSelectedTabWithURL(url, content::PAGE_TRANSITION_TYPED);
 
     MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
         &ImporterHost::OnImportLockDialogEnd, this, false));
