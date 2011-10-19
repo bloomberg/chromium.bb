@@ -254,8 +254,8 @@ class ChromeTests:
   def TestRemoting(self):
     return self.SimpleTest("chrome", "remoting_unittests",
                            cmd_args=[
-                               "--ui-test-action-timeout=80000",
-                               "--ui-test-action-max-timeout=200000"])
+                               "--ui-test-action-timeout=60000",
+                               "--ui-test-action-max-timeout=150000"])
 
   def TestSql(self):
     return self.SimpleTest("chrome", "sql_unittests")
@@ -278,8 +278,8 @@ class ChromeTests:
   # Valgrind timeouts are in seconds.
   UI_VALGRIND_ARGS = ["--timeout=14400", "--trace_children", "--indirect"]
   # UI test timeouts are in milliseconds.
-  UI_TEST_ARGS = ["--ui-test-action-timeout=80000",
-                  "--ui-test-action-max-timeout=200000"]
+  UI_TEST_ARGS = ["--ui-test-action-timeout=60000",
+                  "--ui-test-action-max-timeout=150000"]
 
   def TestAutomatedUI(self):
     return self.SimpleTest("chrome", "automated_ui_tests",
@@ -307,12 +307,12 @@ class ChromeTests:
   def TestSafeBrowsing(self):
     return self.SimpleTest("chrome", "safe_browsing_tests",
                            valgrind_test_args=self.UI_VALGRIND_ARGS,
-                           cmd_args=(["--ui-test-action-max-timeout=600000"]))
+                           cmd_args=(["--ui-test-action-max-timeout=450000"]))
 
   def TestSyncIntegration(self):
     return self.SimpleTest("chrome", "sync_integration_tests",
                            valgrind_test_args=self.UI_VALGRIND_ARGS,
-                           cmd_args=(["--ui-test-action-max-timeout=600000"]))
+                           cmd_args=(["--ui-test-action-max-timeout=450000"]))
 
   def TestUI(self):
     return self.SimpleTest("chrome", "ui_tests",
