@@ -116,7 +116,7 @@ void ContentSettingBlockedImageModel::UpdateFromTabContents(
   if (!content_settings->IsContentBlocked(get_content_settings_type())) {
     if (!content_settings->IsContentAccessed(get_content_settings_type()) ||
         (wrapper->profile()->GetHostContentSettingsMap()->
-            GetDefaultContentSetting(get_content_settings_type()) !=
+            GetDefaultContentSetting(get_content_settings_type(), NULL) !=
                 CONTENT_SETTING_BLOCK))
       return;
     icon_ids = kAccessedIconIDs;

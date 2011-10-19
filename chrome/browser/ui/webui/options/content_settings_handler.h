@@ -94,12 +94,10 @@ class ContentSettingsHandler : public OptionsPageUIHandler {
   // is no active incognito session.
   HostContentSettingsMap* GetOTRContentSettingsMap();
 
-  // Gets the default setting in string form.
-  std::string GetSettingDefaultFromModel(ContentSettingsType type);
-
-  // Returns true if the default setting for the given content settings type
-  // |type| is managed.
-  bool GetDefaultSettingManagedFromModel(ContentSettingsType type);
+  // Gets the default setting in string form. If |provider_id| is not NULL, the
+  // id of the provider which provided the default setting is assigned to it.
+  std::string GetSettingDefaultFromModel(ContentSettingsType type,
+                                         std::string* provider_id);
 
   // Gets the ProtocolHandlerRegistry for the normal profile.
   ProtocolHandlerRegistry* GetProtocolHandlerRegistry();

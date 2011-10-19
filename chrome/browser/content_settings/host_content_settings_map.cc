@@ -156,41 +156,47 @@ void HostContentSettingsMap::RegisterUserPrefs(PrefService* prefs) {
 }
 
 ContentSetting HostContentSettingsMap::GetDefaultContentSettingFromProvider(
-    ContentSettingsType content_type, ProviderType provider_type) const {
-  ConstProviderIterator it = content_settings_providers_.find(provider_type);
-  if (it == content_settings_providers_.end())
-    return CONTENT_SETTING_DEFAULT;
+    ContentSettingsType content_type,
+    content_settings::ProviderInterface* provider) const {
   scoped_ptr<content_settings::RuleIterator> rule_iterator(
-      it->second->GetRuleIterator(content_type, "", false));
+      provider->GetRuleIterator(content_type, "", false));
   return GetDefaultSetting(rule_iterator.get());
 }
 
 ContentSetting HostContentSettingsMap::GetDefaultContentSetting(
-    ContentSettingsType content_type) const {
+    ContentSettingsType content_type,
+    std::string* provider_id) const {
   DCHECK(!ContentTypeHasCompoundValue(content_type));
 
-  // First check if there is a default setting set by policy.
-  ContentSetting default_setting = GetDefaultContentSettingFromProvider(
-      content_type, POLICY_PROVIDER);
-  if (default_setting != CONTENT_SETTING_DEFAULT)
-    return default_setting;
-
-  // Get the default setting.
-  default_setting = GetDefaultContentSettingFromProvider(
-      content_type, DEFAULT_PROVIDER);
+  // Iterate through the list of providers and return the first non-NULL value
+  // that matches |primary_url| and |secondary_url|.
+  for (ConstProviderIterator provider = content_settings_providers_.begin();
+       provider != content_settings_providers_.end();
+       ++provider) {
+    if (provider->first == PREF_PROVIDER)
+      continue;
+    ContentSetting default_setting =
+        GetDefaultContentSettingFromProvider(content_type, provider->second);
+    if (default_setting != CONTENT_SETTING_DEFAULT) {
+      if (provider_id)
+        *provider_id = kProviderNames[provider->first];
+      return default_setting;
+    }
+  }
 
   // The method GetDefaultContentSetting always has to return an explicit
   // value that is to be used as default. We here rely on the
   // DefaultProvider to always provide a value.
-  CHECK_NE(CONTENT_SETTING_DEFAULT, default_setting);
-  return default_setting;
+  NOTREACHED();
+  return CONTENT_SETTING_DEFAULT;
 }
 
 ContentSettings HostContentSettingsMap::GetDefaultContentSettings() const {
   ContentSettings output(CONTENT_SETTING_DEFAULT);
   for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
     if (!ContentTypeHasCompoundValue(ContentSettingsType(i)))
-      output.settings[i] = GetDefaultContentSetting(ContentSettingsType(i));
+      output.settings[i] = GetDefaultContentSetting(ContentSettingsType(i),
+                                                    NULL);
   }
   return output;
 }
@@ -239,7 +245,7 @@ ContentSetting HostContentSettingsMap::GetCookieContentSetting(
   if (value.get())
     return content_settings::ValueToContentSetting(value.get());
 
-  return GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_COOKIES);
+  return GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_COOKIES, NULL);
 }
 
 ContentSetting HostContentSettingsMap::GetContentSetting(
@@ -513,13 +519,6 @@ HostContentSettingsMap::~HostContentSettingsMap() {
   STLDeleteValues(&content_settings_providers_);
 }
 
-bool HostContentSettingsMap::IsDefaultContentSettingManaged(
-    ContentSettingsType content_type) const {
-  ContentSetting default_setting =
-      GetDefaultContentSettingFromProvider(content_type, POLICY_PROVIDER);
-  return (default_setting != CONTENT_SETTING_DEFAULT);
-}
-
 void HostContentSettingsMap::ShutdownOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(prefs_);
@@ -562,13 +561,6 @@ void HostContentSettingsMap::AddSettingsForOneType(
   ContentSettingsPattern wildcard = ContentSettingsPattern::Wildcard();
   while (rule_iterator->HasNext()) {
     const content_settings::Rule& rule = rule_iterator->Next();
-    // Filter out default settings.
-    if (rule.primary_pattern == wildcard &&
-        rule.secondary_pattern == wildcard &&
-        (provider_type == POLICY_PROVIDER ||
-         provider_type == DEFAULT_PROVIDER)) {
-        continue;
-    }
     settings->push_back(PatternSettingSourceTuple(
         rule.primary_pattern, rule.secondary_pattern,
         content_settings::ValueToContentSetting(rule.value.get()),

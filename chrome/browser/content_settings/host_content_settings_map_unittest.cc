@@ -57,12 +57,12 @@ TEST_F(HostContentSettingsMapTest, DefaultValues) {
   // Check setting defaults.
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetDefaultContentSetting(
-                CONTENT_SETTINGS_TYPE_JAVASCRIPT));
+                CONTENT_SETTINGS_TYPE_JAVASCRIPT, NULL));
   host_content_settings_map->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_IMAGES, CONTENT_SETTING_BLOCK);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             host_content_settings_map->GetDefaultContentSetting(
-                CONTENT_SETTINGS_TYPE_IMAGES));
+                CONTENT_SETTINGS_TYPE_IMAGES, NULL));
   EXPECT_EQ(CONTENT_SETTING_ALLOW, host_content_settings_map->GetContentSetting(
                 GURL(chrome::kChromeUINewTabURL),
                 GURL(chrome::kChromeUINewTabURL),
@@ -78,13 +78,13 @@ TEST_F(HostContentSettingsMapTest, DefaultValues) {
         CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_ASK);
     EXPECT_EQ(CONTENT_SETTING_ASK,
               host_content_settings_map->GetDefaultContentSetting(
-                  CONTENT_SETTINGS_TYPE_PLUGINS));
+                  CONTENT_SETTINGS_TYPE_PLUGINS, NULL));
   }
   host_content_settings_map->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_POPUPS, CONTENT_SETTING_ALLOW);
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetDefaultContentSetting(
-                CONTENT_SETTINGS_TYPE_POPUPS));
+                CONTENT_SETTINGS_TYPE_POPUPS, NULL));
 }
 
 TEST_F(HostContentSettingsMapTest, IndividualSettings) {
@@ -182,14 +182,17 @@ TEST_F(HostContentSettingsMapTest, IndividualSettings) {
   host_content_settings_map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_IMAGES,
                                                    "",
                                                    &host_settings);
-  EXPECT_EQ(1U, host_settings.size());
+  // |host_settings| contains the default setting and an exception.
+  EXPECT_EQ(2U, host_settings.size());
   host_content_settings_map->GetSettingsForOneType(
       CONTENT_SETTINGS_TYPE_PLUGINS, "", &host_settings);
-  EXPECT_EQ(2U, host_settings.size());
+  // |host_settings| contains the default setting and 2 exceptions.
+  EXPECT_EQ(3U, host_settings.size());
   host_content_settings_map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_POPUPS,
                                                    "",
                                                    &host_settings);
-  EXPECT_EQ(0U, host_settings.size());
+  // |host_settings| contains only the default setting.
+  EXPECT_EQ(1U, host_settings.size());
 }
 
 TEST_F(HostContentSettingsMapTest, Clear) {
@@ -232,10 +235,12 @@ TEST_F(HostContentSettingsMapTest, Clear) {
   host_content_settings_map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_IMAGES,
                                                    "",
                                                    &host_settings);
-  EXPECT_EQ(0U, host_settings.size());
+  // |host_settings| contains only the default setting.
+  EXPECT_EQ(1U, host_settings.size());
   host_content_settings_map->GetSettingsForOneType(
       CONTENT_SETTINGS_TYPE_PLUGINS, "", &host_settings);
-  EXPECT_EQ(1U, host_settings.size());
+  // |host_settings| contains the default setting and an exception.
+  EXPECT_EQ(2U, host_settings.size());
 }
 
 TEST_F(HostContentSettingsMapTest, Patterns) {
@@ -702,7 +707,7 @@ TEST_F(HostContentSettingsMapTest, MigrateObsoletePrefs) {
 
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             host_content_settings_map->GetDefaultContentSetting(
-                CONTENT_SETTINGS_TYPE_COOKIES));
+                CONTENT_SETTINGS_TYPE_COOKIES, NULL));
 
   GURL host("http://example.com");
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
@@ -723,7 +728,7 @@ TEST_F(HostContentSettingsMapTest, MigrateObsoleteNotificationsPrefs) {
 
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetDefaultContentSetting(
-                CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+                CONTENT_SETTINGS_TYPE_NOTIFICATIONS, NULL));
 
   // Check if the pref was migrated correctly.
   const DictionaryValue* default_settings_dictionary =
@@ -807,7 +812,7 @@ TEST_F(HostContentSettingsMapTest, ResourceIdentifier) {
   // the default values for all plugins
   ContentSetting default_plugin_setting =
       host_content_settings_map->GetDefaultContentSetting(
-          CONTENT_SETTINGS_TYPE_PLUGINS);
+          CONTENT_SETTINGS_TYPE_PLUGINS, NULL);
   ContentSettings settings =
       host_content_settings_map->GetContentSettings(host, host);
   EXPECT_EQ(default_plugin_setting,
@@ -895,33 +900,33 @@ TEST_F(HostContentSettingsMapTest, ManagedDefaultContentSetting) {
 
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetDefaultContentSetting(
-                CONTENT_SETTINGS_TYPE_JAVASCRIPT));
+                CONTENT_SETTINGS_TYPE_JAVASCRIPT, NULL));
 
   // Set managed-default-content-setting through the coresponding preferences.
   prefs->SetManagedPref(prefs::kManagedDefaultJavaScriptSetting,
                         Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             host_content_settings_map->GetDefaultContentSetting(
-                CONTENT_SETTINGS_TYPE_JAVASCRIPT));
+                CONTENT_SETTINGS_TYPE_JAVASCRIPT, NULL));
 
   // Remove managed-default-content-settings-preferences.
   prefs->RemoveManagedPref(prefs::kManagedDefaultJavaScriptSetting);
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetDefaultContentSetting(
-                CONTENT_SETTINGS_TYPE_JAVASCRIPT));
+                CONTENT_SETTINGS_TYPE_JAVASCRIPT, NULL));
 
   // Set preference to manage the default-content-setting for Plugins.
   prefs->SetManagedPref(prefs::kManagedDefaultPluginsSetting,
                         Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             host_content_settings_map->GetDefaultContentSetting(
-                CONTENT_SETTINGS_TYPE_PLUGINS));
+                CONTENT_SETTINGS_TYPE_PLUGINS, NULL));
 
   // Remove the preference to manage the default-content-setting for Plugins.
   prefs->RemoveManagedPref(prefs::kManagedDefaultPluginsSetting);
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetDefaultContentSetting(
-                CONTENT_SETTINGS_TYPE_PLUGINS));
+                CONTENT_SETTINGS_TYPE_PLUGINS, NULL));
 }
 
 TEST_F(HostContentSettingsMapTest,
@@ -943,7 +948,7 @@ TEST_F(HostContentSettingsMapTest,
 
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetDefaultContentSetting(
-                CONTENT_SETTINGS_TYPE_JAVASCRIPT));
+                CONTENT_SETTINGS_TYPE_JAVASCRIPT, NULL));
 
   GURL host("http://example.com/");
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
@@ -984,7 +989,7 @@ TEST_F(HostContentSettingsMapTest,
 
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             host_content_settings_map->GetDefaultContentSetting(
-                CONTENT_SETTINGS_TYPE_JAVASCRIPT));
+                CONTENT_SETTINGS_TYPE_JAVASCRIPT, NULL));
   GURL host("http://example.com/");
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetContentSetting(
@@ -1017,20 +1022,20 @@ TEST_F(HostContentSettingsMapTest, OverwrittenDefaultContentSetting) {
       CONTENT_SETTINGS_TYPE_COOKIES, CONTENT_SETTING_BLOCK);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             host_content_settings_map->GetDefaultContentSetting(
-                CONTENT_SETTINGS_TYPE_COOKIES));
+                CONTENT_SETTINGS_TYPE_COOKIES, NULL));
 
   // Set preference to manage the default-content-setting for Cookies.
   prefs->SetManagedPref(prefs::kManagedDefaultCookiesSetting,
                         Value::CreateIntegerValue(CONTENT_SETTING_ALLOW));
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetDefaultContentSetting(
-                CONTENT_SETTINGS_TYPE_COOKIES));
+                CONTENT_SETTINGS_TYPE_COOKIES, NULL));
 
   // Remove the preference to manage the default-content-setting for Cookies.
   prefs->RemoveManagedPref(prefs::kManagedDefaultCookiesSetting);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             host_content_settings_map->GetDefaultContentSetting(
-                CONTENT_SETTINGS_TYPE_COOKIES));
+                CONTENT_SETTINGS_TYPE_COOKIES, NULL));
 }
 
 // If a setting for a default-content-setting-type is set while the type is
@@ -1046,18 +1051,18 @@ TEST_F(HostContentSettingsMapTest, SettingDefaultContentSettingsWhenManaged) {
                         Value::CreateIntegerValue(CONTENT_SETTING_ALLOW));
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetDefaultContentSetting(
-                CONTENT_SETTINGS_TYPE_PLUGINS));
+                CONTENT_SETTINGS_TYPE_PLUGINS, NULL));
 
   host_content_settings_map->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_BLOCK);
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetDefaultContentSetting(
-                CONTENT_SETTINGS_TYPE_PLUGINS));
+                CONTENT_SETTINGS_TYPE_PLUGINS, NULL));
 
   prefs->RemoveManagedPref(prefs::kManagedDefaultPluginsSetting);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             host_content_settings_map->GetDefaultContentSetting(
-                CONTENT_SETTINGS_TYPE_PLUGINS));
+                CONTENT_SETTINGS_TYPE_PLUGINS, NULL));
 }
 
 // Tests for cookie content settings.

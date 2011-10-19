@@ -43,7 +43,7 @@ bool ExtensionSpecialStoragePolicy::HasSessionOnlyOrigins() {
   if (host_content_settings_map_ == NULL)
     return false;
   if (host_content_settings_map_->GetDefaultContentSetting(
-          CONTENT_SETTINGS_TYPE_COOKIES) == CONTENT_SETTING_SESSION_ONLY)
+          CONTENT_SETTINGS_TYPE_COOKIES, NULL) == CONTENT_SETTING_SESSION_ONLY)
     return true;
   HostContentSettingsMap::SettingsForOneType entries;
   host_content_settings_map_->GetSettingsForOneType(

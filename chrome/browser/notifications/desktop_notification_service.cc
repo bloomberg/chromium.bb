@@ -274,20 +274,16 @@ void DesktopNotificationService::Observe(
   }
 }
 
-ContentSetting DesktopNotificationService::GetDefaultContentSetting() {
+ContentSetting DesktopNotificationService::GetDefaultContentSetting(
+    std::string* provider_id) {
   return profile_->GetHostContentSettingsMap()->GetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+      CONTENT_SETTINGS_TYPE_NOTIFICATIONS, provider_id);
 }
 
 void DesktopNotificationService::SetDefaultContentSetting(
     ContentSetting setting) {
   profile_->GetHostContentSettingsMap()->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_NOTIFICATIONS, setting);
-}
-
-bool DesktopNotificationService::IsDefaultContentSettingManaged() const {
-  return profile_->GetHostContentSettingsMap()->IsDefaultContentSettingManaged(
-      CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
 }
 
 void DesktopNotificationService::ResetToDefaultContentSetting() {

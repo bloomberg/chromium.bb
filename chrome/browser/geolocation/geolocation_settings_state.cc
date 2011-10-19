@@ -58,7 +58,7 @@ void GeolocationSettingsState::GetDetailedInfo(
   DCHECK(embedder_url_.is_valid());
   ContentSetting default_setting =
       profile_->GetHostContentSettingsMap()->GetDefaultContentSetting(
-          CONTENT_SETTINGS_TYPE_GEOLOCATION);
+          CONTENT_SETTINGS_TYPE_GEOLOCATION, NULL);
   std::set<std::string> formatted_hosts;
   std::set<std::string> repeated_formatted_hosts;
 

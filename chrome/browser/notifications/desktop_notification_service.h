@@ -97,10 +97,10 @@ class DesktopNotificationService : public content::NotificationObserver,
                                 const std::vector<std::string>& subst);
 
   // The default content setting determines how to handle origins that haven't
-  // been allowed or denied yet.
-  ContentSetting GetDefaultContentSetting();
+  // been allowed or denied yet. If |provider_id| is not NULL, the id of the
+  // provider which provided the default setting is assigned to it.
+  ContentSetting GetDefaultContentSetting(std::string* provider_id);
   void SetDefaultContentSetting(ContentSetting setting);
-  bool IsDefaultContentSettingManaged() const;
 
   // NOTE: This should only be called on the UI thread.
   void ResetToDefaultContentSetting();

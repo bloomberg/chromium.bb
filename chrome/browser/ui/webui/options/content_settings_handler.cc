@@ -364,40 +364,32 @@ void ContentSettingsHandler::Observe(
 void ContentSettingsHandler::UpdateSettingDefaultFromModel(
     ContentSettingsType type) {
   DictionaryValue filter_settings;
+  std::string provider_id;
   filter_settings.SetString(ContentSettingsTypeToGroupName(type) + ".value",
-      GetSettingDefaultFromModel(type));
-  filter_settings.SetBoolean(ContentSettingsTypeToGroupName(type) + ".managed",
-      GetDefaultSettingManagedFromModel(type));
+                            GetSettingDefaultFromModel(type, &provider_id));
+  filter_settings.SetString(
+      ContentSettingsTypeToGroupName(type) + ".managedBy",
+      provider_id);
 
   web_ui_->CallJavascriptFunction(
       "ContentSettings.setContentFilterSettingsValue", filter_settings);
 }
 
 std::string ContentSettingsHandler::GetSettingDefaultFromModel(
-    ContentSettingsType type) {
+    ContentSettingsType type, std::string* provider_id) {
   Profile* profile = Profile::FromWebUI(web_ui_);
   ContentSetting default_setting;
   if (type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
     default_setting =
         DesktopNotificationServiceFactory::GetForProfile(profile)->
-            GetDefaultContentSetting();
+            GetDefaultContentSetting(provider_id);
   } else {
     default_setting =
-        profile->GetHostContentSettingsMap()->GetDefaultContentSetting(type);
+        profile->GetHostContentSettingsMap()->
+            GetDefaultContentSetting(type, provider_id);
   }
 
   return ContentSettingToString(default_setting);
-}
-
-bool ContentSettingsHandler::GetDefaultSettingManagedFromModel(
-    ContentSettingsType type) {
-  if (type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
-    Profile* profile = Profile::FromWebUI(web_ui_);
-    return DesktopNotificationServiceFactory::GetForProfile(profile)->
-        IsDefaultContentSettingManaged();
-  } else {
-    return GetContentSettingsMap()->IsDefaultContentSettingManaged(type);
-  }
 }
 
 void ContentSettingsHandler::UpdateHandlersEnabledRadios() {
@@ -562,6 +554,13 @@ void ContentSettingsHandler::UpdateExceptionsViewFromHostContentSettingsMap(
 
   ListValue exceptions;
   for (size_t i = 0; i < entries.size(); ++i) {
+    // Skip default settings from extensions and policy, and the default content
+    // settings; all of them will affect the default setting UI.
+    if (entries[i].a == ContentSettingsPattern::Wildcard() &&
+        entries[i].b == ContentSettingsPattern::Wildcard() &&
+        entries[i].d != "preference") {
+      continue;
+    }
     // The content settings UI does not support secondary content settings
     // pattern yet. For content settings set through the content settings UI the
     // secondary pattern is by default a wildcard pattern. Hence users are not

@@ -122,7 +122,7 @@ TEST_F(DesktopNotificationServiceTest, SettingsForSchemes) {
   GURL url("file:///html/test.html");
 
   EXPECT_EQ(CONTENT_SETTING_ASK,
-            service_->GetDefaultContentSetting());
+            service_->GetDefaultContentSetting(NULL));
   EXPECT_EQ(WebKit::WebNotificationPresenter::PermissionNotAllowed,
             proxy_->ServiceHasPermission(service_, url));
 
@@ -137,7 +137,7 @@ TEST_F(DesktopNotificationServiceTest, SettingsForSchemes) {
   GURL https_url("https://testurl");
   GURL http_url("http://testurl");
   EXPECT_EQ(CONTENT_SETTING_ASK,
-            service_->GetDefaultContentSetting());
+            service_->GetDefaultContentSetting(NULL));
   EXPECT_EQ(WebKit::WebNotificationPresenter::PermissionNotAllowed,
             proxy_->ServiceHasPermission(service_, http_url));
   EXPECT_EQ(WebKit::WebNotificationPresenter::PermissionNotAllowed,
@@ -164,7 +164,8 @@ TEST_F(DesktopNotificationServiceTest, GetNotificationsSettings) {
 
   HostContentSettingsMap::SettingsForOneType settings;
   service_->GetNotificationsSettings(&settings);
-  ASSERT_EQ(4u, settings.size());
+  // |settings| contains the default setting and 4 exceptions.
+  ASSERT_EQ(5u, settings.size());
 
   EXPECT_EQ(ContentSettingsPattern::FromURLNoWildcard(
                 GURL("http://allowed.com")),
@@ -186,4 +187,8 @@ TEST_F(DesktopNotificationServiceTest, GetNotificationsSettings) {
             settings[3].a);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             settings[3].c);
+  EXPECT_EQ(ContentSettingsPattern::Wildcard(),
+            settings[4].a);
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            settings[4].c);
 }

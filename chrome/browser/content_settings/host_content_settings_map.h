@@ -64,11 +64,13 @@ class HostContentSettingsMap
 
   static void RegisterUserPrefs(PrefService* prefs);
 
-  // Returns the default setting for a particular content type.
+  // Returns the default setting for a particular content type. If |provider_id|
+  // is not NULL, the id of the provider which provided the default setting is
+  // assigned to it.
   //
   // This may be called on any thread.
-  ContentSetting GetDefaultContentSetting(
-      ContentSettingsType content_type) const;
+  ContentSetting GetDefaultContentSetting(ContentSettingsType content_type,
+                                          std::string* provider_id) const;
 
   // Returns the default settings for all content types.
   //
@@ -187,9 +189,6 @@ class HostContentSettingsMap
   // This should only be called on the UI thread.
   void SetBlockThirdPartyCookies(bool block);
 
-  // Returns true if the default setting for the |content_type| is managed.
-  bool IsDefaultContentSettingManaged(ContentSettingsType content_type) const;
-
   // Detaches the HostContentSettingsMap from all Profile-related objects like
   // PrefService. This methods needs to be called before destroying the Profile.
   // Afterwards, none of the methods above that should only be called on the UI
@@ -221,7 +220,7 @@ class HostContentSettingsMap
 
   ContentSetting GetDefaultContentSettingFromProvider(
       ContentSettingsType content_type,
-      ProviderType provider_type) const;
+      content_settings::ProviderInterface* provider) const;
 
   // Various migration methods (old cookie, popup and per-host data gets
   // migrated to the new format).

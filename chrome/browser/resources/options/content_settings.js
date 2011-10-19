@@ -90,10 +90,10 @@ cr.define('options', function() {
                              dict[group]['value'] + ']').checked = true;
       var radios = document.querySelectorAll('input[type=radio][name=' +
                                              group + ']');
+      var managedBy = dict[group]['managedBy'];
       for (var i = 0, len = radios.length; i < len; i++) {
-        var managed = dict[group]['managed'];
-        radios[i].disabled = managed;
-        radios[i].controlledBy = managed ? 'policy': null;
+        radios[i].disabled = (managedBy != 'default');
+        radios[i].controlledBy = managedBy;
       }
     }
     OptionsPage.updateManagedBannerVisibility();
