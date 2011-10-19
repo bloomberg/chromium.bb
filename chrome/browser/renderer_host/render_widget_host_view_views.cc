@@ -435,7 +435,7 @@ void RenderWidgetHostViewViews::Observe(
   if (!GetWidget())
     return;
 
-  gfx::Rect keyboard_rect = *Details<gfx::Rect>(details).ptr();
+  gfx::Rect keyboard_rect = *content::Details<gfx::Rect>(details).ptr();
   if (keyboard_rect != keyboard_rect_) {
     keyboard_rect_ = keyboard_rect;
     gfx::Rect screen_bounds = GetScreenBounds();
