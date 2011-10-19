@@ -1,0 +1,14 @@
+This directory contains some executable files for testing the SignatureUtil
+implementations.  Instructions for regenerating these executables:
+
+unsigned.exe:
+
+cl /Feunsigned.exe simple_exe.cc
+
+signed.exe:
+
+MakeCert -sv test.pvk test.cer (password: "password")
+Cert2SPC test.cer test.spc
+pvk2pfx -pvk test.pvk test.cer (export the private key with the cert)
+copy unsigned.exe signed.exe
+signtool sign /f test.pfx /p password signed.exe
