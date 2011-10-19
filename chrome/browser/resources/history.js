@@ -998,6 +998,7 @@ function removeItems() {
     if (confirm(localStrings.getString('deletewarning'))) {
       deleteQueue = deleteQueue.concat(queue);
       deleteNextInQueue();
+      historyView.removeButton_.disabled = true;
     } else {
       // If the remove is cancelled, return the checkboxes to their
       // enabled, non-line-through state.
