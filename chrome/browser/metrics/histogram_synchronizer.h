@@ -63,8 +63,6 @@ class HistogramSynchronizer : public
   // already completed, and will not need this instance any further.
   HistogramSynchronizer();
 
-  ~HistogramSynchronizer();
-
   // Return pointer to the singleton instance, which is allocated and
   // deallocated on the main UI thread (during system startup and teardown).
   static HistogramSynchronizer* CurrentSynchronizer();
@@ -88,6 +86,10 @@ class HistogramSynchronizer : public
       int sequence_number, const std::vector<std::string>& histograms);
 
  private:
+  friend class base::RefCountedThreadSafe<HistogramSynchronizer>;
+
+  ~HistogramSynchronizer();
+
   // Establish a new sequence_number_, and use it to notify all the renderers of
   // the need to supply, to the browser, any changes in their histograms.
   // The argument indicates whether this will set async_sequence_number_ or
