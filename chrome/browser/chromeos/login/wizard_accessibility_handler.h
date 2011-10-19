@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/gtest_prod_util.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 
 class AccessibilityControlInfo;
@@ -35,15 +35,15 @@ enum EarconType {
 
 // Class that handles the accessibility notifications and generates
 // appropriate spoken/audio feedback.
-class WizardAccessibilityHandler : public NotificationObserver {
+class WizardAccessibilityHandler : public content::NotificationObserver {
  public:
   WizardAccessibilityHandler() { }
 
  private:
-  // Override from NotificationObserver.
+  // Override from content::NotificationObserver.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Get text to speak and an earcon identifier (which may be NONE) for any
   // accessibility event.

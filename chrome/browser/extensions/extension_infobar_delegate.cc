@@ -12,8 +12,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 
 ExtensionInfoBarDelegate::ExtensionInfoBarDelegate(
     Browser* browser,
@@ -32,9 +32,9 @@ ExtensionInfoBarDelegate::ExtensionInfoBarDelegate(
   extension_host_->set_associated_tab_contents(infobar_helper->tab_contents());
 
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
-                 Source<Profile>(browser->profile()));
+                 content::Source<Profile>(browser->profile()));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
-                 Source<Profile>(browser->profile()));
+                 content::Source<Profile>(browser->profile()));
 
 #if defined(TOOLKIT_VIEWS) || defined(TOOLKIT_GTK)
   int default_height = InfoBar::kDefaultBarTargetHeight;
@@ -83,15 +83,18 @@ ExtensionInfoBarDelegate*
   return this;
 }
 
-void ExtensionInfoBarDelegate::Observe(int type,
-                                       const NotificationSource& source,
-                                       const NotificationDetails& details) {
+void ExtensionInfoBarDelegate::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE) {
-    if (extension_host_.get() == Details<ExtensionHost>(details).ptr())
+    if (extension_host_.get() == content::Details<ExtensionHost>(details).ptr())
       RemoveSelf();
   } else {
     DCHECK(type == chrome::NOTIFICATION_EXTENSION_UNLOADED);
-    if (extension_ == Details<UnloadedExtensionInfo>(details)->extension)
+    if (extension_ ==
+        content::Details<UnloadedExtensionInfo>(details)->extension) {
       RemoveSelf();
+    }
   }
 }

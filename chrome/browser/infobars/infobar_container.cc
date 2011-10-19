@@ -15,8 +15,8 @@
 #include "chrome/browser/infobars/infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "ui/base/animation/slide_animation.h"
 
 InfoBarContainer::Delegate::~Delegate() {
@@ -45,7 +45,7 @@ void InfoBarContainer::ChangeTabContents(InfoBarTabHelper* tab_helper) {
 
   tab_helper_ = tab_helper;
   if (tab_helper_) {
-    Source<InfoBarTabHelper> th_source(tab_helper_);
+    content::Source<InfoBarTabHelper> th_source(tab_helper_);
     registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
                    th_source);
     registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
@@ -124,25 +124,26 @@ void InfoBarContainer::RemoveAllInfoBarsForDestruction() {
 }
 
 void InfoBarContainer::Observe(int type,
-                               const NotificationSource& source,
-                               const NotificationDetails& details) {
+                               const content::NotificationSource& source,
+                               const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED:
       AddInfoBar(
-          Details<InfoBarAddedDetails>(details)->CreateInfoBar(tab_helper_),
+          content::Details<InfoBarAddedDetails>(details)->CreateInfoBar(
+              tab_helper_),
           infobars_.size(), true, WANT_CALLBACK);
       break;
 
     case chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED: {
       InfoBarRemovedDetails* removed_details =
-          Details<InfoBarRemovedDetails>(details).ptr();
+          content::Details<InfoBarRemovedDetails>(details).ptr();
       HideInfoBar(removed_details->first, removed_details->second);
       break;
     }
 
     case chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REPLACED: {
       InfoBarReplacedDetails* replaced_details =
-          Details<InfoBarReplacedDetails>(details).ptr();
+          content::Details<InfoBarReplacedDetails>(details).ptr();
       AddInfoBar(replaced_details->second->CreateInfoBar(tab_helper_),
           HideInfoBar(replaced_details->first, false), false, WANT_CALLBACK);
       break;

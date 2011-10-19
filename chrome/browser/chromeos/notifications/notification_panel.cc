@@ -11,8 +11,8 @@
 #include "chrome/browser/chromeos/notifications/balloon_collection_impl.h"
 #include "chrome/browser/chromeos/notifications/balloon_view.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
 #include "third_party/cros_system_api/window_manager/chromeos_wm_ipc_enums.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -480,7 +480,7 @@ void NotificationPanel::Show() {
                             gfx::Rect(0, 0, kBalloonMinWidth, 1), 0,
                             WM_IPC_PANEL_USER_RESIZE_VERTICALLY);
     registrar_.Add(this, chrome::NOTIFICATION_PANEL_STATE_CHANGED,
-                   Source<PanelController>(panel_controller_.get()));
+                   content::Source<PanelController>(panel_controller_.get()));
   }
   panel_widget_->Show();
 }
@@ -630,11 +630,11 @@ void NotificationPanel::ActivatePanel() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// NotificationObserver overrides.
+// content::NotificationObserver overrides.
 
 void NotificationPanel::Observe(int type,
-                                const NotificationSource& source,
-                                const NotificationDetails& details) {
+                                const content::NotificationSource& source,
+                                const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_PANEL_STATE_CHANGED);
   PanelController::State* state =
       reinterpret_cast<PanelController::State*>(details.map_key());
@@ -706,9 +706,11 @@ void NotificationPanel::Init() {
 }
 
 void NotificationPanel::UnregisterNotification() {
-  if (panel_controller_.get())
-    registrar_.Remove(this, chrome::NOTIFICATION_PANEL_STATE_CHANGED,
-                      Source<PanelController>(panel_controller_.get()));
+  if (panel_controller_.get()) {
+    registrar_.Remove(
+        this, chrome::NOTIFICATION_PANEL_STATE_CHANGED,
+        content::Source<PanelController>(panel_controller_.get()));
+  }
 }
 
 void NotificationPanel::ScrollBalloonToVisible(Balloon* balloon) {

@@ -38,7 +38,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/browser/utility_process_host.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_source.h"
 #include "crypto/sha2.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
@@ -902,7 +902,7 @@ bool ExtensionUpdater::MaybeInstallCRXFile() {
       // the installer we started.
       registrar_.Add(this,
                      chrome::NOTIFICATION_CRX_INSTALLER_DONE,
-                     Source<CrxInstaller>(installer));
+                     content::Source<CrxInstaller>(installer));
     }
     in_progress_ids_.erase(crx_file.id);
     fetched_crx_files_.pop();
@@ -913,8 +913,8 @@ bool ExtensionUpdater::MaybeInstallCRXFile() {
 }
 
 void ExtensionUpdater::Observe(int type,
-                               const NotificationSource& source,
-                               const NotificationDetails& details) {
+                               const content::NotificationSource& source,
+                               const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_CRX_INSTALLER_DONE);
 
   // No need to listen for CRX_INSTALLER_DONE anymore.
@@ -1218,22 +1218,22 @@ void ExtensionUpdater::FetchUpdatedExtension(const std::string& id,
 void ExtensionUpdater::NotifyStarted() {
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_UPDATING_STARTED,
-      Source<Profile>(profile_),
+      content::Source<Profile>(profile_),
       NotificationService::NoDetails());
 }
 
 void ExtensionUpdater::NotifyUpdateFound(const std::string& extension_id) {
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_UPDATE_FOUND,
-      Source<Profile>(profile_),
-      Details<const std::string>(&extension_id));
+      content::Source<Profile>(profile_),
+      content::Details<const std::string>(&extension_id));
 }
 
 void ExtensionUpdater::NotifyIfFinished() {
   if (in_progress_ids_.empty()) {
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTENSION_UPDATING_FINISHED,
-        Source<Profile>(profile_),
+        content::Source<Profile>(profile_),
         NotificationService::NoDetails());
     VLOG(1) << "Sending EXTENSION_UPDATING_FINISHED";
   }

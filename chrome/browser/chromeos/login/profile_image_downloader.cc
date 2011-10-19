@@ -18,10 +18,10 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "googleurl/src/gurl.h"
 #include "skia/ext/image_operations.h"
@@ -128,10 +128,10 @@ void ProfileImageDownloader::Start() {
   } else {
     registrar_.Add(this,
                    chrome::NOTIFICATION_TOKEN_AVAILABLE,
-                   Source<TokenService>(service));
+                   content::Source<TokenService>(service));
     registrar_.Add(this,
                    chrome::NOTIFICATION_TOKEN_REQUEST_FAILED,
-                   Source<TokenService>(service));
+                   content::Source<TokenService>(service));
   }
 }
 
@@ -212,14 +212,15 @@ void ProfileImageDownloader::OnDecodeImageFailed(const ImageDecoder* decoder) {
     delegate_->OnDownloadFailure();
 }
 
-void ProfileImageDownloader::Observe(int type,
-                                     const NotificationSource& source,
-                                     const NotificationDetails& details) {
+void ProfileImageDownloader::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_TOKEN_AVAILABLE ||
          type == chrome::NOTIFICATION_TOKEN_REQUEST_FAILED);
 
   TokenService::TokenAvailableDetails* token_details =
-      Details<TokenService::TokenAvailableDetails>(details).ptr();
+      content::Details<TokenService::TokenAvailableDetails>(details).ptr();
   if (type == chrome::NOTIFICATION_TOKEN_AVAILABLE) {
     if (token_details->service() == GaiaConstants::kPicasaService) {
       registrar_.RemoveAll();

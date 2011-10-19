@@ -7,10 +7,10 @@
 #pragma once
 
 #include "chrome/common/extensions/extension.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 
 class FilePath;
@@ -21,21 +21,21 @@ namespace chromeos {
 // This observer listens for installed extensions and restarts the ChromeOS
 // Enterprise daemon if an Enterprise Extension gets installed.
 class EnterpriseExtensionObserver
-    : public NotificationObserver {
+    : public content::NotificationObserver {
  public:
   explicit EnterpriseExtensionObserver(Profile* profile);
   virtual ~EnterpriseExtensionObserver() {}
 
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
  private:
   static void CheckExtensionAndNotifyEntd(const FilePath& path);
   static void NotifyEntd();
 
   Profile* profile_;
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(EnterpriseExtensionObserver);
 };

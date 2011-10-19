@@ -393,7 +393,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, OpenAppFromIframe) {
     // NAV_ENTRY_COMMITTED on the new tab there.
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-        Source<NavigationController>(&(newtab->controller())));
+        content::Source<NavigationController>(&(newtab->controller())));
     observer.Wait();
   }
 

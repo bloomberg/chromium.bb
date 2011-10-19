@@ -18,8 +18,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 
 namespace history {
 
@@ -62,7 +62,7 @@ void InMemoryHistoryBackend::AttachToHistoryService(Profile* profile) {
 
   // Register for the notifications we care about.
   // We only want notifications for the associated profile.
-  Source<Profile> source(profile_);
+  content::Source<Profile> source(profile_);
   registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URL_VISITED, source);
   registrar_.Add(this, chrome::NOTIFICATION_HISTORY_TYPED_URLS_MODIFIED,
                  source);
@@ -73,12 +73,13 @@ void InMemoryHistoryBackend::AttachToHistoryService(Profile* profile) {
   registrar_.Add(this, chrome::NOTIFICATION_TEMPLATE_URL_REMOVED, source);
 }
 
-void InMemoryHistoryBackend::Observe(int type,
-                                     const NotificationSource& source,
-                                     const NotificationDetails& details) {
+void InMemoryHistoryBackend::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_HISTORY_URL_VISITED: {
-      Details<history::URLVisitedDetails> visited_details(details);
+      content::Details<history::URLVisitedDetails> visited_details(details);
       content::PageTransition primary_type =
           content::PageTransitionStripQualifier(visited_details->transition);
       if (visited_details->row.typed_count() > 0 ||
@@ -92,18 +93,19 @@ void InMemoryHistoryBackend::Observe(int type,
     }
     case chrome::NOTIFICATION_HISTORY_KEYWORD_SEARCH_TERM_UPDATED:
       OnKeywordSearchTermUpdated(
-          *Details<history::KeywordSearchTermDetails>(details).ptr());
+          *content::Details<history::KeywordSearchTermDetails>(details).ptr());
       break;
     case chrome::NOTIFICATION_HISTORY_TYPED_URLS_MODIFIED:
       OnTypedURLsModified(
-          *Details<history::URLsModifiedDetails>(details).ptr());
+          *content::Details<history::URLsModifiedDetails>(details).ptr());
       break;
     case chrome::NOTIFICATION_HISTORY_URLS_DELETED:
-      OnURLsDeleted(*Details<history::URLsDeletedDetails>(details).ptr());
+      OnURLsDeleted(
+          *content::Details<history::URLsDeletedDetails>(details).ptr());
       break;
     case chrome::NOTIFICATION_TEMPLATE_URL_REMOVED:
       db_->DeleteAllSearchTermsForKeyword(
-          *(Details<TemplateURLID>(details).ptr()));
+          *(content::Details<TemplateURLID>(details).ptr()));
       break;
     default:
       // For simplicity, the unit tests send us all notifications, even when

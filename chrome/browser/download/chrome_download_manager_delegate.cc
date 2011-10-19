@@ -36,7 +36,7 @@
 #include "content/browser/download/download_manager.h"
 #include "content/browser/download/download_status_updater.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -167,7 +167,7 @@ bool ChromeDownloadManagerDelegate::ShouldCompleteDownload(DownloadItem* item) {
   // not around when CRX_INSTALLER_DONE fires, Complete() will not be called.
   registrar_.Add(this,
                  chrome::NOTIFICATION_CRX_INSTALLER_DONE,
-                 Source<CrxInstaller>(crx_installer.get()));
+                 content::Source<CrxInstaller>(crx_installer.get()));
 
   crx_installers_[crx_installer.get()] = item->id();
   // The status text and percent complete indicator will change now
@@ -305,18 +305,18 @@ void ChromeDownloadManagerDelegate::CheckDownloadUrlDone(
                  base::Unretained(this)));
 }
 
-// NotificationObserver implementation.
+// content::NotificationObserver implementation.
 void ChromeDownloadManagerDelegate::Observe(
     int type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_CRX_INSTALLER_DONE);
 
   registrar_.Remove(this,
                     chrome::NOTIFICATION_CRX_INSTALLER_DONE,
                     source);
 
-  CrxInstaller* installer = Source<CrxInstaller>(source).ptr();
+  CrxInstaller* installer = content::Source<CrxInstaller>(source).ptr();
   int download_id = crx_installers_[installer];
   crx_installers_.erase(installer);
 

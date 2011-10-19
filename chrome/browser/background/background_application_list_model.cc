@@ -19,8 +19,8 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_resource.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "ui/base/l10n/l10n_util_collator.h"
 
 class ExtensionNameComparator {
@@ -155,16 +155,16 @@ BackgroundApplicationListModel::BackgroundApplicationListModel(Profile* profile)
   DCHECK(profile_);
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_LOADED,
-                 Source<Profile>(profile));
+                 content::Source<Profile>(profile));
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_UNLOADED,
-                 Source<Profile>(profile));
+                 content::Source<Profile>(profile));
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSIONS_READY,
-                 Source<Profile>(profile));
+                 content::Source<Profile>(profile));
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_PERMISSIONS_UPDATED,
-                 Source<Profile>(profile));
+                 content::Source<Profile>(profile));
   ExtensionService* service = profile->GetExtensionService();
   if (service && service->is_ready())
     Update();
@@ -254,8 +254,8 @@ bool BackgroundApplicationListModel::IsBackgroundApp(
 
 void BackgroundApplicationListModel::Observe(
     int type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_EXTENSIONS_READY) {
     Update();
     return;
@@ -266,16 +266,18 @@ void BackgroundApplicationListModel::Observe(
 
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_LOADED:
-      OnExtensionLoaded(Details<Extension>(details).ptr());
+      OnExtensionLoaded(content::Details<Extension>(details).ptr());
       break;
     case chrome::NOTIFICATION_EXTENSION_UNLOADED:
-      OnExtensionUnloaded(Details<UnloadedExtensionInfo>(details)->extension);
+      OnExtensionUnloaded(
+          content::Details<UnloadedExtensionInfo>(details)->extension);
       break;
     case chrome::NOTIFICATION_EXTENSION_PERMISSIONS_UPDATED:
       OnExtensionPermissionsUpdated(
-          Details<UpdatedExtensionPermissionsInfo>(details)->extension,
-          Details<UpdatedExtensionPermissionsInfo>(details)->reason,
-          Details<UpdatedExtensionPermissionsInfo>(details)->permissions);
+          content::Details<UpdatedExtensionPermissionsInfo>(details)->extension,
+          content::Details<UpdatedExtensionPermissionsInfo>(details)->reason,
+          content::Details<UpdatedExtensionPermissionsInfo>(details)->
+              permissions);
       break;
     default:
       NOTREACHED() << "Received unexpected notification";

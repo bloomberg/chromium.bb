@@ -15,8 +15,8 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/browser/tab_contents/navigation_controller.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 
@@ -52,9 +52,9 @@ GURL GetWebstoreInstallUrl(
 WebstoreInstaller::WebstoreInstaller(Profile* profile)
     : profile_(profile) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
-                 Source<Profile>(profile));
+                 content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR,
-                 Source<CrxInstaller>(NULL));
+                 content::Source<CrxInstaller>(NULL));
 }
 
 WebstoreInstaller::~WebstoreInstaller() {}
@@ -117,25 +117,27 @@ void WebstoreInstaller::InstallExtension(
 }
 
 void WebstoreInstaller::Observe(int type,
-                                const NotificationSource& source,
-                                const NotificationDetails& details) {
+                                const content::NotificationSource& source,
+                                const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_INSTALLED: {
-      CHECK(profile_->IsSameProfile(Source<Profile>(source).ptr()));
-      const Extension* extension = Details<const Extension>(details).ptr();
+      CHECK(profile_->IsSameProfile(content::Source<Profile>(source).ptr()));
+      const Extension* extension =
+          content::Details<const Extension>(details).ptr();
       ReportSuccess(extension->id());
       break;
     }
 
     case chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR: {
-      CrxInstaller* crx_installer = Source<CrxInstaller>(source).ptr();
+      CrxInstaller* crx_installer = content::Source<CrxInstaller>(source).ptr();
       CHECK(crx_installer);
       if (!profile_->IsSameProfile(crx_installer->profile()))
         return;
 
       std::string id = GetPendingInstallId(
           crx_installer->original_download_url());
-      const std::string* error = Details<const std::string>(details).ptr();
+      const std::string* error =
+          content::Details<const std::string>(details).ptr();
       if (!id.empty())
         ReportFailure(id, *error);
       break;

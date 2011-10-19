@@ -22,8 +22,8 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/guid.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 
 namespace history {
 
@@ -35,9 +35,9 @@ ShortcutsBackend::ShortcutsBackend(const FilePath& db_folder_path,
   // |profile| can be NULL in tests.
   if (profile) {
     notification_registrar_.Add(this, chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
-                                Source<Profile>(profile));
+                                content::Source<Profile>(profile));
     notification_registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_DELETED,
-                                Source<Profile>(profile));
+                                content::Source<Profile>(profile));
   }
 }
 
@@ -182,17 +182,19 @@ void ShortcutsBackend::InitCompleted() {
                     OnShortcutsLoaded());
 }
 
-// NotificationObserver:
+// content::NotificationObserver:
 void ShortcutsBackend::Observe(int type,
-                               const NotificationSource& source,
-                               const NotificationDetails& details) {
+                               const content::NotificationSource& source,
+                               const content::NotificationDetails& details) {
   if (current_state_ != INITIALIZED)
     return;
   if (type == chrome::NOTIFICATION_HISTORY_URLS_DELETED) {
-    if (Details<const history::URLsDeletedDetails>(details)->all_history)
+    if (content::Details<const history::URLsDeletedDetails>(details)->
+            all_history) {
       DeleteAllShortcuts();
+    }
     const std::set<GURL>& urls =
-        Details<const history::URLsDeletedDetails>(details)->urls;
+        content::Details<const history::URLsDeletedDetails>(details)->urls;
     std::vector<std::string> shortcut_ids;
 
     for (shortcuts_provider::GuidToShortcutsIteratorMap::iterator
@@ -207,7 +209,7 @@ void ShortcutsBackend::Observe(int type,
 
   DCHECK(type == chrome::NOTIFICATION_OMNIBOX_OPENED_URL);
 
-  AutocompleteLog* log = Details<AutocompleteLog>(details).ptr();
+  AutocompleteLog* log = content::Details<AutocompleteLog>(details).ptr();
   string16 text_lowercase(base::i18n::ToLower(log->text));
 
   int number_of_hits = 1;

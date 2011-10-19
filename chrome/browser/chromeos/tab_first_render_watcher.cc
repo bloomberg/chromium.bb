@@ -6,8 +6,8 @@
 
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 
 namespace chromeos {
@@ -19,20 +19,21 @@ TabFirstRenderWatcher::TabFirstRenderWatcher(TabContents* tab,
       delegate_(delegate) {
   registrar_.Add(this,
       content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB,
-      Source<TabContents>(tab_contents_));
+      content::Source<TabContents>(tab_contents_));
   registrar_.Add(this,
       content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
-      Source<TabContents>(tab_contents_));
+      content::Source<TabContents>(tab_contents_));
 }
 
 void TabFirstRenderWatcher::Observe(int type,
-    const NotificationSource& source, const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   switch (type) {
     case content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB: {
-      RenderWidgetHost* rwh = Details<RenderWidgetHost>(details).ptr();
+      RenderWidgetHost* rwh = content::Details<RenderWidgetHost>(details).ptr();
       registrar_.Add(this,
           content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT,
-          Source<RenderWidgetHost>(rwh));
+          content::Source<RenderWidgetHost>(rwh));
       delegate_->OnRenderHostCreated(Details<RenderViewHost>(details).ptr());
       break;
     }

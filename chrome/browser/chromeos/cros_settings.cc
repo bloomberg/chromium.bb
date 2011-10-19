@@ -11,8 +11,8 @@
 #include "chrome/browser/chromeos/cros_settings_provider.h"
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 
 namespace chromeos {
@@ -38,11 +38,11 @@ void CrosSettings::FireObservers(const char* path) {
     return;
 
   NotificationObserverList::Iterator it(*(observer_iterator->second));
-  NotificationObserver* observer;
+  content::NotificationObserver* observer;
   while ((observer = it.GetNext()) != NULL) {
     observer->Observe(chrome::NOTIFICATION_SYSTEM_SETTING_CHANGED,
-                      Source<CrosSettings>(this),
-                      Details<std::string>(&path_str));
+                      content::Source<CrosSettings>(this),
+                      content::Details<std::string>(&path_str));
   }
 }
 
@@ -94,7 +94,7 @@ bool CrosSettings::RemoveSettingsProvider(CrosSettingsProvider* provider) {
 }
 
 void CrosSettings::AddSettingsObserver(const char* path,
-                                       NotificationObserver* obs) {
+                                       content::NotificationObserver* obs) {
   DCHECK(path);
   DCHECK(obs);
   DCHECK(CalledOnValidThread());
@@ -118,7 +118,7 @@ void CrosSettings::AddSettingsObserver(const char* path,
 
   // Verify that this observer doesn't already exist.
   NotificationObserverList::Iterator it(*observer_list);
-  NotificationObserver* existing_obs;
+  content::NotificationObserver* existing_obs;
   while ((existing_obs = it.GetNext()) != NULL) {
     DCHECK(existing_obs != obs) << path << " observer already registered";
     if (existing_obs == obs)
@@ -130,7 +130,7 @@ void CrosSettings::AddSettingsObserver(const char* path,
 }
 
 void CrosSettings::RemoveSettingsObserver(const char* path,
-                                          NotificationObserver* obs) {
+                                          content::NotificationObserver* obs) {
   DCHECK(CalledOnValidThread());
 
   SettingsObserverMap::iterator observer_iterator =

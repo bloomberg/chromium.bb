@@ -17,7 +17,7 @@
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper_delegate.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 
 // TabDownloadState ------------------------------------------------------------
@@ -31,7 +31,7 @@ DownloadRequestLimiter::TabDownloadState::TabDownloadState(
       status_(DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD),
       download_count_(0),
       infobar_(NULL) {
-  Source<NavigationController> notification_source(controller);
+  content::Source<NavigationController> notification_source(controller);
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
                  notification_source);
   registrar_.Add(this, content::NOTIFICATION_TAB_CLOSED, notification_source);
@@ -94,11 +94,11 @@ void DownloadRequestLimiter::TabDownloadState::Accept() {
 
 void DownloadRequestLimiter::TabDownloadState::Observe(
     int type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if ((type != content::NOTIFICATION_NAV_ENTRY_PENDING &&
        type != content::NOTIFICATION_TAB_CLOSED) ||
-      Source<NavigationController>(source).ptr() != controller_) {
+      content::Source<NavigationController>(source).ptr() != controller_) {
     NOTREACHED();
     return;
   }

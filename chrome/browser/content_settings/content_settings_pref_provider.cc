@@ -24,7 +24,7 @@
 #include "content/browser/browser_thread.h"
 #include "content/browser/user_metrics.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_source.h"
 #include "googleurl/src/gurl.h"
 
 namespace {
@@ -233,18 +233,18 @@ void PrefProvider::ClearAllContentSettingsRules(
 
 void PrefProvider::Observe(
     int type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (type == chrome::NOTIFICATION_PREF_CHANGED) {
-    DCHECK_EQ(prefs_, Source<PrefService>(source).ptr());
+    DCHECK_EQ(prefs_, content::Source<PrefService>(source).ptr());
     if (updating_preferences_)
       return;
 
     if (!is_incognito_) {
       AutoReset<bool> auto_reset(&updating_preferences_, true);
-      std::string* name = Details<std::string>(details).ptr();
+      std::string* name = content::Details<std::string>(details).ptr();
       if (*name == prefs::kContentSettingsPatternPairs) {
         SyncObsoletePatternPref();
         SyncObsoletePrefs();

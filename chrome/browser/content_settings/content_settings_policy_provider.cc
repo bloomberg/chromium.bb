@@ -17,7 +17,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_source.h"
 
 namespace {
 
@@ -404,13 +404,13 @@ void PolicyProvider::ShutdownOnUIThread() {
 }
 
 void PolicyProvider::Observe(int type,
-                             const NotificationSource& source,
-                             const NotificationDetails& details) {
+                             const content::NotificationSource& source,
+                             const content::NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (type == chrome::NOTIFICATION_PREF_CHANGED) {
-    DCHECK_EQ(prefs_, Source<PrefService>(source).ptr());
-    std::string* name = Details<std::string>(details).ptr();
+    DCHECK_EQ(prefs_, content::Source<PrefService>(source).ptr());
+    std::string* name = content::Details<std::string>(details).ptr();
     if (*name == prefs::kManagedDefaultCookiesSetting) {
       UpdateManagedDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES);
     } else if (*name == prefs::kManagedDefaultImagesSetting) {

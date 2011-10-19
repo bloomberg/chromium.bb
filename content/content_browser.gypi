@@ -563,6 +563,9 @@
     'browser/zygote_main_linux.cc',
     'public/browser/native_web_keyboard_event.h',
     'public/browser/navigation_types.h',
+    'public/browser/notification_details.h',
+    'public/browser/notification_observer.h',
+    'public/browser/notification_source.h',    
     'public/browser/notification_types.h',
   ],
   'conditions': [

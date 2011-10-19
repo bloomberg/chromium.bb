@@ -16,7 +16,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_source.h"
 
 using base::TimeTicks;
 
@@ -175,7 +175,7 @@ void BookmarkStorage::MigrateFromHistory() {
   if (!history->BackendLoaded()) {
     // The backend isn't finished loading. Wait for it.
     notification_registrar_.Add(this, chrome::NOTIFICATION_HISTORY_LOADED,
-                                Source<Profile>(profile_));
+                                content::Source<Profile>(profile_));
   } else {
     DoLoadBookmarks(tmp_history_path_);
   }
@@ -183,7 +183,7 @@ void BookmarkStorage::MigrateFromHistory() {
 
 void BookmarkStorage::OnHistoryFinishedWriting() {
   notification_registrar_.Remove(this, chrome::NOTIFICATION_HISTORY_LOADED,
-                                 Source<Profile>(profile_));
+                                 content::Source<Profile>(profile_));
 
   // This is used when migrating bookmarks data from database to file.
   // History wrote the file for us, and now we want to load data from it.
@@ -240,8 +240,8 @@ void BookmarkStorage::OnLoadFinished(bool file_exists, const FilePath& path) {
 }
 
 void BookmarkStorage::Observe(int type,
-                              const NotificationSource& source,
-                              const NotificationDetails& details) {
+                              const content::NotificationSource& source,
+                              const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_HISTORY_LOADED:
       OnHistoryFinishedWriting();

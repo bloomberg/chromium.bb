@@ -21,7 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "net/base/file_stream.h"
@@ -386,7 +386,7 @@ BookmarkFaviconFetcher::BookmarkFaviconFetcher(
   favicons_map_.reset(new URLFaviconMap());
   registrar_.Add(this,
                  chrome::NOTIFICATION_PROFILE_DESTROYED,
-                 Source<Profile>(profile_));
+                 content::Source<Profile>(profile_));
 }
 
 BookmarkFaviconFetcher::~BookmarkFaviconFetcher() {
@@ -402,9 +402,10 @@ void BookmarkFaviconFetcher::ExportBookmarks() {
     ExecuteWriter();
 }
 
-void BookmarkFaviconFetcher::Observe(int type,
-                                     const NotificationSource& source,
-                                     const NotificationDetails& details) {
+void BookmarkFaviconFetcher::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (chrome::NOTIFICATION_PROFILE_DESTROYED == type && fetcher != NULL) {
     MessageLoop::current()->DeleteSoon(FROM_HERE, fetcher);
     fetcher = NULL;

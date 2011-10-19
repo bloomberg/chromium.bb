@@ -17,7 +17,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/user_metrics.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -76,15 +76,15 @@ void LocaleChangeGuard::RevertLocaleChange(const ListValue* list) {
 }
 
 void LocaleChangeGuard::Observe(int type,
-                                const NotificationSource& source,
-                                const NotificationDetails& details) {
+                                const content::NotificationSource& source,
+                                const content::NotificationDetails& details) {
   if (profile_ == NULL) {
     NOTREACHED();
     return;
   }
   switch (type) {
     case content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME: {
-      if (profile_ == Source<TabContents>(source)->browser_context()) {
+      if (profile_ == content::Source<TabContents>(source)->browser_context()) {
         // We need to perform locale change check only once, so unsubscribe.
         registrar_.Remove(this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
                           NotificationService::AllSources());

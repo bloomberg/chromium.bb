@@ -6,7 +6,7 @@
 
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_source.h"
 
 AutomationTabTracker::AutomationTabTracker(IPC::Message::Sender* automation)
     : AutomationResourceTracker<NavigationController*>(automation) {
@@ -19,38 +19,40 @@ void AutomationTabTracker::AddObserver(NavigationController* resource) {
   // This tab could either be a regular tab or an external tab
   // Register for both notifications.
   registrar_.Add(this, content::NOTIFICATION_TAB_CLOSING,
-                 Source<NavigationController>(resource));
+                 content::Source<NavigationController>(resource));
   registrar_.Add(this, chrome::NOTIFICATION_EXTERNAL_TAB_CLOSED,
-                 Source<NavigationController>(resource));
+                 content::Source<NavigationController>(resource));
   // We also want to know about navigations so we can keep track of the last
   // navigation time.
   registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
-                 Source<NavigationController>(resource));
+                 content::Source<NavigationController>(resource));
 }
 
 void AutomationTabTracker::RemoveObserver(NavigationController* resource) {
   registrar_.Remove(this, content::NOTIFICATION_TAB_CLOSING,
-                    Source<NavigationController>(resource));
+                    content::Source<NavigationController>(resource));
   registrar_.Remove(this, chrome::NOTIFICATION_EXTERNAL_TAB_CLOSED,
-                    Source<NavigationController>(resource));
+                    content::Source<NavigationController>(resource));
   registrar_.Remove(this, content::NOTIFICATION_LOAD_STOP,
-                    Source<NavigationController>(resource));
+                    content::Source<NavigationController>(resource));
 }
 
-void AutomationTabTracker::Observe(int type,
-                                   const NotificationSource& source,
-                                   const NotificationDetails& details) {
+void AutomationTabTracker::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   switch (type) {
     case content::NOTIFICATION_LOAD_STOP:
-      last_navigation_times_[Source<NavigationController>(source).ptr()] =
-          base::Time::Now();
+      last_navigation_times_[
+          content::Source<NavigationController>(source).ptr()] =
+              base::Time::Now();
       return;
     case chrome::NOTIFICATION_EXTERNAL_TAB_CLOSED:
     case content::NOTIFICATION_TAB_CLOSING:
       {
         std::map<NavigationController*, base::Time>::iterator iter =
             last_navigation_times_.find(
-                Source<NavigationController>(source).ptr());
+                content::Source<NavigationController>(source).ptr());
         if (iter != last_navigation_times_.end())
           last_navigation_times_.erase(iter);
       }

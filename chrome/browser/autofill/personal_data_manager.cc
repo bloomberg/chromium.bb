@@ -26,7 +26,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_source.h"
 
 namespace {
 
@@ -207,10 +207,11 @@ void PersonalDataManager::Shutdown() {
 }
 
 void PersonalDataManager::Observe(int type,
-                                  const NotificationSource& source,
-                                  const NotificationDetails& details) {
+                                  const content::NotificationSource& source,
+                                  const content::NotificationDetails& details) {
   DCHECK_EQ(type, chrome::NOTIFICATION_AUTOFILL_MULTIPLE_CHANGED);
-  WebDataService* web_data_service = Source<WebDataService>(source).ptr();
+  WebDataService* web_data_service =
+      content::Source<WebDataService>(source).ptr();
 
   DCHECK(web_data_service &&
          web_data_service ==
@@ -564,9 +565,10 @@ void PersonalDataManager::Init(Profile* profile) {
   LoadProfiles();
   LoadCreditCards();
 
-  notification_registrar_.Add(this,
-                              chrome::NOTIFICATION_AUTOFILL_MULTIPLE_CHANGED,
-                              Source<WebDataService>(web_data_service));
+  notification_registrar_.Add(
+      this,
+      chrome::NOTIFICATION_AUTOFILL_MULTIPLE_CHANGED,
+      content::Source<WebDataService>(web_data_service));
 }
 
 bool PersonalDataManager::IsAutofillEnabled() const {

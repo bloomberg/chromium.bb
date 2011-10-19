@@ -24,7 +24,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -231,7 +231,7 @@ void ImporterHost::CheckForLoadedModels(uint16 items) {
       TemplateURLService* model =
           TemplateURLServiceFactory::GetForProfile(profile_);
       registrar_.Add(this, chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED,
-                     Source<TemplateURLService>(model));
+                     content::Source<TemplateURLService>(model));
       model->Load();
     }
   }
@@ -261,8 +261,8 @@ void ImporterHost::BookmarkModelChanged() {
 }
 
 void ImporterHost::Observe(int type,
-                           const NotificationSource& source,
-                           const NotificationDetails& details) {
+                           const content::NotificationSource& source,
+                           const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED);
   registrar_.RemoveAll();
   InvokeTaskIfDone();

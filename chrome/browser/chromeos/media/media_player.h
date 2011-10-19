@@ -10,11 +10,10 @@
 #include <vector>
 
 #include "base/memory/singleton.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
-
 #include "net/url_request/url_request.h"
 
 template <typename T> struct DefaultSingletonTraits;
@@ -23,7 +22,7 @@ class Browser;
 class GURL;
 class Profile;
 
-class MediaPlayer : public NotificationObserver,
+class MediaPlayer : public content::NotificationObserver,
                     public net::URLRequest::Interceptor {
  public:
   struct MediaUrl;
@@ -97,8 +96,8 @@ class MediaPlayer : public NotificationObserver,
 
   // Used to detect when the mediaplayer is closed.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Getter for the singleton.
   static MediaPlayer* GetInstance();
@@ -129,7 +128,7 @@ class MediaPlayer : public NotificationObserver,
   Browser* mediaplayer_browser_;
 
   // Used to register for events on the windows, like to listen for closes.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // List of mimetypes that the mediaplayer should listen to.  Used for
   // interceptions of url GETs.

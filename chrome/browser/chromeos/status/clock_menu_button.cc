@@ -14,8 +14,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
@@ -108,13 +108,13 @@ void ClockMenuButton::SetDefaultUse24HourClock(bool use_24hour_clock) {
   UpdateText();
 }
 
-// ClockMenuButton, NotificationObserver implementation:
+// ClockMenuButton, content::NotificationObserver implementation:
 
 void ClockMenuButton::Observe(int type,
-                              const NotificationSource& source,
-                              const NotificationDetails& details) {
+                              const content::NotificationSource& source,
+                              const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_PREF_CHANGED) {
-    std::string* pref_name = Details<std::string>(details).ptr();
+    std::string* pref_name = content::Details<std::string>(details).ptr();
     if (*pref_name == prefs::kUse24HourClock) {
       UpdateText();
     }

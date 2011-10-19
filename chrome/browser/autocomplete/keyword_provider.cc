@@ -17,8 +17,8 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "net/base/net_util.h"
@@ -66,12 +66,12 @@ KeywordProvider::KeywordProvider(ACProviderListener* listener, Profile* profile)
   // suggestions are meant for us.
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_OMNIBOX_SUGGESTIONS_READY,
-                 Source<Profile>(profile->GetOriginalProfile()));
+                 content::Source<Profile>(profile->GetOriginalProfile()));
   registrar_.Add(
       this, chrome::NOTIFICATION_EXTENSION_OMNIBOX_DEFAULT_SUGGESTION_CHANGED,
-      Source<Profile>(profile->GetOriginalProfile()));
+      content::Source<Profile>(profile->GetOriginalProfile()));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_OMNIBOX_INPUT_ENTERED,
-                 Source<Profile>(profile));
+                 content::Source<Profile>(profile));
 }
 
 KeywordProvider::KeywordProvider(ACProviderListener* listener,
@@ -441,8 +441,8 @@ AutocompleteMatch KeywordProvider::CreateAutocompleteMatch(
 }
 
 void KeywordProvider::Observe(int type,
-                              const NotificationSource& source,
-                              const NotificationDetails& details) {
+                              const content::NotificationSource& source,
+                              const content::NotificationDetails& details) {
   TemplateURLService* model =
       profile_ ? TemplateURLServiceFactory::GetForProfile(profile_) : model_;
   const AutocompleteInput& input = extension_suggest_last_input_;
@@ -475,7 +475,7 @@ void KeywordProvider::Observe(int type,
 
     case chrome::NOTIFICATION_EXTENSION_OMNIBOX_SUGGESTIONS_READY: {
       const ExtensionOmniboxSuggestions& suggestions =
-        *Details<ExtensionOmniboxSuggestions>(details).ptr();
+        *content::Details<ExtensionOmniboxSuggestions>(details).ptr();
       if (suggestions.request_id != current_input_id_)
         return;  // This is an old result. Just ignore.
 
