@@ -302,7 +302,8 @@ void ActiveDownloadsHandler::OpenNewFullWindow(const ListValue* args) {
   if (SelectTab(GURL(url)))
     return;
 
-  Browser* browser = BrowserList::GetLastActive();
+  DCHECK(profile_);
+  Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
   browser::NavigateParams params(
       browser, GURL(url), content::PAGE_TRANSITION_LINK);
   params.disposition = NEW_FOREGROUND_TAB;
