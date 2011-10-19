@@ -26,25 +26,26 @@
 #include "webkit/glue/window_open_disposition.h"
 
 class ChildProcessSecurityPolicy;
+struct ContextMenuParams;
 struct DesktopNotificationHostMsg_Show_Params;
 class FilePath;
 class GURL;
+struct MediaPlayerAction;
+class PowerSaveBlocker;
 class RenderViewHostDelegate;
 class RenderViewHostObserver;
 class SessionStorageNamespace;
 class SiteInstance;
 class SkBitmap;
-class ViewMsg_Navigate;
-struct ContextMenuParams;
-struct MediaPlayerAction;
+struct UserMetricsAction;
 struct ViewHostMsg_AccessibilityNotification_Params;
 struct ViewHostMsg_CreateWindow_Params;
-struct ViewHostMsg_ShowPopup_Params;
-struct ViewMsg_Navigate_Params;
-struct WebDropData;
-struct UserMetricsAction;
 struct ViewHostMsg_RunFileChooser_Params;
+struct ViewHostMsg_ShowPopup_Params;
+class ViewMsg_Navigate;
+struct ViewMsg_Navigate_Params;
 struct ViewMsg_StopFinding_Params;
+struct WebDropData;
 
 namespace base {
 class ListValue;
@@ -538,6 +539,10 @@ class CONTENT_EXPORT RenderViewHost : public RenderWidgetHost {
       const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params);
   void OnScriptEvalResponse(int id, const base::ListValue& result);
   void OnDidZoomURL(double zoom_level, bool remember, const GURL& url);
+  void OnMediaNotification(int64 player_cookie,
+                           bool has_video,
+                           bool has_audio,
+                           bool is_playing);
   void OnRequestDesktopNotificationPermission(const GURL& origin,
                                               int callback_id);
   void OnShowDesktopNotification(
@@ -554,6 +559,8 @@ class CONTENT_EXPORT RenderViewHost : public RenderWidgetHost {
 
  private:
   friend class TestRenderViewHost;
+
+  void ClearPowerSaveBlockers();
 
   // The SiteInstance associated with this RenderViewHost.  All pages drawn
   // in this RenderViewHost are part of this SiteInstance.  Should not change
@@ -631,6 +638,11 @@ class CONTENT_EXPORT RenderViewHost : public RenderWidgetHost {
 
   // The termination status of the last render view that terminated.
   base::TerminationStatus render_view_termination_status_;
+
+  // Holds PowerSaveBlockers for the media players in use. Key is the
+  // player_cookie passed to OnMediaNotification, value is the PowerSaveBlocker.
+  typedef std::map<int64, PowerSaveBlocker*> PowerSaveBlockerMap;
+  PowerSaveBlockerMap power_save_blockers_;
 
   // A list of observers that filter messages.  Weak references.
   ObserverList<RenderViewHostObserver> observers_;

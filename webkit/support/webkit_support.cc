@@ -324,6 +324,7 @@ WebKit::WebMediaPlayer* CreateMediaPlayer(WebFrame* frame,
 
   scoped_ptr<webkit_glue::WebMediaPlayerImpl> result(
       new webkit_glue::WebMediaPlayerImpl(client,
+                                          NULL,
                                           collection.release(),
                                           message_loop_factory.release(),
                                           NULL,

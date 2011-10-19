@@ -43,6 +43,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebViewClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNavigationType.h"
 #include "ui/gfx/surface/transport_dib.h"
+#include "webkit/glue/webmediaplayer_delegate.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/plugins/npapi/webplugin_page_delegate.h"
 
@@ -166,6 +167,7 @@ class RenderViewImpl : public RenderWidget,
                        public WebKit::WebPageSerializerClient,
                        public content::RenderView,
                        public webkit::npapi::WebPluginPageDelegate,
+                       public webkit_glue::WebMediaPlayerDelegate,
                        public base::SupportsWeakPtr<RenderViewImpl> {
  public:
   // Creates a new RenderView.  The parent_hwnd specifies a HWND to use as the
@@ -602,6 +604,12 @@ class RenderViewImpl : public RenderWidget,
   virtual void DidStartLoadingForPlugin();
   virtual void DidStopLoadingForPlugin();
   virtual WebKit::WebCookieJar* GetCookieJar();
+
+  // webkit_glue::WebMediaPlayerDelegate implementation ------------------------
+
+  virtual void DidPlay(webkit_glue::WebMediaPlayerImpl* player) OVERRIDE;
+  virtual void DidPause(webkit_glue::WebMediaPlayerImpl* player) OVERRIDE;
+  virtual void PlayerGone(webkit_glue::WebMediaPlayerImpl* player) OVERRIDE;
 
   // Please do not add your stuff randomly to the end here. If there is an
   // appropriate section, add it there. If not, there are some random functions

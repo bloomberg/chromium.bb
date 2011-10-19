@@ -73,6 +73,7 @@ namespace webkit_glue {
 
 class MediaResourceLoaderBridgeFactory;
 class MediaStreamClient;
+class WebMediaPlayerDelegate;
 class WebMediaPlayerProxy;
 class WebVideoRenderer;
 
@@ -104,6 +105,7 @@ class WebMediaPlayerImpl
   //
   // Callers must call |Initialize()| before they can use the object.
   WebMediaPlayerImpl(WebKit::WebMediaPlayerClient* client,
+                     WebMediaPlayerDelegate* delegate,
                      media::FilterCollection* collection,
                      media::MessageLoopFactory* message_loop_factory,
                      MediaStreamClient* media_stream_client,
@@ -256,6 +258,8 @@ class WebMediaPlayerImpl
   WebKit::WebMediaPlayerClient* client_;
 
   scoped_refptr<WebMediaPlayerProxy> proxy_;
+
+  WebMediaPlayerDelegate* delegate_;
 
   MediaStreamClient* media_stream_client_;
 

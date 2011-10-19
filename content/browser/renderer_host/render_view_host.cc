@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/json/json_reader.h"
+#include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -21,6 +22,7 @@
 #include "content/browser/cross_site_request_manager.h"
 #include "content/browser/host_zoom_map.h"
 #include "content/browser/in_process_webkit/session_storage_namespace.h"
+#include "content/browser/power_save_blocker.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_observer.h"
@@ -143,6 +145,8 @@ RenderViewHost::~RenderViewHost() {
       content::NOTIFICATION_RENDER_VIEW_HOST_DELETED,
       content::Source<RenderViewHost>(this),
       NotificationService::NoDetails());
+
+  ClearPowerSaveBlockers();
 
   delegate()->RenderViewDeleted(this);
 
@@ -677,6 +681,7 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
                         OnAccessibilityNotifications)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ScriptEvalResponse, OnScriptEvalResponse)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidZoomURL, OnDidZoomURL)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_MediaNotification, OnMediaNotification)
     IPC_MESSAGE_HANDLER(DesktopNotificationHostMsg_RequestPermission,
                         OnRequestDesktopNotificationPermission)
     IPC_MESSAGE_HANDLER(DesktopNotificationHostMsg_Show,
@@ -789,6 +794,9 @@ void RenderViewHost::OnMsgRenderViewGone(int status, int exit_code) {
   // need to know why it died.
   render_view_termination_status_ =
       static_cast<base::TerminationStatus>(status);
+
+  // Reset state.
+  ClearPowerSaveBlockers();
 
   // Our base class RenderWidgetHost needs to reset some stuff.
   RendererExited(render_view_termination_status_, exit_code);
@@ -1382,6 +1390,28 @@ void RenderViewHost::OnDidZoomURL(double zoom_level,
   }
 }
 
+void RenderViewHost::OnMediaNotification(int64 player_cookie,
+                                         bool has_video,
+                                         bool has_audio,
+                                         bool is_playing) {
+  if (is_playing) {
+    PowerSaveBlocker* blocker = NULL;
+    if (has_video) {
+      blocker = new PowerSaveBlocker(
+          PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep);
+    } else if (has_audio) {
+      blocker = new PowerSaveBlocker(
+          PowerSaveBlocker::kPowerSaveBlockPreventSystemSleep);
+    }
+
+    if (blocker)
+      power_save_blockers_[player_cookie] = blocker;
+  } else {
+    delete power_save_blockers_[player_cookie];
+    power_save_blockers_.erase(player_cookie);
+  }
+}
+
 void RenderViewHost::OnRequestDesktopNotificationPermission(
     const GURL& source_origin, int callback_context) {
   content::GetContentClient()->browser()->RequestDesktopNotificationPermission(
@@ -1432,4 +1462,8 @@ void RenderViewHost::OnWebUISend(const GURL& source_url,
                                  const std::string& name,
                                  const base::ListValue& args) {
   delegate_->WebUISend(this, source_url, name, args);
+}
+
+void RenderViewHost::ClearPowerSaveBlockers() {
+  STLDeleteValues(&power_save_blockers_);
 }

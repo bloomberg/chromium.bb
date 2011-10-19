@@ -399,6 +399,7 @@
         'webkit_glue.h',
         'webkitplatformsupport_impl.cc',
         'webkitplatformsupport_impl.h',
+        'webmediaplayer_delegate.h',
         'webmediaplayer_impl.cc',
         'webmediaplayer_impl.h',
         'webmediaplayer_proxy.cc',

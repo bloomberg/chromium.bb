@@ -1302,6 +1302,13 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_SwapOut_ACK,
 // message.
 IPC_MESSAGE_ROUTED0(ViewHostMsg_ClosePage_ACK)
 
+// Notifies the browser that media has started/stopped playing.
+IPC_MESSAGE_ROUTED4(ViewHostMsg_MediaNotification,
+                    int64 /* player_cookie, distinguishes instances */,
+                    bool /* has_video */,
+                    bool /* has_audio */,
+                    bool /* is_playing */)
+
 // Notifies the browser that we have session history information.
 // page_id: unique ID that allows us to distinguish between history entries.
 IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateState,

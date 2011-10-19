@@ -33,6 +33,7 @@
 #include "webkit/glue/media/media_stream_client.h"
 #include "webkit/glue/media/video_renderer_impl.h"
 #include "webkit/glue/media/web_video_renderer.h"
+#include "webkit/glue/webmediaplayer_delegate.h"
 #include "webkit/glue/webmediaplayer_proxy.h"
 #include "webkit/glue/webvideoframe_impl.h"
 
@@ -97,6 +98,7 @@ namespace webkit_glue {
 
 WebMediaPlayerImpl::WebMediaPlayerImpl(
     WebKit::WebMediaPlayerClient* client,
+    WebMediaPlayerDelegate* delegate,
     media::FilterCollection* collection,
     media::MessageLoopFactory* message_loop_factory,
     MediaStreamClient* media_stream_client,
@@ -113,6 +115,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       pending_seek_(false),
       client_(client),
       proxy_(NULL),
+      delegate_(delegate),
       media_stream_client_(media_stream_client),
       media_log_(media_log),
       incremented_externally_allocated_memory_(false) {
@@ -208,6 +211,9 @@ WebMediaPlayerImpl::~WebMediaPlayerImpl() {
   media_log_->AddEvent(
       media_log_->CreateEvent(media::MediaLogEvent::WEBMEDIAPLAYER_DESTROYED));
 
+  if (delegate_)
+    delegate_->PlayerGone(this);
+
   // Finally tell the |main_loop_| we don't want to be notified of destruction
   // event.
   if (main_loop_) {
@@ -266,6 +272,9 @@ void WebMediaPlayerImpl::play() {
   pipeline_->SetPlaybackRate(playback_rate_);
 
   media_log_->AddEvent(media_log_->CreateEvent(media::MediaLogEvent::PLAY));
+
+  if (delegate_)
+    delegate_->DidPlay(this);
 }
 
 void WebMediaPlayerImpl::pause() {
@@ -276,6 +285,9 @@ void WebMediaPlayerImpl::pause() {
   paused_time_ = pipeline_->GetCurrentTime();
 
   media_log_->AddEvent(media_log_->CreateEvent(media::MediaLogEvent::PAUSE));
+
+  if (delegate_)
+    delegate_->DidPause(this);
 }
 
 bool WebMediaPlayerImpl::supportsFullscreen() const {

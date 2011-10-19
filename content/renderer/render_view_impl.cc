@@ -1947,6 +1947,7 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
 
   scoped_ptr<webkit_glue::WebMediaPlayerImpl> result(
       new webkit_glue::WebMediaPlayerImpl(client,
+                                          this,
                                           collection.release(),
                                           message_loop_factory.release(),
                                           media_stream_impl_.get(),
@@ -3186,6 +3187,26 @@ void RenderViewImpl::DidStopLoadingForPlugin() {
 
 WebCookieJar* RenderViewImpl::GetCookieJar() {
   return &cookie_jar_;
+}
+
+void RenderViewImpl::DidPlay(webkit_glue::WebMediaPlayerImpl* player) {
+  Send(new ViewHostMsg_MediaNotification(routing_id_,
+                                         reinterpret_cast<int64>(player),
+                                         player->hasVideo(),
+                                         player->hasAudio(),
+                                         true));
+}
+
+void RenderViewImpl::DidPause(webkit_glue::WebMediaPlayerImpl* player) {
+  Send(new ViewHostMsg_MediaNotification(routing_id_,
+                                         reinterpret_cast<int64>(player),
+                                         player->hasVideo(),
+                                         player->hasAudio(),
+                                         false));
+}
+
+void RenderViewImpl::PlayerGone(webkit_glue::WebMediaPlayerImpl* player) {
+  DidPause(player);
 }
 
 void RenderViewImpl::SyncNavigationState() {
