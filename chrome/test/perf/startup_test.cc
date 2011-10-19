@@ -288,7 +288,14 @@ TEST_F(StartupTest, PerfReferenceWarm) {
 
 // TODO(mpcomplete): Should we have reference timings for all these?
 
-TEST_F(StartupTest, PerfCold) {
+// dominich: Disabling as per http://crbug.com/100900.
+#if defined(OS_WIN)
+#define MAYBE_PerfCold DISABLED_PerfCold
+#else
+#define MAYBE_PerfCold PerfCold
+#endif
+
+TEST_F(StartupTest, MAYBE_PerfCold) {
   RunStartupTest("cold", "t", COLD, NOT_IMPORTANT,
                  UITestBase::DEFAULT_THEME, 0, 0);
 }
