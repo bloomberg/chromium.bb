@@ -495,6 +495,11 @@ void NativeWidgetAura::OnBlur() {
 }
 
 bool NativeWidgetAura::OnKeyEvent(aura::KeyEvent* event) {
+  // TODO(beng): Need an InputMethodAura to properly handle character events.
+  //             Right now, we just skip these.
+  if (event->is_char())
+    return false;
+
   DCHECK(window_->IsVisible());
   InputMethod* input_method = GetWidget()->GetInputMethod();
   DCHECK(input_method);

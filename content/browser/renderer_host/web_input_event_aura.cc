@@ -8,11 +8,16 @@
 
 namespace content {
 
+#if defined(OS_WIN)
 WebKit::WebMouseEvent MakeUntranslatedWebMouseEventFromNativeEvent(
     base::NativeEvent native_event);
-WebKit::WebMouseEvent MakeWebMouseEventFromAuraEvent(aura::MouseEvent* event);
 WebKit::WebKeyboardEvent MakeWebKeyboardEventFromNativeEvent(
     base::NativeEvent native_event);
+#else
+WebKit::WebMouseEvent MakeWebMouseEventFromAuraEvent(aura::MouseEvent* event);
+WebKit::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
+    aura::KeyEvent* event);
+#endif
 
 // General approach:
 //
@@ -59,8 +64,18 @@ WebKit::WebMouseEvent MakeWebMouseEvent(aura::MouseEvent* event) {
 }
 
 WebKit::WebKeyboardEvent MakeWebKeyboardEvent(aura::KeyEvent* event) {
+  // Windows can figure out whether or not to construct a RawKeyDown or a Char
+  // WebInputEvent based on the type of message carried in
+  // event->native_event(). X11 is not so fortunate, there is no separate
+  // translated event type, so DesktopHostLinux sends an extra KeyEvent with
+  // is_char() == true. We need to pass the aura::KeyEvent to the X11 function
+  // to detect this case so the right event type can be constructed.
+#if defined(OS_WIN)
   // Key events require no translation by the aura system.
   return MakeWebKeyboardEventFromNativeEvent(event->native_event());
+#else
+  return MakeWebKeyboardEventFromAuraEvent(event);
+#endif
 }
 
 }  // namespace content

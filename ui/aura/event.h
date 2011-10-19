@@ -127,7 +127,7 @@ class AURA_EXPORT TouchEvent : public LocatedEvent {
 
 class AURA_EXPORT KeyEvent : public Event {
  public:
-  explicit KeyEvent(const base::NativeEvent& native_event);
+  KeyEvent(const base::NativeEvent& native_event, bool is_char);
 
   // Used for synthetic events in testing.
   KeyEvent(ui::EventType type,
@@ -135,9 +135,13 @@ class AURA_EXPORT KeyEvent : public Event {
            int flags);
 
   ui::KeyboardCode key_code() const { return key_code_; }
+  bool is_char() const { return is_char_; }
 
  private:
   ui::KeyboardCode key_code_;
+  // True if this is a translated character event (vs. a raw key down). Both
+  // share the same type: ui::ET_KEY_PRESSED.
+  bool is_char_;
 };
 
 }  // namespace aura

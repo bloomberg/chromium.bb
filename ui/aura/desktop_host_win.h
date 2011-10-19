@@ -40,6 +40,9 @@ class DesktopHostWin : public DesktopHost, public ui::WindowImpl {
     MESSAGE_HANDLER_EX(WM_KEYUP, OnKeyEvent)
     MESSAGE_HANDLER_EX(WM_SYSKEYDOWN, OnKeyEvent)
     MESSAGE_HANDLER_EX(WM_SYSKEYUP, OnKeyEvent)
+    MESSAGE_HANDLER_EX(WM_CHAR, OnKeyEvent)
+    MESSAGE_HANDLER_EX(WM_SYSCHAR, OnKeyEvent)
+    MESSAGE_HANDLER_EX(WM_IME_CHAR, OnKeyEvent)
 
     MSG_WM_CLOSE(OnClose)
     MSG_WM_PAINT(OnPaint)

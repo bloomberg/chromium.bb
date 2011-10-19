@@ -251,8 +251,9 @@ WebKit::WebMouseEvent MakeWebMouseEventFromAuraEvent(aura::MouseEvent* event) {
   return webkit_event;
 }
 
-WebKit::WebKeyboardEvent MakeWebKeyboardEventFromNativeEvent(
-    base::NativeEvent native_event) {
+WebKit::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
+    aura::KeyEvent* event) {
+  base::NativeEvent native_event = event->native_event();
   WebKit::WebKeyboardEvent webkit_event;
   XKeyEvent* native_key_event = &native_event->xkey;
 
@@ -262,7 +263,8 @@ WebKit::WebKeyboardEvent MakeWebKeyboardEventFromNativeEvent(
 
   switch (native_event->type) {
     case KeyPress:
-      webkit_event.type = WebKit::WebInputEvent::RawKeyDown;
+      webkit_event.type = event->is_char() ? WebKit::WebInputEvent::Char :
+          WebKit::WebInputEvent::RawKeyDown;
       break;
     case KeyRelease:
       webkit_event.type = WebKit::WebInputEvent::KeyUp;

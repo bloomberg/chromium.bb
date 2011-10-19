@@ -185,10 +185,16 @@ base::MessagePumpDispatcher::DispatchStatus DesktopHostLinux::Dispatch(
       desktop_->Draw();
       handled = true;
       break;
-    case KeyPress:
+    case KeyPress: {
+      KeyEvent keydown_event(xev, false);
+      handled = desktop_->OnKeyEvent(keydown_event);
+      KeyEvent char_event(xev, true);
+      handled |= desktop_->OnKeyEvent(char_event);
+      break;
+    }
     case KeyRelease: {
-      KeyEvent keyev(xev);
-      handled = desktop_->OnKeyEvent(keyev);
+      KeyEvent keyup_event(xev, false);
+      handled = desktop_->OnKeyEvent(keyup_event);
       break;
     }
     case ButtonPress:

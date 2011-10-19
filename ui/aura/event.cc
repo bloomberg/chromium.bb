@@ -115,18 +115,20 @@ TouchEvent::TouchEvent(ui::EventType type,
       force_(0.0f) {
 }
 
-KeyEvent::KeyEvent(const base::NativeEvent& native_event)
+KeyEvent::KeyEvent(const base::NativeEvent& native_event, bool is_char)
     : Event(native_event,
             ui::EventTypeFromNative(native_event),
             ui::EventFlagsFromNative(native_event)),
-      key_code_(ui::KeyboardCodeFromNative(native_event)) {
+      key_code_(ui::KeyboardCodeFromNative(native_event)),
+      is_char_(is_char) {
 }
 
 KeyEvent::KeyEvent(ui::EventType type,
                    ui::KeyboardCode key_code,
                    int flags)
     : Event(type, flags),
-      key_code_(key_code) {
+      key_code_(key_code),
+      is_char_(false) {
 }
 
 }  // namespace aura
