@@ -44,7 +44,8 @@ IPC_MESSAGE_ROUTED1(SafeBrowsingHostMsg_MalwareDOMDetails,
 // renderer.
 
 // A classification model for client-side phishing detection.
-// The string is an encoded safe_browsing::ClientSideModel protocol buffer.
+// The string is an encoded safe_browsing::ClientSideModel protocol buffer, or
+// empty to disable client-side phishing detection for this renderer.
 IPC_MESSAGE_CONTROL1(SafeBrowsingMsg_SetPhishingModel,
                      std::string /* encoded ClientSideModel proto */)
 

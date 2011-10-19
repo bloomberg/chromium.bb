@@ -193,4 +193,17 @@ TEST_F(PhishingClassifierTest, TestClassification) {
   EXPECT_EQ(PhishingClassifier::kInvalidScore, phishy_score);
 }
 
+TEST_F(PhishingClassifierTest, DisableDetection) {
+  // No scorer yet, so the classifier is not ready.
+  EXPECT_FALSE(classifier_->is_ready());
+
+  // Now set the scorer.
+  classifier_->set_phishing_scorer(scorer_.get());
+  EXPECT_TRUE(classifier_->is_ready());
+
+  // Set a NULL scorer, which turns detection back off.
+  classifier_->set_phishing_scorer(NULL);
+  EXPECT_FALSE(classifier_->is_ready());
+}
+
 }  // namespace safe_browsing

@@ -53,15 +53,23 @@ PhishingClassifier::~PhishingClassifier() {
 void PhishingClassifier::set_phishing_scorer(const Scorer* scorer) {
   CheckNoPendingClassification();
   scorer_ = scorer;
-  url_extractor_.reset(new PhishingUrlFeatureExtractor);
-  dom_extractor_.reset(
-      new PhishingDOMFeatureExtractor(render_view_, clock_.get()));
-  term_extractor_.reset(new PhishingTermFeatureExtractor(
-      &scorer_->page_terms(),
-      &scorer_->page_words(),
-      scorer_->max_words_per_term(),
-      scorer_->murmurhash3_seed(),
-      clock_.get()));
+  if (scorer_) {
+    url_extractor_.reset(new PhishingUrlFeatureExtractor);
+    dom_extractor_.reset(
+        new PhishingDOMFeatureExtractor(render_view_, clock_.get()));
+    term_extractor_.reset(new PhishingTermFeatureExtractor(
+        &scorer_->page_terms(),
+        &scorer_->page_words(),
+        scorer_->max_words_per_term(),
+        scorer_->murmurhash3_seed(),
+        clock_.get()));
+  } else {
+    // We're disabling client-side phishing detection, so tear down all
+    // of the relevant objects.
+    url_extractor_.reset();
+    dom_extractor_.reset();
+    term_extractor_.reset();
+  }
 }
 
 bool PhishingClassifier::is_ready() const {

@@ -1367,7 +1367,7 @@ void SafeBrowsingService::RefreshState() {
     Stop();
 
   if (csd_service_.get())
-    csd_service_->SetEnabled(enable);
+    csd_service_->SetEnabledAndRefreshState(enable);
   if (download_service_.get())
     download_service_->SetEnabled(enable);
 }

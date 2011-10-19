@@ -65,10 +65,15 @@ bool PhishingClassifierFilter::OnControlMessageReceived(
 }
 
 void PhishingClassifierFilter::OnSetPhishingModel(const std::string& model) {
-  safe_browsing::Scorer* scorer = safe_browsing::Scorer::Create(model);
-  if (!scorer) {
-    DLOG(ERROR) << "Unable to create a PhishingScorer - corrupt model?";
-    return;
+  safe_browsing::Scorer* scorer = NULL;
+  // An empty model string means we should disable client-side phishing
+  // detection.
+  if (!model.empty()) {
+    scorer = safe_browsing::Scorer::Create(model);
+    if (!scorer) {
+      DLOG(ERROR) << "Unable to create a PhishingScorer - corrupt model?";
+      return;
+    }
   }
   PhishingClassifierDelegates::iterator i;
   for (i = g_delegates.Get().begin(); i != g_delegates.Get().end(); ++i) {

@@ -15,8 +15,11 @@
 #include "base/task.h"
 #include "base/time.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "chrome/common/net/http_return.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/safe_browsing/client_model.pb.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/common/safe_browsing/safebrowsing_messages.h"
@@ -67,7 +70,7 @@ ClientSideDetectionService::ClientSideDetectionService(
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
       request_context_getter_(request_context_getter) {
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CREATED,
-                 NotificationService::AllSources());
+                 NotificationService::AllBrowserContextsAndSources());
 }
 
 ClientSideDetectionService::~ClientSideDetectionService() {
@@ -90,8 +93,9 @@ ClientSideDetectionService* ClientSideDetectionService::Create(
   return service.release();
 }
 
-void ClientSideDetectionService::SetEnabled(bool enabled) {
+void ClientSideDetectionService::SetEnabledAndRefreshState(bool enabled) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  SendModelToRenderers();  // always refresh the renderer state
   if (enabled == enabled_)
     return;
   enabled_ = enabled;
@@ -211,8 +215,19 @@ void ClientSideDetectionService::Observe(
 
 void ClientSideDetectionService::SendModelToProcess(
     RenderProcessHost* process) {
-  VLOG(2) << "Sending phishing model to renderer";
-  process->Send(new SafeBrowsingMsg_SetPhishingModel(model_str_));
+  // The ClientSideDetectionService is enabled if _any_ active profile has
+  // SafeBrowsing turned on.  Here we check the profile for each renderer
+  // process and only send the model to those that have SafeBrowsing enabled.
+  Profile* profile = Profile::FromBrowserContext(process->browser_context());
+  std::string model;
+  if (profile->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled)) {
+    VLOG(2) << "Sending phishing model to RenderProcessHost @" << process;
+    model = model_str_;
+  } else {
+    VLOG(2) << "Disabling client-side phishing detection for "
+            << "RenderProcessHost @" << process;
+  }
+  process->Send(new SafeBrowsingMsg_SetPhishingModel(model));
 }
 
 void ClientSideDetectionService::SendModelToRenderers() {

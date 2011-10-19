@@ -61,17 +61,19 @@ class ClientSideDetectionService : public URLFetcher::Delegate,
   virtual ~ClientSideDetectionService();
 
   // Creates a client-side detection service.  The service is initially
-  // disabled, use SetEnabled() to start it.  The caller takes ownership of the
-  // object.  This function may return NULL.
+  // disabled, use SetEnabledAndRefreshState() to start it.  The caller takes
+  // ownership of the object.  This function may return NULL.
   static ClientSideDetectionService* Create(
       net::URLRequestContextGetter* request_context_getter);
 
-  // Enables or disables the service.  This is usually called by the
-  // SafeBrowsingService, which tracks whether any profile uses these services
-  // at all.  Disabling cancels any pending requests; existing
-  // ClientSideDetectionHosts will have their callbacks called with "false"
-  // verdicts.  Enabling starts downloading the model after a delay.
-  void SetEnabled(bool enabled);
+  // Enables or disables the service, and refreshes the state of all renderers.
+  // This is usually called by the SafeBrowsingService, which tracks whether
+  // any profile uses these services at all.  Disabling cancels any pending
+  // requests; existing ClientSideDetectionHosts will have their callbacks
+  // called with "false" verdicts.  Enabling starts downloading the model after
+  // a delay.  In all cases, each render process is updated to match the state
+  // of the SafeBrowsing preference for that profile.
+  void SetEnabledAndRefreshState(bool enabled);
 
   bool enabled() const {
     return enabled_;
@@ -164,7 +166,8 @@ class ClientSideDetectionService : public URLFetcher::Delegate,
   friend class ClientSideDetectionServiceTest;
   FRIEND_TEST_ALL_PREFIXES(ClientSideDetectionServiceTest, FetchModelTest);
   FRIEND_TEST_ALL_PREFIXES(ClientSideDetectionServiceTest, SetBadSubnets);
-  FRIEND_TEST_ALL_PREFIXES(ClientSideDetectionServiceTest, SetEnabled);
+  FRIEND_TEST_ALL_PREFIXES(ClientSideDetectionServiceTest,
+                           SetEnabledAndRefreshState);
   FRIEND_TEST_ALL_PREFIXES(ClientSideDetectionServiceTest, IsBadIpAddress);
   FRIEND_TEST_ALL_PREFIXES(ClientSideDetectionServiceTest,
                            IsFalsePositiveResponse);
