@@ -6,7 +6,6 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/gtk/constrained_window_gtk.h"
-#include "chrome/browser/ui/gtk/tab_contents_drag_source.h"
 #include "chrome/browser/tab_contents/web_drag_bookmark_handler_gtk.h"
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_view_delegate.h"
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_view_views.h"
@@ -14,6 +13,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/tab_contents/web_drag_dest_gtk.h"
+#include "content/browser/tab_contents/web_drag_source_gtk.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 

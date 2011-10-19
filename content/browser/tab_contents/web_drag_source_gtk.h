@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_GTK_TAB_CONTENTS_DRAG_SOURCE_H_
-#define CHROME_BROWSER_UI_GTK_TAB_CONTENTS_DRAG_SOURCE_H_
+#ifndef CONTENT_BROWSER_TAB_WEB_DRAG_SOURCE_GTK_H_
+#define CONTENT_BROWSER_TAB_WEB_DRAG_SOURCE_GTK_H_
 #pragma once
 
 #include <gtk/gtk.h>
@@ -12,6 +12,7 @@
 #include "base/file_path.h"
 #include "base/message_loop.h"
 #include "base/string16.h"
+#include "content/common/content_export.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
 #include "ui/base/gtk/gtk_signal.h"
@@ -25,7 +26,7 @@ struct WebDropData;
 
 // TabContentsDragSource takes care of managing the drag from a TabContents
 // with Gtk.
-class TabContentsDragSource : public MessageLoopForUI::Observer {
+class CONTENT_EXPORT TabContentsDragSource : public MessageLoopForUI::Observer {
  public:
   explicit TabContentsDragSource(TabContents* tab_contents);
   virtual ~TabContentsDragSource();
@@ -106,4 +107,4 @@ class TabContentsDragSource : public MessageLoopForUI::Observer {
   DISALLOW_COPY_AND_ASSIGN(TabContentsDragSource);
 };
 
-#endif  // CHROME_BROWSER_UI_GTK_TAB_CONTENTS_DRAG_SOURCE_H_
+#endif  // CONTENT_BROWSER_TAB_WEB_DRAG_SOURCE_GTK_H_

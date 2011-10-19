@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/gtk/tab_contents_drag_source.h"
+#include "content/browser/tab_contents/web_drag_source_gtk.h"
 
 #include <string>
 
