@@ -152,6 +152,7 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
 
  protected:
   friend class ExtensionWebstorePrivateApiTest;
+  friend class WebstoreInlineInstallUnpackFailureTest;
 
   // Disables showing UI (ErrorBox, etc.) for install failures. To be used only
   // in tests.
