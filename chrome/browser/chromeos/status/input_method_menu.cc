@@ -659,6 +659,11 @@ string16 InputMethodMenu::GetTextForIndicator(
 
 string16 InputMethodMenu::GetTextForMenu(
     const input_method::InputMethodDescriptor& input_method) {
+  if (!input_method.name().empty()) {
+    // If the descriptor has a name, use it.
+    return UTF8ToUTF16(input_method.name());
+  }
+
   // We don't show language here.  Name of keyboard layout or input method
   // usually imply (or explicitly include) its language.
 
@@ -678,9 +683,9 @@ string16 InputMethodMenu::GetTextForMenu(
   string16 text =
       manager->GetInputMethodUtil()->TranslateString(input_method.id());
   if (text == standard_input_method_text ||
-      language_code == "de" ||
-      language_code == "fr" ||
-      language_code == "nl") {
+             language_code == "de" ||
+             language_code == "fr" ||
+             language_code == "nl") {
     text = GetLanguageName(language_code) + UTF8ToUTF16(" - ") + text;
   }
 

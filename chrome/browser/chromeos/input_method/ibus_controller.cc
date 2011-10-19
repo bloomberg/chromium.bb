@@ -37,6 +37,7 @@ InputMethodDescriptors* GetSupportedInputMethodsInternal(
     input_methods->push_back(InputMethodDescriptor(
         whitelist,
         kIBusEngines[i].input_method_id,
+        "",
         kIBusEngines[i].xkb_layout_id,
         kIBusEngines[i].language_code));
   }
@@ -76,9 +77,11 @@ class InputMethodWhitelist {
 InputMethodDescriptor::InputMethodDescriptor(
     const InputMethodWhitelist& whitelist,
     const std::string& id,
+    const std::string& name,
     const std::string& raw_layout,
     const std::string& language_code)
     : id_(id),
+      name_(name),
       language_code_(language_code) {
   keyboard_layout_ = kFallbackLayout;
   base::SplitString(raw_layout, ',', &virtual_keyboard_layouts_);
@@ -103,10 +106,12 @@ InputMethodDescriptor::~InputMethodDescriptor() {
 
 InputMethodDescriptor::InputMethodDescriptor(
     const std::string& in_id,
+    const std::string& in_name,
     const std::string& in_keyboard_layout,
     const std::string& in_virtual_keyboard_layouts,
     const std::string& in_language_code)
     : id_(in_id),
+      name_(in_name),
       keyboard_layout_(in_keyboard_layout),
       language_code_(in_language_code) {
   DCHECK(keyboard_layout_.find(",") == std::string::npos);
@@ -118,12 +123,13 @@ InputMethodDescriptor::InputMethodDescriptor(
 InputMethodDescriptor
 InputMethodDescriptor::GetFallbackInputMethodDescriptor() {
   return InputMethodDescriptor(
-      "xkb:us::eng", kFallbackLayout, kFallbackLayout, "eng");
+      "xkb:us::eng", "", kFallbackLayout, kFallbackLayout, "eng");
 }
 
 std::string InputMethodDescriptor::ToString() const {
   std::stringstream stream;
   stream << "id=" << id()
+         << ", name=" << name()
          << ", keyboard_layout=" << keyboard_layout()
          << ", virtual_keyboard_layouts=" << virtual_keyboard_layouts_.size()
          << ", language_code=" << language_code();
@@ -770,9 +776,11 @@ class IBusControllerImpl : public IBusController {
 
   virtual InputMethodDescriptor CreateInputMethodDescriptor(
       const std::string& id,
+      const std::string& name,
       const std::string& raw_layout,
       const std::string& language_code) {
-    return InputMethodDescriptor(whitelist_, id, raw_layout, language_code);
+    return InputMethodDescriptor(whitelist_, id, name, raw_layout,
+                                 language_code);
   }
 
   virtual InputMethodDescriptors* GetSupportedInputMethods() {
@@ -994,6 +1002,7 @@ class IBusControllerImpl : public IBusController {
     if (engine_info) {
       current_input_method = CreateInputMethodDescriptor(
           engine_info->input_method_id,
+          "",
           engine_info->xkb_layout_id,
           engine_info->language_code);
     } else {
@@ -1211,7 +1220,7 @@ class IBusControllerImpl : public IBusController {
       const gchar* layout = ibus_engine_desc_get_layout(engine_desc);
       const gchar* language = ibus_engine_desc_get_language(engine_desc);
       if (whitelist_.InputMethodIdIsWhitelisted(name)) {
-        out->push_back(CreateInputMethodDescriptor(name, layout, language));
+        out->push_back(CreateInputMethodDescriptor(name, "", layout, language));
         VLOG(1) << name << " (preloaded)";
       }
     }
@@ -1319,9 +1328,11 @@ class IBusControllerStubImpl : public IBusController {
   // IBusControllerImpl.
   virtual InputMethodDescriptor CreateInputMethodDescriptor(
       const std::string& id,
+      const std::string& name,
       const std::string& raw_layout,
       const std::string& language_code) {
-    return InputMethodDescriptor(whitelist_, id, raw_layout, language_code);
+    return InputMethodDescriptor(whitelist_, id, name, raw_layout,
+                                 language_code);
   }
   // See the comment above. We have to keep the implementation the same as
   // IBusControllerImpl.

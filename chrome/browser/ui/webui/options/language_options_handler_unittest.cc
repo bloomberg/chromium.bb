@@ -26,7 +26,8 @@ static InputMethodDescriptor GetDesc(IBusController* controller,
                                      const std::string& id,
                                      const std::string& raw_layout,
                                      const std::string& language_code) {
-  return controller->CreateInputMethodDescriptor(id, raw_layout, language_code);
+  return controller->CreateInputMethodDescriptor(id, "", raw_layout,
+                                                 language_code);
 }
 
 static InputMethodDescriptors CreateInputMethodDescriptors() {

@@ -26,6 +26,7 @@ class InputMethodDescriptor {
   InputMethodDescriptor();
   InputMethodDescriptor(const InputMethodWhitelist& whitelist,
                         const std::string& in_id,
+                        const std::string& in_name,
                         const std::string& in_raw_layout,
                         const std::string& in_language_code);
   ~InputMethodDescriptor();
@@ -38,6 +39,7 @@ class InputMethodDescriptor {
   std::string ToString() const;
 
   const std::string& id() const { return id_; }
+  const std::string& name() const { return name_; }
   const std::string& keyboard_layout() const { return keyboard_layout_; }
   const std::vector<std::string>& virtual_keyboard_layouts() const {
     return virtual_keyboard_layouts_;
@@ -52,6 +54,7 @@ class InputMethodDescriptor {
  private:
   // For GetFallbackInputMethodDescriptor(). Use the public constructor instead.
   InputMethodDescriptor(const std::string& in_id,
+                        const std::string& in_name,
                         const std::string& in_keyboard_layout,
                         const std::string& in_virtual_keyboard_layouts,
                         const std::string& in_language_code);
@@ -59,6 +62,9 @@ class InputMethodDescriptor {
   // An ID that identifies an input method engine (e.g., "t:latn-post",
   // "pinyin", "hangul").
   std::string id_;
+  // A name used to specify the user-visible name of this input method.  It is
+  // only used by extension IMEs, and should be blank for internal IMEs.
+  std::string name_;
   // A preferred physical keyboard layout for the input method (e.g., "us",
   // "us(dvorak)", "jp"). Comma separated layout names do NOT appear.
   std::string keyboard_layout_;
@@ -250,6 +256,7 @@ class IBusController {
   // (e.g. "special-us-virtual-keyboard-for-the-input-method,us")
   virtual InputMethodDescriptor CreateInputMethodDescriptor(
       const std::string& id,
+      const std::string& name,
       const std::string& raw_layout,
       const std::string& language_code) = 0;
 

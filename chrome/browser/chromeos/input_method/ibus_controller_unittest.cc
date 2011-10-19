@@ -23,7 +23,7 @@ namespace {
 InputMethodDescriptor GetDesc(IBusController* controller,
                               const std::string& raw_layout) {
   return controller->CreateInputMethodDescriptor(
-      "id", raw_layout, "language_code");
+      "id", "", raw_layout, "language_code");
 }
 }  // namespace
 

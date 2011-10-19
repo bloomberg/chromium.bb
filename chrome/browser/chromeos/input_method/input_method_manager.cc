@@ -397,7 +397,7 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
     std::string virtual_layouts = JoinString(layouts, ',');
 
     extra_input_method_ids_[id] = ibus_controller_->CreateInputMethodDescriptor(
-        id, virtual_layouts, language);
+        id, name, virtual_layouts, language);
     active_input_method_ids_.push_back(id);
     // TODO(yusukes): Call UpdateInputMethodSpecificHotkeys() here once IME
     // extension supports hotkeys.
