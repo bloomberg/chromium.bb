@@ -817,6 +817,7 @@ function reloadPreviewPages(previewUid, previewResponseId) {
 
   hasPendingPreviewRequest = false;
   isPrintReadyMetafileReady = true;
+  previewArea.pdfLoaded = true;
   sendPrintDocumentRequestIfNeeded();
 }
 
