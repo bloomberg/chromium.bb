@@ -129,6 +129,19 @@ def _CheckNoNewWStrings(input_api, output_api):
       '\n'.join(problems))]
 
 
+def _CheckNoDEPSGIT(input_api, output_api):
+  """Make sure .DEPS.git is never modified manually."""
+  if any(f.LocalPath().endswith('.DEPS.git') for f in
+      input_api.AffectedFiles()):
+    return [output_api.PresubmitError(
+      'Never commit changes to .DEPS.git. This file is maintained by an\n'
+      'automated system based on what\'s in DEPS and your changes will be\n'
+      'overwritten.\n'
+      'See http://code.google.com/p/chromium/wiki/UsingNewGit#Rolling_DEPS\n'
+      'for more information')]
+  return []
+
+
 def _CommonChecks(input_api, output_api):
   """Checks common to both upload and commit."""
   results = []
@@ -140,6 +153,7 @@ def _CommonChecks(input_api, output_api):
     _CheckNoProductionCodeUsingTestOnlyFunctions(input_api, output_api))
   results.extend(_CheckNoIOStreamInHeaders(input_api, output_api))
   results.extend(_CheckNoNewWStrings(input_api, output_api))
+  results.extend(_CheckNoDEPSGIT(input_api, output_api))
   return results
 
 
