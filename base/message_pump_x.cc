@@ -147,7 +147,9 @@ bool MessagePumpX::HasXInput2() {
 void MessagePumpX::InitXSource() {
   DCHECK(!x_source_);
   GPollFD* x_poll = new GPollFD();
-  x_poll->fd = ConnectionNumber(GetDefaultXDisplay());
+  Display* display = GetDefaultXDisplay();
+  CHECK(display) << "Unable to get connection to X server";
+  x_poll->fd = ConnectionNumber(display);
   x_poll->events = G_IO_IN;
 
   x_source_ = g_source_new(&XSourceFuncs, sizeof(GSource));
