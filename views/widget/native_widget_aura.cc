@@ -534,13 +534,13 @@ bool NativeWidgetAura::ShouldActivate(aura::Event* event) {
 
 void NativeWidgetAura::OnActivated() {
   delegate_->OnNativeWidgetActivationChanged(true);
-  if (IsVisible())
+  if (IsVisible() && GetWidget()->non_client_view())
     GetWidget()->non_client_view()->SchedulePaint();
 }
 
 void NativeWidgetAura::OnLostActive() {
   delegate_->OnNativeWidgetActivationChanged(false);
-  if (IsVisible())
+  if (IsVisible() && GetWidget()->non_client_view())
     GetWidget()->non_client_view()->SchedulePaint();
 }
 

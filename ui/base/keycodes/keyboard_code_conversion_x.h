@@ -17,7 +17,7 @@ UI_EXPORT KeyboardCode KeyboardCodeFromXKeyEvent(XEvent* xev);
 UI_EXPORT KeyboardCode KeyboardCodeFromXKeysym(unsigned int keysym);
 
 // Converts a hardware keycode into a key symbol on a standard US PC keyboard.
-unsigned int DefaultXKeysymFromHardwareKeycode(unsigned int keycode);
+UI_EXPORT unsigned int DefaultXKeysymFromHardwareKeycode(unsigned int keycode);
 
 }  // namespace ui
 

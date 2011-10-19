@@ -42,7 +42,10 @@
 
 #include "base/event_types.h"
 #include "base/logging.h"
+#include "ui/aura/event.h"
+#include "ui/base/events.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/base/keycodes/keyboard_code_conversion_x.h"
 
 namespace content {
 
@@ -54,6 +57,26 @@ namespace {
 double XEventTimeToWebEventTime(Time time) {
   // Convert from time in ms to time in s.
   return time / 1000.0;
+}
+
+int EventFlagsToWebEventModifiers(int flags) {
+  int modifiers = 0;
+  if (flags & ui::EF_SHIFT_DOWN)
+    modifiers |= WebKit::WebInputEvent::ShiftKey;
+  if (flags & ui::EF_CONTROL_DOWN)
+    modifiers |= WebKit::WebInputEvent::ControlKey;
+  if (flags & ui::EF_ALT_DOWN)
+    modifiers |= WebKit::WebInputEvent::AltKey;
+  // TODO(beng): MetaKey/META_MASK
+  if (flags & ui::EF_LEFT_BUTTON_DOWN)
+    modifiers |= WebKit::WebInputEvent::LeftButtonDown;
+  if (flags & ui::EF_MIDDLE_BUTTON_DOWN)
+    modifiers |= WebKit::WebInputEvent::MiddleButtonDown;
+  if (flags & ui::EF_RIGHT_BUTTON_DOWN)
+    modifiers |= WebKit::WebInputEvent::RightButtonDown;
+  if (flags & ui::EF_CAPS_LOCK_DOWN)
+    modifiers |= WebKit::WebInputEvent::CapsLockOn;
+  return modifiers;
 }
 
 int XStateToWebEventModifiers(unsigned int state) {
@@ -79,8 +102,7 @@ int XStateToWebEventModifiers(unsigned int state) {
 }
 
 int XKeyEventToWindowsKeyCode(XKeyEvent* event) {
-  // TODO(beng):
-  return 0;
+  return ui::KeyboardCodeFromXKeyEvent((XEvent*)event);
 }
 
 // From
@@ -155,117 +177,77 @@ WebKit::WebMouseEvent::Button ButtonFromXState(int state) {
 
 // We have to count clicks (for double-clicks) manually.
 unsigned int g_num_clicks = 0;
-::Window* g_last_click_window = NULL;
-Time g_last_click_time = 0;
+double g_last_click_time = 0.0;
 int g_last_click_x = 0;
- int g_last_click_y = 0;
+int g_last_click_y = 0;
 WebKit::WebMouseEvent::Button g_last_click_button =
     WebKit::WebMouseEvent::ButtonNone;
 
-bool ShouldForgetPreviousClick(::Window* window, Time time, int x, int y) {
-  if (window != g_last_click_window)
-    return true;
-
-  const Time double_click_time = 250;
+bool ShouldForgetPreviousClick(double time, int x, int y) {
+  const double double_click_time = 0.250;  // in seconds
   const int double_click_distance = 5;
-  return (time - g_last_click_time) > double_click_time
-      || std::abs(x - g_last_click_x) > double_click_distance
-      || std::abs(y - g_last_click_y) > double_click_distance;
+  return (time - g_last_click_time) > double_click_time ||
+      std::abs(x - g_last_click_x) > double_click_distance ||
+      std::abs(y - g_last_click_y) > double_click_distance;
 }
 
 void ResetClickCountState() {
   g_num_clicks = 0;
-  g_last_click_window = NULL;
-  g_last_click_time = 0;
+  g_last_click_time = 0.0;
   g_last_click_x = 0;
   g_last_click_y = 0;
   g_last_click_button = WebKit::WebMouseEvent::ButtonNone;
 }
 
-void InitWebKitEventFromButtonEvent(WebKit::WebMouseEvent* webkit_event,
-                                    XButtonEvent* native_event) {
-  webkit_event->modifiers = XStateToWebEventModifiers(native_event->state);
-  webkit_event->timeStampSeconds = XEventTimeToWebEventTime(native_event->time);
+}  // namespace
 
-  webkit_event->x = native_event->x;
-  webkit_event->y = native_event->y;
-  webkit_event->windowX = webkit_event->x;
-  webkit_event->windowY = webkit_event->y;
-  webkit_event->globalX = native_event->x_root;
-  webkit_event->globalY = native_event->y_root;
+WebKit::WebMouseEvent MakeWebMouseEventFromAuraEvent(aura::MouseEvent* event) {
+  WebKit::WebMouseEvent webkit_event;
 
-  switch (native_event->type) {
-    case ButtonPress:
-      webkit_event->type = WebKit::WebInputEvent::MouseDown;
-      webkit_event->button = ButtonFromXButton(native_event->button);
-      if (!ShouldForgetPreviousClick(&native_event->window,
-                                    native_event->time,
-                                    native_event->x,
-                                    native_event->y) &&
-          webkit_event->button == g_last_click_button) {
+  webkit_event.modifiers = EventFlagsToWebEventModifiers(event->flags());
+  webkit_event.timeStampSeconds = event->time_stamp().ToDoubleT();
+
+  webkit_event.button = WebKit::WebMouseEvent::ButtonNone;
+  if (event->flags() & ui::EF_LEFT_BUTTON_DOWN)
+    webkit_event.button = WebKit::WebMouseEvent::ButtonLeft;
+  if (event->flags() & ui::EF_MIDDLE_BUTTON_DOWN)
+    webkit_event.button = WebKit::WebMouseEvent::ButtonMiddle;
+  if (event->flags() & ui::EF_RIGHT_BUTTON_DOWN)
+    webkit_event.button = WebKit::WebMouseEvent::ButtonRight;
+
+  switch (event->type()) {
+    case ui::ET_MOUSE_PRESSED:
+      webkit_event.type = WebKit::WebInputEvent::MouseDown;
+      if (!ShouldForgetPreviousClick(event->time_stamp().ToDoubleT(),
+            event->location().x(), event->location().y()) &&
+          webkit_event.button == g_last_click_button) {
         ++g_num_clicks;
       } else {
         g_num_clicks = 1;
-        g_last_click_window = &native_event->window;
-        g_last_click_x = native_event->x;
-        g_last_click_y = native_event->y;
-        g_last_click_button = webkit_event->button;
+        g_last_click_time = event->time_stamp().ToDoubleT();
+        g_last_click_x = event->location().x();
+        g_last_click_y = event->location().y();
+        g_last_click_button = webkit_event.button;
       }
+      webkit_event.clickCount = g_num_clicks;
       break;
-    case ButtonRelease:
-      webkit_event->type = WebKit::WebInputEvent::MouseUp;
-      webkit_event->button = ButtonFromXButton(native_event->button);
+    case ui::ET_MOUSE_RELEASED:
+      webkit_event.type = WebKit::WebInputEvent::MouseUp;
       break;
-    default:
-      NOTREACHED();
-      break;
-  }
-  webkit_event->clickCount = g_num_clicks;
-}
-
-void InitWebKitEventFromMotionEvent(WebKit::WebMouseEvent* webkit_event,
-                                    XMotionEvent* native_event) {
-  webkit_event->modifiers = XStateToWebEventModifiers(native_event->state);
-  webkit_event->timeStampSeconds = XEventTimeToWebEventTime(native_event->time);
-
-  webkit_event->x = native_event->x;
-  webkit_event->y = native_event->y;
-  webkit_event->windowX = webkit_event->x;
-  webkit_event->windowY = webkit_event->y;
-  webkit_event->globalX = native_event->x_root;
-  webkit_event->globalY = native_event->y_root;
-
-  webkit_event->type = WebKit::WebInputEvent::MouseMove;
-  webkit_event->button = ButtonFromXState(native_event->state);
-  if (ShouldForgetPreviousClick(&native_event->window,
-                                native_event->time,
-                                native_event->x,
-                                native_event->y)) {
-    ResetClickCountState();
-  }
-}
-
-}  // namespace
-
-WebKit::WebMouseEvent MakeUntranslatedWebMouseEventFromNativeEvent(
-    base::NativeEvent native_event) {
-  WebKit::WebMouseEvent webkit_event;
-
-  // In X, button and mouse movement events are different event types that
-  // require different handling.
-  // TODO(sadrul): Add support for XInput2 events.
-  switch (native_event->type) {
-    case ButtonPress:
-    case ButtonRelease:
-      InitWebKitEventFromButtonEvent(&webkit_event, &native_event->xbutton);
-      break;
-    case MotionNotify:
-      InitWebKitEventFromMotionEvent(&webkit_event, &native_event->xmotion);
+    case ui::ET_MOUSE_ENTERED:
+    case ui::ET_MOUSE_EXITED:
+    case ui::ET_MOUSE_MOVED:
+    case ui::ET_MOUSE_DRAGGED:
+      webkit_event.type = WebKit::WebInputEvent::MouseMove;
+      if (ShouldForgetPreviousClick(event->time_stamp().ToDoubleT(),
+            event->location().x(), event->location().y()))
+        ResetClickCountState();
       break;
     default:
-      NOTREACHED();
+      NOTIMPLEMENTED() << "Received unexpected event: " << event->type();
       break;
   }
+
   return webkit_event;
 }
 
@@ -299,7 +281,7 @@ WebKit::WebKeyboardEvent MakeWebKeyboardEventFromNativeEvent(
     webkit_event.unmodifiedText[0] = '\r';
   } else {
     webkit_event.unmodifiedText[0] =
-        static_cast<WebKit::WebUChar>(native_key_event->keycode);
+        ui::DefaultXKeysymFromHardwareKeycode(native_key_event->keycode);
   }
 
   if (webkit_event.modifiers & WebKit::WebInputEvent::ControlKey) {

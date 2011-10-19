@@ -10,6 +10,7 @@ namespace content {
 
 WebKit::WebMouseEvent MakeUntranslatedWebMouseEventFromNativeEvent(
     base::NativeEvent native_event);
+WebKit::WebMouseEvent MakeWebMouseEventFromAuraEvent(aura::MouseEvent* event);
 WebKit::WebKeyboardEvent MakeWebKeyboardEventFromNativeEvent(
     base::NativeEvent native_event);
 
@@ -29,11 +30,21 @@ WebKit::WebKeyboardEvent MakeWebKeyboardEventFromNativeEvent(
 // aura::Event's base::NativeEvent, and then replace the coordinate fields with
 // the translated values from the aura::Event.
 //
+// The exception is mouse events on linux. The aura::MouseEvent contains enough
+// necessary information to construct a WebMouseEvent. So instead of extracting
+// the information from the XEvent, which can be tricky when supporting both
+// XInput2 and XInput, the WebMouseEvent is constructed from the
+// aura::MouseEvent. This will not be necessary once only XInput2 is supported.
+//
 
 WebKit::WebMouseEvent MakeWebMouseEvent(aura::MouseEvent* event) {
+#if defined(OS_WIN)
   // Construct an untranslated event from the platform event data.
   WebKit::WebMouseEvent webkit_event =
       MakeUntranslatedWebMouseEventFromNativeEvent(event->native_event());
+#else
+  WebKit::WebMouseEvent webkit_event = MakeWebMouseEventFromAuraEvent(event);
+#endif
 
   // Replace the event's coordinate fields with translated position data from
   // |event|.
