@@ -427,6 +427,7 @@ CountryNames::CountryNames() {
 
   // Add a few other common synonyms.
   common_names_.insert(std::make_pair("UNITED STATES OF AMERICA", "US"));
+  common_names_.insert(std::make_pair("U.S.A.", "US"));
   common_names_.insert(std::make_pair("GREAT BRITAIN", "GB"));
   common_names_.insert(std::make_pair("UK", "GB"));
   common_names_.insert(std::make_pair("BRASIL", "BR"));
