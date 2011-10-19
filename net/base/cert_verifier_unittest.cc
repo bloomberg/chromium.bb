@@ -9,6 +9,7 @@
 #include "base/stringprintf.h"
 #include "net/base/cert_test_util.h"
 #include "net/base/net_errors.h"
+#include "net/base/net_log.h"
 #include "net/base/test_completion_callback.h"
 #include "net/base/x509_certificate.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -50,7 +51,7 @@ TEST(CertVerifierTest, CacheHit) {
   CertVerifier::RequestHandle request_handle;
 
   error = verifier.Verify(test_cert, "www.example.com", 0, &verify_result,
-                          callback.callback(), &request_handle);
+                          callback.callback(), &request_handle, BoundNetLog());
   ASSERT_EQ(ERR_IO_PENDING, error);
   ASSERT_TRUE(request_handle != NULL);
   error = callback.WaitForResult();
@@ -60,7 +61,7 @@ TEST(CertVerifierTest, CacheHit) {
   ASSERT_EQ(0u, verifier.inflight_joins());
 
   error = verifier.Verify(test_cert, "www.example.com", 0, &verify_result,
-                          callback.callback(), &request_handle);
+                          callback.callback(), &request_handle, BoundNetLog());
   // Synchronous completion.
   ASSERT_NE(ERR_IO_PENDING, error);
   ASSERT_TRUE(IsCertificateError(error));
@@ -91,11 +92,12 @@ TEST(CertVerifierTest, InflightJoin) {
   CertVerifier::RequestHandle request_handle2;
 
   error = verifier.Verify(test_cert, "www.example.com", 0, &verify_result,
-                          callback.callback(), &request_handle);
+                          callback.callback(), &request_handle, BoundNetLog());
   ASSERT_EQ(ERR_IO_PENDING, error);
   ASSERT_TRUE(request_handle != NULL);
-  error = verifier.Verify(test_cert, "www.example.com", 0, &verify_result2,
-                          callback2.callback(), &request_handle2);
+  error = verifier.Verify(
+      test_cert, "www.example.com", 0, &verify_result2,
+      callback2.callback(), &request_handle2, BoundNetLog());
   ASSERT_EQ(ERR_IO_PENDING, error);
   ASSERT_TRUE(request_handle2 != NULL);
   error = callback.WaitForResult();
@@ -124,8 +126,9 @@ TEST(CertVerifierTest, ExpiredCacheEntry) {
   TestCompletionCallback callback;
   CertVerifier::RequestHandle request_handle;
 
-  error = verifier.Verify(test_cert, "www.example.com", 0, &verify_result,
-                          callback.callback(), &request_handle);
+  error = verifier.Verify(
+      test_cert, "www.example.com", 0, &verify_result,
+      callback.callback(), &request_handle, BoundNetLog());
   ASSERT_EQ(ERR_IO_PENDING, error);
   ASSERT_TRUE(request_handle != NULL);
   error = callback.WaitForResult();
@@ -135,8 +138,9 @@ TEST(CertVerifierTest, ExpiredCacheEntry) {
   ASSERT_EQ(0u, verifier.inflight_joins());
 
   // Before expiration, should have a cache hit.
-  error = verifier.Verify(test_cert, "www.example.com", 0, &verify_result,
-                          callback.callback(), &request_handle);
+  error = verifier.Verify(
+      test_cert, "www.example.com", 0, &verify_result,
+      callback.callback(), &request_handle, BoundNetLog());
   // Synchronous completion.
   ASSERT_NE(ERR_IO_PENDING, error);
   ASSERT_TRUE(IsCertificateError(error));
@@ -149,8 +153,9 @@ TEST(CertVerifierTest, ExpiredCacheEntry) {
   ASSERT_EQ(1u, verifier.GetCacheSize());
   current_time += base::TimeDelta::FromMinutes(60);
   time_service->set_current_time(current_time);
-  error = verifier.Verify(test_cert, "www.example.com", 0, &verify_result,
-                          callback.callback(), &request_handle);
+  error = verifier.Verify(
+      test_cert, "www.example.com", 0, &verify_result,
+      callback.callback(), &request_handle, BoundNetLog());
   ASSERT_EQ(ERR_IO_PENDING, error);
   ASSERT_TRUE(request_handle != NULL);
   ASSERT_EQ(0u, verifier.GetCacheSize());
@@ -183,8 +188,9 @@ TEST(CertVerifierTest, FullCache) {
   TestCompletionCallback callback;
   CertVerifier::RequestHandle request_handle;
 
-  error = verifier.Verify(test_cert, "www.example.com", 0, &verify_result,
-                          callback.callback(), &request_handle);
+  error = verifier.Verify(
+      test_cert, "www.example.com", 0, &verify_result,
+      callback.callback(), &request_handle, BoundNetLog());
   ASSERT_EQ(ERR_IO_PENDING, error);
   ASSERT_TRUE(request_handle != NULL);
   error = callback.WaitForResult();
@@ -195,8 +201,9 @@ TEST(CertVerifierTest, FullCache) {
 
   for (unsigned i = 0; i < kCacheSize; i++) {
     std::string hostname = base::StringPrintf("www%d.example.com", i + 1);
-    error = verifier.Verify(test_cert, hostname, 0, &verify_result,
-                            callback.callback(), &request_handle);
+    error = verifier.Verify(
+        test_cert, hostname, 0, &verify_result,
+        callback.callback(), &request_handle, BoundNetLog());
     ASSERT_EQ(ERR_IO_PENDING, error);
     ASSERT_TRUE(request_handle != NULL);
     error = callback.WaitForResult();
@@ -209,8 +216,9 @@ TEST(CertVerifierTest, FullCache) {
   ASSERT_EQ(kCacheSize, verifier.GetCacheSize());
   current_time += base::TimeDelta::FromMinutes(60);
   time_service->set_current_time(current_time);
-  error = verifier.Verify(test_cert, "www999.example.com", 0, &verify_result,
-                          callback.callback(), &request_handle);
+  error = verifier.Verify(
+      test_cert, "www999.example.com", 0, &verify_result,
+      callback.callback(), &request_handle, BoundNetLog());
   ASSERT_EQ(ERR_IO_PENDING, error);
   ASSERT_TRUE(request_handle != NULL);
   ASSERT_EQ(kCacheSize, verifier.GetCacheSize());
@@ -235,8 +243,9 @@ TEST(CertVerifierTest, CancelRequest) {
   CertVerifyResult verify_result;
   CertVerifier::RequestHandle request_handle;
 
-  error = verifier.Verify(test_cert, "www.example.com", 0, &verify_result,
-                          base::Bind(&FailTest), &request_handle);
+  error = verifier.Verify(
+      test_cert, "www.example.com", 0, &verify_result,
+      base::Bind(&FailTest), &request_handle, BoundNetLog());
   ASSERT_EQ(ERR_IO_PENDING, error);
   ASSERT_TRUE(request_handle != NULL);
   verifier.CancelRequest(request_handle);
@@ -246,8 +255,9 @@ TEST(CertVerifierTest, CancelRequest) {
   // worker thread) is likely to complete by the end of this test.
   TestCompletionCallback callback;
   for (int i = 0; i < 5; ++i) {
-    error = verifier.Verify(test_cert, "www2.example.com", 0, &verify_result,
-                            callback.callback(), &request_handle);
+    error = verifier.Verify(
+        test_cert, "www2.example.com", 0, &verify_result,
+        callback.callback(), &request_handle, BoundNetLog());
     ASSERT_EQ(ERR_IO_PENDING, error);
     ASSERT_TRUE(request_handle != NULL);
     error = callback.WaitForResult();
@@ -270,7 +280,7 @@ TEST(CertVerifierTest, CancelRequestThenQuit) {
   CertVerifier::RequestHandle request_handle;
 
   error = verifier.Verify(test_cert, "www.example.com", 0, &verify_result,
-                          callback.callback(), &request_handle);
+                          callback.callback(), &request_handle, BoundNetLog());
   ASSERT_EQ(ERR_IO_PENDING, error);
   ASSERT_TRUE(request_handle != NULL);
   verifier.CancelRequest(request_handle);

@@ -129,7 +129,9 @@ bool SSLHostInfo::ParseInner(const std::string& data) {
       verification_end_time_ = base::TimeTicks();
       int rv = verifier_.Verify(
           cert_.get(), hostname_, flags, &cert_verify_result_,
-          base::Bind(&SSLHostInfo::VerifyCallback, weak_factory_.GetWeakPtr()));
+          base::Bind(&SSLHostInfo::VerifyCallback, weak_factory_.GetWeakPtr()),
+          // TODO(willchan): Figure out how to use NetLog here.
+          BoundNetLog());
       if (rv != ERR_IO_PENDING)
         VerifyCallback(rv);
     } else {
