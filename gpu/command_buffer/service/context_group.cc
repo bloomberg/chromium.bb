@@ -63,10 +63,15 @@ bool ContextGroup::Initialize(const DisallowedFeatures& disallowed_features,
 
   GLint max_renderbuffer_size = 0;
   glGetIntegerv(GL_MAX_RENDERBUFFER_SIZE, &max_renderbuffer_size);
+  GLint max_samples = 0;
+  if (feature_info_.feature_flags().chromium_framebuffer_multisample) {
+    glGetIntegerv(GL_MAX_SAMPLES, &max_samples);
+  }
 
   buffer_manager_.reset(new BufferManager());
   framebuffer_manager_.reset(new FramebufferManager());
-  renderbuffer_manager_.reset(new RenderbufferManager(max_renderbuffer_size));
+  renderbuffer_manager_.reset(new RenderbufferManager(
+      max_renderbuffer_size, max_samples));
   shader_manager_.reset(new ShaderManager());
   program_manager_.reset(new ProgramManager());
 

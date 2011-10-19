@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,9 +13,10 @@ namespace gles2 {
 class RenderbufferManagerTest : public testing::Test {
  public:
   static const GLint kMaxSize = 128;
+  static const GLint kMaxSamples = 4;
 
   RenderbufferManagerTest()
-      : manager_(kMaxSize) {
+      : manager_(kMaxSize, kMaxSamples) {
   }
   ~RenderbufferManagerTest() {
     manager_.Destroy(false);
@@ -40,6 +41,7 @@ class RenderbufferManagerTest : public testing::Test {
 // GCC requires these declarations, but MSVC requires they not be present
 #ifndef COMPILER_MSVC
 const GLint RenderbufferManagerTest::kMaxSize;
+const GLint RenderbufferManagerTest::kMaxSamples;
 #endif
 
 TEST_F(RenderbufferManagerTest, Basic) {
@@ -47,6 +49,7 @@ TEST_F(RenderbufferManagerTest, Basic) {
   const GLuint kService1Id = 11;
   const GLuint kClient2Id = 2;
   EXPECT_EQ(kMaxSize, manager_.max_renderbuffer_size());
+  EXPECT_EQ(kMaxSamples, manager_.max_samples());
   // Check we can create renderbuffer.
   manager_.CreateRenderbufferInfo(kClient1Id, kService1Id);
   // Check renderbuffer got created.

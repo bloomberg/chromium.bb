@@ -3062,6 +3062,18 @@ bool GLES2DecoderImpl::GetHelper(
         return true;
       }
       return false;
+    case GL_MAX_SAMPLES:
+      *num_written = 1;
+      if (params) {
+        params[0] = renderbuffer_manager()->max_samples();
+      }
+      return true;
+    case GL_MAX_RENDERBUFFER_SIZE:
+      *num_written = 1;
+      if (params) {
+        params[0] = renderbuffer_manager()->max_renderbuffer_size();
+      }
+      return true;
     case GL_MAX_TEXTURE_SIZE:
       *num_written = 1;
       if (params) {
@@ -3857,6 +3869,19 @@ void GLES2DecoderImpl::DoRenderbufferStorageMultisample(
     return;
   }
 
+  if (samples > renderbuffer_manager()->max_samples()) {
+    SetGLError(GL_INVALID_VALUE,
+               "glGetRenderbufferStorageMultisample: samples too large");
+    return;
+  }
+
+  if (width > renderbuffer_manager()->max_renderbuffer_size() ||
+      height > renderbuffer_manager()->max_renderbuffer_size()) {
+    SetGLError(GL_INVALID_VALUE,
+               "glGetRenderbufferStorageMultisample: size too large");
+    return;
+  }
+
   GLenum impl_format = internalformat;
   if (gfx::GetGLImplementation() != gfx::kGLImplementationEGLGLES2) {
     switch (impl_format) {
@@ -3892,6 +3917,13 @@ void GLES2DecoderImpl::DoRenderbufferStorage(
   if (!bound_renderbuffer_) {
     SetGLError(GL_INVALID_OPERATION,
                "glGetRenderbufferStorage: no renderbuffer bound");
+    return;
+  }
+
+  if (width > renderbuffer_manager()->max_renderbuffer_size() ||
+      height > renderbuffer_manager()->max_renderbuffer_size()) {
+    SetGLError(GL_INVALID_VALUE,
+               "glGetRenderbufferStorage: size too large");
     return;
   }
 

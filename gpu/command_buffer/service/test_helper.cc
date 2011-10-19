@@ -35,6 +35,7 @@ const GLuint TestHelper::kServiceDefaultTextureCubemapId;
 const GLuint TestHelper::kServiceDefaultExternalTextureId;
 const GLuint TestHelper::kServiceBlackExternalTextureId;
 
+const GLint TestHelper::kMaxSamples;
 const GLint TestHelper::kMaxRenderbufferSize;
 const GLint TestHelper::kMaxTextureSize;
 const GLint TestHelper::kMaxCubeMapTextureSize;
@@ -132,6 +133,11 @@ void TestHelper::SetupContextGroupInitExpectations(
   EXPECT_CALL(*gl, GetIntegerv(GL_MAX_RENDERBUFFER_SIZE, _))
       .WillOnce(SetArgumentPointee<1>(kMaxRenderbufferSize))
       .RetiresOnSaturation();
+  if (strstr(extensions, "GL_EXT_framebuffer_multisample")) {
+    EXPECT_CALL(*gl, GetIntegerv(GL_MAX_SAMPLES, _))
+        .WillOnce(SetArgumentPointee<1>(kMaxSamples))
+        .RetiresOnSaturation();
+  }
   EXPECT_CALL(*gl, GetIntegerv(GL_MAX_VERTEX_ATTRIBS, _))
       .WillOnce(SetArgumentPointee<1>(kNumVertexAttribs))
       .RetiresOnSaturation();

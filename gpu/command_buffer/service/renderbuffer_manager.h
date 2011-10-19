@@ -112,11 +112,15 @@ class RenderbufferManager {
     GLsizei height_;
   };
 
-  explicit RenderbufferManager(GLint max_renderbuffer_size);
+  RenderbufferManager(GLint max_renderbuffer_size, GLint max_samples);
   ~RenderbufferManager();
 
   GLint max_renderbuffer_size() const {
     return max_renderbuffer_size_;
+  }
+
+  GLint max_samples() const {
+    return max_samples_;
   }
 
   // Must call before destruction.
@@ -136,6 +140,7 @@ class RenderbufferManager {
 
  private:
   GLint max_renderbuffer_size_;
+  GLint max_samples_;
 
   // Info for each renderbuffer in the system.
   typedef base::hash_map<GLuint, RenderbufferInfo::Ref> RenderbufferInfoMap;

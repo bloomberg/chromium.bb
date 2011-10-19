@@ -1075,7 +1075,7 @@ TEST_F(GLES2DecoderWithShaderTest, GetShaderInfoLogInvalidArgs) {
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
 
-TEST_F(GLES2DecoderTest, GetIntegervTextureSize) {
+TEST_F(GLES2DecoderTest, GetIntegervCached) {
   struct TestInfo {
     GLenum pname;
     GLint expected;
@@ -1083,26 +1083,27 @@ TEST_F(GLES2DecoderTest, GetIntegervTextureSize) {
   TestInfo tests[] = {
     { GL_MAX_TEXTURE_SIZE, TestHelper::kMaxTextureSize, },
     { GL_MAX_CUBE_MAP_TEXTURE_SIZE, TestHelper::kMaxCubeMapTextureSize, },
+    { GL_MAX_RENDERBUFFER_SIZE, TestHelper::kMaxRenderbufferSize, },
   };
   typedef GetIntegerv::Result Result;
-  for (size_t ii = 0; ii < 2; ++ii) {
+  for (size_t ii = 0; ii < sizeof(tests) / sizeof(tests[0]); ++ii) {
     const TestInfo& test = tests[ii];
-  Result* result = static_cast<Result*>(shared_memory_address_);
-  EXPECT_CALL(*gl_, GetError())
-      .WillOnce(Return(GL_NO_ERROR))
-      .WillOnce(Return(GL_NO_ERROR))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, GetIntegerv(test.pname, _))
-      .Times(0);
-  result->size = 0;
-  GetIntegerv cmd2;
-  cmd2.Init(test.pname, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd2));
-  EXPECT_EQ(
-      decoder_->GetGLES2Util()->GLGetNumValuesReturned(test.pname),
-      result->GetNumResults());
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  EXPECT_EQ(test.expected, result->GetData()[0]);
+    Result* result = static_cast<Result*>(shared_memory_address_);
+    EXPECT_CALL(*gl_, GetError())
+        .WillOnce(Return(GL_NO_ERROR))
+        .WillOnce(Return(GL_NO_ERROR))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, GetIntegerv(test.pname, _))
+        .Times(0);
+    result->size = 0;
+    GetIntegerv cmd2;
+    cmd2.Init(test.pname, shared_memory_id_, shared_memory_offset_);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd2));
+    EXPECT_EQ(
+        decoder_->GetGLES2Util()->GLGetNumValuesReturned(test.pname),
+        result->GetNumResults());
+    EXPECT_EQ(GL_NO_ERROR, GetGLError());
+    EXPECT_EQ(test.expected, result->GetData()[0]);
   }
 }
 
@@ -4234,6 +4235,21 @@ TEST_F(GLES2DecoderTest, RenderbufferStorageGLError) {
   EXPECT_EQ(GL_OUT_OF_MEMORY, GetGLError());
 }
 
+TEST_F(GLES2DecoderTest, RenderbufferStorageBadArgs) {
+  DoBindRenderbuffer(GL_RENDERBUFFER, client_renderbuffer_id_,
+                    kServiceRenderbufferId);
+  EXPECT_CALL(*gl_, RenderbufferStorageEXT(_, _, _, _))
+      .Times(0)
+      .RetiresOnSaturation();
+  RenderbufferStorage cmd;
+  cmd.Init(GL_RENDERBUFFER, GL_RGBA4, TestHelper::kMaxRenderbufferSize + 1, 1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+  cmd.Init(GL_RENDERBUFFER, GL_RGBA4, 1, TestHelper::kMaxRenderbufferSize + 1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+}
+
 TEST_F(GLES2DecoderManualInitTest, RenderbufferStorageMultisampleGLError) {
   InitDecoder(
       "GL_EXT_framebuffer_multisample",  // extensions
@@ -4258,6 +4274,36 @@ TEST_F(GLES2DecoderManualInitTest, RenderbufferStorageMultisampleGLError) {
   cmd.Init(GL_RENDERBUFFER, 1, GL_RGBA4, 100, 50);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_OUT_OF_MEMORY, GetGLError());
+}
+
+TEST_F(GLES2DecoderManualInitTest, RenderbufferStorageMultisampleBadArgs) {
+  InitDecoder(
+      "GL_EXT_framebuffer_multisample",  // extensions
+      false,   // has alpha
+      false,   // has depth
+      false,   // has stencil
+      false,   // request alpha
+      false,   // request depth
+      false,   // request stencil
+      true);   // bind generates resource
+  DoBindRenderbuffer(GL_RENDERBUFFER, client_renderbuffer_id_,
+                    kServiceRenderbufferId);
+  EXPECT_CALL(*gl_, RenderbufferStorageMultisampleEXT(_, _, _, _, _))
+      .Times(0)
+      .RetiresOnSaturation();
+  RenderbufferStorageMultisampleEXT cmd;
+  cmd.Init(GL_RENDERBUFFER, TestHelper::kMaxSamples + 1,
+           GL_RGBA4, TestHelper::kMaxRenderbufferSize, 1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+  cmd.Init(GL_RENDERBUFFER, TestHelper::kMaxSamples,
+           GL_RGBA4, TestHelper::kMaxRenderbufferSize + 1, 1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+  cmd.Init(GL_RENDERBUFFER, TestHelper::kMaxSamples,
+           GL_RGBA4, 1, TestHelper::kMaxRenderbufferSize + 1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest, ReadPixelsGLError) {

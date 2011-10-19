@@ -133,6 +133,7 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
   const GLuint kRenderbufferClient2Id = 34;
   const GLuint kRenderbufferService2Id = 334;
   const GLint kMaxRenderbufferSize = 128;
+  const GLint kMaxSamples = 4;
   const GLsizei kWidth1 = 16;
   const GLsizei kHeight1 = 32;
   const GLenum kFormat1 = GL_STENCIL_INDEX8;
@@ -152,7 +153,7 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
   EXPECT_FALSE(info_->HasUnclearedAttachment(GL_DEPTH_STENCIL_ATTACHMENT));
   EXPECT_FALSE(info_->IsNotComplete());
 
-  RenderbufferManager rb_manager(kMaxRenderbufferSize);
+  RenderbufferManager rb_manager(kMaxRenderbufferSize, kMaxSamples);
   rb_manager.CreateRenderbufferInfo(
       kRenderbufferClient1Id, kRenderbufferService1Id);
   RenderbufferManager::RenderbufferInfo* rb_info1 =

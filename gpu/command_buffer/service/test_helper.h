@@ -21,6 +21,7 @@ class TestHelper {
   static const GLuint kServiceDefaultExternalTextureId = 705;
   static const GLuint kServiceBlackExternalTextureId = 706;
 
+  static const GLint kMaxSamples = 4;
   static const GLint kMaxRenderbufferSize = 1024;
   static const GLint kMaxTextureSize = 2048;
   static const GLint kMaxCubeMapTextureSize = 256;
