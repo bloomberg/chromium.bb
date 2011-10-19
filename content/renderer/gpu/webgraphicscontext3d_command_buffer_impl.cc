@@ -91,6 +91,7 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
 
   bool retry = false;
 
+  // Note similar code in Pepper PlatformContext3DImpl::Init.
   do {
     host_ = render_thread->EstablishGpuChannelSync(
         content::

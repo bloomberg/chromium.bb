@@ -277,13 +277,8 @@ void RenderWidgetFullscreenPepper::DidChangeCursor(
 
 webkit::ppapi::PluginDelegate::PlatformContext3D*
 RenderWidgetFullscreenPepper::CreateContext3D() {
-  if (!context_) {
-    CreateContext();
-  }
-  if (!context_)
-    return NULL;
 #ifdef ENABLE_GPU
-  return new PlatformContext3DImpl(context_);
+  return new PlatformContext3DImpl(this);
 #else
   return NULL;
 #endif
@@ -512,4 +507,14 @@ void RenderWidgetFullscreenPepper::OnLostContext(
 
 void RenderWidgetFullscreenPepper::OnSwapBuffersCompleteByRendererGLContext() {
   OnSwapBuffersComplete();
+}
+
+RendererGLContext*
+RenderWidgetFullscreenPepper::GetParentContextForPlatformContext3D() {
+  if (!context_) {
+    CreateContext();
+  }
+  if (!context_)
+    return NULL;
+  return context_;
 }

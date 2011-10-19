@@ -107,6 +107,8 @@
     'renderer/notification_provider.h',
     'renderer/paint_aggregator.cc',
     'renderer/paint_aggregator.h',
+    'renderer/pepper_parent_context_provider.cc',
+    'renderer/pepper_parent_context_provider.h',
     'renderer/pepper_platform_context_3d_impl.cc',
     'renderer/pepper_platform_context_3d_impl.h',
     'renderer/pepper_platform_video_decoder_impl.cc',

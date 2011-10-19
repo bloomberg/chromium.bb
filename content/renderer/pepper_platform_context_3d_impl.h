@@ -19,12 +19,14 @@ class CommandBuffer;
 
 class CommandBufferProxy;
 class GpuChannelHost;
+class PepperParentContextProvider;
 class RendererGLContext;
 
 class PlatformContext3DImpl
     : public webkit::ppapi::PluginDelegate::PlatformContext3D {
  public:
-  explicit PlatformContext3DImpl(RendererGLContext* parent_context);
+  explicit PlatformContext3DImpl(
+      PepperParentContextProvider* parent_context_provider);
   virtual ~PlatformContext3DImpl();
 
   virtual bool Init(const int32* attrib_list);
@@ -38,6 +40,8 @@ class PlatformContext3DImpl
   bool InitRaw();
   void OnContextLost();
 
+  // Implicitly weak pointer; must outlive this instance.
+  PepperParentContextProvider* parent_context_provider_;
   base::WeakPtr<RendererGLContext> parent_context_;
   scoped_refptr<GpuChannelHost> channel_;
   unsigned int parent_texture_id_;

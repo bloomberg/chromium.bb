@@ -26,12 +26,14 @@ bool GLContextCGL::Initialize(
     GLSurface* compatible_surface, GpuPreference gpu_preference) {
   DCHECK(compatible_surface);
 
-  // Ensure the GPU preference is compatible with contexts already in the
-  // share group.
   GLContextCGL* share_context = share_group() ?
       static_cast<GLContextCGL*>(share_group()->GetContext()) : NULL;
-  if (share_context && gpu_preference != share_context->GetGpuPreference())
-    return false;
+  if (SupportsDualGpus()) {
+    // Ensure the GPU preference is compatible with contexts already in the
+    // share group.
+    if (share_context && gpu_preference != share_context->GetGpuPreference())
+      return false;
+  }
 
   std::vector<CGLPixelFormatAttribute> attribs;
   attribs.push_back(kCGLPFAPBuffer);

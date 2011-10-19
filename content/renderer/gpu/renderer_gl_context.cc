@@ -258,6 +258,10 @@ RendererGLContext::Error RendererGLContext::GetError() {
 }
 
 bool RendererGLContext::IsCommandBufferContextLost() {
+  // If the channel shut down unexpectedly, let that supersede the
+  // command buffer's state.
+  if (channel_->state() == GpuChannelHost::kLost)
+    return true;
   gpu::CommandBuffer::State state = command_buffer_->GetLastState();
   return state.error == gpu::error::kLostContext;
 }

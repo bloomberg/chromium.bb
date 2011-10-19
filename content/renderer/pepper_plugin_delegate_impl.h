@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
+#include "content/renderer/pepper_parent_context_provider.h"
 #include "ppapi/proxy/broker_dispatcher.h"
 #include "ppapi/proxy/proxy_channel.h"
 #include "ui/base/ime/text_input_type.h"
@@ -119,7 +120,8 @@ class PpapiBrokerImpl : public webkit::ppapi::PluginDelegate::PpapiBroker,
 
 class PepperPluginDelegateImpl
     : public webkit::ppapi::PluginDelegate,
-      public base::SupportsWeakPtr<PepperPluginDelegateImpl> {
+      public base::SupportsWeakPtr<PepperPluginDelegateImpl>,
+      public PepperParentContextProvider {
  public:
   explicit PepperPluginDelegateImpl(RenderViewImpl* render_view);
   virtual ~PepperPluginDelegateImpl();
@@ -357,6 +359,9 @@ class PepperPluginDelegateImpl
   bool MouseLockedOrPending() const {
     return mouse_locked_ || pending_lock_request_ || pending_unlock_request_;
   }
+
+  // Implementation of PepperParentContextProvider.
+  virtual RendererGLContext* GetParentContextForPlatformContext3D();
 
   // Pointer to the RenderView that owns us.
   RenderViewImpl* render_view_;

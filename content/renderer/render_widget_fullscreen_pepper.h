@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_RENDER_WIDGET_FULLSCREEN_PEPPER_H_
 
 #include "base/memory/weak_ptr.h"
+#include "content/renderer/pepper_parent_context_provider.h"
 #include "content/renderer/render_widget_fullscreen.h"
 #include "content/renderer/gpu/renderer_gl_context.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebWidget.h"
@@ -23,7 +24,8 @@ class PluginInstance;
 // FullscreenContainer that the plugin instance can callback into to e.g.
 // invalidate rects.
 class RenderWidgetFullscreenPepper : public RenderWidgetFullscreen,
-                                     public webkit::ppapi::FullscreenContainer {
+                                     public webkit::ppapi::FullscreenContainer,
+                                     public PepperParentContextProvider {
  public:
   static RenderWidgetFullscreenPepper* Create(
       int32 opener_id,
@@ -85,6 +87,9 @@ class RenderWidgetFullscreenPepper : public RenderWidgetFullscreen,
   // Binding of RendererGLContext swapbuffers callback to
   // RenderWidget::OnSwapBuffersCompleted.
   void OnSwapBuffersCompleteByRendererGLContext();
+
+  // Implementation of PepperParentContextProvider.
+  virtual RendererGLContext* GetParentContextForPlatformContext3D();
 
   // URL that is responsible for this widget, passed to ggl::CreateViewContext.
   GURL active_url_;

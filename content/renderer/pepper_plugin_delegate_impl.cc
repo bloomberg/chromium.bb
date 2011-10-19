@@ -1033,19 +1033,7 @@ webkit::ppapi::PluginDelegate::PlatformContext3D*
   // modules.
   if (!render_view_->webkit_preferences().accelerated_plugins_enabled)
     return NULL;
-  WebGraphicsContext3DCommandBufferImpl* context =
-      static_cast<WebGraphicsContext3DCommandBufferImpl*>(
-          render_view_->webview()->graphicsContext3D());
-  if (!context)
-    return NULL;
-  if (!context->makeContextCurrent() || context->isContextLost())
-    return NULL;
-
-  RendererGLContext* parent_context = context->context();
-  if (!parent_context)
-    return NULL;
-
-  return new PlatformContext3DImpl(parent_context);
+  return new PlatformContext3DImpl(this);
 #else
   return NULL;
 #endif
@@ -1751,6 +1739,22 @@ bool PepperPluginDelegateImpl::IsInFullscreenMode() {
 
 int PepperPluginDelegateImpl::GetRoutingId() const {
   return render_view_->routing_id();
+}
+
+RendererGLContext*
+PepperPluginDelegateImpl::GetParentContextForPlatformContext3D() {
+  WebGraphicsContext3DCommandBufferImpl* context =
+      static_cast<WebGraphicsContext3DCommandBufferImpl*>(
+          render_view_->webview()->graphicsContext3D());
+  if (!context)
+    return NULL;
+  if (!context->makeContextCurrent() || context->isContextLost())
+    return NULL;
+
+  RendererGLContext* parent_context = context->context();
+  if (!parent_context)
+    return NULL;
+  return parent_context;
 }
 
 void PepperPluginDelegateImpl::PublishInitialPolicy(

@@ -5,6 +5,7 @@
 #include "content/renderer/pepper_platform_context_3d_impl.h"
 
 #include "base/bind.h"
+#include "content/renderer/pepper_parent_context_provider.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/gpu/renderer_gl_context.h"
 #include "content/renderer/gpu/gpu_channel_host.h"
@@ -16,8 +17,9 @@
 
 #ifdef ENABLE_GPU
 
-PlatformContext3DImpl::PlatformContext3DImpl(RendererGLContext* parent_context)
-      : parent_context_(parent_context->AsWeakPtr()),
+PlatformContext3DImpl::PlatformContext3DImpl(
+    PepperParentContextProvider* parent_context_provider)
+      : parent_context_provider_(parent_context_provider),
         parent_texture_id_(0),
         command_buffer_(NULL),
         weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
@@ -37,6 +39,9 @@ PlatformContext3DImpl::~PlatformContext3DImpl() {
     DCHECK(channel_.get());
     channel_->DestroyCommandBuffer(command_buffer_);
     command_buffer_ = NULL;
+    if (channel_->WillGpuSwitchOccur(false, gfx::PreferDiscreteGpu)) {
+      channel_->ForciblyCloseChannel();
+    }
   }
 
   channel_ = NULL;
@@ -47,26 +52,35 @@ bool PlatformContext3DImpl::Init(const int32* attrib_list) {
   if (command_buffer_)
     return true;
 
-  // Parent may already have been deleted.
-  if (!parent_context_.get())
+  if (!parent_context_provider_)
     return false;
 
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   if (!render_thread)
     return false;
 
-  channel_ = render_thread->GetGpuChannel();
-  if (!channel_.get())
-    return false;
+  bool retry = false;
+  gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
 
-  DCHECK(channel_->state() == GpuChannelHost::kConnected);
-
-  // Flush any remaining commands in the parent context to make sure the
-  // texture id accounting stays consistent.
-  gpu::gles2::GLES2Implementation* parent_gles2 =
-      parent_context_->GetImplementation();
-  parent_gles2->helper()->CommandBufferHelper::Finish();
-  parent_texture_id_ = parent_gles2->MakeTextureId();
+  // Note similar code in WebGraphicsContext3DCommandBufferImpl::initialize.
+  do {
+    channel_ = render_thread->EstablishGpuChannelSync(
+        content::CAUSE_FOR_GPU_LAUNCH_PEPPERPLATFORMCONTEXT3DIMPL_INITIALIZE);
+    if (!channel_.get())
+      return false;
+    DCHECK(channel_->state() == GpuChannelHost::kConnected);
+    if (!retry) {
+      // If the creation of this context requires all contexts for this
+      // renderer to be destroyed on the GPU process side, then drop the
+      // channel and recreate it.
+      if (channel_->WillGpuSwitchOccur(true, gpu_preference)) {
+        channel_->ForciblyCloseChannel();
+        retry = true;
+      }
+    } else {
+      retry = false;
+    }
+  } while (retry);
 
   gfx::Size surface_size;
   std::vector<int32> attribs;
@@ -93,24 +107,42 @@ bool PlatformContext3DImpl::Init(const int32* attrib_list) {
     attribs.push_back(RendererGLContext::NONE);
   }
 
-  CommandBufferProxy* parent_command_buffer =
-      parent_context_->GetCommandBufferProxy();
   command_buffer_ = channel_->CreateOffscreenCommandBuffer(
       surface_size,
       NULL,
       "*",
       attribs,
       GURL::EmptyGURL(),
-      gfx::PreferDiscreteGpu);
+      gpu_preference);
   if (!command_buffer_)
-    return false;
-
-  if (!command_buffer_->SetParent(parent_command_buffer, parent_texture_id_))
     return false;
 
   command_buffer_->SetChannelErrorCallback(
       base::Bind(&PlatformContext3DImpl::OnContextLost,
                  weak_ptr_factory_.GetWeakPtr()));
+
+  // Fetch the parent context now, after any potential shutdown of the
+  // channel due to GPU switching, and creation of the Pepper 3D
+  // context with the discrete GPU preference.
+  RendererGLContext* parent_context =
+      parent_context_provider_->GetParentContextForPlatformContext3D();
+  if (!parent_context)
+    return false;
+
+  parent_context_provider_ = NULL;
+  parent_context_ = parent_context->AsWeakPtr();
+
+  // Flush any remaining commands in the parent context to make sure the
+  // texture id accounting stays consistent.
+  gpu::gles2::GLES2Implementation* parent_gles2 =
+      parent_context_->GetImplementation();
+  parent_gles2->helper()->CommandBufferHelper::Finish();
+  parent_texture_id_ = parent_gles2->MakeTextureId();
+
+  CommandBufferProxy* parent_command_buffer =
+      parent_context_->GetCommandBufferProxy();
+  if (!command_buffer_->SetParent(parent_command_buffer, parent_texture_id_))
+    return false;
 
   return true;
 }
