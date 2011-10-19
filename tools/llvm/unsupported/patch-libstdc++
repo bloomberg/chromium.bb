@@ -1,13 +1,12 @@
-diff -r 15dc82da1897 libstdc++-v3/configure
---- a/libstdc++-v3/configure	Tue Oct 18 11:20:53 2011 -0400
-+++ b/libstdc++-v3/configure	Tue Oct 18 16:06:41 2011 -0400
-@@ -10780,6 +10780,14 @@
+diff -r aff0280ea6eb libstdc++-v3/configure
+--- a/libstdc++-v3/configure	Tue Oct 18 17:54:33 2011 -0400
++++ b/libstdc++-v3/configure	Wed Oct 19 11:33:45 2011 -0400
+@@ -10780,6 +10780,13 @@
    dynamic_linker=no
    ;;
  
 +#@ LOCALMOD
 +linux-gnueabi)
-+  echo "################## YEAH"
 +  dynamic_linker=no
 +  hardcode_direct=no
 +  hardcode_shlibpath_var=no
@@ -16,7 +15,7 @@ diff -r 15dc82da1897 libstdc++-v3/configure
  # This must be Linux ELF.
  linux* | k*bsd*-gnu | kopensolaris*-gnu)
    version_type=linux
-@@ -11201,6 +11209,11 @@
+@@ -11201,6 +11208,11 @@
      lt_cv_dlopen_self=yes
      ;;
  
@@ -28,7 +27,7 @@ diff -r 15dc82da1897 libstdc++-v3/configure
    mingw* | pw32* | cegcc*)
      lt_cv_dlopen="LoadLibrary"
      lt_cv_dlopen_libs=
-@@ -14463,6 +14476,11 @@
+@@ -14463,6 +14475,11 @@
    dynamic_linker=no
    ;;
  
@@ -40,7 +39,7 @@ diff -r 15dc82da1897 libstdc++-v3/configure
  # This must be Linux ELF.
  linux* | k*bsd*-gnu | kopensolaris*-gnu)
    version_type=linux
-@@ -44854,6 +44872,8 @@
+@@ -44854,6 +44871,8 @@
  
      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for sin in -lm" >&5
  $as_echo_n "checking for sin in -lm... " >&6; }
@@ -49,9 +48,24 @@ diff -r 15dc82da1897 libstdc++-v3/configure
  if test "${ac_cv_lib_m_sin+set}" = set; then :
    $as_echo_n "(cached) " >&6
  else
-diff -r 15dc82da1897 libstdc++-v3/include/bits/regex_constants.h
---- a/libstdc++-v3/include/bits/regex_constants.h	Tue Oct 18 11:20:53 2011 -0400
-+++ b/libstdc++-v3/include/bits/regex_constants.h	Tue Oct 18 16:06:41 2011 -0400
+diff -r aff0280ea6eb libstdc++-v3/include/bits/atomic_base.h
+--- a/libstdc++-v3/include/bits/atomic_base.h	Tue Oct 18 17:54:33 2011 -0400
++++ b/libstdc++-v3/include/bits/atomic_base.h	Wed Oct 19 11:33:45 2011 -0400
+@@ -161,8 +161,9 @@
+ #define ATOMIC_LONG_LOCK_FREE _GLIBCXX_ATOMIC_PROPERTY
+ #define ATOMIC_LLONG_LOCK_FREE _GLIBCXX_ATOMIC_PROPERTY
+ 
+-  inline namespace _GLIBCXX_ATOMIC_NAMESPACE { }
+-
++  // @LOCALMOD
++  //  inline namespace _GLIBCXX_ATOMIC_NAMESPACE { }
++  using namespace _GLIBCXX_ATOMIC_NAMESPACE;
+ 
+   /// atomic_char
+   typedef __atomic_base<char>  	       		atomic_char;
+diff -r aff0280ea6eb libstdc++-v3/include/bits/regex_constants.h
+--- a/libstdc++-v3/include/bits/regex_constants.h	Tue Oct 18 17:54:33 2011 -0400
++++ b/libstdc++-v3/include/bits/regex_constants.h	Wed Oct 19 11:33:45 2011 -0400
 @@ -30,6 +30,9 @@
   *  Do not attempt to use it directly. @headername{regex}
   */
@@ -67,9 +81,39 @@ diff -r 15dc82da1897 libstdc++-v3/include/bits/regex_constants.h
  } // namespace regex_constants
  } // namespace
 -
-diff -r 15dc82da1897 libstdc++-v3/libsupc++/eh_call.cc
---- a/libstdc++-v3/libsupc++/eh_call.cc	Tue Oct 18 11:20:53 2011 -0400
-+++ b/libstdc++-v3/libsupc++/eh_call.cc	Tue Oct 18 16:06:41 2011 -0400
+diff -r aff0280ea6eb libstdc++-v3/include/std/atomic
+--- a/libstdc++-v3/include/std/atomic	Tue Oct 18 17:54:33 2011 -0400
++++ b/libstdc++-v3/include/std/atomic	Wed Oct 19 11:33:45 2011 -0400
+@@ -42,6 +42,9 @@
+ #include <bits/atomic_0.h>
+ #include <bits/atomic_2.h>
+ 
++// @LOCALMOD
++#define constexpr const
++
+ namespace std _GLIBCXX_VISIBILITY(default)
+ {
+ _GLIBCXX_BEGIN_NAMESPACE_VERSION
+diff -r aff0280ea6eb libstdc++-v3/include/std/chrono
+--- a/libstdc++-v3/include/std/chrono	Tue Oct 18 17:54:33 2011 -0400
++++ b/libstdc++-v3/include/std/chrono	Wed Oct 19 11:33:45 2011 -0400
+@@ -664,10 +664,12 @@
+       typedef duration::period 					period;
+       typedef chrono::time_point<system_clock, duration> 	time_point;
+ 
++      // @LOCALMOD
++#if 0
+       static_assert(system_clock::duration::min()
+ 		    < system_clock::duration::zero(),
+ 		    "a clock's minimum duration cannot be less than its epoch");
+-
++#endif
+       static constexpr bool is_monotonic = false;
+ 
+       static time_point
+diff -r aff0280ea6eb libstdc++-v3/libsupc++/eh_call.cc
+--- a/libstdc++-v3/libsupc++/eh_call.cc	Tue Oct 18 17:54:33 2011 -0400
++++ b/libstdc++-v3/libsupc++/eh_call.cc	Wed Oct 19 11:33:45 2011 -0400
 @@ -31,6 +31,11 @@
  
  using namespace __cxxabiv1;
@@ -82,9 +126,9 @@ diff -r 15dc82da1897 libstdc++-v3/libsupc++/eh_call.cc
  #include "unwind-pe.h"
  
  
-diff -r 15dc82da1897 libstdc++-v3/libsupc++/eh_personality.cc
---- a/libstdc++-v3/libsupc++/eh_personality.cc	Tue Oct 18 11:20:53 2011 -0400
-+++ b/libstdc++-v3/libsupc++/eh_personality.cc	Tue Oct 18 16:06:41 2011 -0400
+diff -r aff0280ea6eb libstdc++-v3/libsupc++/eh_personality.cc
+--- a/libstdc++-v3/libsupc++/eh_personality.cc	Tue Oct 18 17:54:33 2011 -0400
++++ b/libstdc++-v3/libsupc++/eh_personality.cc	Wed Oct 19 11:33:45 2011 -0400
 @@ -36,6 +36,14 @@
  #define NO_SIZE_OF_ENCODED_VALUE
  #endif
@@ -100,3 +144,15 @@ diff -r 15dc82da1897 libstdc++-v3/libsupc++/eh_personality.cc
  #include "unwind-pe.h"
  
  
+diff -r aff0280ea6eb libstdc++-v3/libsupc++/exception_ptr.h
+--- a/libstdc++-v3/libsupc++/exception_ptr.h	Tue Oct 18 17:54:33 2011 -0400
++++ b/libstdc++-v3/libsupc++/exception_ptr.h	Wed Oct 19 11:33:45 2011 -0400
+@@ -44,6 +44,8 @@
+ 
+ namespace std 
+ {
++  // @LOCALMOD
++  class type_info;
+   /**
+    * @addtogroup exceptions
+    * @{
