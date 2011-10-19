@@ -32,6 +32,8 @@ class AppCacheQuotaClientTest;
 // been destroyed.
 class AppCacheQuotaClient : public quota::QuotaClient {
  public:
+  typedef std::deque<base::Closure> RequestQueue;
+
   virtual ~AppCacheQuotaClient();
 
   // QuotaClient method overrides
@@ -54,34 +56,6 @@ class AppCacheQuotaClient : public quota::QuotaClient {
   friend class AppCacheStorageImpl;  // for NotifyAppCacheIsReady
   friend class AppCacheQuotaClientTest;
 
-  struct UsageRequest {
-    GURL origin;
-    quota::StorageType type;
-    GetUsageCallback callback;
-
-    UsageRequest();
-    ~UsageRequest();
-  };
-  struct OriginsRequest {
-    quota::StorageType type;
-    std::string opt_host;
-    GetOriginsCallback callback;
-
-    OriginsRequest();
-    ~OriginsRequest();
-  };
-  struct DeleteRequest {
-    GURL origin;
-    quota::StorageType type;
-    DeletionCallback callback;
-
-    DeleteRequest();
-    ~DeleteRequest();
-  };
-  typedef std::deque<UsageRequest> UsageRequestQueue;
-  typedef std::deque<OriginsRequest> OriginsRequestQueue;
-  typedef std::deque<DeleteRequest> DeleteRequestQueue;
-
   APPCACHE_EXPORT explicit AppCacheQuotaClient(AppCacheService* service);
 
   void DidDeleteAppCachesForOrigin(int rv);
@@ -89,7 +63,6 @@ class AppCacheQuotaClient : public quota::QuotaClient {
                         const std::string& opt_host,
                         const GetOriginsCallback& callback);
   void ProcessPendingRequests();
-  void AbortPendingRequests();
   void DeletePendingRequests();
   const AppCacheStorage::UsageMap* GetUsageMap();
 
@@ -99,9 +72,8 @@ class AppCacheQuotaClient : public quota::QuotaClient {
 
   // Prior to appcache service being ready, we have to queue
   // up reqeusts and defer acting on them until we're ready.
-  UsageRequestQueue pending_usage_requests_;
-  OriginsRequestQueue pending_origins_requests_;
-  DeleteRequestQueue pending_delete_requests_;
+  RequestQueue pending_batch_requests_;
+  RequestQueue pending_serial_requests_;
 
   // And once it's ready, we can only handle one delete request at a time,
   // so we queue up additional requests while one is in already in progress.

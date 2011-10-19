@@ -8,6 +8,7 @@
 #include <map>
 #include <set>
 
+#include "base/bind.h"
 #include "webkit/appcache/appcache_service.h"
 
 using quota::QuotaClient;
@@ -20,6 +21,12 @@ quota::QuotaStatusCode NetErrorCodeToQuotaStatus(int code) {
     return quota::kQuotaErrorAbort;
   else
     return quota::kQuotaStatusUnknown;
+}
+
+void RunFront(appcache::AppCacheQuotaClient::RequestQueue* queue) {
+  base::Closure request = queue->front();
+  queue->pop_front();
+  request.Run();
 }
 }  // namespace
 
@@ -34,9 +41,8 @@ AppCacheQuotaClient::AppCacheQuotaClient(AppCacheService* service)
 }
 
 AppCacheQuotaClient::~AppCacheQuotaClient() {
-  DCHECK(pending_usage_requests_.empty());
-  DCHECK(pending_origins_requests_.empty());
-  DCHECK(pending_delete_requests_.empty());
+  DCHECK(pending_batch_requests_.empty());
+  DCHECK(pending_serial_requests_.empty());
   DCHECK(current_delete_request_callback_.is_null());
 }
 
@@ -70,10 +76,9 @@ void AppCacheQuotaClient::GetOriginUsage(
   }
 
   if (!appcache_is_ready_) {
-    pending_usage_requests_.push_back(UsageRequest());
-    pending_usage_requests_.back().origin = origin;
-    pending_usage_requests_.back().type = type;
-    pending_usage_requests_.back().callback = callback;
+    pending_batch_requests_.push_back(
+        base::Bind(&AppCacheQuotaClient::GetOriginUsage,
+                   base::Unretained(this), origin, type, callback));
     return;
   }
 
@@ -120,10 +125,9 @@ void AppCacheQuotaClient::DeleteOriginData(const GURL& origin,
   }
 
   if (!appcache_is_ready_ || !current_delete_request_callback_.is_null()) {
-    pending_delete_requests_.push_back(DeleteRequest());
-    pending_delete_requests_.back().origin = origin;
-    pending_delete_requests_.back().type = type;
-    pending_delete_requests_.back().callback = callback;
+    pending_serial_requests_.push_back(
+        base::Bind(&AppCacheQuotaClient::DeleteOriginData,
+                   base::Unretained(this), origin, type, callback));
     return;
   }
 
@@ -135,15 +139,6 @@ void AppCacheQuotaClient::DeleteOriginData(const GURL& origin,
   service_->DeleteAppCachesForOrigin(origin, service_delete_callback_);
 }
 
-AppCacheQuotaClient::UsageRequest::UsageRequest() {}
-AppCacheQuotaClient::UsageRequest::~UsageRequest() {}
-
-AppCacheQuotaClient::OriginsRequest::OriginsRequest() {}
-AppCacheQuotaClient::OriginsRequest::~OriginsRequest() {}
-
-AppCacheQuotaClient::DeleteRequest::DeleteRequest() {}
-AppCacheQuotaClient::DeleteRequest::~DeleteRequest() {}
-
 void AppCacheQuotaClient::DidDeleteAppCachesForOrigin(int rv) {
   DCHECK(service_);
   if (quota_manager_is_destroyed_)
@@ -152,15 +147,11 @@ void AppCacheQuotaClient::DidDeleteAppCachesForOrigin(int rv) {
   // Finish the request by calling our callers callback.
   current_delete_request_callback_.Run(NetErrorCodeToQuotaStatus(rv));
   current_delete_request_callback_.Reset();
-  if (pending_delete_requests_.empty())
+  if (pending_serial_requests_.empty())
     return;
 
   // Start the next in the queue.
-  DeleteRequest& next_request = pending_delete_requests_.front();
-  current_delete_request_callback_ = next_request.callback;
-  service_->DeleteAppCachesForOrigin(next_request.origin,
-                                     service_delete_callback_);
-  pending_delete_requests_.pop_front();
+  RunFront(&pending_serial_requests_);
 }
 
 void AppCacheQuotaClient::GetOriginsHelper(
@@ -176,10 +167,9 @@ void AppCacheQuotaClient::GetOriginsHelper(
   }
 
   if (!appcache_is_ready_) {
-    pending_origins_requests_.push_back(OriginsRequest());
-    pending_origins_requests_.back().opt_host = opt_host;
-    pending_origins_requests_.back().type = type;
-    pending_origins_requests_.back().callback = callback;
+    pending_batch_requests_.push_back(
+        base::Bind(&AppCacheQuotaClient::GetOriginsHelper,
+                   base::Unretained(this), type, opt_host, callback));
     return;
   }
 
@@ -200,50 +190,16 @@ void AppCacheQuotaClient::GetOriginsHelper(
 
 void AppCacheQuotaClient::ProcessPendingRequests() {
   DCHECK(appcache_is_ready_);
-  while (!pending_usage_requests_.empty()) {
-    UsageRequest& request = pending_usage_requests_.front();
-    GetOriginUsage(request.origin, request.type, request.callback);
-    pending_usage_requests_.pop_front();
-  }
-  while (!pending_origins_requests_.empty()) {
-    OriginsRequest& request = pending_origins_requests_.front();
-    GetOriginsHelper(request.type, request.opt_host, request.callback);
-    pending_origins_requests_.pop_front();
-  }
-  if (!pending_delete_requests_.empty()) {
-    // Just start the first delete, others will follow upon completion.
-    DeleteRequest request = pending_delete_requests_.front();
-    pending_delete_requests_.pop_front();
-    DeleteOriginData(request.origin, request.type, request.callback);
-  }
-}
+  while (!pending_batch_requests_.empty())
+    RunFront(&pending_batch_requests_);
 
-void AppCacheQuotaClient::AbortPendingRequests() {
-  while (!pending_usage_requests_.empty()) {
-    pending_usage_requests_.front().callback.Run(0);
-    pending_usage_requests_.pop_front();
-  }
-  while (!pending_origins_requests_.empty()) {
-    pending_origins_requests_.front().callback.Run(std::set<GURL>(),
-        pending_origins_requests_.front().type);
-    pending_origins_requests_.pop_front();
-  }
-  while (!pending_delete_requests_.empty()) {
-    pending_delete_requests_.front().callback.Run(quota::kQuotaErrorAbort);
-    pending_delete_requests_.pop_front();
-  }
+  if (!pending_serial_requests_.empty())
+    RunFront(&pending_serial_requests_);
 }
 
 void AppCacheQuotaClient::DeletePendingRequests() {
-  while (!pending_usage_requests_.empty()) {
-    pending_usage_requests_.pop_front();
-  }
-  while (!pending_origins_requests_.empty()) {
-    pending_origins_requests_.pop_front();
-  }
-  while (!pending_delete_requests_.empty()) {
-    pending_delete_requests_.pop_front();
-  }
+  pending_batch_requests_.clear();
+  pending_serial_requests_.clear();
 }
 
 const AppCacheStorage::UsageMap* AppCacheQuotaClient::GetUsageMap() {
@@ -258,7 +214,12 @@ void AppCacheQuotaClient::NotifyAppCacheReady() {
 
 void AppCacheQuotaClient::NotifyAppCacheDestroyed() {
   service_ = NULL;
-  AbortPendingRequests();
+  while (!pending_batch_requests_.empty())
+    RunFront(&pending_batch_requests_);
+
+  while (!pending_serial_requests_.empty())
+    RunFront(&pending_serial_requests_);
+
   if (!current_delete_request_callback_.is_null()) {
     current_delete_request_callback_.Run(quota::kQuotaErrorAbort);
     current_delete_request_callback_.Reset();

@@ -555,12 +555,10 @@ void AppCacheStorageImpl::StoreGroupAndCacheTask::GetQuotaThenSchedule() {
   }
 
   // We have to ask the quota manager for the value.
-  AddRef();  // balanced in the OnQuotaCallback
   storage_->pending_quota_queries_.insert(this);
   quota_manager->GetUsageAndQuota(
       group_record_.origin, quota::kStorageTypeTemporary,
-      base::Bind(&StoreGroupAndCacheTask::OnQuotaCallback,
-                 base::Unretained(this)));
+      base::Bind(&StoreGroupAndCacheTask::OnQuotaCallback, this));
 }
 
 void AppCacheStorageImpl::StoreGroupAndCacheTask::OnQuotaCallback(
@@ -573,7 +571,6 @@ void AppCacheStorageImpl::StoreGroupAndCacheTask::OnQuotaCallback(
     storage_->pending_quota_queries_.erase(this);
     Schedule();
   }
-  Release();  // balanced in GetQuotaThenSchedule
 }
 
 void AppCacheStorageImpl::StoreGroupAndCacheTask::Run() {
