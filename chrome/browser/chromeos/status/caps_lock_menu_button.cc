@@ -8,8 +8,10 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
+#include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/views/bubble/bubble.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
@@ -36,6 +38,9 @@ const int kPadLeftX = 10, kPadRightX = 10, kPadY = 5;
 // Padding between image and text.
 const int kTextPadX = 10;
 
+const size_t kMaxBubbleCount = 3;
+const size_t kCloseBubbleTimerInSec = 5;
+
 // Returns PrefService object associated with |host|.
 PrefService* GetPrefService(chromeos::StatusAreaHost* host) {
   if (host->GetProfile())
@@ -58,7 +63,7 @@ class CapsLockMenuButton::StatusView : public View {
   virtual ~StatusView() {
   }
 
-  gfx::Size GetPreferredSize() {
+  virtual gfx::Size GetPreferredSize() OVERRIDE {
     // TODO(yusukes): For better string localization, we should use either
     // IDS_STATUSBAR_CAPS_LOCK_ENABLED_PRESS_SHIFT_KEYS or
     // IDS_STATUSBAR_CAPS_LOCK_ENABLED_PRESS_SEARCH here instead of just
@@ -122,10 +127,12 @@ class CapsLockMenuButton::StatusView : public View {
   }
 
   void OnMouseReleased(const views::MouseEvent& event) {
-    if (event.IsLeftMouseButton()) {
-      DCHECK(menu_button_->menu_runner_.get());
-      menu_button_->menu_runner_->Cancel();
-    }
+    if (!event.IsLeftMouseButton())
+      return;
+    if (menu_button_->IsMenuShown())
+      menu_button_->HideMenu();
+    if (menu_button_->IsBubbleShown())
+      menu_button_->HideBubble();
   }
 
  private:
@@ -141,7 +148,10 @@ class CapsLockMenuButton::StatusView : public View {
 CapsLockMenuButton::CapsLockMenuButton(StatusAreaHost* host)
     : StatusAreaButton(host, this),
       prefs_(GetPrefService(host)),
-      status_(NULL) {
+      status_(NULL),
+      bubble_(NULL),
+      should_show_bubble_(true),
+      bubble_count_(0) {
   if (prefs_)
     remap_search_key_to_.Init(
         prefs::kLanguageXkbRemapSearchKeyTo, prefs_, this);
@@ -180,6 +190,9 @@ bool CapsLockMenuButton::IsCommandEnabled(int id) const {
 void CapsLockMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
   static const int kDummyCommandId = 1000;
 
+  if (IsBubbleShown())
+    HideBubble();
+
   views::MenuItemView* menu = new views::MenuItemView(this);
   // MenuRunner takes ownership of |menu|.
   menu_runner_.reset(new views::MenuRunner(menu));
@@ -210,7 +223,25 @@ void CapsLockMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
 // SystemKeyEventListener::CapsLockObserver implementation
 
 void CapsLockMenuButton::OnCapsLockChange(bool enabled) {
+  if (!enabled && !HasCapsLock() && bubble_count_ > 0) {
+    // Both shift keys are pressed. We can assume that the user now recognizes
+    // how to turn off Caps Lock.
+    should_show_bubble_ = false;
+  }
+
+  // Update the indicator.
   UpdateUIFromCurrentCapsLock(enabled);
+
+  // Update the drop-down menu and bubble. Since the constructor also calls
+  // UpdateUIFromCurrentCapsLock, we shouldn't do this in the function.
+  if (enabled && IsMenuShown())
+    status_->Update();  // Update the drop-down menu if it's already shown.
+  else if (!enabled && IsMenuShown())
+    HideMenu();
+  if (enabled)
+    MaybeShowBubble();
+  else if (!enabled && IsBubbleShown())
+    HideBubble();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -225,14 +256,14 @@ void CapsLockMenuButton::Observe(int type,
 
 void CapsLockMenuButton::UpdateAccessibleName() {
   int id = IDS_STATUSBAR_CAPS_LOCK_ENABLED_PRESS_SHIFT_KEYS;
-  if (prefs_ && (remap_search_key_to_.GetValue() == input_method::kCapsLockKey))
+  if (HasCapsLock())
     id = IDS_STATUSBAR_CAPS_LOCK_ENABLED_PRESS_SEARCH;
   SetAccessibleName(l10n_util::GetStringUTF16(id));
 }
 
 string16 CapsLockMenuButton::GetText() const {
   int id = IDS_STATUSBAR_PRESS_SHIFT_KEYS;
-  if (prefs_ && (remap_search_key_to_.GetValue() == input_method::kCapsLockKey))
+  if (HasCapsLock())
     id = IDS_STATUSBAR_PRESS_SEARCH;
   return l10n_util::GetStringUTF16(id);
 }
@@ -240,10 +271,72 @@ string16 CapsLockMenuButton::GetText() const {
 void CapsLockMenuButton::UpdateUIFromCurrentCapsLock(bool enabled) {
   SetVisible(enabled);
   SchedulePaint();
-  if (enabled && status_)
-    status_->Update();
-  if (!enabled && menu_runner_.get())
-    menu_runner_->Cancel();
+}
+
+bool CapsLockMenuButton::IsMenuShown() const {
+  return menu_runner_.get() && status_;
+}
+
+void CapsLockMenuButton::HideMenu() {
+  if (!IsMenuShown())
+    return;
+  menu_runner_->Cancel();
+}
+
+bool CapsLockMenuButton::IsBubbleShown() const {
+  return bubble_;
+}
+
+void CapsLockMenuButton::MaybeShowBubble() {
+  if (IsBubbleShown() ||
+      // We've already shown the bubble |kMaxBubbleCount| times.
+      !should_show_bubble_ ||
+      // Don't show the bubble when Caps Lock key is available.
+      HasCapsLock())
+    return;
+
+  ++bubble_count_;
+  if (bubble_count_ > kMaxBubbleCount) {
+    should_show_bubble_ = false;
+  } else {
+    CreateAndShowBubble();
+    bubble_timer_.Start(FROM_HERE,
+                        base::TimeDelta::FromSeconds(kCloseBubbleTimerInSec),
+                        this,
+                        &CapsLockMenuButton::HideBubble);
+  }
+}
+
+void CapsLockMenuButton::CreateAndShowBubble() {
+  if (IsBubbleShown()) {
+    NOTREACHED();
+    return;
+  }
+
+  gfx::Rect button_bounds = GetScreenBounds();
+  button_bounds.set_y(button_bounds.y() + 1);  // See login/message_bubble.cc.
+
+  bubble_ = Bubble::ShowFocusless(GetWidget(),
+                                  button_bounds,
+                                  views::BubbleBorder::TOP_RIGHT,
+                                  new CapsLockMenuButton::StatusView(this),
+                                  NULL /* no delegate */,
+                                  true /* show_while_screen_is_locked */);
+}
+
+void CapsLockMenuButton::HideBubble() {
+  if (!IsBubbleShown())
+    return;
+  bubble_timer_.Stop();  // no-op if it's not running.
+  bubble_->Close();
+  bubble_ = NULL;
+}
+
+bool CapsLockMenuButton::HasCapsLock() const {
+  return (prefs_ &&
+          (remap_search_key_to_.GetValue() == input_method::kCapsLockKey)) ||
+      // A keyboard for Linux usually has Caps Lock.
+      !system::runtime_environment::IsRunningOnChromeOS();
 }
 
 }  // namespace chromeos
