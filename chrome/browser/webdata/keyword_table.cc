@@ -5,11 +5,13 @@
 #include "chrome/browser/webdata/keyword_table.h"
 
 #include "base/logging.h"
+#include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/history/history_database.h"
 #include "chrome/browser/search_engines/template_url.h"
+#include "crypto/hmac.h"
 #include "googleurl/src/gurl.h"
 #include "sql/statement.h"
 
@@ -21,8 +23,22 @@ namespace {
 const int kUrlIdPosition = 18;
 
 // Keys used in the meta table.
-const char* kDefaultSearchProviderKey = "Default Search Provider ID";
-const char* kBuiltinKeywordVersion = "Builtin Keyword Version";
+const char kDefaultSearchProviderKey[] = "Default Search Provider ID";
+const char kBuiltinKeywordVersion[] = "Builtin Keyword Version";
+
+// Key for signing the default search provider backup.
+// TOOD(avayvod): Add key for Google Chrome to internal repository.
+const char kDefaultSearchProviderBackupSigningKey[] =
+    "Please, don't change default search engine!";
+
+// Meta table key to store backup value for the default search provider.
+const char kDefaultSearchProviderBackupKey[] =
+    "Default Search Provider ID Backup";
+
+// Meta table key to store backup value signature for the default search
+// provider.
+const char kDefaultSearchProviderBackupSignatureKey[] =
+    "Default Search Provider ID Backup Signature";
 
 void BindURLToStatement(const TemplateURL& url, sql::Statement* s) {
   s->BindString(0, UTF16ToUTF8(url.short_name()));
@@ -57,6 +73,25 @@ void BindURLToStatement(const TemplateURL& url, sql::Statement* s) {
   s->BindInt64(16, url.last_modified().ToTimeT());
   s->BindString(17, url.sync_guid());
 }
+
+// Signs search provider id and returns its signature.
+std::string GetSearchProviderIDSignature(int64 id) {
+  crypto::HMAC hmac(crypto::HMAC::SHA256);
+  DCHECK(hmac.Init(kDefaultSearchProviderBackupSigningKey));
+
+  std::string id_to_sign(base::Int64ToString(id));
+  std::vector<unsigned char> digest(hmac.DigestLength());
+  DCHECK(hmac.Sign(id_to_sign, &digest[0], digest.size()));
+
+  return std::string(&digest[0], &digest[0] + digest.size());
+}
+
+// Checks if signature for search provider id is correct and returns the
+// result.
+bool IsSearchProviderIDValid(int64 id, const std::string& signature) {
+  return signature == GetSearchProviderIDSignature(id);
+}
+
 }  // anonymous namespace
 
 KeywordTable::~KeywordTable() {}
@@ -86,6 +121,10 @@ bool KeywordTable::Init() {
       NOTREACHED();
       return false;
     }
+    // Initialize default search engine provider for new profile to have it
+    // signed properly. TemplateURLService treats 0 as not existing id and
+    // resets the value to the actual default search provider id.
+    SetDefaultSearchProviderID(0);
   }
   return true;
 }
@@ -220,20 +259,35 @@ bool KeywordTable::UpdateKeyword(const TemplateURL& url) {
 }
 
 bool KeywordTable::SetDefaultSearchProviderID(int64 id) {
-  return meta_table_->SetValue(kDefaultSearchProviderKey, id);
+  return meta_table_->SetValue(kDefaultSearchProviderKey, id) &&
+      SetDefaultSearchProviderBackupID(id);
 }
 
-int64 KeywordTable::GetDefaulSearchProviderID() {
+int64 KeywordTable::GetDefaultSearchProviderID() {
   int64 value = 0;
   meta_table_->GetValue(kDefaultSearchProviderKey, &value);
+  int64 backup_value = 0;
+  meta_table_->GetValue(kDefaultSearchProviderBackupKey, &backup_value);
+  std::string backup_signature;
+  meta_table_->GetValue(
+      kDefaultSearchProviderBackupSignatureKey, &backup_signature);
+  if (!IsSearchProviderIDValid(backup_value, backup_signature)) {
+    // TODO(avayvod): Notify UI about the setting having been hijacked and
+    // the backup value lost.
+    return value;
+  }
+  if (value != backup_value) {
+    // TODO(avayvod): Notify UI about the setting having been hijacked.
+    return backup_value;
+  }
   return value;
 }
 
-bool KeywordTable::SetBuitinKeywordVersion(int version) {
+bool KeywordTable::SetBuiltinKeywordVersion(int version) {
   return meta_table_->SetValue(kBuiltinKeywordVersion, version);
 }
 
-int KeywordTable::GetBuitinKeywordVersion() {
+int KeywordTable::GetBuiltinKeywordVersion() {
   int version = 0;
   if (!meta_table_->GetValue(kBuiltinKeywordVersion, &version))
     return 0;
@@ -312,4 +366,23 @@ bool KeywordTable::MigrateToVersion38AddLastModifiedColumn() {
 bool KeywordTable::MigrateToVersion39AddSyncGUIDColumn() {
   return db_->Execute(
       "ALTER TABLE keywords ADD COLUMN sync_guid VARCHAR");
+}
+
+bool KeywordTable::MigrateToVersion40AddDefaultSearchEngineBackup() {
+  int64 value = 0;
+  if (!meta_table_->GetValue(kDefaultSearchProviderKey, &value))
+    return false;
+  return SetDefaultSearchProviderBackupID(value);
+}
+
+bool KeywordTable::SetDefaultSearchProviderBackupID(int64 id) {
+  return
+      meta_table_->SetValue(kDefaultSearchProviderBackupKey, id) &&
+      SetDefaultSearchProviderBackupIDSignature(id);
+}
+
+bool KeywordTable::SetDefaultSearchProviderBackupIDSignature(int64 id) {
+  return meta_table_->SetValue(
+      kDefaultSearchProviderBackupSignatureKey,
+      GetSearchProviderIDSignature(id));
 }

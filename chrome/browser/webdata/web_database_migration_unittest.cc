@@ -185,7 +185,7 @@ class WebDatabaseMigrationTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(WebDatabaseMigrationTest);
 };
 
-const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 39;
+const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 40;
 
 void WebDatabaseMigrationTest::LoadDatabase(const FilePath::StringType& file) {
   std::string contents;
@@ -1491,3 +1491,78 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion38ToCurrent) {
     EXPECT_TRUE(connection.DoesColumnExist("keywords", "sync_guid"));
   }
 }
+
+// Tests that the backup field for the default search provider gets added to
+// the meta table of a version 39 database.
+TEST_F(WebDatabaseMigrationTest, MigrateVersion39ToCurrent) {
+  // This schema is taken from a build prior to the addition of the defaul
+  // search provider backup field to the meta table.
+  ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_39.sql")));
+
+  // Verify pre-conditions.  These are expectations for version 39 of the
+  // database.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    sql::MetaTable meta_table;
+    ASSERT_TRUE(meta_table.Init(&connection, 39, 39));
+
+    int64 default_search_provider_id = 0;
+    EXPECT_TRUE(meta_table.GetValue(
+        "Default Search Provider ID",
+        &default_search_provider_id));
+
+    int64 default_search_provider_id_backup = 0;
+    EXPECT_FALSE(meta_table.GetValue(
+        "Default Search Provider ID Backup",
+        &default_search_provider_id_backup));
+
+    std::string default_search_provider_id_backup_signature;
+    EXPECT_FALSE(meta_table.GetValue(
+        "Default Search Provider ID Backup Signature",
+        &default_search_provider_id_backup_signature));
+  }
+
+  // Load the database via the WebDatabase class and migrate the database to
+  // the current version.
+  {
+    WebDatabase db;
+    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath()));
+  }
+
+  // Verify post-conditions.  These are expectations for current version of the
+  // database.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    // Check version.
+    EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
+
+    sql::MetaTable meta_table;
+    ASSERT_TRUE(meta_table.Init(
+        &connection,
+        kCurrentTestedVersionNumber,
+        kCurrentTestedVersionNumber));
+
+    int64 default_search_provider_id = 0;
+    EXPECT_TRUE(meta_table.GetValue(
+        "Default Search Provider ID",
+        &default_search_provider_id));
+
+    int64 default_search_provider_id_backup = 0;
+    EXPECT_TRUE(meta_table.GetValue(
+        "Default Search Provider ID Backup",
+        &default_search_provider_id_backup));
+    EXPECT_EQ(default_search_provider_id, default_search_provider_id_backup);
+
+    std::string default_search_provider_id_backup_signature;
+    EXPECT_TRUE(meta_table.GetValue(
+        "Default Search Provider ID Backup Signature",
+        &default_search_provider_id_backup_signature));
+  }
+}
+

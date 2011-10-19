@@ -8,6 +8,7 @@
 
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "chrome/browser/webdata/web_database_table.h"
 #include "chrome/browser/search_engines/template_url_id.h"
 
@@ -79,11 +80,11 @@ class KeywordTable : public WebDatabaseTable {
 
   // ID (TemplateURL->id) of the default search provider.
   bool SetDefaultSearchProviderID(int64 id);
-  int64 GetDefaulSearchProviderID();
+  int64 GetDefaultSearchProviderID();
 
   // Version of the built-in keywords.
-  bool SetBuitinKeywordVersion(int version);
-  int GetBuitinKeywordVersion();
+  bool SetBuiltinKeywordVersion(int version);
+  int GetBuiltinKeywordVersion();
 
   // Table migration functions.
   bool MigrateToVersion21AutoGenerateKeywordColumn();
@@ -93,8 +94,19 @@ class KeywordTable : public WebDatabaseTable {
   bool MigrateToVersion29InstantUrlToSupportsInstant();
   bool MigrateToVersion38AddLastModifiedColumn();
   bool MigrateToVersion39AddSyncGUIDColumn();
+  bool MigrateToVersion40AddDefaultSearchEngineBackup();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(KeywordTableTest, DefaultSearchProviderBackup);
+
+  // Sets backup for id of the default search provider.
+  // Backup value is used to notice when unexpected change of the id
+  // occurred (i.e. by third-party process trying to modify user settings).
+  bool SetDefaultSearchProviderBackupID(int64 id);
+
+  // Sets signature for the backup field.
+  bool SetDefaultSearchProviderBackupIDSignature(int64 id);
+
   DISALLOW_COPY_AND_ASSIGN(KeywordTable);
 };
 

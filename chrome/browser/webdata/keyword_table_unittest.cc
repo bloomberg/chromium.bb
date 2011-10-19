@@ -146,14 +146,28 @@ TEST_F(KeywordTableTest, KeywordMisc) {
 
   ASSERT_EQ(sql::INIT_OK, db.Init(file_));
 
-  ASSERT_EQ(0, db.GetKeywordTable()->GetDefaulSearchProviderID());
-  ASSERT_EQ(0, db.GetKeywordTable()->GetBuitinKeywordVersion());
+  ASSERT_EQ(0, db.GetKeywordTable()->GetDefaultSearchProviderID());
+  ASSERT_EQ(0, db.GetKeywordTable()->GetBuiltinKeywordVersion());
 
-  db.GetKeywordTable()->SetDefaultSearchProviderID(10);
-  db.GetKeywordTable()->SetBuitinKeywordVersion(11);
+  ASSERT_TRUE(db.GetKeywordTable()->SetDefaultSearchProviderID(10));
+  ASSERT_TRUE(db.GetKeywordTable()->SetBuiltinKeywordVersion(11));
 
-  ASSERT_EQ(10, db.GetKeywordTable()->GetDefaulSearchProviderID());
-  ASSERT_EQ(11, db.GetKeywordTable()->GetBuitinKeywordVersion());
+  ASSERT_EQ(10, db.GetKeywordTable()->GetDefaultSearchProviderID());
+  ASSERT_EQ(11, db.GetKeywordTable()->GetBuiltinKeywordVersion());
+}
+
+TEST_F(KeywordTableTest, DefaultSearchProviderBackup) {
+  WebDatabase db;
+
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+
+  EXPECT_EQ(0, db.GetKeywordTable()->GetDefaultSearchProviderID());
+
+  ASSERT_TRUE(db.GetKeywordTable()->SetDefaultSearchProviderID(10));
+  EXPECT_EQ(10, db.GetKeywordTable()->GetDefaultSearchProviderID());
+
+  ASSERT_TRUE(db.GetKeywordTable()->SetDefaultSearchProviderBackupID(11));
+  EXPECT_EQ(11, db.GetKeywordTable()->GetDefaultSearchProviderID());
 }
 
 TEST_F(KeywordTableTest, UpdateKeyword) {
