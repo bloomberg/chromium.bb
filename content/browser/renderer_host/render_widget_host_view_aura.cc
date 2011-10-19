@@ -16,42 +16,25 @@
 #include "ui/aura/window.h"
 #include "ui/gfx/canvas.h"
 
+#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
+#include "base/bind.h"
+#include "content/browser/gpu/gpu_process_host_ui_shim.h"
+#include "content/browser/renderer_host/accelerated_surface_container_linux.h"
+#include "content/common/gpu/gpu_messages.h"
+#include "ui/gfx/compositor/layer.h"
+#include "ui/gfx/gl/gl_bindings.h"
+#endif
+
 namespace {
 
-int WebInputEventFlagsFromAuraEvent(const aura::Event& event) {
-  int modifiers = 0;
-  if (event.flags() & ui::EF_SHIFT_DOWN)
-    modifiers |= WebKit::WebInputEvent::ShiftKey;
-  if (event.flags() & ui::EF_CONTROL_DOWN)
-    modifiers |= WebKit::WebInputEvent::ControlKey;
-  if (event.flags() & ui::EF_ALT_DOWN)
-    modifiers |= WebKit::WebInputEvent::AltKey;
-  if (event.flags() & ui::EF_CAPS_LOCK_DOWN)
-    modifiers |= WebKit::WebInputEvent::CapsLockOn;
-  return modifiers;
+#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
+void AcknowledgeSwapBuffers(int32 route_id, int gpu_host_id) {
+  // It's possible that gpu_host_id is no longer valid at this point (like if
+  // gpu process was restarted after a crash).  SendToGpuHost handles this.
+  GpuProcessHostUIShim::SendToGpuHost(gpu_host_id,
+      new AcceleratedSurfaceMsg_BuffersSwappedACK(route_id));
 }
-
-WebKit::WebInputEvent::Type WebInputEventTypeFromAuraEvent(
-    const aura::Event& event) {
-  switch (event.type()) {
-    case ui::ET_MOUSE_PRESSED:
-      return WebKit::WebInputEvent::MouseDown;
-    case ui::ET_MOUSE_RELEASED:
-      return WebKit::WebInputEvent::MouseUp;
-    case ui::ET_MOUSE_ENTERED:
-    case ui::ET_MOUSE_EXITED:
-    case ui::ET_MOUSE_MOVED:
-    case ui::ET_MOUSE_DRAGGED:
-      // Drags are treated as moves by WebKit, which does its own drag handling.
-      return WebKit::WebInputEvent::MouseMove;
-    case ui::ET_MOUSEWHEEL:
-      return WebKit::WebInputEvent::MouseWheel;
-    default:
-      NOTREACHED();
-      break;
-  }
-  return WebKit::WebInputEvent::Undefined;
-}
+#endif
 
 }  // namespace
 
@@ -207,15 +190,41 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceNew(
       int32 height,
       uint64* surface_id,
       TransportDIB::Handle* surface_handle) {
+  scoped_ptr<AcceleratedSurfaceContainerLinux> surface(
+      AcceleratedSurfaceContainerLinux::CreateAcceleratedSurfaceContainer(
+          gfx::Size(width, height)));
+  if (!surface->Initialize(surface_id)) {
+    LOG(ERROR) << "Failed to create AcceleratedSurfaceContainer";
+    return;
+  }
+  *surface_handle = surface->Handle();
+
+  accelerated_surface_containers_[*surface_id] = surface.release();
 }
 
 void RenderWidgetHostViewAura::AcceleratedSurfaceBuffersSwapped(
       uint64 surface_id,
       int32 route_id,
       int gpu_host_id) {
+  window_->layer()->SetExternalTexture(
+      accelerated_surface_containers_[surface_id].get());
+  glFlush();
+
+  if (!window_->layer()->GetCompositor()) {
+    // We have no compositor, so we have no way to display the surface
+    AcknowledgeSwapBuffers(route_id, gpu_host_id);  // Must still send the ACK
+  } else {
+    // Add sending an ACK to the list of things to do OnCompositingEnded
+    on_compositing_ended_callbacks_.push_back(
+        base::Bind(AcknowledgeSwapBuffers, route_id, gpu_host_id));
+    ui::Compositor* compositor = window_->layer()->GetCompositor();
+    if (!compositor->HasObserver(this))
+      compositor->AddObserver(this);
+  }
 }
 
 void RenderWidgetHostViewAura::AcceleratedSurfaceRelease(uint64 surface_id) {
+  accelerated_surface_containers_.erase(surface_id);
 }
 #endif
 
@@ -270,9 +279,23 @@ void RenderWidgetHostViewAura::ShowCompositorHostWindow(bool show) {
 }
 #endif
 
+#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
 gfx::PluginWindowHandle RenderWidgetHostViewAura::GetCompositingSurface() {
-  return NULL;
+  // The GPU process renders to an offscreen surface (created by the GPU
+  // process), which is later displayed by the browser. As the GPU process
+  // creates this surface, we can return any non-zero value.
+  return 1;
 }
+#else
+gfx::PluginWindowHandle RenderWidgetHostViewAura::GetCompositingSurface() {
+  // TODO(oshima): The original implementation was broken as
+  // GtkNativeViewManager doesn't know about NativeWidgetGtk. Figure
+  // out if this makes sense without compositor. If it does, then find
+  // out the right way to handle.
+  NOTIMPLEMENTED();
+  return gfx::kNullPluginWindow;
+}
+#endif
 
 bool RenderWidgetHostViewAura::LockMouse() {
   NOTIMPLEMENTED();
@@ -366,6 +389,21 @@ void RenderWidgetHostViewAura::OnWindowDestroyed() {
 
 void RenderWidgetHostViewAura::OnWindowVisibilityChanged(bool visible) {
 }
+
+#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
+////////////////////////////////////////////////////////////////////////////////
+// RenderWidgetHostViewAura, ui::CompositorDelegate implementation:
+
+void RenderWidgetHostViewAura::OnCompositingEnded(ui::Compositor* compositor) {
+  for (std::vector< base::Callback<void(void)> >::const_iterator
+      it = on_compositing_ended_callbacks_.begin();
+      it != on_compositing_ended_callbacks_.end(); ++it) {
+    it->Run();
+  }
+  on_compositing_ended_callbacks_.clear();
+  compositor->RemoveObserver(this);
+}
+#endif
 
 #if !defined(TOUCH_UI)
 ////////////////////////////////////////////////////////////////////////////////

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/renderer_host/accelerated_surface_container_touch.h"
+#include "content/browser/renderer_host/accelerated_surface_container_linux.h"
 
 #include <X11/Xlib.h>
 #include <X11/extensions/Xcomposite.h>
@@ -20,10 +20,10 @@
 
 namespace {
 
-class AcceleratedSurfaceContainerTouchEGL
-    : public AcceleratedSurfaceContainerTouch {
+class AcceleratedSurfaceContainerLinuxEGL
+    : public AcceleratedSurfaceContainerLinux {
  public:
-  explicit AcceleratedSurfaceContainerTouchEGL(const gfx::Size& size);
+  explicit AcceleratedSurfaceContainerLinuxEGL(const gfx::Size& size);
 
   virtual bool Initialize(uint64* surface_id) OVERRIDE;
 
@@ -32,17 +32,17 @@ class AcceleratedSurfaceContainerTouchEGL
                     const gfx::Rect& clip_bounds_in_texture) OVERRIDE;
 
  private:
-  virtual ~AcceleratedSurfaceContainerTouchEGL();
+  virtual ~AcceleratedSurfaceContainerLinuxEGL();
 
   void* image_;
 
-  DISALLOW_COPY_AND_ASSIGN(AcceleratedSurfaceContainerTouchEGL);
+  DISALLOW_COPY_AND_ASSIGN(AcceleratedSurfaceContainerLinuxEGL);
 };
 
-class AcceleratedSurfaceContainerTouchGLX
-    : public AcceleratedSurfaceContainerTouch {
+class AcceleratedSurfaceContainerLinuxGLX
+    : public AcceleratedSurfaceContainerLinux {
  public:
-  explicit AcceleratedSurfaceContainerTouchGLX(const gfx::Size& size);
+  explicit AcceleratedSurfaceContainerLinuxGLX(const gfx::Size& size);
 
   virtual bool Initialize(uint64* surface_id) OVERRIDE;
 
@@ -56,18 +56,18 @@ class AcceleratedSurfaceContainerTouchGLX
   static base::LazyInstance<GLXFBConfig> fbconfig_;
 
  private:
-  virtual ~AcceleratedSurfaceContainerTouchGLX();
+  virtual ~AcceleratedSurfaceContainerLinuxGLX();
 
   XID pixmap_;
   XID glx_pixmap_;
 
-  DISALLOW_COPY_AND_ASSIGN(AcceleratedSurfaceContainerTouchGLX);
+  DISALLOW_COPY_AND_ASSIGN(AcceleratedSurfaceContainerLinuxGLX);
 };
 
-class AcceleratedSurfaceContainerTouchOSMesa
-    : public AcceleratedSurfaceContainerTouch {
+class AcceleratedSurfaceContainerLinuxOSMesa
+    : public AcceleratedSurfaceContainerLinux {
  public:
-  explicit AcceleratedSurfaceContainerTouchOSMesa(const gfx::Size& size);
+  explicit AcceleratedSurfaceContainerLinuxOSMesa(const gfx::Size& size);
 
   virtual bool Initialize(uint64* surface_id) OVERRIDE;
 
@@ -82,11 +82,11 @@ class AcceleratedSurfaceContainerTouchOSMesa
   virtual TransportDIB::Handle Handle() const OVERRIDE;
 
  private:
-  virtual ~AcceleratedSurfaceContainerTouchOSMesa();
+  virtual ~AcceleratedSurfaceContainerLinuxOSMesa();
 
   scoped_ptr<TransportDIB> shared_mem_;
 
-  DISALLOW_COPY_AND_ASSIGN(AcceleratedSurfaceContainerTouchOSMesa);
+  DISALLOW_COPY_AND_ASSIGN(AcceleratedSurfaceContainerLinuxOSMesa);
 };
 
 class ScopedPtrXFree {
@@ -97,16 +97,16 @@ class ScopedPtrXFree {
 };
 
 // static
-base::LazyInstance<GLXFBConfig> AcceleratedSurfaceContainerTouchGLX::fbconfig_(
+base::LazyInstance<GLXFBConfig> AcceleratedSurfaceContainerLinuxGLX::fbconfig_(
     base::LINKER_INITIALIZED);
 
-AcceleratedSurfaceContainerTouchEGL::AcceleratedSurfaceContainerTouchEGL(
+AcceleratedSurfaceContainerLinuxEGL::AcceleratedSurfaceContainerLinuxEGL(
     const gfx::Size& size)
-    : AcceleratedSurfaceContainerTouch(size),
+    : AcceleratedSurfaceContainerLinux(size),
       image_(NULL) {
 }
 
-bool AcceleratedSurfaceContainerTouchEGL::Initialize(uint64* surface_id) {
+bool AcceleratedSurfaceContainerLinuxEGL::Initialize(uint64* surface_id) {
   ui::SharedResources* instance = ui::SharedResources::GetInstance();
   DCHECK(instance);
   instance->MakeSharedContextCurrent();
@@ -127,7 +127,7 @@ bool AcceleratedSurfaceContainerTouchEGL::Initialize(uint64* surface_id) {
   return true;
 }
 
-AcceleratedSurfaceContainerTouchEGL::~AcceleratedSurfaceContainerTouchEGL() {
+AcceleratedSurfaceContainerLinuxEGL::~AcceleratedSurfaceContainerLinuxEGL() {
   ui::SharedResources* instance = ui::SharedResources::GetInstance();
   DCHECK(instance);
   instance->MakeSharedContextCurrent();
@@ -136,7 +136,7 @@ AcceleratedSurfaceContainerTouchEGL::~AcceleratedSurfaceContainerTouchEGL() {
   glFlush();
 }
 
-void AcceleratedSurfaceContainerTouchEGL::Draw(
+void AcceleratedSurfaceContainerLinuxEGL::Draw(
     const ui::TextureDrawParams& params,
     const gfx::Rect& clip_bounds_in_texture) {
   ui::SharedResources* instance = ui::SharedResources::GetInstance();
@@ -150,19 +150,19 @@ void AcceleratedSurfaceContainerTouchEGL::Draw(
                clip_bounds_in_texture);
 }
 
-AcceleratedSurfaceContainerTouchGLX::AcceleratedSurfaceContainerTouchGLX(
+AcceleratedSurfaceContainerLinuxGLX::AcceleratedSurfaceContainerLinuxGLX(
     const gfx::Size& size)
-    : AcceleratedSurfaceContainerTouch(size),
+    : AcceleratedSurfaceContainerLinux(size),
       pixmap_(0),
       glx_pixmap_(0) {
 }
 
-bool AcceleratedSurfaceContainerTouchGLX::Initialize(uint64* surface_id) {
+bool AcceleratedSurfaceContainerLinuxGLX::Initialize(uint64* surface_id) {
   ui::SharedResources* instance = ui::SharedResources::GetInstance();
   DCHECK(instance);
   instance->MakeSharedContextCurrent();
 
-  if (!AcceleratedSurfaceContainerTouchGLX::InitializeOneOff())
+  if (!AcceleratedSurfaceContainerLinuxGLX::InitializeOneOff())
     return false;
 
   // Create pixmap from window.
@@ -193,7 +193,7 @@ bool AcceleratedSurfaceContainerTouchGLX::Initialize(uint64* surface_id) {
   return true;
 }
 
-AcceleratedSurfaceContainerTouchGLX::~AcceleratedSurfaceContainerTouchGLX() {
+AcceleratedSurfaceContainerLinuxGLX::~AcceleratedSurfaceContainerLinuxGLX() {
   ui::SharedResources* instance = ui::SharedResources::GetInstance();
   DCHECK(instance);
   instance->MakeSharedContextCurrent();
@@ -205,7 +205,7 @@ AcceleratedSurfaceContainerTouchGLX::~AcceleratedSurfaceContainerTouchGLX() {
     XFreePixmap(dpy, pixmap_);
 }
 
-void AcceleratedSurfaceContainerTouchGLX::Draw(
+void AcceleratedSurfaceContainerLinuxGLX::Draw(
     const ui::TextureDrawParams& params,
     const gfx::Rect& clip_bounds_in_texture) {
   ui::SharedResources* instance = ui::SharedResources::GetInstance();
@@ -222,7 +222,7 @@ void AcceleratedSurfaceContainerTouchGLX::Draw(
 }
 
 // static
-bool AcceleratedSurfaceContainerTouchGLX::InitializeOneOff()
+bool AcceleratedSurfaceContainerLinuxGLX::InitializeOneOff()
 {
   static bool initialized = false;
   if (initialized)
@@ -293,12 +293,12 @@ bool AcceleratedSurfaceContainerTouchGLX::InitializeOneOff()
   return initialized;
 }
 
-AcceleratedSurfaceContainerTouchOSMesa::AcceleratedSurfaceContainerTouchOSMesa(
+AcceleratedSurfaceContainerLinuxOSMesa::AcceleratedSurfaceContainerLinuxOSMesa(
     const gfx::Size& size)
-      : AcceleratedSurfaceContainerTouch(size) {
+      : AcceleratedSurfaceContainerLinux(size) {
 }
 
-bool AcceleratedSurfaceContainerTouchOSMesa::Initialize(uint64* surface_id) {
+bool AcceleratedSurfaceContainerLinuxOSMesa::Initialize(uint64* surface_id) {
   static uint32 next_id = 1;
 
   ui::SharedResources* instance = ui::SharedResources::GetInstance();
@@ -309,7 +309,7 @@ bool AcceleratedSurfaceContainerTouchOSMesa::Initialize(uint64* surface_id) {
   DCHECK_EQ(*surface_id, static_cast<uint64>(0));
 
   // It's possible that this ID gneration could clash with IDs from other
-  // AcceleratedSurfaceContainerTouch* objects, however we should never have
+  // AcceleratedSurfaceContainerLinux* objects, however we should never have
   // ids active from more than one type at the same time, so we have free
   // reign of the id namespace.
   *surface_id = next_id++;
@@ -329,7 +329,7 @@ bool AcceleratedSurfaceContainerTouchOSMesa::Initialize(uint64* surface_id) {
   return true;
 }
 
-void AcceleratedSurfaceContainerTouchOSMesa::Draw(
+void AcceleratedSurfaceContainerLinuxOSMesa::Draw(
     const ui::TextureDrawParams& params,
     const gfx::Rect& clip_bounds_in_texture) {
   ui::SharedResources* instance = ui::SharedResources::GetInstance();
@@ -347,47 +347,48 @@ void AcceleratedSurfaceContainerTouchOSMesa::Draw(
   }
 }
 
-TransportDIB::Handle AcceleratedSurfaceContainerTouchOSMesa::Handle() const {
+TransportDIB::Handle AcceleratedSurfaceContainerLinuxOSMesa::Handle() const {
   if (shared_mem_.get())
     return shared_mem_->handle();
   else
     return TransportDIB::DefaultHandleValue();
 }
 
-AcceleratedSurfaceContainerTouchOSMesa::
-    ~AcceleratedSurfaceContainerTouchOSMesa() {
+AcceleratedSurfaceContainerLinuxOSMesa::
+    ~AcceleratedSurfaceContainerLinuxOSMesa() {
 }
 
 }  // namespace
 
-AcceleratedSurfaceContainerTouch::AcceleratedSurfaceContainerTouch(
+AcceleratedSurfaceContainerLinux::AcceleratedSurfaceContainerLinux(
     const gfx::Size& size) : TextureGL(size) {
 }
 
-TransportDIB::Handle AcceleratedSurfaceContainerTouch::Handle() const {
+TransportDIB::Handle AcceleratedSurfaceContainerLinux::Handle() const {
   return TransportDIB::DefaultHandleValue();
 }
 
 // static
-AcceleratedSurfaceContainerTouch*
-AcceleratedSurfaceContainerTouch::CreateAcceleratedSurfaceContainer(
+AcceleratedSurfaceContainerLinux*
+AcceleratedSurfaceContainerLinux::CreateAcceleratedSurfaceContainer(
     const gfx::Size& size) {
   switch (gfx::GetGLImplementation()) {
     case gfx::kGLImplementationDesktopGL:
-      return new AcceleratedSurfaceContainerTouchGLX(size);
+      return new AcceleratedSurfaceContainerLinuxGLX(size);
     case gfx::kGLImplementationEGLGLES2:
-      return new AcceleratedSurfaceContainerTouchEGL(size);
+      return new AcceleratedSurfaceContainerLinuxEGL(size);
     case gfx::kGLImplementationOSMesaGL:
-      return new AcceleratedSurfaceContainerTouchOSMesa(size);
+      return new AcceleratedSurfaceContainerLinuxOSMesa(size);
     default:
       NOTREACHED();
       return NULL;
   }
 }
 
-void AcceleratedSurfaceContainerTouch::SetCanvas(
+void AcceleratedSurfaceContainerLinux::SetCanvas(
     const SkCanvas& canvas,
     const gfx::Point& origin,
     const gfx::Size& overall_size) {
   NOTREACHED();
 }
+

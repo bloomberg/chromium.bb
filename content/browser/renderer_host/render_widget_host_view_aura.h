@@ -6,11 +6,21 @@
 #define CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_AURA_H_
 #pragma once
 
+#include <map>
+
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/gfx/compositor/compositor_observer.h"
 #include "webkit/glue/webcursor.h"
 
+#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
+class AcceleratedSurfaceContainerLinux;
+#endif
+
 class RenderWidgetHostViewAura : public RenderWidgetHostView,
+#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
+                                 public ui::CompositorObserver,
+#endif
                                  public aura::WindowDelegate {
  public:
   explicit RenderWidgetHostViewAura(RenderWidgetHost* host);
@@ -106,6 +116,11 @@ class RenderWidgetHostViewAura : public RenderWidgetHostView,
   virtual void OnWindowVisibilityChanged(bool visible) OVERRIDE;
 
  private:
+#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
+  // Overridden from ui::CompositorObserver:
+  virtual void OnCompositingEnded(ui::Compositor* compositor) OVERRIDE;
+#endif
+
   void UpdateCursorIfOverSelf();
 
   // The model object.
@@ -118,6 +133,13 @@ class RenderWidgetHostViewAura : public RenderWidgetHostView,
 
   // The cursor for the page. This is passed up from the renderer.
   WebCursor current_cursor_;
+
+#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
+  std::vector< base::Callback<void(void)> > on_compositing_ended_callbacks_;
+
+  std::map<uint64, scoped_refptr<AcceleratedSurfaceContainerLinux> >
+      accelerated_surface_containers_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAura);
 };

@@ -33,7 +33,7 @@ enum TouchStatus;
 #endif
 
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
-class AcceleratedSurfaceContainerTouch;
+class AcceleratedSurfaceContainerLinux;
 #endif
 
 class RenderWidgetHost;
@@ -315,7 +315,7 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
 #endif
 
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
-  std::map<uint64, scoped_refptr<AcceleratedSurfaceContainerTouch> >
+  std::map<uint64, scoped_refptr<AcceleratedSurfaceContainerLinux> >
       accelerated_surface_containers_;
 #endif
 

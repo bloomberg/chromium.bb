@@ -39,8 +39,8 @@
 
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
 #include "base/bind.h"
-#include "chrome/browser/renderer_host/accelerated_surface_container_touch.h"
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
+#include "content/browser/renderer_host/accelerated_surface_container_linux.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "ui/gfx/gl/gl_bindings.h"
 #endif
@@ -1119,8 +1119,8 @@ void RenderWidgetHostViewViews::AcceleratedSurfaceNew(
     int32 height,
     uint64* surface_id,
     TransportDIB::Handle* surface_handle) {
-  scoped_ptr<AcceleratedSurfaceContainerTouch> surface(
-      AcceleratedSurfaceContainerTouch::CreateAcceleratedSurfaceContainer(
+  scoped_ptr<AcceleratedSurfaceContainerLinux> surface(
+      AcceleratedSurfaceContainerLinux::CreateAcceleratedSurfaceContainer(
           gfx::Size(width, height)));
   if (!surface->Initialize(surface_id)) {
     LOG(ERROR) << "Failed to create AcceleratedSurfaceContainer";

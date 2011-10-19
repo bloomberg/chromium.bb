@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_RENDERER_HOST_ACCELERATED_SURFACE_CONTAINER_TOUCH_H_
-#define CHROME_BROWSER_RENDERER_HOST_ACCELERATED_SURFACE_CONTAINER_TOUCH_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_ACCELERATED_SURFACE_CONTAINER_LINUX_H_
+#define CONTENT_BROWSER_RENDERER_HOST_ACCELERATED_SURFACE_CONTAINER_LINUX_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -14,9 +14,9 @@
 // on behalf of the RWHVV. It assumes that GL context that will display
 // the image data is current  when an instance of this object is created
 // or destroyed.
-class AcceleratedSurfaceContainerTouch : public ui::TextureGL {
+class AcceleratedSurfaceContainerLinux : public ui::TextureGL {
  public:
-  static AcceleratedSurfaceContainerTouch* CreateAcceleratedSurfaceContainer(
+  static AcceleratedSurfaceContainerLinux* CreateAcceleratedSurfaceContainer(
       const gfx::Size& size);
 
   // TextureGL implementation
@@ -34,10 +34,11 @@ class AcceleratedSurfaceContainerTouch : public ui::TextureGL {
   virtual TransportDIB::Handle Handle() const;
 
  protected:
-  explicit AcceleratedSurfaceContainerTouch(const gfx::Size& size);
+  explicit AcceleratedSurfaceContainerLinux(const gfx::Size& size);
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(AcceleratedSurfaceContainerTouch);
+  DISALLOW_COPY_AND_ASSIGN(AcceleratedSurfaceContainerLinux);
 };
 
-#endif  // CHROME_BROWSER_RENDERER_HOST_ACCELERATED_SURFACE_CONTAINER_TOUCH_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_ACCELERATED_SURFACE_CONTAINER_LINUX_H_
+

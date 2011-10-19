@@ -294,6 +294,8 @@
     'browser/quota_permission_context.h',
     'browser/renderer_host/accelerated_plugin_view_mac.h',
     'browser/renderer_host/accelerated_plugin_view_mac.mm',
+    'browser/renderer_host/accelerated_surface_container_linux.cc',
+    'browser/renderer_host/accelerated_surface_container_linux.h',
     'browser/renderer_host/accelerated_surface_container_mac.cc',
     'browser/renderer_host/accelerated_surface_container_mac.h',
     'browser/renderer_host/accelerated_surface_container_manager_mac.cc',
@@ -693,5 +695,25 @@
         ['exclude', '^browser/renderer_host/render_widget_host_view_aura.h'],
       ],
     }],
-  ],
+    ['ui_compositor_image_transport==1', {
+      'dependencies': [
+        '../ui/gfx/compositor/compositor.gyp:compositor',
+        '../ui/gfx/gl/gl.gyp:gl',
+      ],
+      'link_settings': {
+        'libraries': [
+          '-lXcomposite',
+        ],
+      },
+      'include_dirs': [
+        '../third_party/angle/include',
+      ],
+    }, {
+      'sources/': [
+        ['exclude', '^browser/renderer_host/accelerated_surface_container_linux.cc'],
+        ['exclude', '^browser/renderer_host/accelerated_surface_container_linux.h'],
+      ],
+   }],
+ ],
 }
+

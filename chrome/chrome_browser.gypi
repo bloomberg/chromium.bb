@@ -1968,8 +1968,6 @@
         'browser/remove_rows_table_model.h',
         'browser/remoting/firewall_traversal_observer.cc',
         'browser/remoting/firewall_traversal_observer.h',
-        'browser/renderer_host/accelerated_surface_container_touch.cc',
-        'browser/renderer_host/accelerated_surface_container_touch.h',
         'browser/renderer_host/chrome_render_message_filter.cc',
         'browser/renderer_host/chrome_render_message_filter.h',
         'browser/renderer_host/chrome_render_view_host_observer.cc',
@@ -4187,24 +4185,9 @@
             '../ui/aura_shell/aura_shell.gyp:aura_shell',
           ],
         }],
-        ['ui_compositor_image_transport==0', {
-          'sources/': [
-            ['exclude', '^browser/renderer_host/accelerated_surface_container_touch.cc'],
-            ['exclude', '^browser/renderer_host/accelerated_surface_container_touch.h'],
-          ],
-        }],
         ['ui_compositor_image_transport==1', {
           'dependencies': [
-            '../ui/gfx/compositor/compositor.gyp:compositor',
             '../ui/gfx/gl/gl.gyp:gl',
-          ],
-          'link_settings': {
-            'libraries': [
-              '-lXcomposite',
-            ],
-          },
-          'include_dirs': [
-            '../third_party/angle/include',
           ],
         }],
         ['use_virtual_keyboard==0', {

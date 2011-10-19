@@ -269,6 +269,9 @@ WebKit::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
     case KeyRelease:
       webkit_event.type = WebKit::WebInputEvent::KeyUp;
       break;
+    case GenericEvent:
+      // TODO(sadrul): touch!
+      break;
     default:
       NOTREACHED();
   }
