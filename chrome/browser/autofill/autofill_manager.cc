@@ -1097,7 +1097,12 @@ void AutofillManager::FillFormField(const AutofillProfile& profile,
     } else {
       std::vector<string16> values;
       profile.GetCanonicalizedMultiInfo(type, &values);
-      DCHECK(variant < values.size());
+      if (variant >= values.size()) {
+        // If the variant is unavailable, bail.  This case is reachable, for
+        // example if Sync updates a profile during the filling process.
+        return;
+      }
+
       field->value = values[variant];
     }
   }

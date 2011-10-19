@@ -2108,9 +2108,30 @@ TEST_F(AutofillManagerTest, FillAddressFormWithVariantType) {
                        PackGUIDs(empty, guid));
 
   int page_id = 0;
-  FormData results;
-  EXPECT_TRUE(GetAutofillFormDataFilledMessage(&page_id, &results));
-  ExpectFilledAddressFormElvis(page_id, results, kDefaultPageID, false);
+  FormData results1;
+  EXPECT_TRUE(GetAutofillFormDataFilledMessage(&page_id, &results1));
+  {
+    SCOPED_TRACE("Valid variant");
+    ExpectFilledAddressFormElvis(page_id, results1, kDefaultPageID, false);
+  }
+
+  // Try filling with a variant that doesn't exist.  The fields to which this
+  // variant would normally apply should not be filled.
+  const int kPageID2 = 2;
+  GUIDPair guid2(profile->guid(), 2);
+  FillAutofillFormData(kPageID2, form, form.fields[0],
+                       PackGUIDs(empty, guid2));
+
+  page_id = 0;
+  FormData results2;
+  EXPECT_TRUE(GetAutofillFormDataFilledMessage(&page_id, &results2));
+  {
+    SCOPED_TRACE("Invalid variant");
+    ExpectFilledForm(page_id, results2, kPageID2, "", "", "",
+                     "3734 Elvis Presley Blvd.", "Apt. 10", "Memphis",
+                     "Tennessee", "38116", "United States", "12345678901",
+                     "theking@gmail.com", "", "", "", "", true, false, false);
+  }
 }
 
 // Test that we correctly fill a phone number split across multiple fields.
