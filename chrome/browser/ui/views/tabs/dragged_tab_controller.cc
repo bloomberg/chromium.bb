@@ -1285,16 +1285,12 @@ void DraggedTabController::CreateDraggedView(
 }
 
 gfx::Point DraggedTabController::GetCursorScreenPoint() const {
-#if defined(OS_WIN)
+  // TODO(sky): see if we can convert to using Screen every where.
+#if defined(OS_WIN) && !defined(USE_AURA)
   DWORD pos = GetMessagePos();
   return gfx::Point(pos);
-#elif defined(TOOLKIT_USES_GTK)
-  gint x, y;
-  gdk_display_get_pointer(gdk_display_get_default(), NULL, &x, &y, NULL);
-  return gfx::Point(x, y);
 #else
-  NOTIMPLEMENTED();
-  return gfx::Point();
+  return gfx::Screen::GetCursorScreenPoint();
 #endif
 }
 
