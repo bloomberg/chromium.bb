@@ -119,10 +119,10 @@ void NTPLoginHandler::UpdateLogin() {
     signed_in_link = ASCIIToUTF16("<span class='link-span'>") + signed_in_link +
                      ASCIIToUTF16("</span>");
     header = l10n_util::GetStringFUTF16(
-        IDS_SYNC_PROMO_NOT_SIGNED_IN_STATUS_HEADER, signed_in_link,
+        IDS_SYNC_PROMO_NOT_SIGNED_IN_STATUS_HEADER,
         l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
-    sub_header = l10n_util::GetStringUTF16(
-        IDS_SYNC_PROMO_NOT_SIGNED_IN_STATUS_SUB_HEADER);
+    sub_header = l10n_util::GetStringFUTF16(
+        IDS_SYNC_PROMO_NOT_SIGNED_IN_STATUS_SUB_HEADER, signed_in_link);
   }
 
   StringValue header_value(header);

@@ -10561,13 +10561,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
         &lt;/p&gt;
       </message>
       <message name="IDS_SYNC_PROMO_NOT_SIGNED_IN_STATUS_HEADER" desc="The first line of the of the message shown in NTP when a user is not signed into sync.">
-        Not <ph name="IDS_SYNC_PROMO_NOT_SIGNED_IN_STATUS_LINK">$1<ex>signed in</ex></ph> to <ph name="SHORT_PRODUCT_NAME">$2<ex>Chrome</ex></ph>
-      </message>
-      <message name="IDS_SYNC_PROMO_NOT_SIGNED_IN_STATUS_LINK" desc="The linkified portion of the sync sign in promo on the NTP. Clicking this text allows the user to sign in to sync.">
-        signed in
+        Not signed in to <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>
       </message>
       <message name="IDS_SYNC_PROMO_NOT_SIGNED_IN_STATUS_SUB_HEADER" desc="The second line of the of the message shown in NTP when a user is not signed into sync.">
-        (You're missing out)
+        (You're missing out&#8212;<ph name="IDS_SYNC_PROMO_NOT_SIGNED_IN_STATUS_LINK">$1<ex>sign in</ex></ph>)
+      </message>
+      <message name="IDS_SYNC_PROMO_NOT_SIGNED_IN_STATUS_LINK" desc="The linkified portion of the sync sign in promo on the NTP. Clicking this text allows the user to sign in to sync.">
+        sign in
       </message>
 
       <!-- Translate Info Bar -->
