@@ -99,7 +99,11 @@ void XInputHierarchyChangedEventListener::Stop() {
 #if defined(TOUCH_UI) || !defined(TOOLKIT_USES_GTK)
 base::EventStatus XInputHierarchyChangedEventListener::WillProcessEvent(
     const base::NativeEvent& event) {
-  return ProcessedXEvent(event) ? base::EVENT_HANDLED : base::EVENT_CONTINUE;
+  // There may be multiple listeners for the XI_HierarchyChanged event. So
+  // always return EVENT_CONTINUE to make sure all the listeners receive the
+  // event.
+  ProcessedXEvent(event);
+  return base::EVENT_CONTINUE;
 }
 
 void XInputHierarchyChangedEventListener::DidProcessEvent(
@@ -123,18 +127,20 @@ bool XInputHierarchyChangedEventListener::ProcessedXEvent(XEvent* xevent) {
       (xevent->xcookie.extension != xiopcode_)) {
     return false;
   }
+#if !defined(TOUCH_UI)
   if (!XGetEventData(xevent->xgeneric.display, &xevent->xcookie)) {
     VLOG(1) << "XGetEventData failed";
     return false;
   }
-
+#endif
   XGenericEventCookie* cookie = &(xevent->xcookie);
   const bool should_consume = (cookie->evtype == XI_HierarchyChanged);
-  if (should_consume) {
+  if (should_consume)
     HandleHierarchyChangedEvent(static_cast<XIHierarchyEvent*>(cookie->data));
-  }
-  XFreeEventData(xevent->xgeneric.display, cookie);
 
+#if !defined(TOUCH_UI)
+  XFreeEventData(xevent->xgeneric.display, cookie);
+#endif
   return should_consume;
 }
 
