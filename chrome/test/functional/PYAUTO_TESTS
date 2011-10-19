@@ -126,6 +126,8 @@
       '-pdf.PDFTest.testPDFRunner',
       # crbug.com/100593
       '-nacl_sdk.NaClSDKTest.testVerifyNaClPlugin',
+      # crbug.com/100867
+      '-history.HistoryTest.testSubmitFormAddsTargetPage',
     ],
 
     'win': [
