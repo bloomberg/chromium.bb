@@ -155,7 +155,7 @@ if test_env.Bit('target_x86_32'):
       [ncval_tests],
       )
 
-  test_env.AddNodeToTestSuite(node, STANDARD_TESTS)
+  test_env.AddNodeToTestSuite(node, STANDARD_TESTS, 'run_ncval_tests')
 
 # ======================================================================
 # Define what decoder was historically being used for tests. This allows
