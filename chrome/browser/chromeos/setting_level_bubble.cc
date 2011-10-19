@@ -57,11 +57,7 @@ namespace chromeos {
 // TODO(glotov): remove this in favor of enabling Bubble class act
 // without |parent| specified. crosbug.com/4025
 static views::Widget* GetToplevelWidget() {
-#if defined(USE_AURA)
-  // TODO(saintlou): Need to fix in PureViews.
-  return WebUILoginDisplay::GetLoginWindow();
-#else
-  GtkWindow* window = NULL;
+  gfx::NativeWindow window = NULL;
 
   // We just use the default profile here -- this gets overridden as needed
   // in Chrome OS depending on whether the user is logged in or not.
@@ -70,19 +66,22 @@ static views::Widget* GetToplevelWidget() {
           ProfileManager::GetDefaultProfile(),
           true);  // match_incognito
   if (browser) {
-    window = GTK_WINDOW(browser->window()->GetNativeHandle());
+    window = browser->window()->GetNativeHandle();
   } else {
+#if defined(USE_AURA)
+    // TODO(saintlou): Unsure what to do for the Aura background.
+#else
     // Otherwise, see if there's a background window that we can use.
     BackgroundView* background = LoginUtils::Get()->GetBackgroundView();
     if (background)
       window = GTK_WINDOW(background->GetNativeWindow());
+#endif
   }
 
   if (window)
     return views::Widget::GetWidgetForNativeWindow(window);
   else
     return WebUILoginDisplay::GetLoginWindow();
-#endif
 }
 
 SettingLevelBubble::SettingLevelBubble(SkBitmap* increase_icon,
