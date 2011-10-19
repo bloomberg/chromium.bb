@@ -319,8 +319,7 @@ bool XKeyboard::SetAutoRepeatRate(const AutoRepeatRate& rate) {
 
 // static
 bool XKeyboard::CapsLockIsEnabled() {
-  // Do not call CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI)); to make
-  // unit_tests happy.
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   XkbStateRec status;
   XkbGetState(ui::GetXDisplay(), XkbUseCoreKbd, &status);
   return status.locked_mods & LockMask;
@@ -328,8 +327,7 @@ bool XKeyboard::CapsLockIsEnabled() {
 
 // static
 void XKeyboard::SetCapsLockEnabled(bool enable_caps_lock) {
-  // Do not call CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI)); to make
-  // unit_tests happy.
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   XkbLockModifiers(ui::GetXDisplay(), XkbUseCoreKbd, LockMask,
                    enable_caps_lock ? LockMask : 0);
 }

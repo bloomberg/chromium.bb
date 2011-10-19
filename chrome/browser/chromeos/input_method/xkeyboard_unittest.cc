@@ -8,13 +8,15 @@
 #include <set>
 #include <string>
 
-#include <gtest/gtest.h>
-#include <X11/Xlib.h>
-
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
+#include "content/browser/browser_thread.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/x/x11_util.h"
+
+#include <X11/Xlib.h>
 
 #if defined(TOUCH_UI)
 // Since TOUCH_UI build only supports a few keyboard layouts, we skip the tests
@@ -45,14 +47,19 @@ class XKeyboardTest : public testing::Test {
   XKeyboardTest()
       : controller_(IBusController::Create()),
         util_(controller_->GetSupportedInputMethods()),
-        xkey_(util_) {
+        xkey_(util_),
+        ui_thread_(BrowserThread::UI, &message_loop_) {
   }
+
   static void SetUpTestCase() {
   }
 
   scoped_ptr<IBusController> controller_;
   InputMethodUtil util_;
   TestableXKeyboard xkey_;
+
+  MessageLoopForUI message_loop_;
+  BrowserThread ui_thread_;
 };
 
 // Returns a ModifierMap object that contains the following mapping:
