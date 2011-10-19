@@ -4478,7 +4478,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         New Downloads UI
       </message>
       <message name="IDS_FLAGS_DOWNLOADS_NEW_UI_DESCRIPTION" desc="Description of the 'New Downloads UI' lab.">
-        Shows an experimental new UI instead of the download shelf.
+        Disables the download shelf. Will show the new downloads UI as it is implemented.
       </message>
       <message name="IDS_FLAGS_XSS_AUDITOR_NAME" desc="Description of the 'XSS Auditor' lab.">
         XSS Auditor
