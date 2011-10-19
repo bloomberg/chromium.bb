@@ -178,7 +178,8 @@ Bubble::Bubble(views::Widget::InitParams::Type type,
       type_(type),
       show_while_screen_is_locked_(show_while_screen_is_locked),
       arrow_location_(views::BubbleBorder::NONE),
-      contents_(NULL) {
+      contents_(NULL),
+      accelerator_registered_(false) {
 }
 #endif
 
