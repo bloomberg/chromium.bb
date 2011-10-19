@@ -239,7 +239,6 @@ void FullscreenExitBubbleGtk::OnAllowClicked(GtkWidget* button) {
   gtk_widget_grab_focus(render_widget_host_view_widget_);
   Accept();
   UpdateContent(url_, bubble_type_);
-  StartWatchingMouse();
 }
 void FullscreenExitBubbleGtk::OnDenyClicked(GtkWidget* button) {
   gtk_widget_grab_focus(render_widget_host_view_widget_);
