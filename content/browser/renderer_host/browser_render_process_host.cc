@@ -72,7 +72,7 @@
 #include "content/common/child_process_info.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/gpu/gpu_messages.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/common/process_watcher.h"
 #include "content/common/resource_messages.h"
 #include "content/common/result_codes.h"
@@ -870,7 +870,7 @@ void BrowserRenderProcessHost::ProcessDied(
   // already handled the error.
 
   RendererClosedDetails details(status, exit_code, was_alive);
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
       content::Source<RenderProcessHost>(this),
       content::Details<RendererClosedDetails>(&details));
@@ -900,10 +900,10 @@ void BrowserRenderProcessHost::OnShutdownRequest() {
 
   // Notify any tabs that might have swapped out renderers from this process.
   // They should not attempt to swap them back in.
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       content::NOTIFICATION_RENDERER_PROCESS_CLOSING,
       content::Source<RenderProcessHost>(this),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 
   Send(new ChildProcessMsg_Shutdown());
 }
@@ -965,10 +965,10 @@ void BrowserRenderProcessHost::OnProcessLaunched() {
   // The queued messages contain such things as "navigate". If this notification
   // was after, we can end up executing JavaScript before the initialization
   // happens.
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       content::NOTIFICATION_RENDERER_PROCESS_CREATED,
       content::Source<RenderProcessHost>(this),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 
   while (!queued_messages_.empty()) {
     Send(queued_messages_.front());

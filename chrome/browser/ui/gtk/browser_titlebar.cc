@@ -41,7 +41,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
@@ -336,7 +336,7 @@ void BrowserTitlebar::Init() {
   avatar_button_.reset(new AvatarMenuButtonGtk(browser_window_->browser()));
 
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 
 #if defined(USE_GCONF)
   // Either read the gconf database and register for updates (on GNOME), or use

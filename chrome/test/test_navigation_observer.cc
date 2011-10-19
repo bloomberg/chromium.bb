@@ -6,6 +6,7 @@
 
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host_observer.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -52,7 +53,7 @@ TestNavigationObserver::TestNavigationObserver(
   // When we need to do javascript injection, register for RVH creation.
   if (js_injection_ready_observer_) {
     registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_CREATED,
-                   NotificationService::AllSources());
+                   content::NotificationService::AllSources());
   }
   RegisterAsObserver(source);
 }
@@ -81,7 +82,7 @@ TestNavigationObserver::TestNavigationObserver(
   // When we need to do javascript injection, register for RVH creation.
   if (js_injection_ready_observer_) {
     registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_CREATED,
-                   NotificationService::AllSources());
+                   content::NotificationService::AllSources());
   }
 }
 

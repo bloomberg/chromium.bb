@@ -22,7 +22,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -461,16 +461,16 @@ void SimUnlockHandler::EnterCode(const std::string& code,
 }
 
 void SimUnlockHandler::NotifyOnEnterPinEnded(bool cancelled) {
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_ENTER_PIN_ENDED,
-      NotificationService::AllSources(),
+      content::NotificationService::AllSources(),
       content::Details<bool>(&cancelled));
 }
 
 void SimUnlockHandler::NotifyOnRequirePinChangeEnded(bool new_value) {
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_REQUIRE_PIN_SETTING_CHANGE_ENDED,
-      NotificationService::AllSources(),
+      content::NotificationService::AllSources(),
       content::Details<bool>(&new_value));
 }
 

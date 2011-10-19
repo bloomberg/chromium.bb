@@ -43,7 +43,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "net/http/http_util.h"
@@ -566,9 +566,9 @@ void InstantLoader::TabContentsDelegateImpl::OnInstantSupportDetermined(
     return;
 
   content::Details<const bool> details(&result);
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_INSTANT_SUPPORT_DETERMINED,
-      NotificationService::AllSources(),
+      content::NotificationService::AllSources(),
       details);
 
   if (result)

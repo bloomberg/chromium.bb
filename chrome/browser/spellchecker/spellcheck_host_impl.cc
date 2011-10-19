@@ -23,7 +23,7 @@
 #include "chrome/common/spellcheck_common.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "content/browser/renderer_host/render_process_host.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -101,7 +101,7 @@ SpellCheckHostImpl::SpellCheckHostImpl(
       personal_file_directory.Append(chrome::kCustomDictionaryFileName);
 
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CREATED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 }
 
 SpellCheckHostImpl::~SpellCheckHostImpl() {

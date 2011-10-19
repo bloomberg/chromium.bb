@@ -21,6 +21,7 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "net/test/test_server.h"
 #include "ui/base/keycodes/keyboard_codes.h"
@@ -1061,7 +1062,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_NoIncognitoPrepopulate) {
   Profile* incognito_profile = browser()->profile()->GetOffTheRecordProfile();
   Browser* incognito_browser = Browser::Create(incognito_profile);
   ui_test_utils::WindowedNotificationObserver observer(
-      content::NOTIFICATION_LOAD_STOP, NotificationService::AllSources());
+      content::NOTIFICATION_LOAD_STOP,
+      content::NotificationService::AllSources());
   incognito_browser->AddSelectedTabWithURL(
       url, content::PAGE_TRANSITION_START_PAGE);
   observer.Wait();
@@ -1120,7 +1122,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FitWindow) {
   params.initial_bounds = gfx::Rect(0, 0, 250, 500);
   Browser* popup = Browser::CreateWithParams(params);
   ui_test_utils::WindowedNotificationObserver observer(
-      content::NOTIFICATION_LOAD_STOP, NotificationService::AllSources());
+      content::NOTIFICATION_LOAD_STOP,
+      content::NotificationService::AllSources());
   popup->AddSelectedTabWithURL(GURL(chrome::kAboutBlankURL),
                                content::PAGE_TRANSITION_LINK);
   // Wait for the page to finish loading.

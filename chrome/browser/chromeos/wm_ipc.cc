@@ -14,7 +14,7 @@ extern "C" {
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/rect.h"
 
@@ -303,7 +303,7 @@ void WmIpc::FetchLayoutModeProperty() {
           GetAtomName(ATOM_CHROME_LAYOUT_MODE),
           &value)) {
     layout_mode_ = static_cast<WmIpcLayoutMode>(value);
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_LAYOUT_MODE_CHANGED,
         content::Source<WmIpc>(this),
         content::Details<WmIpcLayoutMode>(&layout_mode_));

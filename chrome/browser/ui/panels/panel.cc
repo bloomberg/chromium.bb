@@ -17,6 +17,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "ui/gfx/rect.h"
 

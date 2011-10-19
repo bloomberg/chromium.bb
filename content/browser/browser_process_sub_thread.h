@@ -10,7 +10,9 @@
 #include "content/browser/browser_thread.h"
 #include "content/common/content_export.h"
 
+namespace content {
 class NotificationService;
+}
 
 // ----------------------------------------------------------------------------
 // BrowserProcessSubThread
@@ -34,7 +36,7 @@ class CONTENT_EXPORT BrowserProcessSubThread : public BrowserThread {
   // Each specialized thread has its own notification service.
   // Note: We don't use scoped_ptr because the destructor runs on the wrong
   // thread.
-  NotificationService* notification_service_;
+  content::NotificationService* notification_service_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserProcessSubThread);
 };

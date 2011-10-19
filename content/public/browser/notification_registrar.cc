@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "base/threading/platform_thread.h"
-#include "content/common/notification_service.h"
+#include "content/browser/notification_service_impl.h"
 
 namespace {
 
@@ -45,7 +45,7 @@ NotificationRegistrar::NotificationRegistrar() {
   // AtExitManager before any objects which access it via NotificationRegistrar.
   // This in turn means it will be destroyed after these objects, so they will
   // never try to access the NotificationService after it's been destroyed.
-  NotificationService::current();
+  NotificationServiceImpl::current();
 }
 
 NotificationRegistrar::~NotificationRegistrar() {
@@ -60,7 +60,7 @@ void NotificationRegistrar::Add(NotificationObserver* observer,
   Record record = { observer, type, source, base::PlatformThread::CurrentId() };
   registered_.push_back(record);
 
-  NotificationService::current()->AddObserver(observer, type, source);
+  NotificationServiceImpl::current()->AddObserver(observer, type, source);
 }
 
 void NotificationRegistrar::Remove(NotificationObserver* observer,
@@ -80,7 +80,7 @@ void NotificationRegistrar::Remove(NotificationObserver* observer,
 
   // This can be NULL if our owner outlives the NotificationService, e.g. if our
   // owner is a Singleton.
-  NotificationService* service = NotificationService::current();
+  NotificationServiceImpl* service = NotificationServiceImpl::current();
   if (service)
     service->RemoveObserver(observer, type, source);
 }
@@ -98,7 +98,7 @@ void NotificationRegistrar::RemoveAll() {
 
   // This can be NULL if our owner outlives the NotificationService, e.g. if our
   // owner is a Singleton.
-  NotificationService* service = NotificationService::current();
+  NotificationServiceImpl* service = NotificationServiceImpl::current();
   if (service) {
     for (size_t i = 0; i < registered_.size(); i++) {
       CheckCalledOnValidThread(registered_[i].thread_id);

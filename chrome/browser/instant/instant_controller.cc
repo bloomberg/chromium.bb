@@ -27,7 +27,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "views/focus/focus_manager.h"
@@ -186,10 +186,10 @@ bool InstantController::Update(TabContentsWrapper* tab_contents,
   UpdateLoader(template_url, match.destination_url, match.transition, user_text,
                verbatim, suggested_text);
 
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_INSTANT_CONTROLLER_UPDATED,
       content::Source<InstantController>(this),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
   return true;
 }
 
@@ -471,10 +471,10 @@ void InstantController::UpdateIsDisplayable() {
     delegate_->HideInstant();
   } else {
     delegate_->ShowInstant(loader_->preview_contents());
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_INSTANT_CONTROLLER_SHOWN,
         content::Source<InstantController>(this),
-        NotificationService::NoDetails());
+        content::NotificationService::NoDetails());
   }
 }
 

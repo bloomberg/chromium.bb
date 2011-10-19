@@ -12,7 +12,7 @@
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
@@ -41,7 +41,7 @@ HostZoomMap::HostZoomMap(HostZoomMap* original)
 void HostZoomMap::Init() {
   registrar_.Add(
       this, content::NOTIFICATION_RENDER_VIEW_HOST_WILL_CLOSE_RENDER_VIEW,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
 }
 
 double HostZoomMap::GetZoomLevel(const std::string& host) const {
@@ -61,7 +61,7 @@ void HostZoomMap::SetZoomLevel(std::string host, double level) {
       host_zoom_levels_[host] = level;
   }
 
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
       content::Source<HostZoomMap>(this),
       content::Details<const std::string>(&host));
@@ -109,7 +109,7 @@ void HostZoomMap::SetTemporaryZoomLevel(int render_process_id,
   }
 
   std::string host;
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
       content::Source<HostZoomMap>(this),
       content::Details<const std::string>(&host));

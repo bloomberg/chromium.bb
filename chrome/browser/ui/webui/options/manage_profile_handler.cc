@@ -15,7 +15,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
 
 ManageProfileHandler::ManageProfileHandler() {
@@ -44,7 +44,7 @@ void ManageProfileHandler::GetLocalizedValues(
 
 void ManageProfileHandler::Initialize() {
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   SendProfileNames();
 }
 

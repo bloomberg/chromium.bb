@@ -14,7 +14,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/user_metrics.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "grit/ui_resources.h"
@@ -597,10 +597,11 @@ void ThemeService::LoadThemePrefs() {
 void ThemeService::NotifyThemeChanged() {
   VLOG(1) << "Sending BROWSER_THEME_CHANGED";
   // Redraw!
-  NotificationService* service = NotificationService::current();
+  content::NotificationService* service =
+      content::NotificationService::current();
   service->Notify(chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                   content::Source<ThemeService>(this),
-                  NotificationService::NoDetails());
+                  content::NotificationService::NoDetails());
 #if defined(OS_MACOSX)
   NotifyPlatformThemeChanged();
 #endif  // OS_MACOSX

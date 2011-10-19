@@ -22,6 +22,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
@@ -143,7 +144,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerDialogBrowserTest, SelectFileAndCancel) {
   // that the window has closed.
   ui_test_utils::WindowedNotificationObserver host_destroyed(
       content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
   RenderViewHost* host = dialog_->GetRenderViewHost();
   string16 main_frame;
   string16 script = ASCIIToUTF16(
@@ -213,7 +214,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerDialogBrowserTest, SelectFileAndOpen) {
   // that the window has closed.
   ui_test_utils::WindowedNotificationObserver host_destroyed(
       content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
   RenderViewHost* host = dialog_->GetRenderViewHost();
   string16 main_frame;
   string16 script = ASCIIToUTF16(
@@ -279,7 +280,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerDialogBrowserTest, SelectFileAndSave) {
   // that the window has closed.
   ui_test_utils::WindowedNotificationObserver host_destroyed(
       content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
   RenderViewHost* host = dialog_->GetRenderViewHost();
   string16 main_frame;
   string16 script = ASCIIToUTF16(
@@ -340,7 +341,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerDialogBrowserTest,
   // that the window has closed.
   ui_test_utils::WindowedNotificationObserver host_destroyed(
       content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
   RenderViewHost* host = dialog_->GetRenderViewHost();
   string16 main_frame;
   string16 script = ASCIIToUTF16(

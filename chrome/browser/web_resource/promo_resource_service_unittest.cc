@@ -43,7 +43,7 @@ class SyncPromoTest : public PromoResourceServiceTest,
     web_resource_service_->set_channel(chrome::VersionInfo::CHANNEL_DEV);
     registrar_.Add(this,
                    chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED,
-                   NotificationService::AllSources());
+                   content::NotificationService::AllSources());
   }
 
   virtual void Observe(int type,

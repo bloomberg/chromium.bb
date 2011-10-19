@@ -15,6 +15,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_service.h"
 
 class ExtensionFromWebAppTest
     : public InProcessBrowserTest, public content::NotificationObserver {
@@ -53,7 +54,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionFromWebAppTest, Basic) {
 
   content::NotificationRegistrar registrar;
   registrar.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
-                NotificationService::AllSources());
+                content::NotificationService::AllSources());
 
   expected_extension_id_ = "fnpgoaochgbdfjndakichfafiocjjpmm";
   ui_test_utils::NavigateToURL(

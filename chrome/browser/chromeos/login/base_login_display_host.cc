@@ -31,7 +31,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/cros_system_api/window_manager/chromeos_wm_ipc_enums.h"
@@ -106,7 +106,7 @@ BaseLoginDisplayHost::BaseLoginDisplayHost(const gfx::Rect& background_bounds)
   registrar_.Add(
       this,
       content::NOTIFICATION_APP_EXITING,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
   DCHECK(default_host_ == NULL);
   default_host_ = this;
 

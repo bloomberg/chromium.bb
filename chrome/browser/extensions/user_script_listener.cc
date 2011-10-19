@@ -12,7 +12,7 @@
 #include "chrome/common/extensions/url_pattern.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "net/url_request/url_request.h"
 
 struct UserScriptListener::ProfileData {
@@ -32,13 +32,13 @@ UserScriptListener::UserScriptListener()
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_USER_SCRIPTS_UPDATED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   AddRef();  // Will be balanced in Cleanup().
 }
 

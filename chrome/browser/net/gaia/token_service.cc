@@ -12,7 +12,7 @@
 #include "chrome/common/net/gaia/gaia_auth_fetcher.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -228,7 +228,7 @@ void TokenService::FireTokenAvailableNotification(
     const std::string& auth_token) {
 
   TokenAvailableDetails details(service, auth_token);
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TOKEN_AVAILABLE,
       content::Source<TokenService>(this),
       content::Details<const TokenAvailableDetails>(&details));
@@ -239,7 +239,7 @@ void TokenService::FireTokenRequestFailedNotification(
     const GoogleServiceAuthError& error) {
 
   TokenRequestFailedDetails details(service, error);
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TOKEN_REQUEST_FAILED,
       content::Source<TokenService>(this),
       content::Details<const TokenRequestFailedDetails>(&details));
@@ -315,10 +315,10 @@ void TokenService::OnWebDataServiceRequestDone(WebDataService::Handle h,
     LoadTokensIntoMemory(token_result->GetValue(), &token_map_);
   }
 
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TOKEN_LOADING_FINISHED,
       content::Source<TokenService>(this),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 }
 
 // Load tokens from the db_token map into the in memory token map.

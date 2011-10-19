@@ -23,7 +23,7 @@
 #include "content/browser/user_metrics.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -102,7 +102,7 @@ void ConflictsDOMHandler::RegisterMessages() {
 void ConflictsDOMHandler::HandleRequestModuleList(const ListValue* args) {
   // This request is handled asynchronously. See Observe for when we reply back.
   registrar_.Add(this, chrome::NOTIFICATION_MODULE_LIST_ENUMERATED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   EnumerateModulesModel::GetInstance()->ScanNow();
 }
 

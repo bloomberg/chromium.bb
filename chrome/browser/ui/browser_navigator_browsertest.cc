@@ -20,6 +20,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 
 namespace {
@@ -137,7 +138,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_SingletonTabExisting) {
 
   // As the registrar object goes out of scope, this will get unregistered
   registrar.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB,
-                NotificationService::AllSources());
+                content::NotificationService::AllSources());
 
   browser()->AddSelectedTabWithURL(
       singleton_url1, content::PAGE_TRANSITION_LINK);
@@ -922,7 +923,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   params.disposition = OFF_THE_RECORD;
   {
     ui_test_utils::WindowedNotificationObserver observer(
-        content::NOTIFICATION_LOAD_STOP, NotificationService::AllSources());
+        content::NOTIFICATION_LOAD_STOP,
+        content::NotificationService::AllSources());
     browser::Navigate(&params);
     observer.Wait();
   }
@@ -989,7 +991,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        NavigateFromDefaultToOptionsInSameTab) {
   {
     ui_test_utils::WindowedNotificationObserver observer(
-        content::NOTIFICATION_LOAD_STOP, NotificationService::AllSources());
+        content::NOTIFICATION_LOAD_STOP,
+        content::NotificationService::AllSources());
     browser()->OpenOptionsDialog();
     observer.Wait();
   }
@@ -1006,7 +1009,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 
   {
     ui_test_utils::WindowedNotificationObserver observer(
-        content::NOTIFICATION_LOAD_STOP, NotificationService::AllSources());
+        content::NOTIFICATION_LOAD_STOP,
+        content::NotificationService::AllSources());
     browser()->OpenOptionsDialog();
     observer.Wait();
   }
@@ -1026,7 +1030,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 
   {
     ui_test_utils::WindowedNotificationObserver observer(
-        content::NOTIFICATION_LOAD_STOP, NotificationService::AllSources());
+        content::NOTIFICATION_LOAD_STOP,
+        content::NotificationService::AllSources());
     browser()->OpenOptionsDialog();
     observer.Wait();
   }
@@ -1045,7 +1050,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 
   {
     ui_test_utils::WindowedNotificationObserver observer(
-        content::NOTIFICATION_LOAD_STOP, NotificationService::AllSources());
+        content::NOTIFICATION_LOAD_STOP,
+        content::NotificationService::AllSources());
     browser()->OpenOptionsDialog();
     observer.Wait();
   }
@@ -1058,7 +1064,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        NavigateFromNTPToOptionsSingleton) {
   {
     ui_test_utils::WindowedNotificationObserver observer(
-        content::NOTIFICATION_LOAD_STOP, NotificationService::AllSources());
+        content::NOTIFICATION_LOAD_STOP,
+        content::NotificationService::AllSources());
     browser()->OpenOptionsDialog();
     observer.Wait();
   }
@@ -1069,7 +1076,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 
   {
     ui_test_utils::WindowedNotificationObserver observer(
-        content::NOTIFICATION_LOAD_STOP, NotificationService::AllSources());
+        content::NOTIFICATION_LOAD_STOP,
+        content::NotificationService::AllSources());
     browser()->OpenOptionsDialog();
     observer.Wait();
   }
@@ -1082,7 +1090,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        NavigateFromNTPToOptionsPageInSameTab) {
   {
     ui_test_utils::WindowedNotificationObserver observer(
-        content::NOTIFICATION_LOAD_STOP, NotificationService::AllSources());
+        content::NOTIFICATION_LOAD_STOP,
+        content::NotificationService::AllSources());
     browser()->ShowOptionsTab(chrome::kPersonalOptionsSubPage);
     observer.Wait();
   }
@@ -1095,7 +1104,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 
   {
     ui_test_utils::WindowedNotificationObserver observer(
-        content::NOTIFICATION_LOAD_STOP, NotificationService::AllSources());
+        content::NOTIFICATION_LOAD_STOP,
+        content::NotificationService::AllSources());
     browser()->ShowOptionsTab(chrome::kPersonalOptionsSubPage);
     observer.Wait();
   }
@@ -1108,13 +1118,15 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        NavigateFromOtherTabToSingletonOptions) {
   {
     ui_test_utils::WindowedNotificationObserver observer(
-        content::NOTIFICATION_LOAD_STOP, NotificationService::AllSources());
+        content::NOTIFICATION_LOAD_STOP,
+        content::NotificationService::AllSources());
     browser()->OpenOptionsDialog();
     observer.Wait();
   }
   {
     ui_test_utils::WindowedNotificationObserver observer(
-        content::NOTIFICATION_LOAD_STOP, NotificationService::AllSources());
+        content::NOTIFICATION_LOAD_STOP,
+        content::NotificationService::AllSources());
     browser()->AddSelectedTabWithURL(
         GetGoogleURL(), content::PAGE_TRANSITION_LINK);
     observer.Wait();
@@ -1122,7 +1134,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 
   {
     ui_test_utils::WindowedNotificationObserver observer(
-        content::NOTIFICATION_LOAD_STOP, NotificationService::AllSources());
+        content::NOTIFICATION_LOAD_STOP,
+        content::NotificationService::AllSources());
     browser()->OpenOptionsDialog();
     observer.Wait();
   }
@@ -1173,7 +1186,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        NavigateFromDefaultToHistoryInSameTab) {
   {
     ui_test_utils::WindowedNotificationObserver observer(
-        content::NOTIFICATION_LOAD_STOP, NotificationService::AllSources());
+        content::NOTIFICATION_LOAD_STOP,
+        content::NotificationService::AllSources());
     browser()->ShowHistoryTab();
     observer.Wait();
   }
@@ -1186,7 +1200,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        NavigateFromDefaultToBookmarksInSameTab) {
   {
     ui_test_utils::WindowedNotificationObserver observer(
-        content::NOTIFICATION_LOAD_STOP, NotificationService::AllSources());
+        content::NOTIFICATION_LOAD_STOP,
+        content::NotificationService::AllSources());
     browser()->OpenBookmarkManager();
     observer.Wait();
   }
@@ -1199,7 +1214,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        NavigateFromDefaultToDownloadsInSameTab) {
   {
     ui_test_utils::WindowedNotificationObserver observer(
-        content::NOTIFICATION_LOAD_STOP, NotificationService::AllSources());
+        content::NOTIFICATION_LOAD_STOP,
+        content::NotificationService::AllSources());
     browser()->ShowDownloadsTab();
     observer.Wait();
   }

@@ -15,7 +15,6 @@
 
 class FileSystemDispatcher;
 class MessageLoop;
-class NotificationService;
 class QuotaDispatcher;
 class ResourceDispatcher;
 class SocketStreamDispatcher;
@@ -132,8 +131,6 @@ class CONTENT_EXPORT ChildThread : public IPC::Channel::Listener,
   bool on_channel_error_called_;
 
   MessageLoop* message_loop_;
-
-  scoped_ptr<NotificationService> notification_service_;
 
   scoped_ptr<FileSystemDispatcher> file_system_dispatcher_;
 

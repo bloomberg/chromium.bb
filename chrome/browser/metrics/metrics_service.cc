@@ -179,7 +179,7 @@
 #include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/common/child_process_info.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/webplugininfo.h"
 
@@ -459,35 +459,35 @@ void MetricsService::SetUpNotifications(
     content::NotificationRegistrar* registrar,
     content::NotificationObserver* observer) {
   registrar->Add(observer, chrome::NOTIFICATION_BROWSER_OPENED,
-                 NotificationService::AllBrowserContextsAndSources());
+                 content::NotificationService::AllBrowserContextsAndSources());
   registrar->Add(observer, chrome::NOTIFICATION_BROWSER_CLOSED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar->Add(observer, content::NOTIFICATION_USER_ACTION,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar->Add(observer, content::NOTIFICATION_TAB_PARENTED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar->Add(observer, content::NOTIFICATION_TAB_CLOSING,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar->Add(observer, content::NOTIFICATION_LOAD_START,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar->Add(observer, content::NOTIFICATION_LOAD_STOP,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar->Add(observer, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar->Add(observer, content::NOTIFICATION_RENDERER_PROCESS_HANG,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar->Add(observer, content::NOTIFICATION_CHILD_PROCESS_HOST_CONNECTED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar->Add(observer, content::NOTIFICATION_CHILD_INSTANCE_CREATED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar->Add(observer, content::NOTIFICATION_CHILD_PROCESS_CRASHED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar->Add(observer, chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar->Add(observer, chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar->Add(observer, chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED,
-                 NotificationService::AllBrowserContextsAndSources());
+                 content::NotificationService::AllBrowserContextsAndSources());
 }
 
 void MetricsService::Observe(int type,
@@ -1201,7 +1201,7 @@ void MetricsService::LogLoadComplete(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (details == NotificationService::NoDetails())
+  if (details == content::NotificationService::NoDetails())
     return;
 
   // TODO(jar): There is a bug causing this to be called too many times, and

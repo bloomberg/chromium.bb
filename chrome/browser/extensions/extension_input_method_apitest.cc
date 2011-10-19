@@ -11,7 +11,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -27,7 +27,7 @@ class SetInputMethodListener : public content::NotificationObserver {
   // Creates listener, which should reply exactly |count_| times.
   explicit SetInputMethodListener(int count) : count_(count) {
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_TEST_MESSAGE,
-                   NotificationService::AllSources());
+                   content::NotificationService::AllSources());
   }
 
   virtual ~SetInputMethodListener() {

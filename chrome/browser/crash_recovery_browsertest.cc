@@ -9,6 +9,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/tab_contents/navigation_entry.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/common/page_transition_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -18,7 +19,7 @@ namespace {
 void SimulateRendererCrash(Browser* browser) {
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_TAB_CONTENTS_DISCONNECTED,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
   browser->OpenURL(GURL(chrome::kChromeUICrashURL), GURL(), CURRENT_TAB,
                    content::PAGE_TRANSITION_TYPED);
   observer.Wait();

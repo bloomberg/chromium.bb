@@ -33,7 +33,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/ui_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
@@ -442,10 +442,10 @@ enum {
   if (windowShim_->panel()->expansion_state() == Panel::EXPANDED)
     [self enableTabContentsViewAutosizing];
 
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
       content::Source<Panel>(windowShim_->panel()),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 }
 
 - (void)terminateBoundsAnimation {
@@ -512,10 +512,10 @@ enum {
     [[self titlebarView] stopDrawingAttention];
   }
 
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PANEL_CHANGED_ACTIVE_STATUS,
       content::Source<Panel>(windowShim_->panel()),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 }
 
 - (void)windowDidResignKey:(NSNotification*)notification {
@@ -534,10 +534,10 @@ enum {
       rwhv->SetActive(false);
   }
 
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PANEL_CHANGED_ACTIVE_STATUS,
       content::Source<Panel>(windowShim_->panel()),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 }
 
 @end

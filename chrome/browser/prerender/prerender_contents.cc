@@ -28,7 +28,7 @@
 #include "content/browser/renderer_host/resource_request_details.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/common/view_messages.h"
 #include "ui/gfx/rect.h"
 
@@ -292,7 +292,7 @@ void PrerenderContents::StartPrerendering(
 
   // Close ourselves when the application is shutting down.
   notification_registrar_.Add(this, content::NOTIFICATION_APP_TERMINATING,
-                              NotificationService::AllSources());
+                              content::NotificationService::AllSources());
 
   // Register for our parent profile to shutdown, so we can shut ourselves down
   // as well (should only be called for OTR profiles, as we should receive

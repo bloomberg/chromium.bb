@@ -19,7 +19,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/context_menu.h"
@@ -311,7 +311,8 @@ TEST_F(ExtensionMenuManagerTest, ChangeParent) {
 // Tests that we properly remove an extension's menu item when that extension is
 // unloaded.
 TEST_F(ExtensionMenuManagerTest, ExtensionUnloadRemovesMenuItems) {
-  NotificationService* notifier = NotificationService::current();
+  content::NotificationService* notifier =
+      content::NotificationService::current();
   ASSERT_TRUE(notifier != NULL);
 
   // Create a test extension.

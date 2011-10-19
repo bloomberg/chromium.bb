@@ -42,7 +42,7 @@
 #include "chrome/common/web_apps.h"
 #include "content/browser/disposition_utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "googleurl/src/gurl.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
@@ -542,7 +542,7 @@ void AppLauncherHandler::HandleGetApps(const ListValue* args) {
     pref_change_registrar_.Add(prefs::kNTPAppPageNames, this);
 
     registrar_.Add(this, chrome::NOTIFICATION_APP_NOTIFICATION_STATE_CHANGED,
-        NotificationService::AllSources());
+        content::NotificationService::AllSources());
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
         content::Source<Profile>(profile));
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,

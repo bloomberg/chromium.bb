@@ -25,7 +25,7 @@ class VirtualKeyboardManagerTest : public InProcessBrowserTest,
   void SetupNotificationListener() {
     registrar_.Add(this,
                    chrome::NOTIFICATION_KEYBOARD_VISIBILITY_CHANGED,
-                   NotificationService::AllSources());
+                   content::NotificationService::AllSources());
   }
 
  private:
@@ -82,7 +82,7 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardManagerTest, TestVisibility) {
   // Open a new tab that does not give focus to a textfield onload.
   ui_test_utils::WindowedNotificationObserver load_stop_observer(
       content::NOTIFICATION_LOAD_STOP,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
   browser()->AddSelectedTabWithURL(base_url.Resolve("blank.html"),
                                    content::PAGE_TRANSITION_LINK);
   load_stop_observer.Wait();

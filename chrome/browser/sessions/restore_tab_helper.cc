@@ -7,7 +7,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 
 RestoreTabHelper::RestoreTabHelper(TabContentsWrapper* tab)
@@ -20,10 +20,10 @@ RestoreTabHelper::~RestoreTabHelper() {
 
 void RestoreTabHelper::SetWindowID(const SessionID& id) {
   window_id_ = id;
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       content::NOTIFICATION_TAB_PARENTED,
       content::Source<TabContentsWrapper>(tab_),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 
   // Extension code in the renderer holds the ID of the window that hosts it.
   // Notify it that the window ID changed.

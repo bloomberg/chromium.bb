@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/status/status_area_button.h"
 
-#include "content/common/notification_service.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"

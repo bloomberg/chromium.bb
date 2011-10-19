@@ -16,7 +16,7 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_permission_set.h"
 #include "chrome/common/extensions/url_pattern_set.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "googleurl/src/gurl.h"
 
 namespace {
@@ -212,7 +212,7 @@ void ExtensionPermissionsManager::NotifyPermissionsUpdated(
   // Notify other APIs or interested parties.
   UpdatedExtensionPermissionsInfo info = UpdatedExtensionPermissionsInfo(
       extension, changed, reason);
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_PERMISSIONS_UPDATED,
       content::Source<Profile>(extension_service_->profile()),
       content::Details<UpdatedExtensionPermissionsInfo>(&info));

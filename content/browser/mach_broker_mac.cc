@@ -15,7 +15,7 @@
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/common/child_process_info.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/common/content_switches.h"
 
@@ -36,16 +36,16 @@ class RegisterNotificationTask : public Task {
   virtual void Run() {
     broker_->registrar_.Add(broker_,
         content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
-        NotificationService::AllBrowserContextsAndSources());
+        content::NotificationService::AllBrowserContextsAndSources());
     broker_->registrar_.Add(broker_,
         content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-        NotificationService::AllBrowserContextsAndSources());
+        content::NotificationService::AllBrowserContextsAndSources());
     broker_->registrar_.Add(broker_,
         content::NOTIFICATION_CHILD_PROCESS_CRASHED,
-        NotificationService::AllBrowserContextsAndSources());
+        content::NotificationService::AllBrowserContextsAndSources());
     broker_->registrar_.Add(broker_,
         content::NOTIFICATION_CHILD_PROCESS_HOST_DISCONNECTED,
-        NotificationService::AllBrowserContextsAndSources());
+        content::NotificationService::AllBrowserContextsAndSources());
   }
 
  private:

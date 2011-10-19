@@ -10,7 +10,7 @@
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/views/html_dialog_view.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"

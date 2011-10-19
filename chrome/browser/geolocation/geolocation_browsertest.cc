@@ -30,7 +30,7 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/geoposition.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_details.h"
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"
@@ -51,7 +51,7 @@ class IFrameLoader : public content::NotificationObserver {
     registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
                    content::Source<NavigationController>(controller));
     registrar_.Add(this, chrome::NOTIFICATION_DOM_OPERATION_RESPONSE,
-                   NotificationService::AllSources());
+                   content::NotificationService::AllSources());
     std::string script = base::StringPrintf(
         "window.domAutomationController.setAutomationId(0);"
         "window.domAutomationController.send(addIFrame(%d, \"%s\"));",
@@ -117,17 +117,17 @@ class GeolocationNotificationObserver : public content::NotificationObserver {
       navigation_started_(false),
       navigation_completed_(false) {
     registrar_.Add(this, chrome::NOTIFICATION_DOM_OPERATION_RESPONSE,
-                   NotificationService::AllSources());
+                   content::NotificationService::AllSources());
     if (wait_for_infobar) {
       registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
-                     NotificationService::AllSources());
+                     content::NotificationService::AllSources());
     } else {
       registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-                     NotificationService::AllSources());
+                     content::NotificationService::AllSources());
       registrar_.Add(this, content::NOTIFICATION_LOAD_START,
-                     NotificationService::AllSources());
+                     content::NotificationService::AllSources());
       registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
-                     NotificationService::AllSources());
+                     content::NotificationService::AllSources());
     }
   }
 

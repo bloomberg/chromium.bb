@@ -18,6 +18,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/common/url_constants.h"
 
 #if defined(OS_MACOSX)
@@ -246,7 +247,7 @@ Panel* BasePanelBrowserTest::CreatePanelWithParams(
   } else {
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
-        NotificationService::AllSources());
+        content::NotificationService::AllSources());
     panel_browser->AddSelectedTabWithURL(params.url,
                                          content::PAGE_TRANSITION_START_PAGE);
     observer.Wait();

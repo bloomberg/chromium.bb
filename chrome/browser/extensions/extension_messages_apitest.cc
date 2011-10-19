@@ -7,7 +7,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "googleurl/src/gurl.h"
 
 namespace {
@@ -16,7 +16,7 @@ class MessageSender : public content::NotificationObserver {
  public:
   MessageSender() {
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
-                   NotificationService::AllSources());
+                   content::NotificationService::AllSources());
   }
 
  private:

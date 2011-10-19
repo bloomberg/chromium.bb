@@ -11,7 +11,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/render_messages.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 
 namespace {
 // Errors.
@@ -38,10 +38,10 @@ bool BrowserActionFunction::RunImpl() {
   if (!RunBrowserAction())
     return false;
 
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
       content::Source<ExtensionAction>(browser_action_),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
   return true;
 }
 

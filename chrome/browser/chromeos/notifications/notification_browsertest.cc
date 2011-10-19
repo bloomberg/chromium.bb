@@ -20,7 +20,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "ui/base/x/x11_util.h"
 
 namespace {
@@ -304,7 +304,7 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, TestStateTransition2) {
   content::NotificationRegistrar registrar;
   registrar.Add(this,
                 chrome::NOTIFICATION_PANEL_STATE_CHANGED,
-                NotificationService::AllSources());
+                content::NotificationService::AllSources());
 
   BalloonCollectionImpl* collection = GetBalloonCollectionImpl();
   NotificationPanel* panel = GetNotificationPanel();
@@ -371,7 +371,7 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, TestCleanupOnExit) {
   content::NotificationRegistrar registrar;
   registrar.Add(this,
                 chrome::NOTIFICATION_PANEL_STATE_CHANGED,
-                NotificationService::AllSources());
+                content::NotificationService::AllSources());
 
   BalloonCollectionImpl* collection = GetBalloonCollectionImpl();
   NotificationPanel* panel = GetNotificationPanel();

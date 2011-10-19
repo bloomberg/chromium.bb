@@ -24,7 +24,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_collator.h"
@@ -615,10 +615,10 @@ void BookmarkModel::DoneLoading(
                     Loaded(this, details->ids_reassigned()));
 
   // And generic notification.
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED,
       content::Source<Profile>(profile_),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 }
 
 void BookmarkModel::RemoveAndDeleteNode(BookmarkNode* delete_me) {
@@ -667,7 +667,7 @@ void BookmarkModel::RemoveAndDeleteNode(BookmarkNode* delete_me) {
       history->URLsNoLongerBookmarked(details.changed_urls);
   }
 
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_URLS_STARRED,
       content::Source<Profile>(profile_),
       content::Details<history::URLsStarredDetails>(&details));
@@ -690,7 +690,7 @@ BookmarkNode* BookmarkModel::AddNode(BookmarkNode* parent,
   if (node->is_url() && !was_bookmarked) {
     history::URLsStarredDetails details(true);
     details.changed_urls.insert(node->url());
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_URLS_STARRED,
         content::Source<Profile>(profile_),
         content::Details<history::URLsStarredDetails>(&details));

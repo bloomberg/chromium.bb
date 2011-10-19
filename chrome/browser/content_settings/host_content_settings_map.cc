@@ -28,7 +28,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/user_metrics.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/common/content_switches.h"
 #include "googleurl/src/gurl.h"
@@ -480,7 +480,7 @@ void HostContentSettingsMap::OnContentSettingChanged(
                                        secondary_pattern,
                                        content_type,
                                        resource_identifier);
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_CONTENT_SETTINGS_CHANGED,
       content::Source<HostContentSettingsMap>(this),
       content::Details<const ContentSettingsDetails>(&details));

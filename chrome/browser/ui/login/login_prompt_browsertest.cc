@@ -16,7 +16,8 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "net/base/auth.h"
 #include "net/base/mock_host_resolver.h"
 

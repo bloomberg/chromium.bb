@@ -32,7 +32,6 @@
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_service.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "grit/theme_resources.h"

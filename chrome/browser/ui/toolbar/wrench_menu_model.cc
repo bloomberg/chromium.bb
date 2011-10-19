@@ -35,7 +35,7 @@
 #include "chrome/common/profiling.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/user_metrics.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "grit/chromium_strings.h"
@@ -211,7 +211,7 @@ WrenchMenuModel::WrenchMenuModel(ui::AcceleratorProvider* provider,
       this, content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
       content::Source<HostZoomMap>(browser_->profile()->GetHostZoomMap()));
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 }
 
 WrenchMenuModel::~WrenchMenuModel() {

@@ -19,7 +19,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/renderer_host/browser_render_process_host.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 
 using base::Time;
 using base::TimeDelta;
@@ -65,9 +65,9 @@ WebCacheManager::WebCacheManager()
     : global_size_limit_(GetDefaultGlobalSizeLimit()),
       ALLOW_THIS_IN_INITIALIZER_LIST(revise_allocation_factory_(this)) {
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CREATED,
-                 NotificationService::AllBrowserContextsAndSources());
+                 content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-                 NotificationService::AllBrowserContextsAndSources());
+                 content::NotificationService::AllBrowserContextsAndSources());
 }
 
 WebCacheManager::~WebCacheManager() {

@@ -9,7 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 
 using ::base::files::FilePathWatcher;
@@ -79,10 +79,10 @@ UserStyleSheetLoader::UserStyleSheetLoader()
 
 void UserStyleSheetLoader::NotifyLoaded() {
   if (has_loaded_) {
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_USER_STYLE_SHEET_UPDATED,
         content::Source<UserStyleSheetLoader>(this),
-        NotificationService::NoDetails());
+        content::NotificationService::NoDetails());
   }
 }
 
@@ -137,7 +137,7 @@ UserStyleSheetWatcher::UserStyleSheetWatcher(Profile* profile,
   // too fast, the first tab won't hear the notification and won't get
   // the user style sheet.
   registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB,
-                 NotificationService::AllBrowserContextsAndSources());
+                 content::NotificationService::AllBrowserContextsAndSources());
 }
 
 UserStyleSheetWatcher::~UserStyleSheetWatcher() {

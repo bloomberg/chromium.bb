@@ -13,6 +13,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_service.h"
 
 namespace {
 
@@ -28,9 +29,9 @@ ExtensionApiTest::ResultCatcher::ResultCatcher()
     : profile_restriction_(NULL),
       waiting_(false) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_TEST_PASSED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_TEST_FAILED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 }
 
 ExtensionApiTest::ResultCatcher::~ResultCatcher() {

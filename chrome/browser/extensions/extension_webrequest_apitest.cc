@@ -9,7 +9,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "net/base/mock_host_resolver.h"
 
 namespace {
@@ -19,7 +19,7 @@ class CancelLoginDialog : public content::NotificationObserver {
   CancelLoginDialog() {
     registrar_.Add(this,
                    chrome::NOTIFICATION_AUTH_NEEDED,
-                   NotificationService::AllSources());
+                   content::NotificationService::AllSources());
   }
 
   virtual ~CancelLoginDialog() {}

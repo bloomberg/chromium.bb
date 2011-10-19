@@ -37,7 +37,7 @@
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/test/base/profile_mock.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

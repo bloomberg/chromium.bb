@@ -28,7 +28,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/common/content_switches.h"
@@ -277,19 +277,19 @@ void ContentSettingsHandler::GetLocalizedValues(
 void ContentSettingsHandler::Initialize() {
   notification_registrar_.Add(
       this, chrome::NOTIFICATION_PROFILE_CREATED,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
   notification_registrar_.Add(
       this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
 
   UpdateHandlersEnabledRadios();
   UpdateAllExceptionsViewsFromModel();
   notification_registrar_.Add(
       this, chrome::NOTIFICATION_CONTENT_SETTINGS_CHANGED,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
   notification_registrar_.Add(
       this, chrome::NOTIFICATION_DESKTOP_NOTIFICATION_SETTINGS_CHANGED,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
   Profile* profile = Profile::FromWebUI(web_ui_);
   notification_registrar_.Add(
       this, chrome::NOTIFICATION_PROTOCOL_HANDLER_REGISTRY_CHANGED,

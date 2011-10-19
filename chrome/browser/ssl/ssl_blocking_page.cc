@@ -20,7 +20,7 @@
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
@@ -115,10 +115,10 @@ void SSLBlockingPage::UpdateEntry(NavigationEntry* entry) {
   entry->ssl().set_cert_id(cert_id);
   entry->ssl().set_cert_status(ssl_info.cert_status);
   entry->ssl().set_security_bits(ssl_info.security_bits);
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       content::NOTIFICATION_SSL_VISIBLE_STATE_CHANGED,
       content::Source<NavigationController>(&tab()->controller()),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 }
 
 void SSLBlockingPage::CommandReceived(const std::string& command) {

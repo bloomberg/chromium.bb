@@ -30,7 +30,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
 #include "net/base/dnsrr_resolver.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -136,7 +136,7 @@ NetworkStateInformer::NetworkStateInformer(WebUI* web_ui) : web_ui_(web_ui) {
   cros->AddNetworkManagerObserver(this);
   registrar_.Add(this,
                  chrome::NOTIFICATION_LOGIN_PROXY_CHANGED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 }
 
 NetworkStateInformer::~NetworkStateInformer() {
@@ -623,10 +623,10 @@ void SigninScreenHandler::SendUserList(bool animated) {
 }
 
 void SigninScreenHandler::HandleLoginWebuiReady(const base::ListValue* args) {
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_LOGIN_WEBUI_READY,
-      NotificationService::AllSources(),
-      NotificationService::NoDetails());
+      content::NotificationService::AllSources(),
+      content::NotificationService::NoDetails());
 }
 
 void SigninScreenHandler::HandleLoginRequestNetworkState(

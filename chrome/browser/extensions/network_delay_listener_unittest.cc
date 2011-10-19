@@ -15,7 +15,7 @@
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/browser/renderer_host/resource_queue.h"
 #include "content/browser/site_instance.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_job.h"
 #include "net/url_request/url_request_test_util.h"
@@ -134,7 +134,7 @@ class NetworkDelayListenerTest
     scoped_ptr<TestExtensionHost> background_host(
         new TestExtensionHost(extension,
                               chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE));
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
         content::Source<Profile>(profile_.get()),
         content::Details<ExtensionHost>(background_host.get()));
@@ -164,7 +164,7 @@ TEST_F(NetworkDelayListenerTest, DelayAndLoad) {
   // We don't care about a loaded extension dialog.
   scoped_ptr<TestExtensionHost> dialog_host(
       new TestExtensionHost(extension1_, chrome::VIEW_TYPE_EXTENSION_DIALOG));
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
       content::Source<Profile>(profile_.get()),
       content::Details<ExtensionHost>(dialog_host.get()));

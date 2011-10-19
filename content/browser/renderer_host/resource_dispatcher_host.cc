@@ -51,7 +51,7 @@
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "content/browser/ssl/ssl_manager.h"
 #include "content/browser/worker_host/worker_service.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/common/resource_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/content_browser_client.h"
@@ -1904,7 +1904,7 @@ void ResourceDispatcherHost::NotifyOnUI(int type,
       RenderViewHost::FromID(render_process_id, render_view_id);
   if (rvh) {
     RenderViewHostDelegate* rvhd = rvh->delegate();
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         type, content::Source<RenderViewHostDelegate>(rvhd),
         content::Details<T>(detail));
   }

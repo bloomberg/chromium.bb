@@ -15,7 +15,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_status.h"
@@ -388,10 +388,10 @@ bool AppsPromoLogoFetcher::HaveCachedLogo() {
 void AppsPromoLogoFetcher::SavePromo() {
   AppsPromo::SetPromo(promo_data_);
 
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_WEB_STORE_PROMO_LOADED,
       content::Source<Profile>(profile_),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 }
 
 bool AppsPromoLogoFetcher::SupportsLogoURL() {

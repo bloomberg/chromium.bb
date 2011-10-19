@@ -26,7 +26,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/user_metrics.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -176,7 +176,7 @@ BackgroundModeManager::BackgroundModeManager(
   // Listen for the application shutting down so we can decrement our KeepAlive
   // count.
   registrar_.Add(this, content::NOTIFICATION_APP_TERMINATING,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 }
 
 BackgroundModeManager::~BackgroundModeManager() {

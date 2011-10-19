@@ -9,8 +9,8 @@
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/browser/ssl/ssl_client_auth_notification_details.h"
-#include "content/common/notification_service.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/notification_service.h"
 #include "net/base/x509_certificate.h"
 #include "net/url_request/url_request.h"
 
@@ -58,7 +58,8 @@ void SSLClientAuthHandler::CertificateSelected(net::X509Certificate* cert) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   SSLClientAuthNotificationDetails details(cert_request_info_, cert);
-  NotificationService* service = NotificationService::current();
+  content::NotificationService* service =
+      content::NotificationService::current();
   service->Notify(content::NOTIFICATION_SSL_CLIENT_AUTH_CERT_SELECTED,
                   content::Source<SSLClientAuthHandler>(this),
                   content::Details<SSLClientAuthNotificationDetails>(&details));
@@ -141,7 +142,7 @@ void SSLClientAuthObserver::StartObserving() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   notification_registrar_.Add(
       this, content::NOTIFICATION_SSL_CLIENT_AUTH_CERT_SELECTED,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
 }
 
 void SSLClientAuthObserver::StopObserving() {

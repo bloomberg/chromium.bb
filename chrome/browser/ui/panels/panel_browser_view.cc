@@ -13,7 +13,7 @@
 #include "chrome/browser/ui/webui/task_manager_dialog.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/chromium_strings.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -176,10 +176,10 @@ void PanelBrowserView::OnWidgetActivationChanged(views::Widget* widget,
       StopDrawingAttention();
   }
 
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PANEL_CHANGED_ACTIVE_STATUS,
       content::Source<Panel>(panel()),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 }
 
 bool PanelBrowserView::AcceleratorPressed(
@@ -197,10 +197,10 @@ bool PanelBrowserView::AcceleratorPressed(
 }
 
 void PanelBrowserView::AnimationEnded(const ui::Animation* animation) {
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
       content::Source<Panel>(panel()),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 }
 
 void PanelBrowserView::AnimationProgressed(const ui::Animation* animation) {

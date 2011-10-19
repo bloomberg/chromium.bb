@@ -41,7 +41,7 @@
 #include "content/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -177,7 +177,7 @@ class ProfileSyncServiceSessionTest
                                window_bounds_,
                                ui::SHOW_STATE_NORMAL);
     registrar_.Add(this, chrome::NOTIFICATION_FOREIGN_SESSION_UPDATED,
-        NotificationService::AllSources());
+        content::NotificationService::AllSources());
   }
 
   void Observe(int type,

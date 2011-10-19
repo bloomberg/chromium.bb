@@ -33,7 +33,7 @@
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/url_constants.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -323,10 +323,11 @@ void ExtensionInstallUI::OnImageLoaded(
     case PERMISSIONS_PROMPT:
     case RE_ENABLE_PROMPT:
     case INSTALL_PROMPT: {
-      NotificationService* service = NotificationService::current();
+      content::NotificationService* service =
+          content::NotificationService::current();
       service->Notify(chrome::NOTIFICATION_EXTENSION_WILL_SHOW_CONFIRM_DIALOG,
           content::Source<ExtensionInstallUI>(this),
-          NotificationService::NoDetails());
+          content::NotificationService::NoDetails());
 
       Prompt prompt(prompt_type_);
       prompt.SetPermissions(permissions_->GetWarningMessages());
@@ -347,7 +348,7 @@ void ExtensionInstallUI::OpenAppInstalledNTP(Browser* browser,
       browser->GetSingletonTabNavigateParams(GURL(chrome::kChromeUINewTabURL));
   browser::Navigate(&params);
 
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_APP_INSTALLED_TO_NTP,
       content::Source<TabContents>(params.target_contents->tab_contents()),
       content::Details<const std::string>(&app_id));

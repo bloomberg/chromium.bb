@@ -160,8 +160,6 @@
     'common/navigation_gesture.h',
     'common/net/url_fetcher.cc',
     'common/net/url_fetcher.h',
-    'common/notification_service.cc',
-    'common/notification_service.h',
     'common/np_channel_base.cc',
     'common/np_channel_base.h',
     'common/npobject_base.h',

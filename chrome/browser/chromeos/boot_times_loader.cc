@@ -31,7 +31,7 @@
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 
 namespace {
 
@@ -345,13 +345,13 @@ void BootTimesLoader::LoginDone() {
   AddLoginTimeMarker("LoginDone", true);
   RecordCurrentStats(kChromeFirstRender);
   registrar_.Remove(this, content::NOTIFICATION_LOAD_START,
-                    NotificationService::AllSources());
+                    content::NotificationService::AllSources());
   registrar_.Remove(this, content::NOTIFICATION_LOAD_STOP,
-                    NotificationService::AllSources());
+                    content::NotificationService::AllSources());
   registrar_.Remove(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                    NotificationService::AllSources());
+                    content::NotificationService::AllSources());
   registrar_.Remove(this, content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT,
-                    NotificationService::AllSources());
+                    content::NotificationService::AllSources());
   // Don't swamp the FILE thread right away.
   BrowserThread::PostDelayedTask(
       BrowserThread::FILE, FROM_HERE,
@@ -406,15 +406,15 @@ void BootTimesLoader::RecordLoginAttempted() {
   if (!have_registered_) {
     have_registered_ = true;
     registrar_.Add(this, chrome::NOTIFICATION_LOGIN_AUTHENTICATION,
-                   NotificationService::AllSources());
+                   content::NotificationService::AllSources());
     registrar_.Add(this, content::NOTIFICATION_LOAD_START,
-                   NotificationService::AllSources());
+                   content::NotificationService::AllSources());
     registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
-                   NotificationService::AllSources());
+                   content::NotificationService::AllSources());
     registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                   NotificationService::AllSources());
+                   content::NotificationService::AllSources());
     registrar_.Add(this, content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT,
-                   NotificationService::AllSources());
+                   content::NotificationService::AllSources());
   }
 }
 
@@ -439,7 +439,7 @@ void BootTimesLoader::Observe(
         AddLoginTimeMarker("Authenticate", true);
         RecordCurrentStats(kLoginSuccess);
         registrar_.Remove(this, chrome::NOTIFICATION_LOGIN_AUTHENTICATION,
-                          NotificationService::AllSources());
+                          content::NotificationService::AllSources());
       }
       break;
     }

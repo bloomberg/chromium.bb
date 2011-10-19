@@ -5,7 +5,7 @@
 #include "chrome/test/base/test_html_dialog_observer.h"
 
 #include "chrome/common/chrome_notification_types.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/webui/web_ui.h"
@@ -17,7 +17,7 @@
 TestHtmlDialogObserver::TestHtmlDialogObserver()
     : web_ui_(NULL), done_(false), running_(false) {
   registrar_.Add(this, chrome::NOTIFICATION_HTML_DIALOG_SHOWN,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 }
 
 TestHtmlDialogObserver::~TestHtmlDialogObserver() {
@@ -31,7 +31,7 @@ void TestHtmlDialogObserver::Observe(
     case chrome::NOTIFICATION_HTML_DIALOG_SHOWN:
       web_ui_ = content::Source<WebUI>(source).ptr();
       registrar_.Remove(this, chrome::NOTIFICATION_HTML_DIALOG_SHOWN,
-                        NotificationService::AllSources());
+                        content::NotificationService::AllSources());
       // Wait for navigation on the new WebUI instance to complete. This depends
       // on receiving the notification of the HtmlDialog being shown before the
       // NavigationController finishes loading. The HtmlDialog notification is

@@ -38,7 +38,7 @@
 #include "chrome/common/guid.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -927,7 +927,7 @@ void TemplateURLService::Init(const Initializer* initializers,
         PrefSetObserver::CreateDefaultSearchPrefSetObserver(prefs, this));
   }
   registrar_.Add(this, chrome::NOTIFICATION_GOOGLE_URL_UPDATED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 
   if (num_initializers > 0) {
     // This path is only hit by test code and is used to simulate a loaded
@@ -1043,10 +1043,10 @@ void TemplateURLService::ChangeToLoadedState() {
 }
 
 void TemplateURLService::NotifyLoaded() {
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED,
       content::Source<TemplateURLService>(this),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 
   for (size_t i = 0; i < pending_extension_ids_.size(); ++i) {
     const Extension* extension = profile_->GetExtensionService()->
@@ -1552,7 +1552,7 @@ void TemplateURLService::RemoveNoNotify(const TemplateURL* template_url) {
   if (profile_) {
     content::Source<Profile> source(profile_);
     TemplateURLID id = template_url->id();
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_TEMPLATE_URL_REMOVED,
         source,
         content::Details<TemplateURLID>(&id));

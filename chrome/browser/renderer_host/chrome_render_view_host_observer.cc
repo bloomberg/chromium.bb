@@ -19,7 +19,7 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/site_instance.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/common/view_messages.h"
 
 ChromeRenderViewHostObserver::ChromeRenderViewHostObserver(
@@ -146,15 +146,15 @@ const Extension* ChromeRenderViewHostObserver::GetExtension() {
 void ChromeRenderViewHostObserver::OnDomOperationResponse(
     const std::string& json_string, int automation_id) {
   DomOperationNotificationDetails details(json_string, automation_id);
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_DOM_OPERATION_RESPONSE,
       content::Source<RenderViewHost>(render_view_host()),
       content::Details<DomOperationNotificationDetails>(&details));
 }
 
 void ChromeRenderViewHostObserver::OnFocusedEditableNodeTouched() {
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_FOCUSED_EDITABLE_NODE_TOUCHED,
       content::Source<RenderViewHost>(render_view_host()),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 }

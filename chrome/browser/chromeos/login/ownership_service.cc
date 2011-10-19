@@ -13,6 +13,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/browser_thread.h"
+#include "content/public/browser/notification_service.h"
 
 namespace chromeos {
 
@@ -32,7 +33,7 @@ OwnershipService::OwnershipService()
   notification_registrar_.Add(
       this,
       chrome::NOTIFICATION_OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
 }
 
 OwnershipService::~OwnershipService() {}

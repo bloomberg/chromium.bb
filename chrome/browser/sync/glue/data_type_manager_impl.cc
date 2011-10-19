@@ -18,7 +18,7 @@
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 
@@ -457,10 +457,10 @@ void DataTypeManagerImpl::Abort(ConfigureStatus status,
 }
 
 void DataTypeManagerImpl::NotifyStart() {
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_SYNC_CONFIGURE_START,
       content::Source<DataTypeManager>(this),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 }
 
 void DataTypeManagerImpl::NotifyDone(const ConfigureResult& result) {
@@ -493,7 +493,7 @@ void DataTypeManagerImpl::NotifyDone(const ConfigureResult& result) {
       NOTREACHED();
       break;
   }
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,
       content::Source<DataTypeManager>(this),
       content::Details<const ConfigureResult>(&result));
@@ -508,10 +508,10 @@ void DataTypeManagerImpl::SetBlockedAndNotify() {
   AddToConfigureTime();
   VLOG(1) << "Accumulated spent configuring: "
           << configure_time_delta_.InSecondsF() << "s";
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_SYNC_CONFIGURE_BLOCKED,
       content::Source<DataTypeManager>(this),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 }
 
 void DataTypeManagerImpl::AddToConfigureTime() {

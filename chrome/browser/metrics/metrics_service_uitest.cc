@@ -24,7 +24,6 @@
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/ui_test.h"
-#include "content/common/notification_service.h"
 #include "net/base/net_util.h"
 
 class MetricsServiceTest : public UITest {

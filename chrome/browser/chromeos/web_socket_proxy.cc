@@ -36,8 +36,8 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_service.h"
 #include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/common/url_constants.h"
 #include "googleurl/src/gurl.h"
@@ -192,9 +192,9 @@ inline size_t strlen(const void* s) {
 
 void SendNotification(int port) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_WEB_SOCKET_PROXY_STARTED,
-      NotificationService::AllSources(), content::Details<int>(&port));
+      content::NotificationService::AllSources(), content::Details<int>(&port));
 }
 
 class Conn;

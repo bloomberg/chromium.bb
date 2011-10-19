@@ -11,7 +11,6 @@
 #include "content/common/child_process_messages.h"
 #include "content/common/child_trace_message_filter.h"
 #include "content/common/file_system/file_system_dispatcher.h"
-#include "content/common/notification_service.h"
 #include "content/common/quota_dispatcher.h"
 #include "content/common/resource_dispatcher.h"
 #include "content/common/socket_stream_dispatcher.h"
@@ -58,11 +57,6 @@ void ChildThread::Init() {
       new IPC::SyncMessageFilter(ChildProcess::current()->GetShutDownEvent());
   channel_->AddFilter(sync_message_filter_.get());
   channel_->AddFilter(new ChildTraceMessageFilter());
-
-  // When running in unit tests, there is already a NotificationService object.
-  // Since only one can exist at a time per thread, check first.
-  if (!NotificationService::current())
-    notification_service_.reset(new NotificationService);
 }
 
 ChildThread::~ChildThread() {

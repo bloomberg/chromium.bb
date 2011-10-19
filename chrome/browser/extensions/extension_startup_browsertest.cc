@@ -19,6 +19,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_service.h"
 #include "net/base/net_util.h"
 
 // This file contains high-level startup tests for the extensions system. We've
@@ -92,7 +93,7 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
 
     ui_test_utils::WindowedNotificationObserver user_scripts_observer(
         chrome::NOTIFICATION_USER_SCRIPTS_UPDATED,
-        NotificationService::AllSources());
+        content::NotificationService::AllSources());
     UserScriptMaster* master = browser()->profile()->GetUserScriptMaster();
     if (!master->ScriptsReady())
       user_scripts_observer.Wait();
@@ -169,7 +170,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionsStartupTest, MAYBE_NoFileAccess) {
     if (service->AllowFileAccess(service->extensions()->at(i))) {
       ui_test_utils::WindowedNotificationObserver user_scripts_observer(
           chrome::NOTIFICATION_USER_SCRIPTS_UPDATED,
-          NotificationService::AllSources());
+          content::NotificationService::AllSources());
       service->SetAllowFileAccess(service->extensions()->at(i), false);
       user_scripts_observer.Wait();
     }

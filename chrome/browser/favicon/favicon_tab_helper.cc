@@ -16,7 +16,7 @@
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/webui/web_ui.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image.h"
 
@@ -138,10 +138,10 @@ void FaviconTabHelper::StartDownload(int id, const GURL& url, int image_size) {
 }
 
 void FaviconTabHelper::NotifyFaviconUpdated() {
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_FAVICON_UPDATED,
       content::Source<TabContents>(tab_contents()),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
   tab_contents()->NotifyNavigationStateChanged(TabContents::INVALIDATE_TAB);
 }
 

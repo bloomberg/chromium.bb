@@ -30,6 +30,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "content/browser/browser_thread.h"
+#include "content/public/browser/notification_service.h"
 
 namespace chromeos {
 
@@ -69,7 +70,7 @@ class MigrationHelper : public content::NotificationObserver {
  public:
   explicit MigrationHelper() : callback_(NULL) {
     registrar_.Add(this, chrome::NOTIFICATION_OWNERSHIP_CHECKED,
-                   NotificationService::AllSources());
+                   content::NotificationService::AllSources());
   }
 
   void set_callback(SignedSettingsHelper::Callback* callback) {

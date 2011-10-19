@@ -33,7 +33,7 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/common/content_client.h"
 
 static const int kSaveChangesIntervalSeconds = 10;
@@ -788,7 +788,7 @@ void SyncBackendHost::Core::NotifyUpdatedToken(const std::string& token) {
     return;
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   TokenAvailableDetails details(GaiaConstants::kSyncService, token);
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TOKEN_UPDATED,
       content::Source<Profile>(host_->profile_),
       content::Details<const TokenAvailableDetails>(&details));

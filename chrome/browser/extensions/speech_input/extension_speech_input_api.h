@@ -7,7 +7,7 @@
 #pragma once
 
 #include "chrome/browser/extensions/extension_function.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_observer.h"
 
 class ExtensionSpeechInputManager;
 

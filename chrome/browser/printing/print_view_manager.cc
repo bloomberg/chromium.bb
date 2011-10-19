@@ -19,7 +19,7 @@
 #include "chrome/common/print_messages.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
@@ -236,10 +236,10 @@ void PrintViewManager::OnDidPrintPage(
 void PrintViewManager::OnPrintingFailed(int cookie) {
   ReleasePrinterQuery(cookie);
 
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PRINT_JOB_RELEASED,
       content::Source<TabContents>(tab_contents()),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 }
 
 bool PrintViewManager::OnMessageReceived(const IPC::Message& message) {
@@ -278,10 +278,10 @@ void PrintViewManager::OnNotifyPrintJobEvent(
     case JobEventDetails::FAILED: {
       TerminatePrintJob(true);
 
-      NotificationService::current()->Notify(
+      content::NotificationService::current()->Notify(
           chrome::NOTIFICATION_PRINT_JOB_RELEASED,
           content::Source<TabContentsWrapper>(tab_),
-          NotificationService::NoDetails());
+          content::NotificationService::NoDetails());
       break;
     }
     case JobEventDetails::USER_INIT_DONE:
@@ -308,10 +308,10 @@ void PrintViewManager::OnNotifyPrintJobEvent(
       printing_succeeded_ = true;
       ReleasePrintJob();
 
-      NotificationService::current()->Notify(
+      content::NotificationService::current()->Notify(
           chrome::NOTIFICATION_PRINT_JOB_RELEASED,
           content::Source<TabContentsWrapper>(tab_),
-          NotificationService::NoDetails());
+          content::NotificationService::NoDetails());
       break;
     }
     default: {

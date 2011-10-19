@@ -39,7 +39,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/user_metrics.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "googleurl/src/gurl.h"
 #include "googleurl/src/url_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -500,7 +500,7 @@ void AutocompleteEditModel::OpenMatch(const AutocompleteMatch& match,
       log.selected_index = index;
     else if (!has_temporary_text_)
       log.inline_autocompleted_length = inline_autocomplete_text_.length();
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
         content::Source<Profile>(profile_),
         content::Details<AutocompleteLog>(&log));

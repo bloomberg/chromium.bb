@@ -34,7 +34,7 @@
 #include "chrome/common/extensions/extension_file_util.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/user_metrics.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -444,10 +444,11 @@ void CrxInstaller::InstallUIAbort(bool user_initiated) {
       extension_, histogram_name.c_str());
 
   // Kill the theme loading bubble.
-  NotificationService* service = NotificationService::current();
+  content::NotificationService* service =
+      content::NotificationService::current();
   service->Notify(chrome::NOTIFICATION_NO_THEME_DETECTED,
                   content::Source<CrxInstaller>(this),
-                  NotificationService::NoDetails());
+                  content::NotificationService::NoDetails());
   Release();  // balanced in ConfirmInstall().
 
   NotifyCrxInstallComplete();
@@ -518,7 +519,8 @@ void CrxInstaller::ReportFailureFromFileThread(const std::string& error) {
 void CrxInstaller::ReportFailureFromUIThread(const std::string& error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  NotificationService* service = NotificationService::current();
+  content::NotificationService* service =
+      content::NotificationService::current();
   service->Notify(chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR,
                   content::Source<CrxInstaller>(this),
                   content::Details<const std::string>(&error));
@@ -594,8 +596,8 @@ void CrxInstaller::NotifyCrxInstallComplete() {
   // is problematic because they don't know anything about the
   // extension before it is unpacked, so they can not filter based
   // on the extension.
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_CRX_INSTALLER_DONE,
       content::Source<CrxInstaller>(this),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 }

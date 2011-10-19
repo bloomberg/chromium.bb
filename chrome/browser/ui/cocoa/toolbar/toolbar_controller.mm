@@ -49,7 +49,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_observer.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_details.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -104,7 +104,7 @@ class NotificationBridge : public content::NotificationObserver {
   explicit NotificationBridge(ToolbarController* controller)
       : controller_(controller) {
     registrar_.Add(this, chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
-                   NotificationService::AllSources());
+                   content::NotificationService::AllSources());
     registrar_.Add(this, chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED,
                    content::Source<Profile>([controller browser]->profile()));
   }

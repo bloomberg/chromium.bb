@@ -21,7 +21,7 @@
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/browser/user_metrics.h"
 #include "content/common/content_constants.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/notification_types.h"
 #include "net/base/escape.h"
@@ -42,7 +42,7 @@ void NotifyPrunedEntries(NavigationController* nav_controller,
   content::PrunedDetails details;
   details.from_front = from_front;
   details.count = count;
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       content::NOTIFICATION_NAV_LIST_PRUNED,
       content::Source<NavigationController>(nav_controller),
       content::Details<content::PrunedDetails>(&details));
@@ -133,10 +133,10 @@ NavigationController::NavigationController(
 NavigationController::~NavigationController() {
   DiscardNonCommittedEntriesInternal();
 
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       content::NOTIFICATION_TAB_CLOSED,
       content::Source<NavigationController>(this),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 }
 
 void NavigationController::Restore(
@@ -183,10 +183,10 @@ void NavigationController::ReloadInternal(bool check_for_repost,
     // The user is asking to reload a page with POST data. Prompt to make sure
     // they really want to do this. If they do, the dialog will call us back
     // with check_for_repost = false.
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         content::NOTIFICATION_REPOST_WARNING_SHOWN,
         content::Source<NavigationController>(this),
-        NotificationService::NoDetails());
+        content::NotificationService::NoDetails());
 
     pending_reload_ = reload_type;
     tab_contents_->Activate();
@@ -274,7 +274,7 @@ void NavigationController::LoadEntry(NavigationEntry* entry) {
   // result in a download or a 'no content' response (e.g., a mailto: URL).
   DiscardNonCommittedEntriesInternal();
   pending_entry_ = entry;
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       content::NOTIFICATION_NAV_ENTRY_PENDING,
       content::Source<NavigationController>(this),
       content::Details<NavigationEntry>(entry));
@@ -1139,7 +1139,7 @@ void NavigationController::NotifyNavigationEntryCommitted(
   // notification below instead.
   tab_contents_->NotifyNavigationStateChanged(kInvalidateAll);
 
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::Source<NavigationController>(this),
       notification_details);
@@ -1171,7 +1171,7 @@ void NavigationController::NotifyEntryChanged(const NavigationEntry* entry,
   content::EntryChangedDetails det;
   det.changed_entry = entry;
   det.index = index;
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       content::NOTIFICATION_NAV_ENTRY_CHANGED,
       content::Source<NavigationController>(this),
       content::Details<content::EntryChangedDetails>(&det));

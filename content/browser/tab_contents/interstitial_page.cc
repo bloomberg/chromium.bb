@@ -22,7 +22,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/common/dom_storage_common.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_source.h"
@@ -348,10 +348,10 @@ void InterstitialPage::DidNavigate(
   // after the interstitial page was registered with |tab_|, since there will be
   // a callback to |tab_| testing if an interstitial page is showing before
   // hiding the bookmark bar.
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       content::NOTIFICATION_INTERSTITIAL_ATTACHED,
       content::Source<TabContents>(tab_),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 
   RenderWidgetHostView* rwh_view = tab_->render_view_host()->view();
 

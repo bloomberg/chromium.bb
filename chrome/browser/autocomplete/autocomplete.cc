@@ -35,7 +35,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "googleurl/src/gurl.h"
 #include "googleurl/src/url_canon_ip.h"
 #include "googleurl/src/url_util.h"
@@ -1026,10 +1026,10 @@ void AutocompleteController::NotifyChanged(bool notify_default_match) {
   if (delegate_)
     delegate_->OnResultChanged(notify_default_match);
   if (done_) {
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_AUTOCOMPLETE_CONTROLLER_RESULT_READY,
         content::Source<AutocompleteController>(this),
-        NotificationService::NoDetails());
+        content::NotificationService::NoDetails());
   }
 }
 

@@ -31,7 +31,7 @@
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/browser/renderer_host/resource_message_filter.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/common/resource_messages.h"
 #include "net/base/load_flags.h"
 
@@ -79,10 +79,10 @@ void NotifyDownloadInitiatedOnUI(int render_process_id, int render_view_id) {
   if (!rvh)
     return;
 
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_DOWNLOAD_INITIATED,
       content::Source<RenderViewHost>(rvh),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 }
 
 }  // end namespace

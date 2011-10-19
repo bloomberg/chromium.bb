@@ -43,7 +43,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
@@ -335,10 +335,10 @@ void LocationBarView::UpdatePageActions() {
   size_t count_before = page_action_views_.size();
   RefreshPageActionViews();
   if (page_action_views_.size() != count_before) {
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_COUNT_CHANGED,
         content::Source<LocationBar>(this),
-        NotificationService::NoDetails());
+        content::NotificationService::NoDetails());
   }
 
   Layout();
@@ -349,10 +349,10 @@ void LocationBarView::InvalidatePageActions() {
   size_t count_before = page_action_views_.size();
   DeletePageActionViews();
   if (page_action_views_.size() != count_before) {
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_COUNT_CHANGED,
         content::Source<LocationBar>(this),
-        NotificationService::NoDetails());
+        content::NotificationService::NoDetails());
   }
 }
 
@@ -995,7 +995,7 @@ void LocationBarView::RefreshPageActionViews() {
       ExtensionAction* action = (*i)->image_view()->page_action();
       if (old_visibility.find(action) == old_visibility.end() ||
           old_visibility[action] != (*i)->IsVisible()) {
-        NotificationService::current()->Notify(
+        content::NotificationService::current()->Notify(
             chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
             content::Source<ExtensionAction>(action),
             content::Details<TabContents>(contents));

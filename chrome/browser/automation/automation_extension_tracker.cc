@@ -8,13 +8,13 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 
 AutomationExtensionTracker::AutomationExtensionTracker(
     IPC::Message::Sender* automation)
     : AutomationResourceTracker<const Extension*>(automation) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 }
 
 AutomationExtensionTracker::~AutomationExtensionTracker() {

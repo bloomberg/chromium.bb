@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
+#include "content/public/browser/notification_service.h"
 
 const char kBodyTextKey[] = "bodyText";
 const char kExtensionIdKey[] = "extensionId";
@@ -70,7 +71,7 @@ bool AppNotifyFunction::RunImpl() {
 
   manager->Add(id, item.release());
 
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_APP_NOTIFICATION_STATE_CHANGED,
       content::Source<Profile>(profile_),
       content::Details<const std::string>(&id));
@@ -92,7 +93,7 @@ bool AppClearAllNotificationsFunction::RunImpl() {
   AppNotificationManager* manager =
       profile()->GetExtensionService()->app_notification_manager();
   manager->ClearAll(id);
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_APP_NOTIFICATION_STATE_CHANGED,
       content::Source<Profile>(profile_),
       content::Details<const std::string>(&id));

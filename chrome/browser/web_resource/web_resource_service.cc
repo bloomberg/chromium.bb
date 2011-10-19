@@ -22,7 +22,7 @@
 #include "chrome/common/web_resource/web_resource_unpacker.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/net/url_fetcher.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_status.h"
@@ -265,10 +265,11 @@ void WebResourceService::WebResourceStateChange() {
   web_resource_update_scheduled_ = false;
   if (notification_type_ == chrome::NOTIFICATION_CHROME_END)
     return;
-  NotificationService* service = NotificationService::current();
+  content::NotificationService* service =
+      content::NotificationService::current();
   service->Notify(notification_type_,
                   content::Source<WebResourceService>(this),
-                  NotificationService::NoDetails());
+                  content::NotificationService::NoDetails());
 }
 
 void WebResourceService::StartAfterDelay() {

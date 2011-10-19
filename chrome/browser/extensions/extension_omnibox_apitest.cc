@@ -23,6 +23,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/notification_service.h"
 
 #if defined(TOOLKIT_GTK)
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
@@ -66,7 +67,7 @@ class OmniboxApiTest : public ExtensionApiTest {
   void WaitForTemplateURLServiceToLoad() {
     ui_test_utils::WindowedNotificationObserver loaded_observer(
         chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED,
-        NotificationService::AllSources());
+        content::NotificationService::AllSources());
     TemplateURLService* model =
         TemplateURLServiceFactory::GetForProfile(browser()->profile());
     model->Load();

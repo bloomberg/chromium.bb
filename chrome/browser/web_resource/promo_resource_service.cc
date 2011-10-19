@@ -21,7 +21,7 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "googleurl/src/gurl.h"
 
 namespace {
@@ -368,10 +368,11 @@ void PromoResourceService::UnpackLogoSignal(
       !(old_logo_end == logo_end)) {
     prefs_->SetDouble(prefs::kNTPCustomLogoStart, logo_start);
     prefs_->SetDouble(prefs::kNTPCustomLogoEnd, logo_end);
-    NotificationService* service = NotificationService::current();
+    content::NotificationService* service =
+        content::NotificationService::current();
     service->Notify(chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED,
                     content::Source<WebResourceService>(this),
-                    NotificationService::NoDetails());
+                    content::NotificationService::NoDetails());
   }
 }
 
@@ -419,10 +420,10 @@ void PromoResourceService::UnpackSyncPromoSignal(
       prefs_->ClearPref(prefs::kNTPSyncPromoGroup);
       prefs_->ClearPref(prefs::kNTPSyncPromoGroupMax);
       // Notify the NTP resource cache if the promo has been disabled.
-      NotificationService::current()->Notify(
+      content::NotificationService::current()->Notify(
           chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED,
           content::Source<WebResourceService>(this),
-          NotificationService::NoDetails());
+          content::NotificationService::NoDetails());
     }
     return;
   }

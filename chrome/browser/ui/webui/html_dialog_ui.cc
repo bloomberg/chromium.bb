@@ -11,7 +11,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/common/bindings_policy.h"
 
 static base::LazyInstance<PropertyAccessor<HtmlDialogUIDelegate*> >
@@ -68,10 +68,10 @@ void HtmlDialogUI::RenderViewCreated(RenderViewHost* render_view_host) {
     AddMessageHandler(*it);
   }
 
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_HTML_DIALOG_SHOWN,
       content::Source<HtmlDialogUI>(this),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 }
 
 void HtmlDialogUI::OnDialogClosed(const ListValue* args) {

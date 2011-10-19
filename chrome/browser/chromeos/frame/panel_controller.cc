@@ -18,7 +18,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
@@ -396,7 +396,7 @@ bool PanelController::PanelClientEvent(GdkEventClient* event) {
     if (expanded_ != new_state) {
       expanded_ = new_state;
       State state = new_state ? EXPANDED : MINIMIZED;
-      NotificationService::current()->Notify(
+      content::NotificationService::current()->Notify(
           chrome::NOTIFICATION_PANEL_STATE_CHANGED,
           content::Source<PanelController>(this),
           content::Details<State>(&state));

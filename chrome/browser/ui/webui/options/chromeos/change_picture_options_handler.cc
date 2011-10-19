@@ -22,7 +22,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -62,7 +62,7 @@ ChangePictureOptionsHandler::ChangePictureOptionsHandler()
       profile_image_data_url_(chrome::kAboutBlankURL),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_IMAGE_UPDATED,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
 }
 
 ChangePictureOptionsHandler::~ChangePictureOptionsHandler() {

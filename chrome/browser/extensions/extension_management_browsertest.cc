@@ -21,6 +21,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/public/browser/notification_service.h"
 
 class ExtensionManagementTest : public ExtensionBrowserTest {
  protected:
@@ -236,7 +237,8 @@ class NotificationListener : public content::NotificationObserver {
       chrome::NOTIFICATION_EXTENSION_UPDATE_FOUND
     };
     for (size_t i = 0; i < arraysize(types); i++) {
-      registrar_.Add(this, types[i], NotificationService::AllSources());
+      registrar_.Add(
+          this, types[i], content::NotificationService::AllSources());
     }
   }
   ~NotificationListener() {}

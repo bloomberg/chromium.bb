@@ -14,7 +14,7 @@
 #include "content/browser/user_metrics.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -41,9 +41,9 @@ BookmarkBubbleNotificationBridge::BookmarkBubbleNotificationBridge(
   // registrar_ will automatically RemoveAll() when destroyed so we
   // don't need to do so explicitly.
   registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_CONNECTED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(this, content::NOTIFICATION_TAB_CLOSED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 }
 
 // At this time all notifications instigate the same behavior (go

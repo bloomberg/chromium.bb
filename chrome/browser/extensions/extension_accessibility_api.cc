@@ -17,7 +17,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 
 namespace keys = extension_accessibility_api_constants;
 
@@ -43,28 +43,28 @@ ExtensionAccessibilityEventRouter::ExtensionAccessibilityEventRouter()
     : enabled_(false) {
   registrar_.Add(this,
                  chrome::NOTIFICATION_ACCESSIBILITY_WINDOW_OPENED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(this,
                  chrome::NOTIFICATION_ACCESSIBILITY_WINDOW_CLOSED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(this,
                  chrome::NOTIFICATION_ACCESSIBILITY_CONTROL_FOCUSED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(this,
                  chrome::NOTIFICATION_ACCESSIBILITY_CONTROL_ACTION,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(this,
                  chrome::NOTIFICATION_ACCESSIBILITY_TEXT_CHANGED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(this,
                  chrome::NOTIFICATION_ACCESSIBILITY_MENU_OPENED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(this,
                  chrome::NOTIFICATION_ACCESSIBILITY_MENU_CLOSED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(this,
                  chrome::NOTIFICATION_ACCESSIBILITY_VOLUME_CHANGED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 }
 
 ExtensionAccessibilityEventRouter::~ExtensionAccessibilityEventRouter() {

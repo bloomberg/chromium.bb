@@ -15,7 +15,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "views/accelerator.h"
@@ -60,19 +60,19 @@ void WizardAccessibilityHelper::Init() {
 void WizardAccessibilityHelper::RegisterNotifications() {
   registrar_.Add(accessibility_handler_.get(),
                  chrome::NOTIFICATION_ACCESSIBILITY_CONTROL_FOCUSED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(accessibility_handler_.get(),
                  chrome::NOTIFICATION_ACCESSIBILITY_CONTROL_ACTION,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(accessibility_handler_.get(),
                  chrome::NOTIFICATION_ACCESSIBILITY_TEXT_CHANGED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(accessibility_handler_.get(),
                  chrome::NOTIFICATION_ACCESSIBILITY_MENU_OPENED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(accessibility_handler_.get(),
                  chrome::NOTIFICATION_ACCESSIBILITY_MENU_CLOSED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registered_notifications_ = true;
 }
 

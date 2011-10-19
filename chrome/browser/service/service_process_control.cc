@@ -18,7 +18,7 @@
 #include "chrome/common/service_process_util.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/child_process_host.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "ui/base/ui_base_switches.h"
 
 
@@ -213,7 +213,7 @@ void ServiceProcessControl::OnChannelConnected(int32 peer_pid) {
   } else {
     if (registrar_.IsEmpty())
       registrar_.Add(this, chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
-                     NotificationService::AllSources());
+                     content::NotificationService::AllSources());
   }
   RunConnectDoneTasks();
 }

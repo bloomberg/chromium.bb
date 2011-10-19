@@ -18,7 +18,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/user_metrics.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -165,7 +165,7 @@ InputMethodMenu::InputMethodMenu(PrefService* pref_service,
     manager->AddPreLoginPreferenceObserver(this);
     registrar_.Add(this,
                    chrome::NOTIFICATION_LOGIN_USER_CHANGED,
-                   NotificationService::AllSources());
+                   content::NotificationService::AllSources());
   } else if (screen_mode_ == StatusAreaHost::kBrowserMode) {
     manager->AddPostLoginPreferenceObserver(this);
   }

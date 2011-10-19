@@ -45,7 +45,7 @@
 #include "content/browser/tab_contents/popup_menu_helper_mac.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -175,7 +175,7 @@ ExtensionHost::ExtensionHost(const Extension* extension,
 }
 
 ExtensionHost::~ExtensionHost() {
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
       content::Source<Profile>(profile_),
       content::Details<ExtensionHost>(this));
@@ -298,7 +298,7 @@ void ExtensionHost::Observe(int type,
       NavigateToURL(url_);
       break;
     case content::NOTIFICATION_RENDERER_PROCESS_CREATED:
-      NotificationService::current()->Notify(
+      content::NotificationService::current()->Notify(
           chrome::NOTIFICATION_EXTENSION_PROCESS_CREATED,
           content::Source<Profile>(profile_),
           content::Details<ExtensionHost>(this));
@@ -346,7 +346,7 @@ void ExtensionHost::RenderViewGone(RenderViewHost* render_view_host,
   // and they aren't all going to use ExtensionHost. This should be in someplace
   // more central, like EPM maybe.
   DCHECK_EQ(render_view_host_, render_view_host);
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
       content::Source<Profile>(profile_),
       content::Details<ExtensionHost>(this));
@@ -388,7 +388,7 @@ void ExtensionHost::DidStopLoading() {
 #endif
   }
   if (notify) {
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
         content::Source<Profile>(profile_),
         content::Details<ExtensionHost>(this));
@@ -431,7 +431,7 @@ void ExtensionHost::DocumentAvailableInMainFrame(RenderViewHost* rvh) {
 void ExtensionHost::DocumentOnLoadCompletedInMainFrame(RenderViewHost* rvh,
                                                        int32 page_id) {
   if (chrome::VIEW_TYPE_EXTENSION_POPUP == GetRenderViewType()) {
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTENSION_POPUP_VIEW_READY,
         content::Source<Profile>(profile_),
         content::Details<ExtensionHost>(this));
@@ -503,7 +503,7 @@ void ExtensionHost::Close(RenderViewHost* render_view_host) {
       extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_DIALOG ||
       extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE ||
       extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_INFOBAR) {
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
         content::Source<Profile>(profile_),
         content::Details<ExtensionHost>(this));
@@ -572,7 +572,7 @@ void ExtensionHost::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
   if (extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_POPUP) {
     if (event.type == NativeWebKeyboardEvent::RawKeyDown &&
         event.windowsKeyCode == ui::VKEY_ESCAPE) {
-      NotificationService::current()->Notify(
+      content::NotificationService::current()->Notify(
           chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
           content::Source<Profile>(profile_),
           content::Details<ExtensionHost>(this));

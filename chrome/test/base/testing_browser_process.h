@@ -16,7 +16,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "content/common/notification_service.h"
+#include "content/browser/notification_service_impl.h"
 
 class BackgroundModeManager;
 class CRLSetFetcher;
@@ -134,7 +134,7 @@ class TestingBrowserProcess : public BrowserProcess {
   void SetDevToolsManager(DevToolsManager*);
 
  private:
-  NotificationService notification_service_;
+  NotificationServiceImpl notification_service_;
   unsigned int module_ref_count_;
   scoped_ptr<ui::Clipboard> clipboard_;
   std::string app_locale_;

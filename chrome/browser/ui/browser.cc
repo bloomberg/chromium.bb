@@ -150,7 +150,7 @@
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/user_metrics.h"
 #include "content/common/content_restriction.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/common/page_zoom.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/common/content_switches.h"
@@ -295,7 +295,7 @@ Browser::Browser(Type type, Profile* profile)
       mouse_lock_state_(MOUSELOCK_NOT_REQUESTED),
       window_has_shown_(false) {
   registrar_.Add(this, content::NOTIFICATION_SSL_VISIBLE_STATE_CHANGED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED,
                  content::Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
@@ -305,17 +305,17 @@ Browser::Browser(Type type, Profile* profile)
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
                  content::Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(
       this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
       content::Source<ThemeService>(
           ThemeServiceFactory::GetForProfile(profile_)));
   registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENT_SETTINGS_CHANGED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 
   // Need to know when to alert the user of theme install delay.
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_READY_FOR_INSTALL,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 
   PrefService* local_state = g_browser_process->local_state();
   if (local_state) {
@@ -500,10 +500,10 @@ void Browser::InitBrowserWindow() {
   }
 #endif
 
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_BROWSER_WINDOW_READY,
       content::Source<Browser>(this),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 
   PrefService* local_state = g_browser_process->local_state();
   if (local_state && local_state->FindPreference(
@@ -1013,7 +1013,7 @@ void Browser::OnWindowClosing() {
     tab_restore_service->BrowserClosing(tab_restore_service_delegate());
 
   // TODO(sky): convert session/tab restore to use notification.
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_BROWSER_CLOSING,
       content::Source<Browser>(this),
       content::Details<bool>(&exiting));
@@ -1321,10 +1321,10 @@ void Browser::WindowFullscreenStateChanged() {
 }
 
 void Browser::NotifyFullscreenChange() {
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_FULLSCREEN_CHANGED,
       content::Source<Browser>(this),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3201,10 +3201,10 @@ void Browser::TabInsertedAt(TabContentsWrapper* contents,
 void Browser::TabClosingAt(TabStripModel* tab_strip_model,
                            TabContentsWrapper* contents,
                            int index) {
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       content::NOTIFICATION_TAB_CLOSING,
       content::Source<NavigationController>(&contents->controller()),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 
   // Sever the TabContents' connection back to us.
   SetAsDelegate(contents, NULL);
@@ -3584,10 +3584,10 @@ void Browser::TabContentsFocused(TabContents* tab_content) {
 }
 
 bool Browser::TakeFocus(bool reverse) {
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_FOCUS_RETURNED_TO_BROWSER,
       content::Source<Browser>(this),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
   return false;
 }
 
@@ -5270,11 +5270,11 @@ bool Browser::OpenInstant(WindowOpenDisposition disposition) {
   }
 
   if (disposition == CURRENT_TAB) {
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_INSTANT_COMMITTED,
         content::Source<TabContentsWrapper>(instant()->CommitCurrentPreview(
             INSTANT_COMMIT_PRESSED_ENTER)),
-        NotificationService::NoDetails());
+        content::NotificationService::NoDetails());
     return true;
   }
   if (disposition == NEW_FOREGROUND_TAB) {
@@ -5290,10 +5290,10 @@ bool Browser::OpenInstant(WindowOpenDisposition disposition) {
         instant()->last_transition_type(),
         TabStripModel::ADD_ACTIVE);
     instant()->CompleteRelease(preview_contents);
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_INSTANT_COMMITTED,
         content::Source<TabContentsWrapper>(preview_contents),
-        NotificationService::NoDetails());
+        content::NotificationService::NoDetails());
     return true;
   }
   // The omnibox currently doesn't use other dispositions, so we don't attempt

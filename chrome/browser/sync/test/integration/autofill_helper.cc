@@ -72,10 +72,10 @@ class AutofillDBThreadObserverHelper : public DBThreadObserverHelper {
   virtual void RegisterObservers() {
     registrar_.Add(&observer_,
                    chrome::NOTIFICATION_AUTOFILL_ENTRIES_CHANGED,
-                   NotificationService::AllSources());
+                   content::NotificationService::AllSources());
     registrar_.Add(&observer_,
                    chrome::NOTIFICATION_AUTOFILL_PROFILE_CHANGED,
-                   NotificationService::AllSources());
+                   content::NotificationService::AllSources());
   }
 };
 

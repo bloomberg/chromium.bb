@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_settings_menu_model.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
 
@@ -148,10 +148,10 @@ void PanelBrowserWindowGtk::OnSizeChanged(int width, int height) {
   StartBoundsAnimation(gfx::Rect(bounds_.x(), top, width, height));
   panel_->OnWindowSizeAvailable();
 
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PANEL_WINDOW_SIZE_KNOWN,
       content::Source<Panel>(panel_.get()),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 }
 
 bool PanelBrowserWindowGtk::UseCustomFrame() {
@@ -196,10 +196,10 @@ void PanelBrowserWindowGtk::ActiveWindowChanged(GdkWindow* active_window) {
   if (was_active == IsActive())  // State didn't change.
     return;
 
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PANEL_CHANGED_ACTIVE_STATUS,
       content::Source<Panel>(panel_.get()),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 }
 
 BrowserWindowGtk::TitleDecoration PanelBrowserWindowGtk::GetWindowTitle(
@@ -428,10 +428,10 @@ void PanelBrowserWindowGtk::DidProcessEvent(GdkEvent* event) {
 }
 
 void PanelBrowserWindowGtk::AnimationEnded(const ui::Animation* animation) {
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
       content::Source<Panel>(panel_.get()),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 }
 
 void PanelBrowserWindowGtk::AnimationProgressed(

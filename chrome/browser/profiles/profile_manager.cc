@@ -34,7 +34,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/user_metrics.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/url_request/url_request_context.h"
@@ -205,7 +205,7 @@ ProfileManager::ProfileManager(const FilePath& user_data_dir)
   registrar_.Add(
       this,
       chrome::NOTIFICATION_LOGIN_USER_CHANGED,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
 #endif
 }
 
@@ -441,10 +441,10 @@ void ProfileManager::SetWillImport() {
 void ProfileManager::OnImportFinished(Profile* profile) {
   will_import_ = false;
   DCHECK(profile);
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_IMPORT_FINISHED,
       content::Source<Profile>(profile),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 }
 
 void ProfileManager::OnBrowserAdded(const Browser* browser) {}

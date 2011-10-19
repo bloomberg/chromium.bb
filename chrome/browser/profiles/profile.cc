@@ -54,7 +54,6 @@
 #include "content/browser/ssl/ssl_host_state.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/webui/web_ui.h"
-#include "content/common/notification_service.h"
 #include "grit/locale_settings.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/database/database_tracker.h"

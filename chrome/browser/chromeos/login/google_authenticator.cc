@@ -29,7 +29,7 @@
 #include "chrome/common/net/gaia/gaia_auth_fetcher.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_status.h"
@@ -173,9 +173,9 @@ void GoogleAuthenticator::LoginOffTheRecord() {
   int mount_error = chromeos::kCryptohomeMountErrorNone;
   if (CrosLibrary::Get()->GetCryptohomeLibrary()->MountForBwsi(&mount_error)) {
     AuthenticationNotificationDetails details(true);
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_LOGIN_AUTHENTICATION,
-        NotificationService::AllSources(),
+        content::NotificationService::AllSources(),
         content::Details<AuthenticationNotificationDetails>(&details));
     consumer_->OnOffTheRecordLoginSuccess();
   } else {
@@ -278,9 +278,9 @@ void GoogleAuthenticator::OnLoginSuccess(
     bool request_pending) {
   // Send notification of success
   AuthenticationNotificationDetails details(true);
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_LOGIN_AUTHENTICATION,
-      NotificationService::AllSources(),
+      content::NotificationService::AllSources(),
       content::Details<AuthenticationNotificationDetails>(&details));
 
   int mount_error = chromeos::kCryptohomeMountErrorNone;
@@ -353,9 +353,9 @@ void GoogleAuthenticator::CheckLocalaccount(const LoginFailure& error) {
 void GoogleAuthenticator::OnLoginFailure(const LoginFailure& error) {
   // Send notification of failure
   AuthenticationNotificationDetails details(false);
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_LOGIN_AUTHENTICATION,
-      NotificationService::AllSources(),
+      content::NotificationService::AllSources(),
       content::Details<AuthenticationNotificationDetails>(&details));
   LOG(WARNING) << "Login failed: " << error.GetErrorString();
   consumer_->OnLoginFailure(error);

@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 
 static bool IsLastNormalBrowser(Browser* browser) {
   for (BrowserList::const_iterator i = BrowserList::begin();
@@ -27,11 +27,11 @@ PinnedTabService::PinnedTabService(Profile* profile)
       got_exiting_(false),
       has_normal_browser_(false) {
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_OPENED,
-                 NotificationService::AllBrowserContextsAndSources());
+                 content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSING,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(this, content::NOTIFICATION_APP_EXITING,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 }
 
 void PinnedTabService::Observe(int type,

@@ -20,7 +20,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 
 namespace events = extension_event_names;
 namespace tab_keys = extension_tabs_module_constants;
@@ -75,7 +75,7 @@ void ExtensionBrowserEventRouter::Init() {
   // Needed for when no suitable window can be passed to an extension as the
   // currently focused window.
   registrar_.Add(this, content::NOTIFICATION_NO_KEY_WINDOW,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 #endif
 
   // Init() can happen after the browser is running, so catch up with any

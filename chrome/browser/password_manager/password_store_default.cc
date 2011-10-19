@@ -16,7 +16,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 
 using webkit_glue::PasswordForm;
 
@@ -130,7 +130,7 @@ void PasswordStoreDefault::AddLoginImpl(const PasswordForm& form) {
   if (login_db_->AddLogin(form)) {
     PasswordStoreChangeList changes;
     changes.push_back(PasswordStoreChange(PasswordStoreChange::ADD, form));
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_LOGINS_CHANGED,
         content::Source<PasswordStore>(this),
         content::Details<PasswordStoreChangeList>(&changes));
@@ -141,7 +141,7 @@ void PasswordStoreDefault::UpdateLoginImpl(const PasswordForm& form) {
   if (login_db_->UpdateLogin(form, NULL)) {
     PasswordStoreChangeList changes;
     changes.push_back(PasswordStoreChange(PasswordStoreChange::UPDATE, form));
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_LOGINS_CHANGED,
         content::Source<PasswordStore>(this),
         content::Details<PasswordStoreChangeList>(&changes));
@@ -152,7 +152,7 @@ void PasswordStoreDefault::RemoveLoginImpl(const PasswordForm& form) {
   if (login_db_->RemoveLogin(form)) {
     PasswordStoreChangeList changes;
     changes.push_back(PasswordStoreChange(PasswordStoreChange::REMOVE, form));
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_LOGINS_CHANGED,
         content::Source<PasswordStore>(this),
         content::Details<PasswordStoreChangeList>(&changes));
@@ -170,7 +170,7 @@ void PasswordStoreDefault::RemoveLoginsCreatedBetweenImpl(
         changes.push_back(PasswordStoreChange(PasswordStoreChange::REMOVE,
                                               **it));
       }
-      NotificationService::current()->Notify(
+      content::NotificationService::current()->Notify(
           chrome::NOTIFICATION_LOGINS_CHANGED,
           content::Source<PasswordStore>(this),
           content::Details<PasswordStoreChangeList>(&changes));

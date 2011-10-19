@@ -16,7 +16,7 @@
 #include "content/browser/browser_thread.h"
 #include "content/common/net/url_fetcher.h"
 #include "content/public/browser/notification_observer.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/test/test_notification_tracker.h"
 
 #include "googleurl/src/gurl.h"
@@ -151,8 +151,8 @@ class ComponentUpdaterTest : public testing::Test {
     };
 
     for (int ix = 0; ix != arraysize(notifications); ++ix) {
-      notification_tracker_.ListenFor(notifications[ix],
-                                      NotificationService::AllSources());
+      notification_tracker_.ListenFor(
+          notifications[ix], content::NotificationService::AllSources());
     }
     URLFetcher::enable_interception_for_tests(true);
   }

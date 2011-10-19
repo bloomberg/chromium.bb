@@ -40,6 +40,7 @@
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/url_constants.h"
@@ -299,7 +300,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CancelBeforeUnloadResetsURL) {
 
   ui_test_utils::WindowedNotificationObserver host_destroyed_observer(
       content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
 
   // Cancel the dialog.
   AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
@@ -380,10 +381,10 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NullOpenerRedirectForksProcess) {
 
   ui_test_utils::WindowedNotificationObserver popup_observer(
         content::NOTIFICATION_TAB_ADDED,
-        NotificationService::AllSources());
+        content::NotificationService::AllSources());
   ui_test_utils::WindowedNotificationObserver nav_observer(
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-        NotificationService::AllSources());
+        content::NotificationService::AllSources());
   oldtab->render_view_host()->
       ExecuteJavascriptInWebFrame(string16(), ASCIIToUTF16(redirect_popup));
 
@@ -413,10 +414,10 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NullOpenerRedirectForksProcess) {
 
   ui_test_utils::WindowedNotificationObserver popup_observer2(
         content::NOTIFICATION_TAB_ADDED,
-        NotificationService::AllSources());
+        content::NotificationService::AllSources());
   ui_test_utils::WindowedNotificationObserver nav_observer2(
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-        NotificationService::AllSources());
+        content::NotificationService::AllSources());
   oldtab->render_view_host()->
       ExecuteJavascriptInWebFrame(string16(), ASCIIToUTF16(refresh_popup));
 
@@ -465,10 +466,10 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OtherRedirectsDontForkProcess) {
 
   ui_test_utils::WindowedNotificationObserver popup_observer(
         content::NOTIFICATION_TAB_ADDED,
-        NotificationService::AllSources());
+        content::NotificationService::AllSources());
   ui_test_utils::WindowedNotificationObserver nav_observer(
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-        NotificationService::AllSources());
+        content::NotificationService::AllSources());
   oldtab->render_view_host()->
       ExecuteJavascriptInWebFrame(string16(), ASCIIToUTF16(dont_fork_popup));
 
@@ -494,7 +495,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OtherRedirectsDontForkProcess) {
 
   ui_test_utils::WindowedNotificationObserver nav_observer2(
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-        NotificationService::AllSources());
+        content::NotificationService::AllSources());
   oldtab->render_view_host()->
       ExecuteJavascriptInWebFrame(string16(), ASCIIToUTF16(navigate_str));
   nav_observer2.Wait();
@@ -824,7 +825,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_TestNewTabExitsFullscreen) {
   {
     ui_test_utils::WindowedNotificationObserver fullscreen_observer(
         chrome::NOTIFICATION_FULLSCREEN_CHANGED,
-        NotificationService::AllSources());
+        content::NotificationService::AllSources());
     browser()->ToggleFullscreenModeForTab(fullscreen_tab, true);
     fullscreen_observer.Wait();
     ASSERT_TRUE(browser()->window()->IsFullscreen());
@@ -833,7 +834,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_TestNewTabExitsFullscreen) {
   {
     ui_test_utils::WindowedNotificationObserver fullscreen_observer(
         chrome::NOTIFICATION_FULLSCREEN_CHANGED,
-        NotificationService::AllSources());
+        content::NotificationService::AllSources());
     AddTabAtIndex(
         1, GURL(chrome::kAboutBlankURL), content::PAGE_TRANSITION_TYPED);
     fullscreen_observer.Wait();
@@ -860,7 +861,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_TestTabExitsItselfFromFullscreen) {
   {
     ui_test_utils::WindowedNotificationObserver fullscreen_observer(
         chrome::NOTIFICATION_FULLSCREEN_CHANGED,
-        NotificationService::AllSources());
+        content::NotificationService::AllSources());
     browser()->ToggleFullscreenModeForTab(fullscreen_tab, true);
     fullscreen_observer.Wait();
     ASSERT_TRUE(browser()->window()->IsFullscreen());
@@ -869,7 +870,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_TestTabExitsItselfFromFullscreen) {
   {
     ui_test_utils::WindowedNotificationObserver fullscreen_observer(
         chrome::NOTIFICATION_FULLSCREEN_CHANGED,
-        NotificationService::AllSources());
+        content::NotificationService::AllSources());
     browser()->ToggleFullscreenModeForTab(fullscreen_tab, false);
     fullscreen_observer.Wait();
     ASSERT_FALSE(browser()->window()->IsFullscreen());
@@ -896,7 +897,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_TestFullscreenBubbleMouseLockState) {
   {
     ui_test_utils::WindowedNotificationObserver fullscreen_observer(
         chrome::NOTIFICATION_FULLSCREEN_CHANGED,
-        NotificationService::AllSources());
+        content::NotificationService::AllSources());
     browser()->ToggleFullscreenModeForTab(fullscreen_tab, true);
     fullscreen_observer.Wait();
     ASSERT_TRUE(browser()->window()->IsFullscreen());
@@ -927,7 +928,7 @@ IN_PROC_BROWSER_TEST_F(
   {
     ui_test_utils::WindowedNotificationObserver fullscreen_observer(
         chrome::NOTIFICATION_FULLSCREEN_CHANGED,
-        NotificationService::AllSources());
+        content::NotificationService::AllSources());
     EXPECT_FALSE(browser()->window()->IsFullscreen());
     EXPECT_FALSE(browser()->window()->InPresentationMode());
     browser()->ToggleFullscreenModeForTab(fullscreen_tab, true);
@@ -939,7 +940,7 @@ IN_PROC_BROWSER_TEST_F(
   {
     ui_test_utils::WindowedNotificationObserver fullscreen_observer(
         chrome::NOTIFICATION_FULLSCREEN_CHANGED,
-        NotificationService::AllSources());
+        content::NotificationService::AllSources());
     browser()->TogglePresentationMode(false);
     fullscreen_observer.Wait();
     ASSERT_FALSE(browser()->window()->IsFullscreen());
@@ -951,7 +952,7 @@ IN_PROC_BROWSER_TEST_F(
     // on Lion.
     ui_test_utils::WindowedNotificationObserver fullscreen_observer(
         chrome::NOTIFICATION_FULLSCREEN_CHANGED,
-        NotificationService::AllSources());
+        content::NotificationService::AllSources());
     browser()->ToggleFullscreenMode(false);
     fullscreen_observer.Wait();
     ASSERT_TRUE(browser()->window()->IsFullscreen());

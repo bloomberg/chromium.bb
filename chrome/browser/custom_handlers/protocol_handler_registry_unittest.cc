@@ -19,7 +19,7 @@
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_source.h"
 #include "net/url_request/url_request.h"
 
 namespace {

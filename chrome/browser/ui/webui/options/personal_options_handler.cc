@@ -33,7 +33,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/user_metrics.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -56,7 +56,7 @@ PersonalOptionsHandler::PersonalOptionsHandler() {
 #if defined(OS_CHROMEOS)
   registrar_.Add(this,
                  chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 #endif
 }
 
@@ -349,7 +349,7 @@ void PersonalOptionsHandler::Initialize() {
                  content::Source<ThemeService>(
                      ThemeServiceFactory::GetForProfile(profile)));
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   ObserveThemeChanged();
 
   ProfileSyncService* sync_service = profile->GetProfileSyncService();

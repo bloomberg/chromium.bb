@@ -12,7 +12,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -39,7 +39,7 @@ UserImageScreen::UserImageScreen(ScreenObserver* screen_observer,
   registrar_.Add(
       this,
       chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
 }
 
 UserImageScreen::~UserImageScreen() {

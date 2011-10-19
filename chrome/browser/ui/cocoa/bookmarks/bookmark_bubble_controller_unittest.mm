@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -472,10 +472,10 @@ TEST_F(BookmarkBubbleControllerTest, BubbleGoesAwayOnNewTab) {
   // are "just enough" to run tests without being complete.  Instead
   // we fake the notification that would be triggered by a tab
   // creation. See TabContents::NotifyConnected().
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       content::NOTIFICATION_TAB_CONTENTS_CONNECTED,
       content::Source<TabContents>(NULL),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 
   // Confirm bubble going bye-bye.
   EXPECT_TRUE(IsWindowClosing());

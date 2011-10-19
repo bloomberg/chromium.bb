@@ -10,6 +10,8 @@
 #include "chrome/browser/extensions/speech_input/extension_speech_input_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 
 namespace constants = extension_speech_input_api_constants;
 

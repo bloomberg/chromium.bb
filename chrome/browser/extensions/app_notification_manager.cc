@@ -11,7 +11,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 
 AppNotificationManager::AppNotificationManager(Profile* profile)
     : profile_(profile) {
@@ -139,7 +139,7 @@ void AppNotificationManager::HandleLoadResults(const NotificationMap& map) {
     notifications_[id].insert(notifications_[id].begin(),
                               list.begin(),
                               list.end());
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_APP_NOTIFICATION_STATE_CHANGED,
         content::Source<Profile>(profile_),
         content::Details<const std::string>(&id));

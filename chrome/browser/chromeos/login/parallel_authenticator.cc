@@ -32,7 +32,7 @@
 #include "chrome/common/net/gaia/gaia_auth_fetcher.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "crypto/encryptor.h"
 #include "crypto/sha2.h"
 #include "crypto/symmetric_key.h"
@@ -219,9 +219,9 @@ void ParallelAuthenticator::OnLoginSuccess(
   VLOG(1) << "Login success";
   // Send notification of success
   AuthenticationNotificationDetails details(true);
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_LOGIN_AUTHENTICATION,
-      NotificationService::AllSources(),
+      content::NotificationService::AllSources(),
       content::Details<AuthenticationNotificationDetails>(&details));
   {
     base::AutoLock for_this_block(success_lock_);
@@ -238,9 +238,9 @@ void ParallelAuthenticator::OnOffTheRecordLoginSuccess() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Send notification of success
   AuthenticationNotificationDetails details(true);
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_LOGIN_AUTHENTICATION,
-      NotificationService::AllSources(),
+      content::NotificationService::AllSources(),
       content::Details<AuthenticationNotificationDetails>(&details));
   consumer_->OnOffTheRecordLoginSuccess();
 }
@@ -290,9 +290,9 @@ void ParallelAuthenticator::OnLoginFailure(const LoginFailure& error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Send notification of failure
   AuthenticationNotificationDetails details(false);
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_LOGIN_AUTHENTICATION,
-      NotificationService::AllSources(),
+      content::NotificationService::AllSources(),
       content::Details<AuthenticationNotificationDetails>(&details));
   LOG(WARNING) << "Login failed: " << error.GetErrorString();
   consumer_->OnLoginFailure(error);

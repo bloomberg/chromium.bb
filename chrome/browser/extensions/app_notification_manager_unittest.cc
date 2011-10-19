@@ -9,7 +9,7 @@
 #include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -109,7 +109,7 @@ TEST_F(AppNotificationManagerTest, MAYBE_ExtensionUninstall) {
   util::ExpectListsEqual(list2, *mgr_->GetAll(id2));
 
   // Send the uninstall notification for extension id1.
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
       content::Source<Profile>(profile_.get()),
       content::Details<const std::string>(&id1));

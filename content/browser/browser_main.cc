@@ -14,9 +14,9 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/tracked_objects.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/notification_service_impl.h"
 #include "content/common/hi_res_timer_manager.h"
 #include "content/common/main_function_params.h"
-#include "content/common/notification_service.h"
 #include "content/common/result_codes.h"
 #include "content/common/sandbox_policy.h"
 #include "content/public/browser/content_browser_client.h"
@@ -375,7 +375,7 @@ bool ExitedMainMessageLoop() {
 int BrowserMain(const MainFunctionParams& parameters) {
   TRACE_EVENT_BEGIN_ETW("BrowserMain", 0, "");
 
-  NotificationService main_notification_service;
+  NotificationServiceImpl main_notification_service;
 
   scoped_ptr<content::BrowserMainParts> parts(
       content::GetContentClient()->browser()->CreateBrowserMainParts(

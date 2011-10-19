@@ -8,7 +8,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -35,7 +35,7 @@ TakePhotoDialog::TakePhotoDialog(Delegate* delegate)
   registrar_.Add(
       this,
       chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
 }
 
 TakePhotoDialog::~TakePhotoDialog() {

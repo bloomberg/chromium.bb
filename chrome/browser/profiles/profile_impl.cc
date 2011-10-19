@@ -101,7 +101,7 @@
 #include "content/browser/speech/speech_input_manager.h"
 #include "content/browser/ssl/ssl_host_state.h"
 #include "content/browser/user_metrics.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/browser_resources.h"
 #include "grit/locale_settings.h"
 #include "net/base/transport_security_state.h"
@@ -426,10 +426,10 @@ void ProfileImpl::DoFinalInit() {
   if (delegate_)
     delegate_->OnProfileCreated(this, true);
 
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PROFILE_CREATED,
       content::Source<Profile>(this),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 }
 
 void ProfileImpl::InitExtensions(bool extensions_enabled) {
@@ -631,10 +631,10 @@ void ProfileImpl::set_last_selected_directory(const FilePath& path) {
 }
 
 ProfileImpl::~ProfileImpl() {
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PROFILE_DESTROYED,
       content::Source<Profile>(this),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 
   if (appcache_service_ && clear_local_state_on_exit_) {
     BrowserThread::PostTask(
@@ -752,10 +752,10 @@ Profile* ProfileImpl::GetOffTheRecordProfile() {
     scoped_ptr<Profile> p(CreateOffTheRecordProfile());
     off_the_record_profile_.swap(p);
 
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_PROFILE_CREATED,
         content::Source<Profile>(off_the_record_profile_.get()),
-        NotificationService::NoDetails());
+        content::NotificationService::NoDetails());
   }
   return off_the_record_profile_.get();
 }

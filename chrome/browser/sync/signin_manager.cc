@@ -15,7 +15,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/pref_names.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 
 const char kGetInfoEmailKey[] = "email";
 
@@ -198,7 +198,7 @@ void SigninManager::OnGetUserInfoSuccess(const std::string& key,
   profile_->GetPrefs()->ScheduleSavePersistentPrefs();
 
   GoogleServiceSigninSuccessDetails details(username_, password_);
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
       content::Source<Profile>(profile_),
       content::Details<const GoogleServiceSigninSuccessDetails>(&details));
@@ -235,7 +235,7 @@ void SigninManager::OnTokenAuthFailure(const GoogleServiceAuthError& error) {
 
 void SigninManager::OnClientLoginFailure(const GoogleServiceAuthError& error) {
   DCHECK(!browser_sync::IsUsingOAuth());
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_GOOGLE_SIGNIN_FAILED,
       content::Source<Profile>(profile_),
       content::Details<const GoogleServiceAuthError>(&error));
@@ -302,7 +302,7 @@ void SigninManager::OnUserInfoSuccess(const std::string& email) {
 
   DCHECK(password_.empty());
   GoogleServiceSigninSuccessDetails details(oauth_username_, "");
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
       content::Source<Profile>(profile_),
       content::Details<const GoogleServiceSigninSuccessDetails>(&details));

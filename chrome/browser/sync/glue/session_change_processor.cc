@@ -21,7 +21,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 
@@ -270,10 +270,10 @@ void SessionChangeProcessor::ApplyChangesFromSyncModel(
   }
 
   // Notify foreign session handlers that there are new sessions.
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_FOREIGN_SESSION_UPDATED,
       content::Source<Profile>(profile_),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 
   StartObserving();
 }
@@ -296,23 +296,23 @@ void SessionChangeProcessor::StartObserving() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(profile_);
   notification_registrar_.Add(this, content::NOTIFICATION_TAB_PARENTED,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
   notification_registrar_.Add(this, content::NOTIFICATION_TAB_CLOSED,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
   notification_registrar_.Add(this, content::NOTIFICATION_NAV_LIST_PRUNED,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
   notification_registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_CHANGED,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
   notification_registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
   notification_registrar_.Add(this, chrome::NOTIFICATION_BROWSER_OPENED,
-      NotificationService::AllBrowserContextsAndSources());
+      content::NotificationService::AllBrowserContextsAndSources());
   notification_registrar_.Add(this,
       chrome::NOTIFICATION_TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
   notification_registrar_.Add(this,
       content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
-      NotificationService::AllBrowserContextsAndSources());
+      content::NotificationService::AllBrowserContextsAndSources());
 }
 
 void SessionChangeProcessor::StopObserving() {

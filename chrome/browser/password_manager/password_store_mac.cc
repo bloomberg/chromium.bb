@@ -21,7 +21,7 @@
 #include "chrome/browser/password_manager/login_database.h"
 #include "chrome/browser/password_manager/password_store_change.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/common/notification_service.h"
+#include "content/browser/notification_service_impl.h"
 
 using webkit_glue::PasswordForm;
 
@@ -775,7 +775,7 @@ void PasswordStoreMac::AddLoginImpl(const PasswordForm& form) {
     if (login_metadata_db_->AddLogin(form)) {
       PasswordStoreChangeList changes;
       changes.push_back(PasswordStoreChange(PasswordStoreChange::ADD, form));
-      NotificationService::current()->Notify(
+      content::NotificationService::current()->Notify(
           chrome::NOTIFICATION_LOGINS_CHANGED,
           content::Source<PasswordStore>(this),
           content::Details<PasswordStoreChangeList>(&changes));
@@ -810,7 +810,7 @@ void PasswordStoreMac::UpdateLoginImpl(const PasswordForm& form) {
                                             form));
     }
     if (!changes.empty()) {
-      NotificationService::current()->Notify(
+      content::NotificationService::current()->Notify(
           chrome::NOTIFICATION_LOGINS_CHANGED,
           content::Source<PasswordStore>(this),
           content::Details<PasswordStoreChangeList>(&changes));
@@ -841,7 +841,7 @@ void PasswordStoreMac::RemoveLoginImpl(const PasswordForm& form) {
 
     PasswordStoreChangeList changes;
     changes.push_back(PasswordStoreChange(PasswordStoreChange::REMOVE, form));
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_LOGINS_CHANGED,
         content::Source<PasswordStore>(this),
         content::Details<PasswordStoreChangeList>(&changes));
@@ -875,7 +875,7 @@ void PasswordStoreMac::RemoveLoginsCreatedBetweenImpl(
         changes.push_back(PasswordStoreChange(PasswordStoreChange::REMOVE,
                                               **it));
       }
-      NotificationService::current()->Notify(
+      content::NotificationService::current()->Notify(
           chrome::NOTIFICATION_LOGINS_CHANGED,
           content::Source<PasswordStore>(this),
           content::Details<PasswordStoreChangeList>(&changes));
@@ -1013,5 +1013,5 @@ void PasswordStoreMac::RemoveKeychainForms(
 }
 
 void PasswordStoreMac::CreateNotificationService() {
-  notification_service_.reset(new NotificationService);
+  notification_service_.reset(new NotificationServiceImpl);
 }

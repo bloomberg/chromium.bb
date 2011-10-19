@@ -36,7 +36,7 @@
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/webui/web_ui.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/common/view_messages.h"
 #include "net/base/network_change_notifier.h"
 
@@ -60,7 +60,7 @@ void FillFontFamilyMap(const PrefService* prefs,
 
 RenderViewHostDelegateViewHelper::RenderViewHostDelegateViewHelper() {
   registrar_.Add(this, content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 }
 
 RenderViewHostDelegateViewHelper::~RenderViewHostDelegateViewHelper() {}
@@ -268,7 +268,7 @@ TabContents* RenderViewHostDelegateViewHelper::CreateNewWindowFromTabContents(
     details.source_frame_id = params.opener_frame_id;
     details.target_url = params.target_url;
     details.target_tab_contents = new_contents;
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         content::NOTIFICATION_RETARGETING,
         content::Source<content::BrowserContext>(
             tab_contents->browser_context()),
@@ -277,7 +277,7 @@ TabContents* RenderViewHostDelegateViewHelper::CreateNewWindowFromTabContents(
     if (tab_contents->delegate())
       tab_contents->delegate()->TabContentsCreated(new_contents);
   } else {
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         content::NOTIFICATION_CREATING_NEW_WINDOW_CANCELLED,
         content::Source<TabContents>(tab_contents),
         content::Details<const ViewHostMsg_CreateWindow_Params>(&params));

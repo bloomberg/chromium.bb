@@ -21,7 +21,7 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/renderer_host/render_process_host.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 
 namespace {
 
@@ -92,9 +92,9 @@ ExtensionEventRouter::ExtensionEventRouter(Profile* profile)
     : profile_(profile),
       extension_devtools_manager_(profile->GetExtensionDevToolsManager()) {
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
                  content::Source<Profile>(profile_));
   // TODO(tessamac): also get notified for background page crash/failure.

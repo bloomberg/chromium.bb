@@ -30,6 +30,7 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/notification_service.h"
 
 #define EXPECT_STR_EQ(ascii, utf16) \
   EXPECT_EQ(ASCIIToWide(ascii), UTF16ToWide(utf16))
@@ -118,7 +119,7 @@ class InstantTest : public InProcessBrowserTest {
 
     ui_test_utils::WindowedNotificationObserver service_loaded_observer(
         chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED,
-        NotificationService::AllSources());
+        content::NotificationService::AllSources());
     if (!model->loaded()) {
       model->Load();
       service_loaded_observer.Wait();
@@ -191,7 +192,7 @@ class InstantTest : public InProcessBrowserTest {
     ASSERT_NO_FATAL_FAILURE(FindLocationBar());
     ui_test_utils::WindowedNotificationObserver controller_shown_observer(
         chrome::NOTIFICATION_INSTANT_CONTROLLER_SHOWN,
-        NotificationService::AllSources());
+        content::NotificationService::AllSources());
     location_bar_->location_entry()->SetUserText(UTF8ToUTF16(text));
     controller_shown_observer.Wait();
   }
@@ -618,7 +619,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_SearchServerDoesntSupportInstant) {
 
   ui_test_utils::WindowedNotificationObserver tab_closed_observer(
       content::NOTIFICATION_TAB_CLOSED,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
 
   location_bar_->location_entry()->SetUserText(ASCIIToUTF16("d"));
   ASSERT_TRUE(browser()->instant());
@@ -664,7 +665,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest,
 
   ui_test_utils::WindowedNotificationObserver tab_closed_observer(
       content::NOTIFICATION_TAB_CLOSED,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
 
   // Now type in some search text.
   location_bar_->location_entry()->SetUserText(ASCIIToUTF16("d"));
@@ -812,7 +813,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_DontCrashOnBlockedJS) {
 
   ui_test_utils::WindowedNotificationObserver instant_support_observer(
       chrome::NOTIFICATION_INSTANT_SUPPORT_DETERMINED,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
 
   EnableInstant();
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
@@ -874,7 +875,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_PreloadsInstant) {
 
   ui_test_utils::WindowedNotificationObserver instant_support_observer(
       chrome::NOTIFICATION_INSTANT_SUPPORT_DETERMINED,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
 
   // Focusing the omnibox should cause instant to be preloaded.
   FindLocationBar();
@@ -950,7 +951,7 @@ IN_PROC_BROWSER_TEST_F(InstantFieldTrialHiddenTest, MAYBE_ExperimentEnabled) {
   SetupInstantProvider("search.html");
   ui_test_utils::WindowedNotificationObserver instant_support_observer(
       chrome::NOTIFICATION_INSTANT_SUPPORT_DETERMINED,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
   SetupLocationBar();
   WaitForPreviewToNavigate();
   instant_support_observer.Wait();
@@ -982,7 +983,7 @@ IN_PROC_BROWSER_TEST_F(InstantFieldTrialHiddenTest, MAYBE_SearchToNonSearch) {
   ASSERT_TRUE(test_server()->Start());
   ui_test_utils::WindowedNotificationObserver instant_support_observer(
       chrome::NOTIFICATION_INSTANT_SUPPORT_DETERMINED,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
 
   // Type in some search text.
   SetupInstantProvider("search.html");

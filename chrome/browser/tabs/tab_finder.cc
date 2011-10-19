@@ -18,7 +18,7 @@
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -123,7 +123,7 @@ void TabFinder::Observe(int type,
 
 TabFinder::TabFinder() {
   registrar_.Add(this, content::NOTIFICATION_TAB_PARENTED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 }
 
 TabFinder::~TabFinder() {

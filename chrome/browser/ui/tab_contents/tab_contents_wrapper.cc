@@ -54,7 +54,7 @@
 #include "chrome/common/render_messages.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/platform_locale_settings.h"
@@ -296,9 +296,9 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
     omnibox_search_hint_.reset(new OmniboxSearchHint(this));
 
   registrar_.Add(this, chrome::NOTIFICATION_GOOGLE_URL_UPDATED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_USER_STYLE_SHEET_UPDATED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  content::Source<ThemeService>(
@@ -615,7 +615,7 @@ void TabContentsWrapper::Observe(int type,
 // Internal helpers
 
 void TabContentsWrapper::OnSnapshot(const SkBitmap& bitmap) {
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_SNAPSHOT_TAKEN,
       content::Source<TabContentsWrapper>(this),
       content::Details<const SkBitmap>(&bitmap));

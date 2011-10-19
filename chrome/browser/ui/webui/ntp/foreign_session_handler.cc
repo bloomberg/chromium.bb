@@ -19,8 +19,7 @@
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
-#include "content/common/notification_service.h"
-#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 
 namespace browser_sync {
 

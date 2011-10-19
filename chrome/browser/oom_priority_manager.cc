@@ -25,7 +25,7 @@
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/zygote_host_linux.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 
 #if !defined(OS_CHROMEOS)
@@ -92,13 +92,13 @@ OomPriorityManager::OomPriorityManager()
   : focused_tab_pid_(0) {
   registrar_.Add(this,
       content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
-      NotificationService::AllBrowserContextsAndSources());
+      content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this,
       content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-      NotificationService::AllBrowserContextsAndSources());
+      content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this,
       content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
-      NotificationService::AllBrowserContextsAndSources());
+      content::NotificationService::AllBrowserContextsAndSources());
 }
 
 OomPriorityManager::~OomPriorityManager() {

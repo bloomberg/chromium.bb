@@ -9,7 +9,7 @@
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 
 ChromeInterstitialPage::ChromeInterstitialPage(TabContents* tab,

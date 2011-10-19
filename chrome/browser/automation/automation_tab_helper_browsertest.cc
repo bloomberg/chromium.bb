@@ -22,7 +22,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "net/base/net_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -69,7 +69,7 @@ class AutomationTabHelperBrowserTest : public InProcessBrowserTest {
       MockNotificationObserver* mock_notification_observer) {
     mock_notification_observer->Register(
         chrome::NOTIFICATION_DOM_OPERATION_RESPONSE,
-        NotificationService::AllSources());
+        content::NotificationService::AllSources());
 
     testing::InSequence expect_in_sequence;
     EXPECT_CALL(*mock_tab_observer, OnFirstPendingLoad(_));
@@ -185,7 +185,7 @@ IN_PROC_BROWSER_TEST_F(AutomationTabHelperBrowserTest,
   MockNotificationObserver mock_notification_observer;
   mock_notification_observer.Register(
       chrome::NOTIFICATION_DOM_OPERATION_RESPONSE,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
   MockTabEventObserver mock_tab_observer(tab_helper());
 
   EXPECT_CALL(mock_tab_observer, OnFirstPendingLoad(_));

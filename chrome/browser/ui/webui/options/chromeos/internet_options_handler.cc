@@ -43,7 +43,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/time_format.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -59,9 +59,9 @@ InternetOptionsHandler::InternetOptionsHandler()
     : chromeos::CrosOptionsPageUIHandler(NULL),
       proxy_settings_(NULL) {
   registrar_.Add(this, chrome::NOTIFICATION_REQUIRE_PIN_SETTING_CHANGE_ENDED,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_ENTER_PIN_ENDED,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
   cros_ = chromeos::CrosLibrary::Get()->GetNetworkLibrary();
   if (cros_) {
     cros_->AddNetworkManagerObserver(this);

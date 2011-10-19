@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/notification_service_impl.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/common/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -32,12 +32,12 @@ private:
 }  // namespace
 
 
-class NotificationServiceTest : public testing::Test {
+class NotificationServiceImplTest : public testing::Test {
  protected:
   content::NotificationRegistrar registrar_;
 };
 
-TEST_F(NotificationServiceTest, Basic) {
+TEST_F(NotificationServiceImplTest, Basic) {
   TestSource test_source;
   TestSource other_source;
 
@@ -53,15 +53,16 @@ TEST_F(NotificationServiceTest, Basic) {
   TestObserver idle_test_source;
 
   // Make sure it doesn't freak out when there are no observers.
-  NotificationService* service = NotificationService::current();
+  content::NotificationService* service =
+      content::NotificationService::current();
   service->Notify(content::NOTIFICATION_IDLE,
                   content::Source<TestSource>(&test_source),
-                  NotificationService::NoDetails());
+                  content::NotificationService::NoDetails());
 
   registrar_.Add(&all_types_all_sources, content::NOTIFICATION_ALL,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(&idle_all_sources, content::NOTIFICATION_IDLE,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(&all_types_test_source, content::NOTIFICATION_ALL,
                  content::Source<TestSource>(&test_source));
   registrar_.Add(&idle_test_source, content::NOTIFICATION_IDLE,
@@ -74,7 +75,7 @@ TEST_F(NotificationServiceTest, Basic) {
 
   service->Notify(content::NOTIFICATION_IDLE,
                   content::Source<TestSource>(&test_source),
-                  NotificationService::NoDetails());
+                  content::NotificationService::NoDetails());
 
   EXPECT_EQ(1, all_types_all_sources.notification_count());
   EXPECT_EQ(1, idle_all_sources.notification_count());
@@ -83,7 +84,7 @@ TEST_F(NotificationServiceTest, Basic) {
 
   service->Notify(content::NOTIFICATION_BUSY,
                   content::Source<TestSource>(&test_source),
-                  NotificationService::NoDetails());
+                  content::NotificationService::NoDetails());
 
   EXPECT_EQ(2, all_types_all_sources.notification_count());
   EXPECT_EQ(1, idle_all_sources.notification_count());
@@ -92,7 +93,7 @@ TEST_F(NotificationServiceTest, Basic) {
 
   service->Notify(content::NOTIFICATION_IDLE,
                   content::Source<TestSource>(&other_source),
-                  NotificationService::NoDetails());
+                  content::NotificationService::NoDetails());
 
   EXPECT_EQ(3, all_types_all_sources.notification_count());
   EXPECT_EQ(2, idle_all_sources.notification_count());
@@ -101,7 +102,7 @@ TEST_F(NotificationServiceTest, Basic) {
 
   service->Notify(content::NOTIFICATION_BUSY,
                   content::Source<TestSource>(&other_source),
-                  NotificationService::NoDetails());
+                  content::NotificationService::NoDetails());
 
   EXPECT_EQ(4, all_types_all_sources.notification_count());
   EXPECT_EQ(2, idle_all_sources.notification_count());
@@ -110,8 +111,8 @@ TEST_F(NotificationServiceTest, Basic) {
 
   // Try send with NULL source.
   service->Notify(content::NOTIFICATION_IDLE,
-                  NotificationService::AllSources(),
-                  NotificationService::NoDetails());
+                  content::NotificationService::AllSources(),
+                  content::NotificationService::NoDetails());
 
   EXPECT_EQ(5, all_types_all_sources.notification_count());
   EXPECT_EQ(3, idle_all_sources.notification_count());
@@ -122,7 +123,7 @@ TEST_F(NotificationServiceTest, Basic) {
 
   service->Notify(content::NOTIFICATION_IDLE,
                   content::Source<TestSource>(&test_source),
-                  NotificationService::NoDetails());
+                  content::NotificationService::NoDetails());
 
   EXPECT_EQ(5, all_types_all_sources.notification_count());
   EXPECT_EQ(3, idle_all_sources.notification_count());
@@ -130,12 +131,13 @@ TEST_F(NotificationServiceTest, Basic) {
   EXPECT_EQ(1, idle_test_source.notification_count());
 }
 
-TEST_F(NotificationServiceTest, MultipleRegistration) {
+TEST_F(NotificationServiceImplTest, MultipleRegistration) {
   TestSource test_source;
 
   TestObserver idle_test_source;
 
-  NotificationService* service = NotificationService::current();
+  content::NotificationService* service =
+      content::NotificationService::current();
 
   registrar_.Add(&idle_test_source, content::NOTIFICATION_IDLE,
                  content::Source<TestSource>(&test_source));
@@ -144,7 +146,7 @@ TEST_F(NotificationServiceTest, MultipleRegistration) {
 
   service->Notify(content::NOTIFICATION_IDLE,
                   content::Source<TestSource>(&test_source),
-                  NotificationService::NoDetails());
+                  content::NotificationService::NoDetails());
   EXPECT_EQ(2, idle_test_source.notification_count());
 
   registrar_.Remove(&idle_test_source, content::NOTIFICATION_IDLE,
@@ -152,7 +154,7 @@ TEST_F(NotificationServiceTest, MultipleRegistration) {
 
   service->Notify(content::NOTIFICATION_IDLE,
                  content::Source<TestSource>(&test_source),
-                 NotificationService::NoDetails());
+                 content::NotificationService::NoDetails());
   EXPECT_EQ(3, idle_test_source.notification_count());
 
   registrar_.Remove(&idle_test_source, content::NOTIFICATION_ALL,
@@ -160,6 +162,6 @@ TEST_F(NotificationServiceTest, MultipleRegistration) {
 
   service->Notify(content::NOTIFICATION_IDLE,
                   content::Source<TestSource>(&test_source),
-                  NotificationService::NoDetails());
+                  content::NotificationService::NoDetails());
   EXPECT_EQ(3, idle_test_source.notification_count());
 }

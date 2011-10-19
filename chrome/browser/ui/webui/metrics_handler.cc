@@ -15,7 +15,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/user_metrics.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 
 using base::ListValue;
 
@@ -98,7 +98,7 @@ void MetricsHandler::HandleLogEventTime(const ListValue* args) {
   } else {
     NOTREACHED();
   }
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_METRIC_EVENT_DURATION,
       content::Source<TabContents>(tab),
       content::Details<MetricEventDurationDetails>(&details));

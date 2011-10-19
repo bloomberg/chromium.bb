@@ -14,7 +14,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_service.h"
+#include "content/browser/notification_service_impl.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -24,9 +24,10 @@ class Thread;
 }
 
 ACTION_P(Notify, type) {
-  NotificationService::current()->Notify(type,
-                                         NotificationService::AllSources(),
-                                         NotificationService::NoDetails());
+  content::NotificationService::current()->Notify(
+      type,
+      content::NotificationService::AllSources(),
+      content::NotificationService::NoDetails());
 }
 
 ACTION(QuitUIMessageLoop) {
@@ -59,7 +60,7 @@ class ThreadNotificationService
 
   base::WaitableEvent done_event_;
   base::Thread* notification_thread_;
-  scoped_ptr<NotificationService> service_;
+  scoped_ptr<NotificationServiceImpl> service_;
 };
 
 class ThreadNotifier :  // NOLINT

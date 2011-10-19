@@ -14,7 +14,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/window_sizer.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
@@ -31,7 +31,7 @@ namespace chromeos {
 BalloonCollectionImpl::BalloonCollectionImpl()
     : notification_ui_(new NotificationPanel()) {
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 }
 
 BalloonCollectionImpl::~BalloonCollectionImpl() {

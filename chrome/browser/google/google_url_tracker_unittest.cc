@@ -15,7 +15,7 @@
 #include "chrome/test/base/testing_pref_service.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/net/url_fetcher.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -189,9 +189,9 @@ void GoogleURLTrackerTest::MockSearchDomainCheckResponse(
 void GoogleURLTrackerTest::RequestServerCheck() {
   if (!registrar_.IsRegistered(observer_.get(),
                                chrome::NOTIFICATION_GOOGLE_URL_UPDATED,
-                               NotificationService::AllSources())) {
+                               content::NotificationService::AllSources())) {
     registrar_.Add(observer_.get(), chrome::NOTIFICATION_GOOGLE_URL_UPDATED,
-                   NotificationService::AllSources());
+                   content::NotificationService::AllSources());
   }
   GoogleURLTracker::RequestServerCheck();
   MessageLoop::current()->RunAllPending();
@@ -231,7 +231,7 @@ void GoogleURLTrackerTest::SearchCommitted(const GURL& search_url) {
   google_url_tracker->SearchCommitted();
   if (google_url_tracker->registrar_.IsRegistered(google_url_tracker,
       content::NOTIFICATION_NAV_ENTRY_PENDING,
-      NotificationService::AllSources()))
+      content::NotificationService::AllSources()))
     google_url_tracker->search_url_ = search_url;
 }
 

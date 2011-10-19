@@ -11,7 +11,7 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/common/view_message_enums.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFindOptions.h"
 
@@ -146,7 +146,7 @@ void FindTabHelper::HandleFindReply(int request_id,
     last_search_result_ = FindNotificationDetails(
         request_id, number_of_matches, selection, active_match_ordinal,
         final_update);
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_FIND_RESULT_AVAILABLE,
         content::Source<TabContents>(tab_contents()),
         content::Details<FindNotificationDetails>(&last_search_result_));

@@ -24,6 +24,7 @@
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_test_job.h"
@@ -247,7 +248,8 @@ IN_PROC_BROWSER_TEST_F(PrintDialogCloudTest, MAYBE_HandlersRegistered) {
 
   // Close the dialog before finishing the test.
   ui_test_utils::WindowedNotificationObserver signal(
-      content::NOTIFICATION_TAB_CLOSED, NotificationService::AllSources());
+      content::NOTIFICATION_TAB_CLOSED,
+      content::NotificationService::AllSources());
   EXPECT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_ESCAPE,
                                               false, false, false, false));
   signal.Wait();

@@ -84,7 +84,7 @@
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -1529,10 +1529,10 @@ bool BrowserWindowGtk::CanClose() const {
   }
 
   // Empty TabStripModel, it's now safe to allow the Window to be closed.
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_WINDOW_CLOSED,
       content::Source<GtkWindow>(window_),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
   return true;
 }
 

@@ -25,7 +25,7 @@
 #include "chrome/common/safe_browsing/safebrowsing_messages.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_process_host.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "crypto/sha2.h"
 #include "googleurl/src/gurl.h"
@@ -70,7 +70,7 @@ ClientSideDetectionService::ClientSideDetectionService(
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
       request_context_getter_(request_context_getter) {
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CREATED,
-                 NotificationService::AllBrowserContextsAndSources());
+                 content::NotificationService::AllBrowserContextsAndSources());
 }
 
 ClientSideDetectionService::~ClientSideDetectionService() {

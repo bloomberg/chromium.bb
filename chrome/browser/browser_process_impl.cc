@@ -84,7 +84,7 @@
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/common/net/url_fetcher.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_details.h"
 #include "ipc/ipc_logging.h"
 #include "net/socket/client_socket_pool_manager.h"
 #include "net/url_request/url_request_context_getter.h"

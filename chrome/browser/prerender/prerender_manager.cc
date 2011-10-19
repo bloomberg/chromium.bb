@@ -43,7 +43,7 @@
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_source.h"
 
 namespace prerender {
 

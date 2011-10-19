@@ -26,9 +26,9 @@
 #include "content/browser/worker_host/worker_service.h"
 #include "content/browser/worker_host/worker_service_observer.h"
 #include "content/common/worker_messages.h"
-#include "content/common/notification_service.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_service.h"
 #include "net/test/test_server.h"
 
 namespace {
@@ -124,7 +124,8 @@ class DevToolsSanityTest : public InProcessBrowserTest {
     ui_test_utils::NavigateToURL(browser(), url);
 
     ui_test_utils::WindowedNotificationObserver observer(
-        content::NOTIFICATION_LOAD_STOP, NotificationService::AllSources());
+        content::NOTIFICATION_LOAD_STOP,
+        content::NotificationService::AllSources());
     inspected_rvh_ = GetInspectedTab()->render_view_host();
     window_ = DevToolsWindow::OpenDevToolsWindow(inspected_rvh_);
     observer.Wait();
@@ -202,7 +203,7 @@ class DevToolsExtensionDebugTest : public DevToolsSanityTest,
     {
       content::NotificationRegistrar registrar;
       registrar.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
-                    NotificationService::AllSources());
+                    content::NotificationService::AllSources());
       CancelableQuitTask* delayed_quit =
           new CancelableQuitTask("Extension load timed out.");
       MessageLoop::current()->PostDelayedTask(FROM_HERE, delayed_quit,
@@ -225,7 +226,7 @@ class DevToolsExtensionDebugTest : public DevToolsSanityTest,
 
     content::NotificationRegistrar registrar;
     registrar.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
-                  NotificationService::AllSources());
+                  content::NotificationService::AllSources());
     CancelableQuitTask* delayed_quit =
         new CancelableQuitTask("Extension host load timed out.");
     MessageLoop::current()->PostDelayedTask(FROM_HERE, delayed_quit,

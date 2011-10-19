@@ -46,6 +46,7 @@
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/notification_service.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -291,7 +292,7 @@ void WaitForLoadStop(TabContents* tab) {
 Browser* WaitForNewBrowser() {
   TestNotificationObserver observer;
   RegisterAndWait(&observer, chrome::NOTIFICATION_BROWSER_WINDOW_READY,
-                  NotificationService::AllSources());
+                   content::NotificationService::AllSources());
   return content::Source<Browser>(observer.source()).ptr();
 }
 
@@ -314,7 +315,8 @@ void OpenURLOffTheRecord(Profile* profile, const GURL& url) {
 }
 
 void NavigateToURL(browser::NavigateParams* params) {
-  TestNavigationObserver observer(NotificationService::AllSources(), NULL, 1);
+  TestNavigationObserver observer(
+      content::NotificationService::AllSources(), NULL, 1);
   browser::Navigate(params);
   observer.WaitForObservation();
 }
@@ -349,7 +351,7 @@ static void NavigateToURLWithDispositionBlockUntilNavigationsComplete(
 
   WindowedNotificationObserver tab_added_observer(
       content::NOTIFICATION_TAB_ADDED,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
 
   browser->OpenURL(url, GURL(), disposition, content::PAGE_TRANSITION_TYPED);
   if (browser_test_flags & BROWSER_TEST_WAIT_FOR_BROWSER)
@@ -490,7 +492,7 @@ GURL GetFileUrlWithQuery(const FilePath& path,
 AppModalDialog* WaitForAppModalDialog() {
   TestNotificationObserver observer;
   RegisterAndWait(&observer, chrome::NOTIFICATION_APP_MODAL_DIALOG_SHOWN,
-                  NotificationService::AllSources());
+                  content::NotificationService::AllSources());
   return content::Source<AppModalDialog>(observer.source()).ptr();
 }
 
@@ -555,7 +557,7 @@ void WaitForHistoryToLoad(Browser* browser) {
       browser->profile()->GetHistoryService(Profile::EXPLICIT_ACCESS);
   WindowedNotificationObserver history_loaded_observer(
       chrome::NOTIFICATION_HISTORY_LOADED,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
   if (!history_service->BackendLoaded())
     history_loaded_observer.Wait();
 }
@@ -769,7 +771,7 @@ TestWebSocketServer::~TestWebSocketServer() {
 }
 
 TestNotificationObserver::TestNotificationObserver()
-    : source_(NotificationService::AllSources()) {
+    : source_(content::NotificationService::AllSources()) {
 }
 
 TestNotificationObserver::~TestNotificationObserver() {}
@@ -795,7 +797,7 @@ WindowedNotificationObserver::WindowedNotificationObserver(
 WindowedNotificationObserver::~WindowedNotificationObserver() {}
 
 void WindowedNotificationObserver::Wait() {
-  if (seen_ || (waiting_for_ == NotificationService::AllSources() &&
+  if (seen_ || (waiting_for_ == content::NotificationService::AllSources() &&
                 !sources_seen_.empty())) {
     return;
   }
@@ -809,7 +811,7 @@ void WindowedNotificationObserver::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   if (waiting_for_ == source ||
-      (running_ && waiting_for_ == NotificationService::AllSources())) {
+      (running_ && waiting_for_ == content::NotificationService::AllSources())) {
     seen_ = true;
     if (running_)
       MessageLoopForUI::current()->Quit();
@@ -883,7 +885,7 @@ void TitleWatcher::Observe(int type,
 
 DOMMessageQueue::DOMMessageQueue() {
   registrar_.Add(this, chrome::NOTIFICATION_DOM_OPERATION_RESPONSE,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 }
 
 DOMMessageQueue::~DOMMessageQueue() {}

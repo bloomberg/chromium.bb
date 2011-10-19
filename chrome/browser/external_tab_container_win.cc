@@ -43,7 +43,7 @@
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/provisional_load_details.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/common/page_zoom.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -218,7 +218,7 @@ bool ExternalTabContainer::Init(Profile* profile,
   registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB,
                  content::Source<TabContents>(tab_contents_->tab_contents()));
   registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_DELETED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 
   TabContentsObserver::Observe(tab_contents_->tab_contents());
 
@@ -259,7 +259,7 @@ void ExternalTabContainer::Uninitialize() {
     if (GetWidget()->GetRootView())
       GetWidget()->GetRootView()->RemoveAllChildViews(true);
 
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTERNAL_TAB_CLOSED,
         content::Source<NavigationController>(&tab_contents_->controller()),
         content::Details<ExternalTabContainer>(this));

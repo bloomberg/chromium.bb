@@ -29,7 +29,7 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -475,7 +475,7 @@ BackgroundContents* BackgroundContentsService::CreateBackgroundContents(
                                              frame_name,
                                              application_id};
   BackgroundContentsOpened(&details);
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_BACKGROUND_CONTENTS_OPENED,
       content::Source<Profile>(profile),
       content::Details<BackgroundContentsOpenedDetails>(&details));

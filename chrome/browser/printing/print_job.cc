@@ -9,7 +9,7 @@
 #include "base/timer.h"
 #include "chrome/browser/printing/print_job_worker.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "printing/printed_document.h"
 #include "printing/printed_page.h"
 
@@ -124,7 +124,7 @@ void PrintJob::StartPrinting() {
   // Tell everyone!
   scoped_refptr<JobEventDetails> details(
       new JobEventDetails(JobEventDetails::NEW_DOC, document_.get(), NULL));
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PRINT_JOB_EVENT,
       content::Source<PrintJob>(this),
       content::Details<JobEventDetails>(details.get()));
@@ -166,7 +166,7 @@ void PrintJob::Cancel() {
   // Make sure a Cancel() is broadcast.
   scoped_refptr<JobEventDetails> details(
       new JobEventDetails(JobEventDetails::FAILED, NULL, NULL));
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PRINT_JOB_EVENT,
       content::Source<PrintJob>(this),
       content::Details<JobEventDetails>(details.get()));
@@ -273,7 +273,7 @@ void PrintJob::OnDocumentDone() {
 
   scoped_refptr<JobEventDetails> details(
       new JobEventDetails(JobEventDetails::JOB_DONE, document_.get(), NULL));
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PRINT_JOB_EVENT,
       content::Source<PrintJob>(this),
       content::Details<JobEventDetails>(details.get()));

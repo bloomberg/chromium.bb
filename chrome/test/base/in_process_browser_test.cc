@@ -32,6 +32,7 @@
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/renderer/mock_content_renderer_client.h"
 #include "net/base/mock_host_resolver.h"
@@ -231,7 +232,7 @@ Browser* InProcessBrowserTest::CreateBrowserForPopup(Profile* profile) {
 void InProcessBrowserTest::AddBlankTabAndShow(Browser* browser) {
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
-      NotificationService::AllSources());
+       content::NotificationService::AllSources());
   browser->AddSelectedTabWithURL(
       GURL(chrome::kAboutBlankURL), content::PAGE_TRANSITION_START_PAGE);
   observer.Wait();

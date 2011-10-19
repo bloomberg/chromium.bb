@@ -29,7 +29,7 @@
 #include "chrome/common/guid.h"
 #include "chrome/test/base/thread_observer_helper.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_details.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -57,13 +57,13 @@ class AutofillDBThreadObserverHelper : public DBThreadObserverHelper {
   virtual void RegisterObservers() {
     registrar_.Add(&observer_,
                    chrome::NOTIFICATION_AUTOFILL_ENTRIES_CHANGED,
-                   NotificationService::AllSources());
+                   content::NotificationService::AllSources());
     registrar_.Add(&observer_,
                    chrome::NOTIFICATION_AUTOFILL_PROFILE_CHANGED,
-                   NotificationService::AllSources());
+                   content::NotificationService::AllSources());
     registrar_.Add(&observer_,
                    chrome::NOTIFICATION_AUTOFILL_CREDIT_CARD_CHANGED,
-                   NotificationService::AllSources());
+                   content::NotificationService::AllSources());
   }
 };
 

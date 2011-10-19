@@ -37,7 +37,7 @@
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/util_constants.h"
 #include "content/browser/user_metrics.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "google_update_idl.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -60,10 +60,10 @@ class FirstRunDelayedTasks : public content::NotificationObserver {
   explicit FirstRunDelayedTasks(Tasks task) {
     if (task == INSTALL_EXTENSIONS) {
       registrar_.Add(this, chrome::NOTIFICATION_EXTENSIONS_READY,
-                     NotificationService::AllSources());
+                     content::NotificationService::AllSources());
     }
     registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSED,
-                   NotificationService::AllSources());
+                   content::NotificationService::AllSources());
   }
 
   virtual void Observe(int type,

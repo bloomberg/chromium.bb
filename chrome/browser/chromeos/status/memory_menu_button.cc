@@ -13,7 +13,7 @@
 #include "chrome/browser/memory_purger.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/renderer_host/render_process_host.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -58,7 +58,7 @@ MemoryMenuButton::MemoryMenuButton(StatusAreaHost* host)
   // Track renderer kills, as the kernel OOM killer will start to kill our
   // renderers as we run out of memory.
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   UpdateTextAndSetNextTimer();
 }
 

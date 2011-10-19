@@ -21,7 +21,7 @@
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
 #include "net/base/auth.h"
 #include "net/base/net_util.h"
@@ -195,18 +195,20 @@ void LoginHandler::AddObservers() {
   // This is probably OK; we need to listen to everything and we break out of
   // the Observe() if we aren't handling the same auth_info().
   registrar_.Add(this, chrome::NOTIFICATION_AUTH_SUPPLIED,
-                 NotificationService::AllBrowserContextsAndSources());
+                 content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, chrome::NOTIFICATION_AUTH_CANCELLED,
-                 NotificationService::AllBrowserContextsAndSources());
+                 content::NotificationService::AllBrowserContextsAndSources());
 }
 
 void LoginHandler::RemoveObservers() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  registrar_.Remove(this, chrome::NOTIFICATION_AUTH_SUPPLIED,
-                    NotificationService::AllBrowserContextsAndSources());
-  registrar_.Remove(this, chrome::NOTIFICATION_AUTH_CANCELLED,
-                    NotificationService::AllBrowserContextsAndSources());
+  registrar_.Remove(
+      this, chrome::NOTIFICATION_AUTH_SUPPLIED,
+      content::NotificationService::AllBrowserContextsAndSources());
+  registrar_.Remove(
+      this, chrome::NOTIFICATION_AUTH_CANCELLED,
+      content::NotificationService::AllBrowserContextsAndSources());
 
   DCHECK(registrar_.IsEmpty());
 }
@@ -265,7 +267,8 @@ void LoginHandler::NotifyAuthNeeded() {
   if (WasAuthHandled())
     return;
 
-  NotificationService* service = NotificationService::current();
+  content::NotificationService* service =
+      content::NotificationService::current();
   NavigationController* controller = NULL;
 
   TabContents* requesting_contents = GetTabContentsForLogin();
@@ -283,7 +286,8 @@ void LoginHandler::NotifyAuthCancelled() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(WasAuthHandled());
 
-  NotificationService* service = NotificationService::current();
+  content::NotificationService* service =
+      content::NotificationService::current();
   NavigationController* controller = NULL;
 
   TabContents* requesting_contents = GetTabContentsForLogin();
@@ -306,7 +310,8 @@ void LoginHandler::NotifyAuthSupplied(const string16& username,
   if (!requesting_contents)
     return;
 
-  NotificationService* service = NotificationService::current();
+  content::NotificationService* service =
+      content::NotificationService::current();
   NavigationController* controller = &requesting_contents->controller();
   AuthSuppliedLoginNotificationDetails details(this, username, password);
 

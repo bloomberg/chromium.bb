@@ -18,7 +18,7 @@
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -179,10 +179,10 @@ class SearchProviderInstallDataTest : public testing::Test {
 
     // Make sure that the install data class on the UI thread gets cleaned up.
     // It doesn't matter that this happens after install_data_ is deleted.
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
         content::Source<SearchProviderInstallDataTest>(this),
-        NotificationService::NoDetails());
+        content::NotificationService::NoDetails());
 
     util_.TearDown();
     testing::Test::TearDown();

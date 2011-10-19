@@ -15,7 +15,6 @@
 #include "chrome/browser/sync/protocol/preference_specifics.pb.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
-#include "content/common/notification_service.h"
 
 using syncable::PREFERENCES;
 

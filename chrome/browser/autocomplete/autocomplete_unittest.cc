@@ -20,7 +20,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 static std::ostream& operator<<(std::ostream& os,

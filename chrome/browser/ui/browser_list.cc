@@ -22,7 +22,7 @@
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/common/result_codes.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 
 #if defined(OS_MACOSX)
 #include "chrome/browser/chrome_browser_application_mac.h"
@@ -48,7 +48,7 @@ class BrowserActivityObserver : public content::NotificationObserver {
  public:
   BrowserActivityObserver() {
     registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-                   NotificationService::AllSources());
+                   content::NotificationService::AllSources());
   }
   ~BrowserActivityObserver() {}
 
@@ -248,10 +248,10 @@ void BrowserList::AddBrowser(Browser* browser) {
   if (!activity_observer)
     activity_observer = new BrowserActivityObserver;
 
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_BROWSER_OPENED,
       content::Source<Browser>(browser),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 
   // Send out notifications after add has occurred. Do some basic checking to
   // try to catch evil observers that change the list from under us.
@@ -269,10 +269,10 @@ void BrowserList::MarkAsCleanShutdown() {
 }
 
 void BrowserList::AttemptExitInternal() {
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       content::NOTIFICATION_APP_EXITING,
-      NotificationService::AllSources(),
-      NotificationService::NoDetails());
+      content::NotificationService::AllSources(),
+      content::NotificationService::NoDetails());
 
 #if !defined(OS_MACOSX)
   // On most platforms, closing all windows causes the application to exit.
@@ -293,10 +293,10 @@ void BrowserList::NotifyAndTerminate(bool fast_path) {
 #endif
 
   if (fast_path) {
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         content::NOTIFICATION_APP_TERMINATING,
-        NotificationService::AllSources(),
-        NotificationService::NoDetails());
+        content::NotificationService::AllSources(),
+        content::NotificationService::NoDetails());
   }
 
 #if defined(OS_CHROMEOS)
@@ -327,7 +327,7 @@ void BrowserList::RemoveBrowser(Browser* browser) {
   // simply ignore the behavior on the Mac outside of unit tests.
   // TODO(andybons): Fix the UI tests to Do The Right Thing.
   bool closing_last_browser = (browsers_.size() == 1);
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_BROWSER_CLOSED,
       content::Source<Browser>(browser),
       content::Details<bool>(&closing_last_browser));
@@ -360,10 +360,10 @@ void BrowserList::RemoveBrowser(Browser* browser) {
     // to call ProfileManager::ShutdownSessionServices() as part of the
     // shutdown, because Browser::WindowClosing() already makes sure that the
     // SessionService is created and notified.
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         content::NOTIFICATION_APP_TERMINATING,
-        NotificationService::AllSources(),
-        NotificationService::NoDetails());
+        content::NotificationService::AllSources(),
+        content::NotificationService::NoDetails());
     AllBrowsersClosedAndAppExiting();
   }
 }
@@ -524,16 +524,16 @@ static void TimeLimitedSessionEnding() {
   static bool already_ended = false;
   // We may get called in the middle of shutdown, e.g. http://crbug.com/70852
   // In this case, do nothing.
-  if (already_ended || !NotificationService::current())
+  if (already_ended || !content::NotificationService::current())
     return;
   already_ended = true;
 
   browser_shutdown::OnShutdownStarting(browser_shutdown::END_SESSION);
 
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       content::NOTIFICATION_APP_EXITING,
-      NotificationService::AllSources(),
-      NotificationService::NoDetails());
+      content::NotificationService::AllSources(),
+      content::NotificationService::NoDetails());
 
   // Write important data first.
   g_browser_process->EndSession();
@@ -542,10 +542,10 @@ static void TimeLimitedSessionEnding() {
 
   // Send out notification. This is used during testing so that the test harness
   // can properly shutdown before we exit.
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_SESSION_END,
-      NotificationService::AllSources(),
-      NotificationService::NoDetails());
+      content::NotificationService::AllSources(),
+      content::NotificationService::NoDetails());
 
   // And shutdown.
   browser_shutdown::Shutdown();

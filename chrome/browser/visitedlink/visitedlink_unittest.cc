@@ -20,7 +20,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/browser_render_process_host.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -499,16 +499,16 @@ class VisitRelayingRenderProcessHost : public BrowserRenderProcessHost {
   explicit VisitRelayingRenderProcessHost(
       content::BrowserContext* browser_context)
           : BrowserRenderProcessHost(browser_context) {
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         content::NOTIFICATION_RENDERER_PROCESS_CREATED,
         content::Source<RenderProcessHost>(this),
-        NotificationService::NoDetails());
+        content::NotificationService::NoDetails());
   }
   virtual ~VisitRelayingRenderProcessHost() {
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
         content::Source<RenderProcessHost>(this),
-        NotificationService::NoDetails());
+        content::NotificationService::NoDetails());
   }
 
   virtual bool Init(bool is_accessibility_enabled) {

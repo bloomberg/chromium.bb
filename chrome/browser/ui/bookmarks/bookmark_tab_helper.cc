@@ -13,7 +13,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 
 namespace {
 
@@ -31,9 +31,9 @@ BookmarkTabHelper::BookmarkTabHelper(TabContentsWrapper* tab_contents)
       bookmark_drag_(NULL) {
   // Register for notifications about URL starredness changing on any profile.
   registrar_.Add(this, chrome::NOTIFICATION_URLS_STARRED,
-                 NotificationService::AllBrowserContextsAndSources());
+                 content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED,
-                 NotificationService::AllBrowserContextsAndSources());
+                 content::NotificationService::AllBrowserContextsAndSources());
 }
 
 BookmarkTabHelper::~BookmarkTabHelper() {

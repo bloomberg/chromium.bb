@@ -19,7 +19,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/browser_thread.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_details.h"
 #include "content/test/notification_observer_mock.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -78,10 +78,10 @@ class DataTypeManagerImplTest : public testing::Test {
   virtual void SetUp() {
     registrar_.Add(&observer_,
                    chrome::NOTIFICATION_SYNC_CONFIGURE_START,
-                   NotificationService::AllSources());
+                   content::NotificationService::AllSources());
     registrar_.Add(&observer_,
                    chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,
-                   NotificationService::AllSources());
+                   content::NotificationService::AllSources());
   }
 
   DataTypeControllerMock* MakeBookmarkDTC() {

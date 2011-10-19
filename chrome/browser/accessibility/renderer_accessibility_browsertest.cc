@@ -15,6 +15,7 @@
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 
 #if defined(OS_WIN)
@@ -35,7 +36,7 @@ class RendererAccessibilityBrowserTest : public InProcessBrowserTest {
   const WebAccessibility& GetWebAccessibilityTree() {
     ui_test_utils::WindowedNotificationObserver tree_updated_observer(
         content::NOTIFICATION_RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED,
-        NotificationService::AllSources());
+        content::NotificationService::AllSources());
     RenderWidgetHostView* host_view =
         browser()->GetSelectedTabContents()->GetRenderWidgetHostView();
     RenderWidgetHost* host = host_view->GetRenderWidgetHost();

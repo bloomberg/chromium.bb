@@ -81,7 +81,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/user_metrics.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/common/content_switches.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -1675,10 +1675,10 @@ bool BrowserView::CanClose() {
   }
 
   // Empty TabStripModel, it's now safe to allow the Window to be closed.
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_WINDOW_CLOSED,
       content::Source<gfx::NativeWindow>(frame_->GetNativeWindow()),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
   return true;
 }
 

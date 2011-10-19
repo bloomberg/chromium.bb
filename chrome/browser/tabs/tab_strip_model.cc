@@ -31,7 +31,7 @@
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/user_metrics.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 
 namespace {
 
@@ -68,7 +68,7 @@ TabStripModel::TabStripModel(TabStripModelDelegate* delegate, Profile* profile)
   DCHECK(delegate_);
   registrar_.Add(this,
                  content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                 NotificationService::AllBrowserContextsAndSources());
+                 content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  content::Source<Profile>(profile_));

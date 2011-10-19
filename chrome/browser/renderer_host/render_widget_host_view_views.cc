@@ -20,7 +20,7 @@
 #include "chrome/common/render_messages.h"
 #include "content/browser/renderer_host/backing_store_skia.h"
 #include "content/browser/renderer_host/render_widget_host.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/common/result_codes.h"
 #include "content/common/view_messages.h"
 #include "grit/ui_strings.h"
@@ -130,7 +130,7 @@ RenderWidgetHostViewViews::RenderWidgetHostViewViews(RenderWidgetHost* host)
   SetPaintToLayer(true);
   registrar_.Add(this,
                  chrome::NOTIFICATION_KEYBOARD_VISIBLE_BOUNDS_CHANGED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 #endif
 }
 

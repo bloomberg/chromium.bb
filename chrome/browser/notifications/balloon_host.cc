@@ -17,7 +17,7 @@
 #include "content/browser/renderer_host/browser_render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/site_instance.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/common/renderer_preferences.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/notification_source.h"
@@ -91,9 +91,10 @@ void BalloonHost::RenderViewCreated(RenderViewHost* render_view_host) {
 
 void BalloonHost::RenderViewReady(RenderViewHost* render_view_host) {
   should_notify_on_disconnect_ = true;
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_NOTIFY_BALLOON_CONNECTED,
-      content::Source<BalloonHost>(this), NotificationService::NoDetails());
+      content::Source<BalloonHost>(this),
+      content::NotificationService::NoDetails());
 }
 
 void BalloonHost::RenderViewGone(RenderViewHost* render_view_host,
@@ -207,9 +208,10 @@ void BalloonHost::NotifyDisconnect() {
     return;
 
   should_notify_on_disconnect_ = false;
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_NOTIFY_BALLOON_DISCONNECTED,
-      content::Source<BalloonHost>(this), NotificationService::NoDetails());
+      content::Source<BalloonHost>(this),
+      content::NotificationService::NoDetails());
 }
 
 bool BalloonHost::IsRenderViewReady() const {

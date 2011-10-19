@@ -20,7 +20,7 @@
 #include "content/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 
 typedef SearchHostToURLsMap::TemplateURLSet TemplateURLSet;
@@ -127,7 +127,7 @@ GoogleURLObserver::GoogleURLObserver(
     : change_notifier_(change_notifier) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   registrar_.Add(this, chrome::NOTIFICATION_GOOGLE_URL_UPDATED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(this, ui_death_notification, ui_death_source);
 }
 

@@ -9,7 +9,7 @@
 #include "chrome/browser/tab_contents/insecure_content_infobar_delegate.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/render_messages.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/browser/tab_contents/tab_contents.h"
 
 InfoBarTabHelper::InfoBarTabHelper(TabContents* tab_contents)
@@ -44,7 +44,7 @@ void InfoBarTabHelper::AddInfoBar(InfoBarDelegate* delegate) {
   // TODO(pkasting): Consider removing InfoBarTabHelper arg from delegate
   // constructors and instead using a setter from here.
   infobars_.push_back(delegate);
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
       content::Source<InfoBarTabHelper>(this),
       content::Details<InfoBarAddedDetails>(delegate));
@@ -81,7 +81,7 @@ void InfoBarTabHelper::ReplaceInfoBar(InfoBarDelegate* old_delegate,
 
   old_delegate->clear_owner();
   InfoBarReplacedDetails replaced_details(old_delegate, new_delegate);
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REPLACED,
       content::Source<InfoBarTabHelper>(this),
       content::Details<InfoBarReplacedDetails>(&replaced_details));
@@ -110,7 +110,7 @@ void InfoBarTabHelper::RemoveInfoBarInternal(InfoBarDelegate* delegate,
 
   infobar->clear_owner();
   InfoBarRemovedDetails removed_details(infobar, animate);
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
       content::Source<InfoBarTabHelper>(this),
       content::Details<InfoBarRemovedDetails>(&removed_details));

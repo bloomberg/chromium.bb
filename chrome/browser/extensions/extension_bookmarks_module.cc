@@ -34,7 +34,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -79,15 +79,16 @@ void BookmarksFunction::Run() {
   BookmarkModel* model = profile()->GetBookmarkModel();
   if (!model->IsLoaded()) {
     // Bookmarks are not ready yet.  We'll wait.
-    registrar_.Add(this, chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED,
-                   NotificationService::AllBrowserContextsAndSources());
+    registrar_.Add(
+        this, chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED,
+        content::NotificationService::AllBrowserContextsAndSources());
     AddRef();  // Balanced in Observe().
     return;
   }
 
   bool success = RunImpl();
   if (success) {
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTENSION_BOOKMARKS_API_INVOKED,
         content::Source<const Extension>(GetExtension()),
         content::Details<const BookmarksFunction>(this));

@@ -16,7 +16,7 @@
 #include "chrome/browser/web_resource/notification_promo.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -157,8 +157,9 @@ void NewTabPageHandler::DismissIntroMessage(PrefService* prefs) {
 }
 
 void NewTabPageHandler::NotifyPromoResourceChanged() {
-  NotificationService* service = NotificationService::current();
+  content::NotificationService* service =
+      content::NotificationService::current();
   service->Notify(chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED,
                   content::Source<NewTabPageHandler>(this),
-                  NotificationService::NoDetails());
+                  content::NotificationService::NoDetails());
 }

@@ -49,7 +49,7 @@
 #include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/common/content_paths.h"
-#include "content/common/notification_service.h"
+#include "content/browser/notification_service_impl.h"
 #include "content/public/common/content_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -232,7 +232,7 @@ FakeExternalTab::~FakeExternalTab() {
 void FakeExternalTab::Initialize() {
   DCHECK(g_browser_process == NULL);
 
-  notificaton_service_.reset(new NotificationService);
+  notificaton_service_.reset(new NotificationServiceImpl);
 
   base::SystemMonitor system_monitor;
 
@@ -409,7 +409,7 @@ void CFUrlRequestUnittestRunner::StartTests() {
 DWORD CFUrlRequestUnittestRunner::RunAllUnittests(void* param) {
   base::PlatformThread::SetName("CFUrlRequestUnittestRunner");
   // Needed for some url request tests like the intercept job tests, etc.
-  NotificationService service;
+  NotificationServiceImpl service;
   CFUrlRequestUnittestRunner* me =
       reinterpret_cast<CFUrlRequestUnittestRunner*>(param);
   me->test_result_ = me->Run();

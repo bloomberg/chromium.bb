@@ -17,7 +17,6 @@
 #include "content/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/common/notification_service.h"
 
 namespace base {
 template <typename T> struct DefaultLazyInstanceTraits;

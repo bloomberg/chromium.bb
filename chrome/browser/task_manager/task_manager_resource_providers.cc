@@ -44,7 +44,7 @@
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
@@ -354,17 +354,17 @@ void TaskManagerTabContentsResourceProvider::StartUpdating() {
 
   // Then we register for notifications to get new tabs.
   registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_CONNECTED,
-                 NotificationService::AllBrowserContextsAndSources());
+                 content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_SWAPPED,
-                 NotificationService::AllBrowserContextsAndSources());
+                 content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_DISCONNECTED,
-                 NotificationService::AllBrowserContextsAndSources());
+                 content::NotificationService::AllBrowserContextsAndSources());
   // TAB_CONTENTS_DISCONNECTED should be enough to know when to remove a
   // resource.  This is an attempt at mitigating a crasher that seem to
   // indicate a resource is still referencing a deleted TabContents
   // (http://crbug.com/7321).
   registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                 NotificationService::AllBrowserContextsAndSources());
+                 content::NotificationService::AllBrowserContextsAndSources());
 }
 
 void TaskManagerTabContentsResourceProvider::StopUpdating() {
@@ -372,14 +372,18 @@ void TaskManagerTabContentsResourceProvider::StopUpdating() {
   updating_ = false;
 
   // Then we unregister for notifications to get new tabs.
-  registrar_.Remove(this, content::NOTIFICATION_TAB_CONTENTS_CONNECTED,
-                    NotificationService::AllBrowserContextsAndSources());
-  registrar_.Remove(this, content::NOTIFICATION_TAB_CONTENTS_SWAPPED,
-                    NotificationService::AllBrowserContextsAndSources());
-  registrar_.Remove(this, content::NOTIFICATION_TAB_CONTENTS_DISCONNECTED,
-                    NotificationService::AllBrowserContextsAndSources());
-  registrar_.Remove(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                    NotificationService::AllBrowserContextsAndSources());
+  registrar_.Remove(
+      this, content::NOTIFICATION_TAB_CONTENTS_CONNECTED,
+      content::NotificationService::AllBrowserContextsAndSources());
+  registrar_.Remove(
+      this, content::NOTIFICATION_TAB_CONTENTS_SWAPPED,
+      content::NotificationService::AllBrowserContextsAndSources());
+  registrar_.Remove(
+      this, content::NOTIFICATION_TAB_CONTENTS_DISCONNECTED,
+      content::NotificationService::AllBrowserContextsAndSources());
+  registrar_.Remove(
+      this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
+      content::NotificationService::AllBrowserContextsAndSources());
 
   // Delete all the resources.
   STLDeleteContainerPairSecondPointers(resources_.begin(), resources_.end());
@@ -604,11 +608,11 @@ void TaskManagerBackgroundContentsResourceProvider::StartUpdating() {
 
   // Then we register for notifications to get new BackgroundContents.
   registrar_.Add(this, chrome::NOTIFICATION_BACKGROUND_CONTENTS_OPENED,
-                 NotificationService::AllBrowserContextsAndSources());
+                 content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, chrome::NOTIFICATION_BACKGROUND_CONTENTS_NAVIGATED,
-                 NotificationService::AllBrowserContextsAndSources());
+                 content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, chrome::NOTIFICATION_BACKGROUND_CONTENTS_DELETED,
-                 NotificationService::AllBrowserContextsAndSources());
+                 content::NotificationService::AllBrowserContextsAndSources());
 }
 
 void TaskManagerBackgroundContentsResourceProvider::StopUpdating() {
@@ -616,12 +620,15 @@ void TaskManagerBackgroundContentsResourceProvider::StopUpdating() {
   updating_ = false;
 
   // Unregister for notifications
-  registrar_.Remove(this, chrome::NOTIFICATION_BACKGROUND_CONTENTS_OPENED,
-                    NotificationService::AllBrowserContextsAndSources());
-  registrar_.Remove(this, chrome::NOTIFICATION_BACKGROUND_CONTENTS_NAVIGATED,
-                    NotificationService::AllBrowserContextsAndSources());
-  registrar_.Remove(this, chrome::NOTIFICATION_BACKGROUND_CONTENTS_DELETED,
-                    NotificationService::AllBrowserContextsAndSources());
+  registrar_.Remove(
+      this, chrome::NOTIFICATION_BACKGROUND_CONTENTS_OPENED,
+      content::NotificationService::AllBrowserContextsAndSources());
+  registrar_.Remove(
+      this, chrome::NOTIFICATION_BACKGROUND_CONTENTS_NAVIGATED,
+      content::NotificationService::AllBrowserContextsAndSources());
+  registrar_.Remove(
+      this, chrome::NOTIFICATION_BACKGROUND_CONTENTS_DELETED,
+      content::NotificationService::AllBrowserContextsAndSources());
 
   // Delete all the resources.
   STLDeleteContainerPairSecondPointers(resources_.begin(), resources_.end());
@@ -906,9 +913,9 @@ void TaskManagerChildProcessResourceProvider::StartUpdating() {
 
   // Register for notifications to get new child processes.
   registrar_.Add(this, content::NOTIFICATION_CHILD_PROCESS_HOST_CONNECTED,
-                 NotificationService::AllBrowserContextsAndSources());
+                 content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, content::NOTIFICATION_CHILD_PROCESS_HOST_DISCONNECTED,
-                 NotificationService::AllBrowserContextsAndSources());
+                 content::NotificationService::AllBrowserContextsAndSources());
 
   // Get the existing child processes.
   BrowserThread::PostTask(
@@ -923,11 +930,13 @@ void TaskManagerChildProcessResourceProvider::StopUpdating() {
   updating_ = false;
 
   // Unregister for notifications to get new plugin processes.
-  registrar_.Remove(this, content::NOTIFICATION_CHILD_PROCESS_HOST_CONNECTED,
-                    NotificationService::AllBrowserContextsAndSources());
-  registrar_.Remove(this,
-                    content::NOTIFICATION_CHILD_PROCESS_HOST_DISCONNECTED,
-                    NotificationService::AllBrowserContextsAndSources());
+  registrar_.Remove(
+      this, content::NOTIFICATION_CHILD_PROCESS_HOST_CONNECTED,
+      content::NotificationService::AllBrowserContextsAndSources());
+  registrar_.Remove(
+      this,
+      content::NOTIFICATION_CHILD_PROCESS_HOST_DISCONNECTED,
+      content::NotificationService::AllBrowserContextsAndSources());
 
   // Delete all the resources.
   STLDeleteContainerPairSecondPointers(resources_.begin(), resources_.end());
@@ -1160,11 +1169,11 @@ void TaskManagerExtensionProcessResourceProvider::StartUpdating() {
 
   // Register for notifications about extension process changes.
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_PROCESS_CREATED,
-                 NotificationService::AllBrowserContextsAndSources());
+                 content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
-                 NotificationService::AllBrowserContextsAndSources());
+                 content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
-                 NotificationService::AllBrowserContextsAndSources());
+                 content::NotificationService::AllBrowserContextsAndSources());
 }
 
 void TaskManagerExtensionProcessResourceProvider::StopUpdating() {
@@ -1172,12 +1181,15 @@ void TaskManagerExtensionProcessResourceProvider::StopUpdating() {
   updating_ = false;
 
   // Unregister for notifications about extension process changes.
-  registrar_.Remove(this, chrome::NOTIFICATION_EXTENSION_PROCESS_CREATED,
-                    NotificationService::AllBrowserContextsAndSources());
-  registrar_.Remove(this, chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
-                    NotificationService::AllBrowserContextsAndSources());
-  registrar_.Remove(this, chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
-                    NotificationService::AllBrowserContextsAndSources());
+  registrar_.Remove(
+      this, chrome::NOTIFICATION_EXTENSION_PROCESS_CREATED,
+      content::NotificationService::AllBrowserContextsAndSources());
+  registrar_.Remove(
+      this, chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
+      content::NotificationService::AllBrowserContextsAndSources());
+  registrar_.Remove(
+      this, chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
+      content::NotificationService::AllBrowserContextsAndSources());
 
   // Delete all the resources.
   STLDeleteContainerPairSecondPointers(resources_.begin(), resources_.end());

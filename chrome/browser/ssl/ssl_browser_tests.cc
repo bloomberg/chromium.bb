@@ -18,7 +18,7 @@
 #include "content/browser/tab_contents/interstitial_page.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "net/base/cert_status_flags.h"
 #include "net/test/test_server.h"
 
@@ -367,7 +367,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSExpiredCertAndGoBackViaButton) {
 
   ui_test_utils::WindowedNotificationObserver load_failed_observer(
       content::NOTIFICATION_FAIL_PROVISIONAL_LOAD_WITH_ERROR,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
 
   // Simulate user clicking on back button (crbug.com/39248).
   browser()->GoBack(CURRENT_TAB);
@@ -503,7 +503,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestBadHTTPSDownload) {
   // Now, start a transition to dangerous download.
   {
     ui_test_utils::WindowedNotificationObserver observer(
-        content::NOTIFICATION_LOAD_STOP, NotificationService::AllSources());
+        content::NOTIFICATION_LOAD_STOP,
+        content::NotificationService::AllSources());
     browser::NavigateParams navigate_params(browser(), url_dangerous,
                                             content::PAGE_TRANSITION_TYPED);
     browser::Navigate(&navigate_params);
@@ -518,7 +519,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestBadHTTPSDownload) {
   {
     ui_test_utils::WindowedNotificationObserver observer(
         chrome::NOTIFICATION_DOWNLOAD_INITIATED,
-        NotificationService::AllSources());
+        content::NotificationService::AllSources());
     tab->interstitial_page()->Proceed();
     observer.Wait();
   }
@@ -669,7 +670,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestDisplaysInsecureContentTwoTabs) {
   params.tabstrip_index = 0;
   params.source_contents = tab1;
   ui_test_utils::WindowedNotificationObserver observer(
-      content::NOTIFICATION_LOAD_STOP, NotificationService::AllSources());
+      content::NOTIFICATION_LOAD_STOP,
+      content::NotificationService::AllSources());
   browser::Navigate(&params);
   TabContentsWrapper* tab2 = params.target_contents;
   observer.Wait();
@@ -709,7 +711,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRunsInsecureContentTwoTabs) {
   params.disposition = NEW_FOREGROUND_TAB;
   params.source_contents = tab1;
   ui_test_utils::WindowedNotificationObserver observer(
-      content::NOTIFICATION_LOAD_STOP, NotificationService::AllSources());
+      content::NOTIFICATION_LOAD_STOP,
+      content::NotificationService::AllSources());
   browser::Navigate(&params);
   TabContentsWrapper* tab2 = params.target_contents;
   observer.Wait();
@@ -884,7 +887,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestCloseTabWithUnsafePopup) {
   // the first tab.
   GURL url = test_server()->GetURL("files/ssl/google.html");
   ui_test_utils::WindowedNotificationObserver observer(
-      content::NOTIFICATION_LOAD_STOP, NotificationService::AllSources());
+      content::NOTIFICATION_LOAD_STOP,
+      content::NotificationService::AllSources());
   browser()->AddSelectedTabWithURL(url, content::PAGE_TRANSITION_TYPED);
   observer.Wait();
 

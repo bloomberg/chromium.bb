@@ -33,7 +33,7 @@
 #include "chrome/installer/util/google_update_settings.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/navigation_entry.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 
 namespace {
 
@@ -179,16 +179,16 @@ bool RLZTracker::Init(bool first_run, int delay, bool google_default_search,
   // Register for notifications from the omnibox so that we can record when
   // the user performs a first search.
   registrar_.Add(this, chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   // If instant is enabled we'll start searching as soon as the user starts
   // typing in the omnibox (which triggers INSTANT_CONTROLLER_UPDATED).
   registrar_.Add(this, chrome::NOTIFICATION_INSTANT_CONTROLLER_UPDATED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 
   // Register for notifications from navigations, to see if the user has used
   // the home page.
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 
   ScheduleDelayedInit(delay);
 
@@ -291,9 +291,9 @@ void RLZTracker::Observe(int type,
       call_record = true;
 
       registrar_.Remove(this, chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
-                        NotificationService::AllSources());
+                        content::NotificationService::AllSources());
       registrar_.Remove(this, chrome::NOTIFICATION_INSTANT_CONTROLLER_UPDATED,
-                        NotificationService::AllSources());
+                        content::NotificationService::AllSources());
       break;
     case content::NOTIFICATION_NAV_ENTRY_PENDING: {
       const NavigationEntry* entry =
@@ -306,7 +306,7 @@ void RLZTracker::Observe(int type,
         call_record = true;
 
         registrar_.Remove(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
-                          NotificationService::AllSources());
+                          content::NotificationService::AllSources());
       }
       break;
     }

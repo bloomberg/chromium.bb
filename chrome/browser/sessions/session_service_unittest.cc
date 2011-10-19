@@ -23,7 +23,7 @@
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class SessionServiceTest : public BrowserWithTestWindowTest,
@@ -650,7 +650,7 @@ TEST_F(SessionServiceTest, GetCurrentSession) {
 TEST_F(SessionServiceTest, SavedSessionNotification) {
   content::NotificationRegistrar registrar_;
   registrar_.Add(this, chrome::NOTIFICATION_SESSION_SERVICE_SAVED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   service()->Save();
   EXPECT_EQ(sync_save_count_, 1);
 }

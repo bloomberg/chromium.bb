@@ -17,7 +17,7 @@
 #include "content/browser/renderer_host/backing_store_manager.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "net/proxy/proxy_resolver.h"
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"
@@ -63,10 +63,10 @@ void PurgeMemoryIOHelper::PurgeMemoryOnIOThread() {
     (*i)->GetURLRequestContext()->proxy_service()->PurgeMemory();
 
   // The appcache and safe browsing services listen for this notification.
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       content::NOTIFICATION_PURGE_MEMORY,
       content::Source<void>(NULL),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 }
 
 // -----------------------------------------------------------------------------

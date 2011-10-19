@@ -26,6 +26,7 @@
 #include "content/browser/tab_contents/interstitial_page.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
+#include "content/public/browser/notification_service.h"
 #include "content/common/view_messages.h"
 #include "net/test/test_server.h"
 
@@ -182,7 +183,7 @@ class TestInterstitialPage : public InterstitialPage {
   }
 
   void OnFocusedNodeChanged(bool is_editable_node) {
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
         content::Source<TabContents>(tab()),
         content::Details<const bool>(&is_editable_node));
@@ -632,7 +633,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversalOnInterstitial) {
 
       int notification_type;
       content::NotificationSource notification_source =
-          NotificationService::AllSources();
+          content::NotificationService::AllSources();
       if (j < arraysize(kExpElementIDs) - 1) {
         notification_type = content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE;
         notification_source = content::Source<TabContents>(
@@ -667,7 +668,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversalOnInterstitial) {
     for (size_t j = 0; j < 7; ++j) {
       int notification_type;
       content::NotificationSource notification_source =
-          NotificationService::AllSources();
+          content::NotificationService::AllSources();
       if (j < arraysize(kExpElementIDs) - 1) {
         notification_type = content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE;
         notification_source = content::Source<TabContents>(
@@ -851,7 +852,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnReload) {
   {
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
-        NotificationService::AllSources());
+        content::NotificationService::AllSources());
     browser()->NewTab();
     observer.Wait();
   }

@@ -32,7 +32,7 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
@@ -216,19 +216,19 @@ void ExtensionSettingsHandler::MaybeRegisterForNotifications() {
                  content::Source<Profile>(profile));
   registrar_.Add(this,
                  content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-                 NotificationService::AllBrowserContextsAndSources());
+                 content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this,
                  content::NOTIFICATION_RENDER_VIEW_HOST_CREATED,
-                 NotificationService::AllBrowserContextsAndSources());
+                 content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this,
                  content::NOTIFICATION_RENDER_VIEW_HOST_DELETED,
-                 NotificationService::AllBrowserContextsAndSources());
+                 content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this,
                  chrome::NOTIFICATION_BACKGROUND_CONTENTS_NAVIGATED,
-                 NotificationService::AllBrowserContextsAndSources());
+                 content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this,
                  chrome::NOTIFICATION_BACKGROUND_CONTENTS_DELETED,
-                 NotificationService::AllBrowserContextsAndSources());
+                 content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(
       this,
       chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,

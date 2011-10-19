@@ -31,7 +31,6 @@
 #include "chrome/browser/ui/profile_error_dialog.h"
 #include "chrome/common/json_pref_store.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_service.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"

@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "googleurl/src/gurl.h"
 
@@ -20,21 +21,24 @@ IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPriorityManagerBasics) {
   using namespace ui_test_utils;
 
   // Get three tabs open.  Load asynchronously to speed up the test.
-  WindowedNotificationObserver load1(content::NOTIFICATION_LOAD_STOP,
-                                     NotificationService::AllSources());
+  WindowedNotificationObserver load1(
+      content::NOTIFICATION_LOAD_STOP,
+      content::NotificationService::AllSources());
   OpenURLParams open1(GURL("chrome://about"), GURL(),
                       CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false);
   browser()->OpenURL(open1);
 
-  WindowedNotificationObserver load2(content::NOTIFICATION_LOAD_STOP,
-                                     NotificationService::AllSources());
+  WindowedNotificationObserver load2(
+      content::NOTIFICATION_LOAD_STOP,
+      content::NotificationService::AllSources());
   OpenURLParams open2(GURL("chrome://credits"), GURL(),
                       NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_TYPED,
                       false);
   browser()->OpenURL(open2);
 
-  WindowedNotificationObserver load3(content::NOTIFICATION_LOAD_STOP,
-                                     NotificationService::AllSources());
+  WindowedNotificationObserver load3(
+      content::NOTIFICATION_LOAD_STOP,
+      content::NotificationService::AllSources());
   OpenURLParams open3(GURL("chrome://terms"), GURL(),
                       NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_TYPED,
                       false);
@@ -71,8 +75,9 @@ IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPriorityManagerBasics) {
   EXPECT_FALSE(g_browser_process->oom_priority_manager()->DiscardTab());
 
   // Select the first tab.  It should reload.
-  WindowedNotificationObserver reload1(content::NOTIFICATION_LOAD_STOP,
-                                       NotificationService::AllSources());
+  WindowedNotificationObserver reload1(
+      content::NOTIFICATION_LOAD_STOP,
+      content::NotificationService::AllSources());
   browser()->SelectNumberedTab(0);
   reload1.Wait();
   EXPECT_FALSE(browser()->IsTabDiscarded(0));

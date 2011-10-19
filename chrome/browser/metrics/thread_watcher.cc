@@ -15,7 +15,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/logging_chrome.h"
-#include "content/common/notification_service.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"

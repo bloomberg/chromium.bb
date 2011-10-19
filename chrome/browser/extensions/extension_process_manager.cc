@@ -24,7 +24,7 @@
 #include "content/browser/browser_thread.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 
 namespace {
 
@@ -108,9 +108,9 @@ ExtensionProcessManager::ExtensionProcessManager(Profile* profile)
   // We can listen to everything for SITE_INSTANCE_DELETED because we check the
   // |site_instance_id| in UnregisterExtensionSiteInstance.
   registrar_.Add(this, content::NOTIFICATION_SITE_INSTANCE_DELETED,
-                 NotificationService::AllBrowserContextsAndSources());
+                 content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, content::NOTIFICATION_APP_TERMINATING,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 }
 
 ExtensionProcessManager::~ExtensionProcessManager() {
@@ -467,7 +467,7 @@ void ExtensionProcessManager::OnExtensionHostCreated(ExtensionHost* host,
   all_hosts_.insert(host);
   if (is_background)
     background_hosts_.insert(host);
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_HOST_CREATED,
       content::Source<ExtensionProcessManager>(this),
       content::Details<ExtensionHost>(host));
@@ -493,7 +493,7 @@ IncognitoExtensionProcessManager::IncognitoExtensionProcessManager(
   DCHECK(profile->IsOffTheRecord());
 
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_WINDOW_READY,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 }
 
 ExtensionHost* IncognitoExtensionProcessManager::CreateViewHost(

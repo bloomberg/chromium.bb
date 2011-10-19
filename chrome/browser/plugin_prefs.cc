@@ -30,7 +30,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/plugin_service.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "webkit/plugins/npapi/plugin_group.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/webplugininfo.h"
@@ -540,8 +540,8 @@ void PluginPrefs::OnUpdatePreferences(
 
 void PluginPrefs::NotifyPluginStatusChanged() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED,
       content::Source<Profile>(profile_),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 }

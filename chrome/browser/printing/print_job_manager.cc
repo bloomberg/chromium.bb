@@ -10,7 +10,7 @@
 #include "chrome/browser/printing/printer_query.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "printing/printed_document.h"
 #include "printing/printed_page.h"
 
@@ -18,7 +18,7 @@ namespace printing {
 
 PrintJobManager::PrintJobManager() {
   registrar_.Add(this, chrome::NOTIFICATION_PRINT_JOB_EVENT,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 }
 
 PrintJobManager::~PrintJobManager() {

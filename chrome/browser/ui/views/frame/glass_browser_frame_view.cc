@@ -21,7 +21,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
@@ -84,7 +84,7 @@ GlassBrowserFrameView::GlassBrowserFrameView(BrowserFrame* frame,
   UpdateAvatarInfo();
   if (!browser_view_->IsOffTheRecord()) {
     registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
-                   NotificationService::AllSources());
+                   content::NotificationService::AllSources());
   }
 }
 

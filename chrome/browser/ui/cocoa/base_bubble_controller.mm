@@ -11,7 +11,7 @@
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -28,7 +28,7 @@ class Bridge : public content::NotificationObserver {
  public:
   explicit Bridge(BaseBubbleController* controller) : controller_(controller) {
     registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_HIDDEN,
-        NotificationService::AllSources());
+        content::NotificationService::AllSources());
   }
 
   // content::NotificationObserver:

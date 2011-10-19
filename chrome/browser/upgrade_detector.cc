@@ -11,7 +11,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/theme_resources.h"
 
 // How long to wait between checks for whether the user has been idle.
@@ -76,10 +76,10 @@ void UpgradeDetector::NotifyUpgradeDetected() {
 void UpgradeDetector::NotifyUpgradeRecommended() {
   notify_upgrade_ = true;
 
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
       content::Source<UpgradeDetector>(this),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 
   if (is_critical_upgrade_) {
     int idle_timer = UseTestingIntervals() ?
@@ -111,10 +111,10 @@ void UpgradeDetector::IdleCallback(IdleState state) {
     case IDLE_STATE_IDLE:
       // Computer has been idle for long enough, show warning.
       idle_check_timer_.Stop();
-      NotificationService::current()->Notify(
+      content::NotificationService::current()->Notify(
           chrome::NOTIFICATION_CRITICAL_UPGRADE_INSTALLED,
           content::Source<UpgradeDetector>(this),
-          NotificationService::NoDetails());
+          content::NotificationService::NoDetails());
       break;
     case IDLE_STATE_ACTIVE:
     case IDLE_STATE_UNKNOWN:

@@ -13,8 +13,8 @@
 #include "content/browser/webui/web_ui_factory.h"
 #include "content/common/child_process_info.h"
 #include "content/common/content_constants.h"
-#include "content/common/notification_service.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/common/content_switches.h"
 
@@ -149,10 +149,10 @@ void RenderProcessHost::Release(int listener_id) {
 void RenderProcessHost::Cleanup() {
   // When no other owners of this object, we can delete ourselves
   if (listeners_.IsEmpty()) {
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
         content::Source<RenderProcessHost>(this),
-        NotificationService::NoDetails());
+        content::NotificationService::NoDetails());
     MessageLoop::current()->DeleteSoon(FROM_HERE, this);
     deleting_soon_ = true;
     // It's important not to wait for the DeleteTask to delete the channel

@@ -18,8 +18,11 @@
 #include "content/public/browser/notification_types.h"
 
 class MessageLoop;
-class NotificationService;
 class Profile;
+
+namespace content {
+class NotificationService;
+}
 
 namespace history {
 class HistoryBackend;
@@ -101,7 +104,7 @@ class TypedUrlChangeProcessor : public ChangeProcessor,
 
   MessageLoop* expected_loop_;
 
-  scoped_ptr<NotificationService> notification_service_;
+  scoped_ptr<content::NotificationService> notification_service_;
 
   // The set of pending changes that will be written out on the next
   // CommitChangesFromSyncModel() call.

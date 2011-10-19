@@ -17,7 +17,7 @@
 #include "content/common/devtools_messages.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 
 class WorkerDevToolsManager::AgentHosts
@@ -54,7 +54,7 @@ public:
 private:
   AgentHosts() {
     registrar_.Add(this, content::NOTIFICATION_APP_TERMINATING,
-                   NotificationService::AllSources());
+                   content::NotificationService::AllSources());
   }
   ~AgentHosts() {}
 

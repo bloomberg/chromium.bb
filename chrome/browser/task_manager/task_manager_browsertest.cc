@@ -28,6 +28,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/common/page_transition_types.h"
 #include "grit/generated_resources.h"
 #include "net/base/mock_host_resolver.h"
@@ -302,7 +303,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeHostedAppTabs) {
   GURL url(base_url.Resolve("path1/empty.html"));
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
   AddTabAtIndex(0, url, content::PAGE_TRANSITION_TYPED);
   observer.Wait();
 

@@ -64,7 +64,6 @@
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/ui/ui_test.h"
-#include "content/common/notification_service.h"
 #include "net/base/net_util.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "v8/include/v8-testing.h"

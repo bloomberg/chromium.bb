@@ -8,7 +8,7 @@
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/notification_types.h"
 
@@ -113,7 +113,7 @@ void MHTMLGenerationManager::JobFinished(int job_id, int64 file_size) {
     details.file_path = job.file_path;
     details.file_size = file_size;
 
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         content::NOTIFICATION_MHTML_GENERATED,
         content::Source<RenderViewHost>(rvh),
         content::Details<NotificationDetails>(&details));

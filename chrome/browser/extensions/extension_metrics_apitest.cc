@@ -9,7 +9,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 
 namespace {
 
@@ -86,7 +86,7 @@ class UserActionObserver : public content::NotificationObserver {
 
 UserActionObserver::UserActionObserver() {
   registrar_.Add(this, content::NOTIFICATION_USER_ACTION,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 }
 
 void UserActionObserver::Observe(int type,

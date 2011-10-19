@@ -27,7 +27,7 @@
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/common/view_messages.h"
 #include "webkit/fileapi/file_system_types.h"
 
@@ -231,10 +231,10 @@ void TabSpecificContentSettings::OnContentBlocked(
   if (!content_blocked_[type]) {
     content_blocked_[type] = true;
     // TODO: it would be nice to have a way of mocking this in tests.
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_TAB_CONTENT_SETTINGS_CHANGED,
         content::Source<TabContents>(tab_contents()),
-        NotificationService::NoDetails());
+        content::NotificationService::NoDetails());
   }
 }
 
@@ -243,10 +243,10 @@ void TabSpecificContentSettings::OnContentAccessed(ContentSettingsType type) {
       << "Geolocation settings handled by OnGeolocationPermissionSet";
   if (!content_accessed_[type]) {
     content_accessed_[type] = true;
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_TAB_CONTENT_SETTINGS_CHANGED,
         content::Source<TabContents>(tab_contents()),
-        NotificationService::NoDetails());
+        content::NotificationService::NoDetails());
   }
 }
 
@@ -349,10 +349,10 @@ void TabSpecificContentSettings::OnGeolocationPermissionSet(
     bool allowed) {
   geolocation_settings_state_.OnGeolocationPermissionSet(requesting_origin,
                                                          allowed);
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_CONTENT_SETTINGS_CHANGED,
       content::Source<TabContents>(tab_contents()),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 }
 
 void TabSpecificContentSettings::ClearBlockedContentSettingsExceptForCookies() {
@@ -365,10 +365,10 @@ void TabSpecificContentSettings::ClearBlockedContentSettingsExceptForCookies() {
     content_blockage_indicated_to_user_[i] = false;
   }
   load_plugins_link_enabled_ = true;
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_CONTENT_SETTINGS_CHANGED,
       content::Source<TabContents>(tab_contents()),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 }
 
 void TabSpecificContentSettings::ClearCookieSpecificContentSettings() {
@@ -377,19 +377,19 @@ void TabSpecificContentSettings::ClearCookieSpecificContentSettings() {
   content_blocked_[CONTENT_SETTINGS_TYPE_COOKIES] = false;
   content_accessed_[CONTENT_SETTINGS_TYPE_COOKIES] = false;
   content_blockage_indicated_to_user_[CONTENT_SETTINGS_TYPE_COOKIES] = false;
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_CONTENT_SETTINGS_CHANGED,
       content::Source<TabContents>(tab_contents()),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 }
 
 void TabSpecificContentSettings::SetPopupsBlocked(bool blocked) {
   content_blocked_[CONTENT_SETTINGS_TYPE_POPUPS] = blocked;
   content_blockage_indicated_to_user_[CONTENT_SETTINGS_TYPE_POPUPS] = false;
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_CONTENT_SETTINGS_CHANGED,
       content::Source<TabContents>(tab_contents()),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 }
 
 void TabSpecificContentSettings::GeolocationDidNavigate(

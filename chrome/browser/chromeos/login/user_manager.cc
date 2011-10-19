@@ -40,7 +40,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/codec/png_codec.h"
 
@@ -230,7 +230,7 @@ void UserManager::SaveImageToLocalState(const std::string& username,
   local_state->SavePersistentPrefs();
 
   NotifyLocalStateChanged();
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
       content::Source<UserManager>(this),
       content::Details<const User>(&logged_in_user_));
@@ -274,10 +274,10 @@ void UserManager::UpdateOwnership(bool is_owner) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   set_current_user_is_owner(is_owner);
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_OWNERSHIP_CHECKED,
-      NotificationService::AllSources(),
-      NotificationService::NoDetails());
+      content::NotificationService::AllSources(),
+      content::NotificationService::NoDetails());
   if (is_owner) {
     // Also update cached value.
     UserCrosSettingsProvider::UpdateCachedOwner(logged_in_user_.email());
@@ -690,7 +690,7 @@ void UserManager::OnDownloadSuccess(const SkBitmap& image) {
     VLOG(1) << "Updating profile image for logged-in user";
     SetLoggedInUserImage(image, User::kProfileImageIndex);
     SaveUserImage(logged_in_user_.email(), image, User::kProfileImageIndex);
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_PROFILE_IMAGE_UPDATED,
         content::Source<UserManager>(this),
         content::Details<const UserManager::User>(&logged_in_user()));
@@ -710,7 +710,7 @@ UserManager::UserManager()
       user_is_logged_in_(false),
       last_image_set_async_(false) {
   registrar_.Add(this, chrome::NOTIFICATION_OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
 }
 
 UserManager::~UserManager() {
@@ -758,7 +758,7 @@ void RealTPMTokenInfoDelegate::GetTokenInfo(std::string* token_name,
 }
 
 void UserManager::NotifyOnLogin() {
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_LOGIN_USER_CHANGED,
       content::Source<UserManager>(this),
       content::Details<const User>(&logged_in_user_));

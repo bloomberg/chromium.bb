@@ -26,6 +26,7 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/notification_service.h"
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"
 
@@ -614,7 +615,7 @@ static void WindowOpenHelper(Browser* browser, const GURL& start_url,
 
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
       browser->GetSelectedTabContents()->render_view_host(), L"",
       L"window.open('" + UTF8ToWide(newtab_url) + L"');"));

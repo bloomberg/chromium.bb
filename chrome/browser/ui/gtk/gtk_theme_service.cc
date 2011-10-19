@@ -27,7 +27,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/user_metrics.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "grit/theme_resources.h"
@@ -338,7 +338,7 @@ bool GtkThemeService::HasCustomImage(int id) const {
 void GtkThemeService::InitThemesFor(NotificationObserver* observer) {
   observer->Observe(chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                     content::Source<ThemeService>(this),
-                    NotificationService::NoDetails());
+                    content::NotificationService::NoDetails());
 }
 
 void GtkThemeService::SetTheme(const Extension* extension) {

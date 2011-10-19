@@ -26,7 +26,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -785,10 +785,10 @@ bool EnumerateModulesModel::ShouldShowConflictWarning() const {
 void EnumerateModulesModel::AcknowledgeConflictNotification() {
   if (!conflict_notification_acknowledged_) {
     conflict_notification_acknowledged_ = true;
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_MODULE_INCOMPATIBILITY_BADGE_CHANGE,
         content::Source<EnumerateModulesModel>(this),
-        NotificationService::NoDetails());
+        content::NotificationService::NoDetails());
   }
 }
 
@@ -940,10 +940,10 @@ void EnumerateModulesModel::DoneScanning() {
   if (limited_mode_)
     return;
 
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_MODULE_LIST_ENUMERATED,
       content::Source<EnumerateModulesModel>(this),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 
   // Command line flag must be enabled for the notification to get sent out.
   // Otherwise we'd get the badge (while the feature is disabled) when we
@@ -952,10 +952,10 @@ void EnumerateModulesModel::DoneScanning() {
   if (!cmd_line.HasSwitch(switches::kConflictingModulesCheck))
     return;
 
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_MODULE_INCOMPATIBILITY_BADGE_CHANGE,
       content::Source<EnumerateModulesModel>(this),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 }
 
 GURL EnumerateModulesModel::ConstructHelpCenterUrl(

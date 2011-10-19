@@ -7,7 +7,7 @@
 #include "chrome/browser/extensions/extension_test_api.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 
 ExtensionTestMessageListener::ExtensionTestMessageListener(
     const std::string& expected_message,
@@ -17,7 +17,7 @@ ExtensionTestMessageListener::ExtensionTestMessageListener(
       waiting_(false),
       will_reply_(will_reply) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_TEST_MESSAGE,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 }
 
 ExtensionTestMessageListener::~ExtensionTestMessageListener() {}

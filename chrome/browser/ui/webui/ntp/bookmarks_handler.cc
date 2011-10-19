@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
-#include "content/common/notification_service.h"
 
 // TODO(csilv):
 // Much of this implementation is based on the classes defined in

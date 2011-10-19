@@ -15,7 +15,7 @@
 #include "chrome/browser/chromeos/views/copy_background.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -119,7 +119,7 @@ void ScreenLockView::Layout() {
 void ScreenLockView::Init() {
   registrar_.Add(this,
                  chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 
   user_view_ = new UserView(this,
                             false,  // is_login

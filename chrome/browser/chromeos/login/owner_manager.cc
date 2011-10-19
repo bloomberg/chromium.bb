@@ -15,7 +15,7 @@
 #include "chrome/browser/chromeos/login/signed_settings_temp_storage.h"
 #include "content/browser/browser_thread.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 
 namespace chromeos {
 
@@ -56,7 +56,7 @@ void OwnerManager::LoadOwnerKey() {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&OwnerManager::SendNotification, this, result,
-                 NotificationService::NoDetails()));
+                 content::NotificationService::NoDetails()));
 }
 
 bool OwnerManager::EnsurePublicKey() {
@@ -136,9 +136,9 @@ void OwnerManager::Verify(const BrowserThread::ID thread_id,
 void OwnerManager::SendNotification(
     int type,
     const content::NotificationDetails& details) {
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       type,
-      NotificationService::AllSources(),
+      content::NotificationService::AllSources(),
       details);
 }
 

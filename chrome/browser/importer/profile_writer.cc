@@ -21,7 +21,6 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
-#include "content/common/notification_service.h"
 
 namespace {
 

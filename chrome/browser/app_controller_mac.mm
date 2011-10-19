@@ -63,7 +63,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/user_metrics.h"
 #include "content/common/cloud_print_class_mac.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -508,10 +508,10 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
   if ([NSApp keyWindow])
     return;
 
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       content::NOTIFICATION_NO_KEY_WINDOW,
-      NotificationService::AllSources(),
-      NotificationService::NoDetails());
+      content::NotificationService::AllSources(),
+      content::NotificationService::NoDetails());
 }
 
 // If the auto-update interval is not set, make it 5 hours.
@@ -584,9 +584,10 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
 // This is called after profiles have been loaded and preferences registered.
 // It is safe to access the default profile here.
 - (void)applicationDidBecomeActive:(NSNotification*)notify {
-  NotificationService::current()->Notify(content::NOTIFICATION_APP_ACTIVATED,
-                                         NotificationService::AllSources(),
-                                         NotificationService::NoDetails());
+  content::NotificationService::current()->Notify(
+      content::NOTIFICATION_APP_ACTIVATED,
+      content::NotificationService::AllSources(),
+      content::NotificationService::NoDetails());
 }
 
 // Helper function for populating and displaying the in progress downloads at

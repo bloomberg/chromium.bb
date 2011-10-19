@@ -23,7 +23,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/browser/user_metrics.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -327,11 +327,11 @@ class ContentSettingCookiesBubbleModel : public ContentSettingSingleRadioGroup {
   virtual void OnCustomLinkClicked() OVERRIDE {
     if (!tab_contents())
       return;
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_COLLECTED_COOKIES_SHOWN,
         content::Source<TabSpecificContentSettings>(
             tab_contents()->content_settings()),
-        NotificationService::NoDetails());
+        content::NotificationService::NoDetails());
     browser()->ShowCollectedCookiesDialog(tab_contents());
   }
 };

@@ -33,7 +33,7 @@
 #include "content/browser/site_instance.h"
 #include "content/browser/worker_host/worker_process_host.h"
 #include "content/common/desktop_notification_messages.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -415,10 +415,10 @@ string16 DesktopNotificationService::DisplayNameForOrigin(
 }
 
 void DesktopNotificationService::NotifySettingsChange() {
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_DESKTOP_NOTIFICATION_SETTINGS_CHANGED,
       content::Source<DesktopNotificationService>(this),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 }
 
 WebKit::WebNotificationPresenter::Permission

@@ -25,7 +25,7 @@
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "content/browser/renderer_host/render_process_host.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 
 // Helper function to parse greasesmonkey headers
 static bool GetDeclarationValue(const base::StringPiece& line,
@@ -295,7 +295,7 @@ UserScriptMaster::UserScriptMaster(Profile* profile)
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  content::Source<Profile>(profile_));
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CREATED,
-                 NotificationService::AllBrowserContextsAndSources());
+                 content::NotificationService::AllBrowserContextsAndSources());
 }
 
 UserScriptMaster::~UserScriptMaster() {
@@ -323,7 +323,7 @@ void UserScriptMaster::NewScriptsAvailable(base::SharedMemory* handle) {
       SendUpdate(i.GetCurrentValue(), handle);
     }
 
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_USER_SCRIPTS_UPDATED,
         content::Source<Profile>(profile_),
         content::Details<base::SharedMemory>(handle));

@@ -16,7 +16,7 @@
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/resource_message_filter.h"
 #include "content/browser/trace_message_filter.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/common/plugin_messages.h"
 #include "content/common/process_watcher.h"
 #include "content/common/result_codes.h"
@@ -44,8 +44,8 @@ class ChildNotificationTask : public Task {
       : notification_type_(notification_type), info_(*info) { }
 
   virtual void Run() {
-    NotificationService::current()->
-        Notify(notification_type_, NotificationService::AllSources(),
+    content::NotificationService::current()->
+        Notify(notification_type_, content::NotificationService::AllSources(),
                content::Details<ChildProcessInfo>(&info_));
   }
 

@@ -24,7 +24,7 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/resource_context.h"
 #include "content/browser/utility_process_host.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/common/pepper_plugin_registry.h"
 #include "content/common/plugin_messages.h"
 #include "content/common/utility_messages.h"
@@ -131,7 +131,7 @@ PluginService::PluginService()
   // We need to know when the browser comes forward so we can bring modal plugin
   // windows forward too.
   registrar_.Add(this, content::NOTIFICATION_APP_ACTIVATED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 #endif
 }
 

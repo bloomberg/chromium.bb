@@ -5,7 +5,7 @@
 #include "content/browser/browser_process_sub_thread.h"
 
 #include "build/build_config.h"
-#include "content/common/notification_service.h"
+#include "content/browser/notification_service_impl.h"
 
 #if defined(OS_WIN)
 #include <Objbase.h>
@@ -26,7 +26,7 @@ void BrowserProcessSubThread::Init() {
   CoInitialize(NULL);
 #endif
 
-  notification_service_ = new NotificationService;
+  notification_service_ = new NotificationServiceImpl;
 }
 
 void BrowserProcessSubThread::CleanUp() {

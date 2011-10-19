@@ -27,7 +27,7 @@
 #include "content/browser/download/download_persistent_store_info.h"
 #include "content/browser/net/url_request_mock_http_job.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -82,7 +82,7 @@ class SavePageBrowserTest : public InProcessBrowserTest {
     ui_test_utils::TestNotificationObserver observer;
     ui_test_utils::RegisterAndWait(&observer,
         content::NOTIFICATION_SAVE_PACKAGE_SUCCESSFULLY_FINISHED,
-        NotificationService::AllSources());
+        content::NotificationService::AllSources());
     return content::Details<DownloadItem>(observer.details()).ptr()->
         original_url();
   }

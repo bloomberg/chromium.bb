@@ -21,7 +21,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/common/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

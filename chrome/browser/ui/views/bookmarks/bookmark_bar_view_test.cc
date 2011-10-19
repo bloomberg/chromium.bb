@@ -22,7 +22,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/base/view_event_test_base.h"
 #include "content/browser/tab_contents/page_navigator.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
 #include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -479,7 +479,7 @@ class ContextMenuNotificationObserver : public content::NotificationObserver {
       : task_(task) {
     registrar_.Add(this,
                    chrome::NOTIFICATION_BOOKMARK_CONTEXT_MENU_SHOWN,
-                   NotificationService::AllSources());
+                   content::NotificationService::AllSources());
   }
 
   virtual void Observe(int type,

@@ -8,6 +8,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "net/test/test_server.h"
 
@@ -31,7 +32,7 @@ bool ResourceDispatcherHostBrowserTest::GetPopupTitle(const GURL& url,
 
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_TAB_ADDED,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
 
   // Create dynamic popup.
   if (!ui_test_utils::ExecuteJavaScript(

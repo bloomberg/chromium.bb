@@ -33,6 +33,7 @@
 #include "content/browser/browser_url_handler.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/notification_service.h"
 #include "net/http/http_util.h"
 
 namespace {
@@ -565,7 +566,7 @@ void Navigate(NavigateParams* params) {
   }
 
   if (params->disposition != CURRENT_TAB) {
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         content::NOTIFICATION_TAB_ADDED,
         content::Source<TabContentsDelegate>(params->browser),
         content::Details<TabContents>(params->target_contents->tab_contents()));

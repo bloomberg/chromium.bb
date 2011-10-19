@@ -15,7 +15,10 @@
 #include "chrome/browser/password_manager/password_store.h"
 
 class MacKeychain;
+
+namespace content {
 class NotificationService;
+}
 
 // Implements PasswordStore on top of the OS X Keychain, with an internal
 // database for extra metadata. For an overview of the interactions with the
@@ -89,7 +92,7 @@ class PasswordStoreMac : public PasswordStore {
 
   // Since we aren't running on a well-known thread but still want to send out
   // notifications, we need to run our own service.
-  scoped_ptr<NotificationService> notification_service_;
+  scoped_ptr<content::NotificationService> notification_service_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordStoreMac);
 };

@@ -9,7 +9,7 @@
 #include "chrome/browser/chromeos/login/signed_settings_temp_storage.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 
 namespace chromeos {
 
@@ -55,9 +55,10 @@ void SessionManagerObserver::OwnerKeySet(bool success) {
 
   // Whether we exported the public key or not, send a notification
   // indicating that we're done with this attempt.
-  NotificationService::current()->Notify(result,
-                                         NotificationService::AllSources(),
-                                         NotificationService::NoDetails());
+  content::NotificationService::current()->Notify(
+      result,
+      content::NotificationService::AllSources(),
+      content::NotificationService::NoDetails());
 
   // We stored some settings in transient storage before owner was assigned.
   // Now owner is assigned and key is generated and we should persist

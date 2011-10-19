@@ -9,7 +9,7 @@
 #include "base/memory/scoped_nsobject.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 
@@ -34,7 +34,7 @@ class AppNotificationBridge : public content::NotificationObserver {
  public:
   explicit AppNotificationBridge(InfoBubbleWindow* owner) : owner_(owner) {
     registrar_.Add(this, content::NOTIFICATION_APP_TERMINATING,
-                   NotificationService::AllSources());
+                   content::NotificationService::AllSources());
   }
 
   // Overridden from content::NotificationObserver.

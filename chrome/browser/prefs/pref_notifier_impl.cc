@@ -8,7 +8,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_observer.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 
 PrefNotifierImpl::PrefNotifierImpl(PrefService* service)
     : pref_service_(service) {
@@ -78,7 +78,7 @@ void PrefNotifierImpl::OnPreferenceChanged(const std::string& path) {
 void PrefNotifierImpl::OnInitializationCompleted(bool succeeded) {
   DCHECK(CalledOnValidThread());
 
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PREF_INITIALIZATION_COMPLETED,
       content::Source<PrefService>(pref_service_),
       content::Details<bool>(&succeeded));

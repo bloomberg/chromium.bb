@@ -9,7 +9,7 @@
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/media/media_internals.h"
 #include "chrome/browser/ui/webui/media/media_internals_handler.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/public/browser/notification_types.h"
 
@@ -27,7 +27,7 @@ MediaInternalsProxy::MediaInternalsProxy()
     : ThreadSafeObserverImpl(net::NetLog::LOG_ALL_BUT_BYTES) {
   io_thread_ = g_browser_process->io_thread();
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-                 NotificationService::AllBrowserContextsAndSources());
+                 content::NotificationService::AllBrowserContextsAndSources());
 }
 
 void MediaInternalsProxy::Observe(int type,

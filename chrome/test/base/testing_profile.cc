@@ -51,7 +51,7 @@
 #include "content/browser/browser_thread.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/browser/mock_resource_context.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "net/base/cookie_monster.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -174,17 +174,17 @@ void TestingProfile::Init() {
   DesktopNotificationServiceFactory::GetInstance()->SetTestingFactory(
       this, CreateTestDesktopNotificationService);
 
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PROFILE_CREATED,
       content::Source<Profile>(static_cast<Profile*>(this)),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 }
 
 TestingProfile::~TestingProfile() {
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PROFILE_DESTROYED,
       content::Source<Profile>(static_cast<Profile*>(this)),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 
   profile_dependency_manager_->DestroyProfileServices(this);
 
@@ -318,7 +318,7 @@ void TestingProfile::BlockUntilBookmarkModelLoaded() {
 void TestingProfile::BlockUntilTopSitesLoaded() {
   ui_test_utils::WindowedNotificationObserver top_sites_loaded_observer(
       chrome::NOTIFICATION_TOP_SITES_LOADED,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
   if (!GetHistoryService(Profile::EXPLICIT_ACCESS))
     GetTopSites()->HistoryLoaded();
   top_sites_loaded_observer.Wait();

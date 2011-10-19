@@ -22,7 +22,7 @@
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 
 ExtensionTabHelper::ExtensionTabHelper(TabContentsWrapper* wrapper)
     : TabContentsObserver(wrapper->tab_contents()),
@@ -55,10 +55,10 @@ void ExtensionTabHelper::SetExtensionApp(const Extension* extension) {
 
   UpdateExtensionAppIcon(extension_app_);
 
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED,
       content::Source<ExtensionTabHelper>(this),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 }
 
 void ExtensionTabHelper::SetExtensionAppById(
@@ -103,10 +103,10 @@ void ExtensionTabHelper::DidNavigateMainFramePostCommit(
     if (browser_action) {
       browser_action->ClearAllValuesForTab(
           wrapper_->restore_tab_helper()->session_id().id());
-      NotificationService::current()->Notify(
+      content::NotificationService::current()->Notify(
           chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
           content::Source<ExtensionAction>(browser_action),
-          NotificationService::NoDetails());
+          content::NotificationService::NoDetails());
     }
 
     ExtensionAction* page_action =

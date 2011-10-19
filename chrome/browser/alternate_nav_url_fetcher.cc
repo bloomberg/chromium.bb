@@ -13,7 +13,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "net/base/registry_controlled_domain.h"
@@ -96,9 +96,9 @@ AlternateNavURLFetcher::AlternateNavURLFetcher(
       state_(NOT_STARTED),
       navigated_to_entry_(false) {
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_INSTANT_COMMITTED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 }
 
 AlternateNavURLFetcher::~AlternateNavURLFetcher() {

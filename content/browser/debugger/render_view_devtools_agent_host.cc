@@ -12,8 +12,8 @@
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/devtools_messages.h"
-#include "content/common/notification_service.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 
 RenderViewDevToolsAgentHost::Instances RenderViewDevToolsAgentHost::instances_;
@@ -54,7 +54,7 @@ void RenderViewDevToolsAgentHost::SendMessageToAgent(IPC::Message* msg) {
 }
 
 void RenderViewDevToolsAgentHost::NotifyClientClosing() {
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       content::NOTIFICATION_DEVTOOLS_WINDOW_CLOSING,
       content::Source<content::BrowserContext>(
           render_view_host_->site_instance()->GetProcess()->browser_context()),

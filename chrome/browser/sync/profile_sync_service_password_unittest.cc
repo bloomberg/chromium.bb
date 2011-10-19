@@ -165,10 +165,10 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
     notification_service_->Init();
     registrar_.Add(&observer_,
         chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,
-        NotificationService::AllSources());
+        content::NotificationService::AllSources());
     registrar_.Add(&observer_,
         chrome::NOTIFICATION_SYNC_CONFIGURE_BLOCKED,
-        NotificationService::AllSources());
+        content::NotificationService::AllSources());
   }
 
   virtual void TearDown() {

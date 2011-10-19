@@ -14,7 +14,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "net/url_request/url_request.h"
 
 NetworkDelayListener::NetworkDelayListener()
@@ -24,11 +24,11 @@ NetworkDelayListener::NetworkDelayListener()
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   AddRef();  // Will be balanced in Cleanup().
 }
 

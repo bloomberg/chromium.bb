@@ -14,7 +14,7 @@
 #include "chrome/browser/history/url_database.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_source.h"
 #include "ui/base/l10n/l10n_util.h"
 
 ExtensionAppProvider::ExtensionAppProvider(ACProviderListener* listener,

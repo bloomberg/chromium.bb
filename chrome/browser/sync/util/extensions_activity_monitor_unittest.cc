@@ -13,7 +13,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_service.h"
+#include "content/browser/notification_service_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using browser_sync::ExtensionsActivityMonitor;
@@ -46,7 +46,7 @@ class BookmarkAPIEventTask : public Task {
        extension_(e), function_(t), repeats_(repeats), done_(done) {}
    virtual void Run() {
      for (size_t i = 0; i < repeats_; i++) {
-       NotificationService::current()->Notify(
+       content::NotificationService::current()->Notify(
            chrome::NOTIFICATION_EXTENSION_BOOKMARKS_API_INVOKED,
            content::Source<Extension>(extension_.get()),
            content::Details<const BookmarksFunction>(function_.get()));
@@ -91,16 +91,16 @@ class BookmarkAPIEventGenerator {
 
 class DoUIThreadSetupTask : public Task {
  public:
-  DoUIThreadSetupTask(NotificationService** service,
+  DoUIThreadSetupTask(content::NotificationService** service,
                       base::WaitableEvent* done)
       : service_(service), signal_when_done_(done) {}
   virtual ~DoUIThreadSetupTask() {}
   virtual void Run() {
-    *service_ = new NotificationService();
+    *service_ = new NotificationServiceImpl();
     signal_when_done_->Signal();
   }
  private:
-  NotificationService** service_;
+  content::NotificationService** service_;
   base::WaitableEvent* signal_when_done_;
   DISALLOW_COPY_AND_ASSIGN(DoUIThreadSetupTask);
 };
@@ -139,7 +139,7 @@ class ExtensionsActivityMonitorTest : public testing::Test {
     return extension->id();
   }
  private:
-  NotificationService* service_;
+  content::NotificationService* service_;
   BrowserThread ui_thread_;
 };
 

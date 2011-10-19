@@ -21,7 +21,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/ime/text_input_type.h"
@@ -210,16 +210,16 @@ KeyboardWidget::KeyboardWidget()
   views::TextInputTypeTracker::GetInstance()->AddTextInputTypeObserver(this);
   registrar_.Add(this,
                  chrome::NOTIFICATION_FOCUSED_EDITABLE_NODE_TOUCHED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(this,
                  chrome::NOTIFICATION_HIDE_KEYBOARD_INVOKED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(this,
                  chrome::NOTIFICATION_SET_KEYBOARD_HEIGHT_INVOKED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(this,
                  content::NOTIFICATION_APP_TERMINATING,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 
 #if defined(OS_CHROMEOS)
   chromeos::input_method::InputMethodManager* manager =
@@ -262,7 +262,7 @@ void KeyboardWidget::ShowKeyboardForWidget(views::Widget* widget) {
   Show();
 
   bool visible = true;
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_KEYBOARD_VISIBILITY_CHANGED,
       content::Source<KeyboardWidget>(this),
       content::Details<bool>(&visible));
@@ -276,7 +276,7 @@ void KeyboardWidget::Hide() {
   animation_->Hide();
 
   bool visible = false;
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_KEYBOARD_VISIBILITY_CHANGED,
       content::Source<KeyboardWidget>(this),
       content::Details<bool>(&visible));
@@ -328,7 +328,7 @@ void KeyboardWidget::AnimationEnded(const ui::Animation* animation) {
   else
     keyboard_rect = GetWindowScreenBounds();
 
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_KEYBOARD_VISIBLE_BOUNDS_CHANGED,
       content::Source<KeyboardWidget>(this),
       content::Details<gfx::Rect>(&keyboard_rect));

@@ -12,7 +12,7 @@
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/size.h"
@@ -162,9 +162,9 @@ TEST_F(ImageLoadingTrackerTest, DeleteExtensionWhileWaitingForCache) {
   // Send out notification the extension was uninstalled.
   UnloadedExtensionInfo details(extension.get(),
                                 extension_misc::UNLOAD_REASON_UNINSTALL);
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_UNLOADED,
-      NotificationService::AllSources(),
+      content::NotificationService::AllSources(),
       content::Details<UnloadedExtensionInfo>(&details));
 
   // Chuck the extension, that way if anyone tries to access it we should crash

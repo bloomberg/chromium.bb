@@ -33,7 +33,7 @@
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_details.h"
 
 #if defined(OS_MACOSX)
@@ -458,30 +458,30 @@ void SessionService::Save() {
     RecordSessionUpdateHistogramData(
         chrome::NOTIFICATION_SESSION_SERVICE_SAVED,
         &last_updated_save_time_);
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_SESSION_SERVICE_SAVED,
         content::Source<Profile>(profile()),
-        NotificationService::NoDetails());
+        content::NotificationService::NoDetails());
   }
 }
 
 void SessionService::Init() {
   // Register for the notifications we're interested in.
   registrar_.Add(this, content::NOTIFICATION_TAB_PARENTED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(this, content::NOTIFICATION_TAB_CLOSED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(this, content::NOTIFICATION_NAV_LIST_PRUNED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_CHANGED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_OPENED,
-                 NotificationService::AllBrowserContextsAndSources());
+                 content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(
       this, chrome::NOTIFICATION_TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
 }
 
 bool SessionService::ShouldNewWindowStartSession() {

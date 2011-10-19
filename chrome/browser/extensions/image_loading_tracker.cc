@@ -10,7 +10,7 @@
 #include "chrome/common/extensions/extension_resource.h"
 #include "content/browser/browser_thread.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/glue/image_decoder.h"
@@ -123,7 +123,7 @@ ImageLoadingTracker::ImageLoadingTracker(Observer* observer)
     : observer_(observer),
       next_id_(0) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 }
 
 ImageLoadingTracker::~ImageLoadingTracker() {

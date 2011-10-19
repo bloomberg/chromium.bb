@@ -21,7 +21,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "net/test/test_server.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
@@ -681,7 +681,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_ReservedAccelerators) {
 
   ui_test_utils::WindowedNotificationObserver wait_for_new_tab(
       content::NOTIFICATION_TAB_PARENTED,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
 
   // Press Ctrl/Cmd+T, which will open a new tab. It cannot be suppressed.
   EXPECT_NO_FATAL_FAILURE(TestKeyEvent(0, kTestCtrlOrCmdT));

@@ -25,7 +25,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "content/browser/utility_process_host.h"
 #include "content/common/net/url_fetcher.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
@@ -347,10 +347,10 @@ ComponentUpdateService::Status CrxUpdateService::Start() {
   if (work_items_.empty())
     return kOk;
 
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
     chrome::NOTIFICATION_COMPONENT_UPDATER_STARTED,
     content::Source<ComponentUpdateService>(this),
-    NotificationService::NoDetails());
+    content::NotificationService::NoDetails());
 
   timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(config_->InitialDelay()),
                this, &CrxUpdateService::ProcessPendingItems);
@@ -381,10 +381,10 @@ void CrxUpdateService::ScheduleNextRun(bool step_delay) {
   int64 delay = step_delay ? config_->StepDelay() : config_->NextCheckDelay();
 
   if (!step_delay) {
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING,
         content::Source<ComponentUpdateService>(this),
-        NotificationService::NoDetails());
+        content::NotificationService::NoDetails());
     // Zero is only used for unit tests.
     if (0 == delay)
       return;
@@ -634,10 +634,10 @@ void CrxUpdateService::OnParseUpdateManifestSucceeded(
     crx->next_version = Version(it->version);
     ++update_pending;
 
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_COMPONENT_UPDATE_FOUND,
         content::Source<std::string>(&crx->id),
-        NotificationService::NoDetails());
+        content::NotificationService::NoDetails());
   }
 
   // All the components that are not mentioned in the manifest we
@@ -681,10 +681,10 @@ void CrxUpdateService::OnURLFetchComplete(const URLFetcher* source,
     DCHECK_EQ(count, 1ul);
     url_fetcher_.reset();
 
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_COMPONENT_UPDATE_READY,
         content::Source<std::string>(&context->id),
-        NotificationService::NoDetails());
+        content::NotificationService::NoDetails());
 
     BrowserThread::PostDelayedTask(BrowserThread::FILE, FROM_HERE,
         NewRunnableMethod(this, &CrxUpdateService::Install,

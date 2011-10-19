@@ -12,7 +12,6 @@
 #include "chrome/common/extensions/extension_permission_set.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/renderer_host/render_process_host.h"
-#include "content/common/notification_service.h"
 
 namespace base {
 class DictionaryValue;

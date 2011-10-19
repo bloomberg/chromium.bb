@@ -27,7 +27,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 
 ExtensionBrowserTest::ExtensionBrowserTest()
     : loaded_(false),
@@ -65,7 +65,7 @@ const Extension* ExtensionBrowserTest::LoadExtensionWithOptions(
   {
     content::NotificationRegistrar registrar;
     registrar.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
-                  NotificationService::AllSources());
+                  content::NotificationService::AllSources());
     service->LoadExtension(path, false);
     ui_test_utils::RunMessageLoop();
   }
@@ -242,13 +242,13 @@ bool ExtensionBrowserTest::InstallOrUpdateExtension(const std::string& id,
   {
     content::NotificationRegistrar registrar;
     registrar.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
-                  NotificationService::AllSources());
+                  content::NotificationService::AllSources());
     registrar.Add(this, chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED,
-                  NotificationService::AllSources());
+                  content::NotificationService::AllSources());
     registrar.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR,
-                  NotificationService::AllSources());
+                  content::NotificationService::AllSources());
     registrar.Add(this, chrome::NOTIFICATION_EXTENSION_LOAD_ERROR,
-                  NotificationService::AllSources());
+                  content::NotificationService::AllSources());
 
     ExtensionInstallUI* install_ui = NULL;
     if (ui_type == INSTALL_UI_TYPE_CANCEL)
@@ -303,7 +303,7 @@ void ExtensionBrowserTest::ReloadExtension(const std::string& extension_id) {
   service->ReloadExtension(extension_id);
   ui_test_utils::RegisterAndWait(this,
                                  chrome::NOTIFICATION_EXTENSION_LOADED,
-                                 NotificationService::AllSources());
+                                 content::NotificationService::AllSources());
 }
 
 void ExtensionBrowserTest::UnloadExtension(const std::string& extension_id) {
@@ -333,7 +333,7 @@ bool ExtensionBrowserTest::WaitForPageActionCountChangeTo(int count) {
     target_page_action_count_ = count;
     ui_test_utils::RegisterAndWait(this,
         chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_COUNT_CHANGED,
-        NotificationService::AllSources());
+        content::NotificationService::AllSources());
   }
   return location_bar->PageActionCount() == count;
 }
@@ -345,7 +345,7 @@ bool ExtensionBrowserTest::WaitForPageActionVisibilityChangeTo(int count) {
     target_visible_page_action_count_ = count;
     ui_test_utils::RegisterAndWait(this,
         chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
-        NotificationService::AllSources());
+        content::NotificationService::AllSources());
   }
   return location_bar->PageActionVisibleCount() == count;
 }
@@ -354,7 +354,7 @@ bool ExtensionBrowserTest::WaitForExtensionHostsToLoad() {
   // Wait for all the extension hosts that exist to finish loading.
   content::NotificationRegistrar registrar;
   registrar.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
-                NotificationService::AllSources());
+                content::NotificationService::AllSources());
 
   ExtensionProcessManager* manager =
         browser()->profile()->GetExtensionProcessManager();
@@ -378,7 +378,7 @@ bool ExtensionBrowserTest::WaitForExtensionInstall() {
   int before = extension_installs_observed_;
   ui_test_utils::RegisterAndWait(this,
                                  chrome::NOTIFICATION_EXTENSION_INSTALLED,
-                                 NotificationService::AllSources());
+                                 content::NotificationService::AllSources());
   return extension_installs_observed_ == (before + 1);
 }
 
@@ -386,13 +386,13 @@ bool ExtensionBrowserTest::WaitForExtensionInstallError() {
   int before = extension_installs_observed_;
   ui_test_utils::RegisterAndWait(this,
                                  chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR,
-                                 NotificationService::AllSources());
+                                 content::NotificationService::AllSources());
   return extension_installs_observed_ == before;
 }
 
 void ExtensionBrowserTest::WaitForExtensionLoad() {
   ui_test_utils::RegisterAndWait(this, chrome::NOTIFICATION_EXTENSION_LOADED,
-                                 NotificationService::AllSources());
+                                 content::NotificationService::AllSources());
   WaitForExtensionHostsToLoad();
 }
 
@@ -406,7 +406,7 @@ bool ExtensionBrowserTest::WaitForExtensionCrash(
   }
   ui_test_utils::RegisterAndWait(
       this, chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
   return (service->GetExtensionById(extension_id, true) == NULL);
 }
 

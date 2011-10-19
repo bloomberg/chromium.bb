@@ -32,7 +32,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "net/base/registry_controlled_domain.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -210,9 +210,9 @@ void SafeBrowsingService::Initialize() {
 
   // Track profile creation and destruction.
   prefs_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CREATED,
-                       NotificationService::AllSources());
+                       content::NotificationService::AllSources());
   prefs_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                       NotificationService::AllSources());
+                       content::NotificationService::AllSources());
 }
 
 void SafeBrowsingService::ShutDown() {
@@ -541,7 +541,7 @@ void SafeBrowsingService::OnIOInitialize(
   enabled_ = true;
 
   registrar_.Add(this, content::NOTIFICATION_PURGE_MEMORY,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 
   MakeDatabaseAvailable();
 

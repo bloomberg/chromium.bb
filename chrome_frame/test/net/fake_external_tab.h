@@ -21,7 +21,10 @@
 #include "net/base/net_test_suite.h"
 
 class ProcessSingleton;
+
+namespace content {
 class NotificationService;
+}
 
 class FakeExternalTab {
  public:
@@ -45,7 +48,7 @@ class FakeExternalTab {
   FilePath overridden_user_dir_;
   FilePath user_data_dir_;
   scoped_ptr<ProcessSingleton> process_singleton_;
-  scoped_ptr<NotificationService> notificaton_service_;
+  scoped_ptr<content::NotificationService> notificaton_service_;
 };
 
 // The "master class" that spins the UI and test threads.

@@ -4,13 +4,13 @@
 
 #include "content/test/test_notification_tracker.h"
 
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 
 TestNotificationTracker::Event::Event()
     : type(content::NOTIFICATION_ALL),
-      source(NotificationService::AllSources()),
-      details(NotificationService::NoDetails()) {
+      source(content::NotificationService::AllSources()),
+      details(content::NotificationService::NoDetails()) {
 }
 TestNotificationTracker::Event::Event(int t,
                                       content::NotificationSource s,

@@ -40,7 +40,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/options/options_util.h"
 #include "chrome/common/pref_names.h"
-#include "content/common/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "views/accelerator.h"

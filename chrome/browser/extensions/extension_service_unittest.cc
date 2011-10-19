@@ -59,7 +59,7 @@
 #include "content/browser/in_process_webkit/dom_storage_context.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/cookie_options.h"
@@ -485,11 +485,11 @@ class ExtensionServiceTest
  public:
   ExtensionServiceTest() : installed_(NULL) {
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
-                   NotificationService::AllSources());
+                   content::NotificationService::AllSources());
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
-                   NotificationService::AllSources());
+                   content::NotificationService::AllSources());
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
-                   NotificationService::AllSources());
+                   content::NotificationService::AllSources());
   }
 
   virtual void Observe(int type,
@@ -3467,7 +3467,7 @@ class ExtensionsReadyRecorder : public content::NotificationObserver {
  public:
   ExtensionsReadyRecorder() : ready_(false) {
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSIONS_READY,
-                   NotificationService::AllSources());
+                   content::NotificationService::AllSources());
   }
 
   void set_ready(bool value) { ready_ = value; }

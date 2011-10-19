@@ -23,7 +23,7 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/user_metrics.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "views/controls/menu/menu_item_view.h"
 #include "views/controls/menu/menu_model_adapter.h"
 #include "views/controls/menu/menu_runner.h"
@@ -140,7 +140,7 @@ BrowserTabStripController::BrowserTabStripController(Browser* browser,
 
   notification_registrar_.Add(this,
       chrome::NOTIFICATION_TAB_CLOSEABLE_STATE_CHANGED,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
 }
 
 BrowserTabStripController::~BrowserTabStripController() {

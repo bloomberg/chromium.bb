@@ -19,7 +19,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/child_process_security_policy.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "net/base/network_delegate.h"
 #include "net/url_request/url_request_redirect_job.h"
 
@@ -571,10 +571,10 @@ void ProtocolHandlerRegistry::PromoteHandler(const ProtocolHandler& handler) {
 
 void ProtocolHandlerRegistry::NotifyChanged() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PROTOCOL_HANDLER_REGISTRY_CHANGED,
       content::Source<Profile>(profile_),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 }
 
 // IO thread methods -----------------------------------------------------------

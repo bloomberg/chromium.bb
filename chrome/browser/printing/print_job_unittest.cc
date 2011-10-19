@@ -8,7 +8,7 @@
 #include "chrome/browser/printing/print_job_worker.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "printing/printed_pages_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -101,7 +101,7 @@ TEST_F(PrintJobTest, MAYBE_SimplePrint) {
   content::NotificationRegistrar registrar_;
   TestPrintNotifObserv observ;
   registrar_.Add(&observ, content::NOTIFICATION_ALL,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   volatile bool check = false;
   scoped_refptr<printing::PrintJob> job(new TestPrintJob(&check));
   EXPECT_EQ(MessageLoop::current(), job->message_loop());

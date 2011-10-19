@@ -20,7 +20,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_details.h"
 
 SyncPromoHandler::SyncPromoHandler(ProfileManager* profile_manager)
@@ -53,7 +53,7 @@ WebUIMessageHandler* SyncPromoHandler::Attach(WebUI* web_ui) {
             &web_ui->tab_contents()->controller()));
     // Listen to see if the window we're in gets closed.
     registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSING,
-        NotificationService::AllSources());
+        content::NotificationService::AllSources());
   }
   return SyncSetupHandler::Attach(web_ui);
 }

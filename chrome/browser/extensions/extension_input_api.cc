@@ -20,7 +20,7 @@
 #include "views/widget/widget.h"
 
 #if defined(USE_VIRTUAL_KEYBOARD)
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #endif
 
 #if defined(OS_CHROMEOS) && defined(TOUCH_UI)
@@ -166,10 +166,10 @@ bool SendKeyboardEventInputFunction::RunImpl() {
 
 #if defined(USE_VIRTUAL_KEYBOARD)
 bool HideKeyboardFunction::RunImpl() {
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_HIDE_KEYBOARD_INVOKED,
       content::Source<HideKeyboardFunction>(this),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
   return true;
 }
 
@@ -185,7 +185,7 @@ bool SetKeyboardHeightFunction::RunImpl() {
   // TODO(penghuang) Check the height is not greater than height of browser view
   // and set the height of virtual keyboard directly instead of using
   // notification.
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_SET_KEYBOARD_HEIGHT_INVOKED,
       content::Source<SetKeyboardHeightFunction>(this),
       content::Details<int>(&height));

@@ -28,7 +28,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/user_metrics.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/cookie_store.h"
@@ -393,7 +393,7 @@ void LoginPerformer::RequestScreenLock() {
   // Will receive notifications on screen unlock and delete itself.
   registrar_.Add(this,
                  chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   if (ScreenLocker::default_screen_locker()) {
     DVLOG(1) << "Screen already locked";
     ResolveScreenLocked();

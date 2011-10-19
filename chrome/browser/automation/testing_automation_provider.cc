@@ -115,7 +115,7 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/interstitial_page.h"
 #include "content/common/common_param_traits.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "net/base/cookie_store.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "ui/base/events.h"
@@ -186,7 +186,7 @@ TestingAutomationProvider::TestingAutomationProvider(Profile* profile)
       redirect_query_(0) {
   BrowserList::AddObserver(this);
   registrar_.Add(this, chrome::NOTIFICATION_SESSION_END,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 }
 
 TestingAutomationProvider::~TestingAutomationProvider() {

@@ -36,7 +36,7 @@ void ThreadNotificationService::TearDown() {
 ThreadNotificationService::~ThreadNotificationService() {}
 
 void ThreadNotificationService::InitTask() {
-  service_.reset(new NotificationService());
+  service_.reset(new NotificationServiceImpl());
   done_event_.Signal();
 }
 
@@ -51,7 +51,7 @@ ThreadNotifier::ThreadNotifier(base::Thread* notify_thread)
 
 void ThreadNotifier::Notify(int type,
                             const content::NotificationDetails& details) {
-  Notify(type, NotificationService::AllSources(), details);
+  Notify(type, content::NotificationService::AllSources(), details);
 }
 
 void ThreadNotifier::Notify(int type,
@@ -73,6 +73,6 @@ ThreadNotifier::~ThreadNotifier() {}
 void ThreadNotifier::NotifyTask(int type,
                                 const content::NotificationSource& source,
                                 const content::NotificationDetails& details) {
-  NotificationService::current()->Notify(type, source, details);
+  content::NotificationService::current()->Notify(type, source, details);
   done_event_.Signal();
 }

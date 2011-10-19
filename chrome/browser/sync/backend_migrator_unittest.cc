@@ -77,7 +77,7 @@ class BackendMigratorTest : public testing::Test {
                          const syncable::ModelTypeSet& requested_types) {
     if (status == DataTypeManager::OK) {
       DataTypeManager::ConfigureResult result(status, requested_types);
-      NotificationService::current()->Notify(
+      content::NotificationService::current()->Notify(
           chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,
           content::Source<DataTypeManager>(&manager_),
           content::Details<const DataTypeManager::ConfigureResult>(&result));
@@ -87,7 +87,7 @@ class BackendMigratorTest : public testing::Test {
           status,
           requested_types,
           errors);
-      NotificationService::current()->Notify(
+      content::NotificationService::current()->Notify(
           chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,
           content::Source<DataTypeManager>(&manager_),
           content::Details<const DataTypeManager::ConfigureResult>(&result));

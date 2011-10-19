@@ -11,7 +11,8 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 
 ExtensionToolbarModel::ExtensionToolbarModel(ExtensionService* service)
     : service_(service),

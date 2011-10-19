@@ -36,7 +36,7 @@
 #include "content/browser/debugger/devtools_manager.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "net/base/mock_host_resolver.h"
@@ -528,7 +528,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
   void ClickToNextPageAfterPrerender(Browser* browser) {
     ui_test_utils::WindowedNotificationObserver new_page_observer(
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-        NotificationService::AllSources());
+        content::NotificationService::AllSources());
     RenderViewHost* render_view_host =
         browser->GetSelectedTabContents()->render_view_host();
     render_view_host->ExecuteJavascriptInWebFrame(
@@ -548,7 +548,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
   void GoBackToPrerender(Browser* browser) {
     ui_test_utils::WindowedNotificationObserver back_nav_observer(
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-        NotificationService::AllSources());
+        content::NotificationService::AllSources());
     browser->GoBack(CURRENT_TAB);
     back_nav_observer.Wait();
     bool original_prerender_page = false;

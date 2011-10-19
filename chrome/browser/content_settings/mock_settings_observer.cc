@@ -7,13 +7,13 @@
 #include "chrome/browser/content_settings/content_settings_details.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "googleurl/src/gurl.h"
 
 MockSettingsObserver::MockSettingsObserver() {
   registrar_.Add(this, chrome::NOTIFICATION_CONTENT_SETTINGS_CHANGED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 }
 
 MockSettingsObserver::~MockSettingsObserver() {}

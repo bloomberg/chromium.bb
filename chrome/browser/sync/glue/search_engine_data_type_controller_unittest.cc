@@ -16,7 +16,7 @@
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/profile_mock.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using browser_sync::ChangeProcessorMock;
@@ -107,10 +107,10 @@ TEST_F(SearchEngineDataTypeControllerTest, StartURLServiceNotReady) {
   EXPECT_EQ(DataTypeController::MODEL_STARTING, search_engine_dtc_->state());
 
   // Send the notification that the TemplateURLService has started.
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED,
       content::Source<TemplateURLService>(test_util_.model()),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
   EXPECT_EQ(DataTypeController::RUNNING, search_engine_dtc_->state());
 }
 

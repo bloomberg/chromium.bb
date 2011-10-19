@@ -19,7 +19,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "views/controls/textfield/textfield.h"
@@ -35,7 +35,7 @@ class Waiter : public content::NotificationObserver {
         running_(false) {
     registrar_.Add(this,
                    chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
-                   NotificationService::AllSources());
+                   content::NotificationService::AllSources());
     handler_id_ = g_signal_connect(
         G_OBJECT(browser_->window()->GetNativeHandle()),
         "window-state-event",
@@ -118,7 +118,7 @@ class ScreenLockerTest : public CrosInProcessBrowserTest {
     tester->EmulateWindowManagerReady();
     ui_test_utils::WindowedNotificationObserver lock_state_observer(
         chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
-        NotificationService::AllSources());
+        content::NotificationService::AllSources());
     if (!chromeos::ScreenLocker::GetTester()->IsLocked())
       lock_state_observer.Wait();
     EXPECT_TRUE(tester->IsLocked());
@@ -142,7 +142,7 @@ class ScreenLockerTest : public CrosInProcessBrowserTest {
     tester->EmulateWindowManagerReady();
     ui_test_utils::WindowedNotificationObserver lock_state_observer(
         chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
-        NotificationService::AllSources());
+        content::NotificationService::AllSources());
     if (!tester->IsLocked())
       lock_state_observer.Wait();
     EXPECT_TRUE(tester->IsLocked());
@@ -188,7 +188,7 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, DISABLED_TestBasic) {
   tester->EmulateWindowManagerReady();
   ui_test_utils::WindowedNotificationObserver lock_state_observer(
       chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
   if (!chromeos::ScreenLocker::GetTester()->IsLocked())
     lock_state_observer.Wait();
 

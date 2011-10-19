@@ -25,7 +25,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/common/geolocation_messages.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // ClosedDelegateTracker ------------------------------------------------------
@@ -57,7 +57,7 @@ class ClosedDelegateTracker : public content::NotificationObserver {
 
 ClosedDelegateTracker::ClosedDelegateTracker() {
   registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 }
 
 ClosedDelegateTracker::~ClosedDelegateTracker() {

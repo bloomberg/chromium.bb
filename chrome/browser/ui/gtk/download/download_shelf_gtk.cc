@@ -20,7 +20,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/download/download_item.h"
 #include "content/browser/download/download_stats.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"

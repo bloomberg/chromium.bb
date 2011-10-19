@@ -2,74 +2,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This file describes a central switchboard for notifications that might
-// happen in various parts of the application, and allows users to register
-// observers for various classes of events that they're interested in.
-
-#ifndef CONTENT_COMMON_NOTIFICATION_SERVICE_H_
-#define CONTENT_COMMON_NOTIFICATION_SERVICE_H_
+#ifndef CONTENT_PUBLIC_BROWSER_NOTIFICATION_SERVICE_IMPL_H_
+#define CONTENT_PUBLIC_BROWSER_NOTIFICATION_SERVICE_IMPL_H_
 #pragma once
 
 #include <map>
 
 #include "base/observer_list.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
+#include "content/public/browser/notification_service.h"
 
 namespace content {
 class NotificationObserver;
 class NotificationRegistrar;
 }
 
-class CONTENT_EXPORT NotificationService {
+class NotificationServiceImpl : public content::NotificationService {
  public:
-  // Returns the NotificationService object for the current thread, or NULL if
-  // none.
-  static NotificationService* current();
+  static NotificationServiceImpl* current();
 
   // Normally instantiated when the thread is created.  Not all threads have
   // a NotificationService.  Only one instance should be created per thread.
-  NotificationService();
-  ~NotificationService();
+  NotificationServiceImpl();
+  virtual ~NotificationServiceImpl();
 
-  // Synchronously posts a notification to all interested observers.
-  // Source is a reference to a NotificationSource object representing
-  // the object originating the notification (can be
-  // NotificationService::AllSources(), in which case
-  // only observers interested in all sources will be notified).
-  // Details is a reference to an object containing additional data about
-  // the notification.  If no additional data is needed, NoDetails() is used.
-  // There is no particular order in which the observers will be notified.
-  void Notify(int type,
+  // content::NotificationService
+  virtual void Notify(int type,
               const content::NotificationSource& source,
               const content::NotificationDetails& details);
-
-  // Returns a NotificationSource that represents all notification sources
-  // (for the purpose of registering an observer for events from all sources).
-  static content::Source<void> AllSources() {
-    return content::Source<void>(NULL);
-  }
-
-  // Returns the same value as AllSources(). This function has semantic
-  // differences to the programmer: We have checked that this AllSources()
-  // usage is safe in the face of multiple profiles. Objects that were
-  // singletons now will always have multiple instances, one per browser
-  // context.
-  //
-  // Some usage is safe, where the Source is checked to see if it's a member of
-  // a container before use. But, we want the number of AllSources() calls to
-  // drop to almost nothing, because most usages are not multiprofile safe and
-  // were done because it was easier to listen to everything.
-  static content::Source<void> AllBrowserContextsAndSources() {
-    return content::Source<void>(NULL);
-  }
-
-  // Returns a NotificationDetails object that represents a lack of details
-  // associated with a notification.  (This is effectively a null pointer.)
-  static content::Details<void> NoDetails() {
-    return content::Details<void>(NULL);
-  }
 
  private:
   friend class content::NotificationRegistrar;
@@ -126,7 +86,7 @@ class CONTENT_EXPORT NotificationService {
   NotificationObserverCount observer_counts_;
 #endif
 
-  DISALLOW_COPY_AND_ASSIGN(NotificationService);
+  DISALLOW_COPY_AND_ASSIGN(NotificationServiceImpl);
 };
 
-#endif  // CONTENT_COMMON_NOTIFICATION_SERVICE_H_
+#endif  // CONTENT_PUBLIC_BROWSER_NOTIFICATION_SERVICE_IMPL_H_

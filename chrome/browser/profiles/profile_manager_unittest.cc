@@ -27,7 +27,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -139,8 +139,8 @@ TEST_F(ProfileManagerTest, LoggedInProfileDir) {
             profile_manager_->GetInitialProfileDir().value());
 
   profile_manager_->Observe(chrome::NOTIFICATION_LOGIN_USER_CHANGED,
-                           NotificationService::AllSources(),
-                           NotificationService::NoDetails());
+                           content::NotificationService::AllSources(),
+                           content::NotificationService::NoDetails());
   FilePath expected_logged_in(profile_dir);
   EXPECT_EQ(expected_logged_in.value(),
             profile_manager_->GetInitialProfileDir().value());

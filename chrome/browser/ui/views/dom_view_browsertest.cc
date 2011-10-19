@@ -6,6 +6,7 @@
 #include "chrome/browser/ui/views/dom_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "views/widget/widget.h"
 
@@ -33,7 +34,7 @@ IN_PROC_BROWSER_TEST_F(DOMViewTest, TestShowAndHide) {
   dom_view->Init(browser()->profile(), NULL);
   ui_test_utils::WindowedNotificationObserver load_stop_observer(
       content::NOTIFICATION_LOAD_STOP,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
   dom_view->LoadURL(GURL("http://www.google.com"));
   load_stop_observer.Wait();
   one->Show();
@@ -54,7 +55,7 @@ IN_PROC_BROWSER_TEST_F(DOMViewTest, TestRemoveAndDelete) {
   dom_view->Init(browser()->profile(), NULL);
   ui_test_utils::WindowedNotificationObserver load_stop_observer(
       content::NOTIFICATION_LOAD_STOP,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
   dom_view->LoadURL(GURL("http://www.google.com"));
   load_stop_observer.Wait();
   one->Show();
@@ -79,7 +80,7 @@ IN_PROC_BROWSER_TEST_F(DOMViewTest, TestReparent) {
   dom_view->Init(browser()->profile(), NULL);
   ui_test_utils::WindowedNotificationObserver load_stop_observer(
       content::NOTIFICATION_LOAD_STOP,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
   dom_view->LoadURL(GURL("http://www.google.com"));
   load_stop_observer.Wait();
   one->Show();

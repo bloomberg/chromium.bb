@@ -10,7 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 
 namespace keys = extension_accessibility_api_constants;
@@ -19,7 +19,7 @@ void SendAccessibilityNotification(
     int type, AccessibilityEventInfo* info) {
   Profile *profile = info->profile();
   if (profile->ShouldSendAccessibilityEvents()) {
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         type,
         content::Source<Profile>(profile),
         content::Details<AccessibilityEventInfo>(info));

@@ -37,7 +37,7 @@
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/utility_process_host.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "crypto/sha2.h"
 #include "googleurl/src/gurl.h"
@@ -1216,14 +1216,14 @@ void ExtensionUpdater::FetchUpdatedExtension(const std::string& id,
 }
 
 void ExtensionUpdater::NotifyStarted() {
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_UPDATING_STARTED,
       content::Source<Profile>(profile_),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 }
 
 void ExtensionUpdater::NotifyUpdateFound(const std::string& extension_id) {
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_UPDATE_FOUND,
       content::Source<Profile>(profile_),
       content::Details<const std::string>(&extension_id));
@@ -1231,10 +1231,10 @@ void ExtensionUpdater::NotifyUpdateFound(const std::string& extension_id) {
 
 void ExtensionUpdater::NotifyIfFinished() {
   if (in_progress_ids_.empty()) {
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTENSION_UPDATING_FINISHED,
         content::Source<Profile>(profile_),
-        NotificationService::NoDetails());
+        content::NotificationService::NoDetails());
     VLOG(1) << "Sending EXTENSION_UPDATING_FINISHED";
   }
 }

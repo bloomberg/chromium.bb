@@ -14,7 +14,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "googleurl/src/gurl.h"
 
 struct SidebarManager::SidebarStateForTab {
@@ -239,7 +239,7 @@ void SidebarManager::Observe(int type,
 }
 
 void SidebarManager::UpdateSidebar(SidebarContainer* host) {
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_SIDEBAR_CHANGED,
       content::Source<SidebarManager>(this),
       content::Details<SidebarContainer>(host));

@@ -31,7 +31,6 @@
 #include "content/common/child_process_host.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/desktop_notification_messages.h"
-#include "content/common/notification_service.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_switches.h"

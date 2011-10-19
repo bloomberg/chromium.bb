@@ -8,7 +8,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 
 ExtensionNavigationObserver::ExtensionNavigationObserver(Profile* profile)
     : profile_(profile) {
@@ -37,7 +37,7 @@ void ExtensionNavigationObserver::Observe(
 
 void ExtensionNavigationObserver::RegisterForNotifications() {
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 }
 
 void ExtensionNavigationObserver::PromptToEnableExtensionIfNecessary(

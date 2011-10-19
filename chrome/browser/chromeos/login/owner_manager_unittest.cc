@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/login/mock_owner_key_utils.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/browser_thread.h"
+#include "content/public/browser/notification_service.h"
 #include "crypto/nss_util.h"
 #include "crypto/rsa_private_key.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -39,11 +40,11 @@ MockKeyLoadObserver::MockKeyLoadObserver(base::WaitableEvent* e)
   registrar_.Add(
       this,
       chrome::NOTIFICATION_OWNER_KEY_FETCH_ATTEMPT_FAILED,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
   registrar_.Add(
       this,
       chrome::NOTIFICATION_OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
 }
 
 MockKeyLoadObserver::~MockKeyLoadObserver() {

@@ -54,7 +54,7 @@
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
@@ -553,7 +553,7 @@ void LocationBarViewGtk::OnSetFocus() {
   Profile* profile = browser_->profile();
   AccessibilityTextBoxInfo info(profile,
       l10n_util::GetStringUTF8(IDS_ACCNAME_LOCATION), false);
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_ACCESSIBILITY_CONTROL_FOCUSED,
       content::Source<Profile>(profile),
       content::Details<AccessibilityTextBoxInfo>(&info));
@@ -659,10 +659,10 @@ void LocationBarViewGtk::UpdatePageActions() {
       gtk_box_pack_end(GTK_BOX(page_action_hbox_.get()),
                        page_action_views_[i]->widget(), FALSE, FALSE, 0);
     }
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_COUNT_CHANGED,
         content::Source<LocationBar>(this),
-        NotificationService::NoDetails());
+        content::NotificationService::NoDetails());
   }
 
   TabContents* contents = GetTabContents();
@@ -685,10 +685,10 @@ void LocationBarViewGtk::InvalidatePageActions() {
   size_t count_before = page_action_views_.size();
   page_action_views_.reset();
   if (page_action_views_.size() != count_before) {
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_COUNT_CHANGED,
         content::Source<LocationBar>(this),
-        NotificationService::NoDetails());
+        content::NotificationService::NoDetails());
   }
 }
 
@@ -1535,7 +1535,7 @@ void LocationBarViewGtk::PageActionViewGtk::UpdateVisibility(
     gtk_widget_hide_all(event_box_.get());
 
   if (visible != old_visible) {
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
         content::Source<ExtensionAction>(page_action_),
         content::Details<TabContents>(contents));

@@ -6,9 +6,10 @@
 
 #import "chrome/browser/ui/cocoa/theme_install_bubble_view.h"
 
+#include "base/logging.h"
 #include "base/memory/scoped_nsobject.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -64,27 +65,27 @@ ThemeInstallBubbleView::ThemeInstallBubbleView(NSWindow* window)
   registrar_.Add(
       this,
       chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
-      NotificationService::AllBrowserContextsAndSources());
+      content::NotificationService::AllBrowserContextsAndSources());
 
   // Close when we are installing an extension, not a theme.
   registrar_.Add(
       this,
       chrome::NOTIFICATION_NO_THEME_DETECTED,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
   registrar_.Add(
       this,
       chrome::NOTIFICATION_EXTENSION_INSTALLED,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
   registrar_.Add(
       this,
       chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
 
   // Don't let the bubble overlap the confirm dialog.
   registrar_.Add(
       this,
       chrome::NOTIFICATION_EXTENSION_WILL_SHOW_CONFIRM_DIALOG,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
 
   // Add the view.
   [cocoa_view_ setFrame:parent_bounds];

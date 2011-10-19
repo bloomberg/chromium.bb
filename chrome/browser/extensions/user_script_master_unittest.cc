@@ -16,7 +16,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -44,7 +44,7 @@ class UserScriptMasterTest : public testing::Test,
 
     // Register for all user script notifications.
     registrar_.Add(this, chrome::NOTIFICATION_USER_SCRIPTS_UPDATED,
-                   NotificationService::AllSources());
+                   content::NotificationService::AllSources());
 
     // UserScriptMaster posts tasks to the file thread so make the current
     // thread look like one.

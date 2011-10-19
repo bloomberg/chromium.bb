@@ -11,15 +11,17 @@
 #include "sql/init_status.h"
 #include "sql/meta_table.h"
 
-class FilePath;
-class NotificationService;
-
 class AutofillTable;
+class FilePath;
 class KeywordTable;
 class LoginsTable;
 class TokenServiceTable;
 class WebAppsTable;
 class WebIntentsTable;
+
+namespace content {
+class NotificationService;
+}
 
 // This class manages a SQLite database that stores various web page meta data.
 class WebDatabase {
@@ -60,7 +62,7 @@ class WebDatabase {
   scoped_ptr<WebAppsTable> web_apps_table_;
   scoped_ptr<WebIntentsTable> web_intents_table_;
 
-  scoped_ptr<NotificationService> notification_service_;
+  scoped_ptr<content::NotificationService> notification_service_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDatabase);
 };

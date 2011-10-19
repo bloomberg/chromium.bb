@@ -16,7 +16,6 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/common/notification_service.h"
 #include "net/base/mock_host_resolver.h"
 
 namespace {

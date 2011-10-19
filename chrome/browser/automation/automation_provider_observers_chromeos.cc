@@ -14,7 +14,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 
 using chromeos::CrosLibrary;
 using chromeos::NetworkLibrary;
@@ -50,7 +50,7 @@ LoginWebuiReadyObserver::LoginWebuiReadyObserver(
     AutomationProvider* automation)
     : automation_(automation->AsWeakPtr()) {
   registrar_.Add(this, chrome::NOTIFICATION_LOGIN_WEBUI_READY,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 }
 
 LoginWebuiReadyObserver::~LoginWebuiReadyObserver() {
@@ -105,7 +105,7 @@ ScreenLockUnlockObserver::ScreenLockUnlockObserver(
       reply_message_(reply_message),
       lock_screen_(lock_screen) {
   registrar_.Add(this, chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 }
 
 ScreenLockUnlockObserver::~ScreenLockUnlockObserver() {}

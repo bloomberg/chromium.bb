@@ -12,7 +12,7 @@
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/common/url_constants.h"
 
@@ -99,7 +99,7 @@ TEST_F(PrintPreviewTabControllerUnitTest, TitleAfterReload) {
   content::LoadCommittedDetails details;
   details.type = content::NAVIGATION_TYPE_SAME_PAGE;
   details.entry = entry.get();
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::Source<NavigationController>(&preview_tab->controller()),
       content::Details<content::LoadCommittedDetails>(&details));

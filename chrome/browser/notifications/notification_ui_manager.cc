@@ -16,7 +16,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/site_instance.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 
 namespace {
 const int kUserStatePollingIntervalSeconds = 1;
@@ -51,7 +51,7 @@ NotificationUIManager::NotificationUIManager(PrefService* local_state)
     : balloon_collection_(NULL),
       is_user_active_(true) {
   registrar_.Add(this, content::NOTIFICATION_APP_TERMINATING,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   position_pref_.Init(prefs::kDesktopNotificationPosition, local_state, this);
 #if defined(OS_MACOSX)
   InitFullScreenMonitor();

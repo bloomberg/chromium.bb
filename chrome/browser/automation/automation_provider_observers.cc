@@ -76,7 +76,7 @@
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/child_process_info.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -110,11 +110,11 @@ InitialLoadObserver::InitialLoadObserver(size_t tab_count,
       init_time_(base::TimeTicks::Now()) {
   if (outstanding_tab_count_ > 0) {
     registrar_.Add(this, content::NOTIFICATION_LOAD_START,
-                   NotificationService::AllSources());
+                   content::NotificationService::AllSources());
     registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
-                   NotificationService::AllSources());
+                   content::NotificationService::AllSources());
     registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
-                   NotificationService::AllSources());
+                   content::NotificationService::AllSources());
   }
 }
 
@@ -233,7 +233,7 @@ NavigationControllerRestoredObserver::NavigationControllerRestoredObserver(
     SendDone();
   } else {
     registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
-                   NotificationService::AllSources());
+                   content::NotificationService::AllSources());
   }
 }
 
@@ -285,7 +285,7 @@ NavigationNotificationObserver::NavigationNotificationObserver(
   registrar_.Add(this, chrome::NOTIFICATION_AUTH_SUPPLIED, source);
   registrar_.Add(this, chrome::NOTIFICATION_AUTH_CANCELLED, source);
   registrar_.Add(this, chrome::NOTIFICATION_APP_MODAL_DIALOG_SHOWN,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 
   if (include_current_navigation && controller->tab_contents()->IsLoading())
     navigation_started_ = true;
@@ -366,7 +366,8 @@ TabStripNotificationObserver::TabStripNotificationObserver(
     int notification, AutomationProvider* automation)
     : automation_(automation->AsWeakPtr()),
       notification_(notification) {
-  registrar_.Add(this, notification_, NotificationService::AllSources());
+  registrar_.Add(this, notification_,
+                 content::NotificationService::AllSources());
 }
 
 TabStripNotificationObserver::~TabStripNotificationObserver() {
@@ -514,9 +515,9 @@ ExtensionUninstallObserver::ExtensionUninstallObserver(
       reply_message_(reply_message),
       id_(id) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALL_NOT_ALLOWED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 }
 
 ExtensionUninstallObserver::~ExtensionUninstallObserver() {
@@ -572,15 +573,15 @@ ExtensionReadyNotificationObserver::ExtensionReadyNotificationObserver(
       reply_message_(reply_message),
       extension_(NULL) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOAD_ERROR,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 }
 
 ExtensionReadyNotificationObserver::~ExtensionReadyNotificationObserver() {
@@ -642,7 +643,7 @@ void ExtensionReadyNotificationObserver::Observe(
 ExtensionUnloadNotificationObserver::ExtensionUnloadNotificationObserver()
     : did_receive_unload_notification_(false) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 }
 
 ExtensionUnloadNotificationObserver::~ExtensionUnloadNotificationObserver() {
@@ -664,19 +665,19 @@ ExtensionsUpdatedObserver::ExtensionsUpdatedObserver(
     : manager_(manager), automation_(automation->AsWeakPtr()),
       reply_message_(reply_message), updater_finished_(false) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALL_NOT_ALLOWED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UPDATE_FOUND,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UPDATING_FINISHED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 }
 
 ExtensionsUpdatedObserver::~ExtensionsUpdatedObserver() {
@@ -756,9 +757,9 @@ ExtensionTestResultNotificationObserver::
     ExtensionTestResultNotificationObserver(AutomationProvider* automation)
         : automation_(automation->AsWeakPtr()) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_TEST_PASSED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_TEST_FAILED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 }
 
 ExtensionTestResultNotificationObserver::
@@ -814,9 +815,9 @@ BrowserOpenedNotificationObserver::BrowserOpenedNotificationObserver(
       new_window_id_(extension_misc::kUnknownWindowId),
       for_browser_command_(false) {
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_OPENED,
-                 NotificationService::AllBrowserContextsAndSources());
+                 content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
-                 NotificationService::AllBrowserContextsAndSources());
+                 content::NotificationService::AllBrowserContextsAndSources());
 }
 
 BrowserOpenedNotificationObserver::~BrowserOpenedNotificationObserver() {
@@ -910,9 +911,9 @@ BrowserCountChangeNotificationObserver::BrowserCountChangeNotificationObserver(
       automation_(automation->AsWeakPtr()),
       reply_message_(reply_message) {
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_OPENED,
-                 NotificationService::AllBrowserContextsAndSources());
+                 content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSED,
-                 NotificationService::AllBrowserContextsAndSources());
+                 content::NotificationService::AllBrowserContextsAndSources());
 }
 
 BrowserCountChangeNotificationObserver::
@@ -950,7 +951,7 @@ AppModalDialogShownObserver::AppModalDialogShownObserver(
     : automation_(automation->AsWeakPtr()),
       reply_message_(reply_message) {
   registrar_.Add(this, chrome::NOTIFICATION_APP_MODAL_DIALOG_SHOWN,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 }
 
 AppModalDialogShownObserver::~AppModalDialogShownObserver() {
@@ -1074,7 +1075,8 @@ ExecuteBrowserCommandObserver::ExecuteBrowserCommandObserver(
 bool ExecuteBrowserCommandObserver::Register(int command) {
   if (!Getint(command, &notification_type_))
     return false;
-  registrar_.Add(this, notification_type_, NotificationService::AllSources());
+  registrar_.Add(this, notification_type_,
+                 content::NotificationService::AllSources());
   return true;
 }
 
@@ -1157,9 +1159,9 @@ const int FindInPageNotificationObserver::kFindInPageRequestId = -1;
 
 DomOperationObserver::DomOperationObserver() {
   registrar_.Add(this, chrome::NOTIFICATION_DOM_OPERATION_RESPONSE,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_APP_MODAL_DIALOG_SHOWN,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 }
 
 DomOperationObserver::~DomOperationObserver() {}
@@ -1217,7 +1219,7 @@ DocumentPrintedNotificationObserver::DocumentPrintedNotificationObserver(
       success_(false),
       reply_message_(reply_message) {
   registrar_.Add(this, chrome::NOTIFICATION_PRINT_JOB_EVENT,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 }
 
 DocumentPrintedNotificationObserver::~DocumentPrintedNotificationObserver() {
@@ -1264,7 +1266,7 @@ void DocumentPrintedNotificationObserver::Observe(
 
 MetricEventDurationObserver::MetricEventDurationObserver() {
   registrar_.Add(this, chrome::NOTIFICATION_METRIC_EVENT_DURATION,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 }
 
 MetricEventDurationObserver::~MetricEventDurationObserver() {}
@@ -1755,7 +1757,7 @@ void PasswordStoreLoginsChangedObserver::Init() {
 void PasswordStoreLoginsChangedObserver::RegisterObserversTask() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   registrar_.Add(this, chrome::NOTIFICATION_LOGINS_CHANGED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   done_event_.Signal();
 }
 
@@ -2187,9 +2189,9 @@ AppLaunchObserver::AppLaunchObserver(
   } else {
     // Need to wait for a new tab in a new window to load.
     registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
-                   NotificationService::AllSources());
+                   content::NotificationService::AllSources());
     registrar_.Add(this, chrome::NOTIFICATION_BROWSER_WINDOW_READY,
-                   NotificationService::AllSources());
+                   content::NotificationService::AllSources());
   }
 }
 
@@ -2290,9 +2292,9 @@ void AutofillChangedObserver::Init() {
 void AutofillChangedObserver::RegisterObserversTask() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   registrar_.Add(this, chrome::NOTIFICATION_AUTOFILL_CREDIT_CARD_CHANGED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_AUTOFILL_PROFILE_CHANGED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   done_event_.Signal();
 }
 
@@ -2341,7 +2343,7 @@ AutofillFormSubmittedObserver::AutofillFormSubmittedObserver(
       infobar_helper_(NULL) {
   pdm_->SetObserver(this);
   registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 }
 
 AutofillFormSubmittedObserver::~AutofillFormSubmittedObserver() {
@@ -2431,7 +2433,7 @@ GetAllNotificationsObserver::GetAllNotificationsObserver(
     SendMessage();
   } else {
     registrar_.Add(this, chrome::NOTIFICATION_NOTIFY_BALLOON_CONNECTED,
-                   NotificationService::AllSources());
+                   content::NotificationService::AllSources());
   }
 }
 
@@ -2495,7 +2497,7 @@ NewNotificationBalloonObserver::NewNotificationBalloonObserver(
     : automation_(provider->AsWeakPtr()),
       reply_message_(reply_message) {
   registrar_.Add(this, chrome::NOTIFICATION_NOTIFY_BALLOON_CONNECTED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 }
 
 NewNotificationBalloonObserver::~NewNotificationBalloonObserver() { }
@@ -2521,7 +2523,7 @@ OnNotificationBalloonCountObserver::OnNotificationBalloonCountObserver(
           g_browser_process->notification_ui_manager()->balloon_collection()),
       count_(count) {
   registrar_.Add(this, chrome::NOTIFICATION_NOTIFY_BALLOON_CONNECTED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   collection_->set_on_collection_changed_callback(
       base::Bind(&OnNotificationBalloonCountObserver::CheckBalloonCount,
                  base::Unretained(this)));
@@ -2559,7 +2561,7 @@ RendererProcessClosedObserver::RendererProcessClosedObserver(
     : automation_(automation->AsWeakPtr()),
       reply_message_(reply_message) {
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 }
 
 RendererProcessClosedObserver::~RendererProcessClosedObserver() {}
@@ -2588,11 +2590,11 @@ InputEventAckNotificationObserver::InputEventAckNotificationObserver(
   registrar_.Add(
       this,
       content::NOTIFICATION_RENDER_WIDGET_HOST_DID_RECEIVE_INPUT_EVENT_ACK,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
   registrar_.Add(
       this,
       chrome::NOTIFICATION_APP_MODAL_DIALOG_SHOWN,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
 }
 
 InputEventAckNotificationObserver::~InputEventAckNotificationObserver() {}
@@ -2630,7 +2632,7 @@ AllTabsStoppedLoadingObserver::AllTabsStoppedLoadingObserver(
       reply_message_(reply_message) {
   registrar_.Add(this,
                  chrome::NOTIFICATION_APP_MODAL_DIALOG_SHOWN,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   for (BrowserList::const_iterator iter = BrowserList::begin();
        iter != BrowserList::end();
        ++iter) {
@@ -2702,7 +2704,7 @@ NewTabObserver::NewTabObserver(AutomationProvider* automation,
   // Use TAB_PARENTED to detect the new tab.
   registrar_.Add(this,
                  content::NOTIFICATION_TAB_PARENTED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 }
 
 void NewTabObserver::Observe(int type,
@@ -2782,11 +2784,11 @@ DragTargetDropAckNotificationObserver::DragTargetDropAckNotificationObserver(
   registrar_.Add(
       this,
       content::NOTIFICATION_RENDER_VIEW_HOST_DID_RECEIVE_DRAG_TARGET_DROP_ACK,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
   registrar_.Add(
       this,
       chrome::NOTIFICATION_APP_MODAL_DIALOG_SHOWN,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
 }
 
 DragTargetDropAckNotificationObserver::
@@ -2892,11 +2894,11 @@ BrowserOpenedWithNewProfileNotificationObserver::
           reply_message_(reply_message),
           new_window_id_(extension_misc::kUnknownWindowId) {
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CREATED,
-                 NotificationService::AllBrowserContextsAndSources());
+                 content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_OPENED,
-                 NotificationService::AllBrowserContextsAndSources());
+                 content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
-                 NotificationService::AllBrowserContextsAndSources());
+                 content::NotificationService::AllBrowserContextsAndSources());
 }
 
 BrowserOpenedWithNewProfileNotificationObserver::

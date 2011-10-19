@@ -17,7 +17,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 
 namespace events {
 const char kOnInputStarted[] = "omnibox.onInputStarted";
@@ -99,9 +99,10 @@ void ExtensionOmniboxEventRouter::OnInputEntered(
   profile->GetExtensionEventRouter()->DispatchEventToExtension(
       extension_id, events::kOnInputEntered, json_args, profile, GURL());
 
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_OMNIBOX_INPUT_ENTERED,
-      content::Source<Profile>(profile), NotificationService::NoDetails());
+      content::Source<Profile>(profile),
+      content::NotificationService::NoDetails());
 }
 
 // static
@@ -140,7 +141,7 @@ bool OmniboxSendSuggestionsFunction::RunImpl() {
     }
   }
 
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_OMNIBOX_SUGGESTIONS_READY,
       content::Source<Profile>(profile_),
       content::Details<ExtensionOmniboxSuggestions>(&suggestions));
@@ -171,10 +172,10 @@ bool OmniboxSetDefaultSuggestionFunction::RunImpl() {
       profile_->GetExtensionService()->GetPropertyBag(GetExtension()),
       suggestion);
 
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_OMNIBOX_DEFAULT_SUGGESTION_CHANGED,
       content::Source<Profile>(profile_),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 
   return true;
 }

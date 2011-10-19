@@ -2,33 +2,38 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/notification_service.h"
+#include "content/browser/notification_service_impl.h"
 
 #include "base/lazy_instance.h"
 #include "base/threading/thread_local.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_types.h"
 
-static base::LazyInstance<base::ThreadLocalPointer<NotificationService> >
+static base::LazyInstance<base::ThreadLocalPointer<NotificationServiceImpl> >
     lazy_tls_ptr(base::LINKER_INITIALIZED);
 
 // static
-NotificationService* NotificationService::current() {
+NotificationServiceImpl* NotificationServiceImpl::current() {
   return lazy_tls_ptr.Pointer()->Get();
 }
 
 // static
-bool NotificationService::HasKey(const NotificationSourceMap& map,
+content::NotificationService* content::NotificationService::current() {
+  return NotificationServiceImpl::current();
+}
+
+// static
+bool NotificationServiceImpl::HasKey(const NotificationSourceMap& map,
                                  const content::NotificationSource& source) {
   return map.find(source.map_key()) != map.end();
 }
 
-NotificationService::NotificationService() {
+NotificationServiceImpl::NotificationServiceImpl() {
   DCHECK(current() == NULL);
   lazy_tls_ptr.Pointer()->Set(this);
 }
 
-void NotificationService::AddObserver(
+void NotificationServiceImpl::AddObserver(
     content::NotificationObserver* observer,
     int type,
     const content::NotificationSource& source) {
@@ -53,12 +58,12 @@ void NotificationService::AddObserver(
 #endif
 }
 
-void NotificationService::RemoveObserver(
+void NotificationServiceImpl::RemoveObserver(
     content::NotificationObserver* observer,
     int type,
     const content::NotificationSource& source) {
   // This is a very serious bug.  An object is most likely being deleted on
-  // the wrong thread, and as a result another thread's NotificationService
+  // the wrong thread, and as a result another thread's NotificationServiceImpl
   // has its deleted pointer in its map.  A garbge object will be called in the
   // future.
   // NOTE: when this check shows crashes, use BrowserThread::DeleteOnIOThread or
@@ -77,9 +82,10 @@ void NotificationService::RemoveObserver(
   // TODO(jhughes): Remove observer list from map if empty?
 }
 
-void NotificationService::Notify(int type,
-                                 const content::NotificationSource& source,
-                                 const content::NotificationDetails& details) {
+void NotificationServiceImpl::Notify(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK(type > content::NOTIFICATION_ALL) <<
       "Allowed for observing, but not posting.";
 
@@ -118,7 +124,7 @@ void NotificationService::Notify(int type,
 }
 
 
-NotificationService::~NotificationService() {
+NotificationServiceImpl::~NotificationServiceImpl() {
   lazy_tls_ptr.Pointer()->Set(NULL);
 
 #ifndef NDEBUG

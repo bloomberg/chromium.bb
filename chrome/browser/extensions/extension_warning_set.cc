@@ -8,7 +8,7 @@
 #include "chrome/browser/ui/global_error_service.h"
 #include "chrome/browser/ui/global_error_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -126,10 +126,10 @@ void ExtensionWarningSet::SuppressBadgeForCurrentWarnings() {
 }
 
 void ExtensionWarningSet::NotifyWarningsChanged() {
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_WARNING_CHANGED,
       content::Source<Profile>(profile_),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 }
 
 void ExtensionWarningSet::ActivateBadge() {

@@ -24,7 +24,7 @@
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/guid.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 
 namespace browser_sync {
 
@@ -422,7 +422,7 @@ void AutofillChangeProcessor::StartObserving() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   notification_registrar_.Add(this,
                               chrome::NOTIFICATION_AUTOFILL_ENTRIES_CHANGED,
-                              NotificationService::AllSources());
+                              content::NotificationService::AllSources());
 }
 
 void AutofillChangeProcessor::StopObserving() {

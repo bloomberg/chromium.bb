@@ -10,7 +10,7 @@
 #include "chrome/browser/internal_auth.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_details.h"
 #include "net/base/escape.h"
 
@@ -84,7 +84,7 @@ bool WebSocketProxyPrivateGetPassportForTCPFunction::RunImpl() {
       delay_response = true;
       registrar_.Add(
           this, chrome::NOTIFICATION_WEB_SOCKET_PROXY_STARTED,
-          NotificationService::AllSources());
+          content::NotificationService::AllSources());
       chromeos::WebSocketProxyController::Initiate();
     }
 
@@ -136,7 +136,7 @@ bool WebSocketProxyPrivateGetURLForTCPFunction::RunImpl() {
       delay_response = true;
       registrar_.Add(
           this, chrome::NOTIFICATION_WEB_SOCKET_PROXY_STARTED,
-          NotificationService::AllSources());
+          content::NotificationService::AllSources());
       chromeos::WebSocketProxyController::Initiate();
     }
 

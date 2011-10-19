@@ -15,7 +15,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/pref_names.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 
 using base::Time;
 
@@ -1124,7 +1124,7 @@ void ExtensionPrefs::SetBrowserActionVisibility(const Extension* extension,
 
   UpdateExtensionPref(extension->id(), kBrowserActionVisible,
                       Value::CreateBooleanValue(visible));
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,
       content::Source<ExtensionPrefs>(this),
       content::Details<const Extension>(extension));
@@ -1458,10 +1458,10 @@ void ExtensionPrefs::SetAppLauncherOrder(
   for (size_t i = 0; i < extension_ids.size(); ++i)
     SetAppLaunchIndex(extension_ids.at(i), i);
 
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_LAUNCHER_REORDERED,
       content::Source<ExtensionPrefs>(this),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 }
 
 int ExtensionPrefs::GetPageIndex(const std::string& extension_id) {

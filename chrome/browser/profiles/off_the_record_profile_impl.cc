@@ -52,7 +52,7 @@
 #include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/browser/ssl/ssl_host_state.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "net/base/transport_security_state.h"
 #include "net/http/http_server_properties.h"
 #include "webkit/database/database_tracker.h"
@@ -117,9 +117,9 @@ void OffTheRecordProfileImpl::Init() {
 }
 
 OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
     chrome::NOTIFICATION_PROFILE_DESTROYED, content::Source<Profile>(this),
-    NotificationService::NoDetails());
+    content::NotificationService::NoDetails());
 
   ChromePluginServiceFilter::GetInstance()->UnregisterResourceContext(
     &GetResourceContext());

@@ -33,7 +33,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "net/base/network_change_notifier.h"
 
 #if defined(OS_CHROMEOS)
@@ -184,7 +184,7 @@ void TabLoader::TabIsLoading(NavigationController* controller) {
 
 void TabLoader::StartLoading() {
   registrar_.Add(this, content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 #if defined(OS_CHROMEOS)
   if (!net::NetworkChangeNotifier::IsOffline()) {
     loading_ = true;

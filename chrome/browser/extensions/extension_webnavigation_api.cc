@@ -19,7 +19,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "net/base/net_errors.h"
 
@@ -367,10 +367,10 @@ void ExtensionWebNavigationEventRouter::Init() {
                    content::Source<content::BrowserContext>(profile_));
     registrar_.Add(this,
                    content::NOTIFICATION_TAB_ADDED,
-                   NotificationService::AllSources());
+                   content::NotificationService::AllSources());
     registrar_.Add(this,
                    content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                   NotificationService::AllSources());
+                   content::NotificationService::AllSources());
   }
 }
 

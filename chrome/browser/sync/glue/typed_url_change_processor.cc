@@ -18,7 +18,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/protocol/typed_url_specifics.pb.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/common/notification_service.h"
+#include "content/browser/notification_service_impl.h"
 
 namespace browser_sync {
 
@@ -47,8 +47,8 @@ TypedUrlChangeProcessor::TypedUrlChangeProcessor(
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
   // When running in unit tests, there is already a NotificationService object.
   // Since only one can exist at a time per thread, check first.
-  if (!NotificationService::current())
-    notification_service_.reset(new NotificationService);
+  if (!content::NotificationService::current())
+    notification_service_.reset(new NotificationServiceImpl);
   StartObserving();
 }
 

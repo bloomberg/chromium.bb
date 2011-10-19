@@ -16,6 +16,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/notification_service.h"
 #include "net/base/mock_host_resolver.h"
 
 class AppApiTest : public ExtensionApiTest {
@@ -39,7 +40,8 @@ static void WindowOpenHelper(Browser* browser,
                              const GURL& url,
                              bool newtab_process_should_equal_opener) {
   ui_test_utils::WindowedNotificationObserver observer(
-      content::NOTIFICATION_LOAD_STOP, NotificationService::AllSources());
+      content::NOTIFICATION_LOAD_STOP,
+      content::NotificationService::AllSources());
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
       opener_host, L"", L"window.open('" + UTF8ToWide(url.spec()) + L"');"));
 
@@ -63,7 +65,7 @@ static void NavigateTabHelper(TabContents* contents, const GURL& url) {
   bool result = false;
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
       contents->render_view_host(), L"",
       L"window.addEventListener('unload', function() {"
@@ -428,7 +430,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, OpenWebPopupFromWebIframe) {
   ASSERT_TRUE(app);
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
   ui_test_utils::NavigateToURLWithDisposition(
       browser(),
       base_url.Resolve("path1/container.html"),

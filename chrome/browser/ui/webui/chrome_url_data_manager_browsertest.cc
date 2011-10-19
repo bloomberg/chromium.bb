@@ -7,7 +7,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 
@@ -19,7 +19,7 @@ class NavigationNotificationObserver : public content::NotificationObserver {
       : got_navigation_(false),
         http_status_code_(0) {
     registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-                   NotificationService::AllSources());
+                   content::NotificationService::AllSources());
   }
 
   virtual void Observe(int type,

@@ -21,7 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/browser/user_metrics.h"
 #include "content/public/browser/notification_observer.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "grit/chromium_strings.h"
@@ -64,8 +64,9 @@ class ZoomLevelObserver : public content::NotificationObserver {
  public:
   explicit ZoomLevelObserver(WrenchMenuController* controller)
       : controller_(controller) {
-    registrar_.Add(this, content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
-                   NotificationService::AllBrowserContextsAndSources());
+    registrar_.Add(
+        this, content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
+        content::NotificationService::AllBrowserContextsAndSources());
   }
 
   void Observe(int type,

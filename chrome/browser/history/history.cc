@@ -49,7 +49,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/download/download_persistent_store_info.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -97,11 +97,10 @@ class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
       int type,
       history::HistoryDetails* details) OVERRIDE {
     // Send the notification on the history thread.
-    if (NotificationService::current()) {
+    if (content::NotificationService::current()) {
       content::Details<history::HistoryDetails> det(details);
-      NotificationService::current()->Notify(type,
-                                             content::Source<Profile>(profile_),
-                                             det);
+      content::NotificationService::current()->Notify(
+          type, content::Source<Profile>(profile_), det);
     }
     // Send the notification to the history service on the main thread.
     message_loop_->PostTask(
@@ -792,7 +791,7 @@ void HistoryService::BroadcastNotifications(
   // this to the proper type.
   content::Details<history::HistoryDetails> det(details_deleted);
 
-  NotificationService::current()->Notify(type, source, det);
+  content::NotificationService::current()->Notify(type, source, det);
 }
 
 void HistoryService::LoadBackendIfNecessary() {
@@ -822,7 +821,7 @@ void HistoryService::OnDBLoaded(int backend_id) {
     return;
   }
   backend_loaded_ = true;
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_HISTORY_LOADED,
       content::Source<Profile>(profile_),
       content::Details<HistoryService>(this));

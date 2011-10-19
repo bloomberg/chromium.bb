@@ -16,7 +16,7 @@
 #include "content/browser/browsing_instance.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/site_instance.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/common/view_messages.h"
 #include "ui/gfx/rect.h"
 
@@ -35,7 +35,7 @@ BackgroundContents::BackgroundContents(SiteInstance* site_instance,
 
   // Close ourselves when the application is shutting down.
   registrar_.Add(this, content::NOTIFICATION_APP_TERMINATING,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 
   // Register for our parent profile to shutdown, so we can shut ourselves down
   // as well (should only be called for OTR profiles, as we should receive
@@ -55,7 +55,7 @@ BackgroundContents::~BackgroundContents() {
     return;
   Profile* profile = Profile::FromBrowserContext(
       render_view_host_->process()->browser_context());
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_BACKGROUND_CONTENTS_DELETED,
       content::Source<Profile>(profile),
       content::Details<BackgroundContents>(this));
@@ -96,7 +96,7 @@ void BackgroundContents::DidNavigate(
 
   Profile* profile = Profile::FromBrowserContext(
       render_view_host->process()->browser_context());
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_BACKGROUND_CONTENTS_NAVIGATED,
       content::Source<Profile>(profile),
       content::Details<BackgroundContents>(this));
@@ -152,7 +152,7 @@ gfx::NativeWindow BackgroundContents::GetDialogRootWindow() {
 void BackgroundContents::Close(RenderViewHost* render_view_host) {
   Profile* profile = Profile::FromBrowserContext(
       render_view_host->process()->browser_context());
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_BACKGROUND_CONTENTS_CLOSED,
       content::Source<Profile>(profile),
       content::Details<BackgroundContents>(this));
@@ -164,7 +164,7 @@ void BackgroundContents::RenderViewGone(RenderViewHost* rvh,
                                         int error_code) {
   Profile* profile =
       Profile::FromBrowserContext(rvh->process()->browser_context());
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_BACKGROUND_CONTENTS_TERMINATED,
       content::Source<Profile>(profile),
       content::Details<BackgroundContents>(this));

@@ -39,7 +39,7 @@
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -445,12 +445,12 @@ TranslateManager::TranslateManager()
     : ALLOW_THIS_IN_INITIALIZER_LIST(weak_method_factory_(this)),
       translate_script_expiration_delay_(kTranslateScriptExpirationDelayMS) {
   notification_registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-                              NotificationService::AllSources());
+                              content::NotificationService::AllSources());
   notification_registrar_.Add(this,
                               chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
-                              NotificationService::AllSources());
+                              content::NotificationService::AllSources());
   notification_registrar_.Add(this, chrome::NOTIFICATION_PAGE_TRANSLATED,
-                              NotificationService::AllSources());
+                              content::NotificationService::AllSources());
 }
 
 void TranslateManager::InitiateTranslation(TabContents* tab,

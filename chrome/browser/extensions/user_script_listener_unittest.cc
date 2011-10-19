@@ -17,7 +17,7 @@
 #include "content/browser/renderer_host/global_request_id.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/browser/renderer_host/resource_queue.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_job.h"
 #include "net/url_request/url_request_test_util.h"
@@ -157,10 +157,10 @@ TEST_F(UserScriptListenerTest, DelayAndUpdate) {
   scoped_ptr<TestURLRequest> request(StartTestRequest(&delegate, kMatchingUrl));
   ASSERT_FALSE(request->is_pending());
 
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_USER_SCRIPTS_UPDATED,
       content::Source<Profile>(profile_.get()),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kTestData, delegate.data_received());
 }
@@ -180,10 +180,10 @@ TEST_F(UserScriptListenerTest, DelayAndUnload) {
   // listener that the user scripts have been updated.
   ASSERT_FALSE(request->is_pending());
 
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_USER_SCRIPTS_UPDATED,
       content::Source<Profile>(profile_.get()),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kTestData, delegate.data_received());
 }
@@ -226,7 +226,7 @@ TEST_F(UserScriptListenerTest, MultiProfile) {
       "content_script_yahoo.json", &error);
   ASSERT_TRUE(extension.get());
 
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_LOADED,
       content::Source<Profile>(&profile2),
       content::Details<Extension>(extension.get()));
@@ -237,19 +237,19 @@ TEST_F(UserScriptListenerTest, MultiProfile) {
 
   // When the first profile's user scripts are ready, the request should still
   // be blocked waiting for profile2.
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_USER_SCRIPTS_UPDATED,
       content::Source<Profile>(profile_.get()),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
   MessageLoop::current()->RunAllPending();
   ASSERT_FALSE(request->is_pending());
   EXPECT_TRUE(delegate.data_received().empty());
 
   // After profile2 is ready, the request should proceed.
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_USER_SCRIPTS_UPDATED,
       content::Source<Profile>(&profile2),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kTestData, delegate.data_received());
 }

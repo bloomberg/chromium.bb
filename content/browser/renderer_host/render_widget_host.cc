@@ -21,7 +21,7 @@
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/user_metrics.h"
 #include "content/common/gpu/gpu_messages.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/common/result_codes.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -265,7 +265,7 @@ void RenderWidgetHost::WasHidden() {
   process_->WidgetHidden();
 
   bool is_visible = false;
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
       content::Source<RenderWidgetHost>(this),
       content::Details<bool>(&is_visible));
@@ -300,7 +300,7 @@ void RenderWidgetHost::WasRestored() {
   process_->WidgetRestored();
 
   bool is_visible = true;
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
       content::Source<RenderWidgetHost>(this),
       content::Details<bool>(&is_visible));
@@ -833,10 +833,10 @@ bool RenderWidgetHost::IsFullscreen() const {
 }
 
 void RenderWidgetHost::Destroy() {
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
       content::Source<RenderWidgetHost>(this),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 
   // Tell the view to die.
   // Note that in the process of the view shutting down, it can call a ton
@@ -861,10 +861,10 @@ void RenderWidgetHost::CheckRendererIsUnresponsive() {
   }
 
   // OK, looks like we have a hung renderer!
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       content::NOTIFICATION_RENDERER_PROCESS_HANG,
       content::Source<RenderWidgetHost>(this),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
   is_unresponsive_ = true;
   NotifyRendererUnresponsive();
 }
@@ -934,7 +934,7 @@ void RenderWidgetHost::OnMsgRequestMove(const gfx::Rect& pos) {
 void RenderWidgetHost::OnMsgPaintAtSizeAck(int tag, const gfx::Size& size) {
   PaintAtSizeAckDetails details = {tag, size};
   gfx::Size size_details = size;
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       content::NOTIFICATION_RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK,
       content::Source<RenderWidgetHost>(this),
       content::Details<PaintAtSizeAckDetails>(&details));
@@ -1038,10 +1038,10 @@ void RenderWidgetHost::OnMsgUpdateRect(
     view_being_painted_ = false;
   }
 
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT,
       content::Source<RenderWidgetHost>(this),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 
   // If we got a resize ack, then perhaps we have another resize to send?
   if (is_resize_ack && view_) {
@@ -1090,7 +1090,7 @@ void RenderWidgetHost::OnMsgInputEventAck(WebInputEvent::Type event_type,
     }
   }
   // This is used only for testing.
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       content::NOTIFICATION_RENDER_WIDGET_HOST_DID_RECEIVE_INPUT_EVENT_ACK,
       content::Source<RenderWidgetHost>(this),
       content::Details<int>(&type));

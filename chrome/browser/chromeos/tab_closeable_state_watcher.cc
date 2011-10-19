@@ -14,7 +14,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 
 namespace chromeos {
 
@@ -72,7 +72,7 @@ TabCloseableStateWatcher::TabCloseableStateWatcher()
       waiting_for_browser_(false) {
   BrowserList::AddObserver(this);
   notification_registrar_.Add(this, content::NOTIFICATION_APP_EXITING,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
 }
 
 TabCloseableStateWatcher::~TabCloseableStateWatcher() {
@@ -261,9 +261,9 @@ void TabCloseableStateWatcher::SetCloseableState(bool closeable) {
   can_close_tab_ = closeable;
 
   // Notify of change in tab closeable state.
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_CLOSEABLE_STATE_CHANGED,
-      NotificationService::AllSources(),
+      content::NotificationService::AllSources(),
       content::Details<bool>(&can_close_tab_));
 }
 

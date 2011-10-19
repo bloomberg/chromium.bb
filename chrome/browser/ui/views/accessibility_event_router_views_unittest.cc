@@ -12,7 +12,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "views/controls/button/text_button.h"
 #include "views/layout/grid_layout.h"
@@ -160,7 +160,7 @@ TEST_F(AccessibilityEventRouterViewsTest, MAYBE_TestFocusNotification) {
   content::NotificationRegistrar registrar;
   registrar.Add(this,
                 chrome::NOTIFICATION_ACCESSIBILITY_CONTROL_FOCUSED,
-                NotificationService::AllSources());
+                content::NotificationService::AllSources());
 
   // Switch on accessibility event notifications.
   ExtensionAccessibilityEventRouter* accessibility_event_router =

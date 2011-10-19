@@ -8,7 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/mock_content_browser_client.h"
 #include "content/common/content_paths.h"
-#include "content/common/notification_service.h"
+#include "content/browser/notification_service_impl.h"
 #include "content/public/common/content_client.h"
 #include "content/test/test_content_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,7 +22,7 @@ class TestContentClientInitializer : public testing::EmptyTestEventListener {
   }
 
   virtual void OnTestStart(const testing::TestInfo& test_info) OVERRIDE {
-    notification_service_.reset(new NotificationService());
+    notification_service_.reset(new NotificationServiceImpl());
 
     DCHECK(!content::GetContentClient());
     content_client_.reset(new TestContentClient);
@@ -43,7 +43,7 @@ class TestContentClientInitializer : public testing::EmptyTestEventListener {
   }
 
  private:
-  scoped_ptr<NotificationService> notification_service_;
+  scoped_ptr<NotificationServiceImpl> notification_service_;
   scoped_ptr<content::ContentClient> content_client_;
   scoped_ptr<content::ContentBrowserClient> content_browser_client_;
 

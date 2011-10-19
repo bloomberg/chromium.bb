@@ -16,7 +16,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/glue/webpreferences.h"
@@ -354,10 +354,10 @@ void TaskManagerHandler::EnableTaskManager(const ListValue* indexes) {
   model_->AddObserver(this);
   model_->StartUpdating();
 
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TASK_MANAGER_WINDOW_READY,
       content::Source<TaskManagerModel>(model_),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 }
 
 void TaskManagerHandler::OpenAboutMemory(const ListValue* indexes) {

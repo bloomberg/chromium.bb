@@ -34,7 +34,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"

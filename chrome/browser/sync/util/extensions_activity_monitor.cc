@@ -9,7 +9,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 
 namespace browser_sync {
 
@@ -34,7 +34,7 @@ class RegistrationTask : public Task {
     // Observe.
     registrar_->Add(monitor_,
                     chrome::NOTIFICATION_EXTENSION_BOOKMARKS_API_INVOKED,
-                    NotificationService::AllSources());
+                    content::NotificationService::AllSources());
   }
 
  private:

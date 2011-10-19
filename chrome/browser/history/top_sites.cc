@@ -32,7 +32,7 @@
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -148,13 +148,13 @@ TopSites::TopSites(Profile* profile)
   if (!profile_)
     return;
 
-  if (NotificationService::current()) {
+  if (content::NotificationService::current()) {
     registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_DELETED,
                    content::Source<Profile>(profile_));
     // Listen for any nav commits. We'll ignore those not related to this
     // profile when we get the notification.
     registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-                   NotificationService::AllSources());
+                   content::NotificationService::AllSources());
   }
 
   // We create update objects here to be sure that dictionaries are created
@@ -932,9 +932,10 @@ void TopSites::MoveStateToLoaded() {
 
   ProcessPendingCallbacks(pending_callbacks, filtered_urls);
 
-  NotificationService::current()->Notify(chrome::NOTIFICATION_TOP_SITES_LOADED,
-                                         content::Source<Profile>(profile_),
-                                         content::Details<TopSites>(this));
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_TOP_SITES_LOADED,
+      content::Source<Profile>(profile_),
+      content::Details<TopSites>(this));
 }
 
 void TopSites::ResetThreadSafeCache() {
@@ -951,10 +952,10 @@ void TopSites::ResetThreadSafeImageCache() {
 }
 
 void TopSites::NotifyTopSitesChanged() {
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TOP_SITES_CHANGED,
       content::Source<TopSites>(this),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 }
 
 void TopSites::RestartQueryForTopSitesTimer(base::TimeDelta delta) {
@@ -1025,7 +1026,7 @@ void TopSites::OnTopSitesAvailableFromHistory(
   SetTopSites(pages);
 
   // Used only in testing.
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TOP_SITES_UPDATED,
       content::Source<TopSites>(this),
       content::Details<CancelableRequestProvider::Handle>(&handle));

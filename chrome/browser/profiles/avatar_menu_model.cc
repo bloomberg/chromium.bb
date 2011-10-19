@@ -17,7 +17,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
@@ -53,7 +53,7 @@ AvatarMenuModel::AvatarMenuModel(ProfileInfoInterface* profile_cache,
 
   // Register this as an observer of the info cache.
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
 
   // Build the initial menu.
   RebuildMenu();

@@ -23,7 +23,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/browser/accessibility/browser_accessibility_state.h"
 #include "content/browser/user_metrics.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -115,14 +115,14 @@ ToolbarView::ToolbarView(Browser* browser)
   }
 
   registrar_.Add(this, chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 #if defined(OS_WIN) && !defined(USE_AURA)
   registrar_.Add(this, chrome::NOTIFICATION_CRITICAL_UPGRADE_INSTALLED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 #endif
   registrar_.Add(this,
                  chrome::NOTIFICATION_MODULE_INCOMPATIBILITY_BADGE_CHANGE,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED,
                  content::Source<Profile>(browser_->profile()));
 }

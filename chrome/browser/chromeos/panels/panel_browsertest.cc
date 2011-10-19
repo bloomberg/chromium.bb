@@ -10,6 +10,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "third_party/cros_system_api/window_manager/chromeos_wm_ipc_enums.h"
 
@@ -48,7 +49,7 @@ IN_PROC_BROWSER_TEST_F(PanelTest, PanelOpenSmall) {
 
   ui_test_utils::WindowedNotificationObserver tab_added_observer(
       content::NOTIFICATION_TAB_ADDED,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
   browser()->OpenURL(url, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
   tab_added_observer.Wait();
 
@@ -91,7 +92,7 @@ IN_PROC_BROWSER_TEST_F(PanelTest, PanelOpenLarge) {
   int old_tab_count = browser()->tab_count();
   ui_test_utils::WindowedNotificationObserver tab_added_observer(
       content::NOTIFICATION_TAB_ADDED,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
   browser()->OpenURL(url, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
   tab_added_observer.Wait();
 

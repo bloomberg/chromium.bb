@@ -32,7 +32,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "net/base/mock_host_resolver.h"
 #include "ui/base/events.h"
 #include "ui/base/keycodes/keyboard_codes.h"
@@ -229,7 +229,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
                   (tab_count < expected_tab_count ?
                    content::NOTIFICATION_TAB_PARENTED :
                    content::NOTIFICATION_TAB_CLOSED),
-                   NotificationService::AllSources());
+                   content::NotificationService::AllSources());
 
     while (!HasFailure() && browser->tab_count() != expected_tab_count)
       ui_test_utils::RunMessageLoop();

@@ -7,8 +7,8 @@
 #include "content/browser/browsing_instance.h"
 #include "content/browser/renderer_host/browser_render_process_host.h"
 #include "content/browser/webui/web_ui_factory.h"
-#include "content/common/notification_service.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/registry_controlled_domain.h"
@@ -38,14 +38,14 @@ SiteInstance::SiteInstance(BrowsingInstance* browsing_instance)
   DCHECK(browsing_instance);
 
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-                 NotificationService::AllBrowserContextsAndSources());
+                 content::NotificationService::AllBrowserContextsAndSources());
 }
 
 SiteInstance::~SiteInstance() {
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       content::NOTIFICATION_SITE_INSTANCE_DELETED,
       content::Source<SiteInstance>(this),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 
   // Now that no one is referencing us, we can safely remove ourselves from
   // the BrowsingInstance.  Any future visits to a page from this site

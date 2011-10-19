@@ -64,6 +64,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/user_metrics.h"
 #include "content/common/content_restriction.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "net/base/net_util.h"
@@ -1935,7 +1936,7 @@ void RenderViewContextMenu::OpenURL(
     details.source_frame_id = frame_id;
     details.target_url = url;
     details.target_tab_contents = new_contents;
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         content::NOTIFICATION_RETARGETING,
         content::Source<content::BrowserContext>(
             source_tab_contents_->browser_context()),

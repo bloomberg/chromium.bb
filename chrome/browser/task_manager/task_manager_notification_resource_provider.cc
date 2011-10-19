@@ -13,7 +13,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
@@ -110,9 +110,9 @@ void TaskManagerNotificationResourceProvider::StartUpdating() {
 
   // Register for notifications about extension process changes.
   registrar_.Add(this, chrome::NOTIFICATION_NOTIFY_BALLOON_CONNECTED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_NOTIFY_BALLOON_DISCONNECTED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 }
 
 void TaskManagerNotificationResourceProvider::StopUpdating() {
@@ -121,9 +121,9 @@ void TaskManagerNotificationResourceProvider::StopUpdating() {
 
   // Unregister for notifications about extension process changes.
   registrar_.Remove(this, chrome::NOTIFICATION_NOTIFY_BALLOON_CONNECTED,
-                    NotificationService::AllSources());
+                    content::NotificationService::AllSources());
   registrar_.Remove(this, chrome::NOTIFICATION_NOTIFY_BALLOON_DISCONNECTED,
-                    NotificationService::AllSources());
+                    content::NotificationService::AllSources());
 
   // Delete all the resources.
   STLDeleteContainerPairSecondPointers(resources_.begin(), resources_.end());

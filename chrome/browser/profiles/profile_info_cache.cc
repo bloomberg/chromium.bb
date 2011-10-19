@@ -16,7 +16,7 @@
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -127,10 +127,10 @@ void ProfileInfoCache::AddProfileToCache(const FilePath& profile_path,
 
   sorted_keys_.insert(FindPositionForProfile(key, name), key);
 
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
     chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
-    NotificationService::AllSources(),
-    NotificationService::NoDetails());
+    content::NotificationService::AllSources(),
+    content::NotificationService::NoDetails());
 }
 
 void ProfileInfoCache::DeleteProfileFromCache(const FilePath& profile_path) {
@@ -141,10 +141,10 @@ void ProfileInfoCache::DeleteProfileFromCache(const FilePath& profile_path) {
   cache->Remove(key, NULL);
   sorted_keys_.erase(std::find(sorted_keys_.begin(), sorted_keys_.end(), key));
 
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
     chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
-    NotificationService::AllSources(),
-    NotificationService::NoDetails());
+    content::NotificationService::AllSources(),
+    content::NotificationService::NoDetails());
 }
 
 size_t ProfileInfoCache::GetNumberOfProfiles() const {
@@ -227,10 +227,10 @@ void ProfileInfoCache::SetNameOfProfileAtIndex(size_t index,
   sorted_keys_.erase(key_it);
   sorted_keys_.insert(FindPositionForProfile(key, name), key);
 
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
     chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
-    NotificationService::AllSources(),
-    NotificationService::NoDetails());
+    content::NotificationService::AllSources(),
+    content::NotificationService::NoDetails());
 }
 
 void ProfileInfoCache::SetUserNameOfProfileAtIndex(size_t index,
@@ -388,10 +388,10 @@ void ProfileInfoCache::SetInfoForProfileAtIndex(size_t index,
   DictionaryValue* cache = update.Get();
   cache->Set(sorted_keys_[index], info);
 
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
     chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
-    NotificationService::AllSources(),
-    NotificationService::NoDetails());
+    content::NotificationService::AllSources(),
+    content::NotificationService::NoDetails());
 }
 
 std::string ProfileInfoCache::CacheKeyFromProfilePath(

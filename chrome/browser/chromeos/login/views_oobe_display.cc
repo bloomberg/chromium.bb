@@ -14,7 +14,7 @@
 #include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "views/view.h"
 #include "views/widget/widget.h"
 
@@ -66,10 +66,10 @@ class ContentView : public views::View {
   }
 
   ~ContentView() {
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_WIZARD_CONTENT_VIEW_DESTROYED,
-        NotificationService::AllSources(),
-        NotificationService::NoDetails());
+        content::NotificationService::AllSources(),
+        content::NotificationService::NoDetails());
   }
 
   bool AcceleratorPressed(const views::Accelerator& accel) {

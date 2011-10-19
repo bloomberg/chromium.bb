@@ -26,7 +26,7 @@
 #include "content/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "googleurl/src/gurl.h"
 
@@ -150,7 +150,7 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
     // upstart script. See crosbug.com/6515 and crosbug.com/6995 for
     // details.
     notification_registrar_.Add(this, content::NOTIFICATION_APP_TERMINATING,
-                                NotificationService::AllSources());
+                                content::NotificationService::AllSources());
 
     // The observer should be added before Connect() so we can capture the
     // initial connection change.

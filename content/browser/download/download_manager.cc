@@ -31,8 +31,8 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_service.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 
 namespace {
@@ -1073,7 +1073,7 @@ void DownloadManager::SavePageDownloadFinished(DownloadItem* download) {
     save_page_downloads_.erase(download->id());
 
     if (download->IsComplete())
-      NotificationService::current()->Notify(
+      content::NotificationService::current()->Notify(
           content::NOTIFICATION_SAVE_PACKAGE_SUCCESSFULLY_FINISHED,
           content::Source<DownloadManager>(this),
           content::Details<DownloadItem>(download));

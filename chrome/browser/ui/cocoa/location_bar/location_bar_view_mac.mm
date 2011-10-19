@@ -49,7 +49,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/net_util.h"
@@ -105,7 +105,7 @@ LocationBarViewMac::LocationBarViewMac(
 
   registrar_.Add(this,
       chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
 
   edit_bookmarks_enabled_.Init(prefs::kEditBookmarksEnabled,
                                profile_->GetPrefs(), this);
@@ -184,10 +184,10 @@ void LocationBarViewMac::UpdatePageActions() {
   RefreshPageActionDecorations();
   Layout();
   if (page_action_decorations_.size() != count_before) {
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_COUNT_CHANGED,
         content::Source<LocationBar>(this),
-        NotificationService::NoDetails());
+        content::NotificationService::NoDetails());
   }
 }
 
@@ -196,10 +196,10 @@ void LocationBarViewMac::InvalidatePageActions() {
   DeletePageActionDecorations();
   Layout();
   if (page_action_decorations_.size() != count_before) {
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_COUNT_CHANGED,
         content::Source<LocationBar>(this),
-        NotificationService::NoDetails());
+        content::NotificationService::NoDetails());
   }
 }
 

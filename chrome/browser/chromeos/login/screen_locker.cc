@@ -39,7 +39,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/user_metrics.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "third_party/cros_system_api/window_manager/chromeos_wm_ipc_enums.h"
@@ -57,7 +57,7 @@ class ScreenLockObserver : public chromeos::ScreenLockLibrary::Observer,
  public:
   ScreenLockObserver() {
     registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_CHANGED,
-                   NotificationService::AllSources());
+                   content::NotificationService::AllSources());
   }
 
   // NotificationObserver overrides:
@@ -421,7 +421,7 @@ ScreenLocker::~ScreenLocker() {
 
   screen_locker_ = NULL;
   bool state = false;
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
       content::Source<ScreenLocker>(this),
       content::Details<bool>(&state));
@@ -441,7 +441,7 @@ void ScreenLocker::ScreenLockReady() {
   UMA_HISTOGRAM_TIMES("ScreenLocker.ScreenLockTime", delta);
 
   bool state = true;
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
       content::Source<ScreenLocker>(this),
       content::Details<bool>(&state));

@@ -13,7 +13,7 @@
 #include "content/browser/renderer_host/mock_render_process_host.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/tab_contents/render_view_host_manager.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/notification_types.h"
 #include "skia/ext/platform_canvas.h"
@@ -68,7 +68,7 @@ class ThumbnailGeneratorTest : public testing::Test {
     // Need to send out a create notification for the RWH to get hooked. This is
     // a little scary in that we don't have a RenderView, but the only listener
     // will want a RenderWidget, so it works out OK.
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB,
         content::Source<RenderViewHostManager>(NULL),
         content::Details<RenderViewHost>(reinterpret_cast<RenderViewHost*>(

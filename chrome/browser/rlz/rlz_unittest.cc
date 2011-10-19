@@ -17,7 +17,7 @@
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "content/browser/tab_contents/navigation_entry.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -200,7 +200,7 @@ void RlzLibTest::TearDown() {
 
 void RlzLibTest::SimulateOmniboxUsage() {
   tracker_.Observe(chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
-                   NotificationService::AllSources(),
+                   content::NotificationService::AllSources(),
                    content::Details<AutocompleteLog>(NULL));
 }
 
@@ -208,7 +208,7 @@ void RlzLibTest::SimulateHomepageUsage() {
   NavigationEntry entry(NULL, 0, GURL(), GURL(), string16(),
                         content::PAGE_TRANSITION_HOME_PAGE, false);
   tracker_.Observe(content::NOTIFICATION_NAV_ENTRY_PENDING,
-                   NotificationService::AllSources(),
+                   content::NotificationService::AllSources(),
                    content::Details<NavigationEntry>(&entry));
 }
 
@@ -543,9 +543,9 @@ TEST_F(RlzLibTest, ObserveHandlesBadArgs) {
   NavigationEntry entry(NULL, 0, GURL(), GURL(), string16(),
                         content::PAGE_TRANSITION_LINK, false);
   tracker_.Observe(content::NOTIFICATION_NAV_ENTRY_PENDING,
-                   NotificationService::AllSources(),
+                   content::NotificationService::AllSources(),
                    content::Details<NavigationEntry>(NULL));
   tracker_.Observe(content::NOTIFICATION_NAV_ENTRY_PENDING,
-                   NotificationService::AllSources(),
+                   content::NotificationService::AllSources(),
                    content::Details<NavigationEntry>(&entry));
 }

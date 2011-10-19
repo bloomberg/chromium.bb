@@ -8,7 +8,6 @@
 
 #include "chrome/browser/ui/views/bubble/border_contents.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/common/notification_service.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/color_utils.h"

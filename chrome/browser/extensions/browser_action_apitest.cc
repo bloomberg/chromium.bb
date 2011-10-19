@@ -21,6 +21,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/notification_service.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
@@ -38,7 +39,7 @@ class BrowserActionApiTest : public ExtensionApiTest {
     ResultCatcher catcher;
     ui_test_utils::WindowedNotificationObserver popup_observer(
         chrome::NOTIFICATION_EXTENSION_POPUP_VIEW_READY,
-        NotificationService::AllSources());
+        content::NotificationService::AllSources());
     GetBrowserActionsBar().Press(index);
     popup_observer.Wait();
     EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
@@ -397,7 +398,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DISABLED_CloseBackgroundPage) {
 
   ui_test_utils::WindowedNotificationObserver host_destroyed_observer(
       chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
 
   // Click the browser action.
   browser()->profile()->GetExtensionService()->browser_event_router()->

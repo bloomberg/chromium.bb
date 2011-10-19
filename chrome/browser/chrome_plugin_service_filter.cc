@@ -13,7 +13,7 @@
 #include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/resource_context.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "webkit/plugins/npapi/plugin_group.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 
@@ -125,9 +125,9 @@ bool ChromePluginServiceFilter::ShouldUsePlugin(
 ChromePluginServiceFilter::ChromePluginServiceFilter() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 }
 
 ChromePluginServiceFilter::~ChromePluginServiceFilter() {

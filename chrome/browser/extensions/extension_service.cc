@@ -91,7 +91,7 @@
 #include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/user_metrics.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/common/pepper_plugin_registry.h"
 #include "content/public/browser/notification_types.h"
 #include "googleurl/src/gurl.h"
@@ -616,11 +616,11 @@ ExtensionService::ExtensionService(Profile* profile,
   }
 
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
-                 NotificationService::AllBrowserContextsAndSources());
+                 content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CREATED,
-                 NotificationService::AllBrowserContextsAndSources());
+                 content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-                 NotificationService::AllBrowserContextsAndSources());
+                 content::NotificationService::AllBrowserContextsAndSources());
   pref_change_registrar_.Init(profile->GetPrefs());
   pref_change_registrar_.Add(prefs::kExtensionInstallAllowList, this);
   pref_change_registrar_.Add(prefs::kExtensionInstallDenyList, this);
@@ -891,7 +891,7 @@ bool ExtensionService::UninstallExtension(
   // managed extensions.
   if (!Extension::UserMayDisable(extension->location()) &&
       !external_uninstall) {
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTENSION_UNINSTALL_NOT_ALLOWED,
         content::Source<Profile>(profile_),
         content::Details<const Extension>(extension));
@@ -959,7 +959,7 @@ bool ExtensionService::UninstallExtension(
   UntrackTerminatedExtension(extension_id);
 
   // Notify interested parties that we've uninstalled this extension.
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
       content::Source<Profile>(profile_),
       content::Details<const std::string>(&extension_id));
@@ -1473,7 +1473,7 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
 
   // Tell subsystems that use the EXTENSION_LOADED notification about the new
   // extension.
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_LOADED,
       content::Source<Profile>(profile_),
       content::Details<const Extension>(extension));
@@ -1587,7 +1587,7 @@ void ExtensionService::NotifyExtensionUnloaded(
     const Extension* extension,
     extension_misc::UnloadedExtensionReason reason) {
   UnloadedExtensionInfo details(extension, reason);
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_UNLOADED,
       content::Source<Profile>(profile_),
       content::Details<UnloadedExtensionInfo>(&details));
@@ -2277,7 +2277,7 @@ void ExtensionService::UnloadExtension(
     UnloadedExtensionInfo details(extension, reason);
     details.already_disabled = true;
     disabled_extensions_.erase(iter);
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTENSION_UNLOADED,
         content::Source<Profile>(profile_),
         content::Details<UnloadedExtensionInfo>(&details));
@@ -2349,10 +2349,10 @@ void ExtensionService::OnLoadedInstalledExtensions() {
   }
 
   ready_ = true;
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSIONS_READY,
       content::Source<Profile>(profile_),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 }
 
 void ExtensionService::AddExtension(const Extension* extension) {
@@ -2390,7 +2390,7 @@ void ExtensionService::AddExtension(const Extension* extension) {
     // TODO(aa): This seems dodgy. It seems that AddExtension() could get called
     // with a disabled extension for other reasons other than that an update was
     // disabled.
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED,
         content::Source<Profile>(profile_),
         content::Details<const Extension>(extension));
@@ -2558,7 +2558,7 @@ void ExtensionService::OnExtensionInstalled(
           << " and update URL " << extension->update_url().spec()
           << "; not installing";
 
-      NotificationService::current()->Notify(
+      content::NotificationService::current()->Notify(
           chrome::NOTIFICATION_EXTENSION_INSTALL_NOT_ALLOWED,
           content::Source<Profile>(profile_),
           content::Details<const Extension>(extension));
@@ -2609,7 +2609,7 @@ void ExtensionService::OnExtensionInstalled(
   extension_prefs_->SetDelaysNetworkRequests(
       extension->id(), extension->ImplicitlyDelaysNetworkStartup());
 
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_INSTALLED,
       content::Source<Profile>(profile_),
       content::Details<const Extension>(extension));
@@ -2783,7 +2783,8 @@ void ExtensionService::ReportExtensionLoadError(
     const FilePath& extension_path,
     const std::string &error,
     bool be_noisy) {
-  NotificationService* service = NotificationService::current();
+  content::NotificationService* service =
+      content::NotificationService::current();
   service->Notify(chrome::NOTIFICATION_EXTENSION_LOAD_ERROR,
                   content::Source<Profile>(profile_),
                   content::Details<const std::string>(&error));
@@ -2918,10 +2919,10 @@ bool ExtensionService::IsBackgroundPageReady(const Extension* extension) {
 void ExtensionService::SetBackgroundPageReady(const Extension* extension) {
   DCHECK(!extension->background_url().is_empty());
   extension_runtime_data_[extension->id()].background_page_ready = true;
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY,
       content::Source<const Extension>(extension),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 }
 
 bool ExtensionService::IsBeingUpgraded(const Extension* extension) {

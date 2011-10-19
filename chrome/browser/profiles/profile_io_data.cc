@@ -47,7 +47,7 @@
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/browser/resource_context.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "net/base/origin_bound_cert_service.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/http/http_util.h"
@@ -103,7 +103,7 @@ class ChromeCookieMonsterDelegate : public net::CookieMonster::Delegate {
     Profile* profile = profile_getter_.Run();
     if (profile) {
       ChromeCookieDetails cookie_details(&cookie, removed, cause);
-      NotificationService::current()->Notify(
+      content::NotificationService::current()->Notify(
           chrome::NOTIFICATION_COOKIE_CHANGED,
           content::Source<Profile>(profile),
           content::Details<ChromeCookieDetails>(&cookie_details));

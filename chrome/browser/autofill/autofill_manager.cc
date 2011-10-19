@@ -43,7 +43,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
@@ -567,18 +567,18 @@ void AutofillManager::OnShowAutofillDialog() {
 }
 
 void AutofillManager::OnDidPreviewAutofillFormData() {
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_AUTOFILL_DID_FILL_FORM_DATA,
       content::Source<RenderViewHost>(tab_contents()->render_view_host()),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 }
 
 
 void AutofillManager::OnDidFillAutofillFormData(const TimeTicks& timestamp) {
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_AUTOFILL_DID_FILL_FORM_DATA,
       content::Source<RenderViewHost>(tab_contents()->render_view_host()),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 
   metric_logger_->LogUserHappinessMetric(AutofillMetrics::USER_DID_AUTOFILL);
   if (!user_did_autofill_) {
@@ -591,10 +591,10 @@ void AutofillManager::OnDidFillAutofillFormData(const TimeTicks& timestamp) {
 }
 
 void AutofillManager::OnDidShowAutofillSuggestions(bool is_new_popup) {
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_AUTOFILL_DID_SHOW_SUGGESTIONS,
       content::Source<RenderViewHost>(tab_contents()->render_view_host()),
-      NotificationService::NoDetails());
+      content::NotificationService::NoDetails());
 
   if (is_new_popup) {
     metric_logger_->LogUserHappinessMetric(AutofillMetrics::SUGGESTIONS_SHOWN);

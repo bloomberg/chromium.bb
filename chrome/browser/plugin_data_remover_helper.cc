@@ -14,7 +14,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/plugin_service.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_source.h"
 
 PluginDataRemoverHelper::PluginDataRemoverHelper()
     : profile_(NULL),

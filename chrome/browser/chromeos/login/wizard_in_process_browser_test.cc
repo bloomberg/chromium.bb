@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/views/browser_dialogs.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/notification_service.h"
 
 namespace chromeos {
 
@@ -36,7 +37,7 @@ Browser* WizardInProcessBrowserTest::CreateBrowser(Profile* profile) {
 void WizardInProcessBrowserTest::CleanUpOnMainThread() {
   ui_test_utils::WindowedNotificationObserver wizard_destroyed_observer(
       chrome::NOTIFICATION_WIZARD_CONTENT_VIEW_DESTROYED,
-      NotificationService::AllSources());
+      content::NotificationService::AllSources());
 
   // LoginDisplayHost owns controllers and all windows.
   MessageLoopForUI::current()->DeleteSoon(FROM_HERE, host_);

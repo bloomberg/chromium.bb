@@ -46,7 +46,7 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/user_metrics.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -138,7 +138,7 @@ void NewTabUI::PaintTimeout() {
     // Painting has quieted down.  Log this as the full time to run.
     base::TimeDelta load_time = last_paint_ - start_;
     int load_time_ms = static_cast<int>(load_time.InMilliseconds());
-    NotificationService::current()->Notify(
+    content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_INITIAL_NEW_TAB_UI_LOAD,
         content::Source<Profile>(GetProfile()),
         content::Details<int>(&load_time_ms));

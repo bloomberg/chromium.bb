@@ -16,7 +16,7 @@
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/webui/web_ui.h"
 #include "content/browser/webui/web_ui_factory.h"
-#include "content/common/notification_service.h"
+#include "content/public/browser/notification_service.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_types.h"
@@ -69,7 +69,7 @@ void RenderViewHostManager::Init(content::BrowserContext* browser_context,
 
   // Keep track of renderer processes as they start to shut down.
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSING,
-                 NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 }
 
 RenderWidgetHostView* RenderViewHostManager::GetRenderWidgetHostView() const {
@@ -112,7 +112,7 @@ RenderViewHost* RenderViewHostManager::Navigate(const NavigationEntry& entry) {
       RenderViewHostSwitchedDetails details;
       details.new_host = render_view_host_;
       details.old_host = NULL;
-      NotificationService::current()->Notify(
+      content::NotificationService::current()->Notify(
           content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
           content::Source<NavigationController>(
               &delegate_->GetControllerForRenderManager()),
@@ -613,7 +613,7 @@ void RenderViewHostManager::CommitPending() {
   RenderViewHostSwitchedDetails details;
   details.new_host = render_view_host_;
   details.old_host = old_render_view_host;
-  NotificationService::current()->Notify(
+  content::NotificationService::current()->Notify(
       content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
       content::Source<NavigationController>(
           &delegate_->GetControllerForRenderManager()),
