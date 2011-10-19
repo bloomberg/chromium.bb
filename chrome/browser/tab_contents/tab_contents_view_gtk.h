@@ -22,11 +22,11 @@
 class ConstrainedWindowGtk;
 class RenderViewContextMenuGtk;
 class SadTabGtk;
-class TabContentsDragSource;
 class WebDragBookmarkHandlerGtk;
 
 namespace content {
 class WebDragDestGtk;
+class WebDragSourceGtk;
 }
 
 class TabContentsViewGtk : public TabContentsView,
@@ -167,7 +167,7 @@ class TabContentsViewGtk : public TabContentsView,
   scoped_ptr<WebDragBookmarkHandlerGtk> bookmark_handler_gtk_;
 
   // Object responsible for handling drags from the page for us.
-  scoped_ptr<TabContentsDragSource> drag_source_;
+  scoped_ptr<content::WebDragSourceGtk> drag_source_;
 
   // The size we want the tab contents view to be.  We keep this in a separate
   // variable because resizing in GTK+ is async.

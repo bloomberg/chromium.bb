@@ -83,8 +83,6 @@ void OSExchangeDataProviderGtk::WriteFormatToSelection(
   }
 
   if ((format & OSExchangeData::URL) != 0) {
-    // TODO: this should be pulled out of TabContentsDragSource into a common
-    // place.
     Pickle pickle;
     pickle.WriteString(UTF16ToUTF8(title_));
     pickle.WriteString(url_.spec());

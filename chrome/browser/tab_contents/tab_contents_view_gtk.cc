@@ -96,7 +96,7 @@ TabContentsViewGtk::TabContentsViewGtk(TabContents* tab_contents)
   gtk_widget_show(floating_.get());
   registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_CONNECTED,
                  content::Source<TabContents>(tab_contents));
-  drag_source_.reset(new TabContentsDragSource(tab_contents));
+  drag_source_.reset(new content::WebDragSourceGtk(tab_contents));
 }
 
 TabContentsViewGtk::~TabContentsViewGtk() {

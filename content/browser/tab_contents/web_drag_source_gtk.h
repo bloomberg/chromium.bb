@@ -24,16 +24,18 @@ class SkBitmap;
 class TabContents;
 struct WebDropData;
 
-// TabContentsDragSource takes care of managing the drag from a TabContents
+namespace content {
+
+// WebDragSourceGtk takes care of managing the drag from a TabContents
 // with Gtk.
-class CONTENT_EXPORT TabContentsDragSource : public MessageLoopForUI::Observer {
+class CONTENT_EXPORT WebDragSourceGtk : public MessageLoopForUI::Observer {
  public:
-  explicit TabContentsDragSource(TabContents* tab_contents);
-  virtual ~TabContentsDragSource();
+  explicit WebDragSourceGtk(TabContents* tab_contents);
+  virtual ~WebDragSourceGtk();
 
   TabContents* tab_contents() const { return tab_contents_; }
 
-  // Starts a drag for the tab contents this TabContentsDragSource was
+  // Starts a drag for the tab contents this WebDragSourceGtk was
   // created for.
   void StartDragging(const WebDropData& drop_data,
                      WebKit::WebDragOperationsMask allowed_ops,
@@ -46,15 +48,15 @@ class CONTENT_EXPORT TabContentsDragSource : public MessageLoopForUI::Observer {
   virtual void DidProcessEvent(GdkEvent* event);
 
  private:
-  CHROMEGTK_CALLBACK_2(TabContentsDragSource, gboolean, OnDragFailed,
+  CHROMEGTK_CALLBACK_2(WebDragSourceGtk, gboolean, OnDragFailed,
                        GdkDragContext*, GtkDragResult);
-  CHROMEGTK_CALLBACK_1(TabContentsDragSource, void, OnDragBegin,
+  CHROMEGTK_CALLBACK_1(WebDragSourceGtk, void, OnDragBegin,
                        GdkDragContext*);
-  CHROMEGTK_CALLBACK_1(TabContentsDragSource, void, OnDragEnd,
+  CHROMEGTK_CALLBACK_1(WebDragSourceGtk, void, OnDragEnd,
                        GdkDragContext*);
-  CHROMEGTK_CALLBACK_4(TabContentsDragSource, void, OnDragDataGet,
+  CHROMEGTK_CALLBACK_4(WebDragSourceGtk, void, OnDragDataGet,
                        GdkDragContext*, GtkSelectionData*, guint, guint);
-  CHROMEGTK_CALLBACK_1(TabContentsDragSource, gboolean, OnDragIconExpose,
+  CHROMEGTK_CALLBACK_1(WebDragSourceGtk, gboolean, OnDragIconExpose,
                        GdkEventExpose*);
 
   gfx::NativeView GetContentNativeView() const;
@@ -104,7 +106,9 @@ class CONTENT_EXPORT TabContentsDragSource : public MessageLoopForUI::Observer {
 
   ui::GtkSignalRegistrar signals_;
 
-  DISALLOW_COPY_AND_ASSIGN(TabContentsDragSource);
+  DISALLOW_COPY_AND_ASSIGN(WebDragSourceGtk);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_TAB_WEB_DRAG_SOURCE_GTK_H_

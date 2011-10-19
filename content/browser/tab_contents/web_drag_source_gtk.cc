@@ -29,7 +29,9 @@ using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;
 using WebKit::WebDragOperationNone;
 
-TabContentsDragSource::TabContentsDragSource(TabContents* tab_contents)
+namespace content {
+
+WebDragSourceGtk::WebDragSourceGtk(TabContents* tab_contents)
     : tab_contents_(tab_contents),
       drag_pixbuf_(NULL),
       drag_failed_(false),
@@ -50,7 +52,7 @@ TabContentsDragSource::TabContentsDragSource(TabContents* tab_contents)
                    G_CALLBACK(OnDragIconExposeThunk), this);
 }
 
-TabContentsDragSource::~TabContentsDragSource() {
+WebDragSourceGtk::~WebDragSourceGtk() {
   // Break the current drag, if any.
   if (drop_data_.get()) {
     gtk_grab_add(drag_widget_);
@@ -63,11 +65,11 @@ TabContentsDragSource::~TabContentsDragSource() {
   gtk_widget_destroy(drag_icon_);
 }
 
-void TabContentsDragSource::StartDragging(const WebDropData& drop_data,
-                                          WebDragOperationsMask allowed_ops,
-                                          GdkEventButton* last_mouse_down,
-                                          const SkBitmap& image,
-                                          const gfx::Point& image_offset) {
+void WebDragSourceGtk::StartDragging(const WebDropData& drop_data,
+                                     WebDragOperationsMask allowed_ops,
+                                     GdkEventButton* last_mouse_down,
+                                     const SkBitmap& image,
+                                     const gfx::Point& image_offset) {
   // Guard against re-starting before previous drag completed.
   if (drag_context_) {
     NOTREACHED();
@@ -145,11 +147,11 @@ void TabContentsDragSource::StartDragging(const WebDropData& drop_data,
   MessageLoopForUI::current()->AddObserver(this);
 }
 
-void TabContentsDragSource::WillProcessEvent(GdkEvent* event) {
+void WebDragSourceGtk::WillProcessEvent(GdkEvent* event) {
   // No-op.
 }
 
-void TabContentsDragSource::DidProcessEvent(GdkEvent* event) {
+void WebDragSourceGtk::DidProcessEvent(GdkEvent* event) {
   if (event->type != GDK_MOTION_NOTIFY)
     return;
 
@@ -164,9 +166,11 @@ void TabContentsDragSource::DidProcessEvent(GdkEvent* event) {
   }
 }
 
-void TabContentsDragSource::OnDragDataGet(GtkWidget* sender,
-    GdkDragContext* context, GtkSelectionData* selection_data,
-    guint target_type, guint time) {
+void WebDragSourceGtk::OnDragDataGet(GtkWidget* sender,
+                                     GdkDragContext* context,
+                                     GtkSelectionData* selection_data,
+                                     guint target_type,
+                                     guint time) {
   const int kBitsPerByte = 8;
 
   switch (target_type) {
@@ -235,20 +239,20 @@ void TabContentsDragSource::OnDragDataGet(GtkWidget* sender,
           net::FileStream* file_stream =
               drag_download_util::CreateFileStreamForDrop(&file_path);
           if (file_stream) {
-              // Start downloading the file to the stream.
-              scoped_refptr<DragDownloadFile> drag_file_downloader =
-                  new DragDownloadFile(file_path,
-                                       linked_ptr<net::FileStream>(file_stream),
-                                       download_url_,
-                                       tab_contents_->GetURL(),
-                                       tab_contents_->encoding(),
-                                       tab_contents_);
-              drag_file_downloader->Start(
-                  new drag_download_util::PromiseFileFinalizer(
-                      drag_file_downloader));
+            // Start downloading the file to the stream.
+            scoped_refptr<DragDownloadFile> drag_file_downloader =
+                new DragDownloadFile(file_path,
+                                     linked_ptr<net::FileStream>(file_stream),
+                                     download_url_,
+                                     tab_contents_->GetURL(),
+                                     tab_contents_->encoding(),
+                                     tab_contents_);
+            drag_file_downloader->Start(
+                new drag_download_util::PromiseFileFinalizer(
+                    drag_file_downloader));
 
-              // Set the status code to success.
-              status_code = 'S';
+            // Set the status code to success.
+            status_code = 'S';
           }
         }
 
@@ -267,9 +271,9 @@ void TabContentsDragSource::OnDragDataGet(GtkWidget* sender,
   }
 }
 
-gboolean TabContentsDragSource::OnDragFailed(GtkWidget* sender,
-                                             GdkDragContext* context,
-                                             GtkDragResult result) {
+gboolean WebDragSourceGtk::OnDragFailed(GtkWidget* sender,
+                                        GdkDragContext* context,
+                                        GtkDragResult result) {
   drag_failed_ = true;
 
   gfx::Point root = ui::ScreenPoint(GetContentNativeView());
@@ -285,8 +289,8 @@ gboolean TabContentsDragSource::OnDragFailed(GtkWidget* sender,
   return FALSE;
 }
 
-void TabContentsDragSource::OnDragBegin(GtkWidget* sender,
-                                        GdkDragContext* drag_context) {
+void WebDragSourceGtk::OnDragBegin(GtkWidget* sender,
+                                   GdkDragContext* drag_context) {
   if (!download_url_.is_empty()) {
     // Generate the file name based on both mime type and proposed file name.
     std::string default_name =
@@ -329,8 +333,8 @@ void TabContentsDragSource::OnDragBegin(GtkWidget* sender,
   }
 }
 
-void TabContentsDragSource::OnDragEnd(GtkWidget* sender,
-                                      GdkDragContext* drag_context) {
+void WebDragSourceGtk::OnDragEnd(GtkWidget* sender,
+                                 GdkDragContext* drag_context) {
   if (drag_pixbuf_) {
     g_object_unref(drag_pixbuf_);
     drag_pixbuf_ = NULL;
@@ -360,12 +364,12 @@ void TabContentsDragSource::OnDragEnd(GtkWidget* sender,
   drag_context_ = NULL;
 }
 
-gfx::NativeView TabContentsDragSource::GetContentNativeView() const {
+gfx::NativeView WebDragSourceGtk::GetContentNativeView() const {
   return tab_contents_->view()->GetContentNativeView();
 }
 
-gboolean TabContentsDragSource::OnDragIconExpose(GtkWidget* sender,
-                                                 GdkEventExpose* event) {
+gboolean WebDragSourceGtk::OnDragIconExpose(GtkWidget* sender,
+                                            GdkEventExpose* event) {
   cairo_t* cr = gdk_cairo_create(event->window);
   gdk_cairo_rectangle(cr, &event->area);
   cairo_clip(cr);
@@ -376,3 +380,5 @@ gboolean TabContentsDragSource::OnDragIconExpose(GtkWidget* sender,
 
   return TRUE;
 }
+
+}  // namespace content
