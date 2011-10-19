@@ -24,7 +24,6 @@ class MountLibrary;
 class NetworkLibrary;
 class PowerLibrary;
 class ScreenLockLibrary;
-class SpeechSynthesisLibrary;
 class UpdateLibrary;
 
 // This class handles access to sub-parts of ChromeOS library. it provides
@@ -52,7 +51,6 @@ class CrosLibrary {
     void SetNetworkLibrary(NetworkLibrary* library, bool own);
     void SetPowerLibrary(PowerLibrary* library, bool own);
     void SetScreenLockLibrary(ScreenLockLibrary* library, bool own);
-    void SetSpeechSynthesisLibrary(SpeechSynthesisLibrary* library, bool own);
     void SetUpdateLibrary(UpdateLibrary* library, bool own);
 
    private:
@@ -79,7 +77,6 @@ class CrosLibrary {
   NetworkLibrary* GetNetworkLibrary();
   PowerLibrary* GetPowerLibrary();
   ScreenLockLibrary* GetScreenLockLibrary();
-  SpeechSynthesisLibrary* GetSpeechSynthesisLibrary();
   UpdateLibrary* GetUpdateLibrary();
 
   // Getter for Test API that gives access to internal members of this class.
@@ -151,7 +148,6 @@ class CrosLibrary {
   Library<NetworkLibrary> network_lib_;
   Library<PowerLibrary> power_lib_;
   Library<ScreenLockLibrary> screen_lock_lib_;
-  Library<SpeechSynthesisLibrary> speech_synthesis_lib_;
   Library<UpdateLibrary> update_lib_;
 
   // Stub implementations of the libraries should be used.

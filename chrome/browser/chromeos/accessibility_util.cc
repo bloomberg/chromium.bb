@@ -7,8 +7,8 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/speech_synthesis_library.h"
+#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
+#include "chrome/browser/chromeos/dbus/speech_synthesizer_client.h"
 #include "chrome/browser/extensions/extension_accessibility_api.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/file_reader.h"
@@ -155,19 +155,17 @@ void ToggleAccessibility(WebUI* login_web_ui) {
 };
 
 void Speak(const char* speak_str, bool queue, bool interruptible) {
-  if (chromeos::CrosLibrary::Get()->EnsureLoaded()) {
-    if (queue || !interruptible) {
-      std::string props = "";
-      props.append("enqueue=");
-      props.append(queue ? "1;" : "0;");
-      props.append("interruptible=");
-      props.append(interruptible ? "1;" : "0;");
-      chromeos::CrosLibrary::Get()->GetSpeechSynthesisLibrary()->
-          SetSpeakProperties(props.c_str());
-    }
-    chromeos::CrosLibrary::Get()->GetSpeechSynthesisLibrary()->
-        Speak(speak_str);
+  if (queue || !interruptible) {
+    std::string props = "";
+    props.append("enqueue=");
+    props.append(queue ? "1;" : "0;");
+    props.append("interruptible=");
+    props.append(interruptible ? "1;" : "0;");
+    chromeos::DBusThreadManager::Get()->speech_synthesizer_client()->
+        SetSpeakProperties(props);
   }
+  chromeos::DBusThreadManager::Get()->speech_synthesizer_client()->
+      Speak(speak_str);
 }
 
 

@@ -12,7 +12,6 @@
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/cros/power_library.h"
 #include "chrome/browser/chromeos/cros/screen_lock_library.h"
-#include "chrome/browser/chromeos/cros/speech_synthesis_library.h"
 #include "chrome/browser/chromeos/cros/update_library.h"
 #include "third_party/cros/chromeos_cros_api.h"
 
@@ -87,7 +86,6 @@ DEFINE_GET_LIBRARY_METHOD(Mount, mount);
 DEFINE_GET_LIBRARY_METHOD(Network, network);
 DEFINE_GET_LIBRARY_METHOD(Power, power);
 DEFINE_GET_LIBRARY_METHOD(ScreenLock, screen_lock);
-DEFINE_GET_LIBRARY_METHOD(SpeechSynthesis, speech_synthesis);
 DEFINE_GET_LIBRARY_METHOD(Update, update);
 
 bool CrosLibrary::LoadLibcros() {
@@ -134,7 +132,6 @@ DEFINE_SET_LIBRARY_METHOD(Mount, mount);
 DEFINE_SET_LIBRARY_METHOD(Network, network);
 DEFINE_SET_LIBRARY_METHOD(Power, power);
 DEFINE_SET_LIBRARY_METHOD(ScreenLock, screen_lock);
-DEFINE_SET_LIBRARY_METHOD(SpeechSynthesis, speech_synthesis);
 DEFINE_SET_LIBRARY_METHOD(Update, update);
 
 } // namespace chromeos

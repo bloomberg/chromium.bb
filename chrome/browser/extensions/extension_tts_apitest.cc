@@ -17,10 +17,6 @@
 #define GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 #include "testing/gmock_mutant.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/cros/cros_mock.h"
-#endif
-
 using ::testing::AnyNumber;
 using ::testing::CreateFunctor;
 using ::testing::DoAll;
@@ -305,17 +301,3 @@ IN_PROC_BROWSER_TEST_F(TtsApiTest, EngineWordCallbacks) {
 
   ASSERT_TRUE(RunExtensionTest("tts_engine/engine_word_callbacks")) << message_;
 }
-
-#if defined(OS_CHROMEOS)
-// Fails since v8 roll at r96374: http://crbug.com/92482
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FAILS_TtsChromeOs) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
-
-  chromeos::CrosMock crosMock;
-  crosMock.InitMockSpeechSynthesisLibrary();
-  crosMock.SetSpeechSynthesisLibraryExpectations();
-
-  ASSERT_TRUE(RunExtensionTest("tts/chromeos")) << message_;
-}
-#endif

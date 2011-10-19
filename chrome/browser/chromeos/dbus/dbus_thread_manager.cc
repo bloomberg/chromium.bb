@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/dbus/session_manager_client.h"
 #include "chrome/browser/chromeos/dbus/power_manager_client.h"
 #include "chrome/browser/chromeos/dbus/sensors_source.h"
+#include "chrome/browser/chromeos/dbus/speech_synthesizer_client.h"
 #include "chrome/common/chrome_switches.h"
 #include "dbus/bus.h"
 
@@ -48,6 +49,9 @@ DBusThreadManager::DBusThreadManager() {
   // Create the session manager client.
   session_manager_client_.reset(
       SessionManagerClient::Create(system_bus_.get()));
+  // Create the speech synthesizer client.
+  speech_synthesizer_client_.reset(
+      SpeechSynthesizerClient::Create(system_bus_.get()));
 }
 
 DBusThreadManager::~DBusThreadManager() {

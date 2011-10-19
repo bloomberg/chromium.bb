@@ -23,6 +23,7 @@ class CrosDBusService;
 class PowerManagerClient;
 class SessionManagerClient;
 class SensorsSource;
+class SpeechSynthesizerClient;
 
 // DBusThreadManager manages the D-Bus thread, the thread dedicated to
 // handling asynchronous D-Bus operations.
@@ -73,6 +74,13 @@ class DBusThreadManager {
   void set_session_manager_client_for_testing(
       SessionManagerClient* session_manager_client);
 
+  // Returns the speech synthesizer client, owned by DBusThreadManager.
+  // Do not cache this pointer and use it after DBusThreadManager is shut
+  // down.
+  SpeechSynthesizerClient* speech_synthesizer_client() {
+    return speech_synthesizer_client_.get();
+  }
+
  private:
   DBusThreadManager();
   virtual ~DBusThreadManager();
@@ -83,6 +91,7 @@ class DBusThreadManager {
   scoped_ptr<SensorsSource> sensors_source_;
   scoped_ptr<PowerManagerClient> power_manager_client_;
   scoped_ptr<SessionManagerClient> session_manager_client_;
+  scoped_ptr<SpeechSynthesizerClient> speech_synthesizer_client_;
 
   DISALLOW_COPY_AND_ASSIGN(DBusThreadManager);
 };

@@ -17,7 +17,6 @@ class MockLibraryLoader;
 class MockNetworkLibrary;
 class MockPowerLibrary;
 class MockScreenLockLibrary;
-class MockSpeechSynthesisLibrary;
 
 // Class for initializing mocks for some parts of CrosLibrary. Once you mock
 // part of CrosLibrary it will be considered as successfully loaded and
@@ -45,7 +44,6 @@ class CrosMock {
   void InitMockNetworkLibrary();
   void InitMockPowerLibrary();
   void InitMockScreenLockLibrary();
-  void InitMockSpeechSynthesisLibrary();
 
   // Get mocks.
   MockCryptohomeLibrary* mock_cryptohome_library();
@@ -53,7 +51,6 @@ class CrosMock {
   MockNetworkLibrary* mock_network_library();
   MockPowerLibrary* mock_power_library();
   MockScreenLockLibrary* mock_screen_lock_library();
-  MockSpeechSynthesisLibrary* mock_speech_synthesis_library();
 
   // This method sets up corresponding expectations for basic mocks that
   // are used by status area items.
@@ -68,7 +65,6 @@ class CrosMock {
   void SetNetworkLibraryStatusAreaExpectations();
   void SetPowerLibraryStatusAreaExpectations();
   void SetPowerLibraryExpectations();
-  void SetSpeechSynthesisLibraryExpectations();
 
   void TearDownMocks();
 
@@ -83,7 +79,6 @@ class CrosMock {
   MockNetworkLibrary* mock_network_library_;
   MockPowerLibrary* mock_power_library_;
   MockScreenLockLibrary* mock_screen_lock_library_;
-  MockSpeechSynthesisLibrary* mock_speech_synthesis_library_;
 
   WifiNetworkVector wifi_networks_;
   CellularNetworkVector cellular_networks_;
