@@ -37,10 +37,11 @@ class NetflixTest(pyauto.PyUITest):
     login_js = """
         document.getElementById('email').value='%s';
         document.getElementById('password').value='%s';
-        document.getElementById('login-form').submit()
         window.domAutomationController.send('ok');
     """ % (credentials['username'], credentials['password'])
     self.assertEqual(self.ExecuteJavascript(login_js), 'ok',
+        msg='Failed to set login credentials')
+    self.assertTrue(self.SubmitForm('login-form'),
         msg='Login to Netflix failed')
     
   def _HandleInfobars(self):

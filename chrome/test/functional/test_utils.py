@@ -83,9 +83,7 @@ def GoogleAccountsLogin(test, username, password, tab_index=0, windex=0):
              'window.domAutomationController.send("done")' % password
   test.ExecuteJavascript(email_id, tab_index, windex)
   test.ExecuteJavascript(password, tab_index, windex)
-  test.ExecuteJavascript('document.getElementById("gaia_loginform").submit();'
-                         'window.domAutomationController.send("done")',
-                         tab_index, windex)
+  test.assertTrue(test.SubmitForm('gaia_loginform', tab_index, windex))
 
 
 def VerifyGoogleAccountCredsFilled(test, username, password, tab_index=0,

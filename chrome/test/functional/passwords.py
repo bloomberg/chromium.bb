@@ -227,17 +227,7 @@ class PasswordTest(pyauto.PyUITest):
       script = ('document.getElementById("%s").value = "%s"; '
                 'window.domAutomationController.send("done");') % (key, value)
       self.ExecuteJavascript(script, 0, 0)
-    js_code = """
-      document.getElementById("loginform").submit();
-      window.addEventListener("unload", function() {
-        window.domAutomationController.send("done");
-      });
-    """
-    self.ExecuteJavascript(js_code, 0, 0)
-    # Wait until the form is submitted and the page completes loading.
-    self.WaitUntil(
-        lambda: self.GetDOMValue('document.readyState'),
-        expect_retval='complete')
+    self.assertTrue(self.SubmitForm('loginform'))
     password_infobar = (
         self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars'])
     self.assertFalse(password_infobar,

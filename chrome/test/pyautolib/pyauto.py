@@ -3322,6 +3322,28 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     return self._GetResultFromJSONRequest(cmd_dict)
 
+  def SubmitForm(self, form_id, tab_index=0, windex=0, frame_xpath=''):
+    """Submits the given form ID, and returns after it has been submitted.
+
+    Args:
+      form_id: the id attribute of the form to submit.
+
+    Returns: true on success.
+    """
+    js = """
+        document.getElementById("%s").submit();
+        window.addEventListener("unload", function() {
+          window.domAutomationController.send("done");
+        });
+    """ % form_id
+    if self.ExecuteJavascript(js, tab_index, windex, frame_xpath) != 'done':
+      return False
+    # Wait until the form is submitted and the page completes loading.
+    return self.WaitUntil(
+        lambda: self.GetDOMValue('document.readyState',
+                                 tab_index, windex, frame_xpath),
+        expect_retval='complete')
+
   ## ChromeOS section
 
   def GetLoginInfo(self):
