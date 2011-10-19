@@ -153,8 +153,9 @@ deps = {
   "src/third_party/v8-i18n":
     (Var("googlecode_url") % "v8-i18n") + "/trunk@4",
 
+  # WebGL Conformance Tests: Khronos r15841
   "src/third_party/webgl_conformance":
-    "/trunk/deps/third_party/webgl/sdk/tests@93490",
+    "/trunk/deps/third_party/webgl/sdk/tests@106194",
 
   # We run these layout tests as UI tests. Since many of the buildbots that
   # run layout tests do NOT have access to the LayoutTest directory, we need
