@@ -46,7 +46,7 @@ list > [selected]:hover {
 
 .table-row-cell > * {
   overflow: hidden;
-  margin: 0 10px;
+  margin: 0 7px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }

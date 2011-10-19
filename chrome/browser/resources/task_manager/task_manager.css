@@ -14,8 +14,8 @@ body {
   -webkit-box-orient: vertical;
   -webkit-user-select: none;
   display: -webkit-box;
-  font-family: sans-serif;
-  font-size: 13px;
+  font-family: segoe ui, arial, helvetica, sans-serif;
+  font-size: 12px;
   height: 100%;
   min-height: 150px;
   position: absolute;
@@ -120,8 +120,8 @@ body {
 }
 
 .detail-title-text {
-  height: 18px;
-  padding: 1px;
+  height: 20px;
+  padding-left: 1px;
 }
 
 /* Entire Table (including column header). */
@@ -150,6 +150,11 @@ body {
   text-align: left;
 }
 
+#about-memory-link {
+  padding-left: 2px;
+  color: #1155CC;
+}
+
 /* Container for the ok/cancel buttons. */
 .footer-right-container {
   -webkit-box-flex: 1;
@@ -157,6 +162,6 @@ body {
 }
 
 button {
-  margin: 2px;
+  margin: 2px 0 2px 8px;
   padding: 1px 6px;
 }
