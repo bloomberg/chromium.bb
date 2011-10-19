@@ -47,6 +47,9 @@ class DesktopHost : public MessageLoop::Dispatcher {
   virtual void SetCursor(gfx::NativeCursor cursor) = 0;
 
   // Queries the mouse's current position relative to the host window.
+  // The position is constrained within the host window.
+  // You should probably call Desktop::last_mouse_location() instead; this
+  // method can be expensive.
   virtual gfx::Point QueryMouseLocation() = 0;
 };
 

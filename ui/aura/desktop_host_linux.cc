@@ -4,6 +4,7 @@
 
 #include "ui/aura/desktop_host.h"
 
+#include <X11/cursorfont.h>
 #include <X11/Xlib.h>
 
 // Get rid of a macro from Xlib.h that conflicts with Aura's RootWindow class.
@@ -19,8 +20,8 @@
 #include "ui/base/touch/touch_factory.h"
 #include "ui/base/x/x11_util.h"
 
-#include <X11/cursorfont.h>
-#include <X11/Xlib.h>
+using std::max;
+using std::min;
 
 namespace aura {
 
@@ -315,7 +316,8 @@ gfx::Point DesktopHostLinux::QueryMouseLocation() {
                 &root_x_return, &root_y_return,
                 &win_x_return, &win_y_return,
                 &mask_return);
-  return gfx::Point(win_x_return, win_y_return);
+  return gfx::Point(max(0, min(bounds_.width(), win_x_return)),
+                    max(0, min(bounds_.height(), win_y_return)));
 }
 
 }  // namespace

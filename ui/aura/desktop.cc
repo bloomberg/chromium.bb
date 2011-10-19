@@ -84,6 +84,8 @@ void Desktop::ShowDesktop() {
 
 void Desktop::SetHostSize(const gfx::Size& size) {
   host_->SetSize(size);
+  // Requery the location to constrain it within the new desktop size.
+  last_mouse_location_ = host_->QueryMouseLocation();
 }
 
 gfx::Size Desktop::GetHostSize() const {

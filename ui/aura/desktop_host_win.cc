@@ -6,9 +6,14 @@
 
 #include <windows.h>
 
+#include <algorithm>
+
 #include "base/message_loop.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura/event.h"
+
+using std::max;
+using std::min;
 
 namespace aura {
 
@@ -158,7 +163,9 @@ gfx::Point DesktopHostWin::QueryMouseLocation() {
   POINT pt;
   GetCursorPos(&pt);
   ScreenToClient(hwnd(), &pt);
-  return gfx::Point(pt);
+  const gfx::Size size = GetSize();
+  return gfx::Point(max(0, min(size.width(), static_cast<int>(pt.x))),
+                    max(0, min(size.height(), static_cast<int>(pt.y))));
 }
 
 void DesktopHostWin::OnClose() {
