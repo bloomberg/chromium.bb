@@ -772,6 +772,10 @@ void WebGraphicsContext3DInProcessCommandBufferImpl::reshape(
 #endif  // FLIP_FRAMEBUFFER_VERTICALLY
 }
 
+void WebGraphicsContext3DInProcessCommandBufferImpl::setVisibility(
+    bool visible) {
+}
+
 WebGLId WebGraphicsContext3DInProcessCommandBufferImpl::createCompositorTexture(
     WGC3Dsizei width, WGC3Dsizei height) {
   // TODO(gmam): See if we can comment this in.
