@@ -1155,15 +1155,12 @@ static void TestValidator(struct NCValTestCase *vtest) {
   NCValidateSegment(byte0, (uint32_t)vtest->vaddr, data_size - 1, vstate);
   free(byte0);
   rc = NCValidateFinish(vstate);
-  /* rc can be non-zero even on small_tests.
-     http://code.google.com/p/nativeclient/issues/detail?id=2372
-  */
-  /* assert(rc == 0); */
-  (void) rc;  /* assert needs to be fixed! */
+
   do {
     printf("vtest->sawfailure = %d, vstate->stats.sawfailure = %d\n",
            vtest->sawfailure, vstate->stats.sawfailure);
     NCStatsPrint(vstate);
+    if (vtest->sawfailure != rc) break;
     if (vtest->sawfailure ^ vstate->stats.sawfailure) break;
     if (vtest->instructions != vstate->stats.instructions) break;
     if (vtest->illegalinst != vstate->stats.illegalinst) break;
