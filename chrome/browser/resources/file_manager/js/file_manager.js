@@ -136,7 +136,6 @@ function FileManager(dialogDom, filesystem, rootEntries) {
   this.setupCurrentDirectory_();
 
   this.summarizeSelection_();
-  this.updatePreview_();
 
   this.dataModel_.sort('cachedMtime_', 'desc');
 
@@ -198,6 +197,11 @@ FileManager.prototype = {
    */
   const CP_RECURSE = true;
   const CP_NO_RECURSE = false;
+
+  /**
+   * Maximum amount of thumbnails in the preview pane.
+   */
+  const MAX_PREVIEW_THUMBAIL_COUNT = 5;
 
   /**
    * Translated strings.
@@ -548,7 +552,8 @@ FileManager.prototype = {
    */
   FileManager.prototype.initDom_ = function() {
     // Cache nodes we'll be manipulating.
-    this.previewImage_ = this.dialogDom_.querySelector('.preview-img');
+    this.previewThumbnails_ =
+        this.dialogDom_.querySelector('.preview-thumbnails');
     this.previewFilename_ = this.dialogDom_.querySelector('.preview-filename');
     this.previewSummary_ = this.dialogDom_.querySelector('.preview-summary');
     this.previewMetadata_ = this.dialogDom_.querySelector('.preview-metadata');
@@ -557,8 +562,7 @@ FileManager.prototype = {
     this.okButton_ = this.dialogDom_.querySelector('.ok');
     this.cancelButton_ = this.dialogDom_.querySelector('.cancel');
     this.newFolderButton_ = this.dialogDom_.querySelector('.new-folder');
-    this.copyButton_ = this.dialogDom_.querySelector('.clipboard-copy');
-    this.pasteButton_ = this.dialogDom_.querySelector('.clipboard-paste');
+    this.deleteButton_ = this.dialogDom_.querySelector('.delete-button');
 
     this.downloadsWarning_ =
         this.dialogDom_.querySelector('.downloads-warning');
@@ -568,9 +572,6 @@ FileManager.prototype = {
     link.addEventListener('click', this.onDownloadsWarningClick_.bind(this));
 
     this.document_.addEventListener('keydown', this.onKeyDown_.bind(this));
-
-    this.descriptionTable_ =
-        this.dialogDom_.querySelector('.preview-metadata-table');
 
     this.renameInput_ = this.document_.createElement('input');
     this.renameInput_.className = 'rename';
@@ -929,50 +930,52 @@ FileManager.prototype = {
    * Invoked to decide whether the "copy" command can be executed.
    */
   FileManager.prototype.onCanExecute_ = function(event) {
-    switch (event.command.id) {
+    event.canExecute = this.canExecute_(event.command.id);
+  };
+
+  /**
+   * @param {string} commandId Command identifier.
+   * @return {boolean} True if the command can be executed for current
+   *                   selection.
+   */
+  FileManager.prototype.canExecute_ = function(commandId) {
+    switch (commandId) {
       case 'cut':
-        event.canExecute =
-          (this.currentDirEntry_ &&
-           !isSystemDirEntry(this.currentDirEntry_));
-        break;
+        return (this.currentDirEntry_ &&
+               !isSystemDirEntry(this.currentDirEntry_));
 
       case 'copy':
-        event.canExecute =
-          (this.currentDirEntry_ &&
-           this.currentDirEntry_.fullPath != '/');
-        if (this.copyButton_)
-          this.copyButton_.disabled = !event.canExecute;
-        break;
+        return (this.currentDirEntry_ &&
+                this.currentDirEntry_.fullPath != '/');
 
       case 'paste':
-        event.canExecute =
-          (this.clipboard_ &&
-           !isSystemDirEntry(this.currentDirEntry_));
-        if (this.pasteButton_)
-          this.pasteButton_.disabled = !event.canExecute;
-        break;
+        return (this.clipboard_ &&
+               !isSystemDirEntry(this.currentDirEntry_));
 
       case 'rename':
-        event.canExecute =
-          (// Initialized to the point where we have a current directory
-           this.currentDirEntry_ &&
-           // Rename not in progress.
-           !this.renameInput_.currentEntry &&
-           // Only one file selected.
-           this.selection &&
-           this.selection.totalCount == 1 &&
-           !isSystemDirEntry(this.currentDirEntry_));
-         break;
+        return (// Initialized to the point where we have a current directory
+                this.currentDirEntry_ &&
+                // Rename not in progress.
+                !this.renameInput_.currentEntry &&
+                // Only one file selected.
+                this.selection &&
+                this.selection.totalCount == 1 &&
+                !isSystemDirEntry(this.currentDirEntry_));
 
       case 'delete':
-        event.canExecute =
-          (// Initialized to the point where we have a current directory
-           this.currentDirEntry_ &&
-           // Rename not in progress.
-           !this.renameInput_.currentEntry &&
-           !isSystemDirEntry(this.currentDirEntry_));
-         break;
+        return (// Initialized to the point where we have a current directory
+                this.currentDirEntry_ &&
+                // Rename not in progress.
+                !this.renameInput_.currentEntry &&
+                !isSystemDirEntry(this.currentDirEntry_)) &&
+                this.selection &&
+                this.selection.totalCount > 0;
     }
+  };
+
+  FileManager.prototype.updateCommonActionButtons_ = function() {
+    if (this.deleteButton_)
+      this.deleteButton_.disabled = !this.canExecute_('delete');
   };
 
   FileManager.prototype.setListType = function(type) {
@@ -1025,8 +1028,6 @@ FileManager.prototype = {
         'dblclick', this.onDetailDoubleClick_.bind(this));
     this.grid_.selectionModel.addEventListener(
         'change', this.onSelectionChanged_.bind(this));
-    this.grid_.selectionModel.addEventListener(
-        'leadIndexChange', this.onLeadIndexChanged_.bind(this));
     cr.ui.contextMenuHandler.addContextMenuProperty(this.grid_);
     this.grid_.contextMenu = this.fileContextMenu_;
     this.grid_.addEventListener('mousedown',
@@ -1068,8 +1069,6 @@ FileManager.prototype = {
         'dblclick', this.onDetailDoubleClick_.bind(this));
     this.table_.selectionModel.addEventListener(
         'change', this.onSelectionChanged_.bind(this));
-    this.table_.selectionModel.addEventListener(
-        'leadIndexChange', this.onLeadIndexChanged_.bind(this));
 
     cr.ui.contextMenuHandler.addContextMenuProperty(this.table_);
     this.table_.contextMenu = this.fileContextMenu_;
@@ -1525,7 +1524,7 @@ FileManager.prototype = {
     cr.defineProperty(li, 'lead', cr.PropertyKind.BOOL_ATTR);
     cr.defineProperty(li, 'selected', cr.PropertyKind.BOOL_ATTR);
     return li;
-  }
+  };
 
   /**
    * Render the type column of the detail table.
@@ -1686,8 +1685,10 @@ FileManager.prototype = {
 
     this.previewSummary_.textContent = str('COMPUTING_SELECTION');
     this.taskButtons_.innerHTML = '';
+    this.previewThumbnails_.innerHTML = '';
 
     if (!selection.indexes.length) {
+      this.updateCommonActionButtons_();
       cr.dispatchSimpleEvent(this, 'selection-summarized');
       return;
     }
@@ -1695,6 +1696,7 @@ FileManager.prototype = {
     var fileCount = 0;
     var byteCount = 0;
     var pendingFiles = [];
+    var thumbnailCount = 0;
 
     for (var i = 0; i < selection.indexes.length; i++) {
       var entry = this.dataModel_.item(selection.indexes[i]);
@@ -1710,6 +1712,14 @@ FileManager.prototype = {
         var iconType = this.getIconType(entry);
         if (selection.iconType != iconType)
           selection.iconType = 'unknown';
+      }
+
+      if (thumbnailCount < MAX_PREVIEW_THUMBAIL_COUNT) {
+        var thumbnail = this.renderThumbnailBox_(entry, true);
+        thumbnail.style.top = (i * 2) + 'px';
+        thumbnail.style.zIndex = MAX_PREVIEW_THUMBAIL_COUNT + 1 - i;
+        this.previewThumbnails_.appendChild(thumbnail);
+        thumbnailCount++;
       }
 
       selection.totalCount++;
@@ -1731,6 +1741,9 @@ FileManager.prototype = {
         selection.directoryCount += 1;
       }
     }
+
+    // Now this.selection is complete. Update buttons.
+    this.updateCommonActionButtons_();
 
     var self = this;
 
@@ -1862,7 +1875,9 @@ FileManager.prototype = {
     img.src = task.iconUrl;
 
     button.appendChild(img);
-    button.appendChild(this.document_.createTextNode(task.title));
+    var label = this.document_.createElement('div');
+    label.appendChild(this.document_.createTextNode(task.title))
+    button.appendChild(label);
 
     this.taskButtons_.appendChild(button);
   };
@@ -2155,101 +2170,6 @@ FileManager.prototype = {
     }
   };
 
-  /**
-   * Update the preview panel to display a given entry.
-   *
-   * The selection summary line is handled by the onSelectionSummarized handler
-   * rather than this function, because summarization may not complete quickly.
-   */
-  FileManager.prototype.updatePreview_ = function() {
-    // Clear the preview image first, in case the thumbnail takes long to load.
-    // Do not set url to empty string in plugins because it crashes browser,
-    // instead we use empty 1x1 gif
-    this.previewImage_.src = EMPTY_IMAGE_URI;
-
-    // Also clear description in case metadata takes some time to load
-    this.clearDescription_();
-
-    // The thumbnail class styles the preview for image thumbnails, which are
-    // treated a little differently than the stock icons for non-thumbnail
-    // preview images.
-    this.previewImage_.classList.remove('thumbnail');
-
-    // The multiple-selected class indicates that more than one entry is
-    // selcted.
-    this.previewImage_.classList.remove('multiple-selected');
-
-    var leadEntry = this.getLeadEntry();
-    if (!leadEntry) {
-      this.previewFilename_.textContent = '';
-      return;
-    }
-    var previewName = leadEntry.name;
-    if (this.currentDirEntry_.name == '')
-      previewName = this.getLabelForRootPath_(previewName);
-
-    this.previewFilename_.textContent = previewName;
-
-    var iconType = this.getIconType(leadEntry);
-    if (iconType == 'image') {
-      if (fileManager.selection.totalCount > 1)
-        this.previewImage_.classList.add('multiple-selected');
-    }
-
-    var self = this;
-
-    this.getThumbnailURL(leadEntry, function(iconType, url) {
-      if (self.getLeadEntry() != leadEntry) {
-        // Selection has changed since we asked, nevermind.
-        return;
-      }
-
-      if (url) {
-        self.previewImage_.src = url;
-        if (iconType == 'image')
-          self.previewImage_.classList.add('thumbnail');
-      } else {
-        self.previewImage_.src = previewArt['unknown'];
-      }
-    });
-
-    this.getDescription(leadEntry, function(desc) {
-      self.clearDescription_();
-
-      if (self.getLeadEntry() != leadEntry) {
-        return;
-      }
-
-      if (desc) {
-
-        var descriptionBody =
-            self.descriptionTable_.ownerDocument.createElement('tbody');
-
-        var doc = self.descriptionTable_.ownerDocument;
-
-        for (var key in desc) {
-          descriptionBody.appendChild(
-            util.createElement(doc, 'tr',
-                util.createElement(doc, 'th', str(desc[key].key)),
-                util.createElement(doc, 'td',
-                                   self.formatMetadataValue_(desc[key]))
-            )
-          );
-        }
-
-        self.descriptionTable_.appendChild(descriptionBody);
-      }
-    });
-  };
-
-  FileManager.prototype.getLeadEntry = function() {
-    var leadIndex = this.currentList_.selectionModel.leadIndex;
-    if (leadIndex < 0)
-      return null;
-
-    return this.dataModel_.item(leadIndex);
-  };
-
   FileManager.prototype.formatMetadataValue_ = function(obj) {
     if (typeof obj.type == 'undefined') {
       return obj.value;
@@ -2275,13 +2195,6 @@ FileManager.prototype = {
       var fmt = this.locale_.createDateTimeFormat({skeleton:fmtSkeleton});
 
       return fmt.format(date);
-    }
-  };
-
-
-  FileManager.prototype.clearDescription_ = function() {
-    while (this.descriptionTable_.hasChildNodes()) {
-      this.descriptionTable_.removeChild(this.descriptionTable_.firstChild);
     }
   };
 
@@ -2739,7 +2652,7 @@ FileManager.prototype = {
       if (this.selection &&
           this.selection.totalCount == 1 &&
           this.selection.entries[0].isFile)
-        this.filenameInput_.value = this.getLeadEntry().name;
+        this.filenameInput_.value = this.selection.entries[0].name;
     }
 
     this.updateOkButton_();
@@ -2785,15 +2698,6 @@ FileManager.prototype = {
           listItem.querySelector('input[type="checkbox"]').checked = true;
       }
     }
-  };
-
-  /**
-   * Update the UI then the lead item changes.
-   *
-   * @param {cr.Event} event The change event.
-   */
-  FileManager.prototype.onLeadIndexChanged_ = function(event) {
-    this.updatePreview_();
   };
 
   FileManager.prototype.updateOkButton_ = function(event) {

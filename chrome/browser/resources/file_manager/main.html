@@ -124,7 +124,7 @@
               ></button>
     </div>
     <div class=dialog-body>
-      <div class=left-column>
+      <div class=filelist-panel>
         <div class=list-container>
           <div class=detail-table tabindex=0></div>
           <grid class=thumbnail-grid tabindex=0></grid>
@@ -134,38 +134,19 @@
           <div></div>
         </div>
       </div>
-      <div class=preview-container>
-        <div class=table-header style='width:100%'>
-          <div class=table-header-cell>
-            <div class='preview-label table-header-label'
-                 i18n-content=PREVIEW_COLUMN_LABEL>[PREVIEW]</div>
-          </div>
-        </div>
-        <center><img class=preview-img></center>
-        <div class=preview-filename></div>
-        <div class="preview-metadata">
-            <table class="preview-metadata-table">
-            </table>
-        </div>
-        <div class=vertical-spacer></div>
+      <div class=preview-panel>
+        <div><div class=preview-thumbnails></div></div>
+        <div><div class=preview-summary></div></div>
         <div class=task-buttons></div>
-        <div class=clipboard-status>
-          <div class=clipboard-buttons>
-            <button class='clipboard-copy' command='#copy'
-                    onclick='fileManager.copySelectionToClipboard()'
-                    visibleif='this.dialogType_ == "full-page"'
-               ><img src='images/button-icon-copy.png'
-                ><span i18n-content=COPY_BUTTON_LABEL></span
-            ></button>
-            <button class='clipboard-paste' command='#paste'
-                    onclick='fileManager.pasteFromClipboard()'
-                    visibleif='this.dialogType_ == "full-page"'
-               ><img src='images/button-icon-paste.png'
-                ><span i18n-content=PASTE_BUTTON_LABEL></span
-            ></button>
-          </div>
+        <div>
+          <button class='delete-button task-button' command='#delete'
+                  onclick='fileManager.deleteEntries(
+                           fileManager.selection.entries, false)'
+                  visibleif='this.dialogType_ == "full-page"'
+             ><img src='images/button-icon-delete.png'
+              ><div i18n-content=DELETE_BUTTON_LABEL></div
+          ></button>
         </div>
-        <div class=preview-summary></div>
       </div>
     </div>
     <div class=dialog-footer visibleif='this.dialogType_ != "full-page"'>

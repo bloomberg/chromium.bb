@@ -111,7 +111,7 @@ input[type='submit'][disabled]:hover {
 
 /* Container for the detail and thumbnail (not implemented yet) list views. */
 .dialog-body {
-  -webkit-box-orient: horizontal;
+  -webkit-box-orient: vertical;
   -webkit-box-flex: 1;
   border: 1px #aaa solid;
   border-radius: 4px;
@@ -170,7 +170,7 @@ button.thumbnail-view > img {
   top: 1px;
 }
 
-.left-column {
+.filelist-panel {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-box-flex: 1;
@@ -239,7 +239,7 @@ div.img-container {
   height: 112px;
 }
 
-div.img-container > img{
+div.img-container > img {
   position: absolute;
 }
 
@@ -270,12 +270,40 @@ div.img-container > img{
   border: 0;
 }
 
-/* The right-column 'Preview' column container. */
-.preview-container {
+/* Bottom pane describing current selection. */
+.preview-panel {
   -webkit-border-start: 1px #aaa solid;
-  -webkit-box-orient: vertical;
+  -webkit-box-orient: horizontal;
   display: -webkit-box;
-  width: 225px;
+  height: 61px;
+  background-color: #F0F0F0;
+  padding: 0px 14px 0px 14px;
+}
+
+.preview-thumbnails {
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
+  padding-left: 38px;
+}
+
+.preview-thumbnails > div.img-container {
+  width: 45px;
+  height: 45px;
+  position: relative;
+  margin-left: -38px;
+  overflow: hidden;
+  border: 1px solid white;
+  background-color: #F2F2F2;
+}
+
+.preview-thumbnails > div.img-container > img {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.preview-panel > * {
+  display: -webkit-box;
+  -webkit-box-align: center;
 }
 
 /* cr.ui.Table has a black focus border by default, which we don't want. */
@@ -481,56 +509,35 @@ li.thumbnail-item[selected] .file-checkbox {
 
 /* The task buttons at the bottom of the preview pane. */
 .task-buttons {
-  padding: 4px;
-  padding-left: 20px;
-  padding-right: 20px;
-  overflow-y: auto;
+  -webkit-box-flex: 1;
+  overflow: hidden;
+
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: end;
 }
 
 .task-button {
-  width: 100%;
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
+  height: 29px;
   text-align: left;
+  vertical-align: middle;
+  padding: 6px;
 }
 
 .task-button > img {
-  position: relative;
-  top: 2px;
-  -webkit-margin-end: 5px;
-}
-
-/* The copy/paste buttons and summary. */
-.clipboard-status {
-  margin-left: 18px;
-  margin-right: 18px;
-  overflow: hidden;
-  padding: 0;
-  padding-bottom: 5px;
-}
-
-.clipboard-buttons {
-  display: -webkit-box;
-  -webkit-box-orient: horizontal;
-}
-
-.clipboard-buttons > button {
-  display: -webkit-box;
-  -webkit-box-flex: 1;
-}  
-
-.clipboard-buttons > button > img {
-  vertical-align: middle;
-  -webkit-margin-end: 5px;
+  -webkit-margin-end: 5px;  
 }
 
 /* The selection summary text at the bottom of the preview pane. */
 .preview-summary {
-  border-top: 1px #aaa solid;
-  color: #666;
-  font-weight: bold;
+  color: #666666;
   overflow: hidden;
   padding: 5px;
   text-overflow: ellipsis;
   white-space: nowrap;
+  vertical-align: middle;
 }
 
 .dialog-footer .filename-label {
