@@ -744,4 +744,20 @@ const char kIdLabel[] = "IdLabel";
 const char kNativePath[] = "NativePath";
 }  // namespace cros_disks
 
+namespace update_engine {
+const char kUpdateEngineInterface[] = "org.chromium.UpdateEngineInterface";
+const char kUpdateEngineServicePath[] = "/org/chromium/UpdateEngine";
+const char kUpdateEngineServiceName[] = "org.chromium.UpdateEngine";
+
+// Methods.
+const char kAttemptUpdate[] = "AttemptUpdate";
+const char kGetStatus[] = "GetStatus";
+const char kGetTrack[] = "GetTrack";
+const char kRebootIfNeeded[] = "RebootIfNeeded";
+const char kSetTrack[] = "SetTrack";
+
+// Signals.
+const char kStatusUpdate[] = "StatusUpdate";
+}  // namespace update_engine
+
 #endif  // DBUS_SERVICE_CONSTANTS_H_
