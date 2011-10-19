@@ -293,6 +293,9 @@
       'filepath': 'chrome/browser/autocomplete/.*'\
                   '|chrome/browser/ui/.*/omnibox/.*'
     },
+    'message_loop': {
+      'filepath': 'base/message_.*'
+    },
   },
 
   'WATCHLISTS': {
@@ -385,7 +388,7 @@
     'accelerator_table_linux': ['mazda@chromium.org',
                                 'derat+watch@chromium.org'],
     'downloads_ui': ['asanka@chromium.org', 'rdsmith@chromium.org'],
-    'x11': ['derat+watch@chromium.org'],
+    'x11': ['derat+watch@chromium.org', 'sadrul@chromium.org'],
     'accessibility': ['dmazzoni+watch@chromium.org',
                       'dtseng+watch@chromium.org',
                       'ctguil+watch@chromium.org',
@@ -395,11 +398,12 @@
                       'hashimoto+watch@chromium.org',
                       'yoshiki+watch@chromium.org',
                       'yuzo+watch@chromium.org'],
-    'aura': ['ben+watch@chromium.org'],
+    'aura': ['ben+watch@chromium.org', 'sadrul@chromium.org'],
     'views_core': ['ben+watch@chromium.org'],
     'tools_emacs': ['fischman+watch@chromium.org'],
     'browser_compositor': ['backer@chromium.org'],
     'textinput': ['suzhe@chromium.org'],
     'omnibox': ['suzhe@chromium.org'],
+    'message_loop': ['sadrul@chromium.org'],
   },
 }
