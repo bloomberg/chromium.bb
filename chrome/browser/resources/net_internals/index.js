@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 <include src="util.js"/>
+<include src="table_printer.js"/>
 <include src="view.js"/>
 <include src="tab_switcher_view.js"/>
 <include src="import_view.js"/>
@@ -35,6 +36,6 @@
 <include src="logs_view.js"/>
 <include src="prerender_view.js"/>
 
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function() {
   MainView.getInstance();  // from main.js
 });
