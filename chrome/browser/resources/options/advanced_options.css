@@ -4,12 +4,12 @@
  * found in the LICENSE file.
  */
 
-#advancedPage > section > div:only-of-type > div.checkbox {
-  margin: 10px 0;
+#advancedPage .section-group:not(:first-child) {
+  margin-top: 10px;
 }
 
-#advancedPage .section-group {
-  margin: 10px 0;
+#advancedPage .section-group:not(:last-child) {
+  margin-bottom: 10px;
 }
 
 #advancedPage select,
