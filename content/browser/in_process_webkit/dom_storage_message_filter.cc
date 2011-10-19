@@ -4,6 +4,7 @@
 
 #include "content/browser/in_process_webkit/dom_storage_message_filter.h"
 
+#include "base/bind.h"
 #include "base/nullable_string16.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/in_process_webkit/dom_storage_area.h"
@@ -73,9 +74,10 @@ void DOMStorageMessageFilter::DispatchStorageEvent(const NullableString16& key,
                                          : DOM_STORAGE_SESSION;
   // The storage_event_message_filter is the DOMStorageMessageFilter that is up
   // in the current call stack since it caused the storage event to fire.
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(storage_event_message_filter,
-          &DOMStorageMessageFilter::OnStorageEvent, params));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&DOMStorageMessageFilter::OnStorageEvent,
+                 storage_event_message_filter, params));
 }
 
 bool DOMStorageMessageFilter::OnMessageReceived(const IPC::Message& message,

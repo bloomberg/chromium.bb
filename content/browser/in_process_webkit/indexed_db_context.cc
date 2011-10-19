@@ -124,11 +124,10 @@ IndexedDBContext::~IndexedDBContext() {
 
   // No WEBKIT thread here means we are running in a unit test where no clean
   // up is needed.
-  BrowserThread::PostTask(BrowserThread::WEBKIT, FROM_HERE,
-                          NewRunnableFunction(&ClearLocalState,
-                                              data_path_,
-                                              clear_local_state_on_exit_,
-                                              special_storage_policy_));
+  BrowserThread::PostTask(
+      BrowserThread::WEBKIT, FROM_HERE,
+      base::Bind(&ClearLocalState, data_path_, clear_local_state_on_exit_,
+                 special_storage_policy_));
 }
 
 WebIDBFactory* IndexedDBContext::GetIDBFactory() {
@@ -294,11 +293,8 @@ void IndexedDBContext::GotUsageAndQuota(const GURL& origin_url,
   }
   BrowserThread::PostTask(
       BrowserThread::WEBKIT, FROM_HERE,
-      NewRunnableMethod(this,
-                        &IndexedDBContext::GotUpdatedQuota,
-                        origin_url,
-                        usage,
-                        quota));
+      base::Bind(&IndexedDBContext::GotUpdatedQuota, this, origin_url, usage,
+                 quota));
 }
 
 void IndexedDBContext::GotUpdatedQuota(const GURL& origin_url, int64 usage,
@@ -311,9 +307,9 @@ void IndexedDBContext::QueryAvailableQuota(const GURL& origin_url) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
     if (quota_manager_proxy())
-      BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-          NewRunnableMethod(this, &IndexedDBContext::QueryAvailableQuota,
-                            origin_url));
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          base::Bind(&IndexedDBContext::QueryAvailableQuota, this, origin_url));
     return;
   }
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));

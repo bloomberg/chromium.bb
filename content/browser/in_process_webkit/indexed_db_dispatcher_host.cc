@@ -4,6 +4,7 @@
 
 #include "content/browser/in_process_webkit/indexed_db_dispatcher_host.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/browser_thread.h"
@@ -79,7 +80,7 @@ void IndexedDBDispatcherHost::OnChannelClosing() {
 
   bool success = BrowserThread::PostTask(
       BrowserThread::WEBKIT, FROM_HERE,
-      NewRunnableMethod(this, &IndexedDBDispatcherHost::ResetDispatcherHosts));
+      base::Bind(&IndexedDBDispatcherHost::ResetDispatcherHosts, this));
 
   if (!success)
     ResetDispatcherHosts();

@@ -4,6 +4,7 @@
 
 #include "content/browser/in_process_webkit/indexed_db_key_utility_client.h"
 
+#include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/synchronization/waitable_event.h"
 #include "content/browser/utility_process_host.h"
@@ -250,9 +251,7 @@ void KeyUtilityClientImpl::GetRDHAndStartUtilityProcess() {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(
-            this,
-            &KeyUtilityClientImpl::GetRDHAndStartUtilityProcess));
+        base::Bind(&KeyUtilityClientImpl::GetRDHAndStartUtilityProcess, this));
     return;
   }
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -265,9 +264,7 @@ void KeyUtilityClientImpl::StartUtilityProcessInternal() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(
-            this,
-            &KeyUtilityClientImpl::StartUtilityProcessInternal));
+        base::Bind(&KeyUtilityClientImpl::StartUtilityProcessInternal, this));
     return;
   }
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -285,9 +282,7 @@ void KeyUtilityClientImpl::EndUtilityProcessInternal() {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(
-            this,
-            &KeyUtilityClientImpl::EndUtilityProcessInternal));
+        base::Bind(&KeyUtilityClientImpl::EndUtilityProcessInternal, this));
     return;
   }
 
@@ -304,10 +299,9 @@ void KeyUtilityClientImpl::CallStartIDBKeyFromValueAndKeyPathFromIOThread(
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(this,
-            &KeyUtilityClientImpl::
-                CallStartIDBKeyFromValueAndKeyPathFromIOThread,
-            values, key_path));
+        base::Bind(&KeyUtilityClientImpl::
+            CallStartIDBKeyFromValueAndKeyPathFromIOThread,
+                   this, values, key_path));
     return;
   }
 
@@ -323,10 +317,8 @@ void KeyUtilityClientImpl::CallStartInjectIDBKeyFromIOThread(
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(this,
-            &KeyUtilityClientImpl::
-                CallStartInjectIDBKeyFromIOThread,
-            key, value, key_path));
+        base::Bind(&KeyUtilityClientImpl::CallStartInjectIDBKeyFromIOThread,
+                   this, key, value, key_path));
     return;
   }
 

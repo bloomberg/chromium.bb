@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/string_util.h"
@@ -91,9 +92,9 @@ int64 DOMStorageContext::CloneSessionStorage(int64 original_id) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   int64 clone_id = AllocateSessionStorageNamespaceId();
   BrowserThread::PostTask(
-      BrowserThread::WEBKIT, FROM_HERE, NewRunnableFunction(
-          &DOMStorageContext::CompleteCloningSessionStorage,
-          this, original_id, clone_id));
+      BrowserThread::WEBKIT, FROM_HERE,
+      base::Bind(&DOMStorageContext::CompleteCloningSessionStorage, this,
+                 original_id, clone_id));
   return clone_id;
 }
 

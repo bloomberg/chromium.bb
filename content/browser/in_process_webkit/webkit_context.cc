@@ -4,6 +4,7 @@
 
 #include "content/browser/in_process_webkit/webkit_context.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "content/browser/browser_thread.h"
 
@@ -47,7 +48,7 @@ void WebKitContext::PurgeMemory() {
   if (!BrowserThread::CurrentlyOn(BrowserThread::WEBKIT)) {
     BrowserThread::PostTask(
         BrowserThread::WEBKIT, FROM_HERE,
-        NewRunnableMethod(this, &WebKitContext::PurgeMemory));
+        base::Bind(&WebKitContext::PurgeMemory, this));
     return;
   }
 
@@ -58,8 +59,7 @@ void WebKitContext::DeleteDataModifiedSince(const base::Time& cutoff) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::WEBKIT)) {
     BrowserThread::PostTask(
         BrowserThread::WEBKIT, FROM_HERE,
-        NewRunnableMethod(this, &WebKitContext::DeleteDataModifiedSince,
-                          cutoff));
+        base::Bind(&WebKitContext::DeleteDataModifiedSince, this, cutoff));
     return;
   }
 
@@ -70,7 +70,7 @@ void WebKitContext::DeleteSessionOnlyData() {
   if (!BrowserThread::CurrentlyOn(BrowserThread::WEBKIT)) {
     BrowserThread::PostTask(
         BrowserThread::WEBKIT, FROM_HERE,
-        NewRunnableMethod(this, &WebKitContext::DeleteSessionOnlyData));
+        base::Bind(&WebKitContext::DeleteSessionOnlyData, this));
     return;
   }
 
@@ -82,8 +82,8 @@ void WebKitContext::DeleteSessionStorageNamespace(
   if (!BrowserThread::CurrentlyOn(BrowserThread::WEBKIT)) {
     BrowserThread::PostTask(
         BrowserThread::WEBKIT, FROM_HERE,
-        NewRunnableMethod(this, &WebKitContext::DeleteSessionStorageNamespace,
-                          session_storage_namespace_id));
+        base::Bind(&WebKitContext::DeleteSessionStorageNamespace, this,
+                   session_storage_namespace_id));
     return;
   }
 
