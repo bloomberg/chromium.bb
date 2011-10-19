@@ -475,7 +475,8 @@ function HistoryView(model) {
   window.onresize = function() {
     self.updateEntryAnchorWidth_();
   };
-  self.updateEditControls_();
+  this.updateEditControls_();
+  this.editButtonTd_.hidden = true;
 
   this.boundUpdateRemoveButton_ = function(e) {
     return self.updateRemoveButton_(e);
@@ -583,6 +584,9 @@ HistoryView.prototype.setPageRendered_ = function(page) {
  * Update the page with results.
  */
 HistoryView.prototype.displayResults_ = function() {
+  // Hide the Edit Button if there are no history results to display.
+  this.editButtonTd_.hidden = !this.model_.getSize();
+
   var results = this.model_.getNumberedRange(
       this.pageIndex_ * RESULTS_PER_PAGE,
       this.pageIndex_ * RESULTS_PER_PAGE + RESULTS_PER_PAGE);
