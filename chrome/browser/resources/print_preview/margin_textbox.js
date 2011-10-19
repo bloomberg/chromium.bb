@@ -74,7 +74,7 @@ cr.define('print_preview', function() {
             this.lastValidValueInPoints + dragDeltaInPoints);
       } else if (validity == print_preview.marginValidationStates.TOO_SMALL) {
         this.value = print_preview.convertPointsToInchesText(0);
-      } else if (validity == print_preview.marginValidationStates.TOO_HIGH) {
+      } else if (validity == print_preview.marginValidationStates.TOO_BIG) {
         this.value = print_preview.convertPointsToInchesText(this.valueLimit);
       }
 

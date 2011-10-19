@@ -233,9 +233,9 @@ cr.define('print_preview', function() {
       var validity = this.box_.validateDelta(dragDeltaInPoints);
       if (validity == print_preview.marginValidationStates.WITHIN_RANGE)
         this.moveTo(destinationPoint);
-      else if (validity == print_preview.marginValidationStates.TOO_LOW)
+      else if (validity == print_preview.marginValidationStates.TOO_SMALL)
         this.snapToMinValue_();
-      else if (validity == print_preview.marginValidationStates.TOO_HIGH)
+      else if (validity == print_preview.marginValidationStates.TOO_BIG)
         this.snapToMaxValue_();
     },
 
