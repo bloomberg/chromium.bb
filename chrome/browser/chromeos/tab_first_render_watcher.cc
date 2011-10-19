@@ -34,7 +34,8 @@ void TabFirstRenderWatcher::Observe(int type,
       registrar_.Add(this,
           content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT,
           content::Source<RenderWidgetHost>(rwh));
-      delegate_->OnRenderHostCreated(Details<RenderViewHost>(details).ptr());
+      delegate_->OnRenderHostCreated(
+          content::Details<RenderViewHost>(details).ptr());
       break;
     }
     case content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME:

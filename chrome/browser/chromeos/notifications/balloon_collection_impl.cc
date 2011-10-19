@@ -152,7 +152,7 @@ void BalloonCollectionImpl::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_BROWSER_CLOSED);
-  bool app_closing = *Details<bool>(details).ptr();
+  bool app_closing = *content::Details<bool>(details).ptr();
   // When exiting, we need to shutdown all renderers in
   // BalloonViewImpl before IO thread gets deleted in the
   // BrowserProcessImpl's destructor.  See http://crbug.com/40810

@@ -172,7 +172,7 @@ void GoogleAuthenticator::LoginOffTheRecord() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   int mount_error = chromeos::kCryptohomeMountErrorNone;
   if (CrosLibrary::Get()->GetCryptohomeLibrary()->MountForBwsi(&mount_error)) {
-    Authenticationcontent::NotificationDetails details(true);
+    AuthenticationNotificationDetails details(true);
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_LOGIN_AUTHENTICATION,
         NotificationService::AllSources(),
@@ -281,7 +281,7 @@ void GoogleAuthenticator::OnLoginSuccess(
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_LOGIN_AUTHENTICATION,
       NotificationService::AllSources(),
-      Details<AuthenticationNotificationDetails>(&details));
+      content::Details<AuthenticationNotificationDetails>(&details));
 
   int mount_error = chromeos::kCryptohomeMountErrorNone;
   BootTimesLoader::Get()->AddLoginTimeMarker("CryptohomeMounting", false);
@@ -356,7 +356,7 @@ void GoogleAuthenticator::OnLoginFailure(const LoginFailure& error) {
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_LOGIN_AUTHENTICATION,
       NotificationService::AllSources(),
-      Details<AuthenticationNotificationDetails>(&details));
+      content::Details<AuthenticationNotificationDetails>(&details));
   LOG(WARNING) << "Login failed: " << error.GetErrorString();
   consumer_->OnLoginFailure(error);
 }

@@ -197,7 +197,7 @@ void OomPriorityManager::Observe(int type,
       break;
     }
     case content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED: {
-      bool visible = *Details<bool>(details).ptr();
+      bool visible = *content::Details<bool>(details).ptr();
       if (visible) {
         focused_tab_pid_ = content::Source<RenderWidgetHost>(source).ptr()->
             process()->GetHandle();

@@ -256,7 +256,7 @@ void LoginPerformer::Observe(int type,
   if (type != chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED)
     return;
 
-  bool is_screen_locked = *Details<bool>(details).ptr();
+  bool is_screen_locked = *content::Details<bool>(details).ptr();
   if (is_screen_locked) {
     if (screen_lock_requested_) {
       screen_lock_requested_ = false;

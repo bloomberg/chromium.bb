@@ -581,14 +581,14 @@ void InternetOptionsHandler::Observe(
     const content::NotificationDetails& details) {
   chromeos::CrosOptionsPageUIHandler::Observe(type, source, details);
   if (type == chrome::NOTIFICATION_REQUIRE_PIN_SETTING_CHANGE_ENDED) {
-    base::FundamentalValue require_pin(*Details<bool>(details).ptr());
+    base::FundamentalValue require_pin(*content::Details<bool>(details).ptr());
     web_ui_->CallJavascriptFunction(
         "options.InternetOptions.updateSecurityTab", require_pin);
   } else if (type == chrome::NOTIFICATION_ENTER_PIN_ENDED) {
     // We make an assumption (which is valid for now) that the SIM
     // unlock dialog is put up only when the user is trying to enable
     // mobile data.
-    bool cancelled = *Details<bool>(details).ptr();
+    bool cancelled = *content::Details<bool>(details).ptr();
     if (cancelled) {
       base::DictionaryValue dictionary;
       FillNetworkInfo(&dictionary);

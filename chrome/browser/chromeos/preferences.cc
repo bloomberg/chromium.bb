@@ -294,7 +294,7 @@ void Preferences::Observe(int type,
                           const content::NotificationSource& source,
                           const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_PREF_CHANGED)
-    NotifyPrefChanged(Details<std::string>(details).ptr());
+    NotifyPrefChanged(content::Details<std::string>(details).ptr());
 }
 
 void Preferences::NotifyPrefChanged(const std::string* pref_name) {

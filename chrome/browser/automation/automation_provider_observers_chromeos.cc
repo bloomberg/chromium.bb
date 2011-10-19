@@ -113,11 +113,11 @@ ScreenLockUnlockObserver::~ScreenLockUnlockObserver() {}
 void ScreenLockUnlockObserver::Observe(
     int type,
     const content::NotificationSource& source,
-    const NotificationDetails& details) {
+    const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED);
   if (automation_) {
     AutomationJSONReply reply(automation_, reply_message_.release());
-    bool is_screen_locked = *Details<bool>(details).ptr();
+    bool is_screen_locked = *content::Details<bool>(details).ptr();
     if (lock_screen_ == is_screen_locked)
       reply.SendSuccess(NULL);
     else

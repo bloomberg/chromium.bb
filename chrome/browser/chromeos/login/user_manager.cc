@@ -692,7 +692,7 @@ void UserManager::OnDownloadSuccess(const SkBitmap& image) {
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_PROFILE_IMAGE_UPDATED,
         content::Source<UserManager>(this),
-        Details<const UserManager::User>(&logged_in_user()));
+        content::Details<const UserManager::User>(&logged_in_user()));
   }
 }
 
@@ -760,7 +760,7 @@ void UserManager::NotifyOnLogin() {
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_LOGIN_USER_CHANGED,
       content::Source<UserManager>(this),
-      Details<const User>(&logged_in_user_));
+      content::Details<const User>(&logged_in_user_));
 
   chromeos::input_method::InputMethodManager::GetInstance()->
       SetDeferImeStartup(false);

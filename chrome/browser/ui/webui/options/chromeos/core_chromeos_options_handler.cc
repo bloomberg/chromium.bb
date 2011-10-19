@@ -67,7 +67,7 @@ void CoreChromeOSOptionsHandler::Observe(
   if (handling_change_)
     return;
   if (type == chrome::NOTIFICATION_SYSTEM_SETTING_CHANGED) {
-    NotifySettingsChanged(Details<std::string>(details).ptr());
+    NotifySettingsChanged(content::Details<std::string>(details).ptr());
     return;
   }
   ::CoreOptionsHandler::Observe(type, source, details);

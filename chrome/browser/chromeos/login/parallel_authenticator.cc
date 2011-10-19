@@ -241,7 +241,7 @@ void ParallelAuthenticator::OnOffTheRecordLoginSuccess() {
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_LOGIN_AUTHENTICATION,
       NotificationService::AllSources(),
-      Details<AuthenticationNotificationDetails>(&details));
+      content::Details<AuthenticationNotificationDetails>(&details));
   consumer_->OnOffTheRecordLoginSuccess();
 }
 
@@ -293,7 +293,7 @@ void ParallelAuthenticator::OnLoginFailure(const LoginFailure& error) {
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_LOGIN_AUTHENTICATION,
       NotificationService::AllSources(),
-      Details<AuthenticationNotificationDetails>(&details));
+      content::Details<AuthenticationNotificationDetails>(&details));
   LOG(WARNING) << "Login failed: " << error.GetErrorString();
   consumer_->OnLoginFailure(error);
 }

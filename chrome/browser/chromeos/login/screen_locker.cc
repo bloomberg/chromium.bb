@@ -444,7 +444,7 @@ void ScreenLocker::ScreenLockReady() {
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
       content::Source<ScreenLocker>(this),
-      Details<bool>(&state));
+      content::Details<bool>(&state));
   if (CrosLibrary::Get()->EnsureLoaded())
     CrosLibrary::Get()->GetScreenLockLibrary()->NotifyScreenLockCompleted();
 }
