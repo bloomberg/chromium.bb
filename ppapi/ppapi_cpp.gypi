@@ -5,7 +5,7 @@
 {
   'targets': [
     {
-      'target_name': 'ppapi_c<(nacl_ppapi_library_suffix)',
+      'target_name': 'ppapi_c',
       'type': 'none',
       'all_dependent_settings': {
         'include_dirs+': [
@@ -133,10 +133,10 @@
       ],
     },
     {
-      'target_name': 'ppapi_cpp_objects<(nacl_ppapi_library_suffix)',
+      'target_name': 'ppapi_cpp_objects',
       'type': 'static_library',
       'dependencies': [
-        'ppapi_c<(nacl_ppapi_library_suffix)'
+        'ppapi_c'
       ],
       'include_dirs+': [
         '..',
@@ -285,11 +285,11 @@
       ],
     },
     {
-      'target_name': 'ppapi_cpp<(nacl_ppapi_library_suffix)',
+      'target_name': 'ppapi_cpp',
       'type': 'static_library',
       'dependencies': [
-        'ppapi_c<(nacl_ppapi_library_suffix)',
-        'ppapi_cpp_objects<(nacl_ppapi_library_suffix)',
+        'ppapi_c',
+        'ppapi_cpp_objects',
       ],
       'include_dirs+': [
         '..',

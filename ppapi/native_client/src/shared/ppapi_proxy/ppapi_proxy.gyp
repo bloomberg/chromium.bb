@@ -65,7 +65,7 @@
         '<(DEPTH)/ppapi',
       ],
       'dependencies': [
-        '<(DEPTH)/native_client/src/shared/ppapi/ppapi.gyp:ppapi_c_nacl',
+        '<(DEPTH)/ppapi/ppapi.gyp:ppapi_c',
       ],
     },
   ],

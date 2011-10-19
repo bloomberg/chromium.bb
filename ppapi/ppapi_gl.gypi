@@ -8,10 +8,10 @@
   ],
   'targets': [
     {
-      'target_name': 'ppapi_egl<(nacl_ppapi_library_suffix)',
+      'target_name': 'ppapi_egl',
       'type': 'static_library',
       'dependencies': [
-        '<(DEPTH)/ppapi/ppapi.gyp:ppapi_c<(nacl_ppapi_library_suffix)',
+        '<(DEPTH)/ppapi/ppapi.gyp:ppapi_c',
       ],
       'include_dirs': [
         'lib/gl/include',
@@ -45,10 +45,10 @@
       ],
     },
     {
-      'target_name': 'ppapi_gles2<(nacl_ppapi_library_suffix)',
+      'target_name': 'ppapi_gles2',
       'type': 'static_library',
       'dependencies': [
-        'ppapi_c<(nacl_ppapi_library_suffix)',
+        'ppapi_c',
       ],
       'include_dirs': [
         'lib/gl/include',
