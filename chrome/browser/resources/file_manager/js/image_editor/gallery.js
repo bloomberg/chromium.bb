@@ -848,6 +848,9 @@ function ShareMode(container, toolbar, shareActions,
     row.addEventListener('click', actionCallback.bind(null, action));
     this.menu_.appendChild(row);
   }
+  var arrow = doc.createElement('div');
+  arrow.className = 'bubble-point';
+  this.menu_.appendChild(arrow);
   container.appendChild(this.menu_);
 }
 

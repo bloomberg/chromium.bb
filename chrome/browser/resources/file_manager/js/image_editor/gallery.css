@@ -661,15 +661,29 @@ body {
 .gallery .share-menu {
   position: absolute;
   right: 10px;
-  bottom: 80px;
-  background-color: rgba(240,240,240,1);
+  bottom: 60px;
+  background-color: white;
   opacity: 1.0;
   -webkit-transition: opacity 0.5s ease-in-out;
-  padding: 10px;
+  padding: 8px;
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-box-align: stretch;
   -webkit-box-pack: start;
+  border: 1px solid #7f7f7f;
+  -webkit-border-radius: 1px;
+}
+
+.gallery .share-menu .bubble-point {
+  background-image: url(../../images/gallery/bubble_point.png);
+  background-position: center top;
+  background-repeat: no-repeat;
+  position: absolute;
+  width: 20px;
+  height: 8px;
+  bottom: -8px;
+  right: 20px;
+  padding: 0;
 }
 
 .gallery .share-menu[hidden] {
@@ -688,9 +702,10 @@ body {
 }
 
 .gallery .share-menu > div:hover {
-  background-color: rgba(200,200,200,1);
+  background-color: rgba(240,240,240,1);
 }
 
 .gallery .share-menu > div > img {
   margin-right: 5px;
+  display: block;
 }

@@ -90,6 +90,7 @@
         <include name="IDR_FILE_MANAGER_IMG_GALLERY_OK" file="file_manager/images/gallery/icon_ok_check.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_GALLERY_CANCEL" file="file_manager/images/gallery/icon_cancel_x.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_GALLERY_CLOSE" file="file_manager/images/gallery/close_x.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_GALLERY_BUBBLE_POINT" file="file_manager/images/gallery/bubble_point.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_GALLERY_FADE_LEFT" file="file_manager/images/gallery/thumb_fade_left.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_GALLERY_FADE_RIGHT" file="file_manager/images/gallery/thumb_fade_right.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_GALLERY_CURSOR_CROP" file="file_manager/images/gallery/cursor_crop.png" type="BINDATA" />
