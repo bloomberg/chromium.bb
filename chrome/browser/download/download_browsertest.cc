@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
+#include "base/stringprintf.h"
 #include "base/stl_util.h"
 #include "base/test/test_file_util.h"
 #include "base/utf_string_conversions.h"
@@ -824,11 +825,12 @@ class DownloadTest : public InProcessBrowserTest {
       return false;
 
     int64 origin_file_size = 0;
-    int64 downloaded_file_size = 0;
     EXPECT_TRUE(file_util::GetFileSize(origin_file, &origin_file_size));
-    EXPECT_TRUE(file_util::GetFileSize(downloaded_file, &downloaded_file_size));
-    EXPECT_EQ(origin_file_size, downloaded_file_size);
-    EXPECT_TRUE(file_util::ContentsEqual(downloaded_file, origin_file));
+    std::string original_file_contents;
+    EXPECT_TRUE(
+        file_util::ReadFileToString(origin_file, &original_file_contents));
+    EXPECT_TRUE(
+        VerifyFile(downloaded_file, original_file_contents, origin_file_size));
 
     // Delete the downloaded copy of the file.
     bool downloaded_file_deleted =
@@ -898,6 +900,12 @@ class DownloadTest : public InProcessBrowserTest {
     EXPECT_TRUE(downloaded_path_exists);
     if (!downloaded_path_exists)
       return false;
+
+    // Check the file contents.
+    size_t file_size = URLRequestSlowDownloadJob::kFirstDownloadSize +
+                       URLRequestSlowDownloadJob::kSecondDownloadSize;
+    std::string expected_contents(file_size, '*');
+    EXPECT_TRUE(VerifyFile(download_path, expected_contents, file_size));
 
     // Delete the file we just downloaded.
     EXPECT_TRUE(file_util::DieFileDie(download_path, true));
@@ -973,6 +981,33 @@ class DownloadTest : public InProcessBrowserTest {
     // Gives ownership to DownloadService.
     DownloadServiceFactory::GetForProfile(
         browser->profile())->SetDownloadManagerDelegateForTesting(new_delegate);
+  }
+
+  // Checks that |path| is has |file_size| bytes, and matches the |value|
+  // string.
+  bool VerifyFile(const FilePath& path,
+                  const std::string& value,
+                  const int64 file_size) {
+    std::string file_contents;
+
+    bool read = file_util::ReadFileToString(path, &file_contents);
+
+    if (!read)
+      return false;  // Couldn't read the file.
+
+    // Note: we don't handle really large files (more than size_t can hold)
+    // so we will fail in that case.
+    size_t expected_size = static_cast<size_t>(file_size);
+
+    // Check the size.
+    if (expected_size != file_contents.size())
+      return false;
+
+    // Check the contents.
+    if (memcmp(file_contents.c_str(), value.c_str(), expected_size) != 0)
+      return false;
+
+    return true;
   }
 
  private:
@@ -1454,6 +1489,78 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, NewWindow) {
   CheckDownloadUI(browser(), false, true, file);
 
   CheckDownload(browser(), file, file);
+}
+
+// Check that downloading multiple (in this case, 2) files does not result in
+// corrupted files.
+IN_PROC_BROWSER_TEST_F(DownloadTest, MultiDownload) {
+  ASSERT_TRUE(InitialSetup(false));
+  EXPECT_EQ(1, browser()->tab_count());
+
+  // Create a download, wait until it's started, and confirm
+  // we're in the expected state.
+  scoped_ptr<DownloadsObserver> observer1(CreateInProgressWaiter(browser(), 1));
+  ui_test_utils::NavigateToURL(
+      browser(), GURL(URLRequestSlowDownloadJob::kUnknownSizeUrl));
+  observer1->WaitForFinished();
+
+  std::vector<DownloadItem*> downloads;
+  browser()->profile()->GetDownloadManager()->SearchDownloads(
+      string16(), &downloads);
+  ASSERT_EQ(1u, downloads.size());
+  ASSERT_EQ(DownloadItem::IN_PROGRESS, downloads[0]->state());
+  CheckDownloadUI(browser(), true, true, FilePath());
+  DownloadItem* download1 = downloads[0];  // The only download.
+
+  // Start the second download and wait until it's done.
+  FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
+  GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
+  // Download the file and wait.  We do not expect the Select File dialog.
+  DownloadAndWait(browser(), url, EXPECT_NO_SELECT_DIALOG);
+
+  // Should now have 2 items on the download shelf.
+  downloads.clear();
+  browser()->profile()->GetDownloadManager()->SearchDownloads(
+      string16(), &downloads);
+  ASSERT_EQ(2u, downloads.size());
+  // We don't know the order of the downloads.
+  DownloadItem* download2 = downloads[(download1 == downloads[0]) ? 1 : 0];
+
+  ASSERT_EQ(DownloadItem::IN_PROGRESS, download1->state());
+  ASSERT_EQ(DownloadItem::COMPLETE, download2->state());
+  // The download shelf should be open.
+  CheckDownloadUI(browser(), true, true, FilePath());
+
+  // Allow the first request to finish.  We do this by loading a third URL
+  // in a separate tab.
+  scoped_ptr<DownloadsObserver> observer2(CreateWaiter(browser(), 1));
+  GURL finish_url(URLRequestSlowDownloadJob::kFinishDownloadUrl);
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      finish_url,
+      NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  observer2->WaitForFinished();  // Wait for the third request.
+
+  // Get the important info from other threads and check it.
+  scoped_refptr<CancelTestDataCollector> info(new CancelTestDataCollector());
+  info->WaitForDataCollected();
+  EXPECT_EQ(0, info->dfm_pending_downloads());
+
+  CheckDownloadUI(browser(), true, true, FilePath());
+
+  // The |DownloadItem|s should now be done and have the final file names.
+  // Verify that the files have the expected data and size.
+  // |file1| should be full of '*'s, and |file2| should be the same as the
+  // source file.
+  FilePath file1(download1->full_path());
+  size_t file_size1 = URLRequestSlowDownloadJob::kFirstDownloadSize +
+                      URLRequestSlowDownloadJob::kSecondDownloadSize;
+  std::string expected_contents(file_size1, '*');
+  ASSERT_TRUE(VerifyFile(file1, expected_contents, file_size1));
+
+  FilePath file2(download2->full_path());
+  ASSERT_TRUE(file_util::ContentsEqual(OriginFile(file), file2));
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadCancelled) {

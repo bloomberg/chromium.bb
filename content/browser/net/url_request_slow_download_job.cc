@@ -5,6 +5,7 @@
 #include "content/browser/net/url_request_slow_download_job.h"
 
 #include "base/compiler_specific.h"
+#include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/stringprintf.h"
 #include "base/string_util.h"
@@ -14,15 +15,15 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_filter.h"
 
-const int kFirstDownloadSize = 1024 * 35;
-const int kSecondDownloadSize = 1024 * 10;
-
 const char URLRequestSlowDownloadJob::kUnknownSizeUrl[] =
   "http://url.handled.by.slow.download/download-unknown-size";
 const char URLRequestSlowDownloadJob::kKnownSizeUrl[] =
   "http://url.handled.by.slow.download/download-known-size";
 const char URLRequestSlowDownloadJob::kFinishDownloadUrl[] =
   "http://url.handled.by.slow.download/download-finish";
+
+const int URLRequestSlowDownloadJob::kFirstDownloadSize = 1024 * 35;
+const int URLRequestSlowDownloadJob::kSecondDownloadSize = 1024 * 10;
 
 std::vector<URLRequestSlowDownloadJob*>
     URLRequestSlowDownloadJob::kPendingRequests;
@@ -69,8 +70,9 @@ URLRequestSlowDownloadJob::URLRequestSlowDownloadJob(net::URLRequest* request)
     : net::URLRequestJob(request),
       first_download_size_remaining_(kFirstDownloadSize),
       should_finish_download_(false),
-      should_send_second_chunk_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {}
+      buffer_size_(0),
+      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+}
 
 void URLRequestSlowDownloadJob::StartAsync() {
   if (LowerCaseEqualsASCII(kFinishDownloadUrl, request_->url().spec().c_str()))
@@ -84,16 +86,6 @@ bool URLRequestSlowDownloadJob::ReadRawData(net::IOBuffer* buf, int buf_size,
   if (LowerCaseEqualsASCII(kFinishDownloadUrl,
                            request_->url().spec().c_str())) {
     *bytes_read = 0;
-    return true;
-  }
-
-  if (should_send_second_chunk_) {
-    DCHECK(buf_size > kSecondDownloadSize);
-    for (int i = 0; i < kSecondDownloadSize; ++i) {
-      buf->data()[i] = '*';
-    }
-    *bytes_read = kSecondDownloadSize;
-    should_send_second_chunk_ = false;
     return true;
   }
 
@@ -116,6 +108,8 @@ bool URLRequestSlowDownloadJob::ReadRawData(net::IOBuffer* buf, int buf_size,
 
   // If we make it here, the first chunk has been sent and we need to wait
   // until a request is made for kFinishDownloadUrl.
+  buffer_ = buf;
+  buffer_size_ = buf_size;
   SetStatus(net::URLRequestStatus(net::URLRequestStatus::IO_PENDING, 0));
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
@@ -129,9 +123,14 @@ bool URLRequestSlowDownloadJob::ReadRawData(net::IOBuffer* buf, int buf_size,
 
 void URLRequestSlowDownloadJob::CheckDoneStatus() {
   if (should_finish_download_) {
-    should_send_second_chunk_ = true;
+    DCHECK(NULL != buffer_);
+    // Send the rest of the data.
+    DCHECK_GT(buffer_size_, kSecondDownloadSize);
+    for (int i = 0; i < kSecondDownloadSize; ++i) {
+      buffer_->data()[i] = '*';
+    }
     SetStatus(net::URLRequestStatus());
-    NotifyReadComplete(kSecondDownloadSize);
+    NotifyReadComplete(kSecondDownloadSize);  // Deletes this.
   } else {
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE,

@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 // This class simulates a slow download.  This used in a UI test to test the
 // download manager.  Requests to |kUnknownSizeUrl| and |kKnownSizeUrl| start
-// downloads that pause after the first
+// downloads that pause after the first N bytes, to be completed by sending a
+// request to |kFinishDownloadUrl|.
 
 #ifndef CONTENT_BROWSER_NET_URL_REQUEST_SLOW_DOWNLOAD_JOB_H_
 #define CONTENT_BROWSER_NET_URL_REQUEST_SLOW_DOWNLOAD_JOB_H_
@@ -18,6 +19,15 @@
 
 class URLRequestSlowDownloadJob : public net::URLRequestJob {
  public:
+  // Test URLs.
+  CONTENT_EXPORT static const char kUnknownSizeUrl[];
+  CONTENT_EXPORT static const char kKnownSizeUrl[];
+  CONTENT_EXPORT static const char kFinishDownloadUrl[];
+
+  // Download sizes.
+  CONTENT_EXPORT static const int kFirstDownloadSize;
+  CONTENT_EXPORT static const int kSecondDownloadSize;
+
   explicit URLRequestSlowDownloadJob(net::URLRequest* request);
 
   // Timer callback, used to check to see if we should finish our download and
@@ -32,11 +42,6 @@ class URLRequestSlowDownloadJob : public net::URLRequestJob {
 
   static net::URLRequestJob* Factory(net::URLRequest* request,
                                      const std::string& scheme);
-
-  // Test URLs.
-  CONTENT_EXPORT static const char kUnknownSizeUrl[];
-  CONTENT_EXPORT static const char kKnownSizeUrl[];
-  CONTENT_EXPORT static const char kFinishDownloadUrl[];
 
   // Adds the testing URLs to the net::URLRequestFilter.
   CONTENT_EXPORT static void AddUrlHandler();
@@ -57,7 +62,8 @@ class URLRequestSlowDownloadJob : public net::URLRequestJob {
 
   int first_download_size_remaining_;
   bool should_finish_download_;
-  bool should_send_second_chunk_;
+  scoped_refptr<net::IOBuffer> buffer_;
+  int buffer_size_;
 
   ScopedRunnableMethodFactory<URLRequestSlowDownloadJob> method_factory_;
 };
