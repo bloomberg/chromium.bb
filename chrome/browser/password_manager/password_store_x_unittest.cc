@@ -549,11 +549,11 @@ TEST_P(PasswordStoreXTest, Notifications) {
   };
 
   EXPECT_CALL(helper->observer(),
-              Observe(int(chrome::NOTIFICATION_LOGINS_CHANGED),
-                      content::Source<PasswordStore>(store),
-                      Property(&Details<const PasswordStoreChangeList>::ptr,
-                               Pointee(ElementsAreArray(
-                                   expected_add_changes)))));
+      Observe(int(chrome::NOTIFICATION_LOGINS_CHANGED),
+              content::Source<PasswordStore>(store),
+              Property(&content::Details<const PasswordStoreChangeList>::ptr,
+                       Pointee(ElementsAreArray(
+                           expected_add_changes)))));
 
   // Adding a login should trigger a notification.
   store->AddLogin(*form);
@@ -573,11 +573,11 @@ TEST_P(PasswordStoreXTest, Notifications) {
   };
 
   EXPECT_CALL(helper->observer(),
-              Observe(int(chrome::NOTIFICATION_LOGINS_CHANGED),
-                      content::Source<PasswordStore>(store),
-                      Property(&Details<const PasswordStoreChangeList>::ptr,
-                               Pointee(ElementsAreArray(
-                                   expected_update_changes)))));
+      Observe(int(chrome::NOTIFICATION_LOGINS_CHANGED),
+              content::Source<PasswordStore>(store),
+              Property(&content::Details<const PasswordStoreChangeList>::ptr,
+                       Pointee(ElementsAreArray(
+                           expected_update_changes)))));
 
   // Updating the login with the new password should trigger a notification.
   store->UpdateLogin(*form);
@@ -592,11 +592,11 @@ TEST_P(PasswordStoreXTest, Notifications) {
   };
 
   EXPECT_CALL(helper->observer(),
-              Observe(int(chrome::NOTIFICATION_LOGINS_CHANGED),
-                      content::Source<PasswordStore>(store),
-                      Property(&Details<const PasswordStoreChangeList>::ptr,
-                               Pointee(ElementsAreArray(
-                                   expected_delete_changes)))));
+      Observe(int(chrome::NOTIFICATION_LOGINS_CHANGED),
+              content::Source<PasswordStore>(store),
+              Property(&content::Details<const PasswordStoreChangeList>::ptr,
+                       Pointee(ElementsAreArray(
+                           expected_delete_changes)))));
 
   // Deleting the login should trigger a notification.
   store->RemoveLogin(*form);
