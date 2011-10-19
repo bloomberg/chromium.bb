@@ -67,12 +67,14 @@ class ProfileManager : public base::NonThreadSafe,
   // Physically remove deleted profile directories from disk.
   static void NukeDeletedProfilesFromDisk();
 
+  // DEPRECATED: DO NOT USE unless in ChromeOS.
   // Returns the default profile.  This adds the profile to the
   // ProfileManager if it doesn't already exist.  This method returns NULL if
   // the profile doesn't exist and we can't create it.
   // The profile used can be overridden by using --login-profile on cros.
   Profile* GetDefaultProfile(const FilePath& user_data_dir);
 
+  // DEPRECATED: DO NOT USE unless in ChromeOS.
   // Same as instance method but provides the default user_data_dir as well.
   static Profile* GetDefaultProfile();
 
