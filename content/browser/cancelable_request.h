@@ -4,8 +4,8 @@
 
 // CancelableRequestProviders and Consumers work together to make requests that
 // execute on a background thread in the provider and return data to the
-// consumer. These class collaborate to keep a list of open requests and to
-// make sure that requests to not outlive either of the objects involved in the
+// consumer. These classes collaborate to keep a list of open requests and to
+// make sure that requests do not outlive either of the objects involved in the
 // transaction.
 //
 // If you do not need to return data to the consumer, do not use this system,
