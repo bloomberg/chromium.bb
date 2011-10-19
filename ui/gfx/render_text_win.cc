@@ -4,11 +4,9 @@
 
 #include "ui/gfx/render_text_win.h"
 
-#include "base/i18n/break_iterator.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
-#include "skia/ext/skia_utils_win.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia.h"
 #include "third_party/skia/include/core/SkTypeface.h"
@@ -97,13 +95,9 @@ int RenderTextWin::GetStringWidth() {
 }
 
 void RenderTextWin::Draw(Canvas* canvas) {
-  skia::ScopedPlatformPaint scoped_platform_paint(canvas->GetSkCanvas());
-  HDC hdc = scoped_platform_paint.GetPlatformSurface();
-  int saved_dc = SaveDC(hdc);
   DrawSelection(canvas);
   DrawVisualText(canvas);
   DrawCursor(canvas);
-  RestoreDC(hdc, saved_dc);
 }
 
 SelectionModel RenderTextWin::FindCursorPosition(const Point& point) {
@@ -588,7 +582,6 @@ void RenderTextWin::DrawVisualText(Canvas* canvas) {
     return;
 
   SkCanvas* canvas_skia = canvas->GetSkCanvas();
-  skia::ScopedPlatformPaint scoped_platform_paint(canvas_skia);
 
   Point offset(ToViewPoint(Point()));
   // TODO(msw): Establish a vertical baseline for strings of mixed font heights.
@@ -639,11 +632,11 @@ void RenderTextWin::DrawVisualText(Canvas* canvas) {
       strike.setStyle(SkPaint::kFill_Style);
       strike.setColor(run->foreground);
       strike.setStrokeWidth(kStrikeWidth);
-      canvas->GetSkCanvas()->drawLine(SkIntToScalar(bounds.x()),
-                                      SkIntToScalar(bounds.bottom()),
-                                      SkIntToScalar(bounds.right()),
-                                      SkIntToScalar(bounds.y()),
-                                      strike);
+      canvas_skia->drawLine(SkIntToScalar(bounds.x()),
+                            SkIntToScalar(bounds.bottom()),
+                            SkIntToScalar(bounds.right()),
+                            SkIntToScalar(bounds.y()),
+                            strike);
     }
     offset.Offset(run->width, 0);
   }
