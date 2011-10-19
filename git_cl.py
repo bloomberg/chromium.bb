@@ -495,7 +495,16 @@ or verify this branch is set up to track another (via the --track argument to
     # We use the sha1 of HEAD as a name of this change.
     name = RunCommand(['git', 'rev-parse', 'HEAD']).strip()
     # Need to pass a relative path for msysgit.
-    files = scm.GIT.CaptureStatus([root], upstream_branch)
+    try:
+      files = scm.GIT.CaptureStatus([root], upstream_branch)
+    except subprocess2.CalledProcessError:
+      DieWithError(
+          ('\nFailed to diff against upstream branch %s!\n\n'
+           'This branch probably doesn\'t exist anymore. To reset the\n'
+           'tracking branch, please run\n'
+           '    git branch --set-upstream %s trunk\n'
+           'replacing trunk with origin/master or the relevant branch') %
+          (upstream_branch, self.GetBranch()))
 
     issue = ConvertToInteger(self.GetIssue())
     patchset = ConvertToInteger(self.GetPatchset())
