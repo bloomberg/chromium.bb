@@ -1115,6 +1115,7 @@ def CMDrecurse(parser, args):
   parser.disable_interspersed_args()
   parser.add_option('-s', '--scm', action='append', default=[],
                     help='choose scm types to operate upon')
+  parser.remove_option('--jobs')
   options, args = parser.parse_args(args)
   if not args:
     print >> sys.stderr, 'Need to supply a command!'
