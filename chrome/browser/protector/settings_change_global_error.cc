@@ -55,11 +55,11 @@ const int kBubbleChangeSettingIDs[] = {
 
 SettingsChangeGlobalError::SettingsChangeGlobalError(
     const ChangesVector& changes,
-    const base::Closure& make_changes_cb,
-    const base::Closure& restore_changes_cb)
+    const base::Closure& apply_changes_cb,
+    const base::Closure& revert_changes_cb)
     : changes_(changes),
-      make_changes_cb_(make_changes_cb),
-      restore_changes_cb_(restore_changes_cb),
+      apply_changes_cb_(apply_changes_cb),
+      revert_changes_cb_(revert_changes_cb),
       profile_(NULL),
       closed_by_button_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
@@ -113,27 +113,31 @@ string16 SettingsChangeGlobalError::GetBubbleViewMessage() {
 
 string16 SettingsChangeGlobalError::GetBubbleViewAcceptButtonLabel() {
   const Change& change = changes_.front();
+  return l10n_util::GetStringFUTF16(kBubbleChangeSettingIDs[change.type],
+                                    change.new_setting);
+}
+
+string16 SettingsChangeGlobalError::GetBubbleViewCancelButtonLabel() {
+  const Change& change = changes_.front();
   return change.old_setting.empty() ?
       l10n_util::GetStringUTF16(IDS_SETTINGS_CHANGE_OPEN_SETTINGS) :
       l10n_util::GetStringFUTF16(kBubbleKeepSettingIDs[change.type],
                                  change.old_setting);
 }
 
-string16 SettingsChangeGlobalError::GetBubbleViewCancelButtonLabel() {
-  const Change& change = changes_.front();
-  return l10n_util::GetStringFUTF16(kBubbleChangeSettingIDs[change.type],
-                                    change.new_setting);
+bool SettingsChangeGlobalError::IsAcceptButtonDefault() {
+  return false;
 }
 
 void SettingsChangeGlobalError::BubbleViewAcceptButtonPressed() {
-  VLOG(1) << "Restore changes";
-  restore_changes_cb_.Run();
+  VLOG(1) << "Apply changes";
+  apply_changes_cb_.Run();
   closed_by_button_ = true;
 }
 
 void SettingsChangeGlobalError::BubbleViewCancelButtonPressed() {
-  VLOG(1) << "Make changes";
-  make_changes_cb_.Run();
+  VLOG(1) << "Revert changes";
+  revert_changes_cb_.Run();
   closed_by_button_ = true;
 }
 

@@ -34,11 +34,11 @@ class SettingsChangeGlobalError : public GlobalError {
   typedef std::vector<Change> ChangesVector;
 
   // Creates new global error about settings changes |changes|.
-  // If user decides to apply changes, |make_changes_cb| is called.
-  // If user decides to keep previous settings, |restore_changes_cb| is called.
+  // If user decides to apply changes, |apply_changes_cb| is called.
+  // If user decides to keep previous settings, |revert_changes_cb| is called.
   SettingsChangeGlobalError(const ChangesVector& changes,
-                            const base::Closure& make_changes_cb,
-                            const base::Closure& restore_changes_cb);
+                            const base::Closure& apply_changes_cb,
+                            const base::Closure& revert_changes_cb);
   virtual ~SettingsChangeGlobalError();
 
   // Displays a global error bubble for the default browser profile.
@@ -56,6 +56,7 @@ class SettingsChangeGlobalError : public GlobalError {
   virtual string16 GetBubbleViewMessage() OVERRIDE;
   virtual string16 GetBubbleViewAcceptButtonLabel() OVERRIDE;
   virtual string16 GetBubbleViewCancelButtonLabel() OVERRIDE;
+  virtual bool IsAcceptButtonDefault() OVERRIDE;
   virtual void BubbleViewDidClose() OVERRIDE;
   virtual void BubbleViewAcceptButtonPressed() OVERRIDE;
   virtual void BubbleViewCancelButtonPressed() OVERRIDE;
@@ -63,8 +64,8 @@ class SettingsChangeGlobalError : public GlobalError {
  private:
   ChangesVector changes_;
 
-  base::Closure make_changes_cb_;
-  base::Closure restore_changes_cb_;
+  base::Closure apply_changes_cb_;
+  base::Closure revert_changes_cb_;
 
   // Profile that we have been added to.
   Profile* profile_;

@@ -53,10 +53,11 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(Browser* browser,
   message_label_->SetMultiLine(true);
   message_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
 
+  bool accept_default = error_->IsAcceptButtonDefault();
   string16 accept_string(error_->GetBubbleViewAcceptButtonLabel());
   scoped_ptr<views::TextButton> accept_button(
       new views::NativeTextButton(this, UTF16ToWideHack(accept_string)));
-  accept_button->SetIsDefault(true);
+  accept_button->SetIsDefault(accept_default);
   accept_button->set_tag(TAG_ACCEPT_BUTTON);
 
   string16 cancel_string(error_->GetBubbleViewCancelButtonLabel());
@@ -64,6 +65,7 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(Browser* browser,
   if (!cancel_string.empty()) {
     cancel_button.reset(
         new views::NativeTextButton(this, UTF16ToWideHack(cancel_string)));
+    cancel_button->SetIsDefault(!accept_default);
     cancel_button->set_tag(TAG_CANCEL_BUTTON);
   }
 
