@@ -3,21 +3,20 @@
 # This is a temporary hack to see whether we can build libstdc++ from
 # gcc 4.6.1 with pnacl-clang
 #  Upon success this should be folded into utman
-# NOTE: run this in native_client/hg/ like so
+# NOTE: run this in native_client/ like so
 #
-# ../tools/llvm/unsupported/build-libstdc++.sh download
-# ../tools/llvm/unsupported/build-libstdc++.sh libstdcpp-patch
-# ../tools/llvm/unsupported/build-libstdc++.sh libstdcpp-configure
-# ../tools/llvm/unsupported/build-libstdc++.sh libstdcpp-make -k
+# tools/llvm/unsupported/build-libstdc++.sh download
+# tools/llvm/unsupported/build-libstdc++.sh libstdcpp-patch
+# tools/llvm/unsupported/build-libstdc++.sh libstdcpp-configure
+# tools/llvm/unsupported/build-libstdc++.sh libstdcpp-make -k
 #
 set -o nounset
 set -o errexit
 
-readonly INSTALL_BIN="$(pwd)/../toolchain/pnacl_linux_x86_64_newlib/bin/"
+readonly INSTALL_BIN="$(pwd)/toolchain/pnacl_linux_x86_64_newlib/bin/"
+readonly GCC_SRC="$(pwd)/pnacl/git/gcc"
 
 CC=gcc
-TARBALL_URL=http://ftp.gnu.org/gnu/gcc/gcc-4.6.1/gcc-4.6.1.tar.bz2
-
 
 
 # Location of PNaCl gcc/g++/as
@@ -66,20 +65,15 @@ STD_ENV_FOR_LIBSTDCPP_CLANG=(
   OBJDUMP_FOR_TARGET="${ILLEGAL_TOOL}" )
 
 
-download() {
-  wget ${TARBALL_URL} -O gcc-4.6.1.tar.bz2
-  tar jxf gcc-4.6.1.tar.bz2
-  pushd  gcc-4.6.1
-  hg init .
-  hg add .
-  hg commit -m "initial"
+generate-patch() {
+  pushd ${GCC_SRC}
+  git diff
   popd
 }
 
-
 libstdcpp-patch() {
-  pushd gcc-4.6.1
-  patch -p1 < ../../tools/llvm/unsupported/patch-libstdc++
+  pushd ${GCC_SRC}
+  patch -p1 < ../../../tools/llvm/unsupported/patch-libstdc++
   popd
 }
 
@@ -89,7 +83,7 @@ libstdcpp-configure() {
   pushd build
 
   env -i PATH=/usr/bin/:/bin  "${STD_ENV_FOR_LIBSTDCPP_CLANG[@]}" \
-    ../gcc-4.6.1/libstdc++-v3/configure \
+    ${GCC_SRC}/libstdc++-v3/configure \
     --host=arm-none-linux-gnueabi \
     --disable-shared \
     --disable-rpath \
