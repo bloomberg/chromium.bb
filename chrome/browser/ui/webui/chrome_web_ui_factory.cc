@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/webui/crashes_ui.h"
 #include "chrome/browser/ui/webui/devtools_ui.h"
 #include "chrome/browser/ui/webui/downloads_ui.h"
+#include "chrome/browser/ui/webui/edit_search_engine_dialog_ui_webui.h"
 #include "chrome/browser/ui/webui/task_manager_ui.h"
 #include "chrome/browser/ui/webui/flags_ui.h"
 #include "chrome/browser/ui/webui/flash_ui.h"
@@ -152,6 +153,9 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
   if (url.host() == chrome::kChromeUICertificateViewerHost)
     return &NewWebUI<CertificateViewerUI>;
 #endif
+  if (url.host() == chrome::kChromeUIEditSearchEngineDialogHost) {
+    return &NewWebUI<EditSearchEngineDialogUI>;
+  }
   if (url.host() == chrome::kChromeUIHungRendererDialogHost) {
     return &NewWebUI<HungRendererDialogUI>;
   }

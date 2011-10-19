@@ -314,6 +314,9 @@ are declared in build/common.gypi.
       <message name="IDS_ACCNAME_TAB" desc="A generic description of a tab button's role">
         Tab
       </message>
+      <message name="IDS_SAVE" desc="Used on a button to save information you are editing.">
+        Save
+      </message>
 
       <!-- content area context menus -->
       <if expr="is_macosx">

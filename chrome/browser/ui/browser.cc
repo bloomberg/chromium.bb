@@ -118,6 +118,7 @@
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/browser/ui/webui/bug_report_ui.h"
+#include "chrome/browser/ui/webui/chrome_web_ui.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_page_handler.h"
 #include "chrome/browser/ui/webui/options/content_settings_handler.h"
 #include "chrome/browser/ui/window_sizer.h"
@@ -4084,7 +4085,15 @@ void Browser::ConfirmSetDefaultSearchProvider(TabContents* tab_contents,
 
 void Browser::ConfirmAddSearchProvider(const TemplateURL* template_url,
                                        Profile* profile) {
-  window()->ConfirmAddSearchProvider(template_url, profile);
+  // If we are using web UI dialogs, then redirect this dialog to the web UI
+  // version.  Otherwise, call the existing framework, which is called by way of
+  // window()->ConfirmAddSearchProvider.
+  if (ChromeWebUI::IsMoreWebUI()) {
+    // Call a clean API to confirm adding a search provider.
+    browser::ConfirmAddSearchProvider(template_url, profile);
+  } else {
+    window()->ConfirmAddSearchProvider(template_url, profile);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

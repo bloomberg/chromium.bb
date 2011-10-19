@@ -15,6 +15,7 @@ class HtmlDialogUIDelegate;
 class Profile;
 class SkBitmap;
 class TabContents;
+class TemplateURL;
 
 namespace browser {
 
@@ -55,6 +56,10 @@ void HideHungRendererDialog(TabContents* contents);
 void ShowNativeHungRendererDialog(TabContents* contents);
 void HideNativeHungRendererDialog(TabContents* contents);
 
-} // namespace browser
+// Show the edit search engine dialog.
+void ConfirmAddSearchProvider(const TemplateURL* template_url,
+                              Profile* profile);
+
+}  // namespace browser
 
 #endif  // CHROME_BROWSER_UI_BROWSER_DIALOGS_H_

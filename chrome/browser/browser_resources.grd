@@ -44,6 +44,9 @@
       <include name="IDR_HUNG_RENDERER_DIALOG_HTML" file="resources\hung_renderer_dialog.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_HUNG_RENDERER_DIALOG_JS" file="resources\hung_renderer_dialog.js" type="BINDATA" />
       <include name="IDR_HUNG_RENDERER_DIALOG_CSS" file="resources\hung_renderer_dialog.css" type="BINDATA" />
+      <include name="IDR_EDIT_SEARCH_ENGINE_DIALOG_HTML" file="resources\edit_search_engine_dialog.html" type="BINDATA" />
+      <include name="IDR_EDIT_SEARCH_ENGINE_DIALOG_JS" file="resources\edit_search_engine_dialog.js" type="BINDATA" />
+      <include name="IDR_EDIT_SEARCH_ENGINE_DIALOG_CSS" file="resources\edit_search_engine_dialog.css" type="BINDATA" />
       <include name="IDR_TASK_MANAGER_HTML" file="resources\task_manager\main.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_TASK_MANAGER_INCLUDES_JS" file="resources\task_manager\includes.js" type="BINDATA" />
       <include name="IDR_TASK_MANAGER_JS" file="resources\task_manager\main.js" type="BINDATA" />

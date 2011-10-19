@@ -1,0 +1,55 @@
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+html, body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+.hfill {
+  width: 100%;
+}
+
+input {
+  box-sizing: border-box;
+}
+
+#url-description {
+  margin: 12px 3px 0 3px;
+}
+
+.action-area {
+  -webkit-box-align: center;
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: end;
+  display: -webkit-box;
+  padding: 12px;
+  text-align: end;
+}
+
+.button-strip {
+  -webkit-box-orient: horizontal;
+  display: -webkit-box;
+}
+
+.button-strip > button {
+  -webkit-margin-start: 10px;
+  display: block;
+  white-space: nowrap;
+}
+
+.valid {
+  background-image: url("chrome://theme/IDR_INPUT_GOOD");
+  height: 21px;
+  width: 22px;
+}
+
+.invalid {
+  background-image: url("chrome://theme/IDR_INPUT_ALERT");
+  height: 21px;
+  width: 22px;
+}
+}
