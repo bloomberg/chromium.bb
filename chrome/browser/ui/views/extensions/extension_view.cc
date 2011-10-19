@@ -6,9 +6,9 @@
 
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
-#include "content/browser/content_browser_client.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
+#include "content/public/browser/content_browser_client.h"
 #include "views/widget/widget.h"
 
 #if defined(OS_WIN)

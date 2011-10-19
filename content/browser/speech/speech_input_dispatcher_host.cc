@@ -5,9 +5,9 @@
 #include "content/browser/speech/speech_input_dispatcher_host.h"
 
 #include "base/lazy_instance.h"
-#include "content/browser/content_browser_client.h"
 #include "content/browser/speech/speech_input_preferences.h"
 #include "content/common/speech_input_messages.h"
+#include "content/public/browser/content_browser_client.h"
 
 namespace speech_input {
 

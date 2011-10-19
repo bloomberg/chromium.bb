@@ -4,9 +4,9 @@
 
 #include "content/browser/geolocation/arbitrator_dependency_factory.h"
 
-#include "content/browser/content_browser_client.h"
 #include "content/browser/geolocation/access_token_store.h"
 #include "content/browser/geolocation/location_provider.h"
+#include "content/public/browser/content_browser_client.h"
 
 // GeolocationArbitratorDependencyFactory
 GeolocationArbitratorDependencyFactory::

@@ -245,11 +245,11 @@
     'common/webkit_param_traits.h',
     'common/webmessageportchannel_impl.cc',
     'common/webmessageportchannel_impl.h',
-    'common/window_container_type.cc',
-    'common/window_container_type.h',
     'common/worker_messages.h',
     'public/common/content_client.cc',
     'public/common/content_client.h',
+    'public/common/window_container_type.cc',
+    'public/common/window_container_type.h',
   ],
   'conditions': [
     ['OS!="win"', {

@@ -5,8 +5,8 @@
 #include "content/browser/browser_url_handler.h"
 
 #include "base/string_util.h"
-#include "content/browser/content_browser_client.h"
 #include "content/browser/webui/web_ui.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 

@@ -4,7 +4,7 @@
 
 #include "content/browser/webui/web_ui_factory.h"
 
-#include "content/browser/content_browser_client.h"
+#include "content/public/browser/content_browser_client.h"
 
 namespace content {
 

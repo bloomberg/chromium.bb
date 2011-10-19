@@ -6,8 +6,8 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "content/browser/content_browser_client.h"
 #include "content/common/notification_service.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_types.h"
 #include "net/base/net_errors.h"
 #include "webkit/quota/quota_manager.h"

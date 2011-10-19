@@ -6,11 +6,11 @@
 
 #include "base/bind.h"
 #include "content/browser/browser_thread.h"
-#include "content/browser/content_browser_client.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/browser/ssl/ssl_client_auth_notification_details.h"
 #include "content/common/notification_service.h"
+#include "content/public/browser/content_browser_client.h"
 #include "net/base/x509_certificate.h"
 #include "net/url_request/url_request.h"
 

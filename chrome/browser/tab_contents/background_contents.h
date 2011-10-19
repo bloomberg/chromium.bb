@@ -13,9 +13,9 @@
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "content/browser/javascript_dialogs.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
-#include "content/common/window_container_type.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/common/window_container_type.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class TabContents;

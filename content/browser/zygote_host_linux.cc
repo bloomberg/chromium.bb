@@ -24,11 +24,11 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "content/browser/content_browser_client.h"
 #include "content/browser/renderer_host/render_sandbox_host_linux.h"
 #include "content/common/process_watcher.h"
 #include "content/common/result_codes.h"
 #include "content/common/unix_domain_socket_posix.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_switches.h"
 #include "sandbox/linux/suid/suid_unsafe_environment_variables.h"
 

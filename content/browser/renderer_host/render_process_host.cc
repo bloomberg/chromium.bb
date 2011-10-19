@@ -10,11 +10,11 @@
 #include "content/browser/browser_main.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/child_process_security_policy.h"
-#include "content/browser/content_browser_client.h"
 #include "content/browser/webui/web_ui_factory.h"
 #include "content/common/child_process_info.h"
 #include "content/common/content_constants.h"
 #include "content/common/notification_service.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/common/content_switches.h"
 

@@ -19,7 +19,6 @@
 #include "build/build_config.h"
 #include "content/browser/browser_context.h"
 #include "content/browser/browser_thread.h"
-#include "content/browser/content_browser_client.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/download_item.h"
@@ -33,6 +32,7 @@
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_types.h"
 
 namespace {

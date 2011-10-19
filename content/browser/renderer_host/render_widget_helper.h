@@ -14,7 +14,7 @@
 #include "base/process.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
-#include "content/common/window_container_type.h"
+#include "content/public/common/window_container_type.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/surface/transport_dib.h"

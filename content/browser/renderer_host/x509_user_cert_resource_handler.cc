@@ -5,11 +5,11 @@
 #include "content/browser/renderer_host/x509_user_cert_resource_handler.h"
 
 #include "base/string_util.h"
-#include "content/browser/content_browser_client.h"
 #include "content/browser/download/download_types.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/common/resource_response.h"
+#include "content/public/browser/content_browser_client.h"
 #include "net/base/io_buffer.h"
 #include "net/base/mime_sniffer.h"
 #include "net/base/mime_util.h"

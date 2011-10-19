@@ -16,7 +16,7 @@
 #include "base/process_util.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/common/content_export.h"
-#include "content/common/window_container_type.h"
+#include "content/public/common/window_container_type.h"
 #include "net/base/load_states.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"

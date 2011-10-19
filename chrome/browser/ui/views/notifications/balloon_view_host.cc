@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/notifications/balloon_view_host.h"
 
 #include "chrome/browser/notifications/balloon.h"
-#include "content/browser/content_browser_client.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #if defined(OS_WIN)
@@ -18,6 +17,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_gtk.h"
 #endif
 #endif
+#include "content/public/browser/content_browser_client.h"
 #include "views/widget/widget.h"
 
 class BalloonViewHostView : public views::NativeViewHost {

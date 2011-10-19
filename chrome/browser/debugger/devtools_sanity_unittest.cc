@@ -17,7 +17,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/content_browser_client.h"
 #include "content/browser/debugger/devtools_client_host.h"
 #include "content/browser/debugger/devtools_manager.h"
 #include "content/browser/debugger/worker_devtools_manager.h"
@@ -27,8 +26,9 @@
 #include "content/browser/worker_host/worker_service.h"
 #include "content/browser/worker_host/worker_service_observer.h"
 #include "content/common/worker_messages.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/common/notification_service.h"
+#include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/notification_registrar.h"
 #include "net/test/test_server.h"
 
 namespace {

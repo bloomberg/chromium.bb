@@ -12,8 +12,8 @@
 
 #include "base/stl_util.h"
 #include "content/browser/clipboard_dispatcher.h"
-#include "content/browser/content_browser_client.h"
 #include "content/common/clipboard_messages.h"
+#include "content/public/browser/content_browser_client.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/skia/include/core/SkBitmap.h"

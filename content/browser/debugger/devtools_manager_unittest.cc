@@ -4,7 +4,6 @@
 
 #include "base/basictypes.h"
 #include "base/time.h"
-#include "content/browser/content_browser_client.h"
 #include "content/browser/debugger/devtools_client_host.h"
 #include "content/browser/debugger/devtools_manager.h"
 #include "content/browser/debugger/render_view_devtools_agent_host.h"
@@ -12,6 +11,7 @@
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
+#include "content/public/browser/content_browser_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::TimeDelta;

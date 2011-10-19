@@ -16,7 +16,7 @@
 #include "content/common/renderer_preferences.h"
 #include "content/common/view_message_enums.h"
 #include "content/common/webkit_param_traits.h"
-#include "content/common/window_container_type.h"
+#include "content/public/common/window_container_type.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"

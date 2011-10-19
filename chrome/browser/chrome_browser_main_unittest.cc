@@ -10,9 +10,9 @@
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_pref_service.h"
-#include "content/browser/content_browser_client.h"
 #include "content/common/main_function_params.h"
 #include "content/common/sandbox_init_wrapper.h"
+#include "content/public/browser/content_browser_client.h"
 #include "net/socket/client_socket_pool_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

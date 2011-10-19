@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/scoped_temp_dir.h"
-#include "content/browser/content_browser_client.h"
+#include "content/public/browser/content_browser_client.h"
 
 namespace content {
 

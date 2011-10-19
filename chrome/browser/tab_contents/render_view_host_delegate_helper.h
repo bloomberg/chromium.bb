@@ -10,9 +10,9 @@
 
 #include "base/basictypes.h"
 #include "content/browser/webui/web_ui.h"
-#include "content/common/window_container_type.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/common/window_container_type.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
 #include "ui/gfx/rect.h"
 #include "webkit/glue/webpreferences.h"

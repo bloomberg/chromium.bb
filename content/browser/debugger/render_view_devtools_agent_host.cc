@@ -5,7 +5,6 @@
 #include "content/browser/debugger/render_view_devtools_agent_host.h"
 
 #include "base/basictypes.h"
-#include "content/browser/content_browser_client.h"
 #include "content/browser/debugger/devtools_manager.h"
 #include "content/browser/debugger/render_view_devtools_agent_host.h"
 #include "content/browser/renderer_host/render_process_host.h"
@@ -14,6 +13,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/devtools_messages.h"
 #include "content/common/notification_service.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_types.h"
 
 RenderViewDevToolsAgentHost::Instances RenderViewDevToolsAgentHost::instances_;
