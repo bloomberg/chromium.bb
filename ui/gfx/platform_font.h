@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_PLATFORM_FONT_
-#define UI_GFX_PLATFORM_FONT_
+#ifndef UI_GFX_PLATFORM_FONT_H_
+#define UI_GFX_PLATFORM_FONT_H_
 #pragma once
 
 #include <string>
@@ -19,16 +19,17 @@ class Font;
 
 class UI_EXPORT PlatformFont : public base::RefCounted<PlatformFont> {
  public:
-  // Create an appropriate PlatformFont implementation.
+  // Creates an appropriate PlatformFont implementation.
   static PlatformFont* CreateDefault();
   static PlatformFont* CreateFromFont(const Font& other);
   static PlatformFont* CreateFromNativeFont(NativeFont native_font);
+  // Creates a PlatformFont implementation with the specified |font_name| and
+  // |font_size| in pixels.
   static PlatformFont* CreateFromNameAndSize(const string16& font_name,
                                              int font_size);
 
   // Returns a new Font derived from the existing font.
-  // size_delta is the size to add to the current font. See the single
-  // argument version of this method for an example.
+  // |size_delta| is the size in pixels to add to the current font.
   // The style parameter specifies the new style for the font, and is a
   // bitmask of the values: BOLD, ITALIC and UNDERLINED.
   virtual Font DeriveFont(int size_delta, int style) const = 0;
@@ -76,5 +77,5 @@ class UI_EXPORT PlatformFont : public base::RefCounted<PlatformFont> {
 
 }  // namespace gfx
 
-#endif  // UI_GFX_PLATFORM_FONT_
+#endif  // UI_GFX_PLATFORM_FONT_H_
 

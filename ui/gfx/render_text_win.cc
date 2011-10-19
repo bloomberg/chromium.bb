@@ -24,9 +24,6 @@ const int kMaxItems = 10000;
 // TODO(msw): Review memory use/failure? Max string length? Alternate approach?
 const int kMaxGlyphs = 100000;
 
-// TODO(msw): Solve gfx/Uniscribe/Skia text size unit conversion issues.
-const float kSkiaFontScale = 1.375;
-
 }  // namespace
 
 namespace gfx {
@@ -607,7 +604,6 @@ void RenderTextWin::DrawVisualText(Canvas* canvas) {
   paint.setLCDRenderText(true);
   SkPoint point(SkPoint::Make(SkIntToScalar(offset.x()),
       SkIntToScalar(display_rect().height() - offset.y())));
-  RECT rect = display_rect().ToRECT();
   scoped_array<SkPoint> pos;
   for (size_t i = 0; i < runs_.size(); ++i) {
     // Get the run specified by the visual-to-logical map.
@@ -622,9 +618,7 @@ void RenderTextWin::DrawVisualText(Canvas* canvas) {
       // |paint| adds its own ref. Release the ref from CreateFromName.
       typeface->unref();
     }
-    // TODO(msw): Skia font size units? Set OmniboxViewViews gfx::Font size?
-    int font_size = run->font.GetFontSize();
-    paint.setTextSize(SkFloatToScalar(font_size * kSkiaFontScale));
+    paint.setTextSize(run->font.GetFontSize());
     paint.setColor(run->foreground);
 
     // Based on WebCore::skiaDrawText.

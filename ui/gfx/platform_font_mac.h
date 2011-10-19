@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_PLATFORM_FONT_MAC_
-#define UI_GFX_PLATFORM_FONT_MAC_
+#ifndef UI_GFX_PLATFORM_FONT_MAC_H_
+#define UI_GFX_PLATFORM_FONT_MAC_H_
 #pragma once
 
 #include "ui/gfx/platform_font.h"
@@ -54,4 +54,4 @@ class PlatformFontMac : public PlatformFont {
 
 }  // namespace gfx
 
-#endif  // UI_GFX_PLATFORM_FONT_MAC_
+#endif  // UI_GFX_PLATFORM_FONT_MAC_H_

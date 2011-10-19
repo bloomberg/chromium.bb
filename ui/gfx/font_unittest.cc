@@ -114,27 +114,21 @@ TEST_F(FontTest, Widths) {
 
 #if defined(OS_WIN)
 TEST_F(FontTest, DeriveFontResizesIfSizeTooSmall) {
-  // This creates font of height -8.
-  Font cf(L"Arial", 6);
+  Font cf(L"Arial", 8);
   // The minimum font size is set to 5 in browser_main.cc.
   ScopedMinimumFontSizeCallback minimum_size(5);
 
   Font derived_font = cf.DeriveFont(-4);
-  LOGFONT font_info;
-  GetObject(derived_font.GetNativeFont(), sizeof(LOGFONT), &font_info);
-  EXPECT_EQ(-5, font_info.lfHeight);
+  EXPECT_EQ(5, derived_font.GetFontSize());
 }
 
 TEST_F(FontTest, DeriveFontKeepsOriginalSizeIfHeightOk) {
-  // This creates font of height -8.
-  Font cf(L"Arial", 6);
+  Font cf(L"Arial", 8);
   // The minimum font size is set to 5 in browser_main.cc.
   ScopedMinimumFontSizeCallback minimum_size(5);
 
   Font derived_font = cf.DeriveFont(-2);
-  LOGFONT font_info;
-  GetObject(derived_font.GetNativeFont(), sizeof(LOGFONT), &font_info);
-  EXPECT_EQ(-6, font_info.lfHeight);
+  EXPECT_EQ(6, derived_font.GetFontSize());
 }
 #endif  // defined(OS_WIN)
 

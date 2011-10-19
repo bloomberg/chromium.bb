@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_PLATFORM_FONT_GTK_
-#define UI_GFX_PLATFORM_FONT_GTK_
+#ifndef UI_GFX_PLATFORM_FONT_PANGO_H_
+#define UI_GFX_PLATFORM_FONT_PANGO_H_
 #pragma once
 
 #include "base/memory/scoped_ptr.h"
@@ -20,8 +20,7 @@ class UI_EXPORT PlatformFontPango : public PlatformFont {
   PlatformFontPango();
   explicit PlatformFontPango(const Font& other);
   explicit PlatformFontPango(NativeFont native_font);
-  PlatformFontPango(const string16& font_name,
-                  int font_size);
+  PlatformFontPango(const string16& font_name, int font_size);
 
   // Converts |gfx_font| to a new pango font. Free the returned font with
   // pango_font_description_free().
@@ -84,7 +83,7 @@ class UI_EXPORT PlatformFontPango : public PlatformFont {
   // handle the reference counting, but without @typeface_ we would have to
   // cast the SkRefCnt from @typeface_helper_ every time.
   scoped_ptr<SkAutoUnref> typeface_helper_;
-  SkTypeface *typeface_;
+  SkTypeface* typeface_;
 
   // Additional information about the face
   // Skia actually expects a family name and not a font name.
@@ -109,4 +108,4 @@ class UI_EXPORT PlatformFontPango : public PlatformFont {
 
 }  // namespace gfx
 
-#endif  // UI_GFX_PLATFORM_FONT_GTK_
+#endif  // UI_GFX_PLATFORM_FONT_PANGO_H_

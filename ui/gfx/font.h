@@ -43,19 +43,19 @@ class UI_EXPORT Font {
   // object takes ownership of the PlatformFont object.
   explicit Font(PlatformFont* platform_font);
 
-  // Creates a font with the specified name and size.
+  // Creates a font with the specified name and size in pixels.
   Font(const string16& font_name, int font_size);
 
   ~Font();
 
   // Returns a new Font derived from the existing font.
-  // size_deta is the size to add to the current font. For example, a value
-  // of 5 results in a font 5 units bigger than this font.
+  // |size_deta| is the size in pixels to add to the current font. For example,
+  // a value of 5 results in a font 5 pixels bigger than this font.
   Font DeriveFont(int size_delta) const;
 
   // Returns a new Font derived from the existing font.
-  // size_delta is the size to add to the current font. See the single
-  // argument version of this method for an example.
+  // |size_delta| is the size in pixels to add to the current font. See the
+  // single argument version of this method for an example.
   // The style parameter specifies the new style for the font, and is a
   // bitmask of the values: BOLD, ITALIC and UNDERLINED.
   Font DeriveFont(int size_delta, int style) const;

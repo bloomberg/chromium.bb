@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_PLATFORM_FONT_WIN_
-#define UI_GFX_PLATFORM_FONT_WIN_
+#ifndef UI_GFX_PLATFORM_FONT_WIN_H_
+#define UI_GFX_PLATFORM_FONT_WIN_H_
 #pragma once
 
 #include "base/memory/ref_counted.h"
@@ -17,8 +17,7 @@ class UI_EXPORT PlatformFontWin : public PlatformFont {
   PlatformFontWin();
   explicit PlatformFontWin(const Font& other);
   explicit PlatformFontWin(NativeFont native_font);
-  PlatformFontWin(const string16& font_name,
-                  int font_size);
+  PlatformFontWin(const string16& font_name, int font_size);
 
   // Dialog units to pixels conversion.
   // See http://support.microsoft.com/kb/145994 for details.
@@ -128,5 +127,5 @@ class UI_EXPORT PlatformFontWin : public PlatformFont {
 
 }  // namespace gfx
 
-#endif  // UI_GFX_PLATFORM_FONT_WIN_
+#endif  // UI_GFX_PLATFORM_FONT_WIN_H_
 
