@@ -137,17 +137,23 @@ int ScoreForValue(int value, const int* value_ranks) {
 
 InMemoryURLIndex::InMemoryURLIndex(const FilePath& history_dir)
     : history_dir_(history_dir),
-      history_item_count_(0) {
+      history_item_count_(0),
+      cached_at_shutdown_(false) {
   InMemoryURLIndex::InitializeSchemeWhitelist(&scheme_whitelist_);
 }
 
 // Called only by unit tests.
 InMemoryURLIndex::InMemoryURLIndex()
-    : history_item_count_(0) {
+    : history_item_count_(0),
+      cached_at_shutdown_(false) {
   InMemoryURLIndex::InitializeSchemeWhitelist(&scheme_whitelist_);
 }
 
-InMemoryURLIndex::~InMemoryURLIndex() {}
+InMemoryURLIndex::~InMemoryURLIndex() {
+  // If there was a history directory (which there won't be for some unit tests)
+  // then insure that the cache has already been saved.
+  DCHECK(history_dir_.empty() || cached_at_shutdown_);
+}
 
 // static
 void InMemoryURLIndex::InitializeSchemeWhitelist(
@@ -174,6 +180,7 @@ bool InMemoryURLIndex::Init(history::URLDatabase* history_db,
 void InMemoryURLIndex::ShutDown() {
   // Write our cache.
   SaveToCacheFile();
+  cached_at_shutdown_ = true;
 }
 
 bool InMemoryURLIndex::IndexRow(const URLRow& row) {
@@ -292,6 +299,10 @@ bool InMemoryURLIndex::RestoreFromCacheFile() {
 bool InMemoryURLIndex::SaveToCacheFile() {
   // TODO(mrossetti): Move File IO to another thread.
   base::ThreadRestrictions::ScopedAllowIO allow_io;
+  FilePath file_path;
+  if (!GetCacheFilePath(&file_path))
+    return false;
+
   base::TimeTicks beginning_time = base::TimeTicks::Now();
   InMemoryURLIndexCacheItem index_cache;
   SavePrivateData(&index_cache);
@@ -300,12 +311,6 @@ bool InMemoryURLIndex::SaveToCacheFile() {
     LOG(WARNING) << "Failed to serialize the InMemoryURLIndex cache.";
     return false;
   }
-
-  // TODO(mrossetti): Write the cache to a file then swap it for the old cache,
-  // if any, and delete the old cache.
-  FilePath file_path;
-  if (!GetCacheFilePath(&file_path))
-    return false;
 
   int size = data.size();
   if (file_util::WriteFile(file_path, data.c_str(), size) != size) {

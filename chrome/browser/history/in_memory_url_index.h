@@ -420,6 +420,13 @@ class InMemoryURLIndex {
   // Only URLs with a whitelisted scheme are indexed.
   std::set<std::string> scheme_whitelist_;
 
+  // Set to true at shutdown when the cache has been written to disk. Used
+  // as a temporary safety check to insure that the cache is saved before
+  // the index has been destructed.
+  // TODO(mrossetti): Eliminate once the transition to SQLite has been done.
+  // http://crbug.com/83659
+  bool cached_at_shutdown_;
+
   DISALLOW_COPY_AND_ASSIGN(InMemoryURLIndex);
 };
 

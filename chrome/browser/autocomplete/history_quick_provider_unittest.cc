@@ -161,8 +161,7 @@ void HistoryQuickProviderTest::FillData() {
                                          history::SOURCE_BROWSED);
   }
 
-  history::InMemoryURLIndex* index =
-      new history::InMemoryURLIndex(FilePath(FILE_PATH_LITERAL("/dummy")));
+  history::InMemoryURLIndex* index = new history::InMemoryURLIndex(FilePath());
   PrefService* prefs = profile_->GetPrefs();
   std::string languages(prefs->GetString(prefs::kAcceptLanguages));
   index->Init(db, languages);

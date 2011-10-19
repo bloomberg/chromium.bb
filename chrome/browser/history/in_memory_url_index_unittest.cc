@@ -203,7 +203,7 @@ void ExpandedInMemoryURLIndexTest::SetUp() {
 }
 
 TEST_F(InMemoryURLIndexTest, Construction) {
-  url_index_.reset(new InMemoryURLIndex(FilePath(FILE_PATH_LITERAL("/dummy"))));
+  url_index_.reset(new InMemoryURLIndex(FilePath()));
   EXPECT_TRUE(url_index_.get());
 }
 
@@ -215,7 +215,7 @@ TEST_F(LimitedInMemoryURLIndexTest, Initialization) {
   uint64 row_count = 0;
   while (statement.Step()) ++row_count;
   EXPECT_EQ(1U, row_count);
-  url_index_.reset(new InMemoryURLIndex);
+  url_index_.reset(new InMemoryURLIndex(FilePath()));
   url_index_->Init(this, "en,ja,hi,zh");
   EXPECT_EQ(1, url_index_->history_item_count_);
 
@@ -226,7 +226,7 @@ TEST_F(LimitedInMemoryURLIndexTest, Initialization) {
 }
 
 TEST_F(InMemoryURLIndexTest, Retrieval) {
-  url_index_.reset(new InMemoryURLIndex(FilePath(FILE_PATH_LITERAL("/dummy"))));
+  url_index_.reset(new InMemoryURLIndex(FilePath()));
   url_index_->Init(this, "en,ja,hi,zh");
   // The term will be lowercased by the search.
 
@@ -279,7 +279,7 @@ TEST_F(InMemoryURLIndexTest, Retrieval) {
 }
 
 TEST_F(ExpandedInMemoryURLIndexTest, ShortCircuit) {
-  url_index_.reset(new InMemoryURLIndex(FilePath(FILE_PATH_LITERAL("/dummy"))));
+  url_index_.reset(new InMemoryURLIndex(FilePath()));
   url_index_->Init(this, "en,ja,hi,zh");
 
   // A search for 'w' should short-circuit and not return any matches.
@@ -293,7 +293,7 @@ TEST_F(ExpandedInMemoryURLIndexTest, ShortCircuit) {
 }
 
 TEST_F(InMemoryURLIndexTest, TitleSearch) {
-  url_index_.reset(new InMemoryURLIndex());
+  url_index_.reset(new InMemoryURLIndex(FilePath()));
   url_index_->Init(this, "en,ja,hi,zh");
   // Signal if someone has changed the test DB.
   EXPECT_EQ(27U, url_index_->history_info_map_.size());
@@ -316,7 +316,7 @@ TEST_F(InMemoryURLIndexTest, TitleSearch) {
 }
 
 TEST_F(InMemoryURLIndexTest, NonUniqueTermCharacterSets) {
-  url_index_.reset(new InMemoryURLIndex());
+  url_index_.reset(new InMemoryURLIndex(FilePath()));
   url_index_->Init(this, "en,ja,hi,zh");
 
   // The presence of duplicate characters should succeed. Exercise by cycling
@@ -447,7 +447,7 @@ TEST_F(InMemoryURLIndexTest, TypedCharacterCaching) {
   typedef InMemoryURLIndex::SearchTermCacheMap::iterator CacheIter;
   typedef InMemoryURLIndex::SearchTermCacheItem CacheItem;
 
-  url_index_.reset(new InMemoryURLIndex(FilePath(FILE_PATH_LITERAL("/dummy"))));
+  url_index_.reset(new InMemoryURLIndex(FilePath()));
   url_index_->Init(this, "en,ja,hi,zh");
 
   InMemoryURLIndex::SearchTermCacheMap& cache(url_index_->search_term_cache_);
@@ -550,7 +550,7 @@ TEST_F(InMemoryURLIndexTest, Scoring) {
 }
 
 TEST_F(InMemoryURLIndexTest, AddNewRows) {
-  url_index_.reset(new InMemoryURLIndex(FilePath(FILE_PATH_LITERAL("/dummy"))));
+  url_index_.reset(new InMemoryURLIndex(FilePath()));
   url_index_->Init(this, "en,ja,hi,zh");
   InMemoryURLIndex::String16Vector terms;
 
@@ -575,7 +575,7 @@ TEST_F(InMemoryURLIndexTest, AddNewRows) {
 }
 
 TEST_F(InMemoryURLIndexTest, DeleteRows) {
-  url_index_.reset(new InMemoryURLIndex(FilePath(FILE_PATH_LITERAL("/dummy"))));
+  url_index_.reset(new InMemoryURLIndex(FilePath()));
   url_index_->Init(this, "en,ja,hi,zh");
   InMemoryURLIndex::String16Vector terms;
 
@@ -662,8 +662,7 @@ TEST_F(InMemoryURLIndexTest, WhitelistedURLs) {
     { "xmpp:node@example.com", false },
     { "xmpp://guest@example.com", false },
   };
-  url_index_.reset(new InMemoryURLIndex(FilePath(FILE_PATH_LITERAL(
-      "/flammmy/frammy/"))));
+  url_index_.reset(new InMemoryURLIndex(FilePath()));
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(data); ++i) {
     GURL url(data[i].url_spec);
     EXPECT_EQ(data[i].expected_is_whitelisted,
@@ -685,11 +684,13 @@ TEST_F(InMemoryURLIndexTest, CacheFilePath) {
   size_t count = expected_parts.size();
   for (size_t i = 0; i < count; ++i)
     EXPECT_EQ(expected_parts[i], actual_parts[i]);
+  // Must clear the history_dir_ to satisfy the dtor's DCHECK.
+  url_index_->history_dir_.clear();
 }
 
 TEST_F(InMemoryURLIndexTest, CacheSaveRestore) {
   // Save the cache to a protobuf, restore it, and compare the results.
-  url_index_.reset(new InMemoryURLIndex(FilePath(FILE_PATH_LITERAL("/dummy"))));
+  url_index_.reset(new InMemoryURLIndex(FilePath()));
   InMemoryURLIndex& url_index(*(url_index_.get()));
   url_index.Init(this, "en,ja,hi,zh");
   in_memory_url_index::InMemoryURLIndexCacheItem index_cache;
