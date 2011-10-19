@@ -613,6 +613,10 @@ cr.define('ntp4', function() {
             Array.prototype.indexOf.call(this.focusableElements_,
                                          focusable);
         this.updateFocusElement_();
+      } else {
+        // This prevents the tile page from getting focus when the user clicks
+        // inside the grid but outside of any tile.
+        e.preventDefault();
       }
     },
 
@@ -675,7 +679,7 @@ cr.define('ntp4', function() {
      */
     updateFocusElement_: function() {
       this.focusElementIndex_ = Math.min(this.focusableElements_.length - 1,
-                                       this.focusElementIndex_);
+                                         this.focusElementIndex_);
       this.focusElementIndex_ = Math.max(0, this.focusElementIndex_);
 
       var newFocusElement = this.focusableElements_[this.focusElementIndex_];
