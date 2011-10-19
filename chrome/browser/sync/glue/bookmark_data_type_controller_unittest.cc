@@ -90,6 +90,10 @@ class BookmarkDataTypeControllerTest : public testing::Test {
   ModelAssociatorMock* model_associator_;
   ChangeProcessorMock* change_processor_;
   StartCallback start_callback_;
+
+  void PumpLoop() {
+    message_loop_.RunAllPending();
+  }
 };
 
 TEST_F(BookmarkDataTypeControllerTest, StartBookmarkModelReady) {
@@ -217,4 +221,5 @@ TEST_F(BookmarkDataTypeControllerTest, OnUnrecoverableError) {
   bookmark_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
   // This should cause bookmark_dtc_->Stop() to be called.
   bookmark_dtc_->OnUnrecoverableError(FROM_HERE, "Test");
+  PumpLoop();
 }

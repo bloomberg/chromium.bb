@@ -195,7 +195,14 @@ void FrontendDataTypeController::OnUnrecoverableError(
     const tracked_objects::Location& from_here, const std::string& message) {
   // The ProfileSyncService will invoke our Stop() method in response to this.
   RecordUnrecoverableError(from_here, message);
-  sync_service_->OnUnrecoverableError(from_here, message);
+
+  // We dont know the current state of the caller. Posting a task will allow
+  // the caller to unwind the stack before we process unrecoverable error.
+  MessageLoop::current()->PostTask(from_here,
+      base::Bind(&ProfileSyncService::OnUnrecoverableError,
+                 sync_service_->AsWeakPtr(),
+                 from_here,
+                 message));
 }
 
 AssociatorInterface* FrontendDataTypeController::model_associator() const {

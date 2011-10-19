@@ -129,6 +129,10 @@ class FrontendDataTypeControllerTest : public testing::Test {
     EXPECT_CALL(start_callback_, Run(result,_));
   }
 
+  void PumpLoop() {
+    message_loop_.RunAllPending();
+  }
+
   MessageLoopForUI message_loop_;
   BrowserThread ui_thread_;
   scoped_refptr<FrontendDataTypeControllerFake> frontend_dtc_;
@@ -243,5 +247,6 @@ TEST_F(FrontendDataTypeControllerTest, OnUnrecoverableError) {
   EXPECT_EQ(DataTypeController::RUNNING, frontend_dtc_->state());
   // This should cause frontend_dtc_->Stop() to be called.
   frontend_dtc_->OnUnrecoverableError(FROM_HERE, "Test");
+  PumpLoop();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, frontend_dtc_->state());
 }

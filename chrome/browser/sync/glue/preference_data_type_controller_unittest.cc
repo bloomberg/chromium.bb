@@ -70,6 +70,10 @@ class PreferenceDataTypeControllerTest : public testing::Test {
     EXPECT_CALL(*model_associator_, DisassociateModels(_));
   }
 
+  void PumpLoop() {
+    message_loop_.RunAllPending();
+  }
+
   MessageLoopForUI message_loop_;
   BrowserThread ui_thread_;
   scoped_refptr<PreferenceDataTypeController> preference_dtc_;
@@ -167,4 +171,5 @@ TEST_F(PreferenceDataTypeControllerTest, OnUnrecoverableError) {
   preference_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
   // This should cause preference_dtc_->Stop() to be called.
   preference_dtc_->OnUnrecoverableError(FROM_HERE, "Test");
+  PumpLoop();
 }

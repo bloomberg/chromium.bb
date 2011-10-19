@@ -67,6 +67,10 @@ class ThemeDataTypeControllerTest : public testing::Test {
     EXPECT_CALL(*model_associator_, DisassociateModels(_));
   }
 
+  void PumpLoop() {
+    message_loop_.RunAllPending();
+  }
+
   MessageLoopForUI message_loop_;
   BrowserThread ui_thread_;
   scoped_refptr<ThemeDataTypeController> theme_dtc_;
@@ -165,4 +169,5 @@ TEST_F(ThemeDataTypeControllerTest, OnUnrecoverableError) {
   theme_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
   // This should cause theme_dtc_->Stop() to be called.
   theme_dtc_->OnUnrecoverableError(FROM_HERE, "Test");
+  PumpLoop();
 }

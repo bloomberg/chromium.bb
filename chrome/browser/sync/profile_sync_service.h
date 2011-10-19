@@ -103,7 +103,11 @@ struct UserShare;
 class ProfileSyncService : public browser_sync::SyncFrontend,
                            public browser_sync::SyncPrefObserver,
                            public browser_sync::UnrecoverableErrorHandler,
-                           public content::NotificationObserver {
+                           public content::NotificationObserver,
+                           // TODO(lipalani): crbug.com/100829. Instead of
+                           // doing this vend weak pointers from a factory.
+                           public base::SupportsWeakPtr<ProfileSyncService> {
+
  public:
   typedef ProfileSyncServiceObserver Observer;
   typedef browser_sync::SyncBackendHost::Status Status;
