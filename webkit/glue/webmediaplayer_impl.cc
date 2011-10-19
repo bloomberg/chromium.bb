@@ -786,14 +786,12 @@ void WebMediaPlayerImpl::OnPipelineError(PipelineStatus error) {
   Repaint();
 }
 
-void WebMediaPlayerImpl::OnNetworkEvent(PipelineStatus status) {
+void WebMediaPlayerImpl::OnNetworkEvent(bool is_downloading_data) {
   DCHECK_EQ(main_loop_, MessageLoop::current());
-  if (status == media::PIPELINE_OK) {
-    if (pipeline_->IsNetworkActive())
-      SetNetworkState(WebKit::WebMediaPlayer::Loading);
-    else
-      SetNetworkState(WebKit::WebMediaPlayer::Idle);
-  }
+  if (is_downloading_data)
+    SetNetworkState(WebKit::WebMediaPlayer::Loading);
+  else
+    SetNetworkState(WebKit::WebMediaPlayer::Idle);
 }
 
 void WebMediaPlayerImpl::OnDemuxerOpened() {

@@ -116,8 +116,8 @@ class BufferedResourceLoader
   // Returns true if the server supports byte range requests.
   virtual bool range_supported();
 
-  // Returns true if network is currently active.
-  virtual bool network_activity();
+  // Returns true if the resource loader is currently downloading data.
+  virtual bool is_downloading_data();
 
   // Returns resulting URL.
   virtual const GURL& url();
@@ -179,10 +179,6 @@ class BufferedResourceLoader
   // Updates the |buffer_|'s forward and backward capacities.
   void UpdateBufferWindow();
 
-  // Toggles whether the resource loading is deferred or not.
-  // Returns true if a network event was fired.
-  bool ToggleDeferring();
-
   // Returns true if we should defer resource loading, based
   // on current buffering scheme.
   bool ShouldEnableDefer();
@@ -193,6 +189,10 @@ class BufferedResourceLoader
 
   // Updates deferring behavior based on current buffering scheme.
   void UpdateDeferBehavior();
+
+  // Set defer state to |deferred| and cease/continue downloading data
+  // accordingly.
+  void SetDeferred(bool deferred);
 
   // Returns true if the current read request can be fulfilled by what is in
   // the buffer.

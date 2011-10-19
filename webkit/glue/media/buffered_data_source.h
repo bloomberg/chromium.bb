@@ -158,8 +158,8 @@ class BufferedDataSource : public WebDataSource {
   // A resource loader for the media resource.
   scoped_refptr<BufferedResourceLoader> loader_;
 
-  // True if network is active.
-  bool network_activity_;
+  // True if |loader| is downloading data.
+  bool is_downloading_data_;
 
   // Callback method from the pipeline for initialization.
   media::PipelineStatusCB initialize_cb_;

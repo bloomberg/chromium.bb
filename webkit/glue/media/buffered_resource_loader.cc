@@ -295,12 +295,8 @@ void BufferedResourceLoader::Read(int64 position,
     // Make sure we stop deferring now that there's additional capacity.
     //
     // XXX: can we DCHECK(url_loader_.get()) at this point in time?
-    if (deferred_ && url_loader_.get()) {
-      deferred_ = false;
-
-      url_loader_->setDefersLoading(deferred_);
-      NotifyNetworkEvent();
-    }
+    if (deferred_)
+      SetDeferred(false);
 
     DCHECK(!ShouldEnableDefer())
         << "Capacity was not adjusted properly to prevent deferring.";
@@ -330,7 +326,7 @@ bool BufferedResourceLoader::range_supported() {
   return range_supported_;
 }
 
-bool BufferedResourceLoader::network_activity() {
+bool BufferedResourceLoader::is_downloading_data() {
   return !completed_ && !deferred_;
 }
 
@@ -609,11 +605,17 @@ void BufferedResourceLoader::UpdateDeferBehavior() {
   if (!url_loader_.get() || !buffer_.get())
     return;
 
-  if ((deferred_ && ShouldDisableDefer()) ||
-      (!deferred_ && ShouldEnableDefer())) {
-    bool eventOccurred = ToggleDeferring();
-    if (eventOccurred)
-      NotifyNetworkEvent();
+  // If necessary, toggle defer state and continue/pause downloading data
+  // accordingly.
+  if (ShouldEnableDefer() || ShouldDisableDefer())
+    SetDeferred(!deferred_);
+}
+
+void BufferedResourceLoader::SetDeferred(bool deferred) {
+  deferred_ = deferred;
+  if (url_loader_.get()) {
+    url_loader_->setDefersLoading(deferred);
+    NotifyNetworkEvent();
   }
 }
 
@@ -665,15 +667,6 @@ bool BufferedResourceLoader::ShouldDisableDefer() {
   }
 
   // Otherwise keep deferring.
-  return false;
-}
-
-bool BufferedResourceLoader::ToggleDeferring() {
-  deferred_ = !deferred_;
-  if (url_loader_.get()) {
-    url_loader_->setDefersLoading(deferred_);
-    return true;
-  }
   return false;
 }
 

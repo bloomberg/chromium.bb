@@ -50,7 +50,7 @@ BufferedDataSource::BufferedDataSource(
       streaming_(false),
       frame_(frame),
       loader_(NULL),
-      network_activity_(false),
+      is_downloading_data_(false),
       read_position_(0),
       read_size_(0),
       read_buffer_(NULL),
@@ -621,7 +621,7 @@ void BufferedDataSource::NetworkEventCallback() {
   if (loaded_)
     return;
 
-  bool network_activity = loader_->network_activity();
+  bool is_downloading_data = loader_->is_downloading_data();
   int64 buffered_position = loader_->GetBufferedPosition();
 
   // If we get an unspecified value, return immediately.
@@ -640,10 +640,10 @@ void BufferedDataSource::NetworkEventCallback() {
   if (stop_signal_received_)
     return;
 
-  if (network_activity != network_activity_) {
-    network_activity_ = network_activity;
+  if (is_downloading_data != is_downloading_data_) {
+    is_downloading_data_ = is_downloading_data;
     if (host())
-      host()->SetNetworkActivity(network_activity);
+      host()->SetNetworkActivity(is_downloading_data);
   }
 
   buffered_bytes_ = buffered_position + 1;

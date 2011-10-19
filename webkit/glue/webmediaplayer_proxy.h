@@ -52,7 +52,7 @@ class WebMediaPlayerProxy
   void PipelineSeekCallback(media::PipelineStatus status);
   void PipelineEndedCallback(media::PipelineStatus status);
   void PipelineErrorCallback(media::PipelineStatus error);
-  void NetworkEventCallback(media::PipelineStatus status);
+  void NetworkEventCallback(bool network_activity);
 
   // ChunkDemuxerClient implementation.
   virtual void DemuxerOpened(media::ChunkDemuxer* demuxer) OVERRIDE;
@@ -94,7 +94,7 @@ class WebMediaPlayerProxy
   void PipelineErrorTask(media::PipelineStatus error);
 
   // Notify |webmediaplayer_| that there's a network event.
-  void NetworkEventTask(media::PipelineStatus status);
+  void NetworkEventTask(bool network_activity);
 
   // The render message loop where WebKit lives.
   MessageLoop* render_loop_;

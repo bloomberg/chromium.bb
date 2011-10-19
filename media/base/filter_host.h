@@ -67,7 +67,7 @@ class MEDIA_EXPORT FilterHost {
   virtual void SetLoaded(bool loaded) = 0;
 
   // Sets the flag to indicate current network activity.
-  virtual void SetNetworkActivity(bool network_activity) = 0;
+  virtual void SetNetworkActivity(bool is_downloading_data) = 0;
 
   // Disable audio renderer by calling OnAudioRendererDisabled() on all
   // filters.

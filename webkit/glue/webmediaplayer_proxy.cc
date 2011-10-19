@@ -127,9 +127,9 @@ void WebMediaPlayerProxy::PipelineErrorCallback(PipelineStatus error) {
       this, &WebMediaPlayerProxy::PipelineErrorTask, error));
 }
 
-void WebMediaPlayerProxy::NetworkEventCallback(PipelineStatus status) {
+void WebMediaPlayerProxy::NetworkEventCallback(bool is_downloading_data) {
   render_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &WebMediaPlayerProxy::NetworkEventTask, status));
+      this, &WebMediaPlayerProxy::NetworkEventTask, is_downloading_data));
 }
 
 void WebMediaPlayerProxy::AddDataSource(WebDataSource* data_source) {
@@ -151,37 +151,32 @@ void WebMediaPlayerProxy::RepaintTask() {
 
 void WebMediaPlayerProxy::PipelineInitializationTask(PipelineStatus status) {
   DCHECK(MessageLoop::current() == render_loop_);
-  if (webmediaplayer_) {
+  if (webmediaplayer_)
     webmediaplayer_->OnPipelineInitialize(status);
-  }
 }
 
 void WebMediaPlayerProxy::PipelineSeekTask(PipelineStatus status) {
   DCHECK(MessageLoop::current() == render_loop_);
-  if (webmediaplayer_) {
+  if (webmediaplayer_)
     webmediaplayer_->OnPipelineSeek(status);
-  }
 }
 
 void WebMediaPlayerProxy::PipelineEndedTask(PipelineStatus status) {
   DCHECK(MessageLoop::current() == render_loop_);
-  if (webmediaplayer_) {
+  if (webmediaplayer_)
     webmediaplayer_->OnPipelineEnded(status);
-  }
 }
 
 void WebMediaPlayerProxy::PipelineErrorTask(PipelineStatus error) {
   DCHECK(MessageLoop::current() == render_loop_);
-  if (webmediaplayer_) {
+  if (webmediaplayer_)
     webmediaplayer_->OnPipelineError(error);
-  }
 }
 
-void WebMediaPlayerProxy::NetworkEventTask(PipelineStatus status) {
+void WebMediaPlayerProxy::NetworkEventTask(bool is_downloading_data) {
   DCHECK(MessageLoop::current() == render_loop_);
-  if (webmediaplayer_) {
-    webmediaplayer_->OnNetworkEvent(status);
-  }
+  if (webmediaplayer_)
+    webmediaplayer_->OnNetworkEvent(is_downloading_data);
 }
 
 void WebMediaPlayerProxy::GetCurrentFrame(
