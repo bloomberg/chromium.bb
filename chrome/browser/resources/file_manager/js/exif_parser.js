@@ -42,7 +42,7 @@ ExifParser.prototype.parse = function(file, callback, errorCallback) {
     try {
       steps[++currentStep].apply(null, arguments);
     } catch(e) {
-      onError(e);
+      onError(e.stack);
     }
   }
 
@@ -234,8 +234,9 @@ ExifParser.prototype.readTagValue = function(br, tag) {
       readFunction = function(size) { return br.readScalar(size, signed) };
 
     var totalSize = tag.componentCount * size;
-    if (totalSize > 100 || totalSize < 1) {
-      // This is probably invalid exif data.
+    if (totalSize < 1) {
+      // This is probably invalid exif data, skip it.
+      tag.componentCount = 1;
       tag.value = br.readScalar(4);
       return;
     }

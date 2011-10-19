@@ -66,7 +66,9 @@ Viewport.prototype.setScale = function(scale, notify) {
 Viewport.prototype.getFittingScale = function() {
   var scaleX = this.screenBounds_.width / this.imageBounds_.width;
   var scaleY = this.screenBounds_.height / this.imageBounds_.height;
-  return Math.min(scaleX, scaleY);
+  // Scales > 1 do not look good. Also they are not really useful
+  // as we do not have any pixel-level operations.
+  return Math.min(1, scaleX, scaleY);
 };
 
 Viewport.prototype.fitImage = function() {

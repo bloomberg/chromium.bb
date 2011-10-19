@@ -41,7 +41,7 @@ body {
 }
 
 .gallery[tools] > .close div {
-  opacity: 0.4;
+  opacity: 0.5;
 }
 
 .gallery[tools] > .close div:hover {
@@ -333,7 +333,7 @@ body {
   -webkit-box-orient: horizontal;
   -webkit-box-pack: center;
   -webkit-transition: width 0.5s ease-in-out;
-}
+  }
 
 .gallery[editing] .toolbar .edit-bar {
   width: 100%;
@@ -365,6 +365,8 @@ body {
 
   background-repeat: no-repeat;
   background-position: 5px center;
+
+  opacity: 0.99;  /* Workaround for http://crosbug.com/21065 */
 }
 
 .gallery > .toolbar .button {
@@ -540,7 +542,7 @@ body {
 }
 
 .gallery .crop-overlay .shadow {
-  background-color: rgba(0,0,0,0.4);
+  background-color: rgba(0,0,0,0.65);
 }
 
 .gallery .crop-overlay .middle-box {

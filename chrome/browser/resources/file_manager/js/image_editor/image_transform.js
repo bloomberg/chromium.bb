@@ -230,7 +230,9 @@ DraggableRect.prototype.getDragMode = function(x, y) {
   } else if (xBetween && yBetween) {
     result.whole = true;
   } else {
-    result.outside = true;
+    result.newcrop = true;
+    result.xSide = DraggableRect.RIGHT;
+    result.ySide = DraggableRect.BOTTOM;
   }
 
   return result;
@@ -245,7 +247,7 @@ DraggableRect.prototype.getCursorStyle = function(x, y, mouseDown) {
         this.viewport_.screenToImageX(x), this.viewport_.screenToImageY(y));
   }
   if (mode.whole) return 'move';
-  if (mode.outside) return 'crop';
+  if (mode.newcrop) return 'crop';
   return this.cssSide_[mode.ySide] + this.cssSide_[mode.xSide] + '-resize';
 };
 
@@ -283,12 +285,14 @@ DraggableRect.prototype.getDragHandler = function(x, y) {
       self.bounds_.bottom = self.bounds_.top + fixedHeight;
     };
   } else {
-    if (this.dragMode_.outside) {
-      this.dragMode_.outside = false;
-      this.dragMode_.xSide = DraggableRect.RIGHT;
-      this.dragMode_.ySide = DraggableRect.BOTTOM;
-      this.bounds_.left = this.bounds_.right = x;
-      this.bounds_.top = this.bounds_.bottom = y;
+    function checkNewCrop() {
+      if (self.dragMode_.newcrop) {
+        self.dragMode_.newcrop = false;
+        self.bounds_.left = self.bounds_.right = x;
+        self.bounds_.top = self.bounds_.bottom = y;
+        mouseBiasX = 0;
+        mouseBiasY = 0;
+      }
     }
 
     function flipSide(side) {
@@ -302,6 +306,7 @@ DraggableRect.prototype.getDragHandler = function(x, y) {
     if (this.dragMode_.xSide != DraggableRect.NONE) {
       mouseBiasX = self.bounds_[this.dragMode_.xSide] - x;
       resizeFuncX = function(x) {
+        checkNewCrop();
         self.bounds_[self.dragMode_.xSide] = x;
         if (self.bounds_.left > self.bounds_.right) {
           self.dragMode_.xSide = flipSide(self.dragMode_.xSide);
@@ -311,6 +316,7 @@ DraggableRect.prototype.getDragHandler = function(x, y) {
     if (this.dragMode_.ySide != DraggableRect.NONE) {
       mouseBiasY = self.bounds_[this.dragMode_.ySide] - y;
       resizeFuncY = function(y) {
+        checkNewCrop();
         self.bounds_[self.dragMode_.ySide] = y;
         if (self.bounds_.top > self.bounds_.bottom) {
           self.dragMode_.ySide = flipSide(self.dragMode_.ySide);

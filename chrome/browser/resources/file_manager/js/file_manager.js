@@ -1834,6 +1834,8 @@ FileManager.prototype = {
           task.iconUrl =
               chrome.extension.getURL('images/icon_preview_16x16.png');
           task.title = str('PREVIEW_IMAGE');
+          // Do not create the Slideshow button if the Gallery is present.
+          if (GALLERY_ENABLED) continue;
         } else if (task_parts[1] == 'play') {
           task.iconUrl =
               chrome.extension.getURL('images/icon_play_16x16.png');
@@ -2110,6 +2112,7 @@ FileManager.prototype = {
     }
 
     galleryFrame.onload = function() {
+      self.document_.title = str('GALLERY');
       galleryFrame.contentWindow.Gallery.open(
           self.currentDirEntry_,
           urls,
@@ -2118,6 +2121,7 @@ FileManager.prototype = {
             // TODO(kaznacheev): keep selection.
             self.rescanDirectoryNow_();  // Make sure new files show up.
             self.dialogDom_.removeChild(galleryFrame);
+            self.document_.title = self.currentDirEntry_.fullPath;
             self.refocus();
           },
           self.metadataProvider_,

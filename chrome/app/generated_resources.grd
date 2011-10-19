@@ -9535,7 +9535,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <message name="IDS_FILE_BROWSER_GALLERY" desc="Title of the action to open the Gallery.">
-        View and edit
+        View and Edit
       </message>
       <message name="IDS_FILE_BROWSER_GALLERY_EDIT" desc="In the Gallery, the title on the button shows/hides editing buttons.">
         Edit
