@@ -583,6 +583,10 @@ set_mode(struct connector *c, int count, int page_flip)
 
 		ret = drmModeSetCrtc(fd, c[i].crtc, fb_id, x, 0,
 				     &c[i].id, 1, c[i].mode);
+
+		/* XXX: Actually check if this is needed */
+		drmModeDirtyFB(fd, fb_id, NULL, 0);
+
 		x += c[i].mode->hdisplay;
 
 		if (ret) {
