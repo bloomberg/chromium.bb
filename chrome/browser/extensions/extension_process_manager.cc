@@ -263,10 +263,6 @@ void ExtensionProcessManager::RegisterExtensionSiteInstance(
                    render_process_id));
   }
 
-  if (extension->is_storage_isolated()) {
-    isolated_storage_process_ids_.insert(render_process_id);
-  }
-
   SiteInstanceIDMap::const_iterator it = extension_ids_.find(site_instance_id);
   if (it != extension_ids_.end() && (*it).second == extension->id())
     return;
@@ -290,7 +286,6 @@ void ExtensionProcessManager::UnregisterExtensionSiteInstance(
     if (host != process_ids_.end()) {
       host->second.erase(site_instance_id);
       if (host->second.empty()) {
-        isolated_storage_process_ids_.erase(render_process_id);
         process_ids_.erase(host);
         Profile* profile = Profile::FromBrowserContext(
             site_instance->GetProcess()->browser_context());
@@ -331,11 +326,6 @@ bool ExtensionProcessManager::AreBindingsEnabledForProcess(
   return false;
 }
 
-bool ExtensionProcessManager::IsStorageIsolatedForProcess(int host_id) {
-  return isolated_storage_process_ids_.find(host_id) !=
-      isolated_storage_process_ids_.end();
-}
-
 RenderProcessHost* ExtensionProcessManager::GetExtensionProcess(
     const GURL& url) {
   if (!browsing_instance_->HasSiteInstance(url))
@@ -366,6 +356,24 @@ const Extension* ExtensionProcessManager::GetExtensionForSiteInstance(
   }
 
   return NULL;
+}
+
+std::set<const Extension*> ExtensionProcessManager::GetExtensionsForProcess(
+    int process_id) {
+  std::set<const Extension*> result;
+
+  ProcessIDMap::iterator site_id_set = process_ids_.find(process_id);
+  if (site_id_set == process_ids_.end())
+    return result;
+
+  for (std::set<int>::iterator site_id = site_id_set->second.begin();
+       site_id != site_id_set->second.end(); ++site_id) {
+    const Extension* extension = GetExtensionForSiteInstance(*site_id);
+    if (extension)
+      result.insert(extension);
+  }
+
+  return result;
 }
 
 SiteInstance* ExtensionProcessManager::GetSiteInstanceForURL(const GURL& url) {

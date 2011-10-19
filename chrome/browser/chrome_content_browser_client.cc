@@ -171,15 +171,19 @@ RenderProcessHostPrivilege GetPrivilegeRequiredByUrl(
 RenderProcessHostPrivilege GetProcessPrivilege(
     RenderProcessHost* process_host,
     ExtensionProcessManager* extension_process_manager) {
-  if (extension_process_manager->IsExtensionProcess(process_host->id())) {
-    if (extension_process_manager->IsStorageIsolatedForProcess(
-        process_host->id())) {
+  if (!extension_process_manager->IsExtensionProcess(process_host->id()))
+    return PRIV_NORMAL;
+
+  std::set<const Extension*> extensions_for_process(
+      extension_process_manager->GetExtensionsForProcess(process_host->id()));
+  for (std::set<const Extension*>::iterator iter =
+           extensions_for_process.begin();
+       iter != extensions_for_process.end(); ++iter) {
+    if ((*iter)->is_storage_isolated())
       return PRIV_ISOLATED;
-    }
-    return PRIV_EXTENSION;
   }
 
-  return PRIV_NORMAL;
+  return PRIV_EXTENSION;
 }
 
 }  // namespace
