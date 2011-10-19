@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/file_path.h"
+#include "base/path_service.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -10,9 +12,11 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/browser/plugin_service.h"
 #include "content/browser/tab_contents/tab_contents.h"
 
 namespace {
@@ -72,9 +76,22 @@ class NaClExtensionTest : public ExtensionBrowserTest {
     return extension;
   }
 
+  bool IsNaClPluginLoaded() {
+    FilePath path;
+    if (PathService::Get(chrome::FILE_NACL_PLUGIN, &path)) {
+      webkit::WebPluginInfo info;
+      return PluginService::GetInstance()->GetPluginInfoByPath(path, &info);
+    }
+    return false;
+  }
+
   void CheckPluginsCreated(const Extension* extension, bool should_create) {
     ui_test_utils::NavigateToURL(browser(),
                                  extension->GetResourceURL("test.html"));
+    // Don't run tests if the NaCl plugin isn't loaded.
+    if (!IsNaClPluginLoaded())
+      return;
+
     bool embedded_plugin_created = false;
     bool content_handler_plugin_created = false;
     TabContents* tab_contents = browser()->GetSelectedTabContents();

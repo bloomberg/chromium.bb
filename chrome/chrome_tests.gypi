@@ -2592,11 +2592,6 @@
             'browser/ui/webui/print_preview.js',
           ],
         }],
-        ['disable_nacl==1', {
-          'sources!': [
-            'browser/extensions/extension_nacl_browsertest.cc',
-          ],
-        }],
         ['use_virtual_keyboard==1', {
           'sources': [
             'browser/ui/virtual_keyboard/virtual_keyboard_manager_browsertest.cc',
