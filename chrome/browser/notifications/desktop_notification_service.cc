@@ -328,7 +328,7 @@ void DesktopNotificationService::RequestPermission(
     TabContents* tab) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!tab) {
-    Browser* browser = BrowserList::GetLastActive();
+    Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
     if (browser)
       tab = browser->GetSelectedTabContents();
   }
