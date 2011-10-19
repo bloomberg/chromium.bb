@@ -320,7 +320,8 @@ TEST_F(ResourceDispatcherTest, CrossSiteNavigationNonBuffered) {
 // Tests that a cross-site navigation to an error page (resulting in the link
 // doctor page) still runs the onunload handler and can support navigations
 // away from the link doctor page.  (Bug 1235537)
-TEST_F(ResourceDispatcherTest, CrossSiteNavigationErrorPage) {
+// Flaky: http://crbug.com/100823
+TEST_F(ResourceDispatcherTest, FLAKY_CrossSiteNavigationErrorPage) {
   net::TestServer test_server(net::TestServer::TYPE_HTTP,
                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(test_server.Start());
