@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -566,12 +566,14 @@ TEST(MultipartResponseTest, MultipartContentRangesTest) {
   WebURLResponse response1;
   response1.initialize();
   response1.setMIMEType("application/pdf");
-  response1.setHTTPHeaderField("Content-Length", "200");
-  response1.setHTTPHeaderField("Content-Range", "bytes 1000-1050/5000");
+  response1.setHTTPHeaderField("Content-Length", "200");  // Ignored!
+  // Use intentionally >32bit values to check they are handled correctly.
+  response1.setHTTPHeaderField("Content-Range",
+                               "bytes 5000000000-5000000050/6000000000");
 
-  int content_range_lower_bound = 0;
-  int content_range_upper_bound = 0;
-  int content_range_instance_size = 0;
+  int64 content_range_lower_bound = 0;
+  int64 content_range_upper_bound = 0;
+  int64 content_range_instance_size = 0;
 
   bool result = MultipartResponseDelegate::ReadContentRanges(
       response1, &content_range_lower_bound,
@@ -579,8 +581,9 @@ TEST(MultipartResponseTest, MultipartContentRangesTest) {
       &content_range_instance_size);
 
   EXPECT_EQ(result, true);
-  EXPECT_EQ(content_range_lower_bound, 1000);
-  EXPECT_EQ(content_range_upper_bound, 1050);
+  EXPECT_EQ(content_range_lower_bound, 5e9);
+  EXPECT_EQ(content_range_upper_bound, 5e9+50);
+  EXPECT_EQ(content_range_instance_size, 6e9);
 
   WebURLResponse response2;
   response2.initialize();

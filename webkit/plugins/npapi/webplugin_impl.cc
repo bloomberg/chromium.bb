@@ -115,7 +115,7 @@ class MultiPartResponseClient : public WebURLLoaderClient {
   // response.
   virtual void didReceiveResponse(
       WebURLLoader*, const WebURLResponse& response) {
-    int instance_size;
+    int64 instance_size;
     if (!MultipartResponseDelegate::ReadContentRanges(
             response,
             &byte_range_lower_bound_,
@@ -153,9 +153,9 @@ class MultiPartResponseClient : public WebURLLoaderClient {
  private:
   WebURLResponse resource_response_;
   // The lower bound of the byte range.
-  int byte_range_lower_bound_;
+  int64 byte_range_lower_bound_;
   // The upper bound of the byte range.
-  int byte_range_upper_bound_;
+  int64 byte_range_upper_bound_;
   // The handler for the data.
   WebPluginResourceClient* resource_client_;
 };

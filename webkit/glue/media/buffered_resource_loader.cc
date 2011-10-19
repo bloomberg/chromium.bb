@@ -734,12 +734,12 @@ void BufferedResourceLoader::ReadInternal() {
 
 bool BufferedResourceLoader::VerifyPartialResponse(
     const WebURLResponse& response) {
-  int first_byte_position, last_byte_position, instance_size;
+  int64 first_byte_position, last_byte_position, instance_size;
 
   if (!MultipartResponseDelegate::ReadContentRanges(response,
-                         &first_byte_position,
-                         &last_byte_position,
-                         &instance_size)) {
+                                                    &first_byte_position,
+                                                    &last_byte_position,
+                                                    &instance_size)) {
     return false;
   }
 
