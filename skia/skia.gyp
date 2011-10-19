@@ -190,6 +190,7 @@
         '../third_party/skia/src/core/SkBitmapShaderTemplate.h',
         '../third_party/skia/src/core/SkBitmap_scroll.cpp',
         '../third_party/skia/src/core/SkBlitBWMaskTemplate.h',
+        '../third_party/skia/src/core/SkBlitMask_D32.cpp',
         '../third_party/skia/src/core/SkBlitRow_D16.cpp',
         '../third_party/skia/src/core/SkBlitRow_D32.cpp',
         '../third_party/skia/src/core/SkBlitRow_D4444.cpp',
