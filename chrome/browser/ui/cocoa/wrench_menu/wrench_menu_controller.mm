@@ -179,8 +179,6 @@ class ZoomLevelObserver : public content::NotificationObserver {
       [NSImage imageNamed:NSImageNameExitFullScreenTemplate] :
           [NSImage imageNamed:NSImageNameEnterFullScreenTemplate];
   [[buttonViewController_ zoomFullScreen] setImage:icon];
-
-  [self updateBookmarkSubMenu];
 }
 
 - (void)menuNeedsUpdate:(NSMenu*)menu {
@@ -196,6 +194,8 @@ class ZoomLevelObserver : public content::NotificationObserver {
   for (NSMenuItem* item in itemArray) {
     [menu addItem:item];
   }
+
+  [self updateBookmarkSubMenu];
 }
 
 // Used to dispatch commands from the Wrench menu. The custom items within the
