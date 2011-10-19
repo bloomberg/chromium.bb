@@ -167,10 +167,8 @@ class DatasetConverter(object):
           if output_file:
             output_file.write(output_line)
             output_file.write(os.linesep)
-          self._logger.info('%d: %s' % (i, line.encode(sys.stdout.encoding,
-                                                       'ignore')))
-          self._logger.info('\tconverted to: %s' %
-                            output_line.encode(sys.stdout.encoding, 'ignore'))
+          self._logger.info('%d: %s' % (i, line.encode('UTF-8')))
+          self._logger.info('\tconverted to: %s' % output_line.encode('UTF-8'))
       if output_file:
         output_file.write(']')
         output_file.write(os.linesep)

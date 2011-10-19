@@ -134,9 +134,6 @@
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
-      # crbug.com/81271
-      '-autofill.AutofillTest.testMergeAggregatedProfilesWithSameAddress',
-      '-autofill.AutofillTest.testProfilesNotMergedWhenNoMinAddressData',
       # Some download test fails on win official builder, only thru buildbot
       # when downloading the small zip file.
       # crbug.com/91225
@@ -303,9 +300,6 @@
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
-      # crbug.com/81271
-      '-autofill.AutofillTest.testMergeAggregatedProfilesWithSameAddress',
-      '-autofill.AutofillTest.testProfilesNotMergedWhenNoMinAddressData',
       # crosbug.com/19556
       '-autofill.AutofillTest.testDisplayLineItemForEntriesWithNoCCNum',
       '-autofill.AutofillTest.testPostalCodeAndStateLabelsBasedOnCountry',
