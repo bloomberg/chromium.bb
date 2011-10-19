@@ -4804,9 +4804,7 @@
 {
    bug_100761b
    Memcheck:Leak
-   fun:calloc
-   fun:PR_Calloc
-   fun:PORT_ZAlloc_Util
+   ...
    fun:PORT_NewArena_Util
    fun:CERT_CreateCertificate
    fun:_ZN12_GLOBAL__N_117CreateCertificateEP18SECKEYPublicKeyStrRKSsjN4base9TimeDeltaE
