@@ -357,8 +357,9 @@ class RenderWidgetHostViewGtkWidget {
       gtk_widget_grab_focus(widget);
 
     host_view->is_popup_first_mouse_release_ = false;
-    host_view->GetRenderWidgetHost()->ForwardMouseEvent(
-        WebInputEventFactory::mouseEvent(event));
+    RenderWidgetHost* widget_host = host_view->GetRenderWidgetHost();
+    if (widget_host)
+      widget_host->ForwardMouseEvent(WebInputEventFactory::mouseEvent(event));
 
     // Although we did handle the mouse event, we need to let other handlers
     // run (in particular the one installed by TabContentsViewGtk).
@@ -1277,12 +1278,12 @@ bool RenderWidgetHostViewGtk::LockMouse() {
 
   GdkGrabStatus grab_status =
       gdk_pointer_grab(window,
-                       FALSE, // owner_events
+                       FALSE,  // owner_events
                        static_cast<GdkEventMask>(
                            GDK_POINTER_MOTION_MASK |
                            GDK_BUTTON_PRESS_MASK |
                            GDK_BUTTON_RELEASE_MASK),
-                       window, // confine_to
+                       window,  // confine_to
                        cursor,
                        GDK_CURRENT_TIME);
 
