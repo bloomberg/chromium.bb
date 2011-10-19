@@ -159,11 +159,14 @@ void MessagePumpX::InitXSource() {
 }
 
 bool MessagePumpX::ShouldCaptureXEvent(XEvent* xev) {
-  return
 #if defined(TOOLKIT_USES_GTK)
-      capture_x_events_[xev->type] &&
-#endif
+  return capture_x_events_[xev->type] &&
       (xev->type != GenericEvent || xev->xcookie.extension == xiopcode);
+#else
+  // When not using GTK, we always handle all events ourselves, and always have
+  // to remove it from the queue, whether we do anything with it or not.
+  return true;
+#endif
 }
 
 bool MessagePumpX::ProcessXEvent(XEvent* xev) {
@@ -200,7 +203,9 @@ bool MessagePumpX::RunOnce(GMainContext* context, bool block) {
   if (!display || !GetDispatcher())
     return g_main_context_iteration(context, block);
 
-  if (XPending(display)) {
+  // In the general case, we want to handle all pending events before running
+  // the tasks. This is what happens in the message_pump_glib case.
+  while (XPending(display)) {
     XEvent xev;
     XPeekEvent(display, &xev);
 
@@ -217,6 +222,10 @@ bool MessagePumpX::RunOnce(GMainContext* context, bool block) {
       g_main_context_iteration(context, FALSE);
 #endif
     }
+#if defined(TOOLKIT_USES_GTK)
+    // In the GTK case, we only want to process one event at a time.
+    break;
+#endif
   }
 
   bool retvalue;
