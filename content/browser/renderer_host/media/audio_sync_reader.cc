@@ -36,7 +36,10 @@ void AudioSyncReader::UpdatePendingBytes(uint32 bytes) {
         shared_memory_,
         media::PacketSizeSizeInBytes(shared_memory_->created_size()));
   }
-  socket_->Send(&bytes, sizeof(bytes));
+  base::AutoLock auto_lock(lock_);
+  if (socket_.get()) {
+    socket_->Send(&bytes, sizeof(bytes));
+  }
 }
 
 uint32 AudioSyncReader::Read(void* data, uint32 size) {
@@ -81,7 +84,11 @@ uint32 AudioSyncReader::Read(void* data, uint32 size) {
 }
 
 void AudioSyncReader::Close() {
-  socket_->Close();
+  base::AutoLock auto_lock(lock_);
+  if (socket_.get()) {
+    socket_->Close();
+    socket_.reset(NULL);
+  }
 }
 
 bool AudioSyncReader::Init() {

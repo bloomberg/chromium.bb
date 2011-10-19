@@ -9,6 +9,7 @@
 #include "base/file_descriptor_posix.h"
 #include "base/process.h"
 #include "base/sync_socket.h"
+#include "base/synchronization/lock.h"
 #include "base/time.h"
 #include "media/audio/audio_output_controller.h"
 
@@ -50,6 +51,12 @@ class AudioSyncReader : public media::AudioOutputController::SyncReader {
   // SyncSocket to be used by the renderer. The reference is released after
   // PrepareForeignSocketHandle() is called and ran successfully.
   scoped_ptr<base::SyncSocket> foreign_socket_;
+
+  // Protect socket_ access by lock to prevent race condition when audio
+  // controller thread closes the reader and hardware audio thread is reading
+  // data. This way we know that socket would not be deleted while we are
+  // writing data to it.
+  base::Lock lock_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioSyncReader);
 };
