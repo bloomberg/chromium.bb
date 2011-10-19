@@ -20,8 +20,8 @@ RadioButtonExample::~RadioButtonExample() {
 }
 
 void RadioButtonExample::CreateExampleView(views::View* container) {
-  select_ = new views::TextButton(this, L"Select");
-  status_ = new views::TextButton(this, L"Show Status");
+  select_ = new views::TextButton(this, ASCIIToUTF16("Select"));
+  status_ = new views::TextButton(this, ASCIIToUTF16("Show Status"));
 
   int group = 1;
   for (size_t i = 0; i < arraysize(radio_buttons_); ++i) {

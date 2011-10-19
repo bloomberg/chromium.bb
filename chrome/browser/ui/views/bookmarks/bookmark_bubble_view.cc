@@ -181,11 +181,10 @@ void BookmarkBubbleView::Init() {
   remove_link_->SetBackgroundColor(Bubble::kBackgroundColor);
 
   edit_button_ = new views::NativeTextButton(
-      this,
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_BOOKMARK_BUBBLE_OPTIONS)));
+      this, l10n_util::GetStringUTF16(IDS_BOOKMARK_BUBBLE_OPTIONS));
 
   close_button_ = new views::NativeTextButton(
-      this, UTF16ToWide(l10n_util::GetStringUTF16(IDS_DONE)));
+      this, l10n_util::GetStringUTF16(IDS_DONE));
   close_button_->SetIsDefault(true);
 
   views::Label* combobox_label = new views::Label(

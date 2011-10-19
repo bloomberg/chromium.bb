@@ -34,7 +34,7 @@ class WidgetExample : public ExampleBase, public views::ButtonListener {
     CLOSE_WIDGET,
   };
 
-  void BuildButton(views::View* container, const std::wstring& label, int tag);
+  void BuildButton(views::View* container, const std::string& label, int tag);
 
   void InitWidget(views::Widget* widget, bool transparent);
 

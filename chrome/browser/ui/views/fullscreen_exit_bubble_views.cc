@@ -112,8 +112,8 @@ FullscreenExitBubbleViews::FullscreenExitView::FullscreenExitView(
   AddChildView(&instruction_label_);
   AddChildView(&link_);
 
-  accept_button_ = new views::NativeTextButton(this,
-      UTF16ToWideHack(bubble->GetAllowButtonText()));
+  accept_button_ = new views::NativeTextButton(
+      this, bubble->GetAllowButtonText());
   accept_button_->set_focusable(false);
   AddChildView(accept_button_);
 

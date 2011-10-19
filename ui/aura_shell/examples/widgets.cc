@@ -52,8 +52,9 @@ class WidgetsWindow : public views::WidgetDelegateView {
 };
 
 WidgetsWindow::WidgetsWindow()
-    : button_(new views::NativeTextButton(NULL, L"Button")),
-      disabled_button_(new views::NativeTextButton(NULL, L"Disabled button")),
+    : button_(new views::NativeTextButton(NULL, ASCIIToUTF16("Button"))),
+      disabled_button_(
+          new views::NativeTextButton(NULL, ASCIIToUTF16("Disabled button"))),
       checkbox_(new views::Checkbox(ASCIIToUTF16("Checkbox"))),
       checkbox_disabled_(new views::Checkbox(
           ASCIIToUTF16("Checkbox disabled"))),

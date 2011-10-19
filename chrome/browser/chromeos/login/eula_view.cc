@@ -348,10 +348,10 @@ void EulaView::Init() {
 
   layout->AddView(system_security_settings_link_);
 
-  back_button_ = new login::WideButton(this, std::wstring());
+  back_button_ = new login::WideButton(this, string16());
   layout->AddView(back_button_);
 
-  continue_button_ = new login::WideButton(this, std::wstring());
+  continue_button_ = new login::WideButton(this, string16());
   layout->AddView(continue_button_);
   layout->AddPaddingRow(0, kPadding);
 

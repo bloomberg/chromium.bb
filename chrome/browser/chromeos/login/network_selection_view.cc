@@ -476,8 +476,7 @@ void NetworkSelectionView::RecreateNativeControls() {
   delete continue_button_;
   continue_button_ = new login::WideButton(
       actor_,
-      UTF16ToWide(
-          l10n_util::GetStringUTF16(IDS_NETWORK_SELECTION_CONTINUE_BUTTON)));
+      l10n_util::GetStringUTF16(IDS_NETWORK_SELECTION_CONTINUE_BUTTON));
   continue_button_->SetEnabled(is_continue_enabled);
 }
 

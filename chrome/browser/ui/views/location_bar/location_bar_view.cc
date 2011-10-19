@@ -1104,7 +1104,7 @@ void LocationBarView::WriteDragDataForView(views::View* sender,
   DCHECK(tab_contents);
   drag_utils::SetURLAndDragImage(
       tab_contents->tab_contents()->GetURL(),
-      UTF16ToWideHack(tab_contents->tab_contents()->GetTitle()),
+      tab_contents->tab_contents()->GetTitle(),
       tab_contents->favicon_tab_helper()->GetFavicon(),
       data);
 }

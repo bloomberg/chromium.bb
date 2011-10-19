@@ -27,7 +27,7 @@ ButtonExample::~ButtonExample() {
 }
 
 void ButtonExample::CreateExampleView(views::View* container) {
-  views::TextButton* tb = new views::TextButton(this, L"Button");
+  views::TextButton* tb = new views::TextButton(this, ASCIIToUTF16("Button"));
   button_ = tb;
   container->SetLayoutManager(new views::FillLayout);
   container->AddChildView(button_);

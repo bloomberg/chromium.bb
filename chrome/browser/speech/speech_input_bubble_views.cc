@@ -103,13 +103,11 @@ ContentView::ContentView(SpeechInputBubbleDelegate* delegate)
   AddChildView(icon_);
 
   cancel_ = new views::NativeTextButton(
-      this,
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_CANCEL)));
+      this, l10n_util::GetStringUTF16(IDS_CANCEL));
   AddChildView(cancel_);
 
   try_again_ = new views::NativeTextButton(
-      this,
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_SPEECH_INPUT_TRY_AGAIN)));
+      this, l10n_util::GetStringUTF16(IDS_SPEECH_INPUT_TRY_AGAIN));
   AddChildView(try_again_);
 
   mic_settings_ = new views::Link(

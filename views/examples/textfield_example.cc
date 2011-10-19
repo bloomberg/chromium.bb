@@ -25,11 +25,11 @@ void TextfieldExample::CreateExampleView(views::View* container) {
   name_ = new views::Textfield();
   password_ = new views::Textfield(views::Textfield::STYLE_PASSWORD);
   password_->set_text_to_display_when_empty(ASCIIToUTF16("password"));
-  show_password_ = new views::TextButton(this, L"Show password");
-  clear_all_ = new views::TextButton(this, L"Clear All");
-  append_ = new views::TextButton(this, L"Append");
-  set_ = new views::TextButton(this, L"Set");
-  set_style_ = new views::TextButton(this, L"Set Styles");
+  show_password_ = new views::TextButton(this, ASCIIToUTF16("Show password"));
+  clear_all_ = new views::TextButton(this, ASCIIToUTF16("Clear All"));
+  append_ = new views::TextButton(this, ASCIIToUTF16("Append"));
+  set_ = new views::TextButton(this, ASCIIToUTF16("Set"));
+  set_style_ = new views::TextButton(this, ASCIIToUTF16("Set Styles"));
   name_->SetController(this);
   password_->SetController(this);
 

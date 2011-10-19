@@ -52,7 +52,7 @@ class CaptchaField : public TextfieldWithMargin {
 
 class WideTextButton : public views::TextButton {
  public:
-  WideTextButton(views::ButtonListener* listener, const std::wstring& text)
+  WideTextButton(views::ButtonListener* listener, const string16& text)
       : TextButton(listener, text) {
     SetFont(font().DeriveFont(kFontSizeCorrectionDelta));
   }
@@ -197,8 +197,7 @@ void CaptchaView::Init() {
 
   if (is_standalone_) {
     layout->StartRow(0, column_view_set_id);
-    ok_button_ = new WideTextButton(
-        this, UTF16ToWide(l10n_util::GetStringUTF16(IDS_OK)));
+    ok_button_ = new WideTextButton(this, l10n_util::GetStringUTF16(IDS_OK));
     ok_button_->set_alignment(views::TextButton::ALIGN_CENTER);
     ok_button_->set_focusable(true);
     static_cast<views::TextButtonBorder*>(ok_button_->border())->

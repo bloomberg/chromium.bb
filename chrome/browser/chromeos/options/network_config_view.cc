@@ -171,9 +171,9 @@ void NetworkConfigView::ViewHierarchyChanged(
 }
 
 void NetworkConfigView::CreateAdvancedButton() {
-  advanced_button_ = new views::NativeTextButton(this, UTF16ToWide(
+  advanced_button_ = new views::NativeTextButton(this,
       l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_ADVANCED_BUTTON)));
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_ADVANCED_BUTTON));
 
   // Wrap the advanced button in a grid layout in order to left-align it.
   advanced_button_container_ = new views::View();

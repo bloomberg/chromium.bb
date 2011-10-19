@@ -299,8 +299,8 @@ class TouchSelectionControllerImpl::TouchContextMenuView
     for (size_t i = 0; i < arraysize(kContextMenuCommands); i++) {
       int command_id = kContextMenuCommands[i];
       if (controller_->IsCommandIdEnabled(command_id)) {
-        TextButton* button = new TextButton(this,
-            UTF16ToWide(l10n_util::GetStringUTF16(command_id)));
+        TextButton* button = new TextButton(
+            this, l10n_util::GetStringUTF16(command_id));
         button->set_focusable(true);
         button->set_request_focus_on_press(false);
         button->set_prefix_type(TextButton::PREFIX_HIDE);

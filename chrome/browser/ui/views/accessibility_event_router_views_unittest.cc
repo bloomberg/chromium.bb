@@ -141,13 +141,13 @@ TEST_F(AccessibilityEventRouterViewsTest, MAYBE_TestFocusNotification) {
   // Create a contents view with 3 buttons.
   views::View* contents = new views::View();
   views::NativeTextButton* button1 = new views::NativeTextButton(
-      NULL, ASCIIToWide(kButton1ASCII));
+      NULL, ASCIIToUTF16(kButton1ASCII));
   contents->AddChildView(button1);
   views::NativeTextButton* button2 = new views::NativeTextButton(
-      NULL, ASCIIToWide(kButton2ASCII));
+      NULL, ASCIIToUTF16(kButton2ASCII));
   contents->AddChildView(button2);
   views::NativeTextButton* button3 = new views::NativeTextButton(
-      NULL, ASCIIToWide(kButton3ASCII));
+      NULL, ASCIIToUTF16(kButton3ASCII));
   contents->AddChildView(button3);
 
   // Put the view in a window.

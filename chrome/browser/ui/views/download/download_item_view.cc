@@ -215,12 +215,12 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
     body_state_ = DANGEROUS;
     drop_down_state_ = DANGEROUS;
     save_button_ = new views::NativeTextButton(this,
-        UTF16ToWide(l10n_util::GetStringUTF16(
+        l10n_util::GetStringUTF16(
             ChromeDownloadManagerDelegate::IsExtensionDownload(download) ?
-                IDS_CONTINUE_EXTENSION_DOWNLOAD : IDS_CONFIRM_DOWNLOAD)));
+                IDS_CONTINUE_EXTENSION_DOWNLOAD : IDS_CONFIRM_DOWNLOAD));
     save_button_->set_ignore_minimum_size(true);
     discard_button_ = new views::NativeTextButton(
-        this, UTF16ToWide(l10n_util::GetStringUTF16(IDS_DISCARD_DOWNLOAD)));
+        this, l10n_util::GetStringUTF16(IDS_DISCARD_DOWNLOAD));
     discard_button_->set_ignore_minimum_size(true);
     AddChildView(save_button_);
     AddChildView(discard_button_);

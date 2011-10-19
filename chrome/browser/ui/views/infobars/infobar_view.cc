@@ -120,8 +120,7 @@ views::TextButton* InfoBarView::CreateTextButton(
     views::ButtonListener* listener,
     const string16& text,
     bool needs_elevation) {
-  views::TextButton* text_button =
-      new views::TextButton(listener, UTF16ToWideHack(text));
+  views::TextButton* text_button = new views::TextButton(listener, text);
   text_button->set_border(new InfoBarButtonBorder);
   text_button->set_animate_on_state_change(false);
   text_button->SetEnabledColor(SK_ColorBLACK);

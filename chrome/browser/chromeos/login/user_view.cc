@@ -118,7 +118,7 @@ class RemoveButton : public views::TextButton {
                const SkBitmap& icon,
                const string16& text,
                const gfx::Point& top_right)
-    : views::TextButton(listener, std::wstring()),
+    : views::TextButton(listener, string16()),
       icon_(icon),
       text_(text),
       top_right_(top_right),

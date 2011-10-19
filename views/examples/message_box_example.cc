@@ -23,8 +23,8 @@ void MessageBoxExample::CreateExampleView(views::View* container) {
       0,
       ASCIIToUTF16("Message Box Message"),
       ASCIIToUTF16("Default Prompt"));
-  status_ = new views::TextButton(this, L"Show Status");
-  toggle_ = new views::TextButton(this, L"Toggle Checkbox");
+  status_ = new views::TextButton(this, ASCIIToUTF16("Show Status"));
+  toggle_ = new views::TextButton(this, ASCIIToUTF16("Toggle Checkbox"));
 
   views::GridLayout* layout = new views::GridLayout(container);
   container->SetLayoutManager(layout);

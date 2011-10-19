@@ -49,7 +49,7 @@ MenuButton::MenuButton(ButtonListener* listener,
                        const string16& text,
                        ViewMenuDelegate* menu_delegate,
                        bool show_menu_marker)
-    : TextButton(listener, UTF16ToWideHack(text)),
+    : TextButton(listener, text),
       menu_visible_(false),
       menu_offset_(kDefaultMenuOffsetX, kDefaultMenuOffsetY),
       menu_delegate_(menu_delegate),

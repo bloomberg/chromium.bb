@@ -190,8 +190,8 @@ class AutocompletePopupContentsView::InstantOptInView
     // native buttons don't draw  in layered windows.
     // TODO(sky): these buttons look crap. Figure out the right
     // border/background to use.
-    views::TextButton* button =
-        new views::TextButton(this, UTF16ToWide(l10n_util::GetStringUTF16(id)));
+    views::TextButton* button = new views::TextButton(
+        this, l10n_util::GetStringUTF16(id));
     button->set_border(new OptInButtonBorder());
     button->set_tag(id);
     button->SetFont(font);

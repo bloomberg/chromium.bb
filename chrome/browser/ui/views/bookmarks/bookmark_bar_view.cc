@@ -133,7 +133,7 @@ class BookmarkButton : public views::TextButton {
 
   BookmarkButton(views::ButtonListener* listener,
                  const GURL& url,
-                 const std::wstring& title,
+                 const string16& title,
                  Profile* profile)
       : TextButton(listener, title),
         url_(url),
@@ -1247,9 +1247,8 @@ MenuButton* BookmarkBarView::CreateOverflowButton() {
 }
 
 views::TextButton* BookmarkBarView::CreateSyncErrorButton() {
-  views::TextButton* sync_error_button =
-      new views::TextButton(this, UTF16ToWide(
-          l10n_util::GetStringUTF16(IDS_SYNC_BOOKMARK_BAR_ERROR)));
+  views::TextButton* sync_error_button = new views::TextButton(
+      this, l10n_util::GetStringUTF16(IDS_SYNC_BOOKMARK_BAR_ERROR));
   sync_error_button->set_tag(kSyncErrorButtonTag);
 
   // The tooltip is the only way we have to display text explaining the error
@@ -1265,8 +1264,8 @@ views::TextButton* BookmarkBarView::CreateSyncErrorButton() {
 
 views::View* BookmarkBarView::CreateBookmarkButton(const BookmarkNode* node) {
   if (node->is_url()) {
-    BookmarkButton* button = new BookmarkButton(this, node->url(),
-        UTF16ToWide(node->GetTitle()), browser_->profile());
+    BookmarkButton* button = new BookmarkButton(
+        this, node->url(), node->GetTitle(), browser_->profile());
     ConfigureButton(node, button);
     return button;
   } else {

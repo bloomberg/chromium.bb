@@ -318,7 +318,7 @@ class VIEWS_EXPORT TextButton : public TextButtonBase {
   // The button's class name.
   static const char kViewClassName[];
 
-  TextButton(ButtonListener* listener, const std::wstring& text);
+  TextButton(ButtonListener* listener, const string16& text);
   virtual ~TextButton();
 
   void set_icon_text_spacing(int icon_text_spacing) {
@@ -404,7 +404,7 @@ class VIEWS_EXPORT NativeTextButton : public TextButton {
   static const char kViewClassName[];
 
   NativeTextButton(ButtonListener* listener);
-  NativeTextButton(ButtonListener* listener, const std::wstring& text);
+  NativeTextButton(ButtonListener* listener, const string16& text);
 
   // Overridden from TextButton:
   virtual gfx::Size GetMinimumSize() OVERRIDE;

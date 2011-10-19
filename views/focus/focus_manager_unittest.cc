@@ -549,7 +549,8 @@ void FocusTraversalTest::InitContentView() {
 
   y += label_height + gap_between_labels;
 
-  NativeTextButton* button = new NativeTextButton(NULL, L"Click me");
+  NativeTextButton* button = new NativeTextButton(NULL,
+                                                  ASCIIToUTF16("Click me"));
   button->SetBounds(label_x, y + 10, 80, 30);
   button->set_id(kFruitButtonID);
   left_container_->AddChildView(button);
@@ -644,19 +645,19 @@ void FocusTraversalTest::InitContentView() {
 
   y = 250;
   int width = 60;
-  button = new NativeTextButton(NULL, L"OK");
+  button = new NativeTextButton(NULL, ASCIIToUTF16("OK"));
   button->set_id(kOKButtonID);
   button->SetIsDefault(true);
 
   content_view_->AddChildView(button);
   button->SetBounds(150, y, width, 30);
 
-  button = new NativeTextButton(NULL, L"Cancel");
+  button = new NativeTextButton(NULL, ASCIIToUTF16("Cancel"));
   button->set_id(kCancelButtonID);
   content_view_->AddChildView(button);
   button->SetBounds(220, y, width, 30);
 
-  button = new NativeTextButton(NULL, L"Help");
+  button = new NativeTextButton(NULL, ASCIIToUTF16("Help"));
   button->set_id(kHelpButtonID);
   content_view_->AddChildView(button);
   button->SetBounds(290, y, width, 30);
@@ -706,7 +707,7 @@ void FocusTraversalTest::InitContentView() {
   text_field->SetBounds(10, 10, 100, 20);
   text_field->set_id(kSearchTextfieldID);
 
-  button = new NativeTextButton(NULL, L"Search");
+  button = new NativeTextButton(NULL, ASCIIToUTF16("Search"));
   contents->AddChildView(button);
   button->SetBounds(112, 5, 60, 30);
   button->set_id(kSearchButtonID);
@@ -729,11 +730,11 @@ void FocusTraversalTest::InitContentView() {
   contents->set_focusable(true);
   contents->set_background(Background::CreateSolidBackground(SK_ColorBLUE));
   contents->set_id(kThumbnailContainerID);
-  button = new NativeTextButton(NULL, L"Star");
+  button = new NativeTextButton(NULL, ASCIIToUTF16("Star"));
   contents->AddChildView(button);
   button->SetBounds(5, 5, 50, 30);
   button->set_id(kThumbnailStarID);
-  button = new NativeTextButton(NULL, L"SuperStar");
+  button = new NativeTextButton(NULL, ASCIIToUTF16("SuperStar"));
   contents->AddChildView(button);
   button->SetBounds(60, 5, 100, 30);
   button->set_id(kThumbnailSuperStarID);
@@ -868,7 +869,7 @@ TEST_F(FocusManagerTest, FocusChangeListener) {
 
 class TestNativeButton : public NativeTextButton {
  public:
-  explicit TestNativeButton(const std::wstring& text)
+  explicit TestNativeButton(const string16& text)
       : NativeTextButton(NULL, text) {
   };
   virtual gfx::NativeView TestGetNativeControlView() {
@@ -962,7 +963,8 @@ TEST_F(FocusManagerTest, FocusStoreRestore) {
   // Simulate an activate, otherwise the deactivate isn't going to do anything.
   SimulateActivateWindow();
 
-  NativeTextButton* button = new NativeTextButton(NULL, L"Press me");
+  NativeTextButton* button = new NativeTextButton(NULL,
+                                                  ASCIIToUTF16("Press me"));
   View* view = new View();
   view->set_focusable(true);
 
@@ -1043,7 +1045,8 @@ TEST_F(FocusManagerTest, ContainsView) {
   scoped_ptr<View> detached_view(new View());
   TabbedPane* tabbed_pane = new TabbedPane();
   TabbedPane* nested_tabbed_pane = new TabbedPane();
-  NativeTextButton* tab_button = new NativeTextButton(NULL, L"tab button");
+  NativeTextButton* tab_button = new NativeTextButton(
+      NULL, ASCIIToUTF16("tab button"));
 
   content_view_->AddChildView(view);
   content_view_->AddChildView(tabbed_pane);
@@ -1678,7 +1681,7 @@ class FocusManagerDtorTest : public FocusManagerTest {
 
   class NativeButtonDtorTracked : public NativeTextButton {
    public:
-    NativeButtonDtorTracked(const std::wstring& text,
+    NativeButtonDtorTracked(const string16& text,
                             DtorTrackVector* dtor_tracker)
         : NativeTextButton(NULL, text),
           dtor_tracker_(dtor_tracker) {
@@ -1736,8 +1739,8 @@ TEST_F(FocusManagerDtorTest, FocusManagerDestructedLast) {
   TabbedPane* tabbed_pane = new TabbedPane();
   content_view_->AddChildView(tabbed_pane);
 
-  NativeButtonDtorTracked* button = new NativeButtonDtorTracked(L"button",
-                                                                &dtor_tracker_);
+  NativeButtonDtorTracked* button = new NativeButtonDtorTracked(
+      ASCIIToUTF16("button"), &dtor_tracker_);
   tabbed_pane->AddTab(ASCIIToUTF16("Awesome tab"), button);
 
   // Close the window.

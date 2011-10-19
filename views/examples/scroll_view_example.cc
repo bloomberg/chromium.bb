@@ -18,7 +18,7 @@ class ScrollViewExample::ScrollableView : public views::View {
  public:
   ScrollableView() {
     SetColor(SK_ColorRED, SK_ColorCYAN);
-    AddChildView(new views::TextButton(NULL, L"Button"));
+    AddChildView(new views::TextButton(NULL, ASCIIToUTF16("Button")));
     AddChildView(new views::RadioButton(ASCIIToUTF16("Radio Button"), 0));
   }
 
@@ -55,11 +55,11 @@ ScrollViewExample::~ScrollViewExample() {
 }
 
 void ScrollViewExample::CreateExampleView(views::View* container) {
-  wide_ = new views::TextButton(this, L"Wide");
-  tall_ = new views::TextButton(this, L"Tall");
-  big_square_ = new views::TextButton(this, L"Big Square");
-  small_square_ = new views::TextButton(this, L"Small Square");
-  scroll_to_ = new views::TextButton(this, L"Scroll to");
+  wide_ = new views::TextButton(this, ASCIIToUTF16("Wide"));
+  tall_ = new views::TextButton(this, ASCIIToUTF16("Tall"));
+  big_square_ = new views::TextButton(this, ASCIIToUTF16("Big Square"));
+  small_square_ = new views::TextButton(this, ASCIIToUTF16("Small Square"));
+  scroll_to_ = new views::TextButton(this, ASCIIToUTF16("Scroll to"));
   scrollable_ = new ScrollableView();
   scroll_view_ = new views::ScrollView();
   scroll_view_->SetContents(scrollable_);

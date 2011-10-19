@@ -94,8 +94,7 @@ void UserImageView::Init() {
 
   splitter_ = CreateSplitter(kSplitterColor);
 
-  ok_button_ = new login::WideButton(
-      this, UTF16ToWide(l10n_util::GetStringUTF16(IDS_OK)));
+  ok_button_ = new login::WideButton(this, l10n_util::GetStringUTF16(IDS_OK));
   ok_button_->set_focusable(true);
   ok_button_->SetEnabled(false);
 

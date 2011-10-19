@@ -33,17 +33,19 @@ void InitWindowTypeLauncher() {
 }
 
 WindowTypeLauncher::WindowTypeLauncher()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(
-          create_button_(new views::NativeTextButton(this, L"Create Window"))),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          create_nonresizable_button_(new views::NativeTextButton(
-              this, L"Create Non-Resizable Window"))),
+    : ALLOW_THIS_IN_INITIALIZER_LIST(create_button_(
+          new views::NativeTextButton(this, ASCIIToUTF16("Create Window")))),
+      ALLOW_THIS_IN_INITIALIZER_LIST(create_nonresizable_button_(
+          new views::NativeTextButton(
+              this, ASCIIToUTF16("Create Non-Resizable Window")))),
       ALLOW_THIS_IN_INITIALIZER_LIST(bubble_button_(
-          new views::NativeTextButton(this, L"Create Pointy Bubble"))),
+          new views::NativeTextButton(
+              this, ASCIIToUTF16("Create Pointy Bubble")))),
       ALLOW_THIS_IN_INITIALIZER_LIST(lock_button_(
-          new views::NativeTextButton(this, L"Lock Screen"))),
+          new views::NativeTextButton(this, ASCIIToUTF16("Lock Screen")))),
       ALLOW_THIS_IN_INITIALIZER_LIST(widgets_button_(
-          new views::NativeTextButton(this, L"Show Example Widgets"))) {
+          new views::NativeTextButton(
+              this, ASCIIToUTF16("Show Example Widgets")))) {
   AddChildView(create_button_);
   AddChildView(create_nonresizable_button_);
   AddChildView(bubble_button_);

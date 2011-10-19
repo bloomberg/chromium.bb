@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/file_path.h"
+#include "base/string16.h"
 #include "views/views_export.h"
 
 class GURL;
@@ -30,7 +31,7 @@ namespace drag_utils {
 // Sets url and title on data as well as setting a suitable image for dragging.
 // The image looks like that of the bookmark buttons.
 VIEWS_EXPORT void SetURLAndDragImage(const GURL& url,
-                                     const std::wstring& title,
+                                     const string16& title,
                                      const SkBitmap& icon,
                                      OSExchangeData* data);
 

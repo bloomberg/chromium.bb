@@ -64,7 +64,7 @@ class HoverBackground : public views::Background {
 namespace chromeos {
 
 ShutdownButton::ShutdownButton()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(TextButton(this, std::wstring())) {
+    : ALLOW_THIS_IN_INITIALIZER_LIST(TextButton(this, string16())) {
 }
 
 void ShutdownButton::Init() {

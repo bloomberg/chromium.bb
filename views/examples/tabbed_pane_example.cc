@@ -20,10 +20,10 @@ TabbedPaneExample::~TabbedPaneExample() {
 void TabbedPaneExample::CreateExampleView(views::View* container) {
   tabbed_pane_ = new views::TabbedPane();
   tabbed_pane_->set_listener(this);
-  add_ = new views::TextButton(this, L"Add");
-  add_at_ = new views::TextButton(this, L"Add At 1");
-  remove_at_ = new views::TextButton(this, L"Remove At 1");
-  select_at_ = new views::TextButton(this, L"Select At 1");
+  add_ = new views::TextButton(this, ASCIIToUTF16("Add"));
+  add_at_ = new views::TextButton(this, ASCIIToUTF16("Add At 1"));
+  remove_at_ = new views::TextButton(this, ASCIIToUTF16("Remove At 1"));
+  select_at_ = new views::TextButton(this, ASCIIToUTF16("Select At 1"));
 
   views::GridLayout* layout = new views::GridLayout(container);
   container->SetLayoutManager(layout);
@@ -59,8 +59,8 @@ void TabbedPaneExample::ButtonPressed(views::Button* sender,
   if (sender == add_) {
     AddButton("Added");
   } else if (sender == add_at_) {
-    const std::wstring label = L"Added at 1";
-    tabbed_pane_->AddTabAtIndex(1, WideToUTF16Hack(label),
+    const string16 label = ASCIIToUTF16("Added at 1");
+    tabbed_pane_->AddTabAtIndex(1, label,
                                 new views::TextButton(NULL, label), true);
   } else if (sender == remove_at_) {
     if (tabbed_pane_->GetTabCount() > 1)
@@ -84,7 +84,7 @@ void TabbedPaneExample::PrintStatus() {
 }
 
 void TabbedPaneExample::AddButton(const std::string& label) {
-  views::TextButton* button = new views::TextButton(NULL, ASCIIToWide(label));
+  views::TextButton* button = new views::TextButton(NULL, ASCIIToUTF16(label));
   tabbed_pane_->AddTab(ASCIIToUTF16(label), button);
 }
 

@@ -28,16 +28,16 @@ static const int kFileDragImageMaxWidth = 200;
 static const SkColor kFileDragImageTextColor = SK_ColorBLACK;
 
 void SetURLAndDragImage(const GURL& url,
-                        const std::wstring& title,
+                        const string16& title,
                         const SkBitmap& icon,
                         OSExchangeData* data) {
   DCHECK(url.is_valid() && data);
 
-  data->SetURL(url, WideToUTF16(title));
+  data->SetURL(url, title);
 
   // Create a button to render the drag image for us.
   views::TextButton button(NULL,
-                           title.empty() ? UTF8ToWide(url.spec()) : title);
+                           title.empty() ? UTF8ToUTF16(url.spec()) : title);
   button.set_max_width(kLinkDragImageMaxWidth);
   if (icon.isNull()) {
     button.SetIcon(*ResourceBundle::GetSharedInstance().GetBitmapNamed(

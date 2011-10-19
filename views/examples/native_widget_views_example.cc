@@ -4,6 +4,7 @@
 
 #include "views/examples/native_widget_views_example.h"
 
+#include "base/utf_string_conversions.h"
 #include "ui/gfx/canvas.h"
 #include "views/controls/button/text_button.h"
 #include "views/examples/example_base.h"
@@ -23,7 +24,7 @@ class TestContentView : public views::View,
   TestContentView()
       : click_count_(0),
         ALLOW_THIS_IN_INITIALIZER_LIST(
-            button_(new views::TextButton(this, L"Click me!"))) {
+            button_(new views::TextButton(this, ASCIIToUTF16("Click me!")))) {
     AddChildView(button_);
   }
   virtual ~TestContentView() {

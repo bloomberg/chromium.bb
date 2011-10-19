@@ -72,11 +72,10 @@ BubbleExample::~BubbleExample() {}
 void BubbleExample::CreateExampleView(views::View* container) {
   container->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 1));
-  round_ = new views::TextButton(this, UTF16ToWideHack(kRoundConfig.label));
-  arrow_ = new views::TextButton(this, UTF16ToWideHack(kArrowConfig.label));
-  fade_in_ = new views::TextButton(this, UTF16ToWideHack(kFadeInConfig.label));
-  fade_out_ = new views::TextButton(this,
-                                    UTF16ToWideHack(kFadeOutConfig.label));
+  round_ = new views::TextButton(this, kRoundConfig.label);
+  arrow_ = new views::TextButton(this, kArrowConfig.label);
+  fade_in_ = new views::TextButton(this, kFadeInConfig.label);
+  fade_out_ = new views::TextButton(this, kFadeOutConfig.label);
   container->AddChildView(round_);
   container->AddChildView(arrow_);
   container->AddChildView(fade_in_);

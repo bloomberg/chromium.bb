@@ -151,7 +151,7 @@ const int kButtonMinWidth = 90;
 
 class WideButton : public views::NativeTextButton {
  public:
-  WideButton(views::ButtonListener* listener, const std::wstring& text)
+  WideButton(views::ButtonListener* listener, const string16& text)
       : NativeTextButton(listener, text) {
     CorrectNativeButtonFontSize(this);
   }

@@ -4,6 +4,7 @@
 
 #include "views/examples/widget_example.h"
 
+#include "base/utf_string_conversions.h"
 #include "views/controls/button/text_button.h"
 #include "views/layout/box_layout.h"
 #include "views/layout/layout_manager.h"
@@ -50,35 +51,36 @@ WidgetExample::~WidgetExample() {
 void WidgetExample::CreateExampleView(views::View* container) {
   container->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 2));
-  BuildButton(container, L"Create a popup widget", POPUP);
-  BuildButton(container, L"Create a transparent popup widget",
+  BuildButton(container, "Create a popup widget", POPUP);
+  BuildButton(container, "Create a transparent popup widget",
               TRANSPARENT_POPUP);
 #if defined(OS_LINUX)
   views::View* vert_container = new views::View();
   container->AddChildView(vert_container);
   vert_container->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 20));
-  BuildButton(vert_container, L"Create a child widget", CHILD);
-  BuildButton(vert_container, L"Create a transparent child widget",
+  BuildButton(vert_container, "Create a child widget", CHILD);
+  BuildButton(vert_container, "Create a transparent child widget",
               TRANSPARENT_CHILD);
 #endif
 }
 
 void WidgetExample::BuildButton(views::View* container,
-                                const std::wstring& label,
+                                const std::string& label,
                                 int tag) {
-  views::TextButton* button = new views::TextButton(this, label);
+  views::TextButton* button = new views::TextButton(this, ASCIIToUTF16(label));
   button->set_tag(tag);
   container->AddChildView(button);
 }
 
 void WidgetExample::InitWidget(views::Widget* widget, bool transparent) {
   // Add view/native buttons to close the popup widget.
-  views::TextButton* close_button = new views::TextButton(this, L"Close");
+  views::TextButton* close_button = new views::TextButton(
+      this, ASCIIToUTF16("Close"));
   close_button->set_tag(CLOSE_WIDGET);
   // TODO(oshima): support transparent native view.
-  views::NativeTextButton* native_button =
-      new views::NativeTextButton(this, L"Native Close");
+  views::NativeTextButton* native_button = new views::NativeTextButton(
+      this, ASCIIToUTF16("Native Close"));
   native_button->set_tag(CLOSE_WIDGET);
 
   views::View* button_container = new views::View();

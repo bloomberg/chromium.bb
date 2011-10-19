@@ -1223,8 +1223,8 @@ class TestDialog : public DialogDelegate, public ButtonListener {
   virtual View* GetContentsView() OVERRIDE {
     if (!contents_) {
       contents_ = new View;
-      button1_ = new NativeTextButton(this, L"Button1");
-      button2_ = new NativeTextButton(this, L"Button2");
+      button1_ = new NativeTextButton(this, ASCIIToUTF16("Button1"));
+      button2_ = new NativeTextButton(this, ASCIIToUTF16("Button2"));
       checkbox_ = new Checkbox(ASCIIToUTF16("My checkbox"));
       button_drop_ = new ButtonDropDown(this, mock_menu_model_);
       contents_->AddChildView(button1_);
@@ -1468,7 +1468,7 @@ TEST_F(ViewTest, ChangeVisibility) {
   scoped_ptr<Widget> window(CreateWidget());
   window->Init(NULL, gfx::Rect(0, 0, 500, 300));
   View* root_view = window->GetRootView();
-  NativeTextButton* native = new NativeTextButton(NULL, L"Native");
+  NativeTextButton* native = new NativeTextButton(NULL, ASCIIToUTF16("Native"));
 
   root_view->SetContentsView(native);
   native->SetVisible(true);

@@ -242,7 +242,7 @@ void NewUserView::RecreatePeculiarControls() {
   // There is no way to get native button preferred size after the button was
   // sized so delete and recreate the button on text update.
   delete sign_in_button_;
-  sign_in_button_ = new login::WideButton(this, std::wstring());
+  sign_in_button_ = new login::WideButton(this, string16());
   UpdateSignInButtonState();
 
   if (!CrosLibrary::Get()->EnsureLoaded())

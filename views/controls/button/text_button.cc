@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "base/utf_string_conversions.h"
 #include "grit/ui_resources.h"
 #include "ui/base/animation/throb_animation.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -650,9 +649,8 @@ gfx::NativeTheme::State TextButtonBase::GetForegroundThemeState(
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-TextButton::TextButton(ButtonListener* listener,
-                       const std::wstring& text)
-    : TextButtonBase(listener, WideToUTF16Hack(text)),
+TextButton::TextButton(ButtonListener* listener, const string16& text)
+    : TextButtonBase(listener, text),
       icon_placement_(ICON_ON_LEFT),
       has_hover_icon_(false),
       has_pushed_icon_(false),
@@ -793,12 +791,12 @@ const SkBitmap& TextButton::GetImageToPaint() const {
 ////////////////////////////////////////////////////////////////////////////////
 
 NativeTextButton::NativeTextButton(ButtonListener* listener)
-    : TextButton(listener, std::wstring()) {
+    : TextButton(listener, string16()) {
   Init();
 }
 
 NativeTextButton::NativeTextButton(ButtonListener* listener,
-                                   const std::wstring& text)
+                                   const string16& text)
     : TextButton(listener, text) {
   Init();
 }

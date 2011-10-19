@@ -336,8 +336,7 @@ void ContentSettingBubbleContents::InitControlLayout() {
   manage_link_->set_listener(this);
   layout->AddView(manage_link_);
 
-  close_button_ =
-      new views::NativeTextButton(this,
-          UTF16ToWide(l10n_util::GetStringUTF16(IDS_DONE)));
+  close_button_ = new views::NativeTextButton(
+      this, l10n_util::GetStringUTF16(IDS_DONE));
   layout->AddView(close_button_);
 }

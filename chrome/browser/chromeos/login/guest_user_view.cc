@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,7 @@ class UserEntryButton : public login::WideButton {
  public:
   UserEntryButton(views::ButtonListener* button_listener,
                   UserController* user_controller,
-                  const std::wstring& label)
+                  const string16& label)
       : WideButton(button_listener, label),
         user_controller_(user_controller) {}
 
@@ -67,7 +67,7 @@ void GuestUserView::RecreateFields() {
   submit_button_ = new UserEntryButton(
       this,
       user_controller_,
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ENTER_GUEST_SESSION_BUTTON)));
+      l10n_util::GetStringUTF16(IDS_ENTER_GUEST_SESSION_BUTTON));
   AddChildView(submit_button_);
   Layout();
   SchedulePaint();

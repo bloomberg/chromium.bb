@@ -281,8 +281,8 @@ class WrenchMenuView : public ScheduleAllView, public views::ButtonListener {
                                       int index,
                                       MenuButtonBackground** background,
                                       int acc_string_id) {
-    TextButton* button =
-        new TextButton(this, UTF16ToWide(l10n_util::GetStringUTF16(string_id)));
+    TextButton* button = new TextButton(this,
+                                        l10n_util::GetStringUTF16(string_id));
     button->SetAccessibleName(
         GetAccessibleNameForWrenchMenuItem(menu_model_, index, acc_string_id));
     button->set_focusable(true);

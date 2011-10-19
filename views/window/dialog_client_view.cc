@@ -70,7 +70,7 @@ class DialogButton : public NativeTextButton {
   DialogButton(ButtonListener* listener,
                Widget* owner,
                MessageBoxFlags::DialogButton type,
-               const std::wstring& title,
+               const string16& title,
                bool is_default)
       : NativeTextButton(listener, title),
         owner_(owner),
@@ -135,9 +135,10 @@ void DialogClientView::ShowDialogButtons() {
       label = l10n_util::GetStringUTF16(IDS_APP_OK);
     bool is_default_button =
         (dd->GetDefaultDialogButton() & MessageBoxFlags::DIALOGBUTTON_OK) != 0;
-    ok_button_ = new DialogButton(this, GetWidget(),
+    ok_button_ = new DialogButton(this,
+                                  GetWidget(),
                                   MessageBoxFlags::DIALOGBUTTON_OK,
-                                  UTF16ToWideHack(label),
+                                  label,
                                   is_default_button);
     ok_button_->SetGroup(kButtonGroup);
     if (is_default_button)
@@ -160,9 +161,10 @@ void DialogClientView::ShowDialogButtons() {
     bool is_default_button =
         (dd->GetDefaultDialogButton() & MessageBoxFlags::DIALOGBUTTON_CANCEL)
         != 0;
-    cancel_button_ = new DialogButton(this, GetWidget(),
+    cancel_button_ = new DialogButton(this,
+                                      GetWidget(),
                                       MessageBoxFlags::DIALOGBUTTON_CANCEL,
-                                      UTF16ToWideHack(label),
+                                      label,
                                       is_default_button);
     cancel_button_->SetGroup(kButtonGroup);
     cancel_button_->AddAccelerator(Accelerator(ui::VKEY_ESCAPE,
