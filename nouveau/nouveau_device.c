@@ -46,8 +46,10 @@ nouveau_device_open_existing(struct nouveau_device **dev, int close,
 	nvdev->needs_close = close;
 
 	ver = drmGetVersion(fd);
-	if (!ver)
+	if (!ver) {
+		nouveau_device_close((void *)&nvdev);
 		return -EINVAL;
+	}
 
 	if ((ver->version_major == 0 && ver->version_patchlevel != 16) ||
 	     ver->version_major > 1) {
