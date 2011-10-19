@@ -311,10 +311,10 @@ bool DirectoryBackingStore::BeginLoad() {
 #else
   UMA_HISTOGRAM_COUNTS_100("Sync.DirectoryOpenFailedNotWinMac", bucket);
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  UMA_HISTOGRAM_COUNTS_100("Sync.DirectoryOpenFailedLinux", bucket);
-#elif defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
   UMA_HISTOGRAM_COUNTS_100("Sync.DirectoryOpenFailedCros", bucket);
+#elif defined(OS_LINUX)
+  UMA_HISTOGRAM_COUNTS_100("Sync.DirectoryOpenFailedLinux", bucket);
 #else
   UMA_HISTOGRAM_COUNTS_100("Sync.DirectoryOpenFailedOther", bucket);
 #endif  // OS_LINUX && !OS_CHROMEOS

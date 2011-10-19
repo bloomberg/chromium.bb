@@ -120,7 +120,7 @@
 #include "chrome/browser/password_manager/password_store_mac.h"
 #elif defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/enterprise_extension_observer.h"
-#elif defined(OS_POSIX) && !defined(OS_CHROMEOS)
+#elif defined(OS_POSIX)
 #include "base/nix/xdg_util.h"
 #if defined(USE_GNOME_KEYRING)
 #include "chrome/browser/password_manager/native_backend_gnome_x.h"

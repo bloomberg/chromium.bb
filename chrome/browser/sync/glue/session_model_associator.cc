@@ -142,14 +142,14 @@ bool SessionModelAssociator::AssociateWindows(bool reload_tabs) {
       synced_session_tracker_.GetSession(local_tag);
   current_session->modified_time = base::Time::Now();
   header_s->set_client_name(current_session_name_);
-#if defined(OS_LINUX)
+#if defined(OS_CHROMEOS)
+  header_s->set_device_type(sync_pb::SessionHeader_DeviceType_TYPE_CROS);
+#elif defined(OS_LINUX)
   header_s->set_device_type(sync_pb::SessionHeader_DeviceType_TYPE_LINUX);
 #elif defined(OS_MACOSX)
   header_s->set_device_type(sync_pb::SessionHeader_DeviceType_TYPE_MAC);
 #elif defined(OS_WIN)
   header_s->set_device_type(sync_pb::SessionHeader_DeviceType_TYPE_WIN);
-#elif defined(OS_CHROMEOS)
-  header_s->set_device_type(sync_pb::SessionHeader_DeviceType_TYPE_CROS);
 #else
   header_s->set_device_type(sync_pb::SessionHeader_DeviceType_TYPE_OTHER);
 #endif
