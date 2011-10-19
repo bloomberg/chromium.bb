@@ -1531,7 +1531,7 @@ const WebKit::WebNode& PrintWebViewHelper::PrintPreviewContext::node() const {
 }
 
 int PrintWebViewHelper::PrintPreviewContext::total_page_count() const {
-  DCHECK(IsRendering());
+  DCHECK(state_ != UNINITIALIZED);
   return total_page_count_;
 }
 
