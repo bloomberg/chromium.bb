@@ -77,14 +77,26 @@ void XmppSignalStrategy::SetListener(Listener* listener) {
 }
 
 void XmppSignalStrategy::SendStanza(buzz::XmlElement* stanza) {
+  if (!xmpp_client_) {
+    LOG(INFO) << "Dropping signalling message because XMPP "
+        "connection has been terminated.";
+    return;
+  }
   xmpp_client_->SendStanza(stanza);
 }
 
 std::string XmppSignalStrategy::GetNextId() {
+  if (!xmpp_client_) {
+    // If the connection has been terminated then it doesn't matter
+    // what Id we return.
+    return "";
+  }
   return xmpp_client_->NextId();
 }
 
 IqRequest* XmppSignalStrategy::CreateIqRequest() {
+  // TODO(sergeyu): Handle the case when |xmpp_client_| is NULL.
+  CHECK(xmpp_client_);
   return new XmppIqRequest(thread_->message_loop(), xmpp_client_);
 }
 
