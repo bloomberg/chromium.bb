@@ -420,6 +420,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableVideoTrack)
   },
+  {
+    "extension-alerts",
+    IDS_FLAGS_ENABLE_EXTENSION_ALERTS_NAME,
+    IDS_FLAGS_ENABLE_EXTENSION_ALERTS_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableExtensionAlerts)
+  },
 };
 
 const Experiment* experiments = kExperiments;

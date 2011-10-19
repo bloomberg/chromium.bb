@@ -435,6 +435,9 @@ const char kEnableCrxlessWebApps[]          = "enable-crxless-web-apps";
 const char kEnableExperimentalExtensionApis[] =
     "enable-experimental-extension-apis";
 
+// Enables extension alerts, which are currently in development.
+const char kEnableExtensionAlerts[] = "enable-extension-alerts";
+
 // Enable experimental timeline API.
 const char kEnableExtensionTimelineApi[]    = "enable-extension-timeline-api";
 
