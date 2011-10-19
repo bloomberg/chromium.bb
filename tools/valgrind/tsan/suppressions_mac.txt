@@ -236,3 +236,9 @@
   fun:MIO::DAL::System::AtExitHandler
   fun:MIO::DAL::AtExit::AtExitHandler
 }
+{
+  bug_100772d
+  ThreadSanitizer:Race
+  fun:DVSignalSync
+  fun:DVDeviceTerminate
+}

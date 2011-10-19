@@ -4815,6 +4815,33 @@
    fun:_ZN12_GLOBAL__N_119MakeContextDelegateI16CrxUpdateServiceNS1_13UpdateContextEEEPN10URLFetcher8DelegateEPT_PT0_
    fun:_ZN16CrxUpdateService19ProcessPendingItemsEv
 }
+{
+   bug_100914a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN11webkit_glue18BufferedDataSource20CreateResourceLoaderExx
+   fun:_ZN11webkit_glue18BufferedDataSource24HttpInitialStartCallbackEi
+}
+{
+   bug_100914b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN11webkit_glue18BufferedDataSource20CreateResourceLoaderExx
+   fun:_ZN11webkit_glue18BufferedDataSource14InitializeTaskEv
+   ...
+   fun:_ZNK4base8CallbackIFvvEE3RunEv
+}
+{
+   bug_100916
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN6WebKit19WebWorkerClientImpl24createWorkerContextProxyEPN7WebCore6WorkerE
+   fun:_ZN7WebCore18WorkerContextProxy6createEPNS_6WorkerE
+   fun:_ZN7WebCore6WorkerC1EPNS_22ScriptExecutionContextE
+   fun:_ZN7WebCore6Worker6createEPNS_22ScriptExecutionContextERKN3WTF6StringERi
+   fun:_ZN7WebCore8V8Worker19constructorCallbackERKN2v89ArgumentsE
+   fun:_ZN2v88internalL19HandleApiCallHelperILb1EEEPNS0_11MaybeObjectENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
