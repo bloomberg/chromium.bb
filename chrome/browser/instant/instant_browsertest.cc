@@ -26,6 +26,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "chrome/test/test_navigation_observer.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -165,7 +166,11 @@ class InstantTest : public InProcessBrowserTest {
     ASSERT_TRUE(tab);
     preview_ = tab->tab_contents();
     ASSERT_TRUE(preview_);
-    ui_test_utils::WaitForNavigation(&preview_->controller());
+    // TODO(gbillock): This should really be moved into calling code. It is
+    // still race-prone here.
+    TestNavigationObserver observer(
+        Source<NavigationController>(&preview_->controller()), NULL, 1);
+    observer.WaitForObservation();
   }
 
   // Wait for instant to load and ensure it is in the state we expect.

@@ -263,10 +263,6 @@ void WaitForNavigations(NavigationController* controller,
   observer.WaitForObservation();
 }
 
-void WaitForNavigation(NavigationController* controller) {
-  WaitForNavigations(controller, 1);
-}
-
 void WaitForNewTab(Browser* browser) {
   TestNotificationObserver observer;
   RegisterAndWait(&observer, content::NOTIFICATION_TAB_ADDED,
