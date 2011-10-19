@@ -24,6 +24,7 @@
 #include "base/values.h"
 #include "crypto/nss_util.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/cros/cert_library.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
@@ -782,6 +783,9 @@ void UserManager::NotifyOnLogin() {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kLoadOpencryptoki)) {
     crypto::EnableTPMTokenForNSS(new RealTPMTokenInfoDelegate());
+    CertLibrary* cert_library;
+    cert_library = chromeos::CrosLibrary::Get()->GetCertLibrary();
+    cert_library->RequestCertificates();
   }
 
   // Schedules current user ownership check on file thread.
