@@ -863,6 +863,7 @@ string16 TaskManagerChildProcessResource::GetLocalizedTitle() const {
     case ChildProcessInfo::RENDER_PROCESS:
     case ChildProcessInfo::ZYGOTE_PROCESS:
     case ChildProcessInfo::SANDBOX_HELPER_PROCESS:
+    case ChildProcessInfo::MAX_PROCESS:
       NOTREACHED();
       break;
 

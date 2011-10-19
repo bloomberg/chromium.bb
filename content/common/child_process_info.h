@@ -31,7 +31,8 @@ class CONTENT_EXPORT ChildProcessInfo {
     NACL_BROKER_PROCESS,
     GPU_PROCESS,
     PPAPI_PLUGIN_PROCESS,
-    PPAPI_BROKER_PROCESS
+    PPAPI_BROKER_PROCESS,
+    MAX_PROCESS
   };
 
   // NOTE: Do not remove or reorder the elements in this enum, and only add new

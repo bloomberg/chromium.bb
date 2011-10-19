@@ -179,6 +179,8 @@ void BrowserChildProcessHost::OnChildDisconnected() {
     default:
       break;
   }
+  UMA_HISTOGRAM_ENUMERATION("ChildProcess.Disconnected",
+                            this->type(), MAX_PROCESS);
   // Notify in the main loop of the disconnection.
   Notify(content::NOTIFICATION_CHILD_PROCESS_HOST_DISCONNECTED);
   OnChildDied();
