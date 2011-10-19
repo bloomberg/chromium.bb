@@ -7,17 +7,22 @@
 #pragma once
 
 #include "base/compiler_specific.h"
+#include "ui/aura/aura_export.h"
+#include "ui/gfx/insets.h"
 #include "ui/gfx/screen.h"
 
 namespace aura {
-namespace internal {
 
 // Aura implementation of gfx::Screen. Implemented here to avoid circular
 // dependencies.
-class ScreenAura : public gfx::Screen {
+class AURA_EXPORT ScreenAura : public gfx::Screen {
  public:
   ScreenAura();
   virtual ~ScreenAura();
+
+  void set_work_area_insets(const gfx::Insets& insets) {
+    work_area_insets_ = insets;
+  }
 
  protected:
   virtual gfx::Point GetCursorScreenPointImpl() OVERRIDE;
@@ -31,11 +36,18 @@ class ScreenAura : public gfx::Screen {
       const gfx::Point& point) OVERRIDE;
   virtual gfx::NativeWindow GetWindowAtCursorScreenPointImpl() OVERRIDE;
 
-private:
+ private:
+  // We currently support only one monitor. These two methods return the bounds
+  // and work area.
+  gfx::Rect GetBounds();
+  gfx::Rect GetWorkAreaBounds();
+
+  // Insets for the work area.
+  gfx::Insets work_area_insets_;
+
   DISALLOW_COPY_AND_ASSIGN(ScreenAura);
 };
 
-}  // namespace internal
 }  // namespace aura
 
 #endif  // UI_AURA_SCREEN_AURA_H_

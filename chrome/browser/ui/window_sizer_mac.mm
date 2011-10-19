@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,14 +45,6 @@ class DefaultMonitorInfoProvider : public WindowSizer::MonitorInfoProvider {
       const gfx::Rect& match_rect) const {
     NSScreen* match_screen = GetMatchingScreen(match_rect);
     return ConvertCoordinateSystem([match_screen visibleFrame]);
-  }
-
-  virtual gfx::Point GetBoundsOffsetMatching(
-      const gfx::Rect& match_rect) const {
-    NSScreen* match_screen = GetMatchingScreen(match_rect);
-    gfx::Rect bounds = ConvertCoordinateSystem([match_screen frame]);
-    gfx::Rect work_area = ConvertCoordinateSystem([match_screen visibleFrame]);
-    return gfx::Point(work_area.x() - bounds.x(), work_area.y() - bounds.y());
   }
 
   virtual void UpdateWorkAreas();

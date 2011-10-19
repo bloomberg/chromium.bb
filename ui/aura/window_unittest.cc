@@ -19,9 +19,10 @@
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_observer.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/compositor/layer.h"
-#include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/gfx/screen.h"
 
 namespace aura {
 namespace test {
@@ -842,7 +843,8 @@ TEST_F(WindowTest, Fullscreen) {
 
 TEST_F(WindowTest, Maximized) {
   gfx::Rect original_bounds = gfx::Rect(100, 100, 100, 100);
-  gfx::Rect desktop_bounds(Desktop::GetInstance()->GetHostSize());
+  gfx::Rect desktop_bounds(
+      gfx::Screen::GetMonitorWorkAreaNearestPoint(gfx::Point()));
   scoped_ptr<Window> w(CreateTestWindowWithDelegate(
       NULL, 1, original_bounds, NULL));
   EXPECT_EQ(original_bounds, w->bounds());
@@ -851,7 +853,6 @@ TEST_F(WindowTest, Maximized) {
   w->Maximize();
   EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED, w->show_state());
   gfx::Rect max_bounds(desktop_bounds);
-  max_bounds.Inset(10, 10, 10, 10);
   EXPECT_EQ(max_bounds, w->bounds());
   w->Restore();
   EXPECT_EQ(ui::SHOW_STATE_NORMAL, w->show_state());

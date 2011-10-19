@@ -4,47 +4,38 @@
 
 #include "chrome/browser/ui/window_sizer.h"
 
-#include "ui/aura/desktop.h"
-#include "ui/aura/window.h"
+#include "base/compiler_specific.h"
 #include "ui/gfx/screen.h"
 
-// TODO(oshima): Get This from WindowManager
+// This doesn't matter for aura, which has different tiling.
+// static
 const int WindowSizer::kWindowTilePixels = 10;
 
-// An implementation of WindowSizer::MonitorInfoProvider that gets the actual
-// monitor information from X via GDK.
+// An implementation of WindowSizer::MonitorInfoProvider. This assumes a single
+// monitor, which is currently the case.
 class DefaultMonitorInfoProvider : public WindowSizer::MonitorInfoProvider {
  public:
-  DefaultMonitorInfoProvider() { }
+  DefaultMonitorInfoProvider() {}
 
-  virtual gfx::Rect GetPrimaryMonitorWorkArea() const {
-    return gfx::Screen::GetMonitorWorkAreaNearestPoint(
-        gfx::Point(0, 0));
+  virtual gfx::Rect GetPrimaryMonitorWorkArea() const OVERRIDE {
+    return gfx::Screen::GetMonitorWorkAreaNearestPoint(gfx::Point());
   }
 
-  virtual gfx::Rect GetPrimaryMonitorBounds() const {
-    aura::Desktop* desktop = aura::Desktop::GetInstance();
-    return gfx::Rect(desktop->GetHostSize());
+  virtual gfx::Rect GetPrimaryMonitorBounds() const OVERRIDE {
+    return gfx::Screen::GetMonitorAreaNearestPoint(gfx::Point());
   }
 
   virtual gfx::Rect GetMonitorWorkAreaMatching(
-      const gfx::Rect& match_rect) const {
-    return gfx::Screen::GetMonitorWorkAreaNearestPoint(
-        match_rect.origin());
+      const gfx::Rect& match_rect) const OVERRIDE {
+    return gfx::Screen::GetMonitorWorkAreaNearestPoint(gfx::Point());
   }
 
-  virtual gfx::Point GetBoundsOffsetMatching(
-      const gfx::Rect& match_rect) const {
-    return GetMonitorWorkAreaMatching(match_rect).origin();
-  }
-
-  void UpdateWorkAreas() {
+  virtual void UpdateWorkAreas() OVERRIDE {
     work_areas_.clear();
     work_areas_.push_back(GetPrimaryMonitorBounds());
   }
 
  private:
-
   DISALLOW_COPY_AND_ASSIGN(DefaultMonitorInfoProvider);
 };
 
@@ -56,9 +47,7 @@ WindowSizer::CreateDefaultMonitorInfoProvider() {
 
 // static
 gfx::Point WindowSizer::GetDefaultPopupOrigin(const gfx::Size& size) {
-  // TODO(oshima):This is used to control panel/popups, and this may
-  // not be needed on aura environment as they must be controlled by
-  // WM.
-  NOTIMPLEMENTED();
+  // TODO(oshima):This is used to control panel/popups, and this may not be
+  // needed on aura environment as they must be controlled by WM.
   return gfx::Point();
 }

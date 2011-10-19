@@ -31,6 +31,7 @@ class DesktopHost;
 class DesktopObserver;
 class KeyEvent;
 class MouseEvent;
+class ScreenAura;
 class TouchEvent;
 
 // Desktop is responsible for hosting a set of windows.
@@ -57,6 +58,7 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate,
   Window* active_window() { return active_window_; }
   Window* mouse_pressed_handler() { return mouse_pressed_handler_; }
   Window* capture_window() { return capture_window_; }
+  ScreenAura* screen() { return screen_; }
 
   void SetDelegate(DesktopDelegate* delegate);
 
@@ -114,6 +116,8 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate,
   void AddObserver(DesktopObserver* observer);
   void RemoveObserver(DesktopObserver* observer);
 
+  // Capture -------------------------------------------------------------------
+
   // Sets capture to the specified window.
   void SetCapture(Window* window);
 
@@ -165,6 +169,8 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate,
   bool in_destructor_;
 
   ObserverList<DesktopObserver> observers_;
+
+  ScreenAura* screen_;
 
   // The capture window. When not-null, this window receives all the mouse and
   // touch events.

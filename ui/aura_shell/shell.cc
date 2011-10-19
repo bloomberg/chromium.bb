@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "ui/aura/desktop.h"
+#include "ui/aura/screen_aura.h"
 #include "ui/aura/toplevel_window_container.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_types.h"
@@ -158,6 +159,9 @@ void Shell::Init() {
   launcher_.reset(new Launcher(toplevel_container));
   desktop_layout->set_launcher_widget(launcher_->widget());
   desktop_layout->set_status_area_widget(internal::CreateStatusArea());
+  aura::Desktop::GetInstance()->screen()->set_work_area_insets(
+      gfx::Insets(0, 0, launcher_->widget()->GetWindowScreenBounds().height(),
+                  0));
 }
 
 void Shell::SetDelegate(ShellDelegate* delegate) {

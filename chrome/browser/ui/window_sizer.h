@@ -56,11 +56,6 @@ class WindowSizer {
     virtual gfx::Rect GetMonitorWorkAreaMatching(
         const gfx::Rect& match_rect) const = 0;
 
-    // Returns the delta between the work area and the monitor bounds for the
-    // monitor that most closely intersects the provided bounds.
-    virtual gfx::Point GetBoundsOffsetMatching(
-        const gfx::Rect& match_rect) const = 0;
-
     // Ensures number and coordinates of work areas are up-to-date.  You must
     // call this before calling either of the below functions, as work areas can
     // change while the program is running.

@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/window_sizer.h"
+
 #include <vector>
 
-#include "chrome/browser/ui/window_sizer.h"
+#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -53,28 +55,20 @@ class TestMonitorInfoProvider : public WindowSizer::MonitorInfoProvider {
   }
 
   // Overridden from WindowSizer::MonitorInfoProvider:
-  virtual gfx::Rect GetPrimaryMonitorWorkArea() const {
+  virtual gfx::Rect GetPrimaryMonitorWorkArea() const OVERRIDE {
     return work_areas_[0];
   }
 
-  virtual gfx::Rect GetPrimaryMonitorBounds() const {
+  virtual gfx::Rect GetPrimaryMonitorBounds() const OVERRIDE {
     return monitor_bounds_[0];
   }
 
   virtual gfx::Rect GetMonitorWorkAreaMatching(
-      const gfx::Rect& match_rect) const {
+      const gfx::Rect& match_rect) const OVERRIDE {
     return work_areas_[GetMonitorIndexMatchingBounds(match_rect)];
   }
 
-  virtual gfx::Point GetBoundsOffsetMatching(
-      const gfx::Rect& match_rect) const {
-    int monitor_index = GetMonitorIndexMatchingBounds(match_rect);
-    gfx::Rect bounds = monitor_bounds_[monitor_index];
-    const gfx::Rect& work_area = work_areas_[monitor_index];
-    return gfx::Point(work_area.x() - bounds.x(), work_area.y() - bounds.y());
-  }
-
-  virtual void UpdateWorkAreas() { }
+  virtual void UpdateWorkAreas() OVERRIDE {}
 
  private:
   size_t GetMonitorIndexMatchingBounds(const gfx::Rect& match_rect) const {

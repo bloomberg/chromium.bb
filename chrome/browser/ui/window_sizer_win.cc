@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,15 +35,6 @@ class DefaultMonitorInfoProvider : public WindowSizer::MonitorInfoProvider {
     MONITORINFO monitor_info = GetMonitorInfoForMonitor(MonitorFromRect(
         &other_bounds_rect, MONITOR_DEFAULTTONEAREST));
     return gfx::Rect(monitor_info.rcWork);
-  }
-
-  virtual gfx::Point GetBoundsOffsetMatching(
-      const gfx::Rect& match_rect) const {
-    RECT other_bounds_rect = match_rect.ToRECT();
-    MONITORINFO monitor_info = GetMonitorInfoForMonitor(MonitorFromRect(
-        &other_bounds_rect, MONITOR_DEFAULTTONEAREST));
-    return gfx::Point(monitor_info.rcWork.left - monitor_info.rcMonitor.left,
-                      monitor_info.rcWork.top - monitor_info.rcMonitor.top);
   }
 
   void UpdateWorkAreas() {

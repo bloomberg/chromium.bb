@@ -33,12 +33,12 @@ Desktop::Desktop()
       ALLOW_THIS_IN_INITIALIZER_LIST(schedule_paint_factory_(this)),
       active_window_(NULL),
       in_destructor_(false),
+      screen_(NULL),
       capture_window_(NULL),
       mouse_pressed_handler_(NULL),
       mouse_moved_handler_(NULL),
       focused_window_(NULL),
       touch_event_handler_(NULL) {
-
   set_name("RootWindow");
   if (compositor_factory_) {
     compositor_ = (*Desktop::compositor_factory())();
@@ -46,7 +46,8 @@ Desktop::Desktop()
     compositor_ = ui::Compositor::Create(this, host_->GetAcceleratedWidget(),
                                          host_->GetSize());
   }
-  gfx::Screen::SetInstance(new internal::ScreenAura);
+  screen_ = new ScreenAura;
+  gfx::Screen::SetInstance(screen_);
   host_->SetDesktop(this);
   DCHECK(compositor_.get());
   last_mouse_location_ = host_->QueryMouseLocation();
