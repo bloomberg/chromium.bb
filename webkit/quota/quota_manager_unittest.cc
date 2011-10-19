@@ -186,6 +186,15 @@ class QuotaManagerTest : public testing::Test {
                    weak_factory_.GetWeakPtr()));
   }
 
+  void DeleteHostData(const std::string& host,
+                      StorageType type) {
+    quota_status_ = kQuotaStatusUnknown;
+    quota_manager_->DeleteHostData(
+        host, type,
+        base::Bind(&QuotaManagerTest::StatusCallback,
+                   weak_factory_.GetWeakPtr()));
+  }
+
   void GetAvailableSpace() {
     quota_status_ = kQuotaStatusUnknown;
     available_space_ = -1;
@@ -1289,6 +1298,142 @@ TEST_F(QuotaManagerTest, GetUsageAndQuotaForEviction) {
   EXPECT_EQ(4000, unlimited_usage());
   EXPECT_EQ(10000000, quota());
   EXPECT_LE(0, available_space());
+}
+
+TEST_F(QuotaManagerTest, DeleteHostDataSimple) {
+  static const MockOriginData kData[] = {
+    { "http://foo.com/",   kTemp,     1 },
+  };
+  MockStorageClient* client = CreateClient(kData, ARRAYSIZE_UNSAFE(kData));
+  RegisterClient(client);
+
+  GetGlobalUsage(kTemp);
+  MessageLoop::current()->RunAllPending();
+  const int64 predelete_global_tmp = usage();
+
+  GetHostUsage("foo.com", kTemp);
+  MessageLoop::current()->RunAllPending();
+  int64 predelete_host_tmp = usage();
+
+  GetHostUsage("foo.com", kPerm);
+  MessageLoop::current()->RunAllPending();
+  int64 predelete_host_pers = usage();
+
+  DeleteHostData("", kTemp);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(kQuotaStatusOk, status());
+
+  GetGlobalUsage(kTemp);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(predelete_global_tmp, usage());
+
+  GetHostUsage("foo.com", kTemp);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(predelete_host_tmp, usage());
+
+  GetHostUsage("foo.com", kPerm);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(predelete_host_pers, usage());
+
+  DeleteHostData("foo.com", kTemp);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(kQuotaStatusOk, status());
+
+  GetGlobalUsage(kTemp);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(predelete_global_tmp - 1, usage());
+
+  GetHostUsage("foo.com", kTemp);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(predelete_host_tmp - 1, usage());
+
+  GetHostUsage("foo.com", kPerm);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(predelete_host_pers, usage());
+}
+
+TEST_F(QuotaManagerTest, DeleteHostDataMultiple) {
+  static const MockOriginData kData1[] = {
+    { "http://foo.com/",   kTemp,     1 },
+    { "http://foo.com:1/", kTemp,    20 },
+    { "http://foo.com/",   kPerm,   300 },
+    { "http://bar.com/",   kTemp,  4000 },
+  };
+  static const MockOriginData kData2[] = {
+    { "http://foo.com/",   kTemp, 50000 },
+    { "http://foo.com:1/", kTemp,  6000 },
+    { "http://foo.com/",   kPerm,   700 },
+    { "https://foo.com/",  kTemp,    80 },
+    { "http://bar.com/",   kTemp,     9 },
+  };
+  MockStorageClient* client1 = CreateClient(kData1, ARRAYSIZE_UNSAFE(kData1));
+  MockStorageClient* client2 = CreateClient(kData2, ARRAYSIZE_UNSAFE(kData2));
+  RegisterClient(client1);
+  RegisterClient(client2);
+
+  GetGlobalUsage(kTemp);
+  MessageLoop::current()->RunAllPending();
+  const int64 predelete_global_tmp = usage();
+
+  GetHostUsage("foo.com", kTemp);
+  MessageLoop::current()->RunAllPending();
+  const int64 predelete_foo_tmp = usage();
+
+  GetHostUsage("bar.com", kTemp);
+  MessageLoop::current()->RunAllPending();
+  const int64 predelete_bar_tmp = usage();
+
+  GetHostUsage("foo.com", kPerm);
+  MessageLoop::current()->RunAllPending();
+  const int64 predelete_foo_pers = usage();
+
+  GetHostUsage("bar.com", kPerm);
+  MessageLoop::current()->RunAllPending();
+  const int64 predelete_bar_pers = usage();
+
+  reset_status_callback_count();
+  DeleteHostData("foo.com", kTemp);
+  DeleteHostData("bar.com", kTemp);
+  DeleteHostData("foo.com", kTemp);
+  MessageLoop::current()->RunAllPending();
+
+  EXPECT_EQ(3, status_callback_count());
+
+  DumpOriginInfoTable();
+  MessageLoop::current()->RunAllPending();
+
+  typedef OriginInfoTableEntries::const_iterator iterator;
+  for (iterator itr(origin_info_entries().begin()),
+                end(origin_info_entries().end());
+       itr != end; ++itr) {
+    if (itr->type == kTemp) {
+      EXPECT_NE(std::string("http://foo.com/"), itr->origin.spec());
+      EXPECT_NE(std::string("http://foo.com:1/"), itr->origin.spec());
+      EXPECT_NE(std::string("https://foo.com/"), itr->origin.spec());
+      EXPECT_NE(std::string("http://bar.com/"), itr->origin.spec());
+    }
+  }
+
+  GetGlobalUsage(kTemp);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(
+      predelete_global_tmp - (1 + 20 + 4000 + 50000 + 6000 + 80 + 9), usage());
+
+  GetHostUsage("foo.com", kTemp);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(predelete_foo_tmp - (1 + 20 + 50000 + 6000 + 80), usage());
+
+  GetHostUsage("bar.com", kTemp);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(predelete_bar_tmp - (4000 + 9), usage());
+
+  GetHostUsage("foo.com", kPerm);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(predelete_foo_pers, usage());
+
+  GetHostUsage("bar.com", kPerm);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(predelete_bar_pers, usage());
 }
 
 // Single-run DeleteOriginData cases must be well covered by

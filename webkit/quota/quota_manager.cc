@@ -522,6 +522,101 @@ class QuotaManager::OriginDataDeleter : public QuotaTask {
   DISALLOW_COPY_AND_ASSIGN(OriginDataDeleter);
 };
 
+class QuotaManager::HostDataDeleter : public QuotaTask {
+ public:
+  HostDataDeleter(QuotaManager* manager,
+                  const std::string& host,
+                  StorageType type,
+                  const StatusCallback& callback)
+      : QuotaTask(manager),
+        host_(host),
+        type_(type),
+        error_count_(0),
+        remaining_clients_(-1),
+        remaining_deleters_(-1),
+        callback_(callback),
+        weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
+
+ protected:
+  virtual void Run() OVERRIDE {
+    error_count_ = 0;
+    remaining_clients_ = manager()->clients_.size();
+    for (QuotaClientList::iterator iter = manager()->clients_.begin();
+         iter != manager()->clients_.end(); ++iter) {
+      (*iter)->GetOriginsForHost(
+          type_, host_,
+          base::Bind(&HostDataDeleter::DidGetOriginsForHost,
+                     weak_factory_.GetWeakPtr()));
+    }
+  }
+
+  virtual void Completed() OVERRIDE {
+    if (error_count_ == 0) {
+      callback_.Run(kQuotaStatusOk);
+    } else {
+      callback_.Run(kQuotaErrorInvalidModification);
+    }
+    DeleteSoon();
+  }
+
+  virtual void Aborted() OVERRIDE {
+    callback_.Run(kQuotaErrorAbort);
+    DeleteSoon();
+  }
+
+  void DidGetOriginsForHost(const std::set<GURL>& origins, StorageType type) {
+    DCHECK_GT(remaining_clients_, 0);
+
+    origins_.insert(origins.begin(), origins.end());
+
+    if (--remaining_clients_ == 0) {
+      if (!origins_.empty())
+        ScheduleOriginsDeletion();
+      else
+        CallCompleted();
+    }
+  }
+
+  void ScheduleOriginsDeletion() {
+    remaining_deleters_ = origins_.size();
+    for (std::set<GURL>::const_iterator p = origins_.begin();
+         p != origins_.end();
+         ++p) {
+      OriginDataDeleter* deleter =
+          new OriginDataDeleter(
+              manager(), *p, type_,
+              base::Bind(&HostDataDeleter::DidDeleteOriginData,
+                         weak_factory_.GetWeakPtr()));
+      deleter->Start();
+    }
+  }
+
+  void DidDeleteOriginData(QuotaStatusCode status) {
+    DCHECK_GT(remaining_deleters_, 0);
+
+    if (status != kQuotaStatusOk)
+      ++error_count_;
+
+    if (--remaining_deleters_ == 0)
+      CallCompleted();
+  }
+
+  QuotaManager* manager() const {
+    return static_cast<QuotaManager*>(observer());
+  }
+
+  std::string host_;
+  StorageType type_;
+  std::set<GURL> origins_;
+  int error_count_;
+  int remaining_clients_;
+  int remaining_deleters_;
+  StatusCallback callback_;
+
+  base::WeakPtrFactory<HostDataDeleter> weak_factory_;
+  DISALLOW_COPY_AND_ASSIGN(HostDataDeleter);
+};
+
 class QuotaManager::DatabaseTaskBase : public QuotaThreadTask {
  public:
   explicit DatabaseTaskBase(QuotaManager* manager)
@@ -1230,6 +1325,22 @@ void QuotaManager::DeleteOriginData(
 
   OriginDataDeleter* deleter =
       new OriginDataDeleter(this, origin, type, callback);
+  deleter->Start();
+}
+
+void QuotaManager::DeleteHostData(const std::string& host,
+                                  StorageType type,
+                                  const StatusCallback& callback) {
+
+  LazyInitialize();
+
+  if (host.empty() || clients_.empty()) {
+    callback.Run(kQuotaStatusOk);
+    return;
+  }
+
+  HostDataDeleter* deleter =
+      new HostDataDeleter(this, host, type, callback);
   deleter->Start();
 }
 

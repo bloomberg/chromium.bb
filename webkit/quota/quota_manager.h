@@ -152,6 +152,9 @@ class QuotaManager : public QuotaTaskObserver,
   virtual void DeleteOriginData(const GURL& origin,
                                 StorageType type,
                                 const StatusCallback& callback);
+  void DeleteHostData(const std::string& host,
+                      StorageType type,
+                      const StatusCallback& callback);
 
   // Called by UI and internal modules.
   void GetAvailableSpace(const AvailableSpaceCallback& callback);
@@ -213,6 +216,7 @@ class QuotaManager : public QuotaTaskObserver,
   class UsageAndQuotaDispatcherTaskForTemporaryGlobal;
 
   class OriginDataDeleter;
+  class HostDataDeleter;
 
   class AvailableSpaceQueryTask;
   class DumpQuotaTableTask;
