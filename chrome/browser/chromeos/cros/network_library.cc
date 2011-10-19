@@ -1056,10 +1056,16 @@ CellularNetwork::CellularNetwork(const std::string& service_path)
 CellularNetwork::~CellularNetwork() {
 }
 
-bool CellularNetwork::StartActivation() const {
+bool CellularNetwork::StartActivation() {
   if (!EnsureCrosLoaded())
     return false;
-  return chromeos::ActivateCellularModem(service_path().c_str(), NULL);
+  if (!chromeos::ActivateCellularModem(service_path().c_str(), NULL))
+    return false;
+  // Don't wait for flimflam to tell us that we are really activating since
+  // other notifications in the message loop might cause us to think that
+  // the process hasn't started yet.
+  activation_state_ = ACTIVATION_STATE_ACTIVATING;
+  return true;
 }
 
 void CellularNetwork::RefreshDataPlansIfNeeded() const {
@@ -4853,7 +4859,7 @@ void NetworkLibraryImplStub::Init() {
   CellularNetwork* cellular2 = new CellularNetwork("cellular2");
   cellular2->set_name("Fake Cellular2");
   cellular2->set_strength(50);
-  cellular2->set_activation_state(ACTIVATION_STATE_ACTIVATED);
+  cellular2->set_activation_state(ACTIVATION_STATE_NOT_ACTIVATED);
   cellular2->set_network_technology(NETWORK_TECHNOLOGY_UMTS);
   cellular2->set_roaming_state(ROAMING_STATE_ROAMING);
   AddStubNetwork(cellular2, PROFILE_NONE);

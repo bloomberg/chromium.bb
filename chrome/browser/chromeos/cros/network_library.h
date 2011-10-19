@@ -975,7 +975,7 @@ class CellularNetwork : public WirelessNetwork {
 
   // Starts device activation process. Returns false if the device state does
   // not permit activation.
-  bool StartActivation() const;
+  bool StartActivation();
   // Requests data plans if the network is conencted and activated.
   // Plan data will be passed through Network::Observer::CellularDataPlanChanged
   // callback.
