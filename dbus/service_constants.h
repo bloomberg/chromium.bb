@@ -716,4 +716,32 @@ const char kPropertyChangedSignal[] = "PropertyChanged";
 const char kConnectedProperty[] = "Connected";
 }  // namespace bluetooth_input
 
+namespace cros_disks {
+const char kCrosDisksInterface[] = "org.chromium.CrosDisks";
+const char kCrosDisksServicePath[] = "/org/chromium/CrosDisks";
+const char kCrosDisksServiceName[] = "org.chromium.CrosDisks";
+
+// Methods.
+const char kEnumerateAutoMountableDevices[] = "EnumerateAutoMountableDevices";
+const char kFormatDevice[] = "FormatDevice";
+const char kGetDeviceProperties[] = "GetDeviceProperties";
+const char kMount[] = "Mount";
+const char kUnmount[] = "Unmount";
+
+// Properties.
+const char kDeviceFile[] = "DeviceFile";
+const char kDeviceIsDrive[] = "DeviceIsDrive";
+const char kDeviceIsMediaAvailable[] = "DeviceIsMediaAvailable";
+const char kDeviceIsOnBootDevice[] = "DeviceIsOnBootDevice";
+const char kDeviceIsOpticalDisc[] = "DeviceIsOpticalDisc";
+const char kDeviceIsReadOnly[] = "DeviceIsReadOnly";
+const char kDeviceMountPaths[] = "DeviceMountPaths";
+const char kDevicePresentationHide[] = "DevicePresentationHide";
+const char kDeviceSize[] = "DeviceSize";
+const char kDriveIsRotational[] = "DriveIsRotational";
+const char kDriveModel[] = "DriveModel";
+const char kIdLabel[] = "IdLabel";
+const char kNativePath[] = "NativePath";
+}  // namespace cros_disks
+
 #endif  // DBUS_SERVICE_CONSTANTS_H_
