@@ -58,7 +58,7 @@ class SessionManagerClient {
   // completion of the retrieve attempt, we will call the provided
   // callback.  Policies are serialized protocol buffers.  Upon success,
   // we will pass a protobuf to the callback.  On failure, we will pass
-  // NULL.
+  // "".
   virtual void RetrievePolicy(RetrievePolicyCallback callback) = 0;
 
   // Used for StorePolicyCallback. Takes a boolean indicating whether the

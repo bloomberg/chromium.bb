@@ -211,6 +211,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
     if (!response) {
       LOG(ERROR) << "Failed to call "
                  << login_manager::kSessionManagerRetrievePolicy;
+      callback.Run("");
       return;
     }
     dbus::MessageReader reader(response);
@@ -218,6 +219,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
     size_t length = 0;
     if (!reader.PopArrayOfBytes(&values, &length)) {
       LOG(ERROR) << "Invalid response: " << response->ToString();
+      callback.Run("");
       return;
     }
     // static_cast does not work due to signedness.

@@ -912,7 +912,7 @@ void RetrievePolicyOp::OnStringComplete(const std::string& serialized_proto) {
 }
 
 void RetrievePolicyOp::ProcessPolicy(const std::string& serialized_proto) {
-  if (!policy_.ParseFromString(serialized_proto) ||
+  if (serialized_proto.empty() || !policy_.ParseFromString(serialized_proto) ||
       (!policy_.has_policy_data() && !policy_.has_policy_data_signature())) {
     Fail(NOT_FOUND);
     return;
