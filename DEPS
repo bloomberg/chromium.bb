@@ -153,6 +153,8 @@ deps = {
   "src/third_party/v8-i18n":
     (Var("googlecode_url") % "v8-i18n") + "/trunk@4",
 
+  # When roll to another webgl conformance tests revision, please goto
+  # chrome/test/gpu and run generate_webgl_conformance_test_list.py.
   "src/third_party/webgl_conformance":
     "/trunk/deps/third_party/webgl/sdk/tests@93490",
 

@@ -3495,34 +3495,16 @@
         'browser/gpu_crash_browsertest.cc',
         'test/base/chrome_test_launcher.cc',
         'test/gpu/webgl_conformance_tests.cc',
+        'test/gpu/webgl_conformance_test_list_autogen.h',
         '../content/app/startup_helper_win.cc',
         '../content/test/test_launcher.cc',
         '../content/test/test_launcher.h',
-        '<(test_list_out_dir)/webgl_conformance_test_list_autogen.h',
       ],
       # hard_dependency is necessary for this target because it has actions
       # that generate a header file included by dependent targets. The header
       # file must be generated before the dependents are compiled. The usual
       # semantics are to allow the two targets to build concurrently.
       'hard_dependency': 1,
-      'actions': [
-        {
-          'action_name': 'generate_webgl_conformance_test_list',
-          'inputs': [
-            'test/gpu/webgl_conformance_test_expectations.txt',
-            'test/gpu/generate_webgl_conformance_test_list.py',
-            '<!@(python test/gpu/generate_webgl_conformance_test_list.py --input)',
-          ],
-          'outputs': [
-            '<(test_list_out_dir)/webgl_conformance_test_list_autogen.h',
-          ],
-          'action': [
-            'python',
-            'test/gpu/generate_webgl_conformance_test_list.py',
-            '<(test_list_out_dir)/webgl_conformance_test_list_autogen.h',
-          ],
-        },
-      ],
       'conditions': [
         ['OS=="win"', {
           'dependencies': [
