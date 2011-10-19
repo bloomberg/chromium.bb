@@ -5,8 +5,10 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_view.h"
 
 #include "chrome/browser/bookmarks/bookmark_pasteboard_helper_mac.h"
+#include "chrome/browser/profiles/profile.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_folder_target.h"
+#import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "content/browser/user_metrics.h"
 
 #import "third_party/mozilla/NSPasteboard+Utils.h"
@@ -182,7 +184,22 @@
   if (data && [info draggingSource]) {
     BookmarkButton* button = nil;
     [data getBytes:&button length:sizeof(button)];
-    BOOL copy = !([info draggingSourceOperationMask] & NSDragOperationMove);
+
+    // If we're dragging from one profile to another, disallow moving (only
+    // allow copying). Note that we need to call |GetOriginalProfile()| to make
+    // sure that Incognito profiles are handled correctly.
+    NSWindow* source_window = [[button delegate] browserWindow];
+    BrowserWindowController* source_window_controller =
+        [BrowserWindowController
+         browserWindowControllerForWindow:source_window];
+    const Profile* source_profile =
+        [source_window_controller profile]->GetOriginalProfile();
+    const Profile* target_profile =
+        [controller_ bookmarkModel]->profile()->GetOriginalProfile();
+
+    BOOL copy =
+        !([info draggingSourceOperationMask] & NSDragOperationMove) ||
+        source_profile != target_profile;
     doDrag = [[self controller] dragButton:button
                                         to:[info draggingLocation]
                                       copy:copy];

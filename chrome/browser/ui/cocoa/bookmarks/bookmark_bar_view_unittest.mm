@@ -3,35 +3,48 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_nsobject.h"
+#include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_view.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_folder_target.h"
+#include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/url_drop_target.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
+#import "third_party/ocmock/OCMock/OCMock.h"
+#import "third_party/ocmock/ocmock_extensions.h"
 
 namespace {
-  const CGFloat kFakeIndicatorPos = 7.0;
+// Some values used for mocks and fakes.
+const CGFloat kFakeIndicatorPos = 7.0;
+const NSPoint kPoint = {10, 10};
 };
 
 // Fake DraggingInfo, fake BookmarkBarController, fake NSPasteboard...
 @interface FakeBookmarkDraggingInfo : NSObject {
  @public
   BOOL dragButtonToPong_;
+  BOOL dragButtonToShouldCopy_;
   BOOL dragURLsPong_;
   BOOL dragBookmarkDataPong_;
   BOOL dropIndicatorShown_;
   BOOL draggingEnteredCalled_;
   // Only mock one type of drag data at a time.
   NSString* dragDataType_;
+  BookmarkButton* button_;  // weak
+  BookmarkModel* bookmarkModel_;  // weak
   id draggingSource_;
 }
 @property (nonatomic) BOOL dropIndicatorShown;
 @property (nonatomic) BOOL draggingEnteredCalled;
 @property (nonatomic, copy) NSString* dragDataType;
+@property (nonatomic, assign) BookmarkButton* button;
+@property (nonatomic, assign) BookmarkModel* bookmarkModel;
 @end
 
 @implementation FakeBookmarkDraggingInfo
@@ -39,6 +52,8 @@ namespace {
 @synthesize dropIndicatorShown = dropIndicatorShown_;
 @synthesize draggingEnteredCalled = draggingEnteredCalled_;
 @synthesize dragDataType = dragDataType_;
+@synthesize button = button_;
+@synthesize bookmarkModel = bookmarkModel_;
 
 - (id)init {
   if ((self = [super init])) {
@@ -83,7 +98,7 @@ namespace {
 }
 
 - (NSPoint)draggingLocation {
-  return NSMakePoint(10, 10);
+  return kPoint;
 }
 
 // NSPasteboard mocking functions.
@@ -96,8 +111,12 @@ namespace {
 }
 
 - (NSData*)dataForType:(NSString*)type {
-  if (dragDataType_ && [dragDataType_ isEqualToString:type])
-    return [NSData data];  // Return something, anything.
+  if (dragDataType_ && [dragDataType_ isEqualToString:type]) {
+    if (button_)
+      return [NSData dataWithBytes:&button_ length:sizeof(button_)];
+    else
+      return [NSData data];  // Return something, anything.
+  }
   return nil;
 }
 
@@ -105,6 +124,7 @@ namespace {
 
 - (BOOL)dragButton:(BookmarkButton*)button to:(NSPoint)point copy:(BOOL)copy {
   dragButtonToPong_ = YES;
+  dragButtonToShouldCopy_ = copy;
   return YES;
 }
 
@@ -131,6 +151,10 @@ namespace {
 
 - (BOOL)dragButtonToPong {
   return dragButtonToPong_;
+}
+
+- (BOOL)dragButtonToShouldCopy {
+  return dragButtonToShouldCopy_;
 }
 
 - (BOOL)dragURLsPong {
@@ -168,14 +192,29 @@ namespace {
 
 namespace {
 
-class BookmarkBarViewTest : public CocoaTest {
+class BookmarkBarViewTest : public CocoaProfileTest {
  public:
   virtual void SetUp() {
-    CocoaTest::SetUp();
+    CocoaProfileTest::SetUp();
     view_.reset([[BookmarkBarView alloc] init]);
+    window_ = CreateBrowserWindow()->GetNativeHandle();
+  }
+
+  id GetMockController() {
+    id mock_controller =
+        [OCMockObject mockForClass:[BookmarkBarController class]];
+    [[[mock_controller stub] andReturnBool:YES]
+     draggingAllowed:OCMOCK_ANY];
+    [[[mock_controller stub] andReturnBool:YES]
+     shouldShowIndicatorShownForPoint:kPoint];
+    [[[mock_controller stub] andReturnFloat:kFakeIndicatorPos]
+     indicatorPosForDragToPoint:kPoint];
+    [[[mock_controller stub] andReturn:window_] browserWindow];
+    return mock_controller;
   }
 
   scoped_nsobject<BookmarkBarView> view_;
+  NSWindow* window_;  // WEAK, owned by CocoaProfileTest
 };
 
 TEST_F(BookmarkBarViewTest, CanDragWindow) {
@@ -189,11 +228,42 @@ TEST_F(BookmarkBarViewTest, BookmarkButtonDragAndDrop) {
   [info reset];
 
   scoped_nsobject<BookmarkButton> dragged_button([[BookmarkButton alloc] init]);
+  [dragged_button setDelegate:GetMockController()];
   [info setDraggingSource:dragged_button.get()];
   [info setDragDataType:kBookmarkButtonDragType];
+  [info setButton:dragged_button.get()];
+  [info setBookmarkModel:profile()->GetBookmarkModel()];
   EXPECT_EQ([view_ draggingEntered:(id)info.get()], NSDragOperationMove);
   EXPECT_TRUE([view_ performDragOperation:(id)info.get()]);
   EXPECT_TRUE([info dragButtonToPong]);
+  EXPECT_FALSE([info dragButtonToShouldCopy]);
+  EXPECT_FALSE([info dragURLsPong]);
+  EXPECT_TRUE([info dragBookmarkDataPong]);
+}
+
+// When dragging bookmarks across profiles, we should always copy, never move.
+TEST_F(BookmarkBarViewTest, BookmarkButtonDragAndDropAcrossProfiles) {
+  scoped_nsobject<FakeBookmarkDraggingInfo>
+  info([[FakeBookmarkDraggingInfo alloc] init]);
+  [view_ setController:info.get()];
+  [info reset];
+
+  // |other_profile| is owned by the |testing_profile_manager|.
+  TestingProfile* other_profile =
+      testing_profile_manager()->CreateTestingProfile("other");
+  other_profile->CreateBookmarkModel(true);
+  other_profile->BlockUntilBookmarkModelLoaded();
+
+  scoped_nsobject<BookmarkButton> dragged_button([[BookmarkButton alloc] init]);
+  [dragged_button setDelegate:GetMockController()];
+  [info setDraggingSource:dragged_button.get()];
+  [info setDragDataType:kBookmarkButtonDragType];
+  [info setButton:dragged_button.get()];
+  [info setBookmarkModel:other_profile->GetBookmarkModel()];
+  EXPECT_EQ([view_ draggingEntered:(id)info.get()], NSDragOperationMove);
+  EXPECT_TRUE([view_ performDragOperation:(id)info.get()]);
+  EXPECT_TRUE([info dragButtonToPong]);
+  EXPECT_TRUE([info dragButtonToShouldCopy]);
   EXPECT_FALSE([info dragURLsPong]);
   EXPECT_TRUE([info dragBookmarkDataPong]);
 }

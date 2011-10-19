@@ -3,10 +3,14 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_nsobject.h"
+#include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_view.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_folder_target.h"
+#include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/url_drop_target.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -47,24 +51,46 @@ namespace {
 const CGFloat kFakeIndicatorPos = 7.0;
 const NSPoint kPoint = {10, 10};
 
-class BookmarkBarFolderViewTest : public CocoaTest {
+class BookmarkBarFolderViewTest : public CocoaProfileTest {
  public:
   virtual void SetUp() {
-    CocoaTest::SetUp();
+    CocoaProfileTest::SetUp();
+
     view_.reset([[BookmarkBarFolderView alloc] init]);
-    mock_controller_.reset([GetMockController(YES) retain]);
+
+    // The created window will be destroyed in |CocoaProfileTest::TearDown()|.
+    window_ = CreateBrowserWindow()->GetNativeHandle();
+    mock_controller_.reset(GetMockController(YES,
+                                             profile()->GetBookmarkModel()));
+
+    mock_button_.reset(GetMockButton(mock_controller_.get()));
     [view_ awakeFromNib];
     [view_ setController:mock_controller_];
   }
 
   virtual void TearDown() {
     [mock_controller_ verify];
-    CocoaTest::TearDown();
+
+    // Order is important here: We need to release the mock objects *prior* to
+    // calling |CocoaProfileTest::TearDown()|. This is because the
+    // |mock_controller_| retains |window_|; and if any windows remain allocated
+    // when |CocoaProfileTest::TearDown()| is called, this triggers an assertion
+    // in |ui_cocoa_test_helper.mm|.
+    mock_controller_.reset();
+    mock_button_.reset();
+    CocoaProfileTest::TearDown();
   }
 
   id GetFakePasteboardForType(NSString* dataType) {
     id pasteboard = [OCMockObject mockForClass:[NSPasteboard class]];
-    [[[pasteboard stub] andReturn:[NSData data]] dataForType:dataType];
+    if ([dataType isEqualToString:kBookmarkButtonDragType]) {
+      BookmarkButton* button = mock_button_.get();
+      [[[pasteboard stub]
+        andReturn:[NSData dataWithBytes:&button length:sizeof(button)]]
+       dataForType:dataType];
+    } else {
+      [[[pasteboard stub] andReturn:[NSData data]] dataForType:dataType];
+    }
     [[[pasteboard stub] andReturn:nil] dataForType:OCMOCK_ANY];
     [[[pasteboard stub] andReturnBool:YES] containsURLData];
     [[pasteboard stub] getURLs:[OCMArg setTo:nil]
@@ -87,20 +113,30 @@ class BookmarkBarFolderViewTest : public CocoaTest {
     return drag_info;
   }
 
-  id GetMockController(BOOL show_indicator) {
-    id mock_controller
-        = [OCMockObject mockForClass:[BookmarkBarFolderController class]];
-   [[[mock_controller stub] andReturnBool:YES]
+  id GetMockController(BOOL show_indicator, BookmarkModel* model) {
+    id mock_controller =
+        [OCMockObject mockForClass:[BookmarkBarFolderController class]];
+    [[[mock_controller stub] andReturnBool:YES]
      draggingAllowed:OCMOCK_ANY];
     [[[mock_controller stub] andReturnBool:show_indicator]
      shouldShowIndicatorShownForPoint:kPoint];
     [[[mock_controller stub] andReturnFloat:kFakeIndicatorPos]
      indicatorPosForDragToPoint:kPoint];
-    return mock_controller;
+    [[[mock_controller stub] andReturn:window_] browserWindow];
+    [[[mock_controller stub] andReturnValue:OCMOCK_VALUE(model)] bookmarkModel];
+    return [mock_controller retain];
+  }
+
+  id GetMockButton(id mock_controller) {
+    id mock_button = [OCMockObject mockForClass:[BookmarkButton class]];
+    [[[mock_button stub] andReturn:mock_controller] delegate];
+    return [mock_button retain];
   }
 
   scoped_nsobject<id> mock_controller_;
   scoped_nsobject<BookmarkBarFolderView> view_;
+  NSWindow* window_;  // WEAK, owned by CocoaProfileTest
+  scoped_nsobject<id> mock_button_;
 };
 
 TEST_F(BookmarkBarFolderViewTest, BookmarkButtonDragAndDrop) {
@@ -111,6 +147,30 @@ TEST_F(BookmarkBarFolderViewTest, BookmarkButtonDragAndDrop) {
   [[[mock_controller_ expect] andReturnBool:YES] dragButton:OCMOCK_ANY
                                                          to:kPoint
                                                        copy:NO];
+
+  EXPECT_EQ([view_ draggingEntered:drag_info], NSDragOperationMove);
+  EXPECT_TRUE([view_ performDragOperation:drag_info]);
+}
+
+// When dragging bookmarks across profiles, we should always copy, never move.
+TEST_F(BookmarkBarFolderViewTest, BookmarkButtonDragAndDropAcrossProfiles) {
+  // |other_profile| is owned by the |testing_profile_manager|.
+  TestingProfile* other_profile =
+      testing_profile_manager()->CreateTestingProfile("other");
+  other_profile->CreateBookmarkModel(true);
+  other_profile->BlockUntilBookmarkModelLoaded();
+
+  mock_controller_.reset(GetMockController(YES,
+                                           other_profile->GetBookmarkModel()));
+  [view_ setController:mock_controller_];
+
+  id drag_info = GetFakeDragInfoForType(kBookmarkButtonDragType);
+  [[[mock_controller_ expect] andReturnUnsignedInteger:NSDragOperationNone]
+   draggingEntered:drag_info];
+  [[[mock_controller_ expect] andReturnBool:NO] dragBookmarkData:drag_info];
+  [[[mock_controller_ expect] andReturnBool:YES] dragButton:OCMOCK_ANY
+                                                         to:kPoint
+                                                       copy:YES];
 
   EXPECT_EQ([view_ draggingEntered:drag_info], NSDragOperationMove);
   EXPECT_TRUE([view_ performDragOperation:drag_info]);
@@ -140,7 +200,7 @@ TEST_F(BookmarkBarFolderViewTest, BookmarkButtonDropIndicator) {
   [mock_controller_ verify];
   EXPECT_TRUE([view_ dropIndicatorShown]);
   EXPECT_EQ([view_ dropIndicatorPosition], kFakeIndicatorPos);
-  mock_controller_.reset([GetMockController(NO) retain]);
+  mock_controller_.reset(GetMockController(NO, profile()->GetBookmarkModel()));
   [view_ setController:mock_controller_];
   [[[mock_controller_ expect] andReturnUnsignedInteger:NSDragOperationNone]
    draggingEntered:drag_info];
