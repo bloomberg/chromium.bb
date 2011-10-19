@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+  // Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,10 +35,10 @@ class VirtualKeyboardManagerTest : public InProcessBrowserTest,
   }
 
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE {
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE {
     DCHECK_EQ(chrome::NOTIFICATION_KEYBOARD_VISIBILITY_CHANGED, type);
-    keyboard_visible_ = *Details<bool>(details).ptr();
+    keyboard_visible_ = *content::Details<bool>(details).ptr();
   }
 
   bool keyboard_visible_;
