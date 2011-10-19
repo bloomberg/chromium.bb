@@ -302,15 +302,15 @@ remoting.ClientSession.prototype.connectionInfoUpdateCallback = function() {
   } else if (state == this.plugin.STATUS_FAILED) {
     var error = this.plugin.error;
     if (error == this.plugin.ERROR_HOST_IS_OFFLINE) {
-      error = remoting.ClientSession.ConnectionError.HOST_IS_OFFLINE;
+      this.error = remoting.ClientSession.ConnectionError.HOST_IS_OFFLINE;
     } else if (error == this.plugin.ERROR_SESSION_REJECTED) {
-      error = remoting.ClientSession.ConnectionError.SESSION_REJECTED;
+      this.error = remoting.ClientSession.ConnectionError.SESSION_REJECTED;
     } else if (error == this.plugin.ERROR_INCOMPATIBLE_PROTOCOL) {
-      error = remoting.ClientSession.ConnectionError.INCOMPATIBLE_PROTOCOL;
+      this.error = remoting.ClientSession.ConnectionError.INCOMPATIBLE_PROTOCOL;
     } else if (error == this.plugin.ERROR_NETWORK_FAILURE) {
-      error = remoting.ClientSession.ConnectionError.NETWORK_FAILURE;
+      this.error = remoting.ClientSession.ConnectionError.NETWORK_FAILURE;
     } else {
-      error = remoting.ClientSession.ConnectionError.OTHER;
+      this.error = remoting.ClientSession.ConnectionError.OTHER;
     }
     this.setState_(remoting.ClientSession.State.CONNECTION_FAILED);
   }
