@@ -9,6 +9,7 @@
 #include <objbase.h>
 
 #include "base/basictypes.h"
+#include "base/logging.h"
 
 namespace chrome {
 namespace common {
@@ -22,19 +23,34 @@ namespace common {
 template<typename T>
 class ScopedCoMem {
  public:
-  explicit ScopedCoMem() : mem_ptr_(NULL) {}
-
+  ScopedCoMem() : mem_ptr_(NULL) {}
   ~ScopedCoMem() {
-    if (mem_ptr_)
-      CoTaskMemFree(mem_ptr_);
+    Reset(NULL);
   }
 
   T** operator&() {  // NOLINT
+    DCHECK(mem_ptr_ == NULL);  // To catch memory leaks.
     return &mem_ptr_;
   }
 
   operator T*() {
     return mem_ptr_;
+  }
+
+  T* operator->() {
+    DCHECK(mem_ptr_ != NULL);
+    return mem_ptr_;
+  }
+
+  const T* operator->() const {
+    DCHECK(mem_ptr_ != NULL);
+    return mem_ptr_;
+  }
+
+  void Reset(T* ptr) {
+    if (mem_ptr_)
+      CoTaskMemFree(mem_ptr_);
+    mem_ptr_ = ptr;
   }
 
  private:
