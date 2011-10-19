@@ -33,10 +33,12 @@
 #include "native_client/tests/ppapi_test_lib/get_browser_interface.h"
 #include "native_client/tests/ppapi_test_lib/internal_utils.h"
 
+// Use for dev interfaces that might not be present.
 const void* GetBrowserInterface(const char* interface_name) {
   return (*ppb_get_interface())(interface_name);
 }
 
+// Use for stable interfaces that must always be present.
 const void* GetBrowserInterfaceSafe(const char* interface_name) {
   const void* ppb_interface = (*ppb_get_interface())(interface_name);
   CHECK(ppb_interface != NULL);
@@ -52,17 +54,17 @@ const PPB_Core* PPBCore() {
 
 const PPB_FileIO* PPBFileIO() {
   return reinterpret_cast<const PPB_FileIO*>(
-      GetBrowserInterface(PPB_FILEIO_INTERFACE));
+      GetBrowserInterfaceSafe(PPB_FILEIO_INTERFACE));
 }
 
 const PPB_FileRef* PPBFileRef() {
   return reinterpret_cast<const PPB_FileRef*>(
-      GetBrowserInterface(PPB_FILEREF_INTERFACE));
+      GetBrowserInterfaceSafe(PPB_FILEREF_INTERFACE));
 }
 
 const PPB_FileSystem* PPBFileSystem() {
   return reinterpret_cast<const PPB_FileSystem*>(
-      GetBrowserInterface(PPB_FILESYSTEM_INTERFACE));
+      GetBrowserInterfaceSafe(PPB_FILESYSTEM_INTERFACE));
 }
 
 const PPB_Fullscreen* PPBFullscreen() {
@@ -77,7 +79,7 @@ const PPB_Graphics2D* PPBGraphics2D() {
 
 const PPB_Graphics3D* PPBGraphics3D() {
   return reinterpret_cast<const PPB_Graphics3D*>(
-      GetBrowserInterface(PPB_GRAPHICS_3D_INTERFACE));
+      GetBrowserInterfaceSafe(PPB_GRAPHICS_3D_INTERFACE));
 }
 
 const PPB_ImageData* PPBImageData() {
@@ -112,7 +114,7 @@ const PPB_MouseInputEvent* PPBMouseInputEvent() {
 
 const PPB_OpenGLES2* PPBOpenGLES2() {
   return reinterpret_cast<const PPB_OpenGLES2*>(
-      GetBrowserInterface(PPB_OPENGLES2_INTERFACE));
+      GetBrowserInterfaceSafe(PPB_OPENGLES2_INTERFACE));
 }
 
 const PPB_URLLoader* PPBURLLoader() {
@@ -145,40 +147,48 @@ const PPB_WheelInputEvent* PPBWheelInputEvent() {
 
 const PPB_Context3D_Dev* PPBContext3DDev() {
   return reinterpret_cast<const PPB_Context3D_Dev*>(
+      // Change to GetBrowserInterfaceSafe when moving out of dev.
       GetBrowserInterface(PPB_CONTEXT_3D_DEV_INTERFACE));
 }
 
 const PPB_CursorControl_Dev* PPBCursorControlDev() {
   return reinterpret_cast<const PPB_CursorControl_Dev*>(
+      // Change to GetBrowserInterfaceSafe when moving out of dev.
       GetBrowserInterface(PPB_CURSOR_CONTROL_DEV_INTERFACE));
 }
 
 const PPB_Font_Dev* PPBFontDev() {
   return reinterpret_cast<const PPB_Font_Dev*>(
+      // Change to GetBrowserInterfaceSafe when moving out of dev.
       GetBrowserInterface(PPB_FONT_DEV_INTERFACE));
 }
 
 const PPB_Memory_Dev* PPBMemoryDev() {
   return reinterpret_cast<const PPB_Memory_Dev*>(
+      // Change to GetBrowserInterfaceSafe when moving out of dev.
       GetBrowserInterface(PPB_MEMORY_DEV_INTERFACE));
 }
 
 const PPB_Scrollbar_Dev* PPBScrollbarDev() {
   return  reinterpret_cast<const PPB_Scrollbar_Dev*>(
+      // Change to GetBrowserInterfaceSafe when moving out of dev.
       GetBrowserInterface(PPB_SCROLLBAR_DEV_INTERFACE));
 }
 
 const PPB_Surface3D_Dev* PPBSurface3DDev() {
   return  reinterpret_cast<const PPB_Surface3D_Dev*>(
+      // Change to GetBrowserInterfaceSafe when moving out of dev.
       GetBrowserInterface(PPB_SURFACE_3D_DEV_INTERFACE));
 }
 
 const PPB_Testing_Dev* PPBTestingDev() {
   return  reinterpret_cast<const PPB_Testing_Dev*>(
+      // Change to GetBrowserInterfaceSafe when moving out of dev.
       GetBrowserInterface(PPB_TESTING_DEV_INTERFACE));
 }
 
 const PPB_Widget_Dev* PPBWidgetDev() {
   return  reinterpret_cast<const PPB_Widget_Dev*>(
+      // Change to GetBrowserInterfaceSafe when moving out of dev.
       GetBrowserInterface(PPB_WIDGET_DEV_INTERFACE));
 }
