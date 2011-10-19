@@ -221,10 +221,10 @@ class BenchmarkPerfTest(BasePerfTest):
     """
     self.assertTrue(
         self.WaitUntil(
-            lambda: 'Score:' in self.ExecuteJavascript(js, 1), timeout=300,
-            expect_retval=True, retry_sleep=0.10),
+            lambda: 'Score:' in self.ExecuteJavascript(js, tab_index=1),
+            timeout=300, expect_retval=True, retry_sleep=0.10),
         msg='Timed out when waiting for v8 benchmark score.')
-    val = self.ExecuteJavascript(js, 1)  # Window index 0, tab index 1.
+    val = self.ExecuteJavascript(js, tab_index=1)
     score = int(val.split(':')[1].strip())
     self._PrintSummaryResults('V8Benchmark', [score], 'score')
 
@@ -264,7 +264,7 @@ class LiveWebappLoadTest(BasePerfTest):
           }
           window.domAutomationController.send("false");
       """ % EXPECTED_SUBSTRING
-      return self.ExecuteJavascript(js, 1)  # Window index 0, tab index 1.
+      return self.ExecuteJavascript(js, tab_index=1)
 
     def _RunSingleGmailTabOpen():
       self._AppendTab('http://www.gmail.com')
@@ -293,7 +293,7 @@ class LiveWebappLoadTest(BasePerfTest):
           }
           window.domAutomationController.send("false");
       """ % EXPECTED_SUBSTRING
-      return self.ExecuteJavascript(js, 1)  # Window index 0, tab index 1.
+      return self.ExecuteJavascript(js, tab_index=1)
 
     def _RunSingleCalendarTabOpen():
       self._AppendTab('http://calendar.google.com')
@@ -321,7 +321,7 @@ class LiveWebappLoadTest(BasePerfTest):
           }
           window.domAutomationController.send("false");
       """ % EXPECTED_SUBSTRING
-      return self.ExecuteJavascript(js, 1)  # Window index 0, tab index 1.
+      return self.ExecuteJavascript(js, tab_index=1)
 
     def _RunSingleDocsTabOpen():
       self._AppendTab('http://docs.google.com')
@@ -476,7 +476,7 @@ class FileUploadDownloadTest(BasePerfTest):
             result = div.innerHTML;
           window.domAutomationController.send(result);
       """
-      return self.ExecuteJavascript(js, 0, 0).find(EXPECTED_SUBSTRING) >= 0
+      return self.ExecuteJavascript(js).find(EXPECTED_SUBSTRING) >= 0
 
     def _RunSingleUpload():
       self.NavigateToURL(START_UPLOAD_URL)
@@ -524,7 +524,7 @@ class ScrollTest(BasePerfTest):
           %s
           window.domAutomationController.send('done');
       """ % scroll_text
-      self.ExecuteJavascript(js, 0, 1)  # Window index 0, tab index 1.
+      self.ExecuteJavascript(js, tab_index=1)
 
       # Poll the webpage until the test is complete.
       def IsTestDone():
@@ -534,7 +534,7 @@ class ScrollTest(BasePerfTest):
           else
             window.domAutomationController.send('false');
         """
-        return self.ExecuteJavascript(done_js, 0, 1) == 'true'
+        return self.ExecuteJavascript(done_js, tab_index=1) == 'true'
 
       self.assertTrue(
           self.WaitUntil(IsTestDone, timeout=300, expect_retval=True,
@@ -545,7 +545,7 @@ class ScrollTest(BasePerfTest):
       results_js = """
         window.domAutomationController.send("{'fps': " + __mean_fps + "}");
       """
-      fps = eval(self.ExecuteJavascript(results_js, 0, 1))['fps']
+      fps = eval(self.ExecuteJavascript(results_js, tab_index=1))['fps']
       self.GetBrowserWindow(0).GetTab(1).Close(True)
       return fps
 
@@ -591,10 +591,10 @@ class FlashTest(BasePerfTest):
     js = 'window.domAutomationController.send("" + final_average_fps);'
     self.assertTrue(
         self.WaitUntil(
-            lambda: self.ExecuteJavascript(js, 0, 1) != '-1', timeout=300,
-            expect_retval=True, retry_sleep=0.25),
+            lambda: self.ExecuteJavascript(js, tab_index=1) != '-1',
+            timeout=300, expect_retval=True, retry_sleep=0.25),
         msg='Timed out when waiting for test result.')
-    result = float(self.ExecuteJavascript(js, 0, 1))
+    result = float(self.ExecuteJavascript(js, tab_index=1))
     logging.info('Result for %s: %.2f FPS (average)' % (description, result))
     self._OutputPerfGraphValue('%s_%s' % ('FPS', description), result)
 
@@ -620,7 +620,7 @@ class FlashTest(BasePerfTest):
     js = 'window.domAutomationController.send("" + tests_done);'
     self.assertTrue(
         self.WaitUntil(
-            lambda: self.ExecuteJavascript(js, 0, 1), timeout=300,
+            lambda: self.ExecuteJavascript(js, tab_index=1), timeout=300,
             expect_retval='true', retry_sleep=0.25),
         msg='Timed out when waiting for tests to complete.')
 
@@ -636,7 +636,7 @@ class FlashTest(BasePerfTest):
         json_result += "}";
         window.domAutomationController.send(json_result);
     """
-    result = eval(self.ExecuteJavascript(js_result, 0, 1))
+    result = eval(self.ExecuteJavascript(js_result, tab_index=1))
     for benchmark in result:
       mflops = result[benchmark][0]
       mem = result[benchmark][1]
