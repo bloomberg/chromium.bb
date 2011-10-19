@@ -12,6 +12,7 @@ include_rules = [
   "+webkit/plugins",
 
   # TODO(jam): remove me once chrome_notifcation_types.h moves to browser
+  "+content/public/browser/notification_source.h",
   "+content/public/browser/notification_types.h",
 
   # Other libraries.
