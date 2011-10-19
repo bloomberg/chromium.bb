@@ -4791,8 +4791,6 @@
 {
    bug_100761a
    Memcheck:Leak
-   fun:calloc
-   fun:PR_Calloc
    ...
    fun:STAN_GetNSSCertificate
    fun:CERT_DupCertificate
@@ -4805,7 +4803,6 @@
    bug_100761b
    Memcheck:Leak
    ...
-   fun:PORT_NewArena_Util
    fun:CERT_CreateCertificate
    fun:_ZN12_GLOBAL__N_117CreateCertificateEP18SECKEYPublicKeyStrRKSsjN4base9TimeDeltaE
    fun:_ZN3net9x509_util20CreateSelfSignedCertEP18SECKEYPublicKeyStrP19SECKEYPrivateKeyStrRKSsjN4base9TimeDeltaE
