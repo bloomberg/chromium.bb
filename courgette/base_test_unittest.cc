@@ -25,3 +25,17 @@ std::string BaseTest::FileContents(const char* file_name) const {
 
   return file_bytes;
 }
+
+std::string BaseTest::FilesContents(std::list<std::string> file_names) const {
+
+  std::string result;
+
+  std::list<std::string>::iterator file_name = file_names.begin();
+
+  while (file_name != file_names.end()) {
+    result += FileContents(file_name->c_str());
+    file_name++;
+  }
+
+  return result;
+}

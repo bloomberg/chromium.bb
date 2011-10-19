@@ -91,6 +91,7 @@
         'difference_estimator_unittest.cc',
         'encoded_program_unittest.cc',
         'encode_decode_unittest.cc',
+        'ensemble_unittest.cc',
         'image_info_unittest.cc',
         'run_all_unittests.cc',
         'streams_unittest.cc',
