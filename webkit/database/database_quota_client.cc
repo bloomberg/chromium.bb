@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop_proxy.h"
@@ -172,7 +173,7 @@ class DatabaseQuotaClient::DeleteOriginTask : public HelperTask {
     if (rv == net::OK)
       result_ = quota::kQuotaStatusOk;
     original_message_loop()->PostTask(
-        FROM_HERE, NewRunnableMethod(this, &DeleteOriginTask::CallCompleted));
+        FROM_HERE, base::Bind(&DeleteOriginTask::CallCompleted, this));
     Release();  // balanced in RunOnTargetThreadAsync
   }
 

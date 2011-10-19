@@ -71,9 +71,10 @@ class MockDatabaseTracker : public DatabaseTracker {
       net::OldCompletionCallback* callback) {
     ++delete_called_count_;
     if (async_delete()) {
-      base::MessageLoopProxy::current()->PostTask(FROM_HERE,
-          NewRunnableMethod(this,
-              &MockDatabaseTracker::AsyncDeleteDataForOrigin, callback));
+      base::MessageLoopProxy::current()->PostTask(
+          FROM_HERE,
+          base::Bind(&MockDatabaseTracker::AsyncDeleteDataForOrigin, this,
+                     callback));
       return net::ERR_IO_PENDING;
     }
     return net::OK;

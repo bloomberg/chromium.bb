@@ -5,6 +5,7 @@
 #include "webkit/database/database_connections.h"
 
 #include "base/auto_reset.h"
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
@@ -156,9 +157,10 @@ void DatabaseConnectionsWrapper::RemoveOpenConnection(
   // But only remove from the collection on the main thread
   // so we can handle the waiting_for_dbs_to_close_ case.
   if (!main_thread_->BelongsToCurrentThread()) {
-    main_thread_->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &DatabaseConnectionsWrapper::RemoveOpenConnection,
-        origin_identifier, database_name));
+    main_thread_->PostTask(
+        FROM_HERE,
+        base::Bind(&DatabaseConnectionsWrapper::RemoveOpenConnection, this,
+                   origin_identifier, database_name));
     return;
   }
   base::AutoLock auto_lock(open_connections_lock_);

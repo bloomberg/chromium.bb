@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
@@ -863,10 +864,10 @@ void DatabaseTracker::Shutdown() {
 void DatabaseTracker::SetClearLocalStateOnExit(bool clear_local_state_on_exit) {
   DCHECK(db_tracker_thread_.get());
   if (!db_tracker_thread_->BelongsToCurrentThread()) {
-    db_tracker_thread_->PostTask(FROM_HERE,
-        NewRunnableMethod(this,
-                          &DatabaseTracker::SetClearLocalStateOnExit,
-                          clear_local_state_on_exit));
+    db_tracker_thread_->PostTask(
+        FROM_HERE,
+        base::Bind(&DatabaseTracker::SetClearLocalStateOnExit, this,
+                   clear_local_state_on_exit));
     return;
   }
   if (shutting_down_) {

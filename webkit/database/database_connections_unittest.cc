@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/task.h"
 #include "base/threading/thread.h"
@@ -26,9 +27,10 @@ void ScheduleRemoveConnectionTask(
     const string16& database_name,
     scoped_refptr<DatabaseConnectionsWrapper> obj,
     bool* did_task_execute) {
-  thread->message_loop()->PostTask(FROM_HERE,
-      NewRunnableFunction(RemoveConnectionTask,
-                          origin_id, database_name, obj, did_task_execute));
+  thread->message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&RemoveConnectionTask, origin_id, database_name, obj,
+                 did_task_execute));
 }
 
 }  // anonymous namespace
@@ -116,9 +118,10 @@ TEST(DatabaseConnectionsTest, DatabaseConnectionsWrapperTest) {
   // being removed on the current thread.
   obj->AddOpenConnection(kOriginId, kName);
   bool did_task_execute = false;
-  MessageLoop::current()->PostTask(FROM_HERE,
-      NewRunnableFunction(&RemoveConnectionTask,
-                          kOriginId, kName, obj, &did_task_execute));
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&RemoveConnectionTask, kOriginId, kName, obj,
+                 &did_task_execute));
   obj->WaitForAllDatabasesToClose();  // should return after the task executes
   EXPECT_TRUE(did_task_execute);
   EXPECT_FALSE(obj->HasOpenConnections());
@@ -129,10 +132,10 @@ TEST(DatabaseConnectionsTest, DatabaseConnectionsWrapperTest) {
   base::Thread thread("WrapperTestThread");
   thread.Start();
   did_task_execute = false;
-  MessageLoop::current()->PostTask(FROM_HERE,
-      NewRunnableFunction(ScheduleRemoveConnectionTask,
-                          &thread, kOriginId, kName,
-                          obj, &did_task_execute));
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&ScheduleRemoveConnectionTask, &thread, kOriginId, kName, obj,
+                 &did_task_execute));
   obj->WaitForAllDatabasesToClose();  // should return after the task executes
   EXPECT_TRUE(did_task_execute);
   EXPECT_FALSE(obj->HasOpenConnections());
