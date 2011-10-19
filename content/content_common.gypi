@@ -288,7 +288,7 @@
         'common/gpu/x_util.h',
       ],
     }],
-    ['views_gpu_image_transport==1', {
+    ['ui_compositor_image_transport==1', {
       'sources': [
         'common/gpu/image_transport_surface.cc',
         'common/gpu/image_transport_surface_linux.cc',

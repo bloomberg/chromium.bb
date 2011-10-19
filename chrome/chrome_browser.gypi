@@ -4183,13 +4183,13 @@
             '../ui/aura_shell/aura_shell.gyp:aura_shell',
           ],
         }],
-        ['views_gpu_image_transport==0', {
+        ['ui_compositor_image_transport==0', {
           'sources/': [
             ['exclude', '^browser/renderer_host/accelerated_surface_container_touch.cc'],
             ['exclude', '^browser/renderer_host/accelerated_surface_container_touch.h'],
           ],
         }],
-        ['views_gpu_image_transport==1', {
+        ['ui_compositor_image_transport==1', {
           'dependencies': [
             '../ui/gfx/compositor/compositor.gyp:compositor',
             '../ui/gfx/gl/gl.gyp:gl',
