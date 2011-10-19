@@ -4,8 +4,8 @@
 
 // chrome_tab.cc : Implementation of DLL Exports.
 
-// Include without path to make GYP build see it.
-#include "chrome_tab.h"  // NOLINT
+// Need to include this before the ATL headers below.
+#include "chrome_frame/chrome_tab.h"
 
 #include <atlsecurity.h>
 #include <objbase.h>

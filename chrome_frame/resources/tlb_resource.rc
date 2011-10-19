@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,4 +35,4 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 //
 // Generated from the TEXTINCLUDE 3 resource.
 //
-1 TYPELIB "chrome_tab.tlb"
+1 TYPELIB "chrome_frame/chrome_tab.tlb"

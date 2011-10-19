@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/win/win_util.h"
-#include "chrome_tab.h"  // NOLINT
+#include "chrome_frame/chrome_tab.h"
 
 _ATL_FUNC_INFO ReadyModeWebBrowserAdapter::kBeforeNavigate2Info = {
   CC_STDCALL, VT_EMPTY, 7, {

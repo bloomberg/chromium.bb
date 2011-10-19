@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome_frame/chrome_frame_helper_util.h"
-#include "chrome_tab.h"  // NOLINT
+#include "chrome_frame/chrome_tab.h"
 
 #include <shlwapi.h>
 #include <stdio.h>

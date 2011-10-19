@@ -18,11 +18,10 @@
 #include "base/win/scoped_comptr.h"
 #include "chrome/installer/test/alternate_version_generator.h"
 #include "chrome/installer/util/delete_after_reboot_helper.h"
+#include "chrome_frame/chrome_tab.h"
 #include "chrome_frame/test_utils.h"
 #include "chrome_frame/utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#include "chrome_tab.h"  // NOLINT
 
 namespace {
 const wchar_t kSharedMemoryPrefix[] = L"ChromeFrameVersionBeacon_";

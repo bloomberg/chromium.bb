@@ -9,8 +9,8 @@
 #include <exdisp.h>
 
 #include "chrome_frame/chrome_frame_helper_util.h"
+#include "chrome_frame/chrome_tab.h"
 #include "chrome_frame/event_hooker.h"
-#include "chrome_tab.h"  // NOLINT
 
 
 // Describes the window class we look for.

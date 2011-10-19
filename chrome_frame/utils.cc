@@ -29,6 +29,7 @@
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/installer/util/chrome_frame_distribution.h"
+#include "chrome_frame/chrome_tab.h"
 #include "chrome_frame/extra_system_apis.h"
 #include "chrome_frame/html_utils.h"
 #include "chrome_frame/navigation_constraints.h"
@@ -40,8 +41,6 @@
 #include "net/base/escape.h"
 #include "net/http/http_util.h"
 #include "ui/base/models/menu_model.h"
-
-#include "chrome_tab.h"  // NOLINT
 
 using base::win::RegKey;
 

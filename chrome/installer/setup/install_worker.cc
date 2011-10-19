@@ -35,8 +35,7 @@
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/work_item_list.h"
-
-#include "chrome_tab.h"  // NOLINT
+#include "chrome_frame/chrome_tab.h"
 
 using base::win::RegKey;
 

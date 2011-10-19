@@ -13,9 +13,9 @@
 #include "base/threading/platform_thread.h"
 #include "base/utf_string_conversions.h"
 #include "chrome_frame/bind_context_info.h"
+#include "chrome_frame/chrome_tab.h"
 #include "chrome_frame/exception_barrier.h"
 #include "chrome_frame/urlmon_moniker.h"
-#include "chrome_tab.h"  // NOLINT
 
 
 // A helper to given feed data to the specified |bscb| using

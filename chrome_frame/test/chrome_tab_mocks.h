@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -7,10 +7,8 @@
 #ifndef CHROME_FRAME_TEST_CHROME_TAB_MOCKS_H_
 #define CHROME_FRAME_TEST_CHROME_TAB_MOCKS_H_
 
+#include "chrome_frame/chrome_tab.h"
 #include "testing/gmock/include/gmock/gmock.h"
-
-// Include without path to make GYP build see it.
-#include "chrome_tab.h"  // NOLINT
 
 namespace testing {
 
