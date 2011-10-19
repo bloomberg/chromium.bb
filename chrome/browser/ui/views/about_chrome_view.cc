@@ -583,7 +583,7 @@ void AboutChromeView::LinkClicked(views::Link* source, int event_flags) {
     NOTREACHED() << "Unknown link source";
   }
 
-  Browser* browser = BrowserList::GetLastActive();
+  Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
   browser->OpenURL(url, GURL(), NEW_WINDOW, content::PAGE_TRANSITION_LINK);
 }
 
