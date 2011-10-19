@@ -344,7 +344,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
   ContentSettingsPattern primary_pattern;
   ContentSettingsPattern secondary_pattern;
   render_view->Send(new ChromeViewHostMsg_GetPluginContentSetting(
-      frame->top()->document().url(), resource,
+      frame->top()->document().url(), url, resource,
       &plugin_setting, &primary_pattern, &secondary_pattern));
   DCHECK(plugin_setting != CONTENT_SETTING_DEFAULT);
 

@@ -123,6 +123,7 @@ class ChromeRenderMessageFilter : public BrowserMessageFilter {
                         const string16& name,
                         bool* allowed);
   void OnGetPluginContentSetting(const GURL& policy_url,
+                                 const GURL& plugin_url,
                                  const std::string& resource,
                                  ContentSetting* setting,
                                  ContentSettingsPattern* primary_pattern,

@@ -420,8 +420,9 @@ IPC_SYNC_MESSAGE_CONTROL4_1(ChromeViewHostMsg_AllowIndexedDB,
 // neither blocked nor white-listed, which means that it's allowed
 // by default and can still be blocked if it's non-sandboxed.
 //
-IPC_SYNC_MESSAGE_CONTROL2_3(ChromeViewHostMsg_GetPluginContentSetting,
+IPC_SYNC_MESSAGE_CONTROL3_3(ChromeViewHostMsg_GetPluginContentSetting,
                             GURL /* policy_url */,
+                            GURL /* plugin_url */,
                             std::string  /* resource */,
                             ContentSetting /* setting */,
                             ContentSettingsPattern /* primary pattern */,

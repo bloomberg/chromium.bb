@@ -490,17 +490,18 @@ void ChromeRenderMessageFilter::OnAllowIndexedDB(int render_view_id,
 
 void ChromeRenderMessageFilter::OnGetPluginContentSetting(
     const GURL& policy_url,
+    const GURL& plugin_url,
     const std::string& resource,
     ContentSetting* setting,
     ContentSettingsPattern* primary_pattern,
     ContentSettingsPattern* secondary_pattern) {
   scoped_ptr<base::Value> value(
       host_content_settings_map_->GetContentSettingValue(
-          policy_url, policy_url, CONTENT_SETTINGS_TYPE_PLUGINS, resource,
+          policy_url, plugin_url, CONTENT_SETTINGS_TYPE_PLUGINS, resource,
           primary_pattern, secondary_pattern));
   if (!value.get()) {
     value.reset(host_content_settings_map_->GetContentSettingValue(
-        policy_url, policy_url, CONTENT_SETTINGS_TYPE_PLUGINS, std::string(),
+        policy_url, plugin_url, CONTENT_SETTINGS_TYPE_PLUGINS, std::string(),
         primary_pattern, secondary_pattern));
   }
   *setting = content_settings::ValueToContentSetting(value.get());
