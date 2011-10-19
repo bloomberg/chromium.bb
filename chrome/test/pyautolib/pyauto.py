@@ -4724,8 +4724,8 @@ class Main(object):
     suite_args = [sys.argv[0]]
     chrome_flags = self._options.chrome_flags
     # Set CHROME_HEADLESS. It enables crash reporter on posix.
-    os.putenv('CHROME_HEADLESS', '1')
-    os.putenv('EXTRA_CHROME_FLAGS', chrome_flags)
+    os.environ['CHROME_HEADLESS'] = '1'
+    os.environ['EXTRA_CHROME_FLAGS'] = chrome_flags
     pyauto_suite = PyUITestSuite(suite_args)
     test_names = self._ExpandTestNames(self._args)
     test_names *= self._options.repeat
