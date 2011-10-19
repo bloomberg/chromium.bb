@@ -370,8 +370,10 @@ bool KeywordTable::MigrateToVersion39AddSyncGUIDColumn() {
 
 bool KeywordTable::MigrateToVersion40AddDefaultSearchEngineBackup() {
   int64 value = 0;
-  if (!meta_table_->GetValue(kDefaultSearchProviderKey, &value))
-    return false;
+  if (!meta_table_->GetValue(kDefaultSearchProviderKey, &value)) {
+    // Set default search provider ID and its backup.
+    return SetDefaultSearchProviderID(0);
+  }
   return SetDefaultSearchProviderBackupID(value);
 }
 
