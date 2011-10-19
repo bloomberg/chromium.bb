@@ -464,7 +464,7 @@ void KeyboardWidget::Observe(int type,
 
       // TODO(penghuang) Allow extension conrtol the virtual keyboard directly
       // instead of using Notification.
-      int height = *Details<int>(details).ptr();
+      int height = *content::Details<int>(details).ptr();
       if (height != keyboard_height_) {
         DCHECK_GE(height, 0) << "Keyboard height should not be negative.";
 
