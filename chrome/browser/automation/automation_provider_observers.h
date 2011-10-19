@@ -1556,7 +1556,7 @@ class GetAllNotificationsObserver : public content::NotificationObserver {
   // Returns a new dictionary describing the given notification.
   base::DictionaryValue* NotificationToJson(const Notification* note);
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
   base::WeakPtr<AutomationProvider> automation_;
   scoped_ptr<IPC::Message> reply_message_;
 
