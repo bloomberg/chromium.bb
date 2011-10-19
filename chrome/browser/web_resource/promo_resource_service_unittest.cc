@@ -39,7 +39,7 @@ class PromoResourceServiceTest : public testing::Test {
 class SyncPromoTest : public PromoResourceServiceTest,
                       public content::NotificationObserver {
  public:
-  SyncPromoTest() : PromoResourceServiceTest(), notifications_allowed_(false) {
+  SyncPromoTest() : PromoResourceServiceTest(), notifications_received_(0) {
     web_resource_service_->set_channel(chrome::VersionInfo::CHANNEL_DEV);
     registrar_.Add(this,
                    chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED,
@@ -49,11 +49,18 @@ class SyncPromoTest : public PromoResourceServiceTest,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) {
-    // If we get any unexpected notifications we should fail.
-    EXPECT_TRUE(notifications_allowed_);
+    EXPECT_EQ(type, chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED);
+    // Remember how many notifications we've received.
+    ++notifications_received_;
   }
 
-  void allow_notifications(bool allowed) { notifications_allowed_ = allowed; }
+  void reset_notification_count() {
+    notifications_received_ = 0;
+  }
+
+  int notifications_received() const {
+    return notifications_received_;
+  }
 
  protected:
   void ClearSyncPromoPrefs() {
@@ -101,7 +108,7 @@ class SyncPromoTest : public PromoResourceServiceTest,
   }
 
   private:
-    bool notifications_allowed_;
+    int notifications_received_;
     content::NotificationRegistrar registrar_;
 };
 
@@ -748,9 +755,6 @@ TEST_F(SyncPromoTest, UnpackSyncPromoSignal) {
   PrefService* prefs = profile_.GetPrefs();
   ASSERT_TRUE(prefs != NULL);
 
-  // It's OK if we get notifications now, so just allow all.
-  allow_notifications(true);
-
   // Test on by default (currently should be false).
   EXPECT_FALSE(PromoResourceService::CanShowSyncPromo(&profile_));
   EXPECT_FALSE(prefs->HasPrefPath(prefs::kNTPSyncPromoGroup));
@@ -820,9 +824,6 @@ TEST_F(SyncPromoTest, UnpackSyncPromoSignal) {
 // Throw random stuff at UnpackSyncPromoSignal and make sure no segfaults or
 // other issues and that the prefs were cleared.
 TEST_F(SyncPromoTest, UnpackSyncPromoSignalInvalid) {
-  // We're not testing these here, so ignore them.
-  allow_notifications(true);
-
   // Empty.
   InvalidTestCase("");
 
@@ -843,16 +844,28 @@ TEST_F(SyncPromoTest, UnpackSyncPromoSignalInvalid) {
 }
 
 TEST_F(SyncPromoTest, UnpackSyncPromoSignalNotify) {
-  // Ensure no notifications are sent.
+  // Clear prefs and ensure we're not triggering notifications every time we
+  // receive not-targeted or valid data (only when we need to turn off the
+  // promo).
   ClearSyncPromoPrefs();
-  allow_notifications(false);
+  reset_notification_count();
+
+  // Non-targeted build.
   SetupSyncPromoCase(2, 50);
+
+  // Targeted, but under any possible max group.
   SetupSyncPromoCase(1, 0);
+
+  // Targeted for sure, but shouldn't send notification.
   SetupSyncPromoCase(1, 100);
 
-  // Expect a notification to be called when the promo is disabled.
-  allow_notifications(true);
+  // Expect this didn't trigger any notifications.
+  EXPECT_EQ(notifications_received(), 0);
+
+  // Expect notifications when the promo is disabled, as this is expected
+  // behavior.
   SetupSyncPromoCase(2, 0);
+  EXPECT_EQ(notifications_received(), 1);
 }
 #endif  // !defined(OS_CHROMEOS)
 
