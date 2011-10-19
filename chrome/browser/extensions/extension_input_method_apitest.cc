@@ -38,7 +38,7 @@ class SetInputMethodListener : public content::NotificationObserver {
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) {
-    const std::string& content = *Details<std::string>(details).ptr();
+    const std::string& content = *content::Details<std::string>(details).ptr();
     const std::string expected_message = StringPrintf("%s:%s",
                                                       kSetInputMethodMessage,
                                                       kNewInputMethod);
