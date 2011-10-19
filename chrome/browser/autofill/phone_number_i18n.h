@@ -66,30 +66,6 @@ bool ConstructPhoneNumber(const string16& country_code,
                           FullPhoneFormat phone_format,
                           string16* whole_number) WARN_UNUSED_RESULT;
 
-// Parses and then formats phone number either nationally or internationally.
-// |phone| - raw, unsanitized phone number, as entered by user.
-// |locale| - country locale code, such as "US".
-// |phone_format| - the phone type format.
-// The same as calling ParsePhoneNumber(phone, locale, &country, &city,
-// &number); ConstructPhoneNumber(country, city, number, locale, phone_format,
-// &formatted_phone); but almost twice as fast, as parsing done only once.
-// Returns formatted phone on success, empty string on error.
-string16 FormatPhone(const string16& phone,
-                     const std::string& locale,
-                     FullPhoneFormat phone_format);
-
-enum PhoneMatch {
-  PHONES_NOT_EQUAL,
-  PHONES_EQUAL,  // +1(650)2345678 is equal to 1-650-234-56-78.
-  PHONES_SUBMATCH,  // 650-234-56-78 or 2345678 is a submatch for
-                    // +1(650)2345678. The submatch is symmetric.
-};
-
-// Compares two phones, normalizing them before comparision.
-PhoneMatch ComparePhones(const string16& phone1,
-                         const string16& phone2,
-                         const std::string& locale);
-
 bool PhoneNumbersMatch(const string16& number_a,
                        const string16& number_b,
                        const std::string& country_code);
@@ -108,8 +84,6 @@ class PhoneObject {
   std::string GetLocale() const { return locale_; }
 
   string16 GetWholeNumber() const;
-
-  PhoneMatch ComparePhones(const string16& phone) const;
 
   PhoneObject& operator=(const PhoneObject& other);
 
