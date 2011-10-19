@@ -4,6 +4,8 @@
 
 #include "content/renderer/p2p/socket_dispatcher.h"
 
+#include "base/bind.h"
+#include "base/memory/ref_counted.h"
 #include "base/message_loop_proxy.h"
 #include "content/common/p2p_messages.h"
 #include "content/renderer/p2p/host_address_request.h"
@@ -12,12 +14,44 @@
 
 namespace content {
 
+class P2PSocketDispatcher::AsyncMessageSender
+    : public base::RefCountedThreadSafe<AsyncMessageSender> {
+ public:
+  explicit AsyncMessageSender(IPC::Message::Sender* message_sender)
+      : message_loop_(base::MessageLoopProxy::current()),
+        message_sender_(message_sender) {
+  }
+
+  void Detach() {
+    DCHECK(message_loop_->BelongsToCurrentThread());
+    message_sender_ = NULL;
+  }
+
+  void Send(IPC::Message* msg) {
+    message_loop_->PostTask(FROM_HERE,
+                            base::Bind(&AsyncMessageSender::DoSend, this, msg));
+  }
+
+ private:
+  void DoSend(IPC::Message* msg) {
+    DCHECK(message_loop_->BelongsToCurrentThread());
+    if (message_sender_)
+      message_sender_->Send(msg);
+  }
+
+  scoped_refptr<base::MessageLoopProxy> message_loop_;
+  IPC::Message::Sender* message_sender_;
+
+  DISALLOW_COPY_AND_ASSIGN(AsyncMessageSender);
+};
+
 P2PSocketDispatcher::P2PSocketDispatcher(RenderViewImpl* render_view)
     : content::RenderViewObserver(render_view),
       message_loop_(base::MessageLoopProxy::current()),
       network_notifications_started_(false),
       network_list_observers_(
-          new ObserverListThreadSafe<NetworkListObserver>()) {
+          new ObserverListThreadSafe<NetworkListObserver>()),
+      async_message_sender_(new AsyncMessageSender(this)) {
 }
 
 P2PSocketDispatcher::~P2PSocketDispatcher() {
@@ -27,20 +61,20 @@ P2PSocketDispatcher::~P2PSocketDispatcher() {
        i.Advance()) {
     i.GetCurrentValue()->Detach();
   }
+  async_message_sender_->Detach();
 }
 
 void P2PSocketDispatcher::AddNetworkListObserver(
     NetworkListObserver* network_list_observer) {
   network_list_observers_->AddObserver(network_list_observer);
   network_notifications_started_ = true;
-  Send(new P2PHostMsg_StartNetworkNotifications(routing_id()));
+  async_message_sender_->Send(
+      new P2PHostMsg_StartNetworkNotifications(routing_id()));
 }
 
 void P2PSocketDispatcher::RemoveNetworkListObserver(
     NetworkListObserver* network_list_observer) {
   network_list_observers_->RemoveObserver(network_list_observer);
-  network_notifications_started_ = false;
-  Send(new P2PHostMsg_StopNetworkNotifications(routing_id()));
 }
 
 bool P2PSocketDispatcher::OnMessageReceived(const IPC::Message& message) {

@@ -81,6 +81,7 @@ class P2PSocketDispatcher : public content::RenderViewObserver {
  private:
   friend class P2PHostAddressRequest;
   friend class P2PSocketClient;
+  class AsyncMessageSender;
 
   base::MessageLoopProxy* message_loop();
 
@@ -113,6 +114,8 @@ class P2PSocketDispatcher : public content::RenderViewObserver {
   bool network_notifications_started_;
   scoped_refptr<ObserverListThreadSafe<NetworkListObserver> >
       network_list_observers_;
+
+  scoped_refptr<AsyncMessageSender> async_message_sender_;
 
   DISALLOW_COPY_AND_ASSIGN(P2PSocketDispatcher);
 };
