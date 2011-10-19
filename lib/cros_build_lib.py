@@ -268,7 +268,6 @@ def Error(message):
 
 
 #TODO(sjg): Remove this in favor of operation.Warning
-# pylint: disable-msg=W0622
 def Warning(message):
   """Emits a yellow warning message and continues execution."""
   if DebugLevel.GetCurrentDebugLevel() <= DebugLevel.WARNING:

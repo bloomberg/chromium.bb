@@ -27,6 +27,7 @@ from chromite.buildbot import patch
 from chromite.lib import cros_build_lib as cros_lib
 
 
+# pylint: disable=W0212,R0904
 FAKE_VERSION_STRING = '1.2.4-rc3'
 FAKE_VERSION_STRING_NEXT = '1.2.4-rc4'
 CHROME_BRANCH = '13'

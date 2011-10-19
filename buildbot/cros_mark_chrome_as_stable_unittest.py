@@ -21,6 +21,7 @@ sys.path.append(constants.CROSUTILS_LIB_DIR)
 import cros_mark_as_stable
 import cros_mark_chrome_as_stable
 
+# pylint: disable=W0212,R0904
 unstable_data = 'KEYWORDS=~x86 ~arm'
 stable_data = 'KEYWORDS=x86 arm'
 fake_svn_rev = '12345'

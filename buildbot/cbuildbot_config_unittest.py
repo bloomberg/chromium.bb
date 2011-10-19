@@ -14,6 +14,7 @@ import constants
 sys.path.append(constants.SOURCE_ROOT)
 from chromite.buildbot import cbuildbot_config
 
+# pylint: disable=W0212,R0904
 class CBuildBotTest(mox.MoxTestBase):
 
   def setUp(self):

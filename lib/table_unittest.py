@@ -13,6 +13,7 @@ import unittest
 
 import table
 
+# pylint: disable=W0212,R0904
 class TableTest(unittest.TestCase):
   """Unit tests for the Table class."""
 

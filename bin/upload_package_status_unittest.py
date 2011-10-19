@@ -26,6 +26,7 @@ _stderr = None
 _stdout_cap = None
 _stderr_cap = None
 
+# pylint: disable=W0212,R0904
 def _StartCapturingOutput():
   """Begin capturing stdout and stderr."""
   global _stdout, _stderr, _stdout_cap, _stderr_cap

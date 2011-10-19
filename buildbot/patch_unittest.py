@@ -19,6 +19,7 @@ from chromite.buildbot import patch as cros_patch
 from chromite.buildbot import gerrit_helper
 
 
+# pylint: disable=W0212,R0904
 class GerritQueryTests(mox.MoxTestBase):
 
   def setUp(self):

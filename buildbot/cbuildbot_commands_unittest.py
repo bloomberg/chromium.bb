@@ -21,6 +21,7 @@ import chromite.lib.cros_build_lib as cros_lib
 import chromite.buildbot.repository as repository
 
 
+# pylint: disable=W0212,R0904
 class CBuildBotTest(mox.MoxTestBase):
 
   def setUp(self):

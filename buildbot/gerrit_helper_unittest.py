@@ -16,6 +16,7 @@ from chromite.buildbot import gerrit_helper
 from chromite.lib import cros_build_lib as cros_lib
 
 
+# pylint: disable=W0212,R0904
 class GerritHelperTest(mox.MoxTestBase):
 
   def setUp(self):

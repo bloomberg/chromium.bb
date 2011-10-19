@@ -28,6 +28,7 @@ from chromite.buildbot import manifest_version
 from chromite.lib import cros_build_lib as cros_lib
 
 
+# pylint: disable=W0212,R0904
 class AbstractStageTest(mox.MoxTestBase):
   """Base class for tests that test a particular build stage.
 

@@ -21,6 +21,7 @@ from chromite.buildbot import manifest_version
 from chromite.buildbot import repository
 from chromite.lib import cros_build_lib as cros_lib
 
+# pylint: disable=W0212,R0904
 FAKE_VERSION = """
 CHROMEOS_BUILD=1
 CHROMEOS_BRANCH=2

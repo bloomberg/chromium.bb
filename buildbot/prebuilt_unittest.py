@@ -17,6 +17,7 @@ import prebuilt
 from chromite.lib import cros_build_lib
 from chromite.lib import binpkg
 
+# pylint: disable=W0212,R0904
 PUBLIC_PACKAGES = [{'CPV': 'gtk+/public1', 'SHA1': '1', 'MTIME': '1'},
                    {'CPV': 'gtk+/public2', 'SHA1': '2',
                     'PATH': 'gtk+/foo.tgz', 'MTIME': '2'}]

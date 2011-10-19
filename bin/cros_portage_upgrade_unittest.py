@@ -21,6 +21,7 @@ import parallel_emerge
 import portage.package.ebuild.config as portcfg
 import portage.tests.resolver.ResolverPlayground as respgnd
 
+# pylint: disable=W0212,R0904
 # Regex to find the character sequence to turn text red (used for errors).
 ERROR_PREFIX = re.compile('^\033\[1;31m')
 

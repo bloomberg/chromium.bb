@@ -22,6 +22,7 @@ import chromite.buildbot.cbuildbot_config as config
 import chromite.lib.cros_build_lib as cros_lib
 
 
+# pylint: disable=W0212,R0904
 class TestExitedException(Exception):
   """Exception used by sys.exit() mock to halt execution."""
   pass

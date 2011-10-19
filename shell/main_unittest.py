@@ -24,13 +24,6 @@ import mox
 #
 # pylint: disable=W0212
 
-# Needed to make pylint not yell so much about mocked out stuff
-# (it yells about AndReturn, MultipleTimes, ...).
-#
-# TODO(dianders): Any better solution than this heavy hammer?
-#
-# pylint: disable=E1101, E1103
-
 # Just being a unittest.TestCase gives us 14 public methods.  Unless we
 # disable this, we can only have 6 tests in a TestCase.  That's not enough.
 #

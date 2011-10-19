@@ -20,6 +20,7 @@ from chromite.buildbot import patch as cros_patch
 from chromite.buildbot import validation_pool
 
 
+# pylint: disable=W0212,R0904
 class TestValidationPool(mox.MoxTestBase):
   """Tests methods in validation_pool.ValidationPool."""
 

@@ -20,6 +20,7 @@ import mox
 import chromite.lib.table as table
 import merge_package_status as mps
 
+# pylint: disable=W0212,R0904
 class MergeTest(unittest.TestCase):
   """Test the functionality of merge_package_status."""
 

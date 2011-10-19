@@ -22,6 +22,7 @@ from chromite.lib import cros_build_lib
 import cros_mark_as_stable
 
 
+# pylint: disable=W0212,R0904
 class NonClassTests(mox.MoxTestBase):
   def setUp(self):
     mox.MoxTestBase.setUp(self)

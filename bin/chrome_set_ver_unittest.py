@@ -18,6 +18,7 @@ import chromite.lib.cros_build_lib as cros_lib
 import chromite.bin.chrome_set_ver as chrome_set_ver
 
 
+# pylint: disable=W0212,R0904
 class TestEndedException(Exception):
   """Exception thrown by test to mark completion."""
   pass

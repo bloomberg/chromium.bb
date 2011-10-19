@@ -15,6 +15,7 @@ import cros_build_lib
 import mox
 
 
+# pylint: disable=W0212,R0904
 class TestRunCommandNoMock(unittest.TestCase):
   """Class that tests RunCommand by not mocking subprocess.Popen"""
 
