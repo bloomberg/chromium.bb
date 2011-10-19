@@ -514,7 +514,9 @@ class VMTestStage(bs.BuilderStage):
   def _CreateTestRoot(self):
     """Returns a temporary directory for test results in chroot.
 
-    Returns relative path from chroot rather than whole path.
+    Returns:
+      A 2-tuple containing the absolute paths from inside the chroot and
+      outside the chroot i.e. returns (inside, outside).
     """
     # Create test directory within tmp in chroot.
     chroot = os.path.join(self._build_root, 'chroot')
@@ -523,7 +525,7 @@ class VMTestStage(bs.BuilderStage):
 
     # Relative directory.
     (_, _, relative_path) = test_root.partition(chroot)
-    return relative_path
+    return relative_path, test_root
 
   def _PerformStage(self):
     # VM tests should run with higher priority than other tasks
@@ -541,16 +543,21 @@ class VMTestStage(bs.BuilderStage):
         if self._archive_stage:
           self._archive_stage.AutotestTarballReady(filename)
 
+    # These directories are used later to archive test artifacts.
     test_results_dir = None
+    payloads_dir_full_path = None
     try:
       if self._build_config['vm_tests'] and self._options.tests:
-        test_results_dir = self._CreateTestRoot()
+        test_results_dir = self._CreateTestRoot()[0]
+        payloads_dir, payloads_dir_full_path = self._CreateTestRoot()
         commands.RunTestSuite(self._build_root,
                               self._build_config['board'],
                               self.GetImageDirSymlink(),
                               os.path.join(test_results_dir,
                                            'test_harness'),
-                              test_type=self._build_config['vm_tests'])
+                              test_type=self._build_config['vm_tests'],
+                              nplus1_archive_dir=payloads_dir,
+                              build_config=self._bot_id)
 
         if self._build_config['chrome_tests']:
           commands.RunChromeSuite(self._build_root,
@@ -558,14 +565,16 @@ class VMTestStage(bs.BuilderStage):
                                   self.GetImageDirSymlink(),
                                   os.path.join(test_results_dir,
                                                'chrome_results'))
-    except commands.TestException as e:
+    except commands.TestException:
       raise bs.NonBacktraceBuildException()  # Suppress redundant output.
     finally:
       test_tarball = None
       if test_results_dir:
         test_tarball = commands.ArchiveTestResults(self._build_root,
                                                    test_results_dir)
+
       if self._archive_stage:
+        self._archive_stage.UpdatePayloadsReady(payloads_dir_full_path)
         self._archive_stage.TestResultsReady(test_tarball)
 
 
@@ -663,6 +672,7 @@ class ArchiveStage(NonHaltingBuilderStage):
     self._bot_archive_root = os.path.join(self._archive_root, self._bot_id)
     self._autotest_tarball_queue = multiprocessing.Queue()
     self._test_results_queue = multiprocessing.Queue()
+    self._update_payloads_queue = multiprocessing.Queue()
     self._breakpad_symbols_queue = multiprocessing.Queue()
 
   def AutotestTarballReady(self, autotest_tarball):
@@ -672,6 +682,15 @@ class ArchiveStage(NonHaltingBuilderStage):
          autotest_tarball: The filename of the autotest tarball.
     """
     self._autotest_tarball_queue.put(autotest_tarball)
+
+  def UpdatePayloadsReady(self, update_payloads_dir):
+    """Tell Archive Stage that test results are ready.
+
+       Args:
+         test_results: The test results tarball from the tests. If no tests
+                       results are available, this should be set to None.
+    """
+    self._update_payloads_queue.put(update_payloads_dir)
 
   def TestResultsReady(self, test_results):
     """Tell Archive Stage that test results are ready.
@@ -690,6 +709,7 @@ class ArchiveStage(NonHaltingBuilderStage):
     """
     self._autotest_tarball_queue.put(None)
     self._test_results_queue.put(None)
+    self._update_payloads_queue.put(None)
 
   def _BreakpadSymbolsGenerated(self, success):
     """Signal that breakpad symbols have been generated.
@@ -750,6 +770,16 @@ class ArchiveStage(NonHaltingBuilderStage):
       cros_lib.Info('No autotest tarball.')
     return autotest_tarball
 
+  def _GetUpdatePayloads(self):
+    """Get the path to the directory containing update payloads."""
+    cros_lib.Info('Waiting for update payloads dir...')
+    update_payloads_dir = self._update_payloads_queue.get()
+    if update_payloads_dir:
+      cros_lib.Info('Found update payloads at %s...' % update_payloads_dir)
+    else:
+      cros_lib.Info('No update payloads found.')
+    return update_payloads_dir
+
   def _GetTestResults(self):
     """Get the path to the test results tarball."""
     cros_lib.Info('Waiting for test results dir...')
@@ -787,9 +817,19 @@ class ArchiveStage(NonHaltingBuilderStage):
       extra_env['USE'] = ' '.join(config['useflags'])
 
     # The following three functions are run in parallel.
-    #  1. UploadTestResults: Upload results from test phase.
-    #  2. ArchiveDebugSymbols: Generate and upload debug symbols.
-    #  3. BuildAndArchiveAllImages: Build and archive images.
+    #  1. UploadUpdatePayloads: Upload update payloads from test phase.
+    #  2. UploadTestResults: Upload results from test phase.
+    #  3. ArchiveDebugSymbols: Generate and upload debug symbols.
+    #  4. BuildAndArchiveAllImages: Build and archive images.
+
+    def UploadUpdatePayloads():
+      """Uploads update payloads when ready."""
+      update_payloads_dir = self._GetUpdatePayloads()
+      if update_payloads_dir:
+        for payload in os.listdir(update_payloads_dir):
+          filename = os.path.join(update_payloads_dir, payload)
+          commands.UploadArchivedFile(archive_path, upload_url,
+                                      filename, debug)
 
     def UploadTestResults():
       """Upload test results when they are ready."""
@@ -888,6 +928,7 @@ class ArchiveStage(NonHaltingBuilderStage):
                                    ArchiveRegularImages])
 
     background.RunParallelSteps([
+      UploadUpdatePayloads,
       UploadTestResults,
       ArchiveDebugSymbols,
       BuildAndArchiveAllImages])
