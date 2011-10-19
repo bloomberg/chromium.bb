@@ -205,15 +205,15 @@ void ExtensionSettingsHandler::MaybeRegisterForNotifications() {
 
   // Register for notifications that we need to reload the page.
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
-                 Source<Profile>(profile));
+                 content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_PROCESS_CREATED,
-                 Source<Profile>(profile));
+                 content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
-                 Source<Profile>(profile));
+                 content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED,
-                 Source<Profile>(profile));
+                 content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_WARNING_CHANGED,
-                 Source<Profile>(profile));
+                 content::Source<Profile>(profile));
   registrar_.Add(this,
                  content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                  NotificationService::AllBrowserContextsAndSources());
@@ -232,7 +232,7 @@ void ExtensionSettingsHandler::MaybeRegisterForNotifications() {
   registrar_.Add(
       this,
       chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,
-      Source<ExtensionPrefs>(profile->GetExtensionService()->
+      content::Source<ExtensionPrefs>(profile->GetExtensionService()->
                              extension_prefs()));
 }
 
@@ -584,9 +584,10 @@ WebUIMessageHandler* ExtensionSettingsHandler::Attach(WebUI* web_ui) {
   return handler;
 }
 
-void ExtensionSettingsHandler::Observe(int type,
-                                       const NotificationSource& source,
-                                       const NotificationDetails& details) {
+void ExtensionSettingsHandler::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   Profile* profile = Profile::FromWebUI(web_ui_);
   Profile* source_profile = NULL;
   switch (type) {
@@ -605,28 +606,30 @@ void ExtensionSettingsHandler::Observe(int type,
     // Doing it this way gets everything but causes the page to be rendered
     // more than we need. It doesn't seem to result in any noticeable flicker.
     case content::NOTIFICATION_RENDER_VIEW_HOST_DELETED:
-      deleting_rvh_ = Source<RenderViewHost>(source).ptr();
+      deleting_rvh_ = content::Source<RenderViewHost>(source).ptr();
       // Fall through.
     case content::NOTIFICATION_RENDER_VIEW_HOST_CREATED:
       source_profile = Profile::FromBrowserContext(
-          Source<RenderViewHost>(source)->site_instance()->
+          content::Source<RenderViewHost>(source)->site_instance()->
           browsing_instance()->browser_context());
       if (!profile->IsSameProfile(source_profile))
         return;
       MaybeUpdateAfterNotification();
       break;
     case chrome::NOTIFICATION_BACKGROUND_CONTENTS_DELETED:
-      deleting_rvh_ = Details<BackgroundContents>(details)->render_view_host();
+      deleting_rvh_ =
+          content::Details<BackgroundContents>(details)->render_view_host();
       // Fall through.
     case chrome::NOTIFICATION_BACKGROUND_CONTENTS_NAVIGATED:
-      source_profile = Source<Profile>(source).ptr();
+      source_profile = content::Source<Profile>(source).ptr();
       if (!profile->IsSameProfile(source_profile))
           return;
       MaybeUpdateAfterNotification();
       break;
     case content::NOTIFICATION_NAV_ENTRY_COMMITTED:
       source_profile = Profile::FromBrowserContext(
-          Source<NavigationController>(source).ptr()->browser_context());
+          content::Source<NavigationController>(
+              source).ptr()->browser_context());
       if (!profile->IsSameProfile(source_profile))
         return;
       MaybeUpdateAfterNotification();

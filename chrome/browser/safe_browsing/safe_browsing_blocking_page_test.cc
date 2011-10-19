@@ -316,7 +316,7 @@ class SafeBrowsingBlockingPageTest : public InProcessBrowserTest,
     TabContents* contents = browser()->GetSelectedTabContents();
     ui_test_utils::WindowedNotificationObserver interstitial_observer(
           content::NOTIFICATION_INTERSTITIAL_ATTACHED,
-          Source<TabContents>(contents));
+          content::Source<TabContents>(contents));
     if (!InterstitialPage::GetInterstitialPage(contents))
       interstitial_observer.Wait();
   }
@@ -420,7 +420,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, MalwareProceed) {
   ui_test_utils::NavigateToURL(browser(), url);
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
-      Source<NavigationController>(
+      content::Source<NavigationController>(
           &browser()->GetSelectedTabContentsWrapper()->controller()));
   SendCommand("\"proceed\"");    // Simulate the user clicking "proceed"
   observer.Wait();
@@ -448,7 +448,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, PhishingProceed) {
 
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
-      Source<NavigationController>(
+      content::Source<NavigationController>(
           &browser()->GetSelectedTabContentsWrapper()->controller()));
   SendCommand("\"proceed\"");   // Simulate the user clicking "proceed".
   observer.Wait();
@@ -464,7 +464,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, PhishingReportError) {
 
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
-      Source<NavigationController>(
+      content::Source<NavigationController>(
           &browser()->GetSelectedTabContentsWrapper()->controller()));
   SendCommand("\"reportError\"");   // Simulate the user clicking "report error"
   observer.Wait();
@@ -484,7 +484,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
 
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
-      Source<NavigationController>(
+      content::Source<NavigationController>(
           &browser()->GetSelectedTabContentsWrapper()->controller()));
   SendCommand("\"learnMore\"");   // Simulate the user clicking "learn more"
   observer.Wait();

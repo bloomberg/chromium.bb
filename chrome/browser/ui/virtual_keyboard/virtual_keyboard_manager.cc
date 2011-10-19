@@ -78,7 +78,7 @@ class KeyboardWidget
 #if defined(USE_AURA)
       public aura::DesktopObserver,
 #endif
-      public NotificationObserver,
+      public content::NotificationObserver,
       public views::Widget::Observer,
       public views::TextInputTypeObserver {
  public:
@@ -141,8 +141,8 @@ class KeyboardWidget
 
   // Overridden from NotificationObserver.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Overridden from views::Widget::Observer.
   virtual void OnWidgetClosing(Widget* widget) OVERRIDE;
@@ -166,7 +166,7 @@ class KeyboardWidget
   // Height of the keyboard.
   int keyboard_height_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardWidget);
 };
@@ -264,8 +264,8 @@ void KeyboardWidget::ShowKeyboardForWidget(views::Widget* widget) {
   bool visible = true;
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_KEYBOARD_VISIBILITY_CHANGED,
-      Source<KeyboardWidget>(this),
-      Details<bool>(&visible));
+      content::Source<KeyboardWidget>(this),
+      content::Details<bool>(&visible));
 }
 
 void KeyboardWidget::ResetBounds() {
@@ -278,8 +278,8 @@ void KeyboardWidget::Hide() {
   bool visible = false;
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_KEYBOARD_VISIBILITY_CHANGED,
-      Source<KeyboardWidget>(this),
-      Details<bool>(&visible));
+      content::Source<KeyboardWidget>(this),
+      content::Details<bool>(&visible));
 }
 
 void KeyboardWidget::SetTarget(views::Widget* target) {
@@ -330,8 +330,8 @@ void KeyboardWidget::AnimationEnded(const ui::Animation* animation) {
 
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_KEYBOARD_VISIBLE_BOUNDS_CHANGED,
-      Source<KeyboardWidget>(this),
-      Details<gfx::Rect>(&keyboard_rect));
+      content::Source<KeyboardWidget>(this),
+      content::Details<gfx::Rect>(&keyboard_rect));
 }
 
 bool KeyboardWidget::OnMessageReceived(const IPC::Message& message) {
@@ -441,8 +441,8 @@ void KeyboardWidget::OnDesktopResized(const gfx::Size& new_size) {
 #endif
 
 void KeyboardWidget::Observe(int type,
-                             const NotificationSource& source,
-                             const NotificationDetails& details) {
+                             const content::NotificationSource& source,
+                             const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_FOCUSED_EDITABLE_NODE_TOUCHED: {
       // In case the keyboard hid itself and the focus is still in an editable

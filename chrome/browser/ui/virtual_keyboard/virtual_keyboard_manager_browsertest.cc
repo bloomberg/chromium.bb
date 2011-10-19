@@ -13,7 +13,7 @@
 #include "views/widget/widget.h"
 
 class VirtualKeyboardManagerTest : public InProcessBrowserTest,
-                            public NotificationObserver {
+                            public content::NotificationObserver {
  public:
   VirtualKeyboardManagerTest()
       : InProcessBrowserTest(),
@@ -42,7 +42,7 @@ class VirtualKeyboardManagerTest : public InProcessBrowserTest,
   }
 
   bool keyboard_visible_;
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 };
 
 IN_PROC_BROWSER_TEST_F(VirtualKeyboardManagerTest, TestVisibility) {

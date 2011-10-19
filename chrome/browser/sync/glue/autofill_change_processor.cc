@@ -59,11 +59,12 @@ AutofillChangeProcessor::AutofillChangeProcessor(
 
 AutofillChangeProcessor::~AutofillChangeProcessor() {}
 
-void AutofillChangeProcessor::Observe(int type,
-                                      const NotificationSource& source,
-                                      const NotificationDetails& details) {
+void AutofillChangeProcessor::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   // Ensure this notification came from our web database.
-  WebDataService* wds = Source<WebDataService>(source).ptr();
+  WebDataService* wds = content::Source<WebDataService>(source).ptr();
   if (!wds || wds->GetDatabase() != web_database_)
     return;
 
@@ -83,7 +84,8 @@ void AutofillChangeProcessor::Observe(int type,
 
   DCHECK(type == chrome::NOTIFICATION_AUTOFILL_ENTRIES_CHANGED);
 
-  AutofillChangeList* changes = Details<AutofillChangeList>(details).ptr();
+  AutofillChangeList* changes =
+      content::Details<AutofillChangeList>(details).ptr();
   ObserveAutofillEntriesChanged(changes, &trans, autofill_root);
 }
 

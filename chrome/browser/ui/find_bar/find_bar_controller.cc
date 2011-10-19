@@ -15,8 +15,8 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/navigation_entry.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "ui/gfx/rect.h"
 
 // The minimum space between the FindInPage window and the search result.
@@ -86,9 +86,10 @@ void FindBarController::ChangeTabContents(TabContentsWrapper* contents) {
     return;
 
   registrar_.Add(this, chrome::NOTIFICATION_FIND_RESULT_AVAILABLE,
-                 Source<TabContents>(tab_contents_->tab_contents()));
-  registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-                 Source<NavigationController>(&tab_contents_->controller()));
+                 content::Source<TabContents>(tab_contents_->tab_contents()));
+  registrar_.Add(
+      this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+      content::Source<NavigationController>(&tab_contents_->controller()));
 
   MaybeSetPrepopulateText();
 
@@ -105,16 +106,17 @@ void FindBarController::ChangeTabContents(TabContentsWrapper* contents) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// FindBarHost, NotificationObserver implementation:
+// FindBarHost, content::NotificationObserver implementation:
 
 void FindBarController::Observe(int type,
-                                const NotificationSource& source,
-                                const NotificationDetails& details) {
+                                const content::NotificationSource& source,
+                                const content::NotificationDetails& details) {
   FindTabHelper* find_tab_helper = tab_contents_->find_tab_helper();
   if (type == chrome::NOTIFICATION_FIND_RESULT_AVAILABLE) {
     // Don't update for notifications from TabContentses other than the one we
     // are actively tracking.
-    if (Source<TabContents>(source).ptr() == tab_contents_->tab_contents()) {
+    if (content::Source<TabContents>(source).ptr() ==
+        tab_contents_->tab_contents()) {
       UpdateFindBarForCurrentResult();
       if (find_tab_helper->find_result().final_update() &&
           find_tab_helper->find_result().number_of_matches() == 0) {
@@ -126,10 +128,10 @@ void FindBarController::Observe(int type,
     }
   } else if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED) {
     NavigationController* source_controller =
-        Source<NavigationController>(source).ptr();
+        content::Source<NavigationController>(source).ptr();
     if (source_controller == &tab_contents_->controller()) {
       content::LoadCommittedDetails* commit_details =
-          Details<content::LoadCommittedDetails>(details).ptr();
+          content::Details<content::LoadCommittedDetails>(details).ptr();
       content::PageTransition transition_type =
           commit_details->entry->transition_type();
       // We hide the FindInPage window when the user navigates away, except on

@@ -23,8 +23,8 @@
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/common/content_constants.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_source.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/common/bindings_policy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/message_box_flags.h"
@@ -97,8 +97,8 @@ class TestInterstitialPage : public ChromeInterstitialPage {
   void TestDomOperationResponse(const std::string& json_string) {
     DomOperationNotificationDetails details(json_string, 1);
     Observe(chrome::NOTIFICATION_DOM_OPERATION_RESPONSE,
-            Source<RenderViewHost>(render_view_host()),
-            Details<DomOperationNotificationDetails>(&details));
+            content::Source<RenderViewHost>(render_view_host()),
+            content::Details<DomOperationNotificationDetails>(&details));
   }
 
   void TestDidNavigate(int page_id, const GURL& url) {

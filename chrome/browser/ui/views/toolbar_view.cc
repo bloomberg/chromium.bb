@@ -124,7 +124,7 @@ ToolbarView::ToolbarView(Browser* browser)
                  chrome::NOTIFICATION_MODULE_INCOMPATIBILITY_BADGE_CHANGE,
                  NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED,
-                 Source<Profile>(browser_->profile()));
+                 content::Source<Profile>(browser_->profile()));
 }
 
 ToolbarView::~ToolbarView() {
@@ -407,14 +407,14 @@ void ToolbarView::ButtonPressed(views::Button* sender,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ToolbarView, NotificationObserver implementation:
+// ToolbarView, content::NotificationObserver implementation:
 
 void ToolbarView::Observe(int type,
-                          const NotificationSource& source,
-                          const NotificationDetails& details) {
+                          const content::NotificationSource& source,
+                          const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_PREF_CHANGED: {
-      std::string* pref_name = Details<std::string>(details).ptr();
+      std::string* pref_name = content::Details<std::string>(details).ptr();
       if (*pref_name == prefs::kShowHomeButton) {
         Layout();
         SchedulePaint();

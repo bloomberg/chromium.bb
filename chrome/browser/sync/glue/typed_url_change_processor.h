@@ -13,8 +13,8 @@
 #include "base/time.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/glue/typed_url_model_associator.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
 
 class MessageLoop;
@@ -37,7 +37,7 @@ class UnrecoverableErrorHandler;
 // applying them to the sync_api 'syncable' model, and vice versa. All
 // operations and use of this class are from the UI thread.
 class TypedUrlChangeProcessor : public ChangeProcessor,
-                                public NotificationObserver {
+                                public content::NotificationObserver {
  public:
   TypedUrlChangeProcessor(Profile* profile,
                           TypedUrlModelAssociator* model_associator,
@@ -45,11 +45,11 @@ class TypedUrlChangeProcessor : public ChangeProcessor,
                           UnrecoverableErrorHandler* error_handler);
   virtual ~TypedUrlChangeProcessor();
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   // History -> sync_api model change application.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // sync_api model -> WebDataService change application.
   virtual void ApplyChangesFromSyncModel(
@@ -95,7 +95,7 @@ class TypedUrlChangeProcessor : public ChangeProcessor,
   // holding a reference.
   history::HistoryBackend* history_backend_;
 
-  NotificationRegistrar notification_registrar_;
+  content::NotificationRegistrar notification_registrar_;
 
   bool observing_;  // True when we should observe notifications.
 

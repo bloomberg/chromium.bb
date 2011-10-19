@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_NOTIFICATION_REGISTRAR_H_
-#define CONTENT_COMMON_NOTIFICATION_REGISTRAR_H_
+#ifndef CONTENT_PUBLIC_BROWSER_NOTIFICATION_REGISTRAR_H_
+#define CONTENT_PUBLIC_BROWSER_NOTIFICATION_REGISTRAR_H_
 #pragma once
 
 #include <vector>
 
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
+
+namespace content {
 
 class NotificationObserver;
 class NotificationSource;
@@ -31,10 +33,10 @@ class CONTENT_EXPORT NotificationRegistrar {
   // Wrappers around NotificationService::[Add|Remove]Observer.
   void Add(NotificationObserver* observer,
            int type,
-           const NotificationSource& source);
+           const content::NotificationSource& source);
   void Remove(NotificationObserver* observer,
               int type,
-              const NotificationSource& source);
+              const content::NotificationSource& source);
 
   // Unregisters all notifications.
   void RemoveAll();
@@ -46,7 +48,7 @@ class CONTENT_EXPORT NotificationRegistrar {
   // specified details.
   bool IsRegistered(NotificationObserver* observer,
                     int type,
-                    const NotificationSource& source);
+                    const content::NotificationSource& source);
 
  private:
   struct Record;
@@ -63,4 +65,6 @@ class CONTENT_EXPORT NotificationRegistrar {
   DISALLOW_COPY_AND_ASSIGN(NotificationRegistrar);
 };
 
-#endif  // CONTENT_COMMON_NOTIFICATION_REGISTRAR_H_
+}  // namespace content
+
+#endif  // CONTENT_PUBLIC_BROWSER_NOTIFICATION_REGISTRAR_H_

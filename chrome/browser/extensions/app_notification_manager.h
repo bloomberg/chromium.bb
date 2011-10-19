@@ -13,15 +13,15 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/app_notification.h"
 #include "chrome/browser/extensions/app_notification_storage.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class Profile;
 
 // This class keeps track of notifications for installed apps.
 class AppNotificationManager
     : public base::RefCountedThreadSafe<AppNotificationManager>,
-      public NotificationObserver {
+      public content::NotificationObserver {
  public:
   explicit AppNotificationManager(Profile* profile);
 
@@ -40,10 +40,10 @@ class AppNotificationManager
   // Clears all notifications for |extension_id|.
   void ClearAll(const std::string& extension_id);
 
-  // Implementing NotificationObserver interface.
+  // Implementing content::NotificationObserver interface.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   friend class base::RefCountedThreadSafe<AppNotificationManager>;
@@ -65,7 +65,7 @@ class AppNotificationManager
   void DeleteOnFileThread(const std::string& extension_id);
 
   Profile* profile_;
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
   NotificationMap notifications_;
 
   // This should only be used on the FILE thread.

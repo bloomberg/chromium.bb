@@ -9,7 +9,7 @@
 #include "chrome/common/render_messages.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "googleurl/src/gurl.h"
 
@@ -21,7 +21,7 @@ SearchProviderInstallStateMessageFilter(
         reply_with_provider_install_state_factory_(this)),
       provider_data_(profile->GetWebDataService(Profile::EXPLICIT_ACCESS),
                      content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-                     Source<RenderProcessHost>(
+                     content::Source<RenderProcessHost>(
                          RenderProcessHost::FromID(render_process_id))),
       is_off_the_record_(profile->IsOffTheRecord()) {
   // This is initialized by BrowserRenderProcessHost. Do not add any non-trivial

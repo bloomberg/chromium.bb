@@ -548,8 +548,8 @@ void PluginService::OnWaitableEventSignaled(
 }
 
 void PluginService::Observe(int type,
-                            const NotificationSource& source,
-                            const NotificationDetails& details) {
+                            const content::NotificationSource& source,
+                            const content::NotificationDetails& details) {
 #if defined(OS_MACOSX)
   if (type == content::NOTIFICATION_APP_ACTIVATED) {
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,

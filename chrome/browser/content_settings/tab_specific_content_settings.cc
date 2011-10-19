@@ -59,7 +59,7 @@ TabSpecificContentSettings::TabSpecificContentSettings(TabContents* tab)
   g_tab_specific.Get().push_back(this);
 
   registrar_.Add(this, chrome::NOTIFICATION_CONTENT_SETTINGS_CHANGED,
-                 Source<HostContentSettingsMap>(
+                 content::Source<HostContentSettingsMap>(
                      profile_->GetHostContentSettingsMap()));
 }
 
@@ -233,7 +233,7 @@ void TabSpecificContentSettings::OnContentBlocked(
     // TODO: it would be nice to have a way of mocking this in tests.
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_TAB_CONTENT_SETTINGS_CHANGED,
-        Source<TabContents>(tab_contents()),
+        content::Source<TabContents>(tab_contents()),
         NotificationService::NoDetails());
   }
 }
@@ -245,7 +245,7 @@ void TabSpecificContentSettings::OnContentAccessed(ContentSettingsType type) {
     content_accessed_[type] = true;
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_TAB_CONTENT_SETTINGS_CHANGED,
-        Source<TabContents>(tab_contents()),
+        content::Source<TabContents>(tab_contents()),
         NotificationService::NoDetails());
   }
 }
@@ -351,7 +351,7 @@ void TabSpecificContentSettings::OnGeolocationPermissionSet(
                                                          allowed);
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_CONTENT_SETTINGS_CHANGED,
-      Source<TabContents>(tab_contents()),
+      content::Source<TabContents>(tab_contents()),
       NotificationService::NoDetails());
 }
 
@@ -367,7 +367,7 @@ void TabSpecificContentSettings::ClearBlockedContentSettingsExceptForCookies() {
   load_plugins_link_enabled_ = true;
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_CONTENT_SETTINGS_CHANGED,
-      Source<TabContents>(tab_contents()),
+      content::Source<TabContents>(tab_contents()),
       NotificationService::NoDetails());
 }
 
@@ -379,7 +379,7 @@ void TabSpecificContentSettings::ClearCookieSpecificContentSettings() {
   content_blockage_indicated_to_user_[CONTENT_SETTINGS_TYPE_COOKIES] = false;
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_CONTENT_SETTINGS_CHANGED,
-      Source<TabContents>(tab_contents()),
+      content::Source<TabContents>(tab_contents()),
       NotificationService::NoDetails());
 }
 
@@ -388,7 +388,7 @@ void TabSpecificContentSettings::SetPopupsBlocked(bool blocked) {
   content_blockage_indicated_to_user_[CONTENT_SETTINGS_TYPE_POPUPS] = false;
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_CONTENT_SETTINGS_CHANGED,
-      Source<TabContents>(tab_contents()),
+      content::Source<TabContents>(tab_contents()),
       NotificationService::NoDetails());
 }
 
@@ -466,12 +466,13 @@ void TabSpecificContentSettings::AppCacheAccessed(const GURL& manifest_url,
   }
 }
 
-void TabSpecificContentSettings::Observe(int type,
-                                         const NotificationSource& source,
-                                         const NotificationDetails& details) {
+void TabSpecificContentSettings::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_CONTENT_SETTINGS_CHANGED);
 
-  Details<const ContentSettingsDetails> settings_details(details);
+  content::Details<const ContentSettingsDetails> settings_details(details);
   const NavigationController& controller = tab_contents()->controller();
   NavigationEntry* entry = controller.GetActiveEntry();
   GURL entry_url;

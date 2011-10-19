@@ -29,7 +29,7 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
@@ -80,7 +80,7 @@ BrowserActionButton::BrowserActionButton(const Extension* extension,
   // should call UpdateState() after creation.
 
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
-                 Source<ExtensionAction>(browser_action_));
+                 content::Source<ExtensionAction>(browser_action_));
 }
 
 void BrowserActionButton::Destroy() {
@@ -190,8 +190,8 @@ GURL BrowserActionButton::GetPopupUrl() {
 }
 
 void BrowserActionButton::Observe(int type,
-                                  const NotificationSource& source,
-                                  const NotificationDetails& details) {
+                                  const content::NotificationSource& source,
+                                  const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED);
   UpdateState();
   // The browser action may have become visible/hidden so we need to make

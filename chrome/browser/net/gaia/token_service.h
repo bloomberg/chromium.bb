@@ -47,8 +47,8 @@
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "chrome/common/net/gaia/gaia_auth_fetcher.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class Profile;
 
@@ -61,7 +61,7 @@ class URLRequestContextGetter;
 class TokenService : public GaiaAuthConsumer,
                      public GaiaOAuthConsumer,
                      public WebDataServiceConsumer,
-                     public NotificationObserver {
+                     public content::NotificationObserver {
  public:
    TokenService();
    virtual ~TokenService();
@@ -179,10 +179,10 @@ class TokenService : public GaiaAuthConsumer,
   virtual void OnWebDataServiceRequestDone(WebDataService::Handle h,
                                            const WDTypedResult* result);
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
  private:
 
@@ -245,7 +245,7 @@ class TokenService : public GaiaAuthConsumer,
   // Map from service to token.
   std::map<std::string, std::string> token_map_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   FRIEND_TEST_ALL_PREFIXES(TokenServiceTest, LoadTokensIntoMemoryBasic);
   FRIEND_TEST_ALL_PREFIXES(TokenServiceTest, LoadTokensIntoMemoryAdvanced);

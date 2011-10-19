@@ -21,8 +21,8 @@
 #include "chrome/browser/sync/protocol/password_specifics.pb.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "webkit/glue/password_form.h"
 
 namespace browser_sync {
@@ -50,9 +50,10 @@ PasswordChangeProcessor::~PasswordChangeProcessor() {
   DCHECK(expected_loop_ == MessageLoop::current());
 }
 
-void PasswordChangeProcessor::Observe(int type,
-                                      const NotificationSource& source,
-                                      const NotificationDetails& details) {
+void PasswordChangeProcessor::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK(expected_loop_ == MessageLoop::current());
   DCHECK(chrome::NOTIFICATION_LOGINS_CHANGED == type);
   if (!observing_)
@@ -71,7 +72,7 @@ void PasswordChangeProcessor::Observe(int type,
   }
 
   PasswordStoreChangeList* changes =
-      Details<PasswordStoreChangeList>(details).ptr();
+      content::Details<PasswordStoreChangeList>(details).ptr();
   for (PasswordStoreChangeList::iterator change = changes->begin();
        change != changes->end(); ++change) {
     std::string tag = PasswordModelAssociator::MakeTag(change->form());
@@ -227,14 +228,15 @@ void PasswordChangeProcessor::StartObserving() {
   DCHECK(expected_loop_ == MessageLoop::current());
   notification_registrar_.Add(this,
                               chrome::NOTIFICATION_LOGINS_CHANGED,
-                              Source<PasswordStore>(password_store_));
+                              content::Source<PasswordStore>(password_store_));
 }
 
 void PasswordChangeProcessor::StopObserving() {
   DCHECK(expected_loop_ == MessageLoop::current());
-  notification_registrar_.Remove(this,
-                                 chrome::NOTIFICATION_LOGINS_CHANGED,
-                                 Source<PasswordStore>(password_store_));
+  notification_registrar_.Remove(
+      this,
+      chrome::NOTIFICATION_LOGINS_CHANGED,
+      content::Source<PasswordStore>(password_store_));
 }
 
 }  // namespace browser_sync

@@ -430,11 +430,11 @@ void BootTimesLoader::AddLogoutTimeMarker(
 
 void BootTimesLoader::Observe(
     int type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_LOGIN_AUTHENTICATION: {
-      Details<AuthenticationNotificationDetails> auth_details(details);
+      content::Details<AuthenticationNotificationDetails> auth_details(details);
       if (auth_details->success()) {
         AddLoginTimeMarker("Authenticate", true);
         RecordCurrentStats(kLoginSuccess);
@@ -444,7 +444,8 @@ void BootTimesLoader::Observe(
       break;
     }
     case content::NOTIFICATION_LOAD_START: {
-      NavigationController* tab = Source<NavigationController>(source).ptr();
+      NavigationController* tab =
+          content::Source<NavigationController>(source).ptr();
       RenderWidgetHost* rwh = GetRenderWidgetHost(tab);
       DCHECK(rwh);
       AddLoginTimeMarker("TabLoad-Start: " + GetTabUrl(rwh), false);
@@ -452,7 +453,8 @@ void BootTimesLoader::Observe(
       break;
     }
     case content::NOTIFICATION_LOAD_STOP: {
-      NavigationController* tab = Source<NavigationController>(source).ptr();
+      NavigationController* tab =
+          content::Source<NavigationController>(source).ptr();
       RenderWidgetHost* rwh = GetRenderWidgetHost(tab);
       if (render_widget_hosts_loading_.find(rwh) !=
           render_widget_hosts_loading_.end()) {
@@ -461,7 +463,7 @@ void BootTimesLoader::Observe(
       break;
     }
     case content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT: {
-      RenderWidgetHost* rwh = Source<RenderWidgetHost>(source).ptr();
+      RenderWidgetHost* rwh = content::Source<RenderWidgetHost>(source).ptr();
       if (render_widget_hosts_loading_.find(rwh) !=
           render_widget_hosts_loading_.end()) {
         AddLoginTimeMarker("TabPaint: " + GetTabUrl(rwh), false);
@@ -470,7 +472,7 @@ void BootTimesLoader::Observe(
       break;
     }
     case content::NOTIFICATION_TAB_CONTENTS_DESTROYED: {
-      TabContents* tab_contents = Source<TabContents>(source).ptr();
+      TabContents* tab_contents = content::Source<TabContents>(source).ptr();
       RenderWidgetHost* render_widget_host =
           GetRenderWidgetHost(&tab_contents->controller());
       render_widget_hosts_loading_.erase(render_widget_host);

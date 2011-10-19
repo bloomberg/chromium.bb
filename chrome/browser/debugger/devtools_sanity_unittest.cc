@@ -26,30 +26,30 @@
 #include "content/browser/worker_host/worker_process_host.h"
 #include "content/browser/worker_host/worker_service.h"
 #include "content/browser/worker_host/worker_service_observer.h"
-#include "content/common/notification_registrar.h"
-#include "content/common/notification_service.h"
 #include "content/common/worker_messages.h"
+#include "content/public/browser/notification_registrar.h"
+#include "content/common/notification_service.h"
 #include "net/test/test_server.h"
 
 namespace {
 
 // Used to block until a dev tools client window's browser is closed.
-class BrowserClosedObserver : public NotificationObserver {
+class BrowserClosedObserver : public content::NotificationObserver {
  public:
   explicit BrowserClosedObserver(Browser* browser) {
     registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSED,
-                   Source<Browser>(browser));
+                   content::Source<Browser>(browser));
     ui_test_utils::RunMessageLoop();
   }
 
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) {
     MessageLoopForUI::current()->Quit();
   }
 
  private:
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
   DISALLOW_COPY_AND_ASSIGN(BrowserClosedObserver);
 };
 
@@ -180,7 +180,7 @@ class CancelableQuitTask : public Task {
 // Base class for DevTools tests that test devtools functionality for
 // extensions and content scripts.
 class DevToolsExtensionDebugTest : public DevToolsSanityTest,
-                                   public NotificationObserver {
+                                   public content::NotificationObserver {
  public:
   DevToolsExtensionDebugTest() : DevToolsSanityTest() {
     PathService::Get(chrome::DIR_TEST_DATA, &test_extensions_dir_);
@@ -200,7 +200,7 @@ class DevToolsExtensionDebugTest : public DevToolsSanityTest,
     ExtensionService* service = browser()->profile()->GetExtensionService();
     size_t num_before = service->extensions()->size();
     {
-      NotificationRegistrar registrar;
+      content::NotificationRegistrar registrar;
       registrar.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                     NotificationService::AllSources());
       CancelableQuitTask* delayed_quit =
@@ -223,7 +223,7 @@ class DevToolsExtensionDebugTest : public DevToolsSanityTest,
     // NOTE: This assumes that the extension host list is not changing while
     // this method is running.
 
-    NotificationRegistrar registrar;
+    content::NotificationRegistrar registrar;
     registrar.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
                   NotificationService::AllSources());
     CancelableQuitTask* delayed_quit =
@@ -246,8 +246,8 @@ class DevToolsExtensionDebugTest : public DevToolsSanityTest,
   }
 
   void Observe(int type,
-               const NotificationSource& source,
-               const NotificationDetails& details) {
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) {
     switch (type) {
       case chrome::NOTIFICATION_EXTENSION_LOADED:
       case chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING:
@@ -412,7 +412,8 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
     if (client_contents->IsLoading()) {
       ui_test_utils::WindowedNotificationObserver observer(
           content::NOTIFICATION_LOAD_STOP,
-          Source<NavigationController>(&client_contents->controller()));
+          content::Source<NavigationController>(
+              &client_contents->controller()));
       observer.Wait();
     }
   }

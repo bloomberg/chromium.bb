@@ -73,7 +73,7 @@ ExtensionHistoryEventRouter::~ExtensionHistoryEventRouter() {}
 
 void ExtensionHistoryEventRouter::ObserveProfile(Profile* profile) {
   CHECK(registrar_.IsEmpty());
-  const Source<Profile> source = Source<Profile>(profile);
+  const content::Source<Profile> source = content::Source<Profile>(profile);
   registrar_.Add(this,
                  chrome::NOTIFICATION_HISTORY_URL_VISITED,
                  source);
@@ -82,19 +82,20 @@ void ExtensionHistoryEventRouter::ObserveProfile(Profile* profile) {
                  source);
 }
 
-void ExtensionHistoryEventRouter::Observe(int type,
-                                          const NotificationSource& source,
-                                          const NotificationDetails& details) {
+void ExtensionHistoryEventRouter::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_HISTORY_URL_VISITED:
       HistoryUrlVisited(
-          Source<Profile>(source).ptr(),
-          Details<const history::URLVisitedDetails>(details).ptr());
+          content::Source<Profile>(source).ptr(),
+          content::Details<const history::URLVisitedDetails>(details).ptr());
       break;
     case chrome::NOTIFICATION_HISTORY_URLS_DELETED:
       HistoryUrlsRemoved(
-          Source<Profile>(source).ptr(),
-          Details<const history::URLsDeletedDetails>(details).ptr());
+          content::Source<Profile>(source).ptr(),
+          content::Details<const history::URLsDeletedDetails>(details).ptr());
       break;
     default:
       NOTREACHED();

@@ -21,8 +21,8 @@
 #include "content/browser/plugin_process_host.h"
 #include "content/browser/ppapi_plugin_process_host.h"
 #include "content/common/content_export.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel_handle.h"
 
@@ -62,7 +62,7 @@ class PluginList;
 // doing expensive disk operations on the IO/UI threads.
 class CONTENT_EXPORT PluginService
     : public base::WaitableEventWatcher::Delegate,
-      public NotificationObserver {
+      public content::NotificationObserver {
  public:
   struct OverriddenPlugin {
     int render_process_id;
@@ -186,9 +186,9 @@ class CONTENT_EXPORT PluginService
   // base::WaitableEventWatcher::Delegate implementation.
   virtual void OnWaitableEventSignaled(base::WaitableEvent* waitable_event);
 
-  // NotificationObserver implementation
-  virtual void Observe(int type, const NotificationSource& source,
-                       const NotificationDetails& details);
+  // content::NotificationObserver implementation
+  virtual void Observe(int type, const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   void RegisterPepperPlugins();
 
@@ -233,7 +233,7 @@ class CONTENT_EXPORT PluginService
   // The browser's UI locale.
   const std::string ui_locale_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
 #if defined(OS_WIN)
   // Registry keys for getting notifications when new plugins are installed.

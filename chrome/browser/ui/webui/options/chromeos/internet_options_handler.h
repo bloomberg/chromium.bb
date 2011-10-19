@@ -10,7 +10,7 @@
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/proxy_cros_settings_provider.h"
 #include "chrome/browser/ui/webui/options/chromeos/cros_options_page_ui_handler.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/native_widget_types.h"
 
 class SkBitmap;
@@ -43,10 +43,10 @@ class InternetOptionsHandler
   // NetworkLibrary::CellularDataPlanObserver implementation.
   virtual void OnCellularDataPlanChanged(chromeos::NetworkLibrary* network_lib);
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   // Opens a modal popup dialog.
@@ -143,7 +143,7 @@ class InternetOptionsHandler
   // Convenience pointer to netwrok library (will not change).
   chromeos::NetworkLibrary* cros_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   chromeos::ProxyCrosSettingsProvider* proxy_settings_;
 

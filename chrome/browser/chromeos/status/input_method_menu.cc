@@ -699,8 +699,8 @@ void InputMethodMenu::RegisterPrefs(PrefService* local_state) {
 }
 
 void InputMethodMenu::Observe(int type,
-                              const NotificationSource& source,
-                              const NotificationDetails& details) {
+                              const content::NotificationSource& source,
+                              const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_LOGIN_USER_CHANGED) {
     // When a user logs in, we should remove |this| object from the observer
     // list so that PreferenceUpdateNeeded() does not update the local state

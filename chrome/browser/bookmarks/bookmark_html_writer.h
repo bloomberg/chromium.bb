@@ -12,7 +12,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/history/history.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_registrar.h"
 #include "net/base/file_stream.h"
 
 class BookmarkNode;
@@ -33,7 +33,7 @@ class BookmarksExportObserver {
 // Class that fetches favicons for list of bookmarks and
 // then starts Writer which outputs bookmarks and favicons to html file.
 // Should be used only by WriteBookmarks function.
-class BookmarkFaviconFetcher: public NotificationObserver {
+class BookmarkFaviconFetcher: public content::NotificationObserver {
  public:
   // Map of URL and corresponding favicons.
   typedef std::map<std::string, scoped_refptr<RefCountedMemory> > URLFaviconMap;
@@ -46,10 +46,10 @@ class BookmarkFaviconFetcher: public NotificationObserver {
   // Executes bookmark export process.
   void ExportBookmarks();
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
  private:
   // Recursively extracts URLs from bookmarks.
@@ -86,7 +86,7 @@ class BookmarkFaviconFetcher: public NotificationObserver {
 
   BookmarksExportObserver* observer_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkFaviconFetcher);
 };

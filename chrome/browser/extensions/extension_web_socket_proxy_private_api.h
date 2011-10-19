@@ -7,12 +7,12 @@
 #pragma once
 
 #include "base/timer.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
 #include "chrome/browser/extensions/extension_function.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class WebSocketProxyPrivate
-    : public AsyncExtensionFunction, public NotificationObserver {
+    : public AsyncExtensionFunction, public content::NotificationObserver {
  public:
   WebSocketProxyPrivate();
 
@@ -22,10 +22,10 @@ class WebSocketProxyPrivate
   virtual void Finalize();
 
  protected:
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(
-      int type, const NotificationSource& source,
-      const NotificationDetails& details) OVERRIDE;
+      int type, const content::NotificationSource& source,
+      const content::NotificationDetails& details) OVERRIDE;
 
   // Whether already finalized.
   bool is_finalized_;
@@ -33,7 +33,7 @@ class WebSocketProxyPrivate
   // Used to signal timeout (when waiting for proxy initial launch).
   base::OneShotTimer<WebSocketProxyPrivate> timer_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // Proxy listens incoming websocket connection on this port.
   int listening_port_;
@@ -57,10 +57,10 @@ class WebSocketProxyPrivateGetURLForTCPFunction
   // ExtensionFunction implementation.
   virtual bool RunImpl() OVERRIDE;
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(
-      int type, const NotificationSource& source,
-      const NotificationDetails& details) OVERRIDE;
+      int type, const content::NotificationSource& source,
+      const content::NotificationDetails& details) OVERRIDE;
 
   // Finalizes async operation.
   virtual void Finalize() OVERRIDE;

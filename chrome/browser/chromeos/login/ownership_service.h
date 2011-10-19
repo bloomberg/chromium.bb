@@ -15,8 +15,8 @@
 #include "chrome/browser/chromeos/login/owner_manager.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/common/notification_service.h"
 
 namespace base {
@@ -26,7 +26,7 @@ template <typename T> struct DefaultLazyInstanceTraits;
 namespace em = enterprise_management;
 namespace chromeos {
 
-class OwnershipService : public NotificationObserver {
+class OwnershipService : public content::NotificationObserver {
  public:
   enum Status {
     // Listed in upgrade order.
@@ -102,10 +102,10 @@ class OwnershipService : public NotificationObserver {
  protected:
   OwnershipService();
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
  private:
   friend struct base::DefaultLazyInstanceTraits<OwnershipService>;
@@ -138,7 +138,7 @@ class OwnershipService : public NotificationObserver {
   scoped_refptr<OwnerManager> manager_;
   scoped_refptr<OwnerKeyUtils> utils_;
   scoped_ptr<em::PolicyData> policy_;
-  NotificationRegistrar notification_registrar_;
+  content::NotificationRegistrar notification_registrar_;
   volatile Status ownership_status_;
   base::Lock ownership_status_lock_;
 };

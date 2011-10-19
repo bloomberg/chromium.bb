@@ -132,14 +132,14 @@ void TaskManagerNotificationResourceProvider::StopUpdating() {
 
 void TaskManagerNotificationResourceProvider::Observe(
     int type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_NOTIFY_BALLOON_CONNECTED:
-      AddToTaskManager(Source<BalloonHost>(source).ptr());
+      AddToTaskManager(content::Source<BalloonHost>(source).ptr());
       break;
     case chrome::NOTIFICATION_NOTIFY_BALLOON_DISCONNECTED:
-      RemoveFromTaskManager(Source<BalloonHost>(source).ptr());
+      RemoveFromTaskManager(content::Source<BalloonHost>(source).ptr());
       break;
     default:
       NOTREACHED() << "Unexpected notification.";

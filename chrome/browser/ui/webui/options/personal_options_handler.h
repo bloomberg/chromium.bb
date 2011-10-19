@@ -10,7 +10,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #if defined(OS_CHROMEOS)
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_registrar.h"
 #endif
 
 // Chrome personal options page UI handler.
@@ -27,10 +27,10 @@ class PersonalOptionsHandler : public OptionsPageUIHandler,
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages();
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // ProfileSyncServiceObserver implementation.
   virtual void OnStateChanged();
@@ -44,7 +44,7 @@ class PersonalOptionsHandler : public OptionsPageUIHandler,
 
 #if defined(OS_CHROMEOS)
   void UpdateAccountPicture();
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 #endif
 
   // Sends an array of Profile objects to javascript.

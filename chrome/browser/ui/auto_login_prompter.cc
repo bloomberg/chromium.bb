@@ -26,10 +26,10 @@
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "googleurl/src/url_canon.h"
 #include "googleurl/src/url_util.h"
@@ -45,7 +45,7 @@
 // auto-login.  It holds context information needed while re-issuing service
 // tokens using the TokenService, gets the browser cookies with the TokenAuth
 // API, and finally redirects the user to the correct page.
-class AutoLoginRedirector : public NotificationObserver {
+class AutoLoginRedirector : public content::NotificationObserver {
  public:
   AutoLoginRedirector(TokenService* token_service,
                       NavigationController* navigation_controller,
@@ -53,10 +53,10 @@ class AutoLoginRedirector : public NotificationObserver {
   virtual ~AutoLoginRedirector();
 
  private:
-  // NotificationObserver override.
+  // content::NotificationObserver override.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Redirect tab to MergeSession URL, logging the user in and navigating
   // to the desired page.
@@ -64,7 +64,7 @@ class AutoLoginRedirector : public NotificationObserver {
 
   NavigationController* navigation_controller_;
   const std::string args_;
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoLoginRedirector);
 };
@@ -81,10 +81,10 @@ AutoLoginRedirector::AutoLoginRedirector(
   // the other, allow AutoLoginRedirector to delete itself correctly.
   registrar_.Add(this,
                  chrome::NOTIFICATION_TOKEN_AVAILABLE,
-                 Source<TokenService>(token_service));
+                 content::Source<TokenService>(token_service));
   registrar_.Add(this,
                  chrome::NOTIFICATION_TOKEN_REQUEST_FAILED,
-                 Source<TokenService>(token_service));
+                 content::Source<TokenService>(token_service));
   token_service->StartFetchingTokens();
 }
 
@@ -92,22 +92,23 @@ AutoLoginRedirector::~AutoLoginRedirector() {
 }
 
 void AutoLoginRedirector::Observe(int type,
-                                  const NotificationSource& source,
-                                  const NotificationDetails& details) {
+                                  const content::NotificationSource& source,
+                                  const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_TOKEN_AVAILABLE ||
          type == chrome::NOTIFICATION_TOKEN_REQUEST_FAILED);
 
   // We are only interested in GAIA tokens.
   if (type == chrome::NOTIFICATION_TOKEN_AVAILABLE) {
     TokenService::TokenAvailableDetails* tok_details =
-        Details<TokenService::TokenAvailableDetails>(details).ptr();
+        content::Details<TokenService::TokenAvailableDetails>(details).ptr();
     if (tok_details->service() == GaiaConstants::kGaiaService) {
       RedirectToMergeSession(tok_details->token());
       delete this;
     }
   } else {
     TokenService::TokenRequestFailedDetails* tok_details =
-        Details<TokenService::TokenRequestFailedDetails>(details).ptr();
+        content::Details<TokenService::TokenRequestFailedDetails>(details).
+            ptr();
     if (tok_details->service() == GaiaConstants::kGaiaService) {
       LOG(WARNING) << "AutoLoginRedirector: token request failed";
       delete this;
@@ -221,9 +222,10 @@ AutoLoginPrompter::AutoLoginPrompter(
       username_(username),
       args_(args) {
   registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
-                 Source<NavigationController>(&tab_contents_->controller()));
+                 content::Source<NavigationController>(
+                    &tab_contents_->controller()));
   registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                 Source<TabContents>(tab_contents_));
+                 content::Source<TabContents>(tab_contents_));
 }
 
 AutoLoginPrompter::~AutoLoginPrompter() {
@@ -316,8 +318,8 @@ void AutoLoginPrompter::ShowInfoBarUIThread(const std::string& account,
 }
 
 void AutoLoginPrompter::Observe(int type,
-                                const NotificationSource& source,
-                                const NotificationDetails& details) {
+                                const content::NotificationSource& source,
+                                const content::NotificationDetails& details) {
   if (type == content::NOTIFICATION_LOAD_STOP) {
     TabContentsWrapper* wrapper =
         TabContentsWrapper::GetCurrentWrapperForContents(tab_contents_);

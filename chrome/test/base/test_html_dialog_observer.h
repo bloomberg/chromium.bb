@@ -7,15 +7,15 @@
 #pragma once
 
 #include "base/compiler_specific.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class WebUI;
 
 // For browser_tests, which run on the UI thread, run a second message
 // MessageLoop to detect HtmlDialog creation and quit when the constructed
 // WebUI instance is captured and ready.
-class TestHtmlDialogObserver : public NotificationObserver {
+class TestHtmlDialogObserver : public content::NotificationObserver {
  public:
   // Create and register a new TestHtmlDialogObserver.
   TestHtmlDialogObserver();
@@ -26,11 +26,11 @@ class TestHtmlDialogObserver : public NotificationObserver {
   WebUI* GetWebUI();
 
  private:
-  // NotificationObserver:
-  virtual void Observe(int type, const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+  // content::NotificationObserver:
+  virtual void Observe(int type, const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   WebUI* web_ui_;
   bool done_;

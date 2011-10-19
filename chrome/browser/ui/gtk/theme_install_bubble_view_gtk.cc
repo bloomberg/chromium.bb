@@ -36,9 +36,10 @@ void ThemeInstallBubbleViewGtk::Show(GtkWindow* parent) {
     instance_ = new ThemeInstallBubbleViewGtk(GTK_WIDGET(parent));
 }
 
-void ThemeInstallBubbleViewGtk::Observe(int type,
-                                        const NotificationSource& source,
-                                        const NotificationDetails& details) {
+void ThemeInstallBubbleViewGtk::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (--num_loads_extant_ == 0)
     delete this;
 }

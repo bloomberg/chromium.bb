@@ -7,8 +7,8 @@
 
 #include <string>
 #include "base/compiler_specific.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class TabContents;
 namespace net {
@@ -19,7 +19,7 @@ class URLRequest;
 // the currently loaded page with one click.  This is used when the browser
 // detects that the user has navigated to a login page and that there are stored
 // tokens that would allow a one-click login.
-class AutoLoginPrompter : public NotificationObserver {
+class AutoLoginPrompter : public content::NotificationObserver {
  public:
   AutoLoginPrompter(TabContents* tab_contents,
                     const std::string& username,
@@ -41,15 +41,15 @@ class AutoLoginPrompter : public NotificationObserver {
                                   int child_id,
                                   int route_id);
 
-  // NotificationObserver override.
+  // content::NotificationObserver override.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   TabContents* tab_contents_;
   const std::string username_;
   const std::string args_;
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoLoginPrompter);
 };

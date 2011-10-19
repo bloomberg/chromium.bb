@@ -17,9 +17,9 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "content/common/notification_details.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/gtk_util.h"
@@ -284,8 +284,8 @@ void GlobalMenuBar::EnabledStateChangedForCommand(int id, bool enabled) {
 }
 
 void GlobalMenuBar::Observe(int type,
-                            const NotificationSource& source,
-                            const NotificationDetails& details) {
+                            const content::NotificationSource& source,
+                            const content::NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_PREF_CHANGED, type);
   const std::string& pref_name = *Details<std::string>(details).ptr();
   DCHECK_EQ(prefs::kShowBookmarkBar, pref_name);

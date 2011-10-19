@@ -14,9 +14,9 @@
 #include "chrome/browser/tab_contents/tab_contents_view_mac.h"
 #import "chrome/browser/ui/cocoa/animatable_image.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_registrar.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "grit/theme_resources.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
@@ -45,7 +45,7 @@ class DownloadAnimationTabObserver;
 
 // A helper class to monitor tab hidden and closed notifications. If we receive
 // such a notification, we stop the animation.
-class DownloadAnimationTabObserver : public NotificationObserver {
+class DownloadAnimationTabObserver : public content::NotificationObserver {
  public:
   DownloadAnimationTabObserver(DownloadStartedAnimationMac* owner,
                                TabContents* tab_contents)
@@ -53,17 +53,17 @@ class DownloadAnimationTabObserver : public NotificationObserver {
         tab_contents_(tab_contents) {
     registrar_.Add(this,
                    content::NOTIFICATION_TAB_CONTENTS_HIDDEN,
-                   Source<TabContents>(tab_contents_));
+                   content::Source<TabContents>(tab_contents_));
     registrar_.Add(this,
                    content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                   Source<TabContents>(tab_contents_));
+                   content::Source<TabContents>(tab_contents_));
   }
 
   // Runs when a tab is hidden or destroyed. Let our owner know we should end
   // the animation.
   void Observe(int type,
-               const NotificationSource& source,
-               const NotificationDetails& details) {
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) {
     // This ends up deleting us.
     [owner_ closeAnimation];
   }
@@ -76,7 +76,7 @@ class DownloadAnimationTabObserver : public NotificationObserver {
   TabContents* tab_contents_;
 
   // Used for registering to receive notifications and automatic clean up.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadAnimationTabObserver);
 };

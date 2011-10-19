@@ -11,8 +11,8 @@
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "net/base/x509_certificate.h"
 
 // The purpose of the cert store is to provide an easy way to store/retrieve
@@ -25,7 +25,7 @@
 // Note that the cert ids will overflow if we register more than 2^32 - 1 certs
 // in 1 browsing session (which is highly unlikely to happen).
 
-class CONTENT_EXPORT CertStore : public NotificationObserver {
+class CONTENT_EXPORT CertStore : public content::NotificationObserver {
  public:
   // Returns the singleton instance of the CertStore.
   static CertStore* GetInstance();
@@ -42,10 +42,10 @@ class CONTENT_EXPORT CertStore : public NotificationObserver {
   // non-NULL, copies it in.
   bool RetrieveCert(int cert_id, scoped_refptr<net::X509Certificate>* cert);
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
  private:
   friend struct DefaultSingletonTraits<CertStore>;
@@ -65,7 +65,7 @@ class CONTENT_EXPORT CertStore : public NotificationObserver {
   typedef std::map<net::X509Certificate*, int, net::X509Certificate::LessThan>
       ReverseCertMap;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   IDMap process_id_to_cert_id_;
   IDMap cert_id_to_process_id_;

@@ -23,8 +23,8 @@
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/user_metrics.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -390,9 +390,10 @@ void DraggedTabController::InitTabDragData(BaseTab* tab,
   drag_data->contents = GetModel(source_tabstrip_)->GetTabContentsAt(
       drag_data->source_model_index);
   drag_data->pinned = source_tabstrip_->IsTabPinned(tab);
-  registrar_.Add(this,
-                 content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                 Source<TabContents>(drag_data->contents->tab_contents()));
+  registrar_.Add(
+      this,
+      content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
+      content::Source<TabContents>(drag_data->contents->tab_contents()));
 
   // We need to be the delegate so we receive messages about stuff, otherwise
   // our dragged TabContents may be replaced and subsequently
@@ -474,13 +475,14 @@ DraggedTabController::GetJavaScriptDialogCreator() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// DraggedTabController, NotificationObserver implementation:
+// DraggedTabController, content::NotificationObserver implementation:
 
-void DraggedTabController::Observe(int type,
-                                   const NotificationSource& source,
-                                   const NotificationDetails& details) {
+void DraggedTabController::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK_EQ(type, content::NOTIFICATION_TAB_CONTENTS_DESTROYED);
-  TabContents* destroyed_contents = Source<TabContents>(source).ptr();
+  TabContents* destroyed_contents = content::Source<TabContents>(source).ptr();
   for (size_t i = 0; i < drag_data_.size(); ++i) {
     if (drag_data_[i].contents->tab_contents() == destroyed_contents) {
       // One of the tabs we're dragging has been destroyed. Cancel the drag.

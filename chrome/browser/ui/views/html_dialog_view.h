@@ -13,8 +13,8 @@
 #include "chrome/browser/ui/views/dom_view.h"
 #include "chrome/browser/ui/webui/html_dialog_tab_contents_delegate.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/size.h"
 #include "views/widget/widget_delegate.h"
 
@@ -38,7 +38,7 @@ class HtmlDialogView
       public HtmlDialogTabContentsDelegate,
       public HtmlDialogUIDelegate,
       public views::WidgetDelegate,
-      public NotificationObserver {
+      public content::NotificationObserver {
  public:
   HtmlDialogView(Profile* profile, HtmlDialogUIDelegate* delegate);
   virtual ~HtmlDialogView();
@@ -84,10 +84,10 @@ class HtmlDialogView
       OVERRIDE;
   virtual void CloseContents(TabContents* source) OVERRIDE;
 
-  // Overridden from NotificationObserver
+  // Overridden from content::NotificationObserver
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
  protected:
   // Register accelerators for this dialog.
@@ -115,7 +115,7 @@ class HtmlDialogView
   // using this variable.
   HtmlDialogUIDelegate* delegate_;
 
-  NotificationRegistrar notification_registrar_;
+  content::NotificationRegistrar notification_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(HtmlDialogView);
 };

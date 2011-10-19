@@ -1905,7 +1905,8 @@ void ResourceDispatcherHost::NotifyOnUI(int type,
   if (rvh) {
     RenderViewHostDelegate* rvhd = rvh->delegate();
     NotificationService::current()->Notify(
-        type, Source<RenderViewHostDelegate>(rvhd), Details<T>(detail));
+        type, content::Source<RenderViewHostDelegate>(rvhd),
+        content::Details<T>(detail));
   }
   delete detail;
 }

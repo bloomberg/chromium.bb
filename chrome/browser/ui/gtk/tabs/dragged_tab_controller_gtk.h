@@ -16,8 +16,8 @@
 #include "chrome/browser/ui/gtk/tabs/drag_data.h"
 #include "chrome/browser/ui/tabs/dock_info.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/base/x/x11_util.h"
 
 class DraggedViewGtk;
@@ -26,7 +26,7 @@ class TabStripGtk;
 class TabStripModel;
 class TabContentsWrapper;
 
-class DraggedTabControllerGtk : public NotificationObserver,
+class DraggedTabControllerGtk : public content::NotificationObserver,
                                 public TabContentsDelegate {
  public:
   // |source_tabstrip| is the tabstrip where the tabs reside before any
@@ -105,10 +105,10 @@ class DraggedTabControllerGtk : public NotificationObserver,
   virtual content::JavaScriptDialogCreator*
       GetJavaScriptDialogCreator() OVERRIDE;
 
-  // Overridden from NotificationObserver:
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Returns the point where a detached window should be created given the
   // current mouse position.
@@ -221,7 +221,7 @@ class DraggedTabControllerGtk : public NotificationObserver,
   bool AreTabsConsecutive();
 
   // Handles registering for notifications.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // The tab strip |source_tab_| originated from.
   TabStripGtk* source_tabstrip_;

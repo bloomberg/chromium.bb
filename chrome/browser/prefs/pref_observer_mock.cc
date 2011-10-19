@@ -13,8 +13,8 @@ void PrefObserverMock::Expect(const PrefService* prefs,
                               const std::string& pref_name,
                               const Value* value) {
   EXPECT_CALL(*this, Observe(int(chrome::NOTIFICATION_PREF_CHANGED),
-                             Source<PrefService>(prefs),
-                             Property(&Details<std::string>::ptr,
+                             content::Source<PrefService>(prefs),
+                             Property(&content::Details<std::string>::ptr,
                                       Pointee(pref_name))))
       .With(PrefValueMatches(prefs, pref_name, value));
 }

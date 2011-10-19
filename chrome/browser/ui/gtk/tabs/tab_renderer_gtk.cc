@@ -158,7 +158,7 @@ TabRendererGtk::LoadingAnimation::LoadingAnimation(
       animation_frame_(0) {
   registrar_.Add(this,
                  chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
-                 Source<ThemeService>(theme_service_));
+                 content::Source<ThemeService>(theme_service_));
 }
 
 TabRendererGtk::LoadingAnimation::LoadingAnimation(
@@ -202,8 +202,8 @@ bool TabRendererGtk::LoadingAnimation::ValidateLoadingAnimation(
 
 void TabRendererGtk::LoadingAnimation::Observe(
     int type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_BROWSER_THEME_CHANGED);
   data_.reset(new Data(theme_service_));
 }
@@ -276,7 +276,7 @@ TabRendererGtk::TabRendererGtk(ThemeService* theme_service)
   hover_animation_->SetSlideDuration(kHoverDurationMs);
 
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
-                 Source<ThemeService>(theme_service_));
+                 content::Source<ThemeService>(theme_service_));
 }
 
 TabRendererGtk::~TabRendererGtk() {
@@ -556,7 +556,7 @@ void TabRendererGtk::SetBounds(const gfx::Rect& bounds) {
 }
 
 void TabRendererGtk::Observe(int type,
-                             const NotificationSource& source,
+                             const content::NotificationSource& source,
                              const NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_BROWSER_THEME_CHANGED);
 

@@ -17,8 +17,8 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/common/content_settings.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNotificationPresenter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
@@ -35,7 +35,7 @@ struct DesktopNotificationHostMsg_Show_Params;
 
 // The DesktopNotificationService is an object, owned by the Profile,
 // which provides the creation of desktop "toasts" to web pages and workers.
-class DesktopNotificationService : public NotificationObserver,
+class DesktopNotificationService : public content::NotificationObserver,
                                    public ProfileKeyedService {
  public:
   enum DesktopNotificationSource {
@@ -77,10 +77,10 @@ class DesktopNotificationService : public NotificationObserver,
   void GrantPermission(const GURL& origin);
   void DenyPermission(const GURL& origin);
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Creates a data:xxxx URL which contains the full HTML for a notification
   // using supplied icon, title, and text, run through a template which contains
@@ -145,7 +145,7 @@ class DesktopNotificationService : public NotificationObserver,
   // UI for desktop toasts.
   NotificationUIManager* ui_manager_;
 
-  NotificationRegistrar notification_registrar_;
+  content::NotificationRegistrar notification_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopNotificationService);
 };

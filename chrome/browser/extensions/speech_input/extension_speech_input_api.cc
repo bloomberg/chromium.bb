@@ -25,7 +25,7 @@ SpeechInputAsyncFunction::SpeechInputAsyncFunction(
       expecting_transition_(false),
       failed_(false) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_SPEECH_INPUT_FAILED,
-      Source<Profile>(profile()));
+      content::Source<Profile>(profile()));
 }
 
 SpeechInputAsyncFunction::~SpeechInputAsyncFunction() {
@@ -49,7 +49,7 @@ void SpeechInputAsyncFunction::Run() {
     // Register before RunImpl to ensure it's received if generated.
     if (state_before_call == start_state_) {
       registrar_.Add(this, transition_notification_,
-          Source<Profile>(profile()));
+          content::Source<Profile>(profile()));
       AddRef(); // Balanced in Observe().
     }
 
@@ -76,14 +76,16 @@ void SpeechInputAsyncFunction::Run() {
   SendResponse(true);
 }
 
-void SpeechInputAsyncFunction::Observe(int type,
-                                       const NotificationSource& source,
-                                       const NotificationDetails& details) {
-  DCHECK_EQ(profile(), Source<Profile>(source).ptr());
+void SpeechInputAsyncFunction::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  DCHECK_EQ(profile(), content::Source<Profile>(source).ptr());
 
   if (type == chrome::NOTIFICATION_EXTENSION_SPEECH_INPUT_FAILED) {
     ExtensionSpeechInputManager::ExtensionError* error_details =
-        Details<ExtensionSpeechInputManager::ExtensionError>(details).ptr();
+        content::Details<ExtensionSpeechInputManager::ExtensionError>(
+            details).ptr();
     if (error_details->extension_id_ != extension_id())
       return;
 
@@ -91,7 +93,7 @@ void SpeechInputAsyncFunction::Observe(int type,
     failed_ = true;
   } else {
     DCHECK_EQ(type, transition_notification_);
-    if (*Details<std::string>(details).ptr() != extension_id())
+    if (*content::Details<std::string>(details).ptr() != extension_id())
       return;
     DCHECK(expecting_transition_);
   }

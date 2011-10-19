@@ -41,7 +41,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_details.h"
+#include "content/public/browser/notification_details.h"
 #include "grit/generated_resources.h"
 #include "grit/net_internals_resources.h"
 #include "net/base/escape.h"
@@ -150,7 +150,7 @@ ChromeWebUIDataSource* CreateNetInternalsHTMLSource() {
 class NetInternalsMessageHandler
     : public WebUIMessageHandler,
       public base::SupportsWeakPtr<NetInternalsMessageHandler>,
-      public NotificationObserver {
+      public content::NotificationObserver {
  public:
   NetInternalsMessageHandler();
   virtual ~NetInternalsMessageHandler();
@@ -164,10 +164,10 @@ class NetInternalsMessageHandler
   // message will be ignored.
   void SendJavascriptCommand(const std::string& command, Value* arg);
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Javascript message handlers.
   void OnRendererReady(const ListValue* list);
@@ -570,13 +570,14 @@ void NetInternalsMessageHandler::SendJavascriptCommand(
   }
 }
 
-void NetInternalsMessageHandler::Observe(int type,
-                                         const NotificationSource& source,
-                                         const NotificationDetails& details) {
+void NetInternalsMessageHandler::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(type, chrome::NOTIFICATION_PREF_CHANGED);
 
-  std::string* pref_name = Details<std::string>(details).ptr();
+  std::string* pref_name = content::Details<std::string>(details).ptr();
   if (*pref_name == prefs::kHttpThrottlingEnabled) {
     SendJavascriptCommand(
         "receivedHttpThrottlingEnabledPrefChanged",

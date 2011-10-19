@@ -14,8 +14,8 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/synchronization/waitable_event.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/common/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -23,20 +23,20 @@
 
 
 namespace chromeos {
-class MockKeyLoadObserver : public NotificationObserver {
+class MockKeyLoadObserver : public content::NotificationObserver {
  public:
   explicit MockKeyLoadObserver(base::WaitableEvent* e);
   virtual ~MockKeyLoadObserver();
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   void ExpectKeyFetchSuccess(bool should_succeed);
 
  private:
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
   bool success_expected_;
   base::WaitableEvent* event_;
   bool observed_;

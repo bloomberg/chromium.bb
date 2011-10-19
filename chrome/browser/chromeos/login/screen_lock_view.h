@@ -8,8 +8,8 @@
 
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/user_view.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "views/controls/textfield/textfield_controller.h"
 #include "views/view.h"
 
@@ -30,7 +30,7 @@ class ScreenLockerTester;
 // a user to unlock the screen.
 class ScreenLockView : public ThrobberHostView,
                        public views::TextfieldController,
-                       public NotificationObserver,
+                       public content::NotificationObserver,
                        public UserView::Delegate {
  public:
   explicit ScreenLockView(ScreenLocker* screen_locker);
@@ -52,10 +52,10 @@ class ScreenLockView : public ThrobberHostView,
   virtual void Layout();
   virtual gfx::Size GetPreferredSize();
 
-  // NotificationObserver:
+  // content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // views::TextfieldController:
   virtual void ContentsChanged(views::Textfield* sender,
@@ -78,7 +78,7 @@ class ScreenLockView : public ThrobberHostView,
   // ScreenLocker is owned by itself.
   ScreenLocker* screen_locker_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // User's picture, signout button and password field.
   views::View* main_;

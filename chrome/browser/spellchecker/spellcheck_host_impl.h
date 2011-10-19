@@ -14,8 +14,8 @@
 #include "chrome/browser/spellchecker/spellcheck_host.h"
 #include "chrome/browser/spellchecker/spellcheck_profile_provider.h"
 #include "content/common/net/url_fetcher.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 // This class implements the SpellCheckHost interface to provide the
 // functionalities listed below:
@@ -39,7 +39,7 @@
 // can be listed using SpellCheckHost::GetAvailableLanguages() static method.
 class SpellCheckHostImpl : public SpellCheckHost,
                            public URLFetcher::Delegate,
-                           public NotificationObserver {
+                           public content::NotificationObserver {
  public:
   SpellCheckHostImpl(SpellCheckProfileProvider* profile,
                      const std::string& language,
@@ -113,8 +113,8 @@ class SpellCheckHostImpl : public SpellCheckHost,
 
   // NotificationProfile implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Saves |data_| to disk. Run on the file thread.
   void SaveDictionaryData();
@@ -156,7 +156,7 @@ class SpellCheckHostImpl : public SpellCheckHost,
   // Used for downloading the dictionary file.
   scoped_ptr<URLFetcher> fetcher_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // An optional metrics counter given by the constructor.
   SpellCheckHostMetrics* metrics_;

@@ -8,8 +8,8 @@
 
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/ui/views/bubble/bubble.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 class Browser;
@@ -31,7 +31,7 @@ class SkBitmap;
 // ExtensionInstallBubble manages its own lifetime.
 class ExtensionInstalledBubble
     : public BubbleDelegate,
-      public NotificationObserver,
+      public content::NotificationObserver,
       public base::RefCountedThreadSafe<ExtensionInstalledBubble> {
  public:
   // The behavior and content of this Bubble comes in these varieties:
@@ -62,10 +62,10 @@ class ExtensionInstalledBubble
   // Shows the bubble. Called internally via PostTask.
   void ShowInternal();
 
-  // NotificationObserver
+  // content::NotificationObserver
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // BubbleDelegate
   virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape) OVERRIDE;
@@ -75,7 +75,7 @@ class ExtensionInstalledBubble
   const Extension* extension_;
   Browser* browser_;
   SkBitmap icon_;
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
   InstalledBubbleContent* bubble_content_;
   BubbleType type_;
 

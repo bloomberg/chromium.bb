@@ -396,10 +396,11 @@ void BrowserTabStripController::TabBlockedStateChanged(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// BrowserTabStripController, NotificationObserver implementation:
+// BrowserTabStripController, content::NotificationObserver implementation:
 
 void BrowserTabStripController::Observe(int type,
-    const NotificationSource& source, const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_TAB_CLOSEABLE_STATE_CHANGED);
   // Note that this notification may be fired during a model mutation and
   // possibly before the tabstrip has processed the change.

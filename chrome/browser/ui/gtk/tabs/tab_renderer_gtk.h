@@ -12,8 +12,8 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/gtk/gtk_signal.h"
@@ -36,7 +36,7 @@ class ThrobAnimation;
 }
 
 class TabRendererGtk : public ui::AnimationDelegate,
-                       public NotificationObserver {
+                       public content::NotificationObserver {
  public:
   // Possible animation states.
   enum AnimationState {
@@ -45,7 +45,7 @@ class TabRendererGtk : public ui::AnimationDelegate,
     ANIMATION_LOADING
   };
 
-  class LoadingAnimation : public NotificationObserver {
+  class LoadingAnimation : public content::NotificationObserver {
    public:
     struct Data {
       explicit Data(ThemeService* theme_service);
@@ -80,16 +80,16 @@ class TabRendererGtk : public ui::AnimationDelegate,
       return data_->loading_animation_frames;
     }
 
-    // Provide NotificationObserver implementation.
+    // Provide content::NotificationObserver implementation.
     virtual void Observe(int type,
-                         const NotificationSource& source,
-                         const NotificationDetails& details);
+                         const content::NotificationSource& source,
+                         const content::NotificationDetails& details);
 
    private:
     scoped_ptr<Data> data_;
 
     // Used to listen for theme change notifications.
-    NotificationRegistrar registrar_;
+    content::NotificationRegistrar registrar_;
 
     // Gives us our throbber images.
     ThemeService* theme_service_;
@@ -165,7 +165,7 @@ class TabRendererGtk : public ui::AnimationDelegate,
 
   // Provide NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
+                       const content::NotificationSource& source,
                        const NotificationDetails& details);
 
   // Advance the loading animation to the next frame, or hide the animation if
@@ -456,7 +456,7 @@ class TabRendererGtk : public ui::AnimationDelegate,
   bool is_active_;
 
   // Used to listen for theme change notifications.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(TabRendererGtk);
 };

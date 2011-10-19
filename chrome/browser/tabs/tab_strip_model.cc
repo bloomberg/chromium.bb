@@ -71,7 +71,7 @@ TabStripModel::TabStripModel(TabStripModelDelegate* delegate, Profile* profile)
                  NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_UNLOADED,
-                 Source<Profile>(profile_));
+                 content::Source<Profile>(profile_));
   order_controller_ = new TabStripModelOrderController(this);
 }
 
@@ -990,17 +990,17 @@ bool TabStripModel::WillContextMenuPin(int index) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// TabStripModel, NotificationObserver implementation:
+// TabStripModel, content::NotificationObserver implementation:
 
 void TabStripModel::Observe(int type,
-                            const NotificationSource& source,
-                            const NotificationDetails& details) {
+                            const content::NotificationSource& source,
+                            const content::NotificationDetails& details) {
   switch (type) {
     case content::NOTIFICATION_TAB_CONTENTS_DESTROYED: {
       // Sometimes, on qemu, it seems like a TabContents object can be destroyed
       // while we still have a reference to it. We need to break this reference
       // here so we don't crash later.
-      int index = GetWrapperIndex(Source<TabContents>(source).ptr());
+      int index = GetWrapperIndex(content::Source<TabContents>(source).ptr());
       if (index != TabStripModel::kNoTab) {
         // Note that we only detach the contents here, not close it - it's
         // already been closed. We just want to undo our bookkeeping.
@@ -1011,7 +1011,7 @@ void TabStripModel::Observe(int type,
 
     case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
       const Extension* extension =
-          Details<UnloadedExtensionInfo>(details)->extension;
+          content::Details<UnloadedExtensionInfo>(details)->extension;
       // Iterate backwards as we may remove items while iterating.
       for (int i = count() - 1; i >= 0; i--) {
         TabContentsWrapper* contents = GetTabContentsAt(i);

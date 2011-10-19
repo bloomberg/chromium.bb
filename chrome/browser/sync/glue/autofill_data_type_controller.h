@@ -12,11 +12,9 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/autofill/personal_data_manager_observer.h"
 #include "chrome/browser/sync/glue/non_frontend_data_type_controller.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
-class NotificationDetails;
-class NotificationSource;
 class PersonalDataManager;
 class WebDataService;
 
@@ -24,7 +22,7 @@ namespace browser_sync {
 
 // A class that manages the startup and shutdown of autofill sync.
 class AutofillDataTypeController : public NonFrontendDataTypeController,
-                                   public NotificationObserver,
+                                   public content::NotificationObserver,
                                    public PersonalDataManagerObserver {
  public:
   AutofillDataTypeController(ProfileSyncFactory* profile_sync_factory,
@@ -35,10 +33,10 @@ class AutofillDataTypeController : public NonFrontendDataTypeController,
   virtual syncable::ModelType type() const;
   virtual browser_sync::ModelSafeGroup model_safe_group() const;
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int notification_type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // PersonalDataManagerObserver implementation:
   virtual void OnPersonalDataChanged() OVERRIDE;
@@ -63,7 +61,7 @@ class AutofillDataTypeController : public NonFrontendDataTypeController,
  private:
   PersonalDataManager* personal_data_;
   scoped_refptr<WebDataService> web_data_service_;
-  NotificationRegistrar notification_registrar_;
+  content::NotificationRegistrar notification_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillDataTypeController);
 };

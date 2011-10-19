@@ -28,8 +28,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/navigation_details.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources_standard.h"
@@ -150,9 +150,10 @@ bool HintInfoBar::Accept() {
 
 OmniboxSearchHint::OmniboxSearchHint(TabContentsWrapper* tab) : tab_(tab) {
   NavigationController* controller = &(tab->controller());
-  notification_registrar_.Add(this,
-                              content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-                              Source<NavigationController>(controller));
+  notification_registrar_.Add(
+      this,
+      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+      content::Source<NavigationController>(controller));
   // Fill the search_engine_urls_ map, used for faster look-up (overkill?).
   for (size_t i = 0; i < arraysize(kSearchEngineURLs); ++i)
     search_engine_urls_[kSearchEngineURLs[i]] = 1;
@@ -160,15 +161,15 @@ OmniboxSearchHint::OmniboxSearchHint(TabContentsWrapper* tab) : tab_(tab) {
   // Listen for omnibox to figure-out when the user searches from the omnibox.
   notification_registrar_.Add(this,
                               chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
-                              Source<Profile>(tab->profile()));
+                              content::Source<Profile>(tab->profile()));
 }
 
 OmniboxSearchHint::~OmniboxSearchHint() {
 }
 
 void OmniboxSearchHint::Observe(int type,
-                                const NotificationSource& source,
-                                const NotificationDetails& details) {
+                                const content::NotificationSource& source,
+                                const content::NotificationDetails& details) {
   if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED) {
     NavigationEntry* entry = tab_->controller().GetActiveEntry();
     if (search_engine_urls_.find(entry->url().spec()) ==
@@ -186,7 +187,7 @@ void OmniboxSearchHint::Observe(int type,
     if (search_url->GetHost() == entry->url().host())
       ShowInfoBar();
   } else if (type == chrome::NOTIFICATION_OMNIBOX_OPENED_URL) {
-    AutocompleteLog* log = Details<AutocompleteLog>(details).ptr();
+    AutocompleteLog* log = content::Details<AutocompleteLog>(details).ptr();
     AutocompleteMatch::Type type =
         log->result.match_at(log->selected_index).type;
     if (type == AutocompleteMatch::SEARCH_WHAT_YOU_TYPED ||

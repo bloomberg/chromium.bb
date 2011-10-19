@@ -8,7 +8,7 @@
 
 #include "base/string16.h"
 #include "content/browser/webui/web_ui.h"
-#include "content/common/notification_observer.h"
+#include "content/public/browser/notification_observer.h"
 
 namespace base {
 
@@ -18,7 +18,7 @@ class ListValue;
 
 // This class registers test framework specific handlers on WebUI objects.
 class WebUITestHandler : public WebUIMessageHandler,
-                         public NotificationObserver {
+                         public content::NotificationObserver {
  public:
   WebUITestHandler();
 
@@ -42,10 +42,10 @@ class WebUITestHandler : public WebUIMessageHandler,
   // Receives testResult messages.
   void HandleTestResult(const base::ListValue* test_result);
 
-  // From NotificationObserver.
+  // From content::NotificationObserver.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Runs a message loop until test finishes. Returns the result of the
   // test.

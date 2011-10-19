@@ -11,7 +11,7 @@
 #include "chrome/browser/tab_closeable_state_watcher.h"
 #include "chrome/browser/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_registrar.h"
 
 namespace chromeos {
 
@@ -41,7 +41,7 @@ namespace chromeos {
 
 class TabCloseableStateWatcher : public ::TabCloseableStateWatcher,
                                  public BrowserList::Observer,
-                                 public NotificationObserver {
+                                 public content::NotificationObserver {
  public:
   TabCloseableStateWatcher();
   virtual ~TabCloseableStateWatcher();
@@ -65,8 +65,8 @@ class TabCloseableStateWatcher : public ::TabCloseableStateWatcher,
   virtual void OnBrowserRemoved(const Browser* browser);
 
   // NotificationObserver implementation:
-  virtual void Observe(int type, const NotificationSource& source,
-                       const NotificationDetails& details);
+  virtual void Observe(int type, const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Called by private class TabStripWatcher for TabStripModelObserver
   // notifications.
@@ -108,7 +108,7 @@ class TabCloseableStateWatcher : public ::TabCloseableStateWatcher,
   // being created.
   bool waiting_for_browser_;
 
-  NotificationRegistrar notification_registrar_;
+  content::NotificationRegistrar notification_registrar_;
 
   // TabStripWatcher is a TabStripModelObserver that funnels all interesting
   // methods to TabCloseableStateWatcher::OnTabStripChanged. TabStripWatcher is

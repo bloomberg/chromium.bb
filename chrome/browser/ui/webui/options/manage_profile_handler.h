@@ -21,10 +21,10 @@ class ManageProfileHandler : public OptionsPageUIHandler {
   // WebUIMessageHandler:
   virtual void RegisterMessages();
 
-  // NotificationObserver:
+  // content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
  private:
   // Callback for the "requestDefaultProfileIcons" message.

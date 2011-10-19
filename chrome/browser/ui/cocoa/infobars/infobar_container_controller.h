@@ -11,7 +11,7 @@
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/view_resizer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_registrar.h"
 
 @class BrowserWindowController;
 @class InfoBarController;
@@ -64,7 +64,7 @@ const CGFloat kTipHeight = 12.0;
   // Lets us registers for INFOBAR_ADDED/INFOBAR_REMOVED
   // notifications.  The actual notifications are sent to the
   // InfoBarNotificationObserver object, which proxies them back to us.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
   scoped_ptr<InfoBarNotificationObserver> infoBarObserver_;
 }
 

@@ -13,8 +13,8 @@
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_delegate.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
@@ -29,7 +29,7 @@ class MenuModel;
 }
 
 class InfoBarGtk : public InfoBar,
-                   public NotificationObserver {
+                   public content::NotificationObserver {
  public:
   InfoBarGtk(InfoBarTabHelper* owner, InfoBarDelegate* delegate);
   virtual ~InfoBarGtk();
@@ -92,10 +92,10 @@ class InfoBarGtk : public InfoBar,
   virtual void PlatformSpecificOnCloseSoon() OVERRIDE;
   virtual void PlatformSpecificOnHeightsRecalculated() OVERRIDE;
 
-  // NotificationObserver:
+  // content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // The second highest widget in the hierarchy (after the |widget_|).
   GtkWidget* bg_box_;
@@ -109,7 +109,7 @@ class InfoBarGtk : public InfoBar,
   // The theme provider, used for getting border colors.
   GtkThemeService* theme_service_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
  private:
   CHROMEGTK_CALLBACK_0(InfoBarGtk, void, OnCloseButton);

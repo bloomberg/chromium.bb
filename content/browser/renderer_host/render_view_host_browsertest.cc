@@ -22,15 +22,16 @@ namespace {
 
 // NotificationObserver used to listen for EXECUTE_JAVASCRIPT_RESULT
 // notifications.
-class ExecuteNotificationObserver : public NotificationObserver {
+class ExecuteNotificationObserver : public content::NotificationObserver {
  public:
   ExecuteNotificationObserver() : id_(0) {}
 
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
-    id_ = (static_cast<Details<ExecuteDetailType > >(details))->first;
-    Value* value = (static_cast<Details<ExecuteDetailType > >(details))->second;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) {
+    id_ = (static_cast<content::Details<ExecuteDetailType > >(details))->first;
+    Value* value =
+        (static_cast<content::Details<ExecuteDetailType > >(details))->second;
     if (value)
       value_.reset(value->DeepCopy());
     MessageLoopForUI::current()->Quit();
@@ -66,7 +67,7 @@ class RenderViewHostTest : public InProcessBrowserTest {
     ui_test_utils::RegisterAndWait(
         out_result,
         content::NOTIFICATION_EXECUTE_JAVASCRIPT_RESULT,
-        Source<RenderViewHost>(rvh));
+        content::Source<RenderViewHost>(rvh));
     EXPECT_EQ(execute_id, out_result->id());
     ASSERT_TRUE(out_result->value());
     last_execute_id_ = execute_id;

@@ -15,7 +15,10 @@
 #include "content/browser/browser_thread.h"
 
 class FilePath;
+
+namespace content {
 class NotificationDetails;
+}
 
 namespace chromeos {
 
@@ -90,7 +93,7 @@ class OwnerManager : public base::RefCountedThreadSafe<OwnerManager> {
  private:
   // A helper method to send a notification on another thread.
   void SendNotification(int type,
-                        const NotificationDetails& details);
+                        const content::NotificationDetails& details);
 
   // Calls back a key update delegate on a given thread.
   void CallKeyUpdateDelegate(KeyUpdateDelegate* d) {

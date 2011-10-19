@@ -17,7 +17,7 @@
 #include "chrome/browser/importer/importer_list_observer.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/common/page_type.h"
 #include "net/base/cert_status_flags.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
@@ -37,7 +37,7 @@ struct WebPluginInfo;
 class TestingAutomationProvider : public AutomationProvider,
                                   public BrowserList::Observer,
                                   public importer::ImporterListObserver,
-                                  public NotificationObserver {
+                                  public content::NotificationObserver {
  public:
   explicit TestingAutomationProvider(Profile* profile);
 
@@ -68,10 +68,10 @@ class TestingAutomationProvider : public AutomationProvider,
   // importer::ImporterListObserver:
   virtual void OnSourceProfilesLoaded() OVERRIDE;
 
-  // NotificationObserver:
+  // content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // IPC Message callbacks.
   void CloseBrowser(int handle, IPC::Message* reply_message);
@@ -1402,7 +1402,7 @@ class TestingAutomationProvider : public AutomationProvider,
   // query in progress.
   HistoryService::Handle redirect_query_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // Used to enumerate browser profiles.
   scoped_refptr<ImporterList> importer_list_;

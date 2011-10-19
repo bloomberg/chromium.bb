@@ -165,7 +165,7 @@ TEST_F(ImageLoadingTrackerTest, DeleteExtensionWhileWaitingForCache) {
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_UNLOADED,
       NotificationService::AllSources(),
-      Details<UnloadedExtensionInfo>(&details));
+      content::Details<UnloadedExtensionInfo>(&details));
 
   // Chuck the extension, that way if anyone tries to access it we should crash
   // or get valgrind errors.

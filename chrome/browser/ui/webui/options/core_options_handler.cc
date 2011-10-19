@@ -21,7 +21,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/user_metrics.h"
-#include "content/common/notification_details.h"
+#include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_types.h"
 #include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
@@ -136,10 +136,10 @@ WebUIMessageHandler* CoreOptionsHandler::Attach(WebUI* web_ui) {
 }
 
 void CoreOptionsHandler::Observe(int type,
-                                 const NotificationSource& source,
-                                 const NotificationDetails& details) {
+                                 const content::NotificationSource& source,
+                                 const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_PREF_CHANGED)
-    NotifyPrefChanged(Details<std::string>(details).ptr());
+    NotifyPrefChanged(content::Details<std::string>(details).ptr());
 }
 
 void CoreOptionsHandler::RegisterMessages() {

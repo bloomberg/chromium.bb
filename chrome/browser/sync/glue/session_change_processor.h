@@ -11,13 +11,10 @@
 #include "chrome/browser/sessions/session_backend.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sync/glue/change_processor.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
 
-
-class NotificationDetails;
-class NotificationSource;
 class Profile;
 
 namespace browser_sync {
@@ -30,7 +27,7 @@ class UnrecoverableErrorHandler;
 // model, and vice versa. All operations and use of this class are
 // from the UI thread.
 class SessionChangeProcessor : public ChangeProcessor,
-                               public NotificationObserver {
+                               public content::NotificationObserver {
  public:
   // Does not take ownership of either argument.
   SessionChangeProcessor(
@@ -42,11 +39,11 @@ class SessionChangeProcessor : public ChangeProcessor,
       bool setup_for_test);
   virtual ~SessionChangeProcessor();
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   // BrowserSessionProvider -> sync_api model change application.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // ChangeProcessor implementation.
   // sync_api model -> BrowserSessionProvider change application.
@@ -63,7 +60,7 @@ class SessionChangeProcessor : public ChangeProcessor,
   void StartObserving();
   void StopObserving();
   SessionModelAssociator* session_model_associator_;
-  NotificationRegistrar notification_registrar_;
+  content::NotificationRegistrar notification_registrar_;
 
   // Owner of the SessionService.  Non-NULL iff |running()| is true.
   Profile* profile_;

@@ -11,8 +11,8 @@
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
 #include "chrome/browser/prefs/pref_member.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
 #include "ui/base/models/menu_model.h"
 #include "views/controls/menu/menu_item_view.h"
@@ -42,7 +42,7 @@ class InputMethodMenu
       public ui::MenuModel,
       public input_method::InputMethodManager::Observer,
       public input_method::InputMethodManager::PreferenceObserver,
-      public NotificationObserver {
+      public content::NotificationObserver {
  public:
   InputMethodMenu(PrefService* pref_service,
                   StatusAreaHost::ScreenMode screen_mode,
@@ -93,10 +93,10 @@ class InputMethodMenu
     const input_method::InputMethodDescriptor& current_input_method);
   virtual void FirstObserverIsAdded(input_method::InputMethodManager* manager);
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Specify menu alignment (default TOPRIGHT).
   void set_menu_alignment(views::MenuItemView::AnchorPosition menu_alignment) {
@@ -190,7 +190,7 @@ class InputMethodMenu
   views::MenuItemView::AnchorPosition menu_alignment_;
 
   PrefService* pref_service_;
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // The mode of the host screen  (e.g. browser, screen locker, login screen.)
   const StatusAreaHost::ScreenMode screen_mode_;

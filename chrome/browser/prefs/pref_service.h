@@ -19,7 +19,6 @@
 
 class DefaultPrefStore;
 class FilePath;
-class NotificationObserver;
 class PersistentPrefStore;
 class PrefModelAssociator;
 class PrefNotifier;
@@ -28,6 +27,10 @@ class PrefStore;
 class PrefValueStore;
 class Profile;
 class SyncableService;
+
+namespace content {
+class NotificationObserver;
+}
 
 namespace subtle {
 class PrefMemberBase;
@@ -348,8 +351,10 @@ class PrefService : public base::NonThreadSafe {
   // method with PREF_CHANGED. Note that observers should not call these methods
   // directly but rather use a PrefChangeRegistrar to make sure the observer
   // gets cleaned up properly.
-  virtual void AddPrefObserver(const char* path, NotificationObserver* obs);
-  virtual void RemovePrefObserver(const char* path, NotificationObserver* obs);
+  virtual void AddPrefObserver(const char* path,
+                               content::NotificationObserver* obs);
+  virtual void RemovePrefObserver(const char* path,
+                                  content::NotificationObserver* obs);
 
   // Registers a new preference at |path|. The |default_value| must not be
   // NULL as it determines the preference value's type.

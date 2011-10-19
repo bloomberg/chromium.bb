@@ -18,7 +18,7 @@
 #include "chrome/browser/ui/gtk/tabstrip_origin_provider.h"
 #include "chrome/browser/ui/gtk/view_id_util.h"
 #include "chrome/browser/ui/tabs/hover_tab_selector.h"
-#include "content/common/notification_observer.h"
+#include "content/public/browser/notification_observer.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
 #include "ui/gfx/rect.h"
@@ -31,7 +31,7 @@ class GtkThemeService;
 class TabStripGtk : public TabStripModelObserver,
                     public TabGtk::TabDelegate,
                     public MessageLoopForUI::Observer,
-                    public NotificationObserver,
+                    public content::NotificationObserver,
                     public TabstripOriginProvider,
                     public ViewIDUtil::Delegate {
  public:
@@ -156,10 +156,10 @@ class TabStripGtk : public TabStripModelObserver,
   virtual void WillProcessEvent(GdkEvent* event);
   virtual void DidProcessEvent(GdkEvent* event);
 
-  // Overridden from NotificationObserver:
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Horizontal gap between mini-tabs and normal tabs.
   static const int mini_to_non_mini_gap_;
@@ -417,7 +417,7 @@ class TabStripGtk : public TabStripModelObserver,
   // Optionally a full Layout will be performed, specified by |layout|.
   void FinishAnimation(TabAnimation* animation, bool layout);
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // The Tabs we contain, and their last generated "good" bounds.
   std::vector<TabData> tab_data_;

@@ -16,8 +16,8 @@
 #include "base/synchronization/lock.h"
 #include "chrome/browser/chromeos/login/profile_image_downloader.h"
 #include "chrome/browser/chromeos/login/user_image_loader.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 class FilePath;
@@ -34,7 +34,7 @@ class RemoveUserDelegate;
 // into this chromium os device before and updating that list.
 class UserManager : public UserImageLoader::Delegate,
                     public ProfileImageDownloader::Delegate,
-                    public NotificationObserver {
+                    public content::NotificationObserver {
  public:
   // User OAuth token status according to the last check.
   typedef enum {
@@ -173,10 +173,10 @@ class UserManager : public UserImageLoader::Delegate,
   // ProfileImageDownloader::Delegate implementation.
   virtual void OnDownloadSuccess(const SkBitmap& image) OVERRIDE;
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Accessor for current_user_is_owner_
   virtual bool current_user_is_owner() const;
@@ -285,7 +285,7 @@ class UserManager : public UserImageLoader::Delegate,
   // Cached flag of whether any user is logged in at the moment.
   bool user_is_logged_in_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   friend struct base::DefaultLazyInstanceTraits<UserManager>;
 

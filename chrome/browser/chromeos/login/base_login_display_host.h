@@ -11,8 +11,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/chromeos/login/login_display_host.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/rect.h"
 
 namespace views {
@@ -28,7 +28,7 @@ class WizardController;
 // An abstract base class that defines OOBE/login screen host.
 // It encapsulates controllers, background integration and flow.
 class BaseLoginDisplayHost : public LoginDisplayHost,
-                             public NotificationObserver {
+                             public content::NotificationObserver {
  public:
   explicit BaseLoginDisplayHost(const gfx::Rect& background_bounds);
   virtual ~BaseLoginDisplayHost();
@@ -51,15 +51,15 @@ class BaseLoginDisplayHost : public LoginDisplayHost,
   const gfx::Rect& background_bounds() const { return background_bounds_; }
 
  private:
-  // NotificationObserver implementation:
+  // content::NotificationObserver implementation:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Used to calculate position of the screens and background.
   gfx::Rect background_bounds_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // Default LoginDisplayHost.
   static LoginDisplayHost* default_host_;

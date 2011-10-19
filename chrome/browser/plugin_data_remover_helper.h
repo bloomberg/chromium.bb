@@ -11,8 +11,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/prefs/pref_member.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class PluginPrefs;
 class Profile;
@@ -26,7 +26,7 @@ struct WebPluginInfo;
 // by an installed plug-in.
 // It should only be used from the UI thread. The client has to make sure that
 // the passed profile outlives this object.
-class PluginDataRemoverHelper : public NotificationObserver {
+class PluginDataRemoverHelper : public content::NotificationObserver {
  public:
   PluginDataRemoverHelper();
   virtual ~PluginDataRemoverHelper();
@@ -37,14 +37,14 @@ class PluginDataRemoverHelper : public NotificationObserver {
   // plug-ins.
   void Init(const char* pref_name,
             Profile* profile,
-            NotificationObserver* observer);
+            content::NotificationObserver* observer);
 
   bool GetValue() const { return pref_.GetValue(); }
 
-  // NotificationObserver methods:
+  // content::NotificationObserver methods:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
  private:
   void StartUpdate();
@@ -52,7 +52,7 @@ class PluginDataRemoverHelper : public NotificationObserver {
                   const std::vector<webkit::WebPluginInfo>& plugins);
 
   BooleanPrefMember pref_;
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
   // Weak pointer.
   Profile* profile_;
   base::WeakPtrFactory<PluginDataRemoverHelper> factory_;

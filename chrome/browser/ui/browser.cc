@@ -149,9 +149,9 @@
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/user_metrics.h"
 #include "content/common/content_restriction.h"
-#include "content/common/notification_details.h"
 #include "content/common/notification_service.h"
 #include "content/common/page_zoom.h"
+#include "content/public/browser/notification_details.h"
 #include "content/public/common/content_switches.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -296,18 +296,19 @@ Browser::Browser(Type type, Profile* profile)
   registrar_.Add(this, content::NOTIFICATION_SSL_VISIBLE_STATE_CHANGED,
                  NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED,
-                 Source<Profile>(profile_));
+                 content::Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
-                 Source<Profile>(profile_));
+                 content::Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
-                 Source<Profile>(profile_));
+                 content::Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
-                 Source<Profile>(profile_));
+                 content::Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
                  NotificationService::AllSources());
   registrar_.Add(
       this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
-      Source<ThemeService>(ThemeServiceFactory::GetForProfile(profile_)));
+      content::Source<ThemeService>(
+          ThemeServiceFactory::GetForProfile(profile_)));
   registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENT_SETTINGS_CHANGED,
                  NotificationService::AllSources());
 
@@ -500,7 +501,7 @@ void Browser::InitBrowserWindow() {
 
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_BROWSER_WINDOW_READY,
-      Source<Browser>(this),
+      content::Source<Browser>(this),
       NotificationService::NoDetails());
 
   PrefService* local_state = g_browser_process->local_state();
@@ -1013,8 +1014,8 @@ void Browser::OnWindowClosing() {
   // TODO(sky): convert session/tab restore to use notification.
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_BROWSER_CLOSING,
-      Source<Browser>(this),
-      Details<bool>(&exiting));
+      content::Source<Browser>(this),
+      content::Details<bool>(&exiting));
 
   CloseAllTabs();
 }
@@ -1321,7 +1322,7 @@ void Browser::WindowFullscreenStateChanged() {
 void Browser::NotifyFullscreenChange() {
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_FULLSCREEN_CHANGED,
-      Source<Browser>(this),
+      content::Source<Browser>(this),
       NotificationService::NoDetails());
 }
 
@@ -3190,10 +3191,10 @@ void Browser::TabInsertedAt(TabContentsWrapper* contents,
   // If the tab crashes in the beforeunload or unload handler, it won't be
   // able to ack. But we know we can close it.
   registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_DISCONNECTED,
-                 Source<TabContents>(contents->tab_contents()));
+                 content::Source<TabContents>(contents->tab_contents()));
 
   registrar_.Add(this, content::NOTIFICATION_INTERSTITIAL_ATTACHED,
-                 Source<TabContents>(contents->tab_contents()));
+                 content::Source<TabContents>(contents->tab_contents()));
 }
 
 void Browser::TabClosingAt(TabStripModel* tab_strip_model,
@@ -3201,7 +3202,7 @@ void Browser::TabClosingAt(TabStripModel* tab_strip_model,
                            int index) {
   NotificationService::current()->Notify(
       content::NOTIFICATION_TAB_CLOSING,
-      Source<NavigationController>(&contents->controller()),
+      content::Source<NavigationController>(&contents->controller()),
       NotificationService::NoDetails());
 
   // Sever the TabContents' connection back to us.
@@ -3584,7 +3585,7 @@ void Browser::TabContentsFocused(TabContents* tab_content) {
 bool Browser::TakeFocus(bool reverse) {
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_FOCUS_RETURNED_TO_BROWSER,
-      Source<Browser>(this),
+      content::Source<Browser>(this),
       NotificationService::NoDetails());
   return false;
 }
@@ -4113,18 +4114,18 @@ void Browser::FileSelected(const FilePath& path, int index, void* params) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Browser, NotificationObserver implementation:
+// Browser, content::NotificationObserver implementation:
 
 void Browser::Observe(int type,
-                      const NotificationSource& source,
-                      const NotificationDetails& details) {
+                      const content::NotificationSource& source,
+                      const content::NotificationDetails& details) {
   switch (type) {
     case content::NOTIFICATION_TAB_CONTENTS_DISCONNECTED:
       if (is_attempting_to_close_browser_) {
         // Pass in false so that we delay processing. We need to delay the
         // processing as it may close the tab, which is currently on the call
         // stack above us.
-        ClearUnloadState(Source<TabContents>(source).ptr(), false);
+        ClearUnloadState(content::Source<TabContents>(source).ptr(), false);
       }
       break;
 
@@ -4137,17 +4138,18 @@ void Browser::Observe(int type,
       // closing of this one.
       if (GetSelectedTabContents() &&
           &GetSelectedTabContents()->controller() ==
-          Source<NavigationController>(source).ptr())
+          content::Source<NavigationController>(source).ptr())
         UpdateToolbar(false);
       break;
 
     case chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED: {
       // Show the UI if the extension was disabled for escalated permissions.
-      Profile* profile = Source<Profile>(source).ptr();
+      Profile* profile = content::Source<Profile>(source).ptr();
       if (profile_->IsSameProfile(profile)) {
         ExtensionService* service = profile->GetExtensionService();
         DCHECK(service);
-        const Extension* extension = Details<const Extension>(details).ptr();
+        const Extension* extension =
+            content::Details<const Extension>(details).ptr();
         if (service->extension_prefs()->DidExtensionEscalatePermissions(
                 extension->id()))
           ShowExtensionDisabledUI(service, profile_, extension);
@@ -4161,7 +4163,7 @@ void Browser::Observe(int type,
 
       // Close any tabs from the unloaded extension.
       const Extension* extension =
-          Details<UnloadedExtensionInfo>(details)->extension;
+          content::Details<UnloadedExtensionInfo>(details)->extension;
       TabStripModel* model = tab_handler_->GetTabStripModel();
       for (int i = model->count() - 1; i >= 0; --i) {
         TabContents* tc = model->GetTabContentsAt(i)->tab_contents();
@@ -4175,7 +4177,7 @@ void Browser::Observe(int type,
     }
 
     case chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED: {
-      Profile* profile = Source<Profile>(source).ptr();
+      Profile* profile = content::Source<Profile>(source).ptr();
       if (profile_->IsSameProfile(profile) && window()->GetLocationBar())
         window()->GetLocationBar()->InvalidatePageActions();
       break;
@@ -4196,7 +4198,7 @@ void Browser::Observe(int type,
       break;
 
     case chrome::NOTIFICATION_EXTENSION_READY_FOR_INSTALL: {
-      Profile* profile = Source<Profile>(source).ptr();
+      Profile* profile = content::Source<Profile>(source).ptr();
       if (profile_->IsSameProfile(profile)) {
         // Handle EXTENSION_READY_FOR_INSTALL for last active tabbed browser.
         if (BrowserList::FindTabbedBrowser(profile, true) == this) {
@@ -4204,7 +4206,7 @@ void Browser::Observe(int type,
           // want to wait until unpack to find out an extension is a theme, so
           // we test the download_url GURL instead. This means that themes in
           // the extensions gallery won't get the loading dialog.
-          GURL download_url = *(Details<GURL>(details).ptr());
+          GURL download_url = *(content::Details<GURL>(details).ptr());
           if (ExtensionService::IsDownloadFromMiniGallery(download_url))
             window()->ShowThemeInstallBubble();
         }
@@ -4213,7 +4215,8 @@ void Browser::Observe(int type,
     }
 
     case chrome::NOTIFICATION_PREF_CHANGED: {
-      const std::string& pref_name = *Details<std::string>(details).ptr();
+      const std::string& pref_name =
+          *content::Details<std::string>(details).ptr();
       if (pref_name == prefs::kPrintingEnabled) {
         UpdatePrintingState(GetContentRestrictionsForSelectedTab());
       } else if (pref_name == prefs::kInstantEnabled ||
@@ -4247,7 +4250,7 @@ void Browser::Observe(int type,
         UpdateCommandsForBookmarkBar();
         UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_PREF_CHANGE);
       } else if (pref_name == prefs::kHomePage) {
-        PrefService* pref_service = Source<PrefService>(source).ptr();
+        PrefService* pref_service = content::Source<PrefService>(source).ptr();
         MarkHomePageAsChanged(pref_service);
       } else if (pref_name == prefs::kAllowFileSelectionDialogs) {
         UpdateSaveAsState(GetContentRestrictionsForSelectedTab());
@@ -4259,7 +4262,7 @@ void Browser::Observe(int type,
     }
 
     case chrome::NOTIFICATION_TAB_CONTENT_SETTINGS_CHANGED: {
-      TabContents* tab_contents = Source<TabContents>(source).ptr();
+      TabContents* tab_contents = content::Source<TabContents>(source).ptr();
       if (tab_contents == GetSelectedTabContents()) {
         LocationBar* location_bar = window()->GetLocationBar();
         if (location_bar)
@@ -5202,9 +5205,9 @@ void Browser::TabDetachedAtImpl(TabContentsWrapper* contents, int index,
   }
 
   registrar_.Remove(this, content::NOTIFICATION_INTERSTITIAL_ATTACHED,
-                    Source<TabContents>(contents->tab_contents()));
+                    content::Source<TabContents>(contents->tab_contents()));
   registrar_.Remove(this, content::NOTIFICATION_TAB_CONTENTS_DISCONNECTED,
-                    Source<TabContents>(contents->tab_contents()));
+                    content::Source<TabContents>(contents->tab_contents()));
 }
 
 // static
@@ -5260,7 +5263,7 @@ bool Browser::OpenInstant(WindowOpenDisposition disposition) {
   if (disposition == CURRENT_TAB) {
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_INSTANT_COMMITTED,
-        Source<TabContentsWrapper>(instant()->CommitCurrentPreview(
+        content::Source<TabContentsWrapper>(instant()->CommitCurrentPreview(
             INSTANT_COMMIT_PRESSED_ENTER)),
         NotificationService::NoDetails());
     return true;
@@ -5280,7 +5283,7 @@ bool Browser::OpenInstant(WindowOpenDisposition disposition) {
     instant()->CompleteRelease(preview_contents);
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_INSTANT_COMMITTED,
-        Source<TabContentsWrapper>(preview_contents),
+        content::Source<TabContentsWrapper>(preview_contents),
         NotificationService::NoDetails());
     return true;
   }

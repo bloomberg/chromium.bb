@@ -18,8 +18,8 @@
 #include "chrome/browser/net/gaia/gaia_oauth_fetcher.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class GaiaAuthFetcher;
 class Profile;
@@ -39,7 +39,7 @@ struct GoogleServiceSigninSuccessDetails {
 
 class SigninManager : public GaiaAuthConsumer,
                       public GaiaOAuthConsumer,
-                      public NotificationObserver {
+                      public content::NotificationObserver {
  public:
   SigninManager();
   virtual ~SigninManager();
@@ -107,10 +107,10 @@ class SigninManager : public GaiaAuthConsumer,
   virtual void OnUserInfoSuccess(const std::string& email) OVERRIDE;
   virtual void OnUserInfoFailure(const GoogleServiceAuthError& error) OVERRIDE;
 
-  // NotificationObserver
+  // content::NotificationObserver
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   void PrepareForSignin();
@@ -140,7 +140,7 @@ class SigninManager : public GaiaAuthConsumer,
   scoped_ptr<GaiaOAuthFetcher> oauth_login_;
 
   // Register for notifications from the TokenService.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(SigninManager);
 };

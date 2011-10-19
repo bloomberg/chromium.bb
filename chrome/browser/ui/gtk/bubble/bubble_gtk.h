@@ -12,8 +12,8 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/gtk_signal_registrar.h"
 #include "ui/gfx/point.h"
@@ -46,7 +46,7 @@ class BubbleDelegateGtk {
 // BubbleDelegateGtk::BubbleClosing(). Then the widgets and the underlying
 // object will be destroyed. You can also close and destroy the bubble by
 // calling Close().
-class BubbleGtk : public NotificationObserver {
+class BubbleGtk : public content::NotificationObserver {
  public:
   // Where should the arrow be placed relative to the bubble?
   enum ArrowLocationGtk {
@@ -76,10 +76,10 @@ class BubbleGtk : public NotificationObserver {
   // so you shouldn't hold a BubbleGtk pointer after calling Close().
   void Close();
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // If the content contains widgets that can steal our pointer and keyboard
   // grabs (e.g. GtkComboBox), this method should be called after a widget
@@ -206,7 +206,7 @@ class BubbleGtk : public NotificationObserver {
 
   bool closed_by_escape_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   ui::GtkSignalRegistrar signals_;
 

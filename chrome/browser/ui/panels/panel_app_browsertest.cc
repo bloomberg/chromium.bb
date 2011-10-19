@@ -61,7 +61,7 @@ class PanelAppBrowserTest : public ExtensionBrowserTest {
     size_t browser_count = BrowserList::size();
     ui_test_utils::WindowedNotificationObserver signal(
         chrome::NOTIFICATION_BROWSER_CLOSED,
-        Source<Browser>(browser));
+        content::Source<Browser>(browser));
     browser->CloseWindow();
     signal.Wait();
     // Now we have one less browser instance.

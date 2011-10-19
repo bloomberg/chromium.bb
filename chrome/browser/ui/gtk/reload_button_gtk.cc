@@ -14,7 +14,7 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/location_bar_view_gtk.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
@@ -63,7 +63,7 @@ ReloadButtonGtk::ReloadButtonGtk(LocationBarViewGtk* location_bar,
     theme_service_->InitThemesFor(this);
     registrar_.Add(this,
                    chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
-                   Source<ThemeService>(theme_service_));
+                   content::Source<ThemeService>(theme_service_));
   }
 
   // Set the default double-click timer delay to the system double-click time.
@@ -126,15 +126,15 @@ void ReloadButtonGtk::ChangeMode(Mode mode, bool force) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ReloadButtonGtk, NotificationObserver implementation:
+// ReloadButtonGtk, content::NotificationObserver implementation:
 
 void ReloadButtonGtk::Observe(int type,
-                              const NotificationSource& source,
-                              const NotificationDetails& /* details */) {
+                              const content::NotificationSource& source,
+                              const content::NotificationDetails& details) {
   DCHECK(chrome::NOTIFICATION_BROWSER_THEME_CHANGED == type);
 
   GtkThemeService* provider = static_cast<GtkThemeService*>(
-      Source<ThemeService>(source).ptr());
+      content::Source<ThemeService>(source).ptr());
   DCHECK_EQ(provider, theme_service_);
   GtkButtonWidth = 0;
   UpdateThemeButtons();

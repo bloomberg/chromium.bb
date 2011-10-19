@@ -10,8 +10,6 @@
 #include "content/public/browser/notification_types.h"
 
 class GURL;
-class NotificationDetails;
-class NotificationSource;
 class Profile;
 class TabContentsWrapper;
 
@@ -23,7 +21,7 @@ struct NavigateParams;
 // for the |BrowserGuestModeNavigation| which tests navigation while in guest
 // mode.
 class BrowserNavigatorTest : public InProcessBrowserTest,
-                             public NotificationObserver {
+                             public content::NotificationObserver {
  protected:
   browser::NavigateParams MakeNavigateParams() const;
   browser::NavigateParams MakeNavigateParams(Browser* browser) const;
@@ -35,9 +33,9 @@ class BrowserNavigatorTest : public InProcessBrowserTest,
 
   void RunSuppressTest(WindowOpenDisposition disposition);
 
-  // NotificationObserver:
-  virtual void Observe(int type, const NotificationSource& source,
-                       const NotificationDetails& details);
+  // content::NotificationObserver:
+  virtual void Observe(int type, const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   size_t created_tab_contents_count_;
 };

@@ -42,7 +42,7 @@ ExternalPolicyExtensionLoader::ExternalPolicyExtensionLoader(
   pref_change_registrar_.Add(prefs::kExtensionInstallForceList, this);
   notification_registrar_.Add(this,
                               chrome::NOTIFICATION_PROFILE_DESTROYED,
-                              Source<Profile>(profile_));
+                              content::Source<Profile>(profile_));
 }
 
 void ExternalPolicyExtensionLoader::StartLoading() {
@@ -74,13 +74,13 @@ void ExternalPolicyExtensionLoader::StartLoading() {
 
 void ExternalPolicyExtensionLoader::Observe(
     int type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (profile_ == NULL) return;
   switch (type) {
     case chrome::NOTIFICATION_PREF_CHANGED: {
-      if (Source<PrefService>(source).ptr() == profile_->GetPrefs()) {
-        std::string* pref_name = Details<std::string>(details).ptr();
+      if (content::Source<PrefService>(source).ptr() == profile_->GetPrefs()) {
+        std::string* pref_name = content::Details<std::string>(details).ptr();
         if (*pref_name == prefs::kExtensionInstallForceList) {
           StartLoading();
         } else {
@@ -90,7 +90,7 @@ void ExternalPolicyExtensionLoader::Observe(
       break;
     }
     case chrome::NOTIFICATION_PROFILE_DESTROYED: {
-      if (Source<Profile>(source).ptr() == profile_) {
+      if (content::Source<Profile>(source).ptr() == profile_) {
         notification_registrar_.RemoveAll();
         pref_change_registrar_.RemoveAll();
         profile_ = NULL;

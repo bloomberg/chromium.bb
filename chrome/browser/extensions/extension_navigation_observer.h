@@ -11,7 +11,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_registrar.h"
 
 class Profile;
 class NavigationController;
@@ -21,15 +21,15 @@ class NavigationController;
 // increase, it prompts the user to accept the new permissions and re-enables
 // the extension.
 class ExtensionNavigationObserver : public ExtensionInstallUI::Delegate,
-                                    public NotificationObserver {
+                                    public content::NotificationObserver {
  public:
   explicit ExtensionNavigationObserver(Profile* profile);
   virtual ~ExtensionNavigationObserver();
 
-  // NotificationObserver
+  // content::NotificationObserver
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
  private:
   // Registers for the NOTIFICATION_NAV_ENTRY_COMMITTED notification.
   void RegisterForNotifications();
@@ -43,7 +43,7 @@ class ExtensionNavigationObserver : public ExtensionInstallUI::Delegate,
   virtual void InstallUIProceed() OVERRIDE;
   virtual void InstallUIAbort(bool user_initiated) OVERRIDE;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   Profile* profile_;
 

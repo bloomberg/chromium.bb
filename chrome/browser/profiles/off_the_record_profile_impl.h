@@ -11,7 +11,7 @@
 #include "chrome/browser/profiles/off_the_record_profile_io_data.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "content/common/notification_observer.h"
+#include "content/public/browser/notification_observer.h"
 
 using base::Time;
 using base::TimeDelta;
@@ -27,7 +27,7 @@ using base::TimeDelta;
 ////////////////////////////////////////////////////////////////////////////////
 class OffTheRecordProfileImpl : public Profile,
                                 public BrowserList::Observer,
-                                public NotificationObserver {
+                                public content::NotificationObserver {
  public:
   explicit OffTheRecordProfileImpl(Profile* real_profile);
   virtual ~OffTheRecordProfileImpl();
@@ -128,15 +128,15 @@ class OffTheRecordProfileImpl : public Profile,
   virtual chrome_browser_net::Predictor* GetNetworkPredictor() OVERRIDE;
   virtual void ClearNetworkingHistorySince(base::Time time) OVERRIDE;
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   void CreateQuotaManagerAndClients();
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // The real underlying profile.
   Profile* profile_;

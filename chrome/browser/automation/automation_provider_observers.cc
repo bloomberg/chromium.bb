@@ -122,8 +122,8 @@ InitialLoadObserver::~InitialLoadObserver() {
 }
 
 void InitialLoadObserver::Observe(int type,
-                                  const NotificationSource& source,
-                                  const NotificationDetails& details) {
+                                  const content::NotificationSource& source,
+                                  const content::NotificationDetails& details) {
   if (type == content::NOTIFICATION_LOAD_START) {
     if (outstanding_tab_count_ > loading_tabs_.size())
       loading_tabs_.insert(TabTimeMap::value_type(
@@ -139,7 +139,8 @@ void InitialLoadObserver::Observe(int type,
     }
   } else if (type == content::NOTIFICATION_RENDERER_PROCESS_CLOSED) {
     base::TerminationStatus status =
-        Details<RenderProcessHost::RendererClosedDetails>(details)->status;
+        content::Details<RenderProcessHost::RendererClosedDetails>(details)->
+            status;
     switch (status) {
       case base::TERMINATION_STATUS_NORMAL_TERMINATION:
         break;
@@ -201,17 +202,17 @@ NewTabUILoadObserver::NewTabUILoadObserver(AutomationProvider* automation,
                                            Profile* profile)
     : automation_(automation->AsWeakPtr()) {
   registrar_.Add(this, chrome::NOTIFICATION_INITIAL_NEW_TAB_UI_LOAD,
-                 Source<Profile>(profile));
+                 content::Source<Profile>(profile));
 }
 
 NewTabUILoadObserver::~NewTabUILoadObserver() {
 }
 
 void NewTabUILoadObserver::Observe(int type,
-                                   const NotificationSource& source,
-                                   const NotificationDetails& details) {
+                                   const content::NotificationSource& source,
+                                   const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_INITIAL_NEW_TAB_UI_LOAD) {
-    Details<int> load_time(details);
+    content::Details<int> load_time(details);
     if (automation_) {
       automation_->Send(
           new AutomationMsg_InitialNewTabUILoadComplete(*load_time.ptr()));
@@ -240,8 +241,8 @@ NavigationControllerRestoredObserver::~NavigationControllerRestoredObserver() {
 }
 
 void NavigationControllerRestoredObserver::Observe(
-    int type, const NotificationSource& source,
-    const NotificationDetails& details) {
+    int type, const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (FinishedRestoring()) {
     SendDone();
     registrar_.RemoveAll();
@@ -276,7 +277,7 @@ NavigationNotificationObserver::NavigationNotificationObserver(
       navigation_started_(false),
       use_json_interface_(use_json_interface) {
   DCHECK_LT(0, navigations_remaining_);
-  Source<NavigationController> source(controller_);
+  content::Source<NavigationController> source(controller_);
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED, source);
   registrar_.Add(this, content::NOTIFICATION_LOAD_START, source);
   registrar_.Add(this, content::NOTIFICATION_LOAD_STOP, source);
@@ -294,8 +295,8 @@ NavigationNotificationObserver::~NavigationNotificationObserver() {
 }
 
 void NavigationNotificationObserver::Observe(
-    int type, const NotificationSource& source,
-    const NotificationDetails& details) {
+    int type, const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (!automation_) {
     delete this;
     return;
@@ -330,7 +331,7 @@ void NavigationNotificationObserver::Observe(
     // We do this in all cases (not just when navigation_started_ == true) so
     // tests can still wait for auth dialogs outside of navigation.
     LoginHandler* handler =
-        Details<LoginNotificationDetails>(details)->handler();
+        content::Details<LoginNotificationDetails>(details)->handler();
     automation_->AddLoginHandler(controller_, handler);
 
     // Respond that authentication is needed.
@@ -371,14 +372,17 @@ TabStripNotificationObserver::TabStripNotificationObserver(
 TabStripNotificationObserver::~TabStripNotificationObserver() {
 }
 
-void TabStripNotificationObserver::Observe(int type,
-                                           const NotificationSource& source,
-                                           const NotificationDetails& details) {
+void TabStripNotificationObserver::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (type == notification_) {
-    if (type == content::NOTIFICATION_TAB_PARENTED)
-      ObserveTab(&(Source<TabContentsWrapper>(source).ptr()->controller()));
-    else
-      ObserveTab(Source<NavigationController>(source).ptr());
+    if (type == content::NOTIFICATION_TAB_PARENTED) {
+      ObserveTab(
+          &(content::Source<TabContentsWrapper>(source).ptr()->controller()));
+    } else {
+      ObserveTab(content::Source<NavigationController>(source).ptr());
+    }
     delete this;
   } else {
     NOTREACHED();
@@ -520,8 +524,8 @@ ExtensionUninstallObserver::~ExtensionUninstallObserver() {
 
 void ExtensionUninstallObserver::Observe(
     int type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (!automation_) {
     delete this;
     return;
@@ -529,7 +533,7 @@ void ExtensionUninstallObserver::Observe(
 
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_UNINSTALLED: {
-      if (id_ == *Details<const std::string>(details).ptr()) {
+      if (id_ == *content::Details<const std::string>(details).ptr()) {
         scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
         return_value->SetBoolean("success", true);
         AutomationJSONReply(automation_, reply_message_.release())
@@ -541,7 +545,7 @@ void ExtensionUninstallObserver::Observe(
     }
 
     case chrome::NOTIFICATION_EXTENSION_UNINSTALL_NOT_ALLOWED: {
-      const Extension* extension = Details<Extension>(details).ptr();
+      const Extension* extension = content::Details<Extension>(details).ptr();
       if (id_ == extension->id()) {
         scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
         return_value->SetBoolean("success", false);
@@ -583,8 +587,8 @@ ExtensionReadyNotificationObserver::~ExtensionReadyNotificationObserver() {
 }
 
 void ExtensionReadyNotificationObserver::Observe(
-    int type, const NotificationSource& source,
-    const NotificationDetails& details) {
+    int type, const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (!automation_) {
     delete this;
     return;
@@ -598,7 +602,7 @@ void ExtensionReadyNotificationObserver::Observe(
         return;
       break;
     case chrome::NOTIFICATION_EXTENSION_LOADED:
-      extension_ = Details<const Extension>(details).ptr();
+      extension_ = content::Details<const Extension>(details).ptr();
       if (!DidExtensionHostsStopLoading(manager_))
         return;
       // For some reason, the background ExtensionHost is not yet
@@ -645,8 +649,8 @@ ExtensionUnloadNotificationObserver::~ExtensionUnloadNotificationObserver() {
 }
 
 void ExtensionUnloadNotificationObserver::Observe(
-    int type, const NotificationSource& source,
-    const NotificationDetails& details) {
+    int type, const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED) {
     did_receive_unload_notification_ = true;
   } else {
@@ -679,8 +683,8 @@ ExtensionsUpdatedObserver::~ExtensionsUpdatedObserver() {
 }
 
 void ExtensionsUpdatedObserver::Observe(
-    int type, const NotificationSource& source,
-    const NotificationDetails& details) {
+    int type, const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (!automation_) {
     delete this;
     return;
@@ -698,7 +702,8 @@ void ExtensionsUpdatedObserver::Observe(
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_UPDATE_FOUND:
       // Extension updater has identified an extension that needs to be updated.
-      in_progress_updates_.insert(*(Details<const std::string>(details).ptr()));
+      in_progress_updates_.insert(
+          *(content::Details<const std::string>(details).ptr()));
       break;
 
     case chrome::NOTIFICATION_EXTENSION_UPDATING_FINISHED:
@@ -713,14 +718,14 @@ void ExtensionsUpdatedObserver::Observe(
       // An extension has either completed update installation and is now
       // loaded, or else the install has been skipped because it is
       // either not allowed or else has been disabled.
-      const Extension* extension = Details<Extension>(details).ptr();
+      const Extension* extension = content::Details<Extension>(details).ptr();
       in_progress_updates_.erase(extension->id());
       break;
     }
 
     case chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR: {
       // An extension had an error on update installation.
-      CrxInstaller* installer = Source<CrxInstaller>(source).ptr();
+      CrxInstaller* installer = content::Source<CrxInstaller>(source).ptr();
       in_progress_updates_.erase(installer->expected_id());
       break;
     }
@@ -761,8 +766,8 @@ ExtensionTestResultNotificationObserver::
 }
 
 void ExtensionTestResultNotificationObserver::Observe(
-    int type, const NotificationSource& source,
-    const NotificationDetails& details) {
+    int type, const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_TEST_PASSED:
       results_.push_back(true);
@@ -771,7 +776,7 @@ void ExtensionTestResultNotificationObserver::Observe(
 
     case chrome::NOTIFICATION_EXTENSION_TEST_FAILED:
       results_.push_back(false);
-      messages_.push_back(*Details<std::string>(details).ptr());
+      messages_.push_back(*content::Details<std::string>(details).ptr());
       break;
 
     default:
@@ -818,8 +823,8 @@ BrowserOpenedNotificationObserver::~BrowserOpenedNotificationObserver() {
 }
 
 void BrowserOpenedNotificationObserver::Observe(
-    int type, const NotificationSource& source,
-    const NotificationDetails& details) {
+    int type, const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (!automation_) {
     delete this;
     return;
@@ -829,11 +834,11 @@ void BrowserOpenedNotificationObserver::Observe(
     // Store the new browser ID and continue waiting for a new tab within it
     // to stop loading.
     new_window_id_ = ExtensionTabUtil::GetWindowId(
-        Source<Browser>(source).ptr());
+        content::Source<Browser>(source).ptr());
   } else if (type == content::NOTIFICATION_LOAD_STOP) {
     // Only send the result if the loaded tab is in the new window.
     NavigationController* controller =
-        Source<NavigationController>(source).ptr();
+        content::Source<NavigationController>(source).ptr();
     TabContentsWrapper* tab = TabContentsWrapper::GetCurrentWrapperForContents(
         controller->tab_contents());
     int window_id = tab ? tab->restore_tab_helper()->window_id().id() : -1;
@@ -864,14 +869,14 @@ BrowserClosedNotificationObserver::BrowserClosedNotificationObserver(
       reply_message_(reply_message),
       for_browser_command_(false) {
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSED,
-                 Source<Browser>(browser));
+                 content::Source<Browser>(browser));
 }
 
 BrowserClosedNotificationObserver::~BrowserClosedNotificationObserver() {}
 
 void BrowserClosedNotificationObserver::Observe(
-    int type, const NotificationSource& source,
-    const NotificationDetails& details) {
+    int type, const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_BROWSER_CLOSED);
 
   if (!automation_) {
@@ -879,7 +884,7 @@ void BrowserClosedNotificationObserver::Observe(
     return;
   }
 
-  Details<bool> close_app(details);
+  content::Details<bool> close_app(details);
 
   if (for_browser_command_) {
     AutomationMsg_WindowExecuteCommand::WriteReplyParams(reply_message_.get(),
@@ -915,8 +920,8 @@ BrowserCountChangeNotificationObserver::
 
 void BrowserCountChangeNotificationObserver::Observe(
     int type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_BROWSER_OPENED ||
          type == chrome::NOTIFICATION_BROWSER_CLOSED);
   int current_count = static_cast<int>(BrowserList::size());
@@ -952,8 +957,8 @@ AppModalDialogShownObserver::~AppModalDialogShownObserver() {
 }
 
 void AppModalDialogShownObserver::Observe(
-    int type, const NotificationSource& source,
-    const NotificationDetails& details) {
+    int type, const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_APP_MODAL_DIALOG_SHOWN);
 
   if (automation_) {
@@ -1045,8 +1050,8 @@ bool ExecuteBrowserCommandObserver::CreateAndRegisterObserver(
 }
 
 void ExecuteBrowserCommandObserver::Observe(
-    int type, const NotificationSource& source,
-    const NotificationDetails& details) {
+    int type, const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (type == notification_type_) {
     if (automation_) {
       AutomationMsg_WindowExecuteCommand::WriteReplyParams(reply_message_.get(),
@@ -1096,16 +1101,16 @@ FindInPageNotificationObserver::FindInPageNotificationObserver(
       reply_with_json_(reply_with_json),
       reply_message_(reply_message) {
   registrar_.Add(this, chrome::NOTIFICATION_FIND_RESULT_AVAILABLE,
-                 Source<TabContents>(parent_tab));
+                 content::Source<TabContents>(parent_tab));
 }
 
 FindInPageNotificationObserver::~FindInPageNotificationObserver() {
 }
 
 void FindInPageNotificationObserver::Observe(
-    int type, const NotificationSource& source,
-    const NotificationDetails& details) {
-  Details<FindNotificationDetails> find_details(details);
+    int type, const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  content::Details<FindNotificationDetails> find_details(details);
   if (!(find_details->final_update() && reply_message_ != NULL)) {
     DVLOG(1) << "Ignoring, since we only care about the final message";
     return;
@@ -1160,10 +1165,10 @@ DomOperationObserver::DomOperationObserver() {
 DomOperationObserver::~DomOperationObserver() {}
 
 void DomOperationObserver::Observe(
-    int type, const NotificationSource& source,
-    const NotificationDetails& details) {
+    int type, const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_DOM_OPERATION_RESPONSE) {
-    Details<DomOperationNotificationDetails> dom_op_details(details);
+    content::Details<DomOperationNotificationDetails> dom_op_details(details);
     OnDomOperationCompleted(dom_op_details->json());
   } else if (type == chrome::NOTIFICATION_APP_MODAL_DIALOG_SHOWN) {
     OnModalDialogShown();
@@ -1224,10 +1229,10 @@ DocumentPrintedNotificationObserver::~DocumentPrintedNotificationObserver() {
 
 void DocumentPrintedNotificationObserver::Observe(
     int type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_PRINT_JOB_EVENT);
-  switch (Details<printing::JobEventDetails>(details)->type()) {
+  switch (content::Details<printing::JobEventDetails>(details)->type()) {
     case printing::JobEventDetails::JOB_DONE: {
       // Succeeded.
       success_ = true;
@@ -1272,14 +1277,16 @@ int MetricEventDurationObserver::GetEventDurationMs(
   return it->second;
 }
 
-void MetricEventDurationObserver::Observe(int type,
-    const NotificationSource& source, const NotificationDetails& details) {
+void MetricEventDurationObserver::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (type != chrome::NOTIFICATION_METRIC_EVENT_DURATION) {
     NOTREACHED();
     return;
   }
   MetricEventDurationDetails* metric_event_duration =
-      Details<MetricEventDurationDetails>(details).ptr();
+      content::Details<MetricEventDurationDetails>(details).ptr();
   durations_[metric_event_duration->event_name] =
       metric_event_duration->duration_ms;
 }
@@ -1290,14 +1297,15 @@ PageTranslatedObserver::PageTranslatedObserver(AutomationProvider* automation,
   : automation_(automation->AsWeakPtr()),
     reply_message_(reply_message) {
   registrar_.Add(this, chrome::NOTIFICATION_PAGE_TRANSLATED,
-                 Source<TabContents>(tab_contents));
+                 content::Source<TabContents>(tab_contents));
 }
 
 PageTranslatedObserver::~PageTranslatedObserver() {}
 
-void PageTranslatedObserver::Observe(int type,
-                                     const NotificationSource& source,
-                                     const NotificationDetails& details) {
+void PageTranslatedObserver::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (!automation_) {
     delete this;
     return;
@@ -1307,7 +1315,7 @@ void PageTranslatedObserver::Observe(int type,
   AutomationJSONReply reply(automation_, reply_message_.release());
 
   PageTranslatedDetails* translated_details =
-      Details<PageTranslatedDetails>(details).ptr();
+      content::Details<PageTranslatedDetails>(details).ptr();
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
   return_value->SetBoolean(
       "translation_success",
@@ -1324,14 +1332,14 @@ TabLanguageDeterminedObserver::TabLanguageDeterminedObserver(
       tab_contents_(tab_contents),
       translate_bar_(translate_bar) {
   registrar_.Add(this, chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
-                 Source<TabContents>(tab_contents));
+                 content::Source<TabContents>(tab_contents));
 }
 
 TabLanguageDeterminedObserver::~TabLanguageDeterminedObserver() {}
 
 void TabLanguageDeterminedObserver::Observe(
-    int type, const NotificationSource& source,
-    const NotificationDetails& details) {
+    int type, const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED);
 
   if (!automation_) {
@@ -1389,7 +1397,7 @@ InfoBarCountObserver::InfoBarCountObserver(AutomationProvider* automation,
       reply_message_(reply_message),
       tab_contents_(tab_contents),
       target_count_(target_count) {
-  Source<InfoBarTabHelper> source(tab_contents->infobar_tab_helper());
+  content::Source<InfoBarTabHelper> source(tab_contents->infobar_tab_helper());
   registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
                  source);
   registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
@@ -1399,9 +1407,10 @@ InfoBarCountObserver::InfoBarCountObserver(AutomationProvider* automation,
 
 InfoBarCountObserver::~InfoBarCountObserver() {}
 
-void InfoBarCountObserver::Observe(int type,
-                                   const NotificationSource& source,
-                                   const NotificationDetails& details) {
+void InfoBarCountObserver::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED ||
          type == chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED);
   CheckCount();
@@ -1752,12 +1761,12 @@ void PasswordStoreLoginsChangedObserver::RegisterObserversTask() {
 
 void PasswordStoreLoginsChangedObserver::Observe(
     int type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   DCHECK(type == chrome::NOTIFICATION_LOGINS_CHANGED);
   PasswordStoreChangeList* change_details =
-      Details<PasswordStoreChangeList>(details).ptr();
+      content::Details<PasswordStoreChangeList>(details).ptr();
   if (change_details->size() != 1 ||
       change_details->front().type() != expected_type_) {
     // Notify the UI thread that there's an error.
@@ -1826,7 +1835,7 @@ OmniboxAcceptNotificationObserver::OmniboxAcceptNotificationObserver(
     : automation_(automation->AsWeakPtr()),
       reply_message_(reply_message),
       controller_(controller) {
-  Source<NavigationController> source(controller_);
+  content::Source<NavigationController> source(controller_);
   registrar_.Add(this, content::NOTIFICATION_LOAD_STOP, source);
   // Pages requiring auth don't send LOAD_STOP.
   registrar_.Add(this, chrome::NOTIFICATION_AUTH_NEEDED, source);
@@ -1837,8 +1846,8 @@ OmniboxAcceptNotificationObserver::~OmniboxAcceptNotificationObserver() {
 
 void OmniboxAcceptNotificationObserver::Observe(
     int type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (type == content::NOTIFICATION_LOAD_STOP ||
       type == chrome::NOTIFICATION_AUTH_NEEDED) {
     if (automation_) {
@@ -1857,7 +1866,7 @@ SavePackageNotificationObserver::SavePackageNotificationObserver(
     IPC::Message* reply_message)
     : automation_(automation->AsWeakPtr()),
       reply_message_(reply_message) {
-  Source<DownloadManager> source(download_manager);
+  content::Source<DownloadManager> source(download_manager);
   registrar_.Add(this, content::NOTIFICATION_SAVE_PACKAGE_SUCCESSFULLY_FINISHED,
                  source);
 }
@@ -1866,8 +1875,8 @@ SavePackageNotificationObserver::~SavePackageNotificationObserver() {}
 
 void SavePackageNotificationObserver::Observe(
     int type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (type == content::NOTIFICATION_SAVE_PACKAGE_SUCCESSFULLY_FINISHED) {
     if (automation_) {
       AutomationJSONReply(automation_,
@@ -2105,24 +2114,25 @@ NTPInfoObserver::NTPInfoObserver(
   ntp_info_->Set("default_sites", default_sites_list);
 
   registrar_.Add(this, chrome::NOTIFICATION_TOP_SITES_UPDATED,
-                 Source<history::TopSites>(top_sites_));
+                 content::Source<history::TopSites>(top_sites_));
   if (top_sites_->loaded()) {
     OnTopSitesLoaded();
   } else {
     registrar_.Add(this, chrome::NOTIFICATION_TOP_SITES_LOADED,
-                   Source<Profile>(automation_->profile()));
+                   content::Source<Profile>(automation_->profile()));
   }
 }
 
 NTPInfoObserver::~NTPInfoObserver() {}
 
 void NTPInfoObserver::Observe(int type,
-                              const NotificationSource& source,
-                              const NotificationDetails& details) {
+                              const content::NotificationSource& source,
+                              const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_TOP_SITES_LOADED) {
     OnTopSitesLoaded();
   } else if (type == chrome::NOTIFICATION_TOP_SITES_UPDATED) {
-    Details<CancelableRequestProvider::Handle> request_details(details);
+    content::Details<CancelableRequestProvider::Handle> request_details(
+          details);
     if (request_ == *request_details.ptr()) {
       top_sites_->GetMostVisitedURLs(
           consumer_,
@@ -2172,7 +2182,7 @@ AppLaunchObserver::AppLaunchObserver(
       new_window_id_(extension_misc::kUnknownWindowId) {
   if (launch_container_ == extension_misc::LAUNCH_TAB) {
     // Need to wait for the currently-active tab to reload.
-    Source<NavigationController> source(controller_);
+    content::Source<NavigationController> source(controller_);
     registrar_.Add(this, content::NOTIFICATION_LOAD_STOP, source);
   } else {
     // Need to wait for a new tab in a new window to load.
@@ -2186,8 +2196,8 @@ AppLaunchObserver::AppLaunchObserver(
 AppLaunchObserver::~AppLaunchObserver() {}
 
 void AppLaunchObserver::Observe(int type,
-                                const NotificationSource& source,
-                                const NotificationDetails& details) {
+                                const content::NotificationSource& source,
+                                const content::NotificationDetails& details) {
   if (type == content::NOTIFICATION_LOAD_STOP) {
     if (launch_container_ == extension_misc::LAUNCH_TAB) {
       // The app has been launched in the new tab.
@@ -2200,7 +2210,7 @@ void AppLaunchObserver::Observe(int type,
     } else {
       // The app has launched only if the loaded tab is in the new window.
       NavigationController* controller =
-          Source<NavigationController>(source).ptr();
+          content::Source<NavigationController>(source).ptr();
       TabContentsWrapper* tab =
           TabContentsWrapper::GetCurrentWrapperForContents(
               controller->tab_contents());
@@ -2216,7 +2226,7 @@ void AppLaunchObserver::Observe(int type,
     }
   } else if (type == chrome::NOTIFICATION_BROWSER_WINDOW_READY) {
     new_window_id_ = ExtensionTabUtil::GetWindowId(
-        Source<Browser>(source).ptr());
+        content::Source<Browser>(source).ptr());
   } else {
     NOTREACHED();
   }
@@ -2231,7 +2241,7 @@ AutofillDisplayedObserver::AutofillDisplayedObserver(
       render_view_host_(render_view_host),
       automation_(automation->AsWeakPtr()),
       reply_message_(reply_message) {
-  Source<RenderViewHost> source(render_view_host_);
+  content::Source<RenderViewHost> source(render_view_host_);
   registrar_.Add(this, notification_, source);
 }
 
@@ -2239,10 +2249,10 @@ AutofillDisplayedObserver::~AutofillDisplayedObserver() {}
 
 void AutofillDisplayedObserver::Observe(
     int type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK_EQ(type, notification_);
-  DCHECK_EQ(Source<RenderViewHost>(source).ptr(), render_view_host_);
+  DCHECK_EQ(content::Source<RenderViewHost>(source).ptr(), render_view_host_);
   if (automation_) {
     AutomationJSONReply(automation_,
                         reply_message_.release()).SendSuccess(NULL);
@@ -2288,8 +2298,8 @@ void AutofillChangedObserver::RegisterObserversTask() {
 
 void AutofillChangedObserver::Observe(
     int type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
 
   if (type == chrome::NOTIFICATION_AUTOFILL_CREDIT_CARD_CHANGED) {
@@ -2364,12 +2374,12 @@ void AutofillFormSubmittedObserver::OnInsufficientFormData() {
 
 void AutofillFormSubmittedObserver::Observe(
     int type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED);
 
   // Accept in the infobar.
-  infobar_helper_ = Source<InfoBarTabHelper>(source).ptr();
+  infobar_helper_ = content::Source<InfoBarTabHelper>(source).ptr();
   InfoBarDelegate* infobar = NULL;
   infobar = infobar_helper_->GetInfoBarDelegateAt(0);
 
@@ -2429,8 +2439,8 @@ GetAllNotificationsObserver::~GetAllNotificationsObserver() {}
 
 void GetAllNotificationsObserver::Observe(
     int type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (!automation_) {
     delete this;
     return;
@@ -2523,8 +2533,8 @@ OnNotificationBalloonCountObserver::~OnNotificationBalloonCountObserver() {
 
 void OnNotificationBalloonCountObserver::Observe(
     int type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   CheckBalloonCount();
 }
 
@@ -2556,8 +2566,8 @@ RendererProcessClosedObserver::~RendererProcessClosedObserver() {}
 
 void RendererProcessClosedObserver::Observe(
     int type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (automation_) {
     AutomationJSONReply(automation_,
                         reply_message_.release()).SendSuccess(NULL);
@@ -2589,8 +2599,8 @@ InputEventAckNotificationObserver::~InputEventAckNotificationObserver() {}
 
 void InputEventAckNotificationObserver::Observe(
     int type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_APP_MODAL_DIALOG_SHOWN) {
     AutomationJSONReply(automation_,
                         reply_message_.release()).SendSuccess(NULL);
@@ -2598,7 +2608,7 @@ void InputEventAckNotificationObserver::Observe(
     return;
   }
 
-  Details<int> request_details(details);
+  content::Details<int> request_details(details);
   // If the event type matches for |count_| times, replies with a JSON message.
   if (event_type_ == *request_details.ptr()) {
     if (--count_ == 0 && automation_) {
@@ -2663,8 +2673,8 @@ void AllTabsStoppedLoadingObserver::OnNoMorePendingLoads(
 
 void AllTabsStoppedLoadingObserver::Observe(
     int type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (!automation_) {
     AutomationJSONReply(automation_,
                         reply_message_.release()).SendSuccess(NULL);
@@ -2696,11 +2706,11 @@ NewTabObserver::NewTabObserver(AutomationProvider* automation,
 }
 
 void NewTabObserver::Observe(int type,
-                             const NotificationSource& source,
-                             const NotificationDetails& details) {
+                             const content::NotificationSource& source,
+                             const content::NotificationDetails& details) {
   DCHECK_EQ(content::NOTIFICATION_TAB_PARENTED, type);
   NavigationController* controller =
-      &(Source<TabContentsWrapper>(source).ptr()->controller());
+      &(content::Source<TabContentsWrapper>(source).ptr()->controller());
   if (automation_) {
     // TODO(phajdan.jr): Clean up this hack. We write the correct return type
     // here, but don't send the message. NavigationNotificationObserver
@@ -2784,8 +2794,8 @@ DragTargetDropAckNotificationObserver::
 
 void DragTargetDropAckNotificationObserver::Observe(
     int type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (automation_) {
     AutomationJSONReply(automation_,
                         reply_message_.release()).SendSuccess(NULL);
@@ -2895,8 +2905,8 @@ BrowserOpenedWithNewProfileNotificationObserver::
 
 void BrowserOpenedWithNewProfileNotificationObserver::Observe(
     int type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (!automation_) {
     delete this;
     return;
@@ -2905,7 +2915,7 @@ void BrowserOpenedWithNewProfileNotificationObserver::Observe(
   if (type == chrome::NOTIFICATION_PROFILE_CREATED) {
     // As part of multi-profile creation, a new browser window will
     // automatically be opened.
-    Profile* profile = Source<Profile>(source).ptr();
+    Profile* profile = content::Source<Profile>(source).ptr();
     if (!profile) {
       AutomationJSONReply(automation_,
           reply_message_.release()).SendError("Profile could not be created.");
@@ -2915,11 +2925,11 @@ void BrowserOpenedWithNewProfileNotificationObserver::Observe(
     // Store the new browser ID and continue waiting for a new tab within it
     // to stop loading.
     new_window_id_ = ExtensionTabUtil::GetWindowId(
-        Source<Browser>(source).ptr());
+        content::Source<Browser>(source).ptr());
   } else if (type == content::NOTIFICATION_LOAD_STOP) {
     // Only send the result if the loaded tab is in the new window.
     NavigationController* controller =
-        Source<NavigationController>(source).ptr();
+        content::Source<NavigationController>(source).ptr();
     TabContentsWrapper* tab = TabContentsWrapper::GetCurrentWrapperForContents(
         controller->tab_contents());
     int window_id = tab ? tab->restore_tab_helper()->window_id().id() : -1;

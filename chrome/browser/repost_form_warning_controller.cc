@@ -6,7 +6,7 @@
 
 #include "chrome/browser/ui/constrained_window.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 
 RepostFormWarningController::RepostFormWarningController(
@@ -15,11 +15,11 @@ RepostFormWarningController::RepostFormWarningController(
       window_(NULL) {
   NavigationController* controller = &tab_contents->controller();
   registrar_.Add(this, content::NOTIFICATION_LOAD_START,
-                 Source<NavigationController>(controller));
+                 content::Source<NavigationController>(controller));
   registrar_.Add(this, content::NOTIFICATION_TAB_CLOSING,
-                 Source<NavigationController>(controller));
+                 content::Source<NavigationController>(controller));
   registrar_.Add(this, content::NOTIFICATION_REPOST_WARNING_SHOWN,
-                 Source<NavigationController>(controller));
+                 content::Source<NavigationController>(controller));
 }
 
 RepostFormWarningController::~RepostFormWarningController() {
@@ -45,8 +45,8 @@ void RepostFormWarningController::Continue() {
 }
 
 void RepostFormWarningController::Observe(int type,
-                                const NotificationSource& source,
-                                const NotificationDetails& details) {
+                                const content::NotificationSource& source,
+                                const content::NotificationDetails& details) {
   // Close the dialog if we load a page (because reloading might not apply to
   // the same page anymore) or if the tab is closed, because then we won't have
   // a navigation controller anymore.
@@ -54,7 +54,7 @@ void RepostFormWarningController::Observe(int type,
       (type == content::NOTIFICATION_LOAD_START ||
        type == content::NOTIFICATION_TAB_CLOSING ||
        type == content::NOTIFICATION_REPOST_WARNING_SHOWN)) {
-    DCHECK_EQ(Source<NavigationController>(source).ptr(),
+    DCHECK_EQ(content::Source<NavigationController>(source).ptr(),
               &tab_contents_->controller());
     Cancel();
   }

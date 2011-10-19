@@ -8,7 +8,7 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/common/notification_service.h"
 
 namespace {
@@ -56,7 +56,7 @@ std::string BuildFullName(const std::string& name, const Extension* extension) {
 
 // This class observes and collects user action notifications that are sent
 // by the tests, so that they can be examined afterwards for correctness.
-class UserActionObserver : public NotificationObserver {
+class UserActionObserver : public content::NotificationObserver {
  public:
   UserActionObserver();
 
@@ -65,8 +65,8 @@ class UserActionObserver : public NotificationObserver {
                            int count);
 
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
  private:
   typedef std::map<std::string, int> UserActionCountMap;
@@ -80,7 +80,7 @@ class UserActionObserver : public NotificationObserver {
     return i == count_map_.end() ? -1 : i->second;
   }
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
   UserActionCountMap count_map_;
 };
 
@@ -90,9 +90,9 @@ UserActionObserver::UserActionObserver() {
 }
 
 void UserActionObserver::Observe(int type,
-                                 const NotificationSource& source,
-                                 const NotificationDetails& details) {
-  const char* name = *Details<const char*>(details).ptr();
+                                 const content::NotificationSource& source,
+                                 const content::NotificationDetails& details) {
+  const char* name = *content::Details<const char*>(details).ptr();
   ++(count_map_[name]);
 }
 

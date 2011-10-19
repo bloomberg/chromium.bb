@@ -17,7 +17,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_source.h"
 
 namespace browser_sync {
 
@@ -67,8 +67,8 @@ void AutofillProfileDataTypeController::OnPersonalDataChanged() {
 
 void AutofillProfileDataTypeController::Observe(
     int notification_type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   notification_registrar_.RemoveAll();
   DoStartAssociationAsync();
 }

@@ -14,8 +14,8 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tabs/dock_info.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/rect.h"
 
 namespace views {
@@ -40,7 +40,7 @@ struct TabRendererData;
 //
 ///////////////////////////////////////////////////////////////////////////////
 class DraggedTabController : public TabContentsDelegate,
-                             public NotificationObserver,
+                             public content::NotificationObserver,
                              public MessageLoopForUI::Observer {
  public:
   DraggedTabController();
@@ -148,10 +148,10 @@ class DraggedTabController : public TabContentsDelegate,
   virtual content::JavaScriptDialogCreator*
       GetJavaScriptDialogCreator() OVERRIDE;
 
-  // Overridden from NotificationObserver:
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Overridden from MessageLoop::Observer:
 #if defined(OS_WIN) || defined(TOUCH_UI) || defined(USE_AURA)
@@ -295,7 +295,7 @@ class DraggedTabController : public TabContentsDelegate,
   TabStripModel* GetModel(BaseTabStrip* tabstrip) const;
 
   // Handles registering for notifications.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // The TabStrip the drag originated from.
   BaseTabStrip* source_tabstrip_;

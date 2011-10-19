@@ -13,7 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/ui/views/notifications/balloon_view_host.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/point.h"
@@ -26,9 +26,7 @@
 #include "views/widget/widget_delegate.h"
 
 class BalloonCollection;
-class NotificationDetails;
 class NotificationOptionsMenuModel;
-class NotificationSource;
 
 namespace ui {
 class SlideAnimation;
@@ -48,7 +46,7 @@ class BalloonViewImpl : public BalloonView,
                         public views::ViewMenuDelegate,
                         public views::WidgetDelegateView,
                         public views::ButtonListener,
-                        public NotificationObserver,
+                        public content::NotificationObserver,
                         public ui::AnimationDelegate {
  public:
   explicit BalloonViewImpl(BalloonCollection* collection);
@@ -79,10 +77,10 @@ class BalloonViewImpl : public BalloonView,
   virtual void ButtonPressed(
       views::Button* sender, const views::Event&) OVERRIDE;
 
-  // NotificationObserver interface.
+  // content::NotificationObserver interface.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // ui::AnimationDelegate interface.
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
@@ -159,7 +157,7 @@ class BalloonViewImpl : public BalloonView,
   scoped_ptr<views::MenuRunner> menu_runner_;
   views::MenuButton* options_menu_button_;
 
-  NotificationRegistrar notification_registrar_;
+  content::NotificationRegistrar notification_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(BalloonViewImpl);
 };

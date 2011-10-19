@@ -8,8 +8,8 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class Extension;
 class ExtensionService;
@@ -19,7 +19,7 @@ class ThemeService;
 // When a user installs a theme, we display it immediately, but provide an
 // infobar allowing them to cancel.
 class ThemeInstalledInfoBarDelegate : public ConfirmInfoBarDelegate,
-                                      public NotificationObserver {
+                                      public content::NotificationObserver {
  public:
   ThemeInstalledInfoBarDelegate(InfoBarTabHelper* infobar_helper,
                                 ExtensionService* extension_service,
@@ -50,10 +50,10 @@ class ThemeInstalledInfoBarDelegate : public ConfirmInfoBarDelegate,
   virtual int GetButtons() const OVERRIDE;
   virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
 
-  // NotificationObserver:
+  // content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   ExtensionService* extension_service_;
   ThemeService* theme_service_;
@@ -69,7 +69,7 @@ class ThemeInstalledInfoBarDelegate : public ConfirmInfoBarDelegate,
   bool previous_using_native_theme_;
 
   // Registers and unregisters us for notifications.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_THEME_INSTALLED_INFOBAR_DELEGATE_H_

@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_REPOST_FORM_WARNING_CONTROLLER_H_
 #pragma once
 
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class ConstrainedWindow;
 class TabContents;
@@ -15,7 +15,7 @@ class TabContents;
 // This class is used to continue or cancel a pending reload when the
 // repost form warning is shown. It is owned by the platform-dependent
 // |RepostFormWarning{Gtk,Mac,View}| classes.
-class RepostFormWarningController : public NotificationObserver {
+class RepostFormWarningController : public content::NotificationObserver {
  public:
   explicit RepostFormWarningController(TabContents* tab_contents);
   virtual ~RepostFormWarningController();
@@ -29,16 +29,16 @@ class RepostFormWarningController : public NotificationObserver {
   void set_window(ConstrainedWindow* window) { window_ = window; }
 
  private:
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   // Watch for a new load or a closed tab and dismiss the dialog if they occur.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Close the warning dialog.
   void CloseDialog();
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // Tab contents, used to continue the reload.
   TabContents* tab_contents_;

@@ -10,7 +10,7 @@
 #include "chrome/browser/chromeos/options/take_photo_dialog.h"
 #include "chrome/browser/ui/shell_dialogs.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace base {
@@ -79,10 +79,10 @@ class ChangePictureOptionsHandler : public OptionsPageUIHandler,
   // ProfileImageDownloader::Delegate implementation.
   virtual void OnDownloadSuccess(const SkBitmap& image) OVERRIDE;
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Called when the camera presence check has been completed.
   void OnCameraPresenceCheckDone();
@@ -106,7 +106,7 @@ class ChangePictureOptionsHandler : public OptionsPageUIHandler,
   // Downloads user profile image when it's not set as current image.
   scoped_ptr<ProfileImageDownloader> profile_image_downloader_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   base::WeakPtrFactory<ChangePictureOptionsHandler> weak_factory_;
 

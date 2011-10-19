@@ -22,8 +22,8 @@
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/public/browser/navigation_types.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "views/accelerator.h"
 #include "views/widget/native_widget_win.h"
 
@@ -45,7 +45,7 @@ class ViewProp;
 // TabContents as well as an implementation of TabContentsDelegate.
 class ExternalTabContainer : public TabContentsDelegate,
                              public TabContentsObserver,
-                             public NotificationObserver,
+                             public content::NotificationObserver,
                              public views::NativeWidgetWin,
                              public base::RefCounted<ExternalTabContainer>,
                              public views::AcceleratorTarget,
@@ -197,10 +197,10 @@ class ExternalTabContainer : public TabContentsDelegate,
                                       const std::string& origin,
                                       const std::string& target);
 
-  // Overridden from NotificationObserver:
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Returns the ExternalTabContainer instance associated with the cookie
   // passed in. It also erases the corresponding reference from the map.
@@ -273,7 +273,7 @@ class ExternalTabContainer : public TabContentsDelegate,
   scoped_ptr<TabContentsWrapper> tab_contents_;
   scoped_refptr<AutomationProvider> automation_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // A view to handle focus cycling
   TabContentsContainer* tab_contents_container_;
@@ -369,8 +369,8 @@ class TemporaryPopupExternalTabContainer : public ExternalTabContainer {
     return false;
   }
 
-  virtual void Observe(int type, const NotificationSource& source,
-                       const NotificationDetails& details) {}
+  virtual void Observe(int type, const content::NotificationSource& source,
+                       const content::NotificationDetails& details) {}
 
   // Deprecated. Please use the two-argument variant.
   // TODO(adriansc): Remove method once refactoring changed all call sites.

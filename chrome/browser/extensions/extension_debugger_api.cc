@@ -31,7 +31,7 @@
 namespace keys = extension_debugger_api_constants;
 
 class ExtensionDevToolsClientHost : public DevToolsClientHost,
-                                    public NotificationObserver {
+                                    public content::NotificationObserver {
  public:
   ExtensionDevToolsClientHost(TabContents* tab_contents,
                               const std::string& extension_id,
@@ -53,16 +53,16 @@ class ExtensionDevToolsClientHost : public DevToolsClientHost,
   virtual void FrameNavigating(const std::string& url) {}
 
  private:
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
   void OnDispatchOnInspectorFrontend(const std::string& data);
 
   TabContents* tab_contents_;
   std::string extension_id_;
   int tab_id_;
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
   int last_request_id_;
   typedef std::map<int, scoped_refptr<SendRequestDebuggerFunction> >
       PendingRequests;
@@ -120,7 +120,7 @@ ExtensionDevToolsClientHost::ExtensionDevToolsClientHost(
   Profile* profile =
       Profile::FromBrowserContext(tab_contents_->browser_context());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
-                 Source<Profile>(profile));
+                 content::Source<Profile>(profile));
 
   // Attach to debugger and tell it we are ready.
   DevToolsManager::GetInstance()->RegisterDevToolsClientHostFor(
@@ -200,8 +200,8 @@ void ExtensionDevToolsClientHost::SendMessageToBackend(
 
 void ExtensionDevToolsClientHost::Observe(
     int type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_EXTENSION_UNLOADED);
   Close();
 }

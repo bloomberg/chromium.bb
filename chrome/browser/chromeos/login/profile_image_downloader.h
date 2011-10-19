@@ -11,9 +11,9 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/image_decoder.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
 #include "content/common/net/url_fetcher.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 
 namespace chromeos {
@@ -21,7 +21,7 @@ namespace chromeos {
 // Downloads user profile image, decodes it in a sandboxed process.
 class ProfileImageDownloader : public URLFetcher::Delegate,
                                public ImageDecoder::Delegate,
-                               public NotificationObserver {
+                               public content::NotificationObserver {
  public:
   // Reports on success or failure of Profile image download.
   class Delegate {
@@ -57,10 +57,10 @@ class ProfileImageDownloader : public URLFetcher::Delegate,
                               const SkBitmap& decoded_image) OVERRIDE;
   virtual void OnDecodeImageFailed(const ImageDecoder* decoder) OVERRIDE;
 
-  // Overriden from NotificationObserver:
+  // Overriden from content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Searches for profile image URL in user entry response from Picasa.
   // Returns an empty string on failure.
@@ -73,7 +73,7 @@ class ProfileImageDownloader : public URLFetcher::Delegate,
   std::string auth_token_;
   scoped_ptr<URLFetcher> user_entry_fetcher_;
   scoped_ptr<URLFetcher> profile_image_fetcher_;
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileImageDownloader);
 };

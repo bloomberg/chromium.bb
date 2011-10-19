@@ -9,8 +9,8 @@
 #include "base/memory/scoped_nsobject.h"
 #include "base/string_util.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/common/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "grit/generated_resources.h"
@@ -24,23 +24,23 @@ namespace BaseBubbleControllerInternal {
 
 // This bridge listens for notifications so that the bubble closes when a user
 // switches tabs (including by opening a new one).
-class Bridge : public NotificationObserver {
+class Bridge : public content::NotificationObserver {
  public:
   explicit Bridge(BaseBubbleController* controller) : controller_(controller) {
     registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_HIDDEN,
         NotificationService::AllSources());
   }
 
-  // NotificationObserver:
+  // content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) {
     [controller_ close];
   }
 
  private:
   BaseBubbleController* controller_;  // Weak, owns this.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 };
 
 }  // namespace BaseBubbleControllerInternal

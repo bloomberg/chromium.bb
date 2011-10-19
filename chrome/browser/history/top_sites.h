@@ -50,7 +50,7 @@ class TopSitesTest;
 // db using TopSitesBackend.
 class TopSites
     : public base::RefCountedThreadSafe<TopSites>,
-      public NotificationObserver,
+      public content::NotificationObserver,
       public CancelableRequestProvider {
  public:
   explicit TopSites(Profile* profile);
@@ -278,10 +278,10 @@ class TopSites
       const PendingCallbackSet& pending_callbacks,
       const MostVisitedURLList& urls);
 
-  // Implementation of NotificationObserver.
+  // Implementation of content::NotificationObserver.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Resets top_sites_ and updates the db (in the background). All mutations to
   // top_sites_ *must* go through this.
@@ -344,7 +344,7 @@ class TopSites
   // The time we started |timer_| at. Only valid if |timer_| is running.
   base::TimeTicks timer_start_time_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // The number of URLs changed on the last update.
   size_t last_num_urls_changed_;

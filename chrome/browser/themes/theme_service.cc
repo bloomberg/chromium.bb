@@ -216,7 +216,7 @@ void ThemeService::Init(Profile* profile) {
   // BROWSER_THEME_CHANGED).
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_LOADED,
-                 Source<Profile>(profile_));
+                 content::Source<Profile>(profile_));
 
   LoadThemePrefs();
 }
@@ -599,7 +599,7 @@ void ThemeService::NotifyThemeChanged() {
   // Redraw!
   NotificationService* service = NotificationService::current();
   service->Notify(chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
-                  Source<ThemeService>(this),
+                  content::Source<ThemeService>(this),
                   NotificationService::NoDetails());
 #if defined(OS_MACOSX)
   NotifyPlatformThemeChanged();
@@ -613,10 +613,10 @@ void ThemeService::FreePlatformCaches() {
 #endif
 
 void ThemeService::Observe(int type,
-                           const NotificationSource& source,
-                           const NotificationDetails& details) {
+                           const content::NotificationSource& source,
+                           const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_EXTENSION_LOADED);
-  const Extension* extension = Details<const Extension>(details).ptr();
+  const Extension* extension = content::Details<const Extension>(details).ptr();
   if (!extension->is_theme()) {
     return;
   }

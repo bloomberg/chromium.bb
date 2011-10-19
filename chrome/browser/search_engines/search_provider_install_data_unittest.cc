@@ -19,7 +19,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Create a TemplateURL. The caller owns the returned TemplateURL*.
@@ -168,7 +168,7 @@ class SearchProviderInstallDataTest : public testing::Test {
     install_data_ = new SearchProviderInstallData(
         util_.GetWebDataService(),
         content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-        Source<SearchProviderInstallDataTest>(this));
+        content::Source<SearchProviderInstallDataTest>(this));
   }
 
   virtual void TearDown() {
@@ -181,7 +181,7 @@ class SearchProviderInstallDataTest : public testing::Test {
     // It doesn't matter that this happens after install_data_ is deleted.
     NotificationService::current()->Notify(
         content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-        Source<SearchProviderInstallDataTest>(this),
+        content::Source<SearchProviderInstallDataTest>(this),
         NotificationService::NoDetails());
 
     util_.TearDown();
@@ -207,8 +207,8 @@ class SearchProviderInstallDataTest : public testing::Test {
         prefs::kDefaultSearchProviderPrepopulateID, new StringValue(""));
     util_.model()->Observe(
         chrome::NOTIFICATION_PREF_CHANGED,
-        Source<PrefService>(util_.profile()->GetTestingPrefService()),
-        Details<std::string>(NULL));
+        content::Source<PrefService>(util_.profile()->GetTestingPrefService()),
+        content::Details<std::string>(NULL));
   }
 
  protected:

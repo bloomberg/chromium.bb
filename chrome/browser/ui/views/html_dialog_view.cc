@@ -10,9 +10,9 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/window.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_source.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "views/events/event.h"
@@ -248,25 +248,25 @@ void HtmlDialogView::InitDialog() {
   notification_registrar_.Add(
       this,
       content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB,
-      Source<TabContents>(tab_contents));
+      content::Source<TabContents>(tab_contents));
   notification_registrar_.Add(
       this,
       content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
-      Source<TabContents>(tab_contents));
+      content::Source<TabContents>(tab_contents));
 
   DOMView::LoadURL(GetDialogContentURL());
 }
 
 void HtmlDialogView::Observe(int type,
-                             const NotificationSource& source,
-                             const NotificationDetails& details) {
+                             const content::NotificationSource& source,
+                             const content::NotificationDetails& details) {
   switch (type) {
     case content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB: {
-      RenderWidgetHost* rwh = Details<RenderWidgetHost>(details).ptr();
+      RenderWidgetHost* rwh = content::Details<RenderWidgetHost>(details).ptr();
       notification_registrar_.Add(
           this,
           content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT,
-          Source<RenderWidgetHost>(rwh));
+          content::Source<RenderWidgetHost>(rwh));
       break;
     }
     case content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME:

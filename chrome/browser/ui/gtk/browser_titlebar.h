@@ -15,8 +15,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/prefs/pref_member.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/x/active_window_watcher_x.h"
@@ -29,7 +29,7 @@ class MenuGtk;
 class PopupPageMenuModel;
 class TabContents;
 
-class BrowserTitlebar : public NotificationObserver,
+class BrowserTitlebar : public content::NotificationObserver,
                         public ui::ActiveWindowWatcherX::Observer,
                         public ui::SimpleMenuModel::Delegate {
  public:
@@ -166,10 +166,10 @@ class BrowserTitlebar : public NotificationObserver,
   virtual bool GetAcceleratorForCommandId(int command_id,
                                           ui::Accelerator* accelerator);
 
-  // Overridden from NotificationObserver:
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Overriden from ActiveWindowWatcher::Observer.
   virtual void ActiveWindowChanged(GdkWindow* active_window);
@@ -274,7 +274,7 @@ class BrowserTitlebar : public NotificationObserver,
   // Theme provider for building buttons.
   GtkThemeService* theme_service_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 };
 
 #endif  // CHROME_BROWSER_UI_GTK_BROWSER_TITLEBAR_H_

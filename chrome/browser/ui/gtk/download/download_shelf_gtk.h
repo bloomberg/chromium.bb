@@ -15,8 +15,8 @@
 #include "base/message_loop.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/ui/gtk/slide_animator_gtk.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
 #include "ui/gfx/native_widget_types.h"
@@ -33,7 +33,7 @@ class Point;
 }
 
 class DownloadShelfGtk : public DownloadShelf,
-                         public NotificationObserver,
+                         public content::NotificationObserver,
                          public SlideAnimatorGtk::Delegate,
                          public MessageLoopForUI::Observer {
  public:
@@ -52,10 +52,10 @@ class DownloadShelfGtk : public DownloadShelf,
   // SlideAnimatorGtk::Delegate implementation.
   virtual void Closed();
 
-  // Overridden from NotificationObserver:
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Returns the current height of the shelf.
   int GetHeight() const;
@@ -135,7 +135,7 @@ class DownloadShelfGtk : public DownloadShelf,
   // Gives us our colors and theme information.
   GtkThemeService* theme_service_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // True if the shelf will automatically close when the user mouses out.
   bool close_on_mouse_out_;

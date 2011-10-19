@@ -12,8 +12,8 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/sync/glue/password_model_associator.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
 
 class PasswordStore;
@@ -29,18 +29,18 @@ class UnrecoverableErrorHandler;
 // operations and use of this class are from the DB thread on Windows and Linux,
 // or the password thread on Mac.
 class PasswordChangeProcessor : public ChangeProcessor,
-                                public NotificationObserver {
+                                public content::NotificationObserver {
  public:
   PasswordChangeProcessor(PasswordModelAssociator* model_associator,
                           PasswordStore* password_store,
                           UnrecoverableErrorHandler* error_handler);
   virtual ~PasswordChangeProcessor();
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   // Passwords -> sync_api model change application.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // sync_api model -> WebDataService change application.
   virtual void ApplyChangesFromSyncModel(
@@ -75,7 +75,7 @@ class PasswordChangeProcessor : public ChangeProcessor,
   PasswordModelAssociator::PasswordVector updated_passwords_;
   PasswordModelAssociator::PasswordVector deleted_passwords_;
 
-  NotificationRegistrar notification_registrar_;
+  content::NotificationRegistrar notification_registrar_;
 
   bool observing_;
 

@@ -68,7 +68,7 @@ void LoginPromptBrowserTest::SetAuthFor(LoginHandler* handler) {
 
 // Maintains a set of LoginHandlers that are currently active and
 // keeps a count of the notifications that were observed.
-class LoginPromptBrowserTestObserver : public NotificationObserver {
+class LoginPromptBrowserTestObserver : public content::NotificationObserver {
  public:
   LoginPromptBrowserTestObserver()
       : auth_needed_count_(0),
@@ -76,14 +76,14 @@ class LoginPromptBrowserTestObserver : public NotificationObserver {
         auth_cancelled_count_(0) {}
 
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   void AddHandler(LoginHandler* handler);
 
   void RemoveHandler(LoginHandler* handler);
 
-  void Register(const NotificationSource& source);
+  void Register(const content::NotificationSource& source);
 
   std::list<LoginHandler*> handlers_;
 
@@ -96,28 +96,28 @@ class LoginPromptBrowserTestObserver : public NotificationObserver {
   int auth_cancelled_count_;
 
  private:
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginPromptBrowserTestObserver);
 };
 
 void LoginPromptBrowserTestObserver::Observe(
     int type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_AUTH_NEEDED) {
     LoginNotificationDetails* login_details =
-        Details<LoginNotificationDetails>(details).ptr();
+        content::Details<LoginNotificationDetails>(details).ptr();
     AddHandler(login_details->handler());
     auth_needed_count_++;
   } else if (type == chrome::NOTIFICATION_AUTH_SUPPLIED) {
     AuthSuppliedLoginNotificationDetails* login_details =
-        Details<AuthSuppliedLoginNotificationDetails>(details).ptr();
+        content::Details<AuthSuppliedLoginNotificationDetails>(details).ptr();
     RemoveHandler(login_details->handler());
     auth_supplied_count_++;
   } else if (type == chrome::NOTIFICATION_AUTH_CANCELLED) {
     LoginNotificationDetails* login_details =
-        Details<LoginNotificationDetails>(details).ptr();
+        content::Details<LoginNotificationDetails>(details).ptr();
     RemoveHandler(login_details->handler());
     auth_cancelled_count_++;
   }
@@ -142,7 +142,7 @@ void LoginPromptBrowserTestObserver::RemoveHandler(LoginHandler* handler) {
 }
 
 void LoginPromptBrowserTestObserver::Register(
-    const NotificationSource& source) {
+    const content::NotificationSource& source) {
   registrar_.Add(this, chrome::NOTIFICATION_AUTH_NEEDED, source);
   registrar_.Add(this, chrome::NOTIFICATION_AUTH_SUPPLIED, source);
   registrar_.Add(this, chrome::NOTIFICATION_AUTH_CANCELLED, source);
@@ -154,7 +154,7 @@ class WindowedNavigationObserver
  public:
   explicit WindowedNavigationObserver(NavigationController* controller)
       : ui_test_utils::WindowedNotificationObserver(
-          T, Source<NavigationController>(controller)) {}
+          T, content::Source<NavigationController>(controller)) {}
 };
 
 typedef WindowedNavigationObserver<content::NOTIFICATION_LOAD_STOP>
@@ -217,7 +217,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, PrefetchAuthCancels) {
   NavigationController* controller = &contents->controller();
   LoginPromptBrowserTestObserver observer;
 
-  observer.Register(Source<NavigationController>(controller));
+  observer.Register(content::Source<NavigationController>(controller));
 
   WindowedLoadStopObserver load_stop_waiter(controller);
   browser()->OpenURL(
@@ -244,7 +244,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, MultipleRealmCancellation) {
   NavigationController* controller = &contents->controller();
   LoginPromptBrowserTestObserver observer;
 
-  observer.Register(Source<NavigationController>(controller));
+  observer.Register(content::Source<NavigationController>(controller));
 
   WindowedLoadStopObserver load_stop_waiter(controller);
 
@@ -303,7 +303,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
   NavigationController* controller = &contents->controller();
   LoginPromptBrowserTestObserver observer;
 
-  observer.Register(Source<NavigationController>(controller));
+  observer.Register(content::Source<NavigationController>(controller));
 
   WindowedLoadStopObserver load_stop_waiter(controller);
   int n_handlers = 0;
@@ -355,7 +355,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, IncorrectConfirmation) {
   NavigationController* controller = &contents->controller();
   LoginPromptBrowserTestObserver observer;
 
-  observer.Register(Source<NavigationController>(controller));
+  observer.Register(content::Source<NavigationController>(controller));
 
   {
     WindowedAuthNeededObserver auth_needed_waiter(controller);
@@ -426,7 +426,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, NoLoginPromptForFavicon) {
   NavigationController* controller = &contents->controller();
   LoginPromptBrowserTestObserver observer;
 
-  observer.Register(Source<NavigationController>(controller));
+  observer.Register(content::Source<NavigationController>(controller));
 
   // First load a page that has a favicon that requires
   // authentication.  There should be no login prompt.
@@ -480,7 +480,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, BlockCrossdomainPrompt) {
 
   NavigationController* controller = &contents->controller();
   LoginPromptBrowserTestObserver observer;
-  observer.Register(Source<NavigationController>(controller));
+  observer.Register(content::Source<NavigationController>(controller));
 
   // Load a page that has a cross-domain sub-resource authentication.
   // There should be no login prompt.

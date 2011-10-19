@@ -42,9 +42,9 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_details.h"
 #include "content/common/notification_service.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "content/public/browser/notification_details.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -75,8 +75,9 @@ BrowserWindowCocoa::BrowserWindowCocoa(Browser* browser,
   : browser_(browser),
     controller_(controller),
     confirm_close_factory_(browser) {
-  registrar_.Add(this, chrome::NOTIFICATION_SIDEBAR_CHANGED,
-                 Source<SidebarManager>(SidebarManager::GetInstance()));
+  registrar_.Add(
+      this, chrome::NOTIFICATION_SIDEBAR_CHANGED,
+      content::Source<SidebarManager>(SidebarManager::GetInstance()));
 
   pref_change_registrar_.Init(browser_->profile()->GetPrefs());
   pref_change_registrar_.Add(prefs::kShowBookmarkBar, this);
@@ -563,8 +564,8 @@ FindBar* BrowserWindowCocoa::CreateFindBar() {
 }
 
 void BrowserWindowCocoa::Observe(int type,
-                                 const NotificationSource& source,
-                                 const NotificationDetails& details) {
+                                 const content::NotificationSource& source,
+                                 const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_PREF_CHANGED: {
       const std::string& pref_name = *Details<std::string>(details).ptr();
@@ -574,7 +575,7 @@ void BrowserWindowCocoa::Observe(int type,
     }
     case chrome::NOTIFICATION_SIDEBAR_CHANGED:
       UpdateSidebarForContents(
-          Details<SidebarContainer>(details)->tab_contents());
+          content::Details<SidebarContainer>(details)->tab_contents());
       break;
     default:
       NOTREACHED();  // we don't ask for anything else!

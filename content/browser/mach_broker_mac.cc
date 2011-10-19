@@ -200,8 +200,8 @@ mach_port_t MachBroker::TaskForPid(base::ProcessHandle pid) const {
 }
 
 void MachBroker::Observe(int type,
-                         const NotificationSource& source,
-                         const NotificationDetails& details) {
+                         const content::NotificationSource& source,
+                         const content::NotificationDetails& details) {
   // TODO(rohitrao): These notifications do not always carry the proper PIDs,
   // especially when the renderer is already gone or has crashed.  Find a better
   // way to listen for child process deaths.  http://crbug.com/55734
@@ -209,11 +209,11 @@ void MachBroker::Observe(int type,
   switch (type) {
     case content::NOTIFICATION_RENDERER_PROCESS_CLOSED:
     case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED:
-      handle = Source<RenderProcessHost>(source)->GetHandle();
+      handle = content::Source<RenderProcessHost>(source)->GetHandle();
       break;
     case content::NOTIFICATION_CHILD_PROCESS_CRASHED:
     case content::NOTIFICATION_CHILD_PROCESS_HOST_DISCONNECTED:
-      handle = Details<ChildProcessInfo>(details)->handle();
+      handle = content::Details<ChildProcessInfo>(details)->handle();
       break;
     default:
       NOTREACHED() << "Unexpected notification";

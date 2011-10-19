@@ -17,8 +17,8 @@
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 
 namespace content {
@@ -171,7 +171,7 @@ class ExtensionWebNavigationTabObserver : public TabContentsObserver {
 
 // Observes navigation notifications and routes them as events to the extension
 // system.
-class ExtensionWebNavigationEventRouter : public NotificationObserver {
+class ExtensionWebNavigationEventRouter : public content::NotificationObserver {
  public:
   explicit ExtensionWebNavigationEventRouter(Profile* profile);
   virtual ~ExtensionWebNavigationEventRouter();
@@ -198,10 +198,10 @@ class ExtensionWebNavigationEventRouter : public NotificationObserver {
     GURL target_url;
   };
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Handler for the NOTIFICATION_RETARGETING event. The method takes the
   // details of such an event and stores them for the later
@@ -221,7 +221,7 @@ class ExtensionWebNavigationEventRouter : public NotificationObserver {
   std::map<TabContents*, PendingTabContents> pending_tab_contents_;
 
   // Used for tracking registrations to navigation notifications.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // The profile that owns us via ExtensionService.
   Profile* profile_;

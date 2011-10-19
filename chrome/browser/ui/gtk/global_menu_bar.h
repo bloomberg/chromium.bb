@@ -11,7 +11,7 @@
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/ui/gtk/global_history_menu.h"
-#include "content/common/notification_observer.h"
+#include "content/public/browser/notification_observer.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
 
@@ -31,7 +31,7 @@ typedef struct _GtkWidget GtkWidget;
 // bar itself is visible, so we insert a GtkMenuBar into the window hierarchy
 // and set it to be invisible.
 class GlobalMenuBar : public CommandUpdater::CommandObserver,
-                      public NotificationObserver {
+                      public content::NotificationObserver {
  public:
   static const int TAG_NORMAL = 0;
   static const int TAG_MOST_VISITED = 1;
@@ -68,10 +68,10 @@ class GlobalMenuBar : public CommandUpdater::CommandObserver,
   // CommandUpdater::CommandObserver:
   virtual void EnabledStateChangedForCommand(int id, bool enabled);
 
-  // NotificationObserver:
+  // content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Updates the visibility of the bookmark bar on pref changes.
   void OnBookmarkBarVisibilityChanged();

@@ -20,8 +20,8 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -93,8 +93,8 @@ class MockCloudPrintFlowHandler
   MOCK_METHOD0(RegisterMessages, void());
   MOCK_METHOD3(Observe,
                void(int type,
-                    const NotificationSource& source,
-                    const NotificationDetails& details));
+                    const content::NotificationSource& source,
+                    const content::NotificationDetails& details));
   MOCK_METHOD1(SetDialogDelegate,
                void(CloudPrintHtmlDialogDelegate* delegate));
   MOCK_METHOD0(CreateCloudPrintDataSender,

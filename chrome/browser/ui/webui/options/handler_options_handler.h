@@ -10,7 +10,7 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "chrome/common/custom_handlers/protocol_handler.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_registrar.h"
 
 namespace base {
 class DictionaryValue;
@@ -26,10 +26,10 @@ class HandlerOptionsHandler : public OptionsPageUIHandler {
   virtual void Initialize();
   virtual void RegisterMessages();
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
  private:
   // Called when the user toggles whether custom handlers are enabled.
@@ -67,7 +67,7 @@ class HandlerOptionsHandler : public OptionsPageUIHandler {
 
   ProtocolHandlerRegistry* GetProtocolHandlerRegistry();
 
-  NotificationRegistrar notification_registrar_;
+  content::NotificationRegistrar notification_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(HandlerOptionsHandler);
 };

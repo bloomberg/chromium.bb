@@ -12,7 +12,7 @@
 #include "chrome/browser/sync/profile_sync_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_source.h"
 
 namespace browser_sync {
 
@@ -34,8 +34,8 @@ syncable::ModelType SearchEngineDataTypeController::type() const {
 
 void SearchEngineDataTypeController::Observe(
     int type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED, type);
   registrar_.RemoveAll();
@@ -55,7 +55,7 @@ bool SearchEngineDataTypeController::StartModels() {
 
   // Add an observer and continue when the TemplateURLService is loaded.
   registrar_.Add(this, chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED,
-                 Source<TemplateURLService>(turl_service));
+                 content::Source<TemplateURLService>(turl_service));
   return false;  // Don't continue Start.
 }
 

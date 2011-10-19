@@ -19,8 +19,8 @@
 #include "base/synchronization/lock.h"
 #include "chrome/browser/autocomplete/shortcuts_provider_shortcut.h"
 #include "chrome/browser/history/shortcuts_database.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 
 class Profile;
@@ -30,7 +30,7 @@ namespace history {
 // This class manages the shortcut provider backend - access to database on the
 // db thread, etc.
 class ShortcutsBackend : public base::RefCountedThreadSafe<ShortcutsBackend>,
-                         public NotificationObserver {
+                         public content::NotificationObserver {
  public:
   // |profile| is necessary for profile notifications only and can be NULL in
   // unit-tests. |db_folder_path| could be an empty path only in unit-tests as
@@ -97,10 +97,10 @@ class ShortcutsBackend : public base::RefCountedThreadSafe<ShortcutsBackend>,
   // Finishes initialization on UI thread, notifies all observers.
   void InitCompleted();
 
-  // NotificationObserver:
+  // content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   enum CurrentState {
     NOT_INITIALIZED,  // Backend created but not initialized.
@@ -122,7 +122,7 @@ class ShortcutsBackend : public base::RefCountedThreadSafe<ShortcutsBackend>,
   // This is a helper map for quick access to a shortcut by guid.
   shortcuts_provider::GuidToShortcutsIteratorMap guid_map_;
 
-  NotificationRegistrar notification_registrar_;
+  content::NotificationRegistrar notification_registrar_;
 
   // For some unit-test only.
   bool no_db_access_;

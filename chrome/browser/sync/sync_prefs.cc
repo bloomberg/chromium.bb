@@ -11,8 +11,8 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 
 namespace browser_sync {
 
@@ -291,14 +291,14 @@ void SyncPrefs::AcknowledgeSyncedTypes(
 }
 
 void SyncPrefs::Observe(int type,
-                        const NotificationSource& source,
-                        const NotificationDetails& details) {
+                        const content::NotificationSource& source,
+                        const content::NotificationDetails& details) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
-  DCHECK(Source<PrefService>(pref_service_) == source);
+  DCHECK(content::Source<PrefService>(pref_service_) == source);
   switch (type) {
     case chrome::NOTIFICATION_PREF_CHANGED: {
       const std::string* pref_name =
-          Details<const std::string>(details).ptr();
+          content::Details<const std::string>(details).ptr();
       if (*pref_name == prefs::kSyncManaged) {
         FOR_EACH_OBSERVER(SyncPrefObserver, sync_pref_observers_,
                           OnSyncManagedPrefChange(*pref_sync_managed_));

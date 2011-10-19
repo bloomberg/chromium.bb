@@ -13,8 +13,8 @@
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/protocol/autofill_specifics.pb.h"
 #include "chrome/browser/webdata/web_data_service.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class AutofillEntry;
 class AutofillProfileChange;
@@ -35,7 +35,7 @@ class UnrecoverableErrorHandler;
 // applying them to the sync_api 'syncable' model, and vice versa. All
 // operations and use of this class are from the DB thread.
 class AutofillChangeProcessor : public ChangeProcessor,
-                                public NotificationObserver {
+                                public content::NotificationObserver {
  public:
   AutofillChangeProcessor(AutofillModelAssociator* model_associator,
                           WebDatabase* web_database,
@@ -43,11 +43,11 @@ class AutofillChangeProcessor : public ChangeProcessor,
                           UnrecoverableErrorHandler* error_handler);
   virtual ~AutofillChangeProcessor();
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   // WebDataService -> sync_api model change application.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // sync_api model -> WebDataService change application.
   virtual void ApplyChangesFromSyncModel(
@@ -118,7 +118,7 @@ class AutofillChangeProcessor : public ChangeProcessor,
   // the changes made.
   Profile* profile_;
 
-  NotificationRegistrar notification_registrar_;
+  content::NotificationRegistrar notification_registrar_;
 
   bool observing_;
 

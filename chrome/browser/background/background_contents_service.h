@@ -14,9 +14,9 @@
 #include "base/task.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/tab_contents/background_contents.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
 #include "content/common/window_container_type.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/glue/window_open_disposition.h"
 
@@ -44,7 +44,7 @@ struct BackgroundContentsOpenedDetails;
 // It is also responsible for tracking the association between
 // BackgroundContents and their parent app, and shutting them down when the
 // parent app is unloaded.
-class BackgroundContentsService : private NotificationObserver,
+class BackgroundContentsService : private content::NotificationObserver,
                                   public BackgroundContents::Delegate,
                                   public ProfileKeyedService {
  public:
@@ -105,10 +105,10 @@ class BackgroundContentsService : private NotificationObserver,
   // Registers for various notifications.
   void StartObserving(Profile* profile);
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Loads all registered BackgroundContents at startup.
   void LoadBackgroundContentsFromPrefs(Profile* profile);
@@ -157,7 +157,7 @@ class BackgroundContentsService : private NotificationObserver,
   // PrefService used to store list of background pages (or NULL if this is
   // running under an incognito profile).
   PrefService* prefs_;
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // Information we track about each BackgroundContents.
   struct BackgroundContentsInfo {

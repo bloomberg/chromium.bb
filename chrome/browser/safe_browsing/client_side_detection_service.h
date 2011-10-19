@@ -30,8 +30,8 @@
 #include "base/task.h"
 #include "base/time.h"
 #include "content/common/net/url_fetcher.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 
@@ -53,7 +53,7 @@ class ClientPhishingResponse;
 class ClientSideModel;
 
 class ClientSideDetectionService : public URLFetcher::Delegate,
-                                   public NotificationObserver {
+                                   public content::NotificationObserver {
  public:
   typedef Callback2<GURL /* phishing URL */, bool /* is phishing */>::Type
       ClientReportPhishingRequestCallback;
@@ -85,10 +85,10 @@ class ClientSideDetectionService : public URLFetcher::Delegate,
                                   const net::ResponseCookies& cookies,
                                   const std::string& data) OVERRIDE;
 
-  // NotificationObserver overrides:
+  // content::NotificationObserver overrides:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Sends a request to the SafeBrowsing servers with the ClientPhishingRequest.
   // The URL scheme of the |url()| in the request should be HTTP.  This method
@@ -298,7 +298,7 @@ class ClientSideDetectionService : public URLFetcher::Delegate,
   // this map to speed up lookups.
   BadSubnetMap bad_subnets_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientSideDetectionService);
 };

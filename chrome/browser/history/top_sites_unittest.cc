@@ -1387,7 +1387,7 @@ TEST_F(TopSitesUnloadTest, UnloadWithMigration) {
   // Create top sites and unload history.
   ui_test_utils::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_TOP_SITES_LOADED,
-      Source<Profile>(profile()));
+      content::Source<Profile>(profile()));
   profile()->CreateTopSites();
   profile()->GetHistoryService(Profile::EXPLICIT_ACCESS)->UnloadBackend();
   profile()->BlockUntilHistoryProcessesPendingRequests();

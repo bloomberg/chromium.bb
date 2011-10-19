@@ -24,8 +24,8 @@
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/common/dom_storage_common.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_source.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/view_types.h"
@@ -194,7 +194,7 @@ void InterstitialPage::Show() {
   // already been destroyed.
   notification_registrar_.Add(
       this, content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
-      Source<RenderWidgetHost>(tab_->render_view_host()));
+      content::Source<RenderWidgetHost>(tab_->render_view_host()));
 
   // Update the tab_to_interstitial_page_ map.
   iter = tab_to_interstitial_page_->find(tab_);
@@ -223,11 +223,11 @@ void InterstitialPage::Show() {
 
   notification_registrar_.Add(this,
                               content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                              Source<TabContents>(tab_));
+                              content::Source<TabContents>(tab_));
   notification_registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      Source<NavigationController>(&tab_->controller()));
+      content::Source<NavigationController>(&tab_->controller()));
   notification_registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
-      Source<NavigationController>(&tab_->controller()));
+      content::Source<NavigationController>(&tab_->controller()));
 }
 
 void InterstitialPage::Hide() {
@@ -262,8 +262,8 @@ void InterstitialPage::Hide() {
 }
 
 void InterstitialPage::Observe(int type,
-                               const NotificationSource& source,
-                               const NotificationDetails& details) {
+                               const content::NotificationSource& source,
+                               const content::NotificationDetails& details) {
   switch (type) {
     case content::NOTIFICATION_NAV_ENTRY_PENDING:
       // We are navigating away from the interstitial (the user has typed a URL
@@ -283,7 +283,7 @@ void InterstitialPage::Observe(int type,
         // The RenderViewHost is being destroyed (as part of the tab being
         // closed); make sure we clear the blocked requests.
         RenderViewHost* rvh = static_cast<RenderViewHost*>(
-            Source<RenderWidgetHost>(source).ptr());
+            content::Source<RenderWidgetHost>(source).ptr());
         DCHECK(rvh->process()->id() == original_child_id_ &&
                rvh->routing_id() == original_rvh_id_);
         TakeActionOnResourceDispatcher(CANCEL);
@@ -350,7 +350,7 @@ void InterstitialPage::DidNavigate(
   // hiding the bookmark bar.
   NotificationService::current()->Notify(
       content::NOTIFICATION_INTERSTITIAL_ATTACHED,
-      Source<TabContents>(tab_),
+      content::Source<TabContents>(tab_),
       NotificationService::NoDetails());
 
   RenderWidgetHostView* rwh_view = tab_->render_view_host()->view();

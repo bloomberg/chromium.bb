@@ -17,7 +17,7 @@ AppNotificationManager::AppNotificationManager(Profile* profile)
     : profile_(profile) {
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
-                 Source<Profile>(profile_));
+                 content::Source<Profile>(profile_));
 }
 
 namespace {
@@ -97,11 +97,12 @@ void AppNotificationManager::ClearAll(const std::string& extension_id) {
           &AppNotificationManager::DeleteOnFileThread, this, extension_id));
 }
 
-void AppNotificationManager::Observe(int type,
-                                     const NotificationSource& source,
-                                     const NotificationDetails& details) {
+void AppNotificationManager::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   CHECK(type == chrome::NOTIFICATION_EXTENSION_UNINSTALLED);
-  ClearAll(*Details<const std::string>(details).ptr());
+  ClearAll(*content::Details<const std::string>(details).ptr());
 }
 
 void AppNotificationManager::LoadOnFileThread(const FilePath& storage_path) {
@@ -140,8 +141,8 @@ void AppNotificationManager::HandleLoadResults(const NotificationMap& map) {
                               list.end());
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_APP_NOTIFICATION_STATE_CHANGED,
-        Source<Profile>(profile_),
-        Details<const std::string>(&id));
+        content::Source<Profile>(profile_),
+        content::Details<const std::string>(&id));
   }
 }
 

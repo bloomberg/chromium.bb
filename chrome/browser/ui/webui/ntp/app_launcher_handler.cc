@@ -236,7 +236,7 @@ bool AppLauncherHandler::HandlePing(Profile* profile, const std::string& path) {
 
 WebUIMessageHandler* AppLauncherHandler::Attach(WebUI* web_ui) {
   registrar_.Add(this, chrome::NOTIFICATION_APP_INSTALLED_TO_NTP,
-      Source<TabContents>(web_ui->tab_contents()));
+      content::Source<TabContents>(web_ui->tab_contents()));
   return WebUIMessageHandler::Attach(web_ui);
 }
 
@@ -280,11 +280,11 @@ void AppLauncherHandler::RegisterMessages() {
 }
 
 void AppLauncherHandler::Observe(int type,
-                                 const NotificationSource& source,
-                                 const NotificationDetails& details) {
+                                 const content::NotificationSource& source,
+                                 const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_APP_INSTALLED_TO_NTP &&
           NewTabUI::NTP4Enabled()) {
-    highlight_app_id_ = *Details<const std::string>(details).ptr();
+    highlight_app_id_ = *content::Details<const std::string>(details).ptr();
     if (has_loaded_apps_)
       SetAppToBeHighlighted();
     return;
@@ -295,11 +295,12 @@ void AppLauncherHandler::Observe(int type,
 
   switch (type) {
     case chrome::NOTIFICATION_APP_NOTIFICATION_STATE_CHANGED: {
-      Profile* profile = Source<Profile>(source).ptr();
+      Profile* profile = content::Source<Profile>(source).ptr();
       if (!Profile::FromWebUI(web_ui_)->IsSameProfile(profile))
         return;
 
-      const std::string& id = *Details<const std::string>(details).ptr();
+      const std::string& id =
+          *content::Details<const std::string>(details).ptr();
       const AppNotification* notification =
           extension_service_->app_notification_manager()->GetLast(id);
       base::StringValue id_value(id);
@@ -315,7 +316,8 @@ void AppLauncherHandler::Observe(int type,
     }
 
     case chrome::NOTIFICATION_EXTENSION_LOADED: {
-      const Extension* extension = Details<const Extension>(details).ptr();
+      const Extension* extension =
+          content::Details<const Extension>(details).ptr();
       if (!extension->is_app())
         return;
 
@@ -338,7 +340,7 @@ void AppLauncherHandler::Observe(int type,
     }
     case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
       const Extension* extension =
-          Details<UnloadedExtensionInfo>(details)->extension;
+          content::Details<UnloadedExtensionInfo>(details)->extension;
       if (!extension->is_app())
         return;
 
@@ -350,7 +352,7 @@ void AppLauncherHandler::Observe(int type,
       scoped_ptr<DictionaryValue> app_info(GetAppInfo(extension));
       scoped_ptr<base::FundamentalValue> uninstall_value(
           Value::CreateBooleanValue(
-              Details<UnloadedExtensionInfo>(details)->reason ==
+              content::Details<UnloadedExtensionInfo>(details)->reason ==
               extension_misc::UNLOAD_REASON_UNINSTALL));
       if (app_info.get()) {
         web_ui_->CallJavascriptFunction(
@@ -372,7 +374,7 @@ void AppLauncherHandler::Observe(int type,
       break;
     }
     case chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR: {
-      CrxInstaller* crx_installer = Source<CrxInstaller>(source).ptr();
+      CrxInstaller* crx_installer = content::Source<CrxInstaller>(source).ptr();
       if (!Profile::FromWebUI(web_ui_)->IsSameProfile(crx_installer->profile()))
         return;
       // Fall Through.
@@ -542,17 +544,17 @@ void AppLauncherHandler::HandleGetApps(const ListValue* args) {
     registrar_.Add(this, chrome::NOTIFICATION_APP_NOTIFICATION_STATE_CHANGED,
         NotificationService::AllSources());
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
-        Source<Profile>(profile));
+        content::Source<Profile>(profile));
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
-        Source<Profile>(profile));
+        content::Source<Profile>(profile));
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LAUNCHER_REORDERED,
-        Source<ExtensionPrefs>(extension_service_->extension_prefs()));
+        content::Source<ExtensionPrefs>(extension_service_->extension_prefs()));
     registrar_.Add(this, chrome::NOTIFICATION_WEB_STORE_PROMO_LOADED,
-        Source<Profile>(profile));
+        content::Source<Profile>(profile));
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR,
-        Source<CrxInstaller>(NULL));
+        content::Source<CrxInstaller>(NULL));
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOAD_ERROR,
-        Source<Profile>(profile));
+        content::Source<Profile>(profile));
   }
 
   has_loaded_apps_ = true;

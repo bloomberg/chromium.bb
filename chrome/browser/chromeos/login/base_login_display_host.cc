@@ -205,9 +205,10 @@ void BaseLoginDisplayHost::StartSignInScreen() {
 
 // BaseLoginDisplayHost --------------------------------------------------------
 
-void BaseLoginDisplayHost::Observe(int type,
-                                   const NotificationSource& source,
-                                   const NotificationDetails& details) {
+void BaseLoginDisplayHost::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   CHECK(type == content::NOTIFICATION_APP_EXITING);
 
   registrar_.RemoveAll();

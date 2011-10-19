@@ -37,7 +37,7 @@ class ToolbarView : public AccessiblePaneView,
                     public views::ViewMenuDelegate,
                     public ui::AcceleratorProvider,
                     public LocationBarView::Delegate,
-                    public NotificationObserver,
+                    public content::NotificationObserver,
                     public CommandUpdater::CommandObserver,
                     public views::ButtonListener {
  public:
@@ -107,10 +107,10 @@ class ToolbarView : public AccessiblePaneView,
   virtual void ButtonPressed(views::Button* sender, const views::Event& event)
       OVERRIDE;
 
-  // Overridden from NotificationObserver:
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Overridden from ui::AcceleratorProvider:
   virtual bool GetAcceleratorForCommandId(
@@ -209,7 +209,7 @@ class ToolbarView : public AccessiblePaneView,
   // A list of listeners to call when the menu opens.
   ObserverList<views::MenuListener> menu_listeners_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ToolbarView);
 };

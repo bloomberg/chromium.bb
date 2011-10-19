@@ -43,7 +43,7 @@ class TabStripGtk;
 // it needs to manipulate the window.
 
 class BrowserWindowGtk : public BrowserWindow,
-                         public NotificationObserver,
+                         public content::NotificationObserver,
                          public TabStripModelObserver,
                          public ui::ActiveWindowWatcherX::Observer,
                          public InfoBarContainer::Delegate {
@@ -156,8 +156,8 @@ class BrowserWindowGtk : public BrowserWindow,
 
   // Overridden from NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Overridden from TabStripModelObserver:
   virtual void TabDetachedAt(TabContentsWrapper* contents, int index);

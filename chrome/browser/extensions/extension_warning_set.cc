@@ -128,7 +128,7 @@ void ExtensionWarningSet::SuppressBadgeForCurrentWarnings() {
 void ExtensionWarningSet::NotifyWarningsChanged() {
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_WARNING_CHANGED,
-      Source<Profile>(profile_),
+      content::Source<Profile>(profile_),
       NotificationService::NoDetails());
 }
 

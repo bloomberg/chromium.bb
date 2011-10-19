@@ -10,8 +10,8 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 
 namespace chrome_browser_net {
 
@@ -421,14 +421,15 @@ void HttpServerPropertiesManager::StartAlternateProtocolPrefsUpdateTimerOnIO(
       &HttpServerPropertiesManager::UpdateAlternateProtocolPrefsFromCache);
 }
 
-void HttpServerPropertiesManager::Observe(int type,
-                                          const NotificationSource& source,
-                                          const NotificationDetails& details) {
+void HttpServerPropertiesManager::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(type == chrome::NOTIFICATION_PREF_CHANGED);
-  PrefService* prefs = Source<PrefService>(source).ptr();
+  PrefService* prefs = content::Source<PrefService>(source).ptr();
   DCHECK(prefs == pref_service_);
-  std::string* pref_name = Details<std::string>(details).ptr();
+  std::string* pref_name = content::Details<std::string>(details).ptr();
   if (*pref_name == prefs::kSpdyServers) {
     if (!setting_spdy_servers_)
       ScheduleUpdateSpdyCacheOnUI();

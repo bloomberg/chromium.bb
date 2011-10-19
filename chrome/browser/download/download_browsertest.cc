@@ -1186,7 +1186,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, IncognitoDownload) {
   // notification inside of a test.
   ui_test_utils::WindowedNotificationObserver signal(
       chrome::NOTIFICATION_BROWSER_CLOSED,
-      Source<Browser>(incognito));
+      content::Source<Browser>(incognito));
 #endif
 
   // Close the Incognito window and don't crash.
@@ -1437,7 +1437,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, NewWindow) {
   // notification inside of a test.
   ui_test_utils::WindowedNotificationObserver signal(
       chrome::NOTIFICATION_BROWSER_CLOSED,
-      Source<Browser>(download_browser));
+      content::Source<Browser>(download_browser));
 #endif
 
   // Close the new window.
@@ -1595,7 +1595,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, BrowserCloseAfterDownload) {
 
   ui_test_utils::WindowedNotificationObserver signal(
       chrome::NOTIFICATION_BROWSER_CLOSED,
-      Source<Browser>(browser()));
+      content::Source<Browser>(browser()));
   browser()->CloseWindow();
   signal.Wait();
 }

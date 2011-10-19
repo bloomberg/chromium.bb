@@ -41,7 +41,7 @@ CustomDrawButtonBase::CustomDrawButtonBase(GtkThemeService* theme_provider,
 
     registrar_.Add(this,
                    chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
-                   Source<ThemeService>(theme_provider));
+                   content::Source<ThemeService>(theme_provider));
   } else {
     // Load the button images from the resource bundle.
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
@@ -142,7 +142,8 @@ void CustomDrawButtonBase::SetBackground(SkColor color,
 }
 
 void CustomDrawButtonBase::Observe(int type,
-    const NotificationSource& source, const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK(theme_service_);
   DCHECK(chrome::NOTIFICATION_BROWSER_THEME_CHANGED == type);
 
@@ -248,7 +249,7 @@ CustomDrawButton::CustomDrawButton(GtkThemeService* theme_provider,
   theme_service_->InitThemesFor(this);
   registrar_.Add(this,
                  chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
-                 Source<ThemeService>(theme_provider));
+                 content::Source<ThemeService>(theme_provider));
 }
 
 CustomDrawButton::CustomDrawButton(GtkThemeService* theme_provider,
@@ -267,7 +268,7 @@ CustomDrawButton::CustomDrawButton(GtkThemeService* theme_provider,
   theme_service_->InitThemesFor(this);
   registrar_.Add(this,
                  chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
-                 Source<ThemeService>(theme_provider));
+                 content::Source<ThemeService>(theme_provider));
 }
 
 CustomDrawButton::~CustomDrawButton() {
@@ -289,7 +290,8 @@ void CustomDrawButton::ForceChromeTheme() {
 }
 
 void CustomDrawButton::Observe(int type,
-    const NotificationSource& source, const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK(chrome::NOTIFICATION_BROWSER_THEME_CHANGED == type);
   SetBrowserTheme();
 }

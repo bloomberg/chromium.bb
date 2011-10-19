@@ -8,8 +8,8 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 namespace gfx {
 class Rect;
@@ -18,7 +18,7 @@ class Rect;
 class FindBar;
 class TabContentsWrapper;
 
-class FindBarController : public NotificationObserver {
+class FindBarController : public content::NotificationObserver {
  public:
   // An enum listing the possible actions to take on a find-in-page selection.
   enum SelectionAction {
@@ -45,10 +45,10 @@ class FindBarController : public NotificationObserver {
   // the user switches tabs in the Browser window. |contents| can be NULL.
   void ChangeTabContents(TabContentsWrapper* contents);
 
-  // Overridden from NotificationObserver:
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   FindBar* find_bar() const { return find_bar_.get(); }
 
@@ -72,7 +72,7 @@ class FindBarController : public NotificationObserver {
   // Mac.
   void MaybeSetPrepopulateText();
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   scoped_ptr<FindBar> find_bar_;
 

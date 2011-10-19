@@ -214,16 +214,16 @@ void BackgroundModeManager::RegisterProfile(Profile* profile) {
   // we can display a "background app installed" notification and enter
   // "launch on login" mode on the Mac.
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
-                 Source<Profile>(profile));
+                 content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_PERMISSIONS_UPDATED,
-                 Source<Profile>(profile));
+                 content::Source<Profile>(profile));
 
 
   // Check for the presence of background apps after all extensions have been
   // loaded, to handle the case where an extension has been manually removed
   // while Chrome was not running.
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSIONS_READY,
-                 Source<Profile>(profile));
+                 content::Source<Profile>(profile));
 
   bmd->applications_->AddObserver(this);
 
@@ -246,13 +246,14 @@ void BackgroundModeManager::LaunchBackgroundApplication(
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-//  BackgroundModeManager, NotificationObserver overrides
-void BackgroundModeManager::Observe(int type,
-                                    const NotificationSource& source,
-                                    const NotificationDetails& details) {
+//  BackgroundModeManager, content::NotificationObserver overrides
+void BackgroundModeManager::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_PREF_CHANGED:
-      DCHECK(*Details<std::string>(details).ptr() ==
+      DCHECK(*content::Details<std::string>(details).ptr() ==
              prefs::kBackgroundModeEnabled);
       if (IsBackgroundModePrefEnabled())
         EnableBackgroundMode();
@@ -266,11 +267,11 @@ void BackgroundModeManager::Observe(int type,
       break;
 
     case chrome::NOTIFICATION_EXTENSION_LOADED: {
-        Extension* extension = Details<Extension>(details).ptr();
+        Extension* extension = content::Details<Extension>(details).ptr();
         if (BackgroundApplicationListModel::IsBackgroundApp(*extension)) {
           // Extensions loaded after the ExtensionsService is ready should be
           // treated as new installs.
-          Profile* profile = Source<Profile>(source).ptr();
+          Profile* profile = content::Source<Profile>(source).ptr();
           if (profile->GetExtensionService()->is_ready())
             OnBackgroundAppInstalled(extension);
         }
@@ -278,7 +279,7 @@ void BackgroundModeManager::Observe(int type,
       break;
     case chrome::NOTIFICATION_EXTENSION_PERMISSIONS_UPDATED: {
         UpdatedExtensionPermissionsInfo* info =
-            Details<UpdatedExtensionPermissionsInfo>(details).ptr();
+            content::Details<UpdatedExtensionPermissionsInfo>(details).ptr();
         if (info->permissions->HasAPIPermission(
                 ExtensionAPIPermission::kBackground) &&
             info->reason == UpdatedExtensionPermissionsInfo::ADDED) {

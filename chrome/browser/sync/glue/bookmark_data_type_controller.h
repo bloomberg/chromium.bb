@@ -9,17 +9,14 @@
 #include <string>
 
 #include "chrome/browser/sync/glue/frontend_data_type_controller.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
-
-class NotificationDetails;
-class NotificationSource;
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 namespace browser_sync {
 
 // A class that manages the startup and shutdown of bookmark sync.
 class BookmarkDataTypeController : public FrontendDataTypeController,
-                                   public NotificationObserver {
+                                   public content::NotificationObserver {
  public:
   BookmarkDataTypeController(
       ProfileSyncFactory* profile_sync_factory,
@@ -30,10 +27,10 @@ class BookmarkDataTypeController : public FrontendDataTypeController,
   // FrontendDataTypeController interface.
   virtual syncable::ModelType type() const;
 
-  // NotificationObserver interface.
+  // content::NotificationObserver interface.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
  private:
   // FrontendDataTypeController interface.
@@ -46,7 +43,7 @@ class BookmarkDataTypeController : public FrontendDataTypeController,
   virtual void RecordAssociationTime(base::TimeDelta time);
   virtual void RecordStartFailure(StartResult result);
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkDataTypeController);
 };

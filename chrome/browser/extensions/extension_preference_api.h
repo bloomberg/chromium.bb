@@ -10,22 +10,22 @@
 
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
-#include "content/common/notification_observer.h"
+#include "content/public/browser/notification_observer.h"
 
 namespace base {
 class Value;
 }
 
-class ExtensionPreferenceEventRouter : public NotificationObserver {
+class ExtensionPreferenceEventRouter : public content::NotificationObserver {
  public:
   explicit ExtensionPreferenceEventRouter(Profile* profile);
   virtual ~ExtensionPreferenceEventRouter();
 
  private:
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   void OnPrefChanged(PrefService* pref_service, const std::string& pref_key);
 

@@ -14,8 +14,8 @@
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "chrome/browser/ui/gtk/notifications/balloon_view_host_gtk.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/gfx/point.h"
@@ -26,9 +26,7 @@ class BalloonCollection;
 class CustomDrawButton;
 class GtkThemeService;
 class MenuGtk;
-class NotificationDetails;
 class NotificationOptionsMenuModel;
-class NotificationSource;
 
 namespace ui {
 class SlideAnimation;
@@ -38,7 +36,7 @@ class SlideAnimation;
 // It draws a border, and within the border an HTML renderer.
 class BalloonViewImpl : public BalloonView,
                         public MenuGtk::Delegate,
-                        public NotificationObserver,
+                        public content::NotificationObserver,
                         public ui::AnimationDelegate {
  public:
   explicit BalloonViewImpl(BalloonCollection* collection);
@@ -56,10 +54,10 @@ class BalloonViewImpl : public BalloonView,
   virtual void StoppedShowing();
 
  private:
-  // NotificationObserver interface.
+  // content::NotificationObserver interface.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // ui::AnimationDelegate interface.
   virtual void AnimationProgressed(const ui::Animation* animation);
@@ -131,7 +129,7 @@ class BalloonViewImpl : public BalloonView,
   // The button to open the options menu.
   scoped_ptr<CustomDrawButton> options_menu_button_;
 
-  NotificationRegistrar notification_registrar_;
+  content::NotificationRegistrar notification_registrar_;
 
   // Is the menu currently showing?
   bool menu_showing_;

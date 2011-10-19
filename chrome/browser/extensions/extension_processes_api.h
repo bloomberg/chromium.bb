@@ -11,7 +11,7 @@
 
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/task_manager/task_manager.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_registrar.h"
 
 // Observes the Task Manager and routes the notifications as events to the
 // extension system.
@@ -46,7 +46,7 @@ class ExtensionProcessesEventRouter : public TaskManagerModelObserver {
                      const std::string& json_args);
 
   // Used for tracking registrations to process related notifications.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // Registered profiles.
   typedef std::set<Profile*> ProfileSet;

@@ -1937,9 +1937,9 @@ void RenderViewContextMenu::OpenURL(
     details.target_tab_contents = new_contents;
     NotificationService::current()->Notify(
         content::NOTIFICATION_RETARGETING,
-        Source<content::BrowserContext>(
+        content::Source<content::BrowserContext>(
             source_tab_contents_->browser_context()),
-        Details<content::RetargetingDetails>(&details));
+        content::Details<content::RetargetingDetails>(&details));
   }
 }
 

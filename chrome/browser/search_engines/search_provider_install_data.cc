@@ -18,10 +18,10 @@
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_source.h"
 
 typedef SearchHostToURLsMap::TemplateURLSet TemplateURLSet;
 
@@ -99,23 +99,23 @@ void GoogleURLChangeNotifier::OnChange(const std::string& google_base_url) {
 
 // Notices changes in the Google base URL and sends them along
 // to the SearchProviderInstallData on the I/O thread.
-class GoogleURLObserver : public NotificationObserver {
+class GoogleURLObserver : public content::NotificationObserver {
  public:
   GoogleURLObserver(
       GoogleURLChangeNotifier* change_notifier,
       int ui_death_notification,
-      const NotificationSource& ui_death_source);
+      const content::NotificationSource& ui_death_source);
 
-  // Implementation of NotificationObserver.
+  // Implementation of content::NotificationObserver.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
  private:
   virtual ~GoogleURLObserver() {}
 
   scoped_refptr<GoogleURLChangeNotifier> change_notifier_;
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(GoogleURLObserver);
 };
@@ -123,7 +123,7 @@ class GoogleURLObserver : public NotificationObserver {
 GoogleURLObserver::GoogleURLObserver(
       GoogleURLChangeNotifier* change_notifier,
       int ui_death_notification,
-      const NotificationSource& ui_death_source)
+      const content::NotificationSource& ui_death_source)
     : change_notifier_(change_notifier) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   registrar_.Add(this, chrome::NOTIFICATION_GOOGLE_URL_UPDATED,
@@ -132,8 +132,8 @@ GoogleURLObserver::GoogleURLObserver(
 }
 
 void GoogleURLObserver::Observe(int type,
-                                const NotificationSource& source,
-                                const NotificationDetails& details) {
+                                const content::NotificationSource& source,
+                                const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_GOOGLE_URL_UPDATED) {
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
         NewRunnableMethod(change_notifier_.get(),
@@ -163,7 +163,7 @@ static bool IsSameOrigin(const GURL& requested_origin,
 SearchProviderInstallData::SearchProviderInstallData(
     WebDataService* web_service,
     int ui_death_notification,
-    const NotificationSource& ui_death_source)
+    const content::NotificationSource& ui_death_source)
     : web_service_(web_service),
       load_handle_(0),
       google_base_url_(UIThreadSearchTermsData().GoogleBaseURLValue()) {

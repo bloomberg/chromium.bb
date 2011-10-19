@@ -11,8 +11,8 @@
 #include "base/task.h"
 #include "chrome/browser/sync/glue/data_type_manager.h"
 #include "chrome/browser/sync/syncable/model_type.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class ProfileSyncService;
 
@@ -34,7 +34,7 @@ class MigrationObserver {
 
 // A class to perform migration of a datatype pursuant to the 'MIGRATION_DONE'
 // code in the sync protocol definition (protocol/sync.proto).
-class BackendMigrator : public NotificationObserver {
+class BackendMigrator : public content::NotificationObserver {
  public:
   enum State {
     IDLE,
@@ -61,10 +61,10 @@ class BackendMigrator : public NotificationObserver {
   bool HasMigrationObserver(MigrationObserver* observer) const;
   void RemoveMigrationObserver(MigrationObserver* observer);
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   State state() const;
 
@@ -93,7 +93,7 @@ class BackendMigrator : public NotificationObserver {
 
   State state_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   ObserverList<MigrationObserver> migration_observers_;
 

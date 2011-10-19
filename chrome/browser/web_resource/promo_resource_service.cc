@@ -370,7 +370,7 @@ void PromoResourceService::UnpackLogoSignal(
     prefs_->SetDouble(prefs::kNTPCustomLogoEnd, logo_end);
     NotificationService* service = NotificationService::current();
     service->Notify(chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED,
-                    Source<WebResourceService>(this),
+                    content::Source<WebResourceService>(this),
                     NotificationService::NoDetails());
   }
 }
@@ -421,7 +421,7 @@ void PromoResourceService::UnpackSyncPromoSignal(
       // Notify the NTP resource cache if the promo has been disabled.
       NotificationService::current()->Notify(
           chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED,
-          Source<WebResourceService>(this),
+          content::Source<WebResourceService>(this),
           NotificationService::NoDetails());
     }
     return;

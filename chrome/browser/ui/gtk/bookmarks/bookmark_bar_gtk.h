@@ -21,8 +21,8 @@
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_bar_instructions_gtk.h"
 #include "chrome/browser/ui/gtk/menu_bar_helper.h"
 #include "chrome/browser/ui/gtk/view_id_util.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/base/animation/animation.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
@@ -44,7 +44,7 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
                        public ProfileSyncServiceObserver,
                        public BookmarkModelObserver,
                        public MenuBarHelper::Delegate,
-                       public NotificationObserver,
+                       public content::NotificationObserver,
                        public BookmarkBarInstructionsGtk::Delegate,
                        public BookmarkContextMenuControllerDelegate {
  public:
@@ -233,10 +233,10 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
   virtual void BookmarkNodeChildrenReordered(BookmarkModel* model,
                                              const BookmarkNode* node) OVERRIDE;
 
-  // Overridden from NotificationObserver:
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   GtkWidget* CreateBookmarkButton(const BookmarkNode* node);
   GtkToolItem* CreateBookmarkToolItem(const BookmarkNode* node);
@@ -395,7 +395,7 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
   // need to respond to.
   int last_allocation_width_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // The size of the tab contents last time we forced a paint. We keep track
   // of this so we don't force too many paints.

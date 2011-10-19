@@ -138,8 +138,8 @@ void OwnershipService::StartVerifyAttempt(const std::string& data,
 }
 
 void OwnershipService::Observe(int type,
-                               const NotificationSource& source,
-                               const NotificationDetails& details) {
+                               const content::NotificationSource& source,
+                               const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED) {
     SetStatus(OWNERSHIP_TAKEN);
     notification_registrar_.RemoveAll();

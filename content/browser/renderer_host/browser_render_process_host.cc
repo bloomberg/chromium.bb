@@ -872,8 +872,8 @@ void BrowserRenderProcessHost::ProcessDied(
   RendererClosedDetails details(status, exit_code, was_alive);
   NotificationService::current()->Notify(
       content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
-      Source<RenderProcessHost>(this),
-      Details<RendererClosedDetails>(&details));
+      content::Source<RenderProcessHost>(this),
+      content::Details<RendererClosedDetails>(&details));
 
   child_process_launcher_.reset();
   channel_.reset();
@@ -902,7 +902,8 @@ void BrowserRenderProcessHost::OnShutdownRequest() {
   // They should not attempt to swap them back in.
   NotificationService::current()->Notify(
       content::NOTIFICATION_RENDERER_PROCESS_CLOSING,
-      Source<RenderProcessHost>(this), NotificationService::NoDetails());
+      content::Source<RenderProcessHost>(this),
+      NotificationService::NoDetails());
 
   Send(new ChildProcessMsg_Shutdown());
 }
@@ -966,7 +967,8 @@ void BrowserRenderProcessHost::OnProcessLaunched() {
   // happens.
   NotificationService::current()->Notify(
       content::NOTIFICATION_RENDERER_PROCESS_CREATED,
-      Source<RenderProcessHost>(this), NotificationService::NoDetails());
+      content::Source<RenderProcessHost>(this),
+      NotificationService::NoDetails());
 
   while (!queued_messages_.empty()) {
     Send(queued_messages_.front());

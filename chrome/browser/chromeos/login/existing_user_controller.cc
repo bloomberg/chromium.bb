@@ -119,16 +119,17 @@ void ExistingUserController::Init(const UserVector& users) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ExistingUserController, NotificationObserver implementation:
+// ExistingUserController, content::NotificationObserver implementation:
 //
 
-void ExistingUserController::Observe(int type,
-                                     const NotificationSource& source,
-                                     const NotificationDetails& details) {
+void ExistingUserController::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (type != chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED)
     return;
 
-  UserManager::User* user = Details<UserManager::User>(details).ptr();
+  UserManager::User* user = content::Details<UserManager::User>(details).ptr();
   login_display_->OnUserImageChanged(user);
 }
 

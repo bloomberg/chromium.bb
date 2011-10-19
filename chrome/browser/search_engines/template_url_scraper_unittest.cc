@@ -10,8 +10,8 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/common/notification_registrar.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_source.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/base/net_util.h"
 
@@ -25,26 +25,26 @@ class TemplateURLScraperTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(TemplateURLScraperTest);
 };
 
-class TemplateURLServiceLoader : public NotificationObserver {
+class TemplateURLServiceLoader : public content::NotificationObserver {
  public:
   explicit TemplateURLServiceLoader(TemplateURLService* model) : model_(model) {
     registrar_.Add(this, chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED,
-                   Source<TemplateURLService>(model));
+                   content::Source<TemplateURLService>(model));
     model_->Load();
     ui_test_utils::RunMessageLoop();
   }
 
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) {
     if (type == chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED &&
-        Source<TemplateURLService>(source).ptr() == model_) {
+        content::Source<TemplateURLService>(source).ptr() == model_) {
       MessageLoop::current()->Quit();
     }
   }
 
  private:
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   TemplateURLService* model_;
 

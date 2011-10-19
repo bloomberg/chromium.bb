@@ -9,14 +9,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "content/browser/speech/speech_recognizer.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
 #include "content/common/speech_input_result.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include <string>
 
 class Extension;
-class NotificationDetails;
-class NotificationSource;
 class Profile;
 
 namespace net {
@@ -56,7 +54,7 @@ class ExtensionSpeechInterface {
 class ExtensionSpeechInputManager
     : public base::RefCountedThreadSafe<ExtensionSpeechInputManager>,
       public speech_input::SpeechRecognizerDelegate,
-      public NotificationObserver,
+      public content::NotificationObserver,
       private ExtensionSpeechInterface {
  public:
   enum State {
@@ -105,10 +103,10 @@ class ExtensionSpeechInputManager
   // Called by internal ProfileKeyedService class.
   void ShutdownOnUIThread();
 
-  // Methods from NotificationObserver.
+  // Methods from content::NotificationObserver.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Methods from SpeechRecognizerDelegate.
   virtual void SetRecognitionResult(
@@ -188,7 +186,7 @@ class ExtensionSpeechInputManager
   std::string extension_id_in_use_;
 
   // Used in the UI thread.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
   ExtensionSpeechInterface* speech_interface_;
 };
 

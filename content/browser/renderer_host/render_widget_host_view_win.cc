@@ -1526,15 +1526,16 @@ void RenderWidgetHostViewWin::UnlockMouse() {
     render_widget_host_->LostMouseLock();
 }
 
-void RenderWidgetHostViewWin::Observe(int type,
-                                      const NotificationSource& source,
-                                      const NotificationDetails& details) {
+void RenderWidgetHostViewWin::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK(type == content::NOTIFICATION_RENDERER_PROCESS_TERMINATED);
 
   // Get the RenderProcessHost that posted this notification, and exit
   // if it's not the one associated with this host view.
   RenderProcessHost* render_process_host =
-      Source<RenderProcessHost>(source).ptr();
+      content::Source<RenderProcessHost>(source).ptr();
   DCHECK(render_process_host);
   if (!render_widget_host_ ||
       render_process_host != render_widget_host_->process())

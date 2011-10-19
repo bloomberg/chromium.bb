@@ -228,7 +228,7 @@ class TestPrerenderContents : public PrerenderContents {
     notification_registrar().Add(
         this,
         content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
-        Source<RenderWidgetHost>(new_render_view_host));
+        content::Source<RenderWidgetHost>(new_render_view_host));
 
     new_render_view_host_ = new_render_view_host;
 
@@ -236,12 +236,13 @@ class TestPrerenderContents : public PrerenderContents {
   }
 
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE {
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE {
     if (type ==
         content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED) {
-      EXPECT_EQ(new_render_view_host_, Source<RenderWidgetHost>(source).ptr());
-      bool is_visible = *Details<bool>(details).ptr();
+      EXPECT_EQ(new_render_view_host_,
+                content::Source<RenderWidgetHost>(source).ptr());
+      bool is_visible = *content::Details<bool>(details).ptr();
 
       if (!is_visible) {
         was_hidden_ = true;
@@ -723,7 +724,8 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
       page_load_observer.reset(
           new ui_test_utils::WindowedNotificationObserver(
               content::NOTIFICATION_LOAD_STOP,
-              Source<NavigationController>(&tab_contents->controller())));
+              content::Source<NavigationController>(
+                  &tab_contents->controller())));
     }
 
     // ui_test_utils::NavigateToURL waits until DidStopLoading is called on
@@ -1726,7 +1728,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderFavicon) {
   ASSERT_TRUE(prerender_contents != NULL);
   ui_test_utils::WindowedNotificationObserver favicon_update_watcher(
       chrome::NOTIFICATION_FAVICON_UPDATED,
-      Source<TabContents>(prerender_contents->prerender_contents()->
+      content::Source<TabContents>(prerender_contents->prerender_contents()->
                           tab_contents()));
   NavigateToDestURL();
   favicon_update_watcher.Wait();

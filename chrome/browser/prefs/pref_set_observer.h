@@ -11,15 +11,15 @@
 #include "base/basictypes.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "content/common/notification_observer.h"
+#include "content/public/browser/notification_observer.h"
 
 // Observes the state of a set of preferences and allows to query their combined
 // managed bits.
-class PrefSetObserver : public NotificationObserver {
+class PrefSetObserver : public content::NotificationObserver {
  public:
   // Initialize with an empty set of preferences.
   PrefSetObserver(PrefService* pref_service,
-                  NotificationObserver* observer);
+                  content::NotificationObserver* observer);
   virtual ~PrefSetObserver();
 
   // Add a |pref| to the set of preferences to observe.
@@ -35,25 +35,25 @@ class PrefSetObserver : public NotificationObserver {
   // Create a pref set observer for all preferences relevant to proxies.
   static PrefSetObserver* CreateProxyPrefSetObserver(
       PrefService* pref_service,
-      NotificationObserver* observer);
+      content::NotificationObserver* observer);
 
   // Create a pref set observer for all preferences relevant to default search.
   static PrefSetObserver* CreateDefaultSearchPrefSetObserver(
       PrefService* pref_service,
-      NotificationObserver* observer);
+      content::NotificationObserver* observer);
 
  private:
-  // Overridden from NotificationObserver.
+  // Overridden from content::NotificationObserver.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   typedef std::set<std::string> PrefSet;
   PrefSet prefs_;
 
   PrefService* pref_service_;
   PrefChangeRegistrar registrar_;
-  NotificationObserver* observer_;
+  content::NotificationObserver* observer_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefSetObserver);
 };

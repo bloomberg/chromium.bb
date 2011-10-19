@@ -422,9 +422,10 @@ void RenderWidgetHostViewViews::SelectionBoundsChanged(
   }
 }
 
-void RenderWidgetHostViewViews::Observe(int type,
-                                        const NotificationSource& source,
-                                        const NotificationDetails& details) {
+void RenderWidgetHostViewViews::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
 #if defined(TOUCH_UI)
   if (type != chrome::NOTIFICATION_KEYBOARD_VISIBLE_BOUNDS_CHANGED) {
     NOTREACHED();

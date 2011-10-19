@@ -44,7 +44,7 @@ SiteInstance::SiteInstance(BrowsingInstance* browsing_instance)
 SiteInstance::~SiteInstance() {
   NotificationService::current()->Notify(
       content::NOTIFICATION_SITE_INSTANCE_DELETED,
-      Source<SiteInstance>(this),
+      content::Source<SiteInstance>(this),
       NotificationService::NoDetails());
 
   // Now that no one is referencing us, we can safely remove ourselves from
@@ -221,10 +221,10 @@ GURL SiteInstance::GetEffectiveURL(content::BrowserContext* browser_context,
 }
 
 void SiteInstance::Observe(int type,
-                           const NotificationSource& source,
-                           const NotificationDetails& details) {
+                           const content::NotificationSource& source,
+                           const content::NotificationDetails& details) {
   DCHECK(type == content::NOTIFICATION_RENDERER_PROCESS_TERMINATED);
-  RenderProcessHost* rph = Source<RenderProcessHost>(source).ptr();
+  RenderProcessHost* rph = content::Source<RenderProcessHost>(source).ptr();
   if (rph == process_)
     process_ = NULL;
 }

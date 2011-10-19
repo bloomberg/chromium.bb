@@ -19,7 +19,7 @@ OverflowButton::OverflowButton(Profile* profile) : profile_(profile) {
 
   GtkThemeService* theme_service = GtkThemeService::GetFrom(profile);
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
-                 Source<ThemeService>(theme_service));
+                 content::Source<ThemeService>(theme_service));
   theme_service->InitThemesFor(this);
 }
 
@@ -28,8 +28,8 @@ OverflowButton::~OverflowButton() {
 }
 
 void OverflowButton::Observe(int type,
-                             const NotificationSource& source,
-                             const NotificationDetails& details) {
+                             const content::NotificationSource& source,
+                             const content::NotificationDetails& details) {
   GtkWidget* former_child = gtk_bin_get_child(GTK_BIN(widget()));
   if (former_child)
     gtk_widget_destroy(former_child);

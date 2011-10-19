@@ -56,8 +56,8 @@
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
 #include "net/base/cookie_monster.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -205,16 +205,16 @@ void ProfileSyncService::Initialize() {
 void ProfileSyncService::RegisterAuthNotifications() {
   registrar_.Add(this,
                  chrome::NOTIFICATION_TOKEN_AVAILABLE,
-                 Source<TokenService>(profile_->GetTokenService()));
+                 content::Source<TokenService>(profile_->GetTokenService()));
   registrar_.Add(this,
                  chrome::NOTIFICATION_TOKEN_LOADING_FINISHED,
-                 Source<TokenService>(profile_->GetTokenService()));
+                 content::Source<TokenService>(profile_->GetTokenService()));
   registrar_.Add(this,
                  chrome::NOTIFICATION_TOKEN_REQUEST_FAILED,
-                 Source<TokenService>(profile_->GetTokenService()));
+                 content::Source<TokenService>(profile_->GetTokenService()));
   registrar_.Add(this,
                  chrome::NOTIFICATION_GOOGLE_SIGNIN_FAILED,
-                 Source<Profile>(profile_));
+                 content::Source<Profile>(profile_));
 }
 
 void ProfileSyncService::RegisterDataTypeController(
@@ -390,12 +390,14 @@ void ProfileSyncService::Shutdown(bool sync_disabled) {
       data_type_manager_->Stop();
     }
 
-    registrar_.Remove(this,
-                      chrome::NOTIFICATION_SYNC_CONFIGURE_START,
-                      Source<DataTypeManager>(data_type_manager_.get()));
-    registrar_.Remove(this,
-                      chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,
-                      Source<DataTypeManager>(data_type_manager_.get()));
+    registrar_.Remove(
+        this,
+        chrome::NOTIFICATION_SYNC_CONFIGURE_START,
+        content::Source<DataTypeManager>(data_type_manager_.get()));
+    registrar_.Remove(
+        this,
+        chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,
+        content::Source<DataTypeManager>(data_type_manager_.get()));
     data_type_manager_.reset();
   }
 
@@ -1202,10 +1204,10 @@ void ProfileSyncService::ConfigureDataTypeManager() {
                                         &data_type_controllers_));
     registrar_.Add(this,
                    chrome::NOTIFICATION_SYNC_CONFIGURE_START,
-                   Source<DataTypeManager>(data_type_manager_.get()));
+                   content::Source<DataTypeManager>(data_type_manager_.get()));
     registrar_.Add(this,
                    chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,
-                   Source<DataTypeManager>(data_type_manager_.get()));
+                   content::Source<DataTypeManager>(data_type_manager_.get()));
 
     // We create the migrator at the same time.
     migrator_.reset(
@@ -1361,8 +1363,8 @@ void ProfileSyncService::OnSyncManagedPrefChange(bool is_sync_managed) {
 }
 
 void ProfileSyncService::Observe(int type,
-                                 const NotificationSource& source,
-                                 const NotificationDetails& details) {
+                                 const content::NotificationSource& source,
+                                 const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_SYNC_CONFIGURE_START: {
       NotifyObservers();
@@ -1371,7 +1373,7 @@ void ProfileSyncService::Observe(int type,
     }
     case chrome::NOTIFICATION_SYNC_CONFIGURE_DONE: {
       DataTypeManager::ConfigureResult* result =
-          Details<DataTypeManager::ConfigureResult>(details).ptr();
+          content::Details<DataTypeManager::ConfigureResult>(details).ptr();
 
       DataTypeManager::ConfigureStatus status = result->status;
       VLOG(1) << "PSS SYNC_CONFIGURE_DONE called with status: " << status;
@@ -1424,7 +1426,7 @@ void ProfileSyncService::Observe(int type,
     }
     case chrome::NOTIFICATION_GOOGLE_SIGNIN_FAILED: {
       GoogleServiceAuthError error =
-          *(Details<const GoogleServiceAuthError>(details).ptr());
+          *(content::Details<const GoogleServiceAuthError>(details).ptr());
       UpdateAuthErrorState(error);
       break;
     }

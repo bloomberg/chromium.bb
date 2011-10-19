@@ -215,9 +215,10 @@ void TestProfileSyncService::OnBackendInitialized(
   }
 }
 
-void TestProfileSyncService::Observe(int type,
-                                     const NotificationSource& source,
-                                     const NotificationDetails& details) {
+void TestProfileSyncService::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   ProfileSyncService::Observe(type, source, details);
   if (type == chrome::NOTIFICATION_SYNC_CONFIGURE_DONE &&
       !synchronous_sync_configuration_) {

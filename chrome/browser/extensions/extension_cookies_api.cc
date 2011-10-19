@@ -38,10 +38,11 @@ void ExtensionCookiesEventRouter::Init() {
                  NotificationService::AllBrowserContextsAndSources());
 }
 
-void ExtensionCookiesEventRouter::Observe(int type,
-                                          const NotificationSource& source,
-                                          const NotificationDetails& details) {
-  Profile* profile = Source<Profile>(source).ptr();
+void ExtensionCookiesEventRouter::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  Profile* profile = content::Source<Profile>(source).ptr();
   if (!profile_->IsSameProfile(profile)) {
     return;
   }
@@ -49,7 +50,7 @@ void ExtensionCookiesEventRouter::Observe(int type,
     case chrome::NOTIFICATION_COOKIE_CHANGED:
       CookieChanged(
           profile,
-          Details<ChromeCookieDetails>(details).ptr());
+          content::Details<ChromeCookieDetails>(details).ptr());
       break;
 
     default:

@@ -9,12 +9,10 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/sync/glue/change_processor.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
 
-class NotificationDetails;
-class NotificationSource;
 class Profile;
 
 namespace browser_sync {
@@ -26,16 +24,16 @@ class UnrecoverableErrorHandler;
 // model, and vice versa. All operations and use of this class are
 // from the UI thread.
 class ThemeChangeProcessor : public ChangeProcessor,
-                             public NotificationObserver {
+                             public content::NotificationObserver {
  public:
   explicit ThemeChangeProcessor(UnrecoverableErrorHandler* error_handler);
   virtual ~ThemeChangeProcessor();
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   // ThemeService -> sync_api model change application.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // ChangeProcessor implementation.
   // sync_api model -> ThemeService change application.
@@ -52,7 +50,7 @@ class ThemeChangeProcessor : public ChangeProcessor,
   void StartObserving();
   void StopObserving();
 
-  NotificationRegistrar notification_registrar_;
+  content::NotificationRegistrar notification_registrar_;
   // Profile associated with the ThemeService.  Non-NULL iff |running()| is
   // true.
   Profile* profile_;

@@ -18,11 +18,11 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_observer_mock.h"
-#include "content/common/notification_registrar.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/test/notification_observer_mock.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/form_data.h"
@@ -85,8 +85,8 @@ class PersonalDataManagerTest : public testing::Test {
   BrowserThread db_thread_;
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<PersonalDataManager> personal_data_;
-  NotificationRegistrar registrar_;
-  NotificationObserverMock observer_;
+  content::NotificationRegistrar registrar_;
+  content::NotificationObserverMock observer_;
   PersonalDataLoadedObserverMock personal_data_observer_;
 };
 

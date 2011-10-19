@@ -196,16 +196,17 @@ void ClientSideDetectionService::OnURLFetchComplete(
   }
 }
 
-void ClientSideDetectionService::Observe(int type,
-                                         const NotificationSource& source,
-                                         const NotificationDetails& details) {
+void ClientSideDetectionService::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(type == content::NOTIFICATION_RENDERER_PROCESS_CREATED);
   if (!model_.get()) {
     // Model might not be ready or maybe there was an error.
     return;
   }
-  SendModelToProcess(Source<RenderProcessHost>(source).ptr());
+  SendModelToProcess(content::Source<RenderProcessHost>(source).ptr());
 }
 
 void ClientSideDetectionService::SendModelToProcess(

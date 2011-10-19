@@ -32,13 +32,11 @@
 #include "chrome/browser/sync/sync_setup_wizard.h"
 #include "chrome/browser/sync/unrecoverable_error_handler.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
 #include "googleurl/src/gurl.h"
 
-class NotificationDetails;
-class NotificationSource;
 class Profile;
 class ProfileSyncFactory;
 class SigninManager;
@@ -105,7 +103,7 @@ struct UserShare;
 class ProfileSyncService : public browser_sync::SyncFrontend,
                            public browser_sync::SyncPrefObserver,
                            public browser_sync::UnrecoverableErrorHandler,
-                           public NotificationObserver {
+                           public content::NotificationObserver {
  public:
   typedef ProfileSyncServiceObserver Observer;
   typedef browser_sync::SyncBackendHost::Status Status;
@@ -403,10 +401,10 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // SyncPrefObserver implementation.
   virtual void OnSyncManagedPrefChange(bool is_sync_managed) OVERRIDE;
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Changes which data types we're going to be syncing to |preferred_types|.
   // If it is running, the DataTypeManager will be instructed to reconfigure
@@ -638,7 +636,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   browser_sync::SyncJsController sync_js_controller_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   ScopedRunnableMethodFactory<ProfileSyncService>
       scoped_runnable_method_factory_;

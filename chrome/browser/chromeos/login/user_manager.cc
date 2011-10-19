@@ -231,8 +231,8 @@ void UserManager::SaveImageToLocalState(const std::string& username,
   NotifyLocalStateChanged();
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
-      Source<UserManager>(this),
-      Details<const User>(&logged_in_user_));
+      content::Source<UserManager>(this),
+      content::Details<const User>(&logged_in_user_));
 }
 
 void UserManager::SaveImageToFile(const SkBitmap& image,
@@ -691,7 +691,7 @@ void UserManager::OnDownloadSuccess(const SkBitmap& image) {
     SaveUserImage(logged_in_user_.email(), image, User::kProfileImageIndex);
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_PROFILE_IMAGE_UPDATED,
-        Source<UserManager>(this),
+        content::Source<UserManager>(this),
         Details<const UserManager::User>(&logged_in_user()));
   }
 }
@@ -759,7 +759,7 @@ void RealTPMTokenInfoDelegate::GetTokenInfo(std::string* token_name,
 void UserManager::NotifyOnLogin() {
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_LOGIN_USER_CHANGED,
-      Source<UserManager>(this),
+      content::Source<UserManager>(this),
       Details<const User>(&logged_in_user_));
 
   chromeos::input_method::InputMethodManager::GetInstance()->
@@ -791,8 +791,8 @@ void UserManager::NotifyOnLogin() {
 }
 
 void UserManager::Observe(int type,
-                          const NotificationSource& source,
-                          const NotificationDetails& details) {
+                          const content::NotificationSource& source,
+                          const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED) {
     BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
                             base::Bind(&UserManager::CheckOwnership,

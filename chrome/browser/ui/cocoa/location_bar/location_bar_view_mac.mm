@@ -186,7 +186,7 @@ void LocationBarViewMac::UpdatePageActions() {
   if (page_action_decorations_.size() != count_before) {
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_COUNT_CHANGED,
-        Source<LocationBar>(this),
+        content::Source<LocationBar>(this),
         NotificationService::NoDetails());
   }
 }
@@ -198,7 +198,7 @@ void LocationBarViewMac::InvalidatePageActions() {
   if (page_action_decorations_.size() != count_before) {
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_COUNT_CHANGED,
-        Source<LocationBar>(this),
+        content::Source<LocationBar>(this),
         NotificationService::NoDetails());
   }
 }
@@ -480,8 +480,8 @@ NSImage* LocationBarViewMac::GetKeywordImage(const string16& keyword) {
 }
 
 void LocationBarViewMac::Observe(int type,
-                                 const NotificationSource& source,
-                                 const NotificationDetails& details) {
+                                 const content::NotificationSource& source,
+                                 const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED: {
       TabContents* contents = GetTabContents();

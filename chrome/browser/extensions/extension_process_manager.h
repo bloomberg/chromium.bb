@@ -12,9 +12,9 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
 #include "content/public/common/view_types.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class Browser;
 class BrowsingInstance;
@@ -28,7 +28,7 @@ class SiteInstance;
 // Manages dynamic state of running Chromium extensions. There is one instance
 // of this class per Profile. OTR Profiles have a separate instance that keeps
 // track of split-mode extensions only.
-class ExtensionProcessManager : public NotificationObserver {
+class ExtensionProcessManager : public content::NotificationObserver {
  public:
   static ExtensionProcessManager* Create(Profile* profile);
   virtual ~ExtensionProcessManager();
@@ -114,12 +114,12 @@ class ExtensionProcessManager : public NotificationObserver {
   // Called on browser shutdown to close our extension hosts.
   void CloseBackgroundHosts();
 
-  // NotificationObserver:
+  // content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // The set of all ExtensionHosts managed by this process manager.
   ExtensionHostSet all_hosts_;

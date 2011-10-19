@@ -592,11 +592,11 @@ int OmniboxViewViews::OnPerformDrop(const views::DropTargetEvent& event) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// OmniboxViewViews, NotificationObserver implementation:
+// OmniboxViewViews, content::NotificationObserver implementation:
 
 void OmniboxViewViews::Observe(int type,
-                               const NotificationSource& source,
-                               const NotificationDetails& details) {
+                               const content::NotificationSource& source,
+                               const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_BROWSER_THEME_CHANGED);
   SetBaseColor();
 }

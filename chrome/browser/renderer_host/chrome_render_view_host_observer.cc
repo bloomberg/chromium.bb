@@ -148,13 +148,13 @@ void ChromeRenderViewHostObserver::OnDomOperationResponse(
   DomOperationNotificationDetails details(json_string, automation_id);
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_DOM_OPERATION_RESPONSE,
-      Source<RenderViewHost>(render_view_host()),
-      Details<DomOperationNotificationDetails>(&details));
+      content::Source<RenderViewHost>(render_view_host()),
+      content::Details<DomOperationNotificationDetails>(&details));
 }
 
 void ChromeRenderViewHostObserver::OnFocusedEditableNodeTouched() {
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_FOCUSED_EDITABLE_NODE_TOUCHED,
-      Source<RenderViewHost>(render_view_host()),
+      content::Source<RenderViewHost>(render_view_host()),
       NotificationService::NoDetails());
 }

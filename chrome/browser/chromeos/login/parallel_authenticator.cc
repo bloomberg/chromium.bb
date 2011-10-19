@@ -222,7 +222,7 @@ void ParallelAuthenticator::OnLoginSuccess(
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_LOGIN_AUTHENTICATION,
       NotificationService::AllSources(),
-      Details<AuthenticationNotificationDetails>(&details));
+      content::Details<AuthenticationNotificationDetails>(&details));
   {
     base::AutoLock for_this_block(success_lock_);
     already_reported_success_ = true;

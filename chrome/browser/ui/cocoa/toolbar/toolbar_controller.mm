@@ -48,9 +48,9 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_observer.h"
+#include "content/public/browser/notification_observer.h"
 #include "content/common/notification_service.h"
+#include "content/public/browser/notification_details.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -99,20 +99,20 @@ namespace ToolbarControllerInternal {
 // A class registered for C++ notifications. This is used to detect changes in
 // preferences and upgrade available notifications. Bridges the notification
 // back to the ToolbarController.
-class NotificationBridge : public NotificationObserver {
+class NotificationBridge : public content::NotificationObserver {
  public:
   explicit NotificationBridge(ToolbarController* controller)
       : controller_(controller) {
     registrar_.Add(this, chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
                    NotificationService::AllSources());
     registrar_.Add(this, chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED,
-                   Source<Profile>([controller browser]->profile()));
+                   content::Source<Profile>([controller browser]->profile()));
   }
 
-  // Overridden from NotificationObserver:
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) {
     switch (type) {
       case chrome::NOTIFICATION_PREF_CHANGED:
         [controller_ prefChanged:Details<std::string>(details).ptr()];
@@ -129,7 +129,7 @@ class NotificationBridge : public NotificationObserver {
  private:
   ToolbarController* controller_;  // weak, owns us
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 };
 
 }  // namespace ToolbarControllerInternal

@@ -28,10 +28,10 @@ class PasswordManagerHandler : public OptionsPageUIHandler,
   // PasswordStore::Observer implementation.
   virtual void OnLoginsChanged();
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
  private:
   // The password store associated with the currently active profile.

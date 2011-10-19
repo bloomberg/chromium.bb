@@ -14,8 +14,8 @@
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "chrome/test/base/signaling_task.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "content/test/test_notification_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -33,8 +33,8 @@ class TokenAvailableTracker : public TestNotificationTracker {
 
  private:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   TokenService::TokenAvailableDetails details_;
 };
@@ -50,8 +50,8 @@ class TokenFailedTracker : public TestNotificationTracker {
 
  private:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   TokenService::TokenRequestFailedDetails details_;
 };

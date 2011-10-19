@@ -101,7 +101,7 @@ void ExtensionOmniboxEventRouter::OnInputEntered(
 
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_OMNIBOX_INPUT_ENTERED,
-      Source<Profile>(profile), NotificationService::NoDetails());
+      content::Source<Profile>(profile), NotificationService::NoDetails());
 }
 
 // static
@@ -142,8 +142,8 @@ bool OmniboxSendSuggestionsFunction::RunImpl() {
 
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_OMNIBOX_SUGGESTIONS_READY,
-      Source<Profile>(profile_),
-      Details<ExtensionOmniboxSuggestions>(&suggestions));
+      content::Source<Profile>(profile_),
+      content::Details<ExtensionOmniboxSuggestions>(&suggestions));
 
   return true;
 }
@@ -173,7 +173,7 @@ bool OmniboxSetDefaultSuggestionFunction::RunImpl() {
 
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_OMNIBOX_DEFAULT_SUGGESTION_CHANGED,
-      Source<Profile>(profile_),
+      content::Source<Profile>(profile_),
       NotificationService::NoDetails());
 
   return true;

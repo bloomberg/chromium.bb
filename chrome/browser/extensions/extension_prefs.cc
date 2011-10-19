@@ -1126,8 +1126,8 @@ void ExtensionPrefs::SetBrowserActionVisibility(const Extension* extension,
                       Value::CreateBooleanValue(visible));
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,
-      Source<ExtensionPrefs>(this),
-      Details<const Extension>(extension));
+      content::Source<ExtensionPrefs>(this),
+      content::Details<const Extension>(extension));
 }
 
 std::string ExtensionPrefs::GetVersionString(const std::string& extension_id) {
@@ -1460,7 +1460,7 @@ void ExtensionPrefs::SetAppLauncherOrder(
 
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_LAUNCHER_REORDERED,
-      Source<ExtensionPrefs>(this),
+      content::Source<ExtensionPrefs>(this),
       NotificationService::NoDetails());
 }
 

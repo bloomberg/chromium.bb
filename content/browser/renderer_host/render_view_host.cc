@@ -32,13 +32,13 @@
 #include "content/common/content_constants.h"
 #include "content/common/desktop_notification_messages.h"
 #include "content/common/drag_messages.h"
-#include "content/common/notification_details.h"
 #include "content/common/notification_service.h"
 #include "content/common/result_codes.h"
 #include "content/common/speech_input_messages.h"
 #include "content/common/swapped_out_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/url_constants.h"
@@ -131,7 +131,7 @@ RenderViewHost::RenderViewHost(SiteInstance* instance,
 
   NotificationService::current()->Notify(
       content::NOTIFICATION_RENDER_VIEW_HOST_CREATED,
-      Source<RenderViewHost>(this),
+      content::Source<RenderViewHost>(this),
       NotificationService::NoDetails());
 }
 
@@ -141,7 +141,7 @@ RenderViewHost::~RenderViewHost() {
 
   NotificationService::current()->Notify(
       content::NOTIFICATION_RENDER_VIEW_HOST_DELETED,
-      Source<RenderViewHost>(this),
+      content::Source<RenderViewHost>(this),
       NotificationService::NoDetails());
 
   delegate()->RenderViewDeleted(this);
@@ -368,7 +368,7 @@ void RenderViewHost::ClosePage() {
     // RenderViewHosts that have been swapped out.
     NotificationService::current()->Notify(
         content::NOTIFICATION_RENDER_VIEW_HOST_WILL_CLOSE_RENDER_VIEW,
-        Source<RenderViewHost>(this),
+        content::Source<RenderViewHost>(this),
         NotificationService::NoDetails());
 
     Send(new ViewMsg_ClosePage(routing_id()));
@@ -1068,7 +1068,7 @@ void RenderViewHost::OnUpdateDragCursor(WebDragOperation current_op) {
 void RenderViewHost::OnTargetDropACK() {
   NotificationService::current()->Notify(
       content::NOTIFICATION_RENDER_VIEW_HOST_DID_RECEIVE_DRAG_TARGET_DROP_ACK,
-      Source<RenderViewHost>(this),
+      content::Source<RenderViewHost>(this),
       NotificationService::NoDetails());
 }
 
@@ -1338,7 +1338,7 @@ void RenderViewHost::OnAccessibilityNotifications(
 
     NotificationService::current()->Notify(
         content::NOTIFICATION_RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED,
-        Source<RenderViewHost>(this),
+        content::Source<RenderViewHost>(this),
         NotificationService::NoDetails());
   }
 
@@ -1355,8 +1355,8 @@ void RenderViewHost::OnScriptEvalResponse(int id, const ListValue& result) {
   std::pair<int, Value*> details(id, result_value);
   NotificationService::current()->Notify(
       content::NOTIFICATION_EXECUTE_JAVASCRIPT_RESULT,
-      Source<RenderViewHost>(this),
-      Details<std::pair<int, Value*> >(&details));
+      content::Source<RenderViewHost>(this),
+      content::Details<std::pair<int, Value*> >(&details));
 }
 
 void RenderViewHost::OnDidZoomURL(double zoom_level,

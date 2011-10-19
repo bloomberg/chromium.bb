@@ -9,8 +9,8 @@
 #include "chrome/browser/sync/api/sync_error.h"
 #include "chrome/browser/sync/glue/data_type_manager.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
-#include "content/common/notification_details.h"
 #include "content/common/notification_service.h"
+#include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -37,14 +37,14 @@ ACTION_P3(InvokeCallbackPointer, callback, datatype, callback_result) {
 ACTION_P3(NotifyFromDataTypeManagerWithResult, dtm, type, result) {
   NotificationService::current()->Notify(
       type,
-      Source<browser_sync::DataTypeManager>(dtm),
-      Details<const browser_sync::DataTypeManager::ConfigureResult>(
+      content::Source<browser_sync::DataTypeManager>(dtm),
+      content::Details<const browser_sync::DataTypeManager::ConfigureResult>(
           result));
 }
 
 ACTION_P2(NotifyFromDataTypeManager, dtm, type) {
   NotificationService::current()->Notify(type,
-      Source<browser_sync::DataTypeManager>(dtm),
+      content::Source<browser_sync::DataTypeManager>(dtm),
       NotificationService::NoDetails());
 }
 

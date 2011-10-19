@@ -14,8 +14,8 @@
 #include "base/synchronization/lock.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "content/browser/webui/web_ui.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class GURL;
 class CloudPrintHtmlDialogDelegateTest;
@@ -101,7 +101,7 @@ class CloudPrintHtmlDialogDelegate;
 // Probably..), and packing up the PDF and job parameters and sending
 // them to the cloud.
 class CloudPrintFlowHandler : public WebUIMessageHandler,
-                              public NotificationObserver {
+                              public content::NotificationObserver {
  public:
   CloudPrintFlowHandler(const FilePath& path_to_file,
                         const string16& print_job_title,
@@ -112,10 +112,10 @@ class CloudPrintFlowHandler : public WebUIMessageHandler,
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages();
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Callbacks from the page.
   void HandleShowDebugger(const base::ListValue* args);
@@ -136,7 +136,7 @@ class CloudPrintFlowHandler : public WebUIMessageHandler,
   void CancelAnyRunningTask();
 
   CloudPrintHtmlDialogDelegate* dialog_delegate_;
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
   FilePath path_to_file_;
   string16 print_job_title_;
   string16 print_ticket_;

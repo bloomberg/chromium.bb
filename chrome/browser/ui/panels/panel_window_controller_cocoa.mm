@@ -444,7 +444,7 @@ enum {
 
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
-      Source<Panel>(windowShim_->panel()),
+      content::Source<Panel>(windowShim_->panel()),
       NotificationService::NoDetails());
 }
 
@@ -514,7 +514,7 @@ enum {
 
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_PANEL_CHANGED_ACTIVE_STATUS,
-      Source<Panel>(windowShim_->panel()),
+      content::Source<Panel>(windowShim_->panel()),
       NotificationService::NoDetails());
 }
 
@@ -536,7 +536,7 @@ enum {
 
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_PANEL_CHANGED_ACTIVE_STATUS,
-      Source<Panel>(windowShim_->panel()),
+      content::Source<Panel>(windowShim_->panel()),
       NotificationService::NoDetails());
 }
 

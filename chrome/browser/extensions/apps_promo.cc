@@ -390,7 +390,7 @@ void AppsPromoLogoFetcher::SavePromo() {
 
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_WEB_STORE_PROMO_LOADED,
-      Source<Profile>(profile_),
+      content::Source<Profile>(profile_),
       NotificationService::NoDetails());
 }
 

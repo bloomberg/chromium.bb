@@ -10,8 +10,8 @@
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/hover_tab_selector.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class BaseTab;
 class BaseTabStrip;
@@ -24,7 +24,7 @@ struct TabRendererData;
 // TabContentsWrappers in a TabStripModel.
 class BrowserTabStripController : public TabStripController,
                                   public TabStripModelObserver,
-                                  public NotificationObserver {
+                                  public content::NotificationObserver {
  public:
   BrowserTabStripController(Browser* browser, TabStripModel* model);
   virtual ~BrowserTabStripController();
@@ -90,10 +90,10 @@ class BrowserTabStripController : public TabStripController,
   virtual void TabBlockedStateChanged(TabContentsWrapper* contents,
                                       int model_index) OVERRIDE;
 
-  // NotificationObserver implementation:
+  // content::NotificationObserver implementation:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
  protected:
   // The context in which SetTabRendererDataFromModel is being called.
@@ -137,7 +137,7 @@ class BrowserTabStripController : public TabStripController,
   // If non-NULL it means we're showing a menu for the tab.
   scoped_ptr<TabContextMenuContents> context_menu_contents_;
 
-  NotificationRegistrar notification_registrar_;
+  content::NotificationRegistrar notification_registrar_;
 
   // Helper for performing tab selection as a result of dragging over a tab.
   HoverTabSelector hover_tab_selector_;

@@ -6,25 +6,29 @@
 #define CHROME_COMMON_NATIVE_WINDOW_NOTIFICATION_SOURCE_H_
 #pragma once
 
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_source.h"
 #include "ui/gfx/native_widget_types.h"
+
+namespace content {
 
 // Specialization of the Source class for native windows.  On Windows, these are
 // HWNDs rather than pointers, and since the Source class expects a pointer
 // type, this is necessary.  On Mac/Linux, these are pointers, so this is
 // unnecessary but harmless.
 template<>
-class Source<gfx::NativeWindow> : public NotificationSource {
+class Source<gfx::NativeWindow> : public content::NotificationSource {
  public:
-  explicit Source(gfx::NativeWindow wnd) : NotificationSource(wnd) {}
+  explicit Source(gfx::NativeWindow wnd) : content::NotificationSource(wnd) {}
 
-  explicit Source(const NotificationSource& other)
-      : NotificationSource(other) {}
+  explicit Source(const content::NotificationSource& other)
+      : content::NotificationSource(other) {}
 
   gfx::NativeWindow operator->() const { return ptr(); }
   gfx::NativeWindow ptr() const {
     return static_cast<gfx::NativeWindow>(const_cast<void*>(ptr_));
   }
 };
+
+}
 
 #endif  // CHROME_COMMON_NATIVE_WINDOW_NOTIFICATION_SOURCE_H_

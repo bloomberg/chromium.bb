@@ -20,7 +20,7 @@ namespace {
 class RegistrationTask : public Task {
  public:
   RegistrationTask(ExtensionsActivityMonitor* monitor,
-                   NotificationRegistrar* registrar)
+                   content::NotificationRegistrar* registrar)
       : monitor_(monitor), registrar_(registrar) {}
   virtual ~RegistrationTask() {}
 
@@ -39,7 +39,7 @@ class RegistrationTask : public Task {
 
  private:
   ExtensionsActivityMonitor* monitor_;
-  NotificationRegistrar* registrar_;
+  content::NotificationRegistrar* registrar_;
   DISALLOW_COPY_AND_ASSIGN(RegistrationTask);
 };
 }  // namespace
@@ -80,13 +80,15 @@ void ExtensionsActivityMonitor::PutRecords(const Records& records) {
   }
 }
 
-void ExtensionsActivityMonitor::Observe(int type,
-                                        const NotificationSource& source,
-                                        const NotificationDetails& details) {
+void ExtensionsActivityMonitor::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   base::AutoLock lock(records_lock_);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  const Extension* extension = Source<const Extension>(source).ptr();
-  const BookmarksFunction* f = Details<const BookmarksFunction>(details).ptr();
+  const Extension* extension = content::Source<const Extension>(source).ptr();
+  const BookmarksFunction* f =
+      content::Details<const BookmarksFunction>(details).ptr();
   if (f->name() == "bookmarks.update" ||
       f->name() == "bookmarks.move" ||
       f->name() == "bookmarks.create" ||

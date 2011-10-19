@@ -704,7 +704,7 @@ ExtensionService::~ExtensionService() {
 
 void ExtensionService::InitEventRoutersAfterImport() {
   registrar_.Add(this, chrome::NOTIFICATION_IMPORT_FINISHED,
-                 Source<Profile>(profile_));
+                 content::Source<Profile>(profile_));
 }
 
 void ExtensionService::InitEventRouters() {
@@ -893,8 +893,8 @@ bool ExtensionService::UninstallExtension(
       !external_uninstall) {
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTENSION_UNINSTALL_NOT_ALLOWED,
-        Source<Profile>(profile_),
-        Details<const Extension>(extension));
+        content::Source<Profile>(profile_),
+        content::Details<const Extension>(extension));
     if (error != NULL) {
       *error = errors::kCannotUninstallManagedExtension;
     }
@@ -961,8 +961,8 @@ bool ExtensionService::UninstallExtension(
   // Notify interested parties that we've uninstalled this extension.
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
-      Source<Profile>(profile_),
-      Details<const std::string>(&extension_id));
+      content::Source<Profile>(profile_),
+      content::Details<const std::string>(&extension_id));
 
   if (sync_bundle && sync_bundle->HasExtensionId(extension_id)) {
     sync_bundle->sync_processor->ProcessSyncChanges(
@@ -1475,8 +1475,8 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
   // extension.
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_LOADED,
-      Source<Profile>(profile_),
-      Details<const Extension>(extension));
+      content::Source<Profile>(profile_),
+      content::Details<const Extension>(extension));
 
   // Tell renderers about the new extension.
   for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
@@ -1589,8 +1589,8 @@ void ExtensionService::NotifyExtensionUnloaded(
   UnloadedExtensionInfo details(extension, reason);
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_UNLOADED,
-      Source<Profile>(profile_),
-      Details<UnloadedExtensionInfo>(&details));
+      content::Source<Profile>(profile_),
+      content::Details<UnloadedExtensionInfo>(&details));
 
   for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance()) {
@@ -2276,8 +2276,8 @@ void ExtensionService::UnloadExtension(
     disabled_extensions_.erase(iter);
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTENSION_UNLOADED,
-        Source<Profile>(profile_),
-        Details<UnloadedExtensionInfo>(&details));
+        content::Source<Profile>(profile_),
+        content::Details<UnloadedExtensionInfo>(&details));
     // Make sure the profile cleans up its RequestContexts when an already
     // disabled extension is unloaded (since they are also tracking the disabled
     // extensions).
@@ -2348,7 +2348,7 @@ void ExtensionService::OnLoadedInstalledExtensions() {
   ready_ = true;
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSIONS_READY,
-      Source<Profile>(profile_),
+      content::Source<Profile>(profile_),
       NotificationService::NoDetails());
 }
 
@@ -2389,8 +2389,8 @@ void ExtensionService::AddExtension(const Extension* extension) {
     // disabled.
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED,
-        Source<Profile>(profile_),
-        Details<const Extension>(extension));
+        content::Source<Profile>(profile_),
+        content::Details<const Extension>(extension));
     SyncExtensionChangeIfNeeded(*extension);
     return;
   }
@@ -2557,8 +2557,8 @@ void ExtensionService::OnExtensionInstalled(
 
       NotificationService::current()->Notify(
           chrome::NOTIFICATION_EXTENSION_INSTALL_NOT_ALLOWED,
-          Source<Profile>(profile_),
-          Details<const Extension>(extension));
+          content::Source<Profile>(profile_),
+          content::Details<const Extension>(extension));
 
       // Delete the extension directory since we're not going to
       // load it.
@@ -2608,8 +2608,8 @@ void ExtensionService::OnExtensionInstalled(
 
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_INSTALLED,
-      Source<Profile>(profile_),
-      Details<const Extension>(extension));
+      content::Source<Profile>(profile_),
+      content::Details<const Extension>(extension));
 
   // Transfer ownership of |extension| to AddExtension.
   AddExtension(scoped_extension);
@@ -2782,8 +2782,8 @@ void ExtensionService::ReportExtensionLoadError(
     bool be_noisy) {
   NotificationService* service = NotificationService::current();
   service->Notify(chrome::NOTIFICATION_EXTENSION_LOAD_ERROR,
-                  Source<Profile>(profile_),
-                  Details<const std::string>(&error));
+                  content::Source<Profile>(profile_),
+                  content::Details<const std::string>(&error));
 
   std::string path_str = UTF16ToUTF8(extension_path.LossyDisplayName());
   std::string message = base::StringPrintf(
@@ -2805,14 +2805,16 @@ void ExtensionService::DidCreateRenderViewForBackgroundPage(
 }
 
 void ExtensionService::Observe(int type,
-                               const NotificationSource& source,
-                               const NotificationDetails& details) {
+                               const content::NotificationSource& source,
+                               const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED: {
-      if (profile_ != Source<Profile>(source).ptr()->GetOriginalProfile())
+      if (profile_ !=
+          content::Source<Profile>(source).ptr()->GetOriginalProfile()) {
         break;
+      }
 
-      ExtensionHost* host = Details<ExtensionHost>(details).ptr();
+      ExtensionHost* host = content::Details<ExtensionHost>(details).ptr();
 
       // Mark the extension as terminated and Unload it. We want it to
       // be in a consistent state: either fully working or not loaded
@@ -2828,7 +2830,8 @@ void ExtensionService::Observe(int type,
       break;
     }
     case content::NOTIFICATION_RENDERER_PROCESS_CREATED: {
-      RenderProcessHost* process = Source<RenderProcessHost>(source).ptr();
+      RenderProcessHost* process =
+          content::Source<RenderProcessHost>(source).ptr();
       Profile* host_profile =
           Profile::FromBrowserContext(process->browser_context());
       if (!profile_->IsSameProfile(host_profile->GetOriginalProfile()))
@@ -2852,7 +2855,8 @@ void ExtensionService::Observe(int type,
       break;
     }
     case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED: {
-      RenderProcessHost* process = Source<RenderProcessHost>(source).ptr();
+      RenderProcessHost* process =
+          content::Source<RenderProcessHost>(source).ptr();
       Profile* host_profile =
           Profile::FromBrowserContext(process->browser_context());
       if (!profile_->IsSameProfile(host_profile->GetOriginalProfile()))
@@ -2862,7 +2866,7 @@ void ExtensionService::Observe(int type,
       break;
     }
     case chrome::NOTIFICATION_PREF_CHANGED: {
-      std::string* pref_name = Details<std::string>(details).ptr();
+      std::string* pref_name = content::Details<std::string>(details).ptr();
       if (*pref_name == prefs::kExtensionInstallAllowList ||
           *pref_name == prefs::kExtensionInstallDenyList) {
         CheckAdminBlacklist();
@@ -2873,7 +2877,7 @@ void ExtensionService::Observe(int type,
     }
     case chrome::NOTIFICATION_IMPORT_FINISHED: {
       registrar_.Remove(this, chrome::NOTIFICATION_IMPORT_FINISHED,
-                        Source<Profile>(profile_));
+                        content::Source<Profile>(profile_));
       InitEventRouters();
       break;
     }
@@ -2913,7 +2917,7 @@ void ExtensionService::SetBackgroundPageReady(const Extension* extension) {
   extension_runtime_data_[extension->id()].background_page_ready = true;
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY,
-      Source<const Extension>(extension),
+      content::Source<const Extension>(extension),
       NotificationService::NoDetails());
 }
 

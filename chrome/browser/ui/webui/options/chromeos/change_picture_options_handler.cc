@@ -336,9 +336,10 @@ void ChangePictureOptionsHandler::OnCameraPresenceCheckDone() {
                    CameraDetector::kCameraPresent);
 }
 
-void ChangePictureOptionsHandler::Observe(int type,
-                                          const NotificationSource& source,
-                                          const NotificationDetails& details) {
+void ChangePictureOptionsHandler::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   OptionsPageUIHandler::Observe(type, source, details);
   // User profile image is currently set and it has been updated by UserManager.
   if (type == chrome::NOTIFICATION_PROFILE_IMAGE_UPDATED)

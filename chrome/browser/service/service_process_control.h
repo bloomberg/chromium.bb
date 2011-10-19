@@ -17,8 +17,8 @@
 #include "base/memory/singleton.h"
 #include "base/process.h"
 #include "base/task.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ipc/ipc_channel_proxy.h"
 
 class CommandLine;
@@ -39,7 +39,7 @@ struct CloudPrintProxyInfo;
 // talks to the IPC channel on the IO thread.
 class ServiceProcessControl : public IPC::Channel::Sender,
                               public IPC::Channel::Listener,
-                              public NotificationObserver {
+                              public content::NotificationObserver {
  public:
   typedef IDMap<ServiceProcessControl>::iterator iterator;
   typedef std::queue<IPC::Message> MessageQueue;
@@ -75,10 +75,10 @@ class ServiceProcessControl : public IPC::Channel::Sender,
   // IPC::Channel::Sender implementation
   virtual bool Send(IPC::Message* message);
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Message handlers
   void OnCloudPrintProxyInfo(
@@ -161,7 +161,7 @@ class ServiceProcessControl : public IPC::Channel::Sender,
   // the cloud print proxy.
   scoped_ptr<CloudPrintProxyInfoHandler> cloud_print_info_callback_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 };
 
 #endif  // CHROME_BROWSER_SERVICE_SERVICE_PROCESS_CONTROL_H_

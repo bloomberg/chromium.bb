@@ -787,7 +787,7 @@ void EnumerateModulesModel::AcknowledgeConflictNotification() {
     conflict_notification_acknowledged_ = true;
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_MODULE_INCOMPATIBILITY_BADGE_CHANGE,
-        Source<EnumerateModulesModel>(this),
+        content::Source<EnumerateModulesModel>(this),
         NotificationService::NoDetails());
   }
 }
@@ -942,7 +942,7 @@ void EnumerateModulesModel::DoneScanning() {
 
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_MODULE_LIST_ENUMERATED,
-      Source<EnumerateModulesModel>(this),
+      content::Source<EnumerateModulesModel>(this),
       NotificationService::NoDetails());
 
   // Command line flag must be enabled for the notification to get sent out.
@@ -954,7 +954,7 @@ void EnumerateModulesModel::DoneScanning() {
 
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_MODULE_INCOMPATIBILITY_BADGE_CHANGE,
-      Source<EnumerateModulesModel>(this),
+      content::Source<EnumerateModulesModel>(this),
       NotificationService::NoDetails());
 }
 

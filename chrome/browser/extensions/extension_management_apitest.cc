@@ -99,7 +99,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, LaunchPanelApp) {
   // Close the app panel.
   ui_test_utils::WindowedNotificationObserver signal(
       chrome::NOTIFICATION_BROWSER_CLOSED,
-      Source<Browser>(app_browser));
+      content::Source<Browser>(app_browser));
 
   app_browser->CloseWindow();
   signal.Wait();

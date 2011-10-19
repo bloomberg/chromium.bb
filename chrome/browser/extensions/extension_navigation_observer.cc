@@ -17,15 +17,17 @@ ExtensionNavigationObserver::ExtensionNavigationObserver(Profile* profile)
 
 ExtensionNavigationObserver::~ExtensionNavigationObserver() {}
 
-void ExtensionNavigationObserver::Observe(int type,
-                                          const NotificationSource& source,
-                                          const NotificationDetails& details) {
+void ExtensionNavigationObserver::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (type != content::NOTIFICATION_NAV_ENTRY_COMMITTED) {
     NOTREACHED();
     return;
   }
 
-  NavigationController* controller = Source<NavigationController>(source).ptr();
+  NavigationController* controller =
+      content::Source<NavigationController>(source).ptr();
   if (!profile_->IsSameProfile(
           Profile::FromBrowserContext(controller->browser_context())))
     return;

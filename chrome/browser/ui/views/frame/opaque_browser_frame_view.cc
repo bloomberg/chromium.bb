@@ -490,9 +490,10 @@ SkBitmap OpaqueBrowserFrameView::GetFaviconForTabIconView() {
 ///////////////////////////////////////////////////////////////////////////////
 // OpaqueBrowserFrameView, protected:
 
-void OpaqueBrowserFrameView::Observe(int type,
-                                     const NotificationSource& source,
-                                     const NotificationDetails& details) {
+void OpaqueBrowserFrameView::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED:
       UpdateAvatarInfo();

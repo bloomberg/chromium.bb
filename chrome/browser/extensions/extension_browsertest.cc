@@ -26,7 +26,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/common/notification_service.h"
 
 ExtensionBrowserTest::ExtensionBrowserTest()
@@ -63,7 +63,7 @@ const Extension* ExtensionBrowserTest::LoadExtensionWithOptions(
     const FilePath& path, bool incognito_enabled, bool fileaccess_enabled) {
   ExtensionService* service = browser()->profile()->GetExtensionService();
   {
-    NotificationRegistrar registrar;
+    content::NotificationRegistrar registrar;
     registrar.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                   NotificationService::AllSources());
     service->LoadExtension(path, false);
@@ -99,7 +99,7 @@ const Extension* ExtensionBrowserTest::LoadExtensionWithOptions(
   {
     ui_test_utils::WindowedNotificationObserver load_signal(
         chrome::NOTIFICATION_EXTENSION_LOADED,
-        Source<Profile>(browser()->profile()));
+        content::Source<Profile>(browser()->profile()));
     CHECK(!service->IsIncognitoEnabled(extension_id));
 
     if (incognito_enabled) {
@@ -113,7 +113,7 @@ const Extension* ExtensionBrowserTest::LoadExtensionWithOptions(
   {
     ui_test_utils::WindowedNotificationObserver load_signal(
         chrome::NOTIFICATION_EXTENSION_LOADED,
-        Source<Profile>(browser()->profile()));
+        content::Source<Profile>(browser()->profile()));
     CHECK(service->AllowFileAccess(extension));
 
     if (!fileaccess_enabled) {
@@ -240,7 +240,7 @@ bool ExtensionBrowserTest::InstallOrUpdateExtension(const std::string& id,
   size_t num_before = service->extensions()->size();
 
   {
-    NotificationRegistrar registrar;
+    content::NotificationRegistrar registrar;
     registrar.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                   NotificationService::AllSources());
     registrar.Add(this, chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED,
@@ -352,7 +352,7 @@ bool ExtensionBrowserTest::WaitForPageActionVisibilityChangeTo(int count) {
 
 bool ExtensionBrowserTest::WaitForExtensionHostsToLoad() {
   // Wait for all the extension hosts that exist to finish loading.
-  NotificationRegistrar registrar;
+  content::NotificationRegistrar registrar;
   registrar.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
                 NotificationService::AllSources());
 
@@ -410,12 +410,14 @@ bool ExtensionBrowserTest::WaitForExtensionCrash(
   return (service->GetExtensionById(extension_id, true) == NULL);
 }
 
-void ExtensionBrowserTest::Observe(int type,
-                                   const NotificationSource& source,
-                                   const NotificationDetails& details) {
+void ExtensionBrowserTest::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_LOADED:
-      last_loaded_extension_id_ = Details<const Extension>(details).ptr()->id();
+      last_loaded_extension_id_ =
+          content::Details<const Extension>(details).ptr()->id();
       VLOG(1) << "Got EXTENSION_LOADED notification.";
       MessageLoopForUI::current()->Quit();
       break;

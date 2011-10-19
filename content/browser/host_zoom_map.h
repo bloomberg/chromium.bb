@@ -18,8 +18,8 @@
 #include "base/synchronization/lock.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/content_export.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 namespace base {
 class DictionaryValue;
@@ -30,7 +30,7 @@ class GURL;
 // HostZoomMap needs to be deleted on the UI thread because it listens
 // to notifications on there (and holds a NotificationRegistrar).
 class CONTENT_EXPORT HostZoomMap
-    : public NotificationObserver,
+    : public content::NotificationObserver,
       public base::RefCountedThreadSafe<HostZoomMap,
                                         BrowserThread::DeleteOnUIThread> {
  public:
@@ -70,10 +70,10 @@ class CONTENT_EXPORT HostZoomMap
                              int render_view_id,
                              double level);
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   double default_zoom_level() const { return default_zoom_level_; }
   void set_default_zoom_level(double level) { default_zoom_level_ = level; }
@@ -112,7 +112,7 @@ class CONTENT_EXPORT HostZoomMap
   // |temporary_zoom_levels_| to guarantee thread safety.
   mutable base::Lock lock_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(HostZoomMap);
 };

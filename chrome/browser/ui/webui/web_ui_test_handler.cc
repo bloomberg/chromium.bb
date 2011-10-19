@@ -12,8 +12,8 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
 
 WebUITestHandler::WebUITestHandler()
@@ -41,10 +41,10 @@ bool WebUITestHandler::RunJavaScriptTestWithResult(const string16& js_text) {
   test_succeeded_ = false;
   run_test_succeeded_ = false;
   RenderViewHost* rvh = web_ui_->tab_contents()->render_view_host();
-  NotificationRegistrar notification_registrar;
+  content::NotificationRegistrar notification_registrar;
   notification_registrar.Add(
       this, content::NOTIFICATION_EXECUTE_JAVASCRIPT_RESULT,
-      Source<RenderViewHost>(rvh));
+      content::Source<RenderViewHost>(rvh));
   rvh->ExecuteJavascriptInWebFrameNotifyResult(string16(), js_text);
   return WaitForResult();
 }
@@ -75,8 +75,8 @@ void WebUITestHandler::HandleTestResult(const ListValue* test_result) {
 }
 
 void WebUITestHandler::Observe(int type,
-                               const NotificationSource& source,
-                               const NotificationDetails& details) {
+                               const content::NotificationSource& source,
+                               const content::NotificationDetails& details) {
   // Quit the message loop if |is_waiting_| so waiting process can get result or
   // error. To ensure this gets done, do this before ASSERT* calls.
   if (is_waiting_)
@@ -90,7 +90,7 @@ void WebUITestHandler::Observe(int type,
   run_test_done_ = true;
   run_test_succeeded_ = false;
 
-  Value* value = Details<std::pair<int, Value*> >(details)->second;
+  Value* value = content::Details<std::pair<int, Value*> >(details)->second;
   ASSERT_TRUE(value->GetAsBoolean(&run_test_succeeded_));
 }
 

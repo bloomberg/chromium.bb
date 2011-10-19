@@ -182,7 +182,7 @@ void WebUIBrowserTest::BrowsePreload(const GURL& browse_to,
   preload_test_name_ = preload_test_name;
 
   TestNavigationObserver navigation_observer(
-      Source<NavigationController>(
+      content::Source<NavigationController>(
           &browser()->GetSelectedTabContentsWrapper()->controller()),
       this, 1);
   browser::NavigateParams params(

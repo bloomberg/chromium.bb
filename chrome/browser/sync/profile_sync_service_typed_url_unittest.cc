@@ -443,8 +443,8 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeAdd) {
   details.changed_urls.push_back(added_entry);
   scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&history_thread_));
   notifier->Notify(chrome::NOTIFICATION_HISTORY_TYPED_URLS_MODIFIED,
-                   Source<Profile>(&profile_),
-                   Details<history::URLsModifiedDetails>(&details));
+                   content::Source<Profile>(&profile_),
+                   content::Details<history::URLsModifiedDetails>(&details));
 
   std::vector<history::URLRow> new_sync_entries;
   GetTypedUrlsFromSyncDB(&new_sync_entries);
@@ -480,8 +480,8 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeUpdate) {
   details.changed_urls.push_back(updated_entry);
   scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&history_thread_));
   notifier->Notify(chrome::NOTIFICATION_HISTORY_TYPED_URLS_MODIFIED,
-                   Source<Profile>(&profile_),
-                   Details<history::URLsModifiedDetails>(&details));
+                   content::Source<Profile>(&profile_),
+                   content::Details<history::URLsModifiedDetails>(&details));
 
   std::vector<history::URLRow> new_sync_entries;
   GetTypedUrlsFromSyncDB(&new_sync_entries);
@@ -508,8 +508,8 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeAddFromVisit) {
   details.transition = content::PAGE_TRANSITION_TYPED;
   scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&history_thread_));
   notifier->Notify(chrome::NOTIFICATION_HISTORY_URL_VISITED,
-                   Source<Profile>(&profile_),
-                   Details<history::URLVisitedDetails>(&details));
+                   content::Source<Profile>(&profile_),
+                   content::Details<history::URLVisitedDetails>(&details));
 
   std::vector<history::URLRow> new_sync_entries;
   GetTypedUrlsFromSyncDB(&new_sync_entries);
@@ -546,8 +546,8 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeUpdateFromVisit) {
   details.transition = content::PAGE_TRANSITION_TYPED;
   scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&history_thread_));
   notifier->Notify(chrome::NOTIFICATION_HISTORY_URL_VISITED,
-                   Source<Profile>(&profile_),
-                   Details<history::URLVisitedDetails>(&details));
+                   content::Source<Profile>(&profile_),
+                   content::Details<history::URLVisitedDetails>(&details));
 
   std::vector<history::URLRow> new_sync_entries;
   GetTypedUrlsFromSyncDB(&new_sync_entries);
@@ -586,8 +586,8 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserIgnoreChangeUpdateFromVisit) {
   details.transition = content::PAGE_TRANSITION_RELOAD;
   scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&history_thread_));
   notifier->Notify(chrome::NOTIFICATION_HISTORY_URL_VISITED,
-                   Source<Profile>(&profile_),
-                   Details<history::URLVisitedDetails>(&details));
+                   content::Source<Profile>(&profile_),
+                   content::Details<history::URLVisitedDetails>(&details));
 
   GetTypedUrlsFromSyncDB(&new_sync_entries);
 
@@ -603,8 +603,8 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserIgnoreChangeUpdateFromVisit) {
   details.row = twelve_visits;
   details.transition = content::PAGE_TRANSITION_TYPED;
   notifier->Notify(chrome::NOTIFICATION_HISTORY_URL_VISITED,
-                   Source<Profile>(&profile_),
-                   Details<history::URLVisitedDetails>(&details));
+                   content::Source<Profile>(&profile_),
+                   content::Details<history::URLVisitedDetails>(&details));
   GetTypedUrlsFromSyncDB(&new_sync_entries);
   // Should be no changes to the sync DB from this notification.
   ASSERT_EQ(1U, new_sync_entries.size());
@@ -618,8 +618,8 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserIgnoreChangeUpdateFromVisit) {
   details.row = twenty_visits;
   details.transition = content::PAGE_TRANSITION_TYPED;
   notifier->Notify(chrome::NOTIFICATION_HISTORY_URL_VISITED,
-                   Source<Profile>(&profile_),
-                   Details<history::URLVisitedDetails>(&details));
+                   content::Source<Profile>(&profile_),
+                   content::Details<history::URLVisitedDetails>(&details));
   GetTypedUrlsFromSyncDB(&new_sync_entries);
   ASSERT_EQ(1U, new_sync_entries.size());
   EXPECT_TRUE(URLsEqual(twenty_visits, new_sync_entries[0]));
@@ -652,8 +652,8 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeRemove) {
   changes.urls.insert(GURL("http://mine.com"));
   scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&history_thread_));
   notifier->Notify(chrome::NOTIFICATION_HISTORY_URLS_DELETED,
-                   Source<Profile>(&profile_),
-                   Details<history::URLsDeletedDetails>(&changes));
+                   content::Source<Profile>(&profile_),
+                   content::Details<history::URLsDeletedDetails>(&changes));
 
   std::vector<history::URLRow> new_sync_entries;
   GetTypedUrlsFromSyncDB(&new_sync_entries);
@@ -687,8 +687,8 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeRemoveAll) {
   changes.all_history = true;
   scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&history_thread_));
   notifier->Notify(chrome::NOTIFICATION_HISTORY_URLS_DELETED,
-                   Source<Profile>(&profile_),
-                   Details<history::URLsDeletedDetails>(&changes));
+                   content::Source<Profile>(&profile_),
+                   content::Details<history::URLsDeletedDetails>(&changes));
 
   std::vector<history::URLRow> new_sync_entries;
   GetTypedUrlsFromSyncDB(&new_sync_entries);

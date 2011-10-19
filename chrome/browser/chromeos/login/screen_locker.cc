@@ -53,7 +53,7 @@ namespace {
 
 // Observer to start ScreenLocker when the screen lock
 class ScreenLockObserver : public chromeos::ScreenLockLibrary::Observer,
-                           public NotificationObserver {
+                           public content::NotificationObserver {
  public:
   ScreenLockObserver() {
     registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_CHANGED,
@@ -62,8 +62,8 @@ class ScreenLockObserver : public chromeos::ScreenLockLibrary::Observer,
 
   // NotificationObserver overrides:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE {
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE {
     if (type == chrome::NOTIFICATION_LOGIN_USER_CHANGED) {
       // Register Screen Lock after login screen to make sure
       // we don't show the screen lock on top of the login screen by accident.
@@ -164,7 +164,7 @@ class ScreenLockObserver : public chromeos::ScreenLockLibrary::Observer,
     }
   }
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
   std::string saved_previous_input_method_id_;
   std::string saved_current_input_method_id_;
   std::vector<std::string> saved_active_input_method_list_;
@@ -423,8 +423,8 @@ ScreenLocker::~ScreenLocker() {
   bool state = false;
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
-      Source<ScreenLocker>(this),
-      Details<bool>(&state));
+      content::Source<ScreenLocker>(this),
+      content::Details<bool>(&state));
   if (CrosLibrary::Get()->EnsureLoaded())
     CrosLibrary::Get()->GetScreenLockLibrary()->NotifyScreenUnlockCompleted();
 }
@@ -443,7 +443,7 @@ void ScreenLocker::ScreenLockReady() {
   bool state = true;
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
-      Source<ScreenLocker>(this),
+      content::Source<ScreenLocker>(this),
       Details<bool>(&state));
   if (CrosLibrary::Get()->EnsureLoaded())
     CrosLibrary::Get()->GetScreenLockLibrary()->NotifyScreenLockCompleted();

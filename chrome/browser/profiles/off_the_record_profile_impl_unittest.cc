@@ -18,7 +18,7 @@
 namespace {
 
 class TestingProfileWithHostZoomMap : public TestingProfile,
-                                      public NotificationObserver {
+                                      public content::NotificationObserver {
  public:
   TestingProfileWithHostZoomMap() {}
 
@@ -29,7 +29,7 @@ class TestingProfileWithHostZoomMap : public TestingProfile,
       host_zoom_map_ = new HostZoomMap();
 
       registrar_.Add(this, content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
-                     Source<HostZoomMap>(host_zoom_map_));
+                     content::Source<HostZoomMap>(host_zoom_map_));
     }
     return host_zoom_map_.get();
   }
@@ -45,9 +45,10 @@ class TestingProfileWithHostZoomMap : public TestingProfile,
   }
 
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE {
-    const std::string& host = *(Details<const std::string>(details).ptr());
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE {
+    const std::string& host =
+        *(content::Details<const std::string>(details).ptr());
     if (type == content::NOTIFICATION_ZOOM_LEVEL_CHANGED) {
       if (!host.empty()) {
         double level = host_zoom_map_->GetZoomLevel(host);
@@ -64,7 +65,7 @@ class TestingProfileWithHostZoomMap : public TestingProfile,
   }
 
  private:
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
   scoped_refptr<HostZoomMap> host_zoom_map_;
   scoped_ptr<Profile> off_the_record_profile_;
   scoped_ptr<SSLConfigServiceManager> ssl_config_service_manager_;

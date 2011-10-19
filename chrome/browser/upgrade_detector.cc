@@ -78,7 +78,7 @@ void UpgradeDetector::NotifyUpgradeRecommended() {
 
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
-      Source<UpgradeDetector>(this),
+      content::Source<UpgradeDetector>(this),
       NotificationService::NoDetails());
 
   if (is_critical_upgrade_) {
@@ -113,7 +113,7 @@ void UpgradeDetector::IdleCallback(IdleState state) {
       idle_check_timer_.Stop();
       NotificationService::current()->Notify(
           chrome::NOTIFICATION_CRITICAL_UPGRADE_INSTALLED,
-          Source<UpgradeDetector>(this),
+          content::Source<UpgradeDetector>(this),
           NotificationService::NoDetails());
       break;
     case IDLE_STATE_ACTIVE:

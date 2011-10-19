@@ -62,6 +62,6 @@ GlobalError* GlobalErrorService::GetFirstGlobalErrorWithBubbleView() const {
 void GlobalErrorService::NotifyErrorsChanged(GlobalError* error) {
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED,
-      Source<Profile>(profile_),
-      Details<GlobalError>(error));
+      content::Source<Profile>(profile_),
+      content::Details<GlobalError>(error));
 }

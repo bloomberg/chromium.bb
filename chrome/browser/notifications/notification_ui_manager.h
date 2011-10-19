@@ -15,8 +15,8 @@
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/prefs/pref_member.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class Notification;
 class PrefService;
@@ -28,7 +28,7 @@ class SiteInstance;
 // It maintains a queue of pending notifications when space becomes constrained.
 class NotificationUIManager
     : public BalloonCollection::BalloonSpaceChangeListener,
-      public NotificationObserver {
+      public content::NotificationObserver {
  public:
   virtual ~NotificationUIManager();
 
@@ -87,10 +87,10 @@ class NotificationUIManager
  private:
   explicit NotificationUIManager(PrefService* local_state);
 
-  // NotificationObserver override.
+  // content::NotificationObserver override.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Attempts to display notifications from the show_queue if the user
   // is active.
@@ -117,7 +117,7 @@ class NotificationUIManager
   NotificationDeque show_queue_;
 
   // Registrar for the other kind of notifications (event signaling).
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // Prefs listener for the position preference.
   IntegerPrefMember position_pref_;

@@ -25,17 +25,18 @@ PluginDataRemoverHelper::~PluginDataRemoverHelper() {
 
 void PluginDataRemoverHelper::Init(const char* pref_name,
                                    Profile* profile,
-                                   NotificationObserver* observer) {
+                                   content::NotificationObserver* observer) {
   pref_.Init(pref_name, profile->GetPrefs(), observer);
   profile_ = profile;
   registrar_.Add(this, chrome::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED,
-                 Source<Profile>(profile));
+                 content::Source<Profile>(profile));
   StartUpdate();
 }
 
-void PluginDataRemoverHelper::Observe(int type,
-                                      const NotificationSource& source,
-                                      const NotificationDetails& details) {
+void PluginDataRemoverHelper::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED) {
     StartUpdate();
   } else {

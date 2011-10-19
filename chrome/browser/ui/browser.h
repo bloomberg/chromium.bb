@@ -44,8 +44,8 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/browser/tab_contents/page_navigator.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
-#include "content/common/notification_registrar.h"
 #include "content/common/page_zoom.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/common/page_transition_types.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/rect.h"
@@ -80,7 +80,7 @@ class Browser : public TabHandlerDelegate,
                 public BookmarkTabHelperDelegate,
                 public PageNavigator,
                 public CommandUpdater::CommandUpdaterDelegate,
-                public NotificationObserver,
+                public content::NotificationObserver,
                 public SelectFileDialog::Listener,
                 public TabRestoreServiceObserver,
                 public ProfileSyncServiceObserver,
@@ -1038,10 +1038,10 @@ class Browser : public TabHandlerDelegate,
   // Overridden from SelectFileDialog::Listener:
   virtual void FileSelected(const FilePath& path, int index, void* params);
 
-  // Overridden from NotificationObserver:
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Overridden from ProfileSyncServiceObserver:
   virtual void OnStateChanged();
@@ -1284,7 +1284,7 @@ class Browser : public TabHandlerDelegate,
 
   // Data members /////////////////////////////////////////////////////////////
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   PrefChangeRegistrar profile_pref_registrar_;
 

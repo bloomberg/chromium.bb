@@ -14,8 +14,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
 #include "chrome/browser/ui/status_bubble.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/gtk/gtk_signal.h"
@@ -34,7 +34,7 @@ class SlideAnimation;
 // window manager to not try to be "helpful" and center our popups, etc.
 // We therefore position it absolutely in a GtkFixed, that we don't own.
 class StatusBubbleGtk : public StatusBubble,
-                        public NotificationObserver,
+                        public content::NotificationObserver,
                         public ui::AnimationDelegate {
  public:
   explicit StatusBubbleGtk(Profile* profile);
@@ -59,10 +59,10 @@ class StatusBubbleGtk : public StatusBubble,
   // the download shelf, when it is visible.
   virtual void UpdateDownloadShelfVisibility(bool visible);
 
-  // Overridden from NotificationObserver:
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Top of the widget hierarchy for a StatusBubble. This top level widget is
   // guarenteed to have its gtk_widget_name set to "status-bubble" for
@@ -113,7 +113,7 @@ class StatusBubbleGtk : public StatusBubble,
   CHROMEGTK_CALLBACK_1(StatusBubbleGtk, gboolean, HandleEnterNotify,
                        GdkEventCrossing*);
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // Provides colors.
   GtkThemeService* theme_service_;

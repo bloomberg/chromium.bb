@@ -185,7 +185,7 @@ void BookmarkModel::Load() {
   // Listen for changes to favicons so that we can update the favicon of the
   // node appropriately.
   registrar_.Add(this, chrome::NOTIFICATION_FAVICON_CHANGED,
-                 Source<Profile>(profile_));
+                 content::Source<Profile>(profile_));
 
   // Load the bookmarks. BookmarkStorage notifies us when done.
   store_ = new BookmarkStorage(profile_, this);
@@ -617,7 +617,7 @@ void BookmarkModel::DoneLoading(
   // And generic notification.
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED,
-      Source<Profile>(profile_),
+      content::Source<Profile>(profile_),
       NotificationService::NoDetails());
 }
 
@@ -669,8 +669,8 @@ void BookmarkModel::RemoveAndDeleteNode(BookmarkNode* delete_me) {
 
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_URLS_STARRED,
-      Source<Profile>(profile_),
-      Details<history::URLsStarredDetails>(&details));
+      content::Source<Profile>(profile_),
+      content::Details<history::URLsStarredDetails>(&details));
 }
 
 BookmarkNode* BookmarkModel::AddNode(BookmarkNode* parent,
@@ -692,8 +692,8 @@ BookmarkNode* BookmarkModel::AddNode(BookmarkNode* parent,
     details.changed_urls.insert(node->url());
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_URLS_STARRED,
-        Source<Profile>(profile_),
-        Details<history::URLsStarredDetails>(&details));
+        content::Source<Profile>(profile_),
+        content::Details<history::URLsStarredDetails>(&details));
   }
   return node;
 }
@@ -788,12 +788,12 @@ void BookmarkModel::CancelPendingFaviconLoadRequests(BookmarkNode* node) {
 }
 
 void BookmarkModel::Observe(int type,
-                            const NotificationSource& source,
-                            const NotificationDetails& details) {
+                            const content::NotificationSource& source,
+                            const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_FAVICON_CHANGED: {
       // Prevent the observers from getting confused for multiple favicon loads.
-      Details<history::FaviconChangeDetails> favicon_details(details);
+      content::Details<history::FaviconChangeDetails> favicon_details(details);
       for (std::set<GURL>::const_iterator i = favicon_details->urls.begin();
            i != favicon_details->urls.end(); ++i) {
         std::vector<const BookmarkNode*> nodes;

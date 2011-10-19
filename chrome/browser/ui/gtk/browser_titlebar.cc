@@ -406,7 +406,7 @@ void BrowserTitlebar::Init() {
     theme_service_ = GtkThemeService::GetFrom(
         browser_window_->browser()->profile());
     registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
-                   Source<ThemeService>(theme_service_));
+                   content::Source<ThemeService>(theme_service_));
     theme_service_->InitThemesFor(this);
     UpdateTitleAndIcon();
   }
@@ -991,8 +991,8 @@ bool BrowserTitlebar::GetAcceleratorForCommandId(
 }
 
 void BrowserTitlebar::Observe(int type,
-                              const NotificationSource& source,
-                              const NotificationDetails& details) {
+                              const content::NotificationSource& source,
+                              const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_BROWSER_THEME_CHANGED:
       UpdateTextColor();

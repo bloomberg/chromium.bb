@@ -26,10 +26,10 @@ class CoreOptionsHandler : public OptionsPageUIHandler {
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
   virtual void Uninitialize();
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages();

@@ -30,7 +30,7 @@ void AppModalDialog::ShowModalDialog() {
 
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_APP_MODAL_DIALOG_SHOWN,
-      Source<AppModalDialog>(this),
+      content::Source<AppModalDialog>(this),
       NotificationService::NoDetails());
 }
 

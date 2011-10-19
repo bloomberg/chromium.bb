@@ -4,10 +4,10 @@
 
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/test/base/testing_pref_service.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_observer_mock.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/test/notification_observer_mock.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -22,8 +22,10 @@ class MockPrefService : public TestingPrefService {
   MockPrefService() {}
   virtual ~MockPrefService() {}
 
-  MOCK_METHOD2(AddPrefObserver, void(const char*, NotificationObserver*));
-  MOCK_METHOD2(RemovePrefObserver, void(const char*, NotificationObserver*));
+  MOCK_METHOD2(AddPrefObserver,
+               void(const char*, content::NotificationObserver*));
+  MOCK_METHOD2(RemovePrefObserver,
+               void(const char*, content::NotificationObserver*));
 };
 
 }  // namespace
@@ -36,17 +38,17 @@ class PrefChangeRegistrarTest : public testing::Test {
  protected:
   virtual void SetUp();
 
-  NotificationObserver* observer() const { return observer_.get(); }
+  content::NotificationObserver* observer() const { return observer_.get(); }
   MockPrefService* service() const { return service_.get(); }
 
  private:
   scoped_ptr<MockPrefService> service_;
-  scoped_ptr<NotificationObserverMock> observer_;
+  scoped_ptr<content::NotificationObserverMock> observer_;
 };
 
 void PrefChangeRegistrarTest::SetUp() {
   service_.reset(new MockPrefService());
-  observer_.reset(new NotificationObserverMock());
+  observer_.reset(new content::NotificationObserverMock());
 }
 
 TEST_F(PrefChangeRegistrarTest, AddAndRemove) {

@@ -12,12 +12,12 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class ExtensionFromWebAppTest
-    : public InProcessBrowserTest, public NotificationObserver {
+    : public InProcessBrowserTest, public content::NotificationObserver {
  protected:
   ExtensionFromWebAppTest() : installed_extension_(NULL) {
   }
@@ -31,12 +31,13 @@ class ExtensionFromWebAppTest
     command_line->AppendSwitch(switches::kEnableCrxlessWebApps);
   }
 
-  // NotificationObserver
+  // content::NotificationObserver
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) {
     if (type == chrome::NOTIFICATION_EXTENSION_INSTALLED) {
-      const Extension* extension = Details<const Extension>(details).ptr();
+      const Extension* extension =
+          content::Details<const Extension>(details).ptr();
       if (extension->id() == expected_extension_id_) {
         installed_extension_ = extension;
         MessageLoopForUI::current()->Quit();
@@ -50,7 +51,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionFromWebAppTest, Basic) {
   browser()->profile()->GetExtensionService()->set_show_extensions_prompts(
       false);
 
-  NotificationRegistrar registrar;
+  content::NotificationRegistrar registrar;
   registrar.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
                 NotificationService::AllSources());
 

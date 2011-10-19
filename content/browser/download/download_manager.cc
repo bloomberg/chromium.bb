@@ -1075,8 +1075,8 @@ void DownloadManager::SavePageDownloadFinished(DownloadItem* download) {
     if (download->IsComplete())
       NotificationService::current()->Notify(
           content::NOTIFICATION_SAVE_PACKAGE_SUCCESSFULLY_FINISHED,
-          Source<DownloadManager>(this),
-          Details<DownloadItem>(download));
+          content::Source<DownloadManager>(this),
+          content::Details<DownloadItem>(download));
   }
 }
 

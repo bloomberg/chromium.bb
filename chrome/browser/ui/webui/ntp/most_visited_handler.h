@@ -12,8 +12,8 @@
 #include "chrome/browser/history/history_types.h"
 #include "content/browser/cancelable_request.h"
 #include "content/browser/webui/web_ui.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class GURL;
 class PageUsageData;
@@ -35,7 +35,7 @@ class Value;
 //   the URL and the value is a dictionary with title, url and index.  This is
 //   owned by the PrefService.
 class MostVisitedHandler : public WebUIMessageHandler,
-                           public NotificationObserver {
+                           public content::NotificationObserver {
  public:
 
   MostVisitedHandler();
@@ -63,10 +63,10 @@ class MostVisitedHandler : public WebUIMessageHandler,
   // Callback for the "removePinnedURL" message.
   void HandleRemovePinnedURL(const base::ListValue* args);
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   const std::vector<GURL>& most_visited_urls() const {
     return most_visited_urls_;
@@ -103,7 +103,7 @@ class MostVisitedHandler : public WebUIMessageHandler,
   // Sends pages_value_ to the javascript side to and resets page_value_.
   void SendPagesValue();
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // Our consumer for the history service.
   CancelableRequestConsumerTSimple<PageUsageData*> cancelable_consumer_;

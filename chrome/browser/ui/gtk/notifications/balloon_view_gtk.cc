@@ -32,9 +32,9 @@
 #include "chrome/common/extensions/extension.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
-#include "content/common/notification_details.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
@@ -317,7 +317,7 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   gtk_box_pack_end(GTK_BOX(hbox_), options_alignment, FALSE, FALSE, 0);
 
   notification_registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
-                              Source<ThemeService>(theme_service_));
+                              content::Source<ThemeService>(theme_service_));
 
   // We don't do InitThemesFor() because it just forces a redraw.
   gtk_util::ActAsRoundedWindow(frame_container_, ui::kGdkBlack, 3,
@@ -341,7 +341,7 @@ void BalloonViewImpl::Show(Balloon* balloon) {
 
   notification_registrar_.Add(this,
       chrome::NOTIFICATION_NOTIFY_BALLOON_DISCONNECTED,
-      Source<Balloon>(balloon));
+      content::Source<Balloon>(balloon));
 }
 
 void BalloonViewImpl::Update() {
@@ -385,14 +385,14 @@ gfx::Rect BalloonViewImpl::GetContentsRectangle() const {
 }
 
 void BalloonViewImpl::Observe(int type,
-                              const NotificationSource& source,
-                              const NotificationDetails& details) {
+                              const content::NotificationSource& source,
+                              const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_NOTIFY_BALLOON_DISCONNECTED) {
     // If the renderer process attached to this balloon is disconnected
     // (e.g., because of a crash), we want to close the balloon.
     notification_registrar_.Remove(this,
         chrome::NOTIFICATION_NOTIFY_BALLOON_DISCONNECTED,
-        Source<Balloon>(balloon_));
+        content::Source<Balloon>(balloon_));
     Close(false);
   } else if (type == chrome::NOTIFICATION_BROWSER_THEME_CHANGED) {
     // Since all the buttons change their own properties, and our expose does

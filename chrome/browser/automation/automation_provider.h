@@ -28,7 +28,7 @@
 #include "content/browser/browser_thread.h"
 #include "content/browser/cancelable_request.h"
 #include "content/browser/tab_contents/navigation_entry.h"
-#include "content/common/notification_observer.h"
+#include "content/public/browser/notification_observer.h"
 #include "ipc/ipc_channel.h"
 
 #if defined(OS_WIN) && !defined(USE_AURA)
@@ -374,8 +374,8 @@ class AutomationProvider
 #endif  // defined(OS_WIN) && !defined(USE_AURA)
 
   scoped_ptr<IPC::ChannelProxy> channel_;
-  scoped_ptr<NotificationObserver> new_tab_ui_load_observer_;
-  scoped_ptr<NotificationObserver> find_in_page_observer_;
+  scoped_ptr<content::NotificationObserver> new_tab_ui_load_observer_;
+  scoped_ptr<content::NotificationObserver> find_in_page_observer_;
   scoped_ptr<ExtensionTestResultNotificationObserver>
       extension_test_result_observer_;
   scoped_ptr<AutomationExtensionTracker> extension_tracker_;

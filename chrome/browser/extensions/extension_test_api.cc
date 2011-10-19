@@ -30,7 +30,7 @@ ExtensionTestPassFunction::~ExtensionTestPassFunction() {}
 bool ExtensionTestPassFunction::RunImpl() {
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_TEST_PASSED,
-      Source<Profile>(dispatcher()->profile()),
+      content::Source<Profile>(dispatcher()->profile()),
       NotificationService::NoDetails());
   return true;
 }
@@ -42,8 +42,8 @@ bool ExtensionTestFailFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &message));
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_TEST_FAILED,
-      Source<Profile>(dispatcher()->profile()),
-      Details<std::string>(&message));
+      content::Source<Profile>(dispatcher()->profile()),
+      content::Details<std::string>(&message));
   return true;
 }
 
@@ -82,8 +82,8 @@ bool ExtensionTestSendMessageFunction::RunImpl() {
   AddRef();  // balanced in Reply
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_TEST_MESSAGE,
-      Source<ExtensionTestSendMessageFunction>(this),
-      Details<std::string>(&message));
+      content::Source<ExtensionTestSendMessageFunction>(this),
+      content::Details<std::string>(&message));
   return true;
 }
 ExtensionTestSendMessageFunction::~ExtensionTestSendMessageFunction() {}

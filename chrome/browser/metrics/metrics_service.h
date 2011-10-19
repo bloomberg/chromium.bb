@@ -19,9 +19,9 @@
 #include "base/process_util.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/common/metrics_helpers.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
 #include "content/common/net/url_fetcher.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/external_metrics.h"
@@ -51,7 +51,7 @@ struct WebPluginInfo;
 }
 
 
-class MetricsService : public NotificationObserver,
+class MetricsService : public content::NotificationObserver,
                        public URLFetcher::Delegate,
                        public MetricsServiceBase {
  public:
@@ -77,13 +77,13 @@ class MetricsService : public NotificationObserver,
   // Set up notifications which indicate that a user is performing work. This is
   // useful to allow some features to sleep, until the machine becomes active,
   // such as precluding UMA uploads unless there was recent activity.
-  static void SetUpNotifications(NotificationRegistrar* registrar,
-                                 NotificationObserver* observer);
+  static void SetUpNotifications(content::NotificationRegistrar* registrar,
+                                 content::NotificationObserver* observer);
 
-  // Implementation of NotificationObserver
+  // Implementation of content::NotificationObserver
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Invoked when we get a WM_SESSIONEND. This places a value in prefs that is
   // reset when RecordCompletedSessionEnd is invoked.
@@ -244,8 +244,8 @@ class MetricsService : public NotificationObserver,
 
   // Records a window-related notification.
   void LogWindowChange(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Reads, increments and then sets the specified integer preference.
   void IncrementPrefValue(const char* path);
@@ -279,8 +279,8 @@ class MetricsService : public NotificationObserver,
   // in-object buffer because these notifications are sent on page load, and we
   // don't want to slow that down.
   void LogChildProcessChange(int type,
-                             const NotificationSource& source,
-                             const NotificationDetails& details);
+                             const content::NotificationSource& source,
+                             const content::NotificationDetails& details);
 
   // Logs keywords specific metrics. Keyword metrics are recorded in the
   // profile specific metrics.
@@ -299,18 +299,18 @@ class MetricsService : public NotificationObserver,
 
   // Records a page load notification.
   void LogLoadComplete(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Checks whether a notification can be logged.
   bool CanLogNotification(int type,
-                          const NotificationSource& source,
-                          const NotificationDetails& details);
+                          const content::NotificationSource& source,
+                          const content::NotificationDetails& details);
 
   // Sets the value of the specified path in prefs and schedules a save.
   void RecordBooleanPrefValue(const char* path, bool value);
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // Indicate whether recording and reporting are currently happening.
   // These should not be set directly, but by calling SetRecording and

@@ -30,8 +30,8 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/geoposition.h"
-#include "content/common/notification_details.h"
 #include "content/common/notification_service.h"
+#include "content/public/browser/notification_details.h"
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"
 
@@ -41,7 +41,7 @@ namespace {
 // Note: NavigateToURLBlockUntilNavigationsComplete doesn't seem to work for
 // multiple embedded iframes, as notifications seem to be 'batched'. Instead, we
 // load and wait one single frame here by calling a javascript function.
-class IFrameLoader : public NotificationObserver {
+class IFrameLoader : public content::NotificationObserver {
  public:
   IFrameLoader(Browser* browser, int iframe_id, const GURL& url)
       : navigation_completed_(false),
@@ -49,7 +49,7 @@ class IFrameLoader : public NotificationObserver {
     NavigationController* controller =
         &browser->GetSelectedTabContents()->controller();
     registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
-                   Source<NavigationController>(controller));
+                   content::Source<NavigationController>(controller));
     registrar_.Add(this, chrome::NOTIFICATION_DOM_OPERATION_RESPONSE,
                    NotificationService::AllSources());
     std::string script = base::StringPrintf(
@@ -76,12 +76,12 @@ class IFrameLoader : public NotificationObserver {
   GURL iframe_url() const { return iframe_url_; }
 
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) {
     if (type == content::NOTIFICATION_LOAD_STOP) {
       navigation_completed_ = true;
     } else if (type == chrome::NOTIFICATION_DOM_OPERATION_RESPONSE) {
-      Details<DomOperationNotificationDetails> dom_op_details(details);
+      content::Details<DomOperationNotificationDetails> dom_op_details(details);
       javascript_response_ = dom_op_details->json();
       javascript_completed_ = true;
     }
@@ -90,7 +90,7 @@ class IFrameLoader : public NotificationObserver {
   }
 
  private:
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // If true the navigation has completed.
   bool navigation_completed_;
@@ -106,7 +106,7 @@ class IFrameLoader : public NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(IFrameLoader);
 };
 
-class GeolocationNotificationObserver : public NotificationObserver {
+class GeolocationNotificationObserver : public content::NotificationObserver {
  public:
   // If |wait_for_infobar| is true, AddWatchAndWaitForNotification will block
   // until the infobar has been displayed; otherwise it will block until the
@@ -150,16 +150,16 @@ class GeolocationNotificationObserver : public NotificationObserver {
     }
   }
 
-  // NotificationObserver
+  // content::NotificationObserver
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) {
     if (type == chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED) {
-      infobar_ = Details<InfoBarAddedDetails>(details).ptr();
+      infobar_ = content::Details<InfoBarAddedDetails>(details).ptr();
       ASSERT_TRUE(infobar_->GetIcon());
       ASSERT_TRUE(infobar_->AsConfirmInfoBarDelegate());
     } else if (type == chrome::NOTIFICATION_DOM_OPERATION_RESPONSE) {
-      Details<DomOperationNotificationDetails> dom_op_details(details);
+      content::Details<DomOperationNotificationDetails> dom_op_details(details);
       javascript_response_ = dom_op_details->json();
       LOG(WARNING) << "javascript_response " << javascript_response_;
     } else if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED ||
@@ -180,7 +180,7 @@ class GeolocationNotificationObserver : public NotificationObserver {
       MessageLoopForUI::current()->Quit();
   }
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
   bool wait_for_infobar_;
   InfoBarDelegate* infobar_;
   bool navigation_started_;
@@ -324,7 +324,8 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
     {
       ui_test_utils::WindowedNotificationObserver observer(
           content::NOTIFICATION_LOAD_STOP,
-          Source<NavigationController>(&tab_contents_wrapper->controller()));
+          content::Source<NavigationController>(
+              &tab_contents_wrapper->controller()));
       if (allowed)
         infobar_->AsConfirmInfoBarDelegate()->Accept();
       else
@@ -506,7 +507,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
   Geoposition fresh_position = GeopositionFromLatLong(3.17, 4.23);
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
-      Source<NavigationController>(
+      content::Source<NavigationController>(
           &current_browser_->GetSelectedTabContents()->controller()));
   NotifyGeoposition(fresh_position);
   observer.Wait();
@@ -543,7 +544,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
   Geoposition cached_position = GeopositionFromLatLong(5.67, 8.09);
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
-      Source<NavigationController>(
+      content::Source<NavigationController>(
           &current_browser_->GetSelectedTabContents()->controller()));
   NotifyGeoposition(cached_position);
   observer.Wait();
@@ -651,7 +652,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, TwoWatchesInOneFrame) {
   // its way through to the first watcher.
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
-      Source<NavigationController>(
+      content::Source<NavigationController>(
           &current_browser_->GetSelectedTabContents()->controller()));
   NotifyGeoposition(final_position);
   observer.Wait();

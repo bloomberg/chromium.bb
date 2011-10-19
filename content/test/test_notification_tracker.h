@@ -8,23 +8,23 @@
 
 #include <vector>
 
-#include "content/common/notification_details.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_source.h"
 
 // Provides an easy way for tests to verify that a given set of notifications
 // was received during test execution.
-class TestNotificationTracker : public NotificationObserver {
+class TestNotificationTracker : public content::NotificationObserver {
  public:
   // Records one received notification.
   struct Event {
     Event();
-    Event(int t, NotificationSource s, NotificationDetails d);
+    Event(int t, content::NotificationSource s, content::NotificationDetails d);
 
     int type;
-    NotificationSource source;
-    NotificationDetails details;
+    content::NotificationSource source;
+    content::NotificationDetails details;
   };
 
   // By default, it won't listen for any notifications. You'll need to call
@@ -34,7 +34,7 @@ class TestNotificationTracker : public NotificationObserver {
   virtual ~TestNotificationTracker();
 
   // Makes this object listen for the given notification with the given source.
-  void ListenFor(int type, const NotificationSource& source);
+  void ListenFor(int type, const content::NotificationSource& source);
 
   // Makes this object listen for notifications of the given type coming from
   // any source.
@@ -68,10 +68,10 @@ class TestNotificationTracker : public NotificationObserver {
 
  protected:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
  private:
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // Lists all received since last cleared, in the order they were received.
   std::vector<Event> events_;

@@ -151,7 +151,8 @@ void RenderProcessHost::Cleanup() {
   if (listeners_.IsEmpty()) {
     NotificationService::current()->Notify(
         content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-        Source<RenderProcessHost>(this), NotificationService::NoDetails());
+        content::Source<RenderProcessHost>(this),
+        NotificationService::NoDetails());
     MessageLoop::current()->DeleteSoon(FROM_HERE, this);
     deleting_soon_ = true;
     // It's important not to wait for the DeleteTask to delete the channel

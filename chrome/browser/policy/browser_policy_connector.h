@@ -13,8 +13,8 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/policy/cloud_policy_data_store.h"
 #include "chrome/browser/policy/enterprise_install_attributes.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class TestingBrowserProcess;
 class TokenService;
@@ -30,7 +30,7 @@ class UserPolicyTokenCache;
 // platform policy providers, device- and the user-cloud policy infrastructure.
 // TODO(gfeher,mnissler): Factor out device and user specific methods into their
 // respective classes.
-class BrowserPolicyConnector : public NotificationObserver {
+class BrowserPolicyConnector : public content::NotificationObserver {
  public:
   // Indicates the type of token passed to SetDeviceCredentials.
   enum TokenType {
@@ -121,10 +121,10 @@ class BrowserPolicyConnector : public NotificationObserver {
       CloudPolicyProvider* managed_cloud_provider,
       CloudPolicyProvider* recommended_cloud_provider);
 
-  // NotificationObserver method overrides:
+  // content::NotificationObserver method overrides:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Initializes the device cloud policy infrasturcture.
   void InitializeDevicePolicy();
@@ -164,7 +164,7 @@ class BrowserPolicyConnector : public NotificationObserver {
   base::WeakPtrFactory<BrowserPolicyConnector> weak_ptr_factory_;
 
   // Registers the provider for notification of successful Gaia logins.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // Weak reference to the TokenService we are listening to for user cloud
   // policy authentication tokens.

@@ -9,8 +9,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/waitable_event.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_observer_mock.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_registrar.h"
+#include "content/test/notification_observer_mock.h"
 
 // Helper class to add and remove observers on a non-UI thread from
 // the UI thread.
@@ -34,7 +34,7 @@ class ThreadObserverHelper : public base::RefCountedThreadSafe<T, Traits> {
     registrar_.RemoveAll();
   }
 
-  NotificationObserverMock* observer() {
+  content::NotificationObserverMock* observer() {
     return &observer_;
   }
 
@@ -43,8 +43,8 @@ class ThreadObserverHelper : public base::RefCountedThreadSafe<T, Traits> {
 
   virtual void RegisterObservers() = 0;
 
-  NotificationRegistrar registrar_;
-  NotificationObserverMock observer_;
+  content::NotificationRegistrar registrar_;
+  content::NotificationObserverMock observer_;
 
  private:
   void RegisterObserversTask() {

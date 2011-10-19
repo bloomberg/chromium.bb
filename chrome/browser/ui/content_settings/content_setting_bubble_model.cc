@@ -329,7 +329,8 @@ class ContentSettingCookiesBubbleModel : public ContentSettingSingleRadioGroup {
       return;
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_COLLECTED_COOKIES_SHOWN,
-        Source<TabSpecificContentSettings>(tab_contents()->content_settings()),
+        content::Source<TabSpecificContentSettings>(
+            tab_contents()->content_settings()),
         NotificationService::NoDetails());
     browser()->ShowCollectedCookiesDialog(tab_contents());
   }
@@ -513,9 +514,9 @@ ContentSettingBubbleModel::ContentSettingBubbleModel(
       profile_(profile),
       content_type_(content_type) {
   registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                 Source<TabContents>(tab_contents->tab_contents()));
+                 content::Source<TabContents>(tab_contents->tab_contents()));
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                 Source<Profile>(profile_));
+                 content::Source<Profile>(profile_));
 }
 
 ContentSettingBubbleModel::~ContentSettingBubbleModel() {
@@ -541,16 +542,18 @@ void ContentSettingBubbleModel::AddBlockedResource(
   bubble_content_.resource_identifiers.insert(resource_identifier);
 }
 
-void ContentSettingBubbleModel::Observe(int type,
-                                        const NotificationSource& source,
-                                        const NotificationDetails& details) {
+void ContentSettingBubbleModel::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   switch (type) {
     case content::NOTIFICATION_TAB_CONTENTS_DESTROYED:
-      DCHECK(source == Source<TabContents>(tab_contents_->tab_contents()));
+      DCHECK(source ==
+             content::Source<TabContents>(tab_contents_->tab_contents()));
       tab_contents_ = NULL;
       break;
     case chrome::NOTIFICATION_PROFILE_DESTROYED:
-      DCHECK(source == Source<Profile>(profile_));
+      DCHECK(source == content::Source<Profile>(profile_));
       profile_ = NULL;
       break;
     default:

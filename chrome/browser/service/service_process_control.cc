@@ -231,10 +231,11 @@ bool ServiceProcessControl::Send(IPC::Message* message) {
   return channel_->Send(message);
 }
 
-// NotificationObserver implementation.
-void ServiceProcessControl::Observe(int type,
-                                    const NotificationSource& source,
-                                    const NotificationDetails& details) {
+// content::NotificationObserver implementation.
+void ServiceProcessControl::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_UPGRADE_RECOMMENDED) {
     Send(new ServiceMsg_UpdateAvailable);
   }

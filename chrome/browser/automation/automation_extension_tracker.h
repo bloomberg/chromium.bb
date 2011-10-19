@@ -33,8 +33,8 @@ class AutomationExtensionTracker
   // This is not true for the relevant extension notifications, so we have to
   // the observation ourselves.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 };
 
 #endif  // CHROME_BROWSER_AUTOMATION_AUTOMATION_EXTENSION_TRACKER_H_

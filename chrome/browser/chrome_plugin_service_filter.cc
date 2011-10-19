@@ -133,13 +133,15 @@ ChromePluginServiceFilter::ChromePluginServiceFilter() {
 ChromePluginServiceFilter::~ChromePluginServiceFilter() {
 }
 
-void ChromePluginServiceFilter::Observe(int type,
-                                        const NotificationSource& source,
-                                        const NotificationDetails& details) {
+void ChromePluginServiceFilter::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   switch (type) {
     case content::NOTIFICATION_RENDERER_PROCESS_CLOSED: {
-      int render_process_id = Source<RenderProcessHost>(source).ptr()->id();
+      int render_process_id =
+          content::Source<RenderProcessHost>(source).ptr()->id();
 
       base::AutoLock auto_lock(lock_);
       for (size_t i = 0; i < overridden_plugins_.size(); ++i) {
@@ -151,7 +153,7 @@ void ChromePluginServiceFilter::Observe(int type,
       break;
     }
     case chrome::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED: {
-      Profile* profile = Source<Profile>(source).ptr();
+      Profile* profile = content::Source<Profile>(source).ptr();
       PluginService::GetInstance()->PurgePluginListCache(profile, false);
       if (profile->HasOffTheRecordProfile()) {
         PluginService::GetInstance()->PurgePluginListCache(

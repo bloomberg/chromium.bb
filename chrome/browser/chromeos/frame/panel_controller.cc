@@ -398,8 +398,8 @@ bool PanelController::PanelClientEvent(GdkEventClient* event) {
       State state = new_state ? EXPANDED : MINIMIZED;
       NotificationService::current()->Notify(
           chrome::NOTIFICATION_PANEL_STATE_CHANGED,
-          Source<PanelController>(this),
-          Details<State>(&state));
+          content::Source<PanelController>(this),
+          content::Details<State>(&state));
     }
   }
 #endif

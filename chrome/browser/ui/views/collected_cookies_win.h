@@ -8,8 +8,8 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/common/content_settings.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "views/controls/tabbed_pane/tabbed_pane_listener.h"
 #include "views/controls/tree/tree_view.h"
 #include "views/window/dialog_delegate.h"
@@ -33,7 +33,7 @@ class TextButton;
 // ShowCollectedCookiesDialog() on the delegate of the tab contents wrapper's
 // content settings tab helper.
 class CollectedCookiesWin : public views::DialogDelegate,
-                            public NotificationObserver,
+                            public content::NotificationObserver,
                             public views::ButtonListener,
                             public views::TabbedPaneListener,
                             public views::TreeViewController,
@@ -79,12 +79,12 @@ class CollectedCookiesWin : public views::DialogDelegate,
 
   void AddContentException(views::TreeView* tree_view, ContentSetting setting);
 
-  // NotificationObserver:
+  // content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   ConstrainedWindow* window_;
 

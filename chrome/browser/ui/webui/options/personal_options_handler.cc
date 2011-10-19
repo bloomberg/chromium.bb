@@ -220,9 +220,10 @@ void PersonalOptionsHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-void PersonalOptionsHandler::Observe(int type,
-                                     const NotificationSource& source,
-                                     const NotificationDetails& details) {
+void PersonalOptionsHandler::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_BROWSER_THEME_CHANGED) {
     ObserveThemeChanged();
   } else if (multiprofile_ &&
@@ -345,8 +346,8 @@ void PersonalOptionsHandler::Initialize() {
 
   // Listen for theme installation.
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
-                 Source<ThemeService>(ThemeServiceFactory::GetForProfile(
-                     profile)));
+                 content::Source<ThemeService>(
+                     ThemeServiceFactory::GetForProfile(profile)));
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
                  NotificationService::AllSources());
   ObserveThemeChanged();

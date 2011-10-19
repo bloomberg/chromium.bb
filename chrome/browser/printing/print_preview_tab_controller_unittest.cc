@@ -101,8 +101,8 @@ TEST_F(PrintPreviewTabControllerUnitTest, TitleAfterReload) {
   details.entry = entry.get();
   NotificationService::current()->Notify(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      Source<NavigationController>(&preview_tab->controller()),
-      Details<content::LoadCommittedDetails>(&details));
+      content::Source<NavigationController>(&preview_tab->controller()),
+      content::Details<content::LoadCommittedDetails>(&details));
   EXPECT_EQ(initiator_tab->tab_contents()->GetTitle(),
             preview_ui->initiator_tab_title_);
 }

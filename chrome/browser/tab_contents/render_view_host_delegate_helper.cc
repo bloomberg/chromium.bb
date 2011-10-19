@@ -67,10 +67,10 @@ RenderViewHostDelegateViewHelper::~RenderViewHostDelegateViewHelper() {}
 
 void RenderViewHostDelegateViewHelper::Observe(
     int type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK_EQ(type, content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED);
-  RenderWidgetHost* host = Source<RenderWidgetHost>(source).ptr();
+  RenderWidgetHost* host = content::Source<RenderWidgetHost>(source).ptr();
   for (PendingWidgetViews::iterator i = pending_widget_views_.begin();
        i != pending_widget_views_.end(); ++i) {
     if (host->view() == i->second) {
@@ -270,16 +270,17 @@ TabContents* RenderViewHostDelegateViewHelper::CreateNewWindowFromTabContents(
     details.target_tab_contents = new_contents;
     NotificationService::current()->Notify(
         content::NOTIFICATION_RETARGETING,
-        Source<content::BrowserContext>(tab_contents->browser_context()),
-        Details<content::RetargetingDetails>(&details));
+        content::Source<content::BrowserContext>(
+            tab_contents->browser_context()),
+        content::Details<content::RetargetingDetails>(&details));
 
     if (tab_contents->delegate())
       tab_contents->delegate()->TabContentsCreated(new_contents);
   } else {
     NotificationService::current()->Notify(
         content::NOTIFICATION_CREATING_NEW_WINDOW_CANCELLED,
-        Source<TabContents>(tab_contents),
-        Details<const ViewHostMsg_CreateWindow_Params>(&params));
+        content::Source<TabContents>(tab_contents),
+        content::Details<const ViewHostMsg_CreateWindow_Params>(&params));
   }
 
   return new_contents;

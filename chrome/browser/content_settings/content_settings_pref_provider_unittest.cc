@@ -25,7 +25,7 @@
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_observer.h"
+#include "content/public/browser/notification_observer.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -79,7 +79,7 @@ class DeadlockCheckerThread : public base::PlatformThread::Delegate {
 
 // A helper for observing an preference changes and testing whether
 // |PrefProvider| holds a lock when the preferences change.
-class DeadlockCheckerObserver : public NotificationObserver {
+class DeadlockCheckerObserver : public content::NotificationObserver {
  public:
   // |DeadlockCheckerObserver| doesn't take the ownership of |prefs| or
   // ||provider|.
@@ -92,8 +92,8 @@ class DeadlockCheckerObserver : public NotificationObserver {
   virtual ~DeadlockCheckerObserver() {}
 
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) {
     ASSERT_EQ(type, chrome::NOTIFICATION_PREF_CHANGED);
     // Check whether |provider_| holds its lock. For this, we need a separate
     // thread.

@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_registrar.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class BlockedContentContainer;

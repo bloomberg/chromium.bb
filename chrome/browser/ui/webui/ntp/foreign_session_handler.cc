@@ -19,8 +19,8 @@
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
-#include "content/common/notification_details.h"
 #include "content/common/notification_service.h"
+#include "content/public/browser/notification_details.h"
 
 namespace browser_sync {
 
@@ -46,16 +46,17 @@ void ForeignSessionHandler::RegisterMessages() {
 void ForeignSessionHandler::Init() {
   Profile* profile = Profile::FromWebUI(web_ui());
   registrar_.Add(this, chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,
-                 Source<Profile>(profile));
+                 content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_FOREIGN_SESSION_UPDATED,
-                 Source<Profile>(profile));
+                 content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_FOREIGN_SESSION_DISABLED,
-                 Source<Profile>(profile));
+                 content::Source<Profile>(profile));
 }
 
-void ForeignSessionHandler::Observe(int type,
-                                    const NotificationSource& source,
-                                    const NotificationDetails& details) {
+void ForeignSessionHandler::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   ListValue list_value;
   switch (type) {
     case chrome::NOTIFICATION_SYNC_CONFIGURE_DONE:

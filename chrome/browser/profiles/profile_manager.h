@@ -21,8 +21,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_init.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class NewProfileLauncher;
 class ProfileInfoCache;
@@ -55,7 +55,7 @@ class ProfileManagerObserver {
 
 class ProfileManager : public base::NonThreadSafe,
                        public BrowserList::Observer,
-                       public NotificationObserver,
+                       public content::NotificationObserver,
                        public Profile::Delegate {
  public:
   explicit ProfileManager(const FilePath& user_data_dir);
@@ -113,10 +113,10 @@ class ProfileManager : public base::NonThreadSafe,
   // related with the creation order.
   std::vector<Profile*> GetLoadedProfiles() const;
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // BrowserList::Observer implementation.
   virtual void OnBrowserAdded(const Browser* browser);
@@ -244,7 +244,7 @@ class ProfileManager : public base::NonThreadSafe,
   // For ChromeOS, determines if profile should be otr.
   bool ShouldGoOffTheRecord();
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // The path to the user data directory (DIR_USER_DATA).
   const FilePath user_data_dir_;

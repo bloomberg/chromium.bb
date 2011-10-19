@@ -13,7 +13,7 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
-#include "content/common/notification_observer.h"
+#include "content/public/browser/notification_observer.h"
 #include "ui/base/range/range.h"
 #include "views/controls/textfield/textfield_controller.h"
 #include "views/view.h"
@@ -35,7 +35,7 @@ class TabContents;
 // Instant.
 class OmniboxViewViews : public views::View,
                          public OmniboxView,
-                         public NotificationObserver,
+                         public content::NotificationObserver,
                          public views::TextfieldController {
  public:
   // The internal view class name.
@@ -124,10 +124,10 @@ class OmniboxViewViews : public views::View,
   virtual views::View* AddToView(views::View* parent) OVERRIDE;
   virtual int OnPerformDrop(const views::DropTargetEvent& event) OVERRIDE;
 
-  // NotificationObserver:
+  // content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // views::TextfieldController:
   virtual void ContentsChanged(views::Textfield* sender,

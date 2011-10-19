@@ -575,9 +575,10 @@ void InternetOptionsHandler::OnCellularDataPlanChanged(
 }
 
 
-void InternetOptionsHandler::Observe(int type,
-                                     const NotificationSource& source,
-                                     const NotificationDetails& details) {
+void InternetOptionsHandler::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   chromeos::CrosOptionsPageUIHandler::Observe(type, source, details);
   if (type == chrome::NOTIFICATION_REQUIRE_PIN_SETTING_CHANGE_ENDED) {
     base::FundamentalValue require_pin(*Details<bool>(details).ptr());

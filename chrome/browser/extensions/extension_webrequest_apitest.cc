@@ -8,13 +8,13 @@
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/common/notification_service.h"
 #include "net/base/mock_host_resolver.h"
 
 namespace {
 
-class CancelLoginDialog : public NotificationObserver {
+class CancelLoginDialog : public content::NotificationObserver {
  public:
   CancelLoginDialog() {
     registrar_.Add(this,
@@ -25,15 +25,15 @@ class CancelLoginDialog : public NotificationObserver {
   virtual ~CancelLoginDialog() {}
 
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) {
     LoginHandler* handler =
-        Details<LoginNotificationDetails>(details).ptr()->handler();
+        content::Details<LoginNotificationDetails>(details).ptr()->handler();
     handler->CancelAuth();
   }
 
  private:
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
  DISALLOW_COPY_AND_ASSIGN(CancelLoginDialog);
 };

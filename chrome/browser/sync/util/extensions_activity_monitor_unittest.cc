@@ -48,8 +48,8 @@ class BookmarkAPIEventTask : public Task {
      for (size_t i = 0; i < repeats_; i++) {
        NotificationService::current()->Notify(
            chrome::NOTIFICATION_EXTENSION_BOOKMARKS_API_INVOKED,
-           Source<Extension>(extension_.get()),
-           Details<const BookmarksFunction>(function_.get()));
+           content::Source<Extension>(extension_.get()),
+           content::Details<const BookmarksFunction>(function_.get()));
      }
      done_->Signal();
    }

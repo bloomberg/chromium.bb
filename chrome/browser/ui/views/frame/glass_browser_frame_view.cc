@@ -475,9 +475,10 @@ void GlassBrowserFrameView::DisplayNextThrobberFrame() {
               reinterpret_cast<LPARAM>(throbber_icons_[throbber_frame_]));
 }
 
-void GlassBrowserFrameView::Observe(int type,
-                                    const NotificationSource& source,
-                                    const NotificationDetails& details) {
+void GlassBrowserFrameView::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED:
       UpdateAvatarInfo();

@@ -12,8 +12,8 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/common/content_settings.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -23,7 +23,7 @@ class TabContentsWrapper;
 
 // This model provides data for ContentSettingBubble, and also controls
 // the action triggered when the allow / block radio buttons are triggered.
-class ContentSettingBubbleModel : public NotificationObserver {
+class ContentSettingBubbleModel : public content::NotificationObserver {
  public:
   virtual ~ContentSettingBubbleModel();
 
@@ -80,10 +80,10 @@ class ContentSettingBubbleModel : public NotificationObserver {
 
   const BubbleContent& bubble_content() const { return bubble_content_; }
 
-  // NotificationObserver:
+  // content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   virtual void OnRadioClicked(int radio_index) {}
   virtual void OnPopupClicked(int index) {}
@@ -124,7 +124,7 @@ class ContentSettingBubbleModel : public NotificationObserver {
   ContentSettingsType content_type_;
   BubbleContent bubble_content_;
   // A registrar for listening for TAB_CONTENTS_DESTROYED notifications.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingBubbleModel);
 };

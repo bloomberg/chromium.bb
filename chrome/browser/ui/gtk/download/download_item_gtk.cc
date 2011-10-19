@@ -250,7 +250,7 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
   }
 
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
-                 Source<ThemeService>(theme_service_));
+                 content::Source<ThemeService>(theme_service_));
   theme_service_->InitThemesFor(this);
 
   // Set the initial width of the widget to be animated.
@@ -381,8 +381,8 @@ void DownloadItemGtk::AnimationProgressed(const ui::Animation* animation) {
 }
 
 void DownloadItemGtk::Observe(int type,
-                              const NotificationSource& source,
-                              const NotificationDetails& details) {
+                              const content::NotificationSource& source,
+                              const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_BROWSER_THEME_CHANGED) {
     // Our GtkArrow is only visible in gtk mode. Otherwise, we let the custom
     // rendering code do whatever it wants.

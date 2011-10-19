@@ -23,8 +23,8 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view_gtk.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "googleurl/src/gurl.h"
 
 ExtensionPopupGtk* ExtensionPopupGtk::current_extension_popup_ = NULL;
@@ -55,11 +55,11 @@ ExtensionPopupGtk::ExtensionPopupGtk(Browser* browser,
     ShowPopup();
   } else {
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
-                   Source<Profile>(host->profile()));
+                   content::Source<Profile>(host->profile()));
   }
 
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
-                 Source<Profile>(host->profile()));
+                 content::Source<Profile>(host->profile()));
 }
 
 ExtensionPopupGtk::~ExtensionPopupGtk() {
@@ -80,8 +80,8 @@ void ExtensionPopupGtk::Show(const GURL& url, Browser* browser,
 }
 
 void ExtensionPopupGtk::Observe(int type,
-                                const NotificationSource& source,
-                                const NotificationDetails& details) {
+                                const content::NotificationSource& source,
+                                const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING:
       if (Details<ExtensionHost>(host_.get()) == details)
@@ -145,7 +145,7 @@ void ExtensionPopupGtk::ShowPopup() {
     DevToolsWindow::OpenDevToolsWindow(host_->render_view_host());
     // Listen for the the devtools window closing.
     registrar_.Add(this, content::NOTIFICATION_DEVTOOLS_WINDOW_CLOSING,
-        Source<content::BrowserContext>(host_->profile()));
+        content::Source<content::BrowserContext>(host_->profile()));
   }
 
   // Only one instance should be showing at a time. Get rid of the old one, if

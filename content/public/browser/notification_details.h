@@ -5,21 +5,23 @@
 // This file defines the type used to provide details for NotificationService
 // notifications.
 
-#ifndef CONTENT_COMMON_NOTIFICATION_DETAILS_H_
-#define CONTENT_COMMON_NOTIFICATION_DETAILS_H_
+#ifndef CONTENT_PUBLIC_BROWSER_NOTIFICATION_DETAILS_H_
+#define CONTENT_PUBLIC_BROWSER_NOTIFICATION_DETAILS_H_
 #pragma once
 
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
+
+namespace content {
 
 // Do not declare a NotificationDetails directly--use either
 // "Details<detailsclassname>(detailsclasspointer)" or
 // NotificationService::NoDetails().
 class CONTENT_EXPORT NotificationDetails {
  public:
-  NotificationDetails();
-  NotificationDetails(const NotificationDetails& other);
-  ~NotificationDetails();
+  NotificationDetails() : ptr_(NULL) {}
+  NotificationDetails(const NotificationDetails& other) : ptr_(other.ptr_) {}
+  ~NotificationDetails() {}
 
   // NotificationDetails can be used as the index for a map; this method
   // returns the pointer to the current details as an identifier, for use as a
@@ -35,7 +37,7 @@ class CONTENT_EXPORT NotificationDetails {
   }
 
  protected:
-  explicit NotificationDetails(const void* ptr);
+   explicit NotificationDetails(const void* ptr) : ptr_(ptr) {}
 
   // Declaring this const allows Details<T> to be used with both T = Foo and
   // T = const Foo.
@@ -55,4 +57,6 @@ class Details : public NotificationDetails {
   T* ptr() const { return static_cast<T*>(const_cast<void*>(ptr_)); }
 };
 
-#endif  // CONTENT_COMMON_NOTIFICATION_DETAILS_H_
+}  // namespace content
+
+#endif  // CONTENT_PUBLIC_BROWSER_NOTIFICATION_DETAILS_H_

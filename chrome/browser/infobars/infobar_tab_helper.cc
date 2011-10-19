@@ -46,15 +46,16 @@ void InfoBarTabHelper::AddInfoBar(InfoBarDelegate* delegate) {
   infobars_.push_back(delegate);
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
-      Source<InfoBarTabHelper>(this),
-      Details<InfoBarAddedDetails>(delegate));
+      content::Source<InfoBarTabHelper>(this),
+      content::Details<InfoBarAddedDetails>(delegate));
 
   // Add ourselves as an observer for navigations the first time a delegate is
   // added. We use this notification to expire InfoBars that need to expire on
   // page transitions.
   if (infobars_.size() == 1) {
-    registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-                   Source<NavigationController>(&tab_contents()->controller()));
+    registrar_.Add(
+        this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+        content::Source<NavigationController>(&tab_contents()->controller()));
   }
 }
 
@@ -82,8 +83,8 @@ void InfoBarTabHelper::ReplaceInfoBar(InfoBarDelegate* old_delegate,
   InfoBarReplacedDetails replaced_details(old_delegate, new_delegate);
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REPLACED,
-      Source<InfoBarTabHelper>(this),
-      Details<InfoBarReplacedDetails>(&replaced_details));
+      content::Source<InfoBarTabHelper>(this),
+      content::Details<InfoBarReplacedDetails>(&replaced_details));
 
   infobars_.erase(infobars_.begin() + i + 1);
 }
@@ -111,14 +112,14 @@ void InfoBarTabHelper::RemoveInfoBarInternal(InfoBarDelegate* delegate,
   InfoBarRemovedDetails removed_details(infobar, animate);
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
-      Source<InfoBarTabHelper>(this),
-      Details<InfoBarRemovedDetails>(&removed_details));
+      content::Source<InfoBarTabHelper>(this),
+      content::Details<InfoBarRemovedDetails>(&removed_details));
 
   infobars_.erase(infobars_.begin() + i);
   // Remove ourselves as an observer if we are tracking no more InfoBars.
   if (infobars_.empty()) {
     registrar_.Remove(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-        Source<NavigationController>(&tab_contents()->controller()));
+        content::Source<NavigationController>(&tab_contents()->controller()));
   }
 }
 
@@ -171,15 +172,15 @@ bool InfoBarTabHelper::OnMessageReceived(const IPC::Message& message) {
 }
 
 void InfoBarTabHelper::Observe(int type,
-                               const NotificationSource& source,
-                               const NotificationDetails& details) {
+                               const content::NotificationSource& source,
+                               const content::NotificationDetails& details) {
   switch (type) {
     case content::NOTIFICATION_NAV_ENTRY_COMMITTED: {
       DCHECK(&tab_contents()->controller() ==
-             Source<NavigationController>(source).ptr());
+             content::Source<NavigationController>(source).ptr());
 
       content::LoadCommittedDetails& committed_details =
-          *(Details<content::LoadCommittedDetails>(details).ptr());
+          *(content::Details<content::LoadCommittedDetails>(details).ptr());
 
       // NOTE: It is not safe to change the following code to count upwards or
       // use iterators, as the RemoveInfoBar() call synchronously modifies our

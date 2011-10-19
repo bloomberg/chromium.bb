@@ -140,7 +140,7 @@ void FaviconTabHelper::StartDownload(int id, const GURL& url, int image_size) {
 void FaviconTabHelper::NotifyFaviconUpdated() {
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_FAVICON_UPDATED,
-      Source<TabContents>(tab_contents()),
+      content::Source<TabContents>(tab_contents()),
       NotificationService::NoDetails());
   tab_contents()->NotifyNavigationStateChanged(TabContents::INVALIDATE_TAB);
 }

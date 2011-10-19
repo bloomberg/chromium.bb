@@ -15,7 +15,7 @@
 #include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -67,19 +67,19 @@ class ThreadNotifier :  // NOLINT
  public:
   explicit ThreadNotifier(base::Thread* notify_thread);
 
-  void Notify(int type, const NotificationDetails& details);
+  void Notify(int type, const content::NotificationDetails& details);
 
   void Notify(int type,
-              const NotificationSource& source,
-              const NotificationDetails& details);
+              const content::NotificationSource& source,
+              const content::NotificationDetails& details);
 
  private:
   friend class base::RefCountedThreadSafe<ThreadNotifier>;
   virtual ~ThreadNotifier();
 
   void NotifyTask(int type,
-                  const NotificationSource& source,
-                  const NotificationDetails& details);
+                  const content::NotificationSource& source,
+                  const content::NotificationDetails& details);
 
   base::WaitableEvent done_event_;
   base::Thread* notify_thread_;

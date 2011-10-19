@@ -13,7 +13,7 @@
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_source.h"
 #include "net/url_request/url_request_context_getter.h"
 
 // Unfortunately kNumServices must be defined in the .h.
@@ -81,7 +81,7 @@ void TokenService::Initialize(const char* const source,
 
   registrar_.Add(this,
                  chrome::NOTIFICATION_TOKEN_UPDATED,
-                 Source<Profile>(profile));
+                 content::Source<Profile>(profile));
 }
 
 void TokenService::ResetCredentialsInMemory() {
@@ -230,8 +230,8 @@ void TokenService::FireTokenAvailableNotification(
   TokenAvailableDetails details(service, auth_token);
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_TOKEN_AVAILABLE,
-      Source<TokenService>(this),
-      Details<const TokenAvailableDetails>(&details));
+      content::Source<TokenService>(this),
+      content::Details<const TokenAvailableDetails>(&details));
 }
 
 void TokenService::FireTokenRequestFailedNotification(
@@ -241,8 +241,8 @@ void TokenService::FireTokenRequestFailedNotification(
   TokenRequestFailedDetails details(service, error);
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_TOKEN_REQUEST_FAILED,
-      Source<TokenService>(this),
-      Details<const TokenRequestFailedDetails>(&details));
+      content::Source<TokenService>(this),
+      content::Details<const TokenRequestFailedDetails>(&details));
 }
 
 void TokenService::IssueAuthTokenForTest(const std::string& service,
@@ -317,7 +317,7 @@ void TokenService::OnWebDataServiceRequestDone(WebDataService::Handle h,
 
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_TOKEN_LOADING_FINISHED,
-      Source<TokenService>(this),
+      content::Source<TokenService>(this),
       NotificationService::NoDetails());
 }
 
@@ -408,10 +408,10 @@ void TokenService::LoadTokensIntoMemory(
 }
 
 void TokenService::Observe(int type,
-                           const NotificationSource& source,
-                           const NotificationDetails& details) {
+                           const content::NotificationSource& source,
+                           const content::NotificationDetails& details) {
   DCHECK_EQ(type, chrome::NOTIFICATION_TOKEN_UPDATED);
   TokenAvailableDetails* tok_details =
-      Details<TokenAvailableDetails>(details).ptr();
+      content::Details<TokenAvailableDetails>(details).ptr();
   OnIssueAuthTokenSuccess(tok_details->service(), tok_details->token());
 }

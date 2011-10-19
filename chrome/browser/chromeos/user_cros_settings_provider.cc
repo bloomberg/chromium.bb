@@ -65,7 +65,7 @@ const char* kListSettings[] = {
 // SignedSettingsTempStorage if there is no owner yet, or waits for an
 // OWNERSHIP_CHECKED notification to delay the storing until the owner has
 // logged in.
-class MigrationHelper : public NotificationObserver {
+class MigrationHelper : public content::NotificationObserver {
  public:
   explicit MigrationHelper() : callback_(NULL) {
     registrar_.Add(this, chrome::NOTIFICATION_OWNERSHIP_CHECKED,
@@ -87,8 +87,8 @@ class MigrationHelper : public NotificationObserver {
 
   // NotificationObserver overrides:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE {
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE {
     if (type == chrome::NOTIFICATION_OWNERSHIP_CHECKED)
       MigrateValues();
   }
@@ -114,7 +114,7 @@ class MigrationHelper : public NotificationObserver {
     }
   }
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
   scoped_ptr<OwnershipStatusChecker> ownership_checker_;
   SignedSettingsHelper::Callback* callback_;
 

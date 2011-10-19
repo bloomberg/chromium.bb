@@ -26,9 +26,9 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -68,7 +68,7 @@ class AsyncUninstaller : public ExtensionUninstallDialog::Delegate {
 
 namespace extension_action_context_menu {
 
-class DevmodeObserver : public NotificationObserver {
+class DevmodeObserver : public content::NotificationObserver {
  public:
   DevmodeObserver(ExtensionActionContextMenu* menu,
                              PrefService* service)
@@ -79,8 +79,8 @@ class DevmodeObserver : public NotificationObserver {
   virtual ~DevmodeObserver() {}
 
   void Observe(int type,
-               const NotificationSource& source,
-               const NotificationDetails& details) {
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) {
     if (type == chrome::NOTIFICATION_PREF_CHANGED)
       [menu_ updateInspectorItem];
     else
@@ -93,24 +93,24 @@ class DevmodeObserver : public NotificationObserver {
   PrefChangeRegistrar registrar_;
 };
 
-class ProfileObserverBridge : public NotificationObserver {
+class ProfileObserverBridge : public content::NotificationObserver {
  public:
   ProfileObserverBridge(ExtensionActionContextMenu* owner,
                         const Profile* profile)
       : owner_(owner),
         profile_(profile) {
     registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                   Source<Profile>(profile));
+                   content::Source<Profile>(profile));
   }
 
   ~ProfileObserverBridge() {}
 
-  // Overridden from NotificationObserver
+  // Overridden from content::NotificationObserver
   void Observe(int type,
-               const NotificationSource& source,
+               const content::NotificationSource& source,
                const NotificationDetails& details) {
     if (type == chrome::NOTIFICATION_PROFILE_DESTROYED &&
-        source == Source<Profile>(profile_)) {
+        source == content::Source<Profile>(profile_)) {
       [owner_ invalidateProfile];
     }
   }
@@ -118,7 +118,7 @@ class ProfileObserverBridge : public NotificationObserver {
  private:
   ExtensionActionContextMenu* owner_;
   const Profile* profile_;
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 };
 
 }  // namespace extension_action_context_menu

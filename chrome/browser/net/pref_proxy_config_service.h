@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
-#include "content/common/notification_observer.h"
+#include "content/public/browser/notification_observer.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_config_service.h"
 
@@ -23,7 +23,7 @@ class PrefSetObserver;
 // PrefProxyConfigService to use.
 class PrefProxyConfigTracker
     : public base::RefCountedThreadSafe<PrefProxyConfigTracker>,
-      public NotificationObserver {
+      public content::NotificationObserver {
  public:
   // Observer interface used to send out notifications on the IO thread about
   // changes to the proxy configuration.
@@ -62,10 +62,10 @@ class PrefProxyConfigTracker
   friend class base::RefCountedThreadSafe<PrefProxyConfigTracker>;
   virtual ~PrefProxyConfigTracker();
 
-  // NotificationObserver implementation:
+  // content::NotificationObserver implementation:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Install a new configuration. This is invoked on the IO thread to update
   // the internal state after handling a pref change on the UI thread.

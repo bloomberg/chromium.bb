@@ -25,8 +25,8 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
-#include "content/common/notification_registrar.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
 #include "content/test/test_notification_tracker.h"
 #include "net/base/net_util.h"
@@ -45,11 +45,11 @@ class NavigationControllerTest : public ChromeRenderViewHostTestHarness {
 void RegisterForAllNavNotifications(TestNotificationTracker* tracker,
                                     NavigationController* controller) {
   tracker->ListenFor(content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-                     Source<NavigationController>(controller));
+                     content::Source<NavigationController>(controller));
   tracker->ListenFor(content::NOTIFICATION_NAV_LIST_PRUNED,
-                     Source<NavigationController>(controller));
+                     content::Source<NavigationController>(controller));
   tracker->ListenFor(content::NOTIFICATION_NAV_ENTRY_CHANGED,
-                     Source<NavigationController>(controller));
+                     content::Source<NavigationController>(controller));
 }
 
 class TestTabContentsDelegate : public TabContentsDelegate {
@@ -1380,20 +1380,20 @@ TEST_F(NavigationControllerTest, ClientRedirectAfterInPageNavigation) {
 
 // NotificationObserver implementation used in verifying we've received the
 // content::NOTIFICATION_NAV_LIST_PRUNED method.
-class PrunedListener : public NotificationObserver {
+class PrunedListener : public content::NotificationObserver {
  public:
   explicit PrunedListener(NavigationController* controller)
       : notification_count_(0) {
     registrar_.Add(this, content::NOTIFICATION_NAV_LIST_PRUNED,
-                   Source<NavigationController>(controller));
+                   content::Source<NavigationController>(controller));
   }
 
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) {
     if (type == content::NOTIFICATION_NAV_LIST_PRUNED) {
       notification_count_++;
-      details_ = *(Details<content::PrunedDetails>(details).ptr());
+      details_ = *(content::Details<content::PrunedDetails>(details).ptr());
     }
   }
 
@@ -1404,7 +1404,7 @@ class PrunedListener : public NotificationObserver {
   content::PrunedDetails details_;
 
  private:
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(PrunedListener);
 };

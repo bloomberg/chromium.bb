@@ -8,8 +8,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class NavigationController;
 class RenderViewHost;
@@ -19,7 +19,7 @@ class RenderViewHost;
 // WebUI tests that need to inject javascript, construct with a
 // JsInjectionReadyObserver and this class will call its
 // OnJsInjectionReady() at the appropriate time.
-class TestNavigationObserver : public NotificationObserver {
+class TestNavigationObserver : public content::NotificationObserver {
  public:
   class RVHOSendJS;
 
@@ -39,7 +39,7 @@ class TestNavigationObserver : public NotificationObserver {
   // OnEntryCommitted() after |number_of_navigations| navigations.
   // Note: |js_injection_ready_observer| is owned by the caller and should be
   // valid until this class is destroyed.
-  TestNavigationObserver(const NotificationSource& source,
+  TestNavigationObserver(const content::NotificationSource& source,
                          JsInjectionReadyObserver* js_injection_ready_observer,
                          int number_of_navigations);
 
@@ -57,14 +57,14 @@ class TestNavigationObserver : public NotificationObserver {
       int number_of_navigations);
 
   // Register this TestNavigationObserver as an observer of the |source|.
-  void RegisterAsObserver(const NotificationSource& source);
+  void RegisterAsObserver(const content::NotificationSource& source);
 
  private:
-  // NotificationObserver:
-  virtual void Observe(int type, const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+  // content::NotificationObserver:
+  virtual void Observe(int type, const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // If true the navigation has started.
   bool navigation_started_;

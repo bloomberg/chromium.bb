@@ -19,8 +19,8 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -379,7 +379,7 @@ void BalloonViewImpl::Show(Balloon* balloon) {
 
   notification_registrar_.Add(
     this, chrome::NOTIFICATION_NOTIFY_BALLOON_DISCONNECTED,
-    Source<Balloon>(balloon));
+    content::Source<Balloon>(balloon));
 }
 
 void BalloonViewImpl::CreateOptionsMenu() {
@@ -503,8 +503,8 @@ void BalloonViewImpl::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 }
 
 void BalloonViewImpl::Observe(int type,
-                              const NotificationSource& source,
-                              const NotificationDetails& details) {
+                              const content::NotificationSource& source,
+                              const content::NotificationDetails& details) {
   if (type != chrome::NOTIFICATION_NOTIFY_BALLOON_DISCONNECTED) {
     NOTREACHED();
     return;
@@ -514,6 +514,6 @@ void BalloonViewImpl::Observe(int type,
   // (e.g., because of a crash), we want to close the balloon.
   notification_registrar_.Remove(
       this, chrome::NOTIFICATION_NOTIFY_BALLOON_DISCONNECTED,
-      Source<Balloon>(balloon_));
+      content::Source<Balloon>(balloon_));
   Close(false);
 }

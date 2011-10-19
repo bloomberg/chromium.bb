@@ -36,7 +36,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/user_metrics.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -207,8 +207,9 @@ WrenchMenuModel::WrenchMenuModel(ui::AcceleratorProvider* provider,
 
   tabstrip_model_->AddObserver(this);
 
-  registrar_.Add(this, content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
-                 Source<HostZoomMap>(browser_->profile()->GetHostZoomMap()));
+  registrar_.Add(
+      this, content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
+      content::Source<HostZoomMap>(browser_->profile()->GetHostZoomMap()));
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                  NotificationService::AllSources());
 }
@@ -412,8 +413,8 @@ void WrenchMenuModel::TabStripModelDeleted() {
 }
 
 void WrenchMenuModel::Observe(int type,
-                              const NotificationSource& source,
-                              const NotificationDetails& details) {
+                              const content::NotificationSource& source,
+                              const content::NotificationDetails& details) {
   switch (type) {
     case content::NOTIFICATION_ZOOM_LEVEL_CHANGED:
     case content::NOTIFICATION_NAV_ENTRY_COMMITTED:

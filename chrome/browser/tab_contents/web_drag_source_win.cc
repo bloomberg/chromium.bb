@@ -9,7 +9,7 @@
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 
 using WebKit::WebDragOperationNone;
@@ -37,9 +37,9 @@ WebDragSource::WebDragSource(gfx::NativeWindow source_wnd,
       render_view_host_(tab_contents->render_view_host()),
       effect_(DROPEFFECT_NONE) {
   registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_SWAPPED,
-                 Source<TabContents>(tab_contents));
+                 content::Source<TabContents>(tab_contents));
   registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_DISCONNECTED,
-                 Source<TabContents>(tab_contents));
+                 content::Source<TabContents>(tab_contents));
 }
 
 WebDragSource::~WebDragSource() {
@@ -108,7 +108,8 @@ void WebDragSource::OnDragSourceMove() {
 }
 
 void WebDragSource::Observe(int type,
-    const NotificationSource& source, const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (content::NOTIFICATION_TAB_CONTENTS_SWAPPED == type) {
     // When the tab contents get swapped, our render view host goes away.
     // That's OK, we can continue the drag, we just can't send messages back to

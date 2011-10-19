@@ -186,10 +186,11 @@ void TabCloseableStateWatcher::OnBrowserRemoved(const Browser* browser) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TabCloseableStateWatcher, NotificationObserver implementation:
+// TabCloseableStateWatcher, content::NotificationObserver implementation:
 
 void TabCloseableStateWatcher::Observe(int type,
-    const NotificationSource& source, const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (type != content::NOTIFICATION_APP_EXITING)
     NOTREACHED();
   if (!signing_off_) {
@@ -263,7 +264,7 @@ void TabCloseableStateWatcher::SetCloseableState(bool closeable) {
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_CLOSEABLE_STATE_CHANGED,
       NotificationService::AllSources(),
-      Details<bool>(&can_close_tab_));
+      content::Details<bool>(&can_close_tab_));
 }
 
 bool TabCloseableStateWatcher::CanCloseBrowserImpl(

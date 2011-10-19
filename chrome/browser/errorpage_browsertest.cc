@@ -78,7 +78,7 @@ class ErrorPageTest : public InProcessBrowserTest {
         ASCIIToUTF16(expected_title));
 
     TestNavigationObserver test_navigation_observer(
-        Source<NavigationController>(
+        content::Source<NavigationController>(
             &browser()->GetSelectedTabContentsWrapper()->controller()),
         NULL,
         num_navigations);

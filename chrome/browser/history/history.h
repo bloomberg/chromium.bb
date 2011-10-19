@@ -21,8 +21,8 @@
 #include "chrome/browser/search_engines/template_url_id.h"
 #include "chrome/common/ref_counted_util.h"
 #include "content/browser/cancelable_request.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/common/page_transition_types.h"
 #include "sql/init_status.h"
 
@@ -98,7 +98,7 @@ class HistoryDBTask : public base::RefCountedThreadSafe<HistoryDBTask> {
 // This service is thread safe. Each request callback is invoked in the
 // thread that made the request.
 class HistoryService : public CancelableRequestProvider,
-                       public NotificationObserver,
+                       public content::NotificationObserver,
                        public base::RefCountedThreadSafe<HistoryService> {
  public:
   // Miscellaneous commonly-used types.
@@ -605,10 +605,10 @@ class HistoryService : public CancelableRequestProvider,
   friend class RedirectRequest;
   friend class TestingProfile;
 
-  // Implementation of NotificationObserver.
+  // Implementation of content::NotificationObserver.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Low-level Init().  Same as the public version, but adds a |no_db| parameter
   // that is only set by unittests which causes the backend to not init its DB.
@@ -831,7 +831,7 @@ class HistoryService : public CancelableRequestProvider,
                                       a, b, c, d));
   }
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // Some void primitives require some internal processing in the main thread
   // when done. We use this internal consumer for this purpose.

@@ -118,7 +118,7 @@ ExtensionSpeechInputManager::ExtensionSpeechInputManager(Profile* profile)
       state_(kIdle),
       speech_interface_(NULL) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
-                 Source<Profile>(profile_));
+                 content::Source<Profile>(profile_));
 }
 
 ExtensionSpeechInputManager::~ExtensionSpeechInputManager() {
@@ -138,12 +138,14 @@ void ExtensionSpeechInputManager::InitializeFactory() {
 }
 
 void ExtensionSpeechInputManager::Observe(int type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED)
-    ExtensionUnloaded(Details<UnloadedExtensionInfo>(details)->extension->id());
-  else
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED) {
+    ExtensionUnloaded(
+        content::Details<UnloadedExtensionInfo>(details)->extension->id());
+  } else {
     NOTREACHED();
+  }
 }
 
 void ExtensionSpeechInputManager::ShutdownOnUIThread() {
@@ -272,8 +274,8 @@ void ExtensionSpeechInputManager::DidStartReceivingAudioOnUIThread() {
   VLOG(1) << "Sending start notification";
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_SPEECH_INPUT_RECORDING_STARTED,
-      Source<Profile>(profile_),
-      Details<std::string>(&extension_id_in_use_));
+      content::Source<Profile>(profile_),
+      content::Details<std::string>(&extension_id_in_use_));
 }
 
 void ExtensionSpeechInputManager::OnRecognizerError(
@@ -405,8 +407,8 @@ void ExtensionSpeechInputManager::DispatchError(
     ExtensionError details(extension_id, error);
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTENSION_SPEECH_INPUT_FAILED,
-        Source<Profile>(profile_),
-        Details<ExtensionError>(&details));
+        content::Source<Profile>(profile_),
+        content::Details<ExtensionError>(&details));
   }
 
   // Used for errors that are also reported via the onError event.
@@ -604,6 +606,7 @@ void ExtensionSpeechInputManager::StopSucceededOnUIThread() {
 
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_SPEECH_INPUT_RECORDING_STOPPED,
-      Source<Profile>(profile_), // Guarded by the state_ == kShutdown check.
-      Details<std::string>(&extension_id));
+      // Guarded by the state_ == kShutdown check.
+      content::Source<Profile>(profile_),      
+      content::Details<std::string>(&extension_id));
 }

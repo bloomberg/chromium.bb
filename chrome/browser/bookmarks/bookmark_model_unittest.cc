@@ -28,9 +28,9 @@
 #include "chrome/test/base/model_test_utils.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_registrar.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/tree_node_iterator.h"
 #include "ui/base/models/tree_node_model.h"
@@ -540,22 +540,23 @@ TEST_F(BookmarkModelTest, HasBookmarks) {
   EXPECT_TRUE(model_.HasBookmarks());
 }
 
-// NotificationObserver implementation used in verifying we've received the
-// NOTIFY_URLS_STARRED method correctly.
-class StarredListener : public NotificationObserver {
+// content::NotificationObserver implementation used in verifying we've received
+// the NOTIFY_URLS_STARRED method correctly.
+class StarredListener : public content::NotificationObserver {
  public:
   StarredListener() : notification_count_(0), details_(false) {
     registrar_.Add(this, chrome::NOTIFICATION_URLS_STARRED,
-                   Source<Profile>(NULL));
+                   content::Source<Profile>(NULL));
   }
 
   // NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE {
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE {
     if (type == chrome::NOTIFICATION_URLS_STARRED) {
       notification_count_++;
-      details_ = *(Details<history::URLsStarredDetails>(details).ptr());
+      details_ =
+          *(content::Details<history::URLsStarredDetails>(details).ptr());
     }
   }
 
@@ -566,7 +567,7 @@ class StarredListener : public NotificationObserver {
   history::URLsStarredDetails details_;
 
  private:
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(StarredListener);
 };

@@ -41,8 +41,8 @@
 #include "content/browser/tab_contents/render_view_host_manager.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/common/notification_service.h"
 
 namespace prerender {
@@ -162,14 +162,15 @@ struct PrerenderManager::NavigationRecord {
   }
 };
 
-class PrerenderManager::MostVisitedSites : public NotificationObserver {
+class PrerenderManager::MostVisitedSites
+    : public content::NotificationObserver {
  public:
   explicit MostVisitedSites(Profile* profile) :
       profile_(profile) {
     history::TopSites* top_sites = GetTopSites();
     if (top_sites) {
       registrar_.Add(this, chrome::NOTIFICATION_TOP_SITES_CHANGED,
-                     Source<history::TopSites>(top_sites));
+                     content::Source<history::TopSites>(top_sites));
     }
 
     UpdateMostVisited();
@@ -192,8 +193,8 @@ class PrerenderManager::MostVisitedSites : public NotificationObserver {
   }
 
   void Observe(int type,
-               const NotificationSource& source,
-               const NotificationDetails& details) {
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) {
     DCHECK_EQ(type, chrome::NOTIFICATION_TOP_SITES_CHANGED);
     UpdateMostVisited();
   }
@@ -211,7 +212,7 @@ class PrerenderManager::MostVisitedSites : public NotificationObserver {
 
   CancelableRequestConsumer topsites_consumer_;
   Profile* profile_;
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
   std::set<GURL> urls_;
 };
 

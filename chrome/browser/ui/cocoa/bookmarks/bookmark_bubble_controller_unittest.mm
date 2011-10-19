@@ -474,7 +474,7 @@ TEST_F(BookmarkBubbleControllerTest, BubbleGoesAwayOnNewTab) {
   // creation. See TabContents::NotifyConnected().
   NotificationService::current()->Notify(
       content::NOTIFICATION_TAB_CONTENTS_CONNECTED,
-      Source<TabContents>(NULL),
+      content::Source<TabContents>(NULL),
       NotificationService::NoDetails());
 
   // Confirm bubble going bye-bye.

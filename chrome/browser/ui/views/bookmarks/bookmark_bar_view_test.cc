@@ -473,7 +473,7 @@ VIEW_TEST(BookmarkBarViewTest3, Submenus)
 // Observer that posts task upon the context menu creation.
 // This is necessary for Linux as the context menu has to check
 // the clipboard, which invokes the event loop.
-class ContextMenuNotificationObserver : public NotificationObserver {
+class ContextMenuNotificationObserver : public content::NotificationObserver {
  public:
   explicit ContextMenuNotificationObserver(const base::Closure& task)
       : task_(task) {
@@ -483,8 +483,8 @@ class ContextMenuNotificationObserver : public NotificationObserver {
   }
 
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) {
     MessageLoop::current()->PostTask(FROM_HERE, task_);
   }
 
@@ -492,7 +492,7 @@ class ContextMenuNotificationObserver : public NotificationObserver {
   void set_task(const base::Closure& task) { task_ = task; }
 
  private:
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
   base::Closure task_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextMenuNotificationObserver);

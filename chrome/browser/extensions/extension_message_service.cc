@@ -326,18 +326,20 @@ void ExtensionMessageService::PostMessageFromRenderer(
 
   DispatchOnMessage(port, message, dest_port_id);
 }
-void ExtensionMessageService::Observe(int type,
-                                      const NotificationSource& source,
-                                      const NotificationDetails& details) {
+void ExtensionMessageService::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   switch (type) {
     case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED:
     case content::NOTIFICATION_RENDERER_PROCESS_CLOSED: {
-      RenderProcessHost* renderer = Source<RenderProcessHost>(source).ptr();
+      RenderProcessHost* renderer =
+          content::Source<RenderProcessHost>(source).ptr();
       OnSenderClosed(renderer);
       break;
     }
     case content::NOTIFICATION_RENDER_VIEW_HOST_DELETED:
-      OnSenderClosed(Source<RenderViewHost>(source).ptr());
+      OnSenderClosed(content::Source<RenderViewHost>(source).ptr());
       break;
     default:
       NOTREACHED();

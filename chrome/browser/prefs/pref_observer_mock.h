@@ -9,9 +9,9 @@
 #include <string>
 
 #include "chrome/browser/prefs/pref_service.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -37,14 +37,14 @@ MATCHER_P3(PrefValueMatches, prefs, pref_name, value, "") {
 }
 
 // A mock for testing preference notifications and easy setup of expectations.
-class PrefObserverMock : public NotificationObserver {
+class PrefObserverMock : public content::NotificationObserver {
  public:
   PrefObserverMock();
   virtual ~PrefObserverMock();
 
   MOCK_METHOD3(Observe, void(int type,
-                             const NotificationSource& source,
-                             const NotificationDetails& details));
+                             const content::NotificationSource& source,
+                             const content::NotificationDetails& details));
 
   void Expect(const PrefService* prefs,
               const std::string& pref_name,

@@ -52,7 +52,7 @@ StatusBubbleGtk::StatusBubbleGtk(Profile* profile)
 
   theme_service_->InitThemesFor(this);
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
-                 Source<ThemeService>(theme_service_));
+                 content::Source<ThemeService>(theme_service_));
 }
 
 StatusBubbleGtk::~StatusBubbleGtk() {
@@ -238,8 +238,8 @@ void StatusBubbleGtk::UpdateDownloadShelfVisibility(bool visible) {
 }
 
 void StatusBubbleGtk::Observe(int type,
-                              const NotificationSource& source,
-                              const NotificationDetails& details) {
+                              const content::NotificationSource& source,
+                              const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_BROWSER_THEME_CHANGED) {
     UserChangedTheme();
   }

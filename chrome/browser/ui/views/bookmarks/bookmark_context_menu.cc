@@ -45,7 +45,7 @@ BookmarkContextMenu::~BookmarkContextMenu() {
 void BookmarkContextMenu::RunMenuAt(const gfx::Point& point) {
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_BOOKMARK_CONTEXT_MENU_SHOWN,
-      Source<BookmarkContextMenu>(this),
+      content::Source<BookmarkContextMenu>(this),
       NotificationService::NoDetails());
   // width/height don't matter here.
   if (menu_runner_->RunMenuAt(

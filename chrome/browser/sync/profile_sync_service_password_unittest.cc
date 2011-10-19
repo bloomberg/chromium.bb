@@ -36,8 +36,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/profile_mock.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_observer_mock.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_source.h"
+#include "content/test/notification_observer_mock.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "webkit/glue/password_form.h"
 
@@ -303,10 +303,10 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
   friend class AddPasswordEntriesTask;
 
   scoped_refptr<ThreadNotificationService> notification_service_;
-  NotificationObserverMock observer_;
+  content::NotificationObserverMock observer_;
   ProfileMock profile_;
   scoped_refptr<MockPasswordStore> password_store_;
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 };
 
 class AddPasswordEntriesTask : public Task {

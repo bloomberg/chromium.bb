@@ -10,7 +10,7 @@
 #include <string>
 
 #include "content/browser/tab_contents/interstitial_page.h"
-#include "content/common/notification_observer.h"
+#include "content/public/browser/notification_observer.h"
 #include "googleurl/src/gurl.h"
 
 class TabContents;
@@ -28,10 +28,10 @@ class ChromeInterstitialPage : public InterstitialPage {
   virtual void Show();
 
  protected:
-  // NotificationObserver method:
+  // content::NotificationObserver method:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Invoked when the page sent a command through DOMAutomation.
   virtual void CommandReceived(const std::string& command) {}

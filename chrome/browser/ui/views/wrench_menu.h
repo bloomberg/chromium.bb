@@ -11,8 +11,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/base/models/menu_model.h"
 #include "views/controls/menu/menu_delegate.h"
 
@@ -29,7 +29,7 @@ class View;
 // WrenchMenu adapts the WrenchMenuModel to view's menu related classes.
 class WrenchMenu : public views::MenuDelegate,
                    public BaseBookmarkModelObserver,
-                   public NotificationObserver {
+                   public content::NotificationObserver {
  public:
   explicit WrenchMenu(Browser* browser);
   virtual ~WrenchMenu();
@@ -74,10 +74,10 @@ class WrenchMenu : public views::MenuDelegate,
   // BaseBookmarkModelObserver overrides:
   virtual void BookmarkModelChanged() OVERRIDE;
 
-  // NotificationObserver overrides:
+  // content::NotificationObserver overrides:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   class CutCopyPasteView;
@@ -142,7 +142,7 @@ class WrenchMenu : public views::MenuDelegate,
   // ID to use for the items representing bookmarks in the bookmark menu.
   int first_bookmark_command_id_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(WrenchMenu);
 };

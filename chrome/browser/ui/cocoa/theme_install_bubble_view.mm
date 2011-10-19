@@ -113,9 +113,10 @@ void ThemeInstallBubbleView::Close() {
   }
 }
 
-void ThemeInstallBubbleView::Observe(int type,
-                                     const NotificationSource& source,
-                                     const NotificationDetails& details) {
+void ThemeInstallBubbleView::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   Close();
 }
 

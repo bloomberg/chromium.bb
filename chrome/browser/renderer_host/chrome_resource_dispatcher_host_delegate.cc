@@ -80,7 +80,8 @@ void NotifyDownloadInitiatedOnUI(int render_process_id, int render_view_id) {
     return;
 
   NotificationService::current()->Notify(
-      chrome::NOTIFICATION_DOWNLOAD_INITIATED, Source<RenderViewHost>(rvh),
+      chrome::NOTIFICATION_DOWNLOAD_INITIATED,
+      content::Source<RenderViewHost>(rvh),
       NotificationService::NoDetails());
 }
 

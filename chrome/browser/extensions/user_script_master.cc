@@ -289,11 +289,11 @@ UserScriptMaster::UserScriptMaster(Profile* profile)
       pending_load_(false),
       profile_(profile) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSIONS_READY,
-                 Source<Profile>(profile_));
+                 content::Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
-                 Source<Profile>(profile_));
+                 content::Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
-                 Source<Profile>(profile_));
+                 content::Source<Profile>(profile_));
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CREATED,
                  NotificationService::AllBrowserContextsAndSources());
 }
@@ -325,14 +325,14 @@ void UserScriptMaster::NewScriptsAvailable(base::SharedMemory* handle) {
 
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_USER_SCRIPTS_UPDATED,
-        Source<Profile>(profile_),
-        Details<base::SharedMemory>(handle));
+        content::Source<Profile>(profile_),
+        content::Details<base::SharedMemory>(handle));
   }
 }
 
 void UserScriptMaster::Observe(int type,
-                               const NotificationSource& source,
-                               const NotificationDetails& details) {
+                               const content::NotificationSource& source,
+                               const content::NotificationDetails& details) {
   bool should_start_load = false;
   switch (type) {
     case chrome::NOTIFICATION_EXTENSIONS_READY:
@@ -341,7 +341,8 @@ void UserScriptMaster::Observe(int type,
       break;
     case chrome::NOTIFICATION_EXTENSION_LOADED: {
       // Add any content scripts inside the extension.
-      const Extension* extension = Details<const Extension>(details).ptr();
+      const Extension* extension =
+          content::Details<const Extension>(details).ptr();
       extensions_info_[extension->id()] =
           ExtensionSet::ExtensionPathAndDefaultLocale(
               extension->path(), extension->default_locale());
@@ -360,7 +361,7 @@ void UserScriptMaster::Observe(int type,
     case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
       // Remove any content scripts.
       const Extension* extension =
-          Details<UnloadedExtensionInfo>(details)->extension;
+          content::Details<UnloadedExtensionInfo>(details)->extension;
       extensions_info_.erase(extension->id());
       UserScriptList new_user_scripts;
       for (UserScriptList::iterator iter = user_scripts_.begin();
@@ -377,7 +378,8 @@ void UserScriptMaster::Observe(int type,
       break;
     }
     case content::NOTIFICATION_RENDERER_PROCESS_CREATED: {
-      RenderProcessHost* process = Source<RenderProcessHost>(source).ptr();
+      RenderProcessHost* process =
+          content::Source<RenderProcessHost>(source).ptr();
       Profile* profile = Profile::FromBrowserContext(
           process->browser_context());
       if (!profile_->IsSameProfile(profile))

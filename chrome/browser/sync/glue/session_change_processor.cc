@@ -21,9 +21,9 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_details.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 
 namespace browser_sync {
 
@@ -31,9 +31,10 @@ namespace {
 
 // Extract the source SyncedTabDelegate from a NotificationSource originating
 // from a NavigationController, if it exists. Returns |NULL| otherwise.
-SyncedTabDelegate* ExtractSyncedTabDelegate(const NotificationSource& source) {
+SyncedTabDelegate* ExtractSyncedTabDelegate(
+    const content::NotificationSource& source) {
   TabContentsWrapper* tab =  TabContentsWrapper::GetCurrentWrapperForContents(
-      Source<NavigationController>(source).ptr()->tab_contents());
+      content::Source<NavigationController>(source).ptr()->tab_contents());
   if (!tab)
     return NULL;
   return tab->synced_tab_delegate();
@@ -70,9 +71,10 @@ SessionChangeProcessor::~SessionChangeProcessor() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void SessionChangeProcessor::Observe(int type,
-                                     const NotificationSource& source,
-                                     const NotificationDetails& details) {
+void SessionChangeProcessor::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(running());
   DCHECK(profile_);
@@ -81,7 +83,7 @@ void SessionChangeProcessor::Observe(int type,
   std::vector<SyncedTabDelegate*> modified_tabs;
   switch (type) {
     case chrome::NOTIFICATION_BROWSER_OPENED: {
-      Browser* browser = Source<Browser>(source).ptr();
+      Browser* browser = content::Source<Browser>(source).ptr();
       if (!browser || browser->profile() != profile_) {
         return;
       }
@@ -90,7 +92,7 @@ void SessionChangeProcessor::Observe(int type,
     }
 
     case content::NOTIFICATION_TAB_PARENTED: {
-      SyncedTabDelegate* tab = Source<SyncedTabDelegate>(source).ptr();
+      SyncedTabDelegate* tab = content::Source<SyncedTabDelegate>(source).ptr();
       if (!tab || tab->profile() != profile_) {
         return;
       }
@@ -102,7 +104,7 @@ void SessionChangeProcessor::Observe(int type,
     case content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME: {
       TabContentsWrapper* tab_contents_wrapper =
           TabContentsWrapper::GetCurrentWrapperForContents(
-              Source<TabContents>(source).ptr());
+              content::Source<TabContents>(source).ptr());
       if (!tab_contents_wrapper) {
         return;
       }
@@ -157,7 +159,7 @@ void SessionChangeProcessor::Observe(int type,
 
     case chrome::NOTIFICATION_TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED: {
       ExtensionTabHelper* extension_tab_helper =
-          Source<ExtensionTabHelper>(source).ptr();
+          content::Source<ExtensionTabHelper>(source).ptr();
       if (!extension_tab_helper ||
           extension_tab_helper->tab_contents()->browser_context() != profile_) {
         return;
@@ -270,7 +272,7 @@ void SessionChangeProcessor::ApplyChangesFromSyncModel(
   // Notify foreign session handlers that there are new sessions.
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_FOREIGN_SESSION_UPDATED,
-      Source<Profile>(profile_),
+      content::Source<Profile>(profile_),
       NotificationService::NoDetails());
 
   StartObserving();

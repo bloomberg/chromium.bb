@@ -267,12 +267,12 @@ ExtensionPreferenceEventRouter::~ExtensionPreferenceEventRouter() { }
 
 void ExtensionPreferenceEventRouter::Observe(
     int type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_PREF_CHANGED) {
     const std::string* pref_key =
-        Details<const std::string>(details).ptr();
-    OnPrefChanged(Source<PrefService>(source).ptr(), *pref_key);
+        content::Details<const std::string>(details).ptr();
+    OnPrefChanged(content::Source<PrefService>(source).ptr(), *pref_key);
   } else {
     NOTREACHED();
   }

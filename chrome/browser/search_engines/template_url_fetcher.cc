@@ -16,14 +16,15 @@
 #include "chrome/browser/search_engines/template_url_parser.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/common/net/url_fetcher.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_source.h"
 #include "net/url_request/url_request_status.h"
 
 // RequestDelegate ------------------------------------------------------------
-class TemplateURLFetcher::RequestDelegate : public URLFetcher::Delegate,
-                                            public NotificationObserver {
+class TemplateURLFetcher::RequestDelegate
+    : public URLFetcher::Delegate,
+      public content::NotificationObserver {
  public:
   // Takes ownership of |callbacks|.
   RequestDelegate(TemplateURLFetcher* fetcher,
@@ -33,10 +34,10 @@ class TemplateURLFetcher::RequestDelegate : public URLFetcher::Delegate,
                   TemplateURLFetcherCallbacks* callbacks,
                   ProviderType provider_type);
 
-  // NotificationObserver:
+  // content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // URLFetcher::Delegate:
   // If data contains a valid OSDD, a TemplateURL is created and added to
@@ -70,7 +71,7 @@ class TemplateURLFetcher::RequestDelegate : public URLFetcher::Delegate,
   scoped_ptr<TemplateURLFetcherCallbacks> callbacks_;
 
   // Handles registering for our notifications.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestDelegate);
 };
@@ -98,7 +99,7 @@ TemplateURLFetcher::RequestDelegate::RequestDelegate(
     // Start the model load and set-up waiting for it.
     registrar_.Add(this,
                    chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED,
-                   Source<TemplateURLService>(model));
+                   content::Source<TemplateURLService>(model));
     model->Load();
   }
 
@@ -108,8 +109,8 @@ TemplateURLFetcher::RequestDelegate::RequestDelegate(
 
 void TemplateURLFetcher::RequestDelegate::Observe(
     int type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED);
 
   if (!template_url_.get())

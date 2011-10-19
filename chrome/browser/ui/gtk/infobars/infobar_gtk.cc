@@ -96,7 +96,7 @@ InfoBarGtk::InfoBarGtk(InfoBarTabHelper* owner, InfoBarDelegate* delegate)
                    this);
 
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
-                 Source<ThemeService>(theme_service_));
+                 content::Source<ThemeService>(theme_service_));
   UpdateBorderColor();
 }
 
@@ -280,8 +280,8 @@ void InfoBarGtk::PlatformSpecificOnHeightsRecalculated() {
 }
 
 void InfoBarGtk::Observe(int type,
-                         const NotificationSource& source,
-                         const NotificationDetails& details) {
+                         const content::NotificationSource& source,
+                         const content::NotificationDetails& details) {
   UpdateBorderColor();
 }
 

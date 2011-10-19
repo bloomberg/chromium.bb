@@ -212,8 +212,8 @@ void LoginHandler::RemoveObservers() {
 }
 
 void LoginHandler::Observe(int type,
-                           const NotificationSource& source,
-                           const NotificationDetails& details) {
+                           const content::NotificationSource& source,
+                           const content::NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(type == chrome::NOTIFICATION_AUTH_SUPPLIED ||
          type == chrome::NOTIFICATION_AUTH_CANCELLED);
@@ -227,7 +227,7 @@ void LoginHandler::Observe(int type,
     return;
 
   LoginNotificationDetails* login_details =
-      Details<LoginNotificationDetails>(details).ptr();
+      content::Details<LoginNotificationDetails>(details).ptr();
 
   // WasAuthHandled() should always test positive before we publish
   // AUTH_SUPPLIED or AUTH_CANCELLED notifications.
@@ -240,7 +240,7 @@ void LoginHandler::Observe(int type,
   // Set or cancel the auth in this handler.
   if (type == chrome::NOTIFICATION_AUTH_SUPPLIED) {
     AuthSuppliedLoginNotificationDetails* supplied_details =
-        Details<AuthSuppliedLoginNotificationDetails>(details).ptr();
+        content::Details<AuthSuppliedLoginNotificationDetails>(details).ptr();
     SetAuth(supplied_details->username(), supplied_details->password());
   } else {
     DCHECK(type == chrome::NOTIFICATION_AUTH_CANCELLED);
@@ -275,8 +275,8 @@ void LoginHandler::NotifyAuthNeeded() {
   LoginNotificationDetails details(this);
 
   service->Notify(chrome::NOTIFICATION_AUTH_NEEDED,
-                  Source<NavigationController>(controller),
-                  Details<LoginNotificationDetails>(&details));
+                  content::Source<NavigationController>(controller),
+                  content::Details<LoginNotificationDetails>(&details));
 }
 
 void LoginHandler::NotifyAuthCancelled() {
@@ -293,8 +293,8 @@ void LoginHandler::NotifyAuthCancelled() {
   LoginNotificationDetails details(this);
 
   service->Notify(chrome::NOTIFICATION_AUTH_CANCELLED,
-                  Source<NavigationController>(controller),
-                  Details<LoginNotificationDetails>(&details));
+                  content::Source<NavigationController>(controller),
+                  content::Details<LoginNotificationDetails>(&details));
 }
 
 void LoginHandler::NotifyAuthSupplied(const string16& username,
@@ -310,9 +310,10 @@ void LoginHandler::NotifyAuthSupplied(const string16& username,
   NavigationController* controller = &requesting_contents->controller();
   AuthSuppliedLoginNotificationDetails details(this, username, password);
 
-  service->Notify(chrome::NOTIFICATION_AUTH_SUPPLIED,
-                  Source<NavigationController>(controller),
-                  Details<AuthSuppliedLoginNotificationDetails>(&details));
+  service->Notify(
+      chrome::NOTIFICATION_AUTH_SUPPLIED,
+      content::Source<NavigationController>(controller),
+      content::Details<AuthSuppliedLoginNotificationDetails>(&details));
 }
 
 void LoginHandler::ReleaseSoon() {

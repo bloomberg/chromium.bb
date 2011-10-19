@@ -13,9 +13,9 @@
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "content/browser/javascript_dialogs.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
 #include "content/common/window_container_type.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class TabContents;
@@ -32,7 +32,7 @@ class Rect;
 // it is never allowed to navigate across a SiteInstance boundary.
 class BackgroundContents : public RenderViewHostDelegate,
                            public RenderViewHostDelegate::View,
-                           public NotificationObserver,
+                           public content::NotificationObserver,
                            public content::JavaScriptDialogDelegate {
  public:
   class Delegate {
@@ -109,10 +109,10 @@ class BackgroundContents : public RenderViewHostDelegate,
   virtual void GotFocus() {}
   virtual void TakeFocus(bool reverse) {}
 
-  // NotificationObserver
+  // content::NotificationObserver
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Overridden from JavaScriptDialogDelegate:
   virtual void OnDialogClosed(IPC::Message* reply_msg,
@@ -144,7 +144,7 @@ class BackgroundContents : public RenderViewHostDelegate,
   // The URL being hosted.
   GURL url_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundContents);
 };

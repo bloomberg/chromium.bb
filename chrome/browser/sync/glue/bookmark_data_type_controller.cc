@@ -11,8 +11,8 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 
 namespace browser_sync {
 
@@ -38,7 +38,7 @@ bool BookmarkDataTypeController::StartModels() {
 
   // Add an observer and continue when the bookmarks model is loaded.
   registrar_.Add(this, chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED,
-                 Source<Profile>(sync_service_->profile()));
+                 content::Source<Profile>(sync_service_->profile()));
   return false;  // Don't continue Start.
 }
 
@@ -47,9 +47,10 @@ void BookmarkDataTypeController::CleanUpState() {
   registrar_.RemoveAll();
 }
 
-void BookmarkDataTypeController::Observe(int type,
-                                         const NotificationSource& source,
-                                         const NotificationDetails& details) {
+void BookmarkDataTypeController::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED, type);
   registrar_.RemoveAll();

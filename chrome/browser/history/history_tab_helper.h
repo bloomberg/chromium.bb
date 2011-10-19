@@ -7,8 +7,8 @@
 #pragma once
 
 #include "content/browser/tab_contents/tab_contents_observer.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class HistoryService;
 class SkBitmap;
@@ -19,7 +19,7 @@ class HistoryAddPageArgs;
 }
 
 class HistoryTabHelper : public TabContentsObserver,
-                         public NotificationObserver {
+                         public content::NotificationObserver {
  public:
   explicit HistoryTabHelper(TabContents* tab_contents);
   virtual ~HistoryTabHelper();
@@ -50,10 +50,10 @@ class HistoryTabHelper : public TabContentsObserver,
       const content::LoadCommittedDetails& details,
       const ViewHostMsg_FrameNavigate_Params& params);
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   void OnPageContents(const GURL& url,
                       int32 page_id,
@@ -71,7 +71,7 @@ class HistoryTabHelper : public TabContentsObserver,
   // messages.
   bool received_page_title_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryTabHelper);
 };

@@ -10,8 +10,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class Extension;
 class ExtensionResource;
@@ -36,7 +36,7 @@ namespace gfx {
 // Observer is notified immediately from the call to LoadImage. In other words,
 // by the time LoadImage returns the observer has been notified.
 //
-class ImageLoadingTracker : public NotificationObserver {
+class ImageLoadingTracker : public content::NotificationObserver {
  public:
   enum CacheParam {
     CACHE,
@@ -85,11 +85,11 @@ class ImageLoadingTracker : public NotificationObserver {
   void OnImageLoaded(SkBitmap* image, const ExtensionResource& resource,
                      const gfx::Size& original_size, int id);
 
-  // NotificationObserver method. If an extension is uninstalled while we're
-  // waiting for the image we remove the entry from load_map_.
+  // content::NotificationObserver method. If an extension is uninstalled while
+  // we're waiting for the image we remove the entry from load_map_.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // The view that is waiting for the image to load.
   Observer* observer_;
@@ -105,7 +105,7 @@ class ImageLoadingTracker : public NotificationObserver {
   // deleted while fetching the image the entry is removed from the map.
   LoadMap load_map_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageLoadingTracker);
 };

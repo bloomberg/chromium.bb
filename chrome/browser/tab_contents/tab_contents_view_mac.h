@@ -17,8 +17,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/base/cocoa/base_view.h"
 #include "ui/gfx/size.h"
 
@@ -47,7 +47,7 @@ class Point;
 // Mac-specific implementation of the TabContentsView. It owns an NSView that
 // contains all of the contents of the tab and associated child views.
 class TabContentsViewMac : public TabContentsView,
-                           public NotificationObserver {
+                           public content::NotificationObserver {
  public:
   // The corresponding TabContents is passed in the constructor, and manages our
   // lifetime. This doesn't need to be the case, but is this way currently
@@ -106,11 +106,11 @@ class TabContentsViewMac : public TabContentsView,
   virtual void GotFocus();
   virtual void TakeFocus(bool reverse);
 
-  // NotificationObserver implementation ---------------------------------------
+  // content::NotificationObserver implementation ------------------------------
 
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // A helper method for closing the tab in the
   // CloseTabAfterEventTracking() implementation.
@@ -134,7 +134,7 @@ class TabContentsViewMac : public TabContentsView,
   scoped_nsobject<FocusTracker> focus_tracker_;
 
   // Used to get notifications about renderers coming and going.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // Used to render the sad tab. This will be non-NULL only when the sad tab is
   // visible.

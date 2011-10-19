@@ -13,9 +13,9 @@
 #include "base/process_util.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/common/content_export.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
 #include "content/common/renderer_preferences.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/size.h"
 
@@ -41,7 +41,7 @@ enum ResourceRequestAction {
   CANCEL
 };
 
-class CONTENT_EXPORT InterstitialPage : public NotificationObserver,
+class CONTENT_EXPORT InterstitialPage : public content::NotificationObserver,
                                         public RenderViewHostDelegate {
  public:
   // The different state of actions the user can take in an interstitial.
@@ -111,10 +111,10 @@ class CONTENT_EXPORT InterstitialPage : public NotificationObserver,
   bool reload_on_dont_proceed() const { return reload_on_dont_proceed_; }
 
  protected:
-  // NotificationObserver method:
+  // content::NotificationObserver method:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // RenderViewHostDelegate implementation:
   virtual View* GetViewDelegate() OVERRIDE;
@@ -156,7 +156,7 @@ class CONTENT_EXPORT InterstitialPage : public NotificationObserver,
   virtual TabContentsView* CreateTabContentsView();
 
   // Notification magic.
-  NotificationRegistrar notification_registrar_;
+  content::NotificationRegistrar notification_registrar_;
 
  private:
   // AutomationProvider needs access to Proceed and DontProceed to simulate

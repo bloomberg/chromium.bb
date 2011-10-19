@@ -10,8 +10,8 @@
 #include "chrome/browser/internal_auth.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
-#include "content/common/notification_details.h"
 #include "content/common/notification_service.h"
+#include "content/public/browser/notification_details.h"
 #include "net/base/escape.h"
 
 #if defined(OS_CHROMEOS)
@@ -26,8 +26,8 @@ WebSocketProxyPrivate::~WebSocketProxyPrivate() {
 }
 
 void WebSocketProxyPrivate::Observe(
-    int type, const NotificationSource& source,
-    const NotificationDetails& details) {
+    int type, const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
 #if defined(OS_CHROMEOS)
   DCHECK_EQ(chrome::NOTIFICATION_WEB_SOCKET_PROXY_STARTED, type);
 #else
@@ -52,9 +52,9 @@ WebSocketProxyPrivateGetPassportForTCPFunction::
 }
 
 void WebSocketProxyPrivateGetURLForTCPFunction::Observe(
-    int type, const NotificationSource& source,
-    const NotificationDetails& details) {
-  listening_port_ = *Details<int>(details).ptr();
+    int type, const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  listening_port_ = *content::Details<int>(details).ptr();
   WebSocketProxyPrivate::Observe(type, source, details);
 }
 

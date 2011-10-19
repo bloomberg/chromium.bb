@@ -19,8 +19,8 @@
 #include <string>
 
 #include "chrome/browser/autocomplete/autocomplete.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class Profile;
 class TemplateURL;
@@ -49,7 +49,7 @@ class TemplateURLService;
 // but no search terms, the suggested result is shown greyed out, with
 // "<enter term(s)>" as the substituted input, and does nothing when selected.
 class KeywordProvider : public AutocompleteProvider,
-                        public NotificationObserver {
+                        public content::NotificationObserver {
  public:
   KeywordProvider(ACProviderListener* listener, Profile* profile);
   // For testing.
@@ -133,10 +133,10 @@ class KeywordProvider : public AutocompleteProvider,
   void EnterExtensionKeywordMode(const std::string& extension_id);
   void MaybeEndExtensionKeywordMode();
 
-  // NotificationObserver interface.
+  // content::NotificationObserver interface.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Model for the keywords.  This is only non-null when testing, otherwise the
   // TemplateURLService from the Profile is used.
@@ -159,7 +159,7 @@ class KeywordProvider : public AutocompleteProvider,
   // the URL bar while the autocomplete popup is open.
   std::string current_keyword_extension_id_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(KeywordProvider);
 };

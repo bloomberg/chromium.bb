@@ -15,8 +15,8 @@
 #include "content/browser/debugger/devtools_client_host.h"
 #include "content/browser/renderer_host/render_view_host_observer.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 namespace IPC {
 class Message;
@@ -35,7 +35,7 @@ class Value;
 
 class DevToolsWindow
     : public DevToolsClientHost,
-      private NotificationObserver,
+      private content::NotificationObserver,
       private TabContentsDelegate,
       private RenderViewHostObserver {
  public:
@@ -78,10 +78,10 @@ class DevToolsWindow
   bool IsInspectedBrowserPopupOrPanel();
   void UpdateFrontendAttachedState();
 
-  // Overridden from NotificationObserver.
+  // Overridden from content::NotificationObserver.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   void ScheduleAction(DevToolsToggleAction action);
   void DoAction();
@@ -139,7 +139,7 @@ class DevToolsWindow
   bool docked_;
   bool is_loaded_;
   DevToolsToggleAction action_on_load_;
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsWindow);
 };
 

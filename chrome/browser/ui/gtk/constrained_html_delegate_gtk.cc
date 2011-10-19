@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_source.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/gfx/rect.h"
 

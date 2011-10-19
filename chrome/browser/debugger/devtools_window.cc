@@ -149,16 +149,19 @@ DevToolsWindow::DevToolsWindow(TabContentsWrapper* tab_contents,
   entry->favicon().set_is_valid(true);
 
   // Register on-load actions.
-  registrar_.Add(this,
-                 content::NOTIFICATION_LOAD_STOP,
-                 Source<NavigationController>(&tab_contents_->controller()));
-  registrar_.Add(this,
-                 content::NOTIFICATION_TAB_CLOSING,
-                 Source<NavigationController>(&tab_contents_->controller()));
+  registrar_.Add(
+      this,
+      content::NOTIFICATION_LOAD_STOP,
+      content::Source<NavigationController>(&tab_contents_->controller()));
+  registrar_.Add(
+      this,
+      content::NOTIFICATION_TAB_CLOSING,
+      content::Source<NavigationController>(&tab_contents_->controller()));
   registrar_.Add(
       this,
       chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
-      Source<ThemeService>(ThemeServiceFactory::GetForProfile(profile_)));
+      content::Source<ThemeService>(
+          ThemeServiceFactory::GetForProfile(profile_)));
   // There is no inspected_rvh in case of shared workers.
   if (inspected_rvh) {
     TabContents* tab = inspected_rvh->delegate()->GetAsTabContents();
@@ -448,15 +451,15 @@ void DevToolsWindow::CallClientFunction(const string16& function_name,
 }
 
 void DevToolsWindow::Observe(int type,
-                             const NotificationSource& source,
-                             const NotificationDetails& details) {
+                             const content::NotificationSource& source,
+                             const content::NotificationDetails& details) {
   if (type == content::NOTIFICATION_LOAD_STOP && !is_loaded_) {
     is_loaded_ = true;
     UpdateTheme();
     DoAction();
     AddDevToolsExtensionsToClient();
   } else if (type == content::NOTIFICATION_TAB_CLOSING) {
-    if (Source<NavigationController>(source).ptr() ==
+    if (content::Source<NavigationController>(source).ptr() ==
             &tab_contents_->controller()) {
       // This happens when browser closes all of its tabs as a result
       // of window.Close event.

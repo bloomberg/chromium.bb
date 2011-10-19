@@ -73,11 +73,12 @@ void AccessibilityMenuButton::ExecuteCommand(int id) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// NotificationObserver implementation
+// content::NotificationObserver implementation
 
-void AccessibilityMenuButton::Observe(int type,
-                                      const NotificationSource& source,
-                                      const NotificationDetails& details) {
+void AccessibilityMenuButton::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_PREF_CHANGED)
     Update();
 }

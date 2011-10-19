@@ -19,18 +19,19 @@ EnterpriseExtensionObserver::EnterpriseExtensionObserver(Profile* profile)
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_INSTALLED,
-                 Source<Profile>(profile_));
+                 content::Source<Profile>(profile_));
 }
 
-void EnterpriseExtensionObserver::Observe(int type,
-                                          const NotificationSource& source,
-                                          const NotificationDetails& details) {
+void EnterpriseExtensionObserver::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(type == chrome::NOTIFICATION_EXTENSION_INSTALLED);
-  if (Source<Profile>(source).ptr() != profile_) {
+  if (content::Source<Profile>(source).ptr() != profile_) {
     return;
   }
-  Extension* extension = Details<Extension>(details).ptr();
+  Extension* extension = content::Details<Extension>(details).ptr();
   if (extension->location() != Extension::EXTERNAL_POLICY_DOWNLOAD) {
     return;
   }

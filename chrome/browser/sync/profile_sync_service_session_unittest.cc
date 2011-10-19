@@ -39,8 +39,8 @@
 #include "chrome/test/base/profile_mock.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/common/notification_service.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -149,7 +149,7 @@ void VerifySyncedSession(
 
 class ProfileSyncServiceSessionTest
     : public BrowserWithTestWindowTest,
-      public NotificationObserver {
+      public content::NotificationObserver {
  public:
   ProfileSyncServiceSessionTest()
       : io_thread_(BrowserThread::IO),
@@ -181,8 +181,8 @@ class ProfileSyncServiceSessionTest
   }
 
   void Observe(int type,
-      const NotificationSource& source,
-      const NotificationDetails& details) {
+      const content::NotificationSource& source,
+      const content::NotificationDetails& details) {
     switch (type) {
       case chrome::NOTIFICATION_FOREIGN_SESSION_UPDATED:
         notified_of_update_ = true;
@@ -257,7 +257,7 @@ class ProfileSyncServiceSessionTest
   scoped_ptr<TestProfileSyncService> sync_service_;
   const gfx::Rect window_bounds_;
   bool notified_of_update_;
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 };
 
 class CreateRootTask : public Task {

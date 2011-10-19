@@ -690,12 +690,12 @@ const ListValue* PrefService::GetList(const char* path) const {
 }
 
 void PrefService::AddPrefObserver(const char* path,
-                                  NotificationObserver* obs) {
+                                  content::NotificationObserver* obs) {
   pref_notifier_->AddPrefObserver(path, obs);
 }
 
 void PrefService::RemovePrefObserver(const char* path,
-                                     NotificationObserver* obs) {
+                                     content::NotificationObserver* obs) {
   pref_notifier_->RemovePrefObserver(path, obs);
 }
 

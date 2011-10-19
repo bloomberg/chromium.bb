@@ -79,7 +79,7 @@ class OmniboxApiTest : public ExtensionApiTest {
     while (!controller->done()) {
       ui_test_utils::WindowedNotificationObserver ready_observer(
           chrome::NOTIFICATION_AUTOCOMPLETE_CONTROLLER_RESULT_READY,
-          Source<AutocompleteController>(controller));
+          content::Source<AutocompleteController>(controller));
       ready_observer.Wait();
     }
   }

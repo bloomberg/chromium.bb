@@ -39,7 +39,7 @@ TestNavigationObserver::JsInjectionReadyObserver::~JsInjectionReadyObserver() {
 }
 
 TestNavigationObserver::TestNavigationObserver(
-    const NotificationSource& source,
+    const content::NotificationSource& source,
     TestNavigationObserver::JsInjectionReadyObserver*
         js_injection_ready_observer,
     int number_of_navigations)
@@ -86,7 +86,7 @@ TestNavigationObserver::TestNavigationObserver(
 }
 
 void TestNavigationObserver::RegisterAsObserver(
-    const NotificationSource& source) {
+    const content::NotificationSource& source) {
   // Register for events to know when we've finished loading the page and are
   // ready to quit the current message loop to return control back to the
   // waiting test.
@@ -96,8 +96,8 @@ void TestNavigationObserver::RegisterAsObserver(
 }
 
 void TestNavigationObserver::Observe(
-    int type, const NotificationSource& source,
-    const NotificationDetails& details) {
+    int type, const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   switch (type) {
     case content::NOTIFICATION_NAV_ENTRY_COMMITTED:
     case content::NOTIFICATION_LOAD_START:
@@ -113,8 +113,9 @@ void TestNavigationObserver::Observe(
       }
       break;
     case content::NOTIFICATION_RENDER_VIEW_HOST_CREATED:
-      rvho_send_js_.reset(new RVHOSendJS(Source<RenderViewHost>(source).ptr(),
-                                         js_injection_ready_observer_));
+      rvho_send_js_.reset(new RVHOSendJS(
+          content::Source<RenderViewHost>(source).ptr(),
+          js_injection_ready_observer_));
       break;
     default:
       NOTREACHED();

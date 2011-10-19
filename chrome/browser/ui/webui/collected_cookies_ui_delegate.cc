@@ -160,7 +160,7 @@ CollectedCookiesUIDelegate::CollectedCookiesUIDelegate(
       wrapper->profile()->GetHostContentSettingsMap();
 
   registrar_.Add(this, chrome::NOTIFICATION_COLLECTED_COOKIES_SHOWN,
-                 Source<TabSpecificContentSettings>(content_settings));
+                 content::Source<TabSpecificContentSettings>(content_settings));
 
   allowed_cookies_tree_model_.reset(
       content_settings->GetAllowedCookiesTreeModel());
@@ -250,9 +250,10 @@ void CollectedCookiesUIDelegate::AddContentException(
   }
 }
 
-void CollectedCookiesUIDelegate::Observe(int type,
-                                         const NotificationSource& source,
-                                         const NotificationDetails& details) {
+void CollectedCookiesUIDelegate::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK_EQ(type, chrome::NOTIFICATION_COLLECTED_COOKIES_SHOWN);
   CloseDialog();
 }

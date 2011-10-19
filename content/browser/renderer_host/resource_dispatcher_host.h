@@ -34,7 +34,6 @@
 class CrossSiteResourceHandler;
 class DownloadFileManager;
 class LoginHandler;
-class NotificationDetails;
 class PluginService;
 class ResourceDispatcherHostDelegate;
 class ResourceDispatcherHostRequestInfo;

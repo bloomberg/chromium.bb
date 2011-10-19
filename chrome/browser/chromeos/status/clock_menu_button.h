@@ -13,7 +13,7 @@
 #include "chrome/browser/chromeos/system/timezone_settings.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/pref_member.h"
-#include "content/common/notification_observer.h"
+#include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_types.h"
 #include "unicode/calendar.h"
 #include "views/controls/button/menu_button.h"
@@ -33,7 +33,7 @@ class StatusAreaHost;
 class ClockMenuButton : public StatusAreaButton,
                         public views::MenuDelegate,
                         public views::ViewMenuDelegate,
-                        public NotificationObserver,
+                        public content::NotificationObserver,
                         public PowerLibrary::Observer,
                         public system::TimezoneSettings::Observer {
  public:
@@ -62,10 +62,10 @@ class ClockMenuButton : public StatusAreaButton,
   // Sets default use 24hour clock mode.
   void SetDefaultUse24HourClock(bool use_24hour_clock);
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
  protected:
   virtual int horizontal_padding();

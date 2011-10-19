@@ -147,9 +147,10 @@ const BalloonCollectionImpl::Balloons&
   return base_.balloons();
 }
 
-void BalloonCollectionImpl::Observe(int type,
-                                    const NotificationSource& source,
-                                    const NotificationDetails& details) {
+void BalloonCollectionImpl::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_BROWSER_CLOSED);
   bool app_closing = *Details<bool>(details).ptr();
   // When exiting, we need to shutdown all renderers in

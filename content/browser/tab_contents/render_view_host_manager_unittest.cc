@@ -11,10 +11,10 @@
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/render_view_host_manager.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_source.h"
 #include "content/common/test_url_constants.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/test/test_notification_tracker.h"
@@ -193,8 +193,9 @@ TEST_F(RenderViewHostManagerTest, Navigate) {
   SiteInstance* instance = SiteInstance::CreateSiteInstance(profile());
 
   TestTabContents tab_contents(profile(), instance);
-  notifications.ListenFor(content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
-                     Source<NavigationController>(&tab_contents.controller()));
+  notifications.ListenFor(
+      content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
+      content::Source<NavigationController>(&tab_contents.controller()));
 
   // Create.
   RenderViewHostManager manager(&tab_contents, &tab_contents);

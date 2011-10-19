@@ -12,8 +12,8 @@
 #include "chrome/browser/sessions/tab_restore_service_observer.h"
 #include "chrome/browser/ui/gtk/global_menu_owner.h"
 #include "content/browser/cancelable_request.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
 
@@ -27,7 +27,7 @@ typedef struct _GdkPixbuf GdkPixbuf;
 
 // Controls the History menu.
 class GlobalHistoryMenu : public GlobalMenuOwner,
-                          public NotificationObserver,
+                          public content::NotificationObserver,
                           public TabRestoreServiceObserver {
  public:
   explicit GlobalHistoryMenu(Browser* browser);
@@ -80,10 +80,10 @@ class GlobalHistoryMenu : public GlobalMenuOwner,
   // Implementation detail of ClearMenuSection.
   static void ClearMenuCallback(GtkWidget* widget, ClearMenuClosure* closure);
 
-  // NotificationObserver:
+  // content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // For TabRestoreServiceObserver
   virtual void TabRestoreServiceChanged(TabRestoreService* service);
@@ -114,7 +114,7 @@ class GlobalHistoryMenu : public GlobalMenuOwner,
   // A mapping from GtkMenuItems to HistoryItems that maintain data.
   MenuItemToHistoryMap menu_item_history_map_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 };
 
 #endif  // CHROME_BROWSER_UI_GTK_GLOBAL_HISTORY_MENU_H_

@@ -10,8 +10,8 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_source.h"
-#include "content/common/notification_details.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace util = app_notification_test_util;
@@ -111,8 +111,8 @@ TEST_F(AppNotificationManagerTest, MAYBE_ExtensionUninstall) {
   // Send the uninstall notification for extension id1.
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
-      Source<Profile>(profile_.get()),
-      Details<const std::string>(&id1));
+      content::Source<Profile>(profile_.get()),
+      content::Details<const std::string>(&id1));
 
   // The id1 items should be gone but the id2 items should still be there.
   EXPECT_EQ(NULL, mgr_->GetLast(id1));

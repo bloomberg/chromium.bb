@@ -15,8 +15,8 @@
 #include "chrome/browser/prefs/pref_member.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/cancelable_request.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "webkit/quota/quota_types.h"
 
 class ExtensionSpecialStoragePolicy;
@@ -43,7 +43,7 @@ class QuotaManager;
 // BrowsingDataRemover is responsible for removing data related to browsing:
 // visits in url database, downloads, cookies ...
 
-class BrowsingDataRemover : public NotificationObserver,
+class BrowsingDataRemover : public content::NotificationObserver,
                             public base::WaitableEventWatcher::Delegate {
  public:
   // Time period ranges available when doing browsing data removals.
@@ -129,12 +129,13 @@ class BrowsingDataRemover : public NotificationObserver,
   friend class DeleteTask<BrowsingDataRemover>;
   virtual ~BrowsingDataRemover();
 
-  // NotificationObserver method. Callback when TemplateURLService has finished
-  // loading. Deletes the entries from the model, and if we're not waiting on
-  // anything else notifies observers and deletes this BrowsingDataRemover.
+  // content::NotificationObserver method. Callback when TemplateURLService has
+  // finished loading. Deletes the entries from the model, and if we're not
+  // waiting on anything else notifies observers and deletes this
+  // BrowsingDataRemover.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // WaitableEventWatcher implementation.
   // Called when plug-in data has been cleared. Invokes NotifyAndDeleteIfDone.
@@ -206,7 +207,7 @@ class BrowsingDataRemover : public NotificationObserver,
   // already removing, and vice-versa.
   static void set_removing(bool removing);
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // Profile we're to remove from.
   Profile* profile_;

@@ -41,9 +41,9 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
 #include "content/common/property_bag.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class AppNotificationManager;
 class CrxInstaller;
@@ -117,7 +117,7 @@ class ExtensionServiceInterface : public SyncableService {
 class ExtensionService
     : public ExtensionServiceInterface,
       public ExternalExtensionProviderInterface::VisitorInterface,
-      public NotificationObserver {
+      public content::NotificationObserver {
  public:
   // Information about a registered component extension.
   struct ComponentExtensionInfo {
@@ -533,10 +533,10 @@ class ExtensionService
   // Displays the extension alert in the last-active browser window.
   void ShowExtensionAlert(ExtensionGlobalError* global_error);
 
-  // NotificationObserver
+  // content::NotificationObserver
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Whether there are any apps installed. Component apps are not included.
   bool HasApps() const;
@@ -762,7 +762,7 @@ class ExtensionService
   typedef std::map<std::string, int> OrphanedDevTools;
   OrphanedDevTools orphaned_dev_tools_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
   PrefChangeRegistrar pref_change_registrar_;
 
   // Keeps track of menu items added by extensions.

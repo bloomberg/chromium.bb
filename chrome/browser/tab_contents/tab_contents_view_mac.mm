@@ -24,9 +24,9 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #import "content/common/chrome_application_mac.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_source.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
@@ -71,7 +71,7 @@ TabContentsViewMac::TabContentsViewMac(TabContents* tab_contents)
     : tab_contents_(tab_contents),
       preferred_width_(0) {
   registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_CONNECTED,
-                 Source<TabContents>(tab_contents));
+                 content::Source<TabContents>(tab_contents));
 }
 
 TabContentsViewMac::~TabContentsViewMac() {
@@ -400,8 +400,8 @@ void TabContentsViewMac::CloseTab() {
 }
 
 void TabContentsViewMac::Observe(int type,
-                                 const NotificationSource& source,
-                                 const NotificationDetails& details) {
+                                 const content::NotificationSource& source,
+                                 const content::NotificationDetails& details) {
   switch (type) {
     case content::NOTIFICATION_TAB_CONTENTS_CONNECTED: {
       sad_tab_.reset();

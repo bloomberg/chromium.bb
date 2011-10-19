@@ -7,14 +7,14 @@
 
 #include <vector>
 
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/rect.h"
 
 class RenderViewHost;
 struct WebMenuItem;
 
-class PopupMenuHelper : public NotificationObserver {
+class PopupMenuHelper : public content::NotificationObserver {
  public:
   // Creates a PopupMenuHelper that will notify |render_view_host| when a user
   // selects or cancels the popup.
@@ -31,12 +31,12 @@ class PopupMenuHelper : public NotificationObserver {
                      bool right_aligned);
 
  private:
-  // NotificationObserver implementation:
+  // content::NotificationObserver implementation:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
-  NotificationRegistrar notification_registrar_;
+  content::NotificationRegistrar notification_registrar_;
 
   RenderViewHost* render_view_host_;
 

@@ -210,13 +210,13 @@ bool ExternalTabContainer::Init(Profile* profile,
 
   NavigationController* controller = &tab_contents_->controller();
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-                 Source<NavigationController>(controller));
+                 content::Source<NavigationController>(controller));
   registrar_.Add(this, content::NOTIFICATION_FAIL_PROVISIONAL_LOAD_WITH_ERROR,
-                 Source<NavigationController>(controller));
+                 content::Source<NavigationController>(controller));
   registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
-                 Source<NavigationController>(controller));
+                 content::Source<NavigationController>(controller));
   registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB,
-                 Source<TabContents>(tab_contents_->tab_contents()));
+                 content::Source<TabContents>(tab_contents_->tab_contents()));
   registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_DELETED,
                  NotificationService::AllSources());
 
@@ -261,8 +261,8 @@ void ExternalTabContainer::Uninitialize() {
 
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTERNAL_TAB_CLOSED,
-        Source<NavigationController>(&tab_contents_->controller()),
-        Details<ExternalTabContainer>(this));
+        content::Source<NavigationController>(&tab_contents_->controller()),
+        content::Details<ExternalTabContainer>(this));
 
     tab_contents_.reset(NULL);
   }
@@ -816,8 +816,8 @@ void ExternalTabContainer::OnForwardMessageToExternalHost(
 // ExternalTabContainer, NotificationObserver implementation:
 
 void ExternalTabContainer::Observe(int type,
-                                   const NotificationSource& source,
-                                   const NotificationDetails& details) {
+                                   const content::NotificationSource& source,
+                                   const content::NotificationDetails& details) {
   if (!automation_)
     return;
 
@@ -827,7 +827,7 @@ void ExternalTabContainer::Observe(int type,
   switch (type) {
     case content::NOTIFICATION_LOAD_STOP: {
         const LoadNotificationDetails* load =
-            Details<LoadNotificationDetails>(details).ptr();
+            content::Details<LoadNotificationDetails>(details).ptr();
         if (load != NULL &&
             content::PageTransitionIsMainFrame(load->origin())) {
           TRACE_EVENT_END_ETW("ExternalTabContainer::Navigate", 0,
@@ -844,7 +844,7 @@ void ExternalTabContainer::Observe(int type,
         }
 
         const content::LoadCommittedDetails* commit =
-            Details<content::LoadCommittedDetails>(details).ptr();
+            content::Details<content::LoadCommittedDetails>(details).ptr();
 
         if (commit->http_status_code >= kHttpClientErrorStart &&
             commit->http_status_code <= kHttpServerErrorEnd) {
@@ -867,7 +867,7 @@ void ExternalTabContainer::Observe(int type,
       }
     case content::NOTIFICATION_FAIL_PROVISIONAL_LOAD_WITH_ERROR: {
       const ProvisionalLoadDetails* load_details =
-          Details<ProvisionalLoadDetails>(details).ptr();
+          content::Details<ProvisionalLoadDetails>(details).ptr();
       automation_->Send(new AutomationMsg_NavigationFailed(
           tab_handle_, load_details->error_code(), load_details->url()));
 
@@ -876,14 +876,14 @@ void ExternalTabContainer::Observe(int type,
     }
     case content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB: {
       if (load_requests_via_automation_) {
-        RenderViewHost* rvh = Details<RenderViewHost>(details).ptr();
+        RenderViewHost* rvh = content::Details<RenderViewHost>(details).ptr();
         RegisterRenderViewHostForAutomation(rvh, false);
       }
       break;
     }
     case content::NOTIFICATION_RENDER_VIEW_HOST_DELETED: {
       if (load_requests_via_automation_) {
-        RenderViewHost* rvh = Source<RenderViewHost>(source).ptr();
+        RenderViewHost* rvh = content::Source<RenderViewHost>(source).ptr();
         UnregisterRenderViewHost(rvh);
       }
       break;

@@ -14,8 +14,8 @@
 #include "base/time.h"
 #include "chrome/browser/icon_manager.h"
 #include "content/browser/download/download_item.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/gtk/gtk_signal.h"
@@ -38,7 +38,7 @@ class SlideAnimation;
 
 class DownloadItemGtk : public DownloadItem::Observer,
                         public ui::AnimationDelegate,
-                        public NotificationObserver {
+                        public content::NotificationObserver {
  public:
   // DownloadItemGtk takes ownership of |download_item_model|.
   DownloadItemGtk(DownloadShelfGtk* parent_shelf,
@@ -54,10 +54,10 @@ class DownloadItemGtk : public DownloadItem::Observer,
   // ui::AnimationDelegate implementation.
   virtual void AnimationProgressed(const ui::Animation* animation);
 
-  // Overridden from NotificationObserver:
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Called when the icon manager has finished loading the icon. We take
   // ownership of |icon_bitmap|.
@@ -228,7 +228,7 @@ class DownloadItemGtk : public DownloadItem::Observer,
   // The last download file path for which we requested an icon.
   FilePath icon_filepath_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // The time at which we were insantiated.
   base::Time creation_time_;

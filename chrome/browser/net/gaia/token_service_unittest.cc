@@ -19,12 +19,13 @@ TokenAvailableTracker::TokenAvailableTracker() {}
 
 TokenAvailableTracker::~TokenAvailableTracker() {}
 
-void TokenAvailableTracker::Observe(int type,
-                                    const NotificationSource& source,
-                                    const NotificationDetails& details) {
+void TokenAvailableTracker::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   TestNotificationTracker::Observe(type, source, details);
   if (type == chrome::NOTIFICATION_TOKEN_AVAILABLE) {
-    Details<const TokenService::TokenAvailableDetails> full = details;
+    content::Details<const TokenService::TokenAvailableDetails> full = details;
     details_ = *full.ptr();
   }
 }
@@ -34,11 +35,12 @@ TokenFailedTracker::TokenFailedTracker() {}
 TokenFailedTracker::~TokenFailedTracker() {}
 
 void TokenFailedTracker::Observe(int type,
-                                 const NotificationSource& source,
-                                 const NotificationDetails& details) {
+                                 const content::NotificationSource& source,
+                                 const content::NotificationDetails& details) {
   TestNotificationTracker::Observe(type, source, details);
   if (type == chrome::NOTIFICATION_TOKEN_REQUEST_FAILED) {
-    Details<const TokenService::TokenRequestFailedDetails> full = details;
+    content::Details<const TokenService::TokenRequestFailedDetails> full =
+        details;
     details_ = *full.ptr();
   }
 }
@@ -68,9 +70,9 @@ void TokenServiceTestHarness::SetUp() {
   WaitForDBLoadCompletion();
 
   success_tracker_.ListenFor(chrome::NOTIFICATION_TOKEN_AVAILABLE,
-                             Source<TokenService>(&service_));
+                             content::Source<TokenService>(&service_));
   failure_tracker_.ListenFor(chrome::NOTIFICATION_TOKEN_REQUEST_FAILED,
-                             Source<TokenService>(&service_));
+                             content::Source<TokenService>(&service_));
 
   service_.Initialize("test", profile_.get());
 }

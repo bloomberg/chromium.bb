@@ -431,16 +431,16 @@ void ExtensionManagementEventRouter::Init() {
   for (size_t i = 0; i < arraysize(types); i++) {
     registrar_.Add(this,
                    types[i],
-                   Source<Profile>(profile_));
+                   content::Source<Profile>(profile_));
   }
 }
 
 void ExtensionManagementEventRouter::Observe(
     int type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   const char* event_name = NULL;
-  Profile* profile = Source<Profile>(source).ptr();
+  Profile* profile = content::Source<Profile>(source).ptr();
   CHECK(profile);
   CHECK(profile_->IsSameProfile(profile));
 
@@ -464,14 +464,14 @@ void ExtensionManagementEventRouter::Observe(
 
   ListValue args;
   if (event_name == events::kOnExtensionUninstalled) {
-    args.Append(
-        Value::CreateStringValue(*Details<const std::string>(details).ptr()));
+    args.Append(Value::CreateStringValue(
+        *content::Details<const std::string>(details).ptr()));
   } else {
     const Extension* extension = NULL;
     if (event_name == events::kOnExtensionDisabled) {
-      extension = Details<UnloadedExtensionInfo>(details)->extension;
+      extension = content::Details<UnloadedExtensionInfo>(details)->extension;
     } else {
-      extension = Details<const Extension>(details).ptr();
+      extension = content::Details<const Extension>(details).ptr();
     }
     CHECK(extension);
     ExtensionService* service = profile->GetExtensionService();

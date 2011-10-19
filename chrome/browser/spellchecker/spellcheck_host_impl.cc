@@ -353,10 +353,10 @@ void SpellCheckHostImpl::OnURLFetchComplete(const URLFetcher* source,
 }
 
 void SpellCheckHostImpl::Observe(int type,
-                                 const NotificationSource& source,
-                                 const NotificationDetails& details) {
+                                 const content::NotificationSource& source,
+                                 const content::NotificationDetails& details) {
   DCHECK(type == content::NOTIFICATION_RENDERER_PROCESS_CREATED);
-  RenderProcessHost* process = Source<RenderProcessHost>(source).ptr();
+  RenderProcessHost* process = content::Source<RenderProcessHost>(source).ptr();
   InitForRenderer(process);
 }
 

@@ -16,11 +16,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
-#include "content/common/notification_observer.h"
+#include "content/public/browser/notification_observer.h"
 
 class GURL;
-class NotificationDetails;
-class NotificationSource;
 class PrefService;
 
 namespace policy {
@@ -109,7 +107,7 @@ class URLBlacklist {
 // exists in UI, then a potential destruction on IO will come after any task
 // posted to IO from that method on UI. This is used to go through IO before
 // the actual update starts, and grab a WeakPtr.
-class URLBlacklistManager : public NotificationObserver {
+class URLBlacklistManager : public content::NotificationObserver {
  public:
   // Must be constructed on the UI thread.
   explicit URLBlacklistManager(PrefService* pref_service);
@@ -145,8 +143,8 @@ class URLBlacklistManager : public NotificationObserver {
 
  private:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // ---------
   // UI thread

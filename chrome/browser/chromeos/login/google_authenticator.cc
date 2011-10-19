@@ -172,11 +172,11 @@ void GoogleAuthenticator::LoginOffTheRecord() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   int mount_error = chromeos::kCryptohomeMountErrorNone;
   if (CrosLibrary::Get()->GetCryptohomeLibrary()->MountForBwsi(&mount_error)) {
-    AuthenticationNotificationDetails details(true);
+    Authenticationcontent::NotificationDetails details(true);
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_LOGIN_AUTHENTICATION,
         NotificationService::AllSources(),
-        Details<AuthenticationNotificationDetails>(&details));
+        content::Details<AuthenticationNotificationDetails>(&details));
     consumer_->OnOffTheRecordLoginSuccess();
   } else {
     LOG(ERROR) << "Could not mount tmpfs: " << mount_error;

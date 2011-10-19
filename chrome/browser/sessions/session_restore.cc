@@ -32,7 +32,7 @@
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/common/notification_service.h"
 #include "net/base/network_change_notifier.h"
 
@@ -58,7 +58,7 @@ static const int kInitialDelayTimerMS = 100;
 //
 // This is not part of SessionRestoreImpl so that synchronous destruction
 // of SessionRestoreImpl doesn't have timing problems.
-class TabLoader : public NotificationObserver,
+class TabLoader : public content::NotificationObserver,
                   public net::NetworkChangeNotifier::OnlineStateObserver {
  public:
   explicit TabLoader(base::TimeTicks restore_started);
@@ -88,8 +88,8 @@ class TabLoader : public NotificationObserver,
   // NotificationObserver method. Removes the specified tab and loads the next
   // tab.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // net::NetworkChangeNotifier::OnlineStateObserver overrides.
   virtual void OnOnlineStateChanged(bool online) OVERRIDE;
@@ -113,7 +113,7 @@ class TabLoader : public NotificationObserver,
   // Called when a tab goes away or a load completes.
   void HandleTabClosedOrLoaded(NavigationController* controller);
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // Current delay before a new tab is loaded. See class description for
   // details.
@@ -232,21 +232,22 @@ void TabLoader::LoadNextTab() {
 }
 
 void TabLoader::Observe(int type,
-                        const NotificationSource& source,
-                        const NotificationDetails& details) {
+                        const content::NotificationSource& source,
+                        const content::NotificationDetails& details) {
   switch (type) {
     case content::NOTIFICATION_LOAD_START: {
       // Add this render_widget_host to the set of those we're waiting for
       // paints on. We want to only record stats for paints that occur after
       // a load has finished.
-      NavigationController* tab = Source<NavigationController>(source).ptr();
+      NavigationController* tab =
+          content::Source<NavigationController>(source).ptr();
       RenderWidgetHost* render_widget_host = GetRenderWidgetHost(tab);
       DCHECK(render_widget_host);
       render_widget_hosts_loading_.insert(render_widget_host);
       break;
     }
     case content::NOTIFICATION_TAB_CONTENTS_DESTROYED: {
-      TabContents* tab_contents = Source<TabContents>(source).ptr();
+      TabContents* tab_contents = content::Source<TabContents>(source).ptr();
       if (!got_first_paint_) {
         RenderWidgetHost* render_widget_host =
             GetRenderWidgetHost(&tab_contents->controller());
@@ -256,7 +257,8 @@ void TabLoader::Observe(int type,
       break;
     }
     case content::NOTIFICATION_LOAD_STOP: {
-      NavigationController* tab = Source<NavigationController>(source).ptr();
+      NavigationController* tab =
+          content::Source<NavigationController>(source).ptr();
       render_widget_hosts_to_paint_.insert(GetRenderWidgetHost(tab));
       HandleTabClosedOrLoaded(tab);
       break;
@@ -264,7 +266,7 @@ void TabLoader::Observe(int type,
     case content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT: {
       if (!got_first_paint_) {
         RenderWidgetHost* render_widget_host =
-            Source<RenderWidgetHost>(source).ptr();
+            content::Source<RenderWidgetHost>(source).ptr();
         if (render_widget_hosts_to_paint_.find(render_widget_host) !=
             render_widget_hosts_to_paint_.end()) {
           // Got a paint for one of our renderers, so record time.
@@ -323,11 +325,11 @@ void TabLoader::OnOnlineStateChanged(bool online) {
 
 void TabLoader::RemoveTab(NavigationController* tab) {
   registrar_.Remove(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                    Source<TabContents>(tab->tab_contents()));
+                    content::Source<TabContents>(tab->tab_contents()));
   registrar_.Remove(this, content::NOTIFICATION_LOAD_STOP,
-                    Source<NavigationController>(tab));
+                    content::Source<NavigationController>(tab));
   registrar_.Remove(this, content::NOTIFICATION_LOAD_START,
-                    Source<NavigationController>(tab));
+                    content::Source<NavigationController>(tab));
 
   TabsLoading::iterator i = tabs_loading_.find(tab);
   if (i != tabs_loading_.end())
@@ -357,11 +359,11 @@ RenderWidgetHost* TabLoader::GetRenderWidgetHost(NavigationController* tab) {
 
 void TabLoader::RegisterForNotifications(NavigationController* controller) {
   registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                 Source<TabContents>(controller->tab_contents()));
+                 content::Source<TabContents>(controller->tab_contents()));
   registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
-                 Source<NavigationController>(controller));
+                 content::Source<NavigationController>(controller));
   registrar_.Add(this, content::NOTIFICATION_LOAD_START,
-                 Source<NavigationController>(controller));
+                 content::Source<NavigationController>(controller));
   ++tab_count_;
 }
 
@@ -397,7 +399,7 @@ void TabLoader::HandleTabClosedOrLoaded(NavigationController* tab) {
 // SessionRestoreImpl is responsible for fetching the set of tabs to create
 // from SessionService. SessionRestoreImpl deletes itself when done.
 
-class SessionRestoreImpl : public NotificationObserver {
+class SessionRestoreImpl : public content::NotificationObserver {
  public:
   SessionRestoreImpl(Profile* profile,
                      Browser* browser,
@@ -438,7 +440,7 @@ class SessionRestoreImpl : public NotificationObserver {
 
     if (browser_) {
       registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSED,
-                     Source<Browser>(browser_));
+                     content::Source<Browser>(browser_));
     }
 
     return browser_;
@@ -490,8 +492,8 @@ class SessionRestoreImpl : public NotificationObserver {
   }
 
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) {
     switch (type) {
       case chrome::NOTIFICATION_BROWSER_CLOSED:
         delete this;
@@ -801,7 +803,7 @@ class SessionRestoreImpl : public NotificationObserver {
   // windows when the nested message loop exits.
   std::vector<SessionWindow*> windows_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // The time we started the restore.
   base::TimeTicks restore_started_;

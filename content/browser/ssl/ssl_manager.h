@@ -12,8 +12,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/ssl/ssl_policy_backend.h"
 #include "content/common/content_export.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/cert_status_flags.h"
 #include "net/base/net_errors.h"
@@ -40,7 +40,7 @@ class URLRequest;
 // The security state (secure/insecure) is stored in the navigation entry.
 // Along with it are stored any SSL error code and the associated cert.
 
-class SSLManager : public NotificationObserver {
+class SSLManager : public content::NotificationObserver {
  public:
   // Entry point for SSLCertificateErrors.  This function begins the process
   // of resolving a certificate error during an SSL connection.  SSLManager
@@ -84,7 +84,7 @@ class SSLManager : public NotificationObserver {
   // This entry point is called directly (instead of via the notification
   // service) because we need more precise control of the order in which folks
   // are notified of this event.
-  void DidCommitProvisionalLoad(const NotificationDetails& details);
+  void DidCommitProvisionalLoad(const content::NotificationDetails& details);
 
   // Insecure content entry point.
   void DidRunInsecureContent(const std::string& security_origin);
@@ -97,8 +97,8 @@ class SSLManager : public NotificationObserver {
   //
   // Called on the UI thread.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
  private:
   // Entry points for notifications to which we subscribe. Note that
@@ -124,7 +124,7 @@ class SSLManager : public NotificationObserver {
   NavigationController* controller_;
 
   // Handles registering notifications with the NotificationService.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLManager);
 };

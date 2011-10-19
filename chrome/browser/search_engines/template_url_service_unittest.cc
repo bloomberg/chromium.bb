@@ -26,8 +26,8 @@
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;
@@ -149,8 +149,8 @@ class TemplateURLServiceTest : public testing::Test {
   void NotifyManagedPrefsHaveChanged() {
     model()->Observe(
         chrome::NOTIFICATION_PREF_CHANGED,
-        Source<PrefService>(profile()->GetTestingPrefService()),
-        Details<std::string>(NULL));
+        content::Source<PrefService>(profile()->GetTestingPrefService()),
+        content::Details<std::string>(NULL));
   }
 
   // Verifies the two TemplateURLs are equal.

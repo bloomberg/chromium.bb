@@ -249,12 +249,12 @@ bool ScreenLockView::HandleKeyEvent(
 
 void ScreenLockView::Observe(
     int type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (type != chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED || !user_view_)
     return;
 
-  UserManager::User* user = Details<UserManager::User>(details).ptr();
+  UserManager::User* user = content::Details<UserManager::User>(details).ptr();
   if (screen_locker_->user().email() != user->email())
     return;
   user_view_->SetImage(user->image(), user->image());

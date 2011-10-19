@@ -16,9 +16,9 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_permission_set.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_observer_mock.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
+#include "content/test/notification_observer_mock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;
@@ -1041,12 +1041,12 @@ class ExtensionPrefsNotifyWhenNeeded
     using testing::Mock;
     using testing::StrEq;
 
-    NotificationObserverMock observer;
+    content::NotificationObserverMock observer;
     PrefChangeRegistrar registrar;
     registrar.Init(prefs()->pref_service());
     registrar.Add(kPref1, &observer);
 
-    NotificationObserverMock incognito_observer;
+    content::NotificationObserverMock incognito_observer;
     scoped_ptr<PrefService> incog_prefs(prefs_.CreateIncognitoPrefService());
     PrefChangeRegistrar incognito_registrar;
     incognito_registrar.Init(incog_prefs.get());

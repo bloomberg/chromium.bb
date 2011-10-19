@@ -148,15 +148,15 @@ void MediaPlayer::SetPlaybackError(GURL const& url) {
 }
 
 void MediaPlayer::Observe(int type,
-                          const NotificationSource& source,
-                          const NotificationDetails& details) {
+                          const content::NotificationSource& source,
+                          const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_BROWSER_CLOSED);
   registrar_.Remove(this,
                     chrome::NOTIFICATION_BROWSER_CLOSED,
                     source);
-  if (Source<Browser>(source).ptr() == mediaplayer_browser_) {
+  if (content::Source<Browser>(source).ptr() == mediaplayer_browser_) {
     mediaplayer_browser_ = NULL;
-  } else if (Source<Browser>(source).ptr() == playlist_browser_) {
+  } else if (content::Source<Browser>(source).ptr() == playlist_browser_) {
     playlist_browser_ = NULL;
   }
 }
@@ -192,7 +192,7 @@ void MediaPlayer::PopupPlaylist(Browser* creator) {
                                             profile);
   registrar_.Add(this,
                  chrome::NOTIFICATION_BROWSER_CLOSED,
-                 Source<Browser>(playlist_browser_));
+                 content::Source<Browser>(playlist_browser_));
   playlist_browser_->AddSelectedTabWithURL(GetMediaplayerPlaylistUrl(),
                                            content::PAGE_TRANSITION_LINK);
   playlist_browser_->window()->SetBounds(gfx::Rect(kPopupLeft,
@@ -220,7 +220,7 @@ void MediaPlayer::PopupMediaPlayer(Browser* creator) {
                                                profile);
   registrar_.Add(this,
                  chrome::NOTIFICATION_BROWSER_CLOSED,
-                 Source<Browser>(mediaplayer_browser_));
+                 content::Source<Browser>(mediaplayer_browser_));
 
 #if defined(OS_CHROMEOS) && defined(TOOLKIT_USES_GTK)
   // Since we are on chromeos, popups should be a PanelBrowserView,

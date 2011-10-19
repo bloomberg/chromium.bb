@@ -102,15 +102,15 @@ typedef std::vector<scoped_refptr<ShellLinkItem> > ShellLinkItemList;
 // update it in a UI thread. To solve this problem, this class posts to a
 // runnable method when it actually updates a JumpList.
 class JumpList : public TabRestoreServiceObserver,
-                 public NotificationObserver,
+                 public content::NotificationObserver,
                  public base::RefCountedThreadSafe<JumpList> {
  public:
   JumpList();
 
   // NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Registers (or unregisters) this object as an observer.
   // When the TabRestoreService object notifies the tab status is changed, this
@@ -204,7 +204,7 @@ class JumpList : public TabRestoreServiceObserver,
   // The Profile object is used to listen for events
   Profile* profile_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // App id to associate with the jump list.
   std::wstring app_id_;

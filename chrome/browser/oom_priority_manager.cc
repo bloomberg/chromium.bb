@@ -184,22 +184,23 @@ void OomPriorityManager::OnFocusTabScoreAdjustmentTimeout() {
           this, &OomPriorityManager::AdjustFocusedTabScoreOnFileThread));
 }
 
-void OomPriorityManager::Observe(int type, const NotificationSource& source,
-                                 const NotificationDetails& details) {
+void OomPriorityManager::Observe(int type,
+                                 const content::NotificationSource& source,
+                                 const content::NotificationDetails& details) {
   base::ProcessHandle handle = 0;
   base::AutoLock pid_to_oom_score_autolock(pid_to_oom_score_lock_);
   switch (type) {
     case content::NOTIFICATION_RENDERER_PROCESS_CLOSED:
     case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED: {
-      handle = Source<RenderProcessHost>(source)->GetHandle();
+      handle = content::Source<RenderProcessHost>(source)->GetHandle();
       pid_to_oom_score_.erase(handle);
       break;
     }
     case content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED: {
       bool visible = *Details<bool>(details).ptr();
       if (visible) {
-        focused_tab_pid_ =
-            Source<RenderWidgetHost>(source).ptr()->process()->GetHandle();
+        focused_tab_pid_ = content::Source<RenderWidgetHost>(source).ptr()->
+            process()->GetHandle();
 
         // If the currently focused tab already has a lower score, do not
         // set it. This can happen in case the newly focused tab is script

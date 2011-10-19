@@ -176,14 +176,14 @@ void TestingProfile::Init() {
 
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_PROFILE_CREATED,
-      Source<Profile>(static_cast<Profile*>(this)),
+      content::Source<Profile>(static_cast<Profile*>(this)),
       NotificationService::NoDetails());
 }
 
 TestingProfile::~TestingProfile() {
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_PROFILE_DESTROYED,
-      Source<Profile>(static_cast<Profile*>(this)),
+      content::Source<Profile>(static_cast<Profile*>(this)),
       NotificationService::NoDetails());
 
   profile_dependency_manager_->DestroyProfileServices(this);

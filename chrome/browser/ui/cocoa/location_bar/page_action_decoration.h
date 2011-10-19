@@ -21,7 +21,7 @@ class TabContents;
 
 class PageActionDecoration : public ImageDecoration,
                              public ImageLoadingTracker::Observer,
-                             public NotificationObserver {
+                             public content::NotificationObserver {
  public:
   PageActionDecoration(LocationBarViewMac* owner,
                        Profile* profile,
@@ -60,8 +60,8 @@ class PageActionDecoration : public ImageDecoration,
  private:
   // Overridden from NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // The location bar view that owns us.
   LocationBarViewMac* owner_;
@@ -102,7 +102,7 @@ class PageActionDecoration : public ImageDecoration,
 
   // Used to register for notifications received by
   // NotificationObserver.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(PageActionDecoration);
 };

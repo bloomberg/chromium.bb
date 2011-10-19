@@ -10,8 +10,8 @@
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/interstitial_page.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 
@@ -63,18 +63,19 @@ void TabContentsContainer::SetReservedContentsRect(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TabContentsContainer, NotificationObserver implementation:
+// TabContentsContainer, content::NotificationObserver implementation:
 
-void TabContentsContainer::Observe(int type,
-                                   const NotificationSource& source,
-                                   const NotificationDetails& details) {
+void TabContentsContainer::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (type == content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED) {
     RenderViewHostSwitchedDetails* switched_details =
-        Details<RenderViewHostSwitchedDetails>(details).ptr();
+        content::Details<RenderViewHostSwitchedDetails>(details).ptr();
     RenderViewHostChanged(switched_details->old_host,
                           switched_details->new_host);
   } else if (type == content::NOTIFICATION_TAB_CONTENTS_DESTROYED) {
-    TabContentsDestroyed(Source<TabContents>(source).ptr());
+    TabContentsDestroyed(content::Source<TabContents>(source).ptr());
   } else {
     NOTREACHED();
   }
@@ -152,13 +153,15 @@ void TabContentsContainer::AddObservers() {
   // TabContents can change their RenderViewHost and hence the HWND that is
   // shown and getting focused.  We need to keep track of that so we install
   // the focus subclass on the shown HWND so we intercept focus change events.
-  registrar_.Add(this,
-                 content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
-                 Source<NavigationController>(&tab_contents_->controller()));
+  registrar_.Add(
+      this,
+      content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
+      content::Source<NavigationController>(&tab_contents_->controller()));
 
-  registrar_.Add(this,
-                 content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                 Source<TabContents>(tab_contents_));
+  registrar_.Add(
+      this,
+      content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
+      content::Source<TabContents>(tab_contents_));
 }
 
 void TabContentsContainer::RemoveObservers() {

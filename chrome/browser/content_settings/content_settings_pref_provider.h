@@ -16,8 +16,8 @@
 #include "chrome/browser/content_settings/content_settings_observable_provider.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class PrefService;
 
@@ -30,7 +30,7 @@ namespace content_settings {
 // Content settings provider that provides content settings from the user
 // preference.
 class PrefProvider : public ObservableProvider,
-                     public NotificationObserver {
+                     public content::NotificationObserver {
  public:
   static void RegisterUserPrefs(PrefService* prefs);
 
@@ -56,10 +56,10 @@ class PrefProvider : public ObservableProvider,
 
   virtual void ShutdownOnUIThread() OVERRIDE;
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   friend class DeadlockCheckerThread;  // For testing.

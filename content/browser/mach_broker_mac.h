@@ -15,8 +15,8 @@
 #include "base/process.h"
 #include "base/process_util.h"
 #include "base/synchronization/lock.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 // On OS X, the mach_port_t of a process is required to collect metrics about
 // the process. Running |task_for_pid()| is only allowed for privileged code.
@@ -33,7 +33,7 @@
 // Since this data arrives over a separate channel, it is not available
 // immediately after a child process has been started.
 class MachBroker : public base::ProcessMetrics::PortProvider,
-                   public NotificationObserver {
+                   public content::NotificationObserver {
  public:
   // Returns the global MachBroker.
   static MachBroker* GetInstance();
@@ -81,10 +81,10 @@ class MachBroker : public base::ProcessMetrics::PortProvider,
   // Implement |ProcessMetrics::PortProvider|.
   virtual mach_port_t TaskForPid(base::ProcessHandle process) const;
 
-  // Implement |NotificationObserver|.
+  // Implement |content::NotificationObserver|.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
  private:
   // Private constructor.
   MachBroker();
@@ -95,7 +95,7 @@ class MachBroker : public base::ProcessMetrics::PortProvider,
 
   // Used to register for notifications received by NotificationObserver.
   // Accessed only on the UI thread.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // Stores mach info for every process in the broker.
   typedef std::map<base::ProcessHandle, MachInfo> MachMap;

@@ -24,8 +24,8 @@
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/common/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "googleurl/src/gurl.h"
@@ -129,7 +129,7 @@ namespace input_method {
 // The implementation of InputMethodManager.
 class InputMethodManagerImpl : public HotkeyManager::Observer,
                                public InputMethodManager,
-                               public NotificationObserver,
+                               public content::NotificationObserver,
                                public IBusController::Observer {
  public:
   InputMethodManagerImpl()
@@ -1162,10 +1162,10 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
     enable_auto_ime_shutdown_ = enable;
   }
 
-  // NotificationObserver implementation:
+  // content::NotificationObserver implementation:
   void Observe(int type,
-               const NotificationSource& source,
-               const NotificationDetails& details) {
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) {
     // Stop the input method daemon on browser shutdown.
     if (type == content::NOTIFICATION_APP_TERMINATING) {
       shutting_down_ = true;
@@ -1318,7 +1318,7 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
   InputMethodConfigRequests current_config_values_;
 
   // This is used to register this object to APP_TERMINATING notification.
-  NotificationRegistrar notification_registrar_;
+  content::NotificationRegistrar notification_registrar_;
 
   // True if we should launch the input method daemon.
   bool should_launch_ime_;

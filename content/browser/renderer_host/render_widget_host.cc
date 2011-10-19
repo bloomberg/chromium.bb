@@ -267,8 +267,8 @@ void RenderWidgetHost::WasHidden() {
   bool is_visible = false;
   NotificationService::current()->Notify(
       content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
-      Source<RenderWidgetHost>(this),
-      Details<bool>(&is_visible));
+      content::Source<RenderWidgetHost>(this),
+      content::Details<bool>(&is_visible));
 }
 
 void RenderWidgetHost::WasRestored() {
@@ -302,8 +302,8 @@ void RenderWidgetHost::WasRestored() {
   bool is_visible = true;
   NotificationService::current()->Notify(
       content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
-      Source<RenderWidgetHost>(this),
-      Details<bool>(&is_visible));
+      content::Source<RenderWidgetHost>(this),
+      content::Details<bool>(&is_visible));
 
   // It's possible for our size to be out of sync with the renderer. The
   // following is one case that leads to this:
@@ -835,7 +835,7 @@ bool RenderWidgetHost::IsFullscreen() const {
 void RenderWidgetHost::Destroy() {
   NotificationService::current()->Notify(
       content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
-      Source<RenderWidgetHost>(this),
+      content::Source<RenderWidgetHost>(this),
       NotificationService::NoDetails());
 
   // Tell the view to die.
@@ -863,7 +863,7 @@ void RenderWidgetHost::CheckRendererIsUnresponsive() {
   // OK, looks like we have a hung renderer!
   NotificationService::current()->Notify(
       content::NOTIFICATION_RENDERER_PROCESS_HANG,
-      Source<RenderWidgetHost>(this),
+      content::Source<RenderWidgetHost>(this),
       NotificationService::NoDetails());
   is_unresponsive_ = true;
   NotifyRendererUnresponsive();
@@ -936,8 +936,8 @@ void RenderWidgetHost::OnMsgPaintAtSizeAck(int tag, const gfx::Size& size) {
   gfx::Size size_details = size;
   NotificationService::current()->Notify(
       content::NOTIFICATION_RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK,
-      Source<RenderWidgetHost>(this),
-      Details<PaintAtSizeAckDetails>(&details));
+      content::Source<RenderWidgetHost>(this),
+      content::Details<PaintAtSizeAckDetails>(&details));
 }
 
 void RenderWidgetHost::OnMsgUpdateRect(
@@ -1040,7 +1040,7 @@ void RenderWidgetHost::OnMsgUpdateRect(
 
   NotificationService::current()->Notify(
       content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT,
-      Source<RenderWidgetHost>(this),
+      content::Source<RenderWidgetHost>(this),
       NotificationService::NoDetails());
 
   // If we got a resize ack, then perhaps we have another resize to send?
@@ -1092,8 +1092,8 @@ void RenderWidgetHost::OnMsgInputEventAck(WebInputEvent::Type event_type,
   // This is used only for testing.
   NotificationService::current()->Notify(
       content::NOTIFICATION_RENDER_WIDGET_HOST_DID_RECEIVE_INPUT_EVENT_ACK,
-      Source<RenderWidgetHost>(this),
-      Details<int>(&type));
+      content::Source<RenderWidgetHost>(this),
+      content::Details<int>(&type));
 }
 
 void RenderWidgetHost::ProcessWheelAck(bool processed) {

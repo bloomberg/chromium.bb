@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/views/accessibility_event_router_views.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/common/notification_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "views/controls/button/text_button.h"
@@ -87,7 +87,7 @@ class AccessibilityWindowDelegate : public views::WidgetDelegate {
 
 class AccessibilityEventRouterViewsTest
     : public testing::Test,
-      public NotificationObserver {
+      public content::NotificationObserver {
  public:
   virtual void SetUp() {
     views::ViewsDelegate::views_delegate = new AccessibilityViewsDelegate();
@@ -111,11 +111,11 @@ class AccessibilityEventRouterViewsTest
   // Implement NotificationObserver::Observe and store information about a
   // ACCESSIBILITY_CONTROL_FOCUSED event.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) {
     ASSERT_EQ(type, chrome::NOTIFICATION_ACCESSIBILITY_CONTROL_FOCUSED);
     const AccessibilityControlInfo* info =
-        Details<const AccessibilityControlInfo>(details).ptr();
+        content::Details<const AccessibilityControlInfo>(details).ptr();
     focus_event_count_++;
     last_control_name_ = info->name();
   }
@@ -157,7 +157,7 @@ TEST_F(AccessibilityEventRouterViewsTest, MAYBE_TestFocusNotification) {
   button1->RequestFocus();
 
   // Start listening to ACCESSIBILITY_CONTROL_FOCUSED notifications.
-  NotificationRegistrar registrar;
+  content::NotificationRegistrar registrar;
   registrar.Add(this,
                 chrome::NOTIFICATION_ACCESSIBILITY_CONTROL_FOCUSED,
                 NotificationService::AllSources());

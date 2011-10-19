@@ -31,7 +31,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/user_metrics.h"
-#include "content/common/notification_details.h"
+#include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_types.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -300,11 +300,12 @@ void AdvancedOptionsHandler::RegisterMessages() {
 #endif
 }
 
-void AdvancedOptionsHandler::Observe(int type,
-                                     const NotificationSource& source,
-                                     const NotificationDetails& details) {
+void AdvancedOptionsHandler::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_PREF_CHANGED) {
-    std::string* pref_name = Details<std::string>(details).ptr();
+    std::string* pref_name = content::Details<std::string>(details).ptr();
     if (*pref_name == prefs::kDownloadExtensionsToOpen) {
       SetupAutoOpenFileTypesDisabledAttribute();
     } else if (proxy_prefs_->IsObserved(*pref_name)) {

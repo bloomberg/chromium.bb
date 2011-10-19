@@ -247,12 +247,12 @@ void LoginPerformer::OnCheckWhitelistCompleted(SignedSettings::ReturnCode code,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// LoginPerformer, NotificationObserver implementation:
+// LoginPerformer, content::NotificationObserver implementation:
 //
 
 void LoginPerformer::Observe(int type,
-                             const NotificationSource& source,
-                             const NotificationDetails& details) {
+                             const content::NotificationSource& source,
+                             const content::NotificationDetails& details) {
   if (type != chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED)
     return;
 

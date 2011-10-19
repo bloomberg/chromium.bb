@@ -18,8 +18,8 @@
 #include "base/string16.h"
 #include "chrome/browser/extensions/extension_icon_manager.h"
 #include "chrome/common/extensions/url_pattern_set.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 struct ContextMenuParams;
 
@@ -192,7 +192,7 @@ class ExtensionMenuItem {
 };
 
 // This class keeps track of menu items added by extensions.
-class ExtensionMenuManager : public NotificationObserver {
+class ExtensionMenuManager : public content::NotificationObserver {
  public:
   explicit ExtensionMenuManager(Profile* profile);
   virtual ~ExtensionMenuManager();
@@ -246,9 +246,9 @@ class ExtensionMenuManager : public NotificationObserver {
   // default extension icon.
   const SkBitmap& GetIconForExtension(const std::string& extension_id);
 
-  // Implements the NotificationObserver interface.
-  virtual void Observe(int type, const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+  // Implements the content::NotificationObserver interface.
+  virtual void Observe(int type, const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ExtensionMenuManagerTest, DeleteParent);
@@ -271,7 +271,7 @@ class ExtensionMenuManager : public NotificationObserver {
   // items.
   std::map<ExtensionMenuItem::Id, ExtensionMenuItem*> items_by_id_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   ExtensionIconManager icon_manager_;
 

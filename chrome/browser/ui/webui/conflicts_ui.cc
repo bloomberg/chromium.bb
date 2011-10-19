@@ -21,8 +21,8 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/user_metrics.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/common/notification_service.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
@@ -70,7 +70,7 @@ ChromeWebUIDataSource* CreateConflictsUIHTMLSource() {
 
 // The handler for JavaScript messages for the about:flags page.
 class ConflictsDOMHandler : public WebUIMessageHandler,
-                            public NotificationObserver {
+                            public content::NotificationObserver {
  public:
   ConflictsDOMHandler() {}
   virtual ~ConflictsDOMHandler() {}
@@ -85,10 +85,10 @@ class ConflictsDOMHandler : public WebUIMessageHandler,
   void SendModuleList();
 
   void Observe(int type,
-               const NotificationSource& source,
-               const NotificationDetails& details);
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details);
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ConflictsDOMHandler);
 };
@@ -133,8 +133,8 @@ void ConflictsDOMHandler::SendModuleList() {
 }
 
 void ConflictsDOMHandler::Observe(int type,
-                                  const NotificationSource& source,
-                                  const NotificationDetails& details) {
+                                  const content::NotificationSource& source,
+                                  const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_MODULE_LIST_ENUMERATED:
       SendModuleList();

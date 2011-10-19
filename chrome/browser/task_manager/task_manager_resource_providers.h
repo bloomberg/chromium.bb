@@ -14,8 +14,8 @@
 #include "base/process_util.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "content/common/child_process_info.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 
 class BackgroundContents;
@@ -115,7 +115,7 @@ class TaskManagerTabContentsResource : public TaskManagerRendererResource {
 
 class TaskManagerTabContentsResourceProvider
     : public TaskManager::ResourceProvider,
-      public NotificationObserver {
+      public content::NotificationObserver {
  public:
   explicit TaskManagerTabContentsResourceProvider(TaskManager* task_manager);
 
@@ -125,10 +125,10 @@ class TaskManagerTabContentsResourceProvider
   virtual void StartUpdating();
   virtual void StopUpdating();
 
-  // NotificationObserver method:
+  // content::NotificationObserver method:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
  private:
   virtual ~TaskManagerTabContentsResourceProvider();
@@ -149,7 +149,7 @@ class TaskManagerTabContentsResourceProvider
   std::map<TabContentsWrapper*, TaskManagerTabContentsResource*> resources_;
 
   // A scoped container for notification registries.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskManagerTabContentsResourceProvider);
 };
@@ -184,7 +184,7 @@ class TaskManagerBackgroundContentsResource
 
 class TaskManagerBackgroundContentsResourceProvider
     : public TaskManager::ResourceProvider,
-      public NotificationObserver {
+      public content::NotificationObserver {
  public:
   explicit TaskManagerBackgroundContentsResourceProvider(
       TaskManager* task_manager);
@@ -195,10 +195,10 @@ class TaskManagerBackgroundContentsResourceProvider
   virtual void StartUpdating();
   virtual void StopUpdating();
 
-  // NotificationObserver method:
+  // content::NotificationObserver method:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
  private:
   virtual ~TaskManagerBackgroundContentsResourceProvider();
@@ -221,7 +221,7 @@ class TaskManagerBackgroundContentsResourceProvider
       resources_;
 
   // A scoped container for notification registries.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskManagerBackgroundContentsResourceProvider);
 };
@@ -263,7 +263,7 @@ class TaskManagerChildProcessResource : public TaskManager::Resource {
 
 class TaskManagerChildProcessResourceProvider
     : public TaskManager::ResourceProvider,
-      public NotificationObserver {
+      public content::NotificationObserver {
  public:
   explicit TaskManagerChildProcessResourceProvider(TaskManager* task_manager);
 
@@ -273,10 +273,10 @@ class TaskManagerChildProcessResourceProvider
   virtual void StartUpdating();
   virtual void StopUpdating();
 
-  // NotificationObserver method:
+  // content::NotificationObserver method:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Retrieves the current ChildProcessInfo (performed in the IO thread).
   virtual void RetrieveChildProcessInfo();
@@ -310,7 +310,7 @@ class TaskManagerChildProcessResourceProvider
   std::map<int, TaskManagerChildProcessResource*> pid_to_resources_;
 
   // A scoped container for notification registries.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskManagerChildProcessResourceProvider);
 };
@@ -352,7 +352,7 @@ class TaskManagerExtensionProcessResource : public TaskManager::Resource {
 
 class TaskManagerExtensionProcessResourceProvider
     : public TaskManager::ResourceProvider,
-      public NotificationObserver {
+      public content::NotificationObserver {
  public:
   explicit TaskManagerExtensionProcessResourceProvider(
       TaskManager* task_manager);
@@ -363,10 +363,10 @@ class TaskManagerExtensionProcessResourceProvider
   virtual void StartUpdating();
   virtual void StopUpdating();
 
-  // NotificationObserver method:
+  // content::NotificationObserver method:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
  private:
   virtual ~TaskManagerExtensionProcessResourceProvider();
@@ -384,7 +384,7 @@ class TaskManagerExtensionProcessResourceProvider
   std::map<int, TaskManagerExtensionProcessResource*> pid_to_resources_;
 
   // A scoped container for notification registries.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   bool updating_;
 
@@ -422,7 +422,7 @@ class TaskManagerNotificationResource : public TaskManager::Resource {
 
 class TaskManagerNotificationResourceProvider
     : public TaskManager::ResourceProvider,
-      public NotificationObserver {
+      public content::NotificationObserver {
  public:
   static TaskManagerNotificationResourceProvider* Create(
       TaskManager* task_manager);
@@ -434,10 +434,10 @@ class TaskManagerNotificationResourceProvider
   virtual void StartUpdating();
   virtual void StopUpdating();
 
-  // NotificationObserver interface
+  // content::NotificationObserver interface
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
  private:
   explicit TaskManagerNotificationResourceProvider(TaskManager* task_manager);
@@ -452,7 +452,7 @@ class TaskManagerNotificationResourceProvider
   std::map<BalloonHost*, TaskManagerNotificationResource*> resources_;
 
   // A scoped container for notification registries.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   bool updating_;
 

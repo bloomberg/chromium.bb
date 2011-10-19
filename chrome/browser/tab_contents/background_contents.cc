@@ -41,7 +41,7 @@ BackgroundContents::BackgroundContents(SiteInstance* site_instance,
   // as well (should only be called for OTR profiles, as we should receive
   // APP_TERMINATING before non-OTR profiles are destroyed).
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                 Source<Profile>(profile));
+                 content::Source<Profile>(profile));
 }
 
 // Exposed to allow creating mocks.
@@ -57,8 +57,8 @@ BackgroundContents::~BackgroundContents() {
       render_view_host_->process()->browser_context());
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_BACKGROUND_CONTENTS_DELETED,
-      Source<Profile>(profile),
-      Details<BackgroundContents>(this));
+      content::Source<Profile>(profile),
+      content::Details<BackgroundContents>(this));
   render_view_host_->Shutdown();  // deletes render_view_host
 }
 
@@ -98,8 +98,8 @@ void BackgroundContents::DidNavigate(
       render_view_host->process()->browser_context());
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_BACKGROUND_CONTENTS_NAVIGATED,
-      Source<Profile>(profile),
-      Details<BackgroundContents>(this));
+      content::Source<Profile>(profile),
+      content::Details<BackgroundContents>(this));
 }
 
 void BackgroundContents::RunJavaScriptMessage(
@@ -120,8 +120,8 @@ void BackgroundContents::RunJavaScriptMessage(
 }
 
 void BackgroundContents::Observe(int type,
-                                 const NotificationSource& source,
-                                 const NotificationDetails& details) {
+                                 const content::NotificationSource& source,
+                                 const content::NotificationDetails& details) {
   // TODO(rafaelw): Implement pagegroup ref-counting so that non-persistent
   // background pages are closed when the last referencing frame is closed.
   switch (type) {
@@ -154,8 +154,8 @@ void BackgroundContents::Close(RenderViewHost* render_view_host) {
       render_view_host->process()->browser_context());
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_BACKGROUND_CONTENTS_CLOSED,
-      Source<Profile>(profile),
-      Details<BackgroundContents>(this));
+      content::Source<Profile>(profile),
+      content::Details<BackgroundContents>(this));
   delete this;
 }
 
@@ -166,8 +166,8 @@ void BackgroundContents::RenderViewGone(RenderViewHost* rvh,
       Profile::FromBrowserContext(rvh->process()->browser_context());
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_BACKGROUND_CONTENTS_TERMINATED,
-      Source<Profile>(profile),
-      Details<BackgroundContents>(this));
+      content::Source<Profile>(profile),
+      content::Details<BackgroundContents>(this));
 
   // Our RenderView went away, so we should go away also, so killing the process
   // via the TaskManager doesn't permanently leave a BackgroundContents hanging

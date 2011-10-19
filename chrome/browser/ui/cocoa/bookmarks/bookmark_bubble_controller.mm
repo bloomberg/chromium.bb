@@ -12,8 +12,8 @@
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #include "content/browser/user_metrics.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -21,16 +21,16 @@
 
 // Simple class to watch for tab creation/destruction and close the bubble.
 // Bridge between Chrome-style notifications and ObjC-style notifications.
-class BookmarkBubbleNotificationBridge : public NotificationObserver {
+class BookmarkBubbleNotificationBridge : public content::NotificationObserver {
  public:
   BookmarkBubbleNotificationBridge(BookmarkBubbleController* controller,
                                    SEL selector);
   virtual ~BookmarkBubbleNotificationBridge() {}
   void Observe(int type,
-               const NotificationSource& source,
-               const NotificationDetails& details);
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details);
  private:
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
   BookmarkBubbleController* controller_;  // weak; owns us.
   SEL selector_;   // SEL sent to controller_ on notification.
 };
@@ -50,8 +50,8 @@ BookmarkBubbleNotificationBridge::BookmarkBubbleNotificationBridge(
 // away) so we don't bother checking which notification came in.
 void BookmarkBubbleNotificationBridge::Observe(
   int type,
-  const NotificationSource& source,
-  const NotificationDetails& details) {
+  const content::NotificationSource& source,
+  const content::NotificationDetails& details) {
   [controller_ performSelector:selector_ withObject:controller_];
 }
 

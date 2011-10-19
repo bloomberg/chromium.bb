@@ -10,8 +10,8 @@
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/tab_icon_view.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "views/controls/button/button.h"
 #include "views/window/non_client_view.h"
 
@@ -27,7 +27,7 @@ class ImageView;
 }
 
 class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
-                               public NotificationObserver,
+                               public content::NotificationObserver,
                                public views::ButtonListener,
                                public TabIconView::TabIconViewModel {
  public:
@@ -98,10 +98,10 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   virtual SkBitmap GetFaviconForTabIconView() OVERRIDE;
 
  protected:
-  // NotificationObserver implementation:
+  // content::NotificationObserver implementation:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   // Returns the thickness of the border that makes up the window frame edges.
@@ -187,7 +187,7 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   // icon.
   scoped_ptr<AvatarMenuButton> avatar_button_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(OpaqueBrowserFrameView);
 };

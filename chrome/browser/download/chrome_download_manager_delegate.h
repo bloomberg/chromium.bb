@@ -12,8 +12,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
 #include "content/browser/download/download_manager_delegate.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class CrxInstaller;
 class DownloadHistory;
@@ -40,7 +40,7 @@ struct hash<CrxInstaller*> {
 class ChromeDownloadManagerDelegate
     : public base::RefCountedThreadSafe<ChromeDownloadManagerDelegate>,
       public DownloadManagerDelegate,
-      public NotificationObserver {
+      public content::NotificationObserver {
  public:
   explicit ChromeDownloadManagerDelegate(Profile* profile);
 
@@ -94,10 +94,10 @@ class ChromeDownloadManagerDelegate
  private:
   friend class base::RefCountedThreadSafe<ChromeDownloadManagerDelegate>;
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Callback function after url is checked with safebrowsing service.
   void CheckDownloadUrlDone(int32 download_id, bool is_dangerous_url);
@@ -142,7 +142,7 @@ class ChromeDownloadManagerDelegate
   typedef base::hash_map<CrxInstaller*, int> CrxInstallerMap;
   CrxInstallerMap crx_installers_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeDownloadManagerDelegate);
 };

@@ -13,8 +13,8 @@ TestNotificationTracker::Event::Event()
       details(NotificationService::NoDetails()) {
 }
 TestNotificationTracker::Event::Event(int t,
-                                      NotificationSource s,
-                                      NotificationDetails d)
+                                      content::NotificationSource s,
+                                      content::NotificationDetails d)
     : type(t),
       source(s),
       details(d) {
@@ -26,8 +26,9 @@ TestNotificationTracker::TestNotificationTracker() {
 TestNotificationTracker::~TestNotificationTracker() {
 }
 
-void TestNotificationTracker::ListenFor(int type,
-                                        const NotificationSource& source) {
+void TestNotificationTracker::ListenFor(
+    int type,
+    const content::NotificationSource& source) {
   registrar_.Add(this, type, source);
 }
 
@@ -70,8 +71,9 @@ bool TestNotificationTracker::Check3AndReset(int type1,
   return success;
 }
 
-void TestNotificationTracker::Observe(int type,
-                                      const NotificationSource& source,
-                                      const NotificationDetails& details) {
+void TestNotificationTracker::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   events_.push_back(Event(type, source, details));
 }

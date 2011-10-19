@@ -104,23 +104,24 @@ AlternateNavURLFetcher::AlternateNavURLFetcher(
 AlternateNavURLFetcher::~AlternateNavURLFetcher() {
 }
 
-void AlternateNavURLFetcher::Observe(int type,
-                                     const NotificationSource& source,
-                                     const NotificationDetails& details) {
+void AlternateNavURLFetcher::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   switch (type) {
     case content::NOTIFICATION_NAV_ENTRY_PENDING: {
       // If we've already received a notification for the same controller, we
       // should delete ourselves as that indicates that the page is being
       // re-loaded so this instance is now stale.
       NavigationController* controller =
-          Source<NavigationController>(source).ptr();
+          content::Source<NavigationController>(source).ptr();
       if (controller_ == controller) {
         delete this;
       } else if (!controller_) {
         // Start listening for the commit notification.
         DCHECK(controller->pending_entry());
         registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-                       Source<NavigationController>(controller));
+                       content::Source<NavigationController>(controller));
         StartFetch(controller);
       }
       break;
@@ -129,7 +130,7 @@ void AlternateNavURLFetcher::Observe(int type,
     case chrome::NOTIFICATION_INSTANT_COMMITTED: {
       // See above.
       NavigationController* controller =
-          &Source<TabContentsWrapper>(source)->controller();
+          &content::Source<TabContentsWrapper>(source)->controller();
       if (controller_ == controller) {
         delete this;
       } else if (!controller_) {
@@ -142,7 +143,7 @@ void AlternateNavURLFetcher::Observe(int type,
     case content::NOTIFICATION_NAV_ENTRY_COMMITTED:
       // The page was navigated, we can show the infobar now if necessary.
       registrar_.Remove(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-                        Source<NavigationController>(controller_));
+                        content::Source<NavigationController>(controller_));
       navigated_to_entry_ = true;
       ShowInfobarIfPossible();
       // WARNING: |this| may be deleted!
@@ -176,7 +177,7 @@ void AlternateNavURLFetcher::OnURLFetchComplete(
 void AlternateNavURLFetcher::StartFetch(NavigationController* controller) {
   controller_ = controller;
   registrar_.Add(this, content::NOTIFICATION_TAB_CLOSED,
-                 Source<NavigationController>(controller_));
+                 content::Source<NavigationController>(controller_));
 
   DCHECK_EQ(NOT_STARTED, state_);
   state_ = IN_PROGRESS;

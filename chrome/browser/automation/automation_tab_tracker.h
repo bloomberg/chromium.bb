@@ -23,8 +23,8 @@ class AutomationTabTracker
   virtual void RemoveObserver(NavigationController* resource);
 
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   base::Time GetLastNavigationTime(int handle);
 

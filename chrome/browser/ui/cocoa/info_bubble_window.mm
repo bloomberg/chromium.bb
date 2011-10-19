@@ -7,8 +7,8 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_nsobject.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/common/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
@@ -30,17 +30,17 @@ const NSTimeInterval kMinimumTimeInterval =
 @end
 
 // A helper class to proxy app notifications to the window.
-class AppNotificationBridge : public NotificationObserver {
+class AppNotificationBridge : public content::NotificationObserver {
  public:
   explicit AppNotificationBridge(InfoBubbleWindow* owner) : owner_(owner) {
     registrar_.Add(this, content::NOTIFICATION_APP_TERMINATING,
                    NotificationService::AllSources());
   }
 
-  // Overridden from NotificationObserver.
+  // Overridden from content::NotificationObserver.
   void Observe(int type,
-               const NotificationSource& source,
-               const NotificationDetails& details) {
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) {
     switch (type) {
       case content::NOTIFICATION_APP_TERMINATING:
         [owner_ appIsTerminating];
@@ -55,7 +55,7 @@ class AppNotificationBridge : public NotificationObserver {
   InfoBubbleWindow* owner_;
 
   // Used for registering to receive notifications and automatic clean up.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(AppNotificationBridge);
 };

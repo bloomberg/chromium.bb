@@ -349,7 +349,7 @@ ComponentUpdateService::Status CrxUpdateService::Start() {
 
   NotificationService::current()->Notify(
     chrome::NOTIFICATION_COMPONENT_UPDATER_STARTED,
-    Source<ComponentUpdateService>(this),
+    content::Source<ComponentUpdateService>(this),
     NotificationService::NoDetails());
 
   timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(config_->InitialDelay()),
@@ -383,7 +383,7 @@ void CrxUpdateService::ScheduleNextRun(bool step_delay) {
   if (!step_delay) {
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING,
-        Source<ComponentUpdateService>(this),
+        content::Source<ComponentUpdateService>(this),
         NotificationService::NoDetails());
     // Zero is only used for unit tests.
     if (0 == delay)
@@ -636,7 +636,7 @@ void CrxUpdateService::OnParseUpdateManifestSucceeded(
 
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_COMPONENT_UPDATE_FOUND,
-        Source<std::string>(&crx->id),
+        content::Source<std::string>(&crx->id),
         NotificationService::NoDetails());
   }
 
@@ -683,7 +683,7 @@ void CrxUpdateService::OnURLFetchComplete(const URLFetcher* source,
 
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_COMPONENT_UPDATE_READY,
-        Source<std::string>(&context->id),
+        content::Source<std::string>(&context->id),
         NotificationService::NoDetails());
 
     BrowserThread::PostDelayedTask(BrowserThread::FILE, FROM_HERE,

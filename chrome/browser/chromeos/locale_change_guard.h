@@ -11,12 +11,10 @@
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/notifications/system_notification.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
 
-class NotificationDetails;
-class NotificationSource;
 class Profile;
 
 namespace base {
@@ -28,7 +26,7 @@ namespace chromeos {
 // Performs check whether locale has been changed automatically recently
 // (based on synchronized user preference).  If so: shows notification that
 // allows user to revert change.
-class LocaleChangeGuard : public NotificationObserver {
+class LocaleChangeGuard : public content::NotificationObserver {
  public:
   explicit LocaleChangeGuard(Profile* profile);
   virtual ~LocaleChangeGuard();
@@ -47,17 +45,17 @@ class LocaleChangeGuard : public NotificationObserver {
   void AcceptLocaleChange();
   void Check();
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   std::string from_locale_;
   std::string to_locale_;
   Profile* profile_;
   scoped_ptr<chromeos::SystemNotification> note_;
   bool reverted_;
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // We want to show locale change notification in previous language however
   // we cannot directly load strings for non-current locale.  So we cache

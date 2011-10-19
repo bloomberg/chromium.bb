@@ -8,8 +8,8 @@
 
 #include "base/message_loop.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_registrar.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "grit/theme_resources.h"
 #include "ui/base/animation/linear_animation.h"
@@ -31,7 +31,7 @@ const int kFrameRateHz = 60;
 const double kMoveFraction = 1.0 / 3.0;
 
 class DownloadStartedAnimationGtk : public ui::LinearAnimation,
-                                    public NotificationObserver {
+                                    public content::NotificationObserver {
  public:
   explicit DownloadStartedAnimationGtk(TabContents* tab_contents);
 
@@ -51,8 +51,8 @@ class DownloadStartedAnimationGtk : public ui::LinearAnimation,
 
   // NotificationObserver
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // The top level window that floats over the browser and displays the
   // image.
@@ -73,7 +73,7 @@ class DownloadStartedAnimationGtk : public ui::LinearAnimation,
   gfx::Rect tab_contents_bounds_;
 
   // A scoped container for notification registries.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadStartedAnimationGtk);
 };
@@ -101,11 +101,11 @@ DownloadStartedAnimationGtk::DownloadStartedAnimationGtk(
   registrar_.Add(
       this,
       content::NOTIFICATION_TAB_CONTENTS_HIDDEN,
-      Source<TabContents>(tab_contents_));
+      content::Source<TabContents>(tab_contents_));
   registrar_.Add(
       this,
       content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-      Source<TabContents>(tab_contents_));
+      content::Source<TabContents>(tab_contents_));
 
   // TODO(estade): don't show up on the wrong virtual desktop.
 
@@ -157,11 +157,11 @@ void DownloadStartedAnimationGtk::Close() {
   registrar_.Remove(
       this,
       content::NOTIFICATION_TAB_CONTENTS_HIDDEN,
-      Source<TabContents>(tab_contents_));
+      content::Source<TabContents>(tab_contents_));
   registrar_.Remove(
       this,
       content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-      Source<TabContents>(tab_contents_));
+      content::Source<TabContents>(tab_contents_));
 
   tab_contents_ = NULL;
   gtk_widget_destroy(popup_);
@@ -186,9 +186,10 @@ void DownloadStartedAnimationGtk::AnimateToState(double state) {
   }
 }
 
-void DownloadStartedAnimationGtk::Observe(int type,
-                                          const NotificationSource& source,
-                                          const NotificationDetails& details) {
+void DownloadStartedAnimationGtk::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   Close();
 }
 

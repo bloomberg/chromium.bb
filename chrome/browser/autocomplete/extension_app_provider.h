@@ -22,11 +22,11 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class ExtensionAppProvider : public AutocompleteProvider,
-                             public NotificationObserver {
+                             public content::NotificationObserver {
  public:
   ExtensionAppProvider(ACProviderListener* listener, Profile* profile);
 
@@ -57,12 +57,12 @@ class ExtensionAppProvider : public AutocompleteProvider,
                          int target_length,
                          const GURL& url);
 
-  // NotificationObserver implementation:
+  // content::NotificationObserver implementation:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // Our cache of ExtensionApp objects (name + url) representing the extension
   // apps we know about.

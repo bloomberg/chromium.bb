@@ -170,8 +170,8 @@ void UserImageScreen::OnActorDestroyed(UserImageScreenActor* actor) {
 }
 
 void UserImageScreen::Observe(int type,
-                              const NotificationSource& source,
-                              const NotificationDetails& details) {
+                              const content::NotificationSource& source,
+                              const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED);
   bool is_screen_locked = *Details<bool>(details).ptr();
   if (is_screen_locked)

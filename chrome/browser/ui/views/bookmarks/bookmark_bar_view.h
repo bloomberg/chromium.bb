@@ -19,7 +19,7 @@
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_instructions_view.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_menu_controller_views.h"
 #include "chrome/browser/ui/views/detachable_toolbar_view.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "views/context_menu_controller.h"
 #include "views/controls/button/button.h"
@@ -54,7 +54,7 @@ class BookmarkBarView : public DetachableToolbarView,
                         public BookmarkModelObserver,
                         public views::ViewMenuDelegate,
                         public views::ButtonListener,
-                        public NotificationObserver,
+                        public content::NotificationObserver,
                         public views::ContextMenuController,
                         public views::DragController,
                         public ui::AnimationDelegate,
@@ -239,8 +239,8 @@ class BookmarkBarView : public DetachableToolbarView,
 
   // NotificationService:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // If true we're running tests. This short circuits a couple of animations.
   static bool testing_;
@@ -357,7 +357,7 @@ class BookmarkBarView : public DetachableToolbarView,
   // desired bounds. If |compute_bounds_only| = FALSE, the bounds are set.
   gfx::Size LayoutItems(bool compute_bounds_only);
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // Used for opening urls.
   PageNavigator* page_navigator_;

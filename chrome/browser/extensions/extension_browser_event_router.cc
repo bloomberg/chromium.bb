@@ -130,7 +130,7 @@ void ExtensionBrowserEventRouter::RegisterForBrowserNotifications(
   // notified when it is. If this is an existing window, this is a no-op that we
   // just do to reduce code complexity.
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_WINDOW_READY,
-      Source<const Browser>(browser));
+      content::Source<const Browser>(browser));
 
   for (int i = 0; i < browser->tabstrip_model()->count(); ++i)
     RegisterForTabNotifications(browser->GetTabContentsAt(i));
@@ -139,22 +139,22 @@ void ExtensionBrowserEventRouter::RegisterForBrowserNotifications(
 void ExtensionBrowserEventRouter::RegisterForTabNotifications(
     TabContents* contents) {
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-                 Source<NavigationController>(&contents->controller()));
+                 content::Source<NavigationController>(&contents->controller()));
 
   // Observing TAB_CONTENTS_DESTROYED is necessary because it's
   // possible for tabs to be created, detached and then destroyed without
   // ever having been re-attached and closed. This happens in the case of
   // a devtools TabContents that is opened in window, docked, then closed.
   registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                 Source<TabContents>(contents));
+                 content::Source<TabContents>(contents));
 }
 
 void ExtensionBrowserEventRouter::UnregisterForTabNotifications(
     TabContents* contents) {
   registrar_.Remove(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      Source<NavigationController>(&contents->controller()));
+      content::Source<NavigationController>(&contents->controller()));
   registrar_.Remove(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-      Source<TabContents>(contents));
+      content::Source<TabContents>(contents));
 }
 
 void ExtensionBrowserEventRouter::OnBrowserWindowReady(const Browser* browser) {
@@ -178,7 +178,7 @@ void ExtensionBrowserEventRouter::OnBrowserRemoved(const Browser* browser) {
   browser->tabstrip_model()->RemoveObserver(this);
 
   registrar_.Remove(this, chrome::NOTIFICATION_BROWSER_WINDOW_READY,
-      Source<const Browser>(browser));
+      content::Source<const Browser>(browser));
 
   DispatchSimpleBrowserEvent(browser->profile(),
                              ExtensionTabUtil::GetWindowId(browser),
@@ -523,22 +523,23 @@ ExtensionBrowserEventRouter::TabEntry* ExtensionBrowserEventRouter::GetTabEntry(
   return &i->second;
 }
 
-void ExtensionBrowserEventRouter::Observe(int type,
-                                          const NotificationSource& source,
-                                          const NotificationDetails& details) {
+void ExtensionBrowserEventRouter::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED) {
     NavigationController* source_controller =
-        Source<NavigationController>(source).ptr();
+        content::Source<NavigationController>(source).ptr();
     TabUpdated(source_controller->tab_contents(), true);
   } else if (type == content::NOTIFICATION_TAB_CONTENTS_DESTROYED) {
     // Tab was destroyed after being detached (without being re-attached).
-    TabContents* contents = Source<TabContents>(source).ptr();
+    TabContents* contents = content::Source<TabContents>(source).ptr();
     registrar_.Remove(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-        Source<NavigationController>(&contents->controller()));
+        content::Source<NavigationController>(&contents->controller()));
     registrar_.Remove(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-        Source<TabContents>(contents));
+        content::Source<TabContents>(contents));
   } else if (type == chrome::NOTIFICATION_BROWSER_WINDOW_READY) {
-    const Browser* browser = Source<const Browser>(source).ptr();
+    const Browser* browser = content::Source<const Browser>(source).ptr();
     OnBrowserWindowReady(browser);
 #if defined(OS_MACOSX)
   } else if (type == content::NOTIFICATION_NO_KEY_WINDOW) {

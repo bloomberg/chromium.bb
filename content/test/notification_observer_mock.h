@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_NOTIFICATION_OBSERVER_MOCK_H_
-#define CONTENT_COMMON_NOTIFICATION_OBSERVER_MOCK_H_
+#ifndef CONTENT_TEST_NOTIFICATION_OBSERVER_MOCK_H_
+#define CONTENT_TEST_NOTIFICATION_OBSERVER_MOCK_H_
 #pragma once
 
-#include "content/common/notification_observer.h"
+#include "content/public/browser/notification_observer.h"
 #include "testing/gmock/include/gmock/gmock.h"
+
+namespace content {
 
 class NotificationDetails;
 class NotificationSource;
@@ -22,4 +24,6 @@ class NotificationObserverMock : public NotificationObserver {
                              const NotificationDetails& details));
 };
 
-#endif  // CONTENT_COMMON_NOTIFICATION_OBSERVER_MOCK_H_
+}  // namespace content
+
+#endif  // CONTENT_TEST_NOTIFICATION_OBSERVER_MOCK_H_

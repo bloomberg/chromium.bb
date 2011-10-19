@@ -11,8 +11,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/prefs/pref_member.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class PrefService;
 
@@ -24,7 +24,7 @@ class PrintJob;
 class PrintedPage;
 class PrinterQuery;
 
-class PrintJobManager : public NotificationObserver {
+class PrintJobManager : public content::NotificationObserver {
  public:
   PrintJobManager();
   virtual ~PrintJobManager();
@@ -51,10 +51,10 @@ class PrintJobManager : public NotificationObserver {
 
   static void RegisterPrefs(PrefService* prefs);
 
-  // NotificationObserver
+  // content::NotificationObserver
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   bool printing_enabled() {
     return *printing_enabled_;
@@ -68,7 +68,7 @@ class PrintJobManager : public NotificationObserver {
   void OnPrintJobEvent(PrintJob* print_job,
                        const JobEventDetails& event_details);
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // Used to serialize access to queued_workers_.
   base::Lock lock_;

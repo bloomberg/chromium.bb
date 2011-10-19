@@ -57,7 +57,7 @@ void ExtensionTabHelper::SetExtensionApp(const Extension* extension) {
 
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED,
-      Source<ExtensionTabHelper>(this),
+      content::Source<ExtensionTabHelper>(this),
       NotificationService::NoDetails());
 }
 
@@ -105,7 +105,7 @@ void ExtensionTabHelper::DidNavigateMainFramePostCommit(
           wrapper_->restore_tab_helper()->session_id().id());
       NotificationService::current()->Notify(
           chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
-          Source<ExtensionAction>(browser_action),
+          content::Source<ExtensionAction>(browser_action),
           NotificationService::NoDetails());
     }
 

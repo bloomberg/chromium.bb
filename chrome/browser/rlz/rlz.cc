@@ -274,8 +274,8 @@ bool RLZTracker::SendFinancialPing(const std::string& brand,
 }
 
 void RLZTracker::Observe(int type,
-                         const NotificationSource& source,
-                         const NotificationDetails& details) {
+                         const content::NotificationSource& source,
+                         const content::NotificationDetails& details) {
   // Needs to be evaluated. See http://crbug.com/62328.
   base::ThreadRestrictions::ScopedAllowIO allow_io;
 
@@ -296,7 +296,8 @@ void RLZTracker::Observe(int type,
                         NotificationService::AllSources());
       break;
     case content::NOTIFICATION_NAV_ENTRY_PENDING: {
-      const NavigationEntry* entry = Details<NavigationEntry>(details).ptr();
+      const NavigationEntry* entry =
+          content::Details<NavigationEntry>(details).ptr();
       if (entry != NULL &&
           ((entry->transition_type() &
             content::PAGE_TRANSITION_HOME_PAGE) != 0)) {

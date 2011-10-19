@@ -44,8 +44,8 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/user_metrics.h"
-#include "content/common/notification_details.h"
 #include "content/common/notification_service.h"
+#include "content/public/browser/notification_details.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -105,7 +105,7 @@ BrowserToolbarGtk::BrowserToolbarGtk(Browser* browser, BrowserWindowGtk* window)
                  NotificationService::AllSources());
   registrar_.Add(this,
                  chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED,
-                 Source<Profile>(browser_->profile()));
+                 content::Source<Profile>(browser_->profile()));
 }
 
 BrowserToolbarGtk::~BrowserToolbarGtk() {
@@ -124,7 +124,7 @@ void BrowserToolbarGtk::Init(GtkWindow* top_level_window) {
   theme_service_ = GtkThemeService::GetFrom(profile);
   registrar_.Add(this,
                  chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
-                 Source<ThemeService>(theme_service_));
+                 content::Source<ThemeService>(theme_service_));
 
   offscreen_entry_.Own(gtk_entry_new());
 
@@ -228,7 +228,7 @@ void BrowserToolbarGtk::Init(GtkWindow* top_level_window) {
   wrench_menu_model_->bookmark_sub_menu_model()->SetMenuGtk(wrench_menu_.get());
 
   registrar_.Add(this, content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
-      Source<HostZoomMap>(profile->GetHostZoomMap()));
+      content::Source<HostZoomMap>(profile->GetHostZoomMap()));
 
   if (ShouldOnlyShowLocation()) {
     gtk_widget_show(event_box_);
@@ -354,13 +354,13 @@ bool BrowserToolbarGtk::GetAcceleratorForCommandId(
   return !!accelerator_gtk;
 }
 
-// NotificationObserver --------------------------------------------------------
+// content::NotificationObserver -----------------------------------------------
 
 void BrowserToolbarGtk::Observe(int type,
-                                const NotificationSource& source,
-                                const NotificationDetails& details) {
+                                const content::NotificationSource& source,
+                                const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_PREF_CHANGED) {
-    NotifyPrefChanged(Details<std::string>(details).ptr());
+    NotifyPrefChanged(content::Details<std::string>(details).ptr());
   } else if (type == chrome::NOTIFICATION_BROWSER_THEME_CHANGED) {
     // Update the spacing around the menu buttons
     bool use_gtk = theme_service_->UsingNativeTheme();

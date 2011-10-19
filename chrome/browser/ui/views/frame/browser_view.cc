@@ -329,9 +329,10 @@ BrowserView::BrowserView(Browser* browser)
                  {
   browser_->tabstrip_model()->AddObserver(this);
 
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_SIDEBAR_CHANGED,
-                 Source<SidebarManager>(SidebarManager::GetInstance()));
+  registrar_.Add(
+      this,
+      chrome::NOTIFICATION_SIDEBAR_CHANGED,
+      content::Source<SidebarManager>(SidebarManager::GetInstance()));
 }
 
 BrowserView::~BrowserView() {
@@ -1336,14 +1337,14 @@ ToolbarView* BrowserView::GetToolbarView() const {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// BrowserView, NotificationObserver implementation:
+// BrowserView, content::NotificationObserver implementation:
 
 void BrowserView::Observe(int type,
-                          const NotificationSource& source,
-                          const NotificationDetails& details) {
+                          const content::NotificationSource& source,
+                          const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_SIDEBAR_CHANGED:
-      if (Details<SidebarContainer>(details)->tab_contents() ==
+      if (content::Details<SidebarContainer>(details)->tab_contents() ==
           browser_->GetSelectedTabContents()) {
         UpdateSidebar();
       }
@@ -1676,7 +1677,7 @@ bool BrowserView::CanClose() {
   // Empty TabStripModel, it's now safe to allow the Window to be closed.
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_WINDOW_CLOSED,
-      Source<gfx::NativeWindow>(frame_->GetNativeWindow()),
+      content::Source<gfx::NativeWindow>(frame_->GetNativeWindow()),
       NotificationService::NoDetails());
   return true;
 }

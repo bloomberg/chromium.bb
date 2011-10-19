@@ -9,8 +9,8 @@
 #include <string>
 
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 
@@ -20,7 +20,7 @@ class BubbleFrameView;
 
 // Launches html dialog during OOBE/Login with specified URL and title.
 class LoginHtmlDialog : public HtmlDialogUIDelegate,
-                        public NotificationObserver {
+                        public content::NotificationObserver {
  public:
   // Delegate class to get notifications from the dialog.
   class Delegate {
@@ -68,10 +68,10 @@ class LoginHtmlDialog : public HtmlDialogUIDelegate,
   virtual bool ShouldShowDialogTitle() const OVERRIDE;
   virtual bool HandleContextMenu(const ContextMenuParams& params) OVERRIDE;
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
  private:
   // Notifications receiver.
@@ -81,7 +81,7 @@ class LoginHtmlDialog : public HtmlDialogUIDelegate,
   string16 title_;
   GURL url_;
   Style style_;
-  NotificationRegistrar notification_registrar_;
+  content::NotificationRegistrar notification_registrar_;
   BubbleFrameView* bubble_frame_view_;
   bool is_open_;
 

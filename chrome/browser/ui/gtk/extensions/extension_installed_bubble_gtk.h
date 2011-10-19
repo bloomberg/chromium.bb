@@ -11,8 +11,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 class Browser;
@@ -33,7 +33,7 @@ class SkBitmap;
 // ExtensionInstallBubble manages its own lifetime.
 class ExtensionInstalledBubbleGtk
     : public BubbleDelegateGtk,
-      public NotificationObserver,
+      public content::NotificationObserver,
       public base::RefCountedThreadSafe<ExtensionInstalledBubbleGtk> {
  public:
   // The behavior and content of this BubbleGtk comes in three varieties.
@@ -63,10 +63,10 @@ class ExtensionInstalledBubbleGtk
   // Shows the bubble. Called internally via PostTask.
   void ShowInternal();
 
-  // NotificationObserver:
+  // content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // BubbleDelegateGtk:
   virtual void BubbleClosing(BubbleGtk* bubble, bool closed_by_escape) OVERRIDE;
@@ -80,7 +80,7 @@ class ExtensionInstalledBubbleGtk
   const Extension* extension_;
   Browser *browser_;
   SkBitmap icon_;
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
   BubbleType type_;
 
   // The number of times to retry showing the bubble if the browser action

@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/themes/theme_service.h"
-#include "content/common/notification_observer.h"
+#include "content/public/browser/notification_observer.h"
 #include "ui/base/gtk/gtk_integers.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
@@ -43,7 +43,7 @@ class GtkThemeService : public ThemeService {
 
   // Calls |observer|.Observe() for the browser theme with this provider as the
   // source.
-  void InitThemesFor(NotificationObserver* observer);
+  void InitThemesFor(content::NotificationObserver* observer);
 
   // Overridden from ThemeService:
   //
@@ -59,10 +59,10 @@ class GtkThemeService : public ThemeService {
   virtual bool UsingDefaultTheme() const;
   virtual bool UsingNativeTheme() const;
 
-  // Overridden from ThemeService, NotificationObserver:
+  // Overridden from ThemeService, content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Creates a GtkChromeButton instance, registered with this theme provider,
   // with a "destroy" signal to remove it from our internal list when it goes

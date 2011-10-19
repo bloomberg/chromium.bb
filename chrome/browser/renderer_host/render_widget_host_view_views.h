@@ -14,8 +14,8 @@
 #include "base/task.h"
 #include "base/time.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "ui/gfx/compositor/compositor_observer.h"
 #include "ui/gfx/native_widget_types.h"
@@ -48,7 +48,7 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
 #endif
                                   public views::TouchSelectionClientView,
                                   public views::TextInputClient,
-                                  public NotificationObserver {
+                                  public content::NotificationObserver {
  public:
   // Internal class name.
   static const char kViewClassName[];
@@ -130,10 +130,10 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   virtual void SelectRect(const gfx::Point& start,
                           const gfx::Point& end) OVERRIDE;
 
-  // Overriden from NotificationObserver
+  // Overriden from content::NotificationObserver
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Overridden from ui::SimpleMenuModel::Delegate.
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
@@ -310,7 +310,7 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
 
 #if defined(TOUCH_UI)
   // used to register for keyboard visiblity notificatons.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
   gfx::Rect keyboard_rect_;
 #endif
 

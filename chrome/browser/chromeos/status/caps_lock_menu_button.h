@@ -11,7 +11,7 @@
 #include "chrome/browser/chromeos/status/status_area_button.h"
 #include "chrome/browser/chromeos/system_key_event_listener.h"
 #include "chrome/browser/prefs/pref_member.h"
-#include "content/common/notification_observer.h"
+#include "content/public/browser/notification_observer.h"
 #include "views/controls/menu/menu_delegate.h"
 #include "views/controls/menu/view_menu_delegate.h"
 
@@ -25,7 +25,7 @@ class StatusAreaHost;
 
 // A class for the button in the status area which alerts the user when caps
 // lock is active.
-class CapsLockMenuButton : public NotificationObserver,
+class CapsLockMenuButton : public content::NotificationObserver,
                            public StatusAreaButton,
                            public views::MenuDelegate,
                            public views::ViewMenuDelegate,
@@ -47,10 +47,10 @@ class CapsLockMenuButton : public NotificationObserver,
   // SystemKeyEventListener::CapsLockObserver implementation
   virtual void OnCapsLockChange(bool enabled);
 
-  // NotificationObserver implementation
+  // content::NotificationObserver implementation
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Updates the accessible name.
   void UpdateAccessibleName();

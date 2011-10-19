@@ -26,10 +26,10 @@
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
@@ -179,19 +179,19 @@ const CGFloat kBrowserActionBubbleYOffset = 3.0;
 
 // A helper class to proxy extension notifications to the view controller's
 // appropriate methods.
-class ExtensionServiceObserverBridge : public NotificationObserver,
-                                        public ExtensionToolbarModel::Observer {
+class ExtensionServiceObserverBridge : public content::NotificationObserver,
+                                       public ExtensionToolbarModel::Observer {
  public:
   ExtensionServiceObserverBridge(BrowserActionsController* owner,
                                   Profile* profile) : owner_(owner) {
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
-                   Source<Profile>(profile));
+                   content::Source<Profile>(profile));
   }
 
-  // Overridden from NotificationObserver.
+  // Overridden from content::NotificationObserver.
   void Observe(int type,
-               const NotificationSource& source,
-               const NotificationDetails& details) {
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) {
     switch (type) {
       case chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE: {
         ExtensionPopupController* popup = [ExtensionPopupController popup];
@@ -221,7 +221,7 @@ class ExtensionServiceObserverBridge : public NotificationObserver,
   BrowserActionsController* owner_;
 
   // Used for registering to receive notifications and automatic clean up.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionServiceObserverBridge);
 };

@@ -13,8 +13,8 @@
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/status_icons/status_icon.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/base/models/simple_menu_model.h"
 
 class Browser;
@@ -41,7 +41,7 @@ class StatusTray;
 // no open windows to allow apps with the "background" permission to run in the
 // background.
 class BackgroundModeManager
-    : public NotificationObserver,
+    : public content::NotificationObserver,
       public BackgroundApplicationListModel::Observer,
       public ProfileKeyedService,
       public ui::SimpleMenuModel::Delegate {
@@ -139,10 +139,10 @@ class BackgroundModeManager
   // which is similar to a shared_ptr.
   typedef linked_ptr<BackgroundModeData> BackgroundModeInfo;
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // BackgroundApplicationListModel::Observer implementation.
   virtual void OnApplicationDataChanged(const Extension* extension,
@@ -233,7 +233,7 @@ class BackgroundModeManager
   ProfileInfoCache* profile_cache_;
 
   // Registrars for managing our change observers.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
   PrefChangeRegistrar pref_registrar_;
 
   // The profile-keyed data for this background mode manager. Keyed on profile.

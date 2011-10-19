@@ -60,8 +60,8 @@ void SSLClientAuthHandler::CertificateSelected(net::X509Certificate* cert) {
   SSLClientAuthNotificationDetails details(cert_request_info_, cert);
   NotificationService* service = NotificationService::current();
   service->Notify(content::NOTIFICATION_SSL_CLIENT_AUTH_CERT_SELECTED,
-                  Source<SSLClientAuthHandler>(this),
-                  Details<SSLClientAuthNotificationDetails>(&details));
+                  content::Source<SSLClientAuthHandler>(this),
+                  content::Details<SSLClientAuthNotificationDetails>(&details));
 
   CertificateSelectedNoNotify(cert);
 }
@@ -113,19 +113,19 @@ SSLClientAuthObserver::~SSLClientAuthObserver() {
 
 void SSLClientAuthObserver::Observe(
     int type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   VLOG(1) << "SSLClientAuthObserver::Observe " << this << " " << handler_.get();
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(type == content::NOTIFICATION_SSL_CLIENT_AUTH_CERT_SELECTED);
 
-  if (Source<SSLClientAuthHandler>(source).ptr() == handler_.get()) {
+  if (content::Source<SSLClientAuthHandler>(source).ptr() == handler_.get()) {
     VLOG(1) << "got notification from ourself " << handler_.get();
     return;
   }
 
   SSLClientAuthNotificationDetails* auth_details =
-      Details<SSLClientAuthNotificationDetails>(details).ptr();
+      content::Details<SSLClientAuthNotificationDetails>(details).ptr();
   if (!auth_details->IsSameHost(cert_request_info_))
     return;
 

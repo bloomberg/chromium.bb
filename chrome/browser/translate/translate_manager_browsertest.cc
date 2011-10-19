@@ -29,10 +29,10 @@
 #include "content/browser/renderer_host/mock_render_process_host.h"
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_observer_mock.h"
-#include "content/common/notification_registrar.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_registrar.h"
+#include "content/test/notification_observer_mock.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "grit/generated_resources.h"
 #include "ipc/ipc_test_sink.h"
@@ -46,7 +46,7 @@ using testing::Property;
 using WebKit::WebContextMenuData;
 
 class TranslateManagerTest : public TabContentsWrapperTestHarness,
-                             public NotificationObserver {
+                             public content::NotificationObserver {
  public:
   TranslateManagerTest()
       : ui_thread_(BrowserThread::UI, &message_loop_) {
@@ -144,10 +144,11 @@ class TranslateManagerTest : public TabContentsWrapperTestHarness,
   }
 
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) {
     DCHECK_EQ(chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED, type);
-    removed_infobars_.insert(Details<InfoBarRemovedDetails>(details)->first);
+    removed_infobars_.insert(
+        content::Details<InfoBarRemovedDetails>(details)->first);
   }
 
  protected:
@@ -168,7 +169,8 @@ class TranslateManagerTest : public TabContentsWrapperTestHarness,
 
     notification_registrar_.Add(this,
         chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
-        Source<InfoBarTabHelper>(contents_wrapper()->infobar_tab_helper()));
+        content::Source<InfoBarTabHelper>(
+            contents_wrapper()->infobar_tab_helper()));
   }
 
   virtual void TearDown() {
@@ -176,7 +178,8 @@ class TranslateManagerTest : public TabContentsWrapperTestHarness,
 
     notification_registrar_.Remove(this,
         chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
-        Source<InfoBarTabHelper>(contents_wrapper()->infobar_tab_helper()));
+        content::Source<InfoBarTabHelper>(
+            contents_wrapper()->infobar_tab_helper()));
 
     TabContentsWrapperTestHarness::TearDown();
   }
@@ -226,13 +229,13 @@ class TranslateManagerTest : public TabContentsWrapperTestHarness,
         pref_observer_,
         Observe(int(chrome::NOTIFICATION_PREF_CHANGED),
                 _,
-                Property(&Details<std::string>::ptr, Pointee(path))));
+                Property(&content::Details<std::string>::ptr, Pointee(path))));
   }
 
-  NotificationObserverMock pref_observer_;
+  content::NotificationObserverMock pref_observer_;
 
  private:
-  NotificationRegistrar notification_registrar_;
+  content::NotificationRegistrar notification_registrar_;
   TestURLFetcherFactory url_fetcher_factory_;
   BrowserThread ui_thread_;
 
@@ -244,19 +247,20 @@ class TranslateManagerTest : public TabContentsWrapperTestHarness,
 };
 
 // An observer that keeps track of whether a navigation entry was committed.
-class NavEntryCommittedObserver : public NotificationObserver {
+class NavEntryCommittedObserver : public content::NotificationObserver {
  public:
   explicit NavEntryCommittedObserver(TabContents* tab_contents) {
     registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-                   Source<NavigationController>(&tab_contents->controller()));
+                   content::Source<NavigationController>(
+                      &tab_contents->controller()));
   }
 
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) {
     DCHECK(type == content::NOTIFICATION_NAV_ENTRY_COMMITTED);
     details_ =
-        *(Details<content::LoadCommittedDetails>(details).ptr());
+        *(content::Details<content::LoadCommittedDetails>(details).ptr());
   }
 
   const content::LoadCommittedDetails&
@@ -266,7 +270,7 @@ class NavEntryCommittedObserver : public NotificationObserver {
 
  private:
   content::LoadCommittedDetails details_;
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(NavEntryCommittedObserver);
 };

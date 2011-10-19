@@ -56,8 +56,8 @@ scoped_refptr<CrxInstaller> OpenChromeExtension(
   NotificationService* nservice = NotificationService::current();
   GURL nonconst_download_url = download_item.GetURL();
   nservice->Notify(chrome::NOTIFICATION_EXTENSION_READY_FOR_INSTALL,
-                   Source<Profile>(profile),
-                   Details<GURL>(&nonconst_download_url));
+                   content::Source<Profile>(profile),
+                   content::Details<GURL>(&nonconst_download_url));
 
   scoped_refptr<CrxInstaller> installer(
       service->MakeCrxInstaller(CreateExtensionInstallUI(profile)));

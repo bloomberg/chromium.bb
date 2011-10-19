@@ -28,8 +28,8 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/navigation_entry.h"
-#include "content/common/notification_details.h"
 #include "content/common/notification_service.h"
+#include "content/public/browser/notification_details.h"
 #if defined(OS_LINUX)
 #include "base/linux_util.h"
 #elif defined(OS_WIN)
@@ -535,7 +535,7 @@ bool SessionModelAssociator::DisassociateModels(SyncError* error) {
   // foreign session handlers.
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_FOREIGN_SESSION_DISABLED,
-      Source<Profile>(sync_service_->profile()),
+      content::Source<Profile>(sync_service_->profile()),
       NotificationService::NoDetails());
   return true;
 }

@@ -40,7 +40,7 @@ Panel::Panel(Browser* browser, const gfx::Rect& bounds)
 
   registrar_.Add(this,
                  content::NOTIFICATION_TAB_ADDED,
-                 Source<TabContentsDelegate>(browser));
+                 content::Source<TabContentsDelegate>(browser));
 }
 
 Panel::~Panel() {
@@ -528,8 +528,8 @@ void Panel::ShowAvatarBubble(TabContents* tab_contents, const gfx::Rect& rect) {
 }
 
 void Panel::Observe(int type,
-                    const NotificationSource& source,
-                    const NotificationDetails& details) {
+                    const content::NotificationSource& source,
+                    const content::NotificationDetails& details) {
   switch (type) {
     case content::NOTIFICATION_TAB_ADDED:
       // We also need to know when the render view host changes in order
@@ -537,9 +537,10 @@ void Panel::Observe(int type,
       // render view host. However, we cannot register for
       // NOTIFICATION_TAB_CONTENTS_SWAPPED until we actually have a
       // tab content so we register for it here.
-      registrar_.Add(this,
-                     content::NOTIFICATION_TAB_CONTENTS_SWAPPED,
-                     Source<TabContents>(browser()->GetSelectedTabContents()));
+      registrar_.Add(
+          this,
+          content::NOTIFICATION_TAB_CONTENTS_SWAPPED,
+          content::Source<TabContents>(browser()->GetSelectedTabContents()));
       // Fall-thru to update render view host.
 
     case content::NOTIFICATION_TAB_CONTENTS_SWAPPED: {

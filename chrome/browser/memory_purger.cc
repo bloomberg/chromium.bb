@@ -65,7 +65,7 @@ void PurgeMemoryIOHelper::PurgeMemoryOnIOThread() {
   // The appcache and safe browsing services listen for this notification.
   NotificationService::current()->Notify(
       content::NOTIFICATION_PURGE_MEMORY,
-      Source<void>(NULL),
+      content::Source<void>(NULL),
       NotificationService::NoDetails());
 }
 

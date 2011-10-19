@@ -22,7 +22,7 @@ void RestoreTabHelper::SetWindowID(const SessionID& id) {
   window_id_ = id;
   NotificationService::current()->Notify(
       content::NOTIFICATION_TAB_PARENTED,
-      Source<TabContentsWrapper>(tab_),
+      content::Source<TabContentsWrapper>(tab_),
       NotificationService::NoDetails());
 
   // Extension code in the renderer holds the ID of the window that hosts it.

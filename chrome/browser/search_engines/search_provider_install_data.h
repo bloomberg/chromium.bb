@@ -17,10 +17,13 @@
 #include "chrome/browser/webdata/web_data_service.h"
 
 class GURL;
-class NotificationSource;
 class SearchHostToURLsMap;
 class Task;
 class TemplateURL;
+
+namespace content {
+class NotificationSource;
+}
 
 // Provides the search provider install state for the I/O thread. It works by
 // loading the data on demand (when CallWhenLoaded is called) and then throwing
@@ -46,7 +49,7 @@ class SearchProviderInstallData : public WebDataServiceConsumer,
   // that notification occurs. It doesn't matter.)
   SearchProviderInstallData(WebDataService* web_service,
                             int ui_death_notification,
-                            const NotificationSource& ui_death_source);
+                            const content::NotificationSource& ui_death_source);
   virtual ~SearchProviderInstallData();
 
   // Use to determine when the search provider information is loaded. The

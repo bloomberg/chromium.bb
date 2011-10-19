@@ -27,7 +27,7 @@
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/browser/tab_contents/web_drag_dest_gtk.h"
 #include "content/browser/tab_contents/web_drag_source_gtk.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "ui/base/gtk/gtk_expanded_container.h"
 #include "ui/base/gtk/gtk_floating_container.h"
@@ -95,7 +95,7 @@ TabContentsViewGtk::TabContentsViewGtk(TabContents* tab_contents)
   gtk_widget_show(expanded_);
   gtk_widget_show(floating_.get());
   registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_CONNECTED,
-                 Source<TabContents>(tab_contents));
+                 content::Source<TabContents>(tab_contents));
   drag_source_.reset(new TabContentsDragSource(tab_contents));
 }
 
@@ -303,8 +303,8 @@ void TabContentsViewGtk::TakeFocus(bool reverse) {
 }
 
 void TabContentsViewGtk::Observe(int type,
-                                 const NotificationSource& source,
-                                 const NotificationDetails& details) {
+                                 const content::NotificationSource& source,
+                                 const content::NotificationDetails& details) {
   switch (type) {
     case content::NOTIFICATION_TAB_CONTENTS_CONNECTED: {
       // No need to remove the SadTabGtk's widget from the container since

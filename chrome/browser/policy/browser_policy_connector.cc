@@ -21,8 +21,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/pref_names.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "policy/policy_constants.h"
 
 #if defined(OS_WIN)
@@ -279,7 +279,7 @@ void BrowserPolicyConnector::SetUserPolicyTokenService(
   token_service_ = token_service;
   registrar_.Add(this,
                  chrome::NOTIFICATION_TOKEN_AVAILABLE,
-                 Source<TokenService>(token_service_));
+                 content::Source<TokenService>(token_service_));
 
   if (token_service_->HasTokenForService(
           GaiaConstants::kDeviceManagementService)) {
@@ -336,16 +336,18 @@ BrowserPolicyConnector::BrowserPolicyConnector(
       recommended_cloud_provider_(recommended_cloud_provider),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {}
 
-void BrowserPolicyConnector::Observe(int type,
-                                     const NotificationSource& source,
-                                     const NotificationDetails& details) {
+void BrowserPolicyConnector::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (type == chrome::NOTIFICATION_TOKEN_AVAILABLE) {
     const TokenService* token_source =
-        Source<const TokenService>(source).ptr();
+        content::Source<const TokenService>(source).ptr();
     DCHECK_EQ(token_service_, token_source);
     const TokenService::TokenAvailableDetails* token_details =
-        Details<const TokenService::TokenAvailableDetails>(details).ptr();
+        content::Details<const TokenService::TokenAvailableDetails>(details).
+            ptr();
     if (token_details->service() == GaiaConstants::kDeviceManagementService) {
       if (user_data_store_.get()) {
         user_data_store_->SetGaiaToken(token_details->token());

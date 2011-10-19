@@ -46,7 +46,7 @@ class ChildNotificationTask : public Task {
   virtual void Run() {
     NotificationService::current()->
         Notify(notification_type_, NotificationService::AllSources(),
-               Details<ChildProcessInfo>(&info_));
+               content::Details<ChildProcessInfo>(&info_));
   }
 
  private:

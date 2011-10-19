@@ -677,10 +677,10 @@ bool BrowserProcessImpl::plugin_finder_disabled() const {
 }
 
 void BrowserProcessImpl::Observe(int type,
-                                 const NotificationSource& source,
-                                 const NotificationDetails& details) {
+                                 const content::NotificationSource& source,
+                                 const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_PREF_CHANGED) {
-    std::string* pref = Details<std::string>(details).ptr();
+    std::string* pref = content::Details<std::string>(details).ptr();
     if (*pref == prefs::kDefaultBrowserSettingEnabled) {
       if (local_state_->GetBoolean(prefs::kDefaultBrowserSettingEnabled))
         ShellIntegration::SetAsDefaultBrowser();

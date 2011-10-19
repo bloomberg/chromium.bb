@@ -32,13 +32,13 @@
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_observer.h"
+#include "content/public/browser/notification_observer.h"
 
 class PrefService;
 
 namespace subtle {
 
-class PrefMemberBase : public NotificationObserver {
+class PrefMemberBase : public content::NotificationObserver {
  protected:
   class Internal : public base::RefCountedThreadSafe<Internal> {
    public:
@@ -82,7 +82,7 @@ class PrefMemberBase : public NotificationObserver {
 
   // See PrefMember<> for description.
   void Init(const char* pref_name, PrefService* prefs,
-            NotificationObserver* observer);
+            content::NotificationObserver* observer);
 
   virtual void CreateInternal() const = 0;
 
@@ -91,10 +91,10 @@ class PrefMemberBase : public NotificationObserver {
 
   void MoveToThread(BrowserThread::ID thread_id);
 
-  // NotificationObserver
+  // content::NotificationObserver
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   void VerifyValuePrefName() const {
     DCHECK(!pref_name_.empty());
@@ -118,7 +118,7 @@ class PrefMemberBase : public NotificationObserver {
  // Ordered the members to compact the class instance.
  private:
   std::string pref_name_;
-  NotificationObserver* observer_;
+  content::NotificationObserver* observer_;
   PrefService* prefs_;
 
  protected:
@@ -139,7 +139,7 @@ class PrefMember : public subtle::PrefMemberBase {
   // don't want any notifications of changes.
   // This method should only be called on the UI thread.
   void Init(const char* pref_name, PrefService* prefs,
-            NotificationObserver* observer) {
+            content::NotificationObserver* observer) {
     subtle::PrefMemberBase::Init(pref_name, prefs, observer);
   }
 

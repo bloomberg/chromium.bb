@@ -133,8 +133,9 @@ void OwnerManager::Verify(const BrowserThread::ID thread_id,
   BootTimesLoader::Get()->AddLoginTimeMarker("VerifyEnd", false);
 }
 
-void OwnerManager::SendNotification(int type,
-                                    const NotificationDetails& details) {
+void OwnerManager::SendNotification(
+    int type,
+    const content::NotificationDetails& details) {
   NotificationService::current()->Notify(
       type,
       NotificationService::AllSources(),

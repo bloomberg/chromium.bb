@@ -15,12 +15,13 @@
 #include "content/browser/worker_host/worker_process_host.h"
 #include "content/browser/worker_host/worker_service.h"
 #include "content/common/devtools_messages.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/common/notification_service.h"
 #include "content/public/browser/notification_types.h"
 
-class WorkerDevToolsManager::AgentHosts : private NotificationObserver {
+class WorkerDevToolsManager::AgentHosts
+    : private content::NotificationObserver {
 public:
   static void Add(WorkerId id, WorkerDevToolsAgentHost* host) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -57,15 +58,15 @@ private:
   }
   ~AgentHosts() {}
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource&,
-                       const NotificationDetails&) OVERRIDE;
+                       const content::NotificationSource&,
+                       const content::NotificationDetails&) OVERRIDE;
 
   static AgentHosts* instance_;
   typedef std::map<WorkerId, WorkerDevToolsAgentHost*> Instances;
   Instances map_;
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 };
 
 WorkerDevToolsManager::AgentHosts*
@@ -212,9 +213,10 @@ WorkerDevToolsManager::DetachedClientHosts*
     WorkerDevToolsManager::DetachedClientHosts::instance_ = NULL;
 
 
-void WorkerDevToolsManager::AgentHosts::Observe(int type,
-                                                const NotificationSource&,
-                                                const NotificationDetails&) {
+void WorkerDevToolsManager::AgentHosts::Observe(
+    int type,
+    const content::NotificationSource&,
+    const content::NotificationDetails&) {
   DCHECK(type == content::NOTIFICATION_APP_TERMINATING);
   Instances copy(map_);
   for (Instances::iterator it = copy.begin(); it != copy.end(); ++it)

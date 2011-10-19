@@ -41,8 +41,8 @@ class PrintJobWorker::NotificationTask : public Task {
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_PRINT_JOB_EVENT,
         // We know that is is a PrintJob object in this circumstance.
-        Source<PrintJob>(static_cast<PrintJob*>(print_job_.get())),
-        Details<JobEventDetails>(details_));
+        content::Source<PrintJob>(static_cast<PrintJob*>(print_job_.get())),
+        content::Details<JobEventDetails>(details_));
   }
 
   // The job which originates this notification.

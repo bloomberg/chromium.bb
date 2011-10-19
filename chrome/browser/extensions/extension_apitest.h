@@ -12,7 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_registrar.h"
 
 class Extension;
 
@@ -36,7 +36,7 @@ class ExtensionApiTest : public ExtensionBrowserTest {
   // GetNextResult() and message() if GetNextResult() return false. If there
   // are no results, this method will pump the UI message loop until one is
   // received.
-  class ResultCatcher : public NotificationObserver {
+  class ResultCatcher : public content::NotificationObserver {
    public:
     ResultCatcher();
     virtual ~ResultCatcher();
@@ -51,10 +51,10 @@ class ExtensionApiTest : public ExtensionBrowserTest {
 
    private:
     virtual void Observe(int type,
-                         const NotificationSource& source,
-                         const NotificationDetails& details) OVERRIDE;
+                         const content::NotificationSource& source,
+                         const content::NotificationDetails& details) OVERRIDE;
 
-    NotificationRegistrar registrar_;
+    content::NotificationRegistrar registrar_;
 
     // A sequential list of pass/fail notifications from the test extension(s).
     std::deque<bool> results_;

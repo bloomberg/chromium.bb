@@ -12,8 +12,8 @@
 #include "base/synchronization/lock.h"
 #include "chrome/browser/content_settings/content_settings_observable_provider.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class PrefService;
 
@@ -23,7 +23,7 @@ namespace content_settings {
 // user prefs. If no default values are set by the user we use the hard coded
 // default values.
 class DefaultProvider : public ObservableProvider,
-                        public NotificationObserver {
+                        public content::NotificationObserver {
  public:
   static void RegisterUserPrefs(PrefService* prefs);
 
@@ -49,10 +49,10 @@ class DefaultProvider : public ObservableProvider,
 
   virtual void ShutdownOnUIThread() OVERRIDE;
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   // Sets the fields of |settings| based on the values in |dictionary|.

@@ -24,7 +24,7 @@
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/common/geolocation_messages.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/common/notification_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -33,15 +33,15 @@
 namespace {
 
 // We need to track which infobars were closed.
-class ClosedDelegateTracker : public NotificationObserver {
+class ClosedDelegateTracker : public content::NotificationObserver {
  public:
   ClosedDelegateTracker();
   virtual ~ClosedDelegateTracker();
 
-  // NotificationObserver:
+  // content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   size_t size() const {
     return removed_infobar_delegates_.size();
@@ -51,7 +51,7 @@ class ClosedDelegateTracker : public NotificationObserver {
   void Clear();
 
  private:
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
   std::set<InfoBarDelegate*> removed_infobar_delegates_;
 };
 
@@ -63,12 +63,13 @@ ClosedDelegateTracker::ClosedDelegateTracker() {
 ClosedDelegateTracker::~ClosedDelegateTracker() {
 }
 
-void ClosedDelegateTracker::Observe(int type,
-                                    const NotificationSource& source,
-                                    const NotificationDetails& details) {
+void ClosedDelegateTracker::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED);
   removed_infobar_delegates_.insert(
-      Details<InfoBarRemovedDetails>(details)->first);
+      content::Details<InfoBarRemovedDetails>(details)->first);
 }
 
 bool ClosedDelegateTracker::Contains(InfoBarDelegate* delegate) const {

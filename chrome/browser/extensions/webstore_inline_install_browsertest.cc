@@ -83,7 +83,7 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, Install) {
 
   ui_test_utils::WindowedNotificationObserver load_signal(
         chrome::NOTIFICATION_EXTENSION_LOADED,
-        Source<Profile>(browser()->profile()));
+        content::Source<Profile>(browser()->profile()));
 
   ui_test_utils::NavigateToURL(
       browser(), GenerateTestServerUrl(kAppDomain, "install.html"));

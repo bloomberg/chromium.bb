@@ -10,8 +10,8 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class MockExternalPolicyExtensionProviderVisitor;
 class Profile;
@@ -21,14 +21,14 @@ class Profile;
 // registered.
 class ExternalPolicyExtensionLoader
     : public ExternalExtensionLoader,
-      public NotificationObserver {
+      public content::NotificationObserver {
  public:
   explicit ExternalPolicyExtensionLoader(Profile* profile);
 
-  // NotificationObserver implementation
+  // content::NotificationObserver implementation
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
  protected:
   virtual void StartLoading() OVERRIDE;
@@ -39,7 +39,7 @@ class ExternalPolicyExtensionLoader
   virtual ~ExternalPolicyExtensionLoader() {}
 
   PrefChangeRegistrar pref_change_registrar_;
-  NotificationRegistrar notification_registrar_;
+  content::NotificationRegistrar notification_registrar_;
 
   Profile* profile_;
 

@@ -118,7 +118,7 @@ NewTabUI::NewTabUI(TabContents* contents)
 
   // Listen for theme installation.
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
-                 Source<ThemeService>(
+                 content::Source<ThemeService>(
                      ThemeServiceFactory::GetForProfile(GetProfile())));
   // Listen for bookmark bar visibility changes.
   pref_change_registrar_.Init(GetProfile()->GetPrefs());
@@ -140,8 +140,8 @@ void NewTabUI::PaintTimeout() {
     int load_time_ms = static_cast<int>(load_time.InMilliseconds());
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_INITIAL_NEW_TAB_UI_LOAD,
-        Source<Profile>(GetProfile()),
-        Details<int>(&load_time_ms));
+        content::Source<Profile>(GetProfile()),
+        content::Details<int>(&load_time_ms));
     UMA_HISTOGRAM_TIMES("NewTabUI load", load_time);
   } else {
     // Not enough quiet time has elapsed.
@@ -156,7 +156,7 @@ void NewTabUI::StartTimingPaint(RenderViewHost* render_view_host) {
   start_ = base::TimeTicks::Now();
   last_paint_ = start_;
   registrar_.Add(this, content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT,
-      Source<RenderWidgetHost>(render_view_host));
+      content::Source<RenderWidgetHost>(render_view_host));
   timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(kTimeoutMs), this,
                &NewTabUI::PaintTimeout);
 
@@ -181,8 +181,8 @@ bool NewTabUI::CanShowBookmarkBar() const {
 }
 
 void NewTabUI::Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_BROWSER_THEME_CHANGED: {
       InitializeCSSCaches();
@@ -195,7 +195,8 @@ void NewTabUI::Observe(int type,
       break;
     }
     case chrome::NOTIFICATION_PREF_CHANGED: {
-      const std::string& pref_name = *Details<std::string>(details).ptr();
+      const std::string& pref_name =
+          *content::Details<std::string>(details).ptr();
       if (pref_name == prefs::kShowBookmarkBar) {
         if (!NTP4Enabled() && CanShowBookmarkBar()) {
           if (GetProfile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar))

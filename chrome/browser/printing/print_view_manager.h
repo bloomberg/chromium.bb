@@ -9,8 +9,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/string16.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "printing/printed_pages_source.h"
 
 class RenderViewHost;
@@ -26,7 +26,7 @@ class PrintViewManagerObserver;
 
 // Manages the print commands in relation to a TabContents. TabContents
 // delegates a few printing related commands to this instance.
-class PrintViewManager : public NotificationObserver,
+class PrintViewManager : public content::NotificationObserver,
                          public PrintedPagesSource,
                          public TabContentsObserver {
  public:
@@ -71,10 +71,10 @@ class PrintViewManager : public NotificationObserver,
   // PrintedPagesSource implementation.
   virtual string16 RenderSourceName() OVERRIDE;
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // TabContentsObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -147,7 +147,7 @@ class PrintViewManager : public NotificationObserver,
   // TabContentsWrapper we're associated with.
   TabContentsWrapper* tab_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // Manages the low-level talk to the printer.
   scoped_refptr<PrintJob> print_job_;

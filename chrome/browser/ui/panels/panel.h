@@ -10,8 +10,8 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/rect.h"
 
 class NativePanel;
@@ -28,7 +28,7 @@ class RenderViewHost;
 //   Panel size is restricted to certain limits.
 // - Invoke an appropriate PanelManager function to do stuff that might affect
 //   other Panels.  For example deleting a panel would rearrange other panels.
-class Panel : public BrowserWindow, public NotificationObserver {
+class Panel : public BrowserWindow, public content::NotificationObserver {
  public:
   enum ExpansionState {
    // The panel is fully expanded with both title-bar and the client-area.
@@ -168,10 +168,10 @@ class Panel : public BrowserWindow, public NotificationObserver {
   virtual void ShowAvatarBubble(TabContents* tab_contents,
                                 const gfx::Rect& rect) OVERRIDE;
 
-  // NotificationObserver overrides.
+  // content::NotificationObserver overrides.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Construct a native panel BrowserWindow implementation for the specified
   // |browser|.
@@ -238,7 +238,7 @@ class Panel : public BrowserWindow, public NotificationObserver {
   // been minimized.
   int restored_height_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(Panel);
 };

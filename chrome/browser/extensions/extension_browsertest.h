@@ -13,8 +13,8 @@
 #include "base/file_path.h"
 #include "base/scoped_temp_dir.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_observer.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_types.h"
 
 class Extension;
@@ -22,7 +22,7 @@ class Extension;
 // Base class for extension browser tests. Provides utilities for loading,
 // unloading, and installing extensions.
 class ExtensionBrowserTest
-    : public InProcessBrowserTest, public NotificationObserver {
+    : public InProcessBrowserTest, public content::NotificationObserver {
  protected:
   ExtensionBrowserTest();
 
@@ -112,10 +112,10 @@ class ExtensionBrowserTest
   // crashed.
   bool WaitForExtensionCrash(const std::string& extension_id);
 
-  // NotificationObserver
+  // content::NotificationObserver
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   bool loaded_;
   bool installed_;

@@ -29,7 +29,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/common/content_switches.h"
 #include "grit/generated_resources.h"
@@ -293,19 +293,20 @@ void ContentSettingsHandler::Initialize() {
   Profile* profile = Profile::FromWebUI(web_ui_);
   notification_registrar_.Add(
       this, chrome::NOTIFICATION_PROTOCOL_HANDLER_REGISTRY_CHANGED,
-      Source<Profile>(profile));
+      content::Source<Profile>(profile));
 
   PrefService* prefs = profile->GetPrefs();
   pref_change_registrar_.Init(prefs);
   pref_change_registrar_.Add(prefs::kGeolocationContentSettings, this);
 }
 
-void ContentSettingsHandler::Observe(int type,
-                                     const NotificationSource& source,
-                                     const NotificationDetails& details) {
+void ContentSettingsHandler::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_PROFILE_DESTROYED: {
-      if (Source<Profile>(source).ptr()->IsOffTheRecord()) {
+      if (content::Source<Profile>(source).ptr()->IsOffTheRecord()) {
         web_ui_->CallJavascriptFunction(
             "ContentSettingsExceptionsArea.OTRProfileDestroyed");
       }
@@ -313,7 +314,7 @@ void ContentSettingsHandler::Observe(int type,
     }
 
     case chrome::NOTIFICATION_PROFILE_CREATED: {
-      if (Source<Profile>(source).ptr()->IsOffTheRecord())
+      if (content::Source<Profile>(source).ptr()->IsOffTheRecord())
         UpdateAllOTRExceptionsViewsFromModel();
       break;
     }
@@ -321,13 +322,13 @@ void ContentSettingsHandler::Observe(int type,
     case chrome::NOTIFICATION_CONTENT_SETTINGS_CHANGED: {
       // Filter out notifications from other profiles.
       HostContentSettingsMap* map =
-          Source<HostContentSettingsMap>(source).ptr();
+          content::Source<HostContentSettingsMap>(source).ptr();
       if (map != GetContentSettingsMap() &&
           map != GetOTRContentSettingsMap())
         break;
 
       const ContentSettingsDetails* settings_details =
-          Details<const ContentSettingsDetails>(details).ptr();
+          content::Details<const ContentSettingsDetails>(details).ptr();
 
       // TODO(estade): we pretend update_all() is always true.
       if (settings_details->update_all_types())
@@ -338,7 +339,8 @@ void ContentSettingsHandler::Observe(int type,
     }
 
     case chrome::NOTIFICATION_PREF_CHANGED: {
-      const std::string& pref_name = *Details<std::string>(details).ptr();
+      const std::string& pref_name =
+          *content::Details<std::string>(details).ptr();
       if (pref_name == prefs::kGeolocationContentSettings)
         UpdateGeolocationExceptionsView();
       break;

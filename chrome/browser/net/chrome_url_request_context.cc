@@ -256,16 +256,16 @@ void ChromeURLRequestContextGetter::CleanupOnUIThread() {
   registrar_.RemoveAll();
 }
 
-// NotificationObserver implementation.
+// content::NotificationObserver implementation.
 void ChromeURLRequestContextGetter::Observe(
     int type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (chrome::NOTIFICATION_PREF_CHANGED == type) {
-    std::string* pref_name_in = Details<std::string>(details).ptr();
-    PrefService* prefs = Source<PrefService>(source).ptr();
+    std::string* pref_name_in = content::Details<std::string>(details).ptr();
+    PrefService* prefs = content::Source<PrefService>(source).ptr();
     DCHECK(pref_name_in && prefs);
     if (*pref_name_in == prefs::kAcceptLanguages) {
       std::string accept_language =

@@ -31,8 +31,8 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/user_metrics.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -335,11 +335,12 @@ void BrowserOptionsHandler::OnItemsRemoved(int start, int length) {
   OnModelChanged();
 }
 
-void BrowserOptionsHandler::Observe(int type,
-                                    const NotificationSource& source,
-                                    const NotificationDetails& details) {
+void BrowserOptionsHandler::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_PREF_CHANGED) {
-    std::string* pref = Details<std::string>(details).ptr();
+    std::string* pref = content::Details<std::string>(details).ptr();
     if (*pref == prefs::kDefaultBrowserSettingEnabled) {
       UpdateDefaultBrowserState();
     } else if (*pref == prefs::kURLsToRestoreOnStartup) {

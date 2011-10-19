@@ -25,8 +25,8 @@
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/common/content_settings_types.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/common/page_transition_types.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/animation/animation_delegate.h"
@@ -49,7 +49,7 @@ class ToolbarModel;
 class LocationBarViewGtk : public AutocompleteEditController,
                            public LocationBar,
                            public LocationBarTesting,
-                           public NotificationObserver {
+                           public content::NotificationObserver {
  public:
   explicit LocationBarViewGtk(Browser* browser);
   virtual ~LocationBarViewGtk();
@@ -134,10 +134,10 @@ class LocationBarViewGtk : public AutocompleteEditController,
   virtual ExtensionAction* GetVisiblePageAction(size_t index) OVERRIDE;
   virtual void TestPageActionPressed(size_t index) OVERRIDE;
 
-  // Implement the NotificationObserver interface.
+  // Implement the content::NotificationObserver interface.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Edit background color.
   static const GdkColor kBackgroundColor;
@@ -422,7 +422,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
   // Provides colors and rendering mode.
   GtkThemeService* theme_service_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // Width of the main |hbox_|. Used to properly elide the EV certificate.
   int hbox_width_;

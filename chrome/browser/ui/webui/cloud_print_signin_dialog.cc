@@ -17,9 +17,9 @@
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
-#include "content/common/notification_registrar.h"
-#include "content/common/notification_source.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 
 // This module implements a sign in dialog for cloud print.
@@ -31,20 +31,20 @@ namespace cloud_print_signin_dialog {
 // The flow handler sends our dialog to the correct URL, saves size info,
 // and closes the dialog when sign in is complete.
 class CloudPrintSigninFlowHandler : public WebUIMessageHandler,
-                                    public NotificationObserver {
+                                    public content::NotificationObserver {
  public:
   explicit CloudPrintSigninFlowHandler(TabContents* parent_tab);
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
  private:
   // Records the final size of the dialog in prefs.
   void StoreDialogSize();
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
   TabContents* parent_tab_;
 };
 
@@ -60,13 +60,14 @@ void CloudPrintSigninFlowHandler::RegisterMessages() {
       pending_entry->set_url(CloudPrintURL(
           Profile::FromWebUI(web_ui_)).GetCloudPrintSigninURL());
     registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-                   Source<NavigationController>(controller));
+                   content::Source<NavigationController>(controller));
   }
 }
 
-void CloudPrintSigninFlowHandler::Observe(int type,
-                                          const NotificationSource& source,
-                                          const NotificationDetails& details) {
+void CloudPrintSigninFlowHandler::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED) {
     GURL url = web_ui_->tab_contents()->GetURL();
     GURL dialog_url = CloudPrintURL(

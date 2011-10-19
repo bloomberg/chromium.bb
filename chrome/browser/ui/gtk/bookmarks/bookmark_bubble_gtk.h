@@ -22,8 +22,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 #include "ui/base/gtk/gtk_signal.h"
 
@@ -35,7 +35,7 @@ typedef struct _GtkWidget GtkWidget;
 typedef struct _GParamSpec GParamSpec;
 
 class BookmarkBubbleGtk : public BubbleDelegateGtk,
-                          public NotificationObserver {
+                          public content::NotificationObserver {
  public:
   // Shows the bookmark bubble, pointing at |anchor_widget|.
   static void Show(GtkWidget* anchor_widget,
@@ -46,10 +46,10 @@ class BookmarkBubbleGtk : public BubbleDelegateGtk,
   // BubbleDelegateGtk:
   virtual void BubbleClosing(BubbleGtk* bubble, bool closed_by_escape) OVERRIDE;
 
-  // NotificationObserver:
+  // content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   BookmarkBubbleGtk(GtkWidget* anchor,
@@ -120,7 +120,7 @@ class BookmarkBubbleGtk : public BubbleDelegateGtk,
   bool apply_edits_;
   bool remove_bookmark_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkBubbleGtk);
 };

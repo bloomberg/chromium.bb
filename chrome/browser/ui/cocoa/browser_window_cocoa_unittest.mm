@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
-#include "content/common/notification_details.h"
+#include "content/public/browser/notification_details.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // A BrowserWindowCocoa that goes PONG when
@@ -27,8 +27,8 @@ class BrowserWindowCocoaPong : public BrowserWindowCocoa {
   virtual ~BrowserWindowCocoaPong() { }
 
   void Observe(int type,
-               const NotificationSource& source,
-               const NotificationDetails& details) {
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) {
     if (type == chrome::NOTIFICATION_PREF_CHANGED) {
       const std::string& pref_name = *Details<std::string>(details).ptr();
       if (pref_name == prefs::kShowBookmarkBar)

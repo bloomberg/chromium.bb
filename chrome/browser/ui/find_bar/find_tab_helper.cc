@@ -148,7 +148,7 @@ void FindTabHelper::HandleFindReply(int request_id,
         final_update);
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_FIND_RESULT_AVAILABLE,
-        Source<TabContents>(tab_contents()),
-        Details<FindNotificationDetails>(&last_search_result_));
+        content::Source<TabContents>(tab_contents()),
+        content::Details<FindNotificationDetails>(&last_search_result_));
   }
 }

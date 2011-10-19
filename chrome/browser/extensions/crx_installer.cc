@@ -446,7 +446,7 @@ void CrxInstaller::InstallUIAbort(bool user_initiated) {
   // Kill the theme loading bubble.
   NotificationService* service = NotificationService::current();
   service->Notify(chrome::NOTIFICATION_NO_THEME_DETECTED,
-                  Source<CrxInstaller>(this),
+                  content::Source<CrxInstaller>(this),
                   NotificationService::NoDetails());
   Release();  // balanced in ConfirmInstall().
 
@@ -520,8 +520,8 @@ void CrxInstaller::ReportFailureFromUIThread(const std::string& error) {
 
   NotificationService* service = NotificationService::current();
   service->Notify(chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR,
-                  Source<CrxInstaller>(this),
-                  Details<const std::string>(&error));
+                  content::Source<CrxInstaller>(this),
+                  content::Details<const std::string>(&error));
 
   // This isn't really necessary, it is only used because unit tests expect to
   // see errors get reported via this interface.
@@ -596,6 +596,6 @@ void CrxInstaller::NotifyCrxInstallComplete() {
   // on the extension.
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_CRX_INSTALLER_DONE,
-      Source<CrxInstaller>(this),
+      content::Source<CrxInstaller>(this),
       NotificationService::NoDetails());
 }

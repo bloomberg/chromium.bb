@@ -12,8 +12,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
 #include "chrome/common/content_settings_types.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/base/gtk/gtk_signal.h"
 
 class ContentSettingBubbleModel;
@@ -25,7 +25,7 @@ class TabContents;
 // and when clicked, an instance of this class is created specialized for the
 // type of content being blocked.
 class ContentSettingBubbleGtk : public BubbleDelegateGtk,
-                                public NotificationObserver {
+                                public content::NotificationObserver {
  public:
    ContentSettingBubbleGtk(
        GtkWidget* anchor,
@@ -43,10 +43,10 @@ class ContentSettingBubbleGtk : public BubbleDelegateGtk,
   // BubbleDelegateGtk:
   virtual void BubbleClosing(BubbleGtk* bubble, bool closed_by_escape) OVERRIDE;
 
-  // NotificationObserver:
+  // content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Builds the bubble and all the widgets that it displays.
   void BuildBubble();
@@ -70,7 +70,7 @@ class ContentSettingBubbleGtk : public BubbleDelegateGtk,
   TabContents* tab_contents_;
 
   // A registrar for listening for TAB_CONTENTS_DESTROYED notifications.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // Pass on delegate messages to this.
   BubbleDelegateGtk* delegate_;

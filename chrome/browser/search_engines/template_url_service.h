@@ -20,8 +20,8 @@
 #include "chrome/browser/sync/api/sync_change.h"
 #include "chrome/browser/sync/api/syncable_service.h"
 #include "chrome/browser/webdata/web_data_service.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class GURL;
 class Extension;
@@ -61,7 +61,7 @@ struct URLVisitedDetails;
 
 class TemplateURLService : public WebDataServiceConsumer,
                            public ProfileKeyedService,
-                           public NotificationObserver,
+                           public content::NotificationObserver,
                            public SyncableService {
  public:
   typedef std::map<std::string, std::string> QueryTerms;
@@ -232,7 +232,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   string16 GetKeywordShortName(const string16& keyword,
                                bool* is_extension_keyword);
 
-  // NotificationObserver method. TemplateURLService listens for three
+  // content::NotificationObserver method. TemplateURLService listens for three
   // notification types:
   // . NOTIFY_HISTORY_URL_VISITED: adds keyword search terms if the visit
   //   corresponds to a keyword.
@@ -240,8 +240,8 @@ class TemplateURLService : public WebDataServiceConsumer,
   //   a google base url replacement term.
   // . PREF_CHANGED: checks whether the default search engine has changed.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // SyncableService implementation.
 
@@ -495,7 +495,7 @@ class TemplateURLService : public WebDataServiceConsumer,
                                       TemplateURL* local_url,
                                       SyncChangeList* change_list);
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // Mapping from keyword to the TemplateURL.
   KeywordToTemplateMap keyword_to_template_map_;

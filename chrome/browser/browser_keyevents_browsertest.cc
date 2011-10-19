@@ -20,7 +20,7 @@
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/common/notification_service.h"
 #include "net/test/test_server.h"
 #include "ui/base/keycodes/keyboard_codes.h"
@@ -82,12 +82,12 @@ const wchar_t* GetBoolString(bool value) {
 }
 
 // A class to help wait for the finish of a key event test.
-class TestFinishObserver : public NotificationObserver {
+class TestFinishObserver : public content::NotificationObserver {
  public:
   explicit TestFinishObserver(RenderViewHost* render_view_host)
       : finished_(false), waiting_(false) {
     registrar_.Add(this, chrome::NOTIFICATION_DOM_OPERATION_RESPONSE,
-                   Source<RenderViewHost>(render_view_host));
+                   content::Source<RenderViewHost>(render_view_host));
   }
 
   bool WaitForFinish() {
@@ -100,10 +100,10 @@ class TestFinishObserver : public NotificationObserver {
   }
 
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) {
     DCHECK(type == chrome::NOTIFICATION_DOM_OPERATION_RESPONSE);
-    Details<DomOperationNotificationDetails> dom_op_details(details);
+    content::Details<DomOperationNotificationDetails> dom_op_details(details);
     // We might receive responses for other script execution, but we only
     // care about the test finished message.
     if (dom_op_details->json() == "\"FINISHED\"") {
@@ -116,7 +116,7 @@ class TestFinishObserver : public NotificationObserver {
  private:
   bool finished_;
   bool waiting_;
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(TestFinishObserver);
 };
@@ -707,7 +707,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_ReservedAccelerators) {
   ASSERT_NO_FATAL_FAILURE(SuppressAllEvents(1, true));
 
   ui_test_utils::WindowedNotificationObserver wait_for_tab_closed(
-      content::NOTIFICATION_TAB_CLOSED, Source<NavigationController>(
+      content::NOTIFICATION_TAB_CLOSED, content::Source<NavigationController>(
           &browser()->GetTabContentsAt(1)->controller()));
 
   // Press Ctrl/Cmd+W, which will close the tab.

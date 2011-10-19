@@ -178,7 +178,7 @@ void PanelBrowserView::OnWidgetActivationChanged(views::Widget* widget,
 
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_PANEL_CHANGED_ACTIVE_STATUS,
-      Source<Panel>(panel()),
+      content::Source<Panel>(panel()),
       NotificationService::NoDetails());
 }
 
@@ -199,7 +199,7 @@ bool PanelBrowserView::AcceleratorPressed(
 void PanelBrowserView::AnimationEnded(const ui::Animation* animation) {
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
-      Source<Panel>(panel()),
+      content::Source<Panel>(panel()),
       NotificationService::NoDetails());
 }
 

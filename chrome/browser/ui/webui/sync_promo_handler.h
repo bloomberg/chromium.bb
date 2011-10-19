@@ -8,9 +8,6 @@
 
 #include "chrome/browser/ui/webui/sync_setup_handler.h"
 
-class NotificationSource;
-class NotificationDetails;
-
 // The handler for Javascript messages related to the "sync promo" page.
 class SyncPromoHandler : public SyncSetupHandler {
  public:
@@ -28,10 +25,10 @@ class SyncPromoHandler : public SyncSetupHandler {
   // SyncSetupFlowHandler implementation.
   virtual void ShowConfigure(const base::DictionaryValue& args) OVERRIDE;
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
  protected:
   virtual void ShowSetupUI() OVERRIDE;
@@ -63,7 +60,7 @@ class SyncPromoHandler : public SyncSetupHandler {
 
   // Use this to register for certain notifications (currently when tabs or
   // windows close).
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // Weak reference that's initialized and checked in Attach() (after that
   // guaranteed to be non-NULL).

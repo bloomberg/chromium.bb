@@ -10,9 +10,9 @@
 
 #include "base/basictypes.h"
 #include "content/browser/webui/web_ui.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
 #include "content/common/window_container_type.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
 #include "ui/gfx/rect.h"
 #include "webkit/glue/webpreferences.h"
@@ -35,7 +35,7 @@ class BrowserContext;
 
 // Provides helper methods that provide common implementations of some
 // RenderViewHostDelegate::View methods.
-class RenderViewHostDelegateViewHelper : public NotificationObserver {
+class RenderViewHostDelegateViewHelper : public content::NotificationObserver {
  public:
   RenderViewHostDelegateViewHelper();
   virtual ~RenderViewHostDelegateViewHelper();
@@ -92,10 +92,10 @@ class RenderViewHostDelegateViewHelper : public NotificationObserver {
                                                     int route_id);
 
  private:
-  // NotificationObserver implementation
+  // content::NotificationObserver implementation
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   BackgroundContents* MaybeCreateBackgroundContents(
       int route_id,
@@ -115,7 +115,7 @@ class RenderViewHostDelegateViewHelper : public NotificationObserver {
   PendingWidgetViews pending_widget_views_;
 
   // Registers and unregisters us for notifications.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewHostDelegateViewHelper);
 };

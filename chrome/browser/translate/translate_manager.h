@@ -17,8 +17,8 @@
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/common/translate_errors.h"
 #include "content/common/net/url_fetcher.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 template <typename T> struct DefaultSingletonTraits;
 class GURL;
@@ -32,7 +32,7 @@ class TranslateInfoBarDelegate;
 // page translation the user requests.
 // It is a singleton.
 
-class TranslateManager : public NotificationObserver,
+class TranslateManager : public content::NotificationObserver,
                          public URLFetcher::Delegate {
  public:
   // Returns the singleton instance.
@@ -69,10 +69,10 @@ class TranslateManager : public NotificationObserver,
   // Clears the translate script, so it will be fetched next time we translate.
   void ClearTranslateScript() { translate_script_.clear(); }
 
-  // NotificationObserver implementation:
+  // content::NotificationObserver implementation:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // URLFetcher::Delegate implementation:
   virtual void OnURLFetchComplete(const URLFetcher* source,
@@ -180,7 +180,7 @@ class TranslateManager : public NotificationObserver,
   static TranslateInfoBarDelegate* GetTranslateInfoBarDelegate(
       TabContents* tab);
 
-  NotificationRegistrar notification_registrar_;
+  content::NotificationRegistrar notification_registrar_;
 
   // Each PrefChangeRegistrar only tracks a single PrefService, so a map from
   // each PrefService used to its registrar is needed.

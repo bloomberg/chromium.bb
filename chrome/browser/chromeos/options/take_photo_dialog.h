@@ -10,8 +10,8 @@
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/login/camera_controller.h"
 #include "chrome/browser/chromeos/login/take_photo_view.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "views/window/dialog_delegate.h"
 
 namespace views {
@@ -24,7 +24,7 @@ namespace chromeos {
 class TakePhotoDialog : public views::DialogDelegateView,
                         public TakePhotoView::Delegate,
                         public CameraController::Delegate,
-                        public NotificationObserver {
+                        public content::NotificationObserver {
  public:
   class Delegate {
    public:
@@ -86,10 +86,10 @@ class TakePhotoDialog : public views::DialogDelegateView,
   void NotifyOnCaptureFailure();
   void NotifyOnCapturingStopped();
 
-  // NotificationObserver implementation:
+  // content::NotificationObserver implementation:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
  protected:
   // views::View overrides:
@@ -105,7 +105,7 @@ class TakePhotoDialog : public views::DialogDelegateView,
 
   CameraController camera_controller_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   Delegate* delegate_;
 

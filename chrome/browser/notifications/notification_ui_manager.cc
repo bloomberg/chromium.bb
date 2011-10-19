@@ -240,13 +240,14 @@ void NotificationUIManager::GetQueuedNotificationsForTesting(
   }
 }
 
-void NotificationUIManager::Observe(int type,
-                                    const NotificationSource& source,
-                                    const NotificationDetails& details) {
+void NotificationUIManager::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (type == content::NOTIFICATION_APP_TERMINATING) {
     CancelAll();
   } else if (type == chrome::NOTIFICATION_PREF_CHANGED) {
-    std::string* name = Details<std::string>(details).ptr();
+    std::string* name = content::Details<std::string>(details).ptr();
     if (*name == prefs::kDesktopNotificationPosition)
       balloon_collection_->SetPositionPreference(
           static_cast<BalloonCollection::PositionPreference>(

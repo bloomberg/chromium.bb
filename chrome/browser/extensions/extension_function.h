@@ -17,8 +17,8 @@
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ipc/ipc_message.h"
 
 class Browser;
@@ -266,15 +266,15 @@ class UIThreadExtensionFunction : public ExtensionFunction {
   // common for subclasses of ExtensionFunction to be NotificationObservers, and
   // it would be an easy error to forget to call the base class's Observe()
   // method.
-  class RenderViewHostTracker : public NotificationObserver {
+  class RenderViewHostTracker : public content::NotificationObserver {
    public:
     explicit RenderViewHostTracker(UIThreadExtensionFunction* function);
    private:
     virtual void Observe(int type,
-                         const NotificationSource& source,
-                         const NotificationDetails& details) OVERRIDE;
+                         const content::NotificationSource& source,
+                         const content::NotificationDetails& details) OVERRIDE;
     UIThreadExtensionFunction* function_;
-    NotificationRegistrar registrar_;
+    content::NotificationRegistrar registrar_;
   };
 
   virtual void Destruct() const;

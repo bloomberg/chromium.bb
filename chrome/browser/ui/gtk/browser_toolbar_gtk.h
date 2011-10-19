@@ -15,8 +15,8 @@
 #include "chrome/browser/ui/gtk/custom_button.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/gtk_signal_registrar.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
@@ -40,7 +40,7 @@ class ToolbarModel;
 class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
                           public ui::AcceleratorProvider,
                           public MenuGtk::Delegate,
-                          public NotificationObserver {
+                          public content::NotificationObserver {
  public:
   BrowserToolbarGtk(Browser* browser, BrowserWindowGtk* window);
   virtual ~BrowserToolbarGtk();
@@ -95,10 +95,10 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   virtual bool GetAcceleratorForCommandId(int id,
                                           ui::Accelerator* accelerator);
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Message that we should react to a state change.
   void UpdateTabContents(TabContents* contents, bool should_restore_state);
@@ -204,7 +204,7 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   StringPrefMember home_page_;
   BooleanPrefMember home_page_is_new_tab_page_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // A GtkEntry that isn't part of the hierarchy. We keep this for native
   // rendering.

@@ -16,7 +16,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_source.h"
 
 namespace browser_sync {
 
@@ -49,7 +49,7 @@ bool AutofillDataTypeController::StartModels() {
   } else {
     notification_registrar_.Add(
         this, chrome::NOTIFICATION_WEB_DATABASE_LOADED,
-        Source<WebDataService>(web_data_service_.get()));
+        content::Source<WebDataService>(web_data_service_.get()));
     return false;
   }
 }
@@ -70,13 +70,14 @@ void AutofillDataTypeController::OnPersonalDataChanged() {
   } else {
     notification_registrar_.Add(
         this, chrome::NOTIFICATION_WEB_DATABASE_LOADED,
-        Source<WebDataService>(web_data_service_.get()));
+        content::Source<WebDataService>(web_data_service_.get()));
   }
 }
 
-void AutofillDataTypeController::Observe(int notification_type,
-                                         const NotificationSource& source,
-                                         const NotificationDetails& details) {
+void AutofillDataTypeController::Observe(
+  int notification_type,
+  const content::NotificationSource& source,
+  const content::NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(state(), MODEL_STARTING);
   notification_registrar_.RemoveAll();

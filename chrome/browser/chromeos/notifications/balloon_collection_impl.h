@@ -13,7 +13,7 @@
 #include "chrome/browser/chromeos/notifications/balloon_view_host.h"
 #include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/notifications/balloon_collection_base.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 
@@ -30,7 +30,7 @@ class BalloonViewImpl;
 // chromeos shows the all notifications in the notification panel, and
 // this class does not manage the location of balloons.
 class BalloonCollectionImpl : public BalloonCollection,
-                              public NotificationObserver {
+                              public content::NotificationObserver {
  public:
   // An interface to display balloons on the screen.
   // This is used for unit tests to inject a mock ui implementation.
@@ -73,8 +73,8 @@ class BalloonCollectionImpl : public BalloonCollection,
 
   // NotificationObserver overrides:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Adds a callback for WebUI message. Returns true if the callback
   // is succssfully registered, or false otherwise. It fails to add if
@@ -134,7 +134,7 @@ class BalloonCollectionImpl : public BalloonCollection,
 
   scoped_ptr<NotificationUI> notification_ui_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(BalloonCollectionImpl);
 };

@@ -11,12 +11,15 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/speech/speech_input_bubble.h"
-#include "content/common/notification_observer.h"
+#include "content/public/browser/notification_observer.h"
 
 namespace gfx {
 class Rect;
 }
+
+namespace content {
 class NotificationRegistrar;
+}
 
 namespace speech_input {
 
@@ -28,7 +31,7 @@ namespace speech_input {
 class SpeechInputBubbleController
     : public base::RefCountedThreadSafe<SpeechInputBubbleController>,
       public SpeechInputBubbleDelegate,
-      public NotificationObserver {
+      public content::NotificationObserver {
  public:
   // All methods of this delegate are called in the IO thread.
   class Delegate {
@@ -80,10 +83,10 @@ class SpeechInputBubbleController
   virtual void InfoBubbleButtonClicked(SpeechInputBubble::Button button);
   virtual void InfoBubbleFocusChanged();
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
  private:
   // The various calls received by this object and handled in the UI thread.
@@ -132,7 +135,7 @@ class SpeechInputBubbleController
   typedef std::map<int, SpeechInputBubble*> BubbleCallerIdMap;
   BubbleCallerIdMap bubbles_;
 
-  scoped_ptr<NotificationRegistrar> registrar_;
+  scoped_ptr<content::NotificationRegistrar> registrar_;
 };
 
 // This typedef is to workaround the issue with certain versions of

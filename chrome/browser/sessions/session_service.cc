@@ -33,8 +33,8 @@
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_details.h"
 #include "content/common/notification_service.h"
+#include "content/public/browser/notification_details.h"
 
 #if defined(OS_MACOSX)
 #include "chrome/browser/app_controller_cppsafe_mac.h"
@@ -460,7 +460,7 @@ void SessionService::Save() {
         &last_updated_save_time_);
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_SESSION_SERVICE_SAVED,
-        Source<Profile>(profile()),
+        content::Source<Profile>(profile()),
         NotificationService::NoDetails());
   }
 }
@@ -523,12 +523,12 @@ bool SessionService::RestoreIfNecessary(const std::vector<GURL>& urls_to_open,
 }
 
 void SessionService::Observe(int type,
-                             const NotificationSource& source,
-                             const NotificationDetails& details) {
+                             const content::NotificationSource& source,
+                             const content::NotificationDetails& details) {
   // All of our messages have the NavigationController as the source.
   switch (type) {
     case chrome::NOTIFICATION_BROWSER_OPENED: {
-      Browser* browser = Source<Browser>(source).ptr();
+      Browser* browser = content::Source<Browser>(source).ptr();
       if (browser->profile() != profile() ||
           !should_track_changes_for_browser_type(browser->type())) {
         return;
@@ -540,7 +540,8 @@ void SessionService::Observe(int type,
     }
 
     case content::NOTIFICATION_TAB_PARENTED: {
-      TabContentsWrapper* tab = Source<TabContentsWrapper>(source).ptr();
+      TabContentsWrapper* tab =
+          content::Source<TabContentsWrapper>(source).ptr();
       if (tab->profile() != profile())
         return;
       SetTabWindow(tab->restore_tab_helper()->window_id(),
@@ -557,7 +558,8 @@ void SessionService::Observe(int type,
     case content::NOTIFICATION_TAB_CLOSED: {
       TabContentsWrapper* tab =
           TabContentsWrapper::GetCurrentWrapperForContents(
-              Source<NavigationController>(source).ptr()->tab_contents());
+              content::Source<NavigationController>(
+                  source).ptr()->tab_contents());
       if (!tab || tab->profile() != profile())
         return;
       TabClosed(tab->restore_tab_helper()->window_id(),
@@ -571,10 +573,11 @@ void SessionService::Observe(int type,
     case content::NOTIFICATION_NAV_LIST_PRUNED: {
       TabContentsWrapper* tab =
           TabContentsWrapper::GetCurrentWrapperForContents(
-              Source<NavigationController>(source).ptr()->tab_contents());
+              content::Source<NavigationController>(
+                  source).ptr()->tab_contents());
       if (!tab || tab->profile() != profile())
         return;
-      Details<content::PrunedDetails> pruned_details(details);
+      content::Details<content::PrunedDetails> pruned_details(details);
       if (pruned_details->from_front) {
         TabNavigationPathPrunedFromFront(
             tab->restore_tab_helper()->window_id(),
@@ -594,10 +597,11 @@ void SessionService::Observe(int type,
     case content::NOTIFICATION_NAV_ENTRY_CHANGED: {
       TabContentsWrapper* tab =
           TabContentsWrapper::GetCurrentWrapperForContents(
-              Source<NavigationController>(source).ptr()->tab_contents());
+              content::Source<NavigationController>(
+                  source).ptr()->tab_contents());
       if (!tab || tab->profile() != profile())
         return;
-      Details<content::EntryChangedDetails> changed(details);
+      content::Details<content::EntryChangedDetails> changed(details);
       UpdateTabNavigation(
           tab->restore_tab_helper()->window_id(),
           tab->restore_tab_helper()->session_id(),
@@ -608,7 +612,8 @@ void SessionService::Observe(int type,
     case content::NOTIFICATION_NAV_ENTRY_COMMITTED: {
       TabContentsWrapper* tab =
           TabContentsWrapper::GetCurrentWrapperForContents(
-              Source<NavigationController>(source).ptr()->tab_contents());
+              content::Source<NavigationController>(
+                  source).ptr()->tab_contents());
       if (!tab || tab->profile() != profile())
         return;
       int current_entry_index = tab->controller().GetCurrentEntryIndex();
@@ -620,7 +625,7 @@ void SessionService::Observe(int type,
           tab->restore_tab_helper()->session_id(),
           current_entry_index,
           *tab->controller().GetEntryAtIndex(current_entry_index));
-      Details<content::LoadCommittedDetails> changed(details);
+      content::Details<content::LoadCommittedDetails> changed(details);
       if (changed->type == content::NAVIGATION_TYPE_NEW_PAGE ||
         changed->type == content::NAVIGATION_TYPE_EXISTING_PAGE) {
         RecordSessionUpdateHistogramData(
@@ -632,7 +637,7 @@ void SessionService::Observe(int type,
 
     case chrome::NOTIFICATION_TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED: {
       ExtensionTabHelper* extension_tab_helper =
-          Source<ExtensionTabHelper>(source).ptr();
+          content::Source<ExtensionTabHelper>(source).ptr();
       if (extension_tab_helper->tab_contents_wrapper()->profile() != profile())
         return;
       if (extension_tab_helper->extension_app()) {

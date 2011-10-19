@@ -16,9 +16,9 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_resource.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_source.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 #include "ui/gfx/canvas_skia_paint.h"
@@ -42,7 +42,7 @@ const CGFloat kAnimationDuration = 0.2;
 
 // A helper class to bridge the asynchronous Skia bitmap loading mechanism to
 // the extension's button.
-class ExtensionImageTrackerBridge : public NotificationObserver,
+class ExtensionImageTrackerBridge : public content::NotificationObserver,
                                     public ImageLoadingTracker::Observer {
  public:
   ExtensionImageTrackerBridge(BrowserActionButton* owner,
@@ -58,8 +58,9 @@ class ExtensionImageTrackerBridge : public NotificationObserver,
                                    Extension::kBrowserActionIconMaxSize),
                          ImageLoadingTracker::DONT_CACHE);
     }
-    registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
-                   Source<ExtensionAction>(extension->browser_action()));
+    registrar_.Add(
+        this, chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
+        content::Source<ExtensionAction>(extension->browser_action()));
   }
 
   ~ExtensionImageTrackerBridge() {}
@@ -72,10 +73,10 @@ class ExtensionImageTrackerBridge : public NotificationObserver,
     [owner_ updateState];
   }
 
-  // Overridden from NotificationObserver.
+  // Overridden from content::NotificationObserver.
   void Observe(int type,
-               const NotificationSource& source,
-               const NotificationDetails& details) {
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) {
     if (type == chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED)
       [owner_ updateState];
     else
@@ -90,7 +91,7 @@ class ExtensionImageTrackerBridge : public NotificationObserver,
   ImageLoadingTracker tracker_;
 
   // Used for registering to receive notifications and automatic clean up.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionImageTrackerBridge);
 };

@@ -253,15 +253,16 @@ views::MenuItemView* MemoryMenuButton::CreateMenu() {
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// NotificationObserver overrides.
+// content::NotificationObserver overrides.
 
 void MemoryMenuButton::Observe(int type,
-                               const NotificationSource& source,
-                               const NotificationDetails& details) {
+                               const content::NotificationSource& source,
+                               const content::NotificationDetails& details) {
   switch (type) {
     case content::NOTIFICATION_RENDERER_PROCESS_CLOSED: {
       RenderProcessHost::RendererClosedDetails* process_details =
-          Details<RenderProcessHost::RendererClosedDetails>(details).ptr();
+          content::Details<RenderProcessHost::RendererClosedDetails>(details).
+              ptr();
       if (process_details->status ==
           base::TERMINATION_STATUS_PROCESS_WAS_KILLED) {
         renderer_kills_++;

@@ -105,8 +105,8 @@ void BookmarkBubbleView::Show(views::Widget* parent,
   GURL url_ptr(url);
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_BOOKMARK_BUBBLE_SHOWN,
-      Source<Profile>(profile->GetOriginalProfile()),
-      Details<GURL>(&url_ptr));
+      content::Source<Profile>(profile->GetOriginalProfile()),
+      content::Details<GURL>(&url_ptr));
   bookmark_bubble_->BubbleShown();
 }
 
@@ -320,7 +320,7 @@ void BookmarkBubbleView::BubbleClosing(Bubble* bubble,
     delegate_->BubbleClosing(bubble, closed_by_escape);
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_BOOKMARK_BUBBLE_HIDDEN,
-      Source<Profile>(profile_->GetOriginalProfile()),
+      content::Source<Profile>(profile_->GetOriginalProfile()),
       NotificationService::NoDetails());
 }
 

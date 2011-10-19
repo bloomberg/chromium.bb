@@ -8,8 +8,8 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_registrar.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "ui/gfx/rect.h"
 
@@ -18,7 +18,7 @@ namespace speech_input {
 SpeechInputBubbleController::SpeechInputBubbleController(Delegate* delegate)
     : delegate_(delegate),
       current_bubble_caller_id_(0),
-      registrar_(new NotificationRegistrar) {
+      registrar_(new content::NotificationRegistrar) {
 }
 
 SpeechInputBubbleController::~SpeechInputBubbleController() {
@@ -111,19 +111,20 @@ void SpeechInputBubbleController::UpdateTabContentsSubscription(
 
   if (action == BUBBLE_ADDED) {
     registrar_->Add(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                    Source<TabContents>(tab_contents));
+                    content::Source<TabContents>(tab_contents));
   } else {
     registrar_->Remove(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                    Source<TabContents>(tab_contents));
+                    content::Source<TabContents>(tab_contents));
   }
 }
 
-void SpeechInputBubbleController::Observe(int type,
-                                          const NotificationSource& source,
-                                          const NotificationDetails& details) {
+void SpeechInputBubbleController::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (type == content::NOTIFICATION_TAB_CONTENTS_DESTROYED) {
     // Cancel all bubbles and active recognition sessions for this tab.
-    TabContents* tab_contents = Source<TabContents>(source).ptr();
+    TabContents* tab_contents = content::Source<TabContents>(source).ptr();
     BubbleCallerIdMap::iterator iter = bubbles_.begin();
     while (iter != bubbles_.end()) {
       if (iter->second->tab_contents() == tab_contents) {

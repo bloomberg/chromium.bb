@@ -442,11 +442,11 @@ void TaskManagerTabContentsResourceProvider::Remove(
 }
 
 void TaskManagerTabContentsResourceProvider::Observe(int type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   TabContentsWrapper* tab_contents =
       TabContentsWrapper::GetCurrentWrapperForContents(
-          Source<TabContents>(source).ptr());
+          content::Source<TabContents>(source).ptr());
   // A background page does not have a TabContentsWrapper.
   if (!tab_contents)
     return;
@@ -673,8 +673,8 @@ void TaskManagerBackgroundContentsResourceProvider::Remove(
 
 void TaskManagerBackgroundContentsResourceProvider::Observe(
     int type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_BACKGROUND_CONTENTS_OPENED: {
       // Get the name from the parent application. If no parent application is
@@ -684,17 +684,18 @@ void TaskManagerBackgroundContentsResourceProvider::Observe(
       // exiting while the task manager is displayed.
       string16 application_name;
       ExtensionService* service =
-          Source<Profile>(source)->GetExtensionService();
+          content::Source<Profile>(source)->GetExtensionService();
       if (service) {
         std::string application_id = UTF16ToUTF8(
-            Details<BackgroundContentsOpenedDetails>(details)->application_id);
+            content::Details<BackgroundContentsOpenedDetails>(details)->
+                application_id);
         const Extension* extension =
             service->GetExtensionById(application_id, false);
         // Extension can be NULL when running unit tests.
         if (extension)
           application_name = UTF8ToUTF16(extension->name());
       }
-      Add(Details<BackgroundContentsOpenedDetails>(details)->contents,
+      Add(content::Details<BackgroundContentsOpenedDetails>(details)->contents,
           application_name);
       // Opening a new BackgroundContents needs to force the display to refresh
       // (applications may now be considered "background" that weren't before).
@@ -702,7 +703,8 @@ void TaskManagerBackgroundContentsResourceProvider::Observe(
       break;
     }
     case chrome::NOTIFICATION_BACKGROUND_CONTENTS_NAVIGATED: {
-      BackgroundContents* contents = Details<BackgroundContents>(details).ptr();
+      BackgroundContents* contents =
+          content::Details<BackgroundContents>(details).ptr();
       // Should never get a NAVIGATED before OPENED.
       DCHECK(resources_.find(contents) != resources_.end());
       // Preserve the application name.
@@ -713,7 +715,7 @@ void TaskManagerBackgroundContentsResourceProvider::Observe(
       break;
     }
     case chrome::NOTIFICATION_BACKGROUND_CONTENTS_DELETED:
-      Remove(Details<BackgroundContents>(details).ptr());
+      Remove(content::Details<BackgroundContents>(details).ptr());
       // Closing a BackgroundContents needs to force the display to refresh
       // (applications may now be considered "foreground" that weren't before).
       task_manager_->ModelChanged();
@@ -936,14 +938,14 @@ void TaskManagerChildProcessResourceProvider::StopUpdating() {
 
 void TaskManagerChildProcessResourceProvider::Observe(
     int type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   switch (type) {
     case content::NOTIFICATION_CHILD_PROCESS_HOST_CONNECTED:
-      Add(*Details<ChildProcessInfo>(details).ptr());
+      Add(*content::Details<ChildProcessInfo>(details).ptr());
       break;
     case content::NOTIFICATION_CHILD_PROCESS_HOST_DISCONNECTED:
-      Remove(*Details<ChildProcessInfo>(details).ptr());
+      Remove(*content::Details<ChildProcessInfo>(details).ptr());
       break;
     default:
       NOTREACHED() << "Unexpected notification.";
@@ -1185,15 +1187,15 @@ void TaskManagerExtensionProcessResourceProvider::StopUpdating() {
 
 void TaskManagerExtensionProcessResourceProvider::Observe(
     int type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_PROCESS_CREATED:
-      AddToTaskManager(Details<ExtensionHost>(details).ptr());
+      AddToTaskManager(content::Details<ExtensionHost>(details).ptr());
       break;
     case chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED:
     case chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED:
-      RemoveFromTaskManager(Details<ExtensionHost>(details).ptr());
+      RemoveFromTaskManager(content::Details<ExtensionHost>(details).ptr());
       break;
     default:
       NOTREACHED() << "Unexpected notification.";

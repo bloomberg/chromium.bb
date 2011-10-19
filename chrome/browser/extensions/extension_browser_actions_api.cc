@@ -40,7 +40,7 @@ bool BrowserActionFunction::RunImpl() {
 
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
-      Source<ExtensionAction>(browser_action_),
+      content::Source<ExtensionAction>(browser_action_),
       NotificationService::NoDetails());
   return true;
 }

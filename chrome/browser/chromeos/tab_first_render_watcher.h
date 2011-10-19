@@ -7,8 +7,8 @@
 #pragma once
 
 #include "base/compiler_specific.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class RenderViewHost;
 class TabContents;
@@ -17,7 +17,7 @@ namespace chromeos {
 
 // This class watches given TabContent's loading and rendering state change.
 // TODO(xiyuan): Move this to a proper place and share with HTMLDialogView.
-class TabFirstRenderWatcher : public NotificationObserver {
+class TabFirstRenderWatcher : public content::NotificationObserver {
  public:
   class Delegate {
    public:
@@ -29,10 +29,10 @@ class TabFirstRenderWatcher : public NotificationObserver {
   TabFirstRenderWatcher(TabContents* tab, Delegate* delegate);
 
  private:
-  // Overridden from NotificationObserver
+  // Overridden from content::NotificationObserver
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   enum State {
     NONE,
@@ -47,7 +47,7 @@ class TabFirstRenderWatcher : public NotificationObserver {
   // Delegate to notify.
   Delegate* delegate_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(TabFirstRenderWatcher);
 };

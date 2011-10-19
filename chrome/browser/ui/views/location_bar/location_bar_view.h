@@ -73,7 +73,7 @@ class LocationBarView : public LocationBar,
                         public AutocompleteEditController,
                         public DropdownBarHostDelegate,
                         public TemplateURLServiceObserver,
-                        public NotificationObserver {
+                        public content::NotificationObserver {
  public:
   // The location bar view's class name.
   static const char kViewClassName[];
@@ -264,10 +264,10 @@ class LocationBarView : public LocationBar,
   // Overridden from TemplateURLServiceObserver
   virtual void OnTemplateURLServiceChanged() OVERRIDE;
 
-  // Overridden from NotificationObserver
+  // Overridden from content::NotificationObserver
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Thickness of the left and right edges of the omnibox, in normal mode.
   static const int kNormalHorizontalEdgeThickness;

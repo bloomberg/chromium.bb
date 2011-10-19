@@ -39,9 +39,9 @@
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_details.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "grit/browser_resources.h"
 #include "net/base/escape.h"
@@ -252,14 +252,14 @@ bool TranslateManager::IsSupportedLanguage(const std::string& page_language) {
 }
 
 void TranslateManager::Observe(int type,
-                               const NotificationSource& source,
-                               const NotificationDetails& details) {
+                               const content::NotificationSource& source,
+                               const content::NotificationDetails& details) {
   switch (type) {
     case content::NOTIFICATION_NAV_ENTRY_COMMITTED: {
       NavigationController* controller =
-          Source<NavigationController>(source).ptr();
+          content::Source<NavigationController>(source).ptr();
       content::LoadCommittedDetails* load_details =
-          Details<content::LoadCommittedDetails>(details).ptr();
+          content::Details<content::LoadCommittedDetails>(details).ptr();
       NavigationEntry* entry = controller->GetActiveEntry();
       if (!entry) {
         NOTREACHED();
@@ -300,7 +300,7 @@ void TranslateManager::Observe(int type,
       break;
     }
     case chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED: {
-      TabContents* tab = Source<TabContents>(source).ptr();
+      TabContents* tab = content::Source<TabContents>(source).ptr();
       // We may get this notifications multiple times.  Make sure to translate
       // only once.
       TabContentsWrapper* wrapper =
@@ -314,7 +314,7 @@ void TranslateManager::Observe(int type,
           !language_state.translation_pending() &&
           !language_state.translation_declined() &&
           !language_state.IsPageTranslated()) {
-        std::string language = *(Details<std::string>(details).ptr());
+        std::string language = *(content::Details<std::string>(details).ptr());
         InitiateTranslation(tab, language);
       }
       break;
@@ -323,14 +323,15 @@ void TranslateManager::Observe(int type,
       // Only add translate infobar if it doesn't exist; if it already exists,
       // just update the state, the actual infobar would have received the same
       //  notification and update the visual display accordingly.
-      TabContents* tab = Source<TabContents>(source).ptr();
+      TabContents* tab = content::Source<TabContents>(source).ptr();
       PageTranslatedDetails* page_translated_details =
-          Details<PageTranslatedDetails>(details).ptr();
+          content::Details<PageTranslatedDetails>(details).ptr();
       PageTranslated(tab, page_translated_details);
       break;
     }
     case chrome::NOTIFICATION_PROFILE_DESTROYED: {
-      PrefService* pref_service = Source<Profile>(source).ptr()->GetPrefs();
+      PrefService* pref_service =
+          content::Source<Profile>(source).ptr()->GetPrefs();
       notification_registrar_.Remove(this,
                                      chrome::NOTIFICATION_PROFILE_DESTROYED,
                                      source);
@@ -346,8 +347,9 @@ void TranslateManager::Observe(int type,
       break;
     }
     case chrome::NOTIFICATION_PREF_CHANGED: {
-      DCHECK(*Details<std::string>(details).ptr() == prefs::kAcceptLanguages);
-      PrefService* prefs = Source<PrefService>(source).ptr();
+      DCHECK(*content::Details<std::string>(details).ptr() ==
+             prefs::kAcceptLanguages);
+      PrefService* prefs = content::Source<PrefService>(source).ptr();
       InitAcceptLanguages(prefs);
       break;
     }
@@ -694,7 +696,7 @@ bool TranslateManager::IsAcceptLanguage(TabContents* tab,
     // Listen for this profile going away, in which case we would need to clear
     // the accepted languages for the profile.
     notification_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                                Source<Profile>(profile));
+                                content::Source<Profile>(profile));
     // Also start listening for changes in the accept languages.
     DCHECK(pref_change_registrars_.find(pref_service) ==
            pref_change_registrars_.end());

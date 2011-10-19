@@ -44,8 +44,8 @@ void TranslateTabHelper::OnLanguageDetermined(const std::string& language,
   std::string lang = language;
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
-      Source<TabContents>(tab_contents()),
-      Details<std::string>(&lang));
+      content::Source<TabContents>(tab_contents()),
+      content::Details<std::string>(&lang));
 }
 
 void TranslateTabHelper::OnPageTranslated(int32 page_id,
@@ -57,6 +57,6 @@ void TranslateTabHelper::OnPageTranslated(int32 page_id,
   PageTranslatedDetails details(original_lang, translated_lang, error_type);
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_PAGE_TRANSLATED,
-      Source<TabContents>(tab_contents()),
-      Details<PageTranslatedDetails>(&details));
+      content::Source<TabContents>(tab_contents()),
+      content::Details<PageTranslatedDetails>(&details));
 }

@@ -14,7 +14,7 @@
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/chromeos/cros_settings_names.h"
-#include "content/common/notification_observer.h"
+#include "content/public/browser/notification_observer.h"
 
 namespace base {
 template <typename T> struct DefaultLazyInstanceTraits;
@@ -66,8 +66,10 @@ class CrosSettings : public base::NonThreadSafe {
 
   // If the pref at the given path changes, we call the observer's Observe
   // method with PREF_CHANGED.
-  void AddSettingsObserver(const char* path, NotificationObserver* obs);
-  void RemoveSettingsObserver(const char* path, NotificationObserver* obs);
+  void AddSettingsObserver(const char* path,
+                           content::NotificationObserver* obs);
+  void RemoveSettingsObserver(const char* path,
+                              content::NotificationObserver* obs);
 
   // Returns the provider that handles settings with the path or prefix.
   CrosSettingsProvider* GetProvider(const std::string& path) const;
@@ -78,7 +80,7 @@ class CrosSettings : public base::NonThreadSafe {
 
   // A map from settings names to a list of observers. Observers get fired in
   // the order they are added.
-  typedef ObserverList<NotificationObserver> NotificationObserverList;
+  typedef ObserverList<content::NotificationObserver> NotificationObserverList;
   typedef base::hash_map<std::string, NotificationObserverList*>
       SettingsObserverMap;
   SettingsObserverMap settings_observers_;

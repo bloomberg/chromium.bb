@@ -115,8 +115,8 @@ void MHTMLGenerationManager::JobFinished(int job_id, int64 file_size) {
 
     NotificationService::current()->Notify(
         content::NOTIFICATION_MHTML_GENERATED,
-        Source<RenderViewHost>(rvh),
-        Details<NotificationDetails>(&details));
+        content::Source<RenderViewHost>(rvh),
+        content::Details<NotificationDetails>(&details));
   }
 
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,

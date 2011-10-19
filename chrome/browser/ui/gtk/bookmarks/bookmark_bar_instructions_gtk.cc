@@ -49,13 +49,14 @@ BookmarkBarInstructionsGtk::BookmarkBarInstructionsGtk(Delegate* delegate,
                    NULL);
 
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
-                 Source<ThemeService>(theme_service_));
+                 content::Source<ThemeService>(theme_service_));
   theme_service_->InitThemesFor(this);
 }
 
-void BookmarkBarInstructionsGtk::Observe(int type,
-                                         const NotificationSource& source,
-                                         const NotificationDetails& details) {
+void BookmarkBarInstructionsGtk::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_BROWSER_THEME_CHANGED)
     UpdateColors();
 }

@@ -6,7 +6,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/threading/thread_local.h"
-#include "content/common/notification_observer.h"
+#include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_types.h"
 
 static base::LazyInstance<base::ThreadLocalPointer<NotificationService> >
@@ -19,7 +19,7 @@ NotificationService* NotificationService::current() {
 
 // static
 bool NotificationService::HasKey(const NotificationSourceMap& map,
-                                 const NotificationSource& source) {
+                                 const content::NotificationSource& source) {
   return map.find(source.map_key()) != map.end();
 }
 
@@ -28,9 +28,10 @@ NotificationService::NotificationService() {
   lazy_tls_ptr.Pointer()->Set(this);
 }
 
-void NotificationService::AddObserver(NotificationObserver* observer,
-                                      int type,
-                                      const NotificationSource& source) {
+void NotificationService::AddObserver(
+    content::NotificationObserver* observer,
+    int type,
+    const content::NotificationSource& source) {
   // We have gotten some crashes where the observer pointer is NULL. The problem
   // is that this happens when we actually execute a notification, so have no
   // way of knowing who the bad observer was. We want to know when this happens
@@ -52,9 +53,10 @@ void NotificationService::AddObserver(NotificationObserver* observer,
 #endif
 }
 
-void NotificationService::RemoveObserver(NotificationObserver* observer,
-                                         int type,
-                                         const NotificationSource& source) {
+void NotificationService::RemoveObserver(
+    content::NotificationObserver* observer,
+    int type,
+    const content::NotificationSource& source) {
   // This is a very serious bug.  An object is most likely being deleted on
   // the wrong thread, and as a result another thread's NotificationService
   // has its deleted pointer in its map.  A garbge object will be called in the
@@ -76,8 +78,8 @@ void NotificationService::RemoveObserver(NotificationObserver* observer,
 }
 
 void NotificationService::Notify(int type,
-                                 const NotificationSource& source,
-                                 const NotificationDetails& details) {
+                                 const content::NotificationSource& source,
+                                 const content::NotificationDetails& details) {
   DCHECK(type > content::NOTIFICATION_ALL) <<
       "Allowed for observing, but not posting.";
 
@@ -87,14 +89,14 @@ void NotificationService::Notify(int type,
   // Notify observers of all types and all sources
   if (HasKey(observers_[content::NOTIFICATION_ALL], AllSources()) &&
       source != AllSources()) {
-    FOR_EACH_OBSERVER(NotificationObserver,
+    FOR_EACH_OBSERVER(content::NotificationObserver,
        *observers_[content::NOTIFICATION_ALL][AllSources().map_key()],
        Observe(type, source, details));
   }
 
   // Notify observers of all types and the given source
   if (HasKey(observers_[content::NOTIFICATION_ALL], source)) {
-    FOR_EACH_OBSERVER(NotificationObserver,
+    FOR_EACH_OBSERVER(content::NotificationObserver,
         *observers_[content::NOTIFICATION_ALL][source.map_key()],
         Observe(type, source, details));
   }
@@ -102,14 +104,14 @@ void NotificationService::Notify(int type,
   // Notify observers of the given type and all sources
   if (HasKey(observers_[type], AllSources()) &&
       source != AllSources()) {
-    FOR_EACH_OBSERVER(NotificationObserver,
+    FOR_EACH_OBSERVER(content::NotificationObserver,
                       *observers_[type][AllSources().map_key()],
                       Observe(type, source, details));
   }
 
   // Notify observers of the given type and the given source
   if (HasKey(observers_[type], source)) {
-    FOR_EACH_OBSERVER(NotificationObserver,
+    FOR_EACH_OBSERVER(content::NotificationObserver,
                       *observers_[type][source.map_key()],
                       Observe(type, source, details));
   }
@@ -137,7 +139,3 @@ NotificationService::~NotificationService() {
       delete it->second;
   }
 }
-
-NotificationObserver::NotificationObserver() {}
-
-NotificationObserver::~NotificationObserver() {}

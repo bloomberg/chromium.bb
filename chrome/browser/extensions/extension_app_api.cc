@@ -72,8 +72,8 @@ bool AppNotifyFunction::RunImpl() {
 
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_APP_NOTIFICATION_STATE_CHANGED,
-      Source<Profile>(profile_),
-      Details<const std::string>(&id));
+      content::Source<Profile>(profile_),
+      content::Details<const std::string>(&id));
 
   return true;
 }
@@ -94,7 +94,7 @@ bool AppClearAllNotificationsFunction::RunImpl() {
   manager->ClearAll(id);
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_APP_NOTIFICATION_STATE_CHANGED,
-      Source<Profile>(profile_),
-      Details<const std::string>(&id));
+      content::Source<Profile>(profile_),
+      content::Details<const std::string>(&id));
   return true;
 }

@@ -10,8 +10,8 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/ui/gtk/view_id_util.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
 
@@ -22,7 +22,7 @@ class TabContentsWrapper;
 
 typedef struct _GtkFloatingContainer GtkFloatingContainer;
 
-class TabContentsContainerGtk : public NotificationObserver,
+class TabContentsContainerGtk : public content::NotificationObserver,
                                 public ViewIDUtil::Delegate {
  public:
   explicit TabContentsContainerGtk(StatusBubbleGtk* status_bubble);
@@ -45,10 +45,10 @@ class TabContentsContainerGtk : public NotificationObserver,
   // Remove the tab from the hierarchy.
   void DetachTab(TabContentsWrapper* tab);
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   GtkWidget* widget() { return floating_.get(); }
 
@@ -81,7 +81,7 @@ class TabContentsContainerGtk : public NotificationObserver,
   CHROMEGTK_CALLBACK_1(TabContentsContainerGtk, gboolean, OnFocus,
                        GtkDirectionType);
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // The TabContentsWrapper for the currently selected tab. This will be showing
   // unless there is a preview contents.

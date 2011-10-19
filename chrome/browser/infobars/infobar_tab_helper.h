@@ -8,14 +8,14 @@
 
 #include "base/basictypes.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_registrar.h"
 
 class InfoBarDelegate;
 class TabContents;
 
 // Per-tab info bar manager.
 class InfoBarTabHelper : public TabContentsObserver,
-                         public NotificationObserver {
+                         public content::NotificationObserver {
  public:
   explicit InfoBarTabHelper(TabContents* tab_contents);
   virtual ~InfoBarTabHelper();
@@ -53,10 +53,10 @@ class InfoBarTabHelper : public TabContentsObserver,
   virtual void RenderViewGone() OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
-  // NotificationObserver overrides:
+  // content::NotificationObserver overrides:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Helper functions for infobars:
   TabContents* tab_contents() {
@@ -75,7 +75,7 @@ class InfoBarTabHelper : public TabContentsObserver,
   std::vector<InfoBarDelegate*> infobars_;
   bool infobars_enabled_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(InfoBarTabHelper);
 };

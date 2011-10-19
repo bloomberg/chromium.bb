@@ -9,8 +9,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/views/frame/browser_frame_win.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "views/controls/button/button.h"
 #include "views/window/non_client_view.h"
 
@@ -19,7 +19,7 @@ class AvatarMenuButton;
 class SkBitmap;
 
 class GlassBrowserFrameView : public BrowserNonClientFrameView,
-                              public NotificationObserver {
+                              public content::NotificationObserver {
  public:
   // Constructs a non-client view for an BrowserFrame.
   GlassBrowserFrameView(BrowserFrame* frame, BrowserView* browser_view);
@@ -83,10 +83,10 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   // Displays the next throbber frame.
   void DisplayNextThrobberFrame();
 
-  // NotificationObserver implementation:
+  // content::NotificationObserver implementation:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Updates the title and icon of the avatar button.
   void UpdateAvatarInfo();
@@ -113,7 +113,7 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   // The index of the current frame of the throbber animation.
   int throbber_frame_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   static const int kThrobberIconCount = 24;
   static HICON throbber_icons_[kThrobberIconCount];

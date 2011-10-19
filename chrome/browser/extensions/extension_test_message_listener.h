@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class ExtensionTestSendMessageFunction;
 
@@ -43,7 +43,7 @@ class ExtensionTestSendMessageFunction;
 // either make it a local variable inside your test body, or if it's a member
 // variable of a ExtensionBrowserTest subclass, override the
 // InProcessBrowserTest::CleanUpOnMainThread() method and clean it up there.
-class ExtensionTestMessageListener : public NotificationObserver {
+class ExtensionTestMessageListener : public content::NotificationObserver {
  public:
   // We immediately start listening for |expected_message|.
   ExtensionTestMessageListener(const std::string& expected_message,
@@ -59,15 +59,15 @@ class ExtensionTestMessageListener : public NotificationObserver {
   // WaitUntilSatisfied has returned true, and if will_reply is true.
   void Reply(const std::string& message);
 
-  // Implements the NotificationObserver interface.
+  // Implements the content::NotificationObserver interface.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   bool was_satisfied() const { return satisfied_; }
 
  private:
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // The message we're expecting.
   std::string expected_message_;

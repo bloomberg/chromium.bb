@@ -81,7 +81,7 @@ void UserStyleSheetLoader::NotifyLoaded() {
   if (has_loaded_) {
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_USER_STYLE_SHEET_UPDATED,
-        Source<UserStyleSheetLoader>(this),
+        content::Source<UserStyleSheetLoader>(this),
         NotificationService::NoDetails());
   }
 }
@@ -169,11 +169,12 @@ GURL UserStyleSheetWatcher::user_style_sheet() const {
 }
 
 void UserStyleSheetWatcher::Observe(int type,
-    const NotificationSource& source, const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(type == content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB);
   if (profile_->IsSameProfile(Profile::FromBrowserContext(
-          Source<TabContents>(source)->browser_context()))) {
+          content::Source<TabContents>(source)->browser_context()))) {
     loader_->NotifyLoaded();
     registrar_.RemoveAll();
   }

@@ -94,7 +94,7 @@ void ExtensionMenuItem::AddChild(ExtensionMenuItem* item) {
 
 ExtensionMenuManager::ExtensionMenuManager(Profile* profile) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
-                 Source<Profile>(profile));
+                 content::Source<Profile>(profile));
 }
 
 ExtensionMenuManager::~ExtensionMenuManager() {
@@ -446,14 +446,15 @@ void ExtensionMenuManager::ExecuteCommand(
       item->extension_id(), event_name, json_args, profile, GURL());
 }
 
-void ExtensionMenuManager::Observe(int type,
-                                   const NotificationSource& source,
-                                   const NotificationDetails& details) {
+void ExtensionMenuManager::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_EXTENSION_UNLOADED);
 
   // Remove menu items for disabled/uninstalled extensions.
   const Extension* extension =
-      Details<UnloadedExtensionInfo>(details)->extension;
+      content::Details<UnloadedExtensionInfo>(details)->extension;
   if (ContainsKey(context_items_, extension->id())) {
     RemoveAllContextItems(extension->id());
   }

@@ -146,7 +146,7 @@ DownloadShelfGtk::DownloadShelfGtk(Browser* browser, GtkWidget* parent)
 
   theme_service_->InitThemesFor(this);
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
-                 Source<ThemeService>(theme_service_));
+                 content::Source<ThemeService>(theme_service_));
 
   gtk_widget_show_all(shelf_.get());
 
@@ -231,8 +231,8 @@ void DownloadShelfGtk::Closed() {
 }
 
 void DownloadShelfGtk::Observe(int type,
-                               const NotificationSource& source,
-                               const NotificationDetails& details) {
+                               const content::NotificationSource& source,
+                               const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_BROWSER_THEME_CHANGED) {
     GdkColor color = theme_service_->GetGdkColor(
         ThemeService::COLOR_TOOLBAR);

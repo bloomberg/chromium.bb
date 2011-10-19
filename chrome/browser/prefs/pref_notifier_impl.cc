@@ -7,7 +7,7 @@
 #include "base/stl_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/common/notification_observer.h"
+#include "content/public/browser/notification_observer.h"
 #include "content/common/notification_service.h"
 
 PrefNotifierImpl::PrefNotifierImpl(PrefService* service)
@@ -32,7 +32,7 @@ PrefNotifierImpl::~PrefNotifierImpl() {
 }
 
 void PrefNotifierImpl::AddPrefObserver(const char* path,
-                                       NotificationObserver* obs) {
+                                       content::NotificationObserver* obs) {
   // Get the pref observer list associated with the path.
   NotificationObserverList* observer_list = NULL;
   const PrefObserverMap::iterator observer_iterator =
@@ -46,7 +46,7 @@ void PrefNotifierImpl::AddPrefObserver(const char* path,
 
   // Verify that this observer doesn't already exist.
   NotificationObserverList::Iterator it(*observer_list);
-  NotificationObserver* existing_obs;
+  content::NotificationObserver* existing_obs;
   while ((existing_obs = it.GetNext()) != NULL) {
     DCHECK(existing_obs != obs) << path << " observer already registered";
     if (existing_obs == obs)
@@ -58,7 +58,7 @@ void PrefNotifierImpl::AddPrefObserver(const char* path,
 }
 
 void PrefNotifierImpl::RemovePrefObserver(const char* path,
-                                          NotificationObserver* obs) {
+                                          content::NotificationObserver* obs) {
   DCHECK(CalledOnValidThread());
 
   const PrefObserverMap::iterator observer_iterator =
@@ -80,8 +80,8 @@ void PrefNotifierImpl::OnInitializationCompleted(bool succeeded) {
 
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_PREF_INITIALIZATION_COMPLETED,
-      Source<PrefService>(pref_service_),
-      Details<bool>(&succeeded));
+      content::Source<PrefService>(pref_service_),
+      content::Details<bool>(&succeeded));
 }
 
 void PrefNotifierImpl::FireObservers(const std::string& path) {
@@ -97,10 +97,10 @@ void PrefNotifierImpl::FireObservers(const std::string& path) {
     return;
 
   NotificationObserverList::Iterator it(*(observer_iterator->second));
-  NotificationObserver* observer;
+  content::NotificationObserver* observer;
   while ((observer = it.GetNext()) != NULL) {
     observer->Observe(chrome::NOTIFICATION_PREF_CHANGED,
-                      Source<PrefService>(pref_service_),
-                      Details<const std::string>(&path));
+                      content::Source<PrefService>(pref_service_),
+                      content::Details<const std::string>(&path));
   }
 }

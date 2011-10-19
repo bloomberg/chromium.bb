@@ -98,13 +98,14 @@ void TypedUrlDataTypeController::CreateSyncComponents() {
   set_change_processor(sync_components.change_processor);
 }
 
-void TypedUrlDataTypeController::Observe(int type,
-                                         const NotificationSource& source,
-                                         const NotificationDetails& details) {
+void TypedUrlDataTypeController::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   switch (type) {
     case chrome::NOTIFICATION_PREF_CHANGED:
-      DCHECK(*Details<std::string>(details).ptr() ==
+      DCHECK(*content::Details<std::string>(details).ptr() ==
              prefs::kSavingBrowserHistoryDisabled);
       if (profile()->GetPrefs()->GetBoolean(
               prefs::kSavingBrowserHistoryDisabled)) {

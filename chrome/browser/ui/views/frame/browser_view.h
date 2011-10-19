@@ -22,7 +22,7 @@
 #include "chrome/browser/ui/views/tab_contents/tab_contents_container.h"
 #include "chrome/browser/ui/views/tabs/abstract_tab_strip_view.h"
 #include "chrome/browser/ui/views/unhandled_keyboard_event_handler.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/gfx/native_widget_types.h"
 #include "views/controls/single_split_view.h"
@@ -81,7 +81,7 @@ class Menu;
 class BrowserView : public BrowserBubbleHost,
                     public BrowserWindow,
                     public BrowserWindowTesting,
-                    public NotificationObserver,
+                    public content::NotificationObserver,
                     public TabStripModelObserver,
                     public ui::SimpleMenuModel::Delegate,
                     public views::WidgetDelegate,
@@ -339,10 +339,10 @@ class BrowserView : public BrowserBubbleHost,
   virtual views::View* GetSidebarContainerView() const OVERRIDE;
   virtual ToolbarView* GetToolbarView() const OVERRIDE;
 
-  // Overridden from NotificationObserver:
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Overridden from TabStripModelObserver:
   virtual void TabDetachedAt(TabContentsWrapper* contents, int index) OVERRIDE;
@@ -703,7 +703,7 @@ class BrowserView : public BrowserBubbleHost,
 
   UnhandledKeyboardEventHandler unhandled_keyboard_event_handler_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // Used to measure the loading spinner animation rate.
   base::TimeTicks last_animation_time_;

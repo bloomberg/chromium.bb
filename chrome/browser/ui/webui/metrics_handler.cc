@@ -100,6 +100,6 @@ void MetricsHandler::HandleLogEventTime(const ListValue* args) {
   }
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_METRIC_EVENT_DURATION,
-      Source<TabContents>(tab),
-      Details<MetricEventDurationDetails>(&details));
+      content::Source<TabContents>(tab),
+      content::Details<MetricEventDurationDetails>(&details));
 }

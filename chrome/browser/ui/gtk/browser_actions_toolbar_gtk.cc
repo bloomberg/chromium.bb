@@ -32,9 +32,9 @@
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_details.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "grit/ui_resources.h"
@@ -82,7 +82,7 @@ gint WidthForIconCount(gint icon_count) {
 
 using ui::SimpleMenuModel;
 
-class BrowserActionButton : public NotificationObserver,
+class BrowserActionButton : public content::NotificationObserver,
                             public ImageLoadingTracker::Observer,
                             public ExtensionContextMenuModel::PopupDelegate,
                             public MenuGtk::Delegate {
@@ -130,8 +130,9 @@ class BrowserActionButton : public NotificationObserver,
     signals_.ConnectAfter(widget(), "expose-event",
                           G_CALLBACK(OnExposeEvent), this);
 
-    registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
-                   Source<ExtensionAction>(extension->browser_action()));
+    registrar_.Add(
+        this, chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
+        content::Source<ExtensionAction>(extension->browser_action()));
   }
 
   ~BrowserActionButton() {
@@ -152,8 +153,8 @@ class BrowserActionButton : public NotificationObserver,
 
   // NotificationObserver implementation.
   void Observe(int type,
-               const NotificationSource& source,
-               const NotificationDetails& details) {
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) {
     if (type == chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED)
       UpdateState();
     else
@@ -354,7 +355,7 @@ class BrowserActionButton : public NotificationObserver,
   SkBitmap default_skbitmap_;
 
   ui::GtkSignalRegistrar signals_;
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // The context menu view and model for this extension action.
   scoped_ptr<MenuGtk> context_menu_;
@@ -452,7 +453,7 @@ BrowserActionsToolbarGtk::BrowserActionsToolbarGtk(Browser* browser)
 
   registrar_.Add(this,
                  chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
-                 Source<ThemeService>(theme_service_));
+                 content::Source<ThemeService>(theme_service_));
   theme_service_->InitThemesFor(this);
 }
 
@@ -478,9 +479,10 @@ void BrowserActionsToolbarGtk::Update() {
   }
 }
 
-void BrowserActionsToolbarGtk::Observe(int type,
-                                       const NotificationSource& source,
-                                       const NotificationDetails& details) {
+void BrowserActionsToolbarGtk::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK(chrome::NOTIFICATION_BROWSER_THEME_CHANGED == type);
   gtk_widget_set_visible(separator_, theme_service_->UsingNativeTheme());
 }

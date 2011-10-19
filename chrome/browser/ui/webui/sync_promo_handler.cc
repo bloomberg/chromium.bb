@@ -20,8 +20,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_details.h"
 #include "content/common/notification_service.h"
+#include "content/public/browser/notification_details.h"
 
 SyncPromoHandler::SyncPromoHandler(ProfileManager* profile_manager)
     : SyncSetupHandler(profile_manager),
@@ -49,7 +49,8 @@ WebUIMessageHandler* SyncPromoHandler::Attach(WebUI* web_ui) {
           IsViewSourceMode()) {
     // Listen to see if the tab we're in gets closed.
     registrar_.Add(this, content::NOTIFICATION_TAB_CLOSING,
-        Source<NavigationController>(&web_ui->tab_contents()->controller()));
+        content::Source<NavigationController>(
+            &web_ui->tab_contents()->controller()));
     // Listen to see if the window we're in gets closed.
     registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSING,
         NotificationService::AllSources());
@@ -93,8 +94,8 @@ void SyncPromoHandler::ShowConfigure(const base::DictionaryValue& args) {
 }
 
 void SyncPromoHandler::Observe(int type,
-                               const NotificationSource& source,
-                               const NotificationDetails& details) {
+                               const content::NotificationSource& source,
+                               const content::NotificationDetails& details) {
   switch (type) {
     case content::NOTIFICATION_TAB_CLOSING: {
       if (!window_already_closed_)
@@ -103,7 +104,7 @@ void SyncPromoHandler::Observe(int type,
     }
     case chrome::NOTIFICATION_BROWSER_CLOSING: {
       // Make sure we're in the tab strip of the closing window.
-      Browser* browser = Source<Browser>(source).ptr();
+      Browser* browser = content::Source<Browser>(source).ptr();
       if (browser->tabstrip_model()->GetWrapperIndex(
               web_ui_->tab_contents()) != TabStripModel::kNoTab) {
         RecordUserFlowAction(extension_misc::SYNC_PROMO_CLOSED_WINDOW);

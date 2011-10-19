@@ -21,13 +21,13 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/tab_contents/navigation_entry.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/common/notification_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class SessionServiceTest : public BrowserWithTestWindowTest,
-                           public NotificationObserver {
+                           public content::NotificationObserver {
  public:
   SessionServiceTest() : window_bounds(0, 1, 2, 3), sync_save_count_(0){}
 
@@ -52,8 +52,8 @@ class SessionServiceTest : public BrowserWithTestWindowTest,
 
   // Upon notification, increment the sync_save_count variable
   void Observe(int type,
-               const NotificationSource& source,
-               const NotificationDetails& details) {
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) {
     ASSERT_EQ(type, chrome::NOTIFICATION_SESSION_SERVICE_SAVED);
     sync_save_count_++;
   }
@@ -648,7 +648,7 @@ TEST_F(SessionServiceTest, GetCurrentSession) {
 
 // Test that the notification for SESSION_SERVICE_SAVED is working properly.
 TEST_F(SessionServiceTest, SavedSessionNotification) {
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
   registrar_.Add(this, chrome::NOTIFICATION_SESSION_SERVICE_SAVED,
                  NotificationService::AllSources());
   service()->Save();

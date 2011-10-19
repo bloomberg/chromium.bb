@@ -12,8 +12,8 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/shell_dialogs.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "net/base/directory_lister.h"
 
 class Profile;
@@ -27,7 +27,7 @@ struct ViewHostMsg_RunFileChooser_Params;
 class FileSelectHelper
     : public base::RefCountedThreadSafe<FileSelectHelper>,
       public SelectFileDialog::Listener,
-      public NotificationObserver {
+      public content::NotificationObserver {
  public:
   explicit FileSelectHelper(Profile* profile);
 
@@ -85,10 +85,10 @@ class FileSelectHelper
                                   void* params) OVERRIDE;
   virtual void FileSelectionCanceled(void* params) OVERRIDE;
 
-  // NotificationObserver overrides.
+  // content::NotificationObserver overrides.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Kicks off a new directory enumeration.
   void StartNewEnumeration(const FilePath& path,
@@ -133,7 +133,7 @@ class FileSelectHelper
   std::map<int, ActiveDirectoryEnumeration*> directory_enumerations_;
 
   // Registrar for notifications regarding our RenderViewHost.
-  NotificationRegistrar notification_registrar_;
+  content::NotificationRegistrar notification_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSelectHelper);
 };

@@ -5,9 +5,9 @@
 #include "chrome/browser/download/download_started_animation.h"
 
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_registrar.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "grit/theme_resources.h"
 #include "ui/base/animation/linear_animation.h"
@@ -35,7 +35,7 @@ namespace {
 // simply call "new DownloadStartAnimation"; the class cleans itself up when it
 // finishes animating.
 class DownloadStartedAnimationWin : public ui::LinearAnimation,
-                                    public NotificationObserver,
+                                    public content::NotificationObserver,
                                     public views::ImageView {
  public:
   explicit DownloadStartedAnimationWin(TabContents* tab_contents);
@@ -50,10 +50,10 @@ class DownloadStartedAnimationWin : public ui::LinearAnimation,
   // Animation
   virtual void AnimateToState(double state);
 
-  // NotificationObserver
+  // content::NotificationObserver
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // We use a HWND for the popup so that it may float above any HWNDs in our UI.
   views::Widget* popup_;
@@ -69,7 +69,7 @@ class DownloadStartedAnimationWin : public ui::LinearAnimation,
   gfx::Rect tab_contents_bounds_;
 
   // A scoped container for notification registries.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadStartedAnimationWin);
 };
@@ -94,11 +94,11 @@ DownloadStartedAnimationWin::DownloadStartedAnimationWin(
   registrar_.Add(
       this,
       content::NOTIFICATION_TAB_CONTENTS_HIDDEN,
-      Source<TabContents>(tab_contents_));
+      content::Source<TabContents>(tab_contents_));
   registrar_.Add(
       this,
       content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-      Source<TabContents>(tab_contents_));
+      content::Source<TabContents>(tab_contents_));
 
   SetImage(kDownloadImage);
 
@@ -141,11 +141,11 @@ void DownloadStartedAnimationWin::Close() {
   registrar_.Remove(
       this,
       content::NOTIFICATION_TAB_CONTENTS_HIDDEN,
-      Source<TabContents>(tab_contents_));
+      content::Source<TabContents>(tab_contents_));
   registrar_.Remove(
       this,
       content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-      Source<TabContents>(tab_contents_));
+      content::Source<TabContents>(tab_contents_));
   tab_contents_ = NULL;
   popup_->Close();
 }
@@ -167,9 +167,10 @@ void DownloadStartedAnimationWin::AnimateToState(double state) {
   }
 }
 
-void DownloadStartedAnimationWin::Observe(int type,
-                                          const NotificationSource& source,
-                                          const NotificationDetails& details) {
+void DownloadStartedAnimationWin::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   Close();
 }
 

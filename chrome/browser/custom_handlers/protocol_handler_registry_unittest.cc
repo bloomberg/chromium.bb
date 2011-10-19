@@ -17,8 +17,8 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/common/notification_service.h"
 #include "net/url_request/url_request.h"
 
@@ -138,30 +138,31 @@ ShellIntegration::DefaultProtocolClientWorker* FakeDelegate::CreateShellWorker(
   return new FakeProtocolClientWorker(observer, protocol, force_os_failure_);
 }
 
-class NotificationCounter : public NotificationObserver {
+class NotificationCounter : public content::NotificationObserver {
  public:
   explicit NotificationCounter(Profile* profile)
       : events_(0),
         notification_registrar_() {
     notification_registrar_.Add(this,
         chrome::NOTIFICATION_PROTOCOL_HANDLER_REGISTRY_CHANGED,
-        Source<Profile>(profile));
+        content::Source<Profile>(profile));
   }
 
   int events() { return events_; }
   bool notified() { return events_ > 0; }
   void Clear() { events_ = 0; }
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) {
     ++events_;
   }
 
   int events_;
-  NotificationRegistrar notification_registrar_;
+  content::NotificationRegistrar notification_registrar_;
 };
 
-class QueryProtocolHandlerOnChange : public NotificationObserver {
+class QueryProtocolHandlerOnChange
+    : public content::NotificationObserver {
  public:
   QueryProtocolHandlerOnChange(Profile* profile,
                                ProtocolHandlerRegistry* registry)
@@ -170,12 +171,12 @@ class QueryProtocolHandlerOnChange : public NotificationObserver {
       notification_registrar_() {
     notification_registrar_.Add(this,
         chrome::NOTIFICATION_PROTOCOL_HANDLER_REGISTRY_CHANGED,
-        Source<Profile>(profile));
+        content::Source<Profile>(profile));
   }
 
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) {
     std::vector<std::string> output;
     registry_->GetRegisteredProtocols(&output);
     called_ = true;
@@ -183,7 +184,7 @@ class QueryProtocolHandlerOnChange : public NotificationObserver {
 
   ProtocolHandlerRegistry* registry_;
   bool called_;
-  NotificationRegistrar notification_registrar_;
+  content::NotificationRegistrar notification_registrar_;
 };
 
 class ProtocolHandlerRegistryTest : public testing::Test {

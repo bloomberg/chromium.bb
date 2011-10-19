@@ -30,11 +30,12 @@ MediaInternalsProxy::MediaInternalsProxy()
                  NotificationService::AllBrowserContextsAndSources());
 }
 
-void MediaInternalsProxy::Observe(int type, const NotificationSource& source,
-                                  const NotificationDetails& details) {
+void MediaInternalsProxy::Observe(int type,
+                                  const content::NotificationSource& source,
+                                  const content::NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(type, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED);
-  RenderProcessHost* process = Source<RenderProcessHost>(source).ptr();
+  RenderProcessHost* process = content::Source<RenderProcessHost>(source).ptr();
   CallJavaScriptFunctionOnUIThread("media.onRendererTerminated",
       base::Value::CreateIntegerValue(process->id()));
 }

@@ -15,7 +15,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/common/notification_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -32,7 +32,7 @@ static void AddPattern(URLPatternSet* extent, const std::string& pattern) {
 // in there, etc.
 
 class UserScriptMasterTest : public testing::Test,
-                             public NotificationObserver {
+                             public content::NotificationObserver {
  public:
   UserScriptMasterTest()
       : message_loop_(MessageLoop::TYPE_UI),
@@ -60,11 +60,11 @@ class UserScriptMasterTest : public testing::Test,
   }
 
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) {
     DCHECK(type == chrome::NOTIFICATION_USER_SCRIPTS_UPDATED);
 
-    shared_memory_ = Details<base::SharedMemory>(details).ptr();
+    shared_memory_ = content::Details<base::SharedMemory>(details).ptr();
     if (MessageLoop::current() == &message_loop_)
       MessageLoop::current()->Quit();
   }
@@ -72,7 +72,7 @@ class UserScriptMasterTest : public testing::Test,
   // Directory containing user scripts.
   ScopedTempDir temp_dir_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // MessageLoop used in tests.
   MessageLoop message_loop_;

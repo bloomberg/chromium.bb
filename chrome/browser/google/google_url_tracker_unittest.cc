@@ -26,14 +26,14 @@
 
 namespace {
 
-class TestNotificationObserver : public NotificationObserver {
+class TestNotificationObserver : public content::NotificationObserver {
  public:
   TestNotificationObserver();
   virtual ~TestNotificationObserver();
 
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
   bool notified() const { return notified_; }
   void clear_notified() { notified_ = false; }
 
@@ -47,9 +47,10 @@ TestNotificationObserver::TestNotificationObserver() : notified_(false) {
 TestNotificationObserver::~TestNotificationObserver() {
 }
 
-void TestNotificationObserver::Observe(int type,
-                                       const NotificationSource& source,
-                                       const NotificationDetails& details) {
+void TestNotificationObserver::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   notified_ = true;
 }
 
@@ -137,7 +138,7 @@ class GoogleURLTrackerTest : public testing::Test {
   ScopedTestingLocalState local_state_;
 
   TestURLFetcherFactory fetcher_factory_;
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 };
 
 GoogleURLTrackerTest::GoogleURLTrackerTest()

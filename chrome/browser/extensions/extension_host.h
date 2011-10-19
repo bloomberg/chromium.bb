@@ -15,8 +15,8 @@
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "content/browser/javascript_dialogs.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/views/extensions/extension_view.h"
@@ -42,7 +42,7 @@ struct WebPreferences;
 class ExtensionHost : public RenderViewHostDelegate,
                       public RenderViewHostDelegate::View,
                       public ExtensionFunctionDispatcher::Delegate,
-                      public NotificationObserver,
+                      public content::NotificationObserver,
                       public content::JavaScriptDialogDelegate {
  public:
   class ProcessCreationQueue;
@@ -183,10 +183,10 @@ class ExtensionHost : public RenderViewHostDelegate,
   virtual void GotFocus() OVERRIDE;
   virtual void TakeFocus(bool reverse) OVERRIDE;
 
-  // NotificationObserver
+  // content::NotificationObserver
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Overridden from content::JavaScriptDialogDelegate:
   virtual void OnDialogClosed(IPC::Message* reply_msg,
@@ -274,7 +274,7 @@ class ExtensionHost : public RenderViewHostDelegate,
   // The URL being hosted.
   GURL url_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   ExtensionFunctionDispatcher extension_function_dispatcher_;
 

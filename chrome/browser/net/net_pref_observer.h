@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/prefs/pref_member.h"
-#include "content/common/notification_observer.h"
+#include "content/public/browser/notification_observer.h"
 
 class Profile;
 
@@ -25,7 +25,7 @@ class PrerenderManager;
 // Monitors network-related preferences for changes and applies them.
 // The supplied PrefService must outlive this NetPrefObserver.
 // Must be used only on the UI thread.
-class NetPrefObserver : public NotificationObserver {
+class NetPrefObserver : public content::NotificationObserver {
  public:
   // |prefs| must be non-NULL and |*prefs| must outlive this.
   // |prerender_manager| may be NULL. If not, |*prerender_manager| must
@@ -35,10 +35,10 @@ class NetPrefObserver : public NotificationObserver {
                   chrome_browser_net::Predictor* predictor);
   virtual ~NetPrefObserver();
 
-  // NotificationObserver
+  // content::NotificationObserver
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   static void RegisterPrefs(PrefService* prefs);
 

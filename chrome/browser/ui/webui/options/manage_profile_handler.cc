@@ -63,9 +63,10 @@ void ManageProfileHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-void ManageProfileHandler::Observe(int type,
-                                    const NotificationSource& source,
-                                    const NotificationDetails& details) {
+void ManageProfileHandler::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED)
     SendProfileNames();
   else

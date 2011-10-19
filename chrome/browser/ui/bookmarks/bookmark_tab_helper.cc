@@ -67,15 +67,15 @@ void BookmarkTabHelper::DidNavigateMainFramePostCommit(
 }
 
 void BookmarkTabHelper::Observe(int type,
-                                const NotificationSource& source,
-                                const NotificationDetails& details) {
+                                const content::NotificationSource& source,
+                                const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED:
       // BookmarkModel finished loading, fall through to update starred state.
     case chrome::NOTIFICATION_URLS_STARRED: {
       // Somewhere, a URL has been starred.
       // Ignore notifications for profiles other than our current one.
-      Profile* source_profile = Source<Profile>(source).ptr();
+      Profile* source_profile = content::Source<Profile>(source).ptr();
       if (!source_profile ||
           !source_profile->IsSameProfile(tab_contents_wrapper_->profile()))
         return;

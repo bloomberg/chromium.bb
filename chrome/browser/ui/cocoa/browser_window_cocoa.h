@@ -11,7 +11,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/base/ui_base_types.h"
 
 class Browser;
@@ -26,7 +26,7 @@ class Browser;
 // it needs to manipulate the window.
 
 class BrowserWindowCocoa : public BrowserWindow,
-                           public NotificationObserver {
+                           public content::NotificationObserver {
  public:
   BrowserWindowCocoa(Browser* browser,
                      BrowserWindowController* controller);
@@ -126,8 +126,8 @@ class BrowserWindowCocoa : public BrowserWindow,
 
   // Overridden from NotificationObserver
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Adds the given FindBar cocoa controller to this browser window.
   void AddFindBar(FindBarCocoaController* find_bar_cocoa_controller);
@@ -142,7 +142,7 @@ class BrowserWindowCocoa : public BrowserWindow,
   NSWindow* window() const;  // Accessor for the (current) |NSWindow|.
   void UpdateSidebarForContents(TabContents* tab_contents);
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
   PrefChangeRegistrar pref_change_registrar_;
   Browser* browser_;  // weak, owned by controller
   BrowserWindowController* controller_;  // weak, owns us

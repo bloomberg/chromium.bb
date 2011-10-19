@@ -12,11 +12,11 @@
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_notifications.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_registrar.h"
 
 // Observes History service and routes the notifications as events to the
 // extension system.
-class ExtensionHistoryEventRouter : public NotificationObserver {
+class ExtensionHistoryEventRouter : public content::NotificationObserver {
  public:
   explicit ExtensionHistoryEventRouter();
   virtual ~ExtensionHistoryEventRouter();
@@ -24,10 +24,10 @@ class ExtensionHistoryEventRouter : public NotificationObserver {
   void ObserveProfile(Profile* profile);
 
  private:
-  // NotificationObserver::Observe.
+  // content::NotificationObserver::Observe.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   void HistoryUrlVisited(Profile* profile,
                          const history::URLVisitedDetails* details);
@@ -40,7 +40,7 @@ class ExtensionHistoryEventRouter : public NotificationObserver {
                      const std::string& json_args);
 
   // Used for tracking registrations to history service notifications.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionHistoryEventRouter);
 };

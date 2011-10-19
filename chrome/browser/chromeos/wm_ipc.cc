@@ -305,8 +305,8 @@ void WmIpc::FetchLayoutModeProperty() {
     layout_mode_ = static_cast<WmIpcLayoutMode>(value);
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_LAYOUT_MODE_CHANGED,
-        Source<WmIpc>(this),
-        Details<WmIpcLayoutMode>(&layout_mode_));
+        content::Source<WmIpc>(this),
+        content::Details<WmIpcLayoutMode>(&layout_mode_));
   } else {
     DLOG(WARNING) << "Missing _CHROME_LAYOUT_MODE property on root window";
   }

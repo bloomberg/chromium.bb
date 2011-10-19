@@ -455,43 +455,44 @@ bool MetricsService::reporting_active() const {
 }
 
 // static
-void MetricsService::SetUpNotifications(NotificationRegistrar* registrar,
-                                        NotificationObserver* observer) {
-    registrar->Add(observer, chrome::NOTIFICATION_BROWSER_OPENED,
-                   NotificationService::AllBrowserContextsAndSources());
-    registrar->Add(observer, chrome::NOTIFICATION_BROWSER_CLOSED,
-                   NotificationService::AllSources());
-    registrar->Add(observer, content::NOTIFICATION_USER_ACTION,
-                   NotificationService::AllSources());
-    registrar->Add(observer, content::NOTIFICATION_TAB_PARENTED,
-                   NotificationService::AllSources());
-    registrar->Add(observer, content::NOTIFICATION_TAB_CLOSING,
-                   NotificationService::AllSources());
-    registrar->Add(observer, content::NOTIFICATION_LOAD_START,
-                   NotificationService::AllSources());
-    registrar->Add(observer, content::NOTIFICATION_LOAD_STOP,
-                   NotificationService::AllSources());
-    registrar->Add(observer, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
-                   NotificationService::AllSources());
-    registrar->Add(observer, content::NOTIFICATION_RENDERER_PROCESS_HANG,
-                   NotificationService::AllSources());
-    registrar->Add(observer, content::NOTIFICATION_CHILD_PROCESS_HOST_CONNECTED,
-                   NotificationService::AllSources());
-    registrar->Add(observer, content::NOTIFICATION_CHILD_INSTANCE_CREATED,
-                   NotificationService::AllSources());
-    registrar->Add(observer, content::NOTIFICATION_CHILD_PROCESS_CRASHED,
-                   NotificationService::AllSources());
-    registrar->Add(observer, chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED,
-                   NotificationService::AllSources());
-    registrar->Add(observer, chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
-                   NotificationService::AllSources());
-    registrar->Add(observer, chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED,
-                   NotificationService::AllBrowserContextsAndSources());
+void MetricsService::SetUpNotifications(
+    content::NotificationRegistrar* registrar,
+    content::NotificationObserver* observer) {
+  registrar->Add(observer, chrome::NOTIFICATION_BROWSER_OPENED,
+                 NotificationService::AllBrowserContextsAndSources());
+  registrar->Add(observer, chrome::NOTIFICATION_BROWSER_CLOSED,
+                 NotificationService::AllSources());
+  registrar->Add(observer, content::NOTIFICATION_USER_ACTION,
+                 NotificationService::AllSources());
+  registrar->Add(observer, content::NOTIFICATION_TAB_PARENTED,
+                 NotificationService::AllSources());
+  registrar->Add(observer, content::NOTIFICATION_TAB_CLOSING,
+                 NotificationService::AllSources());
+  registrar->Add(observer, content::NOTIFICATION_LOAD_START,
+                 NotificationService::AllSources());
+  registrar->Add(observer, content::NOTIFICATION_LOAD_STOP,
+                 NotificationService::AllSources());
+  registrar->Add(observer, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
+                 NotificationService::AllSources());
+  registrar->Add(observer, content::NOTIFICATION_RENDERER_PROCESS_HANG,
+                 NotificationService::AllSources());
+  registrar->Add(observer, content::NOTIFICATION_CHILD_PROCESS_HOST_CONNECTED,
+                 NotificationService::AllSources());
+  registrar->Add(observer, content::NOTIFICATION_CHILD_INSTANCE_CREATED,
+                 NotificationService::AllSources());
+  registrar->Add(observer, content::NOTIFICATION_CHILD_PROCESS_CRASHED,
+                 NotificationService::AllSources());
+  registrar->Add(observer, chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED,
+                 NotificationService::AllSources());
+  registrar->Add(observer, chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
+                 NotificationService::AllSources());
+  registrar->Add(observer, chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED,
+                 NotificationService::AllBrowserContextsAndSources());
 }
 
 void MetricsService::Observe(int type,
-                             const NotificationSource& source,
-                             const NotificationDetails& details) {
+                             const content::NotificationSource& source,
+                             const content::NotificationDetails& details) {
   DCHECK(log_manager_.current_log());
   DCHECK(IsSingleThreaded());
 
@@ -501,7 +502,7 @@ void MetricsService::Observe(int type,
   switch (type) {
     case content::NOTIFICATION_USER_ACTION:
          log_manager_.current_log()->RecordUserAction(
-             *Details<const char*>(details).ptr());
+             *content::Details<const char*>(details).ptr());
       break;
 
     case chrome::NOTIFICATION_BROWSER_OPENED:
@@ -524,8 +525,10 @@ void MetricsService::Observe(int type,
 
     case content::NOTIFICATION_RENDERER_PROCESS_CLOSED: {
         RenderProcessHost::RendererClosedDetails* process_details =
-            Details<RenderProcessHost::RendererClosedDetails>(details).ptr();
-        RenderProcessHost* host = Source<RenderProcessHost>(source).ptr();
+            content::Details<RenderProcessHost::RendererClosedDetails>(
+                details).ptr();
+        RenderProcessHost* host =
+            content::Source<RenderProcessHost>(source).ptr();
         LogRendererCrash(
             host, process_details->status, process_details->was_alive);
       }
@@ -542,19 +545,19 @@ void MetricsService::Observe(int type,
       break;
 
     case chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED:
-      LogKeywords(Source<TemplateURLService>(source).ptr());
+      LogKeywords(content::Source<TemplateURLService>(source).ptr());
       break;
 
     case chrome::NOTIFICATION_OMNIBOX_OPENED_URL: {
       MetricsLog* current_log = log_manager_.current_log()->AsMetricsLog();
       DCHECK(current_log);
       current_log->RecordOmniboxOpenedURL(
-          *Details<AutocompleteLog>(details).ptr());
+          *content::Details<AutocompleteLog>(details).ptr());
       break;
     }
 
     case chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED: {
-      Profile* p = Source<Profile>(source).ptr();
+      Profile* p = content::Source<Profile>(source).ptr();
       if (p)
         LogBookmarks(p->GetBookmarkModel());
       break;
@@ -1154,9 +1157,10 @@ void MetricsService::LogBadResponseCode() {
   }
 }
 
-void MetricsService::LogWindowChange(int type,
-                                     const NotificationSource& source,
-                                     const NotificationDetails& details) {
+void MetricsService::LogWindowChange(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   int controller_id = -1;
   uintptr_t window_or_tab = source.map_key();
   MetricsLog::WindowEventType window_type;
@@ -1193,9 +1197,10 @@ void MetricsService::LogWindowChange(int type,
   log_manager_.current_log()->RecordWindowEvent(window_type, controller_id, 0);
 }
 
-void MetricsService::LogLoadComplete(int type,
-                                     const NotificationSource& source,
-                                     const NotificationDetails& details) {
+void MetricsService::LogLoadComplete(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (details == NotificationService::NoDetails())
     return;
 
@@ -1204,7 +1209,7 @@ void MetricsService::LogLoadComplete(int type,
   UMA_HISTOGRAM_COUNTS("UMA.LogLoadComplete called", 1);
   return;
 
-  const Details<LoadNotificationDetails> load_details(details);
+  const content::Details<LoadNotificationDetails> load_details(details);
   int controller_id = window_map_[details.map_key()];
   log_manager_.current_log()->RecordLoadEvent(controller_id,
                                               load_details->url(),
@@ -1328,9 +1333,9 @@ void MetricsService::LogChromeOSCrash(const std::string &crash_type) {
 
 void MetricsService::LogChildProcessChange(
     int type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
-  Details<ChildProcessInfo> child_details(details);
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  content::Details<ChildProcessInfo> child_details(details);
   const string16& child_name = child_details->name();
 
   if (child_process_stats_buffer_.find(child_name) ==
@@ -1490,9 +1495,10 @@ void MetricsService::RecordPluginChanges(PrefService* pref) {
   child_process_stats_buffer_.clear();
 }
 
-bool MetricsService::CanLogNotification(int type,
-                                        const NotificationSource& source,
-                                        const NotificationDetails& details) {
+bool MetricsService::CanLogNotification(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   // We simply don't log anything to UMA if there is a single incognito
   // session visible. The problem is that we always notify using the orginal
   // profile in order to simplify notification processing.

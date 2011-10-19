@@ -214,8 +214,8 @@ void ExtensionPermissionsManager::NotifyPermissionsUpdated(
       extension, changed, reason);
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_PERMISSIONS_UPDATED,
-      Source<Profile>(extension_service_->profile()),
-      Details<UpdatedExtensionPermissionsInfo>(&info));
+      content::Source<Profile>(extension_service_->profile()),
+      content::Details<UpdatedExtensionPermissionsInfo>(&info));
 
   // Send the new permissions to the renderers.
   for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());

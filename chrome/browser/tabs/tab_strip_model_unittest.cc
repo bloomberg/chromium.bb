@@ -32,12 +32,12 @@
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_observer_mock.h"
-#include "content/common/notification_registrar.h"
-#include "content/common/notification_source.h"
 #include "content/common/property_bag.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/test/notification_observer_mock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
@@ -45,7 +45,8 @@ using testing::_;
 namespace {
 
 // Class used to delete a TabContents when another TabContents is destroyed.
-class DeleteTabContentsOnDestroyedObserver : public NotificationObserver {
+class DeleteTabContentsOnDestroyedObserver
+    : public content::NotificationObserver {
  public:
   DeleteTabContentsOnDestroyedObserver(TabContentsWrapper* source,
                                        TabContentsWrapper* tab_to_delete)
@@ -53,12 +54,12 @@ class DeleteTabContentsOnDestroyedObserver : public NotificationObserver {
         tab_to_delete_(tab_to_delete) {
     registrar_.Add(this,
                    content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                   Source<TabContents>(source->tab_contents()));
+                   content::Source<TabContents>(source->tab_contents()));
   }
 
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) {
     TabContentsWrapper* tab_to_delete = tab_to_delete_;
     tab_to_delete_ = NULL;
     delete tab_to_delete;
@@ -67,7 +68,7 @@ class DeleteTabContentsOnDestroyedObserver : public NotificationObserver {
  private:
   TabContentsWrapper* source_;
   TabContentsWrapper* tab_to_delete_;
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(DeleteTabContentsOnDestroyedObserver);
 };

@@ -11,8 +11,8 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class BackingStore;
 class SkBitmap;
@@ -119,20 +119,20 @@ class RemoveTabsFunction : public SyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.remove")
 };
 class DetectTabLanguageFunction : public AsyncExtensionFunction,
-                                  public NotificationObserver {
+                                  public content::NotificationObserver {
  private:
   virtual ~DetectTabLanguageFunction() {}
   virtual bool RunImpl() OVERRIDE;
 
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
   void GotLanguage(const std::string& language);
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.detectLanguage")
 };
 class CaptureVisibleTabFunction : public AsyncExtensionFunction,
-                                  public NotificationObserver {
+                                  public content::NotificationObserver {
  private:
   enum ImageFormat {
     FORMAT_JPEG,
@@ -146,11 +146,11 @@ class CaptureVisibleTabFunction : public AsyncExtensionFunction,
   virtual bool RunImpl() OVERRIDE;
   virtual bool CaptureSnapshotFromBackingStore(BackingStore* backing_store);
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
   virtual void SendResultFromBitmap(const SkBitmap& screen_capture);
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // The format (JPEG vs PNG) of the resulting image.  Set in RunImpl().
   ImageFormat image_format_;

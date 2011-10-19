@@ -114,9 +114,9 @@ RenderViewHost* RenderViewHostManager::Navigate(const NavigationEntry& entry) {
       details.old_host = NULL;
       NotificationService::current()->Notify(
           content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
-          Source<NavigationController>(
+          content::Source<NavigationController>(
               &delegate_->GetControllerForRenderManager()),
-          Details<RenderViewHostSwitchedDetails>(&details));
+          content::Details<RenderViewHostSwitchedDetails>(&details));
     }
   }
 
@@ -313,12 +313,13 @@ void RenderViewHostManager::OnCrossSiteNavigationCanceled() {
     CancelPending();
 }
 
-void RenderViewHostManager::Observe(int type,
-                                    const NotificationSource& source,
-                                    const NotificationDetails& details) {
+void RenderViewHostManager::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   switch (type) {
     case content::NOTIFICATION_RENDERER_PROCESS_CLOSING:
-      RendererProcessClosing(Source<RenderProcessHost>(source).ptr());
+      RendererProcessClosing(content::Source<RenderProcessHost>(source).ptr());
       break;
 
     default:
@@ -614,8 +615,9 @@ void RenderViewHostManager::CommitPending() {
   details.old_host = old_render_view_host;
   NotificationService::current()->Notify(
       content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
-      Source<NavigationController>(&delegate_->GetControllerForRenderManager()),
-      Details<RenderViewHostSwitchedDetails>(&details));
+      content::Source<NavigationController>(
+          &delegate_->GetControllerForRenderManager()),
+      content::Details<RenderViewHostSwitchedDetails>(&details));
 
   // If the pending view was on the swapped out list, we can remove it.
   swapped_out_hosts_.erase(render_view_host_->site_instance()->id());

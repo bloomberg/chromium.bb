@@ -7,20 +7,17 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "views/controls/button/button.h"
 #include "views/controls/button/image_button.h"
-
-class NotificationDetails;
-class NotificationSource;
 
 namespace chromeos {
 
 // Maximize/restore button in the corner of each browser window.
 class LayoutModeButton : public views::ImageButton,
                          public views::ButtonListener,
-                         public NotificationObserver {
+                         public content::NotificationObserver {
  public:
   LayoutModeButton();
   virtual ~LayoutModeButton();
@@ -29,10 +26,10 @@ class LayoutModeButton : public views::ImageButton,
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual bool HitTest(const gfx::Point& l) const OVERRIDE;
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   void Init();
 
@@ -45,7 +42,7 @@ class LayoutModeButton : public views::ImageButton,
   void UpdateForCurrentLayoutMode();
 
   // A registrar for subscribing to LAYOUT_MODE_CHANGED notifications.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(LayoutModeButton);
 };

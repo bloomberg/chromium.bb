@@ -136,8 +136,8 @@ class NetworkDelayListenerTest
                               chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE));
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
-        Source<Profile>(profile_.get()),
-        Details<ExtensionHost>(background_host.get()));
+        content::Source<Profile>(profile_.get()),
+        content::Details<ExtensionHost>(background_host.get()));
     MessageLoop::current()->RunAllPending();
   }
 
@@ -166,8 +166,8 @@ TEST_F(NetworkDelayListenerTest, DelayAndLoad) {
       new TestExtensionHost(extension1_, chrome::VIEW_TYPE_EXTENSION_DIALOG));
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
-      Source<Profile>(profile_.get()),
-      Details<ExtensionHost>(dialog_host.get()));
+      content::Source<Profile>(profile_.get()),
+      content::Details<ExtensionHost>(dialog_host.get()));
   MessageLoop::current()->RunAllPending();
 
   SendExtensionLoadedNotification(extension1_);

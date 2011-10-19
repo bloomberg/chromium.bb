@@ -11,7 +11,7 @@
 
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/prefs/pref_member.h"
-#include "content/common/notification_observer.h"
+#include "content/public/browser/notification_observer.h"
 
 class PrefService;
 
@@ -21,7 +21,7 @@ namespace chromeos {
 // is first initialized, it will initialize the OS settings to what's stored in
 // the preferences. These include touchpad settings, etc.
 // When the preferences change, we change the settings to reflect the new value.
-class Preferences : public NotificationObserver {
+class Preferences : public content::NotificationObserver {
  public:
   Preferences();
   virtual ~Preferences();
@@ -36,10 +36,10 @@ class Preferences : public NotificationObserver {
   // This method will initialize Chrome OS settings to values in user prefs.
   void Init(PrefService* prefs);
 
-  // Overridden from NotificationObserver:
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
  private:
   // This will set the OS settings when the preference changes.

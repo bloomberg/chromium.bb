@@ -10,8 +10,8 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/string16.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class AvatarMenuModelObserver;
 class Browser;
@@ -25,7 +25,7 @@ class Image;
 // avatar icon is clicked in the browser window frame. This class will notify
 // its observer when the backend data changes, and the controller/view for this
 // model should forward actions back to it in response to user events.
-class AvatarMenuModel : public NotificationObserver {
+class AvatarMenuModel : public content::NotificationObserver {
  public:
   // Represents an item in the menu.
   struct Item {
@@ -76,10 +76,10 @@ class AvatarMenuModel : public NotificationObserver {
   // last active browser changes, the model needs to update accordingly.
   void set_browser(Browser* browser) { browser_ = browser; }
 
-  // NotificationObserver:
+  // content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // True if avatar menu should be displayed.
   static bool ShouldShowAvatarMenu();
@@ -104,7 +104,7 @@ class AvatarMenuModel : public NotificationObserver {
   std::vector<Item*> items_;
 
   // Listens for notifications from the ProfileInfoCache.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(AvatarMenuModel);
 };

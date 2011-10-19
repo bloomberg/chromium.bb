@@ -11,8 +11,8 @@
 #include "chrome/browser/chromeos/login/profile_image_downloader.h"
 #include "chrome/browser/chromeos/login/user_image_screen_actor.h"
 #include "chrome/browser/chromeos/login/wizard_screen.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace chromeos {
@@ -20,7 +20,7 @@ namespace chromeos {
 class UserImageScreen: public WizardScreen,
                        public CameraController::Delegate,
                        public UserImageScreenActor::Delegate,
-                       public NotificationObserver,
+                       public content::NotificationObserver,
                        public ProfileImageDownloader::Delegate {
  public:
   UserImageScreen(ScreenObserver* screen_observer,
@@ -44,10 +44,10 @@ class UserImageScreen: public WizardScreen,
   virtual void OnDefaultImageSelected(int index) OVERRIDE;
   virtual void OnActorDestroyed(UserImageScreenActor* actor) OVERRIDE;
 
-  // NotificationObserver implementation:
+  // content::NotificationObserver implementation:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // ProfileImageDownloader::Delegate implementation.
   virtual void OnDownloadSuccess(const SkBitmap& profile_image) OVERRIDE;
@@ -58,7 +58,7 @@ class UserImageScreen: public WizardScreen,
 
   CameraController camera_controller_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   UserImageScreenActor* actor_;
 

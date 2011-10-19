@@ -325,7 +325,7 @@ void ExtensionInstallUI::OnImageLoaded(
     case INSTALL_PROMPT: {
       NotificationService* service = NotificationService::current();
       service->Notify(chrome::NOTIFICATION_EXTENSION_WILL_SHOW_CONFIRM_DIALOG,
-          Source<ExtensionInstallUI>(this),
+          content::Source<ExtensionInstallUI>(this),
           NotificationService::NoDetails());
 
       Prompt prompt(prompt_type_);
@@ -349,8 +349,8 @@ void ExtensionInstallUI::OpenAppInstalledNTP(Browser* browser,
 
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_APP_INSTALLED_TO_NTP,
-      Source<TabContents>(params.target_contents->tab_contents()),
-      Details<const std::string>(&app_id));
+      content::Source<TabContents>(params.target_contents->tab_contents()),
+      content::Details<const std::string>(&app_id));
 }
 
 // static

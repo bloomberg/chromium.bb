@@ -15,8 +15,8 @@
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
 #include "content/browser/plugin_service_filter.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 
 class PluginPrefs;
@@ -25,7 +25,7 @@ class Profile;
 // This class must be created (by calling the |GetInstance| method) on the UI
 // thread, but is safe to use on any thread after that.
 class ChromePluginServiceFilter : public content::PluginServiceFilter,
-                                  public NotificationObserver {
+                                  public content::NotificationObserver {
  public:
   static ChromePluginServiceFilter* GetInstance();
 
@@ -72,12 +72,12 @@ class ChromePluginServiceFilter : public content::PluginServiceFilter,
   ChromePluginServiceFilter();
   virtual ~ChromePluginServiceFilter();
 
-  // NotificationObserver implementation:
+  // content::NotificationObserver implementation:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   base::Lock lock_;  // Guards access to member variables.
   // Map of plugin paths to the origin they are restricted to.

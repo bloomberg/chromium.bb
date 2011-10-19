@@ -501,8 +501,9 @@ void AutocompleteEditModel::OpenMatch(const AutocompleteMatch& match,
     else if (!has_temporary_text_)
       log.inline_autocompleted_length = inline_autocomplete_text_.length();
     NotificationService::current()->Notify(
-        chrome::NOTIFICATION_OMNIBOX_OPENED_URL, Source<Profile>(profile_),
-        Details<AutocompleteLog>(&log));
+        chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
+        content::Source<Profile>(profile_),
+        content::Details<AutocompleteLog>(&log));
   }
 
   TemplateURLService* template_url_service =

@@ -72,32 +72,40 @@ ExtensionAccessibilityEventRouter::~ExtensionAccessibilityEventRouter() {
 
 void ExtensionAccessibilityEventRouter::Observe(
     int type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_ACCESSIBILITY_WINDOW_OPENED:
-      OnWindowOpened(Details<const AccessibilityWindowInfo>(details).ptr());
+      OnWindowOpened(
+          content::Details<const AccessibilityWindowInfo>(details).ptr());
       break;
     case chrome::NOTIFICATION_ACCESSIBILITY_WINDOW_CLOSED:
-      OnWindowClosed(Details<const AccessibilityWindowInfo>(details).ptr());
+      OnWindowClosed(
+          content::Details<const AccessibilityWindowInfo>(details).ptr());
       break;
     case chrome::NOTIFICATION_ACCESSIBILITY_CONTROL_FOCUSED:
-      OnControlFocused(Details<const AccessibilityControlInfo>(details).ptr());
+      OnControlFocused(
+          content::Details<const AccessibilityControlInfo>(details).ptr());
       break;
     case chrome::NOTIFICATION_ACCESSIBILITY_CONTROL_ACTION:
-      OnControlAction(Details<const AccessibilityControlInfo>(details).ptr());
+      OnControlAction(
+          content::Details<const AccessibilityControlInfo>(details).ptr());
       break;
     case chrome::NOTIFICATION_ACCESSIBILITY_TEXT_CHANGED:
-      OnTextChanged(Details<const AccessibilityControlInfo>(details).ptr());
+      OnTextChanged(
+          content::Details<const AccessibilityControlInfo>(details).ptr());
       break;
     case chrome::NOTIFICATION_ACCESSIBILITY_MENU_OPENED:
-      OnMenuOpened(Details<const AccessibilityMenuInfo>(details).ptr());
+      OnMenuOpened(
+          content::Details<const AccessibilityMenuInfo>(details).ptr());
       break;
     case chrome::NOTIFICATION_ACCESSIBILITY_MENU_CLOSED:
-      OnMenuClosed(Details<const AccessibilityMenuInfo>(details).ptr());
+      OnMenuClosed(
+          content::Details<const AccessibilityMenuInfo>(details).ptr());
       break;
     case chrome::NOTIFICATION_ACCESSIBILITY_VOLUME_CHANGED:
-      OnVolumeChanged(Details<const AccessibilityVolumeInfo>(details).ptr());
+      OnVolumeChanged(
+          content::Details<const AccessibilityVolumeInfo>(details).ptr());
       break;
     default:
       NOTREACHED();

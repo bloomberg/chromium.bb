@@ -166,14 +166,15 @@ void UserScriptListener::CollectURLPatterns(const Extension* extension,
 }
 
 void UserScriptListener::Observe(int type,
-                                 const NotificationSource& source,
-                                 const NotificationDetails& details) {
+                                 const content::NotificationSource& source,
+                                 const content::NotificationDetails& details) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_LOADED: {
-      Profile* profile = Source<Profile>(source).ptr();
-      const Extension* extension = Details<const Extension>(details).ptr();
+      Profile* profile = content::Source<Profile>(source).ptr();
+      const Extension* extension =
+          content::Details<const Extension>(details).ptr();
       if (extension->content_scripts().empty())
         return;  // no new patterns from this extension.
 
@@ -188,9 +189,9 @@ void UserScriptListener::Observe(int type,
     }
 
     case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
-      Profile* profile = Source<Profile>(source).ptr();
+      Profile* profile = content::Source<Profile>(source).ptr();
       const Extension* unloaded_extension =
-          Details<UnloadedExtensionInfo>(details)->extension;
+          content::Details<UnloadedExtensionInfo>(details)->extension;
       if (unloaded_extension->content_scripts().empty())
         return;  // no patterns to delete for this extension.
 
@@ -209,14 +210,14 @@ void UserScriptListener::Observe(int type,
     }
 
     case chrome::NOTIFICATION_USER_SCRIPTS_UPDATED: {
-      Profile* profile = Source<Profile>(source).ptr();
+      Profile* profile = content::Source<Profile>(source).ptr();
       BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
           &UserScriptListener::UserScriptsReady, this, profile));
       break;
     }
 
     case chrome::NOTIFICATION_PROFILE_DESTROYED: {
-      Profile* profile = Source<Profile>(source).ptr();
+      Profile* profile = content::Source<Profile>(source).ptr();
       BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
           &UserScriptListener::ProfileDestroyed, this, profile));
       break;

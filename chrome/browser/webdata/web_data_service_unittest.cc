@@ -29,8 +29,8 @@
 #include "chrome/common/guid.h"
 #include "chrome/test/base/thread_observer_helper.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_details.h"
 #include "content/common/notification_service.h"
+#include "content/public/browser/notification_details.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/form_field.h"
@@ -184,8 +184,8 @@ TEST_F(WebDataServiceAutofillTest, FormFillAdd) {
   EXPECT_CALL(
       *observer_helper_->observer(),
       Observe(int(chrome::NOTIFICATION_AUTOFILL_ENTRIES_CHANGED),
-              Source<WebDataService>(wds_.get()),
-              Property(&Details<const AutofillChangeList>::ptr,
+              content::Source<WebDataService>(wds_.get()),
+              Property(&content::Details<const AutofillChangeList>::ptr,
                        Pointee(ElementsAreArray(expected_changes))))).
       WillOnce(SignalEvent(&done_event_));
 
@@ -230,8 +230,8 @@ TEST_F(WebDataServiceAutofillTest, FormFillRemoveOne) {
   EXPECT_CALL(
       *observer_helper_->observer(),
       Observe(int(chrome::NOTIFICATION_AUTOFILL_ENTRIES_CHANGED),
-              Source<WebDataService>(wds_.get()),
-              Property(&Details<const AutofillChangeList>::ptr,
+              content::Source<WebDataService>(wds_.get()),
+              Property(&content::Details<const AutofillChangeList>::ptr,
                        Pointee(ElementsAreArray(expected_changes))))).
       WillOnce(SignalEvent(&done_event_));
   wds_->RemoveFormValueForElementName(name1_, value1_);
@@ -263,8 +263,8 @@ TEST_F(WebDataServiceAutofillTest, FormFillRemoveMany) {
   EXPECT_CALL(
       *observer_helper_->observer(),
       Observe(int(chrome::NOTIFICATION_AUTOFILL_ENTRIES_CHANGED),
-              Source<WebDataService>(wds_.get()),
-              Property(&Details<const AutofillChangeList>::ptr,
+              content::Source<WebDataService>(wds_.get()),
+              Property(&content::Details<const AutofillChangeList>::ptr,
                        Pointee(ElementsAreArray(expected_changes))))).
       WillOnce(SignalEvent(&done_event_));
   wds_->RemoveFormElementsAddedBetween(t, t + one_day);
@@ -282,8 +282,8 @@ TEST_F(WebDataServiceAutofillTest, ProfileAdd) {
   EXPECT_CALL(
       *observer_helper_->observer(),
       Observe(int(chrome::NOTIFICATION_AUTOFILL_PROFILE_CHANGED),
-              Source<WebDataService>(wds_.get()),
-              Property(&Details<const AutofillProfileChange>::ptr,
+              content::Source<WebDataService>(wds_.get()),
+              Property(&content::Details<const AutofillProfileChange>::ptr,
                        Pointee(expected_change)))).
       WillOnce(SignalEvent(&done_event_));
 
@@ -325,8 +325,8 @@ TEST_F(WebDataServiceAutofillTest, ProfileRemove) {
   EXPECT_CALL(
       *observer_helper_->observer(),
       Observe(int(chrome::NOTIFICATION_AUTOFILL_PROFILE_CHANGED),
-              Source<WebDataService>(wds_.get()),
-              Property(&Details<const AutofillProfileChange>::ptr,
+              content::Source<WebDataService>(wds_.get()),
+              Property(&content::Details<const AutofillProfileChange>::ptr,
                        Pointee(expected_change)))).
       WillOnce(SignalEvent(&done_event_));
 
@@ -373,8 +373,8 @@ TEST_F(WebDataServiceAutofillTest, ProfileUpdate) {
   EXPECT_CALL(
       *observer_helper_->observer(),
       Observe(int(chrome::NOTIFICATION_AUTOFILL_PROFILE_CHANGED),
-              Source<WebDataService>(wds_.get()),
-              Property(&Details<const AutofillProfileChange>::ptr,
+              content::Source<WebDataService>(wds_.get()),
+              Property(&content::Details<const AutofillProfileChange>::ptr,
                        Pointee(expected_change)))).
       WillOnce(SignalEvent(&done_event_));
 
@@ -403,8 +403,8 @@ TEST_F(WebDataServiceAutofillTest, CreditAdd) {
       *observer_helper_->observer(),
       Observe(
           int(chrome::NOTIFICATION_AUTOFILL_CREDIT_CARD_CHANGED),
-              Source<WebDataService>(wds_.get()),
-              Property(&Details<const AutofillCreditCardChange>::ptr,
+              content::Source<WebDataService>(wds_.get()),
+              Property(&content::Details<const AutofillCreditCardChange>::ptr,
                        Pointee(expected_change)))).
       WillOnce(SignalEvent(&done_event_));
 
@@ -446,8 +446,8 @@ TEST_F(WebDataServiceAutofillTest, CreditCardRemove) {
       *observer_helper_->observer(),
       Observe(
           int(chrome::NOTIFICATION_AUTOFILL_CREDIT_CARD_CHANGED),
-              Source<WebDataService>(wds_.get()),
-              Property(&Details<const AutofillCreditCardChange>::ptr,
+              content::Source<WebDataService>(wds_.get()),
+              Property(&content::Details<const AutofillCreditCardChange>::ptr,
                        Pointee(expected_change)))).
       WillOnce(SignalEvent(&done_event_));
   wds_->RemoveCreditCard(credit_card.guid());
@@ -494,8 +494,8 @@ TEST_F(WebDataServiceAutofillTest, CreditUpdate) {
       *observer_helper_->observer(),
       Observe(
           int(chrome::NOTIFICATION_AUTOFILL_CREDIT_CARD_CHANGED),
-              Source<WebDataService>(wds_.get()),
-              Property(&Details<const AutofillCreditCardChange>::ptr,
+              content::Source<WebDataService>(wds_.get()),
+              Property(&content::Details<const AutofillCreditCardChange>::ptr,
                        Pointee(expected_change)))).
       WillOnce(SignalEvent(&done_event_));
 
@@ -556,8 +556,8 @@ TEST_F(WebDataServiceAutofillTest, AutofillRemoveModifiedBetween) {
   EXPECT_CALL(
       *observer_helper_->observer(),
       Observe(int(chrome::NOTIFICATION_AUTOFILL_PROFILE_CHANGED),
-              Source<WebDataService>(wds_.get()),
-              Property(&Details<const AutofillProfileChange>::ptr,
+              content::Source<WebDataService>(wds_.get()),
+              Property(&content::Details<const AutofillProfileChange>::ptr,
                        Pointee(expected_profile_change)))).
       WillOnce(SignalEvent(&done_event_));
 
@@ -568,8 +568,8 @@ TEST_F(WebDataServiceAutofillTest, AutofillRemoveModifiedBetween) {
       *observer_helper_->observer(),
       Observe(
           int(chrome::NOTIFICATION_AUTOFILL_CREDIT_CARD_CHANGED),
-              Source<WebDataService>(wds_.get()),
-              Property(&Details<const AutofillCreditCardChange>::ptr,
+              content::Source<WebDataService>(wds_.get()),
+              Property(&content::Details<const AutofillCreditCardChange>::ptr,
                        Pointee(expected_card_change)))).
       WillOnce(SignalEvent(&done_event_));
 

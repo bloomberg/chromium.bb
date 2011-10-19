@@ -18,15 +18,15 @@
 #include "base/gtest_prod_util.h"
 #include "base/task.h"
 #include "base/time.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 
 template<typename Type>
 struct DefaultSingletonTraits;
 class PrefService;
 
-class WebCacheManager : public NotificationObserver {
+class WebCacheManager : public content::NotificationObserver {
   friend class WebCacheManagerTest;
   FRIEND_TEST_ALL_PREFIXES(WebCacheManagerBrowserTest, CrashOnceOnly);
 
@@ -74,10 +74,10 @@ class WebCacheManager : public NotificationObserver {
   // to a different website.
   void ClearCacheOnNavigation();
 
-  // NotificationObserver implementation:
+  // content::NotificationObserver implementation:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Gets the default global size limit.  This interrogates system metrics to
   // tune the default size to the current system.
@@ -215,7 +215,7 @@ class WebCacheManager : public NotificationObserver {
 
   ScopedRunnableMethodFactory<WebCacheManager> revise_allocation_factory_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(WebCacheManager);
 };

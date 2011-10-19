@@ -82,8 +82,8 @@ class TestProfileSyncService : public ProfileSyncService {
       bool success) OVERRIDE;
 
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // If this is called, configuring data types will require a syncer
   // nudge.

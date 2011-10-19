@@ -150,7 +150,7 @@ TopSites::TopSites(Profile* profile)
 
   if (NotificationService::current()) {
     registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_DELETED,
-                   Source<Profile>(profile_));
+                   content::Source<Profile>(profile_));
     // Listen for any nav commits. We'll ignore those not related to this
     // profile when we get the notification.
     registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
@@ -802,13 +802,13 @@ void TopSites::ProcessPendingCallbacks(
 }
 
 void TopSites::Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) {
   if (!loaded_)
     return;
 
   if (type == chrome::NOTIFICATION_HISTORY_URLS_DELETED) {
-    Details<history::URLsDeletedDetails> deleted_details(details);
+    content::Details<history::URLsDeletedDetails> deleted_details(details);
     if (deleted_details->all_history) {
       SetTopSites(MostVisitedURLList());
       backend_->ResetDatabase();
@@ -835,12 +835,12 @@ void TopSites::Observe(int type,
     StartQueryForMostVisited();
   } else if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED) {
     NavigationController* controller =
-        Source<NavigationController>(source).ptr();
+        content::Source<NavigationController>(source).ptr();
     Profile* profile = Profile::FromBrowserContext(
         controller->tab_contents()->browser_context());
     if (profile == profile_ && !IsFull()) {
       content::LoadCommittedDetails* load_details =
-          Details<content::LoadCommittedDetails>(details).ptr();
+          content::Details<content::LoadCommittedDetails>(details).ptr();
       if (!load_details)
         return;
       const GURL& url = load_details->entry->url();
@@ -933,8 +933,8 @@ void TopSites::MoveStateToLoaded() {
   ProcessPendingCallbacks(pending_callbacks, filtered_urls);
 
   NotificationService::current()->Notify(chrome::NOTIFICATION_TOP_SITES_LOADED,
-                                         Source<Profile>(profile_),
-                                         Details<TopSites>(this));
+                                         content::Source<Profile>(profile_),
+                                         content::Details<TopSites>(this));
 }
 
 void TopSites::ResetThreadSafeCache() {
@@ -953,7 +953,7 @@ void TopSites::ResetThreadSafeImageCache() {
 void TopSites::NotifyTopSitesChanged() {
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_TOP_SITES_CHANGED,
-      Source<TopSites>(this),
+      content::Source<TopSites>(this),
       NotificationService::NoDetails());
 }
 
@@ -1027,8 +1027,8 @@ void TopSites::OnTopSitesAvailableFromHistory(
   // Used only in testing.
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_TOP_SITES_UPDATED,
-      Source<TopSites>(this),
-      Details<CancelableRequestProvider::Handle>(&handle));
+      content::Source<TopSites>(this),
+      content::Details<CancelableRequestProvider::Handle>(&handle));
 }
 
 }  // namespace history

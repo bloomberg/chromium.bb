@@ -411,7 +411,7 @@ void OmniboxViewGtk::Init() {
 #if !defined(TOOLKIT_VIEWS)
   registrar_.Add(this,
                  chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
-                 Source<ThemeService>(theme_service_));
+                 content::Source<ThemeService>(theme_service_));
   theme_service_->InitThemesFor(this);
 #else
   // Manually invoke SetBaseColor() because TOOLKIT_VIEWS doesn't observe
@@ -919,8 +919,8 @@ OmniboxView* OmniboxViewGtk::Create(AutocompleteEditController* controller,
 #endif
 
 void OmniboxViewGtk::Observe(int type,
-                             const NotificationSource& source,
-                             const NotificationDetails& details) {
+                             const content::NotificationSource& source,
+                             const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_BROWSER_THEME_CHANGED);
 
   SetBaseColor();

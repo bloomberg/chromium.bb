@@ -20,9 +20,9 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_source.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "grit/generated_resources.h"
 #include "net/base/mime_util.h"
@@ -276,10 +276,10 @@ void FileSelectHelper::RunFileChooser(
   notification_registrar_.RemoveAll();
   notification_registrar_.Add(
       this, content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
-      Source<RenderWidgetHost>(render_view_host_));
+      content::Source<RenderWidgetHost>(render_view_host_));
   notification_registrar_.Add(
       this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-      Source<TabContents>(tab_contents_));
+      content::Source<TabContents>(tab_contents_));
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
@@ -380,17 +380,18 @@ void FileSelectHelper::EnumerateDirectoryEnd() {
 }
 
 void FileSelectHelper::Observe(int type,
-                               const NotificationSource& source,
-                               const NotificationDetails& details) {
+                               const content::NotificationSource& source,
+                               const content::NotificationDetails& details) {
   switch (type) {
     case content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED: {
-      DCHECK(Source<RenderWidgetHost>(source).ptr() == render_view_host_);
+      DCHECK(content::Source<RenderWidgetHost>(source).ptr() ==
+             render_view_host_);
       render_view_host_ = NULL;
       break;
     }
 
     case content::NOTIFICATION_TAB_CONTENTS_DESTROYED: {
-      DCHECK(Source<TabContents>(source).ptr() == tab_contents_);
+      DCHECK(content::Source<TabContents>(source).ptr() == tab_contents_);
       tab_contents_ = NULL;
       break;
     }

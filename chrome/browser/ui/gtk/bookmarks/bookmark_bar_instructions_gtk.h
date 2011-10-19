@@ -7,15 +7,15 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/base/gtk/gtk_signal.h"
 
 typedef struct _GtkWidget GtkWidget;
 class GtkThemeService;
 class Profile;
 
-class BookmarkBarInstructionsGtk : public NotificationObserver {
+class BookmarkBarInstructionsGtk : public content::NotificationObserver {
  public:
   // The delegate is notified once the user clicks on the link to import
   // bookmarks.
@@ -33,10 +33,10 @@ class BookmarkBarInstructionsGtk : public NotificationObserver {
   GtkWidget* widget() const { return instructions_hbox_; }
 
  private:
-  // Overridden from NotificationObserver:
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   CHROMEGTK_CALLBACK_0(BookmarkBarInstructionsGtk, void, OnButtonClick);
 
@@ -54,7 +54,7 @@ class BookmarkBarInstructionsGtk : public NotificationObserver {
   GtkWidget* instructions_label_;
   GtkWidget* instructions_link_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkBarInstructionsGtk);
 };

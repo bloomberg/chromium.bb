@@ -18,8 +18,8 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/common/notification_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -105,7 +105,7 @@ void TestProvider::AddResults(int start_at, int num) {
 }
 
 class AutocompleteProviderTest : public testing::Test,
-                                 public NotificationObserver {
+                                 public content::NotificationObserver {
  protected:
   void ResetControllerWithTestProviders(bool same_destinations);
 
@@ -122,14 +122,14 @@ class AutocompleteProviderTest : public testing::Test,
   AutocompleteResult result_;
 
  private:
-  // NotificationObserver
+  // content::NotificationObserver
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   MessageLoopForUI message_loop_;
   scoped_ptr<AutocompleteController> controller_;
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
   TestingProfile profile_;
 };
 
@@ -161,7 +161,7 @@ void AutocompleteProviderTest::ResetControllerWithTestProviders(
   // notifications.
   registrar_.Add(this,
                  chrome::NOTIFICATION_AUTOCOMPLETE_CONTROLLER_RESULT_READY,
-                 Source<AutocompleteController>(controller));
+                 content::Source<AutocompleteController>(controller));
 }
 
 void AutocompleteProviderTest::
@@ -232,9 +232,10 @@ void AutocompleteProviderTest::RunExactKeymatchTest(
       controller_->result().default_match()->provider);
 }
 
-void AutocompleteProviderTest::Observe(int type,
-                                       const NotificationSource& source,
-                                       const NotificationDetails& details) {
+void AutocompleteProviderTest::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (controller_->done()) {
     result_.CopyFrom(controller_->result());
     MessageLoop::current()->Quit();

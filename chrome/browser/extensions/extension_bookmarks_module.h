@@ -15,8 +15,8 @@
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/ui/shell_dialogs.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class FilePath;
 
@@ -69,7 +69,7 @@ class ExtensionBookmarkEventRouter : public BookmarkModelObserver {
 };
 
 class BookmarksFunction : public AsyncExtensionFunction,
-                          public NotificationObserver {
+                          public content::NotificationObserver {
  public:
   // AsyncExtensionFunction:
   virtual void Run() OVERRIDE;
@@ -87,12 +87,12 @@ class BookmarksFunction : public AsyncExtensionFunction,
   bool EditBookmarksEnabled();
 
  private:
-  // NotificationObserver:
+  // content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 };
 
 class GetBookmarksFunction : public BookmarksFunction {

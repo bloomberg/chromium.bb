@@ -7,21 +7,21 @@
 #pragma once
 
 #include "chrome/common/content_settings_types.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 class ContentSettingsPattern;
 class HostContentSettingsMap;
 
-class MockSettingsObserver : public NotificationObserver {
+class MockSettingsObserver : public content::NotificationObserver {
  public:
   MockSettingsObserver();
   virtual ~MockSettingsObserver();
 
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   MOCK_METHOD6(OnContentSettingsChanged,
                void(HostContentSettingsMap*,
@@ -32,7 +32,7 @@ class MockSettingsObserver : public NotificationObserver {
                     bool));
 
  private:
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 };
 
 #endif  // CHROME_BROWSER_CONTENT_SETTINGS_MOCK_SETTINGS_OBSERVER_H_

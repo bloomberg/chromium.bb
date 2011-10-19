@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/renderer_host/render_widget_host_view_gtk.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "ui/base/gtk/gtk_expanded_container.h"
 #include "ui/base/gtk/gtk_floating_container.h"
@@ -66,7 +66,7 @@ void TabContentsContainerGtk::SetTab(TabContentsWrapper* tab) {
   HideTab(tab_);
   if (tab_) {
     registrar_.Remove(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                      Source<TabContents>(tab_->tab_contents()));
+                      content::Source<TabContents>(tab_->tab_contents()));
   }
 
   tab_ = tab;
@@ -79,7 +79,7 @@ void TabContentsContainerGtk::SetTab(TabContentsWrapper* tab) {
     // Otherwise we actually have to add it to the widget hierarchy.
     PackTab(tab);
     registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                   Source<TabContents>(tab_->tab_contents()));
+                   content::Source<TabContents>(tab_->tab_contents()));
   }
 }
 
@@ -97,7 +97,7 @@ void TabContentsContainerGtk::SetPreview(TabContentsWrapper* preview) {
 
   PackTab(preview);
   registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                 Source<TabContents>(preview_->tab_contents()));
+                 content::Source<TabContents>(preview_->tab_contents()));
 }
 
 void TabContentsContainerGtk::RemovePreview() {
@@ -111,7 +111,7 @@ void TabContentsContainerGtk::RemovePreview() {
     gtk_container_remove(GTK_CONTAINER(expanded_), preview_widget);
 
   registrar_.Remove(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                    Source<TabContents>(preview_->tab_contents()));
+                    content::Source<TabContents>(preview_->tab_contents()));
   preview_ = NULL;
 }
 
@@ -169,12 +169,13 @@ void TabContentsContainerGtk::DetachTab(TabContentsWrapper* tab) {
   }
 }
 
-void TabContentsContainerGtk::Observe(int type,
-                                      const NotificationSource& source,
-                                      const NotificationDetails& details) {
+void TabContentsContainerGtk::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK(type == content::NOTIFICATION_TAB_CONTENTS_DESTROYED);
 
-  TabContentsDestroyed(Source<TabContents>(source).ptr());
+  TabContentsDestroyed(content::Source<TabContents>(source).ptr());
 }
 
 void TabContentsContainerGtk::TabContentsDestroyed(TabContents* contents) {

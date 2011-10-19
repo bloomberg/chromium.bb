@@ -17,8 +17,8 @@
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/base/ui_base_types.h"
 
 class NavigationEntry;
@@ -49,7 +49,7 @@ class TabContentsWrapper;
 // SessionService rebuilds the contents of the file from the open state
 // of the browser.
 class SessionService : public BaseSessionService,
-                       public NotificationObserver {
+                       public content::NotificationObserver {
   friend class SessionServiceTestHelper;
  public:
   // Creates a SessionService for the specified profile.
@@ -207,8 +207,8 @@ class SessionService : public BaseSessionService,
                           Browser* browser);
 
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Sets the application extension id of the specified tab.
   void SetTabExtensionAppID(const SessionID& window_id,
@@ -404,7 +404,7 @@ class SessionService : public BaseSessionService,
   static WindowType WindowTypeForBrowserType(Browser::Type type);
   static Browser::Type BrowserTypeForWindowType(WindowType type);
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // Maps from session tab id to the range of navigation entries that has
   // been written to disk.

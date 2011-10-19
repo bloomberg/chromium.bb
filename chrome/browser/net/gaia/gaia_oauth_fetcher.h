@@ -12,8 +12,8 @@
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
 #include "chrome/browser/net/gaia/gaia_oauth_consumer.h"
 #include "content/common/net/url_fetcher.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 
 struct ChromeCookieDetails;
@@ -39,7 +39,7 @@ class Profile;
 // This class can handle one request at a time, and all calls through an
 // instance should be serialized.
 class GaiaOAuthFetcher : public URLFetcher::Delegate,
-                         public NotificationObserver {
+                         public content::NotificationObserver {
  public:
   // Defines steps of OAuth process performed by this class.
   typedef enum {
@@ -115,10 +115,10 @@ class GaiaOAuthFetcher : public URLFetcher::Delegate,
   // StartOAuthWrapBridge).
   virtual void StartOAuthRevokeWrapToken(const std::string& token);
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Called when a cookie, e. g. oauth_token, changes
   virtual void OnCookieChanged(Profile* profile,
@@ -243,7 +243,7 @@ class GaiaOAuthFetcher : public URLFetcher::Delegate,
   net::URLRequestContextGetter* const getter_;
   Profile* profile_;
   Browser* popup_;
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // While a fetch is going on:
   scoped_ptr<URLFetcher> fetcher_;

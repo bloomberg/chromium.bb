@@ -5,12 +5,12 @@
 #include "chrome/test/base/test_html_dialog_observer.h"
 
 #include "chrome/common/chrome_notification_types.h"
-#include "content/common/notification_details.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_source.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/webui/web_ui.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "chrome/test/base/ui_test_utils.h"
 
@@ -23,12 +23,13 @@ TestHtmlDialogObserver::TestHtmlDialogObserver()
 TestHtmlDialogObserver::~TestHtmlDialogObserver() {
 }
 
-void TestHtmlDialogObserver::Observe(int type,
-                                     const NotificationSource& source,
-                                     const NotificationDetails& details) {
+void TestHtmlDialogObserver::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_HTML_DIALOG_SHOWN:
-      web_ui_ = Source<WebUI>(source).ptr();
+      web_ui_ = content::Source<WebUI>(source).ptr();
       registrar_.Remove(this, chrome::NOTIFICATION_HTML_DIALOG_SHOWN,
                         NotificationService::AllSources());
       // Wait for navigation on the new WebUI instance to complete. This depends
@@ -39,13 +40,13 @@ void TestHtmlDialogObserver::Observe(int type,
       // TabContents::NavigateToEntry. The new RenderView is later told to
       // navigate in this method, ensuring that this is not a race condition.
       registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
-                     Source<NavigationController>(
+                     content::Source<NavigationController>(
                          &web_ui_->tab_contents()->controller()));
       break;
     case content::NOTIFICATION_LOAD_STOP:
       DCHECK(web_ui_);
       registrar_.Remove(this, content::NOTIFICATION_LOAD_STOP,
-                        Source<NavigationController>(
+                        content::Source<NavigationController>(
                             &web_ui_->tab_contents()->controller()));
       done_ = true;
       // If the message loop is running stop it.

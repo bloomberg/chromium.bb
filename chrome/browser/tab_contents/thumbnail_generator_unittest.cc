@@ -70,8 +70,8 @@ class ThumbnailGeneratorTest : public testing::Test {
     // will want a RenderWidget, so it works out OK.
     NotificationService::current()->Notify(
         content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB,
-        Source<RenderViewHostManager>(NULL),
-        Details<RenderViewHost>(reinterpret_cast<RenderViewHost*>(
+        content::Source<RenderViewHostManager>(NULL),
+        content::Details<RenderViewHost>(reinterpret_cast<RenderViewHost*>(
             widget_.get())));
 
     transport_dib_.reset(TransportDIB::Create(kBitmapWidth * kBitmapHeight * 4,

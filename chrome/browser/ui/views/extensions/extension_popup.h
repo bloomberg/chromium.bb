@@ -10,7 +10,7 @@
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/ui/views/browser_bubble.h"
 #include "chrome/browser/ui/views/extensions/extension_view.h"
-#include "content/common/notification_observer.h"
+#include "content/public/browser/notification_observer.h"
 #include "googleurl/src/gurl.h"
 #include "views/bubble/bubble_border.h"
 
@@ -26,7 +26,7 @@ class Widget;
 class ExtensionPopup : public BrowserBubble,
                        public BrowserBubble::Delegate,
                        public ExtensionView::Container,
-                       public NotificationObserver,
+                       public content::NotificationObserver,
                        public base::RefCounted<ExtensionPopup> {
  public:
   // Observer to ExtensionPopup events.
@@ -82,10 +82,10 @@ class ExtensionPopup : public BrowserBubble,
   virtual void BubbleLostFocus(BrowserBubble* bubble,
                                bool lost_focus_to_child);
 
-  // NotificationObserver overrides.
+  // content::NotificationObserver overrides.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // ExtensionView::Container overrides.
   virtual void OnExtensionMouseMove(ExtensionView* view) { }
@@ -122,7 +122,7 @@ class ExtensionPopup : public BrowserBubble,
   // Whether the ExtensionPopup is current going about closing itself.
   bool closing_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // The observer of this popup.
   Observer* observer_;

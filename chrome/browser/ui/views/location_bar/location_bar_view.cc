@@ -337,7 +337,7 @@ void LocationBarView::UpdatePageActions() {
   if (page_action_views_.size() != count_before) {
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_COUNT_CHANGED,
-        Source<LocationBar>(this),
+        content::Source<LocationBar>(this),
         NotificationService::NoDetails());
   }
 
@@ -351,7 +351,7 @@ void LocationBarView::InvalidatePageActions() {
   if (page_action_views_.size() != count_before) {
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_COUNT_CHANGED,
-        Source<LocationBar>(this),
+        content::Source<LocationBar>(this),
         NotificationService::NoDetails());
   }
 }
@@ -997,8 +997,8 @@ void LocationBarView::RefreshPageActionViews() {
           old_visibility[action] != (*i)->IsVisible()) {
         NotificationService::current()->Notify(
             chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
-            Source<ExtensionAction>(action),
-            Details<TabContents>(contents));
+            content::Source<ExtensionAction>(action),
+            content::Details<TabContents>(contents));
       }
     }
   }
@@ -1257,10 +1257,10 @@ void LocationBarView::OnTemplateURLServiceChanged() {
 }
 
 void LocationBarView::Observe(int type,
-                              const NotificationSource& source,
-                              const NotificationDetails& details) {
+                              const content::NotificationSource& source,
+                              const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_PREF_CHANGED) {
-    std::string* name = Details<std::string>(details).ptr();
+    std::string* name = content::Details<std::string>(details).ptr();
     if (*name == prefs::kEditBookmarksEnabled)
       Update(NULL);
   }

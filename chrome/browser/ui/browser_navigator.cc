@@ -567,8 +567,8 @@ void Navigate(NavigateParams* params) {
   if (params->disposition != CURRENT_TAB) {
     NotificationService::current()->Notify(
         content::NOTIFICATION_TAB_ADDED,
-        Source<TabContentsDelegate>(params->browser),
-        Details<TabContents>(params->target_contents->tab_contents()));
+        content::Source<TabContentsDelegate>(params->browser),
+        content::Details<TabContents>(params->target_contents->tab_contents()));
   }
 }
 

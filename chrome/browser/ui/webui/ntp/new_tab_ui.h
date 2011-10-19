@@ -15,8 +15,8 @@
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class GURL;
 class PrefService;
@@ -24,7 +24,7 @@ class Profile;
 
 // The TabContents used for the New Tab page.
 class NewTabUI : public ChromeWebUI,
-                 public NotificationObserver {
+                 public content::NotificationObserver {
  public:
   explicit NewTabUI(TabContents* manager);
   virtual ~NewTabUI();
@@ -80,8 +80,8 @@ class NewTabUI : public ChromeWebUI,
   FRIEND_TEST_ALL_PREFIXES(NewTabUITest, UpdateUserPrefsVersion);
 
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Reset the CSS caches.
   void InitializeCSSCaches();
@@ -97,7 +97,7 @@ class NewTabUI : public ChromeWebUI,
   // detached from the location bar.
   virtual bool CanShowBookmarkBar() const OVERRIDE;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // Tracks updates of the kShowBookmarkBar preference.
   PrefChangeRegistrar pref_change_registrar_;

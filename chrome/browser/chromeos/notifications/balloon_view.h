@@ -12,8 +12,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/notifications/balloon.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
@@ -28,8 +28,6 @@ class Widget;
 }  // namespace views
 
 class Notification;
-class NotificationDetails;
-class NotificationSource;
 
 namespace chromeos {
 
@@ -39,7 +37,7 @@ class NotificationControlView;
 // A balloon view is the UI component for a notification panel.
 class BalloonViewImpl : public BalloonView,
                         public views::View,
-                        public NotificationObserver {
+                        public content::NotificationObserver {
  public:
   BalloonViewImpl(bool sticky, bool controls, bool web_ui);
   virtual ~BalloonViewImpl();
@@ -83,10 +81,10 @@ class BalloonViewImpl : public BalloonView,
   // views::View interface.
   virtual gfx::Size GetPreferredSize();
 
-  // NotificationObserver interface.
+  // content::NotificationObserver interface.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Initializes the options menu.
   void CreateOptionsMenu();
@@ -113,7 +111,7 @@ class BalloonViewImpl : public BalloonView,
   scoped_ptr<views::Widget> control_view_host_;
 
   bool stale_;
-  NotificationRegistrar notification_registrar_;
+  content::NotificationRegistrar notification_registrar_;
   // A sticky flag. A sticky notification cannot be dismissed by a user.
   bool sticky_;
   // True if a notification should have info/option/dismiss label/buttons.

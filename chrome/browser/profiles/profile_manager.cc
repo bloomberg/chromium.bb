@@ -416,8 +416,8 @@ void ProfileManager::NewWindowWithProfile(
 
 void ProfileManager::Observe(
     int type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
 #if defined(OS_CHROMEOS)
   if (type == chrome::NOTIFICATION_LOGIN_USER_CHANGED) {
     const CommandLine& command_line = *CommandLine::ForCurrentProcess();
@@ -443,7 +443,7 @@ void ProfileManager::OnImportFinished(Profile* profile) {
   DCHECK(profile);
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_IMPORT_FINISHED,
-      Source<Profile>(profile),
+      content::Source<Profile>(profile),
       NotificationService::NoDetails());
 }
 

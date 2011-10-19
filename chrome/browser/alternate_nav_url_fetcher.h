@@ -9,9 +9,9 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
 #include "content/common/net/url_fetcher.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 
 class NavigationController;
@@ -32,7 +32,7 @@ class NavigationController;
 //   * The tab is closed before we show an infobar
 //   * The intranet fetch fails
 //   * None of the above apply, so we successfully show an infobar
-class AlternateNavURLFetcher : public NotificationObserver,
+class AlternateNavURLFetcher : public content::NotificationObserver,
                                public URLFetcher::Delegate {
  public:
   enum State {
@@ -48,10 +48,10 @@ class AlternateNavURLFetcher : public NotificationObserver,
   State state() const { return state_; }
 
  private:
-  // NotificationObserver
+  // content::NotificationObserver
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // URLFetcher::Delegate
   virtual void OnURLFetchComplete(const URLFetcher* source,
@@ -83,7 +83,7 @@ class AlternateNavURLFetcher : public NotificationObserver,
   State state_;
   bool navigated_to_entry_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(AlternateNavURLFetcher);
 };

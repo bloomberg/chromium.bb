@@ -332,7 +332,7 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
 
   registrar_.Add(this,
                  chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
-                 Source<ThemeService>(theme_service_));
+                 content::Source<ThemeService>(theme_service_));
   edit_bookmarks_enabled_.Init(prefs::kEditBookmarksEnabled,
                                profile->GetPrefs(), this);
 
@@ -555,7 +555,8 @@ void LocationBarViewGtk::OnSetFocus() {
       l10n_util::GetStringUTF8(IDS_ACCNAME_LOCATION), false);
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_ACCESSIBILITY_CONTROL_FOCUSED,
-      Source<Profile>(profile), Details<AccessibilityTextBoxInfo>(&info));
+      content::Source<Profile>(profile),
+      content::Details<AccessibilityTextBoxInfo>(&info));
 
   // Update the keyword and search hint states.
   OnChanged();
@@ -660,7 +661,7 @@ void LocationBarViewGtk::UpdatePageActions() {
     }
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_COUNT_CHANGED,
-        Source<LocationBar>(this),
+        content::Source<LocationBar>(this),
         NotificationService::NoDetails());
   }
 
@@ -686,7 +687,7 @@ void LocationBarViewGtk::InvalidatePageActions() {
   if (page_action_views_.size() != count_before) {
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_COUNT_CHANGED,
-        Source<LocationBar>(this),
+        content::Source<LocationBar>(this),
         NotificationService::NoDetails());
   }
 }
@@ -754,8 +755,8 @@ void LocationBarViewGtk::TestPageActionPressed(size_t index) {
 }
 
 void LocationBarViewGtk::Observe(int type,
-                                 const NotificationSource& source,
-                                 const NotificationDetails& details) {
+                                 const content::NotificationSource& source,
+                                 const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_PREF_CHANGED) {
     UpdateStarIcon();
     return;
@@ -1536,8 +1537,8 @@ void LocationBarViewGtk::PageActionViewGtk::UpdateVisibility(
   if (visible != old_visible) {
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
-        Source<ExtensionAction>(page_action_),
-        Details<TabContents>(contents));
+        content::Source<ExtensionAction>(page_action_),
+        content::Details<TabContents>(contents));
   }
 }
 

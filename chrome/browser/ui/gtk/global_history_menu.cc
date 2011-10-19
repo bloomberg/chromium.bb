@@ -122,7 +122,7 @@ void GlobalHistoryMenu::Init(GtkWidget* history_menu,
       // Register for notification when TopSites changes so that we can update
       // ourself.
       registrar_.Add(this, chrome::NOTIFICATION_TOP_SITES_CHANGED,
-                     Source<history::TopSites>(top_sites_));
+                     content::Source<history::TopSites>(top_sites_));
     }
   }
 }
@@ -283,8 +283,8 @@ void GlobalHistoryMenu::ClearMenuCallback(GtkWidget* menu_item,
 }
 
 void GlobalHistoryMenu::Observe(int type,
-                                const NotificationSource& source,
-                                const NotificationDetails& details) {
+                                const content::NotificationSource& source,
+                                const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_TOP_SITES_CHANGED) {
     GetTopSitesData();
   } else {

@@ -301,7 +301,7 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
                  NotificationService::AllSources());
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
-                 Source<ThemeService>(
+                 content::Source<ThemeService>(
                      ThemeServiceFactory::GetForProfile(profile())));
 #endif
 
@@ -570,8 +570,8 @@ void TabContentsWrapper::TabContentsDestroyed(TabContents* tab) {
 }
 
 void TabContentsWrapper::Observe(int type,
-                                 const NotificationSource& source,
-                                 const NotificationDetails& details) {
+                                 const content::NotificationSource& source,
+                                 const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_GOOGLE_URL_UPDATED:
       UpdateAlternateErrorPageURL(render_view_host());
@@ -586,8 +586,9 @@ void TabContentsWrapper::Observe(int type,
     }
 #endif
     case chrome::NOTIFICATION_PREF_CHANGED: {
-      std::string* pref_name_in = Details<std::string>(details).ptr();
-      DCHECK(Source<PrefService>(source).ptr() == profile()->GetPrefs());
+      std::string* pref_name_in = content::Details<std::string>(details).ptr();
+      DCHECK(content::Source<PrefService>(source).ptr() ==
+             profile()->GetPrefs());
       if (*pref_name_in == prefs::kAlternateErrorPagesEnabled) {
         UpdateAlternateErrorPageURL(render_view_host());
       } else if ((*pref_name_in == prefs::kDefaultCharset) ||
@@ -616,8 +617,8 @@ void TabContentsWrapper::Observe(int type,
 void TabContentsWrapper::OnSnapshot(const SkBitmap& bitmap) {
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_SNAPSHOT_TAKEN,
-      Source<TabContentsWrapper>(this),
-      Details<const SkBitmap>(&bitmap));
+      content::Source<TabContentsWrapper>(this),
+      content::Details<const SkBitmap>(&bitmap));
 }
 
 void TabContentsWrapper::OnPDFHasUnsupportedFeature() {

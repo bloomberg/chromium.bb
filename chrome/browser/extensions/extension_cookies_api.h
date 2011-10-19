@@ -16,8 +16,8 @@
 #include "base/time.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 
 namespace base {
@@ -31,7 +31,7 @@ class URLRequestContextGetter;
 
 // Observes CookieMonster notifications and routes them as events to the
 // extension system.
-class ExtensionCookiesEventRouter : public NotificationObserver {
+class ExtensionCookiesEventRouter : public content::NotificationObserver {
  public:
   explicit ExtensionCookiesEventRouter(Profile* profile);
   virtual ~ExtensionCookiesEventRouter();
@@ -39,10 +39,10 @@ class ExtensionCookiesEventRouter : public NotificationObserver {
   void Init();
 
  private:
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Handler for the COOKIE_CHANGED event. The method takes the details of such
   // an event and constructs a suitable JSON formatted extension event from it.
@@ -56,7 +56,7 @@ class ExtensionCookiesEventRouter : public NotificationObserver {
                      GURL& cookie_domain);
 
   // Used for tracking registrations to CookieMonster notifications.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   Profile* profile_;
 

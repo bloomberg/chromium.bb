@@ -335,8 +335,8 @@ TEST_F(ExtensionMenuManagerTest, ExtensionUnloadRemovesMenuItems) {
   UnloadedExtensionInfo details(
       extension1, extension_misc::UNLOAD_REASON_DISABLE);
   notifier->Notify(chrome::NOTIFICATION_EXTENSION_UNLOADED,
-                   Source<Profile>(&profile_),
-                   Details<UnloadedExtensionInfo>(&details));
+                   content::Source<Profile>(&profile_),
+                   content::Details<UnloadedExtensionInfo>(&details));
   ASSERT_EQ(NULL, manager_.MenuItems(extension1->id()));
   ASSERT_EQ(1u, manager_.MenuItems(extension2->id())->size());
   ASSERT_TRUE(manager_.GetItemById(id1) == NULL);

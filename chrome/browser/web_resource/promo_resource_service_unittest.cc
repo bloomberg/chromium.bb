@@ -18,7 +18,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -37,7 +37,7 @@ class PromoResourceServiceTest : public testing::Test {
 };
 
 class SyncPromoTest : public PromoResourceServiceTest,
-                      public NotificationObserver {
+                      public content::NotificationObserver {
  public:
   SyncPromoTest() : PromoResourceServiceTest(), notifications_allowed_(false) {
     web_resource_service_->set_channel(chrome::VersionInfo::CHANNEL_DEV);
@@ -47,8 +47,8 @@ class SyncPromoTest : public PromoResourceServiceTest,
   }
 
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) {
     // If we get any unexpected notifications we should fail.
     EXPECT_TRUE(notifications_allowed_);
   }
@@ -102,7 +102,7 @@ class SyncPromoTest : public PromoResourceServiceTest,
 
   private:
     bool notifications_allowed_;
-    NotificationRegistrar registrar_;
+    content::NotificationRegistrar registrar_;
 };
 
 // Verifies that custom dates read from a web resource server are written to

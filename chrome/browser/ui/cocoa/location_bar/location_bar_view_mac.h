@@ -45,7 +45,7 @@ class ToolbarModel;
 class LocationBarViewMac : public AutocompleteEditController,
                            public LocationBar,
                            public LocationBarTesting,
-                           public NotificationObserver {
+                           public content::NotificationObserver {
  public:
   LocationBarViewMac(AutocompleteTextField* field,
                      CommandUpdater* command_updater,
@@ -149,8 +149,8 @@ class LocationBarViewMac : public AutocompleteEditController,
 
   // Overridden from NotificationObserver.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
  private:
   // Posts |notification| to the default notification center.
@@ -221,7 +221,7 @@ class LocationBarViewMac : public AutocompleteEditController,
   content::PageTransition transition_;
 
   // Used to register for notifications received by NotificationObserver.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // Used to schedule a task for the first run info bubble.
   base::WeakPtrFactory<LocationBarViewMac> weak_ptr_factory_;

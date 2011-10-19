@@ -14,7 +14,7 @@ class ExtensionSpeechInputManager;
 // Handles asynchronous operations such as starting or stopping speech
 // recognition in the framework of the extension API state machine.
 class SpeechInputAsyncFunction : public AsyncExtensionFunction,
-                                 public NotificationObserver {
+                                 public content::NotificationObserver {
  protected:
   SpeechInputAsyncFunction(int start_state, int transition_state,
                            int end_state, int transition_notification);
@@ -24,10 +24,10 @@ class SpeechInputAsyncFunction : public AsyncExtensionFunction,
   virtual bool RunImpl() = 0;
 
  private:
-  // NotificationObserver.
+  // content::NotificationObserver.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // To be defined on construction by derived classes.
   int start_state_;
@@ -35,7 +35,7 @@ class SpeechInputAsyncFunction : public AsyncExtensionFunction,
   int end_state_;
   int transition_notification_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
   bool expecting_transition_;
   bool failed_;
 };

@@ -12,8 +12,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ipc/ipc_message.h"
 
 class GURL;
@@ -46,7 +46,7 @@ class TabContents;
 // class. Then we can get rid of ProfileDestroyed().
 class ExtensionMessageService
     : public base::RefCounted<ExtensionMessageService>,
-      public NotificationObserver {
+      public content::NotificationObserver {
  public:
   // A messaging channel. Note that the opening port can be the same as the
   // receiver, if an extension background page wants to talk to its tab (for
@@ -134,17 +134,17 @@ class ExtensionMessageService
   void CloseChannelImpl(MessageChannelMap::iterator channel_iter, int port_id,
                         bool notify_other_port);
 
-  // NotificationObserver interface.
+  // content::NotificationObserver interface.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // An IPC sender that might be in our list of channels has closed.
   void OnSenderClosed(IPC::Message::Sender* sender);
 
   Profile* profile_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   MessageChannelMap channels_;
 

@@ -39,8 +39,8 @@ void PasswordStoreX::AddLoginImpl(const PasswordForm& form) {
     changes.push_back(PasswordStoreChange(PasswordStoreChange::ADD, form));
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_LOGINS_CHANGED,
-        Source<PasswordStore>(this),
-        Details<PasswordStoreChangeList>(&changes));
+        content::Source<PasswordStore>(this),
+        content::Details<PasswordStoreChangeList>(&changes));
     allow_fallback_ = false;
   } else if (allow_default_store()) {
     PasswordStoreDefault::AddLoginImpl(form);
@@ -54,8 +54,8 @@ void PasswordStoreX::UpdateLoginImpl(const PasswordForm& form) {
     changes.push_back(PasswordStoreChange(PasswordStoreChange::UPDATE, form));
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_LOGINS_CHANGED,
-        Source<PasswordStore>(this),
-        Details<PasswordStoreChangeList>(&changes));
+        content::Source<PasswordStore>(this),
+        content::Details<PasswordStoreChangeList>(&changes));
     allow_fallback_ = false;
   } else if (allow_default_store()) {
     PasswordStoreDefault::UpdateLoginImpl(form);
@@ -69,8 +69,8 @@ void PasswordStoreX::RemoveLoginImpl(const PasswordForm& form) {
     changes.push_back(PasswordStoreChange(PasswordStoreChange::REMOVE, form));
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_LOGINS_CHANGED,
-        Source<PasswordStore>(this),
-        Details<PasswordStoreChangeList>(&changes));
+        content::Source<PasswordStore>(this),
+        content::Details<PasswordStoreChangeList>(&changes));
     allow_fallback_ = false;
   } else if (allow_default_store()) {
     PasswordStoreDefault::RemoveLoginImpl(form);
@@ -93,8 +93,8 @@ void PasswordStoreX::RemoveLoginsCreatedBetweenImpl(
     }
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_LOGINS_CHANGED,
-        Source<PasswordStore>(this),
-        Details<PasswordStoreChangeList>(&changes));
+        content::Source<PasswordStore>(this),
+        content::Details<PasswordStoreChangeList>(&changes));
     allow_fallback_ = false;
   } else if (allow_default_store()) {
     PasswordStoreDefault::RemoveLoginsCreatedBetweenImpl(delete_begin,

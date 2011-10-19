@@ -12,8 +12,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "webkit/glue/web_intent_data.h"
 
 class Browser;
@@ -28,7 +28,7 @@ struct WebIntentServiceData;
 
 // Controls the creation of the WebIntentPicker UI and forwards the user's
 // intent handler choice back to the TabContents object.
-class WebIntentPickerController : public NotificationObserver,
+class WebIntentPickerController : public content::NotificationObserver,
                                   public WebIntentPickerDelegate {
  public:
   // Takes ownership of |factory|.
@@ -52,10 +52,10 @@ class WebIntentPickerController : public NotificationObserver,
                   const string16& type);
 
  protected:
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // WebIntentPickerDelegate implementation.
   virtual void OnServiceChosen(size_t index) OVERRIDE;
@@ -87,7 +87,7 @@ class WebIntentPickerController : public NotificationObserver,
 
   // A notification registrar, listening for notifications when the tab closes
   // to close the picker ui.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // A factory to create a new picker.
   scoped_ptr<WebIntentPickerFactory> picker_factory_;

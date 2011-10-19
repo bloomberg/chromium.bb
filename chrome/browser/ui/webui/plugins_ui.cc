@@ -91,7 +91,7 @@ ChromeWebUIDataSource* CreatePluginsUIHTMLSource() {
 // changes; maybe replumb plugin list through plugin service?
 // <http://crbug.com/39101>
 class PluginsDOMHandler : public WebUIMessageHandler,
-                          public NotificationObserver {
+                          public content::NotificationObserver {
  public:
   explicit PluginsDOMHandler();
   virtual ~PluginsDOMHandler() {}
@@ -112,10 +112,10 @@ class PluginsDOMHandler : public WebUIMessageHandler,
   // Calback for the "getShowDetails" message.
   void HandleGetShowDetails(const ListValue* args);
 
-  // NotificationObserver method overrides
+  // content::NotificationObserver method overrides
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   // Call this to start getting the plugins on the UI thread.
@@ -124,7 +124,7 @@ class PluginsDOMHandler : public WebUIMessageHandler,
   // Called on the UI thread when the plugin information is ready.
   void PluginsLoaded(const std::vector<PluginGroup>& groups);
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   base::WeakPtrFactory<PluginsDOMHandler> weak_ptr_factory_;
 
@@ -147,7 +147,7 @@ WebUIMessageHandler* PluginsDOMHandler::Attach(WebUI* web_ui) {
 
   registrar_.Add(this,
                  chrome::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED,
-                 Source<Profile>(profile));
+                 content::Source<Profile>(profile));
 
   return WebUIMessageHandler::Attach(web_ui);
 }
@@ -227,8 +227,8 @@ void PluginsDOMHandler::HandleGetShowDetails(const ListValue* args) {
 }
 
 void PluginsDOMHandler::Observe(int type,
-                                const NotificationSource& source,
-                                const NotificationDetails& details) {
+                                const content::NotificationSource& source,
+                                const content::NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED, type);
   LoadPlugins();
 }

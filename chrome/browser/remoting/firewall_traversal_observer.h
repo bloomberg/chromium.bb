@@ -8,14 +8,14 @@
 
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "content/common/notification_observer.h"
+#include "content/public/browser/notification_observer.h"
 #include "ipc/ipc_channel.h"
 
 // Per-tab class to manage the firewall traversal policies for
 // the remoting plugin.
 // TODO(dmaclach): Replace this with a more generic mechanism for
 //                 plugins to access preferences. http://crbug.com/90543
-class FirewallTraversalObserver : public NotificationObserver,
+class FirewallTraversalObserver : public content::NotificationObserver,
                                   public TabContentsObserver {
  public:
   explicit FirewallTraversalObserver(TabContents* tab_contents);
@@ -23,10 +23,10 @@ class FirewallTraversalObserver : public NotificationObserver,
 
   static void RegisterUserPrefs(PrefService* prefs);
 
-  // NotificationObserver overrides:
+  // content::NotificationObserver overrides:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // IPC::Channel::Listener overrides:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

@@ -44,8 +44,8 @@ void NotifyPrunedEntries(NavigationController* nav_controller,
   details.count = count;
   NotificationService::current()->Notify(
       content::NOTIFICATION_NAV_LIST_PRUNED,
-      Source<NavigationController>(nav_controller),
-      Details<content::PrunedDetails>(&details));
+      content::Source<NavigationController>(nav_controller),
+      content::Details<content::PrunedDetails>(&details));
 }
 
 // Ensure the given NavigationEntry has a valid state, so that WebKit does not
@@ -135,7 +135,7 @@ NavigationController::~NavigationController() {
 
   NotificationService::current()->Notify(
       content::NOTIFICATION_TAB_CLOSED,
-      Source<NavigationController>(this),
+      content::Source<NavigationController>(this),
       NotificationService::NoDetails());
 }
 
@@ -185,7 +185,7 @@ void NavigationController::ReloadInternal(bool check_for_repost,
     // with check_for_repost = false.
     NotificationService::current()->Notify(
         content::NOTIFICATION_REPOST_WARNING_SHOWN,
-        Source<NavigationController>(this),
+        content::Source<NavigationController>(this),
         NotificationService::NoDetails());
 
     pending_reload_ = reload_type;
@@ -276,8 +276,8 @@ void NavigationController::LoadEntry(NavigationEntry* entry) {
   pending_entry_ = entry;
   NotificationService::current()->Notify(
       content::NOTIFICATION_NAV_ENTRY_PENDING,
-      Source<NavigationController>(this),
-      Details<NavigationEntry>(entry));
+      content::Source<NavigationController>(this),
+      content::Details<NavigationEntry>(entry));
   NavigateToPendingEntry(NO_RELOAD);
 }
 
@@ -1126,8 +1126,8 @@ void NavigationController::NavigateToPendingEntry(ReloadType reload_type) {
 void NavigationController::NotifyNavigationEntryCommitted(
     content::LoadCommittedDetails* details) {
   details->entry = GetActiveEntry();
-  NotificationDetails notification_details =
-      Details<content::LoadCommittedDetails>(details);
+  content::NotificationDetails notification_details =
+      content::Details<content::LoadCommittedDetails>(details);
 
   // We need to notify the ssl_manager_ before the tab_contents_ so the
   // location bar will have up-to-date information about the security style
@@ -1141,7 +1141,7 @@ void NavigationController::NotifyNavigationEntryCommitted(
 
   NotificationService::current()->Notify(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      Source<NavigationController>(this),
+      content::Source<NavigationController>(this),
       notification_details);
 }
 
@@ -1173,8 +1173,8 @@ void NavigationController::NotifyEntryChanged(const NavigationEntry* entry,
   det.index = index;
   NotificationService::current()->Notify(
       content::NOTIFICATION_NAV_ENTRY_CHANGED,
-      Source<NavigationController>(this),
-      Details<content::EntryChangedDetails>(&det));
+      content::Source<NavigationController>(this),
+      content::Details<content::EntryChangedDetails>(&det));
 }
 
 void NavigationController::FinishRestore(int selected_index,

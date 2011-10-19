@@ -105,8 +105,8 @@ class ChromeCookieMonsterDelegate : public net::CookieMonster::Delegate {
       ChromeCookieDetails cookie_details(&cookie, removed, cause);
       NotificationService::current()->Notify(
           chrome::NOTIFICATION_COOKIE_CHANGED,
-          Source<Profile>(profile),
-          Details<ChromeCookieDetails>(&cookie_details));
+          content::Source<Profile>(profile),
+          content::Details<ChromeCookieDetails>(&cookie_details));
     }
   }
 

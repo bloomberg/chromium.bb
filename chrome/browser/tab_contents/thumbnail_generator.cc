@@ -157,15 +157,16 @@ void ThumbnailGenerator::StartThumbnailing(TabContents* tab_contents) {
     // for RenderViewHosts that aren't in tabs, or RenderWidgetHosts that
     // aren't views like select popups.
     registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB,
-                   Source<TabContents>(tab_contents));
+                   content::Source<TabContents>(tab_contents));
     registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_DISCONNECTED,
-                   Source<TabContents>(tab_contents));
+                   content::Source<TabContents>(tab_contents));
   }
 }
 
 void ThumbnailGenerator::MonitorRenderer(RenderWidgetHost* renderer,
                                          bool monitor) {
-  Source<RenderWidgetHost> renderer_source = Source<RenderWidgetHost>(renderer);
+  content::Source<RenderWidgetHost> renderer_source =
+      content::Source<RenderWidgetHost>(renderer);
   bool currently_monitored =
       registrar_.IsRegistered(
         this,
@@ -325,33 +326,35 @@ void ThumbnailGenerator::WidgetDidReceivePaintAtSizeAck(
 }
 
 void ThumbnailGenerator::Observe(int type,
-                                 const NotificationSource& source,
-                                 const NotificationDetails& details) {
+                                 const content::NotificationSource& source,
+                                 const content::NotificationDetails& details) {
   switch (type) {
     case content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB: {
       // Install our observer for all new RVHs.
-      RenderViewHost* renderer = Details<RenderViewHost>(details).ptr();
+      RenderViewHost* renderer =
+          content::Details<RenderViewHost>(details).ptr();
       MonitorRenderer(renderer, true);
       break;
     }
 
     case content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED:
-      if (!*Details<bool>(details).ptr())
-        WidgetHidden(Source<RenderWidgetHost>(source).ptr());
+      if (!*content::Details<bool>(details).ptr())
+        WidgetHidden(content::Source<RenderWidgetHost>(source).ptr());
       break;
 
     case content::NOTIFICATION_RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK: {
       RenderWidgetHost::PaintAtSizeAckDetails* size_ack_details =
-          Details<RenderWidgetHost::PaintAtSizeAckDetails>(details).ptr();
+          content::Details<RenderWidgetHost::PaintAtSizeAckDetails>(details).
+              ptr();
       WidgetDidReceivePaintAtSizeAck(
-          Source<RenderWidgetHost>(source).ptr(),
+          content::Source<RenderWidgetHost>(source).ptr(),
           size_ack_details->tag,
           size_ack_details->size);
       break;
     }
 
     case content::NOTIFICATION_TAB_CONTENTS_DISCONNECTED:
-      TabContentsDisconnected(Source<TabContents>(source).ptr());
+      TabContentsDisconnected(content::Source<TabContents>(source).ptr());
       break;
 
     default:

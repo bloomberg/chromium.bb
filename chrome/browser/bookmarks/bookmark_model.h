@@ -21,7 +21,7 @@
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/history/history.h"
 #include "content/browser/cancelable_request.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/models/tree_node_model.h"
@@ -189,7 +189,8 @@ class BookmarkPermanentNode : public BookmarkNode {
 //
 // You should NOT directly create a BookmarkModel, instead go through the
 // Profile.
-class BookmarkModel : public NotificationObserver, public BookmarkService {
+class BookmarkModel : public content::NotificationObserver,
+                      public BookmarkService {
  public:
   explicit BookmarkModel(Profile* profile);
   virtual ~BookmarkModel();
@@ -416,10 +417,10 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
   // If we're waiting on a favicon for node, the load request is canceled.
   void CancelPendingFaviconLoadRequests(BookmarkNode* node);
 
-  // NotificationObserver:
+  // content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Generates and returns the next node ID.
   int64 generate_next_node_id();
@@ -436,7 +437,7 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
   // delete the returned object.
   BookmarkLoadDetails* CreateLoadDetails();
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   Profile* profile_;
 

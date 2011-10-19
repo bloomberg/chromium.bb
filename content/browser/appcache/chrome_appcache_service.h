@@ -10,8 +10,8 @@
 #include "base/memory/ref_counted.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/content_export.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "webkit/appcache/appcache_policy.h"
 #include "webkit/appcache/appcache_service.h"
 #include "webkit/quota/special_storage_policy.h"
@@ -38,7 +38,7 @@ class CONTENT_EXPORT ChromeAppCacheService
                                         BrowserThread::DeleteOnIOThread>,
       NON_EXPORTED_BASE(public appcache::AppCacheService),
       NON_EXPORTED_BASE(public appcache::AppCachePolicy),
-      public NotificationObserver {
+      public content::NotificationObserver {
  public:
   explicit ChromeAppCacheService(quota::QuotaManagerProxy* proxy);
 
@@ -61,13 +61,13 @@ class CONTENT_EXPORT ChromeAppCacheService
   virtual bool CanCreateAppCache(const GURL& manifest_url,
                                  const GURL& first_party);
 
-  // NotificationObserver override
+  // content::NotificationObserver override
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   const content::ResourceContext* resource_context_;
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
   FilePath cache_path_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeAppCacheService);

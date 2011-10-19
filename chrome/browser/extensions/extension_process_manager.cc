@@ -47,10 +47,10 @@ class IncognitoExtensionProcessManager : public ExtensionProcessManager {
   virtual const Extension* GetExtensionForSiteInstance(int site_instance_id);
 
  private:
-  // NotificationObserver:
+  // content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Returns the extension for an URL, which can either be a chrome-extension
   // URL or a web app URL.
@@ -96,15 +96,15 @@ ExtensionProcessManager::ExtensionProcessManager(Profile* profile)
     : browsing_instance_(new BrowsingInstance(profile)) {
   Profile* original_profile = profile->GetOriginalProfile();
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSIONS_READY,
-                 Source<Profile>(original_profile));
+                 content::Source<Profile>(original_profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
-                 Source<Profile>(original_profile));
+                 content::Source<Profile>(original_profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
-                 Source<Profile>(original_profile));
+                 content::Source<Profile>(original_profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
-                 Source<Profile>(profile));
+                 content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
-                 Source<Profile>(profile));
+                 content::Source<Profile>(profile));
   // We can listen to everything for SITE_INSTANCE_DELETED because we check the
   // |site_instance_id| in UnregisterExtensionSiteInstance.
   registrar_.Add(this, content::NOTIFICATION_SITE_INSTANCE_DELETED,
@@ -376,21 +376,24 @@ bool ExtensionProcessManager::HasExtensionHost(ExtensionHost* host) const {
   return all_hosts_.find(host) != all_hosts_.end();
 }
 
-void ExtensionProcessManager::Observe(int type,
-                                      const NotificationSource& source,
-                                      const NotificationDetails& details) {
+void ExtensionProcessManager::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_EXTENSIONS_READY: {
       CreateBackgroundHostsForProfileStartup(this,
-          Source<Profile>(source).ptr()->GetExtensionService()->extensions());
+          content::Source<Profile>(source).ptr()->
+              GetExtensionService()->extensions());
       break;
     }
 
     case chrome::NOTIFICATION_EXTENSION_LOADED: {
       ExtensionService* service =
-          Source<Profile>(source).ptr()->GetExtensionService();
+          content::Source<Profile>(source).ptr()->GetExtensionService();
       if (service->is_ready()) {
-        const Extension* extension = Details<const Extension>(details).ptr();
+        const Extension* extension =
+            content::Details<const Extension>(details).ptr();
         ::CreateBackgroundHostForExtensionLoad(this, extension);
       }
       break;
@@ -398,7 +401,7 @@ void ExtensionProcessManager::Observe(int type,
 
     case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
       const Extension* extension =
-          Details<UnloadedExtensionInfo>(details)->extension;
+          content::Details<UnloadedExtensionInfo>(details)->extension;
       for (ExtensionHostSet::iterator iter = background_hosts_.begin();
            iter != background_hosts_.end(); ++iter) {
         ExtensionHost* host = *iter;
@@ -413,20 +416,20 @@ void ExtensionProcessManager::Observe(int type,
     }
 
     case chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED: {
-      ExtensionHost* host = Details<ExtensionHost>(details).ptr();
+      ExtensionHost* host = content::Details<ExtensionHost>(details).ptr();
       all_hosts_.erase(host);
       background_hosts_.erase(host);
       break;
     }
 
     case content::NOTIFICATION_SITE_INSTANCE_DELETED: {
-      SiteInstance* site_instance = Source<SiteInstance>(source).ptr();
+      SiteInstance* site_instance = content::Source<SiteInstance>(source).ptr();
       UnregisterExtensionSiteInstance(site_instance);
       break;
     }
 
     case chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE: {
-      ExtensionHost* host = Details<ExtensionHost>(details).ptr();
+      ExtensionHost* host = content::Details<ExtensionHost>(details).ptr();
       if (host->extension_host_type() ==
           chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
         delete host;
@@ -458,8 +461,8 @@ void ExtensionProcessManager::OnExtensionHostCreated(ExtensionHost* host,
     background_hosts_.insert(host);
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_HOST_CREATED,
-      Source<ExtensionProcessManager>(this),
-      Details<ExtensionHost>(host));
+      content::Source<ExtensionProcessManager>(this),
+      content::Details<ExtensionHost>(host));
 }
 
 void ExtensionProcessManager::CloseBackgroundHosts() {
@@ -570,8 +573,8 @@ bool IncognitoExtensionProcessManager::IsIncognitoEnabled(
 
 void IncognitoExtensionProcessManager::Observe(
     int type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_BROWSER_WINDOW_READY: {
       if (CommandLine::ForCurrentProcess()->HasSwitch(
@@ -580,7 +583,7 @@ void IncognitoExtensionProcessManager::Observe(
       // We want to spawn our background hosts as soon as the user opens an
       // incognito window. Watch for new browsers and create the hosts if
       // it matches our profile.
-      Browser* browser = Source<Browser>(source).ptr();
+      Browser* browser = content::Source<Browser>(source).ptr();
       if (browser->profile() == browsing_instance_->browser_context()) {
         // On Chrome OS, a login screen is implemented as a browser.
         // This browser has no extension service.  In this case,

@@ -226,10 +226,10 @@ DesktopNotificationService::~DesktopNotificationService() {
 void DesktopNotificationService::StartObserving() {
   if (!profile_->IsOffTheRecord()) {
     notification_registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
-                                Source<Profile>(profile_));
+                                content::Source<Profile>(profile_));
   }
   notification_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                              Source<Profile>(profile_));
+                              content::Source<Profile>(profile_));
 }
 
 void DesktopNotificationService::StopObserving() {
@@ -258,14 +258,15 @@ void DesktopNotificationService::DenyPermission(const GURL& origin) {
       CONTENT_SETTING_BLOCK);
 }
 
-void DesktopNotificationService::Observe(int type,
-                                         const NotificationSource& source,
-                                         const NotificationDetails& details) {
+void DesktopNotificationService::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED) {
     // Remove all notifications currently shown or queued by the extension
     // which was unloaded.
     const Extension* extension =
-        Details<UnloadedExtensionInfo>(details)->extension;
+        content::Details<UnloadedExtensionInfo>(details)->extension;
     if (extension)
       ui_manager_->CancelAllBySourceOrigin(extension->url());
   } else if (type == chrome::NOTIFICATION_PROFILE_DESTROYED) {
@@ -420,7 +421,7 @@ string16 DesktopNotificationService::DisplayNameForOrigin(
 void DesktopNotificationService::NotifySettingsChange() {
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_DESKTOP_NOTIFICATION_SETTINGS_CHANGED,
-      Source<DesktopNotificationService>(this),
+      content::Source<DesktopNotificationService>(this),
       NotificationService::NoDetails());
 }
 

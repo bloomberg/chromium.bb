@@ -15,8 +15,8 @@
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_impl_io_data.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class ExtensionNavigationObserver;
 class ExtensionPrefs;
@@ -37,7 +37,7 @@ class Preferences;
 
 // The default profile implementation.
 class ProfileImpl : public Profile,
-                    public NotificationObserver {
+                    public content::NotificationObserver {
  public:
   virtual ~ProfileImpl();
 
@@ -140,10 +140,10 @@ class ProfileImpl : public Profile,
 
   virtual PrefProxyConfigTracker* GetProxyConfigTracker() OVERRIDE;
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   friend class Profile;
@@ -182,7 +182,7 @@ class ProfileImpl : public Profile,
 
   SpellCheckProfile* GetSpellCheckProfile();
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
   PrefChangeRegistrar pref_change_registrar_;
 
   FilePath path_;

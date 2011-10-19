@@ -15,8 +15,8 @@
 #include "chrome/browser/ui/gtk/custom_button.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "chrome/browser/ui/gtk/overflow_button.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/gtk/gtk_signal.h"
@@ -37,7 +37,7 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
                                  public ui::AnimationDelegate,
                                  public MenuGtk::Delegate,
                                  public ui::SimpleMenuModel::Delegate,
-                                 public NotificationObserver {
+                                 public content::NotificationObserver {
  public:
   explicit BrowserActionsToolbarGtk(Browser* browser);
   virtual ~BrowserActionsToolbarGtk();
@@ -60,10 +60,10 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
   // Update the display of all buttons.
   void Update();
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   bool animating() {
     return resize_animation_.is_animating();
@@ -213,7 +213,7 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
 
   ui::GtkSignalRegistrar signals_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   base::WeakPtrFactory<BrowserActionsToolbarGtk> weak_factory_;
 

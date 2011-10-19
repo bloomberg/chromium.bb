@@ -49,14 +49,14 @@ void FirewallTraversalObserver::RegisterUserPrefs(PrefService* prefs) {
 
 void FirewallTraversalObserver::Observe(
     int type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_PREF_CHANGED: {
-      std::string* pref_name_in = Details<std::string>(details).ptr();
+      std::string* pref_name_in = content::Details<std::string>(details).ptr();
       Profile* profile =
           Profile::FromBrowserContext(tab_contents()->browser_context());
-      DCHECK(Source<PrefService>(source).ptr() == profile->GetPrefs());
+      DCHECK(content::Source<PrefService>(source).ptr() == profile->GetPrefs());
       if (*pref_name_in == prefs::kRemoteAccessClientFirewallTraversal) {
         UpdateFirewallTraversalState();
       } else {

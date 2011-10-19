@@ -109,7 +109,7 @@ TEST_F(SearchEngineDataTypeControllerTest, StartURLServiceNotReady) {
   // Send the notification that the TemplateURLService has started.
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED,
-      Source<TemplateURLService>(test_util_.model()),
+      content::Source<TemplateURLService>(test_util_.model()),
       NotificationService::NoDetails());
   EXPECT_EQ(DataTypeController::RUNNING, search_engine_dtc_->state());
 }

@@ -139,8 +139,8 @@ void TakePhotoDialog::NotifyOnCapturingStopped() {
 }
 
 void TakePhotoDialog::Observe(int type,
-                              const NotificationSource& source,
-                              const NotificationDetails& details) {
+                              const content::NotificationSource& source,
+                              const content::NotificationDetails& details) {
   if (type != chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED)
     return;
 

@@ -299,22 +299,22 @@ void PrerenderContents::StartPrerendering(
   // APP_TERMINATING before non-OTR profiles are destroyed).
   // TODO(tburkard): figure out if this is needed.
   notification_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                              Source<Profile>(profile_));
+                              content::Source<Profile>(profile_));
 
   // Register to inform new RenderViews that we're prerendering.
   notification_registrar_.Add(
       this, content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB,
-      Source<TabContents>(new_contents));
+      content::Source<TabContents>(new_contents));
 
   // Register for redirect notifications sourced from |this|.
   notification_registrar_.Add(
       this, content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
-      Source<RenderViewHostDelegate>(GetRenderViewHostDelegate()));
+      content::Source<RenderViewHostDelegate>(GetRenderViewHostDelegate()));
 
   // Register for new windows from any source.
   notification_registrar_.Add(
       this, content::NOTIFICATION_CREATING_NEW_WINDOW_CANCELLED,
-      Source<TabContents>(new_contents));
+      content::Source<TabContents>(new_contents));
 
   DCHECK(load_start_time_.is_null());
   load_start_time_ = base::TimeTicks::Now();
@@ -381,8 +381,8 @@ PrerenderContents::~PrerenderContents() {
 }
 
 void PrerenderContents::Observe(int type,
-                                const NotificationSource& source,
-                                const NotificationDetails& details) {
+                                const content::NotificationSource& source,
+                                const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_PROFILE_DESTROYED:
       Destroy(FINAL_STATUS_PROFILE_DESTROYED);
@@ -398,10 +398,10 @@ void PrerenderContents::Observe(int type,
       // to be remembered for future matching, and if it redirects to
       // an https resource, it needs to be canceled. If a subresource
       // is redirected, nothing changes.
-      DCHECK(Source<RenderViewHostDelegate>(source).ptr() ==
+      DCHECK(content::Source<RenderViewHostDelegate>(source).ptr() ==
              GetRenderViewHostDelegate());
       ResourceRedirectDetails* resource_redirect_details =
-          Details<ResourceRedirectDetails>(details).ptr();
+          content::Details<ResourceRedirectDetails>(details).ptr();
       CHECK(resource_redirect_details);
       if (resource_redirect_details->resource_type() ==
           ResourceType::MAIN_FRAME) {
@@ -413,10 +413,10 @@ void PrerenderContents::Observe(int type,
 
     case content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB: {
       if (prerender_contents_.get()) {
-        DCHECK_EQ(Source<TabContents>(source).ptr(),
+        DCHECK_EQ(content::Source<TabContents>(source).ptr(),
                   prerender_contents_->tab_contents());
 
-        Details<RenderViewHost> new_render_view_host(details);
+        content::Details<RenderViewHost> new_render_view_host(details);
         OnRenderViewHostCreated(new_render_view_host.ptr());
 
         // When a new RenderView is created for a prerendering TabContents,
@@ -443,7 +443,7 @@ void PrerenderContents::Observe(int type,
 
     case content::NOTIFICATION_CREATING_NEW_WINDOW_CANCELLED: {
       if (prerender_contents_.get()) {
-        CHECK(Source<TabContents>(source).ptr() ==
+        CHECK(content::Source<TabContents>(source).ptr() ==
               prerender_contents_->tab_contents());
         // Since we don't want to permit child windows that would have a
         // window.opener property, terminate prerendering.

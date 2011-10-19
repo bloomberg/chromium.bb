@@ -181,7 +181,7 @@ class AutofillTest : public InProcessBrowserTest {
     ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
         browser(), ui::VKEY_M, false, true, false, false,
         chrome::NOTIFICATION_AUTOFILL_DID_SHOW_SUGGESTIONS,
-        Source<RenderViewHost>(render_view_host())));
+        content::Source<RenderViewHost>(render_view_host())));
 
     // Press the down arrow to select the suggestion and preview the autofilled
     // form.
@@ -189,7 +189,7 @@ class AutofillTest : public InProcessBrowserTest {
     ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
         browser(), ui::VKEY_DOWN, false, false, false, false,
         chrome::NOTIFICATION_AUTOFILL_DID_FILL_FORM_DATA,
-        Source<RenderViewHost>(render_view_host())));
+        content::Source<RenderViewHost>(render_view_host())));
 
     // The previewed values should not be accessible to JavaScript.
     ExpectFieldValue(L"firstname", "M");
@@ -209,7 +209,7 @@ class AutofillTest : public InProcessBrowserTest {
     ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
         browser(), ui::VKEY_RETURN, false, false, false, false,
         chrome::NOTIFICATION_AUTOFILL_DID_FILL_FORM_DATA,
-        Source<RenderViewHost>(render_view_host())));
+        content::Source<RenderViewHost>(render_view_host())));
 
     // The form should be filled.
     ExpectFilledTestForm();
@@ -249,20 +249,20 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, AutofillViaDownArrow) {
   ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
       browser(), ui::VKEY_DOWN, false, false, false, false,
       chrome::NOTIFICATION_AUTOFILL_DID_SHOW_SUGGESTIONS,
-      Source<RenderViewHost>(render_view_host())));
+      content::Source<RenderViewHost>(render_view_host())));
 
   // Press the down arrow to select the suggestion and preview the autofilled
   // form.
   ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
       browser(), ui::VKEY_DOWN, false, false, false, false,
       chrome::NOTIFICATION_AUTOFILL_DID_FILL_FORM_DATA,
-      Source<RenderViewHost>(render_view_host())));
+      content::Source<RenderViewHost>(render_view_host())));
 
   // Press Enter to accept the autofill suggestions.
   ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
       browser(), ui::VKEY_RETURN, false, false, false, false,
       chrome::NOTIFICATION_AUTOFILL_DID_FILL_FORM_DATA,
-      Source<RenderViewHost>(render_view_host())));
+      content::Source<RenderViewHost>(render_view_host())));
 
   // The form should be filled.
   ExpectFilledTestForm();
@@ -306,20 +306,20 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, OnChangeAfterAutofill) {
   ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
       browser(), ui::VKEY_M, false, true, false, false,
       chrome::NOTIFICATION_AUTOFILL_DID_SHOW_SUGGESTIONS,
-      Source<RenderViewHost>(render_view_host())));
+      content::Source<RenderViewHost>(render_view_host())));
 
   // Press the down arrow to select the suggestion and preview the autofilled
   // form.
   ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
       browser(), ui::VKEY_DOWN, false, false, false, false,
       chrome::NOTIFICATION_AUTOFILL_DID_FILL_FORM_DATA,
-      Source<RenderViewHost>(render_view_host())));
+      content::Source<RenderViewHost>(render_view_host())));
 
   // Press Enter to accept the autofill suggestions.
   ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
       browser(), ui::VKEY_RETURN, false, false, false, false,
       chrome::NOTIFICATION_AUTOFILL_DID_FILL_FORM_DATA,
-      Source<RenderViewHost>(render_view_host())));
+      content::Source<RenderViewHost>(render_view_host())));
 
   // The form should be filled.
   ExpectFilledTestForm();

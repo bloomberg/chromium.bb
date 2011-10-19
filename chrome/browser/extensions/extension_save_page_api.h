@@ -9,11 +9,11 @@
 
 #include "chrome/browser/extensions/extension_function.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class SavePageAsMHTMLFunction : public AsyncExtensionFunction,
-                                public NotificationObserver {
+                                public content::NotificationObserver {
  public:
   SavePageAsMHTMLFunction();
 
@@ -22,8 +22,8 @@ class SavePageAsMHTMLFunction : public AsyncExtensionFunction,
 
   virtual bool RunImpl() OVERRIDE;
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Called on the file thread.
   void CreateTemporaryFile();
@@ -38,7 +38,7 @@ class SavePageAsMHTMLFunction : public AsyncExtensionFunction,
   // The path to the temporary file containing the MHTML data.
   FilePath mhtml_path_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.savePage.saveAsMHTML")
 };
 

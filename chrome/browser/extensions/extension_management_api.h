@@ -8,8 +8,8 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/extension_function.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class ExtensionService;
 
@@ -66,7 +66,7 @@ class UninstallFunction : public ExtensionManagementFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("management.uninstall");
 };
 
-class ExtensionManagementEventRouter : public NotificationObserver {
+class ExtensionManagementEventRouter : public content::NotificationObserver {
  public:
   explicit ExtensionManagementEventRouter(Profile* profile);
   virtual ~ExtensionManagementEventRouter();
@@ -74,12 +74,12 @@ class ExtensionManagementEventRouter : public NotificationObserver {
   void Init();
 
  private:
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   Profile* profile_;
 

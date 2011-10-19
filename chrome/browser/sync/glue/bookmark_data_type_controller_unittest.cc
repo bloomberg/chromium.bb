@@ -20,7 +20,7 @@
 #include "chrome/test/base/profile_mock.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_source.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using browser_sync::BookmarkDataTypeController;
@@ -115,7 +115,7 @@ TEST_F(BookmarkDataTypeControllerTest, StartBookmarkModelNotReady) {
   // Send the notification that the bookmark model has started.
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED,
-      Source<Profile>(&profile_),
+      content::Source<Profile>(&profile_),
       NotificationService::NoDetails());
   EXPECT_EQ(DataTypeController::RUNNING, bookmark_dtc_->state());
 }

@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_UI_COCOA_THEME_INSTALL_BUBBLE_VIEW_H_
 #pragma once
 
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 @class NSWindow;
 @class ThemeInstallBubbleViewCocoa;
@@ -25,14 +25,14 @@
 // between install begin and theme caching seizing the UI thread), the loading
 // bubble will only appear over the first window, as there is only ever one
 // instance of the bubble.
-class ThemeInstallBubbleView : public NotificationObserver {
+class ThemeInstallBubbleView : public content::NotificationObserver {
  public:
   virtual ~ThemeInstallBubbleView();
 
-  // NotificationObserver
+  // content::NotificationObserver
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Show the loading bubble.
   static void Show(NSWindow* window);
@@ -44,7 +44,7 @@ class ThemeInstallBubbleView : public NotificationObserver {
   static ThemeInstallBubbleView* view_;
 
   // A scoped container for notification registries.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // Shut down the popup and remove our notifications.
   void Close();

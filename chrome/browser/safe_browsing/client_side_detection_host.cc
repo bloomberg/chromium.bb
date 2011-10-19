@@ -265,7 +265,7 @@ ClientSideDetectionHost::ClientSideDetectionHost(TabContents* tab)
   sb_service_ = g_browser_process->safe_browsing_service();
   // Note: csd_service_ and sb_service_ will be NULL here in testing.
   registrar_.Add(this, content::NOTIFICATION_RESOURCE_RESPONSE_STARTED,
-                 Source<RenderViewHostDelegate>(tab));
+                 content::Source<RenderViewHostDelegate>(tab));
   if (sb_service_) {
     sb_service_->AddObserver(this);
   }
@@ -453,12 +453,13 @@ void ClientSideDetectionHost::FeatureExtractionDone(
       cb);
 }
 
-void ClientSideDetectionHost::Observe(int type,
-                                      const NotificationSource& source,
-                                      const NotificationDetails& details) {
+void ClientSideDetectionHost::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(type, content::NOTIFICATION_RESOURCE_RESPONSE_STARTED);
-  const ResourceRequestDetails* req = Details<ResourceRequestDetails>(
+  const ResourceRequestDetails* req = content::Details<ResourceRequestDetails>(
       details).ptr();
   if (req && browse_info_.get()) {
     browse_info_->ips.insert(req->socket_address().host());

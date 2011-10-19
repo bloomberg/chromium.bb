@@ -14,13 +14,13 @@
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "skia/ext/skia_utils_mac.h"
 
 // C++ class that receives INFOBAR_ADDED and INFOBAR_REMOVED
 // notifications and proxies them back to |controller|.
-class InfoBarNotificationObserver : public NotificationObserver {
+class InfoBarNotificationObserver : public content::NotificationObserver {
  public:
   InfoBarNotificationObserver(InfoBarContainerController* controller)
       : controller_(controller) {
@@ -29,9 +29,10 @@ class InfoBarNotificationObserver : public NotificationObserver {
  private:
   // NotificationObserver implementation
   void Observe(int type,
-               const NotificationSource& source,
-               const NotificationDetails& details) {
-    InfoBarTabHelper* infobar_helper = Source<InfoBarTabHelper>(source).ptr();
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) {
+    InfoBarTabHelper* infobar_helper =
+        content::Source<InfoBarTabHelper>(source).ptr();
     switch (type) {
       case chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED:
         [controller_ addInfoBar:Details<InfoBarAddedDetails>(details)->
@@ -41,7 +42,7 @@ class InfoBarNotificationObserver : public NotificationObserver {
 
       case chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED: {
         InfoBarRemovedDetails* removed_details =
-            Details<InfoBarRemovedDetails>(details).ptr();
+            content::Details<InfoBarRemovedDetails>(details).ptr();
         [controller_
             closeInfoBarsForDelegate:removed_details->first
                              animate:(removed_details->second ? YES : NO)];
@@ -50,7 +51,7 @@ class InfoBarNotificationObserver : public NotificationObserver {
 
       case chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REPLACED: {
         InfoBarReplacedDetails* replaced_details =
-            Details<InfoBarReplacedDetails>(details).ptr();
+            content::Details<InfoBarReplacedDetails>(details).ptr();
         [controller_ closeInfoBarsForDelegate:replaced_details->first
                                       animate:NO];
         [controller_ addInfoBar:replaced_details->second->
@@ -148,7 +149,7 @@ class InfoBarNotificationObserver : public NotificationObserver {
       [self addInfoBar:infobar animate:NO];
     }
 
-    Source<InfoBarTabHelper> source(infobar_helper);
+    content::Source<InfoBarTabHelper> source(infobar_helper);
     registrar_.Add(infoBarObserver_.get(),
                    chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED, source);
     registrar_.Add(infoBarObserver_.get(),

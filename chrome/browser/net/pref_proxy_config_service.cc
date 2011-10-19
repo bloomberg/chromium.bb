@@ -11,8 +11,8 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 
 PrefProxyConfigTracker::PrefProxyConfigTracker(PrefService* pref_service)
     : pref_service_(pref_service) {
@@ -52,12 +52,13 @@ void PrefProxyConfigTracker::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-void PrefProxyConfigTracker::Observe(int type,
-                                     const NotificationSource& source,
-                                     const NotificationDetails& details) {
+void PrefProxyConfigTracker::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (type == chrome::NOTIFICATION_PREF_CHANGED &&
-      Source<PrefService>(source).ptr() == pref_service_) {
+      content::Source<PrefService>(source).ptr() == pref_service_) {
     net::ProxyConfig new_config;
     ConfigState config_state = ReadPrefConfig(&new_config);
     BrowserThread::PostTask(

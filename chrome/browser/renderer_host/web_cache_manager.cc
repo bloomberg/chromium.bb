@@ -158,16 +158,18 @@ void WebCacheManager::ClearCacheOnNavigation() {
 }
 
 void WebCacheManager::Observe(int type,
-                              const NotificationSource& source,
-                              const NotificationDetails& details) {
+                              const content::NotificationSource& source,
+                              const content::NotificationDetails& details) {
   switch (type) {
     case content::NOTIFICATION_RENDERER_PROCESS_CREATED: {
-      RenderProcessHost* process = Source<RenderProcessHost>(source).ptr();
+      RenderProcessHost* process =
+          content::Source<RenderProcessHost>(source).ptr();
       Add(process->id());
       break;
     }
     case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED: {
-      RenderProcessHost* process = Source<RenderProcessHost>(source).ptr();
+      RenderProcessHost* process =
+          content::Source<RenderProcessHost>(source).ptr();
       Remove(process->id());
       break;
     }

@@ -40,7 +40,7 @@
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/url_constants.h"
 #include "grit/chromium_strings.h"
@@ -780,7 +780,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_PageLanguageDetection) {
   TabContents* current_tab = browser()->GetSelectedTabContents();
   TabContentsWrapper* wrapper = browser()->GetSelectedTabContentsWrapper();
   TranslateTabHelper* helper = wrapper->translate_tab_helper();
-  Source<TabContents> source(current_tab);
+  content::Source<TabContents> source(current_tab);
 
   ui_test_utils::WindowedNotificationObserverWithDetails<std::string>
       en_language_detected_signal(chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
@@ -1139,7 +1139,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ForwardDisabledOnForward) {
 
   ui_test_utils::WindowedNotificationObserver back_nav_load_observer(
       content::NOTIFICATION_LOAD_STOP,
-      Source<NavigationController>(
+      content::Source<NavigationController>(
           &browser()->GetSelectedTabContents()->controller()));
   browser()->GoBack(CURRENT_TAB);
   back_nav_load_observer.Wait();
@@ -1147,7 +1147,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ForwardDisabledOnForward) {
 
   ui_test_utils::WindowedNotificationObserver forward_nav_load_observer(
       content::NOTIFICATION_LOAD_STOP,
-      Source<NavigationController>(
+      content::Source<NavigationController>(
           &browser()->GetSelectedTabContents()->controller()));
   browser()->GoForward(CURRENT_TAB);
   // This check will happen before the navigation completes, since the browser

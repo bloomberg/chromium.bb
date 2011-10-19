@@ -1116,13 +1116,13 @@ void BookmarkBarView::ShowContextMenuForView(View* source,
 }
 
 void BookmarkBarView::Observe(int type,
-                              const NotificationSource& source,
-                              const NotificationDetails& details) {
+                              const content::NotificationSource& source,
+                              const content::NotificationDetails& details) {
   DCHECK(browser_->profile());
   switch (type) {
     case chrome::NOTIFICATION_BOOKMARK_BUBBLE_SHOWN: {
       StopThrobbing(true);
-      GURL url = *(Details<GURL>(details).ptr());
+      GURL url = *(content::Details<GURL>(details).ptr());
       const BookmarkNode* node = model_->GetMostRecentlyAddedNodeForURL(url);
       if (!node)
         return;  // Generally shouldn't happen.
@@ -1174,7 +1174,7 @@ void BookmarkBarView::Init() {
   size_animation_.reset(new ui::SlideAnimation(this));
 
   Profile* profile = browser_->profile();
-  Source<Profile> ns_source(profile->GetOriginalProfile());
+  content::Source<Profile> ns_source(profile->GetOriginalProfile());
   registrar_.Add(this, chrome::NOTIFICATION_BOOKMARK_BUBBLE_SHOWN, ns_source);
   registrar_.Add(this, chrome::NOTIFICATION_BOOKMARK_BUBBLE_HIDDEN, ns_source);
 

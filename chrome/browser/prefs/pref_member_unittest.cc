@@ -10,8 +10,8 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 namespace {
 
@@ -65,7 +65,7 @@ class GetPrefValueCallback
   bool value_;
 };
 
-class PrefMemberTestClass : public NotificationObserver {
+class PrefMemberTestClass : public content::NotificationObserver {
  public:
   explicit PrefMemberTestClass(PrefService* prefs)
       : observe_cnt_(0), prefs_(prefs) {
@@ -73,12 +73,12 @@ class PrefMemberTestClass : public NotificationObserver {
   }
 
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) {
     DCHECK(chrome::NOTIFICATION_PREF_CHANGED == type);
-    PrefService* prefs_in = Source<PrefService>(source).ptr();
+    PrefService* prefs_in = content::Source<PrefService>(source).ptr();
     EXPECT_EQ(prefs_in, prefs_);
-    std::string* pref_name_in = Details<std::string>(details).ptr();
+    std::string* pref_name_in = content::Details<std::string>(details).ptr();
     EXPECT_EQ(*pref_name_in, kStringPref);
     EXPECT_EQ(str_.GetValue(), prefs_->GetString(kStringPref));
     ++observe_cnt_;

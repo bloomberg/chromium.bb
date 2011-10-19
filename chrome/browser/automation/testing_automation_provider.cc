@@ -256,9 +256,10 @@ void TestingAutomationProvider::OnSourceProfilesLoaded() {
                                      import_settings_data_.first_run);
 }
 
-void TestingAutomationProvider::Observe(int type,
-                                        const NotificationSource& source,
-                                        const NotificationDetails& details) {
+void TestingAutomationProvider::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_SESSION_END);
   // OnBrowserRemoved does a ReleaseLater. When session end is received we exit
   // before the task runs resulting in this object not being deleted. This
@@ -499,7 +500,7 @@ void TestingAutomationProvider::AppendTab(int handle,
                                           const GURL& url,
                                           IPC::Message* reply_message) {
   int append_tab_response = -1;  // -1 is the error code
-  NotificationObserver* observer = NULL;
+  content::NotificationObserver* observer = NULL;
 
   if (browser_tracker_->ContainsHandle(handle)) {
     Browser* browser = browser_tracker_->GetResource(handle);
@@ -1644,7 +1645,7 @@ void TestingAutomationProvider::PrintNow(int tab_handle,
   if (tab_contents) {
     FindAndActivateTab(tab);
 
-    NotificationObserver* observer =
+    content::NotificationObserver* observer =
         new DocumentPrintedNotificationObserver(this, reply_message);
 
     TabContentsWrapper* wrapper =
@@ -4102,8 +4103,8 @@ void TestingAutomationProvider::GetTranslateInfo(
   std::string language = helper->language_state().original_language();
   if (!language.empty()) {
     observer->Observe(chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
-                      Source<TabContents>(tab_contents),
-                      Details<std::string>(&language));
+                      content::Source<TabContents>(tab_contents),
+                      content::Details<std::string>(&language));
   }
 }
 

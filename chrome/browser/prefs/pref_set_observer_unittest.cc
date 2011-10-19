@@ -6,9 +6,9 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_observer_mock.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
+#include "content/test/notification_observer_mock.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -28,7 +28,8 @@ class PrefSetObserverTest : public testing::Test {
                                       PrefService::UNSYNCABLE_PREF);
   }
 
-  PrefSetObserver* CreatePrefSetObserver(NotificationObserver* observer) {
+  PrefSetObserver* CreatePrefSetObserver(
+        content::NotificationObserver* observer) {
     PrefSetObserver* pref_set =
         new PrefSetObserver(pref_service_.get(), observer);
     pref_set->AddPref(prefs::kHomePage);
@@ -62,7 +63,8 @@ TEST_F(PrefSetObserverTest, IsManaged) {
 }
 
 MATCHER_P(PrefNameDetails, name, "details references named preference") {
-  std::string* pstr = reinterpret_cast<const Details<std::string>&>(arg).ptr();
+  std::string* pstr =
+      reinterpret_cast<const content::Details<std::string>&>(arg).ptr();
   return pstr && *pstr == name;
 }
 
@@ -70,12 +72,12 @@ TEST_F(PrefSetObserverTest, Observe) {
   using testing::_;
   using testing::Mock;
 
-  NotificationObserverMock observer;
+  content::NotificationObserverMock observer;
   scoped_ptr<PrefSetObserver> pref_set(CreatePrefSetObserver(&observer));
 
   EXPECT_CALL(observer,
               Observe(int(chrome::NOTIFICATION_PREF_CHANGED),
-                      Source<PrefService>(pref_service_.get()),
+                      content::Source<PrefService>(pref_service_.get()),
                       PrefNameDetails(prefs::kHomePage)));
   pref_service_->SetUserPref(prefs::kHomePage,
                              Value::CreateStringValue("http://crbug.com"));
@@ -83,7 +85,7 @@ TEST_F(PrefSetObserverTest, Observe) {
 
   EXPECT_CALL(observer,
               Observe(int(chrome::NOTIFICATION_PREF_CHANGED),
-                      Source<PrefService>(pref_service_.get()),
+                      content::Source<PrefService>(pref_service_.get()),
                       PrefNameDetails(prefs::kHomePageIsNewTabPage)));
   pref_service_->SetUserPref(prefs::kHomePageIsNewTabPage,
                              Value::CreateBooleanValue(true));

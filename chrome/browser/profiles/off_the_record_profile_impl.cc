@@ -118,7 +118,7 @@ void OffTheRecordProfileImpl::Init() {
 
 OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
   NotificationService::current()->Notify(
-    chrome::NOTIFICATION_PROFILE_DESTROYED, Source<Profile>(this),
+    chrome::NOTIFICATION_PROFILE_DESTROYED, content::Source<Profile>(this),
     NotificationService::NoDetails());
 
   ChromePluginServiceFilter::GetInstance()->UnregisterResourceContext(
@@ -384,7 +384,7 @@ HostZoomMap* OffTheRecordProfileImpl::GetHostZoomMap() {
      // Observe parent's HZM change for propagating change of parent's
      // change to this HZM.
      registrar_.Add(this, content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
-                    Source<HostZoomMap>(profile_->GetHostZoomMap()));
+                    content::Source<HostZoomMap>(profile_->GetHostZoomMap()));
   }
   return host_zoom_map_.get();
 }
@@ -565,10 +565,11 @@ void OffTheRecordProfileImpl::ClearNetworkingHistorySince(base::Time time) {
 }
 
 void OffTheRecordProfileImpl::Observe(int type,
-                     const NotificationSource& source,
-                     const NotificationDetails& details) {
+                     const content::NotificationSource& source,
+                     const content::NotificationDetails& details) {
   if (type == content::NOTIFICATION_ZOOM_LEVEL_CHANGED) {
-    const std::string& host = *(Details<const std::string>(details).ptr());
+    const std::string& host =
+        *(content::Details<const std::string>(details).ptr());
     if (!host.empty()) {
       double level = profile_->GetHostZoomMap()->GetZoomLevel(host);
       GetHostZoomMap()->SetZoomLevel(host, level);

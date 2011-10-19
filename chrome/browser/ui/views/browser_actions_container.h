@@ -19,8 +19,8 @@
 #include "chrome/browser/ui/views/browser_bubble.h"
 #include "chrome/browser/ui/views/extensions/browser_action_overflow_menu_controller.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/tween.h"
 #include "views/controls/button/menu_button.h"
@@ -60,7 +60,7 @@ class ResizeArea;
 class BrowserActionButton : public views::MenuButton,
                             public views::ButtonListener,
                             public ImageLoadingTracker::Observer,
-                            public NotificationObserver {
+                            public content::NotificationObserver {
  public:
   BrowserActionButton(const Extension* extension,
                       BrowserActionsContainer* panel);
@@ -90,10 +90,10 @@ class BrowserActionButton : public views::MenuButton,
                              const ExtensionResource& resource,
                              int index) OVERRIDE;
 
-  // Overridden from NotificationObserver:
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // MenuButton behavior overrides.  These methods all default to TextButton
   // behavior unless this button is a popup.  In that case, it uses MenuButton
@@ -143,7 +143,7 @@ class BrowserActionButton : public views::MenuButton,
   // The context menu.  This member is non-NULL only when the menu is shown.
   views::MenuItemView* context_menu_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   friend class DeleteTask<BrowserActionButton>;
 

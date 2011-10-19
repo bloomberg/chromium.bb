@@ -60,8 +60,8 @@
 #include "base/threading/watchdog.h"
 #include "base/time.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class CustomThreadWatcher;
 class StartupTimeBomb;
@@ -409,7 +409,7 @@ class ThreadWatcherList {
 
 // This class ensures that the thread watching is actively taking place. Only
 // one instance of this class exists.
-class ThreadWatcherObserver : public NotificationObserver {
+class ThreadWatcherObserver : public content::NotificationObserver {
  public:
   // Registers |g_thread_watcher_observer_| as the Notifications observer.
   // |wakeup_interval| specifies how often to wake up thread watchers. This
@@ -429,18 +429,18 @@ class ThreadWatcherObserver : public NotificationObserver {
 
   // This ensures all thread watchers are active because there is some user
   // activity. It will wake up all thread watchers every |wakeup_interval_|
-  // seconds. This is the implementation of NotificationObserver. When a
-  // matching notification is posted to the notification service, this method is
-  // called.
+  // seconds. This is the implementation of content::NotificationObserver. When
+  // a matching notification is posted to the notification service, this method
+  // is called.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // The singleton of this class.
   static ThreadWatcherObserver* g_thread_watcher_observer_;
 
   // The registrar that holds ints to be observed.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // This is the last time when woke all thread watchers up.
   base::TimeTicks last_wakeup_time_;

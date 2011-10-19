@@ -790,8 +790,8 @@ void SyncBackendHost::Core::NotifyUpdatedToken(const std::string& token) {
   TokenAvailableDetails details(GaiaConstants::kSyncService, token);
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_TOKEN_UPDATED,
-      Source<Profile>(host_->profile_),
-      Details<const TokenAvailableDetails>(&details));
+      content::Source<Profile>(host_->profile_),
+      content::Details<const TokenAvailableDetails>(&details));
 }
 
 void SyncBackendHost::Core::NotifyEncryptionComplete(

@@ -89,8 +89,8 @@ void BookmarksFunction::Run() {
   if (success) {
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTENSION_BOOKMARKS_API_INVOKED,
-        Source<const Extension>(GetExtension()),
-        Details<const BookmarksFunction>(this));
+        content::Source<const Extension>(GetExtension()),
+        content::Details<const BookmarksFunction>(this));
   }
   SendResponse(success);
 }
@@ -112,10 +112,10 @@ bool BookmarksFunction::EditBookmarksEnabled() {
 }
 
 void BookmarksFunction::Observe(int type,
-                                const NotificationSource& source,
-                                const NotificationDetails& details) {
+                                const content::NotificationSource& source,
+                                const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED);
-  Profile* source_profile = Source<Profile>(source).ptr();
+  Profile* source_profile = content::Source<Profile>(source).ptr();
   if (!source_profile || !source_profile->IsSameProfile(profile()))
     return;
 

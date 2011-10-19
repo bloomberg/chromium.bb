@@ -19,9 +19,9 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/user_metrics.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -380,7 +380,7 @@ static const int kZoomPadding = 6;
 // the zoom, a label showing the current zoom percent, and a button to go
 // full-screen.
 class WrenchMenu::ZoomView : public WrenchMenuView,
-                             public NotificationObserver {
+                             public content::NotificationObserver {
  public:
   ZoomView(WrenchMenu* menu,
            MenuModel* menu_model,
@@ -440,7 +440,8 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
 
     registrar_.Add(
         this, content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
-        Source<HostZoomMap>(menu->browser_->profile()->GetHostZoomMap()));
+        content::Source<HostZoomMap>(
+            menu->browser_->profile()->GetHostZoomMap()));
   }
 
   gfx::Size GetPreferredSize() {
@@ -488,10 +489,10 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
     }
   }
 
-  // NotificationObserver:
+  // content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) {
     DCHECK_EQ(content::NOTIFICATION_ZOOM_LEVEL_CHANGED, type);
     UpdateZoomControls();
   }
@@ -543,7 +544,7 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
   // Index of the fullscreen menu item in the model.
   const int fullscreen_index_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // Button for incrementing the zoom.
   TextButton* increment_button_;
@@ -572,7 +573,7 @@ WrenchMenu::WrenchMenu(Browser* browser)
       bookmark_menu_(NULL),
       first_bookmark_command_id_(0) {
   registrar_.Add(this, chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED,
-                 Source<Profile>(browser_->profile()));
+                 content::Source<Profile>(browser_->profile()));
 }
 
 WrenchMenu::~WrenchMenu() {
@@ -776,8 +777,8 @@ void WrenchMenu::BookmarkModelChanged() {
 
 
 void WrenchMenu::Observe(int type,
-                         const NotificationSource& source,
-                         const NotificationDetails& details) {
+                         const content::NotificationSource& source,
+                         const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED:
       // A change in the global errors list can add or remove items from the

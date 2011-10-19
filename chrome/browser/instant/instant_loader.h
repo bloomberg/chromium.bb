@@ -13,8 +13,8 @@
 #include "chrome/browser/instant/instant_commit_type.h"
 #include "chrome/browser/search_engines/template_url_id.h"
 #include "chrome/common/instant_types.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/rect.h"
@@ -35,7 +35,7 @@ class TemplateURL;
 //
 // If the TemplateURLID supplied to the constructor is zero, then the url is
 // loaded as is.
-class InstantLoader : public NotificationObserver {
+class InstantLoader : public content::NotificationObserver {
  public:
   // Header and value set on loads that originate from instant.
   static const char* const kInstantHeader;
@@ -82,10 +82,10 @@ class InstantLoader : public NotificationObserver {
   // pending NavigationEntry.
   bool IsNavigationPending() const;
 
-  // NotificationObserver:
+  // content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // The preview TabContents; may be null.
   TabContentsWrapper* preview_contents() const {
@@ -231,7 +231,7 @@ class InstantLoader : public NotificationObserver {
   base::OneShotTimer<InstantLoader> update_bounds_timer_;
 
   // Used to get notifications about renderers coming and going.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // Last value of verbatim passed to |Update|.
   bool verbatim_;

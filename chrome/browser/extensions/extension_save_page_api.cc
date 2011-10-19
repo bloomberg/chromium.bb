@@ -66,21 +66,24 @@ void SavePageAsMHTMLFunction::TemporaryFileCreated(bool success) {
   }
 
   TabContents* tab_contents = tab_contents_wrapper->tab_contents();
-  registrar_.Add(this, content::NOTIFICATION_MHTML_GENERATED,
-                 Source<RenderViewHost>(tab_contents->render_view_host()));
+  registrar_.Add(
+      this, content::NOTIFICATION_MHTML_GENERATED,
+      content::Source<RenderViewHost>(tab_contents->render_view_host()));
   // TODO(jcivelli): we should listen for navigation in the tab, tab closed,
   //                 renderer died.
   g_browser_process->mhtml_generation_manager()->GenerateMHTML(
       tab_contents, mhtml_path_);
 }
 
-void SavePageAsMHTMLFunction::Observe(int type,
-                                      const NotificationSource& source,
-                                      const NotificationDetails& details) {
+void SavePageAsMHTMLFunction::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK(type == content::NOTIFICATION_MHTML_GENERATED);
 
   const MHTMLGenerationManager::NotificationDetails* save_details =
-      Details<MHTMLGenerationManager::NotificationDetails>(details).ptr();
+      content::Details<MHTMLGenerationManager::NotificationDetails>(details).
+          ptr();
 
   if (mhtml_path_ != save_details->file_path) {
     // This could happen if there are concurrent MHTML generations going on for

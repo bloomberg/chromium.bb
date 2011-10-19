@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_source.h"
 
 namespace {
 
@@ -76,7 +76,7 @@ void TaskManagerBrowserTestUtil::ShowTaskManagerAndWaitForReady(
 #if defined(WEBUI_TASK_MANAGER)
   ui_test_utils::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_TASK_MANAGER_WINDOW_READY,
-      Source<TaskManagerModel>(TaskManager::GetInstance()->model()));
+      content::Source<TaskManagerModel>(TaskManager::GetInstance()->model()));
   browser->window()->ShowTaskManager();
   observer.Wait();
 #else

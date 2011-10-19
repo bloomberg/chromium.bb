@@ -26,9 +26,9 @@ class SigninManagerTest : public TokenServiceTestHarness {
     manager_.reset(new SigninManager());
     google_login_success_.ListenFor(
         chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
-        Source<Profile>(profile_.get()));
+        content::Source<Profile>(profile_.get()));
     google_login_failure_.ListenFor(chrome::NOTIFICATION_GOOGLE_SIGNIN_FAILED,
-                                    Source<Profile>(profile_.get()));
+                                    content::Source<Profile>(profile_.get()));
     originally_using_oauth_ = browser_sync::IsUsingOAuth();
   }
 

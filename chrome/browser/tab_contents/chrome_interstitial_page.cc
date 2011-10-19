@@ -10,7 +10,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_source.h"
 
 ChromeInterstitialPage::ChromeInterstitialPage(TabContents* tab,
                                                bool new_navigation,
@@ -30,15 +30,16 @@ void ChromeInterstitialPage::Show() {
 
   notification_registrar_.Add(
       this, chrome::NOTIFICATION_DOM_OPERATION_RESPONSE,
-      Source<RenderViewHost>(render_view_host()));
+      content::Source<RenderViewHost>(render_view_host()));
 }
 
-void ChromeInterstitialPage::Observe(int type,
-                                     const NotificationSource& source,
-                                     const NotificationDetails& details) {
+void ChromeInterstitialPage::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (chrome::NOTIFICATION_DOM_OPERATION_RESPONSE == type) {
     if (enabled()) {
-      Details<DomOperationNotificationDetails> dom_op_details(details);
+      content::Details<DomOperationNotificationDetails> dom_op_details(details);
       CommandReceived(dom_op_details->json());
     }
     return;

@@ -162,12 +162,14 @@ void VisitedLinkEventListener::CommitVisitedLinks() {
   pending_visited_links_.clear();
 }
 
-void VisitedLinkEventListener::Observe(int type,
-                                       const NotificationSource& source,
-                                       const NotificationDetails& details) {
+void VisitedLinkEventListener::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   switch (type) {
     case content::NOTIFICATION_RENDERER_PROCESS_CREATED: {
-      RenderProcessHost* process = Source<RenderProcessHost>(source).ptr();
+      RenderProcessHost* process =
+          content::Source<RenderProcessHost>(source).ptr();
       Profile* profile =
           Profile::FromBrowserContext(process->browser_context());
       if (!profile_->IsSameProfile(profile))
@@ -185,14 +187,16 @@ void VisitedLinkEventListener::Observe(int type,
       break;
     }
     case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED: {
-      RenderProcessHost* process = Source<RenderProcessHost>(source).ptr();
+      RenderProcessHost* process =
+          content::Source<RenderProcessHost>(source).ptr();
       if (updaters_.count(process->id())) {
         updaters_.erase(process->id());
       }
       break;
     }
     case content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED: {
-      RenderWidgetHost* widget = Source<RenderWidgetHost>(source).ptr();
+      RenderWidgetHost* widget =
+          content::Source<RenderWidgetHost>(source).ptr();
       int child_id = widget->process()->id();
       if (updaters_.count(child_id))
         updaters_[child_id]->Update();

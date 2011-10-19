@@ -48,8 +48,8 @@
 #include "chrome/tools/profiles/thumbnail-inl.h"
 #include "content/browser/download/download_item.h"
 #include "content/browser/download/download_persistent_store_info.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -304,9 +304,9 @@ void BackendDelegate::BroadcastNotifications(int type,
                                              HistoryDetails* details) {
   // Currently, just send the notifications directly to the in-memory database.
   // We may want do do something more fancy in the future.
-  Details<HistoryDetails> det(details);
+  content::Details<HistoryDetails> det(details);
   history_test_->in_mem_backend_->Observe(type,
-      Source<HistoryTest>(NULL), det);
+      content::Source<HistoryTest>(NULL), det);
 
   // The backend passes ownership of the details pointer to us.
   delete details;

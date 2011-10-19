@@ -181,12 +181,12 @@ void ImageLoadingTracker::OnImageLoaded(
 }
 
 void ImageLoadingTracker::Observe(int type,
-                                  const NotificationSource& source,
-                                  const NotificationDetails& details) {
+                                  const content::NotificationSource& source,
+                                  const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_EXTENSION_UNLOADED);
 
   const Extension* extension =
-      Details<UnloadedExtensionInfo>(details)->extension;
+      content::Details<UnloadedExtensionInfo>(details)->extension;
 
   // Remove all entries in the load_map_ referencing the extension. This ensures
   // we don't attempt to cache the image when the load completes.

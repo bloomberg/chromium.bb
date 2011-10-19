@@ -15,8 +15,8 @@
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/browser/ui/views/cookie_info_view.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
@@ -178,7 +178,7 @@ CollectedCookiesWin::CollectedCookiesWin(gfx::NativeWindow parent_window,
       status_changed_(false) {
   TabSpecificContentSettings* content_settings = wrapper->content_settings();
   registrar_.Add(this, chrome::NOTIFICATION_COLLECTED_COOKIES_SHOWN,
-                 Source<TabSpecificContentSettings>(content_settings));
+                 content::Source<TabSpecificContentSettings>(content_settings));
 
   Init();
 
@@ -503,11 +503,11 @@ void CollectedCookiesWin::AddContentException(views::TreeView* tree_view,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// NotificationObserver implementation.
+// content::NotificationObserver implementation.
 
 void CollectedCookiesWin::Observe(int type,
-                                   const NotificationSource& source,
-                                   const NotificationDetails& details) {
+                                  const content::NotificationSource& source,
+                                  const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_COLLECTED_COOKIES_SHOWN);
   window_->CloseConstrainedWindow();
 }

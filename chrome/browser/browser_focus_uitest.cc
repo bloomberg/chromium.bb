@@ -184,8 +184,8 @@ class TestInterstitialPage : public InterstitialPage {
   void OnFocusedNodeChanged(bool is_editable_node) {
     NotificationService::current()->Notify(
         content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
-        Source<TabContents>(tab()),
-        Details<const bool>(&is_editable_node));
+        content::Source<TabContents>(tab()),
+        content::Details<const bool>(&is_editable_node));
   }
 
  private:
@@ -503,12 +503,12 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversal) {
         // notified we have switched to an editable node.
         bool is_editable_node =
             (strcmp(kTextElementID, kExpElementIDs[j + 1]) == 0);
-        Details<bool> details(&is_editable_node);
+        content::Details<bool> details(&is_editable_node);
 
         ASSERT_TRUE(ui_test_utils::SendKeyPressAndWaitWithDetails(
             browser(), ui::VKEY_TAB, false, false, false, false,
             content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
-            NotificationSource(Source<TabContents>(
+            content::NotificationSource(content::Source<TabContents>(
                 browser()->GetSelectedTabContents())),
             details));
       } else {
@@ -516,7 +516,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversal) {
         ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
             browser(), ui::VKEY_TAB, false, false, false, false,
             chrome::NOTIFICATION_FOCUS_RETURNED_TO_BROWSER,
-            NotificationSource(Source<Browser>(browser()))));
+            content::NotificationSource(content::Source<Browser>(browser()))));
       }
     }
 
@@ -546,12 +546,12 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversal) {
         // If the next element is the kTextElementID, we expect to be
         // notified we have switched to an editable node.
         bool is_editable_node = (strcmp(kTextElementID, next_element) == 0);
-        Details<bool> details(&is_editable_node);
+        content::Details<bool> details(&is_editable_node);
 
         ASSERT_TRUE(ui_test_utils::SendKeyPressAndWaitWithDetails(
             browser(), ui::VKEY_TAB, false, true, false, false,
             content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
-            NotificationSource(Source<TabContents>(
+            content::NotificationSource(content::Source<TabContents>(
                 browser()->GetSelectedTabContents())),
             details));
       } else {
@@ -559,7 +559,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversal) {
         ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
             browser(), ui::VKEY_TAB, false, true, false, false,
             chrome::NOTIFICATION_FOCUS_RETURNED_TO_BROWSER,
-            NotificationSource(Source<Browser>(browser()))));
+            content::NotificationSource(content::Source<Browser>(browser()))));
       }
 
       // Let's make sure the focus is on the expected element in the page.
@@ -631,16 +631,16 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversalOnInterstitial) {
       ASSERT_STREQ(kExpElementIDs[j], actual.c_str());
 
       int notification_type;
-      NotificationSource notification_source =
+      content::NotificationSource notification_source =
           NotificationService::AllSources();
       if (j < arraysize(kExpElementIDs) - 1) {
         notification_type = content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE;
-        notification_source = Source<TabContents>(
+        notification_source = content::Source<TabContents>(
             interstitial_page->tab());
       } else {
         // On the last tab key press, the focus returns to the browser.
         notification_type = chrome::NOTIFICATION_FOCUS_RETURNED_TO_BROWSER;
-        notification_source = Source<Browser>(browser());
+        notification_source = content::Source<Browser>(browser());
       }
 
       ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
@@ -666,16 +666,16 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversalOnInterstitial) {
     // Now let's press shift-tab to move the focus in reverse.
     for (size_t j = 0; j < 7; ++j) {
       int notification_type;
-      NotificationSource notification_source =
+      content::NotificationSource notification_source =
           NotificationService::AllSources();
       if (j < arraysize(kExpElementIDs) - 1) {
         notification_type = content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE;
-        notification_source = Source<TabContents>(
+        notification_source = content::Source<TabContents>(
             interstitial_page->tab());
       } else {
         // On the last tab key press, the focus returns to the browser.
         notification_type = chrome::NOTIFICATION_FOCUS_RETURNED_TO_BROWSER;
-        notification_source = Source<Browser>(browser());
+        notification_source = content::Source<Browser>(browser());
       }
 
       ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
@@ -860,7 +860,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnReload) {
   {
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
-        Source<NavigationController>(
+        content::Source<NavigationController>(
             &browser()->GetSelectedTabContentsWrapper()->controller()));
     browser()->Reload(CURRENT_TAB);
     observer.Wait();
@@ -875,7 +875,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnReload) {
   {
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
-        Source<NavigationController>(
+        content::Source<NavigationController>(
             &browser()->GetSelectedTabContentsWrapper()->controller()));
     browser()->Reload(CURRENT_TAB);
     observer.Wait();
@@ -897,7 +897,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_FocusOnReloadCrashedTab) {
   {
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
-        Source<NavigationController>(
+        content::Source<NavigationController>(
             &browser()->GetSelectedTabContentsWrapper()->controller()));
     browser()->Reload(CURRENT_TAB);
     observer.Wait();

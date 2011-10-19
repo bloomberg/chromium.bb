@@ -51,8 +51,8 @@ MockKeyLoadObserver::~MockKeyLoadObserver() {
 }
 
 void MockKeyLoadObserver::Observe(int type,
-                                  const NotificationSource& source,
-                                  const NotificationDetails& details) {
+                                  const content::NotificationSource& source,
+                                  const content::NotificationDetails& details) {
   LOG(INFO) << "Observed key fetch event";
   if (type == chrome::NOTIFICATION_OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED) {
     DCHECK(success_expected_);

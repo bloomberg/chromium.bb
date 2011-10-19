@@ -19,7 +19,7 @@
 #include "content/browser/tab_contents/provisional_load_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_source.h"
 #include "net/base/cert_status_flags.h"
 
 // static
@@ -52,7 +52,7 @@ void SSLManager::NotifySSLInternalStateChanged(
     NavigationController* controller) {
   NotificationService::current()->Notify(
       content::NOTIFICATION_SSL_INTERNAL_STATE_CHANGED,
-      Source<content::BrowserContext>(controller->browser_context()),
+      content::Source<content::BrowserContext>(controller->browser_context()),
       NotificationService::NoDetails());
 }
 
@@ -102,25 +102,28 @@ SSLManager::SSLManager(NavigationController* controller)
 
   // Subscribe to various notifications.
   registrar_.Add(this, content::NOTIFICATION_FAIL_PROVISIONAL_LOAD_WITH_ERROR,
-                 Source<NavigationController>(controller_));
-  registrar_.Add(this, content::NOTIFICATION_RESOURCE_RESPONSE_STARTED,
-                 Source<RenderViewHostDelegate>(controller_->tab_contents()));
-  registrar_.Add(this, content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
-                 Source<RenderViewHostDelegate>(controller_->tab_contents()));
-  registrar_.Add(this, content::NOTIFICATION_LOAD_FROM_MEMORY_CACHE,
-                 Source<NavigationController>(controller_));
-  registrar_.Add(this, content::NOTIFICATION_SSL_INTERNAL_STATE_CHANGED,
-                 Source<content::BrowserContext>(
-                     controller_->browser_context()));
+                 content::Source<NavigationController>(controller_));
+  registrar_.Add(
+      this, content::NOTIFICATION_RESOURCE_RESPONSE_STARTED,
+      content::Source<RenderViewHostDelegate>(controller_->tab_contents()));
+  registrar_.Add(
+      this, content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
+      content::Source<RenderViewHostDelegate>(controller_->tab_contents()));
+  registrar_.Add(
+      this, content::NOTIFICATION_LOAD_FROM_MEMORY_CACHE,
+      content::Source<NavigationController>(controller_));
+  registrar_.Add(
+      this, content::NOTIFICATION_SSL_INTERNAL_STATE_CHANGED,
+      content::Source<content::BrowserContext>(controller_->browser_context()));
 }
 
 SSLManager::~SSLManager() {
 }
 
 void SSLManager::DidCommitProvisionalLoad(
-    const NotificationDetails& in_details) {
+    const content::NotificationDetails& in_details) {
   content::LoadCommittedDetails* details =
-      Details<content::LoadCommittedDetails>(in_details).ptr();
+      content::Details<content::LoadCommittedDetails>(in_details).ptr();
 
   NavigationEntry* entry = controller_->GetActiveEntry();
 
@@ -166,23 +169,24 @@ bool SSLManager::ProcessedSSLErrorFromRequest() const {
 }
 
 void SSLManager::Observe(int type,
-                         const NotificationSource& source,
-                         const NotificationDetails& details) {
+                         const content::NotificationSource& source,
+                         const content::NotificationDetails& details) {
   // Dispatch by type.
   switch (type) {
     case content::NOTIFICATION_FAIL_PROVISIONAL_LOAD_WITH_ERROR:
       // Do nothing.
       break;
     case content::NOTIFICATION_RESOURCE_RESPONSE_STARTED:
-      DidStartResourceResponse(Details<ResourceRequestDetails>(details).ptr());
+      DidStartResourceResponse(
+          content::Details<ResourceRequestDetails>(details).ptr());
       break;
     case content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT:
       DidReceiveResourceRedirect(
-          Details<ResourceRedirectDetails>(details).ptr());
+          content::Details<ResourceRedirectDetails>(details).ptr());
       break;
     case content::NOTIFICATION_LOAD_FROM_MEMORY_CACHE:
       DidLoadFromMemoryCache(
-          Details<LoadFromMemoryCacheDetails>(details).ptr());
+          content::Details<LoadFromMemoryCacheDetails>(details).ptr());
       break;
     case content::NOTIFICATION_SSL_INTERNAL_STATE_CHANGED:
       DidChangeSSLInternalState();
@@ -248,7 +252,7 @@ void SSLManager::UpdateEntry(NavigationEntry* entry) {
   if (!entry->ssl().Equals(original_ssl_status)) {
     NotificationService::current()->Notify(
         content::NOTIFICATION_SSL_VISIBLE_STATE_CHANGED,
-        Source<NavigationController>(controller_),
+        content::Source<NavigationController>(controller_),
         NotificationService::NoDetails());
   }
 }

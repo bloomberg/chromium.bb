@@ -14,8 +14,8 @@
 #include "base/perftimer.h"
 #include "base/time.h"
 #include "content/browser/renderer_host/resource_queue.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 namespace net {
 class URLRequest;
@@ -33,7 +33,7 @@ struct GlobalRequestID;
 class NetworkDelayListener
     : public base::RefCountedThreadSafe<NetworkDelayListener>,
       public ResourceQueueDelegate,
-      public NotificationObserver {
+      public content::NotificationObserver {
  public:
   NetworkDelayListener();
 
@@ -96,12 +96,12 @@ class NetworkDelayListener
 
   // --- UI thread:
 
-  // NotificationObserver
+  // content::NotificationObserver
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkDelayListener);
 };

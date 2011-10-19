@@ -17,10 +17,10 @@ AutomationWindowTracker::~AutomationWindowTracker() {
 
 void AutomationWindowTracker::AddObserver(gfx::NativeWindow resource) {
   registrar_.Add(this, chrome::NOTIFICATION_WINDOW_CLOSED,
-                 Source<gfx::NativeWindow>(resource));
+                 content::Source<gfx::NativeWindow>(resource));
 }
 
 void AutomationWindowTracker::RemoveObserver(gfx::NativeWindow resource) {
   registrar_.Remove(this, chrome::NOTIFICATION_WINDOW_CLOSED,
-                    Source<gfx::NativeWindow>(resource));
+                    content::Source<gfx::NativeWindow>(resource));
 }

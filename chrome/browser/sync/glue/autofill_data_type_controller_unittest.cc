@@ -21,7 +21,7 @@
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/test/base/profile_mock.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

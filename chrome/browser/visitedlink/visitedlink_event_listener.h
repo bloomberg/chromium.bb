@@ -15,8 +15,8 @@
 #include "base/memory/linked_ptr.h"
 #include "base/timer.h"
 #include "chrome/browser/visitedlink/visitedlink_master.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class Profile;
 class VisitedLinkUpdater;
@@ -26,7 +26,7 @@ class SharedMemory;
 }
 
 class VisitedLinkEventListener : public VisitedLinkMaster::Listener,
-                                 public NotificationObserver {
+                                 public content::NotificationObserver {
  public:
   explicit VisitedLinkEventListener(Profile* profile);
   virtual ~VisitedLinkEventListener();
@@ -38,15 +38,15 @@ class VisitedLinkEventListener : public VisitedLinkMaster::Listener,
  private:
   void CommitVisitedLinks();
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   base::OneShotTimer<VisitedLinkEventListener> coalesce_timer_;
   VisitedLinkCommon::Fingerprints pending_visited_links_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // Map between renderer child ids and their VisitedLinkUpdater.
   typedef std::map<int, linked_ptr<VisitedLinkUpdater> > Updaters;

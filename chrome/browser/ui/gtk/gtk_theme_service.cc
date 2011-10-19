@@ -26,9 +26,9 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/user_metrics.h"
-#include "content/common/notification_details.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "grit/ui_resources.h"
@@ -336,7 +336,7 @@ bool GtkThemeService::HasCustomImage(int id) const {
 
 void GtkThemeService::InitThemesFor(NotificationObserver* observer) {
   observer->Observe(chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
-                    Source<ThemeService>(this),
+                    content::Source<ThemeService>(this),
                     NotificationService::NoDetails());
 }
 
@@ -368,8 +368,8 @@ bool GtkThemeService::UsingNativeTheme() const {
 }
 
 void GtkThemeService::Observe(int type,
-                              const NotificationSource& source,
-                              const NotificationDetails& details) {
+                              const content::NotificationSource& source,
+                              const content::NotificationDetails& details) {
   if ((type == chrome::NOTIFICATION_PREF_CHANGED) &&
       (*Details<std::string>(details).ptr() == prefs::kUsesSystemTheme)) {
 #if !defined(OS_CHROMEOS)

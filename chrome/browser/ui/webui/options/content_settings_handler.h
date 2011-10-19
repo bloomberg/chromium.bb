@@ -10,8 +10,8 @@
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "chrome/common/content_settings_types.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class HostContentSettingsMap;
 class ProtocolHandlerRegistry;
@@ -28,10 +28,10 @@ class ContentSettingsHandler : public OptionsPageUIHandler {
 
   virtual void RegisterMessages();
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Gets a string identifier for the group name, for use in HTML.
   static std::string ContentSettingsTypeToGroupName(ContentSettingsType type);
@@ -106,7 +106,7 @@ class ContentSettingsHandler : public OptionsPageUIHandler {
 
   // Member variables ---------------------------------------------------------
 
-  NotificationRegistrar notification_registrar_;
+  content::NotificationRegistrar notification_registrar_;
   PrefChangeRegistrar pref_change_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingsHandler);

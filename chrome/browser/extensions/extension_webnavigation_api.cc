@@ -364,7 +364,7 @@ void ExtensionWebNavigationEventRouter::Init() {
   if (registrar_.IsEmpty()) {
     registrar_.Add(this,
                    content::NOTIFICATION_RETARGETING,
-                   Source<content::BrowserContext>(profile_));
+                   content::Source<content::BrowserContext>(profile_));
     registrar_.Add(this,
                    content::NOTIFICATION_TAB_ADDED,
                    NotificationService::AllSources());
@@ -376,19 +376,20 @@ void ExtensionWebNavigationEventRouter::Init() {
 
 void ExtensionWebNavigationEventRouter::Observe(
     int type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   switch (type) {
     case content::NOTIFICATION_RETARGETING:
-      Retargeting(Details<const content::RetargetingDetails>(details).ptr());
+      Retargeting(
+          content::Details<const content::RetargetingDetails>(details).ptr());
       break;
 
     case content::NOTIFICATION_TAB_ADDED:
-      TabAdded(Details<TabContents>(details).ptr());
+      TabAdded(content::Details<TabContents>(details).ptr());
       break;
 
     case content::NOTIFICATION_TAB_CONTENTS_DESTROYED:
-      TabDestroyed(Source<TabContents>(source).ptr());
+      TabDestroyed(content::Source<TabContents>(source).ptr());
       break;
 
     default:

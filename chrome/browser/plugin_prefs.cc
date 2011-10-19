@@ -243,15 +243,15 @@ bool PluginPrefs::IsPluginEnabled(const webkit::WebPluginInfo& plugin) {
 }
 
 void PluginPrefs::Observe(int type,
-                          const NotificationSource& source,
-                          const NotificationDetails& details) {
+                          const content::NotificationSource& source,
+                          const content::NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_PREF_CHANGED, type);
-  const std::string* pref_name = Details<std::string>(details).ptr();
+  const std::string* pref_name = content::Details<std::string>(details).ptr();
   if (!pref_name) {
     NOTREACHED();
     return;
   }
-  DCHECK_EQ(prefs_, Source<PrefService>(source).ptr());
+  DCHECK_EQ(prefs_, content::Source<PrefService>(source).ptr());
   if (*pref_name == prefs::kPluginsDisabledPlugins) {
     base::AutoLock auto_lock(lock_);
     ListValueToStringSet(prefs_->GetList(prefs::kPluginsDisabledPlugins),
@@ -542,6 +542,6 @@ void PluginPrefs::NotifyPluginStatusChanged() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED,
-      Source<Profile>(profile_),
+      content::Source<Profile>(profile_),
       NotificationService::NoDetails());
 }

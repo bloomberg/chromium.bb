@@ -83,7 +83,8 @@ class SavePageBrowserTest : public InProcessBrowserTest {
     ui_test_utils::RegisterAndWait(&observer,
         content::NOTIFICATION_SAVE_PACKAGE_SUCCESSFULLY_FINISHED,
         NotificationService::AllSources());
-    return Details<DownloadItem>(observer.details()).ptr()->original_url();
+    return content::Details<DownloadItem>(observer.details()).ptr()->
+        original_url();
   }
 
 #if defined(OS_CHROMEOS) && defined(TOUCH_UI)

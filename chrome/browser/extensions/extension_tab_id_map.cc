@@ -12,8 +12,8 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_process_host.h"
-#include "content/common/notification_registrar.h"
-#include "content/common/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
 #include "content/common/notification_service.h"
 #include "content/public/browser/notification_types.h"
 
@@ -24,18 +24,18 @@
 // This class listens for notifications about new and closed tabs on the UI
 // thread, and notifies the ExtensionTabIdMap on the IO thread. It should only
 // ever be accessed on the UI thread.
-class ExtensionTabIdMap::TabObserver : public NotificationObserver {
+class ExtensionTabIdMap::TabObserver : public content::NotificationObserver {
  public:
   TabObserver();
   ~TabObserver();
 
  private:
-  // NotificationObserver interface.
+  // content::NotificationObserver interface.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 };
 
 ExtensionTabIdMap::TabObserver::TabObserver() {
@@ -53,16 +53,16 @@ ExtensionTabIdMap::TabObserver::~TabObserver() {
 }
 
 void ExtensionTabIdMap::TabObserver::Observe(
-    int type, const NotificationSource& source,
-    const NotificationDetails& details) {
+    int type, const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   switch (type) {
     case content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB: {
-      TabContents* contents = Source<TabContents>(source).ptr();
+      TabContents* contents = content::Source<TabContents>(source).ptr();
       TabContentsWrapper* tab =
           TabContentsWrapper::GetCurrentWrapperForContents(contents);
       if (!tab)
         break;
-      RenderViewHost* host = Details<RenderViewHost>(details).ptr();
+      RenderViewHost* host = content::Details<RenderViewHost>(details).ptr();
       // TODO(mpcmoplete): How can we tell if window_id is bogus? It may not
       // have been set yet.
       BrowserThread::PostTask(
@@ -76,7 +76,8 @@ void ExtensionTabIdMap::TabObserver::Observe(
       break;
     }
     case content::NOTIFICATION_TAB_PARENTED: {
-      TabContentsWrapper* tab = Source<TabContentsWrapper>(source).ptr();
+      TabContentsWrapper* tab =
+          content::Source<TabContentsWrapper>(source).ptr();
       RenderViewHost* host = tab->render_view_host();
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
@@ -89,7 +90,7 @@ void ExtensionTabIdMap::TabObserver::Observe(
       break;
     }
     case content::NOTIFICATION_RENDER_VIEW_HOST_DELETED: {
-      RenderViewHost* host = Source<RenderViewHost>(source).ptr();
+      RenderViewHost* host = content::Source<RenderViewHost>(source).ptr();
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
           base::Bind(

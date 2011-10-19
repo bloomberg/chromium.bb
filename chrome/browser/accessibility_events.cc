@@ -21,8 +21,8 @@ void SendAccessibilityNotification(
   if (profile->ShouldSendAccessibilityEvents()) {
     NotificationService::current()->Notify(
         type,
-        Source<Profile>(profile),
-        Details<AccessibilityEventInfo>(info));
+        content::Source<Profile>(profile),
+        content::Details<AccessibilityEventInfo>(info));
   }
 }
 

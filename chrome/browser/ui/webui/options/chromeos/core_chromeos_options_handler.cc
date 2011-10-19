@@ -11,8 +11,8 @@
 #include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/user_metrics.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 
 namespace chromeos {
 
@@ -59,9 +59,10 @@ void CoreChromeOSOptionsHandler::StopObservingPref(const std::string& path) {
     ::CoreOptionsHandler::StopObservingPref(path);
 }
 
-void CoreChromeOSOptionsHandler::Observe(int type,
-                                         const NotificationSource& source,
-                                         const NotificationDetails& details) {
+void CoreChromeOSOptionsHandler::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   // Ignore the notification if this instance had caused it.
   if (handling_change_)
     return;

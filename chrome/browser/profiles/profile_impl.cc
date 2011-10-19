@@ -304,7 +304,7 @@ ProfileImpl::ProfileImpl(const FilePath& path,
     // Wait for the notifcation that prefs has been loaded (successfully or
     // not).
     registrar_.Add(this, chrome::NOTIFICATION_PREF_INITIALIZATION_COMPLETED,
-                   Source<PrefService>(prefs_.get()));
+                   content::Source<PrefService>(prefs_.get()));
   } else {
     // Load prefs synchronously.
     prefs_.reset(PrefService::CreatePrefService(
@@ -346,7 +346,7 @@ void ProfileImpl::DoFinalInit() {
   // Listen for bookmark model load, to bootstrap the sync service.
   // On CrOS sync service will be initialized after sign in.
   registrar_.Add(this, chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED,
-                 Source<Profile>(this));
+                 content::Source<Profile>(this));
 #endif
 
   PrefService* local_state = g_browser_process->local_state();
@@ -428,7 +428,7 @@ void ProfileImpl::DoFinalInit() {
 
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_PROFILE_CREATED,
-      Source<Profile>(this),
+      content::Source<Profile>(this),
       NotificationService::NoDetails());
 }
 
@@ -633,7 +633,7 @@ void ProfileImpl::set_last_selected_directory(const FilePath& path) {
 ProfileImpl::~ProfileImpl() {
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_PROFILE_DESTROYED,
-      Source<Profile>(this),
+      content::Source<Profile>(this),
       NotificationService::NoDetails());
 
   if (appcache_service_ && clear_local_state_on_exit_) {
@@ -754,7 +754,7 @@ Profile* ProfileImpl::GetOffTheRecordProfile() {
 
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_PROFILE_CREATED,
-        Source<Profile>(off_the_record_profile_.get()),
+        content::Source<Profile>(off_the_record_profile_.get()),
         NotificationService::NoDetails());
   }
   return off_the_record_profile_.get();
@@ -1020,7 +1020,7 @@ HostZoomMap* ProfileImpl::GetHostZoomMap() {
     }
 
     registrar_.Add(this, content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
-                 Source<HostZoomMap>(host_zoom_map_));
+                 content::Source<HostZoomMap>(host_zoom_map_));
   }
   return host_zoom_map_.get();
 }
@@ -1392,22 +1392,22 @@ void ProfileImpl::MarkAsCleanShutdown() {
 }
 
 void ProfileImpl::Observe(int type,
-                          const NotificationSource& source,
-                          const NotificationDetails& details) {
+                          const content::NotificationSource& source,
+                          const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_PREF_INITIALIZATION_COMPLETED: {
-      bool* succeeded = Details<bool>(details).ptr();
-      PrefService *prefs = Source<PrefService>(source).ptr();
+      bool* succeeded = content::Details<bool>(details).ptr();
+      PrefService *prefs = content::Source<PrefService>(source).ptr();
       DCHECK(prefs == prefs_.get());
       registrar_.Remove(this,
                         chrome::NOTIFICATION_PREF_INITIALIZATION_COMPLETED,
-                        Source<PrefService>(prefs));
+                        content::Source<PrefService>(prefs));
       OnPrefsLoaded(*succeeded);
       break;
     }
     case chrome::NOTIFICATION_PREF_CHANGED: {
-      std::string* pref_name_in = Details<std::string>(details).ptr();
-      PrefService* prefs = Source<PrefService>(source).ptr();
+      std::string* pref_name_in = content::Details<std::string>(details).ptr();
+      PrefService* prefs = content::Source<PrefService>(source).ptr();
       DCHECK(pref_name_in && prefs);
       if (*pref_name_in == prefs::kSpellCheckDictionary ||
           *pref_name_in == prefs::kEnableSpellCheck) {
@@ -1452,10 +1452,11 @@ void ProfileImpl::Observe(int type,
     case chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED:
       GetProfileSyncService();  // Causes lazy-load if sync is enabled.
       registrar_.Remove(this, chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED,
-                        Source<Profile>(this));
+                        content::Source<Profile>(this));
       break;
     case content::NOTIFICATION_ZOOM_LEVEL_CHANGED: {
-      const std::string& host = *(Details<const std::string>(details).ptr());
+      const std::string& host =
+          *(content::Details<const std::string>(details).ptr());
       if (!host.empty()) {
         double level = host_zoom_map_->GetZoomLevel(host);
         DictionaryPrefUpdate update(prefs_.get(), prefs::kPerHostZoomLevels);

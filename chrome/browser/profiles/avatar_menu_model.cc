@@ -109,8 +109,8 @@ const AvatarMenuModel::Item& AvatarMenuModel::GetItemAt(size_t index) {
 }
 
 void AvatarMenuModel::Observe(int type,
-                              const NotificationSource& source,
-                              const NotificationDetails& details) {
+                              const content::NotificationSource& source,
+                              const content::NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED, type);
   RebuildMenu();
   observer_->OnAvatarMenuModelChanged(this);

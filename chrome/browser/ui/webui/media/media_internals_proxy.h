@@ -11,8 +11,8 @@
 #include "chrome/browser/media/media_internals_observer.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class IOThread;
 class MediaInternalsMessageHandler;
@@ -31,14 +31,14 @@ class MediaInternalsProxy
       public base::RefCountedThreadSafe<MediaInternalsProxy,
                                         BrowserThread::DeleteOnUIThread>,
       public ChromeNetLog::ThreadSafeObserverImpl,
-      public NotificationObserver {
+      public content::NotificationObserver {
  public:
   MediaInternalsProxy();
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Register a Handler and start receiving callbacks from MediaInternals.
   void Attach(MediaInternalsMessageHandler* handler);
@@ -85,7 +85,7 @@ class MediaInternalsProxy
   MediaInternalsMessageHandler* handler_;
   IOThread* io_thread_;
   scoped_ptr<base::ListValue> pending_net_updates_;
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaInternalsProxy);
 };

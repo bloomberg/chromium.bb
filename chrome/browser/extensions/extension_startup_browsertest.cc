@@ -18,7 +18,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_details.h"
+#include "content/public/browser/notification_details.h"
 #include "net/base/net_util.h"
 
 // This file contains high-level startup tests for the extensions system. We've

@@ -56,9 +56,9 @@ void RenderViewDevToolsAgentHost::SendMessageToAgent(IPC::Message* msg) {
 void RenderViewDevToolsAgentHost::NotifyClientClosing() {
   NotificationService::current()->Notify(
       content::NOTIFICATION_DEVTOOLS_WINDOW_CLOSING,
-      Source<content::BrowserContext>(
+      content::Source<content::BrowserContext>(
           render_view_host_->site_instance()->GetProcess()->browser_context()),
-      Details<RenderViewHost>(render_view_host_));
+      content::Details<RenderViewHost>(render_view_host_));
 }
 
 int RenderViewDevToolsAgentHost::GetRenderProcessId() {

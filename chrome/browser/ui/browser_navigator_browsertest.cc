@@ -98,9 +98,10 @@ void BrowserNavigatorTest::RunSuppressTest(WindowOpenDisposition disposition) {
   EXPECT_EQ(old_url, browser()->GetSelectedTabContents()->GetURL());
 }
 
-void BrowserNavigatorTest::Observe(int type,
-                                   const NotificationSource& source,
-                                   const NotificationDetails& details) {
+void BrowserNavigatorTest::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   switch (type) {
     case content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB: {
       ++this->created_tab_contents_count_;
@@ -132,7 +133,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_SingletonTabExisting) {
   // Register for a notification if an additional tab_contents was instantiated.
   // Opening a Singleton tab that is already opened should not be opening a new
   // tab nor be creating a new TabContents object
-  NotificationRegistrar registrar;
+  content::NotificationRegistrar registrar;
 
   // As the registrar object goes out of scope, this will get unregistered
   registrar.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB,

@@ -50,7 +50,7 @@ namespace {
 
 // Helper class that performs delayed first-run tasks that need more of the
 // chrome infrastructure to be up and running before they can be attempted.
-class FirstRunDelayedTasks : public NotificationObserver {
+class FirstRunDelayedTasks : public content::NotificationObserver {
  public:
   enum Tasks {
     NO_TASK,
@@ -67,11 +67,13 @@ class FirstRunDelayedTasks : public NotificationObserver {
   }
 
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) {
     // After processing the notification we always delete ourselves.
-    if (type == chrome::NOTIFICATION_EXTENSIONS_READY)
-      DoExtensionWork(Source<Profile>(source).ptr()->GetExtensionService());
+    if (type == chrome::NOTIFICATION_EXTENSIONS_READY) {
+      DoExtensionWork(
+          content::Source<Profile>(source).ptr()->GetExtensionService());
+    }
     delete this;
     return;
   }
@@ -90,7 +92,7 @@ class FirstRunDelayedTasks : public NotificationObserver {
     return;
   }
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 };
 
 // Creates the desktop shortcut to chrome for the current user. Returns

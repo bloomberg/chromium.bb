@@ -56,9 +56,10 @@ LoginWebuiReadyObserver::LoginWebuiReadyObserver(
 LoginWebuiReadyObserver::~LoginWebuiReadyObserver() {
 }
 
-void LoginWebuiReadyObserver::Observe(int type,
-                                      const NotificationSource& source,
-                                      const NotificationDetails& details) {
+void LoginWebuiReadyObserver::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_LOGIN_WEBUI_READY);
   automation_->OnLoginWebuiReady();
   delete this;
@@ -109,9 +110,10 @@ ScreenLockUnlockObserver::ScreenLockUnlockObserver(
 
 ScreenLockUnlockObserver::~ScreenLockUnlockObserver() {}
 
-void ScreenLockUnlockObserver::Observe(int type,
-                                       const NotificationSource& source,
-                                       const NotificationDetails& details) {
+void ScreenLockUnlockObserver::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED);
   if (automation_) {
     AutomationJSONReply reply(automation_, reply_message_.release());

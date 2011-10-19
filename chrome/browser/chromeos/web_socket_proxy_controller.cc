@@ -22,8 +22,8 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/common/notification_service.h"
 #include "content/public/common/url_constants.h"
 #include "googleurl/src/gurl.h"
@@ -127,7 +127,7 @@ class ProxyLifetime : public net::NetworkChangeNotifier::OnlineStateObserver {
   chromeos::WebSocketProxy* volatile server_;
   volatile bool shutdown_requested_;
   base::Lock lock_;
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
   friend class ProxyTask;
   friend class chromeos::WebSocketProxyController;
 };

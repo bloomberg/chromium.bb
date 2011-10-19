@@ -23,8 +23,8 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/tools/profiles/thumbnail-inl.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/codec/jpeg_codec.h"
@@ -178,8 +178,8 @@ class HistoryBackendTest : public testing::Test {
   void BroadcastNotifications(int type,
                                       HistoryDetails* details) {
     // Send the notifications directly to the in-memory database.
-    Details<HistoryDetails> det(details);
-    mem_backend_->Observe(type, Source<HistoryBackendTest>(NULL), det);
+    content::Details<HistoryDetails> det(details);
+    mem_backend_->Observe(type, content::Source<HistoryBackendTest>(NULL), det);
 
     // The backend passes ownership of the details pointer to us.
     delete details;

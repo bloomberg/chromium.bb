@@ -21,8 +21,8 @@
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_pattern.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 namespace base {
 class Value;
@@ -38,7 +38,7 @@ class PrefService;
 
 class HostContentSettingsMap
     : public content_settings::Observer,
-      public NotificationObserver,
+      public content::NotificationObserver,
       public base::RefCountedThreadSafe<HostContentSettingsMap> {
  public:
   enum ProviderType {
@@ -197,10 +197,10 @@ class HostContentSettingsMap
       ContentSettingsType content_type,
       std::string resource_identifier);
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
  private:
   friend class base::RefCountedThreadSafe<HostContentSettingsMap>;

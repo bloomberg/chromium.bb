@@ -188,7 +188,7 @@ bool InstantController::Update(TabContentsWrapper* tab_contents,
 
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_INSTANT_CONTROLLER_UPDATED,
-      Source<InstantController>(this),
+      content::Source<InstantController>(this),
       NotificationService::NoDetails());
   return true;
 }
@@ -473,7 +473,7 @@ void InstantController::UpdateIsDisplayable() {
     delegate_->ShowInstant(loader_->preview_contents());
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_INSTANT_CONTROLLER_SHOWN,
-        Source<InstantController>(this),
+        content::Source<InstantController>(this),
         NotificationService::NoDetails());
   }
 }

@@ -24,9 +24,10 @@ void UserMetrics::Record(const char *action) {
     return;
   }
 
-  NotificationService::current()->Notify(content::NOTIFICATION_USER_ACTION,
-                                         NotificationService::AllSources(),
-                                         Details<const char*>(&action));
+  NotificationService::current()->Notify(
+      content::NOTIFICATION_USER_ACTION,
+      NotificationService::AllSources(),
+      content::Details<const char*>(&action));
 }
 
 void UserMetrics::CallRecordOnUI(const std::string& action) {

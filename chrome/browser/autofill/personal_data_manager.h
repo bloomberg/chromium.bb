@@ -20,8 +20,8 @@
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/browser/webdata/web_data_service.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class AutofillManager;
 class AutofillMetrics;
@@ -40,7 +40,7 @@ class PersonalDataManager
     : public WebDataServiceConsumer,
       public ProfileSyncServiceObserver,
       public ProfileKeyedService,
-      public NotificationObserver {
+      public content::NotificationObserver {
  public:
   // WebDataServiceConsumer:
   virtual void OnWebDataServiceRequestDone(
@@ -61,12 +61,12 @@ class PersonalDataManager
   // notifications.
   virtual void Shutdown() OVERRIDE;
 
-  // NotificationObserver:
+  // content::NotificationObserver:
   // Observes "batch" changes made by Sync and refreshes data from the
   // WebDataService in response.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Scans the given |form| for importable Autofill data. If the form includes
   // sufficient address data, it is immediately imported. If the form includes
@@ -256,7 +256,7 @@ class PersonalDataManager
   mutable bool has_logged_profile_count_;
 
   // Manages registration lifetime for NotificationObserver implementation.
-  NotificationRegistrar notification_registrar_;
+  content::NotificationRegistrar notification_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(PersonalDataManager);
 };

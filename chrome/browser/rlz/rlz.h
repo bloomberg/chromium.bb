@@ -18,8 +18,8 @@
 #include "base/memory/singleton.h"
 #include "base/string16.h"
 #include "base/task.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "rlz/win/lib/rlz_lib.h"
 
 // RLZ is a library which is used to measure distribution scenarios.
@@ -32,7 +32,7 @@
 // For partner or bundled installs, the RLZ might send more information
 // according to the terms disclosed in the EULA.
 
-class RLZTracker : public NotificationObserver {
+class RLZTracker : public content::NotificationObserver {
  public:
   // Initializes the RLZ library services for use in chrome. Schedules a
   // delayed task (delayed by |delay| seconds) that performs the ping and
@@ -75,10 +75,10 @@ class RLZTracker : public NotificationObserver {
   // that it does not interfere with chrome startup time.
   virtual void DelayedInit();
 
-  // NotificationObserver implementation:
+  // content::NotificationObserver implementation:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Used by test code to override the default RLZTracker instance returned
   // by GetInstance().
@@ -145,7 +145,7 @@ class RLZTracker : public NotificationObserver {
   bool omnibox_used_;
   bool homepage_used_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(RLZTracker);
 };

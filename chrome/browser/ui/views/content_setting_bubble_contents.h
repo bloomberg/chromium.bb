@@ -11,8 +11,8 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/common/content_settings_types.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "views/controls/button/button.h"
 #include "views/controls/link_listener.h"
 
@@ -39,7 +39,7 @@ class RadioButton;
 class ContentSettingBubbleContents : public views::View,
                                      public views::ButtonListener,
                                      public views::LinkListener,
-                                     public NotificationObserver {
+                                     public content::NotificationObserver {
  public:
   ContentSettingBubbleContents(
       ContentSettingBubbleModel* content_setting_bubble_model,
@@ -66,10 +66,10 @@ class ContentSettingBubbleContents : public views::View,
   // views::LinkListener:
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
-  // NotificationObserver:
+  // content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Creates the child views.
   void InitControlLayout();
@@ -84,7 +84,7 @@ class ContentSettingBubbleContents : public views::View,
   TabContents* tab_contents_;
 
   // A registrar for listening for TAB_CONTENTS_DESTROYED notifications.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // The Bubble holding us.
   Bubble* bubble_;

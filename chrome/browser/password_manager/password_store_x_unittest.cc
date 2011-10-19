@@ -24,10 +24,10 @@
 #include "chrome/test/base/signaling_task.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_observer_mock.h"
-#include "content/common/notification_registrar.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_source.h"
+#include "content/test/notification_observer_mock.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -80,7 +80,7 @@ class DBThreadObserverHelper
     registrar_.RemoveAll();
   }
 
-  NotificationObserverMock& observer() {
+  content::NotificationObserverMock& observer() {
     return observer_;
   }
 
@@ -91,13 +91,13 @@ class DBThreadObserverHelper
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
     registrar_.Add(&observer_,
                    chrome::NOTIFICATION_LOGINS_CHANGED,
-                   Source<PasswordStore>(password_store));
+                   content::Source<PasswordStore>(password_store));
     done_event_.Signal();
   }
 
   WaitableEvent done_event_;
-  NotificationRegistrar registrar_;
-  NotificationObserverMock observer_;
+  content::NotificationRegistrar registrar_;
+  content::NotificationObserverMock observer_;
 };
 
 class FailingBackend : public PasswordStoreX::NativeBackend {
@@ -550,7 +550,7 @@ TEST_P(PasswordStoreXTest, Notifications) {
 
   EXPECT_CALL(helper->observer(),
               Observe(int(chrome::NOTIFICATION_LOGINS_CHANGED),
-                      Source<PasswordStore>(store),
+                      content::Source<PasswordStore>(store),
                       Property(&Details<const PasswordStoreChangeList>::ptr,
                                Pointee(ElementsAreArray(
                                    expected_add_changes)))));
@@ -574,7 +574,7 @@ TEST_P(PasswordStoreXTest, Notifications) {
 
   EXPECT_CALL(helper->observer(),
               Observe(int(chrome::NOTIFICATION_LOGINS_CHANGED),
-                      Source<PasswordStore>(store),
+                      content::Source<PasswordStore>(store),
                       Property(&Details<const PasswordStoreChangeList>::ptr,
                                Pointee(ElementsAreArray(
                                    expected_update_changes)))));
@@ -593,7 +593,7 @@ TEST_P(PasswordStoreXTest, Notifications) {
 
   EXPECT_CALL(helper->observer(),
               Observe(int(chrome::NOTIFICATION_LOGINS_CHANGED),
-                      Source<PasswordStore>(store),
+                      content::Source<PasswordStore>(store),
                       Property(&Details<const PasswordStoreChangeList>::ptr,
                                Pointee(ElementsAreArray(
                                    expected_delete_changes)))));

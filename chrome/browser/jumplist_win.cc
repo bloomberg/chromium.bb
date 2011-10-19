@@ -524,19 +524,19 @@ bool JumpList::AddObserver(Profile* profile) {
     // Register for notification when TopSites changes so that we can update
     // ourself.
     registrar_.Add(this, chrome::NOTIFICATION_TOP_SITES_CHANGED,
-                   Source<history::TopSites>(top_sites));
+                   content::Source<history::TopSites>(top_sites));
     // Register for notification when profile is destroyed to ensure that all
     // observers are detatched at that time.
     registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                   Source<Profile>(profile_));
+                   content::Source<Profile>(profile_));
   }
   tab_restore_service->AddObserver(this);
   return true;
 }
 
 void JumpList::Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_TOP_SITES_CHANGED: {
       // Most visited urls changed, query again.
@@ -565,10 +565,12 @@ void JumpList::RemoveObserver() {
         TabRestoreServiceFactory::GetForProfile(profile_);
     if (tab_restore_service)
       tab_restore_service->RemoveObserver(this);
-    registrar_.Remove(this, chrome::NOTIFICATION_TOP_SITES_CHANGED,
-                     Source<history::TopSites>(profile_->GetTopSites()));
-    registrar_.Remove(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                     Source<Profile>(profile_));
+    registrar_.Remove(
+        this, chrome::NOTIFICATION_TOP_SITES_CHANGED,
+        content::Source<history::TopSites>(profile_->GetTopSites()));
+    registrar_.Remove(
+        this, chrome::NOTIFICATION_PROFILE_DESTROYED,
+        content::Source<Profile>(profile_));
   }
   profile_ = NULL;
 }

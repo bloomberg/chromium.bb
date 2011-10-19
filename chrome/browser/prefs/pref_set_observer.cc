@@ -8,7 +8,7 @@
 #include "content/public/browser/notification_types.h"
 
 PrefSetObserver::PrefSetObserver(PrefService* pref_service,
-                                 NotificationObserver* observer)
+                                 content::NotificationObserver* observer)
     : pref_service_(pref_service),
       observer_(observer) {
   registrar_.Init(pref_service);
@@ -45,7 +45,7 @@ bool PrefSetObserver::IsManaged() {
 // static
 PrefSetObserver* PrefSetObserver::CreateProxyPrefSetObserver(
     PrefService* pref_service,
-    NotificationObserver* observer) {
+    content::NotificationObserver* observer) {
   PrefSetObserver* pref_set = new PrefSetObserver(pref_service, observer);
   pref_set->AddPref(prefs::kProxy);
 
@@ -55,7 +55,7 @@ PrefSetObserver* PrefSetObserver::CreateProxyPrefSetObserver(
 // static
 PrefSetObserver* PrefSetObserver::CreateDefaultSearchPrefSetObserver(
     PrefService* pref_service,
-    NotificationObserver* observer) {
+    content::NotificationObserver* observer) {
   PrefSetObserver* pref_set = new PrefSetObserver(pref_service, observer);
   pref_set->AddPref(prefs::kDefaultSearchProviderEnabled);
   pref_set->AddPref(prefs::kDefaultSearchProviderName);
@@ -70,8 +70,8 @@ PrefSetObserver* PrefSetObserver::CreateDefaultSearchPrefSetObserver(
 }
 
 void PrefSetObserver::Observe(int type,
-                              const NotificationSource& source,
-                              const NotificationDetails& details) {
+                              const content::NotificationSource& source,
+                              const content::NotificationDetails& details) {
   if (observer_)
     observer_->Observe(type, source, details);
 }

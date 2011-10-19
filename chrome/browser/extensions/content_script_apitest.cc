@@ -85,7 +85,7 @@ IN_PROC_BROWSER_TEST_F(
 
   ui_test_utils::WindowedNotificationObserver signal(
       chrome::NOTIFICATION_USER_SCRIPTS_UPDATED,
-      Source<Profile>(browser()->profile()));
+      content::Source<Profile>(browser()->profile()));
 
   // Start with a renderer already open at a URL.
   GURL url(test_server()->GetURL("file/extensions/test_file.html"));

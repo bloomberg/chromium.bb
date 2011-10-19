@@ -16,13 +16,11 @@
 #include "base/timer.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
-#include "content/common/notification_observer.h"
+#include "content/public/browser/notification_observer.h"
 #include "net/base/host_port_pair.h"
 #include "net/http/http_server_properties.h"
 #include "net/http/http_server_properties_impl.h"
 
-class NotificationDetails;
-class NotificationSource;
 class PrefService;
 
 namespace chrome_browser_net {
@@ -51,7 +49,7 @@ namespace chrome_browser_net {
 // the actual update starts, and grab a WeakPtr.
 class HttpServerPropertiesManager
     : public net::HttpServerProperties,
-      public NotificationObserver {
+      public content::NotificationObserver {
  public:
   // Create an instance of the HttpServerPropertiesManager. The lifetime of the
   // PrefService objects must be longer than that of the
@@ -190,8 +188,8 @@ class HttpServerPropertiesManager
  private:
   // Callback for preference changes.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // ---------
   // UI thread

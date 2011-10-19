@@ -58,7 +58,7 @@
 #include "content/browser/file_system/browser_file_system_helper.h"
 #include "content/browser/in_process_webkit/dom_storage_context.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/common/notification_service.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/cookie_monster.h"
@@ -481,7 +481,7 @@ void ExtensionServiceTestBase::SetUp() {
 }
 
 class ExtensionServiceTest
-  : public ExtensionServiceTestBase, public NotificationObserver {
+  : public ExtensionServiceTestBase, public content::NotificationObserver {
  public:
   ExtensionServiceTest() : installed_(NULL) {
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
@@ -493,11 +493,12 @@ class ExtensionServiceTest
   }
 
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) {
     switch (type) {
       case chrome::NOTIFICATION_EXTENSION_LOADED: {
-        const Extension* extension = Details<const Extension>(details).ptr();
+        const Extension* extension =
+            content::Details<const Extension>(details).ptr();
         loaded_.push_back(make_scoped_refptr(extension));
         // The tests rely on the errors being in a certain order, which can vary
         // depending on how filesystem iteration works.
@@ -507,7 +508,7 @@ class ExtensionServiceTest
 
       case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
         const Extension* e =
-            Details<UnloadedExtensionInfo>(details)->extension;
+            content::Details<UnloadedExtensionInfo>(details)->extension;
         unloaded_id_ = e->id();
         ExtensionList::iterator i =
             std::find(loaded_.begin(), loaded_.end(), e);
@@ -519,7 +520,7 @@ class ExtensionServiceTest
         break;
       }
       case chrome::NOTIFICATION_EXTENSION_INSTALLED:
-        installed_ = Details<const Extension>(details).ptr();
+        installed_ = content::Details<const Extension>(details).ptr();
         break;
 
       default:
@@ -911,7 +912,7 @@ class ExtensionServiceTest
   const Extension* installed_;
 
  private:
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 };
 
 FilePath NormalizeSeparators(const FilePath& path) {
@@ -3462,7 +3463,7 @@ TEST_F(ExtensionServiceTest, LoadAndRelocalizeExtensions) {
   EXPECT_EQ("no l10n", loaded_[2]->name());
 }
 
-class ExtensionsReadyRecorder : public NotificationObserver {
+class ExtensionsReadyRecorder : public content::NotificationObserver {
  public:
   ExtensionsReadyRecorder() : ready_(false) {
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSIONS_READY,
@@ -3474,8 +3475,8 @@ class ExtensionsReadyRecorder : public NotificationObserver {
 
  private:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) {
     switch (type) {
       case chrome::NOTIFICATION_EXTENSIONS_READY:
         ready_ = true;
@@ -3485,7 +3486,7 @@ class ExtensionsReadyRecorder : public NotificationObserver {
     }
   }
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
   bool ready_;
 };
 

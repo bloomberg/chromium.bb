@@ -20,7 +20,7 @@
 #include "chrome/browser/webdata/web_data_service.h"
 #include "content/browser/intents/intent_injector.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_source.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "webkit/glue/web_intent_service_data.h"
 
@@ -117,9 +117,9 @@ WebIntentPickerController::WebIntentPickerController(
           intent_id_(0) {
   NavigationController* controller = &wrapper->controller();
   registrar_.Add(this, content::NOTIFICATION_LOAD_START,
-                 Source<NavigationController>(controller));
+                 content::Source<NavigationController>(controller));
   registrar_.Add(this, content::NOTIFICATION_TAB_CLOSING,
-                 Source<NavigationController>(controller));
+                 content::Source<NavigationController>(controller));
 }
 
 WebIntentPickerController::~WebIntentPickerController() {
@@ -150,9 +150,10 @@ void WebIntentPickerController::ShowDialog(Browser* browser,
   web_intent_data_fetcher_->Fetch(action, type);
 }
 
-void WebIntentPickerController::Observe(int type,
-                                        const NotificationSource& source,
-                                        const NotificationDetails& details) {
+void WebIntentPickerController::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK(type == content::NOTIFICATION_LOAD_START ||
          type == content::NOTIFICATION_TAB_CLOSING);
   ClosePicker();

@@ -24,10 +24,10 @@ class CoreChromeOSOptionsHandler : public CoreOptionsHandler {
                        const std::string& metric);
   virtual void StopObservingPref(const std::string& path);
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
  private:
   // Notifies registered JS callbacks on ChromeOS setting change.

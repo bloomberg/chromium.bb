@@ -20,9 +20,9 @@
 #include "chrome/common/pref_names.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/tab_contents/navigation_details.h"
-#include "content/common/notification_registrar.h"
-#include "content/common/notification_service.h"
 #include "content/common/result_codes.h"
+#include "content/public/browser/notification_registrar.h"
+#include "content/common/notification_service.h"
 
 #if defined(OS_MACOSX)
 #include "chrome/browser/chrome_browser_application_mac.h"
@@ -44,7 +44,7 @@ namespace {
 // This object is instantiated when the first Browser object is added to the
 // list and delete when the last one is removed. It watches for loads and
 // creates histograms of some global object counts.
-class BrowserActivityObserver : public NotificationObserver {
+class BrowserActivityObserver : public content::NotificationObserver {
  public:
   BrowserActivityObserver() {
     registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
@@ -53,13 +53,13 @@ class BrowserActivityObserver : public NotificationObserver {
   ~BrowserActivityObserver() {}
 
  private:
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) {
     DCHECK(type == content::NOTIFICATION_NAV_ENTRY_COMMITTED);
     const content::LoadCommittedDetails& load =
-        *Details<content::LoadCommittedDetails>(details).ptr();
+        *content::Details<content::LoadCommittedDetails>(details).ptr();
     if (!load.is_navigation_to_different_page())
       return;  // Don't log for subframes or other trivial types.
 
@@ -101,7 +101,7 @@ class BrowserActivityObserver : public NotificationObserver {
     }
   }
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserActivityObserver);
 };
@@ -250,7 +250,7 @@ void BrowserList::AddBrowser(Browser* browser) {
 
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_BROWSER_OPENED,
-      Source<Browser>(browser),
+      content::Source<Browser>(browser),
       NotificationService::NoDetails());
 
   // Send out notifications after add has occurred. Do some basic checking to
@@ -329,7 +329,8 @@ void BrowserList::RemoveBrowser(Browser* browser) {
   bool closing_last_browser = (browsers_.size() == 1);
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_BROWSER_CLOSED,
-      Source<Browser>(browser), Details<bool>(&closing_last_browser));
+      content::Source<Browser>(browser),
+      content::Details<bool>(&closing_last_browser));
 
   RemoveBrowserFrom(browser, &browsers_);
 

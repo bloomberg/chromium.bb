@@ -151,11 +151,11 @@ ExtensionHost::ExtensionHost(const Extension* extension,
   // Listen for when the render process' handle is available so we can add it
   // to the task manager then.
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CREATED,
-                 Source<RenderProcessHost>(render_process_host()));
+                 content::Source<RenderProcessHost>(render_process_host()));
   // Listen for when an extension is unloaded from the same profile, as it may
   // be the same extension that this points to.
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
-                 Source<Profile>(profile_));
+                 content::Source<Profile>(profile_));
 }
 
 // This "mock" constructor should only be used by unit tests.
@@ -177,8 +177,8 @@ ExtensionHost::ExtensionHost(const Extension* extension,
 ExtensionHost::~ExtensionHost() {
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
-      Source<Profile>(profile_),
-      Details<ExtensionHost>(this));
+      content::Source<Profile>(profile_),
+      content::Details<ExtensionHost>(this));
   ProcessCreationQueue::GetInstance()->Remove(this);
   GetJavaScriptDialogCreatorInstance()->ResetJavaScriptState(this);
   // render_view_host_ may be NULL in unit tests.
@@ -281,7 +281,7 @@ void ExtensionHost::NavigateToURL(const GURL& url) {
       !profile_->GetExtensionService()->IsBackgroundPageReady(extension_)) {
     // Make sure the background page loads before any others.
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY,
-                   Source<Extension>(extension_));
+                   content::Source<Extension>(extension_));
     return;
   }
 
@@ -289,8 +289,8 @@ void ExtensionHost::NavigateToURL(const GURL& url) {
 }
 
 void ExtensionHost::Observe(int type,
-                            const NotificationSource& source,
-                            const NotificationDetails& details) {
+                            const content::NotificationSource& source,
+                            const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY:
       DCHECK(profile_->GetExtensionService()->
@@ -300,16 +300,18 @@ void ExtensionHost::Observe(int type,
     case content::NOTIFICATION_RENDERER_PROCESS_CREATED:
       NotificationService::current()->Notify(
           chrome::NOTIFICATION_EXTENSION_PROCESS_CREATED,
-          Source<Profile>(profile_),
-          Details<ExtensionHost>(this));
+          content::Source<Profile>(profile_),
+          content::Details<ExtensionHost>(this));
       break;
     case chrome::NOTIFICATION_EXTENSION_UNLOADED:
       // The extension object will be deleted after this notification has been
       // sent. NULL it out so that dirty pointer issues don't arise in cases
       // when multiple ExtensionHost objects pointing to the same Extension are
       // present.
-      if (extension_ == Details<UnloadedExtensionInfo>(details)->extension)
+      if (extension_ ==
+          content::Details<UnloadedExtensionInfo>(details)->extension) {
         extension_ = NULL;
+      }
       break;
     default:
       NOTREACHED() << "Unexpected notification sent.";
@@ -346,8 +348,8 @@ void ExtensionHost::RenderViewGone(RenderViewHost* render_view_host,
   DCHECK_EQ(render_view_host_, render_view_host);
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
-      Source<Profile>(profile_),
-      Details<ExtensionHost>(this));
+      content::Source<Profile>(profile_),
+      content::Details<ExtensionHost>(this));
 }
 
 void ExtensionHost::DidNavigate(RenderViewHost* render_view_host,
@@ -388,8 +390,8 @@ void ExtensionHost::DidStopLoading() {
   if (notify) {
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
-        Source<Profile>(profile_),
-        Details<ExtensionHost>(this));
+        content::Source<Profile>(profile_),
+        content::Details<ExtensionHost>(this));
     if (extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
       UMA_HISTOGRAM_TIMES("Extensions.BackgroundPageLoadTime",
                           since_created_.Elapsed());
@@ -431,8 +433,8 @@ void ExtensionHost::DocumentOnLoadCompletedInMainFrame(RenderViewHost* rvh,
   if (chrome::VIEW_TYPE_EXTENSION_POPUP == GetRenderViewType()) {
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTENSION_POPUP_VIEW_READY,
-        Source<Profile>(profile_),
-        Details<ExtensionHost>(this));
+        content::Source<Profile>(profile_),
+        content::Details<ExtensionHost>(this));
   }
 }
 
@@ -503,8 +505,8 @@ void ExtensionHost::Close(RenderViewHost* render_view_host) {
       extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_INFOBAR) {
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
-        Source<Profile>(profile_),
-        Details<ExtensionHost>(this));
+        content::Source<Profile>(profile_),
+        content::Details<ExtensionHost>(this));
   }
 }
 
@@ -572,8 +574,8 @@ void ExtensionHost::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
         event.windowsKeyCode == ui::VKEY_ESCAPE) {
       NotificationService::current()->Notify(
           chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
-          Source<Profile>(profile_),
-          Details<ExtensionHost>(this));
+          content::Source<Profile>(profile_),
+          content::Details<ExtensionHost>(this));
       return;
     }
   }

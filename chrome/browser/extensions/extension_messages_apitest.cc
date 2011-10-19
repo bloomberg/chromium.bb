@@ -6,13 +6,13 @@
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/common/notification_service.h"
 #include "googleurl/src/gurl.h"
 
 namespace {
 
-class MessageSender : public NotificationObserver {
+class MessageSender : public content::NotificationObserver {
  public:
   MessageSender() {
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
@@ -21,32 +21,32 @@ class MessageSender : public NotificationObserver {
 
  private:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) {
     ExtensionEventRouter* event_router =
-        Source<Profile>(source).ptr()->GetExtensionEventRouter();
+        content::Source<Profile>(source).ptr()->GetExtensionEventRouter();
 
     // Sends four messages to the extension. All but the third message sent
     // from the origin http://b.com/ are supposed to arrive.
     event_router->DispatchEventToRenderers("test.onMessage",
         "[{\"lastMessage\":false,\"data\":\"no restriction\"}]",
-        Source<Profile>(source).ptr(),
+        content::Source<Profile>(source).ptr(),
         GURL());
     event_router->DispatchEventToRenderers("test.onMessage",
         "[{\"lastMessage\":false,\"data\":\"http://a.com/\"}]",
-        Source<Profile>(source).ptr(),
+        content::Source<Profile>(source).ptr(),
         GURL("http://a.com/"));
     event_router->DispatchEventToRenderers("test.onMessage",
         "[{\"lastMessage\":false,\"data\":\"http://b.com/\"}]",
-        Source<Profile>(source).ptr(),
+        content::Source<Profile>(source).ptr(),
         GURL("http://b.com/"));
     event_router->DispatchEventToRenderers("test.onMessage",
         "[{\"lastMessage\":true,\"data\":\"last message\"}]",
-        Source<Profile>(source).ptr(),
+        content::Source<Profile>(source).ptr(),
         GURL());
   }
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 };
 
 }  // namespace

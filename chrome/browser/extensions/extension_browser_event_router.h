@@ -14,7 +14,7 @@
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_registrar.h"
 #if defined(TOOLKIT_VIEWS)
 #include "views/focus/widget_focus_manager.h"
 #elif defined(TOOLKIT_GTK)
@@ -33,7 +33,7 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
                                     public ui::ActiveWindowWatcherX::Observer,
 #endif
                                     public BrowserList::Observer,
-                                    public NotificationObserver {
+                                    public content::NotificationObserver {
  public:
   explicit ExtensionBrowserEventRouter(Profile* profile);
   virtual ~ExtensionBrowserEventRouter();
@@ -95,10 +95,10 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
                              const std::string& extension_id,
                              Browser* browser);
 
-  // NotificationObserver.
+  // content::NotificationObserver.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
  private:
   // "Synthetic" event. Called from TabInsertedAt if new tab is detected.
   void TabCreatedAt(TabContents* contents, int index, bool active);
@@ -160,7 +160,7 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
   // Removes notifications added in RegisterForTabNotifications.
   void UnregisterForTabNotifications(TabContents* contents);
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   bool initialized_;
 

@@ -150,7 +150,7 @@ void PanelBrowserWindowGtk::OnSizeChanged(int width, int height) {
 
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_PANEL_WINDOW_SIZE_KNOWN,
-      Source<Panel>(panel_.get()),
+      content::Source<Panel>(panel_.get()),
       NotificationService::NoDetails());
 }
 
@@ -198,7 +198,7 @@ void PanelBrowserWindowGtk::ActiveWindowChanged(GdkWindow* active_window) {
 
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_PANEL_CHANGED_ACTIVE_STATUS,
-      Source<Panel>(panel_.get()),
+      content::Source<Panel>(panel_.get()),
       NotificationService::NoDetails());
 }
 
@@ -430,7 +430,7 @@ void PanelBrowserWindowGtk::DidProcessEvent(GdkEvent* event) {
 void PanelBrowserWindowGtk::AnimationEnded(const ui::Animation* animation) {
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
-      Source<Panel>(panel_.get()),
+      content::Source<Panel>(panel_.get()),
       NotificationService::NoDetails());
 }
 

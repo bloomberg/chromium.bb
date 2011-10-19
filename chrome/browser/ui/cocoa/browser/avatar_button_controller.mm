@@ -36,7 +36,7 @@
 
 namespace AvatarButtonControllerInternal {
 
-class Observer : public NotificationObserver {
+class Observer : public content::NotificationObserver {
  public:
   Observer(AvatarButtonController* button) : button_(button) {
     registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
@@ -45,8 +45,8 @@ class Observer : public NotificationObserver {
 
   // NotificationObserver:
   void Observe(int type,
-               const NotificationSource& source,
-               const NotificationDetails& details) OVERRIDE {
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) OVERRIDE {
     switch (type) {
       case chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED:
         [button_ updateAvatar];
@@ -59,7 +59,7 @@ class Observer : public NotificationObserver {
   }
 
  private:
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   AvatarButtonController* button_;  // Weak; owns this.
 };

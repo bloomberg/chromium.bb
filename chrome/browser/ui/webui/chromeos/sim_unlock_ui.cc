@@ -464,14 +464,14 @@ void SimUnlockHandler::NotifyOnEnterPinEnded(bool cancelled) {
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_ENTER_PIN_ENDED,
       NotificationService::AllSources(),
-      Details<bool>(&cancelled));
+      content::Details<bool>(&cancelled));
 }
 
 void SimUnlockHandler::NotifyOnRequirePinChangeEnded(bool new_value) {
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_REQUIRE_PIN_SETTING_CHANGE_ENDED,
       NotificationService::AllSources(),
-      Details<bool>(&new_value));
+      content::Details<bool>(&new_value));
 }
 
 void SimUnlockHandler::HandleCancel(const ListValue* args) {

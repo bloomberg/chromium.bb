@@ -10,8 +10,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/toolbar/bookmark_sub_menu_model.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/base/models/accelerator.h"
 #include "ui/base/models/button_menu_item_model.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -76,7 +76,7 @@ class WrenchMenuModel : public ui::SimpleMenuModel,
                         public ui::SimpleMenuModel::Delegate,
                         public ui::ButtonMenuItemModel::Delegate,
                         public TabStripModelObserver,
-                        public NotificationObserver {
+                        public content::NotificationObserver {
  public:
   WrenchMenuModel(ui::AcceleratorProvider* provider, Browser* browser);
   virtual ~WrenchMenuModel();
@@ -108,10 +108,10 @@ class WrenchMenuModel : public ui::SimpleMenuModel,
                              int index) OVERRIDE;
   virtual void TabStripModelDeleted() OVERRIDE;
 
-  // Overridden from NotificationObserver:
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Getters.
   Browser* browser() const { return browser_; }
@@ -157,7 +157,7 @@ class WrenchMenuModel : public ui::SimpleMenuModel,
   Browser* browser_;  // weak
   TabStripModel* tabstrip_model_; // weak
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(WrenchMenuModel);
 };

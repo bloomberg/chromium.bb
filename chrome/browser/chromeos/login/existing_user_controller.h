@@ -21,8 +21,8 @@
 #include "chrome/browser/chromeos/login/ownership_status_checker.h"
 #include "chrome/browser/chromeos/login/password_changed_view.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 #include "ui/gfx/rect.h"
@@ -44,7 +44,7 @@ class UserCrosSettingsProvider;
 // ExistingUserController maintains it's own life cycle and deletes itself when
 // the user logs in (or chooses to see other settings).
 class ExistingUserController : public LoginDisplay::Delegate,
-                               public NotificationObserver,
+                               public content::NotificationObserver,
                                public LoginPerformer::Delegate,
                                public LoginUtils::Delegate,
                                public CaptchaView::Delegate,
@@ -74,10 +74,10 @@ class ExistingUserController : public LoginDisplay::Delegate,
   virtual void OnUserSelected(const std::string& username) OVERRIDE;
   virtual void OnStartEnterpriseEnrollment() OVERRIDE;
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Set a delegate that we will pass LoginStatusConsumer events to.
   // Used for testing.
@@ -186,7 +186,7 @@ class ExistingUserController : public LoginDisplay::Delegate,
   GURL guest_mode_url_;
 
   // Used for user image changed notifications.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // Factory of callbacks.
   base::WeakPtrFactory<ExistingUserController> weak_factory_;

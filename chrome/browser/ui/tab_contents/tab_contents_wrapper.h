@@ -16,7 +16,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper_synced_tab_delegate.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_registrar.h"
 
 class AutocompleteHistoryManager;
 class AutofillManager;
@@ -79,7 +79,7 @@ class ClientSideDetectionHost;
 // the browser front-end is concerned, and the current TabContents will be
 // renamed to something like WebPage or WebView (ben's suggestions).
 class TabContentsWrapper : public TabContentsObserver,
-                           public NotificationObserver {
+                           public content::NotificationObserver {
  public:
   // Takes ownership of |contents|, which must be heap-allocated (as it lives
   // in a scoped_ptr) and can not be NULL.
@@ -223,10 +223,10 @@ class TabContentsWrapper : public TabContentsObserver,
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void TabContentsDestroyed(TabContents* tab) OVERRIDE;
 
-  // NotificationObserver overrides:
+  // content::NotificationObserver overrides:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   // Internal helpers ----------------------------------------------------------
@@ -257,7 +257,7 @@ class TabContentsWrapper : public TabContentsObserver,
   // Delegate for notifying our owner about stuff. Not owned by us.
   TabContentsWrapperDelegate* delegate_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
   PrefChangeRegistrar pref_change_registrar_;
 
   // Helper which implements the SyncedTabDelegate interface.

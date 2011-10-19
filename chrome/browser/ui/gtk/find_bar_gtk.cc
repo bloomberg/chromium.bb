@@ -301,7 +301,7 @@ void FindBarGtk::InitWidgets() {
 
   theme_service_->InitThemesFor(this);
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
-                 Source<ThemeService>(theme_service_));
+                 content::Source<ThemeService>(theme_service_));
 
   g_signal_connect(widget(), "parent-set", G_CALLBACK(OnParentSet), this);
 
@@ -457,8 +457,8 @@ FindBarTesting* FindBarGtk::GetFindBarTesting() {
 }
 
 void FindBarGtk::Observe(int type,
-                         const NotificationSource& source,
-                         const NotificationDetails& details) {
+                         const content::NotificationSource& source,
+                         const content::NotificationDetails& details) {
   DCHECK_EQ(type, chrome::NOTIFICATION_BROWSER_THEME_CHANGED);
 
   // Force reshapings of the find bar window.

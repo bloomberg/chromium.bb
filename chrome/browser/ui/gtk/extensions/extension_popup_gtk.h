@@ -12,15 +12,15 @@
 #include "base/task.h"
 #include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
 #include "chrome/browser/ui/gtk/extensions/extension_view_gtk.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/rect.h"
 
 class Browser;
 class ExtensionHost;
 class GURL;
 
-class ExtensionPopupGtk : public NotificationObserver,
+class ExtensionPopupGtk : public content::NotificationObserver,
                           public BubbleDelegateGtk,
                           public ExtensionViewGtk::Container {
  public:
@@ -35,10 +35,10 @@ class ExtensionPopupGtk : public NotificationObserver,
                    GtkWidget* anchor,
                    bool inspect);
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // BubbleDelegateGtk implementation.
   virtual void BubbleClosing(BubbleGtk* bubble,
@@ -87,7 +87,7 @@ class ExtensionPopupGtk : public NotificationObserver,
   // The widget for anchoring the position of the bubble.
   GtkWidget* anchor_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   static ExtensionPopupGtk* current_extension_popup_;
 

@@ -19,8 +19,8 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 
 namespace {
 
@@ -155,14 +155,15 @@ void CloudPolicySubsystem::UpdatePolicyRefreshRate(int64 refresh_rate) {
   }
 }
 
-void CloudPolicySubsystem::Observe(int type,
-                                   const NotificationSource& source,
-                                   const NotificationDetails& details) {
+void CloudPolicySubsystem::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_PREF_CHANGED) {
-    DCHECK_EQ(*(Details<std::string>(details).ptr()),
+    DCHECK_EQ(*(content::Details<std::string>(details).ptr()),
               std::string(refresh_pref_name_));
     PrefService* local_state = g_browser_process->local_state();
-    DCHECK_EQ(Source<PrefService>(source).ptr(), local_state);
+    DCHECK_EQ(content::Source<PrefService>(source).ptr(), local_state);
     UpdatePolicyRefreshRate(local_state->GetInteger(refresh_pref_name_));
   } else {
     NOTREACHED();

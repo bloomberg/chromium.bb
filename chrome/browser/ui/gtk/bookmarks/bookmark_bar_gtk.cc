@@ -158,7 +158,7 @@ BookmarkBarGtk::BookmarkBarGtk(BrowserWindowGtk* window,
                       BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
 
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
-                 Source<ThemeService>(theme_service_));
+                 content::Source<ThemeService>(theme_service_));
 
   edit_bookmarks_enabled_.Init(prefs::kEditBookmarksEnabled,
                                profile->GetPrefs(), this);
@@ -954,8 +954,8 @@ void BookmarkBarGtk::BookmarkNodeChildrenReordered(BookmarkModel* model,
 }
 
 void BookmarkBarGtk::Observe(int type,
-                             const NotificationSource& source,
-                             const NotificationDetails& details) {
+                             const content::NotificationSource& source,
+                             const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_BROWSER_THEME_CHANGED) {
     if (model_ && model_->IsLoaded()) {
       // Regenerate the bookmark bar with all new objects with their theme

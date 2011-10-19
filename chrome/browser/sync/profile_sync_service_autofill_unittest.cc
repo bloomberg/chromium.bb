@@ -53,7 +53,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_source.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using base::Time;
@@ -938,8 +938,8 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeAddEntry) {
   changes.push_back(AutofillChange(AutofillChange::ADD, added_entry.key()));
   scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&db_thread_));
   notifier->Notify(chrome::NOTIFICATION_AUTOFILL_ENTRIES_CHANGED,
-                   Source<WebDataService>(web_data_service_.get()),
-                   Details<AutofillChangeList>(&changes));
+                   content::Source<WebDataService>(web_data_service_.get()),
+                   content::Details<AutofillChangeList>(&changes));
 
   std::vector<AutofillEntry> new_sync_entries;
   std::vector<AutofillProfile> new_sync_profiles;
@@ -967,8 +967,8 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeAddProfile) {
       added_profile.guid(), &added_profile);
   scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&db_thread_));
   notifier->Notify(chrome::NOTIFICATION_AUTOFILL_PROFILE_CHANGED,
-                   Source<WebDataService>(web_data_service_.get()),
-                   Details<AutofillProfileChange>(&change));
+                   content::Source<WebDataService>(web_data_service_.get()),
+                   content::Details<AutofillProfileChange>(&change));
 
   std::vector<AutofillProfile> new_sync_profiles;
   ASSERT_TRUE(GetAutofillProfilesFromSyncDBUnderProfileNode(
@@ -1001,8 +1001,8 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeUpdateEntry) {
                                    updated_entry.key()));
   scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&db_thread_));
   notifier->Notify(chrome::NOTIFICATION_AUTOFILL_ENTRIES_CHANGED,
-                   Source<WebDataService>(web_data_service_.get()),
-                   Details<AutofillChangeList>(&changes));
+                   content::Source<WebDataService>(web_data_service_.get()),
+                   content::Details<AutofillChangeList>(&changes));
 
   std::vector<AutofillEntry> new_sync_entries;
   std::vector<AutofillProfile> new_sync_profiles;
@@ -1031,8 +1031,8 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeRemoveEntry) {
                                    original_entry.key()));
   scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&db_thread_));
   notifier->Notify(chrome::NOTIFICATION_AUTOFILL_ENTRIES_CHANGED,
-                   Source<WebDataService>(web_data_service_.get()),
-                   Details<AutofillChangeList>(&changes));
+                   content::Source<WebDataService>(web_data_service_.get()),
+                   content::Details<AutofillChangeList>(&changes));
 
   std::vector<AutofillEntry> new_sync_entries;
   std::vector<AutofillProfile> new_sync_profiles;
@@ -1069,8 +1069,8 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeRemoveProfile) {
                                sync_profile.guid(), NULL);
   scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&db_thread_));
   notifier->Notify(chrome::NOTIFICATION_AUTOFILL_PROFILE_CHANGED,
-                   Source<WebDataService>(web_data_service_.get()),
-                   Details<AutofillProfileChange>(&change));
+                   content::Source<WebDataService>(web_data_service_.get()),
+                   content::Details<AutofillProfileChange>(&change));
 
   std::vector<AutofillProfile> new_sync_profiles;
   ASSERT_TRUE(GetAutofillProfilesFromSyncDBUnderProfileNode(
@@ -1096,8 +1096,8 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeError) {
                                    evil_entry.key()));
   scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&db_thread_));
   notifier->Notify(chrome::NOTIFICATION_AUTOFILL_ENTRIES_CHANGED,
-                   Source<WebDataService>(web_data_service_.get()),
-                   Details<AutofillChangeList>(&changes));
+                   content::Source<WebDataService>(web_data_service_.get()),
+                   content::Details<AutofillChangeList>(&changes));
 
   // Wait for the PPS to shut everything down and signal us.
   ProfileSyncServiceObserverMock observer;
@@ -1108,8 +1108,8 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeError) {
 
   // Ensure future autofill notifications don't crash.
   notifier->Notify(chrome::NOTIFICATION_AUTOFILL_ENTRIES_CHANGED,
-                   Source<WebDataService>(web_data_service_.get()),
-                   Details<AutofillChangeList>(&changes));
+                   content::Source<WebDataService>(web_data_service_.get()),
+                   content::Details<AutofillChangeList>(&changes));
 }
 
 // Crashy, http://crbug.com/57884

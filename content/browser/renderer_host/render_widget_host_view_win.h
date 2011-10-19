@@ -22,8 +22,8 @@
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/common/content_export.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/base/win/ime_input.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
@@ -70,7 +70,7 @@ class RenderWidgetHostViewWin
                          CWindow,
                          RenderWidgetHostHWNDTraits>,
       public RenderWidgetHostView,
-      public NotificationObserver,
+      public content::NotificationObserver,
       public BrowserAccessibilityDelegate {
  public:
   // The view will associate itself with the given widget.
@@ -186,10 +186,10 @@ class RenderWidgetHostViewWin
   virtual bool LockMouse() OVERRIDE;
   virtual void UnlockMouse() OVERRIDE;
 
-  // Implementation of NotificationObserver:
+  // Implementation of content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Implementation of BrowserAccessibilityDelegate:
   virtual void SetAccessibilityFocus(int acc_obj_id) OVERRIDE;
@@ -384,7 +384,7 @@ class RenderWidgetHostViewWin
   SkColor overlay_color_;
 
   // Registrar so we can listen to RENDERER_PROCESS_TERMINATED events.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // Stores the current text input type received by TextInputStateChanged()
   // method.

@@ -35,7 +35,7 @@ ThemeInstalledInfoBarDelegate::ThemeInstalledInfoBarDelegate(
       previous_using_native_theme_(previous_using_native_theme) {
   theme_service_->OnInfobarDisplayed();
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
-                 Source<ThemeService>(theme_service_));
+                 content::Source<ThemeService>(theme_service_));
 }
 
 bool ThemeInstalledInfoBarDelegate::MatchesTheme(const Extension* theme) const {
@@ -99,8 +99,8 @@ string16 ThemeInstalledInfoBarDelegate::GetButtonLabel(
 
 void ThemeInstalledInfoBarDelegate::Observe(
     int type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_BROWSER_THEME_CHANGED, type);
   // If the new theme is different from what this info bar is associated with,
   // close this info bar since it is no longer relevant.

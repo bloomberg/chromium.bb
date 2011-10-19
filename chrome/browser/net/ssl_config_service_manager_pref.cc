@@ -17,8 +17,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "net/base/ssl_cipher_suite_names.h"
 #include "net/base/ssl_config_service.h"
 
@@ -108,7 +108,7 @@ void SSLConfigServicePref::SetNewSSLConfig(
 // The manager for holding and updating an SSLConfigServicePref instance.
 class SSLConfigServiceManagerPref
     : public SSLConfigServiceManager,
-      public NotificationObserver {
+      public content::NotificationObserver {
  public:
   explicit SSLConfigServiceManagerPref(PrefService* local_state);
   virtual ~SSLConfigServiceManagerPref() {}
@@ -122,8 +122,8 @@ class SSLConfigServiceManagerPref
   // Callback for preference changes.  This will post the changes to the IO
   // thread with SetNewSSLConfig.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Store SSL config settings in |config|, directly from the preferences. Must
   // only be called from UI thread.
@@ -174,13 +174,14 @@ net::SSLConfigService* SSLConfigServiceManagerPref::Get() {
   return ssl_config_service_;
 }
 
-void SSLConfigServiceManagerPref::Observe(int type,
-                                          const NotificationSource& source,
-                                          const NotificationDetails& details) {
+void SSLConfigServiceManagerPref::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_PREF_CHANGED) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    std::string* pref_name_in = Details<std::string>(details).ptr();
-    PrefService* prefs = Source<PrefService>(source).ptr();
+    std::string* pref_name_in = content::Details<std::string>(details).ptr();
+    PrefService* prefs = content::Source<PrefService>(source).ptr();
     DCHECK(pref_name_in && prefs);
     if (*pref_name_in == prefs::kCipherSuiteBlacklist)
       OnDisabledCipherSuitesChange(prefs);

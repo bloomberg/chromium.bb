@@ -8,7 +8,7 @@
 
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "content/browser/webui/web_ui.h"
-#include "content/common/notification_observer.h"
+#include "content/public/browser/notification_observer.h"
 
 class Extension;
 class PrefService;
@@ -37,7 +37,7 @@ enum Section {
 };
 
 class ShownSectionsHandler : public WebUIMessageHandler,
-                             public NotificationObserver {
+                             public content::NotificationObserver {
  public:
   explicit ShownSectionsHandler(PrefService* pref_service);
   virtual ~ShownSectionsHandler() {}
@@ -52,10 +52,10 @@ class ShownSectionsHandler : public WebUIMessageHandler,
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Callback for "setShownSections" message.
   void HandleSetShownSections(const base::ListValue* args);

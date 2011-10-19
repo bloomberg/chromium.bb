@@ -19,8 +19,8 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_source.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/common/page_transition_types.h"
 
@@ -112,12 +112,12 @@ TabContents* TabFinder::FindTab(Browser* browser,
 }
 
 void TabFinder::Observe(int type,
-                        const NotificationSource& source,
-                        const NotificationDetails& details) {
+                        const content::NotificationSource& source,
+                        const content::NotificationDetails& details) {
   DCHECK_EQ(type, content::NOTIFICATION_TAB_PARENTED);
 
   // The tab was added to a browser. Query for its state now.
-  TabContentsWrapper* tab = Source<TabContentsWrapper>(source).ptr();
+  TabContentsWrapper* tab = content::Source<TabContentsWrapper>(source).ptr();
   TrackTab(tab->tab_contents());
 }
 

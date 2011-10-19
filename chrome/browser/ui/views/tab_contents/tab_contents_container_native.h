@@ -7,8 +7,8 @@
 #pragma once
 
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_container.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "views/view.h"
 
 class NativeTabContentsContainer;
@@ -17,7 +17,7 @@ class RenderWidgetHostView;
 class TabContents;
 
 class TabContentsContainer : public views::View,
-                             public NotificationObserver {
+                             public content::NotificationObserver {
  public:
   TabContentsContainer();
   virtual ~TabContentsContainer();
@@ -41,10 +41,10 @@ class TabContentsContainer : public views::View,
   // should not be rendered to draw the resize corner, sidebar mini tabs etc.
   void SetReservedContentsRect(const gfx::Rect& reserved_rect);
 
-  // Overridden from NotificationObserver:
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Overridden from views::View:
   virtual void Layout() OVERRIDE;
@@ -84,7 +84,7 @@ class TabContentsContainer : public views::View,
   TabContents* tab_contents_;
 
   // Handles registering for our notifications.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // The current reserved rect in view coordinates where contents should not be
   // rendered to draw the resize corner, sidebar mini tabs etc.

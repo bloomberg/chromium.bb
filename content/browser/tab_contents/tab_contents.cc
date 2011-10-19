@@ -224,7 +224,7 @@ TabContents::~TabContents() {
   // Notify any observer that have a reference on this tab contents.
   NotificationService::current()->Notify(
       content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-      Source<TabContents>(this),
+      content::Source<TabContents>(this),
       NotificationService::NoDetails());
 
   // TODO(brettw) this should be moved to the view.
@@ -453,7 +453,7 @@ void TabContents::WasHidden() {
 
   NotificationService::current()->Notify(
       content::NOTIFICATION_TAB_CONTENTS_HIDDEN,
-      Source<TabContents>(this),
+      content::Source<TabContents>(this),
       NotificationService::NoDetails());
 }
 
@@ -985,8 +985,8 @@ void TabContents::OnDidFailProvisionalLoadWithError(
 
   NotificationService::current()->Notify(
       content::NOTIFICATION_FAIL_PROVISIONAL_LOAD_WITH_ERROR,
-      Source<NavigationController>(&controller_),
-      Details<ProvisionalLoadDetails>(&details));
+      content::Source<NavigationController>(&controller_),
+      content::Details<ProvisionalLoadDetails>(&details));
 
   FOR_EACH_OBSERVER(TabContentsObserver,
                     observers_,
@@ -1019,8 +1019,8 @@ void TabContents::OnDidLoadResourceFromMemoryCache(
 
   NotificationService::current()->Notify(
       content::NOTIFICATION_LOAD_FROM_MEMORY_CACHE,
-      Source<NavigationController>(&controller_),
-      Details<LoadFromMemoryCacheDetails>(&details));
+      content::Source<NavigationController>(&controller_),
+      content::Details<LoadFromMemoryCacheDetails>(&details));
 }
 
 void TabContents::OnDidDisplayInsecureContent() {
@@ -1092,8 +1092,8 @@ void TabContents::OnUpdateZoomLimits(int minimum_percent,
 void TabContents::OnFocusedNodeChanged(bool is_editable_node) {
   NotificationService::current()->Notify(
       content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
-      Source<TabContents>(this),
-      Details<const bool>(&is_editable_node));
+      content::Source<TabContents>(this),
+      content::Details<const bool>(&is_editable_node));
 }
 
 void TabContents::OnEnumerateDirectory(int request_id,
@@ -1177,11 +1177,11 @@ void TabContents::SetIsLoading(bool is_loading,
 
   int type = is_loading ? content::NOTIFICATION_LOAD_START :
       content::NOTIFICATION_LOAD_STOP;
-  NotificationDetails det = NotificationService::NoDetails();
+  content::NotificationDetails det = NotificationService::NoDetails();
   if (details)
-      det = Details<LoadNotificationDetails>(details);
+      det = content::Details<LoadNotificationDetails>(details);
   NotificationService::current()->Notify(type,
-      Source<NavigationController>(&controller_),
+      content::Source<NavigationController>(&controller_),
       det);
 }
 
@@ -1350,8 +1350,8 @@ bool TabContents::UpdateTitleForEntry(NavigationEntry* entry,
 
   NotificationService::current()->Notify(
       content::NOTIFICATION_TAB_CONTENTS_TITLE_UPDATED,
-      Source<TabContents>(this),
-      Details<TitleUpdatedDetails>(&details));
+      content::Source<TabContents>(this),
+      content::Details<TitleUpdatedDetails>(&details));
 
   return true;
 }
@@ -1363,7 +1363,7 @@ void TabContents::NotifySwapped() {
   notify_disconnection_ = true;
   NotificationService::current()->Notify(
       content::NOTIFICATION_TAB_CONTENTS_SWAPPED,
-      Source<TabContents>(this),
+      content::Source<TabContents>(this),
       NotificationService::NoDetails());
 }
 
@@ -1371,7 +1371,7 @@ void TabContents::NotifyConnected() {
   notify_disconnection_ = true;
   NotificationService::current()->Notify(
       content::NOTIFICATION_TAB_CONTENTS_CONNECTED,
-      Source<TabContents>(this),
+      content::Source<TabContents>(this),
       NotificationService::NoDetails());
 }
 
@@ -1382,7 +1382,7 @@ void TabContents::NotifyDisconnected() {
   notify_disconnection_ = false;
   NotificationService::current()->Notify(
       content::NOTIFICATION_TAB_CONTENTS_DISCONNECTED,
-      Source<TabContents>(this),
+      content::Source<TabContents>(this),
       NotificationService::NoDetails());
 }
 
@@ -1411,8 +1411,8 @@ content::ViewType TabContents::GetRenderViewType() const {
 void TabContents::RenderViewCreated(RenderViewHost* render_view_host) {
   NotificationService::current()->Notify(
       content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB,
-      Source<TabContents>(this),
-      Details<RenderViewHost>(render_view_host));
+      content::Source<TabContents>(this),
+      content::Details<RenderViewHost>(render_view_host));
   NavigationEntry* entry = controller_.GetActiveEntry();
   if (!entry)
     return;
@@ -1680,8 +1680,8 @@ void TabContents::DocumentOnLoadCompletedInMainFrame(
     int32 page_id) {
   NotificationService::current()->Notify(
       content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
-      Source<TabContents>(this),
-      Details<int>(&page_id));
+      content::Source<TabContents>(this),
+      content::Details<int>(&page_id));
 }
 
 void TabContents::RequestOpenURL(const GURL& url,

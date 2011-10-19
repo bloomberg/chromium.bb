@@ -33,8 +33,8 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/browser/user_metrics.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -108,7 +108,7 @@ WebUIMessageHandler* BrowsingHistoryHandler2::Attach(WebUI* web_ui) {
 
   // Get notifications when history is cleared.
   registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_DELETED,
-      Source<Profile>(profile->GetOriginalProfile()));
+      content::Source<Profile>(profile->GetOriginalProfile()));
   return WebUIMessageHandler::Attach(web_ui);
 }
 
@@ -362,15 +362,16 @@ history::QueryOptions BrowsingHistoryHandler2::CreateMonthQueryOptions(
   return options;
 }
 
-void BrowsingHistoryHandler2::Observe(int type,
-                                     const NotificationSource& source,
-                                     const NotificationDetails& details) {
+void BrowsingHistoryHandler2::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (type != chrome::NOTIFICATION_HISTORY_URLS_DELETED) {
     NOTREACHED();
     return;
   }
   history::URLsDeletedDetails* deletedDetails =
-      Details<history::URLsDeletedDetails>(details).ptr();
+      content::Details<history::URLsDeletedDetails>(details).ptr();
   if (deletedDetails->urls != urls_to_be_deleted_) {
     // Notify the page that someone else deleted from the history.
     web_ui_->CallJavascriptFunction("historyDeleted");

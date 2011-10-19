@@ -12,8 +12,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
 
 class GURL;
@@ -22,7 +22,7 @@ struct UserMetricsAction;
 
 // The base class handler of Javascript messages of options pages.
 class OptionsPageUIHandler : public WebUIMessageHandler,
-                             public NotificationObserver {
+                             public content::NotificationObserver {
  public:
   OptionsPageUIHandler();
   virtual ~OptionsPageUIHandler();
@@ -43,10 +43,10 @@ class OptionsPageUIHandler : public WebUIMessageHandler,
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE {}
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE {}
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE {}
 
  protected:
   struct OptionsStringResource {
@@ -65,7 +65,7 @@ class OptionsPageUIHandler : public WebUIMessageHandler,
                             const std::string& variable_name,
                             int title_id);
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(OptionsPageUIHandler);

@@ -95,12 +95,12 @@ void PrintJobManager::RegisterPrefs(PrefService* prefs) {
 }
 
 void PrintJobManager::Observe(int type,
-                              const NotificationSource& source,
-                              const NotificationDetails& details) {
+                              const content::NotificationSource& source,
+                              const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_PRINT_JOB_EVENT: {
-      OnPrintJobEvent(Source<PrintJob>(source).ptr(),
-                      *Details<JobEventDetails>(details).ptr());
+      OnPrintJobEvent(content::Source<PrintJob>(source).ptr(),
+                      *content::Details<JobEventDetails>(details).ptr());
       break;
     }
     default: {

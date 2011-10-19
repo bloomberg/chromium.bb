@@ -13,8 +13,8 @@
 #include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ipc/ipc_message.h"
 
 class GURL;
@@ -23,7 +23,7 @@ class ExtensionDevToolsManager;
 class Profile;
 class RenderProcessHost;
 
-class ExtensionEventRouter : public NotificationObserver {
+class ExtensionEventRouter : public content::NotificationObserver {
  public:
   // Sends an event via ipc_sender to the given extension. Can be called on
   // any thread.
@@ -111,12 +111,12 @@ class ExtensionEventRouter : public NotificationObserver {
   struct EventListener;
 
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   Profile* profile_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   scoped_refptr<ExtensionDevToolsManager> extension_devtools_manager_;
 

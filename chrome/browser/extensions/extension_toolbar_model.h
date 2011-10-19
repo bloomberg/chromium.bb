@@ -9,14 +9,14 @@
 #include "base/compiler_specific.h"
 #include "base/observer_list.h"
 #include "chrome/common/extensions/extension.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class ExtensionService;
 class PrefService;
 
 // Model for the browser actions toolbar.
-class ExtensionToolbarModel : public NotificationObserver {
+class ExtensionToolbarModel : public content::NotificationObserver {
  public:
   explicit ExtensionToolbarModel(ExtensionService* service);
   virtual ~ExtensionToolbarModel();
@@ -74,10 +74,10 @@ class ExtensionToolbarModel : public NotificationObserver {
   int OriginalIndexToIncognito(int original_index);
 
  private:
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // To be called after the extension service is ready; gets loaded extensions
   // from the extension service and their saved order from the pref service
@@ -114,7 +114,7 @@ class ExtensionToolbarModel : public NotificationObserver {
   // chevron).
   int visible_icon_count_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_TOOLBAR_MODEL_H_

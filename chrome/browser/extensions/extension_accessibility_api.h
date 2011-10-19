@@ -13,12 +13,12 @@
 #include "base/values.h"
 #include "chrome/browser/accessibility_events.h"
 #include "chrome/browser/extensions/extension_function.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 // Observes the profile and routes accessibility notifications as events
 // to the extension system.
-class ExtensionAccessibilityEventRouter : public NotificationObserver {
+class ExtensionAccessibilityEventRouter : public content::NotificationObserver {
  public:
   // Single instance of the event router.
   static ExtensionAccessibilityEventRouter* GetInstance();
@@ -42,10 +42,10 @@ class ExtensionAccessibilityEventRouter : public NotificationObserver {
   ExtensionAccessibilityEventRouter();
   virtual ~ExtensionAccessibilityEventRouter();
 
-  // NotificationObserver::Observe.
+  // content::NotificationObserver::Observe.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   void OnWindowOpened(const AccessibilityWindowInfo* details);
   void OnWindowClosed(const AccessibilityWindowInfo* details);
@@ -61,7 +61,7 @@ class ExtensionAccessibilityEventRouter : public NotificationObserver {
                      const std::string& json_args);
 
   // Used for tracking registrations to history service notifications.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DictionaryValue last_focused_control_dict_;
 

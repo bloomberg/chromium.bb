@@ -132,8 +132,8 @@ void PasswordStoreDefault::AddLoginImpl(const PasswordForm& form) {
     changes.push_back(PasswordStoreChange(PasswordStoreChange::ADD, form));
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_LOGINS_CHANGED,
-        Source<PasswordStore>(this),
-        Details<PasswordStoreChangeList>(&changes));
+        content::Source<PasswordStore>(this),
+        content::Details<PasswordStoreChangeList>(&changes));
   }
 }
 
@@ -143,8 +143,8 @@ void PasswordStoreDefault::UpdateLoginImpl(const PasswordForm& form) {
     changes.push_back(PasswordStoreChange(PasswordStoreChange::UPDATE, form));
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_LOGINS_CHANGED,
-        Source<PasswordStore>(this),
-        Details<PasswordStoreChangeList>(&changes));
+        content::Source<PasswordStore>(this),
+        content::Details<PasswordStoreChangeList>(&changes));
   }
 }
 
@@ -154,8 +154,8 @@ void PasswordStoreDefault::RemoveLoginImpl(const PasswordForm& form) {
     changes.push_back(PasswordStoreChange(PasswordStoreChange::REMOVE, form));
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_LOGINS_CHANGED,
-        Source<PasswordStore>(this),
-        Details<PasswordStoreChangeList>(&changes));
+        content::Source<PasswordStore>(this),
+        content::Details<PasswordStoreChangeList>(&changes));
   }
 }
 
@@ -172,8 +172,8 @@ void PasswordStoreDefault::RemoveLoginsCreatedBetweenImpl(
       }
       NotificationService::current()->Notify(
           chrome::NOTIFICATION_LOGINS_CHANGED,
-          Source<PasswordStore>(this),
-          Details<PasswordStoreChangeList>(&changes));
+          content::Source<PasswordStore>(this),
+          content::Details<PasswordStoreChangeList>(&changes));
     }
   }
   STLDeleteElements(&forms);

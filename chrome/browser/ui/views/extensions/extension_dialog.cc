@@ -14,8 +14,8 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "googleurl/src/gurl.h"
 #include "views/widget/widget.h"
 
@@ -50,7 +50,7 @@ ExtensionDialog::ExtensionDialog(ExtensionHost* host,
 
   // Listen for the containing view calling window.close();
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
-                 Source<Profile>(host->profile()));
+                 content::Source<Profile>(host->profile()));
 }
 
 ExtensionDialog::~ExtensionDialog() {
@@ -150,15 +150,15 @@ views::View* ExtensionDialog::GetContentsView() {
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// NotificationObserver overrides.
+// content::NotificationObserver overrides.
 
 void ExtensionDialog::Observe(int type,
-                             const NotificationSource& source,
-                             const NotificationDetails& details) {
+                             const content::NotificationSource& source,
+                             const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE:
       // If we aren't the host of the popup, then disregard the notification.
-      if (Details<ExtensionHost>(host()) != details)
+      if (content::Details<ExtensionHost>(host()) != details)
         return;
       Close();
       break;

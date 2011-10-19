@@ -35,7 +35,7 @@ class PanelAnimatedBoundsObserver :
   PanelAnimatedBoundsObserver(Panel* panel)
     : ui_test_utils::WindowedNotificationObserver(
         chrome::NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
-        Source<Panel>(panel)) { }
+        content::Source<Panel>(panel)) { }
   virtual ~PanelAnimatedBoundsObserver() { }
 };
 
@@ -105,7 +105,7 @@ class PanelBrowserWindowCocoaTest : public CocoaProfileTest {
     size_t browser_count = BrowserList::size();
     ui_test_utils::WindowedNotificationObserver signal(
         chrome::NOTIFICATION_BROWSER_CLOSED,
-        Source<Browser>(browser));
+        content::Source<Browser>(browser));
     browser->CloseWindow();
     signal.Wait();
     // Now we have one less browser instance.
@@ -290,7 +290,7 @@ TEST_F(PanelBrowserWindowCocoaTest, TitlebarViewClose) {
   // Simulate clicking Close Button and wait until the Panel closes.
   ui_test_utils::WindowedNotificationObserver signal(
       chrome::NOTIFICATION_BROWSER_CLOSED,
-      Source<Browser>(panel->browser()));
+      content::Source<Browser>(panel->browser()));
   [titlebar simulateCloseButtonClick];
   signal.Wait();
   EXPECT_EQ(0, manager->num_panels());

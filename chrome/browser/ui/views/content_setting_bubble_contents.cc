@@ -20,7 +20,7 @@
 #include "chrome/browser/ui/views/browser_dialogs.h"
 #include "chrome/browser/ui/views/bubble/bubble.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -116,7 +116,7 @@ ContentSettingBubbleContents::ContentSettingBubbleContents(
       manage_link_(NULL),
       close_button_(NULL) {
   registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                 Source<TabContents>(tab_contents));
+                 content::Source<TabContents>(tab_contents));
 }
 
 ContentSettingBubbleContents::~ContentSettingBubbleContents() {
@@ -178,11 +178,12 @@ void ContentSettingBubbleContents::LinkClicked(views::Link* source,
   content_setting_bubble_model_->OnPopupClicked(i->second);
 }
 
-void ContentSettingBubbleContents::Observe(int type,
-                                           const NotificationSource& source,
-                                           const NotificationDetails& details) {
+void ContentSettingBubbleContents::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK(type == content::NOTIFICATION_TAB_CONTENTS_DESTROYED);
-  DCHECK(source == Source<TabContents>(tab_contents_));
+  DCHECK(source == content::Source<TabContents>(tab_contents_));
   tab_contents_ = NULL;
 }
 

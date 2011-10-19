@@ -15,8 +15,8 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/browser/cancelable_request.h"
 #include "content/browser/webui/web_ui.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class AppNotification;
 class ExtensionPrefs;
@@ -34,7 +34,7 @@ class Rect;
 class AppLauncherHandler : public WebUIMessageHandler,
                            public ExtensionUninstallDialog::Delegate,
                            public ExtensionInstallUI::Delegate,
-                           public NotificationObserver {
+                           public content::NotificationObserver {
  public:
   explicit AppLauncherHandler(ExtensionService* extension_service);
   virtual ~AppLauncherHandler();
@@ -57,10 +57,10 @@ class AppLauncherHandler : public WebUIMessageHandler,
   virtual WebUIMessageHandler* Attach(WebUI* web_ui) OVERRIDE;
   virtual void RegisterMessages() OVERRIDE;
 
-  // NotificationObserver
+  // content::NotificationObserver
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Populate the given dictionary with all installed app info.
   void FillAppDictionary(base::DictionaryValue* value);
@@ -172,7 +172,7 @@ class AppLauncherHandler : public WebUIMessageHandler,
 
   // We monitor changes to the extension system so that we can reload the apps
   // when necessary.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // Monitor extension preference changes so that the Web UI can be notified.
   PrefChangeRegistrar pref_change_registrar_;

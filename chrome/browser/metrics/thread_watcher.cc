@@ -595,9 +595,10 @@ void ThreadWatcherObserver::RemoveNotifications() {
   delete g_thread_watcher_observer_;
 }
 
-void ThreadWatcherObserver::Observe(int type,
-                                    const NotificationSource& source,
-                                    const NotificationDetails& details) {
+void ThreadWatcherObserver::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   // There is some user activity, see if thread watchers are to be awakened.
   base::TimeTicks now = base::TimeTicks::Now();
   if ((now - last_wakeup_time_) < wakeup_interval_)

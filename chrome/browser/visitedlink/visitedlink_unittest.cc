@@ -501,12 +501,14 @@ class VisitRelayingRenderProcessHost : public BrowserRenderProcessHost {
           : BrowserRenderProcessHost(browser_context) {
     NotificationService::current()->Notify(
         content::NOTIFICATION_RENDERER_PROCESS_CREATED,
-        Source<RenderProcessHost>(this), NotificationService::NoDetails());
+        content::Source<RenderProcessHost>(this),
+        NotificationService::NoDetails());
   }
   virtual ~VisitRelayingRenderProcessHost() {
     NotificationService::current()->Notify(
         content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-        Source<RenderProcessHost>(this), NotificationService::NoDetails());
+        content::Source<RenderProcessHost>(this),
+        NotificationService::NoDetails());
   }
 
   virtual bool Init(bool is_accessibility_enabled) {

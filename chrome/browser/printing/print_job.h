@@ -10,8 +10,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "chrome/browser/printing/print_job_worker_owner.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class GURL;
 class Thread;
@@ -34,7 +34,7 @@ class PrinterQuery;
 // reference to the job to be sure it is kept alive. All the code in this class
 // runs in the UI thread.
 class PrintJob : public PrintJobWorkerOwner,
-                 public NotificationObserver,
+                 public content::NotificationObserver,
                  public MessageLoop::DestructionObserver {
  public:
   // Create a empty PrintJob. When initializing with this constructor,
@@ -46,10 +46,10 @@ class PrintJob : public PrintJobWorkerOwner,
   void Initialize(PrintJobWorkerOwner* job, PrintedPagesSource* source,
                   int page_count);
 
-  // NotificationObserver
+  // content::NotificationObserver
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // PrintJobWorkerOwner
   virtual void GetSettingsDone(const PrintSettings& new_settings,
@@ -109,7 +109,7 @@ class PrintJob : public PrintJobWorkerOwner,
   // eventual deadlock.
   void ControlledWorkerShutdown();
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // Main message loop reference. Used to send notifications in the right
   // thread.

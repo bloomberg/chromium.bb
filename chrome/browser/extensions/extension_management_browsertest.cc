@@ -227,7 +227,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, DisableEnable) {
 }
 
 // Used for testing notifications sent during extension updates.
-class NotificationListener : public NotificationObserver {
+class NotificationListener : public content::NotificationObserver {
  public:
   NotificationListener() : started_(false), finished_(false) {
     int types[] = {
@@ -253,10 +253,10 @@ class NotificationListener : public NotificationObserver {
     updates_.clear();
   }
 
-  // Implements NotificationObserver interface.
+  // Implements content::NotificationObserver interface.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) {
     switch (type) {
       case chrome::NOTIFICATION_EXTENSION_UPDATING_STARTED: {
         DCHECK(!started_);
@@ -269,7 +269,8 @@ class NotificationListener : public NotificationObserver {
         break;
       }
       case chrome::NOTIFICATION_EXTENSION_UPDATE_FOUND: {
-        const std::string* id = Details<const std::string>(details).ptr();
+        const std::string* id =
+            content::Details<const std::string>(details).ptr();
         updates_.insert(*id);
         break;
       }
@@ -279,7 +280,7 @@ class NotificationListener : public NotificationObserver {
   }
 
  private:
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // Did we see EXTENSION_UPDATING_STARTED?
   bool started_;

@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_NOTIFICATION_OBSERVER_H_
-#define CONTENT_COMMON_NOTIFICATION_OBSERVER_H_
+#ifndef CONTENT_PUBLIC_BROWSER_NOTIFICATION_OBSERVER_H_
+#define CONTENT_PUBLIC_BROWSER_NOTIFICATION_OBSERVER_H_
 #pragma once
 
 #include "content/common/content_export.h"
+
+namespace content {
 
 class NotificationDetails;
 class NotificationSource;
@@ -15,12 +17,14 @@ class NotificationSource;
 // notification is posted to the notification service, Observe is called.
 class CONTENT_EXPORT NotificationObserver {
  public:
-  NotificationObserver();
-  virtual ~NotificationObserver();
+  NotificationObserver() {}
+  virtual ~NotificationObserver() {}
 
   virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) = 0;
 };
 
-#endif  // CONTENT_COMMON_NOTIFICATION_OBSERVER_H_
+}  // namespace content
+
+#endif  // CONTENT_PUBLIC_BROWSER_NOTIFICATION_OBSERVER_H_

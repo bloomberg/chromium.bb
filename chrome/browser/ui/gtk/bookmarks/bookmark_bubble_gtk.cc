@@ -61,13 +61,13 @@ void BookmarkBubbleGtk::BubbleClosing(BubbleGtk* bubble,
 
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_BOOKMARK_BUBBLE_HIDDEN,
-      Source<Profile>(profile_->GetOriginalProfile()),
+      content::Source<Profile>(profile_->GetOriginalProfile()),
       NotificationService::NoDetails());
 }
 
 void BookmarkBubbleGtk::Observe(int type,
-                                const NotificationSource& source,
-                                const NotificationDetails& details) {
+                                const content::NotificationSource& source,
+                                const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_BROWSER_THEME_CHANGED);
 
   if (theme_service_->UsingNativeTheme()) {
@@ -190,7 +190,7 @@ BookmarkBubbleGtk::BookmarkBubbleGtk(GtkWidget* anchor,
                    G_CALLBACK(&OnRemoveClickedThunk), this);
 
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
-                 Source<ThemeService>(theme_service_));
+                 content::Source<ThemeService>(theme_service_));
   theme_service_->InitThemesFor(this);
 }
 

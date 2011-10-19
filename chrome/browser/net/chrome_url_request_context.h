@@ -11,8 +11,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -90,7 +90,7 @@ class ChromeURLRequestContext : public net::URLRequestContext {
 // Most methods are expected to be called on the UI thread, except for
 // the destructor and GetURLRequestContext().
 class ChromeURLRequestContextGetter : public net::URLRequestContextGetter,
-                                      public NotificationObserver {
+                                      public content::NotificationObserver {
  public:
   // Constructs a ChromeURLRequestContextGetter that will use |factory| to
   // create the ChromeURLRequestContext. If |profile| is non-NULL, then the
@@ -159,10 +159,10 @@ class ChromeURLRequestContextGetter : public net::URLRequestContextGetter,
   // thread before the instance is deleted on the IO thread.
   void CleanupOnUIThread();
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
  private:
   // Must be called on the IO thread.

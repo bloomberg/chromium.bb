@@ -9,8 +9,8 @@
 #include <gtk/gtk.h>
 
 #include "base/memory/scoped_ptr.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
@@ -28,7 +28,7 @@ class SkBitmap;
 // CustomDrawButtonBase provides the base for building a custom drawn button.
 // It handles managing the pixbufs containing all the static images used to draw
 // the button.  It also manages painting these pixbufs.
-class CustomDrawButtonBase : public NotificationObserver {
+class CustomDrawButtonBase : public content::NotificationObserver {
  public:
   // If the images come from ResourceBundle rather than the theme provider,
   // pass in NULL for |theme_provider|.
@@ -56,10 +56,10 @@ class CustomDrawButtonBase : public NotificationObserver {
   // Set the background details.
   void SetBackground(SkColor color, SkBitmap* image, SkBitmap* mask);
 
-  // Provide NotificationObserver implementation.
+  // Provide content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
  private:
   // Get the CairoCachedSurface from |surfaces_| for |state|.
@@ -89,7 +89,7 @@ class CustomDrawButtonBase : public NotificationObserver {
   bool flipped_;
 
   // Used to listen for theme change notifications.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomDrawButtonBase);
 };
@@ -126,7 +126,7 @@ class CustomDrawHoverController : public ui::AnimationDelegate {
 // CustomDrawButton is a plain button where all its various states are drawn
 // with static images. In GTK rendering mode, it will show the standard button
 // with GTK |stock_id|.
-class CustomDrawButton : public NotificationObserver {
+class CustomDrawButton : public content::NotificationObserver {
  public:
   // The constructor takes 4 resource ids.  If a resource doesn't exist for a
   // button, pass in 0.
@@ -192,10 +192,10 @@ class CustomDrawButton : public NotificationObserver {
   // Set the background details.
   void SetBackground(SkColor color, SkBitmap* image, SkBitmap* mask);
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Returns a standard close button. Pass a |theme_provider| to use Gtk icons
   // in Gtk rendering mode.
@@ -230,7 +230,7 @@ class CustomDrawButton : public NotificationObserver {
   bool forcing_chrome_theme_;
 
   // Used to listen for theme change notifications.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomDrawButton);
 };

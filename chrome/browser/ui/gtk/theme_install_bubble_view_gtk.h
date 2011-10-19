@@ -9,18 +9,18 @@
 #include <gtk/gtk.h>
 
 #include "base/basictypes.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/base/gtk/gtk_signal.h"
 
-class ThemeInstallBubbleViewGtk : public NotificationObserver {
+class ThemeInstallBubbleViewGtk : public content::NotificationObserver {
  public:
   static void Show(GtkWindow* parent);
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
  private:
   explicit ThemeInstallBubbleViewGtk(GtkWidget* parent);
@@ -51,7 +51,7 @@ class ThemeInstallBubbleViewGtk : public NotificationObserver {
   // The number of loads we represent. When it reaches 0 we delete ourselves.
   int num_loads_extant_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // Our one instance. We don't allow more than one to exist at a time.
   static ThemeInstallBubbleViewGtk* instance_;

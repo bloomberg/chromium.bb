@@ -214,11 +214,11 @@ void CapsLockMenuButton::OnCapsLockChange(bool enabled) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// NotificationObserver implementation
+// content::NotificationObserver implementation
 
 void CapsLockMenuButton::Observe(int type,
-                                 const NotificationSource& source,
-                                 const NotificationDetails& details) {
+                                 const content::NotificationSource& source,
+                                 const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_PREF_CHANGED)
     UpdateAccessibleName();
 }

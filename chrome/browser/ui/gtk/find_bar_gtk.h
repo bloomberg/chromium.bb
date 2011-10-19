@@ -13,8 +13,8 @@
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/gtk/focus_store_gtk.h"
 #include "chrome/browser/ui/gtk/slide_animator_gtk.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
 #include "ui/gfx/point.h"
@@ -34,7 +34,7 @@ typedef struct _GtkFloatingContainer GtkFloatingContainer;
 // eventually pull out the model specific bits and share with Windows.
 class FindBarGtk : public FindBar,
                    public FindBarTesting,
-                   public NotificationObserver {
+                   public content::NotificationObserver {
  public:
   explicit FindBarGtk(BrowserWindowGtk* window);
   virtual ~FindBarGtk();
@@ -67,10 +67,10 @@ class FindBarGtk : public FindBar,
   virtual string16 GetMatchCountText();
   virtual int GetWidth();
 
-  // Overridden from NotificationObserver:
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
  private:
   void InitWidgets();
@@ -234,7 +234,7 @@ class FindBarGtk : public FindBar,
   // it up.
   gfx::Rect selection_rect_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(FindBarGtk);
 };

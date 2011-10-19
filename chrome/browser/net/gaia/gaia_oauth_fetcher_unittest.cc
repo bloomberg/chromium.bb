@@ -125,8 +125,8 @@ TEST(GaiaOAuthFetcherTest, GetOAuthToken) {
 
   oauth_fetcher.Observe(
       chrome::NOTIFICATION_COOKIE_CHANGED,
-      Source<Profile>(&profile),
-      Details<ChromeCookieDetails>(cookie_details.get()));
+      content::Source<Profile>(&profile),
+      content::Details<ChromeCookieDetails>(cookie_details.get()));
 }
 #endif  // 0  // Suppressing for now
 

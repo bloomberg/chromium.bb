@@ -11,8 +11,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/bookmarks/bookmark_index.h"
 #include "chrome/common/important_file_writer.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class BookmarkModel;
 class BookmarkNode;
@@ -89,7 +89,7 @@ class BookmarkLoadDetails {
 // as notifying the BookmarkStorage every time the model changes.
 //
 // Internally BookmarkStorage uses BookmarkCodec to do the actual read/write.
-class BookmarkStorage : public NotificationObserver,
+class BookmarkStorage : public content::NotificationObserver,
                         public ImportantFileWriter::DataSerializer,
                         public base::RefCountedThreadSafe<BookmarkStorage> {
  public:
@@ -137,10 +137,10 @@ class BookmarkStorage : public NotificationObserver,
   // the temporary file, and notifies the model.
   void FinishHistoryMigration();
 
-  // NotificationObserver
+  // content::NotificationObserver
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Serializes the data and schedules save using ImportantFileWriter.
   // Returns true on successful serialization.
@@ -156,7 +156,7 @@ class BookmarkStorage : public NotificationObserver,
   ImportantFileWriter writer_;
 
   // Helper to ensure that we unregister from notifications on destruction.
-  NotificationRegistrar notification_registrar_;
+  content::NotificationRegistrar notification_registrar_;
 
   // Path to temporary file created during migrating bookmarks from history.
   const FilePath tmp_history_path_;

@@ -159,7 +159,7 @@ TEST_F(UserScriptListenerTest, DelayAndUpdate) {
 
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_USER_SCRIPTS_UPDATED,
-      Source<Profile>(profile_.get()),
+      content::Source<Profile>(profile_.get()),
       NotificationService::NoDetails());
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kTestData, delegate.data_received());
@@ -182,7 +182,7 @@ TEST_F(UserScriptListenerTest, DelayAndUnload) {
 
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_USER_SCRIPTS_UPDATED,
-      Source<Profile>(profile_.get()),
+      content::Source<Profile>(profile_.get()),
       NotificationService::NoDetails());
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kTestData, delegate.data_received());
@@ -228,8 +228,8 @@ TEST_F(UserScriptListenerTest, MultiProfile) {
 
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_LOADED,
-      Source<Profile>(&profile2),
-      Details<Extension>(extension.get()));
+      content::Source<Profile>(&profile2),
+      content::Details<Extension>(extension.get()));
 
   TestDelegate delegate;
   scoped_ptr<TestURLRequest> request(StartTestRequest(&delegate, kMatchingUrl));
@@ -239,7 +239,7 @@ TEST_F(UserScriptListenerTest, MultiProfile) {
   // be blocked waiting for profile2.
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_USER_SCRIPTS_UPDATED,
-      Source<Profile>(profile_.get()),
+      content::Source<Profile>(profile_.get()),
       NotificationService::NoDetails());
   MessageLoop::current()->RunAllPending();
   ASSERT_FALSE(request->is_pending());
@@ -248,7 +248,7 @@ TEST_F(UserScriptListenerTest, MultiProfile) {
   // After profile2 is ready, the request should proceed.
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_USER_SCRIPTS_UPDATED,
-      Source<Profile>(&profile2),
+      content::Source<Profile>(&profile2),
       NotificationService::NoDetails());
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kTestData, delegate.data_received());

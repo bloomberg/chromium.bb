@@ -1272,26 +1272,26 @@ void SafeBrowsingService::UpdateWhitelist(const UnsafeResource& resource) {
 }
 
 void SafeBrowsingService::Observe(int type,
-                                  const NotificationSource& source,
-                                  const NotificationDetails& details) {
+                                  const content::NotificationSource& source,
+                                  const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_PROFILE_CREATED: {
       DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-      Profile* profile = Source<Profile>(source).ptr();
+      Profile* profile = content::Source<Profile>(source).ptr();
       if (!profile->IsOffTheRecord())
         AddPrefService(profile->GetPrefs());
       break;
     }
     case chrome::NOTIFICATION_PROFILE_DESTROYED: {
       DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-      Profile* profile = Source<Profile>(source).ptr();
+      Profile* profile = content::Source<Profile>(source).ptr();
       if (!profile->IsOffTheRecord())
         RemovePrefService(profile->GetPrefs());
       break;
     }
     case chrome::NOTIFICATION_PREF_CHANGED: {
       DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-      std::string* pref = Details<std::string>(details).ptr();
+      std::string* pref = content::Details<std::string>(details).ptr();
       DCHECK(*pref == prefs::kSafeBrowsingEnabled);
       RefreshState();
       break;

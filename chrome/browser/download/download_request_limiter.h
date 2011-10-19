@@ -11,8 +11,8 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class DownloadRequestInfoBarDelegate;
 class NavigationController;
@@ -69,7 +69,7 @@ class DownloadRequestLimiter
   // TabDownloadState prompts the user with an infobar as necessary.
   // TabDownloadState deletes itself (by invoking
   // DownloadRequestLimiter::Remove) as necessary.
-  class TabDownloadState : public NotificationObserver {
+  class TabDownloadState : public content::NotificationObserver {
    public:
     // Creates a new TabDownloadState. |controller| is the controller the
     // TabDownloadState tracks the state of and is the host for any dialogs that
@@ -130,10 +130,10 @@ class DownloadRequestLimiter
     }
 
    private:
-    // NotificationObserver method.
+    // content::NotificationObserver method.
     virtual void Observe(int type,
-                         const NotificationSource& source,
-                         const NotificationDetails& details);
+                         const content::NotificationSource& source,
+                         const content::NotificationDetails& details);
 
     // Notifies the callbacks as to whether the download is allowed or not.
     // Updates status_ appropriately.
@@ -157,7 +157,7 @@ class DownloadRequestLimiter
     std::vector<DownloadRequestLimiter::Callback*> callbacks_;
 
     // Used to remove observers installed on NavigationController.
-    NotificationRegistrar registrar_;
+    content::NotificationRegistrar registrar_;
 
     // Handles showing the infobar to the user, may be null.
     DownloadRequestInfoBarDelegate* infobar_;

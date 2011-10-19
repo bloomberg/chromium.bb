@@ -17,7 +17,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_observer.h"
+#include "content/public/browser/notification_observer.h"
 #include "net/test/test_server.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -30,7 +30,7 @@ static const int kBrowserWidth = 1000;
 static const int kBrowserHeight = 600;
 
 class PDFBrowserTest : public InProcessBrowserTest,
-                       public NotificationObserver {
+                       public content::NotificationObserver {
  public:
   PDFBrowserTest()
       : snapshot_different_(true),
@@ -80,9 +80,10 @@ class PDFBrowserTest : public InProcessBrowserTest,
     expected_filename_ = expected_filename;
     TabContentsWrapper* wrapper =  browser()->GetSelectedTabContentsWrapper();
     wrapper->CaptureSnapshot();
-    ui_test_utils::RegisterAndWait(this,
-                                   chrome::NOTIFICATION_TAB_SNAPSHOT_TAKEN,
-                                   Source<TabContentsWrapper>(wrapper));
+    ui_test_utils::RegisterAndWait(
+        this,
+        chrome::NOTIFICATION_TAB_SNAPSHOT_TAKEN,
+        content::Source<TabContentsWrapper>(wrapper));
     ASSERT_FALSE(snapshot_different_) << "Rendering didn't match, see result "
         "at " << snapshot_filename_.value().c_str();
   }
@@ -105,10 +106,10 @@ class PDFBrowserTest : public InProcessBrowserTest,
   }
 
  private:
-  // NotificationObserver
+  // content::NotificationObserver
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) {
     if (type == chrome::NOTIFICATION_TAB_SNAPSHOT_TAKEN) {
       MessageLoopForUI::current()->Quit();
       FilePath reference = ui_test_utils::GetTestFilePath(
@@ -127,7 +128,7 @@ class PDFBrowserTest : public InProcessBrowserTest,
           gfx::PNGCodec::FORMAT_BGRA, &decoded, &w, &h));
       int32* ref_pixels = reinterpret_cast<int32*>(&decoded[0]);
 
-      const SkBitmap* bitmap = Details<const SkBitmap>(details).ptr();
+      const SkBitmap* bitmap = content::Details<const SkBitmap>(details).ptr();
       int32* pixels = static_cast<int32*>(bitmap->getPixels());
 
       // Get the background color, and use it to figure out the x-offsets in
@@ -274,10 +275,10 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, FLAKY_SLOW_Loading) {
 
   NavigationController* controller =
       &(browser()->GetSelectedTabContents()->controller());
-  NotificationRegistrar registrar;
+  content::NotificationRegistrar registrar;
   registrar.Add(this,
                 content::NOTIFICATION_LOAD_STOP,
-                Source<NavigationController>(controller));
+                content::Source<NavigationController>(controller));
   std::string base_url = std::string("files/");
 
   file_util::FileEnumerator file_enumerator(
@@ -338,7 +339,7 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_OnLoadAndReload) {
 
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
-      Source<NavigationController>(
+      content::Source<NavigationController>(
           &browser()->GetSelectedTabContents()->controller()));
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
       browser()->GetSelectedTabContents()->render_view_host(),

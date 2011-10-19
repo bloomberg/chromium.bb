@@ -598,10 +598,10 @@ string16 TemplateURLService::GetKeywordShortName(const string16& keyword,
 }
 
 void TemplateURLService::Observe(int type,
-                                 const NotificationSource& source,
-                                 const NotificationDetails& details) {
+                                 const content::NotificationSource& source,
+                                 const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_HISTORY_URL_VISITED) {
-    Details<history::URLVisitedDetails> visit_details(details);
+    content::Details<history::URLVisitedDetails> visit_details(details);
     if (!loaded())
       visits_to_add_.push_back(*visit_details.ptr());
     else
@@ -610,7 +610,7 @@ void TemplateURLService::Observe(int type,
     if (loaded_)
       GoogleBaseURLChanged();
   } else if (type == chrome::NOTIFICATION_PREF_CHANGED) {
-    const std::string* pref_name = Details<std::string>(details).ptr();
+    const std::string* pref_name = content::Details<std::string>(details).ptr();
     if (!pref_name || default_search_prefs_->IsObserved(*pref_name)) {
       // A preference related to default search engine has changed.
       // Update the model if needed.
@@ -921,7 +921,7 @@ void TemplateURLService::Init(const Initializer* initializers,
     // backend can handle automatically adding the search terms as the user
     // navigates.
     registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URL_VISITED,
-                   Source<Profile>(profile_->GetOriginalProfile()));
+                   content::Source<Profile>(profile_->GetOriginalProfile()));
     PrefService* prefs = GetPrefs();
     default_search_prefs_.reset(
         PrefSetObserver::CreateDefaultSearchPrefSetObserver(prefs, this));
@@ -1045,7 +1045,7 @@ void TemplateURLService::ChangeToLoadedState() {
 void TemplateURLService::NotifyLoaded() {
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED,
-      Source<TemplateURLService>(this),
+      content::Source<TemplateURLService>(this),
       NotificationService::NoDetails());
 
   for (size_t i = 0; i < pending_extension_ids_.size(); ++i) {
@@ -1550,12 +1550,12 @@ void TemplateURLService::RemoveNoNotify(const TemplateURL* template_url) {
   ProcessTemplateURLChange(template_url, SyncChange::ACTION_DELETE);
 
   if (profile_) {
-    Source<Profile> source(profile_);
+    content::Source<Profile> source(profile_);
     TemplateURLID id = template_url->id();
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_TEMPLATE_URL_REMOVED,
         source,
-        Details<TemplateURLID>(&id));
+        content::Details<TemplateURLID>(&id));
   }
 
   // We own the TemplateURL and need to delete it.

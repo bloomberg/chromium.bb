@@ -17,8 +17,8 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/gtk_signal_registrar.h"
@@ -49,7 +49,7 @@ class GtkThemeService;
 #endif
 
 class OmniboxViewGtk : public OmniboxView,
-                       public NotificationObserver,
+                       public content::NotificationObserver,
                        public ui::AnimationDelegate {
  public:
   // Modeled like the Windows CHARRANGE.  Represent a pair of cursor position
@@ -162,10 +162,10 @@ class OmniboxViewGtk : public OmniboxView,
                              views::View* location_bar);
 #endif
 
-  // Overridden from NotificationObserver:
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Overridden from ui::AnimationDelegate.
   virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
@@ -469,7 +469,7 @@ class OmniboxViewGtk : public OmniboxView,
   // Supplies colors, et cetera.
   GtkThemeService* theme_service_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 #endif
 
   // Indicates if Enter key was pressed.

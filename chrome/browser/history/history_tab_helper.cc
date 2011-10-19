@@ -21,7 +21,7 @@ HistoryTabHelper::HistoryTabHelper(TabContents* tab_contents)
     : TabContentsObserver(tab_contents),
       received_page_title_(false) {
   registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_TITLE_UPDATED,
-                 Source<TabContents>(tab_contents));
+                 content::Source<TabContents>(tab_contents));
 }
 
 HistoryTabHelper::~HistoryTabHelper() {
@@ -106,10 +106,11 @@ void HistoryTabHelper::DidNavigateAnyFramePostCommit(
 }
 
 void HistoryTabHelper::Observe(int type,
-                               const NotificationSource& source,
-                               const NotificationDetails& details) {
+                               const content::NotificationSource& source,
+                               const content::NotificationDetails& details) {
   DCHECK(type == content::NOTIFICATION_TAB_CONTENTS_TITLE_UPDATED);
-  TitleUpdatedDetails* title = Details<TitleUpdatedDetails>(details).ptr();
+  TitleUpdatedDetails* title =
+      content::Details<TitleUpdatedDetails>(details).ptr();
 
   if (received_page_title_)
     return;

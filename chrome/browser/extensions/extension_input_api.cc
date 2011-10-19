@@ -168,7 +168,7 @@ bool SendKeyboardEventInputFunction::RunImpl() {
 bool HideKeyboardFunction::RunImpl() {
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_HIDE_KEYBOARD_INVOKED,
-      Source<HideKeyboardFunction>(this),
+      content::Source<HideKeyboardFunction>(this),
       NotificationService::NoDetails());
   return true;
 }
@@ -187,8 +187,8 @@ bool SetKeyboardHeightFunction::RunImpl() {
   // notification.
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_SET_KEYBOARD_HEIGHT_INVOKED,
-      Source<SetKeyboardHeightFunction>(this),
-      Details<int>(&height));
+      content::Source<SetKeyboardHeightFunction>(this),
+      content::Details<int>(&height));
   return true;
 }
 #endif

@@ -1201,11 +1201,11 @@ void BrowserWindowGtk::ConfirmBrowserCloseWithPendingDownloads() {
 }
 
 void BrowserWindowGtk::Observe(int type,
-                               const NotificationSource& source,
-                               const NotificationDetails& details) {
+                               const content::NotificationSource& source,
+                               const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_PREF_CHANGED: {
-      std::string* pref_name = Details<std::string>(details).ptr();
+      std::string* pref_name = content::Details<std::string>(details).ptr();
       if (*pref_name == prefs::kUseCustomChromeFrame) {
         UpdateCustomFrame();
       } else {
@@ -1531,7 +1531,7 @@ bool BrowserWindowGtk::CanClose() const {
   // Empty TabStripModel, it's now safe to allow the Window to be closed.
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_WINDOW_CLOSED,
-      Source<GtkWindow>(window_),
+      content::Source<GtkWindow>(window_),
       NotificationService::NoDetails());
   return true;
 }

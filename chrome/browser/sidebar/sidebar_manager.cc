@@ -229,10 +229,10 @@ SidebarManager::~SidebarManager() {
 }
 
 void SidebarManager::Observe(int type,
-                             const NotificationSource& source,
-                             const NotificationDetails& details) {
+                             const content::NotificationSource& source,
+                             const content::NotificationDetails& details) {
   if (type == content::NOTIFICATION_TAB_CONTENTS_DESTROYED) {
-    HideAllSidebars(Source<TabContents>(source).ptr());
+    HideAllSidebars(content::Source<TabContents>(source).ptr());
   } else {
     NOTREACHED() << "Got a notification we didn't register for!";
   }
@@ -241,8 +241,8 @@ void SidebarManager::Observe(int type,
 void SidebarManager::UpdateSidebar(SidebarContainer* host) {
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_SIDEBAR_CHANGED,
-      Source<SidebarManager>(this),
-      Details<SidebarContainer>(host));
+      content::Source<SidebarManager>(this),
+      content::Details<SidebarContainer>(host));
 }
 
 void SidebarManager::HideAllSidebars(TabContents* tab) {
@@ -283,7 +283,7 @@ void SidebarManager::RegisterSidebarContainerFor(
   if (tab_to_sidebar_host_.find(tab) == tab_to_sidebar_host_.end()) {
     registrar_.Add(this,
                    content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                   Source<TabContents>(tab));
+                   content::Source<TabContents>(tab));
   }
 
   BindSidebarHost(tab, sidebar_host);
@@ -302,7 +302,7 @@ void SidebarManager::UnregisterSidebarContainerFor(
   if (tab_to_sidebar_host_.find(tab) == tab_to_sidebar_host_.end()) {
     registrar_.Remove(this,
                       content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                      Source<TabContents>(tab));
+                      content::Source<TabContents>(tab));
   }
 
   // Issue tab closing event post unbound.

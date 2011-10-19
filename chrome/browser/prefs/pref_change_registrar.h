@@ -12,7 +12,10 @@
 #include "base/basictypes.h"
 
 class PrefService;
+
+namespace content {
 class NotificationObserver;
+}
 
 // Automatically manages the registration of one or more pref change observers
 // with a PrefStore. Functions much like NotificationRegistrar, but specifically
@@ -32,12 +35,12 @@ class PrefChangeRegistrar {
   // when the registrar's destructor is called unless the observer has been
   // explicitly removed by a call to Remove beforehand.
   void Add(const char* path,
-           NotificationObserver* obs);
+           content::NotificationObserver* obs);
 
   // Removes a preference observer that has previously been added with a call to
   // Add.
   void Remove(const char* path,
-              NotificationObserver* obs);
+              content::NotificationObserver* obs);
 
   // Removes all observers that have been previously added with a call to Add.
   void RemoveAll();
@@ -46,7 +49,8 @@ class PrefChangeRegistrar {
   bool IsEmpty() const;
 
  private:
-  typedef std::pair<std::string, NotificationObserver*> ObserverRegistration;
+  typedef std::pair<std::string, content::NotificationObserver*>
+      ObserverRegistration;
 
   std::set<ObserverRegistration> observers_;
   PrefService* service_;

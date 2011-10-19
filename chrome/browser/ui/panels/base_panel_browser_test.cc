@@ -191,7 +191,7 @@ void BasePanelBrowserTest::WaitForPanelActiveState(
          expected_state == SHOW_AS_INACTIVE);
   ui_test_utils::WindowedNotificationObserver signal(
       chrome::NOTIFICATION_PANEL_CHANGED_ACTIVE_STATUS,
-      Source<Panel>(panel));
+      content::Source<Panel>(panel));
   if (panel->IsActive() == (expected_state == SHOW_AS_ACTIVE))
     return;  // Already in required state.
   signal.Wait();
@@ -204,7 +204,7 @@ void BasePanelBrowserTest::WaitForWindowSizeAvailable(Panel* panel) {
       NativePanelTesting::Create(panel->native_panel()));
   ui_test_utils::WindowedNotificationObserver signal(
       chrome::NOTIFICATION_PANEL_WINDOW_SIZE_KNOWN,
-      Source<Panel>(panel));
+      content::Source<Panel>(panel));
   if (panel_testing->IsWindowSizeKnown())
     return;
   signal.Wait();
@@ -216,7 +216,7 @@ void BasePanelBrowserTest::WaitForBoundsAnimationFinished(Panel* panel) {
       NativePanelTesting::Create(panel->native_panel()));
   ui_test_utils::WindowedNotificationObserver signal(
       chrome::NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
-      Source<Panel>(panel));
+      content::Source<Panel>(panel));
   if (!panel_testing->IsAnimatingBounds())
     return;
   signal.Wait();

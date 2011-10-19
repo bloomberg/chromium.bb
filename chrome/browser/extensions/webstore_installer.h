@@ -10,14 +10,14 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class GURL;
 class Profile;
 
 // Downloads and installs extensions from the web store.
-class WebstoreInstaller : public NotificationObserver {
+class WebstoreInstaller : public content::NotificationObserver {
  public:
   enum Flag {
     FLAG_NONE = 0,
@@ -43,10 +43,10 @@ class WebstoreInstaller : public NotificationObserver {
   // Note: the delegate should stay alive until being called back.
   void InstallExtension(const std::string& id, Delegate* delegate, int flags);
 
-  // NotificationObserver
+  // content::NotificationObserver
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   struct PendingInstall;
@@ -71,7 +71,7 @@ class WebstoreInstaller : public NotificationObserver {
   // PendingInstall.
   void ReportSuccess(const std::string& id);
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
   Profile* profile_;
   std::vector<PendingInstall> pending_installs_;
 };

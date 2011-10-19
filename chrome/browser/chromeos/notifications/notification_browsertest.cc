@@ -33,7 +33,7 @@ const char* kChromeOsWindowManagerName = "chromeos-wm";
 namespace chromeos {
 
 class NotificationTest : public InProcessBrowserTest,
-                         public NotificationObserver {
+                         public content::NotificationObserver {
  public:
   NotificationTest()
       : under_chromeos_(false),
@@ -112,8 +112,8 @@ class NotificationTest : public InProcessBrowserTest,
 
   // NotificationObserver overrides.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) {
     ASSERT_TRUE(chrome::NOTIFICATION_PANEL_STATE_CHANGED == type);
     PanelController::State* state =
         reinterpret_cast<PanelController::State*>(details.map_key());
@@ -301,7 +301,7 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, TestStateTransition1) {
 // 0. This test explicitly controls the stale state instead.
 IN_PROC_BROWSER_TEST_F(NotificationTest, TestStateTransition2) {
   // Register observer here as the registration does not work in SetUp().
-  NotificationRegistrar registrar;
+  content::NotificationRegistrar registrar;
   registrar.Add(this,
                 chrome::NOTIFICATION_PANEL_STATE_CHANGED,
                 NotificationService::AllSources());
@@ -368,7 +368,7 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, TestStateTransition2) {
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationTest, TestCleanupOnExit) {
-  NotificationRegistrar registrar;
+  content::NotificationRegistrar registrar;
   registrar.Add(this,
                 chrome::NOTIFICATION_PANEL_STATE_CHANGED,
                 NotificationService::AllSources());

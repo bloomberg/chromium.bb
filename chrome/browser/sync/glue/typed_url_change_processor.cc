@@ -56,9 +56,10 @@ TypedUrlChangeProcessor::~TypedUrlChangeProcessor() {
   DCHECK(expected_loop_ == MessageLoop::current());
 }
 
-void TypedUrlChangeProcessor::Observe(int type,
-                                      const NotificationSource& source,
-                                      const NotificationDetails& details) {
+void TypedUrlChangeProcessor::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK(expected_loop_ == MessageLoop::current());
   if (!observing_)
     return;
@@ -69,11 +70,14 @@ void TypedUrlChangeProcessor::Observe(int type,
          chrome::NOTIFICATION_HISTORY_URLS_DELETED == type ||
          chrome::NOTIFICATION_HISTORY_URL_VISITED == type);
   if (type == chrome::NOTIFICATION_HISTORY_TYPED_URLS_MODIFIED) {
-    HandleURLsModified(Details<history::URLsModifiedDetails>(details).ptr());
+    HandleURLsModified(
+        content::Details<history::URLsModifiedDetails>(details).ptr());
   } else if (type == chrome::NOTIFICATION_HISTORY_URLS_DELETED) {
-    HandleURLsDeleted(Details<history::URLsDeletedDetails>(details).ptr());
+    HandleURLsDeleted(
+        content::Details<history::URLsDeletedDetails>(details).ptr());
   } else if (type == chrome::NOTIFICATION_HISTORY_URL_VISITED) {
-    HandleURLsVisited(Details<history::URLVisitedDetails>(details).ptr());
+    HandleURLsVisited(
+        content::Details<history::URLVisitedDetails>(details).ptr());
   }
 }
 
@@ -349,13 +353,13 @@ void TypedUrlChangeProcessor::StartObserving() {
   DCHECK(profile_);
   notification_registrar_.Add(
       this, chrome::NOTIFICATION_HISTORY_TYPED_URLS_MODIFIED,
-      Source<Profile>(profile_));
+      content::Source<Profile>(profile_));
   notification_registrar_.Add(
       this, chrome::NOTIFICATION_HISTORY_URLS_DELETED,
-      Source<Profile>(profile_));
+      content::Source<Profile>(profile_));
   notification_registrar_.Add(
       this, chrome::NOTIFICATION_HISTORY_URL_VISITED,
-      Source<Profile>(profile_));
+      content::Source<Profile>(profile_));
 }
 
 void TypedUrlChangeProcessor::StopObserving() {
@@ -363,13 +367,13 @@ void TypedUrlChangeProcessor::StopObserving() {
   DCHECK(profile_);
   notification_registrar_.Remove(
       this, chrome::NOTIFICATION_HISTORY_TYPED_URLS_MODIFIED,
-      Source<Profile>(profile_));
+      content::Source<Profile>(profile_));
   notification_registrar_.Remove(
       this, chrome::NOTIFICATION_HISTORY_URLS_DELETED,
-      Source<Profile>(profile_));
+      content::Source<Profile>(profile_));
   notification_registrar_.Remove(
       this, chrome::NOTIFICATION_HISTORY_URL_VISITED,
-      Source<Profile>(profile_));
+      content::Source<Profile>(profile_));
 }
 
 }  // namespace browser_sync

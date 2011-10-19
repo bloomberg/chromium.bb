@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 class InfoBar;
@@ -24,7 +24,7 @@ class InfoBarTabHelper;
 //
 // Platforms need to subclass this to implement a few platform-specific
 // functions, which are pure virtual here.
-class InfoBarContainer : public NotificationObserver {
+class InfoBarContainer : public content::NotificationObserver {
  public:
   class Delegate {
    public:
@@ -95,10 +95,10 @@ class InfoBarContainer : public NotificationObserver {
  private:
   typedef std::vector<InfoBar*> InfoBars;
 
-  // NotificationObserver:
+  // content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Hides an InfoBar for the specified delegate, in response to a notification
   // from the selected InfoBarTabHelper.  The InfoBar's disappearance will be
@@ -122,7 +122,7 @@ class InfoBarContainer : public NotificationObserver {
   void UpdateInfoBarArrowTargetHeights();
   int ArrowTargetHeightForInfoBar(size_t infobar_index) const;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
   Delegate* delegate_;
   InfoBarTabHelper* tab_helper_;
   InfoBars infobars_;

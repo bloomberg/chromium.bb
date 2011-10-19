@@ -13,8 +13,8 @@
 #include "base/memory/singleton.h"
 #include "chrome/browser/history/history_types.h"
 #include "content/browser/cancelable_request.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class Browser;
 class GURL;
@@ -30,7 +30,7 @@ struct LoadCommittedDetails;
 //
 // TODO: if we end up keeping this (moving it out of about:flags) then we
 // should persist the start of the redirect chain in the navigation entry.
-class TabFinder : public NotificationObserver {
+class TabFinder : public content::NotificationObserver {
  public:
   // Returns the TabFinder, or NULL if TabFinder is not enabled.
   static TabFinder* GetInstance();
@@ -45,10 +45,10 @@ class TabFinder : public NotificationObserver {
                        const GURL& url,
                        Browser** existing_browser);
 
-  // NotificationObserver overrides:
+  // content::NotificationObserver overrides:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   friend struct DefaultSingletonTraits<TabFinder>;
@@ -100,7 +100,7 @@ class TabFinder : public NotificationObserver {
 
   CancelableRequestConsumerTSimple<TabContents*> callback_consumer_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   TabContentsObservers tab_contents_observers_;
 

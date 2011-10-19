@@ -23,8 +23,8 @@
 #include "base/task.h"
 #include "base/time.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 
 class MalwareDetails;
@@ -50,7 +50,7 @@ class DownloadProtectionService;
 // Construction needs to happen on the main thread.
 class SafeBrowsingService
     : public base::RefCountedThreadSafe<SafeBrowsingService>,
-      public NotificationObserver {
+      public content::NotificationObserver {
  public:
   class Client;
   // Users of this service implement this interface to be notified
@@ -457,10 +457,10 @@ class SafeBrowsingService
   // Adds the given entry to the whitelist.  Called on the UI thread.
   void UpdateWhitelist(const UnsafeResource& resource);
 
-  // NotificationObserver override
+  // content::NotificationObserver override
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Starts following the safe browsing preference on |pref_service|.
   void AddPrefService(PrefService* pref_service);
@@ -540,7 +540,7 @@ class SafeBrowsingService
   ObserverList<Observer> observer_list_;
 
   // Used to track purge memory notifications. Lives on the IO thread.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // Tracks existing PrefServices, and the safe browsing preference on each.
   // This is used to determine if any profile is currently using the safe
@@ -548,7 +548,7 @@ class SafeBrowsingService
   std::map<PrefService*, PrefChangeRegistrar*> prefs_map_;
 
   // Used to track creation and destruction of profiles on the UI thread.
-  NotificationRegistrar prefs_registrar_;
+  content::NotificationRegistrar prefs_registrar_;
 
   // The ClientSideDetectionService is managed by the SafeBrowsingService,
   // since its running state and lifecycle depends on SafeBrowsingService's.

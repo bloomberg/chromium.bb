@@ -8,7 +8,7 @@
 
 #include "chrome/browser/chromeos/status/status_area_button.h"
 #include "chrome/browser/prefs/pref_member.h"
-#include "content/common/notification_observer.h"
+#include "content/public/browser/notification_observer.h"
 #include "views/controls/menu/view_menu_delegate.h"
 #include "views/controls/menu/menu_delegate.h"
 
@@ -25,7 +25,7 @@ class StatusAreaHost;
 class AccessibilityMenuButton : public StatusAreaButton,
                                 public views::ViewMenuDelegate,
                                 public views::MenuDelegate,
-                                public NotificationObserver {
+                                public content::NotificationObserver {
  public:
   explicit AccessibilityMenuButton(StatusAreaHost* host);
   virtual ~AccessibilityMenuButton();
@@ -36,10 +36,10 @@ class AccessibilityMenuButton : public StatusAreaButton,
   // views::MenuDelegate implementation
   virtual void ExecuteCommand(int id) OVERRIDE;
 
-  // NotificationObserver implementation
+  // content::NotificationObserver implementation
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   // Updates the state along with the preferences.

@@ -24,16 +24,18 @@ void AutomationExtensionTracker::AddObserver(const Extension* resource) {}
 
 void AutomationExtensionTracker::RemoveObserver(const Extension* resource) {}
 
-void AutomationExtensionTracker::Observe(int type,
-                                         const NotificationSource& source,
-                                         const NotificationDetails& details) {
+void AutomationExtensionTracker::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (type != chrome::NOTIFICATION_EXTENSION_UNLOADED) {
     NOTREACHED();
     return;
   }
-  UnloadedExtensionInfo* info = Details<UnloadedExtensionInfo>(details).ptr();
+  UnloadedExtensionInfo* info =
+      content::Details<UnloadedExtensionInfo>(details).ptr();
   const Extension* extension = info->extension;
-  Profile* profile = Source<Profile>(source).ptr();
+  Profile* profile = content::Source<Profile>(source).ptr();
   if (profile) {
     ExtensionService* service = profile->GetExtensionService();
     if (service && info->reason == extension_misc::UNLOAD_REASON_UNINSTALL) {

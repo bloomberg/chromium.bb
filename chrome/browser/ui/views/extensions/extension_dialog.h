@@ -7,8 +7,8 @@
 #pragma once
 
 #include "base/memory/ref_counted.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "views/widget/widget_delegate.h"
 
 class Browser;
@@ -27,7 +27,7 @@ class Widget;
 // Dialog is automatically centered in the browser window and has fixed size.
 // For example, used by the Chrome OS file browser.
 class ExtensionDialog : public views::WidgetDelegate,
-                        public NotificationObserver,
+                        public content::NotificationObserver,
                         public base::RefCounted<ExtensionDialog> {
  public:
   virtual ~ExtensionDialog();
@@ -60,10 +60,10 @@ class ExtensionDialog : public views::WidgetDelegate,
   virtual const views::Widget* GetWidget() const OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;
 
-  // NotificationObserver overrides.
+  // content::NotificationObserver overrides.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
  private:
   // Use Show() to create instances.
@@ -80,7 +80,7 @@ class ExtensionDialog : public views::WidgetDelegate,
   // The contained host for the view.
   scoped_ptr<ExtensionHost> extension_host_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // The observer of this popup.
   ExtensionDialogObserver* observer_;

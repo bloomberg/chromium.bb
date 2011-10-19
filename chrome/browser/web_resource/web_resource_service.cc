@@ -267,7 +267,7 @@ void WebResourceService::WebResourceStateChange() {
     return;
   NotificationService* service = NotificationService::current();
   service->Notify(notification_type_,
-                  Source<WebResourceService>(this),
+                  content::Source<WebResourceService>(this),
                   NotificationService::NoDetails());
 }
 

@@ -166,7 +166,7 @@ class ManifestFetchesBuilder {
 // ....
 // updater->Stop();
 class ExtensionUpdater : public URLFetcher::Delegate,
-                         public NotificationObserver {
+                         public content::NotificationObserver {
  public:
   // Holds a pointer to the passed |service|, using it for querying installed
   // extensions and installing updated ones. The |frequency_seconds| parameter
@@ -331,10 +331,10 @@ class ExtensionUpdater : public URLFetcher::Delegate,
   // started.
   bool MaybeInstallCRXFile();
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Whether Start() has been called but not Stop().
   bool alive_;
@@ -373,7 +373,7 @@ class ExtensionUpdater : public URLFetcher::Delegate,
   std::set<std::string> in_progress_ids_;
 
   // Observes CRX installs we initiate.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // True when a CrxInstaller is doing an install.  Used in MaybeUpdateCrxFile()
   // to keep more than one install from running at once.

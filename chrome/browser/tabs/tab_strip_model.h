@@ -11,8 +11,8 @@
 #include "base/observer_list.h"
 #include "chrome/browser/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/tabs/tab_strip_selection_model.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/common/page_transition_types.h"
 
 class NavigationController;
@@ -58,7 +58,7 @@ class TabStripModelOrderController;
 //  its bookkeeping when such events happen.
 //
 ////////////////////////////////////////////////////////////////////////////////
-class TabStripModel : public NotificationObserver {
+class TabStripModel : public content::NotificationObserver {
  public:
   // Policy for how new tabs are inserted.
   enum InsertionPolicy {
@@ -469,10 +469,10 @@ class TabStripModel : public NotificationObserver {
   // supplied to |ExecuteContextMenuCommand|.
   bool WillContextMenuPin(int index);
 
-  // Overridden from notificationObserver:
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Convert a ContextMenuCommand into a browser command. Returns true if a
   // corresponding browser command exists, false otherwise.
@@ -652,7 +652,7 @@ class TabStripModel : public NotificationObserver {
   TabStripModelObservers observers_;
 
   // A scoped container for notification registries.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   TabStripSelectionModel selection_model_;
 

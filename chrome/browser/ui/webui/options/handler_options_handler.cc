@@ -47,7 +47,7 @@ void HandlerOptionsHandler::Initialize() {
   UpdateHandlerList();
   notification_registrar_.Add(
       this, chrome::NOTIFICATION_PROTOCOL_HANDLER_REGISTRY_CHANGED,
-      Source<Profile>(Profile::FromWebUI(web_ui_)));
+      content::Source<Profile>(Profile::FromWebUI(web_ui_)));
 }
 
 void HandlerOptionsHandler::RegisterMessages() {
@@ -196,9 +196,10 @@ ProtocolHandler HandlerOptionsHandler::ParseHandlerFromArgs(
                                                 title);
 }
 
-void HandlerOptionsHandler::Observe(int type,
-                                    const NotificationSource& source,
-                                    const NotificationDetails& details) {
+void HandlerOptionsHandler::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_PROTOCOL_HANDLER_REGISTRY_CHANGED)
     UpdateHandlerList();
   else

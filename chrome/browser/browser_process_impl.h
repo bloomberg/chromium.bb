@@ -21,8 +21,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/pref_member.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ipc/ipc_message.h"
 
 class BrowserOnlineStateObserver;
@@ -42,7 +42,7 @@ class BrowserPolicyConnector;
 // Real implementation of BrowserProcess that creates and returns the services.
 class BrowserProcessImpl : public BrowserProcess,
                            public base::NonThreadSafe,
-                           public NotificationObserver {
+                           public content::NotificationObserver {
  public:
   explicit BrowserProcessImpl(const CommandLine& command_line);
   virtual ~BrowserProcessImpl();
@@ -107,10 +107,10 @@ class BrowserProcessImpl : public BrowserProcess,
       safe_browsing_detection_service() OVERRIDE;
   virtual bool plugin_finder_disabled() const OVERRIDE;
 
-  // NotificationObserver methods
+  // content::NotificationObserver methods
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
   virtual void StartAutoupdateTimer() OVERRIDE;
@@ -290,7 +290,7 @@ class BrowserProcessImpl : public BrowserProcess,
   scoped_ptr<ChromeResourceDispatcherHostDelegate>
       resource_dispatcher_host_delegate_;
 
-  NotificationRegistrar notification_registrar_;
+  content::NotificationRegistrar notification_registrar_;
 
   scoped_refptr<MHTMLGenerationManager> mhtml_generation_manager_;
 

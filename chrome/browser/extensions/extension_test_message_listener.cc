@@ -40,11 +40,11 @@ void ExtensionTestMessageListener::Reply(const std::string& message) {
 
 void ExtensionTestMessageListener::Observe(
     int type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
-  const std::string& content = *Details<std::string>(details).ptr();
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  const std::string& content = *content::Details<std::string>(details).ptr();
   if (!satisfied_ && content == expected_message_) {
-    function_ = Source<ExtensionTestSendMessageFunction>(source).ptr();
+    function_ = content::Source<ExtensionTestSendMessageFunction>(source).ptr();
     satisfied_ = true;
     registrar_.RemoveAll();  // Stop listening for more messages.
     if (!will_reply_) {

@@ -15,7 +15,7 @@
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/sync/notifier/invalidation_version_tracker.h"
 #include "chrome/browser/sync/syncable/model_type.h"
-#include "content/common/notification_observer.h"
+#include "content/public/browser/notification_observer.h"
 
 class PrefService;
 
@@ -46,7 +46,7 @@ class SyncPrefObserver {
 //   two_client_preferences_sync_test.cc
 class SyncPrefs : public base::SupportsWeakPtr<SyncPrefs>,
                   public sync_notifier::InvalidationVersionTracker,
-                  public NotificationObserver {
+                  public content::NotificationObserver {
  public:
   // |pref_service| may be NULL (for unit tests), but in that case no
   // setter methods should be called.  Does not take ownership of
@@ -105,10 +105,10 @@ class SyncPrefs : public base::SupportsWeakPtr<SyncPrefs>,
   // Merges the given set of types with the set of acknowledged types.
   void AcknowledgeSyncedTypes(const syncable::ModelTypeSet& types);
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // For testing.
 

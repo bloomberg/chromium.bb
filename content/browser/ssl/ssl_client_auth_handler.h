@@ -10,8 +10,8 @@
 #include "base/memory/ref_counted.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/content_export.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "net/base/ssl_cert_request_info.h"
 
 namespace net {
@@ -77,7 +77,8 @@ class CONTENT_EXPORT SSLClientAuthHandler
   DISALLOW_COPY_AND_ASSIGN(SSLClientAuthHandler);
 };
 
-class CONTENT_EXPORT SSLClientAuthObserver : public NotificationObserver {
+class CONTENT_EXPORT SSLClientAuthObserver
+    : public content::NotificationObserver {
  public:
   SSLClientAuthObserver(net::SSLCertRequestInfo* cert_request_info,
                         SSLClientAuthHandler* handler);
@@ -86,10 +87,10 @@ class CONTENT_EXPORT SSLClientAuthObserver : public NotificationObserver {
   // UI should implement this to close the dialog.
   virtual void OnCertSelectedByNotification() = 0;
 
-  // NotificationObserver implementation:
+  // content::NotificationObserver implementation:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Begins observing notifications from other SSLClientAuthHandler instances.
   // If another instance chooses a cert for a matching SSLCertRequestInfo, we
@@ -106,7 +107,7 @@ class CONTENT_EXPORT SSLClientAuthObserver : public NotificationObserver {
 
   scoped_refptr<SSLClientAuthHandler> handler_;
 
-  NotificationRegistrar notification_registrar_;
+  content::NotificationRegistrar notification_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLClientAuthObserver);
 };

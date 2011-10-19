@@ -18,7 +18,7 @@
 #include "chrome/browser/sessions/tab_restore_service_observer.h"
 #import "chrome/browser/ui/cocoa/main_menu_item.h"
 #include "content/browser/cancelable_request.h"
-#include "content/common/notification_observer.h"
+#include "content/public/browser/notification_observer.h"
 
 class NavigationEntry;
 class NotificationRegistrar;
@@ -56,7 +56,7 @@ class HistoryMenuBridgeTest;
 // unlike the typical ownership model, this bridge owns its controller. The
 // controller is very thin and only exists to interact with Cocoa, but this
 // class does the bulk of the work.
-class HistoryMenuBridge : public NotificationObserver,
+class HistoryMenuBridge : public content::NotificationObserver,
                           public TabRestoreServiceObserver,
                           public MainMenuItem {
  public:
@@ -125,10 +125,10 @@ class HistoryMenuBridge : public NotificationObserver,
   explicit HistoryMenuBridge(Profile* profile);
   virtual ~HistoryMenuBridge();
 
-  // NotificationObserver:
+  // content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // TabRestoreServiceObserver:
   virtual void TabRestoreServiceChanged(TabRestoreService* service);
@@ -209,7 +209,7 @@ class HistoryMenuBridge : public NotificationObserver,
   HistoryService* history_service_;  // weak
   TabRestoreService* tab_restore_service_;  // weak
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
   CancelableRequestConsumer cancelable_request_consumer_;
 
   // Mapping of NSMenuItems to HistoryItems. This owns the HistoryItems until

@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_registrar.h"
 
 namespace {
 
@@ -60,10 +60,10 @@ bool ExtensionApiTest::ResultCatcher::GetNextResult() {
 }
 
 void ExtensionApiTest::ResultCatcher::Observe(
-    int type, const NotificationSource& source,
-    const NotificationDetails& details) {
+    int type, const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (profile_restriction_ &&
-      Source<Profile>(source).ptr() != profile_restriction_) {
+      content::Source<Profile>(source).ptr() != profile_restriction_) {
     return;
   }
 
@@ -79,7 +79,7 @@ void ExtensionApiTest::ResultCatcher::Observe(
     case chrome::NOTIFICATION_EXTENSION_TEST_FAILED:
       VLOG(1) << "Got EXTENSION_TEST_FAILED notification.";
       results_.push_back(false);
-      messages_.push_back(*(Details<std::string>(details).ptr()));
+      messages_.push_back(*(content::Details<std::string>(details).ptr()));
       if (waiting_)
         MessageLoopForUI::current()->Quit();
       break;

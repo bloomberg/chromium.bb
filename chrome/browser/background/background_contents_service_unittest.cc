@@ -71,24 +71,24 @@ class MockBackgroundContents : public BackgroundContents {
     url_ = url;
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_BACKGROUND_CONTENTS_NAVIGATED,
-        Source<Profile>(profile_),
-        Details<BackgroundContents>(this));
+        content::Source<Profile>(profile_),
+        content::Details<BackgroundContents>(this));
   }
   virtual const GURL& GetURL() const { return url_; }
 
   void MockClose(Profile* profile) {
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_BACKGROUND_CONTENTS_CLOSED,
-        Source<Profile>(profile),
-        Details<BackgroundContents>(this));
+        content::Source<Profile>(profile),
+        content::Details<BackgroundContents>(this));
     delete this;
   }
 
   ~MockBackgroundContents() {
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_BACKGROUND_CONTENTS_DELETED,
-        Source<Profile>(profile_),
-        Details<BackgroundContents>(this));
+        content::Source<Profile>(profile_),
+        content::Details<BackgroundContents>(this));
   }
 
   const string16& appid() { return appid_; }

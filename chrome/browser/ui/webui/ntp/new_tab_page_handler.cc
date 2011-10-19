@@ -159,6 +159,6 @@ void NewTabPageHandler::DismissIntroMessage(PrefService* prefs) {
 void NewTabPageHandler::NotifyPromoResourceChanged() {
   NotificationService* service = NotificationService::current();
   service->Notify(chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED,
-                  Source<NewTabPageHandler>(this),
+                  content::Source<NewTabPageHandler>(this),
                   NotificationService::NoDetails());
 }

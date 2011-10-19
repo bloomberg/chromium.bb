@@ -28,7 +28,7 @@
 namespace {
 
 // An object that wait for lock state and fullscreen state.
-class Waiter : public NotificationObserver {
+class Waiter : public content::NotificationObserver {
  public:
   explicit Waiter(Browser* browser)
       : browser_(browser),
@@ -50,8 +50,8 @@ class Waiter : public NotificationObserver {
   }
 
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) {
     DCHECK(type == chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED);
     if (running_)
       MessageLoop::current()->Quit();
@@ -77,7 +77,7 @@ class Waiter : public NotificationObserver {
  private:
   Browser* browser_;
   gulong handler_id_;
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // Are we currently running the message loop?
   bool running_;

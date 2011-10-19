@@ -8,8 +8,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class Browser;
 class Extension;
@@ -20,7 +20,7 @@ class Profile;
 // The InfobarDelegate for creating and managing state for the ExtensionInfobar
 // plus monitor when the extension goes away.
 class ExtensionInfoBarDelegate : public InfoBarDelegate,
-                                 public NotificationObserver {
+                                 public content::NotificationObserver {
  public:
   // The observer for when the delegate dies.
   class DelegateObserver {
@@ -55,10 +55,10 @@ class ExtensionInfoBarDelegate : public InfoBarDelegate,
   virtual Type GetInfoBarType() const OVERRIDE;
   virtual ExtensionInfoBarDelegate* AsExtensionInfoBarDelegate() OVERRIDE;
 
-  // NotificationObserver:
+  // content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   Browser* browser_;
 
@@ -72,7 +72,7 @@ class ExtensionInfoBarDelegate : public InfoBarDelegate,
   DelegateObserver* observer_;
 
   const Extension* extension_;
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // The requested height of the infobar (in pixels).
   int height_;

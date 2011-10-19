@@ -56,9 +56,10 @@ bool ChromeAppCacheService::CanCreateAppCache(
       manifest_url, first_party, *resource_context_);
 }
 
-void ChromeAppCacheService::Observe(int type,
-                                    const NotificationSource& source,
-                                    const NotificationDetails& details) {
+void ChromeAppCacheService::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(type == content::NOTIFICATION_PURGE_MEMORY);
   PurgeMemory();

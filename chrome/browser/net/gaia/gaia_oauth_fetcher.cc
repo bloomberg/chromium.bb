@@ -22,8 +22,8 @@
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/net/gaia/oauth_request_signer.h"
 #include "chrome/common/net/http_return.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "grit/chromium_strings.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -309,7 +309,7 @@ void GaiaOAuthFetcher::StartGetOAuthToken() {
   fetch_pending_ = true;
   registrar_.Add(this,
                  chrome::NOTIFICATION_COOKIE_CHANGED,
-                 Source<Profile>(profile_));
+                 content::Source<Profile>(profile_));
 
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
   DCHECK(browser);
@@ -324,7 +324,7 @@ void GaiaOAuthFetcher::StartGetOAuthToken() {
   DCHECK(popup_ && popup_ != browser);
   registrar_.Add(this,
                  chrome::NOTIFICATION_BROWSER_CLOSING,
-                 Source<Browser>(popup_));
+                 content::Source<Browser>(popup_));
 }
 
 void GaiaOAuthFetcher::StartOAuthLogin(
@@ -481,17 +481,17 @@ GoogleServiceAuthError GaiaOAuthFetcher::GenerateAuthError(
 }
 
 void GaiaOAuthFetcher::Observe(int type,
-                               const NotificationSource& source,
-                               const NotificationDetails& details) {
+                               const content::NotificationSource& source,
+                               const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_COOKIE_CHANGED: {
-      OnCookieChanged(Source<Profile>(source).ptr(),
-                      Details<ChromeCookieDetails>(details).ptr());
+      OnCookieChanged(content::Source<Profile>(source).ptr(),
+                      content::Details<ChromeCookieDetails>(details).ptr());
       break;
     }
     case chrome::NOTIFICATION_BROWSER_CLOSING: {
-      OnBrowserClosing(Source<Browser>(source).ptr(),
-                       *(Details<bool>(details)).ptr());
+      OnBrowserClosing(content::Source<Browser>(source).ptr(),
+                       *(content::Details<bool>(details)).ptr());
       break;
     }
     default: {

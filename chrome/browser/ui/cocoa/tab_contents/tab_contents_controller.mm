@@ -9,10 +9,10 @@
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 
 @interface TabContentsController(Private)
@@ -26,18 +26,18 @@
 
 // A supporting C++ bridge object to register for TabContents notifications.
 
-class TabContentsNotificationBridge : public NotificationObserver {
+class TabContentsNotificationBridge : public content::NotificationObserver {
  public:
   explicit TabContentsNotificationBridge(TabContentsController* controller);
 
-  // Overriden from NotificationObserver.
+  // Overriden from content::NotificationObserver.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
   // Register for |contents|'s notifications, remove all prior registrations.
   void ChangeTabContents(TabContents* contents);
  private:
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
   TabContentsController* controller_;  // weak, owns us
 };
 
@@ -48,11 +48,11 @@ TabContentsNotificationBridge::TabContentsNotificationBridge(
 
 void TabContentsNotificationBridge::Observe(
     int type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (type == content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED) {
     RenderViewHostSwitchedDetails* switched_details =
-        Details<RenderViewHostSwitchedDetails>(details).ptr();
+        content::Details<RenderViewHostSwitchedDetails>(details).ptr();
     [controller_ tabContentsRenderViewHostChanged:switched_details->old_host
                                           newHost:switched_details->new_host];
   } else {
@@ -63,9 +63,10 @@ void TabContentsNotificationBridge::Observe(
 void TabContentsNotificationBridge::ChangeTabContents(TabContents* contents) {
   registrar_.RemoveAll();
   if (contents) {
-    registrar_.Add(this,
-                   content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
-                   Source<NavigationController>(&contents->controller()));
+    registrar_.Add(
+        this,
+        content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
+        content::Source<NavigationController>(&contents->controller()));
   }
 }
 

@@ -15,8 +15,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_view.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/gfx/font.h"
 #include "webkit/glue/window_open_disposition.h"
@@ -28,7 +28,7 @@ class OmniboxView;
 class SkBitmap;
 
 class OmniboxPopupViewGtk : public AutocompletePopupView,
-                            public NotificationObserver {
+                            public content::NotificationObserver {
  public:
   OmniboxPopupViewGtk(const gfx::Font& font,
                       OmniboxView* omnibox_view,
@@ -44,10 +44,10 @@ class OmniboxPopupViewGtk : public AutocompletePopupView,
   virtual void PaintUpdatesNow();
   virtual void OnDragCanceled();
 
-  // Overridden from NotificationObserver:
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
  private:
   // Be friendly for unit tests.
@@ -99,7 +99,7 @@ class OmniboxPopupViewGtk : public AutocompletePopupView,
   PangoLayout* layout_;
 
   GtkThemeService* theme_service_;
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // Font used for suggestions after being derived from the constructor's
   // |font|.

@@ -11,8 +11,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/threading/non_thread_safe.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class RenderProcessHost;
 class TabContentsWrapper;
@@ -23,7 +23,7 @@ namespace printing {
 // The hidden tabs are no longer part of any Browser / TabStripModel.
 // They get deleted when the tab finishes printing.
 class BackgroundPrintingManager : public base::NonThreadSafe,
-                                  public NotificationObserver {
+                                  public content::NotificationObserver {
  public:
   typedef std::set<TabContentsWrapper*> TabContentsWrapperSet;
 
@@ -49,10 +49,10 @@ class BackgroundPrintingManager : public base::NonThreadSafe,
   // Returns true if |printing_tabs_| contains |preview_tab|.
   bool HasPrintPreviewTab(TabContentsWrapper* preview_tab);
 
-  // NotificationObserver overrides:
+  // content::NotificationObserver overrides:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   typedef std::map<TabContentsWrapper*, TabContentsWrapper*>
@@ -76,7 +76,7 @@ class BackgroundPrintingManager : public base::NonThreadSafe,
   // Value: initiator tab.
   TabContentsWrapperMap map_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundPrintingManager);
 };

@@ -40,7 +40,7 @@ class PanelBrowserTest : public BasePanelBrowserTest {
     size_t browser_count = BrowserList::size();
     ui_test_utils::WindowedNotificationObserver signal(
         chrome::NOTIFICATION_BROWSER_CLOSED,
-        Source<Browser>(browser));
+        content::Source<Browser>(browser));
     browser->CloseWindow();
     signal.Wait();
     // Now we have one less browser instance.
@@ -83,7 +83,7 @@ class PanelBrowserTest : public BasePanelBrowserTest {
     // Test closing the leftmost panel that is from same extension.
     ui_test_utils::WindowedNotificationObserver signal(
         chrome::NOTIFICATION_BROWSER_CLOSED,
-        Source<Browser>(panel2->browser()));
+        content::Source<Browser>(panel2->browser()));
     Panel* panel4 = CreatePanelWithBounds(
         web_app::GenerateApplicationNameFromExtensionId(extension2->id()),
         gfx::Rect(0, 0, 280, 200));
@@ -95,7 +95,7 @@ class PanelBrowserTest : public BasePanelBrowserTest {
     // Test closing the leftmost panel.
     ui_test_utils::WindowedNotificationObserver signal2(
         chrome::NOTIFICATION_BROWSER_CLOSED,
-        Source<Browser>(panel4->browser()));
+        content::Source<Browser>(panel4->browser()));
     Panel* panel5 = CreatePanelWithBounds(
         web_app::GenerateApplicationNameFromExtensionId(extension3->id()),
         gfx::Rect(0, 0, 300, 200));
@@ -107,10 +107,10 @@ class PanelBrowserTest : public BasePanelBrowserTest {
     // Test closing 2 leftmost panels.
     ui_test_utils::WindowedNotificationObserver signal3(
         chrome::NOTIFICATION_BROWSER_CLOSED,
-        Source<Browser>(panel3->browser()));
+        content::Source<Browser>(panel3->browser()));
     ui_test_utils::WindowedNotificationObserver signal4(
         chrome::NOTIFICATION_BROWSER_CLOSED,
-        Source<Browser>(panel5->browser()));
+        content::Source<Browser>(panel5->browser()));
     Panel* panel6 = CreatePanelWithBounds(
         web_app::GenerateApplicationNameFromExtensionId(extension3->id()),
         gfx::Rect(0, 0, 500, 200));
@@ -1316,7 +1316,7 @@ IN_PROC_BROWSER_TEST_F(PanelDownloadTest, DownloadNoTabbedBrowser) {
 
   ui_test_utils::WindowedNotificationObserver signal(
       chrome::NOTIFICATION_BROWSER_CLOSED,
-      Source<Browser>(browser()));
+      content::Source<Browser>(browser()));
   browser()->CloseWindow();
   signal.Wait();
   ASSERT_EQ(1U, BrowserList::size());

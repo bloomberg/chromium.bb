@@ -32,7 +32,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/user_metrics.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_source.h"
 #include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -76,7 +76,7 @@ WebUIMessageHandler* MostVisitedHandler::Attach(WebUI* web_ui) {
     // Register for notification when TopSites changes so that we can update
     // ourself.
     registrar_.Add(this, chrome::NOTIFICATION_TOP_SITES_CHANGED,
-                   Source<history::TopSites>(ts));
+                   content::Source<history::TopSites>(ts));
   }
 
   // We pre-emptively make a fetch for the most visited pages so we have the
@@ -322,8 +322,8 @@ void MostVisitedHandler::OnMostVisitedURLsAvailable(
 }
 
 void MostVisitedHandler::Observe(int type,
-                                 const NotificationSource& source,
-                                 const NotificationDetails& details) {
+                                 const content::NotificationSource& source,
+                                 const content::NotificationDetails& details) {
   DCHECK_EQ(type, chrome::NOTIFICATION_TOP_SITES_CHANGED);
 
   // Most visited urls changed, query again.

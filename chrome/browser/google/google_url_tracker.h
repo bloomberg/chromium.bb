@@ -13,8 +13,8 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "content/common/net/url_fetcher.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/network_change_notifier.h"
 
@@ -37,7 +37,7 @@ class TemplateURL;
 // performed (ever) unless at least one consumer registers interest by calling
 // RequestServerCheck().
 class GoogleURLTracker : public URLFetcher::Delegate,
-                         public NotificationObserver,
+                         public content::NotificationObserver,
                          public net::NetworkChangeNotifier::IPAddressObserver {
  public:
   // Only the main browser process loop should call this, when setting up
@@ -114,22 +114,22 @@ class GoogleURLTracker : public URLFetcher::Delegate,
                                   const net::ResponseCookies& cookies,
                                   const std::string& data);
 
-  // NotificationObserver
+  // content::NotificationObserver
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // NetworkChangeNotifier::IPAddressObserver
   virtual void OnIPAddressChanged();
 
   void SearchCommitted();
-  void OnNavigationPending(const NotificationSource& source,
+  void OnNavigationPending(const content::NotificationSource& source,
                            const GURL& pending_url);
   void OnNavigationCommittedOrTabClosed(TabContents* tab_contents,
                                         int type);
   void ShowGoogleURLInfoBarIfNecessary(TabContents* tab_contents);
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
   InfobarCreator infobar_creator_;
   // TODO(ukai): GoogleURLTracker should track google domain (e.g. google.co.uk)
   // rather than URL (e.g. http://www.google.co.uk/), so that user could

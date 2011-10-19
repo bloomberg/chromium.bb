@@ -8,8 +8,8 @@
 
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/common/content_export.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 
 class BrowsingInstance;
@@ -53,7 +53,7 @@ class BrowserContext;
 //
 ///////////////////////////////////////////////////////////////////////////////
 class CONTENT_EXPORT SiteInstance : public base::RefCounted<SiteInstance>,
-                                    public NotificationObserver {
+                                    public content::NotificationObserver {
  public:
   // Returns a unique ID for this SiteInstance.
   int32 id() { return id_; }
@@ -165,10 +165,10 @@ class CONTENT_EXPORT SiteInstance : public base::RefCounted<SiteInstance>,
                               const GURL& url);
 
  private:
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // The next available SiteInstance ID.
   static int32 next_site_instance_id_;
@@ -176,7 +176,7 @@ class CONTENT_EXPORT SiteInstance : public base::RefCounted<SiteInstance>,
   // A unique ID for this SiteInstance.
   int32 id_;
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   // BrowsingInstance to which this SiteInstance belongs.
   scoped_refptr<BrowsingInstance> browsing_instance_;

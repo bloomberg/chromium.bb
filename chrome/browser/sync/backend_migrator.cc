@@ -16,8 +16,8 @@
 #include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 
 using syncable::ModelTypeSet;
 
@@ -36,7 +36,7 @@ BackendMigrator::BackendMigrator(const std::string& name,
       manager_(manager), state_(IDLE),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   registrar_.Add(this, chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,
-                 Source<DataTypeManager>(manager_));
+                 content::Source<DataTypeManager>(manager_));
 }
 
 BackendMigrator::~BackendMigrator() {
@@ -134,8 +134,8 @@ void BackendMigrator::RestartMigration() {
 }
 
 void BackendMigrator::Observe(int type,
-                              const NotificationSource& source,
-                              const NotificationDetails& details) {
+                              const content::NotificationSource& source,
+                              const content::NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_SYNC_CONFIGURE_DONE, type);
   if (state_ == IDLE)
     return;
@@ -147,7 +147,8 @@ void BackendMigrator::Observe(int type,
       FROM_HERE,
       base::Bind(&BackendMigrator::OnConfigureDone,
                  weak_ptr_factory_.GetWeakPtr(),
-                 *Details<DataTypeManager::ConfigureResult>(details).ptr()));
+                 *content::Details<DataTypeManager::ConfigureResult>(
+                     details).ptr()));
 }
 
 namespace {

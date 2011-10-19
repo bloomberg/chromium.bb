@@ -148,7 +148,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, KillBGContents) {
 
   ui_test_utils::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_BACKGROUND_CONTENTS_NAVIGATED,
-      Source<Profile>(browser()->profile()));
+      content::Source<Profile>(browser()->profile()));
 
   BackgroundContentsService* service =
       BackgroundContentsServiceFactory::GetForProfile(browser()->profile());

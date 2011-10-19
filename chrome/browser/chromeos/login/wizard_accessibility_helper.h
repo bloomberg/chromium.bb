@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/chromeos/login/wizard_accessibility_handler.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
 class Profile;
@@ -66,7 +66,7 @@ class WizardAccessibilityHelper {
   Profile* profile_;
 
   // Used for tracking registrations to accessibility notifications.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   bool registered_notifications_;
 

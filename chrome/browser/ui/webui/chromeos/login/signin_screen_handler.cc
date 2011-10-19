@@ -28,8 +28,8 @@
 #include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "net/base/dnsrr_resolver.h"
@@ -92,7 +92,7 @@ namespace chromeos {
 // changed. Also, it answers to the requests about current network state.
 class NetworkStateInformer
     : public chromeos::NetworkLibrary::NetworkManagerObserver,
-      public NotificationObserver {
+      public content::NotificationObserver {
  public:
   explicit NetworkStateInformer(WebUI* web_ui);
   virtual ~NetworkStateInformer();
@@ -109,10 +109,10 @@ class NetworkStateInformer
   // NetworkLibrary::NetworkManagerObserver implementation:
   virtual void OnNetworkManagerChanged(chromeos::NetworkLibrary* cros) OVERRIDE;
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
  private:
   enum State {OFFLINE, ONLINE, CAPTIVE_PORTAL};
 
@@ -120,7 +120,7 @@ class NetworkStateInformer
 
   void SendStateToObservers(const std::string& reason);
 
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
   base::hash_set<std::string> observers_;
   std::string active_network_;
   std::string network_name_;
@@ -167,9 +167,10 @@ void NetworkStateInformer::OnNetworkManagerChanged(NetworkLibrary* cros) {
   }
 }
 
-void NetworkStateInformer::Observe(int type,
-                                   const NotificationSource& source,
-                                   const NotificationDetails& details) {
+void NetworkStateInformer::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_LOGIN_PROXY_CHANGED);
   SendStateToObservers(kReasonProxyChanged);
 }

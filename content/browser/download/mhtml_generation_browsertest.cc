@@ -46,7 +46,7 @@ IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, GenerateMHTML) {
   MHTMLGenerationManager* mhtml_generation_manager =
       g_browser_process->mhtml_generation_manager();
 
-  Source<RenderViewHost> source(tab->render_view_host());
+  content::Source<RenderViewHost> source(tab->render_view_host());
   ui_test_utils::WindowedNotificationObserverWithDetails<
       MHTMLGenerationManager::NotificationDetails> signal(
           content::NOTIFICATION_MHTML_GENERATED, source);

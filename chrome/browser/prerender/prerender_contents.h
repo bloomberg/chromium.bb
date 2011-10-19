@@ -16,7 +16,7 @@
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_registrar.h"
 
 class Profile;
 class RenderViewHost;
@@ -44,7 +44,7 @@ class PrerenderTracker;
 // NavigationController because is has no facility for navigating (other than
 // programatically view window.location.href) or RenderViewHostManager because
 // it is never allowed to navigate across a SiteInstance boundary.
-class PrerenderContents : public NotificationObserver,
+class PrerenderContents : public content::NotificationObserver,
                           public TabContentsObserver {
  public:
   // PrerenderContents::Create uses the currently registered Factory to create
@@ -143,10 +143,10 @@ class PrerenderContents : public NotificationObserver,
       RenderViewHost* render_view_host) OVERRIDE;
   virtual void RenderViewGone() OVERRIDE;
 
-  // NotificationObserver
+  // content::NotificationObserver
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Adds an alias URL, for one of the many redirections. If the URL can not
   // be prerendered - for example, it's an ftp URL - |this| will be destroyed
@@ -203,7 +203,7 @@ class PrerenderContents : public NotificationObserver,
   // once the RenderViewHost has a RenderView and RenderWidgetHostView.
   virtual void OnRenderViewHostCreated(RenderViewHost* new_render_view_host);
 
-  NotificationRegistrar& notification_registrar() {
+  content::NotificationRegistrar& notification_registrar() {
     return notification_registrar_;
   }
 
@@ -255,7 +255,7 @@ class PrerenderContents : public NotificationObserver,
   int32 page_id_;
   GURL url_;
   GURL icon_url_;
-  NotificationRegistrar notification_registrar_;
+  content::NotificationRegistrar notification_registrar_;
 
   // A vector of URLs that this prerendered page matches against.
   // This array can contain more than element as a result of redirects,

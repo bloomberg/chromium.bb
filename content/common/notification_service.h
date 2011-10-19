@@ -14,10 +14,13 @@
 
 #include "base/observer_list.h"
 #include "content/common/content_export.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_source.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 
+namespace content {
 class NotificationObserver;
+class NotificationRegistrar;
+}
 
 class CONTENT_EXPORT NotificationService {
  public:
@@ -39,12 +42,14 @@ class CONTENT_EXPORT NotificationService {
   // the notification.  If no additional data is needed, NoDetails() is used.
   // There is no particular order in which the observers will be notified.
   void Notify(int type,
-              const NotificationSource& source,
-              const NotificationDetails& details);
+              const content::NotificationSource& source,
+              const content::NotificationDetails& details);
 
   // Returns a NotificationSource that represents all notification sources
   // (for the purpose of registering an observer for events from all sources).
-  static Source<void> AllSources() { return Source<void>(NULL); }
+  static content::Source<void> AllSources() {
+    return content::Source<void>(NULL);
+  }
 
   // Returns the same value as AllSources(). This function has semantic
   // differences to the programmer: We have checked that this AllSources()
@@ -56,18 +61,20 @@ class CONTENT_EXPORT NotificationService {
   // a container before use. But, we want the number of AllSources() calls to
   // drop to almost nothing, because most usages are not multiprofile safe and
   // were done because it was easier to listen to everything.
-  static Source<void> AllBrowserContextsAndSources() {
-    return Source<void>(NULL);
+  static content::Source<void> AllBrowserContextsAndSources() {
+    return content::Source<void>(NULL);
   }
 
   // Returns a NotificationDetails object that represents a lack of details
   // associated with a notification.  (This is effectively a null pointer.)
-  static Details<void> NoDetails() { return Details<void>(NULL); }
+  static content::Details<void> NoDetails() {
+    return content::Details<void>(NULL);
+  }
 
  private:
-  friend class NotificationRegistrar;
+  friend class content::NotificationRegistrar;
 
-  typedef ObserverList<NotificationObserver> NotificationObserverList;
+  typedef ObserverList<content::NotificationObserver> NotificationObserverList;
   typedef std::map<uintptr_t, NotificationObserverList*> NotificationSourceMap;
   typedef std::map<int, NotificationSourceMap> NotificationObserverMap;
   typedef std::map<int, int> NotificationObserverCount;
@@ -75,7 +82,7 @@ class CONTENT_EXPORT NotificationService {
   // Convenience function to determine whether a source has a
   // NotificationObserverList in the given map;
   static bool HasKey(const NotificationSourceMap& map,
-                     const NotificationSource& source);
+                     const content::NotificationSource& source);
 
   // NOTE: Rather than using this directly, you should use a
   // NotificationRegistrar.
@@ -96,8 +103,8 @@ class CONTENT_EXPORT NotificationService {
   // it must be removed for each of those combinations of type and source later.
   //
   // The caller retains ownership of the object pointed to by observer.
-  void AddObserver(NotificationObserver* observer,
-                   int type, const NotificationSource& source);
+  void AddObserver(content::NotificationObserver* observer,
+                   int type, const content::NotificationSource& source);
 
   // NOTE: Rather than using this directly, you should use a
   // NotificationRegistrar.
@@ -105,8 +112,8 @@ class CONTENT_EXPORT NotificationService {
   // Removes the object pointed to by observer from receiving notifications
   // that match type and source.  If no object matching the parameters is
   // currently registered, this method is a no-op.
-  void RemoveObserver(NotificationObserver* observer,
-                      int type, const NotificationSource& source);
+  void RemoveObserver(content::NotificationObserver* observer,
+                      int type, const content::NotificationSource& source);
 
   // Keeps track of the observers for each type of notification.
   // Until we get a prohibitively large number of notification types,

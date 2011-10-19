@@ -122,7 +122,7 @@ class SSLUITest : public InProcessBrowserTest {
     ASSERT_TRUE(interstitial_page);
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
-        Source<NavigationController>(&tab->controller()));
+        content::Source<NavigationController>(&tab->controller()));
     interstitial_page->Proceed();
     observer.Wait();
   }
@@ -430,7 +430,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestHTTPSExpiredCertAndGoForward) {
   {
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
-        Source<NavigationController>(&tab->controller()));
+        content::Source<NavigationController>(&tab->controller()));
     tab->controller().GoBack();
     observer.Wait();
   }
@@ -448,7 +448,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestHTTPSExpiredCertAndGoForward) {
   {
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
-        Source<NavigationController>(&tab->controller()));
+        content::Source<NavigationController>(&tab->controller()));
     tab->controller().GoToOffset(1);
     observer.Wait();
   }
@@ -1032,7 +1032,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestGoodFrameNavigation) {
   {
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
-        Source<NavigationController>(&tab->controller()));
+        content::Source<NavigationController>(&tab->controller()));
     EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
         tab->render_view_host(), std::wstring(),
         L"window.domAutomationController.send(clickLink('goodHTTPSLink'));",
@@ -1048,7 +1048,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestGoodFrameNavigation) {
   {
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
-        Source<NavigationController>(&tab->controller()));
+        content::Source<NavigationController>(&tab->controller()));
     EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
         tab->render_view_host(), std::wstring(),
         L"window.domAutomationController.send(clickLink('badHTTPSLink'));",
@@ -1074,7 +1074,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestGoodFrameNavigation) {
   {
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
-        Source<NavigationController>(&tab->controller()));
+        content::Source<NavigationController>(&tab->controller()));
     tab->controller().GoBack();
     observer.Wait();
   }
@@ -1084,7 +1084,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestGoodFrameNavigation) {
   {
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
-        Source<NavigationController>(&tab->controller()));
+        content::Source<NavigationController>(&tab->controller()));
     EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
         tab->render_view_host(), std::wstring(),
         L"window.domAutomationController.send(clickLink('HTTPLink'));",
@@ -1100,7 +1100,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestGoodFrameNavigation) {
   {
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
-        Source<NavigationController>(&tab->controller()));
+        content::Source<NavigationController>(&tab->controller()));
     tab->controller().GoBack();
     observer.Wait();
   }
@@ -1132,7 +1132,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestBadFrameNavigation) {
   bool success = false;
   ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
-        Source<NavigationController>(&tab->controller()));
+        content::Source<NavigationController>(&tab->controller()));
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
       tab->render_view_host(), std::wstring(),
       L"window.domAutomationController.send(clickLink('goodHTTPSLink'));",
@@ -1169,7 +1169,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestUnauthenticatedFrameNavigation) {
     bool success = false;
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
-        Source<NavigationController>(&tab->controller()));
+        content::Source<NavigationController>(&tab->controller()));
     EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
         tab->render_view_host(), std::wstring(),
         L"window.domAutomationController.send(clickLink('goodHTTPSLink'));",
@@ -1186,7 +1186,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestUnauthenticatedFrameNavigation) {
     bool success = false;
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
-        Source<NavigationController>(&tab->controller()));
+        content::Source<NavigationController>(&tab->controller()));
     EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
         tab->render_view_host(), std::wstring(),
         L"window.domAutomationController.send(clickLink('badHTTPSLink'));",

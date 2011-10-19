@@ -9,15 +9,15 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/search_engines/template_url_fetcher_callbacks.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class SearchEngineTabHelper;
 class TabContents;
 
 // Callbacks which display UI for the TemplateURLFetcher.
 class TemplateURLFetcherUICallbacks : public TemplateURLFetcherCallbacks,
-                                      public NotificationObserver {
+                                      public content::NotificationObserver {
  public:
   TemplateURLFetcherUICallbacks(SearchEngineTabHelper* tab_helper,
                                 TabContents* tab_contents);
@@ -29,10 +29,10 @@ class TemplateURLFetcherUICallbacks : public TemplateURLFetcherCallbacks,
   virtual void ConfirmAddSearchProvider(TemplateURL* template_url,
                                         Profile* profile) OVERRIDE;
 
-  // NotificationObserver:
+  // content::NotificationObserver:
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   // The SearchEngineTabHelper where this request originated. Can be NULL if the
@@ -43,7 +43,7 @@ class TemplateURLFetcherUICallbacks : public TemplateURLFetcherCallbacks,
   TabContents* tab_contents_;
 
   // Handles registering for our notifications.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(TemplateURLFetcherUICallbacks);
 };

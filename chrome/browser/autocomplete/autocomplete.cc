@@ -1026,7 +1026,7 @@ void AutocompleteController::NotifyChanged(bool notify_default_match) {
   if (done_) {
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_AUTOCOMPLETE_CONTROLLER_RESULT_READY,
-        Source<AutocompleteController>(this),
+        content::Source<AutocompleteController>(this),
         NotificationService::NoDetails());
   }
 }

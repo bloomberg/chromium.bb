@@ -63,8 +63,8 @@ void HostZoomMap::SetZoomLevel(std::string host, double level) {
 
   NotificationService::current()->Notify(
       content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
-      Source<HostZoomMap>(this),
-      Details<const std::string>(&host));
+      content::Source<HostZoomMap>(this),
+      content::Details<const std::string>(&host));
 }
 
 double HostZoomMap::GetTemporaryZoomLevel(int render_process_id,
@@ -111,21 +111,23 @@ void HostZoomMap::SetTemporaryZoomLevel(int render_process_id,
   std::string host;
   NotificationService::current()->Notify(
       content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
-      Source<HostZoomMap>(this),
-      Details<const std::string>(&host));
+      content::Source<HostZoomMap>(this),
+      content::Details<const std::string>(&host));
 }
 
 void HostZoomMap::Observe(
     int type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   switch (type) {
     case content::NOTIFICATION_RENDER_VIEW_HOST_WILL_CLOSE_RENDER_VIEW: {
       base::AutoLock auto_lock(lock_);
-      int render_view_id = Source<RenderViewHost>(source)->routing_id();
-      int render_process_id = Source<RenderViewHost>(source)->process()->id();
+      int render_view_id =
+          content::Source<RenderViewHost>(source)->routing_id();
+      int render_process_id =
+          content::Source<RenderViewHost>(source)->process()->id();
 
       for (size_t i = 0; i < temporary_zoom_levels_.size(); ++i) {
         if (temporary_zoom_levels_[i].render_process_id == render_process_id &&

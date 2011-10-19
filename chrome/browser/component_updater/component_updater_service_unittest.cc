@@ -15,7 +15,7 @@
 #include "chrome/test/base/test_url_request_context_getter.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/net/url_fetcher.h"
-#include "content/common/notification_observer.h"
+#include "content/public/browser/notification_observer.h"
 #include "content/common/notification_service.h"
 #include "content/test/test_notification_tracker.h"
 

@@ -96,7 +96,7 @@ ExtensionEventRouter::ExtensionEventRouter(Profile* profile)
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
                  NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
-                 Source<Profile>(profile_));
+                 content::Source<Profile>(profile_));
   // TODO(tessamac): also get notified for background page crash/failure.
 }
 
@@ -331,13 +331,15 @@ void ExtensionEventRouter::DispatchPendingEvents(
   pending_events_.erase(extension_id);
 }
 
-void ExtensionEventRouter::Observe(int type,
-                                   const NotificationSource& source,
-                                   const NotificationDetails& details) {
+void ExtensionEventRouter::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   switch (type) {
     case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED:
     case content::NOTIFICATION_RENDERER_PROCESS_CLOSED: {
-      RenderProcessHost* renderer = Source<RenderProcessHost>(source).ptr();
+      RenderProcessHost* renderer =
+          content::Source<RenderProcessHost>(source).ptr();
       // Remove all event listeners associated with this renderer
       for (ListenerMap::iterator it = listeners_.begin();
            it != listeners_.end(); ) {
@@ -356,7 +358,7 @@ void ExtensionEventRouter::Observe(int type,
     }
     case chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING: {
       // TODO: dispatch events in queue.  ExtensionHost is in the details.
-      ExtensionHost* eh = Details<ExtensionHost>(details).ptr();
+      ExtensionHost* eh = content::Details<ExtensionHost>(details).ptr();
       DispatchPendingEvents(eh->extension_id());
       break;
     }

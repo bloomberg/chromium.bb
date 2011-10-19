@@ -18,10 +18,10 @@
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_observer_mock.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/common/notification_service.h"
+#include "content/public/browser/notification_details.h"
+#include "content/test/notification_observer_mock.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -46,9 +46,9 @@ using testing::Return;
 using testing::SaveArg;
 
 DataTypeManager::ConfigureStatus GetStatus(
-    const NotificationDetails& details) {
+    const content::NotificationDetails& details) {
   const DataTypeManager::ConfigureResult* result =
-      Details<const DataTypeManager::ConfigureResult>(
+      content::Details<const DataTypeManager::ConfigureResult>(
       details).ptr();
   return result->status;
 }
@@ -285,8 +285,8 @@ class DataTypeManagerImplTest : public testing::Test {
   BrowserThread ui_thread_;
   DataTypeController::TypeMap controllers_;
   NiceMock<SyncBackendHostMock> backend_;
-  NotificationObserverMock observer_;
-  NotificationRegistrar registrar_;
+  content::NotificationObserverMock observer_;
+  content::NotificationRegistrar registrar_;
   std::set<syncable::ModelType> types_;
 };
 

@@ -14,8 +14,8 @@
 #include "base/time.h"
 #include "content/browser/cancelable_request.h"
 #include "content/browser/renderer_host/render_widget_host.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 namespace chromeos {
 
@@ -32,7 +32,7 @@ namespace chromeos {
 // . When you want the version invoke: loader.GetBootTimes(&consumer, callback);
 class BootTimesLoader
     : public CancelableRequestProvider,
-      public NotificationObserver {
+      public content::NotificationObserver {
  public:
   BootTimesLoader();
   virtual ~BootTimesLoader();
@@ -102,10 +102,10 @@ class BootTimesLoader
   // previous login attempt times.
   void RecordLoginAttempted();
 
-  // NotificationObserver implementation.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
 
   // Writes the logout times to a /tmp/logout-times-sent. Unlike login
   // times, we manually call this function for logout times, as we cannot
@@ -166,7 +166,7 @@ class BootTimesLoader
   scoped_refptr<Backend> backend_;
 
   // Used to track notifications for login.
-  NotificationRegistrar registrar_;
+  content::NotificationRegistrar registrar_;
   base::AtomicSequenceNumber num_tabs_;
   bool have_registered_;
 
