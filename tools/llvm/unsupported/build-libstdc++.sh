@@ -13,7 +13,12 @@
 set -o nounset
 set -o errexit
 
-readonly INSTALL_BIN="$(pwd)/toolchain/pnacl_linux_x86_64_newlib/bin/"
+
+readonly INSTALL_ROOT="$(pwd)/toolchain/pnacl_linux_x86_64_newlib"
+readonly INSTALL_BIN="${INSTALL_ROOT}/bin"
+readonly INSTALL_LIB="${INSTALL_ROOT}/lib"
+readonly LIBSTDCPP_INSTALL_DIR="${INSTALL_ROOT}/pkg/libstdcpp"
+
 readonly GCC_SRC="$(pwd)/pnacl/git/gcc"
 
 CC=gcc
@@ -94,6 +99,8 @@ libstdcpp-configure() {
     --enable-cxx-flags="-D__SIZE_MAX__=4294967295"\
     --enable-libstdcxx-time=no \
     --enable-sjlj-exceptions=no \
+    --prefix="${LIBSTDCPP_INSTALL_DIR}" \
+    --enable-multilib=no \
     "$@"
   popd
 }
@@ -104,6 +111,25 @@ libstdcpp-make() {
   env -i PATH=/usr/bin/:/bin "${STD_ENV_FOR_LIBSTDCPP_CLANG[@]}" \
         make \
         "$@"
+  popd
+}
+
+
+libstdcpp-install() {
+  pushd  build
+  # install headers (=install-data)
+  # for good measure make sure we do not keep any old headers
+  rm -rf "${INSTALL_ROOT}/include/c++"
+  rm -rf "${LIBSTDCPP_INSTALL_DIR}"
+  env -i PATH=/usr/bin/:/bin "${STD_ENV_FOR_LIBSTDCPP_CLANG[@]}" \
+    make \
+    install-data \
+    "$@"
+
+  # Install bitcode library
+  mkdir -p "${INSTALL_LIB}"
+  cp src/.libs/libstdc++.a "${INSTALL_LIB}"
+
   popd
 }
 

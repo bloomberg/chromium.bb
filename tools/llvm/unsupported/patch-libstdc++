@@ -140,6 +140,19 @@ index 89ded2c..27f4516 100644
        static constexpr bool is_monotonic = false;
  
        static time_point
+diff --git a/libstdc++-v3/libsupc++/eh_arm.cc b/libstdc++-v3/libsupc++/eh_arm.cc
+index f0acb70..b566ba4 100644
+--- a/libstdc++-v3/libsupc++/eh_arm.cc
++++ b/libstdc++-v3/libsupc++/eh_arm.cc
+@@ -26,6 +26,8 @@
+ #include "unwind-cxx.h"
+ 
+ #ifdef __ARM_EABI_UNWINDER__
++// @LOCALMOD
++#error "arm is not supported"
+ 
+ using namespace __cxxabiv1;
+ 
 diff --git a/libstdc++-v3/libsupc++/eh_call.cc b/libstdc++-v3/libsupc++/eh_call.cc
 index f519f35..c768970 100644
 --- a/libstdc++-v3/libsupc++/eh_call.cc
@@ -157,7 +170,7 @@ index f519f35..c768970 100644
  
  
 diff --git a/libstdc++-v3/libsupc++/eh_personality.cc b/libstdc++-v3/libsupc++/eh_personality.cc
-index 19c2044..d611ed4 100644
+index 19c2044..ae1d96d 100644
 --- a/libstdc++-v3/libsupc++/eh_personality.cc
 +++ b/libstdc++-v3/libsupc++/eh_personality.cc
 @@ -36,6 +36,14 @@ using namespace __cxxabiv1;
@@ -175,6 +188,23 @@ index 19c2044..d611ed4 100644
  #include "unwind-pe.h"
  
  
+@@ -706,10 +714,16 @@ PERSONALITY_FUNCTION (int version,
+ 
+   /* For targets with pointers smaller than the word size, we must extend the
+      pointer, and this extension is target dependent.  */
++// @LOCALMOD
++#if 0
+   _Unwind_SetGR (context, __builtin_eh_return_data_regno (0),
+ 		 __builtin_extend_pointer (ue_header));
+   _Unwind_SetGR (context, __builtin_eh_return_data_regno (1),
+ 		 handler_switch_value);
++#else
++  _Unwind_PNaClSetResult0(context, __builtin_extend_pointer (ue_header));
++  _Unwind_PNaClSetResult1(context, handler_switch_value);
++#endif
+   _Unwind_SetIP (context, landing_pad);
+ #ifdef __ARM_EABI_UNWINDER__
+   if (found_type == found_cleanup)
 diff --git a/libstdc++-v3/libsupc++/exception_ptr.h b/libstdc++-v3/libsupc++/exception_ptr.h
 index 26117cd..a8cea39 100644
 --- a/libstdc++-v3/libsupc++/exception_ptr.h
@@ -188,27 +218,57 @@ index 26117cd..a8cea39 100644
    /**
     * @addtogroup exceptions
     * @{
+diff --git a/libstdc++-v3/libsupc++/vec.cc b/libstdc++-v3/libsupc++/vec.cc
+index 700c5ef..2cb77ed 100644
+--- a/libstdc++-v3/libsupc++/vec.cc
++++ b/libstdc++-v3/libsupc++/vec.cc
+@@ -358,6 +358,21 @@ namespace __cxxabiv1
+   }
+ } // namespace __cxxabiv1
+ 
++// @LOCALMOD-START
++// http://code.google.com/p/nativeclient/issues/detail?id=865
++#if defined(__native_client__) 
++extern "C" int
++__aeabi_atexit (void *object, 
++                void (*destructor) (void *),
++                void *dso_handle)
++{
++  return abi::__cxa_atexit(destructor, object, dso_handle);
++}
++#undef __ARM_EABI__
++#endif
++// @LOCALMOD-END
++
++
+ #if defined(__arm__) && defined(__ARM_EABI__)
+ 
+ // The ARM C++ ABI requires that the library provide these additional
 diff --git a/libstdc++-v3/src/locale-inst.cc b/libstdc++-v3/src/locale-inst.cc
-index e77c5c9..295fbb2 100644
+index e77c5c9..eb0cf5f 100644
 --- a/libstdc++-v3/src/locale-inst.cc
 +++ b/libstdc++-v3/src/locale-inst.cc
-@@ -27,6 +27,11 @@
- // ISO C++ 14882: 22.1  Locales
- //
- 
+@@ -175,7 +175,12 @@ _GLIBCXX_END_NAMESPACE_LDBL
+   // messages
+   template class messages<C>;
+   template class messages_byname<C>;
+-  
++
++
 +// @LOCALMOD
 +// NOTE: there is a proposed patch, but it does not seem to work:
-+// http://people.freebsd.org/~rpaulo/clang-bootstrap-r211516-1-libstdc%2B%2B.diff
++// http://people.freebsd.org/~rpaulo/clang-bootstrap-r211516-1-libstdc%2B%2B.dif
 +#if 0
-+
- #include <locale>
- 
- // Instantiation configuration.
-@@ -362,3 +367,6 @@ _GLIBCXX_LDBL_COMPAT(_ZNKSt17__gnu_cxx_ldbl1289money_putIcSt19ostreambuf_iterato
- 		     _ZNKSt9money_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEE9_M_insertILb1EEES3_S3_RSt8ios_basecRKSs);
- 
- #endif // _GLIBCXX_LONG_DOUBLE_COMPAT
-+
-+// @LOCALMOD
+   // ctype
+   inline template class __ctype_abstract_base<C>;
+   template class ctype_byname<C>;
+@@ -183,7 +188,7 @@ _GLIBCXX_END_NAMESPACE_LDBL
+   // codecvt
+   inline template class __codecvt_abstract_base<C, char, mbstate_t>;
+   template class codecvt_byname<C, char, mbstate_t>;
+-
 +#endif
+   // collate
+   template class collate<C>;
+   template class collate_byname<C>;
 /usr/local/google/home/robertm/nacl-gclient1/native_client
