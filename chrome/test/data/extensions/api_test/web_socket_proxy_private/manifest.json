@@ -4,5 +4,5 @@
   "version": "0.1",
   "description": "Test for webSocketProxyPrivate.getPassportForTCP",
   "background_page": "background.html",
-  "permissions": ["webSocketProxyPrivate", "chromeosInfoPrivate"]
+  "permissions": ["webSocketProxyPrivate"]
 }

@@ -6,8 +6,3 @@
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, CustomizationPrivateTest) {
   ASSERT_TRUE(RunComponentExtensionTest("chromeos_info_private")) << message_;
 }
-
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, CustomizationPrivateFailTest) {
-  // Only component extensions can use it.
-  ASSERT_FALSE(RunExtensionTest("chromeos_info_private")) << message_;
-}
