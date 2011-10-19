@@ -51,8 +51,10 @@ ContentSetting GetContentSettingFromStore(
     bool incognito) {
   scoped_ptr<content_settings::RuleIterator> rule_iterator (
       store->GetRuleIterator(content_type, resource_identifier, incognito));
-  return content_settings::GetContentSetting(
-      rule_iterator.get(), primary_url, secondary_url);
+  scoped_ptr<base::Value> setting(
+      content_settings::GetContentSettingValueAndPatterns(
+          rule_iterator.get(), primary_url, secondary_url, NULL, NULL));
+  return content_settings::ValueToContentSetting(setting.get());
 }
 
 void GetSettingsForOneTypeFromStore(

@@ -12,11 +12,16 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 
 class GURL;
 
 namespace content_settings {
 class PatternParser;
+}
+
+namespace IPC {
+class Message;
 }
 
 // A pattern used in content setting rules. See |IsValid| for a description of
@@ -53,6 +58,40 @@ class ContentSettingsPattern {
     IDENTITY = 0,
     PREDECESSOR = 1,
     DISJOINT_ORDER_PRE = 2,
+  };
+
+  struct PatternParts {
+    PatternParts();
+    ~PatternParts();
+
+    // Lowercase string of the URL scheme to match. This string is empty if the
+    // |is_scheme_wildcard| flag is set.
+    std::string scheme;
+
+    // True if the scheme wildcard is set.
+    bool is_scheme_wildcard;
+
+    // Normalized string that is either of the following:
+    // - IPv4 or IPv6
+    // - hostname
+    // - domain
+    // - empty string if the |is_host_wildcard flag is set.
+    std::string host;
+
+    // True if the domain wildcard is set.
+    bool has_domain_wildcard;
+
+    // String with the port to match. This string is empty if the
+    // |is_port_wildcard| flag is set.
+    std::string port;
+
+    // True if the port wildcard is set.
+    bool is_port_wildcard;
+
+    // TODO(markusheintz): Needed for legacy reasons. Remove. Path
+    // specification. Only used for content settings pattern with a "file"
+    // scheme part.
+    std::string path;
   };
 
   class BuilderInterface {
@@ -120,6 +159,10 @@ class ContentSettingsPattern {
   // patterns match nothing.
   ContentSettingsPattern();
 
+  // Serializes the pattern to an IPC message or deserializes it.
+  void WriteToMessage(IPC::Message* m) const;
+  bool ReadFromMessage(const IPC::Message* m, void** iter);
+
   // True if this is a valid pattern.
   bool IsValid() const { return is_valid_; }
 
@@ -147,42 +190,8 @@ class ContentSettingsPattern {
 
  private:
   friend class content_settings::PatternParser;
-  friend class ContentSettingsPatternParserTest_SerializePatterns_Test;
   friend class Builder;
-
-  struct PatternParts {
-    PatternParts();
-    ~PatternParts();
-
-    // Lowercase string of the URL scheme to match. This string is empty if the
-    // |is_scheme_wildcard| flag is set.
-    std::string scheme;
-
-    // True if the scheme wildcard is set.
-    bool is_scheme_wildcard;
-
-    // Normalized string that is either of the following:
-    // - IPv4 or IPv6
-    // - hostname
-    // - domain
-    // - empty string if the |is_host_wildcard flag is set.
-    std::string host;
-
-    // True if the domain wildcard is set.
-    bool has_domain_wildcard;
-
-    // String with the port to match. This string is empty if the
-    // |is_port_wildcard| flag is set.
-    std::string port;
-
-    // True if the port wildcard is set.
-    bool is_port_wildcard;
-
-    // TODO(markusheintz): Needed for legacy reasons. Remove. Path
-    // specification. Only used for content settings pattern with a "file"
-    // scheme part.
-    std::string path;
-  };
+  FRIEND_TEST_ALL_PREFIXES(ContentSettingsPatternParserTest, SerializePatterns);
 
   class Builder : public BuilderInterface {
     public:

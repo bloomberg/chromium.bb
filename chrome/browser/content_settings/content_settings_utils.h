@@ -52,15 +52,22 @@ std::string CreatePatternString(
     const ContentSettingsPattern& top_level_frame_pattern);
 
 // Caller takes the ownership of the returned |base::Value*|.
-base::Value* GetContentSettingValue(
+base::Value* GetContentSettingValueAndPatterns(
     RuleIterator* rule_iterator,
     const GURL& primary_url,
-    const GURL& secondary_url);
+    const GURL& secondary_url,
+    ContentSettingsPattern* primary_pattern,
+    ContentSettingsPattern* secondary_pattern);
 
-ContentSetting GetContentSetting(
-    RuleIterator* rule_iterator,
+base::Value* GetContentSettingValueAndPatterns(
+    const ProviderInterface* provider,
     const GURL& primary_url,
-    const GURL& secondary_url);
+    const GURL& secondary_url,
+    ContentSettingsType content_type,
+    const std::string& resource_identifier,
+    bool include_incognito,
+    ContentSettingsPattern* primary_pattern,
+    ContentSettingsPattern* secondary_pattern);
 
 base::Value* GetContentSettingValue(
     const ProviderInterface* provider,

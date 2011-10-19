@@ -120,28 +120,64 @@ bool ParseContentSettingValue(const base::Value* value,
   return *setting != CONTENT_SETTING_DEFAULT;
 }
 
-base::Value* GetContentSettingValue(const ProviderInterface* provider,
-                                    const GURL& primary_url,
-                                    const GURL& secondary_url,
-                                    ContentSettingsType content_type,
-                                    const std::string& resource_identifier,
-                                    bool include_incognito) {
+base::Value* GetContentSettingValueAndPatterns(
+    const ProviderInterface* provider,
+    const GURL& primary_url,
+    const GURL& secondary_url,
+    ContentSettingsType content_type,
+    const std::string& resource_identifier,
+    bool include_incognito,
+    ContentSettingsPattern* primary_pattern,
+    ContentSettingsPattern* secondary_pattern) {
   if (include_incognito) {
     // Check incognito-only specific settings. It's essential that the
     // |RuleIterator| gets out of scope before we get a rule iterator for the
     // normal mode.
     scoped_ptr<RuleIterator> incognito_rule_iterator(
         provider->GetRuleIterator(content_type, resource_identifier, true));
-    base::Value* value = GetContentSettingValue(
-        incognito_rule_iterator.get(), primary_url, secondary_url);
+    base::Value* value = GetContentSettingValueAndPatterns(
+        incognito_rule_iterator.get(), primary_url, secondary_url,
+        primary_pattern, secondary_pattern);
     if (value)
       return value;
   }
   // No settings from the incognito; use the normal mode.
   scoped_ptr<RuleIterator> rule_iterator(
       provider->GetRuleIterator(content_type, resource_identifier, false));
-  return GetContentSettingValue(
-      rule_iterator.get(), primary_url, secondary_url);
+  return GetContentSettingValueAndPatterns(
+      rule_iterator.get(), primary_url, secondary_url,
+      primary_pattern, secondary_pattern);
+}
+
+base::Value* GetContentSettingValueAndPatterns(
+    RuleIterator* rule_iterator,
+    const GURL& primary_url,
+    const GURL& secondary_url,
+    ContentSettingsPattern* primary_pattern,
+    ContentSettingsPattern* secondary_pattern) {
+  while (rule_iterator->HasNext()) {
+    const Rule& rule = rule_iterator->Next();
+    if (rule.primary_pattern.Matches(primary_url) &&
+        rule.secondary_pattern.Matches(secondary_url)) {
+      if (primary_pattern)
+        *primary_pattern = rule.primary_pattern;
+      if (secondary_pattern)
+        *secondary_pattern = rule.secondary_pattern;
+      return rule.value.get()->DeepCopy();
+    }
+  }
+  return NULL;
+}
+
+base::Value* GetContentSettingValue(const ProviderInterface* provider,
+                                    const GURL& primary_url,
+                                    const GURL& secondary_url,
+                                    ContentSettingsType content_type,
+                                    const std::string& resource_identifier,
+                                    bool include_incognito) {
+  return GetContentSettingValueAndPatterns(provider, primary_url, secondary_url,
+                               content_type, resource_identifier,
+                               include_incognito, NULL, NULL);
 }
 
 ContentSetting GetContentSetting(const ProviderInterface* provider,
@@ -150,47 +186,11 @@ ContentSetting GetContentSetting(const ProviderInterface* provider,
                                  ContentSettingsType content_type,
                                  const std::string& resource_identifier,
                                  bool include_incognito) {
-  if (include_incognito) {
-    // Check incognito-only specific settings. It's essential that the
-    // |RuleIterator| gets out of scope before we get a rule iterator for the
-    // normal mode.
-    scoped_ptr<RuleIterator> incognito_rule_iterator(
-        provider->GetRuleIterator(content_type, resource_identifier, true));
-    ContentSetting setting = GetContentSetting(
-        incognito_rule_iterator.get(), primary_url, secondary_url);
-    if (setting != CONTENT_SETTING_DEFAULT)
-      return setting;
-  }
-  // No settings from the incognito; use the normal mode.
-  scoped_ptr<RuleIterator> rule_iterator(
-      provider->GetRuleIterator(content_type, resource_identifier, false));
-  return GetContentSetting(rule_iterator.get(), primary_url, secondary_url);
-}
-
-base::Value* GetContentSettingValue(RuleIterator* rule_iterator,
-                                    const GURL& primary_url,
-                                    const GURL& secondary_url) {
-  while (rule_iterator->HasNext()) {
-    const Rule& rule = rule_iterator->Next();
-    if (rule.primary_pattern.Matches(primary_url) &&
-        rule.secondary_pattern.Matches(secondary_url)) {
-      return rule.value.get()->DeepCopy();
-    }
-  }
-  return NULL;
-}
-
-ContentSetting GetContentSetting(RuleIterator* rule_iterator,
-                                 const GURL& primary_url,
-                                 const GURL& secondary_url) {
-  while (rule_iterator->HasNext()) {
-    const Rule& rule = rule_iterator->Next();
-    if (rule.primary_pattern.Matches(primary_url) &&
-        rule.secondary_pattern.Matches(secondary_url)) {
-      return ValueToContentSetting(rule.value.get());
-    }
-  }
-  return CONTENT_SETTING_DEFAULT;
+  scoped_ptr<base::Value> value(
+      GetContentSettingValue(provider, primary_url, secondary_url,
+                             content_type, resource_identifier,
+                             include_incognito));
+  return ValueToContentSetting(value.get());
 }
 
 }  // namespace content_settings

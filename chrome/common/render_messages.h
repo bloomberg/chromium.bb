@@ -19,6 +19,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/common/common_param_traits.h"
+#include "chrome/common/content_settings_pattern.h"
 #include "chrome/common/instant_types.h"
 #include "chrome/common/nacl_types.h"
 #include "chrome/common/search_provider.h"
@@ -102,6 +103,14 @@ struct ParamTraits<ContentSettings> {
   static void Log(const param_type& p, std::string* l);
 };
 
+template <>
+struct ParamTraits<ContentSettingsPattern> {
+  typedef ContentSettingsPattern param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
 }  // namespace IPC
 
 #endif  // CHROME_COMMON_RENDER_MESSAGES_H_
@@ -117,6 +126,16 @@ IPC_ENUM_TRAITS(WebKit::WebConsoleMessage::Level)
 
 IPC_STRUCT_TRAITS_BEGIN(ChromeViewHostMsg_GetPluginInfo_Status)
 IPC_STRUCT_TRAITS_MEMBER(value)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(ContentSettingsPattern::PatternParts)
+  IPC_STRUCT_TRAITS_MEMBER(scheme)
+  IPC_STRUCT_TRAITS_MEMBER(is_scheme_wildcard)
+  IPC_STRUCT_TRAITS_MEMBER(host)
+  IPC_STRUCT_TRAITS_MEMBER(has_domain_wildcard)
+  IPC_STRUCT_TRAITS_MEMBER(port)
+  IPC_STRUCT_TRAITS_MEMBER(is_port_wildcard)
+  IPC_STRUCT_TRAITS_MEMBER(path)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(ThumbnailScore)
@@ -401,10 +420,12 @@ IPC_SYNC_MESSAGE_CONTROL4_1(ChromeViewHostMsg_AllowIndexedDB,
 // neither blocked nor white-listed, which means that it's allowed
 // by default and can still be blocked if it's non-sandboxed.
 //
-IPC_SYNC_MESSAGE_CONTROL2_1(ChromeViewHostMsg_GetPluginContentSetting,
+IPC_SYNC_MESSAGE_CONTROL2_3(ChromeViewHostMsg_GetPluginContentSetting,
                             GURL /* policy_url */,
                             std::string  /* resource */,
-                            ContentSetting /* setting */)
+                            ContentSetting /* setting */,
+                            ContentSettingsPattern /* primary pattern */,
+                            ContentSettingsPattern /* secondary pattern */)
 
 // Return information about a plugin for the given URL and MIME type.
 // In contrast to ViewHostMsg_GetPluginInfo in content/, this IPC call knows

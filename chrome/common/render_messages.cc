@@ -26,4 +26,21 @@ void ParamTraits<ContentSettings>::Log(
   l->append("<ContentSettings>");
 }
 
+void ParamTraits<ContentSettingsPattern>::Write(
+    Message* m, const ContentSettingsPattern& pattern) {
+  pattern.WriteToMessage(m);
+}
+
+bool ParamTraits<ContentSettingsPattern>::Read(
+    const Message* m, void** iter, ContentSettingsPattern* pattern) {
+  return pattern->ReadFromMessage(m, iter);
+}
+
+void ParamTraits<ContentSettingsPattern>::Log(
+    const ContentSettingsPattern& p, std::string* l) {
+  l->append("<ContentSettingsPattern: ");
+  l->append(p.ToString());
+  l->append(">");
+}
+
 }  // namespace IPC

@@ -148,21 +148,17 @@ TEST_F(ChromeRenderViewTest, PluginsTemporarilyAllowed) {
   ContentSettingsObserver* observer = ContentSettingsObserver::Get(view_);
   observer->SetContentSettings(settings);
   ContentSettingsObserver::SetDefaultContentSettings(settings);
-  EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            observer->GetContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS));
+  EXPECT_FALSE(observer->plugins_temporarily_allowed());
 
   // Temporarily allow plugins.
   OnMessageReceived(ChromeViewMsg_LoadBlockedPlugins(MSG_ROUTING_NONE));
-  EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            observer->GetContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS));
+  EXPECT_TRUE(observer->plugins_temporarily_allowed());
 
   // Simulate a navigation within the page.
   DidNavigateWithinPage(GetMainFrame(), true);
-  EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            observer->GetContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS));
+  EXPECT_TRUE(observer->plugins_temporarily_allowed());
 
   // Navigate to a different page.
   LoadHTML("<html>Bar</html>");
-  EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            observer->GetContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS));
+  EXPECT_FALSE(observer->plugins_temporarily_allowed());
 }

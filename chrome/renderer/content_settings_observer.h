@@ -38,6 +38,10 @@ class ContentSettingsObserver
   // Returns the setting for the given type.
   ContentSetting GetContentSetting(ContentSettingsType type);
 
+  bool plugins_temporarily_allowed() {
+    return plugins_temporarily_allowed_;
+  }
+
   // Sends an IPC notification that the specified content type was blocked.
   // If the content type requires it, |resource_identifier| names the specific
   // resource that was blocked (the plugin path in the case of plugins),

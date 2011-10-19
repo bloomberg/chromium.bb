@@ -77,10 +77,8 @@ void ContentSettingsObserver::SetDefaultContentSettings(
 
 ContentSetting ContentSettingsObserver::GetContentSetting(
     ContentSettingsType type) {
-  if (type == CONTENT_SETTINGS_TYPE_PLUGINS &&
-      plugins_temporarily_allowed_) {
-    return CONTENT_SETTING_ALLOW;
-  }
+  // Don't call this for plug-ins.
+  DCHECK_NE(CONTENT_SETTINGS_TYPE_PLUGINS, type);
   return current_content_settings_.settings[type];
 }
 

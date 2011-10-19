@@ -9,6 +9,7 @@
 #include "base/metrics/histogram.h"
 #include "chrome/browser/automation/automation_resource_message_filter.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/extensions/extension_event_router.h"
@@ -490,13 +491,19 @@ void ChromeRenderMessageFilter::OnAllowIndexedDB(int render_view_id,
 void ChromeRenderMessageFilter::OnGetPluginContentSetting(
     const GURL& policy_url,
     const std::string& resource,
-    ContentSetting* setting) {
-  *setting = host_content_settings_map_->GetContentSetting(
-      policy_url, policy_url, CONTENT_SETTINGS_TYPE_PLUGINS, resource);
-  if (*setting == CONTENT_SETTING_DEFAULT) {
-    *setting = host_content_settings_map_->GetContentSetting(
-        policy_url, policy_url, CONTENT_SETTINGS_TYPE_PLUGINS, std::string());
+    ContentSetting* setting,
+    ContentSettingsPattern* primary_pattern,
+    ContentSettingsPattern* secondary_pattern) {
+  scoped_ptr<base::Value> value(
+      host_content_settings_map_->GetContentSettingValue(
+          policy_url, policy_url, CONTENT_SETTINGS_TYPE_PLUGINS, resource,
+          primary_pattern, secondary_pattern));
+  if (!value.get()) {
+    value.reset(host_content_settings_map_->GetContentSettingValue(
+        policy_url, policy_url, CONTENT_SETTINGS_TYPE_PLUGINS, std::string(),
+        primary_pattern, secondary_pattern));
   }
+  *setting = content_settings::ValueToContentSetting(value.get());
 }
 
 struct ChromeRenderMessageFilter::GetPluginInfo_Params {

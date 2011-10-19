@@ -10,11 +10,13 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "chrome/common/content_settings_pattern_parser.h"
+#include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "net/base/dns_util.h"
 #include "net/base/net_util.h"
 #include "googleurl/src/gurl.h"
 #include "googleurl/src/url_canon.h"
+#include "ipc/ipc_message_utils.h"
 
 namespace {
 
@@ -366,6 +368,17 @@ ContentSettingsPattern::ContentSettingsPattern(
     bool valid)
     : parts_(parts),
       is_valid_(valid) {
+}
+
+void ContentSettingsPattern::WriteToMessage(IPC::Message* m) const {
+  IPC::WriteParam(m, is_valid_);
+  IPC::WriteParam(m, parts_);
+}
+
+bool ContentSettingsPattern::ReadFromMessage(const IPC::Message* m,
+                                             void** iter) {
+  return IPC::ReadParam(m, iter, &is_valid_) &&
+         IPC::ReadParam(m, iter, &parts_);
 }
 
 bool ContentSettingsPattern::Matches(

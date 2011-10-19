@@ -16,6 +16,7 @@
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/content_settings_pattern.h"
 #include "chrome/common/external_ipc_fuzzer.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -340,8 +341,11 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
   ContentSettingsType content_type = CONTENT_SETTINGS_TYPE_PLUGINS;
   ContentSetting plugin_setting = CONTENT_SETTING_DEFAULT;
   std::string resource = group->identifier();
+  ContentSettingsPattern primary_pattern;
+  ContentSettingsPattern secondary_pattern;
   render_view->Send(new ChromeViewHostMsg_GetPluginContentSetting(
-      frame->top()->document().url(), resource, &plugin_setting));
+      frame->top()->document().url(), resource,
+      &plugin_setting, &primary_pattern, &secondary_pattern));
   DCHECK(plugin_setting != CONTENT_SETTING_DEFAULT);
 
   WebPluginParams params(original_params);
@@ -383,14 +387,14 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
   }
 
   ContentSettingsObserver* observer = ContentSettingsObserver::Get(render_view);
-  ContentSetting host_setting =
-      observer->GetContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS);
+  ContentSettingsPattern wildcard = ContentSettingsPattern::Wildcard();
 
   if (group->RequiresAuthorization(plugin) &&
       authorize_policy == CONTENT_SETTING_ASK &&
-      (plugin_setting == CONTENT_SETTING_ALLOW ||
-       plugin_setting == CONTENT_SETTING_ASK) &&
-      host_setting == CONTENT_SETTING_DEFAULT) {
+      plugin_setting != CONTENT_SETTING_BLOCK &&
+      primary_pattern == wildcard &&
+      secondary_pattern == wildcard &&
+      !observer->plugins_temporarily_allowed()) {
     render_view->Send(new ChromeViewHostMsg_BlockedOutdatedPlugin(
         render_view->GetRoutingId(), group->GetGroupName(), GURL()));
     return CreatePluginPlaceholder(
@@ -408,7 +412,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
   }
 
   if (plugin_setting == CONTENT_SETTING_ALLOW ||
-      host_setting == CONTENT_SETTING_ALLOW ||
+      observer->plugins_temporarily_allowed() ||
       plugin.path.value() == webkit::npapi::kDefaultPluginLibraryName) {
     // Delay loading plugins if prerendering.
     if (prerender::PrerenderHelper::IsPrerendering(render_view)) {

@@ -15,6 +15,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 
 struct ChromeViewHostMsg_GetPluginInfo_Status;
+class ContentSettingsPattern;
 struct ExtensionHostMsg_Request_Params;
 class ExtensionInfoMap;
 class FilePath;
@@ -123,7 +124,9 @@ class ChromeRenderMessageFilter : public BrowserMessageFilter {
                         bool* allowed);
   void OnGetPluginContentSetting(const GURL& policy_url,
                                  const std::string& resource,
-                                 ContentSetting* setting);
+                                 ContentSetting* setting,
+                                 ContentSettingsPattern* primary_pattern,
+                                 ContentSettingsPattern* secondary_pattern);
   void OnGetPluginInfo(int render_view_id,
                        const GURL& url,
                        const GURL& top_origin_url,

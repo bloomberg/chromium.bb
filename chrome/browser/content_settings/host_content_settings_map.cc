@@ -203,26 +203,23 @@ ContentSetting HostContentSettingsMap::GetCookieContentSetting(
     return CONTENT_SETTING_ALLOW;
 
   // First get any host-specific settings.
-  ContentSetting setting = CONTENT_SETTING_DEFAULT;
+  scoped_ptr<base::Value> value;
   for (ConstProviderIterator provider = content_settings_providers_.begin();
        provider != content_settings_providers_.end();
        ++provider) {
     if (provider->first == DEFAULT_PROVIDER)
       continue;
 
-    setting = content_settings::GetContentSetting(provider->second,
-                                                  url,
-                                                  first_party_url,
-                                                  CONTENT_SETTINGS_TYPE_COOKIES,
-                                                  std::string(),
-                                                  is_off_the_record_);
-    if (setting != CONTENT_SETTING_DEFAULT)
+    value.reset(content_settings::GetContentSettingValueAndPatterns(
+        provider->second, url, first_party_url, CONTENT_SETTINGS_TYPE_COOKIES,
+        std::string(), is_off_the_record_, NULL, NULL));
+    if (value.get())
       break;
   }
 
   // If no explicit exception has been made and third-party cookies are blocked
   // by default, apply that rule.
-  if (setting == CONTENT_SETTING_DEFAULT && BlockThirdPartyCookies()) {
+  if (!value.get() && BlockThirdPartyCookies()) {
     bool strict = CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kBlockReadingThirdPartyCookies);
     net::StaticCookiePolicy policy(strict ?
@@ -235,14 +232,14 @@ ContentSetting HostContentSettingsMap::GetCookieContentSetting(
       rv = policy.CanGetCookies(url, first_party_url);
     DCHECK_NE(net::ERR_IO_PENDING, rv);
     if (rv != net::OK)
-      setting = CONTENT_SETTING_BLOCK;
+      return CONTENT_SETTING_BLOCK;
   }
 
   // If no other policy has changed the setting, use the default.
-  if (setting == CONTENT_SETTING_DEFAULT)
-    setting = GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_COOKIES);
+  if (value.get())
+    return content_settings::ValueToContentSetting(value.get());
 
-  return setting;
+  return GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_COOKIES);
 }
 
 ContentSetting HostContentSettingsMap::GetContentSetting(
@@ -250,58 +247,45 @@ ContentSetting HostContentSettingsMap::GetContentSetting(
     const GURL& secondary_url,
     ContentSettingsType content_type,
     const std::string& resource_identifier) const {
+  scoped_ptr<base::Value> value(GetContentSettingValue(
+      primary_url, secondary_url, content_type, resource_identifier,
+      NULL, NULL));
+  return content_settings::ValueToContentSetting(value.get());
+}
+
+base::Value* HostContentSettingsMap::GetContentSettingValue(
+    const GURL& primary_url,
+    const GURL& secondary_url,
+    ContentSettingsType content_type,
+    const std::string& resource_identifier,
+    ContentSettingsPattern* primary_pattern,
+    ContentSettingsPattern* secondary_pattern) const {
   DCHECK_NE(CONTENT_SETTINGS_TYPE_COOKIES, content_type);
   DCHECK(content_settings::SupportsResourceIdentifier(content_type) ||
          resource_identifier.empty());
 
-  if (ShouldAllowAllContent(secondary_url, content_type))
-    return CONTENT_SETTING_ALLOW;
-
-  // Iterate through the list of providers and return the first non-NULL value
-  // that matches |primary_url| and |secondary_url|.
-  for (ConstProviderIterator provider = content_settings_providers_.begin();
-       provider != content_settings_providers_.end();
-       ++provider) {
-    ContentSetting provided_setting = content_settings::GetContentSetting(
-        provider->second, primary_url, secondary_url, content_type,
-        resource_identifier, is_off_the_record_);
-    if (provided_setting != CONTENT_SETTING_DEFAULT)
-      return provided_setting;
-  }
-  return CONTENT_SETTING_DEFAULT;
-}
-
-Value* HostContentSettingsMap::GetContentSettingValue(
-    const GURL& primary_url,
-    const GURL& secondary_url,
-    ContentSettingsType content_type,
-    const std::string& resource_identifier) const {
   // Check if the scheme of the requesting url is whitelisted.
   if (ShouldAllowAllContent(secondary_url, content_type))
     return Value::CreateIntegerValue(CONTENT_SETTING_ALLOW);
 
-  // First check if there are specific settings for the |primary_url| and
-  // |secondary_url|. The list of |content_settings_providers_| is ordered
-  // according to their priority.
+  // The list of |content_settings_providers_| is ordered according to their
+  // precedence.
   for (ConstProviderIterator provider = content_settings_providers_.begin();
        provider != content_settings_providers_.end();
        ++provider) {
-    base::Value* value = content_settings::GetContentSettingValue(
+    base::Value* value = content_settings::GetContentSettingValueAndPatterns(
         provider->second, primary_url, secondary_url, content_type,
-        resource_identifier, is_off_the_record_);
+        resource_identifier, is_off_the_record_,
+        primary_pattern, secondary_pattern);
     if (value)
       return value;
   }
-
-  // For simple content types, the DefaultProvider should always return
-  // a setting.
-  DCHECK(ContentTypeHasCompoundValue(content_type));
   return NULL;
 }
 
 ContentSettings HostContentSettingsMap::GetContentSettings(
-      const GURL& primary_url,
-      const GURL& secondary_url) const {
+    const GURL& primary_url,
+    const GURL& secondary_url) const {
   ContentSettings output;
   // If we require a resource identifier, set the content settings to default,
   // otherwise make the defaults explicit. Values for content type

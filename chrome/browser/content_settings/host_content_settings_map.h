@@ -75,28 +75,34 @@ class HostContentSettingsMap
   // This may be called on any thread.
   ContentSettings GetDefaultContentSettings() const;
 
-  // Returns a single ContentSetting which applies to the given URLs. Note that
-  // certain internal schemes are whitelisted. For ContentSettingsTypes that
-  // require a resource identifier to be specified, the |resource_identifier|
-  // must be non-empty.
-  //
-  // This may be called on any thread.
+  // Returns a single |ContentSetting| which applies to the given URLs.
+  // Note that certain internal schemes are whitelisted.
+  // For |CONTENT_TYPE_COOKIES|, |GetCookieContentSetting| should be called,
+  // and for content types that can't be converted to a ContentSetting,
+  // |GetContentSettingValue| should be called.
+  // If there is no content setting, returns CONTENT_SETTING_DEFAULT.
+  // May be called on any thread.
   ContentSetting GetContentSetting(
       const GURL& primary_url,
       const GURL& secondary_url,
       ContentSettingsType content_type,
       const std::string& resource_identifier) const;
 
-  // Returns a content setting |Value| which applies to the given URLs. Note
-  // that certain internal schemes are whitelisted. Ownership of the returned
-  // |Value| is transfered to the caller.
-  //
-  // This may be called on any thread.
+  // Returns a single content setting |Value| which applies to the given URLs.
+  // If |primary_pattern| and |secondary_pattern| are not NULL, they are set to
+  // the patterns of the applying rule.
+  // Note that certain internal schemes are whitelisted.
+  // If there is no content setting, returns NULL and leaves |primary_pattern|
+  // and |secondary_pattern| unchanged.
+  // Otherwise transfers ownership of the resulting |Value| to the caller.
+  // May be called on any thread.
   base::Value* GetContentSettingValue(
       const GURL& primary_url,
       const GURL& secondary_url,
       ContentSettingsType content_type,
-      const std::string& resource_identifier) const;
+      const std::string& resource_identifier,
+      ContentSettingsPattern* primary_pattern,
+      ContentSettingsPattern* secondary_pattern) const;
 
   // Gets the content setting for cookies. This takes the third party cookie
   // flag into account, and therefore needs to know whether we read or write a
