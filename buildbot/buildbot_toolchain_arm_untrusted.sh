@@ -106,10 +106,13 @@ RETCODE=0
 echo @@@BUILD_STEP clobber@@@
 rm -rf scons-out compiler ../xcodebuild ../sconsbuild ../out \
     src/third_party/nacl_sdk/arm-newlib
-rm -rf toolchain/pnacl* toolchain/hg* toolchain/test-log
-rm -rf ../toolchain
 # Try to clobber /tmp/ contents to clear temporary chrome files.
 rm -rf /tmp/.org.chromium.Chromium.*
+
+# Only clobber the directory of the toolchain being built.
+rm -rf toolchain/${TOOLCHAIN_LABEL}
+rm -rf toolchain/hg*
+rm -rf toolchain/test-log
 
 echo @@@BUILD_STEP show-config@@@
 UTMAN_BUILDBOT=true UTMAN_PRUNE=true ${UTMAN} show-config
