@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/at_exit.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/file_path.h"
@@ -1864,7 +1865,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunInternal() {
   // Upon completion, it posts GpuBlacklist auto update task on UI thread.
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableFunction(&GpuBlacklistUpdater::SetupOnFileThread));
+      base::Bind(&GpuBlacklistUpdater::SetupOnFileThread));
 
   // Start watching all browser threads for responsiveness.
   ThreadWatcherList::StartWatchingAll(parsed_command_line());

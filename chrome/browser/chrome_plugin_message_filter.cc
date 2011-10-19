@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chrome_plugin_message_filter.h"
 
+#include "base/bind.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/plugin_download_helper.h"
@@ -56,8 +57,9 @@ void ChromePluginMessageFilter::OnDownloadUrl(const std::string& url,
                                               int render_process_id) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableFunction(OnDownloadUrlOnUIThread, url, caller_window,
-                          render_process_id));
+      base::Bind(&ChromePluginMessageFilter::OnDownloadUrlOnUIThread,
+                 url, caller_window,
+                 render_process_id));
 }
 
 void ChromePluginMessageFilter::OnDownloadUrlOnUIThread(
@@ -70,8 +72,9 @@ void ChromePluginMessageFilter::OnDownloadUrlOnUIThread(
   }
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableFunction(OnDownloadUrlOnFileThread, url, caller_window,
-                          host->browser_context()->GetRequestContext()));
+      base::Bind(&ChromePluginMessageFilter::OnDownloadUrlOnFileThread,
+                 url, caller_window,
+                 host->browser_context()->GetRequestContext()));
 }
 
 void ChromePluginMessageFilter::OnDownloadUrlOnFileThread(
@@ -105,7 +108,7 @@ void ChromePluginMessageFilter::OnMissingPluginStatus(
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
-      NewRunnableFunction(
+      base::Bind(
           &ChromePluginMessageFilter::HandleMissingPluginStatus,
           status, render_process_id, render_view_id, window));
 }

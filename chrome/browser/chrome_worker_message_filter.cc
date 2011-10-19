@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chrome_worker_message_filter.h"
 
+#include "base/bind.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/profiles/profile_io_data.h"
@@ -60,7 +61,7 @@ void ChromeWorkerMessageFilter::OnAllowDatabase(int worker_route_id,
          documents.begin(); doc != documents.end(); ++doc) {
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          NewRunnableFunction(
+          base::Bind(
               &TabSpecificContentSettings::WebDatabaseAccessed,
               doc->render_process_id(), doc->render_view_id(),
               url, name, display_name, !*result));
@@ -90,7 +91,7 @@ void ChromeWorkerMessageFilter::OnAllowFileSystem(int worker_route_id,
          documents.begin(); doc != documents.end(); ++doc) {
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          NewRunnableFunction(
+          base::Bind(
               &TabSpecificContentSettings::FileSystemAccessed,
               doc->render_process_id(), doc->render_view_id(), url, !*result));
     }
