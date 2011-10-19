@@ -20,7 +20,7 @@ var PrerenderView = (function() {
     // Call superclass's constructor.
     superClass.call(this, PrerenderView.MAIN_BOX_ID);
 
-    g_browser.addPrerenderInfoObserver(this);
+    g_browser.addPrerenderInfoObserver(this, true);
     this.prerenderEnabledSpan_ = $(PrerenderView.ENABLED_SPAN_ID);
     this.prerenderOmniboxEnabledSpan_ =
         $(PrerenderView.OMNIBOX_ENABLED_SPAN_ID);

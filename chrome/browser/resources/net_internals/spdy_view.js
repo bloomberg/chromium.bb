@@ -21,9 +21,9 @@ var SpdyView = (function() {
     // Call superclass's constructor.
     superClass.call(this, SpdyView.MAIN_BOX_ID);
 
-    g_browser.addSpdySessionInfoObserver(this);
-    g_browser.addSpdyStatusObserver(this);
-    g_browser.addSpdyAlternateProtocolMappingsObserver(this);
+    g_browser.addSpdySessionInfoObserver(this, true);
+    g_browser.addSpdyStatusObserver(this, true);
+    g_browser.addSpdyAlternateProtocolMappingsObserver(this, true);
 
     this.spdyEnabledSpan_ = $(SpdyView.ENABLED_SPAN_ID);
     this.spdyUseAlternateProtocolSpan_ =

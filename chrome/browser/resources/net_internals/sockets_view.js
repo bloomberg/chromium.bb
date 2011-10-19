@@ -24,7 +24,7 @@ var SocketsView = (function() {
     // Call superclass's constructor.
     superClass.call(this, SocketsView.MAIN_BOX_ID);
 
-    g_browser.addSocketPoolInfoObserver(this);
+    g_browser.addSocketPoolInfoObserver(this, true);
     this.socketPoolDiv_ = $(SocketsView.SOCKET_POOL_DIV_ID);
     this.socketPoolGroupsDiv_ = $(SocketsView.SOCKET_POOL_GROUPS_DIV_ID);
 

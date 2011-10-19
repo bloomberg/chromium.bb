@@ -45,7 +45,6 @@ function CheckQueryResultTask(domain, subdomains, publicKeyHashes,
   this.subdomains_ = subdomains;
   this.publicKeyHashes_ = publicKeyHashes;
   this.queryResultType_ = queryResultType;
-  this.running_ = false;
   netInternalsTest.Task.call(this);
 }
 
@@ -57,8 +56,6 @@ CheckQueryResultTask.prototype = {
    */
   start: function() {
     g_browser.addHSTSObserver(this);
-    // This will be set to false to ignore results, once the task is complete.
-    this.running_ = true;
   },
 
   /**
@@ -67,7 +64,8 @@ CheckQueryResultTask.prototype = {
    * @param {object} result Results from the query.
    */
   onHSTSQueryResult: function(result) {
-    if (this.running_) {
+    // Ignore results after |this| is finished.
+    if (!this.isDone()) {
       expectEquals(this.domain_, $(HSTSView.QUERY_INPUT_ID).value);
 
       // Each case has its own validation function because of the design of the

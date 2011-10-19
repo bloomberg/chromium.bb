@@ -30,7 +30,7 @@ var ServiceProvidersView = (function() {
     this.namespaceProvidersTbody_ =
         $(ServiceProvidersView.NAMESPACE_PROVIDERS_TBODY_ID);
 
-    g_browser.addServiceProvidersObserver(this);
+    g_browser.addServiceProvidersObserver(this, true);
   }
 
   // ID for special HTML element in category_tabs.html

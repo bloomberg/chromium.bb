@@ -23,7 +23,7 @@ var HttpCacheView = (function() {
     this.statsDiv_ = $(HttpCacheView.STATS_DIV_ID);
 
     // Register to receive http cache info.
-    g_browser.addHttpCacheInfoObserver(this);
+    g_browser.addHttpCacheInfoObserver(this, true);
   }
 
   // ID for special HTML element in category_tabs.html

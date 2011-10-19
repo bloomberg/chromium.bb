@@ -159,5 +159,5 @@ netInternalsTest.test('netInternalsPrerenderView',
   // onPrerenderInfoChanged event from changing the active tab.
   var prerenderObserver = new PrerenderTestObserver(url, shouldSucceed,
                                                     finalStatus);
-  g_browser.addPrerenderInfoObserver(prerenderObserver);
+  g_browser.addPrerenderInfoObserver(prerenderObserver, true);
 });

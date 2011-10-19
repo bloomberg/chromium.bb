@@ -35,8 +35,8 @@ var ProxyView = (function() {
         g_browser.sendClearBadProxies.bind(g_browser);
 
     // Register to receive proxy information as it changes.
-    g_browser.addProxySettingsObserver(this);
-    g_browser.addBadProxiesObserver(this);
+    g_browser.addProxySettingsObserver(this, true);
+    g_browser.addBadProxiesObserver(this, true);
     g_browser.sourceTracker.addObserver(this);
   }
 

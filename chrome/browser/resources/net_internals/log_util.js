@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 logutil = (function() {
+  'use strict';
+
   /**
    * Creates a new log dump.  |events| is a list of all events, |polledData| is
    * an object containing the results of each poll, |tabData| is an object
@@ -40,8 +42,11 @@ logutil = (function() {
     };
 
     // Not technically client info, but it's used at the same point in the code.
-    if (date && constants.clientInfo)
-      constants.clientInfo.date = date;
+    if (date && constants.clientInfo) {
+      constants.clientInfo.numericDate = date.getTime();
+      // TODO(mmenke):  Remove this some time after Chrome 17 hits stable.
+      constants.clientInfo.date = date.toLocaleString();
+    }
 
     return logDump;
   }
@@ -66,7 +71,7 @@ logutil = (function() {
                                 g_browser.sourceTracker.getAllCapturedEvents(),
                                 polledData,
                                 tabData,
-                                (new Date()).toLocaleString());
+                                new Date());
     callback(JSON.stringify(logDump, null, ' '));
   }
 

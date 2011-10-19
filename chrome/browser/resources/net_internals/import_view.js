@@ -196,8 +196,17 @@ var ImportView = (function() {
       if (typeof(ClientInfo) != 'object')
         return;
 
-      // Dumps made with the command line option don't have a date.
-      this.loadedInfoExportDate_.innerText = ClientInfo.date || '';
+      var dateString = '';
+      // Dumps made with the command line option don't have a date, and older
+      // versions of Chrome use a formatted string.
+      // TODO(mmenke):  At some point, after Chrome 17 hits stable, remove the
+      //                ClientInfo.date case.
+      if (ClientInfo.numericDate) {
+        dateString = (new Date(ClientInfo.numericDate)).toLocaleString();
+      } else if (ClientInfo.date) {
+        dateString = ClientInfo.date;
+      }
+      this.loadedInfoExportDate_.innerText = dateString;
 
       var buildName =
           ClientInfo.name +

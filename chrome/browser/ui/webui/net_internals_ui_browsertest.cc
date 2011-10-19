@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/utf_string_conversions.h"
+#include "base/values.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
@@ -17,12 +18,57 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/address_list.h"
+#include "net/base/host_cache.h"
+#include "net/base/host_resolver.h"
+#include "net/base/host_resolver_proc.h"
 #include "net/base/net_errors.h"
+#include "net/base/net_log.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
+
+// Called on IO thread.  Adds an entry to the cache for the specified hostname.
+// Either |net_error| must be net::OK, or |address| must be NULL.
+void AddCacheEntryOnIOThread(net::URLRequestContextGetter* context_getter,
+                             const std::string& hostname,
+                             const std::string& ip_literal,
+                             int net_error,
+                             int expire_days_from_now) {
+  ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  net::URLRequestContext* context = context_getter->GetURLRequestContext();
+  net::HostCache* cache = context->host_resolver()->GetHostCache();
+  ASSERT_TRUE(cache);
+
+  net::HostCache::Key key(hostname, net::ADDRESS_FAMILY_UNSPECIFIED, 0);
+  base::TimeTicks expires =
+      base::TimeTicks::Now() + base::TimeDelta::FromDays(expire_days_from_now);
+
+  net::AddressList address_list;
+  if (net_error == net::OK) {
+    // If |net_error| does not indicate an error, convert |ip_literal| to a
+    // net::AddressList, so it can be used with the cache.
+    int rv = net::SystemHostResolverProc(ip_literal,
+                                         net::ADDRESS_FAMILY_UNSPECIFIED,
+                                         0,
+                                         &address_list,
+                                         NULL);
+    ASSERT_EQ(net::OK, rv);
+  } else {
+    ASSERT_TRUE(ip_literal.empty());
+  }
+
+  // Add entry to the cache.
+  cache->Set(net::HostCache::Key(hostname, net::ADDRESS_FAMILY_UNSPECIFIED, 0),
+             net_error,
+             address_list,
+             expires);
+}
 
 // Class to handle messages from the renderer needed by certain tests.
 class NetInternalsTestMessageHandler : public WebUIMessageHandler {
@@ -40,6 +86,10 @@ class NetInternalsTestMessageHandler : public WebUIMessageHandler {
   // Opens the given URL in a new tab.
   void OpenNewTab(const ListValue* list_value);
 
+  // Adds a new entry to the host cache.  Takes in hostname, ip address,
+  // net error code, and expiration time (as number of days from now).
+  void AddCacheEntry(const ListValue* list_value);
+
   Browser* browser_;
 
   DISALLOW_COPY_AND_ASSIGN(NetInternalsTestMessageHandler);
@@ -54,6 +104,10 @@ void NetInternalsTestMessageHandler::RegisterMessages() {
       "openNewTab",
       base::Bind(&NetInternalsTestMessageHandler::OpenNewTab,
                  base::Unretained(this)));
+  web_ui_->RegisterMessageCallback(
+      "addCacheEntry",
+      base::Bind(&NetInternalsTestMessageHandler::AddCacheEntry,
+                 base::Unretained(this)));
 }
 
 void NetInternalsTestMessageHandler::OpenNewTab(const ListValue* list_value) {
@@ -65,6 +119,32 @@ void NetInternalsTestMessageHandler::OpenNewTab(const ListValue* list_value) {
       GURL(url),
       NEW_BACKGROUND_TAB,
       ui_test_utils::BROWSER_TEST_NONE);
+}
+
+// Called on UI thread.  Adds an entry to the cache for the specified hostname
+// by posting a task to the IO thread.  Takes the host name, ip address, net
+// error code, and expiration time in days from now as parameters.  If the error
+// code indicates failure, the ip address must be an empty string.
+void NetInternalsTestMessageHandler::AddCacheEntry(
+    const ListValue* list_value) {
+  std::string hostname;
+  std::string ip_literal;
+  double net_error;
+  double expire_days_from_now;
+  ASSERT_TRUE(list_value->GetString(0, &hostname));
+  ASSERT_TRUE(list_value->GetString(1, &ip_literal));
+  ASSERT_TRUE(list_value->GetDouble(2, &net_error));
+  ASSERT_TRUE(list_value->GetDouble(3, &expire_days_from_now));
+  ASSERT_TRUE(browser_);
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&AddCacheEntryOnIOThread,
+                 make_scoped_refptr(browser_->profile()->GetRequestContext()),
+                 hostname,
+                 ip_literal,
+                 static_cast<int>(net_error),
+                 static_cast<int>(expire_days_from_now)));
 }
 
 class NetInternalsTest : public WebUIBrowserTest {
@@ -110,6 +190,7 @@ void NetInternalsTest::SetUpInProcessBrowserTestFixture() {
                           "net_internals/net_internals_test.js")));
 
   // Add Javascript files needed for individual tests.
+  AddLibrary(FilePath(FILE_PATH_LITERAL("net_internals/dns_view.js")));
   AddLibrary(FilePath(FILE_PATH_LITERAL("net_internals/hsts_view.js")));
   AddLibrary(FilePath(FILE_PATH_LITERAL("net_internals/log_util.js")));
   AddLibrary(FilePath(FILE_PATH_LITERAL("net_internals/log_view_painter.js")));
@@ -187,6 +268,30 @@ IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsTourTabs) {
 // TODO(mmenke):  Add a test for a log created with --log-net-log.
 IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsExportImportDump) {
   EXPECT_TRUE(RunJavascriptAsyncTest("netInternalsExportImportDump"));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// dns_view.js
+////////////////////////////////////////////////////////////////////////////////
+
+// Adds a successful lookup to the DNS cache, then clears the cache.
+IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsDnsViewSuccess) {
+  EXPECT_TRUE(RunJavascriptAsyncTest("netInternalsDnsViewSuccess"));
+}
+
+// Adds a failed lookup to the DNS cache, then clears the cache.
+IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsDnsViewFail) {
+  EXPECT_TRUE(RunJavascriptAsyncTest("netInternalsDnsViewFail"));
+}
+
+// Adds an expired successful lookup to the DNS cache, then clears the cache.
+IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsDnsViewExpired) {
+  EXPECT_TRUE(RunJavascriptAsyncTest("netInternalsDnsViewExpired"));
+}
+
+// Adds two entries to the DNS cache, clears the cache, and then repeats.
+IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsDnsViewAddTwoTwice) {
+  EXPECT_TRUE(RunJavascriptAsyncTest("netInternalsDnsViewAddTwoTwice"));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

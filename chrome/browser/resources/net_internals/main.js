@@ -44,6 +44,10 @@ var MainView = (function() {
   function MainView() {
     assertFirstConstructorCall(MainView);
 
+    // Tracks if we're viewing a loaded log file, so views can behave
+    // appropriately.
+    this.isViewingLoadedLog_ = false;
+
     // This must be initialized before the tabs, so they can register as
     // observers.
     g_browser = BrowserBridge.getInstance();
@@ -153,11 +157,14 @@ var MainView = (function() {
      * Prevents receiving/sending events to/from the browser, so loaded data
      * will not be mixed with current Chrome state.  Also hides any interactive
      * HTML elements that send messages to the browser.  Cannot be undone
-     * without reloading the page.
+     * without reloading the page.  Must be called before passing loaded data
+     * to the individual views.
      *
      * @param {String} fileName The name of the log file that has been loaded.
      */
     onLoadLogFile: function(fileName) {
+      this.isViewingLoadedLog_ = true;
+
        // Swap out the status bar to indicate we have loaded from a file.
       setNodeDisplay($(MainView.STATUS_VIEW_FOR_CAPTURE_ID), false);
       setNodeDisplay($(MainView.STATUS_VIEW_FOR_FILE_ID), true);
@@ -169,6 +176,13 @@ var MainView = (function() {
 
       g_browser.sourceTracker.setSecurityStripping(false);
       g_browser.disable();
+    },
+
+    /**
+     * Returns true if we're viewing a loaded log file.
+     */
+    isViewingLoadedLog: function() {
+      return this.isViewingLoadedLog_;
     }
   };
 

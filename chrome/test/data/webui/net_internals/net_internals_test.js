@@ -139,29 +139,57 @@ var netInternalsTest = (function() {
   }
 
   /**
-   * Finds the first styled table that's a child of |parentId|, and returns the
-   * number of rows it has.  Returns -1 if there's no such table.
-   * @param {string} parentId HTML element id containing a styled table.
+   * Returns the first styled table body that's a descendent of |ancestorId|.
+   * If the specified node is itself a table body node, just returns that node.
+   * Returns null if no such node is found.
+   * @param {string} ancestorId HTML element id containing a styled table.
+   */
+  function getStyledTableDescendent(ancestorId) {
+    if ($(ancestorId).nodeName == 'TBODY')
+      return $(ancestorId);
+    // The tbody element of the first styled table in |parentId|.
+    return document.querySelector('#' + ancestorId + ' .styledTable tbody');
+  }
+
+  /**
+   * Finds the first styled table body that's a descendent of |ancestorId|,
+   * including the |ancestorId| element itself, and returns the number of rows
+   * it has. Returns -1 if there's no such table.
+   * @param {string} ancestorId HTML element id containing a styled table.
    * @return {number} Number of rows the style table's body has.
    */
-  function getStyledTableNumRows(parentId) {
+  function getStyledTableNumRows(ancestorId) {
     // The tbody element of the first styled table in |parentId|.
-    var tbody = document.querySelector('#' + parentId + ' .styledTable tbody');
+    var tbody = getStyledTableDescendent(ancestorId);
     if (!tbody)
       return -1;
     return tbody.children.length;
   }
 
   /**
-   * Finds the first styled table that's a child of the element with the given
-   * id, and checks if it has exactly |expectedRows| rows, not including the
-   * header row.
-   * @param {string} parentId HTML element id containing a styled table.
+   * Finds the first styled table body that's a descendent of |ancestorId|,
+   * including the |ancestorId| element itself, and checks if it has exactly
+   * |expectedRows| rows.  As only table bodies are considered, the header row
+   * will not be included in the count.
+   * @param {string} ancestorId HTML element id containing a styled table.
    * @param {number} expectedRows Expected number of rows in the table.
    */
-  function checkStyledTableRows(parentId, expectedRows) {
-    expectEquals(expectedRows, getStyledTableNumRows(parentId),
-                 'Incorrect number of rows in ' + parentId);
+  function checkStyledTableRows(ancestorId, expectedRows) {
+    expectEquals(expectedRows, getStyledTableNumRows(ancestorId),
+                 'Incorrect number of rows in ' + ancestorId);
+  }
+
+  /**
+   * Finds the first styled table body that's a descendent of |ancestorId|,
+   * including the |ancestorId| element itself, and returns the text of the
+   * specified cell.  If the cell does not exist, throws an exception.
+   * @param {string} ancestorId HTML element id containing a styled table.
+   * @param {number} row Row of the value to retrieve.
+   * @param {number} column Column of the value to retrieve.
+   */
+  function getStyledTableText(ancestorId, row, column) {
+    var tbody = getStyledTableDescendent(ancestorId);
+    return tbody.children[row].children[column].innerText;
   }
 
   /**
@@ -335,6 +363,13 @@ var netInternalsTest = (function() {
     },
 
     /**
+     * @return {bool} True if this task has completed by calling onTaskDone.
+     */
+    isDone: function() {
+      return this.isDone_;
+    },
+
+    /**
      * Sets the TaskQueue used by the task in the onTaskDone function.  May only
      * be called by the TaskQueue.
      * @param {TaskQueue}: taskQueue The TaskQueue |this| has been added to.
@@ -355,15 +390,26 @@ var netInternalsTest = (function() {
     }
   };
 
+  /**
+   * Returns true if a node does not have a 'display' property of 'none'.
+   * @param {node}: node The node to check.
+   */
+  function isDisplayed(node) {
+    var style = getComputedStyle(node);
+    return style.getPropertyValue('display') != 'none';
+  }
+
   // Exported functions.
   return {
     test: test,
-    runTest: runTest,
     checkStyledTableRows: checkStyledTableRows,
-    switchToView: switchToView,
     checkTabHandleVisibility: checkTabHandleVisibility,
-    TaskQueue: TaskQueue,
-    Task: Task
+    getStyledTableText: getStyledTableText,
+    isDisplayed: isDisplayed,
+    runTest: runTest,
+    switchToView: switchToView,
+    Task: Task,
+    TaskQueue: TaskQueue
   };
 })();
 
