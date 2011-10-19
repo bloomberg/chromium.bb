@@ -515,7 +515,7 @@ add_config('arm-tegra2-seaboard-toolchain', [arm, full, {
 
 add_config('amd64-generic-full', [full, {
   'board' : 'amd64-generic',
-  'prebuilts' : False,
+  'prebuilts' : True,
 }])
 
 add_config('x86-generic-asan', [{
