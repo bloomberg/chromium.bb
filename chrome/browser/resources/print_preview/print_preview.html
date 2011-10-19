@@ -11,6 +11,7 @@
 <script src="chrome://resources/js/event_tracker.js"></script>
 <script src="chrome://resources/js/local_strings.js"></script>
 <script src="chrome://resources/js/cr.js"></script>
+<script src="chrome://resources/js/event_tracker.js"></script>
 <script src="chrome://resources/js/util.js"></script>
 <script src="chrome://print/print_preview.js"></script>
 <script src="chrome://print/strings.js"></script>
@@ -53,8 +54,7 @@
           <button id="system-dialog-link" class="link-button"
               i18n-content="systemDialogOption"></button>
         </if>
-        <!-- TODO(dpapad): Investigate whey hidden attribute does not work. -->
-        <div id="system-dialog-throbber" class="throbber hidden"></div>
+        <div id="system-dialog-throbber" class="throbber" hidden></div>
       </div>
     </div>
   </div>
@@ -69,8 +69,8 @@
         <div id="custom-message-with-dots"
           class="message-with-dots" hidden></div>
         <div id="error-action-area">
-          <button id="error-button" class="hidden"></button>
-          <div id="native-print-dialog-throbber" class="throbber hidden"></div>
+          <button id="error-button" hidden></button>
+          <div id="native-print-dialog-throbber" class="throbber" hidden></div>
         </div>
       </div>
     </div>

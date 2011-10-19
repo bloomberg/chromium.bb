@@ -112,13 +112,16 @@ function onLoad() {
   initialPreviewRequestID = randomInteger(MIN_REQUEST_ID, MAX_REQUEST_ID);
   lastPreviewRequestID = initialPreviewRequestID;
 
+  previewArea = print_preview.PreviewArea.getInstance();
   printHeader = print_preview.PrintHeader.getInstance();
 
   if (!checkCompatiblePluginExists()) {
     disableInputElementsInSidebar();
-    displayErrorMessageWithButton(localStrings.getString('noPlugin'),
-                                  localStrings.getString('launchNativeDialog'),
-                                  launchNativePrintDialog);
+    previewArea.displayErrorMessageWithButton(
+        localStrings.getString('noPlugin'),
+        localStrings.getString('launchNativeDialog'),
+        launchNativePrintDialog);
+    cancelPendingPrintRequest();
     $('mainview').parentElement.removeChild($('dummy-viewer'));
     return;
   }
@@ -134,10 +137,9 @@ function onLoad() {
   marginSettings = print_preview.MarginSettings.getInstance();
   headerFooterSettings = print_preview.HeaderFooterSettings.getInstance();
   colorSettings = print_preview.ColorSettings.getInstance();
-  previewArea = print_preview.PreviewArea.getInstance();
   $('printer-list').onchange = updateControlsWithSelectedPrinterCapabilities;
 
-  showLoadingAnimation();
+  previewArea.showLoadingAnimation();
   chrome.send('getInitiatorTabTitle');
   chrome.send('getDefaultPrinter');
 }
@@ -163,7 +165,7 @@ function onSystemDialogLinkClicked() {
     return;
   showingSystemDialog = true;
   disableInputElementsInSidebar();
-  $('system-dialog-throbber').classList.remove('hidden');
+  $('system-dialog-throbber').hidden = false;
   chrome.send('showSystemDialog');
 }
 
@@ -175,9 +177,9 @@ function launchNativePrintDialog() {
   if (showingSystemDialog)
     return;
   showingSystemDialog = true;
-  $('error-button').disabled = true;
+  previewArea.errorButton.disabled = true;
   printHeader.disableCancelButton();
-  $('native-print-dialog-throbber').classList.remove('hidden');
+  $('native-print-dialog-throbber').hidden = false;
   chrome.send('showSystemDialog');
 }
 
@@ -189,12 +191,15 @@ function launchNativePrintDialog() {
 function onInitiatorTabCrashed(initiatorTabURL) {
   disableInputElementsInSidebar();
   if (initiatorTabURL) {
-    displayErrorMessageWithButton(
+    previewArea.displayErrorMessageWithButton(
         localStrings.getString('initiatorTabCrashed'),
         localStrings.getString('reopenPage'),
         function() { chrome.send('reloadCrashedInitiatorTab'); });
+    cancelPendingPrintRequest();
   } else {
-    displayErrorMessage(localStrings.getString('initiatorTabCrashed'));
+    previewArea.displayErrorMessage(
+        localStrings.getString('initiatorTabCrashed'));
+    cancelPendingPrintRequest();
   }
 }
 
@@ -206,12 +211,15 @@ function onInitiatorTabCrashed(initiatorTabURL) {
 function onInitiatorTabClosed(initiatorTabURL) {
   disableInputElementsInSidebar();
   if (initiatorTabURL) {
-    displayErrorMessageWithButton(
+    previewArea.displayErrorMessageWithButton(
         localStrings.getString('initiatorTabClosed'),
         localStrings.getString('reopenPage'),
         function() { window.location = initiatorTabURL; });
+    cancelPendingPrintRequest();
   } else {
-    displayErrorMessage(localStrings.getString('initiatorTabClosed'));
+    previewArea.displayErrorMessage(
+        localStrings.getString('initiatorTabClosed'));
+    cancelPendingPrintRequest();
   }
 }
 
@@ -437,7 +445,8 @@ function requestToPrintDocument() {
     if (printToPDF) {
       sendPrintDocumentRequest();
     } else if (printWithCloudPrint) {
-      showCustomMessage(localStrings.getString('printWithCloudPrintWait'));
+      previewArea.showCustomMessage(
+          localStrings.getString('printWithCloudPrintWait'));
       disableInputElementsInSidebar();
     } else {
       isTabHidden = true;
@@ -457,7 +466,8 @@ function requestToPrintDocument() {
  * Sends a message to cancel the pending print request.
  */
 function cancelPendingPrintRequest() {
-  chrome.send('cancelPendingPrintRequest');
+  if (isTabHidden)
+    chrome.send('cancelPendingPrintRequest');
 }
 
 /**
@@ -491,7 +501,7 @@ function loadSelectedPages() {
  */
 function requestPrintPreview() {
   if (!isTabHidden)
-    showLoadingAnimation();
+    previewArea.showLoadingAnimation();
 
   if (!hasPendingPreviewRequest && previewModifiable &&
       hasOnlyPageSettingsChanged()) {
@@ -535,7 +545,8 @@ function fileSelectionCompleted() {
   // If the file selection is completed and the tab is not already closed it
   // means that a pending print to pdf request exists.
   disableInputElementsInSidebar();
-  showCustomMessage(localStrings.getString('printingToPDFInProgress'));
+  previewArea.showCustomMessage(
+      localStrings.getString('printingToPDFInProgress'));
 }
 
 /**
@@ -699,54 +710,15 @@ function setColor(color) {
 }
 
 /**
- * Display an error message in the center of the preview area.
- * @param {string} errorMessage The error message to be displayed.
- */
-function displayErrorMessage(errorMessage) {
-  $('print-button').disabled = true;
-  $('overlay-layer').classList.remove('invisible');
-  var customMessage = $('custom-message');
-  customMessage.textContent = errorMessage;
-  customMessage.hidden = false;
-  var customMessageWithDots = $('custom-message-with-dots');
-  customMessageWithDots.innerHTML = '';
-  customMessageWithDots.hidden = true;;
-  var pdfViewer = $('pdf-viewer');
-  if (pdfViewer)
-    $('mainview').removeChild(pdfViewer);
-
-  if (isTabHidden)
-    cancelPendingPrintRequest();
-}
-
-/**
- * Display an error message in the center of the preview area followed by a
- * button.
- * @param {string} errorMessage The error message to be displayed.
- * @param {string} buttonText The text to be displayed within the button.
- * @param {string} buttonListener The listener to be executed when the button is
- * clicked.
- */
-function displayErrorMessageWithButton(
-    errorMessage, buttonText, buttonListener) {
-  var errorButton = $('error-button');
-  errorButton.disabled = false;
-  errorButton.textContent = buttonText;
-  errorButton.onclick = buttonListener;
-  errorButton.classList.remove('hidden');
-  $('system-dialog-throbber').classList.add('hidden');
-  $('native-print-dialog-throbber').classList.add('hidden');
-  displayErrorMessage(errorMessage);
-}
-
-/**
  * Display an error message when print preview fails.
  * Called from PrintPreviewMessageHandler::OnPrintPreviewFailed().
  */
 function printPreviewFailed() {
-  displayErrorMessageWithButton(localStrings.getString('previewFailed'),
-                                localStrings.getString('launchNativeDialog'),
-                                launchNativePrintDialog);
+  previewArea.displayErrorMessageWithButton(
+      localStrings.getString('previewFailed'),
+      localStrings.getString('launchNativeDialog'),
+      launchNativePrintDialog);
+  cancelPendingPrintRequest();
 }
 
 /**
@@ -754,7 +726,9 @@ function printPreviewFailed() {
  * Called from PrintPreviewMessageHandler::OnInvalidPrinterSettings().
  */
 function invalidPrinterSettings() {
-  displayErrorMessage(localStrings.getString('invalidPrinterSettings'));
+  previewArea.displayErrorMessage(
+      localStrings.getString('invalidPrinterSettings'));
+  cancelPendingPrintRequest();
 }
 
 /**
@@ -822,7 +796,7 @@ function checkAndHideOverlayLayerIfValid() {
       !isPrintReadyMetafileReady && hasPendingPrintDocumentRequest) {
     return;
   }
-  hideOverlayLayer();
+  previewArea.hideOverlayLayer();
 }
 
 /**
@@ -933,8 +907,7 @@ function sendPrintDocumentRequestIfNeeded() {
   hasPendingPrintDocumentRequest = false;
 
   if (!areSettingsValid()) {
-    if (isTabHidden)
-      cancelPendingPrintRequest();
+    cancelPendingPrintRequest();
     return;
   }
   sendPrintDocumentRequest();

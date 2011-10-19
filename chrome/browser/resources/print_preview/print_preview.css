@@ -178,10 +178,6 @@ hr.invisible {
   visibility: hidden;
 }
 
-.hidden + hr {
-  display: none;
-}
-
 /* TODO(jhawkins): Remove this specialization once all WebUI shares the same
  * link-button styling.
  */
@@ -706,8 +702,8 @@ select {
   padding: 20px;
 }
 
-.hidden {
-  display: none;
+[hidden] {
+  display: none !important;
 }
 
 #overlay-layer {
