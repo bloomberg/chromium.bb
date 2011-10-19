@@ -4013,14 +4013,8 @@ are declared in build/common.gypi.
         The following apps and extensions are now installed:
       </message>
 
-      <message name="IDS_EXTENSION_BUNDLE_ERROR_HEADING_EXTENSIONS" desc="Text displayed in the extension bundle installed bubble when some extensions failed to install. Instructs which extensions did not install.">
-        We were unable to install these extensions:
-      </message>
-      <message name="IDS_EXTENSION_BUNDLE_ERROR_HEADING_APPS" desc="Text displayed in the extension bundle installed bubble when some apps failed to install. Instructs which apps did not install.">
-        We were unable to install these apps:
-      </message>
-      <message name="IDS_EXTENSION_BUNDLE_ERROR_HEADING_EXTENSION_APPS" desc="Text displayed in the extension bundle installed bubble when some extensions failed to install. Instructs which extensions and apps did not install.">
-        We were unable to install these apps and extensions:
+      <message name="IDS_EXTENSION_BUNDLE_ERROR_HEADING" desc="Text displayed in the extension bundle installed bubble when some extensions or apps failed to install. Instructs which extensions did not install.">
+        We were unable to install:
       </message>
 
       <message name="IDS_EXTENSION_INSTALLED_APP_INFO" desc="Text displayed inside a link when an app is installed. Clicking this link opens up the New Tab Page to show the app's icon.">
