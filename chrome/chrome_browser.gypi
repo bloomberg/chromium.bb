@@ -381,8 +381,6 @@
         'browser/chromeos/cros/cryptohome_library.h',
         'browser/chromeos/cros/library_loader.cc',
         'browser/chromeos/cros/library_loader.h',
-        'browser/chromeos/cros/login_library.cc',
-        'browser/chromeos/cros/login_library.h',
         'browser/chromeos/cros/mount_library.cc',
         'browser/chromeos/cros/mount_library.h',
         'browser/chromeos/cros/native_network_constants.cc',

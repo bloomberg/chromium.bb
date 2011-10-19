@@ -86,8 +86,6 @@
         'browser/chromeos/cros/mock_cryptohome_library.h',
         'browser/chromeos/cros/mock_library_loader.cc',
         'browser/chromeos/cros/mock_library_loader.h',
-        'browser/chromeos/cros/mock_login_library.cc',
-        'browser/chromeos/cros/mock_login_library.h',
         'browser/chromeos/cros/mock_network_library.cc',
         'browser/chromeos/cros/mock_network_library.h',
         'browser/chromeos/dbus/mock_session_manager_client.cc',
