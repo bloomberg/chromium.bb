@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/metrics/histogram.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/pref_notifier.h"
@@ -15,10 +16,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_setup_flow.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/sync_promo_ui.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
@@ -62,6 +63,9 @@ void NTPLoginHandler::Observe(int type,
 
 void NTPLoginHandler::HandleInitializeSyncLogin(const ListValue* args) {
   UpdateLogin();
+  UMA_HISTOGRAM_ENUMERATION("SyncPromo.NTPPromo",
+                            SYNC_PROMO_NTP_PROMO_VIEWED,
+                            SYNC_PROMO_NTP_PROMO_BUCKET_BOUNDARY);
 }
 
 void NTPLoginHandler::HandleShowSyncLoginUI(const ListValue* args) {
@@ -72,9 +76,12 @@ void NTPLoginHandler::HandleShowSyncLoginUI(const ListValue* args) {
   if (username.empty()) {
     // The user isn't signed in, show the sync promo.
     if (SyncPromoUI::ShouldShowSyncPromo(profile)) {
-        web_ui_->tab_contents()->OpenURL(GURL(chrome::kChromeUISyncPromoURL),
-                                         GURL(), CURRENT_TAB,
-                                         content::PAGE_TRANSITION_LINK);
+      UMA_HISTOGRAM_ENUMERATION("SyncPromo.NTPPromo",
+                                SYNC_PROMO_NTP_PROMO_CLICKED,
+                                SYNC_PROMO_NTP_PROMO_BUCKET_BOUNDARY);
+      web_ui_->tab_contents()->OpenURL(GURL(chrome::kChromeUISyncPromoURL),
+                                       GURL(), CURRENT_TAB,
+                                       content::PAGE_TRANSITION_LINK);
     }
   } else if (args->GetSize() == 4) {
     // The user is signed in, show the profiles menu.

@@ -37,6 +37,13 @@ class NTPLoginHandler : public WebUIMessageHandler,
   static bool ShouldShow(Profile* profile);
 
  private:
+  // User actions while on the NTP when clicking on or viewing the sync promo.
+  enum SyncPromoNTPPromoBuckets {
+    SYNC_PROMO_NTP_PROMO_VIEWED,
+    SYNC_PROMO_NTP_PROMO_CLICKED,
+    SYNC_PROMO_NTP_PROMO_BUCKET_BOUNDARY,
+  };
+
   // Called from JS when the NTP is loaded. |args| is the list of arguments
   // passed from JS and should be an empty list.
   void HandleInitializeSyncLogin(const ListValue* args);
