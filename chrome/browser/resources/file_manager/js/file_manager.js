@@ -201,7 +201,7 @@ FileManager.prototype = {
   /**
    * Maximum amount of thumbnails in the preview pane.
    */
-  const MAX_PREVIEW_THUMBAIL_COUNT = 5;
+  const MAX_PREVIEW_THUMBAIL_COUNT = 4;
 
   /**
    * Translated strings.
@@ -1716,7 +1716,6 @@ FileManager.prototype = {
 
       if (thumbnailCount < MAX_PREVIEW_THUMBAIL_COUNT) {
         var thumbnail = this.renderThumbnailBox_(entry, true);
-        thumbnail.style.top = (i * 2) + 'px';
         thumbnail.style.zIndex = MAX_PREVIEW_THUMBAIL_COUNT + 1 - i;
         this.previewThumbnails_.appendChild(thumbnail);
         thumbnailCount++;

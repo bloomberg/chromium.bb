@@ -283,22 +283,18 @@ div.img-container > img {
 .preview-thumbnails {
   display: -webkit-box;
   -webkit-box-orient: horizontal;
-  padding-left: 38px;
+  padding-left: 39px;
 }
 
 .preview-thumbnails > div.img-container {
   width: 45px;
   height: 45px;
   position: relative;
-  margin-left: -38px;
+  margin-left: -39px;  /* Show 7 pixels of the overlapped image */
+  margin-right: 0;
   overflow: hidden;
   border: 1px solid white;
   background-color: #F2F2F2;
-}
-
-.preview-thumbnails > div.img-container > img {
-  max-width: 100%;
-  max-height: 100%;
 }
 
 .preview-panel > * {
