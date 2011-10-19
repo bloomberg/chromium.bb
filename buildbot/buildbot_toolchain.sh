@@ -35,6 +35,9 @@ export INSIDE_TOOLCHAIN=1
 echo @@@BUILD_STEP clobber_toolchain@@@
 rm -rf ../scons-out sdk-out sdk ../toolchain SRC/* BUILD/*
 
+echo @@@BUILD_STEP setup source@@@
+./buildbot_patch-toolchain-tries.sh
+
 echo @@@BUILD_STEP compile_toolchain@@@
 mkdir -p ../toolchain/${PLATFORM}_x86
 make -j8 clean buildbot-build-with-newlib
