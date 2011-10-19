@@ -7,6 +7,7 @@
 
 #include <algorithm>
 
+#include "gestures/include/gestures.h"
 #include "gestures/include/logging.h"
 
 // This is a set class that doesn't call out to malloc/free. Many of the
@@ -142,6 +143,20 @@ template<typename Set, typename Elt>
 inline bool SetContainsValue(const Set& the_set,
                              const Elt& elt) {
   return the_set.find(elt) != the_set.end();
+}
+
+// Removes any ids from the set that are not finger ids in hs.
+template<int kSetSize>
+void RemoveMissingIdsFromSet(set<short, kSetSize>* the_set,
+                             const HardwareState& hs) {
+  short old_ids[the_set->size()];
+  size_t old_ids_len = 0;
+  for (typename set<short, kSetSize>::const_iterator it = the_set->begin();
+       it != the_set->end(); ++it)
+    if (!hs.GetFingerState(*it))
+      old_ids[old_ids_len++] = *it;
+  for (size_t i = 0; i < old_ids_len; i++)
+    the_set->erase(old_ids[i]);
 }
 
 }  // namespace gestures

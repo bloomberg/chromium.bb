@@ -175,6 +175,7 @@ Gesture* ImmediateInterpreter::SyncInterpret(HardwareState* hwstate,
     FillStartPositions(*hwstate);
   }
   UpdatePalmState(*hwstate);
+  UpdateThumbState(*hwstate);
   set<short, kMaxGesturingFingers> gs_fingers = GetGesturingFingers(*hwstate);
 
   UpdateButtons(*hwstate);
@@ -274,6 +275,32 @@ void ImmediateInterpreter::UpdatePalmState(const HardwareState& hwstate) {
     if (FingerNearOtherFinger(hwstate, i) || !FingerInPalmEdgeZone(fs) ||
         PossiblePalmMovingQuickly(fs, hwstate.timestamp))
       pointing_.insert(fs.tracking_id);
+  }
+}
+
+// Updates thumb_ below.
+void ImmediateInterpreter::UpdateThumbState(const HardwareState& hwstate) {
+  // Remove old ids from thumb_
+  RemoveMissingIdsFromSet(&thumb_, hwstate);
+  float min_pressure = INFINITY;
+  for (size_t i = 0; i < hwstate.finger_cnt; i++) {
+    const FingerState& fs = hwstate.fingers[i];
+    if (SetContainsValue(palm_, fs.tracking_id))
+      continue;
+    if (fs.pressure < min_pressure)
+      min_pressure = fs.pressure;
+  }
+  // Make all large-pressure contacts thumbs
+  for (size_t i = 0; i < hwstate.finger_cnt; i++) {
+    const FingerState& fs = hwstate.fingers[i];
+    if (SetContainsValue(palm_, fs.tracking_id))
+      continue;
+    if (fs.pressure > (min_pressure + two_finger_pressure_diff_thresh_.val_))
+      thumb_.insert(fs.tracking_id);
+  }
+  for (set<short, kMaxFingers>::const_iterator it = thumb_.begin();
+       it != thumb_.end(); ++it) {
+    pointing_.erase(*it);
   }
 }
 

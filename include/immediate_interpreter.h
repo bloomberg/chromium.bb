@@ -52,6 +52,7 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   FRIEND_TEST(ImmediateInterpreterTest, GetGesturingFingersTest);
   FRIEND_TEST(ImmediateInterpreterTest, TapToClickStateMachineTest);
   FRIEND_TEST(ImmediateInterpreterTest, TapToClickEnableTest);
+  FRIEND_TEST(ImmediateInterpreterTest, ThumbRetainTest);
  public:
   enum TapToClickState {
     kTtcIdle,
@@ -96,6 +97,9 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
 
   // Updates *palm_, pointing_ below.
   void UpdatePalmState(const HardwareState& hwstate);
+
+  // Updates thumb_ below.
+  void UpdateThumbState(const HardwareState& hwstate);
 
   // Gets the finger or fingers we should consider for gestures.
   // Currently, it fetches the (up to) two fingers closest to the keyboard
@@ -193,6 +197,8 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   set<short, kMaxFingers> pending_palm_;  // tracking ids of potential palms
   // tracking ids of known non-palms
   set<short, kMaxFingers> pointing_;
+
+  set<short, kMaxFingers> thumb_;  // contacts believed to be thumbs
 
   // Tap-to-click
   // The current state:
