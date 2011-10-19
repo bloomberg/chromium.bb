@@ -4,6 +4,7 @@
 
 #include "chrome/browser/browsing_data_indexed_db_helper.h"
 
+#include "base/bind.h"
 #include "base/callback_old.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
@@ -76,9 +77,9 @@ void BrowsingDataIndexedDBHelperImpl::StartFetching(
   completion_callback_.reset(callback);
   BrowserThread::PostTask(
       BrowserThread::WEBKIT, FROM_HERE,
-      NewRunnableMethod(
-          this,
-          &BrowsingDataIndexedDBHelperImpl::FetchIndexedDBInfoInWebKitThread));
+      base::Bind(
+          &BrowsingDataIndexedDBHelperImpl::FetchIndexedDBInfoInWebKitThread,
+          this));
 }
 
 void BrowsingDataIndexedDBHelperImpl::CancelNotification() {
@@ -91,11 +92,9 @@ void BrowsingDataIndexedDBHelperImpl::DeleteIndexedDB(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   BrowserThread::PostTask(
       BrowserThread::WEBKIT, FROM_HERE,
-       NewRunnableMethod(
-           this,
-           &BrowsingDataIndexedDBHelperImpl::
-              DeleteIndexedDBInWebKitThread,
-           origin));
+      base::Bind(
+          &BrowsingDataIndexedDBHelperImpl::DeleteIndexedDBInWebKitThread, this,
+          origin));
 }
 
 void BrowsingDataIndexedDBHelperImpl::FetchIndexedDBInfoInWebKitThread() {
@@ -115,8 +114,7 @@ void BrowsingDataIndexedDBHelperImpl::FetchIndexedDBInfoInWebKitThread() {
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(
-          this, &BrowsingDataIndexedDBHelperImpl::NotifyInUIThread));
+      base::Bind(&BrowsingDataIndexedDBHelperImpl::NotifyInUIThread, this));
 }
 
 void BrowsingDataIndexedDBHelperImpl::NotifyInUIThread() {
@@ -211,9 +209,11 @@ void CannedBrowsingDataIndexedDBHelper::StartFetching(
   DCHECK(callback);
   is_fetching_ = true;
   completion_callback_.reset(callback);
-  BrowserThread::PostTask(BrowserThread::WEBKIT, FROM_HERE, NewRunnableMethod(
-      this,
-      &CannedBrowsingDataIndexedDBHelper::ConvertPendingInfoInWebKitThread));
+  BrowserThread::PostTask(
+      BrowserThread::WEBKIT, FROM_HERE,
+      base::Bind(
+          &CannedBrowsingDataIndexedDBHelper::ConvertPendingInfoInWebKitThread,
+          this));
 }
 
 CannedBrowsingDataIndexedDBHelper::~CannedBrowsingDataIndexedDBHelper() {}
@@ -244,8 +244,7 @@ void CannedBrowsingDataIndexedDBHelper::ConvertPendingInfoInWebKitThread() {
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(
-          this, &CannedBrowsingDataIndexedDBHelper::NotifyInUIThread));
+      base::Bind(&CannedBrowsingDataIndexedDBHelper::NotifyInUIThread, this));
 }
 
 void CannedBrowsingDataIndexedDBHelper::NotifyInUIThread() {

@@ -39,10 +39,7 @@ void BrowsingDataQuotaHelperImpl::RevokeHostQuota(const std::string& host) {
   if (!io_thread_->BelongsToCurrentThread()) {
     io_thread_->PostTask(
         FROM_HERE,
-        NewRunnableMethod(
-            this,
-            &BrowsingDataQuotaHelperImpl::RevokeHostQuota,
-            host));
+        base::Bind(&BrowsingDataQuotaHelperImpl::RevokeHostQuota, this, host));
     return;
   }
 
@@ -71,9 +68,7 @@ void BrowsingDataQuotaHelperImpl::FetchQuotaInfo() {
   if (!io_thread_->BelongsToCurrentThread()) {
     io_thread_->PostTask(
         FROM_HERE,
-        NewRunnableMethod(
-            this,
-            &BrowsingDataQuotaHelperImpl::FetchQuotaInfo));
+        base::Bind(&BrowsingDataQuotaHelperImpl::FetchQuotaInfo, this));
     return;
   }
 
@@ -152,9 +147,7 @@ void BrowsingDataQuotaHelperImpl::OnComplete() {
   if (!ui_thread_->BelongsToCurrentThread()) {
     ui_thread_->PostTask(
         FROM_HERE,
-        NewRunnableMethod(
-            this,
-            &BrowsingDataQuotaHelperImpl::OnComplete));
+        base::Bind(&BrowsingDataQuotaHelperImpl::OnComplete, this));
     return;
   }
 

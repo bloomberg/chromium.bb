@@ -143,10 +143,8 @@ void BrowsingDataRemover::Remove(int remove_mask) {
       waiting_for_clear_networking_history_ = true;
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
-          NewRunnableMethod(
-              this,
-              &BrowsingDataRemover::ClearNetworkingHistory,
-              g_browser_process->io_thread()));
+          base::Bind(&BrowsingDataRemover::ClearNetworkingHistory,
+                     base::Unretained(this), g_browser_process->io_thread()));
     }
 
     // As part of history deletion we also delete the auto-generated keywords.
@@ -227,9 +225,8 @@ void BrowsingDataRemover::Remove(int remove_mask) {
       waiting_for_clear_quota_managed_data_ = true;
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
-          NewRunnableMethod(
-              this,
-              &BrowsingDataRemover::ClearQuotaManagedDataOnIOThread));
+          base::Bind(&BrowsingDataRemover::ClearQuotaManagedDataOnIOThread,
+                     base::Unretained(this)));
     }
   }
 
@@ -281,7 +278,8 @@ void BrowsingDataRemover::Remove(int remove_mask) {
 
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(this, &BrowsingDataRemover::ClearCacheOnIOThread));
+        base::Bind(&BrowsingDataRemover::ClearCacheOnIOThread,
+                   base::Unretained(this)));
 
     // The PrerenderManager may have a page actively being prerendered, which
     // is essentially a preemptively cached page.
@@ -396,7 +394,8 @@ void BrowsingDataRemover::ClearNetworkingHistory(IOThread* io_thread) {
   // Notify the UI thread that we are done.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &BrowsingDataRemover::ClearedNetworkHistory));
+      base::Bind(&BrowsingDataRemover::ClearedNetworkHistory,
+                 base::Unretained(this)));
 }
 
 void BrowsingDataRemover::ClearedCache() {
@@ -460,7 +459,8 @@ void BrowsingDataRemover::DoClearCache(int rv) {
         // Notify the UI thread that we are done.
         BrowserThread::PostTask(
             BrowserThread::UI, FROM_HERE,
-            NewRunnableMethod(this, &BrowsingDataRemover::ClearedCache));
+            base::Bind(&BrowsingDataRemover::ClearedCache,
+                       base::Unretained(this)));
 
         next_cache_state_ = STATE_NONE;
         break;
@@ -546,9 +546,8 @@ void BrowsingDataRemover::CheckQuotaManagedDataDeletionStatus() {
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(
-          this,
-          &BrowsingDataRemover::OnQuotaManagedDataDeleted));
+      base::Bind(&BrowsingDataRemover::OnQuotaManagedDataDeleted,
+                 base::Unretained(this)));
 }
 
 void BrowsingDataRemover::OnQuotaManagedDataDeleted() {

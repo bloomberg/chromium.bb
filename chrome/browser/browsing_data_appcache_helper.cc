@@ -4,6 +4,7 @@
 
 #include "chrome/browser/browsing_data_appcache_helper.h"
 
+#include "base/bind.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
@@ -25,8 +26,9 @@ void BrowsingDataAppCacheHelper::StartFetching(const base::Closure& callback) {
     is_fetching_ = true;
     info_collection_ = new appcache::AppCacheInfoCollection;
     completion_callback_ = callback;
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, NewRunnableMethod(
-        this, &BrowsingDataAppCacheHelper::StartFetching, callback));
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&BrowsingDataAppCacheHelper::StartFetching, this, callback));
     return;
   }
 
@@ -41,8 +43,9 @@ void BrowsingDataAppCacheHelper::StartFetching(const base::Closure& callback) {
 void BrowsingDataAppCacheHelper::CancelNotification() {
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     completion_callback_.Reset();
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, NewRunnableMethod(
-        this, &BrowsingDataAppCacheHelper::CancelNotification));
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&BrowsingDataAppCacheHelper::CancelNotification, this));
     return;
   }
 
@@ -53,9 +56,10 @@ void BrowsingDataAppCacheHelper::CancelNotification() {
 void BrowsingDataAppCacheHelper::DeleteAppCacheGroup(
     const GURL& manifest_url) {
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, NewRunnableMethod(
-        this, &BrowsingDataAppCacheHelper::DeleteAppCacheGroup,
-        manifest_url));
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&BrowsingDataAppCacheHelper::DeleteAppCacheGroup, this,
+                   manifest_url));
     return;
   }
   appcache_service_->DeleteAppCacheGroup(manifest_url, NULL);
@@ -78,8 +82,9 @@ void BrowsingDataAppCacheHelper::OnFetchComplete(int rv) {
     }
 
     appcache_info_callback_ = NULL;
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, NewRunnableMethod(
-        this, &BrowsingDataAppCacheHelper::OnFetchComplete, rv));
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&BrowsingDataAppCacheHelper::OnFetchComplete, this, rv));
     return;
   }
 

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/browsing_data_database_helper.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
@@ -63,8 +64,10 @@ void BrowsingDataDatabaseHelper::StartFetching(
   is_fetching_ = true;
   database_info_.clear();
   completion_callback_.reset(callback);
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, NewRunnableMethod(
-      this, &BrowsingDataDatabaseHelper::FetchDatabaseInfoOnFileThread));
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&BrowsingDataDatabaseHelper::FetchDatabaseInfoOnFileThread,
+                 this));
 }
 
 void BrowsingDataDatabaseHelper::CancelNotification() {
@@ -75,9 +78,10 @@ void BrowsingDataDatabaseHelper::CancelNotification() {
 void BrowsingDataDatabaseHelper::DeleteDatabase(const std::string& origin,
                                                 const std::string& name) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, NewRunnableMethod(
-      this, &BrowsingDataDatabaseHelper::DeleteDatabaseOnFileThread, origin,
-      name));
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&BrowsingDataDatabaseHelper::DeleteDatabaseOnFileThread, this,
+                 origin, name));
 }
 
 void BrowsingDataDatabaseHelper::FetchDatabaseInfoOnFileThread() {
@@ -116,8 +120,9 @@ void BrowsingDataDatabaseHelper::FetchDatabaseInfoOnFileThread() {
     }
   }
 
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, NewRunnableMethod(
-      this, &BrowsingDataDatabaseHelper::NotifyInUIThread));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&BrowsingDataDatabaseHelper::NotifyInUIThread, this));
 }
 
 void BrowsingDataDatabaseHelper::NotifyInUIThread() {
@@ -199,8 +204,10 @@ void CannedBrowsingDataDatabaseHelper::StartFetching(
   DCHECK(callback);
   is_fetching_ = true;
   completion_callback_.reset(callback);
-  BrowserThread::PostTask(BrowserThread::WEBKIT, FROM_HERE, NewRunnableMethod(
-      this, &CannedBrowsingDataDatabaseHelper::ConvertInfoInWebKitThread));
+  BrowserThread::PostTask(
+      BrowserThread::WEBKIT, FROM_HERE,
+      base::Bind(&CannedBrowsingDataDatabaseHelper::ConvertInfoInWebKitThread,
+                 this));
 }
 
 CannedBrowsingDataDatabaseHelper::~CannedBrowsingDataDatabaseHelper() {}
@@ -239,6 +246,7 @@ void CannedBrowsingDataDatabaseHelper::ConvertInfoInWebKitThread() {
   }
   pending_database_info_.clear();
 
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, NewRunnableMethod(
-      this, &CannedBrowsingDataDatabaseHelper::NotifyInUIThread));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&CannedBrowsingDataDatabaseHelper::NotifyInUIThread, this));
 }

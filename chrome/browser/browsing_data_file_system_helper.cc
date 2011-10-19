@@ -4,6 +4,7 @@
 
 #include "chrome/browser/browsing_data_file_system_helper.h"
 
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
@@ -87,10 +88,9 @@ void BrowsingDataFileSystemHelperImpl::StartFetching(
   completion_callback_.reset(callback);
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(
-          this,
-          &BrowsingDataFileSystemHelperImpl::
-              FetchFileSystemInfoInFileThread));
+      base::Bind(
+          &BrowsingDataFileSystemHelperImpl::FetchFileSystemInfoInFileThread,
+          this));
 }
 
 void BrowsingDataFileSystemHelperImpl::CancelNotification() {
@@ -103,11 +103,9 @@ void BrowsingDataFileSystemHelperImpl::DeleteFileSystemOrigin(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-       NewRunnableMethod(
-           this,
-           &BrowsingDataFileSystemHelperImpl::
-               DeleteFileSystemOriginInFileThread,
-           origin));
+      base::Bind(
+          &BrowsingDataFileSystemHelperImpl::DeleteFileSystemOriginInFileThread,
+          this, origin));
 }
 
 void BrowsingDataFileSystemHelperImpl::FetchFileSystemInfoInFileThread() {
@@ -146,8 +144,7 @@ void BrowsingDataFileSystemHelperImpl::FetchFileSystemInfoInFileThread() {
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(
-          this, &BrowsingDataFileSystemHelperImpl::NotifyOnUIThread));
+      base::Bind(&BrowsingDataFileSystemHelperImpl::NotifyOnUIThread, this));
 }
 
 void BrowsingDataFileSystemHelperImpl::NotifyOnUIThread() {
@@ -266,8 +263,7 @@ void CannedBrowsingDataFileSystemHelper::StartFetching(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(
-          this, &CannedBrowsingDataFileSystemHelper::NotifyOnUIThread));
+      base::Bind(&CannedBrowsingDataFileSystemHelper::NotifyOnUIThread, this));
 }
 
 void CannedBrowsingDataFileSystemHelper::NotifyOnUIThread() {

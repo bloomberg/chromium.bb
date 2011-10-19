@@ -4,6 +4,7 @@
 
 #include "chrome/browser/browsing_data_local_storage_helper.h"
 
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
@@ -64,10 +65,9 @@ void BrowsingDataLocalStorageHelper::StartFetching(
   completion_callback_.reset(callback);
   BrowserThread::PostTask(
       BrowserThread::WEBKIT, FROM_HERE,
-      NewRunnableMethod(
-          this,
-          &BrowsingDataLocalStorageHelper::
-              FetchLocalStorageInfoInWebKitThread));
+      base::Bind(
+          &BrowsingDataLocalStorageHelper::FetchLocalStorageInfoInWebKitThread,
+          this));
 }
 
 void BrowsingDataLocalStorageHelper::CancelNotification() {
@@ -80,11 +80,9 @@ void BrowsingDataLocalStorageHelper::DeleteLocalStorageFile(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   BrowserThread::PostTask(
       BrowserThread::WEBKIT, FROM_HERE,
-       NewRunnableMethod(
-           this,
-           &BrowsingDataLocalStorageHelper::
-              DeleteLocalStorageFileInWebKitThread,
-           file_path));
+      base::Bind(
+          &BrowsingDataLocalStorageHelper::DeleteLocalStorageFileInWebKitThread,
+          this, file_path));
 }
 
 void BrowsingDataLocalStorageHelper::FetchLocalStorageInfoInWebKitThread() {
@@ -122,8 +120,7 @@ void BrowsingDataLocalStorageHelper::FetchLocalStorageInfoInWebKitThread() {
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(
-          this, &BrowsingDataLocalStorageHelper::NotifyInUIThread));
+      base::Bind(&BrowsingDataLocalStorageHelper::NotifyInUIThread, this));
 }
 
 void BrowsingDataLocalStorageHelper::NotifyInUIThread() {
@@ -189,10 +186,8 @@ void CannedBrowsingDataLocalStorageHelper::StartFetching(
   completion_callback_.reset(callback);
   BrowserThread::PostTask(
       BrowserThread::WEBKIT, FROM_HERE,
-      NewRunnableMethod(
-          this,
-          &CannedBrowsingDataLocalStorageHelper::
-              ConvertPendingInfoInWebKitThread));
+      base::Bind(&CannedBrowsingDataLocalStorageHelper::
+          ConvertPendingInfoInWebKitThread, this));
 }
 
 CannedBrowsingDataLocalStorageHelper::~CannedBrowsingDataLocalStorageHelper() {}
@@ -233,6 +228,6 @@ void CannedBrowsingDataLocalStorageHelper::ConvertPendingInfoInWebKitThread() {
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(
-          this, &CannedBrowsingDataLocalStorageHelper::NotifyInUIThread));
+      base::Bind(&CannedBrowsingDataLocalStorageHelper::NotifyInUIThread,
+                 this));
 }
