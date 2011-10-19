@@ -51,12 +51,11 @@ PPB_FileIO_Impl::CallbackEntry::~CallbackEntry() {
 
 PPB_FileIO_Impl::PPB_FileIO_Impl(PP_Instance instance)
     : Resource(instance),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       file_(base::kInvalidPlatformFileValue),
       file_system_type_(PP_FILESYSTEMTYPE_INVALID),
       pending_op_(OPERATION_NONE),
       info_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
 }
 
 PPB_FileIO_Impl::~PPB_FileIO_Impl() {
@@ -98,7 +97,7 @@ int32_t PPB_FileIO_Impl::Open(PP_Resource pp_file_ref,
     if (!plugin_delegate->AsyncOpenFileSystemURL(
             file_system_url_, flags,
             base::Bind(&PPB_FileIO_Impl::AsyncOpenFileCallback,
-                       weak_ptr_factory_.GetWeakPtr())))
+                       weak_factory_.GetWeakPtr())))
       return PP_ERROR_FAILED;
   } else {
     if (file_system_type_ != PP_FILESYSTEMTYPE_EXTERNAL)
@@ -106,7 +105,7 @@ int32_t PPB_FileIO_Impl::Open(PP_Resource pp_file_ref,
     if (!plugin_delegate->AsyncOpenFile(
             file_ref->GetSystemPath(), flags,
             base::Bind(&PPB_FileIO_Impl::AsyncOpenFileCallback,
-                       weak_ptr_factory_.GetWeakPtr())))
+                       weak_factory_.GetWeakPtr())))
       return PP_ERROR_FAILED;
   }
 

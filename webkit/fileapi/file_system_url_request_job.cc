@@ -106,7 +106,6 @@ FileSystemURLRequestJob::FileSystemURLRequestJob(
     : URLRequestJob(request),
       file_system_context_(file_system_context),
       file_thread_proxy_(file_thread_proxy),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       stream_(NULL),
       is_directory_(false),
@@ -121,9 +120,10 @@ FileSystemURLRequestJob::~FileSystemURLRequestJob() {
 }
 
 void FileSystemURLRequestJob::Start() {
-  MessageLoop::current()->PostTask(FROM_HERE,
-      method_factory_.NewRunnableMethod(
-          &FileSystemURLRequestJob::StartAsync));
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&FileSystemURLRequestJob::StartAsync,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void FileSystemURLRequestJob::Kill() {
@@ -132,7 +132,6 @@ void FileSystemURLRequestJob::Kill() {
     stream_.reset(NULL);
   }
   URLRequestJob::Kill();
-  method_factory_.RevokeAll();
   weak_factory_.InvalidateWeakPtrs();
 }
 

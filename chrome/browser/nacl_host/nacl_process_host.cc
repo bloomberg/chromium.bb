@@ -264,13 +264,12 @@ void NaClProcessHost::OnProcessLaunched() {
     irt_path = plugin_dir.Append(GetIrtLibraryFilename());
   }
 
-  base::FileUtilProxy::CreateOrOpenCallback callback =
-      base::Bind(&NaClProcessHost::OpenIrtFileDone, weak_factory_.GetWeakPtr());
   if (!base::FileUtilProxy::CreateOrOpen(
            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
            irt_path,
            base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ,
-           callback)) {
+           base::Bind(&NaClProcessHost::OpenIrtFileDone,
+                      weak_factory_.GetWeakPtr()))) {
     delete this;
   }
 }

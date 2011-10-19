@@ -33,19 +33,24 @@ using base::PlatformFileInfo;
 // FileSystem API.
 class FileSystemFileUtilProxy {
  public:
+  typedef base::FileUtilProxy::Entry Entry;
+
   typedef base::FileUtilProxy::StatusCallback StatusCallback;
   typedef base::FileUtilProxy::CreateOrOpenCallback CreateOrOpenCallback;
-  typedef base::FileUtilProxy::EnsureFileExistsCallback
-    EnsureFileExistsCallback;
-  typedef base::Callback<
-      void(PlatformFileError /* error code */,
-           const PlatformFileInfo& /* file_info */,
-           const FilePath& /* platform_path, where possible */)>
-      GetFileInfoCallback;
+  typedef base::Callback<void(PlatformFileError,
+                              bool /* created */
+                              )> EnsureFileExistsCallback;
+  typedef base::Callback<void(PlatformFileError,
+                              const PlatformFileInfo&,
+                              const FilePath& /* platform_path */
+                              )> GetFileInfoCallback;
+  typedef base::Callback<void(PlatformFileError,
+                              const std::vector<Entry>&
+                              )> ReadDirectoryCallback;
+
   typedef Callback2<PlatformFileError /* error code */,
                     const FilePath& /* local_path, where possible */
                     >::Type GetLocalPathCallback;
-  typedef base::FileUtilProxy::ReadDirectoryCallback ReadDirectoryCallback;
 
   // Creates or opens a file with the given flags.  It is invalid to pass NULL
   // for the callback.

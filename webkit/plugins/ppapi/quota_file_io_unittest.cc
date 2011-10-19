@@ -8,7 +8,6 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
-#include "base/memory/scoped_callback_factory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/platform_file.h"
@@ -85,8 +84,7 @@ class QuotaMockPluginDelegate : public MockPluginDelegate {
 class QuotaFileIOTest : public PpapiUnittest {
  public:
   QuotaFileIOTest()
-      : ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)),
-        ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {}
+      : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {}
 
   virtual void SetUp() OVERRIDE {
     PpapiUnittest::SetUp();
@@ -430,7 +428,6 @@ class QuotaFileIOTest : public PpapiUnittest {
   scoped_ptr<QuotaFileIO> quota_file_io_;
   std::deque<int> bytes_written_;
   std::deque<PlatformFileError> status_;
-  base::ScopedCallbackFactory<QuotaFileIOTest> callback_factory_;
   base::WeakPtrFactory<QuotaFileIOTest> weak_factory_;
 };
 

@@ -181,8 +181,8 @@ class QuotaFileIO::SetLengthOperation : public PendingOperationBase {
     }
 
     if (!base::FileUtilProxy::Truncate(
-            plugin_delegate->GetFileThreadMessageLoopProxy(), quota_io_->file_,
-            length_,
+            plugin_delegate->GetFileThreadMessageLoopProxy(),
+            quota_io_->file_, length_,
             base::Bind(&SetLengthOperation::DidFinish,
                        weak_factory_.GetWeakPtr()))) {
       DidFail(base::PLATFORM_FILE_ERROR_FAILED);
