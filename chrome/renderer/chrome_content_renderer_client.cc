@@ -403,8 +403,8 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
   }
 
   // Treat Native Client invocations like Javascript.
-  bool is_nacl_plugin = plugin.name ==
-                        ASCIIToUTF16(ChromeContentClient::kNaClPluginName);
+  bool is_nacl_plugin =
+      plugin.name == ASCIIToUTF16(ChromeContentClient::kNaClPluginName);
   if (is_nacl_plugin) {
     content_type = CONTENT_SETTINGS_TYPE_JAVASCRIPT;
     plugin_setting =
@@ -421,15 +421,22 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
           IDR_CLICK_TO_PLAY_PLUGIN_HTML, IDS_PLUGIN_LOAD, true, true);
     }
 
-    if (is_nacl_plugin &&
-        !IsNaClAllowed(plugin,
-                       url,
-                       actual_mime_type,
-                       cmd->HasSwitch(switches::kEnableNaCl),
-                       params)) {
+    // Determine if NaCl is allowed for both the internal plugin and
+    // any external plugin that handles our MIME type. This is so NaCl
+    // tests will still pass.
+    const char* kNaClMimeType = "application/x-nacl";
+    bool is_nacl_mime_type = actual_mime_type == kNaClMimeType;
+    if (is_nacl_plugin || is_nacl_mime_type) {
+      if (!IsNaClAllowed(plugin,
+                         url,
+                         actual_mime_type,
+                         is_nacl_mime_type,
+                         cmd->HasSwitch(switches::kEnableNaCl),
+                         params)) {
         return CreatePluginPlaceholder(
             render_view, frame, plugin, params, group.get(),
             IDR_BLOCKED_PLUGIN_HTML, IDS_PLUGIN_BLOCKED, false, false);
+      }
     }
 
     return render_view->CreatePlugin(frame, plugin, params);
@@ -453,17 +460,16 @@ bool ChromeContentRendererClient::IsNaClAllowed(
     const webkit::WebPluginInfo& plugin,
     const GURL& url,
     const std::string& actual_mime_type,
+    bool is_nacl_mime_type,
     bool enable_nacl,
     WebKit::WebPluginParams& params) {
-  const char* kNaClPluginMimeType = "application/x-nacl";
-  const char* kNaClPluginManifestAttribute = "nacl";
-
   GURL manifest_url;
-  if (actual_mime_type == kNaClPluginMimeType) {
+  if (is_nacl_mime_type) {
     manifest_url = url;  // Normal embedded NaCl plugin.
   } else {
     // This is a content type handling NaCl plugin; look for the .nexe URL
     // among the MIME type's additonal parameters.
+    const char* kNaClPluginManifestAttribute = "nacl";
     string16 nacl_attr = ASCIIToUTF16(kNaClPluginManifestAttribute);
     for (size_t i = 0; i < plugin.mime_types.size(); ++i) {
       if (plugin.mime_types[i].mime_type == actual_mime_type) {
