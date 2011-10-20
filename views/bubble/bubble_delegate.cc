@@ -4,11 +4,34 @@
 
 #include "views/bubble/bubble_delegate.h"
 
+#include "ui/base/animation/slide_animation.h"
 #include "views/bubble/bubble_frame_view.h"
-#include "views/bubble/bubble_view.h"
 #include "views/widget/widget.h"
 
+// The duration of the fade animation in milliseconds.
+static const int kHideFadeDurationMS = 1000;
+
 namespace views {
+
+BubbleDelegateView::BubbleDelegateView()
+    : WidgetDelegateView(),
+      close_on_esc_(true),
+      arrow_location_(BubbleBorder::TOP_LEFT),
+      color_(SK_ColorWHITE) {
+  AddAccelerator(Accelerator(ui::VKEY_ESCAPE, 0));
+}
+
+BubbleDelegateView::BubbleDelegateView(
+    const gfx::Point& anchor_point,
+    BubbleBorder::ArrowLocation arrow_location,
+    const SkColor& color)
+    : WidgetDelegateView(),
+      close_on_esc_(true),
+      anchor_point_(anchor_point),
+      arrow_location_(arrow_location),
+      color_(color) {
+  AddAccelerator(Accelerator(ui::VKEY_ESCAPE, 0));
+}
 
 BubbleDelegateView::~BubbleDelegateView() {}
 
@@ -28,12 +51,16 @@ Widget* BubbleDelegateView::CreateBubble(BubbleDelegateView* bubble_delegate,
   return bubble_widget;
 }
 
+View* BubbleDelegateView::GetInitiallyFocusedView() {
+  return this;
+}
+
 View* BubbleDelegateView::GetContentsView() {
   return this;
 }
 
 ClientView* BubbleDelegateView::CreateClientView(Widget* widget) {
-  return new BubbleView(widget, GetContentsView());
+  return new ClientView(widget, GetContentsView());
 }
 
 NonClientFrameView* BubbleDelegateView::CreateNonClientFrameView() {
@@ -43,18 +70,55 @@ NonClientFrameView* BubbleDelegateView::CreateNonClientFrameView() {
 }
 
 gfx::Point BubbleDelegateView::GetAnchorPoint() const {
-  return gfx::Point();
+  return anchor_point_;
 }
 
 BubbleBorder::ArrowLocation BubbleDelegateView::GetArrowLocation() const {
-  return BubbleBorder::TOP_LEFT;
+  return arrow_location_;
 }
 
 SkColor BubbleDelegateView::GetColor() const {
-  return SK_ColorWHITE;
+  return color_;
 }
 
 void BubbleDelegateView::Init() {}
+
+void BubbleDelegateView::StartFade(bool fade_in) {
+  fade_animation_.reset(new ui::SlideAnimation(this));
+  fade_animation_->SetSlideDuration(kHideFadeDurationMS);
+  fade_animation_->Reset(fade_in ? 0.0 : 1.0);
+  if (fade_in) {
+    GetWidget()->SetOpacity(0);
+    GetWidget()->Show();
+    fade_animation_->Show();
+  } else {
+    fade_animation_->Hide();
+  }
+}
+
+bool BubbleDelegateView::AcceleratorPressed(const Accelerator& accelerator) {
+  if (!close_on_esc() || accelerator.key_code() != ui::VKEY_ESCAPE)
+    return false;
+  if (fade_animation_.get())
+    fade_animation_->Reset();
+  GetWidget()->Close();
+  return true;
+}
+
+void BubbleDelegateView::AnimationEnded(const ui::Animation* animation) {
+  DCHECK_EQ(animation, fade_animation_.get());
+  bool closed = fade_animation_->GetCurrentValue() == 0;
+  fade_animation_->Reset();
+  if (closed)
+    GetWidget()->Close();
+}
+
+void BubbleDelegateView::AnimationProgressed(const ui::Animation* animation) {
+  DCHECK_EQ(animation, fade_animation_.get());
+  DCHECK(fade_animation_->is_animating());
+  GetWidget()->SetOpacity(fade_animation_->GetCurrentValue() * 255);
+  SchedulePaint();
+}
 
 const BubbleView* BubbleDelegateView::GetBubbleView() const {
   return GetWidget()->client_view()->AsBubbleView();

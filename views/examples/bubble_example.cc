@@ -6,7 +6,6 @@
 
 #include "base/utf_string_conversions.h"
 #include "views/bubble/bubble_delegate.h"
-#include "views/bubble/bubble_view.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/label.h"
 #include "views/layout/box_layout.h"
@@ -38,30 +37,19 @@ BubbleConfig kFadeOutConfig = { ASCIIToUTF16("FadeOutBubble"), SK_ColorWHITE,
 class ExampleBubbleDelegateView : public views::BubbleDelegateView {
  public:
   ExampleBubbleDelegateView(const BubbleConfig& config)
-      : config_(config) {}
-
-  virtual gfx::Point GetAnchorPoint() const OVERRIDE {
-    return config_.anchor_point;
-  }
-
-  views::BubbleBorder::ArrowLocation GetArrowLocation() const OVERRIDE {
-    return config_.arrow;
-  }
-
-  SkColor GetColor() const OVERRIDE {
-    return config_.color;
-  }
+      : BubbleDelegateView(config.anchor_point, config.arrow, config.color),
+        label_(config.label) {}
 
  protected:
   virtual void Init() OVERRIDE {
     SetLayoutManager(new views::FillLayout());
-    views::Label* label = new views::Label(config_.label);
-    label->set_border(views::Border::CreateSolidBorder(10, config_.color));
+    views::Label* label = new views::Label(label_);
+    label->set_border(views::Border::CreateSolidBorder(10, GetColor()));
     AddChildView(label);
   }
 
  private:
-  const BubbleConfig config_;
+  string16 label_;
 };
 
 BubbleExample::BubbleExample(ExamplesMain* main)
@@ -98,17 +86,19 @@ void BubbleExample::ButtonPressed(views::Button* sender,
   config.anchor_point.set_y(sender->height() / 2);
   views::View::ConvertPointToScreen(sender, &config.anchor_point);
 
+  ExampleBubbleDelegateView* bubble_delegate =
+      new ExampleBubbleDelegateView(config);
   views::Widget* bubble = views::BubbleDelegateView::CreateBubble(
-      new ExampleBubbleDelegateView(config), example_view()->GetWidget());
+      bubble_delegate, example_view()->GetWidget());
 
   if (config.fade_in)
-    bubble->client_view()->AsBubbleView()->StartFade(true);
+    bubble_delegate->StartFade(true);
   else
     bubble->Show();
 
   if (config.fade_out) {
-    bubble->client_view()->AsBubbleView()->set_close_on_esc(false);
-    bubble->client_view()->AsBubbleView()->StartFade(false);
+    bubble_delegate->set_close_on_esc(false);
+    bubble_delegate->StartFade(false);
   }
 }
 

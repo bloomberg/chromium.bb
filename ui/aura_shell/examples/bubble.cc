@@ -5,7 +5,6 @@
 #include "base/utf_string_conversions.h"
 #include "views/bubble/bubble_border.h"
 #include "views/bubble/bubble_delegate.h"
-#include "views/bubble/bubble_view.h"
 #include "views/controls/label.h"
 #include "views/layout/fill_layout.h"
 #include "views/widget/widget.h"
@@ -23,29 +22,18 @@ struct BubbleConfig {
 class ExampleBubbleDelegateView : public views::BubbleDelegateView {
  public:
   ExampleBubbleDelegateView(const BubbleConfig& config)
-      : config_(config) {}
-
-  virtual gfx::Point GetAnchorPoint() const OVERRIDE {
-    return config_.anchor_point;
-  }
-
-  views::BubbleBorder::ArrowLocation GetArrowLocation() const OVERRIDE {
-    return config_.arrow;
-  }
-
-  SkColor GetColor() const OVERRIDE {
-    return config_.color;
-}
+      : BubbleDelegateView(config.anchor_point, config.arrow, config.color),
+        label_(config.label) {}
 
   virtual void Init() OVERRIDE {
     SetLayoutManager(new views::FillLayout());
-    views::Label* label = new views::Label(config_.label);
-    label->set_border(views::Border::CreateSolidBorder(10, config_.color));
+    views::Label* label = new views::Label(label_);
+    label->set_border(views::Border::CreateSolidBorder(10, GetColor()));
     AddChildView(label);
   }
 
  private:
-  const BubbleConfig config_;
+  string16 label_;
 };
 
 void CreatePointyBubble(views::Widget* parent, const gfx::Point& origin) {

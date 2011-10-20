@@ -67,8 +67,6 @@
         'bubble/bubble_delegate.h',
         'bubble/bubble_frame_view.cc',
         'bubble/bubble_frame_view.h',
-        'bubble/bubble_view.cc',
-        'bubble/bubble_view.h',
         'context_menu_controller.h',
         'controls/button/button.cc',
         'controls/button/button.h',
