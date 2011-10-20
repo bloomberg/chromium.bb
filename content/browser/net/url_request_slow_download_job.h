@@ -10,8 +10,8 @@
 #define CONTENT_BROWSER_NET_URL_REQUEST_SLOW_DOWNLOAD_JOB_H_
 #pragma once
 
+#include <set>
 #include <string>
-#include <vector>
 
 #include "base/task.h"
 #include "content/common/content_export.h"
@@ -28,8 +28,6 @@ class URLRequestSlowDownloadJob : public net::URLRequestJob {
   CONTENT_EXPORT static const int kFirstDownloadSize;
   CONTENT_EXPORT static const int kSecondDownloadSize;
 
-  explicit URLRequestSlowDownloadJob(net::URLRequest* request);
-
   // Timer callback, used to check to see if we should finish our download and
   // send the second chunk.
   void CheckDoneStatus();
@@ -43,18 +41,23 @@ class URLRequestSlowDownloadJob : public net::URLRequestJob {
   static net::URLRequestJob* Factory(net::URLRequest* request,
                                      const std::string& scheme);
 
+  // Returns the current number of URLRequestSlowDownloadJobs that have
+  // not yet completed.
+  static size_t NumberOutstandingRequests();
+
   // Adds the testing URLs to the net::URLRequestFilter.
   CONTENT_EXPORT static void AddUrlHandler();
 
  private:
+  explicit URLRequestSlowDownloadJob(net::URLRequest* request);
   virtual ~URLRequestSlowDownloadJob();
 
   void GetResponseInfoConst(net::HttpResponseInfo* info) const;
 
   // Mark all pending requests to be finished.  We keep track of pending
-  // requests in |kPendingRequests|.
+  // requests in |pending_requests_|.
   static void FinishPendingRequests();
-  static std::vector<URLRequestSlowDownloadJob*> kPendingRequests;
+  static std::set<URLRequestSlowDownloadJob*> pending_requests_;
 
   void StartAsync();
 

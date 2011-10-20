@@ -9,6 +9,7 @@
 #include "base/message_loop.h"
 #include "base/stringprintf.h"
 #include "base/string_util.h"
+#include "content/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/io_buffer.h"
 #include "net/http/http_response_headers.h"
@@ -25,8 +26,8 @@ const char URLRequestSlowDownloadJob::kFinishDownloadUrl[] =
 const int URLRequestSlowDownloadJob::kFirstDownloadSize = 1024 * 35;
 const int URLRequestSlowDownloadJob::kSecondDownloadSize = 1024 * 10;
 
-std::vector<URLRequestSlowDownloadJob*>
-    URLRequestSlowDownloadJob::kPendingRequests;
+std::set<URLRequestSlowDownloadJob*>
+    URLRequestSlowDownloadJob::pending_requests_;
 
 void URLRequestSlowDownloadJob::Start() {
   MessageLoop::current()->PostTask(
@@ -46,24 +47,31 @@ void URLRequestSlowDownloadJob::AddUrlHandler() {
                         &URLRequestSlowDownloadJob::Factory);
 }
 
-/*static */
+// static
 net::URLRequestJob* URLRequestSlowDownloadJob::Factory(
     net::URLRequest* request,
     const std::string& scheme) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   URLRequestSlowDownloadJob* job = new URLRequestSlowDownloadJob(request);
   if (request->url().spec() != kFinishDownloadUrl)
-    URLRequestSlowDownloadJob::kPendingRequests.push_back(job);
+    pending_requests_.insert(job);
   return job;
 }
 
-/* static */
+// static
+size_t URLRequestSlowDownloadJob::NumberOutstandingRequests() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  return pending_requests_.size();
+}
+
+// static
 void URLRequestSlowDownloadJob::FinishPendingRequests() {
-  typedef std::vector<URLRequestSlowDownloadJob*> JobList;
-  for (JobList::iterator it = kPendingRequests.begin(); it !=
-       kPendingRequests.end(); ++it) {
+  typedef std::set<URLRequestSlowDownloadJob*> JobList;
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  for (JobList::iterator it = pending_requests_.begin(); it !=
+       pending_requests_.end(); ++it) {
     (*it)->set_should_finish_download();
   }
-  kPendingRequests.clear();
 }
 
 URLRequestSlowDownloadJob::URLRequestSlowDownloadJob(net::URLRequest* request)
@@ -146,7 +154,10 @@ void URLRequestSlowDownloadJob::GetResponseInfo(net::HttpResponseInfo* info) {
   GetResponseInfoConst(info);
 }
 
-URLRequestSlowDownloadJob::~URLRequestSlowDownloadJob() {}
+URLRequestSlowDownloadJob::~URLRequestSlowDownloadJob() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  pending_requests_.erase(this);
+}
 
 // Private const version.
 void URLRequestSlowDownloadJob::GetResponseInfoConst(

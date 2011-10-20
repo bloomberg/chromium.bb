@@ -446,7 +446,7 @@ class CancelTestDataCollector
   CancelTestDataCollector()
       : resource_dispatcher_host_(
           g_browser_process->resource_dispatcher_host()),
-        rdh_pending_requests_(0),
+        slow_download_job_pending_requests_(0),
         dfm_pending_downloads_(0) { }
 
   void WaitForDataCollected() {
@@ -457,8 +457,11 @@ class CancelTestDataCollector
     ui_test_utils::RunMessageLoop();
   }
 
-  int rdh_pending_requests() { return rdh_pending_requests_; }
-  int dfm_pending_downloads() { return dfm_pending_downloads_; }
+  int slow_download_job_pending_requests() const {
+    return slow_download_job_pending_requests_;
+  }
+
+  int dfm_pending_downloads() const { return dfm_pending_downloads_; }
 
  protected:
   friend class base::RefCountedThreadSafe<CancelTestDataCollector>;
@@ -469,7 +472,8 @@ class CancelTestDataCollector
 
   void IOInfoCollector() {
     download_file_manager_ = resource_dispatcher_host_->download_file_manager();
-    rdh_pending_requests_ = resource_dispatcher_host_->pending_requests();
+    slow_download_job_pending_requests_ =
+        URLRequestSlowDownloadJob::NumberOutstandingRequests();
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
         base::Bind(&CancelTestDataCollector::FileInfoCollector, this));
@@ -483,7 +487,7 @@ class CancelTestDataCollector
 
   ResourceDispatcherHost* resource_dispatcher_host_;
   DownloadFileManager* download_file_manager_;
-  int rdh_pending_requests_;
+  int slow_download_job_pending_requests_;
   int dfm_pending_downloads_;
 
   DISALLOW_COPY_AND_ASSIGN(CancelTestDataCollector);
@@ -1607,7 +1611,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadCancelled) {
   // Get the important info from other threads and check it.
   scoped_refptr<CancelTestDataCollector> info(new CancelTestDataCollector());
   info->WaitForDataCollected();
-  EXPECT_EQ(0, info->rdh_pending_requests());
+  EXPECT_EQ(0, info->slow_download_job_pending_requests());
   EXPECT_EQ(0, info->dfm_pending_downloads());
 
   // Using "DownloadItem::Remove" follows the discard dangerous download path,
