@@ -68,26 +68,22 @@ RenderTextWin::~RenderTextWin() {
 void RenderTextWin::SetText(const string16& text) {
   // TODO(msw): Skip complex processing if ScriptIsComplex returns false.
   RenderText::SetText(text);
-  ItemizeLogicalText();
-  LayoutVisualText(CreateCompatibleDC(NULL));
+  ItemizeAndLayoutText();
 }
 
 void RenderTextWin::SetDisplayRect(const Rect& r) {
   RenderText::SetDisplayRect(r);
-  ItemizeLogicalText();
-  LayoutVisualText(CreateCompatibleDC(NULL));
+  ItemizeAndLayoutText();
 }
 
 void RenderTextWin::ApplyStyleRange(StyleRange style_range) {
   RenderText::ApplyStyleRange(style_range);
-  ItemizeLogicalText();
-  LayoutVisualText(CreateCompatibleDC(NULL));
+  ItemizeAndLayoutText();
 }
 
 void RenderTextWin::ApplyDefaultStyle() {
   RenderText::ApplyDefaultStyle();
-  ItemizeLogicalText();
-  LayoutVisualText(CreateCompatibleDC(NULL));
+  ItemizeAndLayoutText();
 }
 
 int RenderTextWin::GetStringWidth() {
@@ -317,6 +313,13 @@ size_t RenderTextWin::IndexOfAdjacentGrapheme(size_t index, bool next) {
   return std::max(static_cast<long>(std::min(ch, length) + start), 0L);
 }
 
+void RenderTextWin::ItemizeAndLayoutText() {
+  ItemizeLogicalText();
+  HDC hdc = CreateCompatibleDC(NULL);
+  LayoutVisualText(hdc);
+  DeleteDC(hdc);
+}
+
 void RenderTextWin::ItemizeLogicalText() {
   text_is_dirty_ = false;
   STLDeleteContainerPointers(runs_.begin(), runs_.end());
@@ -381,8 +384,8 @@ void RenderTextWin::LayoutVisualText(HDC hdc) {
   for (run_iter = runs_.begin(); run_iter < runs_.end(); ++run_iter) {
     internal::TextRun* run = *run_iter;
     size_t run_length = run->range.length();
-    string16 run_string(text().substr(run->range.start(), run_length));
-    const wchar_t* run_text = run_string.c_str();
+    const wchar_t* run_text = &(text()[run->range.start()]);
+
     // Select the font desired for glyph generation.
     SelectObject(hdc, run->font.GetNativeFont());
 

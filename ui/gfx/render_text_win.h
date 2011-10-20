@@ -78,6 +78,7 @@ class RenderTextWin : public RenderText {
  private:
   virtual size_t IndexOfAdjacentGrapheme(size_t index, bool next) OVERRIDE;
 
+  void ItemizeAndLayoutText();
   void ItemizeLogicalText();
   void LayoutVisualText(HDC hdc);
 
