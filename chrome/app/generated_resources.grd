@@ -4249,6 +4249,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PLUGINS_PATH" desc="The label in front of a plug-in path (file/location on disk).">
         Location:
       </message>
+      <message name="IDS_PLUGINS_TYPE" desc="The label in front of a plug-in type (NPAPI, PPAPI, etc.).">
+        Type:
+      </message>
       <message name="IDS_PLUGINS_MIME_TYPES" desc="The label in front of a plug-in's MIME types table.">
         MIME types:
       </message>
@@ -4275,6 +4278,15 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_PLUGINS_NO_PLUGINS" desc="Text that indicates that no plugins are installed">
         No plugins are installed
+      </message>
+      <message name="IDS_PLUGINS_NPAPI" desc="Text that indicates the plugin is an NPAPI plugin.">
+        NPAPI
+      </message>
+      <message name="IDS_PLUGINS_PPAPI_IN_PROCESS" desc="Text that indicates the plugin is an in-process PPAPI plugin.">
+        PPAPI (in-process)
+      </message>
+      <message name="IDS_PLUGINS_PPAPI_OUT_OF_PROCESS" desc="Text that indicates the plugin is an out-of-process PPAPI plugin.">
+        PPAPI (out-of-process)
       </message>
 
       <!-- about:policy -->

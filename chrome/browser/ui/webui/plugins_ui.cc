@@ -36,6 +36,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/plugins/npapi/plugin_group.h"
 
@@ -63,6 +64,7 @@ ChromeWebUIDataSource* CreatePluginsUIHTMLSource() {
   source->AddLocalizedString("pluginVersion", IDS_PLUGINS_VERSION);
   source->AddLocalizedString("pluginDescription", IDS_PLUGINS_DESCRIPTION);
   source->AddLocalizedString("pluginPath", IDS_PLUGINS_PATH);
+  source->AddLocalizedString("pluginType", IDS_PLUGINS_TYPE);
   source->AddLocalizedString("pluginMimeTypes", IDS_PLUGINS_MIME_TYPES);
   source->AddLocalizedString("pluginMimeTypesMimeType",
                              IDS_PLUGINS_MIME_TYPES_MIME_TYPE);
@@ -78,6 +80,22 @@ ChromeWebUIDataSource* CreatePluginsUIHTMLSource() {
   source->add_resource_path("plugins.js", IDR_PLUGINS_JS);
   source->set_default_resource(IDR_PLUGINS_HTML);
   return source;
+}
+
+string16 PluginTypeToString(int type) {
+  // The type is stored as an |int|, but doing the switch on the right
+  // enumeration type gives us better build-time error checking (if someone adds
+  // a new type).
+  switch (static_cast<WebPluginInfo::PluginType>(type)) {
+    case WebPluginInfo::PLUGIN_TYPE_NPAPI:
+      return l10n_util::GetStringUTF16(IDS_PLUGINS_NPAPI);
+    case WebPluginInfo::PLUGIN_TYPE_PEPPER_IN_PROCESS:
+      return l10n_util::GetStringUTF16(IDS_PLUGINS_PPAPI_IN_PROCESS);
+    case WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS:
+      return l10n_util::GetStringUTF16(IDS_PLUGINS_PPAPI_OUT_OF_PROCESS);
+  }
+  NOTREACHED();
+  return string16();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -264,6 +282,7 @@ void PluginsDOMHandler::PluginsLoaded(const std::vector<PluginGroup>& groups) {
       plugin_file->SetString("description", group_plugin.desc);
       plugin_file->SetString("path", group_plugin.path.value());
       plugin_file->SetString("version", group_plugin.version);
+      plugin_file->SetString("type", PluginTypeToString(group_plugin.type));
 
       ListValue* mime_types = new ListValue();
       const std::vector<webkit::WebPluginMimeType>& plugin_mime_types =
