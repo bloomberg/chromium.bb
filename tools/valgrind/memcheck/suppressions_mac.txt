@@ -1935,3 +1935,21 @@
    fun:_ZN5media18VideoCaptureDevice6CreateERKNS0_4NameE
    fun:_ZN5media45VideoCaptureDeviceTest_OpenInvalidDevice_Test8TestBodyEv
 }
+{
+   bug_100983
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base18StatisticsRecorder31RegisterOrDeleteDuplicateRangesEPNS_9HistogramE
+   fun:_ZN4base18StatisticsRecorder25RegisterOrDeleteDuplicateEPNS_9HistogramE
+   fun:_ZN10disk_cache14StatsHistogram10FactoryGetERKSs
+   fun:_ZN10disk_cache5Stats4InitEPNS_11BackendImplEPj
+   fun:_ZN10disk_cache11BackendImpl8SyncInitEv
+   fun:_ZN10disk_cache9BackendIO23ExecuteBackendOperationEv
+   fun:_ZN4base8internal8Invoker1ILb0ENS0_15InvokerStorage1IMN10disk_cache9BackendIOEFvvEPS4_EES6_E8DoInvokeEPNS0_18InvokerStorageBaseE
+   fun:_ZNK4base8CallbackIFvvEE3RunEv
+   fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
+   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
+   fun:_ZN11MessageLoop6DoWorkEv
+   fun:_ZN4base19MessagePumpLibevent3RunEPNS_11MessagePump8DelegateE
+   fun:_ZN11MessageLoop11RunInternalEv
+}
