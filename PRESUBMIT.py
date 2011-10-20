@@ -48,10 +48,17 @@ def _CheckNoProductionCodeUsingTestOnlyFunctions(input_api, output_api):
   # calls to such functions without a proper C++ parser.
   source_extensions = r'\.(cc|cpp|cxx|mm)$'
   file_inclusion_pattern = r'.+%s' % source_extensions
-  file_exclusion_pattern = (
-    r'(.*/(test_|mock_).+|.+(_test_support|profile_sync_service_harness|'
-    r'_(api|browser|perf|unit|ui)?test))%s' % source_extensions)
-  path_exclusion_pattern = r'.*[/\\](test|tool(s)?)[/\\].*'
+  file_exclusion_patterns = (
+      r'.*/(test_|mock_).+%s' % source_extensions,
+      r'.+_test_(support|base)%s' % source_extensions,
+      r'.+_(api|browser|perf|unit|ui)?test%s' % source_extensions,
+      r'.+profile_sync_service_harness%s' % source_extensions,
+      )
+  path_exclusion_patterns = (
+      r'.*[/\\](test|tool(s)?)[/\\].*',
+      # At request of folks maintaining this folder.
+      r'chrome[/\\]browser[/\\]automation[/\\].*',
+      )
 
   base_function_pattern = r'ForTest(ing)?|for_test(ing)?'
   inclusion_pattern = input_api.re.compile(r'(%s)\s*\(' % base_function_pattern)
@@ -60,7 +67,7 @@ def _CheckNoProductionCodeUsingTestOnlyFunctions(input_api, output_api):
       base_function_pattern, base_function_pattern))
 
   def FilterFile(affected_file):
-    black_list = ((file_exclusion_pattern, path_exclusion_pattern, ) +
+    black_list = (file_exclusion_patterns + path_exclusion_patterns +
                   _EXCLUDED_PATHS + input_api.DEFAULT_BLACK_LIST)
     return input_api.FilterSourceFile(
       affected_file,
