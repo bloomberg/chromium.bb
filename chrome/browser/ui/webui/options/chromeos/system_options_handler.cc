@@ -91,6 +91,10 @@ void SystemOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECTED));
   localized_strings->SetString("bluetoothDeviceNotPaired",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_BLUETOOTH_NOT_PAIRED));
+  localized_strings->SetString("bluetoothConnectDevice",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECT));
+  localized_strings->SetString("bluetoothDisconnectDevice",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_BLUETOOTH_DISCONNECT));
 
   localized_strings->SetString("language",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_SECTION_TITLE_LANGUAGE));

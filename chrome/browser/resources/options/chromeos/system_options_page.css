@@ -48,6 +48,12 @@ html[dir=rtl] .touchpad-sensitivity-more {
   vertical-align: middle;
 }
 
+.bluetooth-button-group {
+  -webkit-box-flex: 1; 
+  -webkit-box-pack: end;
+  display: -webkit-box;
+}
+
 .bluetooth-headset,
 .bluetooth-keyboard,
 .bluetooth-mouse {

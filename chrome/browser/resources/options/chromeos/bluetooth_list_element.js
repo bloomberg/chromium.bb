@@ -16,7 +16,7 @@ cr.define('options.system.bluetooth', function() {
   Constants.DEVICE_TYPE = {
     HEADSET: 'headset',
     KEYBOARD: 'keyboard',
-    MOUSE: 'mouse',
+    MOUSE: 'mouse'
   };
 
   /**
@@ -43,7 +43,6 @@ cr.define('options.system.bluetooth', function() {
 
     /** @inheritDoc */
     decorate: function() {
-      // TODO (kevers) - Implement me.
     },
 
     /**
@@ -61,16 +60,26 @@ cr.define('options.system.bluetooth', function() {
     },
 
     /**
-     * Adds a bluetooth device to the list of available devices.
+     * Adds a bluetooth device to the list of available devices. A check is
+     * made to see if the device is already in the list, in which case the
+     * existing device is updated.
      * @param {Object.<string,string>} device Description of the bluetooth
      *     device.
      */
     appendDevice: function(device) {
-      // TODO (kevers) - check device ID to determine if already in list, in
-      //                 which case we should be updating the existing element.
-      //                 Display connected devices at the top of the list.
-      if (this.isSupported_(device))
-        this.appendChild(new BluetoothItem(device));
+      if (!this.isSupported_(device))
+        return;
+
+      var item = new BluetoothItem(device);
+      var candidate = this.firstChild;
+      while (candidate) {
+        if (candidate.data.deviceId  == device.deviceId) {
+          this.replaceChild(item, candidate);
+          return;
+        }
+        candidate = candidate.nextSibling;
+      }
+      this.appendChild(item);
     },
 
     /**
@@ -137,17 +146,44 @@ cr.define('options.system.bluetooth', function() {
       nameEl.className = 'network-name-label';
       nameEl.textContent = this.data.deviceName;
       textDiv.appendChild(nameEl);
+      var buttonsDiv = null;
 
-      if (this.data.deviceStatus) {
-        var statusMessage = templateData[this.data.deviceStatus];
+      var status = this.data.deviceStatus;
+      if (status) {
+        var statusMessage = templateData[status];
         if (statusMessage) {
           var statusEl = this.ownerDocument.createElement('div');
           statusEl.className = 'network-status-label';
           statusEl.textContent = statusMessage;
           textDiv.appendChild(statusEl);
         }
+        buttonsDiv = this.ownerDocument.createElement('div');
+        buttonsDiv.className = 'bluetooth-button-group';
+        var buttonLabelKey = null;
+        var callbackType = null;
+        if (status == Constants.DEVICE_STATUS.CONNECTED) {
+          this.connected = true;
+          buttonLabelKey = 'bluetoothDisconnectDevice';
+          callbackType = 'disconnect';
+        } else if (status == Constants.DEVICE_STATUS.NOT_PAIRED) {
+          buttonLabelKey = 'bluetoothConnectDevice';
+          callbackType = 'connect';
+        }
+        if (buttonLabelKey && callbackType) {
+          var buttonEl = this.ownerDocument.createElement('button');
+          buttonEl.textContent = localStrings.getString(buttonLabelKey);
+          var self = this;
+          var callback = function(e) {
+            chrome.send('updateBluetoothDevice',
+                [self.data.deviceId, callbackType]);
+          }
+          buttonEl.addEventListener('click', callback);
+          buttonsDiv.appendChild(buttonEl);
+        }
       }
       this.appendChild(textDiv);
+      if (buttonsDiv)
+        this.appendChild(buttonsDiv);
     }
   };
 
@@ -156,5 +192,3 @@ cr.define('options.system.bluetooth', function() {
     BluetoothListElement: BluetoothListElement
   };
 });
-
-
