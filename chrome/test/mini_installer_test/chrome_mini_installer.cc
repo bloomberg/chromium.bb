@@ -196,7 +196,6 @@ CommandLine ChromeMiniInstaller::GetBaseMultiInstallCommand() {
     return CommandLine(CommandLine::NO_PROGRAM);
   CommandLine cmd(mini_installer);
   cmd.AppendSwitch(installer::switches::kMultiInstall);
-  cmd.AppendSwitch(installer::switches::kDoNotLaunchChrome);
   return cmd;
 }
 
@@ -217,7 +216,6 @@ void ChromeMiniInstaller::InstallChromeUsingMultiInstall() {
 
 void ChromeMiniInstaller::InstallChromeFrameUsingMultiInstall() {
   CommandLine cmd = GetBaseMultiInstallCommand();
-  cmd.AppendSwitch(installer::switches::kChromeFrame);
   RunInstaller(cmd);
 
   // Verify installation.
@@ -228,8 +226,12 @@ void ChromeMiniInstaller::InstallChromeFrameUsingMultiInstall() {
   EXPECT_TRUE(type & InstallationValidator::ProductBits::CHROME_FRAME_MULTI);
   // Launch IE
   LaunchIE(L"gcf:about:version");
-  // Check if Chrome process got spawned.
-  MiniInstallerTestUtil::VerifyProcessLaunch(installer::kChromeExe, false);
+  if (system_install_) {
+    MiniInstallerTestUtil::VerifyProcessLaunch(installer::kChromeExe, true);
+  } else {
+    MiniInstallerTestUtil::VerifyProcessLaunch(
+        installer::kChromeFrameHelperExe, true);
+  }
   FindChromeShortcut();
 }
 

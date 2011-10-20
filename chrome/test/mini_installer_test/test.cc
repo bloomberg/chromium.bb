@@ -164,6 +164,10 @@ TEST_F(MiniInstallTest,
 TEST_F(MiniInstallTest, InstallChromeFrameUsingMultiInstallUser) {
   cf_user_installer_->InstallChromeFrameUsingMultiInstall();
 }
+
+TEST_F(MiniInstallTest, InstallChromeFrameUsingMultiInstallSys) {
+  cf_sys_installer_->InstallChromeFrameUsingMultiInstall();
+}
 #endif
 
 TEST_F(MiniInstallTest, InstallMiniInstallerSys) {
