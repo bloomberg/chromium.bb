@@ -72,6 +72,8 @@
     'renderer/intents_dispatcher.h',
     'renderer/java_bridge_channel.cc',
     'renderer/java_bridge_channel.h',
+    'renderer/java_bridge_dispatcher.cc',
+    'renderer/java_bridge_dispatcher.h',
     'renderer/load_progress_tracker.cc',
     'renderer/load_progress_tracker.h',
     'renderer/media/audio_device.cc',

@@ -61,6 +61,7 @@ class ExternalPopupMenu;
 class GeolocationDispatcher;
 class GURL;
 class IntentsDispatcher;
+class JavaBridgeDispatcher;
 class LoadProgressTracker;
 class MediaStreamImpl;
 class NotificationProvider;
@@ -862,6 +863,8 @@ class RenderViewImpl : public RenderWidget,
   void OnZoom(PageZoom::Function function);
   void OnEnableViewSourceMode();
 
+  void OnJavaBridgeInit(const IPC::ChannelHandle& channel_handle);
+
   // Adding a new message handler? Please add it in alphabetical order above
   // and put it in the same position in the .cc file.
 
@@ -1153,6 +1156,9 @@ class RenderViewImpl : public RenderWidget,
   DevToolsAgent* devtools_agent_;
 
   RendererAccessibility* renderer_accessibility_;
+
+  // Java Bridge dispatcher attached to this view; lazily initialized.
+  scoped_ptr<JavaBridgeDispatcher> java_bridge_dispatcher_;
 
   // Misc ----------------------------------------------------------------------
 

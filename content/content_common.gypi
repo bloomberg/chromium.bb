@@ -141,6 +141,7 @@
     'common/indexed_db_param_traits.cc',
     'common/indexed_db_param_traits.h',
     'common/intents_messages.h',
+    'common/java_bridge_messages.h',
     'common/mac/attributed_string_coder.h',
     'common/mac/attributed_string_coder.mm',
     'common/mac/font_descriptor.h',

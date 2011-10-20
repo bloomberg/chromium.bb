@@ -32,6 +32,7 @@
 #include "content/common/file_system/file_system_dispatcher.h"
 #include "content/common/file_system/webfilesystem_callback_dispatcher.h"
 #include "content/common/intents_messages.h"
+#include "content/common/java_bridge_messages.h"
 #include "content/common/pepper_messages.h"
 #include "content/common/pepper_plugin_registry.h"
 #include "content/common/quota_dispatcher.h"
@@ -51,6 +52,7 @@
 #include "content/renderer/geolocation_dispatcher.h"
 #include "content/renderer/gpu/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/renderer/intents_dispatcher.h"
+#include "content/renderer/java_bridge_dispatcher.h"
 #include "content/renderer/load_progress_tracker.h"
 #include "content/renderer/media/audio_message_filter.h"
 #include "content/renderer/media/audio_renderer_impl.h"
@@ -669,6 +671,7 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_EnableViewSourceMode, OnEnableViewSourceMode)
     IPC_MESSAGE_HANDLER(ViewMsg_LockMouse_ACK, OnLockMouseACK)
     IPC_MESSAGE_HANDLER(ViewMsg_MouseLockLost, OnMouseLockLost)
+    IPC_MESSAGE_HANDLER(JavaBridgeMsg_Init, OnJavaBridgeInit)
 
     // Have the super handle all other messages.
     IPC_MESSAGE_UNHANDLED(handled = RenderWidget::OnMessageReceived(message))
@@ -4634,4 +4637,10 @@ void RenderViewImpl::OnMouseLockLost() {
 
 bool RenderViewImpl::WebWidgetHandlesCompositorScheduling() const {
   return webview()->settings()->useThreadedCompositor();
+}
+
+void RenderViewImpl::OnJavaBridgeInit(
+    const IPC::ChannelHandle& channel_handle) {
+  DCHECK(!java_bridge_dispatcher_.get());
+  java_bridge_dispatcher_.reset(new JavaBridgeDispatcher(this, channel_handle));
 }
