@@ -480,17 +480,14 @@ def lockedmethod(method):
 
 class WorkItem(object):
   """One work item."""
+  # On cygwin, creating a lock throwing randomly when nearing ~100 locks.
+  # As a workaround, use a single lock. Yep you read it right. Single lock for
+  # all the 100 objects.
+  lock = threading.Lock()
+
   def __init__(self, name):
     # A unique string representing this work item.
     self._name = name
-    try:
-      self.lock = threading.Lock()
-    except:  # pylint: disable=W0702
-      if sys.platform != 'cygwin':
-        raise
-      # On cygwin, it's throwing randomly. Hack and reuse the single
-      # sys.stdout.lock. Yep you read it right. Single lock.
-      self.lock = sys.stdout.lock
 
   def run(self, work_queue):
     """work_queue is passed as keyword argument so it should be
