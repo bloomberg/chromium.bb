@@ -3825,7 +3825,16 @@
    ...
    fun:_ZN11ProfileImpl13OnPrefsLoadedEb
    ...
-   fun:_ZN11ProfileImplC1ERK8FilePathPN7Profile8DelegateE
+   fun:_ZN11ProfileImplC*ERK8FilePathPN7Profile8DelegateE
+}
+{
+   bug_88640_c
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN29ChromeURLRequestContextGetter14CreateOriginalEP7ProfilePK13ProfileIOData
+   fun:_ZN17ProfileImplIOData6Handle4InitERK8FilePathS3_S3_iS3_iS3_S3_PN18chrome_browser_net9PredictorEP11PrefServiceP8IOThread
+   fun:_ZN11ProfileImpl11DoFinalInitEv
+   fun:_ZN11ProfileImpl13OnPrefsLoadedEb
 }
 {
    bug_81796
