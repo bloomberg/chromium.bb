@@ -435,9 +435,11 @@
 
       <!-- Images only used by ChromeOS. -->
       <if expr="pp_ifdef('chromeos')">
+	<include name="IDR_ACCESSIBILITY_ICON" file="accessibility_icon.png" type="BINDATA" />
         <include name="IDR_BRIGHTNESS_BUBBLE_ICON" file="brightness_icon.png" type="BINDATA" />
         <include name="IDR_BUTTON_USER_IMAGE_CHOOSE_FILE" file="choose_file.png" type="BINDATA" />
         <include name="IDR_BUTTON_USER_IMAGE_TAKE_PHOTO" file="take_photo.png" type="BINDATA" />
+	<include name="IDR_CAPS_LOCK_ICON" file="caps_lock_icon.png" type="BINDATA" />
         <include name="IDR_DIVIDER_VERT" file="divider_vert.png" type="BINDATA" />
         <include name="IDR_DROPDOWN_BOTTOM_H" file="textbutton_dropdown_b_h.png" type="BINDATA" />
         <include name="IDR_DROPDOWN_BOTTOM_LEFT_H" file="textbutton_dropdown_bl_h.png" type="BINDATA" />
@@ -508,7 +510,6 @@
         <include name="IDR_SHUTDOWN_ICON" file="shutdown_icon.png" type="BINDATA" />
         <include name="IDR_SPINNER" file="spinner.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_ACCESSIBILITY" file="statusbar_accessibility.png" type="BINDATA" />
-        <include name="IDR_CAPS_LOCK_ICON" file="caps_lock_icon.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_BATTERY_LARGE_ALL" file="statusbar_battery_large_all.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_BATTERY_SMALL_ALL" file="statusbar_battery_small_all.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_CAPS_LOCK" file="statusbar_caps_lock.png" type="BINDATA" />
