@@ -184,18 +184,22 @@ void PrintSettings::SetPrinterPrintableArea(
     case CUSTOM_MARGINS: {
       margins.header = 0;
       margins.footer = 0;
-      margins.top = ConvertUnitDouble(custom_margins_in_points_.top,
-                                      kPointsPerInch,
-                                      units_per_inch);
-      margins.bottom = ConvertUnitDouble(custom_margins_in_points_.bottom,
-                                         kPointsPerInch,
-                                         units_per_inch);
-      margins.left = ConvertUnitDouble(custom_margins_in_points_.left,
-                                       kPointsPerInch,
-                                       units_per_inch);
-      margins.right = ConvertUnitDouble(custom_margins_in_points_.right,
-                                        kPointsPerInch,
-                                        units_per_inch);
+      margins.top = ConvertUnitDouble(
+          requested_custom_margins_in_points_.top,
+          kPointsPerInch,
+          units_per_inch);
+      margins.bottom = ConvertUnitDouble(
+          requested_custom_margins_in_points_.bottom,
+          kPointsPerInch,
+          units_per_inch);
+      margins.left = ConvertUnitDouble(
+          requested_custom_margins_in_points_.left,
+          kPointsPerInch,
+          units_per_inch);
+      margins.right = ConvertUnitDouble(
+          requested_custom_margins_in_points_.right,
+          kPointsPerInch,
+          units_per_inch);
       break;
     }
     default: {
@@ -209,8 +213,9 @@ void PrintSettings::SetPrinterPrintableArea(
     page_setup_device_units_.ForceRequestedMargins(margins);
 }
 
-void PrintSettings::SetCustomMargins(const PageMargins& margins_in_points) {
-  custom_margins_in_points_ = margins_in_points;
+void PrintSettings::SetCustomMargins(
+    const PageMargins& requested_margins_in_points) {
+  requested_custom_margins_in_points_ = requested_margins_in_points;
   margin_type = CUSTOM_MARGINS;
 }
 

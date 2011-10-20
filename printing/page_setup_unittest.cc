@@ -161,3 +161,32 @@ TEST(PageSetupTest, HardCoded) {
       " " << page_size.ToString() << " " << printable_area.ToString() <<
       " " << kTextHeight;
 }
+
+TEST(PageSetupTest, OutOfRangeMargins) {
+  printing::PageMargins margins;
+  margins.header = 0;
+  margins.footer = 0;
+  margins.left = -10;
+  margins.top = -11;
+  margins.right = -12;
+  margins.bottom = -13;
+
+  gfx::Size page_size(100, 100);
+  gfx::Rect printable_area(1, 2, 96, 94);
+
+  // Make the calculations.
+  printing::PageSetup setup;
+  setup.SetRequestedMargins(margins);
+  setup.Init(page_size, printable_area, 0);
+
+  EXPECT_EQ(setup.effective_margins().left, 1);
+  EXPECT_EQ(setup.effective_margins().top, 2);
+  EXPECT_EQ(setup.effective_margins().right, 3);
+  EXPECT_EQ(setup.effective_margins().bottom, 4);
+
+  setup.ForceRequestedMargins(margins);
+  EXPECT_EQ(setup.effective_margins().left, 0);
+  EXPECT_EQ(setup.effective_margins().top, 0);
+  EXPECT_EQ(setup.effective_margins().right, 0);
+  EXPECT_EQ(setup.effective_margins().bottom, 0);
+}

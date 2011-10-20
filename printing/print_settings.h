@@ -41,7 +41,7 @@ class PRINTING_EXPORT PrintSettings {
                                gfx::Rect const& printable_area_device_units,
                                int units_per_inch);
 
-  void SetCustomMargins(const PageMargins& margins_in_points);
+  void SetCustomMargins(const PageMargins& requested_margins_in_points);
 
   // Equality operator.
   // NOTE: printer_name is NOT tested for equality since it doesn't affect the
@@ -139,8 +139,8 @@ class PRINTING_EXPORT PrintSettings {
   // True if this printer supports AlphaBlend.
   bool supports_alpha_blend_;
 
-  // If margin type is custom, these are the margins.
-  PageMargins custom_margins_in_points_;
+  // If margin type is custom, this is what was requested.
+  PageMargins requested_custom_margins_in_points_;
 };
 
 }  // namespace printing
