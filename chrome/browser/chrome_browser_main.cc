@@ -416,19 +416,14 @@ Profile* CreateProfile(const MainFunctionParams& parameters,
                        const FilePath& user_data_dir,
                        const CommandLine& parsed_command_line) {
   Profile* profile;
-  if (ProfileManager::IsMultipleProfilesEnabled()) {
-    if (parsed_command_line.HasSwitch(switches::kProfileDirectory)) {
-      g_browser_process->local_state()->SetString(prefs::kProfileLastUsed,
-          parsed_command_line.GetSwitchValueASCII(
-              switches::kProfileDirectory));
-    }
-    profile = g_browser_process->profile_manager()->GetLastUsedProfile(
-        user_data_dir);
-  } else {
-    profile = g_browser_process->profile_manager()->GetDefaultProfile(
-        user_data_dir);
+  if (ProfileManager::IsMultipleProfilesEnabled() &&
+      parsed_command_line.HasSwitch(switches::kProfileDirectory)) {
+    g_browser_process->local_state()->SetString(prefs::kProfileLastUsed,
+        parsed_command_line.GetSwitchValueASCII(
+            switches::kProfileDirectory));
   }
-
+  profile = g_browser_process->profile_manager()->GetLastUsedProfile(
+      user_data_dir);
   if (profile)
     return profile;
 
