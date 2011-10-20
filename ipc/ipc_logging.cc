@@ -44,6 +44,7 @@ LogFunctionMap* Logging::log_function_map_;
 Logging::Logging()
     : enabled_(false),
       enabled_on_stderr_(false),
+      enabled_color_(false),
       queue_invoke_later_pending_(false),
       sender_(NULL),
       main_thread_(MessageLoop::current()),
@@ -55,8 +56,17 @@ Logging::Logging()
   size_t requiredSize = 0;
   getenv_s(&requiredSize, NULL, 0, "CHROME_IPC_LOGGING");
   bool logging_env_var_set = (requiredSize != 0);
+  if (requiredSize <= 6) {
+    char buffer[6];
+    getenv_s(&requiredSize, buffer, sizeof(buffer), "CHROME_IPC_LOGGING");
+    if (requiredSize && !strncmp("color", buffer, 6))
+      enabled_color_ = true;
+  }
 #else  // !defined(OS_WIN)
-  bool logging_env_var_set = (getenv("CHROME_IPC_LOGGING") != NULL);
+  const char* ipc_logging = getenv("CHROME_IPC_LOGGING");
+  bool logging_env_var_set = (ipc_logging != NULL);
+  if (ipc_logging && !strcmp(ipc_logging, "color"))
+    enabled_color_ = true;
 #endif  //defined(OS_WIN)
   if (logging_env_var_set) {
     enabled_ = true;
@@ -123,7 +133,7 @@ void Logging::OnSendMessage(Message* message, const std::string& channel_id) {
     // of the output parameters, add it to the LogData that was earlier stashed
     // with the reply, and log the result.
     data->channel = channel_id;
-    GenerateLogData("", *message, data);
+    GenerateLogData("", *message, data, true);
     Log(*data);
     delete data;
     message->set_sync_log_data(NULL);
@@ -148,7 +158,7 @@ void Logging::OnPostDispatchMessage(const Message& message,
     return;
 
   LogData data;
-  GenerateLogData(channel_id, message, &data);
+  GenerateLogData(channel_id, message, &data, true);
 
   if (MessageLoop::current() == main_thread_) {
     Log(data);
@@ -177,6 +187,42 @@ void Logging::GetMessageText(uint32 type, std::string* name,
   (*it->second)(name, message, params);
 }
 
+const char* Logging::ANSIEscape(ANSIColor color) {
+  if (!enabled_color_)
+    return "";
+  switch (color) {
+    case ANSI_COLOR_RESET:
+      return "\033[m";
+    case ANSI_COLOR_BLACK:
+      return "\033[0;30m";
+    case ANSI_COLOR_RED:
+      return "\033[0;31m";
+    case ANSI_COLOR_GREEN:
+      return "\033[0;32m";
+    case ANSI_COLOR_YELLOW:
+      return "\033[0;33m";
+    case ANSI_COLOR_BLUE:
+      return "\033[0;34m";
+    case ANSI_COLOR_MAGENTA:
+      return "\033[0;35m";
+    case ANSI_COLOR_CYAN:
+      return "\033[0;36m";
+    case ANSI_COLOR_WHITE:
+      return "\033[0;37m";
+  }
+  return "";
+}
+
+Logging::ANSIColor Logging::DelayColor(double delay) {
+  if (delay < 0.1)
+    return ANSI_COLOR_GREEN;
+  if (delay < 0.25)
+    return ANSI_COLOR_BLACK;
+  if (delay < 0.5)
+    return ANSI_COLOR_YELLOW;
+  return ANSI_COLOR_RED;
+}
+
 void Logging::Log(const LogData& data) {
   if (consumer_) {
     // We're in the browser process.
@@ -199,17 +245,33 @@ void Logging::Log(const LogData& data) {
     } else {
       message_name = data.message_name;
     }
-    fprintf(stderr, "ipc %s %d %s %s %s\n",
+    double receive_delay =
+        (Time::FromInternalValue(data.receive) -
+         Time::FromInternalValue(data.sent)).InSecondsF();
+    double dispatch_delay =
+        (Time::FromInternalValue(data.dispatch) -
+         Time::FromInternalValue(data.sent)).InSecondsF();
+    fprintf(stderr,
+            "ipc %s %d %s %s%s %s%s\n  %18.5f %s%18.5f %s%18.5f%s\n",
             data.channel.c_str(),
             data.routing_id,
             data.flags.c_str(),
+            ANSIEscape(sender_ ? ANSI_COLOR_BLUE : ANSI_COLOR_CYAN),
             message_name.c_str(),
-            data.params.c_str());
+            ANSIEscape(ANSI_COLOR_RESET),
+            data.params.c_str(),
+            Time::FromInternalValue(data.sent).ToDoubleT(),
+            ANSIEscape(DelayColor(receive_delay)),
+            Time::FromInternalValue(data.receive).ToDoubleT(),
+            ANSIEscape(DelayColor(dispatch_delay)),
+            Time::FromInternalValue(data.dispatch).ToDoubleT(),
+            ANSIEscape(ANSI_COLOR_RESET)
+            );
   }
 }
 
 void GenerateLogData(const std::string& channel, const Message& message,
-                     LogData* data) {
+                     LogData* data, bool get_params) {
   if (message.is_reply()) {
     // "data" should already be filled in.
     std::string params;
@@ -233,7 +295,8 @@ void GenerateLogData(const std::string& channel, const Message& message,
       flags += "E";
 
     std::string params, message_name;
-    Logging::GetMessageText(message.type(), &message_name, &message, &params);
+    Logging::GetMessageText(message.type(), &message_name, &message,
+                            get_params ? &params : NULL);
 
     data->channel = channel;
     data->routing_id = message.routing_id();

@@ -999,7 +999,7 @@ class MessageSchema {
 // defined in ipc_logging.cc
 IPC_EXPORT void GenerateLogData(const std::string& channel,
                                 const Message& message,
-                                LogData* data);
+                                LogData* data, bool get_params);
 
 
 #if defined(IPC_MESSAGE_LOG_ENABLED)
@@ -1027,7 +1027,7 @@ inline void ConnectMessageAndReply(const Message* msg, Message* reply) {
     // output parameters at that point.  Instead, save its data and log it
     // with the outgoing reply message when it's sent.
     LogData* data = new LogData;
-    GenerateLogData("", *msg, data);
+    GenerateLogData("", *msg, data, true);
     msg->set_dont_log();
     reply->set_sync_log_data(data);
   }

@@ -85,6 +85,20 @@ class IPC_EXPORT Logging {
   }
 
  private:
+  typedef enum {
+    ANSI_COLOR_RESET = -1,
+    ANSI_COLOR_BLACK,
+    ANSI_COLOR_RED,
+    ANSI_COLOR_GREEN,
+    ANSI_COLOR_YELLOW,
+    ANSI_COLOR_BLUE,
+    ANSI_COLOR_MAGENTA,
+    ANSI_COLOR_CYAN,
+    ANSI_COLOR_WHITE
+  } ANSIColor;
+  const char* ANSIEscape(ANSIColor color);
+  ANSIColor DelayColor(double delay);
+
   friend struct DefaultSingletonTraits<Logging>;
   Logging();
 
@@ -93,6 +107,7 @@ class IPC_EXPORT Logging {
 
   bool enabled_;
   bool enabled_on_stderr_;  // only used on POSIX for now
+  bool enabled_color_; // only used on POSIX for now
 
   std::vector<LogData> queued_logs_;
   bool queue_invoke_later_pending_;
