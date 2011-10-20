@@ -72,9 +72,16 @@ html[dir='rtl'] #sync-setup-login-content-column {
   text-align: center;
 }
 
-#promo-advanced-link {
-  font-size: 85%;
-  margin: 0 10px;
+#promo-advanced,
+#promo-advanced:hover,
+#sync-setup-login-promo-column a:link,
+#sync-setup-login-promo-column a:hover {
+  color: #15c;
+}
+
+#promo-advanced:active,
+#sync-setup-login-promo-column a:active {
+  color: #d14836;
 }
 
 #sync-setup-login h1 {

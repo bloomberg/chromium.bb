@@ -10450,10 +10450,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Can't access your account?
       </message>
       <message name="IDS_SYNC_CREATE_ACCOUNT_PREFIX" desc="The text before the create account link">
-        or <ph name="IDS_SYNC_CREATE_ACCOUNT">$1<ex>Create a Google account</ex></ph>
+        or <ph name="IDS_SYNC_CREATE_ACCOUNT">$1<ex>Create a Google Account</ex></ph>
       </message>
       <message name="IDS_SYNC_CREATE_ACCOUNT" desc="The text of a hyperlink to create a Google account">
-        Create a Google account
+        Create a Google Account
       </message>
       <message name="IDS_SYNC_CANNOT_BE_BLANK" desc="The input error message when the user hasn't entered a username or password">
         Required field cannot be left blank
