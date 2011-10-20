@@ -94,7 +94,7 @@ var netInternalsTest = (function() {
     var testArguments = Array.prototype.slice.call(arguments, 2);
 
     // If we've already received the constants, start the tests.
-    if (typeof LogEventType != 'undefined') {
+    if (Constants) {
       startNetInternalsTest(testName, testFunction, testArguments);
       return;
     }
