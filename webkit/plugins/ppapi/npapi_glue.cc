@@ -8,7 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/string_util.h"
 #include "webkit/plugins/ppapi/host_globals.h"
-#include "webkit/plugins/ppapi/host_resource_tracker.h"
+#include "webkit/plugins/ppapi/host_var_tracker.h"
 #include "webkit/plugins/ppapi/npobject_var.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/plugin_object.h"
@@ -134,7 +134,7 @@ PP_Var NPIdentifierToPPVar(PP_Module module, NPIdentifier id) {
 PP_Var NPObjectToPPVar(PluginInstance* instance, NPObject* object) {
   DCHECK(object);
   scoped_refptr<NPObjectVar> object_var(
-      HostGlobals::Get()->host_resource_tracker()->NPObjectVarForNPObject(
+      HostGlobals::Get()->host_var_tracker()->NPObjectVarForNPObject(
           instance->pp_instance(), object));
   if (!object_var) {  // No object for this module yet, make a new one.
     object_var = new NPObjectVar(instance->module()->pp_module(),

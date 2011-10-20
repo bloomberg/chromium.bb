@@ -10,7 +10,7 @@
 #include "third_party/npapi/bindings/npruntime.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "webkit/plugins/ppapi/host_globals.h"
-#include "webkit/plugins/ppapi/host_resource_tracker.h"
+#include "webkit/plugins/ppapi/host_var_tracker.h"
 #include "webkit/plugins/ppapi/mock_plugin_delegate.h"
 #include "webkit/plugins/ppapi/mock_resource.h"
 #include "webkit/plugins/ppapi/npapi_glue.h"
@@ -72,19 +72,17 @@ typedef scoped_ptr_malloc<NPObject, ReleaseNPObject> NPObjectReleaser;
 
 }  // namespace
 
-// HostResourceTrackerTest -----------------------------------------------------
-
-class HostResourceTrackerTest : public PpapiUnittest {
+class HostVarTrackerTest : public PpapiUnittest {
  public:
-  HostResourceTrackerTest() {
+  HostVarTrackerTest() {
   }
 
-  HostResourceTracker& tracker() {
-    return *HostGlobals::Get()->host_resource_tracker();
+  HostVarTracker& tracker() {
+    return *HostGlobals::Get()->host_var_tracker();
   }
 };
 
-TEST_F(HostResourceTrackerTest, DeleteObjectVarWithInstance) {
+TEST_F(HostVarTrackerTest, DeleteObjectVarWithInstance) {
   // Make a second instance (the test harness already creates & manages one).
   scoped_refptr<PluginInstance> instance2(
       PluginInstance::Create1_0(delegate(), module(),
@@ -105,7 +103,7 @@ TEST_F(HostResourceTrackerTest, DeleteObjectVarWithInstance) {
 
 // Make sure that using the same NPObject should give the same PP_Var
 // each time.
-TEST_F(HostResourceTrackerTest, ReuseVar) {
+TEST_F(HostVarTrackerTest, ReuseVar) {
   NPObjectReleaser npobject(NewTrackedNPObject());
 
   PP_Var pp_object1 = NPObjectToPPVar(instance(), npobject.get());

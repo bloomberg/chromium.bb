@@ -59,25 +59,6 @@ class HostResourceTracker : public ::ppapi::TrackerBase,
   // ppapi::ResourceTracker overrides.
   virtual void LastPluginRefWasDeleted(::ppapi::Resource* object) OVERRIDE;
 
-  // PP_Vars -------------------------------------------------------------------
-
-  // Tracks all live NPObjectVar. This is so we can map between instance +
-  // NPObject and get the NPObjectVar corresponding to it. This Add/Remove
-  // function is called by the NPObjectVar when it is created and
-  // destroyed.
-  void AddNPObjectVar(::ppapi::NPObjectVar* object_var);
-  void RemoveNPObjectVar(::ppapi::NPObjectVar* object_var);
-
-  // Looks up a previously registered NPObjectVar for the given NPObject and
-  // instance. Returns NULL if there is no NPObjectVar corresponding to the
-  // given NPObject for the given instance. See AddNPObjectVar above.
-  ::ppapi::NPObjectVar* NPObjectVarForNPObject(PP_Instance instance,
-                                               NPObject* np_object);
-
-  // Returns the number of NPObjectVar's associated with the given instance.
-  // Returns 0 if the instance isn't known.
-  int GetLiveNPObjectVarsForInstance(PP_Instance instance) const;
-
   // PP_Modules ----------------------------------------------------------------
 
   // Adds a new plugin module to the list of tracked module, and returns a new
@@ -116,16 +97,6 @@ class HostResourceTracker : public ::ppapi::TrackerBase,
 
   // Per-instance data we track.
   struct InstanceData;
-
-  // Force frees all vars and resources associated with the given instance.
-  // If delete_instance is true, the instance tracking information will also
-  // be deleted.
-  void CleanupInstanceData(PP_Instance instance, bool delete_instance);
-
-  // Like ResourceAndRefCount but for vars, which are associated with modules.
-  typedef std::pair<scoped_refptr< ::ppapi::Var>, size_t> VarAndRefCount;
-  typedef base::hash_map<int32, VarAndRefCount> VarMap;
-  VarMap live_vars_;
 
   // Tracks all live instances and their associated data.
   typedef std::map<PP_Instance, linked_ptr<InstanceData> > InstanceMap;

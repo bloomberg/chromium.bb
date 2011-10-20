@@ -208,6 +208,8 @@
         '../plugins/ppapi/host_globals.h',
         '../plugins/ppapi/host_resource_tracker.cc',
         '../plugins/ppapi/host_resource_tracker.h',
+        '../plugins/ppapi/host_var_tracker.cc',
+        '../plugins/ppapi/host_var_tracker.h',
         '../plugins/ppapi/message_channel.cc',
         '../plugins/ppapi/message_channel.h',
         '../plugins/ppapi/npapi_glue.cc',

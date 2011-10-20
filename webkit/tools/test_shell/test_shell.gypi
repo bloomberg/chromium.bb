@@ -439,7 +439,7 @@
         '../../plugins/npapi/plugin_list_unittest.cc',
         '../../plugins/npapi/webplugin_impl_unittest.cc',
         '../../plugins/ppapi/callbacks_unittest.cc',
-        '../../plugins/ppapi/host_resource_tracker_unittest.cc',
+        '../../plugins/ppapi/host_var_tracker_unittest.cc',
         '../../plugins/ppapi/mock_plugin_delegate.cc',
         '../../plugins/ppapi/mock_plugin_delegate.h',
         '../../plugins/ppapi/mock_resource.h',

@@ -29,7 +29,6 @@ using ppapi::CheckIdType;
 using ppapi::MakeTypedId;
 using ppapi::NPObjectVar;
 using ppapi::PPIdType;
-using ppapi::Var;
 
 namespace webkit {
 namespace ppapi {
@@ -42,20 +41,12 @@ namespace {
 
 }  // namespace
 
-typedef std::map<NPObject*, NPObjectVar*> NPObjectToNPObjectVarMap;
-
 struct HostResourceTracker::InstanceData {
   InstanceData() : instance(0) {}
 
   // Non-owning pointer to the instance object. When a PluginInstance is
   // destroyed, it will notify us and we'll delete all associated data.
   PluginInstance* instance;
-
-  // Tracks all live NPObjectVars used by this module so we can map NPObjects
-  // to the corresponding object, and also release these properly if the
-  // instance goes away when there are still refs. These are non-owning
-  // references.
-  NPObjectToNPObjectVarMap np_object_to_object_var;
 
   // Lazily allocated function proxies for the different interfaces.
   scoped_ptr< ::ppapi::FunctionGroupBase >
@@ -68,39 +59,6 @@ HostResourceTracker::HostResourceTracker() {
 }
 
 HostResourceTracker::~HostResourceTracker() {
-}
-
-void HostResourceTracker::CleanupInstanceData(PP_Instance instance,
-                                              bool delete_instance) {
-  DLOG_IF(ERROR, !CheckIdType(instance, ::ppapi::PP_ID_TYPE_INSTANCE))
-      << instance << " is not a PP_Instance.";
-  InstanceMap::iterator found = instance_map_.find(instance);
-  if (found == instance_map_.end()) {
-    NOTREACHED();
-    return;
-  }
-  InstanceData& data = *found->second;
-
-  // Force delete all var references. Need to make a copy so we can iterate over
-  // the map while deleting stuff from it.
-  NPObjectToNPObjectVarMap np_object_map_copy = data.np_object_to_object_var;
-  NPObjectToNPObjectVarMap::iterator cur_var =
-      np_object_map_copy.begin();
-  while (cur_var != np_object_map_copy.end()) {
-    NPObjectToNPObjectVarMap::iterator current = cur_var++;
-
-    // Clear the object from the var mapping and the live instance object list.
-    int32 var_id = current->second->GetExistingVarID();
-    if (var_id)
-      live_vars_.erase(var_id);
-
-    current->second->InstanceDeleted();
-    data.np_object_to_object_var.erase(current->first);
-  }
-  DCHECK(data.np_object_to_object_var.empty());
-
-  if (delete_instance)
-    instance_map_.erase(found);
 }
 
 ::ppapi::FunctionGroupBase* HostResourceTracker::GetFunctionAPI(
@@ -163,52 +121,6 @@ void HostResourceTracker::LastPluginRefWasDeleted(::ppapi::Resource* object) {
   }
 }
 
-void HostResourceTracker::AddNPObjectVar(NPObjectVar* object_var) {
-  DCHECK(instance_map_.find(object_var->pp_instance()) != instance_map_.end());
-  InstanceData& data = *instance_map_[object_var->pp_instance()].get();
-
-  DCHECK(data.np_object_to_object_var.find(object_var->np_object()) ==
-         data.np_object_to_object_var.end()) << "NPObjectVar already in map";
-  data.np_object_to_object_var[object_var->np_object()] = object_var;
-}
-
-void HostResourceTracker::RemoveNPObjectVar(NPObjectVar* object_var) {
-  DCHECK(instance_map_.find(object_var->pp_instance()) != instance_map_.end());
-  InstanceData& data = *instance_map_[object_var->pp_instance()].get();
-
-  NPObjectToNPObjectVarMap::iterator found =
-      data.np_object_to_object_var.find(object_var->np_object());
-  if (found == data.np_object_to_object_var.end()) {
-    NOTREACHED() << "NPObjectVar not registered.";
-    return;
-  }
-  if (found->second != object_var) {
-    NOTREACHED() << "NPObjectVar doesn't match.";
-    return;
-  }
-  data.np_object_to_object_var.erase(found);
-}
-
-NPObjectVar* HostResourceTracker::NPObjectVarForNPObject(PP_Instance instance,
-                                                     NPObject* np_object) {
-  DCHECK(instance_map_.find(instance) != instance_map_.end());
-  InstanceData& data = *instance_map_[instance].get();
-
-  NPObjectToNPObjectVarMap::iterator found =
-      data.np_object_to_object_var.find(np_object);
-  if (found == data.np_object_to_object_var.end())
-    return NULL;
-  return found->second;
-}
-
-int HostResourceTracker::GetLiveNPObjectVarsForInstance(
-    PP_Instance instance) const {
-  InstanceMap::const_iterator found = instance_map_.find(instance);
-  if (found == instance_map_.end())
-    return 0;
-  return static_cast<int>(found->second->np_object_to_object_var.size());
-}
-
 PP_Instance HostResourceTracker::AddInstance(PluginInstance* instance) {
   DCHECK(instance_map_.find(instance->pp_instance()) == instance_map_.end());
 
@@ -233,12 +145,15 @@ PP_Instance HostResourceTracker::AddInstance(PluginInstance* instance) {
 
 void HostResourceTracker::InstanceDeleted(PP_Instance instance) {
   DidDeleteInstance(instance);
-  CleanupInstanceData(instance, true);
+  HostGlobals::Get()->host_var_tracker()->ForceFreeNPObjectsForInstance(
+      instance);
+  instance_map_.erase(instance);
 }
 
 void HostResourceTracker::InstanceCrashed(PP_Instance instance) {
   DidDeleteInstance(instance);
-  CleanupInstanceData(instance, false);
+  HostGlobals::Get()->host_var_tracker()->ForceFreeNPObjectsForInstance(
+      instance);
 }
 
 PluginInstance* HostResourceTracker::GetInstance(PP_Instance instance) {

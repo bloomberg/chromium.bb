@@ -8,7 +8,7 @@
 #include "ppapi/c/pp_var.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "webkit/plugins/ppapi/host_globals.h"
-#include "webkit/plugins/ppapi/host_resource_tracker.h"
+#include "webkit/plugins/ppapi/host_var_tracker.h"
 
 using webkit::ppapi::HostGlobals;
 using WebKit::WebBindings;
@@ -24,12 +24,12 @@ NPObjectVar::NPObjectVar(PP_Module module,
       pp_instance_(instance),
       np_object_(np_object) {
   WebBindings::retainObject(np_object_);
-  HostGlobals::Get()->host_resource_tracker()->AddNPObjectVar(this);
+  HostGlobals::Get()->host_var_tracker()->AddNPObjectVar(this);
 }
 
 NPObjectVar::~NPObjectVar() {
   if (pp_instance())
-    HostGlobals::Get()->host_resource_tracker()->RemoveNPObjectVar(this);
+    HostGlobals::Get()->host_var_tracker()->RemoveNPObjectVar(this);
   WebBindings::releaseObject(np_object_);
 }
 
