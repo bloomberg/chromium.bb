@@ -21,6 +21,7 @@ class PropRegistry;
 
 class ActivityLog {
   FRIEND_TEST(ActivityLogTest, SimpleTest);
+  FRIEND_TEST(ActivityLogTest, WrapAroundTest);
   FRIEND_TEST(LoggingFilterInterpreterTest, SimpleTest);
  public:
   enum EntryType {

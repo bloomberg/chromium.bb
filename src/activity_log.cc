@@ -249,7 +249,7 @@ string ActivityLog::Encode() {
 
   ListValue* entries = new ListValue;
   for (size_t i = 0; i < size_; ++i) {
-    const Entry& entry = buffer_[i];
+    const Entry& entry = buffer_[(i + head_idx_) % kBufferSize];
     switch (entry.type) {
       case kHardwareState:
         entries->Append(EncodeHardwareState(entry.details.hwstate));

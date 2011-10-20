@@ -105,4 +105,17 @@ TEST(ActivityLogTest, SimpleTest) {
   EXPECT_EQ(0, log.size());
 }
 
+TEST(ActivityLogTest, WrapAroundTest) {
+  ActivityLog log(NULL);
+  // overfill the buffer
+  const size_t fill_size = (ActivityLog::kBufferSize * 3) / 2;
+  for (size_t i = 0; i < fill_size; i++)
+    log.LogCallbackRequest(static_cast<stime_t>(i));
+  const string::size_type prefix_length = 100;
+  string first_prefix = log.Encode().substr(0, prefix_length);
+  log.LogCallbackRequest(static_cast<stime_t>(fill_size));
+  string second_prefix = log.Encode().substr(0, prefix_length);
+  EXPECT_NE(first_prefix, second_prefix);
+}
+
 }  // namespace gestures
