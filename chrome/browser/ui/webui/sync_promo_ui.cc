@@ -160,6 +160,10 @@ bool SyncPromoUI::ShouldShowSyncPromoAtStartup(Profile* profile,
   if (HasUserSkippedSyncPromo(profile))
     return false;
 
+  // For Chinese users skip the sync promo.
+  if (g_browser_process->GetApplicationLocale() == "zh-CN")
+    return false;
+
   int show_count = prefs->GetInteger(prefs::kSyncPromoStartupCount);
   return show_count < kSyncPromoShowAtStartupMaxiumum;
 }
