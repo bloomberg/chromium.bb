@@ -9,10 +9,19 @@ cd "$(dirname "$0")"
 . REVISIONS
 
 repos='binutils gcc gdb glibc linux-headers-for-nacl newlib'
-trybots="\
+
+trybots_glibc_only="\
+nacl-toolchain-lucid64-glibc\
+"
+trybots_glibc="\
 nacl-toolchain-lucid64-glibc,\
 nacl-toolchain-mac-glibc,\
 nacl-toolchain-win7-glibc\
+"
+trybots_newlib="\
+nacl-toolchain-lucid64-newlib,\
+nacl-toolchain-mac-newlib,\
+nacl-toolchain-win7-newlib\
 "
 
 tmp='.git-status$$'
@@ -24,6 +33,9 @@ trap 'rm -f $tmp' 0 1 2 15
   exit 1
 }
 
+test_all=
+test_glibc=
+test_newlib=
 tryname=try
 for repo in $repos; do
   revname="NACL_$(echo "$repo" | tr '[:lower:]-' '[:upper:]_')_COMMIT"
@@ -37,10 +49,24 @@ for repo in $repos; do
     git add "$patch"
     tryname="${tryname}-${repo}-$(cd "SRC/$repo";
                                   git rev-list -n1 --abbrev-commit HEAD)"
+    case "$repo" in
+    newlib) test_newlib=yes ;;
+    glibc) test_glibc=yes ;;
+    *) test_newlib=yes
+       test_glibc=yes
+       test_all=yes ;;
+    esac
   else
     rm -f "$patch"
   fi
 done
+
+if [ -z "$test_all" -a -z "$test_newlib" -a -n "$test_glibc" ]; then
+  trybots="$trybots_glibc_only"
+else
+  trybots="${test_newlib:+${trybots_newlib}}\
+${test_glibc:+${test_newlib:+,}${trybots_glibc}}"
+fi
 
 if ! git rev-parse origin/master >/dev/null; then
   echo >&2 "$0: error: no origin/master branch"
