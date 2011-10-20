@@ -80,6 +80,7 @@ void DOMView::ViewHierarchyChanged(bool is_add, views::View* parent,
 }
 
 void DOMView::AttachTabContents() {
+#if !defined(USE_AURA)
   if (views::Widget::IsPureViews()) {
     TabContentsViewViews* widget = static_cast<TabContentsViewViews*>(
         dom_contents_->tab_contents()->view());
@@ -87,6 +88,9 @@ void DOMView::AttachTabContents() {
         static_cast<views::NativeWidgetViews*>(widget->native_widget());
     AttachToView(nwv->GetView());
   } else {
+#endif
     Attach(dom_contents_->tab_contents()->GetNativeView());
+#if !defined(USE_AURA)
   }
+#endif
 }

@@ -104,8 +104,12 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   delegate_->OnNativeWidgetCreated();
   window_->set_minimum_size(delegate_->GetMinimumSize());
   window_->SetBounds(params.bounds);
-  window_->SetParent(
-      params.type == Widget::InitParams::TYPE_MENU ? NULL : params.parent);
+  if (params.type == Widget::InitParams::TYPE_CONTROL) {
+    window_->SetParent(params.parent);
+  } else {
+    window_->SetParent(NULL);
+    // TODO(derat): Set Transient Parent.
+  }
   // TODO(beng): do this some other way.
   delegate_->OnNativeWidgetSizeChanged(params.bounds.size());
   can_activate_ = params.can_activate;
