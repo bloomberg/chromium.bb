@@ -8,20 +8,12 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/automation/tab_proxy.h"
-#include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/ui/javascript_test_util.h"
 #include "chrome/test/ui/ui_test.h"
 #include "content/public/common/content_switches.h"
 #include "net/base/net_util.h"
-#include "ui/gfx/gl/gl_implementation.h"
 
 namespace {
-
-#if defined(OS_WIN)
-const std::string& kGLImplementationName = gfx::kGLImplementationEGLName;
-#else
-const std::string& kGLImplementationName = gfx::kGLImplementationDesktopName;
-#endif
 
 class WebGLConformanceTests : public UITest {
  public:
