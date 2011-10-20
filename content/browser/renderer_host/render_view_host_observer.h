@@ -34,10 +34,10 @@ class CONTENT_EXPORT RenderViewHostObserver : public IPC::Channel::Listener,
   virtual void Navigate(const ViewMsg_Navigate_Params& params);
 
   // IPC::Channel::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // IPC::Message::Sender implementation.
-  virtual bool Send(IPC::Message* message);
+  virtual bool Send(IPC::Message* message) OVERRIDE;
 
   RenderViewHost* render_view_host() const { return render_view_host_; }
   int routing_id() { return routing_id_; }
