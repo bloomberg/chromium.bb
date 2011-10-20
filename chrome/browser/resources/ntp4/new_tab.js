@@ -235,8 +235,13 @@ cr.define('ntp4', function() {
       chrome.send('notificationPromoViewed');
     }
 
-    if (templateData.showSyncPromo)
-      showSyncPromo();
+    var loginContainer = getRequiredElement('login-container');
+    loginContainer.addEventListener('click', function() {
+      var rect = loginContainer.getBoundingClientRect();
+      chrome.send('showSyncLoginUI',
+                  [rect.left, rect.top, rect.width, rect.height]);
+    });
+    chrome.send('initializeSyncLogin');
   }
 
   /**
@@ -843,21 +848,6 @@ cr.define('ntp4', function() {
     $('recently-closed-menu-button').dataItems = dataItems;
   }
 
-  /**
-   * Visually shows the sync promo on the NTP.
-   */
-  function showSyncPromo() {
-    var loginContainer = getRequiredElement('login-container');
-    if (loginContainer.hidden) {
-      chrome.send('initializeSyncLogin');
-      loginContainer.addEventListener('click', function() {
-        var rect = loginContainer.getBoundingClientRect();
-        chrome.send('showSyncLoginUI',
-                    [rect.left, rect.top, rect.width, rect.height]);
-      });
-    }
-  }
-
   function setMostVisitedPages(data, hasBlacklistedUrls) {
     mostVisitedPage.data = data;
   }
@@ -970,7 +960,6 @@ cr.define('ntp4', function() {
     setRecentlyClosedTabs: setRecentlyClosedTabs,
     setStripeColor: setStripeColor,
     showNotification: showNotification,
-    showSyncPromo: showSyncPromo,
     themeChanged: themeChanged,
     updateLogin: updateLogin,
     updateOfflineEnabledApps: updateOfflineEnabledApps

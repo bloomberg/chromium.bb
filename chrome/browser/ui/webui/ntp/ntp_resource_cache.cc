@@ -425,10 +425,6 @@ void NTPResourceCache::CreateNewTabHTML() {
     UserMetrics::RecordAction(UserMetricsAction("NTPPromoShown"));
   }
 
-  // Tell the NTP whether or not it should show the sync promotion.
-  localized_strings.SetBoolean("showSyncPromo",
-      SyncPromoUI::ShouldShowSyncPromo(profile_));
-
   // Enable or disable bookmark features based on an about flag.
   localized_strings.SetString("bookmark_features",
       NewTabUI::NTP4BookmarkFeaturesEnabled() ? "true" : "false");
