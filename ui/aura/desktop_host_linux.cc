@@ -19,6 +19,7 @@
 #include "ui/aura/event.h"
 #include "ui/base/touch/touch_factory.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/gfx/compositor/layer.h"
 
 #include <X11/cursorfont.h>
 #include <X11/extensions/XInput2.h>
@@ -251,20 +252,20 @@ base::MessagePumpDispatcher::DispatchStatus DesktopHostLinux::Dispatch(
       break;
     case KeyPress: {
       KeyEvent keydown_event(xev, false);
-      handled = desktop_->OnKeyEvent(keydown_event);
+      handled = desktop_->DispatchKeyEvent(&keydown_event);
       KeyEvent char_event(xev, true);
-      handled |= desktop_->OnKeyEvent(char_event);
+      handled |= desktop_->DispatchKeyEvent(&char_event);
       break;
     }
     case KeyRelease: {
       KeyEvent keyup_event(xev, false);
-      handled = desktop_->OnKeyEvent(keyup_event);
+      handled = desktop_->DispatchKeyEvent(&keyup_event);
       break;
     }
     case ButtonPress:
     case ButtonRelease: {
       MouseEvent mouseev(xev);
-      handled = desktop_->OnMouseEvent(mouseev);
+      handled = desktop_->DispatchMouseEvent(&mouseev);
       break;
     }
     case MotionNotify: {
@@ -284,8 +285,9 @@ base::MessagePumpDispatcher::DispatchStatus DesktopHostLinux::Dispatch(
           break;
         }
       }
+
       MouseEvent mouseev(xev);
-      handled = desktop_->OnMouseEvent(mouseev);
+      handled = desktop_->DispatchMouseEvent(&mouseev);
       break;
     }
     case ConfigureNotify: {
@@ -325,7 +327,7 @@ base::MessagePumpDispatcher::DispatchStatus DesktopHostLinux::Dispatch(
         case ui::ET_TOUCH_RELEASED:
         case ui::ET_TOUCH_MOVED: {
           TouchEvent touchev(xev);
-          handled = desktop_->OnTouchEvent(touchev);
+          handled = desktop_->DispatchTouchEvent(&touchev);
           break;
         }
         case ui::ET_MOUSE_PRESSED:
@@ -336,7 +338,7 @@ base::MessagePumpDispatcher::DispatchStatus DesktopHostLinux::Dispatch(
         case ui::ET_MOUSE_ENTERED:
         case ui::ET_MOUSE_EXITED: {
           MouseEvent mouseev(xev);
-          handled = desktop_->OnMouseEvent(mouseev);
+          handled = desktop_->DispatchMouseEvent(&mouseev);
           break;
         }
         case ui::ET_UNKNOWN:

@@ -14,6 +14,10 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/point.h"
 
+namespace ui {
+class Transform;
+}
+
 namespace aura {
 
 class Window;
@@ -49,6 +53,8 @@ class AURA_EXPORT LocatedEvent : public Event {
   int x() const { return location_.x(); }
   int y() const { return location_.y(); }
   gfx::Point location() const { return location_; }
+
+  void UpdateForTransform(const ui::Transform& transform);
 
  protected:
   explicit LocatedEvent(const base::NativeEvent& native_event);

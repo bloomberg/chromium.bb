@@ -24,6 +24,10 @@ namespace gfx {
 class Size;
 }
 
+namespace ui {
+class Transform;
+}
+
 namespace aura {
 
 class DesktopDelegate;
@@ -79,13 +83,13 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate,
   void Draw();
 
   // Handles a mouse event. Returns true if handled.
-  bool OnMouseEvent(const MouseEvent& event);
+  bool DispatchMouseEvent(MouseEvent* event);
 
   // Handles a key event. Returns true if handled.
-  bool OnKeyEvent(const KeyEvent& event);
+  bool DispatchKeyEvent(KeyEvent* event);
 
   // Handles a touch event. Returns true if handled.
-  bool OnTouchEvent(const TouchEvent& event);
+  bool DispatchTouchEvent(TouchEvent* event);
 
   // Called when the host changes size.
   void OnHostResized(const gfx::Size& size);
@@ -123,6 +127,9 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate,
 
   // If |window| has mouse capture, the current capture window is set to NULL.
   void ReleaseCapture(Window* window);
+
+  // Overridden from Window:
+  virtual void SetTransform(const ui::Transform& transform) OVERRIDE;
 
  private:
   // Called whenever the mouse moves, tracks the current |mouse_moved_handler_|,

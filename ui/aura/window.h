@@ -25,6 +25,7 @@ namespace ui {
 class Animation;
 class Compositor;
 class Layer;
+class Transform;
 }
 
 namespace aura {
@@ -114,6 +115,8 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // not a top level window container.
   virtual ToplevelWindowContainer* AsToplevelWindowContainer();
   virtual const ToplevelWindowContainer* AsToplevelWindowContainer() const;
+
+  virtual void SetTransform(const ui::Transform& transform);
 
   // Assigns a LayoutManager to size and place child windows.
   // The Window takes ownership of the LayoutManager.

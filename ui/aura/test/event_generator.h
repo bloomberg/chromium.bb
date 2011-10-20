@@ -68,7 +68,7 @@ class EventGenerator {
 
  private:
   // Dispatch the |event| to the Desktop.
-  void Dispatch(const Event& event);
+  void Dispatch(Event& event);
 
   int flags_;
   gfx::Point current_location_;

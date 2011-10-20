@@ -131,6 +131,10 @@ const ToplevelWindowContainer* Window::AsToplevelWindowContainer() const {
   return NULL;
 }
 
+void Window::SetTransform(const ui::Transform& transform) {
+  layer()->SetTransform(transform);
+}
+
 void Window::SetLayoutManager(LayoutManager* layout_manager) {
   layout_manager_.reset(layout_manager);
 }

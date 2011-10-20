@@ -310,25 +310,27 @@ TEST_F(WindowTest, Focus) {
   // Click on a sub-window (w121) to focus it.
   gfx::Point click_point = w121->bounds().CenterPoint();
   Window::ConvertPointToWindow(w121->parent(), desktop, &click_point);
-  desktop->OnMouseEvent(
-      MouseEvent(ui::ET_MOUSE_PRESSED, click_point, ui::EF_LEFT_BUTTON_DOWN));
+  MouseEvent mouse(ui::ET_MOUSE_PRESSED, click_point, ui::EF_LEFT_BUTTON_DOWN);
+  desktop->DispatchMouseEvent(&mouse);
   internal::FocusManager* focus_manager = w121->GetFocusManager();
   EXPECT_EQ(w121.get(), focus_manager->GetFocusedWindow());
 
   // The key press should be sent to the focused sub-window.
-  desktop->OnKeyEvent(KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_E, 0));
+  KeyEvent keyev(ui::ET_KEY_PRESSED, ui::VKEY_E, 0);
+  desktop->DispatchKeyEvent(&keyev);
   EXPECT_EQ(ui::VKEY_E, w121delegate->last_key_code());
 
   // Touch on a sub-window (w122) to focus it.
   click_point = w122->bounds().CenterPoint();
   Window::ConvertPointToWindow(w122->parent(), desktop, &click_point);
-  desktop->OnTouchEvent(TouchEvent(ui::ET_TOUCH_PRESSED, click_point, 0));
+  TouchEvent touchev(ui::ET_TOUCH_PRESSED, click_point, 0);
+  desktop->DispatchTouchEvent(&touchev);
   focus_manager = w122->GetFocusManager();
   EXPECT_EQ(w122.get(), focus_manager->GetFocusedWindow());
 
   // The key press should be sent to the focused sub-window.
-  desktop->OnKeyEvent(KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_F, 0));
-  EXPECT_EQ(ui::VKEY_F, w122delegate->last_key_code());
+  desktop->DispatchKeyEvent(&keyev);
+  EXPECT_EQ(ui::VKEY_E, w122delegate->last_key_code());
 }
 
 // Various destruction assertions.
@@ -394,8 +396,8 @@ TEST_F(WindowTest, CaptureTests) {
   EXPECT_EQ(2, delegate.mouse_event_count());
   delegate.set_mouse_event_count(0);
 
-  desktop->OnTouchEvent(TouchEvent(ui::ET_TOUCH_PRESSED, gfx::Point(50, 50),
-                                   0));
+  TouchEvent touchev(ui::ET_TOUCH_PRESSED, gfx::Point(50, 50), 0);
+  desktop->DispatchTouchEvent(&touchev);
   EXPECT_EQ(1, delegate.touch_event_count());
   delegate.set_touch_event_count(0);
 
@@ -406,8 +408,7 @@ TEST_F(WindowTest, CaptureTests) {
   generator.PressLeftButton();
   EXPECT_EQ(0, delegate.mouse_event_count());
 
-  desktop->OnTouchEvent(TouchEvent(ui::ET_TOUCH_PRESSED, gfx::Point(50, 50),
-                                   0));
+  desktop->DispatchTouchEvent(&touchev);
   EXPECT_EQ(0, delegate.touch_event_count());
 }
 
@@ -474,7 +475,8 @@ TEST_F(WindowTest, MouseEnterExit) {
 
   gfx::Point move_point = w1->bounds().CenterPoint();
   Window::ConvertPointToWindow(w1->parent(), desktop, &move_point);
-  desktop->OnMouseEvent(MouseEvent(ui::ET_MOUSE_MOVED, move_point, 0));
+  MouseEvent mouseev1(ui::ET_MOUSE_MOVED, move_point, 0);
+  desktop->DispatchMouseEvent(&mouseev1);
 
   EXPECT_TRUE(d1.entered());
   EXPECT_FALSE(d1.exited());
@@ -483,7 +485,8 @@ TEST_F(WindowTest, MouseEnterExit) {
 
   move_point = w2->bounds().CenterPoint();
   Window::ConvertPointToWindow(w2->parent(), desktop, &move_point);
-  desktop->OnMouseEvent(MouseEvent(ui::ET_MOUSE_MOVED, move_point, 0));
+  MouseEvent mouseev2(ui::ET_MOUSE_MOVED, move_point, 0);
+  desktop->DispatchMouseEvent(&mouseev2);
 
   EXPECT_TRUE(d1.entered());
   EXPECT_TRUE(d1.exited());
@@ -627,7 +630,8 @@ TEST_F(WindowTest, ActivateOnTouch) {
   // Touch window2.
   gfx::Point press_point = w2->bounds().CenterPoint();
   Window::ConvertPointToWindow(w2->parent(), desktop, &press_point);
-  desktop->OnTouchEvent(TouchEvent(ui::ET_TOUCH_PRESSED, press_point, 0));
+  TouchEvent touchev1(ui::ET_TOUCH_PRESSED, press_point, 0);
+  desktop->DispatchTouchEvent(&touchev1);
 
   // Window2 should have become active.
   EXPECT_EQ(w2.get(), desktop->active_window());
@@ -643,7 +647,8 @@ TEST_F(WindowTest, ActivateOnTouch) {
   press_point = w1->bounds().CenterPoint();
   Window::ConvertPointToWindow(w1->parent(), desktop, &press_point);
   d1.set_activate(false);
-  desktop->OnTouchEvent(TouchEvent(ui::ET_TOUCH_PRESSED, press_point, 0));
+  TouchEvent touchev2(ui::ET_TOUCH_PRESSED, press_point, 0);
+  desktop->DispatchTouchEvent(&touchev2);
 
   // Window2 should still be active and focused.
   EXPECT_EQ(w2.get(), desktop->active_window());
@@ -937,6 +942,51 @@ TEST_F(WindowTest, IsOrContainsFullscreenWindow) {
   w11->Hide();
   EXPECT_FALSE(root->IsOrContainsFullscreenWindow());
 }
+
+#if !defined(OS_WIN)
+// Tests transformation on the desktop.
+TEST_F(WindowTest, Transform) {
+  Desktop* desktop = Desktop::GetInstance();
+  gfx::Size size(200, 300);
+  desktop->SetHostSize(size);
+  desktop->ShowDesktop();
+
+  EXPECT_EQ(gfx::Rect(size), gfx::Rect(desktop->GetHostSize()));
+  EXPECT_EQ(gfx::Rect(size),
+            gfx::Screen::GetMonitorAreaNearestPoint(gfx::Point()));
+
+  // Rotate it clock-wise 90 degrees.
+  ui::Transform transform;
+  transform.SetRotate(90.0f);
+  transform.ConcatTranslate(size.width(), 0);
+  desktop->SetTransform(transform);
+
+  // The size should be the transformed size.
+  EXPECT_EQ(gfx::Rect(0, 0, 300, 200), gfx::Rect(desktop->GetHostSize()));
+  EXPECT_EQ(gfx::Rect(0, 0, 300, 200), desktop->bounds());
+  EXPECT_EQ(gfx::Rect(0, 0, 300, 200),
+            gfx::Screen::GetMonitorAreaNearestPoint(gfx::Point()));
+
+  ActivateWindowDelegate d1;
+  scoped_ptr<Window> w1(
+      CreateTestWindowWithDelegate(&d1, 1, gfx::Rect(0, 10, 50, 50), NULL));
+  w1->Show();
+
+  MouseEvent mouseev1(ui::ET_MOUSE_PRESSED,
+                      gfx::Point(195, 5), ui::EF_LEFT_BUTTON_DOWN);
+  desktop->DispatchMouseEvent(&mouseev1);
+  EXPECT_FALSE(w1->GetFocusManager()->GetFocusedWindow());
+  MouseEvent mouseup(ui::ET_MOUSE_RELEASED,
+                     gfx::Point(195, 5), ui::EF_LEFT_BUTTON_DOWN);
+  desktop->DispatchMouseEvent(&mouseup);
+
+  MouseEvent mouseev2(ui::ET_MOUSE_PRESSED,
+                      gfx::Point(185, 5), ui::EF_LEFT_BUTTON_DOWN);
+  desktop->DispatchMouseEvent(&mouseev2);
+  EXPECT_EQ(w1.get(), desktop->active_window());
+  EXPECT_EQ(w1.get(), w1->GetFocusManager()->GetFocusedWindow());
+}
+#endif
 
 class ToplevelWindowTest : public WindowTest {
  public:

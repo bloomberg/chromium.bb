@@ -5,6 +5,8 @@
 #include "ui/aura/event.h"
 
 #include "ui/aura/window.h"
+#include "ui/gfx/point3.h"
+#include "ui/gfx/transform.h"
 
 namespace aura {
 
@@ -60,6 +62,12 @@ LocatedEvent::LocatedEvent(ui::EventType type,
                            int flags)
     : Event(type, flags),
       location_(location) {
+}
+
+void LocatedEvent::UpdateForTransform(const ui::Transform& transform) {
+  gfx::Point3f p(location_);
+  transform.TransformPointReverse(p);
+  location_ = p.AsPoint();
 }
 
 MouseEvent::MouseEvent(const base::NativeEvent& native_event)

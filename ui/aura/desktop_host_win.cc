@@ -177,7 +177,8 @@ LRESULT DesktopHostWin::OnKeyEvent(UINT message,
                                    WPARAM w_param,
                                    LPARAM l_param) {
   MSG msg = { hwnd(), message, w_param, l_param };
-  SetMsgHandled(desktop_->OnKeyEvent(KeyEvent(msg, message == WM_CHAR)));
+  KeyEvent keyev(msg, message == WM_CHAR);
+  SetMsgHandled(desktop_->DispatchKeyEvent(&keyev));
   return 0;
 }
 
@@ -189,7 +190,7 @@ LRESULT DesktopHostWin::OnMouseRange(UINT message,
   MouseEvent event(msg);
   bool handled = false;
   if (!(event.flags() & ui::EF_IS_NON_CLIENT))
-    handled = desktop_->OnMouseEvent(event);
+    handled = desktop_->DispatchMouseEvent(&event);
   SetMsgHandled(handled);
   return 0;
 }

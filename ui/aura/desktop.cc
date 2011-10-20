@@ -89,7 +89,9 @@ void Desktop::SetHostSize(const gfx::Size& size) {
 }
 
 gfx::Size Desktop::GetHostSize() const {
-  return host_->GetSize();
+  gfx::Rect rect(host_->GetSize());
+  layer()->transform().TransformRect(&rect);
+  return rect.size();
 }
 
 void Desktop::SetCursor(gfx::NativeCursor cursor) {
@@ -105,16 +107,18 @@ void Desktop::Draw() {
   compositor_->Draw(false);
 }
 
-bool Desktop::OnMouseEvent(const MouseEvent& event) {
-  last_mouse_location_ = event.location();
+bool Desktop::DispatchMouseEvent(MouseEvent* event) {
+  event->UpdateForTransform(layer()->transform());
+
+  last_mouse_location_ = event->location();
 
   Window* target =
       mouse_pressed_handler_ ? mouse_pressed_handler_ : capture_window_;
   if (!target)
-    target = GetEventHandlerForPoint(event.location());
-  switch (event.type()) {
+    target = GetEventHandlerForPoint(event->location());
+  switch (event->type()) {
     case ui::ET_MOUSE_MOVED:
-      HandleMouseMoved(event, target);
+      HandleMouseMoved(*event, target);
       break;
     case ui::ET_MOUSE_PRESSED:
       if (!mouse_pressed_handler_)
@@ -127,28 +131,57 @@ bool Desktop::OnMouseEvent(const MouseEvent& event) {
       break;
   }
   if (target && target->delegate()) {
-    MouseEvent translated_event(event, this, target);
+    MouseEvent translated_event(*event, this, target);
     return target->OnMouseEvent(&translated_event);
   }
   return false;
 }
 
-bool Desktop::OnKeyEvent(const KeyEvent& event) {
+bool Desktop::DispatchKeyEvent(KeyEvent* event) {
+#if !defined(NDEBUG)
+  // Press Home key to rotate the screen. Primarily used for testing.
+  if (event->type() == ui::ET_KEY_PRESSED &&
+      (event->flags() & ui::EF_CONTROL_DOWN) &&
+      event->key_code() == ui::VKEY_HOME) {
+    ui::Transform transform;
+    static int count = 0;
+    gfx::Size size = host_->GetSize();
+    switch (count) {
+      case 0:
+        transform.ConcatRotate(-90.0f);
+        transform.ConcatTranslate(0, size.height());
+        break;
+      case 1:
+        transform.ConcatRotate(90.0f);
+        transform.ConcatTranslate(size.width(), 0);
+        break;
+      case 2:
+        transform.ConcatRotate(180.0f);
+        transform.ConcatTranslate(size.width(), size.height());
+        break;
+    }
+    SetTransform(transform);
+    count = (count + 1) % 4;
+    return true;
+  }
+#endif
+
   if (focused_window_) {
-    KeyEvent translated_event(event);
+    KeyEvent translated_event(*event);
     return focused_window_->OnKeyEvent(&translated_event);
   }
   return false;
 }
 
-bool Desktop::OnTouchEvent(const TouchEvent& event) {
+bool Desktop::DispatchTouchEvent(TouchEvent* event) {
+  event->UpdateForTransform(layer()->transform());
   bool handled = false;
   Window* target =
       touch_event_handler_ ? touch_event_handler_ : capture_window_;
   if (!target)
-    target = GetEventHandlerForPoint(event.location());
+    target = GetEventHandlerForPoint(event->location());
   if (target) {
-    TouchEvent translated_event(event, this, target);
+    TouchEvent translated_event(*event, this, target);
     ui::TouchStatus status = target->OnTouchEvent(&translated_event);
     if (status == ui::TOUCH_STATUS_START)
       touch_event_handler_ = target;
@@ -161,10 +194,16 @@ bool Desktop::OnTouchEvent(const TouchEvent& event) {
 }
 
 void Desktop::OnHostResized(const gfx::Size& size) {
-  gfx::Rect bounds(0, 0, size.width(), size.height());
+  // The compositor should have the same size as the native desktop host.
   compositor_->WidgetSizeChanged(size);
-  SetBounds(bounds);
-  FOR_EACH_OBSERVER(DesktopObserver, observers_, OnDesktopResized(size));
+
+  // The layer, and all the observers should be notified of the
+  // transformed size of the desktop.
+  gfx::Rect bounds(size);
+  layer()->transform().TransformRect(&bounds);
+  SetBounds(gfx::Rect(bounds.size()));
+  FOR_EACH_OBSERVER(DesktopObserver, observers_,
+                    OnDesktopResized(bounds.size()));
 }
 
 void Desktop::SetActiveWindow(Window* window, Window* to_focus) {
@@ -302,6 +341,13 @@ void Desktop::ScheduleDraw() {
         FROM_HERE,
         base::Bind(&Desktop::Draw, schedule_paint_factory_.GetWeakPtr()));
   }
+}
+
+void Desktop::SetTransform(const ui::Transform& transform) {
+  Window::SetTransform(transform);
+
+  // The transform can effect the size of the desktop.
+  OnHostResized(host_->GetSize());
 }
 
 bool Desktop::CanFocus() const {
