@@ -671,8 +671,8 @@ class MinidumpWriter {
         // don't bother trying to write it.
         bool ip_is_mapped = false;
         MDMemoryDescriptor ip_memory_d;
-        for (unsigned i = 0; i < dumper_.mappings().size(); ++i) {
-          const MappingInfo& mapping = *dumper_.mappings()[i];
+        for (unsigned j = 0; j < dumper_.mappings().size(); ++j) {
+          const MappingInfo& mapping = *dumper_.mappings()[j];
           if (ip >= mapping.start_addr &&
               ip < mapping.start_addr + mapping.size) {
             ip_is_mapped = true;

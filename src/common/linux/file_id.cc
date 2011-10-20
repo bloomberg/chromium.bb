@@ -107,10 +107,10 @@ static void FindElfClassSection(const char *elf_base,
   const Shdr* section = NULL;
   for (int i = 0; i < elf_header->e_shnum; ++i) {
     if (sections[i].sh_type == section_type) {
-      const char* section_name = (char*)(elf_base +
-                                         string_section->sh_offset +
-                                         sections[i].sh_name);
-      if (!my_strncmp(section_name, section_name, name_len)) {
+      const char* current_section_name = (char*)(elf_base +
+                                                 string_section->sh_offset +
+                                                 sections[i].sh_name);
+      if (!my_strncmp(current_section_name, section_name, name_len)) {
         section = &sections[i];
         break;
       }
@@ -166,8 +166,7 @@ static bool FindElfSection(const void *elf_mapped_base,
 
 template<typename ElfClass>
 static bool ElfClassBuildIDNoteIdentifier(const void *section,
-                                          uint8_t identifier[kMDGUIDSize])
-{
+                                          uint8_t identifier[kMDGUIDSize]) {
   typedef typename ElfClass::Nhdr Nhdr;
 
   const Nhdr* note_header = reinterpret_cast<const Nhdr*>(section);
@@ -190,8 +189,7 @@ static bool ElfClassBuildIDNoteIdentifier(const void *section,
 // Attempt to locate a .note.gnu.build-id section in an ELF binary
 // and copy as many bytes of it as will fit into |identifier|.
 static bool FindElfBuildIDNote(const void *elf_mapped_base,
-                               uint8_t identifier[kMDGUIDSize])
-{
+                               uint8_t identifier[kMDGUIDSize]) {
   void* note_section;
   int note_size, elfclass;
   if (!FindElfSection(elf_mapped_base, ".note.gnu.build-id", SHT_NOTE,
@@ -213,7 +211,6 @@ static bool FindElfBuildIDNote(const void *elf_mapped_base,
 // a simple hash by XORing the first page worth of bytes into |identifier|.
 static bool HashElfTextSection(const void *elf_mapped_base,
                                uint8_t identifier[kMDGUIDSize]) {
-
   void* text_section;
   int text_size;
   if (!FindElfSection(elf_mapped_base, ".text", SHT_PROGBITS,
@@ -235,8 +232,7 @@ static bool HashElfTextSection(const void *elf_mapped_base,
 
 // static
 bool FileID::ElfFileIdentifierFromMappedFile(void* base,
-                                             uint8_t identifier[kMDGUIDSize])
-{
+                                             uint8_t identifier[kMDGUIDSize]) {
   // Look for a build id note first.
   if (FindElfBuildIDNote(base, identifier))
     return true;

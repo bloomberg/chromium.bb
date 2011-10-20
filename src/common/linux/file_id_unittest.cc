@@ -43,6 +43,18 @@ using google_breakpad::synth_elf::ELF;
 using google_breakpad::test_assembler::kLittleEndian;
 using google_breakpad::test_assembler::Section;
 
+namespace {
+
+// Simply calling Section::Append(size, byte) produces a uninteresting pattern
+// that tends to get hashed to 0000...0000. This populates the section with
+// data to produce better hashes.
+void PopulateSection(Section* section, int size, int prime_number) {
+  for (int i = 0; i < size; i++)
+    section->Append(1, (i % prime_number) % 256);
+}
+
+}  // namespace
+
 TEST(FileIDStripTest, StripSelf) {
   // Calculate the File ID of this binary using
   // FileID::ElfFileIdentifier, then make a copy of this binary,
@@ -180,4 +192,93 @@ TEST_F(FileIDTest, BuildID) {
   FileID::ConvertIdentifierToString(identifier, identifier_string,
                                     sizeof(identifier_string));
   EXPECT_STREQ(expected_identifier_string, identifier_string);
+}
+
+// Test to make sure two files with different text sections produce
+// different hashes when not using a build id.
+TEST_F(FileIDTest, UniqueHashes32) {
+  char identifier_string_1[] =
+    "00000000-0000-0000-0000-000000000000";
+  char identifier_string_2[] =
+    "00000000-0000-0000-0000-000000000000";
+  uint8_t identifier_1[sizeof(MDGUID)];
+  uint8_t identifier_2[sizeof(MDGUID)];
+
+  {
+    ELF elf1(EM_386, ELFCLASS32, kLittleEndian);
+    Section foo_1(kLittleEndian);
+    PopulateSection(&foo_1, 32, 5);
+    elf1.AddSection(".foo", foo_1, SHT_PROGBITS);
+    Section text_1(kLittleEndian);
+    PopulateSection(&text_1, 4096, 17);
+    elf1.AddSection(".text", text_1, SHT_PROGBITS);
+    elf1.Finish();
+    GetElfContents(elf1);
+  }
+
+  EXPECT_TRUE(FileID::ElfFileIdentifierFromMappedFile(elfdata, identifier_1));
+  FileID::ConvertIdentifierToString(identifier_1, identifier_string_1,
+                                    sizeof(identifier_string_1));
+
+  {
+    ELF elf2(EM_386, ELFCLASS32, kLittleEndian);
+    Section text_2(kLittleEndian);
+    Section foo_2(kLittleEndian);
+    PopulateSection(&foo_2, 32, 5);
+    elf2.AddSection(".foo", foo_2, SHT_PROGBITS);
+    PopulateSection(&text_2, 4096, 31);
+    elf2.AddSection(".text", text_2, SHT_PROGBITS);
+    elf2.Finish();
+    GetElfContents(elf2);
+  }
+
+  EXPECT_TRUE(FileID::ElfFileIdentifierFromMappedFile(elfdata, identifier_2));
+  FileID::ConvertIdentifierToString(identifier_2, identifier_string_2,
+                                    sizeof(identifier_string_2));
+
+  EXPECT_STRNE(identifier_string_1, identifier_string_2);
+}
+
+// Same as UniqueHashes32, for x86-64.
+TEST_F(FileIDTest, UniqueHashes64) {
+  char identifier_string_1[] =
+    "00000000-0000-0000-0000-000000000000";
+  char identifier_string_2[] =
+    "00000000-0000-0000-0000-000000000000";
+  uint8_t identifier_1[sizeof(MDGUID)];
+  uint8_t identifier_2[sizeof(MDGUID)];
+
+  {
+    ELF elf1(EM_X86_64, ELFCLASS64, kLittleEndian);
+    Section foo_1(kLittleEndian);
+    PopulateSection(&foo_1, 32, 5);
+    elf1.AddSection(".foo", foo_1, SHT_PROGBITS);
+    Section text_1(kLittleEndian);
+    PopulateSection(&text_1, 4096, 17);
+    elf1.AddSection(".text", text_1, SHT_PROGBITS);
+    elf1.Finish();
+    GetElfContents(elf1);
+  }
+
+  EXPECT_TRUE(FileID::ElfFileIdentifierFromMappedFile(elfdata, identifier_1));
+  FileID::ConvertIdentifierToString(identifier_1, identifier_string_1,
+                                    sizeof(identifier_string_1));
+
+  {
+    ELF elf2(EM_X86_64, ELFCLASS64, kLittleEndian);
+    Section text_2(kLittleEndian);
+    Section foo_2(kLittleEndian);
+    PopulateSection(&foo_2, 32, 5);
+    elf2.AddSection(".foo", foo_2, SHT_PROGBITS);
+    PopulateSection(&text_2, 4096, 31);
+    elf2.AddSection(".text", text_2, SHT_PROGBITS);
+    elf2.Finish();
+    GetElfContents(elf2);
+  }
+
+  EXPECT_TRUE(FileID::ElfFileIdentifierFromMappedFile(elfdata, identifier_2));
+  FileID::ConvertIdentifierToString(identifier_2, identifier_string_2,
+                                    sizeof(identifier_string_2));
+
+  EXPECT_STRNE(identifier_string_1, identifier_string_2);
 }
