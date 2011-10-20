@@ -434,11 +434,6 @@
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
-      # TODO(kkania): Re-enable notification tests once new build is in.
-      # Disabling for all because hook was changed in non-backwards
-      # compatible way.
-      # crbug.com/100790
-      '-notifications',
       # This test fails due to crbug.com/35485
       '-translate.TranslateTest.testBarNotVisibleOnSSLErrorPage',
       # This test fails due to crbug.com/50706
