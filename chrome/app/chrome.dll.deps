@@ -2,7 +2,6 @@
 
 dependents = [
   'KERNEL32.dll',
-  'USER32.dll',
   'ADVAPI32.dll',
   'WINMM.dll',
   'COMCTL32.dll',
@@ -21,6 +20,7 @@ dependents = [
 ]
 
 delay_loaded = [
+  'USER32.dll',
   'CRYPTUI.dll',
   'IMM32.dll',
   'CRYPT32.dll',
