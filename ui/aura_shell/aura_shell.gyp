@@ -47,6 +47,8 @@
         'launcher/launcher_view.h',
         'launcher/tabbed_launcher_button.cc',
         'launcher/tabbed_launcher_button.h',
+        'launcher/view_model.cc',
+        'launcher/view_model.h',
         'shell.cc',
         'shell.h',
         'shell_delegate.h',
@@ -79,6 +81,7 @@
       ],
       'sources': [
         'launcher/launcher_model_unittest.cc',
+        'launcher/view_model_unittest.cc',
         'run_all_unittests.cc',
         'test_suite.cc',
         'test_suite.h',
@@ -86,6 +89,13 @@
         '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_standard.rc',
+      ],
+      'conditions': [
+        ['OS!="mac"', {
+          'dependencies': [
+            '../../chrome/chrome.gyp:packed_resources',
+           ],
+        }],
       ],
     },
     {

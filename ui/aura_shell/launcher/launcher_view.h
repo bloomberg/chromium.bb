@@ -11,6 +11,7 @@
 #include "views/widget/widget_delegate.h"
 
 namespace views {
+class BoundsAnimator;
 class ImageButton;
 }
 
@@ -18,6 +19,7 @@ namespace aura_shell {
 
 struct LauncherItem;
 class LauncherModel;
+class ViewModel;
 
 namespace internal {
 
@@ -31,6 +33,22 @@ class LauncherView : public views::WidgetDelegateView,
   void Init();
 
  private:
+  struct IdealBounds {
+    gfx::Rect new_browser_bounds;
+    gfx::Rect show_apps_bounds;
+  };
+
+  // Sets the bounds of each view to its ideal bounds.
+  void LayoutToIdealBounds();
+
+  // Calculates the ideal bounds. The bounds of each button corresponding to an
+  // item in the model is set in |view_model_|, the bounds of the
+  // |new_browser_button_| and |show_apps_button_| is set in |bounds|.
+  void CalculateIdealBounds(IdealBounds* bounds);
+
+  // Animates the bounds of each view to its ideal bounds.
+  void AnimateToIdealBounds();
+
   // Creates the view used to represent |item|.
   views::View* CreateViewForItem(const LauncherItem& item);
 
@@ -38,13 +56,12 @@ class LauncherView : public views::WidgetDelegateView,
   void Resize();
 
   // Overridden from views::View:
-  virtual void Layout() OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 
   // Overridden from LauncherModelObserver:
-  virtual void LauncherItemAdded(int index) OVERRIDE;
-  virtual void LauncherItemRemoved(int index) OVERRIDE;
-  virtual void LauncherItemImagesChanged(int index) OVERRIDE;
+  virtual void LauncherItemAdded(int model_index) OVERRIDE;
+  virtual void LauncherItemRemoved(int model_index) OVERRIDE;
+  virtual void LauncherItemImagesChanged(int model_index) OVERRIDE;
 
   // Overriden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
@@ -52,6 +69,12 @@ class LauncherView : public views::WidgetDelegateView,
 
   // The model; owned by Launcher.
   LauncherModel* model_;
+
+  // Used to manage the set of active launcher buttons. There is a view per
+  // item in |model_|.
+  scoped_ptr<ViewModel> view_model_;
+
+  scoped_ptr<views::BoundsAnimator> bounds_animator_;
 
   views::ImageButton* new_browser_button_;
 

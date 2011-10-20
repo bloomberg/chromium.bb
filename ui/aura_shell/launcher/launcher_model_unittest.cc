@@ -52,7 +52,7 @@ class TestLauncherModelObserver : public LauncherModelObserver {
 
 }  // namespace
 
-TEST(TestLauncher, BasicAssertions) {
+TEST(LauncherModel, BasicAssertions) {
   TestLauncherModelObserver observer;
   LauncherModel model;
   // Add an item.
