@@ -29,42 +29,61 @@ function reloadWorker(workerProcessHostId, workerRouteId) {
 
 function populateWorkerList() {
   var data = requestData();
-
-  var worker_properties = ["workerRouteId", "url", "name", "pid"];
-
   var list = document.getElementById("workers-table");
-  for (var i = 0; i < data.length; i++) {
-    var workerData = data[i];
-    var row = document.createElement("tr");
-    for (var j = 0; j < worker_properties.length; j++)
-      addColumn(row, workerData[worker_properties[j]]);
+  for (var i = 0; i < data.length; i++)
+    addWorkerInfoToList(data[i], list);
+}
 
-    var column = document.createElement("td");
-    var link = document.createElement("a");
-    link.setAttribute("href", "#");
-    link.textContent = "inspect";
-    link.addEventListener(
-        "click",
-        openDevTools.bind(this,
-                          workerData.workerProcessHostId,
-                          workerData.workerRouteId),
-        true);
-    column.appendChild(link);
-    row.appendChild(column);
+function addWorkerInfoToList(workerData, list) {
+  var row = document.createElement("tr");
+  var workerProperties = ["workerRouteId", "url", "name", "pid"];
+  for (var j = 0; j < workerProperties.length; j++)
+    addColumn(row, workerData[workerProperties[j]]);
 
-    var link = document.createElement("a");
-    link.setAttribute("href", "#");
-    link.textContent = "terminate";
-    link.addEventListener(
-        "click",
-        reloadWorker.bind(this,
-                          workerData.workerProcessHostId,
-                          workerData.workerRouteId),
-        true);
-    column.appendChild(link);
-    row.appendChild(column);
+  var column = document.createElement("td");
+  var link = document.createElement("a");
+  link.setAttribute("href", "#");
+  link.textContent = "inspect";
+  link.addEventListener(
+      "click",
+      openDevTools.bind(this,
+                        workerData.workerProcessHostId,
+                        workerData.workerRouteId),
+      true);
+  column.appendChild(link);
+  row.appendChild(column);
 
-    list.appendChild(row);
+  var link = document.createElement("a");
+  link.setAttribute("href", "#");
+  link.textContent = "terminate";
+  link.addEventListener(
+      "click",
+      reloadWorker.bind(this,
+                        workerData.workerProcessHostId,
+                        workerData.workerRouteId),
+      true);
+  column.appendChild(link);
+  row.appendChild(column);
+
+  row.workerProcessHostId = workerData.workerProcessHostId;
+  row.workerRouteId = workerData.workerRouteId;
+
+  list.appendChild(row);
+}
+
+function workerCreated(workerData) {
+  var list = document.getElementById("workers-table");
+  addWorkerInfoToList(workerData, list);
+}
+
+function workerDestroyed(workerData) {
+  var list = document.getElementById("workers-table");
+  for (var row = list.firstChild; row; row = row.nextSibling) {
+    if (row.workerProcessHostId === workerData.workerProcessHostId &&
+        row.workerRouteId === workerData.workerRouteId) {
+      list.removeChild(row);
+      return;
+    }
   }
 }
 
