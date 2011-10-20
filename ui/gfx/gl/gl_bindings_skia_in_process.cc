@@ -25,6 +25,10 @@ GLvoid StubGLAttachShader(GLuint program, GLuint shader) {
   glAttachShader(program, shader);
 }
 
+GLvoid StubGLBeginQuery(GLenum target, GLuint id) {
+  glBeginQuery(target, id);
+}
+
 GLvoid StubGLBindAttribLocation(GLuint program, GLuint index,
                                 const char* name) {
   glBindAttribLocation(program, index, name);
@@ -136,6 +140,10 @@ GLvoid StubGLDeleteFramebuffers(GLsizei n, const GLuint* framebuffers) {
   glDeleteFramebuffersEXT(n, framebuffers);
 }
 
+GLvoid StubGLDeleteQueries(GLsizei n, const GLuint* ids) {
+  glDeleteQueries(n, ids);
+}
+
 GLvoid StubGLDeleteProgram(GLuint program) {
   glDeleteProgram(program);
 }
@@ -189,6 +197,18 @@ GLvoid StubGLEnableVertexAttribArray(GLuint index) {
   glEnableVertexAttribArray(index);
 }
 
+GLvoid StubGLEndQuery(GLenum target) {
+  glEndQuery(target);
+}
+
+GLvoid StubGLFinish() {
+  glFinish();
+}
+
+GLvoid StubGLFlush() {
+  glFlush();
+}
+
 GLvoid StubGLFramebufferRenderbuffer(GLenum target, GLenum attachment,
                                      GLenum renderbuffertarget,
                                      GLuint renderbuffer) {
@@ -212,6 +232,10 @@ GLvoid StubGLGenBuffers(GLsizei n, GLuint* buffers) {
 
 GLvoid StubGLGenFramebuffers(GLsizei n, GLuint* framebuffers) {
   glGenFramebuffersEXT(n, framebuffers);
+}
+
+GLvoid StubGLGenQueries(GLsizei n, GLuint* ids) {
+  glGenQueries(n, ids);
 }
 
 GLvoid StubGLGenRenderbuffers(GLsizei n, GLuint* renderbuffers) {
@@ -267,6 +291,26 @@ const GLubyte* StubGLGetString(GLenum name) {
   return glGetString(name);
 }
 
+GLvoid StubGLGetQueryiv(GLenum target, GLenum pname, GLint* params) {
+  glGetQueryiv(target, pname, params);
+}
+
+GLvoid StubGLGetQueryObjecti64v(GLuint id, GLenum pname, GLint64* params) {
+  glGetQueryObjecti64v(id, pname, params);
+}
+
+GLvoid StubGLGetQueryObjectiv(GLuint id, GLenum pname, GLint* params) {
+  glGetQueryObjectiv(id, pname, params);
+}
+
+GLvoid StubGLGetQueryObjectui64v(GLuint id, GLenum pname, GLuint64* params) {
+  glGetQueryObjectui64v(id, pname, params);
+}
+
+GLvoid StubGLGetQueryObjectuiv(GLuint id, GLenum pname, GLuint* params) {
+  glGetQueryObjectuiv(id, pname, params);
+}
+
 GLvoid StubGLGetTexLevelParameteriv(GLenum target, GLint level,
                                     GLenum pname, GLint* params) {
   glGetTexLevelParameteriv(target, level, pname, params);
@@ -290,6 +334,10 @@ void* StubGLMapBuffer(GLenum target, GLenum access) {
 
 GLvoid StubGLPixelStorei(GLenum pname, GLint param) {
   glPixelStorei(pname, param);
+}
+
+GLvoid StubGLQueryCounter(GLuint id, GLenum target) {
+  glQueryCounter(id, target);
 }
 
 GLvoid StubGLReadBuffer(GLenum src) {
@@ -501,6 +549,7 @@ GrGLInterface* CreateInProcessSkiaGLBinding() {
   interface->fBindingsExported = binding;
   interface->fActiveTexture = StubGLActiveTexture;
   interface->fAttachShader = StubGLAttachShader;
+  interface->fBeginQuery = StubGLBeginQuery;
   interface->fBindAttribLocation = StubGLBindAttribLocation;
   interface->fBindBuffer = StubGLBindBuffer;
   interface->fBindFragDataLocation = StubGLBindFragDataLocation;
@@ -520,6 +569,7 @@ GrGLInterface* CreateInProcessSkiaGLBinding() {
   interface->fCullFace = StubGLCullFace;
   interface->fDeleteBuffers = StubGLDeleteBuffers;
   interface->fDeleteProgram = StubGLDeleteProgram;
+  interface->fDeleteQueries = StubGLDeleteQueries;
   interface->fDeleteShader = StubGLDeleteShader;
   interface->fDeleteTextures = StubGLDeleteTextures;
   interface->fDepthMask = StubGLDepthMask;
@@ -530,13 +580,21 @@ GrGLInterface* CreateInProcessSkiaGLBinding() {
   interface->fDrawBuffers = StubGLDrawBuffers;
   interface->fDrawElements = StubGLDrawElements;
   interface->fEnable = StubGLEnable;
-  interface->fEnableVertexAttribArray = StubGLEnableVertexAttribArray;
+  interface->fEndQuery = StubGLEndQuery;
+  interface->fFinish = StubGLFinish;
+  interface->fFlush = StubGLFlush;
   interface->fFrontFace = StubGLFrontFace;
   interface->fGenBuffers = StubGLGenBuffers;
+  interface->fGenQueries = StubGLGenQueries;
   interface->fGenTextures = StubGLGenTextures;
   interface->fGetBufferParameteriv = StubGLGetBufferParameteriv;
   interface->fGetError = StubGLGetError;
   interface->fGetIntegerv = StubGLGetIntegerv;
+  interface->fGetQueryiv = StubGLGetQueryiv;
+  interface->fGetQueryObjecti64v = StubGLGetQueryObjecti64v;
+  interface->fGetQueryObjectiv = StubGLGetQueryObjectiv;
+  interface->fGetQueryObjectui64v = StubGLGetQueryObjectui64v;
+  interface->fGetQueryObjectuiv = StubGLGetQueryObjectuiv;
   interface->fGetProgramInfoLog = StubGLGetProgramInfoLog;
   interface->fGetProgramiv = StubGLGetProgramiv;
   interface->fGetShaderInfoLog = StubGLGetShaderInfoLog;
@@ -547,6 +605,7 @@ GrGLInterface* CreateInProcessSkiaGLBinding() {
   interface->fLineWidth = StubGLLineWidth;
   interface->fLinkProgram = StubGLLinkProgram;
   interface->fPixelStorei = StubGLPixelStorei;
+  interface->fQueryCounter = StubGLQueryCounter;
   interface->fReadBuffer = StubGLReadBuffer;
   interface->fReadPixels = StubGLReadPixels;
   interface->fScissor = StubGLScissor;

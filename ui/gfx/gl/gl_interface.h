@@ -28,6 +28,8 @@ class GL_EXPORT GLInterface {
   virtual void AttachShader(GLuint program,
                             GLuint shader) = 0;
 
+  virtual void BeginQuery(GLenum target, GLuint id) = 0;
+
   virtual void BindAttribLocation(GLuint program,
                                   GLuint index,
                                   const char* name) = 0;
@@ -152,6 +154,8 @@ class GL_EXPORT GLInterface {
   virtual void DeleteRenderbuffersEXT(GLsizei n,
                                       const GLuint* renderbuffers) = 0;
 
+  virtual void DeleteQueries(GLsizei n, const GLuint* ids) = 0;
+
   virtual void DeleteShader(GLuint shader) = 0;
 
   virtual void DeleteTextures(GLsizei n, const GLuint* textures) = 0;
@@ -188,6 +192,8 @@ class GL_EXPORT GLInterface {
 
   virtual void EnableVertexAttribArray(GLuint index) = 0;
 
+  virtual void EndQuery(GLenum target) = 0;
+
   virtual void Finish() = 0;
 
   virtual void Flush() = 0;
@@ -210,6 +216,8 @@ class GL_EXPORT GLInterface {
   virtual void GenerateMipmapEXT(GLenum target) = 0;
 
   virtual void GenFramebuffersEXT(GLsizei n, GLuint* framebuffers) = 0;
+
+  virtual void GenQueries(GLsizei n, GLuint* ids) = 0;
 
   virtual void GenRenderbuffersEXT(GLsizei n, GLuint* renderbuffers) = 0;
 
@@ -262,6 +270,18 @@ class GL_EXPORT GLInterface {
                                  GLsizei bufsize,
                                  GLsizei* length,
                                  char* infolog) = 0;
+
+  virtual void GetQueryiv(GLenum target, GLenum pname, GLint* params) = 0;
+
+  virtual void GetQueryObjecti64v(GLuint id, GLenum pname, GLint64* params) = 0;
+
+  virtual void GetQueryObjectiv(GLuint id, GLenum pname, GLint* params) = 0;
+
+  virtual void GetQueryObjectui64v(GLuint id,
+                                   GLenum pname,
+                                   GLuint64* params) = 0;
+
+  virtual void GetQueryObjectuiv(GLuint id, GLenum pname, GLuint* params) = 0;
 
   virtual void GetRenderbufferParameterivEXT(GLenum target,
                                              GLenum pname,
@@ -358,6 +378,8 @@ class GL_EXPORT GLInterface {
   virtual void PixelStorei(GLenum pname, GLint param) = 0;
 
   virtual void PolygonOffset(GLfloat factor, GLfloat units) = 0;
+
+  virtual void QueryCounter(GLuint id, GLenum target) = 0;
 
   virtual void ReadBuffer(GLenum src) = 0;
 
