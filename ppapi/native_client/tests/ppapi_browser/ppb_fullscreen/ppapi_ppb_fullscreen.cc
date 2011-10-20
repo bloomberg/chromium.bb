@@ -37,21 +37,6 @@ PP_Size kSize1920x1200 = PP_MakeSize(1920, 1200);   // WUXGA: 24" HP, 17" MB Pro
 PP_Size kSize2560x1600 = PP_MakeSize(2560, 1600);   // WQXGA: 30" HP Monitor
 PP_Size kSize2560x2048 = PP_MakeSize(2560, 2048);   // QSXGA
 
-bool IsSizeInRange(PP_Size size, PP_Size min_size, PP_Size max_size) {
-  return (min_size.width <= size.width && size.width <= max_size.width &&
-          min_size.height <= size.height && size.height <= max_size.height);
-}
-
-bool IsSizeEqual(PP_Size size, PP_Size expected) {
-  return IsSizeInRange(size, expected, expected);
-}
-
-bool IsRectEqual(PP_Rect position, PP_Rect expected) {
-  return (position.point.x == expected.point.x &&
-          position.point.y == expected.point.y &&
-          IsSizeEqual(position.size, expected.size));
-}
-
 PP_Resource g_graphics2d = kInvalidResource;
 
 bool CreateGraphics2D(PP_Resource* graphics2d) {

@@ -37,35 +37,10 @@ const PP_Size k60x60 = PP_MakeSize(60, 60);
 const PP_Size k30x30 = PP_MakeSize(30, 30);
 const PP_Size k2500x2500 = PP_MakeSize(2500, 2500);
 const PP_Size k100000x100000 = PP_MakeSize(100000, 100000);
-const PP_Point kOrigin = PP_MakePoint(0, 0);
 const PP_Rect kBadRect = { PP_MakePoint(-1, -1), PP_MakeSize(-1, -1) };
 const PP_Rect* kEntireImage = NULL;
 const PP_Bool kInitToZero = PP_TRUE;
 
-// TODO(polina, nfullagar): allow specification of non-premultipled colors
-// and provide alpha premultiplcation in FormatColor(). This will be required
-// when future PPAPI pixel formats are extended to include non-premultipled
-// or ignored alpha.
-
-struct ColorPremul { uint32_t A, R, G, B; };  // Use premultipled Alpha.
-const ColorPremul kSheerRed = { 0x88, 0x88, 0x00, 0x00 };
-const ColorPremul kSheerBlue = { 0x88, 0x00, 0x00, 0x88 };
-const ColorPremul kSheerGray = { 0x77, 0x55, 0x55, 0x55 };
-const ColorPremul kOpaqueGreen = { 0xFF, 0x00, 0xFF, 0x00 };
-const ColorPremul kOpaqueBlack = { 0xFF, 0x00, 0x00, 0x00 };
-const ColorPremul kOpaqueWhite = { 0xFF, 0xFF, 0xFF, 0xFF };
-const ColorPremul kOpaqueYellow = { 0xFF, 0xFF, 0xFF, 0x00 };
-const int kBytesPerPixel = sizeof(uint32_t);  // 4 bytes for BGRA or RGBA.
-
-// Assumes premultipled Alpha.
-uint32_t FormatColor(PP_ImageDataFormat format, ColorPremul color) {
-  if (format == PP_IMAGEDATAFORMAT_BGRA_PREMUL)
-    return (color.A << 24) | (color.R << 16) | (color.G << 8) | (color.B);
-  else if (format == PP_IMAGEDATAFORMAT_RGBA_PREMUL)
-    return (color.A << 24) | (color.B << 16) | (color.G << 8) | (color.R);
-  else
-    NACL_NOTREACHED();
-}
 
 // Make graphics2d contexts for each test the same size, so we can layer
 // the images without invalidating the previous ones.
@@ -75,24 +50,6 @@ PP_Resource CreateGraphics2D_90x90() {
   CHECK(graphics2d != kInvalidResource);
   PPBInstance()->BindGraphics(pp_instance(), graphics2d);
   return graphics2d;
-}
-
-PP_Resource CreateImageData(PP_Size size, ColorPremul pixel_color, void** bmp) {
-  PP_ImageDataFormat image_format = PPBImageData()->GetNativeImageDataFormat();
-  uint32_t formatted_pixel_color = FormatColor(image_format, pixel_color);
-  PP_Resource image_data = PPBImageData()->Create(
-      pp_instance(), image_format, &size, kInitToZero);
-  CHECK(image_data != kInvalidResource);
-  PP_ImageDataDesc image_desc;
-  CHECK(PPBImageData()->Describe(image_data, &image_desc) == PP_TRUE);
-  *bmp = NULL;
-  *bmp = PPBImageData()->Map(image_data);
-  CHECK(*bmp != NULL);
-  uint32_t* bmp_words = static_cast<uint32_t*>(*bmp);
-  int num_pixels = image_desc.stride / kBytesPerPixel * image_desc.size.height;
-  for (int i = 0; i < num_pixels; i++)
-    bmp_words[i] = formatted_pixel_color;
-  return image_data;
 }
 
 PP_Resource CreateImageData(PP_Size size, ColorPremul pixel_color) {
@@ -137,40 +94,6 @@ void FlushCallback(void* user_data, int32_t result) {
         graphics2d, image_data, g_expected_flush_calls);
     CHECK(PP_OK_COMPLETIONPENDING == PPBGraphics2D()->Flush(graphics2d, cc));
   }
-}
-
-bool IsEqualSize(PP_Size size1, PP_Size size2) {
-  return (size1.width == size2.width && size1.height == size2.height);
-}
-
-bool IsSquareOnScreen(PP_Resource graphics2d, PP_Point origin, PP_Size square,
-                      ColorPremul color) {
-  PP_Size size;
-  PP_Bool dummy;
-  CHECK(PP_TRUE == PPBGraphics2D()->Describe(graphics2d, &size, &dummy));
-
-  void* bitmap = NULL;
-  PP_Resource image = CreateImageData(size, kOpaqueBlack, &bitmap);
-
-  PP_ImageDataDesc image_desc;
-  CHECK(PP_TRUE == PPBImageData()->Describe(image, &image_desc));
-  int32_t stride = image_desc.stride / kBytesPerPixel;  // width + padding.
-  uint32_t expected_color = FormatColor(image_desc.format, color);
-  CHECK(origin.x >= 0 && origin.y >= 0 &&
-        (origin.x + square.width) <= stride &&
-        (origin.y + square.height) <= image_desc.size.height);
-
-  CHECK(PP_TRUE == PPBTestingDev()->ReadImageData(graphics2d, image, &kOrigin));
-  bool found_error = false;
-  for (int y = origin.y; y < origin.y + square.height && !found_error; y++) {
-    for (int x = origin.x; x < origin.x + square.width && !found_error; x++) {
-      uint32_t pixel_color = static_cast<uint32_t*>(bitmap)[stride * y + x];
-      found_error = (pixel_color != expected_color);
-    }
-  }
-
-  PPBCore()->ReleaseResource(image);
-  return !found_error;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -264,27 +187,27 @@ void TestDescribe() {
   // Valid resource -> output = configuration, true.
   graphics2d = ppb->Create(pp_instance(), &k30x30, kNotAlwaysOpaque);
   EXPECT(PP_TRUE == ppb->Describe(graphics2d, &size, &is_always_opaque));
-  EXPECT(is_always_opaque == PP_FALSE && IsEqualSize(size, k30x30));
+  EXPECT(is_always_opaque == PP_FALSE && IsSizeEqual(size, k30x30));
   PPBCore()->ReleaseResource(graphics2d);
 
   graphics2d = ppb->Create(pp_instance(), &k30x30, kAlwaysOpaque);
   EXPECT(PP_TRUE == ppb->Describe(graphics2d, &size, &is_always_opaque));
-  EXPECT(is_always_opaque == PP_TRUE && IsEqualSize(size, k30x30));
+  EXPECT(is_always_opaque == PP_TRUE && IsSizeEqual(size, k30x30));
   PPBCore()->ReleaseResource(graphics2d);
 
   // NULL outputs -> output = unchanged, false.
   EXPECT(PP_FALSE == ppb->Describe(graphics2d, NULL, &is_always_opaque));
   EXPECT(PP_FALSE == ppb->Describe(graphics2d, &size, NULL));
-  EXPECT(is_always_opaque == PP_TRUE && IsEqualSize(size, k30x30));
+  EXPECT(is_always_opaque == PP_TRUE && IsSizeEqual(size, k30x30));
 
   // Invalid / non-existent resource -> output = 0, false.
   EXPECT(PP_FALSE == ppb->Describe(kInvalidResource, &size, &is_always_opaque));
-  EXPECT(is_always_opaque == PP_FALSE && IsEqualSize(size, kZeroPixels));
+  EXPECT(is_always_opaque == PP_FALSE && IsSizeEqual(size, kZeroPixels));
 
   is_always_opaque = PP_TRUE;
   size = k90x90;
   EXPECT(PP_FALSE == ppb->Describe(kNotAResource, &size, &is_always_opaque));
-  EXPECT(is_always_opaque == PP_FALSE && IsEqualSize(size, kZeroPixels));
+  EXPECT(is_always_opaque == PP_FALSE && IsSizeEqual(size, kZeroPixels));
 
   TEST_PASSED;
 }
@@ -323,11 +246,11 @@ void TestPaintImageData() {
 
   // Paints backing store image to screen only after Flush().
   PP_Point top_right = PP_MakePoint(60, 0);
-  EXPECT(!IsSquareOnScreen(graphics2d, top_right, k30x30, kSheerBlue));
+  EXPECT(!IsImageRectOnScreen(graphics2d, top_right, k30x30, kSheerBlue));
   PP_CompletionCallback cc = MakeTestableFlushCallback(
       "PaintImageDataFlushCallback", graphics2d, image_data, 1);
   EXPECT(PP_OK_COMPLETIONPENDING == ppb->Flush(graphics2d, cc));
-  EXPECT(IsSquareOnScreen(graphics2d, top_right, k30x30, kSheerBlue));
+  EXPECT(IsImageRectOnScreen(graphics2d, top_right, k30x30, kSheerBlue));
 
   // This should have no effect on Flush().
   ppb->PaintImageData(graphics2d, image_data_noop, &top_left, &src_rect);
@@ -369,11 +292,11 @@ void TestPaintImageDataEntire() {
   ppb->PaintImageData(kInvalidResource, kNotAResource, NULL, kEntireImage);
 
   // Paints backing store image to the screen only after Flush().
-  EXPECT(!IsSquareOnScreen(graphics2d, bottom_left, k30x30, kOpaqueYellow));
+  EXPECT(!IsImageRectOnScreen(graphics2d, bottom_left, k30x30, kOpaqueYellow));
   PP_CompletionCallback cc = MakeTestableFlushCallback(
       "PaintImageDataEntireFlushCallback", graphics2d, image_data, 1);
   EXPECT(PP_OK_COMPLETIONPENDING == ppb->Flush(graphics2d, cc));
-  EXPECT(IsSquareOnScreen(graphics2d, bottom_left, k30x30, kOpaqueYellow));
+  EXPECT(IsImageRectOnScreen(graphics2d, bottom_left, k30x30, kOpaqueYellow));
 
   // This should have no effect on Flush().
   ppb->PaintImageData(graphics2d, image_data_noop, &bottom_left, kEntireImage);
@@ -403,11 +326,11 @@ void TestScroll() {
   ppb->Scroll(graphics2d, &clip_rect, NULL);  // Internal error in rpc method.
 
   // Paints backing store image to the sreen only after Flush().
-  EXPECT(!IsSquareOnScreen(graphics2d, middle, k30x30, kOpaqueWhite));
+  EXPECT(!IsImageRectOnScreen(graphics2d, middle, k30x30, kOpaqueWhite));
   PP_CompletionCallback cc = MakeTestableFlushCallback(
       "ScrollFlushCallback", graphics2d, image_data, 1);
   EXPECT(PP_OK_COMPLETIONPENDING == ppb->Flush(graphics2d, cc));
-  EXPECT(IsSquareOnScreen(graphics2d, middle, k30x30, kOpaqueWhite));
+  EXPECT(IsImageRectOnScreen(graphics2d, middle, k30x30, kOpaqueWhite));
 
   TEST_PASSED;
 }
@@ -431,12 +354,12 @@ void TestScrollEntire() {
   ppb->Scroll(graphics2d, kEntireImage, NULL);  // Internal error in rpc method.
 
   // Paints backing store image to the screen only after Flush().
-  EXPECT(!IsSquareOnScreen(graphics2d, bottom_right, k30x30, kOpaqueGreen));
+  EXPECT(!IsImageRectOnScreen(graphics2d, bottom_right, k30x30, kOpaqueGreen));
   ppb->Scroll(graphics2d, kEntireImage, &bottom_right);
   PP_CompletionCallback cc = MakeTestableFlushCallback(
       "ScrollEntireFlushCallback", graphics2d, image_data, 1);
   EXPECT(PP_OK_COMPLETIONPENDING == ppb->Flush(graphics2d, cc));
-  EXPECT(IsSquareOnScreen(graphics2d, bottom_right, k30x30, kOpaqueGreen));
+  EXPECT(IsImageRectOnScreen(graphics2d, bottom_right, k30x30, kOpaqueGreen));
 
   TEST_PASSED;
 }
@@ -462,11 +385,11 @@ void TestReplaceContents() {
   PPBGraphics2D()->ReplaceContents(graphics2d, image_data_size_mismatch);
 
   // Paints backing store image to the screen only after Flush().
-  EXPECT(!IsSquareOnScreen(graphics2d, kOrigin, k90x90, kSheerGray));
+  EXPECT(!IsImageRectOnScreen(graphics2d, kOrigin, k90x90, kSheerGray));
   PP_CompletionCallback cc = MakeTestableFlushCallback(
       "ReplaceContentsFlushCallback", graphics2d, image_data, 1);
   EXPECT(PP_OK_COMPLETIONPENDING == PPBGraphics2D()->Flush(graphics2d, cc));
-  EXPECT(IsSquareOnScreen(graphics2d, kOrigin, k90x90, kSheerGray));
+  EXPECT(IsImageRectOnScreen(graphics2d, kOrigin, k90x90, kSheerGray));
 
   // This should have no effect on Flush().
   PPBGraphics2D()->ReplaceContents(graphics2d, image_data_noop);

@@ -50,8 +50,13 @@
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"
+#include "ppapi/c/pp_point.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_var.h"
+#include "ppapi/c/ppb_image_data.h"
+
+struct PP_Rect;
+struct PP_Size;
 
 ////////////////////////////////////////////////////////////////////////////////
 // These must be implemented by the tester
@@ -147,10 +152,13 @@ template<typename T> nacl::string toString(T v) {
 // Cause a crash in a way that is guaranteed not to get optimized out by LLVM.
 #define CRASH *(volatile int *) 0 = 0;
 
-
 // Use this constant for stress testing
 // (i.e. creating and using a large number of resources).
 const int kManyResources = 1000;
+
+////////////////////////////////////////////////////////////////////////////////
+// PPAPI Helpers
+////////////////////////////////////////////////////////////////////////////////
 
 const PP_Instance kInvalidInstance = 0;
 const PP_Module kInvalidModule = 0;
@@ -161,6 +169,8 @@ const PP_Resource kInvalidResource = 0;
 // 00 - module, 01 - instance, 10 - resource, 11 - var.
 const PP_Instance kNotAnInstance = 0xFFFFF0;
 const PP_Resource kNotAResource = 0xAAAAA0;
+
+const PP_Point kOrigin = PP_MakePoint(0, 0);
 
 // Interface pointers and ids corresponding to this plugin;
 // set at initialization/creation.
@@ -178,5 +188,39 @@ void DidChangeViewDefault(PP_Instance instance,
                           const struct PP_Rect* clip);
 void DidChangeFocusDefault(PP_Instance instance, PP_Bool has_focus);
 PP_Bool HandleDocumentLoadDefault(PP_Instance instance, PP_Resource url_loader);
+
+
+bool IsSizeInRange(PP_Size size, PP_Size min_size, PP_Size max_size);
+bool IsSizeEqual(PP_Size size, PP_Size expected);
+bool IsRectEqual(PP_Rect position, PP_Rect expected);
+
+// TODO(polina, nfullagar): allow specification of non-premultipled colors
+// and provide alpha premultiplcation in FormatColor(). This will be required
+// when future PPAPI pixel formats are extended to include non-premultipled
+// or ignored alpha.
+
+struct ColorPremul { uint32_t A, R, G, B; };  // Use premultipled Alpha.
+const ColorPremul kSheerRed = { 0x88, 0x88, 0x00, 0x00 };
+const ColorPremul kSheerBlue = { 0x88, 0x00, 0x00, 0x88 };
+const ColorPremul kSheerGray = { 0x77, 0x55, 0x55, 0x55 };
+const ColorPremul kOpaqueGreen = { 0xFF, 0x00, 0xFF, 0x00 };
+const ColorPremul kOpaqueBlack = { 0xFF, 0x00, 0x00, 0x00 };
+const ColorPremul kOpaqueWhite = { 0xFF, 0xFF, 0xFF, 0xFF };
+const ColorPremul kOpaqueYellow = { 0xFF, 0xFF, 0xFF, 0x00 };
+const int kBytesPerPixel = sizeof(uint32_t);  // 4 bytes for BGRA or RGBA.
+
+// Assumes premultipled Alpha.
+uint32_t FormatColor(PP_ImageDataFormat format, ColorPremul color);
+
+// Creates image data resource and bitmap for a rectangular region of |size|
+// and |pixel_color|.
+PP_Resource CreateImageData(PP_Size size, ColorPremul pixel_color, void** bmp);
+
+
+// Checks if the image rect of |color| and |size| is on the screen at |origin|.
+bool IsImageRectOnScreen(PP_Resource graphics2d,
+                         PP_Point origin,
+                         PP_Size size,
+                         ColorPremul color);
 
 #endif  // NATIVE_CLIENT_TESTS_PPAPI_TEST_PPB_TEMPLATE_TEST_INTERFACE_H
