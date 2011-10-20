@@ -35,6 +35,7 @@ static SSLInfo GetBadSSLInfo() {
 
   info.cert = net::ImportCertFromFile(net::GetTestCertsDirectory(),
                                       "expired_cert.pem");
+  info.cert_status = net::CERT_STATUS_DATE_INVALID;
   info.is_issued_by_known_root = false;
 
   return info;
@@ -143,7 +144,8 @@ class MockReporter : public ChromeFraudulentCertificateReporter {
       bool sni_available) {
     DCHECK(!hostname.empty());
     DCHECK(ssl_info.is_valid());
-    ChromeFraudulentCertificateReporter::SendReport(hostname, ssl_info, sni_available);
+    ChromeFraudulentCertificateReporter::SendReport(hostname, ssl_info,
+                                                    sni_available);
   }
 };
 
@@ -158,7 +160,7 @@ static void DoReportIsNotSent() {
   scoped_refptr<ChromeURLRequestContext> context = new ChromeURLRequestContext;
   NotSendingTestReporter reporter(context.get());
   SSLInfo info = GetBadSSLInfo();
-  reporter.SendReport("127.0.0.1", info, true);
+  reporter.SendReport("www.example.com", info, true);
 }
 
 static void DoMockReportIsSent() {
