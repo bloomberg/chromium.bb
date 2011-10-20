@@ -322,8 +322,15 @@ void ChromeURLRequestContextGetter::OnDefaultCharsetChange(
 
 void ChromeURLRequestContextGetter::OnClearSiteDataOnExitChange(
     bool clear_site_data) {
-  GetURLRequestContext()->cookie_store()->GetCookieMonster()->
-      SetClearPersistentStoreOnExit(clear_site_data);
+  net::CookieMonster* cookie_monster =
+      GetURLRequestContext()->cookie_store()->GetCookieMonster();
+
+  // If there is no cookie monster, this function does nothing. If
+  // clear_site_data is true, this is most certainly not the expected behavior.
+  DCHECK(!clear_site_data || cookie_monster);
+
+  if (cookie_monster)
+    cookie_monster->SetClearPersistentStoreOnExit(clear_site_data);
 }
 
 void ChromeURLRequestContextGetter::GetCookieStoreAsyncHelper(
