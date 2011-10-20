@@ -119,6 +119,10 @@ class WebUIBrowserTest
 
   WebUIBrowserTest();
 
+  // Set up & tear down console error catching.
+  virtual void SetUpOnMainThread() OVERRIDE;
+  virtual void CleanUpOnMainThread() OVERRIDE;
+
   // Set up test path & override for |kDummyURL|.
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE;
 

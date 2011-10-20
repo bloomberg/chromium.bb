@@ -232,6 +232,18 @@ base::LazyInstance<MockWebUIProvider> mock_provider_(
 
 }  // namespace
 
+void WebUIBrowserTest::SetUpOnMainThread() {
+  InProcessBrowserTest::SetUpOnMainThread();
+
+  logging::SetLogMessageHandler(&LogHandler);
+}
+
+void WebUIBrowserTest::CleanUpOnMainThread() {
+  InProcessBrowserTest::CleanUpOnMainThread();
+
+  logging::SetLogMessageHandler(NULL);
+}
+
 void WebUIBrowserTest::SetUpInProcessBrowserTestFixture() {
   InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
   TestChromeWebUIFactory::AddFactoryOverride(GURL(kDummyURL).host(),
@@ -351,7 +363,6 @@ bool WebUIBrowserTest::RunJavascriptUsingHandler(
   if (!preload_host)
     SetupHandlers();
 
-  logging::SetLogMessageHandler(&LogHandler);
   bool result = true;
 
   if (is_test)
@@ -360,8 +371,6 @@ bool WebUIBrowserTest::RunJavascriptUsingHandler(
     test_handler_->PreloadJavaScript(content, preload_host);
   else
     test_handler_->RunJavaScript(content);
-
-  logging::SetLogMessageHandler(NULL);
 
   if (error_messages_.Get().size() > 0) {
     LOG(ERROR) << "Encountered javascript console error(s)";
@@ -422,6 +431,14 @@ IN_PROC_BROWSER_TEST_F(WebUIBrowserExpectFailTest, TestFailsFast) {
   AddLibrary(FilePath(FILE_PATH_LITERAL("sample_downloads.js")));
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIDownloadsURL));
   EXPECT_FATAL_FAILURE(RunJavascriptTestNoReturn("FAILS_BogusFunctionName"),
+                       "WebUITestHandler::Observe");
+}
+
+// Test that bogus javascript fails fast - no timeout waiting for result.
+IN_PROC_BROWSER_TEST_F(WebUIBrowserExpectFailTest, TestRuntimeErrorFailsFast) {
+  AddLibrary(FilePath(FILE_PATH_LITERAL("runtime_error.js")));
+  ui_test_utils::NavigateToURL(browser(), GURL(kDummyURL));
+  EXPECT_FATAL_FAILURE(RunJavascriptTestNoReturn("TestRuntimeErrorFailsFast"),
                        "WebUITestHandler::Observe");
 }
 
