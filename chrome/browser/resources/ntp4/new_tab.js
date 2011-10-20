@@ -805,14 +805,14 @@ cr.define('ntp4', function() {
     for (var i = 0; i < links.length; i++) {
       var link = linksBin.ownerDocument.createElement('div');
       link.textContent = links[i].text;
-      var action = links[i].action;
-      link.onclick = function(e) {
-        action();
+      link.action = links[i].action;
+      link.onclick = function() {
+        this.action();
         hideNotification();
       }
       link.setAttribute('role', 'button');
       link.setAttribute('tabindex', 0);
-      link.className = "linkButton";
+      link.className = 'linkButton';
       linksBin.appendChild(link);
     }
 
