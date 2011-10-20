@@ -3,8 +3,17 @@
 // found in the LICENSE file.
 
 #include "content/browser/download/mock_download_manager_delegate.h"
+#include "content/browser/download/download_item.h"
+#include "content/browser/download/download_manager.h"
+
+MockDownloadManagerDelegate::MockDownloadManagerDelegate() {
+}
 
 MockDownloadManagerDelegate::~MockDownloadManagerDelegate() {
+}
+
+void MockDownloadManagerDelegate::SetDownloadManager(DownloadManager* dm) {
+  download_manager_ = dm;
 }
 
 void MockDownloadManagerDelegate::Shutdown() {
@@ -53,6 +62,7 @@ void MockDownloadManagerDelegate::OnResponseCompleted(DownloadItem* item,
 }
 
 void MockDownloadManagerDelegate::AddItemToPersistentStore(DownloadItem* item) {
+  download_manager_->OnItemAddedToPersistentStore(item->id(), item->id());
 }
 
 void MockDownloadManagerDelegate::UpdateItemInPersistentStore(

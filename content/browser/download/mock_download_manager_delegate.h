@@ -9,9 +9,13 @@
 #include "base/compiler_specific.h"
 #include "content/public/browser/download_manager_delegate.h"
 
+class DownloadManager;
+
 class MockDownloadManagerDelegate : public content::DownloadManagerDelegate {
  public:
+  MockDownloadManagerDelegate();
   virtual ~MockDownloadManagerDelegate();
+  void SetDownloadManager(DownloadManager* dm);
   virtual void Shutdown() OVERRIDE;
   virtual bool ShouldStartDownload(int32 download_id) OVERRIDE;
   virtual void ChooseDownloadPath(TabContents* tab_contents,
@@ -42,6 +46,9 @@ class MockDownloadManagerDelegate : public content::DownloadManagerDelegate {
                               const FilePath& suggested_path,
                               bool can_save_as_complete) OVERRIDE;
   virtual void DownloadProgressUpdated() OVERRIDE;
+
+ private:
+  scoped_refptr<DownloadManager> download_manager_;
 };
 
 #endif  // CONTENT_BROWSER_DOWNLOAD_MOCK_DOWNLOAD_MANAGER_DELEGATE_H_

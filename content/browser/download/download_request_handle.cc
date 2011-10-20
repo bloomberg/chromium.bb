@@ -61,15 +61,16 @@ TabContents* DownloadRequestHandle::GetTabContents() const {
 }
 
 DownloadManager* DownloadRequestHandle::GetDownloadManager() const {
-  TabContents* contents = GetTabContents();
-  if (!contents)
+  RenderViewHost* rvh = RenderViewHost::FromID(child_id_, render_view_id_);
+  if (rvh == NULL)
     return NULL;
-
-  content::BrowserContext* browser_context = contents->browser_context();
-  if (!browser_context)
+  RenderProcessHost* rph = rvh->process();
+  if (rph == NULL)
     return NULL;
-
-  return browser_context->GetDownloadManager();
+  content::BrowserContext* context = rph->browser_context();
+  if (context == NULL)
+    return NULL;
+  return context->GetDownloadManager();
 }
 
 void DownloadRequestHandle::PauseRequest() const {

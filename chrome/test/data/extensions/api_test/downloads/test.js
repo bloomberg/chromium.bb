@@ -9,6 +9,7 @@ chrome.test.getConfig(function(testConfig) {
   function getURL(path) {
     return "http://localhost:" + testConfig.testServer.port + "/" + path;
   }
+
   var nextId = 0;
   function getNextId() {
     return nextId++;
@@ -29,18 +30,33 @@ chrome.test.getConfig(function(testConfig) {
     }
   }
 
+  // The "/slow" handler waits a specified amount of time before returning a
+  // safe file. Specify zero seconds to return quickly.
+  var SAFE_FAST_URL = getURL("slow?0");
+
   chrome.test.runTests([
+    // TODO(benjhayden): Test onErased using remove().
     function downloadFilename() {
       chrome.experimental.downloads.download(
-        {"url": getURL("pass"), "filename": "pass"},
+        {"url": SAFE_FAST_URL, "filename": "foo"},
         chrome.test.callbackPass(function(id) {
           chrome.test.assertEq(getNextId(), id);
       }));
       // TODO(benjhayden): Test the filename using onChanged.
     },
+    function downloadOnCreated() {
+      chrome.test.listenOnce(chrome.experimental.downloads.onCreated,
+        chrome.test.callbackPass(function(item) {
+      }));
+      chrome.experimental.downloads.download(
+        {"url": SAFE_FAST_URL},
+        function(id) {
+          chrome.test.assertEq(getNextId(), id);
+      });
+    },
     function downloadSubDirectoryFilename() {
       chrome.experimental.downloads.download(
-        {"url": getURL("pass"), "filename": "foo/pass"},
+        {"url": SAFE_FAST_URL, "filename": "foo/slow"},
         chrome.test.callbackPass(function(id) {
           chrome.test.assertEq(getNextId(), id);
       }));
@@ -48,7 +64,7 @@ chrome.test.getConfig(function(testConfig) {
     },
     function downloadInvalidFilename() {
       chrome.experimental.downloads.download(
-        {"url": getURL("pass"), "filename": "../../../../../etc/passwd"},
+        {"url": SAFE_FAST_URL, "filename": "../../../../../etc/passwd"},
         chrome.test.callbackFail("I'm afraid I can't do that."));
       // TODO(benjhayden): Give a better error message.
     },
@@ -59,13 +75,13 @@ chrome.test.getConfig(function(testConfig) {
     },
     function downloadInvalidSaveAs() {
       assertThrows(chrome.experimental.downloads.download,
-                   {"url": getURL("pass"), "saveAs": "GOAT"},
+                   {"url": SAFE_FAST_URL, "saveAs": "GOAT"},
                    ("Invalid value for argument 1. Property 'saveAs': " +
                     "Expected 'boolean' but got 'string'."));
     },
     function downloadInvalidHeadersOption() {
       assertThrows(chrome.experimental.downloads.download,
-                   {"url": getURL("pass"), "headers": "GOAT"},
+                   {"url": SAFE_FAST_URL, "headers": "GOAT"},
                    ("Invalid value for argument 1. Property 'headers': " +
                     "Expected 'array' but got 'string'."));
     },
@@ -76,37 +92,37 @@ chrome.test.getConfig(function(testConfig) {
     },
     function downloadInvalidMethod() {
       assertThrows(chrome.experimental.downloads.download,
-                   {"url": getURL("pass"), "method": "GOAT"},
+                   {"url": SAFE_FAST_URL, "method": "GOAT"},
                    ("Invalid value for argument 1. Property 'method': " +
                     "Value must be one of: [GET, POST]."));
     },
     function downloadSimple() {
       chrome.experimental.downloads.download(
-        {"url": getURL("pass")},
+        {"url": SAFE_FAST_URL},
         chrome.test.callbackPass(function(id) {
           chrome.test.assertEq(getNextId(), id);
       }));
     },
     function downloadHeader() {
       chrome.experimental.downloads.download(
-        {"url": getURL("pass"),
+        {"url": SAFE_FAST_URL,
          "headers": [{"name": "Foo", "value": "bar"}]},
         chrome.test.callbackPass(function(id) {
           chrome.test.assertEq(getNextId(), id);
         }));
     },
     function downloadInterrupted() {
+      // TODO(benjhayden): Find a suitable URL and test that this id is
+      // eventually interrupted using onChanged.
       chrome.experimental.downloads.download(
-        {"url": getURL("compressedfiles/Picture_1.doc?L")},
+        {"url": SAFE_FAST_URL},
         chrome.test.callbackPass(function(id) {
           chrome.test.assertEq(getNextId(), id);
-          // TODO(benjhayden): Test that this id is eventually interrupted using
-          // onChanged.
       }));
     },
     function downloadInvalidHeader() {
       chrome.experimental.downloads.download(
-        {"url": getURL("pass"),
+        {"url": SAFE_FAST_URL,
          "headers": [{"name": "Cookie", "value": "fake"}]},
         chrome.test.callbackFail("I'm afraid I can't do that."));
       // TODO(benjhayden): Give a better error message.
