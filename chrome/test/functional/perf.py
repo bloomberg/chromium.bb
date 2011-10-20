@@ -112,18 +112,32 @@ class BasePerfTest(pyauto.PyUITest):
   def _OutputPerfGraphValue(self, description, value):
     """Outputs a performance value to have it graphed on the performance bots.
 
-    Only used for ChromeOS.
+    Only used for ChromeOS.  The performance bots have a 30-character limit on
+    the length of the description for a performance value.  Any characters
+    beyond that are truncated before results are stored in the autotest
+    database.
 
     Args:
-      description: A string description of the performance value.
+      description: A string description of the performance value.  This will
+                   be truncated to 30 characters when stored in the autotest
+                   database.
       value: A numeric value representing a single performance measurement.
     """
     if self.IsChromeOS():
+      if len(description) > 30:
+        logging.warning('The description "%s" will be truncated to "%s" '
+                        '(length 30) when added to the autotest database.',
+                        description, description[:30])
       print '\n%s(\'%s\', %.2f)%s' % (self._PERF_OUTPUT_MARKER_PRE, description,
                                       value, self._PERF_OUTPUT_MARKER_POST)
 
   def _PrintSummaryResults(self, description, values, units):
     """Logs summary measurement information.
+
+    This function computes and outputs the average and standard deviation of
+    the specified list of value measurements.  It also invokes
+    _OutputPerfGraphValue() with the computed *average* value, to ensure the
+    average value can be plotted in a performance graph.
 
     Args:
       description: A string description for the specified results.
@@ -595,7 +609,7 @@ class FlashTest(BasePerfTest):
             timeout=300, expect_retval=True, retry_sleep=0.25),
         msg='Timed out when waiting for test result.')
     result = float(self.ExecuteJavascript(js, tab_index=1))
-    logging.info('Result for %s: %.2f FPS (average)' % (description, result))
+    logging.info('Result for %s: %.2f FPS (average)', description, result)
     self._OutputPerfGraphValue('%s_%s' % ('FPS', description), result)
 
   def testFlashGaming(self):
@@ -643,8 +657,8 @@ class FlashTest(BasePerfTest):
       if benchmark.endswith('_mflops'):
         benchmark = benchmark[:benchmark.find('_mflops')]
       logging.info('Results for ScimarkGui_' + benchmark + ':')
-      logging.info('  %.2f MFLOPS' % mflops)
-      logging.info('  %.2f MB' % mem)
+      logging.info('  %.2f MFLOPS', mflops)
+      logging.info('  %.2f MB', mem)
       self._OutputPerfGraphValue(
           '%s_ScimarkGui-%s-MFLOPS' % ('MFLOPS', benchmark), mflops)
       self._OutputPerfGraphValue(
@@ -678,7 +692,7 @@ class PerfTestServerRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
       megabytes = int(args['mb'][0])
       filename = args['filename'][0]
     except (ValueError, KeyError, IndexError), e:
-      logging.exception('Server error creating file: %s' % e)
+      logging.exception('Server error creating file: %s', e)
     assert megabytes and filename
     with open(os.path.join(self.server.docroot, filename), 'wb') as f:
       f.write('X' * 1024 * 1024 * megabytes)
@@ -697,12 +711,12 @@ class PerfTestServerRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     try:
       filename = args['filename'][0]
     except (KeyError, IndexError), e:
-      logging.exception('Server error deleting file: %s' % e)
+      logging.exception('Server error deleting file: %s', e)
     assert filename
     try:
       os.remove(os.path.join(self.server.docroot, filename))
     except OSError, e:
-      logging.warning('OS error removing file: %s' % e)
+      logging.warning('OS error removing file: %s', e)
     self.send_response(200)
     self.end_headers()
 
@@ -721,7 +735,7 @@ class PerfTestServerRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     try:
       megabytes = int(args['mb'][0])
     except (ValueError, KeyError, IndexError), e:
-      logging.exception('Server error starting upload: %s' % e)
+      logging.exception('Server error starting upload: %s', e)
     assert megabytes
     script = """
         <html>
