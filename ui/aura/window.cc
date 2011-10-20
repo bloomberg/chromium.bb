@@ -410,7 +410,7 @@ void Window::SetBoundsInternal(const gfx::Rect& new_bounds) {
     if (was_move)
       layer()->ScheduleDraw();
     else
-      layer()->SchedulePaint(gfx::Rect());
+      SchedulePaint();
   }
 }
 
