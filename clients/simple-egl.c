@@ -35,7 +35,6 @@
 
 struct display {
 	struct wl_display *display;
-	struct wl_visual *premultiplied_argb_visual;
 	struct wl_compositor *compositor;
 	struct wl_shell *shell;
 	struct {
@@ -192,7 +191,6 @@ static void
 create_surface(struct window *window)
 {
 	struct display *display = window->display;
-	struct wl_visual *visual;
 	EGLBoolean ret;
 	static const EGLint surface_attribs[] = {
 		EGL_ALPHA_FORMAT, EGL_ALPHA_FORMAT_PRE,
@@ -200,7 +198,6 @@ create_surface(struct window *window)
 	};
 	
 	window->surface = wl_compositor_create_surface(display->compositor);
-	visual = display->premultiplied_argb_visual;
 	window->native =
 		wl_egl_window_create(window->surface,
 				     window->geometry.width,
