@@ -96,6 +96,12 @@ void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
     case ViewHostMsg_AccEvent::ALERT:
       event_id = EVENT_SYSTEM_ALERT;
       break;
+    case ViewHostMsg_AccEvent::MENU_LIST_VALUE_CHANGED:
+      event_id = EVENT_OBJECT_VALUECHANGE;
+      break;
+    case ViewHostMsg_AccEvent::SELECTED_CHILDREN_CHANGED:
+      event_id = EVENT_OBJECT_SELECTIONWITHIN;
+      break;
     default:
       // Not all WebKit accessibility events result in a Windows
       // accessibility notification.
