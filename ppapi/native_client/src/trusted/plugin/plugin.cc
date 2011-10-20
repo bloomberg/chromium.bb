@@ -1869,16 +1869,17 @@ void Plugin::UpdateNexeDownloadProgress(
     int64_t /*bytes_sent*/,
     int64_t /*total_bytes_to_be_sent*/,
     int64_t bytes_received,
-    int64_t total_bytes_to_be_received)
-{
+    int64_t total_bytes_to_be_received) {
   Instance* instance = pp::Module::Get()->InstanceForPPInstance(pp_instance);
   if (instance != NULL) {
     Plugin* plugin = static_cast<Plugin*>(instance);
     int64_t progress = bytes_received - plugin->last_event_bytes_received_;
     const int64_t kProgressThreshold = 1 << 17;  // 128K bytes per event
     if (progress > kProgressThreshold) {
+      LengthComputable length_computable = (total_bytes_to_be_received >= 0) ?
+          LENGTH_IS_COMPUTABLE : LENGTH_IS_NOT_COMPUTABLE;
       plugin->EnqueueProgressEvent("progress",
-                                   LENGTH_IS_COMPUTABLE,
+                                   length_computable,
                                    bytes_received,
                                    total_bytes_to_be_received);
       plugin->last_event_bytes_received_ = bytes_received;
