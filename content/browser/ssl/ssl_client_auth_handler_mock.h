@@ -16,6 +16,10 @@ class SSLClientAuthHandlerMock : public SSLClientAuthHandler {
       net::SSLCertRequestInfo* cert_request_info)
       : SSLClientAuthHandler(request, cert_request_info) {
   }
+  ~SSLClientAuthHandlerMock() {
+    // Hack to avoid destructor calling request_->ContinueWithCertificate.
+    OnRequestCancelled();
+  }
   MOCK_METHOD1(CertificateSelectedNoNotify, void(net::X509Certificate* cert));
 };
 

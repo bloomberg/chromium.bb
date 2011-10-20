@@ -11,19 +11,23 @@ namespace net {
 class X509Certificate;
 class SSLCertRequestInfo;
 }
+class SSLClientAuthHandler;
 
 class SSLClientAuthNotificationDetails {
  public:
   SSLClientAuthNotificationDetails(
       const net::SSLCertRequestInfo* cert_request_info,
+      const SSLClientAuthHandler* handler,
       net::X509Certificate* selected_cert);
 
   bool IsSameHost(const net::SSLCertRequestInfo* cert_request_info) const;
+  bool IsSameHandler(const SSLClientAuthHandler* handler) const;
   net::X509Certificate* selected_cert() const { return selected_cert_; }
 
  private:
   // Notifications are synchronous, so we don't need to hold our own references.
   const net::SSLCertRequestInfo* cert_request_info_;
+  const SSLClientAuthHandler* handler_;
   net::X509Certificate* selected_cert_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLClientAuthNotificationDetails);

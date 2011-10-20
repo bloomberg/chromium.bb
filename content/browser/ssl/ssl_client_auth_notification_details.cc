@@ -8,8 +8,10 @@
 
 SSLClientAuthNotificationDetails::SSLClientAuthNotificationDetails(
     const net::SSLCertRequestInfo* cert_request_info,
+    const SSLClientAuthHandler* handler,
     net::X509Certificate* selected_cert)
     : cert_request_info_(cert_request_info),
+      handler_(handler),
       selected_cert_(selected_cert) {
 }
 
@@ -18,4 +20,9 @@ bool SSLClientAuthNotificationDetails::IsSameHost(
   // TODO(mattm): should we also compare the DistinguishedNames, or is just
   // matching host&port sufficient?
   return cert_request_info_->host_and_port == cert_request_info->host_and_port;
+}
+
+bool SSLClientAuthNotificationDetails::IsSameHandler(
+    const SSLClientAuthHandler* handler) const {
+  return handler_ == handler;
 }

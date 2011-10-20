@@ -15,6 +15,7 @@
 #include "net/base/ssl_cert_request_info.h"
 
 namespace net {
+class HttpNetworkSession;
 class URLRequest;
 class X509Certificate;
 }  // namespace net
@@ -51,6 +52,11 @@ class CONTENT_EXPORT SSLClientAuthHandler
   // Returns the SSLCertRequestInfo for this handler.
   net::SSLCertRequestInfo* cert_request_info() { return cert_request_info_; }
 
+  // Returns the session the URL request is associated with.
+  const net::HttpNetworkSession* http_network_session() const {
+    return http_network_session_;
+  }
+
  protected:
   virtual ~SSLClientAuthHandler();
 
@@ -70,6 +76,9 @@ class CONTENT_EXPORT SSLClientAuthHandler
 
   // The net::URLRequest that triggered this client auth.
   net::URLRequest* request_;
+
+  // The HttpNetworkSession |request_| is associated with.
+  const net::HttpNetworkSession* http_network_session_;
 
   // The certs to choose from.
   scoped_refptr<net::SSLCertRequestInfo> cert_request_info_;
