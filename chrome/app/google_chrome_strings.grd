@@ -410,7 +410,7 @@ Chrome supports. -->
         Invalid arguments. Google Chrome Frame cannot be installed in ready mode without also installing Google Chrome.
       </message>
       <message name="IDS_INSTALL_INCONSISTENT_UPDATE_POLICY" desc="Error during install if the update policies settings in Group Policy are inconsistent.">
-        Google Chrome or Google Chrome Frame cannot be updated on account of inconsistent Google Update Group Policy settings. Use the Group Policy Editor to set the update policy override for the Google Chrome Binaries application and try again.
+        Google Chrome or Google Chrome Frame cannot be updated due to inconsistent Google Update Group Policy settings. Use the Group Policy Editor to set the update policy override for the Google Chrome Binaries application and try again; see http://goo.gl/uJ9gV for details.
       </message>
       <!-- Options Dialog -->
       <message name="IDS_OPTIONS_IMPROVE_BROWSING_EXPERIENCE" desc="The text in the options panel that describes how we use web services to improve browsing experience.">
