@@ -241,9 +241,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'third_party/jemalloc': [  # http://crbug.com/98302
         'UNKNOWN',
     ],
-    'third_party/jsoncpp/source': [  # http://crbug.com/100986
-        'UNKNOWN',
-    ],
     'third_party/lcov': [  # http://crbug.com/98304
         'UNKNOWN',
     ],
