@@ -17,6 +17,10 @@ ShellMainDelegate::ShellMainDelegate() {
 ShellMainDelegate::~ShellMainDelegate() {
 }
 
+bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
+  return false;
+}
+
 void ShellMainDelegate::PreSandboxStartup() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   std::string process_type =
@@ -26,14 +30,46 @@ void ShellMainDelegate::PreSandboxStartup() {
   InitializeShellContentClient(process_type);
 }
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+void ShellMainDelegate::SandboxInitialized(const std::string& process_type) {
+}
+
+int ShellMainDelegate::RunProcess(
+    const std::string& process_type,
+    const MainFunctionParams& main_function_params) {
+  NOTREACHED();
+  return -1;
+}
+
+void ShellMainDelegate::ProcessExiting(const std::string& process_type) {
+}
+
+#if defined(OS_MACOSX)
+bool ShellMainDelegate::ProcessRegistersWithSystemProcess(
+    const std::string& process_type) {
+  return false;
+}
+
+bool ShellMainDelegate::ShouldSendMachPort(const std::string& process_type) {
+  return false;
+}
+
+bool ShellMainDelegate::DelaySandboxInitialization(
+    const std::string& process_type) {
+  return false;
+}
+
+#elif defined(OS_POSIX)
+ZygoteForkDelegate* ShellMainDelegate::ZygoteStarting() {
+  return NULL;
+}
+
 void ShellMainDelegate::ZygoteForked() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   std::string process_type =
       command_line.GetSwitchValueASCII(switches::kProcessType);
   InitializeShellContentClient(process_type);
 }
-#endif
+#endif  // OS_MACOSX
 
 void ShellMainDelegate::InitializeShellContentClient(
     const std::string& process_type) {

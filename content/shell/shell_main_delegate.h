@@ -8,8 +8,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/app/content_main_delegate.h"
 #include "content/shell/shell_content_client.h"
+#include "content/public/app/content_main_delegate.h"
 
 namespace content {
 class ShellContentBrowserClient;
@@ -23,11 +23,23 @@ class ShellMainDelegate : public content::ContentMainDelegate {
   ShellMainDelegate();
   virtual ~ShellMainDelegate();
 
+  virtual bool BasicStartupComplete(int* exit_code) OVERRIDE;
   virtual void PreSandboxStartup() OVERRIDE;
-
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+  virtual void SandboxInitialized(const std::string& process_type) OVERRIDE;
+  virtual int RunProcess(
+      const std::string& process_type,
+      const MainFunctionParams& main_function_params) OVERRIDE;
+  virtual void ProcessExiting(const std::string& process_type) OVERRIDE;
+#if defined(OS_MACOSX)
+  virtual bool ProcessRegistersWithSystemProcess(
+      const std::string& process_type) OVERRIDE;
+  virtual bool ShouldSendMachPort(const std::string& process_type) OVERRIDE;
+  virtual bool DelaySandboxInitialization(
+      const std::string& process_type) OVERRIDE;
+#elif defined(OS_POSIX)
+  virtual ZygoteForkDelegate* ZygoteStarting() OVERRIDE;
   virtual void ZygoteForked() OVERRIDE;
-#endif
+#endif  // OS_MACOSX
 
  private:
   void InitializeShellContentClient(const std::string& process_type);

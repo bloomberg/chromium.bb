@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/stats_counters.h"
 #include "chrome/common/chrome_content_client.h"
-#include "content/app/content_main_delegate.h"
+#include "content/public/app/content_main_delegate.h"
 
 // Chrome implementation of ContentMainDelegate.
 class ChromeMainDelegate : public content::ContentMainDelegate {
