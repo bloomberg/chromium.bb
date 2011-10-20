@@ -12,9 +12,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebContentLayer.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebContentLayerClient.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebLayerClient.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/transform.h"
 #include "ui/gfx/compositor/compositor.h"
@@ -38,9 +35,7 @@ class Texture;
 // NOTE: unlike Views, each Layer does *not* own its children views. If you
 // delete a Layer and it has children, the parent of each child layer is set to
 // NULL, but the children are not deleted.
-class COMPOSITOR_EXPORT Layer : public LayerAnimatorDelegate,
-                                public WebKit::WebLayerClient,
-                                public WebKit::WebContentLayerClient {
+class COMPOSITOR_EXPORT Layer : public LayerAnimatorDelegate {
  public:
   enum LayerType {
     LAYER_HAS_NO_TEXTURE = 0,
@@ -122,7 +117,7 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimatorDelegate,
 
   // Returns true if this layer can have a texture (has_texture_ is true)
   // and is not completely obscured by a child.
-  bool ShouldDraw() const;
+  bool ShouldDraw();
 
   // Converts a point from the coordinates of |source| to the coordinates of
   // |target|. Necessarily, |source| and |target| must inhabit the same Layer
@@ -169,16 +164,6 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimatorDelegate,
   // Sometimes the Layer is being updated by something other than SetCanvas
   // (e.g. the GPU process on TOUCH_UI).
   bool layer_updated_externally() const { return layer_updated_externally_; }
-
-  // WebLayerClient
-  virtual void notifyNeedsComposite();
-
-  // WebContentLayerClient
-  virtual void paintContents(WebKit::WebCanvas*, const WebKit::WebRect& clip);
-
-#if defined(USE_WEBKIT_COMPOSITOR)
-  WebKit::WebContentLayer web_layer() { return web_layer_; }
-#endif
 
  private:
   // TODO(vollick): Eventually, if a non-leaf node has an opacity of less than
@@ -254,12 +239,6 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimatorDelegate,
   virtual void SetTransformFromAnimator(const Transform& transform) OVERRIDE;
   virtual void SetOpacityFromAnimator(float opacity) OVERRIDE;
 
-#if defined(USE_WEBKIT_COMPOSITOR)
-  void CreateWebLayer();
-  void RecomputeTransform();
-  void RecomputeDrawsContent();
-#endif
-
   const LayerType type_;
 
   Compositor* compositor_;
@@ -291,10 +270,6 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimatorDelegate,
   LayerDelegate* delegate_;
 
   scoped_ptr<LayerAnimator> animator_;
-
-#if defined(USE_WEBKIT_COMPOSITOR)
-  WebKit::WebContentLayer web_layer_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(Layer);
 };

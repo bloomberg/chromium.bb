@@ -7,27 +7,16 @@
 #pragma once
 
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/test/test_suite.h"
-
-namespace ui {
-class WebKitPlatformSupportImpl;
-}  // namespace ui
-
-class MessageLoop;
 
 class CompositorTestSuite : public base::TestSuite {
  public:
   CompositorTestSuite(int argc, char** argv);
-  ~CompositorTestSuite();
 
  protected:
   // base::TestSuite:
   virtual void Initialize() OVERRIDE;
   virtual void Shutdown() OVERRIDE;
-
- private:
-  scoped_ptr<MessageLoop> message_loop_;
 };
 
 #endif  // UI_GFX_COMPOSITOR_TEST_SUITE_H_

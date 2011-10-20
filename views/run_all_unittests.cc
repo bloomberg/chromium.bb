@@ -5,7 +5,6 @@
 #include "base/test/test_suite.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
-#include "ui/gfx/compositor/compositor_test_support.h"
 #include "views/view.h"
 
 class ViewTestSuite : public base::TestSuite {
@@ -23,11 +22,6 @@ class ViewTestSuite : public base::TestSuite {
     // Disable GPU browser compositor during unit tests.
     views::View::set_use_acceleration_when_possible(false);
 #endif
-    ui::CompositorTestSupport::Initialize();
-  }
-
-  virtual void Shutdown() {
-    ui::CompositorTestSupport::Terminate();
   }
 };
 

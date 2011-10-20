@@ -555,7 +555,6 @@
         '../third_party/icu/icu.gyp:icuuc',
         '../ui/base/strings/ui_strings.gyp:ui_strings',
         '../ui/gfx/compositor/compositor.gyp:compositor',
-        '../ui/gfx/compositor/compositor.gyp:compositor_test_support',
         '../ui/ui.gyp:gfx_resources',
         '../ui/ui.gyp:ui',
         '../ui/ui.gyp:ui_resources',

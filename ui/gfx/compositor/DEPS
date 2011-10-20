@@ -1,7 +1,0 @@
-# NOTE(piman): This is not an invitation to add WebKit stuff in general into
-# the compositor/ui. These lines will disappear once we can extract the Chromium
-# Compositor out of WebKit.
-include_rules = [
-  "+webkit/glue",
-  "+webkit/gpu",
-]

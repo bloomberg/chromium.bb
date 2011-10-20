@@ -25,15 +25,10 @@ Compositor::Compositor(CompositorDelegate* delegate, const gfx::Size& size)
 Compositor::~Compositor() {
 }
 
-void Compositor::ScheduleDraw() {
-  delegate_->ScheduleDraw();
-}
-
 void Compositor::SetRootLayer(Layer* root_layer) {
   root_layer_ = root_layer;
   if (!root_layer_->GetCompositor())
     root_layer_->SetCompositor(this);
-  OnRootLayerChanged();
 }
 
 void Compositor::Draw(bool force_clear) {
@@ -41,7 +36,7 @@ void Compositor::Draw(bool force_clear) {
     return;
 
   NotifyStart(force_clear);
-  DrawTree();
+  root_layer_->DrawTree();
   NotifyEnd();
 }
 
@@ -55,14 +50,6 @@ void Compositor::RemoveObserver(CompositorObserver* observer) {
 
 bool Compositor::HasObserver(CompositorObserver* observer) {
   return observer_list_.HasObserver(observer);
-}
-
-void Compositor::OnRootLayerChanged() {
-  ScheduleDraw();
-}
-
-void Compositor::DrawTree() {
-  root_layer_->DrawTree();
 }
 
 void Compositor::NotifyStart(bool clear) {

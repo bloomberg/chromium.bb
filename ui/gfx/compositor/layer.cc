@@ -8,9 +8,6 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFloatPoint.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFloatRect.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"
 #include "ui/base/animation/animation.h"
 #include "ui/gfx/compositor/layer_animator.h"
 #include "ui/gfx/canvas_skia.h"
@@ -39,9 +36,6 @@ Layer::Layer(Compositor* compositor)
       layer_updated_externally_(false),
       opacity_(1.0f),
       delegate_(NULL) {
-#if defined(USE_WEBKIT_COMPOSITOR)
-  CreateWebLayer();
-#endif
 }
 
 Layer::Layer(Compositor* compositor, LayerType type)
@@ -53,9 +47,6 @@ Layer::Layer(Compositor* compositor, LayerType type)
       layer_updated_externally_(false),
       opacity_(1.0f),
       delegate_(NULL) {
-#if defined(USE_WEBKIT_COMPOSITOR)
-  CreateWebLayer();
-#endif
 }
 
 Layer::~Layer() {
@@ -63,9 +54,6 @@ Layer::~Layer() {
     parent_->Remove(this);
   for (size_t i = 0; i < children_.size(); ++i)
     children_[i]->parent_ = NULL;
-#if defined(USE_WEBKIT_COMPOSITOR)
-  web_layer_.removeFromParent();
-#endif
 }
 
 Compositor* Layer::GetCompositor() {
@@ -86,9 +74,6 @@ void Layer::Add(Layer* child) {
     child->parent_->Remove(child);
   child->parent_ = this;
   children_.push_back(child);
-#if defined(USE_WEBKIT_COMPOSITOR)
-  web_layer_.addChild(child->web_layer_);
-#endif
 
   RecomputeHole();
 }
@@ -99,9 +84,6 @@ void Layer::Remove(Layer* child) {
   DCHECK(i != children_.end());
   children_.erase(i);
   child->parent_ = NULL;
-#if defined(USE_WEBKIT_COMPOSITOR)
-  child->web_layer_.removeFromParent();
-#endif
 
   RecomputeHole();
 
@@ -114,10 +96,6 @@ void Layer::MoveToFront(Layer* child) {
   DCHECK(i != children_.end());
   children_.erase(i);
   children_.push_back(child);
-#if defined(USE_WEBKIT_COMPOSITOR)
-  child->web_layer_.removeFromParent();
-  web_layer_.addChild(child->web_layer_);
-#endif
 }
 
 bool Layer::Contains(const Layer* other) const {
@@ -187,10 +165,6 @@ void Layer::SetVisible(bool visible) {
     DropTextures();
   if (parent_)
     parent_->RecomputeHole();
-#if defined(USE_WEBKIT_COMPOSITOR)
-  // TODO(piman): Expose a visibility flag on WebLayer.
-  web_layer_.setOpacity(visible_ ? opacity_ : 0.f);
-#endif
 }
 
 bool Layer::IsDrawn() const {
@@ -200,7 +174,7 @@ bool Layer::IsDrawn() const {
   return layer == NULL;
 }
 
-bool Layer::ShouldDraw() const {
+bool Layer::ShouldDraw() {
   return type_ == LAYER_HAS_TEXTURE && GetCombinedOpacity() > 0.0f &&
       !hole_rect_.Contains(gfx::Rect(gfx::Point(0, 0), bounds_.size()));
 }
@@ -232,9 +206,6 @@ void Layer::SetFillsBoundsOpaquely(bool fills_bounds_opaquely) {
 
   if (parent())
     parent()->RecomputeHole();
-#if defined(USE_WEBKIT_COMPOSITOR)
-  web_layer_.setOpaque(fills_bounds_opaquely);
-#endif
 }
 
 void Layer::SetExternalTexture(ui::Texture* texture) {
@@ -244,9 +215,6 @@ void Layer::SetExternalTexture(ui::Texture* texture) {
 }
 
 void Layer::SetCanvas(const SkCanvas& canvas, const gfx::Point& origin) {
-#if defined(USE_WEBKIT_COMPOSITOR)
-  NOTREACHED();
-#else
   DCHECK_EQ(type_, LAYER_HAS_TEXTURE);
 
   if (!texture_.get())
@@ -254,32 +222,19 @@ void Layer::SetCanvas(const SkCanvas& canvas, const gfx::Point& origin) {
 
   texture_->SetCanvas(canvas, origin, bounds_.size());
   invalid_rect_ = gfx::Rect();
-#endif
 }
 
 void Layer::SchedulePaint(const gfx::Rect& invalid_rect) {
-#if defined(USE_WEBKIT_COMPOSITOR)
-  WebKit::WebFloatRect web_rect(invalid_rect.x(),
-      invalid_rect.y(),
-      invalid_rect.width(),
-      invalid_rect.height());
-  web_layer_.invalidateRect(web_rect);
-#else
   invalid_rect_ = invalid_rect_.Union(invalid_rect);
   ScheduleDraw();
-#endif
 }
 
 void Layer::ScheduleDraw() {
-  Compositor* compositor = GetCompositor();
-  if (compositor)
-    compositor->ScheduleDraw();
+  if (GetCompositor())
+    GetCompositor()->ScheduleDraw();
 }
 
 void Layer::Draw() {
-#if defined(USE_WEBKIT_COMPOSITOR)
-  NOTREACHED();
-#else
   DCHECK(GetCompositor());
   if (!ShouldDraw())
     return;
@@ -319,38 +274,15 @@ void Layer::Draw() {
     if (!regions_to_draw[i].IsEmpty())
       texture_->Draw(texture_draw_params, regions_to_draw[i]);
   }
-#endif
 }
 
 void Layer::DrawTree() {
-#if defined(USE_WEBKIT_COMPOSITOR)
-  NOTREACHED();
-#else
   if (!visible_)
     return;
 
   Draw();
   for (size_t i = 0; i < children_.size(); ++i)
     children_.at(i)->DrawTree();
-#endif
-}
-
-void Layer::notifyNeedsComposite() {
-#if defined(USE_WEBKIT_COMPOSITOR)
-  ScheduleDraw();
-#else
-  NOTREACHED();
-#endif
-}
-
-void Layer::paintContents(WebKit::WebCanvas* web_canvas,
-                          const WebKit::WebRect& clip) {
-#if defined(USE_WEBKIT_COMPOSITOR)
-  gfx::CanvasSkia canvas(web_canvas);
-  delegate_->OnPaintLayer(&canvas);
-#else
-  NOTREACHED();
-#endif
 }
 
 float Layer::GetCombinedOpacity() const {
@@ -364,9 +296,6 @@ float Layer::GetCombinedOpacity() const {
 }
 
 void Layer::UpdateLayerCanvas() {
-#if defined(USE_WEBKIT_COMPOSITOR)
-  NOTREACHED();
-#else
   // If we have no delegate, that means that whoever constructed the Layer is
   // setting its canvas directly with SetCanvas().
   if (!delegate_ || layer_updated_externally_)
@@ -383,7 +312,6 @@ void Layer::UpdateLayerCanvas() {
   canvas->TranslateInt(-draw_rect.x(), -draw_rect.y());
   delegate_->OnPaintLayer(canvas.get());
   SetCanvas(*canvas->GetSkCanvas(), draw_rect.origin());
-#endif
 }
 
 void Layer::RecomputeHole() {
@@ -429,10 +357,6 @@ void Layer::RecomputeHole() {
   // Free up texture memory if the hole fills bounds of layer.
   if (!ShouldDraw() && !layer_updated_externally_)
     texture_ = NULL;
-
-#if defined(USE_WEBKIT_COMPOSITOR)
-  RecomputeDrawsContent();
-#endif
 }
 
 bool Layer::IsCompletelyOpaque() const {
@@ -542,11 +466,6 @@ void Layer::SetBoundsImmediately(const gfx::Rect& bounds) {
 
   if (parent())
     parent()->RecomputeHole();
-#if defined(USE_WEBKIT_COMPOSITOR)
-  web_layer_.setBounds(bounds.size());
-  RecomputeTransform();
-  RecomputeDrawsContent();
-#endif
 }
 
 void Layer::SetTransformImmediately(const ui::Transform& transform) {
@@ -554,9 +473,6 @@ void Layer::SetTransformImmediately(const ui::Transform& transform) {
 
   if (parent())
     parent()->RecomputeHole();
-#if defined(USE_WEBKIT_COMPOSITOR)
-  RecomputeTransform();
-#endif
 }
 
 void Layer::SetOpacityImmediately(float opacity) {
@@ -579,11 +495,6 @@ void Layer::SetOpacityImmediately(float opacity) {
         to_process.push(current->children_.at(i));
     }
   }
-#if defined(USE_WEBKIT_COMPOSITOR)
-  if (visible_)
-    web_layer_.setOpacity(opacity);
-  RecomputeDrawsContent();
-#endif
 }
 
 void Layer::SetBoundsFromAnimator(const gfx::Rect& bounds) {
@@ -597,24 +508,5 @@ void Layer::SetTransformFromAnimator(const Transform& transform) {
 void Layer::SetOpacityFromAnimator(float opacity) {
   SetOpacityImmediately(opacity);
 }
-
-#if defined(USE_WEBKIT_COMPOSITOR)
-void Layer::CreateWebLayer() {
-  web_layer_ = WebKit::WebContentLayer::create(this, this);
-  web_layer_.setAnchorPoint(WebKit::WebFloatPoint(0.f, 0.f));
-  web_layer_.setOpaque(true);
-  RecomputeDrawsContent();
-}
-
-void Layer::RecomputeTransform() {
-  ui::Transform transform = transform_;
-  transform.ConcatTranslate(bounds_.x(), bounds_.y());
-  web_layer_.setTransform(transform.matrix());
-}
-
-void Layer::RecomputeDrawsContent() {
-  web_layer_.setDrawsContent(ShouldDraw());
-}
-#endif
 
 }  // namespace ui

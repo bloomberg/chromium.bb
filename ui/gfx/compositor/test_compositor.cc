@@ -40,12 +40,6 @@ void TestCompositor::OnNotifyEnd() {
 void TestCompositor::Blur(const gfx::Rect& bounds) {
 }
 
-void TestCompositor::DrawTree() {
-#if !defined(USE_WEBKIT_COMPOSITOR)
-  Compositor::DrawTree();
-#endif
-}
-
 void TestCompositor::OnWidgetSizeChanged() {
 }
 
