@@ -948,7 +948,6 @@ void TopSites::ResetThreadSafeCache() {
 void TopSites::ResetThreadSafeImageCache() {
   base::AutoLock lock(lock_);
   thread_safe_cache_->SetThumbnails(cache_->images());
-  thread_safe_cache_->RemoveUnreferencedThumbnails();
 }
 
 void TopSites::NotifyTopSitesChanged() {

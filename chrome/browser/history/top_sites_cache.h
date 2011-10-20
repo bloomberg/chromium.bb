@@ -31,11 +31,6 @@ class TopSitesCache {
   void SetThumbnails(const URLToImagesMap& images);
   const URLToImagesMap& images() const { return images_; }
 
-  // Set a thumbnail.
-  void SetPageThumbnail(const GURL& url,
-                        RefCountedBytes* thumbnail,
-                        const ThumbnailScore& score);
-
   // Returns the thumbnail as an Image for the specified url. This adds an entry
   // for |url| if one has not yet been added.
   Images* GetImage(const GURL& url);
@@ -58,9 +53,6 @@ class TopSitesCache {
 
   // Returns the index into |top_sites_| for |url|.
   size_t GetURLIndex(const GURL& url);
-
-  // Removes any thumbnails that are no longer referenced by the top sites.
-  void RemoveUnreferencedThumbnails();
 
  private:
   // The entries in CanonicalURLs, see CanonicalURLs for details. The second

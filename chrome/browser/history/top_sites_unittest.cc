@@ -547,6 +547,7 @@ TEST_F(TopSitesTest, ThumbnailRemoved) {
 
   // Reset the thumbnails and make sure we don't get it back.
   SetTopSites(MostVisitedURLList());
+  RefreshTopSitesAndRecreate();
   EXPECT_FALSE(top_sites()->GetPageThumbnail(url, &result));
 }
 
