@@ -386,9 +386,9 @@ bool ActivityReplay::Replay(Interpreter* interpreter) {
         }
         break;
       case ActivityLog::kGesture:
-        if (*last_gs != entry->details.gesture) {
+        if (!last_gs || *last_gs != entry->details.gesture) {
           Err("Incorrect gesture. Expected %s, but log has %s",
-              last_gs->String().c_str(),
+              last_gs ? last_gs->String().c_str() : "(null)",
               entry->details.gesture.String().c_str());
           all_correct = false;
         }

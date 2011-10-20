@@ -33,6 +33,7 @@ TEST(ActivityReplayTest, DISABLED_SimpleTest) {
   ActivityReplay replay(prop_reg);
   replay.Parse(log_contents);
   replay.Replay(interpreter);
+  DeleteGestureInterpreter(c_interpreter);
 }
 
 }  // namespace gestures
