@@ -126,52 +126,6 @@ TEST_F(LoginPromptTest, TestTwoAuths) {
   EXPECT_EQ(ExpectedTitleFromAuth(username_digest_, password_), title);
 }
 
-// Test that cancelling authentication works.
-// Flaky, http://crbug.com/90198.
-TEST_F(LoginPromptTest, FLAKY_TestCancelAuth) {
-  ASSERT_TRUE(test_server_.Start());
-
-  scoped_refptr<TabProxy> tab(GetActiveTab());
-  ASSERT_TRUE(tab.get());
-
-  // First navigate to a test server page so we have something to go back to.
-  ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
-            tab->NavigateToURL(test_server_.GetURL("a")));
-
-  // Navigating while auth is requested is the same as cancelling.
-  ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_AUTH_NEEDED,
-            tab->NavigateToURL(test_server_.GetURL("auth-basic")));
-  EXPECT_TRUE(tab->NeedsAuth());
-  ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
-            tab->NavigateToURL(test_server_.GetURL("b")));
-  EXPECT_FALSE(tab->NeedsAuth());
-
-  ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_AUTH_NEEDED,
-            tab->NavigateToURL(test_server_.GetURL("auth-basic")));
-  EXPECT_TRUE(tab->NeedsAuth());
-  EXPECT_TRUE(tab->GoBack());  // should bring us back to 'a'
-  EXPECT_FALSE(tab->NeedsAuth());
-
-  // Now add a page and go back, so we have something to go forward to.
-  ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
-            tab->NavigateToURL(test_server_.GetURL("c")));
-  EXPECT_TRUE(tab->GoBack());  // should bring us back to 'a'
-
-  ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_AUTH_NEEDED,
-            tab->NavigateToURL(test_server_.GetURL("auth-basic")));
-  EXPECT_TRUE(tab->NeedsAuth());
-  EXPECT_TRUE(tab->GoForward());  // should bring us to 'c'
-  EXPECT_FALSE(tab->NeedsAuth());
-
-  // Now test that cancelling works as expected.
-  ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_AUTH_NEEDED,
-            tab->NavigateToURL(test_server_.GetURL("auth-basic")));
-  EXPECT_TRUE(tab->NeedsAuth());
-  EXPECT_TRUE(tab->CancelAuth());
-  EXPECT_FALSE(tab->NeedsAuth());
-  EXPECT_EQ(L"Denied: no auth", GetActiveTabTitle());
-}
-
 // If multiple tabs are looking for the same auth, the user should only have to
 // enter it once.
 TEST_F(LoginPromptTest, SupplyRedundantAuths) {

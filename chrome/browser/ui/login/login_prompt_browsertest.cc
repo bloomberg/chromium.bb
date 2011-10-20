@@ -158,8 +158,30 @@ class WindowedNavigationObserver
           T, content::Source<NavigationController>(controller)) {}
 };
 
-typedef WindowedNavigationObserver<content::NOTIFICATION_LOAD_STOP>
-    WindowedLoadStopObserver;
+// LOAD_STOP observer is special since we want to be able to wait for
+// multiple LOAD_STOP events.
+class WindowedLoadStopObserver
+    : public WindowedNavigationObserver<content::NOTIFICATION_LOAD_STOP> {
+ public:
+  WindowedLoadStopObserver(NavigationController* controller,
+                           int notification_count)
+      : WindowedNavigationObserver<content::NOTIFICATION_LOAD_STOP>(controller),
+        remaining_notification_count_(notification_count) {}
+ protected:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+ private:
+  int remaining_notification_count_;  // Number of notifications remaining.
+};
+
+void WindowedLoadStopObserver::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  if (--remaining_notification_count_ == 0)
+    WindowedNotificationObserver::Observe(type, source, details);
+}
 
 typedef WindowedNavigationObserver<chrome::NOTIFICATION_AUTH_NEEDED>
     WindowedAuthNeededObserver;
@@ -178,6 +200,8 @@ const int   kMultiRealmTestResourceCount = 4;
 
 const char* kSingleRealmTestPage = "files/login/single_realm.html";
 const int   kSingleRealmTestResourceCount = 6;
+
+const char* kAuthBasicPage = "auth-basic";
 
 // Confirm that <link rel="prefetch"> targetting an auth required
 // resource does not provide a login dialog.  These types of requests
@@ -220,13 +244,107 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, PrefetchAuthCancels) {
 
   observer.Register(content::Source<NavigationController>(controller));
 
-  WindowedLoadStopObserver load_stop_waiter(controller);
+  WindowedLoadStopObserver load_stop_waiter(controller, 1);
   browser()->OpenURL(
       test_page, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
 
   load_stop_waiter.Wait();
   EXPECT_TRUE(observer.handlers_.empty());
   EXPECT_TRUE(test_server()->Stop());
+}
+
+// Test login prompt cancellation.
+IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, TestCancelAuth) {
+  ASSERT_TRUE(test_server()->Start());
+  GURL auth_page = test_server()->GetURL(kAuthBasicPage);
+  GURL no_auth_page_1 = test_server()->GetURL("a");
+  GURL no_auth_page_2 = test_server()->GetURL("b");
+  GURL no_auth_page_3 = test_server()->GetURL("c");
+
+  TabContentsWrapper* contents =
+      browser()->GetSelectedTabContentsWrapper();
+  ASSERT_TRUE(contents);
+
+  NavigationController* controller = &contents->controller();
+
+  LoginPromptBrowserTestObserver observer;
+  observer.Register(content::Source<NavigationController>(controller));
+
+  // First navigate to an unauthenticated page so we have something to
+  // go back to.
+  ui_test_utils::NavigateToURL(browser(), no_auth_page_1);
+
+  // Navigating while auth is requested is the same as cancelling.
+  {
+    // We need to wait for two LOAD_STOP events.  One for auth_page and one for
+    // no_auth_page_2.
+    WindowedLoadStopObserver load_stop_waiter(controller, 2);
+    WindowedAuthNeededObserver auth_needed_waiter(controller);
+    browser()->OpenURL(
+        auth_page, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
+    auth_needed_waiter.Wait();
+    WindowedAuthCancelledObserver auth_cancelled_waiter(controller);
+    browser()->OpenURL(
+        no_auth_page_2, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
+    auth_cancelled_waiter.Wait();
+    load_stop_waiter.Wait();
+    EXPECT_TRUE(observer.handlers_.empty());
+  }
+
+  // Try navigating backwards.
+  {
+    // As above, we wait for two LOAD_STOP events; one for each navigation.
+    WindowedLoadStopObserver load_stop_waiter(controller, 2);
+    WindowedAuthNeededObserver auth_needed_waiter(controller);
+    browser()->OpenURL(
+        auth_page, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
+    auth_needed_waiter.Wait();
+    WindowedAuthCancelledObserver auth_cancelled_waiter(controller);
+    ASSERT_TRUE(browser()->CanGoBack());
+    browser()->GoBack(CURRENT_TAB);
+    auth_cancelled_waiter.Wait();
+    load_stop_waiter.Wait();
+    EXPECT_TRUE(observer.handlers_.empty());
+  }
+
+  // Now add a page and go back, so we have something to go forward to.
+  ui_test_utils::NavigateToURL(browser(), no_auth_page_3);
+  {
+    WindowedLoadStopObserver load_stop_waiter(controller, 1);
+    browser()->GoBack(CURRENT_TAB);  // Should take us to page 1
+    load_stop_waiter.Wait();
+  }
+
+  {
+    // We wait for two LOAD_STOP events; one for each navigation.
+    WindowedLoadStopObserver load_stop_waiter(controller, 2);
+    WindowedAuthNeededObserver auth_needed_waiter(controller);
+    browser()->OpenURL(
+        auth_page, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
+    auth_needed_waiter.Wait();
+    WindowedAuthCancelledObserver auth_cancelled_waiter(controller);
+    ASSERT_TRUE(browser()->CanGoForward());
+    browser()->GoForward(CURRENT_TAB);  // Should take us to page 3
+    auth_cancelled_waiter.Wait();
+    load_stop_waiter.Wait();
+    EXPECT_TRUE(observer.handlers_.empty());
+  }
+
+  // Now test that cancelling works as expected.
+  {
+    WindowedLoadStopObserver load_stop_waiter(controller, 1);
+    WindowedAuthNeededObserver auth_needed_waiter(controller);
+    browser()->OpenURL(
+        auth_page, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
+    auth_needed_waiter.Wait();
+    WindowedAuthCancelledObserver auth_cancelled_waiter(controller);
+    LoginHandler* handler = *observer.handlers_.begin();
+    ASSERT_TRUE(handler);
+    handler->CancelAuth();
+    auth_cancelled_waiter.Wait();
+    load_stop_waiter.Wait();
+    EXPECT_TRUE(observer.handlers_.empty());
+  }
 }
 
 // Test handling of resources that require authentication even though
@@ -247,7 +365,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, MultipleRealmCancellation) {
 
   observer.Register(content::Source<NavigationController>(controller));
 
-  WindowedLoadStopObserver load_stop_waiter(controller);
+  WindowedLoadStopObserver load_stop_waiter(controller, 1);
 
   {
     WindowedAuthNeededObserver auth_needed_waiter(controller);
@@ -306,7 +424,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
 
   observer.Register(content::Source<NavigationController>(controller));
 
-  WindowedLoadStopObserver load_stop_waiter(controller);
+  WindowedLoadStopObserver load_stop_waiter(controller, 1);
   int n_handlers = 0;
 
   {
@@ -433,7 +551,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, NoLoginPromptForFavicon) {
   // authentication.  There should be no login prompt.
   {
     GURL test_page = test_server()->GetURL(kFaviconTestPage);
-    WindowedLoadStopObserver load_stop_waiter(controller);
+    WindowedLoadStopObserver load_stop_waiter(controller, 1);
     browser()->OpenURL(
         test_page, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
     load_stop_waiter.Wait();
@@ -443,7 +561,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, NoLoginPromptForFavicon) {
   // There should be one login prompt.
   {
     GURL test_page = test_server()->GetURL(kFaviconResource);
-    WindowedLoadStopObserver load_stop_waiter(controller);
+    WindowedLoadStopObserver load_stop_waiter(controller, 1);
     WindowedAuthNeededObserver auth_needed_waiter(controller);
     browser()->OpenURL(
         test_page, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
@@ -496,7 +614,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, BlockCrossdomainPrompt) {
     replacements.SetHostStr(new_host);
     test_page = test_page.ReplaceComponents(replacements);
 
-    WindowedLoadStopObserver load_stop_waiter(controller);
+    WindowedLoadStopObserver load_stop_waiter(controller, 1);
     browser()->OpenURL(
         test_page, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
     load_stop_waiter.Wait();
