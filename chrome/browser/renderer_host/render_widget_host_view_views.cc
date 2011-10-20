@@ -353,7 +353,7 @@ void RenderWidgetHostViewViews::Destroy() {
   }
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 
-#if defined(TOUCH_UI)
+#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
   // Send out all outstanding ACKs so that we don't block the GPU
   // process.
   for (std::vector< base::Callback<void(void)> >::const_iterator
@@ -1058,7 +1058,7 @@ void RenderWidgetHostViewViews::DestroyPluginContainer(
 
 void RenderWidgetHostViewViews::AcceleratedCompositingActivated(
     bool activated) {
-#if defined(TOUCH_UI)
+#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
   // If we don't use a views compositor, we currently have no way of
   // supporting rendering via the GPU process.
   if (!get_use_acceleration_when_possible() && activated)
