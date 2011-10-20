@@ -198,8 +198,7 @@ cr.define('print_preview', function() {
      * Display an error message in the center of the preview area.
      * @param {string} errorMessage The error message to be displayed.
      */
-    displayErrorMessage: function(errorMessage) {
-      $('print-button').disabled = true;
+    displayErrorMessageAndNotify: function(errorMessage) {
       this.overlayLayer.classList.remove('invisible');
       this.customMessage_.textContent = errorMessage;
       this.customMessage_.hidden = false;
@@ -209,6 +208,7 @@ cr.define('print_preview', function() {
         $('mainview').removeChild(this.pdfPlugin_);
         this.pdfPlugin_ = null;
       }
+      cr.dispatchSimpleEvent(document, 'PDFGenerationError');
     },
 
     /**
@@ -219,7 +219,7 @@ cr.define('print_preview', function() {
      * @param {string} buttonListener The listener to be executed when the
      *     button is clicked.
      */
-    displayErrorMessageWithButton: function(
+    displayErrorMessageWithButtonAndNotify: function(
         errorMessage, buttonText, buttonListener) {
       this.errorButton.disabled = false;
       this.errorButton.textContent = buttonText;
@@ -227,7 +227,7 @@ cr.define('print_preview', function() {
       this.errorButton.hidden = false;
       $('system-dialog-throbber').hidden = true;
       $('native-print-dialog-throbber').hidden = true;
-      this.displayErrorMessage(errorMessage);
+      this.displayErrorMessageAndNotify(errorMessage);
     }
   };
 

@@ -114,14 +114,14 @@ function onLoad() {
 
   previewArea = print_preview.PreviewArea.getInstance();
   printHeader = print_preview.PrintHeader.getInstance();
+  document.addEventListener('PDFGenerationError', cancelPendingPrintRequest);
 
   if (!checkCompatiblePluginExists()) {
     disableInputElementsInSidebar();
-    previewArea.displayErrorMessageWithButton(
+    previewArea.displayErrorMessageWithButtonAndNotify(
         localStrings.getString('noPlugin'),
         localStrings.getString('launchNativeDialog'),
         launchNativePrintDialog);
-    cancelPendingPrintRequest();
     $('mainview').parentElement.removeChild($('dummy-viewer'));
     return;
   }
@@ -191,15 +191,13 @@ function launchNativePrintDialog() {
 function onInitiatorTabCrashed(initiatorTabURL) {
   disableInputElementsInSidebar();
   if (initiatorTabURL) {
-    previewArea.displayErrorMessageWithButton(
+    previewArea.displayErrorMessageWithButtonAndNotify(
         localStrings.getString('initiatorTabCrashed'),
         localStrings.getString('reopenPage'),
         function() { chrome.send('reloadCrashedInitiatorTab'); });
-    cancelPendingPrintRequest();
   } else {
-    previewArea.displayErrorMessage(
+    previewArea.displayErrorMessageAndNotify(
         localStrings.getString('initiatorTabCrashed'));
-    cancelPendingPrintRequest();
   }
 }
 
@@ -211,15 +209,13 @@ function onInitiatorTabCrashed(initiatorTabURL) {
 function onInitiatorTabClosed(initiatorTabURL) {
   disableInputElementsInSidebar();
   if (initiatorTabURL) {
-    previewArea.displayErrorMessageWithButton(
+    previewArea.displayErrorMessageWithButtonAndNotify(
         localStrings.getString('initiatorTabClosed'),
         localStrings.getString('reopenPage'),
         function() { window.location = initiatorTabURL; });
-    cancelPendingPrintRequest();
   } else {
-    previewArea.displayErrorMessage(
+    previewArea.displayErrorMessageAndNotify(
         localStrings.getString('initiatorTabClosed'));
-    cancelPendingPrintRequest();
   }
 }
 
@@ -714,11 +710,10 @@ function setColor(color) {
  * Called from PrintPreviewMessageHandler::OnPrintPreviewFailed().
  */
 function printPreviewFailed() {
-  previewArea.displayErrorMessageWithButton(
+  previewArea.displayErrorMessageWithButtonAndNotify(
       localStrings.getString('previewFailed'),
       localStrings.getString('launchNativeDialog'),
       launchNativePrintDialog);
-  cancelPendingPrintRequest();
 }
 
 /**
@@ -726,9 +721,8 @@ function printPreviewFailed() {
  * Called from PrintPreviewMessageHandler::OnInvalidPrinterSettings().
  */
 function invalidPrinterSettings() {
-  previewArea.displayErrorMessage(
+  previewArea.displayErrorMessageAndNotify(
       localStrings.getString('invalidPrinterSettings'));
-  cancelPendingPrintRequest();
 }
 
 /**

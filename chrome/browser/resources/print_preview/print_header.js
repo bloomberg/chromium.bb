@@ -50,6 +50,16 @@ cr.define('print_preview', function() {
                                 this.updatePrintButton_.bind(this));
       document.addEventListener('disableCancelButton',
                                 this.disableCancelButton.bind(this));
+      document.addEventListener('PDFGenerationError',
+                                this.onPDFGenerationError_.bind(this));
+    },
+
+    /**
+     * Executes when an |PDFGenerationError| event is occurs.
+     * @private
+     */
+    onPDFGenerationError_: function() {
+      this.printButton_.disabled = true;
     },
 
     /**

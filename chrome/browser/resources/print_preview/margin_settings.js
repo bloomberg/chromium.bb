@@ -291,6 +291,19 @@ cr.define('print_preview', function() {
     addEventListeners_: function() {
       this.marginList_.onchange = this.onMarginsChanged_.bind(this);
       document.addEventListener('PDFLoaded', this.onPDFLoaded_.bind(this));
+      document.addEventListener('PDFGenerationError',
+                                this.onPDFGenerationError_.bind(this));
+    },
+
+    /**
+     * Executes when an 'PDFGenerationError' event occurs.
+     * @private
+     */
+    onPDFGenerationError_: function() {
+      if (this.isCustomMarginsSelected()) {
+        this.removeCustomMarginEventListeners_();
+        this.marginsUI.hide();
+      }
     },
 
     /**
