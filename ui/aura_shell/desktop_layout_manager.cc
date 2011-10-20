@@ -50,20 +50,5 @@ void DesktopLayoutManager::OnWindowResized() {
                 status_area_bounds.height()));
 }
 
-void DesktopLayoutManager::OnWindowAdded(aura::Window* child) {
-}
-
-void DesktopLayoutManager::OnWillRemoveWindow(aura::Window* child) {
-}
-
-void DesktopLayoutManager::OnChildWindowVisibilityChanged(aura::Window* child,
-                                                          bool visibile) {
-}
-
-void DesktopLayoutManager::CalculateBoundsForChild(
-    aura::Window* child, gfx::Rect* requested_bounds) {
-}
-
-
 }  // namespace internal
 }  // namespace aura_shell
