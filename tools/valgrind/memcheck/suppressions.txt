@@ -933,6 +933,7 @@
    Histograms via FactoryGet including Stats for disk_cache
    Memcheck:Leak
    fun:_Znw*
+   ...
    fun:_ZN10disk_cache14StatsHistogram10FactoryGet*
 }
 {
@@ -4841,6 +4842,27 @@
    fun:_ZN7WebCore6Worker6createEPNS_22ScriptExecutionContextERKN3WTF6StringERi
    fun:_ZN7WebCore8V8Worker19constructorCallbackERKN2v89ArgumentsE
    fun:_ZN2v88internalL19HandleApiCallHelperILb1EEEPNS0_11MaybeObjectENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
+}
+{
+   bug_100981
+   Memcheck:Cond
+   fun:_ZN7WebCore22CSSPrimitiveValueCache11createValueEdNS_17CSSPrimitiveValue9UnitTypesE
+   fun:_ZN7WebCore27BorderImageQuadParseContext21commitBorderImageQuadEv
+   fun:_ZN7WebCore9CSSParser20parseBorderImageQuadENS0_5UnitsERN3WTF6RefPtrINS_17CSSPrimitiveValueEEE
+   fun:_ZN7WebCore9CSSParser21parseBorderImageWidthERN3WTF6RefPtrINS_17CSSPrimitiveValueEEE
+   fun:_ZN7WebCore9CSSParser16parseBorderImageEiRN3WTF6RefPtrINS_8CSSValueEEE
+   fun:_ZN7WebCore9CSSParser12parseReflectEib
+   fun:_ZN7WebCore9CSSParser10parseValueEib
+   fun:_Z10cssyyparsePv
+}
+{
+   bug_100982
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7WebCore12RenderRegion22setRenderBoxRegionInfoEPKNS_9RenderBoxEiib
+   fun:_ZNK7WebCore9RenderBox19renderBoxRegionInfoEPNS_12RenderRegionEiNS0_24RenderBoxRegionInfoFlagsE
+   ...
+   fun:_ZN7WebCore11RenderBlock5paintERNS_9PaintInfoERKNS_8IntPointE
 }
 
 #-----------------------------------------------------------------------
