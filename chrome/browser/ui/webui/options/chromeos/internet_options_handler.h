@@ -83,6 +83,7 @@ class InternetOptionsHandler
   void DisableWifiCallback(const base::ListValue* args);
   void EnableCellularCallback(const base::ListValue* args);
   void DisableCellularCallback(const base::ListValue* args);
+  void ImportNetworkSettingsCallback(const base::ListValue* args);
   void BuyDataPlanCallback(const base::ListValue* args);
   void SetApnCallback(const base::ListValue* args);
   void SetSimCardLockCallback(const base::ListValue* args);

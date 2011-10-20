@@ -2790,7 +2790,7 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob) {
 
     // TODO(chocobo): Pass parsed network values to flimflam update network.
   }
-  return true;
+  return parser.GetNetworkConfigsSize() != 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////

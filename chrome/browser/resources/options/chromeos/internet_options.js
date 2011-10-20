@@ -88,6 +88,19 @@ cr.define('options', function() {
         chrome.send('coreOptionsUserMetricsAction',
             ['Options_ShowProxySettings']);
       });
+      $('upload-network-settings').addEventListener('change', function(event) {
+        var file = event.target.files[0];
+        if (!file.type.match('text/plain')) {
+          InternetOptions.invalidNetworkSettings();
+          return;
+        }
+
+        var reader = new FileReader();
+        reader.onloadend = function(e) {
+          chrome.send('importNetworkSettings', [this.result]);
+        };
+        reader.readAsText(file);
+      }, false);
       $('buyplanDetails').addEventListener('click', function(event) {
         chrome.send('buyDataPlan', []);
         OptionsPage.closeOverlay();
@@ -661,6 +674,10 @@ cr.define('options', function() {
     // Don't show page name in address bar and in history to prevent people
     // navigate here by hand and solve issue with page session restore.
     OptionsPage.showPageByName('detailsInternetPage', false);
+  };
+
+  InternetOptions.invalidNetworkSettings = function () {
+    alert(localStrings.getString('invalidNetworkSettings'));
   };
 
   // Export
