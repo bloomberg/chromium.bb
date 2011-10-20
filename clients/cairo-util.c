@@ -322,7 +322,7 @@ load_jpeg(const char *filename)
 	}
 
 	while (cinfo.output_scanline < cinfo.output_height) {
-		for (i = 0; i < ARRAY_LENGTH(rows); i++, p += stride)
+		for (i = 0; i < ARRAY_LENGTH(rows); i++)
 			rows[i] = data + (cinfo.output_scanline + i) * stride;
 
 		jpeg_read_scanlines(&cinfo, rows, ARRAY_LENGTH(rows));
