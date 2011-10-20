@@ -48,8 +48,6 @@ deps = {
         Var('git_url') + '/chromium/deps/hunspell_dictionaries.git@50fb79b30a2e3e512c88884152f26b255d0e4074',
     'src/third_party/icu':
         Var('git_url') + '/chromium/deps/icu46.git@1fc016241681e4c6b427248ba7bd613fbe7bd2fc',
-    'src/third_party/jsoncpp/source':
-        Var('git_url') + '/external/jsoncpp/jsoncpp.git@586229b92307944dd750801893c8c7c624547c8a',
     'src/third_party/leveldatabase/src':
         Var('git_url') + '/external/leveldb.git@5fb21ed7ac9e91010d473ac77e132ae68f348d6a',
     'src/third_party/libjingle/source':
