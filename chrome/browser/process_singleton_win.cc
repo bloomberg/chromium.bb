@@ -307,7 +307,7 @@ LRESULT ProcessSingleton::OnCopyData(HWND hwnd, const COPYDATASTRUCT* cds) {
     PrefService* prefs = g_browser_process->local_state();
     DCHECK(prefs);
 
-    Profile* profile = ProfileManager::GetDefaultProfile();
+    Profile* profile = ProfileManager::GetLastUsedProfile();
     if (!profile) {
       // We should only be able to get here if the profile already exists and
       // has been created.
