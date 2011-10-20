@@ -457,6 +457,19 @@ class BrowserView : public BrowserBubbleHost,
   FRIEND_TEST_ALL_PREFIXES(BrowserViewsAccessibilityTest,
                            TestAboutChromeViewAccObj);
 
+  // We store this on linux because we must call ProcessFullscreen()
+  // asynchronously from FullScreenStateChanged() instead of directly from
+  // EnterFullscreen().
+  struct PendingFullscreenRequest {
+    PendingFullscreenRequest()
+        : pending(false),
+          bubble_type(FEB_TYPE_NONE) {}
+
+    bool pending;
+    GURL url;
+    FullscreenExitBubbleType bubble_type;
+  };
+
 #if defined(OS_WIN)
   // Creates the system menu.
   void InitSystemMenu();
@@ -711,6 +724,8 @@ class BrowserView : public BrowserBubbleHost,
   // If this flag is set then SetFocusToLocationBar() will set focus to the
   // location bar even if the browser window is not active.
   bool force_location_bar_focus_;
+
+  PendingFullscreenRequest fullscreen_request_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserView);
 };
