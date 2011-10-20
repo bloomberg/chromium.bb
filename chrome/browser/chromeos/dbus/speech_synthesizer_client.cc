@@ -37,10 +37,8 @@ class SpeechSynthesizerClientImpl : public SpeechSynthesizerClient {
   virtual ~SpeechSynthesizerClientImpl() {}
 
   virtual void Speak(const std::string& text) OVERRIDE {
-    // TODO(hashimoto): Define speech synthesizer method names as constants
-    // in service_constants.h. http://crosbug.com/21824
     dbus::MethodCall method_call(speech_synthesis::kSpeechSynthesizerInterface,
-                                 "Speak");
+                                 speech_synthesis::kSpeak);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(text);
     proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
@@ -50,7 +48,7 @@ class SpeechSynthesizerClientImpl : public SpeechSynthesizerClient {
 
   virtual void SetSpeakProperties(const std::string& props) OVERRIDE {
     dbus::MethodCall method_call(speech_synthesis::kSpeechSynthesizerInterface,
-                                 "SetProperties");
+                                 speech_synthesis::kSetProperties);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(props);
     proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
@@ -61,7 +59,7 @@ class SpeechSynthesizerClientImpl : public SpeechSynthesizerClient {
 
   virtual void StopSpeaking() OVERRIDE {
     dbus::MethodCall method_call(speech_synthesis::kSpeechSynthesizerInterface,
-                                 "Stop");
+                                 speech_synthesis::kStop);
     proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                        base::Bind(&SpeechSynthesizerClientImpl::OnStopSpeaking,
                                   weak_ptr_factory_.GetWeakPtr()));
@@ -69,7 +67,7 @@ class SpeechSynthesizerClientImpl : public SpeechSynthesizerClient {
 
   virtual void IsSpeaking(IsSpeakingCallback callback) OVERRIDE {
     dbus::MethodCall method_call(speech_synthesis::kSpeechSynthesizerInterface,
-                                 "IsSpeaking");
+                                 speech_synthesis::kIsSpeaking);
     proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                        base::Bind(&SpeechSynthesizerClientImpl::OnIsSpeaking,
                                   weak_ptr_factory_.GetWeakPtr(),
