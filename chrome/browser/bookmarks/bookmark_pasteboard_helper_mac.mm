@@ -8,8 +8,8 @@
 
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents_view_mac.h"
-#include "chrome/browser/ui/cocoa/bookmarks/bookmark_drag_source.h"
 
 NSString* const kBookmarkDictionaryListPboardType =
     @"BookmarkDictionaryListPboardType";
@@ -78,30 +78,31 @@ void ConvertPlistToElements(NSArray* input,
   }
 }
 
-bool ReadBookmarkDictionaryListPboardType(NSPasteboard* pb,
-      std::vector<BookmarkNodeData::Element>& elements) {
+bool ReadBookmarkDictionaryListPboardType(
+    NSPasteboard* pb,
+    std::vector<BookmarkNodeData::Element>& elements) {
   NSArray* bookmarks =
       [pb propertyListForType:kBookmarkDictionaryListPboardType];
-  if (!bookmarks) return false;
+  if (!bookmarks)
+    return false;
   ConvertPlistToElements(bookmarks, elements);
   return true;
 }
 
-bool ReadWebURLsWithTitlesPboardType(NSPasteboard* pb,
-      std::vector<BookmarkNodeData::Element>& elements) {
+bool ReadWebURLsWithTitlesPboardType(
+    NSPasteboard* pb,
+    std::vector<BookmarkNodeData::Element>& elements) {
   NSArray* bookmarkPairs =
       [pb propertyListForType:kWebURLsWithTitlesPboardType];
-  if (![bookmarkPairs isKindOfClass:[NSArray class]]) {
+  if (![bookmarkPairs isKindOfClass:[NSArray class]])
     return false;
-  }
+
   NSArray* urlsArr = [bookmarkPairs objectAtIndex:0];
   NSArray* titlesArr = [bookmarkPairs objectAtIndex:1];
-  if ([urlsArr count] < 1) {
+  if ([urlsArr count] < 1)
     return false;
-  }
-  if ([urlsArr count] != [titlesArr count]) {
+  if ([urlsArr count] != [titlesArr count])
     return false;
-  }
 
   NSUInteger len = [titlesArr count];
   for (NSUInteger i = 0; i < len; ++i) {
@@ -121,9 +122,9 @@ bool ReadWebURLsWithTitlesPboardType(NSPasteboard* pb,
 bool ReadNSURLPboardType(NSPasteboard* pb,
                          std::vector<BookmarkNodeData::Element>& elements) {
   NSURL* url = [NSURL URLFromPasteboard:pb];
-  if (url == nil) {
+  if (url == nil)
     return false;
-  }
+
   std::string urlString = base::SysNSStringToUTF8([url absoluteString]);
   NSString* title = [pb stringForType:kNSURLTitlePboardType];
   if (!title)
@@ -173,7 +174,8 @@ NSArray* GetPlistForBookmarkList(
   return plist;
 }
 
-void WriteBookmarkDictionaryListPboardType(NSPasteboard* pb,
+void WriteBookmarkDictionaryListPboardType(
+    NSPasteboard* pb,
     const std::vector<BookmarkNodeData::Element>& elements) {
   NSArray* plist = GetPlistForBookmarkList(elements);
   [pb setPropertyList:plist forType:kBookmarkDictionaryListPboardType];
@@ -211,7 +213,7 @@ void WriteSimplifiedBookmarkTypes(NSPasteboard* pb,
 
   // Write NSStringPboardType.
   [pb setString:[urls componentsJoinedByString:@"\n"]
-      forType:NSStringPboardType];
+        forType:NSStringPboardType];
 
   // Write NSURLPboardType (with title).
   NSURL* url = [NSURL URLWithString:[urls objectAtIndex:0]];
@@ -220,12 +222,40 @@ void WriteSimplifiedBookmarkTypes(NSPasteboard* pb,
   [pb setString:titleString forType:kNSURLTitlePboardType];
 }
 
-void WriteToClipboardPrivate(
-    const std::vector<BookmarkNodeData::Element>& elements,
-    NSPasteboard* pb,
-    FilePath::StringType profile_path) {
+NSPasteboard* PasteboardFromType(
+    bookmark_pasteboard_helper_mac::PasteboardType type) {
+  NSString* type_string = nil;
+  switch (type) {
+    case bookmark_pasteboard_helper_mac::kCopyPastePasteboard:
+      type_string = NSGeneralPboard;
+      break;
+    case bookmark_pasteboard_helper_mac::kDragPasteboard:
+      type_string = NSDragPboard;
+      break;
+  }
+
+  return [NSPasteboard pasteboardWithName:type_string];
+}
+
+// Make a drag image from the drop data.
+NSImage* MakeDragImage() {
+  // TODO(feldstein): Do something better than this. Should have badging
+  // and a single drag image.
+  // http://crbug.com/37264
+  return [NSImage imageNamed:NSImageNameMultipleDocuments];
+}
+
+}  // namespace
+
+namespace bookmark_pasteboard_helper_mac {
+
+void WriteToPasteboard(PasteboardType type,
+                       const std::vector<BookmarkNodeData::Element>& elements,
+                       FilePath::StringType profile_path) {
   if (elements.empty())
     return;
+
+  NSPasteboard* pb = PasteboardFromType(type);
 
   NSArray* types = [NSArray arrayWithObjects:kBookmarkDictionaryListPboardType,
                                              kWebURLsWithTitlesPboardType,
@@ -241,19 +271,22 @@ void WriteToClipboardPrivate(
   WriteSimplifiedBookmarkTypes(pb, elements);
 }
 
-bool ReadFromClipboardPrivate(
-    std::vector<BookmarkNodeData::Element>& elements,
-    NSPasteboard* pb,
-    FilePath::StringType* profile_path) {
+bool ReadFromPasteboard(PasteboardType type,
+                        std::vector<BookmarkNodeData::Element>& elements,
+                        FilePath* profile_path) {
+  NSPasteboard* pb = PasteboardFromType(type);
+
   elements.clear();
   NSString* profile = [pb stringForType:kChromiumProfilePathPboardType];
-  profile_path->assign(base::SysNSStringToUTF8(profile));
-  return (ReadBookmarkDictionaryListPboardType(pb, elements) ||
+  *profile_path = FilePath(base::SysNSStringToUTF8(profile));
+  return ReadBookmarkDictionaryListPboardType(pb, elements) ||
          ReadWebURLsWithTitlesPboardType(pb, elements) ||
-         ReadNSURLPboardType(pb, elements));
+         ReadNSURLPboardType(pb, elements);
 }
 
-bool ClipboardContainsBookmarksPrivate(NSPasteboard* pb) {
+bool PasteboardContainsBookmarks(PasteboardType type) {
+  NSPasteboard* pb = PasteboardFromType(type);
+
   NSArray* availableTypes =
       [NSArray arrayWithObjects:kBookmarkDictionaryListPboardType,
                                 kWebURLsWithTitlesPboardType,
@@ -262,63 +295,39 @@ bool ClipboardContainsBookmarksPrivate(NSPasteboard* pb) {
   return [pb availableTypeFromArray:availableTypes] != nil;
 }
 
-}  // namespace
+void StartDrag(Profile* profile,
+               const std::vector<const BookmarkNode*>& nodes,
+               gfx::NativeView view) {
 
-namespace bookmark_pasteboard_helper_mac {
-
-void WriteToClipboard(const std::vector<BookmarkNodeData::Element>& elements,
-                      FilePath::StringType profile_path) {
-  NSPasteboard* pb = [NSPasteboard generalPasteboard];
-  WriteToClipboardPrivate(elements, pb, profile_path);
-}
-
-void WriteToDragClipboard(
-    const std::vector<BookmarkNodeData::Element>& elements,
-    FilePath::StringType profile_path) {
-  NSPasteboard* pb = [NSPasteboard pasteboardWithName:NSDragPboard];
-  WriteToClipboardPrivate(elements, pb, profile_path);
-}
-
-bool ReadFromClipboard(std::vector<BookmarkNodeData::Element>& elements,
-                       FilePath::StringType* profile_path) {
-  NSPasteboard* pb = [NSPasteboard generalPasteboard];
-  return ReadFromClipboardPrivate(elements, pb, profile_path);
-}
-
-bool ReadFromDragClipboard(std::vector<BookmarkNodeData::Element>& elements,
-                           FilePath::StringType* profile_path) {
-  NSPasteboard* pb = [NSPasteboard pasteboardWithName:NSDragPboard];
-  return ReadFromClipboardPrivate(elements, pb, profile_path);
-}
-
-
-bool ClipboardContainsBookmarks() {
-  NSPasteboard* pb = [NSPasteboard generalPasteboard];
-  return ClipboardContainsBookmarksPrivate(pb);
-}
-
-bool DragClipboardContainsBookmarks() {
-  NSPasteboard* pb = [NSPasteboard pasteboardWithName:NSDragPboard];
-  return ClipboardContainsBookmarksPrivate(pb);
-}
-
-void StartDrag(Profile* profile, const std::vector<const BookmarkNode*>& nodes,
-    gfx::NativeView view) {
-  DCHECK([view isKindOfClass:[TabContentsViewCocoa class]]);
-  TabContentsViewCocoa* tabView = static_cast<TabContentsViewCocoa*>(view);
   std::vector<BookmarkNodeData::Element> elements;
   for (std::vector<const BookmarkNode*>::const_iterator it = nodes.begin();
        it != nodes.end(); ++it) {
     elements.push_back(BookmarkNodeData::Element(*it));
   }
-  NSPasteboard* pb = [NSPasteboard pasteboardWithName:NSDragPboard];
-  scoped_nsobject<BookmarkDragSource> source([[BookmarkDragSource alloc]
-      initWithContentsView:tabView
-                  dropData:elements
-                   profile:profile
-                pasteboard:pb
-         dragOperationMask:NSDragOperationEvery]);
-  [source startDrag];
+
+  WriteToPasteboard(kDragPasteboard, elements, profile->GetPath().value());
+
+  // Synthesize an event for dragging, since we can't be sure that
+  // [NSApp currentEvent] will return a valid dragging event.
+  NSWindow* window = [view window];
+  NSPoint position = [window mouseLocationOutsideOfEventStream];
+  NSTimeInterval eventTime = [[NSApp currentEvent] timestamp];
+  NSEvent* dragEvent = [NSEvent mouseEventWithType:NSLeftMouseDragged
+                                          location:position
+                                     modifierFlags:NSLeftMouseDraggedMask
+                                         timestamp:eventTime
+                                      windowNumber:[window windowNumber]
+                                           context:nil
+                                       eventNumber:0
+                                        clickCount:1
+                                          pressure:1.0];
+  [window dragImage:MakeDragImage()
+                 at:position
+             offset:NSZeroSize
+              event:dragEvent
+         pasteboard:[NSPasteboard pasteboardWithName:NSDragPboard]
+             source:nil
+          slideBack:YES];
 }
 
 }  // namespace bookmark_pasteboard_helper_mac

@@ -71,7 +71,8 @@
 // dragClipboardContainsBookmarks].  http://crbug.com/35966
 // Shim function to assist in unit testing.
 - (BOOL)dragClipboardContainsBookmarks {
-  return bookmark_pasteboard_helper_mac::DragClipboardContainsBookmarks();
+  return bookmark_pasteboard_helper_mac::PasteboardContainsBookmarks(
+      bookmark_pasteboard_helper_mac::kDragPasteboard);
 }
 
 // Virtually identical to [BookmarkBarView draggingEntered:].

@@ -14,33 +14,25 @@
 // and dragging methods.
 namespace bookmark_pasteboard_helper_mac {
 
-// Writes a set of bookmark elements from a profile to the general pasteboard.
-// This should be used for copy/paste functions.
-void WriteToClipboard(const std::vector<BookmarkNodeData::Element>& elements,
-                      FilePath::StringType profile_path);
+enum PasteboardType {
+  kCopyPastePasteboard,
+  kDragPasteboard
+};
 
-// Writes a set of bookmark elements from a profile to the dragging pasteboard
-// for drag and drop functions.
-void WriteToDragClipboard(
-    const std::vector<BookmarkNodeData::Element>& elements,
-    FilePath::StringType profile_path);
+// Writes a set of bookmark elements from a profile to the specified pasteboard.
+void WriteToPasteboard(PasteboardType type,
+                       const std::vector<BookmarkNodeData::Element>& elements,
+                       FilePath::StringType profile_path);
 
-// Reads a set of bookmark elements from the general copy/paste clipboard.
-bool ReadFromClipboard(std::vector<BookmarkNodeData::Element>& elements,
-                       FilePath::StringType* profile_path);
+// Reads a set of bookmark elements from the specified pasteboard.
+bool ReadFromPasteboard(PasteboardType type,
+                        std::vector<BookmarkNodeData::Element>& elements,
+                        FilePath* profile_path);
 
-// Reads a set of bookmark elements from the drag and drop clipboard.
-bool ReadFromDragClipboard(std::vector<BookmarkNodeData::Element>& elements,
-                           FilePath::StringType* profile_path);
-
-// Returns true if the general copy/paste pasteboard contains any sort of
+// Returns true if the specified pasteboard contains any sort of
 // bookmark elements.  It currently does not consider a plaintext url a
 // valid bookmark.
-bool ClipboardContainsBookmarks();
-
-// Returns true if the dragging pasteboard contains any sort of bookmark
-// elements.
-bool DragClipboardContainsBookmarks();
+bool PasteboardContainsBookmarks(PasteboardType type);
 
 // Copies the bookmark nodes to the dragging pasteboard and initiates a
 // drag from the specified view.  |view| must be a |TabContentsViewCocoa*|.
