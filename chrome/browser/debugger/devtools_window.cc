@@ -625,7 +625,7 @@ DevToolsWindow* DevToolsWindow::AsDevToolsWindow(
   return NULL;
 }
 
-void DevToolsWindow::RenderViewHostDestroyed() {
+void DevToolsWindow::RenderViewHostDestroyed(RenderViewHost* rvh) {
   // Don't delete |this| here, do it on NOTIFICATION_TAB_CLOSING event.
 }
 

@@ -28,7 +28,7 @@ class PrerenderRenderViewHostObserver : public RenderViewHostObserver {
   PrerenderRenderViewHostObserver(PrerenderContents* prerender_contents,
                                   RenderViewHost* render_view_host);
 
-  virtual void RenderViewHostDestroyed() OVERRIDE;
+  virtual void RenderViewHostDestroyed(RenderViewHost* rvh) OVERRIDE;
 
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual bool Send(IPC::Message* message) OVERRIDE;

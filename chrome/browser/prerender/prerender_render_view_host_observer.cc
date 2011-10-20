@@ -19,7 +19,8 @@ PrerenderRenderViewHostObserver::PrerenderRenderViewHostObserver(
       prerender_contents_(prerender_contents) {
 }
 
-void PrerenderRenderViewHostObserver::RenderViewHostDestroyed() {
+void PrerenderRenderViewHostObserver::RenderViewHostDestroyed(
+    RenderViewHost* rvh) {
   // The base class deletes |this| on RenderViewHost destruction but we want the
   // lifetime to be tied to the PrerenderContents instead, so we'll do nothing
   // here.

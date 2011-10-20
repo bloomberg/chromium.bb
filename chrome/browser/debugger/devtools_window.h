@@ -121,7 +121,7 @@ class DevToolsWindow
   static DevToolsWindow* AsDevToolsWindow(DevToolsClientHost*);
 
   // RenderViewHostObserver overrides.
-  virtual void RenderViewHostDestroyed() OVERRIDE;
+  virtual void RenderViewHostDestroyed(RenderViewHost* rvh) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   void OnActivateWindow();

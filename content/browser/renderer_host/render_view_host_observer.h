@@ -28,7 +28,9 @@ class CONTENT_EXPORT RenderViewHostObserver : public IPC::Channel::Listener,
 
   // Invoked when the RenderViewHost is being destroyed. Gives subclasses a
   // chance to cleanup.  The base implementation will delete the object.
-  virtual void RenderViewHostDestroyed();
+  // |render_view_host| is passed as an argument since render_view_host() will
+  // return NULL once this method enters.
+  virtual void RenderViewHostDestroyed(RenderViewHost* render_view_host);
 
   // Notifies that a navigation is starting.
   virtual void Navigate(const ViewMsg_Navigate_Params& params);

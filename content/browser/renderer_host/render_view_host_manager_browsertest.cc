@@ -276,10 +276,10 @@ class RenderViewHostObserverArray {
         : RenderViewHostObserver(rvh),
           parent_(parent) {
     }
-    virtual void RenderViewHostDestroyed() OVERRIDE {
+    virtual void RenderViewHostDestroyed(RenderViewHost* rvh) OVERRIDE {
       if (parent_)
         parent_->RemoveObserver(this);
-      RenderViewHostObserver::RenderViewHostDestroyed();
+      RenderViewHostObserver::RenderViewHostDestroyed(rvh);
     };
     void ClearParent() {
       parent_ = NULL;

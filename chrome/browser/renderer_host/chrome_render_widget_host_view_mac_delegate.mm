@@ -78,7 +78,7 @@ class SpellCheckRenderViewObserver : public RenderViewHostObserver {
 
  private:
   // RenderViewHostObserver implementation.
-  virtual void RenderViewHostDestroyed() OVERRIDE {
+  virtual void RenderViewHostDestroyed(RenderViewHost* rvh) OVERRIDE {
     // The parent implementation destroys the observer, scoping the lifetime of
     // the observer to the RenderViewHost. Since this class is acting as a
     // bridge to the view for the delegate below, and is owned by that delegate,

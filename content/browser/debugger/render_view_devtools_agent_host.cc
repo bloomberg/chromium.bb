@@ -69,7 +69,7 @@ RenderViewDevToolsAgentHost::~RenderViewDevToolsAgentHost() {
   instances_.erase(render_view_host_);
 }
 
-void RenderViewDevToolsAgentHost::RenderViewHostDestroyed() {
+void RenderViewDevToolsAgentHost::RenderViewHostDestroyed(RenderViewHost* rvh) {
   NotifyCloseListener();
   delete this;
 }

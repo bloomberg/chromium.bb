@@ -34,16 +34,17 @@ ChromeRenderViewHostObserver::ChromeRenderViewHostObserver(
 }
 
 ChromeRenderViewHostObserver::~ChromeRenderViewHostObserver() {
-  ExtensionProcessManager* process_manager =
-      profile_->GetExtensionProcessManager();
-  if (process_manager) {
-    profile_->GetExtensionProcessManager()->UnregisterRenderViewHost(
-        render_view_host());
-  }
+  RemoveRenderViewHostForExtensions(render_view_host());
 }
 
 void ChromeRenderViewHostObserver::RenderViewHostInitialized() {
   InitRenderViewForExtensions();
+}
+
+void ChromeRenderViewHostObserver::RenderViewHostDestroyed(
+    RenderViewHost* rvh) {
+  RemoveRenderViewHostForExtensions(rvh);
+  delete this;
 }
 
 void ChromeRenderViewHostObserver::Navigate(
@@ -140,6 +141,14 @@ const Extension* ChromeRenderViewHostObserver::GetExtension() {
 
   // May be null if somebody typos a chrome-extension:// URL.
   return service->GetExtensionByURL(site);
+}
+
+void ChromeRenderViewHostObserver::RemoveRenderViewHostForExtensions(
+    RenderViewHost* rvh) {
+  ExtensionProcessManager* process_manager =
+      profile_->GetExtensionProcessManager();
+  if (process_manager)
+    process_manager->UnregisterRenderViewHost(rvh);
 }
 
 void ChromeRenderViewHostObserver::OnDomOperationResponse(

@@ -20,7 +20,7 @@ RenderViewHostObserver::~RenderViewHostObserver() {
 void RenderViewHostObserver::RenderViewHostInitialized() {
 }
 
-void RenderViewHostObserver::RenderViewHostDestroyed() {
+void RenderViewHostObserver::RenderViewHostDestroyed(RenderViewHost* rvh) {
   delete this;
 }
 
@@ -42,6 +42,7 @@ bool RenderViewHostObserver::Send(IPC::Message* message) {
 
 void RenderViewHostObserver::RenderViewHostDestruction() {
   render_view_host_->RemoveObserver(this);
+  RenderViewHost* rvh = render_view_host_;
   render_view_host_ = NULL;
-  RenderViewHostDestroyed();
+  RenderViewHostDestroyed(rvh);
 }

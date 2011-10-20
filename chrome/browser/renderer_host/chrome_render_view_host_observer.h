@@ -25,6 +25,7 @@ class ChromeRenderViewHostObserver : public RenderViewHostObserver {
 
   // RenderViewHostObserver overrides.
   virtual void RenderViewHostInitialized() OVERRIDE;
+  virtual void RenderViewHostDestroyed(RenderViewHost* rvh) OVERRIDE;
   virtual void Navigate(const ViewMsg_Navigate_Params& params) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
@@ -37,6 +38,8 @@ class ChromeRenderViewHostObserver : public RenderViewHostObserver {
   void InitRenderViewForExtensions();
   // Gets the extension or app (if any) that is associated with the RVH.
   const Extension* GetExtension();
+  // Cleans up when a RenderViewHost is removed, or on destruction.
+  void RemoveRenderViewHostForExtensions(RenderViewHost* rvh);
 
   void OnDomOperationResponse(const std::string& json_string,
                               int automation_id);
