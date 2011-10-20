@@ -69,6 +69,8 @@ if env.Bit('linux'):
     'test_sp_updates': 1,
     'test_stores': 1,
     'test_vector_stores': 1,
+    'test_loads': 1,
+    'test_vector_loads': 1,
   }
 
   for test, exit_status in validator_tests.iteritems():

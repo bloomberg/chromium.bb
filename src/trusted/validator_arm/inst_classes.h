@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors.  All rights reserved.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -119,15 +119,25 @@ class ClassDecoder {
   }
 
   /*
-   * For instructions that can write memory, gets the register used as the base
-   * for generating the effective address.
+   * For instructions that can read or write memory, gets the register used as
+   * the base for generating the effective address.
    *
-   * The result is useful only for safe instructions where writes_memory() is
-   * true.  It is stubbed to return nonsense.
+   * It is stubbed to return nonsense.
    */
   virtual Register base_address_register(Instruction i) const {
     UNREFERENCED_PARAMETER(i);
     return kRegisterNone;
+  }
+
+  /*
+   * Checks whether the instruction computes its read or write address as
+   * base address + immediate.
+   *
+   * It is stubbed to return false.
+   */
+  virtual bool offset_is_immediate(Instruction i) const {
+    UNREFERENCED_PARAMETER(i);
+    return false;
   }
 
   /*
@@ -559,7 +569,9 @@ class LoadRegister : public AbstractLoad {
  public:
   virtual ~LoadRegister() {}
 
+  virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
+  virtual Register base_address_register(Instruction i) const;
 };
 
 /*
@@ -574,6 +586,8 @@ class LoadImmediate : public AbstractLoad {
   virtual ~LoadImmediate() {}
 
   virtual RegisterList immediate_addressing_defs(Instruction i) const;
+  virtual Register base_address_register(Instruction i) const;
+  virtual bool offset_is_immediate(Instruction i) const;
 };
 
 /*
@@ -584,6 +598,8 @@ class LoadDoubleI : public LoadImmediate {
   virtual ~LoadDoubleI() {}
 
   virtual RegisterList defs(Instruction i) const;
+  virtual Register base_address_register(Instruction i) const;
+  virtual bool offset_is_immediate(Instruction i) const;
 };
 
 /*
@@ -593,7 +609,9 @@ class LoadDoubleR : public LoadRegister {
  public:
   virtual ~LoadDoubleR() {}
 
+  virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
+  virtual Register base_address_register(Instruction i) const;
 };
 
 /*
@@ -602,6 +620,7 @@ class LoadDoubleR : public LoadRegister {
 class LoadExclusive : public AbstractLoad {
  public:
   virtual ~LoadExclusive() {}
+  virtual Register base_address_register(Instruction i) const;
 };
 
 /*
@@ -612,6 +631,7 @@ class LoadDoubleExclusive : public LoadExclusive {
   virtual ~LoadDoubleExclusive() {}
 
   virtual RegisterList defs(Instruction i) const;
+  virtual Register base_address_register(Instruction i) const;
 };
 
 /*
@@ -625,6 +645,7 @@ class LoadMultiple : public ClassDecoder {
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
   virtual RegisterList immediate_addressing_defs(Instruction i) const;
+  virtual Register base_address_register(Instruction i) const;
 };
 
 /*
@@ -638,6 +659,7 @@ class VectorLoad : public ClassDecoder {
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
   virtual RegisterList immediate_addressing_defs(Instruction i) const;
+  virtual Register base_address_register(Instruction i) const;
 };
 
 /*

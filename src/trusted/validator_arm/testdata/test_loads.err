@@ -1,0 +1,13 @@
+ncval: 00020014 6 kProblemUnsafeLoadStore 00000000
+ncval: 0002001C 6 kProblemUnsafeLoadStore 00000000
+ncval: 0002002C 6 kProblemPatternCrossesBundle 00000000
+ncval: 00020044 6 kProblemUnsafeLoadStore 00000000
+ncval: 0002005C 6 kProblemUnsafeLoadStore 00000000
+ncval: 00020064 5 kProblemUnsafe 00000000
+ncval: 00020064 5 kProblemUnsafeBranch 00000000
+ncval: 0002006C 6 kProblemUnsafeDataWrite 00000000
+ncval: 00020084 4 kProblemUnsafe 00000000
+ncval: 00020094 6 kProblemUnsafeDataWrite 00000000
+ncval: 000200AC 6 kProblemUnsafeLoadStore 00000000
+ncval: 000200B4 6 kProblemUnsafeLoadStore 00000000
+ncval: 000200BC 6 kProblemUnsafeLoadStore 00000000
