@@ -97,6 +97,10 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimatorDelegate {
   void SetBounds(const gfx::Rect& bounds);
   const gfx::Rect& bounds() const { return bounds_; }
 
+  // Return the target bounds if animator is running, or the current bounds
+  // otherwise.
+  gfx::Rect GetTargetBounds() const;
+
   // The opacity of the layer. The opacity is applied to each pixel of the
   // texture (resulting alpha = opacity * alpha).
   float opacity() const { return opacity_; }

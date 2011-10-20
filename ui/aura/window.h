@@ -122,6 +122,10 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // Changes the bounds of the window.
   void SetBounds(const gfx::Rect& new_bounds);
 
+  // Returns the target bounds of the window. If the window's layer is
+  // not animating, it simply returns the current bounds.
+  gfx::Rect GetTargetBounds() const;
+
   // Sets the minimum size of the window that a user can resize it to.
   // A smaller size can still be set using SetBounds().
   void set_minimum_size(const gfx::Size& minimum_size) {

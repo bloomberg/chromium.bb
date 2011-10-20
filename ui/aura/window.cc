@@ -144,6 +144,10 @@ void Window::SetBounds(const gfx::Rect& new_bounds) {
   SetBoundsInternal(new_bounds);
 }
 
+gfx::Rect Window::GetTargetBounds() const {
+  return layer_->GetTargetBounds();
+}
+
 const gfx::Rect& Window::bounds() const {
   return layer_->bounds();
 }

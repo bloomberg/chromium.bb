@@ -136,6 +136,12 @@ void Layer::SetBounds(const gfx::Rect& bounds) {
   SetBoundsImmediately(bounds);
 }
 
+gfx::Rect Layer::GetTargetBounds() const {
+  if (animator_.get() && animator_->IsRunning())
+    return gfx::Rect(animator_->GetTargetPoint(), bounds_.size());
+  return bounds_;
+}
+
 void Layer::SetOpacity(float opacity) {
   StopAnimatingIfNecessary(LayerAnimator::OPACITY);
   if (animator_.get() && animator_->IsRunning()) {
