@@ -61,6 +61,7 @@
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/event_conversion.h"
 #include "webkit/plugins/ppapi/fullscreen_container.h"
+#include "webkit/plugins/ppapi/host_globals.h"
 #include "webkit/plugins/ppapi/message_channel.h"
 #include "webkit/plugins/ppapi/npapi_glue.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
@@ -101,6 +102,7 @@
 
 using base::StringPrintf;
 using ppapi::InputEventImpl;
+using ppapi::PpapiGlobals;
 using ppapi::StringVar;
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_Buffer_API;
@@ -241,7 +243,8 @@ void RectToPPRect(const gfx::Rect& input, PP_Rect* output) {
 // unchanged.
 bool SecurityOriginForInstance(PP_Instance instance_id,
                                WebKit::WebSecurityOrigin* security_origin) {
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
+  PluginInstance* instance =
+      HostGlobals::Get()->host_resource_tracker()->GetInstance(instance_id);
   if (!instance)
     return false;
 
@@ -304,7 +307,7 @@ PluginInstance::PluginInstance(
       text_input_caret_bounds_(0, 0, 0, 0),
       text_input_caret_set_(false),
       lock_mouse_callback_(PP_BlockUntilComplete()) {
-  pp_instance_ = ResourceTracker::Get()->AddInstance(this);
+  pp_instance_ = HostGlobals::Get()->host_resource_tracker()->AddInstance(this);
 
   memset(&current_print_settings_, 0, sizeof(current_print_settings_));
   DCHECK(delegate);
@@ -333,7 +336,7 @@ PluginInstance::~PluginInstance() {
   delegate_->InstanceDeleted(this);
   module_->InstanceDeleted(this);
 
-  ResourceTracker::Get()->InstanceDeleted(pp_instance_);
+  HostGlobals::Get()->host_resource_tracker()->InstanceDeleted(pp_instance_);
 }
 
 // NOTE: Any of these methods that calls into the plugin needs to take into
@@ -421,7 +424,7 @@ void PluginInstance::CommitBackingTexture() {
 
 void PluginInstance::InstanceCrashed() {
   // Force free all resources and vars.
-  ResourceTracker::Get()->InstanceCrashed(pp_instance());
+  HostGlobals::Get()->host_resource_tracker()->InstanceCrashed(pp_instance());
 
   // Free any associated graphics.
   SetFullscreen(false, false);
@@ -860,7 +863,7 @@ string16 PluginInstance::GetSelectedText(bool html) {
   if (string)
     selection = UTF8ToUTF16(string->value());
   // Release the ref the plugin transfered to us.
-  ResourceTracker::Get()->GetVarTracker()->ReleaseVar(rv);
+  HostGlobals::Get()->GetVarTracker()->ReleaseVar(rv);
   return selection;
 }
 
@@ -879,7 +882,7 @@ string16 PluginInstance::GetLinkAtPosition(const gfx::Point& point) {
   if (string)
     link = UTF8ToUTF16(string->value());
   // Release the ref the plugin transfered to us.
-  ResourceTracker::Get()->GetVarTracker()->ReleaseVar(rv);
+  PpapiGlobals::Get()->GetVarTracker()->ReleaseVar(rv);
   return link;
 }
 

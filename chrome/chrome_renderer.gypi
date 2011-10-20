@@ -16,6 +16,7 @@
         '../content/content.gyp:content_renderer',
         '../net/net.gyp:net',
         '../ppapi/ppapi_internal.gyp:ppapi_proxy',
+        '../ppapi/ppapi_internal.gyp:ppapi_shared',
         '../printing/printing.gyp:printing',
         '../skia/skia.gyp:skia',
         '../third_party/cld/cld.gyp:cld',

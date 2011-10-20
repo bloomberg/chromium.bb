@@ -16,6 +16,7 @@
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/file_path.h"
 #include "webkit/plugins/ppapi/file_type_conversions.h"
+#include "webkit/plugins/ppapi/host_globals.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
@@ -66,7 +67,8 @@ int32_t OpenModuleLocalFile(PP_Instance pp_instance,
   if (!path || !PepperFileOpenFlagsToPlatformFileFlags(mode, &flags) || !file)
     return PP_ERROR_BADARGUMENT;
 
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(pp_instance);
+  PluginInstance* instance =
+      HostGlobals::Get()->host_resource_tracker()->GetInstance(pp_instance);
   if (!instance)
     return PP_ERROR_FAILED;
 
@@ -85,7 +87,8 @@ int32_t RenameModuleLocalFile(PP_Instance pp_instance,
   if (!from_path || !to_path)
     return PP_ERROR_BADARGUMENT;
 
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(pp_instance);
+  PluginInstance* instance =
+      HostGlobals::Get()->host_resource_tracker()->GetInstance(pp_instance);
   if (!instance)
     return PP_ERROR_FAILED;
 
@@ -101,7 +104,8 @@ int32_t DeleteModuleLocalFileOrDir(PP_Instance pp_instance,
   if (!path)
     return PP_ERROR_BADARGUMENT;
 
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(pp_instance);
+  PluginInstance* instance =
+      HostGlobals::Get()->host_resource_tracker()->GetInstance(pp_instance);
   if (!instance)
     return PP_ERROR_FAILED;
 
@@ -115,7 +119,8 @@ int32_t CreateModuleLocalDir(PP_Instance pp_instance, const char* path) {
   if (!path)
     return PP_ERROR_BADARGUMENT;
 
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(pp_instance);
+  PluginInstance* instance =
+      HostGlobals::Get()->host_resource_tracker()->GetInstance(pp_instance);
   if (!instance)
     return PP_ERROR_FAILED;
 
@@ -130,7 +135,8 @@ int32_t QueryModuleLocalFile(PP_Instance pp_instance,
   if (!path || !info)
     return PP_ERROR_BADARGUMENT;
 
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(pp_instance);
+  PluginInstance* instance =
+      HostGlobals::Get()->host_resource_tracker()->GetInstance(pp_instance);
   if (!instance)
     return PP_ERROR_FAILED;
 
@@ -157,7 +163,8 @@ int32_t GetModuleLocalDirContents(PP_Instance pp_instance,
                                   PP_DirContents_Dev** contents) {
   if (!path || !contents)
     return PP_ERROR_BADARGUMENT;
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(pp_instance);
+  PluginInstance* instance =
+      HostGlobals::Get()->host_resource_tracker()->GetInstance(pp_instance);
   if (!instance)
     return PP_ERROR_FAILED;
 

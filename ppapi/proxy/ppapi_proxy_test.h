@@ -13,6 +13,7 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
+#include "ppapi/proxy/plugin_globals.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/plugin_var_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -78,8 +79,12 @@ class PluginProxyTestHarness : public ProxyTestHarnessBase {
   virtual ~PluginProxyTestHarness();
 
   PluginDispatcher* plugin_dispatcher() { return plugin_dispatcher_.get(); }
-  PluginResourceTracker& resource_tracker() { return resource_tracker_; }
-  PluginVarTracker& var_tracker() { return var_tracker_; }
+  PluginResourceTracker& resource_tracker() {
+    return *plugin_globals_.plugin_resource_tracker();
+  }
+  PluginVarTracker& var_tracker() {
+    return *plugin_globals_.plugin_var_tracker();
+  }
 
   // ProxyTestHarnessBase implementation.
   virtual Dispatcher* GetDispatcher();
@@ -123,8 +128,8 @@ class PluginProxyTestHarness : public ProxyTestHarnessBase {
   };
 
  private:
-  PluginResourceTracker resource_tracker_;
-  PluginVarTracker var_tracker_;
+  PluginGlobals plugin_globals_;
+
   scoped_ptr<PluginDispatcher> plugin_dispatcher_;
   PluginDelegateMock plugin_delegate_mock_;
 };

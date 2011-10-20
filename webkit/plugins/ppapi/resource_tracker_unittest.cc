@@ -9,6 +9,7 @@
 #include "ppapi/c/ppp_instance.h"
 #include "third_party/npapi/bindings/npruntime.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
+#include "webkit/plugins/ppapi/host_globals.h"
 #include "webkit/plugins/ppapi/mock_plugin_delegate.h"
 #include "webkit/plugins/ppapi/mock_resource.h"
 #include "webkit/plugins/ppapi/npapi_glue.h"
@@ -78,23 +79,9 @@ class ResourceTrackerTest : public PpapiUnittest {
   ResourceTrackerTest() {
   }
 
-  virtual void SetUp() {
-    // The singleton override must be installed before the generic setup because
-    // that creates an instance, etc. which uses the tracker.
-    ResourceTracker::SetSingletonOverride(&tracker_);
-    PpapiUnittest::SetUp();
+  ResourceTracker& tracker() {
+    return *HostGlobals::Get()->host_resource_tracker();
   }
-  virtual void TearDown() {
-    // Must do normal tear down before clearing the override for the same rason
-    // as the SetUp.
-    PpapiUnittest::TearDown();
-    ResourceTracker::ClearSingletonOverride();
-  }
-
-  ResourceTracker& tracker() { return tracker_; }
-
- private:
-  ResourceTracker tracker_;
 };
 
 TEST_F(ResourceTrackerTest, DeleteObjectVarWithInstance) {
@@ -138,7 +125,8 @@ TEST_F(ResourceTrackerTest, ReuseVar) {
   }
 
   // Remove both of the refs we made above.
-  ::ppapi::VarTracker* var_tracker = tracker().GetVarTracker();
+  ::ppapi::VarTracker* var_tracker =
+      ::ppapi::PpapiGlobals::Get()->GetVarTracker();
   var_tracker->ReleaseVar(static_cast<int32_t>(pp_object2.value.as_id));
   var_tracker->ReleaseVar(static_cast<int32_t>(pp_object1.value.as_id));
 

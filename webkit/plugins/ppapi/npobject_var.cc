@@ -7,8 +7,10 @@
 #include "base/logging.h"
 #include "ppapi/c/pp_var.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
+#include "webkit/plugins/ppapi/host_globals.h"
 #include "webkit/plugins/ppapi/resource_tracker.h"
 
+using webkit::ppapi::HostGlobals;
 using WebKit::WebBindings;
 
 namespace ppapi {
@@ -22,12 +24,12 @@ NPObjectVar::NPObjectVar(PP_Module module,
       pp_instance_(instance),
       np_object_(np_object) {
   WebBindings::retainObject(np_object_);
-  webkit::ppapi::ResourceTracker::Get()->AddNPObjectVar(this);
+  HostGlobals::Get()->host_resource_tracker()->AddNPObjectVar(this);
 }
 
 NPObjectVar::~NPObjectVar() {
   if (pp_instance())
-    webkit::ppapi::ResourceTracker::Get()->RemoveNPObjectVar(this);
+    HostGlobals::Get()->host_resource_tracker()->RemoveNPObjectVar(this);
   WebBindings::releaseObject(np_object_);
 }
 
@@ -60,7 +62,7 @@ scoped_refptr<NPObjectVar> NPObjectVar::FromPPVar(PP_Var var) {
   if (var.type != PP_VARTYPE_OBJECT)
     return scoped_refptr<NPObjectVar>(NULL);
   scoped_refptr<Var> var_object(
-      webkit::ppapi::ResourceTracker::Get()->GetVarTracker()->GetVar(var));
+      PpapiGlobals::Get()->GetVarTracker()->GetVar(var));
   if (!var_object)
     return scoped_refptr<NPObjectVar>();
   return scoped_refptr<NPObjectVar>(var_object->AsNPObjectVar());

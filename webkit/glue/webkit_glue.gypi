@@ -204,6 +204,8 @@
         '../plugins/ppapi/file_type_conversions.cc',
         '../plugins/ppapi/file_type_conversions.h',
         '../plugins/ppapi/fullscreen_container.h',
+        '../plugins/ppapi/host_globals.cc',
+        '../plugins/ppapi/host_globals.h',
         '../plugins/ppapi/message_channel.cc',
         '../plugins/ppapi/message_channel.h',
         '../plugins/ppapi/npapi_glue.cc',

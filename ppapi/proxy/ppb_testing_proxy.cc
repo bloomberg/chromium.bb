@@ -7,9 +7,10 @@
 #include "base/message_loop.h"
 #include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
-#include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/resource.h"
+#include "ppapi/shared_impl/resource_tracker.h"
 
 namespace ppapi {
 namespace proxy {
@@ -19,12 +20,12 @@ namespace {
 PP_Bool ReadImageData(PP_Resource graphics_2d,
                       PP_Resource image,
                       const PP_Point* top_left) {
-  Resource* image_object = PluginResourceTracker::GetInstance()->
-      GetResource(image);
+  Resource* image_object =
+      PpapiGlobals::Get()->GetResourceTracker()->GetResource(image);
   if (!image_object)
     return PP_FALSE;
   Resource* graphics_2d_object =
-      PluginResourceTracker::GetInstance()->GetResource(graphics_2d);
+      PpapiGlobals::Get()->GetResourceTracker()->GetResource(graphics_2d);
   if (!graphics_2d_object ||
       image_object->pp_instance() != graphics_2d_object->pp_instance())
     return PP_FALSE;

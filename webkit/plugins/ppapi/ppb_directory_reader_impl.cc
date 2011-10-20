@@ -9,6 +9,7 @@
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/dev/ppb_directory_reader_dev.h"
+#include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_file_ref_api.h"
 #include "webkit/plugins/ppapi/common.h"
@@ -21,6 +22,7 @@
 #include "webkit/plugins/ppapi/resource_helper.h"
 #include "webkit/plugins/ppapi/resource_tracker.h"
 
+using ::ppapi::PpapiGlobals;
 using ::ppapi::thunk::EnterResourceNoLock;
 using ::ppapi::thunk::PPB_DirectoryReader_API;
 using ::ppapi::thunk::PPB_FileRef_API;
@@ -128,8 +130,10 @@ bool PPB_DirectoryReader_Impl::FillUpEntry() {
   if (!entries_.empty()) {
     base::FileUtilProxy::Entry dir_entry = entries_.front();
     entries_.pop();
-    if (entry_->file_ref)
-      ResourceTracker::Get()->ReleaseResource(entry_->file_ref);
+    if (entry_->file_ref) {
+      PpapiGlobals::Get()->GetResourceTracker()->ReleaseResource(
+          entry_->file_ref);
+    }
 
     PPB_FileRef_Impl* file_ref = PPB_FileRef_Impl::CreateInternal(
         directory_ref_->file_system()->pp_resource(),

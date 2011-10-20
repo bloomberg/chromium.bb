@@ -373,11 +373,11 @@ void PPP_VideoCapture_Proxy::OnMsgOnDeviceInfo(
     const PP_VideoCaptureDeviceInfo_Dev& info,
     const std::vector<PPPVideoCapture_Buffer>& buffers) {
   EnterPluginFromHostResource<PPB_VideoCapture_API> enter(host_resource);
-  PluginResourceTracker* tracker = PluginResourceTracker::GetInstance();
-  PP_Resource resource = tracker->PluginResourceForHostResource(host_resource);
-  if (!resource || !ppp_video_capture_impl_ || enter.failed())
+  if (enter.failed() || !ppp_video_capture_impl_)
     return;
 
+  PluginResourceTracker* tracker =
+      PluginGlobals::Get()->plugin_resource_tracker();
   scoped_array<PP_Resource> resources(new PP_Resource[buffers.size()]);
   for (size_t i = 0; i < buffers.size(); ++i) {
     // We assume that the browser created a new set of resources.
@@ -386,10 +386,12 @@ void PPP_VideoCapture_Proxy::OnMsgOnDeviceInfo(
                                                       buffers[i].handle,
                                                       buffers[i].size);
   }
-  static_cast<VideoCapture*>(enter.object())->SetBufferCount(buffers.size());
+
+  VideoCapture* capture = static_cast<VideoCapture*>(enter.object());
+  capture->SetBufferCount(buffers.size());
   ppp_video_capture_impl_->OnDeviceInfo(
       host_resource.instance(),
-      resource,
+      capture->pp_resource(),
       &info,
       buffers.size(),
       resources.get());
@@ -400,40 +402,38 @@ void PPP_VideoCapture_Proxy::OnMsgOnDeviceInfo(
 void PPP_VideoCapture_Proxy::OnMsgOnStatus(const HostResource& host_resource,
                                            uint32_t status) {
   EnterPluginFromHostResource<PPB_VideoCapture_API> enter(host_resource);
-  PluginResourceTracker* tracker = PluginResourceTracker::GetInstance();
-  PP_Resource resource = tracker->PluginResourceForHostResource(host_resource);
-  if (!resource || !ppp_video_capture_impl_ || enter.failed())
+  if (enter.failed() || !ppp_video_capture_impl_)
     return;
 
-  if (!static_cast<VideoCapture*>(enter.object())->OnStatus(status))
+  VideoCapture* capture = static_cast<VideoCapture*>(enter.object());
+  if (!capture->OnStatus(status))
     return;
   ppp_video_capture_impl_->OnStatus(
-      host_resource.instance(), resource, status);
+      host_resource.instance(), capture->pp_resource(), status);
 }
 
 void PPP_VideoCapture_Proxy::OnMsgOnError(const HostResource& host_resource,
                                           uint32_t error_code) {
   EnterPluginFromHostResource<PPB_VideoCapture_API> enter(host_resource);
-  PluginResourceTracker* tracker = PluginResourceTracker::GetInstance();
-  PP_Resource resource = tracker->PluginResourceForHostResource(host_resource);
-  if (!resource || !ppp_video_capture_impl_ || enter.failed())
+  if (enter.failed() || !ppp_video_capture_impl_)
     return;
-  static_cast<VideoCapture*>(enter.object())->set_status(
-      PP_VIDEO_CAPTURE_STATUS_STOPPED);
+
+  VideoCapture* capture = static_cast<VideoCapture*>(enter.object());
+  capture->set_status(PP_VIDEO_CAPTURE_STATUS_STOPPED);
   ppp_video_capture_impl_->OnError(
-      host_resource.instance(), resource, error_code);
+      host_resource.instance(), capture->pp_resource(), error_code);
 }
 
 void PPP_VideoCapture_Proxy::OnMsgOnBufferReady(
     const HostResource& host_resource, uint32_t buffer) {
   EnterPluginFromHostResource<PPB_VideoCapture_API> enter(host_resource);
-  PluginResourceTracker* tracker = PluginResourceTracker::GetInstance();
-  PP_Resource resource = tracker->PluginResourceForHostResource(host_resource);
-  if (!resource || !ppp_video_capture_impl_ || enter.failed())
+  if (enter.failed() || !ppp_video_capture_impl_)
     return;
-  static_cast<VideoCapture*>(enter.object())->SetBufferInUse(buffer);
+
+  VideoCapture* capture = static_cast<VideoCapture*>(enter.object());
+  capture->SetBufferInUse(buffer);
   ppp_video_capture_impl_->OnBufferReady(
-      host_resource.instance(), resource, buffer);
+      host_resource.instance(), capture->pp_resource(), buffer);
 }
 
 }  // namespace proxy

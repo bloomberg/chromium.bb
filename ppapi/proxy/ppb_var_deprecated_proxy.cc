@@ -15,6 +15,7 @@
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
+#include "ppapi/proxy/plugin_globals.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/plugin_var_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
@@ -41,8 +42,9 @@ PluginDispatcher* CheckExceptionAndGetDispatcher(const PP_Var& object,
 
   if (object.type == PP_VARTYPE_OBJECT) {
     // Get the dispatcher for the object.
-    PluginDispatcher* dispatcher = PluginResourceTracker::GetInstance()->
-        var_tracker().DispatcherForPluginObject(object);
+    PluginDispatcher* dispatcher =
+        PluginGlobals::Get()->plugin_var_tracker()->
+            DispatcherForPluginObject(object);
     if (dispatcher)
       return dispatcher;
   }
@@ -59,11 +61,11 @@ PluginDispatcher* CheckExceptionAndGetDispatcher(const PP_Var& object,
 // PPB_Var_Deprecated plugin ---------------------------------------------------
 
 void AddRefVar(PP_Var var) {
-  PluginResourceTracker::GetInstance()->var_tracker().AddRefVar(var);
+  PpapiGlobals::Get()->GetVarTracker()->AddRefVar(var);
 }
 
 void ReleaseVar(PP_Var var) {
-  PluginResourceTracker::GetInstance()->var_tracker().ReleaseVar(var);
+  PpapiGlobals::Get()->GetVarTracker()->ReleaseVar(var);
 }
 
 PP_Var VarFromUtf8(PP_Module module, const char* data, uint32_t len) {

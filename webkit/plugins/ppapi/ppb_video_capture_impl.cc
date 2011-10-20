@@ -12,6 +12,7 @@
 #include "ppapi/c/dev/ppb_video_capture_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/thunk/enter.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
@@ -20,6 +21,7 @@
 #include "webkit/plugins/ppapi/resource_helper.h"
 #include "webkit/plugins/ppapi/resource_tracker.h"
 
+using ppapi::PpapiGlobals;
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_Buffer_API;
 using ppapi::thunk::PPB_VideoCapture_API;
@@ -265,7 +267,7 @@ void PPB_VideoCapture_Impl::OnDeviceInfoReceived(
     info.buffer = static_cast<PPB_Buffer_Impl*>(enter.object());
     info.data = info.buffer->Map();
     if (!info.data) {
-      ResourceTracker::Get()->ReleaseResource(resources[i]);
+      PpapiGlobals::Get()->GetResourceTracker()->ReleaseResource(resources[i]);
       break;
     }
     buffers_.push_back(info);
@@ -286,7 +288,7 @@ void PPB_VideoCapture_Impl::OnDeviceInfoReceived(
 
 void PPB_VideoCapture_Impl::ReleaseBuffers() {
   DCHECK(!is_dead_);
-  ResourceTracker *tracker = ResourceTracker::Get();
+  ::ppapi::ResourceTracker* tracker = PpapiGlobals::Get()->GetResourceTracker();
   for (size_t i = 0; i < buffers_.size(); ++i) {
     buffers_[i].buffer->Unmap();
     tracker->ReleaseResource(buffers_[i].buffer->pp_resource());

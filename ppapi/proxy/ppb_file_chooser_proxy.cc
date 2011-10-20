@@ -17,6 +17,8 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppb_file_ref_proxy.h"
 #include "ppapi/proxy/serialized_var.h"
+#include "ppapi/shared_impl/ppapi_globals.h"
+#include "ppapi/shared_impl/resource_tracker.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/resource_creation_api.h"
 #include "ppapi/thunk/thunk.h"
@@ -87,7 +89,7 @@ FileChooser::~FileChooser() {
 
   // Any existing files we haven't transferred ownership to the plugin need
   // to be freed.
-  PluginResourceTracker* tracker = PluginResourceTracker::GetInstance();
+  ResourceTracker* tracker = PpapiGlobals::Get()->GetResourceTracker();
   while (!file_queue_.empty()) {
     tracker->ReleaseResource(file_queue_.front());
     file_queue_.pop();

@@ -7,6 +7,7 @@
 #include "base/compiler_specific.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/shared_impl/resource_tracker.h"
+#include "ppapi/shared_impl/test_globals.h"
 #include "ppapi/shared_impl/tracker_base.h"
 
 namespace ppapi {
@@ -68,20 +69,14 @@ class ResourceTrackerTest : public testing::Test, public TrackerBase {
       ppapi::proxy::InterfaceID id) OVERRIDE {
     return NULL;
   }
-  virtual VarTracker* GetVarTracker() OVERRIDE {
-    return NULL;
-  }
-  virtual ResourceTracker* GetResourceTracker() OVERRIDE {
-    return &resource_tracker_;
-  }
   virtual PP_Module GetModuleForInstance(PP_Instance /* instance */) OVERRIDE {
     return 0;
   }
 
-  ResourceTracker& resource_tracker() { return resource_tracker_; }
+  ResourceTracker& resource_tracker() { return *globals_.GetResourceTracker(); }
 
  private:
-  ResourceTracker resource_tracker_;
+  TestGlobals globals_;
 };
 
 // Test that LastPluginRefWasDeleted is called when the last plugin ref was

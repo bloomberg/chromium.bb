@@ -137,7 +137,8 @@
         'tests/test_var_deprecated.h',
       ],
       'dependencies': [
-        'ppapi.gyp:ppapi_cpp'
+        'ppapi.gyp:ppapi_cpp',
+        'ppapi_internal.gyp:ppapi_shared',
       ],
       'run_as': {
         'action': [
@@ -218,6 +219,8 @@
         'proxy/ppp_messaging_proxy_unittest.cc',
         'proxy/serialized_var_unittest.cc',
         'shared_impl/resource_tracker_unittest.cc',
+        'shared_impl/test_globals.cc',
+        'shared_impl/test_globals.h',
       ],
     },
     {

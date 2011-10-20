@@ -15,6 +15,7 @@
 #include "ppapi/c/dev/ppp_class_deprecated.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_var.h"
+#include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/var.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "webkit/plugins/ppapi/npapi_glue.h"
@@ -23,6 +24,7 @@
 #include "webkit/plugins/ppapi/resource_tracker.h"
 #include "webkit/plugins/ppapi/string.h"
 
+using ppapi::PpapiGlobals;
 using ppapi::StringVar;
 using ppapi::Var;
 using WebKit::WebBindings;
@@ -150,7 +152,7 @@ bool WrapperClass_SetProperty(NPObject* object, NPIdentifier property_name,
   accessor.object()->ppp_class()->SetProperty(
       accessor.object()->ppp_class_data(), accessor.identifier(), value_var,
       result_converter.exception());
-  ResourceTracker::Get()->GetVarTracker()->ReleaseVar(value_var);
+  PpapiGlobals::Get()->GetVarTracker()->ReleaseVar(value_var);
   return result_converter.CheckExceptionForNoResult();
 }
 
@@ -215,7 +217,7 @@ bool WrapperClass_Enumerate(NPObject* object, NPIdentifier** values,
 
   // Release the PP_Var that the plugin allocated. On success, they will all
   // be converted to NPVariants, and on failure, we want them to just go away.
-  ::ppapi::VarTracker* var_tracker = ResourceTracker::Get()->GetVarTracker();
+  ::ppapi::VarTracker* var_tracker = PpapiGlobals::Get()->GetVarTracker();
   for (uint32_t i = 0; i < property_count; ++i)
     var_tracker->ReleaseVar(properties[i]);
   free(properties);

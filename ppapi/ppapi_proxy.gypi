@@ -44,6 +44,8 @@
         'proxy/interface_proxy.h',
         'proxy/plugin_dispatcher.cc',
         'proxy/plugin_dispatcher.h',
+        'proxy/plugin_globals.cc',
+        'proxy/plugin_globals.h',
         'proxy/plugin_message_filter.cc',
         'proxy/plugin_message_filter.h',
         'proxy/plugin_resource_tracker.cc',

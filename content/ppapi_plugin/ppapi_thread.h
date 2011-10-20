@@ -18,6 +18,7 @@
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/trusted/ppp_broker.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
+#include "ppapi/proxy/plugin_globals.h"
 
 class FilePath;
 class PpapiWebKitThread;
@@ -65,6 +66,9 @@ class PpapiThread : public ChildThread,
   bool is_broker_;
 
   base::ScopedNativeLibrary library_;
+
+  // Global state tracking for the proxy.
+  ppapi::proxy::PluginGlobals plugin_globals_;
 
   ppapi::proxy::Dispatcher::GetInterfaceFunc get_plugin_interface_;
 
