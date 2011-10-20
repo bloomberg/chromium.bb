@@ -54,6 +54,7 @@
 
 #include "client/minidump_file_writer-inl.h"
 #include "common/mac/file_id.h"
+#include "common/mac/macho_id.h"
 #include "common/mac/string_utilities.h"
 
 using MacStringUtils::ConvertToString;
@@ -1160,7 +1161,7 @@ bool MinidumpGenerator::WriteModuleStream(unsigned int index,
       module->version_info.file_version_lo |= (modVersion & 0xff);
     }
 
-    if (!WriteCVRecord(module, image->GetCPUType(), name.c_str())) {
+    if (!WriteCVRecord(module, image->GetCPUType(), name.c_str(), false)) {
       return false;
     }
   } else {
@@ -1206,7 +1207,11 @@ bool MinidumpGenerator::WriteModuleStream(unsigned int index,
           module->size_of_image = static_cast<u_int32_t>(seg->vmsize);
           module->module_name_rva = string_location.rva;
 
-          if (!WriteCVRecord(module, cpu_type, name))
+          bool in_memory = false;
+#if TARGET_OS_IPHONE
+          in_memory = true;
+#endif
+          if (!WriteCVRecord(module, cpu_type, name, in_memory))
             return false;
 
           return true;
@@ -1244,7 +1249,7 @@ int MinidumpGenerator::FindExecutableModule() {
 }
 
 bool MinidumpGenerator::WriteCVRecord(MDRawModule *module, int cpu_type,
-                                      const char *module_path) {
+                                      const char *module_path, bool in_memory) {
   TypedMDRVA<MDCVInfoPDB70> cv(&writer_);
 
   // Only return the last path component of the full module path
@@ -1270,10 +1275,23 @@ bool MinidumpGenerator::WriteCVRecord(MDRawModule *module, int cpu_type,
   cv_ptr->age = 0;
 
   // Get the module identifier
-  FileID file_id(module_path);
   unsigned char identifier[16];
+  bool result = false;
+  if (in_memory) {
+    MacFileUtilities::MachoID macho(module_path,
+        reinterpret_cast<void *>(module->base_of_image),
+        static_cast<size_t>(module->size_of_image));
+    result = macho.UUIDCommand(cpu_type, identifier);
+    if (!result)
+      result = macho.MD5(cpu_type, identifier);
+  }
 
-  if (file_id.MachoIdentifier(cpu_type, identifier)) {
+  if (!result) {
+     FileID file_id(module_path);
+     result = file_id.MachoIdentifier(cpu_type, identifier);
+  }
+
+  if (result) {
     cv_ptr->signature.data1 = (uint32_t)identifier[0] << 24 |
       (uint32_t)identifier[1] << 16 | (uint32_t)identifier[2] << 8 |
       (uint32_t)identifier[3];
