@@ -608,7 +608,11 @@ void ProfileSyncService::OnSyncCycleCompleted() {
 // TODO(sync): eventually support removing datatypes too.
 void ProfileSyncService::OnDataTypesChanged(
     const syncable::ModelTypeSet& to_add) {
-  // We don't bother doing anything if the migrator is busy.
+  // If this is a first time sync for a client, this will be called before
+  // OnBackendInitialized() to ensure the new datatypes are available at sync
+  // setup. As a result, the migrator won't exist yet. This is fine because for
+  // first time sync cases we're only concerned with making the datatype
+  // available.
   if (migrator_.get() &&
       migrator_->state() != browser_sync::BackendMigrator::IDLE) {
     VLOG(1) << "Dropping OnDataTypesChanged due to migrator busy.";
