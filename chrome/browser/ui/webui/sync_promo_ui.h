@@ -39,6 +39,18 @@ class SyncPromoUI : public ChromeWebUI {
   // Registers the preferences the Sync Promo UI needs.
   static void RegisterUserPrefs(PrefService* prefs);
 
+  // Returns the sync promo URL wth the given arguments in the query.
+  // |next_page| is the URL to navigate to when the user completes or skips the
+  // promo. If an empty URL is given then the promo will navigate to the NTP.
+  // If |show_title| is true then the promo title is made visible.
+  static GURL GetSyncPromoURL(const GURL& next_page, bool show_title);
+
+  // Gets the show title value from the query portion of the sync promo URL.
+  static bool GetShowTitleForSyncPromoURL(const GURL& url);
+
+  // Gets the next page URL from the query portion of the sync promo URL.
+  static GURL GetNextPageURLForSyncPromoURL(const GURL& url);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncPromoUI);
 };

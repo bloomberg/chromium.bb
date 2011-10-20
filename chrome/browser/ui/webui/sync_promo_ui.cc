@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/sync_promo_ui.h"
 
 #include "base/command_line.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -20,6 +21,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "googleurl/src/url_util.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -29,6 +31,9 @@ namespace {
 
 const char kStringsJsFile[] = "strings.js";
 const char kSyncPromoJsFile[]  = "sync_promo.js";
+
+const char kSyncPromoQueryKeyShowTitle[]  = "show_title";
+const char kSyncPromoQueryKeyNextPage[]  = "next_page";
 
 // The maximum number of times we want to show the sync promo at startup.
 const int kSyncPromoShowAtStartupMaxiumum = 10;
@@ -49,6 +54,29 @@ SyncPromoUIHTMLSource::SyncPromoUIHTMLSource()
   CoreOptionsHandler::GetStaticLocalizedValues(&localized_strings);
   SyncSetupHandler::GetStaticLocalizedValues(&localized_strings);
   AddLocalizedStrings(localized_strings);
+}
+
+// Looks for |search_key| in the query portion of |url|. Returns true if the
+// key is found and sets |out_value| to the value for the key. Returns false if
+// the key is not found.
+bool GetValueForKeyInQuery(const GURL& url, const std::string& search_key,
+                           std::string* out_value) {
+  url_parse::Component query = url.parsed_for_possibly_invalid_spec().query;
+  url_parse::Component key, value;
+  while (url_parse::ExtractQueryKeyValue(
+      url.spec().c_str(), &query, &key, &value)) {
+    if (key.is_nonempty()) {
+      std::string key_string = url.spec().substr(key.begin, key.len);
+      if (key_string == search_key) {
+        if (value.is_nonempty())
+          *out_value = url.spec().substr(value.begin, value.len);
+        else
+          *out_value = "";
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 }  // namespace
@@ -149,4 +177,42 @@ bool SyncPromoUI::HasUserSkippedSyncPromo(Profile* profile) {
 
 void SyncPromoUI::SetUserSkippedSyncPromo(Profile* profile) {
   profile->GetPrefs()->SetBoolean(prefs::kSyncPromoUserSkipped, true);
+}
+
+// static
+GURL SyncPromoUI::GetSyncPromoURL(const GURL& next_page, bool show_title) {
+  std::stringstream stream;
+  stream << chrome::kChromeUISyncPromoURL << "?" << kSyncPromoQueryKeyShowTitle
+         << "=" << (show_title ? "true" : "false");
+
+  if (!next_page.spec().empty()) {
+    url_canon::RawCanonOutputT<char> output;
+    url_util::EncodeURIComponent(
+        next_page.spec().c_str(), next_page.spec().length(), &output);
+    std::string escaped_spec(output.data(), output.length());
+    stream << "&" << kSyncPromoQueryKeyNextPage << "=" << escaped_spec;
+  }
+
+  return GURL(stream.str());
+}
+
+// static
+bool SyncPromoUI::GetShowTitleForSyncPromoURL(const GURL& url) {
+  std::string value;
+  if (GetValueForKeyInQuery(url, kSyncPromoQueryKeyShowTitle, &value))
+    return value == "true";
+  return false;
+}
+
+// static
+GURL SyncPromoUI::GetNextPageURLForSyncPromoURL(const GURL& url) {
+  std::string value;
+  if (GetValueForKeyInQuery(url, kSyncPromoQueryKeyNextPage, &value)) {
+    url_canon::RawCanonOutputT<char16> output;
+    url_util::DecodeURLEscapeSequences(value.c_str(), value.length(), &output);
+    std::string url;
+    UTF16ToUTF8(output.data(), output.length(), &url);
+    return GURL(url);
+  }
+  return GURL();
 }

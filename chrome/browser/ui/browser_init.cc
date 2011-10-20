@@ -1264,12 +1264,6 @@ void BrowserInit::LaunchWithProfile::AddStartupURLs(
   // and nothing else.
   if (browser_init_) {
     if (!browser_init_->first_run_tabs_.empty()) {
-      // Sync promo comes first.
-      if (SyncPromoUI::ShouldShowSyncPromoAtStartup(profile_, is_first_run_)) {
-        SyncPromoUI::DidShowSyncPromoAtStartup(profile_);
-        startup_urls->push_back(GURL(chrome::kChromeUISyncPromoURL));
-      }
-
       std::vector<GURL>::iterator it = browser_init_->first_run_tabs_.begin();
       while (it != browser_init_->first_run_tabs_.end()) {
         // Replace magic names for the actual urls.
@@ -1283,24 +1277,28 @@ void BrowserInit::LaunchWithProfile::AddStartupURLs(
         ++it;
       }
       browser_init_->first_run_tabs_.clear();
-      return;
     }
   }
 
   // Otherwise open at least the new tab page (and the welcome page, if this
   // is the first time the browser is being started), or the set of URLs
   // specified on the command line.
+  if (startup_urls->empty()) {
+    startup_urls->push_back(GURL());  // New tab page.
+    PrefService* prefs = g_browser_process->local_state();
+    if (prefs->FindPreference(prefs::kShouldShowWelcomePage) &&
+        prefs->GetBoolean(prefs::kShouldShowWelcomePage)) {
+      // Reset the preference so we don't show the welcome page next time.
+      prefs->ClearPref(prefs::kShouldShowWelcomePage);
+      startup_urls->push_back(GetWelcomePageURL());
+    }
+  }
+
+  // If the sync promo page is going to be displayed then replace the first
+  // startup URL with the sync promo page.
   if (SyncPromoUI::ShouldShowSyncPromoAtStartup(profile_, is_first_run_)) {
     SyncPromoUI::DidShowSyncPromoAtStartup(profile_);
-    startup_urls->push_back(GURL(chrome::kChromeUISyncPromoURL));
-  }
-  startup_urls->push_back(GURL());  // New tab page.
-  PrefService* prefs = g_browser_process->local_state();
-  if (prefs->FindPreference(prefs::kShouldShowWelcomePage) &&
-      prefs->GetBoolean(prefs::kShouldShowWelcomePage)) {
-    // Reset the preference so we don't show the welcome page next time.
-    prefs->ClearPref(prefs::kShouldShowWelcomePage);
-    startup_urls->push_back(GetWelcomePageURL());
+    (*startup_urls)[0] = SyncPromoUI::GetSyncPromoURL((*startup_urls)[0], true);
   }
 }
 
