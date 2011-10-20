@@ -75,6 +75,8 @@ const char kTabStripNotEditableError[] =
 const char kNoSelectedTabError[] = "No selected tab";
 const char kNoHighlightedTabError[] = "No highlighted tab";
 const char kIncognitoModeIsDisabled[] = "Incognito mode is disabled.";
+const char kURLsNotAllowedInIncognitoError[] = "Cannot open URL \"*\" "
+    "in an incognito window.";
 const char kInvalidUrlError[] = "Invalid url: \"*\".";
 const char kInternalVisibleTabCaptureError[] =
     "Internal error while trying to capture visible region of the current tab";

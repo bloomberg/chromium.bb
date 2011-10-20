@@ -75,6 +75,7 @@ extern const char kTabStripNotEditableError[];
 extern const char kNoHighlightedTabError[];
 extern const char kNoSelectedTabError[];
 extern const char kIncognitoModeIsDisabled[];
+extern const char kURLsNotAllowedInIncognitoError[];
 extern const char kInvalidUrlError[];
 extern const char kInternalVisibleTabCaptureError[];
 extern const char kNotImplementedError[];

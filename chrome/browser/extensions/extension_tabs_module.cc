@@ -398,14 +398,22 @@ bool CreateWindowFunction::RunImpl() {
       }
 
       if (incognito) {
+        std::string first_url_erased;
         // Guest session is an exception as it always opens in incognito mode.
         for (size_t i = 0; i < urls.size();) {
           if (browser::IsURLAllowedInIncognito(urls[i]) &&
               !Profile::IsGuestSession()) {
+            if (first_url_erased.empty())
+              first_url_erased = urls[i].spec();
             urls.erase(urls.begin() + i);
           } else {
             i++;
           }
+        }
+        if (urls.empty() && !first_url_erased.empty()) {
+          error_ = ExtensionErrorUtils::FormatErrorMessage(
+              keys::kURLsNotAllowedInIncognitoError, first_url_erased);
+          return false;
         }
         window_profile = window_profile->GetOffTheRecordProfile();
       }
