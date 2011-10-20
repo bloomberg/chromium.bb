@@ -10036,7 +10036,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Error signing in.
       </message>
       <message name="IDS_SYNC_PROMO_SIGNIN_HEADER" desc="The header at the top of the GAIA sign in box.">
-        Sign in
+        Sign in and Sync
       </message>
       <message name="IDS_SYNC_UNRECOVERABLE_ERROR" desc="Message shown when sync
         setup failed due to an unrecoverable error and can't continue.">
@@ -10182,6 +10182,63 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SYNC_NTP_SYNCED_TO" desc="The message to display in the New Tab Page sync section when the user is in sync.">
         Synced as <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph>
       </message>
+
+      <!-- Sync Promo New Tab Page bubble strings -->
+      <message name="IDS_SYNC_PROMO_NTP_BUBBLE_MESSAGE" desc="The body of the sync promo NTP bubble.">
+        You're now signed in to <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>. Your bookmarks, history, and other settings are being synced to your Google Account.
+      </message>
+      <message name="IDS_SYNC_PROMO_NTP_BUBBLE_MESSAGE_ALT1" desc="And alternate string for the body of the sync promo NTP bubble.">
+        You're now signed in to <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>. Your bookmarks, history, and other settings are being synced to your Google Account using default settings.
+      </message>
+      <message name="IDS_SYNC_PROMO_NTP_BUBBLE_LEARN_MORE" desc="The learn more link in the sync promo NTP bubble. Clicking the link will take users to a page explaining what sync is.">
+        Learn more
+      </message>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_SYNC_PROMO_NTP_BUBBLE_OK" desc="The ok button in the sync promo NTP bubble. Clicking on the button will dismiss the bubble.">
+          OK
+        </message>
+        <message name="IDS_SYNC_PROMO_NTP_BUBBLE_ADVANCED" desc="The advanced link in the sync promo NTP bubble. Clicking the link will take the user to advanced settings.">
+          Advanced...
+        </message>
+        <message name="IDS_SYNC_PROMO_NTP_BUBBLE_ADVANCED_ALT1" desc="An alternative text for the advanced link in the sync promo NTP bubble.">
+          Configure...
+        </message>
+        <message name="IDS_SYNC_PROMO_NTP_BUBBLE_ADVANCED_ALT2" desc="An alternative text for the advanced link in the sync promo NTP bubble.">
+          Edit...
+        </message>
+        <message name="IDS_SYNC_PROMO_NTP_BUBBLE_ADVANCED_ALT3" desc="An alternative text for the advanced link in the sync promo NTP bubble.">
+          Advanced settings...
+        </message>
+        <message name="IDS_SYNC_PROMO_NTP_BUBBLE_ADVANCED_ALT4" desc="An alternative text for the advanced link in the sync promo NTP bubble.">
+          Configure settings...
+        </message>
+        <message name="IDS_SYNC_PROMO_NTP_BUBBLE_ADVANCED_ALT5" desc="An alternative text for the advanced link in the sync promo NTP bubble.">
+          Advanced setup...
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_SYNC_PROMO_NTP_BUBBLE_OK" desc="In title case. The ok button in the sync promo NTP bubble. Clicking on the button will dismiss the bubble.">
+          OK
+        </message>
+        <message name="IDS_SYNC_PROMO_NTP_BUBBLE_ADVANCED" desc="In title case. The advanced link in the sync promo NTP bubble. Clicking the link will take the user to advanced settings.">
+          Advanced...
+        </message>
+        <message name="IDS_SYNC_PROMO_NTP_BUBBLE_ADVANCED_ALT1" desc="In title case. An alternative text for the advanced link in the sync promo NTP bubble.">
+          Configure...
+        </message>
+        <message name="IDS_SYNC_PROMO_NTP_BUBBLE_ADVANCED_ALT2" desc="In title case. An alternative text for the advanced link in the sync promo NTP bubble.">
+          Edit...
+        </message>
+        <message name="IDS_SYNC_PROMO_NTP_BUBBLE_ADVANCED_ALT3" desc="In title case. An alternative text for the advanced link in the sync promo NTP bubble.">
+          Advanced Settings...
+        </message>
+        <message name="IDS_SYNC_PROMO_NTP_BUBBLE_ADVANCED_ALT4" desc="In title case. An alternative text for the advanced link in the sync promo NTP bubble.">
+          Configure Settings...
+        </message>
+        <message name="IDS_SYNC_PROMO_NTP_BUBBLE_ADVANCED_ALT5" desc="In title case. An alternative text for the advanced link in the sync promo NTP bubble.">
+          Advanced Setup...
+        </message>
+      </if>
 
       <!-- Customize Sync dialog -->
       <if expr="not pp_ifdef('use_titlecase')">
@@ -10536,12 +10593,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_SYNC_PROMO_SKIP_BUTTON" desc="In Title Case: The button at the bottom to let the user skip the sync promo.">
-          Skip For Now
+          No Thanks
         </message>
       </if>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_SYNC_PROMO_SKIP_BUTTON" desc="The button at the bottom to let the user skip the sync promo.">
-          Skip for now
+          No thanks
         </message>
       </if>
       <message name="IDS_SYNC_PROMO_ADVANCED" desc="The link button at the bottom to let the user customize the sync settings.">
