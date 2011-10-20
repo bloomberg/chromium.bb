@@ -124,6 +124,7 @@ TEST(LookaheadFilterInterpreterTest, SimpleTest) {
         EXPECT_EQ(reinterpret_cast<Gesture*>(NULL), out);
       } else {
         // Expect movement
+        ASSERT_TRUE(out);
         EXPECT_EQ(kGestureTypeMove, out->type);
         EXPECT_EQ(expected_movement.start_time, out->start_time);
         EXPECT_EQ(expected_movement.end_time, out->end_time);
