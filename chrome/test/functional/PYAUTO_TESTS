@@ -265,6 +265,8 @@
       '-sync',
       # crbug.com/87837
       '-plugins.PluginsTest.testKillAndReloadAllPlugins',
+      # crbug.com/66072
+      '-notifications.NotificationsTest.testNotificationOrderAfterClosingOne',
     ],
 
     # ChromeOS is linux, but note that this section does not include the
