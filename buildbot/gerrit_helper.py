@@ -54,8 +54,8 @@ class GerritHelper():
     """
     query_string = ('status:open AND CodeReview=+2 AND Verified=+1 '
                     'AND CommitReady=+1 '
-                    'AND NOT CodeReview=-2 AND NOT Verified=-1 '
-                    'AND branch:%s' % branch)
+                    'AND NOT CodeReview=-2 AND NOT Verified=-1')
+
     ready_for_commit = ['--current-patch-set', '"%s"' % query_string]
 
     query_cmd = self.GetGerritQueryCommand(ready_for_commit)
@@ -117,14 +117,19 @@ class GerritHelper():
     """
     manifest_path = os.path.join(buildroot, '.repo', 'manifests/full.xml')
     handler = cros_build_lib.ManifestHandler.ParseManifest(manifest_path)
-    projects_set = handler.projects.keys()
+    projects = handler.projects
 
     changes_to_return = []
     for change in changes:
-      if change.project in projects_set:
-        changes_to_return.append(change)
-      else:
-        logging.info('Filtered change %s' % change)
+      project = projects.get(change.project)
+      if project:
+        branch = project.get('revision') or handler.default.get('revision')
+        patch_branch = 'refs/heads/%s' % change.tracking_branch
+        if branch == patch_branch:
+          changes_to_return.append(change)
+          continue
+
+      logging.info('Filtered change %s', change)
 
     return changes_to_return
 
