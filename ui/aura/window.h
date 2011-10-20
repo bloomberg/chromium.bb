@@ -144,7 +144,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   void SetParent(Window* parent);
 
   // Move the specified child of this Window to the front of the z-order.
-  // TODO(beng): this is (obviously) feeble.
   void MoveChildToFront(Window* child);
 
   // Returns true if this window can be activated.

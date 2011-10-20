@@ -180,7 +180,6 @@ void Window::MoveChildToFront(Window* child) {
   DCHECK(i != children_.end());
   children_.erase(i);
 
-  // TODO(beng): this obviously has to handle different window types.
   children_.insert(children_.begin() + children_.size(), child);
   SchedulePaintInRect(gfx::Rect());
 

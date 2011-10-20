@@ -45,18 +45,6 @@ void NativeTabContentsContainerAura::DetachContents(TabContents* contents) {
   // TabContentsViewViews so that the window hierarchy is intact for any
   // cleanup during Detach().
   Detach();
-
-  // TODO(brettw) should this move to NativeViewHost::Detach?  It
-  // needs cleanup regardless.
-  aura::Window* container_window = contents->GetNativeView();
-  if (container_window) {
-    // Hide the contents before adjusting its parent to avoid a full desktop
-    // flicker.
-    container_window->Hide();
-
-    // Reset the parent to NULL to ensure hidden tabs don't receive messages.
-    static_cast<TabContentsViewViews*>(contents->view())->Unparent();
-  }
 }
 
 void NativeTabContentsContainerAura::SetFastResize(bool fast_resize) {
@@ -151,7 +139,7 @@ gfx::NativeViewAccessible
 // static
 NativeTabContentsContainer* NativeTabContentsContainer::CreateNativeContainer(
     TabContentsContainer* container) {
-  return new NativeTabContentsContainerViews(container);
+  // return new NativeTabContentsContainerViews(container);
   // TODO(beng): switch this over once we're using this container.
-  // return new NativeTabContentsContainerAura(container);
+  return new NativeTabContentsContainerAura(container);
 }

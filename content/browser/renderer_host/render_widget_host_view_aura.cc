@@ -154,7 +154,11 @@ void RenderWidgetHostViewAura::ImeCancelComposition() {
 void RenderWidgetHostViewAura::DidUpdateBackingStore(
     const gfx::Rect& scroll_rect, int scroll_dx, int scroll_dy,
     const std::vector<gfx::Rect>& copy_rects) {
-  window_->SchedulePaintInRect(scroll_rect);
+  if (!window_->IsVisible())
+    return;
+
+  if (!scroll_rect.IsEmpty())
+    window_->SchedulePaintInRect(scroll_rect);
 
   for (size_t i = 0; i < copy_rects.size(); ++i) {
     gfx::Rect rect = copy_rects[i].Subtract(scroll_rect);
@@ -214,6 +218,8 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceBuffersSwapped(
     // We have no compositor, so we have no way to display the surface
     AcknowledgeSwapBuffers(route_id, gpu_host_id);  // Must still send the ACK
   } else {
+    window_->layer()->ScheduleDraw();
+
     // Add sending an ACK to the list of things to do OnCompositingEnded
     on_compositing_ended_callbacks_.push_back(
         base::Bind(AcknowledgeSwapBuffers, route_id, gpu_host_id));
@@ -271,11 +277,11 @@ void RenderWidgetHostViewAura::SetScrollOffsetPinning(
 
 #if defined(OS_WIN)
 void RenderWidgetHostViewAura::WillWmDestroy() {
-  NOTREACHED();
+  // Nothing to do.
 }
 
 void RenderWidgetHostViewAura::ShowCompositorHostWindow(bool show) {
-  NOTREACHED();
+  // Nothing to do.
 }
 #endif
 
@@ -369,6 +375,8 @@ void RenderWidgetHostViewAura::OnCaptureLost() {
 }
 
 void RenderWidgetHostViewAura::OnPaint(gfx::Canvas* canvas) {
+  if (!window_->IsVisible())
+    return;
   BackingStore* backing_store = host_->GetBackingStore(true);
   if (backing_store) {
     static_cast<BackingStoreSkia*>(backing_store)->SkiaShowRect(gfx::Point(),

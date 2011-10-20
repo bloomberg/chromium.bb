@@ -48,11 +48,7 @@ void NativeTabContentsViewAura::InitNativeTabContentsView() {
 }
 
 void NativeTabContentsViewAura::Unparent() {
-  // Note that we do not DCHECK on focus_manager_ as it may be NULL when used
-  // with an external tab container.
-  views::Widget::ReparentNativeView(GetNativeView(), NULL);
-  // TODO(beng):
-  NOTIMPLEMENTED();
+  // Nothing to do.
 }
 
 RenderWidgetHostView* NativeTabContentsViewAura::CreateRenderWidgetHostView(
@@ -139,8 +135,8 @@ bool NativeTabContentsViewAura::OnMouseEvent(aura::MouseEvent* event) {
 // static
 NativeTabContentsView* NativeTabContentsView::CreateNativeTabContentsView(
     internal::NativeTabContentsViewDelegate* delegate) {
-  return new NativeTabContentsViewViews(delegate);
+  // return new NativeTabContentsViewViews(delegate);
   // TODO(beng): switch over to this.
-  // return new NativeTabContentsViewAura(delegate);
+  return new NativeTabContentsViewAura(delegate);
 }
 #endif
