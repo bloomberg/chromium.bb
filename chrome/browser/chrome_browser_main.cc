@@ -1365,6 +1365,25 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunInternal() {
   // just changed it to include experiments.
   child_process_logging::SetCommandLine(CommandLine::ForCurrentProcess());
 
+  InitializeNetworkOptions(parsed_command_line());
+  InitializeURLRequestThrottlerManager(browser_process_->net_log());
+
+  // Initialize histogram synchronizer system. This is a singleton and is used
+  // for posting tasks via NewRunnableMethod. Its deleted when it goes out of
+  // scope. Even though NewRunnableMethod does AddRef and Release, the object
+  // will not be deleted after the Task is executed.
+  histogram_synchronizer_ = new HistogramSynchronizer();
+
+  // Now the command line has been mutated based on about:flags, we can
+  // set up metrics and initialize field trials.
+  MetricsService* metrics =
+      SetupMetricsAndFieldTrials(parsed_command_line(), local_state);
+
+#if defined(USE_WEBKIT_COMPOSITOR)
+  // We need to ensure WebKit has been initialized before we start the WebKit
+  // compositor. This is done by the ResourceDispatcherHost on creation.
+  g_browser_process->resource_dispatcher_host();
+#endif
 #if defined(USE_AURA)
   // Shell takes ownership of ChromeShellDelegate.
   aura_shell::Shell::GetInstance()->SetDelegate(new ChromeShellDelegate);
@@ -1392,20 +1411,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunInternal() {
     }
   }
 #endif
-
-  InitializeNetworkOptions(parsed_command_line());
-  InitializeURLRequestThrottlerManager(browser_process_->net_log());
-
-  // Initialize histogram synchronizer system. This is a singleton and is used
-  // for posting tasks via NewRunnableMethod. Its deleted when it goes out of
-  // scope. Even though NewRunnableMethod does AddRef and Release, the object
-  // will not be deleted after the Task is executed.
-  histogram_synchronizer_ = new HistogramSynchronizer();
-
-  // Now the command line has been mutated based on about:flags, we can
-  // set up metrics and initialize field trials.
-  MetricsService* metrics =
-      SetupMetricsAndFieldTrials(parsed_command_line(), local_state);
 
   // Now that all preferences have been registered, set the install date
   // for the uninstall metrics if this is our first run. This only actually

@@ -26,6 +26,7 @@ class TestCompositor : public ui::Compositor {
   virtual void OnNotifyStart(bool clear) OVERRIDE;
   virtual void OnNotifyEnd() OVERRIDE;
   virtual void Blur(const gfx::Rect& bounds) OVERRIDE;
+  virtual void DrawTree() OVERRIDE;
 
  protected:
   virtual void OnWidgetSizeChanged() OVERRIDE;
