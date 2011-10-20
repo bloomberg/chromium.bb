@@ -42,7 +42,7 @@ class PPB_FileChooser_Proxy : public InterfaceProxy {
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
 
-  static const InterfaceID kInterfaceID = INTERFACE_ID_PPB_FILE_CHOOSER;
+  static const ApiID kApiID = API_ID_PPB_FILE_CHOOSER;
 
  private:
   // Plugin -> host message handlers.

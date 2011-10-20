@@ -140,7 +140,7 @@ bool PepperCommandBuffer::Initialize(int32 size) {
   // for NaCl.
   base::SharedMemoryHandle handle;
   if (Send(new PpapiHostMsg_PPBContext3D_Initialize(
-          INTERFACE_ID_PPB_CONTEXT_3D, resource_, size, &handle)) &&
+          API_ID_PPB_CONTEXT_3D, resource_, size, &handle)) &&
       base::SharedMemory::IsHandleValid(handle)) {
     ring_buffer_.reset(new base::SharedMemory(handle, false));
     if (ring_buffer_->Map(size)) {
@@ -174,7 +174,7 @@ gpu::CommandBuffer::State PepperCommandBuffer::GetState() {
   if (last_state_.error == gpu::error::kNoError) {
     gpu::CommandBuffer::State state;
     if (Send(new PpapiHostMsg_PPBContext3D_GetState(
-             INTERFACE_ID_PPB_CONTEXT_3D, resource_, &state)))
+             API_ID_PPB_CONTEXT_3D, resource_, &state)))
       UpdateState(state);
   }
 
@@ -190,7 +190,7 @@ void PepperCommandBuffer::Flush(int32 put_offset) {
     return;
 
   IPC::Message* message = new PpapiHostMsg_PPBContext3D_AsyncFlush(
-      INTERFACE_ID_PPB_CONTEXT_3D, resource_, put_offset);
+      API_ID_PPB_CONTEXT_3D, resource_, put_offset);
 
   // Do not let a synchronous flush hold up this message. If this handler is
   // deferred until after the synchronous flush completes, it will overwrite the
@@ -206,7 +206,7 @@ gpu::CommandBuffer::State PepperCommandBuffer::FlushSync(
     if (last_state_.error == gpu::error::kNoError) {
       gpu::CommandBuffer::State state;
       if (Send(new PpapiHostMsg_PPBContext3D_Flush(
-              INTERFACE_ID_PPB_CONTEXT_3D, resource_, put_offset,
+              API_ID_PPB_CONTEXT_3D, resource_, put_offset,
               last_known_get, &state)))
         UpdateState(state);
     }
@@ -226,7 +226,7 @@ int32 PepperCommandBuffer::CreateTransferBuffer(size_t size, int32 id_request) {
   if (last_state_.error == gpu::error::kNoError) {
     int32 id;
     if (Send(new PpapiHostMsg_PPBContext3D_CreateTransferBuffer(
-            INTERFACE_ID_PPB_CONTEXT_3D, resource_, size, &id))) {
+            API_ID_PPB_CONTEXT_3D, resource_, size, &id))) {
       return id;
     }
   }
@@ -257,7 +257,7 @@ void PepperCommandBuffer::DestroyTransferBuffer(int32 id) {
   transfer_buffers_.erase(it);
 
   Send(new PpapiHostMsg_PPBContext3D_DestroyTransferBuffer(
-      INTERFACE_ID_PPB_CONTEXT_3D, resource_, id));
+      API_ID_PPB_CONTEXT_3D, resource_, id));
 }
 
 gpu::Buffer PepperCommandBuffer::GetTransferBuffer(int32 id) {
@@ -276,7 +276,7 @@ gpu::Buffer PepperCommandBuffer::GetTransferBuffer(int32 id) {
   base::SharedMemoryHandle handle;
   uint32 size;
   if (!Send(new PpapiHostMsg_PPBContext3D_GetTransferBuffer(
-          INTERFACE_ID_PPB_CONTEXT_3D, resource_, id, &handle, &size))) {
+          API_ID_PPB_CONTEXT_3D, resource_, id, &handle, &size))) {
     return gpu::Buffer();
   }
 
@@ -413,7 +413,7 @@ int32_t Context3D::BindSurfaces(PP_Resource pp_draw, PP_Resource pp_read) {
   int32_t result;
   PluginDispatcher::GetForResource(this)->Send(
       new PpapiHostMsg_PPBContext3D_BindSurfaces(
-          INTERFACE_ID_PPB_CONTEXT_3D,
+          API_ID_PPB_CONTEXT_3D,
           host_resource(), host_draw, host_read, &result));
   if (result != PP_OK)
     return result;
@@ -547,7 +547,7 @@ PP_Resource PPB_Context3D_Proxy::Create(PP_Instance instance,
 
   HostResource result;
   dispatcher->Send(new PpapiHostMsg_PPBContext3D_Create(
-      INTERFACE_ID_PPB_CONTEXT_3D, instance, config, attribs, &result));
+      API_ID_PPB_CONTEXT_3D, instance, config, attribs, &result));
 
   if (result.is_null())
     return 0;

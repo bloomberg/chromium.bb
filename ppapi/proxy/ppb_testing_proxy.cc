@@ -37,7 +37,7 @@ PP_Bool ReadImageData(PP_Resource graphics_2d,
 
   PP_Bool result = PP_FALSE;
   dispatcher->Send(new PpapiHostMsg_PPBTesting_ReadImageData(
-      INTERFACE_ID_PPB_TESTING, graphics_2d_object->host_resource(),
+      API_ID_PPB_TESTING, graphics_2d_object->host_resource(),
       image_object->host_resource(), *top_left, &result));
   return result;
 }
@@ -60,7 +60,7 @@ uint32_t GetLiveObjectsForInstance(PP_Instance instance_id) {
 
   uint32_t result = 0;
   dispatcher->Send(new PpapiHostMsg_PPBTesting_GetLiveObjectsForInstance(
-      INTERFACE_ID_PPB_TESTING, instance_id, &result));
+      API_ID_PPB_TESTING, instance_id, &result));
   return result;
 }
 
@@ -99,7 +99,7 @@ const InterfaceProxy::Info* PPB_Testing_Proxy::GetInfo() {
   static const Info info = {
     &testing_interface,
     PPB_TESTING_DEV_INTERFACE,
-    INTERFACE_ID_PPB_TESTING,
+    API_ID_PPB_TESTING,
     false,
     &CreateTestingProxy,
   };

@@ -88,7 +88,7 @@ int32_t VideoDecoder::Decode(
 
   FlushCommandBuffer();
   GetDispatcher()->Send(new PpapiHostMsg_PPBVideoDecoder_Decode(
-      INTERFACE_ID_PPB_VIDEO_DECODER_DEV, host_resource(),
+      API_ID_PPB_VIDEO_DECODER_DEV, host_resource(),
       host_buffer, bitstream_buffer->id,
       bitstream_buffer->size));
   return PP_OK_COMPLETIONPENDING;
@@ -101,13 +101,13 @@ void VideoDecoder::AssignPictureBuffers(uint32_t no_of_buffers,
   FlushCommandBuffer();
   GetDispatcher()->Send(
       new PpapiHostMsg_PPBVideoDecoder_AssignPictureBuffers(
-          INTERFACE_ID_PPB_VIDEO_DECODER_DEV, host_resource(), buffer_list));
+          API_ID_PPB_VIDEO_DECODER_DEV, host_resource(), buffer_list));
 }
 
 void VideoDecoder::ReusePictureBuffer(int32_t picture_buffer_id) {
   FlushCommandBuffer();
   GetDispatcher()->Send(new PpapiHostMsg_PPBVideoDecoder_ReusePictureBuffer(
-      INTERFACE_ID_PPB_VIDEO_DECODER_DEV, host_resource(), picture_buffer_id));
+      API_ID_PPB_VIDEO_DECODER_DEV, host_resource(), picture_buffer_id));
 }
 
 int32_t VideoDecoder::Flush(PP_CompletionCallback callback) {
@@ -116,7 +116,7 @@ int32_t VideoDecoder::Flush(PP_CompletionCallback callback) {
 
   FlushCommandBuffer();
   GetDispatcher()->Send(new PpapiHostMsg_PPBVideoDecoder_Flush(
-      INTERFACE_ID_PPB_VIDEO_DECODER_DEV, host_resource()));
+      API_ID_PPB_VIDEO_DECODER_DEV, host_resource()));
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -126,14 +126,14 @@ int32_t VideoDecoder::Reset(PP_CompletionCallback callback) {
 
   FlushCommandBuffer();
   GetDispatcher()->Send(new PpapiHostMsg_PPBVideoDecoder_Reset(
-      INTERFACE_ID_PPB_VIDEO_DECODER_DEV, host_resource()));
+      API_ID_PPB_VIDEO_DECODER_DEV, host_resource()));
   return PP_OK_COMPLETIONPENDING;
 }
 
 void VideoDecoder::Destroy() {
   FlushCommandBuffer();
   GetDispatcher()->Send(new PpapiHostMsg_PPBVideoDecoder_Destroy(
-      INTERFACE_ID_PPB_VIDEO_DECODER_DEV, host_resource()));
+      API_ID_PPB_VIDEO_DECODER_DEV, host_resource()));
   VideoDecoderImpl::Destroy();
 }
 
@@ -215,7 +215,7 @@ PP_Resource PPB_VideoDecoder_Proxy::CreateProxyResource(
 
   HostResource result;
   dispatcher->Send(new PpapiHostMsg_PPBVideoDecoder_Create(
-      INTERFACE_ID_PPB_VIDEO_DECODER_DEV, instance,
+      API_ID_PPB_VIDEO_DECODER_DEV, instance,
       host_context, profile, &result));
   if (result.is_null())
     return 0;
@@ -294,19 +294,19 @@ void PPB_VideoDecoder_Proxy::OnMsgDestroy(const HostResource& decoder) {
 void PPB_VideoDecoder_Proxy::SendMsgEndOfBitstreamACKToPlugin(
     int32_t result, const HostResource& decoder, int32 id) {
   dispatcher()->Send(new PpapiMsg_PPBVideoDecoder_EndOfBitstreamACK(
-      INTERFACE_ID_PPB_VIDEO_DECODER_DEV, decoder, id, result));
+      API_ID_PPB_VIDEO_DECODER_DEV, decoder, id, result));
 }
 
 void PPB_VideoDecoder_Proxy::SendMsgFlushACKToPlugin(
     int32_t result, const HostResource& decoder) {
   dispatcher()->Send(new PpapiMsg_PPBVideoDecoder_FlushACK(
-      INTERFACE_ID_PPB_VIDEO_DECODER_DEV, decoder, result));
+      API_ID_PPB_VIDEO_DECODER_DEV, decoder, result));
 }
 
 void PPB_VideoDecoder_Proxy::SendMsgResetACKToPlugin(
     int32_t result, const HostResource& decoder) {
   dispatcher()->Send(new PpapiMsg_PPBVideoDecoder_ResetACK(
-      INTERFACE_ID_PPB_VIDEO_DECODER_DEV, decoder, result));
+      API_ID_PPB_VIDEO_DECODER_DEV, decoder, result));
 }
 
 void PPB_VideoDecoder_Proxy::OnMsgEndOfBitstreamACK(

@@ -98,7 +98,7 @@ int32_t FileSystem::Open(int64_t expected_size,
   called_open_ = true;
   PluginDispatcher::GetForResource(this)->Send(
       new PpapiHostMsg_PPBFileSystem_Open(
-          INTERFACE_ID_PPB_FILE_SYSTEM, host_resource(), expected_size));
+          API_ID_PPB_FILE_SYSTEM, host_resource(), expected_size));
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -122,7 +122,7 @@ const InterfaceProxy::Info* PPB_FileSystem_Proxy::GetInfo() {
   static const Info info = {
     thunk::GetPPB_FileSystem_Thunk(),
     PPB_FILESYSTEM_INTERFACE,
-    INTERFACE_ID_PPB_FILE_SYSTEM,
+    API_ID_PPB_FILE_SYSTEM,
     false,
     &CreateFileSystemProxy,
   };
@@ -139,7 +139,7 @@ PP_Resource PPB_FileSystem_Proxy::CreateProxyResource(
 
   HostResource result;
   dispatcher->Send(new PpapiHostMsg_PPBFileSystem_Create(
-      INTERFACE_ID_PPB_FILE_SYSTEM, instance, type, &result));
+      API_ID_PPB_FILE_SYSTEM, instance, type, &result));
   if (result.is_null())
     return 0;
   return (new FileSystem(result, type))->GetReference();
@@ -190,7 +190,7 @@ void PPB_FileSystem_Proxy::OpenCompleteInHost(
     int32_t result,
     const HostResource& host_resource) {
   dispatcher()->Send(new PpapiMsg_PPBFileSystem_OpenComplete(
-      INTERFACE_ID_PPB_FILE_SYSTEM, host_resource, result));
+      API_ID_PPB_FILE_SYSTEM, host_resource, result));
 }
 
 }  // namespace proxy

@@ -32,7 +32,7 @@ class HostGlobals : public ::ppapi::PpapiGlobals {
   virtual ::ppapi::VarTracker* GetVarTracker() OVERRIDE;
   virtual ::ppapi::FunctionGroupBase* GetFunctionAPI(
       PP_Instance inst,
-      ::ppapi::proxy::InterfaceID id) OVERRIDE;
+      ::ppapi::ApiID id) OVERRIDE;
   virtual PP_Module GetModuleForInstance(PP_Instance instance) OVERRIDE;
 
   HostResourceTracker* host_resource_tracker() {

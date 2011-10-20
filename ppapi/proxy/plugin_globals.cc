@@ -29,8 +29,7 @@ VarTracker* PluginGlobals::GetVarTracker() {
   return &plugin_var_tracker_;
 }
 
-FunctionGroupBase* PluginGlobals::GetFunctionAPI(PP_Instance inst,
-                                                 proxy::InterfaceID id) {
+FunctionGroupBase* PluginGlobals::GetFunctionAPI(PP_Instance inst, ApiID id) {
   PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(inst);
   if (dispatcher)
     return dispatcher->GetFunctionAPI(id);

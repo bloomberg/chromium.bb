@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "ppapi/c/pp_resource.h"
-#include "ppapi/proxy/interface_id.h"
+#include "ppapi/shared_impl/api_id.h"
 #include "ppapi/shared_impl/function_group_base.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/proxy_lock.h"
@@ -75,7 +75,7 @@ class EnterFunction : subtle::LockOnEntry<lock_on_entry> {
   EnterFunction(PP_Instance instance, bool report_error)
       : functions_(NULL) {
     FunctionGroupBase* base = PpapiGlobals::Get()->GetFunctionAPI(
-        instance, FunctionsT::interface_id);
+        instance, FunctionsT::kApiID);
     if (base)
       functions_ = base->GetAs<FunctionsT>();
     // TODO(brettw) check error and if report_error is set, do something.

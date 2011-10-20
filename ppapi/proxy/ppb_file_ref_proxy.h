@@ -55,7 +55,7 @@ class PPB_FileRef_Proxy : public InterfaceProxy {
   static PP_Resource DeserializeFileRef(
       const PPB_FileRef_CreateInfo& serialized);
 
-  static const InterfaceID kInterfaceID = INTERFACE_ID_PPB_FILE_REF;
+  static const ApiID kApiID = API_ID_PPB_FILE_REF;
 
  private:
   // Message handlers.

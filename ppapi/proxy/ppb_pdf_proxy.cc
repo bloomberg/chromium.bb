@@ -75,7 +75,7 @@ PP_Resource GetFontFileWithFallback(
 
   HostResource result;
   dispatcher->Send(new PpapiHostMsg_PPBPDF_GetFontFileWithFallback(
-      INTERFACE_ID_PPB_PDF, instance, desc, charset, &result));
+      API_ID_PPB_PDF, instance, desc, charset, &result));
   if (result.is_null())
     return 0;
   return (new PrivateFontFile(result))->GetReference();
@@ -99,7 +99,7 @@ bool GetFontTableForPrivateFontFile(PP_Resource font_file,
   if (!contents) {
     std::string deserialized;
     dispatcher->Send(new PpapiHostMsg_PPBPDF_GetFontTableForPrivateFontFile(
-        INTERFACE_ID_PPB_PDF, object->host_resource(), table, &deserialized));
+        API_ID_PPB_PDF, object->host_resource(), table, &deserialized));
     if (deserialized.empty())
       return false;
     contents = object->AddFontTable(table, deserialized);
@@ -141,7 +141,7 @@ const InterfaceProxy::Info* PPB_PDF_Proxy::GetInfo() {
   static const Info info = {
     &pdf_interface,
     PPB_PDF_INTERFACE,
-    INTERFACE_ID_PPB_PDF,
+    API_ID_PPB_PDF,
     true,
     &CreatePDFProxy,
   };

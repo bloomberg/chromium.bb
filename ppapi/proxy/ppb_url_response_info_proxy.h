@@ -38,7 +38,7 @@ class PPB_URLResponseInfo_Proxy : public InterfaceProxy {
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
 
-  static const InterfaceID kInterfaceID = INTERFACE_ID_PPB_URL_RESPONSE_INFO;
+  static const ApiID kApiID = API_ID_PPB_URL_RESPONSE_INFO;
 
  private:
   // Message handlers.

@@ -30,7 +30,7 @@ void HandleMessage(PP_Instance instance, PP_Var message_data) {
   }
 
   dispatcher->Send(new PpapiMsg_PPPMessaging_HandleMessage(
-      INTERFACE_ID_PPP_MESSAGING,
+      API_ID_PPP_MESSAGING,
       instance,
       SerializedVarSendInput(dispatcher, message_data)));
 }
@@ -62,7 +62,7 @@ const InterfaceProxy::Info* PPP_Messaging_Proxy::GetInfo() {
   static const Info info = {
     &messaging_interface,
     PPP_MESSAGING_INTERFACE,
-    INTERFACE_ID_PPP_MESSAGING,
+    API_ID_PPP_MESSAGING,
     false,
     &CreateMessagingProxy,
   };

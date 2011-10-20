@@ -92,7 +92,7 @@ bool CommandBuffer::Initialize(int32 size) {
   // for NaCl.
   base::SharedMemoryHandle handle;
   if (Send(new PpapiHostMsg_PPBGraphics3D_InitCommandBuffer(
-          INTERFACE_ID_PPB_GRAPHICS_3D, resource_, size, &handle)) &&
+          API_ID_PPB_GRAPHICS_3D, resource_, size, &handle)) &&
       base::SharedMemory::IsHandleValid(handle)) {
     ring_buffer_.reset(new base::SharedMemory(handle, false));
     if (ring_buffer_->Map(size)) {
@@ -126,7 +126,7 @@ gpu::CommandBuffer::State CommandBuffer::GetState() {
   if (last_state_.error == gpu::error::kNoError) {
     gpu::CommandBuffer::State state;
     if (Send(new PpapiHostMsg_PPBGraphics3D_GetState(
-             INTERFACE_ID_PPB_GRAPHICS_3D, resource_, &state)))
+             API_ID_PPB_GRAPHICS_3D, resource_, &state)))
       UpdateState(state);
   }
 
@@ -142,7 +142,7 @@ void CommandBuffer::Flush(int32 put_offset) {
     return;
 
   IPC::Message* message = new PpapiHostMsg_PPBGraphics3D_AsyncFlush(
-      INTERFACE_ID_PPB_GRAPHICS_3D, resource_, put_offset);
+      API_ID_PPB_GRAPHICS_3D, resource_, put_offset);
 
   // Do not let a synchronous flush hold up this message. If this handler is
   // deferred until after the synchronous flush completes, it will overwrite the
@@ -158,7 +158,7 @@ gpu::CommandBuffer::State CommandBuffer::FlushSync(int32 put_offset,
     if (last_state_.error == gpu::error::kNoError) {
       gpu::CommandBuffer::State state;
       if (Send(new PpapiHostMsg_PPBGraphics3D_Flush(
-              INTERFACE_ID_PPB_GRAPHICS_3D, resource_, put_offset,
+              API_ID_PPB_GRAPHICS_3D, resource_, put_offset,
               last_known_get, &state)))
         UpdateState(state);
     }
@@ -178,7 +178,7 @@ int32 CommandBuffer::CreateTransferBuffer(size_t size, int32 id_request) {
   if (last_state_.error == gpu::error::kNoError) {
     int32 id;
     if (Send(new PpapiHostMsg_PPBGraphics3D_CreateTransferBuffer(
-            INTERFACE_ID_PPB_GRAPHICS_3D, resource_, size, &id))) {
+            API_ID_PPB_GRAPHICS_3D, resource_, size, &id))) {
       return id;
     }
   }
@@ -209,7 +209,7 @@ void CommandBuffer::DestroyTransferBuffer(int32 id) {
   transfer_buffers_.erase(it);
 
   Send(new PpapiHostMsg_PPBGraphics3D_DestroyTransferBuffer(
-      INTERFACE_ID_PPB_GRAPHICS_3D, resource_, id));
+      API_ID_PPB_GRAPHICS_3D, resource_, id));
 }
 
 gpu::Buffer CommandBuffer::GetTransferBuffer(int32 id) {
@@ -228,7 +228,7 @@ gpu::Buffer CommandBuffer::GetTransferBuffer(int32 id) {
   base::SharedMemoryHandle handle;
   uint32 size;
   if (!Send(new PpapiHostMsg_PPBGraphics3D_GetTransferBuffer(
-          INTERFACE_ID_PPB_GRAPHICS_3D, resource_, id, &handle, &size))) {
+          API_ID_PPB_GRAPHICS_3D, resource_, id, &handle, &size))) {
     return gpu::Buffer();
   }
 
@@ -383,7 +383,7 @@ gpu::CommandBuffer* Graphics3D::GetCommandBuffer() {
 
 int32 Graphics3D::DoSwapBuffers() {
   IPC::Message* msg = new PpapiHostMsg_PPBGraphics3D_SwapBuffers(
-      INTERFACE_ID_PPB_GRAPHICS_3D, host_resource());
+      API_ID_PPB_GRAPHICS_3D, host_resource());
   msg->set_unblock(true);
   PluginDispatcher::GetForResource(this)->Send(msg);
 
@@ -426,7 +426,7 @@ PP_Resource PPB_Graphics3D_Proxy::CreateProxyResource(
 
   HostResource result;
   dispatcher->Send(new PpapiHostMsg_PPBGraphics3D_Create(
-      INTERFACE_ID_PPB_GRAPHICS_3D, instance, attribs, &result));
+      API_ID_PPB_GRAPHICS_3D, instance, attribs, &result));
   if (result.is_null())
     return 0;
 
@@ -584,7 +584,7 @@ void PPB_Graphics3D_Proxy::SendSwapBuffersACKToPlugin(
     int32_t result,
     const HostResource& context) {
   dispatcher()->Send(new PpapiMsg_PPBGraphics3D_SwapBuffersACK(
-      INTERFACE_ID_PPB_GRAPHICS_3D, context, result));
+      API_ID_PPB_GRAPHICS_3D, context, result));
 }
 
 }  // namespace proxy

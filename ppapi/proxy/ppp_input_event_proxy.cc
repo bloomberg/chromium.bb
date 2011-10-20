@@ -40,10 +40,10 @@ PP_Bool HandleInputEvent(PP_Instance instance, PP_Resource input_event) {
   PP_Bool result = PP_FALSE;
   if (data.is_filtered) {
     dispatcher->Send(new PpapiMsg_PPPInputEvent_HandleFilteredInputEvent(
-        INTERFACE_ID_PPP_INPUT_EVENT, instance, data, &result));
+        API_ID_PPP_INPUT_EVENT, instance, data, &result));
   } else {
     dispatcher->Send(new PpapiMsg_PPPInputEvent_HandleInputEvent(
-        INTERFACE_ID_PPP_INPUT_EVENT, instance, data));
+        API_ID_PPP_INPUT_EVENT, instance, data));
   }
   return result;
 }
@@ -75,7 +75,7 @@ const InterfaceProxy::Info* PPP_InputEvent_Proxy::GetInfo() {
   static const Info info = {
     &input_event_interface,
     PPP_INPUT_EVENT_INTERFACE,
-    INTERFACE_ID_PPP_INPUT_EVENT,
+    API_ID_PPP_INPUT_EVENT,
     false,
     &CreateInputEventProxy,
   };

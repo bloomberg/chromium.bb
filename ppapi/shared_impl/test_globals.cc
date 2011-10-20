@@ -20,8 +20,7 @@ VarTracker* TestGlobals::GetVarTracker() {
   return &var_tracker_;
 }
 
-FunctionGroupBase* TestGlobals::GetFunctionAPI(PP_Instance inst,
-                                               proxy::InterfaceID id) {
+FunctionGroupBase* TestGlobals::GetFunctionAPI(PP_Instance inst, ApiID id) {
   return NULL;
 }
 

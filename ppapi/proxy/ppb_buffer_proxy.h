@@ -58,7 +58,7 @@ class PPB_Buffer_Proxy : public InterfaceProxy {
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
 
-  static const InterfaceID kInterfaceID = INTERFACE_ID_PPB_BUFFER;
+  static const ApiID kApiID = API_ID_PPB_BUFFER;
 
  private:
   // Message handlers.

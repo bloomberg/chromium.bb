@@ -12,9 +12,9 @@
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/c/trusted/ppb_audio_trusted.h"
 #include "ppapi/proxy/enter_proxy.h"
-#include "ppapi/proxy/interface_id.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/shared_impl/api_id.h"
 #include "ppapi/shared_impl/audio_impl.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/resource.h"
@@ -88,7 +88,7 @@ PP_Bool Audio::StartPlayback() {
   SetStartPlaybackState();
   PluginDispatcher::GetForResource(this)->Send(
       new PpapiHostMsg_PPBAudio_StartOrStop(
-          INTERFACE_ID_PPB_AUDIO, host_resource(), true));
+          API_ID_PPB_AUDIO, host_resource(), true));
   return PP_TRUE;
 }
 
@@ -97,7 +97,7 @@ PP_Bool Audio::StopPlayback() {
     return PP_TRUE;
   PluginDispatcher::GetForResource(this)->Send(
       new PpapiHostMsg_PPBAudio_StartOrStop(
-          INTERFACE_ID_PPB_AUDIO, host_resource(), false));
+          API_ID_PPB_AUDIO, host_resource(), false));
   SetStopPlaybackState();
   return PP_TRUE;
 }
@@ -155,7 +155,7 @@ PP_Resource PPB_Audio_Proxy::CreateProxyResource(
 
   HostResource result;
   dispatcher->Send(new PpapiHostMsg_PPBAudio_Create(
-      INTERFACE_ID_PPB_AUDIO, instance_id,
+      API_ID_PPB_AUDIO, instance_id,
       config.object()->GetSampleRate(), config.object()->GetSampleFrameCount(),
       &result));
   if (result.is_null())
@@ -283,7 +283,7 @@ void PPB_Audio_Proxy::AudioChannelConnected(
   // us, as long as the remote side always closes the handles it receives
   // (in OnMsgNotifyAudioStreamCreated), even in the failure case.
   dispatcher()->Send(new PpapiMsg_PPBAudio_NotifyAudioStreamCreated(
-      INTERFACE_ID_PPB_AUDIO, resource, result_code, socket_handle,
+      API_ID_PPB_AUDIO, resource, result_code, socket_handle,
       shared_memory, shared_memory_length));
 }
 

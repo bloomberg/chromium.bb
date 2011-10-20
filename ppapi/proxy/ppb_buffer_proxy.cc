@@ -78,7 +78,7 @@ PP_Resource PPB_Buffer_Proxy::CreateProxyResource(PP_Instance instance,
   HostResource result;
   base::SharedMemoryHandle shm_handle = base::SharedMemory::NULLHandle();
   dispatcher->Send(new PpapiHostMsg_PPBBuffer_Create(
-      INTERFACE_ID_PPB_BUFFER, instance, size,
+      API_ID_PPB_BUFFER, instance, size,
       &result, &shm_handle));
   if (result.is_null() || !base::SharedMemory::IsHandleValid(shm_handle))
     return 0;

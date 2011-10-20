@@ -29,7 +29,7 @@ class PPB_VideoDecoder_Proxy : public InterfaceProxy {
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
 
-  static const InterfaceID kInterfaceID = INTERFACE_ID_PPB_VIDEO_DECODER_DEV;
+  static const ApiID kApiID = API_ID_PPB_VIDEO_DECODER_DEV;
 
  private:
   // Message handlers in the renderer process to receive messages from the

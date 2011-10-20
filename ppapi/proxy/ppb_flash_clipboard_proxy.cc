@@ -39,7 +39,7 @@ PP_Bool IsFormatAvailable(PP_Instance instance_id,
 
   bool result = false;
   dispatcher->Send(new PpapiHostMsg_PPBFlashClipboard_IsFormatAvailable(
-      INTERFACE_ID_PPB_FLASH_CLIPBOARD,
+      API_ID_PPB_FLASH_CLIPBOARD,
       instance_id,
       static_cast<int>(clipboard_type),
       static_cast<int>(format),
@@ -58,7 +58,7 @@ PP_Var ReadPlainText(PP_Instance instance_id,
 
   ReceiveSerializedVarReturnValue result;
   dispatcher->Send(new PpapiHostMsg_PPBFlashClipboard_ReadPlainText(
-      INTERFACE_ID_PPB_FLASH_CLIPBOARD, instance_id,
+      API_ID_PPB_FLASH_CLIPBOARD, instance_id,
       static_cast<int>(clipboard_type), &result));
   return result.Return(dispatcher);
 }
@@ -74,7 +74,7 @@ int32_t WritePlainText(PP_Instance instance_id,
     return PP_ERROR_BADARGUMENT;
 
   dispatcher->Send(new PpapiHostMsg_PPBFlashClipboard_WritePlainText(
-      INTERFACE_ID_PPB_FLASH_CLIPBOARD,
+      API_ID_PPB_FLASH_CLIPBOARD,
       instance_id,
       static_cast<int>(clipboard_type),
       SerializedVarSendInput(dispatcher, text)));
@@ -111,7 +111,7 @@ const InterfaceProxy::Info* PPB_Flash_Clipboard_Proxy::GetInfo() {
   static const Info info = {
     &flash_clipboard_interface,
     PPB_FLASH_CLIPBOARD_INTERFACE,
-    INTERFACE_ID_PPB_FLASH_CLIPBOARD,
+    API_ID_PPB_FLASH_CLIPBOARD,
     false,
     &CreateFlashClipboardProxy
   };

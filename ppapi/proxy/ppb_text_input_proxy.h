@@ -37,7 +37,7 @@ class PPB_TextInput_Proxy
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
-  static const InterfaceID kInterfaceID = INTERFACE_ID_PPB_TEXT_INPUT;
+  static const ApiID kApiID = API_ID_PPB_TEXT_INPUT;
 
  private:
   // Message handlers.

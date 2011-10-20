@@ -35,14 +35,14 @@ PP_Bool DidCreate(PP_Instance instance,
 
   PP_Bool result = PP_FALSE;
   HostDispatcher::GetForInstance(instance)->Send(
-      new PpapiMsg_PPPInstance_DidCreate(INTERFACE_ID_PPP_INSTANCE, instance,
+      new PpapiMsg_PPPInstance_DidCreate(API_ID_PPP_INSTANCE, instance,
                                          argn_vect, argv_vect, &result));
   return result;
 }
 
 void DidDestroy(PP_Instance instance) {
   HostDispatcher::GetForInstance(instance)->Send(
-      new PpapiMsg_PPPInstance_DidDestroy(INTERFACE_ID_PPP_INSTANCE, instance));
+      new PpapiMsg_PPPInstance_DidDestroy(API_ID_PPP_INSTANCE, instance));
 }
 
 void DidChangeView(PP_Instance instance,
@@ -61,7 +61,7 @@ void DidChangeView(PP_Instance instance,
   PP_Bool flash_fullscreen  =
       flash_fullscreen_interface->IsFullscreen(instance);
   dispatcher->Send(
-      new PpapiMsg_PPPInstance_DidChangeView(INTERFACE_ID_PPP_INSTANCE,
+      new PpapiMsg_PPPInstance_DidChangeView(API_ID_PPP_INSTANCE,
                                              instance, *position, *clip,
                                              fullscreen,
                                              flash_fullscreen));
@@ -69,7 +69,7 @@ void DidChangeView(PP_Instance instance,
 
 void DidChangeFocus(PP_Instance instance, PP_Bool has_focus) {
   HostDispatcher::GetForInstance(instance)->Send(
-      new PpapiMsg_PPPInstance_DidChangeFocus(INTERFACE_ID_PPP_INSTANCE,
+      new PpapiMsg_PPPInstance_DidChangeFocus(API_ID_PPP_INSTANCE,
                                               instance, has_focus));
 }
 
@@ -81,7 +81,7 @@ PP_Bool HandleDocumentLoad(PP_Instance instance,
   // Set up the URLLoader for proxying.
 
   PPB_URLLoader_Proxy* url_loader_proxy = static_cast<PPB_URLLoader_Proxy*>(
-      dispatcher->GetInterfaceProxy(INTERFACE_ID_PPB_URL_LOADER));
+      dispatcher->GetInterfaceProxy(API_ID_PPB_URL_LOADER));
   url_loader_proxy->PrepareURLLoaderForSendingToPlugin(url_loader);
 
   // PluginResourceTracker in the plugin process assumes that resources that it
@@ -101,7 +101,7 @@ PP_Bool HandleDocumentLoad(PP_Instance instance,
   HostResource serialized_loader;
   serialized_loader.SetHostResource(instance, url_loader);
   dispatcher->Send(new PpapiMsg_PPPInstance_HandleDocumentLoad(
-      INTERFACE_ID_PPP_INSTANCE, instance, serialized_loader, &result));
+      API_ID_PPP_INSTANCE, instance, serialized_loader, &result));
   return result;
 }
 
@@ -136,7 +136,7 @@ const InterfaceProxy::Info* PPP_Instance_Proxy::GetInfo1_0() {
   static const Info info = {
     &instance_interface_1_0,
     PPP_INSTANCE_INTERFACE_1_0,
-    INTERFACE_ID_PPP_INSTANCE,
+    API_ID_PPP_INSTANCE,
     false,
     &CreateInstanceProxy
   };

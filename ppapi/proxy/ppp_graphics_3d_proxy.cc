@@ -16,8 +16,7 @@ namespace {
 
 void ContextLost(PP_Instance instance) {
   HostDispatcher::GetForInstance(instance)->Send(
-      new PpapiMsg_PPPGraphics3D_ContextLost(INTERFACE_ID_PPP_GRAPHICS_3D,
-                                             instance));
+      new PpapiMsg_PPPGraphics3D_ContextLost(API_ID_PPP_GRAPHICS_3D, instance));
 }
 
 static const PPP_Graphics3D graphics_3d_interface = {
@@ -47,7 +46,7 @@ const InterfaceProxy::Info* PPP_Graphics3D_Proxy::GetInfo() {
   static const Info info = {
     &graphics_3d_interface,
     PPP_GRAPHICS_3D_INTERFACE,
-    INTERFACE_ID_PPP_GRAPHICS_3D,
+    API_ID_PPP_GRAPHICS_3D,
     false,
     &CreateGraphics3DProxy,
   };

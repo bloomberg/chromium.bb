@@ -44,7 +44,7 @@ class PPB_CursorControl_Proxy
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
-  static const InterfaceID kInterfaceID = INTERFACE_ID_PPB_CURSORCONTROL;
+  static const ApiID kApiID = API_ID_PPB_CURSORCONTROL;
 
  private:
   // Message handlers.

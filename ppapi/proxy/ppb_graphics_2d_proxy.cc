@@ -95,7 +95,7 @@ void Graphics2D::PaintImageData(PP_Resource image_data,
   PP_Rect dummy;
   memset(&dummy, 0, sizeof(PP_Rect));
   GetDispatcher()->Send(new PpapiHostMsg_PPBGraphics2D_PaintImageData(
-      INTERFACE_ID_PPB_GRAPHICS_2D, host_resource(),
+      API_ID_PPB_GRAPHICS_2D, host_resource(),
       image_object->host_resource(), *top_left, !!src_rect,
       src_rect ? *src_rect : dummy));
 }
@@ -105,7 +105,7 @@ void Graphics2D::Scroll(const PP_Rect* clip_rect,
   PP_Rect dummy;
   memset(&dummy, 0, sizeof(PP_Rect));
   GetDispatcher()->Send(new PpapiHostMsg_PPBGraphics2D_Scroll(
-      INTERFACE_ID_PPB_GRAPHICS_2D, host_resource(),
+      API_ID_PPB_GRAPHICS_2D, host_resource(),
       !!clip_rect, clip_rect ? *clip_rect : dummy, *amount));
 }
 
@@ -116,7 +116,7 @@ void Graphics2D::ReplaceContents(PP_Resource image_data) {
     return;
 
   GetDispatcher()->Send(new PpapiHostMsg_PPBGraphics2D_ReplaceContents(
-      INTERFACE_ID_PPB_GRAPHICS_2D, host_resource(),
+      API_ID_PPB_GRAPHICS_2D, host_resource(),
       image_object->host_resource()));
 }
 
@@ -131,7 +131,7 @@ int32_t Graphics2D::Flush(PP_CompletionCallback callback) {
   current_flush_callback_ = callback;
 
   GetDispatcher()->Send(new PpapiHostMsg_PPBGraphics2D_Flush(
-      INTERFACE_ID_PPB_GRAPHICS_2D, host_resource()));
+      API_ID_PPB_GRAPHICS_2D, host_resource()));
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -158,7 +158,7 @@ PP_Resource PPB_Graphics2D_Proxy::CreateProxyResource(
 
   HostResource result;
   dispatcher->Send(new PpapiHostMsg_ResourceCreation_Graphics2D(
-      INTERFACE_ID_RESOURCE_CREATION, instance, size, is_always_opaque,
+      API_ID_RESOURCE_CREATION, instance, size, is_always_opaque,
       &result));
   if (result.is_null())
     return 0;
@@ -237,7 +237,7 @@ void PPB_Graphics2D_Proxy::SendFlushACKToPlugin(
     int32_t result,
     const HostResource& graphics_2d) {
   dispatcher()->Send(new PpapiMsg_PPBGraphics2D_FlushACK(
-      INTERFACE_ID_PPB_GRAPHICS_2D, graphics_2d, result));
+      API_ID_PPB_GRAPHICS_2D, graphics_2d, result));
 }
 
 }  // namespace proxy

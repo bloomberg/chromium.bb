@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "base/rand_util.h"
-#include "ppapi/proxy/interface_id.h"
+#include "ppapi/shared_impl/api_id.h"
 #include "ppapi/shared_impl/function_group_base.h"
 #include "ppapi/shared_impl/id_assignment.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
@@ -34,7 +34,7 @@ struct HostGlobals::InstanceData {
 
   // Lazily allocated function proxies for the different interfaces.
   scoped_ptr< ::ppapi::FunctionGroupBase >
-      function_proxies[::ppapi::proxy::INTERFACE_ID_COUNT];
+      function_proxies[::ppapi::API_ID_COUNT];
 };
 
 HostGlobals* HostGlobals::host_globals_ = NULL;
@@ -57,9 +57,8 @@ HostGlobals::~HostGlobals() {
   return &host_var_tracker_;
 }
 
-::ppapi::FunctionGroupBase* HostGlobals::GetFunctionAPI(
-    PP_Instance pp_instance,
-    ::ppapi::proxy::InterfaceID id) {
+::ppapi::FunctionGroupBase* HostGlobals::GetFunctionAPI(PP_Instance pp_instance,
+                                                        ::ppapi::ApiID id) {
   // Get the instance object. This also ensures that the instance data is in
   // the map, since we need it below.
   PluginInstance* instance = GetInstance(pp_instance);
@@ -68,7 +67,7 @@ HostGlobals::~HostGlobals() {
 
   // The instance one is special, since it's just implemented by the instance
   // object.
-  if (id == ::ppapi::proxy::INTERFACE_ID_PPB_INSTANCE)
+  if (id == ::ppapi::API_ID_PPB_INSTANCE)
     return instance;
 
   scoped_ptr< ::ppapi::FunctionGroupBase >& proxy =
@@ -77,16 +76,16 @@ HostGlobals::~HostGlobals() {
     return proxy.get();
 
   switch (id) {
-    case ::ppapi::proxy::INTERFACE_ID_PPB_CURSORCONTROL:
+    case ::ppapi::API_ID_PPB_CURSORCONTROL:
       proxy.reset(new PPB_CursorControl_Impl(instance));
       break;
-    case ::ppapi::proxy::INTERFACE_ID_PPB_FONT:
+    case ::ppapi::API_ID_PPB_FONT:
       proxy.reset(new PPB_Font_FunctionImpl(instance));
       break;
-    case ::ppapi::proxy::INTERFACE_ID_PPB_TEXT_INPUT:
+    case ::ppapi::API_ID_PPB_TEXT_INPUT:
       proxy.reset(new PPB_TextInput_Impl(instance));
       break;
-    case ::ppapi::proxy::INTERFACE_ID_RESOURCE_CREATION:
+    case ::ppapi::API_ID_RESOURCE_CREATION:
       proxy.reset(new ResourceCreationImpl(instance));
       break;
     default:

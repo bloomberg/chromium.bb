@@ -6,9 +6,8 @@
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_size.h"
-#include "ppapi/proxy/interface_id.h"
-#include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/c/trusted/ppb_image_data_trusted.h"
+#include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppb_audio_proxy.h"
@@ -30,6 +29,7 @@
 #include "ppapi/proxy/ppb_url_loader_proxy.h"
 #include "ppapi/proxy/ppb_video_capture_proxy.h"
 #include "ppapi/proxy/ppb_video_decoder_proxy.h"
+#include "ppapi/shared_impl/api_id.h"
 #include "ppapi/shared_impl/audio_config_impl.h"
 #include "ppapi/shared_impl/font_impl.h"
 #include "ppapi/shared_impl/function_group_base.h"
@@ -190,7 +190,7 @@ PP_Resource ResourceCreationProxy::CreateImageData(PP_Instance instance,
   std::string image_data_desc;
   ImageHandle image_handle = ImageData::NullHandle;
   dispatcher->Send(new PpapiHostMsg_ResourceCreation_ImageData(
-      INTERFACE_ID_RESOURCE_CREATION, instance, format, size, init_to_zero,
+      API_ID_RESOURCE_CREATION, instance, format, size, init_to_zero,
       &result, &image_data_desc, &image_handle));
 
   if (result.is_null() || image_data_desc.size() != sizeof(PP_ImageDataDesc))

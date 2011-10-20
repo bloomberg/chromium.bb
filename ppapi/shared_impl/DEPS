@@ -9,4 +9,5 @@ include_rules = [
   "-ipc",
 
   "-ppapi/cpp",
+  "-ppapi/proxy",
 ]

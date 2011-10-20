@@ -22,7 +22,7 @@ PP_Var GetInstanceObject(PP_Instance instance) {
   Dispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
   ReceiveSerializedVarReturnValue result;
   dispatcher->Send(new PpapiMsg_PPPInstancePrivate_GetInstanceObject(
-      INTERFACE_ID_PPP_INSTANCE_PRIVATE, instance, &result));
+      API_ID_PPP_INSTANCE_PRIVATE, instance, &result));
   return result.Return(dispatcher);
 }
 
@@ -53,7 +53,7 @@ const InterfaceProxy::Info* PPP_Instance_Private_Proxy::GetInfo() {
   static const Info info = {
     &instance_private_interface,
     PPP_INSTANCE_PRIVATE_INTERFACE,
-    INTERFACE_ID_PPP_INSTANCE_PRIVATE,
+    API_ID_PPP_INSTANCE_PRIVATE,
     false,
     &CreateInstancePrivateProxy,
   };

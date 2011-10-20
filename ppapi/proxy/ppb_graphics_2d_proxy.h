@@ -36,7 +36,7 @@ class PPB_Graphics2D_Proxy : public InterfaceProxy {
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
 
-  static const InterfaceID kInterfaceID = INTERFACE_ID_PPB_GRAPHICS_2D;
+  static const ApiID kApiID = API_ID_PPB_GRAPHICS_2D;
 
  private:
   // Plugin->renderer message handlers.

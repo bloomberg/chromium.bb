@@ -73,7 +73,7 @@ int32_t Surface3D::SwapBuffers(PP_CompletionCallback callback) {
   current_flush_callback_ = callback;
 
   IPC::Message* msg = new PpapiHostMsg_PPBSurface3D_SwapBuffers(
-      INTERFACE_ID_PPB_SURFACE_3D, host_resource());
+      API_ID_PPB_SURFACE_3D, host_resource());
   msg->set_unblock(true);
   PluginDispatcher::GetForResource(this)->Send(msg);
 
@@ -100,7 +100,7 @@ const InterfaceProxy::Info* PPB_Surface3D_Proxy::GetInfo() {
   static const Info info = {
     thunk::GetPPB_Surface3D_Dev_Thunk(),
     PPB_SURFACE_3D_DEV_INTERFACE,
-    INTERFACE_ID_PPB_SURFACE_3D,
+    API_ID_PPB_SURFACE_3D,
     false,
     &CreateSurface3DProxy,
   };
@@ -128,7 +128,7 @@ PP_Resource PPB_Surface3D_Proxy::CreateProxyResource(
 
   HostResource result;
   dispatcher->Send(new PpapiHostMsg_PPBSurface3D_Create(
-      INTERFACE_ID_PPB_SURFACE_3D, instance, config, attribs, &result));
+      API_ID_PPB_SURFACE_3D, instance, config, attribs, &result));
 
   if (result.is_null())
     return 0;
@@ -187,7 +187,7 @@ void PPB_Surface3D_Proxy::SendSwapBuffersACKToPlugin(
     int32_t result,
     const HostResource& surface_3d) {
   dispatcher()->Send(new PpapiMsg_PPBSurface3D_SwapBuffersACK(
-      INTERFACE_ID_PPB_SURFACE_3D, surface_3d, result));
+      API_ID_PPB_SURFACE_3D, surface_3d, result));
 }
 
 }  // namespace proxy

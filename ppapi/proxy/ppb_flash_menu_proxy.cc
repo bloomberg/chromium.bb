@@ -66,7 +66,7 @@ int32_t FlashMenu::Show(const struct PP_Point* location,
 
   PluginDispatcher::GetForResource(this)->Send(
       new PpapiHostMsg_PPBFlashMenu_Show(
-          INTERFACE_ID_PPB_FLASH_MENU, host_resource(), *location));
+          API_ID_PPB_FLASH_MENU, host_resource(), *location));
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -96,7 +96,7 @@ const InterfaceProxy::Info* PPB_Flash_Menu_Proxy::GetInfo() {
   static const Info info = {
     ppapi::thunk::GetPPB_Flash_Menu_Thunk(),
     PPB_FLASH_MENU_INTERFACE,
-    INTERFACE_ID_PPB_FLASH_MENU,
+    API_ID_PPB_FLASH_MENU,
     true,
     &CreateFlashMenuProxy,
   };
@@ -117,7 +117,7 @@ PP_Resource PPB_Flash_Menu_Proxy::CreateProxyResource(
     return 0;
 
   dispatcher->Send(new PpapiHostMsg_PPBFlashMenu_Create(
-      INTERFACE_ID_PPB_FLASH_MENU, instance_id, serialized_menu, &result));
+      API_ID_PPB_FLASH_MENU, instance_id, serialized_menu, &result));
   if (result.is_null())
     return 0;
   return (new FlashMenu(result))->GetReference();
@@ -182,7 +182,7 @@ void PPB_Flash_Menu_Proxy::SendShowACKToPlugin(
     int32_t result,
     ShowRequest* request) {
   dispatcher()->Send(new PpapiMsg_PPBFlashMenu_ShowACK(
-      INTERFACE_ID_PPB_FLASH_MENU,
+      API_ID_PPB_FLASH_MENU,
       request->menu,
       request->selected_id,
       result));

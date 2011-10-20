@@ -27,19 +27,19 @@ PPB_TextInput_Proxy::AsPPB_TextInput_FunctionAPI() {
 void PPB_TextInput_Proxy::SetTextInputType(PP_Instance instance,
                                            PP_TextInput_Type type) {
   dispatcher()->Send(new PpapiHostMsg_PPBTextInput_SetTextInputType(
-      INTERFACE_ID_PPB_TEXT_INPUT, instance, type));
+      API_ID_PPB_TEXT_INPUT, instance, type));
 }
 
 void PPB_TextInput_Proxy::UpdateCaretPosition(PP_Instance instance,
                                               const PP_Rect& caret,
                                               const PP_Rect& bounding_box) {
   dispatcher()->Send(new PpapiHostMsg_PPBTextInput_UpdateCaretPosition(
-      INTERFACE_ID_PPB_TEXT_INPUT, instance, caret, bounding_box));
+      API_ID_PPB_TEXT_INPUT, instance, caret, bounding_box));
 }
 
 void PPB_TextInput_Proxy::CancelCompositionText(PP_Instance instance) {
   dispatcher()->Send(new PpapiHostMsg_PPBTextInput_CancelCompositionText(
-      INTERFACE_ID_PPB_TEXT_INPUT, instance));
+      API_ID_PPB_TEXT_INPUT, instance));
 }
 
 bool PPB_TextInput_Proxy::OnMessageReceived(const IPC::Message& msg) {

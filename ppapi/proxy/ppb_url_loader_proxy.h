@@ -52,7 +52,7 @@ class PPB_URLLoader_Proxy : public InterfaceProxy {
   // time you're sending a new URLLoader that the plugin hasn't seen yet.
   void PrepareURLLoaderForSendingToPlugin(PP_Resource resource);
 
-  static const InterfaceID kInterfaceID = INTERFACE_ID_PPB_URL_LOADER;
+  static const ApiID kApiID = API_ID_PPB_URL_LOADER;
 
  private:
   // Data associated with callbacks for ReadResponseBody.

@@ -53,7 +53,7 @@ PP_Var URLResponseInfo::GetProperty(PP_URLResponseProperty property) {
   PluginDispatcher* dispatcher = PluginDispatcher::GetForResource(this);
   ReceiveSerializedVarReturnValue result;
   dispatcher->Send(new PpapiHostMsg_PPBURLResponseInfo_GetProperty(
-      INTERFACE_ID_PPB_URL_RESPONSE_INFO, host_resource(), property, &result));
+      API_ID_PPB_URL_RESPONSE_INFO, host_resource(), property, &result));
   return result.Return(dispatcher);
 }
 
@@ -65,7 +65,7 @@ PP_Resource URLResponseInfo::GetBodyAsFileRef() {
   PPB_FileRef_CreateInfo create_info;
   PluginDispatcher::GetForResource(this)->Send(
       new PpapiHostMsg_PPBURLResponseInfo_GetBodyAsFileRef(
-          INTERFACE_ID_PPB_URL_RESPONSE_INFO, host_resource(), &create_info));
+          API_ID_PPB_URL_RESPONSE_INFO, host_resource(), &create_info));
   return PPB_FileRef_Proxy::DeserializeFileRef(create_info);
 }
 
@@ -120,7 +120,7 @@ void PPB_URLResponseInfo_Proxy::OnMsgGetBodyAsFileRef(
 
   // Use the FileRef proxy to serialize.
   PPB_FileRef_Proxy* file_ref_proxy = static_cast<PPB_FileRef_Proxy*>(
-      dispatcher()->GetInterfaceProxy(INTERFACE_ID_PPB_FILE_REF));
+      dispatcher()->GetInterfaceProxy(API_ID_PPB_FILE_REF));
   file_ref_proxy->SerializeFileRef(file_ref, result);
 }
 

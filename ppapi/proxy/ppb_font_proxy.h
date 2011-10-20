@@ -36,7 +36,7 @@ class PPB_Font_Proxy : public InterfaceProxy,
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
-  static const InterfaceID kInterfaceID = INTERFACE_ID_PPB_FONT;
+  static const ApiID kApiID = API_ID_PPB_FONT;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PPB_Font_Proxy);

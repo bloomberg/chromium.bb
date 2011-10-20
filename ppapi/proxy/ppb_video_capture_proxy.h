@@ -29,7 +29,7 @@ class PPB_VideoCapture_Proxy : public InterfaceProxy {
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
 
-  static const InterfaceID kInterfaceID = INTERFACE_ID_PPB_VIDEO_CAPTURE_DEV;
+  static const ApiID kApiID = API_ID_PPB_VIDEO_CAPTURE_DEV;
 
  private:
   // Message handlers.
@@ -54,7 +54,7 @@ class PPP_VideoCapture_Proxy : public InterfaceProxy {
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
 
-  static const InterfaceID kInterfaceID = INTERFACE_ID_PPP_VIDEO_CAPTURE_DEV;
+  static const ApiID kApiID = API_ID_PPP_VIDEO_CAPTURE_DEV;
 
  private:
   // Message handlers.

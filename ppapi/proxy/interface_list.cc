@@ -99,9 +99,9 @@
 // Helper to get the proxy name PPB_Foo_Proxy given the API name PPB_Foo.
 #define PROXY_CLASS_NAME(api_name) api_name##_Proxy
 
-// Helper to get the interface ID PPB_Foo_Proxy::kInterfaceID given the API
+// Helper to get the interface ID PPB_Foo_Proxy::kApiID given the API
 // name PPB_Foo.
-#define PROXY_INTERFACE_ID(api_name) PROXY_CLASS_NAME(api_name)::kInterfaceID
+#define PROXY_API_ID(api_name) PROXY_CLASS_NAME(api_name)::kApiID
 
 // Helper to get the name of the factory function CreatePPB_Foo_Proxy given
 // the API name PPB_Foo.
@@ -118,13 +118,13 @@ namespace {
 
 // The interface list has interfaces with no ID listed as "NoAPIName" which
 // means there's no corresponding _Proxy object. Our macros expand this to
-// NoAPIName_Proxy, and then they look for kInterfaceID inside it.
+// NoAPIName_Proxy, and then they look for kApiID inside it.
 //
 // This dummy class provides the correct definition for that interface ID,
 // which is "NONE".
 class NoAPIName_Proxy {
  public:
-  static const InterfaceID kInterfaceID = INTERFACE_ID_NONE;
+  static const ApiID kApiID = API_ID_NONE;
 };
 
 // Define factory functions for each interface type. These are of the form:
@@ -146,12 +146,12 @@ InterfaceList::InterfaceList() {
   // Register the API factories for each of the API types. This calls AddProxy
   // for each InterfaceProxy type we support.
   #define PROXIED_API(api_name) \
-      AddProxy(PROXY_INTERFACE_ID(api_name), &PROXY_FACTORY_NAME(api_name));
+      AddProxy(PROXY_API_ID(api_name), &PROXY_FACTORY_NAME(api_name));
 
   // Register each proxied interface by calling AddPPB for each supported
   // interface.
   #define PROXIED_IFACE(api_name, iface_str, iface_struct) \
-      AddPPB(iface_str, PROXY_INTERFACE_ID(api_name), \
+      AddPPB(iface_str, PROXY_API_ID(api_name), \
              INTERFACE_THUNK_NAME(iface_struct)());
 
   #include "ppapi/thunk/interfaces_ppb_public_stable.h"
@@ -165,13 +165,13 @@ InterfaceList::InterfaceList() {
   // that they support, so aren't covered by the macros above, but have proxies
   // for message routing. Others have different implementations between the
   // proxy and the impl and there's no obvious message routing.
-  AddProxy(INTERFACE_ID_RESOURCE_CREATION, &ResourceCreationProxy::Create);
-  AddProxy(INTERFACE_ID_PPP_CLASS, &PPP_Class_Proxy::Create);
-  AddPPB(PPB_CORE_INTERFACE, INTERFACE_ID_PPB_CORE,
+  AddProxy(API_ID_RESOURCE_CREATION, &ResourceCreationProxy::Create);
+  AddProxy(API_ID_PPP_CLASS, &PPP_Class_Proxy::Create);
+  AddPPB(PPB_CORE_INTERFACE, API_ID_PPB_CORE,
          PPB_Core_Proxy::GetPPB_Core_Interface());
-  AddPPB(PPB_OPENGLES2_INTERFACE, INTERFACE_ID_NONE,
+  AddPPB(PPB_OPENGLES2_INTERFACE, API_ID_NONE,
          OpenGLES2Impl::GetInterface());
-  AddPPB(PPB_VAR_INTERFACE, INTERFACE_ID_NONE,
+  AddPPB(PPB_VAR_INTERFACE, API_ID_NONE,
          GetPPB_Var_Interface());
 
   // PPB (browser) interfaces.
@@ -212,26 +212,26 @@ InterfaceList* InterfaceList::GetInstance() {
   return Singleton<InterfaceList>::get();
 }
 
-InterfaceID InterfaceList::GetIDForPPBInterface(const std::string& name) const {
+ApiID InterfaceList::GetIDForPPBInterface(const std::string& name) const {
   NameToInterfaceInfoMap::const_iterator found =
       name_to_browser_info_.find(name);
   if (found == name_to_browser_info_.end())
-    return INTERFACE_ID_NONE;
+    return API_ID_NONE;
   return found->second.id;
 }
 
-InterfaceID InterfaceList::GetIDForPPPInterface(const std::string& name) const {
+ApiID InterfaceList::GetIDForPPPInterface(const std::string& name) const {
   NameToInterfaceInfoMap::const_iterator found =
       name_to_plugin_info_.find(name);
   if (found == name_to_plugin_info_.end())
-    return INTERFACE_ID_NONE;
+    return API_ID_NONE;
   return found->second.id;
 }
 
-InterfaceProxy::Factory InterfaceList::GetFactoryForID(InterfaceID id) const {
+InterfaceProxy::Factory InterfaceList::GetFactoryForID(ApiID id) const {
   int index = static_cast<int>(id);
-  COMPILE_ASSERT(INTERFACE_ID_NONE == 0, none_must_be_zero);
-  if (id <= 0 || id >= INTERFACE_ID_COUNT)
+  COMPILE_ASSERT(API_ID_NONE == 0, none_must_be_zero);
+  if (id <= 0 || id >= API_ID_COUNT)
     return NULL;
   return id_to_factory_[index];
 }
@@ -252,12 +252,12 @@ const void* InterfaceList::GetInterfaceForPPP(const std::string& name) const {
   return found->second.iface;
 }
 
-void InterfaceList::AddProxy(InterfaceID id,
+void InterfaceList::AddProxy(ApiID id,
                              InterfaceProxy::Factory factory) {
   // For interfaces with no corresponding _Proxy objects, the macros will
-  // generate calls to this function with INTERFACE_ID_NONE. This means we
+  // generate calls to this function with API_ID_NONE. This means we
   // should just skip adding a factory for these functions.
-  if (id == INTERFACE_ID_NONE)
+  if (id == API_ID_NONE)
     return;
 
   // The factory should be an exact dupe of the one we already have if it
@@ -269,14 +269,14 @@ void InterfaceList::AddProxy(InterfaceID id,
 }
 
 void InterfaceList::AddPPB(const char* name,
-                           InterfaceID id,
+                           ApiID id,
                            const void* iface) {
   DCHECK(name_to_browser_info_.find(name) == name_to_browser_info_.end());
   name_to_browser_info_[name] = InterfaceInfo(id, iface);
 }
 
 void InterfaceList::AddPPP(const char* name,
-                           InterfaceID id,
+                           ApiID id,
                            const void* iface) {
   DCHECK(name_to_plugin_info_.find(name) == name_to_plugin_info_.end());
   name_to_plugin_info_[name] = InterfaceInfo(id, iface);

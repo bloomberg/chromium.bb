@@ -199,7 +199,7 @@ WebKitForwarding* PluginDispatcher::GetWebKitForwarding() {
   return plugin_delegate_->GetWebKitForwarding();
 }
 
-FunctionGroupBase* PluginDispatcher::GetFunctionAPI(InterfaceID id) {
+FunctionGroupBase* PluginDispatcher::GetFunctionAPI(ApiID id) {
   return GetInterfaceProxy(id);
 }
 
@@ -215,7 +215,7 @@ void PluginDispatcher::ForceFreeAllInstances() {
     if (i->second == this) {
       // Synthesize an "instance destroyed" message, this will notify the
       // plugin and also remove it from our list of tracked plugins.
-      PpapiMsg_PPPInstance_DidDestroy msg(INTERFACE_ID_PPP_INSTANCE, i->first);
+      PpapiMsg_PPPInstance_DidDestroy msg(API_ID_PPP_INSTANCE, i->first);
       OnMessageReceived(msg);
     }
   }

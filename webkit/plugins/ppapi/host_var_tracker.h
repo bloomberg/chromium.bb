@@ -16,7 +16,6 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
-#include "ppapi/proxy/interface_id.h"
 #include "ppapi/shared_impl/function_group_base.h"
 #include "ppapi/shared_impl/resource_tracker.h"
 #include "ppapi/shared_impl/var_tracker.h"

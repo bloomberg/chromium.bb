@@ -28,7 +28,7 @@ Dispatcher::Dispatcher(base::ProcessHandle remote_process_handle,
 Dispatcher::~Dispatcher() {
 }
 
-InterfaceProxy* Dispatcher::GetInterfaceProxy(InterfaceID id) {
+InterfaceProxy* Dispatcher::GetInterfaceProxy(ApiID id) {
   InterfaceProxy* proxy = proxies_[id].get();
   if (!proxy) {
     // Handle the first time for a given API by creating the proxy for it.
@@ -66,13 +66,13 @@ bool Dispatcher::OnMessageReceived(const IPC::Message& msg) {
     return handled;
   }
 
-  if (msg.routing_id() <= 0 || msg.routing_id() >= INTERFACE_ID_COUNT) {
+  if (msg.routing_id() <= 0 || msg.routing_id() >= API_ID_COUNT) {
     OnInvalidMessageReceived();
     return true;
   }
 
   InterfaceProxy* proxy = GetInterfaceProxy(
-      static_cast<InterfaceID>(msg.routing_id()));
+      static_cast<ApiID>(msg.routing_id()));
   if (!proxy) {
     NOTREACHED();
     return true;

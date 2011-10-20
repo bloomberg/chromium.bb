@@ -68,7 +68,7 @@ void UpdateResourceLoadStatus(PP_Instance pp_instance,
   params.bytes_received = bytes_received;
   params.total_bytes_to_be_received = total_bytes_to_be_received;
   dispatcher->Send(new PpapiMsg_PPBURLLoader_UpdateProgress(
-      INTERFACE_ID_PPB_URL_LOADER, params));
+      API_ID_PPB_URL_LOADER, params));
 }
 
 InterfaceProxy* CreateURLLoaderProxy(Dispatcher* dispatcher) {
@@ -188,7 +188,7 @@ int32_t URLLoader::Open(PP_Resource request_id,
   // TODO(brettw) http://crbug.com/86279: SendCallback doesn't ensure that
   // the proper callback semantics happen if the object is deleted.
   GetDispatcher()->Send(new PpapiHostMsg_PPBURLLoader_Open(
-      INTERFACE_ID_PPB_URL_LOADER, host_resource(), enter.object()->GetData(),
+      API_ID_PPB_URL_LOADER, host_resource(), enter.object()->GetData(),
       GetDispatcher()->callback_tracker().SendCallback(callback)));
   return PP_OK_COMPLETIONPENDING;
 }
@@ -197,7 +197,7 @@ int32_t URLLoader::FollowRedirect(PP_CompletionCallback callback) {
   // TODO(brettw) http://crbug.com/86279: SendCallback doesn't ensure that
   // the proper callback semantics happen if the object is deleted.
   GetDispatcher()->Send(new PpapiHostMsg_PPBURLLoader_FollowRedirect(
-      INTERFACE_ID_PPB_URL_LOADER, host_resource(),
+      API_ID_PPB_URL_LOADER, host_resource(),
       GetDispatcher()->callback_tracker().SendCallback(callback)));
   return PP_OK_COMPLETIONPENDING;
 }
@@ -231,7 +231,7 @@ PP_Resource URLLoader::GetResponseInfo() {
   if (!response_info_) {
     HostResource response_id;
     GetDispatcher()->Send(new PpapiHostMsg_PPBURLLoader_GetResponseInfo(
-        INTERFACE_ID_PPB_URL_LOADER, host_resource(), &response_id));
+        API_ID_PPB_URL_LOADER, host_resource(), &response_id));
     if (response_id.is_null())
       return 0;
 
@@ -269,26 +269,26 @@ int32_t URLLoader::ReadResponseBody(void* buffer,
   current_read_buffer_size_ = bytes_to_read;
 
   GetDispatcher()->Send(new PpapiHostMsg_PPBURLLoader_ReadResponseBody(
-      INTERFACE_ID_PPB_URL_LOADER, host_resource(), bytes_to_read));
+      API_ID_PPB_URL_LOADER, host_resource(), bytes_to_read));
   return PP_OK_COMPLETIONPENDING;
 }
 
 int32_t URLLoader::FinishStreamingToFile(PP_CompletionCallback callback) {
   GetDispatcher()->Send(new PpapiHostMsg_PPBURLLoader_FinishStreamingToFile(
-      INTERFACE_ID_PPB_URL_LOADER, host_resource(),
+      API_ID_PPB_URL_LOADER, host_resource(),
       GetDispatcher()->callback_tracker().SendCallback(callback)));
   return PP_OK_COMPLETIONPENDING;
 }
 
 void URLLoader::Close() {
   GetDispatcher()->Send(new PpapiHostMsg_PPBURLLoader_Close(
-      INTERFACE_ID_PPB_URL_LOADER, host_resource()));
+      API_ID_PPB_URL_LOADER, host_resource()));
 }
 
 void URLLoader::GrantUniversalAccess() {
   GetDispatcher()->Send(
       new PpapiHostMsg_PPBURLLoader_GrantUniversalAccess(
-          INTERFACE_ID_PPB_URL_LOADER, host_resource()));
+          API_ID_PPB_URL_LOADER, host_resource()));
 }
 
 void URLLoader::SetStatusCallback(
@@ -366,7 +366,7 @@ const InterfaceProxy::Info* PPB_URLLoader_Proxy::GetTrustedInfo() {
   static const Info info = {
     thunk::GetPPB_URLLoaderTrusted_Thunk(),
     PPB_URLLOADERTRUSTED_INTERFACE,
-    INTERFACE_ID_NONE,  // URL_LOADER is the canonical one.
+    API_ID_NONE,  // URL_LOADER is the canonical one.
     false,
     &CreateURLLoaderProxy
   };
@@ -381,7 +381,7 @@ PP_Resource PPB_URLLoader_Proxy::CreateProxyResource(PP_Instance pp_instance) {
 
   HostResource result;
   dispatcher->Send(new PpapiHostMsg_PPBURLLoader_Create(
-      INTERFACE_ID_PPB_URL_LOADER, pp_instance, &result));
+      API_ID_PPB_URL_LOADER, pp_instance, &result));
   if (result.is_null())
     return 0;
   return PPB_URLLoader_Proxy::TrackPluginResource(result);
@@ -574,7 +574,7 @@ void PPB_URLLoader_Proxy::OnReadCallback(int32_t result,
   info->read_buffer.resize(bytes_read);
 
   dispatcher()->Send(new PpapiMsg_PPBURLLoader_ReadResponseBody_Ack(
-      INTERFACE_ID_PPB_URL_LOADER, info->resource, result, info->read_buffer));
+      API_ID_PPB_URL_LOADER, info->resource, result, info->read_buffer));
 
   delete info;
 }

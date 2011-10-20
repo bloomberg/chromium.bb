@@ -22,7 +22,7 @@ void MouseLockLost(PP_Instance instance) {
   }
 
   dispatcher->Send(new PpapiMsg_PPPMouseLock_MouseLockLost(
-      INTERFACE_ID_PPP_MOUSE_LOCK, instance));
+      API_ID_PPP_MOUSE_LOCK, instance));
 }
 
 static const PPP_MouseLock mouse_lock_interface = {
@@ -51,7 +51,7 @@ const InterfaceProxy::Info* PPP_MouseLock_Proxy::GetInfo() {
   static const Info info = {
     &mouse_lock_interface,
     PPP_MOUSELOCK_INTERFACE,
-    INTERFACE_ID_PPP_MOUSE_LOCK,
+    API_ID_PPP_MOUSE_LOCK,
     false,
     &CreateMouseLockProxy,
   };

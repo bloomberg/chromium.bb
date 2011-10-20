@@ -112,7 +112,7 @@ int32_t Broker::Connect(PP_CompletionCallback connect_callback) {
 
   bool success = PluginDispatcher::GetForResource(this)->Send(
       new PpapiHostMsg_PPBBroker_Connect(
-          INTERFACE_ID_PPB_BROKER, host_resource()));
+          API_ID_PPB_BROKER, host_resource()));
   return success ?  PP_OK_COMPLETIONPENDING : PP_ERROR_FAILED;
 }
 
@@ -160,7 +160,7 @@ PP_Resource PPB_Broker_Proxy::CreateProxyResource(PP_Instance instance) {
 
   HostResource result;
   dispatcher->Send(new PpapiHostMsg_PPBBroker_Create(
-      INTERFACE_ID_PPB_BROKER, instance, &result));
+      API_ID_PPB_BROKER, instance, &result));
   if (result.is_null())
     return 0;
   return (new Broker(result))->GetReference();
@@ -248,7 +248,7 @@ void PPB_Broker_Proxy::ConnectCompleteInHost(int32_t result,
          foreign_socket_handle == IPC::InvalidPlatformFileForTransit());
 
   bool success = dispatcher()->Send(new PpapiMsg_PPBBroker_ConnectComplete(
-      INTERFACE_ID_PPB_BROKER, broker, foreign_socket_handle, result));
+      API_ID_PPB_BROKER, broker, foreign_socket_handle, result));
 
   if (!success || result != PP_OK) {
       // The plugin did not receive the handle, so it must be closed.

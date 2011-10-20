@@ -28,7 +28,7 @@ void ProvidePictureBuffers(PP_Instance instance, PP_Resource decoder,
 
   HostDispatcher::GetForInstance(instance)->Send(
       new PpapiMsg_PPPVideoDecoder_ProvidePictureBuffers(
-          INTERFACE_ID_PPP_VIDEO_DECODER_DEV,
+          API_ID_PPP_VIDEO_DECODER_DEV,
           decoder_resource, req_num_of_bufs, *dimensions));
 }
 
@@ -39,7 +39,7 @@ void DismissPictureBuffer(PP_Instance instance, PP_Resource decoder,
 
   HostDispatcher::GetForInstance(instance)->Send(
       new PpapiMsg_PPPVideoDecoder_DismissPictureBuffer(
-          INTERFACE_ID_PPP_VIDEO_DECODER_DEV,
+          API_ID_PPP_VIDEO_DECODER_DEV,
           decoder_resource, picture_buffer_id));
 }
 
@@ -50,7 +50,7 @@ void PictureReady(PP_Instance instance, PP_Resource decoder,
 
   HostDispatcher::GetForInstance(instance)->Send(
       new PpapiMsg_PPPVideoDecoder_PictureReady(
-          INTERFACE_ID_PPP_VIDEO_DECODER_DEV, decoder_resource, *picture));
+          API_ID_PPP_VIDEO_DECODER_DEV, decoder_resource, *picture));
 }
 
 void EndOfStream(PP_Instance instance, PP_Resource decoder) {
@@ -59,7 +59,7 @@ void EndOfStream(PP_Instance instance, PP_Resource decoder) {
 
   HostDispatcher::GetForInstance(instance)->Send(
       new PpapiMsg_PPPVideoDecoder_NotifyEndOfStream(
-          INTERFACE_ID_PPP_VIDEO_DECODER_DEV, decoder_resource));
+          API_ID_PPP_VIDEO_DECODER_DEV, decoder_resource));
 }
 
 void NotifyError(PP_Instance instance, PP_Resource decoder,
@@ -69,7 +69,7 @@ void NotifyError(PP_Instance instance, PP_Resource decoder,
 
   HostDispatcher::GetForInstance(instance)->Send(
       new PpapiMsg_PPPVideoDecoder_NotifyError(
-          INTERFACE_ID_PPP_VIDEO_DECODER_DEV, decoder_resource, error));
+          API_ID_PPP_VIDEO_DECODER_DEV, decoder_resource, error));
 }
 
 static const PPP_VideoDecoder_Dev video_decoder_interface = {
@@ -103,7 +103,7 @@ const InterfaceProxy::Info* PPP_VideoDecoder_Proxy::GetInfo() {
   static const Info info = {
     &video_decoder_interface,
     PPP_VIDEODECODER_DEV_INTERFACE,
-    INTERFACE_ID_PPP_VIDEO_DECODER_DEV,
+    API_ID_PPP_VIDEO_DECODER_DEV,
     false,
     &CreateVideoDecoderPPPProxy,
   };

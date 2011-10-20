@@ -136,7 +136,7 @@ class PPAPI_PROXY_EXPORT PluginDispatcher : public Dispatcher {
   // it if necessary.
   // TODO(brettw) this is in progress. It should be merged with the target
   // proxies so there is one list to consult.
-  FunctionGroupBase* GetFunctionAPI(InterfaceID id);
+  FunctionGroupBase* GetFunctionAPI(ApiID id);
 
   uint32 plugin_dispatcher_id() const { return plugin_dispatcher_id_; }
 

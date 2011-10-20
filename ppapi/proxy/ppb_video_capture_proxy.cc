@@ -87,7 +87,7 @@ void OnDeviceInfo(PP_Instance instance,
     }
   }
   dispatcher->Send(new PpapiMsg_PPPVideoCapture_OnDeviceInfo(
-      INTERFACE_ID_PPP_VIDEO_CAPTURE_DEV, host_resource, *info, buffers));
+      API_ID_PPP_VIDEO_CAPTURE_DEV, host_resource, *info, buffers));
 }
 
 void OnStatus(PP_Instance instance, PP_Resource resource, uint32_t status) {
@@ -99,7 +99,7 @@ void OnStatus(PP_Instance instance, PP_Resource resource, uint32_t status) {
   HostResource host_resource;
   host_resource.SetHostResource(instance, resource);
   dispatcher->Send(new PpapiMsg_PPPVideoCapture_OnStatus(
-      INTERFACE_ID_PPP_VIDEO_CAPTURE_DEV, host_resource, status));
+      API_ID_PPP_VIDEO_CAPTURE_DEV, host_resource, status));
 }
 
 void OnError(PP_Instance instance, PP_Resource resource, uint32_t error_code) {
@@ -111,7 +111,7 @@ void OnError(PP_Instance instance, PP_Resource resource, uint32_t error_code) {
   HostResource host_resource;
   host_resource.SetHostResource(instance, resource);
   dispatcher->Send(new PpapiMsg_PPPVideoCapture_OnError(
-      INTERFACE_ID_PPP_VIDEO_CAPTURE_DEV, host_resource, error_code));
+      API_ID_PPP_VIDEO_CAPTURE_DEV, host_resource, error_code));
 }
 
 void OnBufferReady(PP_Instance instance,
@@ -125,7 +125,7 @@ void OnBufferReady(PP_Instance instance,
   HostResource host_resource;
   host_resource.SetHostResource(instance, resource);
   dispatcher->Send(new PpapiMsg_PPPVideoCapture_OnBufferReady(
-      INTERFACE_ID_PPP_VIDEO_CAPTURE_DEV, host_resource, buffer));
+      API_ID_PPP_VIDEO_CAPTURE_DEV, host_resource, buffer));
 }
 
 PPP_VideoCapture_Dev ppp_video_capture = {
@@ -162,7 +162,7 @@ class VideoCapture : public ppapi::thunk::PPB_VideoCapture_API,
     }
     status_ = PP_VIDEO_CAPTURE_STATUS_STARTING;
     GetDispatcher()->Send(new PpapiHostMsg_PPBVideoCapture_StartCapture(
-        INTERFACE_ID_PPB_VIDEO_CAPTURE_DEV, host_resource(),
+        API_ID_PPB_VIDEO_CAPTURE_DEV, host_resource(),
         requested_info, buffer_count));
     return PP_OK;
   }
@@ -171,7 +171,7 @@ class VideoCapture : public ppapi::thunk::PPB_VideoCapture_API,
     if (buffer >= buffer_in_use_.size() || !buffer_in_use_[buffer])
       return PP_ERROR_BADARGUMENT;
     GetDispatcher()->Send(new PpapiHostMsg_PPBVideoCapture_ReuseBuffer(
-        INTERFACE_ID_PPB_VIDEO_CAPTURE_DEV, host_resource(), buffer));
+        API_ID_PPB_VIDEO_CAPTURE_DEV, host_resource(), buffer));
     return PP_OK;
   }
 
@@ -189,7 +189,7 @@ class VideoCapture : public ppapi::thunk::PPB_VideoCapture_API,
     buffer_in_use_.clear();
     status_ = PP_VIDEO_CAPTURE_STATUS_STOPPING;
     GetDispatcher()->Send(new PpapiHostMsg_PPBVideoCapture_StopCapture(
-        INTERFACE_ID_PPB_VIDEO_CAPTURE_DEV, host_resource()));
+        API_ID_PPB_VIDEO_CAPTURE_DEV, host_resource()));
     return PP_OK;
   }
 
@@ -275,7 +275,7 @@ PP_Resource PPB_VideoCapture_Proxy::CreateProxyResource(PP_Instance instance) {
 
   HostResource result;
   dispatcher->Send(new PpapiHostMsg_PPBVideoCapture_Create(
-      INTERFACE_ID_PPB_VIDEO_CAPTURE_DEV, instance, &result));
+      API_ID_PPB_VIDEO_CAPTURE_DEV, instance, &result));
   if (result.is_null())
     return 0;
   return (new VideoCapture(result))->GetReference();
@@ -346,7 +346,7 @@ const InterfaceProxy::Info* PPP_VideoCapture_Proxy::GetInfo() {
   static const Info info = {
     &ppp_video_capture,
     PPP_VIDEO_CAPTURE_DEV_INTERFACE,
-    INTERFACE_ID_PPP_VIDEO_CAPTURE_DEV,
+    API_ID_PPP_VIDEO_CAPTURE_DEV,
     false,
     &CreatePPPVideoCaptureProxy,
   };

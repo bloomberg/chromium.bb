@@ -301,7 +301,7 @@ const InterfaceProxy::Info* PPB_Flash_UDPSocket_Proxy::GetInfo() {
   static const Info info = {
     ::ppapi::thunk::GetPPB_Flash_UDPSocket_Thunk(),
     PPB_FLASH_UDPSOCKET_INTERFACE,
-    INTERFACE_ID_PPB_FLASH_UDPSOCKET,
+    API_ID_PPB_FLASH_UDPSOCKET,
     false,
     &CreateFlashUDPSocketProxy,
   };
@@ -317,7 +317,7 @@ PP_Resource PPB_Flash_UDPSocket_Proxy::CreateProxyResource(
 
   uint32 socket_id = 0;
   dispatcher->SendToBrowser(new PpapiHostMsg_PPBFlashUDPSocket_Create(
-      INTERFACE_ID_PPB_FLASH_UDPSOCKET, dispatcher->plugin_dispatcher_id(),
+      API_ID_PPB_FLASH_UDPSOCKET, dispatcher->plugin_dispatcher_id(),
       &socket_id));
   if (socket_id == 0)
     return 0;

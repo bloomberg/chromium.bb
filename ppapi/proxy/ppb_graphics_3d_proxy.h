@@ -73,7 +73,7 @@ class PPB_Graphics3D_Proxy : public InterfaceProxy {
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
 
-  static const InterfaceID kInterfaceID = INTERFACE_ID_PPB_GRAPHICS_3D;
+  static const ApiID kApiID = API_ID_PPB_GRAPHICS_3D;
 
  private:
   void OnMsgCreate(PP_Instance instance,

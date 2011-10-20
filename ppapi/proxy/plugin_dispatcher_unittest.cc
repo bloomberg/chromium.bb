@@ -52,7 +52,7 @@ class PluginDispatcherTest : public PluginProxyTest {
  public:
   PluginDispatcherTest() {}
 
-  bool HasTargetProxy(InterfaceID id) {
+  bool HasTargetProxy(ApiID id) {
     return !!plugin_dispatcher()->proxies_[id].get();
   }
 };
@@ -71,12 +71,12 @@ TEST_F(PluginDispatcherTest, SupportsInterface) {
 TEST_F(PluginDispatcherTest, PPBCreation) {
   // Sending a PPB message out of the blue should create a target proxy for
   // that interface in the plugin.
-  EXPECT_FALSE(HasTargetProxy(INTERFACE_ID_PPB_AUDIO));
+  EXPECT_FALSE(HasTargetProxy(API_ID_PPB_AUDIO));
   PpapiMsg_PPBAudio_NotifyAudioStreamCreated audio_msg(
-      INTERFACE_ID_PPB_AUDIO, HostResource(), 0,
+      API_ID_PPB_AUDIO, HostResource(), 0,
       IPC::PlatformFileForTransit(), base::SharedMemoryHandle(), 0);
   plugin_dispatcher()->OnMessageReceived(audio_msg);
-  EXPECT_TRUE(HasTargetProxy(INTERFACE_ID_PPB_AUDIO));
+  EXPECT_TRUE(HasTargetProxy(API_ID_PPB_AUDIO));
 }
 
 }  // namespace proxy

@@ -65,7 +65,7 @@ void PluginResourceTracker::RemoveResource(Resource* object) {
       // the instance was destroyed. In that case the browser-side resource has
       // already been freed correctly on the browser side.
       dispatcher->Send(new PpapiHostMsg_PPBCore_ReleaseResource(
-          INTERFACE_ID_PPB_CORE, object->host_resource()));
+          API_ID_PPB_CORE, object->host_resource()));
     }
   }
 }

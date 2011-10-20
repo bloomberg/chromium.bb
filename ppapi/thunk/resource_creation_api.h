@@ -18,7 +18,7 @@
 #include "ppapi/c/ppb_input_event.h"
 #include "ppapi/c/dev/pp_video_dev.h"
 #include "ppapi/c/dev/ppb_transport_dev.h"
-#include "ppapi/proxy/interface_id.h"
+#include "ppapi/shared_impl/api_id.h"
 
 struct PP_Flash_Menu;
 struct PP_FontDescription_Dev;
@@ -133,8 +133,7 @@ class ResourceCreationAPI {
       const PP_FloatPoint* wheel_ticks,
       PP_Bool scroll_by_page) = 0;
 
-  static const proxy::InterfaceID interface_id =
-      proxy::INTERFACE_ID_RESOURCE_CREATION;
+  static const ApiID kApiID = API_ID_RESOURCE_CREATION;
 };
 
 }  // namespace thunk

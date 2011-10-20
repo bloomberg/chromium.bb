@@ -16,10 +16,10 @@
 #include "ppapi/c/pp_module.h"
 #include "ppapi/proxy/callback_tracker.h"
 #include "ppapi/proxy/proxy_channel.h"
-#include "ppapi/proxy/interface_id.h"
 #include "ppapi/proxy/interface_list.h"
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/plugin_var_tracker.h"
+#include "ppapi/shared_impl/api_id.h"
 
 namespace ppapi {
 
@@ -61,7 +61,7 @@ class PPAPI_PROXY_EXPORT Dispatcher : public ProxyChannel {
   // Returns a non-owning pointer to the interface proxy for the given ID, or
   // NULL if the ID isn't found. This will create the proxy if it hasn't been
   // created so far.
-  InterfaceProxy* GetInterfaceProxy(InterfaceID id);
+  InterfaceProxy* GetInterfaceProxy(ApiID id);
 
   // Returns the pointer to the IO thread for processing IPC messages.
   // TODO(brettw) remove this. It's a hack to support the Flash
@@ -110,7 +110,7 @@ class PPAPI_PROXY_EXPORT Dispatcher : public ProxyChannel {
   friend class PluginDispatcherTest;
 
   // Lists all lazily-created interface proxies.
-  scoped_ptr<InterfaceProxy> proxies_[INTERFACE_ID_COUNT];
+  scoped_ptr<InterfaceProxy> proxies_[API_ID_COUNT];
 
   bool disallow_trusted_interfaces_;
 

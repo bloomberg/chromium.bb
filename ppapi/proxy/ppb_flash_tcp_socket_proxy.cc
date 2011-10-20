@@ -406,7 +406,7 @@ const InterfaceProxy::Info* PPB_Flash_TCPSocket_Proxy::GetInfo() {
   static const Info info = {
     thunk::GetPPB_Flash_TCPSocket_Thunk(),
     PPB_FLASH_TCPSOCKET_INTERFACE,
-    INTERFACE_ID_PPB_FLASH_TCPSOCKET,
+    API_ID_PPB_FLASH_TCPSOCKET,
     false,
     &CreateFlashTCPSocketProxy,
   };
@@ -422,7 +422,7 @@ PP_Resource PPB_Flash_TCPSocket_Proxy::CreateProxyResource(
 
   uint32 socket_id = 0;
   dispatcher->SendToBrowser(new PpapiHostMsg_PPBFlashTCPSocket_Create(
-      INTERFACE_ID_PPB_FLASH_TCPSOCKET, dispatcher->plugin_dispatcher_id(),
+      API_ID_PPB_FLASH_TCPSOCKET, dispatcher->plugin_dispatcher_id(),
       &socket_id));
   if (socket_id == 0)
     return 0;

@@ -58,14 +58,14 @@ FileRef::~FileRef() {
 PP_Resource FileRef::GetParent() {
   PPB_FileRef_CreateInfo create_info;
   GetDispatcher()->Send(new PpapiHostMsg_PPBFileRef_GetParent(
-      INTERFACE_ID_PPB_FILE_REF, host_resource(), &create_info));
+      API_ID_PPB_FILE_REF, host_resource(), &create_info));
   return PPB_FileRef_Proxy::DeserializeFileRef(create_info);
 }
 
 int32_t FileRef::MakeDirectory(PP_Bool make_ancestors,
                                PP_CompletionCallback callback) {
   GetDispatcher()->Send(new PpapiHostMsg_PPBFileRef_MakeDirectory(
-      INTERFACE_ID_PPB_FILE_REF, host_resource(), make_ancestors,
+      API_ID_PPB_FILE_REF, host_resource(), make_ancestors,
       GetDispatcher()->callback_tracker().SendCallback(callback)));
   return PP_OK_COMPLETIONPENDING;
 }
@@ -74,7 +74,7 @@ int32_t FileRef::Touch(PP_Time last_access_time,
                        PP_Time last_modified_time,
                        PP_CompletionCallback callback) {
   GetDispatcher()->Send(new PpapiHostMsg_PPBFileRef_Touch(
-      INTERFACE_ID_PPB_FILE_REF, host_resource(),
+      API_ID_PPB_FILE_REF, host_resource(),
       last_access_time, last_modified_time,
       GetDispatcher()->callback_tracker().SendCallback(callback)));
   return PP_OK_COMPLETIONPENDING;
@@ -82,7 +82,7 @@ int32_t FileRef::Touch(PP_Time last_access_time,
 
 int32_t FileRef::Delete(PP_CompletionCallback callback) {
   GetDispatcher()->Send(new PpapiHostMsg_PPBFileRef_Delete(
-      INTERFACE_ID_PPB_FILE_REF, host_resource(),
+      API_ID_PPB_FILE_REF, host_resource(),
       GetDispatcher()->callback_tracker().SendCallback(callback)));
   return PP_OK_COMPLETIONPENDING;
 }
@@ -96,7 +96,7 @@ int32_t FileRef::Rename(PP_Resource new_file_ref,
     return PP_ERROR_BADRESOURCE;
 
   GetDispatcher()->Send(new PpapiHostMsg_PPBFileRef_Rename(
-      INTERFACE_ID_PPB_FILE_REF, host_resource(),
+      API_ID_PPB_FILE_REF, host_resource(),
       new_file_ref_object->host_resource(),
       GetDispatcher()->callback_tracker().SendCallback(callback)));
   return PP_OK_COMPLETIONPENDING;
@@ -120,7 +120,7 @@ PP_Resource PPB_FileRef_Proxy::CreateProxyResource(PP_Resource file_system,
   PPB_FileRef_CreateInfo create_info;
   PluginDispatcher::GetForResource(file_system_object)->Send(
       new PpapiHostMsg_PPBFileRef_Create(
-          INTERFACE_ID_PPB_FILE_REF, file_system_object->host_resource(),
+          API_ID_PPB_FILE_REF, file_system_object->host_resource(),
           path, &create_info));
   return PPB_FileRef_Proxy::DeserializeFileRef(create_info);
 }

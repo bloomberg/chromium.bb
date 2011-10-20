@@ -117,7 +117,7 @@ int32_t FlashNetConnector::ConnectTcp(
     PP_CompletionCallback callback) {
   return ConnectWithMessage(
       new PpapiHostMsg_PPBFlashNetConnector_ConnectTcp(
-          INTERFACE_ID_PPB_FLASH_NETCONNECTOR, host_resource(), host, port),
+          API_ID_PPB_FLASH_NETCONNECTOR, host_resource(), host, port),
       socket_out, local_addr_out, remote_addr_out, callback);
 }
 
@@ -129,7 +129,7 @@ int32_t FlashNetConnector::ConnectTcpAddress(
     PP_CompletionCallback callback) {
   return ConnectWithMessage(
       new PpapiHostMsg_PPBFlashNetConnector_ConnectTcpAddress(
-          INTERFACE_ID_PPB_FLASH_NETCONNECTOR,
+          API_ID_PPB_FLASH_NETCONNECTOR,
           host_resource(), NetAddressToString(*addr)),
       socket_out, local_addr_out, remote_addr_out, callback);
 }
@@ -209,7 +209,7 @@ const InterfaceProxy::Info* PPB_Flash_NetConnector_Proxy::GetInfo() {
   static const Info info = {
     ppapi::thunk::GetPPB_Flash_NetConnector_Thunk(),
     PPB_FLASH_NETCONNECTOR_INTERFACE,
-    INTERFACE_ID_PPB_FLASH_NETCONNECTOR,
+    API_ID_PPB_FLASH_NETCONNECTOR,
     false,
     &CreateFlashNetConnectorProxy
   };
@@ -225,7 +225,7 @@ PP_Resource PPB_Flash_NetConnector_Proxy::CreateProxyResource(
 
   HostResource result;
   dispatcher->Send(new PpapiHostMsg_PPBFlashNetConnector_Create(
-      INTERFACE_ID_PPB_FLASH_NETCONNECTOR, instance, &result));
+      API_ID_PPB_FLASH_NETCONNECTOR, instance, &result));
   if (result.is_null())
     return 0;
   return (new FlashNetConnector(result))->GetReference();
@@ -324,7 +324,7 @@ void PPB_Flash_NetConnector_Proxy::OnCompleteCallbackInHost(
 
   if (result == PP_OK) {
     dispatcher()->Send(new PpapiMsg_PPBFlashNetConnector_ConnectACK(
-        INTERFACE_ID_PPB_FLASH_NETCONNECTOR,
+        API_ID_PPB_FLASH_NETCONNECTOR,
         info->resource, result,
         dispatcher()->ShareHandleWithRemote(
             static_cast<base::PlatformFile>(info->handle), true),
@@ -332,7 +332,7 @@ void PPB_Flash_NetConnector_Proxy::OnCompleteCallbackInHost(
         NetAddressToString(info->remote_addr)));
   } else {
     dispatcher()->Send(new PpapiMsg_PPBFlashNetConnector_ConnectACK(
-        INTERFACE_ID_PPB_FLASH_NETCONNECTOR,
+        API_ID_PPB_FLASH_NETCONNECTOR,
         info->resource, result,
         IPC::InvalidPlatformFileForTransit(), std::string(), std::string()));
   }

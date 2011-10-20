@@ -9,8 +9,8 @@
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"
-#include "ppapi/proxy/interface_id.h"
 #include "ppapi/proxy/proxy_object_var.h"
+#include "ppapi/shared_impl/api_id.h"
 #include "ppapi/shared_impl/var.h"
 
 namespace ppapi {
@@ -240,13 +240,13 @@ void PluginVarTracker::SendAddRefObjectMsg(
     const ProxyObjectVar& proxy_object) {
   int unused;
   proxy_object.dispatcher()->Send(new PpapiHostMsg_PPBVar_AddRefObject(
-      INTERFACE_ID_PPB_VAR_DEPRECATED, proxy_object.host_var_id(), &unused));
+      API_ID_PPB_VAR_DEPRECATED, proxy_object.host_var_id(), &unused));
 }
 
 void PluginVarTracker::SendReleaseObjectMsg(
     const ProxyObjectVar& proxy_object) {
   proxy_object.dispatcher()->Send(new PpapiHostMsg_PPBVar_ReleaseObject(
-      INTERFACE_ID_PPB_VAR_DEPRECATED, proxy_object.host_var_id()));
+      API_ID_PPB_VAR_DEPRECATED, proxy_object.host_var_id()));
 }
 
 scoped_refptr<ProxyObjectVar> PluginVarTracker::FindOrMakePluginVarFromHostVar(

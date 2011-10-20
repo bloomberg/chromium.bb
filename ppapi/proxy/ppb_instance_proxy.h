@@ -95,7 +95,7 @@ class PPB_Instance_Proxy : public InterfaceProxy,
                             PP_CompletionCallback callback) OVERRIDE;
   virtual void UnlockMouse(PP_Instance instance) OVERRIDE;
 
-  static const InterfaceID kInterfaceID = INTERFACE_ID_PPB_INSTANCE;
+  static const ApiID kApiID = API_ID_PPB_INSTANCE;
 
  private:
   // Message handlers.

@@ -21,14 +21,14 @@ class InterfaceList {
 
   static InterfaceList* GetInstance();
 
-  // Looks up the ID for the given interface name. Returns INTERFACE_ID_NONE if
+  // Looks up the ID for the given interface name. Returns API_ID_NONE if
   // the interface string is not found.
-  InterfaceID GetIDForPPBInterface(const std::string& name) const;
-  InterfaceID GetIDForPPPInterface(const std::string& name) const;
+  ApiID GetIDForPPBInterface(const std::string& name) const;
+  ApiID GetIDForPPPInterface(const std::string& name) const;
 
   // Looks up the factory function for the given ID. Returns NULL if not
   // supported.
-  InterfaceProxy::Factory GetFactoryForID(InterfaceID id) const;
+  InterfaceProxy::Factory GetFactoryForID(ApiID id) const;
 
   // Returns the interface pointer for the given browser or plugin interface,
   // or NULL if it's not supported.
@@ -38,24 +38,24 @@ class InterfaceList {
  private:
   struct InterfaceInfo {
     InterfaceInfo()
-        : id(INTERFACE_ID_NONE),
+        : id(API_ID_NONE),
           iface(NULL) {
     }
-    InterfaceInfo(InterfaceID in_id, const void* in_interface)
+    InterfaceInfo(ApiID in_id, const void* in_interface)
         : id(in_id),
           iface(in_interface) {
     }
 
-    InterfaceID id;
+    ApiID id;
     const void* iface;
   };
 
   typedef std::map<std::string, InterfaceInfo> NameToInterfaceInfoMap;
 
-  void AddProxy(InterfaceID id, InterfaceProxy::Factory factory);
+  void AddProxy(ApiID id, InterfaceProxy::Factory factory);
 
-  void AddPPB(const char* name, InterfaceID id, const void* iface);
-  void AddPPP(const char* name, InterfaceID id, const void* iface);
+  void AddPPB(const char* name, ApiID id, const void* iface);
+  void AddPPP(const char* name, ApiID id, const void* iface);
 
   // Old-style add functions. These should be removed when the rest of the
   // proxies are converted over to using the new system.
@@ -65,7 +65,7 @@ class InterfaceList {
   NameToInterfaceInfoMap name_to_browser_info_;
   NameToInterfaceInfoMap name_to_plugin_info_;
 
-  InterfaceProxy::Factory id_to_factory_[INTERFACE_ID_COUNT];
+  InterfaceProxy::Factory id_to_factory_[API_ID_COUNT];
 
   DISALLOW_COPY_AND_ASSIGN(InterfaceList);
 };

@@ -51,7 +51,7 @@ PP_Bool PPB_CursorControl_Proxy::SetCursor(PP_Instance instance,
   PP_Bool result = PP_FALSE;
   PP_Point empty_point = { 0, 0 };
   dispatcher()->Send(new PpapiHostMsg_PPBCursorControl_SetCursor(
-      INTERFACE_ID_PPB_CURSORCONTROL,
+      API_ID_PPB_CURSORCONTROL,
       instance, static_cast<int32_t>(type), cursor_image_resource,
       hot_spot ? *hot_spot : empty_point, &result));
   return result;
@@ -60,28 +60,28 @@ PP_Bool PPB_CursorControl_Proxy::SetCursor(PP_Instance instance,
 PP_Bool PPB_CursorControl_Proxy::LockCursor(PP_Instance instance) {
   PP_Bool result = PP_FALSE;
   dispatcher()->Send(new PpapiHostMsg_PPBCursorControl_LockCursor(
-      INTERFACE_ID_PPB_CURSORCONTROL, instance, &result));
+      API_ID_PPB_CURSORCONTROL, instance, &result));
   return result;
 }
 
 PP_Bool PPB_CursorControl_Proxy::UnlockCursor(PP_Instance instance) {
   PP_Bool result = PP_FALSE;
   dispatcher()->Send(new PpapiHostMsg_PPBCursorControl_UnlockCursor(
-      INTERFACE_ID_PPB_CURSORCONTROL, instance, &result));
+      API_ID_PPB_CURSORCONTROL, instance, &result));
   return result;
 }
 
 PP_Bool PPB_CursorControl_Proxy::HasCursorLock(PP_Instance instance) {
   PP_Bool result = PP_FALSE;
   dispatcher()->Send(new PpapiHostMsg_PPBCursorControl_HasCursorLock(
-      INTERFACE_ID_PPB_CURSORCONTROL, instance, &result));
+      API_ID_PPB_CURSORCONTROL, instance, &result));
   return result;
 }
 
 PP_Bool PPB_CursorControl_Proxy::CanLockCursor(PP_Instance instance) {
   PP_Bool result = PP_FALSE;
   dispatcher()->Send(new PpapiHostMsg_PPBCursorControl_CanLockCursor(
-      INTERFACE_ID_PPB_CURSORCONTROL, instance, &result));
+      API_ID_PPB_CURSORCONTROL, instance, &result));
   return result;
 }
 

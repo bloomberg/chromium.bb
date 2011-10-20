@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"
-#include "ppapi/proxy/interface_id.h"
+#include "ppapi/shared_impl/api_id.h"
 #include "ppapi/shared_impl/ppapi_shared_export.h"
 
 namespace ppapi {
@@ -32,8 +32,7 @@ class PPAPI_SHARED_EXPORT PpapiGlobals {
 
   // Returns the function object corresponding to the given ID, or NULL if
   // there isn't one.
-  virtual FunctionGroupBase* GetFunctionAPI(PP_Instance inst,
-                                            proxy::InterfaceID id) = 0;
+  virtual FunctionGroupBase* GetFunctionAPI(PP_Instance inst, ApiID id) = 0;
 
   // Returns the PP_Module associated with the given PP_Instance, or 0 on
   // failure.
