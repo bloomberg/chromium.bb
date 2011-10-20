@@ -28,7 +28,6 @@
 #include "ppapi/c/dev/ppb_gles_chromium_texture_mapping_dev.h"
 #include "ppapi/c/dev/ppb_layer_compositor_dev.h"
 #include "ppapi/c/dev/ppb_memory_dev.h"
-#include "ppapi/c/dev/ppb_query_policy_dev.h"
 #include "ppapi/c/dev/ppb_scrollbar_dev.h"
 #include "ppapi/c/dev/ppb_surface_3d_dev.h"
 #include "ppapi/c/dev/ppb_testing_dev.h"

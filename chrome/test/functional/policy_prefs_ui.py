@@ -84,7 +84,6 @@ class PolicyPrefsUITest(pyauto.PyUITest):
     'IncognitoEnabled': (False, []),
     'IncognitoModeAvailability': (1, []),
     'SavingBrowserHistoryDisabled': (True, []),
-    'RemoteAccessClientFirewallTraversal': (True, []),
     'RemoteAccessHostFirewallTraversal': (True, []),
     'PrintingEnabled': (False, []),
     # Note: supported_on is empty for this policy.

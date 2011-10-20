@@ -262,7 +262,6 @@ class PepperPluginDelegateImpl
   virtual bool ReadDirectory(
       const GURL& directory_path,
       fileapi::FileSystemCallbackDispatcher* dispatcher) OVERRIDE;
-  virtual void PublishPolicy(const std::string& policy_json) OVERRIDE;
   virtual void QueryAvailableSpace(
       const GURL& origin,
       quota::StorageType type,
@@ -324,8 +323,6 @@ class PepperPluginDelegateImpl
   virtual std::string GetDefaultEncoding() OVERRIDE;
   virtual void ZoomLimitsChanged(double minimum_factor, double maximum_factor)
       OVERRIDE;
-  virtual void SubscribeToPolicyUpdates(
-      webkit::ppapi::PluginInstance* instance) OVERRIDE;
   virtual std::string ResolveProxy(const GURL& url) OVERRIDE;
   virtual void DidStartLoading() OVERRIDE;
   virtual void DidStopLoading() OVERRIDE;
@@ -348,10 +345,6 @@ class PepperPluginDelegateImpl
   CONTENT_EXPORT int GetRoutingId() const;
 
  private:
-  void PublishInitialPolicy(
-      scoped_refptr<webkit::ppapi::PluginInstance> instance,
-      const std::string& policy);
-
   // Asynchronously attempts to create a PPAPI broker for the given plugin.
   scoped_refptr<PpapiBrokerImpl> CreatePpapiBroker(
       webkit::ppapi::PluginModule* plugin_module);
@@ -389,10 +382,6 @@ class PepperPluginDelegateImpl
   // Current text input composition text. Empty if no composition is in
   // progress.
   string16 composition_text_;
-
-  // Set of instances to receive a notification when the enterprise policy has
-  // been updated.
-  std::set<webkit::ppapi::PluginInstance*> subscribed_to_policy_updates_;
 
   // |mouse_lock_owner_| is not owned by this class. We can know about when it
   // is destroyed via InstanceDeleted().

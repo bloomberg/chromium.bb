@@ -149,7 +149,6 @@
         'thunk/ppb_messaging_thunk.cc',
         'thunk/ppb_mouse_lock_thunk.cc',
         'thunk/ppb_pdf_api.h',
-        'thunk/ppb_query_policy_thunk.cc',
         'thunk/ppb_scrollbar_api.h',
         'thunk/ppb_scrollbar_thunk.cc',
         'thunk/ppb_surface_3d_api.h',

@@ -1478,7 +1478,6 @@
         'browser/profiles/profile_dependency_manager_unittest.cc',
         'browser/profiles/profile_info_cache_unittest.cc',
         'browser/profiles/profile_manager_unittest.cc',
-        'browser/remoting/firewall_traversal_observer_unittest.cc',
         'browser/renderer_host/web_cache_manager_unittest.cc',
         'browser/resources_util_unittest.cc',
         'browser/rlz/rlz_unittest.cc',

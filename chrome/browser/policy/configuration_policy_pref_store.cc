@@ -277,8 +277,6 @@ const ConfigurationPolicyPrefKeeper::PolicyToPreferenceMapEntry
   { Value::TYPE_BOOLEAN, kPolicyInstantEnabled, prefs::kInstantEnabled },
   { Value::TYPE_BOOLEAN, kPolicyDefaultBrowserSettingEnabled,
     prefs::kDefaultBrowserSettingEnabled },
-  { Value::TYPE_BOOLEAN, kPolicyRemoteAccessClientFirewallTraversal,
-    prefs::kRemoteAccessClientFirewallTraversal },
   { Value::TYPE_BOOLEAN, kPolicyRemoteAccessHostFirewallTraversal,
     prefs::kRemoteAccessHostFirewallTraversal },
   { Value::TYPE_BOOLEAN, kPolicyCloudPrintProxyEnabled,

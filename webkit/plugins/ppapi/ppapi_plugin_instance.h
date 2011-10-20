@@ -44,7 +44,6 @@ struct PPP_Instance_Private;
 struct PPP_Messaging;
 struct PPP_MouseLock;
 struct PPP_Pdf;
-struct PPP_PolicyUpdate_Dev;
 struct PPP_Selection_Dev;
 struct PPP_Zoom_Dev;
 
@@ -163,7 +162,6 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
   bool HandleDocumentLoad(PPB_URLLoader_Impl* loader);
   bool HandleInputEvent(const WebKit::WebInputEvent& event,
                         WebKit::WebCursorInfo* cursor_info);
-  void HandlePolicyUpdate(const std::string& policy_json);
   PP_Var GetInstanceObject();
   void ViewChanged(const gfx::Rect& position, const gfx::Rect& clip);
 
@@ -349,7 +347,6 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
   virtual int32_t LockMouse(PP_Instance instance,
                             PP_CompletionCallback callback) OVERRIDE;
   virtual void UnlockMouse(PP_Instance instance) OVERRIDE;
-  virtual void SubscribeToPolicyUpdates(PP_Instance instance) OVERRIDE;
   virtual PP_Var ResolveRelativeToDocument(
       PP_Instance instance,
       PP_Var relative,
@@ -377,7 +374,6 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
   bool LoadMessagingInterface();
   bool LoadMouseLockInterface();
   bool LoadPdfInterface();
-  bool LoadPolicyUpdateInterface();
   bool LoadPrintInterface();
   bool LoadPrivateInterface();
   bool LoadSelectionInterface();
@@ -512,7 +508,6 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
   const PPP_InputEvent* plugin_input_event_interface_;
   const PPP_Instance_Private* plugin_private_interface_;
   const PPP_Pdf* plugin_pdf_interface_;
-  const PPP_PolicyUpdate_Dev* plugin_policy_updated_interface_;
   const PPP_Selection_Dev* plugin_selection_interface_;
   const PPP_Zoom_Dev* plugin_zoom_interface_;
 

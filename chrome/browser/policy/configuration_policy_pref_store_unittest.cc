@@ -206,8 +206,6 @@ INSTANTIATE_TEST_CASE_P(
                     prefs::kPrintingEnabled),
         TypeAndName(kPolicyJavascriptEnabled,
                     prefs::kWebKitJavascriptEnabled),
-        TypeAndName(kPolicyRemoteAccessClientFirewallTraversal,
-                    prefs::kRemoteAccessClientFirewallTraversal),
         TypeAndName(kPolicyRemoteAccessHostFirewallTraversal,
                     prefs::kRemoteAccessHostFirewallTraversal),
         TypeAndName(kPolicyCloudPrintProxyEnabled,

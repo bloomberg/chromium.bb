@@ -299,11 +299,6 @@ void PPB_Instance_Proxy::ZoomLimitsChanged(PP_Instance instance,
   NOTIMPLEMENTED();
 }
 
-void PPB_Instance_Proxy::SubscribeToPolicyUpdates(PP_Instance instance) {
-  // Not proxied yet.
-  NOTIMPLEMENTED();
-}
-
 PP_Var PPB_Instance_Proxy::ResolveRelativeToDocument(
     PP_Instance instance,
     PP_Var relative,

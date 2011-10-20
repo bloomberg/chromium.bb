@@ -83,9 +83,6 @@ class PPB_Instance_FunctionAPI {
                                  double minimum_factor,
                                  double maximium_factor) = 0;
 
-  // QueryPolicy.
-  virtual void SubscribeToPolicyUpdates(PP_Instance instance) = 0;
-
   // URLUtil.
   virtual PP_Var ResolveRelativeToDocument(
       PP_Instance instance,

@@ -258,9 +258,6 @@ class RenderViewImpl : public RenderWidget,
   // Cancels current composition.
   void PpapiPluginCancelComposition();
 
-  // Request updated policy regarding firewall NAT traversal being enabled.
-  void RequestRemoteAccessClientFirewallTraversal();
-
 #if defined(OS_MACOSX) || defined(OS_WIN)
   // Informs the render view that the given plugin has gained or lost focus.
   void PluginFocusChanged(bool focused, int plugin_id);
@@ -856,7 +853,6 @@ class RenderViewImpl : public RenderWidget,
   void OnUndo();
   void OnUpdateTargetURLAck();
   void OnUpdateWebPreferences(const WebPreferences& prefs);
-  void OnUpdateRemoteAccessClientFirewallTraversal(const std::string& policy);
 
 #if defined(OS_MACOSX)
   void OnWindowFrameChanged(const gfx::Rect& window_frame,

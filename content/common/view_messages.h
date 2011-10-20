@@ -1186,13 +1186,6 @@ IPC_MESSAGE_ROUTED3(ViewMsg_GetSerializedHtmlDataForCurrentPageWithLocalLinks,
                     std::vector<FilePath> /* paths of local copy */,
                     FilePath /* local directory path */)
 
-// Sends updated information about the client firewall traversal policy.
-// |traversal_data| is a json string containing policy information.
-// Sent due to a policy change or in response to a
-// ViewHostMsg_RequestRemoteAccessClientFirewallTraversal message.
-IPC_MESSAGE_ROUTED1(ViewMsg_UpdateRemoteAccessClientFirewallTraversal,
-                    std::string /* traversal_data */)
-
 // Tells the render side that a ViewHostMsg_LockMouse message has been
 // processed. |succeeded| indicates whether the mouse has been successfully
 // locked or not.
@@ -1942,11 +1935,6 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_SendSerializedHtmlData,
                     GURL /* frame's url */,
                     std::string /* data buffer */,
                     int32 /* complete status */)
-
-// Request updated information about the client firewall traversal policy.
-// Will result in a ViewMsg_UpdateRemoteAccessClientFirewallTraversal message
-// being sent back.
-IPC_MESSAGE_ROUTED0(ViewHostMsg_RequestRemoteAccessClientFirewallTraversal)
 
 // Notifies the browser of an event occurring in the media pipeline.
 IPC_MESSAGE_CONTROL1(ViewHostMsg_MediaLogEvent,

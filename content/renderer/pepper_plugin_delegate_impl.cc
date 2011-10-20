@@ -956,7 +956,6 @@ bool PepperPluginDelegateImpl::CanComposeInline() const {
 
 void PepperPluginDelegateImpl::PluginCrashed(
     webkit::ppapi::PluginInstance* instance) {
-  subscribed_to_policy_updates_.erase(instance);
   render_view_->PluginCrashed(instance->module()->path());
 
   UnlockMouse(instance);
@@ -973,7 +972,6 @@ void PepperPluginDelegateImpl::InstanceCreated(
 void PepperPluginDelegateImpl::InstanceDeleted(
     webkit::ppapi::PluginInstance* instance) {
   active_instances_.erase(instance);
-  subscribed_to_policy_updates_.erase(instance);
 
   if (mouse_lock_owner_ && mouse_lock_owner_ == instance) {
     // UnlockMouse() will determine whether a ViewHostMsg_UnlockMouse needs to
@@ -1279,13 +1277,6 @@ bool PepperPluginDelegateImpl::ReadDirectory(
   return file_system_dispatcher->ReadDirectory(directory_path, dispatcher);
 }
 
-void PepperPluginDelegateImpl::PublishPolicy(const std::string& policy_json) {
-  for (std::set<webkit::ppapi::PluginInstance*>::iterator i =
-           subscribed_to_policy_updates_.begin();
-       i != subscribed_to_policy_updates_.end(); ++i)
-    (*i)->HandlePolicyUpdate(policy_json);
-}
-
 void PepperPluginDelegateImpl::QueryAvailableSpace(
     const GURL& origin, quota::StorageType type,
     const AvailableSpaceCallback& callback) {
@@ -1588,15 +1579,6 @@ void PepperPluginDelegateImpl::ZoomLimitsChanged(double minimum_factor,
   render_view_->webview()->zoomLimitsChanged(minimum_level, maximum_level);
 }
 
-void PepperPluginDelegateImpl::SubscribeToPolicyUpdates(
-    webkit::ppapi::PluginInstance* instance) {
-  subscribed_to_policy_updates_.insert(instance);
-
-  // TODO(ajwong): Make this only send an update to the current instance,
-  // and not all subscribed plugin instances.
-  render_view_->RequestRemoteAccessClientFirewallTraversal();
-}
-
 std::string PepperPluginDelegateImpl::ResolveProxy(const GURL& url) {
   bool result;
   std::string proxy_result;
@@ -1755,10 +1737,4 @@ PepperPluginDelegateImpl::GetParentContextForPlatformContext3D() {
   if (!parent_context)
     return NULL;
   return parent_context;
-}
-
-void PepperPluginDelegateImpl::PublishInitialPolicy(
-    scoped_refptr<webkit::ppapi::PluginInstance> instance,
-    const std::string& policy) {
-  instance->HandlePolicyUpdate(policy);
 }

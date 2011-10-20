@@ -664,8 +664,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ViewMsg_SetInLiveResize, OnSetInLiveResize)
 #endif
-    IPC_MESSAGE_HANDLER(ViewMsg_UpdateRemoteAccessClientFirewallTraversal,
-                        OnUpdateRemoteAccessClientFirewallTraversal)
     IPC_MESSAGE_HANDLER(ViewMsg_SetHistoryLengthAndPrune,
                         OnSetHistoryLengthAndPrune)
     IPC_MESSAGE_HANDLER(ViewMsg_EnableViewSourceMode, OnEnableViewSourceMode)
@@ -3688,11 +3686,6 @@ void RenderViewImpl::OnUpdateWebPreferences(const WebPreferences& prefs) {
   webkit_preferences_.Apply(webview());
 }
 
-void RenderViewImpl::OnUpdateRemoteAccessClientFirewallTraversal(
-    const std::string& policy) {
-  pepper_delegate_.PublishPolicy(policy);
-}
-
 void RenderViewImpl::OnSetAltErrorPageURL(const GURL& url) {
   alternate_error_page_url_ = url;
 }
@@ -4215,10 +4208,6 @@ void RenderViewImpl::PpapiPluginCancelComposition() {
   Send(new ViewHostMsg_ImeCancelComposition(routing_id()));
   ui::Range range(ui::Range::InvalidRange());
   Send(new ViewHostMsg_ImeCompositionRangeChanged(routing_id(), range));
-}
-
-void RenderViewImpl::RequestRemoteAccessClientFirewallTraversal() {
-  Send(new ViewHostMsg_RequestRemoteAccessClientFirewallTraversal(routing_id_));
 }
 
 void RenderViewImpl::OnImeSetComposition(

@@ -12,11 +12,9 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "ppapi/c/dev/ppp_policy_update_dev.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/c/pp_resource.h"
-#include "ppapi/c/pp_var.h"
 #include "ppapi/cpp/var.h"
 #include "ppapi/cpp/private/instance_private.h"
 #include "remoting/base/scoped_thread_proxy.h"
@@ -119,13 +117,6 @@ class ChromotingInstance : public pp::InstancePrivate {
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromotingInstanceTest, TestCaseSetup);
 
-  static PPP_PolicyUpdate_Dev kPolicyUpdatedInterface;
-  static void PolicyUpdatedThunk(PP_Instance pp_instance,
-                                 PP_Var pp_policy_json);
-  void SubscribeToNatTraversalPolicy();
-  bool IsNatTraversalAllowed(const std::string& policy_json);
-  void HandlePolicyUpdate(const std::string policy_json);
-
   void ProcessLogToUI(const std::string& message);
 
   bool initialized_;
@@ -161,17 +152,7 @@ class ChromotingInstance : public pp::InstancePrivate {
   // This wraps a ChromotingScriptableObject in a pp::Var.
   pp::Var instance_object_;
 
-  // Controls if this instance of the plugin should attempt to bridge
-  // firewalls.
-  bool enable_client_nat_traversal_;
-
-  // True when the initial policy is received. Used to avoid taking
-  // action before the browser has informed the plugin about its policy
-  // settings.
-  bool initial_policy_received_;
-
   scoped_ptr<ScopedThreadProxy> thread_proxy_;
-  base::Closure delayed_connect_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromotingInstance);
 };

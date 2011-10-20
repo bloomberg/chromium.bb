@@ -1448,8 +1448,6 @@ const char kLoginDatabaseMigrated[] = "login_database.migrated";
 
 // Boolean that indicates whether to allow firewall traversal while trying to
 // establish the initial connection from the client or host.
-const char kRemoteAccessClientFirewallTraversal[] =
-    "remote_access.client_firewall_traversal";
 const char kRemoteAccessHostFirewallTraversal[] =
     "remote_access.host_firewall_traversal";
 

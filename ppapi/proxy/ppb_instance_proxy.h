@@ -78,7 +78,6 @@ class PPB_Instance_Proxy : public InterfaceProxy,
   virtual void ZoomLimitsChanged(PP_Instance instance,
                                  double minimum_factor,
                                  double maximium_factor) OVERRIDE;
-  virtual void SubscribeToPolicyUpdates(PP_Instance instance) OVERRIDE;
   virtual PP_Var ResolveRelativeToDocument(
       PP_Instance instance,
       PP_Var relative,

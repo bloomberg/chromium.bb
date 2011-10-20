@@ -88,7 +88,6 @@ class MockPluginDelegate : public PluginDelegate {
                                                  DirContents* contents);
   virtual void SyncGetFileSystemPlatformPath(const GURL& url,
                                              FilePath* platform_path);
-  virtual void PublishPolicy(const std::string& policy_json);
   virtual scoped_refptr<base::MessageLoopProxy>
       GetFileThreadMessageLoopProxy();
   virtual int32_t ConnectTcp(
@@ -108,7 +107,6 @@ class MockPluginDelegate : public PluginDelegate {
   virtual std::string GetDefaultEncoding();
   virtual void ZoomLimitsChanged(double minimum_factor,
                                  double maximum_factor);
-  virtual void SubscribeToPolicyUpdates(PluginInstance* instance);
   virtual std::string ResolveProxy(const GURL& url);
   virtual void DidStartLoading();
   virtual void DidStopLoading();

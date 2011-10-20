@@ -348,10 +348,13 @@
           'type': 'main',
           'supported_on': ['chrome.*:14-', 'chrome_os:0.14-'],
           'features': {'dynamic_refresh': 1},
+          # Mark this 'removed' when http://crbug.com/100216 is resolved.
+          'deprecated': True,
           'example_value': False,
           'id': 94,
           'caption': '''Enable firewall traversal from remote access client''',
-          'desc': '''Enables usage of STUN and relay servers when connecting to a remote client.
+          'desc': '''This policy is no longer supported.
+          Enables usage of STUN and relay servers when connecting to a remote client.
 
           If this setting is enabled, then this machine can discover and connect to remote host machines even if they are separated by a firewall.
 

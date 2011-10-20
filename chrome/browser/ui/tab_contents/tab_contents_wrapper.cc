@@ -30,7 +30,6 @@
 #include "chrome/browser/prerender/prerender_tab_helper.h"
 #include "chrome/browser/printing/print_preview_message_handler.h"
 #include "chrome/browser/printing/print_view_manager.h"
-#include "chrome/browser/remoting/firewall_traversal_observer.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
@@ -282,7 +281,6 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   webnavigation_observer_.reset(
       new ExtensionWebNavigationTabObserver(contents));
   external_protocol_observer_.reset(new ExternalProtocolObserver(contents));
-  firewall_traversal_observer_.reset(new FirewallTraversalObserver(contents));
   plugin_observer_.reset(new PluginObserver(this));
   print_preview_.reset(new printing::PrintPreviewMessageHandler(contents));
   // Start the in-browser thumbnailing if the feature is enabled.
