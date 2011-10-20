@@ -1981,6 +1981,14 @@
             # print preview is enabled on CrOS.
             ['exclude', '^browser/ui/webui/print_preview_ui_unittest.cc'],
           ],
+          'conditions': [
+            ['use_aura==1', {
+              'sources!': [
+                'browser/chromeos/login/user_controller_unittest.cc',
+                'browser/chromeos/notifications/desktop_notifications_unittest.cc',
+              ],
+            }],
+          ],          
         }, { # else: chromeos == 0
           'sources/': [
             ['exclude', '^browser/chromeos/'],
