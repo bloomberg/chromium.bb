@@ -20,6 +20,10 @@
 #include "ui/base/touch/touch_factory.h"
 #include "ui/base/x/x11_util.h"
 
+#include <X11/cursorfont.h>
+#include <X11/extensions/XInput2.h>
+#include <X11/Xlib.h>
+
 using std::max;
 using std::min;
 
@@ -113,6 +117,66 @@ int CursorShapeFromNative(gfx::NativeCursor native_cursor) {
   }
   NOTREACHED();
   return XC_left_ptr;
+}
+
+// Coalesce all pending motion events that are at the top of the queue, and
+// return the number eliminated, storing the last one in |last_event|.
+int CoalescePendingXIMotionEvents(const XEvent* xev, XEvent* last_event) {
+  XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(xev->xcookie.data);
+  int num_coalesed = 0;
+  Display* display = xev->xany.display;
+
+  while (XPending(display)) {
+    XEvent next_event;
+    XPeekEvent(display, &next_event);
+
+    // If we can't get the cookie, abort the check.
+    if (!XGetEventData(next_event.xgeneric.display, &next_event.xcookie))
+      return num_coalesed;
+
+    // If this isn't from a valid device, throw the event away, as
+    // that's what the message pump would do. Device events come in pairs
+    // with one from the master and one from the slave so there will
+    // always be at least one pending.
+    if (!ui::TouchFactory::GetInstance()->ShouldProcessXI2Event(&next_event)) {
+      XFreeEventData(display, &next_event.xcookie);
+      XNextEvent(display, &next_event);
+      continue;
+    }
+
+    if (next_event.type == GenericEvent &&
+        next_event.xgeneric.evtype == XI_Motion) {
+      XIDeviceEvent* next_xievent =
+          static_cast<XIDeviceEvent*>(next_event.xcookie.data);
+      // Confirm that the motion event is targeted at the same window
+      // and that no buttons or modifiers have changed.
+      if (xievent->event == next_xievent->event &&
+          xievent->child == next_xievent->child &&
+          xievent->buttons.mask_len == next_xievent->buttons.mask_len &&
+          (memcmp(xievent->buttons.mask,
+                  next_xievent->buttons.mask,
+                  xievent->buttons.mask_len) == 0) &&
+          xievent->mods.base == next_xievent->mods.base &&
+          xievent->mods.latched == next_xievent->mods.latched &&
+          xievent->mods.locked == next_xievent->mods.locked &&
+          xievent->mods.effective == next_xievent->mods.effective) {
+        XFreeEventData(display, &next_event.xcookie);
+        // Free the previous cookie.
+        if (num_coalesed > 0)
+          XFreeEventData(display, &last_event->xcookie);
+        // Get the event and its cookie data.
+        XNextEvent(display, last_event);
+        XGetEventData(display, &last_event->xcookie);
+        ++num_coalesed;
+        continue;
+      } else {
+        // This isn't an event we want so free its cookie data.
+        XFreeEventData(display, &next_event.xcookie);
+      }
+    }
+    break;
+  }
+  return num_coalesed;
 }
 
 class DesktopHostLinux : public DesktopHost {
@@ -244,6 +308,17 @@ base::MessagePumpDispatcher::DispatchStatus DesktopHostLinux::Dispatch(
       ui::TouchFactory* factory = ui::TouchFactory::GetInstance();
       if (!factory->ShouldProcessXI2Event(xev))
         break;
+
+      // If this is a motion event we want to coalesce all pending motion
+      // events that are at the top of the queue.
+      XEvent last_event;
+      int num_coalesced = 0;
+      if (xev->xgeneric.evtype == XI_Motion) {
+        num_coalesced = CoalescePendingXIMotionEvents(xev, &last_event);
+        if (num_coalesced > 0)
+          xev = &last_event;
+      }
+
       ui::EventType type = ui::EventTypeFromNative(xev);
       switch (type) {
         case ui::ET_TOUCH_PRESSED:
@@ -270,6 +345,10 @@ base::MessagePumpDispatcher::DispatchStatus DesktopHostLinux::Dispatch(
         default:
           NOTREACHED();
       }
+
+      // If we coalesced an event we need to free its cookie.
+      if (num_coalesced > 0)
+        XFreeEventData(xev->xgeneric.display, &last_event.xcookie);
     }
   }
   return handled ? EVENT_PROCESSED : EVENT_IGNORED;
