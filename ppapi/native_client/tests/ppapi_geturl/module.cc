@@ -23,11 +23,6 @@
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/c/ppp_messaging.h"
 
-#if !defined(__native_client__)
-int32_t LoadUrl(PP_Instance /*instance*/, const char* /*url*/,
-                PP_CompletionCallback /*callback*/) { return PP_OK; }
-#endif
-
 namespace {
 
 // These constants need to match their corresponding JavaScript values in
@@ -84,14 +79,17 @@ PP_Bool Instance_DidCreate(PP_Instance pp_instance,
   PP_CompletionCallback html_cb =
       PP_MakeCompletionCallback(HTMLLoaded, url_count);
   int32_t result = LoadUrl(pp_instance, "ppapi_geturl_success.html", html_cb);
+  CHECK(PP_OK_COMPLETIONPENDING == result);
 
   PP_CompletionCallback robot_cb =
       PP_MakeCompletionCallback(RobotLoaded, url_count);
   result = LoadUrl(pp_instance, "http://www.google.com/robots.txt", robot_cb);
+  CHECK(PP_OK_COMPLETIONPENDING == result);
 
   PP_CompletionCallback non_exist_cb =
       PP_MakeCompletionCallback(NonExistLoaded, url_count);
   result = LoadUrl(pp_instance, "ppapi_nonexistent_url.html", non_exist_cb);
+  CHECK(PP_OK_COMPLETIONPENDING == result);
 
   return PP_TRUE;
 }

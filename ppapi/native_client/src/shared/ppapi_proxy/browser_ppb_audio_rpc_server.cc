@@ -88,13 +88,12 @@ void StreamCreatedCallback(void* user_data, int32_t result) {
       factory.ImportSyncSocketHandle(nacl_sync_handle));
   NaClDesc *nacl_shm = NaClDescRef(shm_wrapper->desc());
   NaClDesc *nacl_socket = NaClDescRef(socket_wrapper->desc());
-  int r;
-  r = PppAudioRpcClient::PPP_Audio_StreamCreated(
+  static_cast<void>(PppAudioRpcClient::PPP_Audio_StreamCreated(
       ppapi_proxy::GetMainSrpcChannel(data->instance_id),
       data->audio_id,
       nacl_shm,
       shared_memory_size,
-      nacl_socket);
+      nacl_socket));
 }
 
 }  // namespace
