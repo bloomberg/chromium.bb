@@ -288,8 +288,13 @@ void ThreadWatcher::GotNoResponse() {
   // number of other threads responding is equal to live_threads_threshold_.
   int thread_id = thread_id_;
   base::debug::Alias(&thread_id);
-  if (crash_on_hang_ && responding_thread_count == live_threads_threshold_)
-    CHECK(false);
+  if (crash_on_hang_ && responding_thread_count == live_threads_threshold_) {
+    static bool crashed_once = false;
+    if (!crashed_once) {
+      crashed_once = true;
+      CHECK(false);
+    }
+  }
 
   hung_processing_complete_ = true;
 }
