@@ -347,7 +347,7 @@ void Layer::RecomputeHole() {
     // This layer might not contain the child (e.g., a portion of the child may
     // be offscreen). Only the portion of the child that overlaps this layer is
     // of any importance, so take the intersection.
-    candidate_hole = bounds().Intersect(candidate_hole);
+    candidate_hole = gfx::Rect(bounds().size()).Intersect(candidate_hole);
 
     // Ensure we have the largest hole.
     if (candidate_hole.size().GetArea() > hole_rect_.size().GetArea())

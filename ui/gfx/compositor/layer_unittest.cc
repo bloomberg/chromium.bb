@@ -529,6 +529,17 @@ TEST_F(LayerWithNullDelegateTest, LargestHole) {
   EXPECT_EQ(gfx::Rect(75, 75, 200, 200), parent->hole_rect());
 }
 
+// Verifies that the hole is with respect to the local bounds of its parent.
+TEST_F(LayerWithNullDelegateTest, HoleLocalBounds) {
+  scoped_ptr<Layer> parent(CreateTextureRootLayer(
+      gfx::Rect(100, 100, 150, 150)));
+
+  scoped_ptr<Layer> child(CreateTextureLayer(gfx::Rect(50, 50, 100, 100)));
+  parent->Add(child.get());
+
+  EXPECT_EQ(gfx::Rect(50, 50, 100, 100), parent->hole_rect());
+}
+
 // Verifies that there is no hole present when one of the child layers has a
 // transform.
 TEST_F(LayerWithNullDelegateTest, NoHoleWithTransform) {
