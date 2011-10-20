@@ -410,8 +410,8 @@
         }],
         ['OS=="linux"', {
           'conditions': [
-            # For now, do not build nacl_helper on ARM or when disable_nacl=1
-            ['disable_nacl!=1 and target_arch!="arm"', {
+            # For now, do not build nacl_helper when disable_nacl=1
+            ['disable_nacl!=1', {
               'dependencies': [
                 'nacl_helper_bootstrap',
                 'nacl_helper',
