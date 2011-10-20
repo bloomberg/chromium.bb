@@ -4790,26 +4790,6 @@
    fun:_ZNK7WebCore6Editor7Command7executeEPNS_5EventE
 }
 {
-   bug_100761a
-   Memcheck:Leak
-   ...
-   fun:STAN_GetNSSCertificate
-   fun:CERT_DupCertificate
-   fun:_ZN3net15X509Certificate15DupOSCertHandleEP18CERTCertificateStr
-   fun:_ZN3net15X509CertificateC1EP18CERTCertificateStrRKSt6vectorIS2_SaIS2_EE
-   fun:_ZN3net15X509Certificate16CreateFromHandleEP18CERTCertificateStrRKSt6vectorIS2_SaIS2_EE
-   fun:_ZN3net15X509Certificate16CreateSelfSignedEPN6crypto13RSAPrivateKeyERKSsjN4base9TimeDeltaE
-}
-{
-   bug_100761b
-   Memcheck:Leak
-   ...
-   fun:CERT_CreateCertificate
-   fun:_ZN12_GLOBAL__N_117CreateCertificateEP18SECKEYPublicKeyStrRKSsjN4base9TimeDeltaE
-   fun:_ZN3net9x509_util20CreateSelfSignedCertEP18SECKEYPublicKeyStrP19SECKEYPrivateKeyStrRKSsjN4base9TimeDeltaE
-   fun:_ZN3net15X509Certificate16CreateSelfSignedEPN6crypto13RSAPrivateKeyERKSsjN4base9TimeDeltaE
-}
-{
    bug_100777
    Memcheck:Leak
    fun:_Znw*

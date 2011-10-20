@@ -1630,21 +1630,3 @@
    fun:base::Callback::Run
    fun:MessageLoop::RunTask
 }
-
-{
-   bug_100761a
-   Heapcheck:Leak
-   ...
-   fun:net::X509Certificate::DupOSCertHandle
-   fun:*X509Certificate
-   fun:net::X509Certificate::CreateFromHandle
-   fun:net::X509Certificate::CreateSelfSigned
-}
-{
-   bug_100761b
-   Heapcheck:Leak
-   ...
-   fun:*CreateCertificate
-   fun:net::x509_util::CreateSelfSignedCert
-   fun:net::X509Certificate::CreateSelfSigned
-}
