@@ -1,7 +1,8 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
+ * Copyright 2009 The Native Client Authors.  All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can
+ * be found in the LICENSE file.
+ * Copyright 2009, Google Inc.
  */
 
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
@@ -38,8 +39,8 @@ enum PatternMatch {
 };
 
 /*
- * Ensures that all loads/stores use a safe base address.  A base address is
- * safe if it
+ * Ensures that all stores use a safe base address.  A base address is safe if
+ * it
  *     1. Has specific bits masked off by its immediate predecessor, or
  *     2. Is predicated on those bits being clear, as tested by its immediate
  *        predecessor, or
@@ -47,19 +48,13 @@ enum PatternMatch {
  *
  * This pattern concerns itself with case #1, early-exiting if it finds #2.
  */
-static PatternMatch check_loadstore_mask(const SfiValidator &sfi,
-                                         const DecodedInstruction &first,
-                                         const DecodedInstruction &second,
-                                         ProblemSink *out) {
-  if (second.base_address_register() == kRegisterNone /* not a load/store */
+static PatternMatch check_store_mask(const SfiValidator &sfi,
+                                     const DecodedInstruction &first,
+                                     const DecodedInstruction &second,
+                                     ProblemSink *out) {
+  if (second.base_address_register() == kRegisterNone /* not a store */
       || sfi.is_data_address_register(second.base_address_register())) {
     return NO_MATCH;
-  }
-
-  if (second.base_address_register() == kRegisterPc
-      && second.offset_is_immediate()) {
-    /* PC + immediate addressing is always safe. */
-    return PATTERN_SAFE;
   }
 
   if (first.defines(second.base_address_register())
@@ -74,7 +69,7 @@ static PatternMatch check_loadstore_mask(const SfiValidator &sfi,
     return PATTERN_SAFE;
   }
 
-  out->report_problem(second.addr(), second.safety(), kProblemUnsafeLoadStore);
+  out->report_problem(second.addr(), second.safety(), kProblemUnsafeStore);
   return PATTERN_UNSAFE;
 }
 
@@ -378,7 +373,7 @@ bool SfiValidator::apply_patterns(const DecodedInstruction &first,
 
   // The list of patterns -- defined in static functions up top.
   static const TwoInstPattern two_inst_patterns[] = {
-    &check_loadstore_mask,
+    &check_store_mask,
     &check_branch_mask,
     &check_data_register_update,
   };

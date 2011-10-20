@@ -6,26 +6,24 @@
 set -eu
 
 # Get the path to the ARM cross-compiler.
+# We use the trusted compiler because llvm-fake.py (used in the
+# untrusted compiler) doesn't support -nodefaultlibs.
 dir=$(pwd)
 cd ../../../..
+eval "$(tools/llvm/setup_arm_trusted_toolchain.py)"
 topdir=$(pwd)
-tools="$topdir/toolchain/pnacl_linux_x86_64_newlib/pkg/binutils/bin"
 cd $dir
 
-ldscript=$topdir/tools/llvm/ld_script_arm_untrusted
-readonly ARM_LD="$tools/arm-pc-nacl-ld"
-readonly ARM_AS="$tools/arm-pc-nacl-as"
+ldscript=$topdir/toolchain/pnacl_linux_x86_64/ldscripts/ld_script_arm_untrusted
 
+readonly ARM_CROSS_COMPILER="${ARM_CC}"
 for test_file in *.S ; do
   object_file=${test_file%.*}.o
   nexe_file=${test_file%.*}.nexe
-  pre_file=${test_file%.*}.s
 
   echo "compiling $test_file -> $nexe_file"
-  cpp $test_file -o $pre_file
-  ${ARM_AS} -march=armv7-a -mcpu=cortex-a8 -mfpu=neon -c $pre_file \
-    -o $object_file
+  ${ARM_CROSS_COMPILER} \
+      -march=armv7-a -mcpu=cortex-a8 -mfpu=neon -c $test_file -o $object_file
   ${ARM_LD} -static -nodefaultlibs -nostdlib -T $ldscript \
       $object_file -o $nexe_file
-  rm $pre_file $object_file
 done
