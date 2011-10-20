@@ -56,8 +56,8 @@ html[dir=rtl] .most-visited .close-button {
   -webkit-transition-delay: 0.5s;
 }
 
-.close-button:hover {
-  -webkit-transition-delay: 0;
+.most-visited .close-button:hover {
+  -webkit-transition: none;
 }
 
 .most-visited .favicon {
