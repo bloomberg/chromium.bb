@@ -296,12 +296,9 @@ void PrefProvider::UpdatePref(
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
     ContentSetting setting) {
-#if !defined(NDEBUG)
-  // Ensure that |lock_| is not held, since this function will send out
-  // notifications (by |~DictionaryPrefUpdate|).
-  DCHECK(lock_.Try());
-  lock_.Release();
-#endif
+  // Ensure that |lock_| is not held by this thread, since this function will
+  // send out notifications (by |~DictionaryPrefUpdate|).
+  AssertLockNotHeld();
 
   AutoReset<bool> auto_reset(&updating_preferences_, true);
   {
@@ -440,12 +437,10 @@ void PrefProvider::UpdateObsoletePatternsPref(
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier,
       ContentSetting setting) {
-#if !defined(NDEBUG)
-  // Ensure that |lock_| is not held, since this function will send out
-  // notifications (by |~DictionaryPrefUpdate|).
-  DCHECK(lock_.Try());
-  lock_.Release();
-#endif
+  // Ensure that |lock_| is not held by this thread, since this function will
+  // send out notifications (by |~DictionaryPrefUpdate|).
+  AssertLockNotHeld();
+
   DictionaryPrefUpdate update(prefs_,
                               prefs::kContentSettingsPatterns);
   DictionaryValue* all_settings_dictionary = update.Get();
@@ -572,12 +567,10 @@ void PrefProvider::UpdateObsoleteGeolocationPref(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,
     ContentSetting setting) {
-#if !defined(NDEBUG)
-  // Ensure that |lock_| is not held, since this function will send out
-  // notifications (by |~DictionaryPrefUpdate|).
-  DCHECK(lock_.Try());
-  lock_.Release();
-#endif
+  // Ensure that |lock_| is not held by this thread, since this function will
+  // send out notifications (by |~DictionaryPrefUpdate|).
+  AssertLockNotHeld();
+
   if (!prefs_)
     return;
 
@@ -762,12 +755,10 @@ void PrefProvider::MigrateObsoletePopupsPref() {
 }
 
 void PrefProvider::MigrateObsoleteContentSettingsPatternPref() {
-#if !defined(NDEBUG)
-  // Ensure that |lock_| is not held, since this function will send out
-  // notifications (by |~DictionaryPrefUpdate|).
-  DCHECK(lock_.Try());
-  lock_.Release();
-#endif
+  // Ensure that |lock_| is not held by this thread, since this function will
+  // send out notifications (by |~DictionaryPrefUpdate|).
+  AssertLockNotHeld();
+
   if (prefs_->HasPrefPath(prefs::kContentSettingsPatterns) && !is_incognito_) {
     const DictionaryValue* patterns_dictionary =
         prefs_->GetDictionary(prefs::kContentSettingsPatterns);
@@ -847,12 +838,10 @@ void PrefProvider::MigrateObsoleteContentSettingsPatternPref() {
 }
 
 void PrefProvider::SyncObsoletePatternPref() {
-#if !defined(NDEBUG)
-  // Ensure that |lock_| is not held, since this function will send out
-  // notifications (by |~DictionaryPrefUpdate|).
-  DCHECK(lock_.Try());
-  lock_.Release();
-#endif
+  // Ensure that |lock_| is not held by this thread, since this function will
+  // send out notifications (by |~DictionaryPrefUpdate|).
+  AssertLockNotHeld();
+
   if (prefs_->HasPrefPath(prefs::kContentSettingsPatternPairs) &&
       !is_incognito_) {
     const DictionaryValue* pattern_pairs_dictionary =
@@ -906,12 +895,10 @@ void PrefProvider::SyncObsoletePatternPref() {
 }
 
 void PrefProvider::MigrateObsoleteGeolocationPref() {
-#if !defined(NDEBUG)
-  // Ensure that |lock_| is not held, since this function will send out
-  // notifications (by |~DictionaryPrefUpdate|).
-  DCHECK(lock_.Try());
-  lock_.Release();
-#endif
+  // Ensure that |lock_| is not held by this thread, since this function will
+  // send out notifications (by |~DictionaryPrefUpdate|).
+  AssertLockNotHeld();
+
   if (!prefs_->HasPrefPath(prefs::kGeolocationContentSettings))
     return;
 
@@ -964,12 +951,10 @@ void PrefProvider::MigrateObsoleteGeolocationPref() {
 }
 
 void PrefProvider::MigrateObsoleteNotificationsPrefs() {
-#if !defined(NDEBUG)
-  // Ensure that |lock_| is not held, since this function will send out
-  // notifications (by |~DictionaryPrefUpdate|).
-  DCHECK(lock_.Try());
-  lock_.Release();
-#endif
+  // Ensure that |lock_| is not held by this thread, since this function will
+  // send out notifications (by |~DictionaryPrefUpdate|).
+  AssertLockNotHeld();
+
   // The notifications settings in the preferences
   // prefs::kContentSettingsPatternPairs do not contain the latest
   // notifications settings. So all notification settings are cleared and
@@ -1015,12 +1000,10 @@ void PrefProvider::MigrateObsoleteNotificationsPrefs() {
 }
 
 void PrefProvider::SyncObsoletePrefs() {
-#if !defined(NDEBUG)
-  // Ensure that |lock_| is not held, since this function will send out
-  // notifications (by |~DictionaryPrefUpdate|).
-  DCHECK(lock_.Try());
-  lock_.Release();
-#endif
+  // Ensure that |lock_| is not held by this thread, since this function will
+  // send out notifications (by |~DictionaryPrefUpdate|).
+  AssertLockNotHeld();
+
   DCHECK(prefs_);
   DCHECK(prefs_->HasPrefPath(prefs::kContentSettingsPatternPairs));
 
@@ -1070,6 +1053,14 @@ void PrefProvider::SyncObsoletePrefs() {
                                     ContentSetting(setting_value));
     }
   }
+}
+
+void PrefProvider::AssertLockNotHeld() const {
+#if !defined(NDEBUG)
+  // |Lock::Acquire()| will assert if the lock is held by this thread.
+  lock_.Acquire();
+  lock_.Release();
+#endif
 }
 
 }  // namespace content_settings

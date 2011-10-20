@@ -141,6 +141,11 @@ class PrefProvider : public ObservableProvider,
   static void CanonicalizeContentSettingsExceptions(
       base::DictionaryValue* all_settings_dictionary);
 
+  // In the debug mode, asserts that |lock_| is not held by this thread. It's
+  // ok if some other thread holds |lock_|, as long as it will eventually
+  // release it.
+  void AssertLockNotHeld() const;
+
   // Weak; owned by the Profile and reset in ShutdownOnUIThread.
   PrefService* prefs_;
 
