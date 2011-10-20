@@ -13,7 +13,7 @@ class DownloadItem;
 
 class MockDownloadManager : public DownloadManager {
  public:
-  explicit MockDownloadManager(DownloadManagerDelegate* delegate,
+  explicit MockDownloadManager(content::DownloadManagerDelegate* delegate,
                                DownloadStatusUpdater* updater)
       : DownloadManager(delegate, updater) {
   }

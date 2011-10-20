@@ -119,7 +119,6 @@
     'browser/download/download_item.h',
     'browser/download/download_manager.cc',
     'browser/download/download_manager.h',
-    'browser/download/download_manager_delegate.h',
     'browser/download/download_persistent_store_info.cc',
     'browser/download/download_persistent_store_info.h',
     'browser/download/download_request_handle.cc',
@@ -424,7 +423,6 @@
     'browser/renderer_host/render_widget_host_view_win.h',
     'browser/renderer_host/resource_dispatcher_host.cc',
     'browser/renderer_host/resource_dispatcher_host.h',
-    'browser/renderer_host/resource_dispatcher_host_delegate.h',
     'browser/renderer_host/resource_dispatcher_host_login_delegate.cc',
     'browser/renderer_host/resource_dispatcher_host_login_delegate.h',
     'browser/renderer_host/resource_dispatcher_host_request_info.cc',
@@ -565,6 +563,7 @@
     'browser/zygote_host_linux.h',
     'browser/zygote_main_linux.cc',
     'public/browser/content_browser_client.h',
+    'public/browser/download_manager_delegate.h',
     'public/browser/native_web_keyboard_event.h',
     'public/browser/navigation_types.h',
     'public/browser/notification_details.h',
@@ -574,6 +573,7 @@
     'public/browser/notification_service.h',
     'public/browser/notification_source.h',
     'public/browser/notification_types.h',
+    'public/browser/resource_dispatcher_host_delegate.h',
   ],
   'conditions': [
     ['p2p_apis==1', {

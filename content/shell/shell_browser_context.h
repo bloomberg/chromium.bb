@@ -13,7 +13,6 @@
 #include "content/browser/browser_context.h"
 
 class DownloadManager;
-class DownloadManagerDelegate;
 class DownloadStatusUpdater;
 class GeolocationPermissionContext;
 class HostZoomMap;
@@ -21,6 +20,7 @@ class SSLHostState;
 
 namespace content {
 
+class DownloadManagerDelegate;
 class ResourceContext;
 class ShellBrowserMainParts;
 class ShellDownloadManagerDelegate;

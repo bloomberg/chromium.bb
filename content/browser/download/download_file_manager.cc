@@ -13,10 +13,10 @@
 #include "content/browser/download/download_file.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_manager.h"
-#include "content/browser/download/download_manager_delegate.h"
 #include "content/browser/download/interrupt_reasons.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/download_manager_delegate.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/io_buffer.h"
 

@@ -11,7 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
-#include "content/browser/download/download_manager_delegate.h"
+#include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -39,7 +39,7 @@ struct hash<CrxInstaller*> {
 // This is the Chrome side helper for the download system.
 class ChromeDownloadManagerDelegate
     : public base::RefCountedThreadSafe<ChromeDownloadManagerDelegate>,
-      public DownloadManagerDelegate,
+      public content::DownloadManagerDelegate,
       public content::NotificationObserver {
  public:
   explicit ChromeDownloadManagerDelegate(Profile* profile);

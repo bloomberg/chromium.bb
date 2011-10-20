@@ -7,9 +7,9 @@
 #pragma once
 
 #include "base/compiler_specific.h"
-#include "content/browser/download/download_manager_delegate.h"
+#include "content/public/browser/download_manager_delegate.h"
 
-class MockDownloadManagerDelegate : public DownloadManagerDelegate {
+class MockDownloadManagerDelegate : public content::DownloadManagerDelegate {
  public:
   virtual ~MockDownloadManagerDelegate();
   virtual void Shutdown() OVERRIDE;

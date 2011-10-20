@@ -21,12 +21,12 @@
 #include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/download_id.h"
 #include "content/browser/download/download_manager.h"
-#include "content/browser/download/download_manager_delegate.h"
 #include "content/browser/download/download_persistent_store_info.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_stats.h"
 #include "content/browser/download/interrupt_reasons.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/download_manager_delegate.h"
 
 // A DownloadItem normally goes through the following states:
 //      * Created (when download starts)

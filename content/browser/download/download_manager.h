@@ -53,7 +53,6 @@
 #include "net/base/net_errors.h"
 
 class DownloadFileManager;
-class DownloadManagerDelegate;
 class DownloadStatusUpdater;
 class GURL;
 class ResourceDispatcherHost;
@@ -63,6 +62,7 @@ struct DownloadSaveInfo;
 
 namespace content {
 class BrowserContext;
+class DownloadManagerDelegate;
 }
 
 // Browser's download manager: manages all downloads and destination view.
@@ -71,7 +71,7 @@ class CONTENT_EXPORT DownloadManager
                                         BrowserThread::DeleteOnUIThread>,
       public DownloadStatusUpdaterDelegate {
  public:
-  DownloadManager(DownloadManagerDelegate* delegate,
+  DownloadManager(content::DownloadManagerDelegate* delegate,
                   DownloadStatusUpdater* status_updater);
 
   // Shutdown the download manager. Must be called before destruction.
@@ -297,11 +297,11 @@ class CONTENT_EXPORT DownloadManager
   // yet in the history map.
   DownloadItem* GetActiveDownloadItem(int id);
 
-  DownloadManagerDelegate* delegate() const { return delegate_; }
+  content::DownloadManagerDelegate* delegate() const { return delegate_; }
 
   // For testing only.  May be called from tests indirectly (through
   // other for testing only methods).
-  void SetDownloadManagerDelegate(DownloadManagerDelegate* delegate);
+  void SetDownloadManagerDelegate(content::DownloadManagerDelegate* delegate);
 
  private:
   typedef std::set<DownloadItem*> DownloadSet;
@@ -431,7 +431,7 @@ class CONTENT_EXPORT DownloadManager
   FilePath last_download_path_;
 
   // Allows an embedder to control behavior. Guaranteed to outlive this object.
-  DownloadManagerDelegate* delegate_;
+  content::DownloadManagerDelegate* delegate_;
 
   // TODO(rdsmith): Remove when http://crbug.com/85408 is fixed.
   // For debugging only.

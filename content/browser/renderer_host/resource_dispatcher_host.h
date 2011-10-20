@@ -35,7 +35,6 @@ class CrossSiteResourceHandler;
 class DownloadFileManager;
 class LoginHandler;
 class PluginService;
-class ResourceDispatcherHostDelegate;
 class ResourceDispatcherHostRequestInfo;
 class ResourceHandler;
 class ResourceMessageFilter;
@@ -50,6 +49,7 @@ struct ViewMsg_SwapOut_Params;
 
 namespace content {
 class ResourceContext;
+class ResourceDispatcherHostDelegate;
 }
 namespace net {
 class CookieList;
@@ -265,10 +265,10 @@ class CONTENT_EXPORT ResourceDispatcherHost : public net::URLRequest::Delegate {
 
   // This does not take ownership of the delegate. It is expected that the
   // delegate have a longer lifetime than the ResourceDispatcherHost.
-  void set_delegate(ResourceDispatcherHostDelegate* delegate) {
+  void set_delegate(content::ResourceDispatcherHostDelegate* delegate) {
     delegate_ = delegate;
   }
-  ResourceDispatcherHostDelegate* delegate() {
+  content::ResourceDispatcherHostDelegate* delegate() {
     return delegate_;
   }
 
@@ -506,7 +506,7 @@ class CONTENT_EXPORT ResourceDispatcherHost : public net::URLRequest::Delegate {
   // to the source of the message.
   ResourceMessageFilter* filter_;
 
-  ResourceDispatcherHostDelegate* delegate_;
+  content::ResourceDispatcherHostDelegate* delegate_;
 
   static bool is_prefetch_enabled_;
   bool allow_cross_origin_auth_prompt_;

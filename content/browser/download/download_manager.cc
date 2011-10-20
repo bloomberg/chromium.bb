@@ -22,7 +22,6 @@
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/download_item.h"
-#include "content/browser/download/download_manager_delegate.h"
 #include "content/browser/download/download_persistent_store_info.h"
 #include "content/browser/download/download_stats.h"
 #include "content/browser/download/download_status_updater.h"
@@ -32,6 +31,7 @@
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 
@@ -59,7 +59,7 @@ void BeginDownload(
 
 }  // namespace
 
-DownloadManager::DownloadManager(DownloadManagerDelegate* delegate,
+DownloadManager::DownloadManager(content::DownloadManagerDelegate* delegate,
                                  DownloadStatusUpdater* status_updater)
     : shutdown_needed_(false),
       browser_context_(NULL),
@@ -617,7 +617,7 @@ void DownloadManager::RemoveFromActiveList(DownloadItem* download) {
 }
 
 void DownloadManager::SetDownloadManagerDelegate(
-    DownloadManagerDelegate* delegate) {
+    content::DownloadManagerDelegate* delegate) {
   delegate_ = delegate;
 }
 

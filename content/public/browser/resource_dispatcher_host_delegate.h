@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_RESOURCE_DISPATCHER_HOST_DELEGATE_H_
-#define CONTENT_BROWSER_RENDERER_HOST_RESOURCE_DISPATCHER_HOST_DELEGATE_H_
+#ifndef CONTENT_PUBLIC_BROWSER_RESOURCE_DISPATCHER_HOST_DELEGATE_H_
+#define CONTENT_PUBLIC_BROWSER_RESOURCE_DISPATCHER_HOST_DELEGATE_H_
 #pragma once
 
 #include <string>
@@ -27,6 +27,8 @@ class AuthChallengeInfo;
 class SSLCertRequestInfo;
 class URLRequest;
 }
+
+namespace content {
 
 // Interface that the embedder provides to ResourceDispatcherHost to allow
 // observing and modifying requests.
@@ -120,4 +122,6 @@ class ResourceDispatcherHostDelegate {
    virtual ~ResourceDispatcherHostDelegate() {}
 };
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_RESOURCE_DISPATCHER_HOST_DELEGATE_H_
+}  // namespace content
+
+#endif  // CONTENT_PUBLIC_BROWSER_RESOURCE_DISPATCHER_HOST_DELEGATE_H_

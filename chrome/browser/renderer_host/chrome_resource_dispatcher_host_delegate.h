@@ -8,7 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "content/browser/renderer_host/resource_dispatcher_host_delegate.h"
+#include "content/public/browser/resource_dispatcher_host_delegate.h"
 
 class DownloadRequestLimiter;
 class ResourceDispatcherHost;
@@ -21,7 +21,7 @@ class PrerenderTracker;
 // Implements ResourceDispatcherHostDelegate. Currently used by the Prerender
 // system to abort requests and add to the load flags when a request begins.
 class ChromeResourceDispatcherHostDelegate
-    : public ResourceDispatcherHostDelegate {
+    : public content::ResourceDispatcherHostDelegate {
  public:
   // This class does not take ownership of the tracker but merely holds a
   // reference to it to avoid accessing g_browser_process.

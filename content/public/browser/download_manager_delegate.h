@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_MANAGER_DELEGATE_H_
-#define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_MANAGER_DELEGATE_H_
+#ifndef CONTENT_PUBLIC_BROWSER_DOWNLOAD_MANAGER_DELEGATE_H_
+#define CONTENT_PUBLIC_BROWSER_DOWNLOAD_MANAGER_DELEGATE_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -14,6 +14,8 @@ class DownloadItem;
 class FilePath;
 class TabContents;
 class SavePackage;
+
+namespace content {
 
 // Browser's download manager: manages all downloads and destination view.
 class DownloadManagerDelegate {
@@ -113,4 +115,6 @@ class DownloadManagerDelegate {
   DISALLOW_COPY_AND_ASSIGN(DownloadManagerDelegate);
 };
 
-#endif  // CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_MANAGER_DELEGATE_H_
+}  // namespace content
+
+#endif  // CONTENT_PUBLIC_BROWSER_DOWNLOAD_MANAGER_DELEGATE_H_
