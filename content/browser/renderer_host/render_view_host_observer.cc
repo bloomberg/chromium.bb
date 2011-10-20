@@ -42,6 +42,6 @@ bool RenderViewHostObserver::Send(IPC::Message* message) {
 
 void RenderViewHostObserver::RenderViewHostDestruction() {
   render_view_host_->RemoveObserver(this);
-  render_view_host_ = NULL;
   RenderViewHostDestroyed();
+  render_view_host_ = NULL;
 }

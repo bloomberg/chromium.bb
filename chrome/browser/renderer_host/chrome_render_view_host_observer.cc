@@ -26,10 +26,20 @@ ChromeRenderViewHostObserver::ChromeRenderViewHostObserver(
     RenderViewHost* render_view_host, chrome_browser_net::Predictor* predictor)
     : RenderViewHostObserver(render_view_host),
       predictor_(predictor) {
+  SiteInstance* site_instance = render_view_host->site_instance();
+  profile_ = Profile::FromBrowserContext(
+      site_instance->browsing_instance()->browser_context());
+
   InitRenderViewHostForExtensions();
 }
 
 ChromeRenderViewHostObserver::~ChromeRenderViewHostObserver() {
+  ExtensionProcessManager* process_manager =
+      profile_->GetExtensionProcessManager();
+  if (process_manager) {
+    profile_->GetExtensionProcessManager()->UnregisterRenderViewHost(
+        render_view_host());
+  }
 }
 
 void ChromeRenderViewHostObserver::RenderViewHostInitialized() {
@@ -64,24 +74,18 @@ void ChromeRenderViewHostObserver::InitRenderViewHostForExtensions() {
   if (!extension)
     return;
 
-  SiteInstance* site_instance = render_view_host()->site_instance();
-  Profile* profile = Profile::FromBrowserContext(
-      site_instance->browsing_instance()->browser_context());
   ExtensionProcessManager* process_manager =
-      profile->GetExtensionProcessManager();
+      profile_->GetExtensionProcessManager();
   CHECK(process_manager);
 
-  // Register the association between extension and SiteInstance with
-  // ExtensionProcessManager.
   // TODO(creis): Use this to replace SetInstalledAppForRenderer.
-  process_manager->RegisterExtensionSiteInstance(site_instance,
-                                                 extension);
+  process_manager->RegisterRenderViewHost(render_view_host(), extension);
 
   if (extension->is_app()) {
     // Record which, if any, installed app is associated with this process.
     // TODO(aa): Totally lame to store this state in a global map in extension
     // service. Can we get it from EPM instead?
-    profile->GetExtensionService()->SetInstalledAppForRenderer(
+    profile_->GetExtensionService()->SetInstalledAppForRenderer(
         render_view_host()->process()->id(), extension);
   }
 }
@@ -91,9 +95,6 @@ void ChromeRenderViewHostObserver::InitRenderViewForExtensions() {
   if (!extension)
     return;
 
-  SiteInstance* site_instance = render_view_host()->site_instance();
-  Profile* profile = Profile::FromBrowserContext(
-      site_instance->browsing_instance()->browser_context());
   RenderProcessHost* process = render_view_host()->process();
 
   if (extension->is_app()) {
@@ -102,7 +103,7 @@ void ChromeRenderViewHostObserver::InitRenderViewForExtensions() {
     // InitRenderViewHostForExtensions, the process might have crashed and been
     // restarted (hence the re-initialization), so we need to update that
     // mapping.
-    profile->GetExtensionService()->SetInstalledAppForRenderer(
+    profile_->GetExtensionService()->SetInstalledAppForRenderer(
         process->id(), extension);
   }
 
@@ -133,9 +134,7 @@ const Extension* ChromeRenderViewHostObserver::GetExtension() {
   if (!site.SchemeIs(chrome::kExtensionScheme))
     return NULL;
 
-  Profile* profile = Profile::FromBrowserContext(
-      site_instance->browsing_instance()->browser_context());
-  ExtensionService* service = profile->GetExtensionService();
+  ExtensionService* service = profile_->GetExtensionService();
   if (!service)
     return NULL;
 

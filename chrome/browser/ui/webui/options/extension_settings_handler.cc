@@ -28,7 +28,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/common/chrome_view_types.h"
 #include "content/browser/browsing_instance.h"
-#include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
@@ -756,8 +755,8 @@ std::vector<ExtensionPage> ExtensionSettingsHandler::GetActivePagesForExtension(
   ExtensionProcessManager* process_manager =
       extension_service_->profile()->GetExtensionProcessManager();
   GetActivePagesForExtensionProcess(
-      process_manager->GetExtensionProcess(extension->url()),
-      extension, &result);
+      process_manager->GetRenderViewHostsForExtension(
+          extension->id()), &result);
 
   // Repeat for the incognito process, if applicable.
   if (extension_service_->profile()->HasOffTheRecordProfile() &&
@@ -766,28 +765,19 @@ std::vector<ExtensionPage> ExtensionSettingsHandler::GetActivePagesForExtension(
         extension_service_->profile()->GetOffTheRecordProfile()->
             GetExtensionProcessManager();
     GetActivePagesForExtensionProcess(
-        process_manager->GetExtensionProcess(extension->url()),
-        extension, &result);
+        process_manager->GetRenderViewHostsForExtension(
+            extension->id()), &result);
   }
 
   return result;
 }
 
 void ExtensionSettingsHandler::GetActivePagesForExtensionProcess(
-    RenderProcessHost* process,
-    const Extension* extension,
+    const std::set<RenderViewHost*>& views,
     std::vector<ExtensionPage> *result) {
-  if (!process)
-    return;
-
-  RenderProcessHost::listeners_iterator iter = process->ListenersIterator();
-  for (; !iter.IsAtEnd(); iter.Advance()) {
-    const RenderWidgetHost* widget =
-        static_cast<const RenderWidgetHost*>(iter.GetCurrentValue());
-    DCHECK(widget);
-    if (!widget || !widget->IsRenderView())
-      continue;
-    const RenderViewHost* host = static_cast<const RenderViewHost*>(widget);
+  for (std::set<RenderViewHost*>::const_iterator iter = views.begin();
+       iter != views.end(); ++iter) {
+    RenderViewHost* host = *iter;
     int host_type = host->delegate()->GetRenderViewType();
     if (host == deleting_rvh_ ||
         chrome::VIEW_TYPE_EXTENSION_POPUP == host_type ||
@@ -795,13 +785,7 @@ void ExtensionSettingsHandler::GetActivePagesForExtensionProcess(
       continue;
 
     GURL url = host->delegate()->GetURL();
-    if (url.SchemeIs(chrome::kExtensionScheme)) {
-      if (url.host() != extension->id())
-        continue;
-    } else if (!extension->web_extent().MatchesURL(url)) {
-      continue;
-    }
-
+    RenderProcessHost* process = host->process();
     result->push_back(
         ExtensionPage(url, process->id(), host->routing_id(),
                       process->browser_context()->IsOffTheRecord()));

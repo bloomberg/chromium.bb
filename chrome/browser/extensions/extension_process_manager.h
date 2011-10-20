@@ -23,6 +23,7 @@ class ExtensionHost;
 class GURL;
 class Profile;
 class RenderProcessHost;
+class RenderViewHost;
 class SiteInstance;
 
 // Manages dynamic state of running Chromium extensions. There is one instance
@@ -69,12 +70,17 @@ class ExtensionProcessManager : public content::NotificationObserver {
   // Returns the SiteInstance that the given URL belongs to.
   virtual SiteInstance* GetSiteInstanceForURL(const GURL& url);
 
-  // Registers a SiteInstance as hosting a given extension.
-  void RegisterExtensionSiteInstance(SiteInstance* site_instance,
-                                     const Extension* extension);
+  // Registers a RenderViewHost as hosting a given extension.
+  void RegisterRenderViewHost(RenderViewHost* render_view_host,
+                              const Extension* extension);
 
-  // Unregisters the extension associated with |site_instance|.
-  void UnregisterExtensionSiteInstance(SiteInstance* site_instance);
+  // Unregisters a RenderViewHost as hosting any extension.
+  void UnregisterRenderViewHost(RenderViewHost* render_view_host);
+
+  // Returns all RenderViewHosts that are registered for the specified
+  // extension.
+  std::set<RenderViewHost*> GetRenderViewHostsForExtension(
+      const std::string& extension_id);
 
   // True if this process host is hosting an extension.
   bool IsExtensionProcess(int render_process_id);
@@ -139,6 +145,18 @@ class ExtensionProcessManager : public content::NotificationObserver {
   // A map of process ID to site instance ID of the site instances it hosts.
   typedef std::map<int, std::set<int> > ProcessIDMap;
   ProcessIDMap process_ids_;
+
+ private:
+  // Registers a site instance as hosting a given extension.
+  void RegisterExtensionSiteInstance(SiteInstance* site_instance,
+                                     const Extension* extension);
+
+  // Unregisters the extension associated with |site_instance|.
+  void UnregisterExtensionSiteInstance(SiteInstance* site_instance);
+
+  // Contains all extension-related RenderViewHost instances for all extensions.
+  typedef std::set<RenderViewHost*> RenderViewHostSet;
+  RenderViewHostSet all_extension_views_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionProcessManager);
 };

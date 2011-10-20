@@ -22,6 +22,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/common/chrome_view_types.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
@@ -234,6 +235,38 @@ ExtensionHost* ExtensionProcessManager::GetBackgroundHostForExtension(
       return host;
   }
   return NULL;
+}
+
+std::set<RenderViewHost*>
+    ExtensionProcessManager::GetRenderViewHostsForExtension(
+        const std::string& extension_id) {
+  std::set<RenderViewHost*> result;
+
+  SiteInstance* site_instance = GetSiteInstanceForURL(
+      Extension::GetBaseURLFromExtensionId(extension_id));
+  if (!site_instance)
+    return result;
+
+  // Gather up all the views for that site.
+  for (RenderViewHostSet::iterator view = all_extension_views_.begin();
+       view != all_extension_views_.end(); ++view) {
+    if ((*view)->site_instance() == site_instance)
+      result.insert(*view);
+  }
+
+  return result;
+}
+
+void ExtensionProcessManager::RegisterRenderViewHost(
+    RenderViewHost* render_view_host,
+    const Extension* extension) {
+  all_extension_views_.insert(render_view_host);
+  RegisterExtensionSiteInstance(render_view_host->site_instance(), extension);
+}
+
+void ExtensionProcessManager::UnregisterRenderViewHost(
+    RenderViewHost* render_view_host) {
+  all_extension_views_.erase(render_view_host);
 }
 
 void ExtensionProcessManager::RegisterExtensionSiteInstance(

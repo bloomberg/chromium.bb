@@ -13,6 +13,7 @@ class Predictor;
 }
 
 class Extension;
+class Profile;
 
 // This class holds the Chrome specific parts of RenderViewHost, and has the
 // same lifetime.
@@ -41,6 +42,7 @@ class ChromeRenderViewHostObserver : public RenderViewHostObserver {
                               int automation_id);
   void OnFocusedEditableNodeTouched();
 
+  Profile* profile_;
   chrome_browser_net::Predictor* predictor_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeRenderViewHostObserver);
