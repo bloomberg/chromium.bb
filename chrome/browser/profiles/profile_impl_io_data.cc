@@ -109,10 +109,18 @@ void ProfileImplIOData::Handle::Init(
   // Keep track of isolated app path separately so we can use it on demand.
   io_data_->app_path_ = app_path;
 
+  // Initialize the URLRequestContextGetter which is needed for the predictor.
+  if (!main_request_context_getter_) {
+    main_request_context_getter_ =
+        ChromeURLRequestContextGetter::CreateOriginal(
+            profile_, io_data_);
+  }
+
   io_data_->predictor_.reset(predictor);
   io_data_->predictor_->InitNetworkPredictor(profile_->GetPrefs(),
                                              local_state,
-                                             io_thread);
+                                             io_thread,
+                                             main_request_context_getter_);
 }
 
 base::Callback<ChromeURLDataManagerBackend*(void)>
@@ -135,12 +143,6 @@ ProfileImplIOData::Handle::GetResourceContext() const {
 scoped_refptr<ChromeURLRequestContextGetter>
 ProfileImplIOData::Handle::GetMainRequestContextGetter() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  LazyInitialize();
-  if (!main_request_context_getter_) {
-    main_request_context_getter_ =
-        ChromeURLRequestContextGetter::CreateOriginal(
-            profile_, io_data_);
-  }
   return main_request_context_getter_;
 }
 
