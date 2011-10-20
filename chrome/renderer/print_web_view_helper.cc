@@ -1359,6 +1359,8 @@ void PrintWebViewHelper::PrintPreviewContext::InitWithFrame(
   DCHECK(!IsRendering());
   state_ = INITIALIZED;
   frame_ = web_frame;
+  // TODO(vandebo) Remove when http://crbug.com/100890 is resolved.
+  CHECK(frame_ != NULL);
   node_.reset();
 }
 
@@ -1368,6 +1370,8 @@ void PrintWebViewHelper::PrintPreviewContext::InitWithNode(
   DCHECK(!IsRendering());
   state_ = INITIALIZED;
   frame_ = web_node.document().frame();
+  // TODO(vandebo) Remove when http://crbug.com/100890 is resolved.
+  CHECK(frame_ != NULL);
   node_ = web_node;
 }
 
@@ -1521,7 +1525,9 @@ void PrintWebViewHelper::PrintPreviewContext::set_error(
 }
 
 WebKit::WebFrame* PrintWebViewHelper::PrintPreviewContext::frame() const {
-  DCHECK(state_ != UNINITIALIZED);
+  // TODO(vandebo) turn this back into a DCHECK when http://crbug.com/100890 is
+  // resolved.
+  CHECK(state_ != UNINITIALIZED);
   return frame_;
 }
 
