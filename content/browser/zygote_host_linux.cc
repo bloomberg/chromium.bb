@@ -17,6 +17,7 @@
 #include "base/linux_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/pickle.h"
 #include "base/process_util.h"
@@ -267,8 +268,40 @@ pid_t ZygoteHost::ForkRequest(
                                    fds))
       return base::kNullProcessHandle;
 
-    if (ReadReply(&pid, sizeof(pid)) != sizeof(pid))
+    // Read the reply, which pickles the PID and an optional UMA enumeration.
+    static const unsigned kMaxReplyLength = 2048;
+    char buf[kMaxReplyLength];
+    const ssize_t len = ReadReply(buf, sizeof(buf));
+
+    Pickle reply_pickle(buf, len);
+    void *iter = NULL;
+    if (len <= 0 || !reply_pickle.ReadInt(&iter, &pid))
       return base::kNullProcessHandle;
+
+    // If there is a nonempty UMA name string, then there is a UMA
+    // enumeration to record.
+    std::string uma_name;
+    int uma_sample;
+    int uma_boundary_value;
+    if (reply_pickle.ReadString(&iter, &uma_name) &&
+        !uma_name.empty() &&
+        reply_pickle.ReadInt(&iter, &uma_sample) &&
+        reply_pickle.ReadInt(&iter, &uma_boundary_value)) {
+      // We cannot use the UMA_HISTOGRAM_ENUMERATION macro here,
+      // because that's only for when the name is the same every time.
+      // Here we're using whatever name we got from the other side.
+      // But since it's likely that the same one will be used repeatedly
+      // (even though it's not guaranteed), we cache it here.
+      static base::Histogram* uma_histogram;
+      if (!uma_histogram || uma_histogram->histogram_name() != uma_name) {
+        uma_histogram = base::LinearHistogram::FactoryGet(
+            uma_name, 1,
+            uma_boundary_value,
+            uma_boundary_value + 1, base::Histogram::kUmaTargetedHistogramFlag);
+      }
+      uma_histogram->Add(uma_sample);
+    }
+
     if (pid <= 0)
       return base::kNullProcessHandle;
   }

@@ -23,13 +23,30 @@ class NaClForkDelegate : public ZygoteForkDelegate {
   virtual void Init(bool sandboxed,
                     int browserdesc,
                     int sandboxdesc) OVERRIDE;
-  virtual bool CanHelp(const std::string& process_type) OVERRIDE;
+  virtual void InitialUMA(std::string* uma_name,
+                          int* uma_sample,
+                          int* uma_boundary_value) OVERRIDE;
+  virtual bool CanHelp(const std::string& process_type, std::string* uma_name,
+                          int* uma_sample, int* uma_boundary_value) OVERRIDE;
   virtual pid_t Fork(const std::vector<int>& fds) OVERRIDE;
   virtual bool AckChild(int fd,
                         const std::string& channel_switch) OVERRIDE;
 
  private:
-  bool ready_;
+  // These values are reported via UMA and hence they become permanent
+  // constants.  Old values cannot be reused, only new ones added.
+  enum NaClHelperStatus {
+    kNaClHelperUnused = 0,
+    kNaClHelperMissing = 1,
+    kNaClHelperBootstrapMissing = 2,
+    kNaClHelperValgrind = 3,
+    kNaClHelperLaunchFailed = 4,
+    kNaClHelperAckFailed = 5,
+    kNaClHelperSuccess = 6,
+    kNaClHelperStatusBoundary  // Must be one greater than highest value used.
+  };
+
+  NaClHelperStatus status_;
   bool sandboxed_;
   int fd_;
 };

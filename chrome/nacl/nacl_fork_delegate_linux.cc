@@ -23,7 +23,7 @@
 #include "chrome/common/nacl_helper_linux.h"
 
 NaClForkDelegate::NaClForkDelegate()
-    : ready_(false),
+    : status_(kNaClHelperUnused),
       sandboxed_(false),
       fd_(-1) {}
 
@@ -45,25 +45,31 @@ void NaClForkDelegate::Init(const bool sandboxed,
   base::file_handle_mapping_vector fds_to_map;
   fds_to_map.push_back(std::make_pair(fds[1], kNaClZygoteDescriptor));
   fds_to_map.push_back(std::make_pair(sandboxdesc, kNaClSandboxDescriptor));
-  ready_ = false;
+
+  status_ = kNaClHelperUnused;
   FilePath helper_exe;
   FilePath helper_bootstrap_exe;
-  if (PathService::Get(chrome::FILE_NACL_HELPER, &helper_exe) &&
-      PathService::Get(chrome::FILE_NACL_HELPER_BOOTSTRAP,
-                       &helper_bootstrap_exe) &&
-      !RunningOnValgrind()) {
+  if (!PathService::Get(chrome::FILE_NACL_HELPER, &helper_exe)) {
+    status_ = kNaClHelperMissing;
+  } else if (!PathService::Get(chrome::FILE_NACL_HELPER_BOOTSTRAP,
+                               &helper_bootstrap_exe)) {
+    status_ = kNaClHelperBootstrapMissing;
+  } else if (RunningOnValgrind()) {
+    status_ = kNaClHelperValgrind;
+  } else {
     CommandLine cmd_line(helper_bootstrap_exe);
     cmd_line.AppendArgPath(helper_exe);
     cmd_line.AppendArgNative(kNaClHelperAtZero);
     base::LaunchOptions options;
     options.fds_to_remap = &fds_to_map;
     options.clone_flags = CLONE_FS | SIGCHLD;
-    ready_ = base::LaunchProcess(cmd_line.argv(), options, NULL);
+    if (!base::LaunchProcess(cmd_line.argv(), options, NULL))
+      status_ = kNaClHelperLaunchFailed;
     // parent and error cases are handled below
   }
   if (HANDLE_EINTR(close(fds[1])) != 0)
     LOG(ERROR) << "close(fds[1]) failed";
-  if (ready_) {
+  if (status_ == kNaClHelperUnused) {
     const ssize_t kExpectedLength = strlen(kNaClHelperStartupAck);
     char buf[kExpectedLength];
 
@@ -72,29 +78,47 @@ void NaClForkDelegate::Init(const bool sandboxed,
     if (nread == kExpectedLength &&
         memcmp(buf, kNaClHelperStartupAck, nread) == 0) {
       // all is well
+      status_ = kNaClHelperSuccess;
       fd_ = fds[0];
       return;
     }
+
+    status_ = kNaClHelperAckFailed;
     LOG(ERROR) << "Bad NaCl helper startup ack (" << nread << " bytes)";
   }
   // TODO(bradchen): Make this LOG(ERROR) when the NaCl helper
   // becomes the default.
-  ready_ = false;
   fd_ = -1;
   if (HANDLE_EINTR(close(fds[0])) != 0)
     LOG(ERROR) << "close(fds[0]) failed";
 }
 
+void NaClForkDelegate::InitialUMA(std::string* uma_name,
+                                  int* uma_sample,
+                                  int* uma_boundary_value) {
+  *uma_name = "NaCl.Client.Helper.InitState";
+  *uma_sample = status_;
+  *uma_boundary_value = kNaClHelperStatusBoundary;
+}
+
 NaClForkDelegate::~NaClForkDelegate() {
   // side effect of close: delegate process will terminate
-  if (ready_) {
+  if (status_ == kNaClHelperSuccess) {
     if (HANDLE_EINTR(close(fd_)) != 0)
       LOG(ERROR) << "close(fd_) failed";
   }
 }
 
-bool NaClForkDelegate::CanHelp(const std::string& process_type) {
-  return (process_type == switches::kNaClLoaderProcess && ready_);
+bool NaClForkDelegate::CanHelp(const std::string& process_type,
+                               std::string* uma_name,
+                               int* uma_sample,
+                               int* uma_boundary_value) {
+  if (process_type != switches::kNaClLoaderProcess)
+    return false;
+  *uma_name = "NaCl.Client.Helper.StateOnFork";
+  *uma_sample = status_;
+  *uma_boundary_value = kNaClHelperStatusBoundary;
+  return status_ == kNaClHelperSuccess;
 }
 
 pid_t NaClForkDelegate::Fork(const std::vector<int>& fds) {
