@@ -297,13 +297,13 @@ void FlashDOMHandler::MaybeRespondToPage() {
 
   // GPU information.
   AddPair(list, ASCIIToUTF16(""), "--- GPU information ---");
-  const GPUInfo& gpu_info = gpu_data_manager_->gpu_info();
+  const content::GPUInfo& gpu_info = gpu_data_manager_->gpu_info();
 
   if (!gpu_data_manager_->GpuAccessAllowed())
     AddPair(list, ASCIIToUTF16("WARNING:"), "GPU access is not allowed");
 #if defined(OS_WIN)
-  const DxDiagNode& node = gpu_info.dx_diagnostics;
-  for (std::map<std::string, DxDiagNode>::const_iterator it =
+  const content::DxDiagNode& node = gpu_info.dx_diagnostics;
+  for (std::map<std::string, content::DxDiagNode>::const_iterator it =
            node.children.begin();
        it != node.children.end();
        ++it) {

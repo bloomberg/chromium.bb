@@ -9,7 +9,7 @@
 #include "base/basictypes.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
-#include "content/common/gpu/gpu_info.h"
+#include "content/public/common/gpu_info.h"
 
 struct IDirect3D9;
 
@@ -17,12 +17,12 @@ namespace gpu_info_collector {
 
 // Populate variables with necessary graphics card information.
 // Returns true on success.
-bool CollectGraphicsInfo(GPUInfo* gpu_info);
+bool CollectGraphicsInfo(content::GPUInfo* gpu_info);
 
 // Similar to CollectGraphicsInfo, only this collects a subset of variables
 // without creating a GL/DirectX context (and without the danger of crashing).
 // The subset each platform collects may be different.
-bool CollectPreliminaryGraphicsInfo(GPUInfo* gpu_info);
+bool CollectPreliminaryGraphicsInfo(content::GPUInfo* gpu_info);
 
 #if defined(OS_WIN)
 // Windows provides two ways of doing graphics so we need two ways of
@@ -30,29 +30,30 @@ bool CollectPreliminaryGraphicsInfo(GPUInfo* gpu_info);
 // The selection between the two methods is done in the cc file.
 
 // A D3D argument is passed in for testing purposes
-bool CONTENT_EXPORT CollectGraphicsInfoD3D(IDirect3D9* d3d, GPUInfo* gpu_info);
+bool CONTENT_EXPORT CollectGraphicsInfoD3D(IDirect3D9* d3d,
+                                           content::GPUInfo* gpu_info);
 
 // Collects D3D driver version/date through registry lookup.
 // Note that this does not require a D3D context.
 // device_id here is the raw data in DISPLAY_DEVICE.
 bool CONTENT_EXPORT CollectDriverInfoD3D(const std::wstring& device_id,
-                                         GPUInfo* gpu_info);
+                                         content::GPUInfo* gpu_info);
 
 // Collect the DirectX Disagnostics information about the attached displays.
-bool GetDxDiagnostics(DxDiagNode* output);
+bool GetDxDiagnostics(content::DxDiagNode* output);
 #endif
 
 // All platforms have a GL version for collecting information
-bool CONTENT_EXPORT CollectGraphicsInfoGL(GPUInfo* gpu_info);
+bool CONTENT_EXPORT CollectGraphicsInfoGL(content::GPUInfo* gpu_info);
 
 // Collect GL and Shading language version information
-bool CollectGLVersionInfo(GPUInfo* gpu_info);
+bool CollectGLVersionInfo(content::GPUInfo* gpu_info);
 
 // Platform specific method for collecting vendor and device ids
-bool CollectVideoCardInfo(GPUInfo* gpu_info);
+bool CollectVideoCardInfo(content::GPUInfo* gpu_info);
 
 // Each platform stores the driver version on the GL_VERSION string differently
-bool CollectDriverInfoGL(GPUInfo* gpu_info);
+bool CollectDriverInfoGL(content::GPUInfo* gpu_info);
 
 }  // namespace gpu_info_collector
 

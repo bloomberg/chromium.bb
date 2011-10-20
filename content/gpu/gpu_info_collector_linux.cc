@@ -192,7 +192,7 @@ uint32 VendorStringToID(const std::string& vendor_string) {
 
 namespace gpu_info_collector {
 
-bool CollectGraphicsInfo(GPUInfo* gpu_info) {
+bool CollectGraphicsInfo(content::GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
@@ -209,7 +209,7 @@ bool CollectGraphicsInfo(GPUInfo* gpu_info) {
   return CollectGraphicsInfoGL(gpu_info);
 }
 
-bool CollectPreliminaryGraphicsInfo(GPUInfo* gpu_info) {
+bool CollectPreliminaryGraphicsInfo(content::GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
   if (!gfx::GLSurface::InitializeOneOff()) {
@@ -232,7 +232,7 @@ bool CollectPreliminaryGraphicsInfo(GPUInfo* gpu_info) {
   return rt;
 }
 
-bool CollectVideoCardInfo(GPUInfo* gpu_info) {
+bool CollectVideoCardInfo(content::GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
   std::string driver_vendor = CollectDriverVendorGlx();
@@ -332,7 +332,7 @@ bool CollectVideoCardInfo(GPUInfo* gpu_info) {
   return (gpu_active != NULL);
 }
 
-bool CollectDriverInfoGL(GPUInfo* gpu_info) {
+bool CollectDriverInfoGL(content::GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
   std::string gl_version_string = gpu_info->gl_version_string;

@@ -350,7 +350,7 @@ void GpuProcessHost::EstablishGpuChannel(
   if (!GpuDataManager::GetInstance()->GpuAccessAllowed()) {
     EstablishChannelError(
         wrapped_callback.release(), IPC::ChannelHandle(),
-        base::kNullProcessHandle, GPUInfo());
+        base::kNullProcessHandle, content::GPUInfo());
     return;
   }
 
@@ -359,7 +359,7 @@ void GpuProcessHost::EstablishGpuChannel(
   } else {
     EstablishChannelError(
         wrapped_callback.release(), IPC::ChannelHandle(),
-        base::kNullProcessHandle, GPUInfo());
+        base::kNullProcessHandle, content::GPUInfo());
   }
 }
 
@@ -417,7 +417,7 @@ void GpuProcessHost::OnChannelEstablished(
     EstablishChannelError(callback.release(),
                           IPC::ChannelHandle(),
                           base::kNullProcessHandle,
-                          GPUInfo());
+                          content::GPUInfo());
     RouteOnUIThread(GpuHostMsg_OnLogMessage(
         logging::LOG_WARNING,
         "WARNING",
@@ -452,7 +452,7 @@ void GpuProcessHost::OnDestroyCommandBuffer(
 #endif  // defined(TOOLKIT_USES_GTK) && !defined(TOUCH_UI)
 }
 
-void GpuProcessHost::OnGraphicsInfoCollected(const GPUInfo& gpu_info) {
+void GpuProcessHost::OnGraphicsInfoCollected(const content::GPUInfo& gpu_info) {
   GpuDataManager::GetInstance()->UpdateGpuInfo(gpu_info);
 }
 
@@ -597,7 +597,7 @@ void GpuProcessHost::SendOutstandingReplies() {
     EstablishChannelError(callback.release(),
                           IPC::ChannelHandle(),
                           base::kNullProcessHandle,
-                          GPUInfo());
+                          content::GPUInfo());
   }
 }
 
@@ -605,7 +605,7 @@ void GpuProcessHost::EstablishChannelError(
     EstablishChannelCallback* callback,
     const IPC::ChannelHandle& channel_handle,
     base::ProcessHandle renderer_process_for_gpu,
-    const GPUInfo& gpu_info) {
+    const content::GPUInfo& gpu_info) {
   scoped_ptr<EstablishChannelCallback> wrapped_callback(callback);
   wrapped_callback->Run(channel_handle, renderer_process_for_gpu, gpu_info);
 }

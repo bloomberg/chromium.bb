@@ -10,7 +10,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/installer/util/google_update_settings.h"
-#include "content/common/gpu/gpu_info.h"
+#include "content/public/common/gpu_info.h"
 #include "googleurl/src/gurl.h"
 
 namespace child_process_logging {
@@ -83,7 +83,7 @@ void SetActiveExtensions(const std::set<std::string>& extension_ids) {
   g_extension_ids[kMaxExtensionSize - 1] = '\0';
 }
 
-void SetGpuInfo(const GPUInfo& gpu_info) {
+void SetGpuInfo(const content::GPUInfo& gpu_info) {
   snprintf(g_gpu_vendor_id, kGpuStringSize, "0x%04x", gpu_info.vendor_id);
   snprintf(g_gpu_device_id, kGpuStringSize, "0x%04x", gpu_info.device_id);
   strncpy(g_gpu_driver_ver,

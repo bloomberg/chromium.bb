@@ -17,7 +17,7 @@
 #include "base/values.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/gpu_feature_flags.h"
-#include "content/common/gpu/gpu_info.h"
+#include "content/public/common/gpu_info.h"
 
 class CommandLine;
 class GpuBlacklist;
@@ -31,9 +31,9 @@ class CONTENT_EXPORT GpuDataManager {
   void RequestCompleteGpuInfoIfNeeded();
 
   // Only update if the current GPUInfo is not finalized.
-  void UpdateGpuInfo(const GPUInfo& gpu_info);
+  void UpdateGpuInfo(const content::GPUInfo& gpu_info);
 
-  const GPUInfo& gpu_info() const;
+  const content::GPUInfo& gpu_info() const;
 
   // Returns status of various GPU features. This is two parted:
   // {
@@ -178,6 +178,15 @@ class CONTENT_EXPORT GpuDataManager {
   // If use-gl switch is osmesa or any, return true.
   bool UseGLIsOSMesaOrAny();
 
+  // Merges the second GPUInfo object with the first.
+  // If it's the same GPU, i.e., device id and vendor id are the same, then
+  // copy over the fields that are not set yet and ignore the rest.
+  // If it's a different GPU, then reset and copy over everything.
+  // Return true if something changes that may affect blacklisting; currently
+  // they are device_id, vendor_id, driver_vendor, driver_version, driver_date,
+  // and gl_renderer.
+  static bool Merge(content::GPUInfo* object, const content::GPUInfo& other);
+
   bool complete_gpu_info_already_requested_;
 
   GpuFeatureFlags gpu_feature_flags_;
@@ -185,7 +194,7 @@ class CONTENT_EXPORT GpuDataManager {
 
   UserFlags user_flags_;
 
-  GPUInfo gpu_info_;
+  content::GPUInfo gpu_info_;
   mutable base::Lock gpu_info_lock_;
 
   scoped_ptr<GpuBlacklist> gpu_blacklist_;

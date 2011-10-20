@@ -154,11 +154,11 @@ void GpuChannelHost::Connect(
   Send(new GpuChannelMsg_Initialize(renderer_process_for_gpu));
 }
 
-void GpuChannelHost::set_gpu_info(const GPUInfo& gpu_info) {
+void GpuChannelHost::set_gpu_info(const content::GPUInfo& gpu_info) {
   gpu_info_ = gpu_info;
 }
 
-const GPUInfo& GpuChannelHost::gpu_info() const {
+const content::GPUInfo& GpuChannelHost::gpu_info() const {
   return gpu_info_;
 }
 

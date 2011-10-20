@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/gpu/gpu_info.h"
+#include "content/public/common/gpu_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Test that an empty GPUInfo has valid members
 TEST(GPUInfoBasicTest, EmptyGPUInfo) {
-  GPUInfo gpu_info;
+  content::GPUInfo gpu_info;
   EXPECT_EQ(gpu_info.finalized, false);
   EXPECT_EQ(gpu_info.initialization_time.ToInternalValue(), 0);
   EXPECT_EQ(gpu_info.vendor_id, 0u);

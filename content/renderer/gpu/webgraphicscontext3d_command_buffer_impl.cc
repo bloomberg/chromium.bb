@@ -113,7 +113,7 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
     }
   } while (retry);
 
-  const GPUInfo& gpu_info = host_->gpu_info();
+  const content::GPUInfo& gpu_info = host_->gpu_info();
   UMA_HISTOGRAM_ENUMERATION(
       "GPU.WebGraphicsContext3D_Init_CanLoseContext",
       attributes.canRecoverFromContextLoss * 2 + gpu_info.can_lose_context,

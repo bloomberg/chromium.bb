@@ -78,9 +78,7 @@ std::string GetVersionFromString(const std::string& version_string) {
 
 namespace gpu_info_collector {
 
-bool CollectGraphicsInfoGL(GPUInfo* gpu_info) {
-  DCHECK(gpu_info);
-
+bool CollectGraphicsInfoGL(content::GPUInfo* gpu_info) {
   if (!gfx::GLSurface::InitializeOneOff()) {
     LOG(ERROR) << "gfx::GLSurface::InitializeOneOff() failed";
     return false;
@@ -106,9 +104,7 @@ bool CollectGraphicsInfoGL(GPUInfo* gpu_info) {
   return (validGLVersionInfo && validVideoCardInfo && validDriverInfo);
 }
 
-bool CollectGLVersionInfo(GPUInfo* gpu_info) {
-  DCHECK(gpu_info);
-
+bool CollectGLVersionInfo(content::GPUInfo* gpu_info) {
   std::string gl_version_string = gpu_info->gl_version_string;
   std::string glsl_version_string =
       GetGLString(GL_SHADING_LANGUAGE_VERSION);

@@ -18,10 +18,13 @@
 #include "content/common/gpu/gpu_feature_flags.h"
 
 class Version;
-struct GPUInfo;
 
 namespace base {
 class DictionaryValue;
+}
+
+namespace content {
+struct GPUInfo;
 }
 
 class CONTENT_EXPORT GpuBlacklist {
@@ -57,7 +60,7 @@ class CONTENT_EXPORT GpuBlacklist {
   // current OS version.
   GpuFeatureFlags DetermineGpuFeatureFlags(OsType os,
                                            Version* os_version,
-                                           const GPUInfo& gpu_info);
+                                           const content::GPUInfo& gpu_info);
 
   // Collects the active entries that set the "feature" flag from the last
   // DetermineGpuFeatureFlags() call.  This tells which entries are responsible
@@ -212,7 +215,7 @@ class CONTENT_EXPORT GpuBlacklist {
     bool Contains(OsType os_type,
                   const Version& os_version,
                   BrowserChannel channel,
-                  const GPUInfo& gpu_info) const;
+                  const content::GPUInfo& gpu_info) const;
 
     // Returns the OsType.
     OsType GetOsType() const;

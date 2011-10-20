@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
-#include "content/common/gpu/gpu_info.h"
 #include "content/gpu/gpu_idirect3d9_mock_win.h"
 #include "content/gpu/gpu_info_collector.h"
+#include "content/public/common/gpu_info.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -45,13 +45,13 @@ class GPUInfoTest : public testing::Test {
 };
 
 TEST_F(GPUInfoTest, PixelShaderVersionD3D) {
-  GPUInfo gpu_info;
+  content::GPUInfo gpu_info;
   ASSERT_TRUE(gpu_info_collector::CollectGraphicsInfoD3D(&d3d_, &gpu_info));
   EXPECT_EQ(gpu_info.pixel_shader_version, "3.0");
 }
 
 TEST_F(GPUInfoTest, VertexShaderVersionD3D) {
-  GPUInfo gpu_info;
+  content::GPUInfo gpu_info;
   ASSERT_TRUE(gpu_info_collector::CollectGraphicsInfoD3D(&d3d_, &gpu_info));
   EXPECT_EQ(gpu_info.vertex_shader_version, "3.0");
 }

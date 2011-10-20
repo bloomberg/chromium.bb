@@ -15,8 +15,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/process_util.h"
 #include "base/synchronization/lock.h"
-#include "content/common/gpu/gpu_info.h"
 #include "content/common/message_router.h"
+#include "content/public/common/gpu_info.h"
 #include "content/renderer/gpu/gpu_video_decode_accelerator_host.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_channel_proxy.h"
@@ -67,8 +67,8 @@ class GpuChannelHost : public IPC::Message::Sender,
   void SetStateLost();
 
   // The GPU stats reported by the GPU process.
-  void set_gpu_info(const GPUInfo& gpu_info);
-  const GPUInfo& gpu_info() const;
+  void set_gpu_info(const content::GPUInfo& gpu_info);
+  const content::GPUInfo& gpu_info() const;
 
   void OnChannelError();
 
@@ -172,7 +172,7 @@ class GpuChannelHost : public IPC::Message::Sender,
 
   State state_;
 
-  GPUInfo gpu_info_;
+  content::GPUInfo gpu_info_;
 
   scoped_ptr<IPC::SyncChannel> channel_;
   scoped_refptr<MessageFilter> channel_filter_;

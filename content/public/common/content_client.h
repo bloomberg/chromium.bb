@@ -16,7 +16,6 @@
 
 class CommandLine;
 class GURL;
-struct GPUInfo;
 struct PepperPluginInfo;
 
 namespace IPC {
@@ -38,6 +37,7 @@ class ContentClient;
 class ContentPluginClient;
 class ContentRendererClient;
 class ContentUtilityClient;
+struct GPUInfo;
 
 // Setter and getter for the client.  The client should be set early, before any
 // content code is called.
@@ -73,7 +73,7 @@ class CONTENT_EXPORT ContentClient {
   virtual void SetActiveURL(const GURL& url) = 0;
 
   // Sets the data on the current gpu.
-  virtual void SetGpuInfo(const GPUInfo& gpu_info) = 0;
+  virtual void SetGpuInfo(const content::GPUInfo& gpu_info) = 0;
 
   // Gives the embedder a chance to register its own pepper plugins.
   virtual void AddPepperPlugins(std::vector<PepperPluginInfo>* plugins) = 0;

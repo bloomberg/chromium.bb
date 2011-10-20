@@ -11,7 +11,7 @@
 #include "base/path_service.h"
 #include "base/version.h"
 #include "content/browser/gpu/gpu_blacklist.h"
-#include "content/common/gpu/gpu_info.h"
+#include "content/public/common/gpu_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class GpuBlacklistTest : public testing::Test {
@@ -20,7 +20,7 @@ class GpuBlacklistTest : public testing::Test {
 
   virtual ~GpuBlacklistTest() { }
 
-  const GPUInfo& gpu_info() const {
+  const content::GPUInfo& gpu_info() const {
     return gpu_info_;
   }
 
@@ -39,7 +39,7 @@ class GpuBlacklistTest : public testing::Test {
   }
 
  private:
-  GPUInfo gpu_info_;
+  content::GPUInfo gpu_info_;
 };
 
 TEST_F(GpuBlacklistTest, CurrentBlacklistValidation) {

@@ -14,8 +14,8 @@
 #include "base/threading/non_thread_safe.h"
 #include "content/browser/browser_child_process_host.h"
 #include "content/common/content_export.h"
-#include "content/common/gpu/gpu_info.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
+#include "content/public/common/gpu_info.h"
 #include "ui/gfx/native_widget_types.h"
 
 struct GPUCreateCommandBufferConfig;
@@ -60,7 +60,7 @@ class GpuProcessHost : public BrowserChildProcessHost,
 
   typedef Callback3<const IPC::ChannelHandle&,
                     base::ProcessHandle,
-                    const GPUInfo&>::Type
+                    const content::GPUInfo&>::Type
     EstablishChannelCallback;
 
   // Tells the GPU process to create a new channel for communication with a
@@ -99,7 +99,7 @@ class GpuProcessHost : public BrowserChildProcessHost,
   void OnCommandBufferCreated(const int32 route_id);
   void OnDestroyCommandBuffer(
       gfx::PluginWindowHandle window, int32 renderer_id, int32 render_view_id);
-  void OnGraphicsInfoCollected(const GPUInfo& gpu_info);
+  void OnGraphicsInfoCollected(const content::GPUInfo& gpu_info);
 
   bool LaunchGpuProcess();
 
@@ -108,7 +108,7 @@ class GpuProcessHost : public BrowserChildProcessHost,
       EstablishChannelCallback* callback,
       const IPC::ChannelHandle& channel_handle,
       base::ProcessHandle renderer_process_for_gpu,
-      const GPUInfo& gpu_info);
+      const content::GPUInfo& gpu_info);
   void CreateCommandBufferError(CreateCommandBufferCallback* callback,
                                 int32 route_id);
 

@@ -216,7 +216,7 @@ void GpuChildThread::OnHang() {
 void GpuChildThread::CollectDxDiagnostics(GpuChildThread* thread) {
   base::win::ScopedCOMInitializer com_initializer;
 
-  DxDiagNode node;
+  content::DxDiagNode node;
   gpu_info_collector::GetDxDiagnostics(&node);
 
   thread->message_loop()->PostTask(
@@ -226,7 +226,7 @@ void GpuChildThread::CollectDxDiagnostics(GpuChildThread* thread) {
 
 // Runs on the main thread.
 void GpuChildThread::SetDxDiagnostics(GpuChildThread* thread,
-                                      const DxDiagNode& node) {
+                                      const content::DxDiagNode& node) {
   thread->gpu_info_.dx_diagnostics = node;
   thread->gpu_info_.finalized = true;
   thread->collecting_dx_diagnostics_ = false;

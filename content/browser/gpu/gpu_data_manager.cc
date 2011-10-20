@@ -92,7 +92,7 @@ enum WinSubVersion {
 };
 
 // Output DxDiagNode tree as nested array of {description,value} pairs
-ListValue* DxDiagNodeToList(const DxDiagNode& node) {
+ListValue* DxDiagNodeToList(const content::DxDiagNode& node) {
   ListValue* list = new ListValue();
   for (std::map<std::string, std::string>::const_iterator it =
       node.values.begin();
@@ -101,7 +101,7 @@ ListValue* DxDiagNodeToList(const DxDiagNode& node) {
     list->Append(NewDescriptionValuePair(it->first, it->second));
   }
 
-  for (std::map<std::string, DxDiagNode>::const_iterator it =
+  for (std::map<std::string, content::DxDiagNode>::const_iterator it =
       node.children.begin();
       it != node.children.end();
       ++it) {
@@ -197,7 +197,7 @@ void GpuDataManager::Initialize() {
   // on UI thread later, and we skip the preliminary gpu info collection
   // in such situation.
   if (BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
-    GPUInfo gpu_info;
+    content::GPUInfo gpu_info;
     gpu_info_collector::CollectPreliminaryGraphicsInfo(&gpu_info);
     UpdateGpuInfo(gpu_info);
   }
@@ -232,10 +232,10 @@ void GpuDataManager::RequestCompleteGpuInfoIfNeeded() {
       new GpuMsg_CollectGraphicsInfo());
 }
 
-void GpuDataManager::UpdateGpuInfo(const GPUInfo& gpu_info) {
+void GpuDataManager::UpdateGpuInfo(const content::GPUInfo& gpu_info) {
   {
     base::AutoLock auto_lock(gpu_info_lock_);
-    if (!gpu_info_.Merge(gpu_info))
+    if (!Merge(&gpu_info_, gpu_info))
       return;
   }
 
@@ -249,7 +249,7 @@ void GpuDataManager::UpdateGpuInfo(const GPUInfo& gpu_info) {
   UpdateGpuFeatureFlags();
 }
 
-const GPUInfo& GpuDataManager::gpu_info() const {
+const content::GPUInfo& GpuDataManager::gpu_info() const {
   base::AutoLock auto_lock(gpu_info_lock_);
   return gpu_info_;
 }
@@ -515,7 +515,7 @@ void GpuDataManager::UpdateGpuBlacklist(
 
 void GpuDataManager::HandleGpuSwitch() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  GPUInfo gpu_info;
+  content::GPUInfo gpu_info;
   gpu_info_collector::CollectVideoCardInfo(&gpu_info);
   LOG(INFO) << "Switching to use GPU: vendor_id = 0x"
             << base::StringPrintf("%04x", gpu_info.vendor_id)
@@ -698,3 +698,67 @@ bool GpuDataManager::UseGLIsOSMesaOrAny() {
           user_flags_.use_gl() == gfx::kGLImplementationOSMesaName);
 }
 
+bool GpuDataManager::Merge(content::GPUInfo* object,
+                           const content::GPUInfo& other) {
+  if (object->device_id != other.device_id ||
+      object->vendor_id != other.vendor_id) {
+    *object = other;
+    return true;
+  }
+
+  bool changed = false;
+  if (!object->finalized) {
+    object->finalized = other.finalized;
+    object->initialization_time = other.initialization_time;
+
+    if (object->driver_vendor.empty()) {
+      changed |= object->driver_vendor != other.driver_vendor;
+      object->driver_vendor = other.driver_vendor;
+    }
+    if (object->driver_version.empty()) {
+      changed |= object->driver_version != other.driver_version;
+      object->driver_version = other.driver_version;
+    }
+    if (object->driver_date.empty()) {
+      changed |= object->driver_date != other.driver_date;
+      object->driver_date = other.driver_date;
+    }
+    if (object->pixel_shader_version.empty()) {
+      changed |= object->pixel_shader_version != other.pixel_shader_version;
+      object->pixel_shader_version = other.pixel_shader_version;
+    }
+    if (object->vertex_shader_version.empty()) {
+      changed |= object->vertex_shader_version != other.vertex_shader_version;
+      object->vertex_shader_version = other.vertex_shader_version;
+    }
+    if (object->gl_version.empty()) {
+      changed |= object->gl_version != other.gl_version;
+      object->gl_version = other.gl_version;
+    }
+    if (object->gl_version_string.empty()) {
+      changed |= object->gl_version_string != other.gl_version_string;
+      object->gl_version_string = other.gl_version_string;
+    }
+    if (object->gl_vendor.empty()) {
+      changed |= object->gl_vendor != other.gl_vendor;
+      object->gl_vendor = other.gl_vendor;
+    }
+    if (object->gl_renderer.empty()) {
+      changed |= object->gl_renderer != other.gl_renderer;
+      object->gl_renderer = other.gl_renderer;
+    }
+    if (object->gl_extensions.empty()) {
+      changed |= object->gl_extensions != other.gl_extensions;
+      object->gl_extensions = other.gl_extensions;
+    }
+    object->can_lose_context = other.can_lose_context;
+#if defined(OS_WIN)
+    if (object->dx_diagnostics.values.size() == 0 &&
+        object->dx_diagnostics.children.size() == 0) {
+      object->dx_diagnostics = other.dx_diagnostics;
+      changed = true;
+    }
+#endif
+  }
+  return changed;
+}

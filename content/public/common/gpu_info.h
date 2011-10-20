@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_GPU_GPU_INFO_H_
-#define CONTENT_COMMON_GPU_GPU_INFO_H_
+#ifndef CONTENT_PUBLIC_COMMON_GPU_INFO_H_
+#define CONTENT_PUBLIC_COMMON_GPU_INFO_H_
 #pragma once
 
 // Provides access to the GPU information for the system
@@ -14,20 +14,14 @@
 #include "base/basictypes.h"
 #include "base/time.h"
 #include "build/build_config.h"
-#include "content/common/dx_diag_node.h"
 #include "content/common/content_export.h"
+#include "content/public/common/dx_diag_node.h"
+
+namespace content {
 
 struct CONTENT_EXPORT GPUInfo {
   GPUInfo();
   ~GPUInfo();
-
-  // If it's the same GPU, i.e., device id and vendor id are the same, then
-  // copy over the fields that are not set yet and ignore the rest.
-  // If it's a different GPU, then reset and copy over everything.
-  // Return true if something changes that may affect blacklisting; currently
-  // they are device_id, vendor_id, driver_vendor, driver_version, driver_date,
-  // and gl_renderer.
-  bool Merge(const GPUInfo& other);
 
   // Whether more GPUInfo fields might be collected in the future.
   bool finalized;
@@ -84,4 +78,6 @@ struct CONTENT_EXPORT GPUInfo {
 #endif
 };
 
-#endif  // CONTENT_COMMON_GPU_GPU_INFO_H_
+}  // namespace content
+
+#endif  // CONTENT_PUBLIC_COMMON_GPU_INFO_H_

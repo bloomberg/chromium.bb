@@ -2,8 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/dx_diag_node.h"
+#include "content/public/common/dx_diag_node.h"
+
+namespace content {
 
 DxDiagNode::DxDiagNode() {}
 
 DxDiagNode::~DxDiagNode() {}
+
+}  // namespace content

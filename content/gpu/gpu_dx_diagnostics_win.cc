@@ -21,7 +21,7 @@ namespace {
 // Traverses the IDxDiagContainer tree and populates a tree of DxDiagNode
 // structures that contains property name / value pairs and subtrees of DirectX
 // diagnostic information.
-void RecurseDiagnosticTree(DxDiagNode* output,
+void RecurseDiagnosticTree(content::DxDiagNode* output,
                            IDxDiagContainer* container,
                            int depth) {
   HRESULT hr;
@@ -75,7 +75,7 @@ void RecurseDiagnosticTree(DxDiagNode* output,
                                                 arraysize(child_name16));
         if (SUCCEEDED(hr)) {
           std::string child_name8 = WideToUTF8(child_name16);
-          DxDiagNode* output_child =
+          content::DxDiagNode* output_child =
               &output->children[child_name8];
 
           IDxDiagContainer* child_container = NULL;
@@ -94,7 +94,7 @@ void RecurseDiagnosticTree(DxDiagNode* output,
 
 namespace gpu_info_collector {
 
-bool GetDxDiagnostics(DxDiagNode* output) {
+bool GetDxDiagnostics(content::DxDiagNode* output) {
   HRESULT hr;
   bool success = false;
 

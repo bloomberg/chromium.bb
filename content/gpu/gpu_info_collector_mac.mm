@@ -59,7 +59,7 @@ UInt32 IntValueOfCFData(CFDataRef data_ref) {
 // If more than two cards are located, return false.  In such rare situation,
 // video card information should be collected through identifying the currently
 // in-use card as in CollectVideoCardInfo().
-bool CollectPCIVideoCardInfo(GPUInfo* gpu_info) {
+bool CollectPCIVideoCardInfo(content::GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
   // match_dictionary will be consumed by IOServiceGetMatchingServices, no need
@@ -122,7 +122,7 @@ bool CollectPCIVideoCardInfo(GPUInfo* gpu_info) {
 
 namespace gpu_info_collector {
 
-bool CollectGraphicsInfo(GPUInfo* gpu_info) {
+bool CollectGraphicsInfo(content::GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
   gpu_info->can_lose_context =
@@ -131,7 +131,7 @@ bool CollectGraphicsInfo(GPUInfo* gpu_info) {
   return CollectGraphicsInfoGL(gpu_info);
 }
 
-bool CollectPreliminaryGraphicsInfo(GPUInfo* gpu_info) {
+bool CollectPreliminaryGraphicsInfo(content::GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
   bool rt = true;
@@ -141,7 +141,7 @@ bool CollectPreliminaryGraphicsInfo(GPUInfo* gpu_info) {
   return rt;
 }
 
-bool CollectVideoCardInfo(GPUInfo* gpu_info) {
+bool CollectVideoCardInfo(content::GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
   UInt32 vendor_id = 0, device_id = 0;
@@ -162,7 +162,7 @@ bool CollectVideoCardInfo(GPUInfo* gpu_info) {
   return true;
 }
 
-bool CollectDriverInfoGL(GPUInfo* gpu_info) {
+bool CollectDriverInfoGL(content::GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
   // Extract the OpenGL driver version string from the GL_VERSION string.

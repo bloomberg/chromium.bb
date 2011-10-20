@@ -13,7 +13,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
-#include "content/common/gpu/gpu_info.h"
+#include "content/public/common/gpu_info.h"
 #include "googleurl/src/gurl.h"
 
 namespace child_process_logging {
@@ -131,7 +131,7 @@ void SetActiveExtensions(const std::set<std::string>& extension_ids) {
   }
 }
 
-void SetGpuInfo(const GPUInfo& gpu_info) {
+void SetGpuInfo(const content::GPUInfo& gpu_info) {
   static MainSetGpuInfo set_gpu_info = NULL;
   if (!set_gpu_info) {
     HMODULE exe_module = GetModuleHandle(chrome::kBrowserProcessExecutableName);

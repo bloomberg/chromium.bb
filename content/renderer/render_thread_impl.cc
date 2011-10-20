@@ -723,7 +723,7 @@ GpuChannelHost* RenderThreadImpl::EstablishGpuChannelSync(
   // Ask the browser for the channel name.
   IPC::ChannelHandle channel_handle;
   base::ProcessHandle renderer_process_for_gpu;
-  GPUInfo gpu_info;
+  content::GPUInfo gpu_info;
   if (!Send(new GpuHostMsg_EstablishGpuChannel(cause_for_gpu_launch,
                                                &channel_handle,
                                                &renderer_process_for_gpu,

@@ -16,7 +16,7 @@ TestContentClient::~TestContentClient() {
 void TestContentClient::SetActiveURL(const GURL& url) {
 }
 
-void TestContentClient::SetGpuInfo(const GPUInfo& gpu_info) {
+void TestContentClient::SetGpuInfo(const content::GPUInfo& gpu_info) {
 }
 
 void TestContentClient::AddPepperPlugins(

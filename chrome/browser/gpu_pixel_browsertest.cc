@@ -23,7 +23,7 @@
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/gpu/gpu_info.h"
+#include "content/public/common/gpu_info.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -88,9 +88,9 @@ void ResizeTabContainer(Browser* browser, const gfx::Size& desired_size) {
 // which should be always collected during browser startup, so no need to run
 // GPU information collection here.
 // This will return false if we are running in a virtualized environment.
-bool GetGPUInfo(GPUInfo* client_info) {
+bool GetGPUInfo(content::GPUInfo* client_info) {
   CHECK(client_info);
-  const GPUInfo& info = GpuDataManager::GetInstance()->gpu_info();
+  const content::GPUInfo& info = GpuDataManager::GetInstance()->gpu_info();
   if (info.vendor_id == 0 || info.device_id == 0)
     return false;
   *client_info = info;
@@ -166,7 +166,7 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
 #else
 #error "Not implemented for this platform"
 #endif
-    GPUInfo info;
+    content::GPUInfo info;
     if (!GetGPUInfo(&info)) {
       LOG(ERROR) << "Could not get gpu info";
       return false;

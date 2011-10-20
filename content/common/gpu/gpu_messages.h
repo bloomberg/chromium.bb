@@ -10,8 +10,8 @@
 
 #include "base/shared_memory.h"
 #include "content/common/common_param_traits.h"
-#include "content/common/gpu/gpu_info.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
+#include "content/public/common/gpu_info.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/ipc/gpu_command_buffer_traits.h"
@@ -87,12 +87,12 @@ IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceRelease_Params)
 IPC_STRUCT_END()
 #endif
 
-IPC_STRUCT_TRAITS_BEGIN(DxDiagNode)
+IPC_STRUCT_TRAITS_BEGIN(content::DxDiagNode)
   IPC_STRUCT_TRAITS_MEMBER(values)
   IPC_STRUCT_TRAITS_MEMBER(children)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(GPUInfo)
+IPC_STRUCT_TRAITS_BEGIN(content::GPUInfo)
   IPC_STRUCT_TRAITS_MEMBER(finalized)
   IPC_STRUCT_TRAITS_MEMBER(initialization_time)
   IPC_STRUCT_TRAITS_MEMBER(vendor_id)
@@ -200,7 +200,7 @@ IPC_SYNC_MESSAGE_CONTROL1_3(GpuHostMsg_EstablishGpuChannel,
                             content::CauseForGpuLaunch,
                             IPC::ChannelHandle /* handle to channel */,
                             base::ProcessHandle /* renderer_process_for_gpu */,
-                            GPUInfo /* stats about GPU process*/)
+                            content::GPUInfo /* stats about GPU process*/)
 
 // A renderer sends this to the browser process when it wants to
 // create a GL context associated with the given view_id.
@@ -226,7 +226,7 @@ IPC_MESSAGE_CONTROL3(GpuHostMsg_DestroyCommandBuffer,
 
 // Response from GPU to a GpuMsg_CollectGraphicsInfo.
 IPC_MESSAGE_CONTROL1(GpuHostMsg_GraphicsInfoCollected,
-                     GPUInfo /* GPU logging stats */)
+                     content::GPUInfo /* GPU logging stats */)
 
 // Message from GPU to add a GPU log message to the about:gpu page.
 IPC_MESSAGE_CONTROL3(GpuHostMsg_OnLogMessage,

@@ -18,8 +18,8 @@
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_config.h"
-#include "content/common/gpu/gpu_info.h"
 #include "content/common/gpu/x_util.h"
+#include "content/public/common/gpu_info.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace IPC {
@@ -62,7 +62,8 @@ class GpuChildThread : public ChildThread {
 
 #if defined(OS_WIN)
   static void CollectDxDiagnostics(GpuChildThread* thread);
-  static void SetDxDiagnostics(GpuChildThread* thread, const DxDiagNode& node);
+  static void SetDxDiagnostics(GpuChildThread* thread,
+                               const content::DxDiagNode& node);
 #endif
 
   // Set this flag to true if a fatal error occurred before we receive the
@@ -82,7 +83,7 @@ class GpuChildThread : public ChildThread {
   scoped_ptr<GpuChannelManager> gpu_channel_manager_;
 
   // Information about the GPU, such as device and vendor ID.
-  GPUInfo gpu_info_;
+  content::GPUInfo gpu_info_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuChildThread);
 };

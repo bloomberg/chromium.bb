@@ -50,7 +50,7 @@ namespace {
 class EstablishChannelCallback
     : public CallbackRunner<Tuple3<const IPC::ChannelHandle&,
                                    base::ProcessHandle,
-                                   const GPUInfo&> > {
+                                   const content::GPUInfo&> > {
  public:
   EstablishChannelCallback(GpuMessageFilter* filter, IPC::Message* reply)
       : filter_(filter->AsWeakPtr()),
@@ -63,7 +63,7 @@ class EstablishChannelCallback
 
   void Send(const IPC::ChannelHandle& channel,
             base::ProcessHandle gpu_process_for_browser,
-            const GPUInfo& gpu_info) {
+            const content::GPUInfo& gpu_info) {
     if (!filter_)
       return;
 

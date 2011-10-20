@@ -14,7 +14,7 @@
 #include "base/sys_info.h"
 #include "base/values.h"
 #include "base/version.h"
-#include "content/common/gpu/gpu_info.h"
+#include "content/public/common/gpu_info.h"
 
 namespace {
 
@@ -581,7 +581,7 @@ void GpuBlacklist::GpuBlacklistEntry::AddBrowserChannel(
 
 bool GpuBlacklist::GpuBlacklistEntry::Contains(
     OsType os_type, const Version& os_version, BrowserChannel channel,
-    const GPUInfo& gpu_info) const {
+    const content::GPUInfo& gpu_info) const {
   DCHECK(os_type != kOsAny);
   if (os_info_.get() != NULL && !os_info_->Contains(os_type, os_version))
     return false;
@@ -740,7 +740,7 @@ bool GpuBlacklist::LoadGpuBlacklist(
 GpuFeatureFlags GpuBlacklist::DetermineGpuFeatureFlags(
     GpuBlacklist::OsType os,
     Version* os_version,
-    const GPUInfo& gpu_info) {
+    const content::GPUInfo& gpu_info) {
   active_entries_.clear();
   GpuFeatureFlags flags;
 

@@ -14,7 +14,10 @@
 #include "googleurl/src/gurl.h"
 
 class CommandLine;
+
+namespace content {
 struct GPUInfo;
+}
 
 // The maximum number of active extensions we will report.
 // Also used in chrome/app, but we define it here to avoid a common->app
@@ -76,7 +79,7 @@ void SetActiveExtensions(const std::set<std::string>& extension_ids);
 void SetNumberOfViews(int number_of_views);
 
 // Sets the data on the gpu to send along with crash reports.
-void SetGpuInfo(const GPUInfo& gpu_info);
+void SetGpuInfo(const content::GPUInfo& gpu_info);
 
 // Sets the command line arguments to send along with crash reports to the
 // values in |command_line|.

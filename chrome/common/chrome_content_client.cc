@@ -264,7 +264,7 @@ void ChromeContentClient::SetActiveURL(const GURL& url) {
   child_process_logging::SetActiveURL(url);
 }
 
-void ChromeContentClient::SetGpuInfo(const GPUInfo& gpu_info) {
+void ChromeContentClient::SetGpuInfo(const content::GPUInfo& gpu_info) {
   child_process_logging::SetGpuInfo(gpu_info);
 }
 

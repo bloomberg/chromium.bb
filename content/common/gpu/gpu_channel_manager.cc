@@ -76,7 +76,7 @@ bool GpuChannelManager::Send(IPC::Message* msg) {
 void GpuChannelManager::OnEstablishChannel(int renderer_id) {
   scoped_refptr<GpuChannel> channel;
   IPC::ChannelHandle channel_handle;
-  GPUInfo gpu_info;
+  content::GPUInfo gpu_info;
 
   GpuChannelMap::const_iterator iter = gpu_channels_.find(renderer_id);
   if (iter == gpu_channels_.end())
