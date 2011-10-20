@@ -19,9 +19,6 @@ AuraTestSuite::AuraTestSuite(int argc, char** argv)
     : TestSuite(argc, argv) {}
 
 void AuraTestSuite::Initialize() {
-#if defined(OS_LINUX)
-  gfx::InitializeGLBindings(gfx::kGLImplementationOSMesaGL);
-#endif
   base::TestSuite::Initialize();
 
   gfx::RegisterPathProvider();
