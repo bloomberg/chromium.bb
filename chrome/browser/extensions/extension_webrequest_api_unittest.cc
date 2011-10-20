@@ -512,6 +512,63 @@ TEST_P(ExtensionWebRequestHeaderModificationTest, TestModifications) {
 
 namespace {
 
+void TestInitFromValue(const std::string& values, bool expected_return_code,
+                       int expected_extra_info_spec) {
+  // Create a ListValue of strings.
+  std::vector<std::string> split_values;
+  scoped_ptr<base::ListValue> list_value(new base::ListValue());
+  size_t num_values = Tokenize(values, ",", &split_values);
+  for (size_t i = 0; i < num_values ; ++i)
+    list_value->Append(new base::StringValue(split_values[i]));
+  int actual_info_spec;
+  bool actual_return_code =
+      ExtensionWebRequestEventRouter::ExtraInfoSpec::InitFromValue(
+          *list_value, &actual_info_spec);
+  EXPECT_EQ(expected_return_code, actual_return_code);
+  if (expected_return_code)
+    EXPECT_EQ(expected_extra_info_spec, actual_info_spec);
+}
+
+}
+TEST_F(ExtensionWebRequestTest, InitFromValue) {
+  TestInitFromValue("", true, 0);
+
+  // Single valid values.
+  TestInitFromValue(
+      "requestHeaders",
+      true,
+      ExtensionWebRequestEventRouter::ExtraInfoSpec::REQUEST_HEADERS);
+  TestInitFromValue(
+      "responseHeaders",
+      true,
+      ExtensionWebRequestEventRouter::ExtraInfoSpec::RESPONSE_HEADERS);
+  TestInitFromValue(
+      "blocking",
+      true,
+      ExtensionWebRequestEventRouter::ExtraInfoSpec::BLOCKING);
+  TestInitFromValue(
+      "asyncBlocking",
+      true,
+      ExtensionWebRequestEventRouter::ExtraInfoSpec::ASYNC_BLOCKING);
+
+  // Multiple valid values are bitwise-or'ed.
+  TestInitFromValue(
+      "requestHeaders,blocking",
+      true,
+      ExtensionWebRequestEventRouter::ExtraInfoSpec::REQUEST_HEADERS |
+      ExtensionWebRequestEventRouter::ExtraInfoSpec::BLOCKING);
+
+  // Any invalid values lead to a bad parse.
+  TestInitFromValue("invalidValue", false, 0);
+  TestInitFromValue("blocking,invalidValue", false, 0);
+  TestInitFromValue("invalidValue1,invalidValue2", false, 0);
+
+  // BLOCKING and ASYNC_BLOCKING are mutually exclusive.
+  TestInitFromValue("blocking,asyncBlocking", false, 0);
+}
+
+namespace {
+
 const HeaderModificationTest_Modification::Type SET =
     HeaderModificationTest_Modification::SET;
 const HeaderModificationTest_Modification::Type REMOVE =

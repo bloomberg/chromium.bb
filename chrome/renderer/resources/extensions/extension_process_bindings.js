@@ -248,6 +248,17 @@ var chrome = chrome || {};
           throw e;
         }
       };
+    } else if (opt_extraInfo && opt_extraInfo.indexOf("asyncBlocking") >= 0) {
+      var eventName = this.eventName_;
+      subEventCallback = function() {
+        var details = arguments[0];
+        var requestId = details.requestId;
+        var handledCallback = function(response) {
+          chrome.experimental.webRequest.eventHandled(
+              eventName, subEventName, requestId, response);
+        };
+        cb.apply(null, [details, handledCallback]);
+      };
     }
     this.subEvents_.push(
         {subEvent: subEvent, callback: cb, subEventCallback: subEventCallback});

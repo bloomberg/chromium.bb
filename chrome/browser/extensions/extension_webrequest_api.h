@@ -84,6 +84,7 @@ class ExtensionWebRequestEventRouter {
       REQUEST_HEADERS = 1<<0,
       RESPONSE_HEADERS = 1<<1,
       BLOCKING = 1<<2,
+      ASYNC_BLOCKING = 1<<3,
     };
 
     static bool InitFromValue(const base::ListValue& value,

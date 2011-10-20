@@ -5835,7 +5835,7 @@
             "description": "Array of extra information that should be passed to the listener function.",
             "items": {
               "type": "string",
-              "enum": ["requestHeaders", "responseHeaders", "blocking"]
+              "enum": ["requestHeaders", "responseHeaders", "blocking", "asyncBlocking"]
             }
           },
           {"type": "string", "name": "eventName"},
@@ -6062,6 +6062,14 @@
               "responseHeaders": {"$ref": "HttpHeaders", "optional": true, "description": "The HTTP response headers that were received along with this response."},
               "statusLine": {"type": "string", "optional": true, "description": "HTTP status line of the response"}
             }
+          },
+          {
+            "type": "function",
+            "optional": true,
+            "name": "callback",
+            "parameters": [
+              {"name": "response", "$ref": "BlockingResponse"}
+            ]
           }
         ],
         "extraParameters": [
@@ -6078,7 +6086,7 @@
             "description": "Array of extra information that should be passed to the listener function.",
             "items": {
               "type": "string",
-              "enum": ["responseHeaders", "blocking"]
+              "enum": ["responseHeaders", "blocking", "asyncBlocking"]
             }
           }
         ],

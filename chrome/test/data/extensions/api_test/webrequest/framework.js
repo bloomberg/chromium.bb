@@ -127,7 +127,7 @@ function checkUserAgent(headers) {
   return false;
 }
 
-function captureEvent(name, details) {
+function captureEvent(name, details, callback) {
   // Ignore system-level requests like safebrowsing updates and favicon fetches
   // since they are unpredictable.
   if (details.tabId == -1 || details.type == "other" ||
@@ -193,7 +193,12 @@ function captureEvent(name, details) {
 
   capturedEventData.push({label: label, event: name, details: details});
   checkExpectations();
-  return retval;
+
+  if (callback) {
+    window.setTimeout(callback, 0, retval);
+  } else {
+    return retval;
+  }
 }
 
 // Simple array intersection. We use this to filter extraInfoSpec so
@@ -220,9 +225,10 @@ function initListeners(filter, extraInfoSpec) {
     return captureEvent("onHeadersReceived", details);
   }, filter, intersect(extraInfoSpec, ["blocking", "responseHeaders"]));
   chrome.experimental.webRequest.onAuthRequired.addListener(
-      function(details) {
-    return captureEvent("onAuthRequired", details);
-  }, filter, intersect(extraInfoSpec, ["blocking", "responseHeaders"]));
+      function(details, callback) {
+    return captureEvent("onAuthRequired", details, callback);
+  }, filter, intersect(extraInfoSpec, ["asyncBlocking", "blocking",
+                                       "responseHeaders"]));
   chrome.experimental.webRequest.onResponseStarted.addListener(
       function(details) {
     return captureEvent("onResponseStarted", details);

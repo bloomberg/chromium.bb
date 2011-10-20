@@ -433,7 +433,13 @@ bool ExtensionWebRequestEventRouter::ExtraInfoSpec::InitFromValue(
       *extra_info_spec |= RESPONSE_HEADERS;
     else if (str == "blocking")
       *extra_info_spec |= BLOCKING;
+    else if (str == "asyncBlocking")
+      *extra_info_spec |= ASYNC_BLOCKING;
     else
+      return false;
+
+    // BLOCKING and ASYNC_BLOCKING are mutually exclusive.
+    if ((*extra_info_spec & BLOCKING) && (*extra_info_spec & ASYNC_BLOCKING))
       return false;
   }
   return true;
@@ -918,7 +924,8 @@ bool ExtensionWebRequestEventRouter::DispatchEvent(
     ExtensionEventRouter::DispatchEvent(
         (*it)->ipc_sender.get(), (*it)->extension_id, (*it)->sub_event_name,
         json_args, GURL());
-    if ((*it)->extra_info_spec & ExtraInfoSpec::BLOCKING) {
+    if ((*it)->extra_info_spec &
+        (ExtraInfoSpec::BLOCKING | ExtraInfoSpec::ASYNC_BLOCKING)) {
       (*it)->blocked_requests.insert(request->identifier());
       ++num_handlers_blocking;
 
