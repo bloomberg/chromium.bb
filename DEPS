@@ -2,7 +2,6 @@ vars = {
   # Use this googlecode_url variable only if there is an internal mirror for it.
   # If you do not know, use the full path while defining your new deps entry.
   "googlecode_url": "http://%s.googlecode.com/svn",
-  "sourceforge_url": "https://%(repo)s.svn.sourceforge.net/svnroot/%(repo)s",
   "webkit_trunk": "http://svn.webkit.org/repository/webkit/trunk",
   "nacl_trunk": "http://src.chromium.org/native_client/trunk",
   "webkit_revision": "97838",
@@ -276,9 +275,6 @@ deps = {
 
   "src/third_party/webrtc":
     (Var("googlecode_url") % "webrtc") + "/trunk/src@" + Var("webrtc_revision"),
-
-  "src/third_party/jsoncpp/source":
-    (Var("sourceforge_url") % {"repo": "jsoncpp"}) + "/trunk/jsoncpp@246",
 
   "src/third_party/mozc/session":
     (Var("googlecode_url") % "mozc") + "/trunk/src/session@58",
