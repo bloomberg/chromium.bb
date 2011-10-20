@@ -52,6 +52,7 @@
 #include "chrome/browser/ui/search_engines/keyword_editor_controller.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/flags_ui.h"
+#include "chrome/browser/ui/webui/ntp/new_tab_page_handler.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/options/extension_settings_handler.h"
 #include "chrome/browser/ui/webui/plugins_ui.h"
@@ -103,8 +104,10 @@ void RegisterLocalState(PrefService* local_state) {
   KeywordEditorController::RegisterPrefs(local_state);
   MetricsLog::RegisterPrefs(local_state);
   MetricsService::RegisterPrefs(local_state);
+  NewTabPageHandler::RegisterPrefs(local_state);
   printing::PrintJobManager::RegisterPrefs(local_state);
   PromoResourceService::RegisterPrefs(local_state);
+
 #if defined(ENABLE_SAFE_BROWSING)
   SafeBrowsingService::RegisterPrefs(local_state);
 #endif
