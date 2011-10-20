@@ -20,9 +20,9 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
+#include "unicode/datefmt.h"
 #include "views/controls/menu/menu_runner.h"
 #include "views/widget/widget.h"
-#include "unicode/datefmt.h"
 
 namespace {
 
@@ -195,9 +195,8 @@ void ClockMenuButton::EnsureMenu() {
 
     const string16 clock_open_options_label =
         l10n_util::GetStringUTF16(IDS_STATUSBAR_CLOCK_OPEN_OPTIONS_DIALOG);
-    menu->AppendMenuItemWithLabel(
-        CLOCK_OPEN_OPTIONS_ITEM,
-        UTF16ToWide(clock_open_options_label));
+    menu->AppendMenuItemWithLabel(CLOCK_OPEN_OPTIONS_ITEM,
+                                  clock_open_options_label);
   }
 }
 

@@ -144,7 +144,7 @@ void NativeMenuViews::UpdateMenuFromModel(SubmenuView* menu,
     mitem->SetVisible(model->IsVisibleAt(index));
     mitem->SetEnabled(model->IsEnabledAt(index));
     if (model->IsItemDynamicAt(index)) {
-      mitem->SetTitle(UTF16ToWide(model->GetLabelAt(index)));
+      mitem->SetTitle(model->GetLabelAt(index));
     }
 
     SkBitmap icon;

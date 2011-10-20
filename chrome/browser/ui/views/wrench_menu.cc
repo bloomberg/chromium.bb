@@ -809,7 +809,7 @@ void WrenchMenu::PopulateMenu(MenuItemView* parent,
         DCHECK_LT(i + 2, max);
         DCHECK_EQ(IDC_COPY, model->GetCommandIdAt(index + 1));
         DCHECK_EQ(IDC_PASTE, model->GetCommandIdAt(index + 2));
-        item->SetTitle(UTF16ToWide(l10n_util::GetStringUTF16(IDS_EDIT2)));
+        item->SetTitle(l10n_util::GetStringUTF16(IDS_EDIT2));
         item->AddChildView(
             new CutCopyPasteView(this, model, index, index + 1, index + 2));
         i += 2;
@@ -819,7 +819,7 @@ void WrenchMenu::PopulateMenu(MenuItemView* parent,
         DCHECK_EQ(MenuModel::TYPE_COMMAND, model->GetTypeAt(index));
         DCHECK_EQ(IDC_ZOOM_PLUS, model->GetCommandIdAt(index + 1));
         DCHECK_EQ(IDC_FULLSCREEN, model->GetCommandIdAt(index + 2));
-        item->SetTitle(UTF16ToWide(l10n_util::GetStringUTF16(IDS_ZOOM_MENU2)));
+        item->SetTitle(l10n_util::GetStringUTF16(IDS_ZOOM_MENU2));
         item->AddChildView(
             new ZoomView(this, model, index, index + 1, index + 2));
         i += 2;

@@ -19,8 +19,8 @@
 #include "chrome/browser/chromeos/status/status_area_view.h"
 #include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "chrome/browser/chromeos/view_ids.h"
-#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
@@ -591,13 +591,11 @@ void BrowserView::InitSystemMenu() {
   // MenuRunner takes ownership of menu.
   system_menu_runner_.reset(new views::MenuRunner(menu));
   menu->AppendDelegateMenuItem(IDC_RESTORE_TAB);
-  menu->AppendMenuItemWithLabel(
-      IDC_NEW_TAB,
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_NEW_TAB)));
+  menu->AppendMenuItemWithLabel(IDC_NEW_TAB,
+                                l10n_util::GetStringUTF16(IDS_NEW_TAB));
   menu->AppendSeparator();
-  menu->AppendMenuItemWithLabel(
-      IDC_TASK_MANAGER,
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_TASK_MANAGER)));
+  menu->AppendMenuItemWithLabel(IDC_TASK_MANAGER,
+                                l10n_util::GetStringUTF16(IDS_TASK_MANAGER));
 }
 
 void BrowserView::FetchHideStatusAreaProperty() {

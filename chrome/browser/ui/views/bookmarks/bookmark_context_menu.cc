@@ -88,8 +88,8 @@ void BookmarkContextMenu::CloseMenu() {
 }
 
 void BookmarkContextMenu::AddItemWithStringId(int command_id, int string_id) {
-  menu_->AppendMenuItemWithLabel(
-      command_id, UTF16ToWide(l10n_util::GetStringUTF16(string_id)));
+  menu_->AppendMenuItemWithLabel(command_id,
+                                 l10n_util::GetStringUTF16(string_id));
 }
 
 void BookmarkContextMenu::AddSeparator() {
@@ -98,7 +98,7 @@ void BookmarkContextMenu::AddSeparator() {
 
 void BookmarkContextMenu::AddCheckboxItem(int command_id, int string_id) {
   menu_->AppendMenuItem(command_id,
-                        UTF16ToWide(l10n_util::GetStringUTF16(string_id)),
+                        l10n_util::GetStringUTF16(string_id),
                         views::MenuItemView::CHECKBOX);
 }
 

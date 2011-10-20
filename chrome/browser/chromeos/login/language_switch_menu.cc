@@ -60,21 +60,19 @@ void LanguageSwitchMenu::InitLanguageMenu() {
 
   // Fill menu items with updated items.
   for (int line = 0; line != kLanguageMainMenuSize; line++) {
-    menu_->AppendMenuItemWithLabel(
-        line,
-        UTF16ToWide(language_list_->GetLanguageNameAt(line)));
+    menu_->AppendMenuItemWithLabel(line,
+                                   language_list_->GetLanguageNameAt(line));
   }
 
   menu_->AppendSeparator();
   views::MenuItemView* submenu = menu_->AppendSubMenu(
       kMoreLanguagesSubMenu,
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_LANGUAGES_MORE)));
+      l10n_util::GetStringUTF16(IDS_LANGUAGES_MORE));
 
   for (int line = kLanguageMainMenuSize;
        line != language_list_->languages_count(); ++line) {
-    submenu->AppendMenuItemWithLabel(
-        line,
-        UTF16ToWide(language_list_->GetLanguageNameAt(line)));
+    submenu->AppendMenuItemWithLabel(line,
+                                     language_list_->GetLanguageNameAt(line));
   }
 
   menu_->ChildrenChanged();

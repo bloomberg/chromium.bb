@@ -325,9 +325,9 @@ void PowerMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
   // MenuRunner takes ownership of |menu|.
   menu_runner_.reset(new views::MenuRunner(menu));
   views::MenuItemView* submenu = menu->AppendMenuItem(
-          POWER_BATTERY_PERCENTAGE_ITEM,
-          std::wstring(),
-          views::MenuItemView::NORMAL);
+      POWER_BATTERY_PERCENTAGE_ITEM,
+      string16(),
+      views::MenuItemView::NORMAL);
   status_ = new StatusView(this);
   submenu->AddChildView(status_);
   menu->CreateSubmenu()->set_resize_open_menu(true);

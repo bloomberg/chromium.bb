@@ -198,7 +198,7 @@ void CapsLockMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
   menu_runner_.reset(new views::MenuRunner(menu));
   views::MenuItemView* submenu = menu->AppendMenuItem(
       kDummyCommandId,
-      L"",
+      string16(),
       views::MenuItemView::NORMAL);
   status_ = new CapsLockMenuButton::StatusView(this);
   submenu->AddChildView(status_);

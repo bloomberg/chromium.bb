@@ -9,11 +9,14 @@
 #include <string>
 #include <vector>
 
+#include "build/build_config.h"
+
 #if defined(OS_WIN)
 #include <windows.h>
 #endif
 
 #include "base/logging.h"
+#include "base/string16.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "views/view.h"
 
@@ -131,7 +134,7 @@ class VIEWS_EXPORT MenuItemView : public View {
   // called after adding menu items if the menu may be active.
   MenuItemView* AddMenuItemAt(int index,
                               int item_id,
-                              const std::wstring& label,
+                              const string16& label,
                               const SkBitmap& icon,
                               Type type);
 
@@ -149,52 +152,38 @@ class VIEWS_EXPORT MenuItemView : public View {
   // label      The text label shown.
   // type       The type of item.
   MenuItemView* AppendMenuItem(int item_id,
-                      const std::wstring& label,
-                      Type type) {
-    return AppendMenuItemImpl(item_id, label, SkBitmap(), type);
-  }
+                               const string16& label,
+                               Type type);
 
   // Append a submenu to this menu.
   // The returned pointer is owned by this menu.
   MenuItemView* AppendSubMenu(int item_id,
-                              const std::wstring& label) {
-    return AppendMenuItemImpl(item_id, label, SkBitmap(), SUBMENU);
-  }
+                              const string16& label);
 
   // Append a submenu with an icon to this menu.
   // The returned pointer is owned by this menu.
   MenuItemView* AppendSubMenuWithIcon(int item_id,
-                                      const std::wstring& label,
-                                      const SkBitmap& icon) {
-    return AppendMenuItemImpl(item_id, label, icon, SUBMENU);
-  }
+                                      const string16& label,
+                                      const SkBitmap& icon);
 
   // This is a convenience for standard text label menu items where the label
   // is provided with this call.
   MenuItemView* AppendMenuItemWithLabel(int item_id,
-                               const std::wstring& label) {
-    return AppendMenuItem(item_id, label, NORMAL);
-  }
+                                        const string16& label);
 
   // This is a convenience for text label menu items where the label is
   // provided by the delegate.
-  MenuItemView* AppendDelegateMenuItem(int item_id) {
-    return AppendMenuItem(item_id, std::wstring(), NORMAL);
-  }
+  MenuItemView* AppendDelegateMenuItem(int item_id);
 
   // Adds a separator to this menu
-  void AppendSeparator() {
-    AppendMenuItemImpl(0, std::wstring(), SkBitmap(), SEPARATOR);
-  }
+  void AppendSeparator();
 
   // Appends a menu item with an icon. This is for the menu item which
   // needs an icon. Calling this function forces the Menu class to draw
   // the menu, instead of relying on Windows.
   MenuItemView* AppendMenuItemWithIcon(int item_id,
-                              const std::wstring& label,
-                              const SkBitmap& icon) {
-    return AppendMenuItemImpl(item_id, label, icon, NORMAL);
-  }
+                                       const string16& label,
+                                       const SkBitmap& icon);
 
   // Creates a menu item for the specified entry in the model and appends it as
   // a child. |index| should be offset by GetFirstItemIndex() before calling
@@ -205,7 +194,7 @@ class VIEWS_EXPORT MenuItemView : public View {
 
   // All the AppendXXX methods funnel into this.
   MenuItemView* AppendMenuItemImpl(int item_id,
-                                   const std::wstring& label,
+                                   const string16& label,
                                    const SkBitmap& icon,
                                    Type type);
 
@@ -223,7 +212,7 @@ class VIEWS_EXPORT MenuItemView : public View {
   MenuItemView* GetParentMenuItem() const { return parent_menu_item_; }
 
   // Sets/Gets the title.
-  void SetTitle(const std::wstring& title);
+  void SetTitle(const string16& title);
   const string16& title() const { return title_; }
 
   // Returns the type of this menu.

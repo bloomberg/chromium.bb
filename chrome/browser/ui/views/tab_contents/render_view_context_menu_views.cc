@@ -110,7 +110,7 @@ void RenderViewContextMenuViews::UpdateMenuItem(int command_id,
     return;
 
   item->SetEnabled(enabled);
-  item->SetTitle(UTF16ToWideHack(title));
+  item->SetTitle(title);
 
   views::MenuItemView* parent = item->GetParentMenuItem();
   if (!parent)

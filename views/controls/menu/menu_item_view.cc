@@ -35,8 +35,7 @@ class EmptyMenuMenuItem : public MenuItemView {
       : MenuItemView(parent, 0, EMPTY) {
     // Set this so that we're not identified as a normal menu item.
     set_id(kEmptyMenuItemViewID);
-    SetTitle(UTF16ToWide(
-        l10n_util::GetStringUTF16(IDS_APP_MENU_EMPTY_SUBMENU)));
+    SetTitle(l10n_util::GetStringUTF16(IDS_APP_MENU_EMPTY_SUBMENU));
     SetEnabled(false);
   }
 
@@ -191,7 +190,7 @@ void MenuItemView::Cancel() {
 
 MenuItemView* MenuItemView::AddMenuItemAt(int index,
                                           int item_id,
-                                          const std::wstring& label,
+                                          const string16& label,
                                           const SkBitmap& icon,
                                           Type type) {
   DCHECK_NE(type, EMPTY);
@@ -205,7 +204,7 @@ MenuItemView* MenuItemView::AddMenuItemAt(int index,
   }
   MenuItemView* item = new MenuItemView(this, item_id, type);
   if (label.empty() && GetDelegate())
-    item->SetTitle(UTF16ToWideHack(GetDelegate()->GetLabel(item_id)));
+    item->SetTitle(GetDelegate()->GetLabel(item_id));
   else
     item->SetTitle(label);
   item->SetIcon(icon);
@@ -230,26 +229,62 @@ void MenuItemView::RemoveMenuItemAt(int index) {
   removed_items_.push_back(item);
 }
 
+MenuItemView* MenuItemView::AppendMenuItem(int item_id,
+                                           const string16& label,
+                                           Type type) {
+  return AppendMenuItemImpl(item_id, label, SkBitmap(), type);
+}
+
+MenuItemView* MenuItemView::AppendSubMenu(int item_id,
+                                          const string16& label) {
+  return AppendMenuItemImpl(item_id, label, SkBitmap(), SUBMENU);
+}
+
+MenuItemView* MenuItemView::AppendSubMenuWithIcon(int item_id,
+                                                  const string16& label,
+                                                  const SkBitmap& icon) {
+  return AppendMenuItemImpl(item_id, label, icon, SUBMENU);
+}
+
+MenuItemView* MenuItemView::AppendMenuItemWithLabel(int item_id,
+                                                    const string16& label) {
+  return AppendMenuItem(item_id, label, NORMAL);
+}
+
+MenuItemView* MenuItemView::AppendDelegateMenuItem(int item_id) {
+  return AppendMenuItem(item_id, string16(), NORMAL);
+}
+
+void MenuItemView::AppendSeparator() {
+  AppendMenuItemImpl(0, string16(), SkBitmap(), SEPARATOR);
+}
+
+MenuItemView* MenuItemView::AppendMenuItemWithIcon(int item_id,
+                                                   const string16& label,
+                                                   const SkBitmap& icon) {
+  return AppendMenuItemImpl(item_id, label, icon, NORMAL);
+}
+
 MenuItemView* MenuItemView::AppendMenuItemFromModel(ui::MenuModel* model,
                                                     int index,
                                                     int id) {
   SkBitmap icon;
-  std::wstring label;
+  string16 label;
   MenuItemView::Type type;
   ui::MenuModel::ItemType menu_type = model->GetTypeAt(index);
   switch (menu_type) {
     case ui::MenuModel::TYPE_COMMAND:
       model->GetIconAt(index, &icon);
       type = MenuItemView::NORMAL;
-      label = UTF16ToWide(model->GetLabelAt(index));
+      label = model->GetLabelAt(index);
       break;
     case ui::MenuModel::TYPE_CHECK:
       type = MenuItemView::CHECKBOX;
-      label = UTF16ToWide(model->GetLabelAt(index));
+      label = model->GetLabelAt(index);
       break;
     case ui::MenuModel::TYPE_RADIO:
       type = MenuItemView::RADIO;
-      label = UTF16ToWide(model->GetLabelAt(index));
+      label = model->GetLabelAt(index);
       break;
     case ui::MenuModel::TYPE_SEPARATOR:
       type = MenuItemView::SEPARATOR;
@@ -257,7 +292,7 @@ MenuItemView* MenuItemView::AppendMenuItemFromModel(ui::MenuModel* model,
     case ui::MenuModel::TYPE_SUBMENU:
       model->GetIconAt(index, &icon);
       type = MenuItemView::SUBMENU;
-      label = UTF16ToWide(model->GetLabelAt(index));
+      label = model->GetLabelAt(index);
       break;
     default:
       NOTREACHED();
@@ -269,7 +304,7 @@ MenuItemView* MenuItemView::AppendMenuItemFromModel(ui::MenuModel* model,
 }
 
 MenuItemView* MenuItemView::AppendMenuItemImpl(int item_id,
-                                               const std::wstring& label,
+                                               const string16& label,
                                                const SkBitmap& icon,
                                                Type type) {
   const int index = submenu_ ? submenu_->child_count() : 0;
@@ -290,8 +325,8 @@ SubmenuView* MenuItemView::GetSubmenu() const {
   return submenu_;
 }
 
-void MenuItemView::SetTitle(const std::wstring& title) {
-  title_ = WideToUTF16Hack(title);
+void MenuItemView::SetTitle(const string16& title) {
+  title_ = title;
   accessible_name_ = GetAccessibleNameForMenuItem(title_, GetAcceleratorText());
   pref_size_.SetSize(0, 0);  // Triggers preferred size recalculation.
 }
@@ -498,7 +533,7 @@ void MenuItemView::UpdateMenuPartSizes(bool has_icons) {
     label_start_ += config.gutter_width + config.gutter_to_label;
 
   MenuItemView menu_item(NULL);
-  menu_item.SetTitle(L"blah");  // Text doesn't matter here.
+  menu_item.SetTitle(ASCIIToUTF16("blah"));  // Text doesn't matter here.
   pref_menu_height_ = menu_item.GetPreferredSize().height();
 }
 

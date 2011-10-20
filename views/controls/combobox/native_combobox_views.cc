@@ -177,8 +177,7 @@ void NativeComboboxViews::UpdateFromModel() {
     // text is displayed correctly in right-to-left UIs.
     base::i18n::AdjustStringForLocaleDirection(&text);
 
-    menu->AppendMenuItem(i + kFirstMenuItemId, UTF16ToWideHack(text),
-                         MenuItemView::NORMAL);
+    menu->AppendMenuItem(i + kFirstMenuItemId, text, MenuItemView::NORMAL);
     max_width = std::max(max_width, font.GetStringWidth(text));
   }
 

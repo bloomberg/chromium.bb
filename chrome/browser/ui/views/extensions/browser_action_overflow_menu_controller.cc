@@ -41,7 +41,7 @@ BrowserActionOverflowMenuController::BrowserActionOverflowMenuController(
     scoped_ptr<gfx::Canvas> canvas(view->GetIconWithBadge());
     menu_->AppendMenuItemWithIcon(
         command_id,
-        UTF8ToWide(view->button()->extension()->name()),
+        UTF8ToUTF16(view->button()->extension()->name()),
         canvas->AsCanvasSkia()->ExtractBitmap());
 
     // Set the tooltip for this item.

@@ -402,8 +402,8 @@ void BookmarkMenuDelegate::BuildOtherFolderMenu(
   SkBitmap* folder_icon = ResourceBundle::GetSharedInstance().
       GetBitmapNamed(IDR_BOOKMARK_BAR_FOLDER);
   MenuItemView* submenu = menu->AppendSubMenuWithIcon(
-      id, UTF16ToWide(
-          l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_OTHER_BOOKMARKED)),
+      id,
+      l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_OTHER_BOOKMARKED),
       *folder_icon);
   BuildMenu(other_folder, 0, submenu, next_menu_id);
   menu_id_to_node_map_[id] = other_folder;
@@ -425,13 +425,13 @@ void BookmarkMenuDelegate::BuildMenu(const BookmarkNode* parent,
         icon = *ResourceBundle::GetSharedInstance().
             GetBitmapNamed(IDR_DEFAULT_FAVICON);
       }
-      menu->AppendMenuItemWithIcon(id, UTF16ToWide(node->GetTitle()), icon);
+      menu->AppendMenuItemWithIcon(id, node->GetTitle(), icon);
       node_to_menu_id_map_[node] = id;
     } else if (node->is_folder()) {
       SkBitmap* folder_icon = ResourceBundle::GetSharedInstance().
           GetBitmapNamed(IDR_BOOKMARK_BAR_FOLDER);
       MenuItemView* submenu = menu->AppendSubMenuWithIcon(
-          id, UTF16ToWide(node->GetTitle()), *folder_icon);
+          id, node->GetTitle(), *folder_icon);
       node_to_menu_id_map_[node] = id;
       BuildMenu(node, 0, submenu, next_menu_id);
     } else {

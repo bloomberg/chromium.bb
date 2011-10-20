@@ -151,8 +151,11 @@ void WindowTypeLauncher::ShowContextMenuForView(views::View* source,
                                                 const gfx::Point& p,
                                                 bool is_mouse_gesture) {
   MenuItemView* root = new MenuItemView(this);
-  root->AppendMenuItem(COMMAND_NEW_WINDOW, L"New Window", MenuItemView::NORMAL);
-  root->AppendMenuItem(COMMAND_TOGGLE_FULLSCREEN, L"Toggle FullScreen",
+  root->AppendMenuItem(COMMAND_NEW_WINDOW,
+                       ASCIIToUTF16("New Window"),
+                       MenuItemView::NORMAL);
+  root->AppendMenuItem(COMMAND_TOGGLE_FULLSCREEN,
+                       ASCIIToUTF16("Toggle FullScreen"),
                        MenuItemView::NORMAL);
   // MenuRunner takes ownership of root.
   menu_runner_.reset(new MenuRunner(root));

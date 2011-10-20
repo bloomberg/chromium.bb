@@ -14,9 +14,9 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "views/widget/widget.h"
-#include "views/controls/menu/menu_runner.h"
 #include "views/controls/menu/menu_item_view.h"
+#include "views/controls/menu/menu_runner.h"
+#include "views/widget/widget.h"
 
 namespace {
 
@@ -97,9 +97,9 @@ void AccessibilityMenuButton::Update() {
 void AccessibilityMenuButton::PrepareMenu() {
   views::MenuItemView* menu = new views::MenuItemView(this);
   if (accessibility_enabled_.GetValue())
-    menu->AppendMenuItemWithLabel(MENU_ITEM_DISABLE_SPOKEN_FEEDBACK,
-                                  UTF16ToWide(l10n_util::GetStringUTF16(
-                                      IDS_STATUSBAR_DISABLE_SPOKEN_FEEDBACK)));
+    menu->AppendMenuItemWithLabel(
+        MENU_ITEM_DISABLE_SPOKEN_FEEDBACK,
+        l10n_util::GetStringUTF16(IDS_STATUSBAR_DISABLE_SPOKEN_FEEDBACK));
   // |menu_runner_| takes the ownership of |menu|
   menu_runner_.reset(new views::MenuRunner(menu));
 }
