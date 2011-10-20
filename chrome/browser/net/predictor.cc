@@ -34,7 +34,6 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
 #include "net/base/single_request_host_resolver.h"
-#include "net/url_request/url_request_context_getter.h"
 
 using base::TimeDelta;
 
@@ -124,7 +123,6 @@ class Predictor::LookupRequest {
 
 Predictor::Predictor(bool preconnect_enabled)
     : initial_observer_(NULL),
-      url_request_context_getter_(NULL),
       predictor_enabled_(true),
       peak_pending_lookups_(0),
       shutdown_(false),
@@ -145,8 +143,8 @@ Predictor::~Predictor() {
 }
 
 // static
-Predictor* Predictor::CreatePredictor(bool preconnect_enabled,
-                                      bool simple_shutdown) {
+Predictor* Predictor::CreatePredictor(
+    bool preconnect_enabled, bool simple_shutdown) {
   if (simple_shutdown)
     return new SimplePredictor(preconnect_enabled);
   return new Predictor(preconnect_enabled);
@@ -163,14 +161,11 @@ void Predictor::RegisterUserPrefs(PrefService* user_prefs) {
 
 void Predictor::InitNetworkPredictor(PrefService* user_prefs,
                                      PrefService* local_state,
-                                     IOThread* io_thread,
-                                     net::URLRequestContextGetter* getter) {
+                                     IOThread* io_thread) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   bool predictor_enabled =
       user_prefs->GetBoolean(prefs::kNetworkPredictionEnabled);
-
-  url_request_context_getter_ = getter;
 
   // Gather the list of hostnames to prefetch on startup.
   UrlList urls = GetPredictedUrlListAtStartup(user_prefs, local_state);
@@ -248,8 +243,7 @@ void Predictor::AnticipateOmniboxUrl(const GURL& url, bool preconnectable) {
         last_omnibox_preconnect_ = now;
         const int kConnectionsNeeded = 1;
         PreconnectOnUIThread(CanonicalizeUrl(url), motivation,
-                             kConnectionsNeeded,
-                             url_request_context_getter_);
+                             kConnectionsNeeded);
         return;  // Skip pre-resolution, since we'll open a connection.
       }
     } else {
@@ -288,8 +282,7 @@ void Predictor::PreconnectUrlAndSubresources(const GURL& url) {
     UrlInfo::ResolutionMotivation motivation(UrlInfo::EARLY_LOAD_MOTIVATED);
     const int kConnectionsNeeded = 1;
     PreconnectOnUIThread(CanonicalizeUrl(url), motivation,
-                         kConnectionsNeeded,
-                         url_request_context_getter_);
+                         kConnectionsNeeded);
     PredictFrameSubresources(url.GetWithEmptyPath());
   }
 }
@@ -894,10 +887,8 @@ void Predictor::PrepareFrameSubresources(const GURL& url) {
     // size of the list with all the "Leaf" nodes in the tree (nodes that don't
     // load any subresources).  If we learn about this resource, we will instead
     // provide a more carefully estimated preconnection count.
-    if (preconnect_enabled_) {
-      PreconnectOnIOThread(url, UrlInfo::SELF_REFERAL_MOTIVATED, 2,
-                           url_request_context_getter_);
-    }
+    if (preconnect_enabled_)
+      PreconnectOnIOThread(url, UrlInfo::SELF_REFERAL_MOTIVATED, 2);
     return;
   }
 
@@ -920,8 +911,7 @@ void Predictor::PrepareFrameSubresources(const GURL& url) {
       int count = static_cast<int>(std::ceil(connection_expectation));
       if (url.host() == future_url->first.host())
         ++count;
-      PreconnectOnIOThread(future_url->first, motivation, count,
-                           url_request_context_getter_);
+      PreconnectOnIOThread(future_url->first, motivation, count);
     } else if (connection_expectation > kDNSPreresolutionWorthyExpectedValue) {
       evalution = PRERESOLUTION;
       future_url->second.preresolution_increment();
@@ -1212,11 +1202,9 @@ GURL Predictor::CanonicalizeUrl(const GURL& url) {
   return GURL(scheme + "://" + url.host() + colon_plus_port);
 }
 
-void SimplePredictor::InitNetworkPredictor(
-    PrefService* user_prefs,
-    PrefService* local_state,
-    IOThread* io_thread,
-    net::URLRequestContextGetter* getter) {
+void SimplePredictor::InitNetworkPredictor(PrefService* user_prefs,
+                                           PrefService* local_state,
+                                           IOThread* io_thread) {
   // Empty function for unittests.
 }
 

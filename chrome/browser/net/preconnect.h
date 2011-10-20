@@ -13,10 +13,6 @@
 
 class GURL;
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace chrome_browser_net {
 
 // Try to preconnect.  Typically motivated by OMNIBOX to reach search service.
@@ -24,16 +20,14 @@ namespace chrome_browser_net {
 // parallel.
 void PreconnectOnUIThread(const GURL& url,
                           UrlInfo::ResolutionMotivation motivation,
-                          int count,
-                          net::URLRequestContextGetter* getter);
+                          int count);
 
 // Try to preconnect.  Typically used by predictor when a subresource probably
 // needs a connection. |count| may be used to request more than one connection
 // be established in parallel.
 void PreconnectOnIOThread(const GURL& url,
                           UrlInfo::ResolutionMotivation motivation,
-                          int count,
-                          net::URLRequestContextGetter* getter);
+                          int count);
 
 }  // namespace chrome_browser_net
 

@@ -4,9 +4,9 @@
 
 #include "chrome/browser/net/preconnect.h"
 
-#include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "chrome/browser/profiles/profile.h"
 #include "content/browser/browser_thread.h"
 #include "net/base/net_log.h"
 #include "net/base/ssl_config_service.h"
@@ -22,14 +22,13 @@ namespace chrome_browser_net {
 void PreconnectOnUIThread(
     const GURL& url,
     UrlInfo::ResolutionMotivation motivation,
-    int count,
-    net::URLRequestContextGetter* getter) {
+    int count) {
   // Prewarm connection to Search URL.
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
-      base::Bind(&PreconnectOnIOThread, url, motivation,
-                 count, make_scoped_refptr(getter)));
+      NewRunnableFunction(PreconnectOnIOThread, url, motivation,
+                          count));
   return;
 }
 
@@ -37,14 +36,16 @@ void PreconnectOnUIThread(
 void PreconnectOnIOThread(
     const GURL& url,
     UrlInfo::ResolutionMotivation motivation,
-    int count,
-    net::URLRequestContextGetter* getter) {
+    int count) {
+  net::URLRequestContextGetter* getter =
+      Profile::Deprecated::GetDefaultRequestContext();
+  if (!getter)
+    return;
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     LOG(DFATAL) << "This must be run only on the IO thread.";
     return;
   }
-  if (!getter)
-    return;
+
   // We are now commited to doing the async preconnection call.
   UMA_HISTOGRAM_ENUMERATION("Net.PreconnectMotivation", motivation,
                             UrlInfo::MAX_MOTIVATED);

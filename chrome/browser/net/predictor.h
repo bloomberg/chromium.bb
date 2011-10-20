@@ -43,7 +43,6 @@ class WaitableEvent;
 
 namespace net {
 class HostResolver;
-class URLRequestContextGetter;
 }  // namespace net
 
 class IOThread;
@@ -107,8 +106,7 @@ class Predictor {
 
   virtual void InitNetworkPredictor(PrefService* user_prefs,
                                     PrefService* local_state,
-                                    IOThread* io_thread,
-                                    net::URLRequestContextGetter* getter);
+                                    IOThread* io_thread);
 
   // The Omnibox has proposed a given url to the user, and if it is a search
   // URL, then it also indicates that this is preconnectable (i.e., we could
@@ -433,10 +431,6 @@ class Predictor {
 
   scoped_ptr<InitialObserver> initial_observer_;
 
-  // Reference to URLRequestContextGetter from the Profile which owns the
-  // predictor. Used by Preconnect.
-  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
-
   // Status of speculative DNS resolution and speculative TCP/IP connection
   // feature.
   bool predictor_enabled_;
@@ -511,8 +505,7 @@ class SimplePredictor : public Predictor {
   virtual ~SimplePredictor() {}
   virtual void InitNetworkPredictor(PrefService* user_prefs,
                                     PrefService* local_state,
-                                    IOThread* io_thread,
-                                    net::URLRequestContextGetter* getter);
+                                    IOThread* io_thread);
   virtual void ShutdownOnUIThread(PrefService* user_prefs);
 };
 
