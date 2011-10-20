@@ -1,7 +1,0 @@
-{
-  "name": "chrome.tts",
-  "version": "0.1",
-  "description": "browser test for chrome.tts API",
-  "background_page": "test.html",
-  "permissions": ["tts"]
-}
