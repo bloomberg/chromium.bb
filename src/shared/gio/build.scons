@@ -70,8 +70,7 @@ if not env.CrossToolsBuild():
                '-t', temppath,
      # Note: to regenerate the premade_text/binary_file, use "make_premade.py"
                '-x', env.File('premade_text_file'),
-     # TODO(jvoung): after binary file is checked in, enable this too
-#               '-b', env.File('premade_binary_file'),
+               '-b', env.File('premade_binary_file'),
                ],
       )
   gtest_env.AddNodeToTestSuite(node, ['small_tests'],

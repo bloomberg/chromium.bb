@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include <stdio.h>
@@ -46,8 +46,7 @@ void parse_args(int argc, char *argv[]) {
 
   ASSERT_NE(reinterpret_cast<char*>(NULL), g_temp_file);
   ASSERT_NE(reinterpret_cast<char*>(NULL), g_premade_textfile);
-  // TODO(jvoung) enable binary file once the premade file is checked in.
-  // ASSERT_NE(reinterpret_cast<char*>(NULL), g_premade_binfile);
+  ASSERT_NE(reinterpret_cast<char*>(NULL), g_premade_binfile);
 }
 
 
@@ -60,11 +59,10 @@ TEST(GioTest, ReadTest) {
   GioReadTestWithOffset(&my_file.base, 'A');
   GioCloseTest(&my_file.base);
 
-  // TODO(jvoung) enable binary file once the premade file is checked in.
-//   ret_code = GioFileCtor(&my_file, g_premade_binfile, "rb");
-//   EXPECT_EQ(1, ret_code);
-//   GioReadTestWithOffset(&my_file.base, 0);
-//   GioCloseTest(&my_file.base);
+  ret_code = GioFileCtor(&my_file, g_premade_binfile, "rb");
+  EXPECT_EQ(1, ret_code);
+  GioReadTestWithOffset(&my_file.base, 0);
+  GioCloseTest(&my_file.base);
 }
 
 
@@ -98,11 +96,10 @@ TEST(GioTest, SeekTest) {
   GioSeekTestWithOffset(&my_file.base, 'A', false);
   GioCloseTest(&my_file.base);
 
-  // TODO(jvoung) enable binary file once the premade file is checked in.
-//   ret_code = GioFileCtor(&my_file, g_premade_binfile, "rb");
-//   EXPECT_EQ(1, ret_code);
-//   GioSeekTestWithOffset(&my_file.base, 0, false);
-//   GioCloseTest(&my_file.base);
+  ret_code = GioFileCtor(&my_file, g_premade_binfile, "rb");
+  EXPECT_EQ(1, ret_code);
+  GioSeekTestWithOffset(&my_file.base, 0, false);
+  GioCloseTest(&my_file.base);
 }
 
 }  // namespace
