@@ -25,6 +25,7 @@
 
 #include "base/base64.h"
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -962,7 +963,7 @@ void Serv::Run() {
   }
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableFunction(&SendNotification, ntohs(addr.sin_port)));
+      base::Bind(&SendNotification, ntohs(addr.sin_port)));
 
   LOG(INFO) << "WebSocketProxy: Starting event dispatch loop.";
   event_base_dispatch(evbase_);
@@ -1515,7 +1516,7 @@ bool Conn::TryConnectDest(const struct sockaddr* addr, socklen_t addrlen) {
         addr, addrlen, SOCK_STREAM, IPPROTO_TCP);
     net::HostPortPair host_port_pair(destname_, destport_);
     BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE, NewRunnableFunction(
+        BrowserThread::IO, FROM_HERE, base::Bind(
             &SSLChan::Start, addrlist, host_port_pair, fd[2], fd[1]));
   } else {
     int sock = socket(addr->sa_family, SOCK_STREAM, 0);

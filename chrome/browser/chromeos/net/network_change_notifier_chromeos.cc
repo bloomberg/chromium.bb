@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/net/network_change_notifier_chromeos.h"
 
-#include "base/task.h"
+#include "base/bind.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "content/browser/browser_thread.h"
 
@@ -46,7 +46,7 @@ class OnlineStatusReportThreadTask : public CancelableTask {
     parent_->OnOnlineStateNotificationFired();
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        NewRunnableFunction(
+        base::Bind(
            &NetworkChangeNotifierChromeos::NotifyObserversOfOnlineStateChange));
   }
 
@@ -74,7 +74,7 @@ NetworkChangeNotifierChromeos::NetworkChangeNotifierChromeos()
   UpdateNetworkState(net);
   BrowserThread::PostDelayedTask(
          BrowserThread::UI, FROM_HERE,
-         NewRunnableFunction(
+         base::Bind(
              &NetworkChangeNotifierChromeos::UpdateInitialState, this),
          kInitialNotificationCheckDelayMS);
 }
@@ -103,7 +103,7 @@ void NetworkChangeNotifierChromeos::SystemResumed() {
   // Force invalidation of various net resources on system resume.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableFunction(
+      base::Bind(
           &NetworkChangeNotifier::NotifyObserversOfIPAddressChange));
 }
 
@@ -166,7 +166,7 @@ void NetworkChangeNotifierChromeos::UpdateNetworkState(
     DVLOG(1) << "NotifyObserversOfIPAddressChange!!";
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        NewRunnableFunction(
+        base::Bind(
             &NetworkChangeNotifier::NotifyObserversOfIPAddressChange));
   }
 }
