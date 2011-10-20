@@ -228,17 +228,17 @@ output_handle_scanout_buffer_destroy(struct wl_listener *listener,
 }
 
 static void
-output_handle_old_scanout_buffer_destroy(struct wl_listener *listener,
-					 struct wl_resource *resource,
-					 uint32_t time)
+output_handle_pending_scanout_buffer_destroy(struct wl_listener *listener,
+					     struct wl_resource *resource,
+					     uint32_t time)
 {
 	struct wlsc_output *output =
 		container_of(listener, struct wlsc_output,
-			     old_scanout_buffer_destroy_listener);
+			     pending_scanout_buffer_destroy_listener);
 	struct wl_buffer *buffer = (struct wl_buffer *) resource;
 
-	if (output->old_scanout_buffer == buffer)
-		output->old_scanout_buffer = NULL;
+	if (output->pending_scanout_buffer == buffer)
+		output->pending_scanout_buffer = NULL;
 }
 
 
@@ -859,23 +859,16 @@ setup_scanout_surface(struct wlsc_output *output, struct wlsc_surface *es)
 {
 	if (es->visual != WLSC_RGB_VISUAL ||
 	    output->prepare_scanout_surface(output, es) != 0)
-		return 0;
+		return -1;
 
-	output->old_scanout_buffer = output->scanout_buffer;
-	output->scanout_buffer = es->buffer;
-	output->scanout_buffer->busy_count++;
+	/* assert output->pending_scanout_buffer == NULL */
+	output->pending_scanout_buffer = es->buffer;
+	output->pending_scanout_buffer->busy_count++;
 
-	if (output->old_scanout_buffer) {
-		wl_list_remove(&output->old_scanout_buffer_destroy_listener.link);
-		wl_list_insert(output->old_scanout_buffer->resource.destroy_listener_list.prev,
-			       &output->old_scanout_buffer_destroy_listener.link);
-	}
+	wl_list_insert(output->pending_scanout_buffer->resource.destroy_listener_list.prev,
+		       &output->pending_scanout_buffer_destroy_listener.link);
 
-	wl_list_remove(&output->scanout_buffer_destroy_listener.link);
-	wl_list_insert(output->scanout_buffer->resource.destroy_listener_list.prev,
-		       &output->scanout_buffer_destroy_listener.link);
-
-	return 1;
+	return 0;
 }
 
 static void
@@ -920,7 +913,7 @@ wlsc_output_repaint(struct wlsc_output *output)
 
 	es = container_of(ec->surface_list.next, struct wlsc_surface, link);
 
-	if (setup_scanout_surface(output, es)) {
+	if (setup_scanout_surface(output, es) == 0) {
 		/* We're drawing nothing now,
 		 * draw the damaged regions later. */
 		pixman_region32_union(&ec->damage, &ec->damage, &total_damage);
@@ -990,8 +983,20 @@ idle_repaint(void *data)
 WL_EXPORT void
 wlsc_output_finish_frame(struct wlsc_output *output, int msecs)
 {
-	wlsc_buffer_post_release(output->old_scanout_buffer);
-	output->old_scanout_buffer = NULL;
+	if (output->scanout_buffer) {
+		wlsc_buffer_post_release(output->scanout_buffer);
+		wl_list_remove(&output->scanout_buffer_destroy_listener.link);
+		output->scanout_buffer = NULL;
+	}
+
+	if (output->pending_scanout_buffer) {
+		output->scanout_buffer = output->pending_scanout_buffer;
+		wl_list_remove(&output->pending_scanout_buffer_destroy_listener.link);
+		wl_list_insert(output->scanout_buffer->resource.destroy_listener_list.prev,
+			       &output->scanout_buffer_destroy_listener.link);
+		output->pending_scanout_buffer = NULL;
+	}
+
 	output->repaint_scheduled = 0;
 
 	if (output->repaint_needed)
@@ -1943,9 +1948,9 @@ wlsc_output_init(struct wlsc_output *output, struct wlsc_compositor *c,
 		output_handle_scanout_buffer_destroy;
 	wl_list_init(&output->scanout_buffer_destroy_listener.link);
 
-	output->old_scanout_buffer_destroy_listener.func =
-		output_handle_old_scanout_buffer_destroy;
-	wl_list_init(&output->old_scanout_buffer_destroy_listener.link);
+	output->pending_scanout_buffer_destroy_listener.func =
+		output_handle_pending_scanout_buffer_destroy;
+	wl_list_init(&output->pending_scanout_buffer_destroy_listener.link);
 
 	wl_list_init(&output->frame_callback_list);
 

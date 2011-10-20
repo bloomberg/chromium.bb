@@ -71,8 +71,6 @@ struct drm_output {
 	struct gbm_bo *bo[2];
 	uint32_t current;	
 
-	struct wlsc_surface *scanout_surface;
-
 	uint32_t fs_surf_fb_id;
 	uint32_t pending_fs_surf_fb_id;
 };
@@ -107,9 +105,8 @@ drm_output_present(struct wlsc_output *output_base)
 
 	output->current ^= 1;
 
-	if (output->scanout_surface != NULL) {
-		output->scanout_surface = NULL;
-		fb_id = output->fs_surf_fb_id;
+	if (output->pending_fs_surf_fb_id != 0) {
+		fb_id = output->pending_fs_surf_fb_id;
 	} else {
 		fb_id = output->fb_id[output->current ^ 1];
 	}
@@ -130,14 +127,14 @@ page_flip_handler(int fd, unsigned int frame,
 		(struct drm_compositor *) output->base.compositor;
 	uint32_t msecs;
 
-	if (output->pending_fs_surf_fb_id) {
-		drmModeRmFB(c->drm.fd, output->pending_fs_surf_fb_id);
-		output->pending_fs_surf_fb_id = 0;
+	if (output->fs_surf_fb_id) {
+		drmModeRmFB(c->drm.fd, output->fs_surf_fb_id);
+		output->fs_surf_fb_id = 0;
 	}
 
-	if (output->fs_surf_fb_id) {
-		output->pending_fs_surf_fb_id = output->fs_surf_fb_id;
-		output->fs_surf_fb_id = 0;
+	if (output->pending_fs_surf_fb_id) {
+		output->fs_surf_fb_id = output->pending_fs_surf_fb_id;
+		output->pending_fs_surf_fb_id = 0;
 	}
 
 	msecs = sec * 1000 + usec / 1000;
@@ -184,8 +181,7 @@ drm_output_prepare_scanout_surface(struct wlsc_output *output_base,
 	if (ret)
 		return -1;
 
-	output->fs_surf_fb_id = fb_id;
-	output->scanout_surface = es;
+	output->pending_fs_surf_fb_id = fb_id;
 
 	return 0;
 }
@@ -535,7 +531,6 @@ create_output_for_connector(struct drm_compositor *ec,
 		return -1;
 	}
 
-	output->scanout_surface = NULL;
 	output->base.prepare_render = drm_output_prepare_render;
 	output->base.present = drm_output_present;
 	output->base.prepare_scanout_surface =
