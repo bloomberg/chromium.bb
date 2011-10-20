@@ -142,6 +142,10 @@ class SVNWrapperTestCase(BaseTestCase):
     gclient_scm.os.path.exists(join(self.base_path, '.hg')).AndReturn(False)
     # Checkout.
     gclient_scm.os.path.exists(self.base_path).AndReturn(False)
+    parent = gclient_scm.os.path.dirname(self.base_path)
+    gclient_scm.os.path.exists(parent).AndReturn(False)
+    gclient_scm.os.makedirs(parent)
+    gclient_scm.os.path.exists(parent).AndReturn(True)
     files_list = self.mox.CreateMockAnything()
     gclient_scm.scm.SVN.RunAndGetFileList(
         options.verbose,
@@ -167,6 +171,10 @@ class SVNWrapperTestCase(BaseTestCase):
     gclient_scm.os.path.exists(join(self.base_path, '.git')).AndReturn(False)
     gclient_scm.os.path.exists(join(self.base_path, '.hg')).AndReturn(False)
     gclient_scm.os.path.exists(self.base_path).AndReturn(False)
+    parent = gclient_scm.os.path.dirname(self.base_path)
+    gclient_scm.os.path.exists(parent).AndReturn(False)
+    gclient_scm.os.makedirs(parent)
+    gclient_scm.os.path.exists(parent).AndReturn(True)
     files_list = self.mox.CreateMockAnything()
     gclient_scm.scm.SVN.Capture(['--version']).AndReturn('svn, version 1.6')
     gclient_scm.scm.SVN.RunAndGetFileList(
@@ -255,6 +263,10 @@ class SVNWrapperTestCase(BaseTestCase):
     gclient_scm.os.path.exists(join(self.base_path, '.hg')).AndReturn(False)
     # Checkout.
     gclient_scm.os.path.exists(self.base_path).AndReturn(False)
+    parent = gclient_scm.os.path.dirname(self.base_path)
+    gclient_scm.os.path.exists(parent).AndReturn(False)
+    gclient_scm.os.makedirs(parent)
+    gclient_scm.os.path.exists(parent).AndReturn(True)
     files_list = self.mox.CreateMockAnything()
     gclient_scm.scm.SVN.Capture(['--version']
         ).AndReturn('svn, version 1.5.1 (r32289)')

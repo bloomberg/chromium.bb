@@ -171,6 +171,26 @@ def rmtree(path):
 RemoveDirectory = rmtree
 
 
+def safe_makedirs(tree):
+  """Creates the directory in a safe manner.
+
+  Because multiple threads can create these directories concurently, trap the
+  exception and pass on.
+  """
+  count = 0
+  while not os.path.exists(tree):
+    count += 1
+    try:
+      os.makedirs(tree)
+    except OSError, e:
+      # 17 POSIX, 183 Windows
+      if e.errno not in (17, 183):
+        raise
+      if count > 40:
+        # Give up.
+        raise
+
+
 def CheckCallAndFilterAndHeader(args, always=False, **kwargs):
   """Adds 'header' support to CheckCallAndFilter.
 

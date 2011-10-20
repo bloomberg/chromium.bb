@@ -36,7 +36,7 @@ class GclientUtilsUnittest(GclientUtilBase):
         'PrintableObject', 'RemoveDirectory', 'SoftClone', 'SplitUrlRevision',
         'SyntaxErrorToError', 'WorkItem',
         'errno', 'lockedmethod', 'logging', 'os', 'Queue', 're', 'rmtree',
-        'stat', 'subprocess2', 'sys','threading', 'time',
+        'safe_makedirs', 'stat', 'subprocess2', 'sys','threading', 'time',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(gclient_utils, members)

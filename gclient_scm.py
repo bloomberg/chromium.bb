@@ -213,6 +213,7 @@ class GitWrapper(SCMWrapper):
       rev_type = "hash"
 
     if not os.path.exists(self.checkout_path):
+      gclient_utils.safe_makedirs(os.path.dirname(self.checkout_path))
       self._Clone(revision, url, options)
       files = self._Capture(['ls-files']).splitlines()
       file_list.extend([os.path.join(self.checkout_path, f) for f in files])
@@ -508,7 +509,7 @@ class GitWrapper(SCMWrapper):
     # create it, so we need to do it manually.
     parent_dir = os.path.dirname(self.checkout_path)
     if not os.path.exists(parent_dir):
-      os.makedirs(parent_dir)
+      gclient_utils.safe_makedirs(parent_dir)
 
     percent_re = re.compile('.* ([0-9]{1,2})% .*')
     def _GitFilter(line):
@@ -775,6 +776,7 @@ class SVNWrapper(SCMWrapper):
       rev_str = ''
 
     if not os.path.exists(self.checkout_path):
+      gclient_utils.safe_makedirs(os.path.dirname(self.checkout_path))
       # We need to checkout.
       command = ['checkout', url, self.checkout_path]
       command = self._AddAdditionalUpdateFlags(command, options, revision)
@@ -906,7 +908,7 @@ class SVNWrapper(SCMWrapper):
       # information is not stored next to the file, so we will have to
       # re-export the file every time we sync.
       if not os.path.exists(self.checkout_path):
-        os.makedirs(self.checkout_path)
+        gclient_utils.safe_makedirs(self.checkout_path)
       command = ["export", os.path.join(self.url, filename),
                  os.path.join(self.checkout_path, filename)]
       command = self._AddAdditionalUpdateFlags(command, options,
