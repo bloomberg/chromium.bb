@@ -118,8 +118,10 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // Assigns a LayoutManager to size and place child windows.
   // The Window takes ownership of the LayoutManager.
   void SetLayoutManager(LayoutManager* layout_manager);
+  LayoutManager* layout_manager() { return layout_manager_.get(); }
 
-  // Changes the bounds of the window.
+  // Changes the bounds of the window. If present, the window's parent's
+  // LayoutManager may adjust the bounds.
   void SetBounds(const gfx::Rect& new_bounds);
 
   // Returns the target bounds of the window. If the window's layer is
@@ -253,6 +255,8 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   virtual Desktop* GetDesktop();
 
  private:
+  friend class LayoutManager;
+
   // Changes the bounds of the window without condition.
   void SetBoundsInternal(const gfx::Rect& new_bounds);
 

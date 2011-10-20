@@ -136,12 +136,16 @@ void Window::SetLayoutManager(LayoutManager* layout_manager) {
 }
 
 void Window::SetBounds(const gfx::Rect& new_bounds) {
+  gfx::Rect adjusted_bounds = new_bounds;
+  if (parent_ && parent_->layout_manager())
+    parent_->layout_manager()->CalculateBoundsForChild(this, &adjusted_bounds);
+
   if (show_state_ == ui::SHOW_STATE_MAXIMIZED ||
       show_state_ == ui::SHOW_STATE_FULLSCREEN) {
-    restore_bounds_ = new_bounds;
+    restore_bounds_ = adjusted_bounds;
     return;
   }
-  SetBoundsInternal(new_bounds);
+  SetBoundsInternal(adjusted_bounds);
 }
 
 gfx::Rect Window::GetTargetBounds() const {
@@ -198,12 +202,16 @@ void Window::AddChild(Window* child) {
   child->parent_ = this;
   layer_->Add(child->layer_.get());
   children_.push_back(child);
+  if (layout_manager_.get())
+    layout_manager_->OnWindowAdded(child);
   FOR_EACH_OBSERVER(WindowObserver, observers_, OnWindowAdded(child));
 }
 
 void Window::RemoveChild(Window* child) {
   Windows::iterator i = std::find(children_.begin(), children_.end(), child);
   DCHECK(i != children_.end());
+  if (layout_manager_.get())
+    layout_manager_->OnWillRemoveWindow(child);
   FOR_EACH_OBSERVER(WindowObserver, observers_, OnWillRemoveWindow(child));
   child->parent_ = NULL;
   layer_->Remove(child->layer_.get());
@@ -422,6 +430,8 @@ void Window::SetVisible(bool visible) {
     if (delegate_)
       delegate_->OnWindowVisibilityChanged(is_visible);
   }
+  if (parent_ && parent_->layout_manager_.get())
+    parent_->layout_manager_->OnChildWindowVisibilityChanged(this, visible);
   FOR_EACH_OBSERVER(WindowObserver, observers_,
                     OnWindowVisibilityChanged(this, visible));
 }

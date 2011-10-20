@@ -6,6 +6,7 @@
 #define UI_AURA_TEST_TEST_DESKTOP_DELEGATE_H_
 #pragma once
 
+#include "ui/aura/aura_export.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
@@ -17,7 +18,7 @@ class ToplevelWindowContainer;
 
 namespace test {
 
-class TestDesktopDelegate : public DesktopDelegate {
+class AURA_EXPORT TestDesktopDelegate : public DesktopDelegate {
  public:
   // Callers should allocate a TestDesktopDelegate on the heap and then forget
   // about it -- the c'tor passes ownership of the TestDesktopDelegate to the

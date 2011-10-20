@@ -10,6 +10,7 @@
 #include "ui/aura/toplevel_window_container.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_types.h"
+#include "ui/aura_shell/default_container_layout_manager.h"
 #include "ui/aura_shell/desktop_layout_manager.h"
 #include "ui/aura_shell/launcher/launcher.h"
 #include "ui/aura_shell/shell_delegate.h"
@@ -33,6 +34,8 @@ void CreateSpecialContainers(aura::Window::Windows* containers) {
 
   aura::Window* default_container = new aura::ToplevelWindowContainer;
   default_container->set_id(internal::kShellWindowId_DefaultContainer);
+  default_container->SetLayoutManager(
+      new internal::DefaultContainerLayoutManager(default_container));
   containers->push_back(default_container);
 
   aura::Window* always_on_top_container = new aura::ToplevelWindowContainer;
@@ -158,8 +161,10 @@ void Shell::Init() {
           AsToplevelWindowContainer();
   launcher_.reset(new Launcher(toplevel_container));
   desktop_layout->set_launcher_widget(launcher_->widget());
-  desktop_layout->set_status_area_widget(internal::CreateStatusArea());
-  aura::Desktop::GetInstance()->screen()->set_work_area_insets(
+  views::Widget* status_area_widget = internal::CreateStatusArea();
+  desktop_layout->set_status_area_widget(status_area_widget);
+  aura::ScreenAura* screen = aura::Desktop::GetInstance()->screen();
+  screen->set_work_area_insets(
       gfx::Insets(0, 0, launcher_->widget()->GetWindowScreenBounds().height(),
                   0));
 }
