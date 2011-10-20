@@ -17,8 +17,8 @@ import sync_tgz
 import sys
 
 
-def ShowUpdatedDEPS(base_url, version, nacl_newlib_only):
-  """Print a suggested DEPS toolchain hash update for all platforms.
+def GetUpdatedDEPS(base_url, version, nacl_newlib_only):
+  """Return a suggested DEPS toolchain hash update for all platforms.
 
   Arguments:
     base_url: base download url for the toolchains.
@@ -34,10 +34,25 @@ def ShowUpdatedDEPS(base_url, version, nacl_newlib_only):
             not toolchainbinaries.IsNaClNewlibFlavor(flavor)):
           continue
         flavors.add(flavor)
+  new_deps = {}
   for flavor in flavors:
     url = toolchainbinaries.EncodeToolchainUrl(base_url, version, flavor)
-    print '  "nacl_toolchain_%s_hash":' % flavor
-    print '      "%s",' % sync_tgz.HashUrl(url)
+    new_deps['nacl_toolchain_%s_hash' % flavor] = sync_tgz.HashUrl(url)
+  return new_deps
+
+def ShowUpdatedDEPS(base_url, version, nacl_newlib_only):
+  """Print a suggested DEPS toolchain hash update for all platforms.
+
+  Arguments:
+    base_url: base download url for the toolchains.
+    version: revision of the toolchain to use.
+    nacl_newlib_only: flag indicating to only consider non-pnacl newlib flavors.
+  """
+  new_deps = GetUpdatedDEPS(base_url, version, nacl_newlib_only).iteritems()
+  new_deps.sort()
+  for key, value in new_deps:
+    print '  "%s":' % key
+    print '      "%s",' % value
     sys.stdout.flush()
 
 
