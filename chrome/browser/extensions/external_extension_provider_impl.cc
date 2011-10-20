@@ -73,7 +73,7 @@ void DefaultAppsProvider::VisitRegisteredExtension() const {
   if (profile_) {
     ExtensionService* extension_service = profile_->GetExtensionService();
     if (extension_service && extension_service->HasApps()) {
-      service()->OnExternalProviderReady();
+      service()->OnExternalProviderReady(this);
       return;
     }
   }
@@ -260,14 +260,14 @@ void ExternalExtensionProviderImpl::SetPrefs(DictionaryValue* prefs) {
     prefs_->Remove(*it, NULL);
   }
 
-  service_->OnExternalProviderReady();
+  service_->OnExternalProviderReady(this);
 }
 
 void ExternalExtensionProviderImpl::ServiceShutdown() {
   service_ = NULL;
 }
 
-bool ExternalExtensionProviderImpl::IsReady() {
+bool ExternalExtensionProviderImpl::IsReady() const {
   return ready_;
 }
 

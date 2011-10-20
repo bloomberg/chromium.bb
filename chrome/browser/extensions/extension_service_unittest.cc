@@ -149,7 +149,7 @@ class MockExtensionProvider : public ExternalExtensionProviderInterface {
       visitor_->OnExternalExtensionFileFound(
           i->first, version.get(), i->second.second, location_);
     }
-    visitor_->OnExternalProviderReady();
+    visitor_->OnExternalProviderReady(this);
   }
 
   virtual bool HasExtension(const std::string& id) const {
@@ -172,7 +172,7 @@ class MockExtensionProvider : public ExternalExtensionProviderInterface {
     return true;
   }
 
-  virtual bool IsReady() {
+  virtual bool IsReady() const {
     return true;
   }
 
@@ -306,8 +306,10 @@ class MockProviderVisitor
     }
   }
 
-  virtual void OnExternalProviderReady() {
-    EXPECT_TRUE(provider_->IsReady());
+  virtual void OnExternalProviderReady(
+      const ExternalExtensionProviderInterface* provider) {
+    EXPECT_EQ(provider, provider_.get());
+    EXPECT_TRUE(provider->IsReady());
   }
 
  private:
@@ -1269,7 +1271,8 @@ TEST_F(ExtensionServiceTest, UninstallingNotLoadedExtension) {
   // If we don't check whether the extension is loaded before we uninstall it
   // in CheckExternalUninstall, a crash will happen here because we will get or
   // dereference a NULL pointer (extension) inside UninstallExtension.
-  service_->OnExternalProviderReady();
+  MockExtensionProvider provider(NULL, Extension::EXTERNAL_REGISTRY);
+  service_->OnExternalProviderReady(&provider);
 }
 
 // Test that external extensions with incorrect IDs are not installed.
@@ -3098,7 +3101,7 @@ void ExtensionServiceTest::TestExternalProvider(
     provider->RemoveExtension(good_crx);
 
     loaded_.clear();
-    service_->OnExternalProviderReady();
+    service_->OnExternalProviderReady(provider);
     loop_.RunAllPending();
     ASSERT_EQ(0u, loaded_.size());
     ValidatePrefKeyCount(0);

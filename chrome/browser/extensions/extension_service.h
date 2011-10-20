@@ -514,7 +514,10 @@ class ExtensionService
                                                  Extension::Location location)
       OVERRIDE;
 
-  virtual void OnExternalProviderReady() OVERRIDE;
+  virtual void OnExternalProviderReady(
+      const ExternalExtensionProviderInterface* provider) OVERRIDE;
+
+  void OnAllExternalProvidersReady();
 
   // Once all external providers are done, generates any needed alerts about
   // extensions.

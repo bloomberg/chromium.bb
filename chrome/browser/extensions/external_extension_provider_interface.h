@@ -36,9 +36,13 @@ class ExternalExtensionProviderInterface {
         const GURL& update_url,
         Extension::Location location) = 0;
 
-     // Called after all the external extensions have been reported through
-     // the above two methods.
-    virtual void OnExternalProviderReady() = 0;
+    // Called after all the external extensions have been reported
+    // through the above two methods. |provider| is a pointer to the
+    // provider that is now ready (typically this), and the
+    // implementation of OnExternalProviderReady() should be able to
+    // safely assert that provider->IsReady().
+    virtual void OnExternalProviderReady(
+      const ExternalExtensionProviderInterface* provider) = 0;
 
    protected:
     virtual ~VisitorInterface() {}
@@ -67,7 +71,7 @@ class ExternalExtensionProviderInterface {
 
   // Determines if this provider had loaded the list of external extensions
   // from its source.
-  virtual bool IsReady() = 0;
+  virtual bool IsReady() const = 0;
 };
 
 typedef std::vector<linked_ptr<ExternalExtensionProviderInterface> >

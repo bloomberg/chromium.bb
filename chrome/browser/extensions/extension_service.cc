@@ -443,7 +443,7 @@ void ExtensionService::OnExternalExtensionUpdateUrlFound(
   }
   pending_extension_manager()->AddFromExternalUpdateUrl(
       id, update_url, location);
-  external_extension_url_added_ |= true;
+  external_extension_url_added_ = true;
 }
 
 // If a download url matches one of these patterns and has a referrer of the
@@ -2111,17 +2111,21 @@ void ExtensionService::CheckForExternalUpdates() {
     provider->VisitRegisteredExtension();
   }
 
-  // Uninstall of unclaimed extensions will happen after all the providers
-  // had reported ready.  Every provider calls OnExternalProviderReady()
-  // when it finishes, and OnExternalProviderReady() only acts when all
-  // providers are ready.  In case there are no providers, we call it
-  // to trigger removal of extensions that used to have an external source.
-  if (external_extension_providers_.empty())
-    OnExternalProviderReady();
+  // Do any required work that we would have done after completion of all
+  // providers.
+  if (external_extension_providers_.empty()) {
+    OnAllExternalProvidersReady();
+  }
 }
 
-void ExtensionService::OnExternalProviderReady() {
+void ExtensionService::OnExternalProviderReady(
+    const ExternalExtensionProviderInterface* provider) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+#if 0
+  // TODO(rogerta): Remove guard and this comment when bug described
+  // in http://codereview.chromium.org/8245018/ is fixed.
+  CHECK(provider->IsReady());
+#endif
 
   // An external provider has finished loading.  We only take action
   // if all of them are finished. So we check them first.
@@ -2133,7 +2137,13 @@ void ExtensionService::OnExternalProviderReady() {
       return;
   }
 
-  // All the providers are ready.  Install any pending extensions.
+  OnAllExternalProvidersReady();
+}
+
+void ExtensionService::OnAllExternalProvidersReady() {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // Install any pending extensions.
   if (external_extension_url_added_ && updater()) {
     external_extension_url_added_ = false;
     updater()->CheckNow();

@@ -87,8 +87,10 @@ class MockExternalPolicyExtensionProviderVisitor
     EXPECT_NE(false, remaining_extensions->Remove(ext_str, NULL));
   }
 
-  virtual void OnExternalProviderReady() {
-    EXPECT_TRUE(provider_->IsReady());
+  virtual void OnExternalProviderReady(
+      const ExternalExtensionProviderInterface* provider) {
+    EXPECT_EQ(provider, provider_.get());
+    EXPECT_TRUE(provider->IsReady());
   }
 
  private:
