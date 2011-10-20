@@ -8,7 +8,7 @@
 #include "base/compiler_specific.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/var_tracker.h"
-#include "webkit/plugins/ppapi/resource_tracker.h"
+#include "webkit/plugins/ppapi/host_resource_tracker.h"
 
 namespace webkit {
 namespace ppapi {
@@ -27,12 +27,14 @@ class HostGlobals : public ::ppapi::PpapiGlobals {
   virtual ::ppapi::ResourceTracker* GetResourceTracker() OVERRIDE;
   virtual ::ppapi::VarTracker* GetVarTracker() OVERRIDE;
 
-  ResourceTracker* host_resource_tracker() { return &host_resource_tracker_; }
+  HostResourceTracker* host_resource_tracker() {
+    return &host_resource_tracker_;
+  }
 
  private:
   static HostGlobals* host_globals_;
 
-  ResourceTracker host_resource_tracker_;
+  HostResourceTracker host_resource_tracker_;
   ::ppapi::VarTracker host_var_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(HostGlobals);

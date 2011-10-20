@@ -13,9 +13,9 @@
 #include "base/stl_util.h"
 #include "base/task.h"
 #include "webkit/plugins/ppapi/host_globals.h"
+#include "webkit/plugins/ppapi/host_resource_tracker.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
-#include "webkit/plugins/ppapi/resource_tracker.h"
 
 using base::PlatformFile;
 using base::PlatformFileError;

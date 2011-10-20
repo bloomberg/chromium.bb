@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_PLUGINS_PPAPI_RESOURCE_TRACKER_H_
-#define WEBKIT_PLUGINS_PPAPI_RESOURCE_TRACKER_H_
+#ifndef WEBKIT_PLUGINS_PPAPI_HOST_RESOURCE_TRACKER_H_
+#define WEBKIT_PLUGINS_PPAPI_HOST_RESOURCE_TRACKER_H_
 
 #include <map>
 #include <set>
@@ -36,17 +36,17 @@ namespace ppapi {
 
 class PluginInstance;
 class PluginModule;
-class ResourceTrackerTest;
+class HostResourceTrackerTest;
 
 // This class maintains a global list of all live pepper resources. It allows
 // us to check resource ID validity and to map them to a specific module.
 //
 // This object is NOT threadsafe.
-class ResourceTracker : public ::ppapi::TrackerBase,
-                        public ::ppapi::ResourceTracker {
+class HostResourceTracker : public ::ppapi::TrackerBase,
+                            public ::ppapi::ResourceTracker {
  public:
-  ResourceTracker();
-  virtual ~ResourceTracker();
+  HostResourceTracker();
+  virtual ~HostResourceTracker();
 
   // PP_Resources --------------------------------------------------------------
 
@@ -110,7 +110,7 @@ class ResourceTracker : public ::ppapi::TrackerBase,
   PluginInstance* GetInstance(PP_Instance instance);
 
  private:
-  friend class ResourceTrackerTest;
+  friend class HostResourceTrackerTest;
 
   typedef std::set<PP_Resource> ResourceSet;
 
@@ -136,10 +136,10 @@ class ResourceTracker : public ::ppapi::TrackerBase,
   typedef std::map<PP_Module, PluginModule*> ModuleMap;
   ModuleMap module_map_;
 
-  DISALLOW_COPY_AND_ASSIGN(ResourceTracker);
+  DISALLOW_COPY_AND_ASSIGN(HostResourceTracker);
 };
 
 }  // namespace ppapi
 }  // namespace webkit
 
-#endif  // WEBKIT_PLUGINS_PPAPI_RESOURCE_TRACKER_H_
+#endif  // WEBKIT_PLUGINS_PPAPI_HOST_RESOURCE_TRACKER_H_

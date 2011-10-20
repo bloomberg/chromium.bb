@@ -15,12 +15,12 @@
 #include "ppapi/thunk/enter.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/host_globals.h"
+#include "webkit/plugins/ppapi/host_resource_tracker.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_url_request_info_impl.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
-#include "webkit/plugins/ppapi/resource_tracker.h"
 
 using ppapi::PPTimeToTime;
 using ppapi::StringVar;

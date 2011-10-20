@@ -17,12 +17,12 @@
 #include "webkit/plugins/ppapi/file_path.h"
 #include "webkit/plugins/ppapi/file_type_conversions.h"
 #include "webkit/plugins/ppapi/host_globals.h"
+#include "webkit/plugins/ppapi/host_resource_tracker.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_file_ref_impl.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
-#include "webkit/plugins/ppapi/resource_tracker.h"
 
 #if defined(OS_WIN)
 #include "base/utf_string_conversions.h"

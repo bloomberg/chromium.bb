@@ -62,6 +62,7 @@
 #include "webkit/plugins/ppapi/event_conversion.h"
 #include "webkit/plugins/ppapi/fullscreen_container.h"
 #include "webkit/plugins/ppapi/host_globals.h"
+#include "webkit/plugins/ppapi/host_resource_tracker.h"
 #include "webkit/plugins/ppapi/message_channel.h"
 #include "webkit/plugins/ppapi/npapi_glue.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
@@ -75,7 +76,6 @@
 #include "webkit/plugins/ppapi/ppb_url_loader_impl.h"
 #include "webkit/plugins/ppapi/ppb_url_request_info_impl.h"
 #include "webkit/plugins/ppapi/ppp_pdf.h"
-#include "webkit/plugins/ppapi/resource_tracker.h"
 #include "webkit/plugins/ppapi/string.h"
 #include "webkit/plugins/sad_plugin.h"
 

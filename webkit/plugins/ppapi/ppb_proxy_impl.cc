@@ -8,10 +8,10 @@
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_image_data_api.h"
 #include "webkit/plugins/ppapi/host_globals.h"
+#include "webkit/plugins/ppapi/host_resource_tracker.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_url_loader_impl.h"
-#include "webkit/plugins/ppapi/resource_tracker.h"
 
 using ppapi::PpapiGlobals;
 using ppapi::thunk::EnterResource;

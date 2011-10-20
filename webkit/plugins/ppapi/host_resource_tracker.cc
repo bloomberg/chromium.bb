@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/plugins/ppapi/resource_tracker.h"
+#include "webkit/plugins/ppapi/host_resource_tracker.h"
 
 #include <limits>
 #include <set>
@@ -44,7 +44,7 @@ namespace {
 
 typedef std::map<NPObject*, NPObjectVar*> NPObjectToNPObjectVarMap;
 
-struct ResourceTracker::InstanceData {
+struct HostResourceTracker::InstanceData {
   InstanceData() : instance(0) {}
 
   // Non-owning pointer to the instance object. When a PluginInstance is
@@ -62,16 +62,16 @@ struct ResourceTracker::InstanceData {
       function_proxies[::ppapi::proxy::INTERFACE_ID_COUNT];
 };
 
-ResourceTracker::ResourceTracker() {
+HostResourceTracker::HostResourceTracker() {
   // Wire up the new shared resource tracker base to use our implementation.
   ::ppapi::TrackerBase::Init(&GetTrackerBase);
 }
 
-ResourceTracker::~ResourceTracker() {
+HostResourceTracker::~HostResourceTracker() {
 }
 
-void ResourceTracker::CleanupInstanceData(PP_Instance instance,
-                                          bool delete_instance) {
+void HostResourceTracker::CleanupInstanceData(PP_Instance instance,
+                                              bool delete_instance) {
   DLOG_IF(ERROR, !CheckIdType(instance, ::ppapi::PP_ID_TYPE_INSTANCE))
       << instance << " is not a PP_Instance.";
   InstanceMap::iterator found = instance_map_.find(instance);
@@ -103,7 +103,7 @@ void ResourceTracker::CleanupInstanceData(PP_Instance instance,
     instance_map_.erase(found);
 }
 
-::ppapi::FunctionGroupBase* ResourceTracker::GetFunctionAPI(
+::ppapi::FunctionGroupBase* HostResourceTracker::GetFunctionAPI(
     PP_Instance pp_instance,
     ::ppapi::proxy::InterfaceID id) {
   // Get the instance object. This also ensures that the instance data is in
@@ -142,14 +142,14 @@ void ResourceTracker::CleanupInstanceData(PP_Instance instance,
   return proxy.get();
 }
 
-PP_Module ResourceTracker::GetModuleForInstance(PP_Instance instance) {
+PP_Module HostResourceTracker::GetModuleForInstance(PP_Instance instance) {
   PluginInstance* inst = GetInstance(instance);
   if (!inst)
     return 0;
   return inst->module()->pp_module();
 }
 
-void ResourceTracker::LastPluginRefWasDeleted(::ppapi::Resource* object) {
+void HostResourceTracker::LastPluginRefWasDeleted(::ppapi::Resource* object) {
   ::ppapi::ResourceTracker::LastPluginRefWasDeleted(object);
 
   // TODO(brettw) this should be removed when we have the callback tracker
@@ -163,7 +163,7 @@ void ResourceTracker::LastPluginRefWasDeleted(::ppapi::Resource* object) {
   }
 }
 
-void ResourceTracker::AddNPObjectVar(NPObjectVar* object_var) {
+void HostResourceTracker::AddNPObjectVar(NPObjectVar* object_var) {
   DCHECK(instance_map_.find(object_var->pp_instance()) != instance_map_.end());
   InstanceData& data = *instance_map_[object_var->pp_instance()].get();
 
@@ -172,7 +172,7 @@ void ResourceTracker::AddNPObjectVar(NPObjectVar* object_var) {
   data.np_object_to_object_var[object_var->np_object()] = object_var;
 }
 
-void ResourceTracker::RemoveNPObjectVar(NPObjectVar* object_var) {
+void HostResourceTracker::RemoveNPObjectVar(NPObjectVar* object_var) {
   DCHECK(instance_map_.find(object_var->pp_instance()) != instance_map_.end());
   InstanceData& data = *instance_map_[object_var->pp_instance()].get();
 
@@ -189,7 +189,7 @@ void ResourceTracker::RemoveNPObjectVar(NPObjectVar* object_var) {
   data.np_object_to_object_var.erase(found);
 }
 
-NPObjectVar* ResourceTracker::NPObjectVarForNPObject(PP_Instance instance,
+NPObjectVar* HostResourceTracker::NPObjectVarForNPObject(PP_Instance instance,
                                                      NPObject* np_object) {
   DCHECK(instance_map_.find(instance) != instance_map_.end());
   InstanceData& data = *instance_map_[instance].get();
@@ -201,7 +201,7 @@ NPObjectVar* ResourceTracker::NPObjectVarForNPObject(PP_Instance instance,
   return found->second;
 }
 
-int ResourceTracker::GetLiveNPObjectVarsForInstance(
+int HostResourceTracker::GetLiveNPObjectVarsForInstance(
     PP_Instance instance) const {
   InstanceMap::const_iterator found = instance_map_.find(instance);
   if (found == instance_map_.end())
@@ -209,7 +209,7 @@ int ResourceTracker::GetLiveNPObjectVarsForInstance(
   return static_cast<int>(found->second->np_object_to_object_var.size());
 }
 
-PP_Instance ResourceTracker::AddInstance(PluginInstance* instance) {
+PP_Instance HostResourceTracker::AddInstance(PluginInstance* instance) {
   DCHECK(instance_map_.find(instance->pp_instance()) == instance_map_.end());
 
   // Use a random number for the instance ID. This helps prevent some
@@ -231,17 +231,17 @@ PP_Instance ResourceTracker::AddInstance(PluginInstance* instance) {
   return new_instance;
 }
 
-void ResourceTracker::InstanceDeleted(PP_Instance instance) {
+void HostResourceTracker::InstanceDeleted(PP_Instance instance) {
   DidDeleteInstance(instance);
   CleanupInstanceData(instance, true);
 }
 
-void ResourceTracker::InstanceCrashed(PP_Instance instance) {
+void HostResourceTracker::InstanceCrashed(PP_Instance instance) {
   DidDeleteInstance(instance);
   CleanupInstanceData(instance, false);
 }
 
-PluginInstance* ResourceTracker::GetInstance(PP_Instance instance) {
+PluginInstance* HostResourceTracker::GetInstance(PP_Instance instance) {
   DLOG_IF(ERROR, !CheckIdType(instance, ::ppapi::PP_ID_TYPE_INSTANCE))
       << instance << " is not a PP_Instance.";
   InstanceMap::iterator found = instance_map_.find(instance);
@@ -250,7 +250,7 @@ PluginInstance* ResourceTracker::GetInstance(PP_Instance instance) {
   return found->second->instance;
 }
 
-PP_Module ResourceTracker::AddModule(PluginModule* module) {
+PP_Module HostResourceTracker::AddModule(PluginModule* module) {
 #ifndef NDEBUG
   // Make sure we're not adding one more than once.
   for (ModuleMap::const_iterator i = module_map_.begin();
@@ -269,7 +269,7 @@ PP_Module ResourceTracker::AddModule(PluginModule* module) {
   return new_module;
 }
 
-void ResourceTracker::ModuleDeleted(PP_Module module) {
+void HostResourceTracker::ModuleDeleted(PP_Module module) {
   DLOG_IF(ERROR, !CheckIdType(module, ::ppapi::PP_ID_TYPE_MODULE))
       << module << " is not a PP_Module.";
   ModuleMap::iterator found = module_map_.find(module);
@@ -280,7 +280,7 @@ void ResourceTracker::ModuleDeleted(PP_Module module) {
   module_map_.erase(found);
 }
 
-PluginModule* ResourceTracker::GetModule(PP_Module module) {
+PluginModule* HostResourceTracker::GetModule(PP_Module module) {
   DLOG_IF(ERROR, !CheckIdType(module, ::ppapi::PP_ID_TYPE_MODULE))
       << module << " is not a PP_Module.";
   ModuleMap::iterator found = module_map_.find(module);

@@ -15,7 +15,7 @@
 #include "ppapi/c/dev/ppp_video_decoder_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
-#include "webkit/plugins/ppapi/resource_helper.h"
+#include "ppapi/shared_impl/resource_tracker.h"
 #include "ppapi/thunk/enter.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
@@ -23,7 +23,7 @@
 #include "webkit/plugins/ppapi/ppb_buffer_impl.h"
 #include "webkit/plugins/ppapi/ppb_context_3d_impl.h"
 #include "webkit/plugins/ppapi/ppb_graphics_3d_impl.h"
-#include "webkit/plugins/ppapi/resource_tracker.h"
+#include "webkit/plugins/ppapi/resource_helper.h"
 
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_Buffer_API;

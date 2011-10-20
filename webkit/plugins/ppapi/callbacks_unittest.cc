@@ -8,13 +8,13 @@
 #include "base/message_loop.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/shared_impl/resource_tracker.h"
 #include "webkit/plugins/ppapi/callbacks.h"
 #include "webkit/plugins/ppapi/host_globals.h"
 #include "webkit/plugins/ppapi/mock_resource.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
-#include "webkit/plugins/ppapi/resource_tracker.h"
 
 namespace webkit {
 namespace ppapi {
@@ -185,7 +185,7 @@ class CallbackResourceTest : public PpapiUnittest {
 
 // Test that callbacks get aborted on the last resource unref.
 TEST_F(CallbackResourceTest, AbortOnNoRef) {
-  ResourceTracker* resource_tracker =
+  HostResourceTracker* resource_tracker =
       HostGlobals::Get()->host_resource_tracker();
 
   // Test several things: Unref-ing a resource (to zero refs) with callbacks
@@ -225,7 +225,7 @@ TEST_F(CallbackResourceTest, AbortOnNoRef) {
 // Test that "resurrecting" a resource (getting a new ID for a |Resource|)
 // doesn't resurrect callbacks.
 TEST_F(CallbackResourceTest, Resurrection) {
-  ResourceTracker* resource_tracker =
+  HostResourceTracker* resource_tracker =
       HostGlobals::Get()->host_resource_tracker();
 
   scoped_refptr<CallbackMockResource> resource(

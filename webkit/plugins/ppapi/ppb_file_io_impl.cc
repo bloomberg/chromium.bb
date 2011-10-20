@@ -26,7 +26,6 @@
 #include "webkit/plugins/ppapi/ppb_file_ref_impl.h"
 #include "webkit/plugins/ppapi/quota_file_io.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
-#include "webkit/plugins/ppapi/resource_tracker.h"
 
 using ppapi::PPTimeToTime;
 using ppapi::TimeToPPTime;

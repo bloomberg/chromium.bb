@@ -10,6 +10,7 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/dev/ppb_directory_reader_dev.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
+#include "ppapi/shared_impl/resource_tracker.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_file_ref_api.h"
 #include "webkit/plugins/ppapi/common.h"
@@ -20,7 +21,6 @@
 #include "webkit/plugins/ppapi/ppb_file_ref_impl.h"
 #include "webkit/plugins/ppapi/ppb_file_system_impl.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
-#include "webkit/plugins/ppapi/resource_tracker.h"
 
 using ::ppapi::PpapiGlobals;
 using ::ppapi::thunk::EnterResourceNoLock;

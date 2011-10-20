@@ -8,7 +8,7 @@
 #include "ppapi/c/pp_var.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "webkit/plugins/ppapi/host_globals.h"
-#include "webkit/plugins/ppapi/resource_tracker.h"
+#include "webkit/plugins/ppapi/host_resource_tracker.h"
 
 using webkit::ppapi::HostGlobals;
 using WebKit::WebBindings;
