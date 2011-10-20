@@ -7,6 +7,7 @@
 #include <fcntl.h>
 #include <sys/types.h>
 
+#include "base/bind.h"
 #include "base/eintr_wrapper.h"
 #include "net/base/net_util.h"
 #include "testing/platform_test.h"
@@ -36,8 +37,7 @@ void ListenSocketTester::SetUp() {
   thread_->StartWithOptions(options);
   loop_ = reinterpret_cast<MessageLoopForIO*>(thread_->message_loop());
 
-  loop_->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &ListenSocketTester::Listen));
+  loop_->PostTask(FROM_HERE, base::Bind(&ListenSocketTester::Listen, this));
 
   // verify Listen succeeded
   NextAction();
@@ -69,8 +69,7 @@ void ListenSocketTester::TearDown() {
   NextAction();
   ASSERT_EQ(ACTION_CLOSE, last_action_.type());
 
-  loop_->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &ListenSocketTester::Shutdown));
+  loop_->PostTask(FROM_HERE, base::Bind(&ListenSocketTester::Shutdown, this));
   NextAction();
   ASSERT_EQ(ACTION_SHUTDOWN, last_action_.type());
 
@@ -158,8 +157,8 @@ void ListenSocketTester::TestClientSendLong() {
 }
 
 void ListenSocketTester::TestServerSend() {
-  loop_->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &ListenSocketTester::SendFromTester));
+  loop_->PostTask(FROM_HERE, base::Bind(
+      &ListenSocketTester::SendFromTester, this));
   NextAction();
   ASSERT_EQ(ACTION_SEND, last_action_.type());
   const int buf_len = 200;
