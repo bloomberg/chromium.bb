@@ -17,7 +17,6 @@
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/shared_impl/resource_tracker.h"
-#include "ppapi/shared_impl/tracker_base.h"
 #include "ppapi/shared_impl/var.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
@@ -38,6 +37,7 @@
 
 using ppapi::PpapiGlobals;
 using webkit::ppapi::HostGlobals;
+using webkit::ppapi::PluginInstance;
 using WebKit::WebView;
 using content::RenderThread;
 
@@ -125,8 +125,7 @@ static const ResourceImageInfo kResourceImageMap[] = {
 
 PP_Var GetLocalizedString(PP_Instance instance_id,
                           PP_ResourceString string_id) {
-  webkit::ppapi::PluginInstance* instance =
-      HostGlobals::Get()->host_resource_tracker()->GetInstance(instance_id);
+  PluginInstance* instance = HostGlobals::Get()->GetInstance(instance_id);
   if (!instance)
     return PP_MakeUndefined();
 
@@ -162,7 +161,7 @@ PP_Resource GetResourceImage(PP_Instance instance_id,
       ResourceBundle::GetSharedInstance().GetBitmapNamed(res_id);
 
   // Validate the instance.
-  if (!HostGlobals::Get()->host_resource_tracker()->GetInstance(instance_id))
+  if (!HostGlobals::Get()->GetInstance(instance_id))
     return 0;
   scoped_refptr<webkit::ppapi::PPB_ImageData_Impl> image_data(
       new webkit::ppapi::PPB_ImageData_Impl(instance_id));
@@ -190,7 +189,7 @@ PP_Resource GetFontFileWithFallback(
     PP_PrivateFontCharset charset) {
 #if defined(OS_LINUX)
   // Validate the instance before using it below.
-  if (!HostGlobals::Get()->host_resource_tracker()->GetInstance(instance_id))
+  if (!HostGlobals::Get()->GetInstance(instance_id))
     return 0;
 
   scoped_refptr<ppapi::StringVar> face_name(ppapi::StringVar::FromPPVar(
@@ -284,24 +283,21 @@ void SearchString(PP_Instance instance,
 }
 
 void DidStartLoading(PP_Instance instance_id) {
-  webkit::ppapi::PluginInstance* instance =
-      HostGlobals::Get()->host_resource_tracker()->GetInstance(instance_id);
+  PluginInstance* instance = HostGlobals::Get()->GetInstance(instance_id);
   if (!instance)
     return;
   instance->delegate()->DidStartLoading();
 }
 
 void DidStopLoading(PP_Instance instance_id) {
-  webkit::ppapi::PluginInstance* instance =
-      HostGlobals::Get()->host_resource_tracker()->GetInstance(instance_id);
+  PluginInstance* instance = HostGlobals::Get()->GetInstance(instance_id);
   if (!instance)
     return;
   instance->delegate()->DidStopLoading();
 }
 
 void SetContentRestriction(PP_Instance instance_id, int restrictions) {
-  webkit::ppapi::PluginInstance* instance =
-      HostGlobals::Get()->host_resource_tracker()->GetInstance(instance_id);
+  PluginInstance* instance = HostGlobals::Get()->GetInstance(instance_id);
   if (!instance)
     return;
   instance->delegate()->SetContentRestriction(restrictions);
@@ -319,8 +315,7 @@ void UserMetricsRecordAction(PP_Var action) {
 }
 
 void HasUnsupportedFeature(PP_Instance instance_id) {
-  webkit::ppapi::PluginInstance* instance =
-      HostGlobals::Get()->host_resource_tracker()->GetInstance(instance_id);
+  PluginInstance* instance = HostGlobals::Get()->GetInstance(instance_id);
   if (!instance)
     return;
 
@@ -335,8 +330,7 @@ void HasUnsupportedFeature(PP_Instance instance_id) {
 }
 
 void SaveAs(PP_Instance instance_id) {
-  webkit::ppapi::PluginInstance* instance =
-      HostGlobals::Get()->host_resource_tracker()->GetInstance(instance_id);
+  PluginInstance* instance = HostGlobals::Get()->GetInstance(instance_id);
   if (!instance)
     return;
   instance->delegate()->SaveURLAs(instance->plugin_url());

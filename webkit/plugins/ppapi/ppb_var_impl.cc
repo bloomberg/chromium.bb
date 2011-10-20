@@ -12,7 +12,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/host_globals.h"
-#include "webkit/plugins/ppapi/host_resource_tracker.h"
 #include "webkit/plugins/ppapi/npapi_glue.h"
 #include "webkit/plugins/ppapi/npobject_var.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
@@ -126,8 +125,7 @@ class ObjectAccessorTryCatch : public TryCatch {
   NPObjectVar* object() { return object_.get(); }
 
   PluginInstance* GetPluginInstance() {
-    return HostGlobals::Get()->host_resource_tracker()->GetInstance(
-      object()->pp_instance());
+    return HostGlobals::Get()->GetInstance(object()->pp_instance());
   }
 
  protected:
@@ -410,8 +408,7 @@ bool IsInstanceOfDeprecated(PP_Var var,
 PP_Var CreateObjectDeprecated(PP_Instance pp_instance,
                               const PPP_Class_Deprecated* ppp_class,
                               void* ppp_class_data) {
-  PluginInstance* instance =
-      HostGlobals::Get()->host_resource_tracker()->GetInstance(pp_instance);
+  PluginInstance* instance = HostGlobals::Get()->GetInstance(pp_instance);
   if (!instance) {
     DLOG(ERROR) << "Create object passed an invalid instance.";
     return PP_MakeNull();
@@ -422,8 +419,7 @@ PP_Var CreateObjectDeprecated(PP_Instance pp_instance,
 PP_Var CreateObjectWithModuleDeprecated(PP_Module pp_module,
                                         const PPP_Class_Deprecated* ppp_class,
                                         void* ppp_class_data) {
-  PluginModule* module =
-      HostGlobals::Get()->host_resource_tracker()->GetModule(pp_module);
+  PluginModule* module = HostGlobals::Get()->GetModule(pp_module);
   if (!module)
     return PP_MakeNull();
   return PluginObject::Create(module->GetSomeInstance(),

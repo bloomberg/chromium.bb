@@ -19,7 +19,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/host_globals.h"
-#include "webkit/plugins/ppapi/host_resource_tracker.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 
@@ -65,8 +64,7 @@ PP_Bool IsFormatAvailable(PP_Instance instance_id,
                           PP_Flash_Clipboard_Type clipboard_type,
                           PP_Flash_Clipboard_Format format) {
   // If you don't give us an instance, we don't give you anything.
-  PluginInstance* instance =
-      HostGlobals::Get()->host_resource_tracker()->GetInstance(instance_id);
+  PluginInstance* instance = HostGlobals::Get()->GetInstance(instance_id);
   if (!instance)
     return PP_FALSE;
 
@@ -84,8 +82,7 @@ PP_Bool IsFormatAvailable(PP_Instance instance_id,
 
 PP_Var ReadPlainText(PP_Instance instance_id,
                      PP_Flash_Clipboard_Type clipboard_type) {
-  PluginInstance* instance =
-      HostGlobals::Get()->host_resource_tracker()->GetInstance(instance_id);
+  PluginInstance* instance = HostGlobals::Get()->GetInstance(instance_id);
   if (!instance)
     return PP_MakeNull();
 

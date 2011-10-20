@@ -72,8 +72,6 @@
         'shared_impl/scoped_pp_resource.h',
         'shared_impl/time_conversion.cc',
         'shared_impl/time_conversion.h',
-        'shared_impl/tracker_base.cc',
-        'shared_impl/tracker_base.h',
         'shared_impl/url_request_info_impl.cc',
         'shared_impl/url_request_info_impl.h',
         'shared_impl/url_util_impl.cc',

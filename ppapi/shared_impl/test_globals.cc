@@ -20,4 +20,13 @@ VarTracker* TestGlobals::GetVarTracker() {
   return &var_tracker_;
 }
 
+FunctionGroupBase* TestGlobals::GetFunctionAPI(PP_Instance inst,
+                                               proxy::InterfaceID id) {
+  return NULL;
+}
+
+PP_Module TestGlobals::GetModuleForInstance(PP_Instance instance) {
+  return 0;
+}
+
 }  // namespace ppapi

@@ -5,7 +5,7 @@
 #include "ppapi/shared_impl/file_ref_impl.h"
 
 #include "base/logging.h"
-#include "ppapi/shared_impl/tracker_base.h"
+#include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/var.h"
 
 namespace ppapi {
@@ -41,7 +41,7 @@ PP_FileSystemType FileRefImpl::GetFileSystemType() const {
 PP_Var FileRefImpl::GetName() const {
   if (!name_var_.get()) {
     name_var_ = new StringVar(
-        TrackerBase::Get()->GetModuleForInstance(pp_instance()),
+        PpapiGlobals::Get()->GetModuleForInstance(pp_instance()),
         create_info_.name);
   }
   return name_var_->GetPPVar();
@@ -52,7 +52,7 @@ PP_Var FileRefImpl::GetPath() const {
     return PP_MakeUndefined();
   if (!path_var_.get()) {
     path_var_ = new StringVar(
-        TrackerBase::Get()->GetModuleForInstance(pp_instance()),
+        PpapiGlobals::Get()->GetModuleForInstance(pp_instance()),
         create_info_.path);
   }
   return path_var_->GetPPVar();

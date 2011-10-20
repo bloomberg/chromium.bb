@@ -19,7 +19,6 @@
 #include "ppapi/proxy/interface_id.h"
 #include "ppapi/shared_impl/function_group_base.h"
 #include "ppapi/shared_impl/resource_tracker.h"
-#include "ppapi/shared_impl/tracker_base.h"
 #include "ppapi/shared_impl/var_tracker.h"
 
 typedef struct NPObject NPObject;

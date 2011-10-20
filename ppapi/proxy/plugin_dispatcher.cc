@@ -25,7 +25,6 @@
 #include "ppapi/proxy/ppp_class_proxy.h"
 #include "ppapi/proxy/resource_creation_proxy.h"
 #include "ppapi/shared_impl/resource.h"
-#include "ppapi/shared_impl/tracker_base.h"
 
 #if defined(OS_POSIX)
 #include "base/eintr_wrapper.h"
@@ -54,7 +53,6 @@ PluginDispatcher::PluginDispatcher(base::ProcessHandle remote_process_handle,
       received_preferences_(false),
       plugin_dispatcher_id_(0) {
   SetSerializationRules(new PluginVarSerializationRules);
-  TrackerBase::Init(&PluginResourceTracker::GetTrackerBaseInstance);
 }
 
 PluginDispatcher::~PluginDispatcher() {

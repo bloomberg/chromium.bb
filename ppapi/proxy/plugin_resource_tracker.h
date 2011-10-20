@@ -18,7 +18,6 @@
 #include "ppapi/proxy/ppapi_proxy_export.h"
 #include "ppapi/shared_impl/host_resource.h"
 #include "ppapi/shared_impl/resource_tracker.h"
-#include "ppapi/shared_impl/tracker_base.h"
 
 template<typename T> struct DefaultSingletonTraits;
 
@@ -30,23 +29,15 @@ namespace proxy {
 
 class PluginDispatcher;
 
-class PPAPI_PROXY_EXPORT PluginResourceTracker : public TrackerBase,
-                                                 public ResourceTracker {
+class PPAPI_PROXY_EXPORT PluginResourceTracker : public ResourceTracker {
  public:
   PluginResourceTracker();
   virtual ~PluginResourceTracker();
-
-  static TrackerBase* GetTrackerBaseInstance();
 
   // Given a host resource, maps it to an existing plugin resource ID if it
   // exists, or returns 0 on failure.
   PP_Resource PluginResourceForHostResource(
       const HostResource& resource) const;
-
-  // TrackerBase.
-  virtual FunctionGroupBase* GetFunctionAPI(PP_Instance inst,
-                                            InterfaceID id) OVERRIDE;
-  virtual PP_Module GetModuleForInstance(PP_Instance instance) OVERRIDE;
 
  protected:
   // ResourceTracker overrides.

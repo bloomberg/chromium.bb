@@ -62,7 +62,6 @@
 #include "webkit/plugins/ppapi/event_conversion.h"
 #include "webkit/plugins/ppapi/fullscreen_container.h"
 #include "webkit/plugins/ppapi/host_globals.h"
-#include "webkit/plugins/ppapi/host_resource_tracker.h"
 #include "webkit/plugins/ppapi/message_channel.h"
 #include "webkit/plugins/ppapi/npapi_glue.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
@@ -243,8 +242,7 @@ void RectToPPRect(const gfx::Rect& input, PP_Rect* output) {
 // unchanged.
 bool SecurityOriginForInstance(PP_Instance instance_id,
                                WebKit::WebSecurityOrigin* security_origin) {
-  PluginInstance* instance =
-      HostGlobals::Get()->host_resource_tracker()->GetInstance(instance_id);
+  PluginInstance* instance = HostGlobals::Get()->GetInstance(instance_id);
   if (!instance)
     return false;
 
@@ -307,7 +305,7 @@ PluginInstance::PluginInstance(
       text_input_caret_bounds_(0, 0, 0, 0),
       text_input_caret_set_(false),
       lock_mouse_callback_(PP_BlockUntilComplete()) {
-  pp_instance_ = HostGlobals::Get()->host_resource_tracker()->AddInstance(this);
+  pp_instance_ = HostGlobals::Get()->AddInstance(this);
 
   memset(&current_print_settings_, 0, sizeof(current_print_settings_));
   DCHECK(delegate);
@@ -336,7 +334,7 @@ PluginInstance::~PluginInstance() {
   delegate_->InstanceDeleted(this);
   module_->InstanceDeleted(this);
 
-  HostGlobals::Get()->host_resource_tracker()->InstanceDeleted(pp_instance_);
+  HostGlobals::Get()->InstanceDeleted(pp_instance_);
 }
 
 // NOTE: Any of these methods that calls into the plugin needs to take into
@@ -424,7 +422,7 @@ void PluginInstance::CommitBackingTexture() {
 
 void PluginInstance::InstanceCrashed() {
   // Force free all resources and vars.
-  HostGlobals::Get()->host_resource_tracker()->InstanceCrashed(pp_instance());
+  HostGlobals::Get()->InstanceCrashed(pp_instance());
 
   // Free any associated graphics.
   SetFullscreen(false, false);

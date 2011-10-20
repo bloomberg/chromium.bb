@@ -12,19 +12,10 @@
 #include "ppapi/proxy/serialized_var.h"
 #include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/shared_impl/resource.h"
-#include "ppapi/shared_impl/tracker_base.h"
 #include "ppapi/shared_impl/var.h"
 
 namespace ppapi {
 namespace proxy {
-
-namespace {
-
-TrackerBase* GetTrackerBase() {
-  return PluginGlobals::Get()->plugin_resource_tracker();
-}
-
-}  // namespace
 
 PluginResourceTracker::PluginResourceTracker() {
 #ifdef ENABLE_PEPPER_THREADING
@@ -40,30 +31,12 @@ PluginResourceTracker::~PluginResourceTracker() {
 #endif
 }
 
-// static
-TrackerBase* PluginResourceTracker::GetTrackerBaseInstance() {
-  return GetTrackerBase();
-}
-
 PP_Resource PluginResourceTracker::PluginResourceForHostResource(
     const HostResource& resource) const {
   HostResourceMap::const_iterator found = host_resource_map_.find(resource);
   if (found == host_resource_map_.end())
     return 0;
   return found->second;
-}
-
-FunctionGroupBase* PluginResourceTracker::GetFunctionAPI(PP_Instance inst,
-                                                         InterfaceID id) {
-  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(inst);
-  if (dispatcher)
-    return dispatcher->GetFunctionAPI(id);
-  return NULL;
-}
-
-PP_Module PluginResourceTracker::GetModuleForInstance(PP_Instance instance) {
-  // Currently proxied plugins don't use the PP_Module for anything useful.
-  return 0;
 }
 
 PP_Resource PluginResourceTracker::AddResource(Resource* object) {

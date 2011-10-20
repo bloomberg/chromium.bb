@@ -4,6 +4,8 @@
 
 #include "ppapi/proxy/plugin_globals.h"
 
+#include "ppapi/proxy/plugin_dispatcher.h"
+
 namespace ppapi {
 namespace proxy {
 
@@ -25,6 +27,19 @@ ResourceTracker* PluginGlobals::GetResourceTracker() {
 
 VarTracker* PluginGlobals::GetVarTracker() {
   return &plugin_var_tracker_;
+}
+
+FunctionGroupBase* PluginGlobals::GetFunctionAPI(PP_Instance inst,
+                                                 proxy::InterfaceID id) {
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(inst);
+  if (dispatcher)
+    return dispatcher->GetFunctionAPI(id);
+  return NULL;
+}
+
+PP_Module PluginGlobals::GetModuleForInstance(PP_Instance instance) {
+  // Currently proxied plugins don't use the PP_Module for anything useful.
+  return 0;
 }
 
 }  // namespace proxy

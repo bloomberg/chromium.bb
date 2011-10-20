@@ -386,7 +386,7 @@ PluginModule::PluginModule(const std::string& name,
     host_globals = new HostGlobals;
 
   memset(&entry_points_, 0, sizeof(entry_points_));
-  pp_module_ = HostGlobals::Get()->host_resource_tracker()->AddModule(this);
+  pp_module_ = HostGlobals::Get()->AddModule(this);
   GetMainThreadMessageLoop();  // Initialize the main thread message loop.
   GetLivePluginSet()->insert(this);
 }
@@ -412,7 +412,7 @@ PluginModule::~PluginModule() {
     base::UnloadNativeLibrary(library_);
 
   // Notifications that we've been deleted should be last.
-  HostGlobals::Get()->host_resource_tracker()->ModuleDeleted(pp_module_);
+  HostGlobals::Get()->ModuleDeleted(pp_module_);
   if (!is_crashed_) {
     // When the plugin crashes, we immediately tell the lifetime delegate that
     // we're gone, so we don't want to tell it again.

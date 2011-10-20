@@ -27,6 +27,9 @@ class PPAPI_PROXY_EXPORT PluginGlobals : public PpapiGlobals {
   // PpapiGlobals implementation.
   virtual ResourceTracker* GetResourceTracker() OVERRIDE;
   virtual VarTracker* GetVarTracker() OVERRIDE;
+  virtual FunctionGroupBase* GetFunctionAPI(PP_Instance inst,
+                                            proxy::InterfaceID id) OVERRIDE;
+  virtual PP_Module GetModuleForInstance(PP_Instance instance) OVERRIDE;
 
   // Getters for the plugin-specific versions.
   PluginResourceTracker* plugin_resource_tracker() {

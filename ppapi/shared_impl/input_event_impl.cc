@@ -4,7 +4,7 @@
 
 #include "ppapi/shared_impl/input_event_impl.h"
 
-#include "ppapi/shared_impl/tracker_base.h"
+#include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/var.h"
 
 using ppapi::thunk::PPB_InputEvent_API;
@@ -101,7 +101,7 @@ uint32_t InputEventImpl::GetKeyCode() {
 
 PP_Var InputEventImpl::GetCharacterText() {
   return StringVar::StringToPPVar(
-      TrackerBase::Get()->GetModuleForInstance(pp_instance()),
+      PpapiGlobals::Get()->GetModuleForInstance(pp_instance()),
       data_.character_text);
 }
 

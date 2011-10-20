@@ -13,7 +13,6 @@
 #include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/shared_impl/resource_tracker.h"
-#include "ppapi/shared_impl/tracker_base.h"
 #include "ppapi/thunk/ppapi_thunk_export.h"
 #include "ppapi/thunk/ppb_instance_api.h"
 #include "ppapi/thunk/resource_creation_api.h"
@@ -75,7 +74,7 @@ class EnterFunction : subtle::LockOnEntry<lock_on_entry> {
  public:
   EnterFunction(PP_Instance instance, bool report_error)
       : functions_(NULL) {
-    FunctionGroupBase* base = TrackerBase::Get()->GetFunctionAPI(
+    FunctionGroupBase* base = PpapiGlobals::Get()->GetFunctionAPI(
         instance, FunctionsT::interface_id);
     if (base)
       functions_ = base->GetAs<FunctionsT>();
