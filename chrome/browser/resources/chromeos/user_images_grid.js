@@ -139,7 +139,7 @@ cr.define('options', function() {
       return index != -1 ? this.dataModel.item(index) : null;
     },
     set selectedItem(selectedItem) {
-      var index = this.findItem(selectedItem);
+      var index = this.indexOf(selectedItem);
       this.inProgramSelection_ = true;
       this.selectionModel.selectedIndex = index;
       this.selectionModel.leadIndex = index;
@@ -175,7 +175,7 @@ cr.define('options', function() {
      * @param {Object} imageInfo Image data returned from addItem() call.
      * @return {number} Image index (0-based) or -1 if image was not found.
      */
-    findItem: function(imageInfo) {
+    indexOf: function(imageInfo) {
       return this.dataModel.indexOf(imageInfo);
     },
 
@@ -188,7 +188,7 @@ cr.define('options', function() {
      * @return {!Object} Image data of the added or updated image.
      */
     updateItem: function(imageInfo, imageUrl, opt_title) {
-      var imageIndex = this.findItem(imageInfo);
+      var imageIndex = this.indexOf(imageInfo);
       var wasSelected = this.selectionModel.selectedIndex == imageIndex;
       this.removeItem(imageInfo);
       var newInfo = this.addItem(
@@ -206,7 +206,7 @@ cr.define('options', function() {
      * @param {Object} imageInfo Image data returned from the addItem() call.
      */
     removeItem: function(imageInfo) {
-      var index = this.findItem(imageInfo);
+      var index = this.indexOf(imageInfo);
       if (index != -1) {
         this.inProgramSelection_ = true;
         this.dataModel.splice(index, 1);

@@ -186,7 +186,7 @@ cr.define('options', function() {
         this.oldImage_ = imageGrid.updateItem(this.oldImage_, url);
       } else {
         // Insert next to the profile image.
-        var pos = imageGrid.findItem(this.profileImage_) + 1;
+        var pos = imageGrid.indexOf(this.profileImage_) + 1;
         this.oldImage_ = imageGrid.addItem(url, undefined, undefined, pos);
         imageGrid.selectedItem = this.oldImage_;
       }
