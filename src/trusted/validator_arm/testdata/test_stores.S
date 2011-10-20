@@ -1,7 +1,6 @@
-@ Copyright 2009 The Native Client Authors.  All rights reserved.
-@ Use of this source code is governed by a BSD-style license that can
-@ be found in the LICENSE file.
-@ Copyright 2009 Google Inc.
+@ Copyright (c) 2011 The Native Client Authors. All rights reserved.
+@ Use of this source code is governed by a BSD-style license that can be
+@ found in the LICENSE file.
 
 @
 @ Tests both legal and illegal variations on stores -- both stores that
@@ -54,6 +53,12 @@ bundle5:
   str r1, [r0], r2        @ use it in register post-index store: should pass.
   nop                     @ Don't mask, and
   str r1, [r0], r2        @ use it in register post-index store: ERROR.
+
+bundle6:
+  str r1, [sp], #1024     @ post-indexing sp by a constant is OK
+  str r1, [sp], r2        @ post-indexing sp by a register is an ERROR
+  bic r0, r0, #0xC0000000 @ Mask a register, and
+  str r1, [r0, r2]        @ use it in register pre-index store: ERROR
 
 conditional_sandbox:
   tst r0, #0xC0000000     @ Set Z if the top two bits are clear, and
