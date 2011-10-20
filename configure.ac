@@ -113,6 +113,14 @@ if test x$enable_clients == xyes; then
   AS_IF([test "x$have_cairo_egl" = "xyes"],
         [AC_DEFINE([HAVE_CAIRO_EGL], [1], [Have cairo-egl])],
         [AC_MSG_WARN([Cairo-EGL not found - clients will use cairo image])])
+
+  AC_CHECK_LIB([jpeg], [jpeg_CreateDecompress], have_jpeglib=yes)
+  if test x$have_jpeglib == xyes; then
+    CLIENT_LIBS="$CLIENT_LIBS -ljpeg"
+  else
+    AC_ERROR([libjpeg not found])
+  fi
+
 fi
 
 AM_CONDITIONAL(HAVE_POPPLER, test "x$have_poppler" = "xyes")

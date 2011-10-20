@@ -28,6 +28,8 @@
 #include <cairo.h>
 #include "cairo-util.h"
 
+#include <jpeglib.h>
+
 #define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
 
 void
@@ -285,4 +287,56 @@ rounded_rect(cairo_t *cr, int x0, int y0, int x1, int y1, int radius)
 	cairo_line_to(cr, x0 + radius, y1);
 	cairo_arc(cr, x0 + radius, y1 - radius, radius, M_PI / 2, M_PI);
 	cairo_close_path(cr);
+}
+
+cairo_surface_t *
+load_jpeg(const char *filename)
+{
+	struct jpeg_decompress_struct cinfo;
+	struct jpeg_error_mgr jerr;
+	FILE *fp;
+	int stride, i;
+	JSAMPLE *data, *rows[4];
+
+	cinfo.err = jpeg_std_error(&jerr);
+	jpeg_create_decompress(&cinfo);
+
+	fp = fopen(filename, "rb");
+	if (fp == NULL) {
+		fprintf(stderr, "can't open %s\n", filename);
+		return NULL;
+	}
+	jpeg_stdio_src(&cinfo, fp);
+
+	jpeg_read_header(&cinfo, TRUE);
+
+	cinfo.out_color_space = JCS_EXT_BGRX;
+	jpeg_start_decompress(&cinfo);
+
+	stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24,
+					       cinfo.output_width);
+	data = malloc(stride * cinfo.output_height);
+	if (data == NULL) {
+		fprintf(stderr, "couldn't allocate image data\n");
+		return NULL;
+	}
+
+	while (cinfo.output_scanline < cinfo.output_height) {
+		for (i = 0; i < ARRAY_LENGTH(rows); i++, p += stride)
+			rows[i] = data + (cinfo.output_scanline + i) * stride;
+
+		jpeg_read_scanlines(&cinfo, rows, ARRAY_LENGTH(rows));
+	}
+
+	jpeg_finish_decompress(&cinfo);
+
+	fclose(fp);
+
+	jpeg_destroy_decompress(&cinfo);
+
+	return cairo_image_surface_create_for_data (data,
+						    CAIRO_FORMAT_RGB24,
+						    cinfo.output_width,
+						    cinfo.output_height,
+						    stride);
 }

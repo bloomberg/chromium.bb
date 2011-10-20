@@ -32,6 +32,7 @@
 #include <linux/input.h>
 
 #include "wayland-client.h"
+#include "cairo-util.h"
 #include "window.h"
 
 #include <desktop-shell-client-protocol.h>
@@ -241,7 +242,7 @@ background_draw(struct window *window, int width, int height, const char *path)
 	cairo_paint(cr);
 
 	if (path) {
-		image = cairo_image_surface_create_from_png(path);
+		image = load_jpeg(path);
 		pattern = cairo_pattern_create_for_surface(image);
 		sx = (double) cairo_image_surface_get_width(image) / width;
 		sy = (double) cairo_image_surface_get_height(image) / height;
@@ -250,6 +251,7 @@ background_draw(struct window *window, int width, int height, const char *path)
 		cairo_set_source(cr, pattern);
 		cairo_pattern_destroy (pattern);
 		cairo_paint(cr);
+		cairo_surface_destroy(image);
 	}
 
 	cairo_destroy(cr);
