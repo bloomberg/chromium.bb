@@ -165,6 +165,7 @@ extern const char kChromeUITermsHost[];
 extern const char kChromeUITouchIconHost[];
 extern const char kChromeUITracingHost[];
 extern const char kChromeUITrackingHost[];
+extern const char kChromeUITrackingHost2[];
 extern const char kChromeUIVersionHost[];
 extern const char kChromeUIWorkersHost[];
 

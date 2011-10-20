@@ -106,6 +106,8 @@
       <include name="IDR_CLOUD_PRINT_SETUP_DONE_HTML" file="printing\cloud_print\resources\cloud_print_setup_done.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_TRACING_HTML" file="resources\tracing.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_TRACING_JS" file="resources\tracing.js" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_TRACKING_HTML" file="resources\tracking.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+      <include name="IDR_TRACKING_JS" file="resources\tracking.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_TRANSLATE_JS" file="resources\translate.js" type="BINDATA" />
       <include name="IDR_BUGREPORT_HTML" file="resources\bug_report.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_BUGREPORT_HTML_INVALID" file="resources\bug_report_invalid.html" allowexternalscript="true" flattenhtml="true" type="BINDATA" />
