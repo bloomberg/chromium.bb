@@ -39,10 +39,10 @@ class DesktopLayoutManager : public aura::LayoutManager {
     status_area_widget_ = status_area_widget;
   }
 
- private:
   // Overridden from aura::LayoutManager:
   virtual void OnWindowResized() OVERRIDE;
 
+ private:
   aura::Window* owner_;
 
   views::Widget* background_widget_;

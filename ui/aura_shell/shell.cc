@@ -162,6 +162,9 @@ void Shell::Init() {
   aura::Desktop::GetInstance()->screen()->set_work_area_insets(
       gfx::Insets(0, 0, launcher_->widget()->GetWindowScreenBounds().height(),
                   0));
+
+  // Force a layout.
+  desktop_layout->OnWindowResized();
 }
 
 void Shell::SetDelegate(ShellDelegate* delegate) {
