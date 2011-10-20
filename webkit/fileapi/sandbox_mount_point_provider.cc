@@ -4,6 +4,7 @@
 
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_callback_factory.h"
@@ -325,8 +326,11 @@ class SandboxMountPointProvider::GetFileSystemRootPathTask
   }
 
   void Start(bool create) {
-    file_message_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-        &GetFileSystemRootPathTask::GetFileSystemRootPathOnFileThread, create));
+    file_message_loop_->PostTask(
+        FROM_HERE,
+        base::Bind(
+            &GetFileSystemRootPathTask::GetFileSystemRootPathOnFileThread, this,
+            create));
   }
 
  private:
@@ -339,9 +343,10 @@ class SandboxMountPointProvider::GetFileSystemRootPathTask
   }
 
   void DispatchCallbackOnCallerThread(const FilePath& root_path) {
-    origin_message_loop_proxy_->PostTask(FROM_HERE,
-        NewRunnableMethod(this, &GetFileSystemRootPathTask::DispatchCallback,
-                          root_path));
+    origin_message_loop_proxy_->PostTask(
+        FROM_HERE,
+        base::Bind(&GetFileSystemRootPathTask::DispatchCallback, this,
+                   root_path));
   }
 
   void DispatchCallback(const FilePath& root_path) {

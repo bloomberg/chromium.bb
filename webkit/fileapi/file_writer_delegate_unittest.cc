@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/file_util_proxy.h"
 #include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
@@ -146,8 +147,9 @@ class FileWriterDelegateTestJob : public net::URLRequestJob {
   }
 
   void Start() {
-    MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &FileWriterDelegateTestJob::NotifyHeadersComplete));
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&FileWriterDelegateTestJob::NotifyHeadersComplete, this));
   }
 
   bool ReadRawData(net::IOBuffer* buf, int buf_size, int *bytes_read) {

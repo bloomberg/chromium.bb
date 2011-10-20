@@ -6,9 +6,8 @@
 #define WEBKIT_FILEAPI_FILE_WRITER_DELEGATE_H_
 
 #include "base/file_path.h"
-#include "base/memory/ref_counted.h"
-#include "base/memory/scoped_callback_factory.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
 #include "base/task.h"
@@ -80,8 +79,7 @@ class FileWriterDelegate : public net::URLRequest::Delegate {
   scoped_refptr<net::IOBufferWithSize> io_buffer_;
   scoped_ptr<net::FileStream> file_stream_;
   net::URLRequest* request_;
-  ScopedRunnableMethodFactory<FileWriterDelegate> method_factory_;
-  base::ScopedCallbackFactory<FileWriterDelegate> callback_factory_;
+  base::WeakPtrFactory<FileWriterDelegate> weak_factory_;
 };
 
 }  // namespace fileapi

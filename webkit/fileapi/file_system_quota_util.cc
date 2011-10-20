@@ -4,6 +4,7 @@
 
 #include "webkit/fileapi/file_system_quota_util.h"
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/message_loop_proxy.h"
@@ -14,8 +15,10 @@ void FileSystemQuotaUtil::Proxy::UpdateOriginUsage(
     quota::QuotaManagerProxy* proxy, const GURL& origin_url,
     fileapi::FileSystemType type, int64 delta) {
   if (!file_thread_->BelongsToCurrentThread()) {
-    file_thread_->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &Proxy::UpdateOriginUsage, proxy, origin_url, type, delta));
+    file_thread_->PostTask(
+        FROM_HERE,
+        base::Bind(&Proxy::UpdateOriginUsage, this, proxy, origin_url, type,
+                   delta));
     return;
   }
   if (quota_util_)
@@ -25,8 +28,9 @@ void FileSystemQuotaUtil::Proxy::UpdateOriginUsage(
 void FileSystemQuotaUtil::Proxy::StartUpdateOrigin(
     const GURL& origin_url, fileapi::FileSystemType type) {
   if (!file_thread_->BelongsToCurrentThread()) {
-    file_thread_->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &Proxy::StartUpdateOrigin, origin_url, type));
+    file_thread_->PostTask(
+        FROM_HERE,
+        base::Bind(&Proxy::StartUpdateOrigin, this, origin_url, type));
     return;
   }
   if (quota_util_)
@@ -36,8 +40,9 @@ void FileSystemQuotaUtil::Proxy::StartUpdateOrigin(
 void FileSystemQuotaUtil::Proxy::EndUpdateOrigin(
     const GURL& origin_url, fileapi::FileSystemType type) {
   if (!file_thread_->BelongsToCurrentThread()) {
-    file_thread_->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &Proxy::EndUpdateOrigin, origin_url, type));
+    file_thread_->PostTask(
+        FROM_HERE,
+        base::Bind(&Proxy::EndUpdateOrigin, this, origin_url, type));
     return;
   }
   if (quota_util_)
