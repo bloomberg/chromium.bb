@@ -71,7 +71,7 @@ html[dir='rtl'] .recent-menu-item {
 }
 
 .recent-window {
-  background-image: url('../ntp/closed_window.png');
+  background-image: url('images/closed_window.png');
 }
 
 /* TODO(estade): find a better color for active. */
@@ -86,5 +86,5 @@ html[dir='rtl'] .recent-menu-item {
   display: inline-block;
   height: 9px;
   width: 9px;
-  -webkit-mask-image: url('./ntp4_disclosure_triangle_mask.png');
+  -webkit-mask-image: url('images/disclosure_triangle_mask.png');
 }

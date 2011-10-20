@@ -216,7 +216,7 @@ html[dir='rtl'] #login-container {
 }
 
 #trash > span {
-  background-image: url('./trash.png');
+  background-image: url('images/trash.png');
   background-position: 7px;
   background-repeat: no-repeat;
   border: 1px dashed #7f7f7f;

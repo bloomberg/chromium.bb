@@ -174,8 +174,7 @@ bool NewTabUI::CanShowBookmarkBar() const {
   bool disabled_by_policy =
       prefs->IsManagedPreference(prefs::kShowBookmarkBar) &&
       !prefs->GetBoolean(prefs::kShowBookmarkBar);
-  return
-      browser_defaults::bookmarks_enabled &&
+  return browser_defaults::bookmarks_enabled &&
       !disabled_by_policy &&
       !NTP4BookmarkFeaturesEnabled();
 }
@@ -299,7 +298,7 @@ bool NewTabUI::NTP4Enabled() {
 #if defined(TOUCH_UI)
   return CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewTabPage);
 #else
-  return !CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewTabPage);
+  return true;
 #endif
 }
 

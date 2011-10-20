@@ -163,7 +163,7 @@ html[dir="rtl"] .apps-promo-extras {
   text-align: center;
   text-decoration: none;
   white-space: nowrap;
-  -webkit-border-image: url('../ntp/g-button-chocobo.png') 6 10 12 6;
+  -webkit-border-image: url('images/app_promo_button.png') 6 10 12 6;
 }
 
 .app .invisible {
