@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,6 +50,8 @@ void RendererHistogramSnapshots::OnGetRendererHistograms(int sequence_number) {
 
 void RendererHistogramSnapshots::UploadAllHistrograms(int sequence_number) {
   DCHECK_EQ(0u, pickled_histograms_.size());
+
+  StatisticsRecorder::CollectHistogramStats("Renderer");
 
   // Push snapshots into our pickled_histograms_ vector.
   TransmitAllHistograms(Histogram::kIPCSerializationSourceFlag, false);

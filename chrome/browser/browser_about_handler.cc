@@ -849,6 +849,10 @@ std::string AboutTcmalloc() {
 std::string AboutHistograms(const std::string& query) {
   TimeDelta wait_time = TimeDelta::FromMilliseconds(10000);
 
+#ifndef NDEBUG
+  base::StatisticsRecorder::CollectHistogramStats("Browser");
+#endif
+
   HistogramSynchronizer* current_synchronizer =
       HistogramSynchronizer::CurrentSynchronizer();
   DCHECK(current_synchronizer != NULL);

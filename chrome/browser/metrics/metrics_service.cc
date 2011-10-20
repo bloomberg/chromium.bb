@@ -901,6 +901,8 @@ void MetricsService::OnMemoryDetailCollectionDone() {
   Task* callback_task = log_sender_factory_.NewRunnableMethod(
       &MetricsService::OnHistogramSynchronizationDone);
 
+  base::StatisticsRecorder::CollectHistogramStats("Browser");
+
   // Set up the callback to task to call after we receive histograms from all
   // renderer processes. Wait time specifies how long to wait before absolutely
   // calling us back on the task.
