@@ -22,24 +22,24 @@ namespace views {
 
 // The width of an icon, including the pixels between the icon and
 // the item label.
-static const int kIconWidth = 23;
+const int kIconWidth = 23;
 // Margins between the top of the item and the label.
-static const int kItemTopMargin = 3;
+const int kItemTopMargin = 3;
 // Margins between the bottom of the item and the label.
-static const int kItemBottomMargin = 4;
+const int kItemBottomMargin = 4;
 // Margins between the left of the item and the icon.
-static const int kItemLeftMargin = 4;
+const int kItemLeftMargin = 4;
 // Margins between the right of the item and the label.
-static const int kItemRightMargin = 10;
+const int kItemRightMargin = 10;
 // The width for displaying the sub-menu arrow.
-static const int kArrowWidth = 10;
+const int kArrowWidth = 10;
 
 // Current active MenuHostWindow. If NULL, no menu is active.
 static MenuHostWindow* active_host_window = NULL;
 
 // The data of menu items needed to display.
 struct MenuWin::ItemData {
-  std::wstring label;
+  string16 label;
   SkBitmap icon;
   bool submenu;
 };
@@ -110,7 +110,7 @@ class MenuHostWindow : public ui::WindowImpl {
       if (data->submenu)
         lpmis->itemWidth += kArrowWidth;
       // If the label contains an accelerator, make room for tab.
-      if (data->label.find(L'\t') != std::wstring::npos)
+      if (data->label.find(L'\t') != string16::npos)
         lpmis->itemWidth += font.GetStringWidth(L" ");
       lpmis->itemHeight = font.GetHeight() + kItemBottomMargin + kItemTopMargin;
     } else {
@@ -166,10 +166,10 @@ class MenuHostWindow : public ui::WindowImpl {
       // left and the accelerator on the right.
       // TODO(jungshik): This will break in RTL UI. Currently, he/ar use the
       //                 window system UI font and will not hit here.
-      std::wstring label = data->label;
-      std::wstring accel;
-      std::wstring::size_type tab_pos = label.find(L'\t');
-      if (tab_pos != std::wstring::npos) {
+      string16 label = data->label;
+      string16 accel;
+      string16::size_type tab_pos = label.find(L'\t');
+      if (tab_pos != string16::npos) {
         accel = label.substr(tab_pos);
         label = label.substr(0, tab_pos);
       }
@@ -264,7 +264,7 @@ MenuWin::~MenuWin() {
 
 void MenuWin::AddMenuItemWithIcon(int index,
                                   int item_id,
-                                  const std::wstring& label,
+                                  const string16& label,
                                   const SkBitmap& icon) {
   owner_draw_ = true;
   Menu::AddMenuItemWithIcon(index, item_id, label, icon);
@@ -272,7 +272,7 @@ void MenuWin::AddMenuItemWithIcon(int index,
 
 Menu* MenuWin::AddSubMenuWithIcon(int index,
                                   int item_id,
-                                  const std::wstring& label,
+                                  const string16& label,
                                   const SkBitmap& icon) {
   MenuWin* submenu = new MenuWin(this);
   submenus_.push_back(submenu);
@@ -298,7 +298,7 @@ void MenuWin::EnableMenuItemAt(int index, bool enabled) {
   EnableMenuItem(menu_, index, MF_BYPOSITION | enable_flags);
 }
 
-void MenuWin::SetMenuLabel(int item_id, const std::wstring& label) {
+void MenuWin::SetMenuLabel(int item_id, const string16& label) {
   MENUITEMINFO mii = {0};
   mii.cbSize = sizeof(mii);
   mii.fMask = MIIM_STRING;
@@ -387,7 +387,7 @@ int MenuWin::ItemCount() {
 
 void MenuWin::AddMenuItemInternal(int index,
                                   int item_id,
-                                  const std::wstring& label,
+                                  const string16& label,
                                   const SkBitmap& icon,
                                   MenuItemType type) {
   AddMenuItemInternal(index, item_id, label, icon, NULL, type);
@@ -395,7 +395,7 @@ void MenuWin::AddMenuItemInternal(int index,
 
 void MenuWin::AddMenuItemInternal(int index,
                                   int item_id,
-                                  const std::wstring& label,
+                                  const string16& label,
                                   const SkBitmap& icon,
                                   HMENU submenu,
                                   MenuItemType type) {
@@ -439,8 +439,7 @@ void MenuWin::AddMenuItemInternal(int index,
   item_data_.push_back(data);
   data->submenu = submenu != NULL;
 
-  std::wstring actual_label(label.empty() ?
-      delegate()->GetLabel(item_id) : label);
+  string16 actual_label(label.empty() ? delegate()->GetLabel(item_id) : label);
 
   // Find out if there is a shortcut we need to append to the label.
   views::Accelerator accelerator(ui::VKEY_UNKNOWN, false, false, false);
@@ -498,7 +497,7 @@ void MenuWin::SetMenuInfo() {
 
       // Validate the label. If there is a contextual label, use it, otherwise
       // default to the static label
-      std::wstring label;
+      string16 label;
       if (!delegate()->GetContextualLabel(id, &label))
         label = labels_[i - sep_count];
 

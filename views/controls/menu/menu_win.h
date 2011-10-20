@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,10 +6,12 @@
 #define CONTROLS_MENU_VIEWS_MENU_WIN_H_
 #pragma once
 
-#include <vector>
 #include <windows.h>
 
+#include <vector>
+
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "views/controls/menu/menu.h"
 
 namespace views {
@@ -27,8 +29,6 @@ class MenuHostWindow;
 //
 ///////////////////////////////////////////////////////////////////////////////
 class MenuWin : public Menu {
-  friend class MenuHostWindow;
-
  public:
   // Construct a Menu using the specified controller to determine command
   // state.
@@ -46,23 +46,23 @@ class MenuWin : public Menu {
   explicit MenuWin(HMENU hmenu);
   virtual ~MenuWin();
 
-  // Menu overrides.
+  // Overridden from Menu:
   virtual void AddMenuItemWithIcon(int index,
                                    int item_id,
-                                   const std::wstring& label,
-                                   const SkBitmap& icon);
+                                   const string16& label,
+                                   const SkBitmap& icon) OVERRIDE;
   virtual Menu* AddSubMenuWithIcon(int index,
                                    int item_id,
-                                   const std::wstring& label,
-                                   const SkBitmap& icon);
-  virtual void AddSeparator(int index);
-  virtual void EnableMenuItemByID(int item_id, bool enabled);
-  virtual void EnableMenuItemAt(int index, bool enabled);
-  virtual void SetMenuLabel(int item_id, const std::wstring& label);
-  virtual bool SetIcon(const SkBitmap& icon, int item_id);
-  virtual void RunMenuAt(int x, int y);
-  virtual void Cancel();
-  virtual int ItemCount();
+                                   const string16& label,
+                                   const SkBitmap& icon) OVERRIDE;
+  virtual void AddSeparator(int index) OVERRIDE;
+  virtual void EnableMenuItemByID(int item_id, bool enabled) OVERRIDE;
+  virtual void EnableMenuItemAt(int index, bool enabled) OVERRIDE;
+  virtual void SetMenuLabel(int item_id, const string16& label) OVERRIDE;
+  virtual bool SetIcon(const SkBitmap& icon, int item_id) OVERRIDE;
+  virtual void RunMenuAt(int x, int y) OVERRIDE;
+  virtual void Cancel() OVERRIDE;
+  virtual int ItemCount() OVERRIDE;
 
   virtual HMENU GetMenuHandle() const {
     return menu_;
@@ -74,17 +74,19 @@ class MenuWin : public Menu {
  protected:
   virtual void AddMenuItemInternal(int index,
                                    int item_id,
-                                   const std::wstring& label,
+                                   const string16& label,
                                    const SkBitmap& icon,
-                                   MenuItemType type);
+                                   MenuItemType type) OVERRIDE;
 
  private:
+  friend class MenuHostWindow;
+
   // The data of menu items needed to display.
   struct ItemData;
 
   void AddMenuItemInternal(int index,
                            int item_id,
-                           const std::wstring& label,
+                           const string16& label,
                            const SkBitmap& icon,
                            HMENU submenu,
                            MenuItemType type);
@@ -109,7 +111,7 @@ class MenuWin : public Menu {
   // This list is used to store the default labels for the menu items.
   // We may use contextual labels when RunMenu is called, so we must save
   // a copy of default ones here.
-  std::vector<std::wstring> labels_;
+  std::vector<string16> labels_;
 
   // A flag to indicate whether this menu will be drawn by the Menu class.
   // If it's true, all the menu items will be owner drawn. Otherwise,

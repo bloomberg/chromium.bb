@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,14 +32,14 @@ Menu::~Menu() {
 }
 
 void Menu::AppendMenuItem(int item_id,
-                          const std::wstring& label,
+                          const string16& label,
                           MenuItemType type) {
   AddMenuItem(-1, item_id, label, type);
 }
 
 void Menu::AddMenuItem(int index,
                        int item_id,
-                       const std::wstring& label,
+                       const string16& label,
                        MenuItemType type) {
   if (type == SEPARATOR)
     AddSeparator(index);
@@ -47,26 +47,27 @@ void Menu::AddMenuItem(int index,
     AddMenuItemInternal(index, item_id, label, SkBitmap(), type);
 }
 
-Menu* Menu::AppendSubMenu(int item_id, const std::wstring& label) {
+Menu* Menu::AppendSubMenu(int item_id, const string16& label) {
   return AddSubMenu(-1, item_id, label);
 }
 
-Menu* Menu::AddSubMenu(int index, int item_id, const std::wstring& label) {
+Menu* Menu::AddSubMenu(int index, int item_id, const string16& label) {
   return AddSubMenuWithIcon(index, item_id, label, SkBitmap());
 }
 
 Menu* Menu::AppendSubMenuWithIcon(int item_id,
-                                  const std::wstring& label,
+                                  const string16& label,
                                   const SkBitmap& icon) {
   return AddSubMenuWithIcon(-1, item_id, label, icon);
 }
 
-void Menu::AppendMenuItemWithLabel(int item_id, const std::wstring& label) {
+void Menu::AppendMenuItemWithLabel(int item_id, const string16& label) {
   AddMenuItemWithLabel(-1, item_id, label);
 }
 
-void Menu::AddMenuItemWithLabel(int index, int item_id,
-                                const std::wstring& label) {
+void Menu::AddMenuItemWithLabel(int index,
+                                int item_id,
+                                const string16& label) {
   AddMenuItem(index, item_id, label, Menu::NORMAL);
 }
 
@@ -75,7 +76,7 @@ void Menu::AppendDelegateMenuItem(int item_id) {
 }
 
 void Menu::AddDelegateMenuItem(int index, int item_id) {
-  AddMenuItem(index, item_id, std::wstring(), Menu::NORMAL);
+  AddMenuItem(index, item_id, string16(), Menu::NORMAL);
 }
 
 void Menu::AppendSeparator() {
@@ -83,14 +84,14 @@ void Menu::AppendSeparator() {
 }
 
 void Menu::AppendMenuItemWithIcon(int item_id,
-                                  const std::wstring& label,
+                                  const string16& label,
                                   const SkBitmap& icon) {
   AddMenuItemWithIcon(-1, item_id, label, icon);
 }
 
 void Menu::AddMenuItemWithIcon(int index,
                                int item_id,
-                               const std::wstring& label,
+                               const string16& label,
                                const SkBitmap& icon) {
   AddMenuItemInternal(index, item_id, label, icon, Menu::NORMAL);
 }

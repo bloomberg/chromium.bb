@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "views/controls/menu/menu.h"
 
 namespace views {
@@ -24,26 +25,26 @@ class MenuGtk : public Menu {
   MenuGtk(Delegate* d, AnchorPoint anchor, gfx::NativeView owner);
   virtual ~MenuGtk();
 
-  // Menu overrides.
+  // Overridden from Menu:
   virtual Menu* AddSubMenuWithIcon(int index,
                                    int item_id,
-                                   const std::wstring& label,
-                                   const SkBitmap& icon);
-  virtual void AddSeparator(int index);
-  virtual void EnableMenuItemByID(int item_id, bool enabled);
-  virtual void EnableMenuItemAt(int index, bool enabled);
-  virtual void SetMenuLabel(int item_id, const std::wstring& label);
-  virtual bool SetIcon(const SkBitmap& icon, int item_id);
-  virtual void RunMenuAt(int x, int y);
-  virtual void Cancel();
-  virtual int ItemCount();
+                                   const string16& label,
+                                   const SkBitmap& icon) OVERRIDE;
+  virtual void AddSeparator(int index) OVERRIDE;
+  virtual void EnableMenuItemByID(int item_id, bool enabled) OVERRIDE;
+  virtual void EnableMenuItemAt(int index, bool enabled) OVERRIDE;
+  virtual void SetMenuLabel(int item_id, const string16& label) OVERRIDE;
+  virtual bool SetIcon(const SkBitmap& icon, int item_id) OVERRIDE;
+  virtual void RunMenuAt(int x, int y) OVERRIDE;
+  virtual void Cancel() OVERRIDE;
+  virtual int ItemCount() OVERRIDE;
 
  protected:
   virtual void AddMenuItemInternal(int index,
                                    int item_id,
-                                   const std::wstring& label,
+                                   const string16& label,
                                    const SkBitmap& icon,
-                                   MenuItemType type);
+                                   MenuItemType type) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(MenuGtk);
 };

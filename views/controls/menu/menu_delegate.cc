@@ -44,7 +44,7 @@ bool MenuDelegate::IsCommandEnabled(int id) const {
   return true;
 }
 
-bool MenuDelegate::GetContextualLabel(int id, std::wstring* out) const {
+bool MenuDelegate::GetContextualLabel(int id, string16* out) const {
   return false;
 }
 

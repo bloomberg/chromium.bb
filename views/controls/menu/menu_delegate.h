@@ -91,7 +91,7 @@ class VIEWS_EXPORT MenuDelegate {
   // Controller
   virtual bool SupportsCommand(int id) const;
   virtual bool IsCommandEnabled(int id) const;
-  virtual bool GetContextualLabel(int id, std::wstring* out) const;
+  virtual bool GetContextualLabel(int id, string16* out) const;
   virtual void ExecuteCommand(int id) {
   }
 

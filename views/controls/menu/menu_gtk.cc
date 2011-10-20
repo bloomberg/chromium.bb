@@ -1,4 +1,4 @@
-// Copyright (c) 2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,7 +31,7 @@ MenuGtk::~MenuGtk() {
 
 Menu* MenuGtk::AddSubMenuWithIcon(int index,
                                   int item_id,
-                                  const std::wstring& label,
+                                  const string16& label,
                                   const SkBitmap& icon) {
   NOTIMPLEMENTED();
   return NULL;
@@ -49,7 +49,7 @@ void MenuGtk::EnableMenuItemAt(int index, bool enabled) {
   NOTIMPLEMENTED();
 }
 
-void MenuGtk::SetMenuLabel(int item_id, const std::wstring& label) {
+void MenuGtk::SetMenuLabel(int item_id, const string16& label) {
   NOTIMPLEMENTED();
 }
 
@@ -73,7 +73,7 @@ int MenuGtk::ItemCount() {
 
 void MenuGtk::AddMenuItemInternal(int index,
                                   int item_id,
-                                  const std::wstring& label,
+                                  const string16& label,
                                   const SkBitmap& icon,
                                   MenuItemType type) {
   NOTIMPLEMENTED();
