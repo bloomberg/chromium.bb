@@ -191,7 +191,7 @@ void ExtensionProcessManager::CreateBackgroundHost(
     return;
 
   // Don't create multiple background hosts for an extension.
-  if (GetBackgroundHostForExtension(extension))
+  if (GetBackgroundHostForExtension(extension->id()))
     return;
 
   ExtensionHost* host =
@@ -227,14 +227,15 @@ void ExtensionProcessManager::OpenOptionsPage(const Extension* extension,
 }
 
 ExtensionHost* ExtensionProcessManager::GetBackgroundHostForExtension(
-    const Extension* extension) {
+    const std::string& extension_id) {
   for (ExtensionHostSet::iterator iter = background_hosts_.begin();
        iter != background_hosts_.end(); ++iter) {
     ExtensionHost* host = *iter;
-    if (host->extension() == extension)
+    if (host->extension_id() == extension_id)
       return host;
   }
   return NULL;
+
 }
 
 std::set<RenderViewHost*>
@@ -417,6 +418,27 @@ bool ExtensionProcessManager::HasExtensionHost(ExtensionHost* host) const {
   return all_hosts_.find(host) != all_hosts_.end();
 }
 
+void ExtensionProcessManager::OnExtensionIdle(const std::string& extension_id) {
+  ExtensionHost* host = GetBackgroundHostForExtension(extension_id);
+  if (host && !HasVisibleViews(extension_id))
+    CloseBackgroundHost(host);
+}
+
+bool ExtensionProcessManager::HasVisibleViews(const std::string& extension_id) {
+  const std::set<RenderViewHost*>& views =
+      GetRenderViewHostsForExtension(extension_id);
+  for (std::set<RenderViewHost*>::const_iterator it = views.begin();
+       it != views.end(); ++it) {
+    const RenderViewHost* host = *it;
+    if (host->site_instance()->site().host() == extension_id &&
+        host->delegate()->GetRenderViewType() !=
+        chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
+      return true;
+    }
+  }
+  return false;
+}
+
 void ExtensionProcessManager::Observe(
     int type,
     const content::NotificationSource& source,
@@ -447,9 +469,7 @@ void ExtensionProcessManager::Observe(
            iter != background_hosts_.end(); ++iter) {
         ExtensionHost* host = *iter;
         if (host->extension_id() == extension->id()) {
-          delete host;
-          // |host| should deregister itself from our structures.
-          DCHECK(background_hosts_.find(host) == background_hosts_.end());
+          CloseBackgroundHost(host);
           break;
         }
       }
@@ -473,9 +493,7 @@ void ExtensionProcessManager::Observe(
       ExtensionHost* host = content::Details<ExtensionHost>(details).ptr();
       if (host->extension_host_type() ==
           chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
-        delete host;
-        // |host| should deregister itself from our structures.
-        CHECK(background_hosts_.find(host) == background_hosts_.end());
+        CloseBackgroundHost(host);
       }
       break;
     }
@@ -504,6 +522,14 @@ void ExtensionProcessManager::OnExtensionHostCreated(ExtensionHost* host,
       chrome::NOTIFICATION_EXTENSION_HOST_CREATED,
       content::Source<ExtensionProcessManager>(this),
       content::Details<ExtensionHost>(host));
+}
+
+void ExtensionProcessManager::CloseBackgroundHost(ExtensionHost* host) {
+  CHECK(host->extension_host_type() ==
+        chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE);
+  delete host;
+  // |host| should deregister itself from our structures.
+  CHECK(background_hosts_.find(host) == background_hosts_.end());
 }
 
 void ExtensionProcessManager::CloseBackgroundHosts() {

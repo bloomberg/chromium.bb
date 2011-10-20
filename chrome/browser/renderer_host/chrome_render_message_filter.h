@@ -91,6 +91,7 @@ class ChromeRenderMessageFilter : public BrowserMessageFilter {
                               const std::string& event_name);
   void OnExtensionRemoveListener(const std::string& extension_id,
                                  const std::string& event_name);
+  void OnExtensionIdle(const std::string& extension_id);
   void OnExtensionCloseChannel(int port_id);
   void OnExtensionRequestForIOThread(
       int routing_id,

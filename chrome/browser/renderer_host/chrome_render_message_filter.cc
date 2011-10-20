@@ -5,6 +5,7 @@
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/automation/automation_resource_message_filter.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_message_service.h"
+#include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/metrics/histogram_synchronizer.h"
 #include "chrome/browser/nacl_host/nacl_process_host.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
@@ -28,6 +30,7 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/plugin_service.h"
 #include "content/browser/plugin_service_filter.h"
@@ -124,6 +127,7 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_AddListener, OnExtensionAddListener)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_RemoveListener,
                         OnExtensionRemoveListener)
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_ExtensionIdle, OnExtensionIdle)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_CloseChannel, OnExtensionCloseChannel)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_RequestForIOThread,
                         OnExtensionRequestForIOThread)
@@ -185,6 +189,7 @@ void ChromeRenderMessageFilter::OverrideThreadForMessage(
 #endif
     case ExtensionHostMsg_AddListener::ID:
     case ExtensionHostMsg_RemoveListener::ID:
+    case ExtensionHostMsg_ExtensionIdle::ID:
     case ExtensionHostMsg_CloseChannel::ID:
     case ChromeViewHostMsg_UpdatedCacheStats::ID:
       *thread = BrowserThread::UI;
@@ -366,6 +371,12 @@ void ChromeRenderMessageFilter::OnExtensionRemoveListener(
 
   profile_->GetExtensionEventRouter()->RemoveEventListener(
       event_name, process, extension_id);
+}
+
+void ChromeRenderMessageFilter::OnExtensionIdle(
+    const std::string& extension_id) {
+  if (profile_->GetExtensionProcessManager())
+    profile_->GetExtensionProcessManager()->OnExtensionIdle(extension_id);
 }
 
 void ChromeRenderMessageFilter::OnExtensionCloseChannel(int port_id) {

@@ -149,6 +149,12 @@ void ExtensionDispatcher::OnMessageInvoke(const std::string& extension_id,
     RenderThread::Get()->ScheduleIdleHandler(
         kInitialExtensionIdleHandlerDelayS);
   }
+
+  // Tell the browser process that we're idle.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableLazyBackgroundPages) &&
+      function_name == "Event.dispatchJSON")  // may always be true
+    RenderThread::Get()->Send(new ExtensionHostMsg_ExtensionIdle(extension_id));
 }
 
 void ExtensionDispatcher::OnDeliverMessage(int target_port_id,

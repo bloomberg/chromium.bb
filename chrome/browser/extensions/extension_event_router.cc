@@ -217,7 +217,7 @@ bool ExtensionEventRouter::CanDispatchEventNow(
       GetExtensionById(extension_id, false);  // exclude disabled extensions
   if (extension && extension->background_url().is_valid()) {
     ExtensionProcessManager* pm = profile_->GetExtensionProcessManager();
-    if (!pm->GetBackgroundHostForExtension(extension)) {
+    if (!pm->GetBackgroundHostForExtension(extension_id)) {
       pm->CreateBackgroundHost(extension, extension->background_url());
       return false;
     }

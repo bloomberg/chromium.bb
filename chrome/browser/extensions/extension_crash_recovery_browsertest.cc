@@ -67,8 +67,8 @@ class ExtensionCrashRecoveryTest : public ExtensionBrowserTest {
         GetExtensionService()->extensions()->at(index);
     ASSERT_TRUE(extension);
     std::string extension_id(extension->id());
-    ExtensionHost* extension_host =
-        GetExtensionProcessManager()->GetBackgroundHostForExtension(extension);
+    ExtensionHost* extension_host = GetExtensionProcessManager()->
+        GetBackgroundHostForExtension(extension_id);
     ASSERT_TRUE(extension_host);
 
     RenderProcessHost* extension_rph =
@@ -76,8 +76,8 @@ class ExtensionCrashRecoveryTest : public ExtensionBrowserTest {
     base::KillProcess(extension_rph->GetHandle(), content::RESULT_CODE_KILLED,
                       false);
     ASSERT_TRUE(WaitForExtensionCrash(extension_id));
-    ASSERT_FALSE(
-        GetExtensionProcessManager()->GetBackgroundHostForExtension(extension));
+    ASSERT_FALSE(GetExtensionProcessManager()->
+                 GetBackgroundHostForExtension(extension_id));
   }
 
   void CheckExtensionConsistency(size_t index) {
@@ -85,8 +85,8 @@ class ExtensionCrashRecoveryTest : public ExtensionBrowserTest {
     const Extension* extension =
         GetExtensionService()->extensions()->at(index);
     ASSERT_TRUE(extension);
-    ExtensionHost* extension_host =
-        GetExtensionProcessManager()->GetBackgroundHostForExtension(extension);
+    ExtensionHost* extension_host = GetExtensionProcessManager()->
+        GetBackgroundHostForExtension(extension->id());
     ASSERT_TRUE(extension_host);
     ASSERT_TRUE(GetExtensionProcessManager()->HasExtensionHost(extension_host));
     ASSERT_TRUE(extension_host->IsRenderViewLive());

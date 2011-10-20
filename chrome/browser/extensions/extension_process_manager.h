@@ -65,7 +65,7 @@ class ExtensionProcessManager : public content::NotificationObserver {
 
   // Gets the ExtensionHost for the background page for an extension, or NULL if
   // the extension isn't running or doesn't have a background page.
-  ExtensionHost* GetBackgroundHostForExtension(const Extension* extension);
+  ExtensionHost* GetBackgroundHostForExtension(const std::string& extension_id);
 
   // Returns the SiteInstance that the given URL belongs to.
   virtual SiteInstance* GetSiteInstanceForURL(const GURL& url);
@@ -106,6 +106,10 @@ class ExtensionProcessManager : public content::NotificationObserver {
 
   // Returns true if |host| is managed by this process manager.
   bool HasExtensionHost(ExtensionHost* host) const;
+
+  // Called when the render reports that the extension is idle (only if
+  // lazy background pages are enabled).
+  void OnExtensionIdle(const std::string& extension_id);
 
   typedef std::set<ExtensionHost*> ExtensionHostSet;
   typedef ExtensionHostSet::const_iterator const_iterator;
@@ -157,6 +161,13 @@ class ExtensionProcessManager : public content::NotificationObserver {
   // Contains all extension-related RenderViewHost instances for all extensions.
   typedef std::set<RenderViewHost*> RenderViewHostSet;
   RenderViewHostSet all_extension_views_;
+
+ private:
+  // Close the given |host| iff it's a background page.
+  void CloseBackgroundHost(ExtensionHost* host);
+
+  // Excludes background page.
+  bool HasVisibleViews(const std::string& extension_id);
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionProcessManager);
 };

@@ -1,0 +1,9 @@
+<script>
+chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
+  // TODO: look for 'stegosaurus' in the page contents.
+  if (tab.url.search("stegosaurus"))
+    chrome.pageAction.show(tabId);
+  else
+    chrome.pageAction.hide(tabId);
+});
+</script>

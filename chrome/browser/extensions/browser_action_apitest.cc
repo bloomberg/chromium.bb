@@ -392,7 +392,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DISABLED_CloseBackgroundPage) {
   // There is a background page and a browser action with no badge text.
   ExtensionProcessManager* manager =
       browser()->profile()->GetExtensionProcessManager();
-  ASSERT_TRUE(manager->GetBackgroundHostForExtension(extension));
+  ASSERT_TRUE(manager->GetBackgroundHostForExtension(extension->id()));
   ExtensionAction* action = extension->browser_action();
   ASSERT_EQ("", action->GetBadgeText(ExtensionAction::kDefaultTabId));
 
@@ -409,6 +409,6 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DISABLED_CloseBackgroundPage) {
   // so we wait for the notification before checking that it's really gone
   // and the badge text has been set.
   host_destroyed_observer.Wait();
-  ASSERT_FALSE(manager->GetBackgroundHostForExtension(extension));
+  ASSERT_FALSE(manager->GetBackgroundHostForExtension(extension->id()));
   ASSERT_EQ("X", action->GetBadgeText(ExtensionAction::kDefaultTabId));
 }

@@ -40,7 +40,8 @@ class ExtensionManagementTest : public ExtensionBrowserTest {
     // sync with the Extension.
     ExtensionProcessManager* manager = browser()->profile()->
         GetExtensionProcessManager();
-    ExtensionHost* ext_host = manager->GetBackgroundHostForExtension(extension);
+    ExtensionHost* ext_host =
+        manager->GetBackgroundHostForExtension(extension->id());
     EXPECT_TRUE(ext_host);
     if (!ext_host)
       return false;
@@ -205,26 +206,26 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, DisableEnable) {
   const size_t size_before = service->extensions()->size();
 
   // Load an extension, expect the background page to be available.
+  std::string extension_id = "bjafgdebaacbbbecmhlhpofkepfkgcpa";
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("good").AppendASCII("Extensions")
-                    .AppendASCII("bjafgdebaacbbbecmhlhpofkepfkgcpa")
+                    .AppendASCII(extension_id)
                     .AppendASCII("1.0")));
   ASSERT_EQ(size_before + 1, service->extensions()->size());
   EXPECT_EQ(0u, service->disabled_extensions()->size());
-  const Extension* extension = service->extensions()->at(size_before);
-  EXPECT_TRUE(manager->GetBackgroundHostForExtension(extension));
+  EXPECT_TRUE(manager->GetBackgroundHostForExtension(extension_id));
 
   // After disabling, the background page should go away.
-  service->DisableExtension("bjafgdebaacbbbecmhlhpofkepfkgcpa");
+  service->DisableExtension(extension_id);
   EXPECT_EQ(size_before, service->extensions()->size());
   EXPECT_EQ(1u, service->disabled_extensions()->size());
-  EXPECT_FALSE(manager->GetBackgroundHostForExtension(extension));
+  EXPECT_FALSE(manager->GetBackgroundHostForExtension(extension_id));
 
   // And bring it back.
-  service->EnableExtension("bjafgdebaacbbbecmhlhpofkepfkgcpa");
+  service->EnableExtension(extension_id);
   EXPECT_EQ(size_before + 1, service->extensions()->size());
   EXPECT_EQ(0u, service->disabled_extensions()->size());
-  EXPECT_TRUE(manager->GetBackgroundHostForExtension(extension));
+  EXPECT_TRUE(manager->GetBackgroundHostForExtension(extension_id));
 }
 
 // Used for testing notifications sent during extension updates.

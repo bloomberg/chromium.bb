@@ -2427,6 +2427,7 @@
         'browser/extensions/extension_websocket_apitest.cc',
         'browser/extensions/extension_webstore_private_apitest.cc',
         'browser/extensions/isolated_app_browsertest.cc',
+        'browser/extensions/lazy_background_page_apitest.cc',
         'browser/extensions/notifications_apitest.cc',
         'browser/extensions/page_action_apitest.cc',
         'browser/extensions/permissions_apitest.cc',

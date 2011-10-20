@@ -838,8 +838,7 @@ void ExtensionService::ReloadExtension(const std::string& extension_id) {
     // the inspector and hang onto a cookie for it, so that we can reattach
     // later.
     ExtensionProcessManager* manager = profile_->GetExtensionProcessManager();
-    ExtensionHost* host = manager->GetBackgroundHostForExtension(
-        current_extension);
+    ExtensionHost* host = manager->GetBackgroundHostForExtension(extension_id);
     if (host) {
       // Look for an open inspector for the background page.
       int devtools_cookie = DevToolsManager::GetInstance()->DetachClientHost(
