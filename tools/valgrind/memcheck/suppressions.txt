@@ -4749,14 +4749,14 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN11webkit_glue18WebMediaPlayerImpl10InitializeEPN6WebKit8WebFrameEb13scoped_refptrINS_16WebVideoRendererEE
-   fun:_ZN14webkit_support17CreateMediaPlayerEPN6WebKit8WebFrameEPNS0_20WebMediaPlayerClientE
-   fun:_ZN11WebViewHost17createMediaPlayerEPN6WebKit8WebFrameEPNS0_20WebMediaPlayerClientE
+   ...
    fun:_ZN6WebKitL20createWebMediaPlayerEPNS_20WebMediaPlayerClientEPN7WebCore5FrameE
    fun:_ZN6WebKit24WebMediaPlayerClientImpl12loadInternalEv
    fun:_ZN6WebKit24WebMediaPlayerClientImpl4loadERKN3WTF6StringE
    fun:_ZN7WebCore11MediaPlayer23loadWithNextMediaEngineEPNS_18MediaPlayerFactoryE
    fun:_ZN7WebCore11MediaPlayer4loadERKN3WTF6StringERKNS_11ContentTypeE
    fun:_ZN7WebCore16HTMLMediaElement12loadResourceERKNS_4KURLERNS_11ContentTypeE
+   ...
    fun:_ZN7WebCore16HTMLMediaElement19selectMediaResourceEv
    fun:_ZN7WebCore16HTMLMediaElement12loadInternalEv
    fun:_ZN7WebCore16HTMLMediaElement14loadTimerFiredEPNS_5TimerIS0_EE
@@ -4925,7 +4925,18 @@
    fun:_ZN2v88internalL19HandleApiCallHelperILb0EEEPNS0_11MaybeObjectENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
    obj:*
 }
-
+{
+   bug_101159
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7WebCore15NPObjectWrapper10NPAllocateEP4_NPPP7NPClass
+   fun:_NPN_CreateObject
+   fun:_ZN7WebCore15NPObjectWrapper6createEP8NPObject
+   fun:_ZN7WebCore16ScriptController20windowScriptNPObjectEv
+   fun:_ZNK6WebKit12WebFrameImpl12windowObjectEv
+   fun:_ZN6webkit5npapi13WebPluginImpl23GetWindowScriptNPObjectEv
+   fun:NPN_GetValue
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
