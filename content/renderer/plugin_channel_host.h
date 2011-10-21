@@ -31,6 +31,9 @@ class PluginChannelHost : public NPChannelBase {
                 NPObjectBase* npobject);
   void RemoveRoute(int route_id);
 
+  // NPChannelBase override:
+  virtual bool Send(IPC::Message* msg);
+
   // IPC::Channel::Listener override
   virtual void OnChannelError();
 

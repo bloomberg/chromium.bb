@@ -4,6 +4,8 @@
 
 #include "content/renderer/plugin_channel_host.h"
 
+#include "base/metrics/histogram.h"
+#include "base/time.h"
 #include "content/common/child_process.h"
 #include "content/common/npobject_base.h"
 #include "content/common/plugin_messages.h"
@@ -136,6 +138,17 @@ void PluginChannelHost::OnSetException(const std::string& message) {
 
 void PluginChannelHost::OnPluginShuttingDown() {
   expecting_shutdown_ = true;
+}
+
+bool PluginChannelHost::Send(IPC::Message* msg) {
+  if (msg->is_sync()) {
+    base::TimeTicks start_time(base::TimeTicks::Now());
+    bool result = NPChannelBase::Send(msg);
+    UMA_HISTOGRAM_TIMES("Plugin.SyncMessageTime",
+                        base::TimeTicks::Now() - start_time);
+    return result;
+  }
+  return NPChannelBase::Send(msg);
 }
 
 void PluginChannelHost::OnChannelError() {
