@@ -10,8 +10,8 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/memory/weak_ptr.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "views/controls/menu/menu_wrapper.h"
@@ -71,7 +71,7 @@ class VIEWS_EXPORT NativeMenuWin : public MenuWrapper {
   // Sets the label of the item at the specified index.
   void SetMenuItemLabel(int menu_index,
                         int model_index,
-                        const std::wstring& label);
+                        const string16& label);
 
   // Updates the local data structure with the correctly formatted version of
   // |label| at the specified model_index, and adds string data to |mii| if
@@ -79,7 +79,7 @@ class VIEWS_EXPORT NativeMenuWin : public MenuWrapper {
   // of the peculiarities of the Windows menu API.
   void UpdateMenuItemInfoForString(MENUITEMINFO* mii,
                                    int model_index,
-                                   const std::wstring& label);
+                                   const string16& label);
 
   // Returns the alignment flags to be passed to TrackPopupMenuEx, based on the
   // supplied alignment and the UI text direction.

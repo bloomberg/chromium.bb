@@ -594,7 +594,7 @@ void NativeTableWin::UpdateListViewCache(int start, int length, bool add) {
     for (int i = start; i < max_row; ++i) {
       item.iItem = i;
       item.iSubItem = j;
-      std::wstring text = table_->model()->GetText(i, col.id);
+      string16 text = table_->model()->GetText(i, col.id);
       item.pszText = const_cast<LPWSTR>(text.c_str());
       item.iImage = 0;
       ListView_SetItem(native_view(), &item);

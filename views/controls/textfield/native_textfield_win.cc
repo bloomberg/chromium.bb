@@ -173,7 +173,7 @@ void NativeTextfieldWin::AttachHack() {
 
 string16 NativeTextfieldWin::GetText() const {
   int len = GetTextLength() + 1;
-  std::wstring str;
+  string16 str;
   GetWindowText(WriteInto(&str, len), len);
   // The text get from GetWindowText() might be wrapped with explicit bidi
   // control characters. Refer to UpdateText() for detail. Without such
@@ -495,7 +495,7 @@ void NativeTextfieldWin::UpdateAccessibleState(uint32 state_flag,
                    CHILDID_SELF);
 }
 
-void NativeTextfieldWin::UpdateAccessibleValue(const std::wstring& value) {
+void NativeTextfieldWin::UpdateAccessibleValue(const string16& value) {
   base::win::ScopedComPtr<IAccPropServices> pAccPropServices;
   HRESULT hr = CoCreateInstance(CLSID_AccPropServices, NULL, CLSCTX_SERVER,
       IID_IAccPropServices, reinterpret_cast<void**>(&pAccPropServices));
@@ -530,8 +530,7 @@ void NativeTextfieldWin::OnCopy() {
   if (textfield_->IsPassword())
     return;
 
-  const std::wstring text(GetSelectedText());
-
+  const string16 text(GetSelectedText());
   if (!text.empty() && ViewsDelegate::views_delegate) {
     ui::ScopedClipboardWriter scw(
         ViewsDelegate::views_delegate->GetClipboard());
@@ -918,7 +917,7 @@ void NativeTextfieldWin::OnPaste() {
                                     ui::Clipboard::BUFFER_STANDARD))
     return;
 
-  std::wstring clipboard_str;
+  string16 clipboard_str;
   clipboard->ReadText(ui::Clipboard::BUFFER_STANDARD, &clipboard_str);
   if (!clipboard_str.empty()) {
     string16 collapsed(CollapseWhitespace(clipboard_str, false));
@@ -1022,7 +1021,7 @@ void NativeTextfieldWin::OnAfterPossibleChange(bool should_redraw_text) {
     SetSel(new_sel);
   }
 
-  std::wstring new_text(GetText());
+  string16 new_text(GetText());
   if (new_text != text_before_change_) {
     if (ime_discard_composition_ && ime_composition_start_ >= 0 &&
         ime_composition_length_ > 0) {
@@ -1041,7 +1040,7 @@ void NativeTextfieldWin::OnAfterPossibleChange(bool should_redraw_text) {
     if (should_redraw_text) {
       CHARRANGE original_sel;
       GetSel(original_sel);
-      std::wstring text = GetText();
+      string16 text(GetText());
       ScopedSuspendUndo suspend_undo(GetTextObjectModel());
 
       SelectAll();

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "base/string16.h"
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/keycodes/keyboard_codes.h"
@@ -236,7 +237,7 @@ class VIEWS_EXPORT TableView : public NativeControl,
 
   // Sets the text to display on top of the table. This is useful if the table
   // is empty and you want to inform the user why.
-  void SetAltText(const std::wstring& alt_text);
+  void SetAltText(const string16& alt_text);
 
  protected:
   // Overriden to return the position of the first selected row.

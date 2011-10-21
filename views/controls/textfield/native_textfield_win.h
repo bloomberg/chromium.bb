@@ -15,6 +15,7 @@
 #include <tom.h>  // For ITextDocument, a COM interface to CRichEditCtrl
 #include <vsstyle.h>
 
+#include "base/string16.h"
 #include "base/win/scoped_comptr.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/gfx/insets.h"
@@ -107,7 +108,7 @@ class NativeTextfieldWin
   // Update accessibility information.
   void InitializeAccessibilityInfo();
   void UpdateAccessibleState(uint32 state_flag, bool set_value);
-  void UpdateAccessibleValue(const std::wstring& value);
+  void UpdateAccessibleValue(const string16& value);
 
   // CWindowImpl
   BEGIN_MSG_MAP(Edit)

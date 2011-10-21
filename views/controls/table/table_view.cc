@@ -1397,7 +1397,7 @@ int TableView::ViewToModel(int view_index) const {
   return view_to_model_[view_index];
 }
 
-void TableView::SetAltText(const std::wstring& alt_text) {
+void TableView::SetAltText(const string16& alt_text) {
   if (alt_text == alt_text_)
     return;
 
@@ -1445,7 +1445,7 @@ void TableView::UpdateListViewCache0(int start, int length, bool add) {
       // Set item.
       item.iItem = add ? i : ModelToView(i);
       item.iSubItem = j;
-      std::wstring text = model_->GetText(i, visible_columns_[j]);
+      string16 text = model_->GetText(i, visible_columns_[j]);
       item.pszText = const_cast<LPWSTR>(text.c_str());
       ListView_SetItem(list_view_, &item);
 
