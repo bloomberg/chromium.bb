@@ -22,7 +22,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/service_process_util.h"
-#include "content/common/child_process_host.h"
+#include "content/common/content_paths.h"
 
 #if !defined(OS_MACOSX)
 
@@ -252,11 +252,9 @@ IPC::ChannelHandle ServiceProcessState::GetServiceProcessChannel() {
 #endif  // !OS_MACOSX
 
 void ServiceProcessState::CreateAutoRunCommandLine() {
-  FilePath exe_path =
-      ChildProcessHost::GetChildPath(ChildProcessHost::CHILD_NORMAL);
-  if (exe_path.empty()) {
-    NOTREACHED() << "Unable to get service process binary name.";
-  }
+  FilePath exe_path;
+  PathService::Get(content::CHILD_PROCESS_EXE, &exe_path);
+  DCHECK(!exe_path.empty()) << "Unable to get service process binary name.";
   autorun_command_line_.reset(new CommandLine(exe_path));
   autorun_command_line_->AppendSwitchASCII(switches::kProcessType,
                                            switches::kServiceProcess);
