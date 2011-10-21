@@ -25,7 +25,7 @@ cr.define('options', function() {
    */
   var ExtensionsList = cr.ui.define('div');
 
-  var handleInstalled = false;
+  var handlersInstalled = false;
 
   ExtensionsList.prototype = {
     __proto__: HTMLDivElement.prototype,
@@ -59,13 +59,27 @@ cr.define('options', function() {
         toggleSection.classList.add('dev-closed');
       }
 
-      // Install handler for key presses.
-      if (!handleInstalled) {
+      // Instal global event handlers.
+      if (!handlersInstalled) {
         this.ownerDocument.addEventListener('keyup',
                                             this.upEventHandler_.bind(this));
         this.ownerDocument.addEventListener('mouseup',
                                             this.upEventHandler_.bind(this));
-        handleInstalled = true;
+
+        // Support full keyboard accessibility without making things ugly
+        // for users who click, by hiding some focus outlines when the user
+        // clicks anywhere, but showing them when the user presses any key.
+        this.ownerDocument.body.classList.add('hide-some-focus-outlines');
+        this.ownerDocument.addEventListener('click', (function(e) {
+          this.ownerDocument.body.classList.add('hide-some-focus-outlines');
+          return true;
+        }).bind(this), true);
+        this.ownerDocument.addEventListener('keydown', (function(e) {
+          this.ownerDocument.body.classList.remove('hide-some-focus-outlines');
+          return true;
+        }).bind(this), true);
+
+        handlersInstalled = true;
       }
     },
 
@@ -158,7 +172,16 @@ cr.define('options', function() {
         var container = this.ownerDocument.createElement('div');
         // Clicking anywhere on the div expands/collapses the details.
         container.classList.add('extension-zippy-container');
+        container.title = expanded ?
+            localStrings.getString('extensionSettingsHideDetails') :
+            localStrings.getString('extensionSettingsShowDetails');
+        container.tabIndex = 0;
+        container.setAttribute('role', 'button');
+        container.setAttribute('aria-controls', extension.id + '_details');
+        container.setAttribute('aria-expanded', expanded);
         container.addEventListener('click', this.handleZippyClick_.bind(this));
+        container.addEventListener('keydown',
+                                   this.handleZippyKeyDown_.bind(this));
         hbox.appendChild(container);
 
         // On the far left we have the zippy icon.
@@ -522,6 +545,14 @@ cr.define('options', function() {
 
       var zippy = extension.id + '_zippy';
       $(zippy).hidden = !itemsShown;
+
+      // If this isn't expanded now, make sure the newly-added controls
+      // are not part of the tab order.
+      if (!expanded) {
+        var detailsControls = details.querySelectorAll('a, input');
+        for (var i = 0; i < detailsControls.length; i++)
+          detailsControls[i].tabIndex = -1;
+      }
     },
 
     /**
@@ -552,9 +583,19 @@ cr.define('options', function() {
     },
 
     /**
+     * Handles a key down on the zippy icon.
+     * @param {Event} e Key event.
+     * @private
+     */
+    handleZippyKeyDown_: function(e) {
+      if (e.keyCode == 13 || e.keyCode == 32)  // Enter or Space.
+        this.handleZippyClick_(e);
+    },
+
+    /**
      * Handles the mouseclick on the zippy icon (that expands and collapses the
      * details section).
-     * @param {Event} e Change event.
+     * @param {Event} e Mouse event.
      * @private
      */
     handleZippyClick_: function(e) {
@@ -563,6 +604,7 @@ cr.define('options', function() {
       while (iter) {
         var zippy = $(iter.id + '_zippy');
         var details = $(iter.id + '_details');
+        var container = zippy.parentElement;
         if (iter.id == node.id) {
           // Toggle visibility.
           if (iter.classList.contains('extension-list-item-expanded')) {
@@ -573,6 +615,12 @@ cr.define('options', function() {
             details.classList.add('extension-details-hidden');
             iter.classList.remove('extension-list-item-expanded');
             iter.classList.add('extension-list-item-collaped');
+            container.setAttribute('aria-expanded', 'false');
+            container.title =
+                localStrings.getString('extensionSettingsShowDetails');
+            var detailsControls = details.querySelectorAll('a, input');
+            for (var i = 0; i < detailsControls.length; i++)
+              detailsControls[i].tabIndex = -1;
 
             // Hide yo incognito warning.
             var butterBar =
@@ -587,6 +635,12 @@ cr.define('options', function() {
             details.classList.add('extension-details-visible');
             iter.classList.remove('extension-list-item-collaped');
             iter.classList.add('extension-list-item-expanded');
+            container.setAttribute('aria-expanded', 'true');
+            container.title =
+                localStrings.getString('extensionSettingsHideDetails');
+            var detailsControls = details.querySelectorAll('a, input');
+            for (var i = 0; i < detailsControls.length; i++)
+              detailsControls[i].tabIndex = 0;
           }
         }
         iter = iter.nextSibling;

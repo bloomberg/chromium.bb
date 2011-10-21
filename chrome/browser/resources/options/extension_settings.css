@@ -264,3 +264,10 @@ found in the LICENSE file.
   font-size: 15px;
   -webkit-padding-start: 10px;
 }
+
+/* Support full keyboard accessibility without making things ugly
+   for users who click, by hiding some focus outlines when the user
+   clicks anywhere, but showing them when the user presses any key. */
+body.hide-some-focus-outlines .extension-zippy-container {
+  outline: none;
+}
