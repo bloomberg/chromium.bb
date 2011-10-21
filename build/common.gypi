@@ -38,6 +38,13 @@
     # Currently ignored on Windows.
     'coverage%': 0,
 
+    # TODO(sgk): eliminate this if possible.
+    # It would be nicer to support this via a setting in 'target_defaults'
+    # in chrome/app/locales/locales.gypi overriding the setting in the
+    # 'Debug' configuration in the 'target_defaults' dict below,
+    # but that doesn't work as we'd like.
+    'msvs_debug_link_incremental%': '2',
+
     # Doing this in a sub-dict so that it can be referred to below.
     'variables': {
       # By default we assume that we are building as part of Chrome
@@ -56,6 +63,14 @@
         # based on 'buildtype' (i.e. we don't care about saving symbols for
         # non-Official builds).
         'buildtype%': 'Dev',
+
+        # To do a shared build on linux we need to be able to choose between
+        # type static_library and shared_library. We default to doing a static
+        # build but you can override this with "gyp -Dlibrary=shared_library"
+        # or you can add the following line (without the #) to
+        # ~/.gyp/include.gypi {'variables': {'library': 'shared_library'}}
+        # to compile as shared by default
+        'library%': 'static_library',
       },
       'nacl_standalone%': '<(nacl_standalone)',
       # Define branding and buildtype on the basis of their settings within the
@@ -92,6 +107,15 @@
       'sysroot%': '',
 
       # NOTE: end adapted from them chrome common.gypi file for arm
+
+      'library%': '<(library)',
+
+      # Variable 'component' is for cases where we would like to build some
+      # components as dynamic shared libraries but still need variable
+      # 'library' for static libraries.
+      # By default, component is set to whatever library is set to and
+      # it can be overriden by the GYP command line or by ~/.gyp/include.gypi.
+      'component%': '<(library)',
     },
     # These come from the above variable scope.
     'target_arch%': '<(target_arch)',
@@ -99,6 +123,8 @@
     'nacl_strict_warnings%': 1,
     'branding%': '<(branding)',
     'buildtype%': '<(buildtype)',
+    'library%': '<(library)',
+    'component%': '<(component)',
 
     'linux2%': 0,
       'conditions': [
