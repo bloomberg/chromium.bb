@@ -178,7 +178,6 @@
     'common/page_zoom.h',
     'common/pepper_file_messages.cc',
     'common/pepper_file_messages.h',
-    'common/pepper_messages.cc',
     'common/pepper_messages.h',
     'common/pepper_plugin_registry.cc',
     'common/pepper_plugin_registry.h',
