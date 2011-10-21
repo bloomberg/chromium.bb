@@ -158,7 +158,12 @@ def Popen(args, **kwargs):
     # with a list because it only tries to execute the first item in the list.
     kwargs['shell'] = bool(sys.platform=='win32')
 
-  tmp_str = ' '.join(args)
+  if isinstance(args, basestring):
+    tmp_str = args
+  elif isinstance(args, (list, tuple)):
+    tmp_str = ' '.join(args)
+  else:
+    raise CalledProcessError(None, args, kwargs.get('cwd'), None, None)
   if kwargs.get('cwd', None):
     tmp_str += ';  cwd=%s' % kwargs['cwd']
   logging.debug(tmp_str)
