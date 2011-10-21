@@ -61,7 +61,7 @@ void JavaBridgeDispatcherHost::DoAddNamedObject(const string16& name,
   // the ref added in AddNamedObject(). We don't need the containing window or
   // the page URL, as we don't do re-entrant sync IPC.
   NPVariant_Param variant_param;
-  CreateNPVariantParam(variant, channel_, &variant_param, true, NULL, GURL());
+  CreateNPVariantParam(variant, channel_, &variant_param, true, 0, GURL());
   DCHECK_EQ(variant_param.type, NPVARIANT_PARAM_SENDER_OBJECT_ROUTING_ID);
 
   render_view_host_->Send(new JavaBridgeMsg_AddNamedObject(
