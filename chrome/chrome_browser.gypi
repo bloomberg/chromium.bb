@@ -4273,12 +4273,6 @@
             '../dbus/dbus.gyp:dbus',
             '../third_party/undoview/undoview.gyp:undoview',
           ],
-          'link_settings': {
-            'libraries': [
-              # For dlsym() in 'browser/zygote_main_linux.cc'
-              '-ldl',
-            ],
-          },
           'sources!': [
             'browser/ui/views/extensions/extension_view.cc',
             'browser/ui/views/extensions/extension_view.h',
@@ -4288,6 +4282,14 @@
             'browser/first_run/upgrade_util.h',
           ],
           'conditions': [
+            ['OS=="linux"', {
+              'link_settings': {
+                'libraries': [
+                  # For dlsym() in 'browser/zygote_main_linux.cc'
+                  '-ldl',
+                ],
+              },
+            }],
             ['use_gnome_keyring==1', {
               'dependencies': [
                 '../build/linux/system.gyp:gnome_keyring',

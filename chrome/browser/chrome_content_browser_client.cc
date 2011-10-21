@@ -82,7 +82,7 @@
 #include "chrome/browser/chrome_browser_main_win.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/chrome_browser_main_mac.h"
-#elif defined(OS_LINUX)
+#elif defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/chrome_browser_main_gtk.h"
 #endif
 
@@ -93,7 +93,7 @@
 
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/views/tab_contents/tab_contents_view_views.h"
-#elif defined(OS_LINUX)
+#elif defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/tab_contents/tab_contents_view_gtk.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/tab_contents/tab_contents_view_mac.h"
@@ -109,7 +109,7 @@
 #elif defined(OS_WIN)
 #include "chrome/browser/renderer_host/render_widget_host_view_views.h"
 #include "content/browser/renderer_host/render_widget_host_view_win.h"
-#elif defined(OS_LINUX)
+#elif defined(TOOLKIT_USES_GTK)
 #include "content/browser/renderer_host/render_widget_host_view_gtk.h"
 #elif defined(OS_MACOSX)
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
@@ -200,7 +200,7 @@ content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(
   return new ChromeBrowserMainPartsWin(parameters);
 #elif defined(OS_MACOSX)
   return new ChromeBrowserMainPartsMac(parameters);
-#elif defined(OS_LINUX)
+#elif defined(TOOLKIT_USES_GTK)
   return new ChromeBrowserMainPartsGtk(parameters);
 #else
   return NULL;
@@ -215,7 +215,7 @@ RenderWidgetHostView* ChromeContentBrowserClient::CreateViewForWidget(
   if (views::Widget::IsPureViews())
     return new RenderWidgetHostViewViews(widget);
   return new RenderWidgetHostViewWin(widget);
-#elif defined(OS_LINUX)
+#elif defined(TOOLKIT_USES_GTK)
   return new RenderWidgetHostViewGtk(widget);
 #elif defined(OS_MACOSX)
   return render_widget_host_view_mac::CreateRenderWidgetHostView(widget);
@@ -228,7 +228,7 @@ TabContentsView* ChromeContentBrowserClient::CreateTabContentsView(
     TabContents* tab_contents) {
 #if defined(TOOLKIT_VIEWS)
   return new TabContentsViewViews(tab_contents);
-#elif defined(OS_LINUX)
+#elif defined(TOOLKIT_USES_GTK)
   return new TabContentsViewGtk(tab_contents);
 #elif defined(OS_MACOSX)
   return tab_contents_view_mac::CreateTabContentsView(tab_contents);

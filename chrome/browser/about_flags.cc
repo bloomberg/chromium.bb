@@ -672,7 +672,7 @@ int GetCurrentPlatform() {
   return kOsWin;
 #elif defined(OS_CHROMEOS)  // Needs to be before the OS_LINUX check.
   return kOsCrOS;
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || defined(OS_OPENBSD)
   return kOsLinux;
 #else
 #error Unknown platform

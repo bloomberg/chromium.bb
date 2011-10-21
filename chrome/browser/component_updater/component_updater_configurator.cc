@@ -73,6 +73,14 @@ const char kExtraInfo[] =
   #else
     "os=linux&arch=unknown&prod=chrome&prodversion=";
   #endif
+#elif defined(OS_OPENBSD)
+  #if defined(__amd64__)
+    "os=openbsd&arch=x64";
+  #elif defined(__i386__)
+    "os=openbsd&arch=x86";
+  #else
+    "os=openbsd&arch=unknown";
+  #endif
 #else
     #error "unknown os or architecture"
 #endif

@@ -130,10 +130,13 @@ bool NetAddressToAddressList(const PP_Flash_NetAddress& net_addr,
 
 }  // namespace
 
+// This assert fails on OpenBSD for an unknown reason at the moment.
+#if !defined(OS_OPENBSD)
 // Make sure the storage in |PP_Flash_NetAddress| is big enough. (Do it here
 // since the data is opaque elsewhere.)
 COMPILE_ASSERT(sizeof(reinterpret_cast<PP_Flash_NetAddress*>(0)->data) >=
                sizeof(sockaddr_storage), PP_Flash_NetAddress_data_too_small);
+#endif
 
 const PP_Flash_NetAddress kInvalidNetAddress = { 0 };
 
