@@ -21,12 +21,15 @@ void ExpectListsEqual(const AppNotificationList& one,
 }
 
 void AddNotifications(AppNotificationList* list,
+                      const std::string& extension_id,
                       int count,
-                      std::string prefix) {
+                      const std::string& prefix) {
   for (int i = 0; i < count; i++) {
+    std::string guid = prefix + "_guid_" + IntToString(i);
     std::string title = prefix + "_title_" + IntToString(i);
     std::string body = prefix + "_body_" + IntToString(i);
-    AppNotification* item = new AppNotification(title, body);
+    AppNotification* item = new AppNotification(
+        true, guid, extension_id, title, body);
     if (i % 2 == 0) {
       item->set_link_url(GURL("http://www.example.com/" + prefix));
       item->set_link_text(prefix + "_link_" + IntToString(i));
@@ -35,21 +38,15 @@ void AddNotifications(AppNotificationList* list,
   }
 }
 
-AppNotification* CopyAppNotification(const AppNotification& source) {
-  AppNotification* copy = new AppNotification(source.title(), source.body());
-  copy->set_link_url(source.link_url());
-  copy->set_link_text(source.link_text());
-  return copy;
-}
-
-void AddCopiesFromList(AppNotificationManager* manager,
-                       const std::string& extension_id,
+bool AddCopiesFromList(AppNotificationManager* manager,
                        const AppNotificationList& list) {
+  bool result = true;
   for (AppNotificationList::const_iterator i = list.begin();
        i != list.end();
        ++i) {
-    manager->Add(extension_id, CopyAppNotification(*(i->get())));
+    result = result && manager->Add((*i)->Copy());
   }
+  return result;
 }
 
 }  // namespace app_notification_test_util
