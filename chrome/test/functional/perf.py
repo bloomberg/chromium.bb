@@ -118,8 +118,10 @@ class BasePerfTest(pyauto.PyUITest):
     database.
 
     Args:
-      description: A string description of the performance value.  This will
-                   be truncated to 30 characters when stored in the autotest
+      description: A string description of the performance value.  The string
+                   should be of the form "units_identifier" (for example,
+                   "milliseconds_NewTabPage").  This description will be
+                   truncated to 30 characters when stored in the autotest
                    database.
       value: A numeric value representing a single performance measurement.
     """
@@ -236,7 +238,7 @@ class BenchmarkPerfTest(BasePerfTest):
     self.assertTrue(
         self.WaitUntil(
             lambda: 'Score:' in self.ExecuteJavascript(js, tab_index=1),
-            timeout=300, expect_retval=True, retry_sleep=0.10),
+            timeout=300, expect_retval=True, retry_sleep=1),
         msg='Timed out when waiting for v8 benchmark score.')
     val = self.ExecuteJavascript(js, tab_index=1)
     score = int(val.split(':')[1].strip())
@@ -552,12 +554,13 @@ class ScrollTest(BasePerfTest):
 
       self.assertTrue(
           self.WaitUntil(IsTestDone, timeout=300, expect_retval=True,
-                         retry_sleep=0.25),
+                         retry_sleep=1),
           msg='Timed out when waiting for scrolling tests to complete.')
 
       # Get the scroll test results from the webpage.
       results_js = """
-        window.domAutomationController.send("{'fps': " + __mean_fps + "}");
+        window.domAutomationController.send(
+            JSON.stringify({'fps': __mean_fps}));
       """
       fps = eval(self.ExecuteJavascript(results_js, tab_index=1))['fps']
       self.GetBrowserWindow(0).GetTab(1).Close(True)
@@ -600,13 +603,14 @@ class FlashTest(BasePerfTest):
                     msg='Failed to append tab for webpage.')
 
     # Wait until the final result is computed, then retrieve and output it.
-    # TODO(dennisjeffrey): Have all tests in this class use JSON.stringify()
-    # to send results back from the Javascript.
-    js = 'window.domAutomationController.send("" + final_average_fps);'
+    js = """
+        window.domAutomationController.send(
+            JSON.stringify(final_average_fps));
+    """
     self.assertTrue(
         self.WaitUntil(
             lambda: self.ExecuteJavascript(js, tab_index=1) != '-1',
-            timeout=300, expect_retval=True, retry_sleep=0.25),
+            timeout=300, expect_retval=True, retry_sleep=1),
         msg='Timed out when waiting for test result.')
     result = float(self.ExecuteJavascript(js, tab_index=1))
     logging.info('Result for %s: %.2f FPS (average)', description, result)
@@ -631,29 +635,27 @@ class FlashTest(BasePerfTest):
     self.assertTrue(self.AppendTab(pyauto.GURL(webpage_url)),
                     msg='Failed to append tab for webpage.')
 
-    js = 'window.domAutomationController.send("" + tests_done);'
+    js = 'window.domAutomationController.send(JSON.stringify(tests_done));'
     self.assertTrue(
         self.WaitUntil(
             lambda: self.ExecuteJavascript(js, tab_index=1), timeout=300,
-            expect_retval='true', retry_sleep=0.25),
+            expect_retval='true', retry_sleep=1),
         msg='Timed out when waiting for tests to complete.')
 
     js_result = """
-        var json_result = "{";
+        var result = {};
         for (var i = 0; i < tests_results.length; ++i) {
           var test_name = tests_results[i][0];
           var mflops = tests_results[i][1];
           var mem = tests_results[i][2];
-          json_result += "'" + test_name + "':" + "[" + mflops + "," +
-                         mem + "],";
+          result[test_name] = [mflops, mem]
         }
-        json_result += "}";
-        window.domAutomationController.send(json_result);
+        window.domAutomationController.send(JSON.stringify(result));
     """
     result = eval(self.ExecuteJavascript(js_result, tab_index=1))
     for benchmark in result:
-      mflops = result[benchmark][0]
-      mem = result[benchmark][1]
+      mflops = float(result[benchmark][0])
+      mem = float(result[benchmark][1])
       if benchmark.endswith('_mflops'):
         benchmark = benchmark[:benchmark.find('_mflops')]
       logging.info('Results for ScimarkGui_' + benchmark + ':')
