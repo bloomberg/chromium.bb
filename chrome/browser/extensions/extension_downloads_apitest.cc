@@ -13,7 +13,8 @@ class DownloadsApiTest : public ExtensionApiTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(DownloadsApiTest, Downloads) {
+// Disabled: see http://crbug.com/101170
+IN_PROC_BROWSER_TEST_F(DownloadsApiTest, DISABLED_Downloads) {
   ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionTest("downloads")) << message_;
 }
