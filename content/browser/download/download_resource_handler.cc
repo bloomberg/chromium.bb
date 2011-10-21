@@ -11,6 +11,7 @@
 #include "base/metrics/stats_counters.h"
 #include "base/stringprintf.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/download/download_buffer.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/download_item.h"
@@ -46,7 +47,7 @@ DownloadResourceHandler::DownloadResourceHandler(
       save_as_(save_as),
       started_cb_(started_cb),
       save_info_(save_info),
-      buffer_(new DownloadBuffer),
+      buffer_(new content::DownloadBuffer),
       rdh_(rdh),
       is_paused_(false) {
   DCHECK(dl_id.IsValid());
@@ -162,25 +163,25 @@ bool DownloadResourceHandler::OnReadCompleted(int request_id, int* bytes_read) {
   if (!*bytes_read)
     return true;
   DCHECK(read_buffer_);
-  base::AutoLock auto_lock(buffer_->lock);
-  bool need_update = buffer_->contents.empty();
+  // Swap the data.
+  net::IOBuffer* io_buffer = NULL;
+  read_buffer_.swap(&io_buffer);
+  size_t vector_size = buffer_->AddData(io_buffer, *bytes_read);
+  bool need_update = (vector_size == 1);  // Buffer was empty.
 
   // We are passing ownership of this buffer to the download file manager.
-  net::IOBuffer* buffer = NULL;
-  read_buffer_.swap(&buffer);
-  buffer_->contents.push_back(std::make_pair(buffer, *bytes_read));
   if (need_update) {
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
         NewRunnableMethod(download_file_manager_,
                           &DownloadFileManager::UpdateDownload,
                           download_id_,
-                          buffer_.get()));
+                          buffer_));
   }
 
   // We schedule a pause outside of the read loop if there is too much file
   // writing work to do.
-  if (buffer_->contents.size() > kLoadsToWrite)
+  if (vector_size > kLoadsToWrite)
     StartPauseTimer();
 
   return true;
@@ -206,9 +207,9 @@ bool DownloadResourceHandler::OnResponseCompleted(
       NewRunnableMethod(download_file_manager_,
                         &DownloadFileManager::OnResponseCompleted,
                         download_id_,
-                        buffer_.release(),
                         error_code,
                         security_info));
+  buffer_ = NULL;  // The buffer is longer needed by |DownloadResourceHandler|.
   read_buffer_ = NULL;
   return true;
 }
@@ -236,11 +237,7 @@ void DownloadResourceHandler::CheckWriteProgress() {
   if (!buffer_.get())
     return;  // The download completed while we were waiting to run.
 
-  size_t contents_size;
-  {
-    base::AutoLock lock(buffer_->lock);
-    contents_size = buffer_->contents.size();
-  }
+  size_t contents_size = buffer_->size();
 
   bool should_pause = contents_size > kLoadsToWrite;
 

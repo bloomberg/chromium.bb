@@ -18,7 +18,10 @@
 
 class DownloadFileManager;
 class ResourceDispatcherHost;
-struct DownloadBuffer;
+
+namespace content {
+class DownloadBuffer;
+}
 
 namespace net {
 class URLRequest;
@@ -95,7 +98,7 @@ class DownloadResourceHandler : public ResourceHandler {
   bool save_as_;  // Request was initiated via "Save As" by the user.
   OnStartedCallback started_cb_;
   DownloadSaveInfo save_info_;
-  scoped_ptr<DownloadBuffer> buffer_;
+  scoped_refptr<content::DownloadBuffer> buffer_;
   ResourceDispatcherHost* rdh_;
   bool is_paused_;
   base::OneShotTimer<DownloadResourceHandler> pause_timer_;

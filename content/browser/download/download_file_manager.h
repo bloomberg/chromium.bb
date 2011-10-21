@@ -54,7 +54,6 @@
 #include "net/base/net_errors.h"
 #include "ui/gfx/native_widget_types.h"
 
-struct DownloadBuffer;
 struct DownloadCreateInfo;
 struct DownloadSaveInfo;
 class DownloadFile;
@@ -62,6 +61,10 @@ class DownloadManager;
 class FilePath;
 class GURL;
 class ResourceDispatcherHost;
+
+namespace content {
+class DownloadBuffer;
+}
 
 namespace net {
 class URLRequestContextGetter;
@@ -81,14 +84,14 @@ class CONTENT_EXPORT DownloadFileManager
 
   // Handlers for notifications sent from the IO thread and run on the
   // FILE thread.
-  void UpdateDownload(DownloadId global_id, DownloadBuffer* buffer);
+  void UpdateDownload(DownloadId global_id, content::DownloadBuffer* buffer);
+
   // |net_error| is 0 for normal completions, and non-0 for errors.
   // |security_info| contains SSL information (cert_id, cert_status,
   // security_bits, ssl_connection_status), which can be used to
   // fine-tune the error message.  It is empty if the transaction
   // was not performed securely.
   void OnResponseCompleted(DownloadId global_id,
-                           DownloadBuffer* buffer,
                            net::Error net_error,
                            const std::string& security_info);
 

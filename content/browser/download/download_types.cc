@@ -4,12 +4,6 @@
 
 #include "content/browser/download/download_types.h"
 
-DownloadBuffer::DownloadBuffer() {
-}
-
-DownloadBuffer::~DownloadBuffer() {
-}
-
 DownloadSaveInfo::DownloadSaveInfo() {
 }
 

@@ -24,7 +24,6 @@ X509UserCertResourceHandler::X509UserCertResourceHandler(
     : host_(host),
       request_(request),
       content_length_(0),
-      buffer_(new DownloadBuffer),
       read_buffer_(NULL),
       resource_buffer_(NULL),
       render_process_host_id_(render_process_host_id),
@@ -85,7 +84,7 @@ bool X509UserCertResourceHandler::OnReadCompleted(int request_id,
   net::IOBuffer* buffer = NULL;
   read_buffer_.swap(&buffer);
   // TODO(gauravsh): Should this be handled by a separate thread?
-  buffer_->contents.push_back(std::make_pair(buffer, *bytes_read));
+  buffer_.push_back(std::make_pair(buffer, *bytes_read));
 
   return true;
 }
@@ -115,14 +114,7 @@ X509UserCertResourceHandler::~X509UserCertResourceHandler() {
 }
 
 void X509UserCertResourceHandler::AssembleResource() {
-  size_t bytes_copied = 0;
-  resource_buffer_ = new net::IOBuffer(content_length_);
-
-  for (size_t i = 0; i < buffer_->contents.size(); ++i) {
-    net::IOBuffer* data = buffer_->contents[i].first;
-    const int data_len = buffer_->contents[i].second;
-    DCHECK(bytes_copied + data_len <= content_length_);
-    memcpy(resource_buffer_->data() + bytes_copied, data->data(), data_len);
-    bytes_copied += data_len;
-  }
+  size_t assembled_bytes = 0;
+  resource_buffer_ = content::AssembleData(buffer_, &assembled_bytes);
+  DCHECK_EQ(content_length_, assembled_bytes);
 }

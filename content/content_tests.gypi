@@ -132,6 +132,7 @@
         'browser/debugger/devtools_manager_unittest.cc',
         'browser/device_orientation/provider_unittest.cc',
         'browser/download/base_file_unittest.cc',
+        'browser/download/download_buffer_unittest.cc',
         'browser/download/download_file_unittest.cc',
         'browser/download/download_id_unittest.cc',
         'browser/download/download_status_updater_unittest.cc',

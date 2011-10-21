@@ -23,6 +23,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/download/download_buffer.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file.h"
 #include "content/browser/download/download_file_manager.h"
@@ -52,7 +53,8 @@ class DownloadManagerTest : public testing::Test {
         download_manager_(new MockDownloadManager(
             download_manager_delegate_, &download_status_updater_)),
         ui_thread_(BrowserThread::UI, &message_loop_),
-        file_thread_(BrowserThread::FILE, &message_loop_) {
+        file_thread_(BrowserThread::FILE, &message_loop_),
+        download_buffer_(new content::DownloadBuffer) {
     download_manager_->Init(profile_.get());
     download_manager_delegate_->SetDownloadManager(download_manager_);
   }
@@ -92,17 +94,12 @@ class DownloadManagerTest : public testing::Test {
     io_buffer->AddRef();
     memcpy(io_buffer->data(), data, length);
 
-    {
-      base::AutoLock auto_lock(download_buffer_.lock);
-
-      download_buffer_.contents.push_back(
-          std::make_pair(io_buffer, length));
-    }
+    download_buffer_->AddData(io_buffer, length);
 
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
         base::Bind(&DownloadFileManager::UpdateDownload, file_manager_.get(),
-                   DownloadId(download_manager_.get(), id), &download_buffer_));
+                   DownloadId(download_manager_.get(), id), download_buffer_));
 
     message_loop_.RunAllPending();
   }
@@ -128,7 +125,7 @@ class DownloadManagerTest : public testing::Test {
   MessageLoopForUI message_loop_;
   BrowserThread ui_thread_;
   BrowserThread file_thread_;
-  DownloadBuffer download_buffer_;
+  scoped_refptr<content::DownloadBuffer> download_buffer_;
 
   DownloadFileManager* file_manager() {
     if (!file_manager_) {

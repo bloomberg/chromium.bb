@@ -10,6 +10,7 @@
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/download/download_buffer.h"
 #include "content/browser/download/download_file.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_manager.h"
@@ -143,19 +144,15 @@ void DownloadFileManager::StartDownload(DownloadCreateInfo* info) {
 // thread gets the cancel message: we just delete the data since the
 // DownloadFile has been deleted.
 void DownloadFileManager::UpdateDownload(
-    DownloadId global_id, DownloadBuffer* buffer) {
+    DownloadId global_id, content::DownloadBuffer* buffer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  std::vector<DownloadBuffer::Contents> contents;
-  {
-    base::AutoLock auto_lock(buffer->lock);
-    contents.swap(buffer->contents);
-  }
+  scoped_ptr<content::ContentVector> contents(buffer->ReleaseContents());
 
   DownloadFile* download_file = GetDownloadFile(global_id);
   bool had_error = false;
-  for (size_t i = 0; i < contents.size(); ++i) {
-    net::IOBuffer* data = contents[i].first;
-    const int data_len = contents[i].second;
+  for (size_t i = 0; i < contents->size(); ++i) {
+    net::IOBuffer* data = (*contents)[i].first;
+    const int data_len = (*contents)[i].second;
     if (!had_error && download_file) {
       net::Error write_result =
           download_file->AppendDataToFile(data->data(), data_len);
@@ -192,14 +189,12 @@ void DownloadFileManager::UpdateDownload(
 
 void DownloadFileManager::OnResponseCompleted(
     DownloadId global_id,
-    DownloadBuffer* buffer,
     net::Error net_error,
     const std::string& security_info) {
   VLOG(20) << __FUNCTION__ << "()" << " id = " << global_id
            << " net_error = " << net_error
            << " security_info = \"" << security_info << "\"";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  delete buffer;
   DownloadFile* download_file = GetDownloadFile(global_id);
   if (!download_file)
     return;
