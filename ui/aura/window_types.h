@@ -8,12 +8,14 @@
 
 namespace aura {
 
-const int kWindowType_Toplevel = 0;
-const int kWindowType_Control = 1;
-const int kWindowType_Menu = 2;
-const int kWindowType_Tooltip = 3;
+// This file is obsolete. Please do not add any new types.
+// This still exists as Window::Init uses Type_Control.
+// TODO(ben|oshima): Figure out how to clean this up.
 
-const int kWindowType_Max = 4;
+const int kWindowType_None = 0;
+const int kWindowType_Control = 1;
+
+const int kWindowType_Max = 2;
 
 }  // namespace aura
 

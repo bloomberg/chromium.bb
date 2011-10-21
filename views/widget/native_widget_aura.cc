@@ -33,31 +33,7 @@ using ui::ViewProp;
 
 namespace views {
 
-namespace {
-
-int GetAuraWindowTypeFromInitParams(const Widget::InitParams& params) {
-  if (params.child)
-    return aura::kWindowType_Control;
-  switch (params.type) {
-    case Widget::InitParams::TYPE_WINDOW:
-    case Widget::InitParams::TYPE_WINDOW_FRAMELESS:
-    case Widget::InitParams::TYPE_POPUP:
-    case Widget::InitParams::TYPE_BUBBLE:
-      return aura::kWindowType_Toplevel;
-    case Widget::InitParams::TYPE_CONTROL:
-      return aura::kWindowType_Control;
-    case Widget::InitParams::TYPE_MENU:
-      return aura::kWindowType_Menu;
-    case Widget::InitParams::TYPE_TOOLTIP:
-      return aura::kWindowType_Tooltip;
-    default:
-      NOTREACHED();
-      break;
-  }
-  return aura::kWindowType_Toplevel;
-}
-
-}  // namespace
+const char* const NativeWidgetAura::kWindowTypeKey = "WindowType";
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetAura, public:
@@ -97,7 +73,11 @@ gfx::Font NativeWidgetAura::GetWindowTitleFont() {
 void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   ownership_ = params.ownership;
   window_->set_user_data(this);
-  window_->SetType(GetAuraWindowTypeFromInitParams(params));
+  Widget::InitParams::Type window_type =
+      params.child ? Widget::InitParams::TYPE_CONTROL : params.type;
+  SetNativeWindowProperty(kWindowTypeKey, reinterpret_cast<void*>(window_type));
+  window_->SetType(window_type == Widget::InitParams::TYPE_CONTROL ?
+                   aura::kWindowType_Control : aura::kWindowType_None);
   window_->Init();
   // TODO(beng): respect |params| authoritah wrt transparency.
   window_->layer()->SetFillsBoundsOpaquely(false);

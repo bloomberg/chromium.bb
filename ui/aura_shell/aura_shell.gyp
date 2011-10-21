@@ -33,6 +33,8 @@
       ],
       'sources': [
         # All .cc, .h under views, except unittests
+        'default_container_layout_manager.cc',
+        'default_container_layout_manager.h',
         'desktop_background_view.cc',
         'desktop_background_view.h',
         'desktop_layout_manager.cc',
@@ -81,9 +83,12 @@
         '../ui.gyp:ui',
         '../ui.gyp:ui_resources',
         '../ui.gyp:ui_resources_standard',
+        '../aura/aura.gyp:aura',
+        '../aura/aura.gyp:test_support_aura',
         'aura_shell',
       ],
       'sources': [
+        'default_container_layout_manager_unittest.cc',
         'launcher/launcher_model_unittest.cc',
         'launcher/view_model_unittest.cc',
         'launcher/view_model_utils_unittest.cc',

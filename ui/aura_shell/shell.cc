@@ -10,17 +10,22 @@
 #include "ui/aura/toplevel_window_container.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_types.h"
+#include "ui/aura_shell/default_container_layout_manager.h"
 #include "ui/aura_shell/desktop_layout_manager.h"
 #include "ui/aura_shell/launcher/launcher.h"
 #include "ui/aura_shell/shell_delegate.h"
 #include "ui/aura_shell/shell_factory.h"
 #include "ui/aura_shell/shell_window_ids.h"
+#include "ui/base/view_prop.h"
 #include "ui/gfx/compositor/layer.h"
+#include "views/widget/native_widget_aura.h"
 #include "views/widget/widget.h"
 
 namespace aura_shell {
 
 namespace {
+
+using views::Widget;
 
 // Creates each of the special window containers that holds windows of various
 // types in the shell UI. They are added to |containers| from back to front in
@@ -33,6 +38,8 @@ void CreateSpecialContainers(aura::Window::Windows* containers) {
 
   aura::Window* default_container = new aura::ToplevelWindowContainer;
   default_container->set_id(internal::kShellWindowId_DefaultContainer);
+  default_container->SetLayoutManager(
+      new internal::DefaultContainerLayoutManager(default_container));
   containers->push_back(default_container);
 
   aura::Window* always_on_top_container = new aura::ToplevelWindowContainer;
@@ -232,13 +239,18 @@ void Shell::RestoreTiledWindows() {
 
 void Shell::AddChildToDefaultParent(aura::Window* window) {
   aura::Window* parent = NULL;
-  switch (window->type()) {
-    case aura::kWindowType_Toplevel:
-    case aura::kWindowType_Control:
+  intptr_t type = reinterpret_cast<intptr_t>(
+      ui::ViewProp::GetValue(window, views::NativeWidgetAura::kWindowTypeKey));
+  switch (static_cast<Widget::InitParams::Type>(type)) {
+    case Widget::InitParams::TYPE_WINDOW:
+    case Widget::InitParams::TYPE_WINDOW_FRAMELESS:
+    case Widget::InitParams::TYPE_CONTROL:
+    case Widget::InitParams::TYPE_BUBBLE:
+    case Widget::InitParams::TYPE_POPUP:
       parent = GetContainer(internal::kShellWindowId_DefaultContainer);
       break;
-    case aura::kWindowType_Menu:
-    case aura::kWindowType_Tooltip:
+    case Widget::InitParams::TYPE_MENU:
+    case Widget::InitParams::TYPE_TOOLTIP:
       parent = GetContainer(internal::kShellWindowId_MenusAndTooltipsContainer);
       break;
     default:

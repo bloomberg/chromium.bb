@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_SHELL_DESKTOP_LAYOUT_MANAGER_H_
-#define UI_AURA_SHELL_DESKTOP_LAYOUT_MANAGER_H_
+#ifndef UI_AURA_SHELL_DEFAULT_CONTAINER_LAYOUT_MANAGER_H_
+#define UI_AURA_SHELL_DEFAULT_CONTAINER_LAYOUT_MANAGER_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -13,34 +13,19 @@
 namespace aura {
 class Window;
 }
+
 namespace gfx {
 class Rect;
-}
-namespace views {
-class Widget;
 }
 
 namespace aura_shell {
 namespace internal {
 
-// A layout manager for the root window.
-// Resizes all of its immediate children to fill the bounds of the root window.
-class DesktopLayoutManager : public aura::LayoutManager {
+// LayoutManager for the default window container.
+class DefaultContainerLayoutManager : public aura::LayoutManager {
  public:
-  explicit DesktopLayoutManager(aura::Window* owner);
-  virtual ~DesktopLayoutManager();
-
-  void set_background_widget(views::Widget* background_widget) {
-    background_widget_ = background_widget;
-  }
-
-  void set_launcher_widget(views::Widget* launcher_widget) {
-    launcher_widget_ = launcher_widget;
-  }
-
-  void set_status_area_widget(views::Widget* status_area_widget) {
-    status_area_widget_ = status_area_widget;
-  }
+  explicit DefaultContainerLayoutManager(aura::Window* owner);
+  virtual ~DefaultContainerLayoutManager();
 
   // Overridden from aura::LayoutManager:
   virtual void OnWindowResized() OVERRIDE;
@@ -54,14 +39,10 @@ class DesktopLayoutManager : public aura::LayoutManager {
  private:
   aura::Window* owner_;
 
-  views::Widget* background_widget_;
-  views::Widget* launcher_widget_;
-  views::Widget* status_area_widget_;
-
-  DISALLOW_COPY_AND_ASSIGN(DesktopLayoutManager);
+  DISALLOW_COPY_AND_ASSIGN(DefaultContainerLayoutManager);
 };
 
 }  // namespace internal
 }  // namespace aura_shell
 
-#endif  // UI_AURA_SHELL_DESKTOP_LAYOUT_MANAGER_H_
+#endif  // UI_AURA_SHELL_DEFAULT_CONTAINER_LAYOUT_MANAGER_H_
