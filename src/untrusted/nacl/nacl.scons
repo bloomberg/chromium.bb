@@ -68,9 +68,7 @@ env.AddLibraryToSdk(libnacl)
 header_install = env.AddHeaderToSdk(['nacl_startup.h', 'nacl_thread.h'])
 env.Requires('libnacl', header_install)
 
-libnacl_dyncode = env.NaClSdkLibrary('libnacl_dyncode',
-                                     ['dyncode.c'],
-                                     LIBS=['nacl'])
+libnacl_dyncode = env.NaClSdkLibrary('libnacl_dyncode', ['dyncode.c'])
 env.AddLibraryToSdk(libnacl_dyncode)
 env.AddHeaderToSdk(['nacl_dyncode.h'])
 
