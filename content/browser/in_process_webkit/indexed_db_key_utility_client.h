@@ -13,13 +13,16 @@
 #include "content/common/content_export.h"
 
 class IndexedDBKey;
-class SerializedScriptValue;
 class KeyUtilityClientImpl;
 
 namespace base {
 template <typename T>
 struct DefaultLazyInstanceTraits;
 }  // namespace base
+
+namespace content {
+class SerializedScriptValue;
+}
 
 // Class for obtaining IndexedDBKeys from the SerializedScriptValues given
 // an IDBKeyPath. This class is a thin singleton wrapper around the
@@ -28,15 +31,15 @@ class IndexedDBKeyUtilityClient {
  public:
   // Synchronously obtain the |keys| from |values| for the given |key_path|.
   static void CreateIDBKeysFromSerializedValuesAndKeyPath(
-      const std::vector<SerializedScriptValue>& values,
+      const std::vector<content::SerializedScriptValue>& values,
       const string16& key_path,
       std::vector<IndexedDBKey>* keys);
 
   // Synchronously inject |key| into |value| using |key_path|. Returns the new
   // value.
-  static SerializedScriptValue InjectIDBKeyIntoSerializedValue(
+  static content::SerializedScriptValue InjectIDBKeyIntoSerializedValue(
       const IndexedDBKey& key,
-      const SerializedScriptValue& value,
+      const content::SerializedScriptValue& value,
       const string16& key_path);
 
   // Shut down the underlying implementation. Must be called on the IO thread.

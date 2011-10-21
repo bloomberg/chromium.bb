@@ -18,7 +18,10 @@
 
 class FilePath;
 class IndexedDBKey;
+
+namespace content {
 class SerializedScriptValue;
+}
 
 namespace webkit {
 struct WebPluginInfo;
@@ -46,10 +49,11 @@ class UtilityThreadImpl : public content::UtilityThread,
   // IPC message handlers.
   void OnIDBKeysFromValuesAndKeyPath(
       int id,
-      const std::vector<SerializedScriptValue>& serialized_script_values,
+      const std::vector<content::SerializedScriptValue>&
+          serialized_script_values,
       const string16& idb_key_path);
   void OnInjectIDBKey(const IndexedDBKey& key,
-                      const SerializedScriptValue& value,
+                      const content::SerializedScriptValue& value,
                       const string16& key_path);
   void OnBatchModeStarted();
   void OnBatchModeFinished();

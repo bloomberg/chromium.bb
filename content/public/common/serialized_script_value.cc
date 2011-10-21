@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/serialized_script_value.h"
+#include "content/public/common/serialized_script_value.h"
 
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSerializedScriptValue.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 
 using WebKit::WebSerializedScriptValue;
+
+namespace content {
 
 SerializedScriptValue::SerializedScriptValue()
     : is_null_(true),
@@ -40,3 +42,5 @@ void SerializedScriptValue::set_web_serialized_script_value(
   is_invalid_ = value.isNull() ? false : value.toString().isNull();
   data_ = value.isNull() ? string16() : static_cast<string16>(value.toString());
 }
+
+}  // namespace content

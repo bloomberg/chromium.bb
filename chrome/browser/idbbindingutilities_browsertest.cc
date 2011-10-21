@@ -9,8 +9,8 @@
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/utility_process_host.h"
 #include "content/common/indexed_db_key.h"
-#include "content/common/serialized_script_value.h"
 #include "content/common/utility_messages.h"
+#include "content/public/common/serialized_script_value.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
@@ -125,12 +125,13 @@ class IDBKeyPathHelper : public UtilityProcessHost::Client {
     value_for_key_path_failed_ = failed;
   }
 
-  void SetExpectedValue(const SerializedScriptValue& expected_value) {
+  void SetExpectedValue(const content::SerializedScriptValue& expected_value) {
     expected_value_ = expected_value;
   }
 
   void CheckValuesForKeyPath(
-      int id, const std::vector<SerializedScriptValue>& serialized_values,
+      int id,
+      const std::vector<content::SerializedScriptValue>& serialized_values,
       const string16& key_path) {
     if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
       BrowserThread::PostTask(
@@ -147,7 +148,7 @@ class IDBKeyPathHelper : public UtilityProcessHost::Client {
   }
 
   void CheckInjectValue(const IndexedDBKey& key,
-                        const SerializedScriptValue& value,
+                        const content::SerializedScriptValue& value,
                         const string16& key_path) {
     if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
       BrowserThread::PostTask(
@@ -203,7 +204,7 @@ class IDBKeyPathHelper : public UtilityProcessHost::Client {
                             new MessageLoop::QuitTask());
   }
 
-  void OnInjectIDBKeyFinished(const SerializedScriptValue& new_value) {
+  void OnInjectIDBKeyFinished(const content::SerializedScriptValue& new_value) {
     EXPECT_EQ(expected_value_.data(), new_value.data());
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             new MessageLoop::QuitTask());
@@ -215,7 +216,7 @@ class IDBKeyPathHelper : public UtilityProcessHost::Client {
   std::vector<IndexedDBKey> expected_keys_;
   UtilityProcessHost* utility_process_host_;
   bool value_for_key_path_failed_;
-  SerializedScriptValue expected_value_;
+  content::SerializedScriptValue expected_value_;
 };
 
 // This test fixture runs in the UI thread. However, most of the work done by
@@ -241,13 +242,14 @@ class ScopedIDBKeyPathHelper {
     key_path_helper_->SetExpectedKeys(id, expected_keys, failed);
   }
 
-  void SetExpectedValue(const SerializedScriptValue& expected_value) {
+  void SetExpectedValue(const content::SerializedScriptValue& expected_value) {
     key_path_helper_->SetExpectedValue(expected_value);
   }
 
   void CheckValuesForKeyPath(
       int id,
-      const std::vector<SerializedScriptValue>& serialized_script_values,
+      const std::vector<content::SerializedScriptValue>&
+          serialized_script_values,
       const string16& key_path) {
     key_path_helper_->CheckValuesForKeyPath(id, serialized_script_values,
                                             key_path);
@@ -255,7 +257,7 @@ class ScopedIDBKeyPathHelper {
   }
 
   void CheckInjectValue(const IndexedDBKey& key,
-                        const SerializedScriptValue& value,
+                        const content::SerializedScriptValue& value,
                         const string16& key_path) {
     key_path_helper_->CheckInjectValue(key, value, key_path);
     ui_test_utils::RunMessageLoop();
@@ -280,11 +282,11 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, IDBKeyPathExtract) {
   scoped_helper.SetExpectedKeys(kId, expected_keys, false);
 
   char16 data[] = {0x0353,0x6f66,0x536f,0x7a03,0x6f6f,0x017b};
-  std::vector<SerializedScriptValue> serialized_values;
+  std::vector<content::SerializedScriptValue> serialized_values;
+  serialized_values.push_back(content::SerializedScriptValue(
+      false, false, string16(data, arraysize(data))));
   serialized_values.push_back(
-      SerializedScriptValue(false, false, string16(data, arraysize(data))));
-  serialized_values.push_back(
-      SerializedScriptValue(true, false, string16()));
+      content::SerializedScriptValue(true, false, string16()));
   scoped_helper.CheckValuesForKeyPath(
       kId, serialized_values, UTF8ToUTF16("foo"));
 }
@@ -301,11 +303,11 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, IDBKeyPathPropertyNotAvailable) {
   scoped_helper.SetExpectedKeys(kId, expected_keys, false);
 
   char16 data[] = {0x0353,0x6f66,0x536f,0x7a03,0x6f6f,0x017b};
-  std::vector<SerializedScriptValue> serialized_values;
+  std::vector<content::SerializedScriptValue> serialized_values;
+  serialized_values.push_back(content::SerializedScriptValue(
+      false, false, string16(data, arraysize(data))));
   serialized_values.push_back(
-      SerializedScriptValue(false, false, string16(data, arraysize(data))));
-  serialized_values.push_back(
-      SerializedScriptValue(true, false, string16()));
+      content::SerializedScriptValue(true, false, string16()));
   scoped_helper.CheckValuesForKeyPath(kId, serialized_values,
                                       UTF8ToUTF16("PropertyNotAvailable"));
 }
@@ -322,11 +324,11 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, IDBKeyPathMultipleCalls) {
   scoped_helper.SetExpectedKeys(kId, expected_keys, true);
 
   char16 data[] = {0x0353,0x6f66,0x536f,0x7a03,0x6f6f,0x017b};
-  std::vector<SerializedScriptValue> serialized_values;
+  std::vector<content::SerializedScriptValue> serialized_values;
+  serialized_values.push_back(content::SerializedScriptValue(
+      false, false, string16(data, arraysize(data))));
   serialized_values.push_back(
-      SerializedScriptValue(false, false, string16(data, arraysize(data))));
-  serialized_values.push_back(
-      SerializedScriptValue(true, false, string16()));
+      content::SerializedScriptValue(true, false, string16()));
   scoped_helper.CheckValuesForKeyPath(kId, serialized_values,
                                       UTF8ToUTF16("!+Invalid[KeyPath[[["));
 
@@ -344,7 +346,8 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, IDBKeyPathMultipleCalls) {
 IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, InjectIDBKey) {
   // {foo: 'zoo'}
   const char16 data[] = {0x0353,0x6f66,0x536f,0x7a03,0x6f6f,0x017b};
-  SerializedScriptValue value(false, false, string16(data, arraysize(data)));
+  content::SerializedScriptValue value(
+      false, false, string16(data, arraysize(data)));
   IndexedDBKey key;
   key.SetString(UTF8ToUTF16("myNewKey"));
 
@@ -352,9 +355,8 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, InjectIDBKey) {
   const char16 expected_data[] = {0x353, 0x6f66, 0x536f, 0x7a03, 0x6f6f, 0x353,
                                   0x6162, 0x5372, 0x6d08, 0x4e79, 0x7765,
                                   0x654b, 0x7b79, 0x2};
-  SerializedScriptValue expected_value(false, false,
-                                       string16(expected_data,
-                                                arraysize(expected_data)));
+  content::SerializedScriptValue expected_value(
+      false, false, string16(expected_data, arraysize(expected_data)));
 
   ScopedIDBKeyPathHelper scoped_helper;
   scoped_helper.SetExpectedValue(expected_value);
@@ -362,6 +364,7 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, InjectIDBKey) {
   //     https://bugs.webkit.org/show_bug.cgi?id=63481 land.
   // scoped_helper.CheckInjectValue(key, value, UTF8ToUTF16("bar"));
 
-  scoped_helper.SetExpectedValue(SerializedScriptValue());  // Expect null.
+  // Expect null.
+  scoped_helper.SetExpectedValue(content::SerializedScriptValue());
   scoped_helper.CheckInjectValue(key, value, UTF8ToUTF16("bad.key.path"));
 }

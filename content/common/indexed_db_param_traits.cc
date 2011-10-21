@@ -5,21 +5,21 @@
 #include "content/common/indexed_db_param_traits.h"
 
 #include "content/common/indexed_db_key.h"
-#include "content/common/serialized_script_value.h"
+#include "content/public/common/serialized_script_value.h"
 #include "ipc/ipc_message_utils.h"
 
 namespace IPC {
 
-void ParamTraits<SerializedScriptValue>::Write(Message* m,
-                                               const param_type& p) {
+void ParamTraits<content::SerializedScriptValue>::Write(Message* m,
+                                                        const param_type& p) {
   WriteParam(m, p.is_null());
   WriteParam(m, p.is_invalid());
   WriteParam(m, p.data());
 }
 
-bool ParamTraits<SerializedScriptValue>::Read(const Message* m,
-                                              void** iter,
-                                              param_type* r) {
+bool ParamTraits<content::SerializedScriptValue>::Read(const Message* m,
+                                                       void** iter,
+                                                       param_type* r) {
   bool is_null;
   bool is_invalid;
   string16 data;
@@ -35,8 +35,8 @@ bool ParamTraits<SerializedScriptValue>::Read(const Message* m,
   return true;
 }
 
-void ParamTraits<SerializedScriptValue>::Log(const param_type& p,
-                                             std::string* l) {
+void ParamTraits<content::SerializedScriptValue>::Log(const param_type& p,
+                                                      std::string* l) {
   l->append("<SerializedScriptValue>(");
   LogParam(p.is_null(), l);
   l->append(", ");

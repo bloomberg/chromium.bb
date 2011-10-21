@@ -14,7 +14,6 @@
 
 class IndexedDBKey;
 class NullableString16;
-class SerializedScriptValue;
 struct IndexedDBHostMsg_DatabaseCreateObjectStore_Params;
 struct IndexedDBHostMsg_FactoryGetDatabaseNames_Params;
 struct IndexedDBHostMsg_FactoryDeleteDatabase_Params;
@@ -31,6 +30,10 @@ class WebIDBDatabase;
 class WebIDBIndex;
 class WebIDBObjectStore;
 class WebIDBTransaction;
+}
+
+namespace content {
+class SerializedScriptValue;
 }
 
 // Handles all IndexedDB related messages from a particular renderer process.
@@ -223,10 +226,10 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
     void OnKey(int32 idb_object_store_id, IndexedDBKey* key);
     void OnPrimaryKey(int32 idb_object_store_id, IndexedDBKey* primary_key);
     void OnValue(int32 idb_object_store_id,
-                 SerializedScriptValue* script_value);
+                 content::SerializedScriptValue* script_value);
     void OnUpdate(int32 idb_object_store_id,
                   int32 response_id,
-                  const SerializedScriptValue& value,
+                  const content::SerializedScriptValue& value,
                   WebKit::WebExceptionCode* ec);
     void OnContinue(int32 idb_object_store_id,
                     int32 response_id,

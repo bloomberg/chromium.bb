@@ -942,18 +942,18 @@ void IndexedDBDispatcherHost::CursorDispatcherHost::OnPrimaryKey(
 
 void IndexedDBDispatcherHost::CursorDispatcherHost::OnValue(
     int32 object_id,
-    SerializedScriptValue* script_value) {
+    content::SerializedScriptValue* script_value) {
   WebIDBCursor* idb_cursor = parent_->GetOrTerminateProcess(&map_, object_id);
   if (!idb_cursor)
     return;
 
-  *script_value = SerializedScriptValue(idb_cursor->value());
+  *script_value = content::SerializedScriptValue(idb_cursor->value());
 }
 
 void IndexedDBDispatcherHost::CursorDispatcherHost::OnUpdate(
     int32 cursor_id,
     int32 response_id,
-    const SerializedScriptValue& value,
+    const content::SerializedScriptValue& value,
     WebKit::WebExceptionCode* ec) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   WebIDBCursor* idb_cursor = parent_->GetOrTerminateProcess(&map_, cursor_id);

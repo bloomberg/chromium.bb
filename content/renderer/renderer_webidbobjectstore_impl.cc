@@ -5,7 +5,7 @@
 #include "content/renderer/renderer_webidbobjectstore_impl.h"
 
 #include "content/common/indexed_db_messages.h"
-#include "content/common/serialized_script_value.h"
+#include "content/public/common/serialized_script_value.h"
 #include "content/renderer/indexed_db_dispatcher.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_webidbindex_impl.h"
@@ -90,8 +90,8 @@ void RendererWebIDBObjectStoreImpl::put(
   IndexedDBDispatcher* dispatcher =
       RenderThreadImpl::current()->indexed_db_dispatcher();
   dispatcher->RequestIDBObjectStorePut(
-      SerializedScriptValue(value), IndexedDBKey(key), put_mode, callbacks,
-      idb_object_store_id_, transaction, &ec);
+      content::SerializedScriptValue(value), IndexedDBKey(key), put_mode,
+      callbacks, idb_object_store_id_, transaction, &ec);
 }
 
 void RendererWebIDBObjectStoreImpl::deleteFunction(

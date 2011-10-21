@@ -31,14 +31,14 @@ void IndexedDBCallbacks<WebKit::WebIDBCursor>::onSuccess(
   dispatcher_host()->Send(new IndexedDBMsg_CallbacksSuccessIDBCursor(
       response_id(), object_id, IndexedDBKey(idb_object->key()),
       IndexedDBKey(idb_object->primaryKey()),
-      SerializedScriptValue(idb_object->value())));
+      content::SerializedScriptValue(idb_object->value())));
 }
 
 void IndexedDBCallbacks<WebKit::WebIDBCursor>::onSuccess(
     const WebKit::WebSerializedScriptValue& value) {
   dispatcher_host()->Send(
       new IndexedDBMsg_CallbacksSuccessSerializedScriptValue(
-          response_id(), SerializedScriptValue(value)));
+          response_id(), content::SerializedScriptValue(value)));
 }
 
 void IndexedDBCallbacks<WebKit::WebIDBKey>::onSuccess(
@@ -64,5 +64,5 @@ void IndexedDBCallbacks<WebKit::WebSerializedScriptValue>::onSuccess(
     const WebKit::WebSerializedScriptValue& value) {
   dispatcher_host()->Send(
       new IndexedDBMsg_CallbacksSuccessSerializedScriptValue(
-          response_id(), SerializedScriptValue(value)));
+          response_id(), content::SerializedScriptValue(value)));
 }

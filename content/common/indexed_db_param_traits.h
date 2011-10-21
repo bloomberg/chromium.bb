@@ -10,7 +10,10 @@
 #include "ipc/ipc_param_traits.h"
 
 class IndexedDBKey;
+
+namespace content {
 class SerializedScriptValue;
+}
 
 namespace IPC {
 
@@ -20,8 +23,8 @@ namespace IPC {
 // never actually used by that target).
 
 template <>
-struct ParamTraits<SerializedScriptValue> {
-  typedef SerializedScriptValue param_type;
+struct ParamTraits<content::SerializedScriptValue> {
+  typedef content::SerializedScriptValue param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
   static void Log(const param_type& p, std::string* l);

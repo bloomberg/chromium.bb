@@ -9,7 +9,7 @@
 #include "content/browser/in_process_webkit/dom_storage_message_filter.h"
 #include "content/browser/in_process_webkit/indexed_db_key_utility_client.h"
 #include "content/common/indexed_db_key.h"
-#include "content/common/serialized_script_value.h"
+#include "content/public/common/serialized_script_value.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSerializedScriptValue.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
@@ -155,11 +155,11 @@ BrowserWebKitPlatformSupportImpl::createIDBKeysFromSerializedValuesAndKeyPath(
     const WebKit::WebString& keyPath,
     WebKit::WebVector<WebKit::WebIDBKey>& keys) {
 
-  std::vector<SerializedScriptValue> std_values;
+  std::vector<content::SerializedScriptValue> std_values;
   size_t size = values.size();
   std_values.reserve(size);
   for (size_t i = 0; i < size; ++i)
-    std_values.push_back(SerializedScriptValue(values[i]));
+    std_values.push_back(content::SerializedScriptValue(values[i]));
 
   std::vector<IndexedDBKey> std_keys;
   IndexedDBKeyUtilityClient::
@@ -174,5 +174,5 @@ BrowserWebKitPlatformSupportImpl::injectIDBKeyIntoSerializedValue(
     const WebKit::WebIDBKey& key, const WebKit::WebSerializedScriptValue& value,
     const WebKit::WebString& keyPath) {
   return IndexedDBKeyUtilityClient::InjectIDBKeyIntoSerializedValue(
-      IndexedDBKey(key), SerializedScriptValue(value), keyPath);
+      IndexedDBKey(key), content::SerializedScriptValue(value), keyPath);
 }

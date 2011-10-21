@@ -72,7 +72,7 @@ bool UtilityThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
 
 void UtilityThreadImpl::OnIDBKeysFromValuesAndKeyPath(
     int id,
-    const std::vector<SerializedScriptValue>& serialized_script_values,
+    const std::vector<content::SerializedScriptValue>& serialized_script_values,
     const string16& idb_key_path) {
   std::vector<WebKit::WebSerializedScriptValue> web_values;
   ConvertVector(serialized_script_values, &web_values);
@@ -89,11 +89,12 @@ void UtilityThreadImpl::OnIDBKeysFromValuesAndKeyPath(
   ReleaseProcessIfNeeded();
 }
 
-void UtilityThreadImpl::OnInjectIDBKey(const IndexedDBKey& key,
-                                   const SerializedScriptValue& value,
-                                   const string16& key_path) {
-  SerializedScriptValue new_value(webkit_glue::InjectIDBKey(key, value,
-                                                              key_path));
+void UtilityThreadImpl::OnInjectIDBKey(
+    const IndexedDBKey& key,
+    const content::SerializedScriptValue& value,
+    const string16& key_path) {
+  content::SerializedScriptValue new_value(
+      webkit_glue::InjectIDBKey(key, value, key_path));
   Send(new UtilityHostMsg_InjectIDBKey_Finished(new_value));
   ReleaseProcessIfNeeded();
 }

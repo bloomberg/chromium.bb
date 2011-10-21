@@ -16,13 +16,16 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBTransactionCallbacks.h"
 
 class IndexedDBKey;
-class SerializedScriptValue;
 
 namespace WebKit {
 class WebDOMStringList;
 class WebFrame;
 class WebIDBKeyRange;
 class WebIDBTransaction;
+}
+
+namespace content {
+class SerializedScriptValue;
 }
 
 // Handle the indexed db related communication for this entire renderer.
@@ -52,7 +55,7 @@ class IndexedDBDispatcher : public IPC::Channel::Listener {
       WebKit::WebFrame* web_frame);
 
   void RequestIDBCursorUpdate(
-      const SerializedScriptValue& value,
+      const content::SerializedScriptValue& value,
       WebKit::WebIDBCallbacks* callbacks_ptr,
       int32 idb_cursor_id,
       WebKit::WebExceptionCode* ec);
@@ -115,7 +118,7 @@ class IndexedDBDispatcher : public IPC::Channel::Listener {
                                 const WebKit::WebIDBTransaction& transaction,
                                 WebKit::WebExceptionCode* ec);
 
-  void RequestIDBObjectStorePut(const SerializedScriptValue& value,
+  void RequestIDBObjectStorePut(const content::SerializedScriptValue& value,
                                 const IndexedDBKey& key,
                                 WebKit::WebIDBObjectStore::PutMode putMode,
                                 WebKit::WebIDBCallbacks* callbacks,
@@ -159,11 +162,12 @@ class IndexedDBDispatcher : public IPC::Channel::Listener {
   void OnSuccessOpenCursor(int32 response_id, int32 object_id,
                            const IndexedDBKey& key,
                            const IndexedDBKey& primary_key,
-                           const SerializedScriptValue& value);
+                           const content::SerializedScriptValue& value);
   void OnSuccessStringList(int32 response_id,
                            const std::vector<string16>& value);
-  void OnSuccessSerializedScriptValue(int32 response_id,
-                                      const SerializedScriptValue& value);
+  void OnSuccessSerializedScriptValue(
+      int32 response_id,
+      const content::SerializedScriptValue& value);
   void OnError(int32 response_id, int code, const string16& message);
   void OnBlocked(int32 response_id);
   void OnAbort(int32 transaction_id);

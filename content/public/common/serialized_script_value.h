@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_SERIALIZED_SCRIPT_VALUE_H_
-#define CONTENT_COMMON_SERIALIZED_SCRIPT_VALUE_H_
+#ifndef CONTENT_PUBLIC_COMMON_SERIALIZED_SCRIPT_VALUE_H_
+#define CONTENT_PUBLIC_COMMON_SERIALIZED_SCRIPT_VALUE_H_
 #pragma once
 
 #include "base/string16.h"
@@ -12,6 +12,8 @@
 namespace WebKit {
 class WebSerializedScriptValue;
 }
+
+namespace content {
 
 class CONTENT_EXPORT SerializedScriptValue {
  public:
@@ -39,4 +41,6 @@ class CONTENT_EXPORT SerializedScriptValue {
   string16 data_; // The wire string format of the serialized script value.
 };
 
-#endif  // CONTENT_COMMON_SERIALIZED_SCRIPT_VALUE_H_
+}  // namespace content
+
+#endif  // CONTENT_PUBLIC_COMMON_SERIALIZED_SCRIPT_VALUE_H_

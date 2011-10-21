@@ -64,7 +64,7 @@ bool IndexedDBDispatcher::OnMessageReceived(const IPC::Message& msg) {
 }
 
 void IndexedDBDispatcher::RequestIDBCursorUpdate(
-    const SerializedScriptValue& value,
+    const content::SerializedScriptValue& value,
     WebIDBCallbacks* callbacks_ptr,
     int32 idb_cursor_id,
     WebExceptionCode* ec) {
@@ -296,7 +296,7 @@ void IndexedDBDispatcher::RequestIDBObjectStoreGet(
 }
 
 void IndexedDBDispatcher::RequestIDBObjectStorePut(
-    const SerializedScriptValue& value,
+    const content::SerializedScriptValue& value,
     const IndexedDBKey& key,
     WebKit::WebIDBObjectStore::PutMode put_mode,
     WebIDBCallbacks* callbacks_ptr,
@@ -419,7 +419,7 @@ void IndexedDBDispatcher::OnSuccessStringList(
 }
 
 void IndexedDBDispatcher::OnSuccessSerializedScriptValue(
-    int32 response_id, const SerializedScriptValue& value) {
+    int32 response_id, const content::SerializedScriptValue& value) {
   WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(response_id);
   callbacks->onSuccess(value);
   pending_callbacks_.Remove(response_id);
@@ -427,7 +427,7 @@ void IndexedDBDispatcher::OnSuccessSerializedScriptValue(
 
 void IndexedDBDispatcher::OnSuccessOpenCursor(int32 repsonse_id,
     int32 object_id, const IndexedDBKey& key, const IndexedDBKey& primaryKey,
-    const SerializedScriptValue& value) {
+    const content::SerializedScriptValue& value) {
   WebIDBCallbacks* callbacks =
       pending_callbacks_.Lookup(repsonse_id);
   callbacks->onSuccess(new RendererWebIDBCursorImpl(object_id, key,

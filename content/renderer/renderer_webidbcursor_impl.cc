@@ -15,7 +15,7 @@ using WebKit::WebSerializedScriptValue;
 
 RendererWebIDBCursorImpl::RendererWebIDBCursorImpl(int32 idb_cursor_id,
     const IndexedDBKey& key, const IndexedDBKey& primary_key,
-    const SerializedScriptValue& value)
+    const content::SerializedScriptValue& value)
     : idb_cursor_id_(idb_cursor_id),
       key_(key),
       primary_key_(primary_key),
@@ -55,8 +55,8 @@ void RendererWebIDBCursorImpl::update(const WebSerializedScriptValue& value,
                                       WebExceptionCode& ec) {
   IndexedDBDispatcher* dispatcher =
       RenderThreadImpl::current()->indexed_db_dispatcher();
-  dispatcher->RequestIDBCursorUpdate(SerializedScriptValue(value), callbacks,
-                                     idb_cursor_id_, &ec);
+  dispatcher->RequestIDBCursorUpdate(
+      content::SerializedScriptValue(value), callbacks, idb_cursor_id_, &ec);
 }
 
 void RendererWebIDBCursorImpl::continueFunction(const WebIDBKey& key,
