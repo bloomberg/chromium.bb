@@ -15,6 +15,7 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/eintr_wrapper.h"
 #include "base/file_path.h"
@@ -22,7 +23,6 @@
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
-#include "base/task.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/worker_pool.h"
 #include "base/synchronization/waitable_event.h"
@@ -105,28 +105,28 @@ int FlushFile(base::PlatformFile file, bool record_uma) {
   return res;
 }
 
-}  // namespace
-
-// CancelableCallbackTask takes ownership of the Callback.  This task gets
-// posted to the MessageLoopForIO instance.
-class CancelableCallbackTask : public CancelableTask {
+// Cancelable wrapper around a Closure.
+class CancelableCallback {
  public:
-  explicit CancelableCallbackTask(Callback0::Type* callback)
-      : canceled_(false), callback_(callback) {}
+  explicit CancelableCallback(const base::Closure& callback)
+      : canceled_(false),
+        callback_(callback) {}
 
-  virtual void Run() {
+  void Run() {
     if (!canceled_)
-      callback_->Run();
+      callback_.Run();
   }
 
-  virtual void Cancel() {
+  void Cancel() {
     canceled_ = true;
   }
 
  private:
   bool canceled_;
-  scoped_ptr<Callback0::Type> callback_;
+  const base::Closure callback_;
 };
+
+}  // namespace
 
 // FileStream::AsyncContext ----------------------------------------------
 
@@ -173,7 +173,7 @@ class FileStream::AsyncContext {
 
   // These variables are only valid when background_io_completed is signaled.
   int result_;
-  CancelableCallbackTask* message_loop_task_;
+  CancelableCallback* message_loop_task_;
 
   bool is_closing_;
   bool record_uma_;
@@ -184,7 +184,6 @@ class FileStream::AsyncContext {
 FileStream::AsyncContext::AsyncContext()
     : message_loop_(MessageLoopForIO::current()),
       background_io_completed_(true, false),
-      message_loop_task_(NULL),
       is_closing_(false),
       record_uma_(false) {}
 
@@ -239,9 +238,12 @@ void FileStream::AsyncContext::InitiateAsyncWrite(
 
 void FileStream::AsyncContext::OnBackgroundIOCompleted(int result) {
   result_ = result;
-  message_loop_task_ = new CancelableCallbackTask(
-      NewCallback(this, &AsyncContext::RunAsynchronousCallback));
-  message_loop_->PostTask(FROM_HERE, message_loop_task_);
+  message_loop_task_ = new CancelableCallback(
+      base::Bind(&AsyncContext::RunAsynchronousCallback,
+                 base::Unretained(this)));
+  message_loop_->PostTask(FROM_HERE,
+                          base::Bind(&CancelableCallback::Run,
+                                     base::Owned(message_loop_task_)));
   background_io_completed_.Signal();
 }
 
@@ -254,7 +256,7 @@ void FileStream::AsyncContext::RunAsynchronousCallback() {
   // anything, or we're in ~AsyncContext(), in which case this prevents the call
   // from happening again.  Must do it here after calling Wait().
   message_loop_task_->Cancel();
-  message_loop_task_ = NULL;
+  message_loop_task_ = NULL;  // lifetime handled by base::Owned
 
   if (is_closing_) {
     callback_.Reset();
