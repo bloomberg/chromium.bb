@@ -198,6 +198,9 @@ class DesktopHostLinux : public DesktopHost {
   virtual void SetCursor(gfx::NativeCursor cursor_type) OVERRIDE;
   virtual gfx::Point QueryMouseLocation() OVERRIDE;
 
+  // Returns true if there's an X window manager present.
+  bool IsWindowManagerPresent();
+
   Desktop* desktop_;
 
   // The display and the native X window hosting the desktop.
@@ -221,9 +224,16 @@ DesktopHostLinux::DesktopHostLinux(const gfx::Rect& bounds)
       bounds_(bounds) {
   // This assumes that the message-pump creates and owns the display.
   xdisplay_ = base::MessagePumpX::GetDefaultXDisplay();
+
+  // Ingore the requested bounds and just cover the whole screen if there's no
+  // X window manager present.
+  if (!IsWindowManagerPresent())
+    bounds_.SetRect(
+        0, 0, DisplayWidth(xdisplay_, 0), DisplayHeight(xdisplay_, 0));
+
   xwindow_ = XCreateSimpleWindow(xdisplay_, DefaultRootWindow(xdisplay_),
-                                 bounds.x(), bounds.y(),
-                                 bounds.width(), bounds.height(),
+                                 bounds_.x(), bounds_.y(),
+                                 bounds_.width(), bounds_.height(),
                                  0, 0, 0);
 
   long event_mask = ButtonPressMask | ButtonReleaseMask |
@@ -405,6 +415,13 @@ gfx::Point DesktopHostLinux::QueryMouseLocation() {
                 &mask_return);
   return gfx::Point(max(0, min(bounds_.width(), win_x_return)),
                     max(0, min(bounds_.height(), win_y_return)));
+}
+
+bool DesktopHostLinux::IsWindowManagerPresent() {
+  // Per ICCCM 2.8, "Manager Selections", window managers should take ownership
+  // of WM_Sn selections (where n is a screen number).
+  ::Atom wm_s0_atom = XInternAtom(xdisplay_, "WM_S0", False);
+  return XGetSelectionOwner(xdisplay_, wm_s0_atom) != None;
 }
 
 }  // namespace

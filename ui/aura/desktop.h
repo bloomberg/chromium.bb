@@ -152,6 +152,10 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate,
   // Initializes the desktop.
   void Init();
 
+  // Parses the switch describing the initial size for the host window and
+  // returns bounds for the window.
+  gfx::Rect GetInitialHostWindowBounds() const;
+
   scoped_refptr<ui::Compositor> compositor_;
 
   scoped_ptr<DesktopHost> host_;

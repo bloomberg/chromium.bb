@@ -4,9 +4,16 @@
 
 #include "ui/aura/desktop.h"
 
+#include <string>
+#include <vector>
+
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/string_number_conversions.h"
+#include "base/string_split.h"
+#include "ui/aura/aura_switches.h"
 #include "ui/aura/desktop_delegate.h"
 #include "ui/aura/desktop_host.h"
 #include "ui/aura/desktop_observer.h"
@@ -19,7 +26,20 @@
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/compositor/layer.h"
 
+using std::string;
+using std::vector;
+
 namespace aura {
+
+namespace {
+
+// Default bounds for the host window.
+static const int kDefaultHostWindowX = 200;
+static const int kDefaultHostWindowY = 200;
+static const int kDefaultHostWindowWidth = 1280;
+static const int kDefaultHostWindowHeight = 1024;
+
+}  // namespace
 
 // static
 Desktop* Desktop::instance_ = NULL;
@@ -29,28 +49,28 @@ ui::Compositor*(*Desktop::compositor_factory_)() = NULL;
 
 Desktop::Desktop()
     : Window(NULL),
-      host_(aura::DesktopHost::Create(gfx::Rect(200, 200, 1280, 1024))),
+      host_(aura::DesktopHost::Create(GetInitialHostWindowBounds())),
       ALLOW_THIS_IN_INITIALIZER_LIST(schedule_paint_factory_(this)),
       active_window_(NULL),
       in_destructor_(false),
-      screen_(NULL),
+      screen_(new ScreenAura),
       capture_window_(NULL),
       mouse_pressed_handler_(NULL),
       mouse_moved_handler_(NULL),
       focused_window_(NULL),
       touch_event_handler_(NULL) {
   set_name("RootWindow");
+  gfx::Screen::SetInstance(screen_);
+  host_->SetDesktop(this);
+  last_mouse_location_ = host_->QueryMouseLocation();
+
   if (compositor_factory_) {
     compositor_ = (*Desktop::compositor_factory())();
   } else {
     compositor_ = ui::Compositor::Create(this, host_->GetAcceleratedWidget(),
                                          host_->GetSize());
   }
-  screen_ = new ScreenAura;
-  gfx::Screen::SetInstance(screen_);
-  host_->SetDesktop(this);
   DCHECK(compositor_.get());
-  last_mouse_location_ = host_->QueryMouseLocation();
 }
 
 Desktop::~Desktop() {
@@ -387,6 +407,23 @@ void Desktop::Init() {
   SetBounds(gfx::Rect(gfx::Point(), host_->GetSize()));
   Show();
   compositor()->SetRootLayer(layer());
+}
+
+gfx::Rect Desktop::GetInitialHostWindowBounds() const {
+  const string size_str = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      switches::kAuraHostWindowSize);
+
+  int width = 0, height = 0;
+  vector<string> parts;
+  base::SplitString(size_str, 'x', &parts);
+  if (parts.size() != 2 ||
+      !base::StringToInt(parts[0], &width) ||
+      !base::StringToInt(parts[1], &height) ||
+      width <= 0 || height <= 0) {
+    width = kDefaultHostWindowWidth;
+    height = kDefaultHostWindowHeight;
+  }
+  return gfx::Rect(kDefaultHostWindowX, kDefaultHostWindowY, width, height);
 }
 
 }  // namespace aura

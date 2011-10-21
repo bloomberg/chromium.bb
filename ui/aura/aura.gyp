@@ -23,6 +23,8 @@
         'AURA_IMPLEMENTATION',
       ],
       'sources': [
+        'aura_switches.cc',
+        'aura_switches.h',
         'cursor.h',
         'desktop_host.h',
         'desktop_host_linux.cc',
