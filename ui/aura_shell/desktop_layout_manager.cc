@@ -45,7 +45,7 @@ void DesktopLayoutManager::OnWindowResized() {
   gfx::Rect status_area_bounds = status_area_widget_->GetWindowScreenBounds();
   status_area_widget_->SetBounds(
       gfx::Rect(owner_->bounds().right() - status_area_bounds.width(),
-                0,
+                owner_->bounds().bottom() - status_area_bounds.height(),
                 status_area_bounds.width(),
                 status_area_bounds.height()));
 }

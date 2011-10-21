@@ -108,6 +108,7 @@ DesktopHost* DesktopHost::Create(const gfx::Rect& bounds) {
 
 DesktopHostWin::DesktopHostWin(const gfx::Rect& bounds) : desktop_(NULL) {
   Init(NULL, bounds);
+  SetWindowText(hwnd(), L"aura::Desktop!");
 }
 
 DesktopHostWin::~DesktopHostWin() {
