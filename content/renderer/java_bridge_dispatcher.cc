@@ -66,7 +66,7 @@ void JavaBridgeDispatcher::OnAddNamedObject(
   // containing window or the page URL, as we don't do re-entrant sync IPC.
   NPVariant variant;
   bool created =
-      CreateNPVariant(variant_param, channel_.get(), &variant, NULL, GURL());
+      CreateNPVariant(variant_param, channel_.get(), &variant, 0, GURL());
   DCHECK(created);
   DCHECK_EQ(variant.type, NPVariantType_Object);
 
