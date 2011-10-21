@@ -41,7 +41,7 @@ class PPB_URLLoader_Proxy : public InterfaceProxy {
   // function allows the proxy for DocumentLoad to create the correct plugin
   // proxied info for the given browser-supplied URLLoader resource ID.
   static PP_Resource TrackPluginResource(
-      const ppapi::HostResource& url_loader_resource);
+      const HostResource& url_loader_resource);
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
@@ -60,31 +60,32 @@ class PPB_URLLoader_Proxy : public InterfaceProxy {
 
   // Plugin->renderer message handlers.
   void OnMsgCreate(PP_Instance instance,
-                   ppapi::HostResource* result);
-  void OnMsgOpen(const ppapi::HostResource& loader,
-                 const PPB_URLRequestInfo_Data& data,
-                 uint32_t serialized_callback);
-  void OnMsgFollowRedirect(const ppapi::HostResource& loader,
-                           uint32_t serialized_callback);
-  void OnMsgGetResponseInfo(const ppapi::HostResource& loader,
-                            ppapi::HostResource* result);
-  void OnMsgReadResponseBody(const ppapi::HostResource& loader,
+                   HostResource* result);
+  void OnMsgOpen(const HostResource& loader,
+                 const PPB_URLRequestInfo_Data& data);
+  void OnMsgFollowRedirect(const HostResource& loader);
+  void OnMsgGetResponseInfo(const HostResource& loader,
+                            HostResource* result);
+  void OnMsgReadResponseBody(const HostResource& loader,
                              int32_t bytes_to_read);
-  void OnMsgFinishStreamingToFile(const ppapi::HostResource& loader,
-                                  uint32_t serialized_callback);
-  void OnMsgClose(const ppapi::HostResource& loader);
-  void OnMsgGrantUniversalAccess(const ppapi::HostResource& loader);
+  void OnMsgFinishStreamingToFile(const HostResource& loader);
+  void OnMsgClose(const HostResource& loader);
+  void OnMsgGrantUniversalAccess(const HostResource& loader);
 
   // Renderer->plugin message handlers.
   void OnMsgUpdateProgress(
       const PPBURLLoader_UpdateProgress_Params& params);
-  void OnMsgReadResponseBodyAck(const ppapi::HostResource& pp_resource,
+  void OnMsgReadResponseBodyAck(const HostResource& host_resource,
                                 int32_t result,
                                 const std::string& data);
+  void OnMsgCallbackComplete(const HostResource& host_resource, int32_t result);
 
   // Handles callbacks for read complete messages. Takes ownership of the info
   // pointer.
   void OnReadCallback(int32_t result, ReadCallbackInfo* info);
+
+  // Handles callback for everything but reads.
+  void OnCallback(int32_t result, const HostResource& resource);
 
   pp::CompletionCallbackFactory<PPB_URLLoader_Proxy,
                                 ProxyNonThreadSafeRefCount> callback_factory_;

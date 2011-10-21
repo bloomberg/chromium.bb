@@ -34,9 +34,14 @@ namespace proxy {
 // Used to keep track of per-instance data.
 struct InstanceData {
   InstanceData();
+  ~InstanceData();
+
   PP_Rect position;
   PP_Bool fullscreen;  // Used for PPB_Fullscreen.
   PP_Bool flash_fullscreen;  // Used for PPB_FlashFullscreen.
+
+  // When non-0, indicates the callback to execute when mouse lock is lost.
+  PP_CompletionCallback mouse_lock_callback;
 };
 
 class PPAPI_PROXY_EXPORT PluginDispatcher : public Dispatcher {

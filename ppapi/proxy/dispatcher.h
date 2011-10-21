@@ -14,7 +14,6 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"
-#include "ppapi/proxy/callback_tracker.h"
 #include "ppapi/proxy/proxy_channel.h"
 #include "ppapi/proxy/interface_list.h"
 #include "ppapi/proxy/interface_proxy.h"
@@ -83,10 +82,6 @@ class PPAPI_PROXY_EXPORT Dispatcher : public ProxyChannel {
   // IPC::Channel::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
 
-  CallbackTracker& callback_tracker() {
-    return callback_tracker_;
-  }
-
   GetInterfaceFunc local_get_interface() const { return local_get_interface_; }
 
  protected:
@@ -115,8 +110,6 @@ class PPAPI_PROXY_EXPORT Dispatcher : public ProxyChannel {
   bool disallow_trusted_interfaces_;
 
   GetInterfaceFunc local_get_interface_;
-
-  CallbackTracker callback_tracker_;
 
   scoped_ptr<VarSerializationRules> serialization_rules_;
 
