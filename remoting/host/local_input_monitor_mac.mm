@@ -53,9 +53,12 @@ typedef std::set<remoting::ChromotingHost*> Hosts;
 
 static CGEventRef LocalMouseMoved(CGEventTapProxy proxy, CGEventType type,
                                   CGEventRef event, void* context) {
-  CGPoint cgMousePos = CGEventGetLocation(event);
-  SkIPoint mousePos = SkIPoint::Make(cgMousePos.x, cgMousePos.y);
-  [static_cast<LocalInputMonitorImpl*>(context) localMouseMoved:mousePos];
+  int64_t pid = CGEventGetIntegerValueField(event, kCGEventSourceUnixProcessID);
+  if (pid == 0) {
+    CGPoint cgMousePos = CGEventGetLocation(event);
+    SkIPoint mousePos = SkIPoint::Make(cgMousePos.x, cgMousePos.y);
+    [static_cast<LocalInputMonitorImpl*>(context) localMouseMoved:mousePos];
+  }
   return NULL;
 }
 
