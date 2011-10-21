@@ -37,14 +37,42 @@ PP_Size kSize1920x1200 = PP_MakeSize(1920, 1200);   // WUXGA: 24" HP, 17" MB Pro
 PP_Size kSize2560x1600 = PP_MakeSize(2560, 1600);   // WQXGA: 30" HP Monitor
 PP_Size kSize2560x2048 = PP_MakeSize(2560, 2048);   // QSXGA
 
-PP_Resource g_graphics2d = kInvalidResource;
+PP_Size kSampleSize = PP_MakeSize(1, 1);
+const char* kNoTest = NULL;
 
-bool CreateGraphics2D(PP_Resource* graphics2d) {
-  PP_Size size = PP_MakeSize(90, 90);
-  PP_Bool not_always_opaque = PP_FALSE;
-  *graphics2d =
-      PPBGraphics2D()->Create(pp_instance(), &size, not_always_opaque);
-  return (*graphics2d != kInvalidResource);
+PP_Size g_screen_size = PP_MakeSize(0, 0);
+PP_Resource g_graphics2d = kInvalidResource;
+PP_Resource g_image_data = kInvalidResource;
+const char* g_test = kNoTest;
+
+void FlushCallback(void* user_data, int32_t result) {
+  printf("--- FlushCallback result=%d\n", static_cast<int>(result));
+  PPBCore()->ReleaseResource(g_image_data);
+  if (g_test != kNoTest && result == PP_OK)
+    PostTestMessage(g_test, "PASSED");
+}
+
+bool PaintPlugin(PP_Size size, ColorPremul pixel_color, const char* test) {
+  printf("--- PaintPlugin size=%dx%d test=%s\n", size.width, size.height, test);
+  g_test = test;
+  static const PPB_Graphics2D* ppb = PPBGraphics2D();
+  static PP_Bool always_opaque = PP_TRUE;
+
+  if (g_graphics2d == kInvalidResource) {
+    g_graphics2d = ppb->Create(pp_instance(), &g_screen_size, always_opaque);
+    if (!PPBInstance()->BindGraphics(pp_instance(), g_graphics2d))
+      return false;
+  }
+  if (g_graphics2d == kInvalidResource)
+    return false;
+
+  void* bitmap = NULL;
+  g_image_data = CreateImageData(size, pixel_color, &bitmap);
+  ppb->PaintImageData(g_graphics2d, g_image_data, &kOrigin, NULL);
+  PP_CompletionCallback cc = PP_MakeCompletionCallback(FlushCallback, NULL);
+  if (ppb->Flush(g_graphics2d, cc) != PP_OK_COMPLETIONPENDING)
+    return false;
+  return IsImageRectOnScreen(g_graphics2d, kOrigin, size, pixel_color);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -94,7 +122,6 @@ void TestSetFullscreenFalse() {
   const PPB_Fullscreen* ppb = PPBFullscreen();
   if (ppb->IsFullscreen(pp_instance()) == PP_TRUE) {
     // Transition out of fullscreen.
-    EXPECT(CreateGraphics2D(&g_graphics2d));
     // The transition is asynchronous and ends at the next DidChangeView().
     EXPECT(ppb->SetFullscreen(pp_instance(), PP_FALSE) == PP_TRUE);
     g_normal_pending = true;
@@ -103,9 +130,11 @@ void TestSetFullscreenFalse() {
     EXPECT(ppb->SetFullscreen(pp_instance(), PP_TRUE) == PP_FALSE);
     EXPECT(ppb->IsFullscreen(pp_instance()) == PP_TRUE);
     // No 2D or 3D device can be bound during transition.
-    EXPECT(PPBGraphics2D()->IsGraphics2D(g_graphics2d) == PP_TRUE);
-    EXPECT(PPBInstance()->BindGraphics(pp_instance(), g_graphics2d) ==
-           PP_FALSE);
+    PP_Resource g2d =
+        PPBGraphics2D()->Create(pp_instance(), &kSampleSize, PP_FALSE);
+    EXPECT(PPBGraphics2D()->IsGraphics2D(g2d) == PP_TRUE);
+    EXPECT(PPBInstance()->BindGraphics(pp_instance(), g2d) == PP_FALSE);
+    PPBCore()->ReleaseResource(g2d);
     // The transition ends at the next DidChangeView().
   } else {
     // No change.
@@ -158,7 +187,6 @@ PP_Bool HandleInputEvent(PP_Instance instance, PP_Resource event) {
   PPBInputEvent()->ClearInputEventRequest(pp_instance(),
                                           PP_INPUTEVENT_CLASS_MOUSE);
   EXPECT(PPBFullscreen()->IsFullscreen(pp_instance()) == PP_FALSE);
-  EXPECT(CreateGraphics2D(&g_graphics2d));
   EXPECT(PPBFullscreen()->SetFullscreen(pp_instance(), PP_TRUE) == PP_TRUE);
   g_fullscreen_pending = true;
   // Transition is pending, so additional requests fail.
@@ -167,9 +195,11 @@ PP_Bool HandleInputEvent(PP_Instance instance, PP_Resource event) {
          PP_FALSE);
   EXPECT(PPBFullscreen()->IsFullscreen(pp_instance()) == PP_FALSE);
   // No 2D or 3D device can be bound during transition.
-  EXPECT(PPBGraphics2D()->IsGraphics2D(g_graphics2d) == PP_TRUE);
-  EXPECT(PPBInstance()->BindGraphics(pp_instance(), g_graphics2d) ==
-         PP_FALSE);
+  PP_Resource g2d =
+      PPBGraphics2D()->Create(pp_instance(), &kSampleSize, PP_FALSE);
+  EXPECT(PPBGraphics2D()->IsGraphics2D(g2d) == PP_TRUE);
+  EXPECT(PPBInstance()->BindGraphics(pp_instance(), g2d) == PP_FALSE);
+  PPBCore()->ReleaseResource(g2d);
   // The transition ends at the next DidChangeView().
   return PP_FALSE;
 }
@@ -182,14 +212,8 @@ const PPP_InputEvent ppp_input_event_interface = {
 // PPP_Instance
 ////////////////////////////////////////////////////////////////////////////////
 
-PP_Size GetScreenSize() {
-  PP_Size screen_size = PP_MakeSize(0, 0);
-  CHECK(PPBFullscreen()->GetScreenSize(pp_instance(), &screen_size));
-  return screen_size;
-}
-
 bool HasMidScreen(const PP_Rect* position) {
-  static PP_Size screen_size = GetScreenSize();
+  static PP_Size screen_size = g_screen_size;
   static int32_t mid_x = screen_size.width / 2;
   static int32_t mid_y = screen_size.height / 2;
   PP_Point origin = position->point;
@@ -213,25 +237,30 @@ void DidChangeView(PP_Instance instance,
          position->size.width, position->size.height,
          clip->point.x, clip->point.y,
          clip->size.width, clip->size.height);
-  // Remember the original position on the first DidChangeView.
+  // Remember the original position on the first DidChangeView and paint
+  // the plugin area.
   if (g_normal_position.size.width == 0 && g_normal_position.size.height == 0) {
     g_normal_position = PP_MakeRectFromXYWH(position->point.x,
                                             position->point.y,
                                             position->size.width,
                                             position->size.height);
+    CHECK(PPBFullscreen()->GetScreenSize(pp_instance(), &g_screen_size));
+    CHECK(PaintPlugin(position->size, kOpaqueGreen, kNoTest));
   }
 
   const char* test = NULL;
-  PP_Size screen_size = GetScreenSize();
+  ColorPremul pixel_color;
   if (g_fullscreen_pending && PPBFullscreen()->IsFullscreen(pp_instance())) {
     test = "TestSetFullscreenTrue";
+    pixel_color = kOpaqueYellow;
     g_fullscreen_pending = false;
-    EXPECT(IsSizeEqual(position->size, screen_size));
+    EXPECT(IsSizeEqual(position->size, g_screen_size));
     // NOTE: we cannot reliably test for clip size being equal to the screen
     // because it might be affected by JS console, info bars, etc.
   } else if (g_normal_pending &&
              !PPBFullscreen()->IsFullscreen(pp_instance())) {
     test = "TestSetFullscreenFalse";
+    pixel_color = kSheerBlue;
     g_normal_pending = false;
     EXPECT(IsRectEqual(*position, g_normal_position));
   }
@@ -239,8 +268,7 @@ void DidChangeView(PP_Instance instance,
     // We should now be able to bind 2D and 3D devices.
     EXPECT(PPBGraphics2D()->IsGraphics2D(g_graphics2d) == PP_TRUE);
     EXPECT(PPBInstance()->BindGraphics(pp_instance(), g_graphics2d) == PP_TRUE);
-    PPBCore()->ReleaseResource(g_graphics2d);
-    PostTestMessage(test, "PASSED");
+    EXPECT(PaintPlugin(position->size, pixel_color, test));
   }
 }
 
