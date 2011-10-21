@@ -3008,11 +3008,8 @@ void GLES2DecoderImpl::DoGenerateMipmap(GLenum target) {
   }
   // Workaround for Mac driver bug. In the large scheme of things setting
   // glTexParamter twice for glGenerateMipmap is probably not a lage performance
-  // hit so there's probably no need to make this conditional. The bug appears
-  // to be that if the filtering mode is set to something that doesn't require
-  // mipmaps for rendering, or is never set to something other than the default,
-  // then glGenerateMipmap misbehaves.
-  glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+  // hit so there's probably no need to make this conditional.
+  glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
   glGenerateMipmapEXT(target);
   glTexParameteri(target, GL_TEXTURE_MIN_FILTER, info->min_filter());
 }
