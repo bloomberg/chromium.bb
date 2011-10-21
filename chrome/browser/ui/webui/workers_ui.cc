@@ -207,7 +207,6 @@ class WorkersUI::WorkerCreationDestructionListener
  private:
   friend class base::RefCountedThreadSafe<WorkerCreationDestructionListener>;
   virtual ~WorkerCreationDestructionListener() {
-    UnregisterObserver();
   }
 
   virtual void WorkerCreated(
