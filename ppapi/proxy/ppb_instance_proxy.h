@@ -8,11 +8,18 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_var.h"
+#include "ppapi/cpp/completion_callback.h"
 #include "ppapi/proxy/interface_proxy.h"
+#include "ppapi/proxy/proxy_non_thread_safe_ref_count.h"
 #include "ppapi/shared_impl/function_group_base.h"
 #include "ppapi/shared_impl/host_resource.h"
 #include "ppapi/shared_impl/instance_impl.h"
 #include "ppapi/thunk/ppb_instance_api.h"
+
+// Windows headers interfere with this file.
+#ifdef PostMessage
+#undef PostMessage
+#endif
 
 namespace ppapi {
 namespace proxy {
@@ -98,7 +105,7 @@ class PPB_Instance_Proxy : public InterfaceProxy,
   static const ApiID kApiID = API_ID_PPB_INSTANCE;
 
  private:
-  // Message handlers.
+  // Plugin -> Host message handlers.
   void OnMsgGetWindowObject(PP_Instance instance,
                             SerializedVarReturnValue result);
   void OnMsgGetOwnerElementObject(PP_Instance instance,
@@ -139,8 +146,7 @@ class PPB_Instance_Proxy : public InterfaceProxy,
                              uint32_t event_classes);
   void OnMsgPostMessage(PP_Instance instance,
                         SerializedVarReceiveInput message);
-  void OnMsgLockMouse(PP_Instance instance,
-                      uint32_t serialized_callback);
+  void OnMsgLockMouse(PP_Instance instance);
   void OnMsgUnlockMouse(PP_Instance instance);
   void OnMsgResolveRelativeToDocument(PP_Instance instance,
                                       SerializedVarReceiveInput relative,
@@ -155,6 +161,14 @@ class PPB_Instance_Proxy : public InterfaceProxy,
                            SerializedVarReturnValue result);
   void OnMsgGetPluginInstanceURL(PP_Instance instance,
                                  SerializedVarReturnValue result);
+
+  // Host -> Plugin message handlers.
+  void OnMsgMouseLockComplete(PP_Instance instance, int32_t result);
+
+  void MouseLockCompleteInHost(int32_t result, PP_Instance instance);
+
+  pp::CompletionCallbackFactory<PPB_Instance_Proxy,
+                                ProxyNonThreadSafeRefCount> callback_factory_;
 };
 
 }  // namespace proxy
