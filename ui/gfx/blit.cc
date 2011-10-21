@@ -10,7 +10,9 @@
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if defined(OS_OPENBSD)
+#include <cairo.h>
+#elif defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
 #include <cairo/cairo.h>
 #endif
 
