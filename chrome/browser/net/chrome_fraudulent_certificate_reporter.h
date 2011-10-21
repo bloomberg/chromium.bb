@@ -14,11 +14,6 @@
 
 namespace chrome_browser_net {
 
-// TODO(palmer): Switch to HTTPS when the error handling delegate is more
-// sophisticated. Ultimately we plan to attempt the report on many transports.
-const char FRAUDULENT_CERTIFICATE_UPLOAD_ENDPOINT[] =
-    "http://clients3.google.com/log_cert_error";
-
 class ChromeFraudulentCertificateReporter
     : public net::FraudulentCertificateReporter,
       public net::URLRequest::Delegate {
