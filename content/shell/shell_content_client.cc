@@ -19,7 +19,7 @@ void ShellContentClient::SetGpuInfo(const GPUInfo& gpu_info) {
 }
 
 void ShellContentClient::AddPepperPlugins(
-    std::vector<PepperPluginInfo>* plugins) {
+    std::vector<content::PepperPluginInfo>* plugins) {
 }
 
 bool ShellContentClient::CanSendWhileSwappedOut(const IPC::Message* msg) {

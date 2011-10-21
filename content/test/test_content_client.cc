@@ -20,7 +20,7 @@ void TestContentClient::SetGpuInfo(const content::GPUInfo& gpu_info) {
 }
 
 void TestContentClient::AddPepperPlugins(
-    std::vector<PepperPluginInfo>* plugins) {
+    std::vector<content::PepperPluginInfo>* plugins) {
 }
 
 bool TestContentClient::CanSendWhileSwappedOut(const IPC::Message* msg) {

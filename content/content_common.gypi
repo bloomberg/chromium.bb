@@ -39,6 +39,8 @@
     'public/common/page_transition_types.cc',
     'public/common/page_transition_types.h',
     'public/common/page_type.h',
+    'public/common/pepper_plugin_info.cc',
+    'public/common/pepper_plugin_info.h',
     'public/common/resource_dispatcher_delegate.h',
     'public/common/security_style.h',
     'public/common/url_constants.cc',

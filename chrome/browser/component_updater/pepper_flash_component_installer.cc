@@ -21,7 +21,7 @@
 #include "chrome/browser/plugin_prefs.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/pepper_plugin_registry.h"
+#include "content/public/common/pepper_plugin_info.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/plugin_constants.h"
@@ -121,7 +121,7 @@ bool SupportsPepperInterface(const char* interface_name) {
 bool MakePepperFlashPluginInfo(const FilePath& flash_path,
                                const Version& flash_version,
                                bool out_of_process,
-                               PepperPluginInfo* plugin_info) {
+                               content::PepperPluginInfo* plugin_info) {
   if (!flash_version.IsValid())
     return false;
   const std::vector<uint16> ver_nums = flash_version.components();
@@ -153,7 +153,7 @@ bool MakePepperFlashPluginInfo(const FilePath& flash_path,
 void RegisterPepperFlashWithChrome(const FilePath& path,
                                    const Version& version) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  PepperPluginInfo plugin_info;
+  content::PepperPluginInfo plugin_info;
   // Register it as out-of-process and disabled.
   if (!MakePepperFlashPluginInfo(path, version, true, &plugin_info))
     return;

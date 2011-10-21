@@ -10,8 +10,8 @@
 #include "base/utf_string_conversions.h"
 #include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/render_message_filter.h"
-#include "content/common/pepper_plugin_registry.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/pepper_plugin_info.h"
 #include "ipc/ipc_switches.h"
 #include "net/base/network_change_notifier.h"
 #include "ppapi/proxy/ppapi_messages.h"
@@ -56,7 +56,7 @@ PpapiPluginProcessHost::~PpapiPluginProcessHost() {
 }
 
 PpapiPluginProcessHost* PpapiPluginProcessHost::CreatePluginHost(
-    const PepperPluginInfo& info,
+    const content::PepperPluginInfo& info,
     net::HostResolver* host_resolver) {
   PpapiPluginProcessHost* plugin_host =
       new PpapiPluginProcessHost(host_resolver);
@@ -68,7 +68,7 @@ PpapiPluginProcessHost* PpapiPluginProcessHost::CreatePluginHost(
 }
 
 PpapiPluginProcessHost* PpapiPluginProcessHost::CreateBrokerHost(
-    const PepperPluginInfo& info) {
+    const content::PepperPluginInfo& info) {
   PpapiPluginProcessHost* plugin_host =
       new PpapiPluginProcessHost();
   if(plugin_host->Init(info))
@@ -104,7 +104,7 @@ PpapiPluginProcessHost::PpapiPluginProcessHost()
       is_broker_(true) {
 }
 
-bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
+bool PpapiPluginProcessHost::Init(const content::PepperPluginInfo& info) {
   plugin_path_ = info.path;
   set_name(UTF8ToUTF16(info.name));
   set_version(UTF8ToUTF16(info.version));

@@ -35,7 +35,6 @@
 #include "base/files/file_path_watcher.h"
 #endif
 
-struct PepperPluginInfo;
 class PluginDirWatcherDelegate;
 
 namespace base {
@@ -45,6 +44,7 @@ class MessageLoopProxy;
 namespace content {
 class BrowserContext;
 class ResourceContext;
+struct PepperPluginInfo;
 class PluginServiceFilter;
 struct PluginServiceFilterParams;
 }
@@ -192,7 +192,8 @@ class CONTENT_EXPORT PluginService
 
   void RegisterPepperPlugins();
 
-  PepperPluginInfo* GetRegisteredPpapiPluginInfo(const FilePath& plugin_path);
+  content::PepperPluginInfo* GetRegisteredPpapiPluginInfo(
+      const FilePath& plugin_path);
 
   // Function that is run on the FILE thread to load the plugins synchronously.
   void GetPluginsInternal(base::MessageLoopProxy* target_loop,
@@ -250,7 +251,7 @@ class CONTENT_EXPORT PluginService
   scoped_refptr<PluginDirWatcherDelegate> file_watcher_delegate_;
 #endif
 
-  std::vector<PepperPluginInfo> ppapi_plugins_;
+  std::vector<content::PepperPluginInfo> ppapi_plugins_;
 
   // Weak pointer; outlives us.
   content::PluginServiceFilter* filter_;

@@ -17,7 +17,8 @@
 namespace {
 
 // Appends any plugins from the command line to the given vector.
-void ComputePluginsFromCommandLine(std::vector<PepperPluginInfo>* plugins) {
+void ComputePluginsFromCommandLine(
+    std::vector<content::PepperPluginInfo>* plugins) {
   bool out_of_process =
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kPpapiOutOfProcess);
   const std::string value =
@@ -45,7 +46,7 @@ void ComputePluginsFromCommandLine(std::vector<PepperPluginInfo>* plugins) {
     std::vector<std::string> name_parts;
     base::SplitString(parts[0], '#', &name_parts);
 
-    PepperPluginInfo plugin;
+    content::PepperPluginInfo plugin;
     plugin.is_out_of_process = out_of_process;
 #if defined(OS_WIN)
     // This means we can't provide plugins from non-ASCII paths, but
@@ -74,7 +75,7 @@ void ComputePluginsFromCommandLine(std::vector<PepperPluginInfo>* plugins) {
 
 }  // namespace
 
-webkit::WebPluginInfo PepperPluginInfo::ToWebPluginInfo() const {
+webkit::WebPluginInfo content::PepperPluginInfo::ToWebPluginInfo() const {
   webkit::WebPluginInfo info;
 
   info.type = is_out_of_process ?
@@ -91,16 +92,8 @@ webkit::WebPluginInfo PepperPluginInfo::ToWebPluginInfo() const {
   return info;
 }
 
-PepperPluginInfo::PepperPluginInfo()
-    : is_internal(false),
-      is_out_of_process(false) {
-}
-
-PepperPluginInfo::~PepperPluginInfo() {
-}
-
 bool MakePepperPluginInfo(const webkit::WebPluginInfo& webplugin_info,
-                          PepperPluginInfo* pepper_info) {
+                          content::PepperPluginInfo* pepper_info) {
   if (!webkit::IsPepperPlugin(webplugin_info))
     return false;
 
@@ -127,14 +120,15 @@ PepperPluginRegistry* PepperPluginRegistry::GetInstance() {
 }
 
 // static
-void PepperPluginRegistry::ComputeList(std::vector<PepperPluginInfo>* plugins) {
+void PepperPluginRegistry::ComputeList(
+    std::vector<content::PepperPluginInfo>* plugins) {
   content::GetContentClient()->AddPepperPlugins(plugins);
   ComputePluginsFromCommandLine(plugins);
 }
 
 // static
 void PepperPluginRegistry::PreloadModules() {
-  std::vector<PepperPluginInfo> plugins;
+  std::vector<content::PepperPluginInfo> plugins;
   ComputeList(&plugins);
   for (size_t i = 0; i < plugins.size(); ++i) {
     if (!plugins[i].is_internal) {
@@ -148,7 +142,7 @@ void PepperPluginRegistry::PreloadModules() {
   }
 }
 
-const PepperPluginInfo* PepperPluginRegistry::GetInfoForPlugin(
+const content::PepperPluginInfo* PepperPluginRegistry::GetInfoForPlugin(
     const webkit::WebPluginInfo& info) {
   for (size_t i = 0; i < plugin_list_.size(); ++i) {
     if (info.path == plugin_list_[i].path)
@@ -159,7 +153,7 @@ const PepperPluginInfo* PepperPluginRegistry::GetInfoForPlugin(
   // is actually in |info| and we can use it to construct it and add it to
   // the list. This same deal needs to be done in the browser side in
   // PluginService.
-  PepperPluginInfo plugin;
+  content::PepperPluginInfo plugin;
   if (!MakePepperPluginInfo(info, &plugin))
     return NULL;
 
@@ -215,7 +209,7 @@ PepperPluginRegistry::PepperPluginRegistry() {
   // the initialized module, it will still try to unregister itself in its
   // destructor.
   for (size_t i = 0; i < plugin_list_.size(); i++) {
-    const PepperPluginInfo& current = plugin_list_[i];
+    const content::PepperPluginInfo& current = plugin_list_[i];
     if (current.is_out_of_process)
       continue;  // Out of process plugins need no special pre-initialization.
 

@@ -284,7 +284,7 @@ PpapiPluginProcessHost* PluginService::FindOrStartPpapiPluginProcess(
     return plugin_host;
 
   // Validate that the plugin is actually registered.
-  PepperPluginInfo* info = GetRegisteredPpapiPluginInfo(plugin_path);
+  content::PepperPluginInfo* info = GetRegisteredPpapiPluginInfo(plugin_path);
   if (!info)
     return NULL;
 
@@ -303,7 +303,7 @@ PpapiPluginProcessHost* PluginService::FindOrStartPpapiBrokerProcess(
     return plugin_host;
 
   // Validate that the plugin is actually registered.
-  PepperPluginInfo* info = GetRegisteredPpapiPluginInfo(plugin_path);
+  content::PepperPluginInfo* info = GetRegisteredPpapiPluginInfo(plugin_path);
   if (!info)
     return NULL;
 
@@ -581,9 +581,9 @@ void PluginService::RegisterPepperPlugins() {
 }
 
 // There should generally be very few plugins so a brute-force search is fine.
-PepperPluginInfo* PluginService::GetRegisteredPpapiPluginInfo(
+content::PepperPluginInfo* PluginService::GetRegisteredPpapiPluginInfo(
     const FilePath& plugin_path) {
-  PepperPluginInfo* info = NULL;
+  content::PepperPluginInfo* info = NULL;
   for (size_t i = 0; i < ppapi_plugins_.size(); i++) {
     if (ppapi_plugins_[i].path == plugin_path) {
       info = &ppapi_plugins_[i];
@@ -600,7 +600,7 @@ PepperPluginInfo* PluginService::GetRegisteredPpapiPluginInfo(
   webkit::WebPluginInfo webplugin_info;
   if (!GetPluginInfoByPath(plugin_path, &webplugin_info))
     return NULL;
-  PepperPluginInfo new_pepper_info;
+  content::PepperPluginInfo new_pepper_info;
   if (!MakePepperPluginInfo(webplugin_info, &new_pepper_info))
     return NULL;
   ppapi_plugins_.push_back(new_pepper_info);

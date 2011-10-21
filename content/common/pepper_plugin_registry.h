@@ -8,46 +8,15 @@
 
 #include <list>
 #include <map>
-#include <string>
-#include <vector>
 
-#include "base/file_path.h"
-#include "content/common/content_export.h"
+#include "content/public/common/pepper_plugin_info.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
-#include "webkit/plugins/ppapi/plugin_module.h"
-#include "webkit/plugins/webplugininfo.h"
-
-struct CONTENT_EXPORT PepperPluginInfo {
-  PepperPluginInfo();
-  ~PepperPluginInfo();
-
-  webkit::WebPluginInfo ToWebPluginInfo() const;
-
-  // Indicates internal plugins for which there's not actually a library.
-  // These plugins are implemented in the Chrome binary using a separate set
-  // of entry points (see internal_entry_points below).
-  // Defaults to false.
-  bool is_internal;
-
-  // True when this plugin should be run out of process. Defaults to false.
-  bool is_out_of_process;
-
-  FilePath path;  // Internal plugins have "internal-[name]" as path.
-  std::string name;
-  std::string description;
-  std::string version;
-  std::vector<webkit::WebPluginMimeType> mime_types;
-
-  // When is_internal is set, this contains the function pointers to the
-  // entry points for the internal plugins.
-  webkit::ppapi::PluginModule::EntryPoints internal_entry_points;
-};
 
 // Constructs a PepperPluginInfo from a WebPluginInfo. Returns false if
 // the operation is not possible, in particular the WebPluginInfo::type
 // must be one of the pepper types.
 bool MakePepperPluginInfo(const webkit::WebPluginInfo& webplugin_info,
-                          PepperPluginInfo* pepper_info);
+                          content::PepperPluginInfo* pepper_info);
 
 // This class holds references to all of the known pepper plugin modules.
 //
@@ -68,7 +37,7 @@ class PepperPluginRegistry
   // plugin list every time it is called. Generally, code in the registry should
   // be using the cached plugin_list_ instead.
   CONTENT_EXPORT static void ComputeList(
-      std::vector<PepperPluginInfo>* plugins);
+      std::vector<content::PepperPluginInfo>* plugins);
 
   // Loads the (native) libraries but does not initialize them (i.e., does not
   // call PPP_InitializeModule). This is needed by the zygote on Linux to get
@@ -79,7 +48,7 @@ class PepperPluginRegistry
   // return value will be NULL if there is no such plugin.
   //
   // The returned pointer is owned by the PluginRegistry.
-  const PepperPluginInfo* GetInfoForPlugin(
+  const content::PepperPluginInfo* GetInfoForPlugin(
       const webkit::WebPluginInfo& info);
 
   // Returns an existing loaded module for the given path. It will search for
@@ -101,7 +70,7 @@ class PepperPluginRegistry
   PepperPluginRegistry();
 
   // All known pepper plugins.
-  std::vector<PepperPluginInfo> plugin_list_;
+  std::vector<content::PepperPluginInfo> plugin_list_;
 
   // Plugins that have been preloaded so they can be executed in-process in
   // the renderer (the sandbox prevents on-demand loading).

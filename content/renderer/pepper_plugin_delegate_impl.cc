@@ -694,7 +694,7 @@ PepperPluginDelegateImpl::CreatePepperPluginModule(
   // In-process plugins will have always been created up-front to avoid the
   // sandbox restrictions. So getting here implies it doesn't exist or should
   // be out of process.
-  const PepperPluginInfo* info =
+  const content::PepperPluginInfo* info =
       PepperPluginRegistry::GetInstance()->GetInfoForPlugin(webplugin_info);
   if (!info) {
     *pepper_plugin_was_registered = false;

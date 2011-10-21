@@ -18,7 +18,7 @@ class ShellContentClient : public ContentClient {
   virtual void SetActiveURL(const GURL& url) OVERRIDE;
   virtual void SetGpuInfo(const GPUInfo& gpu_info) OVERRIDE;
   virtual void AddPepperPlugins(
-      std::vector<PepperPluginInfo>* plugins) OVERRIDE;
+      std::vector<content::PepperPluginInfo>* plugins) OVERRIDE;
   virtual bool CanSendWhileSwappedOut(const IPC::Message* msg) OVERRIDE;
   virtual bool CanHandleWhileSwappedOut(const IPC::Message& msg) OVERRIDE;
   virtual std::string GetUserAgent(bool* overriding) const OVERRIDE;

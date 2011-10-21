@@ -2968,8 +2968,8 @@ void ExtensionService::UpdatePluginListWithNaClModules() {
   // there is a MIME type that module wants to handle, so we need to add that
   // MIME type to plugins which handle NaCl modules in order to allow the
   // individual modules to handle these types.
-  const PepperPluginInfo* pepper_info = NULL;
-  std::vector<PepperPluginInfo> plugins;
+  const content::PepperPluginInfo* pepper_info = NULL;
+  std::vector<content::PepperPluginInfo> plugins;
   PepperPluginRegistry::ComputeList(&plugins);
 
   // Search the entire plugin list for plugins that handle the NaCl MIME type.
