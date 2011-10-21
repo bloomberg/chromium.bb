@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/file_path.h"
+#include "base/memory/scoped_vector.h"
 #include "content/common/child_process.h"
 #include "content/common/indexed_db_key.h"
 #include "content/common/utility_messages.h"
@@ -107,34 +108,27 @@ void UtilityThreadImpl::OnBatchModeFinished() {
 
 #if defined(OS_POSIX)
 void UtilityThreadImpl::OnLoadPlugins(
-    const std::vector<FilePath>& extra_plugin_paths,
-    const std::vector<FilePath>& extra_plugin_dirs,
-    const std::vector<webkit::WebPluginInfo>& internal_plugins) {
+    const std::vector<FilePath>& plugin_paths) {
   webkit::npapi::PluginList* plugin_list =
       webkit::npapi::PluginList::Singleton();
 
-  // Create the PluginList and set the paths from which to load plugins. Iterate
-  // in reverse to preserve the order when pushing back.
-  std::vector<FilePath>::const_reverse_iterator it;
-  for (it = extra_plugin_paths.rbegin();
-       it != extra_plugin_paths.rend();
+  for (std::vector<FilePath>::const_iterator it = plugin_paths.begin();
+       it != plugin_paths.end();
        ++it) {
-    plugin_list->AddExtraPluginPath(*it);
-  }
-  for (it = extra_plugin_dirs.rbegin(); it != extra_plugin_dirs.rend(); ++it) {
-    plugin_list->AddExtraPluginDir(*it);
-  }
-  for (std::vector<webkit::WebPluginInfo>::const_reverse_iterator it =
-           internal_plugins.rbegin();
-       it != internal_plugins.rend();
-       ++it) {
-    plugin_list->RegisterInternalPlugin(*it);
+    ScopedVector<webkit::npapi::PluginGroup> plugin_groups;
+    plugin_list->LoadPlugin(*it, &plugin_groups);
+
+    if (plugin_groups.empty()) {
+      Send(new UtilityHostMsg_LoadPluginFailed(*it));
+      continue;
+    }
+
+    const webkit::npapi::PluginGroup* group = plugin_groups[0];
+    DCHECK_EQ(group->web_plugin_infos().size(), 1u);
+
+    Send(new UtilityHostMsg_LoadedPlugin(group->web_plugin_infos().front()));
   }
 
-  std::vector<webkit::WebPluginInfo> plugins;
-  plugin_list->GetPlugins(&plugins);
-
-  Send(new UtilityHostMsg_LoadedPlugins(plugins));
   ReleaseProcessIfNeeded();
 }
 #endif

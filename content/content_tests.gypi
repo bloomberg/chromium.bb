@@ -155,6 +155,7 @@
         'browser/mac/closure_blocks_leopard_compat_unittest.cc',
         'browser/mach_broker_mac_unittest.cc',
         'browser/notification_service_impl_unittest.cc',
+        'browser/plugin_loader_posix_unittest.cc',
         'browser/renderer_host/accelerated_plugin_view_mac_unittest.mm',
         'browser/renderer_host/gtk_key_bindings_handler_unittest.cc',
         'browser/renderer_host/media/audio_input_device_manager_unittest.cc',

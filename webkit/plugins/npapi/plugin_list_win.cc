@@ -267,9 +267,8 @@ void PluginList::GetPluginDirectories(std::vector<FilePath>* plugin_dirs) {
     plugin_dirs->push_back(*i);
 }
 
-void PluginList::LoadPluginsFromDir(const FilePath &path,
-                                    ScopedVector<PluginGroup>* plugin_groups,
-                                    std::set<FilePath>* visited_plugins) {
+void PluginList::GetPluginsInDir(
+    const FilePath& path, std::vector<FilePath>* plugins) {
   WIN32_FIND_DATA find_file_data;
   HANDLE find_handle;
 
@@ -284,8 +283,7 @@ void PluginList::LoadPluginsFromDir(const FilePath &path,
   do {
     if (!(find_file_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
       FilePath filename = path.Append(find_file_data.cFileName);
-      LoadPlugin(filename, plugin_groups);
-      visited_plugins->insert(filename);
+      plugins->push_back(filename);
     }
   } while (FindNextFile(find_handle, &find_file_data) != 0);
 
@@ -293,9 +291,7 @@ void PluginList::LoadPluginsFromDir(const FilePath &path,
   FindClose(find_handle);
 }
 
-void PluginList::LoadPluginsFromRegistry(
-    ScopedVector<PluginGroup>* plugin_groups,
-    std::set<FilePath>* visited_plugins) {
+void PluginList::GetPluginPathsFromRegistry(std::vector<FilePath>* plugins) {
   std::set<FilePath> plugin_dirs;
 
   GetPluginsInRegistryDirectory(
@@ -305,8 +301,7 @@ void PluginList::LoadPluginsFromRegistry(
 
   for (std::set<FilePath>::iterator i = plugin_dirs.begin();
        i != plugin_dirs.end(); ++i) {
-    LoadPlugin(*i, plugin_groups);
-    visited_plugins->insert(*i);
+    plugins->push_back(*i);
   }
 }
 

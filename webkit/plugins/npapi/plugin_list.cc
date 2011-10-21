@@ -257,6 +257,17 @@ void PluginList::UnregisterInternalPlugin(const FilePath& path) {
   NOTREACHED();
 }
 
+void PluginList::GetInternalPlugins(
+    std::vector<webkit::WebPluginInfo>* internal_plugins) {
+  base::AutoLock lock(lock_);
+
+  for (std::vector<InternalPlugin>::iterator it = internal_plugins_.begin();
+       it != internal_plugins_.end();
+       ++it) {
+    internal_plugins->push_back(it->info);
+  }
+}
+
 bool PluginList::ReadPluginInfo(const FilePath& filename,
                                 webkit::WebPluginInfo* info,
                                 const PluginEntryPoints** entry_points) {
@@ -348,11 +359,6 @@ PluginGroup* PluginList::CreatePluginGroup(
 }
 
 void PluginList::LoadPluginsInternal(ScopedVector<PluginGroup>* plugin_groups) {
-  // Don't want to hold the lock while loading new plugins, so we don't block
-  // other methods if they're called on other threads.
-  std::vector<FilePath> extra_plugin_paths;
-  std::vector<FilePath> extra_plugin_dirs;
-  std::vector<InternalPlugin> internal_plugins;
   base::Closure will_load_callback;
   {
     base::AutoLock lock(lock_);
@@ -360,53 +366,19 @@ void PluginList::LoadPluginsInternal(ScopedVector<PluginGroup>* plugin_groups) {
     // reach the end of the method.
     plugins_need_refresh_ = false;
     will_load_callback = will_load_plugins_callback_;
-    extra_plugin_paths = extra_plugin_paths_;
-    extra_plugin_dirs = extra_plugin_dirs_;
-    internal_plugins = internal_plugins_;
   }
 
   if (!will_load_callback.is_null())
     will_load_callback.Run();
 
-  std::set<FilePath> visited_plugins;
+  std::vector<FilePath> plugin_paths;
+  GetPluginPathsToLoad(&plugin_paths);
 
-  std::vector<FilePath> directories_to_scan;
-  GetPluginDirectories(&directories_to_scan);
-
-  // Load internal plugins first so that, if both an internal plugin and a
-  // "discovered" plugin want to handle the same type, the internal plugin
-  // will have precedence.
-  for (size_t i = 0; i < internal_plugins.size(); ++i) {
-    if (internal_plugins[i].info.path.value() == kDefaultPluginLibraryName)
-      continue;
-    LoadPlugin(internal_plugins[i].info.path, plugin_groups);
+  for (std::vector<FilePath>::const_iterator it = plugin_paths.begin();
+       it != plugin_paths.end();
+       ++it) {
+    LoadPlugin(*it, plugin_groups);
   }
-
-  for (size_t i = 0; i < extra_plugin_paths.size(); ++i) {
-    const FilePath& path = extra_plugin_paths[i];
-    if (visited_plugins.find(path) != visited_plugins.end())
-      continue;
-    LoadPlugin(path, plugin_groups);
-    visited_plugins.insert(path);
-  }
-
-  for (size_t i = 0; i < extra_plugin_dirs.size(); ++i) {
-    LoadPluginsFromDir(
-        extra_plugin_dirs[i], plugin_groups, &visited_plugins);
-  }
-
-  for (size_t i = 0; i < directories_to_scan.size(); ++i) {
-    LoadPluginsFromDir(
-        directories_to_scan[i], plugin_groups, &visited_plugins);
-  }
-
-#if defined(OS_WIN)
-  LoadPluginsFromRegistry(plugin_groups, &visited_plugins);
-#endif
-
-  // Load the default plugin last.
-  if (default_plugin_enabled_)
-    LoadPlugin(FilePath(kDefaultPluginLibraryName), plugin_groups);
 }
 
 void PluginList::LoadPlugins() {
@@ -456,20 +428,53 @@ void PluginList::LoadPlugin(const FilePath& path,
   AddToPluginGroups(plugin_info, plugin_groups);
 }
 
-void PluginList::GetPluginPathListsToLoad(
-    std::vector<FilePath>* extra_plugin_paths,
-    std::vector<FilePath>* extra_plugin_dirs,
-    std::vector<webkit::WebPluginInfo>* internal_plugins) {
-  base::AutoLock lock(lock_);
-  *extra_plugin_paths = extra_plugin_paths_;
-  *extra_plugin_dirs = extra_plugin_dirs_;
-
-  *internal_plugins = std::vector<webkit::WebPluginInfo>();
-  for (std::vector<InternalPlugin>::iterator it = internal_plugins_.begin();
-       it != internal_plugins_.end();
-       ++it) {
-    internal_plugins->push_back(it->info);
+void PluginList::GetPluginPathsToLoad(std::vector<FilePath>* plugin_paths) {
+  // Don't want to hold the lock while loading new plugins, so we don't block
+  // other methods if they're called on other threads.
+  std::vector<FilePath> extra_plugin_paths;
+  std::vector<FilePath> extra_plugin_dirs;
+  std::vector<InternalPlugin> internal_plugins;
+  {
+    base::AutoLock lock(lock_);
+    extra_plugin_paths = extra_plugin_paths_;
+    extra_plugin_dirs = extra_plugin_dirs_;
+    internal_plugins = internal_plugins_;
   }
+
+  std::vector<FilePath> directories_to_scan;
+  GetPluginDirectories(&directories_to_scan);
+
+  // Load internal plugins first so that, if both an internal plugin and a
+  // "discovered" plugin want to handle the same type, the internal plugin
+  // will have precedence.
+  for (size_t i = 0; i < internal_plugins.size(); ++i) {
+    if (internal_plugins[i].info.path.value() == kDefaultPluginLibraryName)
+      continue;
+    plugin_paths->push_back(internal_plugins[i].info.path);
+  }
+
+  for (size_t i = 0; i < extra_plugin_paths.size(); ++i) {
+    const FilePath& path = extra_plugin_paths[i];
+    if (std::find(plugin_paths->begin(), plugin_paths->end(), path) !=
+        plugin_paths->end()) {
+      continue;
+    }
+    plugin_paths->push_back(path);
+  }
+
+  for (size_t i = 0; i < extra_plugin_dirs.size(); ++i)
+    GetPluginsInDir(extra_plugin_dirs[i], plugin_paths);
+
+  for (size_t i = 0; i < directories_to_scan.size(); ++i)
+    GetPluginsInDir(directories_to_scan[i], plugin_paths);
+
+#if defined(OS_WIN)
+  GetPluginPathsFromRegistry(plugin_paths);
+#endif
+
+  // Load the default plugin last.
+  if (default_plugin_enabled_)
+    plugin_paths->push_back(FilePath(kDefaultPluginLibraryName));
 }
 
 void PluginList::SetPlugins(const std::vector<webkit::WebPluginInfo>& plugins) {

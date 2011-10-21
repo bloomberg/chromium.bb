@@ -40,12 +40,10 @@ IPC_MESSAGE_CONTROL0(UtilityMsg_BatchMode_Started)
 IPC_MESSAGE_CONTROL0(UtilityMsg_BatchMode_Finished)
 
 #if defined(OS_POSIX)
-// Tells the utility process to load the plugins from disk and send a list of
-// WebPluginInfo objects back.
-IPC_MESSAGE_CONTROL3(UtilityMsg_LoadPlugins,
-                     std::vector<FilePath>, /* extra plugin paths */
-                     std::vector<FilePath>, /* extra plugin dirs */
-                     std::vector<webkit::WebPluginInfo> /* internal plugins */)
+// Tells the utility process to load each plugin in the order specified by the
+// vector. It will respond after each load with the WebPluginInfo.
+IPC_MESSAGE_CONTROL1(UtilityMsg_LoadPlugins,
+                     std::vector<FilePath> /* plugin paths */)
 #endif
 
 //------------------------------------------------------------------------------
@@ -69,8 +67,12 @@ IPC_MESSAGE_CONTROL1(UtilityHostMsg_InjectIDBKey_Finished,
                      SerializedScriptValue /* new value */)
 
 #if defined(OS_POSIX)
-// After loading plugins from disk and querying each for MIME information, this
-// sends the resulting WebPluginInfo back to the browser process.
-IPC_MESSAGE_CONTROL1(UtilityHostMsg_LoadedPlugins,
-                     std::vector<webkit::WebPluginInfo> /* plugin infos */)
+// Notifies the browser when a plugin failed to load so the two processes can
+// keep the canonical list in sync.
+IPC_SYNC_MESSAGE_CONTROL1_0(UtilityHostMsg_LoadPluginFailed,
+                            FilePath /* path of plugin */)
+
+// Notifies the browser that a plugin in the vector sent by it has been loaded.
+IPC_SYNC_MESSAGE_CONTROL1_0(UtilityHostMsg_LoadedPlugin,
+                            webkit::WebPluginInfo /* plugin info */)
 #endif  // OS_POSIX

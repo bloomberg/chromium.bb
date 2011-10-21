@@ -36,6 +36,7 @@
 #endif
 
 class PluginDirWatcherDelegate;
+class PluginLoaderPosix;
 
 namespace base {
 class MessageLoopProxy;
@@ -257,6 +258,10 @@ class CONTENT_EXPORT PluginService
   content::PluginServiceFilter* filter_;
 
   std::set<PluginProcessHost::Client*> pending_plugin_clients_;
+
+#if defined(OS_POSIX)
+  scoped_refptr<PluginLoaderPosix> plugin_loader_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(PluginService);
 };

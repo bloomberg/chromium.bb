@@ -102,6 +102,9 @@ class PluginList {
   // This is generally only necessary for tests.
   void UnregisterInternalPlugin(const FilePath& path);
 
+  // Gets a list of all the registered internal plugins.
+  void GetInternalPlugins(std::vector<webkit::WebPluginInfo>* plugins);
+
   // Creates a WebPluginInfo structure given a plugin's path.  On success
   // returns true, with the information being put into "info".  If it's an
   // internal plugin, "entry_points" is filled in as well with a
@@ -169,12 +172,8 @@ class PluginList {
   // The following functions are used to support probing for WebPluginInfo
   // using a different instance of this class.
 
-  // Returns the extra plugin paths, extra plugin directories, and internal
-  // plugin paths that should be loaded.
-  void GetPluginPathListsToLoad(
-      std::vector<FilePath>* extra_plugin_paths,
-      std::vector<FilePath>* extra_plugin_dirs,
-      std::vector<webkit::WebPluginInfo>* internal_plugins);
+  // Computes a list of all plugins to potentially load from all sources.
+  void GetPluginPathsToLoad(std::vector<FilePath>* plugin_paths);
 
   // Clears the internal list of PluginGroups and copies them from the vector.
   void SetPlugins(const std::vector<webkit::WebPluginInfo>& plugins);
@@ -220,13 +219,9 @@ class PluginList {
   // Load all plugins from the default plugins directory.
   void LoadPlugins();
 
-  // Load all plugins from a specific directory.
-  // |plugin_groups| is updated with loaded plugin information.
-  // |visited_plugins| is updated with paths to all plugins that were considered
-  // (including those we didn't load).
-  void LoadPluginsFromDir(const FilePath& path,
-                          ScopedVector<PluginGroup>* plugin_groups,
-                          std::set<FilePath>* visited_plugins);
+  // Walks a directory and produces a list of all the plugins to potentially
+  // load in that directory.
+  void GetPluginsInDir(const FilePath& path, std::vector<FilePath>* plugins);
 
   // Returns true if we should load the given plugin, or false otherwise.
   // |plugins| is the list of plugins we have crawled in the current plugin
@@ -263,10 +258,9 @@ class PluginList {
   // true if we shouldn't load the new WMP plugin.
   bool dont_load_new_wmp_;
 
-  // Loads plugins registered under HKCU\Software\MozillaPlugins and
+  // Gets plugin paths registered under HKCU\Software\MozillaPlugins and
   // HKLM\Software\MozillaPlugins.
-  void LoadPluginsFromRegistry(ScopedVector<PluginGroup>* plugins,
-                               std::set<FilePath>* visited_plugins);
+  void GetPluginPathsFromRegistry(std::vector<FilePath>* plugins);
 #endif
 
   //

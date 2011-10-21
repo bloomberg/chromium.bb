@@ -55,10 +55,7 @@ class UtilityThreadImpl : public content::UtilityThread,
   void OnBatchModeFinished();
 
 #if defined(OS_POSIX)
-  void OnLoadPlugins(
-      const std::vector<FilePath>& extra_plugin_paths,
-      const std::vector<FilePath>& extra_plugin_dirs,
-      const std::vector<webkit::WebPluginInfo>& internal_plugins);
+  void OnLoadPlugins(const std::vector<FilePath>& plugin_paths);
 #endif  // OS_POSIX
 
   // True when we're running in batch mode.

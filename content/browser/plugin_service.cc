@@ -508,8 +508,11 @@ void PluginService::GetPlugins(const GetPluginsCallback& callback) {
     target_loop->PostTask(FROM_HERE,
         base::Bind(&RunGetPluginsCallback, callback, cached_plugins));
   } else {
+    if (!plugin_loader_.get())
+      plugin_loader_ = new PluginLoaderPosix;
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-        base::Bind(&PluginLoaderPosix::LoadPlugins, target_loop, callback));
+        base::Bind(&PluginLoaderPosix::LoadPlugins, plugin_loader_,
+                   target_loop, callback));
   }
 #endif
 }
