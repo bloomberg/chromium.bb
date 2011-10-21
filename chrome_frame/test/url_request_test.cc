@@ -264,9 +264,11 @@ TEST(UrlmonUrlRequestManagerTest, Simple1) {
 
   scoped_ptr<UrlmonUrlRequestManager> mgr(new UrlmonUrlRequestManager());
   mgr->set_delegate(&mock);
-  AutomationURLRequest r1(
-      WideToUTF8(mock_server.Resolve(L"chrome_frame_window_open.html")),
-      "get", "", "", NULL, 0, 0);
+  AutomationURLRequest r1;
+  r1.url =  WideToUTF8(mock_server.Resolve(L"chrome_frame_window_open.html"));
+  r1.method = "get";
+  r1.resource_type = 0;
+  r1.load_flags = 0;
 
   EXPECT_CALL(mock, OnResponseStarted(1, testing::_, testing::_, testing::_,
                              testing::_, testing::_, testing::_, testing::_))
@@ -297,9 +299,11 @@ TEST(UrlmonUrlRequestManagerTest, Abort1) {
 
   scoped_ptr<UrlmonUrlRequestManager> mgr(new UrlmonUrlRequestManager());
   mgr->set_delegate(&mock);
-  AutomationURLRequest r1(
-      WideToUTF8(mock_server.Resolve(L"chrome_frame_window_open.html")),
-      "get", "", "", NULL, 0, 0);
+  AutomationURLRequest r1;
+  r1.url = WideToUTF8(mock_server.Resolve(L"chrome_frame_window_open.html"));
+  r1.method = "get";
+  r1.resource_type = 0;
+  r1.load_flags = 0;
 
   EXPECT_CALL(mock, OnResponseStarted(1, testing::_, testing::_, testing::_,
                                testing::_, testing::_, testing::_, testing::_))

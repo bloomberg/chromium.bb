@@ -900,9 +900,7 @@ LogFunctionMap g_log_function_mapping;
 // Message IDs
 // Note: we currently use __LINE__ to give unique IDs to messages within
 // a file.  They're globally unique since each file defines its own
-// IPC_MESSAGE_START.  Ideally, we wouldn't use line numbers (a possibility
-// is to instead use the __COUNTER__ macro, but it needs gcc 4.3 and xcode
-// doesn't use it yet).
+// IPC_MESSAGE_START.
 #define IPC_MESSAGE_ID() ((IPC_MESSAGE_START << 16) + __LINE__)
 #define IPC_MESSAGE_ID_CLASS(id) ((id) >> 16)
 #define IPC_MESSAGE_ID_LINE(id) ((id) & 0xffff)

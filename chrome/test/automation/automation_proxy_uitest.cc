@@ -709,9 +709,11 @@ void ExternalTabUITestMockClient::ReplyEnd(const net::URLRequestStatus& status,
 }
 
 void ExternalTabUITestMockClient::Reply404(int tab_handle, int request_id) {
-  const AutomationURLResponse notfound("", "HTTP/1.1 404\r\n\r\n", 0,
-                                       base::Time(), "", 0,
-                                       net::HostPortPair());
+  AutomationURLResponse notfound;
+  notfound.headers = "HTTP/1.1 404\r\n\r\n";
+  notfound.content_length = 0;
+  notfound.redirect_status = 0;
+
   ReplyStarted(&notfound, tab_handle, request_id);
   ReplyEOF(tab_handle, request_id);
 }
@@ -724,7 +726,7 @@ void ExternalTabUITestMockClient::ServeHTMLData(int tab_handle,
       testing::Field(&AutomationURLRequest::method, StrEq("GET")))))
     .Times(1)
     .WillOnce(testing::WithArgs<0, 0>(testing::Invoke(CreateFunctor(this,
-        &ExternalTabUITestMockClient::ReplyStarted, &http_200))));
+        &ExternalTabUITestMockClient::ReplyStarted, &GetHttp200Response()))));
 
   EXPECT_CALL(*this, OnRequestRead(tab_handle, testing::Gt(0)))
       .Times(2)
@@ -757,27 +759,27 @@ void ExternalTabUITestMockClient::InvalidateHandle(
   HandleClosed(handle);
 }
 
-// Most of the time we need external tab with these settings.
-const ExternalTabSettings ExternalTabUITestMockClient::default_settings(
-    NULL, gfx::Rect(),  // will be replaced by CreateHostWindowAndTab
-    WS_CHILD | WS_VISIBLE,
-    false,   // is_incognito
-    true,    // load_requests_via_automation
-    true,    // handle_top_level_requests
-    GURL(),  // initial_url
-    GURL(),  // referrer
-    false,   // infobars_enabled
-    false);  // route_all_top_level_navigations
+// static
+ExternalTabSettings ExternalTabUITestMockClient::GetDefaultSettings() {
+  ExternalTabSettings settings;
+  settings.parent = NULL;
+  settings.style = WS_CHILD | WS_VISIBLE;
+  settings.is_incognito = false;
+  settings.load_requests_via_automation = true;
+  settings.handle_top_level_requests = true;
+  settings.infobars_enabled = false;
+  settings.route_all_top_level_navigations = false;
+  return settings;
+}
 
 // static
-const AutomationURLResponse ExternalTabUITestMockClient::http_200(
-    "",
-    "HTTP/0.9 200\r\n\r\n",
-    0,
-    base::Time(),
-    "",
-    0,
-    net::HostPortPair());
+AutomationURLResponse ExternalTabUITestMockClient::GetHttp200Response() {
+  AutomationURLResponse response;
+  response.headers = "HTTP/0.9 200\r\n\r\n";
+  response.content_length = 0;
+  response.redirect_status = 0;
+  return response;
+}
 
 bool ExternalTabUITestMockClient::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
@@ -826,8 +828,7 @@ scoped_refptr<TabProxy> ExternalTabUITestMockClient::CreateHostWindowAndTab(
 
 scoped_refptr<TabProxy> ExternalTabUITestMockClient::CreateTabWithUrl(
     const GURL& initial_url) {
-  ExternalTabSettings settings =
-      ExternalTabUITestMockClient::default_settings;
+  ExternalTabSettings settings = GetDefaultSettings();
   settings.initial_url = initial_url;
   return CreateHostWindowAndTab(settings);
 }
@@ -852,7 +853,7 @@ void ExternalTabUITestMockClient::ConnectToExternalTab(gfx::NativeWindow parent,
 
   RECT rect;
   ::GetClientRect(parent, &rect);
-  Reposition_Params params = {0};
+  Reposition_Params params;
   params.window = tab_container;
   params.flags = SWP_NOZORDER | SWP_SHOWWINDOW;
   params.width = rect.right - rect.left;
@@ -968,7 +969,7 @@ TEST_F(ExternalTabUITest, FLAKY_IncognitoMode) {
   EXPECT_CALL(*mock_, HandleClosed(1)).Times(1);
 
   ExternalTabSettings incognito =
-      ExternalTabUITestMockClient::default_settings;
+      ExternalTabUITestMockClient::GetDefaultSettings();
   incognito.is_incognito = true;
   // SetCookie is a sync call and deadlock can happen if window is visible,
   // since it shares same thread with AutomationProxy.
@@ -1078,7 +1079,7 @@ TEST_F(ExternalTabUITest, FLAKY_PostMessageTarget)  {
 
   EXPECT_CALL(*mock_, HandleClosed(1)).Times(1);
 
-  ExternalTabSettings s = ExternalTabUITestMockClient::default_settings;
+  ExternalTabSettings s = ExternalTabUITestMockClient::GetDefaultSettings();
   s.load_requests_via_automation = false;
   s.initial_url = GURL("http://localhost:1337/files/post_message.html");
   tab = mock_->CreateHostWindowAndTab(s);
@@ -1101,11 +1102,12 @@ TEST_F(ExternalTabUITest, DISABLED_HostNetworkStack) {
           testing::Field(&AutomationURLRequest::url, StrEq(url + "/")),
           testing::Field(&AutomationURLRequest::method, StrEq("GET")))))
       .Times(1)
-      // We can simply do CreateFunctor(1, 2, &http_200) since we know the
-      // tab handle and request id, but using WithArgs<> is much more fancy :)
+      // We can simply do CreateFunctor(1, 2, &GetHttp200Response()) since we
+      // know the tab handle and request id, but using WithArgs<> is much more
+      // fancy :)
       .WillOnce(testing::WithArgs<0, 0>(testing::Invoke(CreateFunctor(mock_,
           &ExternalTabUITestMockClient::ReplyStarted,
-          &ExternalTabUITestMockClient::http_200))));
+          &ExternalTabUITestMockClient::GetHttp200Response()))));
 
   // Return some trivial page, that have a link to a "logo.gif" image
   const std::string data = "<!DOCTYPE html><title>Hello</title>"
@@ -1171,11 +1173,12 @@ TEST_F(ExternalTabUITest, DISABLED_HostNetworkStackAbortRequest) {
           testing::Field(&AutomationURLRequest::url, StrEq(url + "/")),
           testing::Field(&AutomationURLRequest::method, StrEq("GET")))))
       .Times(1)
-      // We can simply do CreateFunctor(1, 2, &http_200) since we know the
-      // tab handle and request id, but using WithArgs<> is much more fancy :)
+      // We can simply do CreateFunctor(1, 2, &GetHttp200Response()) since we
+      // know the tab handle and request id, but using WithArgs<> is much more
+      // fancy :)
       .WillOnce(testing::WithArgs<0, 0>(testing::Invoke(CreateFunctor(mock_,
           &ExternalTabUITestMockClient::ReplyStarted,
-          &ExternalTabUITestMockClient::http_200))));
+          &ExternalTabUITestMockClient::GetHttp200Response()))));
 
   // Return some trivial page, that have a link to a "logo.gif" image
   const std::string data = "<!DOCTYPE html><title>Hello";
@@ -1218,11 +1221,12 @@ TEST_F(ExternalTabUITest, DISABLED_HostNetworkStackUnresponsiveRenderer) {
           testing::Field(&AutomationURLRequest::url, StrEq(url + "/")),
           testing::Field(&AutomationURLRequest::method, StrEq("GET")))))
       .Times(1)
-      // We can simply do CreateFunctor(1, 2, &http_200) since we know the
-      // tab handle and request id, but using WithArgs<> is much more fancy :)
+      // We can simply do CreateFunctor(1, 2, &GetHttp200Response()) since we
+      // know the tab handle and request id, but using WithArgs<> is much more
+      // fancy :)
       .WillOnce(testing::WithArgs<0, 0>(testing::Invoke(CreateFunctor(mock_,
           &ExternalTabUITestMockClient::ReplyStarted,
-          &ExternalTabUITestMockClient::http_200))));
+          &ExternalTabUITestMockClient::GetHttp200Response()))));
 
   const std::string head = "<html><title>Hello</title><body>";
 

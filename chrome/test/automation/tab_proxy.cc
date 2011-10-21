@@ -84,7 +84,6 @@ int TabProxy::FindInPage(const std::wstring& search_string,
     return -1;
 
   AutomationMsg_Find_Params params;
-  params.unused = 0;
   params.search_string = WideToUTF16Hack(search_string);
   params.find_next = find_next;
   params.match_case = (match_case == CASE_SENSITIVE);
@@ -738,7 +737,7 @@ bool TabProxy::CaptureEntirePageAsPNG(const FilePath& path) {
 void TabProxy::Reposition(HWND window, HWND window_insert_after, int left,
                           int top, int width, int height, int flags,
                           HWND parent_window) {
-  Reposition_Params params = {0};
+  Reposition_Params params;
   params.window = window;
   params.window_insert_after = window_insert_after;
   params.left = left;

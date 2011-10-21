@@ -91,13 +91,15 @@ class ExternalTabUITestMockClient : public AutomationProxy {
   void DestroyHostWindow();
   // Returns true if the host window exists.
   bool HostWindowExists();
+
+  static ExternalTabSettings GetDefaultSettings();
+  static AutomationURLResponse GetHttp200Response();
+
   // It's overlapped and visible by default. For Incognito mode test though we
   // want invisible window since SetCookie is a sync call and a deadlock is
   // very possible.
   unsigned long host_window_style_;
 
-  static const AutomationURLResponse http_200;
-  static const ExternalTabSettings default_settings;
  protected:
   gfx::NativeWindow host_window_;
 

@@ -453,14 +453,14 @@ void URLRequestAutomationJob::StartAsync() {
   }
 
   // Ask automation to start this request.
-  AutomationURLRequest automation_request(
-      request_->url().spec(),
-      request_->method(),
-      referrer.spec(),
-      new_request_headers.ToString(),
-      request_->get_upload(),
-      resource_type,
-      request_->load_flags());
+  AutomationURLRequest automation_request;
+  automation_request.url = request_->url().spec();
+  automation_request.method = request_->method();
+  automation_request.referrer = referrer.spec();
+  automation_request.extra_request_headers = new_request_headers.ToString();
+  automation_request.upload_data =request_->get_upload();
+  automation_request.resource_type = resource_type;
+  automation_request.load_flags = request_->load_flags();
 
   DCHECK(message_filter_);
   message_filter_->Send(new AutomationMsg_RequestStart(

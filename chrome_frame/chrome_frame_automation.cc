@@ -767,7 +767,6 @@ void ChromeFrameAutomationClient::FindInPage(const std::wstring& search_string,
   // the SyncMessageReplyDispatcher to avoid concerns about blocking
   // synchronous messages.
   AutomationMsg_Find_Params params;
-  params.unused = 0;
   params.search_string = WideToUTF16Hack(search_string);
   params.find_next = find_next;
   params.match_case = (match_case == CASE_SENSITIVE);
@@ -798,18 +797,18 @@ void ChromeFrameAutomationClient::CreateExternalTab() {
     navigate_after_initialization_ = false;
   }
 
-  const ExternalTabSettings settings(
-      m_hWnd,
-      gfx::Rect(),
-      WS_CHILD,
-      chrome_launch_params_->incognito(),
-      !use_chrome_network_,
-      handle_top_level_requests_,
-      chrome_launch_params_->url(),
-      chrome_launch_params_->referrer(),
-      // Infobars disabled in widget mode.
-      !chrome_launch_params_->widget_mode(),
-      chrome_launch_params_->route_all_top_level_navigations());
+  ExternalTabSettings settings;
+  settings.parent = m_hWnd;
+  settings.style = WS_CHILD;
+  settings.is_incognito = chrome_launch_params_->incognito();
+  settings.load_requests_via_automation = !use_chrome_network_;
+  settings.handle_top_level_requests = handle_top_level_requests_;
+  settings.initial_url = chrome_launch_params_->url();
+  settings.referrer = chrome_launch_params_->referrer();
+  // Infobars disabled in widget mode.
+  settings.infobars_enabled = !chrome_launch_params_->widget_mode();
+  settings.route_all_top_level_navigations =
+      chrome_launch_params_->route_all_top_level_navigations();
 
   UMA_HISTOGRAM_CUSTOM_COUNTS(
       "ChromeFrame.HostNetworking", !use_chrome_network_, 0, 1, 2);
@@ -1242,14 +1241,15 @@ void ChromeFrameAutomationClient::OnResponseStarted(int request_id,
     const char* mime_type,  const char* headers, int size,
     base::Time last_modified, const std::string& redirect_url,
     int redirect_status, const net::HostPortPair& socket_address) {
-  const AutomationURLResponse response(
-      mime_type,
-      headers ? headers : "",
-      size,
-      last_modified,
-      redirect_url,
-      redirect_status,
-      socket_address);
+  AutomationURLResponse response;
+  response.mime_type = mime_type;
+  if (headers)
+    response.headers = headers;
+  response.content_length = size;
+  response.last_modified = last_modified;
+  response.redirect_url = redirect_url;
+  response.redirect_status = redirect_status;
+  response.socket_address = socket_address;
 
   automation_server_->Send(new AutomationMsg_RequestStarted(
       tab_->handle(), request_id, response));

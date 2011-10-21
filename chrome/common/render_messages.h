@@ -8,8 +8,6 @@
 #include <string>
 #include <vector>
 
-// TODO(erg): This list has been temporarily annotated by erg while doing work
-// on which headers to pull out.
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/process.h"

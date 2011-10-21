@@ -129,7 +129,6 @@ void CFProxy::Tab_Find(int tab, const string16& search_string,
                        FindInPageDirection forward, FindInPageCase match_case,
                        bool find_next) {
   AutomationMsg_Find_Params params;
-  params.unused = 0;
   params.search_string = search_string;
   params.find_next = find_next;
   params.match_case = (match_case == CASE_SENSITIVE);

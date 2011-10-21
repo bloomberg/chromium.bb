@@ -4,18 +4,6 @@
 
 // Defines the IPC messages used by the automation interface.
 
-#include <string>
-#include <vector>
-
-#include "base/string16.h"
-#include "chrome/common/content_settings.h"
-#include "googleurl/src/gurl.h"
-#include "ipc/ipc_message_macros.h"
-#include "net/base/cert_status_flags.h"
-#include "net/url_request/url_request_status.h"
-#include "ui/gfx/rect.h"
-#include "webkit/glue/window_open_disposition.h"
-
 // NOTE: All IPC messages have either a routing_id of 0 (for asynchronous
 //       messages), or one that's been assigned by the proxy (for calls
 //       which expect a response).  The routing_id shouldn't be used for
@@ -26,8 +14,20 @@
 //       define the IDs based on __LINE__, to allow these IPC messages to be
 //       used to control an old version of Chrome we need the message IDs to
 //       remain the same.  This means that you should not change the line number
-//       of any of the messages below.  This will be fixed once Xcode supports
-//       __COUNTER__, in which case we can get rid of the __LINE__.
+//       of any of the messages below.
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

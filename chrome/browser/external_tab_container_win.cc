@@ -659,15 +659,15 @@ bool ExternalTabContainer::HandleContextMenu(const ContextMenuParams& params) {
   POINT screen_pt = { params.x, params.y };
   MapWindowPoints(GetNativeView(), HWND_DESKTOP, &screen_pt, 1);
 
-  MiniContextMenuParams ipc_params(
-      screen_pt.x,
-      screen_pt.y,
-      params.link_url,
-      params.unfiltered_link_url,
-      params.src_url,
-      params.page_url,
-      params.keyword_url,
-      params.frame_url);
+  MiniContextMenuParams ipc_params;
+  ipc_params.screen_x = screen_pt.x;
+  ipc_params.screen_y = screen_pt.y;
+  ipc_params.link_url = params.link_url;
+  ipc_params.unfiltered_link_url = params.unfiltered_link_url;
+  ipc_params.src_url = params.src_url;
+  ipc_params.page_url = params.page_url;
+  ipc_params.keyword_url = params.keyword_url;
+  ipc_params.frame_url = params.frame_url;
 
   bool rtl = base::i18n::IsRTL();
   automation_->Send(
