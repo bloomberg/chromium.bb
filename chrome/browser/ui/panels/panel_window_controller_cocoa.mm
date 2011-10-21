@@ -365,7 +365,7 @@ enum {
   DCHECK(windowShim_->browser()->tabstrip_model()->empty());
   // Avoid callbacks from a nonblocking animation in progress, if any.
   [self terminateBoundsAnimation];
-  windowShim_->didCloseNativeWindow();
+  windowShim_->DidCloseNativeWindow();
   [self autorelease];
 }
 

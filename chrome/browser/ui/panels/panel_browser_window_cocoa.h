@@ -67,7 +67,7 @@ class PanelBrowserWindowCocoa : public NativePanel {
   // Callback from PanelWindowControllerCocoa that native window was actually
   // closed. The window may not close right away because of onbeforeunload
   // handlers.
-  void didCloseNativeWindow();
+  void DidCloseNativeWindow();
 
  private:
   friend class PanelBrowserWindowCocoaTest;
