@@ -21,15 +21,11 @@ class SettingsFunction : public AsyncExtensionFunction {
   //
   // Implementations should fill in args themselves, though (like RunImpl)
   // may return false to imply failure.
-  virtual bool RunWithStorage(
-      ExtensionSettingsBackend* backend,
-      ExtensionSettingsStorage* storage) = 0;
+  virtual bool RunWithStorage(ExtensionSettingsStorage* storage) = 0;
 
   // Sets error_ or result_ depending on the value of a storage Result, and
   // returns whether the Result implies success (i.e. !error).
-  bool UseResult(
-      ExtensionSettingsBackend* backend,
-      const ExtensionSettingsStorage::Result& storage_result);
+  bool UseResult(const ExtensionSettingsStorage::Result& storage_result);
 
  private:
   // Called via PostTask from RunImpl.  Calls RunWithStorage and then
@@ -42,9 +38,7 @@ class GetSettingsFunction : public SettingsFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.settings.get");
 
  protected:
-  virtual bool RunWithStorage(
-      ExtensionSettingsBackend* backend,
-      ExtensionSettingsStorage* storage) OVERRIDE;
+  virtual bool RunWithStorage(ExtensionSettingsStorage* storage) OVERRIDE;
 };
 
 class SetSettingsFunction : public SettingsFunction {
@@ -52,9 +46,7 @@ class SetSettingsFunction : public SettingsFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.settings.set");
 
  protected:
-  virtual bool RunWithStorage(
-      ExtensionSettingsBackend* backend,
-      ExtensionSettingsStorage* storage) OVERRIDE;
+  virtual bool RunWithStorage(ExtensionSettingsStorage* storage) OVERRIDE;
 };
 
 class RemoveSettingsFunction : public SettingsFunction {
@@ -62,9 +54,7 @@ class RemoveSettingsFunction : public SettingsFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.settings.remove");
 
  protected:
-  virtual bool RunWithStorage(
-      ExtensionSettingsBackend* backend,
-      ExtensionSettingsStorage* storage) OVERRIDE;
+  virtual bool RunWithStorage(ExtensionSettingsStorage* storage) OVERRIDE;
 };
 
 class ClearSettingsFunction : public SettingsFunction {
@@ -72,9 +62,7 @@ class ClearSettingsFunction : public SettingsFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.settings.clear");
 
  protected:
-  virtual bool RunWithStorage(
-      ExtensionSettingsBackend* backend,
-      ExtensionSettingsStorage* storage) OVERRIDE;
+  virtual bool RunWithStorage(ExtensionSettingsStorage* storage) OVERRIDE;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_SETTINGS_API_H_

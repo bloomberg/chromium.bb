@@ -12,12 +12,10 @@
 #include "base/scoped_temp_dir.h"
 #include "base/task.h"
 #include "chrome/browser/extensions/extension_settings_backend.h"
-#include "chrome/browser/extensions/extension_settings_frontend.h"
 #include "chrome/browser/extensions/extension_settings_storage_cache.h"
 #include "chrome/browser/extensions/extension_settings_sync_util.h"
 #include "chrome/browser/extensions/syncable_extension_settings_storage.h"
 #include "chrome/browser/sync/api/sync_change_processor.h"
-#include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
 
 // TODO(kalman): Integration tests for sync.
@@ -105,8 +103,7 @@ class MockSyncChangeProcessor : public SyncChangeProcessor {
     if (matching_changes.empty()) {
       ADD_FAILURE() << "No matching changes for " << extension_id << "/" <<
           key << " (out of " << changes_.size() << ")";
-      return ExtensionSettingSyncData(
-          SyncChange::ACTION_INVALID, "", "", new DictionaryValue());
+      return ExtensionSettingSyncData(SyncChange::ACTION_INVALID, "", "", NULL);
     }
     if (matching_changes.size() != 1u) {
       ADD_FAILURE() << matching_changes.size() << " matching changes for " <<
@@ -119,27 +116,25 @@ class MockSyncChangeProcessor : public SyncChangeProcessor {
   ExtensionSettingSyncDataList changes_;
 };
 
-// To be called as a callback from ExtensionSettingsFrontend::RunWithSettings.
-void AssignSettings(
-    ExtensionSettingsBackend** dst, ExtensionSettingsBackend* src) {
-  *dst = src;
-}
-
 }  // namespace
 
 class ExtensionSettingsSyncTest : public testing::Test {
  public:
   ExtensionSettingsSyncTest()
       : ui_thread_(BrowserThread::UI, MessageLoop::current()),
-        file_thread_(BrowserThread::FILE, MessageLoop::current()),
-        frontend_(&profile_),
-        backend_(NULL) {
-  }
+        file_thread_(BrowserThread::FILE, MessageLoop::current()) {}
 
   virtual void SetUp() OVERRIDE {
-    frontend_.RunWithBackend(base::Bind(&AssignSettings, &backend_));
-    MessageLoop::current()->RunAllPending();
-    ASSERT_TRUE(backend_ != NULL);
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    // TODO(kalman): Use ExtensionSettingsFrontend here?  It would test more
+    // code paths.
+    backend_.reset(new ExtensionSettingsBackend(temp_dir_.path()));
+  }
+
+  virtual void TearDown() OVERRIDE {
+    // Must do this explicitly here so that it's destroyed before the
+    // message loops are.
+    backend_.reset();
   }
 
  protected:
@@ -151,7 +146,10 @@ class ExtensionSettingsSyncTest : public testing::Test {
         backend_->GetStorage(extension_id));
   }
 
-  // Gets all the sync data from |backend_| as a map from extension id to its
+  MockSyncChangeProcessor sync_;
+  scoped_ptr<ExtensionSettingsBackend> backend_;
+
+  // Gets all the sync data from backend_ as a map from extension id to its
   // sync data.
   std::map<std::string, ExtensionSettingSyncDataList> GetAllSyncData() {
     SyncDataList as_list =
@@ -165,17 +163,13 @@ class ExtensionSettingsSyncTest : public testing::Test {
     return as_map;
   }
 
+ private:
+  ScopedTempDir temp_dir_;
+
   // Need these so that the DCHECKs for running on FILE or UI threads pass.
   MessageLoop message_loop_;
   BrowserThread ui_thread_;
   BrowserThread file_thread_;
-
-  MockSyncChangeProcessor sync_;
-  TestingProfile profile_;
-  ExtensionSettingsFrontend frontend_;
-
-  // Get from frontend_->RunWithBackend, so weak reference.
-  ExtensionSettingsBackend* backend_;
 };
 
 TEST_F(ExtensionSettingsSyncTest, NoDataDoesNotInvokeSync) {

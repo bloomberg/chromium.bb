@@ -1005,25 +1005,7 @@
   },
   {
     "namespace": "experimental.settings",
-    "types": [
-      {
-        "id": "SettingChange",
-        "type": "object",
-        "properties": {
-          "key": {"type": "string", "description": "The ID of the setting which changed."},
-          "oldValue": {
-            "type": "any",
-            "description": "The old value of the setting, before it changed.",
-            "optional": true
-          },
-          "newValue": {
-            "type": "any",
-            "description": "The new value of the setting.",
-            "optional": true
-          }
-        }
-      }
-    ],
+    "types": [],
     "functions": [
       {
         "name": "get",
@@ -1121,20 +1103,7 @@
         ]
       }
     ],
-    "events": [
-      {
-        "name": "onChanged",
-        "type": "function",
-        "description": "Fired when one or more settings change.",
-        "parameters": [
-          {
-            "name": "changes",
-            "type": "array",
-            "items": {"$ref": "SettingChange"}
-          }
-        ]
-      }
-    ]
+    "events": []
   },
   {
     "namespace": "windows",

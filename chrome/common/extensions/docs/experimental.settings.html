@@ -290,19 +290,19 @@
                       </li>
                     </ol>
                   </li>
-                  <li>
-                    <a href="#global-events">Events</a>
+                  <li style="display: none; ">
+                    <a>Events</a>
                     <ol>
                       <li>
-                        <a href="#event-onChanged">onChanged</a>
+                        <a href="#event-anchor">eventName</a>
                       </li>
                     </ol>
                   </li>
-                  <li>
+                  <li style="display: none; ">
                     <a href="#types">Types</a>
                     <ol>
                       <li>
-                        <a href="#type-SettingChange">SettingChange</a>
+                        <a href="#id-anchor">id</a>
                       </li>
                     </ol>
                   </li>
@@ -1207,22 +1207,24 @@
           </div>  <!-- /apiGroup -->
 
           <!-- EVENTS -->
-          <div id="eventsTemplate" class="apiGroup">
-            <a name="global-events"></a>
+          <div id="eventsTemplate" class="apiGroup" style="display: none; ">
+            <a></a>
             <h3>Events</h3>
             <!-- iterates over all events -->
             <div class="apiItem">
-              <a name="event-onChanged"></a>
-              <h4>onChanged</h4>
+              <a></a>
+              <h4>event name</h4>
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.experimental.settings.</span><span>onChanged</span><span class="subdued">.addListener</span>(function(<span>array of SettingChange changes</span>) <span class="subdued">{...}</span><span></span>);
+                <span class="subdued">chrome.bookmarks</span><span>onEvent</span><span class="subdued">.addListener</span>(function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span><span>, Type opt_param1, Type opt_param2</span>);
               </div>
 
               <div class="description">
-                <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Fired when one or more settings change.</p>
+                <p class="todo">Undocumented.</p>
+                <p>
+                  A description from the json schema def of the event goes here.
+                </p>
 
                 <!-- LISTENER PARAMETERS -->
                 <div>
@@ -1230,91 +1232,13 @@
                   <dl>
                     <div>
                       <div>
-          <dt>
-            <var>changes</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
-                    <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span>
-                          array of <span><span>
-                      <span>
-                        <a href="experimental.settings.html#type-SettingChange">SettingChange</a>
-                      </span>
-                      <span style="display: none; ">
-                        <span>
-                          array of <span><span></span></span>
-                        </span>
-                        <span>paramType</span>
-                        <span></span>
-                      </span>
-                    </span></span>
-                        </span>
-                        <span style="display: none; ">paramType</span>
-                        <span style="display: none; "></span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
-          <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-          <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-          <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-        </div>
+                      </div>
                     </div>
                   </dl>
                 </div>
 
                 <!-- EXTRA PARAMETERS -->
-                <div style="display: none; ">
+                <div>
                   <h4>Extra parameters to addListener</h4>
                   <dl>
                     <div>
@@ -1325,9 +1249,9 @@
                 </div>
 
                 <!-- LISTENER RETURN VALUE -->
-                <h4 style="display: none; ">Listener returns</h4>
+                <h4>Listener returns</h4>
                 <dl>
-                  <div style="display: none; ">
+                  <div>
                     <div>
                     </div>
                   </div>
@@ -1339,285 +1263,17 @@
           </div> <!-- /apiGroup -->
 
           <!-- TYPES -->
-          <div class="apiGroup">
+          <div class="apiGroup" style="display: none; ">
             <a name="types"></a>
             <h3 id="types">Types</h3>
 
             <!-- iterates over all types -->
             <div class="apiItem">
-              <a name="type-SettingChange"></a>
-              <h4>SettingChange</h4>
+              <a></a>
+              <h4>type name</h4>
 
               <div>
-          <dt>
-            <var style="display: none; ">paramName</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
-                    <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
-                        <span>object</span>
-                        <span style="display: none; "></span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd>
-            <dl>
-              <div>
-                <div>
-          <dt>
-            <var>key</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
-                    <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
-                        <span>string</span>
-                        <span style="display: none; "></span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
-          <dd>The ID of the setting which changed.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
               </div>
-            </dl>
-          </dd>
-
-          <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-          <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-          <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>oldValue</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
-                    <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
-                        <span>any</span>
-                        <span style="display: none; "></span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
-          <dd>The old value of the setting, before it changed.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
-          <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-          <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-          <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>newValue</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
-                    <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
-                        <span>any</span>
-                        <span style="display: none; "></span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
-          <dd>The new value of the setting.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
-          <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-          <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-          <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-        </div>
-              </div>
-            </dl>
-          </dd>
-
-          <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-          <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-          <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-        </div>
 
             </div> <!-- /apiItem -->
 

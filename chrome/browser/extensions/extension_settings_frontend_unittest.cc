@@ -23,13 +23,13 @@ class ExtensionSettingsFrontendTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    frontend_.reset(new ExtensionSettingsFrontend(temp_dir_.path()));
     profile_.reset(new TestingProfile(temp_dir_.path()));
-    frontend_.reset(new ExtensionSettingsFrontend(profile_.get()));
   }
 
   virtual void TearDown() OVERRIDE {
-    frontend_.reset();
     profile_.reset();
+    frontend_.reset();
   }
 
  protected:
@@ -45,8 +45,8 @@ class ExtensionSettingsFrontendTest : public testing::Test {
   }
 
   ScopedTempDir temp_dir_;
-  scoped_ptr<TestingProfile> profile_;
   scoped_ptr<ExtensionSettingsFrontend> frontend_;
+  scoped_ptr<TestingProfile> profile_;
 
  private:
   // Intended as a ExtensionSettingsFrontend::BackendCallback from GetBackend.
@@ -77,7 +77,7 @@ TEST_F(ExtensionSettingsFrontendTest, SettingsPreservedAcrossReconstruction) {
   ASSERT_FALSE(result.HasError());
   EXPECT_FALSE(result.GetSettings()->empty());
 
-  frontend_.reset(new ExtensionSettingsFrontend(profile_.get()));
+  frontend_.reset(new ExtensionSettingsFrontend(temp_dir_.path()));
   GetBackend(&backend);
   storage = backend->GetStorage(id);
 

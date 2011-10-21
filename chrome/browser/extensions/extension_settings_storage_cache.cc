@@ -15,7 +15,7 @@ ExtensionSettingsStorage::Result ExtensionSettingsStorageCache::Get(
   if (GetFromCache(key, &value)) {
     DictionaryValue* settings = new DictionaryValue();
     settings->SetWithoutPathExpansion(key, value);
-    return Result(settings, NULL, NULL);
+    return Result(settings, NULL);
   }
 
   Result result = delegate_->Get(key);
@@ -43,7 +43,7 @@ ExtensionSettingsStorage::Result ExtensionSettingsStorageCache::Get(
   }
 
   if (missing_keys.empty()) {
-    return Result(from_cache.release(), NULL, NULL);
+    return Result(from_cache.release(), NULL);
   }
 
   Result result = delegate_->Get(keys);
@@ -52,10 +52,8 @@ ExtensionSettingsStorage::Result ExtensionSettingsStorageCache::Get(
   }
 
   cache_.MergeDictionary(result.GetSettings());
-
-  DictionaryValue* settings_with_cache = result.GetSettings()->DeepCopy();
-  settings_with_cache->MergeDictionary(from_cache.get());
-  return Result(settings_with_cache, NULL, NULL);
+  result.GetSettings()->MergeDictionary(from_cache.get());
+  return result;
 }
 
 ExtensionSettingsStorage::Result ExtensionSettingsStorageCache::Get() {
@@ -82,9 +80,9 @@ ExtensionSettingsStorage::Result ExtensionSettingsStorageCache::Set(
     return result;
   }
 
-  const std::set<std::string>* changed_keys = result.GetChangedKeys();
+  std::set<std::string>* changed_keys = result.GetChangedKeys();
   DCHECK(changed_keys);
-  for (std::set<std::string>::const_iterator it = changed_keys->begin();
+  for (std::set<std::string>::iterator it = changed_keys->begin();
       it != changed_keys->end(); ++it) {
     Value* new_value = NULL;
     result.GetSettings()->GetWithoutPathExpansion(*it, &new_value);
@@ -110,9 +108,9 @@ ExtensionSettingsStorage::Result ExtensionSettingsStorageCache::Remove(
     return result;
   }
 
-  const std::set<std::string>* changed_keys = result.GetChangedKeys();
+  std::set<std::string>* changed_keys = result.GetChangedKeys();
   DCHECK(changed_keys);
-  for (std::set<std::string>::const_iterator it = changed_keys->begin();
+  for (std::set<std::string>::iterator it = changed_keys->begin();
       it != changed_keys->end(); ++it) {
     cache_.RemoveWithoutPathExpansion(*it, NULL);
   }

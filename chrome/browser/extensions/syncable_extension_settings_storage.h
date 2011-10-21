@@ -8,9 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
-#include "base/observer_list_threadsafe.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_settings_observer.h"
 #include "chrome/browser/extensions/extension_settings_storage.h"
 #include "chrome/browser/extensions/extension_setting_sync_data.h"
 #include "chrome/browser/sync/api/syncable_service.h"
@@ -20,9 +18,7 @@
 class SyncableExtensionSettingsStorage : public ExtensionSettingsStorage {
  public:
   explicit SyncableExtensionSettingsStorage(
-      const scoped_refptr<ObserverListThreadSafe<ExtensionSettingsObserver> >&
-          observers,
-      const std::string& extension_id,
+      std::string extension_id,
       // Ownership taken.
       ExtensionSettingsStorage* delegate);
 
@@ -66,26 +62,6 @@ class SyncableExtensionSettingsStorage : public ExtensionSettingsStorage {
   SyncError OverwriteLocalSettingsWithSync(
       const DictionaryValue& sync_state, const DictionaryValue& settings);
 
-  // Called when an Add/Update/Remove comes from sync.  Ownership of Value*s
-  // are taken.
-  SyncError OnSyncAdd(
-      const std::string& key,
-      Value* new_value,
-      ExtensionSettingChanges::Builder* changes);
-  SyncError OnSyncUpdate(
-      const std::string& key,
-      Value* old_value,
-      Value* new_value,
-      ExtensionSettingChanges::Builder* changes);
-  SyncError OnSyncDelete(
-      const std::string& key,
-      Value* old_value,
-      ExtensionSettingChanges::Builder* changes);
-
-  // List of observers to settings changes.
-  const scoped_refptr<ObserverListThreadSafe<ExtensionSettingsObserver> >
-      observers_;
-
   // Id of the extension these settings are for.
   std::string const extension_id_;
 
@@ -96,8 +72,7 @@ class SyncableExtensionSettingsStorage : public ExtensionSettingsStorage {
   // StartSyncing and StopSyncing).
   SyncChangeProcessor* sync_processor_;
 
-  // Keys of the settings that are currently being synced.  Only used to decide
-  // whether an ACTION_ADD or ACTION_UPDATE should be sent to sync on a Set().
+  // Keys of the settings that are currently being synced.
   std::set<std::string> synced_keys_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncableExtensionSettingsStorage);

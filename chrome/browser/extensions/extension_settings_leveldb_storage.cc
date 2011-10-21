@@ -100,7 +100,7 @@ ExtensionSettingsStorage::Result ExtensionSettingsLeveldbStorage::Get(
   if (setting.get()) {
     settings->SetWithoutPathExpansion(key, setting.release());
   }
-  return Result(settings, NULL, NULL);
+  return Result(settings, NULL);
 }
 
 ExtensionSettingsStorage::Result ExtensionSettingsLeveldbStorage::Get(
@@ -124,7 +124,7 @@ ExtensionSettingsStorage::Result ExtensionSettingsLeveldbStorage::Get(
     }
   }
 
-  return Result(settings.release(), NULL, NULL);
+  return Result(settings.release(), NULL);
 }
 
 ExtensionSettingsStorage::Result ExtensionSettingsLeveldbStorage::Get() {
@@ -154,7 +154,7 @@ ExtensionSettingsStorage::Result ExtensionSettingsLeveldbStorage::Get() {
     return Result(kGenericOnFailureMessage);
   }
 
-  return Result(settings.release(), NULL, NULL);
+  return Result(settings.release(), NULL);
 }
 
 ExtensionSettingsStorage::Result ExtensionSettingsLeveldbStorage::Set(
@@ -168,28 +168,23 @@ ExtensionSettingsStorage::Result ExtensionSettingsLeveldbStorage::Set(
 ExtensionSettingsStorage::Result ExtensionSettingsLeveldbStorage::Set(
     const DictionaryValue& settings) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  scoped_ptr<DictionaryValue> old_settings(new DictionaryValue());
   scoped_ptr<std::set<std::string> > changed_keys(new std::set<std::string>());
   std::string value_as_json;
   leveldb::WriteBatch batch;
 
   for (DictionaryValue::key_iterator it = settings.begin_keys();
       it != settings.end_keys(); ++it) {
-    scoped_ptr<Value> old_value;
-    if (!ReadFromDb(leveldb::ReadOptions(), *it, &old_value)) {
+    scoped_ptr<Value> original_value;
+    if (!ReadFromDb(leveldb::ReadOptions(), *it, &original_value)) {
       return Result(kGenericOnFailureMessage);
     }
 
     Value* new_value = NULL;
     settings.GetWithoutPathExpansion(*it, &new_value);
-    if (!old_value.get() || !old_value->Equals(new_value)) {
+    if (!original_value.get() || !original_value->Equals(new_value)) {
       changed_keys->insert(*it);
       base::JSONWriter::Write(new_value, false, &value_as_json);
       batch.Put(*it, value_as_json);
-    }
-
-    if (old_value.get()) {
-      old_settings->SetWithoutPathExpansion(*it, old_value.release());
     }
   }
 
@@ -199,8 +194,7 @@ ExtensionSettingsStorage::Result ExtensionSettingsLeveldbStorage::Set(
     return Result(kGenericOnFailureMessage);
   }
 
-  return Result(
-      settings.DeepCopy(), old_settings.release(), changed_keys.release());
+  return Result(settings.DeepCopy(), changed_keys.release());
 }
 
 ExtensionSettingsStorage::Result ExtensionSettingsLeveldbStorage::Remove(
@@ -214,20 +208,18 @@ ExtensionSettingsStorage::Result ExtensionSettingsLeveldbStorage::Remove(
 ExtensionSettingsStorage::Result ExtensionSettingsLeveldbStorage::Remove(
     const std::vector<std::string>& keys) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  scoped_ptr<DictionaryValue> old_settings(new DictionaryValue());
   scoped_ptr<std::set<std::string> > changed_keys(new std::set<std::string>());
 
   leveldb::WriteBatch batch;
   for (std::vector<std::string>::const_iterator it = keys.begin();
       it != keys.end(); ++it) {
-    scoped_ptr<Value> old_value;
-    if (!ReadFromDb(leveldb::ReadOptions(), *it, &old_value)) {
+    scoped_ptr<Value> original_value;
+    if (!ReadFromDb(leveldb::ReadOptions(), *it, &original_value)) {
       return Result(kGenericOnFailureMessage);
     }
 
-    if (old_value.get()) {
+    if (original_value.get()) {
       changed_keys->insert(*it);
-      old_settings->SetWithoutPathExpansion(*it, old_value.release());
       batch.Delete(*it);
     }
   }
@@ -238,12 +230,11 @@ ExtensionSettingsStorage::Result ExtensionSettingsLeveldbStorage::Remove(
     return Result(kGenericOnFailureMessage);
   }
 
-  return Result(NULL, old_settings.release(), changed_keys.release());
+  return Result(NULL, changed_keys.release());
 }
 
 ExtensionSettingsStorage::Result ExtensionSettingsLeveldbStorage::Clear() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  scoped_ptr<DictionaryValue> old_settings(new DictionaryValue());
   scoped_ptr<std::set<std::string> > changed_keys(new std::set<std::string>());
   leveldb::ReadOptions options;
   // All interaction with the db is done on the same thread, so snapshotting
@@ -254,17 +245,8 @@ ExtensionSettingsStorage::Result ExtensionSettingsLeveldbStorage::Clear() {
   options.snapshot = snapshot.get();
   scoped_ptr<leveldb::Iterator> it(db_->NewIterator(options));
   for (it->SeekToFirst(); it->Valid(); it->Next()) {
-    const std::string key = it->key().ToString();
-    const std::string old_value_as_json = it->value().ToString();
-    changed_keys->insert(key);
-    Value* old_value =
-        base::JSONReader().JsonToValue(old_value_as_json, false, false);
-    if (old_value) {
-      old_settings->SetWithoutPathExpansion(key, old_value);
-    } else {
-      LOG(ERROR) << "Invalid JSON in database: " << old_value_as_json;
-    }
-    batch.Delete(key);
+    changed_keys->insert(it->key().ToString());
+    batch.Delete(it->key());
   }
 
   if (!it->status().ok()) {
@@ -278,7 +260,7 @@ ExtensionSettingsStorage::Result ExtensionSettingsLeveldbStorage::Clear() {
     return Result(kGenericOnFailureMessage);
   }
 
-  return Result(NULL, old_settings.release(), changed_keys.release());
+  return Result(NULL, changed_keys.release());
 }
 
 bool ExtensionSettingsLeveldbStorage::ReadFromDb(
