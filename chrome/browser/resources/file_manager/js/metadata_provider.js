@@ -98,9 +98,9 @@ MetadataProvider.prototype.onResult_ = function(url, metadata) {
   this.cache_[url] = metadata;
 };
 
-MetadataProvider.prototype.onError_ = function(url, step, error) {
+MetadataProvider.prototype.onError_ = function(url, step, error, metadata) {
   console.warn('metadata: ' + url + ': ' + step + ': ' + error);
-  this.onResult_(url, {});
+  this.onResult_(url, metadata || {});
 };
 
 MetadataProvider.prototype.onLog_ = function(arglist) {

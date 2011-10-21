@@ -4,6 +4,7 @@
 
 const EXIF_MARK_SOI = 0xffd8;  // Start of image data.
 const EXIF_MARK_SOS = 0xffda;  // Start of "stream" (the actual image data).
+const EXIF_MARK_SOF = 0xffc0;  // Start of "frame"
 const EXIF_MARK_EXIF = 0xffe1;  // Start of exif block.
 
 const EXIF_ALIGN_LITTLE = 0x4949;  // Indicates little endian exif data.
@@ -42,7 +43,7 @@ ExifParser.prototype.parse = function(file, callback, errorCallback) {
     try {
       steps[++currentStep].apply(null, arguments);
     } catch(e) {
-      onError(e.stack);
+      onError(e.stack || e.toString());
     }
   }
 
@@ -68,10 +69,26 @@ ExifParser.prototype.parse = function(file, callback, errorCallback) {
 
       while (true) {
         if (mark == EXIF_MARK_SOS || br.eof()) {
-          return onError('Unable to find EXIF marker');
+          return onError('Unable to find EXIF or SOF marker');
         }
 
         mark = self.readMark(br);
+        if (mark == EXIF_MARK_SOF) {
+          // If we reached this section first then there is no EXIF data.
+          // Extract image dimensions and return.
+
+          // TODO(kaznacheev) Here we are assuming that SOF section lies within
+          // first 1024 bytes. This must be true for any normal JPEG file
+          // with no EXIF data. Still might want to handle this more carefully.
+          if (br.tell() + 7 < buf.byteLength) {
+            br.seek(3, ByteReader.SEEK_CUR);
+            var metadata = {mimeType: self.mimeType};
+            metadata.width = br.readScalar(2);
+            metadata.height = br.readScalar(2);
+            callback(metadata);
+            return;
+          }
+        }
         if (mark == EXIF_MARK_EXIF) {
           var length = self.readMarkLength(br);
 
@@ -130,8 +147,11 @@ ExifParser.prototype.parse = function(file, callback, errorCallback) {
         self.vlog('Read thumbnail directory.');
         br.seek(directoryOffset);
         self.readDirectory(br, metadata.ifd.thumbnail);
+        // If no thumbnail orientation is encoded, assume same orientation as
+        // the primary image.
         metadata.thumbnailTransform =
-            self.parseOrientation(metadata.ifd.thumbnail);
+            self.parseOrientation(metadata.ifd.thumbnail) ||
+            metadata.imageTransform;
       }
 
       // EXIF Directory may be specified as a tag in the image directory.

@@ -366,6 +366,8 @@ div.img-container > img {
 }
 
 .file-checkbox {
+  position: relative;
+  z-index: 2;
   -webkit-margin-end: 0px;
   margin-top: 6px;
   opacity: 0.1;

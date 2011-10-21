@@ -265,6 +265,7 @@ FileManager.prototype = {
     'unknown': 'images/filetype_large_generic.png',
     // TODO(sidor): Find better icon here.
     'unreadable': 'images/filetype_large_folder.png',
+    'image': 'images/filetype_large_image.png',
     'video': 'images/filetype_large_video.png'
   };
 
@@ -655,8 +656,7 @@ FileManager.prototype = {
    * Get the icon type for a given Entry.
    *
    * @param {Entry} entry An Entry subclass (FileEntry or DirectoryEntry).
-   * @return {string} One of the keys from FileManager.iconTypes, or
-   *     'unknown'.
+   * @return {string}
    */
   FileManager.prototype.getIconType = function(entry) {
     if (!('cachedIconType_' in entry))
@@ -1888,6 +1888,7 @@ FileManager.prototype = {
           task.title = str('GALLERY');
           task.allTasks = tasksList;
           if (!GALLERY_ENABLED) continue;  // Skip the button creation.
+          this.galleryTask_ = task;
         }
       }
       this.renderTaskButton_(task);
@@ -1901,9 +1902,9 @@ FileManager.prototype = {
 
   FileManager.prototype.renderTaskButton_ = function(task) {
     var button = this.document_.createElement('button');
-    button.addEventListener('click', this.onTaskButtonClicked_.bind(this));
+    button.addEventListener('click',
+        this.onTaskButtonClicked_.bind(this, task));
     button.className = 'task-button';
-    button.task = task;
 
     var img = this.document_.createElement('img');
     img.src = task.iconUrl;
@@ -2007,8 +2008,8 @@ FileManager.prototype = {
     }
   };
 
-  FileManager.prototype.onTaskButtonClicked_ = function(event) {
-    this.dispatchFileTask_(event.srcElement.task, this.selection.urls);
+  FileManager.prototype.onTaskButtonClicked_ = function(task, event) {
+    this.dispatchFileTask_(task, this.selection.urls);
   };
 
   FileManager.prototype.dispatchFileTask_ = function(task, urls) {
@@ -2134,7 +2135,7 @@ FileManager.prototype = {
       urls = [];
       for (var i = 0; i != this.dataModel_.length; i++) {
         var entry = this.dataModel_.item(i);
-        if (this.getIconType(entry) == 'image') {
+        if (this.getFileType(entry).type == 'image') {
           urls.push(entry.toURL());
         }
       }
@@ -2273,22 +2274,32 @@ FileManager.prototype = {
 
     var iconType = this.getIconType(entry);
 
+    function returnStockIcon() {
+      callback(iconType, previewArt[iconType] || previewArt['unknown']);
+    }
+
+    var SIZE_LIMIT = 1 << 20;  // 1 Mb/Mpix
+
+    function isImageTooLarge(entry, metadata) {
+      return ((metadata.width && metadata.height &&
+              (metadata.width * metadata.height > SIZE_LIMIT))) ||
+        (entry.cachedSize_ && entry.cachedSize_ > SIZE_LIMIT);
+    }
+
     this.metadataProvider_.fetch(entry.toURL(), function (metadata) {
-      var url = metadata.thumbnailURL;
-      if (!url) {
-        if (iconType == 'image') {
-          url = entry.toURL();
-        } else {
-          url = previewArt[iconType] || previewArt['unknown'];
-        }
+      if (metadata.thumbnailURL) {
+        callback(iconType, metadata.thumbnailURL, metadata.thumbnailTransform);
+      } else if (iconType == 'image') {
+        cacheEntrySize(entry, function() {
+          if (isImageTooLarge(entry, metadata)) {
+            returnStockIcon();
+          } else {
+            callback(iconType, entry.toURL(), metadata.imageTransform);
+          }
+        }, returnStockIcon);
+      } else {
+        returnStockIcon();
       }
-
-      var transform =
-          metadata.thumbnailURL ?
-          metadata.thumbnailTransform :
-          metadata.imageTransform;
-
-      callback(iconType, url, transform);
     });
   };
 
@@ -3499,6 +3510,19 @@ FileManager.prototype = {
 
     // In full screen mode, open all files for vieweing.
     if (this.dialogType_ == FileManager.DialogType.FULL_PAGE) {
+      if (this.galleryTask_) {
+        var urls = [];
+        for (i = 0; i < selectedIndexes.length; i++) {
+          var entry = this.dataModel_.item(selectedIndexes[i]);
+          if (this.getFileType(entry).type != 'image')
+            break;
+          urls.push(entry.toURL());
+        }
+        if (urls.length == selectedIndexes.length) {  // Selection is all images
+          this.dispatchFileTask_(this.galleryTask_, urls);
+          return;
+        }
+      }
       chrome.fileBrowserPrivate.viewFiles(ary, "default");
       // Window stays open.
       return;

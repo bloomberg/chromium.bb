@@ -65,7 +65,7 @@ MetadataDispatcher.prototype.messageHandlers = {
           self.postMessage('result', [fileURL, metadata]);
       });
     } catch (ex) {
-      this.error(ex);
+      this.error(fileURL, ex);
     }
   }
 };
@@ -124,8 +124,11 @@ MetadataDispatcher.prototype.processOneFile = function(fileURL, callback) {
     steps[++currentStep].apply(self, arguments);
   }
 
+  // Even if the error occurs we still need to pass mimeType.
+  var metadata = {};
+
   function onError(err, stepName) {
-    self.error(fileURL, stepName || steps[currentStep].name, err);
+    self.error(fileURL, stepName || steps[currentStep].name, err, metadata);
   }
 
   var steps =
@@ -156,6 +159,7 @@ MetadataDispatcher.prototype.processOneFile = function(fileURL, callback) {
 
     // Step four, parse the file content.
     function parseContent(file, parser) {
+      metadata.mimeType = parser.mimeType;
       parser.parse(file, callback, onError);
     }
   ];

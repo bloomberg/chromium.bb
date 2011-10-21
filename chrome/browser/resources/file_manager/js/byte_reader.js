@@ -26,10 +26,10 @@ ByteReader.SEEK_END = 2;  // Seek relative to the end of the buffer.
  */
 ByteReader.validateRead = function(pos, size, end) {
   if (pos < 0 || pos >= end)
-    throw 'Invalid read position';
+    throw new Error('Invalid read position');
 
   if (pos + size > end)
-    throw 'Read past end of buffer';
+    throw new Error('Read past end of buffer');
 };
 
 /**
@@ -206,7 +206,7 @@ ByteReader.prototype.readScalar = function(width, opt_signed, opt_end) {
       break;
 
     default:
-      throw 'Invalid width: ' + width;
+      throw new Error('Invalid width: ' + width);
       break;
   }
 
@@ -310,7 +310,7 @@ ByteReader.prototype.seek = function(pos, opt_seekStart, opt_end) {
   }
 
   if (newPos < 0 || newPos >= this.view_.byteLength)
-    throw 'Seek outside of buffer: ' + (newPos - opt_end);
+    throw new Error('Seek outside of buffer: ' + (newPos - opt_end));
 
   this.pos_ = newPos;
 };

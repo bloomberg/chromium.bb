@@ -64,6 +64,7 @@
         <include name="IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_GENERIC" file="file_manager/images/filetype_large_generic.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_GENERIC_MULTIPLE" file="file_manager/images/filetype_large_generic_multiple.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_VIDEO" file="file_manager/images/filetype_large_video.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_IMAGE" file="file_manager/images/filetype_large_image.png" type="BINDATA" />
 
         <include name="IDR_FILE_MANAGER_IMG_GALLERY_ARROW_LEFT" file="file_manager/images/gallery/arrow_left.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_GALLERY_ARROW_LEFT_DISABLED" file="file_manager/images/gallery/arrow_left_disabled.png" type="BINDATA" />
