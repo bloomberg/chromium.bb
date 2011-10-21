@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_SCOPED_CO_MEM_H_
-#define CHROME_COMMON_SCOPED_CO_MEM_H_
+#ifndef BASE_WIN_SCOPED_CO_MEM_H_
+#define BASE_WIN_SCOPED_CO_MEM_H_
 #pragma once
 
 #include <objbase.h>
@@ -11,12 +11,12 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 
-namespace chrome {
-namespace common {
+namespace base {
+namespace win {
 
 // Simple scoped memory releaser class for COM allocated memory.
 // Example:
-//   chrome::common::ScopedCoMem<ITEMIDLIST> file_item;
+//   base::win::ScopedCoMem<ITEMIDLIST> file_item;
 //   SHGetSomeInfo(&file_item, ...);
 //   ...
 //   return;  <-- memory released
@@ -59,7 +59,7 @@ class ScopedCoMem {
   DISALLOW_COPY_AND_ASSIGN(ScopedCoMem);
 };
 
-}  // namespace common
-}  // namespace chrome
+}  // namespace win
+}  // namespace base
 
-#endif  // CHROME_COMMON_SCOPED_CO_MEM_H_
+#endif  // BASE_WIN_SCOPED_CO_MEM_H_

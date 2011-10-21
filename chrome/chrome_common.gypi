@@ -197,7 +197,6 @@
         'common/render_messages.cc',
         'common/render_messages.h',
         'common/safe_browsing/safebrowsing_messages.h',
-        'common/scoped_co_mem.h',
         'common/search_provider.h',
         'common/service_messages.h',
         'common/service_process_util.cc',

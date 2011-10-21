@@ -12,8 +12,8 @@
 
 #include "base/file_path.h"
 #include "base/path_service.h"
+#include "base/win/scoped_co_mem.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/scoped_co_mem.h"
 #include "chrome/installer/util/browser_distribution.h"
 
 namespace chrome {
@@ -71,7 +71,7 @@ bool GetUserDownloadsDirectory(FilePath* result) {
       REFKNOWNFOLDERID, DWORD, HANDLE, PWSTR*);
   GetKnownFolderPath f = reinterpret_cast<GetKnownFolderPath>(
       GetProcAddress(GetModuleHandle(L"shell32.dll"), "SHGetKnownFolderPath"));
-  chrome::common::ScopedCoMem<wchar_t> path_buf;
+  base::win::ScopedCoMem<wchar_t> path_buf;
   if (f && SUCCEEDED(f(FOLDERID_Downloads, 0, NULL, &path_buf))) {
     *result = FilePath(std::wstring(path_buf));
     return true;
