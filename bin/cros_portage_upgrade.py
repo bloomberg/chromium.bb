@@ -969,7 +969,7 @@ class Upgrader(object):
       oper.Info("Confirmed that all upgraded packages can be emerged "
                 "on %s after upgrade." % self._curr_board)
     else:
-      oper.Error("Packages cannot be emerged after upgraded.  The output "
+      oper.Error("Packages cannot be emerged after upgrade.  The output "
                  "of '%s' follows:" % cmd)
       print output
       raise RuntimeError("Failed to complete upgrades on %s (see above). "
@@ -981,9 +981,11 @@ class Upgrader(object):
     self._curr_table.Clear()
 
     try:
+      upgrades_this_run = False
       for info in infolist:
         if self._UpgradePackage(info):
           self._upgrade_cnt += 1
+          upgrades_this_run = True
 
       # The verification of upgrades needs to happen after upgrades are done.
       # The reason is that it cannot be guaranteed that infolist is ordered such
@@ -995,11 +997,13 @@ class Upgrader(object):
 
         self._PackageReport(info)
 
-      self._GiveEmergeResults(infolist)
+      if upgrades_this_run:
+        self._GiveEmergeResults(infolist)
 
-      # If there were any ebuilds staged before running this script, then
-      # make sure they were targeted in infolist.  If not, abort.
-      self._CheckStagedUpgrades(infolist)
+      if self._IsInUpgradeMode():
+        # If there were any ebuilds staged before running this script, then
+        # make sure they were targeted in infolist.  If not, abort.
+        self._CheckStagedUpgrades(infolist)
     except RuntimeError as ex:
       oper.Error(str(ex))
 
