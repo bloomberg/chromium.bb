@@ -72,8 +72,8 @@ HttpResponseInfoIOBuffer::~HttpResponseInfoIOBuffer() {}
 // AppCacheResponseIO ----------------------------------------------
 
 AppCacheResponseIO::AppCacheResponseIO(
-    int64 response_id, AppCacheDiskCacheInterface* disk_cache)
-    : response_id_(response_id), disk_cache_(disk_cache),
+    int64 response_id, int64 group_id, AppCacheDiskCacheInterface* disk_cache)
+    : response_id_(response_id), group_id_(group_id), disk_cache_(disk_cache),
       entry_(NULL), buffer_len_(0), user_callback_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(raw_callback_(
@@ -135,8 +135,8 @@ void AppCacheResponseIO::OnRawIOComplete(int result) {
 // AppCacheResponseReader ----------------------------------------------
 
 AppCacheResponseReader::AppCacheResponseReader(
-    int64 response_id, AppCacheDiskCacheInterface* disk_cache)
-    : AppCacheResponseIO(response_id, disk_cache),
+    int64 response_id, int64 group_id, AppCacheDiskCacheInterface* disk_cache)
+    : AppCacheResponseIO(response_id, group_id, disk_cache),
       range_offset_(0), range_length_(kint32max),
       read_position_(0) {
 }
@@ -269,8 +269,8 @@ void AppCacheResponseReader::OnOpenEntryComplete(int rv) {
 // AppCacheResponseWriter ----------------------------------------------
 
 AppCacheResponseWriter::AppCacheResponseWriter(
-    int64 response_id, AppCacheDiskCacheInterface* disk_cache)
-    : AppCacheResponseIO(response_id, disk_cache),
+    int64 response_id, int64 group_id, AppCacheDiskCacheInterface* disk_cache)
+    : AppCacheResponseIO(response_id, group_id, disk_cache),
       info_size_(0), write_position_(0), write_amount_(0),
       creation_phase_(INITIAL_ATTEMPT) {
 }

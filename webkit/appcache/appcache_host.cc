@@ -24,7 +24,9 @@ void FillCacheInfo(
   info->status = status;
   info->is_complete = cache->is_complete();
   if (info->is_complete) {
+    DCHECK(cache->owning_group());
     info->manifest_url = cache->owning_group()->manifest_url();
+    info->group_id = cache->owning_group()->group_id();
     info->last_update_time = cache->update_time();
     info->creation_time = cache->owning_group()->creation_time();
     info->size = cache->cache_size();

@@ -64,6 +64,7 @@ struct APPCACHE_EXPORT AppCacheInfo {
   base::Time last_update_time;
   base::Time last_access_time;
   int64 cache_id;
+  int64 group_id;
   Status status;
   int64 size;
   bool is_complete;

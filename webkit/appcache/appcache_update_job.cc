@@ -382,7 +382,8 @@ void AppCacheUpdateJob::StartUpdate(AppCacheHost* host,
 
 AppCacheResponseWriter* AppCacheUpdateJob::CreateResponseWriter() {
   AppCacheResponseWriter* writer =
-      service_->storage()->CreateResponseWriter(manifest_url_);
+      service_->storage()->CreateResponseWriter(manifest_url_,
+                                                group_->group_id());
   stored_response_ids_.push_back(writer->response_id());
   return writer;
 }
@@ -414,7 +415,7 @@ void AppCacheUpdateJob::FetchManifest(bool is_first_fetch) {
         group_->newest_complete_cache()->GetEntry(manifest_url_) : NULL;
     if (entry) {
       // Asynchronously load response info for manifest from newest cache.
-      service_->storage()->LoadResponseInfo(manifest_url_,
+      service_->storage()->LoadResponseInfo(manifest_url_, group_->group_id(),
                                             entry->response_id(), this);
     } else {
       manifest_fetcher_->Start();
@@ -560,6 +561,11 @@ void AppCacheUpdateJob::HandleUrlFetchCompleted(URLFetcher* fetcher) {
     entry.set_response_size(fetcher->response_writer()->amount_written());
     if (!inprogress_cache_->AddOrModifyEntry(url, entry))
       duplicate_response_ids_.push_back(entry.response_id());
+
+    // TODO(michaeln): Check for <html manifest=xxx>
+    // See http://code.google.com/p/chromium/issues/detail?id=97930
+    // if (entry.IsMaster() && !entry.IsExplicit())
+    //   if (!manifestAttribute) skip it
 
     // Foreign entries will be detected during cache selection.
     // Note: 6.9.4, step 17.9 possible optimization: if resource is HTML or XML
@@ -848,6 +854,7 @@ void AppCacheUpdateJob::CheckIfManifestChanged() {
   // Load manifest data from storage to compare against fetched manifest.
   manifest_response_reader_.reset(
       service_->storage()->CreateResponseReader(manifest_url_,
+                                                group_->group_id(),
                                                 entry->response_id()));
   read_manifest_buffer_ = new net::IOBuffer(kBufferSize);
   manifest_response_reader_->ReadData(read_manifest_buffer_, kBufferSize,
@@ -1111,7 +1118,8 @@ bool AppCacheUpdateJob::MaybeLoadFromNewestCache(const GURL& url,
   // Load HTTP headers for entry from newest cache.
   loading_responses_.insert(
       LoadingResponses::value_type(copy_me->response_id(), url));
-  service_->storage()->LoadResponseInfo(manifest_url_, copy_me->response_id(),
+  service_->storage()->LoadResponseInfo(manifest_url_, group_->group_id(),
+                                        copy_me->response_id(),
                                         this);
   // Async: wait for OnResponseInfoLoaded to complete.
   return true;

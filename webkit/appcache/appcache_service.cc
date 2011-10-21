@@ -97,7 +97,7 @@ class AppCacheService::CanHandleOfflineHelper : AsyncHelper {
   virtual void OnMainResponseFound(
       const GURL& url, const AppCacheEntry& entry,
       const GURL& fallback_url, const AppCacheEntry& fallback_entry,
-      int64 cache_id, const GURL& mainfest_url);
+      int64 cache_id, int64 group_id, const GURL& mainfest_url) OVERRIDE;
 
   GURL url_;
   GURL first_party_;
@@ -107,7 +107,7 @@ class AppCacheService::CanHandleOfflineHelper : AsyncHelper {
 void AppCacheService::CanHandleOfflineHelper::OnMainResponseFound(
       const GURL& url, const AppCacheEntry& entry,
       const GURL& fallback_url, const AppCacheEntry& fallback_entry,
-      int64 cache_id, const GURL& manifest_url) {
+      int64 cache_id, int64 group_id, const GURL& manifest_url) {
   bool can = (entry.has_response_id() || fallback_entry.has_response_id());
   CallCallback(can ? net::OK : net::ERR_FAILED);
   delete this;
@@ -361,7 +361,7 @@ void AppCacheService::CheckResponseHelper::OnGroupLoaded(
   // Verify that we can read the response info and data.
   expected_total_size_ = entry->response_size();
   response_reader_.reset(service_->storage()->CreateResponseReader(
-      manifest_url_, response_id_));
+      manifest_url_, group->group_id(), response_id_));
   info_buffer_ = new HttpResponseInfoIOBuffer();
   response_reader_->ReadInfo(info_buffer_, &read_info_callback_);
 }

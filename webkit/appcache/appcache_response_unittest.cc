@@ -306,7 +306,7 @@ class AppCacheResponseTest : public testing::Test {
     // 2. Attempt to ReadData
 
     reader_.reset(service_->storage()->CreateResponseReader(
-        GURL(), kNoSuchResponseId));
+        GURL(), 0, kNoSuchResponseId));
 
     // Push tasks in reverse order
     PushNextTask(NewRunnableMethod(
@@ -336,7 +336,7 @@ class AppCacheResponseTest : public testing::Test {
   void LoadResponseInfo_Miss() {
     PushNextTask(NewRunnableMethod(
         this, &AppCacheResponseTest::LoadResponseInfo_Miss_Verify));
-    service_->storage()->LoadResponseInfo(GURL(), kNoSuchResponseId,
+    service_->storage()->LoadResponseInfo(GURL(), 0, kNoSuchResponseId,
                                           storage_delegate_.get());
   }
 
@@ -355,7 +355,7 @@ class AppCacheResponseTest : public testing::Test {
     // 2. Use LoadResponseInfo to read the response headers back out
     PushNextTask(NewRunnableMethod(
         this, &AppCacheResponseTest::LoadResponseInfo_Hit_Step2));
-    writer_.reset(service_->storage()->CreateResponseWriter(GURL()));
+    writer_.reset(service_->storage()->CreateResponseWriter(GURL(), 0));
     written_response_id_ = writer_->response_id();
     WriteBasicResponse();
   }
@@ -364,7 +364,7 @@ class AppCacheResponseTest : public testing::Test {
     writer_.reset();
     PushNextTask(NewRunnableMethod(
         this, &AppCacheResponseTest::LoadResponseInfo_Hit_Verify));
-    service_->storage()->LoadResponseInfo(GURL(), written_response_id_,
+    service_->storage()->LoadResponseInfo(GURL(), 0, written_response_id_,
                                           storage_delegate_.get());
   }
 
@@ -400,7 +400,7 @@ class AppCacheResponseTest : public testing::Test {
     PushNextTask(NewRunnableMethod(
         this, &AppCacheResponseTest::WriteResponseHead, head));
 
-    writer_.reset(service_->storage()->CreateResponseWriter(GURL()));
+    writer_.reset(service_->storage()->CreateResponseWriter(GURL(), 0));
     written_response_id_ = writer_->response_id();
     ScheduleNextTask();
   }
@@ -446,7 +446,7 @@ class AppCacheResponseTest : public testing::Test {
   }
 
   void WriteOutBlocks() {
-    writer_.reset(service_->storage()->CreateResponseWriter(GURL()));
+    writer_.reset(service_->storage()->CreateResponseWriter(GURL(), 0));
     written_response_id_ = writer_->response_id();
     for (int i = 0; i < kNumBlocks; ++i) {
       PushNextTask(NewRunnableMethod(
@@ -465,7 +465,7 @@ class AppCacheResponseTest : public testing::Test {
   void ReadInBlocks() {
     writer_.reset();
     reader_.reset(service_->storage()->CreateResponseReader(
-        GURL(), written_response_id_));
+        GURL(), 0, written_response_id_));
     for (int i = 0; i < kNumBlocks; ++i) {
       PushNextTask(NewRunnableMethod(
           this, &AppCacheResponseTest::ReadOneBlock, kNumBlocks - i));
@@ -488,7 +488,7 @@ class AppCacheResponseTest : public testing::Test {
     PushNextTask(NewRunnableMethod(
         this, &AppCacheResponseTest::VerifyAllAtOnce));
     reader_.reset(service_->storage()->CreateResponseReader(
-        GURL(), written_response_id_));
+        GURL(), 0, written_response_id_));
     int big_size = kNumBlocks * kBlockSize;
     ReadResponseBody(new IOBuffer(big_size), big_size);
   }
@@ -512,7 +512,7 @@ class AppCacheResponseTest : public testing::Test {
     PushNextTask(NewRunnableMethod(
         this, &AppCacheResponseTest::VerifyRange));
     reader_.reset(service_->storage()->CreateResponseReader(
-        GURL(), written_response_id_));
+        GURL(), 0, written_response_id_));
     reader_->SetReadRange(kBlockSize, kBlockSize);
     ReadResponseBody(new IOBuffer(kBlockSize), kBlockSize);
   }
@@ -526,7 +526,7 @@ class AppCacheResponseTest : public testing::Test {
     PushNextTask(NewRunnableMethod(
         this, &AppCacheResponseTest::VerifyRangeBeyondEOF));
     reader_.reset(service_->storage()->CreateResponseReader(
-        GURL(), written_response_id_));
+        GURL(), 0, written_response_id_));
     reader_->SetReadRange(kBlockSize, kNumBlocks * kBlockSize);
     ReadResponseBody(new IOBuffer(kNumBlocks * kBlockSize),
                      kNumBlocks * kBlockSize);
@@ -540,7 +540,7 @@ class AppCacheResponseTest : public testing::Test {
 
   void ReadRangeFullyBeyondEOF() {
     reader_.reset(service_->storage()->CreateResponseReader(
-        GURL(), written_response_id_));
+        GURL(), 0, written_response_id_));
     reader_->SetReadRange((kNumBlocks * kBlockSize) + 1, kBlockSize);
     ReadResponseBody(new IOBuffer(kBlockSize), kBlockSize);
     expected_read_result_ = 0;
@@ -563,7 +563,7 @@ class AppCacheResponseTest : public testing::Test {
   }
 
   void WriteOutBlocksImmediately() {
-    writer_.reset(service_->storage()->CreateResponseWriter(GURL()));
+    writer_.reset(service_->storage()->CreateResponseWriter(GURL(), 0));
     written_response_id_ = writer_->response_id();
     for (int i = 0; i < kNumBlocks; ++i) {
       PushNextTaskAsImmediate(NewRunnableMethod(
@@ -575,7 +575,7 @@ class AppCacheResponseTest : public testing::Test {
   void ReadInBlocksImmediately() {
     writer_.reset();
     reader_.reset(service_->storage()->CreateResponseReader(
-        GURL(), written_response_id_));
+        GURL(), 0, written_response_id_));
     for (int i = 0; i < kNumBlocks; ++i) {
       PushNextTaskAsImmediate(NewRunnableMethod(
           this, &AppCacheResponseTest::ReadOneBlockImmediately,
@@ -634,7 +634,7 @@ class AppCacheResponseTest : public testing::Test {
   void ReadThenDelete() {
     read_callback_was_called_ = false;
     reader_.reset(service_->storage()->CreateResponseReader(
-        GURL(), written_response_id_));
+        GURL(), 0, written_response_id_));
     ReadResponseBody(new IOBuffer(kBlockSize), kBlockSize);
     EXPECT_TRUE(reader_->IsReadPending());
     reader_.reset();

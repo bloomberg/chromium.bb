@@ -255,6 +255,7 @@ class AppCacheRequestHandlerTest : public testing::Test {
     handler_->GetExtraResponseInfo(&cache_id, &manifest_url);
     EXPECT_EQ(kNoCacheId, cache_id);
     EXPECT_EQ(GURL(), manifest_url);
+    EXPECT_EQ(0, handler_->found_group_id_);
 
     AppCacheURLRequestJob* fallback_job;
     fallback_job = handler_->MaybeLoadFallbackForRedirect(
@@ -282,7 +283,7 @@ class AppCacheRequestHandlerTest : public testing::Test {
     mock_storage()->SimulateFindMainResource(
         AppCacheEntry(AppCacheEntry::EXPLICIT, 1),
         GURL(), AppCacheEntry(),
-        1, GURL("http://blah/manifest/"));
+        1, 2, GURL("http://blah/manifest/"));
 
     job_ = handler_->MaybeLoadResource(request_.get());
     EXPECT_TRUE(job_.get());
@@ -301,6 +302,7 @@ class AppCacheRequestHandlerTest : public testing::Test {
     handler_->GetExtraResponseInfo(&cache_id, &manifest_url);
     EXPECT_EQ(1, cache_id);
     EXPECT_EQ(GURL("http://blah/manifest/"), manifest_url);
+    EXPECT_EQ(2, handler_->found_group_id_);
 
     AppCacheURLRequestJob* fallback_job;
     fallback_job = handler_->MaybeLoadFallbackForResponse(request_.get());
@@ -327,7 +329,7 @@ class AppCacheRequestHandlerTest : public testing::Test {
         AppCacheEntry(),
         GURL("http://blah/fallbackurl"),
         AppCacheEntry(AppCacheEntry::EXPLICIT, 1),
-        1, GURL("http://blah/manifest/"));
+        1, 2, GURL("http://blah/manifest/"));
 
     job_ = handler_->MaybeLoadResource(request_.get());
     EXPECT_TRUE(job_.get());
@@ -384,7 +386,7 @@ class AppCacheRequestHandlerTest : public testing::Test {
         AppCacheEntry(),
         GURL("http://blah/fallbackurl"),
         AppCacheEntry(AppCacheEntry::EXPLICIT, 1),
-        1, GURL("http://blah/manifest/"));
+        1, 2, GURL("http://blah/manifest/"));
 
     job_ = handler_->MaybeLoadResource(request_.get());
     EXPECT_TRUE(job_.get());
@@ -755,7 +757,7 @@ class AppCacheRequestHandlerTest : public testing::Test {
     mock_storage()->SimulateFindMainResource(
         AppCacheEntry(AppCacheEntry::EXPLICIT, 1),
         GURL(), AppCacheEntry(),
-        1, GURL("http://blah/manifest/"));
+        1, 2, GURL("http://blah/manifest/"));
 
     job_ = handler_->MaybeLoadResource(request_.get());
     EXPECT_TRUE(job_.get());
@@ -770,6 +772,7 @@ class AppCacheRequestHandlerTest : public testing::Test {
     EXPECT_FALSE(job_->is_delivering_appcache_response());
 
     EXPECT_EQ(0, handler_->found_cache_id_);
+    EXPECT_EQ(0, handler_->found_group_id_);
     EXPECT_TRUE(handler_->found_manifest_url_.is_empty());
     EXPECT_TRUE(host_->preferred_manifest_url().is_empty());
     EXPECT_TRUE(host_->main_resource_blocked_);

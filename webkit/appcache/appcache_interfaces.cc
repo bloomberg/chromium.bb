@@ -25,6 +25,7 @@ const FilePath::CharType kAppCacheDatabaseName[] = FILE_PATH_LITERAL("Index");
 
 AppCacheInfo::AppCacheInfo()
     : cache_id(kNoCacheId),
+      group_id(0),
       status(UNCACHED),
       size(0),
       is_complete(false) {

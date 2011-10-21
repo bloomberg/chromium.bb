@@ -28,8 +28,9 @@ class APPCACHE_EXPORT AppCacheURLRequestJob : public net::URLRequestJob,
   // Informs the job of what response it should deliver. Only one of these
   // methods should be called, and only once per job. A job will sit idle and
   // wait indefinitely until one of the deliver methods is called.
-  void DeliverAppCachedResponse(const GURL& manifest_url, int64 cache_id,
-                                const AppCacheEntry& entry, bool is_fallback);
+  void DeliverAppCachedResponse(const GURL& manifest_url, int64 group_id,
+                                int64 cache_id, const AppCacheEntry& entry,
+                                bool is_fallback);
   void DeliverNetworkResponse();
   void DeliverErrorResponse();
 
@@ -52,9 +53,10 @@ class APPCACHE_EXPORT AppCacheURLRequestJob : public net::URLRequestJob,
   // Accessors for the info about the appcached response, if any,
   // that this job has been instructed to deliver. These are only
   // valid to call if is_delivering_appcache_response.
-  const GURL& manifest_url() { return manifest_url_; }
-  int64 cache_id() { return cache_id_; }
-  const AppCacheEntry& entry() { return entry_; }
+  const GURL& manifest_url() const { return manifest_url_; }
+  int64 group_id() const { return group_id_; }
+  int64 cache_id() const { return cache_id_; }
+  const AppCacheEntry& entry() const { return entry_; }
 
   // net::URLRequestJob's Kill method is made public so the users of this
   // class in the appcache namespace can call it.
@@ -125,6 +127,7 @@ class APPCACHE_EXPORT AppCacheURLRequestJob : public net::URLRequestJob,
   bool has_been_killed_;
   DeliveryType delivery_type_;
   GURL manifest_url_;
+  int64 group_id_;
   int64 cache_id_;
   AppCacheEntry entry_;
   bool is_fallback_;

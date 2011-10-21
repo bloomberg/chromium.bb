@@ -33,7 +33,7 @@ class MockResponseReader : public AppCacheResponseReader {
   MockResponseReader(int64 response_id,
                      net::HttpResponseInfo* info, int info_size,
                      const char* data, int data_size)
-      : AppCacheResponseReader(response_id, NULL),
+      : AppCacheResponseReader(response_id, 0, NULL),
         info_(info), info_size_(info_size),
         data_(data), data_size_(data_size) {
   }

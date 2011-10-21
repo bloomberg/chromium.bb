@@ -118,6 +118,7 @@ class APPCACHE_EXPORT AppCacheResponseIO {
   };
 
   AppCacheResponseIO(int64 response_id,
+                     int64 group_id,
                      AppCacheDiskCacheInterface* disk_cache);
 
   virtual void OnIOComplete(int result) = 0;
@@ -129,6 +130,7 @@ class APPCACHE_EXPORT AppCacheResponseIO {
   void WriteRaw(int index, int offset, net::IOBuffer* buf, int buf_len);
 
   const int64 response_id_;
+  const int64 group_id_;
   AppCacheDiskCacheInterface* disk_cache_;
   AppCacheDiskCacheInterface::Entry* entry_;
   scoped_refptr<HttpResponseInfoIOBuffer> info_buffer_;
@@ -190,6 +192,7 @@ class APPCACHE_EXPORT AppCacheResponseReader : public AppCacheResponseIO {
 
   // Should only be constructed by the storage class.
   AppCacheResponseReader(int64 response_id,
+                         int64 group_id,
                          AppCacheDiskCacheInterface* disk_cache);
 
   virtual void OnIOComplete(int result);
@@ -252,6 +255,7 @@ class APPCACHE_EXPORT AppCacheResponseWriter : public AppCacheResponseIO {
 
   // Should only be constructed by the storage class.
   AppCacheResponseWriter(int64 response_id,
+                         int64 group_id,
                          AppCacheDiskCacheInterface* disk_cache);
 
   virtual void OnIOComplete(int result);

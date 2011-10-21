@@ -49,9 +49,9 @@ class AppCacheStorageImpl : public AppCacheStorage {
   virtual void MarkEntryAsForeign(const GURL& entry_url, int64 cache_id);
   virtual void MakeGroupObsolete(AppCacheGroup* group, Delegate* delegate);
   virtual AppCacheResponseReader* CreateResponseReader(
-      const GURL& manifest_url, int64 response_id);
+      const GURL& manifest_url, int64 group_id, int64 response_id);
   virtual AppCacheResponseWriter* CreateResponseWriter(
-      const GURL& manifest_url);
+      const GURL& manifest_url, int64 group_id);
   virtual void DoomResponses(
       const GURL& manifest_url, const std::vector<int64>& response_ids);
   virtual void DeleteResponses(
@@ -121,7 +121,7 @@ class AppCacheStorageImpl : public AppCacheStorage {
       DelegateReferenceVector* delegates,
       const GURL& url, const AppCacheEntry& entry,
       const GURL& fallback_url, const AppCacheEntry& fallback_entry,
-      int64 cache_id, const GURL& manifest_url);
+      int64 cache_id, int64 group_id, const GURL& manifest_url);
 
   APPCACHE_EXPORT AppCacheDiskCache* disk_cache();
 
@@ -160,7 +160,6 @@ class AppCacheStorageImpl : public AppCacheStorage {
   // disk cache and cannot continue.
   bool is_disabled_;
 
-  // TODO(michaeln): use a disk_cache per group (manifest or group_id).
   scoped_ptr<AppCacheDiskCache> disk_cache_;
 
   // Used to short-circuit certain operations without having to schedule

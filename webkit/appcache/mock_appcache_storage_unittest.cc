@@ -46,7 +46,8 @@ class MockAppCacheStorageTest : public testing::Test {
     void OnMainResponseFound(const GURL& url, const AppCacheEntry& entry,
                              const GURL& fallback_url,
                              const AppCacheEntry& fallback_entry,
-                             int64 cache_id, const GURL& manifest_url) {
+                             int64 cache_id, int64 group_id,
+                             const GURL& manifest_url) {
       found_url_ = url;
       found_entry_ = entry;
       found_fallback_url_ = fallback_url;

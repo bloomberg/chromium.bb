@@ -330,6 +330,7 @@ void AppCacheStorageImpl::GetAllInfoTask::Run() {
       info.last_access_time = group->last_access_time;
       info.last_update_time = cache_record.update_time;
       info.cache_id = cache_record.cache_id;
+      info.group_id = group->group_id;
       info.is_complete = true;
       infos.push_back(info);
     }
@@ -627,6 +628,7 @@ void AppCacheStorageImpl::StoreGroupAndCacheTask::Run() {
           database_->DeleteFallbackNameSpacesForCache(cache.cache_id) &&
           database_->DeleteOnlineWhiteListForCache(cache.cache_id) &&
           database_->InsertDeletableResponseIds(newly_deletable_response_ids_);
+          // TODO(michaeln): store group_id too with deletable ids
     } else {
       NOTREACHED() << "A existing group without a cache is unexpected";
     }
@@ -713,7 +715,7 @@ class AppCacheStorageImpl::FindMainResponseTask : public DatabaseTask {
                        const AppCacheWorkingSet::GroupMap* groups_in_use)
       : DatabaseTask(storage), url_(url),
         preferred_manifest_url_(preferred_manifest_url),
-        cache_id_(kNoCacheId) {
+        cache_id_(kNoCacheId), group_id_(0) {
     if (groups_in_use) {
       for (AppCacheWorkingSet::GroupMap::const_iterator it =
                groups_in_use->begin();
@@ -744,6 +746,7 @@ class AppCacheStorageImpl::FindMainResponseTask : public DatabaseTask {
   AppCacheEntry fallback_entry_;
   GURL fallback_url_;
   int64 cache_id_;
+  int64 group_id_;
   GURL manifest_url_;
 };
 
@@ -819,19 +822,6 @@ class NetworkNamespaceHelper {
   AppCacheDatabase* database_;
 };
 
-bool FindManifestForEntry(
-    const AppCacheDatabase::EntryRecord& entry_record,
-    AppCacheDatabase* database,
-    GURL* manifest_url_out) {
-  AppCacheDatabase::GroupRecord group_record;
-  if (!database->FindGroupForCache(entry_record.cache_id, &group_record)) {
-    NOTREACHED() << "A cache without a group is not expected.";
-    return false;
-  }
-  *manifest_url_out = group_record.manifest_url;
-  return true;
-}
-
 }  // namespace
 
 void AppCacheStorageImpl::FindMainResponseTask::Run() {
@@ -862,12 +852,14 @@ void AppCacheStorageImpl::FindMainResponseTask::Run() {
   if (FindExactMatch(preferred_cache_id) ||
       FindFallback(preferred_cache_id)) {
     // We found something.
-    DCHECK(cache_id_ != kNoCacheId && !manifest_url_.is_empty());
+    DCHECK(cache_id_ != kNoCacheId && !manifest_url_.is_empty() &&
+           group_id_ != 0);
     return;
   }
 
   // We didn't find anything.
-  DCHECK(cache_id_ == kNoCacheId && manifest_url_.is_empty());
+  DCHECK(cache_id_ == kNoCacheId && manifest_url_.is_empty() &&
+         group_id_ == 0);
 }
 
 bool AppCacheStorageImpl::
@@ -882,10 +874,13 @@ FindMainResponseTask::FindExactMatch(int64 preferred_cache_id) {
     // Take the first with a valid, non-foreign entry.
     std::vector<AppCacheDatabase::EntryRecord>::iterator iter;
     for (iter = entries.begin(); iter < entries.end(); ++iter) {
+      AppCacheDatabase::GroupRecord group_record;
       if ((iter->flags & AppCacheEntry::FOREIGN) ||
-          !FindManifestForEntry(*iter, database_, &manifest_url_)) {
+          !database_->FindGroupForCache(iter->cache_id, &group_record)) {
         continue;
       }
+      manifest_url_ = group_record.manifest_url;
+      group_id_ = group_record.group_id;
       entry_ = AppCacheEntry(iter->flags, iter->response_id);
       cache_id_ = iter->cache_id;
       return true;  // We found an exact match.
@@ -950,10 +945,13 @@ FindMainResponseTask::FindFirstValidFallback(
     AppCacheDatabase::EntryRecord entry_record;
     if (database_->FindEntry((*iter)->cache_id, (*iter)->fallback_entry_url,
                              &entry_record)) {
+      AppCacheDatabase::GroupRecord group_record;
       if ((entry_record.flags & AppCacheEntry::FOREIGN) ||
-          !FindManifestForEntry(entry_record, database_, &manifest_url_)) {
+          !database_->FindGroupForCache(entry_record.cache_id, &group_record)) {
         continue;
       }
+      manifest_url_ = group_record.manifest_url;
+      group_id_ = group_record.group_id;
       cache_id_ = (*iter)->cache_id;
       fallback_url_ = (*iter)->fallback_entry_url;
       fallback_entry_ = AppCacheEntry(
@@ -967,7 +965,7 @@ FindMainResponseTask::FindFirstValidFallback(
 void AppCacheStorageImpl::FindMainResponseTask::RunCompleted() {
   storage_->CallOnMainResponseFound(
       &delegates_, url_, entry_, fallback_url_, fallback_entry_,
-      cache_id_, manifest_url_);
+      cache_id_, group_id_, manifest_url_);
 }
 
 // MarkEntryAsForeignTask -------
@@ -1088,6 +1086,7 @@ class AppCacheStorageImpl::GetDeletableResponseIdsTask : public DatabaseTask {
 void AppCacheStorageImpl::GetDeletableResponseIdsTask::Run() {
   const int kSqlLimit = 1000;
   database_->GetDeletableResponseIds(&response_ids_, max_rowid_, kSqlLimit);
+  // TODO(michaeln): retrieve group_ids too
 }
 
 void AppCacheStorageImpl::GetDeletableResponseIdsTask::RunCompleted() {
@@ -1108,6 +1107,7 @@ class AppCacheStorageImpl::InsertDeletableResponseIdsTask
 
 void AppCacheStorageImpl::InsertDeletableResponseIdsTask::Run() {
   database_->InsertDeletableResponseIds(response_ids_);
+  // TODO(michaeln): store group_ids too
 }
 
 // DeleteDeletableResponseIdsTask -------
@@ -1393,6 +1393,7 @@ void AppCacheStorageImpl::DeliverShortCircuitedFindMainResponse(
         &delegates, url, found_entry,
         GURL(), AppCacheEntry(),
         cache.get() ? cache->cache_id() : kNoCacheId,
+        group.get() ? group->group_id() : kNoCacheId,
         group.get() ? group->manifest_url() : GURL());
   }
 }
@@ -1401,12 +1402,12 @@ void AppCacheStorageImpl::CallOnMainResponseFound(
     DelegateReferenceVector* delegates,
     const GURL& url, const AppCacheEntry& entry,
     const GURL& fallback_url, const AppCacheEntry& fallback_entry,
-    int64 cache_id, const GURL& manifest_url) {
+    int64 cache_id, int64 group_id, const GURL& manifest_url) {
   FOR_EACH_DELEGATE(
       (*delegates),
       OnMainResponseFound(url, entry,
                           fallback_url, fallback_entry,
-                          cache_id, manifest_url));
+                          cache_id, group_id, manifest_url));
 }
 
 void AppCacheStorageImpl::FindResponseForSubRequest(
@@ -1456,13 +1457,13 @@ void AppCacheStorageImpl::MakeGroupObsolete(
 }
 
 AppCacheResponseReader* AppCacheStorageImpl::CreateResponseReader(
-    const GURL& manifest_url, int64 response_id) {
-  return new AppCacheResponseReader(response_id, disk_cache());
+    const GURL& manifest_url, int64 group_id, int64 response_id) {
+  return new AppCacheResponseReader(response_id, group_id, disk_cache());
 }
 
 AppCacheResponseWriter* AppCacheStorageImpl::CreateResponseWriter(
-    const GURL& manifest_url) {
-  return new AppCacheResponseWriter(NewResponseId(), disk_cache());
+    const GURL& manifest_url, int64 group_id) {
+  return new AppCacheResponseWriter(NewResponseId(), group_id, disk_cache());
 }
 
 void AppCacheStorageImpl::DoomResponses(
@@ -1539,6 +1540,7 @@ void AppCacheStorageImpl::DeleteOneResponse() {
     return;
   }
 
+  // TODO(michaeln): add group_id to DoomEntry args
   int64 id = deletable_response_ids_.front();
   int rv = disk_cache_->DoomEntry(id, &doom_callback_);
   if (rv != net::ERR_IO_PENDING)

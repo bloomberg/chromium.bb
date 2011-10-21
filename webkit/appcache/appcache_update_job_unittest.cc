@@ -925,7 +925,8 @@ class AppCacheUpdateJobTest : public testing::Test,
 
     // Create response writer to get a response id.
     response_writer_.reset(
-        service_->storage()->CreateResponseWriter(group_->manifest_url()));
+        service_->storage()->CreateResponseWriter(group_->manifest_url(),
+                                                  group_->group_id()));
 
     AppCache* cache = MakeCacheForGroup(1, response_writer_->response_id());
     MockFrontend* frontend1 = MakeMockFrontend();
@@ -1011,7 +1012,8 @@ class AppCacheUpdateJobTest : public testing::Test,
 
     // Create a response writer to get a response id.
     response_writer_.reset(
-        service_->storage()->CreateResponseWriter(group_->manifest_url()));
+        service_->storage()->CreateResponseWriter(group_->manifest_url(),
+                                                  group_->group_id()));
 
     AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId(),
                                         response_writer_->response_id());
@@ -1075,7 +1077,8 @@ class AppCacheUpdateJobTest : public testing::Test,
 
     // Give the newest cache an entry that is in storage.
     response_writer_.reset(
-        service_->storage()->CreateResponseWriter(group_->manifest_url()));
+        service_->storage()->CreateResponseWriter(group_->manifest_url(),
+                                                  group_->group_id()));
     cache->AddEntry(MockHttpServer::GetMockUrl("files/explicit1"),
                     AppCacheEntry(AppCacheEntry::EXPLICIT,
                                   response_writer_->response_id()));
@@ -1136,7 +1139,8 @@ class AppCacheUpdateJobTest : public testing::Test,
 
     // Give the newest cache an entry that is in storage.
     response_writer_.reset(
-        service_->storage()->CreateResponseWriter(group_->manifest_url()));
+        service_->storage()->CreateResponseWriter(group_->manifest_url(),
+                                                  group_->group_id()));
     cache->AddEntry(MockHttpServer::GetMockUrl("files/explicit1"),
                     AppCacheEntry(AppCacheEntry::EXPLICIT,
                                   response_writer_->response_id()));
@@ -1194,7 +1198,8 @@ class AppCacheUpdateJobTest : public testing::Test,
 
     // Give the newest cache an entry that is in storage.
     response_writer_.reset(
-        service_->storage()->CreateResponseWriter(group_->manifest_url()));
+        service_->storage()->CreateResponseWriter(group_->manifest_url(),
+                                                  group_->group_id()));
     cache->AddEntry(MockHttpServer::GetMockUrl("files/explicit1"),
                     AppCacheEntry(AppCacheEntry::EXPLICIT,
                                   response_writer_->response_id()));
@@ -2573,7 +2578,8 @@ class AppCacheUpdateJobTest : public testing::Test,
 
     // Give the newest cache a manifest enry that is in storage.
     response_writer_.reset(
-        service_->storage()->CreateResponseWriter(group_->manifest_url()));
+        service_->storage()->CreateResponseWriter(group_->manifest_url(),
+                                                  group_->group_id()));
 
     AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId(),
                                         response_writer_->response_id());
@@ -2631,7 +2637,8 @@ class AppCacheUpdateJobTest : public testing::Test,
 
     // Give the newest cache a manifest enry that is in storage.
     response_writer_.reset(
-        service_->storage()->CreateResponseWriter(group_->manifest_url()));
+        service_->storage()->CreateResponseWriter(group_->manifest_url(),
+                                                  group_->group_id()));
 
     AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId(),
                                         response_writer_->response_id());

@@ -53,13 +53,13 @@ class APPCACHE_EXPORT AppCacheRequestHandler
   AppCacheRequestHandler(AppCacheHost* host, ResourceType::Type resource_type);
 
   // AppCacheHost::Observer override
-  virtual void OnDestructionImminent(AppCacheHost* host);
+  virtual void OnDestructionImminent(AppCacheHost* host) OVERRIDE;
 
   // Helpers to instruct a waiting job with what response to
   // deliver for the request we're handling.
   void DeliverAppCachedResponse(const AppCacheEntry& entry, int64 cache_id,
-                                const GURL& manifest_url, bool is_fallback,
-                                const GURL& fallback_url);
+                                int64 group_id, const GURL& manifest_url,
+                                bool is_fallback, const GURL& fallback_url);
   void DeliverNetworkResponse();
   void DeliverErrorResponse();
 
@@ -79,7 +79,7 @@ class APPCACHE_EXPORT AppCacheRequestHandler
   virtual void OnMainResponseFound(
       const GURL& url, const AppCacheEntry& entry,
       const GURL& fallback_url, const AppCacheEntry& fallback_entry,
-      int64 cache_id, const GURL& mainfest_url);
+      int64 cache_id, int64 group_id, const GURL& mainfest_url) OVERRIDE;
 
   // Sub-resource loading -------------------------------------
   // Dedicated worker and all manner of sub-resources are handled here.
@@ -88,7 +88,7 @@ class APPCACHE_EXPORT AppCacheRequestHandler
   void ContinueMaybeLoadSubResource();
 
   // AppCacheHost::Observer override
-  virtual void OnCacheSelectionComplete(AppCacheHost* host);
+  virtual void OnCacheSelectionComplete(AppCacheHost* host) OVERRIDE;
 
   // Data members -----------------------------------------------
 
@@ -103,6 +103,7 @@ class APPCACHE_EXPORT AppCacheRequestHandler
 
   // Info about the type of response we found for delivery.
   // These are relevant for both main and subresource requests.
+  int64 found_group_id_;
   int64 found_cache_id_;
   AppCacheEntry found_entry_;
   AppCacheEntry found_fallback_entry_;
