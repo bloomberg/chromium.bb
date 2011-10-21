@@ -33,15 +33,18 @@ class MEDIA_EXPORT AudioRendererBase : public AudioRenderer {
   virtual ~AudioRendererBase();
 
   // Filter implementation.
-  virtual void Play(const base::Closure& callback);
-  virtual void Pause(const base::Closure& callback);
-  virtual void Stop(const base::Closure& callback);
+  virtual void Play(const base::Closure& callback) OVERRIDE;
+  virtual void Pause(const base::Closure& callback) OVERRIDE;
+  virtual void Stop(const base::Closure& callback) OVERRIDE;
 
-  virtual void Seek(base::TimeDelta time, const FilterStatusCB& cb);
+  virtual void Seek(base::TimeDelta time, const FilterStatusCB& cb) OVERRIDE;
 
   // AudioRenderer implementation.
-  virtual void Initialize(AudioDecoder* decoder, const base::Closure& callback);
-  virtual bool HasEnded();
+  virtual void Initialize(AudioDecoder* decoder,
+                          const base::Closure& init_callback,
+                          const base::Closure& underflow_callback) OVERRIDE;
+  virtual bool HasEnded() OVERRIDE;
+  virtual void ResumeAfterUnderflow(bool buffer_more_audio) OVERRIDE;
 
  protected:
   // Subclasses should return true if they were able to initialize, false
@@ -73,6 +76,10 @@ class MEDIA_EXPORT AudioRendererBase : public AudioRenderer {
   // this case |playback_delay| should be used to indicate when in the future
   // should the filled buffer be played. If FillBuffer() is called as the audio
   // hardware plays the buffer, then |playback_delay| should be zero.
+  //
+  // |buffers_empty| is set to true when all the hardware buffers become empty.
+  // This is an indication that all the data written to the device has been
+  // played.
   //
   // Safe to call on any thread.
   uint32 FillBuffer(uint8* dest,
@@ -107,6 +114,8 @@ class MEDIA_EXPORT AudioRendererBase : public AudioRenderer {
     kPlaying,
     kStopped,
     kError,
+    kUnderflow,
+    kRebuffering,
   };
   State state_;
 
@@ -128,6 +137,8 @@ class MEDIA_EXPORT AudioRendererBase : public AudioRenderer {
   // Filter callbacks.
   base::Closure pause_callback_;
   FilterStatusCB seek_cb_;
+
+  base::Closure underflow_callback_;
 
   base::TimeDelta seek_timestamp_;
 

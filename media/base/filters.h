@@ -261,9 +261,14 @@ class MEDIA_EXPORT VideoRenderer : public Filter {
 class MEDIA_EXPORT AudioRenderer : public Filter {
  public:
   // Initialize a AudioRenderer with the given AudioDecoder, executing the
-  // callback upon completion.
+  // |init_callback| upon completion. |underflow_callback| is called when the
+  // renderer runs out of data to pass to the audio card during playback.
+  // If the |underflow_callback| is called ResumeAfterUnderflow() must be called
+  // to resume playback. Pause(), Seek(), or Stop() cancels the underflow
+  // condition.
   virtual void Initialize(AudioDecoder* decoder,
-                          const base::Closure& callback) = 0;
+                          const base::Closure& init_callback,
+                          const base::Closure& underflow_callback) = 0;
 
   // Returns true if this filter has received and processed an end-of-stream
   // buffer.
@@ -271,6 +276,11 @@ class MEDIA_EXPORT AudioRenderer : public Filter {
 
   // Sets the output volume.
   virtual void SetVolume(float volume) = 0;
+
+  // Resumes playback after underflow occurs.
+  // |buffer_more_audio| is set to true if you want to increase the size of the
+  // decoded audio buffer.
+  virtual void ResumeAfterUnderflow(bool buffer_more_audio) = 0;
 };
 
 }  // namespace media

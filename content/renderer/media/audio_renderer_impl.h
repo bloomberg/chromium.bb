@@ -204,12 +204,6 @@ class CONTENT_EXPORT AudioRendererImpl
   // State of the audio buffers at time of the last request.
   AudioBuffersState request_buffers_state_;
 
-  // State variables for prerolling.
-  bool prerolling_;
-
-  // Remaining bytes for prerolling to complete.
-  uint32 preroll_bytes_;
-
   // We're supposed to know amount of audio data OS or hardware buffered, but
   // that is not always so -- on my Linux box
   // AudioBuffersState::hardware_delay_bytes never reaches 0.

@@ -165,7 +165,8 @@ class AudioRendererImplTest
     // Create and initialize the audio renderer.
     renderer_ = new TestAudioRendererImpl();
     renderer_->set_host(&host_);
-    renderer_->Initialize(decoder_, media::NewExpectedClosure());
+    renderer_->Initialize(decoder_, media::NewExpectedClosure(),
+                          NewUnderflowClosure());
 
     // Wraps delegate calls into tasks.
     delegate_caller_ = new DelegateCaller(renderer_);
@@ -191,6 +192,13 @@ class AudioRendererImplTest
 
   virtual void TearDown() {
     mock_process_.reset();
+  }
+
+  MOCK_METHOD0(OnUnderflow, void());
+
+  base::Closure NewUnderflowClosure() {
+    return base::Bind(&AudioRendererImplTest::OnUnderflow,
+                      base::Unretained(this));
   }
 
  protected:

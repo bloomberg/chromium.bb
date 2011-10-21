@@ -12,14 +12,18 @@ namespace media {
 // The size in bytes we try to maintain for the |queue_|. Previous usage
 // maintained a deque of 16 Buffers, each of size 4Kb. This worked well, so we
 // maintain this number of bytes (16 * 4096).
-const uint32 kDefaultMinQueueSizeInBytes = 65536;
+const int kDefaultMinQueueSizeInBytes = 65536;
+const int kDefaultMinQueueSizeInMilliseconds = 372; // ~64kb @ 44.1k stereo
+const int kDefaultMaxQueueSizeInBytes = 4608000; // 3 seconds @ 96kHz 7.1
+const int kDefaultMaxQueueSizeInMilliseconds = 3000;
 
 AudioRendererAlgorithmBase::AudioRendererAlgorithmBase()
     : channels_(0),
       sample_rate_(0),
       sample_bytes_(0),
       playback_rate_(0.0f),
-      queue_(0, kDefaultMinQueueSizeInBytes) {
+      queue_(0, kDefaultMinQueueSizeInBytes),
+      max_queue_capacity_(kDefaultMaxQueueSizeInBytes) {
 }
 
 AudioRendererAlgorithmBase::~AudioRendererAlgorithmBase() {}
@@ -43,6 +47,15 @@ void AudioRendererAlgorithmBase::Initialize(
   channels_ = channels;
   sample_rate_ = sample_rate;
   sample_bytes_ = sample_bits / 8;
+
+  // Update the capacity based on time now that we have the audio format
+  // parameters.
+  queue_.set_forward_capacity(
+      DurationToBytes(kDefaultMinQueueSizeInMilliseconds));
+  max_queue_capacity_ =
+      std::min(kDefaultMaxQueueSizeInBytes,
+               DurationToBytes(kDefaultMaxQueueSizeInMilliseconds));
+
   request_read_callback_ = callback;
 
   set_playback_rate(initial_playback_rate);
@@ -82,11 +95,23 @@ bool AudioRendererAlgorithmBase::IsQueueEmpty() {
 }
 
 bool AudioRendererAlgorithmBase::IsQueueFull() {
-  return (queue_.forward_bytes() >= kDefaultMinQueueSizeInBytes);
+  return (queue_.forward_bytes() >= queue_.forward_capacity());
 }
 
 uint32 AudioRendererAlgorithmBase::QueueSize() {
   return queue_.forward_bytes();
+}
+
+void AudioRendererAlgorithmBase::IncreaseQueueCapacity() {
+  queue_.set_forward_capacity(
+      std::min(2 * queue_.forward_capacity(), max_queue_capacity_));
+}
+
+int AudioRendererAlgorithmBase::DurationToBytes(
+    int duration_in_milliseconds) const {
+  int64 bytes_per_second = sample_bytes_ * channels_ * sample_rate_;
+  int64 bytes = duration_in_milliseconds * bytes_per_second / 1000;
+  return std::min(bytes, static_cast<int64>(kint32max));
 }
 
 void AudioRendererAlgorithmBase::AdvanceInputPosition(uint32 bytes) {

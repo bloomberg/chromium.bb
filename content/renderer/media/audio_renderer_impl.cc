@@ -32,9 +32,7 @@ AudioRendererImpl::AudioRendererImpl()
       shared_memory_(NULL),
       shared_memory_size_(0),
       stopped_(false),
-      pending_request_(false),
-      prerolling_(false),
-      preroll_bytes_(0) {
+      pending_request_(false) {
   filter_ = RenderThreadImpl::current()->audio_message_filter();
   // Figure out if we are planning to use high or low latency code path.
   // We are initializing only one variable and double initialization is Ok,

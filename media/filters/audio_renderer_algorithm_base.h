@@ -75,6 +75,9 @@ class MEDIA_EXPORT AudioRendererAlgorithmBase {
   // Returns the number of bytes left in |queue_|.
   virtual uint32 QueueSize();
 
+  // Increase the capacity of |queue_| if possible.
+  virtual void IncreaseQueueCapacity();
+
  protected:
   // Advances |queue_|'s internal pointer by |bytes|.
   void AdvanceInputPosition(uint32 bytes);
@@ -82,6 +85,10 @@ class MEDIA_EXPORT AudioRendererAlgorithmBase {
   // Tries to copy |bytes| bytes from |queue_| to |dest|. Returns the number of
   // bytes successfully copied.
   uint32 CopyFromInput(uint8* dest, uint32 bytes);
+
+  // Converts a duration in milliseconds to a byte count based on
+  // the current sample rate, channel count, and bytes per sample.
+  int DurationToBytes(int duration_in_milliseconds) const;
 
   // Number of audio channels.
   virtual int channels();
@@ -106,6 +113,9 @@ class MEDIA_EXPORT AudioRendererAlgorithmBase {
 
   // Queued audio data.
   SeekableBuffer queue_;
+
+  // Largest capacity queue_ can grow to.
+  size_t max_queue_capacity_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererAlgorithmBase);
 };
