@@ -17,6 +17,12 @@ enum WebIntentReplyType {
 
   // Sent for a failure message.
   WEB_INTENT_REPLY_FAILURE,
+
+  // Sent if the picker is cancelled without a selection being made.
+  WEB_INTENT_PICKER_CANCELLED,
+
+  // Sent if the service tab is closed without any response being sent.
+  WEB_INTENT_SERVICE_TAB_CLOSED,
 };
 
 }  // namespace webkit_glue

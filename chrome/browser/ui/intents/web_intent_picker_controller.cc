@@ -205,7 +205,9 @@ void WebIntentPickerController::OnServiceChosen(size_t index) {
 }
 
 void WebIntentPickerController::OnCancelled() {
-  // TODO(binji) Tell the renderer that the intent was cancelled.
+  InvokingTabReplyForwarder forwarder(wrapper_, routing_id_);
+  forwarder.Send(new IntentsMsg_WebIntentReply(
+      0, webkit_glue::WEB_INTENT_PICKER_CANCELLED, string16(), intent_id_));
   ClosePicker();
 }
 

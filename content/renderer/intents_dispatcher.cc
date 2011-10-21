@@ -149,7 +149,6 @@ void IntentsDispatcher::OnWebIntentReply(
   LOG(INFO) << "RenderView got reply to intent type " << reply_type;
 }
 
-
 void IntentsDispatcher::OnResult(const WebKit::WebString& data) {
   Send(new IntentsMsg_WebIntentReply(
       routing_id(),
