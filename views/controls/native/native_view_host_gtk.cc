@@ -112,7 +112,7 @@ NativeViewHostGtk::NativeViewHostGtk(NativeViewHost* host)
 NativeViewHostGtk::~NativeViewHostGtk() {
   if (fixed_) {
     gtk_container_foreach(GTK_CONTAINER(fixed_), RemoveFromParent, fixed_);
-    gtk_widget_destroy(fixed_);
+    DestroyFixed();
   }
 }
 

@@ -4476,20 +4476,6 @@
    fun:_ZN24NativeTabContentsViewGtk25InitNativeTabContentsViewEv
 }
 {
-   bug_96368
-   Memcheck:Leak
-   fun:malloc
-   fun:g_malloc
-   fun:g_slice_alloc
-   fun:g_slice_alloc0
-   fun:g_type_create_instance
-   fun:g_object_constructor
-   fun:g_object_newv
-   fun:g_object_new
-   fun:gtk_views_fixed_new
-   fun:_ZN5views17NativeViewHostGtk11CreateFixedEb
-}
-{
    bug_96369
    Memcheck:Leak
    fun:malloc
