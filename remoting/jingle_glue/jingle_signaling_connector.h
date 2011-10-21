@@ -22,7 +22,7 @@ class SessionManager;
 
 namespace remoting {
 
-class JavascriptIqRequest;
+class IqRequest;
 
 // This class handles proxying the Jingle establishment messages between the
 // client and the server when proxying XMPP through Javascript.
@@ -33,9 +33,6 @@ class JavascriptIqRequest;
 //
 // This class is not threadsafe, and should only be used on the thread it is
 // created on.
-//
-// TODO(sergeyu): This class should not depend on JavascriptIqRequest:
-// it should work with SignalStrategy instead.
 class JingleSignalingConnector : public SignalStrategy::Listener,
                                  public sigslot::has_slots<> {
  public:

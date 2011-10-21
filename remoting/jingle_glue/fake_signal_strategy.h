@@ -10,7 +10,7 @@
 
 #include "base/task.h"
 #include "base/threading/non_thread_safe.h"
-#include "remoting/jingle_glue/javascript_iq_request.h"
+#include "remoting/jingle_glue/iq_request.h"
 #include "remoting/jingle_glue/signal_strategy.h"
 
 namespace remoting {
@@ -40,7 +40,7 @@ class FakeSignalStrategy : public SignalStrategy,
   std::string jid_;
   FakeSignalStrategy* peer_;
   Listener* listener_;
-  JavascriptIqRegistry iq_registry_;
+  IqRegistry iq_registry_;
 
   int last_id_;
 

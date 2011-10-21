@@ -78,7 +78,7 @@ std::string JavascriptSignalStrategy::GetNextId() {
 IqRequest* JavascriptSignalStrategy::CreateIqRequest() {
   DCHECK(CalledOnValidThread());
 
-  return new JavascriptIqRequest(this, &iq_registry_);
+  return new IqRequest(this, &iq_registry_);
 }
 
 void JavascriptSignalStrategy::OnIq(const std::string& stanza_str) {

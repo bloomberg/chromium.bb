@@ -13,6 +13,7 @@
 #include "remoting/jingle_glue/signal_strategy.h"
 
 #include "base/compiler_specific.h"
+#include "remoting/jingle_glue/iq_request.h"
 #include "third_party/libjingle/source/talk/base/sigslot.h"
 #include "third_party/libjingle/source/talk/xmpp/xmppclient.h"
 
@@ -48,13 +49,15 @@ class XmppSignalStrategy : public SignalStrategy,
 
   JingleThread* thread_;
 
-  Listener* listener_;
-
   std::string username_;
   std::string auth_token_;
   std::string auth_token_service_;
   buzz::XmppClient* xmpp_client_;
+  IqRegistry iq_registry_;
+
   StatusObserver* observer_;
+  Listener* listener_;
+
 
   DISALLOW_COPY_AND_ASSIGN(XmppSignalStrategy);
 };

@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "remoting/jingle_glue/javascript_iq_request.h"
+#include "remoting/jingle_glue/iq_request.h"
 #include "third_party/libjingle/source/talk/p2p/base/sessionmanager.h"
 #include "third_party/libjingle/source/talk/xmpp/constants.h"
 #include "third_party/libjingle/source/talk/xmpp/xmppclient.h"

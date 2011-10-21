@@ -11,7 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
-#include "remoting/jingle_glue/javascript_iq_request.h"
+#include "remoting/jingle_glue/iq_request.h"
 #include "remoting/jingle_glue/xmpp_proxy.h"
 
 namespace remoting {
@@ -41,7 +41,7 @@ class JavascriptSignalStrategy : public SignalStrategy,
  private:
   std::string your_jid_;
   scoped_refptr<XmppProxy> xmpp_proxy_;
-  JavascriptIqRegistry iq_registry_;
+  IqRegistry iq_registry_;
 
   Listener* listener_;
 

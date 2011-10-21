@@ -608,8 +608,6 @@
       'sources': [
         'jingle_glue/iq_request.cc',
         'jingle_glue/iq_request.h',
-        'jingle_glue/javascript_iq_request.cc',
-        'jingle_glue/javascript_iq_request.h',
         'jingle_glue/javascript_signal_strategy.cc',
         'jingle_glue/javascript_signal_strategy.h',
         'jingle_glue/jingle_info_request.cc',
@@ -623,8 +621,6 @@
         'jingle_glue/ssl_adapter.cc',
         'jingle_glue/ssl_socket_adapter.cc',
         'jingle_glue/ssl_socket_adapter.h',
-        'jingle_glue/xmpp_iq_request.cc',
-        'jingle_glue/xmpp_iq_request.h',
         'jingle_glue/xmpp_proxy.h',
         'jingle_glue/xmpp_signal_strategy.cc',
         'jingle_glue/xmpp_signal_strategy.h',

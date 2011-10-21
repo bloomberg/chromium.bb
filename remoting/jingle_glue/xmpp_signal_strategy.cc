@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "jingle/notifier/base/gaia_token_pre_xmpp_auth.h"
+#include "remoting/jingle_glue/iq_request.h"
 #include "remoting/jingle_glue/jingle_thread.h"
-#include "remoting/jingle_glue/xmpp_iq_request.h"
 #include "remoting/jingle_glue/xmpp_socket_adapter.h"
 #include "third_party/libjingle/source/talk/base/asyncsocket.h"
 #include "third_party/libjingle/source/talk/xmpp/prexmppauth.h"
@@ -20,12 +20,12 @@ XmppSignalStrategy::XmppSignalStrategy(JingleThread* jingle_thread,
                                        const std::string& auth_token,
                                        const std::string& auth_token_service)
    : thread_(jingle_thread),
-     listener_(NULL),
      username_(username),
      auth_token_(auth_token),
      auth_token_service_(auth_token_service),
      xmpp_client_(NULL),
-     observer_(NULL) {
+     observer_(NULL),
+     listener_(NULL) {
 }
 
 XmppSignalStrategy::~XmppSignalStrategy() {
@@ -95,15 +95,13 @@ std::string XmppSignalStrategy::GetNextId() {
 }
 
 IqRequest* XmppSignalStrategy::CreateIqRequest() {
-  // TODO(sergeyu): Handle the case when |xmpp_client_| is NULL.
-  CHECK(xmpp_client_);
-  return new XmppIqRequest(thread_->message_loop(), xmpp_client_);
+  return new IqRequest(this, &iq_registry_);
 }
 
 bool XmppSignalStrategy::HandleStanza(const buzz::XmlElement* stanza) {
-  if (listener_)
-    return listener_->OnIncomingStanza(stanza);
-  return false;
+  if (listener_ && listener_->OnIncomingStanza(stanza))
+    return true;
+  return iq_registry_.OnIncomingStanza(stanza);
 }
 
 void XmppSignalStrategy::OnConnectionStateChanged(

@@ -78,7 +78,7 @@ std::string FakeSignalStrategy::GetNextId() {
 IqRequest* FakeSignalStrategy::CreateIqRequest() {
   DCHECK(CalledOnValidThread());
 
-  return new JavascriptIqRequest(this, &iq_registry_);
+  return new IqRequest(this, &iq_registry_);
 }
 
 void FakeSignalStrategy::OnIncomingMessage(buzz::XmlElement* stanza) {
