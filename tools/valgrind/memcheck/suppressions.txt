@@ -3702,15 +3702,6 @@
    fun:_ZN7WebCore14FrameSelection6modifyENS0_11EAlterationENS_18SelectionDirectionENS_15TextGranularityEb
 }
 {
-   bug_84780
-   Memcheck:Cond
-   fun:_ZN7WebCore23ReplaceSelectionCommand7doApplyEv
-   fun:_ZN7WebCore11EditCommand5applyEv
-   fun:_ZN7WebCore12applyCommandEN3WTF10PassRefPtrINS_11EditCommandEEE
-   fun:_ZN7WebCore6Editor28replaceSelectionWithFragmentEN3WTF10PassRefPtrINS_16DocumentFragmentEEEbbb
-   fun:_ZN7WebCore6Editor24replaceSelectionWithTextERKN3WTF6StringEbb
-}
-{
    bug_84833
    Memcheck:Leak
    fun:_Znw*
