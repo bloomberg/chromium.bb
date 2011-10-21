@@ -251,7 +251,8 @@ class TestingAutomationProvider : public AutomationProvider,
   void HandleFindWindowLocationRequest(int handle, int* x, int* y);
 
   // Get the visibility state of the Bookmark bar.
-  void GetBookmarkBarVisibility(int handle, bool* visible, bool* animating);
+  void GetBookmarkBarVisibility(
+      int handle, bool* visible, bool* animating, bool* detached);
 
   // Get the bookmarks as a JSON string.
   void GetBookmarksAsJSON(int handle, std::string* bookmarks_as_json,

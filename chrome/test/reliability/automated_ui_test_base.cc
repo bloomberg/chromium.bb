@@ -316,8 +316,10 @@ bool AutomatedUITestBase::SelectPreviousTab() {
 bool AutomatedUITestBase::ShowBookmarkBar() {
   bool is_visible;
   bool is_animating;
+  bool is_detached;
   if (!active_browser()->GetBookmarkBarVisibility(&is_visible,
-                                                  &is_animating)) {
+                                                  &is_animating,
+                                                  &is_detached)) {
     return false;
   }
 

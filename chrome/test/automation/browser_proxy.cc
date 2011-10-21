@@ -284,7 +284,8 @@ bool BrowserProxy::RunCommand(int browser_command) const {
 }
 
 bool BrowserProxy::GetBookmarkBarVisibility(bool* is_visible,
-                                            bool* is_animating) {
+                                            bool* is_animating,
+                                            bool* is_detached) {
   if (!is_valid())
     return false;
 
@@ -294,7 +295,7 @@ bool BrowserProxy::GetBookmarkBarVisibility(bool* is_visible,
   }
 
   return sender_->Send(new AutomationMsg_BookmarkBarVisibility(
-      handle_, is_visible, is_animating));
+      handle_, is_visible, is_animating, is_detached));
 }
 
 bool BrowserProxy::GetBookmarksAsJSON(std::string *json_string) {

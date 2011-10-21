@@ -374,18 +374,23 @@ TEST_F(AutomatedUITestBase, ShowBookmarkBar) {
   ASSERT_TRUE(ShowBookmarkBar());
   bool is_visible;
   bool is_animating;
+  bool is_detached;
   ASSERT_TRUE(active_browser()->GetBookmarkBarVisibility(&is_visible,
-                                                         &is_animating));
+                                                         &is_animating,
+                                                         &is_detached));
   ASSERT_TRUE(is_visible);
   ASSERT_FALSE(is_animating);
+  ASSERT_FALSE(is_detached);
 
   // Try second time to make sure it won't make the bookmark bar
   // disappear.
   ASSERT_TRUE(ShowBookmarkBar());
   ASSERT_TRUE(active_browser()->GetBookmarkBarVisibility(&is_visible,
-                                                         &is_animating));
+                                                         &is_animating,
+                                                         &is_detached));
   ASSERT_TRUE(is_visible);
   ASSERT_FALSE(is_animating);
+  ASSERT_FALSE(is_detached);
 }
 
 TEST_F(AutomatedUITestBase, ShowDownloads) {

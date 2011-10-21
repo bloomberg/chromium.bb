@@ -88,6 +88,7 @@
 #include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
 #include "chrome/browser/ui/app_modal_dialogs/native_app_modal_dialog.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
+#include "chrome/browser/ui/bookmarks/bookmark_bar.h"
 #include "chrome/browser/ui/browser_init.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
@@ -1728,32 +1729,23 @@ void TestingAutomationProvider::HandleFindWindowLocationRequest(int handle,
 }
 
 // Bookmark bar visibility is based on the pref (e.g. is it in the toolbar).
-// Presence in the NTP is NOT considered visible by this call.
+// Presence in the NTP is signalled in |detached|.
 void TestingAutomationProvider::GetBookmarkBarVisibility(int handle,
                                                          bool* visible,
-                                                         bool* animating) {
+                                                         bool* animating,
+                                                         bool* detached) {
   *visible = false;
   *animating = false;
 
   if (browser_tracker_->ContainsHandle(handle)) {
     Browser* browser = browser_tracker_->GetResource(handle);
     if (browser) {
-#if 0  // defined(TOOLKIT_VIEWS) && defined(OS_LINUX)
-      // TODO(jrg): Was removed in rev43789 for perf. Need to investigate.
-
-      // IsBookmarkBarVisible() line looks correct but is not
-      // consistent across platforms.  Specifically, on Mac/Linux, it
-      // returns false if the bar is hidden in a pref (even if visible
-      // on the NTP).  On ChromeOS, it returned true if on NTP
-      // independent of the pref.  Making the code more consistent
-      // caused a perf bot regression on Windows (which shares views).
-      // See http://crbug.com/40225
-      *visible = browser->profile()->GetPrefs()->GetBoolean(
-          prefs::kShowBookmarkBar);
-#else
-      *visible = browser->window()->IsBookmarkBarVisible();
-#endif
+      // browser->window()->IsBookmarkBarVisible() is not consistent across
+      // platforms. bookmark_bar_state() also follows prefs::kShowBookmarkBar
+      // and has a shared implementation on all platforms.
+      *visible = browser->bookmark_bar_state() == BookmarkBar::SHOW;
       *animating = browser->window()->IsBookmarkBarAnimating();
+      *detached = browser->bookmark_bar_state() == BookmarkBar::DETACHED;
     }
   }
 }

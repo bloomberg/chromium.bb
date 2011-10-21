@@ -118,8 +118,6 @@
       '-special_tabs.SpecialTabsTest.testSpecialURLTabs',
       # crbug.com/88593
       '-sync.SyncTest.testPersonalStuffSyncSection',
-      # crbug.com/98918
-      '-policy.PolicyTest.testBookmarkBarPolicy',
       # crbug.com/100217
       '-policy.PolicyTest.testBlacklistPolicy',
       # crbug.com/100591

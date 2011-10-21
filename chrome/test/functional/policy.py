@@ -58,24 +58,14 @@ class PolicyTest(pyauto.PyUITest):
 
   def testBookmarkBarPolicy(self):
     """Tests the BookmarkBarEnabled policy."""
-    # The browser already starts at about:blank, but strangely it loses 2
-    # pixels of the innerHeight after explicitly navigating once.
     self.NavigateToURL('about:blank')
     self.assertFalse(self.GetBookmarkBarVisibility())
+    self.assertFalse(self.IsBookmarkBarDetached())
 
-    # The browser starts at about:blank. |fullHeight| is the inner height of the
-    # content area, when there is no bookmark bar at all.
-    fullHeight = self.GetInnerHeight()
-
-    # It should be visible in detached state, in the NTP. When on that state,
-    # the content is pushed down to make room for the bookmark bar.
+    # It should be visible in detached state, in the NTP.
     self.NavigateToURL('chrome://newtab')
-    # |GetBookmarkBarVisibility()| returns true when the bookmark bar is
-    # visible on the window, attached to the location bar. So it should still
-    # be not visible on the window, but the inner height must have decreased.
-    self.assertTrue(self.WaitForBookmarkBarVisibilityChange(False))
     self.assertFalse(self.GetBookmarkBarVisibility())
-    self.assertTrue(self.GetInnerHeight() < fullHeight)
+    self.assertTrue(self.IsBookmarkBarDetached())
 
     policy = {
       'BookmarkBarEnabled': True
@@ -84,10 +74,12 @@ class PolicyTest(pyauto.PyUITest):
 
     self.assertTrue(self.WaitForBookmarkBarVisibilityChange(True))
     self.assertTrue(self.GetBookmarkBarVisibility())
+    self.assertFalse(self.IsBookmarkBarDetached())
     # The accelerator should be disabled by the policy.
     self.ApplyAccelerator(pyauto.IDC_SHOW_BOOKMARK_BAR)
     self.assertTrue(self.WaitForBookmarkBarVisibilityChange(True))
     self.assertTrue(self.GetBookmarkBarVisibility())
+    self.assertFalse(self.IsBookmarkBarDetached())
 
     policy['BookmarkBarEnabled'] = False
     self.SetPolicies(policy)
@@ -98,8 +90,8 @@ class PolicyTest(pyauto.PyUITest):
     self.assertTrue(self.WaitForBookmarkBarVisibilityChange(False))
     self.assertFalse(self.GetBookmarkBarVisibility())
     # When disabled by policy, it should never be displayed at all,
-    # not even on the NTP. So the content should have the maximum height.
-    self.assertEqual(fullHeight, self.GetInnerHeight())
+    # not even on the NTP.
+    self.assertFalse(self.IsBookmarkBarDetached())
 
 
 if __name__ == '__main__':

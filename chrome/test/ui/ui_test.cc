@@ -322,7 +322,8 @@ bool UITestBase::WaitForBookmarkBarVisibilityChange(BrowserProxy* browser,
   for (int i = 0; i < kCycles; i++) {
     bool visible = false;
     bool animating = true;
-    if (!browser->GetBookmarkBarVisibility(&visible, &animating))
+    bool detached;
+    if (!browser->GetBookmarkBarVisibility(&visible, &animating, &detached))
       return false;  // Some error.
     if (visible == wait_for_open && !animating)
       return true;  // Bookmark bar visibility change complete.

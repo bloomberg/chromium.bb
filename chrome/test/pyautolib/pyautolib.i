@@ -286,6 +286,10 @@ class PyUITestBase {
            "(to the chrome).") GetBookmarkBarVisibility;
   bool GetBookmarkBarVisibility();
 
+  %feature("docstring", "Determine if the bookmark bar is detached. "
+           "This usually is only true on the NTP.") IsBookmarkBarDetached;
+  bool IsBookmarkBarDetached();
+
   %feature("docstring", "Wait for the bookmark bar animation to complete. "
            "|wait_for_open| specifies which kind of change we wait for.")
       WaitForBookmarkBarVisibilityChange;

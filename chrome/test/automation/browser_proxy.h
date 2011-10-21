@@ -138,9 +138,12 @@ class BrowserProxy : public AutomationResourceProxy {
   bool RunCommand(int browser_command) const WARN_UNUSED_RESULT;
 
   // Returns whether the Bookmark bar is visible and whether we are animating
-  // it into position. Returns false on failure.
+  // it into position. Also returns whether it is currently detached from the
+  // location bar, as in the NTP.
+  // Returns false on failure.
   bool GetBookmarkBarVisibility(bool* is_visible,
-                                bool* is_animating) WARN_UNUSED_RESULT;
+                                bool* is_animating,
+                                bool* is_detached) WARN_UNUSED_RESULT;
 
   // Get the bookmarks as a JSON string and put it in |json_string|.
   // Return true on success.

@@ -130,6 +130,9 @@ class PyUITestBase : public UITestBase {
   // Returns bookmark bar visibility state.
   bool GetBookmarkBarVisibility();
 
+  // Returns true if the bookmark bar is visible in the detached state.
+  bool IsBookmarkBarDetached();
+
   // Returns bookmark bar animation state.  Warning: timing issues may
   // change this return value unexpectedly.
   bool IsBookmarkBarAnimating();
@@ -192,6 +195,9 @@ class PyUITestBase : public UITestBase {
   }
 
  private:
+  // Gets the current state of the bookmark bar. Returns false if it failed.
+  bool GetBookmarkBarState(bool* visible, bool* detached);
+
   // Enables PostTask to main thread.
   // Should be shared across multiple instances of PyUITestBase so that this
   // class is re-entrant and multiple instances can be created.

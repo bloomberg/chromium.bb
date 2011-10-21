@@ -744,12 +744,12 @@ IPC_SYNC_MESSAGE_CONTROL1_2(AutomationMsg_FindWindowLocation,
                             int /* x */,
                             int /* y */)
 
-// Is the Bookmark bar visible? The return value will indicate whether it is
-// visible or not and whether it is being animated into (or out of its place).
-IPC_SYNC_MESSAGE_CONTROL1_2(AutomationMsg_BookmarkBarVisibility,
+// Gets the bookmark bar visibility, animating and detached states.
+// TODO(phajdan.jr): Adjust the last param when the reference build is updated.
+IPC_SYNC_MESSAGE_CONTROL1_3(AutomationMsg_BookmarkBarVisibility,
                             int /* browser_handle */,
                             bool, /* is_visible */
-                            bool  /* still_animating */)
+                            bool, /* still_animating */ bool /* is_detached */)
 
 // This message requests the number of related info bars opened.  It
 // returns -1 if an error occurred.
