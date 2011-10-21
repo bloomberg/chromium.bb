@@ -4840,26 +4840,7 @@
    fun:_ZN7WebCore11RenderBlock5paintERNS_9PaintInfoERKNS_8IntPointE
 }
 {
-   bug_101098a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN7WebCoreL18makeExternalStringERKN3WTF6StringE
-   fun:_ZN7WebCore11StringCache20v8ExternalStringSlowEPN3WTF10StringImplE
-   fun:_ZN7WebCore11StringCache16v8ExternalStringEPN3WTF10StringImplE
-   fun:_ZN7WebCore16v8ExternalStringERKN3WTF6StringE
-}
-{
-   bug_101098b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN11webkit_glue16WebURLLoaderImplC1Ev
-   fun:_ZN11webkit_glue25WebKitPlatformSupportImpl15createURLLoaderEv
-   fun:_ZN7WebCore22ResourceHandleInternal5startEv
-   fun:_ZN7WebCore14ResourceHandle5startEPNS_17NetworkingContextE
-   fun:_ZN7WebCore14ResourceHandle6createEPNS_17NetworkingContextERKNS_15ResourceRequestEPNS_20ResourceHandleClientEbb
-}
-{
-   bug_101098c
+   bug_101145a
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN2v88internal2OS15CreateSemaphoreEi
@@ -4869,7 +4850,7 @@
    fun:_ZN7WebCore27WorkerContextExecutionProxy8evaluateERKN3WTF6StringES4_RKNS1_12TextPositionEPNS_27WorkerContextExecutionStateE
 }
 {
-   bug_101098d
+   bug_101145b
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN7WebCore23v8StringToWebCoreStringIN3WTF6StringEEET_N2v86HandleINS4_6StringEEENS_12ExternalModeE
@@ -4879,7 +4860,26 @@
    fun:_ZN7WebCore15V8WorkerContext21importScriptsCallbackERKN2v89ArgumentsE
 }
 {
-   bug_101098e
+   bug_101145c
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7WebCoreL18makeExternalStringERKN3WTF6StringE
+   fun:_ZN7WebCore11StringCache20v8ExternalStringSlowEPN3WTF10StringImplE
+   fun:_ZN7WebCore11StringCache16v8ExternalStringEPN3WTF10StringImplE
+   fun:_ZN7WebCore16v8ExternalStringERKN3WTF6StringE
+}
+{
+   bug_101146a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN11webkit_glue16WebURLLoaderImplC1Ev
+   fun:_ZN11webkit_glue25WebKitPlatformSupportImpl15createURLLoaderEv
+   fun:_ZN7WebCore22ResourceHandleInternal5startEv
+   fun:_ZN7WebCore14ResourceHandle5startEPNS_17NetworkingContextE
+   fun:_ZN7WebCore14ResourceHandle6createEPNS_17NetworkingContextERKNS_15ResourceRequestEPNS_20ResourceHandleClientEbb
+}
+{
+   bug_101146b
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN18ResourceDispatcher12CreateBridgeERKN11webkit_glue20ResourceLoaderBridge11RequestInfoE
