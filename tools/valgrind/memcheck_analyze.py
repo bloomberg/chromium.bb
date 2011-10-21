@@ -35,11 +35,13 @@ _BORING_CALLERS = [
 
   # Don't show our testing framework:
   "_ZN7testing4Test3RunEv",
+  "_ZN7testing8TestInfo3RunEv",
   "_ZN7testing8internal35HandleExceptionsInMethodIfSupported.*",
   "_ZN7testing8internal38HandleSehExceptionsInMethodIfSupported.*",
 
   # Depends on scheduling:
   "_ZN11MessageLoop3RunEv",
+  "_ZN11MessageLoop7RunTask.*",
   "_ZN14RunnableMethod.*",
   "_ZN16RunnableFunction.*",
   "_Z.?16DispatchToMethod.*",

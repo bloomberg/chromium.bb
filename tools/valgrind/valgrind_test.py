@@ -642,6 +642,7 @@ class ThreadSanitizerBase(object):
     ret += ["--cut_stack_below=testing*Test*Run*"]
     ret += ["--cut_stack_below=testing*Handle*ExceptionsInMethodIfSupported"]
     ret += ["--cut_stack_below=MessageLoop*Run"]
+    ret += ["--cut_stack_below=MessageLoop*RunTask"]
     ret += ["--cut_stack_below=RunnableMethod*"]
     ret += ["--cut_stack_below=RunnableFunction*"]
     ret += ["--cut_stack_below=DispatchToMethod*"]
@@ -827,8 +828,8 @@ class DrMemory(BaseTool):
              "build\\src,chromium\\src,crt_build\\self_x86"]
     proc += ["-callstack_truncate_below",
              "main,BaseThreadInitThunk,"+
-             "testing*Test*Run*,testing::internal::Handle*Exceptions*,"+
-             "MessageLoop::Run,"+
+             "testing::Test*::Run*,testing::internal::Handle*Exceptions*,"+
+             "MessageLoop::Run,MessageLoop::RunTask,"+
              "RunnableMethod*,RunnableFunction*,DispatchToMethod*"]
     proc += ["-callstack_modname_hide",
              "*.exe,chrome.dll"]
