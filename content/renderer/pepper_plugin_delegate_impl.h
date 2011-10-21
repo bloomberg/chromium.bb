@@ -200,6 +200,8 @@ class PepperPluginDelegateImpl
                                   bool focused) OVERRIDE;
   virtual void PluginTextInputTypeChanged(
       webkit::ppapi::PluginInstance* instance) OVERRIDE;
+  virtual void PluginCaretPositionChanged(
+      webkit::ppapi::PluginInstance* instance) OVERRIDE;
   virtual void PluginRequestedCancelComposition(
       webkit::ppapi::PluginInstance* instance) OVERRIDE;
   virtual void PluginCrashed(webkit::ppapi::PluginInstance* instance);

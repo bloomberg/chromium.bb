@@ -17,6 +17,7 @@ class MockPluginDelegate : public PluginDelegate {
 
   virtual void PluginFocusChanged(PluginInstance* instance, bool focused);
   virtual void PluginTextInputTypeChanged(PluginInstance* instance);
+  virtual void PluginCaretPositionChanged(PluginInstance* instance);
   virtual void PluginRequestedCancelComposition(PluginInstance* instance);
   virtual void PluginCrashed(PluginInstance* instance);
   virtual void InstanceCreated(PluginInstance* instance);

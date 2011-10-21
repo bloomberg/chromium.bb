@@ -4201,10 +4201,15 @@ void RenderViewImpl::OnSetFocus(bool enable) {
 
 void RenderViewImpl::PpapiPluginFocusChanged() {
   UpdateTextInputState();
+  UpdateSelectionBounds();
 }
 
 void RenderViewImpl::PpapiPluginTextInputTypeChanged() {
   UpdateTextInputState();
+}
+
+void RenderViewImpl::PpapiPluginCaretPositionChanged() {
+  UpdateSelectionBounds();
 }
 
 void RenderViewImpl::PpapiPluginCancelComposition() {
@@ -4297,9 +4302,18 @@ ui::TextInputType RenderViewImpl::GetTextInputType() {
       pepper_delegate_.GetTextInputType() : RenderWidget::GetTextInputType();
 }
 
-gfx::Rect RenderViewImpl::GetCaretBounds() {
-  return pepper_delegate_.IsPluginFocused() ?
-      pepper_delegate_.GetCaretBounds() : RenderWidget::GetCaretBounds();
+void RenderViewImpl::GetSelectionBounds(gfx::Rect* start, gfx::Rect* end) {
+  if (pepper_delegate_.IsPluginFocused()) {
+    // TODO(kinaba) http://crbug.com/101101
+    // Current Pepper IME API does not handle selection bounds. So we simply
+    // use the caret position as an empty range for now. It will be updated
+    // after Pepper API equips features related to surrounding text retrieval.
+    gfx::Rect caret = pepper_delegate_.GetCaretBounds();
+    *start = caret;
+    *end = caret;
+    return;
+  }
+  RenderWidget::GetSelectionBounds(start, end);
 }
 
 bool RenderViewImpl::CanComposeInline() {

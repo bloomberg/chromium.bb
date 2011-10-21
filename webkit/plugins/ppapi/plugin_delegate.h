@@ -251,6 +251,9 @@ class PluginDelegate {
   // Notification that the text input status of the given plugin is changed.
   virtual void PluginTextInputTypeChanged(
       webkit::ppapi::PluginInstance* instance) = 0;
+  // Notification that the caret position in the given plugin is changed.
+  virtual void PluginCaretPositionChanged(
+      webkit::ppapi::PluginInstance* instance) = 0;
   // Notification that the plugin requested to cancel the current composition.
   virtual void PluginRequestedCancelComposition(
       webkit::ppapi::PluginInstance* instance) = 0;

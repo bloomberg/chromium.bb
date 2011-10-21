@@ -25,6 +25,9 @@ void MockPluginDelegate::PluginFocusChanged(PluginInstance* instance,
 void MockPluginDelegate::PluginTextInputTypeChanged(PluginInstance* instance) {
 }
 
+void MockPluginDelegate::PluginCaretPositionChanged(PluginInstance* instance) {
+}
+
 void MockPluginDelegate::PluginRequestedCancelComposition(
     PluginInstance* instance) {
 }

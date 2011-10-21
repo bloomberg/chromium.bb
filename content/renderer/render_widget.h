@@ -292,7 +292,7 @@ class CONTENT_EXPORT RenderWidget
   // Override point to obtain that the current input method state and caret
   // position.
   virtual ui::TextInputType GetTextInputType();
-  virtual gfx::Rect GetCaretBounds();
+  virtual void GetSelectionBounds(gfx::Rect* start, gfx::Rect* end);
 
   // Override point to obtain that the current input method state about
   // composition text.

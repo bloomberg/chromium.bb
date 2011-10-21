@@ -628,10 +628,12 @@ void PluginInstance::UpdateCaretPosition(const gfx::Rect& caret,
   text_input_caret_ = caret;
   text_input_caret_bounds_ = bounding_box;
   text_input_caret_set_ = true;
+  delegate()->PluginCaretPositionChanged(this);
 }
 
 void PluginInstance::SetTextInputType(ui::TextInputType type) {
   text_input_type_ = type;
+  delegate()->PluginTextInputTypeChanged(this);
 }
 
 bool PluginInstance::IsPluginAcceptingCompositionEvents() const {

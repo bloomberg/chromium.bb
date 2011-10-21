@@ -255,6 +255,7 @@ class RenderViewImpl : public RenderWidget,
 
   // Informs the render view that a PPAPI plugin has changed text input status.
   void PpapiPluginTextInputTypeChanged();
+  void PpapiPluginCaretPositionChanged();
 
   // Cancels current composition.
   void PpapiPluginCancelComposition();
@@ -649,7 +650,7 @@ class RenderViewImpl : public RenderWidget,
   virtual void OnImeConfirmComposition(
       const string16& text, const ui::Range& replacement_range) OVERRIDE;
   virtual ui::TextInputType GetTextInputType() OVERRIDE;
-  virtual gfx::Rect GetCaretBounds() OVERRIDE;
+  virtual void GetSelectionBounds(gfx::Rect* start, gfx::Rect* end) OVERRIDE;
   virtual bool CanComposeInline() OVERRIDE;
   virtual bool WebWidgetHandlesCompositorScheduling() const OVERRIDE;
 

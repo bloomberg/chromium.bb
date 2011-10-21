@@ -1313,22 +1313,21 @@ void RenderWidget::UpdateTextInputState() {
   }
 }
 
-gfx::Rect RenderWidget::GetCaretBounds() {
-  if (!webwidget_)
-    return gfx::Rect();
-  return webwidget_->caretOrSelectionBounds();
+void RenderWidget::GetSelectionBounds(gfx::Rect* start, gfx::Rect* end) {
+  WebRect start_webrect;
+  WebRect end_webrect;
+  webwidget_->selectionBounds(start_webrect, end_webrect);
+  *start = start_webrect;
+  *end = end_webrect;
 }
 
 void RenderWidget::UpdateSelectionBounds() {
   if (!webwidget_)
     return;
 
-  WebRect start;
-  WebRect end;
-  webwidget_->selectionBounds(start, end);
-
-  gfx::Rect start_rect = start;
-  gfx::Rect end_rect = end;
+  gfx::Rect start_rect;
+  gfx::Rect end_rect;
+  GetSelectionBounds(&start_rect, &end_rect);
   if (selection_start_rect_ == start_rect && selection_end_rect_ == end_rect)
     return;
 

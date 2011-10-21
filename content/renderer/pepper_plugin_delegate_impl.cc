@@ -867,6 +867,12 @@ void PepperPluginDelegateImpl::PluginTextInputTypeChanged(
     render_view_->PpapiPluginTextInputTypeChanged();
 }
 
+void PepperPluginDelegateImpl::PluginCaretPositionChanged(
+    webkit::ppapi::PluginInstance* instance) {
+  if (focused_plugin_ == instance && render_view_)
+    render_view_->PpapiPluginCaretPositionChanged();
+}
+
 void PepperPluginDelegateImpl::PluginRequestedCancelComposition(
     webkit::ppapi::PluginInstance* instance) {
   if (focused_plugin_ == instance && render_view_)
