@@ -111,7 +111,14 @@ class ExtensionConfig {
  private:
   friend struct DefaultSingletonTraits<ExtensionConfig>;
 
-  ExtensionConfig() { }
+  ExtensionConfig() {
+    // Whitelist ChromeVox, an accessibility extension from Google that needs
+    // the ability to script webui pages. This is temporary and is not
+    // meant to be a general solution.
+    // TODO(dmazzoni): remove this once we have an extension API that
+    // allows any extension to request read-only access to webui pages.
+    scripting_whitelist_.push_back("kgejglhpjiefppelpmljglcjbhoiplfn");
+  }
   ~ExtensionConfig() { }
 
   // A whitelist of extensions that can script anywhere. Do not add to this
