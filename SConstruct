@@ -3024,7 +3024,6 @@ if not nacl_env.Bit('nacl_glibc'):
       BUILD_SCONSCRIPTS = [
         ####  ALPHABETICALLY SORTED ####
         'src/untrusted/pthread/nacl.scons',
-        'src/untrusted/startup/nacl.scons',
         'src/untrusted/stubs/nacl.scons',
         'src/untrusted/nosys/nacl.scons',
         ####  ALPHABETICALLY SORTED ####
@@ -3282,11 +3281,11 @@ if not nacl_irt_env.Bit('bitcode'):
   nacl_irt_env.Append(CCFLAGS=['-mtls-use-call'])
 
 # TODO(mcgrathr): Clean up uses of these methods.
-def AddLibraryDummy(env, nodes, is_platform=False):
+def AddLibraryDummy(env, nodes):
   return nodes
 nacl_irt_env.AddMethod(AddLibraryDummy, 'AddLibraryToSdk')
 
-def AddObjectInternal(env, nodes, is_platform=False):
+def AddObjectInternal(env, nodes):
   return env.Replicate('${LIB_DIR}', nodes)
 nacl_env.AddMethod(AddObjectInternal, 'AddObjectToSdk')
 nacl_irt_env.AddMethod(AddObjectInternal, 'AddObjectToSdk')
@@ -3316,14 +3315,8 @@ def PublishHeader(env, nodes, subdir):
     env.Alias('install', env.Alias('install_headers', n))
     return n
 
-# TODO(pdox): Get rid of install_lib_platform / install_lib_portable
-#             by having a "bitcode" target platform.
-def PublishLibrary(env, nodes, is_platform):
+def PublishLibrary(env, nodes):
   env.Alias('build_lib', nodes)
-  if is_platform:
-    env.Alias('build_lib_platform', nodes)
-  else:
-    env.Alias('build_lib_portable', nodes)
 
   if ('install' in COMMAND_LINE_TARGETS or
       'install_lib' in COMMAND_LINE_TARGETS):
@@ -3332,32 +3325,21 @@ def PublishLibrary(env, nodes, is_platform):
     env.Alias('install', env.Alias('install_lib', n))
     return n
 
-  if is_platform and 'install_lib_platform' in COMMAND_LINE_TARGETS:
-    dir = env.GetAbsDirArg('libdir', 'install_lib_platform')
-    n = env.Install(dir, nodes)
-    env.Alias('install_lib_platform', n)
-    return n
-  elif not is_platform and 'install_lib_portable' in COMMAND_LINE_TARGETS:
-    dir = env.GetAbsDirArg('libdir', 'install_lib_portable')
-    n = env.Install(dir, nodes)
-    env.Alias('install_lib_portable', n)
-    return n
-
 def NaClAddHeader(env, nodes, subdir='nacl'):
   n = AddHeaderInternal(env, nodes, subdir)
   PublishHeader(env, n, subdir)
   return n
 nacl_env.AddMethod(NaClAddHeader, 'AddHeaderToSdk')
 
-def NaClAddLibrary(env, nodes, is_platform=False):
+def NaClAddLibrary(env, nodes):
   nodes = env.Replicate('${LIB_DIR}', nodes)
-  PublishLibrary(env, nodes, is_platform)
+  PublishLibrary(env, nodes)
   return nodes
 nacl_env.AddMethod(NaClAddLibrary, 'AddLibraryToSdk')
 
-def NaClAddObject(env, nodes, is_platform=False):
+def NaClAddObject(env, nodes):
   lib_nodes = env.Replicate('${LIB_DIR}', nodes)
-  PublishLibrary(env, lib_nodes, is_platform)
+  PublishLibrary(env, lib_nodes)
   return lib_nodes
 nacl_env.AddMethod(NaClAddObject, 'AddObjectToSdk')
 
@@ -3372,14 +3354,17 @@ def AddImplicitLibs(env):
     # are the ones providing these files, so we need dependencies.
     # The ComponentProgram method (site_scons/site_tools/component_builders.py)
     # adds dependencies on env['IMPLICIT_LIBS'] if that's set.
-    implicit_libs = ['crt1.o', 'libnacl.a', 'libcrt_platform.a']
-    # TODO(mcgrathr): multilib nonsense defeats -B!  figure out a better way.
-    if GetPlatform('targetplatform') == 'x86-32':
-      implicit_libs.append(os.path.join('32', 'crt1.o'))
     if env.Bit('bitcode'):
-      implicit_libs += ['nacl_startup.bc']
+      implicit_libs = ['libnacl.a']
     else:
-      implicit_libs += ['crti.o', 'crtn.o']
+      implicit_libs = ['crt1.o',
+                       'libnacl.a',
+                       'libcrt_platform.a',
+                       'crti.o',
+                       'crtn.o']
+      # TODO(mcgrathr): multilib nonsense defeats -B!  figure out a better way.
+      if GetPlatform('targetplatform') == 'x86-32':
+        implicit_libs.append(os.path.join('32', 'crt1.o'))
     env['IMPLICIT_LIBS'] = [env.File(os.path.join('${LIB_DIR}', file))
                             for file in implicit_libs]
     # The -B<dir>/ flag is necessary to tell gcc to look for crt[1in].o there.
@@ -3397,7 +3382,6 @@ nacl_irt_env.Append(
         'src/shared/srpc/nacl.scons',
         'src/untrusted/irt/nacl.scons',
         'src/untrusted/nacl/nacl.scons',
-        'src/untrusted/startup/nacl.scons',
         'src/untrusted/stubs/nacl.scons',
     ])
 

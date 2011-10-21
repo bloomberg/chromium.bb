@@ -3419,7 +3419,7 @@ sdk-libs() {
       "${SCONS_COMMON[@]}" \
       ${extra_flags} \
       platform=${neutral_platform} \
-      install_lib_portable \
+      install_lib \
       libdir="$(PosixToSysPath "${INSTALL_SDK_LIB}")"
 }
 

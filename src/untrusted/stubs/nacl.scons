@@ -11,21 +11,18 @@ import os
 # Unlike most untrusted SDK code, conditional compilation may be
 # freely used, as the target will never be PNaCl.
 
+if env.Bit('bitcode'):
+  Return()
+
 def GetPlatformSuffix(env):
   platform = env.get('TARGET_FULLARCH')
-  assert platform in ['x86-32',  'x86-64', 'arm', 'arm-thumb2']
+  assert platform in ['x86-32',  'x86-64']
   # we do not like hyphens in file names
   return platform.replace('-', '_')
 
 platform = GetPlatformSuffix(env)
 
-native_env = env.Clone()
-if native_env.Bit('bitcode'):
-  native_env.PNaClForceNative()
-
 # This is a dummy linker script (a source file), not an actual object file.
-# Note that even for the bitcode case we call it crt1.o rather than crt1.bc,
-# just because of the tradition of using that exact name in linking rules.
 crt1 = env.InstallAs('crt1.o', 'crt1.x')
 env.AddObjectToSdk([crt1])
 
@@ -38,17 +35,9 @@ if platform == 'x86_32':
 # them from newlib, while pnacl's newlib is arch neutral
 platform_objs = []
 
-if env.Bit('bitcode'):
-  bookends = []
-  platform_objs.append(native_env.StaticObject('setjmp.o',
-                                               ['setjmp_%s.S' % platform]))
-else:
-  bookends = [native_env.ComponentObject('crti', ['crti_%s.S' % platform]),
-              native_env.ComponentObject('crtn', ['crtn_%s.S' % platform])]
+bookends = [env.ComponentObject('crti', ['crti_%s.S' % platform]),
+            env.ComponentObject('crtn', ['crtn_%s.S' % platform])]
 
-if env.Bit('target_arm'):
-  platform_objs.append('aeabi_read_tp.S')
+crt_platform = env.StaticLibrary('crt_platform', platform_objs)
 
-crt_platform = native_env.StaticLibrary('crt_platform', platform_objs)
-
-native_env.AddObjectToSdk([crt_platform] + bookends, is_platform=True)
+env.AddObjectToSdk([crt_platform] + bookends)

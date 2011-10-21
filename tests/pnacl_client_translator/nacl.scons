@@ -28,17 +28,6 @@ if env.Bit('nacl_glibc'):
 def DashFreeArch(arch):
   return arch.replace('-', '')
 
-# Sigh, cases where we use the dash.
-def ArchFromTargetPlatform():
-  if env.Bit('target_x86_32'):
-    return 'x86-32'
-  elif env.Bit('target_x86_64'):
-    return 'x86-64'
-  elif env.Bit('target_arm'):
-    return 'arm'
-  else:
-    raise Exception('unknown architecture')
-
 # Return a pair of files, representing a mapping
 # from an URL to path in the staging directory.
 def MappingForStagedFile(f):
@@ -74,17 +63,6 @@ def LayoutTranslatorBinariesOnServer():
   map_files = []
   replicates = [] # track staging dependencies
 
-  # We need to pull some files from extra_sdk. Unfortunately, this is
-  # only guaranteed to be built for the current target platform.
-  # TODO(jvoung): stage the sdk libs for other platforms, not
-  # just the one that you are building.
-  sdk_lib_dir = '${TARGET_ROOT}/lib/'
-  sdk_native_libs = [(sdk_lib_dir + x)
-                     for x in ['crt1.o', 'libcrt_platform.a']]
-
-  arch = ArchFromTargetPlatform()
-  ReplicateAndMap(sdk_native_libs, arch, replicates, map_files)
-
   toolchain_dir = '${PNACL_ROOT}'
   for arch in ['arm', 'x86-32', 'x86-64']:
     toolchain_bin = '%s/tools-sb/%s/srpc/bin/' % (toolchain_dir,
@@ -92,7 +70,9 @@ def LayoutTranslatorBinariesOnServer():
     toolchain_binaries = [toolchain_bin + 'llc', toolchain_bin + 'ld']
     toolchain_lib_dir = '%s/lib-%s/' % (toolchain_dir, arch)
     toolchain_native_libs = [(toolchain_lib_dir + x)
-                             for x in ['libgcc.a','libgcc_eh.a']]
+                             for x in ['libgcc.a',
+                                       'libgcc_eh.a',
+                                       'libcrt_platform.a']]
 
     toolchain_local_files = toolchain_native_libs + toolchain_binaries
     ReplicateAndMap(toolchain_local_files,
