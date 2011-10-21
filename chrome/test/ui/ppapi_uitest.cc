@@ -239,7 +239,7 @@ TEST_PPAPI_OUT_OF_PROCESS(VideoDecoder)
 TEST_F(PPAPITest, FAILS_FileIO) {
   RunTestViaHTTP("FileIO");
 }
-#ifdef ADDRESS_SANITIZER
+#if defined(ADDRESS_SANITIZER) || defined(OS_MACOSX)
 #define MAYBE_FileIO DISABLED_FileIO
 #else
 #define MAYBE_FileIO FAILS_FileIO
