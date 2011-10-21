@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+<include src="keyboard_overlay_data.js"/>
+<include src="keyboard_overlay_accessibility_helper.js"/>
+
 var BASE_KEYBOARD = {
   top: 0,
   left: 0,

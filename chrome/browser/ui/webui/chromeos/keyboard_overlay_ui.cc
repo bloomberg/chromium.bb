@@ -13,6 +13,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -178,27 +179,22 @@ std::string ModifierKeyToLabel(ModifierKey modifier) {
   return "";
 }
 
-}  // namespace
+ChromeWebUIDataSource* CreateKeyboardOverlayUIHTMLSource() {
+  ChromeWebUIDataSource* source =
+      new ChromeWebUIDataSource(chrome::kChromeUIKeyboardOverlayHost);
 
-class KeyboardOverlayUIHTMLSource : public ChromeURLDataManager::DataSource {
- public:
-  KeyboardOverlayUIHTMLSource();
-
-  // Called when the keyboard overlay has requested a resource underneath
-  // the path we registered.
-  virtual void StartDataRequest(const std::string& path,
-                                bool is_incognito,
-                                int request_id);
-  virtual std::string GetMimeType(const std::string&) const {
-    return "text/html";
+  for (size_t i = 0; i < arraysize(kI18nContentToMessage); ++i) {
+    source->AddLocalizedString(kI18nContentToMessage[i].i18n_content,
+                               kI18nContentToMessage[i].message);
   }
 
- private:
-  ~KeyboardOverlayUIHTMLSource() {}
+  source->set_json_path("strings.js");
+  source->add_resource_path("keyboard_overlay.js", IDR_KEYBOARD_OVERLAY_JS);
+  source->set_default_resource(IDR_KEYBOARD_OVERLAY_HTML);
+  return source;
+}
 
-  DISALLOW_COPY_AND_ASSIGN(KeyboardOverlayUIHTMLSource);
-};
-
+}  // namespace
 
 // The handler for Javascript messages related to the "keyboardoverlay" view.
 class KeyboardOverlayHandler
@@ -225,36 +221,6 @@ class KeyboardOverlayHandler
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardOverlayHandler);
 };
-
-////////////////////////////////////////////////////////////////////////////////
-//
-// KeyboardOverlayUIHTMLSource
-//
-////////////////////////////////////////////////////////////////////////////////
-
-KeyboardOverlayUIHTMLSource::KeyboardOverlayUIHTMLSource()
-    : DataSource(chrome::kChromeUIKeyboardOverlayHost,
-                 MessageLoop::current()) {
-}
-
-void KeyboardOverlayUIHTMLSource::StartDataRequest(const std::string& path,
-                                                   bool is_incognito,
-                                                   int request_id) {
-  DictionaryValue localized_strings;
-  for (size_t i = 0; i < arraysize(kI18nContentToMessage); ++i) {
-    localized_strings.SetString(
-        kI18nContentToMessage[i].i18n_content,
-        l10n_util::GetStringUTF16(kI18nContentToMessage[i].message));
-  }
-
-  static const base::StringPiece keyboard_overlay_html(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_KEYBOARD_OVERLAY_HTML));
-  std::string full_html = jstemplate_builder::GetI18nTemplateHtml(
-      keyboard_overlay_html, &localized_strings);
-
-  SendResponse(request_id, base::RefCountedString::TakeString(&full_html));
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -322,11 +288,10 @@ void KeyboardOverlayHandler::GetLabelMap(const ListValue* args) {
 KeyboardOverlayUI::KeyboardOverlayUI(TabContents* contents)
     : HtmlDialogUI(contents) {
   Profile* profile = Profile::FromBrowserContext(contents->browser_context());
-  KeyboardOverlayHandler* handler =
-      new KeyboardOverlayHandler(profile);
+  KeyboardOverlayHandler* handler = new KeyboardOverlayHandler(profile);
   AddMessageHandler((handler)->Attach(this));
-  KeyboardOverlayUIHTMLSource* html_source = new KeyboardOverlayUIHTMLSource();
 
   // Set up the chrome://keyboardoverlay/ source.
-  profile->GetChromeURLDataManager()->AddDataSource(html_source);
+  profile->GetChromeURLDataManager()->AddDataSource(
+      CreateKeyboardOverlayUIHTMLSource());
 }
