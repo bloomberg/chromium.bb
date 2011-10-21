@@ -14,7 +14,6 @@
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/win_util.h"
-#include "base/win/windows_version.h"
 #include "base/win/wrapped_window_proc.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_state.h"
@@ -208,66 +207,6 @@ typedef BOOL (WINAPI *ChangeWindowMessageFilterExFunction)(
     DWORD action,
     PCHANGEFILTERSTRUCT change_filter_struct);
 ChangeWindowMessageFilterExFunction g_ChangeWindowMessageFilterEx;
-
-bool DecodeScrollGesture(WPARAM wParam,
-                         LPARAM lParam,
-                         POINT* start,
-                         POINT* delta){
-  // Windows gestures are streams of messages with begin/end messages that
-  // separate each new gesture. We key off the begin message to reset
-  // the static variables.
-  static POINT last_pt;
-  static POINT start_pt;
-
-  GESTUREINFO gi = {sizeof(GESTUREINFO)};
-  HGESTUREINFO gi_handle = reinterpret_cast<HGESTUREINFO>(lParam);
-  if (!::GetGestureInfo(gi_handle, &gi)) {
-    DWORD error = GetLastError();
-    NOTREACHED() << "Unable to get gesture info. Error : " << error;
-  }
-
-  if (gi.dwID != GID_PAN)
-    return false;
-
-  if (gi.dwFlags == GF_BEGIN) {
-    delta->x = 0;
-    delta->y = 0;
-    start_pt.x = gi.ptsLocation.x;
-    start_pt.y = gi.ptsLocation.y;
-  } else {
-    delta->x = gi.ptsLocation.x - last_pt.x;
-    delta->y = gi.ptsLocation.y - last_pt.y;
-  }
-  last_pt.x = gi.ptsLocation.x;
-  last_pt.y = gi.ptsLocation.y;
-  *start = start_pt;
-  ::CloseGestureInfoHandle(gi_handle);
-  return true;
-}
-
-WebKit::WebMouseWheelEvent MakeFakeScrollWheelEvent(HWND hwnd,
-                                                    POINT start,
-                                                    POINT delta) {
-  WebKit::WebMouseWheelEvent result;
-  result.type = WebInputEvent::MouseWheel;
-  result.timeStampSeconds = ::GetMessageTime() / 1000.0;
-  result.button = WebMouseEvent::ButtonNone;
-  result.globalX = start.x;
-  result.globalY = start.y;
-  // Map to window coordinates.
-  POINT clientPoint = { result.globalX, result.globalY };
-  MapWindowPoints(0, hwnd, &clientPoint, 1);
-  result.x = clientPoint.x;
-  result.y = clientPoint.y;
-  result.windowX = result.x;
-  result.windowY = result.y;
-  // Note that we support diagonal scrolling.
-  result.deltaX = static_cast<float>(delta.x);
-  result.wheelTicksX = WHEEL_DELTA;
-  result.deltaY = static_cast<float>(delta.y);
-  result.wheelTicksY = WHEEL_DELTA;
-  return result;
-}
 
 }  // namespace
 
@@ -852,23 +791,6 @@ LRESULT RenderWidgetHostViewWin::OnCreate(CREATESTRUCT* create_struct) {
   // Marks that window as supporting mouse-wheel messages rerouting so it is
   // scrolled when under the mouse pointer even if inactive.
   props_.push_back(ui::SetWindowSupportsRerouteMouseWheel(m_hWnd));
-
-  if (base::win::GetVersion() >= base::win::VERSION_WIN7) {
-    // Single finger panning is consistent with other windows applications.
-    const DWORD gesture_allow = GC_PAN_WITH_SINGLE_FINGER_VERTICALLY |
-                                GC_PAN_WITH_SINGLE_FINGER_HORIZONTALLY;
-    const DWORD gesture_block = GC_PAN_WITH_GUTTER;
-    GESTURECONFIG gc[] = {
-        { GID_ZOOM, GC_ZOOM, 0 },
-        { GID_PAN, gesture_allow , gesture_block},
-        { GID_TWOFINGERTAP, GC_TWOFINGERTAP , 0},
-        { GID_PRESSANDTAP, GC_PRESSANDTAP , 0}
-    };
-    if (!SetGestureConfig(m_hWnd, 0, arraysize(gc), gc, sizeof(GESTURECONFIG)))
-    {
-      NOTREACHED();
-    }
-  }
 
   return 0;
 }
@@ -1546,22 +1468,6 @@ LRESULT RenderWidgetHostViewWin::OnMouseActivate(UINT message,
   handled = FALSE;
   render_widget_host_->OnMouseActivate();
   return MA_ACTIVATE;
-}
-
-LRESULT RenderWidgetHostViewWin::OnGestureEvent(
-    UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled) {
-  // Right now we only decode scroll gestures and we forward to the page
-  // as scroll events.
-  POINT start;
-  POINT delta;
-  if (DecodeScrollGesture(wparam, lparam, &start, &delta)) {
-    handled = TRUE;
-    render_widget_host_->ForwardWheelEvent(
-        MakeFakeScrollWheelEvent(m_hWnd, start, delta));
-  } else {
-    handled = FALSE;
-  }
-  return 0;
 }
 
 void RenderWidgetHostViewWin::OnAccessibilityNotifications(
