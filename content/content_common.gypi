@@ -30,6 +30,7 @@
   'sources': [
     'public/common/bindings_policy.h',
     'public/common/child_process_sandbox_support_linux.h',
+    'public/common/content_paths.h',
     'public/common/content_switches.cc',
     'public/common/content_switches.h',
     'public/common/dx_diag_node.cc',
@@ -80,7 +81,6 @@
     'common/content_counters.cc',
     'common/content_counters.h',
     'common/content_paths.cc',
-    'common/content_paths.h',
     'common/content_restriction.h',
     'common/css_colors.h',
     'common/database_messages.h',

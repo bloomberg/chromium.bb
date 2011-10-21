@@ -22,7 +22,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/service_process_util.h"
-#include "content/common/content_paths.h"
+#include "content/public/common/content_paths.h"
 
 #if !defined(OS_MACOSX)
 

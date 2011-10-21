@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_CONTENT_PATHS_H_
-#define CONTENT_COMMON_CONTENT_PATHS_H_
+#ifndef CONTENT_PUBLIC_COMMON_CONTENT_PATHS_H_
+#define CONTENT_PUBLIC_COMMON_CONTENT_PATHS_H_
 #pragma once
 
 #include "content/common/content_export.h"
@@ -30,4 +30,4 @@ CONTENT_EXPORT void RegisterPathProvider();
 
 }  // namespace content
 
-#endif  // CONTENT_COMMON_CONTENT_PATHS_H_
+#endif  // CONTENT_PUBLIC_COMMON_CONTENT_PATHS_H_

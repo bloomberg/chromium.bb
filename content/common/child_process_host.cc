@@ -13,7 +13,7 @@
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "content/common/child_process_info.h"
 #include "content/common/child_process_messages.h"
-#include "content/common/content_paths.h"
+#include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "ipc/ipc_logging.h"
 

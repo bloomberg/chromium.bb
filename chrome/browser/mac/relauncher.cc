@@ -28,8 +28,8 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/mac/install_from_dmg.h"
 #include "chrome/common/chrome_switches.h"
-#include "content/common/content_paths.h"
 #include "content/common/main_function_params.h"
+#include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 
 // RTLD_MAIN_ONLY is supported as of Mac OS X 10.5, but <dlfcn.h> does not
