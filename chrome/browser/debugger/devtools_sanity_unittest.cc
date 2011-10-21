@@ -299,7 +299,7 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
     }
     virtual void WorkerDestroyed(
         WorkerProcessHost*,
-        const WorkerProcessHost::WorkerInstance&) OVERRIDE {}
+        int worker_route_id) OVERRIDE {}
     virtual void WorkerContextStarted(
         WorkerProcessHost*,
         int worker_route_id) OVERRIDE {}
@@ -320,9 +320,9 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
         const WorkerProcessHost::WorkerInstance& instance) OVERRIDE {}
     virtual void WorkerDestroyed(
         WorkerProcessHost* process,
-        const WorkerProcessHost::WorkerInstance& instance) OVERRIDE {
+        int worker_route_id) OVERRIDE {
       ASSERT_EQ(worker_data_->worker_process_id, process->id());
-      ASSERT_EQ(worker_data_->worker_route_id, instance.worker_route_id());
+      ASSERT_EQ(worker_data_->worker_route_id, worker_route_id);
       WorkerService::GetInstance()->RemoveObserver(this);
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
           new MessageLoop::QuitTask);

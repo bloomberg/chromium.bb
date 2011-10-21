@@ -224,56 +224,17 @@ void WorkerDevToolsManager::AgentHosts::Observe(
   DCHECK(!instance_);
 }
 
-class WorkerDevToolsManager::InspectedWorkersList {
- public:
-  InspectedWorkersList() {}
-
-  void AddInstance(WorkerProcessHost* host, int route_id) {
-    DCHECK(!Contains(host->id(), route_id));
-    map_.push_back(Entry(host, route_id));
-  }
-
-  bool Contains(int host_id, int route_id) {
-    return FindHost(host_id, route_id) != NULL;
-  }
-
-  WorkerProcessHost* FindHost(int host_id, int route_id) {
-    Entries::iterator it = FindEntry(host_id, route_id);
-    if (it == map_.end())
-      return NULL;
-    return it->host;
-  }
-
-  bool RemoveInstance(int host_id, int route_id) {
-    Entries::iterator it = FindEntry(host_id, route_id);
-    if (it == map_.end())
-      return false;
-    map_.erase(it);
-    return true;
-  }
-
- private:
-  struct Entry {
-    Entry(WorkerProcessHost* host, int route_id)
-        : host(host),
-          route_id(route_id) {}
-    WorkerProcessHost* const host;
-    int const route_id;
-  };
-  typedef std::list<Entry> Entries;
-
-  Entries::iterator FindEntry(int host_id, int route_id) {
-    Entries::iterator it = map_.begin();
-    while (it != map_.end()) {
-      if (it->host->id() == host_id && it->route_id == route_id)
-        break;
-      ++it;
-    }
-    return it;
-  }
-
-  Entries map_;
-  DISALLOW_COPY_AND_ASSIGN(InspectedWorkersList);
+struct WorkerDevToolsManager::InspectedWorker {
+  InspectedWorker(WorkerProcessHost* host, int route_id, const GURL& url,
+                  const string16& name)
+      : host(host),
+        route_id(route_id),
+        worker_url(url),
+        worker_name(name) {}
+  WorkerProcessHost* const host;
+  int const route_id;
+  GURL worker_url;
+  string16 worker_name;
 };
 
 // static
@@ -293,8 +254,7 @@ DevToolsAgentHost* WorkerDevToolsManager::GetDevToolsAgentHostForWorker(
   return result;
 }
 
-WorkerDevToolsManager::WorkerDevToolsManager()
-    : inspected_workers_(new InspectedWorkersList()) {
+WorkerDevToolsManager::WorkerDevToolsManager() {
   WorkerService::GetInstance()->AddObserver(this);
 }
 
@@ -320,19 +280,19 @@ void WorkerDevToolsManager::WorkerCreated(
 
 void WorkerDevToolsManager::WorkerDestroyed(
     WorkerProcessHost* worker,
-    const WorkerProcessHost::WorkerInstance& instance) {
-  if (!instance.shared())
+    int worker_route_id) {
+  InspectedWorkersList::iterator it = FindInspectedWorker(
+      worker->id(),
+      worker_route_id);
+  if (it == inspected_workers_.end())
     return;
-  if (!inspected_workers_->RemoveInstance(worker->id(),
-                                          instance.worker_route_id())) {
-    return;
-  }
 
-  WorkerId worker_id(worker->id(), instance.worker_route_id());
+  WorkerId worker_id(worker->id(), worker_route_id);
   terminated_workers_.push_back(TerminatedInspectedWorker(
       worker_id,
-      instance.url(),
-      instance.name()));
+      it->worker_url,
+      it->worker_name));
+  inspected_workers_.erase(it);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableFunction(
@@ -376,21 +336,23 @@ void WorkerDevToolsManager::RemoveInspectedWorkerData(
   }
 }
 
-static WorkerProcessHost* FindWorkerProcessHostForWorker(
-    int worker_process_id,
-    int worker_route_id) {
+WorkerDevToolsManager::InspectedWorkersList::iterator
+WorkerDevToolsManager::FindInspectedWorker(
+    int host_id, int route_id) {
+  InspectedWorkersList::iterator it = inspected_workers_.begin();
+  while (it != inspected_workers_.end()) {
+    if (it->host->id() == host_id && it->route_id == route_id)
+      break;
+    ++it;
+  }
+  return it;
+}
+
+static WorkerProcessHost* FindWorkerProcess(int worker_process_id) {
   BrowserChildProcessHost::Iterator iter(ChildProcessInfo::WORKER_PROCESS);
   for (; !iter.Done(); ++iter) {
-    if (iter->id() != worker_process_id)
-      continue;
-    WorkerProcessHost* worker = static_cast<WorkerProcessHost*>(*iter);
-    const WorkerProcessHost::Instances& instances = worker->instances();
-    for (WorkerProcessHost::Instances::const_iterator i = instances.begin();
-         i != instances.end(); ++i) {
-      if (i->shared() && i->worker_route_id() == worker_route_id)
-        return worker;
-    }
-    return NULL;
+    if (iter->id() == worker_process_id)
+      return static_cast<WorkerProcessHost*>(*iter);
   }
   return NULL;
 }
@@ -398,20 +360,28 @@ static WorkerProcessHost* FindWorkerProcessHostForWorker(
 void WorkerDevToolsManager::RegisterDevToolsAgentHostForWorker(
     int worker_process_id,
     int worker_route_id) {
-  WorkerProcessHost* host = FindWorkerProcessHostForWorker(
-      worker_process_id,
-      worker_route_id);
-  if (host)
-    inspected_workers_->AddInstance(host, worker_route_id);
-  else
-    NotifyWorkerDestroyedOnIOThread(worker_process_id, worker_route_id);
+  if (WorkerProcessHost* process = FindWorkerProcess(worker_process_id)) {
+    const WorkerProcessHost::Instances& instances = process->instances();
+    for (WorkerProcessHost::Instances::const_iterator i = instances.begin();
+         i != instances.end(); ++i) {
+      if (i->shared() && i->worker_route_id() == worker_route_id) {
+        DCHECK(FindInspectedWorker(worker_process_id, worker_route_id) ==
+               inspected_workers_.end());
+        inspected_workers_.push_back(
+            InspectedWorker(process, worker_route_id, i->url(), i->name()));
+        return;
+      }
+    }
+  }
+  NotifyWorkerDestroyedOnIOThread(worker_process_id, worker_route_id);
 }
 
 void WorkerDevToolsManager::ForwardToDevToolsClient(
     int worker_process_id,
     int worker_route_id,
     const IPC::Message& message) {
-  if (!inspected_workers_->Contains(worker_process_id, worker_route_id)) {
+  if (FindInspectedWorker(worker_process_id, worker_route_id) ==
+          inspected_workers_.end()) {
       NOTREACHED();
       return;
   }
@@ -440,14 +410,14 @@ void WorkerDevToolsManager::ForwardToWorkerDevToolsAgent(
     int worker_process_id,
     int worker_route_id,
     const IPC::Message& message) {
-  WorkerProcessHost* host = inspected_workers_->FindHost(
+  InspectedWorkersList::iterator it = FindInspectedWorker(
       worker_process_id,
       worker_route_id);
-  if (!host)
+  if (it == inspected_workers_.end())
     return;
   IPC::Message* msg = new IPC::Message(message);
   msg->set_routing_id(worker_route_id);
-  host->Send(msg);
+  it->host->Send(msg);
 }
 
 // static
@@ -500,12 +470,7 @@ void WorkerDevToolsManager::NotifyWorkerDestroyedOnUIThread(
 
 // static
 void WorkerDevToolsManager::SendResumeToWorker(const WorkerId& id) {
-  BrowserChildProcessHost::Iterator iter(ChildProcessInfo::WORKER_PROCESS);
-  for (; !iter.Done(); ++iter) {
-    if (iter->id() == id.first) {
-      iter->Send(new DevToolsAgentMsg_ResumeWorkerContext(id.second));
-      return;
-    }
-  }
+  if (WorkerProcessHost* process = FindWorkerProcess(id.first))
+    process->Send(new DevToolsAgentMsg_ResumeWorkerContext(id.second));
 }
 

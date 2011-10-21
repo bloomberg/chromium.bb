@@ -44,6 +44,8 @@ class WorkerDevToolsManager : private WorkerServiceObserver {
   class AgentHosts;
   class DetachedClientHosts;
   class WorkerDevToolsAgentHost;
+  struct InspectedWorker;
+  typedef std::list<InspectedWorker> InspectedWorkersList;
 
   WorkerDevToolsManager();
   virtual ~WorkerDevToolsManager();
@@ -54,11 +56,12 @@ class WorkerDevToolsManager : private WorkerServiceObserver {
       const WorkerProcessHost::WorkerInstance& instance) OVERRIDE;
   virtual void WorkerDestroyed(
       WorkerProcessHost* process,
-      const WorkerProcessHost::WorkerInstance& instance) OVERRIDE;
+      int worker_route_id) OVERRIDE;
   virtual void WorkerContextStarted(WorkerProcessHost* process,
                                     int worker_route_id) OVERRIDE;
 
   void RemoveInspectedWorkerData(const WorkerId& id);
+  InspectedWorkersList::iterator FindInspectedWorker(int host_id, int route_id);
 
   void RegisterDevToolsAgentHostForWorker(int worker_process_id,
                                           int worker_route_id);
@@ -79,8 +82,7 @@ class WorkerDevToolsManager : private WorkerServiceObserver {
                                               int worker_route_id);
   static void SendResumeToWorker(const WorkerId& id);
 
-  class InspectedWorkersList;
-  scoped_ptr<InspectedWorkersList> inspected_workers_;
+  InspectedWorkersList inspected_workers_;
 
   struct TerminatedInspectedWorker;
   typedef std::list<TerminatedInspectedWorker> TerminatedInspectedWorkers;

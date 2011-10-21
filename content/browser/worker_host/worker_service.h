@@ -67,7 +67,7 @@ class WorkerService {
 
   void NotifyWorkerDestroyed(
       WorkerProcessHost* process,
-      const WorkerProcessHost::WorkerInstance& instance);
+      int worker_route_id);
   void NotifyWorkerContextStarted(
       WorkerProcessHost* process,
       int worker_route_id);

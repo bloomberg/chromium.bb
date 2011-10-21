@@ -15,7 +15,7 @@ class WorkerServiceObserver {
       const WorkerProcessHost::WorkerInstance& instance) = 0;
   virtual void WorkerDestroyed(
       WorkerProcessHost* process,
-      const WorkerProcessHost::WorkerInstance& instance) = 0;
+      int worker_route_id) = 0;
   virtual void WorkerContextStarted(
       WorkerProcessHost* process,
       int worker_route_id) = 0;

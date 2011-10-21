@@ -220,10 +220,10 @@ class WorkersUI::WorkerCreationDestructionListener
   }
   virtual void WorkerDestroyed(
       WorkerProcessHost* process,
-      const WorkerProcessHost::WorkerInstance& instance) OVERRIDE {
+      int worker_route_id) OVERRIDE {
     DictionaryValue* worker_data = new DictionaryValue();
     worker_data->SetInteger(kWorkerProcessHostIdField, process->id());
-    worker_data->SetInteger(kWorkerRouteIdField, instance.worker_route_id());
+    worker_data->SetInteger(kWorkerRouteIdField, worker_route_id);
 
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,

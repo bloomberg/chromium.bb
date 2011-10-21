@@ -506,9 +506,9 @@ void WorkerService::RemoveObserver(WorkerServiceObserver* observer) {
 
 void WorkerService::NotifyWorkerDestroyed(
     WorkerProcessHost* process,
-    const WorkerProcessHost::WorkerInstance& instance) {
+    int worker_route_id) {
   FOR_EACH_OBSERVER(WorkerServiceObserver, observers_,
-                    WorkerDestroyed(process, instance));
+                    WorkerDestroyed(process, worker_route_id));
 }
 
 void WorkerService::NotifyWorkerContextStarted(WorkerProcessHost* process,
