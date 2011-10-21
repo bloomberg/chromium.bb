@@ -21,6 +21,7 @@
 #include "webkit/glue/webaccessibility.h"
 
 class BrowserAccessibilityManagerWin;
+class BrowserAccessibilityRelation;
 
 using webkit_glue::WebAccessibility;
 
@@ -33,7 +34,8 @@ using webkit_glue::WebAccessibility;
 // to be used by screen readers and other assistive technology (AT).
 //
 ////////////////////////////////////////////////////////////////////////////////
-class BrowserAccessibilityWin
+class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
+BrowserAccessibilityWin
     : public BrowserAccessibility,
       public CComObjectRootEx<CComMultiThreadModel>,
       public IDispatchImpl<IAccessible2, &IID_IAccessible2,
@@ -179,20 +181,17 @@ class BrowserAccessibilityWin
   // Get this object's index in its parent object.
   CONTENT_EXPORT STDMETHODIMP get_indexInParent(LONG* index_in_parent);
 
-  // IAccessible2 methods not implemented.
-  CONTENT_EXPORT STDMETHODIMP get_extendedRole(BSTR* extended_role) {
-    return E_NOTIMPL;
-  }
-  CONTENT_EXPORT STDMETHODIMP get_nRelations(LONG* n_relations) {
-    return E_NOTIMPL;
-  }
+  CONTENT_EXPORT STDMETHODIMP get_nRelations(LONG* n_relations);
+
   CONTENT_EXPORT STDMETHODIMP get_relation(LONG relation_index,
-                                           IAccessibleRelation** relation) {
-    return E_NOTIMPL;
-  }
+                                           IAccessibleRelation** relation);
+
   CONTENT_EXPORT STDMETHODIMP get_relations(LONG max_relations,
       IAccessibleRelation** relations,
-      LONG* n_relations) {
+      LONG* n_relations);
+
+  // IAccessible2 methods not implemented.
+  CONTENT_EXPORT STDMETHODIMP get_extendedRole(BSTR* extended_role) {
     return E_NOTIMPL;
   }
   CONTENT_EXPORT STDMETHODIMP scrollTo(enum IA2ScrollType scroll_type) {
@@ -713,8 +712,12 @@ class BrowserAccessibilityWin
   // is initialized again but the text doesn't change.
   string16 old_text_;
 
+  // Relationships between this node and other nodes.
+  std::vector<BrowserAccessibilityRelation*> relations_;
+
   // Give BrowserAccessibility::Create access to our constructor.
   friend class BrowserAccessibility;
+  friend class BrowserAccessibilityRelation;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityWin);
 };

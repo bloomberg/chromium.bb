@@ -255,3 +255,15 @@ bool BrowserAccessibility::IsEditableText() const {
   return (role_ == WebAccessibility::ROLE_TEXT_FIELD ||
           role_ == WebAccessibility::ROLE_TEXTAREA);
 }
+
+string16 BrowserAccessibility::GetTextRecursive() const {
+  if (!name_.empty()) {
+    return name_;
+  }
+
+  string16 result;
+  for (size_t i = 0; i < children_.size(); ++i)
+    result += children_[i]->GetTextRecursive();
+  return result;
+}
+

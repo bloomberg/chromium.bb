@@ -194,6 +194,7 @@ static const AttributeToMethodNameEntry attributeToMethodNameContainer[] = {
   { NSAccessibilitySubroleAttribute, @"subrole" },
   { NSAccessibilityTabsAttribute, @"tabs" },
   { NSAccessibilityTitleAttribute, @"title" },
+  { NSAccessibilityTitleUIElementAttribute, @"titleUIElement" },
   { NSAccessibilityTopLevelUIElementAttribute, @"window" },
   { NSAccessibilityURLAttribute, @"url" },
   { NSAccessibilityValueAttribute, @"value" },
@@ -570,6 +571,18 @@ NSDictionary* attributeToMethodNameMap = nil;
   return base::SysUTF16ToNSString(browserAccessibility_->name());
 }
 
+- (id)titleUIElement {
+  int titleElementId;
+  if (browserAccessibility_->GetIntAttribute(
+          WebAccessibility::ATTR_TITLE_UI_ELEMENT, &titleElementId)) {
+    BrowserAccessibility* titleElement =
+        browserAccessibility_->manager()->GetFromRendererID(titleElementId);
+    if (titleElement)
+      return titleElement->toBrowserAccessibilityCocoa();
+  }
+  return nil;
+}
+
 - (NSString*)url {
   StringAttribute urlAttribute =
       [[self role] isEqualToString:@"AXWebArea"] ?
@@ -860,6 +873,15 @@ NSDictionary* attributeToMethodNameMap = nil;
         @"AXARIAAtomic",
         @"AXARIABusy",
         nil]];
+  }
+
+  // Title UI Element.
+  int i;
+  if (browserAccessibility_->GetIntAttribute(
+          WebAccessibility::ATTR_TITLE_UI_ELEMENT, &i)) {
+    [ret addObjectsFromArray:[NSArray arrayWithObjects:
+         NSAccessibilityTitleUIElementAttribute,
+         nil]];
   }
 
   return ret;

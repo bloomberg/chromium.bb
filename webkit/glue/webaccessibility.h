@@ -209,6 +209,9 @@ struct WebAccessibility {
 
     // Tree control attributes.
     ATTR_HIERARCHICAL_LEVEL,
+
+    // Relationships between this element and other elements.
+    ATTR_TITLE_UI_ELEMENT,
   };
 
   enum FloatAttribute {

@@ -220,6 +220,9 @@ class CONTENT_EXPORT BrowserAccessibility {
   // Returns true if this node is an editable text field of any kind.
   bool IsEditableText() const;
 
+  // Append the text from this node and its children.
+  string16 GetTextRecursive() const;
+
  protected:
   BrowserAccessibility();
 

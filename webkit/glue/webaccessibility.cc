@@ -615,6 +615,9 @@ std::string WebAccessibility::DebugString(bool recursive,
       case ATTR_TABLE_CELL_ROW_SPAN:
         result += " rowspan=" + value;
         break;
+    case ATTR_TITLE_UI_ELEMENT:
+        result += " title_elem=" + value;
+        break;
     }
   }
 
@@ -787,6 +790,8 @@ void WebAccessibility::Init(const WebKit::WebAccessibilityObject& src,
     string_attributes[ATTR_HELP] = src.helpText();
   if (src.keyboardShortcut().length())
     string_attributes[ATTR_SHORTCUT] = src.keyboardShortcut();
+  if (src.titleUIElement().isValid())
+    int_attributes[ATTR_TITLE_UI_ELEMENT] = src.titleUIElement().axID();
   if (!src.url().isEmpty())
     string_attributes[ATTR_URL] = src.url().spec().utf16();
 

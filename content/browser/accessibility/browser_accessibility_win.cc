@@ -7,6 +7,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/scoped_comptr.h"
 #include "content/browser/accessibility/browser_accessibility_manager_win.h"
 #include "content/common/view_messages.h"
 #include "net/base/escape.h"
@@ -21,6 +22,133 @@ using webkit_glue::WebAccessibility;
 const GUID GUID_ISimpleDOM = {
     0x0c539790, 0x12e4, 0x11cf,
     0xb6, 0x61, 0x00, 0xaa, 0x00, 0x4c, 0xd6, 0xd8};
+
+//
+// BrowserAccessibilityRelation
+//
+// A simple implementation of IAccessibleRelation, used to represent
+// a relationship between two accessible nodes in the tree.
+//
+
+class BrowserAccessibilityRelation
+    : public CComObjectRootEx<CComMultiThreadModel>,
+      public IAccessibleRelation {
+  BEGIN_COM_MAP(BrowserAccessibilityRelation)
+    COM_INTERFACE_ENTRY(IAccessibleRelation)
+  END_COM_MAP()
+
+  CONTENT_EXPORT BrowserAccessibilityRelation() {}
+  CONTENT_EXPORT virtual ~BrowserAccessibilityRelation() {}
+
+  CONTENT_EXPORT void Initialize(BrowserAccessibilityWin* owner,
+                                 const string16& type);
+  CONTENT_EXPORT void AddTarget(int target_id);
+
+  // IAccessibleRelation methods.
+  CONTENT_EXPORT STDMETHODIMP get_relationType(BSTR* relation_type);
+  CONTENT_EXPORT STDMETHODIMP get_nTargets(long* n_targets);
+  CONTENT_EXPORT STDMETHODIMP get_target(long target_index, IUnknown** target);
+  CONTENT_EXPORT STDMETHODIMP get_targets(long max_targets,
+                                          IUnknown** targets,
+                                          long* n_targets);
+
+  // IAccessibleRelation methods not implemented.
+  CONTENT_EXPORT STDMETHODIMP get_localizedRelationType(BSTR* relation_type) {
+    return E_NOTIMPL;
+  }
+
+ private:
+  string16 type_;
+  base::win::ScopedComPtr<BrowserAccessibilityWin> owner_;
+  std::vector<int> target_ids_;
+};
+
+void BrowserAccessibilityRelation::Initialize(BrowserAccessibilityWin* owner,
+                                              const string16& type) {
+  owner_ = owner;
+  type_ = type;
+}
+
+void BrowserAccessibilityRelation::AddTarget(int target_id) {
+  target_ids_.push_back(target_id);
+}
+
+STDMETHODIMP BrowserAccessibilityRelation::get_relationType(
+    BSTR* relation_type) {
+  if (!relation_type)
+    return E_INVALIDARG;
+
+  if (!owner_->instance_active())
+    return E_FAIL;
+
+  *relation_type = SysAllocString(type_.c_str());
+  DCHECK(*relation_type);
+  return S_OK;
+}
+
+STDMETHODIMP BrowserAccessibilityRelation::get_nTargets(long* n_targets) {
+  if (!n_targets)
+    return E_INVALIDARG;
+
+  if (!owner_->instance_active())
+    return E_FAIL;
+
+  *n_targets = static_cast<long>(target_ids_.size());
+  return S_OK;
+}
+
+STDMETHODIMP BrowserAccessibilityRelation::get_target(
+    long target_index, IUnknown** target) {
+  if (!target)
+    return E_INVALIDARG;
+
+  if (!owner_->instance_active())
+    return E_FAIL;
+
+  if (target_index < 0 ||
+      target_index >= static_cast<long>(target_ids_.size())) {
+    return E_INVALIDARG;
+  }
+
+  BrowserAccessibilityManager* manager = owner_->manager();
+  BrowserAccessibility* result =
+      manager->GetFromRendererID(target_ids_[target_index]);
+  if (!result->instance_active())
+    return E_FAIL;
+
+  *target = static_cast<IAccessible*>(
+      result->toBrowserAccessibilityWin()->NewReference());
+  return S_OK;
+}
+
+STDMETHODIMP BrowserAccessibilityRelation::get_targets(
+    long max_targets, IUnknown** targets, long* n_targets) {
+  if (!targets || !n_targets)
+    return E_INVALIDARG;
+
+  if (!owner_->instance_active())
+    return E_FAIL;
+
+  long count = static_cast<long>(target_ids_.size());
+  if (count > max_targets)
+    count = max_targets;
+
+  *n_targets = count;
+  if (count == 0)
+    return S_FALSE;
+
+  for (long i = 0; i < count; ++i) {
+    HRESULT result = get_target(i, &targets[i]);
+    if (result != S_OK)
+      return result;
+  }
+
+  return S_OK;
+}
+
+//
+// BrowserAccessibilityWin
+//
 
 // static
 BrowserAccessibility* BrowserAccessibility::Create() {
@@ -43,6 +171,8 @@ BrowserAccessibilityWin::BrowserAccessibilityWin()
 }
 
 BrowserAccessibilityWin::~BrowserAccessibilityWin() {
+  for (size_t i = 0; i < relations_.size(); ++i)
+    relations_[i]->Release();
 }
 
 //
@@ -286,10 +416,24 @@ STDMETHODIMP BrowserAccessibilityWin::get_accName(VARIANT var_id, BSTR* name) {
   if (!target)
     return E_INVALIDARG;
 
-  if (target->name_.empty())
+  string16 name_str = target->name_;
+
+  // If the name is empty, see if it's labeled by another element.
+  if (name_str.empty()) {
+    int title_elem_id;
+    if (target->GetIntAttribute(WebAccessibility::ATTR_TITLE_UI_ELEMENT,
+                                &title_elem_id)) {
+      BrowserAccessibility* title_elem =
+          manager_->GetFromRendererID(title_elem_id);
+      if (title_elem)
+        name_str = title_elem->GetTextRecursive();
+    }
+  }
+
+  if (name_str.empty())
     return S_FALSE;
 
-  *name = SysAllocString(target->name_.c_str());
+  *name = SysAllocString(name_str.c_str());
 
   DCHECK(*name);
   return S_OK;
@@ -482,6 +626,59 @@ STDMETHODIMP BrowserAccessibilityWin::get_indexInParent(LONG* index_in_parent) {
     return E_INVALIDARG;
 
   *index_in_parent = index_in_parent_;
+  return S_OK;
+}
+
+STDMETHODIMP BrowserAccessibilityWin::get_nRelations(LONG* n_relations) {
+  if (!instance_active_)
+    return E_FAIL;
+
+  if (!n_relations)
+    return E_INVALIDARG;
+
+  *n_relations = relations_.size();
+  return S_OK;
+}
+
+STDMETHODIMP BrowserAccessibilityWin::get_relation(
+    LONG relation_index,
+    IAccessibleRelation** relation) {
+  if (!instance_active_)
+    return E_FAIL;
+
+  if (relation_index < 0 ||
+      relation_index >= static_cast<long>(relations_.size())) {
+    return E_INVALIDARG;
+  }
+
+  if (!relation)
+    return E_INVALIDARG;
+
+  relations_[relation_index]->AddRef();
+  *relation = relations_[relation_index];
+  return S_OK;
+}
+
+STDMETHODIMP BrowserAccessibilityWin::get_relations(
+    LONG max_relations,
+    IAccessibleRelation** relations,
+    LONG* n_relations) {
+  if (!instance_active_)
+    return E_FAIL;
+
+  if (!relations || !n_relations)
+    return E_INVALIDARG;
+
+  long count = static_cast<long>(relations_.size());
+  *n_relations = count;
+  if (count == 0)
+    return S_FALSE;
+
+  for (long i = 0; i < count; ++i) {
+    relations_[i]->AddRef();
+    relations[i] = relations_[i];
+  }
+
   return S_OK;
 }
 
@@ -2200,6 +2397,26 @@ void BrowserAccessibilityWin::Initialize() {
   string16 url;
   if (value_.empty() && (ia_state_ & STATE_SYSTEM_LINKED))
     GetStringAttribute(WebAccessibility::ATTR_URL, &value_);
+
+  // Clear any old relationships between this node and other nodes.
+  for (size_t i = 0; i < relations_.size(); ++i)
+    relations_[i]->Release();
+  relations_.clear();
+
+  // Handle title UI element.
+  int title_elem_id;
+  if (GetIntAttribute(WebAccessibility::ATTR_TITLE_UI_ELEMENT,
+                      &title_elem_id)) {
+    // Add a labelled by relationship.
+    CComObject<BrowserAccessibilityRelation>* relation;
+    HRESULT hr = CComObject<BrowserAccessibilityRelation>::CreateInstance(
+        &relation);
+    DCHECK(SUCCEEDED(hr));
+    relation->AddRef();
+    relation->Initialize(this, IA2_RELATION_LABELLED_BY);
+    relation->AddTarget(title_elem_id);
+    relations_.push_back(relation);
+  }
 }
 
 void BrowserAccessibilityWin::SendNodeUpdateEvents() {
