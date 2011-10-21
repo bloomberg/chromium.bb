@@ -73,7 +73,7 @@ void ExtensionSpecialStoragePolicy::GrantRightsForExtension(
   }
   {
     base::AutoLock locker(lock_);
-    if (extension->is_hosted_app())
+    if (extension->is_hosted_app() && !extension->from_bookmark())
       protected_apps_.Add(extension);
     if (extension->HasAPIPermission(ExtensionAPIPermission::kUnlimitedStorage))
       unlimited_extensions_.Add(extension);
@@ -97,7 +97,7 @@ void ExtensionSpecialStoragePolicy::RevokeRightsForExtension(
   }
   {
     base::AutoLock locker(lock_);
-    if (extension->is_hosted_app())
+    if (extension->is_hosted_app() && !extension->from_bookmark())
       protected_apps_.Remove(extension);
     if (extension->HasAPIPermission(ExtensionAPIPermission::kUnlimitedStorage))
       unlimited_extensions_.Remove(extension);
