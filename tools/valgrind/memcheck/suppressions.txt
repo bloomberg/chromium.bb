@@ -661,6 +661,25 @@
    fun:_ZN8gtk_util*AppModal*
 }
 
+# The following stack suppresses Memcheck false positives on NaCl browser_tests
+# See https://bugs.kde.org/show_bug.cgi?id=270709#c4 for possible reason
+{
+   valgrind_bitfields_false_positive
+   Memcheck:Cond
+   fun:_ZN7WebCore13WidthIterator*
+   fun:_ZNK7WebCore4Font33getGlyphsAndAdvancesForSimpleTextERKNS_7TextRunEiiRNS_11GlyphBufferENS0_20ForTextEmphasisOrNotE
+   fun:_ZNK7WebCore4Font14drawSimpleTextEPNS_15GraphicsContextERKNS_7TextRunERKNS_10FloatPointEii
+   fun:_ZNK7WebCore4Font8drawTextEPNS_15GraphicsContextERKNS_7TextRunERKNS_10FloatPointEii
+   fun:_ZN7WebCore15GraphicsContext8drawTextERKNS_4FontERKNS_7TextRunERKNS_10FloatPointEii
+   fun:_ZN7WebCoreL20paintTextWithShadowsEPNS_15GraphicsContextERKNS_4FontERKNS_7TextRunERKN3WTF12AtomicStringEiiiiRKNS_10FloatPointERKNS_9FloatRectEPKNS_10ShadowDataEbb
+   fun:_ZN7WebCore13InlineTextBox5paintERNS_9PaintInfoERKNS_8IntPointEii
+   fun:_ZN7WebCore13InlineFlowBox5paintERNS_9PaintInfoERKNS_8IntPointEii
+   fun:_ZN7WebCore13RootInlineBox5paintERNS_9PaintInfoERKNS_8IntPointEii
+   fun:_ZNK7WebCore17RenderLineBoxList5paintEPNS_20RenderBoxModelObjectERNS_9PaintInfoERKNS_8IntPointE
+   fun:_ZN7WebCore11RenderBlock13paintContentsERNS_9PaintInfoERKNS_8IntPointE
+}
+
+
 #-----------------------------------------------------------------------
 # 2. intentional unit test errors, or stuff that is somehow a false positive
 # in our own code, or stuff that is so trivial it's not worth fixing
