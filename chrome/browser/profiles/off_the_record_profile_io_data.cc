@@ -210,8 +210,9 @@ void OffTheRecordProfileIOData::LazyInitializeInternal(
 
   main_http_factory_.reset(cache);
   main_context->set_http_transaction_factory(cache);
-  main_context->set_ftp_transaction_factory(
+  ftp_factory_.reset(
       new net::FtpNetworkLayer(main_context->host_resolver()));
+  main_context->set_ftp_transaction_factory(ftp_factory_.get());
 
   main_context->set_chrome_url_data_manager_backend(
       chrome_url_data_manager_backend());

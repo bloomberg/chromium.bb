@@ -105,6 +105,7 @@ class OffTheRecordProfileIOData : public ProfileIOData {
           const std::string& app_id) const;
 
   mutable scoped_ptr<net::HttpTransactionFactory> main_http_factory_;
+  mutable scoped_ptr<net::FtpTransactionFactory> ftp_factory_;
 
   mutable scoped_ptr<net::HttpServerPropertiesImpl> http_server_properties_;
 
