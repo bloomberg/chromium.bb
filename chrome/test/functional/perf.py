@@ -227,22 +227,40 @@ class BenchmarkPerfTest(BasePerfTest):
   """Benchmark performance tests."""
 
   def testV8BenchmarkSuite(self):
-    """Measures score from online v8 benchmark suite."""
+    """Measures score from v8 benchmark suite."""
     url = self.GetFileURLForDataPath('v8_benchmark_v6', 'run.html')
     self.assertTrue(self.AppendTab(pyauto.GURL(url)),
                     msg='Failed to append tab for v8 benchmark suite.')
-    js = """
+
+    js_is_done = """
         var val = document.getElementById("status").innerHTML;
         window.domAutomationController.send(val);
     """
     self.assertTrue(
         self.WaitUntil(
-            lambda: 'Score:' in self.ExecuteJavascript(js, tab_index=1),
+            lambda: 'Score:' in self.ExecuteJavascript(js_is_done, tab_index=1),
             timeout=300, expect_retval=True, retry_sleep=1),
         msg='Timed out when waiting for v8 benchmark score.')
-    val = self.ExecuteJavascript(js, tab_index=1)
-    score = int(val.split(':')[1].strip())
-    self._PrintSummaryResults('V8Benchmark', [score], 'score')
+
+    js_get_results = """
+        var result = {};
+        result['final_score'] = document.getElementById("status").innerHTML;
+        result['all_results'] = document.getElementById("results").innerHTML;
+        window.domAutomationController.send(JSON.stringify(result));
+    """
+    results = eval(self.ExecuteJavascript(js_get_results, tab_index=1))
+    score_pattern = '(\w+): (\d+)'
+    final_score = re.search(score_pattern, results['final_score']).group(2)
+    logging.info('Final score: ' + final_score)
+    self._OutputPerfGraphValue('%s_%s' % ('score', 'V8Benchmark'),
+                               int(final_score))
+    for match in re.finditer(score_pattern, results['all_results']):
+      benchmark_name = match.group(1)
+      benchmark_score = match.group(2)
+      logging.info('Result %s: %s', benchmark_name, benchmark_score)
+      self._OutputPerfGraphValue(
+          '%s_%s-%s' % ('score', 'V8Benchmark', benchmark_name),
+          int(benchmark_score))
 
 
 class LiveWebappLoadTest(BasePerfTest):
