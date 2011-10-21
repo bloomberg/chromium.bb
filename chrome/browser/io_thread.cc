@@ -189,12 +189,7 @@ net::HostResolver* CreateGlobalHostResolver(net::NetLog* net_log) {
     if (command_line.HasSwitch(switches::kDisableIPv6)) {
       global_host_resolver->SetDefaultAddressFamily(net::ADDRESS_FAMILY_IPV4);
     } else {
-      net::HostResolverImpl* host_resolver_impl =
-          global_host_resolver->GetAsHostResolverImpl();
-      if (host_resolver_impl != NULL) {
-        // Use probe to decide if support is warranted.
-        host_resolver_impl->ProbeIPv6Support();
-      }
+      global_host_resolver->ProbeIPv6Support();
     }
   }
 
