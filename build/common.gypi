@@ -38,13 +38,6 @@
     # Currently ignored on Windows.
     'coverage%': 0,
 
-    # TODO(sgk): eliminate this if possible.
-    # It would be nicer to support this via a setting in 'target_defaults'
-    # in chrome/app/locales/locales.gypi overriding the setting in the
-    # 'Debug' configuration in the 'target_defaults' dict below,
-    # but that doesn't work as we'd like.
-    'msvs_debug_link_incremental%': '2',
-
     # Doing this in a sub-dict so that it can be referred to below.
     'variables': {
       # By default we assume that we are building as part of Chrome

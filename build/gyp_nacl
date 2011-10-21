@@ -26,6 +26,16 @@ if __name__ == '__main__':
     args += shlex.split(os.environ.get('NACL_GYP_FILE',
                                        'native_client/build/all.gyp'))
 
+  # Include implicit variables definition.
+  # NOTE(krasin): Since PPAPI is being moving into Chrome repository,
+  # it makes it harder and harder to maintain the difference between
+  # common.gypi in Chrome (which is implicit) and
+  # common.gypi in NaCl (which is explicit).
+  # I don't know any reasons for this inconsistency and the plan is
+  # to make NaCl's common.gypi implicit as well.
+  # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2377
+  args += ['-I', 'native_client/build/implicit_common.gypi']
+
   # Add in configs.gypi
   args += ['-I', 'native_client/build/configs.gypi']
 
