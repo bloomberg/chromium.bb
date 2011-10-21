@@ -45,6 +45,14 @@ void NativeTabContentsViewAura::InitNativeTabContentsView() {
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.parent = NULL;
   GetWidget()->Init(params);
+
+  // Hide the widget to prevent it from showing up on the desktop. This is
+  // needed for TabContentses that aren't immediately added to the tabstrip,
+  // e.g. the Instant preview contents.
+  // TODO(beng): investigate if control-type windows shouldn't be hidden by
+  //             default if they are created with no parent. Pending oshima's
+  //             change to reflect Widget types onto a ViewProp.
+  GetWidget()->Hide();
 }
 
 void NativeTabContentsViewAura::Unparent() {
