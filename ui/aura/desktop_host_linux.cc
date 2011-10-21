@@ -376,6 +376,14 @@ gfx::AcceleratedWidget DesktopHostLinux::GetAcceleratedWidget() {
 
 void DesktopHostLinux::Show() {
   XMapWindow(xdisplay_, xwindow_);
+
+  // If there's no window manager running, we need to assign the X input focus
+  // to our host window.  (If there's no window manager running, it should also
+  // be safe to assume that the host window will have been mapped by the time
+  // that our SetInputFocus request is received.)
+  if (!IsWindowManagerPresent())
+    XSetInputFocus(xdisplay_, xwindow_, RevertToNone, CurrentTime);
+
   XFlush(xdisplay_);
 }
 
