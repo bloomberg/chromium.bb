@@ -4,7 +4,6 @@
  */
 
 html, body {
-  background-color: #EEE;
   height: 100%;
   margin: 0;
   overflow: hidden;
@@ -39,31 +38,18 @@ html, body {
 }
 
 #explanation {
+  -webkit-margin-end: 4px;
   margin-bottom: 4px;
-  margin-right: 4px;
   margin-top: 4px;
 }
 
 #tab-list-scroll-container {
+  -webkit-margin-end: 5px;
   background-color: white;
   border-style: solid;
   border-width: 1px;
   height: 100%;
-  margin-right: 5px;
   overflow-y: auto;
-}
-
-#buttons-table {
-  float: right;
-  margin-bottom: 8px;
-  margin-right: 8px;
-  margin-top: 20px;
-  width: auto;
-}
-
-#buttons-table > div {
-  padding: 3px;
-  width: 50%;
 }
 
 #tab-table {
@@ -81,18 +67,28 @@ html, body {
   display: block;
   height: 16px;
   line-height: 16px;
-  margin-bottom: 1px;
+  margin: 2px 2px 2px 2px;
 }
 
 html[dir=rtl] #tab-table li {
   background-position: 100% 50%;
 }
 
-#templates {
-  display: none;
+.action-area {
+  -webkit-box-align: center;
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: end;
+  display: -webkit-box;
+  padding: 12px;
 }
 
-button {
+.button-strip {
+  -webkit-box-orient: horizontal;
+  display: -webkit-box;
+}
+
+.button-strip > button {
+  -webkit-margin-start: 10px;
+  display: block;
   white-space: nowrap;
-  width: 100%;
 }

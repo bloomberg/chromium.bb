@@ -24,6 +24,23 @@ cr.define('hungRendererDialog', function() {
   }
 
   /**
+   * Reverses the order of child nodes. This is necessary because WebKit does
+   * not alter the tab order for elements that are visually reversed using
+   * -webkit-box-direction: reverse, and the button order is reversed for
+   * views.  See https://bugs.webkit.org/show_bug.cgi?id=62664 for more
+   * information.
+   * @param {HTMLElement} parent The parent node whose children are to be
+   *     reversed.
+   */
+  function reverseChildren(parent) {
+    var childNodes = parent.childNodes;
+    for (var i = childNodes.length - 1; i >= 0; i--)
+      parent.appendChild(childNodes[i]);
+  };
+
+  var forEach = Array.prototype.forEach.call.bind(Array.prototype.forEach);
+
+  /**
    * Inserts translated strings on loading.
    */
   function initialize() {
@@ -37,6 +54,8 @@ cr.define('hungRendererDialog', function() {
       closeWithResult(false);
     }
 
+    if (cr.isViews)
+      forEach(document.querySelectorAll('.button-strip'), reverseChildren);
     chrome.send('requestTabContentsList')
   }
 
