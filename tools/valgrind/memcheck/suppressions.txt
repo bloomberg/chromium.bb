@@ -605,16 +605,6 @@
    fun:CERT_ChangeCertTrust
 }
 {
-   bug_64930 [vector-under-hashtable false positive leaks on x64]
-   Memcheck:Leak
-   ...
-   fun:_ZNSt6vector*
-   fun:_ZNSt6vector*
-   fun:_ZN9__gnu_cxx9hashtable*
-   fun:_ZN9__gnu_cxx9hashtable*
-   fun:_ZN9__gnu_cxx8hash_map*
-}
-{
    leaks in bash
    Memcheck:Leak
    ...
