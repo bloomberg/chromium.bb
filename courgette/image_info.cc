@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -308,6 +308,14 @@ bool PEInfo::ParseHeader() {
         section->file_offset_of_raw_data + section->size_of_raw_data;
     if (section_end > file_length_)
       file_length_ = section_end;
+  }
+
+  if (!is_32bit()) {
+    return Bad("64 bit executables are not yet supported");
+  }
+
+  if (!has_text_section()) {
+    return Bad("Resource-only executables are not yet supported");
   }
 
   failure_reason_ = NULL;

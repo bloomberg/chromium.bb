@@ -59,13 +59,14 @@ void ImageInfoTest::TestResourceDll() const {
   scoped_ptr<courgette::PEInfo> info(new courgette::PEInfo());
   info->Init(reinterpret_cast<const uint8*>(file1.c_str()), file1.length());
 
+  // This is expected to fail, since we don't really support them yet.
   bool can_parse_header = info->ParseHeader();
-  EXPECT_TRUE(can_parse_header);
+  EXPECT_FALSE(can_parse_header);
 
   // The executable is the whole file, not 'embedded' with the file
   EXPECT_EQ(file1.length(), info->length());
 
-  EXPECT_TRUE(info->ok());
+  EXPECT_FALSE(info->ok());
   EXPECT_FALSE(info->has_text_section());
   EXPECT_EQ(0U, info->size_of_code());
 }

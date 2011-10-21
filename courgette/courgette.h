@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,6 +50,13 @@ enum Status {
   C_ADJUSTMENT_FAILED = 27,       //
 };
 
+// What type of executable is something
+// Generally corresponds to CourgettePatchFile::TransformationMethodId
+enum ExecutableType {
+  UNKNOWN,
+  WIN32_X86
+};
+
 class SinkStream;
 class SinkStreamSet;
 class SourceStream;
@@ -80,12 +87,16 @@ Status ApplyEnsemblePatch(const FilePath::CharType* old_file_name,
 Status GenerateEnsemblePatch(SourceStream* old, SourceStream* target,
                              SinkStream* patch);
 
-// Parses a Windows 32-bit 'Portable Executable' format file from memory,
-// storing the pointer to the AssemblyProgram in |*output|.
+// Detects the type of an executable, and returns UNKNOWN if it cannot
+// be parsed.
+ExecutableType DetectExecutableType(const void* buffer, size_t length);
+
+// Attempts to detect the type of executable, and parse it with the
+// appropriate tools, storing the pointer to the AssemblyProgram in |*output|.
 // Returns C_OK if successful, otherwise returns an error status and sets
 // |*output| to NULL.
-Status ParseWin32X86PE(const void* buffer, size_t length,
-                       AssemblyProgram** output);
+Status ParseDetectedExecutable(const void* buffer, size_t length,
+                               AssemblyProgram** output);
 
 // Converts |program| into encoded form, returning it as |*output|.
 // Returns C_OK if succeeded, otherwise returns an error status and

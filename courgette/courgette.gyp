@@ -22,6 +22,8 @@
       'difference_estimator.h',
       'disassembler.cc',
       'disassembler.h',
+      'disassembler_win32_x86.cc',
+      'disassembler_win32_x86.h',
       'encoded_program.cc',
       'encoded_program.h',
       'ensemble.cc',

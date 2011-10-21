@@ -13,14 +13,13 @@
 class VersioningTest : public BaseTest {
  public:
   void TestApplyingOldPatch(const char* src_file,
-                         const char* patch_file,
-                         const char* expected_file) const;
+                            const char* patch_file,
+                            const char* expected_file) const;
 };
 
 void VersioningTest::TestApplyingOldPatch(const char* src_file,
                                           const char* patch_file,
                                           const char* expected_file) const {
-
   std::string old_buffer = FileContents(src_file);
   std::string new_buffer = FileContents(patch_file);
   std::string expected_buffer = FileContents(expected_file);

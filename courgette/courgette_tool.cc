@@ -85,7 +85,8 @@ void Disassemble(const std::wstring& input_file,
 
   courgette::AssemblyProgram* program = NULL;
   const courgette::Status parse_status =
-      courgette::ParseWin32X86PE(buffer.c_str(), buffer.length(), &program);
+      courgette::ParseDetectedExecutable(buffer.c_str(), buffer.length(),
+                                         &program);
 
   if (parse_status != courgette::C_OK)
     Problem("Can't parse input.");
@@ -122,17 +123,17 @@ void DisassembleAndAdjust(const std::wstring& program_file,
 
   courgette::AssemblyProgram* program = NULL;
   const courgette::Status parse_program_status =
-      courgette::ParseWin32X86PE(program_buffer.c_str(),
-                                 program_buffer.length(),
-                                 &program);
+      courgette::ParseDetectedExecutable(program_buffer.c_str(),
+                                         program_buffer.length(),
+                                         &program);
   if (parse_program_status != courgette::C_OK)
     Problem("Can't parse program input.");
 
   courgette::AssemblyProgram* model = NULL;
   const courgette::Status parse_model_status =
-      courgette::ParseWin32X86PE(model_buffer.c_str(),
-                                 model_buffer.length(),
-                                 &model);
+      courgette::ParseDetectedExecutable(model_buffer.c_str(),
+                                         model_buffer.length(),
+                                         &model);
   if (parse_model_status != courgette::C_OK)
     Problem("Can't parse model input.");
 
@@ -178,17 +179,17 @@ void DisassembleAdjustDiff(const std::wstring& model_file,
 
   courgette::AssemblyProgram* model = NULL;
   const courgette::Status parse_model_status =
-      courgette::ParseWin32X86PE(model_buffer.c_str(),
-                                 model_buffer.length(),
-                                 &model);
+      courgette::ParseDetectedExecutable(model_buffer.c_str(),
+                                         model_buffer.length(),
+                                         &model);
   if (parse_model_status != courgette::C_OK)
     Problem("Can't parse model input.");
 
   courgette::AssemblyProgram* program = NULL;
   const courgette::Status parse_program_status =
-      courgette::ParseWin32X86PE(program_buffer.c_str(),
-                                 program_buffer.length(),
-                                 &program);
+      courgette::ParseDetectedExecutable(program_buffer.c_str(),
+                                         program_buffer.length(),
+                                         &program);
   if (parse_program_status != courgette::C_OK)
     Problem("Can't parse program input.");
 

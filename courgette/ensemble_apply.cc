@@ -136,13 +136,19 @@ Status EnsemblePatchApplication::ReadInitialParameters(
     if (!transformation_parameters->ReadVarint32(&kind))
       return C_BAD_ENSEMBLE_HEADER;
 
-    if (kind == CourgettePatchFile::T_COURGETTE_WIN32_X86) {
-      TransformationPatcher* patcher =
-          new CourgetteWin32X86Patcher(base_region_);
-      patchers_.push_back(patcher);
-    } else {
-      return C_BAD_ENSEMBLE_HEADER;
+    TransformationPatcher* patcher = NULL;
+
+    switch (kind)
+    {
+      case CourgettePatchFile::T_COURGETTE_WIN32_X86:
+        patcher = new CourgetteWin32X86Patcher(base_region_);
+        break;
     }
+
+    if (patcher)
+      patchers_.push_back(patcher);
+    else
+      return C_BAD_ENSEMBLE_HEADER;
   }
 
   for (size_t i = 0;  i < patchers_.size();  ++i) {

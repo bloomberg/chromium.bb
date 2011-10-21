@@ -46,9 +46,9 @@ class CourgetteWin32X86Patcher : public TransformationPatcher {
       return C_GENERAL_ERROR;   // Don't expect any corrected parameters.
 
     AssemblyProgram* program = NULL;
-    status = ParseWin32X86PE(ensemble_region_.start() + base_offset_,
-                             base_length_,
-                             &program);
+    status = ParseDetectedExecutable(ensemble_region_.start() + base_offset_,
+                                     base_length_,
+                                     &program);
     if (status != C_OK)
       return status;
 

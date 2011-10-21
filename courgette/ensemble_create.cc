@@ -65,17 +65,21 @@ Status TransformationPatchGenerator::Reform(
 // Element kind.
 TransformationPatchGenerator* MakeGenerator(Element* old_element,
                                             Element* new_element) {
-  if (new_element->kind() == Element::WIN32_X86_WITH_CODE) {
-    CourgetteWin32X86PatchGenerator* generator =
-        new CourgetteWin32X86PatchGenerator(
-            old_element,
-            new_element,
-            new CourgetteWin32X86Patcher(old_element->region()));
-    return generator;
-  } else {
-    LOG(WARNING) << "Unexpected Element::Kind " << old_element->kind();
-    return NULL;
+  switch (new_element->kind()) {
+    case UNKNOWN:
+      break;
+    case WIN32_X86: {
+      TransformationPatchGenerator* generator =
+          new CourgetteWin32X86PatchGenerator(
+              old_element,
+              new_element,
+              new CourgetteWin32X86Patcher(old_element->region()));
+      return generator;
+    }
   }
+
+  LOG(WARNING) << "Unexpected Element::Kind " << old_element->kind();
+  return NULL;
 }
 
 // Checks to see if the proposed comparison is 'unsafe'.  Sometimes one element

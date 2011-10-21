@@ -7,7 +7,7 @@
 #include "base/path_service.h"
 
 void BaseTest::SetUp() {
-  PathService::Get(base::DIR_SOURCE_ROOT, &test_dir_);
+  ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &test_dir_));
   test_dir_ = test_dir_.AppendASCII("courgette");
   test_dir_ = test_dir_.AppendASCII("testdata");
 }

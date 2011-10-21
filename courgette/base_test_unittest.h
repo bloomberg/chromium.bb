@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <string>
-
 #ifndef COURGETTE_BASE_TEST_UNITTEST_H_
 #define COURGETTE_BASE_TEST_UNITTEST_H_
 
@@ -28,4 +26,4 @@ class BaseTest : public testing::Test {
   FilePath test_dir_;
 };
 
-#endif // COURGETTE_BASE_TEST_UNITTEST_H_
+#endif  // COURGETTE_BASE_TEST_UNITTEST_H_
