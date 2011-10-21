@@ -32,17 +32,15 @@ uint32 KeySymToModifier(KeySym keysym) {
       return Mod1Mask;
     case XK_Meta_R:
       return Mod1Mask;
-    case XK_Super_L:
-      return Mod2Mask;
-    case XK_Super_R:
-      return Mod2Mask;
-    case XK_Hyper_L:
-      return Mod3Mask;
-    case XK_Hyper_R:
-      return Mod3Mask;
     default:
       break;
   }
+
+  // Note for Mod[2-5]Mask: Usually, Mod2Mask corresponds to the Num Lock key,
+  // and Mod4Mask does the Windows key. However, to be exact, the assignment is
+  // dynamic, and could be changed in the future, I believe. FYI, xkeyboard.cc
+  // has code which dynamically obtains a mask for Num Lock.
+
   return 0;
 }
 
@@ -139,7 +137,7 @@ bool HotkeyManager::FilterKeyEvent(const XEvent& key_event) {
 
 uint32 HotkeyManager::NormalizeModifiers(
     uint32 keysym, uint32 modifiers, bool is_key_press) const {
-  modifiers &= (ControlMask | ShiftMask | Mod1Mask | Mod2Mask | Mod3Mask);
+  modifiers &= (ControlMask | ShiftMask | Mod1Mask);
   modifiers |= KeySymToModifier(keysym);
   if (!is_key_press) {
     modifiers |= kKeyReleaseMask;

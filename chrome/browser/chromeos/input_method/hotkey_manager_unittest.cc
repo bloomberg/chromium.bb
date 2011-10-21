@@ -71,13 +71,15 @@ TEST(HotkeyManagerTest, TestIsModifier) {
   EXPECT_TRUE(manager.IsModifier(XK_Alt_R));
   EXPECT_TRUE(manager.IsModifier(XK_Meta_L));
   EXPECT_TRUE(manager.IsModifier(XK_Meta_R));
-  EXPECT_TRUE(manager.IsModifier(XK_Super_L));
-  EXPECT_TRUE(manager.IsModifier(XK_Super_R));
-  EXPECT_TRUE(manager.IsModifier(XK_Hyper_L));
-  EXPECT_TRUE(manager.IsModifier(XK_Hyper_R));
   EXPECT_FALSE(manager.IsModifier(XK_a));
   EXPECT_FALSE(manager.IsModifier(XK_A));
   EXPECT_FALSE(manager.IsModifier(XK_Tab));
+
+  // For now, we don't support Super and Hyper. See crosbug.com/21842.
+  EXPECT_FALSE(manager.IsModifier(XK_Super_L));
+  EXPECT_FALSE(manager.IsModifier(XK_Super_R));
+  EXPECT_FALSE(manager.IsModifier(XK_Hyper_L));
+  EXPECT_FALSE(manager.IsModifier(XK_Hyper_R));
 }
 
 TEST(HotkeyManagerTest, TestNormalizeModifiers) {
@@ -100,14 +102,6 @@ TEST(HotkeyManagerTest, TestNormalizeModifiers) {
             manager.NormalizeModifiers(XK_Meta_L, ShiftMask, true));
   EXPECT_EQ(Mod1Mask | ShiftMask | kReleaseMask,
             manager.NormalizeModifiers(XK_Meta_R, ShiftMask, false));
-  EXPECT_EQ(ShiftMask | Mod2Mask | 0x0U,
-            manager.NormalizeModifiers(XK_Super_L, ShiftMask, true));
-  EXPECT_EQ(Mod1Mask | Mod2Mask | kReleaseMask,
-            manager.NormalizeModifiers(XK_Super_R, Mod1Mask, false));
-  EXPECT_EQ(ShiftMask | Mod3Mask | kReleaseMask,
-            manager.NormalizeModifiers(XK_Hyper_L, ShiftMask, false));
-  EXPECT_EQ(Mod1Mask | Mod3Mask | 0x0U,
-            manager.NormalizeModifiers(XK_Hyper_R, Mod1Mask, true));
 
   // Test non modifier keys like XK_a.
   EXPECT_EQ(Mod1Mask | 0x0U,
@@ -120,6 +114,16 @@ TEST(HotkeyManagerTest, TestNormalizeModifiers) {
   EXPECT_EQ(Mod1Mask | ControlMask | kReleaseMask,
             manager.NormalizeModifiers(
                 XK_D, Mod1Mask | ControlMask, false));
+
+  // For now, we don't support Super and Hyper. See crosbug.com/21842.
+  EXPECT_EQ(ShiftMask | 0x0U,
+            manager.NormalizeModifiers(XK_Super_L, ShiftMask, true));
+  EXPECT_EQ(Mod1Mask | kReleaseMask,
+            manager.NormalizeModifiers(XK_Super_R, Mod1Mask, false));
+  EXPECT_EQ(ShiftMask | kReleaseMask,
+            manager.NormalizeModifiers(XK_Hyper_L, ShiftMask, false));
+  EXPECT_EQ(Mod1Mask | 0x0U,
+            manager.NormalizeModifiers(XK_Hyper_R, Mod1Mask, true));
 }
 
 TEST(HotkeyManagerTest, TestAddBasic) {
