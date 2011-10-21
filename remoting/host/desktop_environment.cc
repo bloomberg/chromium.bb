@@ -24,6 +24,19 @@ static const int kContinueWindowHideTimeoutMs = 60 * 1000;
 
 namespace remoting {
 
+class DesktopEnvironment::TimerTask {
+ public:
+  TimerTask(base::MessageLoopProxy* message_loop,
+            const base::Closure& task,
+            int delay_ms)
+      : thread_proxy_(message_loop) {
+    thread_proxy_.PostDelayedTask(FROM_HERE, task, delay_ms);
+  }
+
+ private:
+  ScopedThreadProxy thread_proxy_;
+};
+
 // static
 DesktopEnvironment* DesktopEnvironment::Create(ChromotingHostContext* context) {
   scoped_ptr<Capturer> capturer(Capturer::Create());
@@ -67,7 +80,6 @@ DesktopEnvironment::DesktopEnvironment(ChromotingHostContext* context,
       continue_window_(continue_window),
       local_input_monitor_(local_input_monitor),
       is_monitoring_local_inputs_(false),
-      continue_timer_state_(INACTIVE),
       ui_thread_proxy_(context->ui_message_loop()) {
 }
 
@@ -119,7 +131,7 @@ void DesktopEnvironment::ProcessOnLastDisconnect() {
 
 void DesktopEnvironment::ProcessOnPause(bool pause) {
   if (!pause) {
-    continue_timer_state_ = INACTIVE;
+    timer_task_.reset();
     StartContinueWindowTimer(true);
   }
 }
@@ -161,50 +173,36 @@ void DesktopEnvironment::ShowContinueWindow(bool show) {
 void DesktopEnvironment::StartContinueWindowTimer(bool start) {
   DCHECK(context_->ui_message_loop()->BelongsToCurrentThread());
 
-  if (start && continue_timer_state_ == INACTIVE) {
-    continue_timer_target_time_ = base::Time::Now() +
-        base::TimeDelta::FromMilliseconds(kContinueWindowShowTimeoutMs);
-    ui_thread_proxy_.PostDelayedTask(
-        FROM_HERE, base::Bind(&DesktopEnvironment::ContinueWindowTimerFunc,
-                              base::Unretained(this)),
-        kContinueWindowShowTimeoutMs);
-    continue_timer_state_ = SHOW_DIALOG;
+  if (start) {
+    timer_task_.reset(new TimerTask(
+        context_->ui_message_loop(),
+        base::Bind(&DesktopEnvironment::OnContinueWindowTimer,
+                   base::Unretained(this)),
+        kContinueWindowShowTimeoutMs));
   } else if (!start) {
-    continue_timer_state_ = INACTIVE;
+    timer_task_.reset();
   }
 
 }
 
-void DesktopEnvironment::ContinueWindowTimerFunc() {
+void DesktopEnvironment::OnContinueWindowTimer() {
   DCHECK(context_->ui_message_loop()->BelongsToCurrentThread());
 
-  // This function may be called prematurely if timer was stopped and
-  // then started again. In that case we just ignore this call.
-  if (continue_timer_target_time_ > base::Time::Now())
-    return;
+  host_->PauseSession(true);
+  ShowContinueWindow(true);
 
-  switch (continue_timer_state_) {
-    case INACTIVE:
-      // This function will still be called, even if the timeout was cancelled.
-      return;
-    case SHOW_DIALOG:
-      host_->PauseSession(true);
-      ShowContinueWindow(true);
-      continue_timer_target_time_ = base::Time::Now() +
-          base::TimeDelta::FromMilliseconds(kContinueWindowHideTimeoutMs);
-      ui_thread_proxy_.PostDelayedTask(
-          FROM_HERE, base::Bind(&DesktopEnvironment::ContinueWindowTimerFunc,
-                                base::Unretained(this)),
-          kContinueWindowHideTimeoutMs);
-      continue_timer_state_ = SHUTDOWN_HOST;
-      break;
-    case SHUTDOWN_HOST:
-      continue_timer_state_ = INACTIVE;
-      ShowContinueWindow(false);
-      host_->Shutdown(NULL);
-      break;
-  }
+  timer_task_.reset(new TimerTask(
+      context_->ui_message_loop(),
+      base::Bind(&DesktopEnvironment::OnShutdownHostTimer,
+                 base::Unretained(this)),
+      kContinueWindowHideTimeoutMs));
 }
 
+void DesktopEnvironment::OnShutdownHostTimer() {
+  DCHECK(context_->ui_message_loop()->BelongsToCurrentThread());
+
+  ShowContinueWindow(false);
+  host_->Shutdown(NULL);
+}
 
 }  // namespace remoting
