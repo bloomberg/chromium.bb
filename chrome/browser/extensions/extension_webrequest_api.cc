@@ -1471,11 +1471,9 @@ void ExtensionWebRequestEventRouter::DecrementBlockCount(
       request_time_tracker_->SetRequestRedirected(request_id);
     }
 
-    // This signals a failed request to subscribers of onErrorOccurred in case
-    // a request is cancelled because net::ERR_EMPTY_RESPONSE cannot be
-    // distinguished from a regular failure.
     if (blocked_request.callback) {
-      int rv = canceled ? net::ERR_EMPTY_RESPONSE : net::OK;
+      // This triggers onErrorOccurred.
+      int rv = canceled ? net::ERR_BLOCKED_BY_CLIENT : net::OK;
       net::OldCompletionCallback* callback = blocked_request.callback;
       // Ensure that request is removed before callback because the callback
       // might trigger the next event.

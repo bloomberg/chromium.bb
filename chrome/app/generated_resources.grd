@@ -6720,6 +6720,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ERRORPAGES_SUGGESTION_RELOAD" desc="When a page fails to load, we provide a suggestion that the user try reloading the page later">
         <ph name="BEGIN_LINK">&lt;a jsvalues="href:reloadUrl"&gt;</ph>Reload<ph name="END_LINK">&lt;/a&gt;</ph> this webpage later.
       </message>
+      <message name="IDS_ERRORPAGES_SUGGESTION_DISABLE_EXTENSION" desc="When a page fails to load, we provide a suggestion that the user try disabling an extension that's blocking it">
+        Disable your extensions and then <ph name="BEGIN_LINK">&lt;a jsvalues="href:reloadUrl"&gt;</ph>reload<ph name="END_LINK">&lt;/a&gt;</ph> this webpage.
+      </message>
       <message name="IDS_ERRORPAGES_SUGGESTION_HOMEPAGE" desc="When a page fails to load, sometimes we provide a suggesting of trying just the hostname of the site.">
         Go to the home page of the site:
       </message>
@@ -6836,6 +6839,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ERRORPAGES_TITLE_LOAD_FAILED" desc="Title of the error page when we can't load a page.">
         <ph name="URL">$1<ex>http://some-unreliable-site.com/</ex></ph> failed to load
       </message>
+      <message name="IDS_ERRORPAGES_TITLE_BLOCKED" desc="Title in the error page when a request is blocked (e.g. by an extension).">
+        <ph name="URL">$1<ex>http://www.google.com/foo/bar</ex></ph> was blocked
+      </message>
       <message name="IDS_ERRORPAGES_HEADING_NOT_AVAILABLE" desc="Heading in the error page when we can't connect to a site.">
         This webpage is not available
       </message>
@@ -6877,6 +6883,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_ERRORPAGES_HEADING_KASPERSKY_ANTI_VIRUS_SSL_INTERCEPTION" desc="Heading of the error page when we detect that Kaspersky anti-virus is running and intercepting our HTTPS connections. 'Kaspersky' is a product name and may be best left untranslated.">
         Cannot make secure connection because of Kaspersky anti-virus
+      </message>
+      <message name="IDS_ERRORPAGES_HEADING_BLOCKED" desc="Heading of the error page when a request is blocked by an extension.">
+        This webpage was blocked by an extension
       </message>
       <message name="IDS_ERRORPAGES_SUMMARY_NOT_AVAILABLE" desc="Summary in the error page when we can't connect to a site.">
         The webpage at <ph name="URL">&lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt;</ph> might be temporarily down or it may have moved permanently to a new web address.
@@ -7251,6 +7260,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_ERRORPAGES_DETAILS_TEMPORARILY_THROTTLED" desc="The error message displayed when we temporarily stop sending requests to a server in order to avoid DDoS.">
         Requests to the server have been temporarily throttled.
+      </message>
+
+      <message name="IDS_ERRORPAGES_SUMMARY_BLOCKED" desc="Summary in the error page when an extension blocks a request.">
+        A third-party extension has blocked access to this webpage.
+      </message>
+      <message name="IDS_ERRORPAGES_DETAILS_BLOCKED" desc="The error message displayed when an extension blocks a request.">
+        Requests to the server have been blocked by an extension.
       </message>
 
       <message name="IDS_ERRORPAGES_HTTP_POST_WARNING" desc="The error message displayed when the user navigates back or forward to a page which would resubmit post data. They can hit reload to send POST data again and load the page.">

@@ -47,7 +47,8 @@ enum NAV_SUGGESTIONS {
   SUGGEST_DNS_CONFIG = 1 << 3,
   SUGGEST_FIREWALL_CONFIG = 1 << 4,
   SUGGEST_PROXY_CONFIG = 1 << 5,
-  SUGGEST_LEARNMORE = 1 << 6,
+  SUGGEST_DISABLE_EXTENSION = 1 << 6,
+  SUGGEST_LEARNMORE = 1 << 7,
 };
 
 struct LocalizedErrorMap {
@@ -260,6 +261,13 @@ const LocalizedErrorMap net_error_options[] = {
    IDS_ERRORPAGES_SUMMARY_TEMPORARILY_THROTTLED,
    IDS_ERRORPAGES_DETAILS_TEMPORARILY_THROTTLED,
    SUGGEST_NONE,
+  },
+  {net::ERR_BLOCKED_BY_CLIENT,
+   IDS_ERRORPAGES_TITLE_BLOCKED,
+   IDS_ERRORPAGES_HEADING_BLOCKED,
+   IDS_ERRORPAGES_SUMMARY_BLOCKED,
+   IDS_ERRORPAGES_DETAILS_BLOCKED,
+   SUGGEST_DISABLE_EXTENSION,
   },
 };
 
@@ -591,6 +599,14 @@ void LocalizedError::GetStrings(const WebKit::WebURLError& error,
         l10n_util::GetStringUTF16(IDS_OPTIONS_PROXIES_CONFIGURE_BUTTON));
 #endif  // defined(OS_CHROMEOS)
     error_strings->Set("suggestionsProxyConfig", suggest_proxy_config);
+  }
+
+  if (options.suggestions & SUGGEST_DISABLE_EXTENSION) {
+    DictionaryValue* suggestion = new DictionaryValue;
+    suggestion->SetString("msg",
+        l10n_util::GetStringUTF16(IDS_ERRORPAGES_SUGGESTION_DISABLE_EXTENSION));
+    suggestion->SetString("reloadUrl", failed_url_string);
+    error_strings->Set("suggestionsDisableExtension", suggestion);
   }
 
   if (options.suggestions & SUGGEST_LEARNMORE) {

@@ -286,7 +286,7 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceCancel) {
 
   EXPECT_TRUE(!request.is_pending());
   EXPECT_EQ(net::URLRequestStatus::FAILED, request.status().status());
-  EXPECT_EQ(net::ERR_EMPTY_RESPONSE, request.status().error());
+  EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, request.status().error());
   EXPECT_EQ(request_url, request.url());
   EXPECT_EQ(1U, request.url_chain().size());
   EXPECT_EQ(0U, ipc_sender_.GetNumTasks());

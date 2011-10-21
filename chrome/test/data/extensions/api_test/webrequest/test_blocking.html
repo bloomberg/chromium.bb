@@ -38,7 +38,7 @@ runTests([
           details: {
             url: getURL("complexLoad/b.html"),
             fromCache: false,
-            error: "net::ERR_EMPTY_RESPONSE"
+            error: "net::ERR_BLOCKED_BY_CLIENT"
             // Request to chrome-extension:// url has no IP.
           }
         },
@@ -102,7 +102,7 @@ runTests([
           details: {
             url: getURLHttpSimpleLoad(),
             fromCache: false,
-            error: "net::ERR_EMPTY_RESPONSE"
+            error: "net::ERR_BLOCKED_BY_CLIENT"
             // Request to chrome-extension:// url has no IP.
           }
         },
