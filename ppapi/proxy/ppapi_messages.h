@@ -193,6 +193,10 @@ IPC_SYNC_MESSAGE_CONTROL1_1(PpapiMsg_SupportsInterface,
                             std::string /* interface_name */,
                             bool /* result */)
 
+IPC_MESSAGE_CONTROL2(PpapiMsg_ExecuteCallback,
+                     uint32 /* serialized_callback */,
+                     int32 /* param */)
+
 // Broker Process.
 
 IPC_SYNC_MESSAGE_CONTROL2_1(PpapiMsg_ConnectToPlugin,
@@ -229,13 +233,6 @@ IPC_MESSAGE_ROUTED3(
     ppapi::HostResource /* chooser */,
     int32_t /* result_code (will be != PP_OK on failure */,
     std::vector<ppapi::PPB_FileRef_CreateInfo> /* chosen_files */)
-
-// PPB_FileRef.
-IPC_MESSAGE_ROUTED3(
-    PpapiMsg_PPBFileRef_CallbackComplete,
-    ppapi::HostResource /* resource */,
-    int /* callback_id */,
-    int32_t /* result */)
 
 // PPB_FileSystem.
 IPC_MESSAGE_ROUTED2(
@@ -299,11 +296,6 @@ IPC_MESSAGE_ROUTED2(PpapiMsg_PPBGraphics2D_FlushACK,
 IPC_MESSAGE_ROUTED2(PpapiMsg_PPBGraphics3D_SwapBuffersACK,
                     ppapi::HostResource /* graphics_3d */,
                     int32_t /* pp_error */)
-
-// PPB_Instance.
-IPC_MESSAGE_ROUTED2(PpapiMsg_PPBInstance_MouseLockComplete,
-                    PP_Instance /* instance */,
-                    int32_t /* result */)
 
 // PPB_Surface3D.
 IPC_MESSAGE_ROUTED2(PpapiMsg_PPBSurface3D_SwapBuffersACK,
@@ -420,9 +412,6 @@ IPC_MESSAGE_ROUTED3(PpapiMsg_PPBURLLoader_ReadResponseBody_Ack,
                     ppapi::HostResource /* loader */,
                     int32 /* result */,
                     std::string /* data */)
-IPC_MESSAGE_ROUTED2(PpapiMsg_PPBURLLoader_CallbackComplete,
-                    ppapi::HostResource /* loader */,
-                    int32_t /* result */)
 
 // PPP_VideoCapture_Dev
 IPC_MESSAGE_ROUTED3(
@@ -589,6 +578,7 @@ IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBFileChooser_Show,
                     std::string /* suggested_file_name */,
                     bool /* require_user_gesture */)
 
+
 // PPB_FileRef.
 IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFileRef_Create,
                            ppapi::HostResource /* file_system */,
@@ -600,19 +590,19 @@ IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBFileRef_GetParent,
 IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBFileRef_MakeDirectory,
                     ppapi::HostResource /* file_ref */,
                     PP_Bool /* make_ancestors */,
-                    int /* callback_id */)
+                    uint32_t /* serialized_callback */)
 IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBFileRef_Touch,
                     ppapi::HostResource /* file_ref */,
                     PP_Time /* last_access */,
                     PP_Time /* last_modified */,
-                    int /* callback_id */)
+                    uint32_t /* serialized_callback */)
 IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBFileRef_Delete,
                     ppapi::HostResource /* file_ref */,
-                    int /* callback_id */)
+                    uint32_t /* serialized_callback */)
 IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBFileRef_Rename,
                     ppapi::HostResource /* file_ref */,
                     ppapi::HostResource /* new_file_ref */,
-                    int /* callback_id */)
+                    uint32_t /* serialized_callback */)
 
 // PPB_FileSystem.
 IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFileSystem_Create,
@@ -902,8 +892,9 @@ IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBInstance_ClearInputEvents,
 IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBInstance_PostMessage,
                     PP_Instance /* instance */,
                     ppapi::proxy::SerializedVar /* message */)
-IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBInstance_LockMouse,
-                    PP_Instance /* instance */)
+IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBInstance_LockMouse,
+                    PP_Instance /* instance */,
+                    uint32_t /* serialized_callback */)
 IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBInstance_UnlockMouse,
                     PP_Instance /* instance */)
 IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBInstance_ResolveRelativeToDocument,
@@ -972,11 +963,13 @@ IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBTextInput_CancelCompositionText,
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBURLLoader_Create,
                            PP_Instance /* instance */,
                            ppapi::HostResource /* result */)
-IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBURLLoader_Open,
+IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBURLLoader_Open,
                     ppapi::HostResource /* loader */,
-                    ppapi::PPB_URLRequestInfo_Data /* request_data */)
-IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBURLLoader_FollowRedirect,
-                    ppapi::HostResource /* loader */)
+                    ppapi::PPB_URLRequestInfo_Data /* request_data */,
+                    uint32_t /* serialized_callback */)
+IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBURLLoader_FollowRedirect,
+                    ppapi::HostResource /* loader */,
+                    uint32_t /* serialized_callback */)
 IPC_SYNC_MESSAGE_ROUTED1_1(
     PpapiHostMsg_PPBURLLoader_GetResponseInfo,
     ppapi::HostResource /* loader */,
@@ -984,8 +977,9 @@ IPC_SYNC_MESSAGE_ROUTED1_1(
 IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBURLLoader_ReadResponseBody,
                     ppapi::HostResource /* loader */,
                     int32_t /* bytes_to_read */)
-IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBURLLoader_FinishStreamingToFile,
-                    ppapi::HostResource /* loader */)
+IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBURLLoader_FinishStreamingToFile,
+                    ppapi::HostResource /* loader */,
+                    uint32_t /* serialized_callback */)
 IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBURLLoader_Close,
                     ppapi::HostResource /* loader */)
 IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBURLLoader_GrantUniversalAccess,

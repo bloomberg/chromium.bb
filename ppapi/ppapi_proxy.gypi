@@ -27,6 +27,8 @@
         '../..',  # For nacl includes to work.
       ],
       'sources': [
+        'proxy/callback_tracker.cc',
+        'proxy/callback_tracker.h',
         'proxy/broker_dispatcher.cc',
         'proxy/broker_dispatcher.h',
         'proxy/dispatcher.cc',

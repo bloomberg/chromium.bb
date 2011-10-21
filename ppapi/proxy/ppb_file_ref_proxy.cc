@@ -4,9 +4,6 @@
 
 #include "ppapi/proxy/ppb_file_ref_proxy.h"
 
-#include <map>
-
-#include "base/bind.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_file_ref.h"
 #include "ppapi/c/private/ppb_proxy_private.h"
@@ -43,46 +40,19 @@ class FileRef : public FileRefImpl {
   virtual int32_t Rename(PP_Resource new_file_ref,
                          PP_CompletionCallback callback) OVERRIDE;
 
-  // Executes the pending callback with the given ID. See pending_callbacks_.
-  void ExecuteCallback(int callback_id, int32_t result);
-
  private:
   PluginDispatcher* GetDispatcher() const {
     return PluginDispatcher::GetForResource(this);
   }
 
-  // Adds a callback to the list and returns its ID. Returns 0 if the callback
-  // is invalid.
-  int SendCallback(PP_CompletionCallback callback);
-
-  // This class can have any number of out-standing requests with completion
-  // callbacks, in contrast to most resources which have one possible pending
-  // callback pending (like a Flush callback).
-  //
-  // To keep track of them, assign integer IDs to the callbacks, which is how
-  // the callback will be identified when it's passed to the host and then
-  // back here.
-  int next_callback_id_;
-  typedef std::map<int, PP_CompletionCallback> PendingCallbackMap;
-  PendingCallbackMap pending_callbacks_;
-
   DISALLOW_IMPLICIT_CONSTRUCTORS(FileRef);
 };
 
 FileRef::FileRef(const PPB_FileRef_CreateInfo& info)
-    : FileRefImpl(FileRefImpl::InitAsProxy(), info),
-      next_callback_id_(0) {
+    : FileRefImpl(FileRefImpl::InitAsProxy(), info) {
 }
 
 FileRef::~FileRef() {
-  // Abort all pending callbacks. Do this by posting a task to avoid reentering
-  // the plugin's Release() call that probably deleted this object.
-  for (PendingCallbackMap::iterator i = pending_callbacks_.begin();
-       i != pending_callbacks_.end(); ++i) {
-    MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
-        i->second.func, i->second.user_data,
-        static_cast<int32_t>(PP_ERROR_ABORTED)));
-  }
 }
 
 PP_Resource FileRef::GetParent() {
@@ -94,44 +64,31 @@ PP_Resource FileRef::GetParent() {
 
 int32_t FileRef::MakeDirectory(PP_Bool make_ancestors,
                                PP_CompletionCallback callback) {
-  int callback_id = SendCallback(callback);
-  if (!callback_id)
-    return PP_ERROR_BADARGUMENT;
-
   GetDispatcher()->Send(new PpapiHostMsg_PPBFileRef_MakeDirectory(
-      API_ID_PPB_FILE_REF, host_resource(), make_ancestors, callback_id));
+      API_ID_PPB_FILE_REF, host_resource(), make_ancestors,
+      GetDispatcher()->callback_tracker().SendCallback(callback)));
   return PP_OK_COMPLETIONPENDING;
 }
 
 int32_t FileRef::Touch(PP_Time last_access_time,
                        PP_Time last_modified_time,
                        PP_CompletionCallback callback) {
-  int callback_id = SendCallback(callback);
-  if (!callback_id)
-    return PP_ERROR_BADARGUMENT;
-
   GetDispatcher()->Send(new PpapiHostMsg_PPBFileRef_Touch(
       API_ID_PPB_FILE_REF, host_resource(),
-      last_access_time, last_modified_time, callback_id));
+      last_access_time, last_modified_time,
+      GetDispatcher()->callback_tracker().SendCallback(callback)));
   return PP_OK_COMPLETIONPENDING;
 }
 
 int32_t FileRef::Delete(PP_CompletionCallback callback) {
-  int callback_id = SendCallback(callback);
-  if (!callback_id)
-    return PP_ERROR_BADARGUMENT;
-
   GetDispatcher()->Send(new PpapiHostMsg_PPBFileRef_Delete(
-      API_ID_PPB_FILE_REF, host_resource(), callback_id));
+      API_ID_PPB_FILE_REF, host_resource(),
+      GetDispatcher()->callback_tracker().SendCallback(callback)));
   return PP_OK_COMPLETIONPENDING;
 }
 
 int32_t FileRef::Rename(PP_Resource new_file_ref,
                         PP_CompletionCallback callback) {
-  int callback_id = SendCallback(callback);
-  if (!callback_id)
-    return PP_ERROR_BADARGUMENT;
-
   Resource* new_file_ref_object =
       PpapiGlobals::Get()->GetResourceTracker()->GetResource(new_file_ref);
   if (!new_file_ref_object ||
@@ -140,40 +97,13 @@ int32_t FileRef::Rename(PP_Resource new_file_ref,
 
   GetDispatcher()->Send(new PpapiHostMsg_PPBFileRef_Rename(
       API_ID_PPB_FILE_REF, host_resource(),
-      new_file_ref_object->host_resource(), callback_id));
+      new_file_ref_object->host_resource(),
+      GetDispatcher()->callback_tracker().SendCallback(callback)));
   return PP_OK_COMPLETIONPENDING;
 }
 
-void FileRef::ExecuteCallback(int callback_id, int32_t result) {
-  PendingCallbackMap::iterator found = pending_callbacks_.find(callback_id);
-  if (found == pending_callbacks_.end()) {
-    // This will happen when the plugin deletes its resource with a pending
-    // callback. The callback will be locally issued with an ABORTED call while
-    // the operation may still be pending in the renderer.
-    return;
-  }
-
-  // Executing the callback may mutate the callback list.
-  PP_CompletionCallback callback = found->second;
-  pending_callbacks_.erase(found);
-  PP_RunCompletionCallback(&callback, result);
-}
-
-int FileRef::SendCallback(PP_CompletionCallback callback) {
-  if (!callback.func)
-    return 0;
-
-  // In extreme cases the IDs may wrap around, so avoid duplicates.
-  while (pending_callbacks_.find(next_callback_id_) != pending_callbacks_.end())
-    next_callback_id_++;
-
-  pending_callbacks_[next_callback_id_] = callback;
-  return next_callback_id_++;
-}
-
 PPB_FileRef_Proxy::PPB_FileRef_Proxy(Dispatcher* dispatcher)
-    : InterfaceProxy(dispatcher),
-      callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+    : InterfaceProxy(dispatcher) {
 }
 
 PPB_FileRef_Proxy::~PPB_FileRef_Proxy() {
@@ -247,67 +177,51 @@ void PPB_FileRef_Proxy::OnMsgGetParent(const HostResource& host_resource,
 
 void PPB_FileRef_Proxy::OnMsgMakeDirectory(const HostResource& host_resource,
                                            PP_Bool make_ancestors,
-                                           int callback_id) {
-  EnterHostFromHostResourceForceCallback<PPB_FileRef_API> enter(
-      host_resource, callback_factory_,
-      &PPB_FileRef_Proxy::OnCallbackCompleteInHost, host_resource, callback_id);
-  if (enter.succeeded()) {
-    enter.SetResult(enter.object()->MakeDirectory(make_ancestors,
-                                                  enter.callback()));
-  }
+                                           uint32_t serialized_callback) {
+  EnterHostFromHostResource<PPB_FileRef_API> enter(host_resource);
+  if (enter.failed())
+    return;
+  PP_CompletionCallback callback = ReceiveCallback(serialized_callback);
+  int32_t result = enter.object()->MakeDirectory(make_ancestors, callback);
+  if (result != PP_OK_COMPLETIONPENDING)
+    PP_RunCompletionCallback(&callback, result);
 }
 
 void PPB_FileRef_Proxy::OnMsgTouch(const HostResource& host_resource,
                                    PP_Time last_access,
                                    PP_Time last_modified,
-                                   int callback_id) {
-  EnterHostFromHostResourceForceCallback<PPB_FileRef_API> enter(
-      host_resource, callback_factory_,
-      &PPB_FileRef_Proxy::OnCallbackCompleteInHost, host_resource, callback_id);
-  if (enter.succeeded()) {
-    enter.SetResult(enter.object()->Touch(last_access, last_modified,
-                                          enter.callback()));
-  }
+                                   uint32_t serialized_callback) {
+  EnterHostFromHostResource<PPB_FileRef_API> enter(host_resource);
+  if (enter.failed())
+    return;
+  PP_CompletionCallback callback = ReceiveCallback(serialized_callback);
+  int32_t result = enter.object()->Touch(last_access, last_modified, callback);
+  if (result != PP_OK_COMPLETIONPENDING)
+    PP_RunCompletionCallback(&callback, result);
 }
 
 void PPB_FileRef_Proxy::OnMsgDelete(const HostResource& host_resource,
-                                    int callback_id) {
-  EnterHostFromHostResourceForceCallback<PPB_FileRef_API> enter(
-      host_resource, callback_factory_,
-      &PPB_FileRef_Proxy::OnCallbackCompleteInHost, host_resource, callback_id);
-  if (enter.succeeded())
-    enter.SetResult(enter.object()->Delete(enter.callback()));
+                                    uint32_t serialized_callback) {
+  EnterHostFromHostResource<PPB_FileRef_API> enter(host_resource);
+  if (enter.failed())
+    return;
+  PP_CompletionCallback callback = ReceiveCallback(serialized_callback);
+  int32_t result = enter.object()->Delete(callback);
+  if (result != PP_OK_COMPLETIONPENDING)
+    PP_RunCompletionCallback(&callback, result);
 }
 
 void PPB_FileRef_Proxy::OnMsgRename(const HostResource& file_ref,
                                     const HostResource& new_file_ref,
-                                    int callback_id) {
-  EnterHostFromHostResourceForceCallback<PPB_FileRef_API> enter(
-      file_ref, callback_factory_,
-      &PPB_FileRef_Proxy::OnCallbackCompleteInHost, file_ref, callback_id);
-  if (enter.succeeded()) {
-    enter.SetResult(enter.object()->Rename(new_file_ref.host_resource(),
-                                           enter.callback()));
-  }
-}
-
-void PPB_FileRef_Proxy::OnMsgCallbackComplete(
-    const HostResource& host_resource,
-    int callback_id,
-    int32_t result) {
-  // Forward the callback info to the plugin resource.
-  EnterPluginFromHostResource<PPB_FileRef_API> enter(host_resource);
-  if (enter.succeeded())
-    static_cast<FileRef*>(enter.object())->ExecuteCallback(callback_id, result);
-}
-
-void PPB_FileRef_Proxy::OnCallbackCompleteInHost(
-    int32_t result,
-    const HostResource& host_resource,
-    int callback_id) {
-  // Execute OnMsgCallbackComplete in the plugin process.
-  Send(new PpapiMsg_PPBFileRef_CallbackComplete(
-      API_ID_PPB_FILE_REF, host_resource, callback_id, result));
+                                    uint32_t serialized_callback) {
+  EnterHostFromHostResource<PPB_FileRef_API> enter(file_ref);
+  if (enter.failed())
+    return;
+  PP_CompletionCallback callback = ReceiveCallback(serialized_callback);
+  int32_t result = enter.object()->Rename(new_file_ref.host_resource(),
+                                          callback);
+  if (result != PP_OK_COMPLETIONPENDING)
+    PP_RunCompletionCallback(&callback, result);
 }
 
 }  // namespace proxy

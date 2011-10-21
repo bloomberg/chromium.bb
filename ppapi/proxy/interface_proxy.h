@@ -60,6 +60,9 @@ class InterfaceProxy : public IPC::Channel::Listener,
   // dispatcher manages our lifetime.
   InterfaceProxy(Dispatcher* dispatcher);
 
+  uint32 SendCallback(PP_CompletionCallback callback);
+  PP_CompletionCallback ReceiveCallback(uint32 serialized_callback);
+
  private:
   Dispatcher* dispatcher_;
 };

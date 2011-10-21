@@ -9,7 +9,6 @@
 #include "ppapi/c/ppb_instance.h"
 #include "ppapi/c/ppb_messaging.h"
 #include "ppapi/c/ppb_mouse_lock.h"
-#include "ppapi/proxy/enter_proxy.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"
@@ -42,8 +41,7 @@ InterfaceProxy* CreateInstanceProxy(Dispatcher* dispatcher) {
 }  // namespace
 
 PPB_Instance_Proxy::PPB_Instance_Proxy(Dispatcher* dispatcher)
-    : InterfaceProxy(dispatcher),
-      callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+    : InterfaceProxy(dispatcher) {
 }
 
 PPB_Instance_Proxy::~PPB_Instance_Proxy() {
@@ -70,7 +68,6 @@ bool PPB_Instance_Proxy::OnMessageReceived(const IPC::Message& msg) {
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPB_Instance_Proxy, msg)
-    // Plugin -> Host messages.
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_GetWindowObject,
                         OnMsgGetWindowObject)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_GetOwnerElementObject,
@@ -115,11 +112,6 @@ bool PPB_Instance_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnMsgGetDocumentURL)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_GetPluginInstanceURL,
                         OnMsgGetPluginInstanceURL)
-
-    // Host -> Plugin messages.
-    IPC_MESSAGE_HANDLER(PpapiMsg_PPBInstance_MouseLockComplete,
-                        OnMsgMouseLockComplete)
-
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -370,17 +362,8 @@ int32_t PPB_Instance_Proxy::LockMouse(PP_Instance instance,
   if (!callback.func)
     return PP_ERROR_BADARGUMENT;
 
-  // Save the mouse callback on the instance data.
-  InstanceData* data = static_cast<PluginDispatcher*>(dispatcher())->
-      GetInstanceData(instance);
-  if (!data)
-    return PP_ERROR_BADARGUMENT;
-  if (data->mouse_lock_callback.func)
-    return PP_ERROR_INPROGRESS;  // Already have a pending callback.
-  data->mouse_lock_callback = callback;
-
   dispatcher()->Send(new PpapiHostMsg_PPBInstance_LockMouse(
-      API_ID_PPB_INSTANCE, instance));
+      API_ID_PPB_INSTANCE, instance, SendCallback(callback)));
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -531,12 +514,15 @@ void PPB_Instance_Proxy::OnMsgPostMessage(PP_Instance instance,
     enter.functions()->PostMessage(instance, message.Get(dispatcher()));
 }
 
-void PPB_Instance_Proxy::OnMsgLockMouse(PP_Instance instance) {
-  EnterHostFunctionForceCallback<PPB_Instance_FunctionAPI> enter(
-      instance, callback_factory_,
-      &PPB_Instance_Proxy::MouseLockCompleteInHost, instance);
-  if (enter.succeeded())
-    enter.SetResult(enter.functions()->LockMouse(instance, enter.callback()));
+void PPB_Instance_Proxy::OnMsgLockMouse(PP_Instance instance,
+                                        uint32_t serialized_callback) {
+  EnterFunctionNoLock<PPB_Instance_FunctionAPI> enter(instance, true);
+  if (enter.failed())
+    return;
+  PP_CompletionCallback callback = ReceiveCallback(serialized_callback);
+  int32_t result = enter.functions()->LockMouse(instance, callback);
+  if (result != PP_OK_COMPLETIONPENDING)
+    PP_RunCompletionCallback(&callback, result);
 }
 
 void PPB_Instance_Proxy::OnMsgUnlockMouse(PP_Instance instance) {
@@ -592,26 +578,6 @@ void PPB_Instance_Proxy::OnMsgGetPluginInstanceURL(
     result.Return(dispatcher(),
                   enter.functions()->GetPluginInstanceURL(instance, NULL));
   }
-}
-
-void PPB_Instance_Proxy::OnMsgMouseLockComplete(PP_Instance instance,
-                                                int32_t result) {
-  // Save the mouse callback on the instance data.
-  InstanceData* data = static_cast<PluginDispatcher*>(dispatcher())->
-      GetInstanceData(instance);
-  if (!data)
-    return;  // Instance was probably deleted.
-  if (!data->mouse_lock_callback.func) {
-    NOTREACHED();
-    return;
-  }
-  PP_RunAndClearCompletionCallback(&data->mouse_lock_callback, result);
-}
-
-void PPB_Instance_Proxy::MouseLockCompleteInHost(int32_t result,
-                                                 PP_Instance instance) {
-  dispatcher()->Send(new PpapiMsg_PPBInstance_MouseLockComplete(
-      API_ID_PPB_INSTANCE, instance, result));
 }
 
 }  // namespace proxy

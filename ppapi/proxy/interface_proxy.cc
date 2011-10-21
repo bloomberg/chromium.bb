@@ -21,5 +21,14 @@ bool InterfaceProxy::Send(IPC::Message* msg) {
   return dispatcher_->Send(msg);
 }
 
+uint32 InterfaceProxy::SendCallback(PP_CompletionCallback callback) {
+  return dispatcher_->callback_tracker().SendCallback(callback);
+}
+
+PP_CompletionCallback InterfaceProxy::ReceiveCallback(
+    uint32 serialized_callback) {
+  return dispatcher_->callback_tracker().ReceiveCallback(serialized_callback);
+}
+
 }  // namespace proxy
 }  // namespace ppapi

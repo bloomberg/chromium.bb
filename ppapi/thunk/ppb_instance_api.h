@@ -13,11 +13,6 @@
 #include "ppapi/c/private/ppb_instance_private.h"
 #include "ppapi/shared_impl/api_id.h"
 
-// Windows headers interfere with this file.
-#ifdef PostMessage
-#undef PostMessage
-#endif
-
 namespace ppapi {
 namespace thunk {
 

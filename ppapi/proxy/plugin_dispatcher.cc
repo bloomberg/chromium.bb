@@ -42,16 +42,8 @@ InstanceToDispatcherMap* g_instance_to_dispatcher = NULL;
 }  // namespace
 
 InstanceData::InstanceData()
-    : fullscreen(PP_FALSE),
-      flash_fullscreen(PP_FALSE),
-      mouse_lock_callback(PP_BlockUntilComplete()) {
+    : fullscreen(PP_FALSE), flash_fullscreen(PP_FALSE) {
   memset(&position, 0, sizeof(position));
-}
-
-InstanceData::~InstanceData() {
-  // Run any pending mouse lock callback to prevent leaks.
-  if (mouse_lock_callback.func)
-    PP_RunAndClearCompletionCallback(&mouse_lock_callback, PP_ERROR_ABORTED);
 }
 
 PluginDispatcher::PluginDispatcher(base::ProcessHandle remote_process_handle,
