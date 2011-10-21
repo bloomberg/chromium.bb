@@ -76,6 +76,11 @@ extern Bool NACL_FLAGS_ncval_annotate;
 /* Define the stop instruction. */
 extern const uint8_t kNaClFullStop;
 
+#ifdef NCVAL_TESTING
+/* Command line flag for printing out prefix/postfix conditions. */
+extern Bool NACL_FLAGS_print_validator_conditions;
+#endif
+
 /* Changes all validator trace flags to true. */
 void NaClValidatorFlagsSetTraceVerbose();
 
@@ -356,6 +361,15 @@ void NaClValidatorTwoInstMessage(int level,
 
 /* Returns true if the validator should quit due to previous errors. */
 Bool NaClValidatorQuit(NaClValidatorState* state);
+
+#ifdef NCVAL_TESTING
+/* Defines the buffer and the corresponding buffer size to use for SNPRINTF,
+ * given the current contents of the pre/post condition.
+ */
+void NaClConditionAppend(char* condition,
+                         char** buffer,
+                         size_t* buffer_size);
+#endif
 
 EXTERN_C_END
 

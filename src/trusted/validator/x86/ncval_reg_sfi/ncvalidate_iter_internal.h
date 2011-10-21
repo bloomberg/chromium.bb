@@ -23,6 +23,11 @@ struct NaClInstIter;
 struct NaClInstState;
 struct NaClValidatorState;
 
+#ifdef NCVAL_TESTING
+/* Maximum size for pre/post conditions (as strings). */
+#define NCVAL_CONDITION_SIZE 1024
+#endif
+
 struct NaClValidatorState {
   /* Holds the decoder tables to use. */
   const struct NaClDecodeTables* decoder_tables;
@@ -96,6 +101,12 @@ struct NaClValidatorState {
   NaClCpuCheckState cpu_checks;
   /* Defines the collected opcode histogram data. */
   NaClOpcodeHistogram opcode_histogram;
+#ifdef NCVAL_TESTING
+  /* The string containing validator preconditions. */
+  char precond[NCVAL_CONDITION_SIZE];
+  /* The string containing validator postconditions. */
+  char postcond[NCVAL_CONDITION_SIZE];
+#endif
 };
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_REG_SFI_NCVALIDATE_ITER_INTERNAL_H__ */

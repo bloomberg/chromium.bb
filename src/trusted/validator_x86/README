@@ -87,13 +87,26 @@ The following scons targets are used for testing this code:
 the decoder and validator, see testdata/XX/README (where XX is 32 or
 64).
 
+* To generate ncval (and the corresponding library) pre/post
+conditions for x86-64, scons build with the command-line argument
+"--ncval_testing=1". This will build the code to test the validator on
+single instructions, and to add any pre/post conditions needed by each
+processed instruction. NOTE: This is a work in progress, and has not
+been completed yet.
+
+To run tests on pre/post conditions, use:
+
+   .> ./scons --mode=opt-linux platform=x86-64 --ncval_testing=1 \
+          ncval_testing
+
 * To test the differences between the modeled x86-64 instructions, and
 the effects of prefixes, when compared to xed, do the following (in
 the native_client directory):
 
-   (1) Generate the 64-bit decoder using:
+   (1) Generate the 64-bit decoder/validator using:
 
-       .> ./scons --mode=opt-linux platform=x86-64 sdl=none
+       .> ./scons --mode=opt-linux platform=x86-64 sdl=none \
+             --ncval_testing=1
 
    (2) Change directory to the following private tests:
 

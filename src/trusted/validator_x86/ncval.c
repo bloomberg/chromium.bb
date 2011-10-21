@@ -122,11 +122,13 @@ static void NaClReportFileSafety(Bool success, const char *fname) {
      */
     NaClLog(LOG_INFO, "STUBBED OUT as follows:\n");
   } else {
+#ifndef NCVAL_TESTING
     if (success) {
       NaClLog(LOG_INFO, "*** %s is safe ***\n", fname);
     } else {
       NaClLog(LOG_INFO, "*** %s IS UNSAFE ***\n", fname);
     }
+#endif
   }
 }
 
@@ -341,7 +343,9 @@ static Bool AnalyzeSegmentCodeSegments(ncfile *ncf, const char *fname) {
   GetVBaseAndLimit(ncf, &vbase, &vlimit);
   vstate = NCValInit(vbase, vlimit, ncf->ncalign);
   if (vstate == NULL) return FALSE;
+#ifndef NCVAL_TESTING
   NCValidateSetErrorReporter(vstate, &kNCVerboseErrorReporter);
+#endif
   if (AnalyzeSegmentSections(ncf, vstate) < 0) {
     NaClLog(LOG_INFO, "%s: text validate failed\n", fname);
   }
@@ -457,7 +461,9 @@ static Bool AnalyzeSfiCodeSegments(ncfile *ncf, const char *fname) {
     NaClValidatorMessage(LOG_ERROR, vstate, "Unable to create validator state");
     return FALSE;
   }
+#ifndef NCVAL_TESTING
   NaClValidatorStateSetErrorReporter(vstate, &kNaClVerboseErrorReporter);
+#endif
   if (NACL_FLAGS_analyze_segments) {
     AnalyzeSfiSegments(ncf, vstate);
   } else {
@@ -523,7 +529,9 @@ static Bool NaClValidateAnalyzeBytes(NaClValidateBytes* data) {
   if (NACL_FLAGS_stubout_memory) {
     NaClValidatorStateSetDoStubOut(state, TRUE);
   }
+#ifndef NCVAL_TESTING
   NaClValidatorStateSetErrorReporter(state, &kNaClVerboseErrorReporter);
+#endif
   NaClValidateSegmentUsingTables(data->bytes, data->base, data->num_bytes,
                                  state, NaClGetDecoderTables());
   return_value = NaClValidatesOk(state);
@@ -539,7 +547,9 @@ static Bool NaClValidateAnalyzeBytes(NaClValidateBytes* data) {
     if (NACL_FLAGS_stubout_memory) {
       NCValidateSetStubOutMode(vstate, 1);
     }
+#ifndef NCVAL_TESTING
     NCValidateSetErrorReporter(vstate, &kNCVerboseErrorReporter);
+#endif
     NCValidateSegment(&data->bytes[0], data->base, data->num_bytes, vstate);
     return_value = (0 == NCValidateFinish(vstate)) ? TRUE : FALSE;
     NaClReportSafety(return_value, "");
@@ -594,6 +604,10 @@ static void usage(int exit_code) {
       "\tModel a CPU that supports the clflush instruction.\n"
       "--CMOV\n"
       "\tModel a CPU that supports the cmov instructions.\n"
+#ifdef NCVAL_TESTING
+      "--conds\n"
+      "\tPrint out pre/post conditions associated with each instruction.\n"
+#endif
       "--cpuid-all\n"
       "\tModel a CPU that supports all available features.\n"
       "--cpuid-none\n"
@@ -766,6 +780,9 @@ static Bool GrokABoolFlag(const char *arg) {
     { "--errors" , &NACL_FLAGS_errors },
     { "--fatal"  , &NACL_FLAGS_fatal },
     { "--validator_decoder", &NACL_FLAGS_validator_decoder },
+#endif
+#if NCVAL_TESTING
+    {"--conds", &NACL_FLAGS_print_validator_conditions },
 #endif
     { "--identity_mask", &NACL_FLAGS_identity_mask },
   };

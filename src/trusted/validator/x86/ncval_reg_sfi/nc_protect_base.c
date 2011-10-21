@@ -9,9 +9,11 @@
  * RSP and RBP is maintained, and that segment registers are not set.
  */
 #include <assert.h>
+#include <string.h>
 
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/nc_protect_base.h"
 
+#include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/validator/x86/decoder/nc_inst_state_internal.h"
 #include "native_client/src/trusted/validator/x86/decoder/nc_inst_trans.h"
@@ -377,19 +379,28 @@ static void NaClCheckRbpAssignments(struct NaClValidatorState* state,
   switch (inst_name) {
     case InstAdd:
       if (NaClInstIterHasLookbackStateInline(iter, 1)) {
-        NaClInstState* prev_state =
-            NaClInstIterGetLookbackStateInline(iter, 1);
         if (NaClIsBinarySetUsingRegisters(
                 state->decoder_tables,
                 inst, InstAdd, vector,
-                RegRBP, state->base_register) &&
-            NaClAssignsRegisterWithZeroExtends(
-                prev_state, RegEBP)) {
-          /* case 2. */
-          NaClMarkInstructionJumpIllegal(state, inst_state);
-          state->set_base_registers.buffer[
-              state->set_base_registers.previous_index].ebp_set_inst = NULL;
+                RegRBP, state->base_register)) {
+#ifdef NCVAL_TESTING
+          char* buffer;
+          size_t buffer_size;
+          NaClConditionAppend(state->precond, &buffer, &buffer_size);
+          SNPRINTF(buffer, buffer_size, "ZeroExtends(Ebp)");
           return;
+#else
+          NaClInstState* prev_state =
+              NaClInstIterGetLookbackStateInline(iter, 1);
+          if (NaClAssignsRegisterWithZeroExtends(
+                  prev_state, RegEBP)) {
+            /* case 2. */
+            NaClMarkInstructionJumpIllegal(state, inst_state);
+            state->set_base_registers.buffer[
+                state->set_base_registers.previous_index].ebp_set_inst = NULL;
+            return;
+          }
+#endif
         }
       }
       break;

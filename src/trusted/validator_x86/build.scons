@@ -319,6 +319,21 @@ for read_write in [False, True]:
           __AddNcvalSfiTests(read_write, cpu_features_all, detailed,
                              annotate, validator_decoder)
 
+# Run segment sandboxing tests of pre/post conditions for the validator.
+if test_env.Bit('ncval_testing') and test_env.Bit('target_x86_64'):
+  options = ['--hex_text=-', '--max_errors=-1', '--detailed', '--cpuid-all',
+             '--readwrite_sfi', '--annotate=false', '--conds']
+  ext = 'cval'
+  test = 'ncval_conds'
+  for base in __GoldenBases(ext):
+    command = [ncval] + options
+    node_val = test_env.CommandTest(
+        __OutTestFile(test, base, ext),
+        command,
+        stdin = __BaseTestFile(base, 'hex'),
+        stdout_golden = __BaseTestFile(base, ext))
+    __AddTest(test, test_env, base, ext, node_val, ['ncval_testing'])
+
 # Run segment sandboxing tests using ncval on test files.
 def __AddNcvalSegmentTests(test_cpuid_all, test_stats, detailed, align_16):
   if env.Bit('target_x86_32'):

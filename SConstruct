@@ -343,6 +343,14 @@ def SetUpArgumentBits(env):
 
   #########################################################################
   # EXPERIMENTAL
+  # This is for generating a testing library for use within private test
+  # enuminsts, where we want to compare and test different validators.
+  #
+  BitFromArgument(env, 'ncval_testing', default=False,
+    desc='EXPERIMENTAL: Compile validator code for testing within enuminsts')
+
+  #########################################################################
+  # EXPERIMENTAL
   # This is only for testing within an artificial cros_chroot hook for ARM/thumb2
   #
   # BUG=http://code.google.com/p/chromium/issues/detail?id=61695
@@ -623,7 +631,9 @@ MAJOR_TEST_SUITES = set([
   'dynamic_library_browser_tests',
   'huge_tests',
   'memcheck_bot_tests',
-  'tsan_bot_tests'
+  'tsan_bot_tests',
+  # Special testing environment for testing comparing x86 validators.
+  'ncval_testing',
 ])
 
 # These are the test suites we know exist, but aren't run on a regular basis.
@@ -2272,6 +2282,8 @@ def MakeBaseTrustedEnv():
     CCFLAGS = ['${EXTRA_CCFLAGS}'],
     CXXFLAGS = ['${EXTRA_CXXFLAGS}'],
   )
+  if base_env.Bit('ncval_testing'):
+    base_env.Append(CPPDEFINES = ['NCVAL_TESTING'])
   if base_env.Bit('target_arm_thumb2'):
     base_env.Append(CPPDEFINES = ['NACL_TARGET_ARM_THUMB2_MODE=1'])
 

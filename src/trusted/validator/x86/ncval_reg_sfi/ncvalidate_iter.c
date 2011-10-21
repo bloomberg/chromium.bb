@@ -15,6 +15,7 @@
 #include <assert.h>
 #include <string.h>
 
+#include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/validator/x86/decoder/ncop_exps.h"
@@ -48,6 +49,25 @@ Bool NACL_FLAGS_validator_trace_instructions = FALSE;
 Bool NACL_FLAGS_validator_trace_inst_internals = FALSE;
 
 Bool NACL_FLAGS_ncval_annotate = TRUE;
+
+#ifdef NCVAL_TESTING
+Bool NACL_FLAGS_print_validator_conditions = FALSE;
+
+void NaClConditionAppend(char* condition,
+                         char** buffer,
+                         size_t* remaining_buffer_size) {
+  size_t bsize = strlen(condition);
+  *buffer = condition + bsize;
+  if (bsize > 0) {
+    /* Add that we are adding an alternative. */
+    SNPRINTF(*buffer, NCVAL_CONDITION_SIZE - bsize,
+             "|");
+    bsize = strlen(condition);
+    *buffer = condition + bsize;
+  }
+  *remaining_buffer_size = NCVAL_CONDITION_SIZE - bsize;
+}
+#endif
 
 /* The set of cpu features to use, if non-NULL.
  * NOTE: This global is used to allow the injection of
@@ -450,6 +470,10 @@ NaClValidatorState *NaClValidatorStateCreate(const NaClPcAddress vbase,
     NaClOpcodeHistogramInitialize(state);
     NaClCpuCheckMemoryInitialize(state);
     NaClBaseRegisterMemoryInitialize(state);
+#ifdef NCVAL_TESTING
+    strcpy(&state->precond[0], "");
+    strcpy(&state->postcond[0], "");
+#endif
     if (!NaClJumpValidatorInitialize(state)) {
       NaClValidatorStateDestroy(state);
       return_value = NULL;
@@ -477,6 +501,16 @@ static INLINE void NaClApplyValidators(NaClValidatorState *state,
   if (state->print_opcode_histogram) {
     NaClOpcodeHistogramRecord(state);
   }
+#ifdef NCVAL_TESTING
+  /* To save space, only report on instructions that have non-empty
+   * pre/post conditions.
+   */
+  if (NACL_FLAGS_print_validator_conditions &&
+      ((strlen(state->precond) > 0) || (strlen(state->postcond) > 0))) {
+    printf("%"NACL_PRIxNaClPcAddress": pre: '%s' post: '%s'\n",
+           state->cur_inst_state->vpc, state->precond, state->postcond);
+  }
+#endif
 }
 
 /* Given that we have just iterated through all instructions in a segment,
@@ -521,6 +555,11 @@ void NaClValidateSegment(uint8_t *mbase, NaClPcAddress vbase,
       break;
     }
     for (; NaClInstIterHasNextInline(iter); NaClInstIterAdvanceInline(iter)) {
+#ifdef NCVAL_TESTING
+      /* Initialize the pre/post conditions to the empty condition. */
+      strcpy(&state->precond[0], "");
+      strcpy(&state->postcond[0], "");
+#endif
       state->cur_inst_state = NaClInstIterGetStateInline(iter);
       state->cur_inst = NaClInstStateInst(state->cur_inst_state);
       state->cur_inst_vector = NaClInstStateExpVector(state->cur_inst_state);
