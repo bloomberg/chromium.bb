@@ -39,6 +39,12 @@ const double kStepPercentage = 4.0;
 // http://crosbug.com/13618.
 const double kVolumePercentOnVolumeUpWhileMuted = 25.0;
 
+// In ProcessedXEvent(), we should check only Alt, Shift, Control, and Caps Lock
+// modifiers, and should ignore Num Lock, Super, Hyper etc. See
+// http://crosbug.com/21842.
+const unsigned int kSupportedModifiers =
+    Mod1Mask | ShiftMask | ControlMask | LockMask;
+
 static SystemKeyEventListener* g_system_key_event_listener = NULL;
 
 }  // namespace
@@ -292,17 +298,18 @@ bool SystemKeyEventListener::ProcessedXEvent(XEvent* xevent) {
   } else if (xevent->type == KeyPress) {
     const int32 keycode = xevent->xkey.keycode;
     if (keycode) {
+      const unsigned int state = (xevent->xkey.state & kSupportedModifiers);
+
       // Toggle Caps Lock if both Shift keys are pressed simultaneously.
       if (keycode == key_left_shift_ || keycode == key_right_shift_) {
-        const bool other_shift_is_held = (xevent->xkey.state & ShiftMask);
-        const bool other_mods_are_held =
-            (xevent->xkey.state & ~(ShiftMask | LockMask));
+        const bool other_shift_is_held = (state & ShiftMask);
+        const bool other_mods_are_held = (state & ~(ShiftMask | LockMask));
         if (other_shift_is_held && !other_mods_are_held)
           input_method::XKeyboard::SetCapsLockEnabled(!caps_lock_is_on_);
       }
 
       // Only doing non-Alt/Shift/Ctrl modified keys
-      if (!(xevent->xkey.state & (Mod1Mask | ShiftMask | ControlMask))) {
+      if (!(state & (Mod1Mask | ShiftMask | ControlMask))) {
         if (keycode == key_f6_ || keycode == key_brightness_down_) {
           if (keycode == key_f6_)
             UserMetrics::RecordAction(
