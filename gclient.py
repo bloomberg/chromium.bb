@@ -69,9 +69,6 @@ import gclient_scm
 import gclient_utils
 from third_party.repo.progress import Progress
 import subprocess2
-from third_party import colorama
-# Import shortcut.
-from third_party.colorama import Fore
 
 
 def attr(attribute, data):
@@ -1486,7 +1483,6 @@ def Main(argv):
   if sys.hexversion < 0x02050000:
     print >> sys.stderr, (
         '\nYour python version is unsupported, please upgrade.\n')
-  colorama.init()
   try:
     # Make stdout auto-flush so buildbot doesn't kill us during lengthy
     # operations. Python as a strong tendency to buffer sys.stdout.
@@ -1496,14 +1492,9 @@ def Main(argv):
     # Do it late so all commands are listed.
     # Unused variable 'usage'
     # pylint: disable=W0612
-    def to_str(fn):
-      return (
-          '  %s%-10s%s' % (Fore.GREEN, fn[3:], Fore.RESET) +
-          ' %s' % Command(fn[3:]).__doc__.split('\n')[0].strip())
-    cmds = (
-        to_str(fn) for fn in dir(sys.modules[__name__]) if fn.startswith('CMD')
-    )
-    CMDhelp.usage = '\n\nCommands are:\n' + '\n'.join(cmds)
+    CMDhelp.usage = ('\n\nCommands are:\n' + '\n'.join([
+        '  %-10s %s' % (fn[3:], Command(fn[3:]).__doc__.split('\n')[0].strip())
+        for fn in dir(sys.modules[__name__]) if fn.startswith('CMD')]))
     parser = Parser()
     if argv:
       command = Command(argv[0])
