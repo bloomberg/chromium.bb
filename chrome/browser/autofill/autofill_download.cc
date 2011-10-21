@@ -72,7 +72,7 @@ void AutofillDownloadManager::SetObserver(
 }
 
 bool AutofillDownloadManager::StartQueryRequest(
-    const ScopedVector<FormStructure>& forms,
+    const std::vector<FormStructure*>& forms,
     const AutofillMetrics& metric_logger) {
   if (next_query_request_ > base::Time::Now()) {
     // We are in back-off mode: do not do the request.
