@@ -138,10 +138,12 @@ Shell* Shell::GetInstance() {
 }
 
 void Shell::Init() {
+  aura::Desktop* desktop_window = aura::Desktop::GetInstance();
+  desktop_window->SetCursor(aura::kCursorPointer);
+
   aura::Window::Windows containers;
   CreateSpecialContainers(&containers);
   aura::Window::Windows::const_iterator i;
-  aura::Desktop* desktop_window = aura::Desktop::GetInstance();
   for (i = containers.begin(); i != containers.end(); ++i) {
     (*i)->Init();
     desktop_window->AddChild(*i);
@@ -159,7 +161,7 @@ void Shell::Init() {
   launcher_.reset(new Launcher(toplevel_container));
   desktop_layout->set_launcher_widget(launcher_->widget());
   desktop_layout->set_status_area_widget(internal::CreateStatusArea());
-  aura::Desktop::GetInstance()->screen()->set_work_area_insets(
+  desktop_window->screen()->set_work_area_insets(
       gfx::Insets(0, 0, launcher_->widget()->GetWindowScreenBounds().height(),
                   0));
 
