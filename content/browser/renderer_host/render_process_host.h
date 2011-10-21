@@ -48,13 +48,16 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Channel::Sender,
 
   // Details for RENDERER_PROCESS_CLOSED notifications.
   struct RendererClosedDetails {
-    RendererClosedDetails(base::TerminationStatus status,
+    RendererClosedDetails(base::ProcessHandle handle,
+                          base::TerminationStatus status,
                           int exit_code,
                           bool was_alive) {
+      this->handle = handle;
       this->status = status;
       this->exit_code = exit_code;
       this->was_alive = was_alive;
     }
+    base::ProcessHandle handle;
     base::TerminationStatus status;
     int exit_code;
     bool was_alive;

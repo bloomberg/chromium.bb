@@ -115,7 +115,8 @@ class CONTENT_EXPORT BrowserRenderProcessHost
 
   // Handle termination of our process. |was_alive| indicates that when we
   // tried to retrieve the exit code the process had not finished yet.
-  void ProcessDied(base::TerminationStatus status,
+  void ProcessDied(base::ProcessHandle handle,
+                   base::TerminationStatus status,
                    int exit_code,
                    bool was_alive);
 

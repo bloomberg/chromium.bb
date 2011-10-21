@@ -190,7 +190,13 @@ void OomPriorityManager::Observe(int type,
   base::ProcessHandle handle = 0;
   base::AutoLock pid_to_oom_score_autolock(pid_to_oom_score_lock_);
   switch (type) {
-    case content::NOTIFICATION_RENDERER_PROCESS_CLOSED:
+    case content::NOTIFICATION_RENDERER_PROCESS_CLOSED: {
+      handle =
+          content::Details<RenderProcessHost::RendererClosedDetails>(details)->
+              handle;
+      pid_to_oom_score_.erase(handle);
+      break;
+    }
     case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED: {
       handle = content::Source<RenderProcessHost>(source)->GetHandle();
       pid_to_oom_score_.erase(handle);

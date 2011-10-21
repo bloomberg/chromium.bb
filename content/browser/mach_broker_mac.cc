@@ -208,6 +208,10 @@ void MachBroker::Observe(int type,
   base::ProcessHandle handle = 0;
   switch (type) {
     case content::NOTIFICATION_RENDERER_PROCESS_CLOSED:
+      handle =
+          content::Details<RenderProcessHost::RendererClosedDetails>(details)->
+              handle;
+      break;
     case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED:
       handle = content::Source<RenderProcessHost>(source)->GetHandle();
       break;

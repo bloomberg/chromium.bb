@@ -662,8 +662,9 @@ bool BrowserRenderProcessHost::FastShutdownIfPossible() {
   if (!sudden_termination_allowed())
     return false;
 
-  child_process_launcher_.reset();
-  ProcessDied(base::TERMINATION_STATUS_NORMAL_TERMINATION, 0, false);
+  // Store the handle before it gets changed.
+  base::ProcessHandle handle = GetHandle();
+  ProcessDied(handle, base::TERMINATION_STATUS_NORMAL_TERMINATION, 0, false);
   fast_shutdown_started_ = true;
   return true;
 }
@@ -828,6 +829,9 @@ void BrowserRenderProcessHost::OnChannelError() {
   if (!channel_.get())
     return;
 
+  // Store the handle before it gets changed.
+  base::ProcessHandle handle = GetHandle();
+
   // child_process_launcher_ can be NULL in single process mode or if fast
   // termination happened.
   int exit_code = 0;
@@ -846,30 +850,33 @@ void BrowserRenderProcessHost::OnChannelError() {
     }
   }
 #endif
-  ProcessDied(status, exit_code, false);
+  ProcessDied(handle, status, exit_code, false);
 }
 
 // Called when the renderer process handle has been signaled.
 void BrowserRenderProcessHost::OnWaitableEventSignaled(
     base::WaitableEvent* waitable_event) {
 #if defined (OS_WIN)
+  base::ProcessHandle handle = GetHandle();
   int exit_code = 0;
   base::TerminationStatus status =
       base::GetTerminationStatus(waitable_event->Release(), &exit_code);
   delete waitable_event;
-  ProcessDied(status, exit_code, true);
+  ProcessDied(handle, status, exit_code, true);
 #endif
 }
 
-void BrowserRenderProcessHost::ProcessDied(
-    base::TerminationStatus status, int exit_code, bool was_alive) {
+void BrowserRenderProcessHost::ProcessDied(base::ProcessHandle handle,
+                                           base::TerminationStatus status,
+                                           int exit_code,
+                                           bool was_alive) {
   // Our child process has died.  If we didn't expect it, it's a crash.
   // In any case, we need to let everyone know it's gone.
   // The OnChannelError notification can fire multiple times due to nested sync
   // calls to a renderer. If we don't have a valid channel here it means we
   // already handled the error.
 
-  RendererClosedDetails details(status, exit_code, was_alive);
+  RendererClosedDetails details(handle, status, exit_code, was_alive);
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
       content::Source<RenderProcessHost>(this),
