@@ -10,5 +10,4 @@
 #include "chrome/common/common_message_generator.h"
 #include "chrome/common/nacl_messages.h"
 #include "content/common/content_message_generator.h"
-#include "content/common/pepper_messages.h"
 #include "ppapi/proxy/ppapi_messages.h"
