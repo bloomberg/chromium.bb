@@ -456,6 +456,7 @@ const CGFloat kRapidCloseDist = 2.5;
       [[super accessibilityAttributeNames] mutableCopy];
   [attributes addObject:NSAccessibilityTitleAttribute];
   [attributes addObject:NSAccessibilityEnabledAttribute];
+  [attributes addObject:NSAccessibilityValueAttribute];
 
   return [attributes autorelease];
 }
@@ -467,16 +468,33 @@ const CGFloat kRapidCloseDist = 2.5;
   if ([attribute isEqual:NSAccessibilityEnabledAttribute])
     return NO;
 
+  if ([attribute isEqual:NSAccessibilityValueAttribute])
+    return YES;
+
   return [super accessibilityIsAttributeSettable:attribute];
+}
+
+- (void)accessibilityPerformAction:(NSString*)action {
+  if ([action isEqual:NSAccessibilityPressAction] &&
+      [[controller_ target] respondsToSelector:[controller_ action]]) {
+    [[controller_ target] performSelector:[controller_ action]
+        withObject:self];
+    NSAccessibilityPostNotification(self,
+                                    NSAccessibilityValueChangedNotification);
+  } else {
+    [super accessibilityPerformAction:action];
+  }
 }
 
 - (id)accessibilityAttributeValue:(NSString*)attribute {
   if ([attribute isEqual:NSAccessibilityRoleAttribute])
+    return NSAccessibilityRadioButtonRole;
+  if ([attribute isEqual:NSAccessibilityRoleDescriptionAttribute])
     return l10n_util::GetNSStringWithFixup(IDS_ACCNAME_TAB);
-
   if ([attribute isEqual:NSAccessibilityTitleAttribute])
     return [controller_ title];
-
+  if ([attribute isEqual:NSAccessibilityValueAttribute])
+    return [NSNumber numberWithInt:[controller_ selected]];
   if ([attribute isEqual:NSAccessibilityEnabledAttribute])
     return [NSNumber numberWithBool:YES];
 
