@@ -239,12 +239,8 @@ TEST_PPAPI_OUT_OF_PROCESS(VideoDecoder)
 TEST_F(PPAPITest, FAILS_FileIO) {
   RunTestViaHTTP("FileIO");
 }
-#if defined(ADDRESS_SANITIZER) || defined(OS_MACOSX)
-#define MAYBE_FileIO DISABLED_FileIO
-#else
-#define MAYBE_FileIO FAILS_FileIO
-#endif
-TEST_F(OutOfProcessPPAPITest, MAYBE_FileIO) {
+// http://crbug.com/101154
+TEST_F(OutOfProcessPPAPITest, DISABLED_FileIO) {
   RunTestViaHTTP("FileIO");
 }
 
