@@ -88,6 +88,7 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimatorDelegate {
   // Layer takes ownership of |animation| and installs it's own delegate on the
   // animation.
   void SetAnimation(Animation* animation);
+  bool has_animation() const { return animator_.get() != NULL; }
 
   // The transform, relative to the parent.
   void SetTransform(const ui::Transform& transform);

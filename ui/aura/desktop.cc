@@ -337,6 +337,15 @@ void Desktop::ReleaseCapture(Window* window) {
   capture_window_ = NULL;
 }
 
+void Desktop::SetTransform(const ui::Transform& transform) {
+  Window::SetTransform(transform);
+
+  // If the layer is not animating, then we need to update the host size
+  // immediately.
+  if (!layer()->has_animation())
+    OnHostResized(host_->GetSize());
+}
+
 void Desktop::HandleMouseMoved(const MouseEvent& event, Window* target) {
   if (target == mouse_moved_handler_)
     return;

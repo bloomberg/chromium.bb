@@ -116,7 +116,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   virtual ToplevelWindowContainer* AsToplevelWindowContainer();
   virtual const ToplevelWindowContainer* AsToplevelWindowContainer() const;
 
-  void SetTransform(const ui::Transform& transform);
+  virtual void SetTransform(const ui::Transform& transform);
 
   // Assigns a LayoutManager to size and place child windows.
   // The Window takes ownership of the LayoutManager.
