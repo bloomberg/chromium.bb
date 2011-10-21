@@ -97,7 +97,7 @@ NavigationInfo::NavigationInfo()
     : navigation_type(0),
       relative_offset(0),
       navigation_index(0),
-      security_style(SECURITY_STYLE_UNKNOWN),
+      security_style(content::SECURITY_STYLE_UNKNOWN),
       displayed_insecure_content(0),
       ran_insecure_content(0) {
 }
@@ -108,7 +108,7 @@ NavigationInfo::NavigationInfo(int in_navigation_type,
                                const std::wstring& in_title,
                                const GURL& in_url,
                                const GURL& in_referrer,
-                               SecurityStyle in_security_style,
+                               content::SecurityStyle in_security_style,
                                bool in_displayed_insecure_content,
                                bool in_ran_insecure_content)
     : navigation_type(in_navigation_type),

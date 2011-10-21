@@ -11,9 +11,9 @@
 #include "chrome/common/automation_constants.h"
 #include "chrome/common/content_settings.h"
 #include "content/common/common_param_traits.h"
-#include "content/common/security_style.h"
 #include "content/common/webkit_param_traits.h"
 #include "content/public/common/page_type.h"
+#include "content/public/common/security_style.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
 #include "net/base/host_port_pair.h"
@@ -95,7 +95,7 @@ struct NavigationInfo {
                  const std::wstring& title,
                  const GURL& url,
                  const GURL& referrer,
-                 SecurityStyle security_style,
+                 content::SecurityStyle security_style,
                  bool displayed_insecure_content,
                  bool ran_insecure_content);
   ~NavigationInfo();
@@ -106,7 +106,7 @@ struct NavigationInfo {
   std::wstring title;
   GURL url;
   GURL referrer;
-  SecurityStyle security_style;
+  content::SecurityStyle security_style;
   bool displayed_insecure_content;
   bool ran_insecure_content;
 };
@@ -266,7 +266,7 @@ struct SimilarTypeTraits<AutomationMsg_ExtensionProperty> {
 };
 
 template <>
-struct SimilarTypeTraits<SecurityStyle> {
+struct SimilarTypeTraits<content::SecurityStyle> {
   typedef int Type;
 };
 

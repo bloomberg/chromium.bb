@@ -26,7 +26,6 @@
 #include "webkit/plugins/plugin_constants.h"
 
 #if defined(OS_WIN)
-#include "content/common/sandbox_policy.h"
 #include "sandbox/src/sandbox.h"
 #endif
 

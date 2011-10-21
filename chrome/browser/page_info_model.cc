@@ -140,7 +140,7 @@ PageInfoModel::PageInfoModel(Profile* profile,
     // HTTP or HTTPS with errors (not warnings).
     description.assign(l10n_util::GetStringUTF16(
         IDS_PAGE_INFO_SECURITY_TAB_INSECURE_IDENTITY));
-    icon_id = ssl.security_style() == SECURITY_STYLE_UNAUTHENTICATED ?
+    icon_id = ssl.security_style() == content::SECURITY_STYLE_UNAUTHENTICATED ?
         ICON_STATE_WARNING_MAJOR : ICON_STATE_ERROR;
 
     const string16 bullet = UTF8ToUTF16("\n • ");
@@ -173,8 +173,8 @@ PageInfoModel::PageInfoModel(Profile* profile,
   description.clear();
   if (!ssl.cert_id()) {
     // Not HTTPS.
-    DCHECK_EQ(ssl.security_style(), SECURITY_STYLE_UNAUTHENTICATED);
-    icon_id = ssl.security_style() == SECURITY_STYLE_UNAUTHENTICATED ?
+    DCHECK_EQ(ssl.security_style(), content::SECURITY_STYLE_UNAUTHENTICATED);
+    icon_id = ssl.security_style() == content::SECURITY_STYLE_UNAUTHENTICATED ?
         ICON_STATE_WARNING_MAJOR : ICON_STATE_ERROR;
     description.assign(l10n_util::GetStringFUTF16(
         IDS_PAGE_INFO_SECURITY_TAB_NOT_ENCRYPTED_CONNECTION_TEXT,
@@ -183,7 +183,7 @@ PageInfoModel::PageInfoModel(Profile* profile,
     // Security strength is unknown.  Say nothing.
     icon_id = ICON_STATE_ERROR;
   } else if (ssl.security_bits() == 0) {
-    DCHECK_NE(ssl.security_style(), SECURITY_STYLE_UNAUTHENTICATED);
+    DCHECK_NE(ssl.security_style(), content::SECURITY_STYLE_UNAUTHENTICATED);
     icon_id = ICON_STATE_ERROR;
     description.assign(l10n_util::GetStringFUTF16(
         IDS_PAGE_INFO_SECURITY_TAB_NOT_ENCRYPTED_CONNECTION_TEXT,

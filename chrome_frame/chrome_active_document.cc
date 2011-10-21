@@ -703,7 +703,7 @@ void ChromeActiveDocument::UpdateNavigationState(
   if (is_ssl_state_changed) {
     int lock_status = SECURELOCK_SET_UNSECURE;
     switch (new_navigation_info.security_style) {
-      case SECURITY_STYLE_AUTHENTICATED:
+      case content::SECURITY_STYLE_AUTHENTICATED:
         lock_status = new_navigation_info.displayed_insecure_content ?
             SECURELOCK_SET_MIXED : SECURELOCK_SET_SECUREUNKNOWNBIT;
         break;

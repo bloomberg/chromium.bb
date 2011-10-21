@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_SECURITY_STYLE_H_
-#define CONTENT_COMMON_SECURITY_STYLE_H_
+#ifndef CONTENT_PUBLIC_COMMON_SECURITY_STYLE_H_
+#define CONTENT_PUBLIC_COMMON_SECURITY_STYLE_H_
 #pragma once
+
+namespace content {
 
 // Various aspects of the UI change their appearance according to the security
 // context in which they are displayed.  For example, the location bar displays
@@ -32,4 +34,6 @@ enum SecurityStyle {
   SECURITY_STYLE_AUTHENTICATED,
 };
 
-#endif  // CONTENT_COMMON_SECURITY_STYLE_H_
+}  // namespace content
+
+#endif  // CONTENT_PUBLIC_COMMON_SECURITY_STYLE_H_

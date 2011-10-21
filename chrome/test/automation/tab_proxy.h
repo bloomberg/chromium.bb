@@ -23,8 +23,8 @@
 #include "chrome/test/automation/dom_element_proxy.h"
 #include "chrome/test/automation/javascript_execution_controller.h"
 #include "content/browser/download/save_package.h"
-#include "content/common/security_style.h"
 #include "content/public/common/page_type.h"
+#include "content/public/common/security_style.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class BrowserProxy;
@@ -281,7 +281,7 @@ class TabProxy : public AutomationResourceProxy,
   bool WaitForTabToBeRestored(uint32 timeout_ms) WARN_UNUSED_RESULT;
 
   // Retrieves the different security states for the current tab.
-  bool GetSecurityState(SecurityStyle* security_style,
+  bool GetSecurityState(content::SecurityStyle* security_style,
                         net::CertStatus* ssl_cert_status,
                         int* insecure_content_status) WARN_UNUSED_RESULT;
 

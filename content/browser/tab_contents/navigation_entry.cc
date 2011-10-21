@@ -21,7 +21,7 @@ static int GetUniqueID() {
 }
 
 NavigationEntry::SSLStatus::SSLStatus()
-    : security_style_(SECURITY_STYLE_UNKNOWN),
+    : security_style_(content::SECURITY_STYLE_UNKNOWN),
       cert_id_(0),
       cert_status_(0),
       security_bits_(-1),

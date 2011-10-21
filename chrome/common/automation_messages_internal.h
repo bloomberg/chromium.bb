@@ -559,7 +559,7 @@ IPC_MESSAGE_ROUTED1(AutomationMsg_DidNavigate,
 IPC_SYNC_MESSAGE_CONTROL1_4(AutomationMsg_GetSecurityState,
                             int,
                             bool,
-                            SecurityStyle,
+                            content::SecurityStyle,
                             net::CertStatus,
                             int)
 

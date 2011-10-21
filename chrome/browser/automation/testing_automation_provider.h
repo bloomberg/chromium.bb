@@ -203,7 +203,7 @@ class TestingAutomationProvider : public AutomationProvider,
   // Gets the security state for the tab associated to the specified |handle|.
   void GetSecurityState(int handle,
                         bool* success,
-                        SecurityStyle* security_style,
+                        content::SecurityStyle* security_style,
                         net::CertStatus* ssl_cert_status,
                         int* insecure_content_status);
 

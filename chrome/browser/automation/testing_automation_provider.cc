@@ -1540,7 +1540,7 @@ void TestingAutomationProvider::WaitForTabToBeRestored(
 void TestingAutomationProvider::GetSecurityState(
     int handle,
     bool* success,
-    SecurityStyle* security_style,
+    content::SecurityStyle* security_style,
     net::CertStatus* ssl_cert_status,
     int* insecure_content_status) {
   if (tab_tracker_->ContainsHandle(handle)) {
@@ -1552,7 +1552,7 @@ void TestingAutomationProvider::GetSecurityState(
     *insecure_content_status = entry->ssl().content_status();
   } else {
     *success = false;
-    *security_style = SECURITY_STYLE_UNKNOWN;
+    *security_style = content::SECURITY_STYLE_UNKNOWN;
     *ssl_cert_status = 0;
     *insecure_content_status = 0;
   }
@@ -2981,13 +2981,13 @@ void TestingAutomationProvider::GetNavigationInfo(
 
   // Security info.
   DictionaryValue* ssl = new DictionaryValue;
-  std::map<SecurityStyle, std::string> style_to_string;
-  style_to_string[SECURITY_STYLE_UNKNOWN] = "SECURITY_STYLE_UNKNOWN";
-  style_to_string[SECURITY_STYLE_UNAUTHENTICATED] =
+  std::map<content::SecurityStyle, std::string> style_to_string;
+  style_to_string[content::SECURITY_STYLE_UNKNOWN] = "SECURITY_STYLE_UNKNOWN";
+  style_to_string[content::SECURITY_STYLE_UNAUTHENTICATED] =
       "SECURITY_STYLE_UNAUTHENTICATED";
-  style_to_string[SECURITY_STYLE_AUTHENTICATION_BROKEN] =
+  style_to_string[content::SECURITY_STYLE_AUTHENTICATION_BROKEN] =
       "SECURITY_STYLE_AUTHENTICATION_BROKEN";
-  style_to_string[SECURITY_STYLE_AUTHENTICATED] =
+  style_to_string[content::SECURITY_STYLE_AUTHENTICATED] =
       "SECURITY_STYLE_AUTHENTICATED";
 
   NavigationEntry::SSLStatus ssl_status = nav_entry->ssl();

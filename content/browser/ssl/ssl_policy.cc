@@ -117,7 +117,7 @@ void SSLPolicy::UpdateEntry(NavigationEntry* entry, TabContents* tab_contents) {
   // happens, use the unauthenticated (HTTP) rather than the authentication
   // broken security style so that we can detect this error condition.
   if (!entry->ssl().cert_id()) {
-    entry->ssl().set_security_style(SECURITY_STYLE_UNAUTHENTICATED);
+    entry->ssl().set_security_style(content::SECURITY_STYLE_UNAUTHENTICATED);
     return;
   }
 
@@ -133,8 +133,10 @@ void SSLPolicy::UpdateEntry(NavigationEntry* entry, TabContents* tab_contents) {
   if (net::IsCertStatusError(entry->ssl().cert_status())) {
     // Minor errors don't lower the security style to
     // SECURITY_STYLE_AUTHENTICATION_BROKEN.
-    if (!net::IsCertStatusMinorError(entry->ssl().cert_status()))
-      entry->ssl().set_security_style(SECURITY_STYLE_AUTHENTICATION_BROKEN);
+    if (!net::IsCertStatusMinorError(entry->ssl().cert_status())) {
+      entry->ssl().set_security_style(
+          content::SECURITY_STYLE_AUTHENTICATION_BROKEN);
+    }
     return;
   }
 
@@ -145,7 +147,8 @@ void SSLPolicy::UpdateEntry(NavigationEntry* entry, TabContents* tab_contents) {
   if (site_instance &&
       backend_->DidHostRunInsecureContent(entry->url().host(),
                                           site_instance->GetProcess()->id())) {
-    entry->ssl().set_security_style(SECURITY_STYLE_AUTHENTICATION_BROKEN);
+    entry->ssl().set_security_style(
+        content::SECURITY_STYLE_AUTHENTICATION_BROKEN);
     entry->ssl().set_ran_insecure_content();
     return;
   }
@@ -202,11 +205,12 @@ void SSLPolicy::OnCertErrorInternal(SSLCertErrorHandler* handler,
 }
 
 void SSLPolicy::InitializeEntryIfNeeded(NavigationEntry* entry) {
-  if (entry->ssl().security_style() != SECURITY_STYLE_UNKNOWN)
+  if (entry->ssl().security_style() != content::SECURITY_STYLE_UNKNOWN)
     return;
 
   entry->ssl().set_security_style(entry->url().SchemeIsSecure() ?
-      SECURITY_STYLE_AUTHENTICATED : SECURITY_STYLE_UNAUTHENTICATED);
+      content::SECURITY_STYLE_AUTHENTICATED :
+      content::SECURITY_STYLE_UNAUTHENTICATED);
 }
 
 void SSLPolicy::OriginRanInsecureContent(const std::string& origin, int pid) {

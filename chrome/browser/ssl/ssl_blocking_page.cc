@@ -111,7 +111,8 @@ void SSLBlockingPage::UpdateEntry(NavigationEntry* entry) {
   int cert_id = CertStore::GetInstance()->StoreCert(
       ssl_info.cert, tab()->render_view_host()->process()->id());
 
-  entry->ssl().set_security_style(SECURITY_STYLE_AUTHENTICATION_BROKEN);
+  entry->ssl().set_security_style(
+      content::SECURITY_STYLE_AUTHENTICATION_BROKEN);
   entry->ssl().set_cert_id(cert_id);
   entry->ssl().set_cert_status(ssl_info.cert_status);
   entry->ssl().set_security_bits(ssl_info.security_bits);

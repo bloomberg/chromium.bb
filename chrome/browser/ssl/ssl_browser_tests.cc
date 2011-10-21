@@ -49,7 +49,8 @@ class SSLUITest : public InProcessBrowserTest {
     NavigationEntry* entry = tab->controller().GetActiveEntry();
     ASSERT_TRUE(entry);
     EXPECT_EQ(content::PAGE_TYPE_NORMAL, entry->page_type());
-    EXPECT_EQ(SECURITY_STYLE_AUTHENTICATED, entry->ssl().security_style());
+    EXPECT_EQ(content::SECURITY_STYLE_AUTHENTICATED,
+              entry->ssl().security_style());
     EXPECT_EQ(0U, entry->ssl().cert_status() & net::CERT_STATUS_ALL_ERRORS);
     EXPECT_EQ(displayed_insecure_content,
               entry->ssl().displayed_insecure_content());
@@ -60,7 +61,8 @@ class SSLUITest : public InProcessBrowserTest {
     NavigationEntry* entry = tab->controller().GetActiveEntry();
     ASSERT_TRUE(entry);
     EXPECT_EQ(content::PAGE_TYPE_NORMAL, entry->page_type());
-    EXPECT_EQ(SECURITY_STYLE_UNAUTHENTICATED, entry->ssl().security_style());
+    EXPECT_EQ(content::SECURITY_STYLE_UNAUTHENTICATED,
+              entry->ssl().security_style());
     EXPECT_EQ(0U, entry->ssl().cert_status() & net::CERT_STATUS_ALL_ERRORS);
     EXPECT_FALSE(entry->ssl().displayed_insecure_content());
     EXPECT_FALSE(entry->ssl().ran_insecure_content());
@@ -75,7 +77,7 @@ class SSLUITest : public InProcessBrowserTest {
     EXPECT_EQ(interstitial ?
                   content::PAGE_TYPE_INTERSTITIAL : content::PAGE_TYPE_NORMAL,
               entry->page_type());
-    EXPECT_EQ(SECURITY_STYLE_AUTHENTICATION_BROKEN,
+    EXPECT_EQ(content::SECURITY_STYLE_AUTHENTICATION_BROKEN,
               entry->ssl().security_style());
     // CERT_STATUS_UNABLE_TO_CHECK_REVOCATION doesn't lower the security style
     // to SECURITY_STYLE_AUTHENTICATION_BROKEN.

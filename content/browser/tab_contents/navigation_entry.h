@@ -11,9 +11,9 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
-#include "content/common/security_style.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/page_type.h"
+#include "content/public/common/security_style.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/cert_status_flags.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -62,10 +62,10 @@ class CONTENT_EXPORT NavigationEntry {
              content_status_ == status.content_status_;
     }
 
-    void set_security_style(SecurityStyle security_style) {
+    void set_security_style(content::SecurityStyle security_style) {
       security_style_ = security_style;
     }
-    SecurityStyle security_style() const {
+    content::SecurityStyle security_style() const {
       return security_style_;
     }
 
@@ -124,7 +124,7 @@ class CONTENT_EXPORT NavigationEntry {
 
    private:
     // See the accessors above for descriptions.
-    SecurityStyle security_style_;
+    content::SecurityStyle security_style_;
     int cert_id_;
     net::CertStatus cert_status_;
     int security_bits_;

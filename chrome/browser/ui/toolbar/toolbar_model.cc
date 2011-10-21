@@ -75,7 +75,7 @@ bool ToolbarModel::ShouldDisplayURL() const {
     if (entry->IsViewSourceMode() ||
         entry->page_type() == content::PAGE_TYPE_INTERSTITIAL) {
       return true;
-    } 
+    }
   }
 
   TabContents* tab_contents = browser_->GetSelectedTabContents();
@@ -102,14 +102,14 @@ ToolbarModel::SecurityLevel ToolbarModel::GetSecurityLevel() const {
 
   const NavigationEntry::SSLStatus& ssl = entry->ssl();
   switch (ssl.security_style()) {
-    case SECURITY_STYLE_UNKNOWN:
-    case SECURITY_STYLE_UNAUTHENTICATED:
+    case content::SECURITY_STYLE_UNKNOWN:
+    case content::SECURITY_STYLE_UNAUTHENTICATED:
       return NONE;
 
-    case SECURITY_STYLE_AUTHENTICATION_BROKEN:
+    case content::SECURITY_STYLE_AUTHENTICATION_BROKEN:
       return SECURITY_ERROR;
 
-    case SECURITY_STYLE_AUTHENTICATED:
+    case content::SECURITY_STYLE_AUTHENTICATED:
       if (ssl.displayed_insecure_content())
         return SECURITY_WARNING;
       if (net::IsCertStatusError(ssl.cert_status())) {
