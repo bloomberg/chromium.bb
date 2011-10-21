@@ -21,16 +21,20 @@ int *current_index_p = NULL;
 int assert_count = 0;
 
 const char *script_argv;
-void module0(void);
-void module1(void);
-void module2(void);
-void module3(void);
+void module0(void) __attribute__((weak));
+void module1(void) __attribute__((weak));
+void module2(void) __attribute__((weak));
+void module3(void) __attribute__((weak));
+void module4(void) __attribute__((weak));
+void module5(void) __attribute__((weak));
 
 int main(int argc, const char *argv[]) {
-  module0();
-  module1();
-  module2();
-  module3();
+  if (module0) module0();
+  if (module1) module1();
+  if (module2) module2();
+  if (module3) module3();
+  if (module4) module4();
+  if (module5) module5();
 
   printf("generate.py arguments: %s\n", script_argv);
   printf("SUCCESS: %d calls OK.\n", assert_count);

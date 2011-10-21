@@ -334,6 +334,19 @@ def PNaClForceNative(env):
              LINKFLAGS=['--pnacl-allow-native'])
   env['SHLINK'] = '${LINK}'
 
+# Get an environment for a different frontend when in
+# PNaCl mode.
+def PNaClChangeFrontend(env, frontend):
+  assert(env.Bit('bitcode'))
+  assert(frontend in ('clang','dragonegg','llvmgcc'))
+
+  # This is kind of a hack.
+  alt_env = env.Clone()
+  alt_env['PNACL_FRONTEND'] = frontend
+  alt_env = alt_env.Clone(tools = ['naclsdk'])
+  return alt_env
+
+
 # Get an environment for nacl-gcc when in PNaCl mode.
 def PNaClGetNNaClEnv(env):
   assert(env.Bit('bitcode'))
@@ -463,6 +476,7 @@ def generate(env):
   env.AddMethod(AddBiasForPNaCl)
   env.AddMethod(PNaClForceNative)
   env.AddMethod(PNaClGetNNaClEnv)
+  env.AddMethod(PNaClChangeFrontend)
 
   sdk_mode = SCons.Script.ARGUMENTS.get('naclsdk_mode', 'download')
 

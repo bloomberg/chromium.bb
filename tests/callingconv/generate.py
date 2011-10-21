@@ -318,18 +318,20 @@ def GenerateTest(settings):
                 for i in xrange(settings.num_functions) ]
 
   calls = [ ]
+  callcount = 0
   for f in functions:
-    calls += [ TestCall(settings, i, f)
-               for i in xrange(settings.calls_per_func) ]
+    for i in xrange(settings.calls_per_func):
+      calls.append(TestCall(settings, callcount, f))
+      callcount += 1
 
   num_asserts = sum([ c.num_asserts for c in calls ])
   return (functions, calls, num_asserts)
 
 
 class TestCall(object):
-  def __init__(self, settings, test_id, function):
+  def __init__(self, settings, call_id, function):
     self.settings = settings
-    self.id = test_id
+    self.id = call_id
     self.f = function
 
     self.num_var_args = random.randint(0, self.settings.max_args_per_func -

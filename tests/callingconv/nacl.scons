@@ -26,13 +26,11 @@ import random
 base_env = env.Clone()
 callingconv_h = base_env.File('callingconv.h').srcnode()
 extra_cflags = [ '-Wno-long-long', '-I' + callingconv_h.dir.abspath ]
-base_env.Append(CFLAGS = extra_cflags)
 
 settings = {
   'num_functions'    : 200,
   'calls_per_func'   : 4,
   'max_args_per_func': 16,
-  'num_modules'      : 4,
 }
 
 # va_arg of struct types is broken in PNaCl
@@ -51,18 +49,22 @@ if env.Bit('bitcode'):
 envlist = []
 
 if env.Bit('bitcode'):
-  # For PNaCl, do a mixed test:
-  # Compile two modules with PNaCl (straight to native code)
-  # and the other modules with the native toolchain.
+  # For PNaCl, we do a mixed test.
+  # Create environments for pnacl-clang, pnacl-gcc, and nacl-gcc.
+  # For each environment, we compile a test module straight to native code.
   pnacl_env = base_env.Clone()
   pnacl_env.PNaClForceNative()
   envlist.append(pnacl_env)
 
+  if env['PNACL_FRONTEND'] == 'clang':
+    alt_env = base_env.PNaClChangeFrontend('llvmgcc')
+    alt_env.PNaClForceNative()
+    envlist.append(alt_env)
+
   # On X86-32 and X86-64, test against nacl-gcc also.
   # For ARM, we can only test PNaCl's self-consistency.
   if not base_env.Bit('target_arm'):
-    native_env = base_env.PNaClGetNNaClEnv()  # Clears CFLAGS
-    native_env.Append(CFLAGS = extra_cflags)
+    native_env = base_env.PNaClGetNNaClEnv()
     envlist.append(native_env)
 
   link_env = pnacl_env
@@ -71,7 +73,18 @@ else:
   link_env = base_env
   envlist.append(base_env)
 
-num_modules = settings['num_modules']
+# Add custom CFLAGS
+# This must be done here, since PNaClGetNNaClEnv and
+# PNaclChangeFrontend wipe CFLAGS.
+for e in envlist:
+  e.Append(CFLAGS = extra_cflags)
+
+# Create two modules for each environment,
+# so that we test toolchain self-interaction.
+envlist = envlist + envlist
+
+num_modules = len(envlist)
+settings['num_modules'] = num_modules
 module_filenames = [ 'module%d.c' % i for i in xrange(num_modules) ]
 
 # Generate the module source files (module0.c, module1.c, ...)
@@ -83,23 +96,17 @@ nodes = base_env.Command(
           base_env.File('generate.py'),
           Action('${PYTHON} ${SOURCE} ${GENERATOR_SETTINGS} -- ${TARGETS}'))
 
-# All the modules and callingconv.c depend on the header file
-base_env.Depends(nodes, callingconv_h)
-
-# Assign each module a build environment
-module_env = []
-j = 0
-for i in xrange(num_modules):
-  module_env.append(envlist[j])
-  j = (j+1) % len(envlist)
-
-# Create the module component objects
+# Create the module objects
 modules = []
 for i in xrange(num_modules):
-  modules.append(module_env[i].ComponentObject(nodes[i+1]))
+  obj = envlist[i].ComponentObject(nodes[i+1])
+  envlist[i].Depends(obj, callingconv_h)
+  modules.append(obj)
 
 # Compile callingconv.c
 callingconv = link_env.ComponentObject('callingconv.c')
+link_env.Depends(callingconv, callingconv_h)
+
 
 prog = link_env.ComponentProgram('callingconv',
                                  [callingconv] + modules,
