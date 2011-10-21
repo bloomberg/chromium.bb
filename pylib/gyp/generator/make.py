@@ -2426,11 +2426,13 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
       env['UNLOCALIZED_RESOURCES_FOLDER_PATH'] = \
           self.xcode_settings.GetBundleResourceFolder()
       env['INFOPLIST_PATH'] = self.xcode_settings.GetBundlePlistPath()
+      env['WRAPPER_NAME'] = self.xcode_settings.GetWrapperName()
 
       # TODO(thakis): Remove this.
       env['EXECUTABLE_PATH'] = QuoteSpaces(env['EXECUTABLE_PATH'])
       env['CONTENTS_FOLDER_PATH'] = QuoteSpaces(env['CONTENTS_FOLDER_PATH'])
       env['INFOPLIST_PATH'] = QuoteSpaces(env['INFOPLIST_PATH'])
+      env['WRAPPER_NAME'] = QuoteSpaces(env['WRAPPER_NAME'])
 
     return env
 
