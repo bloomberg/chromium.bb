@@ -326,8 +326,7 @@ def GetRevisionFromEBuild(chrome_ebuild):
   try:
     ebuild = open(chrome_ebuild.ebuild_path)
   except (OSError, IOError) as e:
-    cros_build_lib.Warning('%s cannot be read due to %s' %
-                           (chrome_ebuild.ebuild_path, e))
+    Warning('%s cannot be read due to %s' % (chrome_ebuild.ebuild_path, e))
     raise
   chrome_revision_re = re.compile('^%s="?(\d+)"?$' % _CHROME_SVN_TAG)
   for line in ebuild:
@@ -455,6 +454,17 @@ def MarkChromeEBuildAsStable(stable_candidate, unstable_ebuild, chrome_rev,
   return '%s-%s' % (new_ebuild.package, new_ebuild.version)
 
 
+def ParseMaxRevision(revision_list):
+  """Returns the max revision from a list of url@revision string."""
+  revision_re = re.compile('.*@(\d+)')
+
+  def RevisionKey(revision):
+    return revision_re.match(revision).group(1)
+
+  max_revision = max(revision_list.split(), key=RevisionKey)
+  return max_revision.rpartition('@')[2]
+
+
 def main():
   usage_options = '|'.join(constants.VALID_CHROME_REVISIONS)
   usage = '%s OPTIONS [%s]' % (__file__, usage_options)
@@ -496,7 +506,7 @@ def main():
   elif chrome_rev == constants.CHROME_REV_SPEC:
     # TODO(sosa): Buildbot may pass url@revision, check and fix commit.
     commit_to_use = options.force_revision
-    if '@' in commit_to_use: commit_to_use = commit_to_use.rpartition('@')[2]
+    if '@' in commit_to_use: commit_to_use = ParseMaxRevision(commit_to_use)
     version_to_uprev = _GetSpecificVersionUrl(options.chrome_url,
                                               commit_to_use)
   elif chrome_rev == constants.CHROME_REV_TOT:
