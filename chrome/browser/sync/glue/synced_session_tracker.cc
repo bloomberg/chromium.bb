@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/string_util.h"
+#include "base/logging.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/sync/glue/synced_session_tracker.h"
 
 namespace browser_sync {
@@ -165,9 +166,9 @@ bool SyncedSessionTracker::DeleteOldSessionTabIfNecessary(
   if (!tab_wrapper.owned) {
     if (VLOG_IS_ON(1)) {
       SessionTab* tab_ptr = tab_wrapper.tab_ptr;
-      std::string title = "";
+      std::string title;
       if (tab_ptr->navigations.size() > 0) {
-        title = " (" + UTF16ToASCII(
+        title = " (" + UTF16ToUTF8(
             tab_ptr->navigations[tab_ptr->navigations.size()-1].title()) + ")";
       }
       VLOG(1) << "Deleting closed tab " << tab_ptr->tab_id.id() << title
@@ -262,15 +263,17 @@ SessionTab* SyncedSessionTracker::GetTab(
       synced_tab_map_[session_tag].find(tab_id);
   if (iter != synced_tab_map_[session_tag].end()) {
     tab_ptr = iter->second.tab_ptr;
-    std::string title = "";
-    if (tab_ptr->navigations.size() > 0) {
-      title = " (" + UTF16ToASCII(
-          tab_ptr->navigations[tab_ptr->navigations.size()-1].title()) + ")";
+    if (VLOG_IS_ON(1)) {
+      std::string title;
+      if (tab_ptr->navigations.size() > 0) {
+        title = " (" + UTF16ToUTF8(
+            tab_ptr->navigations[tab_ptr->navigations.size()-1].title()) + ")";
+      }
+      VLOG(1) << "Getting "
+              << (session_tag == local_session_tag_ ?
+                  "local session" : session_tag)
+              << "'s seen tab " << tab_id  << " at " << tab_ptr << title;
     }
-    VLOG(1) << "Getting "
-            << (session_tag == local_session_tag_ ?
-                "local session" : session_tag)
-            << "'s seen tab " << tab_id  << " at " << tab_ptr << title;
   } else {
     tab_ptr = new SessionTab();
     tab_ptr->tab_id.set_id(tab_id);
