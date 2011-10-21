@@ -217,11 +217,31 @@ NSString* const kFadeOutValueKeyPath = @"fadeOutValue";
   [cell accessibilitySetOverrideValue:gDescription
                          forAttribute:NSAccessibilityDescriptionAttribute];
 
-  // Add a tooltip.
-  [self setToolTip:gTooltip];
+  // Add a tooltip. Using 'owner:self' means that
+  // -view:stringForToolTip:point:userData: will be called to provide the
+  // tooltip contents immediately before showing it.
+  [self addToolTipRect:[self bounds] owner:self userData:NULL];
 
   // Initialize previousState.
   previousState_ = kHoverStateNone;
+}
+
+// Called each time a tooltip is about to be shown.
+- (NSString*)view:(NSView*)view
+ stringForToolTip:(NSToolTipTag)tag
+            point:(NSPoint)point
+         userData:(void*)userData {
+  if (self.hoverState == kHoverStateMouseOver) {
+    // In some cases (e.g. the download tray), the button is still in the
+    // hover state, but is outside the bounds of its parent and not visible.
+    // Don't show the tooltip in that case.
+    NSRect buttonRect = [self frame];
+    NSRect parentRect = [[self superview] bounds];
+    if (NSIntersectsRect(buttonRect, parentRect))
+      return gTooltip;
+  }
+
+  return nil;  // Do not show the tooltip.
 }
 
 + (NSImage*)imageForBounds:(NSRect)bounds
