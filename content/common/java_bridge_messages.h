@@ -6,7 +6,7 @@
 
 // Multiply-included message file, hence no include guard.
 
-#include "content/common/webkit_param_traits.h" // For NPVariant_Param
+#include "content/public/common/webkit_param_traits.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
 

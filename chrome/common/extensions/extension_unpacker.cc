@@ -20,7 +20,7 @@
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/zip.h"
-#include "content/common/common_param_traits.h"
+#include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_message_utils.h"
 #include "net/base/file_stream.h"
 #include "third_party/skia/include/core/SkBitmap.h"

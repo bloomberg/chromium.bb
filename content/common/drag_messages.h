@@ -5,7 +5,7 @@
 // IPC messages for drag and drop.
 // Multiply-included message file, hence no include guard.
 
-#include "content/common/common_param_traits.h"
+#include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"

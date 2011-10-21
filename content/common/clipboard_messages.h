@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/shared_memory.h"
-#include "content/common/common_param_traits.h"
+#include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
 #include "ui/base/clipboard/clipboard.h"

@@ -5,7 +5,7 @@
 #ifndef CONTENT_RENDERER_JAVA_BRIDGE_DISPATCHER_H_
 #define CONTENT_RENDERER_JAVA_BRIDGE_DISPATCHER_H_
 
-#include "content/common/webkit_param_traits.h"  // For NPVariant_Param
+#include "content/public/common/webkit_param_traits.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "ipc/ipc_channel_handle.h"
 

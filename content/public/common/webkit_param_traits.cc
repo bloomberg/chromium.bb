@@ -5,11 +5,11 @@
 // NOTE: New trait definitions that will be used by Chrome Frame must be placed
 // in common_param_traits2.cc.
 
-#include "content/common/webkit_param_traits.h"
+#include "content/public/common/webkit_param_traits.h"
 
 #include "base/string_number_conversions.h"
-#include "content/common/common_param_traits.h"
 #include "content/common/content_constants.h"
+#include "content/public/common/common_param_traits.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "webkit/glue/password_form.h"
 #include "webkit/glue/resource_loader_bridge.h"

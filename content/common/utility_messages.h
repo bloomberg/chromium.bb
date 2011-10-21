@@ -8,10 +8,10 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "content/common/common_param_traits.h"
 #include "content/common/indexed_db_key.h"
 #include "content/common/indexed_db_param_traits.h"
 #include "content/common/serialized_script_value.h"
+#include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 #include "webkit/plugins/webplugininfo.h"
 

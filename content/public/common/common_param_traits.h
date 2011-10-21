@@ -10,8 +10,8 @@
 // manual serialization code.  This is usually because they're not structs with
 // public members..
 
-#ifndef CONTENT_COMMON_COMMON_PARAM_TRAITS_H_
-#define CONTENT_COMMON_COMMON_PARAM_TRAITS_H_
+#ifndef CONTENT_PUBLIC_COMMON_COMMON_PARAM_TRAITS_H_
+#define CONTENT_PUBLIC_COMMON_COMMON_PARAM_TRAITS_H_
 #pragma once
 
 #include "base/memory/ref_counted.h"
@@ -244,4 +244,4 @@ struct SimilarTypeTraits<content::PageTransition> {
 
 }  // namespace IPC
 
-#endif  // CONTENT_COMMON_COMMON_PARAM_TRAITS_H_
+#endif  // CONTENT_PUBLIC_COMMON_COMMON_PARAM_TRAITS_H_

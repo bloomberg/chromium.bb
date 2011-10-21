@@ -7,7 +7,6 @@
 
 #include "base/process.h"
 #include "base/shared_memory.h"
-#include "content/common/common_param_traits.h"
 #include "content/common/content_export.h"
 #include "content/common/css_colors.h"
 #include "content/common/edit_command.h"
@@ -15,7 +14,8 @@
 #include "content/common/page_zoom.h"
 #include "content/common/renderer_preferences.h"
 #include "content/common/view_message_enums.h"
-#include "content/common/webkit_param_traits.h"
+#include "content/public/common/common_param_traits.h"
+#include "content/public/common/webkit_param_traits.h"
 #include "content/public/common/window_container_type.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"

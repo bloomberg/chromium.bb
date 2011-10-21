@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/time.h"
-#include "content/common/webkit_param_traits.h"
+#include "content/public/common/webkit_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
 #include "webkit/glue/form_data.h"

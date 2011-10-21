@@ -5,8 +5,8 @@
 // IPC messages for HTML5 Blob.
 // Multiply-included message file, hence no include guard.
 
-#include "content/common/common_param_traits.h"
-#include "content/common/webkit_param_traits.h"
+#include "content/public/common/common_param_traits.h"
+#include "content/public/common/webkit_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 
 #define IPC_MESSAGE_START BlobMsgStart

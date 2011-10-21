@@ -5,7 +5,7 @@
 #include "chrome/common/extensions/extension_messages.h"
 
 #include "chrome/common/extensions/extension_constants.h"
-#include "content/common/common_param_traits.h"
+#include "content/public/common/common_param_traits.h"
 
 ExtensionMsg_Loaded_Params::ExtensionMsg_Loaded_Params()
     : location(Extension::INVALID),

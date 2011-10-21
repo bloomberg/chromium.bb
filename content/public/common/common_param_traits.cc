@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/common_param_traits.h"
+#include "content/public/common/common_param_traits.h"
 
 #include "content/common/content_constants.h"
 #include "net/base/host_port_pair.h"

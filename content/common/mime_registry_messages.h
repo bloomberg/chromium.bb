@@ -5,7 +5,7 @@
 // Multiply-included message file, so no include guard.
 
 #include "base/file_path.h"
-#include "content/common/common_param_traits.h"
+#include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
 
