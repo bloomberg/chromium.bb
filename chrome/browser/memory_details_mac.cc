@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/file_path.h"
 #include "base/file_version_info.h"
 #include "base/mac/mac_util.h"
@@ -199,7 +200,7 @@ void MemoryDetails::CollectProcessData(
   // Finally return to the browser thread.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &MemoryDetails::CollectChildInfoOnUIThread));
+      base::Bind(&MemoryDetails::CollectChildInfoOnUIThread, this));
 }
 
 void MemoryDetails::CollectProcessDataChrome(

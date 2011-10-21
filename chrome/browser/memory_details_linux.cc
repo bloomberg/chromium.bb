@@ -10,6 +10,7 @@
 
 #include <set>
 
+#include "base/bind.h"
 #include "base/eintr_wrapper.h"
 #include "base/file_version_info.h"
 #include "base/string_util.h"
@@ -284,5 +285,5 @@ void MemoryDetails::CollectProcessData(
   // Finally return to the browser thread.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &MemoryDetails::CollectChildInfoOnUIThread));
+      base::Bind(&MemoryDetails::CollectChildInfoOnUIThread, this));
 }

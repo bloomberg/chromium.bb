@@ -6,6 +6,7 @@
 
 #include <set>
 
+#include "base/bind.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history.h"
@@ -118,9 +119,10 @@ void MemoryPurger::PurgeBrowser() {
     profiles[i]->GetWebKitContext()->PurgeMemory();
   }
 
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(purge_memory_io_helper.get(),
-                        &PurgeMemoryIOHelper::PurgeMemoryOnIOThread));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&PurgeMemoryIOHelper::PurgeMemoryOnIOThread,
+                 purge_memory_io_helper.get()));
 
   // TODO(pkasting):
   // * Purge AppCache memory.  Not yet implemented sufficiently.

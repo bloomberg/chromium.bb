@@ -4,6 +4,7 @@
 
 #include "chrome/browser/memory_details.h"
 
+#include "base/bind.h"
 #include "base/file_version_info.h"
 #include "base/metrics/histogram.h"
 #include "base/process_util.h"
@@ -80,7 +81,7 @@ void MemoryDetails::StartFetch() {
   // However, plugin process information is only available from the IO thread.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(this, &MemoryDetails::CollectChildInfoOnIOThread));
+      base::Bind(&MemoryDetails::CollectChildInfoOnIOThread, this));
 }
 
 MemoryDetails::~MemoryDetails() {}
@@ -106,7 +107,7 @@ void MemoryDetails::CollectChildInfoOnIOThread() {
   // Now go do expensive memory lookups from the file thread.
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(this, &MemoryDetails::CollectProcessData, child_info));
+      base::Bind(&MemoryDetails::CollectProcessData, this, child_info));
 }
 
 void MemoryDetails::CollectChildInfoOnUIThread() {
