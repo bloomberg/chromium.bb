@@ -13,6 +13,7 @@
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/task.h"
@@ -518,6 +519,22 @@ std::wstring ShellIntegration::GetAppId(const std::wstring& app_name,
 std::wstring ShellIntegration::GetChromiumAppId(const FilePath& profile_path) {
   return GetAppId(BrowserDistribution::GetDistribution()->GetBrowserAppId(),
                   profile_path);
+}
+
+string16 ShellIntegration::GetChromiumIconPath() {
+  // Determine the app path. If we can't determine what that is, we have
+  // bigger fish to fry...
+  FilePath app_path;
+  if (!PathService::Get(base::FILE_EXE, &app_path)) {
+    NOTREACHED();
+    return string16();
+  }
+
+  string16 icon_path(app_path.value());
+  icon_path.push_back(',');
+  icon_path += base::IntToString16(
+      BrowserDistribution::GetDistribution()->GetIconIndex());
+  return icon_path;
 }
 
 void ShellIntegration::MigrateChromiumShortcuts() {

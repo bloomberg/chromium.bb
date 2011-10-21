@@ -493,10 +493,16 @@ void Browser::InitBrowserWindow() {
     // Set the app user model id for this application to that of the application
     // name.  See http://crbug.com/7028.
     ui::win::SetAppIdForWindow(
-        is_app() ?
+        is_app() && !is_type_panel() ?
         ShellIntegration::GetAppId(UTF8ToWide(app_name_), profile_->GetPath()) :
         ShellIntegration::GetChromiumAppId(profile_->GetPath()),
         window()->GetNativeHandle());
+
+    if (is_type_panel()) {
+      ui::win::SetAppIconForWindow(
+          ShellIntegration::GetChromiumIconPath(),
+          window()->GetNativeHandle());
+    }
   }
 #endif
 

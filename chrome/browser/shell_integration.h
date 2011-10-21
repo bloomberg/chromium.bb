@@ -134,6 +134,10 @@ class ShellIntegration {
   // chrome::kBrowserAppID as app_name.
   static std::wstring GetChromiumAppId(const FilePath& profile_path);
 
+  // Returns the path to the Chromium icon. This is used to specify the icon
+  // to use for the taskbar group on Win 7.
+  static string16 GetChromiumIconPath();
+
   // Migrates existing chrome shortcuts by tagging them with correct app id.
   // see http://crbug.com/28104
   static void MigrateChromiumShortcuts();

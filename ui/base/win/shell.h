@@ -37,6 +37,9 @@ bool OpenItemWithExternalApp(const string16& full_path);
 // do not group together on the Win7 task bar.
 UI_EXPORT void SetAppIdForWindow(const string16& app_id, HWND hwnd);
 
+// Sets the application icon for the window specified.
+UI_EXPORT void SetAppIconForWindow(const string16& app_icon, HWND hwnd);
+
 }  // namespace win
 }  // namespace ui
 
