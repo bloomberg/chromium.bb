@@ -401,7 +401,7 @@
     'aura': ['ben+watch@chromium.org', 'sadrul@chromium.org'],
     'views_core': ['ben+watch@chromium.org'],
     'tools_emacs': ['fischman+watch@chromium.org'],
-    'browser_compositor': ['backer@chromium.org'],
+    'browser_compositor': ['backer@chromium.org', 'vollick@chromium.org'],
     'textinput': ['suzhe@chromium.org'],
     'omnibox': ['suzhe@chromium.org'],
     'message_loop': ['sadrul@chromium.org'],
