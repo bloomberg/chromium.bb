@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -14,6 +14,10 @@
 #include <stdio.h>
 #include <time.h>
 #include <X11/Xlib.h>
+
+#if defined(TOUCH_UI) || defined(USE_AURA)
+#include <X11/extensions/XInput2.h>
+#endif
 
 void Sleep(int duration_ms) {
   struct timespec sleep_time, remaining;
@@ -31,13 +35,41 @@ void Sleep(int duration_ms) {
 
 int main(int argc, char* argv[]) {
   int kNumTries = 50;
+  Display* display = NULL;
   for (int i = 0; i < kNumTries; ++i) {
-    Display* display = XOpenDisplay(NULL);
+    display = XOpenDisplay(NULL);
     if (display)
-      return 0;
+      break;
     Sleep(100);
   }
 
-  printf("Failed to connect to %s\n", XDisplayName(NULL));
-  return -1;
+  if (!display) {
+    fprintf(stderr, "Failed to connect to %s\n", XDisplayName(NULL));
+    return -1;
+  }
+
+#if defined(TOUCH_UI) || defined(USE_AURA)
+  // Check for XInput2
+  int opcode, event, err;
+  if (!XQueryExtension(display, "XInputExtension", &opcode, &event, &err)) {
+    fprintf(stderr,
+        "Failed to get XInputExtension on %s.\n", XDisplayName(NULL));
+    return -1;
+  }
+
+  int major = 2, minor = 0;
+  if (XIQueryVersion(display, &major, &minor) == BadRequest) {
+    fprintf(stderr,
+        "Server does not have XInput2 on %s.\n", XDisplayName(NULL));
+    return -1;
+  }
+
+  // Ask for the list of devices. This can cause some Xvfb to crash.
+  int count = 0;
+  XIDeviceInfo* devices = XIQueryDevice(display, XIAllDevices, &count);
+  if (devices)
+    XIFreeDeviceInfo(devices);
+#endif
+
+  return 0;
 }
