@@ -29,14 +29,6 @@
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #endif
 
-// Basic test is flaky on ChromeOS and Linux.
-// http://crbug.com/52929
-#if defined(OS_CHROMEOS) || defined(OS_LINUX)
-#define MAYBE_Basic FLAKY_Basic
-#else
-#define MAYBE_Basic Basic
-#endif
-
 namespace {
 
 string16 AutocompleteResultAsString(const AutocompleteResult& result) {
@@ -55,12 +47,12 @@ string16 AutocompleteResultAsString(const AutocompleteResult& result) {
 
 class OmniboxApiTest : public ExtensionApiTest {
  protected:
-  LocationBar* GetLocationBar() const {
-    return browser()->window()->GetLocationBar();
+  LocationBar* GetLocationBar(Browser* browser) const {
+    return browser->window()->GetLocationBar();
   }
 
-  AutocompleteController* GetAutocompleteController() const {
-    return GetLocationBar()->location_entry()->model()->popup_model()->
+  AutocompleteController* GetAutocompleteController(Browser* browser) const {
+    return GetLocationBar(browser)->location_entry()->model()->popup_model()->
         autocomplete_controller();
   }
 
@@ -86,7 +78,7 @@ class OmniboxApiTest : public ExtensionApiTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(OmniboxApiTest, MAYBE_Basic) {
+IN_PROC_BROWSER_TEST_F(OmniboxApiTest, Basic) {
 #if defined(TOOLKIT_GTK)
   // Disable the timer because, on Lucid at least, it triggers resize/move
   // behavior in the browser window, which dismisses the autocomplete popup
@@ -95,15 +87,15 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, MAYBE_Basic) {
       browser()->window())->DisableDebounceTimerForTests(true);
 #endif
 
-  ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(RunExtensionTest("omnibox")) << message_;
 
   // The results depend on the TemplateURLService being loaded. Make sure it is
   // loaded so that the autocomplete results are consistent.
   WaitForTemplateURLServiceToLoad();
 
-  LocationBar* location_bar = GetLocationBar();
-  AutocompleteController* autocomplete_controller = GetAutocompleteController();
+  LocationBar* location_bar = GetLocationBar(browser());
+  AutocompleteController* autocomplete_controller =
+      GetAutocompleteController(browser());
 
   // Test that our extension's keyword is suggested to us when we partially type
   // it.
@@ -219,17 +211,17 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, PopupStaysClosed) {
     browser()->window())->DisableDebounceTimerForTests(true);
 #endif
 
-  ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(RunExtensionTest("omnibox")) << message_;
 
   // The results depend on the TemplateURLService being loaded. Make sure it is
   // loaded so that the autocomplete results are consistent.
   WaitForTemplateURLServiceToLoad();
 
-  LocationBar* location_bar = GetLocationBar();
-  AutocompleteController* autocomplete_controller = GetAutocompleteController();
+  LocationBar* location_bar = GetLocationBar(browser());
+  AutocompleteController* autocomplete_controller =
+      GetAutocompleteController(browser());
   AutocompletePopupModel* popup_model =
-      GetLocationBar()->location_entry()->model()->popup_model();
+      GetLocationBar(browser())->location_entry()->model()->popup_model();
 
   // Input a keyword query and wait for suggestions from the extension.
   autocomplete_controller->Start(
@@ -251,4 +243,67 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, PopupStaysClosed) {
   EXPECT_TRUE(autocomplete_controller->done());
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
   EXPECT_FALSE(popup_model->IsOpen());
+}
+
+// Tests that we get suggestions from and send input to the incognito context
+// of an incognito split mode extension.
+// http://crbug.com/100927
+IN_PROC_BROWSER_TEST_F(OmniboxApiTest, IncognitoSplitMode) {
+#if defined(TOOLKIT_GTK)
+  // Disable the timer because, on Lucid at least, it triggers resize/move
+  // behavior in the browser window, which dismisses the autocomplete popup
+  // before the results can be read.
+  static_cast<BrowserWindowGtk*>(
+    browser()->window())->DisableDebounceTimerForTests(true);
+#endif
+
+  ResultCatcher catcher_incognito;
+  catcher_incognito.RestrictToProfile(
+      browser()->profile()->GetOffTheRecordProfile());
+
+  ASSERT_TRUE(RunExtensionTestIncognito("omnibox")) << message_;
+
+  // Open an incognito window and wait for the incognito extension process to
+  // respond.
+  Browser* incognito_browser = CreateIncognitoBrowser();
+  ASSERT_TRUE(catcher_incognito.GetNextResult()) << catcher_incognito.message();
+
+  // The results depend on the TemplateURLService being loaded. Make sure it is
+  // loaded so that the autocomplete results are consistent.
+  WaitForTemplateURLServiceToLoad();
+
+  LocationBar* location_bar = GetLocationBar(incognito_browser);
+  AutocompleteController* autocomplete_controller =
+      GetAutocompleteController(incognito_browser);
+
+  // Test that we get the incognito-specific suggestions.
+  {
+    autocomplete_controller->Start(
+        ASCIIToUTF16("keyword suggestio"), string16(), true, false, true,
+        AutocompleteInput::ALL_MATCHES);
+
+    WaitForAutocompleteDone(autocomplete_controller);
+    EXPECT_TRUE(autocomplete_controller->done());
+
+    // First result should be to invoke the keyword with what we typed, 2-4
+    // should be to invoke with suggestions from the extension, and the last
+    // should be to search for what we typed.
+    const AutocompleteResult& result = autocomplete_controller->result();
+    ASSERT_EQ(5U, result.size()) << AutocompleteResultAsString(result);
+    ASSERT_TRUE(result.match_at(0).template_url);
+    EXPECT_EQ(ASCIIToUTF16("keyword suggestion3 incognito"),
+              result.match_at(3).fill_into_edit);
+  }
+
+  // Test that our input is sent to the incognito context. The test will do a
+  // text comparison and succeed only if "command incognito" is sent to the
+  // incognito context.
+  {
+    ResultCatcher catcher;
+    autocomplete_controller->Start(
+        ASCIIToUTF16("keyword command incognito"), string16(),
+        true, false, true, AutocompleteInput::ALL_MATCHES);
+    location_bar->AcceptInput();
+    EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+  }
 }

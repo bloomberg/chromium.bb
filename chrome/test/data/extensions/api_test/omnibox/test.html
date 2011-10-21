@@ -1,4 +1,7 @@
 <script>
+var incognito = chrome.extension.inIncognitoContext;
+var incognitoSuffix = incognito ? " incognito" : "";
+
 chrome.omnibox.onInputChanged.addListener(
   function(text, suggest) {
     chrome.test.log("onInputChanged: " + text);
@@ -9,7 +12,7 @@ chrome.omnibox.onInputChanged.addListener(
       suggest([
         {content: text + "n1", description: desc},
         {content: text + "n2", description: "description2"},
-        {content: text + "n3", description: "description3"},
+        {content: text + "n3" + incognitoSuffix, description: "description3"},
       ]);
     } else {
       // Other tests, just provide a simple suggestion.
@@ -19,7 +22,7 @@ chrome.omnibox.onInputChanged.addListener(
 
 chrome.omnibox.onInputEntered.addListener(
   function(text) {
-    chrome.test.assertEq("command", text);
+    chrome.test.assertEq("command" + incognitoSuffix, text);
     chrome.test.notifyPass();
   });
 
