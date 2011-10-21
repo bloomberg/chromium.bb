@@ -156,6 +156,7 @@ extern const char kEnableSyncOAuth[];
 extern const char kEnableSyncSearchEngines[];
 extern const char kEnableSyncTabs[];
 extern const char kEnableSyncTabsForOtherClients[];
+extern const char kEnableSyncAppNotifications[];
 extern const char kEnableSyncedBookmarksFolder[];
 extern const char kEnableTabGroupsContextMenu[];
 extern const char kEnableTopSites[];

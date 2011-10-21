@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "chrome/browser/extensions/app_notification_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_settings_backend.h"
 #include "chrome/browser/prefs/pref_model_associator.h"
@@ -11,6 +12,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sync/api/syncable_service.h"
 #include "chrome/browser/sync/glue/app_data_type_controller.h"
+#include "chrome/browser/sync/glue/app_notification_data_type_controller.h"
 #include "chrome/browser/sync/glue/autofill_change_processor.h"
 #include "chrome/browser/sync/glue/autofill_data_type_controller.h"
 #include "chrome/browser/sync/glue/autofill_model_associator.h"
@@ -49,6 +51,7 @@
 #include "content/browser/browser_thread.h"
 
 using browser_sync::AppDataTypeController;
+using browser_sync::AppNotificationDataTypeController;
 using browser_sync::AutofillChangeProcessor;
 using browser_sync::AutofillDataTypeController;
 using browser_sync::AutofillProfileDataTypeController;
@@ -176,6 +179,13 @@ void ProfileSyncFactoryImpl::RegisterDataTypes(ProfileSyncService* pss) {
   if (command_line_->HasSwitch(switches::kEnableSyncSearchEngines)) {
     pss->RegisterDataTypeController(
         new SearchEngineDataTypeController(this, profile_, pss));
+  }
+
+  // App notifications sync is disabled by default.  Register only if
+  // explicitly enabled.
+  if (command_line_->HasSwitch(switches::kEnableSyncAppNotifications)) {
+    pss->RegisterDataTypeController(
+        new AppNotificationDataTypeController(this, profile_, pss));
   }
 }
 
@@ -380,6 +390,25 @@ ProfileSyncFactoryImpl::CreateSearchEngineSyncComponents(
   SyncableServiceAdapter* sync_service_adapter =
       new SyncableServiceAdapter(syncable::SEARCH_ENGINES,
                                  se_sync_service,
+                                 change_processor);
+  return SyncComponents(sync_service_adapter, change_processor);
+}
+
+ProfileSyncFactory::SyncComponents
+ProfileSyncFactoryImpl::CreateAppNotificationSyncComponents(
+    ProfileSyncService* profile_sync_service,
+    browser_sync::UnrecoverableErrorHandler* error_handler) {
+  base::WeakPtr<SyncableService> notif_sync_service =
+      profile_->GetExtensionService()->app_notification_manager()->AsWeakPtr();
+  DCHECK(notif_sync_service);
+  sync_api::UserShare* user_share = profile_sync_service->GetUserShare();
+  GenericChangeProcessor* change_processor =
+      new GenericChangeProcessor(error_handler,
+                                 notif_sync_service,
+                                 user_share);
+  SyncableServiceAdapter* sync_service_adapter =
+      new SyncableServiceAdapter(syncable::APP_NOTIFICATIONS,
+                                 notif_sync_service,
                                  change_processor);
   return SyncComponents(sync_service_adapter, change_processor);
 }

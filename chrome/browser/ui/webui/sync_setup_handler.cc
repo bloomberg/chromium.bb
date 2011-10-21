@@ -138,6 +138,12 @@ bool GetConfiguration(const std::string& json, SyncConfiguration* config) {
   if (sync_apps)
     config->data_types.insert(syncable::APPS);
 
+  bool sync_app_notifications;
+  if (!result->GetBoolean("syncAppNotifications", &sync_app_notifications))
+    return false;
+  if (sync_app_notifications)
+    config->data_types.insert(syncable::APP_NOTIFICATIONS);
+
   // Encryption settings.
   if (!result->GetBoolean("encryptAllData", &config->encrypt_all))
     return false;
@@ -279,6 +285,7 @@ void SyncSetupHandler::GetStaticLocalizedValues(
     { "apps", IDS_SYNC_DATATYPE_APPS },
     { "searchEngines", IDS_SYNC_DATATYPE_SEARCH_ENGINES },
     { "openTabs", IDS_SYNC_DATATYPE_TABS },
+    { "appNotifications", IDS_SYNC_DATATYPE_APP_NOTIFICATIONS },
     { "syncZeroDataTypesError", IDS_SYNC_ZERO_DATA_TYPES_ERROR },
     { "serviceUnavailableError", IDS_SYNC_SETUP_ABORTED_BY_PENDING_CLEAR },
     { "encryptAllLabel", IDS_SYNC_ENCRYPT_ALL_LABEL },

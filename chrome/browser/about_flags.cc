@@ -308,6 +308,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableSyncSearchEngines)
   },
   {
+    "sync-app-notifications",
+    IDS_FLAGS_SYNC_APP_NOTIFICATIONS_NAME,
+    IDS_FLAGS_SYNC_APP_NOTIFICATIONS_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableSyncAppNotifications)
+  },
+  {
     "enable-smooth-scrolling",  // FLAGS:RECORD_UMA
     IDS_FLAGS_ENABLE_SMOOTH_SCROLLING_NAME,
     IDS_FLAGS_ENABLE_SMOOTH_SCROLLING_DESCRIPTION,

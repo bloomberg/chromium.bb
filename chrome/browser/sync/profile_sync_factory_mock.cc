@@ -27,6 +27,11 @@ ProfileSyncFactoryMock::ProfileSyncFactoryMock(
           InvokeWithoutArgs(
               this,
               &ProfileSyncFactoryMock::MakeSyncComponents));
+  ON_CALL(*this, CreateAppNotificationSyncComponents(_, _)).
+      WillByDefault(
+          InvokeWithoutArgs(
+              this,
+              &ProfileSyncFactoryMock::MakeSyncComponents));
 }
 
 ProfileSyncFactoryMock::~ProfileSyncFactoryMock() {}

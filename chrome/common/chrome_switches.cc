@@ -537,6 +537,9 @@ const char kEnableSyncTabs[]            = "enable-sync-tabs";
 const char kEnableSyncTabsForOtherClients[] =
     "enable-sync-tabs-for-other-clients";
 
+// Enable syncing app notifications.
+const char kEnableSyncAppNotifications[] = "enable-sync-app-notifications";
+
 // Enables context menu for selecting groups of tabs.
 const char kEnableTabGroupsContextMenu[]     = "enable-tab-groups-context-menu";
 

@@ -1523,6 +1523,7 @@
         'browser/sync/backend_migrator_unittest.cc',
         'browser/sync/internal_api/read_node_mock.cc',
         'browser/sync/internal_api/read_node_mock.h',
+        'browser/sync/glue/app_notification_data_type_controller_unittest.cc',
         'browser/sync/glue/autofill_data_type_controller_unittest.cc',
         'browser/sync/glue/autofill_model_associator_unittest.cc',
         'browser/sync/glue/bookmark_data_type_controller_unittest.cc',

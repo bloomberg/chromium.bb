@@ -84,6 +84,10 @@ class ProfileSyncFactoryMock : public ProfileSyncFactory {
                SyncComponents(
                    ProfileSyncService* profile_sync_service,
                    browser_sync::UnrecoverableErrorHandler* error_handler));
+  MOCK_METHOD2(CreateAppNotificationSyncComponents,
+               SyncComponents(
+                   ProfileSyncService* profile_sync_service,
+                   browser_sync::UnrecoverableErrorHandler* error_handler));
 
  private:
   SyncComponents MakeSyncComponents();

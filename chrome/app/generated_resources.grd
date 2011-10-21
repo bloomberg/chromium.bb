@@ -4696,6 +4696,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_SYNC_TABS_DESCRIPTION" desc="Description for the flag to enable syncing the open tabs datatype">
         Enable open tabs in the sync options. This allows syncing your open tabs to other clients.
       </message>
+      <message name="IDS_FLAGS_SYNC_APP_NOTIFICATIONS_NAME" desc="Title for the flag to enable syncing the app notifications datatype">
+        Enable syncing app notifications
+      </message>
+      <message name="IDS_FLAGS_SYNC_APP_NOTIFICATIONS_DESCRIPTION" desc="Description for the flag to enable syncing the app notifications datatype">
+        Enable app notifications in the sync options. This allows syncing notifications received from your apps to other clients.
+      </message>
       <if expr="pp_ifdef('android')">
         <message name="IDS_FLAGS_SYNC_TYPED_URLS_NAME" desc="Title for the flag to enable syncing the TypedUrl datatype">
           Enable syncing typed URLs
@@ -10324,6 +10330,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_SYNC_DATATYPE_TABS" desc="Open Tabs, one of the data types that we allow syncing.">
         Open Tabs
+      </message>
+      <message name="IDS_SYNC_DATATYPE_APP_NOTIFICATIONS" desc="App notifications, one of the data types that we allow syncing.">
+        App Notifications
       </message>
 
       <!-- Encryption tab of the configure sync dialog -->
