@@ -349,16 +349,24 @@ class ValgrindError:
   def __eq__(self, rhs):
     return self.UniqueString() == rhs
 
-def find_and_truncate(f):
+def log_is_finished(f, force_finish):
   f.seek(0)
+  prev_line = ""
   while True:
     line = f.readline()
     if line == "":
+      if not force_finish:
+        return False
+      # Okay, the log is not finished but we can make it up to be parseable:
+      if prev_line.strip() in ["</error>", "</errorcounts>", "</status>"]:
+        f.write("</valgrindoutput>\n")
+        return True
       return False
     if '</valgrindoutput>' in line:
-      # valgrind often has garbage after </valgrindoutput> upon crash
+      # Valgrind often has garbage after </valgrindoutput> upon crash.
       f.truncate()
       return True
+    prev_line = line
 
 class MemcheckAnalyzer:
   ''' Given a set of Valgrind XML files, parse all the errors out of them,
@@ -457,8 +465,9 @@ class MemcheckAnalyzer:
       found = False
       running = True
       firstrun = True
+      skip = False
       origsize = os.path.getsize(file)
-      while (running and not found and
+      while (running and not found and not skip and
              (firstrun or
               ((time.time() - start_time) < self.LOG_COMPLETION_TIMEOUT))):
         firstrun = False
@@ -470,10 +479,15 @@ class MemcheckAnalyzer:
                                     stdout=subprocess.PIPE).stdout
           if len(ps_out.readlines()) < 2:
             running = False
-        found = find_and_truncate(f)
+        else:
+          skip = True
+          running = False
+        found = log_is_finished(f, False)
         if not running and not found:
-          logging.warn("Valgrind process PID = %s is not running but "
-                       "its XML log has not been finished correctly." % pid)
+          logging.warn("Valgrind process PID = %s is not running but its "
+                       "XML log has not been finished correctly.\nMake it up"
+                       "by adding some closing tags manually." % pid)
+          found = log_is_finished(f, not running)
         if running and not found:
           time.sleep(1)
       f.close()
