@@ -36,6 +36,10 @@ class AURA_SHELL_EXPORT ViewModel {
   // view from the view hierarchy.
   void Remove(int index);
 
+  // Moves the view at |index| to |target_index|. |target_index| is in terms
+  // of the model *after* the view at |index| is removed.
+  void Move(int index, int target_index);
+
   // Returns the number of views.
   int view_size() const { return static_cast<int>(entries_.size()); }
 
@@ -43,7 +47,7 @@ class AURA_SHELL_EXPORT ViewModel {
   void Clear();
 
   // Returns the view at the specified index.
-  views::View* view_at(int index) {
+  views::View* view_at(int index) const {
     return entries_[index].view;
   }
 
@@ -55,12 +59,9 @@ class AURA_SHELL_EXPORT ViewModel {
     return entries_[index].ideal_bounds;
   }
 
-  // Sets the bounds of each view to its ideal bounds.
-  void SetViewBoundsToIdealBounds();
-
   // Returns the index of the specified view, or -1 if the view isn't in the
   // model.
-  int GetIndexOfView(views::View* view);
+  int GetIndexOfView(views::View* view) const;
 
  private:
   struct Entry {

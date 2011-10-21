@@ -29,6 +29,16 @@ void LauncherModel::RemoveItemAt(int index) {
                     LauncherItemRemoved(index));
 }
 
+void LauncherModel::Move(int index, int target_index) {
+  if (index == target_index)
+    return;
+  LauncherItem item(items_[index]);
+  items_.erase(items_.begin() + index);
+  items_.insert(items_.begin() + target_index, item);
+  FOR_EACH_OBSERVER(LauncherModelObserver, observers_,
+                    LauncherItemMoved(index, target_index));
+}
+
 void LauncherModel::SetTabbedImages(int index,
                                     const LauncherTabbedImages& images) {
   DCHECK(index >= 0 && index < item_count());

@@ -29,6 +29,14 @@ void ViewModel::Remove(int index) {
   entries_.erase(entries_.begin() + index);
 }
 
+void ViewModel::Move(int index, int target_index) {
+  if (index == target_index)
+    return;
+  Entry entry(entries_[index]);
+  entries_.erase(entries_.begin() + index);
+  entries_.insert(entries_.begin() + target_index, entry);
+}
+
 void ViewModel::Clear() {
   Entries entries;
   entries.swap(entries_);
@@ -36,12 +44,7 @@ void ViewModel::Clear() {
     delete entries[i].view;
 }
 
-void ViewModel::SetViewBoundsToIdealBounds() {
-  for (size_t i = 0; i < entries_.size(); ++i)
-    entries_[i].view->SetBoundsRect(entries_[i].ideal_bounds);
-}
-
-int ViewModel::GetIndexOfView(views::View* view) {
+int ViewModel::GetIndexOfView(views::View* view) const {
   for (size_t i = 0; i < entries_.size(); ++i) {
     if (entries_[i].view == view)
       return static_cast<int>(i);

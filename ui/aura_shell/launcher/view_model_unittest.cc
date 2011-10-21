@@ -19,8 +19,23 @@ TEST(ViewModel, BasicAssertions) {
   model.set_ideal_bounds(0, v1_bounds);
   EXPECT_EQ(v1_bounds, model.ideal_bounds(0));
   EXPECT_EQ(0, model.GetIndexOfView(&v1));
-  model.SetViewBoundsToIdealBounds();
-  EXPECT_EQ(v1_bounds, v1.bounds());
+}
+
+TEST(ViewModel, Move) {
+  views::View v1, v2, v3;
+  ViewModel model;
+  model.Add(&v1, 0);
+  model.Add(&v2, 1);
+  model.Add(&v3, 2);
+  model.Move(0, 2);
+  EXPECT_EQ(&v1, model.view_at(2));
+  EXPECT_EQ(&v2, model.view_at(0));
+  EXPECT_EQ(&v3, model.view_at(1));
+
+  model.Move(2, 0);
+  EXPECT_EQ(&v1, model.view_at(0));
+  EXPECT_EQ(&v2, model.view_at(1));
+  EXPECT_EQ(&v3, model.view_at(2));
 }
 
 }  // namespace aura_shell

@@ -6,6 +6,7 @@
 #define UI_AURA_SHELL_LAUNCHER_VIEW_H_
 #pragma once
 
+#include "ui/aura_shell/launcher/launcher_button_host.h"
 #include "ui/aura_shell/launcher/launcher_model_observer.h"
 #include "views/controls/button/button.h"
 #include "views/widget/widget_delegate.h"
@@ -25,7 +26,8 @@ namespace internal {
 
 class LauncherView : public views::WidgetDelegateView,
                      public LauncherModelObserver,
-                     public views::ButtonListener {
+                     public views::ButtonListener,
+                     public LauncherButtonHost {
  public:
   explicit LauncherView(LauncherModel* model);
   virtual ~LauncherView();
@@ -55,6 +57,16 @@ class LauncherView : public views::WidgetDelegateView,
   // Resizes the widget to fit the view.
   void Resize();
 
+  // Invoked when the mouse has moved enough to trigger a drag. Sets internal
+  // state in preparation for the drag.
+  void PrepareForDrag(const views::MouseEvent& event);
+
+  // Invoked when the mouse is dragged. Updates the models as appropriate.
+  void ContinueDrag(const views::MouseEvent& event);
+
+  // If there is a drag operation in progress it's canceled.
+  void CancelDrag(views::View* deleted_view);
+
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 
@@ -62,6 +74,15 @@ class LauncherView : public views::WidgetDelegateView,
   virtual void LauncherItemAdded(int model_index) OVERRIDE;
   virtual void LauncherItemRemoved(int model_index) OVERRIDE;
   virtual void LauncherItemImagesChanged(int model_index) OVERRIDE;
+  virtual void LauncherItemMoved(int start_index, int target_index) OVERRIDE;
+
+  // Overridden from LauncherButtonHost:
+  virtual void MousePressedOnButton(views::View* view,
+                                    const views::MouseEvent& event) OVERRIDE;
+  virtual void MouseDraggedOnButton(views::View* view,
+                                    const views::MouseEvent& event) OVERRIDE;
+  virtual void MouseReleasedOnButton(views::View* view,
+                                     bool canceled) OVERRIDE;
 
   // Overriden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
@@ -79,6 +100,20 @@ class LauncherView : public views::WidgetDelegateView,
   views::ImageButton* new_browser_button_;
 
   views::ImageButton* show_apps_button_;
+
+  // Are we dragging? This is only set if the mouse is dragged far enough to
+  // trigger a drag.
+  bool dragging_;
+
+  // The view being dragged. This is set immediately when the mouse is pressed.
+  // |dragging_| is set only if the mouse is dragged far enough.
+  views::View* drag_view_;
+
+  // X coordinate of the mouse down event in |drag_view_|s coordinates.
+  int drag_offset_;
+
+  // Index |drag_view_| was initially at.
+  int start_drag_index_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherView);
 };

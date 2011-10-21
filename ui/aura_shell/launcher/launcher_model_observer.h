@@ -19,6 +19,10 @@ class AURA_SHELL_EXPORT LauncherModelObserver {
   // at.
   virtual void LauncherItemRemoved(int index) = 0;
 
+  // Invoked after an item has been moved. See LauncherModel::Move() for details
+  // of the arguments.
+  virtual void LauncherItemMoved(int start_index, int target_index) = 0;
+
   // Invoked when the images of an item change.
   virtual void LauncherItemImagesChanged(int index) = 0;
 

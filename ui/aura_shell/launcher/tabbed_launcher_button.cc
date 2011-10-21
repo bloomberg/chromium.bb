@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "grit/ui_resources.h"
+#include "ui/aura_shell/launcher/launcher_button_host.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
@@ -35,8 +36,10 @@ const int kBgRightInset = 8;
 // static
 SkBitmap* TabbedLauncherButton::bg_image_ = NULL;
 
-TabbedLauncherButton::TabbedLauncherButton(views::ButtonListener* listener)
-    : views::CustomButton(listener) {
+TabbedLauncherButton::TabbedLauncherButton(views::ButtonListener* listener,
+                                           LauncherButtonHost* host)
+    : views::CustomButton(listener),
+      host_(host) {
   if (!bg_image_) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     bg_image_ = new SkBitmap(
@@ -90,10 +93,26 @@ void TabbedLauncherButton::OnPaint(gfx::Canvas* canvas) {
   }
 }
 
-void TabbedLauncherButton::ViewHierarchyChanged(bool is_add,
-                                                views::View* parent,
-                                                views::View* child) {
-  // TODO: something interesting here.
+bool TabbedLauncherButton::OnMousePressed(const views::MouseEvent& event) {
+  CustomButton::OnMousePressed(event);
+  host_->MousePressedOnButton(this, event);
+  return true;
+}
+
+void TabbedLauncherButton::OnMouseReleased(const views::MouseEvent& event) {
+  host_->MouseReleasedOnButton(this, false);
+  CustomButton::OnMouseReleased(event);
+}
+
+void TabbedLauncherButton::OnMouseCaptureLost() {
+  host_->MouseReleasedOnButton(this, true);
+  CustomButton::OnMouseCaptureLost();
+}
+
+bool TabbedLauncherButton::OnMouseDragged(const views::MouseEvent& event) {
+  CustomButton::OnMouseDragged(event);
+  host_->MouseDraggedOnButton(this, event);
+  return true;
 }
 
 }  // namespace internal

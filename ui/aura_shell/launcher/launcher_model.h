@@ -32,6 +32,10 @@ class AURA_SHELL_EXPORT LauncherModel {
   // Removes the item at |index|.
   void RemoveItemAt(int index);
 
+  // Moves the item at |index| to |target_index|. |target_index| is in terms
+  // of the model *after* the item at |index| is removed.
+  void Move(int index, int target_index);
+
   // Changes the images of the specified item.
   void SetTabbedImages(int index, const LauncherTabbedImages& images);
   void SetAppImage(int index, const SkBitmap& image);

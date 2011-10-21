@@ -6,9 +6,11 @@
 
 #include "base/utf_string_conversions.h"
 #include "grit/ui_resources.h"
+#include "ui/aura_shell/launcher/app_launcher_button.h"
 #include "ui/aura_shell/launcher/launcher_model.h"
 #include "ui/aura_shell/launcher/tabbed_launcher_button.h"
 #include "ui/aura_shell/launcher/view_model.h"
+#include "ui/aura_shell/launcher/view_model_utils.h"
 #include "ui/aura_shell/shell.h"
 #include "ui/aura_shell/shell_delegate.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -31,6 +33,9 @@ static const int kLeadingInset = 8;
 // Height of the LauncherView. Hard coded to avoid resizing as items are
 // added/removed.
 static const int kPreferredHeight = 48;
+
+// Minimum distance before drag starts.
+static const int kMinimumDragDistance = 8;
 
 namespace {
 
@@ -55,7 +60,11 @@ LauncherView::LauncherView(LauncherModel* model)
     : model_(model),
       view_model_(new ViewModel),
       new_browser_button_(NULL),
-      show_apps_button_(NULL) {
+      show_apps_button_(NULL),
+      dragging_(NULL),
+      drag_view_(NULL),
+      drag_offset_(0),
+      start_drag_index_(-1) {
   DCHECK(model_);
   bounds_animator_.reset(new views::BoundsAnimator(this));
 }
@@ -94,7 +103,7 @@ void LauncherView::LayoutToIdealBounds() {
   CalculateIdealBounds(&ideal_bounds);
   new_browser_button_->SetBoundsRect(ideal_bounds.new_browser_bounds);
   show_apps_button_->SetBoundsRect(ideal_bounds.show_apps_bounds);
-  view_model_->SetViewBoundsToIdealBounds();
+  ViewModelUtils::SetViewBoundsToIdealBounds(*view_model_);
 }
 
 void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
@@ -137,18 +146,12 @@ void LauncherView::AnimateToIdealBounds() {
 
 views::View* LauncherView::CreateViewForItem(const LauncherItem& item) {
   if (item.type == TYPE_TABBED) {
-    TabbedLauncherButton* button = new TabbedLauncherButton(this);
+    TabbedLauncherButton* button = new TabbedLauncherButton(this, this);
     button->SetImages(item.tab_images);
     return button;
   }
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  const SkBitmap* image =
-      rb.GetImageNamed(IDR_AURA_LAUNCHER_ICON_CHROME).ToSkBitmap();
-  views::ImageButton* button = new views::ImageButton(this);
-  button->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
-                            views::ImageButton::ALIGN_MIDDLE);
-  button->SetPreferredSize(gfx::Size(image->width(), image->height()));
-  button->SetImage(views::CustomButton::BS_NORMAL, &item.app_image);
+  AppLauncherButton* button = new AppLauncherButton(this, this);
+  button->SetAppImage(item.app_image);
   return button;
 }
 
@@ -160,6 +163,65 @@ void LauncherView::Resize() {
   Layout();
 }
 
+void LauncherView::PrepareForDrag(const views::MouseEvent& event) {
+  DCHECK(drag_view_);
+  dragging_ = true;
+  start_drag_index_ = view_model_->GetIndexOfView(drag_view_);
+  // Move the view to the front so that it appears on top of other views.
+  ReorderChildView(drag_view_, -1);
+  bounds_animator_->StopAnimatingView(drag_view_);
+}
+
+void LauncherView::ContinueDrag(const views::MouseEvent& event) {
+  // TODO: I don't think this works correctly with RTL.
+  gfx::Point drag_point(event.x(), 0);
+  views::View::ConvertPointToView(drag_view_, this, &drag_point);
+  int current_index = view_model_->GetIndexOfView(drag_view_);
+  DCHECK_NE(-1, current_index);
+
+  // Constrain the x location so that it doesn't overlap the two buttons.
+  int x = std::max(view_model_->ideal_bounds(0).x(),
+                   drag_point.x() - drag_offset_);
+  x = std::min(view_model_->ideal_bounds(view_model_->view_size() - 1).right() -
+               view_model_->ideal_bounds(current_index).width(),
+               x);
+  if (drag_view_->x() == x)
+    return;
+
+  drag_view_->SetX(x);
+  int target_index =
+      ViewModelUtils::DetermineMoveIndex(*view_model_, drag_view_, x);
+  if (target_index == current_index)
+    return;
+
+  // Remove the observer while we mutate the model so that we don't attempt to
+  // cancel the drag.
+  model_->RemoveObserver(this);
+  model_->Move(current_index, target_index);
+  model_->AddObserver(this);
+  view_model_->Move(current_index, target_index);
+  AnimateToIdealBounds();
+  bounds_animator_->StopAnimatingView(drag_view_);
+}
+
+void LauncherView::CancelDrag(views::View* deleted_view) {
+  if (!drag_view_)
+    return;
+  bool was_dragging = dragging_;
+  views::View* drag_view = drag_view_;
+  dragging_ = false;
+  drag_view_ = NULL;
+  if (drag_view == deleted_view) {
+    // The view that was being dragged is being deleted. Don't do anything.
+    return;
+  }
+  if (!was_dragging)
+    return;
+
+  view_model_->Move(view_model_->GetIndexOfView(drag_view), start_drag_index_);
+  AnimateToIdealBounds();
+}
+
 gfx::Size LauncherView::GetPreferredSize() {
   IdealBounds ideal_bounds;
   CalculateIdealBounds(&ideal_bounds);
@@ -168,6 +230,8 @@ gfx::Size LauncherView::GetPreferredSize() {
 }
 
 void LauncherView::LauncherItemAdded(int model_index) {
+  CancelDrag(NULL);
+
   views::View* view = CreateViewForItem(model_->items()[model_index]);
   AddChildView(view);
   view_model_->Add(view, model_index);
@@ -187,6 +251,7 @@ void LauncherView::LauncherItemAdded(int model_index) {
 
 void LauncherView::LauncherItemRemoved(int model_index) {
   views::View* view = view_model_->view_at(model_index);
+  CancelDrag(view);
   view_model_->Remove(model_index);
   Resize();
   AnimateToIdealBounds();
@@ -212,9 +277,43 @@ void LauncherView::LauncherItemImagesChanged(int model_index) {
     }
   } else {
     DCHECK_EQ(TYPE_APP, item.type);
-    views::ImageButton* button = static_cast<views::ImageButton*>(view);
-    button->SetImage(views::CustomButton::BS_NORMAL, &item.app_image);
+    AppLauncherButton* button = static_cast<AppLauncherButton*>(view);
+    button->SetAppImage(item.app_image);
     button->SchedulePaint();
+  }
+}
+
+void LauncherView::LauncherItemMoved(int start_index, int target_index) {
+  view_model_->Move(start_index, target_index);
+  AnimateToIdealBounds();
+}
+
+void LauncherView::MousePressedOnButton(views::View* view,
+                                        const views::MouseEvent& event) {
+  if (view_model_->GetIndexOfView(view) == -1 || view_model_->view_size() <= 1)
+    return;  // View is being deleted, ignore request.
+
+  drag_view_ = view;
+  drag_offset_ = event.x();
+}
+
+void LauncherView::MouseDraggedOnButton(views::View* view,
+                                        const views::MouseEvent& event) {
+  if (!dragging_ && drag_view_ &&
+      abs(event.x() - drag_offset_) >= kMinimumDragDistance)
+    PrepareForDrag(event);
+  if (dragging_)
+    ContinueDrag(event);
+}
+
+void LauncherView::MouseReleasedOnButton(views::View* view,
+                                         bool canceled) {
+  if (canceled) {
+    CancelDrag(NULL);
+  } else {
+    dragging_ = false;
+    drag_view_ = NULL;
+    AnimateToIdealBounds();
   }
 }
 

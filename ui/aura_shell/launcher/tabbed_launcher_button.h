@@ -12,10 +12,13 @@
 namespace aura_shell {
 namespace internal {
 
+class LauncherButtonHost;
+
 // Button used for items on the launcher corresponding to tabbed windows.
 class TabbedLauncherButton : public views::CustomButton {
  public:
-  explicit TabbedLauncherButton(views::ButtonListener* listener);
+  TabbedLauncherButton(views::ButtonListener* listener,
+                       LauncherButtonHost* host);
   virtual ~TabbedLauncherButton();
 
   // Sets the images to display for this entry.
@@ -27,12 +30,15 @@ class TabbedLauncherButton : public views::CustomButton {
  protected:
   // View overrides:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual void ViewHierarchyChanged(bool is_add,
-                                    views::View* parent,
-                                    views::View* child) OVERRIDE;
+  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseReleased(const views::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseCaptureLost() OVERRIDE;
+  virtual bool OnMouseDragged(const views::MouseEvent& event) OVERRIDE;
 
  private:
   LauncherTabbedImages images_;
+
+  LauncherButtonHost* host_;
 
   static SkBitmap* bg_image_;
 

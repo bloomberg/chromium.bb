@@ -16,7 +16,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 // Max number of tabs we'll send icons over for.
-const int kMaxCount = 3;
+const int kMaxCount = 2;
 
 LauncherIconUpdater::LauncherIconUpdater(
     TabStripModel* tab_model,
