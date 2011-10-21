@@ -152,10 +152,10 @@ class TestFormStructure : public FormStructure {
     ASSERT_EQ(field_count(), server_types.size());
 
     for (size_t i = 0; i < field_count(); ++i) {
-      AutofillField* form_field = field(i);
-      ASSERT_TRUE(form_field);
-      form_field->set_heuristic_type(heuristic_types[i]);
-      form_field->set_server_type(server_types[i]);
+      AutofillField* field = (*fields())[i];
+      ASSERT_TRUE(field);
+      field->set_heuristic_type(heuristic_types[i]);
+      field->set_server_type(server_types[i]);
     }
 
     UpdateAutofillCount();

@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "base/memory/scoped_vector.h"
 #include "base/time.h"
 #include "chrome/browser/autofill/autofill_type.h"
 #include "content/common/net/url_fetcher.h"
@@ -67,7 +68,7 @@ class AutofillDownloadManager : public URLFetcher::Delegate {
   // Starts a query request to Autofill servers. The observer is called with the
   // list of the fields of all requested forms.
   // |forms| - array of forms aggregated in this request.
-  bool StartQueryRequest(const std::vector<FormStructure*>& forms,
+  bool StartQueryRequest(const ScopedVector<FormStructure>& forms,
                          const AutofillMetrics& metric_logger);
 
   // Starts an upload request for the given |form|, unless throttled by the

@@ -349,7 +349,7 @@ bool FormStructure::EncodeUploadRequest(
 
 // static
 bool FormStructure::EncodeQueryRequest(
-    const std::vector<FormStructure*>& forms,
+    const ScopedVector<FormStructure>& forms,
     std::vector<std::string>* encoded_signatures,
     std::string* encoded_xml) {
   DCHECK(encoded_signatures);
