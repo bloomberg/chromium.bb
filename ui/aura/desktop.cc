@@ -172,14 +172,15 @@ bool Desktop::DispatchKeyEvent(KeyEvent* event) {
         transform.ConcatTranslate(0, size.height());
         break;
       case 1:
-        transform.ConcatRotate(90.0f);
-        transform.ConcatTranslate(size.width(), 0);
-        break;
-      case 2:
         transform.ConcatRotate(180.0f);
         transform.ConcatTranslate(size.width(), size.height());
         break;
+      case 2:
+        transform.ConcatRotate(90.0f);
+        transform.ConcatTranslate(size.width(), 0);
+        break;
     }
+    layer()->SetAnimation(CreateDefaultAnimation());
     SetTransform(transform);
     count = (count + 1) % 4;
     return true;
@@ -363,13 +364,6 @@ void Desktop::ScheduleDraw() {
   }
 }
 
-void Desktop::SetTransform(const ui::Transform& transform) {
-  Window::SetTransform(transform);
-
-  // The transform can effect the size of the desktop.
-  OnHostResized(host_->GetSize());
-}
-
 bool Desktop::CanFocus() const {
   return IsVisible();
 }
@@ -380,6 +374,10 @@ internal::FocusManager* Desktop::GetFocusManager() {
 
 Desktop* Desktop::GetDesktop() {
   return this;
+}
+
+void Desktop::OnLayerAnimationEnded(const ui::Animation* animation) {
+  OnHostResized(host_->GetSize());
 }
 
 void Desktop::SetFocusedWindow(Window* focused_window) {

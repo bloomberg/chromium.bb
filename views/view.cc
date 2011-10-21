@@ -1171,6 +1171,9 @@ void View::OnPaintLayer(gfx::Canvas* canvas) {
   PaintCommon(canvas);
 }
 
+void View::OnLayerAnimationEnded(const ui::Animation* animation) {
+}
+
 void View::ReorderLayers() {
   View* v = this;
   while (v && !v->layer())

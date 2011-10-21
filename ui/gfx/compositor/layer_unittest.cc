@@ -118,6 +118,8 @@ class TestLayerDelegate : public LayerDelegate {
                         contents.height());
     color_index_ = (color_index_ + 1) % static_cast<int>(colors_.size());
   }
+  virtual void OnLayerAnimationEnded(const ui::Animation* animation) OVERRIDE {
+  }
 
  private:
   Layer* owner_;
@@ -145,6 +147,8 @@ class DrawTreeLayerDelegate : public LayerDelegate {
   virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE {
     painted_ = true;
   }
+  virtual void OnLayerAnimationEnded(const ui::Animation* animation) OVERRIDE {
+  }
 
   bool painted_;
 
@@ -160,6 +164,8 @@ class NullLayerDelegate : public LayerDelegate {
  private:
   // Overridden from LayerDelegate:
   virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE {
+  }
+  virtual void OnLayerAnimationEnded(const ui::Animation* animation) OVERRIDE {
   }
 
   DISALLOW_COPY_AND_ASSIGN(NullLayerDelegate);

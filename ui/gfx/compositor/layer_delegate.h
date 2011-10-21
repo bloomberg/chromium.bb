@@ -14,12 +14,17 @@ class Canvas;
 
 namespace ui {
 
+class Animation;
+
 // A delegate interface implemented by an object that renders to a Layer.
 class COMPOSITOR_EXPORT LayerDelegate {
  public:
   // Paint content for the layer to the specified canvas. It has already been
   // clipped to the Layer's invalid rect.
   virtual void OnPaintLayer(gfx::Canvas* canvas) = 0;
+
+  // Called when |animation| ends.
+  virtual void OnLayerAnimationEnded(const ui::Animation* animation) = 0;
 
  protected:
   virtual ~LayerDelegate() {}

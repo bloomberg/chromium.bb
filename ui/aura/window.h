@@ -116,7 +116,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   virtual ToplevelWindowContainer* AsToplevelWindowContainer();
   virtual const ToplevelWindowContainer* AsToplevelWindowContainer() const;
 
-  virtual void SetTransform(const ui::Transform& transform);
+  void SetTransform(const ui::Transform& transform);
 
   // Assigns a LayoutManager to size and place child windows.
   // The Window takes ownership of the LayoutManager.
@@ -286,6 +286,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
 
   // Overridden from ui::LayerDelegate:
   virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnLayerAnimationEnded(const ui::Animation* animation) OVERRIDE;
 
   int type_;
 

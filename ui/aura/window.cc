@@ -486,4 +486,7 @@ void Window::OnPaintLayer(gfx::Canvas* canvas) {
   delegate_->OnPaint(canvas);
 }
 
+void Window::OnLayerAnimationEnded(const ui::Animation* animation) {
+}
+
 }  // namespace aura

@@ -128,9 +128,6 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate,
   // If |window| has mouse capture, the current capture window is set to NULL.
   void ReleaseCapture(Window* window);
 
-  // Overridden from Window:
-  virtual void SetTransform(const ui::Transform& transform) OVERRIDE;
-
  private:
   // Called whenever the mouse moves, tracks the current |mouse_moved_handler_|,
   // sending exited and entered events as its value changes.
@@ -143,6 +140,9 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate,
   virtual bool CanFocus() const OVERRIDE;
   virtual internal::FocusManager* GetFocusManager() OVERRIDE;
   virtual Desktop* GetDesktop() OVERRIDE;
+
+  // Overridden from ui::LayerDelegate:
+  virtual void OnLayerAnimationEnded(const ui::Animation* animation) OVERRIDE;
 
   // Overridden from FocusManager:
   virtual void SetFocusedWindow(Window* window) OVERRIDE;
