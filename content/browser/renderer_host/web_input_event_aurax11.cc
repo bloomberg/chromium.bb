@@ -251,6 +251,13 @@ WebKit::WebMouseEvent MakeWebMouseEventFromAuraEvent(aura::MouseEvent* event) {
   return webkit_event;
 }
 
+WebKit::WebMouseWheelEvent MakeWebMouseWheelEventFromAuraEvent(
+    aura::MouseEvent* event) {
+  WebKit::WebMouseWheelEvent webkit_event;
+  // TODO(sadrul): !
+  return webkit_event;
+}
+
 WebKit::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
     aura::KeyEvent* event) {
   base::NativeEvent native_event = event->native_event();

@@ -348,7 +348,10 @@ int RenderWidgetHostViewAura::GetNonClientComponent(
 }
 
 bool RenderWidgetHostViewAura::OnMouseEvent(aura::MouseEvent* event) {
-  host_->ForwardMouseEvent(content::MakeWebMouseEvent(event));
+  if (event->type() == ui::ET_MOUSEWHEEL)
+    host_->ForwardWheelEvent(content::MakeWebMouseWheelEvent(event));
+  else
+    host_->ForwardMouseEvent(content::MakeWebMouseEvent(event));
 
   // Return true so that we receive released/drag events.
   return true;

@@ -20,6 +20,14 @@ WebKit::WebMouseEvent MakeUntranslatedWebMouseEventFromNativeEvent(
                                                   native_event.lParam);
 }
 
+WebKit::WebMouseWheelEvent MakeUntranslatedWebMouseWheelEventFromNativeEvent(
+    base::NativeEvent native_event) {
+  return WebKit::WebInputEventFactory::mouseWheelEvent(native_event.hwnd,
+                                                       native_event.message,
+                                                       native_event.wParam,
+                                                       native_event.lParam);
+}
+
 WebKit::WebKeyboardEvent MakeWebKeyboardEventFromNativeEvent(
     base::NativeEvent native_event) {
   return WebKit::WebInputEventFactory::keyboardEvent(native_event.hwnd,

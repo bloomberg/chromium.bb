@@ -11,10 +11,14 @@ namespace content {
 #if defined(OS_WIN)
 WebKit::WebMouseEvent MakeUntranslatedWebMouseEventFromNativeEvent(
     base::NativeEvent native_event);
+WebKit::WebMouseWheelEvent MakeUntranslatedWebMouseWheelEventFromNativeEvent(
+    base::NativeEvent native_event);
 WebKit::WebKeyboardEvent MakeWebKeyboardEventFromNativeEvent(
     base::NativeEvent native_event);
 #else
 WebKit::WebMouseEvent MakeWebMouseEventFromAuraEvent(aura::MouseEvent* event);
+WebKit::WebMouseWheelEvent MakeWebMouseWheelEventFromAuraEvent(
+    aura::MouseEvent* event);
 WebKit::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
     aura::KeyEvent* event);
 #endif
@@ -49,6 +53,28 @@ WebKit::WebMouseEvent MakeWebMouseEvent(aura::MouseEvent* event) {
       MakeUntranslatedWebMouseEventFromNativeEvent(event->native_event());
 #else
   WebKit::WebMouseEvent webkit_event = MakeWebMouseEventFromAuraEvent(event);
+#endif
+
+  // Replace the event's coordinate fields with translated position data from
+  // |event|.
+  webkit_event.windowX = webkit_event.x = event->x();
+  webkit_event.windowY = webkit_event.y = event->y();
+
+  // TODO(beng): map these to screen coordinates.
+  webkit_event.globalX = event->x();
+  webkit_event.globalY = event->y();
+
+  return webkit_event;
+}
+
+WebKit::WebMouseWheelEvent MakeWebMouseWheelEvent(aura::MouseEvent* event) {
+#if defined(OS_WIN)
+  // Construct an untranslated event from the platform event data.
+  WebKit::WebMouseWheelEvent webkit_event =
+      MakeUntranslatedWebMouseWheelEventFromNativeEvent(event->native_event());
+#else
+  WebKit::WebMouseWheelEvent webkit_event =
+      MakeWebMouseWheelEventFromAuraEvent(event);
 #endif
 
   // Replace the event's coordinate fields with translated position data from

@@ -16,6 +16,7 @@ class MouseEvent;
 namespace content {
 
 WebKit::WebMouseEvent MakeWebMouseEvent(aura::MouseEvent* event);
+WebKit::WebMouseWheelEvent MakeWebMouseWheelEvent(aura::MouseEvent* event);
 WebKit::WebKeyboardEvent MakeWebKeyboardEvent(aura::KeyEvent* event);
 
 // TODO(beng): WebKit::WebMouseWheelEvent
