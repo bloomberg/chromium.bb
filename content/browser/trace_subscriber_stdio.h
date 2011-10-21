@@ -29,12 +29,15 @@ class CONTENT_EXPORT TraceSubscriberStdio : public TraceSubscriber {
 
   // Implementation of TraceSubscriber
   virtual void OnEndTracingComplete();
-  virtual void OnTraceDataCollected(const std::string& json_events);
+  virtual void OnTraceDataCollected(const std::string& trace_fragment);
 
   virtual ~TraceSubscriberStdio();
 
  private:
+  void Write(const std::string& output_str);
+
   FILE* file_;
+  base::debug::TraceResultBuffer trace_buffer_;
 };
 
 #endif  // CONTENT_BROWSER_TRACE_SUBSCRIBER_STDIO_H_

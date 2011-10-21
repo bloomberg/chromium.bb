@@ -224,19 +224,19 @@ void TraceController::OnEndTracingAck(
 
 void TraceController::OnTraceDataCollected(
     const scoped_refptr<base::debug::TraceLog::RefCountedString>&
-        json_events_str_ptr) {
+        events_str_ptr) {
   // OnTraceDataCollected may be called from any browser thread, either by the
   // local event trace system or from child processes via TraceMessageFilter.
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
         base::Bind(&TraceController::OnTraceDataCollected,
-                   base::Unretained(this), json_events_str_ptr));
+                   base::Unretained(this), events_str_ptr));
     return;
   }
 
   // Drop trace events if we are just getting categories.
   if (subscriber_ && !is_get_categories_)
-    subscriber_->OnTraceDataCollected(json_events_str_ptr->data);
+    subscriber_->OnTraceDataCollected(events_str_ptr->data);
 }
 
 void TraceController::OnTraceBufferFull() {
