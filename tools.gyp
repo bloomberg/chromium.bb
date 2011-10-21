@@ -132,8 +132,7 @@
             'objdir': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64',
             'sources': [
               'src/untrusted/stubs/crti_x86_64.S',
-              'src/untrusted/stubs/crtn_x86_64.S',
-              'src/untrusted/stubs/setjmp_x86_64.S'
+              'src/untrusted/stubs/crtn_x86_64.S'
              ]
           },
         }
@@ -155,8 +154,7 @@
             'objdir': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32',
             'sources': [
               'src/untrusted/stubs/crti_x86_32.S',
-              'src/untrusted/stubs/crtn_x86_32.S',
-              'src/untrusted/stubs/setjmp_x86_32.S'
+              'src/untrusted/stubs/crtn_x86_32.S'
             ]
           },
         }

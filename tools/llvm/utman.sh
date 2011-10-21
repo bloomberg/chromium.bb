@@ -94,6 +94,7 @@ readonly NONEXISTENT_PATH="/going/down/the/longest/road/to/nowhere"
 SPECULATIVE_REBUILD_SET=""
 
 readonly PNACL_ROOT="${NACL_ROOT}/pnacl"
+readonly PNACL_SUPPORT="${PNACL_ROOT}/support"
 
 readonly GMP_VER=gmp-5.0.2
 readonly THIRD_PARTY_GMP="${NACL_ROOT}/../third_party/gmp/${GMP_VER}.tar.bz2"
@@ -783,6 +784,7 @@ download-toolchains() {
 #@ libs                  - install native libs and build bitcode libs
 libs() {
   libs-clean
+  libs-platform
   libc
 
   if ${LIBMODE_NEWLIB}; then
@@ -811,6 +813,7 @@ libc() {
 #@ clang-libs            - install native libs and build bitcode libs with clang
 clang-libs() {
   libs-clean
+  libs-platform
   if ${LIBMODE_NEWLIB} ; then
     # TODO(pdox): Why is this step needed?
     sysroot
@@ -3311,6 +3314,49 @@ newlib-install-generic() {
   spopd
 }
 
+# TODO(pdox): Organize these objects better, so that this code is simpler.
+libs-platform() {
+  # There are currently no platform libs in the glibc build.
+  if ${LIBMODE_GLIBC}; then
+    return 0
+  fi
+
+  local pnacl_cc="${PNACL_CLANG} --pnacl-allow-native"
+  local src="${PNACL_SUPPORT}"
+  local tmpdir="${TC_BUILD}/libs-platform"
+  rm -rf "${tmpdir}"
+  mkdir -p "${tmpdir}"
+
+  # Install crt1.o (linker script)
+  StepBanner "LIBS-PLATFORM" "Install crt1.o"
+  mkdir -p "${INSTALL_LIB}"
+  cp "${src}"/crt1.x ${INSTALL_LIB}/crt1.o
+
+  # Install nacl_startup.bc
+  StepBanner "LIBS-PLATFORM" "Install nacl_startup.bc"
+  ${pnacl_cc} -c "${src}"/nacl_startup.c -o "${tmpdir}"/nacl_startup.bc
+  cp "${tmpdir}"/nacl_startup.bc "${INSTALL_LIB}"
+
+  for platform in arm x86-32 x86-64; do
+    StepBanner "LIBS-PLATFORM" "libcrt_platform.a for ${platform}"
+    local dest="${INSTALL_LIB}-${platform}"
+    local sources="setjmp_${platform/-/_}"
+    mkdir -p "${dest}"
+
+    # For ARM, also compile aeabi_read_tp.S
+    if  [ ${platform} == arm ] ; then
+      sources+=" aeabi_read_tp"
+    fi
+
+    local objs=""
+    for name in ${sources}; do
+      ${pnacl_cc} -arch ${platform} -c "${src}"/${name}.S -o ${tmpdir}/${name}.o
+      objs+=" ${tmpdir}/${name}.o"
+    done
+
+    ${PNACL_AR} rc "${dest}"/libcrt_platform.a ${objs}
+  done
+}
 
 #########################################################################
 #     < SDK >
@@ -3369,28 +3415,12 @@ sdk-libs() {
     extra_flags="--nacl_glibc"
   fi
 
-  StepBanner "SDK" "Make/Install bitcode components"
   RunWithLog "sdk.libs.bitcode" \
       "${SCONS_COMMON[@]}" \
       ${extra_flags} \
       platform=${neutral_platform} \
       install_lib_portable \
       libdir="$(PosixToSysPath "${INSTALL_SDK_LIB}")"
-
-  for platform in arm x86-32 x86-64; do
-    # There are currently no platform libs in the glibc build.
-    if ${LIBMODE_GLIBC}; then
-      continue
-    fi
-
-    StepBanner "SDK" "Make/Install ${platform} components"
-    RunWithLog "sdk.libs.${platform}" \
-      "${SCONS_COMMON[@]}" \
-      ${extra_flags} \
-      platform=${platform} \
-      install_lib_platform \
-      libdir="$(PosixToSysPath "${INSTALL_SDK_LIB}-${platform}")"
-  done
 }
 
 sdk-verify() {
@@ -3407,23 +3437,6 @@ sdk-verify() {
 
   for i in ${INSTALL_SDK_LIB}/*.pso ; do
     verify-pso "$i"
-  done
-
-  for platform in arm x86-32 x86-64; do
-    # There are currently no platform libs in the glibc build.
-    if ${LIBMODE_GLIBC}; then
-      continue
-    fi
-
-    SubBanner "VERIFY: ${INSTALL_SDK_LIB}-${platform}"
-
-    for i in ${INSTALL_SDK_LIB}-${platform}/*.o ; do
-      verify-object-${platform} "$i"
-    done
-
-    for i in ${INSTALL_SDK_LIB}-${platform}/*.a ; do
-      verify-archive-${platform} "$i"
-    done
   done
 
   shopt -u nullglob
