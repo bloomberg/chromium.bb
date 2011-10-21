@@ -52,8 +52,8 @@ class UpdateLibraryImpl : public UpdateLibrary {
     chromeos::RequestUpdateCheck(callback, user_data);
   }
 
-  virtual bool RebootAfterUpdate() OVERRIDE {
-    return RebootIfUpdated();
+  virtual void RebootAfterUpdate() OVERRIDE {
+    chromeos::RebootIfUpdated();
   }
 
   virtual void SetReleaseTrack(const std::string& track) OVERRIDE {
@@ -112,7 +112,7 @@ class UpdateLibraryStubImpl : public UpdateLibrary {
     if (callback)
       callback(user_data, UPDATE_RESULT_FAILED, "stub update");
   }
-  virtual bool RebootAfterUpdate() OVERRIDE { return false; }
+  virtual void RebootAfterUpdate() OVERRIDE {}
   virtual void SetReleaseTrack(const std::string& track) OVERRIDE {}
   virtual void GetReleaseTrack(chromeos::UpdateTrackCallback callback,
                                void* user_data) OVERRIDE {

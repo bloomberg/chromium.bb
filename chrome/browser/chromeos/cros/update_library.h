@@ -65,7 +65,7 @@ class UpdateLibrary {
                                   void* user_data) = 0;
 
   // Reboots if update has been performed.
-  virtual bool RebootAfterUpdate() = 0;
+  virtual void RebootAfterUpdate() = 0;
 
   // Sets the release track (channel). |track| should look like
   // "beta-channel" and "dev-channel". Returns true on success.
