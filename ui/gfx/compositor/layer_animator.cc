@@ -4,185 +4,440 @@
 
 #include "ui/gfx/compositor/layer_animator.h"
 
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/base/animation/animation_container.h"
-#include "ui/base/animation/animation.h"
-#include "ui/base/animation/tween.h"
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/compositor/layer.h"
-#include "ui/gfx/compositor/layer_animator_delegate.h"
-#include "ui/gfx/transform.h"
-#include "ui/gfx/rect.h"
-
-namespace {
-
-void SetMatrixElement(SkMatrix44& matrix, int index, SkMScalar value) {
-  int row = index / 4;
-  int col = index % 4;
-  matrix.set(row, col, value);
-}
-
-SkMScalar GetMatrixElement(const SkMatrix44& matrix, int index) {
-  int row = index / 4;
-  int col = index % 4;
-  return matrix.get(row, col);
-}
-
-} // anonymous namespace
+#include "ui/gfx/compositor/layer_animation_delegate.h"
+#include "ui/gfx/compositor/layer_animation_sequence.h"
 
 namespace ui {
 
-LayerAnimator::LayerAnimator(Layer* layer)
-    : layer_(layer),
-      got_initial_tick_(false) {
+class LayerAnimator;
+
+namespace {
+
+static const base::TimeDelta kDefaultTransitionDuration =
+    base::TimeDelta::FromMilliseconds(250);
+
+static const base::TimeDelta kTimerInterval =
+    base::TimeDelta::FromMilliseconds(10);
+
+} // namespace;
+
+// LayerAnimator public --------------------------------------------------------
+
+LayerAnimator::LayerAnimator(base::TimeDelta transition_duration)
+    : delegate_(NULL),
+      preemption_strategy_(IMMEDIATELY_SET_NEW_TARGET),
+      transition_duration_(transition_duration),
+      is_started_(false),
+      disable_timer_for_test_(false) {
 }
 
 LayerAnimator::~LayerAnimator() {
+  ClearAnimations();
 }
 
-void LayerAnimator::SetAnimation(Animation* animation) {
-  animation_.reset(animation);
-  if (animation_.get()) {
-    static ui::AnimationContainer* container = NULL;
-    if (!container) {
-      container = new AnimationContainer;
-      container->AddRef();
+// static
+LayerAnimator* LayerAnimator::CreateDefaultAnimator() {
+  return new LayerAnimator(base::TimeDelta::FromMilliseconds(0));
+}
+
+// static
+LayerAnimator* LayerAnimator::CreateImplicitAnimator() {
+  return new LayerAnimator(kDefaultTransitionDuration);
+}
+
+void LayerAnimator::SetTransform(const Transform& transform) {
+  if (transition_duration_ == base::TimeDelta())
+    delegate_->SetTransformFromAnimation(transform);
+  else
+    StartAnimation(new LayerAnimationSequence(
+        LayerAnimationElement::CreateTransformElement(transform,
+                                                      transition_duration_)));
+}
+
+void LayerAnimator::SetBounds(const gfx::Rect& bounds) {
+  if (transition_duration_ == base::TimeDelta())
+    delegate_->SetBoundsFromAnimation(bounds);
+  else
+    StartAnimation(new LayerAnimationSequence(
+        LayerAnimationElement::CreateBoundsElement(bounds,
+                                                   transition_duration_)));
+}
+
+void LayerAnimator::SetOpacity(float opacity) {
+  if (transition_duration_ == base::TimeDelta())
+    delegate_->SetOpacityFromAnimation(opacity);
+  else
+    StartAnimation(new LayerAnimationSequence(
+        LayerAnimationElement::CreateOpacityElement(opacity,
+                                                    transition_duration_)));
+}
+
+void LayerAnimator::SetDelegate(LayerAnimationDelegate* delegate) {
+  DCHECK(delegate);
+  delegate_ = delegate;
+}
+
+void LayerAnimator::StartAnimation(LayerAnimationSequence* animation) {
+  if (!StartSequenceImmediately(animation)) {
+    // Attempt to preempt a running animation.
+    switch (preemption_strategy_) {
+      case IMMEDIATELY_SET_NEW_TARGET:
+        ImmediatelySetNewTarget(animation);
+        break;
+      case IMMEDIATELY_ANIMATE_TO_NEW_TARGET:
+        ImmediatelyAnimateToNewTarget(animation);
+        break;
+      case ENQUEUE_NEW_ANIMATION:
+        EnqueueNewAnimation(animation);
+        break;
+      case REPLACE_QUEUED_ANIMATIONS:
+        ReplaceQueuedAnimations(animation);
+        break;
+      case BLEND_WITH_CURRENT_ANIMATION: {
+        // TODO(vollick) Add support for blended sequences and use them here.
+        NOTIMPLEMENTED();
+        break;
+      }
     }
-    animation_->set_delegate(this);
-    animation_->SetContainer(container);
-    got_initial_tick_ = false;
+  }
+  FinishAnyAnimationWithZeroDuration();
+}
+
+void LayerAnimator::ScheduleAnimation(LayerAnimationSequence* animation) {
+  if (is_animating()) {
+    animation_queue_.push_back(make_linked_ptr(animation));
+    ProcessQueue();
+  } else {
+    StartSequenceImmediately(animation);
   }
 }
 
-void LayerAnimator::AnimateToPoint(const gfx::Point& target) {
-  StopAnimating(LOCATION);
-  const gfx::Rect& layer_bounds = layer_->bounds();
-  if (target == layer_bounds.origin())
-    return;  // Already there.
+void LayerAnimator::ScheduleTogether(
+    const std::vector<LayerAnimationSequence*>& animations) {
+  // Collect all the affected properties.
+  LayerAnimationElement::AnimatableProperties animated_properties;
+  std::vector<LayerAnimationSequence*>::const_iterator iter;
+  for (iter = animations.begin(); iter != animations.end(); ++iter) {
+    animated_properties.insert((*iter)->properties().begin(),
+                               (*iter)->properties().end());
+  }
 
-  Params& element = elements_[LOCATION];
-  element.location.target_x = target.x();
-  element.location.target_y = target.y();
-  element.location.start_x = layer_bounds.origin().x();
-  element.location.start_y = layer_bounds.origin().y();
-}
+  // Scheduling a zero duration pause that affects all the animated properties
+  // will prevent any of the sequences from animating until there are no
+  // running animations that affect any of these properties.
+  ScheduleAnimation(
+      new LayerAnimationSequence(
+          LayerAnimationElement::CreatePauseElement(animated_properties,
+                                                    base::TimeDelta())));
 
-void LayerAnimator::AnimateTransform(const Transform& transform) {
-  StopAnimating(TRANSFORM);
-  const Transform& layer_transform = layer_->transform();
-  if (transform == layer_transform)
-    return;  // Already there.
-
-  Params& element = elements_[TRANSFORM];
-  for (int i = 0; i < 16; ++i) {
-    element.transform.start[i] =
-        GetMatrixElement(layer_transform.matrix(), i);
-    element.transform.target[i] =
-        GetMatrixElement(transform.matrix(), i);
+  // These animations (provided they don't animate any common properties) will
+  // now animate together if trivially scheduled.
+  for (iter = animations.begin(); iter != animations.end(); ++iter) {
+    ScheduleAnimation(*iter);
   }
 }
 
-void LayerAnimator::AnimateOpacity(float target_opacity) {
-  StopAnimating(OPACITY);
-  if (layer_->opacity() == target_opacity)
+void LayerAnimator::StopAnimatingProperty(
+    LayerAnimationElement::AnimatableProperty property) {
+  while (true) {
+    RunningAnimation* running = GetRunningAnimation(property);
+    if (!running)
+      break;
+    FinishAnimation(running->sequence);
+  }
+}
+
+void LayerAnimator::StopAnimating() {
+  while (is_animating())
+    FinishAnimation(running_animations_[0].sequence);
+}
+
+// LayerAnimator private -------------------------------------------------------
+
+void LayerAnimator::Step(base::TimeTicks now) {
+  TRACE_EVENT0("LayerAnimator", "Step");
+  last_step_time_ = now;
+  std::vector<LayerAnimationSequence*> to_finish;
+  for (RunningAnimations::iterator iter = running_animations_.begin();
+       iter != running_animations_.end(); ++iter) {
+    base::TimeDelta delta = now - (*iter).start_time;
+    if (delta >= (*iter).sequence->duration() &&
+        !(*iter).sequence->is_cyclic()) {
+      to_finish.push_back((*iter).sequence);
+    } else {
+      (*iter).sequence->Progress(delta, delegate());
+    }
+  }
+  for (std::vector<LayerAnimationSequence*>::iterator iter = to_finish.begin();
+       iter != to_finish.end(); ++iter) {
+    FinishAnimation(*iter);
+  }
+}
+
+void LayerAnimator::SetStartTime(base::TimeTicks start_time) {
+}
+
+base::TimeDelta LayerAnimator::GetTimerInterval() const {
+  return kTimerInterval;
+}
+
+void LayerAnimator::UpdateAnimationState() {
+  if (disable_timer_for_test_)
     return;
 
-  Params& element = elements_[OPACITY];
-  element.opacity.start = layer_->opacity();
-  element.opacity.target = target_opacity;
-}
-
-gfx::Point LayerAnimator::GetTargetPoint() {
-  return IsAnimating(LOCATION) ?
-      gfx::Point(elements_[LOCATION].location.target_x,
-                 elements_[LOCATION].location.target_y) :
-      layer_->bounds().origin();
-}
-
-float LayerAnimator::GetTargetOpacity() {
-  return IsAnimating(OPACITY) ?
-      elements_[OPACITY].opacity.target : layer_->opacity();
-}
-
-ui::Transform LayerAnimator::GetTargetTransform() {
-  if (IsAnimating(TRANSFORM)) {
-    Transform transform;
-    for (int i = 0; i < 16; ++i) {
-      SetMatrixElement(transform.matrix(), i,
-                       elements_[TRANSFORM].transform.target[i]);
-    }
-    return transform;
+  static ui::AnimationContainer* container = NULL;
+  if (!container) {
+    container = new AnimationContainer();
+    container->AddRef();
   }
-  return layer_->transform();
+
+  const bool should_start = is_animating();
+  if (should_start && !is_started_)
+    container->Start(this);
+  else if (!should_start && is_started_)
+    container->Stop(this);
+
+  is_started_ = should_start;
 }
 
-bool LayerAnimator::IsAnimating(AnimationProperty property) const {
-  return elements_.count(property) > 0;
-}
-
-bool LayerAnimator::IsRunning() const {
-  return animation_.get() && animation_->is_animating();
-}
-
-void LayerAnimator::AnimationProgressed(const ui::Animation* animation) {
-  got_initial_tick_ = true;
-  for (Elements::const_iterator i = elements_.begin(); i != elements_.end();
-       ++i) {
-    switch (i->first) {
-      case LOCATION: {
-        const gfx::Rect& current_bounds(layer_->bounds());
-        gfx::Rect new_bounds = animation_->CurrentValueBetween(
-            gfx::Rect(gfx::Point(i->second.location.start_x,
-                                 i->second.location.start_y),
-                      current_bounds.size()),
-            gfx::Rect(gfx::Point(i->second.location.target_x,
-                                 i->second.location.target_y),
-                      current_bounds.size()));
-        delegate()->SetBoundsFromAnimator(new_bounds);
-        break;
-      }
-
-      case TRANSFORM: {
-        Transform transform;
-        for (int j = 0; j < 16; ++j) {
-          SkMScalar value = animation_->CurrentValueBetween(
-              i->second.transform.start[j],
-              i->second.transform.target[j]);
-          SetMatrixElement(transform.matrix(), j, value);
-        }
-        delegate()->SetTransformFromAnimator(transform);
-        break;
-      }
-
-      case OPACITY: {
-        delegate()->SetOpacityFromAnimator(animation_->CurrentValueBetween(
-            i->second.opacity.start, i->second.opacity.target));
-        break;
-      }
-
-      default:
-        NOTREACHED();
+void LayerAnimator::RemoveAnimation(LayerAnimationSequence* sequence) {
+    // First remove from running animations
+  for (RunningAnimations::iterator iter = running_animations_.begin();
+       iter != running_animations_.end(); ++iter) {
+    if ((*iter).sequence == sequence) {
+      running_animations_.erase(iter);
+      break;
     }
   }
-  layer_->ScheduleDraw();
+
+  // Then remove from the queue
+  for (AnimationQueue::iterator queue_iter = animation_queue_.begin();
+       queue_iter != animation_queue_.end(); ++queue_iter) {
+    if ((*queue_iter) == sequence) {
+      animation_queue_.erase(queue_iter);
+      break;
+    }
+  }
 }
 
-void LayerAnimator::AnimationEnded(const ui::Animation* animation) {
-  AnimationProgressed(animation);
-  if (layer_->delegate())
-    layer_->delegate()->OnLayerAnimationEnded(animation);
+void LayerAnimator::FinishAnimation(LayerAnimationSequence* sequence) {
+  sequence->Progress(sequence->duration(), delegate());
+  RemoveAnimation(sequence);
+  ProcessQueue();
+  UpdateAnimationState();
 }
 
-void LayerAnimator::StopAnimating(AnimationProperty property) {
-  if (!IsAnimating(property))
-    return;
-
-  elements_.erase(property);
+void LayerAnimator::FinishAnyAnimationWithZeroDuration() {
+  // Special case: if we've started a 0 duration animation, just finish it now
+  // and get rid of it. Note at each iteration of the loop, we either increment
+  // i or remove an element from running_animations_, so
+  // running_animations_.size() - i is always decreasing and we are always
+  // progressing towards the termination of the loop.
+  for (size_t i = 0; i < running_animations_.size();) {
+    if (running_animations_[i].sequence->duration() == base::TimeDelta()) {
+      running_animations_[i].sequence->Progress(
+          running_animations_[i].sequence->duration(), delegate());
+      RemoveAnimation(running_animations_[i].sequence);
+    } else {
+      ++i;
+    }
+  }
+  ProcessQueue();
+  UpdateAnimationState();
 }
 
-LayerAnimatorDelegate* LayerAnimator::delegate() {
-  return static_cast<LayerAnimatorDelegate*>(layer_);
+void LayerAnimator::ClearAnimations() {
+  for (RunningAnimations::iterator iter = running_animations_.begin();
+       iter != running_animations_.end(); ++iter) {
+    (*iter).sequence->Abort();
+  }
+  running_animations_.clear();
+  animation_queue_.clear();
+  UpdateAnimationState();
+}
+
+LayerAnimator::RunningAnimation* LayerAnimator::GetRunningAnimation(
+    LayerAnimationElement::AnimatableProperty property) {
+  for (RunningAnimations::iterator iter = running_animations_.begin();
+       iter != running_animations_.end(); ++iter) {
+    if ((*iter).sequence->properties().find(property) !=
+        (*iter).sequence->properties().end())
+      return &(*iter);
+  }
+  return NULL;
+}
+
+void LayerAnimator::AddToQueueIfNotPresent(LayerAnimationSequence* animation) {
+  // If we don't have the animation in the queue yet, add it.
+  bool found_sequence = false;
+  for (AnimationQueue::iterator queue_iter = animation_queue_.begin();
+       queue_iter != animation_queue_.end(); ++queue_iter) {
+    if ((*queue_iter) == animation) {
+      found_sequence = true;
+      break;
+    }
+  }
+
+  if (!found_sequence)
+    animation_queue_.push_front(make_linked_ptr(animation));
+}
+
+void LayerAnimator::RemoveAllAnimationsWithACommonProperty(
+    LayerAnimationSequence* sequence,
+    bool abort) {
+  // For all the running animations, if they animate the same property,
+  // progress them to the end and remove them. Note: at each iteration i is
+  // incremented or an element is removed from the queue, so
+  // animation_queue_.size() - i is always decreasing and we are always making
+  // progress towards the loop terminating.
+  for (size_t i = 0; i < running_animations_.size();) {
+    if (running_animations_[i].sequence->HasCommonProperty(
+            sequence->properties())) {
+      // Finish the animation.
+      if (abort)
+        running_animations_[i].sequence->Abort();
+      else
+        running_animations_[i].sequence->Progress(
+            running_animations_[i].sequence->duration(), delegate());
+      RemoveAnimation(running_animations_[i].sequence);
+    } else {
+      ++i;
+    }
+  }
+
+  // Same for the queued animations. See comment above about loop termination.
+  for (size_t i = 0; i < animation_queue_.size();) {
+    if (animation_queue_[i]->HasCommonProperty(sequence->properties())) {
+      // Finish the animation.
+      if (abort)
+        animation_queue_[i]->Abort();
+      else
+        animation_queue_[i]->Progress(animation_queue_[i]->duration(),
+                                      delegate());
+      RemoveAnimation(animation_queue_[i].get());
+    } else {
+      ++i;
+    }
+  }
+}
+
+void LayerAnimator::ImmediatelySetNewTarget(LayerAnimationSequence* sequence) {
+  const bool abort = false;
+  RemoveAllAnimationsWithACommonProperty(sequence, abort);
+  sequence->Progress(sequence->duration(), delegate());
+  RemoveAnimation(sequence);
+}
+
+void LayerAnimator::ImmediatelyAnimateToNewTarget(
+    LayerAnimationSequence* sequence) {
+  const bool abort = true;
+  RemoveAllAnimationsWithACommonProperty(sequence, abort);
+  AddToQueueIfNotPresent(sequence);
+  StartSequenceImmediately(sequence);
+}
+
+void LayerAnimator::EnqueueNewAnimation(LayerAnimationSequence* sequence) {
+  // It is assumed that if there was no conflicting animation, we would
+  // not have been called. No need to check for a collision; just
+  // add to the queue.
+  animation_queue_.push_back(make_linked_ptr(sequence));
+  ProcessQueue();
+}
+
+void LayerAnimator::ReplaceQueuedAnimations(LayerAnimationSequence* sequence) {
+  // Remove all animations that aren't running. Note: at each iteration i is
+  // incremented or an element is removed from the queue, so
+  // animation_queue_.size() - i is always decreasing and we are always making
+  // progress towards the loop terminating.
+  for (size_t i = 0; i < animation_queue_.size();) {
+    bool is_running = false;
+    for (RunningAnimations::const_iterator iter = running_animations_.begin();
+         iter != running_animations_.end(); ++iter) {
+      if ((*iter).sequence == animation_queue_[i]) {
+        is_running = true;
+        break;
+      }
+    }
+    if (!is_running)
+      RemoveAnimation(animation_queue_[i].get());
+    else
+      ++i;
+  }
+  animation_queue_.push_back(make_linked_ptr(sequence));
+  ProcessQueue();
+}
+
+void LayerAnimator::ProcessQueue() {
+  bool started_sequence = false;
+  do {
+    started_sequence = false;
+
+    // Build a list of all currently animated properties.
+    LayerAnimationElement::AnimatableProperties animated;
+
+    for (RunningAnimations::const_iterator iter = running_animations_.begin();
+         iter != running_animations_.end(); ++iter) {
+      animated.insert((*iter).sequence->properties().begin(),
+                      (*iter).sequence->properties().end());
+    }
+
+    // Try to find an animation that doesn't conflict with an animated
+    // property or a property that will be animated before it.
+    for (AnimationQueue::iterator queue_iter = animation_queue_.begin();
+         queue_iter != animation_queue_.end(); ++queue_iter) {
+      if (!(*queue_iter)->HasCommonProperty(animated)) {
+        StartSequenceImmediately((*queue_iter).get());
+        started_sequence = true;
+        break;
+      }
+
+      // Animation couldn't be started. Add its properties to the collection so
+      // that we don't start a conflicting animation. For example, if our queue
+      // has the elements { {T,B}, {B} } (that is, an element that animates both
+      // the transform and the bounds followed by an element that animates the
+      // bounds), and we're currently animating the transform, we can't start
+      // the first element because it animates the transform, too. We cannot
+      // start the second element, either, because the first element animates
+      // bounds too, and needs to go first.
+      animated.insert((*queue_iter)->properties().begin(),
+                      (*queue_iter)->properties().end());
+    }
+
+    // If we started a sequence, try again. We may be able to start several.
+  } while (started_sequence);
+}
+
+bool LayerAnimator::StartSequenceImmediately(LayerAnimationSequence* sequence) {
+  // Ensure that no one is animating one of the sequence's properties already.
+  for (RunningAnimations::const_iterator iter = running_animations_.begin();
+       iter != running_animations_.end(); ++iter) {
+    if ((*iter).sequence->HasCommonProperty(sequence->properties()))
+      return false;
+  }
+
+  // All clear, actually start the sequence. Note: base::TimeTicks::Now has
+  // a resolution that can be as bad as 15ms. If this causes glitches in the
+  // animations, this can be switched to HighResNow() (animation uses Now()
+  // internally).
+  base::TimeTicks start_time = is_animating()
+      ? last_step_time_
+      : base::TimeTicks::Now();
+
+  running_animations_.push_back(RunningAnimation(sequence, start_time));
+
+  // Need to keep a reference to the animation.
+  AddToQueueIfNotPresent(sequence);
+
+  // Ensure that animations get stepped at their start time.
+  Step(start_time);
+
+  return true;
 }
 
 }  // namespace ui

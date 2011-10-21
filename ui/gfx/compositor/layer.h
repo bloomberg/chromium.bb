@@ -15,7 +15,7 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/transform.h"
 #include "ui/gfx/compositor/compositor.h"
-#include "ui/gfx/compositor/layer_animator.h"
+#include "ui/gfx/compositor/layer_animation_manager.h"
 #include "ui/gfx/compositor/layer_animator_delegate.h"
 #include "ui/gfx/compositor/layer_delegate.h"
 
@@ -227,7 +227,8 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimatorDelegate {
   // If the animation is running and has progressed, it is stopped and all
   // properties that are animated (except |property|) are immediately set to
   // their target value.
-  void StopAnimatingIfNecessary(LayerAnimator::AnimationProperty property);
+  void StopAnimatingIfNecessary(
+      LayerAnimationManager::AnimationProperty property);
 
   // Following are invoked from the animation or if no animation exists to
   // update the values immediately.
@@ -270,7 +271,7 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimatorDelegate {
 
   LayerDelegate* delegate_;
 
-  scoped_ptr<LayerAnimator> animator_;
+  scoped_ptr<LayerAnimationManager> animator_;
 
   DISALLOW_COPY_AND_ASSIGN(Layer);
 };
