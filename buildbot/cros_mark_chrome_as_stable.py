@@ -91,9 +91,7 @@ def _GetSpecificVersionUrl(base_url, revision, time_to_wait=600):
      time_to_wait: the minimum period before abandoning our wait for the
          desired revision to be present.
   """
-
   svn_url = os.path.join(_GetSvnUrl(base_url), 'src', 'chrome', 'VERSION')
-
   if not revision or not (int(revision) > 0):
     raise Exception('Revision must be positive, got %s' % revision)
 
@@ -458,7 +456,7 @@ def MarkChromeEBuildAsStable(stable_candidate, unstable_ebuild, chrome_rev,
 
 
 def main():
-  usage_options =  '|'.join(constants.VALID_CHROME_REVISIONS)
+  usage_options = '|'.join(constants.VALID_CHROME_REVISIONS)
   usage = '%s OPTIONS [%s]' % (__file__, usage_options)
   parser = optparse.OptionParser(usage)
   parser.add_option('-b', '--board', default='x86-generic')
@@ -496,7 +494,9 @@ def main():
     commit_to_use = 'Unknown'
     Info('Using local source, versioning is untrustworthy.')
   elif chrome_rev == constants.CHROME_REV_SPEC:
+    # TODO(sosa): Buildbot may pass url@revision, check and fix commit.
     commit_to_use = options.force_revision
+    if '@' in commit_to_use: commit_to_use = commit_to_use.rpartition('@')[2]
     version_to_uprev = _GetSpecificVersionUrl(options.chrome_url,
                                               commit_to_use)
   elif chrome_rev == constants.CHROME_REV_TOT:
