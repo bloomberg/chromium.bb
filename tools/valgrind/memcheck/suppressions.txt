@@ -4073,6 +4073,16 @@
    fun:_ZN11TestCharSet18TestCharSetToUTF16Ev
 }
 {
+   bug_90644_d
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN5ppapi12_GLOBAL__N_18MemAllocEj
+   fun:_ZN5ppapi11CharSetImpl14CharSetToUTF16EPKcjS2_26PP_CharSet_ConversionErrorPj
+   fun:_ZN5ppapi5thunk12_GLOBAL__N_114CharSetToUTF16EiPKcjS3_26PP_CharSet_ConversionErrorPj
+   fun:_ZN11TestCharSet18TestCharSetToUTF16Ev
+   fun:_ZN11TestCharSet7RunTestEv
+}
+{
    bug_90671
    Memcheck:Leak
    fun:_Znw*
@@ -4904,6 +4914,18 @@
    fun:_ZN7WebCore22ResourceHandleInternal5startEv
    fun:_ZN7WebCore14ResourceHandle5startEPNS_17NetworkingContextE
 }
+{
+   bug_101151
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7WebCore23v8StringToWebCoreStringIN3WTF6StringEEET_N2v86HandleINS4_6StringEEENS_12ExternalModeE
+   fun:_ZN7WebCore15V8ParameterBase8toStringIN3WTF6StringEEET_v
+   fun:_ZN7WebCore15V8ParameterBasecvN3WTF6StringEEv
+   ...
+   fun:_ZN2v88internalL19HandleApiCallHelperILb0EEEPNS0_11MaybeObjectENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
+   obj:*
+}
+
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
