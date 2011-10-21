@@ -248,7 +248,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, PopupStaysClosed) {
 // Tests that we get suggestions from and send input to the incognito context
 // of an incognito split mode extension.
 // http://crbug.com/100927
-IN_PROC_BROWSER_TEST_F(OmniboxApiTest, IncognitoSplitMode) {
+// Test flaky on linux: http://crbug.com/101219
+IN_PROC_BROWSER_TEST_F(OmniboxApiTest, DISABLED_IncognitoSplitMode) {
 #if defined(TOOLKIT_GTK)
   // Disable the timer because, on Lucid at least, it triggers resize/move
   // behavior in the browser window, which dismisses the autocomplete popup
