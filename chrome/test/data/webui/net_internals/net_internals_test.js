@@ -109,7 +109,7 @@ var netInternalsTest = (function() {
       this.testStarted_ = false;
     }
 
-    ConstantsObserver.prototype.onConstantsReceived = function() {
+    ConstantsObserver.prototype.onReceivedConstants = function() {
       if (!this.testStarted_) {
         this.testStarted_ = true;
         startNetInternalsTest(testFunction, testFunction, testArguments);
