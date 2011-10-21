@@ -41,7 +41,7 @@ void GLES2DecoderTestBase::SpecializedSetup<GenerateMipmap, 0>(
       0, 0);
   if (valid) {
     EXPECT_CALL(*gl_, TexParameteri(
-        GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR))
+        GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST))
         .Times(1)
         .RetiresOnSaturation();
     EXPECT_CALL(*gl_, TexParameteri(
