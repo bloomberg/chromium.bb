@@ -554,6 +554,7 @@ FileManager.prototype = {
     // Cache nodes we'll be manipulating.
     this.previewThumbnails_ =
         this.dialogDom_.querySelector('.preview-thumbnails');
+    this.previewPanel_ = this.dialogDom_.querySelector('.preview-panel');
     this.previewFilename_ = this.dialogDom_.querySelector('.preview-filename');
     this.previewSummary_ = this.dialogDom_.querySelector('.preview-summary');
     this.previewMetadata_ = this.dialogDom_.querySelector('.preview-metadata');
@@ -1689,6 +1690,7 @@ FileManager.prototype = {
 
     if (!selection.indexes.length) {
       this.updateCommonActionButtons_();
+      this.updatePreviewPanelVisibility_();
       cr.dispatchSimpleEvent(this, 'selection-summarized');
       return;
     }
@@ -1743,6 +1745,7 @@ FileManager.prototype = {
 
     // Now this.selection is complete. Update buttons.
     this.updateCommonActionButtons_();
+    this.updatePreviewPanelVisibility_();
 
     var self = this;
 
@@ -1777,6 +1780,36 @@ FileManager.prototype = {
     }
 
     cacheNextFile();
+  };
+
+  FileManager.prototype.updatePreviewPanelVisibility_ = function() {
+    var wasHidden = this.previewPanel_.hasAttribute('hidden');
+    var hide = (this.selection.totalCount == 0);
+
+    if (hide == wasHidden)
+      return;
+
+    if (this.hidingTimeout_) {
+      // Hiding is not complete. display == block.
+      clearTimeout(this.hidingTimeout_);
+      this.hidingTimeout_ = 0;
+    } else if (wasHidden) {
+      // Hiding complete. display == none.
+      this.previewPanel_.style.display = '';
+      this.onResize_();
+    }
+
+    var self = this;
+    if (hide) {
+      this.previewPanel_.setAttribute('hidden', '');
+      this.hidingTimeout_ = setTimeout(function() {
+          self.hidingTimeout_ = 0;
+          self.previewPanel_.style.display = 'none';
+          self.onResize_();
+        }, 250);
+    } else {
+      this.previewPanel_.removeAttribute('hidden');
+    }
   };
 
 
