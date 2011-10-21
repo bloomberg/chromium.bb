@@ -29,11 +29,11 @@ ExtensionSettingsStorage::Result InMemoryExtensionSettingsStorage::Get(
       settings->SetWithoutPathExpansion(*it, value->DeepCopy());
     }
   }
-  return Result(settings, NULL);
+  return Result(settings, NULL, NULL);
 }
 
 ExtensionSettingsStorage::Result InMemoryExtensionSettingsStorage::Get() {
-  return Result(storage_.DeepCopy(), NULL);
+  return Result(storage_.DeepCopy(), NULL, NULL);
 }
 
 ExtensionSettingsStorage::Result InMemoryExtensionSettingsStorage::Set(
@@ -45,11 +45,14 @@ ExtensionSettingsStorage::Result InMemoryExtensionSettingsStorage::Set(
 
 ExtensionSettingsStorage::Result InMemoryExtensionSettingsStorage::Set(
     const DictionaryValue& settings) {
+  DictionaryValue* old_settings = new DictionaryValue();
   std::set<std::string>* changed_keys = new std::set<std::string>();
   for (DictionaryValue::key_iterator it = settings.begin_keys();
       it != settings.end_keys(); ++it) {
     Value* old_value = NULL;
-    storage_.GetWithoutPathExpansion(*it, &old_value);
+    if (storage_.GetWithoutPathExpansion(*it, &old_value)) {
+      old_settings->SetWithoutPathExpansion(*it, old_value->DeepCopy());
+    }
     Value* new_value = NULL;
     settings.GetWithoutPathExpansion(*it, &new_value);
     if (old_value == NULL || !old_value->Equals(new_value)) {
@@ -57,7 +60,7 @@ ExtensionSettingsStorage::Result InMemoryExtensionSettingsStorage::Set(
       storage_.SetWithoutPathExpansion(*it, new_value->DeepCopy());
     }
   }
-  return Result(settings.DeepCopy(), changed_keys);
+  return Result(settings.DeepCopy(), old_settings, changed_keys);
 }
 
 ExtensionSettingsStorage::Result InMemoryExtensionSettingsStorage::Remove(
@@ -67,14 +70,17 @@ ExtensionSettingsStorage::Result InMemoryExtensionSettingsStorage::Remove(
 
 ExtensionSettingsStorage::Result InMemoryExtensionSettingsStorage::Remove(
     const std::vector<std::string>& keys) {
+  DictionaryValue* old_settings = new DictionaryValue();
   std::set<std::string>* changed_keys = new std::set<std::string>();
   for (std::vector<std::string>::const_iterator it = keys.begin();
       it != keys.end(); ++it) {
-    if (storage_.RemoveWithoutPathExpansion(*it, NULL)) {
+    Value* old_value = NULL;
+    if (storage_.RemoveWithoutPathExpansion(*it, &old_value)) {
+      old_settings->SetWithoutPathExpansion(*it, old_value);
       changed_keys->insert(*it);
     }
   }
-  return Result(NULL, changed_keys);
+  return Result(NULL, old_settings, changed_keys);
 }
 
 ExtensionSettingsStorage::Result InMemoryExtensionSettingsStorage::Clear() {
@@ -83,6 +89,7 @@ ExtensionSettingsStorage::Result InMemoryExtensionSettingsStorage::Clear() {
       it != storage_.end_keys(); ++it) {
     changed_keys->insert(*it);
   }
-  storage_.Clear();
-  return Result(NULL, changed_keys);
+  DictionaryValue* old_settings = new DictionaryValue();
+  storage_.Swap(old_settings);
+  return Result(NULL, old_settings, changed_keys);
 }

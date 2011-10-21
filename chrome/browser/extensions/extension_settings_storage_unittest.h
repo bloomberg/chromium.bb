@@ -8,12 +8,15 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+#include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
 #include "base/task.h"
 #include "chrome/browser/extensions/extension_settings_backend.h"
+#include "chrome/browser/extensions/extension_settings_frontend.h"
+#include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
 
 // Parameter type for the value-parameterized tests.
@@ -61,6 +64,7 @@ class ExtensionSettingsStorageTest
 
   scoped_ptr<DictionaryValue> empty_dict_;
   scoped_ptr<DictionaryValue> dict1_;
+  scoped_ptr<DictionaryValue> dict3_;
   scoped_ptr<DictionaryValue> dict12_;
   scoped_ptr<DictionaryValue> dict123_;
 

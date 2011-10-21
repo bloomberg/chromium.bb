@@ -45,6 +45,9 @@ extern const char kOnDownloadCreated[];
 extern const char kOnDownloadChanged[];
 extern const char kOnDownloadErased[];
 
+// Settings.
+extern const char kOnSettingsChanged[];
+
 };  // namespace extension_event_names
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_EVENT_NAMES_H_

@@ -90,7 +90,8 @@ ExtensionSettingsStorageQuotaEnforcer::ExtensionSettingsStorageQuotaEnforcer(
     return;
   }
 
-  DictionaryValue* initial_settings = maybe_initial_settings.GetSettings();
+  const DictionaryValue* initial_settings =
+      maybe_initial_settings.GetSettings();
   for (DictionaryValue::key_iterator it = initial_settings->begin_keys();
       it != initial_settings->end_keys(); ++it) {
     Value *value;

@@ -10,7 +10,9 @@
 #include "base/file_path.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
+#include "base/observer_list_threadsafe.h"
 #include "base/task.h"
+#include "chrome/browser/extensions/extension_settings_observer.h"
 #include "chrome/browser/extensions/syncable_extension_settings_storage.h"
 #include "chrome/browser/sync/api/syncable_service.h"
 
@@ -19,9 +21,13 @@
 // Lives entirely on the FILE thread.
 class ExtensionSettingsBackend : public SyncableService {
  public:
-  // File path is the base of the extension settings directory.
-  // The databases will be at base_path/extension_id.
-  explicit ExtensionSettingsBackend(const FilePath& base_path);
+  // |base_path| is the base of the extension settings directory, so the
+  // databases will be at base_path/extension_id.
+  // |observers| is the list of observers to settings changes.
+  explicit ExtensionSettingsBackend(
+      const FilePath& base_path,
+      const scoped_refptr<ObserverListThreadSafe<ExtensionSettingsObserver> >&
+          observers);
 
   virtual ~ExtensionSettingsBackend();
 
@@ -36,6 +42,13 @@ class ExtensionSettingsBackend : public SyncableService {
 
   // Deletes all setting data for an extension.  Call on the FILE thread.
   void DeleteExtensionData(const std::string& extension_id);
+
+  // Sends a change event to the observer list.  |profile| is the profile which
+  // generated the change.  Must be called on the FILE thread.
+  void TriggerOnSettingsChanged(
+      Profile* profile,
+      const std::string& extension_id,
+      const ExtensionSettingChanges& changes) const;
 
   // SyncableService implementation.
   virtual SyncDataList GetAllSyncData(syncable::ModelType type) const OVERRIDE;
@@ -63,6 +76,10 @@ class ExtensionSettingsBackend : public SyncableService {
 
   // The base file path to create any leveldb databases at.
   const FilePath base_path_;
+
+  // The list of observers to settings changes.
+  const scoped_refptr<ObserverListThreadSafe<ExtensionSettingsObserver> >
+      observers_;
 
   // A cache of ExtensionSettingsStorage objects that have already been created.
   // Ensure that there is only ever one created per extension.
