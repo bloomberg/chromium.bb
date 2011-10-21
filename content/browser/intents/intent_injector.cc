@@ -24,13 +24,17 @@ IntentInjector::~IntentInjector() {
 }
 
 void IntentInjector::TabContentsDestroyed(TabContents* tab) {
-  if (source_tab_.get()) {
+  if (source_tab_.get() != NULL) {
     source_tab_->Send(new IntentsMsg_WebIntentReply(
         0, webkit_glue::WEB_INTENT_SERVICE_TAB_CLOSED, string16(), intent_id_));
     source_tab_.reset(NULL);
   }
 
   delete this;
+}
+
+void IntentInjector::SourceTabContentsDestroyed(TabContents* tab) {
+  source_tab_.reset(NULL);
 }
 
 void IntentInjector::SetIntent(IPC::Message::Sender* source_tab,
@@ -91,9 +95,7 @@ void IntentInjector::OnReply(const IPC::Message& message,
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableWebIntents))
     NOTREACHED();
 
-  // TODO(gbillock): We need to observe source_tab_ and make
-  // sure it hasn't been closed or something...
-  if (source_tab_.get()) {
+  if (source_tab_.get() != NULL) {
     source_tab_->Send(new IntentsMsg_WebIntentReply(
         0, reply_type, data, intent_id));
     source_tab_.reset(NULL);

@@ -41,6 +41,9 @@ class CONTENT_EXPORT IntentInjector : public TabContentsObserver {
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void TabContentsDestroyed(TabContents* tab) OVERRIDE;
 
+  // Used to notify the object that the source tab has been destroyed.
+  virtual void SourceTabContentsDestroyed(TabContents* tab);
+
   // Sets the intent data to be injected. Call after the user has selected a
   // service to pass the intent data to that service.
   // |source_tab| is a sender to use to communicate to the source tab. Takes
@@ -65,7 +68,7 @@ class CONTENT_EXPORT IntentInjector : public TabContentsObserver {
   // Source intent data provided by caller.
   scoped_ptr<webkit_glue::WebIntentData> source_intent_;
 
-  // The tab invoking the intent.
+  // Message forwarder to the tab invoking the intent.
   scoped_ptr<IPC::Message::Sender> source_tab_;
 
   // Unique ID assigned to the intent by the source tab.

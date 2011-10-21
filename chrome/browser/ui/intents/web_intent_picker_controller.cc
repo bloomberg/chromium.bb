@@ -160,16 +160,29 @@ void WebIntentPickerController::Observe(
 }
 
 // Used to forward messages to the source tab from the service context.
-// TODO(gbillock): Add an observer here to make sure the source tab isn't
-// closed when we try to send to it?
-class InvokingTabReplyForwarder : public IPC::Message::Sender {
+// Also watches the source tab contents, and if it closes, doesn't forward
+// messages.
+class InvokingTabObserver : public TabContentsObserver {
  public:
-  InvokingTabReplyForwarder(TabContentsWrapper* wrapper, int routing_id)
-      : wrapper_(wrapper),
+  InvokingTabObserver(TabContentsWrapper* wrapper,
+                      IntentInjector* injector,
+                      int routing_id)
+      : TabContentsObserver(wrapper->tab_contents()),
+        wrapper_(wrapper),
+        intent_injector_(injector),
         routing_id_(routing_id) {}
-  virtual ~InvokingTabReplyForwarder() {}
+  virtual ~InvokingTabObserver() {}
+
+  virtual void TabContentsDestroyed(TabContents* tab) OVERRIDE {
+    if (intent_injector_)
+      intent_injector_->SourceTabContentsDestroyed(tab);
+  }
 
   virtual bool Send(IPC::Message* message) OVERRIDE {
+    // The injector can return exactly one message. After that we don't talk
+    // to it again, since it may have deleted itself.
+    intent_injector_ = NULL;
+
     message->set_routing_id(routing_id_);
     return wrapper_->Send(message);
   }
@@ -177,6 +190,10 @@ class InvokingTabReplyForwarder : public IPC::Message::Sender {
  private:
   // Weak pointer to the source tab invoking the intent.
   TabContentsWrapper* wrapper_;
+
+  // Weak pointer to the intent injector managing delivering the intent data to
+  // the service tab.
+  IntentInjector* intent_injector_;
 
   // Renderer-side object invoking the intent.
   int routing_id_;
@@ -197,7 +214,7 @@ void WebIntentPickerController::OnServiceChosen(size_t index) {
 
   IntentInjector* injector = new IntentInjector(
       params.target_contents->tab_contents());
-  injector->SetIntent(new InvokingTabReplyForwarder(wrapper_, routing_id_),
+  injector->SetIntent(new InvokingTabObserver(wrapper_, injector, routing_id_),
                       intent_,
                       intent_id_);
 
@@ -205,7 +222,7 @@ void WebIntentPickerController::OnServiceChosen(size_t index) {
 }
 
 void WebIntentPickerController::OnCancelled() {
-  InvokingTabReplyForwarder forwarder(wrapper_, routing_id_);
+  InvokingTabObserver forwarder(wrapper_, NULL, routing_id_);
   forwarder.Send(new IntentsMsg_WebIntentReply(
       0, webkit_glue::WEB_INTENT_PICKER_CANCELLED, string16(), intent_id_));
   ClosePicker();
