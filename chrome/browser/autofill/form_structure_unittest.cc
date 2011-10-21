@@ -1371,7 +1371,8 @@ TEST(FormStructureTest, EncodeQueryRequest) {
       "<field signature=\"1917667676\"/><field signature=\"2226358947\"/>"
       "<field signature=\"747221617\"/><field signature=\"4108155786\"/></form>"
       "</autofillquery>";
-  ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms, &encoded_signatures,
+  ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms.get(),
+                                                &encoded_signatures,
                                                 &encoded_xml));
   ASSERT_EQ(1U, encoded_signatures.size());
   EXPECT_EQ(kSignature1, encoded_signatures[0]);
@@ -1380,7 +1381,8 @@ TEST(FormStructureTest, EncodeQueryRequest) {
   // Add the same form, only one will be encoded, so EncodeQueryRequest() should
   // return the same data.
   forms.push_back(new FormStructure(form));
-  ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms, &encoded_signatures,
+  ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms.get(),
+                                                &encoded_signatures,
                                                 &encoded_xml));
   ASSERT_EQ(1U, encoded_signatures.size());
   EXPECT_EQ(kSignature1, encoded_signatures[0]);
@@ -1393,7 +1395,8 @@ TEST(FormStructureTest, EncodeQueryRequest) {
   }
 
   forms.push_back(new FormStructure(form));
-  ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms, &encoded_signatures,
+  ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms.get(),
+                                                &encoded_signatures,
                                                 &encoded_xml));
   ASSERT_EQ(2U, encoded_signatures.size());
   EXPECT_EQ(kSignature1, encoded_signatures[0]);
@@ -1422,7 +1425,8 @@ TEST(FormStructureTest, EncodeQueryRequest) {
   }
 
   forms.push_back(new FormStructure(form));
-  ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms, &encoded_signatures,
+  ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms.get(),
+                                                &encoded_signatures,
                                                 &encoded_xml));
   ASSERT_EQ(2U, encoded_signatures.size());
   EXPECT_EQ(kSignature1, encoded_signatures[0]);
@@ -1432,7 +1436,8 @@ TEST(FormStructureTest, EncodeQueryRequest) {
   // Check that we fail if there are only bad form(s).
   ScopedVector<FormStructure> bad_forms;
   bad_forms.push_back(new FormStructure(form));
-  EXPECT_FALSE(FormStructure::EncodeQueryRequest(bad_forms, &encoded_signatures,
+  EXPECT_FALSE(FormStructure::EncodeQueryRequest(bad_forms.get(),
+                                                 &encoded_signatures,
                                                  &encoded_xml));
   EXPECT_EQ(0U, encoded_signatures.size());
   EXPECT_EQ("", encoded_xml);

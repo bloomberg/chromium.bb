@@ -216,7 +216,7 @@ TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
   MockAutofillMetrics mock_metric_logger;
   EXPECT_CALL(mock_metric_logger,
               LogServerQueryMetric(AutofillMetrics::QUERY_SENT)).Times(1);
-  EXPECT_TRUE(download_manager_.StartQueryRequest(form_structures,
+  EXPECT_TRUE(download_manager_.StartQueryRequest(form_structures.get(),
                                                   mock_metric_logger));
   // Set upload to 100% so requests happen.
   download_manager_.SetPositiveUploadRate(1.0);
@@ -308,7 +308,7 @@ TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
   // Request with id 3.
   EXPECT_CALL(mock_metric_logger,
               LogServerQueryMetric(AutofillMetrics::QUERY_SENT)).Times(1);
-  EXPECT_TRUE(download_manager_.StartQueryRequest(form_structures,
+  EXPECT_TRUE(download_manager_.StartQueryRequest(form_structures.get(),
                                                   mock_metric_logger));
   fetcher = factory.GetFetcherByID(3);
   ASSERT_TRUE(fetcher);
@@ -326,7 +326,7 @@ TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
   // Query requests should be ignored for the next 10 seconds.
   EXPECT_CALL(mock_metric_logger,
               LogServerQueryMetric(AutofillMetrics::QUERY_SENT)).Times(0);
-  EXPECT_FALSE(download_manager_.StartQueryRequest(form_structures,
+  EXPECT_FALSE(download_manager_.StartQueryRequest(form_structures.get(),
                                                    mock_metric_logger));
   fetcher = factory.GetFetcherByID(4);
   EXPECT_EQ(NULL, fetcher);
@@ -425,7 +425,7 @@ TEST_F(AutofillDownloadTest, CacheQueryTest) {
   MockAutofillMetrics mock_metric_logger;
   EXPECT_CALL(mock_metric_logger,
               LogServerQueryMetric(AutofillMetrics::QUERY_SENT)).Times(1);
-  EXPECT_TRUE(download_manager_.StartQueryRequest(form_structures0,
+  EXPECT_TRUE(download_manager_.StartQueryRequest(form_structures0.get(),
                                                   mock_metric_logger));
   // No responses yet
   EXPECT_EQ(static_cast<size_t>(0), responses_.size());
@@ -441,7 +441,7 @@ TEST_F(AutofillDownloadTest, CacheQueryTest) {
   // No actual request - should be a cache hit.
   EXPECT_CALL(mock_metric_logger,
               LogServerQueryMetric(AutofillMetrics::QUERY_SENT)).Times(1);
-  EXPECT_TRUE(download_manager_.StartQueryRequest(form_structures0,
+  EXPECT_TRUE(download_manager_.StartQueryRequest(form_structures0.get(),
                                                   mock_metric_logger));
   // Data is available immediately from cache - no over-the-wire trip.
   ASSERT_EQ(static_cast<size_t>(1), responses_.size());
@@ -451,7 +451,7 @@ TEST_F(AutofillDownloadTest, CacheQueryTest) {
   // Request with id 1.
   EXPECT_CALL(mock_metric_logger,
               LogServerQueryMetric(AutofillMetrics::QUERY_SENT)).Times(1);
-  EXPECT_TRUE(download_manager_.StartQueryRequest(form_structures1,
+  EXPECT_TRUE(download_manager_.StartQueryRequest(form_structures1.get(),
                                                   mock_metric_logger));
   // No responses yet
   EXPECT_EQ(static_cast<size_t>(0), responses_.size());
@@ -467,7 +467,7 @@ TEST_F(AutofillDownloadTest, CacheQueryTest) {
   // Request with id 2.
   EXPECT_CALL(mock_metric_logger,
               LogServerQueryMetric(AutofillMetrics::QUERY_SENT)).Times(1);
-  EXPECT_TRUE(download_manager_.StartQueryRequest(form_structures2,
+  EXPECT_TRUE(download_manager_.StartQueryRequest(form_structures2.get(),
                                                   mock_metric_logger));
 
   fetcher = factory.GetFetcherByID(2);
@@ -481,12 +481,12 @@ TEST_F(AutofillDownloadTest, CacheQueryTest) {
   // No actual requests - should be a cache hit.
   EXPECT_CALL(mock_metric_logger,
               LogServerQueryMetric(AutofillMetrics::QUERY_SENT)).Times(1);
-  EXPECT_TRUE(download_manager_.StartQueryRequest(form_structures1,
+  EXPECT_TRUE(download_manager_.StartQueryRequest(form_structures1.get(),
                                                   mock_metric_logger));
 
   EXPECT_CALL(mock_metric_logger,
               LogServerQueryMetric(AutofillMetrics::QUERY_SENT)).Times(1);
-  EXPECT_TRUE(download_manager_.StartQueryRequest(form_structures2,
+  EXPECT_TRUE(download_manager_.StartQueryRequest(form_structures2.get(),
                                                   mock_metric_logger));
 
   ASSERT_EQ(static_cast<size_t>(2), responses_.size());
@@ -498,7 +498,7 @@ TEST_F(AutofillDownloadTest, CacheQueryTest) {
   // Request with id 3.
   EXPECT_CALL(mock_metric_logger,
               LogServerQueryMetric(AutofillMetrics::QUERY_SENT)).Times(1);
-  EXPECT_TRUE(download_manager_.StartQueryRequest(form_structures0,
+  EXPECT_TRUE(download_manager_.StartQueryRequest(form_structures0.get(),
                                                   mock_metric_logger));
   // No responses yet
   EXPECT_EQ(static_cast<size_t>(0), responses_.size());

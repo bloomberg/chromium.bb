@@ -1154,8 +1154,10 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
   }
 
   // If none of the forms were parsed, no use querying the server.
-  if (!form_structures_.empty() && !disable_download_manager_requests_)
-    download_manager_.StartQueryRequest(form_structures_, *metric_logger_);
+  if (!form_structures_.empty() && !disable_download_manager_requests_) {
+    download_manager_.StartQueryRequest(form_structures_.get(),
+                                        *metric_logger_);
+  }
 
   for (std::vector<FormStructure*>::const_iterator iter =
            non_queryable_forms.begin();
