@@ -1,59 +1,85 @@
 <script>
-
 var settings = chrome.experimental.settings;
+var assertEq = chrome.test.assertEq;
+var inIncognitoContext = chrome.extension.inIncognitoContext;
 
-// A different "waiting" message depending on whether this background page runs
-// in incognito mode or not.  This is so that the C++ test can differentiate
-// between messages.
-
-// Returns a function that asserts a result is expected.
-function assertResultEq(expected) {
+// Returns a function that asserts a result is expected then runs a callback.
+function assertResultEq(expected, callback) {
   return function(actual) {
     chrome.test.assertEq(expected, actual);
+    callback();
   };
 }
+
+// All notifications received.
+var notifications = [];
+settings.onChanged.addListener(function(changes) {
+  changes.forEach(function(change) {
+    notifications.push(change);
+  });
+});
 
 // The test from C++ runs "actions", where each action is defined here.
 // This allows the test to be tightly controlled between incognito and
 // non-incognito modes.
+// Each function accepts a callback which should be run when the settings
+// operation fully completes.
 var testActions = {
-  noop: function() {
-    settings.get("", function() {});
+  noop: function(callback) {
+    settings.get("", callback);
   },
-  assertEmpty: function() {
-    settings.get(null, assertResultEq({}));
+  assertEmpty: function(callback) {
+    settings.get(null, assertResultEq({}, callback));
   },
-  assertFoobar: function() {
-    settings.get(null, assertResultEq({foo: "bar"}));
+  assertFoo: function(callback) {
+    settings.get(null, assertResultEq({foo: "bar"}, callback));
   },
-  setFoobar: function() {
-    settings.set({foo: "bar"}, assertResultEq({foo: "bar"}));
+  setFoo: function(callback) {
+    settings.set({foo: "bar"}, assertResultEq({foo: "bar"}, callback));
   },
-  removeFoo: function() {
-    settings.remove("foo", assertResultEq(undefined));
+  removeFoo: function(callback) {
+    settings.remove("foo", assertResultEq(undefined, callback));
   },
-  clear: function() {
-    settings.clear(assertResultEq(undefined));
+  clear: function(callback) {
+    settings.clear(assertResultEq(undefined, callback));
+  },
+  assertNoNotifications: function(callback) {
+    assertEq([], notifications);
+    callback();
+  },
+  clearNotifications: function(callback) {
+    notifications = [];
+    callback();
+  },
+  assertAddFooNotification: function(callback) {
+    assertEq(1, notifications.length);
+    assertEq("foo", notifications[0].key);
+    assertEq(undefined, notifications[0].oldValue);
+    assertEq("bar", notifications[0].newValue);
+    callback();
+  },
+  assertDeleteFooNotification: function(callback) {
+    assertEq(1, notifications.length);
+    assertEq("foo", notifications[0].key);
+    assertEq("bar", notifications[0].oldValue);
+    assertEq(undefined, notifications[0].newValue);
+    callback();
   }
 };
 
 // The only test we run.  Runs "actions" (as defined above) until told
 // to stop (when the message has isFinalAction set to true).
 function testEverything() {
-  var waiting = chrome.extension.inIncognitoContext ?
-      "waiting_incognito" : "waiting";
-  function runTestAction(messageJson) {
-    var message = JSON.parse(messageJson);
-    testActions[message.action]();
-    if (message.isFinalAction) {
-      chrome.test.succeed();
-      return;
-    }
-    chrome.test.sendMessage(waiting, runTestAction);
+  function next() {
+    var waiting = inIncognitoContext ? "waiting_incognito" : "waiting";
+    chrome.test.sendMessage(waiting, function(messageJson) {
+      var message = JSON.parse(messageJson);
+      var action = testActions[message.action];
+      action(message.isFinalAction ? chrome.test.succeed : next);
+    });
   }
-  chrome.test.sendMessage(waiting, runTestAction);
+  next();
 }
 
 chrome.test.runTests([testEverything]);
-
 </script>

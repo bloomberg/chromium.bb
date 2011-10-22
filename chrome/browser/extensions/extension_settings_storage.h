@@ -23,25 +23,37 @@ class ExtensionSettingsStorage {
   // Supports lightweight copying.
   class Result {
    public:
-    // Ownership of |settings| and |changed_keys| taken.
+    // Ownership of all arguments are taken.
     // |settings| may be NULL when the result is for an operation which
     // generates no setting values (e.g. Remove(), Clear()).
-    // |changed_keys| may be NULL when the result is for an operation which
-    // cannot change settings (e.g. Get()).
-    Result(DictionaryValue* settings, std::set<std::string>* changed_keys);
+    // |changed_keys| and |old_settings| may be NULL when the result is for an
+    // operation which cannot change settings (e.g. Get()).
+    Result(
+        DictionaryValue* settings,
+        DictionaryValue* old_settings,
+        std::set<std::string>* changed_keys);
     explicit Result(const std::string& error);
     ~Result();
 
     // The dictionary result of the computation.  NULL does not imply invalid;
     // HasError() should be used to test this.
-    // Ownership remains with with the Result.
-    DictionaryValue* GetSettings() const;
+    // Ownership remains with this.
+    const DictionaryValue* GetSettings() const;
 
-    // Gets the list of setting keys which changed as a result of the
+    // Gets the set of setting keys which changed as a result of the
     // computation.  This includes all settings that existed and removed, all
-    // settings which changed when set, and all setting keys cleared.
-    // May be NULL for operations which cannot change settings, such as Get().
-    std::set<std::string>* GetChangedKeys() const;
+    // settings which changed when set, and all setting keys cleared.  May be
+    // NULL for operations which cannot change settings, such as Get().
+    const std::set<std::string>* GetChangedKeys() const;
+
+    // Gets the value of a setting prior to the operation which generated
+    // this Result, or NULL if the setting had no original value or this Result
+    // is from an operation that didn't modify the settings (such as Get()).
+    // Ownerships remains with this.
+    const Value* GetOldValue(const std::string& key) const;
+
+    // Like GetOldValue, but gets the new value.
+    const Value* GetNewValue(const std::string& key) const;
 
     // Whether there was an error in the computation.  If so, the results of
     // GetSettings and ReleaseSettings are not valid.
@@ -55,11 +67,13 @@ class ExtensionSettingsStorage {
       // Empty error implies no error.
       Inner(
           DictionaryValue* settings,
+          DictionaryValue* old_settings,
           std::set<std::string>* changed_keys,
           const std::string& error);
       ~Inner();
 
       const scoped_ptr<DictionaryValue> settings_;
+      const scoped_ptr<DictionaryValue> old_settings_;
       const scoped_ptr<std::set<std::string> > changed_keys_;
       const std::string error_;
     };

@@ -35,4 +35,6 @@ const char kOnInputMethodChanged[] = "inputMethodPrivate.onChanged";
 const char kOnDownloadCreated[] = "experimental.downloads.onCreated";
 const char kOnDownloadChanged[] = "experimental.downloads.onChanged";
 const char kOnDownloadErased[] = "experimental.downloads.onErased";
+
+const char kOnSettingsChanged[] = "experimental.settings.onChanged";
 }  // namespace extension_event_names

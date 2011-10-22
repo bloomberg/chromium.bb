@@ -36,8 +36,12 @@ const size_t kMaxSettingKeys = 512;
 
 }  // namespace
 
-ExtensionSettingsBackend::ExtensionSettingsBackend(const FilePath& base_path)
+ExtensionSettingsBackend::ExtensionSettingsBackend(
+    const FilePath& base_path,
+    const scoped_refptr<ObserverListThreadSafe<ExtensionSettingsObserver> >&
+        observers)
     : base_path_(base_path),
+      observers_(observers),
       sync_processor_(NULL) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 }
@@ -83,7 +87,10 @@ ExtensionSettingsBackend::GetOrCreateStorageWithSyncData(
 
   syncable_storage =
       linked_ptr<SyncableExtensionSettingsStorage>(
-          new SyncableExtensionSettingsStorage(extension_id, storage));
+          new SyncableExtensionSettingsStorage(
+              observers_,
+              extension_id,
+              storage));
   if (sync_processor_) {
     // TODO(kalman): do something if StartSyncing fails.
     ignore_result(syncable_storage->StartSyncing(sync_data, sync_processor_));
@@ -106,6 +113,17 @@ void ExtensionSettingsBackend::DeleteExtensionData(
   // a result of being removed from |storage_objs_|.
   maybe_storage->second->Clear();
   storage_objs_.erase(maybe_storage);
+}
+
+void ExtensionSettingsBackend::TriggerOnSettingsChanged(
+    Profile* profile,
+    const std::string& extension_id,
+    const ExtensionSettingChanges& changes) const {
+  observers_->Notify(
+      &ExtensionSettingsObserver::OnSettingsChanged,
+      profile,
+      extension_id,
+      changes);
 }
 
 std::set<std::string> ExtensionSettingsBackend::GetKnownExtensionIDs() const {
@@ -161,7 +179,7 @@ SyncDataList ExtensionSettingsBackend::GetAllSyncData(
       continue;
     }
 
-    DictionaryValue* settings = maybe_settings.GetSettings();
+    const DictionaryValue* settings = maybe_settings.GetSettings();
     for (DictionaryValue::key_iterator key_it = settings->begin_keys();
         key_it != settings->end_keys(); ++key_it) {
       Value *value = NULL;
