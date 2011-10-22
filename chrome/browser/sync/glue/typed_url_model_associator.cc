@@ -100,6 +100,27 @@ bool TypedUrlModelAssociator::FixupURLAndGetVisits(
   return true;
 }
 
+bool TypedUrlModelAssociator::ShouldIgnoreUrl(
+    const history::URLRow& url, const history::VisitVector& visits) {
+  // We ignore URLs that where imported, but have never been visited by
+  // chromium.
+  static const int kLastImportedSource = history::SOURCE_EXTENSION;
+  history::VisitSourceMap map;
+  if (!history_backend_->GetVisitsSource(visits, &map))
+    return false;  // If we can't read the visit, assume it's not imported.
+
+  // Walk the list of visits and look for a non-imported item.
+  for (history::VisitVector::const_iterator it = visits.begin();
+       it != visits.end(); ++it) {
+    if (map.count(it->visit_id) == 0 ||
+        map[it->visit_id] <= kLastImportedSource) {
+      return false;
+    }
+  }
+  // We only saw imported visits, so tell the caller to ignore them.
+  return true;
+}
+
 bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
   VLOG(1) << "Associating TypedUrl Models";
   DCHECK(expected_loop_ == MessageLoop::current());
@@ -116,7 +137,7 @@ bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
   // Get all the visits.
   std::map<history::URLID, history::VisitVector> visit_vectors;
   for (std::vector<history::URLRow>::iterator ix = typed_urls.begin();
-       ix != typed_urls.end(); ++ix) {
+       ix != typed_urls.end();) {
     if (IsAbortPending())
       return false;
     if (!FixupURLAndGetVisits(
@@ -124,6 +145,11 @@ bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
       error->Reset(FROM_HERE, "Could not get the url's visits.", model_type());
       return false;
     }
+
+    if (ShouldIgnoreUrl(*ix, visit_vectors[ix->id()]))
+      ix = typed_urls.erase(ix);
+    else
+      ++ix;
   }
 
   TypedUrlTitleVector titles;

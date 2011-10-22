@@ -166,6 +166,11 @@ class TypedUrlModelAssociator
   // association map.
   bool IsAssociated(const std::string& node_tag);
 
+  // Helper function that determines if we should ignore a URL for the purposes
+  // of sync, because it's import-only.
+  bool ShouldIgnoreUrl(const history::URLRow& url,
+                       const history::VisitVector& visits);
+
   ProfileSyncService* sync_service_;
   history::HistoryBackend* history_backend_;
   int64 typed_url_node_id_;

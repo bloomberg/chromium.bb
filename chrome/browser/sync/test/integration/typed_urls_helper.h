@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "chrome/browser/history/history_types.h"
+#include "content/public/common/page_transition_types.h"
 
 namespace base {
 class Time;
@@ -20,8 +21,15 @@ namespace typed_urls_helper {
 std::vector<history::URLRow> GetTypedUrlsFromClient(int index);
 
 // Adds a URL to the history DB for a specific sync profile (just registers a
-// new visit if the URL already exists).
+// new visit if the URL already exists) using a TYPED PageTransition.
 void AddUrlToHistory(int index, const GURL& url);
+
+// Adds a URL to the history DB for a specific sync profile (just registers a
+// new visit if the URL already exists), using the passed PageTransition.
+void AddUrlToHistoryWithTransition(int index,
+                                   const GURL& url,
+                                   content::PageTransition transition,
+                                   history::VisitSource source);
 
 // Deletes a URL from the history DB for a specific sync profile.
 void DeleteUrlFromHistory(int index, const GURL& url);

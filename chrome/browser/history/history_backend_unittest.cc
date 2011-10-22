@@ -700,7 +700,7 @@ TEST_F(HistoryBackendTest, AddPageVisitSource) {
   // Check if all the visits to the url are stored in database.
   ASSERT_EQ(3U, visits.size());
   VisitSourceMap visit_sources;
-  backend_->db_->GetVisitsSource(visits, &visit_sources);
+  ASSERT_TRUE(backend_->GetVisitsSource(visits, &visit_sources));
   ASSERT_EQ(3U, visit_sources.size());
   int sources = 0;
   for (int i = 0; i < 3; i++) {
@@ -754,7 +754,7 @@ TEST_F(HistoryBackendTest, AddPageArgsSource) {
   ASSERT_TRUE(backend_->db()->GetVisitsForURL(id, &visits));
   ASSERT_EQ(3U, visits.size());
   VisitSourceMap visit_sources;
-  backend_->db_->GetVisitsSource(visits, &visit_sources);
+  ASSERT_TRUE(backend_->GetVisitsSource(visits, &visit_sources));
   ASSERT_EQ(1U, visit_sources.size());
   EXPECT_EQ(history::SOURCE_SYNCED, visit_sources.begin()->second);
 }
@@ -793,14 +793,14 @@ TEST_F(HistoryBackendTest, AddVisitsSource) {
   ASSERT_TRUE(backend_->db()->GetVisitsForURL(id, &visits));
   ASSERT_EQ(3U, visits.size());
   VisitSourceMap visit_sources;
-  backend_->db_->GetVisitsSource(visits, &visit_sources);
+  ASSERT_TRUE(backend_->GetVisitsSource(visits, &visit_sources));
   ASSERT_EQ(3U, visit_sources.size());
   for (int i = 0; i < 3; i++)
     EXPECT_EQ(history::SOURCE_IE_IMPORTED, visit_sources[visits[i].visit_id]);
   id = backend_->db()->GetRowForURL(url2, &row);
   ASSERT_TRUE(backend_->db()->GetVisitsForURL(id, &visits));
   ASSERT_EQ(2U, visits.size());
-  backend_->db_->GetVisitsSource(visits, &visit_sources);
+  ASSERT_TRUE(backend_->GetVisitsSource(visits, &visit_sources));
   ASSERT_EQ(2U, visit_sources.size());
   for (int i = 0; i < 2; i++)
     EXPECT_EQ(history::SOURCE_SYNCED, visit_sources[visits[i].visit_id]);
@@ -925,12 +925,12 @@ TEST_F(HistoryBackendTest, RemoveVisitsSource) {
 
   // Now check only url2's source in visit_source table.
   VisitSourceMap visit_sources;
-  backend_->db_->GetVisitsSource(visits, &visit_sources);
+  ASSERT_TRUE(backend_->GetVisitsSource(visits, &visit_sources));
   ASSERT_EQ(0U, visit_sources.size());
   id = backend_->db()->GetRowForURL(url2, &row);
   ASSERT_TRUE(backend_->db()->GetVisitsForURL(id, &visits));
   ASSERT_EQ(2U, visits.size());
-  backend_->db_->GetVisitsSource(visits, &visit_sources);
+  ASSERT_TRUE(backend_->GetVisitsSource(visits, &visit_sources));
   ASSERT_EQ(2U, visit_sources.size());
   for (int i = 0; i < 2; i++)
     EXPECT_EQ(history::SOURCE_SYNCED, visit_sources[visits[i].visit_id]);

@@ -1000,6 +1000,15 @@ bool HistoryBackend::RemoveVisits(const VisitVector& visits) {
   return true;
 }
 
+bool HistoryBackend::GetVisitsSource(const VisitVector& visits,
+                                     VisitSourceMap* sources) {
+  if (!db_.get())
+    return false;
+
+  db_->GetVisitsSource(visits, sources);
+  return true;
+}
+
 bool HistoryBackend::GetURL(const GURL& url, history::URLRow* url_row) {
   if (db_.get())
     return db_->GetRowForURL(url, url_row) != 0;

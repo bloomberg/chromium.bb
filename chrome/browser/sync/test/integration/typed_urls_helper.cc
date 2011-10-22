@@ -66,18 +66,21 @@ void WaitForHistoryDBThread(int index) {
   wait_event.Wait();
 }
 
-// Creates a URLRow in the specified HistoryService.
+// Creates a URLRow in the specified HistoryService with the passed transition
+// type.
 void AddToHistory(HistoryService* service,
                   const GURL& url,
+                  content::PageTransition transition,
+                  history::VisitSource source,
                   const base::Time& timestamp) {
   service->AddPage(url,
                    timestamp,
                    NULL, // scope
                    1234, // page_id
                    GURL(),  // referrer
-                   content::PAGE_TRANSITION_TYPED,
+                   transition,
                    history::RedirectList(),
-                   history::SOURCE_BROWSED,
+                   source,
                    false);
 }
 
@@ -117,14 +120,25 @@ base::Time GetTimestamp() {
 }
 
 void AddUrlToHistory(int index, const GURL& url) {
+  AddUrlToHistoryWithTransition(index, url, content::PAGE_TRANSITION_TYPED,
+                                history::SOURCE_BROWSED);
+}
+void AddUrlToHistoryWithTransition(int index,
+                                   const GURL& url,
+                                   content::PageTransition transition,
+                                   history::VisitSource source) {
   base::Time timestamp = GetTimestamp();
   AddToHistory(test()->GetProfile(index)->GetHistoryServiceWithoutCreating(),
                url,
+               transition,
+               source,
                timestamp);
   if (test()->use_verifier())
     AddToHistory(
         test()->verifier()->GetHistoryService(Profile::IMPLICIT_ACCESS),
         url,
+        transition,
+        source,
         timestamp);
 
   // Wait until the AddPage() request has completed so we know the change has

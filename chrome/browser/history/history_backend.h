@@ -301,6 +301,11 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   virtual bool RemoveVisits(const VisitVector& visits);
 
+  // Returns the VisitSource associated with each one of the passed visits.
+  // If there is no entry in the map for a given visit, that means the visit
+  // was SOURCE_BROWSED. Returns false if there is no HistoryDatabase..
+  bool GetVisitsSource(const VisitVector& visits, VisitSourceMap* sources);
+
   virtual bool GetURL(const GURL& url, history::URLRow* url_row);
 
   // Deleting ------------------------------------------------------------------

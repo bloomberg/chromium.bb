@@ -12,6 +12,7 @@
 #include "chrome/browser/sync/test/integration/typed_urls_helper.h"
 
 using typed_urls_helper::AddUrlToHistory;
+using typed_urls_helper::AddUrlToHistoryWithTransition;
 using typed_urls_helper::AssertAllProfilesHaveSameURLsAsVerifier;
 using typed_urls_helper::DeleteUrlFromHistory;
 using typed_urls_helper::GetTypedUrlsFromClient;
@@ -175,4 +176,45 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
 
   // Both clients should have this URL added again.
   AssertAllProfilesHaveSameURLsAsVerifier();
+}
+
+IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
+                       SkipImportedVisits) {
+
+  GURL imported_url("http://imported_url.com");
+  GURL browsed_url("http://browsed_url.com");
+  GURL browsed_and_imported_url("http://browsed_and_imported_url.com");
+  ASSERT_TRUE(SetupClients());
+
+  // Create 3 items in our first client - 1 imported, one browsed, one with
+  // both imported and browsed entries.
+  AddUrlToHistoryWithTransition(0, imported_url,
+                                content::PAGE_TRANSITION_TYPED,
+                                history::SOURCE_FIREFOX_IMPORTED);
+  AddUrlToHistoryWithTransition(0, browsed_url,
+                                content::PAGE_TRANSITION_TYPED,
+                                history::SOURCE_BROWSED);
+  AddUrlToHistoryWithTransition(0, browsed_and_imported_url,
+                                content::PAGE_TRANSITION_TYPED,
+                                history::SOURCE_FIREFOX_IMPORTED);
+
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  std::vector<history::URLRow> urls = GetTypedUrlsFromClient(1);
+  ASSERT_EQ(1U, urls.size());
+  ASSERT_EQ(browsed_url, urls[0].url());
+
+  // Now browse to 3rd URL - this should cause it to be synced, even though it
+  // was initially imported.
+  AddUrlToHistoryWithTransition(0, browsed_and_imported_url,
+                                content::PAGE_TRANSITION_TYPED,
+                                history::SOURCE_BROWSED);
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  urls = GetTypedUrlsFromClient(1);
+  ASSERT_EQ(2U, urls.size());
+
+  // Make sure the imported URL didn't make it over.
+  for (size_t i = 0; i < urls.size(); ++i) {
+    ASSERT_NE(imported_url, urls[i].url());
+  }
 }
