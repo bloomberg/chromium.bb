@@ -52,6 +52,11 @@ body #main::after {
   z-index: 2000;
 }
 
+html[dir='rtl'] #sidebar {
+  border-left: 1px solid #a0a0a0;
+  border-right-width: 0;
+}
+
 #sidebar header {
   width: 310px;
 }
