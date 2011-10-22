@@ -174,6 +174,9 @@ class WebUIBrowserTest
   // Location of test data (currently test/data/webui).
   FilePath test_data_directory_;
 
+  // Location of generated test data (<(PROGRAM_DIR)/test_data).
+  FilePath gen_test_data_directory_;
+
   // User added libraries
   std::vector<FilePath> user_libraries_;
 

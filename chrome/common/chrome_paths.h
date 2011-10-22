@@ -96,6 +96,7 @@ enum {
 #endif
 
   // Valid only in development environment; TODO(darin): move these
+  DIR_GEN_TEST_DATA,            // Directory where generated test data resides.
   DIR_TEST_DATA,                // Directory where unit test data resides.
   DIR_TEST_TOOLS,               // Directory where unit test tools reside.
 

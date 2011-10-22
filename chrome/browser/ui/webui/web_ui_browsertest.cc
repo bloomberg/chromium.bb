@@ -251,6 +251,8 @@ void WebUIBrowserTest::SetUpInProcessBrowserTestFixture() {
 
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory_));
   test_data_directory_ = test_data_directory_.Append(kWebUITestFolder);
+  ASSERT_TRUE(PathService::Get(chrome::DIR_GEN_TEST_DATA,
+                               &gen_test_data_directory_));
 
   // TODO(dtseng): should this be part of every BrowserTest or just WebUI test.
   FilePath resources_pack_path;
@@ -307,9 +309,15 @@ void WebUIBrowserTest::BuildJavascriptLibraries(string16* content) {
                                               &library_content))
           << user_libraries_iterator->value();
     } else {
-      ASSERT_TRUE(file_util::ReadFileToString(
-          test_data_directory_.Append(*user_libraries_iterator),
-          &library_content)) << user_libraries_iterator->value();
+      bool ok = file_util::ReadFileToString(
+          gen_test_data_directory_.Append(*user_libraries_iterator),
+          &library_content);
+      if (!ok) {
+        ok = file_util::ReadFileToString(
+            test_data_directory_.Append(*user_libraries_iterator),
+            &library_content);
+      }
+      ASSERT_TRUE(ok) << user_libraries_iterator->value();
     }
     utf8_content.append(library_content);
     utf8_content.append(";\n");

@@ -44,7 +44,8 @@ function TEST_F(testFixture, testFunction, testBody) {
   print('IN_PROC_BROWSER_TEST_F(' + testFixture + ', ' + testFunction + ') {');
   if (testGenPreamble)
     testGenPreamble(testFixture, testFunction);
-  print('  AddLibrary(FilePath(FILE_PATH_LITERAL("' + jsFileBase + '")));');
+  print('  AddLibrary(FilePath(FILE_PATH_LITERAL("' +
+      jsFileBase.replace(/\\/g, '/') + '")));');
   if (browsePreload) {
     print('  BrowsePreload(GURL("' + browsePreload + '"), "' + testFixture +
           '", "' + testFunction + '");');

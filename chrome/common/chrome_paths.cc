@@ -280,13 +280,20 @@ bool PathProvider(int key, FilePath* result) {
     // The following are only valid in the development environment, and
     // will fail if executed from an installed executable (because the
     // generated path won't exist).
+    case chrome::DIR_GEN_TEST_DATA:
+      if (!PathService::Get(base::DIR_MODULE, &cur))
+        return false;
+      cur = cur.Append(FILE_PATH_LITERAL("test_data"));
+      if (!file_util::PathExists(cur))  // We don't want to create this.
+        return false;
+      break;
     case chrome::DIR_TEST_DATA:
       if (!PathService::Get(base::DIR_SOURCE_ROOT, &cur))
         return false;
       cur = cur.Append(FILE_PATH_LITERAL("chrome"));
       cur = cur.Append(FILE_PATH_LITERAL("test"));
       cur = cur.Append(FILE_PATH_LITERAL("data"));
-      if (!file_util::PathExists(cur))  // we don't want to create this
+      if (!file_util::PathExists(cur))  // We don't want to create this.
         return false;
       break;
     case chrome::DIR_TEST_TOOLS:
@@ -295,7 +302,7 @@ bool PathProvider(int key, FilePath* result) {
       cur = cur.Append(FILE_PATH_LITERAL("chrome"));
       cur = cur.Append(FILE_PATH_LITERAL("tools"));
       cur = cur.Append(FILE_PATH_LITERAL("test"));
-      if (!file_util::PathExists(cur))  // we don't want to create this
+      if (!file_util::PathExists(cur))  // We don't want to create this
         return false;
       break;
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
@@ -317,7 +324,7 @@ bool PathProvider(int key, FilePath* result) {
       if (!login)
         return false;
       cur = cur.AppendASCII(login);
-      if (!file_util::PathExists(cur))  // we don't want to create this
+      if (!file_util::PathExists(cur))  // We don't want to create this.
         return false;
       break;
     }

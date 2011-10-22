@@ -2232,12 +2232,13 @@
       # Executable that runs each browser test in a new process.
       'target_name': 'browser_tests',
       'type': 'executable',
+      'msvs_cygwin_shell': 0,
+      'msvs_cygwin_dirs': ['<(DEPTH)/third_party/cygwin'],
       'variables': {
         'gypv8sh': '../tools/gypv8sh.py',
         'js2webui': 'browser/ui/webui/javascript2webui.js',
         'js2webui_out_dir': '<(SHARED_INTERMEDIATE_DIR)/js2webui',
         'mock_js': 'third_party/mock4js/mock4js.js',
-        'rule_input_relpath': 'test/data/webui',
         'test_api_js': 'test/data/webui/test_api.js',
       },
       'dependencies': [
@@ -2508,6 +2509,7 @@
         'browser/ui/webui/bidi_checker_web_ui_test.cc',
         'browser/ui/webui/bidi_checker_web_ui_test.h',
         'browser/ui/webui/net_internals_ui_browsertest.cc',
+        'browser/ui/webui/options/options_browsertest.js',
         'browser/ui/webui/web_ui_browsertest.cc',
         'browser/ui/webui/web_ui_browsertest.h',
         'browser/ui/webui/web_ui_test_handler.cc',
@@ -2537,7 +2539,6 @@
         'test/data/webui/certificate_viewer_dialog_test.js',
         'test/data/webui/certificate_viewer_ui_test-inl.h',
         'test/data/webui/ntp4.js',
-        'test/data/webui/options.js',
         'test/data/webui/print_preview.js',
         # TODO(craig): Rename this and run from base_unittests when the test
         # is safe to run there. See http://crbug.com/78722 for details.
@@ -2567,6 +2568,7 @@
         {
           'rule_name': 'js2webui',
           'extension': 'js',
+          'msvs_external_rule': 1,
           'inputs': [
             '<(gypv8sh)',
             '<(PRODUCT_DIR)/v8_shell<(EXECUTABLE_SUFFIX)',
@@ -2575,11 +2577,16 @@
             '<(js2webui)',
           ],
           'outputs': [
-            '<(js2webui_out_dir)/chrome/<(rule_input_relpath)/<(RULE_INPUT_ROOT).cc',
+            '<(js2webui_out_dir)/chrome/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).cc',
+            '<(PRODUCT_DIR)/test_data/chrome/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).js',
           ],
           'process_outputs_as_sources': 1,
           'action': [
-            'python', '<@(_inputs)', '<(RULE_INPUT_PATH)', '<@(_outputs)',
+            'python',
+            '<@(_inputs)',
+            '<(RULE_INPUT_PATH)',
+            'chrome/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).js',
+            '<@(_outputs)',
           ],
         },
       ],
