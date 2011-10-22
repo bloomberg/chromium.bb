@@ -159,6 +159,8 @@ TEST_F(HostContentSettingsMapTest, IndividualSettings) {
       CONTENT_SETTING_ASK;
   desired_settings.settings[CONTENT_SETTINGS_TYPE_FULLSCREEN] =
       CONTENT_SETTING_ASK;
+  desired_settings.settings[CONTENT_SETTINGS_TYPE_MOUSELOCK] =
+      CONTENT_SETTING_ASK;
   ContentSettings settings =
       host_content_settings_map->GetContentSettings(host, host);
   EXPECT_TRUE(SettingsEqual(desired_settings, settings));
@@ -618,6 +620,8 @@ TEST_F(HostContentSettingsMapTest, NestedSettings) {
       CONTENT_SETTING_ASK;
   desired_settings.settings[CONTENT_SETTINGS_TYPE_FULLSCREEN] =
       CONTENT_SETTING_ASK;
+  desired_settings.settings[CONTENT_SETTINGS_TYPE_MOUSELOCK] =
+      CONTENT_SETTING_ASK;
   ContentSettings settings =
       host_content_settings_map->GetContentSettings(host, host);
   EXPECT_TRUE(SettingsEqual(desired_settings, settings));
@@ -637,6 +641,8 @@ TEST_F(HostContentSettingsMapTest, NestedSettings) {
             settings.settings[CONTENT_SETTINGS_TYPE_INTENTS]);
   EXPECT_EQ(desired_settings.settings[CONTENT_SETTINGS_TYPE_FULLSCREEN],
             settings.settings[CONTENT_SETTINGS_TYPE_FULLSCREEN]);
+  EXPECT_EQ(desired_settings.settings[CONTENT_SETTINGS_TYPE_MOUSELOCK],
+            settings.settings[CONTENT_SETTINGS_TYPE_MOUSELOCK]);
 }
 
 TEST_F(HostContentSettingsMapTest, OffTheRecord) {

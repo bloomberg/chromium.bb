@@ -64,6 +64,7 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
   {CONTENT_SETTINGS_TYPE_INTENTS, "intents"},
   {CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE, "auto-select-certificate"},
   {CONTENT_SETTINGS_TYPE_FULLSCREEN, "fullscreen"},
+  {CONTENT_SETTINGS_TYPE_MOUSELOCK, "mouselock"},
 };
 COMPILE_ASSERT(arraysize(kContentSettingsTypeGroupNames) ==
                    CONTENT_SETTINGS_NUM_TYPES,
@@ -413,6 +414,9 @@ void ContentSettingsHandler::UpdateAllExceptionsViewsFromModel() {
       continue;
     // TODO(koz): Implement fullscreen content settings UI.
     if (type == CONTENT_SETTINGS_TYPE_FULLSCREEN)
+      continue;
+    // TODO(scheib): Mouse lock content settings UI. http://crbug.com/97768
+    if (type == CONTENT_SETTINGS_TYPE_MOUSELOCK)
       continue;
     UpdateExceptionsViewFromModel(static_cast<ContentSettingsType>(type));
   }

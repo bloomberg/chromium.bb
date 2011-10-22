@@ -58,7 +58,8 @@ TEST_F(ContentSettingBubbleControllerTest, Init) {
     if (i == CONTENT_SETTINGS_TYPE_NOTIFICATIONS ||
         i == CONTENT_SETTINGS_TYPE_INTENTS ||
         i == CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE ||
-        i == CONTENT_SETTINGS_TYPE_FULLSCREEN) {
+        i == CONTENT_SETTINGS_TYPE_FULLSCREEN ||
+        i == CONTENT_SETTINGS_TYPE_MOUSELOCK) {
       // Notifications, web intents and auto select certificate have no bubble.
       continue;
     }

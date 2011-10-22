@@ -820,6 +820,7 @@ class Browser : public TabHandlerDelegate,
                                     FullscreenExitBubbleType bubble_type);
   void OnDenyFullscreenPermission(FullscreenExitBubbleType bubble_type);
   ContentSetting GetFullscreenSetting(const GURL& url);
+  ContentSetting GetMouseLockSetting(const GURL& url);
 
   // Figure out if there are tabs that have beforeunload handlers.
   bool TabsNeedBeforeUnloadFired();

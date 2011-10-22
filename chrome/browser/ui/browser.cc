@@ -3963,6 +3963,7 @@ void Browser::UpdatePreferredSize(TabContents* source,
 }
 
 void Browser::RequestToLockMouse(TabContents* tab) {
+  // Mouse Lock is only permitted when browser is in tab fullscreen.
   if (!IsFullscreenForTab(tab)) {
     tab->GotResponseToLockMouseRequest(false);
     return;
@@ -3970,10 +3971,25 @@ void Browser::RequestToLockMouse(TabContents* tab) {
 
   if (mouse_lock_state_ == MOUSELOCK_ACCEPTED) {
     tab->GotResponseToLockMouseRequest(true);
-  } else {
-    mouse_lock_state_ = MOUSELOCK_REQUESTED;
-    UpdateFullscreenExitBubbleContent();
+    return;
   }
+
+  switch (GetMouseLockSetting(tab->GetURL())) {
+    case CONTENT_SETTING_ALLOW:
+      mouse_lock_state_ = MOUSELOCK_ACCEPTED;
+      tab->GotResponseToLockMouseRequest(true);
+      break;
+    case CONTENT_SETTING_BLOCK:
+      mouse_lock_state_ = MOUSELOCK_NOT_REQUESTED;
+      tab->GotResponseToLockMouseRequest(false);
+      break;
+    case CONTENT_SETTING_ASK:
+      mouse_lock_state_ = MOUSELOCK_REQUESTED;
+      break;
+    default:
+      NOTREACHED();
+  }
+  UpdateFullscreenExitBubbleContent();
 }
 
 void Browser::LostMouseLock() {
@@ -3991,17 +4007,21 @@ void Browser::OnAcceptFullscreenPermission(
   DCHECK(fullscreened_tab_);
   DCHECK_NE(tab_fullscreen_accepted_, fullscreen);
 
+  HostContentSettingsMap* settings_map =
+      profile()->GetHostContentSettingsMap();
   if (mouse_lock) {
     DCHECK_EQ(mouse_lock_state_, MOUSELOCK_REQUESTED);
+    settings_map->SetContentSetting(
+        ContentSettingsPattern::FromURL(url),
+        ContentSettingsPattern::Wildcard(), CONTENT_SETTINGS_TYPE_MOUSELOCK,
+        std::string(), CONTENT_SETTING_ALLOW);
     mouse_lock_state_ =
         fullscreened_tab_->tab_contents()->GotResponseToLockMouseRequest(true) ?
         MOUSELOCK_ACCEPTED : MOUSELOCK_NOT_REQUESTED;
   }
   if (!tab_fullscreen_accepted_) {
-    HostContentSettingsMap* settings_map =
-        profile()->GetHostContentSettingsMap();
     settings_map->SetContentSetting(
-        ContentSettingsPattern::FromString(url.host()),
+        ContentSettingsPattern::FromURL(url),
         ContentSettingsPattern::Wildcard(), CONTENT_SETTINGS_TYPE_FULLSCREEN,
         std::string(), CONTENT_SETTING_ALLOW);
     tab_fullscreen_accepted_ = true;
@@ -4036,6 +4056,15 @@ ContentSetting Browser::GetFullscreenSetting(const GURL& url) {
   HostContentSettingsMap* settings_map = profile()->GetHostContentSettingsMap();
   return settings_map->GetContentSetting(url, url,
       CONTENT_SETTINGS_TYPE_FULLSCREEN, std::string());
+}
+
+ContentSetting Browser::GetMouseLockSetting(const GURL& url) {
+  if (url.SchemeIsFile())
+    return CONTENT_SETTING_ALLOW;
+
+  HostContentSettingsMap* settings_map = profile()->GetHostContentSettingsMap();
+  return settings_map->GetContentSetting(url, url,
+      CONTENT_SETTINGS_TYPE_MOUSELOCK, std::string());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
