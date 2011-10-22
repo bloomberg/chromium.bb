@@ -32,7 +32,7 @@ class PPB_Flash_Proxy : public InterfaceProxy {
   PPB_Flash_Proxy(Dispatcher* dispatcher);
   virtual ~PPB_Flash_Proxy();
 
-  static const Info* GetInfo();
+  static const PPB_Flash* GetInterface();
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);

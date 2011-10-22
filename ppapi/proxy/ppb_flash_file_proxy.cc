@@ -525,15 +525,9 @@ PPB_Flash_File_ModuleLocal_Proxy::~PPB_Flash_File_ModuleLocal_Proxy() {
 }
 
 // static
-const InterfaceProxy::Info* PPB_Flash_File_ModuleLocal_Proxy::GetInfo() {
-  static const Info info = {
-    &flash_file_modulelocal_interface,
-    PPB_FLASH_FILE_MODULELOCAL_INTERFACE,
-    API_ID_PPB_FLASH_FILE_MODULELOCAL,
-    true,
-    &CreateFlashFileModuleLocalProxy,
-  };
-  return &info;
+const PPB_Flash_File_ModuleLocal*
+PPB_Flash_File_ModuleLocal_Proxy::GetInterface() {
+  return &flash_file_modulelocal_interface;
 }
 
 bool PPB_Flash_File_ModuleLocal_Proxy::OnMessageReceived(
@@ -692,15 +686,8 @@ PPB_Flash_File_FileRef_Proxy::~PPB_Flash_File_FileRef_Proxy() {
 }
 
 // static
-const InterfaceProxy::Info* PPB_Flash_File_FileRef_Proxy::GetInfo() {
-  static const Info info = {
-    &flash_file_fileref_interface,
-    PPB_FLASH_FILE_FILEREF_INTERFACE,
-    API_ID_PPB_FLASH_FILE_FILEREF,
-    true,
-    &CreateFlashFileFileRefProxy,
-  };
-  return &info;
+const PPB_Flash_File_FileRef* PPB_Flash_File_FileRef_Proxy::GetInterface() {
+  return &flash_file_fileref_interface;
 }
 
 bool PPB_Flash_File_FileRef_Proxy::OnMessageReceived(

@@ -52,6 +52,12 @@ class InterfaceList {
 
   typedef std::map<std::string, InterfaceInfo> NameToInterfaceInfoMap;
 
+  // Registers the Flash-specific interfaces.
+  //
+  // TODO(brettw) these should be moved somewhere separately so we can compile
+  // the proxy for NaCl without Flash interface support.
+  void AddFlashInterfaces();
+
   void AddProxy(ApiID id, InterfaceProxy::Factory factory);
 
   void AddPPB(const char* name, ApiID id, const void* iface);

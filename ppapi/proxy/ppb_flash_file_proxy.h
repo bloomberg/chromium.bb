@@ -30,7 +30,7 @@ class PPB_Flash_File_ModuleLocal_Proxy : public InterfaceProxy {
   PPB_Flash_File_ModuleLocal_Proxy(Dispatcher* dispatcher);
   virtual ~PPB_Flash_File_ModuleLocal_Proxy();
 
-  static const Info* GetInfo();
+  static const PPB_Flash_File_ModuleLocal* GetInterface();
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
@@ -75,7 +75,7 @@ class PPB_Flash_File_FileRef_Proxy : public InterfaceProxy {
   PPB_Flash_File_FileRef_Proxy(Dispatcher* dispatcher);
   virtual ~PPB_Flash_File_FileRef_Proxy();
 
-  static const Info* GetInfo();
+  static const PPB_Flash_File_FileRef* GetInterface();
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);

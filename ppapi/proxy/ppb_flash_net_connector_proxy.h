@@ -25,8 +25,6 @@ class PPB_Flash_NetConnector_Proxy : public InterfaceProxy {
   PPB_Flash_NetConnector_Proxy(Dispatcher* dispatcher);
   virtual ~PPB_Flash_NetConnector_Proxy();
 
-  static const Info* GetInfo();
-
   static PP_Resource CreateProxyResource(PP_Instance instance);
 
   // InterfaceProxy implementation.

@@ -107,15 +107,8 @@ PPB_Flash_Clipboard_Proxy::~PPB_Flash_Clipboard_Proxy() {
 }
 
 // static
-const InterfaceProxy::Info* PPB_Flash_Clipboard_Proxy::GetInfo() {
-  static const Info info = {
-    &flash_clipboard_interface,
-    PPB_FLASH_CLIPBOARD_INTERFACE,
-    API_ID_PPB_FLASH_CLIPBOARD,
-    false,
-    &CreateFlashClipboardProxy
-  };
-  return &info;
+const PPB_Flash_Clipboard* PPB_Flash_Clipboard_Proxy::GetInterface() {
+  return &flash_clipboard_interface;
 }
 
 bool PPB_Flash_Clipboard_Proxy::OnMessageReceived(const IPC::Message& msg) {

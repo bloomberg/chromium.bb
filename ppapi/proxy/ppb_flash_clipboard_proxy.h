@@ -21,7 +21,7 @@ class PPB_Flash_Clipboard_Proxy : public InterfaceProxy {
   PPB_Flash_Clipboard_Proxy(Dispatcher* dispatcher);
   virtual ~PPB_Flash_Clipboard_Proxy();
 
-  static const Info* GetInfo();
+  static const PPB_Flash_Clipboard* GetInterface();
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);

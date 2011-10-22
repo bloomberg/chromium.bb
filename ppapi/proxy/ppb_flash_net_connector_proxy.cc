@@ -187,14 +187,6 @@ struct PPB_Flash_NetConnector_Proxy::ConnectCallbackInfo {
   PP_Flash_NetAddress remote_addr;
 };
 
-namespace {
-
-InterfaceProxy* CreateFlashNetConnectorProxy(Dispatcher* dispatcher) {
-  return new PPB_Flash_NetConnector_Proxy(dispatcher);
-}
-
-}  // namespace
-
 PPB_Flash_NetConnector_Proxy::PPB_Flash_NetConnector_Proxy(
     Dispatcher* dispatcher)
     : InterfaceProxy(dispatcher),
@@ -202,18 +194,6 @@ PPB_Flash_NetConnector_Proxy::PPB_Flash_NetConnector_Proxy(
 }
 
 PPB_Flash_NetConnector_Proxy::~PPB_Flash_NetConnector_Proxy() {
-}
-
-// static
-const InterfaceProxy::Info* PPB_Flash_NetConnector_Proxy::GetInfo() {
-  static const Info info = {
-    ppapi::thunk::GetPPB_Flash_NetConnector_Thunk(),
-    PPB_FLASH_NETCONNECTOR_INTERFACE,
-    API_ID_PPB_FLASH_NETCONNECTOR,
-    false,
-    &CreateFlashNetConnectorProxy
-  };
-  return &info;
 }
 
 // static

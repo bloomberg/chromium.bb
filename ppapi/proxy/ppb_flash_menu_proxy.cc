@@ -11,7 +11,6 @@
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_flash_menu_api.h"
 #include "ppapi/thunk/resource_creation_api.h"
-#include "ppapi/thunk/thunk.h"
 
 using ppapi::thunk::EnterFunctionNoLock;
 using ppapi::thunk::PPB_Flash_Menu_API;
@@ -75,32 +74,12 @@ void FlashMenu::ShowACK(int32_t selected_id, int32_t result) {
   PP_RunAndClearCompletionCallback(&callback_, result);
 }
 
-namespace {
-
-InterfaceProxy* CreateFlashMenuProxy(Dispatcher* dispatcher) {
-  return new PPB_Flash_Menu_Proxy(dispatcher);
-}
-
-}  // namespace
-
 PPB_Flash_Menu_Proxy::PPB_Flash_Menu_Proxy(Dispatcher* dispatcher)
     : InterfaceProxy(dispatcher),
       callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
 PPB_Flash_Menu_Proxy::~PPB_Flash_Menu_Proxy() {
-}
-
-// static
-const InterfaceProxy::Info* PPB_Flash_Menu_Proxy::GetInfo() {
-  static const Info info = {
-    ppapi::thunk::GetPPB_Flash_Menu_Thunk(),
-    PPB_FLASH_MENU_INTERFACE,
-    API_ID_PPB_FLASH_MENU,
-    true,
-    &CreateFlashMenuProxy,
-  };
-  return &info;
 }
 
 // static

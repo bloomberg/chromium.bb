@@ -187,15 +187,8 @@ PPB_Flash_Proxy::~PPB_Flash_Proxy() {
 }
 
 // static
-const InterfaceProxy::Info* PPB_Flash_Proxy::GetInfo() {
-  static const Info info = {
-    &flash_interface,
-    PPB_FLASH_INTERFACE,
-    API_ID_PPB_FLASH,
-    true,
-    &CreateFlashProxy,
-  };
-  return &info;
+const PPB_Flash* PPB_Flash_Proxy::GetInterface() {
+  return &flash_interface;
 }
 
 bool PPB_Flash_Proxy::OnMessageReceived(const IPC::Message& msg) {

@@ -25,8 +25,6 @@ class PPB_Flash_Menu_Proxy : public InterfaceProxy {
   PPB_Flash_Menu_Proxy(Dispatcher* dispatcher);
   virtual ~PPB_Flash_Menu_Proxy();
 
-  static const Info* GetInfo();
-
   static PP_Resource CreateProxyResource(PP_Instance instance_id,
                                          const PP_Flash_Menu* menu_data);
 

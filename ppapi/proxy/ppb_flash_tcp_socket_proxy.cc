@@ -49,10 +49,6 @@ class AbortCallbackTask : public Task {
   PP_CompletionCallback callback_;
 };
 
-InterfaceProxy* CreateFlashTCPSocketProxy(Dispatcher* dispatcher) {
-  return new PPB_Flash_TCPSocket_Proxy(dispatcher);
-}
-
 }  // namespace
 
 class FlashTCPSocket : public PPB_Flash_TCPSocket_API,
@@ -399,18 +395,6 @@ PPB_Flash_TCPSocket_Proxy::PPB_Flash_TCPSocket_Proxy(Dispatcher* dispatcher)
 }
 
 PPB_Flash_TCPSocket_Proxy::~PPB_Flash_TCPSocket_Proxy() {
-}
-
-// static
-const InterfaceProxy::Info* PPB_Flash_TCPSocket_Proxy::GetInfo() {
-  static const Info info = {
-    thunk::GetPPB_Flash_TCPSocket_Thunk(),
-    PPB_FLASH_TCPSOCKET_INTERFACE,
-    API_ID_PPB_FLASH_TCPSOCKET,
-    false,
-    &CreateFlashTCPSocketProxy,
-  };
-  return &info;
 }
 
 // static

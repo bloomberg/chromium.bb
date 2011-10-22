@@ -28,8 +28,6 @@ class PPB_Flash_UDPSocket_Proxy : public InterfaceProxy {
   PPB_Flash_UDPSocket_Proxy(Dispatcher* dispatcher);
   virtual ~PPB_Flash_UDPSocket_Proxy();
 
-  static const Info* GetInfo();
-
   static PP_Resource CreateProxyResource(PP_Instance instance);
 
   // InterfaceProxy implementation.

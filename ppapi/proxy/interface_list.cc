@@ -103,9 +103,8 @@
 // name PPB_Foo.
 #define PROXY_API_ID(api_name) PROXY_CLASS_NAME(api_name)::kApiID
 
-// Helper to get the name of the factory function CreatePPB_Foo_Proxy given
-// the API name PPB_Foo.
-#define PROXY_FACTORY_NAME(api_name) Create##api_name##_Proxy
+// Helper to get the name of the templatized factory function.
+#define PROXY_FACTORY_NAME(api_name) ProxyFactory<PROXY_CLASS_NAME(api_name)>
 
 // Helper to get the name of the thunk GetPPB_Foo_1_0_Thunk given the interface
 // struct name PPB_Foo_1_0.
@@ -127,16 +126,10 @@ class NoAPIName_Proxy {
   static const ApiID kApiID = API_ID_NONE;
 };
 
-// Define factory functions for each interface type. These are of the form:
-//   InterfaceProxy* CreatePPB_URLLoader_Proxy(...
-#define PROXIED_API(api_name) \
-    InterfaceProxy* PROXY_FACTORY_NAME(api_name)(Dispatcher* dispatcher) { \
-      return new PROXY_CLASS_NAME(api_name)(dispatcher); \
-    }
-#include "ppapi/thunk/interfaces_ppb_public_stable.h"
-#include "ppapi/thunk/interfaces_ppb_public_dev.h"
-#include "ppapi/thunk/interfaces_ppb_private.h"
-#undef PROXIED_API
+template<typename ProxyClass>
+InterfaceProxy* ProxyFactory(Dispatcher* dispatcher) {
+  return new ProxyClass(dispatcher);
+}
 
 }  // namespace
 
@@ -174,24 +167,15 @@ InterfaceList::InterfaceList() {
   AddPPB(PPB_VAR_INTERFACE, API_ID_NONE,
          GetPPB_Var_Interface());
 
+  AddFlashInterfaces();
+
   // PPB (browser) interfaces.
   AddPPB(PPB_FileChooser_Proxy::GetTrustedInfo());
-  AddPPB(PPB_Flash_Clipboard_Proxy::GetInfo());
-  AddPPB(PPB_Flash_File_FileRef_Proxy::GetInfo());
-  AddPPB(PPB_Flash_File_ModuleLocal_Proxy::GetInfo());
-  AddPPB(PPB_Flash_Menu_Proxy::GetInfo());
-  AddPPB(PPB_Flash_Proxy::GetInfo());
-  AddPPB(PPB_Flash_TCPSocket_Proxy::GetInfo());
-  AddPPB(PPB_Flash_UDPSocket_Proxy::GetInfo());
   AddPPB(PPB_Instance_Proxy::GetInfoPrivate());
   AddPPB(PPB_PDF_Proxy::GetInfo());
   AddPPB(PPB_Testing_Proxy::GetInfo());
   AddPPB(PPB_URLLoader_Proxy::GetTrustedInfo());
   AddPPB(PPB_Var_Deprecated_Proxy::GetInfo());
-
-#ifdef ENABLE_FLAPPER_HACKS
-  AddPPB(PPB_Flash_NetConnector_Proxy::GetInfo());
-#endif
 
   // PPP (plugin) interfaces.
   AddPPP(PPP_Graphics3D_Proxy::GetInfo());
@@ -250,6 +234,49 @@ const void* InterfaceList::GetInterfaceForPPP(const std::string& name) const {
   if (found == name_to_plugin_info_.end())
     return NULL;
   return found->second.iface;
+}
+
+void InterfaceList::AddFlashInterfaces() {
+  AddProxy(API_ID_PPB_FLASH_CLIPBOARD,
+           &ProxyFactory<PPB_Flash_Clipboard_Proxy>);
+  AddPPB(PPB_FLASH_CLIPBOARD_INTERFACE, API_ID_PPB_FLASH_CLIPBOARD,
+         PPB_Flash_Clipboard_Proxy::GetInterface());
+
+  AddProxy(API_ID_PPB_FLASH_FILE_MODULELOCAL,
+           &ProxyFactory<PPB_Flash_File_ModuleLocal_Proxy>);
+  AddPPB(PPB_FLASH_FILE_MODULELOCAL_INTERFACE,
+         API_ID_PPB_FLASH_FILE_MODULELOCAL,
+         PPB_Flash_File_ModuleLocal_Proxy::GetInterface());
+
+  AddProxy(API_ID_PPB_FLASH_FILE_FILEREF,
+           &ProxyFactory<PPB_Flash_File_FileRef_Proxy>);
+  AddPPB(PPB_FLASH_FILE_FILEREF_INTERFACE, API_ID_PPB_FLASH_FILE_FILEREF,
+         PPB_Flash_File_FileRef_Proxy::GetInterface());
+
+  AddProxy(API_ID_PPB_FLASH_MENU, &ProxyFactory<PPB_Flash_Menu_Proxy>);
+  AddPPB(PPB_FLASH_MENU_INTERFACE, API_ID_PPB_FLASH_MENU,
+         thunk::GetPPB_Flash_Menu_Thunk());
+
+  AddProxy(API_ID_PPB_FLASH, &ProxyFactory<PPB_Flash_Proxy>);
+  AddPPB(PPB_FLASH_INTERFACE, API_ID_PPB_FLASH,
+         PPB_Flash_Proxy::GetInterface());
+
+  AddProxy(API_ID_PPB_FLASH_TCPSOCKET,
+           &ProxyFactory<PPB_Flash_TCPSocket_Proxy>);
+  AddPPB(PPB_FLASH_TCPSOCKET_INTERFACE, API_ID_PPB_FLASH_TCPSOCKET,
+         thunk::GetPPB_Flash_TCPSocket_Thunk());
+
+  AddProxy(API_ID_PPB_FLASH_UDPSOCKET,
+           &ProxyFactory<PPB_Flash_UDPSocket_Proxy>);
+  AddPPB(PPB_FLASH_UDPSOCKET_INTERFACE, API_ID_PPB_FLASH_UDPSOCKET,
+         thunk::GetPPB_Flash_UDPSocket_Thunk());
+
+#ifdef ENABLE_FLAPPER_HACKS
+  AddProxy(API_ID_PPB_FLASH_NETCONNECTOR,
+           &ProxyFactory<PPB_Flash_NetConnector_Proxy>);
+  AddPPB(PPB_FLASH_NETCONNECTOR_INTERFACE, API_ID_PPB_FLASH_NETCONNECTOR,
+         thunk::GetPPB_Flash_NetConnector_Thunk());
+#endif
 }
 
 void InterfaceList::AddProxy(ApiID id,

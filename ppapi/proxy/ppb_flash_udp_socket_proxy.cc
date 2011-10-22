@@ -49,10 +49,6 @@ class AbortCallbackTask : public Task {
   PP_CompletionCallback callback_;
 };
 
-InterfaceProxy* CreateFlashUDPSocketProxy(Dispatcher* dispatcher) {
-  return new PPB_Flash_UDPSocket_Proxy(dispatcher);
-}
-
 class FlashUDPSocket : public PPB_Flash_UDPSocket_API,
                        public Resource {
  public:
@@ -294,18 +290,6 @@ PPB_Flash_UDPSocket_Proxy::PPB_Flash_UDPSocket_Proxy(Dispatcher* dispatcher)
 }
 
 PPB_Flash_UDPSocket_Proxy::~PPB_Flash_UDPSocket_Proxy() {
-}
-
-// static
-const InterfaceProxy::Info* PPB_Flash_UDPSocket_Proxy::GetInfo() {
-  static const Info info = {
-    ::ppapi::thunk::GetPPB_Flash_UDPSocket_Thunk(),
-    PPB_FLASH_UDPSOCKET_INTERFACE,
-    API_ID_PPB_FLASH_UDPSOCKET,
-    false,
-    &CreateFlashUDPSocketProxy,
-  };
-  return &info;
 }
 
 // static
