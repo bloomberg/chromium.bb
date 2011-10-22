@@ -184,11 +184,12 @@ KeyboardWidget::KeyboardWidget()
   params.keep_on_top = true;
   params.transparent = true;
   params.bounds = GetKeyboardPosition(keyboard_height_);
-#if defined(USE_AURA)
-  params.parent = aura_shell::Shell::GetInstance()->GetContainer(
-      aura_shell::internal::kShellWindowId_MenusAndTooltipsContainer);
-#endif
   Init(params);
+#if defined(USE_AURA)
+  aura_shell::Shell::GetInstance()->GetContainer(
+      aura_shell::internal::kShellWindowId_MenusAndTooltipsContainer)->
+      AddChild(GetNativeView());
+#endif
 
   // Setup the DOM view to host the keyboard.
   Profile* profile = ProfileManager::GetDefaultProfile();
