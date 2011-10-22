@@ -128,6 +128,8 @@ var CardSlider = (function() {
       this.updateCardWidths_();
 
       this.mouseWheelScrollAmount_ = 0;
+      this.mouseWheelCardSelected_ = false;
+      this.mouseWheelIsContinuous_ = false;
       this.scrollClearTimeout_ = null;
       this.frame_.addEventListener('mousewheel',
                                    this.onMouseWheel_.bind(this));
@@ -233,23 +235,41 @@ var CardSlider = (function() {
       // Prevent OS X 10.7+ history swiping on the NTP.
       e.preventDefault();
 
-      // Mac value feels ok with multitouch trackpads and magic mice
-      // (with physical scrollwheel, too), but not so great with logitech
-      // mice.
-      var scrollAmountPerPage = cr.isMac ? 400 : 120;
-      if (!ntp4.isRTL())
-        scrollAmountPerPage *= -1;
-      this.mouseWheelScrollAmount_ += e.wheelDeltaX;
-      if (Math.abs(this.mouseWheelScrollAmount_) >=
-          Math.abs(scrollAmountPerPage)) {
-        var pagesToScroll = this.mouseWheelScrollAmount_ / scrollAmountPerPage;
-        pagesToScroll =
-            (pagesToScroll > 0 ? Math.floor : Math.ceil)(pagesToScroll);
+      // Continuous devices such as an Apple Touchpad or Apple MagicMouse will
+      // send arbitrary delta values. Conversly, standard mousewheels will
+      // send delta values in increments of 120.  (There is of course a small
+      // chance we mistake a continuous device for a non-continuous device.
+      // Unfortunately there isn't a better way to do this until real touch
+      // events are available to desktop clients.)
+      var DISCRETE_DELTA = 120;
+      if (e.wheelDeltaX % DISCRETE_DELTA)
+        this.mouseWheelIsContinuous_ = true;
+
+      if (this.mouseWheelIsContinuous_) {
+        // For continuous devices, detect a page swipe when the accumulated
+        // delta matches a pre-defined threshhold.  After changing the page,
+        // ignore wheel events for a short time before repeating this process.
+        if (this.mouseWheelCardSelected_) return;
+        this.mouseWheelScrollAmount_ += e.wheelDeltaX;
+        if (Math.abs(this.mouseWheelScrollAmount_) >= 600) {
+          var pagesToScroll = this.mouseWheelScrollAmount_ > 0 ? 1 : -1;
+          if (!ntp4.isRTL())
+            pagesToScroll *= -1;
+          var newCardIndex = this.currentCard + pagesToScroll;
+          newCardIndex = Math.min(this.cards_.length - 1,
+                                  Math.max(0, newCardIndex));
+          this.selectCard(newCardIndex, true);
+          this.mouseWheelCardSelected_ = true;
+        }
+      } else {
+        // For discrete devices, consider each wheel tick a page change.
+        var pagesToScroll = e.wheelDeltaX / DISCRETE_DELTA;
+        if (!ntp4.isRTL())
+          pagesToScroll *= -1;
         var newCardIndex = this.currentCard + pagesToScroll;
         newCardIndex = Math.min(this.cards_.length - 1,
                                 Math.max(0, newCardIndex));
         this.selectCard(newCardIndex, true);
-        this.mouseWheelScrollAmount_ -= pagesToScroll * scrollAmountPerPage;
       }
 
       // We got a mouse wheel event, so cancel any pending scroll wheel timeout.
@@ -270,6 +290,7 @@ var CardSlider = (function() {
      */
     clearMouseWheelScroll_: function() {
       this.mouseWheelScrollAmount_ = 0;
+      this.mouseWheelCardSelected_ = false;
     },
 
     /**
