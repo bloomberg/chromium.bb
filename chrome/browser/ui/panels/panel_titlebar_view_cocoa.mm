@@ -194,7 +194,6 @@ static NSEvent* MakeMouseEvent(NSEventType type,
 
   // Update layout of controls in the titlebar.
   [self updateCloseButtonLayout];
-  [self updateIconAndTitleLayout];
 
   // Set autoresizing behavior: glued to edges on left, top and right.
   [self setAutoresizingMask:(NSViewMinYMargin | NSViewWidthSizable)];
@@ -204,8 +203,11 @@ static NSEvent* MakeMouseEvent(NSEventType type,
          selector:@selector(didChangeTheme:)
              name:kBrowserThemeDidChangeNotification
            object:nil];
-  // Register for various window focus changes, so we can update our custom
-  // titlebar appropriately.
+  [[NSNotificationCenter defaultCenter]
+      addObserver:self
+         selector:@selector(didChangeFrame:)
+             name:NSViewFrameDidChangeNotification
+           object:self];
   [[NSNotificationCenter defaultCenter]
       addObserver:self
          selector:@selector(didChangeMainWindow:)
@@ -298,6 +300,10 @@ static NSEvent* MakeMouseEvent(NSEventType type,
 
 - (void)mouseExited:(NSEvent*)event {
   [[closeButton_ cell] setHighlighted:NO];
+}
+
+- (void)didChangeFrame:(NSNotification*)notification {
+  [self updateIconAndTitleLayout];
 }
 
 - (void)didChangeTheme:(NSNotification*)notification {
@@ -409,6 +415,10 @@ static NSEvent* MakeMouseEvent(NSEventType type,
 // (Private/TestingAPI)
 - (PanelWindowControllerCocoa*)controller {
   return controller_;
+}
+
+- (NSTextField*)title {
+  return title_;
 }
 
 - (void)simulateCloseButtonClick {

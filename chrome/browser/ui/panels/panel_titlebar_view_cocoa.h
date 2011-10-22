@@ -69,8 +69,8 @@ enum PanelDragState {
 - (void)updateCloseButtonLayout;
 - (void)updateIconAndTitleLayout;
 
-// We need to update our look when the Chrome theme changes or window focus
-// changes.
+// Various events that we'll need to redraw our titlebar for.
+- (void)didChangeFrame:(NSNotification*)notification;
 - (void)didChangeTheme:(NSNotification*)notification;
 - (void)didChangeMainWindow:(NSNotification*)notification;
 
@@ -95,6 +95,8 @@ enum PanelDragState {
 @interface PanelTitlebarViewCocoa(TestingAPI)
 
 - (PanelWindowControllerCocoa*)controller;
+
+- (NSTextField*)title;
 
 // Simulates click on a close button. Used to test panel closing.
 - (void)simulateCloseButtonClick;

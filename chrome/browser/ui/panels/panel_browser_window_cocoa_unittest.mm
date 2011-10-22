@@ -251,8 +251,11 @@ TEST_F(PanelBrowserWindowCocoaTest, TitlebarViewSizing) {
   // content view of the window. They both use the same scale factor.
   EXPECT_EQ(NSWidth([contentView bounds]), NSWidth([titlebar bounds]));
 
+  NSRect oldTitleFrame = [[titlebar title] frame];
+  NSRect oldIconFrame = [[titlebar icon] frame];
+
   // Now resize the Panel, see that titlebar follows.
-  const int kDelta = 153; // random number
+  const int kDelta = 153;  // random number
   gfx::Rect bounds = panel->GetBounds();
   // Grow panel in a way so that its titlebar moves and grows.
   bounds.set_x(bounds.x() - kDelta);
@@ -271,6 +274,15 @@ TEST_F(PanelBrowserWindowCocoaTest, TitlebarViewSizing) {
 
   // Verify the titlebar is still on top of regular titlebar.
   VerifyTitlebarLocation(contentView, titlebar);
+
+  // Verify that the title/icon frames were updated.
+  NSRect newTitleFrame = [[titlebar title] frame];
+  NSRect newIconFrame = [[titlebar icon] frame];
+
+  EXPECT_EQ(newTitleFrame.origin.x - newIconFrame.origin.x,
+            oldTitleFrame.origin.x - oldIconFrame.origin.x);
+  EXPECT_NE(newTitleFrame.origin.x, oldTitleFrame.origin.x);
+  EXPECT_NE(newIconFrame.origin.x, oldIconFrame.origin.x);
 
   ClosePanelAndWait(panel->browser());
 }
