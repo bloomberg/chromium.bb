@@ -23,9 +23,8 @@ class CONTENT_EXPORT TraceSubscriber {
   // Called once after TraceController::EndTracingAsync.
   virtual void OnEndTracingComplete() = 0;
   // Called 0 or more times between TraceController::BeginTracing and
-  // OnEndTracingComplete. Use base::debug::TraceResultBuffer to convert one or
-  // more trace fragments to JSON.
-  virtual void OnTraceDataCollected(const std::string& trace_fragment) = 0;
+  // OnEndTracingComplete.
+  virtual void OnTraceDataCollected(const std::string& json_events) = 0;
   // Called once after TraceController::GetKnownCategoriesAsync.
   virtual void OnKnownCategoriesCollected(
       const std::set<std::string>& known_categories) {}
@@ -135,7 +134,7 @@ class CONTENT_EXPORT TraceController {
   void OnEndTracingAck(const std::vector<std::string>& known_categories);
   void OnTraceDataCollected(
       const scoped_refptr<base::debug::TraceLog::RefCountedString>&
-          events_str_ptr);
+          json_events_str_ptr);
   void OnTraceBufferFull();
   void OnTraceBufferPercentFullReply(float percent_full);
 

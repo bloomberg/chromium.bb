@@ -32,7 +32,7 @@ class ChildTraceMessageFilter : public IPC::ChannelProxy::MessageFilter {
   // Callback from trace subsystem.
   void OnTraceDataCollected(
       const scoped_refptr<base::debug::TraceLog::RefCountedString>&
-          events_str_ptr);
+          json_events_str_ptr);
   void OnTraceBufferFull();
 
   IPC::Channel* channel_;

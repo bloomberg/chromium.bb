@@ -28,7 +28,7 @@ class TraceSubscriberStdioTest : public testing::Test {
 
 }  // namespace
 
-TEST_F(TraceSubscriberStdioTest, CanWriteDataToFile) {
+TEST_F(TraceSubscriberStdioTest, CanWriteBracketedDataToFile) {
   TraceSubscriberStdio subscriber(trace_file_);
   subscriber.OnTraceDataCollected("[foo]");
   subscriber.OnTraceDataCollected("[bar]");
@@ -36,5 +36,7 @@ TEST_F(TraceSubscriberStdioTest, CanWriteDataToFile) {
 
   subscriber.OnEndTracingComplete();
   EXPECT_FALSE(subscriber.IsValid());
+
+  EXPECT_EQ("[foo,bar,]", ReadTraceFile());
 }
 

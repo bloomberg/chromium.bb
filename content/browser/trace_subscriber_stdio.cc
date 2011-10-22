@@ -4,7 +4,6 @@
 
 #include "content/browser/trace_subscriber_stdio.h"
 
-#include "base/bind.h"
 #include "base/logging.h"
 
 TraceSubscriberStdio::TraceSubscriberStdio() : file_(0) {
@@ -23,9 +22,8 @@ bool TraceSubscriberStdio::OpenFile(const FilePath& path) {
   CloseFile();
   file_ = file_util::OpenFile(path, "w+");
   if (IsValid()) {
-    trace_buffer_.SetOutputCallback(base::Bind(&TraceSubscriberStdio::Write,
-                                               base::Unretained(this)));
-    trace_buffer_.Start();
+    // FIXME: the file format expects it to start with "[".
+    fputc('[', file_);
     return true;
   } else {
     LOG(ERROR) << "Failed to open performance trace file: " << path.value();
@@ -35,6 +33,8 @@ bool TraceSubscriberStdio::OpenFile(const FilePath& path) {
 
 void TraceSubscriberStdio::CloseFile() {
   if (file_) {
+    // FIXME: the file format expects it to end with "]".
+    fputc(']', file_);
     fclose(file_);
     file_ = 0;
   }
@@ -45,21 +45,27 @@ bool TraceSubscriberStdio::IsValid() {
 }
 
 void TraceSubscriberStdio::OnEndTracingComplete() {
-  trace_buffer_.Finish();
   CloseFile();
 }
 
 void TraceSubscriberStdio::OnTraceDataCollected(
-    const std::string& trace_fragment) {
-  trace_buffer_.AddFragment(trace_fragment);
-}
+    const std::string& json_events) {
+  if (!IsValid()) {
+    return;
+  }
 
-void TraceSubscriberStdio::Write(const std::string& output_str) {
-  if (IsValid()) {
-    size_t written = fwrite(output_str.c_str(), 1, output_str.size(), file_);
-    if (written != output_str.size()) {
-      LOG(ERROR) << "Error " << ferror(file_) << " when writing to trace file";
-      CloseFile();
-    }
+  // FIXME: "json_events" currently comes with "[" and "]". But the file doesn't
+  // expect them. So remove them when writing to the file.
+  CHECK_GE(json_events.size(), 2u);
+  const char* data = json_events.data() + 1;
+  size_t size = json_events.size() - 2;
+
+  size_t written = fwrite(data, 1, size, file_);
+  if (written != size) {
+    LOG(ERROR) << "Error " << ferror(file_) << " when writing to trace file";
+    fclose(file_);
+    file_ = 0;
+  } else {
+    fputc(',', file_);
   }
 }
