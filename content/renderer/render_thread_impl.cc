@@ -431,8 +431,11 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   webkit_platform_support_.reset(new RendererWebKitPlatformSupportImpl);
   WebKit::initialize(webkit_platform_support_.get());
 
-  compositor_thread_.reset(new CompositorThread(this));
-  AddFilter(compositor_thread_->GetMessageFilter());
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableThreadedCompositing)) {
+    compositor_thread_.reset(new CompositorThread(this));
+    AddFilter(compositor_thread_->GetMessageFilter());
+  }
 
   WebScriptController::enableV8SingleThreadMode();
 

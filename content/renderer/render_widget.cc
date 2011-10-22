@@ -925,8 +925,10 @@ void RenderWidget::didScrollRect(int dx, int dy, const WebRect& clip_rect) {
 void RenderWidget::didActivateCompositor(int compositor_identifier) {
   TRACE_EVENT0("gpu", "RenderWidget::didActivateCompositor");
 
-  RenderThreadImpl::current()->compositor_thread()->
-      AddCompositor(routing_id_, compositor_identifier);
+  CompositorThread* compositor_thread =
+      RenderThreadImpl::current()->compositor_thread();
+  if (compositor_thread)
+    compositor_thread->AddCompositor(routing_id_, compositor_identifier);
 
   is_accelerated_compositing_active_ = true;
   Send(new ViewHostMsg_DidActivateAcceleratedCompositing(

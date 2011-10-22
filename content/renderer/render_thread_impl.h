@@ -134,6 +134,7 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
   void DoNotSuspendWebKitSharedTimer();
   void DoNotNotifyWebKitOfModalLoop();
 
+  // Will be NULL if threaded compositing has not been enabled.
   CompositorThread* compositor_thread() const {
     return compositor_thread_.get();
   }
