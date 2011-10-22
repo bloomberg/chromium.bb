@@ -1423,6 +1423,48 @@ drm_intel_gem_bo_emit_reloc_fence(drm_intel_bo *bo, uint32_t offset,
 				read_domains, write_domain, true);
 }
 
+int
+drm_intel_gem_bo_get_reloc_count(drm_intel_bo *bo)
+{
+	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
+
+	return bo_gem->reloc_count;
+}
+
+/**
+ * Removes existing relocation entries in the BO after "start".
+ *
+ * This allows a user to avoid a two-step process for state setup with
+ * counting up all the buffer objects and doing a
+ * drm_intel_bufmgr_check_aperture_space() before emitting any of the
+ * relocations for the state setup.  Instead, save the state of the
+ * batchbuffer including drm_intel_gem_get_reloc_count(), emit all the
+ * state, and then check if it still fits in the aperture.
+ *
+ * Any further drm_intel_bufmgr_check_aperture_space() queries
+ * involving this buffer in the tree are undefined after this call.
+ */
+void
+drm_intel_gem_bo_clear_relocs(drm_intel_bo *bo, int start)
+{
+	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
+	int i;
+	struct timespec time;
+
+	clock_gettime(CLOCK_MONOTONIC, &time);
+
+	assert(bo_gem->reloc_count >= start);
+	/* Unreference the cleared target buffers */
+	for (i = start; i < bo_gem->reloc_count; i++) {
+		if (bo_gem->reloc_target_info[i].bo != bo) {
+			drm_intel_gem_bo_unreference_locked_timed(bo_gem->
+								  reloc_target_info[i].bo,
+								  time.tv_sec);
+		}
+	}
+	bo_gem->reloc_count = start;
+}
+
 /**
  * Walk the tree of relocations rooted at BO and accumulate the list of
  * validations to be performed and update the relocation buffers with
