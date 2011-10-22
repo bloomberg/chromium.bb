@@ -686,3 +686,18 @@ add_config('arm-tegra2_kaen-release', [
     internal, arm, full, official, release, {
   'board' : 'tegra2_kaen',
 }])
+
+add_config('aura-tot-chrome-pfq-informational', [chrome_pfq_info, {
+  'board' : 'x86-generic',
+  'profile' : 'aura',
+}])
+
+add_config('stumpy-aura-private-bin', [internal, binary, {
+  'board' : 'stumpy',
+  'profile' : 'aura',
+}])
+
+add_config('stumpy-aura-release', [internal, full, official, release, {
+  'board' : 'stumpy',
+  'profile' : 'aura',
+}])

@@ -119,5 +119,14 @@ class CBuildBotTest(mox.MoxTestBase):
           config['gcc_46'] and not config['latest_toolchain'],
           'Config %s: has gcc_46 without latest_toolchain.' % build_name)
 
+  def testBuildToRun(self):
+    """Verify we don't try to run tests without building them."""
+
+    for build_name, config in cbuildbot_config.config.iteritems():
+      self.assertFalse(
+          isinstance(config['useflags'], list) and
+          '-build_tests' in config['useflags'] and config['chrome_tests'],
+          'Config %s: has chrome_tests and use -build_tests.' % build_name)
+
 if __name__ == '__main__':
   unittest.main()
