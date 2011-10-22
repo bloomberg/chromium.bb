@@ -148,6 +148,7 @@ void PPB_Flash_Clipboard_Proxy::OnMsgWritePlainText(
         text.Get(dispatcher()));
     DLOG_IF(WARNING, result != PP_OK)
         << "Write to clipboard failed unexpectedly.";
+    (void)result;  // Prevent warning in release mode.
   }
 }
 
