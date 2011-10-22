@@ -60,6 +60,7 @@
 #define MAYBE_DontPersistSearchbox DISABLED_DontPersistSearchbox
 #define MAYBE_PreloadsInstant DISABLED_PreloadsInstant
 #define MAYBE_ExperimentEnabled DISABLED_ExperimentEnabled
+#define MAYBE_IntranetPathLooksLikeSearch DISABLED_IntranetPathLooksLikeSearch
 #else
 #define MAYBE_OnChangeEvent OnChangeEvent
 #define MAYBE_SetSuggestionsArrayOfStrings SetSuggestionsArrayOfStrings
@@ -81,6 +82,7 @@
 #define MAYBE_DontPersistSearchbox DontPersistSearchbox
 #define MAYBE_PreloadsInstant PreloadsInstant
 #define MAYBE_ExperimentEnabled ExperimentEnabled
+#define MAYBE_IntranetPathLooksLikeSearch IntranetPathLooksLikeSearch
 #endif
 
 #if defined(OS_MACOSX) || defined(OS_LINUX)
@@ -901,6 +903,28 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_PreloadsInstant) {
   EXPECT_TRUE(HasPreview());
   EXPECT_TRUE(browser()->instant()->is_displayable());
   EXPECT_TRUE(browser()->instant()->IsCurrent());
+}
+
+// Tests that instant doesn't fire for intranet paths that look like searches.
+IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_IntranetPathLooksLikeSearch) {
+  ASSERT_TRUE(test_server()->Start());
+  EnableInstant();
+  SetupInstantProvider("search.html");
+
+  // Unfocus the omnibox. This should delete any existing preview contents.
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+  ui_test_utils::ClickOnView(browser(), VIEW_ID_TAB_CONTAINER);
+
+  EXPECT_TRUE(browser()->instant());
+  EXPECT_FALSE(HasPreview());
+
+  // Navigate to a URL that looks like a search (when the scheme is stripped).
+  // It's okay if the host is bogus or the navigation fails, since we only care
+  // that instant doesn't act on it.
+  ui_test_utils::NavigateToURL(browser(), GURL("http://baby/beluga"));
+
+  // Instant should not have tried to load a preview for this "search".
+  EXPECT_FALSE(HasPreview());
 }
 
 // Tests the INSTANT experiment of the field trial.
