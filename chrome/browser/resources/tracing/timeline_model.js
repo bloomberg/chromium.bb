@@ -120,8 +120,8 @@ cr.define('tracing', function() {
    * Comparison between threads that orders first by pid,
    * then by names, then by tid.
    */
-  TimelineThread.compare = function(x,y) {
-    if(x.parent.pid != y.parent.pid) {
+  TimelineThread.compare = function(x, y) {
+    if (x.parent.pid != y.parent.pid) {
       return x.parent.pid - y.parent.pid;
     }
 
@@ -132,7 +132,7 @@ cr.define('tracing', function() {
       return tmp;
     } else if (x.name) {
       return -1;
-    } else if (y.name){
+    } else if (y.name) {
       return 1;
     } else {
       return x.tid - y.tid;
@@ -152,12 +152,32 @@ cr.define('tracing', function() {
   };
 
   TimelineProcess.prototype = {
-    getThread: function(tid) {
+    get numThreads() {
+      var n = 0;
+      for (var p in this.threads) {
+        n++;
+      }
+      return n;
+    },
+
+    getOrCreateThread: function(tid) {
       if (!this.threads[tid])
         this.threads[tid] = new TimelineThread(this, tid);
       return this.threads[tid];
     }
   };
+
+  /**
+   * Computes a simplistic hashcode of the provide name. Used to chose colors
+   * for slices.
+   * @param {string} name The string to hash.
+   */
+  function getStringHash(name) {
+    var hash = 0;
+    for (var i = 0; i < name.length; ++i)
+      hash = (hash + 37 * hash + 11 * name.charCodeAt(i)) % 0xFFFFFFFF;
+    return hash;
+  }
 
   /**
    * Builds a model from an array of TraceEvent objects.
@@ -176,7 +196,14 @@ cr.define('tracing', function() {
   TimelineModel.prototype = {
     __proto__: cr.EventTarget.prototype,
 
-    getProcess: function(pid) {
+    get numProcesses() {
+      var n = 0;
+      for (var p in this.processes)
+        n++;
+      return n;
+    },
+
+    getOrCreateProcess: function(pid) {
       if (!this.processes[pid])
         this.processes[pid] = new TimelineProcess(pid);
       return this.processes[pid];
@@ -202,11 +229,7 @@ cr.define('tracing', function() {
       var nameToColorMap = {};
       function getColor(name) {
         if (!(name in nameToColorMap)) {
-          // Compute a simplistic hashcode of the string so we get consistent
-          // coloring across traces.
-          var hash = 0;
-          for (var i = 0; i < name.length; ++i)
-            hash = (hash + 37 * hash + 11 * name.charCodeAt(i)) % 0xFFFFFFFF;
+          var hash = getStringHash(name);
           nameToColorMap[name] = hash % numColorIds;
         }
         return nameToColorMap[name];
@@ -253,7 +276,8 @@ cr.define('tracing', function() {
           slice.slice.duration = event.ts - slice.slice.start;
 
           // Store the slice in a non-nested subrow.
-          var thread = self.getProcess(event.pid).getThread(event.tid);
+          var thread = self.getOrCreateProcess(event.pid).
+                            getOrCreateThread(event.tid);
           thread.addNonNestedSlice(slice.slice);
           delete state.openNonNestedSlices[name];
         } else {
@@ -265,7 +289,8 @@ cr.define('tracing', function() {
           slice.duration = event.ts - slice.start;
 
           // Store the slice on the correct subrow.
-          var thread = self.getProcess(event.pid).getThread(event.tid);
+          var thread = self.getOrCreateProcess(event.pid)
+                           .getOrCreateThread(event.tid);
           var subRowIndex = state.openSlices.length;
           thread.getSubrow(subRowIndex).push(slice);
 
@@ -297,14 +322,15 @@ cr.define('tracing', function() {
           processEnd(state, event);
         } else if (event.ph == 'M') {
           if (event.name == 'thread_name') {
-            var thread = this.getProcess(event.pid).getThread(event.tid);
+            var thread = this.getOrCreateProcess(event.pid)
+                             .getOrCreateThread(event.tid);
             thread.name = event.args.name;
           } else {
             this.importErrors.push('Unrecognized metadata name: ' + event.name);
           }
         } else {
           this.importErrors.push('Unrecognized event phase: ' + event.ph +
-                          '(' + event.name + ')');
+                                 '(' + event.name + ')');
         }
       }
       this.pruneEmptyThreads();
@@ -322,7 +348,8 @@ cr.define('tracing', function() {
           var event = events[slice.index];
 
           // Store the slice on the correct subrow.
-          var thread = this.getProcess(event.pid).getThread(event.tid);
+          var thread = this.getOrCreateProcess(event.pid)
+                           .getOrCreateThread(event.tid);
           var subRowIndex = state.openSlices.length;
           thread.getSubrow(subRowIndex).push(slice.slice);
 
@@ -347,11 +374,11 @@ cr.define('tracing', function() {
     pruneEmptyThreads: function() {
       for (var pid in this.processes) {
         var process = this.processes[pid];
-        var prunedThreads = [];
+        var prunedThreads = {};
         for (var tid in process.threads) {
           var thread = process.threads[tid];
           if (thread.subRows[0].length || thread.nonNestedSubRows.legnth)
-            prunedThreads.push(thread);
+            prunedThreads[tid] = thread;
         }
         process.threads = prunedThreads;
       }
@@ -411,6 +438,7 @@ cr.define('tracing', function() {
   };
 
   return {
+    getStringHash: getStringHash,
     TimelineSlice: TimelineSlice,
     TimelineThread: TimelineThread,
     TimelineProcess: TimelineProcess,

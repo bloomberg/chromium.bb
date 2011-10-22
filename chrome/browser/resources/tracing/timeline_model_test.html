@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html>
+<!--
+Copyright (c) 2010 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+<head>
+<title></title>
+<script src="http://closure-library.googlecode.com/svn/trunk/closure/goog/base.js"></script>
+<script src="../shared/js/cr.js"></script>
+<script src="../shared/js/cr/event_target.js"></script>
+<script src="timeline_model.js"></script>
+<script>
+  goog.require('goog.testing.jsunit');
+</script>
+
+</head>
+<body>
+<script>
+function testBasicSingleThreadNonnestedParsing() {
+  var events = [
+    {name: 'a', args: {}, pid: 52, ts: 524, cat: 'foo', tid: 53, ph: 'B'},
+    {name: 'a', args: {}, pid: 52, ts: 560, cat: 'foo', tid: 53, ph: 'E'},
+    {name: 'b', args: {}, pid: 52, ts: 629, cat: 'foo', tid: 53, ph: 'B'},
+    {name: 'b', args: {}, pid: 52, ts: 631, cat: 'foo', tid: 53, ph: 'E'}
+  ];
+  var m = new tracing.TimelineModel(events);
+  assertEquals(1, m.numProcesses);
+  var p = m.processes[52];
+  assertNotUndefined(p);
+
+  assertEquals(1, p.numThreads);
+  var t = p.threads[53];
+  assertNotUndefined(t);
+  assertEquals(1, t.subRows.length);
+  assertEquals(53, t.tid);
+  var subRow = t.subRows[0];
+  assertEquals(2, subRow.length);
+  var slice = subRow[0];
+  assertEquals('a', slice.title);
+  assertEquals(0, slice.start);
+  assertEquals((560 - 524) / 1000, slice.duration);
+  assertEquals(0, slice.subSlices.length);
+
+  slice = subRow[1];
+  assertEquals('b', slice.title);
+  assertEquals((629 - 524) / 1000, slice.start);
+  assertEquals((631 - 629) / 1000, slice.duration);
+  assertEquals(0, slice.subSlices.length);
+}
+
+function testNestedParsing() {
+  var events = [
+    {name: 'a', args: {}, pid: 1, ts: 1, cat: 'foo', tid: 1, ph: 'B'},
+    {name: 'b', args: {}, pid: 1, ts: 2, cat: 'foo', tid: 1, ph: 'B'},
+    {name: 'b', args: {}, pid: 1, ts: 3, cat: 'foo', tid: 1, ph: 'E'},
+    {name: 'a', args: {}, pid: 1, ts: 4, cat: 'foo', tid: 1, ph: 'E'},
+  ];
+  var m = new tracing.TimelineModel(events);
+  var p = m.processes[1];
+  var t = p.threads[1];
+  assertEquals(2, t.subRows.length);
+  var subRow = t.subRows[0];
+  assertEquals(1, subRow.length);
+  var slice = subRow[0];
+  assertEquals('a', slice.title);
+  assertEquals((4 - 1) / 1000, slice.duration);
+  assertEquals(1, slice.subSlices.length);
+
+  slice = slice.subSlices[0];
+  assertEquals('b', slice.title);
+  assertEquals((2 - 1) / 1000, slice.start);
+  assertEquals((3 - 2) / 1000, slice.duration);
+  assertEquals(0, slice.subSlices.length);
+
+  subRow = t.subRows[1];
+  slice = subRow[0];
+  assertEquals(t.subRows[0][0].subSlices[0], slice);
+}
+
+function testAutoclosing() {
+  var events = [
+    // Slice that doesn't finish
+    {name: 'a', args: {}, pid: 1, ts: 1, cat: 'foo', tid: 1, ph: 'B'},
+
+    // Slice that does finish to give an 'end time' to make autoclosing work
+    {name: 'b', args: {}, pid: 1, ts: 1, cat: 'foo', tid: 2, ph: 'B'},
+    {name: 'b', args: {}, pid: 1, ts: 2, cat: 'foo', tid: 2, ph: 'E'},
+  ];
+  var m = new tracing.TimelineModel(events);
+  var p = m.processes[1];
+  var t = p.threads[1];
+  var subRow = t.subRows[0];
+  var slice = subRow[0];
+  assertEquals('a', slice.title);
+  assertTrue(slice.didNotFinish);
+  assertEquals(0, slice.start);
+  assertEquals((2 - 1) / 1000, slice.duration);
+}
+
+
+function testNestedAutoclosing() {
+  var events = [
+    // Tasks that dont finish
+    {name: 'a1', args: {}, pid: 1, ts: 1, cat: 'foo', tid: 1, ph: 'B'},
+    {name: 'a2', args: {}, pid: 1, ts: 1.5, cat: 'foo', tid: 1, ph: 'B'},
+
+    // Slice that does finish to give an 'end time' to make autoclosing work
+    {name: 'b', args: {}, pid: 1, ts: 1, cat: 'foo', tid: 2, ph: 'B'},
+    {name: 'b', args: {}, pid: 1, ts: 2, cat: 'foo', tid: 2, ph: 'E'},
+  ];
+  var m = new tracing.TimelineModel(events);
+  var p = m.processes[1];
+  var t = p.threads[1];
+  var subRow = t.subRows[0];
+  var slice = subRow[0];
+  assertEquals('a1', slice.title);
+  assertTrue(slice.didNotFinish);
+  assertEquals(0, slice.start);
+  assertEquals((2 - 1) / 1000, slice.duration);
+
+  var slice = slice.subSlices[0];
+  assertEquals('a2', slice.title);
+  assertTrue(slice.didNotFinish);
+  assertEquals((1.5 - 1) / 1000, slice.start);
+  assertEquals((2 - 1.5) / 1000, slice.duration);
+}
+
+function testTaskColoring() {
+  // The test below depends on hashing of 'a' != 'b'. Fail early if that
+  // assumption is incorrect.
+  assertNotEquals(tracing.getStringHash('a'), tracing.getStringHash('b'));
+
+  var events = [
+    {name: 'a', args: {}, pid: 1, ts: 1, cat: 'foo', tid: 1, ph: 'B'},
+    {name: 'a', args: {}, pid: 1, ts: 2, cat: 'foo', tid: 1, ph: 'E'},
+    {name: 'b', args: {}, pid: 1, ts: 3, cat: 'foo', tid: 1, ph: 'B'},
+    {name: 'b', args: {}, pid: 1, ts: 4, cat: 'foo', tid: 1, ph: 'E'},
+    {name: 'a', args: {}, pid: 1, ts: 5, cat: 'foo', tid: 1, ph: 'B'},
+    {name: 'a', args: {}, pid: 1, ts: 6, cat: 'foo', tid: 1, ph: 'E'},
+  ];
+  var m = new tracing.TimelineModel(events);
+  var p = m.processes[1];
+  var t = p.threads[1];
+  var subRow = t.subRows[0];
+  var a1 = subRow[0];
+  assertEquals('a', a1.title);
+  var b = subRow[1];
+  assertEquals('b', b.title);
+  assertNotEquals(a1.colorId, b.colorId);
+  var a2 = subRow[0];
+  assertEquals('a', a2.title);
+  assertEquals(a1.colorId, a2.colorId);
+}
+
+function testMultipleThreadParsing() {
+  var events = [
+    {name: 'a', args: {}, pid: 1, ts: 1, cat: 'foo', tid: 1, ph: 'B'},
+    {name: 'a', args: {}, pid: 1, ts: 2, cat: 'foo', tid: 1, ph: 'E'},
+    {name: 'b', args: {}, pid: 1, ts: 3, cat: 'foo', tid: 2, ph: 'B'},
+    {name: 'b', args: {}, pid: 1, ts: 4, cat: 'foo', tid: 2, ph: 'E'}
+  ];
+  var m = new tracing.TimelineModel(events);
+  assertEquals(1, m.numProcesses);
+  var p = m.processes[1];
+  assertNotUndefined(p);
+
+  assertEquals(2, p.numThreads);
+
+  // Check thread 1
+  var t = p.threads[1];
+  assertNotUndefined(t);
+  assertEquals(1, t.subRows.length);
+  assertEquals(1, t.tid);
+
+  var subRow = t.subRows[0];
+  assertEquals(1, subRow.length);
+  var slice = subRow[0];
+  assertEquals('a', slice.title);
+  assertEquals(0, slice.start);
+  assertEquals((2 - 1) / 1000, slice.duration);
+  assertEquals(0, slice.subSlices.length);
+
+  // Check thread 2
+  var t = p.threads[2];
+  assertNotUndefined(t);
+  assertEquals(1, t.subRows.length);
+  assertEquals(2, t.tid);
+
+  subRow = t.subRows[0];
+  assertEquals(1, subRow.length);
+  slice = subRow[0];
+  assertEquals('b', slice.title);
+  assertEquals((3 - 1) / 1000, slice.start);
+  assertEquals((4 - 3) / 1000, slice.duration);
+  assertEquals(0, slice.subSlices.length);
+}
+
+function testMultiplePidParsing() {
+  var events = [
+    {name: 'a', args: {}, pid: 1, ts: 1, cat: 'foo', tid: 1, ph: 'B'},
+    {name: 'a', args: {}, pid: 1, ts: 2, cat: 'foo', tid: 1, ph: 'E'},
+    {name: 'b', args: {}, pid: 2, ts: 3, cat: 'foo', tid: 2, ph: 'B'},
+    {name: 'b', args: {}, pid: 2, ts: 4, cat: 'foo', tid: 2, ph: 'E'}
+  ];
+  var m = new tracing.TimelineModel(events);
+  assertEquals(2, m.numProcesses);
+  var p = m.processes[1];
+  assertNotUndefined(p);
+
+  assertEquals(1, p.numThreads);
+
+  // Check process 1 thread 1
+  var t = p.threads[1];
+  assertNotUndefined(t);
+  assertEquals(1, t.subRows.length);
+  assertEquals(1, t.tid);
+
+  var subRow = t.subRows[0];
+  assertEquals(1, subRow.length);
+  var slice = subRow[0];
+  assertEquals('a', slice.title);
+  assertEquals(0, slice.start);
+  assertEquals((2 - 1) / 1000, slice.duration);
+  assertEquals(0, slice.subSlices.length);
+
+  // Check process 2 thread 2
+  var p = m.processes[2];
+  assertNotUndefined(p);
+  assertEquals(1, p.numThreads);
+  var t = p.threads[2];
+  assertNotUndefined(t);
+  assertEquals(1, t.subRows.length);
+  assertEquals(2, t.tid);
+
+  subRow = t.subRows[0];
+  assertEquals(1, subRow.length);
+  slice = subRow[0];
+  assertEquals('b', slice.title);
+  assertEquals((3 - 1) / 1000, slice.start);
+  assertEquals((4 - 3) / 1000, slice.duration);
+  assertEquals(0, slice.subSlices.length);
+
+  // Check getAllThreads.
+  assertArrayEquals([m.processes[1].threads[1], m.processes[2].threads[2]],
+                    m.getAllThreads())
+}
+
+// Thread names
+function testThreadNames() {
+  var events = [
+    {name: 'thread_name', args: {name: 'Thread 1'},
+      pid: 1, ts: 0, tid: 1, ph:  'M'},
+    {name: 'a', args: {}, pid: 1, ts: 1, cat: 'foo', tid: 1, ph: 'B'},
+    {name: 'a', args: {}, pid: 1, ts: 2, cat: 'foo', tid: 1, ph: 'E'},
+    {name: 'b', args: {}, pid: 2, ts: 3, cat: 'foo', tid: 2, ph: 'B'},
+    {name: 'b', args: {}, pid: 2, ts: 4, cat: 'foo', tid: 2, ph: 'E'},
+    {name: 'thread_name', args: {name: 'Thread 2'},
+      pid: 2, ts: 0, tid: 2, ph:  'M'},
+  ];
+  var m = new tracing.TimelineModel(events);
+  assertEquals('Thread 1', m.processes[1].threads[1].name);
+  assertEquals('Thread 2', m.processes[2].threads[2].name);
+}
+
+
+function testImmediateParsing() {
+  var events = [
+    // Need to include immediates inside a task so the timeline
+    // recentering/zeroing doesn't clobber their timestamp.
+    {name: 'a', args: {}, pid: 1, ts: 1, cat: 'foo', tid: 1, ph: 'B'},
+    {name: 'immediate', args: {}, pid: 1, ts: 2, cat: 'foo', tid: 1, ph: 'I'},
+    {name: 'a', args: {}, pid: 1, ts: 4, cat: 'foo', tid: 1, ph: 'E'},
+  ];
+  var m = new tracing.TimelineModel(events);
+  var p = m.processes[1];
+  var t = p.threads[1];
+  assertEquals(2, t.subRows.length);
+  var subRow = t.subRows[0];
+  assertEquals(1, subRow.length);
+  var slice = subRow[0];
+  assertEquals('a', slice.title);
+  assertEquals((4 - 1) / 1000, slice.duration);
+  assertEquals(1, slice.subSlices.length);
+
+  var immed = slice.subSlices[0];
+  assertEquals('immediate', immed.title);
+  assertEquals((2 - 1) / 1000, immed.start);
+  assertEquals(0, immed.duration);
+  assertEquals(0, immed.subSlices.length);
+
+  subRow = t.subRows[1];
+  assertEquals(immed, subRow[0]);
+}
+</script>
+</body>
+</html>
