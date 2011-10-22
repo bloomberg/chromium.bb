@@ -43,7 +43,10 @@ using WebKit::WebString;
 using content::RenderThread;
 
 ExtensionDispatcher::ExtensionDispatcher()
-    : is_webkit_initialized_(false) {
+    : is_webkit_initialized_(false),
+      webrequest_adblock_(false),
+      webrequest_adblock_plus_(false),
+      webrequest_other_(false) {
   const CommandLine& command_line = *(CommandLine::ForCurrentProcess());
   is_extension_process_ =
       command_line.HasSwitch(switches::kExtensionProcess) ||
@@ -75,6 +78,7 @@ bool ExtensionDispatcher::OnControlMessageReceived(
     IPC_MESSAGE_HANDLER(ExtensionMsg_ActivateApplication, OnActivateApplication)
     IPC_MESSAGE_HANDLER(ExtensionMsg_UpdatePermissions, OnUpdatePermissions)
     IPC_MESSAGE_HANDLER(ExtensionMsg_UpdateUserScripts, OnUpdateUserScripts)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_UsingWebRequestAPI, OnUsingWebRequestAPI)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -394,4 +398,11 @@ void ExtensionDispatcher::RegisterExtension(v8::Extension* extension,
     restricted_v8_extensions_.insert(extension->name());
 
   RenderThread::Get()->RegisterExtension(extension);
+}
+
+void ExtensionDispatcher::OnUsingWebRequestAPI(
+    bool adblock, bool adblock_plus, bool other) {
+  webrequest_adblock_ = adblock;
+  webrequest_adblock_plus_ = adblock_plus;
+  webrequest_other_ = other;
 }

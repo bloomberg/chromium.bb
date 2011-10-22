@@ -849,27 +849,15 @@ bool ChromeContentRendererClient::IsAdblockPlusInstalled() {
 }
 
 bool ChromeContentRendererClient::IsAdblockWithWebRequestInstalled() {
-  const ExtensionSet& extensions = *extension_dispatcher_->extensions();
-  for (ExtensionSet::const_iterator it = extensions.begin();
-       it != extensions.end(); ++it) {
-    if (it->second->HasAPIPermission(ExtensionAPIPermission::kExperimental) &&
-        it->second->name().find("Adblock") != std::string::npos &&
-        it->second->name().find("Plus") == std::string::npos)
-      return true;
-  }
-  return false;
+  return extension_dispatcher_->IsAdblockWithWebRequestInstalled();
 }
 
 bool ChromeContentRendererClient::IsAdblockPlusWithWebRequestInstalled() {
-  const ExtensionSet& extensions = *extension_dispatcher_->extensions();
-  for (ExtensionSet::const_iterator it = extensions.begin();
-       it != extensions.end(); ++it) {
-    if (it->second->HasAPIPermission(ExtensionAPIPermission::kExperimental) &&
-        it->second->name().find("Adblock") != std::string::npos &&
-        it->second->name().find("Plus") != std::string::npos)
-      return true;
-  }
-  return false;
+  return extension_dispatcher_->IsAdblockPlusWithWebRequestInstalled();
+}
+
+bool ChromeContentRendererClient::IsOtherExtensionWithWebRequestInstalled() {
+  return extension_dispatcher_->IsOtherExtensionWithWebRequestInstalled();
 }
 
 }  // namespace chrome

@@ -96,6 +96,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   bool IsAdblockPlusInstalled();
   bool IsAdblockWithWebRequestInstalled();
   bool IsAdblockPlusWithWebRequestInstalled();
+  bool IsOtherExtensionWithWebRequestInstalled();
 
   // For testing.
   void SetExtensionDispatcher(ExtensionDispatcher* extension_dispatcher);

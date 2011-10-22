@@ -2943,6 +2943,15 @@ void ExtensionService::SetBeingUpgraded(const Extension* extension,
   extension_runtime_data_[extension->id()].being_upgraded = value;
 }
 
+bool ExtensionService::HasUsedWebRequest(const Extension* extension) {
+  return extension_runtime_data_[extension->id()].has_used_webrequest;
+}
+
+void ExtensionService::SetHasUsedWebRequest(const Extension* extension,
+                                            bool value) {
+  extension_runtime_data_[extension->id()].has_used_webrequest = value;
+}
+
 PropertyBag* ExtensionService::GetPropertyBag(const Extension* extension) {
   return &extension_runtime_data_[extension->id()].property_bag;
 }

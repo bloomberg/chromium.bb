@@ -238,6 +238,12 @@ IPC_MESSAGE_CONTROL5(ExtensionMsg_UpdatePermissions,
 IPC_MESSAGE_ROUTED1(ExtensionMsg_NotifyRenderViewType,
                     content::ViewType /* view_type */)
 
+// Deliver a message sent with ExtensionHostMsg_PostMessage.
+IPC_MESSAGE_CONTROL3(ExtensionMsg_UsingWebRequestAPI,
+                     bool /* adblock */,
+                     bool /* adblock_plus */,
+                     bool /* other_webrequest */)
+
 // Messages sent from the renderer to the browser.
 
 // A renderer sends this message when an extension process starts an API

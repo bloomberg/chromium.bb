@@ -618,7 +618,7 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
   const bool use_adblockplus_histogram = client->IsAdblockPlusInstalled();
   if (use_adblockplus_histogram) {
     UMA_HISTOGRAM_ENUMERATION(
-        "PLT.Abandoned_ExtensionAdblock",
+        "PLT.Abandoned_ExtensionAdblockPlus",
         abandoned_page ? 1 : 0, 2);
     switch (load_type) {
       case NavigationState::NORMAL_LOAD:
@@ -703,6 +703,38 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
       case NavigationState::LINK_LOAD_CACHE_STALE_OK:
         PLT_HISTOGRAM(
             "PLT.BeginToFinish_LinkLoadStaleOk_ExtensionWebRequestAdblockPlus",
+            begin_to_finish_all_loads);
+        break;
+      default:
+        break;
+    }
+  }
+
+  const bool use_webrequest_other_histogram =
+      client->IsOtherExtensionWithWebRequestInstalled();
+  if (use_webrequest_other_histogram) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "PLT.Abandoned_ExtensionWebRequestOther",
+        abandoned_page ? 1 : 0, 2);
+    switch (load_type) {
+      case NavigationState::NORMAL_LOAD:
+        PLT_HISTOGRAM(
+            "PLT.BeginToFinish_NormalLoad_ExtensionWebRequestOther",
+            begin_to_finish_all_loads);
+        break;
+      case NavigationState::LINK_LOAD_NORMAL:
+        PLT_HISTOGRAM(
+            "PLT.BeginToFinish_LinkLoadNormal_ExtensionWebRequestOther",
+            begin_to_finish_all_loads);
+        break;
+      case NavigationState::LINK_LOAD_RELOAD:
+        PLT_HISTOGRAM(
+            "PLT.BeginToFinish_LinkLoadReload_ExtensionWebRequestOther",
+            begin_to_finish_all_loads);
+        break;
+      case NavigationState::LINK_LOAD_CACHE_STALE_OK:
+        PLT_HISTOGRAM(
+            "PLT.BeginToFinish_LinkLoadStaleOk_ExtensionWebRequestOther",
             begin_to_finish_all_loads);
         break;
       default:

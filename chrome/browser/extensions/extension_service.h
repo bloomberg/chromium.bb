@@ -241,6 +241,12 @@ class ExtensionService
   bool IsBeingUpgraded(const Extension* extension);
   void SetBeingUpgraded(const Extension* extension, bool value);
 
+  // Getter and setter for the flag that specifies if the extension has used
+  // the webrequest API.
+  // TODO(mpcomplete): remove. http://crbug.com/100411
+  bool HasUsedWebRequest(const Extension* extension);
+  void SetHasUsedWebRequest(const Extension* extension, bool value);
+
   // Getter for the extension's runtime data PropertyBag.
   PropertyBag* GetPropertyBag(const Extension* extension);
 
@@ -590,6 +596,9 @@ class ExtensionService
 
     // True while the extension is being upgraded.
     bool being_upgraded;
+
+    // True if the extension has used the webRequest API.
+    bool has_used_webrequest;
 
     // Generic bag of runtime data that users can associate with extensions.
     PropertyBag property_bag;

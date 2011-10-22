@@ -70,6 +70,17 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
 
   void SetTestExtensionId(const std::string& extension_id);
 
+  // TODO(mpcomplete): remove. http://crbug.com/100411
+  bool IsAdblockWithWebRequestInstalled() const {
+    return webrequest_adblock_;
+  }
+  bool IsAdblockPlusWithWebRequestInstalled() const {
+    return webrequest_adblock_plus_;
+  }
+  bool IsOtherExtensionWithWebRequestInstalled() const {
+    return webrequest_other_;
+  }
+
  private:
   friend class RenderViewTest;
 
@@ -98,6 +109,10 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
                            const URLPatternSet& explicit_hosts,
                            const URLPatternSet& scriptable_hosts);
   void OnUpdateUserScripts(base::SharedMemoryHandle table);
+  void OnUsingWebRequestAPI(
+      bool adblock,
+      bool adblock_plus,
+      bool other_webrequest);
 
   // Update the list of active extensions that will be reported when we crash.
   void UpdateActiveExtensions();
@@ -146,6 +161,12 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
   bool is_webkit_initialized_;
 
   std::string test_extension_id_;
+
+  // Status of webrequest usage for known extensions.
+  // TODO(mpcomplete): remove. http://crbug.com/100411
+  bool webrequest_adblock_;
+  bool webrequest_adblock_plus_;
+  bool webrequest_other_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionDispatcher);
 };

@@ -21,6 +21,7 @@
 #include "chrome/browser/extensions/extension_message_handler.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
+#include "chrome/browser/extensions/extension_webrequest_api.h"
 #include "chrome/browser/geolocation/chrome_access_token_store.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/net/chrome_net_log.h"
@@ -264,6 +265,8 @@ void ChromeContentBrowserClient::BrowserRenderProcessHostCreated(
 
   host->Send(new ChromeViewMsg_SetIsIncognitoProcess(
       profile->IsOffTheRecord()));
+
+  SendExtensionWebRequestStatusToHost(host);
 }
 
 void ChromeContentBrowserClient::PluginProcessHostCreated(

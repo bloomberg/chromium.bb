@@ -6,11 +6,14 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_prefs.h"
@@ -19,10 +22,12 @@
 #include "chrome/browser/extensions/extension_webrequest_api_constants.h"
 #include "chrome/browser/extensions/extension_webrequest_time_tracker.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_error_utils.h"
+#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_message_filter.h"
@@ -282,6 +287,24 @@ bool InDecreasingExtensionInstallationTimeOrder(
     const linked_ptr<ExtensionWebRequestEventRouter::EventResponseDelta>& a,
     const linked_ptr<ExtensionWebRequestEventRouter::EventResponseDelta>& b) {
   return a->extension_install_time > b->extension_install_time;
+}
+
+void NotifyWebRequestAPIUsed(void* profile_id, const Extension* extension) {
+  Profile* profile = reinterpret_cast<Profile*>(profile_id);
+  if (!g_browser_process->profile_manager()->IsValidProfile(profile))
+    return;
+
+  if (profile->GetExtensionService()->HasUsedWebRequest(extension))
+    return;
+  profile->GetExtensionService()->SetHasUsedWebRequest(extension, true);
+
+  content::BrowserContext* browser_context = profile;
+  for (RenderProcessHost::iterator it = RenderProcessHost::AllHostsIterator();
+       !it.IsAtEnd(); it.Advance()) {
+    RenderProcessHost* host = it.GetCurrentValue();
+    if (host->browser_context() == browser_context)
+      SendExtensionWebRequestStatusToHost(host);
+  }
 }
 
 }  // namespace
@@ -1683,10 +1706,40 @@ bool WebRequestEventHandled::RunImpl() {
       profile_id(), extension_id(), event_name, sub_event_name, request_id,
       response.release());
 
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
+      &NotifyWebRequestAPIUsed,
+      profile_id(), make_scoped_refptr(GetExtension())));
+
   return true;
 }
 
 bool WebRequestHandlerBehaviorChanged::RunImpl() {
   WebCacheManager::GetInstance()->ClearCacheOnNavigation();
   return true;
+}
+
+void SendExtensionWebRequestStatusToHost(RenderProcessHost* host) {
+  Profile* profile = Profile::FromBrowserContext(host->browser_context());
+  if (!profile || !profile->GetExtensionService())
+    return;
+
+  bool adblock = false;
+  bool adblock_plus = false;
+  bool other = false;
+  const ExtensionList* extensions =
+      profile->GetExtensionService()->extensions();
+  for (ExtensionList::const_iterator it = extensions->begin();
+       it != extensions->end(); ++it) {
+    if (profile->GetExtensionService()->HasUsedWebRequest(*it)) {
+      if ((*it)->name().find("Adblock Plus") != std::string::npos) {
+        adblock_plus = true;
+      } else if ((*it)->name().find("AdBlock") != std::string::npos) {
+        adblock = true;
+      } else {
+        other = true;
+      }
+    }
+  }
+
+  host->Send(new ExtensionMsg_UsingWebRequestAPI(adblock, adblock_plus, other));
 }
