@@ -32,7 +32,7 @@ static bool g_has_registered_log_handler = false;
 void HostLogHandler::RegisterLogMessageHandler() {
   base::AutoLock lock(g_logging_lock);
 
-  if (!g_has_registered_log_handler)
+  if (g_has_registered_log_handler)
     return;
 
   LOG(INFO) << "Registering global log handler";
@@ -45,6 +45,7 @@ void HostLogHandler::RegisterLogMessageHandler() {
   // Note that this will not log anything until a scriptable object instance
   // has been created to handle the log message display.
   logging::SetLogMessageHandler(&LogToUI);
+  g_has_registered_log_handler = true;
 }
 
 // static
