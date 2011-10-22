@@ -108,23 +108,29 @@ TEST_F(TypedUrlModelAssociatorTest, MergeUrls) {
                                                &new_row3, &new_visits3));
   EXPECT_TRUE(URLsEqual(new_row3, expected3));
 
+  // Create one node in history DB with timestamp of 3, and one node in sync
+  // DB with timestamp of 4. Result should contain one new item (4).
   history::VisitVector visits4;
   history::URLRow row4(MakeTypedUrlRow("http://pie.com/", "pie",
-                                       2, 4, false, &visits4));
+                                       2, 3, false, &visits4));
   sync_pb::TypedUrlSpecifics specs4(MakeTypedUrlSpecifics("http://pie.com/",
                                                           "pie2",
-                                                          3, true));
+                                                          4, false));
   history::VisitVector expected_visits4;
-  history::URLRow expected4(MakeTypedUrlRow("http://pie.com/", "pie",
+  history::URLRow expected4(MakeTypedUrlRow("http://pie.com/", "pie2",
                                             2, 4, false, &expected_visits4));
   history::URLRow new_row4(GURL("http://pie.com/"));
   std::vector<history::VisitInfo> new_visits4;
   EXPECT_EQ(TypedUrlModelAssociator::DIFF_UPDATE_NODE |
+            TypedUrlModelAssociator::DIFF_LOCAL_TITLE_CHANGED |
+            TypedUrlModelAssociator::DIFF_LOCAL_ROW_CHANGED |
             TypedUrlModelAssociator::DIFF_LOCAL_VISITS_ADDED,
             TypedUrlModelAssociator::MergeUrls(specs4, row4, &visits4,
                                                &new_row4, &new_visits4));
   EXPECT_EQ(1U, new_visits4.size());
+  EXPECT_EQ(specs4.visits(0), new_visits4[0].first.ToInternalValue());
   EXPECT_TRUE(URLsEqual(new_row4, expected4));
+  EXPECT_EQ(2U, visits4.size());
 
   history::VisitVector visits5;
   history::URLRow row5(MakeTypedUrlRow("http://pie.com/", "pie",
@@ -139,14 +145,52 @@ TEST_F(TypedUrlModelAssociatorTest, MergeUrls) {
   std::vector<history::VisitInfo> new_visits5;
 
   // UPDATE_NODE should be set because row5 has a newer last_visit timestamp.
-  // LOCAL_VISITS_ADDED should be set because there now should be two visits.
   EXPECT_EQ(TypedUrlModelAssociator::DIFF_UPDATE_NODE |
-            TypedUrlModelAssociator::DIFF_LOCAL_VISITS_ADDED,
+            TypedUrlModelAssociator::DIFF_NONE,
             TypedUrlModelAssociator::MergeUrls(specs5, row5, &visits5,
                                                &new_row5, &new_visits5));
   EXPECT_TRUE(URLsEqual(new_row5, expected5));
-  EXPECT_EQ(1U, new_visits5.size());
+  EXPECT_EQ(0U, new_visits5.size());
+}
 
+TEST_F(TypedUrlModelAssociatorTest, MergeUrlsAfterExpiration) {
+  // Tests to ensure that we don't resurrect expired URLs (URLs that have been
+  // deleted from the history DB but still exist in the sync DB).
+
+  // First, create a history row that has two visits, with timestamps 2 and 3.
+  history::VisitVector(history_visits);
+  history_visits.push_back(history::VisitRow(
+      0, base::Time::FromInternalValue(2), 0, content::PAGE_TRANSITION_TYPED,
+      0));
+  history::URLRow history_url(MakeTypedUrlRow("http://pie.com/", "pie",
+                                              2, 3, false, &history_visits));
+
+  // Now, create a sync node with visits at timestamps 1, 2, 3, 4.
+  sync_pb::TypedUrlSpecifics node(MakeTypedUrlSpecifics("http://pie.com/",
+                                                        "pie", 1, false));
+  node.add_visits(2);
+  node.add_visits(3);
+  node.add_visits(4);
+  node.add_visit_transitions(2);
+  node.add_visit_transitions(3);
+  node.add_visit_transitions(4);
+  history::URLRow new_history_url(history_url.url());
+  std::vector<history::VisitInfo> new_visits;
+  EXPECT_EQ(TypedUrlModelAssociator::DIFF_NONE |
+            TypedUrlModelAssociator::DIFF_LOCAL_VISITS_ADDED,
+            TypedUrlModelAssociator::MergeUrls(
+                node, history_url, &history_visits, &new_history_url,
+                &new_visits));
+  EXPECT_TRUE(URLsEqual(history_url, new_history_url));
+  EXPECT_EQ(1U, new_visits.size());
+  EXPECT_EQ(4U, new_visits[0].first.ToInternalValue());
+  // We should not sync the visit with timestamp #1 since it is earlier than
+  // any other visit for this URL in the history DB. But we should sync visit
+  // #4.
+  EXPECT_EQ(3U, history_visits.size());
+  EXPECT_EQ(2U, history_visits[0].visit_time.ToInternalValue());
+  EXPECT_EQ(3U, history_visits[1].visit_time.ToInternalValue());
+  EXPECT_EQ(4U, history_visits[2].visit_time.ToInternalValue());
 }
 
 TEST_F(TypedUrlModelAssociatorTest, DiffVisitsSame) {
@@ -176,11 +220,14 @@ TEST_F(TypedUrlModelAssociatorTest, DiffVisitsRemove) {
   history::VisitVector old_visits;
   sync_pb::TypedUrlSpecifics new_url;
 
-  const int64 visits_left[] = { 1, 1024, 1500, 2065, 6000,
+  const int64 visits_left[] = { 1, 2, 1024, 1500, 2065, 6000,
                                 65534, 1237684, 2237684 };
   const int64 visits_right[] = { 1024, 2065, 65534, 1237684 };
 
-  const int64 visits_removed[] = { 1, 1500, 6000, 2237684 };
+  // DiffVisits will not remove the first visit, because we never delete visits
+  // from the start of the array (since those visits can get truncated by the
+  // size-limiting code).
+  const int64 visits_removed[] = { 1500, 6000, 2237684 };
 
   for (size_t c = 0; c < arraysize(visits_left); ++c) {
     old_visits.push_back(history::VisitRow(
@@ -199,7 +246,7 @@ TEST_F(TypedUrlModelAssociatorTest, DiffVisitsRemove) {
   TypedUrlModelAssociator::DiffVisits(old_visits, new_url,
                                       &new_visits, &removed_visits);
   EXPECT_TRUE(new_visits.empty());
-  ASSERT_TRUE(removed_visits.size() == arraysize(visits_removed));
+  ASSERT_EQ(removed_visits.size(), arraysize(visits_removed));
   for (size_t c = 0; c < arraysize(visits_removed); ++c) {
     EXPECT_EQ(removed_visits[c].visit_time.ToInternalValue(),
               visits_removed[c]);

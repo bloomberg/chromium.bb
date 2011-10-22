@@ -83,6 +83,7 @@ bool TypedUrlModelAssociator::FixupURLAndGetVisits(
   // create a new visit whose timestamp is the same as the last_visit time.
   // This is a workaround for http://crbug.com/84258.
   if (visits->empty()) {
+    VLOG(1) << "Found empty visits for URL: " << url->url();
     history::VisitRow visit(
         url->id(), url->last_visit(), 0, content::PAGE_TRANSITION_TYPED, 0);
     visits->push_back(visit);
@@ -140,6 +141,7 @@ bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
        ix != typed_urls.end();) {
     if (IsAbortPending())
       return false;
+    DCHECK_EQ(0U, visit_vectors.count(ix->id()));
     if (!FixupURLAndGetVisits(
             history_backend_, &(*ix), &(visit_vectors[ix->id()]))) {
       error->Reset(FROM_HERE, "Could not get the url's visits.", model_type());
@@ -579,6 +581,7 @@ TypedUrlModelAssociator::MergeResult TypedUrlModelAssociator::MergeUrls(
   size_t history_num_visits = visits->size();
   size_t node_visit_index = 0;
   size_t history_visit_index = 0;
+  base::Time earliest_history_time = (*visits)[0].visit_time;
   // Walk through the two sets of visits and figure out if any new visits were
   // added on either side.
   while (node_visit_index < node_num_visits ||
@@ -601,11 +604,16 @@ TypedUrlModelAssociator::MergeResult TypedUrlModelAssociator::MergeUrls(
       // Found a visit in the sync node that doesn't exist in the history DB, so
       // add it to our list of new visits and set the appropriate flag so the
       // caller will update the history DB.
-      different |= DIFF_LOCAL_VISITS_ADDED;
-      new_visits->push_back(history::VisitInfo(
-          node_time,
-          content::PageTransitionFromInt(
-              node.visit_transitions(node_visit_index))));
+      // If the node visit is older than any existing visit in the history DB,
+      // don't re-add it - this keeps us from resurrecting visits that were
+      // aged out locally.
+      if (node_time > earliest_history_time) {
+        different |= DIFF_LOCAL_VISITS_ADDED;
+        new_visits->push_back(history::VisitInfo(
+            node_time,
+            content::PageTransitionFromInt(
+                node.visit_transitions(node_visit_index))));
+      }
       // This visit is added to visits below.
       ++node_visit_index;
     } else {
@@ -750,7 +758,13 @@ void TypedUrlModelAssociator::DiffVisits(
     base::Time new_visit_time =
         base::Time::FromInternalValue(new_url.visits(new_index));
     if (old_visits[old_index].visit_time < new_visit_time) {
-      removed_visits->push_back(old_visits[old_index]);
+      if (new_index > 0) {
+        // If there are visits missing from the start of the node, that
+        // means that they were probably clipped off due to our code that
+        // limits the size of the sync nodes - don't delete them from our
+        // local history.
+        removed_visits->push_back(old_visits[old_index]);
+      }
       ++old_index;
     } else if (old_visits[old_index].visit_time > new_visit_time) {
       new_visits->push_back(history::VisitInfo(

@@ -96,6 +96,7 @@ void TypedUrlChangeProcessor::HandleURLsModified(
 
 bool TypedUrlChangeProcessor::CreateOrUpdateSyncNode(
     history::URLRow url, sync_api::WriteTransaction* trans) {
+  DCHECK_GT(url.typed_count(), 0);
   // Get the visits for this node.
   history::VisitVector visit_vector;
   if (!TypedUrlModelAssociator::FixupURLAndGetVisits(
@@ -185,6 +186,7 @@ bool TypedUrlChangeProcessor::ShouldSyncVisit(
   // tend to be more broadly distributed such that there's no need to sync up
   // every visit to preserve their relative ordering.
   return (transition == content::PAGE_TRANSITION_TYPED &&
+          typed_count > 0 &&
           (typed_count < kTypedUrlVisitThrottleThreshold ||
            (typed_count % kTypedUrlVisitThrottleMultiple) == 0));
 }

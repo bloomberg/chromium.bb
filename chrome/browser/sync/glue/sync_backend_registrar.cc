@@ -123,7 +123,7 @@ syncable::ModelTypeSet SyncBackendRegistrar::ConfigureDataTypes(
     filtered_types_to_add.erase(syncable::TYPED_URLS);
   }
   if (workers_.count(GROUP_PASSWORD) == 0) {
-    LOG(WARNING) << "No history worker -- removing PASSWORDS";
+    LOG(WARNING) << "No password worker -- removing PASSWORDS";
     filtered_types_to_add.erase(syncable::PASSWORDS);
   }
 
@@ -289,4 +289,3 @@ bool SyncBackendRegistrar::IsCurrentThreadSafeForModel(
 }
 
 }  // namespace browser_sync
-

@@ -267,8 +267,10 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
                                            int64 last_visit,
                                            bool hidden,
                                            history::VisitVector* visits) {
+    // Give each URL a unique ID, to mimic the behavior of the real database.
+    static int unique_url_id = 0;
     GURL gurl(url);
-    URLRow history_url(gurl);
+    URLRow history_url(gurl, ++unique_url_id);
     history_url.set_title(UTF8ToUTF16(title));
     history_url.set_typed_count(typed_count);
     history_url.set_last_visit(
