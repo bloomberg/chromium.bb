@@ -9,6 +9,7 @@
 #include <netinet/in.h>
 #endif
 
+#include "base/bind.h"
 #include "base/eintr_wrapper.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
@@ -98,8 +99,9 @@ void DevToolsRemoteListenSocketTester::SetUp() {
   thread_->StartWithOptions(options);
   loop_ = static_cast<MessageLoopForIO*>(thread_->message_loop());
 
-  loop_->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &DevToolsRemoteListenSocketTester::Listen));
+  loop_->PostTask(
+      FROM_HERE,
+      base::Bind(&DevToolsRemoteListenSocketTester::Listen, this));
 
   // verify Listen succeeded
   ASSERT_TRUE(NextAction(TestTimeouts::action_timeout_ms()));
@@ -134,8 +136,9 @@ void DevToolsRemoteListenSocketTester::TearDown() {
   ASSERT_TRUE(NextAction(TestTimeouts::action_timeout_ms()));
   ASSERT_EQ(ACTION_CLOSE, last_action_.type());
 
-  loop_->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &DevToolsRemoteListenSocketTester::Shutdown));
+  loop_->PostTask(
+      FROM_HERE,
+      base::Bind(&DevToolsRemoteListenSocketTester::Shutdown, this));
   ASSERT_TRUE(NextAction(TestTimeouts::action_timeout_ms()));
   ASSERT_EQ(ACTION_SHUTDOWN, last_action_.type());
 
@@ -333,8 +336,9 @@ void DevToolsRemoteListenSocketTester::TestClientSend() {
 }
 
 void DevToolsRemoteListenSocketTester::TestServerSend() {
-  loop_->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &DevToolsRemoteListenSocketTester::SendFromTester));
+  loop_->PostTask(
+      FROM_HERE,
+      base::Bind(&DevToolsRemoteListenSocketTester::SendFromTester, this));
   ASSERT_TRUE(NextAction(TestTimeouts::action_timeout_ms()));
   ASSERT_EQ(ACTION_SEND, last_action_.type());
   // TODO(erikkay): Without this sleep, the recv seems to fail a small amount

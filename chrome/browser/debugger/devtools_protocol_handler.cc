@@ -4,6 +4,7 @@
 
 #include "chrome/browser/debugger/devtools_protocol_handler.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "chrome/browser/debugger/inspectable_tab_proxy.h"
 #include "chrome/browser/debugger/debugger_remote_service.h"
@@ -47,7 +48,7 @@ DevToolsProtocolHandler::~DevToolsProtocolHandler() {
 void DevToolsProtocolHandler::Start() {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(this, &DevToolsProtocolHandler::Init));
+      base::Bind(&DevToolsProtocolHandler::Init, this));
 }
 
 void DevToolsProtocolHandler::Init() {
@@ -58,7 +59,7 @@ void DevToolsProtocolHandler::Init() {
 void DevToolsProtocolHandler::Stop() {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(this, &DevToolsProtocolHandler::Teardown));
+      base::Bind(&DevToolsProtocolHandler::Teardown, this));
   tool_to_listener_map_.clear();  // Releases all scoped_refptr's to listeners
 }
 
@@ -95,8 +96,8 @@ void DevToolsProtocolHandler::HandleMessage(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(
-          it->second.get(), &DevToolsRemoteListener::HandleMessage, message));
+      base::Bind(&DevToolsRemoteListener::HandleMessage, it->second.get(),
+                 message));
 }
 
 void DevToolsProtocolHandler::Send(const DevToolsRemoteMessage& message) {
@@ -120,7 +121,6 @@ void DevToolsProtocolHandler::OnConnectionLost() {
        ++it) {
     BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(
-          it->second.get(), &DevToolsRemoteListener::OnConnectionLost));
+      base::Bind(&DevToolsRemoteListener::OnConnectionLost, it->second.get()));
   }
 }

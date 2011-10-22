@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
@@ -362,8 +363,9 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
   }
 
   static void TerminateWorker(scoped_refptr<WorkerData> worker_data) {
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, NewRunnableFunction(
-        &TerminateWorkerOnIOThread, worker_data));
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&TerminateWorkerOnIOThread, worker_data));
     ui_test_utils::RunMessageLoop();
   }
 
@@ -391,8 +393,9 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
 
   static scoped_refptr<WorkerData> WaitForFirstSharedWorker() {
     scoped_refptr<WorkerData> worker_data(new WorkerData());
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, NewRunnableFunction(
-        &WaitForFirstSharedWorkerOnIOThread, worker_data));
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&WaitForFirstSharedWorkerOnIOThread, worker_data));
     ui_test_utils::RunMessageLoop();
     return worker_data;
   }

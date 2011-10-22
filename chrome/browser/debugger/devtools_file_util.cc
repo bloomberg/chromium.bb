@@ -4,9 +4,9 @@
 
 #include "chrome/browser/debugger/devtools_file_util.h"
 
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/memory/ref_counted.h"
-
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -61,10 +61,7 @@ class SaveAsDialog : public SelectFileDialog::Listener,
 
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
-        NewRunnableFunction(
-            &SaveAsDialog::WriteFile,
-            path,
-            content_));
+        base::Bind(&SaveAsDialog::WriteFile, path, content_));
     Release();  // Balanced in ::Show.
   }
 
