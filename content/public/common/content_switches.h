@@ -76,6 +76,7 @@ extern const char kEnableMediaStream[];
 extern const char kEnableMonitorProfile[];
 extern const char kEnableOriginBoundCerts[];
 extern const char kEnablePreparsedJsCaching[];
+extern const char kEnablePrivilegedWebGLExtensions[];
 extern const char kEnableSSLCachedInfo[];
 extern const char kEnableSandboxLogging[];
 extern const char kEnableSeccompSandbox[];

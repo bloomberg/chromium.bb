@@ -536,6 +536,9 @@ WebPreferences ExtensionHost::GetWebkitPrefs() {
   webkit_prefs.loads_images_automatically = true;
   webkit_prefs.javascript_enabled = true;
 
+  // Enable privileged WebGL extensions.
+  webkit_prefs.privileged_webgl_extensions_enabled = true;
+
   if (extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_POPUP ||
       extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_DIALOG ||
       extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE ||

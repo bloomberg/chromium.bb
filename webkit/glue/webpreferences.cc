@@ -69,6 +69,7 @@ WebPreferences::WebPreferences()
       webaudio_enabled(false),
       experimental_webgl_enabled(false),
       gl_multisampling_enabled(true),
+      privileged_webgl_extensions_enabled(false),
       show_composited_layer_borders(false),
       show_composited_layer_tree(false),
       show_fps_counter(false),
@@ -235,6 +236,11 @@ void WebPreferences::Apply(WebView* web_view) const {
 
   // Disable GL multisampling if requested on command line.
   settings->setOpenGLMultisamplingEnabled(gl_multisampling_enabled);
+
+  // Enable privileged WebGL extensions for Chrome extensions or if requested
+  // on command line.
+  settings->setPrivilegedWebGLExtensionsEnabled(
+      privileged_webgl_extensions_enabled);
 
   // Display colored borders around composited render layers if requested
   // on command line.

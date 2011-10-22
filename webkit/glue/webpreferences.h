@@ -83,6 +83,7 @@ struct WebPreferences {
   bool webaudio_enabled;
   bool experimental_webgl_enabled;
   bool gl_multisampling_enabled;
+  bool privileged_webgl_extensions_enabled;
   bool show_composited_layer_borders;
   bool show_composited_layer_tree;
   bool show_fps_counter;
