@@ -225,7 +225,7 @@ logutil = (function() {
         if (end != -1)
           parsedDump = JSON.parse(logFileContents.substring(0, end) + ']}');
       }
-      catch (error) {
+      catch (error2) {
       }
     }
 

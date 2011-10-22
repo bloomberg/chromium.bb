@@ -31,11 +31,13 @@ var HSTSView = (function() {
     this.queryInput_ = $(HSTSView.QUERY_INPUT_ID);
     this.queryOutputDiv_ = $(HSTSView.QUERY_OUTPUT_DIV_ID);
 
-    form = $(HSTSView.ADD_FORM_ID);
+    var form = $(HSTSView.ADD_FORM_ID);
     form.addEventListener('submit', this.onSubmitAdd_.bind(this), false);
+
     form = $(HSTSView.DELETE_FORM_ID);
     form.addEventListener('submit', this.onSubmitDelete_.bind(this), false);
-    var form = $(HSTSView.QUERY_FORM_ID);
+
+    form = $(HSTSView.QUERY_FORM_ID);
     form.addEventListener('submit', this.onSubmitQuery_.bind(this), false);
 
     g_browser.addHSTSObserver(this);
