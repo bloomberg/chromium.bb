@@ -93,7 +93,10 @@ class PluginDirWatcherDelegate : public FilePathWatcher::Delegate {
     VLOG(1) << "Watched path changed: " << path.value();
     // Make the plugin list update itself
     webkit::npapi::PluginList::Singleton()->RefreshPlugins();
-    PluginService::GetInstance()->PurgePluginListCache(NULL, false);
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&PluginService::PurgePluginListCache,
+                   static_cast<content::BrowserContext*>(NULL), false));
   }
 
   virtual void OnFilePathError(const FilePath& path) OVERRIDE {
