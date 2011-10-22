@@ -67,8 +67,6 @@ class PhoneNumber : public FormGroup {
   };
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(PhoneNumberTest, Matcher);
-
   // FormGroup:
   virtual void GetSupportedTypes(FieldTypeSet* supported_types) const OVERRIDE;
 
@@ -76,7 +74,7 @@ class PhoneNumber : public FormGroup {
   bool NormalizePhone();
 
   // Returns the locale for this phone number, based on the |profile_|.
-  std::string locale() const;
+  std::string GetLocale() const;
 
   // Updates the cached parsed number if the profile's locale has changed
   // since the last time the cache was updated.

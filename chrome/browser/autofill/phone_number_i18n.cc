@@ -68,7 +68,7 @@ bool ParsePhoneNumberInternal(const string16& value,
   // The |locale| should already be sanitized.
   DCHECK_EQ(2U, locale.size());
   if (phone_util->Parse(number_text, locale.c_str(), i18n_number) !=
-          i18n::phonenumbers::PhoneNumberUtil::NO_PARSING_ERROR) {
+      i18n::phonenumbers::PhoneNumberUtil::NO_PARSING_ERROR) {
     return false;
   }
 
@@ -224,7 +224,7 @@ bool PhoneNumbersMatch(const string16& number_a,
   // Parse phone numbers based on the locale
   PhoneNumber i18n_number1;
   if (phone_util->Parse(UTF16ToUTF8(number_a), locale.c_str(), &i18n_number1) !=
-          i18n::phonenumbers::PhoneNumberUtil::NO_PARSING_ERROR) {
+      i18n::phonenumbers::PhoneNumberUtil::NO_PARSING_ERROR) {
     return false;
   }
 
@@ -253,6 +253,12 @@ bool PhoneNumbersMatch(const string16& number_a,
 PhoneObject::PhoneObject(const string16& number, const std::string& locale)
     : locale_(SanitizeLocaleCode(locale)),
       i18n_number_(NULL) {
+  // TODO(isherman): Autofill profiles should always have a |locale| set, but in
+  // some cases it should be marked as implicit.  Otherwise, phone numbers
+  // might behave differently when they are synced across computers:
+  // [ http://crbug.com/100845 ].  Once the bug is fixed, add a DCHECK here to
+  // verify.
+
   scoped_ptr<PhoneNumber> i18n_number(new PhoneNumber);
   if (ParsePhoneNumberInternal(number, locale_, &country_code_, &city_code_,
                                &number_, i18n_number.get())) {

@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/phone_number_i18n.h"
+#include "content/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using autofill_i18n::NormalizePhoneNumber;
@@ -11,7 +13,18 @@ using autofill_i18n::ParsePhoneNumber;
 using autofill_i18n::ConstructPhoneNumber;
 using autofill_i18n::PhoneNumbersMatch;
 
-typedef testing::Test PhoneNumberI18NTest;
+class PhoneNumberI18NTest : public testing::Test {
+ public:
+  // In order to access the application locale -- which the tested functions do
+  // internally -- this test must run on the UI thread.
+  PhoneNumberI18NTest() : ui_thread_(BrowserThread::UI, &message_loop_) {}
+
+ private:
+  MessageLoopForUI message_loop_;
+  BrowserThread ui_thread_;
+
+  DISALLOW_COPY_AND_ASSIGN(PhoneNumberI18NTest);
+};
 
 TEST_F(PhoneNumberI18NTest, NormalizePhoneNumber) {
   // "Large" digits.

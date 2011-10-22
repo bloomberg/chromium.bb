@@ -5,6 +5,7 @@
 #include <string>
 
 #include "base/file_util.h"
+#include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
 #include "base/stl_util.h"
 #include "base/string16.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/webdata/autofill_change.h"
 #include "chrome/browser/webdata/autofill_entry.h"
 #include "chrome/browser/webdata/web_database.h"
+#include "content/browser/browser_thread.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/guid.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -128,7 +130,13 @@ void CreditCard32FromStatement(const sql::Statement& s,
 // |WebDatabase::MigrateOldVersionsAsNeeded()|.
 class WebDatabaseMigrationTest : public testing::Test {
  public:
-  WebDatabaseMigrationTest() {}
+  // In order to access the application locale -- which the tested functions do
+  // internally -- this test must run on the UI thread.
+  // TODO(isherman): The WebDatabase code should probably verify that it is
+  // running on the DB thread.  Once that verification is added, this code will
+  // need to be updated to create both threads.
+  WebDatabaseMigrationTest()
+      : ui_thread_(BrowserThread::UI, &message_loop_for_ui_) {}
   virtual ~WebDatabaseMigrationTest() {}
 
   virtual void SetUp() {
@@ -180,6 +188,8 @@ class WebDatabaseMigrationTest : public testing::Test {
   void MigrateVersion28Assertions();
 
  private:
+  MessageLoopForUI message_loop_for_ui_;
+  BrowserThread ui_thread_;
   ScopedTempDir temp_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDatabaseMigrationTest);

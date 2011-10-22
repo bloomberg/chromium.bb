@@ -16,6 +16,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "content/browser/browser_thread.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "unicode/coll.h"
@@ -355,6 +356,9 @@ class CountryNames {
  public:
   static CountryNames* GetInstance();
 
+  // Returns the application locale.
+  const std::string ApplicationLocale();
+
   // Returns the country code corresponding to |country|, which should be a
   // country code or country name localized to |locale|.
   const std::string GetCountryCode(const string16& country,
@@ -404,12 +408,24 @@ class CountryNames {
   // Maps ICU locale names to their corresponding collators.
   std::map<std::string, icu::Collator*> collators_;
 
+  // Caches the application locale, for thread-safe access.
+  std::string application_locale_;
+
   DISALLOW_COPY_AND_ASSIGN(CountryNames);
 };
 
 // static
 CountryNames* CountryNames::GetInstance() {
   return Singleton<CountryNames>::get();
+}
+
+const std::string CountryNames::ApplicationLocale() {
+  if (application_locale_.empty()) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    application_locale_ = g_browser_process->GetApplicationLocale();
+  }
+
+  return application_locale_;
 }
 
 CountryNames::CountryNames() {
@@ -628,7 +644,7 @@ const std::string AutofillCountry::GetCountryCode(const string16& country,
 
 // static
 const std::string AutofillCountry::ApplicationLocale() {
-  return g_browser_process->GetApplicationLocale();
+  return CountryNames::GetInstance()->ApplicationLocale();
 }
 
 AutofillCountry::AutofillCountry(const std::string& country_code,

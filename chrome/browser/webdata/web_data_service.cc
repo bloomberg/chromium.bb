@@ -8,6 +8,7 @@
 #include "base/message_loop.h"
 #include "base/stl_util.h"
 #include "base/threading/thread.h"
+#include "chrome/browser/autofill/autofill_country.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/profiles/profile.h"
@@ -540,6 +541,13 @@ WebDataService::~WebDataService() {
 bool WebDataService::InitWithPath(const FilePath& path) {
   path_ = path;
   is_running_ = true;
+
+  // TODO(isherman): For now, to avoid a data race on shutdown
+  // [ http://crbug.com/100745 ], call |AutofillCountry::ApplicationLocale()| to
+  // cache the application locale before we try to access it on the DB thread.
+  // This should be safe to remove once [ http://crbug.com/100845 ] is fixed.
+  AutofillCountry::ApplicationLocale();
+
   ScheduleTask(Bind(&WebDataService::InitializeDatabaseIfNecessary, this));
   ScheduleTask(Bind(&WebDataService::InitializeSyncableServices, this));
   return true;

@@ -4,13 +4,26 @@
 
 #include <string>
 
+#include "base/message_loop.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/address.h"
 #include "chrome/browser/autofill/autofill_type.h"
+#include "content/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-typedef testing::Test AddressTest;
+class AddressTest : public testing::Test {
+ public:
+  // In order to access the application locale -- which the tested functions do
+  // internally -- this test must run on the UI thread.
+  AddressTest() : ui_thread_(BrowserThread::UI, &message_loop_) {}
+
+ private:
+  MessageLoopForUI message_loop_;
+  BrowserThread ui_thread_;
+
+  DISALLOW_COPY_AND_ASSIGN(AddressTest);
+};
 
 // Test that the getters and setters for country code are working.
 TEST_F(AddressTest, CountryCode) {

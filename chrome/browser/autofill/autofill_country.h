@@ -36,6 +36,9 @@ class AutofillCountry {
                                           const std::string& locale);
 
   // Returns the application locale.
+  // The first time this is called, it should be called from the UI thread.
+  // Once [ http://crbug.com/100845 ] is fixed, this method should *only* be
+  // called from the UI thread.
   static const std::string ApplicationLocale();
 
   const std::string country_code() const { return country_code_; }

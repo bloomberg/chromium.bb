@@ -15,8 +15,7 @@ TEST(PhoneNumberTest, Matcher) {
   // Set phone number so country_code == 1, city_code = 650, number = 2345678.
   string16 phone(ASCIIToUTF16("1 [650] 234-5678"));
   PhoneNumber phone_number(&profile);
-  phone_number.SetInfo(PHONE_HOME_WHOLE_NUMBER, phone);
-  phone_number.NormalizePhone();
+  phone_number.SetCanonicalizedInfo(PHONE_HOME_WHOLE_NUMBER, phone);
 
   FieldTypeSet matching_types;
   phone_number.GetMatchingTypes(ASCIIToUTF16(""), &matching_types);
