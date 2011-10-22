@@ -161,6 +161,10 @@ class WindowTest : public AuraTestBase {
     return CreateTestWindowWithDelegate(NULL, id, gfx::Rect(), parent);
   }
 
+  Window* CreateTestWindowWithBounds(const gfx::Rect& bounds, Window* parent) {
+    return CreateTestWindowWithDelegate(NULL, 0, bounds, parent);
+  }
+
   Window* CreateTestWindow(SkColor color,
                            int id,
                            const gfx::Rect& bounds,
@@ -430,6 +434,24 @@ TEST_F(WindowTest, ReleaseCaptureOnDestroy) {
   // Make sure the desktop doesn't reference the window anymore.
   EXPECT_EQ(NULL, desktop->mouse_pressed_handler());
   EXPECT_EQ(NULL, desktop->capture_window());
+}
+
+TEST_F(WindowTest, GetScreenBounds) {
+  scoped_ptr<Window> viewport(CreateTestWindowWithBounds(
+      gfx::Rect(0, 0, 300, 300), NULL));
+  scoped_ptr<Window> child(CreateTestWindowWithBounds(
+      gfx::Rect(0, 0, 100, 100), viewport.get()));
+  // Sanity check.
+  EXPECT_EQ("0,0 100x100", child->GetScreenBounds().ToString());
+
+  // The |child| window's screen bounds should move along with the |viewport|.
+  viewport->SetBounds(gfx::Rect(-100, -100, 300, 300));
+  EXPECT_EQ("-100,-100 100x100", child->GetScreenBounds().ToString());
+
+  // The |child| window is moved to the 0,0 in screen coordinates.
+  // |GetScreenBounds()| should return 0,0.
+  child->SetBounds(gfx::Rect(100, 100, 100, 100));
+  EXPECT_EQ("0,0 100x100", child->GetScreenBounds().ToString());
 }
 
 class MouseEnterExitWindowDelegate : public TestWindowDelegate {

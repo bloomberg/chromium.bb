@@ -259,17 +259,18 @@ void NativeWidgetAura::BecomeModal() {
 }
 
 gfx::Rect NativeWidgetAura::GetWindowScreenBounds() const {
-  // TODO(beng): ensure screen bounds
-  return window_->bounds();
+  return window_->GetScreenBounds();
 }
 
 gfx::Rect NativeWidgetAura::GetClientAreaScreenBounds() const {
   // TODO(beng):
-  return window_->bounds();
+  NOTIMPLEMENTED();
+  return window_->GetScreenBounds();
 }
 
 gfx::Rect NativeWidgetAura::GetRestoredBounds() const {
   // TODO(beng):
+  NOTIMPLEMENTED();
   return window_->bounds();
 }
 

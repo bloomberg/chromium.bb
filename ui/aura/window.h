@@ -97,6 +97,9 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // Restore the window to its original bounds.
   void Restore();
 
+  // Returns the window's bounds in screen coordinates.
+  gfx::Rect GetScreenBounds() const;
+
   // Returns the window's show state.
   ui::WindowShowState show_state() const { return show_state_; }
 
@@ -167,8 +170,8 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   Window* GetChildById(int id);
   const Window* GetChildById(int id) const;
 
-  static void ConvertPointToWindow(Window* source,
-                                   Window* target,
+  static void ConvertPointToWindow(const Window* source,
+                                   const Window* target,
                                    gfx::Point* point);
 
   // Returns the cursor for the specified point, in window coordinates.

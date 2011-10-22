@@ -110,6 +110,15 @@ void Window::Restore() {
   }
 }
 
+gfx::Rect Window::GetScreenBounds() const {
+  const gfx::Rect local_bounds = bounds();
+  gfx::Point origin = local_bounds.origin();
+  Window::ConvertPointToWindow(parent_,
+                               aura::Desktop::GetInstance(),
+                               &origin);
+  return gfx::Rect(origin, local_bounds.size());
+}
+
 void Window::Activate() {
   // If we support minimization need to ensure this restores the window first.
   aura::Desktop::GetInstance()->SetActiveWindow(this, this);
@@ -239,8 +248,8 @@ const Window* Window::GetChildById(int id) const {
 }
 
 // static
-void Window::ConvertPointToWindow(Window* source,
-                                  Window* target,
+void Window::ConvertPointToWindow(const Window* source,
+                                  const Window* target,
                                   gfx::Point* point) {
   ui::Layer::ConvertPointToLayer(source->layer(), target->layer(), point);
 }
