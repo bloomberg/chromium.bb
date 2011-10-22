@@ -104,10 +104,13 @@ void ExtensionAppProvider::RefreshAppList() {
 }
 
 void ExtensionAppProvider::RegisterForNotifications() {
+  // Notifications of extensions loading and unloading always come from the
+  // non-incognito profile, but we need to see them regardless, as the incognito
+  // windows can be affected.
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
-                 content::Source<Profile>(profile_));
+                 content::Source<Profile>(profile_->GetOriginalProfile()));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
-                 content::Source<Profile>(profile_));
+                 content::Source<Profile>(profile_->GetOriginalProfile()));
 }
 
 void ExtensionAppProvider::Observe(int type,
