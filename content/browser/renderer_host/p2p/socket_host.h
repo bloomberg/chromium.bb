@@ -59,6 +59,15 @@ class CONTENT_EXPORT P2PSocketHost {
     STATE_ERROR,
   };
 
+  // Maximum size of send buffers. Must be big enough to fit data for
+  // one data burst. Send buffers size needs to be limited to prevent
+  // from consuming too much memory with misbehaving renderer process.
+  //
+  // TODO(sergeyu): Consider implementing congestion notifications to
+  // minimize buffering. This will require some fixes in libjingle,
+  // see crbug.com/91495 .
+  static const int kMaxSendBufferSize = 256 * 1024;
+
   P2PSocketHost(IPC::Message::Sender* message_sender, int routing_id, int id);
 
   // Verifies that the packet |data| has a valid STUN header. In case

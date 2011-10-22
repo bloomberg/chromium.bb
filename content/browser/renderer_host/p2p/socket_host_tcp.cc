@@ -65,6 +65,9 @@ bool P2PSocketHostTcp::Init(const net::IPEndPoint& local_address,
   }
   socket_.reset(tcp_socket.release());
 
+  if (socket_->SetSendBufferSize(kMaxSendBufferSize))
+    LOG(WARNING) << "Failed to set send buffer size for TCP socket.";
+
   int result = socket_->Connect(&connect_callback_);
   if (result != net::ERR_IO_PENDING) {
     OnConnected(result);
