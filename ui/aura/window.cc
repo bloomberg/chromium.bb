@@ -93,13 +93,21 @@ bool Window::IsVisible() const {
 }
 
 void Window::Maximize() {
-  if (UpdateShowStateAndRestoreBounds(ui::SHOW_STATE_MAXIMIZED))
-    SetBoundsInternal(gfx::Screen::GetMonitorWorkAreaNearestWindow(this));
+  // The desktop size may have changed, so make sure the window is maximized to
+  // the correct size even if it's already maximized.
+  gfx::Rect rect = gfx::Screen::GetMonitorWorkAreaNearestWindow(this);
+  if (UpdateShowStateAndRestoreBounds(ui::SHOW_STATE_MAXIMIZED) ||
+      rect != bounds())
+    SetBoundsInternal(rect);
 }
 
 void Window::Fullscreen() {
-  if (UpdateShowStateAndRestoreBounds(ui::SHOW_STATE_FULLSCREEN))
-    SetBoundsInternal(gfx::Screen::GetMonitorAreaNearestWindow(this));
+  // The desktop size may have changed, so make sure the window is fullscreen to
+  // the correct size even if it's already fullscreen.
+  gfx::Rect rect = gfx::Screen::GetMonitorAreaNearestWindow(this);
+  if (UpdateShowStateAndRestoreBounds(ui::SHOW_STATE_FULLSCREEN) ||
+      rect != bounds())
+    SetBoundsInternal(rect);
 }
 
 void Window::Restore() {

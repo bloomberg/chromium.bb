@@ -1052,6 +1052,54 @@ TEST_F(ToplevelWindowTest, TopMostActivate) {
   EXPECT_EQ(w2.get(), toplevel_container_.GetTopmostWindowToActivate(NULL));
 }
 
+// Tests that maximized windows get resized after desktop is resized.
+TEST_F(ToplevelWindowTest, MaximizeAfterDesktopResize) {
+  gfx::Rect window_bounds(10, 10, 300, 400);
+  scoped_ptr<Window> w1(CreateTestToplevelWindow(NULL, window_bounds));
+
+  w1->Show();
+  EXPECT_EQ(window_bounds, w1->bounds());
+
+  w1->Maximize();
+  EXPECT_EQ(gfx::Screen::GetMonitorWorkAreaNearestWindow(w1.get()),
+                                                         w1->bounds());
+
+  // Resize the desktop.
+  Desktop* desktop = Desktop::GetInstance();
+  gfx::Size desktop_size = desktop->GetHostSize();
+  desktop->SetBounds(gfx::Rect(0, 0, desktop_size.width() + 100,
+                                 desktop_size.height() + 200));
+
+  EXPECT_EQ(gfx::Screen::GetMonitorWorkAreaNearestWindow(w1.get()),
+                                                         w1->bounds());
+
+  w1->Restore();
+  EXPECT_EQ(window_bounds, w1->bounds());
+}
+
+// Tests that fullscreen windows get resized after desktop is resized.
+TEST_F(ToplevelWindowTest, FullscreenAfterDesktopResize) {
+  gfx::Rect window_bounds(10, 10, 300, 400);
+  scoped_ptr<Window> w1(CreateTestToplevelWindow(NULL, window_bounds));
+
+  w1->Show();
+  EXPECT_EQ(window_bounds, w1->bounds());
+
+  w1->Fullscreen();
+  EXPECT_EQ(gfx::Screen::GetMonitorAreaNearestWindow(w1.get()), w1->bounds());
+
+  // Resize the desktop.
+  Desktop* desktop = Desktop::GetInstance();
+  gfx::Size desktop_size = desktop->GetHostSize();
+  desktop->SetBounds(gfx::Rect(0, 0, desktop_size.width() + 100,
+                                 desktop_size.height() + 200));
+
+  EXPECT_EQ(gfx::Screen::GetMonitorAreaNearestWindow(w1.get()), w1->bounds());
+
+  w1->Restore();
+  EXPECT_EQ(window_bounds, w1->bounds());
+}
+
 class WindowObserverTest : public WindowTest,
                            public WindowObserver {
  public:

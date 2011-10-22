@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/aura/layout_manager.h"
+#include "ui/aura_shell/aura_shell_export.h"
 
 namespace aura {
 class Window;
@@ -22,7 +23,8 @@ namespace aura_shell {
 namespace internal {
 
 // LayoutManager for the default window container.
-class DefaultContainerLayoutManager : public aura::LayoutManager {
+class AURA_SHELL_EXPORT DefaultContainerLayoutManager
+    : public aura::LayoutManager {
  public:
   explicit DefaultContainerLayoutManager(aura::Window* owner);
   virtual ~DefaultContainerLayoutManager();

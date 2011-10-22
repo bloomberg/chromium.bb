@@ -31,8 +31,15 @@ DefaultContainerLayoutManager::~DefaultContainerLayoutManager() {}
 void DefaultContainerLayoutManager::OnWindowResized() {
   aura::Window::Windows::const_iterator i = owner_->children().begin();
   // Use SetBounds because window may be maximized or fullscreen.
-  for (; i != owner_->children().end(); ++i)
-    (*i)->SetBounds((*i)->bounds());
+  for (; i != owner_->children().end(); ++i) {
+    aura::Window* w = *i;
+    if (w->show_state() == ui::SHOW_STATE_MAXIMIZED)
+      w->Maximize();
+    else if (w->show_state() == ui::SHOW_STATE_FULLSCREEN)
+      w->Fullscreen();
+    else
+      w->SetBounds(w->bounds());
+  }
   NOTIMPLEMENTED();
 }
 
