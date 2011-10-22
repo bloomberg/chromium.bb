@@ -506,7 +506,6 @@ build-libs-nacl() {
 
 build-libs-pnacl() {
   pushd "${NACL_ROOT}"
-  tools/llvm/utman.sh libs-platform
   tools/llvm/utman.sh sdk
   popd
 }
