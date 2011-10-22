@@ -240,7 +240,7 @@ void InterfaceList::AddFlashInterfaces() {
   AddProxy(API_ID_PPB_FLASH_CLIPBOARD,
            &ProxyFactory<PPB_Flash_Clipboard_Proxy>);
   AddPPB(PPB_FLASH_CLIPBOARD_INTERFACE, API_ID_PPB_FLASH_CLIPBOARD,
-         PPB_Flash_Clipboard_Proxy::GetInterface());
+         thunk::GetPPB_Flash_Clipboard_Thunk());
 
   AddProxy(API_ID_PPB_FLASH_FILE_MODULELOCAL,
            &ProxyFactory<PPB_Flash_File_ModuleLocal_Proxy>);

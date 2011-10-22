@@ -60,47 +60,53 @@ WebKit::WebClipboard::Format ConvertClipboardFormat(
   }
 }
 
-PP_Bool IsFormatAvailable(PP_Instance instance_id,
-                          PP_Flash_Clipboard_Type clipboard_type,
-                          PP_Flash_Clipboard_Format format) {
-  // If you don't give us an instance, we don't give you anything.
-  PluginInstance* instance = HostGlobals::Get()->GetInstance(instance_id);
-  if (!instance)
-    return PP_FALSE;
+}  // namespace
 
+PPB_Flash_Clipboard_Impl::PPB_Flash_Clipboard_Impl(PluginInstance* instance)
+    : instance_(instance) {
+}
+
+PPB_Flash_Clipboard_Impl::~PPB_Flash_Clipboard_Impl() {
+}
+
+::ppapi::thunk::PPB_Flash_Clipboard_FunctionAPI*
+PPB_Flash_Clipboard_Impl::AsPPB_Flash_Clipboard_FunctionAPI() {
+  return this;
+}
+
+PP_Bool PPB_Flash_Clipboard_Impl::IsFormatAvailable(
+    PP_Instance instance,
+    PP_Flash_Clipboard_Type clipboard_type,
+    PP_Flash_Clipboard_Format format) {
   WebKit::WebClipboard* web_clipboard =
       WebKit::webKitPlatformSupport()->clipboard();
   if (!web_clipboard) {
     NOTREACHED();
     return PP_FALSE;
   }
-
   return BoolToPPBool(
       web_clipboard->isFormatAvailable(ConvertClipboardFormat(format),
                                        ConvertClipboardType(clipboard_type)));
 }
 
-PP_Var ReadPlainText(PP_Instance instance_id,
-                     PP_Flash_Clipboard_Type clipboard_type) {
-  PluginInstance* instance = HostGlobals::Get()->GetInstance(instance_id);
-  if (!instance)
-    return PP_MakeNull();
-
+PP_Var PPB_Flash_Clipboard_Impl::ReadPlainText(
+    PP_Instance instance,
+    PP_Flash_Clipboard_Type clipboard_type) {
   WebKit::WebClipboard* web_clipboard =
       WebKit::webKitPlatformSupport()->clipboard();
   if (!web_clipboard) {
     NOTREACHED();
     return PP_MakeNull();
   }
-
   WebKit::WebCString s =
       web_clipboard->readPlainText(ConvertClipboardType(clipboard_type)).utf8();
-  return StringVar::StringToPPVar(instance->module()->pp_module(), s);
+  return StringVar::StringToPPVar(instance_->module()->pp_module(), s);
 }
 
-int32_t WritePlainText(PP_Instance instance_id,
-                       PP_Flash_Clipboard_Type clipboard_type,
-                       PP_Var text) {
+int32_t PPB_Flash_Clipboard_Impl::WritePlainText(
+    PP_Instance instance,
+    PP_Flash_Clipboard_Type clipboard_type,
+    const PP_Var& text) {
   StringVar* text_string = StringVar::FromPPVar(text);
   if (!text_string)
     return PP_ERROR_BADARGUMENT;
@@ -123,20 +129,6 @@ int32_t WritePlainText(PP_Instance instance_id,
   web_clipboard->writePlainText(
       WebKit::WebCString(text_string->value()).utf16());
   return PP_OK;
-}
-
-const PPB_Flash_Clipboard ppb_flash_clipboard = {
-  &IsFormatAvailable,
-  &ReadPlainText,
-  &WritePlainText,
-};
-
-}  // namespace
-
-// static
-const PPB_Flash_Clipboard*
-    PPB_Flash_Clipboard_Impl::GetInterface() {
-  return &ppb_flash_clipboard;
 }
 
 }  // namespace ppapi
