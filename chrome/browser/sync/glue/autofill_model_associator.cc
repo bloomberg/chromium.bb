@@ -320,6 +320,11 @@ void AutofillModelAssociator::AddNativeEntryIfNeeded(
     std::string tag(KeyToTag(key.name(), key.value()));
     Associate(&tag, node.GetId());
     bundle->new_entries.push_back(AutofillEntry(key, timestamps));
+
+    // It seems that name/value pairs are not always unique on the sync server.
+    // As a result, we have to filter out duplicates here.  This probably stems
+    // from a bug in the database.  http://crbug.com/100848
+    bundle->current_entries.insert(key);
   }
 }
 
