@@ -3,9 +3,6 @@
 # found in the LICENSE file.
 
 {
-  'includes': [
-    '../../../build/common.gypi',
-  ],
   'variables': {
     'common_sources': [
       'nc_thread.c',

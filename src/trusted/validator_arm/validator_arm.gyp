@@ -8,9 +8,6 @@
   # Default settings
   # ----------------------------------------------------------------------
 
-  'includes': [
-    '../../../build/common.gypi',
-  ],
   'variables': {
     'validate_gen_out':
       '<(SHARED_INTERMEDIATE_DIR)/gen/native_client/src/trusted/validator_arm',

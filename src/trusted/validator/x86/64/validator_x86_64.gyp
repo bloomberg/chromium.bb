@@ -4,9 +4,6 @@
 
 # Build the specific library dependencies for validating on x86-64
 {
-  'includes': [
-    '../../../../../build/common.gypi',
-  ],
   'target_defaults': {
     'variables': {
       'target_base': 'none',

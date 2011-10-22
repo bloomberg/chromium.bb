@@ -4,9 +4,6 @@
 
 # TODO(bradchen): eliminate need for the warning flag removals below
 {
-  'includes': [
-    '../../../../../build/common.gypi',
-  ],
   'target_defaults': {
     'variables': {
       'target_base': 'none',

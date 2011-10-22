@@ -29,9 +29,6 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 {
-  'includes': [
-    '../../../build/common.gypi',
-  ],
   'target_defaults': {
     'variables': {
       'target_base': 'none',

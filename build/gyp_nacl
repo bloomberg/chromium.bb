@@ -29,6 +29,11 @@ if __name__ == '__main__':
   # Add in configs.gypi
   args += ['-I', 'native_client/build/configs.gypi']
 
+  # This is a transitional name for common.gypi.
+  # It's needed to allow Chrome sources which refer to
+  # build/common.gypi to be changed in a separate CL.
+  args += ['-I', 'native_client/build/implicit_common.gypi']
+
   # Pick depth explicitly.
   args += ['--depth', '.']
 

@@ -1,7 +1,4 @@
 {
-  'includes': [
-    'common.gypi',
-  ],
   'targets': [
     {
       'target_name': 'pull_in_all',

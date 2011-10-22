@@ -5,9 +5,6 @@
 # found in the LICENSE file.
 
 {
-  'includes': [
-    '../../../build/common.gypi',
-  ],
   'target_defaults': {
     'variables':{
       'target_base': 'none',

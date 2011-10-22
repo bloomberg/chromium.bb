@@ -3,9 +3,6 @@
 # of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 {
-  'includes': [
-    '../../../build/common.gypi',
-  ],
   'target_defaults': {
     'variables':{
       'target_base': 'none',

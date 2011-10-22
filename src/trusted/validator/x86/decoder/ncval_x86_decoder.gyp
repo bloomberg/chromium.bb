@@ -7,9 +7,6 @@
 # instructions for the x86-64 validator. Future plans is to encorporate the
 # decoder into the x86-32 validator.
 {
-  'includes': [
-    '../../../../../build/common.gypi',
-  ],
   'target_defaults': {
     'variables': {
       'target_base': 'none',
