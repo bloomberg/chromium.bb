@@ -148,10 +148,6 @@ class PanelManager : public PanelMouseWatcher::Observer,
   // area being changed or a panel being closed.
   void Rearrange(Panels::iterator iter_to_start, int rightmost_position);
 
-  // Finds one panel to close so that we may have space for the new panel
-  // created by |extension|.
-  void FindAndClosePanelOnOverflow(const Extension* extension);
-
   // Help functions to drag the given panel.
   void DragLeft();
   void DragRight();
@@ -167,10 +163,6 @@ class PanelManager : public PanelMouseWatcher::Observer,
   int GetMaxPanelWidth() const;
   int GetMaxPanelHeight() const;
   int GetRightMostAvailablePosition() const;
-
-  // Updates the maximum size of each panel as the result of adding, removing,
-  // or sizing panels.
-  void UpdateMaxSizeForAllPanels();
 
   Panels panels_;
 

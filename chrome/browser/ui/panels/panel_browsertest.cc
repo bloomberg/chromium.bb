@@ -80,47 +80,44 @@ class PanelBrowserTest : public BasePanelBrowserTest {
         gfx::Rect(0, 0, 200, 200));
     ASSERT_EQ(3, panel_manager->num_panels());
 
-    // Test closing the leftmost panel that is from same extension.
-    ui_test_utils::WindowedNotificationObserver signal(
-        chrome::NOTIFICATION_BROWSER_CLOSED,
-        content::Source<Browser>(panel2->browser()));
+    // Open a panel that would overflow.
     Panel* panel4 = CreatePanelWithBounds(
         web_app::GenerateApplicationNameFromExtensionId(extension2->id()),
         gfx::Rect(0, 0, 280, 200));
-    signal.Wait();
-    ASSERT_EQ(3, panel_manager->num_panels());
+    ASSERT_EQ(4, panel_manager->num_panels());
     EXPECT_LT(panel4->GetBounds().right(), panel3->GetBounds().x());
-    EXPECT_LT(panel3->GetBounds().right(), panel1->GetBounds().x());
+    EXPECT_GT(0, panel4->GetBounds().x());
 
-    // Test closing the leftmost panel.
-    ui_test_utils::WindowedNotificationObserver signal2(
-        chrome::NOTIFICATION_BROWSER_CLOSED,
-        content::Source<Browser>(panel4->browser()));
+    // Open another panel that would overflow.
     Panel* panel5 = CreatePanelWithBounds(
         web_app::GenerateApplicationNameFromExtensionId(extension3->id()),
         gfx::Rect(0, 0, 300, 200));
-    signal2.Wait();
-    ASSERT_EQ(3, panel_manager->num_panels());
-    EXPECT_LT(panel5->GetBounds().right(), panel3->GetBounds().x());
-    EXPECT_LT(panel3->GetBounds().right(), panel1->GetBounds().x());
+    ASSERT_EQ(5, panel_manager->num_panels());
+    EXPECT_LT(panel5->GetBounds().right(), panel4->GetBounds().x());
+    EXPECT_GT(0, panel5->GetBounds().x());
 
-    // Test closing 2 leftmost panels.
-    ui_test_utils::WindowedNotificationObserver signal3(
-        chrome::NOTIFICATION_BROWSER_CLOSED,
-        content::Source<Browser>(panel3->browser()));
-    ui_test_utils::WindowedNotificationObserver signal4(
-        chrome::NOTIFICATION_BROWSER_CLOSED,
-        content::Source<Browser>(panel5->browser()));
-    Panel* panel6 = CreatePanelWithBounds(
-        web_app::GenerateApplicationNameFromExtensionId(extension3->id()),
-        gfx::Rect(0, 0, 500, 200));
-    signal3.Wait();
-    signal4.Wait();
+    // Close a visible panel. Expect an overflow panel to slide over.
+    CloseWindowAndWait(panel2->browser());
+    ASSERT_EQ(4, panel_manager->num_panels());
+    EXPECT_LT(panel4->GetBounds().right(), panel3->GetBounds().x());
+    EXPECT_LE(0, panel4->GetBounds().x());
+    EXPECT_GT(0, panel5->GetBounds().x());
+
+    // Close another visible panel. Remaining overflow panel should slide over
+    // but still not enough room to be fully visible.
+    CloseWindowAndWait(panel3->browser());
+    ASSERT_EQ(3, panel_manager->num_panels());
+    EXPECT_LT(panel5->GetBounds().right(), panel4->GetBounds().x());
+    EXPECT_GT(0, panel5->GetBounds().x());
+
+    // Closing one more panel makes room for all panels to fit on screen.
+    CloseWindowAndWait(panel4->browser());
     ASSERT_EQ(2, panel_manager->num_panels());
-    EXPECT_LT(panel6->GetBounds().right(), panel1->GetBounds().x());
+    EXPECT_LT(panel5->GetBounds().right(), panel1->GetBounds().x());
+    EXPECT_LE(0, panel5->GetBounds().x());
 
     panel1->Close();
-    panel6->Close();
+    panel5->Close();
   }
 
   int horizontal_spacing() {
