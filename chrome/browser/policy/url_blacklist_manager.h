@@ -39,7 +39,8 @@ class URLBlacklist {
   URLBlacklist();
   virtual ~URLBlacklist();
 
-  // URLs matching |filter| will be blocked.
+  // URLs matching |filter| will be blocked. The filter format is documented
+  // at http://www.chromium.org/administrators/url-blacklist-filter-format
   void Block(const std::string& filter);
 
   // URLs matching |filter| will be allowed. If |filter| is both Blocked and
@@ -65,20 +66,7 @@ class URLBlacklist {
                                  uint16* port,
                                  std::string* path);
  private:
-  struct PathFilter {
-    explicit PathFilter(const std::string& path, uint16 port, bool match)
-        : path_prefix(path),
-          port(port),
-          blocked_schemes(0),
-          allowed_schemes(0),
-          match_subdomains(match) {}
-
-    std::string path_prefix;
-    uint16 port;
-    uint8 blocked_schemes;
-    uint8 allowed_schemes;
-    bool match_subdomains;
-  };
+  struct PathFilter;
 
   typedef std::vector<PathFilter> PathFilterList;
   typedef base::hash_map<std::string, PathFilterList*> HostFilterTable;
