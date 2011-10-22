@@ -105,18 +105,6 @@ function testPageSetToPageRanges() {
   assertEquals(pageRanges[2].to, 11);
 }
 
-function testConvertInchesToPoints() {
-  assertEquals(convertInchesToPoints(1), 72);
-  assertEquals(convertInchesToPoints(2), 144);
-  assertEquals(convertInchesToPoints(0.45), 32.4);
-}
-
-function testConvertPointsToInches() {
-  assertEquals(convertPointsToInches(72), 1);
-  assertEquals(convertPointsToInches(144), 2);
-  assertEquals(convertPointsToInches(32.4), 0.45);
-}
-
 </script>
 </body>
 </html>

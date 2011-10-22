@@ -190,7 +190,6 @@ function getPageSrcURL(id, pageNumber) {
   return 'chrome://print/' + id + '/' + pageNumber + '/print.pdf';
 }
 
-
 /**
  * Returns a random integer within the specified range, |endPointA| and
  * |endPointB| are included.
@@ -205,7 +204,9 @@ function randomInteger(endPointA, endPointB) {
 }
 
 // Number of points per inch.
-POINTS_PER_INCH = 72;
+var POINTS_PER_INCH = 72;
+// Number of points per millimeter.
+var POINTS_PER_MILLIMETER = 2.83464567;
 
 /**
  * Converts |value| from inches to points.
@@ -223,4 +224,22 @@ function convertInchesToPoints(value) {
  */
 function convertPointsToInches(value) {
   return value / POINTS_PER_INCH;
+}
+
+/**
+ * Converts |value| from millimeters to points.
+ * @param {number} value The number in millimeters.
+ * @return {number} |value| in points.
+ */
+function convertMillimetersToPoints(value) {
+  return value * POINTS_PER_MILLIMETER;
+}
+
+/**
+ * Converts |value| from points to millimeters.
+ * @param {number} value The number in points.
+ * @return {number} |value| in millimeters.
+ */
+function convertPointsToMillimeters(value) {
+  return value / POINTS_PER_MILLIMETER;
 }

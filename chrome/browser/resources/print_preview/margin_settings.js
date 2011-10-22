@@ -72,37 +72,17 @@ cr.define('print_preview', function() {
 
     /**
      * Rounds |this| based on the precision used when displaying the margins in
-     * inches. This is done by converting from points to inches and back to
-     * points.
+     * the user's prefered units. This is done by converting from points to
+     * those units (mm/inches) and back to points.
      */
-    roundToInches: function() {
+    roundToLocaleUnits: function() {
       var indicesAsArray = this.indicesAsArray_();
       for (var i = 0; i < indicesAsArray.length; i++) {
         this[indicesAsArray[i]] =
-            print_preview.convertPointsToInchesTextAndBack(
+            print_preview.convertPointsToLocaleUnitsAndBack(
                 this[indicesAsArray[i]]);
       }
     },
-
-    /**
-     * Converts |this| to inches and returns the result in a new Margins object.
-     * |this| is not affected. It assumes that |this| is currently expressed in
-     * points.
-     * @param {number} The number of decimal points to keep.
-     * @return {Margins} The equivalent of |this| in inches.
-     */
-    toInches: function(precision) {
-      return new Margins(
-          Margins.roundToPrecision(convertPointsToInches(
-              this[MarginSettings.LEFT_GROUP]), precision),
-          Margins.roundToPrecision(convertPointsToInches(
-              this[MarginSettings.TOP_GROUP]), precision),
-          Margins.roundToPrecision(convertPointsToInches(
-              this[MarginSettings.RIGHT_GROUP]), precision),
-          Margins.roundToPrecision(convertPointsToInches(
-              this[MarginSettings.BOTTOM_GROUP]), precision)
-      );
-    }
   };
 
   /**
@@ -186,6 +166,24 @@ cr.define('print_preview', function() {
   // Group name corresponding to the bottom margin.
   MarginSettings.BOTTOM_GROUP = 'bottom';
 
+  /**
+   * Extracts the number formatting and measurement system for the current
+   * locale.
+   * @param {string} numberFormat Is the formatted version of a sample number,
+   *     sent from the backend.
+   * @oaram {number} measurementSystem 0 for SI (aka metric system), 1 for the
+   *     system used in the US. Note: Mathces UMeasurementSystem enum in
+   *     third_party/icu/public/i18n/unicode/ulocdata.h.
+   */
+  MarginSettings.setNumberFormatAndMeasurementSystem = function(
+      numberFormat, measurementSystem) {
+    var regex = /^(\d+)(\.|\,)(\d+)(\.|\,)(\d+)$/;
+    var matches = numberFormat.match(regex);
+    MarginSettings.thousandsPoint = matches[2];
+    MarginSettings.decimalPoint = matches[4];
+    MarginSettings.useMetricSystem = measurementSystem == 0;
+  };
+
   cr.addSingletonGetter(MarginSettings);
 
   MarginSettings.prototype = {
@@ -256,10 +254,8 @@ cr.define('print_preview', function() {
     requestPreviewIfNeeded_: function() {
       if (!this.areMarginSettingsValid())
         return;
-      if (this.customMargins_.toInches(2).isEqual(
-          this.previousCustomMargins_.toInches(2))) {
+      if (this.customMargins_.isEqual(this.previousCustomMargins_))
         return;
-      }
       this.previousCustomMargins_.copy(this.customMargins_);
       setDefaultValuesAndRegeneratePreview(false);
     },
@@ -362,7 +358,7 @@ cr.define('print_preview', function() {
 
       for (var i = 0; i < marginValueLimits.length; i++) {
         marginValueLimits[i] = Math.max(marginValueLimits[i], 0);
-        marginValueLimits[i] = print_preview.convertPointsToInchesTextAndBack(
+        marginValueLimits[i] = print_preview.convertPointsToLocaleUnitsAndBack(
             marginValueLimits[i]);
       }
       return marginValueLimits;
@@ -401,7 +397,8 @@ cr.define('print_preview', function() {
      */
     onMarginTextValueMayHaveChanged_: function(event) {
       var marginBox = event.target;
-      var marginBoxValue = convertInchesToPoints(marginBox.margin);
+      var marginBoxValue =
+          print_preview.convertLocaleUnitsToPoints(marginBox.margin);
       this.customMargins_[marginBox.marginGroup] = marginBoxValue;
       this.requestPreviewIfNeeded_();
     },
@@ -518,7 +515,7 @@ cr.define('print_preview', function() {
 
       if (this.lastSelectedOption_ == MarginSettings.MARGINS_VALUE_DEFAULT) {
         this.customMargins_ = this.currentDefaultPageLayout.margins_;
-        this.customMargins_.roundToInches();
+        this.customMargins_.roundToLocaleUnits();
       }
       this.previousCustomMargins_.copy(this.customMargins_);
 
@@ -609,5 +606,7 @@ cr.define('print_preview', function() {
   return {
     MarginSettings: MarginSettings,
     PageLayout: PageLayout,
+    setNumberFormatAndMeasurementSystem:
+        MarginSettings.setNumberFormatAndMeasurementSystem,
   };
 });

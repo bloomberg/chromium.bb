@@ -17,17 +17,32 @@ cr.define('print_preview', function() {
    *     does not represent a valid number.
    */
   function extractMarginValue(text) {
-    // Remove whitespace anywhere in the string.
-    text.replace(/\s*/g, '');
+    // Removing whitespace anywhere in the string.
+    text = text.replace(/\s*/g, '');
     if (text.length == 0)
       return -1;
-    // Remove the inch(") symbol at end of string if present.
-    if (text.charAt(text.length - 1) == '\"')
-      text = text.slice(0, text.length - 1);
-    var regex = /^\d*(\.\d+)?$/
-    if (regex.test(text))
+    var validationRegex = getValidationRegExp();
+    if (validationRegex.test(text)) {
+      // Replacing decimal point with the dot symbol in order to use
+      // parseFloat() properly.
+      var replacementRegex = new RegExp('\\' +
+          print_preview.MarginSettings.decimalPoint + '{1}');
+      text = text.replace(replacementRegex, '.');
       return parseFloat(text);
+    }
     return -1;
+  }
+
+  /**
+   * @return {RegExp} A regular expression for validating the input of the user.
+   *     It takes into account the user's locale.
+   */
+  function getValidationRegExp() {
+    var regex = new RegExp('(^\\d+)(\\' +
+       print_preview.MarginSettings.thousandsPoint + '\\d{3})*(\\' +
+       print_preview.MarginSettings.decimalPoint + '\\d+)*' +
+       (!print_preview.MarginSettings.useMetricSystem ? '"?' : '(mm)?') + '$');
+    return regex;
   }
 
   var marginValidationStates = {
@@ -51,7 +66,7 @@ cr.define('print_preview', function() {
   }
 
   /**
-   * @param {sting} text The text to check (in inches).
+   * @param {sting} text The text to check in user's locale units.
    * @param {number} limit The upper bound of the valid margin range (in
    *     points).
    * @return {number} An appropriate value from enum |marginValidationStates|.
@@ -60,40 +75,62 @@ cr.define('print_preview', function() {
     var value = extractMarginValue(text);
     if (value == -1)
       return marginValidationStates.NOT_A_NUMBER;
-    value = convertInchesToPoints(value);
+    value = print_preview.convertLocaleUnitsToPoints(value);
     return validateMarginValue(value, limit);
   }
 
   /**
-   * @param {number} toConvert The value to convert in points
-   * @return {string} The equivalent text in inches.
+   * @param {number} value The value to convert in points.
+   * @return {number} The corresponding value after converting to user's locale
+   *     units.
    */
-  function convertPointsToInchesText(toConvert) {
-    var inInches = convertPointsToInches(toConvert);
-    return convertInchesToInchesText(inInches);
+  function convertPointsToLocaleUnits(value) {
+    return print_preview.MarginSettings.useMetricSystem ?
+        convertPointsToMillimeters(value) : convertPointsToInches(value);
   }
 
   /**
-   * @param {number} toConvert The value to convert in inches.
-   * @return {string} The equivalent text in inches with precision of two
-   *     digits.
+   * @param {number} value The value to convert in user's locale units.
+   * @return {number} The corresponding value after converting to points.
    */
-  function convertInchesToInchesText(toConvert) {
-    return toConvert.toFixed(2) + '"';
+  function convertLocaleUnitsToPoints(value) {
+    return print_preview.MarginSettings.useMetricSystem ?
+        convertMillimetersToPoints(value) : convertInchesToPoints(value);
   }
 
   /**
-   * Converts |value| to inches text (keeping 2 decimal digits) and then back to
-   * points. Note: Because of the precision the return value might be different
-   * than |value|.
+   * Converts |value| to user's locale units and then back to points. Note:
+   * Because of the precision the return value might be different than |value|.
    * @param {number} value The value in points to convert.
-   * @return {number} The value in points after converting to inches with a
-   *     certain precision and back.
+   * @return {number} The value in points after converting to user's locale
+   *     units  with a certain precision and back.
    */
-  function convertPointsToInchesTextAndBack(value) {
-    var text = convertPointsToInchesText(value);
-    var inches = extractMarginValue(text);
-    return convertInchesToPoints(inches);
+  function convertPointsToLocaleUnitsAndBack(value) {
+    var inLocaleUnits =
+        convertPointsToLocaleUnits(value).toFixed(getDesiredPrecision());
+    return convertLocaleUnitsToPoints(inLocaleUnits);
+  }
+
+  /**
+   * @return {number} The number of decimal digits to keep based on the
+   *     measurement system used.
+   */
+  function getDesiredPrecision() {
+    return print_preview.MarginSettings.useMetricSystem ? 0 : 2;
+  }
+
+  /**
+   * @param {number} toConvert The value to convert in points.
+   * @return {string} The equivalent text in user locale units with precision
+   *     of two digits.
+   */
+  function convertPointsToLocaleUnitsText(value) {
+    var inLocaleUnits =
+        convertPointsToLocaleUnits(value).toFixed(getDesiredPrecision());
+    var inLocaleUnitsText = inLocaleUnits.toString(10).replace(
+        /\./g, print_preview.MarginSettings.decimalPoint);
+    return !print_preview.MarginSettings.useMetricSystem ?
+        inLocaleUnitsText + '"' : inLocaleUnitsText + 'mm';
   }
 
   /**
@@ -137,13 +174,14 @@ cr.define('print_preview', function() {
   };
 
   return {
-    convertInchesToInchesText: convertInchesToInchesText,
-    convertPointsToInchesTextAndBack:convertPointsToInchesTextAndBack,
-    convertPointsToInchesText: convertPointsToInchesText,
+    convertPointsToLocaleUnitsAndBack:
+        convertPointsToLocaleUnitsAndBack,
+    convertPointsToLocaleUnitsText: convertPointsToLocaleUnitsText,
+    convertLocaleUnitsToPoints: convertLocaleUnitsToPoints,
     extractMarginValue: extractMarginValue,
     marginValidationStates: marginValidationStates,
     Rect: Rect,
     validateMarginText: validateMarginText,
-    validateMarginValue: validateMarginValue
+    validateMarginValue: validateMarginValue,
   };
 });

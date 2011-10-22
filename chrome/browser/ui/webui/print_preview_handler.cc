@@ -16,6 +16,7 @@
 #include "base/json/json_reader.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram.h"
+#include "base/i18n/number_formatting.h"
 #include "base/path_service.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
@@ -47,6 +48,7 @@
 #include "printing/metafile_impl.h"
 #include "printing/page_range.h"
 #include "printing/print_settings.h"
+#include "unicode/ulocdata.h"
 
 #if !defined(OS_CHROMEOS)
 #include "base/command_line.h"
@@ -258,6 +260,10 @@ void PrintPreviewHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("getInitiatorTabTitle",
       base::Bind(&PrintPreviewHandler::HandleGetInitiatorTabTitle,
                  base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("getNumberFormatAndMeasurementSystem",
+      base::Bind(
+          &PrintPreviewHandler::HandleGetNumberFormatAndMeasurementSystem,
+          base::Unretained(this)));
 }
 
 TabContentsWrapper* PrintPreviewHandler::preview_tab_wrapper() const {
@@ -599,6 +605,27 @@ void PrintPreviewHandler::HandleGetInitiatorTabTitle(
   PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(web_ui_);
   base::StringValue tab_title(print_preview_ui->initiator_tab_title());
   web_ui_->CallJavascriptFunction("setInitiatorTabTitle", tab_title);
+}
+
+void PrintPreviewHandler::HandleGetNumberFormatAndMeasurementSystem(
+    const ListValue* /*args*/) {
+
+  // Getting the measurement system based on the locale.
+  UErrorCode errorCode = U_ZERO_ERROR;
+  const char* locale = g_browser_process->GetApplicationLocale().c_str();
+  UMeasurementSystem measurement_system =
+      ulocdata_getMeasurementSystem(locale, &errorCode);
+  if (errorCode > U_ZERO_ERROR || measurement_system == UMS_LIMIT)
+    measurement_system = UMS_SI;
+
+  // Getting the number formatting based on the locale.
+  StringValue number_format(base::FormatDouble(123456.78, 2));
+  base::FundamentalValue system(measurement_system);
+
+  web_ui_->CallJavascriptFunction(
+      "print_preview.setNumberFormatAndMeasurementSystem",
+      number_format,
+      system);
 }
 
 void PrintPreviewHandler::ActivateInitiatorTabAndClosePreviewTab() {

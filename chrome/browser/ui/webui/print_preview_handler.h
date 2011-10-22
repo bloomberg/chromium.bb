@@ -136,6 +136,10 @@ class PrintPreviewHandler : public WebUIMessageHandler,
   // |args| is unused.
   void HandleGetInitiatorTabTitle(const base::ListValue* args);
 
+  // Asks the browser for the number formatting and measurement system according
+  // to the current locale.
+  void HandleGetNumberFormatAndMeasurementSystem(const base::ListValue* args);
+
   // Sends the printer capabilities to the Web UI. |settings_info| contains
   // printer capabilities information.
   void SendPrinterCapabilities(const base::DictionaryValue& settings_info);

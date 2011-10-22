@@ -44,6 +44,16 @@ cr.define('print_preview', function() {
     },
 
     /**
+     * Sets the contents of the textbox.
+     * @param {number} newValueInPoints The value to be displayed in points.
+     * @private
+     */
+    setValue_: function(newValueInPoints) {
+      this.value =
+          print_preview.convertPointsToLocaleUnitsText(newValueInPoints);
+    },
+
+    /**
      * Updates the state of |this|.
      * @param {number} value The margin value in points.
      * @param {number} valueLimit The upper allowed value for the margin.
@@ -52,10 +62,8 @@ cr.define('print_preview', function() {
      */
     update: function(value, valueLimit, keepDisplayedValue) {
       this.lastValidValueInPoints = value;
-      if (!keepDisplayedValue) {
-        this.value = print_preview.convertPointsToInchesText(
-            this.lastValidValueInPoints);
-      }
+      if (!keepDisplayedValue)
+        this.setValue_(this.lastValidValueInPoints);
 
       this.valueLimit = valueLimit;
       this.validate();
@@ -69,14 +77,12 @@ cr.define('print_preview', function() {
     updateWhileDragging: function(dragDeltaInPoints) {
       var validity = this.validateDelta(dragDeltaInPoints);
 
-      if (validity == print_preview.marginValidationStates.WITHIN_RANGE) {
-        this.value = print_preview.convertPointsToInchesText(
-            this.lastValidValueInPoints + dragDeltaInPoints);
-      } else if (validity == print_preview.marginValidationStates.TOO_SMALL) {
-        this.value = print_preview.convertPointsToInchesText(0);
-      } else if (validity == print_preview.marginValidationStates.TOO_BIG) {
-        this.value = print_preview.convertPointsToInchesText(this.valueLimit);
-      }
+      if (validity == print_preview.marginValidationStates.WITHIN_RANGE)
+        this.setValue_(this.lastValidValueInPoints + dragDeltaInPoints);
+      else if (validity == print_preview.marginValidationStates.TOO_SMALL)
+        this.setValue_(0);
+      else if (validity == print_preview.marginValidationStates.TOO_BIG)
+        this.setValue_(this.valueLimit);
 
       this.validate();
       this.updateColor();
@@ -99,8 +105,6 @@ cr.define('print_preview', function() {
       this.isValid =
           print_preview.validateMarginText(this.value, this.valueLimit) ==
               print_preview.marginValidationStates.WITHIN_RANGE;
-      if (this.isValid)
-        this.value = print_preview.convertInchesToInchesText(this.margin);
     },
 
     /**
@@ -139,8 +143,7 @@ cr.define('print_preview', function() {
       clearTimeout(this.timerId_);
       this.validate();
       if (!this.isValid) {
-        this.value = print_preview.convertPointsToInchesText(
-            this.lastValidValueInPoints);
+        this.setValue_(this.lastValidValueInPoints);
         this.validate();
       }
 
@@ -170,8 +173,7 @@ cr.define('print_preview', function() {
      */
     onKeyUp_: function(e) {
       if (e.keyCode == MarginTextbox.ESCAPE_KEYCODE) {
-        this.value = print_preview.convertPointsToInchesText(
-            this.lastValidValueInPoints);
+        this.setValue_(this.lastValidValueInPoints);
         this.validate();
         this.updateColor();
         cr.dispatchSimpleEvent(document, 'updateSummary');

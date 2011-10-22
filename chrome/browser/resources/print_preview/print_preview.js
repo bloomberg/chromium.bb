@@ -142,6 +142,7 @@ function onLoad() {
   previewArea.showLoadingAnimation();
   chrome.send('getInitiatorTabTitle');
   chrome.send('getDefaultPrinter');
+  chrome.send('getNumberFormatAndMeasurementSystem');
 }
 
 /**
