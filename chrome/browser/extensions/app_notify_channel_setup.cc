@@ -4,15 +4,24 @@
 
 #include "chrome/browser/extensions/app_notify_channel_setup.h"
 
+#include "base/command_line.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
+#include "net/base/escape.h"
+#include "net/url_request/url_request_status.h"
 
 AppNotifyChannelSetup::AppNotifyChannelSetup(
+    Profile* profile,
     const std::string& client_id,
     const GURL& requestor_url,
     int return_route_id,
     int callback_id,
     base::WeakPtr<AppNotifyChannelSetup::Delegate> delegate)
-    : client_id_(client_id),
+    : profile_(profile),
+      client_id_(client_id),
       requestor_url_(requestor_url),
       return_route_id_(return_route_id),
       callback_id_(callback_id),
@@ -20,25 +29,72 @@ AppNotifyChannelSetup::AppNotifyChannelSetup(
 
 AppNotifyChannelSetup::~AppNotifyChannelSetup() {}
 
+static GURL GetChannelServerURL() {
+  // TODO(asargent) - Eventually we'll have a hardcoded url baked in and this
+  // will just be an override, but for now we just have this flag as the client
+  // and server are both works-in-progress.
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kAppNotifyChannelServerURL)) {
+    std::string switch_value = command_line->GetSwitchValueASCII(
+        switches::kAppNotifyChannelServerURL);
+    GURL result(switch_value);
+    if (result.is_valid()) {
+      return result;
+    } else {
+      LOG(ERROR) << "Invalid value for " <<
+          switches::kAppNotifyChannelServerURL;
+    }
+  }
+  return GURL();
+}
+
 void AppNotifyChannelSetup::Start() {
   AddRef(); // Balanced in ReportResult.
 
+  GURL channel_server_url = GetChannelServerURL();
 
-  // TODO(asargent) - We will eventually check here whether the user is logged
-  // in to the browser or not. If they are, we'll make a request to a server
-  // with the browser login credentials to get a channel id for the app to use
-  // in server pushed notifications. If they are not logged in, we'll prompt
-  // for login and if they sign in, then continue as in the first case.
-  // Otherwise we'll return an error message.
+  // Check if the user is logged in to the browser.
+  std::string username = profile_->GetPrefs()->GetString(
+      prefs::kGoogleServicesUsername);
 
-  // For now, just reply with an error of 'not_implemented'.
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      NewRunnableMethod(this,
-                        &AppNotifyChannelSetup::ReportResult,
-                        std::string(),
-                        std::string("not_implemented")));
+  // TODO(asargent) - If the user is not logged in, we'd like to prompt for
+  // login and if then they sign in, continue as normal. But for now just return
+  // an error. We do this via PostTask instead of immediately calling back the
+  // delegate because it simplifies tests.
+  if (!channel_server_url.is_valid() || username.empty()) {
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        NewRunnableMethod(this,
+                          &AppNotifyChannelSetup::ReportResult,
+                          std::string(),
+                          std::string("not_available")));
+    return;
+  }
+
+  url_fetcher_.reset(URLFetcher::Create(
+      0, channel_server_url, URLFetcher::POST, this));
+
+  // TODO(asargent) - we eventually want this to use the browser login
+  // credentials instead of the regular cookie store, but for now to aid server
+  // development, we're just using the regular cookie store.
+  url_fetcher_->set_request_context(profile_->GetRequestContext());
+  std::string data = "client_id=" + EscapeUrlEncodedData(client_id_, true);
+  url_fetcher_->set_upload_data("application/x-www-form-urlencoded", data);
+  url_fetcher_->Start();
+}
+
+void AppNotifyChannelSetup::OnURLFetchComplete(const URLFetcher* source) {
+  CHECK(source);
+  net::URLRequestStatus status = source->status();
+
+  if (status.status() == net::URLRequestStatus::SUCCESS &&
+      source->response_code() == 200) {
+    // TODO(asargent) - we need to parse the response from |source| here.
+    ReportResult("dummy_do_not_use", "");
+  } else {
+    ReportResult("", "channel_service_error");
+  }
 }
 
 void AppNotifyChannelSetup::ReportResult(

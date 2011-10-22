@@ -2,15 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "chrome/browser/extensions/app_notify_channel_setup.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
+#include "chrome/test/base/testing_pref_service.h"
+#include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
+#include "content/test/test_url_fetcher_factory.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
+
+const int kRouteId = 4;
+const int kCallbackId = 5;
 
 class TestDelegate : public AppNotifyChannelSetup::Delegate,
                      public base::SupportsWeakPtr<TestDelegate> {
@@ -34,13 +43,11 @@ class TestDelegate : public AppNotifyChannelSetup::Delegate,
 
   // Called to check that we were called with the expected arguments.
   void ExpectWasCalled(const std::string& expected_channel_id,
-                       const std::string& expected_error,
-                       int expected_route_id,
-                       int expected_callback_id) {
+                       const std::string& expected_error) {
     EXPECT_TRUE(was_called_);
     EXPECT_EQ(expected_error, error_);
-    EXPECT_EQ(expected_route_id, route_id_);
-    EXPECT_EQ(expected_callback_id, callback_id_);
+    EXPECT_EQ(kRouteId, route_id_);
+    EXPECT_EQ(kCallbackId, callback_id_);
   }
 
  private:
@@ -59,25 +66,76 @@ class TestDelegate : public AppNotifyChannelSetup::Delegate,
 
 }  // namespace
 
+class AppNotifyChannelSetupTest : public testing::Test {
+ public:
+  AppNotifyChannelSetupTest() : ui_thread_(BrowserThread::UI, &message_loop_) {}
 
-TEST(AppNotifyChannelSetupTest, WasDelegateCalled) {
-  MessageLoop message_loop;
-  BrowserThread thread(BrowserThread::UI, &message_loop);
+  virtual ~AppNotifyChannelSetupTest() {}
 
-  TestDelegate delegate;
-  std::string client_id = "12345";
-  int route_id = 4;
-  int callback_id = 5;
+  virtual void SetChannelServerUrl(GURL channel_server_url) {
+    CommandLine* command_line = CommandLine::ForCurrentProcess();
+    command_line->AppendSwitchASCII(switches::kAppNotifyChannelServerURL,
+                                    channel_server_url.spec());
+  }
+
+  virtual void SetLoggedInUser(const std::string username) {
+    TestingPrefService* prefs = profile_.GetTestingPrefService();
+    prefs->SetUserPref(prefs::kGoogleServicesUsername,
+                       new StringValue(username));
+  }
+
+  virtual void RunServerTest(bool url_fetch_should_succeed,
+                             const std::string& expected_code,
+                             const std::string& expected_error) {
+    GURL page_url("http://www.google.com");
+    GURL server_url("http://dummy.google.com/app_notify_setup");
+    FakeURLFetcherFactory factory;
+    factory.SetFakeResponse(server_url.spec(),
+                            "whatever",
+                            url_fetch_should_succeed);
+
+    SetChannelServerUrl(server_url);
+    SetLoggedInUser("user@gmail.com");
+
+    scoped_refptr<AppNotifyChannelSetup > setup =
+        new AppNotifyChannelSetup(&profile_,
+                                  "1234",
+                                  page_url,
+                                  kRouteId,
+                                  kCallbackId,
+                                  delegate_.AsWeakPtr());
+    setup->Start();
+    message_loop_.Run();
+    delegate_.ExpectWasCalled(expected_code, expected_error);
+  }
+
+ protected:
+  MessageLoop message_loop_;
+  BrowserThread ui_thread_;
+  TestingProfile profile_;
+  TestDelegate delegate_;
+};
+
+TEST_F(AppNotifyChannelSetupTest, NotAvailable) {
   GURL url("http://www.google.com");
 
   scoped_refptr<AppNotifyChannelSetup > setup =
-      new AppNotifyChannelSetup(client_id,
+      new AppNotifyChannelSetup(&profile_,
+                                "1234",
                                 url,
-                                route_id,
-                                callback_id,
-                                delegate.AsWeakPtr());
+                                kRouteId,
+                                kCallbackId,
+                                delegate_.AsWeakPtr());
   setup->Start();
-  MessageLoop::current()->Run();
-  delegate.ExpectWasCalled(
-      std::string(), std::string("not_implemented"), route_id, callback_id);
+  message_loop_.Run();
+  delegate_.ExpectWasCalled(
+      std::string(), std::string("not_available"));
+}
+
+TEST_F(AppNotifyChannelSetupTest, ServerSuccess) {
+  RunServerTest(true, "dummy_do_not_use", "");
+}
+
+TEST_F(AppNotifyChannelSetupTest, ServerFailure) {
+  RunServerTest(false, "", "channel_service_error");
 }
