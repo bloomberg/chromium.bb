@@ -25,6 +25,29 @@ namespace {
 // - LayerWithRealCompositorTest when a real compositor is required for testing.
 //    - Slow because they bring up a window and run the real compositor. This
 //      is typically not what you want.
+
+class ColoredLayer : public Layer, public LayerDelegate {
+ public:
+  ColoredLayer(Compositor* compositor, SkColor color)
+      : Layer(compositor, Layer::LAYER_HAS_TEXTURE),
+        color_(color) {
+    set_delegate(this);
+  }
+
+  virtual ~ColoredLayer() { }
+
+  // Overridden from LayerDelegate:
+  virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE {
+    canvas->GetSkCanvas()->drawColor(color_);
+  }
+
+  virtual void OnLayerAnimationEnded(const ui::Animation* animation) OVERRIDE {
+  }
+
+ private:
+  SkColor color_;
+};
+
 class LayerWithRealCompositorTest : public testing::Test {
  public:
   LayerWithRealCompositorTest() {}
@@ -49,9 +72,8 @@ class LayerWithRealCompositorTest : public testing::Test {
   }
 
   Layer* CreateColorLayer(SkColor color, const gfx::Rect& bounds) {
-    Layer* layer = CreateLayer(Layer::LAYER_HAS_TEXTURE);
+    Layer* layer = new ColoredLayer(GetCompositor(), color);
     layer->SetBounds(bounds);
-    PaintColorToLayer(layer, color);
     return layer;
   }
 
@@ -65,13 +87,6 @@ class LayerWithRealCompositorTest : public testing::Test {
     return gfx::Canvas::CreateCanvas(layer->bounds().width(),
                                      layer->bounds().height(),
                                      false);
-  }
-
-  void PaintColorToLayer(Layer* layer, SkColor color) {
-    scoped_ptr<gfx::Canvas> canvas(CreateCanvasForLayer(layer));
-    canvas->FillRectInt(color, 0, 0, layer->bounds().width(),
-                        layer->bounds().height());
-    layer->SetCanvas(*canvas->GetSkCanvas(), layer->bounds().origin());
   }
 
   void DrawTree(Layer* root) {
@@ -90,7 +105,6 @@ class LayerWithRealCompositorTest : public testing::Test {
   }
 
  private:
-  MessageLoopForUI message_loop_;
   scoped_ptr<TestCompositorHost> window_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerWithRealCompositorTest);
@@ -99,7 +113,7 @@ class LayerWithRealCompositorTest : public testing::Test {
 // LayerDelegate that paints colors to the layer.
 class TestLayerDelegate : public LayerDelegate {
  public:
-  explicit TestLayerDelegate(Layer* owner) : owner_(owner), color_index_(0) {}
+  explicit TestLayerDelegate() : color_index_(0) {}
   virtual ~TestLayerDelegate() {}
 
   void AddColor(SkColor color) {
@@ -122,7 +136,6 @@ class TestLayerDelegate : public LayerDelegate {
   }
 
  private:
-  Layer* owner_;
   std::vector<SkColor> colors_;
   int color_index_;
   gfx::Size paint_size_;
@@ -176,11 +189,17 @@ class NullLayerDelegate : public LayerDelegate {
 #if defined(OS_WIN)
 // These are disabled on windows as they don't run correctly on the buildbot.
 // Reenable once we move to the real compositor.
+#define MAYBE_Delegate DISABLED_Delegate
 #define MAYBE_Draw DISABLED_Draw
+#define MAYBE_DrawTree DISABLED_DrawTree
 #define MAYBE_Hierarchy DISABLED_Hierarchy
+#define MAYBE_HierarchyNoTexture DISABLED_HierarchyNoTexture
 #else
+#define MAYBE_Delegate Delegate
 #define MAYBE_Draw Draw
+#define MAYBE_DrawTree DrawTree
 #define MAYBE_Hierarchy Hierarchy
+#define MAYBE_HierarchyNoTexture HierarchyNoTexture
 #endif
 
 TEST_F(LayerWithRealCompositorTest, MAYBE_Draw) {
@@ -232,9 +251,8 @@ class LayerWithDelegateTest : public testing::Test {
   }
 
   Layer* CreateColorLayer(SkColor color, const gfx::Rect& bounds) {
-    Layer* layer = CreateLayer(Layer::LAYER_HAS_TEXTURE);
+    Layer* layer = new ColoredLayer(compositor(), color);
     layer->SetBounds(bounds);
-    PaintColorToLayer(layer, color);
     return layer;
   }
 
@@ -250,13 +268,6 @@ class LayerWithDelegateTest : public testing::Test {
                                      false);
   }
 
-  void PaintColorToLayer(Layer* layer, SkColor color) {
-    scoped_ptr<gfx::Canvas> canvas(CreateCanvasForLayer(layer));
-    canvas->FillRectInt(color, 0, 0, layer->bounds().width(),
-                        layer->bounds().height());
-    layer->SetCanvas(*canvas->GetSkCanvas(), layer->bounds().origin());
-  }
-
   void DrawTree(Layer* root) {
     compositor()->SetRootLayer(root);
     compositor()->Draw(false);
@@ -270,7 +281,7 @@ class LayerWithDelegateTest : public testing::Test {
 
   // Invokes DrawTree on the compositor.
   void Draw() {
-    compositor_->root_layer()->DrawTree();
+    compositor_->Draw(false);
   }
 
  private:
@@ -325,34 +336,35 @@ TEST_F(LayerWithDelegateTest, ConvertPointToLayer_Medium) {
   EXPECT_EQ(point2_in_l3_coords, point2_in_l1_coords);
 }
 
-TEST_F(LayerWithDelegateTest, Delegate) {
+TEST_F(LayerWithRealCompositorTest, MAYBE_Delegate) {
   scoped_ptr<Layer> l1(CreateColorLayer(SK_ColorBLACK,
                                         gfx::Rect(20, 20, 400, 400)));
-  TestLayerDelegate delegate(l1.get());
+  GetCompositor()->SetRootLayer(l1.get());
+  RunPendingMessages();
+
+  TestLayerDelegate delegate;
   l1->set_delegate(&delegate);
   delegate.AddColor(SK_ColorWHITE);
   delegate.AddColor(SK_ColorYELLOW);
   delegate.AddColor(SK_ColorGREEN);
 
-  compositor()->SetRootLayer(l1.get());
-
   l1->SchedulePaint(gfx::Rect(0, 0, 400, 400));
-  Draw();
+  RunPendingMessages();
   EXPECT_EQ(delegate.color_index(), 1);
   EXPECT_EQ(delegate.paint_size(), l1->bounds().size());
 
   l1->SchedulePaint(gfx::Rect(10, 10, 200, 200));
-  Draw();
+  RunPendingMessages();
   EXPECT_EQ(delegate.color_index(), 2);
   EXPECT_EQ(delegate.paint_size(), gfx::Size(200, 200));
 
   l1->SchedulePaint(gfx::Rect(5, 5, 50, 50));
-  Draw();
+  RunPendingMessages();
   EXPECT_EQ(delegate.color_index(), 0);
   EXPECT_EQ(delegate.paint_size(), gfx::Size(50, 50));
 }
 
-TEST_F(LayerWithDelegateTest, DrawTree) {
+TEST_F(LayerWithRealCompositorTest, MAYBE_DrawTree) {
   scoped_ptr<Layer> l1(CreateColorLayer(SK_ColorRED,
                                         gfx::Rect(20, 20, 400, 400)));
   scoped_ptr<Layer> l2(CreateColorLayer(SK_ColorBLUE,
@@ -362,6 +374,9 @@ TEST_F(LayerWithDelegateTest, DrawTree) {
   l1->Add(l2.get());
   l2->Add(l3.get());
 
+  GetCompositor()->SetRootLayer(l1.get());
+  RunPendingMessages();
+
   DrawTreeLayerDelegate d1;
   l1->set_delegate(&d1);
   DrawTreeLayerDelegate d2;
@@ -369,10 +384,8 @@ TEST_F(LayerWithDelegateTest, DrawTree) {
   DrawTreeLayerDelegate d3;
   l3->set_delegate(&d3);
 
-  compositor()->SetRootLayer(l1.get());
-
   l2->SchedulePaint(gfx::Rect(5, 5, 5, 5));
-  Draw();
+  RunPendingMessages();
   EXPECT_FALSE(d1.painted());
   EXPECT_TRUE(d2.painted());
   EXPECT_FALSE(d3.painted());
@@ -385,7 +398,7 @@ TEST_F(LayerWithDelegateTest, DrawTree) {
 // |   +-- L3 - yellow
 // +-- L4 - magenta
 //
-TEST_F(LayerWithDelegateTest, HierarchyNoTexture) {
+TEST_F(LayerWithRealCompositorTest, MAYBE_HierarchyNoTexture) {
   scoped_ptr<Layer> l1(CreateColorLayer(SK_ColorRED,
                                         gfx::Rect(20, 20, 400, 400)));
   scoped_ptr<Layer> l2(CreateNoTextureLayer(gfx::Rect(10, 10, 350, 350)));
@@ -398,16 +411,17 @@ TEST_F(LayerWithDelegateTest, HierarchyNoTexture) {
   l1->Add(l4.get());
   l2->Add(l3.get());
 
+  GetCompositor()->SetRootLayer(l1.get());
+  RunPendingMessages();
+
   DrawTreeLayerDelegate d2;
   l2->set_delegate(&d2);
   DrawTreeLayerDelegate d3;
   l3->set_delegate(&d3);
 
-  compositor()->SetRootLayer(l1.get());
-
   l2->SchedulePaint(gfx::Rect(5, 5, 5, 5));
   l3->SchedulePaint(gfx::Rect(5, 5, 5, 5));
-  Draw();
+  RunPendingMessages();
 
   // |d2| should not have received a paint notification since it has no texture.
   EXPECT_FALSE(d2.painted());
@@ -472,9 +486,18 @@ TEST_F(LayerWithNullDelegateTest, LayerNoTextureSetFillsBoundsOpaquely) {
   EXPECT_TRUE(parent->texture() == NULL);
 }
 
+// With the webkit compositor, we don't explicitly textures for layers, making
+// tests that check that we do fail.
+#if defined(USE_WEBKIT_COMPOSITOR)
+#define WEBKIT_COMPOSITOR_FAILS(X) FAILS_ ## X
+#else
+#define WEBKIT_COMPOSITOR_FAILS(X) X
+#endif
+
 // Verifies that a layer does not have a texture when the hole is the size
 // of the parent layer.
-TEST_F(LayerWithNullDelegateTest, LayerNoTextureHoleSizeOfLayer) {
+TEST_F(LayerWithNullDelegateTest,
+       WEBKIT_COMPOSITOR_FAILS(LayerNoTextureHoleSizeOfLayer)) {
   scoped_ptr<Layer> parent(CreateTextureRootLayer(gfx::Rect(0, 0, 400, 400)));
   scoped_ptr<Layer> child(CreateTextureLayer(gfx::Rect(50, 50, 100, 100)));
   parent->Add(child.get());
@@ -489,7 +512,8 @@ TEST_F(LayerWithNullDelegateTest, LayerNoTextureHoleSizeOfLayer) {
 }
 
 // Verifies that a layer which has opacity == 0 does not have a texture.
-TEST_F(LayerWithNullDelegateTest, LayerNoTextureTransparent) {
+TEST_F(LayerWithNullDelegateTest,
+       WEBKIT_COMPOSITOR_FAILS(LayerNoTextureTransparent)) {
   scoped_ptr<Layer> parent(CreateTextureRootLayer(gfx::Rect(0, 0, 400, 400)));
   scoped_ptr<Layer> child(CreateTextureLayer(gfx::Rect(50, 50, 100, 100)));
   parent->Add(child.get());
@@ -512,7 +536,8 @@ TEST_F(LayerWithNullDelegateTest, LayerNoTextureTransparent) {
 }
 
 // Verifies that no texture is created for a layer with empty bounds.
-TEST_F(LayerWithNullDelegateTest, LayerTextureNonEmptySchedulePaint) {
+TEST_F(LayerWithNullDelegateTest,
+       WEBKIT_COMPOSITOR_FAILS(LayerTextureNonEmptySchedulePaint)) {
   scoped_ptr<Layer> layer(CreateTextureRootLayer(gfx::Rect(0, 0, 0, 0)));
   Draw();
   EXPECT_TRUE(layer->texture() == NULL);
@@ -595,7 +620,7 @@ TEST_F(LayerWithNullDelegateTest, HoleWithNinetyDegreeTransforms) {
 //  +- L12 (no texture) (added after L1 is already set as root-layer)
 //    +- L121 (texture)
 //    +- L122 (texture)
-TEST_F(LayerWithNullDelegateTest, NoCompositor) {
+TEST_F(LayerWithNullDelegateTest, WEBKIT_COMPOSITOR_FAILS(NoCompositor)) {
   scoped_ptr<Layer> l1(CreateLayer(Layer::LAYER_HAS_NO_TEXTURE));
   scoped_ptr<Layer> l11(CreateLayer(Layer::LAYER_HAS_TEXTURE));
   scoped_ptr<Layer> l12(CreateLayer(Layer::LAYER_HAS_NO_TEXTURE));

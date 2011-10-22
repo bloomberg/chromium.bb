@@ -29,6 +29,7 @@
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/ui/gfx/gl/gl.gyp:gl',
         '<(DEPTH)/ui/ui.gyp:ui',
+        '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
       ],
       'defines': [
         'COMPOSITOR_IMPLEMENTATION',
@@ -39,6 +40,8 @@
         'compositor_export.h',
         'compositor_gl.cc',
         'compositor_gl.h',
+        'compositor_cc.cc',
+        'compositor_cc.h',
         'compositor_observer.h',
         'compositor_stub.cc',
         'compositor_win.cc',
@@ -77,6 +80,39 @@
             ['exclude', '^compositor_win.cc'],
           ],
         }],
+        ['use_webkit_compositor == 1', {
+            'sources/': [
+              ['exclude', '^compositor_(gl|win|stub).(h|cc)$'],
+            ],
+            'dependencies': [
+              '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_gpu',
+            ],
+          }, {
+            'sources!': [
+              'compositor_cc.cc',
+              'compositor_cc.h',
+            ],
+          }
+        ],
+      ],
+    },
+    {
+      'target_name': 'compositor_test_support',
+      'type': 'static_library',
+      'dependencies': [
+        '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_support',
+        '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
+      ],
+      'sources': [
+        'compositor_test_support.cc',
+        'compositor_test_support.h',
+      ],
+      'conditions': [
+        ['use_webkit_compositor == 1', {
+            'dependencies': [
+              '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_support',
+            ],
+        }],
       ],
     },
     {
@@ -92,6 +128,7 @@
         '<(DEPTH)/ui/ui.gyp:ui',
         '<(DEPTH)/ui/ui.gyp:ui_resources',
         'compositor',
+        'compositor_test_support',
       ],
       'sources': [
         'layer_unittest.cc',

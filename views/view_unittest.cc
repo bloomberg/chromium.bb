@@ -2577,19 +2577,28 @@ TEST_F(ViewLayerTest, LayerToggling) {
   View* content_view = new View;
   widget()->SetContentsView(content_view);
 
+#if !defined(USE_WEBKIT_COMPOSITOR)
+  // TODO(piman): with the webkit compositor, we don't create Textures on
+  // Layers. We're not supposed to be calling Layer::DrawTree. This test needs
+  // refactoring to fully work in that case.
   root_layer->DrawTree();
   ui::TestTexture::reset_live_count();
+#endif
 
   // Create v1, give it a bounds and verify everything is set up correctly.
   View* v1 = new View;
   v1->SetPaintToLayer(true);
+#if !defined(USE_WEBKIT_COMPOSITOR)
   root_layer->DrawTree();
   EXPECT_EQ(0, ui::TestTexture::live_count());
+#endif
   EXPECT_TRUE(v1->layer() != NULL);
   v1->SetBounds(20, 30, 140, 150);
   content_view->AddChildView(v1);
+#if !defined(USE_WEBKIT_COMPOSITOR)
   root_layer->DrawTree();
   EXPECT_EQ(1, ui::TestTexture::live_count());
+#endif
   ASSERT_TRUE(v1->layer() != NULL);
   EXPECT_EQ(root_layer, v1->layer()->parent());
   EXPECT_EQ(gfx::Rect(20, 30, 140, 150), v1->layer()->bounds());
@@ -2600,8 +2609,10 @@ TEST_F(ViewLayerTest, LayerToggling) {
   EXPECT_TRUE(v2->layer() == NULL);
   v2->SetBounds(10, 20, 30, 40);
   v2->SetPaintToLayer(true);
+#if !defined(USE_WEBKIT_COMPOSITOR)
   root_layer->DrawTree();
   EXPECT_EQ(2, ui::TestTexture::live_count());
+#endif
   ASSERT_TRUE(v2->layer() != NULL);
   EXPECT_EQ(v1->layer(), v2->layer()->parent());
   EXPECT_EQ(gfx::Rect(10, 20, 30, 40), v2->layer()->bounds());
@@ -2609,8 +2620,10 @@ TEST_F(ViewLayerTest, LayerToggling) {
   // Turn off v1s layer. v2 should still have a layer but its parent should have
   // changed.
   v1->SetPaintToLayer(false);
+#if !defined(USE_WEBKIT_COMPOSITOR)
   root_layer->DrawTree();
   EXPECT_EQ(1, ui::TestTexture::live_count());
+#endif
   EXPECT_TRUE(v1->layer() == NULL);
   EXPECT_TRUE(v2->layer() != NULL);
   EXPECT_EQ(root_layer, v2->layer()->parent());
@@ -2624,8 +2637,10 @@ TEST_F(ViewLayerTest, LayerToggling) {
   ui::Transform transform;
   transform.SetScale(2.0f, 2.0f);
   v1->SetTransform(transform);
+#if !defined(USE_WEBKIT_COMPOSITOR)
   root_layer->DrawTree();
   EXPECT_EQ(2, ui::TestTexture::live_count());
+#endif
   EXPECT_TRUE(v1->layer() != NULL);
   EXPECT_TRUE(v2->layer() != NULL);
   EXPECT_EQ(root_layer, v1->layer()->parent());
@@ -2976,6 +2991,12 @@ class PaintTrackingView : public View {
   DISALLOW_COPY_AND_ASSIGN(PaintTrackingView);
 };
 
+#if !defined(USE_WEBKIT_COMPOSITOR)
+// TODO(piman): this test relies on the way the non-webkit compositor works.
+// Layer::DrawTree should not be called with the webkit compositor. In the
+// WebKit case, it needs to go through the "real" compositor (not the test one)
+// to do the paints on the layer/views.
+
 // Makes sure child views with layers aren't painted when paint starts at an
 // ancestor.
 TEST_F(ViewLayerTest, DontPaintChildrenWithLayers) {
@@ -2996,6 +3017,7 @@ TEST_F(ViewLayerTest, DontPaintChildrenWithLayers) {
   GetRootLayer()->DrawTree();
   EXPECT_TRUE(content_view->painted());
 }
+#endif
 
 // Tests that the visibility of child layers are updated correctly when a View's
 // visibility changes.

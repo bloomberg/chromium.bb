@@ -111,6 +111,7 @@
         '../../skia/skia.gyp:skia',
         '../../testing/gtest.gyp:gtest',
         '../gfx/compositor/compositor.gyp:compositor',
+        '../gfx/compositor/compositor.gyp:compositor_test_support',
         '../gfx/gl/gl.gyp:gl',
         '../ui.gyp:gfx_resources',
         '../ui.gyp:ui',

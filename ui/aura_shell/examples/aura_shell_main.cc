@@ -15,6 +15,7 @@
 #include "ui/aura_shell/shell_factory.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
+#include "ui/gfx/compositor/compositor_test_support.h"
 
 namespace {
 
@@ -69,6 +70,7 @@ int main(int argc, char** argv) {
 
   // Create the message-loop here before creating the desktop.
   MessageLoop message_loop(MessageLoop::TYPE_UI);
+  ui::CompositorTestSupport::Initialize();
 
   aura_shell::Shell::GetInstance()->SetDelegate(new ShellDelegateImpl);;
 
@@ -77,6 +79,8 @@ int main(int argc, char** argv) {
   aura::Desktop::GetInstance()->Run();
 
   delete aura::Desktop::GetInstance();
+
+  ui::CompositorTestSupport::Terminate();
 
   return 0;
 }

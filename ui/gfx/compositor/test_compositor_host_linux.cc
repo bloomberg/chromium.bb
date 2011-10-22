@@ -90,7 +90,8 @@ ui::Compositor* TestCompositorHostLinux::GetCompositor() {
 }
 
 void TestCompositorHostLinux::ScheduleDraw() {
-  compositor_->Draw(false);
+  if (compositor_)
+    compositor_->Draw(false);
 }
 
 #if defined(TOUCH_UI) || defined(USE_AURA)

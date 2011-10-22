@@ -107,9 +107,7 @@ class COMPOSITOR_EXPORT Compositor : public base::RefCounted<Compositor> {
   virtual void Blur(const gfx::Rect& bounds) = 0;
 
   // Schedules a redraw of the layer tree associated with this compositor.
-  void ScheduleDraw() {
-    delegate_->ScheduleDraw();
-  }
+  virtual void ScheduleDraw();
 
   // Sets the root of the layer tree drawn by this Compositor.
   // The Compositor does not own the root layer.
@@ -150,6 +148,8 @@ class COMPOSITOR_EXPORT Compositor : public base::RefCounted<Compositor> {
   virtual void OnNotifyEnd() = 0;
 
   virtual void OnWidgetSizeChanged() = 0;
+  virtual void OnRootLayerChanged();
+  virtual void DrawTree();
 
   CompositorDelegate* delegate() { return delegate_; }
 
