@@ -123,8 +123,7 @@ void PanelBrowserWindowCocoa::ActivatePanel() {
 }
 
 void PanelBrowserWindowCocoa::DeactivatePanel() {
-  // TODO(dcheng): Implement. See crbug.com/51364 for more details.
-  NOTIMPLEMENTED();
+  [controller_ deactivate];
 }
 
 bool PanelBrowserWindowCocoa::IsPanelActive() const {

@@ -32,6 +32,9 @@ class PanelBrowserWindowCocoa;
 // differently, and minimize panels to 3 px. Hence the need to override the
 // constraining logic.
 - (NSRect)constrainFrameRect:(NSRect)frameRect toScreen:(NSScreen *)screen;
+
+// Prevent panel window from becoming key - for example when it is minimized.
+- (BOOL)canBecomeKeyWindow;
 @end
 
 @interface PanelWindowControllerCocoa : NSWindowController
@@ -102,7 +105,7 @@ class PanelBrowserWindowCocoa;
 
 // Invoked when user clicks on the titlebar. Attempts to flip the
 // Minimized/Restored states.
-- (void)tryFlipExpansionState;
+- (void)onTitlebarMouseClicked;
 
 // Executes the command in the context of the current browser.
 // |command| is an integer value containing one of the constants defined in the
@@ -118,6 +121,13 @@ class PanelBrowserWindowCocoa;
 - (void)terminateBoundsAnimation;
 
 - (BOOL)isAnimatingBounds;
+
+// Removes the Key status from the panel to some other window.
+- (void)deactivate;
+
+// Helper for NSWindow, returns NO for minimized panels in some cases, so they
+// are not un-minimized when another panel is minimized.
+- (BOOL)canBecomeKeyWindow;
 
 @end  // @interface PanelWindowController
 

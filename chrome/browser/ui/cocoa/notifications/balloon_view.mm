@@ -94,4 +94,8 @@ const int kRoundedCornerSize = 6;
   // Continue bubbling the event up the chain of responders.
   [super mouseDown:event];
 }
+
+- (BOOL)acceptsFirstMouse:(NSEvent*)event {
+  return YES;
+}
 @end

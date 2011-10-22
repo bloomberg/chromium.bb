@@ -40,12 +40,7 @@
 #include "ui/gfx/mac/nsimage_cache.h"
 
 const int kMinimumWindowSize = 1;
-const double kBoundsChangeAnimationDuration = 0.25;
-
-// Delay before click on a titlebar is allowed to minimize the panel
-// after the 'draw attention' mode has been cleared.
-const base::TimeDelta kSuspendMinimizeOnClickIntervalMs =
-    base::TimeDelta::FromMilliseconds(500);
+const double kBoundsChangeAnimationDuration = 0.18;  // Seconds.
 
 // Replicate specific 10.6 SDK declarations for building with prior SDKs.
 #if !defined(MAC_OS_X_VERSION_10_6) || \
@@ -60,6 +55,12 @@ enum {
 @implementation PanelWindowCocoaImpl
 - (NSRect)constrainFrameRect:(NSRect)frameRect toScreen:(NSScreen *)screen {
   return frameRect;
+}
+
+- (BOOL)canBecomeKeyWindow {
+  PanelWindowControllerCocoa* controller =
+      static_cast<PanelWindowControllerCocoa*>([self delegate]);
+  return [controller canBecomeKeyWindow];
 }
 @end
 
@@ -461,18 +462,23 @@ enum {
   return boundsAnimation_ && [boundsAnimation_ isAnimating];
 }
 
-- (void)tryFlipExpansionState {
-    Panel* panel = windowShim_->panel();
-    Panel::ExpansionState oldExpansionState = panel->expansion_state();
-    if (oldExpansionState == Panel::EXPANDED &&
-        base::Time::Now() < disableMinimizeUntilTime_) {
+- (void)onTitlebarMouseClicked {
+  Panel* panel = windowShim_->panel();
+  Panel::ExpansionState oldExpansionState = panel->expansion_state();
+
+  if (oldExpansionState == Panel::EXPANDED) {
+    if ([[self titlebarView] isDrawingAttention]) {
+      // Do not minimize if the Panel is drawing attention since user
+      // most likely simply wants to reset the 'draw attention' status.
+      panel->Activate();
       return;
     }
-
-    Panel::ExpansionState newExpansionState =
-        (oldExpansionState != Panel::EXPANDED) ? Panel::EXPANDED
-                                               : Panel::MINIMIZED;
-    panel->SetExpansionState(newExpansionState);
+    panel->SetExpansionState(Panel::MINIMIZED);
+    // The Panel class ensures deactivaiton when it is minimized.
+  } else {
+    panel->SetExpansionState(Panel::EXPANDED);
+    panel->Activate();
+  }
 }
 
 - (int)titlebarHeightInScreenCoordinates {
@@ -498,17 +504,7 @@ enum {
   // If the window becomes key, lets make sure it is expanded and stop
   // drawing attention - since it is ready to accept input, it already has
   // user's attention.
-  windowShim_->panel()->SetExpansionState(Panel::EXPANDED);
   if ([[self titlebarView] isDrawingAttention]) {
-    // Disable ExpansionState changes on mouse click for a short duration.
-    // This is needed in case the window became key as result of mouseDown while
-    // being already expanded and drawing attention - in this case, we don't
-    // want to minimize it on subsequent mouseUp.
-    // We use time interval because the window may become key in various ways
-    // (via keyboard for example) which are not distinguishable at this point.
-    // Apparently this interval is not affecting the user in other cases.
-    disableMinimizeUntilTime_ =
-      base::Time::Now() + kSuspendMinimizeOnClickIntervalMs;
     [[self titlebarView] stopDrawingAttention];
   }
 
@@ -538,6 +534,28 @@ enum {
       chrome::NOTIFICATION_PANEL_CHANGED_ACTIVE_STATUS,
       content::Source<Panel>(windowShim_->panel()),
       content::NotificationService::NoDetails());
+}
+
+- (void)deactivate {
+  if (![[self window] isMainWindow])
+    return;
+  BrowserWindow* browser_window =
+      windowShim_->panel()->manager()->GetNextBrowserWindowToActivate(
+          windowShim_->panel());
+
+  if (browser_window)
+    browser_window->Activate();
+  else
+    [NSApp deactivate];
+}
+
+- (BOOL)canBecomeKeyWindow {
+  // Panel can only gain focus if it is expanded. Minimized panels do not
+  // participate in Cmd-~ rotation.
+  // TODO(dimich): If it will be ever desired to expand/focus the Panel on
+  // keyboard navigation or via main menu, the care should be taken to avoid
+  // cases when minimized Panel is getting keyboard input, invisibly.
+  return windowShim_->panel()->expansion_state() == Panel::EXPANDED;
 }
 
 @end

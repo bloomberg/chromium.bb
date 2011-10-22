@@ -41,6 +41,9 @@ enum PanelDragState {
   // so we can animate it with a fade in/fade out effect.
   IBOutlet NSView* settingsButtonWrapper_;
   IBOutlet HoverImageButton* settingsButton_;
+  // Transparent view on top of entire titlebar. It catches mouse events to
+  // prevent window activation by the system on mouseDown.
+  IBOutlet NSView* overlay_;
   NSButton* closeButton_;  // Created explicitly, not from NIB. Weak, destroyed
                            // when view is destroyed, as a subview.
   ScopedCrTrackingArea closeButtonTrackingArea_;

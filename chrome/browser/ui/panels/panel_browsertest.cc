@@ -1009,7 +1009,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_ActivateDeactivateBasic) {
 }
 
 // TODO(jianli): To be enabled for other platforms.
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
 #define MAYBE_ActivateDeactivateMultiple ActivateDeactivateMultiple
 #else
 #define MAYBE_ActivateDeactivateMultiple DISABLED_ActivateDeactivateMultiple
@@ -1177,6 +1177,143 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_DrawAttentionResetOnActivate) {
   EXPECT_FALSE(native_panel_testing->VerifyDrawingAttention());
 
   panel->Close();
+}
+
+// TODO(dimich): try/enable on other platforms.
+#if defined(OS_MACOSX)
+#define MAYBE_DrawAttentionResetOnClick DrawAttentionResetOnClick
+#else
+#define MAYBE_DrawAttentionResetOnClick DISABLED_DrawAttentionResetOnClick
+#endif
+
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_DrawAttentionResetOnClick) {
+  CreatePanelParams params("Initially Inactive", gfx::Rect(), SHOW_AS_INACTIVE);
+  Panel* panel = CreatePanelWithParams(params);
+  scoped_ptr<NativePanelTesting> native_panel_testing(
+      NativePanelTesting::Create(panel->native_panel()));
+
+  panel->FlashFrame();
+  EXPECT_TRUE(panel->IsDrawingAttention());
+  MessageLoop::current()->RunAllPending();
+  EXPECT_TRUE(native_panel_testing->VerifyDrawingAttention());
+
+  // Test that the attention is cleared when panel gets focus.
+  native_panel_testing->PressLeftMouseButtonTitlebar(
+      panel->GetBounds().origin());
+  native_panel_testing->ReleaseMouseButtonTitlebar();
+
+  MessageLoop::current()->RunAllPending();
+  WaitForPanelActiveState(panel, SHOW_AS_ACTIVE);
+  EXPECT_FALSE(panel->IsDrawingAttention());
+  EXPECT_FALSE(native_panel_testing->VerifyDrawingAttention());
+
+  panel->Close();
+}
+
+// TODO(dimich): try/enable on other platforms.
+#if defined(OS_MACOSX) || defined(OS_WIN)
+#define MAYBE_MinimizeImmediatelyAfterRestore \
+    MinimizeImmediatelyAfterRestore
+#else
+#define MAYBE_MinimizeImmediatelyAfterRestore \
+    DISABLED_MinimizeImmediatelyAfterRestore
+#endif
+
+// There was a bug when it was not possible to minimize the panel by clicking
+// on the titlebar right after it was restored and activated. This test verifies
+// it's possible.
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
+                       MAYBE_MinimizeImmediatelyAfterRestore) {
+  CreatePanelParams params("Initially Inactive", gfx::Rect(), SHOW_AS_ACTIVE);
+  Panel* panel = CreatePanelWithParams(params);
+  scoped_ptr<NativePanelTesting> native_panel_testing(
+      NativePanelTesting::Create(panel->native_panel()));
+
+  panel->SetExpansionState(Panel::MINIMIZED);  // this should deactivate.
+  MessageLoop::current()->RunAllPending();
+  WaitForPanelActiveState(panel, SHOW_AS_INACTIVE);
+  EXPECT_EQ(Panel::MINIMIZED, panel->expansion_state());
+
+  panel->Activate();
+  MessageLoop::current()->RunAllPending();
+  WaitForPanelActiveState(panel, SHOW_AS_ACTIVE);
+  EXPECT_EQ(Panel::EXPANDED, panel->expansion_state());
+
+  // Test that click on the titlebar right after expansion minimizes the Panel.
+  native_panel_testing->PressLeftMouseButtonTitlebar(
+      panel->GetBounds().origin());
+  native_panel_testing->ReleaseMouseButtonTitlebar();
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(Panel::MINIMIZED, panel->expansion_state());
+  panel->Close();
+}
+
+// TODO(dimich): try/enable on other platforms.
+#if defined(OS_MACOSX) || defined(OS_WIN)
+#define MAYBE_FocusLostOnMinimize FocusLostOnMinimize
+#else
+#define MAYBE_FocusLostOnMinimize DISABLED_FocusLostOnMinimize
+#endif
+
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_FocusLostOnMinimize) {
+  CreatePanelParams params("Initially Inactive", gfx::Rect(), SHOW_AS_INACTIVE);
+  Panel* panel = CreatePanelWithParams(params);
+
+  EXPECT_EQ(Panel::EXPANDED, panel->expansion_state());
+  panel->Activate();
+  WaitForPanelActiveState(panel, SHOW_AS_ACTIVE);
+
+  panel->SetExpansionState(Panel::MINIMIZED);
+  MessageLoop::current()->RunAllPending();
+  WaitForPanelActiveState(panel, SHOW_AS_INACTIVE);
+  panel->Close();
+}
+
+// TODO(dimich): try/enable on other platforms.
+#if defined(OS_MACOSX) || defined(OS_WIN)
+#define MAYBE_MinimizeTwoPanelsWithoutTabbedWindow \
+    MinimizeTwoPanelsWithoutTabbedWindow
+#else
+#define MAYBE_MinimizeTwoPanelsWithoutTabbedWindow \
+    DISABLED_MinimizeTwoPanelsWithoutTabbedWindow
+#endif
+
+// When there are 2 panels and no chrome window, minimizing one panel does
+// not expand/focuses another.
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
+                       MAYBE_MinimizeTwoPanelsWithoutTabbedWindow) {
+  CreatePanelParams params("Initially Inactive", gfx::Rect(), SHOW_AS_INACTIVE);
+  Panel* panel1 = CreatePanelWithParams(params);
+  Panel* panel2 = CreatePanelWithParams(params);
+
+  // Close main tabbed window.
+  CloseWindowAndWait(browser());
+
+  EXPECT_EQ(Panel::EXPANDED, panel1->expansion_state());
+  EXPECT_EQ(Panel::EXPANDED, panel2->expansion_state());
+  panel1->Activate();
+  WaitForPanelActiveState(panel1, SHOW_AS_ACTIVE);
+
+  panel1->SetExpansionState(Panel::MINIMIZED);
+  MessageLoop::current()->RunAllPending();
+  WaitForPanelActiveState(panel1, SHOW_AS_INACTIVE);
+  EXPECT_EQ(Panel::MINIMIZED, panel1->expansion_state());
+
+  panel2->SetExpansionState(Panel::MINIMIZED);
+  MessageLoop::current()->RunAllPending();
+  WaitForPanelActiveState(panel2, SHOW_AS_INACTIVE);
+  EXPECT_EQ(Panel::MINIMIZED, panel2->expansion_state());
+
+  // Verify that panel1 is still minimized and not active.
+  WaitForPanelActiveState(panel1, SHOW_AS_INACTIVE);
+  EXPECT_EQ(Panel::MINIMIZED, panel1->expansion_state());
+
+  // Another check for the same.
+  EXPECT_FALSE(panel1->IsActive());
+  EXPECT_FALSE(panel2->IsActive());
+
+  panel1->Close();
+  panel2->Close();
 }
 
 class PanelDownloadTest : public PanelBrowserTest {

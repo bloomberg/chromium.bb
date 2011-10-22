@@ -173,6 +173,9 @@ void Panel::Close() {
 }
 
 void Panel::Activate() {
+  // Make sure the panel is expanded when activated programmatically,
+  // so the user input does not go into collapsed window.
+  SetExpansionState(Panel::EXPANDED);
   native_panel_->ActivatePanel();
 }
 

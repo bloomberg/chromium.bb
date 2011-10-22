@@ -227,7 +227,7 @@ static NSEvent* MakeMouseEvent(NSEventType type,
   [icon_ removeFromSuperview];
   icon_ = newIcon;
   if (icon_)
-    [self addSubview:icon_];
+    [self addSubview:icon_ positioned:NSWindowBelow relativeTo:overlay_];
   [self updateIconAndTitleLayout];
 }
 
@@ -317,7 +317,7 @@ static NSEvent* MakeMouseEvent(NSEventType type,
   DCHECK(dragState_ != PANEL_DRAG_IN_PROGRESS);
 
   if ([event clickCount] == 1)
-    [controller_ tryFlipExpansionState];
+    [controller_ onTitlebarMouseClicked];
 }
 
 - (void)mouseDragged:(NSEvent*)event {
