@@ -1,5 +1,5 @@
---- licensecheck.pl.orig	2011-09-22 10:51:25.934402455 -0700
-+++ licensecheck.pl	2011-10-03 09:49:41.651443138 -0700
+--- licensecheck.pl.orig	2011-10-21 14:02:13.282141718 -0700
++++ licensecheck.pl	2011-10-21 14:07:54.802155126 -0700
 @@ -241,6 +241,12 @@
  my @find_args = ();
  my $files_count = @ARGV;
@@ -144,12 +144,14 @@
      if ($licensetext =~ /Permission is hereby granted, free of charge, to any person or organization obtaining a copy of the software and accompanying documentation covered by this license \(the \"Software\"\)/ or
  	$licensetext =~ /Boost Software License([ ,-]+Version ([^ ]+)?(\.))/i) {
  	$license = "BSL " . ($1 ? "(v$2) " : '') . $license;
-@@ -515,18 +523,8 @@
+@@ -515,18 +523,12 @@
      if ($licensetext =~ /The origin of this software must not be misrepresented.*Altered source versions must be plainly marked as such.*This notice may not be removed or altered from any source distribution/ or
          $licensetext =~ /see copyright notice in zlib\.h/) {
  	$license = "zlib/libpng $license";
--    }
--
++    } elsif ($licensetext =~ /This code is released under the libpng license/) {
++        $license = "libpng $license";
+     }
+ 
 -    if ($licensetext =~ /Do What The Fuck You Want To Public License, Version ([^, ]+)/i) {
 -        $license = "WTFPL (v$1)";
 -    }
@@ -160,8 +162,8 @@
 -
 -    if ($licensetext =~ /(License WTFPL|Under (the|a) WTFPL)/i) {
 -        $license = "WTFPL";
-+    } elsif ($licensetext =~ /This code is released under the libpng license/) {
-+        $license = "libpng $license";
++    if ($licensetext =~ /under MIT license/) {
++        $license = "MIT/X11 (BSD like) $license";
      }
  
      $license = "UNKNOWN" if (!length($license));

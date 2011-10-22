@@ -2,6 +2,7 @@ vars = {
   # Use this googlecode_url variable only if there is an internal mirror for it.
   # If you do not know, use the full path while defining your new deps entry.
   "googlecode_url": "http://%s.googlecode.com/svn",
+  "sourceforge_url": "http://%(repo)s.svn.sourceforge.net/svnroot/%(repo)s",
   "webkit_trunk": "http://svn.webkit.org/repository/webkit/trunk",
   "nacl_trunk": "http://src.chromium.org/native_client/trunk",
   "webkit_revision": "98137",
@@ -32,6 +33,7 @@ vars = {
   "skia_revision": "2514",
   "v8_revision": "9637",
   "webrtc_revision": "711",
+  "jsoncpp_revision": "246",
 
   # Note: On most bots, clang is not checked out via DEPS but by
   # tools/clang/scripts/update.sh. The script reads this line here.
@@ -275,6 +277,14 @@ deps = {
 
   "src/third_party/webrtc":
     (Var("googlecode_url") % "webrtc") + "/trunk/src@" + Var("webrtc_revision"),
+
+  "src/third_party/jsoncpp/source/include":
+    (Var("sourceforge_url") % {"repo": "jsoncpp"}) +
+        "/trunk/jsoncpp/include@" + Var("jsoncpp_revision"),
+
+  "src/third_party/jsoncpp/source/src/lib_json":
+    (Var("sourceforge_url") % {"repo": "jsoncpp"}) +
+        "/trunk/jsoncpp/src/lib_json@" + Var("jsoncpp_revision"),
 
   "src/third_party/mozc/session":
     (Var("googlecode_url") % "mozc") + "/trunk/src/session@58",
