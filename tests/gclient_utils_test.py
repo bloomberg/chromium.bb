@@ -28,13 +28,13 @@ class GclientUtilsUnittest(GclientUtilBase):
   """General gclient_utils.py tests."""
   def testMembersChanged(self):
     members = [
-        'CheckCallAndFilter',
+        'Annotated', 'AutoFlush', 'CheckCallAndFilter',
         'CheckCallAndFilterAndHeader', 'Error', 'ExecutionQueue', 'FileRead',
         'FileWrite', 'FindFileUpwards', 'FindGclientRoot',
         'GetGClientRootAndEntries', 'IsDateRevision', 'MakeDateRevision',
         'MakeFileAutoFlush', 'MakeFileAnnotated', 'PathDifference',
-        'PrintableObject', 'RemoveDirectory', 'SoftClone', 'SplitUrlRevision',
-        'SyntaxErrorToError', 'WorkItem',
+        'PrintableObject', 'RemoveDirectory', 'SplitUrlRevision',
+        'SyntaxErrorToError', 'Wrapper', 'WorkItem',
         'errno', 'lockedmethod', 'logging', 'os', 'Queue', 're', 'rmtree',
         'safe_makedirs', 'stat', 'subprocess2', 'sys','threading', 'time',
     ]
