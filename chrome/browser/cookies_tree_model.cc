@@ -630,8 +630,9 @@ CookiesTreeModel::CookiesTreeModel(
       base::Bind(&CookiesTreeModel::OnCookiesModelInfoLoaded,
                  base::Unretained(this)));
   DCHECK(database_helper_);
-  database_helper_->StartFetching(NewCallback(
-      this, &CookiesTreeModel::OnDatabaseModelInfoLoaded));
+  database_helper_->StartFetching(
+      base::Bind(&CookiesTreeModel::OnDatabaseModelInfoLoaded,
+                 base::Unretained(this)));
   DCHECK(local_storage_helper_);
   local_storage_helper_->StartFetching(NewCallback(
       this, &CookiesTreeModel::OnLocalStorageModelInfoLoaded));

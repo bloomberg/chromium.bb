@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/file_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browsing_data_database_helper.h"
@@ -79,7 +81,8 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataDatabaseHelperTest, DISABLED_FetchData) {
       new BrowsingDataDatabaseHelper(browser()->profile()));
   StopTestOnCallback stop_test_on_callback(database_helper);
   database_helper->StartFetching(
-      NewCallback(&stop_test_on_callback, &StopTestOnCallback::Callback));
+      base::Bind(&StopTestOnCallback::Callback,
+                 base::Unretained(&stop_test_on_callback)));
   // Blocks until StopTestOnCallback::Callback is notified.
   ui_test_utils::RunMessageLoop();
 }
@@ -101,7 +104,8 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataDatabaseHelperTest, CannedAddDatabase) {
 
   TestCompletionCallback callback;
   helper->StartFetching(
-      NewCallback(&callback, &TestCompletionCallback::callback));
+      base::Bind(&TestCompletionCallback::callback,
+                 base::Unretained(&callback)));
 
   std::list<BrowsingDataDatabaseHelper::DatabaseInfo> result =
       callback.result();
@@ -131,7 +135,8 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataDatabaseHelperTest, CannedUnique) {
 
   TestCompletionCallback callback;
   helper->StartFetching(
-      NewCallback(&callback, &TestCompletionCallback::callback));
+      base::Bind(&TestCompletionCallback::callback,
+                 base::Unretained(&callback)));
 
   std::list<BrowsingDataDatabaseHelper::DatabaseInfo> result =
       callback.result();

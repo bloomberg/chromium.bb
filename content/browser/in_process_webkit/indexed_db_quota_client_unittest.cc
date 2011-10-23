@@ -139,7 +139,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
   void OnGetOriginsComplete(const std::set<GURL>& origins,
       quota::StorageType type) {
     origins_ = origins;
-    type_ = type_;
+    type_ = type;
   }
 
   void OnDeleteOriginComplete(quota::QuotaStatusCode code) {

@@ -48,8 +48,7 @@ bool BrowsingDataDatabaseHelper::DatabaseInfo::IsFileSchemeData() {
 }
 
 BrowsingDataDatabaseHelper::BrowsingDataDatabaseHelper(Profile* profile)
-    : completion_callback_(NULL),
-      is_fetching_(false),
+    : is_fetching_(false),
       tracker_(profile->GetDatabaseTracker()) {
 }
 
@@ -57,13 +56,14 @@ BrowsingDataDatabaseHelper::~BrowsingDataDatabaseHelper() {
 }
 
 void BrowsingDataDatabaseHelper::StartFetching(
-    Callback1<const std::list<DatabaseInfo>& >::Type* callback) {
+    const base::Callback<void(const std::list<DatabaseInfo>&)>& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!is_fetching_);
-  DCHECK(callback);
+  DCHECK_EQ(false, callback.is_null());
+
   is_fetching_ = true;
   database_info_.clear();
-  completion_callback_.reset(callback);
+  completion_callback_ = callback;
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&BrowsingDataDatabaseHelper::FetchDatabaseInfoOnFileThread,
@@ -72,7 +72,7 @@ void BrowsingDataDatabaseHelper::StartFetching(
 
 void BrowsingDataDatabaseHelper::CancelNotification() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  completion_callback_.reset(NULL);
+  completion_callback_.Reset();
 }
 
 void BrowsingDataDatabaseHelper::DeleteDatabase(const std::string& origin,
@@ -130,9 +130,9 @@ void BrowsingDataDatabaseHelper::NotifyInUIThread() {
   DCHECK(is_fetching_);
   // Note: completion_callback_ mutates only in the UI thread, so it's safe to
   // test it here.
-  if (completion_callback_ != NULL) {
-    completion_callback_->Run(database_info_);
-    completion_callback_.reset();
+  if (!completion_callback_.is_null()) {
+    completion_callback_.Run(database_info_);
+    completion_callback_.Reset();
   }
   is_fetching_ = false;
   database_info_.clear();
@@ -198,12 +198,13 @@ bool CannedBrowsingDataDatabaseHelper::empty() const {
 }
 
 void CannedBrowsingDataDatabaseHelper::StartFetching(
-    Callback1<const std::list<DatabaseInfo>& >::Type* callback) {
+    const base::Callback<void(const std::list<DatabaseInfo>&)>& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!is_fetching_);
-  DCHECK(callback);
+  DCHECK_EQ(false, callback.is_null());
+
   is_fetching_ = true;
-  completion_callback_.reset(callback);
+  completion_callback_ = callback;
   BrowserThread::PostTask(
       BrowserThread::WEBKIT, FROM_HERE,
       base::Bind(&CannedBrowsingDataDatabaseHelper::ConvertInfoInWebKitThread,
