@@ -794,8 +794,6 @@
         'browser/chromeos/tab_closeable_state_watcher.h',
         'browser/chromeos/tab_first_render_watcher.cc',
         'browser/chromeos/tab_first_render_watcher.h',
-        'browser/chromeos/update_observer.cc',
-        'browser/chromeos/update_observer.h',
         'browser/chromeos/upgrade_detector_chromeos.cc',
         'browser/chromeos/upgrade_detector_chromeos.h',
         'browser/chromeos/user_cros_settings_provider.cc',

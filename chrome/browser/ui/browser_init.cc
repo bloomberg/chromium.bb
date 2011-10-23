@@ -102,7 +102,6 @@
 #include "chrome/browser/chromeos/low_battery_observer.h"
 #include "chrome/browser/chromeos/network_message_observer.h"
 #include "chrome/browser/chromeos/sms_observer.h"
-#include "chrome/browser/chromeos/update_observer.h"
 #if defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/chromeos/wm_message_listener.h"
 #endif
@@ -616,11 +615,6 @@ bool BrowserInit::LaunchBrowser(const CommandLine& command_line,
         new chromeos::LowBatteryObserver(profile);
     chromeos::CrosLibrary::Get()->GetPowerLibrary()->AddObserver(
         low_battery_observer);
-
-    static chromeos::UpdateObserver* update_observer =
-        new chromeos::UpdateObserver(profile);
-    chromeos::CrosLibrary::Get()->GetUpdateLibrary()->AddObserver(
-        update_observer);
 
     static chromeos::NetworkMessageObserver* network_message_observer =
         new chromeos::NetworkMessageObserver(profile);
