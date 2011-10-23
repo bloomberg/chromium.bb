@@ -280,20 +280,16 @@ void ExtensionProcessManager::RegisterExtensionSiteInstance(
 
   int site_instance_id = site_instance->id();
   int render_process_id = site_instance->GetProcess()->id();
-  process_ids_[render_process_id].insert(site_instance_id);
-
-  // Register process hosting extensions that have access to extension bindings
-  // with the ExtensionInfoMap on the IO thread.
-  Profile* profile =
-      Profile::FromBrowserContext(browsing_instance_->browser_context());
-  ExtensionService* service = profile->GetExtensionService();
-  if (service->ExtensionBindingsAllowed(extension->url())) {
-    Profile* profile = Profile::FromBrowserContext(
-        site_instance->GetProcess()->browser_context());
+  if (process_ids_[render_process_id].insert(site_instance_id).second) {
+    // Register process hosting extensions that have access to extension
+    // bindings with the ExtensionInfoMap on the IO thread.
+    Profile* profile =
+        Profile::FromBrowserContext(browsing_instance_->browser_context());
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&ExtensionInfoMap::BindingsEnabledForProcess,
+        base::Bind(&ExtensionInfoMap::RegisterExtensionProcess,
                    profile->GetExtensionInfoMap(),
+                   extension->id(),
                    render_process_id));
   }
 
@@ -310,27 +306,40 @@ void ExtensionProcessManager::RegisterExtensionSiteInstance(
 void ExtensionProcessManager::UnregisterExtensionSiteInstance(
     SiteInstance* site_instance) {
   int site_instance_id = site_instance->id();
-  SiteInstanceIDMap::iterator it = extension_ids_.find(site_instance_id);
-  if (it != extension_ids_.end()) {
-    extension_ids_.erase(it++);
-  }
-  if (site_instance->HasProcess()) {
-    int render_process_id = site_instance->GetProcess()->id();
-    ProcessIDMap::iterator host = process_ids_.find(render_process_id);
-    if (host != process_ids_.end()) {
-      host->second.erase(site_instance_id);
-      if (host->second.empty()) {
-        process_ids_.erase(host);
-        Profile* profile = Profile::FromBrowserContext(
-            site_instance->GetProcess()->browser_context());
-        BrowserThread::PostTask(
-            BrowserThread::IO, FROM_HERE,
-            base::Bind(&ExtensionInfoMap::BindingsDisabledForProcess,
-                       profile->GetExtensionInfoMap(),
-                       render_process_id));
+  std::string extension_id = extension_ids_[site_instance_id];
+  if (!extension_id.empty())
+    extension_ids_.erase(site_instance_id);
+
+  int render_process_id = ClearSiteInstanceID(site_instance_id);
+  if (render_process_id == -1)
+    return;
+
+  Profile* profile = Profile::FromBrowserContext(
+      browsing_instance_->browser_context());
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&ExtensionInfoMap::UnregisterExtensionProcess,
+                 profile->GetExtensionInfoMap(),
+                 extension_id,
+                 render_process_id));
+}
+
+int ExtensionProcessManager::ClearSiteInstanceID(int site_instance_id) {
+  for (ProcessIDMap::iterator i = process_ids_.begin();
+       i != process_ids_.end(); ++i) {
+    SiteInstanceIDSet& site_instance_id_set = i->second;
+    for (SiteInstanceIDSet::iterator j = site_instance_id_set.begin();
+         j != site_instance_id_set.end(); ++j) {
+      if (*j == site_instance_id) {
+        int render_process_id = i->first;
+        site_instance_id_set.erase(j);
+        if (site_instance_id_set.empty())
+          process_ids_.erase(i);
+        return render_process_id;
       }
     }
   }
+  return -1;
 }
 
 bool ExtensionProcessManager::IsExtensionProcess(int render_process_id) {

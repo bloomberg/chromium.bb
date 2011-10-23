@@ -9,7 +9,7 @@
 
 namespace {
 
-static void CheckOnValidThread() {
+void CheckOnValidThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 }
 
@@ -96,20 +96,29 @@ bool ExtensionInfoMap::CanCrossIncognito(const Extension* extension) {
       !extension->incognito_split_mode();
 }
 
-// These are duplicated from ExtensionProcessManager so that we can have the
-// information on the IO thread :(.
-void ExtensionInfoMap::BindingsEnabledForProcess(int render_process_id) {
-  extension_bindings_process_ids_.insert(render_process_id);
+void ExtensionInfoMap::RegisterExtensionProcess(const std::string& extension_id,
+                                                int process_id) {
+  DCHECK(!IsExtensionInProcess(extension_id, process_id));
+  extension_process_ids_.insert(
+      ExtensionProcessIDMap::value_type(extension_id, process_id));
 }
 
-void ExtensionInfoMap::BindingsDisabledForProcess(int render_process_id) {
-  extension_bindings_process_ids_.erase(render_process_id);
+void ExtensionInfoMap::UnregisterExtensionProcess(
+    const std::string& extension_id,
+    int process_id) {
+  ExtensionProcessIDMap::iterator iter =
+      std::find(extension_process_ids_.begin(),
+                extension_process_ids_.end(),
+                ExtensionProcessIDMap::value_type(extension_id, process_id));
+  if (iter != extension_process_ids_.end())
+    extension_process_ids_.erase(iter);
 }
 
-bool ExtensionInfoMap::AreBindingsEnabledForProcess(
-    int render_process_id) const {
-  // Must behave logically the same as AreBindingsEnabledForProcess() in
-  // extension_process_manager.cc.
-  return extension_bindings_process_ids_.find(render_process_id) !=
-      extension_bindings_process_ids_.end();
+bool ExtensionInfoMap::IsExtensionInProcess(
+    const std::string& extension_id, int process_id) const {
+  return std::find(
+      extension_process_ids_.begin(),
+      extension_process_ids_.end(),
+      ExtensionProcessIDMap::value_type(extension_id, process_id)) !=
+          extension_process_ids_.end();
 }

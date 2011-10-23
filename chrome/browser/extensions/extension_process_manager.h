@@ -147,7 +147,8 @@ class ExtensionProcessManager : public content::NotificationObserver {
   SiteInstanceIDMap extension_ids_;
 
   // A map of process ID to site instance ID of the site instances it hosts.
-  typedef std::map<int, std::set<int> > ProcessIDMap;
+  typedef std::set<int> SiteInstanceIDSet;
+  typedef std::map<int, SiteInstanceIDSet> ProcessIDMap;
   ProcessIDMap process_ids_;
 
  private:
@@ -168,6 +169,10 @@ class ExtensionProcessManager : public content::NotificationObserver {
 
   // Excludes background page.
   bool HasVisibleViews(const std::string& extension_id);
+
+  // Clears the mapping for the specified site instance. Returns the process the
+  // site was mapped to, or -1 if it wasn't found.
+  int ClearSiteInstanceID(int site_instance_id);
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionProcessManager);
 };

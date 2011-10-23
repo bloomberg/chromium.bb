@@ -523,7 +523,8 @@ void ExtensionFunctionDispatcher::DispatchOnIOThread(
   const Extension* extension =
       extension_info_map->extensions().GetByURL(params.source_url);
 
-  if (!extension_info_map->AreBindingsEnabledForProcess(render_process_id)) {
+  if (!extension_info_map->IsExtensionInProcess(extension->id(),
+                                                render_process_id)) {
     // TODO(aa): Allow content scripts access to low-threat extension APIs.
     // See: crbug.com/80308.
     LOG(ERROR) << "Extension API called from non-extension process.";

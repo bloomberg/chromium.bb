@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_INFO_MAP_H_
 #pragma once
 
-#include <set>
+#include <map>
 #include <string>
 
 #include "base/basictypes.h"
@@ -50,15 +50,21 @@ class ExtensionInfoMap : public base::RefCountedThreadSafe<ExtensionInfoMap> {
   // sub-profile (incognito to original profile, or vice versa).
   bool CanCrossIncognito(const Extension* extension);
 
-  // Registers a RenderProcessHost with |render_process_id| as hosting an
-  // extension.
-  void BindingsEnabledForProcess(int render_process_id);
+  // Record that |extension_id| is running in |process_id|. We normally have
+  // this information in  ExtensionProcessManager on the UI thread, but we also
+  // sometimes need it on the IO thread. Note that this can be any of
+  // (extension, packaged app, hosted app).
+  void RegisterExtensionProcess(const std::string& extension_id,
+                                int process_id);
 
-  // Unregisters the RenderProcessHost with |render_process_id|.
-  void BindingsDisabledForProcess(int render_process_id);
+  // Remove any record of |extension_id| created with RegisterExtensionProcess.
+  // If |extension_id| is unknown, we ignore it.
+  void UnregisterExtensionProcess(const std::string& extension_id,
+                                  int process_id);
 
-  // True if this process host is hosting an extension with extension bindings.
-  bool AreBindingsEnabledForProcess(int render_process_id) const;
+  // Returns true if |extension_id| is running in |process_id|..
+  bool IsExtensionInProcess(const std::string& extension_id,
+                            int process_id) const;
 
  private:
   // Extra dynamic data related to an extension.
@@ -72,8 +78,8 @@ class ExtensionInfoMap : public base::RefCountedThreadSafe<ExtensionInfoMap> {
   // Extra data associated with enabled extensions.
   ExtraDataMap extra_data_;
 
-  // The set of process ids that have extension bindings enabled.
-  std::set<int> extension_bindings_process_ids_;
+  typedef std::multimap<std::string, int> ExtensionProcessIDMap;
+  ExtensionProcessIDMap extension_process_ids_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_INFO_MAP_H_
