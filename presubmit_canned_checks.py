@@ -634,6 +634,7 @@ def RunPylint(input_api, output_api, white_list=None, black_list=None):
     # were listed, try to run pylint.
     try:
       from pylint import lint
+      from pylint.utils import UnknownMessage
       input_api.logging.debug(
           'Using pylint v%s from %s' % (lint.version, lint.__file__))
     except ImportError:
@@ -655,6 +656,8 @@ def RunPylint(input_api, output_api, white_list=None, black_list=None):
       except SystemExit, e:
         # pylint has the bad habit of calling sys.exit(), trap it here.
         return e.code
+      except UnknownMessage, e:
+        return 'Please upgrade pylint: %s' % e
 
     result = None
     if not input_api.verbose:
@@ -662,10 +665,10 @@ def RunPylint(input_api, output_api, white_list=None, black_list=None):
     else:
       for filename in sorted(files):
         print('Running pylint on %s' % filename)
-        out = run_lint([filename])
-        if out:
-          result = out
-    if result:
+        result = run_lint([filename]) or result
+    if isinstance(result, basestring):
+      return [error_type(result)]
+    elif result:
       return [error_type('Fix pylint errors first.')]
     return []
   finally:
