@@ -7,6 +7,7 @@
 
 import logging
 import os
+import posixpath
 import sys
 import unittest
 
@@ -153,12 +154,13 @@ class PatchTest(unittest.TestCase):
     orig_name = patches.patches[4].filename
     orig_source_name = patches.patches[4].source_filename or orig_name
     patches.set_relpath(os.path.join('a', 'bb'))
-    expected = [os.path.join('a', 'bb', x) for x in expected]
+    # Expect posixpath all the time.
+    expected = [posixpath.join('a', 'bb', x) for x in expected]
     self.assertEquals(expected, patches.filenames)
     # Make sure each header is updated accordingly.
     header = []
-    new_name = os.path.join('a', 'bb', orig_name)
-    new_source_name = os.path.join('a', 'bb', orig_source_name)
+    new_name = posixpath.join('a', 'bb', orig_name)
+    new_source_name = posixpath.join('a', 'bb', orig_source_name)
     for line in RAW.PATCH.splitlines(True):
       if line.startswith('@@'):
         break

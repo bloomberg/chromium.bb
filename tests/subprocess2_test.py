@@ -168,7 +168,10 @@ class Subprocess2Test(unittest.TestCase):
          stdout=subprocess2.VOID,
          stderr=subprocess2.PIPE)
     self.assertEquals(None, out)
-    self.assertEquals('a\nbb\nccc\n', err)
+    expected = 'a\nbb\nccc\n'
+    if sys.platform == 'win32':
+      expected = expected.replace('\n', '\r\n')
+    self.assertEquals(expected, err)
     self.assertEquals(0, code)
 
   def test_stderr_void(self):
