@@ -7,6 +7,9 @@
 
 #include "ppapi/c/pp_stdint.h"
 
+/// @file
+/// This file defines the API for callbacks related to 3D.
+
 namespace pp {
 
 class Instance;
@@ -19,12 +22,18 @@ class Widget_Dev;
 // instance.
 class Graphics3DClient {
  public:
+  ///
+  /// A constructor for creating a Graphics3DClient.
+  ///
+  /// @param[in] instance The instance that will own the new
+  /// <code>Graphics3DClient</code>.
   Graphics3DClient(Instance* instance);
+
+  /// Destructor.
   virtual ~Graphics3DClient();
 
-  /**
-   * Notification that the context was lost for the 3D devices.
-   */
+  /// Graphics3DContextLost() is a notification that the context was lost for
+  /// the 3D devices.
   virtual void Graphics3DContextLost() = 0;
 
  private:
