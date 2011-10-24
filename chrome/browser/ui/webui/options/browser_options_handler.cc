@@ -383,6 +383,8 @@ void BrowserOptionsHandler::AddStartupPage(const ListValue* args) {
   CHECK(args->GetString(0, &url_string));
 
   GURL url = URLFixerUpper::FixupURL(url_string, std::string());
+  if (!url.is_valid())
+    return;
   int index = startup_custom_pages_table_model_->RowCount();
   startup_custom_pages_table_model_->Add(index, url);
   SaveStartupPagesPref();
