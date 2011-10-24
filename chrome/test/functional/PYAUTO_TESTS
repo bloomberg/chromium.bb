@@ -259,6 +259,8 @@
       '-find_in_page.FindMatchTests.testSearchInPDF',
       # crbug.com/85310
       '-instant',
+      # crbug.com/91033
+      '-omnibox.OmniboxTest.testOmniboxSearchHistory',
       # Gnome / kwallet popups on linux break sync tests.  crbug.com/80329
       '-sync',
       # crbug.com/87837
