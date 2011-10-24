@@ -79,23 +79,6 @@ void SystemOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_SENSITIVITY_MORE_DESCRIPTION));
 
-  localized_strings->SetString("bluetooth",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_SECTION_TITLE_BLUETOOTH));
-  localized_strings->SetString("enableBluetooth",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_BLUETOOTH_ENABLE));
-  localized_strings->SetString("findBluetoothDevices",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_FIND_BLUETOOTH_DEVICES));
-  localized_strings->SetString("bluetoothScanning",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_BLUETOOTH_SCANNING));
-  localized_strings->SetString("bluetoothDeviceConnected",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECTED));
-  localized_strings->SetString("bluetoothDeviceNotPaired",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_BLUETOOTH_NOT_PAIRED));
-  localized_strings->SetString("bluetoothConnectDevice",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECT));
-  localized_strings->SetString("bluetoothDisconnectDevice",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_BLUETOOTH_DISCONNECT));
-
   localized_strings->SetString("language",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_SECTION_TITLE_LANGUAGE));
   localized_strings->SetString("languageCustomize",
@@ -123,15 +106,6 @@ void SystemOptionsHandler::Initialize() {
   base::FundamentalValue checked(acc_enabled);
   web_ui_->CallJavascriptFunction(
       "options.SystemOptions.SetAccessibilityCheckboxState", checked);
-
-  // Bluetooth support is a work in progress.  Supress the feature unless
-  // explicitly enabled via a command line flag.
-  // TODO (kevers) - Test for presence of bluetooth hardware.
-  if (CommandLine::ForCurrentProcess()
-      ->HasSwitch(switches::kEnableBluetooth)) {
-    web_ui_->CallJavascriptFunction(
-        "options.SystemOptions.showBluetoothSettings");
-  }
 }
 
 void SystemOptionsHandler::RegisterMessages() {
@@ -145,13 +119,6 @@ void SystemOptionsHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui_->RegisterMessageCallback("increaseScreenBrightness",
       base::Bind(&SystemOptionsHandler::IncreaseScreenBrightnessCallback,
-                 base::Unretained(this)));
-
-  web_ui_->RegisterMessageCallback("bluetoothEnableChange",
-      base::Bind(&SystemOptionsHandler::BluetoothEnableChangeCallback,
-                 base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("findBluetoothDevices",
-      base::Bind(&SystemOptionsHandler::FindBluetoothDevicesCallback,
                  base::Unretained(this)));
 }
 
@@ -175,47 +142,4 @@ void SystemOptionsHandler::IncreaseScreenBrightnessCallback(
     const ListValue* args) {
   chromeos::DBusThreadManager::Get()->power_manager_client()->
       IncreaseScreenBrightness();
-}
-
-void SystemOptionsHandler::BluetoothEnableChangeCallback(
-    const ListValue* args) {
-  // TODO (kevers) - Call Bluetooth API to enable or disable.
-}
-
-void SystemOptionsHandler::FindBluetoothDevicesCallback(
-    const ListValue* args) {
-  // TODO (kevers) - Call Bluetooth API to fetch devices.
-  //                 Generate a fake list until the bluetooth API is ready.
-  //                 Afterwards keep fake list only for cases where emulating
-  //                 ChromeOS from the desktop launch.
-  GenerateFakeDeviceList();
-}
-
-void SystemOptionsHandler::BluetoothDeviceNotification(
-    const DictionaryValue& device) {
-  web_ui_->CallJavascriptFunction(
-      "options.SystemOptions.addBluetoothDevice", device);
-}
-
-void SystemOptionsHandler::GenerateFakeDeviceList() {
-  // TODO (kevers) - Send notifications asynchronously simulating that the
-  //                 process of discovering bluetooth devices takes time.
-  //                 Fire each notification using OneShotTimer with a
-  //                 varying delay.
-  std::string data[9] = {
-    "Fake Wireless Keyboard", "01-02-03-04-05", "keyboard",
-    "Fake Wireless Mouse",  "02-03-04-05-01", "mouse",
-    "Fake Wireless Headset", "03-04-05-01-02", "headset"};
-
-  for (int i = 0; i < 3; i++) {
-    DictionaryValue device;
-    device.SetString("deviceName", data[3*i]);
-    device.SetString("deviceId", data[3*i+1]);
-    device.SetString("deviceType", data[3*i+2]);
-    device.SetString("deviceStatus", "bluetoothDeviceNotPaired");
-    web_ui_->CallJavascriptFunction(
-        "options.SystemOptions.addBluetoothDevice", device);
-  }
-  web_ui_->CallJavascriptFunction(
-      "options.SystemOptions.notifyBluetoothSearchComplete");
 }

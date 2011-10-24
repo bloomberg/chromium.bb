@@ -61,6 +61,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/webui/options/chromeos/about_page_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/accounts_options_handler.h"
+#include "chrome/browser/ui/webui/options/chromeos/bluetooth_options_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/change_picture_options_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/core_chromeos_options_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/cros_language_options_handler.h"
@@ -236,6 +237,8 @@ OptionsUI::OptionsUI(TabContents* contents)
                           new chromeos::AboutPageHandler());
   AddOptionsPageUIHandler(localized_strings,
                           new chromeos::AccountsOptionsHandler());
+  AddOptionsPageUIHandler(localized_strings,
+                          new chromeos::BluetoothOptionsHandler());
   AddOptionsPageUIHandler(localized_strings, new InternetOptionsHandler());
   AddOptionsPageUIHandler(localized_strings,
                           new chromeos::LanguageChewingHandler());

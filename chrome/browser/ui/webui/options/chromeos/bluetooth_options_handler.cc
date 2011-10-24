@@ -1,0 +1,129 @@
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/ui/webui/options/chromeos/bluetooth_options_handler.h"
+
+#include "base/bind.h"
+#include "base/command_line.h"
+#include "base/utf_string_conversions.h"
+#include "base/values.h"
+#include "chrome/browser/chromeos/system/runtime_environment.h"
+#include "chrome/browser/ui/webui/options/chromeos/system_settings_provider.h"
+#include "chrome/common/chrome_switches.h"
+#include "grit/chromium_strings.h"
+#include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
+
+namespace chromeos {
+
+BluetoothOptionsHandler::BluetoothOptionsHandler()
+    : chromeos::CrosOptionsPageUIHandler(
+        new chromeos::SystemSettingsProvider()) {
+}
+
+BluetoothOptionsHandler::~BluetoothOptionsHandler() {
+  // TODO(kevers): Shutdown bluetooth.
+}
+
+void BluetoothOptionsHandler::GetLocalizedValues(
+    DictionaryValue* localized_strings) {
+  DCHECK(localized_strings);
+
+  localized_strings->SetString("bluetooth",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_SECTION_TITLE_BLUETOOTH));
+  localized_strings->SetString("enableBluetooth",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_BLUETOOTH_ENABLE));
+  localized_strings->SetString("findBluetoothDevices",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_FIND_BLUETOOTH_DEVICES));
+  localized_strings->SetString("bluetoothScanning",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_BLUETOOTH_SCANNING));
+  localized_strings->SetString("bluetoothDeviceConnected",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECTED));
+  localized_strings->SetString("bluetoothDeviceNotPaired",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_BLUETOOTH_NOT_PAIRED));
+  localized_strings->SetString("bluetoothConnectDevice",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECT));
+  localized_strings->SetString("bluetoothDisconnectDevice",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_BLUETOOTH_DISCONNECT));
+}
+
+void BluetoothOptionsHandler::Initialize() {
+  DCHECK(web_ui_);
+  // Bluetooth support is a work in progress.  Supress the feature unless
+  // explicitly enabled via a command line flag.
+  // TODO(kevers): Test for presence of bluetooth hardware.
+  if (!CommandLine::ForCurrentProcess()
+      ->HasSwitch(switches::kEnableBluetooth)) {
+    return;
+  }
+  web_ui_->CallJavascriptFunction(
+      "options.SystemOptions.showBluetoothSettings");
+  // TODO(kevers): Initialize bluetooth.
+}
+
+void BluetoothOptionsHandler::RegisterMessages() {
+  DCHECK(web_ui_);
+  web_ui_->RegisterMessageCallback("bluetoothEnableChange",
+      base::Bind(&BluetoothOptionsHandler::EnableChangeCallback,
+                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("findBluetoothDevices",
+      base::Bind(&BluetoothOptionsHandler::FindDevicesCallback,
+                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("updateBluetoothDevice",
+      base::Bind(&BluetoothOptionsHandler::UpdateDeviceCallback,
+                 base::Unretained(this)));
+}
+
+void BluetoothOptionsHandler::EnableChangeCallback(
+    const ListValue* args) {
+  // TODO(kevers): Call Bluetooth API to enable or disable.
+}
+
+void BluetoothOptionsHandler::FindDevicesCallback(
+    const ListValue* args) {
+  // We only initiate a scan if we're running on Chrome OS. Otherwise, we
+  // generate a fake device list.
+  if (!chromeos::system::runtime_environment::IsRunningOnChromeOS()) {
+    GenerateFakeDeviceList();
+    return;
+  }
+  // TODO(kevers): Fetch real Bluetooth devices.
+}
+
+void BluetoothOptionsHandler::UpdateDeviceCallback(
+    const ListValue* args) {
+  // TODO(kevers): Trigger connect/disconnect.
+}
+
+void BluetoothOptionsHandler::DeviceNotification(
+    const DictionaryValue& device) {
+  web_ui_->CallJavascriptFunction(
+      "options.SystemOptions.addBluetoothDevice", device);
+}
+
+void BluetoothOptionsHandler::GenerateFakeDeviceList() {
+  // TODO(kevers): Send notifications asynchronously simulating that the
+  //               process of discovering bluetooth devices takes time.
+  //               Fire each notification using OneShotTimer with a
+  //               varying delay.
+  std::string data[9] = {
+    "Fake Wireless Keyboard", "01-02-03-04-05", "keyboard",
+    "Fake Wireless Mouse",  "02-03-04-05-01", "mouse",
+    "Fake Wireless Headset", "03-04-05-01-02", "headset"};
+
+  for (int i = 0; i < 3; i++) {
+    DictionaryValue device;
+    device.SetString("deviceName", data[3*i]);
+    device.SetString("deviceId", data[3*i+1]);
+    device.SetString("deviceType", data[3*i+2]);
+    device.SetString("deviceStatus", "bluetoothDeviceNotPaired");
+    web_ui_->CallJavascriptFunction(
+        "options.SystemOptions.addBluetoothDevice", device);
+  }
+  web_ui_->CallJavascriptFunction(
+      "options.SystemOptions.notifyBluetoothSearchComplete");
+}
+
+}
+

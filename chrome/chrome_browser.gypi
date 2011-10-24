@@ -3766,6 +3766,8 @@
         'browser/ui/webui/options/chromeos/about_page_handler.h',
         'browser/ui/webui/options/chromeos/accounts_options_handler.cc',
         'browser/ui/webui/options/chromeos/accounts_options_handler.h',
+        'browser/ui/webui/options/chromeos/bluetooth_options_handler.cc',
+        'browser/ui/webui/options/chromeos/bluetooth_options_handler.h',
         'browser/ui/webui/options/chromeos/change_picture_options_handler.cc',
         'browser/ui/webui/options/chromeos/change_picture_options_handler.h',
         'browser/ui/webui/options/chromeos/core_chromeos_options_handler.cc',

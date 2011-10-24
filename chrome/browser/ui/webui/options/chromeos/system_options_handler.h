@@ -35,27 +35,7 @@ class SystemOptionsHandler : public chromeos::CrosOptionsPageUIHandler {
   void DecreaseScreenBrightnessCallback(const base::ListValue* args);
   void IncreaseScreenBrightnessCallback(const base::ListValue* args);
 
-  // Called when the 'Enable bluetooth' checkbox value is changed.
-  // |args| will contain the checkbox checked state as a string
-  // ("true" or "false").
-  void BluetoothEnableChangeCallback(const base::ListValue* args);
-
-  // Called when the 'Find Devices' button is pressed from the
-  // Bluetooth settings.
-  // |args| will contain the list of devices currently connected
-  // devices according to the System options page.
-  void FindBluetoothDevicesCallback(const base::ListValue* args);
-
-  // Sends a notification to the Web UI of the status of a bluetooth device.
-  // |device| is the decription of the device.  The supported dictionary keys
-  // for device are "deviceName", "deviceId", "deviceType" and "deviceStatus".
-  void BluetoothDeviceNotification(const base::DictionaryValue& device);
-
  private:
-  // Simulates extracting a list of available bluetooth devices.
-  // Called when emulating ChromeOS from a desktop environment.
-  void GenerateFakeDeviceList();
-
   DISALLOW_COPY_AND_ASSIGN(SystemOptionsHandler);
 };
 
