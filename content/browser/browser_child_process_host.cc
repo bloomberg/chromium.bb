@@ -149,9 +149,11 @@ void BrowserChildProcessHost::OnChildDisconnected() {
       OnProcessCrashed(exit_code);
       // Report that this child process crashed.
       Notify(content::NOTIFICATION_CHILD_PROCESS_CRASHED);
-      UMA_HISTOGRAM_COUNTS("ChildProcess.Crashes", this->type());
+      UMA_HISTOGRAM_ENUMERATION("ChildProcess.Crashed",
+                                this->type(), MAX_PROCESS);
       if (disconnect_was_alive_) {
-        UMA_HISTOGRAM_COUNTS("ChildProcess.CrashesWasAlive", this->type());
+        UMA_HISTOGRAM_ENUMERATION("ChildProcess.CrashedWasAlive",
+                                  this->type(), MAX_PROCESS);
       }
       break;
     }
@@ -159,9 +161,11 @@ void BrowserChildProcessHost::OnChildDisconnected() {
       OnProcessWasKilled(exit_code);
       // Report that this child process was killed.
       Notify(content::NOTIFICATION_CHILD_PROCESS_WAS_KILLED);
-      UMA_HISTOGRAM_COUNTS("ChildProcess.Kills", this->type());
+      UMA_HISTOGRAM_ENUMERATION("ChildProcess.Killed",
+                                this->type(), MAX_PROCESS);
       if (disconnect_was_alive_) {
-        UMA_HISTOGRAM_COUNTS("ChildProcess.KillsWasAlive", this->type());
+        UMA_HISTOGRAM_ENUMERATION("ChildProcess.KilledWasAlive",
+                                  this->type(), MAX_PROCESS);
       }
       break;
     }

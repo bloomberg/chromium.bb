@@ -16,7 +16,8 @@
 class CONTENT_EXPORT ChildProcessInfo {
  public:
   // NOTE: Do not remove or reorder the elements in this enum, and only add new
-  // items at the end. We depend on these specific values in a histogram.
+  // items at the end, right before MAX_PROCESS. We depend on these specific
+  // values in histograms.
   enum ProcessType {
     UNKNOWN_PROCESS = 1,
     BROWSER_PROCESS,
