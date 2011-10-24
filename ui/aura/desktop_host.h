@@ -29,6 +29,10 @@ class DesktopHost : public MessageLoop::Dispatcher {
   // Creates a new DesktopHost. The caller owns the returned value.
   static DesktopHost* Create(const gfx::Rect& bounds);
 
+  // Returns the actual size of the display.
+  // (gfx::Screen only reports on the virtual desktop exposed by Aura.)
+  static gfx::Size GetNativeDisplaySize();
+
   // Sets the Desktop this DesktopHost is hosting. DesktopHost does not own the
   // Desktop.
   virtual void SetDesktop(Desktop* desktop) = 0;

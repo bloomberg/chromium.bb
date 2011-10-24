@@ -41,11 +41,9 @@ static const int kDefaultHostWindowHeight = 1024;
 
 }  // namespace
 
-// static
 Desktop* Desktop::instance_ = NULL;
-
-// static
 ui::Compositor*(*Desktop::compositor_factory_)() = NULL;
+bool Desktop::use_fullscreen_host_window_ = false;
 
 Desktop::Desktop()
     : Window(NULL),
@@ -411,26 +409,29 @@ bool Desktop::IsFocusedWindow(const Window* window) const {
 
 void Desktop::Init() {
   Window::Init();
-  SetBounds(gfx::Rect(gfx::Point(), host_->GetSize()));
+  SetBounds(gfx::Rect(host_->GetSize()));
   Show();
   compositor()->SetRootLayer(layer());
 }
 
 gfx::Rect Desktop::GetInitialHostWindowBounds() const {
+  gfx::Rect bounds(kDefaultHostWindowX, kDefaultHostWindowY,
+                   kDefaultHostWindowWidth, kDefaultHostWindowHeight);
+
   const string size_str = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
       switches::kAuraHostWindowSize);
-
-  int width = 0, height = 0;
   vector<string> parts;
   base::SplitString(size_str, 'x', &parts);
-  if (parts.size() != 2 ||
-      !base::StringToInt(parts[0], &width) ||
-      !base::StringToInt(parts[1], &height) ||
-      width <= 0 || height <= 0) {
-    width = kDefaultHostWindowWidth;
-    height = kDefaultHostWindowHeight;
+  int parsed_width = 0, parsed_height = 0;
+  if (parts.size() == 2 &&
+      base::StringToInt(parts[0], &parsed_width) && parsed_width > 0 &&
+      base::StringToInt(parts[1], &parsed_height) && parsed_height > 0) {
+    bounds.set_size(gfx::Size(parsed_width, parsed_height));
+  } else if (use_fullscreen_host_window_) {
+    bounds = gfx::Rect(DesktopHost::GetNativeDisplaySize());
   }
-  return gfx::Rect(kDefaultHostWindowX, kDefaultHostWindowY, width, height);
+
+  return bounds;
 }
 
 }  // namespace aura

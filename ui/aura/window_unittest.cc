@@ -969,11 +969,8 @@ TEST_F(WindowTest, IsOrContainsFullscreenWindow) {
 // Tests transformation on the desktop.
 TEST_F(WindowTest, Transform) {
   Desktop* desktop = Desktop::GetInstance();
-  gfx::Size size(200, 300);
-  desktop->SetHostSize(size);
   desktop->ShowDesktop();
-
-  EXPECT_EQ(gfx::Rect(size), gfx::Rect(desktop->GetHostSize()));
+  gfx::Size size = desktop->GetHostSize();
   EXPECT_EQ(gfx::Rect(size),
             gfx::Screen::GetMonitorAreaNearestPoint(gfx::Point()));
 
@@ -984,26 +981,35 @@ TEST_F(WindowTest, Transform) {
   desktop->SetTransform(transform);
 
   // The size should be the transformed size.
-  EXPECT_EQ(gfx::Rect(0, 0, 300, 200), gfx::Rect(desktop->GetHostSize()));
-  EXPECT_EQ(gfx::Rect(0, 0, 300, 200), desktop->bounds());
-  EXPECT_EQ(gfx::Rect(0, 0, 300, 200),
-            gfx::Screen::GetMonitorAreaNearestPoint(gfx::Point()));
+  gfx::Size transformed_size(size.height(), size.width());
+  EXPECT_EQ(transformed_size.ToString(), desktop->GetHostSize().ToString());
+  EXPECT_EQ(gfx::Rect(transformed_size).ToString(),
+            desktop->bounds().ToString());
+  EXPECT_EQ(gfx::Rect(transformed_size).ToString(),
+            gfx::Screen::GetMonitorAreaNearestPoint(gfx::Point()).ToString());
 
   ActivateWindowDelegate d1;
   scoped_ptr<Window> w1(
       CreateTestWindowWithDelegate(&d1, 1, gfx::Rect(0, 10, 50, 50), NULL));
   w1->Show();
 
+  gfx::Point miss_point(5, 5);
+  transform.TransformPoint(miss_point);
   MouseEvent mouseev1(ui::ET_MOUSE_PRESSED,
-                      gfx::Point(195, 5), ui::EF_LEFT_BUTTON_DOWN);
+                      miss_point,
+                      ui::EF_LEFT_BUTTON_DOWN);
   desktop->DispatchMouseEvent(&mouseev1);
   EXPECT_FALSE(w1->GetFocusManager()->GetFocusedWindow());
   MouseEvent mouseup(ui::ET_MOUSE_RELEASED,
-                     gfx::Point(195, 5), ui::EF_LEFT_BUTTON_DOWN);
+                     miss_point,
+                     ui::EF_LEFT_BUTTON_DOWN);
   desktop->DispatchMouseEvent(&mouseup);
 
+  gfx::Point hit_point(5, 15);
+  transform.TransformPoint(hit_point);
   MouseEvent mouseev2(ui::ET_MOUSE_PRESSED,
-                      gfx::Point(185, 5), ui::EF_LEFT_BUTTON_DOWN);
+                      hit_point,
+                      ui::EF_LEFT_BUTTON_DOWN);
   desktop->DispatchMouseEvent(&mouseev2);
   EXPECT_EQ(w1.get(), desktop->active_window());
   EXPECT_EQ(w1.get(), w1->GetFocusManager()->GetFocusedWindow());

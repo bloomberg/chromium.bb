@@ -198,7 +198,9 @@ class DesktopHostLinux : public DesktopHost {
   virtual void SetCursor(gfx::NativeCursor cursor_type) OVERRIDE;
   virtual gfx::Point QueryMouseLocation() OVERRIDE;
 
-  // Returns true if there's an X window manager present.
+  // Returns true if there's an X window manager present... in most cases.  Some
+  // window managers (notably, ion3) don't implement enough of ICCCM for us to
+  // detect that they're there.
   bool IsWindowManagerPresent();
 
   Desktop* desktop_;
@@ -211,33 +213,20 @@ class DesktopHostLinux : public DesktopHost {
   gfx::NativeCursor current_cursor_;
 
   // The size of |xwindow_|.
-  gfx::Rect bounds_;
-
-  // True while we requested configure, but haven't recieved configure event
-  // yet.
-  bool expect_configure_event_;
+  gfx::Size size_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopHostLinux);
 };
 
 DesktopHostLinux::DesktopHostLinux(const gfx::Rect& bounds)
     : desktop_(NULL),
-      xdisplay_(NULL),
+      xdisplay_(base::MessagePumpX::GetDefaultXDisplay()),
       xwindow_(0),
       current_cursor_(aura::kCursorNull),
-      bounds_(bounds) {
-  // This assumes that the message-pump creates and owns the display.
-  xdisplay_ = base::MessagePumpX::GetDefaultXDisplay();
-
-  // Ingore the requested bounds and just cover the whole screen if there's no
-  // X window manager present.
-  if (!IsWindowManagerPresent())
-    bounds_.SetRect(
-        0, 0, DisplayWidth(xdisplay_, 0), DisplayHeight(xdisplay_, 0));
-
+      size_(bounds.size()) {
   xwindow_ = XCreateSimpleWindow(xdisplay_, DefaultRootWindow(xdisplay_),
-                                 bounds_.x(), bounds_.y(),
-                                 bounds_.width(), bounds_.height(),
+                                 bounds.x(), bounds.y(),
+                                 bounds.width(), bounds.height(),
                                  0, 0, 0);
 
   long event_mask = ButtonPressMask | ButtonReleaseMask |
@@ -282,28 +271,6 @@ base::MessagePumpDispatcher::DispatchStatus DesktopHostLinux::Dispatch(
       handled = desktop_->DispatchMouseEvent(&mouseev);
       break;
     }
-    case MotionNotify: {
-      // Discard all but the most recent motion event that targets the same
-      // window with unchanged state.
-      XEvent last_event;
-      while (XPending(xev->xany.display)) {
-        XEvent next_event;
-        XPeekEvent(xev->xany.display, &next_event);
-        if (next_event.type == MotionNotify &&
-            next_event.xmotion.window == xev->xmotion.window &&
-            next_event.xmotion.subwindow == xev->xmotion.subwindow &&
-            next_event.xmotion.state == xev->xmotion.state) {
-          XNextEvent(xev->xany.display, &last_event);
-          xev = &last_event;
-        } else {
-          break;
-        }
-      }
-
-      MouseEvent mouseev(xev);
-      handled = desktop_->DispatchMouseEvent(&mouseev);
-      break;
-    }
     case ConfigureNotify: {
       DCHECK_EQ(xdisplay_, xev->xconfigure.display);
       DCHECK_EQ(xwindow_, xev->xconfigure.window);
@@ -313,15 +280,13 @@ base::MessagePumpDispatcher::DispatchStatus DesktopHostLinux::Dispatch(
       // from within aura (e.g. the X window manager can change the size). Make
       // sure the desktop size is maintained properly.
       gfx::Size size(xev->xconfigure.width, xev->xconfigure.height);
-      if (bounds_.size() != size || expect_configure_event_) {
-        expect_configure_event_ = false;
-        bounds_.set_size(size);
+      if (size_ != size) {
+        size_ = size;
         desktop_->OnHostResized(size);
       }
       handled = true;
       break;
     }
-
     case GenericEvent: {
       ui::TouchFactory* factory = ui::TouchFactory::GetInstance();
       if (!factory->ShouldProcessXI2Event(xev))
@@ -367,6 +332,37 @@ base::MessagePumpDispatcher::DispatchStatus DesktopHostLinux::Dispatch(
       // If we coalesced an event we need to free its cookie.
       if (num_coalesced > 0)
         XFreeEventData(xev->xgeneric.display, &last_event.xcookie);
+      break;
+    }
+    case MapNotify: {
+      // If there's no window manager running, we need to assign the X input
+      // focus to our host window.
+      if (!IsWindowManagerPresent())
+        XSetInputFocus(xdisplay_, xwindow_, RevertToNone, CurrentTime);
+      handled = true;
+      break;
+    }
+    case MotionNotify: {
+      // Discard all but the most recent motion event that targets the same
+      // window with unchanged state.
+      XEvent last_event;
+      while (XPending(xev->xany.display)) {
+        XEvent next_event;
+        XPeekEvent(xev->xany.display, &next_event);
+        if (next_event.type == MotionNotify &&
+            next_event.xmotion.window == xev->xmotion.window &&
+            next_event.xmotion.subwindow == xev->xmotion.subwindow &&
+            next_event.xmotion.state == xev->xmotion.state) {
+          XNextEvent(xev->xany.display, &last_event);
+          xev = &last_event;
+        } else {
+          break;
+        }
+      }
+
+      MouseEvent mouseev(xev);
+      handled = desktop_->DispatchMouseEvent(&mouseev);
+      break;
     }
   }
   return handled ? EVENT_PROCESSED : EVENT_IGNORED;
@@ -382,27 +378,25 @@ gfx::AcceleratedWidget DesktopHostLinux::GetAcceleratedWidget() {
 
 void DesktopHostLinux::Show() {
   XMapWindow(xdisplay_, xwindow_);
-
-  // If there's no window manager running, we need to assign the X input focus
-  // to our host window.  (If there's no window manager running, it should also
-  // be safe to assume that the host window will have been mapped by the time
-  // that our SetInputFocus request is received.)
-  if (!IsWindowManagerPresent())
-    XSetInputFocus(xdisplay_, xwindow_, RevertToNone, CurrentTime);
-
-  XFlush(xdisplay_);
 }
 
 gfx::Size DesktopHostLinux::GetSize() const {
-  return bounds_.size();
+  return size_;
 }
 
 void DesktopHostLinux::SetSize(const gfx::Size& size) {
-  if (bounds_.size() == size)
+  if (size == size_)
     return;
-  expect_configure_event_ = true;
-  bounds_.set_size(size);
+
   XResizeWindow(xdisplay_, xwindow_, size.width(), size.height());
+
+  // Assume that the resize will go through as requested, which should be the
+  // case if we're running without a window manager.  If there's a window
+  // manager, it can modify or ignore the request, but (per ICCCM) we'll get a
+  // (possibly synthetic) ConfigureNotify about the actual size and correct
+  // |size_| later.
+  size_ = size;
+  desktop_->OnHostResized(size);
 }
 
 void DesktopHostLinux::SetCursor(gfx::NativeCursor cursor) {
@@ -428,8 +422,8 @@ gfx::Point DesktopHostLinux::QueryMouseLocation() {
                 &root_x_return, &root_y_return,
                 &win_x_return, &win_y_return,
                 &mask_return);
-  return gfx::Point(max(0, min(bounds_.width(), win_x_return)),
-                    max(0, min(bounds_.height(), win_y_return)));
+  return gfx::Point(max(0, min(size_.width(), win_x_return)),
+                    max(0, min(size_.height(), win_y_return)));
 }
 
 bool DesktopHostLinux::IsWindowManagerPresent() {
@@ -444,6 +438,12 @@ bool DesktopHostLinux::IsWindowManagerPresent() {
 // static
 DesktopHost* DesktopHost::Create(const gfx::Rect& bounds) {
   return new DesktopHostLinux(bounds);
+}
+
+// static
+gfx::Size DesktopHost::GetNativeDisplaySize() {
+  ::Display* xdisplay = base::MessagePumpX::GetDefaultXDisplay();
+  return gfx::Size(DisplayWidth(xdisplay, 0), DisplayHeight(xdisplay, 0));
 }
 
 }  // namespace aura

@@ -106,6 +106,12 @@ DesktopHost* DesktopHost::Create(const gfx::Rect& bounds) {
   return new DesktopHostWin(bounds);
 }
 
+// static
+gfx::Size DesktopHost::GetNativeDisplaySize() {
+  return gfx::Size(GetSystemMetrics(SM_CXSCREEN),
+                   GetSystemMetrics(SM_CYSCREEN));
+}
+
 DesktopHostWin::DesktopHostWin(const gfx::Rect& bounds) : desktop_(NULL) {
   Init(NULL, bounds);
   SetWindowText(hwnd(), L"aura::Desktop!");

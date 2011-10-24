@@ -56,6 +56,10 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate,
     return compositor_factory_;
   }
 
+  static void set_use_fullscreen_host_window(bool use_fullscreen) {
+    use_fullscreen_host_window_ = use_fullscreen;
+  }
+
   ui::Compositor* compositor() { return compositor_.get(); }
   gfx::Point last_mouse_location() const { return last_mouse_location_; }
   DesktopDelegate* delegate() { return delegate_.get(); }
@@ -167,11 +171,16 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate,
 
   static Desktop* instance_;
 
-  // Used to schedule painting.
-  base::WeakPtrFactory<Desktop> schedule_paint_factory_;
-
   // Factory used to create Compositors. Settable by tests.
   static ui::Compositor*(*compositor_factory_)();
+
+  // If set before the Desktop is created, the host window will cover the entire
+  // screen.  Note that this can still be overridden via the
+  // switches::kAuraHostWindowSize flag.
+  static bool use_fullscreen_host_window_;
+
+  // Used to schedule painting.
+  base::WeakPtrFactory<Desktop> schedule_paint_factory_;
 
   Window* active_window_;
 

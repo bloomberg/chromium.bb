@@ -143,6 +143,7 @@
 #include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "chrome/browser/chromeos/system_key_event_listener.h"
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
 #include "chrome/browser/chromeos/xinput_hierarchy_changed_event_listener.h"
@@ -1345,6 +1346,11 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunInternal() {
   // Always add the --views-desktop flag, if not already set.
   if (!parsed_command_line().HasSwitch(switches::kViewsDesktop))
     CommandLine::ForCurrentProcess()->AppendSwitch(switches::kViewsDesktop);
+#endif
+
+#if defined(USE_AURA) && defined(OS_CHROMEOS)
+  if (chromeos::system::runtime_environment::IsRunningOnChromeOS())
+    aura::Desktop::set_use_fullscreen_host_window(true);
 #endif
 
   // Always add the --block-reading-third-party-cookies flag, if not already
