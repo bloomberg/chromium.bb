@@ -602,10 +602,17 @@
       ],
       'link_settings': {
         'libraries': [
-	  '-lcomctl32.lib',
+      '-lcomctl32.lib',
           '-llocationapi.lib',
           '-lsensorsapi.lib',
         ],
+      },
+      'msvs_settings': {
+        'VCLinkerTool': {
+          'DelayLoadDLLs': [
+            'user32.dll',
+          ],
+        },
       },
       'sources!': [
         'browser/power_save_blocker_stub.cc',

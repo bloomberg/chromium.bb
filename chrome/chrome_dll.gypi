@@ -133,7 +133,6 @@
                     'iphlpapi.dll',
                     'setupapi.dll',
                     'urlmon.dll',
-                    'user32.dll',
                     'winhttp.dll',
                     'wininet.dll',
                     'winspool.drv',
