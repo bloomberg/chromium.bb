@@ -135,6 +135,21 @@
                 },
               ],
             }],
+            ['OS!="win" and target_arch=="arm"', {
+              'actions': [
+                {
+                  'action_name': 'nacl_irt',
+                  'message': 'Building NaCl IRT',
+                  'inputs': [
+                    '<!@(<(irt_inputs_cmd) --platform=arm)',
+                  ],
+                  'outputs': ['<(PRODUCT_DIR)/nacl_ir.nexe'],
+                  'action': [
+                    '<@(irt_build_cmd)', '--platform', 'arm',
+                  ],
+                },
+              ],
+            }],
           ],
         },
       ],
@@ -312,16 +327,21 @@
                     ['target_arch=="x64"', {
                       'variables': {
                         'linker_emulation': 'elf_x86_64',
+                        'bootstrap_extra_lib': '',
                       }
                     }],
                     ['target_arch=="ia32"', {
                       'variables': {
                         'linker_emulation': 'elf_i386',
+                        'bootstrap_extra_lib': '',
                       }
                     }],
                     ['target_arch=="arm"', {
                       'variables': {
                         'linker_emulation': 'armelf_linux_eabi',
+                        # ARM requires linking against libc due to ABI dependencies on
+                        # memset
+                        'bootstrap_extra_lib' : "${SYSROOT}/usr/lib/libc.a",
                       }
                     }],
                   ],
@@ -344,6 +364,7 @@
                              '-z', 'max-page-size=0x1000',
                              '--whole-archive', '<(bootstrap_lib)',
                              '--no-whole-archive',
+                             '<@(bootstrap_extra_lib)',
                            ],
                 }
               ],

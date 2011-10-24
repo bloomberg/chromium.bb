@@ -163,20 +163,37 @@ def BuildIRT(platforms, out_dir):
   # Copy out each platform after stripping.
   for platform in platforms:
     uplatform = platform.replace('-', '_')
-    platform2 = {'x86-32': 'i686', 'x86-64': 'x86_64'}.get(platform, platform)
+    # NaCl Trusted code is in thumb2 mode in CrOS, but as yet,
+    # untrusted code is still in classic ARM mode
+    # arm-thumb2 is for the future when untrusted code is in thumb2 as well
+    platform2 = {'arm': 'pnacl',
+                 'arm-thumb2' : 'pnacl',
+                 'x86-32': 'i686',
+                 'x86-64': 'x86_64'}.get(platform, platform)
     cplatform = {
         'win32': 'win',
         'cygwin': 'win',
         'darwin': 'mac',
     }.get(sys.platform, 'linux')
     nexe = os.path.join(out_dir, 'nacl_irt_' + uplatform + '.nexe')
-    cmd = [
-      '../native_client/toolchain/' + cplatform + '_x86_newlib/bin/' +
+    if platform in ['arm', 'arm-thumb2']:
+      cmd = [
+          '../native_client/toolchain/pnacl_linux_x86_64_newlib/bin/' +
+          platform2 + '-strip',
+          '--strip-debug',
+          '../native_client/scons-out/nacl_irt-' + platform \
+            + '/staging/irt.nexe',
+          '-o', nexe
+          ]
+    else:
+      cmd = [
+          '../native_client/toolchain/' + cplatform + '_x86_newlib/bin/' +
           platform2 + '-nacl-strip',
-      '--strip-debug',
-      '../native_client/scons-out/nacl_irt-' + platform + '/staging/irt.nexe',
-      '-o', nexe
-    ]
+          '--strip-debug',
+          '../native_client/scons-out/nacl_irt-' + platform \
+            + '/staging/irt.nexe',
+          '-o', nexe
+          ]
     print 'Running: ' + ' '.join(cmd)
     p = subprocess.Popen(cmd, cwd=SCRIPT_DIR)
     p.wait()
