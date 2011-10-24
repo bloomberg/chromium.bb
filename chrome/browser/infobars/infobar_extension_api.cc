@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_infobar_module.h"
+#include "chrome/browser/infobars/infobar_extension_api.h"
 
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_infobar_delegate.h"
-#include "chrome/browser/extensions/extension_infobar_module_constants.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
@@ -22,21 +21,30 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
 
-namespace keys = extension_infobar_module_constants;
+namespace {
+
+const char kHtmlPath[] = "path";
+const char kTabId[] = "tabId";
+const char kHeight[] = "height";
+
+const char kNoCurrentWindowError[] = "No current browser window was found";
+const char kTabNotFoundError[] = "Specified tab (or default tab) not found";
+
+}  // namespace
 
 bool ShowInfoBarFunction::RunImpl() {
   DictionaryValue* args;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &args));
 
   int tab_id;
-  EXTENSION_FUNCTION_VALIDATE(args->GetInteger(keys::kTabId, &tab_id));
+  EXTENSION_FUNCTION_VALIDATE(args->GetInteger(kTabId, &tab_id));
 
   std::string html_path;
-  EXTENSION_FUNCTION_VALIDATE(args->GetString(keys::kHtmlPath, &html_path));
+  EXTENSION_FUNCTION_VALIDATE(args->GetString(kHtmlPath, &html_path));
 
   int height = 0;
-  if (args->HasKey(keys::kHeight))
-    EXTENSION_FUNCTION_VALIDATE(args->GetInteger(keys::kHeight, &height));
+  if (args->HasKey(kHeight))
+    EXTENSION_FUNCTION_VALIDATE(args->GetInteger(kHeight, &height));
 
   const Extension* extension = GetExtension();
   GURL url = extension->GetResourceURL(extension->url(), html_path);
