@@ -559,6 +559,7 @@ shell_create_drag(struct wl_client *client,
 	drag->resource.object.implementation =
 		(void (**)(void)) &drag_interface;
 
+	drag->resource.data = drag;
 	drag->resource.destroy = destroy_drag;
 
 	drag->drag_focus_listener.func = drag_handle_surface_destroy;
