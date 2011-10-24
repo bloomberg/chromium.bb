@@ -773,5 +773,4 @@ def main(argv):
 
 
 if __name__ == '__main__':
-  print os.path.abspath(os.path.dirname(__file__))
   main(sys.argv)
