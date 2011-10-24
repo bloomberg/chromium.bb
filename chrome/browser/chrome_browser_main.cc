@@ -1823,8 +1823,12 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunInternal() {
   chromeos::AudioHandler::Initialize();
 
   // Listen for system key events so that the user will be able to adjust the
-  // volume on the login screen.
-  chromeos::SystemKeyEventListener::Initialize();
+  // volume on the login screen, if Chrome is running on Chrome OS
+  // (i.e. not Linux desktop), and in non-test mode.
+  if (chromeos::system::runtime_environment::IsRunningOnChromeOS() &&
+      !parameters().ui_task) {  // ui_task is non-NULL when running tests.
+    chromeos::SystemKeyEventListener::Initialize();
+  }
 
   // Listen for XI_HierarchyChanged events.
   chromeos::XInputHierarchyChangedEventListener::GetInstance();
@@ -2045,6 +2049,8 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
   // Singletons are finally destroyed in AtExitManager.
   chromeos::XInputHierarchyChangedEventListener::GetInstance()->Stop();
 
+  // chromeos::SystemKeyEventListener::Shutdown() is always safe to call,
+  // even if Initialize() wasn't called.
   chromeos::SystemKeyEventListener::Shutdown();
   chromeos::AudioHandler::Shutdown();
 #endif
