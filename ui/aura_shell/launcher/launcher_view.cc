@@ -13,12 +13,15 @@
 #include "ui/aura_shell/launcher/view_model_utils.h"
 #include "ui/aura_shell/shell.h"
 #include "ui/aura_shell/shell_delegate.h"
+#include "ui/base/animation/animation.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/image/image.h"
 #include "views/animation/bounds_animator.h"
 #include "views/controls/button/image_button.h"
 #include "views/widget/widget.h"
 
+using ui::Animation;
 using views::View;
 
 namespace aura_shell {
@@ -45,7 +48,7 @@ namespace {
 class DeleteViewAnimationDelegate :
       public views::BoundsAnimator::OwnedAnimationDelegate {
  public:
-  DeleteViewAnimationDelegate(views::View* view) : view_(view) {}
+  explicit DeleteViewAnimationDelegate(views::View* view) : view_(view) {}
   virtual ~DeleteViewAnimationDelegate() {}
 
  private:
@@ -54,7 +57,91 @@ class DeleteViewAnimationDelegate :
   DISALLOW_COPY_AND_ASSIGN(DeleteViewAnimationDelegate);
 };
 
+// AnimationDelegate used when inserting a new item. This steadily increases the
+// opacity of the layer as the animation progress.
+class FadeInAnimationDelegate :
+      public views::BoundsAnimator::OwnedAnimationDelegate {
+ public:
+  explicit FadeInAnimationDelegate(views::View* view) : view_(view) {}
+  virtual ~FadeInAnimationDelegate() {}
+
+  // AnimationDelegate overrides:
+  virtual void AnimationProgressed(const Animation* animation) OVERRIDE {
+    view_->layer()->SetOpacity(animation->GetCurrentValue());
+    view_->layer()->ScheduleDraw();
+  }
+  virtual void AnimationEnded(const Animation* animation) OVERRIDE {
+    view_->layer()->SetOpacity(1.0f);
+    view_->layer()->ScheduleDraw();
+  }
+  virtual void AnimationCanceled(const Animation* animation) OVERRIDE {
+    view_->layer()->SetOpacity(1.0f);
+    view_->layer()->ScheduleDraw();
+  }
+
+ private:
+  views::View* view_;
+
+  DISALLOW_COPY_AND_ASSIGN(FadeInAnimationDelegate);
+};
+
 }  // namespace
+
+// AnimationDelegate used when inserting a new item. This steadily decreased the
+// opacity of the layer as the animation progress.
+class LauncherView::FadeOutAnimationDelegate :
+      public views::BoundsAnimator::OwnedAnimationDelegate {
+ public:
+  FadeOutAnimationDelegate(LauncherView* host, views::View* view)
+      : launcher_view_(host),
+        view_(view) {}
+  virtual ~FadeOutAnimationDelegate() {}
+
+  // AnimationDelegate overrides:
+  virtual void AnimationProgressed(const Animation* animation) OVERRIDE {
+    view_->layer()->SetOpacity(1 - animation->GetCurrentValue());
+    view_->layer()->ScheduleDraw();
+  }
+  virtual void AnimationEnded(const Animation* animation) OVERRIDE {
+    launcher_view_->AnimateToIdealBounds();
+  }
+  virtual void AnimationCanceled(const Animation* animation) OVERRIDE {
+  }
+
+ private:
+  LauncherView* launcher_view_;
+  scoped_ptr<views::View> view_;
+
+  DISALLOW_COPY_AND_ASSIGN(FadeOutAnimationDelegate);
+};
+
+// AnimationDelegate used to trigger fading an element in. When an item is
+// inserted this delegate is attached to the animation that expands the size of
+// the item.  When done it kicks off another animation to fade the item in.
+class LauncherView::StartFadeAnimationDelegate :
+      public views::BoundsAnimator::OwnedAnimationDelegate {
+ public:
+  StartFadeAnimationDelegate(LauncherView* host,
+                             views::View* view)
+      : launcher_view_(host),
+        view_(view) {}
+  virtual ~StartFadeAnimationDelegate() {}
+
+  // AnimationDelegate overrides:
+  virtual void AnimationEnded(const Animation* animation) OVERRIDE {
+    view_->SetVisible(true);
+    launcher_view_->FadeIn(view_);
+  }
+  virtual void AnimationCanceled(const Animation* animation) OVERRIDE {
+    view_->SetVisible(true);
+  }
+
+ private:
+  LauncherView* launcher_view_;
+  views::View* view_;
+
+  DISALLOW_COPY_AND_ASSIGN(StartFadeAnimationDelegate);
+};
 
 LauncherView::LauncherView(LauncherModel* model)
     : model_(model),
@@ -85,6 +172,7 @@ void LauncherView::Init() {
   const LauncherItems& items(model_->items());
   for (LauncherItems::const_iterator i = items.begin(); i != items.end(); ++i) {
     views::View* child = CreateViewForItem(*i);
+    child->SetPaintToLayer(true);
     view_model_->Add(child, static_cast<int>(i - items.begin()));
     AddChildView(child);
   }
@@ -145,22 +233,27 @@ void LauncherView::AnimateToIdealBounds() {
 }
 
 views::View* LauncherView::CreateViewForItem(const LauncherItem& item) {
+  views::View* view = NULL;
   if (item.type == TYPE_TABBED) {
     TabbedLauncherButton* button = new TabbedLauncherButton(this, this);
     button->SetImages(item.tab_images);
-    return button;
+    view = button;
+  } else {
+    DCHECK_EQ(TYPE_APP, item.type);
+    AppLauncherButton* button = new AppLauncherButton(this, this);
+    button->SetAppImage(item.app_image);
+    view = button;
   }
-  AppLauncherButton* button = new AppLauncherButton(this, this);
-  button->SetAppImage(item.app_image);
-  return button;
+  view->SetPaintToLayer(true);
+  return view;
 }
 
-void LauncherView::Resize() {
-  // TODO: we may want to force the width to a specific size.
-  int y = GetWidget()->GetClientAreaScreenBounds().y();
-  gfx::Size pref(GetPreferredSize());
-  GetWidget()->SetBounds(gfx::Rect(0, y, pref.width(), pref.height()));
-  Layout();
+void LauncherView::FadeIn(views::View* view) {
+  view->SetVisible(true);
+  view->layer()->SetOpacity(0);
+  AnimateToIdealBounds();
+  bounds_animator_->SetAnimationDelegate(
+      view, new FadeInAnimationDelegate(view), true);
 }
 
 void LauncherView::PrepareForDrag(const views::MouseEvent& event) {
@@ -234,32 +327,27 @@ void LauncherView::LauncherItemAdded(int model_index) {
 
   views::View* view = CreateViewForItem(model_->items()[model_index]);
   AddChildView(view);
+  // Hide the view, it'll be made visible when the animation is done.
+  view->SetVisible(false);
   view_model_->Add(view, model_index);
 
-  // Update the bounds and reset the bounds of the newly created view to 0 width
-  // so that it appears to animate open.
-  IdealBounds ideal_bounds;
-  CalculateIdealBounds(&ideal_bounds);
-  gfx::Rect bounds = view_model_->ideal_bounds(model_index);
-  bounds.set_width(0);
-  view->SetBoundsRect(bounds);
-
-  // Resize and animate all the views.
-  Resize();
+  // The first animation moves all the views to their target position. |view| is
+  // hidden, so it visually appears as though we are providing space for
+  // it. When done we'll fade the view in.
   AnimateToIdealBounds();
+  bounds_animator_->SetAnimationDelegate(
+      view, new StartFadeAnimationDelegate(this, view), true);
 }
 
 void LauncherView::LauncherItemRemoved(int model_index) {
   views::View* view = view_model_->view_at(model_index);
   CancelDrag(view);
   view_model_->Remove(model_index);
-  Resize();
-  AnimateToIdealBounds();
-  gfx::Rect target_bounds = view->bounds();
-  target_bounds.set_width(0);
-  bounds_animator_->AnimateViewTo(view, target_bounds);
+  // The first animation fades out the view. When done we'll animate the rest of
+  // the views to their target location.
+  bounds_animator_->AnimateViewTo(view, view->bounds());
   bounds_animator_->SetAnimationDelegate(
-      view, new DeleteViewAnimationDelegate(view), true);
+      view, new FadeOutAnimationDelegate(this, view), true);
 }
 
 void LauncherView::LauncherItemImagesChanged(int model_index) {
@@ -269,12 +357,10 @@ void LauncherView::LauncherItemImagesChanged(int model_index) {
     TabbedLauncherButton* button = static_cast<TabbedLauncherButton*>(view);
     gfx::Size pref = button->GetPreferredSize();
     button->SetImages(item.tab_images);
-    if (pref != button->GetPreferredSize()) {
-      Resize();
+    if (pref != button->GetPreferredSize())
       AnimateToIdealBounds();
-    } else {
+    else
       button->SchedulePaint();
-    }
   } else {
     DCHECK_EQ(TYPE_APP, item.type);
     AppLauncherButton* button = static_cast<AppLauncherButton*>(view);

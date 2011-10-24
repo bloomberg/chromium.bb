@@ -35,6 +35,9 @@ class LauncherView : public views::WidgetDelegateView,
   void Init();
 
  private:
+  class FadeOutAnimationDelegate;
+  class StartFadeAnimationDelegate;
+
   struct IdealBounds {
     gfx::Rect new_browser_bounds;
     gfx::Rect show_apps_bounds;
@@ -54,8 +57,8 @@ class LauncherView : public views::WidgetDelegateView,
   // Creates the view used to represent |item|.
   views::View* CreateViewForItem(const LauncherItem& item);
 
-  // Resizes the widget to fit the view.
-  void Resize();
+  // Fades |view| from an opacity of 0 to 1. This is when adding a new item.
+  void FadeIn(views::View* view);
 
   // Invoked when the mouse has moved enough to trigger a drag. Sets internal
   // state in preparation for the drag.

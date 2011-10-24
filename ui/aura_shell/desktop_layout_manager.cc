@@ -36,18 +36,19 @@ void DesktopLayoutManager::OnWindowResized() {
 
   background_widget_->SetBounds(fullscreen_bounds);
 
-  gfx::Rect launcher_bounds = launcher_widget_->GetWindowScreenBounds();
-  launcher_widget_->SetBounds(
-      gfx::Rect(0, owner_->bounds().bottom() - launcher_bounds.height(),
-                launcher_bounds.width(),
-                launcher_bounds.height()));
-
   gfx::Rect status_area_bounds = status_area_widget_->GetWindowScreenBounds();
   status_area_widget_->SetBounds(
       gfx::Rect(owner_->bounds().right() - status_area_bounds.width(),
                 owner_->bounds().bottom() - status_area_bounds.height(),
                 status_area_bounds.width(),
                 status_area_bounds.height()));
+
+  // Give the launcher the available width minus the status area.
+  gfx::Rect launcher_bounds = launcher_widget_->GetWindowScreenBounds();
+  launcher_widget_->SetBounds(
+      gfx::Rect(0, owner_->bounds().bottom() - launcher_bounds.height(),
+                owner_->bounds().width() - status_area_bounds.width(),
+                launcher_bounds.height()));
 }
 
 void DesktopLayoutManager::OnWindowAdded(aura::Window* child) {

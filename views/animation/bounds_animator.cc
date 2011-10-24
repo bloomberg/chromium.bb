@@ -251,7 +251,7 @@ void BoundsAnimator::AnimationContainerProgressed(
 
   if (observer_ && !IsAnimating()) {
     // Notify here rather than from AnimationXXX to avoid deleting the animation
-    // while the animaion is calling us.
+    // while the animation is calling us.
     observer_->OnBoundsAnimatorDone(this);
   }
 }

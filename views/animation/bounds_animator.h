@@ -71,8 +71,7 @@ class VIEWS_EXPORT BoundsAnimator : public ui::AnimationDelegate,
   // returned Animation.
   const ui::SlideAnimation* GetAnimationForView(View* view);
 
-  // Stops animating the specified view. If the view was scheduled for deletion
-  // it is deleted. This does nothing if |view| is not currently animating.
+  // Stops animating the specified view.
   void StopAnimatingView(View* view);
 
   // Sets the delegate for the animation created for the specified view. If
@@ -171,10 +170,10 @@ class VIEWS_EXPORT BoundsAnimator : public ui::AnimationDelegate,
   // Maps from view being animated to info about the view.
   ViewToDataMap data_;
 
-  // Makes from animation to view.
+  // Maps from animation to view.
   AnimationToViewMap animation_to_view_;
 
-  // As the animations we created update (AnimationProgressed is invoked) this
+  // As the animations we create update (AnimationProgressed is invoked) this
   // is updated. When all the animations have completed for a given tick of
   // the timer (AnimationContainerProgressed is invoked) the parent_ is asked
   // to repaint these bounds.
