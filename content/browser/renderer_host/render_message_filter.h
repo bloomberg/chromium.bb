@@ -182,6 +182,7 @@ class RenderMessageFilter : public BrowserMessageFilter {
   void OnCheckNotificationPermission(const GURL& source_url,
                                      int* permission_level);
 
+  void OnGetHardwareInputSampleRate(double* sample_rate);
   void OnGetHardwareSampleRate(double* sample_rate);
 
   // Used to ask the browser to allocate a block of shared memory for the

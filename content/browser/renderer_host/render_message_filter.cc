@@ -355,6 +355,8 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
                         OnCacheableMetadataAvailable)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_Keygen, OnKeygen)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AsyncOpenFile, OnAsyncOpenFile)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_GetHardwareInputSampleRate,
+                        OnGetHardwareInputSampleRate)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetHardwareSampleRate,
                         OnGetHardwareSampleRate)
     IPC_MESSAGE_HANDLER(ViewHostMsg_MediaLogEvent, OnMediaLogEvent)
@@ -600,6 +602,10 @@ void RenderMessageFilter::OnOpenChannelToPpapiBroker(int routing_id,
 
 void RenderMessageFilter::OnGenerateRoutingID(int* route_id) {
   *route_id = render_widget_helper_->GetNextRoutingID();
+}
+
+void RenderMessageFilter::OnGetHardwareInputSampleRate(double* sample_rate) {
+  *sample_rate = media::GetAudioInputHardwareSampleRate();
 }
 
 void RenderMessageFilter::OnGetHardwareSampleRate(double* sample_rate) {

@@ -30,7 +30,11 @@ AudioInputDevice::AudioInputDevice(size_t buffer_size,
 #if defined(OS_MACOSX)
   VLOG(1) << "Using AUDIO_PCM_LOW_LATENCY as input mode on Mac OS X.";
   audio_parameters_.format = AudioParameters::AUDIO_PCM_LOW_LATENCY;
+#elif defined(OS_WIN)
+  VLOG(1) << "Using AUDIO_PCM_LOW_LATENCY as input mode on Windows.";
+  audio_parameters_.format = AudioParameters::AUDIO_PCM_LOW_LATENCY;
 #else
+  // TODO(henrika): add support for AUDIO_PCM_LOW_LATENCY on Linux as well.
   audio_parameters_.format = AudioParameters::AUDIO_PCM_LINEAR;
 #endif
   audio_parameters_.channels = channels;

@@ -6,11 +6,21 @@
 
 #include "base/bind.h"
 #include "base/string_util.h"
+#include "content/common/view_messages.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/audio/audio_util.h"
 
 static const int64 kMillisecondsBetweenProcessCalls = 5000;
 static const char kVersion[] = "WebRTC AudioDevice 1.0.0.Chrome";
+
+static int GetAudioInputHardwareSampleRate() {
+  static double input_sample_rate = 0;
+  if (!input_sample_rate) {
+    RenderThreadImpl::current()->Send(
+        new ViewHostMsg_GetHardwareInputSampleRate(&input_sample_rate));
+  }
+  return static_cast<int>(input_sample_rate);
+}
 
 WebRtcAudioDeviceImpl::WebRtcAudioDeviceImpl()
     : ref_count_(0),
@@ -72,8 +82,6 @@ void WebRtcAudioDeviceImpl::Render(
   int samples_per_sec = static_cast<int>(output_sample_rate_);
   if (samples_per_sec == 44100) {
     // Even if the hardware runs at 44.1kHz, we use 44.0 internally.
-    // Can only happen on Mac OS X currently since Windows and Mac
-    // both uses 48kHz.
     samples_per_sec = 44000;
   }
   uint32_t samples_per_10_msec = (samples_per_sec / 100);
@@ -132,7 +140,11 @@ void WebRtcAudioDeviceImpl::Capture(
                                 input_buffer_.get(),
                                 number_of_frames);
 
-  const int samples_per_sec = static_cast<int>(input_sample_rate_);
+  int samples_per_sec = static_cast<int>(input_sample_rate_);
+  if (samples_per_sec == 44100) {
+    // Even if the hardware runs at 44.1kHz, we use 44.0 internally.
+    samples_per_sec = 44000;
+  }
   const int samples_per_10_msec = (samples_per_sec / 100);
   const int bytes_per_10_msec =
       channels * samples_per_10_msec * bytes_per_sample_;
@@ -274,14 +286,16 @@ int32_t WebRtcAudioDeviceImpl::Init() {
   DCHECK(!input_buffer_.get());
   DCHECK(!output_buffer_.get());
 
-  // TODO(henrika): add AudioInputDevice::GetAudioHardwareSampleRate().
-  // Assume that input and output sample rates are identical for now.
-
   // Ask the browser for the default audio output hardware sample-rate.
   // This request is based on a synchronous IPC message.
   int output_sample_rate =
       static_cast<int>(AudioDevice::GetAudioHardwareSampleRate());
-  VLOG(1) << "Audio hardware sample rate: " << output_sample_rate;
+  VLOG(1) << "Audio output hardware sample rate: " << output_sample_rate;
+
+  // Ask the browser for the default audio input hardware sample-rate.
+  // This request is based on a synchronous IPC message.
+  int input_sample_rate = GetAudioInputHardwareSampleRate();
+  VLOG(1) << "Audio input hardware sample rate: " << input_sample_rate;
 
   int input_channels = 0;
   int output_channels = 0;
@@ -291,21 +305,32 @@ int32_t WebRtcAudioDeviceImpl::Init() {
 
   // For real-time audio (in combination with the webrtc::VoiceEngine) it
   // is convenient to use audio buffers of size N*10ms.
+
 #if defined(OS_WIN)
   if (output_sample_rate != 48000) {
     DLOG(ERROR) << "Only 48kHz sample rate is supported on Windows.";
     return -1;
   }
-  input_channels = 1;
+
+  // Use stereo recording on Windows since low-latency Core Audio (WASAPI)
+  // does not support mono.
+  input_channels = 2;
   output_channels = 1;
-  // Capture side: AUDIO_PCM_LINEAR on Windows is based on a callback-
-  // driven Wave implementation where 3 buffers are used for recording audio.
-  // Each buffer is of the size that we specify here and using more than one
-  // does not increase the delay but only adds robustness against dropping
-  // audio. It might also affect the initial start-up time before callbacks
-  // start to pump. Real-time tests have shown that a buffer size of 10ms
-  // works fine on the capture side.
-  input_buffer_size = 480;
+
+  // Capture side: AUDIO_PCM_LOW_LATENCY is based on the Core Audio (WASAPI)
+  // API which was introduced in Windows Vista. For lower Windows versions,
+  // a callback-driven Wave implementation is used instead. An input buffer
+  // size of 10ms works well for both these implementations.
+
+  // Use different buffer sizes depending on the current hardware sample rate.
+  if (input_sample_rate == 48000) {
+    input_buffer_size = 480;
+  } else {
+    // We do run at 44.1kHz at the actual audio layer, but ask for frames
+    // at 44.0kHz to ensure that we can feed them to the webrtc::VoiceEngine.
+    input_buffer_size = 440;
+  }
+
   // Rendering side: AUDIO_PCM_LOW_LATENCY on Windows is based on a callback-
   // driven Wave implementation where 2 buffers are fed to the audio driver
   // before actual rendering starts. Initial real-time tests have shown that
@@ -320,6 +345,7 @@ int32_t WebRtcAudioDeviceImpl::Init() {
   }
   input_channels = 1;
   output_channels = 1;
+
   // Rendering side: AUDIO_PCM_LOW_LATENCY on Mac OS X is based on a callback-
   // driven Core Audio implementation. Tests have shown that 10ms is a suitable
   // frame size to use, both for 48kHz and 44.1kHz.
@@ -347,6 +373,7 @@ int32_t WebRtcAudioDeviceImpl::Init() {
   }
   input_channels = 1;
   output_channels = 1;
+
   // Based on tests using the current ALSA implementation in Chrome, we have
   // found that the best combination is 20ms on the input side and 10ms on the
   // output side.
@@ -367,17 +394,11 @@ int32_t WebRtcAudioDeviceImpl::Init() {
 
   input_buffer_size_ = input_buffer_size;
   input_channels_ = input_channels;
-  // TODO(henrika): we use same rate as on output for now.
-  input_sample_rate_ = output_sample_rate_;
+  input_sample_rate_ = input_sample_rate;
 
   // Create and configure the audio capturing client.
   audio_input_device_ = new AudioInputDevice(
-      input_buffer_size, input_channels, output_sample_rate, this, this);
-#if defined(OS_MACOSX)
-  // We create the input device for Mac as well but the performance
-  // will be very bad.
-  DLOG(WARNING) << "Real-time recording is not yet supported on Mac OS X";
-#endif
+      input_buffer_size, input_channels, input_sample_rate, this, this);
 
   // Create and configure the audio rendering client.
   audio_output_device_ = new AudioDevice(

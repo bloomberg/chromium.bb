@@ -686,6 +686,10 @@ IPC_MESSAGE_ROUTED1(ViewMsg_SetCSSColors,
 IPC_SYNC_MESSAGE_CONTROL0_1(ViewHostMsg_GenerateRoutingID,
                             int /* routing_id */)
 
+// Asks the browser for the default audio input hardware sample-rate.
+IPC_SYNC_MESSAGE_CONTROL0_1(ViewHostMsg_GetHardwareInputSampleRate,
+                            double /* sample_rate */)
+
 // Asks the browser for the default audio hardware sample-rate.
 IPC_SYNC_MESSAGE_CONTROL0_1(ViewHostMsg_GetHardwareSampleRate,
                             double /* sample_rate */)
