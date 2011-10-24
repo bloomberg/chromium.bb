@@ -465,15 +465,13 @@ class VMTestStageTest(AbstractStageTest):
     self.build_config['vm_tests'] = constants.FULL_AU_TEST_TYPE
 
     self.mox.StubOutWithMock(cros_lib, 'OldRunCommand')
-
     self.mox.StubOutWithMock(commands, 'RunTestSuite')
     self.mox.StubOutWithMock(commands, 'ArchiveTestResults')
     self.mox.StubOutWithMock(stages.VMTestStage, '_CreateTestRoot')
+    self.mox.StubOutWithMock(tempfile, 'mkdtemp')
 
-    stages.VMTestStage._CreateTestRoot().AndReturn(
-        (self.fake_results_dir, self.fake_chroot_results_dir))
-    stages.VMTestStage._CreateTestRoot().AndReturn((
-        self.fake_results_dir, self.fake_chroot_results_dir))
+    tempfile.mkdtemp(prefix='cbuildbot').AndReturn(self.fake_results_dir)
+    stages.VMTestStage._CreateTestRoot().AndReturn(self.fake_results_dir)
     commands.RunTestSuite(self.build_root,
                           self.build_config['board'],
                           mox.IgnoreArg(),
@@ -497,11 +495,10 @@ class VMTestStageTest(AbstractStageTest):
     self.mox.StubOutWithMock(commands, 'RunTestSuite')
     self.mox.StubOutWithMock(commands, 'ArchiveTestResults')
     self.mox.StubOutWithMock(stages.VMTestStage, '_CreateTestRoot')
+    self.mox.StubOutWithMock(tempfile, 'mkdtemp')
 
-    stages.VMTestStage._CreateTestRoot().AndReturn(
-        (self.fake_results_dir, self.fake_chroot_results_dir))
-    stages.VMTestStage._CreateTestRoot().AndReturn(
-        (self.fake_results_dir, self.fake_chroot_results_dir))
+    tempfile.mkdtemp(prefix='cbuildbot').AndReturn(self.fake_results_dir)
+    stages.VMTestStage._CreateTestRoot().AndReturn(self.fake_results_dir)
     commands.RunTestSuite(self.build_root,
                           self.build_config['board'],
                           mox.IgnoreArg(),

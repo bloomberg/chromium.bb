@@ -506,8 +506,7 @@ class VMTestStage(bs.BuilderStage):
     """Returns a temporary directory for test results in chroot.
 
     Returns:
-      A 2-tuple containing the absolute paths from inside the chroot and
-      outside the chroot i.e. returns (inside, outside).
+      Returns relative path from chroot rather than whole path.
     """
     # Create test directory within tmp in chroot.
     chroot = os.path.join(self._build_root, 'chroot')
@@ -516,7 +515,7 @@ class VMTestStage(bs.BuilderStage):
 
     # Relative directory.
     (_, _, relative_path) = test_root.partition(chroot)
-    return relative_path, test_root
+    return relative_path
 
   def _PerformStage(self):
     # VM tests should run with higher priority than other tasks
@@ -536,11 +535,14 @@ class VMTestStage(bs.BuilderStage):
 
     # These directories are used later to archive test artifacts.
     test_results_dir = None
-    payloads_dir_full_path = None
+    payloads_dir = None
     try:
       if self._build_config['vm_tests'] and self._options.tests:
-        test_results_dir = self._CreateTestRoot()[0]
-        payloads_dir, payloads_dir_full_path = self._CreateTestRoot()
+        # Payloads dir is not in the chroot as ctest archives them outside of
+        # the chroot.
+        payloads_dir = tempfile.mkdtemp(prefix='cbuildbot')
+
+        test_results_dir = self._CreateTestRoot()
         commands.RunTestSuite(self._build_root,
                               self._build_config['board'],
                               self.GetImageDirSymlink(),
@@ -565,7 +567,7 @@ class VMTestStage(bs.BuilderStage):
                                                    test_results_dir)
 
       if self._archive_stage:
-        self._archive_stage.UpdatePayloadsReady(payloads_dir_full_path)
+        self._archive_stage.UpdatePayloadsReady(payloads_dir)
         self._archive_stage.TestResultsReady(test_tarball)
 
 
