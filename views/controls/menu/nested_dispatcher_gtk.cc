@@ -20,7 +20,7 @@ bool NestedDispatcherGtk::RunAndSelfDestruct() {
   bool nestable = MessageLoopForUI::current()->NestableTasksAllowed();
   if (allow_nested_task_)
     MessageLoopForUI::current()->SetNestableTasksAllowed(true);
-  MessageLoopForUI::current()->Run(this);
+  MessageLoopForUI::current()->RunWithDispatcher(this);
   if (allow_nested_task_)
     MessageLoopForUI::current()->SetNestableTasksAllowed(nestable);
   bool creator_is_deleted = creator_ == NULL;

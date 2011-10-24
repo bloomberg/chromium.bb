@@ -355,7 +355,7 @@ void BrowserMainParts::MainMessageLoopRun() {
 #if defined(OS_MACOSX)
   MessageLoopForUI::current()->Run();
 #else
-  MessageLoopForUI::current()->Run(NULL);
+  MessageLoopForUI::current()->RunWithDispatcher(NULL);
 #endif
 }
 

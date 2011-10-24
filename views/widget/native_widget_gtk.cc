@@ -528,7 +528,7 @@ void NativeWidgetGtk::DoDrag(const OSExchangeData& data, int operation) {
   drag_data_ = &data_provider;
 
   // Block the caller until drag is done by running a nested message loop.
-  MessageLoopForUI::current()->Run(NULL);
+  MessageLoopForUI::current()->RunWithDispatcher(NULL);
 
   drag_data_ = NULL;
 

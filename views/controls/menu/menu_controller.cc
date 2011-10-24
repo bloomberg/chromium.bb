@@ -319,7 +319,7 @@ MenuItemView* MenuController::Run(Widget* parent,
   MessageLoopForUI* loop = MessageLoopForUI::current();
   bool did_allow_task_nesting = loop->NestableTasksAllowed();
   loop->SetNestableTasksAllowed(true);
-  loop->Run(this);
+  loop->RunWithDispatcher(this);
   loop->SetNestableTasksAllowed(did_allow_task_nesting);
 
   if (ViewsDelegate::views_delegate)

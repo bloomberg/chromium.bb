@@ -64,7 +64,7 @@ bool SimpleMessageBoxViews::ShowYesNoBox(gfx::NativeWindow parent_window,
 
   bool old_state = MessageLoopForUI::current()->NestableTasksAllowed();
   MessageLoopForUI::current()->SetNestableTasksAllowed(true);
-  MessageLoopForUI::current()->Run(dialog);
+  MessageLoopForUI::current()->RunWithDispatcher(dialog);
   MessageLoopForUI::current()->SetNestableTasksAllowed(old_state);
 
   g_browser_process->ReleaseModule();

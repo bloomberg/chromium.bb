@@ -217,7 +217,7 @@ void AutomationProvider::WindowSimulateDrag(
       bool did_allow_task_nesting = loop->NestableTasksAllowed();
       loop->SetNestableTasksAllowed(true);
       views::AcceleratorHandler handler;
-      loop->Run(&handler);
+      loop->RunWithDispatcher(&handler);
       loop->SetNestableTasksAllowed(did_allow_task_nesting);
     }
     SendMessage(top_level_hwnd, up_message, wparam_flags,

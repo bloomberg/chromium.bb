@@ -19,7 +19,7 @@ TEST(ChromeFrame, FLAKY_Launch) {
   loop.PostDelayedTask(FROM_HERE, new MessageLoop::QuitTask, kLongWaitTimeout);
 
   mock_launch.Navigate("about:blank");
-  loop.Run(NULL);
+  loop.RunWithDispatcher(NULL);
   EXPECT_TRUE(mock_launch.launch_result());
 }
 
@@ -30,7 +30,7 @@ TEST(ChromeFrame, Navigate) {
   loop.PostDelayedTask(FROM_HERE, new MessageLoop::QuitTask, kLongWaitTimeout);
 
   mock_navigate.NavigateRelativeFile(L"postmessage_basic_frame.html");
-  loop.Run(NULL);
+  loop.RunWithDispatcher(NULL);
   EXPECT_FALSE(mock_navigate.navigation_result());
 }
 
@@ -41,7 +41,7 @@ TEST(ChromeFrame, PostMessage) {
   loop.PostDelayedTask(FROM_HERE, new MessageLoop::QuitTask, kLongWaitTimeout);
 
   mock_postmessage.NavigateRelativeFile(L"postmessage_basic_frame.html");
-  loop.Run(NULL);
+  loop.RunWithDispatcher(NULL);
   EXPECT_FALSE(mock_postmessage.postmessage_result());
 }
 
@@ -55,7 +55,7 @@ TEST(ChromeFrame, FLAKY_RequestStart) {
   loop.PostDelayedTask(FROM_HERE, new MessageLoop::QuitTask, kLongWaitTimeout);
 
   mock_request_start.NavigateRelative(L"postmessage_basic_frame.html");
-  loop.Run(NULL);
+  loop.RunWithDispatcher(NULL);
   EXPECT_TRUE(mock_request_start.request_start_result());
 }
 

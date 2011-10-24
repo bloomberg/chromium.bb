@@ -17,7 +17,7 @@ FilePath UserDataDirDialog::RunUserDataDirDialog(
     const FilePath& user_data_dir) {
   // When the window closes, it will delete itself.
   UserDataDirDialog* dlg = new UserDataDirDialog(user_data_dir);
-  MessageLoopForUI::current()->Run(dlg);
+  MessageLoopForUI::current()->RunWithDispatcher(dlg);
   return dlg->user_data_dir();
 }
 

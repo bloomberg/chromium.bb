@@ -167,7 +167,7 @@ void SearchProviderTest::RunTillProviderDone() {
 #if defined(OS_MACOSX)
   message_loop_.Run();
 #else
-  message_loop_.Run(NULL);
+  message_loop_.RunWithDispatcher(NULL);
 #endif
 }
 

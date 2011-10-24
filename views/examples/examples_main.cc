@@ -185,7 +185,7 @@ int main(int argc, char** argv) {
   main.Init();
 
   views::AcceleratorHandler accelerator_handler;
-  MessageLoopForUI::current()->Run(&accelerator_handler);
+  MessageLoopForUI::current()->RunWithDispatcher(&accelerator_handler);
 
 #if defined(OS_WIN)
   OleUninitialize();

@@ -95,7 +95,7 @@ gfx::NativeView RenderWidgetHostViewAura::GetNativeView() const {
 }
 
 gfx::NativeViewId RenderWidgetHostViewAura::GetNativeViewId() const {
-  return NULL;
+  return static_cast<gfx::NativeViewId>(NULL);
 }
 
 void RenderWidgetHostViewAura::MovePluginWindows(
@@ -339,7 +339,7 @@ bool RenderWidgetHostViewAura::OnKeyEvent(aura::KeyEvent* event) {
 gfx::NativeCursor RenderWidgetHostViewAura::GetCursor(const gfx::Point& point) {
   // TODO(beng): talk to beng before implementing this.
   //NOTIMPLEMENTED();
-  return NULL;
+  return gfx::kNullCursor;
 }
 
 int RenderWidgetHostViewAura::GetNonClientComponent(

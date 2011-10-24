@@ -232,9 +232,9 @@ void RunMessageLoop() {
   loop->SetNestableTasksAllowed(true);
 #if defined(TOOLKIT_VIEWS)
   views::AcceleratorHandler handler;
-  loop->Run(&handler);
+  loop->RunWithDispatcher(&handler);
 #elif defined(OS_POSIX) && !defined(OS_MACOSX)
-  loop->Run(NULL);
+  loop->RunWithDispatcher(NULL);
 #else
   loop->Run();
 #endif

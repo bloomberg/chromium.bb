@@ -120,7 +120,7 @@ void Desktop::SetCursor(gfx::NativeCursor cursor) {
 
 void Desktop::Run() {
   ShowDesktop();
-  MessageLoopForUI::current()->Run(host_.get());
+  MessageLoopForUI::current()->RunWithDispatcher(host_.get());
 }
 
 void Desktop::Draw() {

@@ -1951,9 +1951,9 @@ void ChromeBrowserMainParts::MainMessageLoopRun() {
   aura::Desktop::GetInstance()->Run();
 #elif defined(TOOLKIT_VIEWS)
   views::AcceleratorHandler accelerator_handler;
-  MessageLoopForUI::current()->Run(&accelerator_handler);
+  MessageLoopForUI::current()->RunWithDispatcher(&accelerator_handler);
 #elif defined(USE_X11)
-  MessageLoopForUI::current()->Run(NULL);
+  MessageLoopForUI::current()->RunWithDispatcher(NULL);
 #elif defined(OS_POSIX)
   MessageLoopForUI::current()->Run();
 #endif

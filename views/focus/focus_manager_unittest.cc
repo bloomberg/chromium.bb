@@ -978,7 +978,7 @@ TEST_F(FocusManagerTest, FocusStoreRestore) {
 
   view->RequestFocus();
   RunPendingMessages();
-  //  MessageLoopForUI::current()->Run(new AcceleratorHandler());
+  //  MessageLoopForUI::current()->RunWithDispatcher(new AcceleratorHandler());
 
   // Visual Studio 2010 has problems converting NULL to the null pointer for
   // std::pair.  See http://connect.microsoft.com/VisualStudio/feedback/details/520043/error-converting-from-null-to-a-pointer-type-in-std-pair
@@ -1078,7 +1078,7 @@ TEST_F(FocusTraversalTest, NormalTraversal) {
 
   // Uncomment the following line if you want to test manually the UI of this
   // test.
-  // MessageLoopForUI::current()->Run(new AcceleratorHandler());
+  // MessageLoopForUI::current()->RunWithDispatcher(new AcceleratorHandler());
 
   // Let's traverse the whole focus hierarchy (several times, to make sure it
   // loops OK).
@@ -1131,7 +1131,7 @@ TEST_F(FocusTraversalTest, TraversalWithNonEnabledViews) {
 
   // Uncomment the following line if you want to test manually the UI of this
   // test.
-  // MessageLoopForUI::current()->Run(new AcceleratorHandler());
+  // MessageLoopForUI::current()->RunWithDispatcher(new AcceleratorHandler());
 
   View* focused_view;
   // Let's do one traversal (several times, to make sure it loops ok).
@@ -1183,7 +1183,7 @@ TEST_F(FocusTraversalTest, TraversalWithInvisibleViews) {
 
   // Uncomment the following line if you want to test manually the UI of this
   // test.
-  // MessageLoopForUI::current()->Run(new AcceleratorHandler());
+  // MessageLoopForUI::current()->RunWithDispatcher(new AcceleratorHandler());
 
   View* focused_view;
   // Let's do one traversal (several times, to make sure it loops ok).
@@ -1514,7 +1514,7 @@ TEST_F(FocusManagerTest, IgnoreKeyupForAccelerators) {
   PostKeyUp(ui::VKEY_9);
   AcceleratorHandler accelerator_handler;
   MessageLoopForUI::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
-  MessageLoopForUI::current()->Run(&accelerator_handler);
+  MessageLoopForUI::current()->RunWithDispatcher(&accelerator_handler);
   // Make sure we get a key-up and key-down.
   ASSERT_EQ(1U, mtv->keys_pressed().size());
   EXPECT_EQ(ui::VKEY_9, mtv->keys_pressed()[0]);
@@ -1533,7 +1533,7 @@ TEST_F(FocusManagerTest, IgnoreKeyupForAccelerators) {
   PostKeyUp(ui::VKEY_7);
   PostKeyUp(ui::VKEY_8);
   MessageLoopForUI::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
-  MessageLoopForUI::current()->Run(&accelerator_handler);
+  MessageLoopForUI::current()->RunWithDispatcher(&accelerator_handler);
   // Make sure we get a key-up and key-down.
   ASSERT_EQ(5U, mtv->keys_pressed().size());
   EXPECT_EQ(ui::VKEY_9, mtv->keys_pressed()[0]);
@@ -1552,7 +1552,7 @@ TEST_F(FocusManagerTest, IgnoreKeyupForAccelerators) {
   PostKeyDown(ui::VKEY_0);
   PostKeyUp(ui::VKEY_0);
   MessageLoopForUI::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
-  MessageLoopForUI::current()->Run(&accelerator_handler);
+  MessageLoopForUI::current()->RunWithDispatcher(&accelerator_handler);
   EXPECT_TRUE(mtv->keys_pressed().empty());
   EXPECT_TRUE(mtv->keys_released().empty());
   EXPECT_TRUE(mtv->accelerator_pressed());
@@ -1567,7 +1567,7 @@ TEST_F(FocusManagerTest, IgnoreKeyupForAccelerators) {
   PostKeyUp(ui::VKEY_1);
   PostKeyUp(ui::VKEY_0);
   MessageLoopForUI::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
-  MessageLoopForUI::current()->Run(&accelerator_handler);
+  MessageLoopForUI::current()->RunWithDispatcher(&accelerator_handler);
   EXPECT_TRUE(mtv->keys_pressed().empty());
   EXPECT_TRUE(mtv->keys_released().empty());
   EXPECT_TRUE(mtv->accelerator_pressed());

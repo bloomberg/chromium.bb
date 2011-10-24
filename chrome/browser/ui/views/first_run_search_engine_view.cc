@@ -70,7 +70,7 @@ void ShowFirstRunDialog(Profile* profile,
   window->SetAlwaysOnTop(true);
   window->Show();
   views::AcceleratorHandler accelerator_handler;
-  MessageLoopForUI::current()->Run(&accelerator_handler);
+  MessageLoopForUI::current()->RunWithDispatcher(&accelerator_handler);
   window->Close();
 }
 
