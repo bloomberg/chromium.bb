@@ -641,6 +641,10 @@ GLES2Implementation::~GLES2Implementation() {
 #endif
 }
 
+void GLES2Implementation::FreeUnusedSharedMemory() {
+  mapped_memory_->FreeUnused();
+}
+
 void GLES2Implementation::WaitForCmd() {
   TRACE_EVENT0("gpu", "GLES2::WaitForCmd");
   helper_->CommandBufferHelper::Finish();

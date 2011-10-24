@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -77,6 +77,9 @@ class FencedAllocator {
   // Checks for consistency inside the book-keeping structures. Used for
   // testing.
   bool CheckConsistency();
+
+  // True if any memory is allocated.
+  bool InUse();
 
  private:
   // Status of a block of memory, for book-keeping.
@@ -229,6 +232,11 @@ class FencedAllocatorWrapper {
   // testing.
   bool CheckConsistency() {
     return allocator_.CheckConsistency();
+  }
+
+  // True if any memory is allocated.
+  bool InUse() {
+    return allocator_.InUse();
   }
 
   FencedAllocator &allocator() { return allocator_; }

@@ -73,7 +73,7 @@ class GLES2MockCommandBufferHelper : public CommandBuffer {
     return kTransferBufferId;
   }
 
-  virtual void DestroyTransferBuffer(int32) {  // NOLINT
+  virtual void DestroyTransferBuffer(int32 /* id */) {
     GPU_NOTREACHED();
   }
 
@@ -121,6 +121,7 @@ class MockGLES2CommandBuffer : public GLES2MockCommandBufferHelper {
 
   // This is so we can use all the gmock functions when Flush is called.
   MOCK_METHOD1(OnFlush, void(void* result));
+  MOCK_METHOD1(DestroyTransferBuffer, void(int32 id));
 };
 
 // GCC requires these declarations, but MSVC requires they not be present
@@ -382,7 +383,6 @@ class GLES2ImplementationStrictSharedTest : public GLES2ImplementationTest {
 #ifndef _MSC_VER
 const int32 GLES2ImplementationTest::kTransferBufferId;
 #endif
-
 
 TEST_F(GLES2ImplementationTest, ShaderSource) {
   const uint32 kBucketId = 1;  // This id is hardcoded into GLES2Implemenation
@@ -929,6 +929,31 @@ TEST_F(GLES2ImplementationTest, ReadPixelsBadFormatType) {
       .RetiresOnSaturation();
 
   gl_->ReadPixels(0, 0, kWidth, kHeight, kFormat, kType, buffer.get());
+}
+
+TEST_F(GLES2ImplementationTest, FreeUnusedSharedMemory) {
+  struct Cmds {
+    BufferSubData buf;
+    cmd::SetToken set_token;
+  };
+  const GLenum kTarget = GL_ELEMENT_ARRAY_BUFFER;
+  const GLintptr kOffset = 15;
+  const GLsizeiptr kSize = 16;
+
+  uint32 offset = 0;
+  Cmds expected;
+  expected.buf.Init(
+    kTarget, kOffset, kSize, kTransferBufferId, offset);
+  expected.set_token.Init(GetNextToken());
+
+  void* mem = gl_->MapBufferSubDataCHROMIUM(
+      kTarget, kOffset, kSize, GL_WRITE_ONLY);
+  ASSERT_TRUE(mem != NULL);
+  gl_->UnmapBufferSubDataCHROMIUM(mem);
+  EXPECT_CALL(*command_buffer_, DestroyTransferBuffer(_))\
+      .Times(1)
+      .RetiresOnSaturation();
+  gl_->FreeUnusedSharedMemory();
 }
 
 TEST_F(GLES2ImplementationTest, MapUnmapBufferSubDataCHROMIUM) {

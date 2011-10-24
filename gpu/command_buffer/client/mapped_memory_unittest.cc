@@ -253,6 +253,26 @@ TEST_F(MappedMemoryManagerTest, DontFree) {
   ASSERT_TRUE(mem1);
 }
 
+TEST_F(MappedMemoryManagerTest, FreeUnused) {
+  int32 id = -1;
+  unsigned int offset = 0xFFFFFFFFU;
+  void* m1 = manager_->Alloc(kBufferSize, &id, &offset);
+  void* m2 = manager_->Alloc(kBufferSize, &id, &offset);
+  ASSERT_TRUE(m1 != NULL);
+  ASSERT_TRUE(m2 != NULL);
+  EXPECT_EQ(2u, manager_->num_chunks());
+  manager_->FreeUnused();
+  EXPECT_EQ(2u, manager_->num_chunks());
+  manager_->Free(m2);
+  EXPECT_EQ(2u, manager_->num_chunks());
+  manager_->FreeUnused();
+  EXPECT_EQ(1u, manager_->num_chunks());
+  manager_->Free(m1);
+  EXPECT_EQ(1u, manager_->num_chunks());
+  manager_->FreeUnused();
+  EXPECT_EQ(0u, manager_->num_chunks());
+}
+
 }  // namespace gpu
 
 

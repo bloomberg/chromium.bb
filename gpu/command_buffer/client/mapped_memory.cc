@@ -88,6 +88,21 @@ void MappedMemoryManager::FreePendingToken(void* pointer, int32 token) {
   GPU_NOTREACHED();
 }
 
+void MappedMemoryManager::FreeUnused() {
+  CommandBuffer* cmd_buf = helper_->command_buffer();
+  MemoryChunkVector::iterator iter = chunks_.begin();
+  while (iter != chunks_.end()) {
+    MemoryChunk* chunk = *iter;
+    chunk->FreeUnused();
+    if (!chunk->InUse()) {
+      cmd_buf->DestroyTransferBuffer(chunk->shm_id());
+      iter = chunks_.erase(iter);
+    } else {
+      ++iter;
+    }
+  }
+}
+
 }  // namespace gpu
 
 

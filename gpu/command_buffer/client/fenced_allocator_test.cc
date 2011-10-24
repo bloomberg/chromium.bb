@@ -105,14 +105,17 @@ class FencedAllocatorTest : public BaseFencedAllocatorTest {
 // Checks basic alloc and free.
 TEST_F(FencedAllocatorTest, TestBasic) {
   allocator_->CheckConsistency();
+  EXPECT_FALSE(allocator_->InUse());
 
   const unsigned int kSize = 16;
   FencedAllocator::Offset offset = allocator_->Alloc(kSize);
+  EXPECT_TRUE(allocator_->InUse());
   EXPECT_NE(FencedAllocator::kInvalidOffset, offset);
   EXPECT_GE(kBufferSize, offset+kSize);
   EXPECT_TRUE(allocator_->CheckConsistency());
 
   allocator_->Free(offset);
+  EXPECT_FALSE(allocator_->InUse());
   EXPECT_TRUE(allocator_->CheckConsistency());
 }
 
@@ -222,6 +225,7 @@ TEST_F(FencedAllocatorTest, FreeUnused) {
     EXPECT_GE(kBufferSize, offsets[i]+kSize);
     EXPECT_TRUE(allocator_->CheckConsistency());
   }
+  EXPECT_TRUE(allocator_->InUse());
 
   // No memory should be available.
   EXPECT_EQ(0u, allocator_->GetLargestFreeSize());
@@ -258,12 +262,14 @@ TEST_F(FencedAllocatorTest, FreeUnused) {
 
   // Check that the new largest free size takes into account the unused blocks.
   EXPECT_EQ(kSize * 3, allocator_->GetLargestFreeSize());
+  EXPECT_TRUE(allocator_->InUse());
 
   // Free up everything.
   for (unsigned int i = 3; i < kAllocCount; ++i) {
     allocator_->Free(offsets[i]);
     EXPECT_TRUE(allocator_->CheckConsistency());
   }
+  EXPECT_FALSE(allocator_->InUse());
 }
 
 // Tests GetLargestFreeSize
