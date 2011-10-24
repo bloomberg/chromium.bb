@@ -247,7 +247,7 @@ start_element(void *data, const char *element_name, const char **atts)
 			break;
 		default:
 			if (interface_name != NULL)
-				fail(ctx, "interface no allowed");
+				fail(ctx, "interface not allowed");
 			break;
 		}
 
