@@ -151,8 +151,6 @@ class ParallelAuthenticator : public Authenticator,
       const std::string& oauth1_secret) OVERRIDE;
   virtual std::string EncryptToken(const std::string& token) OVERRIDE;
   virtual std::string DecryptToken(const std::string& encrypted_token) OVERRIDE;
-  virtual std::string DecryptLegacyToken(
-      const std::string& encrypted_token) OVERRIDE;
 
   // AuthAttemptStateResolver overrides.
   // Attempts to make a decision and call back |consumer_| based on
@@ -246,11 +244,6 @@ class ParallelAuthenticator : public Authenticator,
 
   // Returns the ascii encoding of the system salt.
   std::string SaltAsAscii();
-
-  // Returns the ascii encoding of user supplemental key.
-  // TODO(zelidrag): http://crosbug.com/18905. Replace this with a key from
-  // nssdb instead.
-  std::string UserSupplementalKeyAsAscii();
 
   // Signal login completion status for cases when a new user is added via
   // an external authentication provider (i.e. GAIA extension).

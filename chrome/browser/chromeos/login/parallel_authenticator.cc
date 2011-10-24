@@ -751,15 +751,6 @@ std::string ParallelAuthenticator::DecryptToken(
                              encrypted_token_hex);
 }
 
-std::string ParallelAuthenticator::DecryptLegacyToken(
-    const std::string& encrypted_token_hex) {
-  scoped_ptr<crypto::SymmetricKey> key(
-      crypto::SymmetricKey::DeriveKeyFromPassword(
-          crypto::SymmetricKey::AES, UserSupplementalKeyAsAscii(),
-          SaltAsAscii(), 1000, 256));
-  return DecryptTokenWithKey(key.get(), SaltAsAscii(), encrypted_token_hex);
-}
-
 std::string ParallelAuthenticator::HashPassword(const std::string& password) {
   // Get salt, ascii encode, update sha with that, then update with ascii
   // of password, then end.
@@ -780,12 +771,6 @@ std::string ParallelAuthenticator::SaltAsAscii() {
   return StringToLowerASCII(base::HexEncode(
       reinterpret_cast<const void*>(system_salt_.data()),
       system_salt_.size()));
-}
-
-std::string ParallelAuthenticator::UserSupplementalKeyAsAscii() {
-  // TODO(zelidrag, wad): http://crosbug.com/18633 - Replace this with the real
-  // user suplemental key gets exposed in from cryptolib.
-  return SaltAsAscii();
 }
 
 void ParallelAuthenticator::ResolveLoginCompletionStatus() {

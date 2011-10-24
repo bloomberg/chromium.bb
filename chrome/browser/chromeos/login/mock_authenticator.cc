@@ -69,11 +69,6 @@ std::string MockAuthenticator::DecryptToken(
   return std::string();
 }
 
-std::string MockAuthenticator::DecryptLegacyToken(
-    const std::string& encrypted_token) {
-  return std::string();
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // MockLoginUtils
 
