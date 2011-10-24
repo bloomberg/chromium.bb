@@ -828,7 +828,7 @@ wlsc_output_set_cursor(struct wlsc_output *output,
 	pixman_region32_intersect(&cursor_region, &cursor_region, &output->region);
 
 	if (!pixman_region32_not_empty(&cursor_region)) {
- 		output->set_hardware_cursor(output, NULL);
+		output->set_hardware_cursor(output, NULL);
 		goto out;
 	}
 
