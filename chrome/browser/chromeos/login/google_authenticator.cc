@@ -408,12 +408,6 @@ std::string GoogleAuthenticator::DecryptToken(const std::string& unused) {
   return std::string();
 }
 
-std::string GoogleAuthenticator::DecryptLegacyToken(const std::string& unused) {
-  NOTIMPLEMENTED();
-  return std::string();
-}
-
-
 void GoogleAuthenticator::LoadSystemSalt() {
   if (!system_salt_.empty())
     return;
