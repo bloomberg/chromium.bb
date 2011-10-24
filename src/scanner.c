@@ -230,17 +230,25 @@ start_element(void *data, const char *element_name, const char **atts)
 		else if (strcmp(type, "fd") == 0)
 			arg->type = FD;
 		else if (strcmp(type, "new_id") == 0) {
-			if (interface_name == NULL)
-				fail(ctx, "no interface name given");
 			arg->type = NEW_ID;
 			arg->interface_name = strdup(interface_name);
 		} else if (strcmp(type, "object") == 0) {
-			if (interface_name == NULL)
-				fail(ctx, "no interface name given");
 			arg->type = OBJECT;
 			arg->interface_name = strdup(interface_name);
 		} else {
 			fail(ctx, "unknown type");
+		}
+
+		switch (arg->type) {
+		case NEW_ID:
+		case OBJECT:
+			if (interface_name == NULL)
+				fail(ctx, "no interface name given");
+			break;
+		default:
+			if (interface_name != NULL)
+				fail(ctx, "interface no allowed");
+			break;
 		}
 
 		wl_list_insert(ctx->message->arg_list.prev, &arg->link);
