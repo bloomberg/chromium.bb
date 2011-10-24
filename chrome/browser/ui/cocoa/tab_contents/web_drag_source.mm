@@ -7,18 +7,15 @@
 #include <sys/param.h>
 
 #include "base/file_path.h"
-#include "base/mac/crash_logging.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/task.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
-#import "chrome/app/breakpad_mac.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/tab_contents/tab_contents_view_mac.h"
-#include "content/browser/download/download_manager.h"
 #include "content/browser/download/drag_download_file.h"
 #include "content/browser/download/drag_download_util.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -26,7 +23,6 @@
 #include "content/public/common/url_constants.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_util.h"
-#import "third_party/mozilla/NSPasteboard+Utils.h"
 #include "ui/gfx/mac/nsimage_cache.h"
 #include "webkit/glue/webdropdata.h"
 
@@ -34,7 +30,6 @@ using base::SysNSStringToUTF8;
 using base::SysUTF8ToNSString;
 using base::SysUTF16ToNSString;
 using net::FileStream;
-
 
 namespace {
 
@@ -57,12 +52,6 @@ FilePath FilePathFromFilename(const string16& filename) {
 // TODO(viettrungluu): Refactor to make it common across platforms,
 // and move it somewhere sensible.
 FilePath GetFileNameFromDragData(const WebDropData& drop_data) {
-  // Set a breakpad key for the scope of this function to help debug
-  // http://crbug.com/78782
-  static NSString* const kUrlKey = @"drop_data_url";
-  NSString* value = SysUTF8ToNSString(drop_data.url.spec());
-  base::mac::ScopedCrashKey key(kUrlKey, value);
-
   // Images without ALT text will only have a file extension so we need to
   // synthesize one from the provided extension and URL.
   FilePath file_name(FilePathFromFilename(drop_data.file_description_filename));
