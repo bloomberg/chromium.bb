@@ -204,13 +204,10 @@ static void
 surface_handle_buffer_destroy(struct wl_listener *listener,
 			      struct wl_resource *resource, uint32_t time)
 {
-	struct wlsc_surface *es = container_of(listener, struct wlsc_surface,
+	struct wlsc_surface *es = container_of(listener, struct wlsc_surface, 
 					       buffer_destroy_listener);
-	struct wl_buffer *buffer = (struct wl_buffer *) resource;
 
-	wl_list_init(&es->buffer_destroy_listener.link);
-	if (es->buffer == buffer)
-		es->buffer = NULL;
+	es->buffer = NULL;
 }
 
 static void
@@ -221,10 +218,8 @@ output_handle_scanout_buffer_destroy(struct wl_listener *listener,
 	struct wlsc_output *output =
 		container_of(listener, struct wlsc_output,
 			     scanout_buffer_destroy_listener);
-	struct wl_buffer *buffer = (struct wl_buffer *) resource;
 
-	if (output->scanout_buffer == buffer)
-		output->scanout_buffer = NULL;
+	output->scanout_buffer = NULL;
 }
 
 static void
@@ -235,10 +230,8 @@ output_handle_pending_scanout_buffer_destroy(struct wl_listener *listener,
 	struct wlsc_output *output =
 		container_of(listener, struct wlsc_output,
 			     pending_scanout_buffer_destroy_listener);
-	struct wl_buffer *buffer = (struct wl_buffer *) resource;
 
-	if (output->pending_scanout_buffer == buffer)
-		output->pending_scanout_buffer = NULL;
+	output->pending_scanout_buffer = NULL;
 }
 
 
@@ -280,7 +273,6 @@ wlsc_surface_create(struct wlsc_compositor *compositor,
 	pixman_region32_init(&surface->opaque);
 
 	surface->buffer_destroy_listener.func = surface_handle_buffer_destroy;
-	wl_list_init(&surface->buffer_destroy_listener.link);
 
 	surface->transform = NULL;
 
@@ -742,7 +734,7 @@ wlsc_compositor_damage_all(struct wlsc_compositor *compositor)
 static inline void
 wlsc_buffer_post_release(struct wl_buffer *buffer)
 {
-	if (buffer == NULL || --buffer->busy_count > 0)
+	if (--buffer->busy_count > 0)
 		return;
 
 	assert(buffer->resource.client != NULL);
@@ -1083,11 +1075,13 @@ surface_attach(struct wl_client *client,
 	struct wl_buffer *buffer = buffer_resource->data;
 	int repick = 0;
 
-	buffer->busy_count++;
-	wlsc_buffer_post_release(es->buffer);
+	if (es->buffer) {
+		wlsc_buffer_post_release(es->buffer);
+		wl_list_remove(&es->buffer_destroy_listener.link);
+	}
 
+	buffer->busy_count++;
 	es->buffer = buffer;
-	wl_list_remove(&es->buffer_destroy_listener.link);
 	wl_list_insert(es->buffer->resource.destroy_listener_list.prev,
 		       &es->buffer_destroy_listener.link);
 
@@ -1946,11 +1940,8 @@ wlsc_output_init(struct wlsc_output *output, struct wlsc_compositor *c,
 
 	output->scanout_buffer_destroy_listener.func =
 		output_handle_scanout_buffer_destroy;
-	wl_list_init(&output->scanout_buffer_destroy_listener.link);
-
 	output->pending_scanout_buffer_destroy_listener.func =
 		output_handle_pending_scanout_buffer_destroy;
-	wl_list_init(&output->pending_scanout_buffer_destroy_listener.link);
 
 	wl_list_init(&output->frame_callback_list);
 
