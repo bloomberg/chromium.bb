@@ -26,7 +26,6 @@ void NativeViewHostAura::NativeViewAttached() {
   if (host_->native_view()->parent())
     host_->native_view()->parent()->RemoveChild(host_->native_view());
   host_->GetWidget()->GetNativeView()->AddChild(host_->native_view());
-  host_->native_view()->Show();
   host_->Layout();
 }
 
@@ -69,6 +68,7 @@ void NativeViewHostAura::UninstallClip() {
 void NativeViewHostAura::ShowWidget(int x, int y, int w, int h) {
   // TODO: need to support fast resize.
   host_->native_view()->SetBounds(gfx::Rect(x, y, w, h));
+  host_->native_view()->Show();
 }
 
 void NativeViewHostAura::HideWidget() {
