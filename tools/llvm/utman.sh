@@ -203,6 +203,8 @@ readonly LLVM_GCC_VER="4.2.1"
 # Location of PNaCl gcc/g++/as
 readonly PNACL_GCC="${INSTALL_BIN}/pnacl-gcc"
 readonly PNACL_GXX="${INSTALL_BIN}/pnacl-g++"
+readonly PNACL_DGCC="${INSTALL_BIN}/pnacl-dgcc"
+readonly PNACL_DGXX="${INSTALL_BIN}/pnacl-dg++"
 readonly PNACL_CLANG="${INSTALL_BIN}/pnacl-clang"
 readonly PNACL_CLANGXX="${INSTALL_BIN}/pnacl-clang++"
 readonly PNACL_AR="${INSTALL_BIN}/pnacl-ar"
@@ -214,10 +216,17 @@ readonly PNACL_TRANSLATE="${INSTALL_BIN}/pnacl-translate"
 readonly PNACL_READELF="${INSTALL_BIN}/readelf"
 readonly PNACL_SIZE="${INSTALL_BIN}/size"
 readonly PNACL_STRIP="${INSTALL_BIN}/pnacl-strip"
+readonly ILLEGAL_TOOL="${INSTALL_BIN}"/pnacl-illegal
 
 readonly PNACL_AS_ARM="${INSTALL_BIN}/pnacl-arm-as"
 readonly PNACL_AS_X8632="${INSTALL_BIN}/pnacl-i686-as"
 readonly PNACL_AS_X8664="${INSTALL_BIN}/pnacl-x86_64-as"
+
+# Set the default frontend.
+# Can be default, clang, llvm-gcc, or dragonegg
+# "Default" uses whatever is known to work, preferring Clang by default.
+readonly DEFAULT_FRONTEND="clang"
+readonly FRONTEND="${FRONTEND:-default}"
 
 # For a production (release) build, we want the sandboxed
 # translator to only contain the code needed to handle
@@ -287,99 +296,83 @@ if ${HOST_ARCH_X8632} ; then
   CXX="${NACL_ROOT}/tools/llvm/myg++32"
 fi
 
-readonly CROSS_TARGET_AR=${BINUTILS_INSTALL_DIR}/bin/${BINUTILS_TARGET}-ar
-readonly CROSS_TARGET_NM=${BINUTILS_INSTALL_DIR}/bin/${BINUTILS_TARGET}-nm
-readonly CROSS_TARGET_RANLIB=\
-${BINUTILS_INSTALL_DIR}/bin/${BINUTILS_TARGET}-ranlib
-readonly ILLEGAL_TOOL=${INSTALL_BIN}/pnacl-illegal
-
-# NOTE: we do not expect the assembler or linker to be used for libs
-#       hence the use of ILLEGAL_TOOL.
-STD_ENV_FOR_LIBSTDCPP=(
-  CC_FOR_BUILD="${CC}"
-  CC="${PNACL_GCC}"
-  CXX="${PNACL_GXX}"
-  RAW_CXX_FOR_TARGET="${PNACL_GXX}"
-  LD="${ILLEGAL_TOOL}"
-  CFLAGS="--pnacl-arm-bias"
-  CPPFLAGS="--pnacl-arm-bias"
-  CXXFLAGS="--pnacl-arm-bias"
-  CFLAGS_FOR_TARGET="--pnacl-arm-bias"
-  CPPFLAGS_FOR_TARGET="--pnacl-arm-bias"
-  CC_FOR_TARGET="${PNACL_GCC}"
-  GCC_FOR_TARGET="${PNACL_GCC}"
-  CXX_FOR_TARGET="${PNACL_GXX}"
-  AR="${PNACL_AR}"
-  AR_FOR_TARGET="${PNACL_AR}"
-  NM_FOR_TARGET="${PNACL_NM}"
-  RANLIB="${PNACL_RANLIB}"
-  RANLIB_FOR_TARGET="${PNACL_RANLIB}"
-  AS_FOR_TARGET="${ILLEGAL_TOOL}"
-  LD_FOR_TARGET="${ILLEGAL_TOOL}"
-  OBJDUMP_FOR_TARGET="${ILLEGAL_TOOL}" )
-
-# TODO: the arm bias should be eliminated
-# BUG: http://code.google.com/p/nativeclient/issues/detail?id=865
-STD_ENV_FOR_LIBSTDCPP_CLANG=(
-  CC_FOR_BUILD="${CC}"
-  CC="${PNACL_CLANG}"
-  CXX="${PNACL_CLANGXX}"
-  RAW_CXX_FOR_TARGET="${PNACL_CLANGXX}"
-  LD="${ILLEGAL_TOOL}"
-  CFLAGS="--pnacl-arm-bias"
-  CPPFLAGS="--pnacl-arm-bias"
-  CXXFLAGS="--pnacl-arm-bias"
-  CFLAGS_FOR_TARGET="--pnacl-arm-bias"
-  CPPFLAGS_FOR_TARGET="--pnacl-arm-bias"
-  CC_FOR_TARGET="${PNACL_CLANG}"
-  GCC_FOR_TARGET="${PNACL_CLANG}"
-  CXX_FOR_TARGET="${PNACL_CLANGXX}"
-  AR="${PNACL_AR}"
-  AR_FOR_TARGET="${PNACL_AR}"
-  NM_FOR_TARGET="${PNACL_NM}"
-  RANLIB="${PNACL_RANLIB}"
-  RANLIB_FOR_TARGET="${PNACL_RANLIB}"
-  AS_FOR_TARGET="${ILLEGAL_TOOL}"
-  LD_FOR_TARGET="${ILLEGAL_TOOL}"
-  OBJDUMP_FOR_TARGET="${ILLEGAL_TOOL}" )
-
-STD_ENV_FOR_NEWLIB=(
-  CFLAGS_FOR_TARGET="--pnacl-arm-bias"
-  CPPFLAGS_FOR_TARGET="--pnacl-arm-bias"
-  CC_FOR_TARGET="${PNACL_GCC}"
-  GCC_FOR_TARGET="${PNACL_GCC}"
-  CXX_FOR_TARGET="${PNACL_GXX}"
-  AR_FOR_TARGET="${PNACL_AR}"
-  NM_FOR_TARGET="${PNACL_NM}"
-  RANLIB_FOR_TARGET="${PNACL_RANLIB}"
-  OBJDUMP_FOR_TARGET="${ILLEGAL_TOOL}"
-  AS_FOR_TARGET="${ILLEGAL_TOOL}"
-  LD_FOR_TARGET="${ILLEGAL_TOOL}"
-  STRIP_FOR_TARGET="${ILLEGAL_TOOL}" )
-
-STD_ENV_FOR_NEWLIB_CLANG=(
-  CFLAGS_FOR_TARGET="--pnacl-arm-bias"
-  CPPFLAGS_FOR_TARGET="--pnacl-arm-bias"
-  CC_FOR_TARGET="${PNACL_CLANG}"
-  GCC_FOR_TARGET="${PNACL_CLANG}"
-  CXX_FOR_TARGET="${PNACL_CLANGXX}"
-  AR_FOR_TARGET="${PNACL_AR}"
-  NM_FOR_TARGET="${PNACL_NM}"
-  RANLIB_FOR_TARGET="${PNACL_RANLIB}"
-  OBJDUMP_FOR_TARGET="${ILLEGAL_TOOL}"
-  AS_FOR_TARGET="${ILLEGAL_TOOL}"
-  LD_FOR_TARGET="${ILLEGAL_TOOL}"
-  STRIP_FOR_TARGET="${ILLEGAL_TOOL}" )
-
-# Note: the result of this function this needs to be 'eval'ed
-#       there seems to be no better way to copy arrays
-copy-array-by-reference-cmd() {
-  echo -n "$2"          # dst name
-  echo -n '=( ${'
-  echo -n "$1"          # src name
-  echo -n '[@]} )'
+force-frontend() {
+  local frontend="$1"
+  if [ "${frontend}" == default ] ; then
+    frontend="${DEFAULT_FRONTEND}"
+  fi
+  case "${frontend}" in
+    clang)
+      PNACL_CC="${PNACL_CLANG}"
+      PNACL_CXX="${PNACL_CLANGXX}"
+      ;;
+    llvm-gcc)
+      PNACL_CC="${PNACL_GCC}"
+      PNACL_CXX="${PNACL_GXX}"
+      ;;
+    dragonegg)
+      PNACL_CC="${PNACL_DGCC}"
+      PNACL_CXX="${PNACL_DGXX}"
+      ;;
+  esac
 }
 
+# Every prefer-frontend should be followed by a reset-frontend.
+prefer-frontend() {
+  local frontend="$1"
+  if [ "${FRONTEND}" == default ] ; then
+    force-frontend "${frontend}"
+  fi
+}
+
+reset-frontend() {
+  force-frontend "${FRONTEND}"
+}
+
+setup-libstdcpp-env() {
+  # NOTE: we do not expect the assembler or linker to be used for libs
+  #       hence the use of ILLEGAL_TOOL.
+  # TODO: the arm bias should be eliminated
+  # BUG: http://code.google.com/p/nativeclient/issues/detail?id=865
+  STD_ENV_FOR_LIBSTDCPP=(
+    CC_FOR_BUILD="${CC}"
+    CC="${PNACL_CC}"
+    CXX="${PNACL_CXX}"
+    RAW_CXX_FOR_TARGET="${PNACL_CXX}"
+    LD="${ILLEGAL_TOOL}"
+    CFLAGS="--pnacl-arm-bias"
+    CPPFLAGS="--pnacl-arm-bias"
+    CXXFLAGS="--pnacl-arm-bias"
+    CFLAGS_FOR_TARGET="--pnacl-arm-bias"
+    CPPFLAGS_FOR_TARGET="--pnacl-arm-bias"
+    CC_FOR_TARGET="${PNACL_CC}"
+    GCC_FOR_TARGET="${PNACL_CC}"
+    CXX_FOR_TARGET="${PNACL_CXX}"
+    AR="${PNACL_AR}"
+    AR_FOR_TARGET="${PNACL_AR}"
+    NM_FOR_TARGET="${PNACL_NM}"
+    RANLIB="${PNACL_RANLIB}"
+    RANLIB_FOR_TARGET="${PNACL_RANLIB}"
+    AS_FOR_TARGET="${ILLEGAL_TOOL}"
+    LD_FOR_TARGET="${ILLEGAL_TOOL}"
+    OBJDUMP_FOR_TARGET="${ILLEGAL_TOOL}" )
+}
+
+setup-newlib-env() {
+  STD_ENV_FOR_NEWLIB=(
+    CFLAGS_FOR_TARGET="--pnacl-arm-bias"
+    CPPFLAGS_FOR_TARGET="--pnacl-arm-bias"
+    CC_FOR_TARGET="${PNACL_CC}"
+    GCC_FOR_TARGET="${PNACL_CC}"
+    CXX_FOR_TARGET="${PNACL_CXX}"
+    AR_FOR_TARGET="${PNACL_AR}"
+    NM_FOR_TARGET="${PNACL_NM}"
+    RANLIB_FOR_TARGET="${PNACL_RANLIB}"
+    OBJDUMP_FOR_TARGET="${ILLEGAL_TOOL}"
+    AS_FOR_TARGET="${ILLEGAL_TOOL}"
+    LD_FOR_TARGET="${ILLEGAL_TOOL}"
+    STRIP_FOR_TARGET="${ILLEGAL_TOOL}" )
+}
 
 # The gold plugin that we use is documented at
 # http://llvm.org/docs/GoldPlugin.html
@@ -780,25 +773,6 @@ download-toolchains() {
   gclient runhooks --force
 }
 
-#@-------------------------------------------------------------------------
-#@ libs                  - install native libs and build bitcode libs
-libs() {
-  libs-clean
-  libs-platform
-  libc
-
-  if ${LIBMODE_NEWLIB}; then
-    build-compiler-rt
-
-    # NOTE: this currently depends on "llvm-gcc arm"
-    build-libgcc_eh arm
-    build-libgcc_eh x86-32
-    build-libgcc_eh x86-64
-
-    libstdcpp
-  fi
-}
-
 libc() {
   if ${LIBMODE_NEWLIB} ; then
     # TODO(pdox): Why is this step needed?
@@ -810,27 +784,25 @@ libc() {
 }
 
 
-#@ clang-libs            - install native libs and build bitcode libs with clang
-clang-libs() {
+#@ libs            - install native libs and build bitcode libs
+libs() {
   libs-clean
   libs-platform
   if ${LIBMODE_NEWLIB} ; then
     # TODO(pdox): Why is this step needed?
     sysroot
-    clang-newlib
+    newlib
   elif ${LIBMODE_GLIBC} ; then
     glibc
   fi
 
   if ${LIBMODE_NEWLIB}; then
-    clang-build-compiler-rt
+    build-compiler-rt
     # NOTE: this currently depends on "llvm-gcc arm"
-    clang-build-libgcc_eh arm
-    clang-build-libgcc_eh x86-32
-    clang-build-libgcc_eh x86-64
+    build-libgcc_eh arm
+    build-libgcc_eh x86-32
+    build-libgcc_eh x86-64
 
-    # BUG=http://code.google.com/p/nativeclient/issues/detail?id=2289
-    #clang-libstdcpp
     libstdcpp
   fi
 }
@@ -874,21 +846,13 @@ everything-post-hg() {
   driver
   llvm-gcc arm
 
-  clang-libs
+  libs
 
   # NOTE: we delay the tool building till after the sdk is essentially
   #      complete, so that sdk sanity checks don't fail
   misc-tools
   verify
 }
-
-#@ everything-clang builds and install Clang portable bitcode SDK
-everything-clang() {
-  everything-hg
-
-  StepBanner "Clang Portable Bitcode SDK (not implemented)"
-}
-
 
 #@ everything-translator   - Build and install untrusted SDK AND translator
 everything-translator() {
@@ -1769,9 +1733,9 @@ llvm-gcc-configure() {
              CC="${CC}" \
              CXX="${CXX}" \
              CFLAGS="-Dinhibit_libc" \
-             AR_FOR_TARGET="${CROSS_TARGET_AR}" \
-             RANLIB_FOR_TARGET="${CROSS_TARGET_RANLIB}" \
-             NM_FOR_TARGET="${CROSS_TARGET_NM}" \
+             AR_FOR_TARGET="${PNACL_AR}" \
+             RANLIB_FOR_TARGET="${PNACL_RANLIB}" \
+             NM_FOR_TARGET="${PNACL_NM}" \
              ${srcdir}/configure \
                --prefix="${LLVM_GCC_INSTALL_DIR}" \
                --enable-llvm="${LLVM_INSTALL_DIR}" \
@@ -1839,16 +1803,13 @@ llvm-gcc-install() {
 #########################################################################
 
 #+ build-libgcc_eh - build/install libgcc_eh
-build-libgcc_eh_generic() {
+build-libgcc_eh() {
   # TODO(pdox): This process needs some major renovation.
   # We are using the llvm-gcc ARM build directory, but varying '-arch'
   # to get different versions of libgcc_eh.
-
   # NOTE: For simplicity we piggyback the libgcc_eh build onto a preconfigured
   #       objdir. So, to be safe, you have to run gcc-stage1-make first
-  local -a build_env
-  eval $(copy-array-by-reference-cmd $1 build_env)
-  local arch=$2
+  local arch=$1
   local srcdir="${TC_SRC_LLVM_GCC}"
   local objdir="${TC_BUILD_LLVM_GCC}-arm"
   spushd "${objdir}"/gcc
@@ -1870,9 +1831,11 @@ build-libgcc_eh_generic() {
   flags="-arch ${arch} --pnacl-bias=${arch} --pnacl-allow-translate"
   flags+=" -DATTRIBUTE_UNUSED= -DHOST_BITS_PER_INT=32 -Dinhibit_libc"
   flags+=" -DIN_GCC -DCROSS_DIRECTORY_STRUCTURE "
+
+  setup-libstdcpp-env
   RunWithLog libgcc_eh.${arch}.make \
        env -i PATH=/usr/bin/:/bin \
-              "${build_env[@]}" \
+              "${STD_ENV_FOR_LIBSTDCPP[@]}" \
               "INCLUDES=-I${srcdir}/include -I${srcdir}/gcc -I." \
               "LIBGCC2_CFLAGS=${flags}" \
               "AR_CREATE_FOR_TARGET=${PNACL_AR} rc" \
@@ -1884,38 +1847,18 @@ build-libgcc_eh_generic() {
   cp "${objdir}"/gcc/libgcc_eh.a "${INSTALL_LIB}-${arch}"
 }
 
-#+ build-libgcc_eh - build/install libgcc_eh
-build-libgcc_eh() {
-  build-libgcc_eh_generic STD_ENV_FOR_LIBSTDCPP "$@"
-}
-
-#+ clang-build-libgcc_eh - build/install libgcc_eh with clang
-clang-build-libgcc_eh() {
-  build-libgcc_eh_generic STD_ENV_FOR_LIBSTDCPP_CLANG "$@"
-}
-
 #########################################################################
 #########################################################################
 #     < COMPILER-RT >
 #########################################################################
 #########################################################################
 
-STD_ENV_FOR_COMPILER_RT=(
-  CC="${PNACL_GCC}"
-  AR="${PNACL_AR}" )
-
-STD_ENV_FOR_COMPILER_RT_CLANG=(
-  CC="${PNACL_CLANG}"
-  AR="${PNACL_AR}" )
-
 #+ build-compiler-rt - build/install llvm's replacement for libgcc.a
-build-compiler-rt-generic() {
-  local -a build_env
-  eval $(copy-array-by-reference-cmd $1 build_env)
-  src="${TC_SRC_COMPILER_RT}/compiler-rt/lib"
+build-compiler-rt() {
+  local src="${TC_SRC_COMPILER_RT}/compiler-rt/lib"
   mkdir -p "${TC_BUILD_COMPILER_RT}"
   spushd "${TC_BUILD_COMPILER_RT}"
-  StepBanner "COMPILER-RT (LIBGCC) ($1)"
+  StepBanner "COMPILER-RT (LIBGCC)"
   for arch in arm x86-32 x86-64; do
     StepBanner "compiler rt" "build ${arch}"
     rm -rf "${arch}"
@@ -1923,7 +1866,8 @@ build-compiler-rt-generic() {
     spushd "${arch}"
     RunWithLog libgcc.${arch}.make \
         make -j ${UTMAN_CONCURRENCY} -f ${src}/Makefile-pnacl libgcc.a \
-          "${build_env[@]}" \
+          CC="${PNACL_CC}" \
+          AR="${PNACL_AR}" \
           "SRC_DIR=${src}" \
           "CFLAGS=-arch ${arch} --pnacl-allow-translate -O3 -fPIC"
     spopd
@@ -1943,84 +1887,36 @@ build-compiler-rt-generic() {
   spopd
 }
 
-#+ build-compiler-rt - build/install llvm's replacement for libgcc.a
-build-compiler-rt() {
-  build-compiler-rt-generic STD_ENV_FOR_COMPILER_RT
-}
-
-#+ clang-build-compiler-rt - build/install llvm's replacement for
-#                            libgcc.a using clang
-clang-build-compiler-rt() {
-  build-compiler-rt-generic STD_ENV_FOR_COMPILER_RT_CLANG
-}
-
-#+ bitcode-build-compiler-rt - build/install llvm's replacement for libgcc.a
-#                              as bitcode - this is EXPERIMENTAL
-bitcode-build-compiler-rt() {
-  src="${TC_SRC_COMPILER_RT}/compiler-rt/lib"
-  mkdir -p "${TC_BUILD_COMPILER_RT}"
-  spushd "${TC_BUILD_COMPILER_RT}"
-
-  StepBanner "COMPILER-RT (LIBGCC) bitcode"
-  StepBanner "compiler rt bitcode" "build"
-  mkdir -p bitcode
-  spushd bitcode
-  RunWithLog libgcc.bitcode.make \
-    make -j ${UTMAN_CONCURRENCY} -f ${src}/Makefile-pnacl libgcc.a \
-      "SRC_DIR=${src}" \
-      "CC=${PNACL_GCC}" \
-      "AR=${PNACL_AR}" \
-      "CFLAGS=-O3 -ffunction-sections -fdata-sections"
-  spopd
-
-
-  StepBanner "compiler rt bitcode" "install"
-  rm -f "${INSTALL_LIB_ARM}/libgcc.a" \
-        "${INSTALL_LIB_X8632}/libgcc.a" \
-        "${INSTALL_LIB_X8664}/libgcc.a" \
-        "${INSTALL_LIB}/libgcc.a"
-
-  mkdir -p "${INSTALL_LIB}"
-  ls -l bitcode/libgcc.a
-  cp bitcode/libgcc.a "${INSTALL_LIB}"
-
-  spopd
-}
-
 #########################################################################
 #########################################################################
 #                          < LIBSTDCPP >
 #########################################################################
 #########################################################################
 
-#+ libstdcpp             - build and install libstdcpp in bitcode
+libstdcpp-setup() {
+  # BUG=http://code.google.com/p/nativeclient/issues/detail?id=2289
+  prefer-frontend llvm-gcc
+}
+
 libstdcpp() {
-  libstdcpp-generic STD_ENV_FOR_LIBSTDCPP
-}
-
-#+ libstdcpp         - build and install libstdcpp in bitcode with Clang
-clang-libstdcpp() {
-  libstdcpp-generic STD_ENV_FOR_LIBSTDCPP_CLANG
-}
-
-libstdcpp-generic() {
-  local build_env=$1
-  StepBanner "LIBSTDCPP (BITCODE) $build_env"
+  libstdcpp-setup
+  StepBanner "LIBSTDCPP (BITCODE)"
 
   if libstdcpp-needs-configure; then
     libstdcpp-clean
-    libstdcpp-configure-generic $build_env
+    libstdcpp-configure
   else
     SkipBanner "LIBSTDCPP" "configure"
   fi
 
   if libstdcpp-needs-make; then
-    libstdcpp-make-generic $build_env
+    libstdcpp-make
   else
     SkipBanner "LIBSTDCPP" "make"
   fi
 
-  libstdcpp-install-generic $build_env
+  libstdcpp-install
+  reset-frontend
 }
 
 #+ libstdcpp-clean - clean libstdcpp in bitcode
@@ -2037,20 +1933,9 @@ libstdcpp-needs-configure() {
   return #?
 }
 
-#+ libstdcpp-configure - configure libstdcpp for bitcode
 libstdcpp-configure() {
-  libstdcpp-configure-generic STD_ENV_FOR_LIBSTDCPP
-}
-
-#+ clang-libstdcpp-configure - configure bitcode libstdcpp with Clang
-clang-libstdcpp-configure() {
-  libstdcpp-configure-generic STD_ENV_FOR_LIBSTDCPP_CLANG
-}
-
-libstdcpp-configure-generic() {
-  StepBanner "LIBSTDCPP" "Configure $1"
-  local -a build_env
-  eval $(copy-array-by-reference-cmd $1 build_env)
+  libstdcpp-setup
+  StepBanner "LIBSTDCPP" "Configure"
   local srcdir="${TC_SRC_LIBSTDCPP}"
   local objdir="${TC_BUILD_LIBSTDCPP}"
 
@@ -2067,9 +1952,10 @@ libstdcpp-configure-generic() {
     Fatal "Unknown library mode"
   fi
 
+  setup-libstdcpp-env
   RunWithLog llvm-gcc.configure_libstdcpp \
       env -i PATH=/usr/bin/:/bin \
-        "${build_env[@]}" \
+        "${STD_ENV_FOR_LIBSTDCPP[@]}" \
         "${srcdir}"/configure \
           --host="${CROSS_TARGET_ARM}" \
           --prefix="${LIBSTDCPP_INSTALL_DIR}" \
@@ -2091,49 +1977,29 @@ libstdcpp-needs-make() {
   return $?
 }
 
-#+ libstdcpp-make - Make libstdcpp in bitcode
 libstdcpp-make() {
-  libstdcpp-make-generic STD_ENV_FOR_LIBSTDCPP
-}
-
-clang-libstdcpp-make() {
-  libstdcpp-make-generic STD_ENV_FOR_LIBSTDCPP_CLANG
-}
-
-libstdcpp-make-generic() {
-  StepBanner "LIBSTDCPP" "Make $1"
-  local -a build_env
-  eval $(copy-array-by-reference-cmd $1 build_env)
+  libstdcpp-setup
+  StepBanner "LIBSTDCPP" "Make"
   local srcdir="${TC_SRC_LIBSTDCPP}"
   local objdir="${TC_BUILD_LIBSTDCPP}"
 
   ts-touch-open "${objdir}"
 
   spushd "${objdir}"
- RunWithLog llvm-gcc.make_libstdcpp \
+  setup-libstdcpp-env
+  RunWithLog llvm-gcc.make_libstdcpp \
     env -i PATH=/usr/bin/:/bin \
         make \
-        "${build_env[@]}" \
+        "${STD_ENV_FOR_LIBSTDCPP[@]}" \
         ${MAKE_OPTS}
   spopd
 
   ts-touch-commit "${objdir}"
 }
 
-#+ libstdcpp-install - Install libstdcpp in bitcode
 libstdcpp-install() {
-  libstdcpp-install-generic STD_ENV_FOR_LIBSTDCPP
-}
-
-#+ libstdcpp-install - Install libstdcpp in bitcode with Clang
-clang-libstdcpp-install() {
-  libstdcpp-install-generic STD_ENV_FOR_LIBSTDCPP_CLANG
-}
-
-libstdcpp-install-generic() {
-  StepBanner "LIBSTDCPP" "Install $1"
-  local -a build_env
-  eval $(copy-array-by-reference-cmd $1 build_env)
+  libstdcpp-setup
+  StepBanner "LIBSTDCPP" "Install"
   local objdir="${TC_BUILD_LIBSTDCPP}"
 
   spushd "${objdir}"
@@ -2141,9 +2007,10 @@ libstdcpp-install-generic() {
   # install headers (=install-data)
   # for good measure make sure we do not keep any old headers
   rm -rf "${INSTALL_ROOT}/include/c++"
+  setup-libstdcpp-env
   RunWithLog llvm-gcc.install_libstdcpp \
     make \
-    "${build_env[@]}" \
+    "${STD_ENV_FOR_LIBSTDCPP[@]}" \
     ${MAKE_OPTS} install-data
 
   # Install bitcode library
@@ -2460,22 +2327,22 @@ llvm-sb-setup() {
   --target=${CROSS_TARGET_ARM}"
 
   if ${LIBMODE_GLIBC} ; then
-    local target_cc="${PNACL_CLANG}"
-    local target_cxx="${PNACL_CLANGXX}"
+    prefer-frontend clang
   else
-    local target_cc="${PNACL_GCC}"
-    local target_cxx="${PNACL_GXX}"
+    prefer-frontend llvm-gcc
   fi
 
   LLVM_SB_CONFIGURE_ENV=(
     AR="${PNACL_AR}" \
     AS="${PNACL_AS}" \
-    CC="${target_cc} ${flags}" \
-    CXX="${target_cxx} ${flags}" \
+    CC="${PNACL_CC} ${flags}" \
+    CXX="${PNACL_CXX} ${flags}" \
     LD="${PNACL_LD} ${flags}" \
     NM="${PNACL_NM}" \
     RANLIB="${PNACL_RANLIB}" \
     LDFLAGS="") # TODO(pdox): Support -s
+
+  reset-frontend
 }
 
 llvm-sb-setup-jit() {
@@ -2752,8 +2619,8 @@ google-perftools-configure() {
   local src="${TC_SRC_GOOGLE_PERFTOOLS}"/google-perftools
   local flags="-static"
   local configure_env=(
-    CC="${PNACL_GCC} ${flags}" \
-    CXX="${PNACL_GXX} ${flags}" \
+    CC="${PNACL_CC} ${flags}" \
+    CXX="${PNACL_CXX} ${flags}" \
     LD="${PNACL_LD} ${flags}" \
     AR="${PNACL_AR}" \
     RANLIB="${PNACL_RANLIB}")
@@ -2859,18 +2726,16 @@ binutils-sb-setup() {
   flags+=" --pnacl-skip-ll"
 
   if ${LIBMODE_GLIBC} ; then
-    local target_cc="${PNACL_CLANG}"
-    local target_cxx="${PNACL_CLANGXX}"
+    prefer-frontend clang
   else
-    local target_cc="${PNACL_GCC}"
-    local target_cxx="${PNACL_GXX}"
+    prefer-frontend llvm-gcc
   fi
 
   BINUTILS_SB_CONFIGURE_ENV=(
     AR="${PNACL_AR}" \
     AS="${PNACL_AS}" \
-    CC="${target_cc} ${flags}" \
-    CXX="${target_cxx} ${flags}" \
+    CC="${PNACL_CC} ${flags}" \
+    CXX="${PNACL_CXX} ${flags}" \
     CC_FOR_BUILD="${CC}" \
     CXX_FOR_BUILD="${CXX}" \
     LD="${PNACL_LD} ${flags}" \
@@ -2878,6 +2743,8 @@ binutils-sb-setup() {
     RANLIB="${PNACL_RANLIB}" \
     LDFLAGS_FOR_BUILD="-L${TC_BUILD_BINUTILS_LIBERTY}/libiberty/" \
     LDFLAGS="")
+
+  reset-frontend
 }
 
 #+-------------------------------------------------------------------------
@@ -3105,43 +2972,24 @@ prune-translator-install() {
 #     < NEWLIB-BITCODE >
 #########################################################################
 
-#+ newlib                - Build and install newlib in bitcode.
+#+ newlib - Build and install newlib in bitcode.
 newlib() {
-  newlib-generic STD_ENV_FOR_NEWLIB
-}
-
-#+ clang-newlib         - Build and install newlib in bitcode with Clang.
-clang-newlib() {
-  newlib-generic STD_ENV_FOR_NEWLIB_CLANG
-  # Clang claims posix thread model, not single as llvm-gcc does.
-  # It means that libstdcpp needs pthread.h to be in place.
-  # This should go away when we properly import pthread.h with
-  # the other newlib headers. This hack is tracked by
-  # http://code.google.com/p/nativeclient/issues/detail?id=2333
-  StepBanner "NEWLIB" "Copying pthreads headers ahead of time "\
-  "(HACK. See http://code.google.com/p/nativeclient/issues/detail?id=2333)"
-  sdk-headers
-}
-
-#+ newlib-generic - Build and install newlib in bitcode using build env.
-newlib-generic() {
-  local build_env=$1
-  StepBanner "NEWLIB (BITCODE) ${build_env}"
+  StepBanner "NEWLIB (BITCODE)"
 
   if newlib-needs-configure; then
     newlib-clean
-    newlib-configure-generic ${build_env}
+    newlib-configure
   else
     SkipBanner "NEWLIB" "configure"
   fi
 
   if newlib-needs-make; then
-    newlib-make-generic ${build_env}
+    newlib-make
   else
     SkipBanner "NEWLIB" "make"
   fi
 
-  newlib-install-generic ${build_env}
+  newlib-install
 }
 
 #+ newlib-clean  - Clean bitcode newlib.
@@ -3161,34 +3009,18 @@ newlib-needs-configure() {
 
 #+ newlib-configure - Configure bitcode Newlib
 newlib-configure() {
-  newlib-configure-generic STD_ENV_FOR_NEWLIB
-}
+  StepBanner "NEWLIB" "Configure"
 
-#+ clang-newlib-configure - Configure bitcode Newlib with Clang
-clang-newlib-configure() {
-  newlib-configure-generic STD_ENV_FOR_NEWLIB_CLANG
-}
-
-#+ newlib-configure - Configure bitcode Newlib using build env.
-newlib-configure-generic() {
-  local build_env=$1
-  StepBanner "NEWLIB" "Configure ${build_env}"
-
-  newlib-configure-common ${build_env} "${TC_BUILD_NEWLIB}"
-}
-
-newlib-configure-common() {
-  local -a build_env
-  eval $(copy-array-by-reference-cmd $1 build_env)
   local srcdir="${TC_SRC_NEWLIB}"
-  local objdir="$2"
+  local objdir="${TC_BUILD_NEWLIB}"
   mkdir -p "${objdir}"
   spushd "${objdir}"
 
+  setup-newlib-env
   RunWithLog newlib.configure \
     env -i \
     PATH="/usr/bin:/bin" \
-    "${build_env[@]}" \
+    "${STD_ENV_FOR_NEWLIB[@]}" \
     ${srcdir}/newlib-trunk/configure \
         --disable-multilib \
         --prefix="${NEWLIB_INSTALL_DIR}" \
@@ -3212,37 +3044,20 @@ newlib-needs-make() {
   return $?
 }
 
-#+ newlib-make   - Make bitcode Newlib
+#+ newlib-make           - Make bitcode Newlib
 newlib-make() {
-  newlib-make-generic STD_ENV_FOR_NEWLIB
-}
-
-#+ clang-newlib-make   - Make bitcode Newlib with Clang.
-clang-newlib-make() {
-  newlib-make-generic STD_ENV_FOR_NEWLIB_CLANG
-}
-
-#+ newlib-make-generic   - Make bitcode Newlib using build env.
-newlib-make-generic() {
-  local build_env=$1
-  StepBanner "NEWLIB" "Make ${build_env}"
-
-  newlib-make-common ${build_env} "${TC_BUILD_NEWLIB}"
-}
-
-newlib-make-common() {
-  local -a build_env
-  eval $(copy-array-by-reference-cmd $1 build_env)
+  StepBanner "NEWLIB" "Make"
   local srcdir="${TC_SRC_NEWLIB}"
-  local objdir="$2"
+  local objdir="${TC_BUILD_NEWLIB}"
 
   ts-touch-open "${objdir}"
 
+  setup-newlib-env
   spushd "${objdir}"
   RunWithLog newlib.make \
     env -i PATH="/usr/bin:/bin" \
     make \
-      "${build_env[@]}" \
+      "${STD_ENV_FOR_NEWLIB[@]}" \
       ${MAKE_OPTS}
   spopd
 
@@ -3250,32 +3065,20 @@ newlib-make-common() {
 
 }
 
-#+ newlib-install    - Install Bitcode Newlib
+#+ newlib-install        - Install Bitcode Newlib using build env.
 newlib-install() {
-  newlib-install-generic STD_ENV_FOR_NEWLIB
-}
-
-#+ clang-newlib-install    - Install Bitcode Newlib with Clang.
-clang-newlib-install() {
-  newlib-install-generic STD_ENV_FOR_NEWLIB_CLANG
-}
-
-#+ newlib-install-generic - Install Bitcode Newlib using build env.
-newlib-install-generic() {
-  StepBanner "NEWLIB" "Install ${1}"
-
-  local -a build_env
-  eval $(copy-array-by-reference-cmd $1 build_env)
+  StepBanner "NEWLIB" "Install"
   local objdir="${TC_BUILD_NEWLIB}"
 
   spushd "${objdir}"
 
   # NOTE: we might be better off not using install, as we are already
   #       doing a bunch of copying of headers and libs further down
+  setup-newlib-env
   RunWithLog newlib.install \
     env -i PATH="/usr/bin:/bin" \
       make \
-      "${build_env[@]}" \
+      "${STD_ENV_FOR_NEWLIB[@]}" \
       install ${MAKE_OPTS}
 
   ###########################################################
@@ -3312,6 +3115,15 @@ newlib-install-generic() {
   cp ${objdir}/${REAL_CROSS_TARGET}/newlib/lib[cgm].a "${destdir}"
 
   spopd
+
+  # Clang claims posix thread model, not single as llvm-gcc does.
+  # It means that libstdcpp needs pthread.h to be in place.
+  # This should go away when we properly import pthread.h with
+  # the other newlib headers. This hack is tracked by
+  # http://code.google.com/p/nativeclient/issues/detail?id=2333
+  StepBanner "NEWLIB" "Copying pthreads headers ahead of time "\
+  "(HACK. See http://code.google.com/p/nativeclient/issues/detail?id=2333)"
+  sdk-headers
 }
 
 # TODO(pdox): Organize these objects better, so that this code is simpler.
@@ -3321,7 +3133,7 @@ libs-platform() {
     return 0
   fi
 
-  local pnacl_cc="${PNACL_CLANG} --pnacl-allow-native"
+  local pnacl_cc="${PNACL_CC} --pnacl-allow-native"
   local src="${PNACL_SUPPORT}"
   local tmpdir="${TC_BUILD}/libs-platform"
   rm -rf "${tmpdir}"
@@ -3589,7 +3401,6 @@ RecordRevisionInfo() {
 readonly LLVM_DIS=${LLVM_INSTALL_DIR}/bin/llvm-dis
 readonly LLVM_BCANALYZER=${LLVM_INSTALL_DIR}/bin/llvm-bcanalyzer
 readonly LLVM_OPT=${LLVM_INSTALL_DIR}/bin/opt
-readonly LLVM_AR=${CROSS_TARGET_AR}
 
 # Note: we could replace this with a modified version of tools/elf_checker.py
 #       if we do not want to depend on binutils
@@ -3605,7 +3416,7 @@ ExtractAndCheck() {
   mkdir -p ${tmp}
   cp "${archive}" "${tmp}"
   spushd ${tmp}
-  ${LLVM_AR} x $(basename ${archive})
+  ${PNACL_AR} x $(basename ${archive})
   # extract all the files
   local count=0
   for i in ${pattern} ; do
@@ -3645,7 +3456,7 @@ IsLinkerScript() {
 VerifyLinkerScript() {
   local archive="$1"
   # Use cpp to strip the C-style comments.
-  ${PNACL_GCC} -E -xc "${archive}" | awk -v archive="$(basename ${archive})" '
+  ${PNACL_CC} -E -xc "${archive}" | awk -v archive="$(basename ${archive})" '
     BEGIN { status = 0 }
     NF == 0 || $1 == "#" { next }
     $1 == "INPUT" && $2 == "(" && $NF == ")" { next }
@@ -4116,6 +3927,9 @@ function-completions() {
 
 mkdir -p "${INSTALL_ROOT}"
 PackageCheck
+
+# Setup the initial frontend configuration
+reset-frontend
 
 if [ $# = 0 ]; then set -- help; fi  # Avoid reference to undefined $1.
 
