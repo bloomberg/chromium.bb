@@ -211,6 +211,7 @@ cr.define('oobe', function() {
     onBeforeShow: function(data) {
       Oobe.getInstance().headerHidden = true;
       $('user-image-grid').updateAndFocus();
+      chrome.send('onUserImageScreenShown');
     },
 
     /**

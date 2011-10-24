@@ -20,11 +20,11 @@
 // TODO(chron): Sync doesn't use the TalkToken anymore so we can stop
 //              requesting it.
 const char* TokenService::kServices[] = {
+  GaiaConstants::kPicasaService,
   GaiaConstants::kGaiaService,
   GaiaConstants::kSyncService,
   GaiaConstants::kTalkService,
   GaiaConstants::kDeviceManagementService,
-  GaiaConstants::kPicasaService,
 };
 
 const char* kUnusedServiceScope = "unused-service-scope";

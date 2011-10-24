@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/memory/scoped_ptr.h"
+#include "base/time.h"
 #include "chrome/browser/chromeos/login/camera_controller.h"
 #include "chrome/browser/chromeos/login/profile_image_downloader.h"
 #include "chrome/browser/chromeos/login/user_image_screen_actor.h"
@@ -63,6 +64,9 @@ class UserImageScreen: public WizardScreen,
   UserImageScreenActor* actor_;
 
   scoped_ptr<ProfileImageDownloader> profile_image_downloader_;
+
+  // Time when the profile image download has started.
+  base::Time profile_image_load_start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(UserImageScreen);
 };

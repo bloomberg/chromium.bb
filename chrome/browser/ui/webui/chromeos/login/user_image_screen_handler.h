@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_USER_IMAGE_SCREEN_HANDLER_H_
 
 #include "base/memory/weak_ptr.h"
+#include "base/time.h"
 #include "chrome/browser/chromeos/login/user_image_screen_actor.h"
 #include "chrome/browser/chromeos/options/take_photo_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
@@ -63,6 +64,9 @@ class UserImageScreenHandler : public UserImageScreenActor,
   // Called when user accept the image closing the screen.
   void HandleImageAccepted(const base::ListValue* args);
 
+  // Called when the user image screen has been loaded and shown.
+  void HandleScreenShown(const base::ListValue* args);
+
   // Called when the camera presence check has been completed.
   void OnCameraPresenceCheckDone();
 
@@ -84,6 +88,8 @@ class UserImageScreenHandler : public UserImageScreenActor,
   std::string profile_picture_data_url_;
 
   base::WeakPtrFactory<UserImageScreenHandler> weak_factory_;
+
+  base::Time screen_show_time_;
 
   DISALLOW_COPY_AND_ASSIGN(UserImageScreenHandler);
 };

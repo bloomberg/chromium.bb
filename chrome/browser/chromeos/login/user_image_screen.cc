@@ -71,12 +71,13 @@ void UserImageScreen::Show() {
   }
   actor_->SelectImage(selected_image_index);
 
+  profile_image_downloader_.reset(new ProfileImageDownloader(this));
+  profile_image_downloader_->Start();
+  profile_image_load_start_time_ = base::Time::Now();
+
   WizardAccessibilityHelper::GetInstance()->MaybeSpeak(
       l10n_util::GetStringUTF8(IDS_OPTIONS_CHANGE_PICTURE_DIALOG_TEXT).c_str(),
       false, false);
-
-  profile_image_downloader_.reset(new ProfileImageDownloader(this));
-  profile_image_downloader_->Start();
 }
 
 void UserImageScreen::Hide() {
@@ -181,6 +182,12 @@ void UserImageScreen::Observe(int type,
 }
 
 void UserImageScreen::OnDownloadSuccess(const SkBitmap& image) {
+  DCHECK(profile_image_load_start_time_.is_null());
+
+  base::TimeDelta delta = base::Time::Now() - profile_image_load_start_time_;
+  VLOG(1) << "Profile image download time: " << delta.InSecondsF();
+  UMA_HISTOGRAM_TIMES("UserImage.FirstTimeProfileImageDownload", delta);
+
   // TODO(avayvod): Check for the default image.
   if (actor_)
     actor_->AddProfileImage(image);

@@ -153,17 +153,14 @@ void ProfileImageDownloader::StartFetchingImage() {
 
 ProfileImageDownloader::~ProfileImageDownloader() {}
 
-void ProfileImageDownloader::OnURLFetchComplete(
-    const URLFetcher* source,
-    const GURL& url,
-    const net::URLRequestStatus& status,
-    int response_code,
-    const net::ResponseCookies& cookies,
-    const std::string& data) {
+void ProfileImageDownloader::OnURLFetchComplete(const URLFetcher* source) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (response_code != 200) {
-    LOG(ERROR) << "Response code is " << response_code;
-    LOG(ERROR) << "Url is " << url.spec();
+
+  const std::string& data = source->GetResponseStringRef();
+
+  if (source->response_code() != 200) {
+    LOG(ERROR) << "Response code is " << source->response_code();
+    LOG(ERROR) << "Url is " << source->url().spec();
     LOG(ERROR) << "Data is " << data;
     if (delegate_)
       delegate_->OnDownloadFailure();
@@ -177,7 +174,7 @@ void ProfileImageDownloader::OnURLFetchComplete(
         delegate_->OnDownloadFailure();
       return;
     }
-    VLOG(1) << "Fetching profile image...";
+    VLOG(1) << "Fetching profile image from " << image_url;
     profile_image_fetcher_.reset(
         new URLFetcher(GURL(image_url), URLFetcher::GET, this));
     profile_image_fetcher_->set_request_context(

@@ -45,12 +45,7 @@ class ProfileImageDownloader : public URLFetcher::Delegate,
 
  private:
   // Overriden from URLFetcher::Delegate:
-  virtual void OnURLFetchComplete(const URLFetcher* source,
-                                  const GURL& url,
-                                  const net::URLRequestStatus& status,
-                                  int response_code,
-                                  const net::ResponseCookies& cookies,
-                                  const std::string& data) OVERRIDE;
+  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
 
   // Overriden from ImageDecoder::Delegate:
   virtual void OnImageDecoded(const ImageDecoder* decoder,
@@ -81,4 +76,3 @@ class ProfileImageDownloader : public URLFetcher::Delegate,
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_PROFILE_IMAGE_DOWNLOADER_H_
-

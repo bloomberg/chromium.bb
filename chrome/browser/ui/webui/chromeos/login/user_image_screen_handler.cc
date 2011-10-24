@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/camera_detector.h"
 #include "chrome/browser/chromeos/login/default_user_images.h"
@@ -83,6 +84,7 @@ void UserImageScreenHandler::Show() {
     show_on_init_ = true;
     return;
   }
+  screen_show_time_ = base::Time::Now();
   ShowScreen(kUserImageScreen, NULL);
   // When shown, query camera presence again (first-time query is done by
   // OobeUI::OnLoginPromptVisible).
@@ -144,6 +146,9 @@ void UserImageScreenHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("onUserImageAccepted",
       base::Bind(&UserImageScreenHandler::HandleImageAccepted,
                  base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("onUserImageScreenShown",
+      base::Bind(&UserImageScreenHandler::HandleScreenShown,
+                 base::Unretained(this)));
 }
 
 void UserImageScreenHandler::OnPhotoAccepted(const SkBitmap& photo) {
@@ -194,6 +199,15 @@ void UserImageScreenHandler::HandleImageAccepted(const base::ListValue* args) {
     DCHECK(selected_image_ >= 0);
     screen_->OnDefaultImageSelected(selected_image_);
   }
+}
+
+void UserImageScreenHandler::HandleScreenShown(const base::ListValue* args) {
+  DCHECK(args && args->empty());
+  DCHECK(!screen_show_time_.is_null());
+
+  base::TimeDelta delta = base::Time::Now() - screen_show_time_;
+  VLOG(1) << "Screen load time: " << delta.InSecondsF();
+  UMA_HISTOGRAM_TIMES("UserImage.ScreenIsShownTime", delta);
 }
 
 void UserImageScreenHandler::OnCameraPresenceCheckDone() {
