@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -163,6 +163,22 @@ int GioMemoryFileSnapshotCtor(struct GioMemoryFileSnapshot  *self,
                               char                          *fn);
 
 void  GioMemoryFileSnapshotDtor(struct Gio                    *vself);
+
+
+struct GioPio {
+  struct Gio  base;
+  int         fd;
+  off_t       pos;
+};
+
+int GioPioCtor(struct GioPio *self, int fd);
+ssize_t GioPioRead(struct Gio *vself, void *buf, size_t count);
+ssize_t GioPioWrite(struct Gio *vself, const void *buf, size_t count);
+off_t GioPioSeek(struct Gio *vself, off_t offset, int whence);
+int GioPioFlush(struct Gio *vself);
+int GioPioClose(struct Gio *vself);
+void GioPioDtor(struct Gio *vself);
+
 
 #define ggetc(gp) ({ char ch; (*gp->vtbl->Read)(gp, &ch, 1) == 1 ? ch : EOF;})
 

@@ -22,6 +22,7 @@ env.DualLibrary('gio',
                  'gio_mem.c',
                  'gprintf.c',
                  'gio_mem_snapshot.c',
+                 'gio_pio.c',
                  ])
 
 
@@ -75,3 +76,24 @@ if not env.CrossToolsBuild():
       )
   gtest_env.AddNodeToTestSuite(node, ['small_tests'],
       'run_gio_test')
+
+  gio_test_exe = gtest_env.ComponentProgram(
+      'gio_pio_test',
+      ['gio_pio_test.cc'],
+      EXTRA_LIBS=['gtest', 'gio', 'platform', 'gio_test'])
+  gtest_env.Requires(gio_test_exe, crt)
+
+  # temp file will be removed by gio_pio_test (if it compiles and completes).
+  temppath = tempfile.NamedTemporaryFile(prefix="gio_pio", suffix=".tmp").name
+  node = gtest_env.CommandTest(
+      'gio_pio_test_output.xml.out',
+      command=[gio_test_exe,
+               '--gtest_output=xml:${TARGET}',
+               '-t', temppath,
+     # Note: to regenerate the premade_text/binary_file, use "make_premade.py"
+               '-x', env.File('premade_text_file'),
+               '-b', env.File('premade_binary_file'),
+               ],
+      )
+  gtest_env.AddNodeToTestSuite(node, ['small_tests'],
+      'run_gio_pio_test')
