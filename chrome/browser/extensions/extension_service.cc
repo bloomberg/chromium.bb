@@ -229,7 +229,8 @@ bool ExtensionService::ComponentExtensionInfo::Equals(
 
 ExtensionService::ExtensionRuntimeData::ExtensionRuntimeData()
     : background_page_ready(false),
-      being_upgraded(false) {
+      being_upgraded(false),
+      has_used_webrequest(false) {
 }
 
 ExtensionService::ExtensionRuntimeData::~ExtensionRuntimeData() {
