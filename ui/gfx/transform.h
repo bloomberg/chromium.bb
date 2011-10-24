@@ -69,6 +69,9 @@ class UI_EXPORT Transform {
   // Does the transformation change anything?
   bool HasChange() const;
 
+  // Inverts the transform which is passed in. Returns true if successful.
+  bool GetInverse(Transform* transform) const;
+
   // Applies the transformation on the point. Returns true if the point is
   // transformed successfully.
   void TransformPoint(gfx::Point3f& point) const;

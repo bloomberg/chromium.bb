@@ -102,6 +102,10 @@ bool Transform::HasChange() const {
   return !matrix_.isIdentity();
 }
 
+bool Transform::GetInverse(Transform* transform) const {
+  return matrix_.invert(&transform->matrix_);
+}
+
 void Transform::TransformPoint(gfx::Point& point) const {
   TransformPointInternal(matrix_, point);
 }
