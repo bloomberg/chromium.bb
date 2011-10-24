@@ -89,11 +89,6 @@ class SyncStage(bs.BuilderStage):
                               repository.RepoRepository.DEFAULT_MANIFEST,
                               self._build_config['git_url'])
 
-    # Check that all overlays can be found.
-    self._ExtractOverlays() # Our list of overlays are from pre-sync, refresh
-    for path in bs.BuilderStage.overlays:
-      assert os.path.isdir(path), 'Missing overlay: %s' % path
-
 
 class PatchChangesStage(bs.BuilderStage):
   """Stage that patches a set of Gerrit changes to the buildroot source tree."""
@@ -176,11 +171,6 @@ class ManifestVersionedSyncStage(bs.BuilderStage):
                               self._tracking_branch,
                               next_manifest,
                               self._build_config['git_url'])
-
-    # Check that all overlays can be found.
-    self._ExtractOverlays()
-    for path in bs.BuilderStage.overlays:
-      assert os.path.isdir(path), 'Missing overlay: %s' % path
 
 
 class LKGMCandidateSyncStage(ManifestVersionedSyncStage):
@@ -434,9 +424,10 @@ class UprevStage(bs.BuilderStage):
 
     # Perform other uprevs.
     if self._build_config['uprev']:
+      overlays, _ = self._ExtractOverlays()
       commands.UprevPackages(self._build_root,
                              self._build_config['board'],
-                             bs.BuilderStage.overlays)
+                             overlays)
     elif self._chrome_rev and not chrome_atom_to_build:
       # TODO(sosa): Do this in a better way.
       sys.exit(0)
@@ -1024,7 +1015,8 @@ class UploadPrebuiltsStage(bs.BuilderStage):
 class PublishUprevChangesStage(NonHaltingBuilderStage):
   """Makes uprev changes from pfq live for developers."""
   def _PerformStage(self):
+    _, push_overlays = self._ExtractOverlays()
     commands.UprevPush(self._build_root,
                        self._build_config['board'],
-                       bs.BuilderStage.push_overlays,
+                       push_overlays,
                        self._options.debug)
