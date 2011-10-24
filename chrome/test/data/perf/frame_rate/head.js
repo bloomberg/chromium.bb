@@ -34,6 +34,7 @@
  *      ],
  */
 
+var __initialized = true;
 var __running = false;
 var __running_all = false;
 var __old_title = "";
@@ -52,14 +53,19 @@ var __results;
 
 var __recording = [];
 var __advance_gesture;
-var __gestures = {
-  none: [
-    {"time_ms":1, "y":0},
-    {"time_ms":5000, "y":0}
-  ],
-  steady: [
+
+// This flag indicates whether the test page contains an animation loop
+// For more on testing animated pages, see head_animation.js
+var __animation = false;
+
+var __gesture_library = {
+  init: [
     {"time_ms":1, "y":0},
     {"time_ms":5, "y":10}
+  ],
+  stationary: [
+    {"time_ms":1, "y":0},
+    {"time_ms":5000, "y":0}
   ],
   reading: [
     {"time_ms":1, "y":0},
@@ -161,6 +167,26 @@ var __gestures = {
   ],
 };
 
+// Stretch the duration of a gesture by a given factor
+function __gesture_stretch(gesture, stretch_factor) {
+  // clone the gesture
+  var new_gesture = JSON.parse(JSON.stringify(gesture));
+  for (var i = 0; i < new_gesture.length; ++i) {
+    new_gesture[i].time_ms *= stretch_factor;
+  }
+  return new_gesture;
+}
+
+// Gesture set to use for testing, initialized with default gesture set.
+// Redefine in test file to use a different set of gestures.
+var __gestures = {
+  none: __gesture_library["stationary"],
+  steady: __gesture_library["init"],
+  reading: __gesture_library["reading"],
+  mouse_wheel: __gesture_library["mouse_wheel"],
+  mac_fling: __gesture_library["mac_fling"],
+};
+
 function __init_stats() {
   __t_last = undefined;
   __t_est = undefined;
@@ -169,6 +195,25 @@ function __init_stats() {
   __t_count = 0;
 }
 __init_stats();
+
+function __init_raf() {
+  if ("requestAnimationFrame" in window)
+    __raf = requestAnimationFrame;
+  else if ("webkitRequestAnimationFrame" in window)
+    __raf = webkitRequestAnimationFrame;
+  else if ("mozRequestAnimationFrame" in window)
+    __raf = mozRequestAnimationFrame;
+  else if ("oRequestAnimationFrame" in window)
+    __raf = oRequestAnimationFrame;
+  else if ("msRequestAnimationFrame" in window)
+    __raf = msRequestAnimationFrame;
+  else
+    // No raf implementation available, fake it with 16ms timeouts
+    __raf = function(callback, element) {
+      setTimeout(callback, 16);
+    }
+}
+__init_raf();
 
 function __calc_results() {
   var M = __t_est_total / __t_count;
@@ -328,14 +373,12 @@ function __create_repeating_gesture_function(gestures) {
 }
 
 function __sched_update() {
-  if (!__raf) {
-    if ("webkitRequestAnimationFrame" in window)
-      __raf = webkitRequestAnimationFrame;
-    else if ("mozRequestAnimationFrame" in window)
-      __raf = mozRequestAnimationFrame;
-  }
   __raf(function() {
     __raf_is_live = true;
+    // In case __raf falls back to using setTimeout, we must schedule the next
+    // update before rendering the current update to help maintain the
+    // regularity of update intervals.
+    __sched_update();
     if (__running) {
       // Only update the FPS if a gesture movement occurs. Otherwise, the frame
       // rate average becomes inaccurate after any pause.
@@ -344,7 +387,6 @@ function __sched_update() {
       else
         __t_last = new Date().getTime();
     }
-    __sched_update();
   }, document.body);
 }
 
@@ -361,8 +403,13 @@ function __start(gesture_function) {
     return;
   // Attempt to create a gesture function from a string name.
   if (typeof gesture_function == "string") {
-    if (!__gestures[gesture_function])
-      throw new Error("Unrecognized gesture name");
+    if (!__gestures[gesture_function]) {
+      if (!__gesture_library[gesture_function])
+        throw new Error("Unrecognized gesture name");
+      else
+        gesture_function = __create_repeating_gesture_function(
+                            __gesture_library[gesture_function]);
+    }
     else
       gesture_function = __create_repeating_gesture_function(
                             __gestures[gesture_function]);
@@ -374,7 +421,7 @@ function __start(gesture_function) {
   __advance_gesture = gesture_function;
   __t_start = new Date().getTime();
   __running = true;
-  if (!__raf_is_live) {
+  if (!__raf_is_live && !__animation) {
     __sched_update();
   }
 }
@@ -392,8 +439,8 @@ function __start_all() {
     __queued_gesture_functions.push(gesture);
   }
   __running_all = true;
-  // Run steady gesture once to cache the webpage layout for subsequent tests.
-  __start("steady");
+  // Run init gesture once to cache the webpage layout for subsequent tests.
+  __start("init");
 }
 
 function __stop() {

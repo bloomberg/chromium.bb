@@ -15,10 +15,33 @@
 #include "chrome/test/ui/javascript_test_util.h"
 #include "chrome/test/ui/ui_perf_test.h"
 #include "net/base/net_util.h"
+#include "ui/gfx/gl/gl_switches.h"
 
 namespace {
 
-class FrameRateTest : public UIPerfTest {
+enum FrameRateTestFlags {
+  kMakeBodyComposited = 1 << 0,
+  kDisableVsync       = 1 << 1,
+  kDisableGpu         = 1 << 2,
+  kUseReferenceBuild  = 1 << 3,
+};
+
+std::string GetSuffixForTestFlags(int flags) {
+  std::string suffix;
+  if (flags & kMakeBodyComposited)
+    suffix += "_comp";
+  if (flags & kDisableVsync)
+    suffix += "_novsync";
+  if (flags & kDisableGpu)
+    suffix += "_nogpu";
+  if (flags & kUseReferenceBuild)
+    suffix += "_ref";
+  return suffix;
+}
+
+class FrameRateTest
+  : public UIPerfTest
+  , public ::testing::WithParamInterface<int> {
  public:
   FrameRateTest() {
     show_window_ = true;
@@ -41,18 +64,29 @@ class FrameRateTest : public UIPerfTest {
   }
 
   virtual void SetUp() {
-    // UI tests boot up render views starting from about:blank. This causes the
-    // renderer to start up thinking it cannot use the GPU. To work around that,
-    // and allow the frame rate test to use the GPU, we must pass
-    // kAllowWebUICompositing.
+    if (GetParam() & kUseReferenceBuild) {
+      UseReferenceBuild();
+    }
+
+    // UI tests boot up render views starting from about:blank. This causes
+    // the renderer to start up thinking it cannot use the GPU. To work
+    // around that, and allow the frame rate test to use the GPU, we must
+    // pass kAllowWebUICompositing.
     launch_arguments_.AppendSwitch(switches::kAllowWebUICompositing);
+
+    if (GetParam() & kDisableGpu) {
+      launch_arguments_.AppendSwitch(switches::kDisableAcceleratedCompositing);
+      launch_arguments_.AppendSwitch(switches::kDisableExperimentalWebGL);
+    }
+
+    if (GetParam() & kDisableVsync) {
+      launch_arguments_.AppendSwitch(switches::kDisableGpuVsync);
+    }
 
     UIPerfTest::SetUp();
   }
 
-  void RunTest(const std::string& name,
-               const std::string& suffix,
-               bool make_body_composited) {
+  void RunTest(const std::string& name) {
     FilePath test_path = GetDataPath(name);
     ASSERT_TRUE(file_util::DirectoryExists(test_path))
         << "Missing test directory: " << test_path.value();
@@ -65,10 +99,15 @@ class FrameRateTest : public UIPerfTest {
     ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
               tab->NavigateToURL(net::FilePathToFileURL(test_path)));
 
-    if (make_body_composited) {
+    if (GetParam() & kMakeBodyComposited) {
       ASSERT_TRUE(tab->NavigateToURLAsync(
-          GURL("javascript:__make_body_composited();")));
+        GURL("javascript:__make_body_composited();")));
     }
+
+    // Block until initialization completes.
+    ASSERT_TRUE(WaitUntilJavaScriptCondition(
+        tab, L"", L"window.domAutomationController.send(__initialized);",
+        TestTimeouts::large_test_timeout_ms()));
 
     // Start the tests.
     ASSERT_TRUE(tab->NavigateToURLAsync(GURL("javascript:__start_all();")));
@@ -95,7 +134,8 @@ class FrameRateTest : public UIPerfTest {
     ASSERT_TRUE(results.find("means") != results.end());
     ASSERT_TRUE(results.find("sigmas") != results.end());
 
-    std::string trace_name = "fps" + suffix;
+    std::string trace_name = "fps";
+    trace_name += GetSuffixForTestFlags(GetParam());
     printf("GESTURES %s: %s= [%s] [%s] [%s]\n", name.c_str(),
                                                 trace_name.c_str(),
                                                 results["gestures"].c_str(),
@@ -108,39 +148,61 @@ class FrameRateTest : public UIPerfTest {
   }
 };
 
-class FrameRateTest_Reference : public FrameRateTest {
- public:
-  void SetUp() {
-    UseReferenceBuild();
-    FrameRateTest::SetUp();
-  }
-};
+int kTestVariant_Plain(0);
+int kTestVariant_Comp(kMakeBodyComposited);
+int kTestVariant_Reference(kUseReferenceBuild);
+int kTestVariant_Comp_Reference(kMakeBodyComposited | kUseReferenceBuild);
+int kTestVariant_NoVsync(kDisableVsync);
+int kTestVariant_NoGpu(kDisableGpu);
+int kTestVariant_NoVsync_Reference(kDisableVsync | kUseReferenceBuild);
 
-#define FRAME_RATE_TEST(content) \
-TEST_F(FrameRateTest, content) { \
-  RunTest(#content, "", false); \
-} \
-TEST_F(FrameRateTest_Reference, content) { \
-  RunTest(#content, "_ref", false); \
-}
-
+// Must use a different class name to avoid test instantiation conflicts
+// with FrameRateTest (used above). An alias is good enough.
+typedef FrameRateTest FrameRateCompositingTest;
 
 // Tests that trigger compositing with a -webkit-translateZ(0)
 #define FRAME_RATE_TEST_WITH_AND_WITHOUT_ACCELERATED_COMPOSITING(content) \
-TEST_F(FrameRateTest, content) { \
-  RunTest(#content, "", false); \
-} \
-TEST_F(FrameRateTest, content ## _comp) { \
-  RunTest(#content, "_comp", true); \
-} \
-TEST_F(FrameRateTest_Reference, content) { \
-  RunTest(#content, "_ref", false); \
-} \
-TEST_F(FrameRateTest_Reference, content ## _comp) { \
-  RunTest(#content, "_comp_ref", true); \
+TEST_P(FrameRateCompositingTest, content) { \
+  RunTest(#content); \
 }
+
+INSTANTIATE_TEST_CASE_P(, FrameRateCompositingTest, ::testing::Values(
+                        kTestVariant_Plain,
+                        kTestVariant_Comp,
+                        kTestVariant_Reference,
+                        kTestVariant_Comp_Reference));
 
 FRAME_RATE_TEST_WITH_AND_WITHOUT_ACCELERATED_COMPOSITING(blank);
 FRAME_RATE_TEST_WITH_AND_WITHOUT_ACCELERATED_COMPOSITING(googleblog);
+
+// Must use a different class name to avoid test instantiation conflicts
+// with FrameRateTest (used above). An alias is good enough.
+typedef FrameRateTest FrameRateCanvasTest;
+
+// Tests for animated 2D canvas content
+#define FRAME_RATE_TEST_CANVAS(content) \
+TEST_P(FrameRateCanvasTest, content) { \
+  RunTest(#content); \
+} \
+
+INSTANTIATE_TEST_CASE_P(, FrameRateCanvasTest, ::testing::Values(
+                        kTestVariant_Plain,
+                        kTestVariant_NoGpu,
+                        kTestVariant_Reference));
+
+typedef FrameRateTest FrameRateNoVsyncCanvasTest;
+
+// Tests for animated 2D canvas content with and without disabling vsync
+#define FRAME_RATE_TEST_CANVAS_WITH_AND_WITHOUT_NOVSYNC(content) \
+TEST_P(FrameRateNoVsyncCanvasTest, content) { \
+  RunTest(#content); \
+} \
+
+INSTANTIATE_TEST_CASE_P(, FrameRateNoVsyncCanvasTest, ::testing::Values(
+                        kTestVariant_Plain,
+                        kTestVariant_NoVsync,
+                        kTestVariant_NoGpu,
+                        kTestVariant_Reference,
+                        kTestVariant_NoVsync_Reference));
 
 }  // namespace
