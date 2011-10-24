@@ -116,9 +116,10 @@ NaClErrorCode NaClMprotectGuards(struct NaClApp *nap) {
      * the base of the region allocated in Chrome by nacl_helper.
      *
      * It is normal for mmap() calls to fail with EPERM if the indicated
-     * page is less than vm.mmap_min_addr (see /proc/sys/vm/mmap_min_addr).
-     * Hence, we adaptively move the bottom of the region up a page at a
-     * time until we succeed in getting a reservation.
+     * page is less than vm.mmap_min_addr (see /proc/sys/vm/mmap_min_addr),
+     * or with EACCES under SELinux if less than CONFIG_LSM_MMAP_MIN_ADDR
+     * (64k).  Hence, we adaptively move the bottom of the region up a page
+     * at a time until we succeed in getting a reservation.
      */
     for (page_addr = 0;
          page_addr < NACL_SYSCALL_START_ADDR;
@@ -131,7 +132,8 @@ NaClErrorCode NaClMprotectGuards(struct NaClApp *nap) {
       if (page_addr == (uintptr_t)mmap_rval) {
         /* Success; the pages are now protected. */
         break;
-      } else if (MAP_FAILED == mmap_rval && EPERM == errno) {
+      } else if (MAP_FAILED == mmap_rval &&
+                 (EPERM == errno || EACCES == errno)) {
         /* Normal; this is an invalid page for this process and
          * doesn't need to be protected. Continue with next page.
          */
