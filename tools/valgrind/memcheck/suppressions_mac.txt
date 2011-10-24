@@ -292,6 +292,32 @@
    fun:+[NSThemeFrame initialize]
    fun:_class_initialize
 }
+{
+   # QTKit leak. See http://crbug.com/100772 and rdar://10319535.
+   bug_100772
+   Memcheck:Leak
+   fun:calloc
+   fun:QTMLCreateMutex
+   fun:WarholCreateGlobals
+   fun:INIT_QuickTimeLibInternal
+   fun:pthread_once
+   fun:INIT_QuickTimeLib
+   fun:EnterMovies_priv
+   fun:EnterMovies
+   fun:TundraUnitInputFromTSFileEntry
+   fun:TundraUnitVDIGInputEntry
+   fun:TundraUnitCreateFromDescription
+   fun:+[QTCaptureVDIGDevice _refreshDevices]
+   fun:+[QTCaptureVDIGDevice devicesWithIOType:]
+   fun:+[QTCaptureDevice devicesWithIOType:]
+   fun:+[QTCaptureDevice inputDevices]
+   fun:+[QTCaptureDevice inputDevicesWithMediaType:]
+   fun:+[VideoCaptureDeviceQTKit deviceNames]
+   fun:_ZN5media18VideoCaptureDevice14GetDeviceNamesEPSt4listINS0_4NameESaIS2_EE
+   fun:_ZN5media21VideoCaptureDeviceMac4InitEv
+   fun:_ZN5media18VideoCaptureDevice6CreateERKNS0_4NameE
+   fun:_ZN5media45VideoCaptureDeviceTest_OpenInvalidDevice_Test8TestBodyEv
+}
 
 # 2. Intentional unit test errors, stuff that is somehow a false positive
 # in our own code, or stuff that is so trivial it's not worth fixing.
@@ -1909,31 +1935,6 @@
    fun:CGContextDrawImage
    fun:_Z23PlotISImageRefInContextPvP9CGContext6CGRectssPK8RGBColormPK20_ISImageRefCallbacks
    fun:PlotIconRefInContext
-}
-{
-   bug_100772
-   Memcheck:Leak
-   fun:calloc
-   fun:QTMLCreateMutex
-   fun:WarholCreateGlobals
-   fun:INIT_QuickTimeLibInternal
-   fun:pthread_once
-   fun:INIT_QuickTimeLib
-   fun:EnterMovies_priv
-   fun:EnterMovies
-   fun:TundraUnitInputFromTSFileEntry
-   fun:TundraUnitVDIGInputEntry
-   fun:TundraUnitCreateFromDescription
-   fun:+[QTCaptureVDIGDevice _refreshDevices]
-   fun:+[QTCaptureVDIGDevice devicesWithIOType:]
-   fun:+[QTCaptureDevice devicesWithIOType:]
-   fun:+[QTCaptureDevice inputDevices]
-   fun:+[QTCaptureDevice inputDevicesWithMediaType:]
-   fun:+[VideoCaptureDeviceQTKit deviceNames]
-   fun:_ZN5media18VideoCaptureDevice14GetDeviceNamesEPSt4listINS0_4NameESaIS2_EE
-   fun:_ZN5media21VideoCaptureDeviceMac4InitEv
-   fun:_ZN5media18VideoCaptureDevice6CreateERKNS0_4NameE
-   fun:_ZN5media45VideoCaptureDeviceTest_OpenInvalidDevice_Test8TestBodyEv
 }
 {
    bug_100983
