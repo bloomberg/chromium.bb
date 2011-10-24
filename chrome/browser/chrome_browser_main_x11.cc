@@ -5,6 +5,7 @@
 #include "chrome/browser/chrome_browser_main.h"
 
 #include "base/debug/debugger.h"
+#include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "content/browser/browser_thread.h"
@@ -55,6 +56,7 @@ int BrowserX11IOErrorHandler(Display* d) {
   if (!g_in_x11_io_error_handler) {
     g_in_x11_io_error_handler = true;
     LOG(ERROR) << "X IO Error detected";
+    browser_shutdown::SetShuttingDownWithoutClosingBrowsers(true);
     BrowserList::SessionEnding();
   }
 

@@ -205,15 +205,28 @@ bool AreAllBrowsersCloseable() {
   return true;
 }
 
+// Emits APP_TERMINATING notification. It is guaranteed that the
+// notification is sent only once.
+void NotifyAppTerminating() {
+  static bool notified = false;
+  if (notified)
+    return;
+  notified = true;
+  content::NotificationService::current()->Notify(
+      content::NOTIFICATION_APP_TERMINATING,
+      content::NotificationService::AllSources(),
+      content::NotificationService::NoDetails());
+}
+
 #if defined(OS_CHROMEOS)
 
-bool signout = false;
+// Whether a session manager requested to shutdown.
+bool g_session_manager_requested_shutdown = true;
 
 // Fast shutdown for ChromeOS. It tells session manager to start
 // shutdown process when closing browser windows won't be canceled.
 // Returns true if fast shutdown is successfully started.
 bool FastShutdown() {
-  signout = true;
   if (chromeos::CrosLibrary::Get()->EnsureLoaded()
       && AreAllBrowsersCloseable()) {
     BrowserList::NotifyAndTerminate(true);
@@ -291,16 +304,17 @@ void BrowserList::AttemptExitInternal() {
 // static
 void BrowserList::NotifyAndTerminate(bool fast_path) {
 #if defined(OS_CHROMEOS)
-  if (!signout)
+  static bool notified = false;
+  // Don't ask SessionManager to shutdown if
+  // a) a shutdown request has already been sent.
+  // b) shutdown request comes from session manager.
+  if (notified || g_session_manager_requested_shutdown)
     return;
+  notified = true;
 #endif
 
-  if (fast_path) {
-    content::NotificationService::current()->Notify(
-        content::NOTIFICATION_APP_TERMINATING,
-        content::NotificationService::AllSources(),
-        content::NotificationService::NoDetails());
-  }
+  if (fast_path)
+    NotifyAppTerminating();
 
 #if defined(OS_CHROMEOS)
   NotifyWindowManagerAboutSignout();
@@ -363,10 +377,7 @@ void BrowserList::RemoveBrowser(Browser* browser) {
     // to call ProfileManager::ShutdownSessionServices() as part of the
     // shutdown, because Browser::WindowClosing() already makes sure that the
     // SessionService is created and notified.
-    content::NotificationService::current()->Notify(
-        content::NOTIFICATION_APP_TERMINATING,
-        content::NotificationService::AllSources(),
-        content::NotificationService::NoDetails());
+    NotifyAppTerminating();
     AllBrowsersClosedAndAppExiting();
   }
 }
@@ -385,11 +396,6 @@ void BrowserList::RemoveObserver(BrowserList::Observer* observer) {
 void BrowserList::CloseAllBrowsers() {
   bool session_ending =
       browser_shutdown::GetShutdownType() == browser_shutdown::END_SESSION;
-  bool force_exit = false;
-#if defined(USE_X11)
-  if (session_ending)
-    force_exit = true;
-#endif
   // Tell everyone that we are shutting down.
   browser_shutdown::SetTryingToQuit(true);
 
@@ -399,10 +405,12 @@ void BrowserList::CloseAllBrowsers() {
 
   // If there are no browsers, send the APP_TERMINATING action here. Otherwise,
   // it will be sent by RemoveBrowser() when the last browser has closed.
-  if (force_exit || browsers_.empty()) {
+  if (browser_shutdown::ShuttingDownWithoutClosingBrowsers() ||
+      browsers_.empty()) {
     NotifyAndTerminate(true);
     return;
   }
+
 #if defined(OS_CHROMEOS)
   chromeos::BootTimesLoader::Get()->AddLogoutTimeMarker(
       "StartedClosingWindows", false);
@@ -470,6 +478,7 @@ void BrowserList::AttemptUserExit() {
       state->SavePersistentPrefs();
     }
   }
+  g_session_manager_requested_shutdown = false;
   if (FastShutdown())
     return;
 #else
@@ -508,10 +517,18 @@ void BrowserList::AttemptExit() {
 }
 
 #if defined(OS_CHROMEOS)
+// A function called when SIGTERM is received.
 // static
 void BrowserList::ExitCleanly() {
-  // We always mark exit cleanly.
+  // We always mark exit cleanly because SessionManager may kill
+  // chrome in 3 seconds after SIGTERM.
   g_browser_process->EndSession();
+
+  // Don't block when SIGTERM is received. AreaAllBrowsersCloseable()
+  // can be false in following cases. a) power-off b) signout from
+  // screen locker.
+  if (!AreAllBrowsersCloseable())
+    browser_shutdown::OnShutdownStarting(browser_shutdown::END_SESSION);
   AttemptExitInternal();
 }
 #endif

@@ -59,6 +59,9 @@ namespace browser_shutdown {
 // Whether the browser is trying to quit (e.g., Quit chosen from menu).
 bool g_trying_to_quit = false;
 
+// Whether the browser should quit without closing browsers.
+bool g_shutting_down_without_closing_browsers = false;
+
 Time shutdown_started_;
 ShutdownType shutdown_type_ = NOT_VALID;
 int shutdown_num_processes_;
@@ -309,11 +312,11 @@ bool IsTryingToQuit() {
 }
 
 bool ShuttingDownWithoutClosingBrowsers() {
-#if defined(USE_X11)
-  if (GetShutdownType() == browser_shutdown::END_SESSION)
-    return true;
-#endif
-  return false;
+  return g_shutting_down_without_closing_browsers;
+}
+
+void SetShuttingDownWithoutClosingBrowsers(bool without_close) {
+  g_shutting_down_without_closing_browsers = without_close;
 }
 
 }  // namespace browser_shutdown

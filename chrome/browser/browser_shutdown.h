@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -66,10 +66,14 @@ void SetTryingToQuit(bool quitting);
 // General accessor.
 bool IsTryingToQuit();
 
-// This is true on X during an END_SESSION, when we can no longer depend
-// on the X server to be running. As a result we don't explicitly close the
-// browser windows, which can lead to conditions which would fail checks.
+// This is true on X during an END_SESSION initiated by X IO Error, when we
+// can no longer depend on the X server to be running. As a result we don't
+// explicitly close the browser windows, which can lead to conditions which
+// would fail checks.
 bool ShuttingDownWithoutClosingBrowsers();
+
+// Sets the ShuttingDownWithoutClosingBrowsers flag.
+void SetShuttingDownWithoutClosingBrowsers(bool without_close);
 
 }  // namespace browser_shutdown
 
