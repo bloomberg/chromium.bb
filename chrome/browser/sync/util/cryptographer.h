@@ -12,6 +12,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
 #include "chrome/browser/sync/protocol/nigori_specifics.pb.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/util/nigori.h"
@@ -43,6 +44,31 @@ struct KeyParams {
 // delayed until after it can be decrypted.
 class Cryptographer {
  public:
+  // All Observer methods are done synchronously, so they're called
+  // under a transaction (since all Cryptographer operations are done
+  // under a transaction).
+  class Observer {
+   public:
+    // Called when the set of encrypted types or the encrypt
+    // everything flag has been changed.  Note that this doesn't
+    // necessarily mean that encryption has completed for the given
+    // types.
+    //
+    // |encrypted_types| will always be a superset of
+    // SensitiveTypes().  If |encrypt_everything| is true,
+    // |encrypted_types| will be the set of all known types.
+    //
+    // Until this function is called, observers can assume that the
+    // set of encrypted types is SensitiveTypes() and that the encrypt
+    // everything flag is false.
+    virtual void OnEncryptedTypesChanged(
+        const syncable::ModelTypeSet& encrypted_types,
+        bool encrypt_everything) = 0;
+
+   protected:
+    virtual ~Observer();
+  };
+
   Cryptographer();
   ~Cryptographer();
 
@@ -53,6 +79,10 @@ class Cryptographer {
     SUCCESS,
     NEEDS_PASSPHRASE
   };
+
+  // Manage observers.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // |restored_bootstrap_token| can be provided via this method to bootstrap
   // Cryptographer instance into the ready state (is_ready will be true).
@@ -142,23 +172,29 @@ class Cryptographer {
   // Update the nigori to reflect the current set of encrypted types.
   void UpdateNigoriFromEncryptedTypes(sync_pb::NigoriSpecifics* nigori) const;
 
-  // Setter/getter for whether all current and future datatypes should be
-  // encrypted. Once set you cannot unset without reading from a new nigori
-  // node.
+  // Setter/getter for whether all current and future datatypes should
+  // be encrypted. Once set you cannot unset without reading from a
+  // new nigori node.  set_encrypt_everything() emits a notification
+  // the first time it's called.
   void set_encrypt_everything();
   bool encrypt_everything() const;
-
-  // Set all types in |new_types| as requiring encryption (in addition to the
-  // currently encrypted types). Note: once a type requires encryption it can
-  // never stop requiring encryption without clearing the server data.
-  void SetEncryptedTypes(syncable::ModelTypeSet new_types);
 
   // Return the set of encrypted types.
   syncable::ModelTypeSet GetEncryptedTypes() const;
 
+  // Forwards to SetEncryptedTypes.
+  void SetEncryptedTypesForTest(
+      const syncable::ModelTypeSet& encrypted_types);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(CryptographerTest, PackUnpack);
   typedef std::map<std::string, linked_ptr<const Nigori> > NigoriMap;
+
+  // Changes the set of encrypted types and emits a notification if
+  // necessary.
+  void SetEncryptedTypes(const syncable::ModelTypeSet& encrypted_types);
+
+  void EmitEncryptedTypesChangedNotification();
 
   // Helper method to instantiate Nigori instances for each set of key
   // parameters in |bag| and setting the default encryption key to
@@ -172,6 +208,8 @@ class Cryptographer {
   // persistence by sync infrastructure.
   bool PackBootstrapToken(const Nigori* nigori, std::string* pack_into) const;
   Nigori* UnpackBootstrapToken(const std::string& token) const;
+
+  ObserverList<Observer> observers_;
 
   NigoriMap nigoris_;  // The Nigoris we know about, mapped by key name.
   NigoriMap::value_type* default_nigori_;  // The Nigori used for encryption.

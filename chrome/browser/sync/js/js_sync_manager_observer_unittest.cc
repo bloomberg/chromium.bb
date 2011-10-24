@@ -58,12 +58,16 @@ TEST_F(JsSyncManagerObserverTest, NoArgNotifiations) {
   EXPECT_CALL(mock_js_event_handler_,
               HandleJsEvent("onClearServerDataFailed",
                             HasDetails(JsEventDetails())));
+  EXPECT_CALL(mock_js_event_handler_,
+              HandleJsEvent("onEncryptionComplete",
+                            HasDetails(JsEventDetails())));
 
   js_sync_manager_observer_.OnInitializationComplete(WeakHandle<JsBackend>(),
       true);
   js_sync_manager_observer_.OnStopSyncingPermanently();
   js_sync_manager_observer_.OnClearServerDataSucceeded();
   js_sync_manager_observer_.OnClearServerDataFailed();
+  js_sync_manager_observer_.OnEncryptionComplete();
   PumpLoop();
 }
 
@@ -190,10 +194,12 @@ TEST_F(JsSyncManagerObserverTest, SensitiveNotifiations) {
   PumpLoop();
 }
 
-TEST_F(JsSyncManagerObserverTest, OnEncryptionComplete) {
+TEST_F(JsSyncManagerObserverTest, OnEncryptedTypesChanged) {
   DictionaryValue expected_details;
   ListValue* encrypted_type_values = new ListValue();
+  const bool encrypt_everything = false;
   expected_details.Set("encryptedTypes", encrypted_type_values);
+  expected_details.SetBoolean("encryptEverything", encrypt_everything);
   syncable::ModelTypeSet encrypted_types;
 
   for (int i = syncable::FIRST_REAL_MODEL_TYPE;
@@ -205,10 +211,11 @@ TEST_F(JsSyncManagerObserverTest, OnEncryptionComplete) {
   }
 
   EXPECT_CALL(mock_js_event_handler_,
-              HandleJsEvent("onEncryptionComplete",
-                           HasDetailsAsDictionary(expected_details)));
+              HandleJsEvent("onEncryptedTypesChanged",
+                            HasDetailsAsDictionary(expected_details)));
 
-  js_sync_manager_observer_.OnEncryptionComplete(encrypted_types);
+  js_sync_manager_observer_.OnEncryptedTypesChanged(
+      encrypted_types, encrypt_everything);
   PumpLoop();
 }
 

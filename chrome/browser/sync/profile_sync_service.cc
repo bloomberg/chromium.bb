@@ -111,6 +111,8 @@ ProfileSyncService::ProfileSyncService(ProfileSyncFactory* factory,
       scoped_runnable_method_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       expect_sync_configuration_aborted_(false),
       clear_server_data_state_(CLEAR_NOT_STARTED),
+      encrypted_types_(browser_sync::Cryptographer::SensitiveTypes()),
+      encrypt_everything_(false),
       encryption_pending_(false),
       auto_start_enabled_(false),
       failed_datatypes_handler_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
@@ -423,6 +425,8 @@ void ProfileSyncService::Shutdown(bool sync_disabled) {
   backend_initialized_ = false;
   cached_passphrases_ = CachedPassphrases();
   encryption_pending_ = false;
+  encrypt_everything_ = false;
+  encrypted_types_ = browser_sync::Cryptographer::SensitiveTypes();
   passphrase_required_reason_ = sync_api::REASON_PASSPHRASE_NOT_REQUIRED;
   last_attempted_user_email_.clear();
   last_auth_error_ = GoogleServiceAuthError::None();
@@ -838,29 +842,29 @@ void ProfileSyncService::ResolvePassphraseRequired() {
   NotifyObservers();
 }
 
-void ProfileSyncService::OnEncryptionComplete(
-    const syncable::ModelTypeSet& encrypted_types) {
-  if (encryption_pending_) {
-    syncable::ModelTypeSet registered_types;
-    GetRegisteredDataTypes(&registered_types);
-    bool encryption_complete = true;
-    for (syncable::ModelTypeSet::const_iterator it = registered_types.begin();
-         it != registered_types.end();
-         ++it) {
-      if (encrypted_types.count(*it) == 0) {
-        // One of our types is not yet encrypted - keep waiting.
-        encryption_complete = false;
-        break;
-      }
-    }
-    if (encryption_complete) {
-      encryption_pending_ = false;
-      // The user had chosen to encrypt datatypes. This is the last thing to
-      // complete, so now that we're done notify the UI.
-      wizard_.Step(SyncSetupWizard::DONE);
-    }
+void ProfileSyncService::OnEncryptedTypesChanged(
+    const syncable::ModelTypeSet& encrypted_types,
+    bool encrypt_everything) {
+  encrypted_types_ = encrypted_types;
+  encrypt_everything_ = encrypt_everything;
+  VLOG(1) << "Encrypted types changed to "
+          << syncable::ModelTypeSetToString(encrypted_types_)
+          << " (encrypt everything is set to "
+          << (encrypt_everything_ ? "true" : "false") << ")";
+  DCHECK_GT(encrypted_types_.count(syncable::PASSWORDS), 0u);
+}
+
+void ProfileSyncService::OnEncryptionComplete() {
+  VLOG(1) << "Encryption complete";
+  if (encryption_pending_ && encrypt_everything_) {
+    encryption_pending_ = false;
+    // The user had chosen to encrypt datatypes. This is the last thing to
+    // complete, so now that we're done notify the UI.
+    wizard_.Step(SyncSetupWizard::DONE);
+    // This is to nudge the integration tests when encryption is
+    // finished.
+    NotifyObservers();
   }
-  NotifyObservers();
 }
 
 void ProfileSyncService::OnMigrationNeededForTypes(
@@ -1324,37 +1328,35 @@ void ProfileSyncService::SetPassphrase(const std::string& passphrase,
 }
 
 void ProfileSyncService::SetEncryptEverything(bool encrypt_everything) {
+  // Tests override sync_initialized() to always return true, so we
+  // must check that instead of |backend_initialized_|.
+  // TODO(akalin): Fix the above. :/
+  DCHECK(sync_initialized());
   encryption_pending_ = encrypt_everything;
+  // Callers shouldn't try to disable encrypt everything once it has
+  // already succeeded.
+  DCHECK(!encrypt_everything_);
 }
 
 bool ProfileSyncService::encryption_pending() const {
+  // We may be called during the setup process before we're
+  // initialized (via IsEncryptedDatatypeEnabled and
+  // IsPassphraseRequiredForDecryption).
   return encryption_pending_;
 }
 
 bool ProfileSyncService::EncryptEverythingEnabled() const {
-  if (!backend_.get() || !backend_initialized_) {
-    NOTREACHED() << "Cannot check encryption without initialized backend.";
-    return false;
-  }
-  return backend_->EncryptEverythingEnabled();
+  DCHECK(backend_initialized_);
+  return encrypt_everything_;
 }
 
-// This will open a transaction to get the encrypted types. Do not call this
-// if you already have a transaction open.
 void ProfileSyncService::GetEncryptedDataTypes(
     syncable::ModelTypeSet* encrypted_types) const {
   CHECK(encrypted_types);
-  if (backend_.get()) {
-    *encrypted_types = backend_->GetEncryptedDataTypes();
-    DCHECK(encrypted_types->count(syncable::PASSWORDS));
-  } else {
-    // Either we are in an unrecoverable error or the sync is not yet done
-    // initializing. In either case just return the sensitive types. During
-    // sync initialization the UI might need to know what our encrypted
-    // types are.
-    *encrypted_types = browser_sync::Cryptographer::SensitiveTypes();
-    DCHECK(encrypted_types->count(syncable::PASSWORDS));
-  }
+  // We may be called during the setup process before we're
+  // initialized.  In this case, we default to the sensitive types.
+  *encrypted_types = encrypted_types_;
+  DCHECK_GT(encrypted_types->count(syncable::PASSWORDS), 0u);
 }
 
 void ProfileSyncService::OnSyncManagedPrefChange(bool is_sync_managed) {

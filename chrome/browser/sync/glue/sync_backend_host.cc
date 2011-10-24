@@ -305,20 +305,6 @@ void SyncBackendHost::EnableEncryptEverything() {
                        &SyncBackendHost::Core::DoEnableEncryptEverything));
 }
 
-bool SyncBackendHost::EncryptEverythingEnabled() const {
-  if (initialization_state_ <= NOT_INITIALIZED) {
-    NOTREACHED() << "Cannot check encryption status without first "
-                 << "initializing backend.";
-    return false;
-  }
-  return core_->sync_manager()->EncryptEverythingEnabled();
-}
-
-syncable::ModelTypeSet SyncBackendHost::GetEncryptedDataTypes() const {
-  DCHECK_GT(initialization_state_, NOT_INITIALIZED);
-  return core_->sync_manager()->GetEncryptedDataTypes();
-}
-
 void SyncBackendHost::ActivateDataType(
     syncable::ModelType type, ModelSafeGroup group,
     ChangeProcessor* change_processor) {
@@ -503,15 +489,27 @@ void SyncBackendHost::Core::OnClearServerDataSucceeded() {
       &Core::HandleClearServerDataSucceededOnFrontendLoop));
 }
 
-void SyncBackendHost::Core::OnEncryptionComplete(
-    const syncable::ModelTypeSet& encrypted_types) {
+void SyncBackendHost::Core::OnEncryptedTypesChanged(
+    const syncable::ModelTypeSet& encrypted_types,
+    bool encrypt_everything) {
   if (!sync_loop_)
     return;
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  // NOTE: We're in a transaction.
   host_->frontend_loop_->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &Core::NotifyEncryptionComplete,
-                        encrypted_types));
+      base::Bind(&Core::NotifyEncryptedTypesChanged, this,
+                 encrypted_types, encrypt_everything));
+}
+
+void SyncBackendHost::Core::OnEncryptionComplete() {
+  if (!sync_loop_)
+    return;
+  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  // NOTE: We're in a transaction.
+  host_->frontend_loop_->PostTask(
+      FROM_HERE,
+      base::Bind(&Core::NotifyEncryptionComplete, this));
 }
 
 void SyncBackendHost::Core::OnActionableError(
@@ -794,12 +792,21 @@ void SyncBackendHost::Core::NotifyUpdatedToken(const std::string& token) {
       content::Details<const TokenAvailableDetails>(&details));
 }
 
-void SyncBackendHost::Core::NotifyEncryptionComplete(
-    const syncable::ModelTypeSet& encrypted_types) {
+void SyncBackendHost::Core::NotifyEncryptedTypesChanged(
+    const syncable::ModelTypeSet& encrypted_types,
+    bool encrypt_everything) {
   if (!host_)
     return;
   DCHECK_EQ(MessageLoop::current(), host_->frontend_loop_);
-  host_->frontend_->OnEncryptionComplete(encrypted_types);
+  host_->frontend_->OnEncryptedTypesChanged(
+      encrypted_types, encrypt_everything);
+}
+
+void SyncBackendHost::Core::NotifyEncryptionComplete() {
+  if (!host_)
+    return;
+  DCHECK_EQ(MessageLoop::current(), host_->frontend_loop_);
+  host_->frontend_->OnEncryptionComplete();
 }
 
 void SyncBackendHost::Core::HandleSyncCycleCompletedOnFrontendLoop(
@@ -920,6 +927,8 @@ void SyncBackendHost::HandleInitializationCompletedOnFrontendLoop(
       break;
     case DOWNLOADING_NIGORI:
       initialization_state_ = REFRESHING_ENCRYPTION;
+      // Triggers OnEncryptedTypesChanged() and OnEncryptionComplete()
+      // if necessary.
       RefreshEncryption(
           base::Bind(
               &SyncBackendHost::Core::

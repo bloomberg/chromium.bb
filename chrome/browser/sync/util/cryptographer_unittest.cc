@@ -11,11 +11,24 @@
 #include "chrome/browser/password_manager/encryptor.h"
 #include "chrome/browser/sync/protocol/nigori_specifics.pb.h"
 #include "chrome/browser/sync/protocol/password_specifics.pb.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace browser_sync {
+
+using ::testing::Mock;
+using ::testing::StrictMock;
 using syncable::ModelTypeSet;
 
-namespace browser_sync {
+namespace {
+
+class MockObserver : public Cryptographer::Observer {
+ public:
+  MOCK_METHOD2(OnEncryptedTypesChanged,
+               void(const syncable::ModelTypeSet&, bool));
+};
+
+}  // namespace
 
 TEST(CryptographerTest, EmptyCantDecrypt) {
   Cryptographer cryptographer;
@@ -185,37 +198,38 @@ TEST(CryptographerTest, NigoriEncryptionTypes) {
   Cryptographer cryptographer;
   Cryptographer cryptographer2;
   sync_pb::NigoriSpecifics nigori;
-  ModelTypeSet encrypted_types;
 
-  // Just set the sensitive types.
-  encrypted_types.insert(syncable::PASSWORDS);
-  encrypted_types.insert(syncable::NIGORI);
-  cryptographer.SetEncryptedTypes(encrypted_types);
+  StrictMock<MockObserver> observer;
+  cryptographer.AddObserver(&observer);
+  StrictMock<MockObserver> observer2;
+  cryptographer2.AddObserver(&observer2);
+
+  // Just set the sensitive types (shouldn't trigger any
+  // notifications).
+  ModelTypeSet encrypted_types(Cryptographer::SensitiveTypes());
+  cryptographer.SetEncryptedTypesForTest(encrypted_types);
   cryptographer.UpdateNigoriFromEncryptedTypes(&nigori);
   cryptographer2.UpdateEncryptedTypesFromNigori(nigori);
   EXPECT_EQ(encrypted_types, cryptographer.GetEncryptedTypes());
   EXPECT_EQ(encrypted_types, cryptographer2.GetEncryptedTypes());
+
+  Mock::VerifyAndClearExpectations(&observer);
+  Mock::VerifyAndClearExpectations(&observer2);
+
+  EXPECT_CALL(observer,
+              OnEncryptedTypesChanged(syncable::GetAllRealModelTypes(),
+                                      false));
+  EXPECT_CALL(observer2,
+              OnEncryptedTypesChanged(syncable::GetAllRealModelTypes(),
+                                      false));
 
   // Set all encrypted types
   encrypted_types = syncable::GetAllRealModelTypes();
-  cryptographer.SetEncryptedTypes(encrypted_types);
+  cryptographer.SetEncryptedTypesForTest(encrypted_types);
   cryptographer.UpdateNigoriFromEncryptedTypes(&nigori);
   cryptographer2.UpdateEncryptedTypesFromNigori(nigori);
   EXPECT_EQ(encrypted_types, cryptographer.GetEncryptedTypes());
   EXPECT_EQ(encrypted_types, cryptographer2.GetEncryptedTypes());
-
-  // Ensure encrypted types are never unset.
-  Cryptographer cryptographer3;  // Empty cryptographer.
-  encrypted_types.erase(syncable::BOOKMARKS);
-  encrypted_types.erase(syncable::SESSIONS);
-  cryptographer.SetEncryptedTypes(encrypted_types);
-  cryptographer.UpdateNigoriFromEncryptedTypes(&nigori);
-  cryptographer2.UpdateEncryptedTypesFromNigori(nigori);
-  cryptographer3.UpdateEncryptedTypesFromNigori(nigori);
-  encrypted_types = syncable::GetAllRealModelTypes();
-  EXPECT_EQ(encrypted_types, cryptographer.GetEncryptedTypes());
-  EXPECT_EQ(encrypted_types, cryptographer2.GetEncryptedTypes());
-  EXPECT_EQ(encrypted_types, cryptographer3.GetEncryptedTypes());
 }
 
 TEST(CryptographerTest, EncryptEverythingExplicit) {
@@ -224,6 +238,13 @@ TEST(CryptographerTest, EncryptEverythingExplicit) {
   specifics.set_encrypt_everything(true);
 
   Cryptographer cryptographer;
+  StrictMock<MockObserver> observer;
+  cryptographer.AddObserver(&observer);
+
+  EXPECT_CALL(observer,
+              OnEncryptedTypesChanged(syncable::GetAllRealModelTypes(),
+                                      true));
+
   EXPECT_FALSE(cryptographer.encrypt_everything());
   ModelTypeSet encrypted_types = cryptographer.GetEncryptedTypes();
   for (ModelTypeSet::iterator iter = real_types.begin();
@@ -244,14 +265,26 @@ TEST(CryptographerTest, EncryptEverythingExplicit) {
        ++iter) {
     EXPECT_EQ(1U, encrypted_types.count(*iter));
   }
+
+  // Shouldn't trigger another notification.
+  specifics.set_encrypt_everything(true);
+
+  cryptographer.RemoveObserver(&observer);
 }
 
 TEST(CryptographerTest, EncryptEverythingImplicit) {
   ModelTypeSet real_types = syncable::GetAllRealModelTypes();
   sync_pb::NigoriSpecifics specifics;
-  specifics.set_encrypt_bookmarks(true);  // Non-passwords = encrypt everything.
+  specifics.set_encrypt_bookmarks(true);  // Non-passwords = encrypt everything
 
   Cryptographer cryptographer;
+  StrictMock<MockObserver> observer;
+  cryptographer.AddObserver(&observer);
+
+  EXPECT_CALL(observer,
+              OnEncryptedTypesChanged(syncable::GetAllRealModelTypes(),
+                                      true));
+
   EXPECT_FALSE(cryptographer.encrypt_everything());
   ModelTypeSet encrypted_types = cryptographer.GetEncryptedTypes();
   for (ModelTypeSet::iterator iter = real_types.begin();
@@ -272,6 +305,11 @@ TEST(CryptographerTest, EncryptEverythingImplicit) {
        ++iter) {
     EXPECT_EQ(1U, encrypted_types.count(*iter));
   }
+
+  // Shouldn't trigger another notification.
+  specifics.set_encrypt_everything(true);
+
+  cryptographer.RemoveObserver(&observer);
 }
 
 TEST(CryptographerTest, UnknownSensitiveTypes) {
@@ -283,6 +321,17 @@ TEST(CryptographerTest, UnknownSensitiveTypes) {
   specifics.set_encrypt_bookmarks(true);
 
   Cryptographer cryptographer;
+  StrictMock<MockObserver> observer;
+  cryptographer.AddObserver(&observer);
+
+  syncable::ModelTypeSet expected_encrypted_types =
+      Cryptographer::SensitiveTypes();
+  expected_encrypted_types.insert(syncable::BOOKMARKS);
+
+  EXPECT_CALL(observer,
+              OnEncryptedTypesChanged(expected_encrypted_types,
+                                      false));
+
   EXPECT_FALSE(cryptographer.encrypt_everything());
   ModelTypeSet encrypted_types = cryptographer.GetEncryptedTypes();
   for (ModelTypeSet::iterator iter = real_types.begin();
@@ -308,6 +357,8 @@ TEST(CryptographerTest, UnknownSensitiveTypes) {
     else
       EXPECT_EQ(0U, encrypted_types.count(*iter));
   }
+
+  cryptographer.RemoveObserver(&observer);
 }
 
 }  // namespace browser_sync

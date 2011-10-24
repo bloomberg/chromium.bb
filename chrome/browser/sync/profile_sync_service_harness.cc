@@ -1110,7 +1110,12 @@ bool ProfileSyncServiceHarness::WaitForTypeEncryption(
 bool ProfileSyncServiceHarness::IsTypeEncrypted(syncable::ModelType type) {
   syncable::ModelTypeSet encrypted_types;
   service_->GetEncryptedDataTypes(&encrypted_types);
-  return (encrypted_types.count(type) != 0);
+  bool is_type_encrypted = (encrypted_types.count(type) != 0);
+  VLOG(2) << syncable::ModelTypeToString(type) << " is "
+          << (is_type_encrypted ? "" : "not ") << "encrypted; "
+          << "encrypted types = "
+          << syncable::ModelTypeSetToString(encrypted_types);
+  return is_type_encrypted;
 }
 
 bool ProfileSyncServiceHarness::IsTypeRunning(syncable::ModelType type) {

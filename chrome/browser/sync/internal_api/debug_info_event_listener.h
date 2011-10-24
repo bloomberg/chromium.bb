@@ -43,8 +43,10 @@ class DebugInfoEventListener : public sync_api::SyncManager::Observer,
   virtual void OnUpdatedToken(const std::string& token) OVERRIDE;
   virtual void OnClearServerDataFailed() OVERRIDE;
   virtual void OnClearServerDataSucceeded() OVERRIDE;
-  virtual void OnEncryptionComplete(
-      const syncable::ModelTypeSet& encrypted_types) OVERRIDE;
+  virtual void OnEncryptedTypesChanged(
+      const syncable::ModelTypeSet& encrypted_types,
+      bool encrypt_everything) OVERRIDE;
+  virtual void OnEncryptionComplete() OVERRIDE;
   virtual void OnActionableError(
       const browser_sync::SyncProtocolError& sync_error) OVERRIDE;
 

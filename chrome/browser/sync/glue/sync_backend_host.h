@@ -90,8 +90,25 @@ class SyncFrontend {
   // encrypted using the accepted passphrase.
   virtual void OnPassphraseAccepted() = 0;
 
-  virtual void OnEncryptionComplete(
-      const syncable::ModelTypeSet& encrypted_types) = 0;
+  // Called when the set of encrypted types or the encrypt everything
+  // flag has been changed.  Note that encryption isn't complete until
+  // the OnEncryptionComplete() notification has been sent (see
+  // below).
+  //
+  // |encrypted_types| will always be a superset of
+  // Cryptographer::SensitiveTypes().  If |encrypt_everything| is
+  // true, |encrypted_types| will be the set of all known types.
+  //
+  // Until this function is called, observers can assume that the set
+  // of encrypted types is Cryptographer::SensitiveTypes() and that
+  // the encrypt everything flag is false.
+  virtual void OnEncryptedTypesChanged(
+      const syncable::ModelTypeSet& encrypted_types,
+      bool encrypt_everything) = 0;
+
+  // Called after we finish encrypting the current set of encrypted
+  // types.
+  virtual void OnEncryptionComplete() = 0;
 
   // Called to perform migration of |types|.
   virtual void OnMigrationNeededForTypes(
@@ -189,13 +206,6 @@ class SyncBackendHost {
   // Turns on encryption of all present and future sync data.
   virtual void EnableEncryptEverything();
 
-  // Returns true if we have enabled encrypt everything, false if we only
-  // encrypt the sensitive types.
-  virtual bool EncryptEverythingEnabled() const;
-
-  // Returns the set of encrypted data types.
-  virtual syncable::ModelTypeSet GetEncryptedDataTypes() const;
-
   // Activates change processing for the given data type.  This must
   // be called synchronously with the data type's model association so
   // no changes are dropped between model association and change
@@ -289,10 +299,12 @@ class SyncBackendHost {
     virtual void OnUpdatedToken(const std::string& token) OVERRIDE;
     virtual void OnClearServerDataFailed() OVERRIDE;
     virtual void OnClearServerDataSucceeded() OVERRIDE;
-    virtual void OnEncryptionComplete(
-        const syncable::ModelTypeSet& encrypted_types);
+    virtual void OnEncryptedTypesChanged(
+        const syncable::ModelTypeSet& encrypted_types,
+        bool encrypt_everything) OVERRIDE;
+    virtual void OnEncryptionComplete() OVERRIDE;
     virtual void OnActionableError(
-        const browser_sync::SyncProtocolError& sync_error);
+        const browser_sync::SyncProtocolError& sync_error) OVERRIDE;
 
     struct DoInitializeOptions {
       DoInitializeOptions(
@@ -445,10 +457,14 @@ class SyncBackendHost {
     // Invoked when an updated token is available from the sync server.
     void NotifyUpdatedToken(const std::string& token);
 
-    // Invoked when sync finishes encrypting new datatypes or has become aware
-    // of new datatypes requiring encryption.
-    void NotifyEncryptionComplete(const syncable::ModelTypeSet&
-                                      encrypted_types);
+    // Invoked when the set of encrypted types or the encrypt
+    // everything flag changes.
+    void NotifyEncryptedTypesChanged(
+        const syncable::ModelTypeSet& encrypted_types,
+        bool encrypt_everything);
+
+    // Invoked when sync finishes encrypting new datatypes.
+    void NotifyEncryptionComplete();
 
     // Called from Core::OnSyncCycleCompleted to handle updating frontend
     // thread components.

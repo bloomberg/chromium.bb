@@ -209,8 +209,10 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   virtual void OnPassphraseRequired(
       sync_api::PassphraseRequiredReason reason) OVERRIDE;
   virtual void OnPassphraseAccepted() OVERRIDE;
-  virtual void OnEncryptionComplete(
-      const syncable::ModelTypeSet& encrypted_types) OVERRIDE;
+  virtual void OnEncryptedTypesChanged(
+      const syncable::ModelTypeSet& enncrypted_types,
+      bool encrypt_everything) OVERRIDE;
+  virtual void OnEncryptionComplete() OVERRIDE;
   virtual void OnMigrationNeededForTypes(
       const syncable::ModelTypeSet& types) OVERRIDE;
   virtual void OnDataTypesChanged(
@@ -669,6 +671,13 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // syncer paused, etc.).  It can only be removed correctly when the framework
   // is reworked to allow one-shot commands like clearing server data.
   base::OneShotTimer<ProfileSyncService> clear_server_data_timer_;
+
+  // The current set of encrypted types.  Always a superset of
+  // Cryptographer::SensitiveTypes().
+  syncable::ModelTypeSet encrypted_types_;
+
+  // Whether we want to encrypt everything.
+  bool encrypt_everything_;
 
   // Whether we're waiting for an attempt to encryption all sync data to
   // complete. We track this at this layer in order to allow the user to cancel

@@ -16,6 +16,8 @@ const char kNigoriTag[] = "google_chrome_nigori";
 // assign the same name to a particular triplet.
 const char kNigoriKeyName[] = "nigori-key";
 
+Cryptographer::Observer::~Observer() {}
+
 Cryptographer::Cryptographer()
     : default_nigori_(NULL),
       encrypt_everything_(false) {
@@ -24,6 +26,14 @@ Cryptographer::Cryptographer()
 }
 
 Cryptographer::~Cryptographer() {}
+
+void Cryptographer::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void Cryptographer::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
 
 void Cryptographer::Bootstrap(const std::string& restored_bootstrap_token) {
   if (is_initialized()) {
@@ -274,45 +284,47 @@ syncable::ModelTypeSet Cryptographer::SensitiveTypes() {
 
 void Cryptographer::UpdateEncryptedTypesFromNigori(
     const sync_pb::NigoriSpecifics& nigori) {
-  encrypted_types_.clear();
   if (nigori.encrypt_everything()) {
     set_encrypt_everything();
     return;
   }
+
+  syncable::ModelTypeSet encrypted_types(SensitiveTypes());
   if (nigori.encrypt_bookmarks())
-    encrypted_types_.insert(syncable::BOOKMARKS);
+    encrypted_types.insert(syncable::BOOKMARKS);
   if (nigori.encrypt_preferences())
-    encrypted_types_.insert(syncable::PREFERENCES);
+    encrypted_types.insert(syncable::PREFERENCES);
   if (nigori.encrypt_autofill_profile())
-    encrypted_types_.insert(syncable::AUTOFILL_PROFILE);
+    encrypted_types.insert(syncable::AUTOFILL_PROFILE);
   if (nigori.encrypt_autofill())
-    encrypted_types_.insert(syncable::AUTOFILL);
+    encrypted_types.insert(syncable::AUTOFILL);
   if (nigori.encrypt_themes())
-    encrypted_types_.insert(syncable::THEMES);
+    encrypted_types.insert(syncable::THEMES);
   if (nigori.encrypt_typed_urls())
-    encrypted_types_.insert(syncable::TYPED_URLS);
+    encrypted_types.insert(syncable::TYPED_URLS);
   if (nigori.encrypt_extension_settings())
-    encrypted_types_.insert(syncable::EXTENSION_SETTINGS);
+    encrypted_types.insert(syncable::EXTENSION_SETTINGS);
   if (nigori.encrypt_extensions())
-    encrypted_types_.insert(syncable::EXTENSIONS);
+    encrypted_types.insert(syncable::EXTENSIONS);
   if (nigori.encrypt_search_engines())
-    encrypted_types_.insert(syncable::SEARCH_ENGINES);
+    encrypted_types.insert(syncable::SEARCH_ENGINES);
   if (nigori.encrypt_sessions())
-    encrypted_types_.insert(syncable::SESSIONS);
+    encrypted_types.insert(syncable::SESSIONS);
   if (nigori.encrypt_apps())
-    encrypted_types_.insert(syncable::APPS);
+    encrypted_types.insert(syncable::APPS);
   if (nigori.encrypt_app_notifications())
-    encrypted_types_.insert(syncable::APP_NOTIFICATIONS);
+    encrypted_types.insert(syncable::APP_NOTIFICATIONS);
 
   // Note: the initial version with encryption did not support the
   // encrypt_everything field. If anything more than the sensitive types were
   // encrypted, it meant we were encrypting everything.
-  syncable::ModelTypeSet sensitive_types = SensitiveTypes();
-  encrypted_types_.insert(sensitive_types.begin(), sensitive_types.end());
   if (!nigori.has_encrypt_everything() &&
-      encrypted_types_.size() > sensitive_types.size()) {
+      encrypted_types.size() > SensitiveTypes().size()) {
     set_encrypt_everything();
+    return;
   }
+
+  SetEncryptedTypes(encrypted_types);
 }
 
 void Cryptographer::UpdateNigoriFromEncryptedTypes(
@@ -341,20 +353,43 @@ void Cryptographer::UpdateNigoriFromEncryptedTypes(
 }
 
 void Cryptographer::set_encrypt_everything() {
+  if (encrypt_everything_) {
+    DCHECK(encrypted_types_ == syncable::GetAllRealModelTypes());
+    return;
+  }
   encrypt_everything_ = true;
+  // Change |encrypted_types_| directly to avoid sending more than one
+  // notification.
   encrypted_types_ = syncable::GetAllRealModelTypes();
+  EmitEncryptedTypesChangedNotification();
 }
 
 bool Cryptographer::encrypt_everything() const {
   return encrypt_everything_;
 }
 
-void Cryptographer::SetEncryptedTypes(syncable::ModelTypeSet new_types) {
-  encrypted_types_.insert(new_types.begin(), new_types.end());
-}
-
 syncable::ModelTypeSet Cryptographer::GetEncryptedTypes() const {
   return encrypted_types_;
+}
+
+void Cryptographer::SetEncryptedTypesForTest(
+    const syncable::ModelTypeSet& encrypted_types) {
+  SetEncryptedTypes(encrypted_types);
+}
+
+void Cryptographer::SetEncryptedTypes(
+    const syncable::ModelTypeSet& encrypted_types) {
+  if (encrypted_types_ == encrypted_types) {
+    return;
+  }
+  encrypted_types_ = encrypted_types;
+  EmitEncryptedTypesChangedNotification();
+}
+
+void Cryptographer::EmitEncryptedTypesChangedNotification() {
+  FOR_EACH_OBSERVER(
+      Observer, observers_,
+      OnEncryptedTypesChanged(encrypted_types_, encrypt_everything_));
 }
 
 void Cryptographer::InstallKeys(const std::string& default_key_name,

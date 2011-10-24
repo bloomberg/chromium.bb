@@ -376,9 +376,29 @@ class SyncManager {
     virtual void OnClearServerDataSucceeded() = 0;
     virtual void OnClearServerDataFailed() = 0;
 
-    // Called after we finish encrypting all appropriate datatypes.
-    virtual void OnEncryptionComplete(
-        const syncable::ModelTypeSet& encrypted_types) = 0;
+    // Called when the set of encrypted types or the encrypt
+    // everything flag has been changed.  Note that encryption isn't
+    // complete until the OnEncryptionComplete() notification has been
+    // sent (see below).
+    //
+    // |encrypted_types| will always be a superset of
+    // Cryptographer::SensitiveTypes().  If |encrypt_everything| is
+    // true, |encrypted_types| will be the set of all known types.
+    //
+    // Until this function is called, observers can assume that the
+    // set of encrypted types is Cryptographer::SensitiveTypes() and
+    // that the encrypt everything flag is false.
+    //
+    // Called from within a transaction.
+    virtual void OnEncryptedTypesChanged(
+        const syncable::ModelTypeSet& encrypted_types,
+        bool encrypt_everything) = 0;
+
+    // Called after we finish encrypting the current set of encrypted
+    // types.
+    //
+    // Called from within a transaction.
+    virtual void OnEncryptionComplete() = 0;
 
     virtual void OnActionableError(
         const browser_sync::SyncProtocolError& sync_protocol_error) = 0;
@@ -522,24 +542,34 @@ class SyncManager {
   // May be called from any thread.
   UserShare* GetUserShare() const;
 
-  // Inform the cryptographer of the most recent passphrase and set of encrypted
-  // types (from nigori node), then ensure all data that needs encryption is
-  // encrypted with the appropriate passphrase.
-  // Note: opens a transaction and can trigger ON_PASSPHRASE_REQUIRED, so must
-  // only be called after syncapi has been initialized.
+  // Inform the cryptographer of the most recent passphrase and set of
+  // encrypted types (from nigori node), then ensure all data that
+  // needs encryption is encrypted with the appropriate passphrase.
+  //
+  // May trigger OnPassphraseRequired().  Otherwise, it will trigger
+  // OnEncryptedTypesChanged() if necessary (see comments for
+  // OnEncryptedTypesChanged()), and then OnEncryptionComplete().
+  //
+  // Note: opens a transaction, so must only be called after syncapi
+  // has been initialized.
   void RefreshEncryption();
 
-  // Enable encryption of all sync data. Once enabled, it can never be disabled
-  // without clearing the server data.
+  // Enable encryption of all sync data. Once enabled, it can never be
+  // disabled without clearing the server data.
+  //
+  // This will trigger OnEncryptedTypesChanged() if necessary (see
+  // comments for OnEncryptedTypesChanged()).  It then may trigger
+  // OnPassphraseRequired(), but otherwise it will trigger
+  // OnEncryptionComplete().
   void EnableEncryptEverything();
 
   // Returns true if we are currently encrypting all sync data.  May
   // be called on any thread.
-  bool EncryptEverythingEnabled() const;
+  bool EncryptEverythingEnabledForTest() const;
 
   // Gets the set of encrypted types from the cryptographer
   // Note: opens a transaction.  May be called from any thread.
-  syncable::ModelTypeSet GetEncryptedDataTypes() const;
+  syncable::ModelTypeSet GetEncryptedDataTypesForTest() const;
 
   // Reads the nigori node to determine if any experimental types should be
   // enabled.

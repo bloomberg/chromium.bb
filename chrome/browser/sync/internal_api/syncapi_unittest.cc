@@ -629,7 +629,9 @@ class SyncManagerObserverMock : public SyncManager::Observer {
   MOCK_METHOD1(OnUpdatedToken, void(const std::string&));  // NOLINT
   MOCK_METHOD0(OnClearServerDataFailed, void());  // NOLINT
   MOCK_METHOD0(OnClearServerDataSucceeded, void());  // NOLINT
-  MOCK_METHOD1(OnEncryptionComplete, void(const ModelTypeSet&));  // NOLINT
+  MOCK_METHOD2(OnEncryptedTypesChanged,
+               void(const ModelTypeSet&, bool));  // NOLINT
+  MOCK_METHOD0(OnEncryptionComplete, void());  // NOLINT
   MOCK_METHOD1(OnActionableError,
                  void(const browser_sync::SyncProtocolError&));  // NOLINT
 };
@@ -1195,9 +1197,9 @@ TEST_F(SyncManagerTest, RefreshEncryptionReady) {
   EXPECT_TRUE(SetUpEncryption());
   sync_manager_.RefreshEncryption();
   syncable::ModelTypeSet encrypted_types =
-      sync_manager_.GetEncryptedDataTypes();
+      sync_manager_.GetEncryptedDataTypesForTest();
   EXPECT_EQ(1U, encrypted_types.count(syncable::PASSWORDS));
-  EXPECT_FALSE(sync_manager_.EncryptEverythingEnabled());
+  EXPECT_FALSE(sync_manager_.EncryptEverythingEnabledForTest());
 }
 
 // Attempt to refresh encryption when nigori not downloaded.
@@ -1205,16 +1207,18 @@ TEST_F(SyncManagerTest, RefreshEncryptionNotReady) {
   // Don't set up encryption (no nigori node created).
   sync_manager_.RefreshEncryption();  // Should fail.
   syncable::ModelTypeSet encrypted_types =
-      sync_manager_.GetEncryptedDataTypes();
+      sync_manager_.GetEncryptedDataTypesForTest();
   EXPECT_EQ(1U, encrypted_types.count(syncable::PASSWORDS));  // Hardcoded.
-  EXPECT_FALSE(sync_manager_.EncryptEverythingEnabled());
+  EXPECT_FALSE(sync_manager_.EncryptEverythingEnabledForTest());
 }
 
 TEST_F(SyncManagerTest, EncryptDataTypesWithNoData) {
   EXPECT_TRUE(SetUpEncryption());
-  EXPECT_CALL(observer_, OnEncryptionComplete(GetAllRealModelTypes()));
+  EXPECT_CALL(observer_,
+              OnEncryptedTypesChanged(GetAllRealModelTypes(), true));
+  EXPECT_CALL(observer_, OnEncryptionComplete());
   sync_manager_.EnableEncryptEverything();
-  EXPECT_TRUE(sync_manager_.EncryptEverythingEnabled());
+  EXPECT_TRUE(sync_manager_.EncryptEverythingEnabledForTest());
 }
 
 TEST_F(SyncManagerTest, EncryptDataTypesWithData) {
@@ -1262,9 +1266,11 @@ TEST_F(SyncManagerTest, EncryptDataTypesWithData) {
                                                    false /* not encrypted */));
   }
 
-  EXPECT_CALL(observer_, OnEncryptionComplete(GetAllRealModelTypes()));
+  EXPECT_CALL(observer_,
+              OnEncryptedTypesChanged(GetAllRealModelTypes(), true));
+  EXPECT_CALL(observer_, OnEncryptionComplete());
   sync_manager_.EnableEncryptEverything();
-  EXPECT_TRUE(sync_manager_.EncryptEverythingEnabled());
+  EXPECT_TRUE(sync_manager_.EncryptEverythingEnabledForTest());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     EXPECT_EQ(GetAllRealModelTypes(), GetEncryptedTypes(&trans));
@@ -1284,10 +1290,10 @@ TEST_F(SyncManagerTest, EncryptDataTypesWithData) {
 
   // Trigger's a ReEncryptEverything with new passphrase.
   testing::Mock::VerifyAndClearExpectations(&observer_);
-  EXPECT_CALL(observer_, OnPassphraseAccepted(_)).Times(1);
-  EXPECT_CALL(observer_, OnEncryptionComplete(GetAllRealModelTypes())).Times(1);
+  EXPECT_CALL(observer_, OnPassphraseAccepted(_));
+  EXPECT_CALL(observer_, OnEncryptionComplete());
   sync_manager_.SetPassphrase("new_passphrase", true);
-  EXPECT_TRUE(sync_manager_.EncryptEverythingEnabled());
+  EXPECT_TRUE(sync_manager_.EncryptEverythingEnabledForTest());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     EXPECT_EQ(GetAllRealModelTypes(), GetEncryptedTypes(&trans));
@@ -1309,7 +1315,7 @@ TEST_F(SyncManagerTest, EncryptDataTypesWithData) {
   // TODO(zea): add logic to ensure nothing was written.
   testing::Mock::VerifyAndClearExpectations(&observer_);
   EXPECT_CALL(observer_, OnPassphraseAccepted(_)).Times(0);
-  EXPECT_CALL(observer_, OnEncryptionComplete(GetAllRealModelTypes())).Times(1);
+  EXPECT_CALL(observer_, OnEncryptionComplete());
   sync_manager_.EnableEncryptEverything();
 }
 
@@ -1328,9 +1334,9 @@ TEST_F(SyncManagerTest, SetPassphraseWithPassword) {
     password_node.SetPasswordSpecifics(data);
   }
   EXPECT_CALL(observer_, OnPassphraseAccepted(_));
-  EXPECT_CALL(observer_, OnEncryptionComplete(_));
+  EXPECT_CALL(observer_, OnEncryptionComplete());
   sync_manager_.SetPassphrase("new_passphrase", true);
-  EXPECT_FALSE(sync_manager_.EncryptEverythingEnabled());
+  EXPECT_FALSE(sync_manager_.EncryptEverythingEnabledForTest());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     ReadNode password_node(&trans);
@@ -1357,9 +1363,9 @@ TEST_F(SyncManagerTest, SetPassphraseWithEmptyPasswordNode) {
     node_id = password_node.GetId();
   }
   EXPECT_CALL(observer_, OnPassphraseAccepted(_));
-  EXPECT_CALL(observer_, OnEncryptionComplete(_));
+  EXPECT_CALL(observer_, OnEncryptionComplete());
   sync_manager_.SetPassphrase("new_passphrase", true);
-  EXPECT_FALSE(sync_manager_.EncryptEverythingEnabled());
+  EXPECT_FALSE(sync_manager_.EncryptEverythingEnabledForTest());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     ReadNode password_node(&trans);
@@ -1445,9 +1451,11 @@ TEST_F(SyncManagerTest, EncryptBookmarksWithLegacyData) {
                                                    false /* not encrypted */));
   }
 
-  EXPECT_CALL(observer_, OnEncryptionComplete(GetAllRealModelTypes()));
+  EXPECT_CALL(observer_,
+              OnEncryptedTypesChanged(GetAllRealModelTypes(), true));
+  EXPECT_CALL(observer_, OnEncryptionComplete());
   sync_manager_.EnableEncryptEverything();
-  EXPECT_TRUE(sync_manager_.EncryptEverythingEnabled());
+  EXPECT_TRUE(sync_manager_.EncryptEverythingEnabledForTest());
 
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());

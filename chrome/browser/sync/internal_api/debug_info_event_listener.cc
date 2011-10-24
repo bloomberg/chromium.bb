@@ -72,8 +72,13 @@ void DebugInfoEventListener::OnClearServerDataSucceeded() {
   NOTREACHED();
 }
 
-void DebugInfoEventListener::OnEncryptionComplete(
-    const syncable::ModelTypeSet& encrypted_types) {
+void DebugInfoEventListener::OnEncryptedTypesChanged(
+    const syncable::ModelTypeSet& encrypted_types,
+    bool encrypt_everything) {
+  CreateAndAddEvent(sync_pb::DebugEventInfo::ENCRYPTED_TYPES_CHANGED);
+}
+
+void DebugInfoEventListener::OnEncryptionComplete() {
   CreateAndAddEvent(sync_pb::DebugEventInfo::ENCRYPTION_COMPLETE);
 }
 

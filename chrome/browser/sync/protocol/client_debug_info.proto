@@ -4,9 +4,6 @@
 //
 // Common sync protocol for encrypted data.
 
-// Update proto_value_conversions{.h,.cc,_unittest.cc} if you change
-// any fields in this file.
-
 syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
@@ -38,6 +35,7 @@ message DebugEventInfo {
     // the absence of bugs.
     STOP_SYNCING_PERMANENTLY = 6; // Server sent stop syncing permanently.
 
+    ENCRYPTED_TYPES_CHANGED = 9; // Set of encrypted types has changed.
     ENCRYPTION_COMPLETE = 7; // Client has finished encrypting all data.
     ACTIONABLE_ERROR = 8; // Client received an actionable error.
   }

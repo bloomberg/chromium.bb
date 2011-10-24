@@ -85,6 +85,7 @@ chrome.sync.events = {
     'onStopSyncingPermanently',
     'onClearServerDataSucceeded',
     'onClearServerDataFailed',
+    'onEncryptedTypesChanged',
     'onEncryptionComplete',
     'onActionableError'
   ],

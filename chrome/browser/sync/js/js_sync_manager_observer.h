@@ -40,8 +40,10 @@ class JsSyncManagerObserver : public sync_api::SyncManager::Observer {
       sync_api::PassphraseRequiredReason reason) OVERRIDE;
   virtual void OnPassphraseAccepted(
       const std::string& bootstrap_token) OVERRIDE;
-  virtual void OnEncryptionComplete(
-      const syncable::ModelTypeSet& encrypted_types) OVERRIDE;
+  virtual void OnEncryptedTypesChanged(
+      const syncable::ModelTypeSet& encrypted_types,
+      bool encrypt_everything) OVERRIDE;
+  virtual void OnEncryptionComplete() OVERRIDE;
   virtual void OnInitializationComplete(
       const WeakHandle<JsBackend>& js_backend, bool success) OVERRIDE;
   virtual void OnStopSyncingPermanently() OVERRIDE;

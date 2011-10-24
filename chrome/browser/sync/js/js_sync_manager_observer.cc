@@ -80,15 +80,26 @@ void JsSyncManagerObserver::OnPassphraseAccepted(
   HandleJsEvent(FROM_HERE, "onPassphraseAccepted", JsEventDetails(&details));
 }
 
-void JsSyncManagerObserver::OnEncryptionComplete(
-    const syncable::ModelTypeSet& encrypted_types) {
+void JsSyncManagerObserver::OnEncryptedTypesChanged(
+    const syncable::ModelTypeSet& encrypted_types,
+    bool encrypt_everything) {
   if (!event_handler_.IsInitialized()) {
     return;
   }
   DictionaryValue details;
   details.Set("encryptedTypes",
                syncable::ModelTypeSetToValue(encrypted_types));
-  HandleJsEvent(FROM_HERE, "onEncryptionComplete", JsEventDetails(&details));
+  details.SetBoolean("encryptEverything", encrypt_everything);
+  HandleJsEvent(FROM_HERE,
+                "onEncryptedTypesChanged", JsEventDetails(&details));
+}
+
+void JsSyncManagerObserver::OnEncryptionComplete() {
+  if (!event_handler_.IsInitialized()) {
+    return;
+  }
+  DictionaryValue details;
+  HandleJsEvent(FROM_HERE, "onEncryptionComplete", JsEventDetails());
 }
 
 void JsSyncManagerObserver::OnActionableError(

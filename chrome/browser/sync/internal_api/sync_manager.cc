@@ -119,6 +119,7 @@ namespace sync_api {
 // SyncManager's implementation: SyncManager::SyncInternal
 class SyncManager::SyncInternal
     : public net::NetworkChangeNotifier::IPAddressObserver,
+      public browser_sync::Cryptographer::Observer,
       public sync_notifier::SyncNotifierObserver,
       public JsBackend,
       public SyncEngineEventListener,
@@ -223,10 +224,11 @@ class SyncManager::SyncInternal
   // Returns true if cryptographer is ready, false otherwise.
   bool UpdateCryptographerFromNigori();
 
-  // Set the datatypes we want to encrypt and encrypt any nodes as necessary.
-  // Note: |encrypted_types| will be unioned with the current set of encrypted
-  // types, as we do not currently support decrypting datatypes.
-  void EncryptDataTypes(const syncable::ModelTypeSet& encrypted_types);
+  // Updates the nigori node with any new encrypted types and then
+  // encrypts the nodes for those new data types as well as other
+  // nodes that should be encrypted but aren't.  Triggers
+  // OnPassphraseRequired if the cryptographer isn't ready.
+  void RefreshEncryption();
 
   // Try to set the current passphrase to |passphrase|, and record whether
   // it is an explicit passphrase or implicitly using gaia in the Nigori
@@ -258,6 +260,11 @@ class SyncManager::SyncInternal
 
   // Open the directory named with username_for_share
   bool OpenDirectory();
+
+  // Cryptographer::Observer implementation.
+  virtual void OnEncryptedTypesChanged(
+      const syncable::ModelTypeSet& encrypted_types,
+      bool encrypt_everything) OVERRIDE;
 
   // SyncNotifierObserver implementation.
   virtual void OnNotificationStateChange(
@@ -438,15 +445,6 @@ class SyncManager::SyncInternal
   }
 
   void ReEncryptEverything(WriteTransaction* trans);
-
-  // Initializes (bootstraps) the Cryptographer if NIGORI has finished
-  // initial sync so that it can immediately start encrypting / decrypting.
-  // If the restored key is incompatible with the current version of the NIGORI
-  // node (which could happen if a restart occurred just after an update to
-  // NIGORI was downloaded and the user must enter a new passphrase to decrypt)
-  // then we will raise OnPassphraseRequired and set pending keys for
-  // decryption.  Otherwise, the cryptographer is made ready (is_ready()).
-  void BootstrapEncryption(const std::string& restored_key_for_bootstrapping);
 
   // Called for every notification. This updates the notification statistics
   // to be displayed in about:sync.
@@ -682,13 +680,13 @@ void SyncManager::EnableEncryptEverything() {
       cryptographer->set_encrypt_everything();
   }
 
-  // Call with empty set. Reads from cryptographer so will automatically encrypt
-  // all datatypes and update the nigori node as necessary. Will trigger
+  // Reads from cryptographer so will automatically encrypt all
+  // datatypes and update the nigori node as necessary. Will trigger
   // OnPassphraseRequired if necessary.
-  data_->EncryptDataTypes(syncable::ModelTypeSet());
+  data_->RefreshEncryption();
 }
 
-bool SyncManager::EncryptEverythingEnabled() const {
+bool SyncManager::EncryptEverythingEnabledForTest() const {
   ReadTransaction trans(FROM_HERE, GetUserShare());
   return trans.GetCryptographer()->encrypt_everything();
 }
@@ -810,8 +808,13 @@ bool SyncManager::SyncInternal::Init(
 
     initialized_ = true;
 
-    // The following calls check that initialized_ is true.
-    BootstrapEncryption(restored_key_for_bootstrapping);
+    // Cryptographer should only be accessed while holding a
+    // transaction.  Grabbing the user share for the transaction
+    // checks the initialization state, so this must come after
+    // |initialized_| is set to true.
+    ReadTransaction trans(FROM_HERE, GetUserShare());
+    trans.GetCryptographer()->Bootstrap(restored_key_for_bootstrapping);
+    trans.GetCryptographer()->AddObserver(this);
   }
 
   // Notify that initialization is complete. Note: This should be the last to
@@ -832,22 +835,12 @@ bool SyncManager::SyncInternal::Init(
   return signed_in;
 }
 
-void SyncManager::SyncInternal::BootstrapEncryption(
-    const std::string& restored_key_for_bootstrapping) {
-  // Cryptographer should only be accessed while holding a transaction.
-  ReadTransaction trans(FROM_HERE, GetUserShare());
-  Cryptographer* cryptographer = trans.GetCryptographer();
-
-  // Set the bootstrap token before bailing out if nigori node is not there.
-  // This could happen if server asked us to migrate nigri.
-  cryptographer->Bootstrap(restored_key_for_bootstrapping);
-}
-
 bool SyncManager::SyncInternal::UpdateCryptographerFromNigori() {
   DCHECK(initialized_);
   syncable::ScopedDirLookup lookup(dir_manager(), username_for_share());
   if (!lookup.good()) {
-    NOTREACHED() << "BootstrapEncryption: lookup not good so bailing out";
+    NOTREACHED()
+        << "UpdateCryptographerFromNigori: lookup not good so bailing out";
     return false;
   }
   if (!lookup->initial_sync_ended_for_type(syncable::NIGORI))
@@ -1100,11 +1093,8 @@ bool SyncManager::SyncInternal::IsUsingExplicitPassphrase() {
   return node.GetNigoriSpecifics().using_explicit_passphrase();
 }
 
-void SyncManager::SyncInternal::EncryptDataTypes(
-    const syncable::ModelTypeSet& encrypted_types) {
+void SyncManager::SyncInternal::RefreshEncryption() {
   DCHECK(initialized_);
-  VLOG(1) << "Attempting to encrypt datatypes "
-          << syncable::ModelTypeSetToString(encrypted_types);
 
   WriteTransaction trans(FROM_HERE, GetUserShare());
   WriteNode node(&trans);
@@ -1129,7 +1119,6 @@ void SyncManager::SyncInternal::EncryptDataTypes(
   // Update the Nigori node's set of encrypted datatypes.
   // Note, we merge the current encrypted types with those requested. Once a
   // datatypes is marked as needing encryption, it is never unmarked.
-  cryptographer->SetEncryptedTypes(encrypted_types);
   sync_pb::NigoriSpecifics nigori;
   nigori.CopyFrom(node.GetNigoriSpecifics());
   cryptographer->UpdateNigoriFromEncryptedTypes(&nigori);
@@ -1139,7 +1128,6 @@ void SyncManager::SyncInternal::EncryptDataTypes(
   // We reencrypt everything regardless of whether the set of encrypted
   // types changed to ensure that any stray unencrypted entries are overwritten.
   ReEncryptEverything(&trans);
-  return;
 }
 
 // TODO(zea): Add unit tests that ensure no sync changes are made when not
@@ -1216,8 +1204,9 @@ void SyncManager::SyncInternal::ReEncryptEverything(WriteTransaction* trans) {
     }
   }
 
-  FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
-                    OnEncryptionComplete(encrypted_types));
+  // NOTE: We notify from within a transaction.
+  FOR_EACH_OBSERVER(
+      SyncManager::Observer, observers_, OnEncryptionComplete());
 }
 
 SyncManager::~SyncManager() {
@@ -1294,12 +1283,14 @@ void SyncManager::SyncInternal::ShutdownOnSyncThread() {
   observing_ip_address_changes_ = false;
 
   if (dir_manager()) {
-    syncable::ScopedDirLookup lookup(dir_manager(), username_for_share());
-    if (lookup.good()) {
-      lookup->RemoveTransactionObserver(&js_mutation_event_observer_);
+    {
+      // Cryptographer should only be accessed while holding a
+      // transaction.
+      ReadTransaction trans(FROM_HERE, GetUserShare());
+      trans.GetCryptographer()->RemoveObserver(this);
+      trans.GetLookup()->
+          RemoveTransactionObserver(&js_mutation_event_observer_);
       RemoveChangeObserver(&js_mutation_event_observer_);
-    } else {
-      NOTREACHED();
     }
     dir_manager()->FinalSaveChangesForAll();
     dir_manager()->Close(username_for_share());
@@ -1622,11 +1613,6 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
       allstatus_.SetCryptographerReady(cryptographer->is_ready());
       allstatus_.SetCryptoHasPendingKeys(cryptographer->has_pending_keys());
       allstatus_.SetEncryptedTypes(cryptographer->GetEncryptedTypes());
-
-      // If everything is in order(we have the passphrase) then there is no
-      // need to inform the listeners. They will just wait for sync
-      // completion event and if no errors have been raised it means
-      // encryption was succesful.
     }
 
     if (!initialized_) {
@@ -1636,7 +1622,7 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
     }
 
     if (!event.snapshot->has_more_to_sync) {
-      VLOG(1) << "OnSyncCycleCompleted sent";
+      VLOG(1) << "Sending OnSyncCycleCompleted";
       FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
                         OnSyncCycleCompleted(event.snapshot));
     }
@@ -1876,6 +1862,15 @@ JsArgList SyncManager::SyncInternal::FindNodesContainingString(
   return JsArgList(&return_args);
 }
 
+void SyncManager::SyncInternal::OnEncryptedTypesChanged(
+    const syncable::ModelTypeSet& encrypted_types,
+    bool encrypt_everything) {
+  // NOTE: We're in a transaction.
+  FOR_EACH_OBSERVER(
+      SyncManager::Observer, observers_,
+      OnEncryptedTypesChanged(encrypted_types, encrypt_everything));
+}
+
 void SyncManager::SyncInternal::OnNotificationStateChange(
     bool notifications_enabled) {
   VLOG(1) << "P2P: Notifications enabled = "
@@ -2004,10 +1999,10 @@ UserShare* SyncManager::GetUserShare() const {
 void SyncManager::RefreshEncryption() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (data_->UpdateCryptographerFromNigori())
-    data_->EncryptDataTypes(syncable::ModelTypeSet());
+    data_->RefreshEncryption();
 }
 
-syncable::ModelTypeSet SyncManager::GetEncryptedDataTypes() const {
+syncable::ModelTypeSet SyncManager::GetEncryptedDataTypesForTest() const {
   ReadTransaction trans(FROM_HERE, GetUserShare());
   return GetEncryptedTypes(&trans);
 }
