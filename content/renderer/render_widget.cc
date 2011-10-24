@@ -534,8 +534,19 @@ void RenderWidget::PaintRect(const gfx::Rect& rect,
                                                     SkShader::kRepeat_TileMode,
                                                     SkShader::kRepeat_TileMode);
     paint.setShader(shader)->unref();
-    paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
+
+    // Use kSrc_Mode to handle background_ transparency properly.
+    paint.setXfermodeMode(SkXfermode::kSrc_Mode);
+
+    // Canvas could contain multiple update rects. Clip to given rect so that
+    // we don't accidentally clear other update rects.
+    canvas->save();
+    SkRect clip;
+    clip.set(SkIntToScalar(rect.x()), SkIntToScalar(rect.y()),
+             SkIntToScalar(rect.right()), SkIntToScalar(rect.bottom()));
+    canvas->clipRect(clip);
     canvas->drawPaint(paint);
+    canvas->restore();
   }
 
   // First see if this rect is a plugin that can paint itself faster.
