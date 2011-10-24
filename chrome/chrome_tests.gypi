@@ -2441,6 +2441,7 @@
         'browser/extensions/notifications_apitest.cc',
         'browser/extensions/page_action_apitest.cc',
         'browser/extensions/permissions_apitest.cc',
+        'browser/extensions/speech_input/extension_speech_input_apitest.cc',
         'browser/extensions/stubs_apitest.cc',
         'browser/extensions/webstore_inline_install_browsertest.cc',
         'browser/extensions/window_open_apitest.cc',

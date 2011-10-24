@@ -1,0 +1,7 @@
+{
+  "name": "chrome.experimental.speechInput",
+  "version": "0.1",
+  "description": "browser test for chrome.experimental.speechInput API",
+  "background_page": "test.html",
+  "permissions": ["experimental"]
+}
