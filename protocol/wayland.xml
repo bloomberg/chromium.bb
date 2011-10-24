@@ -73,7 +73,7 @@
 
     <!-- Notify the client of removed global objects. -->
     <event name="global_remove">
-      <arg name="id" type="uint" />
+      <arg name="name" type="uint" />
     </event>
 
   </interface>
