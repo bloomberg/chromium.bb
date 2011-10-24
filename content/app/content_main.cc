@@ -22,12 +22,14 @@
 #include "content/common/sandbox_init_wrapper.h"
 #include "content/common/set_process_title.h"
 #include "content/public/app/content_main_delegate.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "crypto/nss_util.h"
 #include "ipc/ipc_switches.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/ui_base_paths.h"
+#include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_WIN)
 #include <atlbase.h>
@@ -202,6 +204,13 @@ int RunZygote(const MainFunctionParams& main_function_params,
   // Zygote::HandleForkRequest may have reallocated the command
   // line so update it here with the new version.
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+
+  // If a custom user agent was passed on the command line, we need
+  // to (re)set it now, rather than using the default one the zygote
+  // initialized.
+  bool custom = false;
+  std::string ua = content::GetContentClient()->GetUserAgent(&custom);
+  if (custom) webkit_glue::SetUserAgent(ua, custom);
 
   // The StatsTable must be initialized in each process; we already
   // initialized for the browser process, now we need to initialize
