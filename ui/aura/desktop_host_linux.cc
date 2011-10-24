@@ -213,6 +213,10 @@ class DesktopHostLinux : public DesktopHost {
   // The size of |xwindow_|.
   gfx::Rect bounds_;
 
+  // True while we requested configure, but haven't recieved configure event
+  // yet.
+  bool expect_configure_event_;
+
   DISALLOW_COPY_AND_ASSIGN(DesktopHostLinux);
 };
 
@@ -309,9 +313,11 @@ base::MessagePumpDispatcher::DispatchStatus DesktopHostLinux::Dispatch(
       // from within aura (e.g. the X window manager can change the size). Make
       // sure the desktop size is maintained properly.
       gfx::Size size(xev->xconfigure.width, xev->xconfigure.height);
-      if (bounds_.size() != size)
+      if (bounds_.size() != size || expect_configure_event_) {
+        expect_configure_event_ = false;
         bounds_.set_size(size);
-      desktop_->OnHostResized(size);
+        desktop_->OnHostResized(size);
+      }
       handled = true;
       break;
     }
@@ -394,6 +400,7 @@ gfx::Size DesktopHostLinux::GetSize() const {
 void DesktopHostLinux::SetSize(const gfx::Size& size) {
   if (bounds_.size() == size)
     return;
+  expect_configure_event_ = true;
   bounds_.set_size(size);
   XResizeWindow(xdisplay_, xwindow_, size.width(), size.height());
 }
