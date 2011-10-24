@@ -45,7 +45,6 @@ void PluginLoaderPosix::OnProcessCrashed(int exit_code) {
   canonical_list_.erase(canonical_list_.begin(),
                         canonical_list_.begin() + next_load_index_ + 1);
   next_load_index_ = 0;
-
   LoadPluginsInternal();
 }
 
@@ -83,11 +82,6 @@ void PluginLoaderPosix::GetPluginsToLoad() {
 void PluginLoaderPosix::LoadPluginsInternal() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  // Check if the list is empty or all plugins have already been loaded before
-  // forking.
-  if (MaybeRunPendingCallbacks())
-    return;
-
   if (load_start_time_.is_null())
     load_start_time_ = base::TimeTicks::Now();
 
@@ -112,7 +106,7 @@ void PluginLoaderPosix::OnPluginLoaded(const webkit::WebPluginInfo& plugin) {
 
   ++next_load_index_;
 
-  MaybeRunPendingCallbacks();
+  RunPendingCallbacks();
 }
 
 void PluginLoaderPosix::OnPluginLoadFailed(const FilePath& plugin_path) {
@@ -125,7 +119,7 @@ void PluginLoaderPosix::OnPluginLoadFailed(const FilePath& plugin_path) {
   ++next_load_index_;
 
   MaybeAddInternalPlugin(plugin_path);
-  MaybeRunPendingCallbacks();
+  RunPendingCallbacks();
 }
 
 bool PluginLoaderPosix::MaybeAddInternalPlugin(const FilePath& plugin_path) {
@@ -142,9 +136,9 @@ bool PluginLoaderPosix::MaybeAddInternalPlugin(const FilePath& plugin_path) {
   return false;
 }
 
-bool PluginLoaderPosix::MaybeRunPendingCallbacks() {
+void PluginLoaderPosix::RunPendingCallbacks() {
   if (next_load_index_ < canonical_list_.size())
-    return false;
+    return;
 
   PluginList::Singleton()->SetPlugins(loaded_plugins_);
   for (std::vector<PendingCallback>::iterator it = callbacks_.begin();
@@ -159,8 +153,6 @@ bool PluginLoaderPosix::MaybeRunPendingCallbacks() {
                   (base::TimeTicks::Now() - load_start_time_)
                       * base::Time::kMicrosecondsPerMillisecond);
   load_start_time_ = base::TimeTicks();
-
-  return true;
 }
 
 PluginLoaderPosix::PendingCallback::PendingCallback(

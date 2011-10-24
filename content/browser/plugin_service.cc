@@ -66,7 +66,8 @@ static void GetPluginsForGroupsCallback(
 // Callback set on the PluginList to assert that plugin loading happens on the
 // correct thread.
 void WillLoadPluginsCallback() {
-#if defined(OS_WIN)
+  // TODO(rsesek): Change these to CHECKs.
+#if defined(OS_WIN) || (defined(OS_POSIX) && !defined(OS_MACOSX))
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 #else
   CHECK(false) << "Plugin loading should happen out-of-process.";
@@ -498,7 +499,7 @@ void PluginService::GetPlugins(const GetPluginsCallback& callback) {
   scoped_refptr<base::MessageLoopProxy> target_loop(
       MessageLoop::current()->message_loop_proxy());
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || (defined(OS_POSIX) && !defined(OS_MACOSX))
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       base::Bind(&PluginService::GetPluginsInternal, base::Unretained(this),
           target_loop, callback));
