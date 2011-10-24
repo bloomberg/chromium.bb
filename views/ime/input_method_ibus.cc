@@ -78,6 +78,7 @@ void IBusKeyEventFromViewsKeyEvent(const views::KeyEvent& key,
     *ibus_keycode = gdk_key->hardware_keycode;
   }
 #endif
+#if defined(TOUCH_UI) || defined(TOOLKIT_USES_GTK)
   else {
     // GdkKeyCodeForWindowsKeyCode() is actually nothing to do with Gtk, we
     // probably want to rename it to something like XKeySymForWindowsKeyCode(),
@@ -86,6 +87,7 @@ void IBusKeyEventFromViewsKeyEvent(const views::KeyEvent& key,
         key.key_code(), key.IsShiftDown() ^ key.IsCapsLockDown());
     *ibus_keycode = 0;
   }
+#endif
 
   *ibus_state = IBusStateFromViewsFlags(key.flags());
   if (key.type() == ui::ET_KEY_RELEASED)
