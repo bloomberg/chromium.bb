@@ -14,7 +14,6 @@
 #include "content/browser/download/download_file.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_manager.h"
-#include "content/browser/download/interrupt_reasons.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/download_manager_delegate.h"
@@ -189,10 +188,10 @@ void DownloadFileManager::UpdateDownload(
 
 void DownloadFileManager::OnResponseCompleted(
     DownloadId global_id,
-    net::Error net_error,
+    InterruptReason reason,
     const std::string& security_info) {
   VLOG(20) << __FUNCTION__ << "()" << " id = " << global_id
-           << " net_error = " << net_error
+           << " reason = " << InterruptReasonDebugString(reason)
            << " security_info = \"" << security_info << "\"";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DownloadFile* download_file = GetDownloadFile(global_id);
@@ -211,12 +210,7 @@ void DownloadFileManager::OnResponseCompleted(
   if (!download_file->GetSha256Hash(&hash))
     hash.clear();
 
-  // ERR_CONNECTION_CLOSED is allowed since a number of servers in the wild
-  // advertise a larger Content-Length than the amount of bytes in the message
-  // body, and then close the connection. Other browsers - IE8, Firefox 4.0.1,
-  // and Safari 5.0.4 - treat the download as complete in this case, so we
-  // follow their lead.
-  if (net_error == net::OK || net_error == net::ERR_CONNECTION_CLOSED) {
+  if (reason == DOWNLOAD_INTERRUPT_REASON_NONE) {
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
@@ -235,9 +229,7 @@ void DownloadFileManager::OnResponseCompleted(
             &DownloadManager::OnDownloadInterrupted,
             global_id.local(),
             download_file->bytes_so_far(),
-            ConvertNetErrorToInterruptReason(
-                net_error,
-                DOWNLOAD_INTERRUPT_FROM_NETWORK)));
+            reason));
   }
   // We need to keep the download around until the UI thread has finalized
   // the name.

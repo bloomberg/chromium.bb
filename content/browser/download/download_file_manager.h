@@ -50,6 +50,7 @@
 #include "base/timer.h"
 #include "content/browser/download/download_id.h"
 #include "content/browser/download/download_request_handle.h"
+#include "content/browser/download/interrupt_reasons.h"
 #include "content/common/content_export.h"
 #include "net/base/net_errors.h"
 #include "ui/gfx/native_widget_types.h"
@@ -86,13 +87,13 @@ class CONTENT_EXPORT DownloadFileManager
   // FILE thread.
   void UpdateDownload(DownloadId global_id, content::DownloadBuffer* buffer);
 
-  // |net_error| is 0 for normal completions, and non-0 for errors.
+  // |reason| is the reason for interruption, if one occurs.
   // |security_info| contains SSL information (cert_id, cert_status,
   // security_bits, ssl_connection_status), which can be used to
   // fine-tune the error message.  It is empty if the transaction
   // was not performed securely.
   void OnResponseCompleted(DownloadId global_id,
-                           net::Error net_error,
+                           InterruptReason reason,
                            const std::string& security_info);
 
   // Handlers for notifications sent from the UI thread and run on the

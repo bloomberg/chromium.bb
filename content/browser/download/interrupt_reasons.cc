@@ -19,6 +19,7 @@ InterruptReason ConvertNetErrorToInterruptReason(
     net::Error net_error, DownloadInterruptSource source) {
   switch (net_error) {
     // File errors.
+    case net::OK: return DOWNLOAD_INTERRUPT_REASON_NONE;
 
     // The file is too large.
     FILE_ERROR_TO_INTERRUPT_REASON(FILE_TOO_BIG, TOO_LARGE)
@@ -93,7 +94,10 @@ std::string InterruptReasonDebugString(InterruptReason error) {
     case DOWNLOAD_INTERRUPT_REASON_##name: return #name;
 
   switch (error) {
+    INTERRUPT_REASON(NONE, 0)
+
 #include "content/browser/download/interrupt_reason_values.h"
+
     default:
       break;
   }

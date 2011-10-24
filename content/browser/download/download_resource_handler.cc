@@ -17,6 +17,7 @@
 #include "content/browser/download/download_item.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_stats.h"
+#include "content/browser/download/interrupt_reasons.h"
 #include "content/browser/renderer_host/global_request_id.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
@@ -195,8 +196,25 @@ bool DownloadResourceHandler::OnResponseCompleted(
            << " request_id = " << request_id
            << " status.status() = " << status.status()
            << " status.error() = " << status.error();
-  net::Error error_code = (status.status() == net::URLRequestStatus::FAILED) ?
-      static_cast<net::Error>(status.error()) : net::OK;
+  net::Error error_code = net::OK;
+  if (status.status() == net::URLRequestStatus::FAILED)
+    error_code = static_cast<net::Error>(status.error());  // Normal case.
+  // ERR_CONNECTION_CLOSED is allowed since a number of servers in the wild
+  // advertise a larger Content-Length than the amount of bytes in the message
+  // body, and then close the connection. Other browsers - IE8, Firefox 4.0.1,
+  // and Safari 5.0.4 - treat the download as complete in this case, so we
+  // follow their lead.
+  if (error_code == net::ERR_CONNECTION_CLOSED)
+    error_code = net::OK;
+  InterruptReason reason =
+      ConvertNetErrorToInterruptReason(error_code,
+                                       DOWNLOAD_INTERRUPT_FROM_NETWORK);
+  if ((status.status() == net::URLRequestStatus::CANCELED) &&
+      (status.error() == net::ERR_ABORTED)) {
+    // TODO(ahendrickson) -- Find a better set of codes to use here, as
+    // CANCELED/ERR_ABORTED can occur for reasons other than user cancel.
+    reason = DOWNLOAD_INTERRUPT_REASON_USER_CANCELED;  // User canceled.
+  }
   if (!download_id_.IsValid())
     CallStartedCB(error_code);
   // We transfer ownership to |DownloadFileManager| to delete |buffer_|,
@@ -207,7 +225,7 @@ bool DownloadResourceHandler::OnResponseCompleted(
       NewRunnableMethod(download_file_manager_,
                         &DownloadFileManager::OnResponseCompleted,
                         download_id_,
-                        error_code,
+                        reason,
                         security_info));
   buffer_ = NULL;  // The buffer is longer needed by |DownloadResourceHandler|.
   read_buffer_ = NULL;
