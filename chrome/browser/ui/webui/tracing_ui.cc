@@ -63,7 +63,7 @@ class TracingMessageHandler
 
   // TraceSubscriber implementation.
   virtual void OnEndTracingComplete();
-  virtual void OnTraceDataCollected(const std::string& json_events);
+  virtual void OnTraceDataCollected(const std::string& trace_fragment);
   virtual void OnTraceBufferPercentFullReply(float percent_full);
 
   // Messages.
@@ -419,13 +419,20 @@ void TracingMessageHandler::OnEndTracingComplete() {
 }
 
 void TracingMessageHandler::OnTraceDataCollected(
-    const std::string& json_events) {
+    const std::string& trace_fragment) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  std::string javascript = "tracingController.onTraceDataCollected("
-      + json_events + ");";
+
+  base::debug::TraceResultBuffer::SimpleOutput output;
+  base::debug::TraceResultBuffer trace_buffer;
+  trace_buffer.SetOutputCallback(output.GetCallback());
+  output.Append("tracingController.onTraceDataCollected(");
+  trace_buffer.Start();
+  trace_buffer.AddFragment(trace_fragment);
+  trace_buffer.Finish();
+  output.Append(");");
 
   web_ui_->tab_contents()->render_view_host()->
-      ExecuteJavascriptInWebFrame(string16(), UTF8ToUTF16(javascript));
+      ExecuteJavascriptInWebFrame(string16(), UTF8ToUTF16(output.json_output));
 }
 
 void TracingMessageHandler::OnTraceBufferPercentFullReply(float percent_full) {

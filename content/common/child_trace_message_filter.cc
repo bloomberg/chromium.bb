@@ -73,16 +73,16 @@ void ChildTraceMessageFilter::OnGetTraceBufferPercentFull() {
 
 void ChildTraceMessageFilter::OnTraceDataCollected(
     const scoped_refptr<base::debug::TraceLog::RefCountedString>&
-        json_events_str_ptr) {
+        events_str_ptr) {
   if (MessageLoop::current() != ChildProcess::current()->io_message_loop()) {
     ChildProcess::current()->io_message_loop()->PostTask(FROM_HERE,
         base::Bind(&ChildTraceMessageFilter::OnTraceDataCollected, this,
-                   json_events_str_ptr));
+                   events_str_ptr));
     return;
   }
 
   channel_->Send(new ChildProcessHostMsg_TraceDataCollected(
-    json_events_str_ptr->data));
+    events_str_ptr->data));
 }
 
 void ChildTraceMessageFilter::OnTraceBufferFull() {
