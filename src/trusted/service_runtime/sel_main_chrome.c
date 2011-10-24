@@ -48,8 +48,7 @@ void NaClSetIrtFileDesc(int fd) {
 
 static void NaClLoadIrt(struct NaClApp *nap) {
   int file_desc;
-  struct NaClDesc *nacl_desc;
-  struct NaClGioNaClDesc gio_nacl_desc;
+  struct GioPio gio_pio;
   struct Gio *gio_desc;
 
   /*
@@ -67,33 +66,22 @@ static void NaClLoadIrt(struct NaClApp *nap) {
   if (file_desc < 0) {
     NaClLog(LOG_FATAL, "NaClLoadIrt: Failed to dup() file descriptor\n");
   }
-  nacl_desc = (struct NaClDesc *)
-    NaClDescIoDescMake(NaClHostDescPosixMake(file_desc, /* mode= */ 0));
-  if (NULL == nacl_desc) {
-    NaClLog(LOG_FATAL, "NaClLoadIrt: Failed to create NaClDesc wrapper\n");
-  }
+
   /*
-   * TODO(mseaborn): Ideally we would use NaClGioShm rather than
-   * NaClGioNaClDesc.  NaClGioNaClDesc will modify the file
-   * descriptor's seek position when we call
-   * NaClAppLoadFileDynamically(), which has a race condition if
-   * Chromium shares the file descriptor between multiple sel_ldr
-   * instances.
-   *
-   * However, NaClGioShm currently does not work with NaClDescIoDesc
-   * instances because NaClDescIoDescMap() requires MAP_FIXED.
-   * See http://code.google.com/p/nativeclient/issues/detail?id=1705
+   * The GioPio type is safe to use when this file descriptor is shared
+   * with other processes, because it does not use the shared file position.
    */
-  if (!NaClGioNaClDescCtor(&gio_nacl_desc, nacl_desc)) {
+  if (!GioPioCtor(&gio_pio, file_desc)) {
     NaClLog(LOG_FATAL, "NaClLoadIrt: Failed to create Gio wrapper\n");
   }
-  NaClDescUnref(nacl_desc);
-  gio_desc = (struct Gio *) &gio_nacl_desc;
+  gio_desc = (struct Gio *) &gio_pio;
+
   if (NaClAppLoadFileDynamically(nap, gio_desc) != LOAD_OK) {
     NaClLog(0, "NaClLoadIrt: Failed to load the integrated runtime (IRT).  "
             "The user executable was probably not built to use the IRT.  "
             "Continuing anyway.\n");
   }
+
   (*NACL_VTBL(Gio, gio_desc)->Close)(gio_desc);
   (*NACL_VTBL(Gio, gio_desc)->Dtor)(gio_desc);
 }
