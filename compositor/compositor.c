@@ -997,10 +997,10 @@ wlsc_output_finish_frame(struct wlsc_output *output, int msecs)
 		output->pending_scanout_buffer = NULL;
 	}
 
-	output->repaint_scheduled = 0;
-
 	if (output->repaint_needed)
 		repaint(output, msecs);
+	else
+		output->repaint_scheduled = 0;
 }
 
 WL_EXPORT void
