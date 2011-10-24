@@ -1793,6 +1793,7 @@ void Plugin::XYZZY(const nacl::string& url,
       callback_factory_.NewRequiredCallback(pmem,
           reinterpret_cast<plugin::FileDownloader*>(NULL),
           js_callback);
+  static_cast<void>(open_callback);
 }
 #endif  // HACK_FOR_MACOS_HANG_REMOVED
 
