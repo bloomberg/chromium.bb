@@ -37,6 +37,7 @@
 #if TARGET_OS_IPHONE
 #include <mach/vm_map.h>
 #define mach_vm_address_t vm_address_t
+#define mach_vm_deallocate vm_deallocate
 #define mach_vm_read vm_read
 #define mach_vm_region vm_region
 #define mach_vm_region_recurse vm_region_recurse
