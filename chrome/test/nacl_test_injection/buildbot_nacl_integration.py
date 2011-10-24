@@ -22,6 +22,11 @@ def Main(args):
     sys.stdout.write('Skipping nacl_integration, see http://crbug.com/101050\n')
     return
 
+  if not is_integration_bot and sys.platform == 'linux2':
+    # TODO: Reenable.
+    sys.stdout.write('Skipping nacl_integration, see http://crbug.com/101401\n')
+    return
+
   # On the main Chrome waterfall, we may need to control where the tests are
   # run.
   # If there is serious skew in the PPAPI interface that causes all of
