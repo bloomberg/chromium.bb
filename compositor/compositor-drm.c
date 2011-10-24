@@ -99,8 +99,6 @@ drm_output_present(struct wlsc_output *output_base)
 		(struct drm_compositor *) output->base.compositor;
 	uint32_t fb_id = 0;
 
-	if (drm_output_prepare_render(&output->base))
-		return -1;
 	glFlush();
 
 	output->current ^= 1;
