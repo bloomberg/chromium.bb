@@ -12,6 +12,7 @@
 #include "chrome/common/net/http_return.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/net/url_fetcher.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
@@ -66,13 +67,7 @@ void DownloadProtectionService::SetEnabledOnIOThread(bool enabled) {
   }
 }
 
-void DownloadProtectionService::OnURLFetchComplete(
-    const URLFetcher* source,
-    const GURL& url,
-    const net::URLRequestStatus& status,
-    int response_code,
-    const net::ResponseCookies& cookies,
-    const std::string& data) {
+void DownloadProtectionService::OnURLFetchComplete(const URLFetcher* source) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   scoped_ptr<const URLFetcher> s(source);  // will delete the URLFetcher object.
   if (download_requests_.find(source) != download_requests_.end()) {
@@ -85,14 +80,17 @@ void DownloadProtectionService::OnURLFetchComplete(
       return;
     }
     DownloadCheckResultReason reason = REASON_MAX;
-    if (status.is_success() &&
-        RC_REQUEST_OK == response_code &&
-        data.size() > 0) {
-      // For now no matter what we'll always say the download is safe.
-      // TODO(noelutz): Parse the response body to see exactly what's going on.
-      reason = REASON_INVALID_RESPONSE_PROTO;
-    } else {
-      reason = REASON_SERVER_PING_FAILED;
+    reason = REASON_SERVER_PING_FAILED;
+    if (source->status().is_success() &&
+        RC_REQUEST_OK == source->response_code()) {
+      std::string data;
+      source->GetResponseAsString(&data);
+      if (data.size() > 0) {
+        // For now no matter what we'll always say the download is safe.
+        // TODO(noelutz): Parse the response body to see exactly what's going
+        // on.
+        reason = REASON_INVALID_RESPONSE_PROTO;
+      }
     }
     BrowserThread::PostTask(
         BrowserThread::UI,

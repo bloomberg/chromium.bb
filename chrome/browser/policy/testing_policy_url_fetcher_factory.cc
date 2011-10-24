@@ -40,13 +40,31 @@ class TestingPolicyURLFetcher : public URLFetcher {
       const base::WeakPtr<TestingPolicyURLFetcherFactory>& parent,
       const GURL& url,
       URLFetcher::RequestType request_type,
-      URLFetcher::Delegate* delegate);
+      content::URLFetcherDelegate* delegate);
 
   virtual void Start() OVERRIDE;
   void Respond();
 
+  virtual const GURL& url() const {
+    return url_;
+  }
+
+  virtual const net::URLRequestStatus& status() const {
+    return status_;
+  }
+
+  virtual int response_code() const {
+    return response_.response_code;
+  }
+
+  virtual bool GetResponseAsString(std::string* out_response_string) const {
+    *out_response_string = response_.response_data;
+    return true;
+  }
+
  private:
   GURL url_;
+  net::URLRequestStatus status_;
   TestURLResponse response_;
   base::WeakPtr<TestingPolicyURLFetcherFactory> parent_;
 
@@ -57,9 +75,10 @@ TestingPolicyURLFetcher::TestingPolicyURLFetcher(
     const base::WeakPtr<TestingPolicyURLFetcherFactory>& parent,
     const GURL& url,
     URLFetcher::RequestType request_type,
-    URLFetcher::Delegate* delegate)
+    content::URLFetcherDelegate* delegate)
         : URLFetcher(url, request_type, delegate),
           url_(url),
+          status_(net::URLRequestStatus::SUCCESS, 0),
           parent_(parent) {
 }
 
@@ -82,13 +101,7 @@ void TestingPolicyURLFetcher::Start() {
 }
 
 void TestingPolicyURLFetcher::Respond() {
-  delegate()->OnURLFetchComplete(
-      this,
-      url_,
-      net::URLRequestStatus(net::URLRequestStatus::SUCCESS, 0),
-      response_.response_code,
-      net::ResponseCookies(),
-      response_.response_data);
+  delegate()->OnURLFetchComplete(this);
 }
 
 TestingPolicyURLFetcherFactory::TestingPolicyURLFetcherFactory(
@@ -118,7 +131,7 @@ URLFetcher* TestingPolicyURLFetcherFactory::CreateURLFetcher(
     int id,
     const GURL& url,
     URLFetcher::RequestType request_type,
-    URLFetcher::Delegate* delegate) {
+    content::URLFetcherDelegate* delegate) {
   return new TestingPolicyURLFetcher(
       weak_ptr_factory_.GetWeakPtr(), url, request_type, delegate);
 }

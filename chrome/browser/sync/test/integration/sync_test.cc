@@ -36,6 +36,7 @@
 #include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher_delegate.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
@@ -66,18 +67,15 @@ const char kSearchDomainCheckUrl[] =
 }
 
 // Helper class that checks whether a sync test server is running or not.
-class SyncServerStatusChecker : public URLFetcher::Delegate {
+class SyncServerStatusChecker : public content::URLFetcherDelegate {
  public:
   SyncServerStatusChecker() : running_(false) {}
 
-  virtual void OnURLFetchComplete(const URLFetcher* source,
-                                  const GURL& url,
-                                  const net::URLRequestStatus& status,
-                                  int response_code,
-                                  const net::ResponseCookies& cookies,
-                                  const std::string& data) {
-    running_ = (status.status() == net::URLRequestStatus::SUCCESS &&
-                response_code == 200 && data.find("ok") == 0);
+  virtual void OnURLFetchComplete(const URLFetcher* source) {
+    std::string data;
+    source->GetResponseAsString(&data);
+    running_ = (source->status().status() == net::URLRequestStatus::SUCCESS &&
+                source->response_code() == 200 && data.find("ok") == 0);
     MessageLoop::current()->Quit();
   }
 

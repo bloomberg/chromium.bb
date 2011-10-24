@@ -39,6 +39,7 @@
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/net/url_fetcher.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -358,12 +359,7 @@ void TranslateManager::Observe(int type,
   }
 }
 
-void TranslateManager::OnURLFetchComplete(const URLFetcher* source,
-                                          const GURL& url,
-                                          const net::URLRequestStatus& status,
-                                          int response_code,
-                                          const net::ResponseCookies& cookies,
-                                          const std::string& data) {
+void TranslateManager::OnURLFetchComplete(const URLFetcher* source) {
   if (translate_script_request_pending_.get() != source &&
       language_list_request_pending_.get() != source) {
     // Looks like crash on Mac is possibly caused with callback entering here
@@ -372,8 +368,8 @@ void TranslateManager::OnURLFetchComplete(const URLFetcher* source,
     return;
   }
 
-  bool error = (status.status() != net::URLRequestStatus::SUCCESS ||
-                response_code != 200);
+  bool error = (source->status().status() != net::URLRequestStatus::SUCCESS ||
+                source->response_code() != 200);
   if (translate_script_request_pending_.get() == source) {
     scoped_ptr<const URLFetcher> delete_ptr(
         translate_script_request_pending_.release());
@@ -382,6 +378,8 @@ void TranslateManager::OnURLFetchComplete(const URLFetcher* source,
           GetRawDataResource(IDR_TRANSLATE_JS);
       DCHECK(translate_script_.empty());
       str.CopyToString(&translate_script_);
+      std::string data;
+      source->GetResponseAsString(&data);
       translate_script_ += "\n" + data;
       // We'll expire the cached script after some time, to make sure long
       // running browsers still get fixes that might get pushed with newer
@@ -429,10 +427,13 @@ void TranslateManager::OnURLFetchComplete(const URLFetcher* source,
   } else {  // if (translate_script_request_pending_.get() == source)
     scoped_ptr<const URLFetcher> delete_ptr(
         language_list_request_pending_.release());
-    if (!error)
+    if (!error) {
+      std::string data;
+      source->GetResponseAsString(&data);
       SetSupportedLanguages(data);
-    else
+    } else {
       VLOG(1) << "Failed to Fetch languages from: " << kLanguageListFetchURL;
+    }
   }
 }
 

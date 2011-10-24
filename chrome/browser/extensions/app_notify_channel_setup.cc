@@ -10,6 +10,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/net/url_fetcher.h"
 #include "net/base/escape.h"
 #include "net/url_request/url_request_status.h"
 

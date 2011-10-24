@@ -20,6 +20,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/net/url_fetcher.h"
 
 // Manifest attributes names.
 
@@ -300,13 +301,10 @@ void ServicesCustomizationDocument::StartFileFetch() {
 }
 
 void ServicesCustomizationDocument::OnURLFetchComplete(
-    const URLFetcher* source,
-    const GURL& url,
-    const net::URLRequestStatus& status,
-    int response_code,
-    const net::ResponseCookies& cookies,
-    const std::string& data) {
-  if (response_code == 200) {
+    const URLFetcher* source) {
+  if (source->response_code() == 200) {
+    std::string data;
+    source->GetResponseAsString(&data);
     LoadManifestFromString(data);
   } else {
     NetworkLibrary* network = CrosLibrary::Get()->GetNetworkLibrary();
@@ -318,8 +316,8 @@ void ServicesCustomizationDocument::OnURLFetchComplete(
       return;
     }
     LOG(ERROR) << "URL fetch for services customization failed:"
-               << " response code = " << response_code
-               << " URL = " << url.spec();
+               << " response code = " << source->response_code()
+               << " URL = " << source->url().spec();
   }
 }
 

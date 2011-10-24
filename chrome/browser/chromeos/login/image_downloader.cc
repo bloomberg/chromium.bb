@@ -12,6 +12,7 @@
 #include "base/stringprintf.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/net/url_fetcher.h"
 
 namespace chromeos {
 
@@ -39,16 +40,13 @@ ImageDownloader::ImageDownloader(ImageDecoder::Delegate* delegate,
 
 ImageDownloader::~ImageDownloader() {}
 
-void ImageDownloader::OnURLFetchComplete(const URLFetcher* source,
-                                         const GURL& url,
-                                         const net::URLRequestStatus& status,
-                                         int response_code,
-                                         const net::ResponseCookies& cookies,
-                                         const std::string& data) {
+void ImageDownloader::OnURLFetchComplete(const URLFetcher* source) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (response_code != 200) {
-    LOG(ERROR) << "Response code is " << response_code;
-    LOG(ERROR) << "Url is " << url.spec();
+  std::string data;
+  source->GetResponseAsString(&data);
+  if (source->response_code() != 200) {
+    LOG(ERROR) << "Response code is " << source->response_code();
+    LOG(ERROR) << "Url is " << source->url().spec();
     LOG(ERROR) << "Data is " << data;
     MessageLoop::current()->DeleteSoon(FROM_HERE, this);
     return;

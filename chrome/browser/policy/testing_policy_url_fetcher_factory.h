@@ -10,7 +10,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher_delegate.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -39,7 +39,7 @@ class TestingPolicyURLFetcherFactory : public URLFetcher::Factory,
       int id,
       const GURL& url,
       URLFetcher::RequestType request_type,
-      URLFetcher::Delegate* delegate) OVERRIDE;
+      content::URLFetcherDelegate* delegate) OVERRIDE;
 
   LoggingWorkScheduler* scheduler();
 

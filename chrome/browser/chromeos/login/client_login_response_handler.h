@@ -35,7 +35,7 @@ class ClientLoginResponseHandler : public AuthResponseHandler {
   // to sent to IssueAuthToken and issues said query.  |catcher| will receive
   // the response to the fetch.
   virtual URLFetcher* Handle(const std::string& to_process,
-                             URLFetcher::Delegate* catcher);
+                             content::URLFetcherDelegate* catcher);
 
   // exposed for tests.
   std::string payload() { return payload_; }

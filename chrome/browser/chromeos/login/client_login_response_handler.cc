@@ -27,7 +27,7 @@ bool ClientLoginResponseHandler::CanHandle(const GURL& url) {
 // Overridden from AuthResponseHandler.
 URLFetcher* ClientLoginResponseHandler::Handle(
     const std::string& to_process,
-    URLFetcher::Delegate* catcher) {
+    content::URLFetcherDelegate* catcher) {
   VLOG(1) << "Handling ClientLogin response!";
   payload_.assign(to_process);
   std::replace(payload_.begin(), payload_.end(), '\n', '&');

@@ -17,6 +17,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/url_constants.h"
+#include "content/common/net/url_fetcher.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_status.h"
 
@@ -352,7 +353,7 @@ void AppsPromoLogoFetcher::OnURLFetchComplete(const URLFetcher* source) {
   std::string base64_data;
 
   CHECK(source == url_fetcher_.get());
-  CHECK(source->GetResponseAsString(&data));
+  source->GetResponseAsString(&data);
 
   if (source->status().is_success() &&
       source->response_code() == kHttpSuccess &&

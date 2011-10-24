@@ -28,6 +28,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "content/common/net/url_fetcher.h"
 #include "googleurl/src/url_util.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
@@ -243,18 +244,14 @@ void SearchProvider::Stop() {
   default_provider_suggest_text_.clear();
 }
 
-void SearchProvider::OnURLFetchComplete(const URLFetcher* source,
-                                        const GURL& url,
-                                        const net::URLRequestStatus& status,
-                                        int response_code,
-                                        const net::ResponseCookies& cookie,
-                                        const std::string& data) {
+void SearchProvider::OnURLFetchComplete(const URLFetcher* source) {
   DCHECK(!done_);
   suggest_results_pending_--;
   DCHECK_GE(suggest_results_pending_, 0);  // Should never go negative.
   const net::HttpResponseHeaders* const response_headers =
       source->response_headers();
-  std::string json_data(data);
+  std::string json_data;
+  source->GetResponseAsString(&json_data);
   // JSON is supposed to be UTF-8, but some suggest service providers send JSON
   // files in non-UTF-8 encodings.  The actual encoding is usually specified in
   // the Content-Type header field.
@@ -263,7 +260,7 @@ void SearchProvider::OnURLFetchComplete(const URLFetcher* source,
     if (response_headers->GetCharset(&charset)) {
       string16 data_16;
       // TODO(jungshik): Switch to CodePageToUTF8 after it's added.
-      if (base::CodepageToUTF16(data, charset.c_str(),
+      if (base::CodepageToUTF16(json_data, charset.c_str(),
                                 base::OnStringConversionError::FAIL,
                                 &data_16))
         json_data = UTF16ToUTF8(data_16);
@@ -274,7 +271,7 @@ void SearchProvider::OnURLFetchComplete(const URLFetcher* source,
   SuggestResults* suggest_results = is_keyword_results ?
       &keyword_suggest_results_ : &default_suggest_results_;
 
-  if (status.is_success() && response_code == 200) {
+  if (source->status().is_success() && source->response_code() == 200) {
     JSONStringValueSerializer deserializer(json_data);
     deserializer.set_allow_trailing_comma(true);
     scoped_ptr<Value> root_val(deserializer.Deserialize(NULL, NULL));

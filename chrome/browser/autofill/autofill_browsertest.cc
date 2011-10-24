@@ -135,11 +135,11 @@ class AutofillTest : public InProcessBrowserTest {
         "  };"
         "})();";
 
-    fetcher->delegate()->OnURLFetchComplete(fetcher,
-                                            fetcher->original_url(),
-                                            status, success ? 200 : 500,
-                                            net::ResponseCookies(),
-                                            script);
+    fetcher->set_url(fetcher->original_url());
+    fetcher->set_status(status);
+    fetcher->set_response_code(success ? 200 : 500);
+    fetcher->SetResponseString(script);
+    fetcher->delegate()->OnURLFetchComplete(fetcher);
   }
 
   void FocusFirstNameField() {

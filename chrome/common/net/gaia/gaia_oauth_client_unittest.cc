@@ -13,6 +13,7 @@
 #include "chrome/common/net/http_return.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher_delegate.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
@@ -31,7 +32,7 @@ class MockOAuthFetcher : public URLFetcher {
                    const GURL& url,
                    const std::string& results,
                    URLFetcher::RequestType request_type,
-                   URLFetcher::Delegate* d)
+                   content::URLFetcherDelegate* d)
     : URLFetcher(url, request_type, d),
       response_code_(response_code),
       max_failure_count_(max_failure_count),
@@ -51,16 +52,30 @@ class MockOAuthFetcher : public URLFetcher {
       code = net::URLRequestStatus::FAILED;
       current_failure_count_++;
     }
-    net::URLRequestStatus status(code, 0);
-    delegate()->OnURLFetchComplete(this,
-                                   url_,
-                                   status,
-                                   response_code_,
-                                   net::ResponseCookies(),
-                                   results_);
+    status_ = net::URLRequestStatus(code, 0);
+
+    delegate()->OnURLFetchComplete(this);
+  }
+
+  virtual const GURL& url() const {
+    return url_;
+  }
+
+  virtual const net::URLRequestStatus& status() const {
+    return status_;
+  }
+
+  virtual int response_code() const {
+    return response_code_;
+  }
+
+  virtual bool GetResponseAsString(std::string* out_response_string) const {
+    *out_response_string = results_;
+    return true;
   }
 
  private:
+  net::URLRequestStatus status_;
   int response_code_;
   int max_failure_count_;
   int current_failure_count_;
@@ -81,7 +96,7 @@ class MockOAuthFetcherFactory : public URLFetcher::Factory,
       int id,
       const GURL& url,
       URLFetcher::RequestType request_type,
-      URLFetcher::Delegate* d) {
+      content::URLFetcherDelegate* d) {
     return new MockOAuthFetcher(
         response_code_,
         max_failure_count_,

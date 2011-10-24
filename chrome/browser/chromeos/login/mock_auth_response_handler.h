@@ -35,9 +35,10 @@ class MockAuthResponseHandler : public AuthResponseHandler {
 
   MOCK_METHOD1(CanHandle, bool(const GURL& url));
   MOCK_METHOD2(Handle, URLFetcher*(const std::string& to_process,
-                                   URLFetcher::Delegate* catcher));
+                                   content::URLFetcherDelegate* catcher));
 
-  URLFetcher* MockNetwork(std::string data, URLFetcher::Delegate* delegate);
+  URLFetcher* MockNetwork(std::string data,
+                          content::URLFetcherDelegate* delegate);
 
  private:
   const GURL remote_;
@@ -45,7 +46,7 @@ class MockAuthResponseHandler : public AuthResponseHandler {
   const int http_response_code_;
   const std::string data_;
 
-  static void CompleteFetch(URLFetcher::Delegate* delegate,
+  static void CompleteFetch(content::URLFetcherDelegate* delegate,
                             const GURL remote,
                             const net::URLRequestStatus status,
                             const int http_response_code,

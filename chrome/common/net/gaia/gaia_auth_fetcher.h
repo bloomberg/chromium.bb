@@ -11,7 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
 
 // Authenticate a user against the Google Accounts ClientLogin API
@@ -26,7 +26,12 @@
 
 class GaiaAuthFetcherTest;
 
-class GaiaAuthFetcher : public URLFetcher::Delegate {
+namespace net {
+class URLRequestContextGetter;
+class URLRequestStatus;
+}
+
+class GaiaAuthFetcher : public content::URLFetcherDelegate {
  public:
   enum HostedAccountsSetting {
     HostedAccountsAllowed,
@@ -76,13 +81,8 @@ class GaiaAuthFetcher : public URLFetcher::Delegate {
   // existing accounts.
   void StartMergeSession(const std::string& auth_token);
 
-  // Implementation of URLFetcher::Delegate
-  virtual void OnURLFetchComplete(const URLFetcher* source,
-                                  const GURL& url,
-                                  const net::URLRequestStatus& status,
-                                  int response_code,
-                                  const net::ResponseCookies& cookies,
-                                  const std::string& data);
+  // Implementation of content::URLFetcherDelegate
+  virtual void OnURLFetchComplete(const URLFetcher* source);
 
   // StartClientLogin been called && results not back yet?
   bool HasPendingFetch();
@@ -201,7 +201,7 @@ class GaiaAuthFetcher : public URLFetcher::Delegate {
                                        const std::string& body,
                                        const GURL& gaia_gurl,
                                        bool send_cookies,
-                                       URLFetcher::Delegate* delegate);
+                                       content::URLFetcherDelegate* delegate);
 
   // From a URLFetcher result, generate an appropriate error.
   // From the API documentation, both IssueAuthToken and ClientLogin have

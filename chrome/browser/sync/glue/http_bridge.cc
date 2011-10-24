@@ -8,6 +8,7 @@
 #include "base/message_loop_proxy.h"
 #include "base/string_number_conversions.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/net/url_fetcher.h"
 #include "content/public/common/content_client.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/host_resolver.h"
@@ -265,12 +266,7 @@ void HttpBridge::Abort() {
   http_post_completed_.Signal();
 }
 
-void HttpBridge::OnURLFetchComplete(const URLFetcher *source,
-                                    const GURL &url,
-                                    const net::URLRequestStatus &status,
-                                    int response_code,
-                                    const net::ResponseCookies &cookies,
-                                    const std::string &data) {
+void HttpBridge::OnURLFetchComplete(const URLFetcher *source) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   base::AutoLock lock(fetch_state_lock_);
   if (fetch_state_.aborted)
@@ -278,11 +274,11 @@ void HttpBridge::OnURLFetchComplete(const URLFetcher *source,
 
   fetch_state_.request_completed = true;
   fetch_state_.request_succeeded =
-      (net::URLRequestStatus::SUCCESS == status.status());
-  fetch_state_.http_response_code = response_code;
-  fetch_state_.error_code = status.error();
+      (net::URLRequestStatus::SUCCESS == source->status().status());
+  fetch_state_.http_response_code = source->response_code();
+  fetch_state_.error_code = source->status().error();
 
-  fetch_state_.response_content = data;
+  source->GetResponseAsString(&fetch_state_.response_content);
   fetch_state_.response_headers = source->response_headers();
 
   // End of the line for url_poster_. It lives only on the IO loop.

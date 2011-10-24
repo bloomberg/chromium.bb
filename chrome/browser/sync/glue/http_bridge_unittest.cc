@@ -129,9 +129,11 @@ class ShuntedHttpBridge : public HttpBridge {
 
     std::string response_content = "success!";
     DummyURLFetcher fetcher;
-    OnURLFetchComplete(&fetcher, GURL("www.google.com"),
-                       net::URLRequestStatus(),
-                       200, cookies, response_content);
+    fetcher.set_url(GURL("www.google.com"));
+    fetcher.set_response_code(200);
+    fetcher.set_cookies(cookies);
+    fetcher.SetResponseString(response_content);
+    OnURLFetchComplete(&fetcher);
   }
   HttpBridgeTest* test_;
   bool never_finishes_;

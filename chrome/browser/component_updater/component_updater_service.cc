@@ -26,6 +26,7 @@
 #include "content/browser/utility_process_host.h"
 #include "content/common/net/url_fetcher.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
@@ -96,7 +97,7 @@ bool IsVersionNewer(const Version& current, const std::string& proposed) {
 // OnURLFetchComplete() callbacks for diffent types of url requests
 // they are differentiated by the |Ctx| type.
 template <typename Del, typename Ctx>
-class DelegateWithContext : public URLFetcher::Delegate {
+class DelegateWithContext : public content::URLFetcherDelegate {
  public:
   DelegateWithContext(Del* delegate, Ctx* context)
     : delegate_(delegate), context_(context) {}
@@ -114,7 +115,7 @@ class DelegateWithContext : public URLFetcher::Delegate {
 };
 // This function creates the right DelegateWithContext using template inference.
 template <typename Del, typename Ctx>
-URLFetcher::Delegate* MakeContextDelegate(Del* delegate, Ctx* context) {
+content::URLFetcherDelegate* MakeContextDelegate(Del* delegate, Ctx* context) {
   return new DelegateWithContext<Del, Ctx>(delegate, context);
 }
 

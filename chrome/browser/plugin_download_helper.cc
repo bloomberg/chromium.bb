@@ -9,6 +9,7 @@
 
 #include "base/file_util.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/net/url_fetcher.h"
 #include "net/base/io_buffer.h"
 
 PluginDownloadUrlHelper::PluginDownloadUrlHelper(

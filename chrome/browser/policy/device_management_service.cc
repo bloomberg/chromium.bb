@@ -13,6 +13,7 @@
 #include "chrome/browser/policy/device_management_backend_impl.h"
 #include "content/browser/browser_thread.h"
 #include "content/public/common/content_client.h"
+#include "content/common/net/url_fetcher.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/host_resolver.h"
 #include "net/base/load_flags.h"
@@ -221,13 +222,7 @@ void DeviceManagementService::StartJob(DeviceManagementJob* job,
   fetcher->Start();
 }
 
-void DeviceManagementService::OnURLFetchComplete(
-    const URLFetcher* source,
-    const GURL& url,
-    const net::URLRequestStatus& status,
-    int response_code,
-    const net::ResponseCookies& cookies,
-    const std::string& data) {
+void DeviceManagementService::OnURLFetchComplete(const URLFetcher* source) {
   JobFetcherMap::iterator entry(pending_jobs_.find(source));
   if (entry != pending_jobs_.end()) {
     DeviceManagementJob* job = entry->second;
@@ -238,10 +233,10 @@ void DeviceManagementService::OnURLFetchComplete(
     // the proxy.
     bool retry = false;
     if ((source->load_flags() & net::LOAD_BYPASS_PROXY) == 0) {
-      if (!status.is_success() && IsProxyError(status)) {
+      if (!source->status().is_success() && IsProxyError(source->status())) {
         LOG(WARNING) << "Proxy failed while contacting dmserver.";
         retry = true;
-      } else if (status.is_success() &&
+      } else if (source->status().is_success() &&
                  source->was_fetched_via_proxy() &&
                  !IsProtobufMimeType(source)) {
         // The proxy server can be misconfigured but pointing to an existing
@@ -257,7 +252,10 @@ void DeviceManagementService::OnURLFetchComplete(
       LOG(WARNING) << "Retrying dmserver request without using a proxy.";
       StartJob(job, true);
     } else {
-      job->HandleResponse(status, response_code, cookies, data);
+      std::string data;
+      source->GetResponseAsString(&data);
+      job->HandleResponse(source->status(), source->response_code(),
+                          source->cookies(), data);
     }
   } else {
     NOTREACHED() << "Callback from foreign URL fetcher";

@@ -11,15 +11,15 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/image_decoder.h"
-#include "content/common/net/url_fetcher.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
 
 namespace chromeos {
 
 // Downloads user profile image, decodes it in a sandboxed process.
-class ProfileImageDownloader : public URLFetcher::Delegate,
+class ProfileImageDownloader : public content::URLFetcherDelegate,
                                public ImageDecoder::Delegate,
                                public content::NotificationObserver {
  public:
@@ -44,7 +44,7 @@ class ProfileImageDownloader : public URLFetcher::Delegate,
   void Start();
 
  private:
-  // Overriden from URLFetcher::Delegate:
+  // Overriden from content::URLFetcherDelegate:
   virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
 
   // Overriden from ImageDecoder::Delegate:

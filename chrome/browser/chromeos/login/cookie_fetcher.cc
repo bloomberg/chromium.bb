@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_paths.h"
+#include "content/common/net/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 
 namespace chromeos {
@@ -40,15 +41,13 @@ void CookieFetcher::AttemptFetch(const std::string& credentials) {
   fetcher_.reset(client_login_handler_->Handle(credentials, this));
 }
 
-void CookieFetcher::OnURLFetchComplete(const URLFetcher* source,
-                                       const GURL& url,
-                                       const net::URLRequestStatus& status,
-                                       int response_code,
-                                       const net::ResponseCookies& cookies,
-                                       const std::string& data) {
-  if (status.is_success() && response_code == kHttpSuccess) {
-    if (issue_handler_->CanHandle(url)) {
+void CookieFetcher::OnURLFetchComplete(const URLFetcher* source) {
+  if (source->status().is_success() &&
+      source->response_code() == kHttpSuccess) {
+    if (issue_handler_->CanHandle(source->url())) {
       VLOG(1) << "Handling auth token";
+      std::string data;
+      source->GetResponseAsString(&data);
       fetcher_.reset(issue_handler_->Handle(data, this));
       return;
     }

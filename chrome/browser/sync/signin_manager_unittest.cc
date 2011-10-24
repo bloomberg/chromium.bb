@@ -43,20 +43,23 @@ class SigninManagerTest : public TokenServiceTestHarness {
     TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
     DCHECK(fetcher);
     DCHECK(fetcher->delegate());
-    fetcher->delegate()->OnURLFetchComplete(
-        fetcher, GURL(GaiaUrls::GetInstance()->client_login_url()),
-        net::URLRequestStatus(), 200, net::ResponseCookies(),
-        "SID=sid\nLSID=lsid\nAuth=auth");
+
+    fetcher->set_url(GURL(GaiaUrls::GetInstance()->client_login_url()));
+    fetcher->set_status(net::URLRequestStatus());
+    fetcher->set_response_code(200);
+    fetcher->SetResponseString("SID=sid\nLSID=lsid\nAuth=auth");
+    fetcher->delegate()->OnURLFetchComplete(fetcher);
 
     // Then simulate the correct GetUserInfo response for the canonical email.
     // A new URL fetcher is used for each call.
     fetcher = factory_.GetFetcherByID(0);
     DCHECK(fetcher);
     DCHECK(fetcher->delegate());
-    fetcher->delegate()->OnURLFetchComplete(
-        fetcher, GURL(GaiaUrls::GetInstance()->get_user_info_url()),
-        net::URLRequestStatus(), 200, net::ResponseCookies(),
-        "email=user@gmail.com");
+    fetcher->set_url(GURL(GaiaUrls::GetInstance()->get_user_info_url()));
+    fetcher->set_status(net::URLRequestStatus());
+    fetcher->set_response_code(200);
+    fetcher->SetResponseString("email=user@gmail.com");
+    fetcher->delegate()->OnURLFetchComplete(fetcher);
   }
 
   void SimulateSigninStartOAuth() {

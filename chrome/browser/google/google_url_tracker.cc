@@ -22,6 +22,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/net/url_fetcher.h"
 #include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
 #include "net/base/load_flags.h"
@@ -221,17 +222,12 @@ void GoogleURLTracker::StartFetchIfDesirable() {
   fetcher_->Start();
 }
 
-void GoogleURLTracker::OnURLFetchComplete(const URLFetcher* source,
-                                          const GURL& url,
-                                          const net::URLRequestStatus& status,
-                                          int response_code,
-                                          const net::ResponseCookies& cookies,
-                                          const std::string& data) {
+void GoogleURLTracker::OnURLFetchComplete(const URLFetcher* source) {
   // Delete the fetcher on this function's exit.
   scoped_ptr<URLFetcher> clean_up_fetcher(fetcher_.release());
 
   // Don't update the URL if the request didn't succeed.
-  if (!status.is_success() || (response_code != 200)) {
+  if (!source->status().is_success() || (source->response_code() != 200)) {
     already_fetched_ = false;
     return;
   }
@@ -239,7 +235,8 @@ void GoogleURLTracker::OnURLFetchComplete(const URLFetcher* source,
   // See if the response data was one we want to use, and if so, convert to the
   // appropriate Google base URL.
   std::string url_str;
-  TrimWhitespace(data, TRIM_ALL, &url_str);
+  source->GetResponseAsString(&url_str);
+  TrimWhitespace(url_str, TRIM_ALL, &url_str);
 
   if (!StartsWithASCII(url_str, ".google.", false))
     return;

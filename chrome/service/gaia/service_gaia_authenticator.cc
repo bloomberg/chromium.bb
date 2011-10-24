@@ -7,6 +7,7 @@
 #include "base/message_loop_proxy.h"
 #include "chrome/service/net/service_url_request_context.h"
 #include "chrome/service/service_process.h"
+#include "content/common/net/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 
 ServiceGaiaAuthenticator::ServiceGaiaAuthenticator(
@@ -70,11 +71,11 @@ void ServiceGaiaAuthenticator::DoPost(const GURL& post_url,
   request->Start();
 }
 
-// URLFetcher::Delegate implementation
+// content::URLFetcherDelegate implementation
 void ServiceGaiaAuthenticator::OnURLFetchComplete(const URLFetcher* source) {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
   http_response_code_ = source->response_code();
-  response_data_ = source->GetResponseStringRef();
+  source->GetResponseAsString(&response_data_);
   delete source;
   // Add an extra reference because we want http_post_completed_ to remain
   // valid until after Signal() returns.

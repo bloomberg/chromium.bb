@@ -16,6 +16,7 @@
 #include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/net/http_return.h"
+#include "content/common/net/url_fetcher.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -129,7 +130,7 @@ URLFetcher* GaiaAuthFetcher::CreateGaiaFetcher(
     const std::string& body,
     const GURL& gaia_gurl,
     bool send_cookies,
-    URLFetcher::Delegate* delegate) {
+    content::URLFetcherDelegate* delegate) {
 
   URLFetcher* to_return =
       URLFetcher::Create(0,
@@ -579,13 +580,13 @@ void GaiaAuthFetcher::OnMergeSessionFetched(const std::string& data,
   }
 }
 
-void GaiaAuthFetcher::OnURLFetchComplete(const URLFetcher* source,
-                                         const GURL& url,
-                                         const net::URLRequestStatus& status,
-                                         int response_code,
-                                         const net::ResponseCookies& cookies,
-                                         const std::string& data) {
+void GaiaAuthFetcher::OnURLFetchComplete(const URLFetcher* source) {
   fetch_pending_ = false;
+  const GURL& url = source->url();
+  const net::URLRequestStatus& status = source->status();
+  int response_code = source->response_code();
+  std::string data;
+  source->GetResponseAsString(&data);
   if (url == client_login_gurl_) {
     OnClientLoginFetched(data, status, response_code);
   } else if (url == issue_auth_token_gurl_) {

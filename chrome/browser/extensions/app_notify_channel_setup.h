@@ -8,7 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
 
 class Profile;
@@ -16,7 +16,7 @@ class Profile;
 // This class uses the browser login credentials to fetch a channel ID for an
 // app to use when sending server push notifications.
 class AppNotifyChannelSetup
-    : public URLFetcher::Delegate,
+    : public content::URLFetcherDelegate,
       public base::RefCountedThreadSafe<AppNotifyChannelSetup> {
  public:
   class Delegate {
@@ -43,7 +43,7 @@ class AppNotifyChannelSetup
   void Start();
 
  protected:
-  // URLFetcher::Delegate.
+  // content::URLFetcherDelegate.
   virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
 
  private:

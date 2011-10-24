@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-#include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
@@ -36,7 +36,7 @@ class PrefService;
 // return a value at all times (even during startup or in unittest mode).  If no
 // redirection is in place, the returned GURL will be empty.
 class IntranetRedirectDetector
-    : public URLFetcher::Delegate,
+    : public content::URLFetcherDelegate,
       public net::NetworkChangeNotifier::IPAddressObserver {
  public:
   // Only the main browser process loop should call this, when setting up
@@ -65,13 +65,8 @@ class IntranetRedirectDetector
   // switch sleep has finished.  Runs any pending fetch.
   void FinishSleep();
 
-  // URLFetcher::Delegate
-  virtual void OnURLFetchComplete(const URLFetcher* source,
-                                  const GURL& url,
-                                  const net::URLRequestStatus& status,
-                                  int response_code,
-                                  const net::ResponseCookies& cookies,
-                                  const std::string& data);
+  // content::URLFetcherDelegate
+  virtual void OnURLFetchComplete(const URLFetcher* source);
 
   // NetworkChangeNotifier::IPAddressObserver
   virtual void OnIPAddressChanged();

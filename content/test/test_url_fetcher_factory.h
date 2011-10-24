@@ -57,7 +57,7 @@ class TestURLFetcher : public URLFetcher {
   TestURLFetcher(int id,
                  const GURL& url,
                  RequestType request_type,
-                 Delegate* d);
+                 content::URLFetcherDelegate* d);
   virtual ~TestURLFetcher();
 
   // Overriden to do nothing. It is assumed the caller will notify the delegate.
@@ -83,7 +83,9 @@ class TestURLFetcher : public URLFetcher {
   const std::list<std::string>& upload_chunks() const { return chunks_; }
 
   // Returns the delegate installed on the URLFetcher.
-  Delegate* delegate() const { return URLFetcher::delegate(); }
+  content::URLFetcherDelegate* delegate() const {
+    return URLFetcher::delegate();
+  }
 
   void set_url(const GURL& url) { fake_url_ = url; }
   virtual const GURL& url() const OVERRIDE;
@@ -96,6 +98,9 @@ class TestURLFetcher : public URLFetcher {
   }
   virtual int response_code() const OVERRIDE;
 
+  void set_cookies(const net::ResponseCookies& c) { fake_cookies_ = c; }
+  virtual const net::ResponseCookies& cookies() const OVERRIDE;
+
   void set_was_fetched_via_proxy(bool flag);
 
   void set_response_headers(scoped_refptr<net::HttpResponseHeaders> headers);
@@ -107,7 +112,6 @@ class TestURLFetcher : public URLFetcher {
   void SetResponseFilePath(const FilePath& path);
 
   // Override response access functions to return fake data.
-  virtual const std::string& GetResponseStringRef() const OVERRIDE;
   virtual bool GetResponseAsString(std::string* out_response_string) const
       OVERRIDE;
   virtual bool GetResponseAsFilePath(bool take_ownership,
@@ -127,6 +131,7 @@ class TestURLFetcher : public URLFetcher {
   GURL fake_url_;
   net::URLRequestStatus fake_status_;
   int fake_response_code_;
+  net::ResponseCookies fake_cookies_;
   std::string fake_response_string_;
   FilePath fake_response_file_path_;
 
@@ -144,7 +149,7 @@ class TestURLFetcherFactory : public URLFetcher::Factory,
   virtual URLFetcher* CreateURLFetcher(int id,
                                        const GURL& url,
                                        URLFetcher::RequestType request_type,
-                                       URLFetcher::Delegate* d) OVERRIDE;
+                                       content::URLFetcherDelegate* d) OVERRIDE;
   TestURLFetcher* GetFetcherByID(int id) const;
   void RemoveFetcherFromMap(int id);
 
@@ -205,7 +210,7 @@ class FakeURLFetcherFactory : public URLFetcher::Factory,
   virtual URLFetcher* CreateURLFetcher(int id,
                                        const GURL& url,
                                        URLFetcher::RequestType request_type,
-                                       URLFetcher::Delegate* d) OVERRIDE;
+                                       content::URLFetcherDelegate* d) OVERRIDE;
 
   // Sets the fake response for a given URL.  If success is true we will serve
   // an HTTP/200 and an HTTP/500 otherwise.  The |response_data| may be empty.
@@ -238,7 +243,7 @@ class URLFetcherFactory : public URLFetcher::Factory {
   virtual URLFetcher* CreateURLFetcher(int id,
                                        const GURL& url,
                                        URLFetcher::RequestType request_type,
-                                       URLFetcher::Delegate* d) OVERRIDE;
+                                       content::URLFetcherDelegate* d) OVERRIDE;
 
 };
 

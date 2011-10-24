@@ -18,6 +18,7 @@
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/threading/thread.h"
+#include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
@@ -44,7 +45,7 @@ class URLFetcher::Core
   Core(URLFetcher* fetcher,
        const GURL& original_url,
        RequestType request_type,
-       URLFetcher::Delegate* d);
+       content::URLFetcherDelegate* d);
 
   // Starts the load.  It's important that this not happen in the constructor
   // because it causes the IO thread to begin AddRef()ing and Release()ing
@@ -70,7 +71,7 @@ class URLFetcher::Core
   virtual void OnResponseStarted(net::URLRequest* request);
   virtual void OnReadCompleted(net::URLRequest* request, int bytes_read);
 
-  URLFetcher::Delegate* delegate() const { return delegate_; }
+  content::URLFetcherDelegate* delegate() const { return delegate_; }
   static void CancelAll();
 
  private:
@@ -220,7 +221,7 @@ class URLFetcher::Core
   GURL url_;                         // The URL we eventually wound up at
   RequestType request_type_;         // What type of request is this?
   net::URLRequestStatus status_;     // Status of the request
-  URLFetcher::Delegate* delegate_;   // Object to notify on completion
+  content::URLFetcherDelegate* delegate_;  // Object to notify on completion
   scoped_refptr<base::MessageLoopProxy> delegate_loop_proxy_;
                                      // Message loop proxy of the creating
                                      // thread.
@@ -465,43 +466,12 @@ void URLFetcher::Core::TempFileWriter::RemoveTempFile() {
 // static
 URLFetcher::Factory* URLFetcher::factory_ = NULL;
 
-void URLFetcher::Delegate::OnURLFetchComplete(
-    const URLFetcher* source,
-    const GURL& url,
-    const net::URLRequestStatus& status,
-    int response_code,
-    const net::ResponseCookies& cookies,
-    const std::string& data) {
-  NOTREACHED() << "If you don't implement this, the no-params version "
-               << "should also be implemented, in which case this "
-               << "method won't be called...";
-}
-
-// TODO(skerner): This default implementation will be removed, and the
-// method made pure virtual, once all users of URLFetcher are updated
-// to not expect response data as a string argument.  Once this is removed,
-// the method URLFetcher::GetResponseStringRef() can be removed as well.
-// crbug.com/83592 tracks this.
-void URLFetcher::Delegate::OnURLFetchComplete(const URLFetcher* source) {
-  // A delegate that did not override this method is using the old
-  // parameter list to OnURLFetchComplete(). If a user asked to save
-  // the response to a file, they must use the new parameter list,
-  // in which case we can not get here.
-  // To avoid updating all callers, thunk to the old prototype for now.
-  OnURLFetchComplete(source,
-                     source->url(),
-                     source->status(),
-                     source->response_code(),
-                     source->cookies(),
-                     source->GetResponseStringRef());
-}
-
 // static
 bool URLFetcher::g_interception_enabled = false;
 
 URLFetcher::URLFetcher(const GURL& url,
                        RequestType request_type,
-                       Delegate* d)
+                       content::URLFetcherDelegate* d)
     : ALLOW_THIS_IN_INITIALIZER_LIST(
       core_(new Core(this, url, request_type, d))) {
 }
@@ -512,7 +482,8 @@ URLFetcher::~URLFetcher() {
 
 // static
 URLFetcher* URLFetcher::Create(int id, const GURL& url,
-                               RequestType request_type, Delegate* d) {
+                               RequestType request_type,
+                               content::URLFetcherDelegate* d) {
   return factory_ ? factory_->CreateURLFetcher(id, url, request_type, d) :
                     new URLFetcher(url, request_type, d);
 }
@@ -520,7 +491,7 @@ URLFetcher* URLFetcher::Create(int id, const GURL& url,
 URLFetcher::Core::Core(URLFetcher* fetcher,
                        const GURL& original_url,
                        RequestType request_type,
-                       URLFetcher::Delegate* d)
+                       content::URLFetcherDelegate* d)
     : fetcher_(fetcher),
       original_url_(original_url),
       request_type_(request_type),
@@ -587,7 +558,9 @@ void URLFetcher::Core::StartOnIOThread() {
 }
 
 void URLFetcher::Core::Stop() {
-  DCHECK(delegate_loop_proxy_->BelongsToCurrentThread());
+  if (delegate_loop_proxy_) {  // May be NULL in tests.
+    DCHECK(delegate_loop_proxy_->BelongsToCurrentThread());
+  }
   delegate_ = NULL;
   fetcher_ = NULL;
   if (io_message_loop_proxy_.get()) {
@@ -1081,11 +1054,6 @@ bool URLFetcher::GetResponseAsString(std::string* out_response_string) const {
   return true;
 }
 
-const std::string& URLFetcher::GetResponseStringRef() const {
-  CHECK(core_->response_destination_ == STRING);
-  return core_->data_;
-}
-
 void URLFetcher::SetResponseDestinationForTesting(
     ResponseDestinationType value) {
   core_->response_destination_ = value;
@@ -1122,6 +1090,6 @@ int URLFetcher::GetNumFetcherCores() {
   return Core::g_registry.Get().size();
 }
 
-URLFetcher::Delegate* URLFetcher::delegate() const {
+content::URLFetcherDelegate* URLFetcher::delegate() const {
   return core_->delegate();
 }

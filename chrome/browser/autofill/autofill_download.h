@@ -13,10 +13,11 @@
 #include <utility>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/time.h"
 #include "chrome/browser/autofill/autofill_type.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher_delegate.h"
 
 class AutofillMetrics;
 class FormStructure;
@@ -28,7 +29,7 @@ class URLRequestStatus;
 }
 
 // Handles getting and updating Autofill heuristics.
-class AutofillDownloadManager : public URLFetcher::Delegate {
+class AutofillDownloadManager : public content::URLFetcherDelegate {
  public:
   enum AutofillRequestType {
     REQUEST_QUERY,
@@ -124,7 +125,7 @@ class AutofillDownloadManager : public URLFetcher::Delegate {
   std::string GetCombinedSignature(
       const std::vector<std::string>& forms_in_query) const;
 
-  // URLFetcher::Delegate implementation:
+  // content::URLFetcherDelegate implementation:
   virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
 
   // Probability of the form upload. Between 0 (no upload) and 1 (upload all).

@@ -16,10 +16,10 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher_delegate.h"
 #include "net/base/sdch_manager.h"
 
-class SdchDictionaryFetcher : public URLFetcher::Delegate,
+class SdchDictionaryFetcher : public content::URLFetcherDelegate,
                               public net::SdchFetcher {
  public:
   SdchDictionaryFetcher();
@@ -48,7 +48,7 @@ class SdchDictionaryFetcher : public URLFetcher::Delegate,
   // in the  |fetch_queue_|.
   void StartFetching();
 
-  // Implementation of URLFetcher::Delegate. Called after transmission
+  // Implementation of content::URLFetcherDelegate. Called after transmission
   // completes (either successfully or with failure).
   virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
 

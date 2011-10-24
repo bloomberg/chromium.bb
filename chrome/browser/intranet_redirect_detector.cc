@@ -12,6 +12,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "content/common/net/url_fetcher.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/registry_controlled_domain.h"
@@ -89,13 +90,7 @@ void IntranetRedirectDetector::FinishSleep() {
   }
 }
 
-void IntranetRedirectDetector::OnURLFetchComplete(
-    const URLFetcher* source,
-    const GURL& url,
-    const net::URLRequestStatus& status,
-    int response_code,
-    const net::ResponseCookies& cookies,
-    const std::string& data) {
+void IntranetRedirectDetector::OnURLFetchComplete(const URLFetcher* source) {
   // Delete the fetcher on this function's exit.
   Fetchers::iterator fetcher = fetchers_.find(const_cast<URLFetcher*>(source));
   DCHECK(fetcher != fetchers_.end());
@@ -104,7 +99,7 @@ void IntranetRedirectDetector::OnURLFetchComplete(
 
   // If any two fetches result in the same domain/host, we set the redirect
   // origin to that; otherwise we set it to nothing.
-  if (!status.is_success() || (response_code != 200)) {
+  if (!source->status().is_success() || (source->response_code() != 200)) {
     if ((resulting_origins_.empty()) ||
         ((resulting_origins_.size() == 1) &&
          resulting_origins_.front().is_valid())) {
@@ -113,8 +108,8 @@ void IntranetRedirectDetector::OnURLFetchComplete(
     }
     redirect_origin_ = GURL();
   } else {
-    DCHECK(url.is_valid());
-    GURL origin(url.GetOrigin());
+    DCHECK(source->url().is_valid());
+    GURL origin(source->url().GetOrigin());
     if (resulting_origins_.empty()) {
       resulting_origins_.push_back(origin);
       return;

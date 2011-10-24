@@ -16,7 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/common/translate_errors.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -33,7 +33,7 @@ class TranslateInfoBarDelegate;
 // It is a singleton.
 
 class TranslateManager : public content::NotificationObserver,
-                         public URLFetcher::Delegate {
+                         public content::URLFetcherDelegate {
  public:
   // Returns the singleton instance.
   static TranslateManager* GetInstance();
@@ -74,13 +74,8 @@ class TranslateManager : public content::NotificationObserver,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details);
 
-  // URLFetcher::Delegate implementation:
-  virtual void OnURLFetchComplete(const URLFetcher* source,
-                                  const GURL& url,
-                                  const net::URLRequestStatus& status,
-                                  int response_code,
-                                  const net::ResponseCookies& cookies,
-                                  const std::string& data);
+  // content::URLFetcherDelegate implementation:
+  virtual void OnURLFetchComplete(const URLFetcher* source);
 
   // Used by unit-tests to override the default delay after which the translate
   // script is fetched again from the translation server.

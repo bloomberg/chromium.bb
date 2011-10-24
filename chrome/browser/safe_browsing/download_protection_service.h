@@ -19,7 +19,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
 
 namespace net {
@@ -34,7 +34,7 @@ namespace safe_browsing {
 // client download is malicious or not.
 class DownloadProtectionService
     : public base::RefCountedThreadSafe<DownloadProtectionService>,
-      public URLFetcher::Delegate {
+      public content::URLFetcherDelegate {
  public:
   // TODO(noelutz): we're missing some fields here: filename to get
   // the signature, server IPs, tab URL redirect chain, ...
@@ -65,13 +65,8 @@ class DownloadProtectionService
       SafeBrowsingService* sb_service,
       net::URLRequestContextGetter* request_context_getter);
 
-  // From the URLFetcher::Delegate interface.
-  virtual void OnURLFetchComplete(const URLFetcher* source,
-                                  const GURL& url,
-                                  const net::URLRequestStatus& status,
-                                  int response_code,
-                                  const net::ResponseCookies& cookies,
-                                  const std::string& data) OVERRIDE;
+  // From the content::URLFetcherDelegate interface.
+  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
 
   // Checks whether the given client download is likely to be
   // malicious or not.  If this method returns true it means the

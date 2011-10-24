@@ -17,6 +17,10 @@
 #include "content/test/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
 
+namespace content {
+class URLFetcherDelegate;
+}
+
 // Responds as though ClientLogin returned from the server.
 class MockFetcher : public URLFetcher {
  public:
@@ -24,15 +28,31 @@ class MockFetcher : public URLFetcher {
               const GURL& url,
               const std::string& results,
               URLFetcher::RequestType request_type,
-              URLFetcher::Delegate* d);
+              content::URLFetcherDelegate* d);
+
+  MockFetcher(const GURL& url,
+              const net::URLRequestStatus& status,
+              int response_code,
+              const net::ResponseCookies& cookies,
+              const std::string& results,
+              URLFetcher::RequestType request_type,
+              content::URLFetcherDelegate* d);
 
   virtual ~MockFetcher();
 
   virtual void Start();
 
+  virtual const GURL& url() const;
+  virtual const net::URLRequestStatus& status() const;
+  virtual int response_code() const;
+  virtual const net::ResponseCookies& cookies() const;
+  virtual bool GetResponseAsString(std::string* out_response_string) const;
+
  private:
-  bool success_;
   GURL url_;
+  net::URLRequestStatus status_;
+  int response_code_;
+  net::ResponseCookies cookies_;
   std::string results_;
   DISALLOW_COPY_AND_ASSIGN(MockFetcher);
 };
@@ -49,7 +69,7 @@ class MockFactory : public URLFetcher::Factory,
   URLFetcher* CreateURLFetcher(int id,
                                const GURL& url,
                                URLFetcher::RequestType request_type,
-                               URLFetcher::Delegate* d) {
+                               content::URLFetcherDelegate* d) {
     return new T(success_, url, results_, request_type, d);
   }
   void set_success(bool success) {

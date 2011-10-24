@@ -15,7 +15,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/sync/internal_api/http_post_provider_factory.h"
 #include "chrome/browser/sync/internal_api/http_post_provider_interface.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_context.h"
@@ -23,6 +23,10 @@
 
 class MessageLoop;
 class HttpBridgeTest;
+
+namespace net {
+class HttpResponseHeaders;
+}
 
 namespace browser_sync {
 
@@ -34,7 +38,7 @@ namespace browser_sync {
 // needs to stick around across context switches, etc.
 class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
                    public sync_api::HttpPostProviderInterface,
-                   public URLFetcher::Delegate {
+                   public content::URLFetcherDelegate {
  public:
   // A request context used for HTTP requests bridged from the sync backend.
   // A bridged RequestContext has a dedicated in-memory cookie store and does
@@ -115,13 +119,8 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
   virtual const std::string GetResponseHeaderValue(
       const std::string& name) const;
 
-  // URLFetcher::Delegate implementation.
-  virtual void OnURLFetchComplete(const URLFetcher* source,
-                                  const GURL& url,
-                                  const net::URLRequestStatus& status,
-                                  int response_code,
-                                  const net::ResponseCookies& cookies,
-                                  const std::string& data);
+  // content::URLFetcherDelegate implementation.
+  virtual void OnURLFetchComplete(const URLFetcher* source);
 
 #if defined(UNIT_TEST)
   net::URLRequestContextGetter* GetRequestContextGetter() const {

@@ -18,7 +18,7 @@
 #include "base/string16.h"
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/importer/profile_writer.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher_delegate.h"
 
 class ImporterBridge;
 class XmlReader;
@@ -29,7 +29,7 @@ class XmlReader;
 // Toolbar5Importer should not have StartImport called more than once. Futher
 // if StartImport is called, then the class must not be destroyed until it has
 // either completed or Toolbar5Importer->Cancel() has been called.
-class Toolbar5Importer : public URLFetcher::Delegate, public Importer {
+class Toolbar5Importer : public content::URLFetcherDelegate, public Importer {
  public:
   Toolbar5Importer();
 
@@ -46,13 +46,8 @@ class Toolbar5Importer : public URLFetcher::Delegate, public Importer {
   // to cancel network retrieval.
   virtual void Cancel();
 
-  // URLFetcher::Delegate method called back from the URLFetcher object.
-  virtual void OnURLFetchComplete(const URLFetcher* source,
-                                  const GURL& url,
-                                  const net::URLRequestStatus& status,
-                                  int response_code,
-                                  const net::ResponseCookies& cookies,
-                                  const std::string& data);
+  // content::URLFetcherDelegate method called back from the URLFetcher object.
+  virtual void OnURLFetchComplete(const URLFetcher* source);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(Toolbar5ImporterTest, BookmarkParse);

@@ -10,6 +10,7 @@
 #include "base/values.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/net/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 

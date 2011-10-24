@@ -23,12 +23,13 @@
 #include "content/browser/browser_thread.h"
 #include "content/common/net/url_fetcher.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_status.h"
 
 class WebResourceService::WebResourceFetcher
-    : public URLFetcher::Delegate {
+    : public content::URLFetcherDelegate {
  public:
   explicit WebResourceFetcher(WebResourceService* web_resource_service) :
       ALLOW_THIS_IN_INITIALIZER_LIST(fetcher_factory_(this)),
@@ -78,21 +79,18 @@ class WebResourceService::WebResourceFetcher
     url_fetcher_->Start();
   }
 
-  // From URLFetcher::Delegate.
-  void OnURLFetchComplete(const URLFetcher* source,
-                          const GURL& url,
-                          const net::URLRequestStatus& status,
-                          int response_code,
-                          const net::ResponseCookies& cookies,
-                          const std::string& data) {
+  // From content::URLFetcherDelegate.
+  void OnURLFetchComplete(const URLFetcher* source) {
     // Delete the URLFetcher when this function exits.
     scoped_ptr<URLFetcher> clean_up_fetcher(url_fetcher_.release());
 
     // Don't parse data if attempt to download was unsuccessful.
     // Stop loading new web resource data, and silently exit.
-    if (!status.is_success() || (response_code != 200))
+    if (!source->status().is_success() || (source->response_code() != 200))
       return;
 
+    std::string data;
+    source->GetResponseAsString(&data);
     web_resource_service_->UpdateResourceCache(data);
     web_resource_service_->Release();
   }

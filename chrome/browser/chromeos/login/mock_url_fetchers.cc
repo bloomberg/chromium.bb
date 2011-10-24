@@ -11,7 +11,7 @@
 #include "base/stringprintf.h"
 #include "chrome/common/net/http_return.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -23,7 +23,7 @@ ExpectCanceledFetcher::ExpectCanceledFetcher(
     const GURL& url,
     const std::string& results,
     URLFetcher::RequestType request_type,
-    URLFetcher::Delegate* d)
+    content::URLFetcherDelegate* d)
     : URLFetcher(url, request_type, d),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
 }
@@ -48,64 +48,84 @@ GotCanceledFetcher::GotCanceledFetcher(bool success,
                                        const GURL& url,
                                        const std::string& results,
                                        URLFetcher::RequestType request_type,
-                                       URLFetcher::Delegate* d)
+                                       content::URLFetcherDelegate* d)
     : URLFetcher(url, request_type, d),
-      url_(url) {
+      url_(url),
+      status_(net::URLRequestStatus::CANCELED, 0) {
 }
 
 GotCanceledFetcher::~GotCanceledFetcher() {}
 
 void GotCanceledFetcher::Start() {
-  net::URLRequestStatus status;
-  status.set_status(net::URLRequestStatus::CANCELED);
-  delegate()->OnURLFetchComplete(this,
-                                 url_,
-                                 status,
-                                 RC_FORBIDDEN,
-                                 net::ResponseCookies(),
-                                 std::string());
+  delegate()->OnURLFetchComplete(this);
+}
+
+const GURL& GotCanceledFetcher::url() const {
+  return url_;
+}
+
+const net::URLRequestStatus& GotCanceledFetcher::status() const {
+  return status_;
+}
+
+int GotCanceledFetcher::response_code() const {
+  return RC_FORBIDDEN;
 }
 
 SuccessFetcher::SuccessFetcher(bool success,
                                const GURL& url,
                                const std::string& results,
                                URLFetcher::RequestType request_type,
-                               URLFetcher::Delegate* d)
+                               content::URLFetcherDelegate* d)
     : URLFetcher(url, request_type, d),
-      url_(url) {
+      url_(url),
+      status_(net::URLRequestStatus::SUCCESS, 0) {
 }
 
 SuccessFetcher::~SuccessFetcher() {}
 
 void SuccessFetcher::Start() {
-  net::URLRequestStatus success(net::URLRequestStatus::SUCCESS, 0);
-  delegate()->OnURLFetchComplete(this,
-                                 url_,
-                                 success,
-                                 RC_REQUEST_OK,
-                                 net::ResponseCookies(),
-                                 std::string());
+  delegate()->OnURLFetchComplete(this);
+}
+
+const GURL& SuccessFetcher::url() const {
+  return url_;
+}
+
+const net::URLRequestStatus& SuccessFetcher::status() const {
+  return status_;
+}
+
+int SuccessFetcher::response_code() const {
+  return RC_REQUEST_OK;
 }
 
 FailFetcher::FailFetcher(bool success,
                          const GURL& url,
                          const std::string& results,
                          URLFetcher::RequestType request_type,
-                         URLFetcher::Delegate* d)
+                         content::URLFetcherDelegate* d)
     : URLFetcher(url, request_type, d),
-      url_(url) {
+      url_(url),
+      status_(net::URLRequestStatus::FAILED, ECONNRESET) {
 }
 
 FailFetcher::~FailFetcher() {}
 
 void FailFetcher::Start() {
-  net::URLRequestStatus failed(net::URLRequestStatus::FAILED, ECONNRESET);
-  delegate()->OnURLFetchComplete(this,
-                                 url_,
-                                 failed,
-                                 RC_REQUEST_OK,
-                                 net::ResponseCookies(),
-                                 std::string());
+  delegate()->OnURLFetchComplete(this);
+}
+
+const GURL& FailFetcher::url() const {
+  return url_;
+}
+
+const net::URLRequestStatus& FailFetcher::status() const {
+  return status_;
+}
+
+int FailFetcher::response_code() const {
+  return RC_REQUEST_OK;
 }
 
 // static
@@ -122,9 +142,18 @@ CaptchaFetcher::CaptchaFetcher(bool success,
                                const GURL& url,
                                const std::string& results,
                                URLFetcher::RequestType request_type,
-                               URLFetcher::Delegate* d)
+                               content::URLFetcherDelegate* d)
     : URLFetcher(url, request_type, d),
-      url_(url) {
+      url_(url),
+      status_(net::URLRequestStatus::SUCCESS, 0) {
+  data_ = base::StringPrintf("Error=%s\n"
+                             "Url=%s\n"
+                             "CaptchaUrl=%s\n"
+                             "CaptchaToken=%s\n",
+                             "CaptchaRequired",
+                             kUnlockUrl,
+                             kCaptchaUrlFragment,
+                             kCaptchaToken);
 }
 
 CaptchaFetcher::~CaptchaFetcher() {}
@@ -145,50 +174,66 @@ std::string CaptchaFetcher::GetUnlockUrl() {
 }
 
 void CaptchaFetcher::Start() {
-  net::URLRequestStatus success(net::URLRequestStatus::SUCCESS, 0);
-  std::string body = base::StringPrintf("Error=%s\n"
-                                        "Url=%s\n"
-                                        "CaptchaUrl=%s\n"
-                                        "CaptchaToken=%s\n",
-                                        "CaptchaRequired",
-                                        kUnlockUrl,
-                                        kCaptchaUrlFragment,
-                                        kCaptchaToken);
-  delegate()->OnURLFetchComplete(this,
-                                 url_,
-                                 success,
-                                 RC_FORBIDDEN,
-                                 net::ResponseCookies(),
-                                 body);
+  delegate()->OnURLFetchComplete(this);
+}
+
+const GURL& CaptchaFetcher::url() const {
+  return url_;
+}
+
+const net::URLRequestStatus& CaptchaFetcher::status() const {
+  return status_;
+}
+
+int CaptchaFetcher::response_code() const {
+  return RC_FORBIDDEN;
+}
+
+bool CaptchaFetcher::GetResponseAsString(
+    std::string* out_response_string) const {
+  *out_response_string = data_;
+  return true;
 }
 
 HostedFetcher::HostedFetcher(bool success,
                              const GURL& url,
                              const std::string& results,
                              URLFetcher::RequestType request_type,
-                             URLFetcher::Delegate* d)
+                             content::URLFetcherDelegate* d)
     : URLFetcher(url, request_type, d),
-      url_(url) {
+      url_(url),
+      status_(net::URLRequestStatus::SUCCESS, 0),
+      response_code_(RC_REQUEST_OK) {
 }
 
 HostedFetcher::~HostedFetcher() {}
 
 void HostedFetcher::Start() {
-  net::URLRequestStatus success(net::URLRequestStatus::SUCCESS, 0);
-  int response_code = RC_REQUEST_OK;
-  std::string data;
   VLOG(1) << upload_data();
   if (upload_data().find("HOSTED") == std::string::npos) {
     VLOG(1) << "HostedFetcher failing request";
-    response_code = RC_FORBIDDEN;
-    data.assign("Error=BadAuthentication");
+    response_code_ = RC_FORBIDDEN;
+    data_.assign("Error=BadAuthentication");
   }
-  delegate()->OnURLFetchComplete(this,
-                                 url_,
-                                 success,
-                                 response_code,
-                                 net::ResponseCookies(),
-                                 data);
+  delegate()->OnURLFetchComplete(this);
+}
+
+const GURL& HostedFetcher::url() const {
+  return url_;
+}
+
+const net::URLRequestStatus& HostedFetcher::status() const {
+  return status_;
+}
+
+int HostedFetcher::response_code() const {
+  return response_code_;;
+}
+
+bool HostedFetcher::GetResponseAsString(
+    std::string* out_response_string) const {
+  *out_response_string = data_;
+  return true;
 }
 
 }  // namespace chromeos

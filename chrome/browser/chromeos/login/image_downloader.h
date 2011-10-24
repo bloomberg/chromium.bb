@@ -11,14 +11,14 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/image_decoder.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
 
 namespace chromeos {
 
 // Downloads the image, decodes it in a sandboxed process.
 // This objects deletes itself after OnURLFetchComplete.
-class ImageDownloader : public URLFetcher::Delegate {
+class ImageDownloader : public content::URLFetcherDelegate {
  public:
   // Starts downloading the picture. Optional auth_token could be passed.
   // Object is deleted as reference counted object.
@@ -28,13 +28,8 @@ class ImageDownloader : public URLFetcher::Delegate {
   virtual ~ImageDownloader();
 
  private:
-  // Overriden from URLFetcher::Delegate:
-  virtual void OnURLFetchComplete(const URLFetcher* source,
-                                  const GURL& url,
-                                  const net::URLRequestStatus& status,
-                                  int response_code,
-                                  const net::ResponseCookies& cookies,
-                                  const std::string& data);
+  // Overriden from content::URLFetcherDelegate:
+  virtual void OnURLFetchComplete(const URLFetcher* source);
 
   ImageDecoder::Delegate* delegate_;
   scoped_ptr<URLFetcher> image_fetcher_;

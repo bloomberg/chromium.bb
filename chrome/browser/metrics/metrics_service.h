@@ -19,7 +19,7 @@
 #include "base/process_util.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/common/metrics_helpers.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -52,7 +52,7 @@ struct WebPluginInfo;
 
 
 class MetricsService : public content::NotificationObserver,
-                       public URLFetcher::Delegate,
+                       public content::URLFetcherDelegate,
                        public MetricsServiceBase {
  public:
   MetricsService();
@@ -229,14 +229,9 @@ class MetricsService : public content::NotificationObserver,
   // copy of the staged log.
   void PrepareFetchWithStagedLog();
 
-  // Implementation of URLFetcher::Delegate. Called after transmission
+  // Implementation of content::URLFetcherDelegate. Called after transmission
   // completes (either successfully or with failure).
-  virtual void OnURLFetchComplete(const URLFetcher* source,
-                                  const GURL& url,
-                                  const net::URLRequestStatus& status,
-                                  int response_code,
-                                  const net::ResponseCookies& cookies,
-                                  const std::string& data);
+  virtual void OnURLFetchComplete(const URLFetcher* source);
 
   // Logs debugging details, for the case where the server returns a response
   // code other than 200.

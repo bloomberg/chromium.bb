@@ -17,6 +17,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/libxml_utils.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/net/url_fetcher.h"
 #include "grit/generated_resources.h"
 
 // Toolbar5Importer
@@ -96,25 +97,21 @@ void Toolbar5Importer::Cancel() {
   }
 }
 
-void Toolbar5Importer::OnURLFetchComplete(
-    const URLFetcher* source,
-    const GURL& url,
-    const net::URLRequestStatus& status,
-    int response_code,
-    const net::ResponseCookies& cookies,
-    const std::string& data) {
+void Toolbar5Importer::OnURLFetchComplete(const URLFetcher* source) {
   if (cancelled()) {
     EndImport();
     return;
   }
 
-  if (200 != response_code) {  // HTTP/Ok
+  if (200 != source->response_code()) {  // HTTP/Ok
     // Cancelling here will update the UI and bypass the rest of bookmark
     // import.
     EndImportBookmarks();
     return;
   }
 
+  std::string data;
+  source->GetResponseAsString(&data);
   switch (state_) {
     case GET_AUTHORIZATION_TOKEN:
       GetBookmarkDataFromServer(data);

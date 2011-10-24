@@ -15,6 +15,10 @@
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_status.h"
 
+namespace content {
+class URLFetcherDelegate;
+}
+
 namespace chromeos {
 
 // Simulates a URL fetch by posting a delayed task. This fetch expects to be
@@ -25,7 +29,7 @@ class ExpectCanceledFetcher : public URLFetcher {
                         const GURL& url,
                         const std::string& results,
                         URLFetcher::RequestType request_type,
-                        URLFetcher::Delegate* d);
+                        content::URLFetcherDelegate* d);
   virtual ~ExpectCanceledFetcher();
 
   virtual void Start();
@@ -43,13 +47,18 @@ class GotCanceledFetcher : public URLFetcher {
                      const GURL& url,
                      const std::string& results,
                      URLFetcher::RequestType request_type,
-                     URLFetcher::Delegate* d);
+                     content::URLFetcherDelegate* d);
   virtual ~GotCanceledFetcher();
 
   virtual void Start();
 
+  virtual const GURL& url() const;
+  virtual const net::URLRequestStatus& status() const;
+  virtual int response_code() const;
+
  private:
   GURL url_;
+  net::URLRequestStatus status_;
 
   DISALLOW_COPY_AND_ASSIGN(GotCanceledFetcher);
 };
@@ -60,13 +69,18 @@ class SuccessFetcher : public URLFetcher {
                  const GURL& url,
                  const std::string& results,
                  URLFetcher::RequestType request_type,
-                 URLFetcher::Delegate* d);
+                 content::URLFetcherDelegate* d);
   virtual ~SuccessFetcher();
 
   virtual void Start();
 
+  virtual const GURL& url() const;
+  virtual const net::URLRequestStatus& status() const;
+  virtual int response_code() const;
+
  private:
   GURL url_;
+  net::URLRequestStatus status_;
 
   DISALLOW_COPY_AND_ASSIGN(SuccessFetcher);
 };
@@ -77,13 +91,18 @@ class FailFetcher : public URLFetcher {
               const GURL& url,
               const std::string& results,
               URLFetcher::RequestType request_type,
-              URLFetcher::Delegate* d);
+              content::URLFetcherDelegate* d);
   virtual ~FailFetcher();
 
   virtual void Start();
 
+  virtual const GURL& url() const;
+  virtual const net::URLRequestStatus& status() const;
+  virtual int response_code() const;
+
  private:
   GURL url_;
+  net::URLRequestStatus status_;
 
   DISALLOW_COPY_AND_ASSIGN(FailFetcher);
 };
@@ -94,7 +113,7 @@ class CaptchaFetcher : public URLFetcher {
                  const GURL& url,
                  const std::string& results,
                  URLFetcher::RequestType request_type,
-                 URLFetcher::Delegate* d);
+                 content::URLFetcherDelegate* d);
   virtual ~CaptchaFetcher();
 
   static std::string GetCaptchaToken();
@@ -103,12 +122,19 @@ class CaptchaFetcher : public URLFetcher {
 
   virtual void Start();
 
+  virtual const GURL& url() const;
+  virtual const net::URLRequestStatus& status() const;
+  virtual int response_code() const;
+  virtual bool GetResponseAsString(std::string* out_response_string) const;
+
  private:
   static const char kCaptchaToken[];
   static const char kCaptchaUrlBase[];
   static const char kCaptchaUrlFragment[];
   static const char kUnlockUrl[];
   GURL url_;
+  net::URLRequestStatus status_;
+  std::string data_;
 
   DISALLOW_COPY_AND_ASSIGN(CaptchaFetcher);
 };
@@ -119,13 +145,21 @@ class HostedFetcher : public URLFetcher {
                 const GURL& url,
                 const std::string& results,
                 URLFetcher::RequestType request_type,
-                URLFetcher::Delegate* d);
+                content::URLFetcherDelegate* d);
   virtual ~HostedFetcher();
 
   virtual void Start();
 
+  virtual const GURL& url() const;
+  virtual const net::URLRequestStatus& status() const;
+  virtual int response_code() const;
+  virtual bool GetResponseAsString(std::string* out_response_string) const;
+
  private:
   GURL url_;
+  net::URLRequestStatus status_;
+  int response_code_;
+  std::string data_;
 
   DISALLOW_COPY_AND_ASSIGN(HostedFetcher);
 };

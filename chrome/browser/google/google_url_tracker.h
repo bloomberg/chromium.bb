@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
@@ -36,7 +36,7 @@ class TemplateURL;
 // To protect users' privacy and reduce server load, no updates will be
 // performed (ever) unless at least one consumer registers interest by calling
 // RequestServerCheck().
-class GoogleURLTracker : public URLFetcher::Delegate,
+class GoogleURLTracker : public content::URLFetcherDelegate,
                          public content::NotificationObserver,
                          public net::NetworkChangeNotifier::IPAddressObserver {
  public:
@@ -106,13 +106,8 @@ class GoogleURLTracker : public URLFetcher::Delegate,
   // it and can currently do so.
   void StartFetchIfDesirable();
 
-  // URLFetcher::Delegate
-  virtual void OnURLFetchComplete(const URLFetcher *source,
-                                  const GURL& url,
-                                  const net::URLRequestStatus& status,
-                                  int response_code,
-                                  const net::ResponseCookies& cookies,
-                                  const std::string& data);
+  // content::URLFetcherDelegate
+  virtual void OnURLFetchComplete(const URLFetcher *source);
 
   // content::NotificationObserver
   virtual void Observe(int type,

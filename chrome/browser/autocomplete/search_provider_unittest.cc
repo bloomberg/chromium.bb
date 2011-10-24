@@ -239,9 +239,8 @@ void SearchProviderTest::FinishDefaultSuggestQuery() {
   ASSERT_TRUE(default_fetcher);
 
   // Tell the SearchProvider the default suggest query is done.
-  default_fetcher->delegate()->OnURLFetchComplete(
-      default_fetcher, GURL(), net::URLRequestStatus(), 200,
-      net::ResponseCookies(), std::string());
+  default_fetcher->set_response_code(200);
+  default_fetcher->delegate()->OnURLFetchComplete(default_fetcher);
 }
 
 // Tests -----------------------------------------------------------------------
@@ -263,9 +262,8 @@ TEST_F(SearchProviderTest, QueryDefaultProvider) {
   ASSERT_TRUE(fetcher->original_url() == expected_url);
 
   // Tell the SearchProvider the suggest query is done.
-  fetcher->delegate()->OnURLFetchComplete(
-      fetcher, GURL(), net::URLRequestStatus(), 200, net::ResponseCookies(),
-      std::string());
+  fetcher->set_response_code(200);
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
   fetcher = NULL;
 
   // Run till the history results complete.
@@ -309,9 +307,8 @@ TEST_F(SearchProviderTest, QueryKeywordProvider) {
   ASSERT_TRUE(default_fetcher);
 
   // Tell the SearchProvider the default suggest query is done.
-  default_fetcher->delegate()->OnURLFetchComplete(
-      default_fetcher, GURL(), net::URLRequestStatus(), 200,
-      net::ResponseCookies(), std::string());
+  default_fetcher->set_response_code(200);
+  default_fetcher->delegate()->OnURLFetchComplete(default_fetcher);
   default_fetcher = NULL;
 
   // Make sure the keyword providers suggest service was queried.
@@ -325,9 +322,8 @@ TEST_F(SearchProviderTest, QueryKeywordProvider) {
   ASSERT_TRUE(keyword_fetcher->original_url() == expected_url);
 
   // Tell the SearchProvider the keyword suggest query is done.
-  keyword_fetcher->delegate()->OnURLFetchComplete(
-      keyword_fetcher, GURL(), net::URLRequestStatus(), 200,
-      net::ResponseCookies(), std::string());
+  keyword_fetcher->set_response_code(200);
+  keyword_fetcher->delegate()->OnURLFetchComplete(keyword_fetcher);
   keyword_fetcher = NULL;
 
   // Run till the history results complete.
@@ -650,10 +646,11 @@ TEST_F(SearchProviderTest, NoTemplateURLForNavsuggest) {
   ASSERT_TRUE(fetcher);
 
   // Tell the SearchProvider the suggest query is done.
-  fetcher->delegate()->OnURLFetchComplete(
-      fetcher, GURL(), net::URLRequestStatus(), 200, net::ResponseCookies(),
+  fetcher->set_response_code(200);
+  fetcher->SetResponseString(
       "[\"a.c\",[\"a.com\"],[\"\"],[],"
       "{\"google:suggesttype\":[\"NAVIGATION\"]}]");
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
   fetcher = NULL;
 
   // Run till the history results complete.

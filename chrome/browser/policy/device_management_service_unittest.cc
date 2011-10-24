@@ -121,12 +121,11 @@ TEST_P(DeviceManagementServiceFailedRequestTest, RegisterRequest) {
   TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
 
-  fetcher->delegate()->OnURLFetchComplete(fetcher,
-                                          GURL(kServiceUrl),
-                                          GetParam().request_status_,
-                                          GetParam().http_status_,
-                                          net::ResponseCookies(),
-                                          GetParam().response_);
+  fetcher->set_url(GURL(kServiceUrl));
+  fetcher->set_status(GetParam().request_status_);
+  fetcher->set_response_code(GetParam().http_status_);
+  fetcher->SetResponseString(GetParam().response_);
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
 }
 
 TEST_P(DeviceManagementServiceFailedRequestTest, UnregisterRequest) {
@@ -137,12 +136,11 @@ TEST_P(DeviceManagementServiceFailedRequestTest, UnregisterRequest) {
   TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
 
-  fetcher->delegate()->OnURLFetchComplete(fetcher,
-                                          GURL(kServiceUrl),
-                                          GetParam().request_status_,
-                                          GetParam().http_status_,
-                                          net::ResponseCookies(),
-                                          GetParam().response_);
+  fetcher->set_url(GURL(kServiceUrl));
+  fetcher->set_status(GetParam().request_status_);
+  fetcher->set_response_code(GetParam().http_status_);
+  fetcher->SetResponseString(GetParam().response_);
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
 }
 
 TEST_P(DeviceManagementServiceFailedRequestTest, PolicyRequest) {
@@ -159,12 +157,11 @@ TEST_P(DeviceManagementServiceFailedRequestTest, PolicyRequest) {
   TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
 
-  fetcher->delegate()->OnURLFetchComplete(fetcher,
-                                          GURL(kServiceUrl),
-                                          GetParam().request_status_,
-                                          GetParam().http_status_,
-                                          net::ResponseCookies(),
-                                          GetParam().response_);
+  fetcher->set_url(GURL(kServiceUrl));
+  fetcher->set_status(GetParam().request_status_);
+  fetcher->set_response_code(GetParam().http_status_);
+  fetcher->SetResponseString(GetParam().response_);
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
 }
 
 INSTANTIATE_TEST_CASE_P(
@@ -349,12 +346,11 @@ TEST_F(DeviceManagementServiceTest, RegisterRequest) {
   response_wrapper.mutable_register_response()->CopyFrom(expected_response);
   ASSERT_TRUE(response_wrapper.SerializeToString(&response_data));
   net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
-  fetcher->delegate()->OnURLFetchComplete(fetcher,
-                                          GURL(kServiceUrl),
-                                          status,
-                                          200,
-                                          net::ResponseCookies(),
-                                          response_data);
+  fetcher->set_url(GURL(kServiceUrl));
+  fetcher->set_status(status);
+  fetcher->set_response_code(200);
+  fetcher->SetResponseString(response_data);
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
 }
 
 TEST_F(DeviceManagementServiceTest, UnregisterRequest) {
@@ -391,12 +387,11 @@ TEST_F(DeviceManagementServiceTest, UnregisterRequest) {
   response_wrapper.mutable_unregister_response()->CopyFrom(expected_response);
   ASSERT_TRUE(response_wrapper.SerializeToString(&response_data));
   net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
-  fetcher->delegate()->OnURLFetchComplete(fetcher,
-                                          GURL(kServiceUrl),
-                                          status,
-                                          200,
-                                          net::ResponseCookies(),
-                                          response_data);
+  fetcher->set_url(GURL(kServiceUrl));
+  fetcher->set_status(status);
+  fetcher->set_response_code(200);
+  fetcher->SetResponseString(response_data);
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
 }
 
 TEST_F(DeviceManagementServiceTest, CancelRegisterRequest) {
@@ -470,12 +465,11 @@ TEST_F(DeviceManagementServiceTest, JobQueueing) {
   response_wrapper.mutable_register_response()->CopyFrom(expected_response);
   ASSERT_TRUE(response_wrapper.SerializeToString(&response_data));
   net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
-  fetcher->delegate()->OnURLFetchComplete(fetcher,
-                                          GURL(kServiceUrl),
-                                          status,
-                                          200,
-                                          net::ResponseCookies(),
-                                          response_data);
+  fetcher->set_url(GURL(kServiceUrl));
+  fetcher->set_status(status);
+  fetcher->set_response_code(200);
+  fetcher->SetResponseString(response_data);
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
 }
 
 TEST_F(DeviceManagementServiceTest, CancelRequestAfterShutdown) {
@@ -513,12 +507,10 @@ TEST_F(DeviceManagementServiceTest, CancelDuringCallback) {
 
   // Generate a callback.
   net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
-  fetcher->delegate()->OnURLFetchComplete(fetcher,
-                                          GURL(kServiceUrl),
-                                          status,
-                                          500,
-                                          net::ResponseCookies(),
-                                          "");
+  fetcher->set_url(GURL(kServiceUrl));
+  fetcher->set_status(status);
+  fetcher->set_response_code(500);
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
 
   // Backend should have been reset.
   EXPECT_FALSE(backend_.get());
@@ -542,12 +534,10 @@ TEST_F(DeviceManagementServiceTest, RetryOnProxyError) {
   // Generate a callback with a proxy failure.
   net::URLRequestStatus status(net::URLRequestStatus::FAILED,
                                net::ERR_PROXY_CONNECTION_FAILED);
-  fetcher->delegate()->OnURLFetchComplete(fetcher,
-                                          GURL(kServiceUrl),
-                                          status,
-                                          0,
-                                          net::ResponseCookies(),
-                                          "");
+  fetcher->set_url(GURL(kServiceUrl));
+  fetcher->set_status(status);
+  fetcher->set_response_code(200);
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
 
   // Verify that a new URLFetcher was started that bypasses the proxy.
   fetcher = factory_.GetFetcherByID(0);
@@ -580,12 +570,10 @@ TEST_F(DeviceManagementServiceTest, RetryOnBadResponseFromProxy) {
   // Generate a callback with a valid http response, that was generated by
   // a bad/wrong proxy.
   net::URLRequestStatus status;
-  fetcher->delegate()->OnURLFetchComplete(fetcher,
-                                          GURL(kServiceUrl),
-                                          status,
-                                          200,
-                                          net::ResponseCookies(),
-                                          "");
+  fetcher->set_url(GURL(kServiceUrl));
+  fetcher->set_status(status);
+  fetcher->set_response_code(200);
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
 
   // Verify that a new URLFetcher was started that bypasses the proxy.
   fetcher = factory_.GetFetcherByID(0);

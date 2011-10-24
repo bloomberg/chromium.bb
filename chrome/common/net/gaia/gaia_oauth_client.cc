@@ -9,6 +9,7 @@
 #include "base/values.h"
 #include "chrome/common/net/http_return.h"
 #include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -23,7 +24,7 @@ namespace gaia {
 
 class GaiaOAuthClient::Core
     : public base::RefCountedThreadSafe<GaiaOAuthClient::Core>,
-      public URLFetcher::Delegate {
+      public content::URLFetcherDelegate {
  public:
   Core(const std::string& gaia_url,
        net::URLRequestContextGetter* request_context_getter)
@@ -43,25 +44,14 @@ class GaiaOAuthClient::Core
                     int max_retries,
                     GaiaOAuthClient::Delegate* delegate);
 
-  // URLFetcher::Delegate implementation.
-  virtual void OnURLFetchComplete(
-    const URLFetcher* source,
-    const GURL& url,
-    const net::URLRequestStatus& status,
-    int response_code,
-    const net::ResponseCookies& cookies,
-    const std::string& data);
+  // content::URLFetcherDelegate implementation.
+  virtual void OnURLFetchComplete(const URLFetcher* source);
 
  private:
   void MakeGaiaRequest(std::string post_body,
                        int max_retries,
                        GaiaOAuthClient::Delegate* delegate);
-  void HandleResponse(const URLFetcher* source,
-                      const GURL& url,
-                      const net::URLRequestStatus& status,
-                      int response_code,
-                      const std::string& data,
-                      bool* should_retry_request);
+  void HandleResponse(const URLFetcher* source, bool* should_retry_request);
 
   GURL gaia_url_;
   int num_retries_;
@@ -113,15 +103,9 @@ void GaiaOAuthClient::Core::MakeGaiaRequest(
 }
 
 // URLFetcher::Delegate implementation.
-void GaiaOAuthClient::Core::OnURLFetchComplete(
-    const URLFetcher* source,
-    const GURL& url,
-    const net::URLRequestStatus& status,
-    int response_code,
-    const net::ResponseCookies& cookies,
-    const std::string& data) {
+void GaiaOAuthClient::Core::OnURLFetchComplete(const URLFetcher* source) {
   bool should_retry = false;
-  HandleResponse(source, url, status, response_code, data, &should_retry);
+  HandleResponse(source, &should_retry);
   if (should_retry) {
     // Explicitly call ReceivedContentWasMalformed() to ensure the current
     // request gets counted as a failure for calculation of the back-off
@@ -140,24 +124,21 @@ void GaiaOAuthClient::Core::OnURLFetchComplete(
 
 void GaiaOAuthClient::Core::HandleResponse(
     const URLFetcher* source,
-    const GURL& url,
-    const net::URLRequestStatus& status,
-    int response_code,
-    const std::string& data,
     bool* should_retry_request) {
   *should_retry_request = false;
   // RC_BAD_REQUEST means the arguments are invalid. No point retrying. We are
   // done here.
-  if (response_code == RC_BAD_REQUEST) {
+  if (source->response_code() == RC_BAD_REQUEST) {
     delegate_->OnOAuthError();
     return;
   }
   std::string access_token;
   std::string refresh_token;
   int expires_in_seconds = 0;
-  if (response_code == RC_REQUEST_OK) {
-    scoped_ptr<Value> message_value(
-        base::JSONReader::Read(data, false));
+  if (source->response_code() == RC_REQUEST_OK) {
+    std::string data;
+    source->GetResponseAsString(&data);
+    scoped_ptr<Value> message_value(base::JSONReader::Read(data, false));
     if (message_value.get() &&
         message_value->IsType(Value::TYPE_DICTIONARY)) {
       scoped_ptr<DictionaryValue> response_dict(
@@ -173,7 +154,7 @@ void GaiaOAuthClient::Core::HandleResponse(
     if ((-1 != source->max_retries()) &&
         (num_retries_ > source->max_retries())) {
       // Retry limit reached. Give up.
-      delegate_->OnNetworkError(response_code);
+      delegate_->OnNetworkError(source->response_code());
     } else {
       *should_retry_request = true;
     }

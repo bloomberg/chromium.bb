@@ -9,12 +9,16 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 
 class NavigationController;
+
+namespace net {
+class URLRequestStatus;
+}
 
 // Attempts to get the HEAD of a host name and displays an info bar if the
 // request was successful. This is used for single-word queries where we can't
@@ -33,7 +37,7 @@ class NavigationController;
 //   * The intranet fetch fails
 //   * None of the above apply, so we successfully show an infobar
 class AlternateNavURLFetcher : public content::NotificationObserver,
-                               public URLFetcher::Delegate {
+                               public content::URLFetcherDelegate {
  public:
   enum State {
     NOT_STARTED,
@@ -53,13 +57,8 @@ class AlternateNavURLFetcher : public content::NotificationObserver,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // URLFetcher::Delegate
-  virtual void OnURLFetchComplete(const URLFetcher* source,
-                                  const GURL& url,
-                                  const net::URLRequestStatus& status,
-                                  int response_code,
-                                  const net::ResponseCookies& cookies,
-                                  const std::string& data) OVERRIDE;
+  // content::URLFetcherDelegate
+  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
 
   // Sets |controller_| to the supplied pointer and begins fetching
   // |alternate_nav_url_|.

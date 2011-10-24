@@ -23,7 +23,7 @@ bool IssueResponseHandler::CanHandle(const GURL& url) {
 // Overridden from AuthResponseHandler.
 URLFetcher* IssueResponseHandler::Handle(
     const std::string& to_process,
-    URLFetcher::Delegate* catcher) {
+    content::URLFetcherDelegate* catcher) {
   VLOG(1) << "Handling IssueAuthToken response";
   token_url_.assign(BuildTokenAuthUrlWithToken(to_process));
   URLFetcher* fetcher =

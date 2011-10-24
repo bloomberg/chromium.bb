@@ -31,6 +31,10 @@ namespace base {
 class MessageLoopProxy;
 }  // namespace base
 
+namespace content {
+class URLFetcherDelegate;
+}
+
 namespace net {
 class HostPortPair;
 class HttpResponseHeaders;
@@ -53,14 +57,14 @@ typedef std::vector<std::string> ResponseCookies;
 //   fetcher->Start();
 //
 //
-// The object you supply as a delegate must inherit from URLFetcher::Delegate;
-// when the fetch is completed, OnURLFetchComplete() will be called with a
-// pointer to the URLFetcher.  From that point until the original URLFetcher
-// instance is destroyed, you may use accessor methods to see the result of
-// the fetch. You should copy these objects if you need them to live longer
-// than the URLFetcher instance. If the URLFetcher instance is destroyed
-// before the callback happens, the fetch will be canceled and no callback
-// will occur.
+// The object you supply as a delegate must inherit from
+// content::URLFetcherDelegate; when the fetch is completed,
+// OnURLFetchComplete() will be called with a pointer to the URLFetcher.  From
+// that point until the original URLFetcher instance is destroyed, you may use
+// accessor methods to see the result of the fetch. You should copy these
+// objects if you need them to live longer than the URLFetcher instance. If the
+// URLFetcher instance is destroyed before the callback happens, the fetch will
+// be canceled and no callback will occur.
 //
 // You may create the URLFetcher instance on any thread; OnURLFetchComplete()
 // will be called back on the same thread you use to create the instance.
@@ -81,26 +85,6 @@ class CONTENT_EXPORT URLFetcher {
   // was received.
   static const int kInvalidHttpResponseCode;
 
-  class CONTENT_EXPORT Delegate {
-   public:
-    // TODO(skerner): This will be removed in favor of the |source|-only
-    // version below. Leaving this for now to make the initial code review
-    // easy to read.
-    virtual void OnURLFetchComplete(const URLFetcher* source,
-                                    const GURL& url,
-                                    const net::URLRequestStatus& status,
-                                    int response_code,
-                                    const net::ResponseCookies& cookies,
-                                    const std::string& data);
-
-    // This will be called when the URL has been fetched, successfully or not.
-    // Use accessor methods on |source| to get the results.
-    virtual void OnURLFetchComplete(const URLFetcher* source);
-
-   protected:
-    virtual ~Delegate() {}
-  };
-
   // URLFetcher::Create uses the currently registered Factory to create the
   // URLFetcher. Factory is intended for testing.
   class Factory {
@@ -108,7 +92,7 @@ class CONTENT_EXPORT URLFetcher {
     virtual URLFetcher* CreateURLFetcher(int id,
                                          const GURL& url,
                                          RequestType request_type,
-                                         Delegate* d) = 0;
+                                         content::URLFetcherDelegate* d) = 0;
 
    protected:
     virtual ~Factory() {}
@@ -117,7 +101,9 @@ class CONTENT_EXPORT URLFetcher {
   // |url| is the URL to send the request to.
   // |request_type| is the type of request to make.
   // |d| the object that will receive the callback on fetch completion.
-  URLFetcher(const GURL& url, RequestType request_type, Delegate* d);
+  URLFetcher(const GURL& url,
+             RequestType request_type,
+             content::URLFetcherDelegate* d);
   virtual ~URLFetcher();
 
   // Normally interception is disabled for URLFetcher, but you can use this
@@ -132,7 +118,7 @@ class CONTENT_EXPORT URLFetcher {
   // constructor for a description of the args. |id| may be used during testing
   // to identify who is creating the URLFetcher.
   static URLFetcher* Create(int id, const GURL& url, RequestType request_type,
-                            Delegate* d);
+                            content::URLFetcherDelegate* d);
 
   // Sets data only needed by POSTs.  All callers making POST requests should
   // call this before the request is started.  |upload_content_type| is the MIME
@@ -246,10 +232,6 @@ class CONTENT_EXPORT URLFetcher {
   // set to store the response as a string.
   virtual bool GetResponseAsString(std::string* out_response_string) const;
 
-  // Return a const reference to the string data fetched.  Response type
-  // must be STRING, or this will CHECK.
-  virtual const std::string& GetResponseStringRef() const;
-
   // Get the path to the file containing the response body. Returns false
   // if the response body was not saved to a file. If take_ownership is
   // true, caller takes responsibility for the temp file, and it will not
@@ -258,7 +240,7 @@ class CONTENT_EXPORT URLFetcher {
   virtual bool GetResponseAsFilePath(bool take_ownership,
                                      FilePath* out_response_path) const;
 
-  // Cancels all existing URLFetchers.  Will notify the URLFetcher::Delegates.
+  // Cancels all existing URLFetchers.  Will notify the URLFetcherDelegates.
   // Note that any new URLFetchers created while this is running will not be
   // cancelled.  Typically, one would call this in the CleanUp() method of an IO
   // thread, so that no new URLRequests would be able to start on the IO thread
@@ -274,7 +256,7 @@ class CONTENT_EXPORT URLFetcher {
   };
 
   // Returns the delegate.
-  Delegate* delegate() const;
+  content::URLFetcherDelegate* delegate() const;
 
   // Used by tests.
   const std::string& upload_data() const;

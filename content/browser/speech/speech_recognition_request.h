@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher_delegate.h"
 #include "content/common/speech_input_result.h"
 #include "googleurl/src/gurl.h"
 
@@ -26,7 +26,7 @@ namespace speech_input {
 
 // Provides a simple interface for sending recorded speech data to the server
 // and get back recognition results.
-class SpeechRecognitionRequest : public URLFetcher::Delegate {
+class SpeechRecognitionRequest : public content::URLFetcherDelegate {
  public:
   // ID passed to URLFetcher::Create(). Used for testing.
   CONTENT_EXPORT static int url_fetcher_id_for_tests;
@@ -62,7 +62,7 @@ class SpeechRecognitionRequest : public URLFetcher::Delegate {
 
   CONTENT_EXPORT bool HasPendingRequest() { return url_fetcher_ != NULL; }
 
-  // URLFetcher::Delegate methods.
+  // content::URLFetcherDelegate methods.
   virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
 
  private:

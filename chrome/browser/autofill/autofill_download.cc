@@ -18,6 +18,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "content/common/net/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 #include "net/http/http_response_headers.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlparser.h"
@@ -317,7 +318,8 @@ void AutofillDownloadManager::OnURLFetchComplete(const URLFetcher* source) {
   } else {
     VLOG(1) << "AutofillDownloadManager: " << type_of_request
             << " request has succeeded";
-    const std::string& response_body = source->GetResponseStringRef();
+    std::string response_body;
+    source->GetResponseAsString(&response_body);
     if (it->second.request_type == AutofillDownloadManager::REQUEST_QUERY) {
       CacheQueryRequest(it->second.form_signatures, response_body);
       if (observer_)

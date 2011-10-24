@@ -6,6 +6,7 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/profiles/profile.h"
+#include "content/common/net/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 
 SdchDictionaryFetcher::SdchDictionaryFetcher()
@@ -73,9 +74,9 @@ void SdchDictionaryFetcher::StartFetching() {
 void SdchDictionaryFetcher::OnURLFetchComplete(const URLFetcher* source) {
   if ((200 == source->response_code()) &&
       (source->status().status() == net::URLRequestStatus::SUCCESS)) {
-    net::SdchManager::Global()->AddSdchDictionary(
-        source->GetResponseStringRef(),
-        source->url());
+    std::string data;
+    source->GetResponseAsString(&data);
+    net::SdchManager::Global()->AddSdchDictionary(data, source->url());
   }
   current_fetch_.reset(NULL);
   ScheduleDelayedRun();

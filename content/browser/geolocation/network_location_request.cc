@@ -12,6 +12,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "content/common/geoposition.h"
+#include "content/common/net/url_fetcher.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -106,9 +107,11 @@ void NetworkLocationRequest::OnURLFetchComplete(const URLFetcher* source) {
 
   Geoposition position;
   string16 access_token;
+  std::string data;
+  source->GetResponseAsString(&data);
   GetLocationFromResponse(status.is_success(),
                           response_code,
-                          source->GetResponseStringRef(),
+                          data,
                           timestamp_,
                           source->url(),
                           &position,

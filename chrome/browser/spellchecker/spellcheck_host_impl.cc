@@ -23,6 +23,7 @@
 #include "chrome/common/spellcheck_common.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "content/browser/renderer_host/render_process_host.h"
+#include "content/common/net/url_fetcher.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "googleurl/src/gurl.h"
@@ -320,17 +321,12 @@ void SpellCheckHostImpl::WriteWordToCustomDictionary(const std::string& word) {
   file_util::CloseFile(f);
 }
 
-void SpellCheckHostImpl::OnURLFetchComplete(const URLFetcher* source,
-                                            const GURL& url,
-                                            const net::URLRequestStatus& status,
-                                            int response_code,
-                                            const net::ResponseCookies& cookies,
-                                            const std::string& data) {
+void SpellCheckHostImpl::OnURLFetchComplete(const URLFetcher* source) {
   DCHECK(source);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  fetcher_.reset();
+  scoped_ptr<URLFetcher> fetcher_destructor(fetcher_.release());
 
-  if ((response_code / 100) != 2) {
+  if ((source->response_code() / 100) != 2) {
     // Initialize will not try to download the file a second time.
     LOG(ERROR) << "Failure to download dictionary.";
     InitializeOnFileThread();
@@ -340,6 +336,8 @@ void SpellCheckHostImpl::OnURLFetchComplete(const URLFetcher* source,
   // Basic sanity check on the dictionary.
   // There's the small chance that we might see a 200 status code for a body
   // that represents some form of failure.
+  std::string data;
+  source->GetResponseAsString(&data);
   if (data.size() < 4 || data[0] != 'B' || data[1] != 'D' || data[2] != 'i' ||
       data[3] != 'c') {
     LOG(ERROR) << "Failure to download dictionary.";

@@ -21,6 +21,7 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/env_vars.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/net/url_fetcher.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -195,7 +196,7 @@ void SafeBrowsingProtocolManager::GetNextUpdate() {
     IssueUpdateRequest();
 }
 
-// URLFetcher::Delegate implementation -----------------------------------------
+// content::URLFetcherDelegate implementation ----------------------------------
 
 // All SafeBrowsing request responses are handled here.
 // TODO(paulg): Clarify with the SafeBrowsing team whether a failed parse of a
@@ -205,13 +206,7 @@ void SafeBrowsingProtocolManager::GetNextUpdate() {
 //              drop it. This isn't so bad because the next UPDATE_REQUEST we
 //              do will report all the chunks we have. If that chunk is still
 //              required, the SafeBrowsing servers will tell us to get it again.
-void SafeBrowsingProtocolManager::OnURLFetchComplete(
-    const URLFetcher* source,
-    const GURL& url,
-    const net::URLRequestStatus& status,
-    int response_code,
-    const net::ResponseCookies& cookies,
-    const std::string& data) {
+void SafeBrowsingProtocolManager::OnURLFetchComplete(const URLFetcher* source) {
   scoped_ptr<const URLFetcher> fetcher;
   bool parsed_ok = true;
   bool must_back_off = false;  // Reduce SafeBrowsing service query frequency.
@@ -234,10 +229,10 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
     SafeBrowsingService::SafeBrowsingCheck* check = it->second;
     std::vector<SBFullHashResult> full_hashes;
     bool can_cache = false;
-    if (response_code == 200 || response_code == 204) {
+    if (source->response_code() == 200 || source->response_code() == 204) {
       // For tracking our GetHash false positive (204) rate, compared to real
       // (200) responses.
-      if (response_code == 200)
+      if (source->response_code() == 200)
         RecordGetHashResult(check->is_download, GET_HASH_STATUS_200);
       else
         RecordGetHashResult(check->is_download, GET_HASH_STATUS_204);
@@ -246,11 +241,14 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
       gethash_back_off_mult_ = 1;
       bool re_key = false;
       SafeBrowsingProtocolParser parser;
-      parsed_ok = parser.ParseGetHash(data.data(),
-                                      static_cast<int>(data.length()),
-                                      client_key_,
-                                      &re_key,
-                                      &full_hashes);
+      std::string data;
+      source->GetResponseAsString(&data);
+      parsed_ok = parser.ParseGetHash(
+          data.data(),
+          static_cast<int>(data.length()),
+          client_key_,
+          &re_key,
+          &full_hashes);
       if (!parsed_ok) {
         // If we fail to parse it, we must still inform the SafeBrowsingService
         // so that it doesn't hold up the user's request indefinitely. Not sure
@@ -262,12 +260,12 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
       }
     } else {
       HandleGetHashError(Time::Now());
-      if (status.status() == net::URLRequestStatus::FAILED) {
+      if (source->status().status() == net::URLRequestStatus::FAILED) {
         VLOG(1) << "SafeBrowsing GetHash request for: " << source->url()
-                << " failed with error: " << status.error();
+                << " failed with error: " << source->status().error();
       } else {
         VLOG(1) << "SafeBrowsing GetHash request for: " << source->url()
-                << " failed with error: " << response_code;
+                << " failed with error: " << source->response_code();
       }
     }
 
@@ -292,11 +290,12 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
       update_timer_.Stop();
     }
 
-    if (response_code == 200) {
+    if (source->response_code() == 200) {
       // We have data from the SafeBrowsing service.
-      parsed_ok = HandleServiceResponse(source->url(),
-                                        data.data(),
-                                        static_cast<int>(data.length()));
+      std::string data;
+      source->GetResponseAsString(&data);
+      parsed_ok = HandleServiceResponse(
+          source->url(), data.data(), static_cast<int>(data.length()));
       if (!parsed_ok) {
         VLOG(1) << "SafeBrowsing request for: " << source->url()
                 << " failed parse.";
@@ -336,12 +335,12 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
       if (request_type_ == CHUNK_REQUEST)
         chunk_request_urls_.clear();
       UpdateFinished(false);
-      if (status.status() == net::URLRequestStatus::FAILED) {
+      if (source->status().status() == net::URLRequestStatus::FAILED) {
         VLOG(1) << "SafeBrowsing request for: " << source->url()
-                << " failed with error: " << status.error();
+                << " failed with error: " << source->status().error();
       } else {
         VLOG(1) << "SafeBrowsing request for: " << source->url()
-                << " failed with error: " << response_code;
+                << " failed with error: " << source->response_code();
       }
     }
   }

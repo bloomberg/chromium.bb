@@ -12,7 +12,7 @@
 #include "chrome/browser/chromeos/login/auth_response_handler.h"
 #include "chrome/browser/chromeos/login/client_login_response_handler.h"
 #include "chrome/browser/chromeos/login/issue_response_handler.h"
-#include "content/common/net/url_fetcher.h"
+
 
 class Profile;
 
@@ -23,7 +23,7 @@ namespace chromeos {
 //
 // A CookieFetcher manages its own lifecycle.  It deletes itself once it's
 // done attempting to fetch URLs.
-class CookieFetcher : public URLFetcher::Delegate {
+class CookieFetcher : public content::URLFetcherDelegate {
  public:
   // |profile| is the Profile whose cookie jar you want the cookies in.
   explicit CookieFetcher(Profile* profile);
@@ -41,13 +41,8 @@ class CookieFetcher : public URLFetcher::Delegate {
   // Either way, we end up by calling launcher_->DoLaunch()
   void AttemptFetch(const std::string& credentials);
 
-  // Overloaded from URLFetcher::Delegate.
-  virtual void OnURLFetchComplete(const URLFetcher* source,
-                                  const GURL& url,
-                                  const net::URLRequestStatus& status,
-                                  int response_code,
-                                  const net::ResponseCookies& cookies,
-                                  const std::string& data);
+  // Overloaded from content::URLFetcherDelegate.
+  virtual void OnURLFetchComplete(const URLFetcher* source);
 
  private:
   virtual ~CookieFetcher();

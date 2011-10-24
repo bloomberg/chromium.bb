@@ -29,7 +29,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
 #include "base/time.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
@@ -45,6 +45,7 @@ class TimeDelta;
 namespace net {
 class URLRequestContextGetter;
 class URLRequestStatus;
+typedef std::vector<std::string> ResponseCookies;
 }  // namespace net
 
 namespace safe_browsing {
@@ -52,7 +53,7 @@ class ClientPhishingRequest;
 class ClientPhishingResponse;
 class ClientSideModel;
 
-class ClientSideDetectionService : public URLFetcher::Delegate,
+class ClientSideDetectionService : public content::URLFetcherDelegate,
                                    public content::NotificationObserver {
  public:
   typedef Callback2<GURL /* phishing URL */, bool /* is phishing */>::Type
@@ -79,13 +80,8 @@ class ClientSideDetectionService : public URLFetcher::Delegate,
     return enabled_;
   }
 
-  // From the URLFetcher::Delegate interface.
-  virtual void OnURLFetchComplete(const URLFetcher* source,
-                                  const GURL& url,
-                                  const net::URLRequestStatus& status,
-                                  int response_code,
-                                  const net::ResponseCookies& cookies,
-                                  const std::string& data) OVERRIDE;
+  // From the content::URLFetcherDelegate interface.
+  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
 
   // content::NotificationObserver overrides:
   virtual void Observe(int type,

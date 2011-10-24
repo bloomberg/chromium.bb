@@ -8,6 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
+#include "content/public/common/url_fetcher_delegate.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_status.h"
 
@@ -24,7 +25,7 @@ ScopedURLFetcherFactory::~ScopedURLFetcherFactory() {
 TestURLFetcher::TestURLFetcher(int id,
                                const GURL& url,
                                URLFetcher::RequestType request_type,
-                               URLFetcher::Delegate* d)
+                               content::URLFetcherDelegate* d)
     : URLFetcher(url, request_type, d),
       id_(id),
       original_url_(url),
@@ -68,10 +69,6 @@ void TestURLFetcher::SetResponseFilePath(const FilePath& path) {
   fake_response_file_path_ = path;
 }
 
-const std::string& TestURLFetcher::GetResponseStringRef() const {
-  return fake_response_string_;
-}
-
 bool TestURLFetcher::GetResponseAsString(
     std::string* out_response_string) const {
   if (GetResponseDestinationForTesting() != STRING)
@@ -100,7 +97,7 @@ URLFetcher* TestURLFetcherFactory::CreateURLFetcher(
     int id,
     const GURL& url,
     URLFetcher::RequestType request_type,
-    URLFetcher::Delegate* d) {
+    content::URLFetcherDelegate* d) {
   TestURLFetcher* fetcher = new TestURLFetcher(id, url, request_type, d);
   fetchers_[id] = fetcher;
   return fetcher;
@@ -129,11 +126,16 @@ int TestURLFetcher::response_code() const {
   return fake_response_code_;
 }
 
+const net::ResponseCookies& TestURLFetcher::cookies() const {
+  return fake_cookies_;
+}
+
 // This class is used by the FakeURLFetcherFactory below.
 class FakeURLFetcher : public URLFetcher {
  public:
   // Normal URL fetcher constructor but also takes in a pre-baked response.
-  FakeURLFetcher(const GURL& url, RequestType request_type, Delegate* d,
+  FakeURLFetcher(const GURL& url, RequestType request_type,
+                 content::URLFetcherDelegate* d,
                  const std::string& response_data, bool success)
     : URLFetcher(url, request_type, d),
       url_(url),
@@ -156,10 +158,6 @@ class FakeURLFetcher : public URLFetcher {
   // OnURLFetchComplete that only has a single URLFetcher argument.
   virtual const net::ResponseCookies& cookies() const OVERRIDE {
     return cookies_;
-  }
-
-  virtual const std::string& GetResponseStringRef() const OVERRIDE {
-    return response_data_;
   }
 
   virtual bool GetResponseAsString(
@@ -220,7 +218,7 @@ URLFetcher* FakeURLFetcherFactory::CreateURLFetcher(
     int id,
     const GURL& url,
     URLFetcher::RequestType request_type,
-    URLFetcher::Delegate* d) {
+    content::URLFetcherDelegate* d) {
   FakeResponseMap::const_iterator it = fake_responses_.find(url);
   if (it == fake_responses_.end()) {
     if (default_factory_ == NULL) {
@@ -254,6 +252,6 @@ URLFetcher* URLFetcherFactory::CreateURLFetcher(
     int id,
     const GURL& url,
     URLFetcher::RequestType request_type,
-    URLFetcher::Delegate* d) {
+    content::URLFetcherDelegate* d) {
   return new URLFetcher(url, request_type, d);
 }

@@ -26,7 +26,7 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_id.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher_delegate.h"
 
 class Profile;
 
@@ -45,7 +45,7 @@ class Value;
 // comes back, the provider creates and returns matches for the best
 // suggestions.
 class SearchProvider : public AutocompleteProvider,
-                       public URLFetcher::Delegate {
+                       public content::URLFetcherDelegate {
  public:
   SearchProvider(ACProviderListener* listener, Profile* profile);
 
@@ -70,13 +70,8 @@ class SearchProvider : public AutocompleteProvider,
                      bool minimal_changes) OVERRIDE;
   virtual void Stop() OVERRIDE;
 
-  // URLFetcher::Delegate
-  virtual void OnURLFetchComplete(const URLFetcher* source,
-                                  const GURL& url,
-                                  const net::URLRequestStatus& status,
-                                  int response_code,
-                                  const net::ResponseCookies& cookies,
-                                  const std::string& data);
+  // content::URLFetcherDelegate
+  virtual void OnURLFetchComplete(const URLFetcher* source);
 
   // ID used in creating URLFetcher for default provider's suggest results.
   static const int kDefaultProviderURLFetcherID;

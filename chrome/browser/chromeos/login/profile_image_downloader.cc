@@ -18,6 +18,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/net/url_fetcher.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -155,9 +156,8 @@ ProfileImageDownloader::~ProfileImageDownloader() {}
 
 void ProfileImageDownloader::OnURLFetchComplete(const URLFetcher* source) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  const std::string& data = source->GetResponseStringRef();
-
+  std::string data;
+  source->GetResponseAsString(&data);
   if (source->response_code() != 200) {
     LOG(ERROR) << "Response code is " << source->response_code();
     LOG(ERROR) << "Url is " << source->url().spec();
@@ -186,7 +186,8 @@ void ProfileImageDownloader::OnURLFetchComplete(const URLFetcher* source) {
     profile_image_fetcher_->Start();
   } else if (source == profile_image_fetcher_.get()) {
     VLOG(1) << "Decoding the image...";
-    scoped_refptr<ImageDecoder> image_decoder = new ImageDecoder(this, data);
+    scoped_refptr<ImageDecoder> image_decoder = new ImageDecoder(
+        this, data);
     image_decoder->Start();
   }
 }

@@ -160,8 +160,14 @@ TEST_F(GaiaOAuthFetcherTest, OAuthGetAccessToken) {
   net::ResponseCookies cookies;
   net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
   GURL url(GaiaUrls::GetInstance()->oauth_get_access_token_url());
-  oauth_fetcher.OnURLFetchComplete(NULL, url, status, RC_REQUEST_OK,
-                                   cookies, data);
+
+  TestURLFetcher test_fetcher(0, GURL(), URLFetcher::GET, &oauth_fetcher);
+  test_fetcher.set_url(url);
+  test_fetcher.set_status(status);
+  test_fetcher.set_response_code(RC_REQUEST_OK);
+  test_fetcher.set_cookies(cookies);
+  test_fetcher.SetResponseString(data);
+  oauth_fetcher.OnURLFetchComplete(&test_fetcher);
 }
 
 TEST_F(GaiaOAuthFetcherTest, OAuthWrapBridge) {
@@ -189,8 +195,14 @@ TEST_F(GaiaOAuthFetcherTest, OAuthWrapBridge) {
   net::ResponseCookies cookies;
   net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
   GURL url(GaiaUrls::GetInstance()->oauth_wrap_bridge_url());
-  oauth_fetcher.OnURLFetchComplete(NULL, url, status, RC_REQUEST_OK,
-                                   cookies, data);
+
+  TestURLFetcher test_fetcher(0, GURL(), URLFetcher::GET, &oauth_fetcher);
+  test_fetcher.set_url(url);
+  test_fetcher.set_status(status);
+  test_fetcher.set_response_code(RC_REQUEST_OK);
+  test_fetcher.set_cookies(cookies);
+  test_fetcher.SetResponseString(data);
+  oauth_fetcher.OnURLFetchComplete(&test_fetcher);
 }
 
 TEST_F(GaiaOAuthFetcherTest, UserInfo) {
@@ -213,8 +225,14 @@ TEST_F(GaiaOAuthFetcherTest, UserInfo) {
   net::ResponseCookies cookies;
   net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
   GURL url(GaiaUrls::GetInstance()->oauth_user_info_url());
-  oauth_fetcher.OnURLFetchComplete(NULL, url, status,
-                                   RC_REQUEST_OK, cookies, data);
+
+  TestURLFetcher test_fetcher(0, GURL(), URLFetcher::GET, &oauth_fetcher);
+  test_fetcher.set_url(url);
+  test_fetcher.set_status(status);
+  test_fetcher.set_response_code(RC_REQUEST_OK);
+  test_fetcher.set_cookies(cookies);
+  test_fetcher.SetResponseString(data);
+  oauth_fetcher.OnURLFetchComplete(&test_fetcher);
 }
 
 TEST_F(GaiaOAuthFetcherTest, OAuthRevokeToken) {
@@ -232,6 +250,11 @@ TEST_F(GaiaOAuthFetcherTest, OAuthRevokeToken) {
   net::ResponseCookies cookies;
   net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
   GURL url(GaiaUrls::GetInstance()->oauth_revoke_token_url());
-  oauth_fetcher.OnURLFetchComplete(NULL, url, status,
-                                   RC_REQUEST_OK, cookies, std::string());
+
+  TestURLFetcher test_fetcher(0, GURL(), URLFetcher::GET, &oauth_fetcher);
+  test_fetcher.set_url(url);
+  test_fetcher.set_status(status);
+  test_fetcher.set_response_code(RC_REQUEST_OK);
+  test_fetcher.set_cookies(cookies);
+  oauth_fetcher.OnURLFetchComplete(&test_fetcher);
 }

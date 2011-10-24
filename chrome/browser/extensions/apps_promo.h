@@ -11,7 +11,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "chrome/common/extensions/extension.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher_delegate.h"
 
 class PrefService;
 class Profile;
@@ -148,7 +148,7 @@ class AppsPromo {
 
 // Fetches logos over HTTPS, making sure we don't send cookies and that we
 // cache the image until its source URL changes.
-class AppsPromoLogoFetcher : public URLFetcher::Delegate {
+class AppsPromoLogoFetcher : public content::URLFetcherDelegate {
  public:
   AppsPromoLogoFetcher(Profile* profile,
                        AppsPromo::PromoData promo_data);

@@ -23,7 +23,7 @@
 #include "base/timer.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/extensions/update_manifest.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
 
 class Extension;
@@ -32,6 +32,10 @@ class ExtensionUpdaterTest;
 class PrefService;
 class Profile;
 class SafeManifestParser;
+
+namespace net {
+class URLRequestStatus;
+}
 
 // To save on server resources we can request updates for multiple extensions
 // in one manifest check. This class helps us keep track of the id's for a
@@ -165,7 +169,7 @@ class ManifestFetchesBuilder {
 // updater->Start();
 // ....
 // updater->Stop();
-class ExtensionUpdater : public URLFetcher::Delegate,
+class ExtensionUpdater : public content::URLFetcherDelegate,
                          public content::NotificationObserver {
  public:
   // Holds a pointer to the passed |service|, using it for querying installed
@@ -250,7 +254,7 @@ class ExtensionUpdater : public URLFetcher::Delegate,
   // Computes when to schedule the first update check.
   base::TimeDelta DetermineFirstCheckDelay();
 
-  // URLFetcher::Delegate interface.
+  // content::URLFetcherDelegate interface.
   virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
 
   // These do the actual work when a URL fetch completes.

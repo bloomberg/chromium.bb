@@ -13,7 +13,7 @@
 #include "base/memory/singleton.h"
 #include "base/timer.h"
 #include "base/values.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
 
 class FilePath;
@@ -111,7 +111,7 @@ class StartupCustomizationDocument : public CustomizationDocument {
 // the manifest should be initiated outside this class by calling
 // StartFetching() method. User of the file should check IsReady before use it.
 class ServicesCustomizationDocument : public CustomizationDocument,
-                                      private URLFetcher::Delegate {
+                                      private content::URLFetcherDelegate {
  public:
   static ServicesCustomizationDocument* GetInstance();
 
@@ -148,13 +148,8 @@ class ServicesCustomizationDocument : public CustomizationDocument,
   // Save applied state in machine settings.
   static void SetApplied(bool val);
 
-  // Overriden from URLFetcher::Delegate:
-  virtual void OnURLFetchComplete(const URLFetcher* source,
-                                  const GURL& url,
-                                  const net::URLRequestStatus& status,
-                                  int response_code,
-                                  const net::ResponseCookies& cookies,
-                                  const std::string& data);
+  // Overriden from content::URLFetcherDelegate:
+  virtual void OnURLFetchComplete(const URLFetcher* source);
 
   // Initiate file fetching.
   void StartFileFetch();

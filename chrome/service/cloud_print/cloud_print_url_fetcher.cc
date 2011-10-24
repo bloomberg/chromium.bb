@@ -50,38 +50,34 @@ void CloudPrintURLFetcher::StartPostRequest(
                      additional_headers);
 }
 
-  // URLFetcher::Delegate implementation.
-void CloudPrintURLFetcher::OnURLFetchComplete(
-    const URLFetcher* source,
-    const GURL& url,
-    const net::URLRequestStatus& status,
-    int response_code,
-    const net::ResponseCookies& cookies,
-    const std::string& data) {
-  VLOG(1) << "CP_PROXY: OnURLFetchComplete, url: " << url
-          << ", response code: " << response_code;
+void CloudPrintURLFetcher::OnURLFetchComplete(const URLFetcher* source) {
+  VLOG(1) << "CP_PROXY: OnURLFetchComplete, url: " << source->url()
+          << ", response code: " << source->response_code();
   // Make sure we stay alive through the body of this function.
   scoped_refptr<CloudPrintURLFetcher> keep_alive(this);
-  ResponseAction action = delegate_->HandleRawResponse(source,
-                                                       url,
-                                                       status,
-                                                       response_code,
-                                                       cookies,
-                                                       data);
+  std::string data;
+  source->GetResponseAsString(&data);
+  ResponseAction action = delegate_->HandleRawResponse(
+      source,
+      source->url(),
+      source->status(),
+      source->response_code(),
+      source->cookies(),
+      data);
   if (action == CONTINUE_PROCESSING) {
     // If we are not using an OAuth token, and we got an auth error, we are
     // done. Else, the token may have been refreshed. Let us try again.
-    if ((RC_FORBIDDEN == response_code) &&
+    if ((RC_FORBIDDEN == source->response_code()) &&
         (!CloudPrintTokenStore::current() ||
          !CloudPrintTokenStore::current()->token_is_oauth())) {
       delegate_->OnRequestAuthError();
       return;
     }
     // We need to retry on all network errors.
-    if (!status.is_success() || (response_code != 200))
+    if (!source->status().is_success() || (source->response_code() != 200))
       action = RETRY_REQUEST;
     else
-      action = delegate_->HandleRawData(source, url, data);
+      action = delegate_->HandleRawData(source, source->url(), data);
 
     if (action == CONTINUE_PROCESSING) {
       // If the delegate is not interested in handling the raw response data,
@@ -93,7 +89,7 @@ void CloudPrintURLFetcher::OnURLFetchComplete(
       CloudPrintHelpers::ParseResponseJSON(data, &succeeded, &response_dict);
       if (response_dict)
         action = delegate_->HandleJSONData(source,
-                                           url,
+                                           source->url(),
                                            response_dict,
                                            succeeded);
       else

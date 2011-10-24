@@ -8,8 +8,10 @@
 
 #include <string>
 
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher_delegate.h"
 
 class GURL;
 
@@ -18,6 +20,7 @@ class DictionaryValue;
 }
 
 namespace net {
+class URLRequestContextGetter;
 class URLRequestStatus;
 }  // namespace net
 
@@ -28,7 +31,7 @@ class URLRequestStatus;
 // must also be retried.
 class CloudPrintURLFetcher
     : public base::RefCountedThreadSafe<CloudPrintURLFetcher>,
-      public URLFetcher::Delegate {
+      public content::URLFetcherDelegate {
  public:
   enum ResponseAction {
     CONTINUE_PROCESSING,
@@ -92,12 +95,9 @@ class CloudPrintURLFetcher
                         const std::string& post_data,
                         const std::string& additional_headers);
 
-  // URLFetcher::Delegate implementation.
-  virtual void OnURLFetchComplete(const URLFetcher* source, const GURL& url,
-                                  const net::URLRequestStatus& status,
-                                  int response_code,
-                                  const net::ResponseCookies& cookies,
-                                  const std::string& data);
+  // content::URLFetcherDelegate implementation.
+  virtual void OnURLFetchComplete(const URLFetcher* source);
+
  protected:
   friend class base::RefCountedThreadSafe<CloudPrintURLFetcher>;
   virtual ~CloudPrintURLFetcher();

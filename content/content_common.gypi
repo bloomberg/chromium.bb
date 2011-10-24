@@ -48,6 +48,7 @@
     'public/common/serialized_script_value.h',
     'public/common/url_constants.cc',
     'public/common/url_constants.h',
+    'public/common/url_fetcher_delegate.h',
     'public/common/view_types.h',
     'common/appcache/appcache_backend_proxy.cc',
     'common/appcache/appcache_backend_proxy.h',

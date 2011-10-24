@@ -37,6 +37,7 @@
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/utility_process_host.h"
+#include "content/common/net/url_fetcher.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "crypto/sha2.h"
@@ -597,7 +598,7 @@ void ExtensionUpdater::OnURLFetchComplete(const URLFetcher* source) {
 
   if (source == manifest_fetcher_.get()) {
     std::string data;
-    CHECK(source->GetResponseAsString(&data));
+    source->GetResponseAsString(&data);
     OnManifestFetchComplete(source->url(),
                             source->status(),
                             source->response_code(),
@@ -843,7 +844,7 @@ void ExtensionUpdater::OnCRXFetchComplete(
       (response_code == 200 || url.SchemeIsFile())) {
     if (current_extension_fetch_.id == kBlacklistAppID) {
       std::string data;
-      CHECK(source->GetResponseAsString(&data));
+      source->GetResponseAsString(&data);
       ProcessBlacklist(data);
       in_progress_ids_.erase(current_extension_fetch_.id);
     } else {

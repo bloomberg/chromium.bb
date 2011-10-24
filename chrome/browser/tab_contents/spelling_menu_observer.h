@@ -12,17 +12,21 @@
 #include "base/string16.h"
 #include "base/timer.h"
 #include "chrome/browser/tab_contents/render_view_context_menu_observer.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher_delegate.h"
 
 class GURL;
 class RenderViewContextMenuProxy;
+
+namespace net {
+class URLRequestContextGetter;
+}
 
 // An observer that listens to events from the RenderViewContextMenu class and
 // shows suggestions from the Spelling ("do you mean") service to a context menu
 // while we show it. This class implements two interfaces:
 // * RenderViewContextMenuObserver
 //   This interface is used for adding a menu item and update it while showing.
-// * URLFetcher::Delegate
+// * content::URLFetcherDelegate
 //   This interface is used for sending a JSON_RPC request to the Spelling
 //   service and retrieving its response.
 // These interfaces allow this class to make a JSON-RPC call to the Spelling
@@ -37,7 +41,7 @@ class RenderViewContextMenuProxy;
 //   }
 //
 class SpellingMenuObserver : public RenderViewContextMenuObserver,
-                             public URLFetcher::Delegate {
+                             public content::URLFetcherDelegate {
  public:
   explicit SpellingMenuObserver(RenderViewContextMenuProxy* proxy);
   virtual ~SpellingMenuObserver();
@@ -48,13 +52,8 @@ class SpellingMenuObserver : public RenderViewContextMenuObserver,
   virtual bool IsCommandIdEnabled(int command_id) OVERRIDE;
   virtual void ExecuteCommand(int command_id) OVERRIDE;
 
-  // URLFetcher::Delegate implementation.
-  virtual void OnURLFetchComplete(const URLFetcher* source,
-                                  const GURL& url,
-                                  const net::URLRequestStatus& status,
-                                  int response_code,
-                                  const net::ResponseCookies& cookies,
-                                  const std::string& data) OVERRIDE;
+  // content::URLFetcherDelegate implementation.
+  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
 
  private:
   // Invokes a JSON-RPC call in the background. This function sends a JSON-RPC

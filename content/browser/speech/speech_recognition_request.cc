@@ -10,6 +10,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/values.h"
+#include "content/common/net/url_fetcher.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_context.h"
@@ -209,8 +210,10 @@ void SpeechRecognitionRequest::OnURLFetchComplete(const URLFetcher* source) {
   DCHECK_EQ(url_fetcher_.get(), source);
 
   SpeechInputResult result;
+  std::string data;
   if (!source->status().is_success() || source->response_code() != 200 ||
-      !ParseServerResponse(source->GetResponseStringRef(), &result)) {
+      !source->GetResponseAsString(&data) ||
+      !ParseServerResponse(data, &result)) {
     result.error = kErrorNetwork;
   }
 

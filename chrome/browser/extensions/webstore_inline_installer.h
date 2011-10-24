@@ -15,7 +15,7 @@
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/browser/extensions/webstore_install_helper.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -32,7 +32,7 @@ class WebstoreInlineInstaller
     : public base::RefCountedThreadSafe<WebstoreInlineInstaller>,
       public ExtensionInstallUI::Delegate,
       public TabContentsObserver,
-      public URLFetcher::Delegate,
+      public content::URLFetcherDelegate,
       public WebstoreInstaller::Delegate,
       public WebstoreInstallHelper::Delegate {
  public:
@@ -69,7 +69,7 @@ class WebstoreInlineInstaller
   // All flows (whether successful or not) end up in CompleteInstall, which
   // informs our delegate of success/failure.
 
-  // UrlFetcher::Delegate interface implementation.
+  // content::URLFetcherDelegate interface implementation.
   virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
 
   // Client callbacks for SafeWebstoreResponseParser when parsing is complete.

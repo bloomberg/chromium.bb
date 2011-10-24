@@ -25,6 +25,7 @@
 #include "chrome/common/safe_browsing/safebrowsing_messages.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_process_host.h"
+#include "content/common/net/url_fetcher.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "crypto/sha2.h"
@@ -183,18 +184,18 @@ bool ClientSideDetectionService::IsBadIpAddress(
   return false;
 }
 
-void ClientSideDetectionService::OnURLFetchComplete(
-    const URLFetcher* source,
-    const GURL& url,
-    const net::URLRequestStatus& status,
-    int response_code,
-    const net::ResponseCookies& cookies,
-    const std::string& data) {
+void ClientSideDetectionService::OnURLFetchComplete(const URLFetcher* source) {
+  std::string data;
+  source->GetResponseAsString(&data);
   if (source == model_fetcher_.get()) {
-    HandleModelResponse(source, url, status, response_code, cookies, data);
+    HandleModelResponse(
+        source, source->url(), source->status(), source->response_code(),
+        source->cookies(), data);
   } else if (client_phishing_reports_.find(source) !=
              client_phishing_reports_.end()) {
-    HandlePhishingVerdict(source, url, status, response_code, cookies, data);
+    HandlePhishingVerdict(
+        source, source->url(), source->status(), source->response_code(),
+        source->cookies(), data);
   } else {
     NOTREACHED();
   }

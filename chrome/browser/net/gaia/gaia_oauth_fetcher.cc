@@ -24,6 +24,7 @@
 #include "chrome/common/net/http_return.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "content/common/net/url_fetcher.h"
 #include "grit/chromium_strings.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -62,7 +63,7 @@ URLFetcher* GaiaOAuthFetcher::CreateGaiaFetcher(
     const std::string& body,
     const std::string& headers,
     bool send_cookies,
-    URLFetcher::Delegate* delegate) {
+    content::URLFetcherDelegate* delegate) {
   bool empty_body = body.empty();
   URLFetcher* result =
       URLFetcher::Create(0,
@@ -654,18 +655,18 @@ void GaiaOAuthFetcher::OnUserInfoFetched(
   }
 }
 
-void GaiaOAuthFetcher::OnURLFetchComplete(const URLFetcher* source,
-                                          const GURL& url,
-                                          const net::URLRequestStatus& status,
-                                          int response_code,
-                                          const net::ResponseCookies& cookies,
-                                          const std::string& data) {
+void GaiaOAuthFetcher::OnURLFetchComplete(const URLFetcher* source) {
   // Keep |fetcher_| around to avoid invalidating its |status| (accessed below).
   scoped_ptr<URLFetcher> current_fetcher(fetcher_.release());
   fetch_pending_ = false;
   GaiaUrls* gaia_urls = GaiaUrls::GetInstance();
+  GURL url = source->url();
+  std::string data;
+  source->GetResponseAsString(&data);
+  net::URLRequestStatus status = source->status();
+  int response_code = source->response_code();
   if (StartsWithASCII(url.spec(), gaia_urls->get_oauth_token_url(), true)) {
-    OnGetOAuthTokenUrlFetched(cookies, status, response_code);
+    OnGetOAuthTokenUrlFetched(source->cookies(), status, response_code);
   } else if (url.spec() == gaia_urls->oauth1_login_url()) {
     OnOAuthLoginFetched(data, status, response_code);
   } else if (url.spec() == gaia_urls->oauth_get_access_token_url()) {

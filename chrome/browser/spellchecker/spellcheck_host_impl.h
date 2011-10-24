@@ -13,7 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/spellchecker/spellcheck_host.h"
 #include "chrome/browser/spellchecker/spellcheck_profile_provider.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -38,7 +38,7 @@
 // Available languages for the checker, which we need to specify via Create(),
 // can be listed using SpellCheckHost::GetAvailableLanguages() static method.
 class SpellCheckHostImpl : public SpellCheckHost,
-                           public URLFetcher::Delegate,
+                           public content::URLFetcherDelegate,
                            public content::NotificationObserver {
  public:
   SpellCheckHostImpl(SpellCheckProfileProvider* profile,
@@ -102,14 +102,9 @@ class SpellCheckHostImpl : public SpellCheckHost,
   // Returns true if the dictionary is ready to use.
   virtual bool IsReady() const;
 
-  // URLFetcher::Delegate implementation.  Called when we finish downloading the
-  // spellcheck dictionary; saves the dictionary to |data_|.
-  virtual void OnURLFetchComplete(const URLFetcher* source,
-                                  const GURL& url,
-                                  const net::URLRequestStatus& status,
-                                  int response_code,
-                                  const net::ResponseCookies& cookies,
-                                  const std::string& data);
+  // content::URLFetcherDelegate implementation.  Called when we finish
+  // downloading the spellcheck dictionary; saves the dictionary to |data_|.
+  virtual void OnURLFetchComplete(const URLFetcher* source);
 
   // NotificationProfile implementation.
   virtual void Observe(int type,

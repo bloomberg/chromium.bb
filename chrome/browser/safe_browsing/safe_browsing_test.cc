@@ -39,6 +39,8 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
+#include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher_delegate.h"
 #include "net/base/host_resolver.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_log.h"
@@ -351,7 +353,7 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
 class SafeBrowsingServiceTestHelper
     : public base::RefCountedThreadSafe<SafeBrowsingServiceTestHelper>,
       public SafeBrowsingService::Client,
-      public URLFetcher::Delegate {
+      public content::URLFetcherDelegate {
  public:
   explicit SafeBrowsingServiceTestHelper(
       SafeBrowsingServiceTest* safe_browsing_test)
@@ -507,14 +509,9 @@ class SafeBrowsingServiceTestHelper
   }
 
   // Callback for URLFetcher.
-  virtual void OnURLFetchComplete(const URLFetcher* source,
-                                  const GURL& url,
-                                  const net::URLRequestStatus& status,
-                                  int response_code,
-                                  const net::ResponseCookies& cookies,
-                                  const std::string& data) {
-    response_data_ = data;
-    response_status_ = status.status();
+  virtual void OnURLFetchComplete(const URLFetcher* source) {
+    source->GetResponseAsString(&response_data_);
+    response_status_ = source->status().status();
     StopUILoop();
   }
 

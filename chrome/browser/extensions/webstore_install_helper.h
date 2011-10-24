@@ -7,7 +7,7 @@
 #pragma once
 
 #include "content/browser/utility_process_host.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -19,12 +19,16 @@ class DictionaryValue;
 class ListValue;
 }
 
+namespace net {
+class URLRequestContextGetter;
+}
+
 // This is a class to help dealing with webstore-provided data. It manages
 // sending work to the utility process for parsing manifests and
 // fetching/decoding icon data. Clients must implement the
 // WebstoreInstallHelper::Delegate interface to receive the parsed data.
 class WebstoreInstallHelper : public UtilityProcessHost::Client,
-                              public URLFetcher::Delegate {
+                              public content::URLFetcherDelegate {
  public:
   class Delegate {
    public:
@@ -64,7 +68,7 @@ class WebstoreInstallHelper : public UtilityProcessHost::Client,
   void ReportResultsIfComplete();
   void ReportResultFromUIThread();
 
-  // Implementing the URLFetcher::Delegate interface.
+  // Implementing the content::URLFetcherDelegate interface.
   virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
 
   // Implementing pieces of the UtilityProcessHost::Client interface.

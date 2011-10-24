@@ -14,6 +14,7 @@
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
+#include "content/common/net/url_fetcher.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "net/base/registry_controlled_domain.h"
@@ -161,15 +162,10 @@ void AlternateNavURLFetcher::Observe(
   }
 }
 
-void AlternateNavURLFetcher::OnURLFetchComplete(
-    const URLFetcher* source,
-    const GURL& url,
-    const net::URLRequestStatus& status,
-    int response_code,
-    const net::ResponseCookies& cookies,
-    const std::string& data) {
+void AlternateNavURLFetcher::OnURLFetchComplete(const URLFetcher* source) {
   DCHECK_EQ(fetcher_.get(), source);
-  SetStatusFromURLFetch(url, status, response_code);
+  SetStatusFromURLFetch(
+      source->url(), source->status(), source->response_code());
   ShowInfobarIfPossible();
   // WARNING: |this| may be deleted!
 }

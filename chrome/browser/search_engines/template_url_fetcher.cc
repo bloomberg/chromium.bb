@@ -19,11 +19,12 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/common/url_fetcher_delegate.h"
 #include "net/url_request/url_request_status.h"
 
 // RequestDelegate ------------------------------------------------------------
 class TemplateURLFetcher::RequestDelegate
-    : public URLFetcher::Delegate,
+    : public content::URLFetcherDelegate,
       public content::NotificationObserver {
  public:
   // Takes ownership of |callbacks|.
@@ -39,15 +40,10 @@ class TemplateURLFetcher::RequestDelegate
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details);
 
-  // URLFetcher::Delegate:
+  // content::URLFetcherDelegate:
   // If data contains a valid OSDD, a TemplateURL is created and added to
   // the TemplateURLService.
-  virtual void OnURLFetchComplete(const URLFetcher* source,
-                                  const GURL& url,
-                                  const net::URLRequestStatus& status,
-                                  int response_code,
-                                  const net::ResponseCookies& cookies,
-                                  const std::string& data);
+  virtual void OnURLFetchComplete(const URLFetcher* source);
 
   // URL of the OSDD.
   GURL url() const { return osdd_url_; }
@@ -120,12 +116,7 @@ void TemplateURLFetcher::RequestDelegate::Observe(
 }
 
 void TemplateURLFetcher::RequestDelegate::OnURLFetchComplete(
-    const URLFetcher* source,
-    const GURL& url,
-    const net::URLRequestStatus& status,
-    int response_code,
-    const net::ResponseCookies& cookies,
-    const std::string& data) {
+    const URLFetcher* source) {
   template_url_.reset(new TemplateURL());
 
   // Validation checks.
@@ -134,8 +125,10 @@ void TemplateURLFetcher::RequestDelegate::OnURLFetchComplete(
   // For other schemes, e.g. when the OSDD file is bundled with an extension,
   // the response_code is not applicable and should be -1. Also, ensure that
   // the returned information results in a valid search URL.
-  if (!status.is_success() ||
-      ((response_code != -1) && (response_code != 200)) ||
+  std::string data;
+  if (!source->status().is_success() ||
+      ((source->response_code() != -1) && (source->response_code() != 200)) ||
+      !source->GetResponseAsString(&data) ||
       !TemplateURLParser::Parse(
           reinterpret_cast<const unsigned char*>(data.c_str()),
           data.length(),

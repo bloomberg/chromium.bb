@@ -17,6 +17,7 @@
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/common/net/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -149,13 +150,7 @@ bool SpellingMenuObserver::Invoke(const string16& text,
   return true;
 }
 
-void SpellingMenuObserver::OnURLFetchComplete(
-    const URLFetcher* source,
-    const GURL& url,
-    const net::URLRequestStatus& status,
-    int response,
-    const net::ResponseCookies& cookies,
-    const std::string& data) {
+void SpellingMenuObserver::OnURLFetchComplete(const URLFetcher* source) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   fetcher_.reset();
@@ -163,7 +158,9 @@ void SpellingMenuObserver::OnURLFetchComplete(
 
   // Parse the response JSON and replace misspelled words in the |result_| text
   // with their suggestions.
-  succeeded_ = ParseResponse(response, data);
+  std::string data;
+  source->GetResponseAsString(&data);
+  succeeded_ = ParseResponse(source->response_code(), data);
   if (!succeeded_)
     result_ = l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_SPELLING_CORRECT);
 
