@@ -9,6 +9,8 @@
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/font.h"
+#include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 #include "views/controls/label.h"
 #include "views/controls/link.h"
@@ -17,7 +19,7 @@ namespace view_text_utils {
 
 void DrawTextAndPositionUrl(gfx::Canvas* canvas,
                             views::Label* label,
-                            const std::wstring& text,
+                            const string16& text,
                             views::Link* link,
                             gfx::Rect* rect,
                             gfx::Size* position,
@@ -31,7 +33,7 @@ void DrawTextAndPositionUrl(gfx::Canvas* canvas,
   // initialize a bidirectional ICU line iterator and split the text into
   // runs that are either strictly LTR or strictly RTL, with no mix.
   base::i18n::BiDiLineIterator bidi_line;
-  if (!bidi_line.Open(WideToUTF16Hack(text), true, false))
+  if (!bidi_line.Open(text, true, false))
     return;
 
   // Iterate over each run and draw it.
@@ -42,7 +44,7 @@ void DrawTextAndPositionUrl(gfx::Canvas* canvas,
     UBiDiLevel level = 0;
     bidi_line.GetLogicalRun(run_start, &run_end, &level);
     DCHECK(run_end > run_start);
-    std::wstring fragment = text.substr(run_start, run_end - run_start);
+    string16 fragment = text.substr(run_start, run_end - run_start);
 
     // A flag that tells us whether we found LTR text inside RTL text.
     bool ltr_inside_rtl_text =
@@ -81,7 +83,7 @@ void DrawTextAndPositionUrl(gfx::Canvas* canvas,
 
 void DrawTextStartingFrom(gfx::Canvas* canvas,
                           views::Label* label,
-                          const std::wstring& text,
+                          const string16& text,
                           gfx::Size* position,
                           const gfx::Rect& bounds,
                           const gfx::Font& font,
@@ -89,7 +91,7 @@ void DrawTextStartingFrom(gfx::Canvas* canvas,
                           bool ltr_within_rtl) {
   // Iterate through line breaking opportunities (which in English would be
   // spaces and such). This tells us where to wrap.
-  string16 text16(WideToUTF16(text));
+  string16 text16(text);
   base::i18n::BreakIterator iter(text16,
                                  base::i18n::BreakIterator::BREAK_SPACE);
   if (!iter.Init())

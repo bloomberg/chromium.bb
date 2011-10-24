@@ -850,9 +850,9 @@ TEST_F(ViewTest, Textfield) {
 
 // Tests that the Textfield view respond appropiately to cut/copy/paste.
 TEST_F(ViewTest, TextfieldCutCopyPaste) {
-  const std::wstring kNormalText = L"Normal";
-  const std::wstring kReadOnlyText = L"Read only";
-  const std::wstring kPasswordText = L"Password! ** Secret stuff **";
+  const string16 kNormalText = ASCIIToUTF16("Normal");
+  const string16 kReadOnlyText = ASCIIToUTF16("Read only");
+  const string16 kPasswordText = ASCIIToUTF16("Password! ** Secret stuff **");
 
   ui::Clipboard clipboard;
 
@@ -941,12 +941,12 @@ TEST_F(ViewTest, TextfieldCutCopyPaste) {
   ::SendMessage(read_only->GetTestingHandle(), WM_KEYDOWN, 0, 0);
   wchar_t buffer[1024] = { 0 };
   ::GetWindowText(read_only->GetTestingHandle(), buffer, 1024);
-  EXPECT_EQ(kReadOnlyText, std::wstring(buffer));
+  EXPECT_EQ(kReadOnlyText, string16(buffer));
 
   password->SelectAll();
   ::SendMessage(password->GetTestingHandle(), WM_PASTE, 0, 0);
   ::GetWindowText(password->GetTestingHandle(), buffer, 1024);
-  EXPECT_EQ(kNormalText, std::wstring(buffer));
+  EXPECT_EQ(kNormalText, string16(buffer));
 
   // Copy from read_only so the string we are pasting is not the same as the
   // current one.
@@ -955,7 +955,7 @@ TEST_F(ViewTest, TextfieldCutCopyPaste) {
   normal->SelectAll();
   ::SendMessage(normal->GetTestingHandle(), WM_PASTE, 0, 0);
   ::GetWindowText(normal->GetTestingHandle(), buffer, 1024);
-  EXPECT_EQ(kReadOnlyText, std::wstring(buffer));
+  EXPECT_EQ(kReadOnlyText, string16(buffer));
   widget->CloseNow();
 }
 #endif

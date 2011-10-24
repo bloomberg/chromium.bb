@@ -407,15 +407,15 @@ void AboutChromeView::OnPaint(gfx::Canvas* canvas) {
   gfx::Size position;
   // Draw the first text chunk and position the Chromium url.
   view_text_utils::DrawTextAndPositionUrl(canvas, main_text_label_,
-      UTF16ToWideHack(main_label_chunk1_), link1, rect1, &position,
+      main_label_chunk1_, link1, rect1, &position,
       text_direction_is_rtl_, label_bounds, font);
   // Draw the second text chunk and position the Open Source url.
   view_text_utils::DrawTextAndPositionUrl(canvas, main_text_label_,
-      UTF16ToWideHack(main_label_chunk2_), link2, rect2, &position,
+      main_label_chunk2_, link2, rect2, &position,
       text_direction_is_rtl_, label_bounds, font);
   // Draw the third text chunk (which has no URL associated with it).
   view_text_utils::DrawTextAndPositionUrl(canvas, main_text_label_,
-      UTF16ToWideHack(main_label_chunk3_), NULL, NULL, &position,
+      main_label_chunk3_, NULL, NULL, &position,
       text_direction_is_rtl_, label_bounds, font);
 
 #if defined(GOOGLE_CHROME_BUILD)
@@ -425,12 +425,12 @@ void AboutChromeView::OnPaint(gfx::Canvas* canvas) {
 
   // And now the Terms of Service and position the TOS url.
   view_text_utils::DrawTextAndPositionUrl(canvas, main_text_label_,
-      UTF16ToWideHack(main_label_chunk4_), terms_of_service_url_,
+      main_label_chunk4_, terms_of_service_url_,
       &terms_of_service_url_rect_, &position, text_direction_is_rtl_,
       label_bounds, font);
   // The last text chunk doesn't have a URL associated with it.
   view_text_utils::DrawTextAndPositionUrl(canvas, main_text_label_,
-       UTF16ToWideHack(main_label_chunk5_), NULL, NULL, &position,
+       main_label_chunk5_, NULL, NULL, &position,
        text_direction_is_rtl_, label_bounds, font);
 
   // Position the TOS URL within the main label.

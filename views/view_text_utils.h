@@ -8,14 +8,13 @@
 #define VIEWS_VIEW_TEXT_UTILS_H_
 #pragma once
 
-#include <string>
-
-#include "ui/gfx/font.h"
-#include "ui/gfx/rect.h"
+#include "base/string16.h"
 #include "views/views_export.h"
 
 namespace gfx {
 class Canvas;
+class Font;
+class Rect;
 class Size;
 }
 
@@ -42,7 +41,7 @@ namespace view_text_utils {
 // character, which we need to position the URLs within the text.
 VIEWS_EXPORT void DrawTextAndPositionUrl(gfx::Canvas* canvas,
                                          views::Label* label,
-                                         const std::wstring& text,
+                                         const string16& text,
                                          views::Link* link,
                                          gfx::Rect* rect,
                                          gfx::Size* position,
@@ -57,7 +56,7 @@ VIEWS_EXPORT void DrawTextAndPositionUrl(gfx::Canvas* canvas,
 // RTL text. For details on the other parameters, see DrawTextAndPositionUrl.
 void DrawTextStartingFrom(gfx::Canvas* canvas,
                           views::Label* label,
-                          const std::wstring& text,
+                          const string16& text,
                           gfx::Size* position,
                           const gfx::Rect& bounds,
                           const gfx::Font& font,
