@@ -395,9 +395,9 @@ TEST_F(NativeBackendGnomeTest, BasicAddLogin) {
   backend.Init();
 
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      base::IgnoreReturn(base::Callback<bool(void)>(
-          base::Bind(&NativeBackendGnome::AddLogin,
-                     base::Unretained(&backend), form_google_))));
+      base::IgnoreReturn<bool>(base::Bind(
+          &NativeBackendGnome::AddLogin,
+          base::Unretained(&backend), form_google_)));
 
   RunBothThreads();
 
@@ -414,15 +414,15 @@ TEST_F(NativeBackendGnomeTest, BasicListLogins) {
   backend.Init();
 
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      base::IgnoreReturn(base::Callback<bool(void)>(
-          base::Bind(&NativeBackendGnome::AddLogin,
-                     base::Unretained(&backend), form_google_))));
+      base::IgnoreReturn<bool>(base::Bind(
+          &NativeBackendGnome::AddLogin,
+          base::Unretained(&backend), form_google_)));
 
   std::vector<PasswordForm*> form_list;
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      base::IgnoreReturn(base::Callback<bool(void)>(
-          base::Bind(&NativeBackendGnome::GetAutofillableLogins,
-                     base::Unretained(&backend), &form_list))));
+      base::IgnoreReturn<bool>(base::Bind(
+          &NativeBackendGnome::GetAutofillableLogins,
+          base::Unretained(&backend), &form_list)));
 
   RunBothThreads();
 
@@ -443,9 +443,9 @@ TEST_F(NativeBackendGnomeTest, BasicRemoveLogin) {
   backend.Init();
 
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      base::IgnoreReturn(base::Callback<bool(void)>(
-          base::Bind(&NativeBackendGnome::AddLogin,
-                     base::Unretained(&backend), form_google_))));
+      base::IgnoreReturn<bool>(base::Bind(
+          &NativeBackendGnome::AddLogin,
+          base::Unretained(&backend), form_google_)));
 
   RunBothThreads();
 
@@ -454,9 +454,9 @@ TEST_F(NativeBackendGnomeTest, BasicRemoveLogin) {
     CheckMockKeyringItem(&mock_keyring_items[0], form_google_, "chrome-42");
 
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      base::IgnoreReturn(base::Callback<bool(void)>(
-          base::Bind(&NativeBackendGnome::RemoveLogin,
-                     base::Unretained(&backend), form_google_))));
+      base::IgnoreReturn<bool>(base::Bind(
+          &NativeBackendGnome::RemoveLogin,
+          base::Unretained(&backend), form_google_)));
 
   RunBothThreads();
 
@@ -472,9 +472,9 @@ TEST_F(NativeBackendGnomeTest, RemoveNonexistentLogin) {
 
   // First add an unrelated login.
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      base::IgnoreReturn(base::Callback<bool(void)>(
-          base::Bind(&NativeBackendGnome::AddLogin,
-                     base::Unretained(&backend), form_google_))));
+      base::IgnoreReturn<bool>(base::Bind(
+          &NativeBackendGnome::AddLogin,
+          base::Unretained(&backend), form_google_)));
 
   RunBothThreads();
 
@@ -484,16 +484,16 @@ TEST_F(NativeBackendGnomeTest, RemoveNonexistentLogin) {
 
   // Attempt to remove a login that doesn't exist.
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      base::IgnoreReturn(base::Callback<bool(void)>(
-          base::Bind(&NativeBackendGnome::RemoveLogin,
-                     base::Unretained(&backend), form_isc_))));
+      base::IgnoreReturn<bool>(base::Bind(
+          &NativeBackendGnome::RemoveLogin,
+          base::Unretained(&backend), form_isc_)));
 
   // Make sure we can still get the first form back.
   std::vector<PasswordForm*> form_list;
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      base::IgnoreReturn(base::Callback<bool(void)>(
-          base::Bind(&NativeBackendGnome::GetAutofillableLogins,
-                     base::Unretained(&backend), &form_list))));
+      base::IgnoreReturn<bool>(base::Bind(
+          &NativeBackendGnome::GetAutofillableLogins,
+          base::Unretained(&backend), &form_list)));
 
   RunBothThreads();
 
@@ -514,13 +514,13 @@ TEST_F(NativeBackendGnomeTest, AddDuplicateLogin) {
   backend.Init();
 
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      base::IgnoreReturn(base::Callback<bool(void)>(
-          base::Bind(&NativeBackendGnome::AddLogin,
-                     base::Unretained(&backend), form_google_))));
+      base::IgnoreReturn<bool>(base::Bind(
+          &NativeBackendGnome::AddLogin,
+          base::Unretained(&backend), form_google_)));
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      base::IgnoreReturn(base::Callback<bool(void)>(
-          base::Bind(&NativeBackendGnome::AddLogin,
-                     base::Unretained(&backend), form_google_))));
+      base::IgnoreReturn<bool>(base::Bind(
+          &NativeBackendGnome::AddLogin,
+          base::Unretained(&backend), form_google_)));
 
   RunBothThreads();
 
@@ -537,20 +537,20 @@ TEST_F(NativeBackendGnomeTest, ListLoginsAppends) {
   backend.Init();
 
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      base::IgnoreReturn(base::Callback<bool(void)>(
-          base::Bind(&NativeBackendGnome::AddLogin,
-                     base::Unretained(&backend), form_google_))));
+      base::IgnoreReturn<bool>(base::Bind(
+          &NativeBackendGnome::AddLogin,
+          base::Unretained(&backend), form_google_)));
 
   // Send the same request twice with the same list both times.
   std::vector<PasswordForm*> form_list;
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      base::IgnoreReturn(base::Callback<bool(void)>(
-          base::Bind(&NativeBackendGnome::GetAutofillableLogins,
-                     base::Unretained(&backend), &form_list))));
+      base::IgnoreReturn<bool>(base::Bind(
+          &NativeBackendGnome::GetAutofillableLogins,
+          base::Unretained(&backend), &form_list)));
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      base::IgnoreReturn(base::Callback<bool(void)>(
-          base::Bind(&NativeBackendGnome::GetAutofillableLogins,
-                     base::Unretained(&backend), &form_list))));
+      base::IgnoreReturn<bool>(base::Bind(
+          &NativeBackendGnome::GetAutofillableLogins,
+          base::Unretained(&backend), &form_list)));
 
   RunBothThreads();
 
@@ -574,16 +574,16 @@ TEST_F(NativeBackendGnomeTest, MigrateOneLogin) {
     backend.Init();
 
     BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-        base::IgnoreReturn(base::Callback<bool(void)>(
-            base::Bind(&NativeBackendGnome::AddLogin,
-                       base::Unretained(&backend), form_google_))));
+        base::IgnoreReturn<bool>(base::Bind(
+            &NativeBackendGnome::AddLogin,
+            base::Unretained(&backend), form_google_)));
 
     // Make sure we can get the form back even when migration is failing.
     std::vector<PasswordForm*> form_list;
     BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-        base::IgnoreReturn(base::Callback<bool(void)>(
-            base::Bind(&NativeBackendGnome::GetAutofillableLogins,
-                       base::Unretained(&backend), &form_list))));
+        base::IgnoreReturn<bool>(base::Bind(
+            &NativeBackendGnome::GetAutofillableLogins,
+            base::Unretained(&backend), &form_list)));
 
     RunBothThreads();
 
@@ -606,9 +606,9 @@ TEST_F(NativeBackendGnomeTest, MigrateOneLogin) {
     // This should not trigger migration because there will be no results.
     std::vector<PasswordForm*> form_list;
     BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-        base::IgnoreReturn(base::Callback<bool(void)>(
-            base::Bind(&NativeBackendGnome::GetBlacklistLogins,
-                       base::Unretained(&backend), &form_list))));
+        base::IgnoreReturn<bool>(base::Bind(
+            &NativeBackendGnome::GetBlacklistLogins,
+            base::Unretained(&backend), &form_list)));
 
     RunBothThreads();
 
@@ -633,9 +633,9 @@ TEST_F(NativeBackendGnomeTest, MigrateOneLogin) {
     // Trigger the migration by looking something up.
     std::vector<PasswordForm*> form_list;
     BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-        base::IgnoreReturn(base::Callback<bool(void)>(
-            base::Bind(&NativeBackendGnome::GetAutofillableLogins,
-                       base::Unretained(&backend), &form_list))));
+        base::IgnoreReturn<bool>(base::Bind(
+            &NativeBackendGnome::GetAutofillableLogins,
+            base::Unretained(&backend), &form_list)));
 
     RunBothThreads();
 
@@ -664,9 +664,9 @@ TEST_F(NativeBackendGnomeTest, MigrateToMultipleProfiles) {
     backend.Init();
 
     BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-        base::IgnoreReturn(base::Callback<bool(void)>(
-            base::Bind(&NativeBackendGnome::AddLogin,
-                       base::Unretained(&backend), form_google_))));
+        base::IgnoreReturn<bool>(base::Bind(
+            &NativeBackendGnome::AddLogin,
+            base::Unretained(&backend), form_google_)));
 
     RunBothThreads();
   }
@@ -685,9 +685,9 @@ TEST_F(NativeBackendGnomeTest, MigrateToMultipleProfiles) {
     // Trigger the migration by looking something up.
     std::vector<PasswordForm*> form_list;
     BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-        base::IgnoreReturn(base::Callback<bool(void)>(
-            base::Bind(&NativeBackendGnome::GetAutofillableLogins,
-                       base::Unretained(&backend), &form_list))));
+        base::IgnoreReturn<bool>(base::Bind(
+            &NativeBackendGnome::GetAutofillableLogins,
+            base::Unretained(&backend), &form_list)));
 
     RunBothThreads();
 
@@ -717,9 +717,9 @@ TEST_F(NativeBackendGnomeTest, MigrateToMultipleProfiles) {
     // Trigger the migration by looking something up.
     std::vector<PasswordForm*> form_list;
     BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-        base::IgnoreReturn(base::Callback<bool(void)>(
-            base::Bind(&NativeBackendGnome::GetAutofillableLogins,
-                       base::Unretained(&backend), &form_list))));
+        base::IgnoreReturn<bool>(base::Bind(
+            &NativeBackendGnome::GetAutofillableLogins,
+            base::Unretained(&backend), &form_list)));
 
     RunBothThreads();
 
@@ -746,9 +746,9 @@ TEST_F(NativeBackendGnomeTest, NoMigrationWithPrefSet) {
     backend.Init();
 
     BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-        base::IgnoreReturn(base::Callback<bool(void)>(
-            base::Bind(&NativeBackendGnome::AddLogin,
-                       base::Unretained(&backend), form_google_))));
+        base::IgnoreReturn<bool>(base::Bind(
+            &NativeBackendGnome::AddLogin,
+            base::Unretained(&backend), form_google_)));
 
     RunBothThreads();
   }
@@ -767,16 +767,16 @@ TEST_F(NativeBackendGnomeTest, NoMigrationWithPrefSet) {
 
     // Trigger the migration by adding a new login.
     BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-        base::IgnoreReturn(base::Callback<bool(void)>(
-            base::Bind(&NativeBackendGnome::AddLogin,
-                       base::Unretained(&backend), form_isc_))));
+        base::IgnoreReturn<bool>(base::Bind(
+            &NativeBackendGnome::AddLogin,
+            base::Unretained(&backend), form_isc_)));
 
     // Look up all logins; we expect only the one we added.
     std::vector<PasswordForm*> form_list;
     BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-        base::IgnoreReturn(base::Callback<bool(void)>(
-            base::Bind(&NativeBackendGnome::GetAutofillableLogins,
-                       base::Unretained(&backend), &form_list))));
+        base::IgnoreReturn<bool>(base::Bind(
+            &NativeBackendGnome::GetAutofillableLogins,
+            base::Unretained(&backend), &form_list)));
 
     RunBothThreads();
 
@@ -803,9 +803,9 @@ TEST_F(NativeBackendGnomeTest, DeleteMigratedPasswordIsIsolated) {
     backend.Init();
 
     BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-        base::IgnoreReturn(base::Callback<bool(void)>(
-            base::Bind(&NativeBackendGnome::AddLogin,
-                       base::Unretained(&backend), form_google_))));
+        base::IgnoreReturn<bool>(base::Bind(
+            &NativeBackendGnome::AddLogin,
+            base::Unretained(&backend), form_google_)));
 
     RunBothThreads();
   }
@@ -824,9 +824,9 @@ TEST_F(NativeBackendGnomeTest, DeleteMigratedPasswordIsIsolated) {
     // Trigger the migration by looking something up.
     std::vector<PasswordForm*> form_list;
     BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-        base::IgnoreReturn(base::Callback<bool(void)>(
-            base::Bind(&NativeBackendGnome::GetAutofillableLogins,
-                       base::Unretained(&backend), &form_list))));
+        base::IgnoreReturn<bool>(base::Bind(
+            &NativeBackendGnome::GetAutofillableLogins,
+            base::Unretained(&backend), &form_list)));
 
     RunBothThreads();
 
@@ -856,9 +856,9 @@ TEST_F(NativeBackendGnomeTest, DeleteMigratedPasswordIsIsolated) {
     // Trigger the migration by looking something up.
     std::vector<PasswordForm*> form_list;
     BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-        base::IgnoreReturn(base::Callback<bool(void)>(
-            base::Bind(&NativeBackendGnome::GetAutofillableLogins,
-                       base::Unretained(&backend), &form_list))));
+        base::IgnoreReturn<bool>(base::Bind(
+            &NativeBackendGnome::GetAutofillableLogins,
+            base::Unretained(&backend), &form_list)));
 
     RunBothThreads();
 
@@ -877,9 +877,9 @@ TEST_F(NativeBackendGnomeTest, DeleteMigratedPasswordIsIsolated) {
 
     // Now delete the password from this second profile.
     BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-        base::IgnoreReturn(base::Callback<bool(void)>(
-            base::Bind(&NativeBackendGnome::RemoveLogin,
-                       base::Unretained(&backend), form_google_))));
+        base::IgnoreReturn<bool>(base::Bind(
+            &NativeBackendGnome::RemoveLogin,
+            base::Unretained(&backend), form_google_)));
 
     RunBothThreads();
 
