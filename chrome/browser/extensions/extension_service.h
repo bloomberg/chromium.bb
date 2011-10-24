@@ -54,7 +54,7 @@ class ExtensionCookiesEventRouter;
 class ExtensionDownloadsEventRouter;
 class ExtensionFileBrowserEventRouter;
 class ExtensionGlobalError;
-class ExtensionHistoryEventRouter;
+class HistoryExtensionEventRouter;
 class ExtensionInstallUI;
 class ExtensionManagementEventRouter;
 class ExtensionPreferenceEventRouter;
@@ -805,7 +805,7 @@ class ExtensionService
 
   scoped_ptr<ExtensionDownloadsEventRouter> downloads_event_router_;
 
-  scoped_ptr<ExtensionHistoryEventRouter> history_event_router_;
+  scoped_ptr<HistoryExtensionEventRouter> history_event_router_;
 
   scoped_ptr<ExtensionBrowserEventRouter> browser_event_router_;
 

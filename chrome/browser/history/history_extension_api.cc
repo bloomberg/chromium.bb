@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_history_api.h"
+#include "chrome/browser/history/history_extension_api.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -13,7 +13,6 @@
 #include "base/task.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_event_router.h"
-#include "chrome/browser/extensions/extension_history_api_constants.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/profiles/profile.h"
@@ -21,9 +20,33 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 
-namespace keys = extension_history_api_constants;
-
 namespace {
+
+const char kAllHistoryKey[] = "allHistory";
+const char kEndTimeKey[] = "endTime";
+const char kFaviconUrlKey[] = "favIconUrl";
+const char kIdKey[] = "id";
+const char kLastVisitdKey[] = "lastVisitTime";
+const char kMaxResultsKey[] = "maxResults";
+const char kNewKey[] = "new";
+const char kReferringVisitId[] = "referringVisitId";
+const char kRemovedKey[] = "removed";
+const char kStartTimeKey[] = "startTime";
+const char kTextKey[] = "text";
+const char kTitleKey[] = "title";
+const char kTypedCountKey[] = "typedCount";
+const char kVisitCountKey[] = "visitCount";
+const char kTransition[] = "transition";
+const char kUrlKey[] = "url";
+const char kUrlsKey[] = "urls";
+const char kVisitId[] = "visitId";
+const char kVisitTime[] = "visitTime";
+
+const char kOnVisited[] = "history.onVisited";
+const char kOnVisitRemoved[] = "history.onVisitRemoved";
+
+const char kInvalidIdError[] = "History item id is invalid.";
+const char kInvalidUrlError[] = "Url is invalid.";
 
 double MilliSecondsFromTime(const base::Time& time) {
   return 1000 * time.ToDoubleT();
@@ -31,13 +54,13 @@ double MilliSecondsFromTime(const base::Time& time) {
 
 void GetHistoryItemDictionary(const history::URLRow& row,
                               DictionaryValue* value) {
-  value->SetString(keys::kIdKey, base::Int64ToString(row.id()));
-  value->SetString(keys::kUrlKey, row.url().spec());
-  value->SetString(keys::kTitleKey, row.title());
-  value->SetDouble(keys::kLastVisitdKey,
+  value->SetString(kIdKey, base::Int64ToString(row.id()));
+  value->SetString(kUrlKey, row.url().spec());
+  value->SetString(kTitleKey, row.title());
+  value->SetDouble(kLastVisitdKey,
                    MilliSecondsFromTime(row.last_visit()));
-  value->SetInteger(keys::kTypedCountKey, row.typed_count());
-  value->SetInteger(keys::kVisitCountKey, row.visit_count());
+  value->SetInteger(kTypedCountKey, row.typed_count());
+  value->SetInteger(kVisitCountKey, row.visit_count());
 }
 
 void AddHistoryNode(const history::URLRow& row, ListValue* list) {
@@ -48,16 +71,16 @@ void AddHistoryNode(const history::URLRow& row, ListValue* list) {
 
 void GetVisitInfoDictionary(const history::VisitRow& row,
                             DictionaryValue* value) {
-  value->SetString(keys::kIdKey, base::Int64ToString(row.url_id));
-  value->SetString(keys::kVisitId, base::Int64ToString(row.visit_id));
-  value->SetDouble(keys::kVisitTime, MilliSecondsFromTime(row.visit_time));
-  value->SetString(keys::kReferringVisitId,
+  value->SetString(kIdKey, base::Int64ToString(row.url_id));
+  value->SetString(kVisitId, base::Int64ToString(row.visit_id));
+  value->SetDouble(kVisitTime, MilliSecondsFromTime(row.visit_time));
+  value->SetString(kReferringVisitId,
                    base::Int64ToString(row.referring_visit));
 
   const char* trans =
       content::PageTransitionGetCoreTransitionString(row.transition);
   DCHECK(trans) << "Invalid transition.";
-  value->SetString(keys::kTransition, trans);
+  value->SetString(kTransition, trans);
 }
 
 void AddVisitNode(const history::VisitRow& row, ListValue* list) {
@@ -68,11 +91,11 @@ void AddVisitNode(const history::VisitRow& row, ListValue* list) {
 
 }  // namespace
 
-ExtensionHistoryEventRouter::ExtensionHistoryEventRouter() {}
+HistoryExtensionEventRouter::HistoryExtensionEventRouter() {}
 
-ExtensionHistoryEventRouter::~ExtensionHistoryEventRouter() {}
+HistoryExtensionEventRouter::~HistoryExtensionEventRouter() {}
 
-void ExtensionHistoryEventRouter::ObserveProfile(Profile* profile) {
+void HistoryExtensionEventRouter::ObserveProfile(Profile* profile) {
   CHECK(registrar_.IsEmpty());
   const content::Source<Profile> source = content::Source<Profile>(profile);
   registrar_.Add(this,
@@ -83,7 +106,7 @@ void ExtensionHistoryEventRouter::ObserveProfile(Profile* profile) {
                  source);
 }
 
-void ExtensionHistoryEventRouter::Observe(
+void HistoryExtensionEventRouter::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
@@ -103,7 +126,7 @@ void ExtensionHistoryEventRouter::Observe(
   }
 }
 
-void ExtensionHistoryEventRouter::HistoryUrlVisited(
+void HistoryExtensionEventRouter::HistoryUrlVisited(
     Profile* profile,
     const history::URLVisitedDetails* details) {
   ListValue args;
@@ -113,30 +136,30 @@ void ExtensionHistoryEventRouter::HistoryUrlVisited(
 
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
-  DispatchEvent(profile, keys::kOnVisited, json_args);
+  DispatchEvent(profile, kOnVisited, json_args);
 }
 
-void ExtensionHistoryEventRouter::HistoryUrlsRemoved(
+void HistoryExtensionEventRouter::HistoryUrlsRemoved(
     Profile* profile,
     const history::URLsDeletedDetails* details) {
   ListValue args;
   DictionaryValue* dict = new DictionaryValue();
-  dict->SetBoolean(keys::kAllHistoryKey, details->all_history);
+  dict->SetBoolean(kAllHistoryKey, details->all_history);
   ListValue* urls = new ListValue();
   for (std::set<GURL>::const_iterator iterator = details->urls.begin();
       iterator != details->urls.end();
       ++iterator) {
     urls->Append(new StringValue(iterator->spec()));
   }
-  dict->Set(keys::kUrlsKey, urls);
+  dict->Set(kUrlsKey, urls);
   args.Append(dict);
 
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
-  DispatchEvent(profile, keys::kOnVisitRemoved, json_args);
+  DispatchEvent(profile, kOnVisitRemoved, json_args);
 }
 
-void ExtensionHistoryEventRouter::DispatchEvent(Profile* profile,
+void HistoryExtensionEventRouter::DispatchEvent(Profile* profile,
                                                 const char* event_name,
                                                 const std::string& json_args) {
   if (profile && profile->GetExtensionEventRouter()) {
@@ -160,7 +183,7 @@ bool HistoryFunction::GetUrlFromValue(Value* value, GURL* url) {
 
   GURL temp_url(url_string);
   if (!temp_url.is_valid()) {
-    error_ = keys::kInvalidUrlError;
+    error_ = kInvalidUrlError;
     return false;
   }
   url->Swap(&temp_url);
@@ -213,7 +236,7 @@ bool GetVisitsHistoryFunction::RunAsyncImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &json));
 
   Value* value;
-  EXTENSION_FUNCTION_VALIDATE(json->Get(keys::kUrlKey, &value));
+  EXTENSION_FUNCTION_VALIDATE(json->Get(kUrlKey, &value));
 
   GURL url;
   if (!GetUrlFromValue(value, &url))
@@ -252,24 +275,24 @@ bool SearchHistoryFunction::RunAsyncImpl() {
 
   // Initialize the HistoryQuery
   string16 search_text;
-  EXTENSION_FUNCTION_VALIDATE(json->GetString(keys::kTextKey, &search_text));
+  EXTENSION_FUNCTION_VALIDATE(json->GetString(kTextKey, &search_text));
 
   history::QueryOptions options;
   options.SetRecentDayRange(1);
   options.max_count = 100;
 
-  if (json->HasKey(keys::kStartTimeKey)) {  // Optional.
+  if (json->HasKey(kStartTimeKey)) {  // Optional.
     Value* value;
-    EXTENSION_FUNCTION_VALIDATE(json->Get(keys::kStartTimeKey, &value));
+    EXTENSION_FUNCTION_VALIDATE(json->Get(kStartTimeKey, &value));
     EXTENSION_FUNCTION_VALIDATE(GetTimeFromValue(value, &options.begin_time));
   }
-  if (json->HasKey(keys::kEndTimeKey)) {  // Optional.
+  if (json->HasKey(kEndTimeKey)) {  // Optional.
     Value* value;
-    EXTENSION_FUNCTION_VALIDATE(json->Get(keys::kEndTimeKey, &value));
+    EXTENSION_FUNCTION_VALIDATE(json->Get(kEndTimeKey, &value));
     EXTENSION_FUNCTION_VALIDATE(GetTimeFromValue(value, &options.end_time));
   }
-  if (json->HasKey(keys::kMaxResultsKey)) {  // Optional.
-    EXTENSION_FUNCTION_VALIDATE(json->GetInteger(keys::kMaxResultsKey,
+  if (json->HasKey(kMaxResultsKey)) {  // Optional.
+    EXTENSION_FUNCTION_VALIDATE(json->GetInteger(kMaxResultsKey,
                                                  &options.max_count));
   }
 
@@ -302,7 +325,7 @@ bool AddUrlHistoryFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &json));
 
   Value* value;
-  EXTENSION_FUNCTION_VALIDATE(json->Get(keys::kUrlKey, &value));
+  EXTENSION_FUNCTION_VALIDATE(json->Get(kUrlKey, &value));
 
   GURL url;
   if (!GetUrlFromValue(value, &url))
@@ -320,7 +343,7 @@ bool DeleteUrlHistoryFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &json));
 
   Value* value;
-  EXTENSION_FUNCTION_VALIDATE(json->Get(keys::kUrlKey, &value));
+  EXTENSION_FUNCTION_VALIDATE(json->Get(kUrlKey, &value));
 
   GURL url;
   if (!GetUrlFromValue(value, &url))
@@ -338,11 +361,11 @@ bool DeleteRangeHistoryFunction::RunAsyncImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &json));
 
   Value* value = NULL;
-  EXTENSION_FUNCTION_VALIDATE(json->Get(keys::kStartTimeKey, &value));
+  EXTENSION_FUNCTION_VALIDATE(json->Get(kStartTimeKey, &value));
   base::Time begin_time;
   EXTENSION_FUNCTION_VALIDATE(GetTimeFromValue(value, &begin_time));
 
-  EXTENSION_FUNCTION_VALIDATE(json->Get(keys::kEndTimeKey, &value));
+  EXTENSION_FUNCTION_VALIDATE(json->Get(kEndTimeKey, &value));
   base::Time end_time;
   EXTENSION_FUNCTION_VALIDATE(GetTimeFromValue(value, &end_time));
 

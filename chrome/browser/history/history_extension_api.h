@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_HISTORY_API_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_HISTORY_API_H_
+#ifndef CHROME_BROWSER_HISTORY_HISTORY_EXTENSION_API_H_
+#define CHROME_BROWSER_HISTORY_HISTORY_EXTENSION_API_H_
 #pragma once
 
 #include <string>
@@ -16,10 +16,10 @@
 
 // Observes History service and routes the notifications as events to the
 // extension system.
-class ExtensionHistoryEventRouter : public content::NotificationObserver {
+class HistoryExtensionEventRouter : public content::NotificationObserver {
  public:
-  explicit ExtensionHistoryEventRouter();
-  virtual ~ExtensionHistoryEventRouter();
+  explicit HistoryExtensionEventRouter();
+  virtual ~HistoryExtensionEventRouter();
 
   void ObserveProfile(Profile* profile);
 
@@ -42,7 +42,7 @@ class ExtensionHistoryEventRouter : public content::NotificationObserver {
   // Used for tracking registrations to history service notifications.
   content::NotificationRegistrar registrar_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionHistoryEventRouter);
+  DISALLOW_COPY_AND_ASSIGN(HistoryExtensionEventRouter);
 };
 
 
@@ -137,4 +137,4 @@ class DeleteRangeHistoryFunction : public HistoryFunctionWithCallback {
   void DeleteComplete();
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_HISTORY_API_H_
+#endif  // CHROME_BROWSER_HISTORY_HISTORY_EXTENSION_API_H_

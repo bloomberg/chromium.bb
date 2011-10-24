@@ -41,7 +41,6 @@
 #include "chrome/browser/extensions/extension_downloads_api.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_global_error.h"
-#include "chrome/browser/extensions/extension_history_api.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_input_ime_api.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
@@ -57,6 +56,7 @@
 #include "chrome/browser/extensions/external_extension_provider_impl.h"
 #include "chrome/browser/extensions/external_extension_provider_interface.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
+#include "chrome/browser/history/history_extension_api.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -711,7 +711,7 @@ void ExtensionService::InitEventRouters() {
     return;
 
   downloads_event_router_.reset(new ExtensionDownloadsEventRouter(profile_));
-  history_event_router_.reset(new ExtensionHistoryEventRouter());
+  history_event_router_.reset(new HistoryExtensionEventRouter());
   history_event_router_->ObserveProfile(profile_);
   browser_event_router_.reset(new ExtensionBrowserEventRouter(profile_));
   browser_event_router_->Init();

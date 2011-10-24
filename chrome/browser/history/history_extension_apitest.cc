@@ -7,7 +7,7 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "net/base/mock_host_resolver.h"
 
-class ExtensionHistoryApiTest : public ExtensionApiTest {
+class HistoryExtensionApiTest : public ExtensionApiTest {
  public:
   virtual void SetUpInProcessBrowserTestFixture() {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
@@ -21,11 +21,11 @@ class ExtensionHistoryApiTest : public ExtensionApiTest {
 
 // Full text search indexing sometimes exceeds a timeout.
 // Fix this as part of crbug/76170.
-IN_PROC_BROWSER_TEST_F(ExtensionHistoryApiTest, DISABLED_MiscSearch) {
+IN_PROC_BROWSER_TEST_F(HistoryExtensionApiTest, DISABLED_MiscSearch) {
   ASSERT_TRUE(RunExtensionSubtest("history", "misc_search.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionHistoryApiTest, TimedSearch) {
+IN_PROC_BROWSER_TEST_F(HistoryExtensionApiTest, TimedSearch) {
   ASSERT_TRUE(RunExtensionSubtest("history", "timed_search.html")) << message_;
 }
 
@@ -35,12 +35,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionHistoryApiTest, TimedSearch) {
 #else
 #define MAYBE_Delete Delete
 #endif
-IN_PROC_BROWSER_TEST_F(ExtensionHistoryApiTest, MAYBE_Delete) {
+IN_PROC_BROWSER_TEST_F(HistoryExtensionApiTest, MAYBE_Delete) {
   ASSERT_TRUE(RunExtensionSubtest("history", "delete.html")) << message_;
 }
 
 // See crbug.com/79074
-IN_PROC_BROWSER_TEST_F(ExtensionHistoryApiTest, FLAKY_GetVisits) {
+IN_PROC_BROWSER_TEST_F(HistoryExtensionApiTest, FLAKY_GetVisits) {
   ASSERT_TRUE(RunExtensionSubtest("history", "get_visits.html")) << message_;
 }
 
@@ -52,7 +52,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionHistoryApiTest, FLAKY_GetVisits) {
 #define MAYBE_SearchAfterAdd SearchAfterAdd
 #endif
 
-IN_PROC_BROWSER_TEST_F(ExtensionHistoryApiTest, MAYBE_SearchAfterAdd) {
+IN_PROC_BROWSER_TEST_F(HistoryExtensionApiTest, MAYBE_SearchAfterAdd) {
   ASSERT_TRUE(RunExtensionSubtest("history", "search_after_add.html"))
       << message_;
 }
