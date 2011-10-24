@@ -741,12 +741,7 @@ void PluginInstance::ViewChanged(const gfx::Rect& position,
   if (desired_fullscreen_state_ || fullscreen_) {
     WebElement element = container_->element();
     WebDocument document = element.document();
-    // TODO(polina): temporary hack to ease WebKit/Chromium commit sequence.
-#ifdef WEBKIT_WEBDOCUMENT_HAS_FULLSCREENELEMENT
     bool is_fullscreen_element = (element == document.fullScreenElement());
-#else
-    bool is_fullscreen_element = desired_fullscreen_state_;
-#endif
     if (!fullscreen_ && desired_fullscreen_state_ &&
         delegate()->IsInFullscreenMode() && is_fullscreen_element) {
       // Entered fullscreen. Only possible via SetFullscreen().
