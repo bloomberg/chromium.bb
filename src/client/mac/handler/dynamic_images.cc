@@ -38,7 +38,6 @@ extern "C" { // needed to compile on Leopard
 #include <assert.h>
 #include <AvailabilityMacros.h>
 #include <dlfcn.h>
-#include <mach/mach_vm.h>
 #include <mach/task_info.h>
 #include <sys/sysctl.h>
 #include <TargetConditionals.h>

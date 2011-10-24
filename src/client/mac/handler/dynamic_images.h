@@ -45,6 +45,8 @@
 #include <string>
 #include <vector>
 
+#include "mach_vm_compat.h"
+
 namespace google_breakpad {
 
 using std::string;

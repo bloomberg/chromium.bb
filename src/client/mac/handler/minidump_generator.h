@@ -43,6 +43,7 @@
 #include "google_breakpad/common/minidump_format.h"
 
 #include "dynamic_images.h"
+#include "mach_vm_compat.h"
 
 #if !TARGET_OS_IPHONE && (MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_7)
   #define HAS_PPC_SUPPORT
