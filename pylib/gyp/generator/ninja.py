@@ -154,6 +154,15 @@ class NinjaWriter:
 
     return path
 
+  def ExpandRuleVariables(self, path, root, dirname, source, ext, name):
+    path = path.replace(generator_default_variables['RULE_INPUT_ROOT'], root)
+    path = path.replace(generator_default_variables['RULE_INPUT_DIRNAME'],
+                        dirname)
+    path = path.replace(generator_default_variables['RULE_INPUT_PATH'], source)
+    path = path.replace(generator_default_variables['RULE_INPUT_EXT'], ext)
+    path = path.replace(generator_default_variables['RULE_INPUT_NAME'], name)
+    return path
+
   def GypPathToNinja(self, path):
     """Translate a gyp path to a ninja path.
 
@@ -351,9 +360,8 @@ class NinjaWriter:
         # Gather the list of outputs, expanding $vars if possible.
         outputs = []
         for output in rule['outputs']:
-          outputs.append(output.replace(
-              generator_default_variables['RULE_INPUT_ROOT'], root).replace(
-                  generator_default_variables['RULE_INPUT_DIRNAME'], dirname))
+          outputs.append(self.ExpandRuleVariables(output, root, dirname,
+                                                  source, ext, basename))
 
         if int(rule.get('process_outputs_as_sources', False)):
           extra_sources += outputs
@@ -414,9 +422,12 @@ class NinjaWriter:
     self.WriteVariableList('includes',
                            ['-I' + self.GypPathToNinja(i)
                             for i in config.get('include_dirs', [])])
-    self.WriteVariableList('cflags', config.get('cflags'))
-    self.WriteVariableList('cflags_c', config.get('cflags_c'))
-    self.WriteVariableList('cflags_cc', config.get('cflags_cc'))
+    self.WriteVariableList('cflags', map(self.ExpandSpecial,
+                                         config.get('cflags', [])))
+    self.WriteVariableList('cflags_c', map(self.ExpandSpecial,
+                                           config.get('cflags_c', [])))
+    self.WriteVariableList('cflags_cc', map(self.ExpandSpecial,
+                                            config.get('cflags_cc', [])))
     self.ninja.newline()
     outputs = []
     for source in sources:
