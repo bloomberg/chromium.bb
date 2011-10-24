@@ -31,6 +31,7 @@
 #include <time.h>
 #include <cairo.h>
 #include <glib.h>
+#include <gio/gio.h>
 #include <linux/input.h>
 
 #include <glib/poppler-document.h>
