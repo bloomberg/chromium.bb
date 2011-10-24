@@ -510,10 +510,16 @@ void RenderViewContextMenu::InitMenu() {
   bool has_selection = !params_.selection_text.empty();
 
   if (AppendCustomItems()) {
-    // Don't add items for Pepper menu.
-    if (!params_.custom_context.is_pepper_menu)
-      AppendDeveloperItems();
-    return;
+    // If there's a selection, don't early return when there are custom items,
+    // but fall through to adding the normal ones after the custom ones.
+    if (has_selection) {
+      menu_model_.AddSeparator();
+    } else {
+      // Don't add items for Pepper menu.
+      if (!params_.custom_context.is_pepper_menu)
+        AppendDeveloperItems();
+      return;
+    }
   }
 
   // When no special node or text is selected and selection has no link,
