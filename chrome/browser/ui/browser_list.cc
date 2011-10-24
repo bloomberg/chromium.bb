@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
+#include "chrome/browser/download/download_service.h"
 #include "chrome/browser/metrics/thread_watcher.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/background_printing_manager.h"
@@ -188,15 +189,17 @@ printing::BackgroundPrintingManager* GetBackgroundPrintingManager() {
 // This currently checks if there is pending download, or if it needs to
 // handle unload handler.
 bool AreAllBrowsersCloseable() {
-  for (BrowserList::const_iterator i = BrowserList::begin();
-       i != BrowserList::end(); ++i) {
-    bool normal_downloads_are_present = false;
-    bool incognito_downloads_are_present = false;
-    (*i)->CheckDownloadsInProgress(&normal_downloads_are_present,
-                                   &incognito_downloads_are_present);
-    if (normal_downloads_are_present ||
-        incognito_downloads_are_present ||
-        (*i)->TabsNeedBeforeUnloadFired())
+  BrowserList::const_iterator browser_it = BrowserList::begin();
+  if (browser_it == BrowserList::end())
+    return true;
+
+  // If there are any downloads active, all browsers are not closeable.
+  if (DownloadService::DownloadCountAllProfiles() > 0)
+    return false;
+
+  // Check TabsNeedBeforeUnloadFired().
+  for (; browser_it != BrowserList::end(); ++browser_it) {
+    if ((*browser_it)->TabsNeedBeforeUnloadFired())
       return false;
   }
   return true;

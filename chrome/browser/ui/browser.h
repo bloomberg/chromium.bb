@@ -110,6 +110,21 @@ class Browser : public TabHandlerDelegate,
     FEATURE_DOWNLOADSHELF = 128
   };
 
+  // The context for a download blocked notification from
+  // OkToCloseWithInProgressDownloads.
+  enum DownloadClosePreventionType {
+    // Browser close is not blocked by download state.
+    DOWNLOAD_CLOSE_OK,
+
+    // The browser is shutting down and there are active downloads
+    // that would be cancelled.
+    DOWNLOAD_CLOSE_BROWSER_SHUTDOWN,
+
+    // There are active downloads associated with this incognito profile
+    // that would be canceled.
+    DOWNLOAD_CLOSE_LAST_WINDOW_IN_INCOGNITO_PROFILE,
+  };
+
   struct CreateParams {
     CreateParams(Type type, Profile* profile);
 
@@ -342,15 +357,19 @@ class Browser : public TabHandlerDelegate,
 
   // In-progress download termination handling /////////////////////////////////
 
-  // Are normal and/or incognito downloads in progress?
-  void CheckDownloadsInProgress(bool* normal_downloads,
-                                bool* incognito_downloads);
-
   // Called when the user has decided whether to proceed or not with the browser
   // closure.  |cancel_downloads| is true if the downloads should be canceled
   // and the browser closed, false if the browser should stay open and the
   // downloads running.
   void InProgressDownloadResponse(bool cancel_downloads);
+
+  // Indicates whether or not this browser window can be closed, or
+  // would be blocked by in-progress downloads.
+  // If executing downloads would be cancelled by this window close,
+  // then |*num_downloads_blocking| is updated with how many downloads
+  // would be canceled if the close continued.
+  DownloadClosePreventionType OkToCloseWithInProgressDownloads(
+      int* num_downloads_blocking) const;
 
   // TabStripModel pass-thrus /////////////////////////////////////////////////
 
