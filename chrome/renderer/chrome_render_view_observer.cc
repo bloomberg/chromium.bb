@@ -5,6 +5,7 @@
 #include "chrome/renderer/chrome_render_view_observer.h"
 
 #include "base/command_line.h"
+#include "base/debug/trace_event.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
@@ -838,6 +839,8 @@ void ChromeRenderViewObserver::CapturePageInfo(int load_id,
   if (!preliminary_capture)
     last_indexed_url_ = stripped_url;
 
+  TRACE_EVENT0("renderer", "ChromeRenderViewObserver::CapturePageInfo");
+
   // Retrieve the frame's full text.
   string16 contents;
   CaptureText(main_frame, &contents);
@@ -909,6 +912,8 @@ void ChromeRenderViewObserver::CaptureThumbnail() {
   if (render_view()->GetSize().IsEmpty())
     return;  // Don't create an empty thumbnail!
 
+  TRACE_EVENT0("renderer", "ChromeRenderViewObserver::CaptureThumbnail");
+
   ThumbnailScore score;
   SkBitmap thumbnail;
   if (!CaptureFrameThumbnail(render_view()->GetWebView(), kThumbnailWidth,
@@ -928,9 +933,13 @@ bool ChromeRenderViewObserver::CaptureFrameThumbnail(WebView* view,
 
   skia::PlatformCanvas canvas;
 
-  // Paint |view| into |canvas|.
-  if (!PaintViewIntoCanvas(view, canvas))
-    return false;
+  {
+    TRACE_EVENT0("renderer",
+        "ChromeRenderViewObserver::CaptureFrameThumbnail::PaintViewIntoCanvas");
+    // Paint |view| into |canvas|.
+    if (!PaintViewIntoCanvas(view, canvas))
+      return false;
+  }
 
   SkDevice* device = skia::GetTopDevice(canvas);
 
@@ -973,13 +982,21 @@ bool ChromeRenderViewObserver::CaptureFrameThumbnail(WebView* view,
   SkBitmap subset;
   device->accessBitmap(false).extractSubset(&subset, src_rect);
 
+  TRACE_EVENT_BEGIN0("renderer",
+        "ChromeRenderViewObserver::CaptureFrameThumbnail::DownsampleByTwo");
   // First do a fast downsample by powers of two to get close to the final size.
   SkBitmap downsampled_subset =
       SkBitmapOperations::DownsampleByTwoUntilSize(subset, w, h);
+  TRACE_EVENT_END0("renderer",
+        "ChromeRenderViewObserver::CaptureFrameThumbnail::DownsampleByTwo");
 
-  // Do a high-quality resize from the downscaled size to the final size.
-  *thumbnail = skia::ImageOperations::Resize(
-      downsampled_subset, skia::ImageOperations::RESIZE_LANCZOS3, w, h);
+  {
+    TRACE_EVENT0("renderer",
+        "ChromeRenderViewObserver::CaptureFrameThumbnail::DownsampleLanczos3");
+    // Do a high-quality resize from the downscaled size to the final size.
+    *thumbnail = skia::ImageOperations::Resize(
+        downsampled_subset, skia::ImageOperations::RESIZE_LANCZOS3, w, h);
+  }
 
   score->boring_score = CalculateBoringScore(thumbnail);
 
