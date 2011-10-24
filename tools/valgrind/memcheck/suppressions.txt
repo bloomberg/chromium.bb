@@ -4908,6 +4908,20 @@
    fun:_ZN7WebCore14ResourceHandle5startEPNS_17NetworkingContextE
 }
 {
+   bug_101146c
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN11webkit_glue16WebURLLoaderImplC1Ev
+   fun:_ZN11webkit_glue25WebKitPlatformSupportImpl15createURLLoaderEv
+   fun:_ZN11webkit_glue15ResourceFetcher5StartEPN6WebKit8WebFrameE
+   fun:_ZN11webkit_glue15ResourceFetcherC2ERK4GURLPN6WebKit8WebFrameENS4_13WebURLRequest10TargetTypeEP14CallbackRunnerI6Tuple2IRKNS4_14WebURLResponseERKSsEE
+   fun:_ZN11webkit_glue26ResourceFetcherWithTimeoutC1ERK4GURLPN6WebKit8WebFrameENS4_13WebURLRequest10TargetTypeEiP14CallbackRunnerI6Tuple2IRKNS4_14WebURLResponseERKSsEE
+   fun:_ZN11webkit_glue27AltErrorPageResourceFetcherC1ERK4GURLPN6WebKit8WebFrameERKNS4_11WebURLErrorEP14CallbackRunnerI6Tuple3IS6_S9_RKSsEE
+   fun:_ZN14RenderViewImpl27MaybeLoadAlternateErrorPageEPN6WebKit8WebFrameERKNS0_11WebURLErrorEb
+   fun:_ZN14RenderViewImpl22didFailProvisionalLoadEPN6WebKit8WebFrameERKNS0_11WebURLErrorE
+   fun:_ZN6WebKit12WebFrameImpl7didFailERKN7WebCore13ResourceErrorEb
+}
+{
    bug_101151
    Memcheck:Leak
    fun:_Znw*
@@ -4930,6 +4944,41 @@
    fun:_ZN6webkit5npapi13WebPluginImpl23GetWindowScriptNPObjectEv
    fun:NPN_GetValue
 }
+{
+   bug_101335
+   Memcheck:Cond
+   fun:_Z35SendExtensionWebRequestStatusToHostP17RenderProcessHost
+   fun:_ZN6chrome26ChromeContentBrowserClient31BrowserRenderProcessHostCreatedEP24BrowserRenderProcessHost
+   fun:_ZN24BrowserRenderProcessHost4InitEb
+   fun:_ZN14RenderViewHost16CreateRenderViewERKSbItN4base20string16_char_traitsESaItEE
+   fun:_ZN11TabContents32CreateRenderViewForRenderManagerEP14RenderViewHost
+   ...
+   fun:_ZN21RenderViewHostManager14InitRenderViewEP14RenderViewHostRK15NavigationEntry
+   fun:_ZN21RenderViewHostManager8NavigateERK15NavigationEntry
+   fun:_ZN11TabContents15NavigateToEntryERK15NavigationEntryN20NavigationController10ReloadTypeE
+   fun:_ZN11TabContents22NavigateToPendingEntryEN20NavigationController10ReloadTypeE
+   fun:_ZN20NavigationController22NavigateToPendingEntryENS_10ReloadTypeE
+   fun:_ZN20NavigationController9LoadEntryEP15NavigationEntry
+   fun:_ZN20NavigationController7LoadURLERK4GURLS2_N7content14PageTransitionERKSs
+   fun:_ZN7browser8NavigateEPNS_14NavigateParamsE
+}
+{
+   bug_101342
+   Memcheck:Cond
+   fun:_ZN14RenderViewImpl23SyncSelectionIfRequiredEv
+   fun:_ZN14RenderViewImpl18didChangeSelectionEb
+   fun:_ZN6WebKit16EditorClientImpl25respondToChangedSelectionEv
+   fun:_ZN7WebCore6Editor25respondToChangedSelectionERKNS_16VisibleSelectionE
+   fun:_ZN7WebCore6Editor25respondToChangedSelectionERKNS_16VisibleSelectionEj
+   fun:_ZN7WebCore14FrameSelection12setSelectionERKNS_16VisibleSelectionEjNS0_19CursorAlignOnScrollENS_15TextGranularityE
+   fun:_ZN7WebCore14FrameSelection12setSelectionERKNS_16VisibleSelectionENS_15TextGranularityE
+   fun:_ZN7WebCore14FrameSelection34setNonDirectionalSelectionIfNeededERKNS_16VisibleSelectionENS_15TextGranularityENS0_23EndPointsAdjustmentModeE
+   fun:_ZN7WebCore12EventHandler49updateSelectionForMouseDownDispatchingSelectStartEPNS_4NodeERKNS_16VisibleSelectionENS_15TextGranularityE
+   fun:_ZN7WebCore12EventHandler32handleMousePressEventSingleClickERKNS_28MouseEventWithHitTestResultsE
+   fun:_ZN7WebCore12EventHandler21handleMousePressEventERKNS_28MouseEventWithHitTestResultsE
+   fun:_ZN7WebCore12EventHandler21handleMousePressEventERKNS_18PlatformMouseEventE
+}
+
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
