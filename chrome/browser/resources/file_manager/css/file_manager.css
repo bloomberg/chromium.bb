@@ -272,7 +272,6 @@ div.img-container > img {
 
 /* Bottom pane describing current selection. */
 .preview-panel {
-  -webkit-border-start: 1px #aaa solid;
   -webkit-box-orient: horizontal;
   display: -webkit-box;
   height: 61px;
