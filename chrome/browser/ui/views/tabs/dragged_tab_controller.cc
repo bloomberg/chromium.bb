@@ -31,6 +31,7 @@
 #include "ui/base/animation/animation.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
+#include "ui/base/events.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/screen.h"
@@ -501,7 +502,7 @@ void DraggedTabController::Observe(
 ///////////////////////////////////////////////////////////////////////////////
 // DraggedTabController, MessageLoop::Observer implementation:
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(TOUCH_UI) || defined(USE_AURA)
 base::EventStatus DraggedTabController::WillProcessEvent(
     const base::NativeEvent& event) {
   return base::EVENT_CONTINUE;
@@ -512,17 +513,10 @@ void DraggedTabController::DidProcessEvent(const base::NativeEvent& event) {
   // to the way they were. This is the most reliable way to do this since no
   // single view or window reliably receives events throughout all the various
   // kinds of tab dragging.
-  if (event.message == WM_KEYDOWN && event.wParam == VK_ESCAPE)
+  if (ui::EventTypeFromNative(event) == ui::ET_KEY_PRESSED &&
+      ui::KeyboardCodeFromNative(event) == ui::VKEY_ESCAPE) {
     EndDrag(true);
-}
-#elif defined(TOUCH_UI) || defined(USE_AURA)
-base::EventStatus DraggedTabController::WillProcessEvent(
-    const base::NativeEvent& event) {
-  return base::EVENT_CONTINUE;
-}
-
-void DraggedTabController::DidProcessEvent(const base::NativeEvent& event) {
-  NOTIMPLEMENTED();
+  }
 }
 #elif defined(TOOLKIT_USES_GTK)
 void DraggedTabController::WillProcessEvent(GdkEvent* event) {
