@@ -655,8 +655,9 @@ CookiesTreeModel::CookiesTreeModel(
   }
 
   if (file_system_helper_) {
-    file_system_helper_->StartFetching(NewCallback(
-        this, &CookiesTreeModel::OnFileSystemModelInfoLoaded));
+    file_system_helper_->StartFetching(
+        base::Bind(&CookiesTreeModel::OnFileSystemModelInfoLoaded,
+                   base::Unretained(this)));
   }
 
   if (quota_helper_) {

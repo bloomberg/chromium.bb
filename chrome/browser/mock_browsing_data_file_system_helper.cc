@@ -15,12 +15,12 @@ MockBrowsingDataFileSystemHelper::~MockBrowsingDataFileSystemHelper() {
 }
 
 void MockBrowsingDataFileSystemHelper::StartFetching(
-    Callback1<const std::list<FileSystemInfo>& >::Type* callback) {
-  callback_.reset(callback);
+    const base::Callback<void(const std::list<FileSystemInfo>&)>& callback) {
+  callback_ = callback;
 }
 
 void MockBrowsingDataFileSystemHelper::CancelNotification() {
-  callback_.reset(NULL);
+  callback_.Reset();
 }
 
 void MockBrowsingDataFileSystemHelper::DeleteFileSystemOrigin(
@@ -45,8 +45,8 @@ void MockBrowsingDataFileSystemHelper::AddFileSystemSamples() {
 }
 
 void MockBrowsingDataFileSystemHelper::Notify() {
-  CHECK(callback_.get());
-  callback_->Run(response_);
+  CHECK_EQ(false, callback_.is_null());
+  callback_.Run(response_);
 }
 
 void MockBrowsingDataFileSystemHelper::Reset() {

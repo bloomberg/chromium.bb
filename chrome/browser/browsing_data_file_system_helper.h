@@ -9,7 +9,8 @@
 #include <list>
 #include <string>
 
-#include "base/callback_old.h"
+#include "base/callback.h"
+#include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -82,8 +83,8 @@ class BrowsingDataFileSystemHelper
   //
   // BrowsingDataFileSystemHelper takes ownership of the Callback1, and is
   // responsible for deleting it once it's no longer needed.
-  virtual void StartFetching(
-      Callback1<const std::list<FileSystemInfo>& >::Type* callback) = 0;
+  virtual void StartFetching(const base::Callback<
+      void(const std::list<FileSystemInfo>&)>& callback) = 0;
 
   // Cancels the notification callback associated with StartFetching. Clients
   // that are destroyed before the callback is triggered must call this, and
@@ -136,16 +137,16 @@ class CannedBrowsingDataFileSystemHelper
   // True if no filesystems are currently stored.
   bool empty() const;
 
-  // BrowsingDataFileSystemHelper methods.
-  virtual void StartFetching(
-      Callback1<const std::list<FileSystemInfo>& >::Type* callback);
-  virtual void CancelNotification();
+  // BrowsingDataFileSystemHelper implementation.
+  virtual void StartFetching(const base::Callback<
+      void(const std::list<FileSystemInfo>&)>& callback) OVERRIDE;
+  virtual void CancelNotification() OVERRIDE;
 
   // Note that this doesn't actually have an implementation for this canned
   // class. It hasn't been necessary for anything that uses the canned
   // implementation, as the canned class is only used in tests, or in read-only
   // contexts (like the non-modal cookie dialog).
-  virtual void DeleteFileSystemOrigin(const GURL& origin) {}
+  virtual void DeleteFileSystemOrigin(const GURL& origin) OVERRIDE {}
 
  private:
   // Used by Clone() to create an object without a Profile
@@ -160,10 +161,9 @@ class CannedBrowsingDataFileSystemHelper
   // StartFetching is called.
   std::list<FileSystemInfo> file_system_info_;
 
-  // Holds the callback passed in at the beginning of the StartFetching workflow
-  // so that it can be triggered via NotifyOnUIThread.
-  scoped_ptr<Callback1<const std::list<FileSystemInfo>& >::Type >
-      completion_callback_;
+  // The callback passed in at the beginning of the StartFetching workflow so
+  // that it can be triggered via NotifyOnUIThread.
+  base::Callback<void(const std::list<FileSystemInfo>&)> completion_callback_;
 
   // Indicates whether or not we're currently fetching information: set to true
   // when StartFetching is called on the UI thread, and reset to false when

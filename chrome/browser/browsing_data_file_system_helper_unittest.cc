@@ -111,16 +111,18 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
   // Calls StartFetching() on the test's BrowsingDataFileSystemHelper
   // object, then blocks until the callback is executed.
   void FetchFileSystems() {
-    helper_->StartFetching(NewCallback(this,
-        &BrowsingDataFileSystemHelperTest::CallbackStartFetching));
+    helper_->StartFetching(
+        base::Bind(&BrowsingDataFileSystemHelperTest::CallbackStartFetching,
+                   base::Unretained(this)));
     BlockUntilNotified();
   }
 
   // Calls StartFetching() on the test's CannedBrowsingDataFileSystemHelper
   // object, then blocks until the callback is executed.
   void FetchCannedFileSystems() {
-    canned_helper_->StartFetching(NewCallback(this,
-        &BrowsingDataFileSystemHelperTest::CallbackStartFetching));
+    canned_helper_->StartFetching(
+        base::Bind(&BrowsingDataFileSystemHelperTest::CallbackStartFetching,
+                   base::Unretained(this)));
     BlockUntilNotified();
   }
 
