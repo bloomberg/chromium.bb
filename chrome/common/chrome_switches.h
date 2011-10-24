@@ -263,6 +263,7 @@ extern const char kEnableSdch[];
 extern const char kSearchInOmniboxHint[];
 extern const char kServiceAccountLsid[];
 extern const char kShowAutofillTypePredictions[];
+extern const char kShowComponentExtensionOptions[];
 extern const char kShowCompositedLayerBorders[];
 extern const char kShowCompositedLayerTree[];
 extern const char kShowFPSCounter[];

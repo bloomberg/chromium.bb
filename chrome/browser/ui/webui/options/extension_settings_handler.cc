@@ -8,6 +8,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -23,10 +24,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/background_contents.h"
 #include "chrome/browser/ui/webui/extension_icon_source.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_view_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/common/chrome_view_types.h"
 #include "content/browser/browsing_instance.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -49,7 +51,9 @@ bool ShouldShowExtension(const Extension* extension) {
 
   // Don't show component extensions because they are only extensions as an
   // implementation detail of Chrome.
-  if (extension->location() == Extension::COMPONENT)
+  if (extension->location() == Extension::COMPONENT &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kShowComponentExtensionOptions))
     return false;
 
   // Always show unpacked extensions and apps.

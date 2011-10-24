@@ -970,6 +970,10 @@ const char kServiceAccountLsid[]            = "service-account-lsid";
 // Annotates forms with Autofill field type predictions.
 const char kShowAutofillTypePredictions[]   = "show-autofill-type-predictions";
 
+// Makes component extensions appear in chrome://settings/extensions.
+const char kShowComponentExtensionOptions[] =
+    "show-component-extension-options";
+
 // See kHideIcons.
 const char kShowIcons[]                     = "show-icons";
 
