@@ -314,6 +314,9 @@ force-frontend() {
       PNACL_CC="${PNACL_DGCC}"
       PNACL_CXX="${PNACL_DGXX}"
       ;;
+    *)
+      Fatal "Unknown frontend: ${frontend}"
+      ;;
   esac
 }
 
