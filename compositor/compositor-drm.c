@@ -476,11 +476,6 @@ create_output_for_connector(struct drm_compositor *ec,
 	drm_mode->base.flags =
 		WL_OUTPUT_MODE_CURRENT | WL_OUTPUT_MODE_PREFERRED;
 
-	wlsc_output_init(&output->base, &ec->base, x, y,
-			 connector->mmWidth, connector->mmHeight, 0);
-
-	wl_list_insert(ec->base.output_list.prev, &output->base.link);
-
 	drmModeFreeEncoder(encoder);
 
 	glGenRenderbuffers(2, output->rbo);
@@ -529,6 +524,12 @@ create_output_for_connector(struct drm_compositor *ec,
 		return -1;
 	}
 
+	wlsc_output_init(&output->base, &ec->base, x, y,
+			 connector->mmWidth, connector->mmHeight, 0);
+
+	wl_list_insert(ec->base.output_list.prev, &output->base.link);
+
+	output->pending_fs_surf_fb_id = 0;
 	output->base.prepare_render = drm_output_prepare_render;
 	output->base.present = drm_output_present;
 	output->base.prepare_scanout_surface =
