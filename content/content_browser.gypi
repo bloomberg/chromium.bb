@@ -727,7 +727,19 @@
         ['exclude', '^browser/renderer_host/accelerated_surface_container_linux.cc'],
         ['exclude', '^browser/renderer_host/accelerated_surface_container_linux.h'],
       ],
-   }],
- ],
+    }],
+    ['java_bridge==1', {
+      'defines': [
+        'ENABLE_JAVA_BRIDGE',
+      ],
+    }, {
+      'sources!': [
+        'browser/renderer_host/java_bridge_channel_host.cc',
+        'browser/renderer_host/java_bridge_channel_host.h',
+        'browser/renderer_host/java_bridge_dispatcher_host.cc',
+        'browser/renderer_host/java_bridge_dispatcher_host.h',
+      ],
+    }],
+  ],
 }
 

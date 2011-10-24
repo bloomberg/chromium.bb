@@ -261,5 +261,17 @@
         'renderer/media/webrtc_audio_device_impl.h',
       ],
     }],
+    ['java_bridge==1', {
+      'defines': [
+        'ENABLE_JAVA_BRIDGE',
+      ],
+    }, {
+      'sources!': [
+        'renderer/java_bridge_channel.cc',
+        'renderer/java_bridge_channel.h',
+        'renderer/java_bridge_dispatcher.cc',
+        'renderer/java_bridge_dispatcher.h',
+      ],
+    }],
   ],
 }

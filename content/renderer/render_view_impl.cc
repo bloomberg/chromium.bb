@@ -4656,5 +4656,7 @@ bool RenderViewImpl::WebWidgetHandlesCompositorScheduling() const {
 void RenderViewImpl::OnJavaBridgeInit(
     const IPC::ChannelHandle& channel_handle) {
   DCHECK(!java_bridge_dispatcher_.get());
+#if defined(ENABLE_JAVA_BRIDGE)
   java_bridge_dispatcher_.reset(new JavaBridgeDispatcher(this, channel_handle));
+#endif
 }
