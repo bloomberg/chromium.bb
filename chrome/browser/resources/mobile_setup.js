@@ -57,11 +57,31 @@ cr.define('mobile', function() {
       this.initialized_ = true;
       self = this;
       this.frameName_ = frame_name;
+
+      cr.ui.dialogs.BaseDialog.OK_LABEL =
+        MobileSetup.localStrings_.getString('ok_button');
+      cr.ui.dialogs.BaseDialog.CANCEL_LABEL =
+          MobileSetup.localStrings_.getString('cancel_button');
+      this.confirm_ = new cr.ui.dialogs.ConfirmDialog(document.body);
+
       window.addEventListener('message', function(e) {
           self.onMessageReceived_(e);
       });
+
       $('closeButton').addEventListener('click', function(e) {
-          $('finalStatus').classList.add('hidden');
+        $('finalStatus').classList.add('hidden');
+      });
+
+      $('cancelButton').addEventListener('click', function(e) {
+        if (self.state_ == MobileSetup.PLAN_ACTIVATION_DONE ||
+            self.state_ == MobileSetup.PLAN_ACTIVATION_ERROR) {
+          window.close();
+          return;
+        }
+        self.confirm_.show(
+          MobileSetup.localStrings_.getString('cancel_question'), function() {
+            window.close();
+        });
       });
 
       this.changeState_({state: MobileSetup.PLAN_ACTIVATION_PAGE_LOADING});
@@ -181,10 +201,13 @@ cr.define('mobile', function() {
           $('paymentForm').classList.remove('hidden');
           $('closeButton').classList.remove('hidden');
           $('finalStatus').classList.remove('hidden');
-          if (this.payment_shown_)
+          if (this.payment_shown_) {
             $('closeButton').classList.remove('hidden');
-          else
+          } else {
             $('closeButton').classList.add('hidden');
+            $('cancelButton').textContent =
+                MobileSetup.localStrings_.getString('close_button');
+          }
           break;
         case MobileSetup.PLAN_ACTIVATION_ERROR:
           $('statusHeader').textContent = '';
@@ -196,10 +219,13 @@ cr.define('mobile', function() {
           $('canvas').classList.add('hidden');
           $('carrierPage').classList.add('hidden');
           $('paymentForm').classList.remove('hidden');
-          if (this.payment_shown_)
+          if (this.payment_shown_) {
             $('closeButton').classList.remove('hidden');
-          else
+          } else {
             $('closeButton').classList.add('hidden');
+            $('cancelButton').textContent =
+                MobileSetup.localStrings_.getString('close_button');
+          }
           $('finalStatus').classList.remove('hidden');
           break;
       }

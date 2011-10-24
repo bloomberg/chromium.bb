@@ -3650,6 +3650,8 @@
         'browser/ui/webui/chromeos/login/update_screen_handler.h',
         'browser/ui/webui/chromeos/login/user_image_screen_handler.cc',
         'browser/ui/webui/chromeos/login/user_image_screen_handler.h',
+        'browser/ui/webui/chromeos/mobile_setup_dialog.cc',
+        'browser/ui/webui/chromeos/mobile_setup_dialog.h',
         'browser/ui/webui/chromeos/mobile_setup_ui.cc',
         'browser/ui/webui/chromeos/mobile_setup_ui.h',
         'browser/ui/webui/chromeos/proxy_settings_ui.cc',

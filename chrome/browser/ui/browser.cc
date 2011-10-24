@@ -2290,9 +2290,14 @@ void Browser::OpenSystemTabAndActivate() {
 }
 
 void Browser::OpenMobilePlanTabAndActivate() {
-  OpenURL(GURL(chrome::kChromeUIMobileSetupURL), GURL(),
-          NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK);
-  window_->Activate();
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableMobileSetupDialog)) {
+    window_->ShowMobileSetup();
+  } else {
+    OpenURL(GURL(chrome::kChromeUIMobileSetupURL), GURL(),
+            NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK);
+    window_->Activate();
+  }
 }
 #endif
 

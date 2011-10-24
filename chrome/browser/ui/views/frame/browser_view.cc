@@ -126,6 +126,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/views/keyboard_overlay_dialog_view.h"
+#include "chrome/browser/ui/webui/chromeos/mobile_setup_dialog.h"
 #else
 #include "chrome/browser/ui/views/download/download_shelf_view.h"
 #endif
@@ -1314,6 +1315,10 @@ FindBar* BrowserView::CreateFindBar() {
 }
 
 #if defined(OS_CHROMEOS)
+void BrowserView::ShowMobileSetup() {
+  MobileSetupDialog::Show();
+}
+
 void BrowserView::ShowKeyboardOverlay(gfx::NativeWindow owning_window) {
 #if defined(TOOLKIT_USES_GTK)
   KeyboardOverlayDialogView::ShowDialog(owning_window, this);

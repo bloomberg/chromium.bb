@@ -1104,6 +1104,9 @@ const char kEnableGView[]                   = "enable-gview";
 // Whether to show the image-based login.
 const char kEnableLoginImages[]             = "enable-login-images";
 
+// Enables mobile setup in a dialog.
+const char kEnableMobileSetupDialog[]       = "enable-mobile-dialog";
+
 // Rotates the screen in response to orientation changed events from dbus. Will
 // be reused for more generic sensors.
 const char kEnableSensors[]                 = "enable-sensors";

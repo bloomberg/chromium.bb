@@ -515,6 +515,10 @@ FindBar* Panel::CreateFindBar() {
 }
 
 #if defined(OS_CHROMEOS)
+void Panel::ShowMobileSetup() {
+  NOTIMPLEMENTED();
+}
+
 void Panel::ShowKeyboardOverlay(gfx::NativeWindow owning_window) {
   NOTIMPLEMENTED();
 }

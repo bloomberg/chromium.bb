@@ -426,6 +426,12 @@ void MobileSetupUIHTMLSource::StartDataRequest(const std::string& path,
                     l10n_util::GetStringUTF16(IDS_MOBILE_COMPLETED_TEXT));
   strings.SetString("close_button",
                     l10n_util::GetStringUTF16(IDS_CLOSE));
+  strings.SetString("cancel_button",
+                    l10n_util::GetStringUTF16(IDS_CANCEL));
+  strings.SetString("ok_button",
+                    l10n_util::GetStringUTF16(IDS_OK));
+  strings.SetString("cancel_question",
+                    l10n_util::GetStringUTF16(IDS_MOBILE_CANCEL_ACTIVATION));
   SetFontAndTextDirection(&strings);
 
   static const base::StringPiece html(

@@ -122,6 +122,7 @@ class TestBrowserWindow : public BrowserWindow {
                                 const gfx::Rect& rect) OVERRIDE {}
 
 #if defined(OS_CHROMEOS)
+  virtual void ShowMobileSetup() OVERRIDE {}
   virtual void ShowKeyboardOverlay(gfx::NativeWindow owning_window) OVERRIDE {}
 #endif
 

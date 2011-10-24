@@ -11,7 +11,8 @@
       // get them from file:// when running as a normal web page, and from
       // chrome://resources/ when compiled directly into chrome.
       var css =
-      ['list.css',
+      ['dialogs.css',
+       'list.css',
        'table.css',
        'menu.css'
       ];
@@ -24,6 +25,7 @@
        'cr/ui.js',
        'cr/event_target.js',
        'cr/ui/array_data_model.js',
+       'cr/ui/dialogs.js',
        'cr/ui/list_item.js',
        'cr/ui/list_selection_model.js',
        'cr/ui/list_single_selection_model.js',
@@ -73,13 +75,11 @@
     </script>
 
     <link rel="stylesheet" href="css/file_manager.css"></link>
-    <link rel="stylesheet" href="css/dialogs.css"></link>
 
     <script src="js/util.js"></script>
     <script src="js/file_copy_manager.js"></script>
     <script src="js/file_manager.js"></script>
     <script src="js/file_manager_pyauto.js"></script>
-    <script src="js/dialogs.js"></script>
     <script src="js/main.js"></script>
     <script src="js/metadata_provider.js"></script>
 

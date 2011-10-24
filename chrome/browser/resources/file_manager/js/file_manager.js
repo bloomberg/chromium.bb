@@ -58,9 +58,7 @@ function FileManager(dialogDom, filesystem, rootEntries) {
   this.document_ = dialogDom.ownerDocument;
   this.dialogType_ = this.params_.type || FileManager.DialogType.FULL_PAGE;
 
-  this.alert = new cr.ui.dialogs.AlertDialog(this.dialogDom_);
-  this.confirm = new cr.ui.dialogs.ConfirmDialog(this.dialogDom_);
-  this.prompt = new cr.ui.dialogs.PromptDialog(this.dialogDom_);
+  this.initDialogs_();
 
   // TODO(dgozman): This will be changed to LocaleInfo.
   this.locale_ = new v8Locale(navigator.language);
@@ -549,6 +547,17 @@ FileManager.prototype = {
   }
 
   /**
+   * One-time initialization of dialogs.
+   */
+  FileManager.prototype.initDialogs_ = function() {
+    cr.ui.dialogs.BaseDialog.OK_LABEL = str('OK_LABEL');
+    cr.ui.dialogs.BaseDialog.CANCEL_LABEL = str('CANCEL_LABEL');
+    this.alert = new cr.ui.dialogs.AlertDialog(this.dialogDom_);
+    this.confirm = new cr.ui.dialogs.ConfirmDialog(this.dialogDom_);
+    this.prompt = new cr.ui.dialogs.PromptDialog(this.dialogDom_);
+  };
+
+  /**
    * One-time initialization of various DOM nodes.
    */
   FileManager.prototype.initDom_ = function() {
@@ -662,7 +671,7 @@ FileManager.prototype = {
     if (!('cachedIconType_' in entry))
       entry.cachedIconType_ = this.computeIconType_(entry);
     return entry.cachedIconType_;
-  }
+  };
 
   /**
    * Extract extension from the file name and cat it to to lower case.

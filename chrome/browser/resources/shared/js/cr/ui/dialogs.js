@@ -24,8 +24,8 @@ cr.define('cr.ui.dialogs', function() {
    *
    * Clients should override these with localized labels.
    */
-  BaseDialog.OK_LABEL = 'Ok';
-  BaseDialog.CANCEL_LABEL = 'Cancel';
+  BaseDialog.OK_LABEL = '[LOCALIZE ME] Ok';
+  BaseDialog.CANCEL_LABEL = '[LOCALIZE ME] Cancel';
 
   /**
    * Number of miliseconds animation is expected to take, plus some margin for
