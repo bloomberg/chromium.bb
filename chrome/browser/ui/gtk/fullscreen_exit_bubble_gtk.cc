@@ -27,10 +27,8 @@ FullscreenExitBubbleGtk::FullscreenExitBubbleGtk(
     Browser* browser,
     const GURL& url,
     FullscreenExitBubbleType bubble_type)
-  : FullscreenExitBubble(browser, url, bubble_type),
-      container_(container),
-      render_widget_host_view_widget_(browser->GetSelectedTabContents()->
-          GetRenderWidgetHostView()->GetNativeView()) {
+    : FullscreenExitBubble(browser, url, bubble_type),
+      container_(container) {
   InitWidgets();
 }
 
@@ -92,25 +90,26 @@ void FullscreenExitBubbleGtk::InitWidgets() {
 
   allow_button_ = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_FULLSCREEN_ALLOW).c_str());
+  gtk_widget_set_can_focus(allow_button_, FALSE);
   gtk_widget_set_no_show_all(allow_button_, FALSE);
   gtk_box_pack_start(GTK_BOX(hbox_), allow_button_, FALSE, FALSE, 0);
 
   deny_button_ = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_FULLSCREEN_DENY).c_str());
+  gtk_widget_set_can_focus(deny_button_, FALSE);
   gtk_widget_set_no_show_all(deny_button_, FALSE);
   gtk_box_pack_start(GTK_BOX(hbox_), deny_button_, FALSE, FALSE, 0);
 
   link_ = gtk_chrome_link_button_new(exit_text_utf8.c_str());
+  gtk_widget_set_can_focus(link_, FALSE);
   gtk_widget_set_no_show_all(link_, FALSE);
   gtk_chrome_link_button_set_use_gtk_theme(GTK_CHROME_LINK_BUTTON(link_),
                                            FALSE);
   gtk_box_pack_start(GTK_BOX(hbox_), link_, FALSE, FALSE, 0);
 
-
   instruction_label_ = gtk_label_new(UTF16ToUTF8(GetInstructionText()).c_str());
   gtk_widget_set_no_show_all(instruction_label_, FALSE);
   gtk_box_pack_start(GTK_BOX(hbox_), instruction_label_, FALSE, FALSE, 0);
-
 
   GtkWidget* bubble = gtk_util::CreateGtkBorderBin(
       hbox_, &ui::kGdkWhite,
@@ -231,16 +230,13 @@ void FullscreenExitBubbleGtk::OnSetFloatingPosition(
 }
 
 void FullscreenExitBubbleGtk::OnLinkClicked(GtkWidget* link) {
-  gtk_widget_grab_focus(render_widget_host_view_widget_);
   ToggleFullscreen();
 }
 
 void FullscreenExitBubbleGtk::OnAllowClicked(GtkWidget* button) {
-  gtk_widget_grab_focus(render_widget_host_view_widget_);
   Accept();
   UpdateContent(url_, bubble_type_);
 }
 void FullscreenExitBubbleGtk::OnDenyClicked(GtkWidget* button) {
-  gtk_widget_grab_focus(render_widget_host_view_widget_);
   Cancel();
 }

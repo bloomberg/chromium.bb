@@ -792,6 +792,7 @@ void BrowserView::ExitFullscreen() {
 #if defined(OS_WIN)
   ProcessFullscreen(false, GURL(), FEB_TYPE_NONE);
 #else
+  fullscreen_request_.pending = false;
   // On Linux changing fullscreen is async. Ask the window to change it's
   // fullscreen state, and when done invoke ProcessFullscreen.
   frame_->SetFullscreen(false);
@@ -814,12 +815,15 @@ bool BrowserView::IsFullscreenBubbleVisible() const {
 }
 
 void BrowserView::FullScreenStateChanged() {
-  bool is_fullscreen = IsFullscreen();
-  if (is_fullscreen) {
-    DCHECK(fullscreen_request_.pending);
-    fullscreen_request_.pending = false;
-    ProcessFullscreen(true, fullscreen_request_.url,
-                      fullscreen_request_.bubble_type);
+  if (IsFullscreen()) {
+    if (fullscreen_request_.pending) {
+      fullscreen_request_.pending = false;
+      ProcessFullscreen(true, fullscreen_request_.url,
+                        fullscreen_request_.bubble_type);
+    } else {
+      ProcessFullscreen(true, GURL(),
+                        FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION);
+    }
   } else {
     ProcessFullscreen(false, GURL(), FEB_TYPE_NONE);
   }

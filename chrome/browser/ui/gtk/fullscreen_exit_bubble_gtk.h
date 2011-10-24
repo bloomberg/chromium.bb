@@ -56,7 +56,6 @@ class FullscreenExitBubbleGtk : public FullscreenExitBubble {
 
   // A pointer to the floating container that is our parent.
   GtkFloatingContainer* container_;
-  GtkWidget* render_widget_host_view_widget_;
 
   // The widget that contains the UI.
   ui::OwnedWidgetGtk ui_container_;

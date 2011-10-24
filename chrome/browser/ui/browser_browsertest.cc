@@ -877,19 +877,12 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_TestTabExitsItselfFromFullscreen) {
   }
 }
 
-#if defined(OS_LINUX)
-// http://crbug.com/100680.
-#define MAYBE_TestFullscreenBubbleMouseLockState \
-        DISABLED_TestFullscreenBubbleMouseLockState
-#else
-#define MAYBE_TestFullscreenBubbleMouseLockState \
-        TestFullscreenBubbleMouseLockState
-#endif
-
-IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_TestFullscreenBubbleMouseLockState) {
+IN_PROC_BROWSER_TEST_F(BrowserTest, TestFullscreenBubbleMouseLockState) {
   ASSERT_TRUE(test_server()->Start());
 
   AddTabAtIndex(0, GURL(chrome::kAboutBlankURL),
+                content::PAGE_TRANSITION_TYPED);
+  AddTabAtIndex(1, GURL(chrome::kAboutBlankURL),
                 content::PAGE_TRANSITION_TYPED);
 
   TabContents* fullscreen_tab = browser()->GetSelectedTabContents();
