@@ -83,4 +83,18 @@ std::pair<NSEvent*,NSEvent*> MouseClickInView(NSView* view,
   return std::make_pair(down, up);
 }
 
+NSEvent* KeyEventWithCharacter(unichar c) {
+  NSString* chars = [NSString stringWithCharacters:&c length:1];
+  return [NSEvent keyEventWithType:NSKeyDown
+                          location:NSZeroPoint
+                     modifierFlags:0
+                         timestamp:0.0
+                      windowNumber:0
+                           context:nil
+                        characters:chars
+       charactersIgnoringModifiers:chars
+                         isARepeat:NO
+                           keyCode:0];
+}
+
 }  // namespace cocoa_test_event_utils

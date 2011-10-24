@@ -43,6 +43,9 @@ NSEvent* LeftMouseDownAtPointInWindow(NSPoint point, NSWindow* window);
 std::pair<NSEvent*, NSEvent*> MouseClickInView(NSView* view,
                                                NSUInteger clickCount);
 
+// Returns a key event with the given character.
+NSEvent* KeyEventWithCharacter(unichar c);
+
 }  // namespace cocoa_test_event_utils
 
 #endif  // UI_BASE_TEST_COCOA_TEST_EVENT_UTILS_H_

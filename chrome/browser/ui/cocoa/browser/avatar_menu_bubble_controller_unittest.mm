@@ -15,6 +15,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "testing/gtest_mac.h"
+#include "ui/base/test/cocoa_test_event_utils.h"
 
 class FakeBridge : public AvatarMenuModelObserver {
  public:
@@ -50,6 +51,14 @@ class AvatarMenuBubbleControllerTest : public CocoaTest {
   AvatarMenuBubbleController* controller() { return controller_; }
   AvatarMenuModel* model() { return model_; }
   FakeBridge* bridge() { return bridge_; }
+
+  AvatarMenuItemController* GetHighlightedItem() {
+    for (AvatarMenuItemController* item in [controller() items]) {
+      if ([item isHighlighted])
+        return item;
+    }
+    return nil;
+  }
 
  private:
   TestingProfileManager manager_;
@@ -178,26 +187,62 @@ TEST_F(AvatarMenuBubbleControllerTest, HighlightForEventType) {
   NSView* emailField = [item emailField];
 
   // The edit link remains hidden.
-  [item highlightForEventType:NSMouseEntered];
+  [item setIsHighlighted:YES];
   EXPECT_TRUE(editButton.isHidden);
   EXPECT_FALSE(emailField.isHidden);
 
-  [item highlightForEventType:NSMouseExited];
+  [item setIsHighlighted:NO];
   EXPECT_TRUE(editButton.isHidden);
   EXPECT_FALSE(emailField.isHidden);
 
   // Make the item "active" and re-test.
   [[item activeView] setHidden:NO];
 
-  [item highlightForEventType:NSMouseEntered];
+  [item setIsHighlighted:YES];
   [item runMessagePump];
 
   EXPECT_FALSE(editButton.isHidden);
   EXPECT_TRUE(emailField.isHidden);
 
-  [item highlightForEventType:NSMouseExited];
+  [item setIsHighlighted:NO];
   [item runMessagePump];
 
   EXPECT_TRUE(editButton.isHidden);
   EXPECT_FALSE(emailField.isHidden);
+}
+
+TEST_F(AvatarMenuBubbleControllerTest, DownArrow) {
+  EXPECT_NSEQ(nil, GetHighlightedItem());
+
+  NSEvent* event =
+      cocoa_test_event_utils::KeyEventWithCharacter(NSDownArrowFunctionKey);
+  // Going down with no item selected should start the selection at the first
+  // item.
+  [controller() keyDown:event];
+  EXPECT_EQ([[controller() items] objectAtIndex:1], GetHighlightedItem());
+
+  [controller() keyDown:event];
+  EXPECT_EQ([[controller() items] objectAtIndex:0], GetHighlightedItem());
+
+  // There are no more items now so going down should stay at the last item.
+  [controller() keyDown:event];
+  EXPECT_EQ([[controller() items] objectAtIndex:0], GetHighlightedItem());
+}
+
+TEST_F(AvatarMenuBubbleControllerTest, UpArrow) {
+  EXPECT_NSEQ(nil, GetHighlightedItem());
+
+  NSEvent* event =
+      cocoa_test_event_utils::KeyEventWithCharacter(NSUpArrowFunctionKey);
+  // Going up with no item selected should start the selection at the last
+  // item.
+  [controller() keyDown:event];
+  EXPECT_EQ([[controller() items] objectAtIndex:0], GetHighlightedItem());
+
+  [controller() keyDown:event];
+  EXPECT_EQ([[controller() items] objectAtIndex:1], GetHighlightedItem());
+
+  // There are no more items now so going up should stay at the first item.
+  [controller() keyDown:event];
+  EXPECT_EQ([[controller() items] objectAtIndex:1], GetHighlightedItem());
 }

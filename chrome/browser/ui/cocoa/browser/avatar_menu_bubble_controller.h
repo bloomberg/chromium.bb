@@ -58,6 +58,9 @@ class Browser;
   // The AvatarMenuModel::item.model_index field.
   size_t modelIndex_;
 
+  // Tracks whether this item is currently highlighted.
+  BOOL isHighlighted_;
+
   // Instance variables that back the outlets.
   __weak NSImageView* iconView_;
   __weak NSImageView* activeView_;
@@ -69,6 +72,7 @@ class Browser;
   __weak NSButton* editButton_;
 }
 @property(readonly, nonatomic) size_t modelIndex;
+@property(assign, nonatomic) BOOL isHighlighted;
 @property(assign, nonatomic) IBOutlet NSImageView* iconView;
 @property(assign, nonatomic) IBOutlet NSImageView* activeView;
 @property(assign, nonatomic) IBOutlet NSTextField* nameField;
@@ -102,9 +106,6 @@ class Browser;
 
   // Used to highlight the background on hover.
   ScopedCrTrackingArea trackingArea_;
-
-  // Whether the mouse is inside the bounds of this view.
-  BOOL mouseInside_;
 }
 @property(assign, nonatomic) IBOutlet AvatarMenuItemController* viewController;
 @end

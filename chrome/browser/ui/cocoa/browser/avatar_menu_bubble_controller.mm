@@ -27,6 +27,12 @@
 @interface AvatarMenuBubbleController (Private)
 - (AvatarMenuModel*)model;
 - (NSButton*)configureNewUserButton:(CGFloat)yOffset;
+- (void)keyDown:(NSEvent*)theEvent;
+- (void)moveDown:(id)sender;
+- (void)moveUp:(id)sender;
+- (void)insertNewline:(id)sender;
+- (void)highlightNextItemByDelta:(NSInteger)delta;
+- (void)highlightItem:(AvatarMenuItemController*)newItem;
 @end
 
 namespace AvatarMenuInternal {
@@ -227,6 +233,72 @@ const CGFloat kLabelInset = 49.0;
   return items_.get();
 }
 
+- (void)keyDown:(NSEvent*)theEvent {
+  [self interpretKeyEvents:[NSArray arrayWithObject:theEvent]];
+}
+
+- (void)moveDown:(id)sender {
+  [self highlightNextItemByDelta:-1];
+}
+
+- (void)moveUp:(id)sender {
+  [self highlightNextItemByDelta:1];
+}
+
+- (void)insertNewline:(id)sender {
+  for (AvatarMenuItemController* item in items_.get()) {
+    if ([item isHighlighted]) {
+      [self switchToProfile:item];
+      return;
+    }
+  }
+}
+
+- (void)highlightNextItemByDelta:(NSInteger)delta {
+  NSUInteger count = [items_ count];
+  if (count == 0)
+    return;
+
+  NSInteger old_index = -1;
+  for (NSUInteger i = 0; i < count; ++i) {
+    if ([[items_ objectAtIndex:i] isHighlighted]) {
+      old_index = i;
+      break;
+    }
+  }
+
+  NSInteger new_index;
+  // If nothing is selected then start at the top if we're going down and start
+  // at the bottom if we're going up.
+  if (old_index == -1)
+    new_index = delta < 0 ? (count - 1) : 0;
+  else
+    new_index = old_index + delta;
+
+  // Cap the index. We don't wrap around to match the behavior of Mac menus.
+  new_index =
+      std::min(std::max(0, new_index), static_cast<NSInteger>(count - 1));
+
+  [self highlightItem:[items_ objectAtIndex:new_index]];
+}
+
+- (void)highlightItem:(AvatarMenuItemController*)newItem {
+  AvatarMenuItemController* oldItem = nil;
+  for (AvatarMenuItemController* item in items_.get()) {
+    if ([item isHighlighted]) {
+      oldItem = item;
+      break;
+    }
+  }
+
+  if (oldItem == newItem)
+    return;
+
+  [oldItem setIsHighlighted:NO];
+  [newItem setIsHighlighted:YES];
+}
+
+
 @end
 
 // Menu Item Controller ////////////////////////////////////////////////////////
@@ -238,6 +310,7 @@ const CGFloat kLabelInset = 49.0;
 @implementation AvatarMenuItemController
 
 @synthesize modelIndex = modelIndex_;
+@synthesize isHighlighted = isHighlighted_;
 @synthesize iconView = iconView_;
 @synthesize activeView = activeView_;
 @synthesize nameField = nameField_;
@@ -274,21 +347,33 @@ const CGFloat kLabelInset = 49.0;
 }
 
 - (void)highlightForEventType:(NSEventType)type {
-  BOOL active = !self.activeView.isHidden;
   switch (type) {
     case NSMouseEntered:
-      if (active)
-        [self animateFromView:self.emailField toView:self.editButton];
+      [controller_ highlightItem:self];
       break;
 
     case NSMouseExited:
-      if (active)
-        [self animateFromView:self.editButton toView:self.emailField];
+      [controller_ highlightItem:nil];
       break;
 
     default:
       NOTREACHED();
   };
+}
+
+- (void)setIsHighlighted:(BOOL)isHighlighted {
+  if (isHighlighted_ == isHighlighted)
+    return;
+
+  isHighlighted_ = isHighlighted;
+  [[self view] setNeedsDisplay:YES];
+
+  if (!self.activeView.isHidden) {
+    if (isHighlighted_)
+      [self animateFromView:self.emailField toView:self.editButton];
+    else
+      [self animateFromView:self.editButton toView:self.emailField];
+  }
 }
 
 - (void)animateFromView:(NSView*)outView toView:(NSView*)inView {
@@ -345,13 +430,11 @@ const CGFloat kLabelInset = 49.0;
 
 - (void)mouseEntered:(id)sender {
   [viewController_ highlightForEventType:[[NSApp currentEvent] type]];
-  mouseInside_ = YES;
   [self setNeedsDisplay:YES];
 }
 
 - (void)mouseExited:(id)sender {
   [viewController_ highlightForEventType:[[NSApp currentEvent] type]];
-  mouseInside_ = NO;
   [self setNeedsDisplay:YES];
 }
 
@@ -361,7 +444,7 @@ const CGFloat kLabelInset = 49.0;
 
 - (void)drawRect:(NSRect)dirtyRect {
   NSColor* backgroundColor = nil;
-  if (mouseInside_) {
+  if ([viewController_ isHighlighted]) {
     backgroundColor = [NSColor colorWithCalibratedRed:223.0/255
                                                 green:238.0/255
                                                  blue:246.0/255
