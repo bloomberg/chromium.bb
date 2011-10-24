@@ -12,7 +12,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFloatRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"
 #include "ui/base/animation/animation.h"
-#include "ui/gfx/compositor/layer_animator.h"
+#include "ui/gfx/compositor/layer_animation_manager.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/point3.h"
@@ -131,7 +131,7 @@ bool Layer::Contains(const Layer* other) const {
 void Layer::SetAnimation(Animation* animation) {
   if (animation) {
     if (!animator_.get())
-      animator_.reset(new LayerAnimator(this));
+      animator_.reset(new LayerAnimationManager(this));
     animation->Start();
     animator_->SetAnimation(animation);
   } else {
@@ -140,7 +140,7 @@ void Layer::SetAnimation(Animation* animation) {
 }
 
 void Layer::SetTransform(const ui::Transform& transform) {
-  StopAnimatingIfNecessary(LayerAnimator::TRANSFORM);
+  StopAnimatingIfNecessary(LayerAnimationManager::TRANSFORM);
   if (animator_.get() && animator_->IsRunning()) {
     animator_->AnimateTransform(transform);
     return;
@@ -149,7 +149,7 @@ void Layer::SetTransform(const ui::Transform& transform) {
 }
 
 void Layer::SetBounds(const gfx::Rect& bounds) {
-  StopAnimatingIfNecessary(LayerAnimator::LOCATION);
+  StopAnimatingIfNecessary(LayerAnimationManager::LOCATION);
   if (animator_.get() && animator_->IsRunning() &&
       bounds.size() == bounds_.size()) {
     animator_->AnimateToPoint(bounds.origin());
@@ -165,7 +165,7 @@ gfx::Rect Layer::GetTargetBounds() const {
 }
 
 void Layer::SetOpacity(float opacity) {
-  StopAnimatingIfNecessary(LayerAnimator::OPACITY);
+  StopAnimatingIfNecessary(LayerAnimationManager::OPACITY);
   if (animator_.get() && animator_->IsRunning()) {
     animator_->AnimateOpacity(opacity);
     return;
@@ -515,23 +515,23 @@ bool Layer::GetTransformRelativeTo(const Layer* ancestor,
 }
 
 void Layer::StopAnimatingIfNecessary(
-    LayerAnimator::AnimationProperty property) {
+    LayerAnimationManager::AnimationProperty property) {
   if (!animator_.get() || !animator_->IsRunning() ||
       !animator_->got_initial_tick()) {
     return;
   }
 
-  if (property != LayerAnimator::LOCATION &&
-      animator_->IsAnimating(LayerAnimator::LOCATION)) {
+  if (property != LayerAnimationManager::LOCATION &&
+      animator_->IsAnimating(LayerAnimationManager::LOCATION)) {
     SetBoundsImmediately(
         gfx::Rect(animator_->GetTargetPoint(), bounds_.size()));
   }
-  if (property != LayerAnimator::OPACITY &&
-      animator_->IsAnimating(LayerAnimator::OPACITY)) {
+  if (property != LayerAnimationManager::OPACITY &&
+      animator_->IsAnimating(LayerAnimationManager::OPACITY)) {
     SetOpacityImmediately(animator_->GetTargetOpacity());
   }
-  if (property != LayerAnimator::TRANSFORM &&
-      animator_->IsAnimating(LayerAnimator::TRANSFORM)) {
+  if (property != LayerAnimationManager::TRANSFORM &&
+      animator_->IsAnimating(LayerAnimationManager::TRANSFORM)) {
     SetTransformImmediately(animator_->GetTargetTransform());
   }
   animator_.reset();
