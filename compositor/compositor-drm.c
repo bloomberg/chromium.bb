@@ -176,7 +176,7 @@ drm_output_prepare_scanout_surface(struct wlsc_output *output_base,
 	ret = drmModeAddFB(c->drm.fd,
 			   output->base.current->width,
 			   output->base.current->height,
-			   32, 32, stride, handle, &fb_id);
+			   24, 32, stride, handle, &fb_id);
 
 	if (ret)
 		return -1;
@@ -510,7 +510,7 @@ create_output_for_connector(struct drm_compositor *ec,
 		ret = drmModeAddFB(ec->drm.fd,
 				   output->base.current->width,
 				   output->base.current->height,
-				   32, 32, stride, handle, &output->fb_id[i]);
+				   24, 32, stride, handle, &output->fb_id[i]);
 		if (ret) {
 			fprintf(stderr, "failed to add fb %d: %m\n", i);
 			return -1;
