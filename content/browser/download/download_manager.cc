@@ -737,8 +737,8 @@ void DownloadManager::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-bool DownloadManager::IsDownloadProgressKnown() {
-  for (DownloadMap::iterator i = in_progress_.begin();
+bool DownloadManager::IsDownloadProgressKnown() const {
+  for (DownloadMap::const_iterator i = in_progress_.begin();
        i != in_progress_.end(); ++i) {
     if (i->second->total_bytes() <= 0)
       return false;
@@ -747,24 +747,24 @@ bool DownloadManager::IsDownloadProgressKnown() {
   return true;
 }
 
-int64 DownloadManager::GetInProgressDownloadCount() {
+int64 DownloadManager::GetInProgressDownloadCount() const {
   return in_progress_.size();
 }
 
-int64 DownloadManager::GetReceivedDownloadBytes() {
+int64 DownloadManager::GetReceivedDownloadBytes() const {
   DCHECK(IsDownloadProgressKnown());
   int64 received_bytes = 0;
-  for (DownloadMap::iterator i = in_progress_.begin();
+  for (DownloadMap::const_iterator i = in_progress_.begin();
        i != in_progress_.end(); ++i) {
     received_bytes += i->second->received_bytes();
   }
   return received_bytes;
 }
 
-int64 DownloadManager::GetTotalDownloadBytes() {
+int64 DownloadManager::GetTotalDownloadBytes() const {
   DCHECK(IsDownloadProgressKnown());
   int64 total_bytes = 0;
-  for (DownloadMap::iterator i = in_progress_.begin();
+  for (DownloadMap::const_iterator i = in_progress_.begin();
        i != in_progress_.end(); ++i) {
     total_bytes += i->second->total_bytes();
   }

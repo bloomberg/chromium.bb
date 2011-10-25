@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,13 +24,13 @@ void DownloadStatusUpdater::RemoveDelegate(
 }
 
 bool DownloadStatusUpdater::GetProgress(float* progress,
-                                        int* download_count) {
+                                        int* download_count) const {
   *progress = 0;
   *download_count = GetInProgressDownloadCount();
 
   int64 received_bytes = 0;
   int64 total_bytes = 0;
-  for (DelegateSet::iterator i = delegates_.begin();
+  for (DelegateSet::const_iterator i = delegates_.begin();
        i != delegates_.end(); ++i) {
     if (!(*i)->IsDownloadProgressKnown())
       return false;
@@ -43,9 +43,9 @@ bool DownloadStatusUpdater::GetProgress(float* progress,
   return true;
 }
 
-int64 DownloadStatusUpdater::GetInProgressDownloadCount() {
+int64 DownloadStatusUpdater::GetInProgressDownloadCount() const {
   int64 download_count = 0;
-  for (DelegateSet::iterator i = delegates_.begin();
+  for (DelegateSet::const_iterator i = delegates_.begin();
        i != delegates_.end(); ++i) {
     download_count += (*i)->GetInProgressDownloadCount();
   }

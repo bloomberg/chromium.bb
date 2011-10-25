@@ -27,11 +27,11 @@ class CONTENT_EXPORT DownloadStatusUpdater
   // If the progress is known (i.e. we know the final size of all downloads),
   // returns true and puts a percentage (in range [0-1]) in |progress|. Also
   // returns the number of current downloads in |download_count|.
-  bool GetProgress(float* progress, int* download_count);
+  bool GetProgress(float* progress, int* download_count) const;
 
  private:
   // Returns the number of downloads that are in progress.
-  int64 GetInProgressDownloadCount();
+  int64 GetInProgressDownloadCount() const;
 
   typedef std::set<DownloadStatusUpdaterDelegate*> DelegateSet;
   DelegateSet delegates_;

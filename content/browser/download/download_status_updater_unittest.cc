@@ -30,19 +30,19 @@ class MockDelegate : public DownloadStatusUpdaterDelegate {
   }
 
   // Overriden from DownloadStatusUpdaterDelegate:
-  virtual bool IsDownloadProgressKnown() {
+  virtual bool IsDownloadProgressKnown() const OVERRIDE {
     return is_download_progress_known_;
   }
 
-  virtual int64 GetInProgressDownloadCount() {
+  virtual int64 GetInProgressDownloadCount() const OVERRIDE {
     return in_progress_download_count_;
   }
 
-  virtual int64 GetReceivedDownloadBytes() {
+  virtual int64 GetReceivedDownloadBytes() const OVERRIDE {
     return received_bytes_;
   }
 
-  virtual int64 GetTotalDownloadBytes() {
+  virtual int64 GetTotalDownloadBytes() const OVERRIDE {
     return total_bytes_;
   }
 

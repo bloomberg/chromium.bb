@@ -252,10 +252,10 @@ class CONTENT_EXPORT DownloadManager
   void ClearLastDownloadPath();
 
   // Overridden from DownloadStatusUpdaterDelegate:
-  virtual bool IsDownloadProgressKnown();
-  virtual int64 GetInProgressDownloadCount();
-  virtual int64 GetReceivedDownloadBytes();
-  virtual int64 GetTotalDownloadBytes();
+  virtual bool IsDownloadProgressKnown() const OVERRIDE;
+  virtual int64 GetInProgressDownloadCount() const OVERRIDE;
+  virtual int64 GetReceivedDownloadBytes() const OVERRIDE;
+  virtual int64 GetTotalDownloadBytes() const OVERRIDE;
 
   // Called by the delegate after the save as dialog is closed.
   void FileSelected(const FilePath& path, void* params);
