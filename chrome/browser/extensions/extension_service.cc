@@ -603,7 +603,6 @@ ExtensionService::ExtensionService(Profile* profile,
       app_notification_manager_(new AppNotificationManager(profile)),
       permissions_manager_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       apps_promo_(profile->GetPrefs()),
-      webstore_installer_(profile),
       event_routers_initialized_(false),
       extension_warnings_(profile) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

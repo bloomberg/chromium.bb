@@ -41,12 +41,14 @@ class WebstoreInstallHelper : public UtilityProcessHost::Client,
     // Called when we've successfully parsed the manifest and decoded the icon
     // in the utility process. Ownership of parsed_manifest is transferred.
     virtual void OnWebstoreParseSuccess(
+        const std::string& id,
         const SkBitmap& icon,
         base::DictionaryValue* parsed_manifest) = 0;
 
     // Called to indicate a parse failure. The |result_code| parameter should
     // indicate whether the problem was with the manifest or icon.
     virtual void OnWebstoreParseFailure(
+        const std::string& id,
         InstallHelperResultCode result_code,
         const std::string& error_message) = 0;
   };
@@ -54,6 +56,7 @@ class WebstoreInstallHelper : public UtilityProcessHost::Client,
   // Only one of |icon_data| (based64-encoded icon data) or |icon_url| can be
   // specified, but it is legal for both to be empty.
   WebstoreInstallHelper(Delegate* delegate,
+                        const std::string& id,
                         const std::string& manifest,
                         const std::string& icon_data,
                         const GURL& icon_url,
@@ -82,6 +85,9 @@ class WebstoreInstallHelper : public UtilityProcessHost::Client,
 
   // The client who we'll report results back to.
   Delegate* delegate_;
+
+  // The extension id of the manifest we're parsing.
+  std::string id_;
 
   // The manifest to parse.
   std::string manifest_;

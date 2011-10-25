@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/extension_install_dialog.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -166,7 +167,7 @@ bool BeginInstallWithManifestFunction::RunImpl() {
     context_getter = profile()->GetRequestContext();
 
   scoped_refptr<WebstoreInstallHelper> helper = new WebstoreInstallHelper(
-      this, manifest_, icon_data_, icon_url, context_getter);
+      this, id_, manifest_, icon_data_, icon_url, context_getter);
 
   // The helper will call us back via OnWebstoreParseSuccess or
   // OnWebstoreParseFailure.
@@ -213,7 +214,10 @@ void BeginInstallWithManifestFunction::SetResult(ResultCode code) {
 }
 
 void BeginInstallWithManifestFunction::OnWebstoreParseSuccess(
-    const SkBitmap& icon, DictionaryValue* parsed_manifest) {
+    const std::string& id,
+    const SkBitmap& icon,
+    DictionaryValue* parsed_manifest) {
+  CHECK_EQ(id_, id);
   CHECK(parsed_manifest);
   icon_ = icon;
   parsed_manifest_.reset(parsed_manifest);
@@ -230,7 +234,7 @@ void BeginInstallWithManifestFunction::OnWebstoreParseSuccess(
       &icon_,
       prompt,
       &dummy_extension_)) {
-    OnWebstoreParseFailure(WebstoreInstallHelper::Delegate::MANIFEST_ERROR,
+    OnWebstoreParseFailure(id_, WebstoreInstallHelper::Delegate::MANIFEST_ERROR,
                            kInvalidManifestError);
     return;
   }
@@ -239,8 +243,11 @@ void BeginInstallWithManifestFunction::OnWebstoreParseSuccess(
 }
 
 void BeginInstallWithManifestFunction::OnWebstoreParseFailure(
+    const std::string& id,
     WebstoreInstallHelper::Delegate::InstallHelperResultCode result_code,
     const std::string& error_message) {
+  CHECK_EQ(id_, id);
+
   // Map from WebstoreInstallHelper's result codes to ours.
   switch (result_code) {
     case WebstoreInstallHelper::Delegate::UNKNOWN_ERROR:
@@ -291,7 +298,7 @@ void BeginInstallWithManifestFunction::InstallUIAbort(bool user_initiated) {
 
   // The web store install histograms are a subset of the install histograms.
   // We need to record both histograms here since CrxInstaller::InstallUIAbort
-  // is never called for web store install cancellations
+  // is never called for web store install cancellations.
   std::string histogram_name = user_initiated ?
       "Extensions.Permissions_WebStoreInstallCancel" :
       "Extensions.Permissions_WebStoreInstallAbort";
@@ -329,10 +336,11 @@ bool CompleteInstallFunction::RunImpl() {
   // The extension will install through the normal extension install flow, but
   // the above call to SetWhitelistedInstallId will bypass the normal
   // permissions install dialog.
-  WebstoreInstaller* installer =
-      profile()->GetExtensionService()->webstore_installer();
-  installer->InstallExtension(
-      id, test_webstore_installer_delegate, WebstoreInstaller::FLAG_NONE);
+  scoped_refptr<WebstoreInstaller> installer = new WebstoreInstaller(
+      profile(), test_webstore_installer_delegate,
+      &(dispatcher()->delegate()->GetAssociatedTabContents()->controller()),
+      id, WebstoreInstaller::FLAG_NONE);
+  installer->Start();
 
   return true;
 }

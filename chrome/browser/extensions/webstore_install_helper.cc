@@ -22,11 +22,13 @@ const char kImageDecodeError[] = "Image decode failed";
 
 WebstoreInstallHelper::WebstoreInstallHelper(
     Delegate* delegate,
+    const std::string& id,
     const std::string& manifest,
     const std::string& icon_data,
     const GURL& icon_url,
     net::URLRequestContextGetter* context_getter)
     : delegate_(delegate),
+      id_(id),
       manifest_(manifest),
       icon_base64_data_(icon_data),
       icon_url_(icon_url),
@@ -177,7 +179,7 @@ void WebstoreInstallHelper::ReportResultsIfComplete() {
 void WebstoreInstallHelper::ReportResultFromUIThread() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (error_.empty() && parsed_manifest_.get())
-    delegate_->OnWebstoreParseSuccess(icon_, parsed_manifest_.release());
+    delegate_->OnWebstoreParseSuccess(id_, icon_, parsed_manifest_.release());
   else
-    delegate_->OnWebstoreParseFailure(parse_error_, error_);
+    delegate_->OnWebstoreParseFailure(id_, parse_error_, error_);
 }

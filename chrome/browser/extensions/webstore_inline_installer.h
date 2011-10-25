@@ -78,9 +78,11 @@ class WebstoreInlineInstaller
 
   // WebstoreInstallHelper::Delegate interface implementation.
   virtual void OnWebstoreParseSuccess(
+      const std::string& id,
       const SkBitmap& icon,
       base::DictionaryValue* parsed_manifest) OVERRIDE;
   virtual void OnWebstoreParseFailure(
+      const std::string& id,
       InstallHelperResultCode result_code,
       const std::string& error_message) OVERRIDE;
 

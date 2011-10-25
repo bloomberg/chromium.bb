@@ -49,8 +49,19 @@ GURL GetWebstoreInstallUrl(
 }  // namespace
 
 
-WebstoreInstaller::WebstoreInstaller(Profile* profile)
-    : profile_(profile) {
+WebstoreInstaller::WebstoreInstaller(Profile* profile,
+                                     Delegate* delegate,
+                                     NavigationController* controller,
+                                     const std::string& id,
+                                     int flags)
+    : profile_(profile),
+      delegate_(delegate),
+      controller_(controller),
+      id_(id),
+      flags_(flags) {
+  download_url_ = GetWebstoreInstallUrl(id, flags & FLAG_INLINE_INSTALL ?
+      kInlineInstallSource : kDefaultInstallSource);
+
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
                  content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR,
@@ -59,61 +70,31 @@ WebstoreInstaller::WebstoreInstaller(Profile* profile)
 
 WebstoreInstaller::~WebstoreInstaller() {}
 
-struct WebstoreInstaller::PendingInstall {
-  PendingInstall() : delegate(NULL) {}
-  PendingInstall(const std::string& id, const GURL& url, Delegate* delegate)
-      : id(id), download_url(url), delegate(delegate) {}
-  ~PendingInstall() {}
+void WebstoreInstaller::Start() {
+  AddRef();  // Balanced in ReportSuccess and ReportFailure.
 
-  // The id of the extension.
-  std::string id;
-
-  // The gallery download URL for the extension.
-  GURL download_url;
-
-  // The delegate for this install.
-  Delegate* delegate;
-};
-
-void WebstoreInstaller::InstallExtension(
-    const std::string& id, Delegate* delegate, int flags) {
-  if (!Extension::IdIsValid(id)) {
-    ReportFailure(id, kInvalidIdError);
+  if (!Extension::IdIsValid(id_)) {
+    ReportFailure(kInvalidIdError);
     return;
   }
 
-  Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
-  if (!browser) {
-    ReportFailure(id, kNoBrowserError);
-    return;
-  }
+  // TODO(mihaip): For inline installs, we pretend like the referrer is the
+  // gallery, even though this could be an inline install, in order to pass the
+  // checks in ExtensionService::IsDownloadFromGallery. We should instead pass
+  // the real referrer, track if this is an inline install in the whitelist
+  // entry and look that up when checking that this is a valid download.
+  GURL referrer = controller_->GetActiveEntry()->url();
+  if (flags_ & FLAG_INLINE_INSTALL)
+    referrer = GURL(extension_urls::GetWebstoreItemDetailURLPrefix() + id_);
 
-  GURL install_url = GetWebstoreInstallUrl(id, flags & FLAG_INLINE_INSTALL ?
-      kInlineInstallSource : kDefaultInstallSource);
-  PendingInstall pending_install = CreatePendingInstall(
-      id, install_url, delegate);
+  // The download url for the given extension is contained in |download_url_|.
+  // We will navigate the current tab to this url to start the download. The
+  // download system will then pass the crx to the CrxInstaller.
+  controller_->LoadURL(download_url_,
+                       referrer,
+                       content::PAGE_TRANSITION_LINK,
+                       std::string());
 
-  // The download url for the given |id| is now contained in
-  // |pending_install.download_url|. We navigate the current tab to this url
-  // which will result in a download starting. Once completed it will go through
-  // the normal extension install flow.
-  NavigationController& controller =
-      browser->tabstrip_model()->GetActiveTabContents()->controller();
-
-  // TODO(mihaip, jstritar): For inline installs, we pretend like the referrer
-  // is the gallery, even though this could be an inline install, in order to
-  // pass the checks in ExtensionService::IsDownloadFromGallery. We should
-  // instead pass the real referrer, track if this is an inline install in the
-  // whitelist entry and look that up when checking that this is a valid
-  // download.
-  GURL referrer = controller.GetActiveEntry()->url();
-  if (flags & FLAG_INLINE_INSTALL)
-    referrer = GURL(extension_urls::GetWebstoreItemDetailURLPrefix() + id);
-
-  controller.LoadURL(install_url,
-                     referrer,
-                     content::PAGE_TRANSITION_LINK,
-                     std::string());
 }
 
 void WebstoreInstaller::Observe(int type,
@@ -124,7 +105,8 @@ void WebstoreInstaller::Observe(int type,
       CHECK(profile_->IsSameProfile(content::Source<Profile>(source).ptr()));
       const Extension* extension =
           content::Details<const Extension>(details).ptr();
-      ReportSuccess(extension->id());
+      if (id_ == extension->id())
+        ReportSuccess();
       break;
     }
 
@@ -134,12 +116,10 @@ void WebstoreInstaller::Observe(int type,
       if (!profile_->IsSameProfile(crx_installer->profile()))
         return;
 
-      std::string id = GetPendingInstallId(
-          crx_installer->original_download_url());
       const std::string* error =
           content::Details<const std::string>(details).ptr();
-      if (!id.empty())
-        ReportFailure(id, *error);
+      if (download_url_ == crx_installer->original_download_url())
+        ReportFailure(*error);
       break;
     }
 
@@ -148,55 +128,16 @@ void WebstoreInstaller::Observe(int type,
   }
 }
 
-bool WebstoreInstaller::ClearPendingInstall(
-    const std::string& id, PendingInstall* install) {
-  for (size_t i = 0; i < pending_installs_.size(); ++i) {
-    if (pending_installs_[i].id == id) {
-      *install = pending_installs_[i];
-      pending_installs_.erase(pending_installs_.begin() + i);
-      return true;
-    }
-  }
-  return false;
+void WebstoreInstaller::ReportFailure(const std::string& error) {
+  if (delegate_)
+    delegate_->OnExtensionInstallFailure(id_, error);
+
+  Release();  // Balanced in Start().
 }
 
-const WebstoreInstaller::PendingInstall&
-    WebstoreInstaller::CreatePendingInstall(
-        const std::string& id, GURL install_url, Delegate* delegate) {
-  PendingInstall pending_install(id, install_url, delegate);
-  pending_installs_.push_back(pending_install);
+void WebstoreInstaller::ReportSuccess() {
+  if (delegate_)
+    delegate_->OnExtensionInstallSuccess(id_);
 
-  return *(pending_installs_.end() - 1);
-}
-
-
-std::string WebstoreInstaller::GetPendingInstallId(const GURL& url) {
-  if (url.is_empty())
-    return std::string();
-
-  for (size_t i = 0; i < pending_installs_.size(); ++i) {
-    if (pending_installs_[i].download_url == url)
-      return pending_installs_[i].id;
-  }
-
-  return std::string();
-}
-
-void WebstoreInstaller::ReportFailure(
-    const std::string& id, const std::string& error) {
-  PendingInstall install;
-  if (!ClearPendingInstall(id, &install))
-    return;
-
-  if (install.delegate)
-    install.delegate->OnExtensionInstallFailure(id, error);
-}
-
-void WebstoreInstaller::ReportSuccess(const std::string& id) {
-  PendingInstall install;
-  if (!ClearPendingInstall(id, &install))
-    return;
-
-  if (install.delegate)
-    install.delegate->OnExtensionInstallSuccess(id);
+  Release();  // Balanced in Start().
 }
