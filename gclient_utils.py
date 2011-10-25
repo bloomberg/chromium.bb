@@ -711,7 +711,8 @@ def RunEditor(content, git):
   file_handle, filename = tempfile.mkstemp(text=True)
   # Make sure CRLF is handled properly by requiring none.
   if '\r' in content:
-    print >> sys.stderr, ('!! Please remove \\r from your content !!')
+    print >> sys.stderr, (
+        '!! Please remove \\r from your change description !!')
   fileobj = os.fdopen(file_handle, 'w')
   # Still remove \r if present.
   fileobj.write(re.sub('\r?\n', '\n', content))
