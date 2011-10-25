@@ -1126,10 +1126,8 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     }
 
     case IDC_CONTENT_CONTEXT_OPENLINKNEWTAB:
-      return params_.link_url.is_valid();
     case IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW:
-      return params_.link_url.is_valid() &&
-             incognito_avail != IncognitoModePrefs::FORCED;
+      return params_.link_url.is_valid();
 
     case IDC_CONTENT_CONTEXT_COPYLINKLOCATION:
       return params_.unfiltered_link_url.is_valid();
