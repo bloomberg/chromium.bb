@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
@@ -39,39 +38,17 @@ class VisibleBrowserTest : public UITest {
   }
 };
 
-#if defined(OS_WIN)
-// The browser should quit quickly if it receives a WM_ENDSESSION message.
-TEST_F(BrowserTest, WindowsSessionEnd) {
-#elif defined(OS_POSIX)
-// The browser should quit gracefully and quickly if it receives a SIGTERM.
-TEST_F(BrowserTest, PosixSessionEnd) {
-#endif
+}  // namespace
+
+// The browser should quit quickly if it receives a WM_ENDSESSION message
+// on Windows, or SIGTERM on posix.
+TEST_F(BrowserTest, SessionEnd) {
   FilePath test_file(test_data_directory_);
   test_file = test_file.AppendASCII("title1.html");
 
   NavigateToURL(net::FilePathToFileURL(test_file));
   TerminateBrowser();
-
-  // Make sure the UMA metrics say we didn't crash.
-  scoped_ptr<DictionaryValue> local_prefs(GetLocalState());
-  bool exited_cleanly;
-  ASSERT_TRUE(local_prefs.get());
-  ASSERT_TRUE(local_prefs->GetBoolean(prefs::kStabilityExitedCleanly,
-                                      &exited_cleanly));
-  ASSERT_TRUE(exited_cleanly);
-
-  // And that session end was successful.
-  bool session_end_completed;
-  ASSERT_TRUE(local_prefs->GetBoolean(prefs::kStabilitySessionEndCompleted,
-                                      &session_end_completed));
-  ASSERT_TRUE(session_end_completed);
-
-  // Make sure session restore says we didn't crash.
-  scoped_ptr<DictionaryValue> profile_prefs(GetDefaultProfilePreferences());
-  ASSERT_TRUE(profile_prefs.get());
-  ASSERT_TRUE(profile_prefs->GetBoolean(prefs::kSessionExitedCleanly,
-                                        &exited_cleanly));
-  ASSERT_TRUE(exited_cleanly);
+  VerifyCleanExit();
 }
 
 // WindowOpenClose is flaky on ChromeOS and fails consistently on linux views.
@@ -247,8 +224,6 @@ TEST_F(NoStartupWindowTest, NoStartupWindowBasicTest) {
   ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
   EXPECT_EQ(1, window_count);
 }
-
-}  // namespace
 
 // This test needs to be placed outside the anonymouse namespace because we
 // need to access private type of Browser.

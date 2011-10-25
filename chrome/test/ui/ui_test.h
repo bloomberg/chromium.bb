@@ -470,6 +470,9 @@ class UITest : public UITestBase, public PlatformTest {
   // Terminates the browser, simulates end of session.
   void TerminateBrowser();
 
+  // Verify that the browser exited cleanly.
+  void VerifyCleanExit();
+
   // Tells the browser to navigate to the given URL in the active tab
   // of the first app window.
   // Does not wait for the navigation to complete to return.

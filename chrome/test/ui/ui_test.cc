@@ -37,6 +37,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/browser_proxy.h"
@@ -800,4 +801,29 @@ bool UITest::WaitForDownloadShelfVisibilityChange(BrowserProxy* browser,
             << " state was incorrect " << incorrect_state_count << " times";
   ADD_FAILURE() << "Timeout reached in " << __FUNCTION__;
   return false;
+}
+
+// TODO(achuith): Call VerifyCleanExit from TerminateBrowser.
+// http://crbug.com/101390
+void UITest::VerifyCleanExit() {
+  // Make sure the UMA metrics say we didn't crash.
+  scoped_ptr<DictionaryValue> local_prefs(GetLocalState());
+  bool exited_cleanly;
+  ASSERT_TRUE(local_prefs.get());
+  ASSERT_TRUE(local_prefs->GetBoolean(prefs::kStabilityExitedCleanly,
+                                      &exited_cleanly));
+  ASSERT_TRUE(exited_cleanly);
+
+  // And that session end was successful.
+  bool session_end_completed;
+  ASSERT_TRUE(local_prefs->GetBoolean(prefs::kStabilitySessionEndCompleted,
+                                      &session_end_completed));
+  ASSERT_TRUE(session_end_completed);
+
+  // Make sure session restore says we didn't crash.
+  scoped_ptr<DictionaryValue> profile_prefs(GetDefaultProfilePreferences());
+  ASSERT_TRUE(profile_prefs.get());
+  ASSERT_TRUE(profile_prefs->GetBoolean(prefs::kSessionExitedCleanly,
+                                        &exited_cleanly));
+  ASSERT_TRUE(exited_cleanly);
 }

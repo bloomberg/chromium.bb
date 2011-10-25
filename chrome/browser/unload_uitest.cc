@@ -315,6 +315,18 @@ TEST_F(UnloadTest, BrowserCloseBeforeUnloadCancel) {
   EXPECT_EQ(0, exit_code);  // Expect a clean shutdown.
 }
 
+// Tests terminating the browser with a beforeunload handler.
+// Currently only ChromeOS shuts down gracefully.
+#if defined(OS_CHROMEOS)
+TEST_F(UnloadTest, BrowserTerminateBeforeUnload) {
+  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser.get());
+  NavigateToDataURL(BEFORE_UNLOAD_HTML, L"beforeunload");
+  TerminateBrowser();
+  VerifyCleanExit();
+}
+#endif
+
 #if defined(OS_LINUX)
 // Fails sometimes on Linux valgrind. http://crbug.com/45675
 #define MAYBE_BrowserCloseWithInnerFocusedFrame \

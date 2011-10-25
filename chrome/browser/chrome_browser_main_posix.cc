@@ -105,7 +105,7 @@ NOINLINE void ShutdownFDClosedError() {
   sleep(UINT_MAX);
 }
 
-NOINLINE void CloseAllBrowsersAndExitPosted() {
+NOINLINE void ExitPosted() {
   // Ensure function isn't optimized away.
   asm("");
   sleep(UINT_MAX);
@@ -161,7 +161,7 @@ void ShutdownDetector::ThreadMain() {
     RAW_LOG(WARNING, "Still here, exiting really ungracefully.");
     _exit(signal | (1 << 7));
   }
-  CloseAllBrowsersAndExitPosted();
+  ExitPosted();
 }
 
 // Sets the file descriptor soft limit to |max_descriptors| or the OS hard
