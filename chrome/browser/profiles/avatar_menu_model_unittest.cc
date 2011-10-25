@@ -72,6 +72,21 @@ TEST_F(AvatarMenuModelTest, InitialCreation) {
   EXPECT_EQ(name2, item2.name);
 }
 
+TEST_F(AvatarMenuModelTest, ActiveItem) {
+  string16 name1(ASCIIToUTF16("Test 1"));
+  string16 name2(ASCIIToUTF16("Test 2"));
+
+  manager()->CreateTestingProfile("p1", name1, 0);
+  manager()->CreateTestingProfile("p2", name2, 0);
+
+  MockObserver observer;
+  AvatarMenuModel model(manager()->profile_info_cache(), &observer, browser());
+  ASSERT_EQ(2U, model.GetNumberOfItems());
+  // TODO(jeremy): Expand test to verify active profile index other than 0
+  // crbug.com/100871
+  ASSERT_EQ(0U, model.GetActiveProfileIndex());
+}
+
 TEST_F(AvatarMenuModelTest, ModifyingNameResortsCorrectly) {
   string16 name1(ASCIIToUTF16("Alpha"));
   string16 name2(ASCIIToUTF16("Beta"));

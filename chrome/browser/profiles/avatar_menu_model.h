@@ -69,6 +69,9 @@ class AvatarMenuModel : public content::NotificationObserver {
   // Gets the number of profiles.
   size_t GetNumberOfItems();
 
+  // Returns the index of the active profile.
+  size_t GetActiveProfileIndex();
+
   // Gets the an Item at a specified index.
   const Item& GetItemAt(size_t index);
 

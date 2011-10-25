@@ -103,6 +103,20 @@ size_t AvatarMenuModel::GetNumberOfItems() {
   return items_.size();
 }
 
+size_t AvatarMenuModel::GetActiveProfileIndex() {
+  Profile* active_profile = NULL;
+  if (!browser_)
+    active_profile = ProfileManager::GetLastUsedProfile();
+  else
+    active_profile = browser_->profile();
+
+  size_t index =
+      profile_info_->GetIndexOfProfileWithPath(active_profile->GetPath());
+
+  DCHECK_LT(index, items_.size());
+  return index;
+}
+
 const AvatarMenuModel::Item& AvatarMenuModel::GetItemAt(size_t index) {
   DCHECK_LT(index, items_.size());
   return *items_[index];

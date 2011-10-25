@@ -84,7 +84,7 @@ class Observer : public BrowserList::Observer,
 }
 
 - (IBAction)editProfile:(id)sender {
-  model_->EditProfile([sender tag]);
+  model_->EditProfile(model_->GetActiveProfileIndex());
 }
 
 - (IBAction)newProfile:(id)sender {
@@ -127,22 +127,14 @@ class Observer : public BrowserList::Observer,
   // Tell the model that the browser has changed.
   model_->set_browser(browser);
 
-  // Then find the profile to mark as active.
-  Profile* profile = NULL;
-  if (!browser)
-    profile = ProfileManager::GetLastUsedProfile();
-  else
-    profile = browser->profile();
-
-  ProfileInfoInterface& info =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
-  size_t index = info.GetIndexOfProfileWithPath(profile->GetPath());
+  size_t active_profile_index = model_->GetActiveProfileIndex();
 
   // Update the state for the menu items.
   for (size_t i = 0; i < model_->GetNumberOfItems(); ++i) {
     size_t tag = model_->GetItemAt(i).model_index;
-    [[[self menu] itemWithTag:tag] setState:index == tag ? NSOnState
-                                                         : NSOffState];
+    [[[self menu] itemWithTag:tag]
+        setState:active_profile_index == tag ? NSOnState
+                                             : NSOffState];
   }
 }
 
