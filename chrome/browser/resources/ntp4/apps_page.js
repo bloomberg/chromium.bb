@@ -301,7 +301,7 @@ cr.define('ntp4', function() {
     // text.
     setupNotification_: function(notification) {
       // Remove the old notification from this node (if any).
-      if (this.appNotification_)
+      if (this.appNotification_ && this.appNotification_.parentNode)
         this.appNotification_.parentNode.removeChild(this.appNotification_);
 
       if (notification) {
@@ -455,8 +455,13 @@ cr.define('ntp4', function() {
       }
 
       var infoBubble = new cr.ui.Bubble;
+      infoBubble.appId = this.appData_.id;
       infoBubble.anchorNode = e.target;
       infoBubble.content = container;
+      infoBubble.handleCloseEvent = function() {
+        chrome.send('closeNotification', [this.appId]);
+        this.hide();
+      };
       infoBubble.show();
     },
 

@@ -110,6 +110,12 @@ bool AppNotificationManager::Add(AppNotification* item) {
         base::Bind(&AppNotificationManager::SaveOnFileThread,
             this, extension_id, CopyAppNotificationList(list)));
   }
+
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_APP_NOTIFICATION_STATE_CHANGED,
+      content::Source<Profile>(profile_),
+      content::Details<const std::string>(&extension_id));
+
   return true;
 }
 
@@ -141,6 +147,8 @@ const AppNotification* AppNotificationManager::GetLast(
   if (found == notifications_->end())
     return NULL;
   const AppNotificationList& list = found->second;
+  if (list.empty())
+    return NULL;
   return list.rbegin()->get();
 }
 
@@ -160,6 +168,11 @@ void AppNotificationManager::ClearAll(const std::string& extension_id) {
         base::Bind(&AppNotificationManager::DeleteOnFileThread,
             this, extension_id));
   }
+
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_APP_NOTIFICATION_STATE_CHANGED,
+      content::Source<Profile>(profile_),
+      content::Details<const std::string>(&extension_id));
 }
 
 void AppNotificationManager::Observe(
@@ -439,6 +452,11 @@ void AppNotificationManager::Remove(const std::string& extension_id,
         base::Bind(&AppNotificationManager::SaveOnFileThread,
             this, extension_id, CopyAppNotificationList(list)));
   }
+
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_APP_NOTIFICATION_STATE_CHANGED,
+      content::Source<Profile>(profile_),
+      content::Details<const std::string>(&extension_id));
 }
 
 // static

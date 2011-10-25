@@ -72,11 +72,6 @@ bool AppNotifyFunction::RunImpl() {
 
   manager->Add(item.release());
 
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_APP_NOTIFICATION_STATE_CHANGED,
-      content::Source<Profile>(profile_),
-      content::Details<const std::string>(&id));
-
   return true;
 }
 
@@ -94,9 +89,5 @@ bool AppClearAllNotificationsFunction::RunImpl() {
   AppNotificationManager* manager =
       profile()->GetExtensionService()->app_notification_manager();
   manager->ClearAll(id);
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_APP_NOTIFICATION_STATE_CHANGED,
-      content::Source<Profile>(profile_),
-      content::Details<const std::string>(&id));
   return true;
 }

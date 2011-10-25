@@ -277,6 +277,9 @@ void AppLauncherHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("recordAppLaunchByURL",
       base::Bind(&AppLauncherHandler::HandleRecordAppLaunchByURL,
                  base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("closeNotification",
+      base::Bind(&AppLauncherHandler::HandleNotificationClose,
+                 base::Unretained(this)));
 }
 
 void AppLauncherHandler::Observe(int type,
@@ -835,6 +838,20 @@ void AppLauncherHandler::HandleRecordAppLaunchByURL(
   CHECK(source < extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
 
   RecordAppLaunchByURL(Profile::FromWebUI(web_ui_), url, bucket);
+}
+
+void AppLauncherHandler::HandleNotificationClose(const ListValue* args) {
+  std::string extension_id;
+  CHECK(args->GetString(0, &extension_id));
+
+  const Extension* extension = extension_service_->GetExtensionById(
+      extension_id, true);
+  if (!extension)
+    return;
+
+  AppNotificationManager* notification_manager =
+      extension_service_->app_notification_manager();
+  notification_manager->ClearAll(extension_id);
 }
 
 void AppLauncherHandler::OnFaviconForApp(FaviconService::Handle handle,

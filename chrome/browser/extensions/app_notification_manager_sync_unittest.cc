@@ -146,12 +146,6 @@ class AppNotificationManagerSyncTest : public testing::Test {
     return notif;
   }
 
-  static AppNotification* CreateNotification(const AppNotification& notif) {
-    return CreateNotification(
-        notif.is_local(), notif.guid(), notif.extension_id(), notif.title(),
-        notif.body(), notif.link_url().spec(), notif.link_text());
-  }
-
   static SyncData CreateSyncData(int suffix) {
     scoped_ptr<AppNotification> notif(CreateNotification(suffix));
     return AppNotificationManager::CreateSyncDataFromNotification(*notif);
@@ -491,8 +485,7 @@ TEST_F(AppNotificationManagerSyncTest, ProcessSyncChangesNonEmptyModel) {
   SyncChangeList changes;
   changes.push_back(CreateSyncChange(
       SyncChange::ACTION_ADD, CreateNotification(3)));
-  changes.push_back(CreateSyncChange(
-      SyncChange::ACTION_DELETE, CreateNotification(*n1)));
+  changes.push_back(CreateSyncChange(SyncChange::ACTION_DELETE, n1->Copy()));
   changes.push_back(CreateSyncChange(
       SyncChange::ACTION_ADD, CreateNotification(4)));
 
