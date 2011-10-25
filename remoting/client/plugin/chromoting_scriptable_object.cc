@@ -33,6 +33,7 @@ const char kSendIq[] = "sendIq";
 const char kStatusAttribute[] = "status";
 const char kErrorAttribute[] = "error";
 const char kVideoBandwidthAttribute[] = "videoBandwidth";
+const char kVideoFrameRateAttribute[] = "videoFrameRate";
 const char kVideoCaptureLatencyAttribute[] = "videoCaptureLatency";
 const char kVideoEncodeLatencyAttribute[] = "videoEncodeLatency";
 const char kVideoDecodeLatencyAttribute[] = "videoDecodeLatency";
@@ -95,6 +96,7 @@ void ChromotingScriptableObject::Init() {
 
   // Statistics.
   AddAttribute(kVideoBandwidthAttribute, Var());
+  AddAttribute(kVideoFrameRateAttribute, Var());
   AddAttribute(kVideoCaptureLatencyAttribute, Var());
   AddAttribute(kVideoEncodeLatencyAttribute, Var());
   AddAttribute(kVideoDecodeLatencyAttribute, Var());
@@ -163,6 +165,8 @@ Var ChromotingScriptableObject::GetProperty(const Var& name, Var* exception) {
   ChromotingStats* stats = instance_->GetStats();
   if (name.AsString() == kVideoBandwidthAttribute)
     return stats ? stats->video_bandwidth()->Rate() : Var();
+  if (name.AsString() == kVideoFrameRateAttribute)
+    return stats ? stats->video_frame_rate()->Rate() : Var();
   if (name.AsString() == kVideoCaptureLatencyAttribute)
     return stats ? stats->video_capture_ms()->Average() : Var();
   if (name.AsString() == kVideoEncodeLatencyAttribute)

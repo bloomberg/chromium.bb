@@ -100,10 +100,11 @@ void ChromotingClient::ProcessVideoPacket(const VideoPacket* packet,
     return;
   }
 
-  // Record size of the packet for statistics.
-  stats_.video_bandwidth()->Record(packet->data().size());
+  // Add one frame to the counter.
+  stats_.video_frame_rate()->Record(1);
 
-  // Record statistics received from host.
+  // Record other statistics received from host.
+  stats_.video_bandwidth()->Record(packet->data().size());
   if (packet->has_capture_time_ms())
     stats_.video_capture_ms()->Record(packet->capture_time_ms());
   if (packet->has_encode_time_ms())

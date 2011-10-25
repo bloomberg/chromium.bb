@@ -19,6 +19,7 @@ class ChromotingStats {
   virtual ~ChromotingStats();
 
   RateCounter* video_bandwidth() { return &video_bandwidth_; }
+  RateCounter* video_frame_rate() { return &video_frame_rate_; }
   RunningAverage* video_capture_ms() { return &video_capture_ms_; }
   RunningAverage* video_encode_ms() { return &video_encode_ms_; }
   RunningAverage* video_decode_ms() { return &video_decode_ms_; }
@@ -27,6 +28,7 @@ class ChromotingStats {
 
  private:
   RateCounter video_bandwidth_;
+  RateCounter video_frame_rate_;
   RunningAverage video_capture_ms_;
   RunningAverage video_encode_ms_;
   RunningAverage video_decode_ms_;

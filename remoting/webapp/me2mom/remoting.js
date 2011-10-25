@@ -509,6 +509,9 @@ function updateStatistics() {
   var statistics = document.getElementById('statistics');
   statistics.innerText =
       'Bandwidth: ' + videoBandwidth.toFixed(2) + units +
+      ', Frame Rate: ' +
+          (stats['video_frame_rate'] ?
+           stats['video_frame_rate'].toFixed(2) + ' fps' : 'n/a') +
       ', Capture: ' + stats['capture_latency'].toFixed(2) + 'ms' +
       ', Encode: ' + stats['encode_latency'].toFixed(2) + 'ms' +
       ', Decode: ' + stats['decode_latency'].toFixed(2) + 'ms' +

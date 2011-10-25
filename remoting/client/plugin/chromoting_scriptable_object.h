@@ -68,6 +68,8 @@
 //   // Statistics.
 //   // Video Bandwidth in bytes per second.
 //   readonly attribute float videoBandwidth;
+//   // Video frames received per second.
+//   readonly attribute float videoFrameRate;
 //   // Latency for capturing in milliseconds.
 //   readonly attribute int videoCaptureLatency;
 //   // Latency for video encoding in milliseconds.
