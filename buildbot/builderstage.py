@@ -48,9 +48,6 @@ class BuilderStage(object):
     self._chrome_rev = self._build_config['chrome_rev']
     if self._options.chrome_rev: self._chrome_rev = self._options.chrome_rev
 
-    if not self._options.clobber and os.path.isdir(repo_dir):
-      self._ExtractOverlays()
-
   def _ExtractVariables(self):
     """Extracts common variables from build config and options into class."""
     self._build_root = os.path.abspath(self._options.buildroot)
@@ -59,18 +56,16 @@ class BuilderStage(object):
 
   def _ExtractOverlays(self):
     """Extracts list of overlays into class."""
-    if not BuilderStage.overlays or not BuilderStage.push_overlays:
-      overlays = self._ResolveOverlays(self._build_config['overlays'])
-      push_overlays = self._ResolveOverlays(self._build_config['push_overlays'])
+    overlays = self._ResolveOverlays(self._build_config['overlays'])
+    push_overlays = self._ResolveOverlays(self._build_config['push_overlays'])
 
-      # Sanity checks.
-      # We cannot push to overlays that we don't rev.
-      assert set(push_overlays).issubset(set(overlays))
-      # Either has to be a master or not have any push overlays.
-      assert self._build_config['master'] or not push_overlays
+    # Sanity checks.
+    # We cannot push to overlays that we don't rev.
+    assert set(push_overlays).issubset(set(overlays))
+    # Either has to be a master or not have any push overlays.
+    assert self._build_config['master'] or not push_overlays
 
-      BuilderStage.overlays = overlays
-      BuilderStage.push_overlays = push_overlays
+    return overlays, push_overlays
 
   def _ListifyBoard(self, board):
     """Return list of boards from either str or list |board|."""

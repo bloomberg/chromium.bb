@@ -324,8 +324,7 @@ def RunBuildStages(bot_id, options, build_config):
                                               success=build_and_test_success)
 
   publish_changes = (options.buildbot and build_config['master'] and
-                     build_and_test_success and
-                     bs.BuilderStage.push_overlays)
+                     build_and_test_success)
 
   if completion_stage:
     # Wait for slave builds to complete.

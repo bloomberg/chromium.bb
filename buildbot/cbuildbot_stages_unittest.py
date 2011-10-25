@@ -66,8 +66,6 @@ class AbstractStageTest(mox.MoxTestBase):
     self.options.buildnumber = 1234
     self.overlay = os.path.join(self.build_root,
                                 'src/third_party/chromiumos-overlay')
-    bs.BuilderStage.overlays = [self.overlay]
-    bs.BuilderStage.push_overlays = [self.overlay]
 
     bs.BuilderStage.SetTrackingBranch(self.TRACKING_BRANCH)
 
@@ -101,7 +99,6 @@ class BuilderStageTest(AbstractStageTest):
     """Basic test case for _GetPortageEnvVar function."""
     self.mox.StubOutWithMock(cros_lib, 'OldRunCommand')
     envvar = 'EXAMPLE'
-    os.path.isdir(self.build_root + '/.repo').AndReturn(True)
     cros_lib.OldRunCommand(mox.And(mox.IsA(list), mox.In(envvar)),
                            cwd='%s/src/scripts' % self.build_root,
                            redirect_stdout=True, enter_chroot=True,
@@ -115,7 +112,6 @@ class BuilderStageTest(AbstractStageTest):
 
   def testResolveOverlays(self):
     self.mox.StubOutWithMock(cros_lib, 'RunCommand')
-    os.path.isdir(self.build_root + '/.repo').AndReturn(True)
     for _ in range(3):
       output_obj = cros_lib.CommandResult()
       output_obj.output = 'public1 public2\n'
@@ -176,8 +172,6 @@ class ManifestVersionedSyncStageTest(AbstractStageTest):
                              'GetNextBuildSpec')
     self.mox.StubOutWithMock(commands, 'ManifestCheckout')
 
-    os.path.isdir(self.build_root + '/.repo').AndReturn(False)
-
     stages.ManifestVersionedSyncStage.InitializeManifestManager()
     self.manager.GetNextBuildSpec(force_version=None,
         latest=True).AndReturn(self.next_version)
@@ -186,9 +180,6 @@ class ManifestVersionedSyncStageTest(AbstractStageTest):
                               self.TRACKING_BRANCH,
                               self.next_version,
                               self.url)
-
-    os.path.isdir('/fake_root/src/third_party/'
-                  'chromiumos-overlay').AndReturn(True)
 
     self.mox.ReplayAll()
     stage = stages.ManifestVersionedSyncStage(self.bot_id,
@@ -204,7 +195,6 @@ class ManifestVersionedSyncStageTest(AbstractStageTest):
 
     self.mox.StubOutWithMock(manifest_version.BuildSpecsManager, 'UpdateStatus')
 
-    os.path.isdir(self.build_root + '/.repo').AndReturn(False)
     self.manager.UpdateStatus(success=True)
 
     self.mox.ReplayAll()
@@ -222,7 +212,6 @@ class ManifestVersionedSyncStageTest(AbstractStageTest):
 
     self.mox.StubOutWithMock(manifest_version.BuildSpecsManager, 'UpdateStatus')
 
-    os.path.isdir(self.build_root + '/.repo').AndReturn(False)
     self.manager.UpdateStatus(success=False)
 
 
@@ -238,8 +227,6 @@ class ManifestVersionedSyncStageTest(AbstractStageTest):
     """Tests basic ManifestVersionedSyncStageCompleted on incomplete build."""
 
     stages.ManifestVersionedSyncStage.manifest_manager = None
-
-    os.path.isdir(self.build_root + '/.repo').AndReturn(False)
 
     self.mox.ReplayAll()
     stage = stages.ManifestVersionedSyncCompletionStage(self.bot_id,
@@ -308,7 +295,6 @@ class LKGMCandidateSyncCompletionStage(AbstractStageTest):
         'important': True,
         'chrome_rev': None,
     }
-    os.path.isdir(self.build_root + '/.repo').AndReturn(True)
 
     self.mox.ReplayAll()
     stage = self.ConstructStage()
@@ -337,7 +323,6 @@ class BuildBoardTest(AbstractStageTest):
     self.mox.StubOutWithMock(commands, 'MakeChroot')
     self.mox.StubOutWithMock(commands, 'SetupBoard')
 
-    os.path.isdir(os.path.join(self.build_root, '.repo')).AndReturn(True)
     os.path.isdir(os.path.join(self.build_root, 'chroot')).AndReturn(True)
     commands.MakeChroot(buildroot=self.build_root,
                         replace=True,
@@ -365,7 +350,6 @@ class BuildBoardTest(AbstractStageTest):
     self.mox.StubOutWithMock(commands, 'SetupBoard')
     self.mox.StubOutWithMock(commands, 'RunChrootUpgradeHooks')
 
-    os.path.isdir(self.build_root + '/.repo').AndReturn(True)
     os.path.isdir(os.path.join(self.build_root, 'chroot')).AndReturn(True)
     commands.MakeChroot(buildroot=self.build_root,
                         replace=True,
@@ -394,7 +378,6 @@ class BuildBoardTest(AbstractStageTest):
     self.mox.StubOutWithMock(commands, 'SetupBoard')
     self.mox.StubOutWithMock(commands, 'RunChrootUpgradeHooks')
 
-    os.path.isdir(self.build_root + '/.repo').AndReturn(True)
     os.path.isdir(os.path.join(self.build_root, 'chroot')).AndReturn(True)
     commands.MakeChroot(buildroot=self.build_root,
                         replace=True,
@@ -421,7 +404,6 @@ class BuildBoardTest(AbstractStageTest):
     self.mox.StubOutWithMock(commands, 'SetupBoard')
     self.mox.StubOutWithMock(commands, 'RunChrootUpgradeHooks')
 
-    os.path.isdir(self.build_root + '/.repo').AndReturn(True)
     os.path.isdir(os.path.join(self.build_root, 'chroot')).AndReturn(True)
     os.path.isdir(os.path.join(self.build_root, 'chroot', 'build',
                                self.build_config['board'])).AndReturn(True)
@@ -437,7 +419,6 @@ class BuildBoardTest(AbstractStageTest):
     self.mox.StubOutWithMock(commands, 'MakeChroot')
     self.mox.StubOutWithMock(commands, 'SetupBoard')
 
-    os.path.isdir(self.build_root + '/.repo').AndReturn(True)
     os.path.isdir(os.path.join(self.build_root, 'chroot')).AndReturn(False)
     commands.MakeChroot(buildroot=self.build_root,
                         replace=self.build_config['chroot_replace'],
@@ -489,7 +470,6 @@ class VMTestStageTest(AbstractStageTest):
     self.mox.StubOutWithMock(stages.VMTestStage, '_CreateTestRoot')
     self.mox.StubOutWithMock(tempfile, 'mkdtemp')
 
-    os.path.isdir(self.build_root + '/.repo').AndReturn(True)
     tempfile.mkdtemp(prefix='cbuildbot').AndReturn(self.fake_results_dir)
     stages.VMTestStage._CreateTestRoot().AndReturn(self.fake_results_dir)
     commands.RunTestSuite(self.build_root,
@@ -517,7 +497,6 @@ class VMTestStageTest(AbstractStageTest):
     self.mox.StubOutWithMock(stages.VMTestStage, '_CreateTestRoot')
     self.mox.StubOutWithMock(tempfile, 'mkdtemp')
 
-    os.path.isdir(self.build_root + '/.repo').AndReturn(True)
     tempfile.mkdtemp(prefix='cbuildbot').AndReturn(self.fake_results_dir)
     stages.VMTestStage._CreateTestRoot().AndReturn(self.fake_results_dir)
     commands.RunTestSuite(self.build_root,
@@ -542,7 +521,6 @@ class UnitTestStageTest(AbstractStageTest):
     self.bot_id = 'x86-generic-full'
     self.build_config = config.config[self.bot_id].copy()
     self.mox.StubOutWithMock(commands, 'RunUnitTests')
-    os.path.isdir(self.build_root + '/.repo').AndReturn(True)
 
   def ConstructStage(self):
     return stages.UnitTestStage(self.bot_id, self.options, self.build_config)
@@ -586,7 +564,6 @@ class HWTestStageTest(AbstractStageTest):
     self.mox.StubOutWithMock(commands, 'UpdateRemoteHW')
     self.mox.StubOutWithMock(commands, 'RunRemoteTest')
 
-    os.path.isdir(self.build_root + '/.repo').AndReturn(True)
     commands.UpdateRemoteHW(self.build_root,
                             self.build_config['board'],
                             mox.IgnoreArg(),
@@ -613,7 +590,6 @@ class HWTestStageTest(AbstractStageTest):
     self.mox.StubOutWithMock(commands, 'UpdateRemoteHW')
     self.mox.StubOutWithMock(commands, 'RunRemoteTest')
 
-    os.path.isdir(self.build_root + '/.repo').AndReturn(True)
     commands.UpdateRemoteHW(self.build_root,
                             self.build_config['board'],
                             mox.IgnoreArg(),
@@ -640,7 +616,6 @@ class HWTestStageTest(AbstractStageTest):
     self.mox.StubOutWithMock(commands, 'UpdateRemoteHW')
     self.mox.StubOutWithMock(commands, 'RunRemoteTest')
 
-    os.path.isdir(self.build_root + '/.repo').AndReturn(True)
 
     self.mox.ReplayAll()
     self.RunStage()
@@ -658,7 +633,6 @@ class HWTestStageTest(AbstractStageTest):
     self.mox.StubOutWithMock(commands, 'UpdateRemoteHW')
     self.mox.StubOutWithMock(commands, 'RunRemoteTest')
 
-    os.path.isdir(self.build_root + '/.repo').AndReturn(True)
     commands.UpdateRemoteHW(self.build_root,
                             self.build_config['board'],
                             mox.IgnoreArg(),
@@ -691,7 +665,6 @@ class HWTestStageTest(AbstractStageTest):
     self.mox.StubOutWithMock(commands, 'UpdateRemoteHW')
     self.mox.StubOutWithMock(commands, 'RunRemoteTest')
 
-    os.path.isdir(self.build_root + '/.repo').AndReturn(True)
     commands.RunRemoteTest(self.build_root,
                            self.build_config['board'],
                            ip,
@@ -715,7 +688,6 @@ class HWTestStageTest(AbstractStageTest):
     self.mox.StubOutWithMock(commands, 'UpdateRemoteHW')
     self.mox.StubOutWithMock(commands, 'RunRemoteTest')
 
-    os.path.isdir(self.build_root + '/.repo').AndReturn(True)
     commands.UpdateRemoteHW(self.build_root,
                             self.build_config['board'],
                             mox.IgnoreArg(),
@@ -736,7 +708,6 @@ class UprevStageTest(AbstractStageTest):
   def setUp(self):
     mox.MoxTestBase.setUp(self)
     AbstractStageTest.setUp(self)
-    os.path.isdir(self.build_root + '/.repo').AndReturn(True)
 
     # Disable most paths by default and selectively enable in tests
 
@@ -834,7 +805,6 @@ class BuildTargetStageTest(AbstractStageTest):
   def setUp(self):
     mox.MoxTestBase.setUp(self)
     AbstractStageTest.setUp(self)
-    os.path.isdir(self.build_root + '/.repo').AndReturn(True)
     latest_image_dir = self.build_root + '/src/build/images/x86-generic/latest'
     self.mox.StubOutWithMock(os, 'readlink')
     self.mox.StubOutWithMock(os, 'symlink')
@@ -957,7 +927,6 @@ class ArchiveStageTest(AbstractStageTest):
   def setUp(self):
     mox.MoxTestBase.setUp(self)
     AbstractStageTest.setUp(self)
-    os.path.isdir(self.build_root + '/.repo').AndReturn(True)
     self.mox.StubOutWithMock(os, 'readlink')
     latest_image_dir = self.build_root + '/src/build/images/x86-generic/latest'
     cbuildbot_link = '%s-cbuildbot' % latest_image_dir
@@ -1004,7 +973,6 @@ class UploadPrebuiltsStageTest(AbstractStageTest):
   def setUp(self):
     mox.MoxTestBase.setUp(self)
     AbstractStageTest.setUp(self)
-    os.path.isdir(self.build_root + '/.repo').AndReturn(True)
     self.options.chrome_rev = 'tot'
     self.options.prebuilts = True
     self.mox.StubOutWithMock(stages.UploadPrebuiltsStage, '_GetPortageEnvVar')
@@ -1085,7 +1053,6 @@ class PublishUprevChangesStageTest(AbstractStageTest):
   def setUp(self):
     mox.MoxTestBase.setUp(self)
     AbstractStageTest.setUp(self)
-    os.path.isdir(self.build_root + '/.repo').AndReturn(True)
 
     # Disable most paths by default and selectively enable in tests
 
