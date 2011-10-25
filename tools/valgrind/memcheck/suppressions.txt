@@ -4946,29 +4946,6 @@
    fun:_ZN5ppapi5proxy20PPB_Graphics2D_Proxy10OnMsgFlushERKNS_12HostResourceE
 }
 {
-   bug_101468a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN9__gnu_cxx13new_allocatorISt13_Rb_tree_nodeISt4pairIKSsPN4base5ValueEEEE8allocateEmPKv
-   fun:_ZNSt8_Rb_treeISsSt4pairIKSsPN4base5ValueEESt10_Select1stIS5_ESt4lessISsESaIS5_EE11_M_get_nodeEv
-   fun:_ZNSt8_Rb_treeISsSt4pairIKSsPN4base5ValueEESt10_Select1stIS5_ESt4lessISsESaIS5_EE14_M_create_nodeERKS5_
-   fun:_ZNSt8_Rb_treeISsSt4pairIKSsPN4base5ValueEESt10_Select1stIS5_ESt4lessISsESaIS5_EE10_M_insert_EPKSt18_Rb_tree_node_baseSE_RKS5_
-   fun:_ZNSt8_Rb_treeISsSt4pairIKSsPN4base5ValueEESt10_Select1stIS5_ESt4lessISsESaIS5_EE16_M_insert_uniqueERKS5_
-   fun:_ZNSt3mapISsPN4base5ValueESt4lessISsESaISt4pairIKSsS2_EEE6insertERKS7_
-   fun:_ZN4base15DictionaryValue23SetWithoutPathExpansionERKSsPNS_5ValueE
-   fun:_ZN4base15DictionaryValue3SetERKSsPNS_5ValueE
-   ...
-   fun:_ZN26bookmark_extension_helpers17GetNodeDictionaryEPK12BookmarkNodebb
-   fun:_ZN*ExtensionBookmarksTest_*_Test8TestBodyEv
-}
-{
-   bug_101468b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN26bookmark_extension_helpers17GetNodeDictionaryEPK12BookmarkNodebb
-   fun:_ZN*ExtensionBookmarksTest_*_Test8TestBodyEv
-}
-{
    bug_101470
    Memcheck:Param
    write(buf)

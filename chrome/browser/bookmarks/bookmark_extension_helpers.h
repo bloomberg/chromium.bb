@@ -21,6 +21,7 @@ class ListValue;
 // Helper functions.
 namespace bookmark_extension_helpers {
 
+// The returned value is owned by the caller.
 base::DictionaryValue* GetNodeDictionary(const BookmarkNode* node,
                                          bool recurse,
                                          bool only_folders);
