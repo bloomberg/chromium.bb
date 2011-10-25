@@ -146,7 +146,7 @@ class WebResourceService::UnpackerClient : public UtilityProcessHost::Client {
   }
 
  private:
-  ~UnpackerClient() {}
+  virtual ~UnpackerClient() {}
 
   // UtilityProcessHost::Client
   virtual bool OnMessageReceived(const IPC::Message& message) {
@@ -201,7 +201,7 @@ class WebResourceService::UnpackerClient : public UtilityProcessHost::Client {
   scoped_refptr<WebResourceService> web_resource_service_;
 
   // Holds raw JSON string.
-  const std::string& json_data_;
+  std::string json_data_;
 
   // True if we got a response from the utility process and have cleaned up
   // already.
