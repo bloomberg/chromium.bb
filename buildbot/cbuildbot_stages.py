@@ -820,7 +820,8 @@ class ArchiveStage(NonHaltingBuilderStage):
       update_payloads_dir = self._GetUpdatePayloads()
       if update_payloads_dir:
         for payload in os.listdir(update_payloads_dir):
-          filename = os.path.join(update_payloads_dir, payload)
+          full_path = os.path.join(update_payloads_dir, payload)
+          filename = commands.ArchiveFile(full_path, archive_path)
           commands.UploadArchivedFile(archive_path, upload_url,
                                       filename, debug)
 
