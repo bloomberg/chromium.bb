@@ -8,8 +8,7 @@
 
 #include "base/logging.h"
 #include "ui/gfx/gl/gl_bindings.h"
-#include "ui/gfx/gl/gl_surface.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/gl/gl_surface_osmesa.h"
 
 namespace gfx {
 
@@ -29,7 +28,8 @@ bool GLContextOSMesa::Initialize(
   OSMesaContext share_handle = static_cast<OSMesaContext>(
       share_group() ? share_group()->GetHandle() : NULL);
 
-  GLuint format = compatible_surface->GetFormat();
+  GLuint format =
+      static_cast<GLSurfaceOSMesa*>(compatible_surface)->GetFormat();
   DCHECK_NE(format, (unsigned)0);
   context_ = OSMesaCreateContextExt(format,
                                     0,  // depth bits

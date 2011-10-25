@@ -4,7 +4,6 @@
 
 #include <string>
 
-#include "ui/base/x/x11_util.h"
 #include "ui/gfx/gl/gl_context.h"
 
 namespace gfx {
@@ -31,7 +30,6 @@ class GLContextGLX : public GLContext {
 
  private:
   void* context_;
-  Display* display_;
 
   DISALLOW_COPY_AND_ASSIGN(GLContextGLX);
 };

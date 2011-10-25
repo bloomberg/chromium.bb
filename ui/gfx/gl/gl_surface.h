@@ -31,8 +31,6 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   // Destroys the surface.
   virtual void Destroy() = 0;
 
-  virtual bool Resize(const gfx::Size& size);
-
   // Returns true if this surface is offscreen.
   virtual bool IsOffscreen() = 0;
 
@@ -56,23 +54,7 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   // on error.
   virtual bool OnMakeCurrent(GLContext* context);
 
-  // This gives a hint as to whether this surface is visible. If it is not
-  // visible, the backing store need not be preserved.
   virtual void SetVisible(bool visible);
-
-  // Get a handle used to share the surface with another process. Returns null
-  // if this is not possible.
-  virtual void* GetShareHandle();
-
-  // Get the platform specific display on which this surface resides, if
-  // available.
-  virtual void* GetDisplay();
-
-  // Get the platfrom specific configuration for this surface, if available.
-  virtual void* GetConfig();
-
-  // Get the GL pixel format of the surface, if available.
-  virtual unsigned GetFormat();
 
   // Create a GL surface that renders directly to a view.
   static scoped_refptr<GLSurface> CreateViewGLSurface(
@@ -94,34 +76,6 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   friend class base::RefCounted<GLSurface>;
   friend class GLContext;
   DISALLOW_COPY_AND_ASSIGN(GLSurface);
-};
-
-// Implementation of GLSurface that forwards all calls through to another
-// GLSurface.
-class GL_EXPORT GLSurfaceAdapter : public GLSurface {
- public:
-  explicit GLSurfaceAdapter(GLSurface* surface);
-  virtual ~GLSurfaceAdapter();
-
-  virtual bool Initialize();
-  virtual void Destroy();
-  virtual bool Resize(const gfx::Size& size);
-  virtual bool IsOffscreen();
-  virtual bool SwapBuffers();
-  virtual gfx::Size GetSize();
-  virtual void* GetHandle();
-  virtual unsigned int GetBackingFrameBufferObject();
-  virtual bool OnMakeCurrent(GLContext* context);
-  virtual void* GetShareHandle();
-  virtual void* GetDisplay();
-  virtual void* GetConfig();
-  virtual unsigned GetFormat();
-
-  GLSurface* surface() const { return surface_.get(); }
-
- private:
-  scoped_refptr<GLSurface> surface_;
-  DISALLOW_COPY_AND_ASSIGN(GLSurfaceAdapter);
 };
 
 }  // namespace gfx

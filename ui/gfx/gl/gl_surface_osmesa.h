@@ -22,7 +22,7 @@ class GL_EXPORT GLSurfaceOSMesa : public GLSurface {
 
   // Resize the back buffer, preserving the old content. Does nothing if the
   // size is unchanged.
-  virtual bool Resize(const gfx::Size& new_size);
+  void Resize(const gfx::Size& new_size);
 
   // Implement GLSurface.
   virtual bool Initialize();
@@ -31,7 +31,9 @@ class GL_EXPORT GLSurfaceOSMesa : public GLSurface {
   virtual bool SwapBuffers();
   virtual gfx::Size GetSize();
   virtual void* GetHandle();
-  virtual unsigned GetFormat();
+
+  // Get the surface's format.
+  unsigned GetFormat();
 
  private:
   void AllocateBuffer(const Size& size);

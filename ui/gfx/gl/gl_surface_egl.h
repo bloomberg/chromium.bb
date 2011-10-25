@@ -34,11 +34,9 @@ class GL_EXPORT GLSurfaceEGL : public GLSurface {
   GLSurfaceEGL();
   virtual ~GLSurfaceEGL();
 
-  // Implement GLSurface.
-  virtual EGLDisplay GetDisplay();
-  virtual EGLConfig GetConfig();
-
   static bool InitializeOneOff();
+  EGLDisplay GetDisplay();
+  EGLConfig GetConfig();
   static EGLDisplay GetHardwareDisplay();
   static EGLDisplay GetSoftwareDisplay();
   static EGLNativeDisplayType GetNativeDisplay();
@@ -83,9 +81,7 @@ class GL_EXPORT PbufferGLSurfaceEGL : public GLSurfaceEGL {
   virtual bool IsOffscreen();
   virtual bool SwapBuffers();
   virtual gfx::Size GetSize();
-  virtual bool Resize(const gfx::Size& size);
   virtual EGLSurface GetHandle();
-  virtual void* GetShareHandle();
 
  private:
   gfx::Size size_;

@@ -17,9 +17,9 @@ GLSurfaceOSMesa::~GLSurfaceOSMesa() {
   Destroy();
 }
 
-bool GLSurfaceOSMesa::Resize(const gfx::Size& new_size) {
+void GLSurfaceOSMesa::Resize(const gfx::Size& new_size) {
   if (new_size == size_)
-    return true;
+    return;
 
   // Preserve the old buffer.
   scoped_array<int32> old_buffer(buffer_.release());
@@ -37,7 +37,6 @@ bool GLSurfaceOSMesa::Resize(const gfx::Size& new_size) {
   }
 
   size_ = new_size;
-  return true;
 }
 
 bool GLSurfaceOSMesa::Initialize() {
