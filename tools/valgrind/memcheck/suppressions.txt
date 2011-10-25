@@ -4929,22 +4929,6 @@
    fun:_ZN7browser8NavigateEPNS_14NavigateParamsE
 }
 {
-   bug_101342
-   Memcheck:Cond
-   fun:_ZN14RenderViewImpl23SyncSelectionIfRequiredEv
-   fun:_ZN14RenderViewImpl18didChangeSelectionEb
-   fun:_ZN6WebKit16EditorClientImpl25respondToChangedSelectionEv
-   fun:_ZN7WebCore6Editor25respondToChangedSelectionERKNS_16VisibleSelectionE
-   fun:_ZN7WebCore6Editor25respondToChangedSelectionERKNS_16VisibleSelectionEj
-   fun:_ZN7WebCore14FrameSelection12setSelectionERKNS_16VisibleSelectionEjNS0_19CursorAlignOnScrollENS_15TextGranularityE
-   fun:_ZN7WebCore14FrameSelection12setSelectionERKNS_16VisibleSelectionENS_15TextGranularityE
-   fun:_ZN7WebCore14FrameSelection34setNonDirectionalSelectionIfNeededERKNS_16VisibleSelectionENS_15TextGranularityENS0_23EndPointsAdjustmentModeE
-   fun:_ZN7WebCore12EventHandler49updateSelectionForMouseDownDispatchingSelectStartEPNS_4NodeERKNS_16VisibleSelectionENS_15TextGranularityE
-   fun:_ZN7WebCore12EventHandler32handleMousePressEventSingleClickERKNS_28MouseEventWithHitTestResultsE
-   fun:_ZN7WebCore12EventHandler21handleMousePressEventERKNS_28MouseEventWithHitTestResultsE
-   fun:_ZN7WebCore12EventHandler21handleMousePressEventERKNS_18PlatformMouseEventE
-}
-{
    bug_101345
    Memcheck:Leak
    fun:_Znw*
