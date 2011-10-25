@@ -31,12 +31,15 @@ class MediaTest : public UITest {
     const std::wstring kPlaying = L"PLAYING";
     const std::wstring kFailed = L"FAILED";
     const std::wstring kError = L"ERROR";
-    for (int i = 0; i < 10; ++i) {
-      base::PlatformThread::Sleep(TestTimeouts::action_timeout_ms());
+    const int kSleepIntervalMs = 250;
+    const int kNumIntervals =
+        TestTimeouts::action_timeout_ms() / kSleepIntervalMs;
+    for (int i = 0; i < kNumIntervals; ++i) {
       const std::wstring& title = GetActiveTabTitle();
       if (title == kPlaying || title == kFailed ||
           StartsWith(title, kError, true))
         break;
+      base::PlatformThread::Sleep(kSleepIntervalMs);
     }
 
     EXPECT_EQ(kPlaying, GetActiveTabTitle());
