@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "base/task.h"
+#include "base/memory/weak_ptr.h"
 #include "base/timer.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/message_bubble.h"
@@ -160,7 +160,7 @@ class NetworkMenuButton : public StatusAreaButton,
   std::string deal_topup_url_;
 
   // Factory for delaying showing promo notification.
-  ScopedRunnableMethodFactory<NetworkMenuButton> method_factory_;
+  base::WeakPtrFactory<NetworkMenuButton> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkMenuButton);
 };

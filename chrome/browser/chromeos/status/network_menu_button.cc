@@ -6,7 +6,9 @@
 
 #include <algorithm>
 #include <limits>
+#include <vector>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
@@ -100,7 +102,7 @@ NetworkMenuButton::NetworkMenuButton(StatusAreaHost* host)
       is_browser_mode_(false),
       check_for_promo_(true),
       was_sim_locked_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   is_browser_mode_ = (host->GetScreenMode() == StatusAreaHost::kBrowserMode);
   network_menu_.reset(new NetworkMenu(this, is_browser_mode_));
   network_icon_.reset(
@@ -385,10 +387,11 @@ void NetworkMenuButton::ShowOptionalMobileDataPromoNotification(
     if (!screen_bounds.Contains(button_bounds)) {
       // If we're not on screen yet, delay notification display.
       // It may be shown earlier, on next NetworkLibrary callback processing.
-      if (method_factory_.empty()) {
+      if (!weak_ptr_factory_.HasWeakPtrs()) {
         MessageLoop::current()->PostDelayedTask(FROM_HERE,
-            method_factory_.NewRunnableMethod(
+            base::Bind(
                 &NetworkMenuButton::ShowOptionalMobileDataPromoNotification,
+                weak_ptr_factory_.GetWeakPtr(),
                 cros),
             kPromoShowDelayMs);
       }
