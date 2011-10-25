@@ -105,6 +105,8 @@ int FlushFile(base::PlatformFile file, bool record_uma) {
   return res;
 }
 
+}  // namespace
+
 // Cancelable wrapper around a Closure.
 class CancelableCallback {
  public:
@@ -125,8 +127,6 @@ class CancelableCallback {
   bool canceled_;
   const base::Closure callback_;
 };
-
-}  // namespace
 
 // FileStream::AsyncContext ----------------------------------------------
 
