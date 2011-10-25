@@ -69,7 +69,11 @@ bool PathProviderPosix(int key, FilePath* result) {
       return true;
 #elif defined(OS_OPENBSD)
       // There is currently no way to get the executable path on OpenBSD
-      *result = FilePath("/usr/local/chrome/chrome");
+      char *cpath;
+      if ((cpath = getenv("CHROME_EXE_PATH")) != NULL)
+        *result = FilePath(cpath);
+      else
+        *result = FilePath("/usr/local/chrome/chrome");
       return true;
 #endif
     }
