@@ -38,6 +38,9 @@ void NewNonFrontendDataTypeController::Start(StartCallback* start_callback) {
 
   set_start_callback(start_callback);
 
+  shared_change_processor_ =
+      profile_sync_factory()->CreateSharedChangeProcessor();
+
   set_state(MODEL_STARTING);
   if (!StartModels()) {
     // If we are waiting for some external service to load before associating
@@ -45,9 +48,6 @@ void NewNonFrontendDataTypeController::Start(StartCallback* start_callback) {
     DCHECK(state() == MODEL_STARTING || state() == NOT_RUNNING);
     return;
   }
-
-  shared_change_processor_ =
-      profile_sync_factory()->CreateSharedChangeProcessor();
 
   // Kick off association on the thread the datatype resides on.
   set_state(ASSOCIATING);
