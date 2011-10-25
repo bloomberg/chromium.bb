@@ -16,7 +16,7 @@
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
     <script type="text/javascript" src="js/sidebar.js"></script>
-  <title>chrome.contentSettings - Google Chrome Extensions - Google Code</title></head>
+  <title>Content Settings - Google Chrome Extensions - Google Code</title></head>
   <body>  <div id="gc-container" class="labs">
       <div id="devModeWarning">
         You are viewing extension docs in chrome via the 'file:' scheme: are you expecting to see local changes when you refresh? You'll need run chrome with --allow-file-access-from-files.
@@ -251,16 +251,44 @@
 
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">chrome.contentSettings</h1>
+        <h1 class="page_title">Content Settings</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
         <div id="toc">
           <h2>Contents</h2>
           <ol>
-            <li style="display: none; ">
-              <a>h2Name</a>
+            <li>
+              <a href="#manifest">Manifest</a>
+              <ol>
+                <li style="display: none; ">
+                  <a>h3Name</a>
+                </li>
+              </ol>
+            </li><li>
+              <a href="#patterns">Content setting patterns</a>
               <ol>
                 <li>
+                  <a href="#pattern-precedence">Pattern precedence</a>
+                </li>
+              </ol>
+            </li><li>
+              <a href="#primary-secondary">Primary and secondary patterns</a>
+              <ol>
+                <li style="display: none; ">
+                  <a>h3Name</a>
+                </li>
+              </ol>
+            </li><li>
+              <a href="#resource-identifiers">Resource identifiers</a>
+              <ol>
+                <li style="display: none; ">
+                  <a>h3Name</a>
+                </li>
+              </ol>
+            </li><li>
+              <a href="#examples">Examples</a>
+              <ol>
+                <li style="display: none; ">
                   <a>h3Name</a>
                 </li>
               </ol>
@@ -324,7 +352,160 @@
         </p>
 
         <!-- STATIC CONTENT PLACEHOLDER -->
-        <div id="static"></div>
+        <div id="static"><div id="pageData-name" class="pageData">Content Settings</div>
+
+<!-- BEGIN AUTHORED CONTENT -->
+<p>
+The content settings module allows you to change settings that control whether
+websites can use features such as cookies, JavaScript, and plug-ins.
+More generally speaking, content settings allow you to customize Chrome's
+behavior on a per-site basis instead of globally.</p>
+<p>
+</p>
+
+<h2 id="manifest">Manifest</h2>
+<p>You must declare the "contentSettings" permission
+in your extension's manifest to use the API.
+For example:</p>
+<pre>{
+  "name": "My extension",
+  ...
+  <b>"permissions": [
+    "contentSettings"
+  ]</b>,
+  ...
+}</pre>
+
+
+<h2 id="patterns">Content setting patterns</h2>
+<p>
+You can use patterns to specify the websites that each content setting affects.
+For example, <code>http://*.youtube.com/*</code> specifies youtube.com and all
+of its subdomains. The syntax for content setting patterns is the same as for
+<a href="match_patterns.html">match patterns</a>, with a few differences:
+</p><ul><li>For <code>http</code>,
+<code>https</code>, and <code>ftp</code> URLs, the path must be a wildcard
+(<code>/*</code>). For <code>file</code> URLs, the path must be completely
+specified and <strong>must not</strong> contain wildcards.</li>
+<li>In contrast to match patterns, content setting patterns can specify a port
+number. If a port number is specified, the pattern only matches websites with
+that port. If no port number is specified, the pattern matches all ports.
+</li>
+</ul>
+<p></p>
+
+<h3 id="pattern-precedence">Pattern precedence</h3>
+<p>
+When more than one content setting rule applies for a given site, the rule with
+the more specific pattern takes precedence.
+</p>
+<p>For example, the following patterns are ordered by precedence:</p>
+<ol>
+<li><code>http://www.example.com/*</code></li>
+<li><code>http://*.example.com/*</code> (matching
+example.com and all subdomains)</li>
+<li><code>&lt;all_urls&gt;</code> (matching every URL)</li>
+</ol>
+<p>
+Three kinds of wildcards affect how specific a pattern is:
+</p>
+<ul>
+<li>Wildcards in the port (for example
+<code>http://www.example.com:*/*</code>)</li>
+<li>Wildcards in the scheme (for example
+<code>*://www.example.com:123/*</code>)</li>
+<li>Wildcards in the hostname (for example
+<code>http://*.example.com:123/*</code>)</li>
+</ul>
+<p>
+If a pattern is more specific than another pattern in one part but less specific
+in another part, the different parts are checked in the following order:
+hostname, scheme, port. For example, the following patterns are ordered by
+precedence:</p>
+<ol>
+<li><code>http://www.example.com:*/*</code><br>
+Specifies the hostname and scheme.</li>
+<li><code>*:/www.example.com:123/*</code><br>
+Not as high, because although it specifies the hostname, it doesn't specify
+the scheme.</li>
+<li><code>http://*.example.com:123/*</code><br>
+Lower because although it specifies the port and scheme, it has a wildcard
+in the hostname.</li>
+</ol>
+
+<h2 id="primary-secondary">Primary and secondary patterns</h2>
+<p>
+The URL taken into account when deciding which content setting to apply depends
+on the content type. For example, for
+<a href="#property-notifications">notifications</a> settings are
+based on the URL shown in the omnibox. This URL is called the "primary" URL.</p>
+<p>
+Some content types can take additional URLs into account. For example,
+whether a site is allowed to set a
+<a href="#property-cookies">cookie</a> is decided based on the URL
+of the HTTP request (which is the primary URL in this case) as well as the URL
+shown in the omnibox (which is called the "secondary" URL).
+</p>
+<p>
+If multiple rules have primary and secondary patterns, the rule with the more
+specific primary pattern takes precedence. If there multiple rules have the same
+primary pattern, the rule with the more specific secondary pattern takes
+precedence. For example, the following list of primary/secondary pattern pairs
+is ordered by precedence:</p>
+<table>
+<tbody><tr><th>Precedence</th><th>Primary pattern</th><th>Secondary pattern</th>
+</tr><tr>
+  <td>1</td>
+  <td><code>http://www.moose.com/*</code>, </td>
+  <td><code>http://www.wombat.com/*</code></td>
+</tr><tr>
+  <td>2</td>
+  <td><code>http://www.moose.com/*</code>, </td>
+  <td><code>&lt;all_urls&gt;</code></td>
+</tr><tr>
+  <td>3</td>
+  <td><code>&lt;all_urls&gt;</code>, </td>
+  <td><code>http://www.wombat.com/*</code></td>
+</tr><tr>
+  <td>4</td>
+  <td><code>&lt;all_urls&gt;</code>, </td>
+  <td><code>&lt;all_urls&gt;</code></td>
+</tr>
+</tbody></table>
+
+<h2 id="resource-identifiers">Resource identifiers</h2>
+<p>
+Resource identifiers allow you to specify content settings for specific
+subtypes of a content type. Currently, the only content type that supports
+resource identifiers is <a href="#property-plugins"><code>plugins</code></a>,
+where a resource identifier identifies a specific plug-in. When applying content
+settings, first the settings for the specific plug-in are checked. If there are
+no settings found for the specific plug-in, the general content settings for
+plug-ins are checked.
+</p>
+<p>
+For example, if a content setting rule has the resource identifier
+<code>adobe-flash-player</code> and the pattern <code>&lt;all_urls&gt;</code>,
+it takes precedence over a rule without a resource identifier and the pattern
+<code>http://www.example.com/*</code>, even if that pattern is more specific.
+</p>
+<p>
+You can get a list of resource identifiers for a content type by calling the
+<a href="contentSettings.html#method-ContentSetting-getResourceIdentifiers">
+<code>getResourceIdentifiers()</code></a> method. The returned list
+can change with the set of installed plug-ins on the user's machine, but Chrome
+tries to keep the identifiers stable across plug-in updates.
+</p>
+
+<h2 id="examples">Examples</h2>
+
+<p>
+You can find samples of this API on the
+<a href="samples.html#contentSettings">sample page</a>.
+</p>
+
+<!-- END AUTHORED CONTENT -->
+</div>
 
         <!-- API PAGE -->
         <div class="apiPage">
@@ -373,7 +554,7 @@
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Whether to allow cookies and other local data to be set by websites. One of<br><var>allow</var>: Accept cookies,<br><var>block</var>: Block cookies,<br><var>session_only</var>: Accept cookies only for the current session. Default is <var>allow</var>.<br>The primary URL is the URL representing the cookie origin. The secondary URL is the URL of the top-level frame.</dd>
+          <dd>Whether to allow cookies and other local data to be set by websites. One of<br><var>allow</var>: Accept cookies,<br><var>block</var>: Block cookies,<br><var>session_only</var>: Accept cookies only for the current session. <br>Default is <var>allow</var>.<br>The primary URL is the URL representing the cookie origin. The secondary URL is the URL of the top-level frame.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -447,7 +628,7 @@
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Whether to show images. One of<br><var>allow</var>: Show images,<br><var>block</var>: Don't show images. Default is <var>allow</var>.<br>The primary URL is the main-frame URL. The secondary URL is not used.</dd>
+          <dd>Whether to show images. One of<br><var>allow</var>: Show images,<br><var>block</var>: Don't show images. <br>Default is <var>allow</var>.<br>The primary URL is the main-frame URL. The secondary URL is not used.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -521,7 +702,7 @@
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Whether to run Javascript. One of<br><var>allow</var>: Run Javascript,<br><var>block</var>: Don't run Javascript. Default is <var>allow</var>.<br>The primary URL is the main-frame URL. The secondary URL is not used.</dd>
+          <dd>Whether to run JavaScript. One of<br><var>allow</var>: Run JavaScript,<br><var>block</var>: Don't run JavaScript. <br>Default is <var>allow</var>.<br>The primary URL is the main-frame URL. The secondary URL is not used.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -595,7 +776,7 @@
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Whether to run plug-ins. One of<br><var>allow</var>: Run plug-ins automatically,<br><var>block</var>: Don't run plug-ins automatically. Default is <var>allow</var>.<br>The primary URL is the main-frame URL. The secondary URL is not used.</dd>
+          <dd>Whether to run plug-ins. One of<br><var>allow</var>: Run plug-ins automatically,<br><var>block</var>: Don't run plug-ins automatically. <br>Default is <var>allow</var>.<br>The primary URL is the main-frame URL. The secondary URL is not used.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -669,7 +850,7 @@
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Whether to allow sites to show pop-ups. One of<br><var>allow</var>: Allow sites to show pop-ups,<br><var>block</var>: Don't allow sites to show pop-ups. Default is <var>block</var>.<br>The primary URL is the main-frame URL. The secondary URL is not used.</dd>
+          <dd>Whether to allow sites to show pop-ups. One of<br><var>allow</var>: Allow sites to show pop-ups,<br><var>block</var>: Don't allow sites to show pop-ups. <br>Default is <var>block</var>.<br>The primary URL is the main-frame URL. The secondary URL is not used.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -743,7 +924,7 @@
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Whether to allow sites to show desktop notifications. One of<br><var>allow</var>: Allow sites to show desktop notifications,<br><var>block</var>: Don't allow sites to show desktop notifications,<br><var>ask</var>: Ask when a site wants to show desktop notifications. Default is <var>ask</var>.<br>The primary URL is the main-frame URL. The secondary URL is not used.</dd>
+          <dd>Whether to allow sites to show desktop notifications. One of<br><var>allow</var>: Allow sites to show desktop notifications,<br><var>block</var>: Don't allow sites to show desktop notifications,<br><var>ask</var>: Ask when a site wants to show desktop notifications. <br>Default is <var>ask</var>.<br>The primary URL is the main-frame URL. The secondary URL is not used.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -956,7 +1137,7 @@
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The only content type using resource identifiers is <var>plugins</var>. Using a resource identifier allows an extension to specify content settings applying only to a specific plug-in. If no rule for the specific plug-in is found, the rules without resource identifiers are applied.</dd>
+          <dd>The only content type using resource identifiers is <a href="contentSettings.html#property-plugins"><var>plugins</var></a>. For more information, see <a href="contentSettings.html#resource-identifiers">Resource Identifiers</a>.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -2365,7 +2546,7 @@
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The pattern for the primary URL. For details on the format of a pattern, see <a href="match_patterns.html">Match Patterns</a>.</dd>
+          <dd>The pattern for the primary URL. For details on the format of a pattern, see <a href="contentSettings.html#patterns">Content Setting Patterns</a>.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -2433,7 +2614,7 @@
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The pattern for the secondary URL. Defaults to matching all URLs. For details on the format of a pattern, see <a href="match_patterns.html">Match Patterns</a>.</dd>
+          <dd>The pattern for the secondary URL. Defaults to matching all URLs. For details on the format of a pattern, see <a href="contentSettings.html#patterns">Content Setting Patterns</a>.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
