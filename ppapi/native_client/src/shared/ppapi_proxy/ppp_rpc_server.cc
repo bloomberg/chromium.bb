@@ -207,7 +207,8 @@ static void PPP_Instance_DidChangeViewDispatcher(
       done,
       inputs[0]->u.ival,
       inputs[1]->u.count, inputs[1]->arrays.iarr,
-      inputs[2]->u.count, inputs[2]->arrays.iarr
+      inputs[2]->u.count, inputs[2]->arrays.iarr,
+      inputs[3]->u.ival
   );
 }
 
@@ -436,7 +437,7 @@ NaClSrpcHandlerDesc PppRpcs::srpc_methods[] = {
   { "PPP_InputEvent_HandleInputEvent:iiCC:i", PPP_InputEvent_HandleInputEventDispatcher },
   { "PPP_Instance_DidCreate:iiCC:i", PPP_Instance_DidCreateDispatcher },
   { "PPP_Instance_DidDestroy:i:", PPP_Instance_DidDestroyDispatcher },
-  { "PPP_Instance_DidChangeView:iII:", PPP_Instance_DidChangeViewDispatcher },
+  { "PPP_Instance_DidChangeView:iIIi:", PPP_Instance_DidChangeViewDispatcher },
   { "PPP_Instance_DidChangeFocus:ib:", PPP_Instance_DidChangeFocusDispatcher },
   { "PPP_Instance_HandleDocumentLoad:ii:i", PPP_Instance_HandleDocumentLoadDispatcher },
   { "PPP_Messaging_HandleMessage:iC:", PPP_Messaging_HandleMessageDispatcher },

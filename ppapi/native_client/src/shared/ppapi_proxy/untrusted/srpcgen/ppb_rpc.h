@@ -410,10 +410,6 @@ class PpbFontRpcClient {
 
 class PpbFullscreenRpcClient {
  public:
-  static NaClSrpcError PPB_Fullscreen_IsFullscreen(
-      NaClSrpcChannel* channel,
-      PP_Instance instance,
-      int32_t* success);
   static NaClSrpcError PPB_Fullscreen_SetFullscreen(
       NaClSrpcChannel* channel,
       PP_Instance instance,

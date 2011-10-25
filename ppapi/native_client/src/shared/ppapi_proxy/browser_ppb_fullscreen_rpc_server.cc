@@ -13,23 +13,7 @@
 using ppapi_proxy::DebugPrintf;
 using ppapi_proxy::PPBFullscreenInterface;
 
-void PpbFullscreenRpcServer::PPB_Fullscreen_IsFullscreen(
-      NaClSrpcRpc* rpc,
-      NaClSrpcClosure* done,
-      // inputs
-      PP_Instance instance,
-      // outputs
-      int32_t* success) {
-  NaClSrpcClosureRunner runner(done);
-  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
-
-  PP_Bool pp_success = PPBFullscreenInterface()->IsFullscreen(instance);
-  DebugPrintf("PPB_Fullscreen::IsFullscreen: pp_success=%d\n", pp_success);
-
-  *success = (pp_success == PP_TRUE);
-  rpc->result = NACL_SRPC_RESULT_OK;
-}
-
+// IsFullscreen is implemented via an extra flag to the DidChangeView proxy.
 
 void PpbFullscreenRpcServer::PPB_Fullscreen_SetFullscreen(
       NaClSrpcRpc* rpc,

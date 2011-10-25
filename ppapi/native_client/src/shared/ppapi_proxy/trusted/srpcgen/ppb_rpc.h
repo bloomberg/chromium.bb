@@ -468,11 +468,6 @@ class PpbFontRpcServer {
 
 class PpbFullscreenRpcServer {
  public:
-  static void PPB_Fullscreen_IsFullscreen(
-      NaClSrpcRpc* rpc,
-      NaClSrpcClosure* done,
-      PP_Instance instance,
-      int32_t* success);
   static void PPB_Fullscreen_SetFullscreen(
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,

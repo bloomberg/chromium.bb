@@ -31,6 +31,9 @@
            'inputs': [['instance', 'PP_Instance'],  # PP_Instance
                       ['position', 'int32_t[]'],  # PP_Rect*
                       ['clip', 'int32_t[]'],  # PP_Rect*
+                      # This arg is not part of the API, but will help us
+                      # avoid unnecessary PPB_Fullscreen::IsFullscreen RPCs.
+                      ['is_fullscreen', 'int32_t' ]  # PP_Bool
                      ],
            'outputs': []
           },

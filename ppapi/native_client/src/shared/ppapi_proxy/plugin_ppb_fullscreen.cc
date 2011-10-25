@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "native_client/src/shared/ppapi_proxy/plugin_instance_data.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_fullscreen.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
@@ -16,17 +17,7 @@ namespace {
 PP_Bool IsFullscreen(PP_Instance instance) {
   DebugPrintf("PPB_Fullscreen::IsFullscreen: instance=%"NACL_PRIu32"\n",
               instance);
-
-  int32_t success;
-  NaClSrpcError srpc_result =
-      PpbFullscreenRpcClient::PPB_Fullscreen_IsFullscreen(
-          GetMainSrpcChannel(), instance, &success);
-  DebugPrintf("PPB_Fullscreen::IsFullscreen: %s\n",
-              NaClSrpcErrorString(srpc_result));
-
-  if (srpc_result == NACL_SRPC_RESULT_OK && success)
-    return PP_TRUE;
-  return PP_FALSE;
+  return PluginInstanceData::IsFullscreen(instance) ? PP_TRUE : PP_FALSE;
 }
 
 

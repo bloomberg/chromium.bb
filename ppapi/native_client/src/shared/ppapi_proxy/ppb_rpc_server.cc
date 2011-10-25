@@ -903,20 +903,6 @@ static void PPB_Font_PixelOffsetForCharacterDispatcher(
   );
 }
 
-static void PPB_Fullscreen_IsFullscreenDispatcher(
-    NaClSrpcRpc* rpc,
-    NaClSrpcArg** inputs,
-    NaClSrpcArg** outputs,
-    NaClSrpcClosure* done
-) {
-  PpbFullscreenRpcServer::PPB_Fullscreen_IsFullscreen(
-      rpc,
-      done,
-      inputs[0]->u.ival,
-      &(outputs[0]->u.ival)
-  );
-}
-
 static void PPB_Fullscreen_SetFullscreenDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
@@ -2353,7 +2339,6 @@ NaClSrpcHandlerDesc PpbRpcs::srpc_methods[] = {
   { "PPB_Font_MeasureText:iCC:i", PPB_Font_MeasureTextDispatcher },
   { "PPB_Font_CharacterOffsetForPixel:iCCi:i", PPB_Font_CharacterOffsetForPixelDispatcher },
   { "PPB_Font_PixelOffsetForCharacter:iCCi:i", PPB_Font_PixelOffsetForCharacterDispatcher },
-  { "PPB_Fullscreen_IsFullscreen:i:i", PPB_Fullscreen_IsFullscreenDispatcher },
   { "PPB_Fullscreen_SetFullscreen:ii:i", PPB_Fullscreen_SetFullscreenDispatcher },
   { "PPB_Fullscreen_GetScreenSize:i:Ci", PPB_Fullscreen_GetScreenSizeDispatcher },
   { "PPB_Graphics2D_Create:iCi:i", PPB_Graphics2D_CreateDispatcher },

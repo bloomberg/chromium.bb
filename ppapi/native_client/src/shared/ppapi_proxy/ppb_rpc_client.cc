@@ -1120,23 +1120,6 @@ NaClSrpcError PpbFontRpcClient::PPB_Font_PixelOffsetForCharacter(
   return retval;
 }
 
-NaClSrpcError PpbFullscreenRpcClient::PPB_Fullscreen_IsFullscreen(
-    NaClSrpcChannel* channel,
-    PP_Instance instance,
-    int32_t* success)  {
-  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
-         ("%s: PPAPI calls are not supported off the main thread\n",
-          __FUNCTION__));
-  NaClSrpcError retval;
-  retval = NaClSrpcInvokeBySignature(
-      channel,
-      "PPB_Fullscreen_IsFullscreen:i:i",
-      instance,
-      success
-  );
-  return retval;
-}
-
 NaClSrpcError PpbFullscreenRpcClient::PPB_Fullscreen_SetFullscreen(
     NaClSrpcChannel* channel,
     PP_Instance instance,

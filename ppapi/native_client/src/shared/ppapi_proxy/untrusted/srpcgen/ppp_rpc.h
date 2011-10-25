@@ -137,7 +137,8 @@ class PppInstanceRpcServer {
       NaClSrpcClosure* done,
       PP_Instance instance,
       nacl_abi_size_t position_bytes, int32_t* position,
-      nacl_abi_size_t clip_bytes, int32_t* clip);
+      nacl_abi_size_t clip_bytes, int32_t* clip,
+      int32_t is_fullscreen);
   static void PPP_Instance_DidChangeFocus(
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,

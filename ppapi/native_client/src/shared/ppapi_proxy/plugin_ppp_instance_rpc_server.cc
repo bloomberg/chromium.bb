@@ -115,7 +115,8 @@ void PppInstanceRpcServer::PPP_Instance_DidChangeView(
     // inputs
     PP_Instance instance_id,
     uint32_t position_count, int32_t* position,
-    uint32_t clip_count, int32_t* clip) {
+    uint32_t clip_count, int32_t* clip,
+    int32_t is_fullscreen) {
   const PP_Rect position_rect =
       PP_MakeRectFromXYWH(position[0], position[1], position[2], position[3]);
   const PP_Rect clip_rect =
@@ -123,7 +124,8 @@ void PppInstanceRpcServer::PPP_Instance_DidChangeView(
 
   ppapi_proxy::PluginInstanceData::DidChangeView(instance_id,
                                                  position_rect,
-                                                 clip_rect);
+                                                 clip_rect,
+                                                 is_fullscreen);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   NaClSrpcClosureRunner runner(done);
   if (position_count != 4 || clip_count != 4) {

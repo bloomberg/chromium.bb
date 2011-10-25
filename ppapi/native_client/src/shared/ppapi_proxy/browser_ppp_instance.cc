@@ -123,7 +123,8 @@ void DidChangeView(PP_Instance instance,
       kPositionArraySize,
       position_array,
       kClipArraySize,
-      clip_array);
+      clip_array,
+      static_cast<int32_t>(PPBFullscreenInterface()->IsFullscreen(instance)));
   DebugPrintf("PPP_Instance::DidChangeView: %s\n",
               NaClSrpcErrorString(srpc_result));
 }
