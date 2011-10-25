@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_POLICY_POLICY_PATH_PARSER_H_
 #define CHROME_BROWSER_POLICY_POLICY_PATH_PARSER_H_
+#pragma once
 
 #include <string>
 

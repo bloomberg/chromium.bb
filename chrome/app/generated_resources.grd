@@ -4384,6 +4384,49 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_POLICY_STATUS_SERIAL_ERROR" desc="Indicates that a policy fetch failed because the serial number was invalid.">
         Invalid serial number
       </message>
+      <message name="IDS_POLICY_TYPE_ERROR" desc="The text displayed in the status column when a policy value has the wrong type.">
+        Expected <ph name="VALUE_TYPE">$1<ex>boolean</ex></ph> value.
+      </message>
+      <message name="IDS_POLICY_OUT_OF_RANGE_ERROR" desc="The text displayed in the status column when a policy value is out of range.">
+        Value is out of range <ph name="VALUE">$1<ex>10</ex></ph>.
+      </message>
+     <message name="IDS_POLICY_DEFAULT_SEARCH_DISABLED" desc="The text displayed in the status column when a policy value has been ignored because default search has been disabled.">
+        Ignored because default search is disabled by policy.
+      </message>
+      <message name="IDS_POLICY_NOT_SPECIFIED_ERROR" desc="The text displayed in the status column when a policy value should have been specified but wasn't.">
+        Must be specified.
+      </message>
+      <message name="IDS_POLICY_INVALID_SEARCH_URL_ERROR" desc="The text displayed in the status column when a the URL given for DefaultSearchProviderSearchURL is invalid.">
+        Invalid search URL.
+      </message>
+      <message name="IDS_POLICY_INVALID_PROXY_MODE_ERROR" desc="The text displayed in the status column when the value for ProxyMode is invalid.">
+        Invalid proxy mode.
+      </message>
+      <message name="IDS_POLICY_PROXY_MODE_DISABLED_ERROR" desc="The text displayed in the status column when use of a proxy is disabled but a proxy configuration is given.">
+        Use of a proxy is disabled but an explicit proxy configuration is specified.
+      </message>
+      <message name="IDS_POLICY_PROXY_MODE_AUTO_DETECT_ERROR" desc="The text displayed in the status column when the proxy is set to auto configured but a proxy configuration is given.">
+        Proxy is set to auto configured.
+      </message>
+      <message name="IDS_POLICY_PROXY_MODE_PAC_URL_ERROR" desc="The text displayed in the status column when the proxy configuration is set to use a .pac script URL but policies only for fixed proxy servers are also specified.">
+        Proxy configuration is set to use a .pac script URL, not fixed proxy servers.
+      </message>
+      <message name="IDS_POLICY_PROXY_MODE_FIXED_SERVERS_ERROR" desc="The text displayed in the status column when the proxy configuration is set to use fixed proxy servers but an alternate configuration is given.">
+        Proxy is set to use fixed proxy servers, not a .pac script URL.
+      </message>
+      <message name="IDS_POLICY_PROXY_MODE_SYSTEM_ERROR" desc="The text displayed in the status column when the proxy configuration is set to use system settings but an alternate configuration is given.">
+        System proxy settings are set to be used but an explicit proxy configuration is also specified.
+      </message>
+      <message name="IDS_POLICY_PROXY_BOTH_SPECIFIED_ERROR" desc="The text displayed in the status column when both fixed proxy servers and .pac url are specified.">
+        Both fixed proxy servers and a .pac script URL are specified.
+      </message>
+      <message name="IDS_POLICY_PROXY_NEITHER_SPECIFIED_ERROR" desc="The text displayed in the status column when neither a fixed proxy servers or a .pac url are specified.">
+        Neither fixed proxy servers nor a .pac script URL are specified.
+      </message>
+      <message name="IDS_POLICY_OVERRIDDEN" desc="The text displayed in the status column when the corresponding policy is being ignored because another policy is overriding it.">
+        Ignored because it was overridden by <ph name="POLICY_NAME">$1<ex>ProxyMode</ex></ph>.
+      </message>
+
       <!-- about:flags -->
       <message name="IDS_FLAGS_LONG_TITLE" desc="Long version of the title for the about:flags page.">
         Careful, these experiments may bite

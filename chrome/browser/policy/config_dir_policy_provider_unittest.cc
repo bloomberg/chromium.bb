@@ -192,16 +192,6 @@ TEST_P(ConfigDirPolicyProviderValueTest, Default) {
   EXPECT_TRUE(policy_map.empty());
 }
 
-TEST_P(ConfigDirPolicyProviderValueTest, NullValue) {
-  DictionaryValue dict;
-  dict.Set(GetParam().policy_key(), Value::CreateNullValue());
-  WriteConfigFile(dict, "empty");
-  ConfigDirPolicyProvider provider(GetChromePolicyDefinitionList(), test_dir());
-  PolicyMap policy_map;
-  EXPECT_TRUE(provider.Provide(&policy_map));
-  EXPECT_TRUE(policy_map.empty());
-}
-
 TEST_P(ConfigDirPolicyProviderValueTest, TestValue) {
   DictionaryValue dict;
   dict.Set(GetParam().policy_key(), GetParam().test_value()->DeepCopy());

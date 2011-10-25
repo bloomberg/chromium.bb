@@ -53,7 +53,7 @@ void PolicyMap::LoadFrom(
   const PolicyDefinitionList::Entry* entry;
   for (entry = list->begin; entry != list->end; ++entry) {
     Value* value;
-    if (policies->Get(entry->name, &value) && value->IsType(entry->value_type))
+    if (policies->Get(entry->name, &value))
       Set(entry->policy_type, value->DeepCopy());
   }
 }

@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/policy/cloud_policy_data_store.h"
+#include "chrome/browser/policy/configuration_policy_handler.h"
 #include "chrome/browser/policy/enterprise_install_attributes.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -108,6 +109,9 @@ class BrowserPolicyConnector : public content::NotificationObserver {
   const CloudPolicyDataStore* GetDeviceCloudPolicyDataStore() const;
   const CloudPolicyDataStore* GetUserCloudPolicyDataStore() const;
 
+  const ConfigurationPolicyHandler::HandlerList*
+      GetConfigurationPolicyHandlerList() const;
+
  private:
   friend class ::TestingBrowserProcess;
 
@@ -169,6 +173,9 @@ class BrowserPolicyConnector : public content::NotificationObserver {
   // Weak reference to the TokenService we are listening to for user cloud
   // policy authentication tokens.
   TokenService* token_service_;
+
+  // List of all available handlers derived from ConfigurationPolicyHandler.
+  scoped_ptr<ConfigurationPolicyHandler::HandlerList> policy_handlers_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPolicyConnector);
 };

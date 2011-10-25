@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_POLICY_POLICY_STATUS_INFO_H_
 #define CHROME_BROWSER_POLICY_POLICY_STATUS_INFO_H_
+#pragma once
 
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"

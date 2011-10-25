@@ -115,6 +115,11 @@ void ResourceBundle::CleanupSharedInstance() {
 }
 
 /* static */
+bool ResourceBundle::HasSharedInstance() {
+  return g_shared_instance_ != NULL;
+}
+
+/* static */
 ResourceBundle& ResourceBundle::GetSharedInstance() {
   // Must call InitSharedInstance before this function.
   CHECK(g_shared_instance_ != NULL);

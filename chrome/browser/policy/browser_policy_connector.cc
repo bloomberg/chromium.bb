@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/policy/cloud_policy_provider.h"
 #include "chrome/browser/policy/cloud_policy_provider_impl.h"
@@ -97,6 +98,8 @@ BrowserPolicyConnector::~BrowserPolicyConnector() {
   user_cloud_policy_subsystem_.reset();
   user_policy_token_cache_.reset();
   user_data_store_.reset();
+
+  STLDeleteElements(policy_handlers_.get());
 }
 
 ConfigurationPolicyProvider*
@@ -308,6 +311,11 @@ const CloudPolicyDataStore*
   return user_data_store_.get();
 }
 
+const ConfigurationPolicyHandler::HandlerList*
+    BrowserPolicyConnector::GetConfigurationPolicyHandlerList() const {
+  return policy_handlers_.get();
+}
+
 BrowserPolicyConnector::BrowserPolicyConnector()
     : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   managed_platform_provider_.reset(CreateManagedPlatformProvider());
@@ -323,6 +331,7 @@ BrowserPolicyConnector::BrowserPolicyConnector()
 #if defined(OS_CHROMEOS)
   InitializeDevicePolicy();
 #endif
+  policy_handlers_.reset(ConfigurationPolicyHandler::CreateHandlerList());
 }
 
 BrowserPolicyConnector::BrowserPolicyConnector(
@@ -334,7 +343,9 @@ BrowserPolicyConnector::BrowserPolicyConnector(
       recommended_platform_provider_(recommended_platform_provider),
       managed_cloud_provider_(managed_cloud_provider),
       recommended_cloud_provider_(recommended_cloud_provider),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {}
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+  policy_handlers_.reset(ConfigurationPolicyHandler::CreateHandlerList());
+}
 
 void BrowserPolicyConnector::Observe(
     int type,

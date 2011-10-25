@@ -104,6 +104,9 @@ class UI_EXPORT ResourceBundle {
   // Delete the ResourceBundle for this process if it exists.
   static void CleanupSharedInstance();
 
+  // Returns true after the global resource loader instance has been created.
+  static bool HasSharedInstance();
+
   // Return the global resource loader instance.
   static ResourceBundle& GetSharedInstance();
 

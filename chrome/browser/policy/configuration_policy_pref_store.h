@@ -13,9 +13,9 @@
 #include "chrome/browser/policy/configuration_policy_provider.h"
 #include "chrome/common/pref_store.h"
 
-namespace policy {
+class PrefValueMap;
 
-class ConfigurationPolicyPrefKeeper;
+namespace policy {
 
 // Constants for the "Proxy Server Mode" defined in the policies.
 // Note that these diverge from internal presentation defined in
@@ -47,15 +47,15 @@ class ConfigurationPolicyPrefStore
   virtual ~ConfigurationPolicyPrefStore();
 
   // PrefStore methods:
-  virtual void AddObserver(PrefStore::Observer* observer);
-  virtual void RemoveObserver(PrefStore::Observer* observer);
-  virtual bool IsInitializationComplete() const;
+  virtual void AddObserver(PrefStore::Observer* observer) OVERRIDE;
+  virtual void RemoveObserver(PrefStore::Observer* observer) OVERRIDE;
+  virtual bool IsInitializationComplete() const OVERRIDE;
   virtual ReadResult GetValue(const std::string& key,
-                              const Value** result) const;
+                              const Value** result) const OVERRIDE;
 
   // ConfigurationPolicyProvider::Observer methods:
-  virtual void OnUpdatePolicy();
-  virtual void OnProviderGoingAway();
+  virtual void OnUpdatePolicy() OVERRIDE;
+  virtual void OnProviderGoingAway() OVERRIDE;
 
   // Creates a ConfigurationPolicyPrefStore that reads managed platform policy.
   static ConfigurationPolicyPrefStore* CreateManagedPlatformPolicyPrefStore();
@@ -79,6 +79,10 @@ class ConfigurationPolicyPrefStore
   // sending out change notifications as appropriate.
   void Refresh();
 
+  // Returns a new PrefValueMap containing the preference values that correspond
+  // to the policies currently provided by |provider_|.
+  PrefValueMap* CreatePreferencesFromPolicies();
+
   // The policy provider from which policy settings are read.
   ConfigurationPolicyProvider* provider_;
 
@@ -87,7 +91,7 @@ class ConfigurationPolicyPrefStore
   bool initialization_complete_;
 
   // Current policy preferences.
-  scoped_ptr<ConfigurationPolicyPrefKeeper> policy_keeper_;
+  scoped_ptr<PrefValueMap> prefs_;
 
   ObserverList<PrefStore::Observer, true> observers_;
 
