@@ -602,16 +602,16 @@
       ],
       'link_settings': {
         'libraries': [
-      '-lcomctl32.lib',
+          '-lcomctl32.lib',
           '-llocationapi.lib',
           '-lsensorsapi.lib',
         ],
-      },
-      'msvs_settings': {
-        'VCLinkerTool': {
-          'DelayLoadDLLs': [
-            'user32.dll',
-          ],
+        'msvs_settings': {
+          'VCLinkerTool': {
+            'DelayLoadDLLs': [
+              'user32.dll',
+            ],
+          },
         },
       },
       'sources!': [
