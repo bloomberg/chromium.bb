@@ -283,7 +283,7 @@ void RendererAccessibility::SendPendingAccessibilityNotifications() {
       LOG(INFO) << "Accessibility update: "
                 << param.acc_tree.DebugString(true,
                                               routing_id(),
-                                              param.notification_type);
+                                              notification.type);
     }
 #endif
   }
