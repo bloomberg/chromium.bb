@@ -73,10 +73,6 @@ bool GLSurfaceGLX::InitializeOneOff() {
   return true;
 }
 
-Display* GLSurfaceGLX::GetDisplay() {
-  return g_display;
-}
-
 const char* GLSurfaceGLX::GetGLXExtensions() {
   return g_glx_extensions;
 }
@@ -97,6 +93,10 @@ bool GLSurfaceGLX::HasGLXExtension(const char* name) {
 
 bool GLSurfaceGLX::IsCreateContextRobustnessSupported() {
   return g_glx_create_context_robustness_supported;
+}
+
+void* GLSurfaceGLX::GetDisplay() {
+  return g_display;
 }
 
 NativeViewGLSurfaceGLX::NativeViewGLSurfaceGLX(gfx::PluginWindowHandle window)

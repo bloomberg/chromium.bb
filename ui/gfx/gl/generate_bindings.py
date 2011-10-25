@@ -362,6 +362,8 @@ EGL_FUNCTIONS = [
     'EGLDisplay dpy, EGLSurface surface, EGLNativePixmapType target'],
 ['__eglMustCastToProperFunctionPointerType', ['eglGetProcAddress'],
     'const char* procname'],
+['EGLBoolean', ['eglQuerySurfacePointerANGLE'],
+    'EGLDisplay dpy, EGLSurface surface, EGLint attribute, void** value'],
 ]
 
 WGL_FUNCTIONS = [

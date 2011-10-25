@@ -60,6 +60,10 @@ GLSurfaceWGL::GLSurfaceWGL() {
 GLSurfaceWGL::~GLSurfaceWGL() {
 }
 
+void* GLSurfaceWGL::GetDisplay() {
+  return g_display_dc;
+}
+
 bool GLSurfaceWGL::InitializeOneOff() {
   static bool initialized = false;
   if (initialized)
@@ -162,7 +166,7 @@ bool GLSurfaceWGL::InitializeOneOff() {
   return true;
 }
 
-HDC GLSurfaceWGL::GetDisplay() {
+HDC GLSurfaceWGL::GetDisplayDC() {
   return g_display_dc;
 }
 
