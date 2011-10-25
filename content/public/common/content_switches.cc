@@ -232,6 +232,10 @@ const char kEnableSeccompSandbox[]          = "enable-seccomp-sandbox";
 // Enables StatsTable, logging statistics to a global named shared memory table.
 const char kEnableStatsTable[]              = "enable-stats-table";
 
+// Experimentally ensure each renderer process has pages from only one site.
+// This is expected to break compatibility with many pages for now.
+const char kEnableStrictSiteIsolation[]     = "enable-strict-site-isolation";
+
 // Enable multithreaded GPU compositing of web content.
 const char kEnableThreadedCompositing[]     = "enable-threaded-compositing";
 

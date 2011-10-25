@@ -2019,6 +2019,19 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
       NavigationState::FromDataSource(frame->provisionalDataSource())->
           is_content_initiated();
 
+  // Experimental:
+  // If --enable-strict-site-isolation is enabled, send all top-level
+  // navigations to the browser to let it swap processes when crossing site
+  // boundaries.  This is currently expected to break some script calls and
+  // navigations, such as form submissions.
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (!frame->parent() && (is_content_initiated || is_redirect) &&
+      command_line.HasSwitch(switches::kEnableStrictSiteIsolation)) {
+    GURL referrer(request.httpHeaderField(WebString::fromUTF8("Referer")));
+    OpenURL(frame, url, referrer, default_policy);
+    return WebKit::WebNavigationPolicyIgnore;
+  }
+
   // If the browser is interested, then give it a chance to look at top level
   // navigations.
   if (is_content_initiated &&
