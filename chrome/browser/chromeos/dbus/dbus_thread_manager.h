@@ -19,6 +19,8 @@ class Bus;
 
 namespace chromeos {
 
+class BluetoothAdapterClient;
+class BluetoothManagerClient;
 class CrosDBusService;
 class PowerManagerClient;
 class SessionManagerClient;
@@ -56,6 +58,20 @@ class DBusThreadManager {
   // Gets the global instance. Initialize() must be called first.
   static DBusThreadManager* Get();
 
+  // Returns the bluetooth manager client, owned by DBusThreadManager.
+  // Do not cache this pointer and use it after DBusThreadManager is shut
+  // down.
+  BluetoothManagerClient* bluetooth_manager_client() {
+    return bluetooth_manager_client_.get();
+  }
+
+  // Returns the bluetooth adapter client, owned by DBusThreadManager.
+  // Do not cache this pointer and use it after DBusThreadManager is shut
+  // down.
+  BluetoothAdapterClient* bluetooth_adapter_client() {
+    return bluetooth_adapter_client_.get();
+  }
+
   // Returns the power manager client, owned by DBusThreadManager.
   // See also comments at session_manager_client().
   PowerManagerClient* power_manager_client() {
@@ -89,6 +105,8 @@ class DBusThreadManager {
   scoped_refptr<dbus::Bus> system_bus_;
   CrosDBusService* cros_dbus_service_;
   scoped_ptr<SensorsSource> sensors_source_;
+  scoped_ptr<BluetoothManagerClient> bluetooth_manager_client_;
+  scoped_ptr<BluetoothAdapterClient> bluetooth_adapter_client_;
   scoped_ptr<PowerManagerClient> power_manager_client_;
   scoped_ptr<SessionManagerClient> session_manager_client_;
   scoped_ptr<SpeechSynthesizerClient> speech_synthesizer_client_;

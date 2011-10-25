@@ -6,6 +6,8 @@
 
 #include "base/command_line.h"
 #include "base/threading/thread.h"
+#include "chrome/browser/chromeos/dbus/bluetooth_adapter_client.h"
+#include "chrome/browser/chromeos/dbus/bluetooth_manager_client.h"
 #include "chrome/browser/chromeos/dbus/cros_dbus_service.h"
 #include "chrome/browser/chromeos/dbus/session_manager_client.h"
 #include "chrome/browser/chromeos/dbus/power_manager_client.h"
@@ -42,6 +44,14 @@ DBusThreadManager::DBusThreadManager() {
   if (command_line.HasSwitch(switches::kEnableSensors)) {
     sensors_source_.reset(new SensorsSource);
     sensors_source_->Init(system_bus_.get());
+  }
+
+  // Create bluetooth clients if bluetooth is enabled.
+  if (command_line.HasSwitch(switches::kEnableBluetooth)) {
+    bluetooth_manager_client_.reset(BluetoothManagerClient::Create(
+        system_bus_.get()));
+    bluetooth_adapter_client_.reset(BluetoothAdapterClient::Create(
+        system_bus_.get()));
   }
 
   // Create the power manager client.
