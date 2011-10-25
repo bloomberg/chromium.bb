@@ -985,10 +985,11 @@ def BuildImageZip(archive_dir, image_dir):
   return filename
 
 
-def BuildFactoryZip(archive_dir, image_root):
+def BuildFactoryZip(buildroot, archive_dir, image_root):
   """Build factory_image.zip in archive_dir.
 
   Args:
+    buildroot: Root directory where build occurs.
     archive_dir: Directory to store image.zip.
     image_root: Directory containing factory_shim and factory_test symlinks.
 
@@ -996,19 +997,45 @@ def BuildFactoryZip(archive_dir, image_root):
   """
   filename = 'factory_image.zip'
 
-  # Prepare and renew HWID folder from _FACTORY_TEST/hwid if available.
-  if os.path.exists(os.path.join(image_root, _FACTORY_TEST, _FACTORY_HWID)):
-    cros_lib.RunCommand(['ln', '-sf', '%s/hwid' % _FACTORY_TEST, _FACTORY_HWID],
-                        cwd=image_root)
+  # Creates a staging temporary folder.
+  temp_dir = tempfile.mkdtemp(prefix='cbuildbot_factory')
 
   zipfile = os.path.join(archive_dir, filename)
-  patterns = ['factory_image', 'factory_install', 'partition', 'netboot',
-              'hwid']
-  cmd = ['zip', zipfile, '-r', _FACTORY_SHIM, _FACTORY_TEST, _FACTORY_HWID]
-  cmd.extend(['--exclude', '%s/hwid/*' % _FACTORY_TEST])
-  for pattern in patterns:
-    cmd.extend(['--include', '*%s*' % pattern])
-  cros_lib.RunCommand(cmd, cwd=image_root)
+  cmd = ['zip', '-r', zipfile, '.']
+
+  # Rules for archive: { folder: pattern }
+  rules = {
+    os.path.join(image_root, _FACTORY_SHIM):
+      ['*factory_install*.bin', '*partition*', os.path.join('netboot', '*')],
+    os.path.join(image_root, _FACTORY_TEST):
+      ['*factory_image*.bin', '*partition*'],
+    os.path.join(image_root, _FACTORY_TEST, _FACTORY_HWID):
+      ['*'],
+    os.path.join(buildroot, 'chroot', 'usr', 'share',
+                 'cros-factoryutils', 'factory_setup'):
+      ['*'],
+  }
+
+  # Special files that must not be included.
+  excludes_list = [
+    os.path.join(_FACTORY_TEST, _FACTORY_HWID, '*'),
+    os.path.join('factory_setup', 'static', '*')
+  ]
+
+  for folder, patterns in rules.items():
+    if not os.path.exists(folder):
+      continue
+    basename = os.path.basename(folder)
+    target = os.path.join(temp_dir, basename)
+    os.symlink(folder, target)
+    for pattern in patterns:
+      cmd.extend(['--include', os.path.join(basename, pattern)])
+
+  for exclude in excludes_list:
+    cmd.extend(['--exclude', exclude])
+
+  cros_lib.RunCommand(cmd, cwd=temp_dir)
+  shutil.rmtree(temp_dir)
   return filename
 
 

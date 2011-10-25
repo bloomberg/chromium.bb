@@ -1078,7 +1078,7 @@ class ArchiveStage(NonHaltingBuilderStage):
       # Build and upload factory zip.
       if factory_install_symlink and factory_test_symlink:
         image_root = os.path.dirname(factory_install_symlink)
-        filename = commands.BuildFactoryZip(archive_path, image_root)
+        filename = commands.BuildFactoryZip(buildroot, archive_path, image_root)
         upload_queue.put(filename)
 
     def ArchiveRegularImages():
