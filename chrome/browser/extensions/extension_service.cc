@@ -2120,11 +2120,7 @@ void ExtensionService::CheckForExternalUpdates() {
 void ExtensionService::OnExternalProviderReady(
     const ExternalExtensionProviderInterface* provider) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-#if 0
-  // TODO(rogerta): Remove guard and this comment when bug described
-  // in http://codereview.chromium.org/8245018/ is fixed.
   CHECK(provider->IsReady());
-#endif
 
   // An external provider has finished loading.  We only take action
   // if all of them are finished. So we check them first.
