@@ -9,6 +9,8 @@
 #include <string>
 #include <vector>
 
+#include "base/compiler_specific.h"
+#include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/spellchecker/spellcheck_profile_provider.h"
@@ -56,7 +58,7 @@ class SpellCheckProfile : public SpellCheckProfileProvider {
     REINITIALIZE_DID_NOTHING
   };
 
-  SpellCheckProfile();
+  explicit SpellCheckProfile(const FilePath& profile_dir);
   virtual ~SpellCheckProfile();
 
   // Retrieves SpellCheckHost object.
@@ -82,9 +84,11 @@ class SpellCheckProfile : public SpellCheckProfileProvider {
   void StartRecordingMetrics(bool spellcheck_enabled);
 
   // SpellCheckProfileProvider implementation.
-  virtual void SpellCheckHostInitialized(CustomWordList* custom_words);
-  virtual const CustomWordList& GetCustomWords() const;
-  virtual void CustomWordAddedLocally(const std::string& word);
+  virtual void SpellCheckHostInitialized(CustomWordList* custom_words) OVERRIDE;
+  virtual const CustomWordList& GetCustomWords() const OVERRIDE;
+  virtual void CustomWordAddedLocally(const std::string& word) OVERRIDE;
+  virtual void LoadCustomDictionary(CustomWordList* custom_words) OVERRIDE;
+  virtual void WriteWordToCustomDictionary(const std::string& word) OVERRIDE;
 
  protected:
   // Only tests should override this.
@@ -97,6 +101,8 @@ class SpellCheckProfile : public SpellCheckProfileProvider {
   virtual bool IsTesting() const;
 
  private:
+  const FilePath& GetCustomDictionaryPath();
+
   scoped_refptr<SpellCheckHost> host_;
   scoped_ptr<SpellCheckHostMetrics> metrics_;
 
@@ -106,6 +112,12 @@ class SpellCheckProfile : public SpellCheckProfileProvider {
 
   // In-memory cache of the custom words file.
   scoped_ptr<CustomWordList> custom_words_;
+
+  // A directory path of profile.
+  FilePath profile_dir_;
+
+  // A path for custom dictionary per profile.
+  scoped_ptr<FilePath> custom_dictionary_path_;
 
   DISALLOW_COPY_AND_ASSIGN(SpellCheckProfile);
 };

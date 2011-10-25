@@ -239,15 +239,8 @@ void SpellCheckHostImpl::InitializeInternal() {
   request_context_getter_ = NULL;
 
   scoped_ptr<CustomWordList> custom_words(new CustomWordList());
-  if (file_ != base::kInvalidPlatformFileValue) {
-    // Load custom dictionary.
-    std::string contents;
-    file_util::ReadFileToString(custom_dictionary_file_, &contents);
-    CustomWordList list_of_words;
-    base::SplitString(contents, '\n', &list_of_words);
-    for (size_t i = 0; i < list_of_words.size(); ++i)
-      custom_words->push_back(list_of_words[i]);
-  }
+  if (file_ != base::kInvalidPlatformFileValue)
+    LoadCustomDictionary(custom_words.get());
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(
@@ -310,15 +303,33 @@ void SpellCheckHostImpl::DownloadDictionary() {
   request_context_getter_ = NULL;
 }
 
+void SpellCheckHostImpl::LoadCustomDictionary(CustomWordList* custom_words) {
+  if (!custom_words)
+    return;
+
+  // Load custom dictionary for profile.
+  if (profile_)
+    profile_->LoadCustomDictionary(custom_words);
+
+  // Load custom dictionary.
+  std::string contents;
+  file_util::ReadFileToString(custom_dictionary_file_, &contents);
+  if (contents.empty())
+    return;
+
+  CustomWordList list_of_words;
+  base::SplitString(contents, '\n', &list_of_words);
+  for (size_t i = 0; i < list_of_words.size(); ++i) {
+    if (list_of_words[i] != "")
+      custom_words->push_back(list_of_words[i]);
+  }
+}
+
 void SpellCheckHostImpl::WriteWordToCustomDictionary(const std::string& word) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  // Stored in UTF-8.
-  std::string word_to_add(word + "\n");
-  FILE* f = file_util::OpenFile(custom_dictionary_file_, "a+");
-  if (f)
-    fputs(word_to_add.c_str(), f);
-  file_util::CloseFile(f);
+  if (profile_)
+    profile_->WriteWordToCustomDictionary(word);
 }
 
 void SpellCheckHostImpl::OnURLFetchComplete(const URLFetcher* source) {

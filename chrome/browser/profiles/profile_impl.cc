@@ -1681,6 +1681,6 @@ void ProfileImpl::ClearNetworkingHistorySince(base::Time time) {
 
 SpellCheckProfile* ProfileImpl::GetSpellCheckProfile() {
   if (!spellcheck_profile_.get())
-    spellcheck_profile_.reset(new SpellCheckProfile());
+    spellcheck_profile_.reset(new SpellCheckProfile(path_));
   return spellcheck_profile_.get();
 }

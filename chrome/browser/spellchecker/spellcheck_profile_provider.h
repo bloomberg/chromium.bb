@@ -25,6 +25,12 @@ class SpellCheckProfileProvider {
   // Invoked on the Ui thread when new custom word is registered.
   virtual void CustomWordAddedLocally(const std::string& word) = 0;
 
+  // Loads the custom dictionary associated with this profile
+  virtual void LoadCustomDictionary(CustomWordList* custom_words) = 0;
+
+  // Writes a word to the custom dictionary associated with this profile.
+  virtual void WriteWordToCustomDictionary(const std::string& word) = 0;
+
  protected:
   virtual ~SpellCheckProfileProvider() {}
 };

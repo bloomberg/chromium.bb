@@ -92,6 +92,9 @@ class SpellCheckHostImpl : public SpellCheckHost,
   // If |dictionary_file_| is missing, we attempt to download it.
   void DownloadDictionary();
 
+  // Loads a custom dictionary from disk.
+  void LoadCustomDictionary(CustomWordList* custom_words);
+
   // Write a custom dictionary addition to disk.
   void WriteWordToCustomDictionary(const std::string& word);
 
