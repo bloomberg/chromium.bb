@@ -1,10 +1,10 @@
-From 3caa0f573d2637bfed99dcc0e5887fe3a52462ba Mon Sep 17 00:00:00 2001
+From 3759b424e3347153e8c9011d9f462f9a351120bb Mon Sep 17 00:00:00 2001
 From: Adam Langley <agl@chromium.org>
 Date: Mon, 3 Oct 2011 12:19:28 -0400
 Subject: [PATCH 01/15] nextproto.patch
 
 ---
- mozilla/security/nss/lib/ssl/ssl.def    |    6 ++
+ mozilla/security/nss/lib/ssl/ssl.def    |    8 ++
  mozilla/security/nss/lib/ssl/ssl.h      |   51 ++++++++++++
  mozilla/security/nss/lib/ssl/ssl3con.c  |   54 +++++++++++++
  mozilla/security/nss/lib/ssl/ssl3ext.c  |  104 ++++++++++++++++++++++++-
@@ -13,24 +13,26 @@ Subject: [PATCH 01/15] nextproto.patch
  mozilla/security/nss/lib/ssl/sslimpl.h  |   21 +++++
  mozilla/security/nss/lib/ssl/sslsock.c  |  131 +++++++++++++++++++++++++++++++
  mozilla/security/nss/lib/ssl/sslt.h     |    3 +-
- 9 files changed, 372 insertions(+), 3 deletions(-)
+ 9 files changed, 374 insertions(+), 3 deletions(-)
 
 diff --git a/mozilla/security/nss/lib/ssl/ssl.def b/mozilla/security/nss/lib/ssl/ssl.def
-index d3f455c..5256ae2 100644
+index d3f455c..6ea48c0 100644
 --- a/mozilla/security/nss/lib/ssl/ssl.def
 +++ b/mozilla/security/nss/lib/ssl/ssl.def
-@@ -152,3 +152,9 @@ SSL_SNISocketConfigHook;
+@@ -152,3 +152,11 @@ SSL_SNISocketConfigHook;
  ;+    local:
  ;+*;
  ;+};
 +;+NSS_CHROMIUM {
 +;+    global:
++SSL_GetNextProto;
 +SSL_SetNextProtoCallback;
++SSL_SetNextProtoNego;
 +;+    local:
 +;+*;
 +;+};
 diff --git a/mozilla/security/nss/lib/ssl/ssl.h b/mozilla/security/nss/lib/ssl/ssl.h
-index 4a9e89d..2cf777d 100644
+index 4a9e89d..f54eb09 100644
 --- a/mozilla/security/nss/lib/ssl/ssl.h
 +++ b/mozilla/security/nss/lib/ssl/ssl.h
 @@ -153,6 +153,57 @@ SSL_IMPORT SECStatus SSL_OptionSetDefault(PRInt32 option, PRBool on);
@@ -83,7 +85,7 @@ index 4a9e89d..2cf777d 100644
 +				      unsigned int *length,
 +				      unsigned int buf_len);
 +
-+// TODO(wtc): it may be a good idea to define these as an enum type.
++/* TODO(wtc): it may be a good idea to define these as an enum type. */
 +#define SSL_NEXT_PROTO_NO_SUPPORT	0 /* No peer support                */
 +#define SSL_NEXT_PROTO_NEGOTIATED	1 /* Mutual agreement               */
 +#define SSL_NEXT_PROTO_NO_OVERLAP	2 /* No protocol overlap found      */
@@ -185,7 +187,7 @@ index 8048913..8f860a9 100644
  
  /* End of ssl3con.c */
 diff --git a/mozilla/security/nss/lib/ssl/ssl3ext.c b/mozilla/security/nss/lib/ssl/ssl3ext.c
-index becbfe9..36ac4de 100644
+index becbfe9..711cad0 100644
 --- a/mozilla/security/nss/lib/ssl/ssl3ext.c
 +++ b/mozilla/security/nss/lib/ssl/ssl3ext.c
 @@ -235,6 +235,7 @@ static const ssl3HelloExtensionHandler clientHelloHandlers[] = {
@@ -271,8 +273,8 @@ index becbfe9..36ac4de 100644
 +                               result, &result_len);
 +    if (rv != SECSuccess)
 +	return rv;
-+    // If the callback wrote more than allowed to |result| it has corrupted our
-+    // stack.
++    /* If the callback wrote more than allowed to |result| it has corrupted our
++     * stack. */
 +    PORT_Assert(result_len <= sizeof(result));
 +
 +    if (ss->ssl3.nextProto.data)
