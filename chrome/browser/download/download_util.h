@@ -61,14 +61,6 @@ bool DownloadPathIsDangerous(const FilePath& download_path);
 void GenerateFileNameFromRequest(const DownloadItem& download_item,
                                  FilePath* generated_name);
 
-// Generate a filename based on the URL, a suggested name and a MIME
-// type.  Similar in operation to net::GenerateFileName(), but uses a
-// localized default name.
-void GenerateFileNameFromSuggestedName(const GURL& url,
-                                       const std::string& suggested_name,
-                                       const std::string& mime_type,
-                                       FilePath* generated_name);
-
 // Download progress animations ------------------------------------------------
 
 // Arc sweep angle for use with downloads of unknown size

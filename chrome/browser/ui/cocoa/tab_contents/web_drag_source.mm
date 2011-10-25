@@ -14,12 +14,12 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/download/download_util.h"
 #include "chrome/browser/tab_contents/tab_contents_view_mac.h"
 #include "content/browser/download/drag_download_file.h"
 #include "content/browser/download/drag_download_util.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_util.h"
@@ -402,11 +402,17 @@ void PromiseWriterTask::Run() {
               &mimeType,
               &fileName,
               &downloadURL_)) {
-        download_util::GenerateFileNameFromSuggestedName(
-            downloadURL_,
-            fileName.value(),
-            UTF16ToUTF8(mimeType),
-            &downloadFileName_);
+        // Generate the file name based on both mime type and proposed file
+        // name.
+        std::string defaultName =
+            content::GetContentClient()->browser()->GetDefaultDownloadName();
+        downloadFileName_ =
+            net::GenerateFileName(downloadURL_,
+                                  std::string(),
+                                  std::string(),
+                                  fileName.value(),
+                                  UTF16ToUTF8(mimeType),
+                                  defaultName);
         fileExtension = SysUTF8ToNSString(downloadFileName_.Extension());
       }
     }

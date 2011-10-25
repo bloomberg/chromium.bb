@@ -88,24 +88,6 @@ namespace download_util {
 // so that the animation ends faded out.
 static const int kCompleteAnimationCycles = 5;
 
-namespace {
-
-void GenerateFileNameInternal(const GURL& url,
-                              const std::string& content_disposition,
-                              const std::string& referrer_charset,
-                              const std::string& suggested_name,
-                              const std::string& mime_type,
-                              FilePath* generated_name) {
-  std::string default_file_name(
-      l10n_util::GetStringUTF8(IDS_DEFAULT_DOWNLOAD_FILENAME));
-
-  *generated_name = net::GenerateFileName(url, content_disposition,
-                                          referrer_charset, suggested_name,
-                                          mime_type, default_file_name);
-}
-
-}  // namespace
-
 // Download temporary file creation --------------------------------------------
 
 class DefaultDownloadDirectory {
@@ -144,21 +126,15 @@ bool DownloadPathIsDangerous(const FilePath& download_path) {
 
 void GenerateFileNameFromRequest(const DownloadItem& download_item,
                                  FilePath* generated_name) {
-  GenerateFileNameInternal(download_item.GetURL(),
-                           download_item.content_disposition(),
-                           download_item.referrer_charset(),
-                           download_item.suggested_filename(),
-                           download_item.mime_type(),
-                           generated_name);
-}
+  std::string default_file_name(
+      l10n_util::GetStringUTF8(IDS_DEFAULT_DOWNLOAD_FILENAME));
 
-void GenerateFileNameFromSuggestedName(const GURL& url,
-                                       const std::string& suggested_name,
-                                       const std::string& mime_type,
-                                       FilePath* generated_name) {
-  // TODO(asanka): We should pass in a valid referrer_charset here.
-  GenerateFileNameInternal(url, std::string(), std::string(),
-                           suggested_name, mime_type, generated_name);
+  *generated_name = net::GenerateFileName(download_item.GetURL(),
+                                          download_item.content_disposition(),
+                                          download_item.referrer_charset(),
+                                          download_item.suggested_filename(),
+                                          download_item.mime_type(),
+                                          default_file_name);
 }
 
 // Download progress painting --------------------------------------------------
