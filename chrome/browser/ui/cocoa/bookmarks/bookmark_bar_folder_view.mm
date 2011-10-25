@@ -196,7 +196,7 @@
     const Profile* source_profile =
         [source_window_controller profile]->GetOriginalProfile();
     const Profile* target_profile =
-        [controller_ bookmarkModel]->profile()->GetOriginalProfile();
+        [[self controller] bookmarkModel]->profile()->GetOriginalProfile();
 
     BOOL copy =
         !([info draggingSourceOperationMask] & NSDragOperationMove) ||

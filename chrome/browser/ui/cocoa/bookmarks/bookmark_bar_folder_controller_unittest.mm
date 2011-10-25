@@ -596,6 +596,13 @@ TEST_F(BookmarkBarFolderControllerTest, MenuPlacementWhileScrollingDeleting) {
   EXPECT_CGFLOAT_EQ(oldTop - bookmarks::kScrollWindowVerticalMargin, newTop);
 }
 
+// Make sure that we return the correct browser window.
+TEST_F(BookmarkBarFolderControllerTest, BrowserWindow) {
+  scoped_nsobject<BookmarkBarFolderController> controller(
+      SimpleBookmarkBarFolderController());
+  EXPECT_EQ([bar_ browserWindow], [controller browserWindow]);
+}
+
 @interface FakedDragInfo : NSObject {
 @public
   NSPoint dropLocation_;

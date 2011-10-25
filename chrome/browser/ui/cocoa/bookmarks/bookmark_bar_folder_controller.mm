@@ -1361,7 +1361,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 }
 
 - (NSWindow*)browserWindow {
-  return [parentController_ browserWindow];
+  return [barController_ browserWindow];
 }
 
 - (BOOL)canDragBookmarkButtonToTrash:(BookmarkButton*)button {
