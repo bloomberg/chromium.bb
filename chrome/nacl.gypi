@@ -143,7 +143,7 @@
                   'inputs': [
                     '<!@(<(irt_inputs_cmd) --platform=arm)',
                   ],
-                  'outputs': ['<(PRODUCT_DIR)/nacl_ir.nexe'],
+                  'outputs': ['<(PRODUCT_DIR)/nacl_irt_arm.nexe'],
                   'action': [
                     '<@(irt_build_cmd)', '--platform', 'arm',
                   ],
