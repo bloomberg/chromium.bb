@@ -1476,6 +1476,25 @@ IPC_SYNC_MESSAGE_CONTROL1_2(AutomationMsg_IsBrowserInApplicationMode,
                             bool /* is_application */,
                             bool /* success */)
 
+// Call BeginTracing on the browser TraceController. This will tell all
+// processes to start collecting trace events via base/debug/trace_event.h.
+IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_BeginTracing,
+                            std::string /* categories */,
+                            bool /* success */)
+
+// End tracing (called after BeginTracing). This blocks until tracing has
+// stopped on all processes and all the events are ready to be retrieved.
+IPC_SYNC_MESSAGE_CONTROL0_1(AutomationMsg_EndTracing,
+                            bool /* success */)
+
+// Retrieve trace event data (called after EndTracing). Must keep calling until
+// remaining_chunks is 0.
+// TODO(jbates): See bug 100255, IPC send fails if message is too big. This
+// code can be removed if that limitation is fixed.
+IPC_SYNC_MESSAGE_CONTROL0_2(AutomationMsg_GetTracingOutput,
+                            std::string /* trace_chunk */,
+                            int /* remaining_chunks */)
+
 // Renderer -> browser messages.
 
 // Sent when the renderer has scheduled a client redirect to occur.

@@ -12,6 +12,7 @@
 #define CHROME_BROWSER_AUTOMATION_AUTOMATION_PROVIDER_H_
 #pragma once
 
+#include <list>
 #include <map>
 #include <string>
 #include <vector>
@@ -28,6 +29,7 @@
 #include "content/browser/browser_thread.h"
 #include "content/browser/cancelable_request.h"
 #include "content/browser/tab_contents/navigation_entry.h"
+#include "content/browser/trace_controller.h"
 #include "content/public/browser/notification_observer.h"
 #include "ipc/ipc_channel.h"
 
@@ -84,7 +86,8 @@ class AutomationProvider
       public IPC::Message::Sender,
       public base::SupportsWeakPtr<AutomationProvider>,
       public base::RefCountedThreadSafe<AutomationProvider,
-                                        BrowserThread::DeleteOnUIThread> {
+                                        BrowserThread::DeleteOnUIThread>,
+      public TraceSubscriber {
  public:
   explicit AutomationProvider(Profile* profile);
 
@@ -222,6 +225,16 @@ class AutomationProvider
   bool reinitialize_on_channel_error_;
 
  private:
+  // Storage for EndTracing() to resume operations after a callback.
+  struct TracingData {
+    std::list<std::string> trace_output;
+    scoped_ptr<IPC::Message> reply_message;
+  };
+
+  // TraceSubscriber:
+  virtual void OnEndTracingComplete() OVERRIDE;
+  virtual void OnTraceDataCollected(const std::string& trace_fragment) OVERRIDE;
+
   void OnUnhandledMessage();
 
   // Clear and reinitialize the automation IPC channel.
@@ -254,6 +267,10 @@ class AutomationProvider
   // |ViewHostMsg_JavaScriptStressTestControl_Commands| in render_messages.h
   // for information on the arguments.
   void JavaScriptStressTestControl(int handle, int cmd, int param);
+
+  void BeginTracing(const std::string& categories, bool* result);
+  void EndTracing(IPC::Message* reply_message);
+  void GetTracingOutput(std::string* chunk, int* remaining_chunks);
 
   void WaitForExtensionTestResult(IPC::Message* reply_message);
 
@@ -394,6 +411,10 @@ class AutomationProvider
 
   // ID of automation channel.
   std::string channel_id_;
+
+  // Trace data that has been collected but not flushed to the automation
+  // client.
+  TracingData tracing_data_;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationProvider);
 };

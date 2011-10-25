@@ -67,6 +67,16 @@ class CONTENT_EXPORT TraceController {
                     const std::vector<std::string>& included_categories,
                     const std::vector<std::string>& excluded_categories);
 
+  // |categories| is a comma-delimited list of category wildcards.
+  // A category can have an optional '-' prefix to make it an excluded category.
+  // All the same rules apply above, so for example, having both included and
+  // excluded categories in the same list would not be supported.
+  //
+  // Example: BeginTracing("test_MyTest*");
+  // Example: BeginTracing("test_MyTest*,test_OtherStuff");
+  // Example: BeginTracing("-excluded_category1,-excluded_category2");
+  bool BeginTracing(TraceSubscriber* subscriber, const std::string& categories);
+
   // Called by browser process to stop tracing events on all processes.
   //
   // Child processes typically are caching trace data and only rarely flush

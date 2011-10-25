@@ -9,6 +9,7 @@
 #include <sstream>
 
 #include "base/basictypes.h"
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/platform_thread.h"
@@ -548,6 +549,43 @@ bool AutomationProxy::LoginWithUserAndPass(const std::string& username,
   return sent && success;
 }
 #endif
+
+bool AutomationProxy::BeginTracing(const std::string& categories) {
+  bool result = false;
+  bool send_success = Send(new AutomationMsg_BeginTracing(categories,
+                                                          &result));
+  return send_success && result;
+}
+
+bool AutomationProxy::EndTracing(std::string* json_trace_output) {
+  bool success = false;
+  if (!Send(new AutomationMsg_EndTracing(&success)) || !success)
+    return false;
+
+  int remaining_chunks = 0;
+  std::string chunk;
+  base::debug::TraceResultBuffer buffer;
+  base::debug::TraceResultBuffer::SimpleOutput output;
+  buffer.SetOutputCallback(output.GetCallback());
+
+  // TODO(jbates): See bug 100255, IPC send fails if message is too big. This
+  // code can be simplified if that limitation is fixed.
+  // Workaround IPC payload size limitation by getting chunks.
+  buffer.Start();
+  do {
+    // The broswer side AutomationProvider resets state at BeginTracing,
+    // so it can recover even after this fails mid-way.
+    if (!Send(new AutomationMsg_GetTracingOutput(&chunk, &remaining_chunks)))
+      return false;
+    buffer.AddFragment(chunk);
+  } while (remaining_chunks > 0);
+  success = (remaining_chunks == 0);
+  buffer.Finish();
+
+  if (success)
+    *json_trace_output = output.json_output;
+  return success;
+}
 
 bool AutomationProxy::ResetToDefaultTheme() {
   return Send(new AutomationMsg_ResetToDefaultTheme());

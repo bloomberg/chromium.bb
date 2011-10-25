@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
+#include "base/string_tokenizer.h"
 #include "content/browser/browser_message_filter.h"
 #include "content/browser/trace_message_filter.h"
 #include "content/common/child_process_messages.h"
@@ -77,6 +78,29 @@ bool TraceController::BeginTracing(
   }
 
   return true;
+}
+
+bool TraceController::BeginTracing(TraceSubscriber* subscriber,
+                                   const std::string& categories) {
+  std::vector<std::string> included, excluded;
+  // Tokenize list of categories, delimited by ','.
+  StringTokenizer tokens(categories, ",");
+  while (tokens.GetNext()) {
+    bool is_included = true;
+    std::string category = tokens.token();
+    // Excluded categories start with '-'.
+    if (category.at(0) == '-') {
+      // Remove '-' from category string.
+      category = category.substr(1);
+      is_included = false;
+    }
+    if (is_included)
+      included.push_back(category);
+    else
+      excluded.push_back(category);
+  }
+
+  return BeginTracing(subscriber, included, excluded);
 }
 
 bool TraceController::EndTracingAsync(TraceSubscriber* subscriber) {

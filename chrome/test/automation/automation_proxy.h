@@ -222,6 +222,23 @@ class AutomationProxy : public IPC::Channel::Listener,
                             const std::string& password) WARN_UNUSED_RESULT;
 #endif
 
+  // Begin tracing specified categories on the browser instance. Blocks until
+  // browser acknowledges that tracing has begun (or failed if false is
+  // returned). |categories| is a comma-delimited list of category wildcards.
+  // A category can have an optional '-' prefix to make it an excluded category.
+  // Either all categories must be included or all must be excluded.
+  //
+  // Example: BeginTracing("test_MyTest*");
+  // Example: BeginTracing("test_MyTest*,test_OtherStuff");
+  // Example: BeginTracing("-excluded_category1,-excluded_category2");
+  //
+  // See base/event_trace.h for documentation of included and excluded
+  // categories.
+  bool BeginTracing(const std::string& categories) WARN_UNUSED_RESULT;
+
+  // End trace and collect the trace output as a json string.
+  bool EndTracing(std::string* json_trace_output) WARN_UNUSED_RESULT;
+
   IPC::SyncChannel* channel();
 
   // AutomationMessageSender implementation.

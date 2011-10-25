@@ -326,6 +326,19 @@ void AutomationProvider::OnChannelConnected(int pid) {
     Send(new AutomationMsg_InitialLoadsComplete());
 }
 
+void AutomationProvider::OnEndTracingComplete() {
+  IPC::Message* reply_message = tracing_data_.reply_message.release();
+  if (reply_message) {
+    AutomationMsg_EndTracing::WriteReplyParams(reply_message, true);
+    Send(reply_message);
+  }
+}
+
+void AutomationProvider::OnTraceDataCollected(
+    const std::string& trace_fragment) {
+  tracing_data_.trace_output.push_back(trace_fragment);
+}
+
 bool AutomationProvider::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   bool deserialize_success = true;
@@ -367,6 +380,9 @@ bool AutomationProvider::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AutomationMsg_RemoveBrowsingData, RemoveBrowsingData)
     IPC_MESSAGE_HANDLER(AutomationMsg_JavaScriptStressTestControl,
                         JavaScriptStressTestControl)
+    IPC_MESSAGE_HANDLER(AutomationMsg_BeginTracing, BeginTracing)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_EndTracing, EndTracing)
+    IPC_MESSAGE_HANDLER(AutomationMsg_GetTracingOutput, GetTracingOutput)
 #if defined(OS_WIN) && !defined(USE_AURA)
     // These are for use with external tabs.
     IPC_MESSAGE_HANDLER(AutomationMsg_CreateExternalTab, CreateExternalTab)
@@ -757,6 +773,41 @@ void AutomationProvider::JavaScriptStressTestControl(int tab_handle,
 
   view->Send(new ChromeViewMsg_JavaScriptStressTestControl(
       view->routing_id(), cmd, param));
+}
+
+void AutomationProvider::BeginTracing(const std::string& categories,
+                                      bool* result) {
+  tracing_data_.trace_output.clear();
+  *result = TraceController::GetInstance()->BeginTracing(this, categories);
+}
+
+void AutomationProvider::EndTracing(IPC::Message* reply_message) {
+  bool success = false;
+  if (!tracing_data_.reply_message.get())
+    success = TraceController::GetInstance()->EndTracingAsync(this);
+  if (success) {
+    // Defer EndTracing reply until TraceController calls us back with all the
+    // events.
+    tracing_data_.reply_message.reset(reply_message);
+  } else {
+    // If failed to call EndTracingAsync, need to reply with failure now.
+    AutomationMsg_EndTracing::WriteReplyParams(reply_message, false);
+    Send(reply_message);
+  }
+}
+
+void AutomationProvider::GetTracingOutput(std::string* chunk,
+                                          int* remaining_chunks) {
+  // The JSON data is sent back to the test in chunks, because IPC sends will
+  // fail if they are too large.
+  if (tracing_data_.trace_output.empty()) {
+    *chunk = "";
+    *remaining_chunks = -1;
+  } else {
+    *chunk = tracing_data_.trace_output.front();
+    tracing_data_.trace_output.pop_front();
+    *remaining_chunks = tracing_data_.trace_output.size();
+  }
 }
 
 RenderViewHost* AutomationProvider::GetViewForTab(int tab_handle) {
