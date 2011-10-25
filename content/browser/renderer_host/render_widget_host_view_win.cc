@@ -200,14 +200,6 @@ LRESULT CALLBACK PluginWrapperWindowProc(HWND window, unsigned int message,
   return ::DefWindowProc(window, message, wparam, lparam);
 }
 
-// Must be dynamically loaded to avoid startup failures on Win XP.
-typedef BOOL (WINAPI *ChangeWindowMessageFilterExFunction)(
-    HWND hwnd,
-    UINT message,
-    DWORD action,
-    PCHANGEFILTERSTRUCT change_filter_struct);
-ChangeWindowMessageFilterExFunction g_ChangeWindowMessageFilterEx;
-
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -448,17 +440,9 @@ HWND RenderWidgetHostViewWin::ReparentWindow(HWND window) {
   if (::GetPropW(orig_parent, webkit::npapi::kNativeWindowClassFilterProp)) {
     // Process-wide message filters required on Vista must be added to:
     // chrome_content_client.cc ChromeContentClient::SandboxPlugin
-    if (!g_ChangeWindowMessageFilterEx) {
-      g_ChangeWindowMessageFilterEx =
-          reinterpret_cast<ChangeWindowMessageFilterExFunction>(
-              ::GetProcAddress(::GetModuleHandle(L"user32.dll"),
-                               "ChangeWindowMessageFilterEx"));
-    }
-    // Process-wide message filters required on Vista must be added to:
-    // chrome_content_client.cc ChromeContentClient::SandboxPlugin
-    g_ChangeWindowMessageFilterEx(parent, WM_MOUSEWHEEL, MSGFLT_ALLOW, NULL);
-    g_ChangeWindowMessageFilterEx(parent, WM_GESTURE, MSGFLT_ALLOW, NULL);
-    g_ChangeWindowMessageFilterEx(parent, WM_APPCOMMAND, MSGFLT_ALLOW, NULL);
+    ChangeWindowMessageFilterEx(parent, WM_MOUSEWHEEL, MSGFLT_ALLOW, NULL);
+    ChangeWindowMessageFilterEx(parent, WM_GESTURE, MSGFLT_ALLOW, NULL);
+    ChangeWindowMessageFilterEx(parent, WM_APPCOMMAND, MSGFLT_ALLOW, NULL);
     ::RemovePropW(orig_parent, webkit::npapi::kNativeWindowClassFilterProp);
   }
   ::SetParent(window, parent);
