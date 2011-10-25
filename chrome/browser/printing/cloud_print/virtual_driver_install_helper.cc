@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/printing/cloud_print/virtual_driver_install_helper.h"
+
+#include "base/bind.h"
 #include "chrome/browser/service/service_process_control.h"
 #include "chrome/common/service_messages.h"
 
@@ -12,18 +14,18 @@ void VirtualDriverInstallHelper::SetUpInstall() {
   scoped_refptr<VirtualDriverInstallHelper> help =
       new VirtualDriverInstallHelper();
   ServiceProcessControl::GetInstance()->Launch(
-      NewRunnableMethod(
-          help.get(), &VirtualDriverInstallHelper::InstallVirtualDriverTask),
-      NULL);
+      base::Bind(&VirtualDriverInstallHelper::InstallVirtualDriverTask,
+                 help.get()),
+      base::Closure());
 }
 
 void VirtualDriverInstallHelper::SetUpUninstall() {
   scoped_refptr<VirtualDriverInstallHelper> help =
       new VirtualDriverInstallHelper();
   ServiceProcessControl::GetInstance()->Launch(
-      NewRunnableMethod(
-          help.get(), &VirtualDriverInstallHelper::UninstallVirtualDriverTask),
-      NULL);
+      base::Bind(&VirtualDriverInstallHelper::UninstallVirtualDriverTask,
+                 help.get()),
+      base::Closure());
 }
 
 void VirtualDriverInstallHelper::InstallVirtualDriverTask() {

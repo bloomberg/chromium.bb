@@ -27,9 +27,6 @@ ServiceProcessControl::ServiceProcessControl() {
 }
 
 ServiceProcessControl::~ServiceProcessControl() {
-  STLDeleteElements(&connect_done_tasks_);
-  STLDeleteElements(&connect_success_tasks_);
-  STLDeleteElements(&connect_failure_tasks_);
 }
 
 void ServiceProcessControl::ConnectInternal() {
@@ -55,60 +52,48 @@ void ServiceProcessControl::RunConnectDoneTasks() {
   // them to the stack before executing them. This way recursion is
   // avoided.
   TaskList tasks;
-  tasks.swap(connect_done_tasks_);
-  RunAllTasksHelper(&tasks);
-  DCHECK(tasks.empty());
 
   if (is_connected()) {
     tasks.swap(connect_success_tasks_);
     RunAllTasksHelper(&tasks);
     DCHECK(tasks.empty());
-
-    STLDeleteElements(&connect_failure_tasks_);
+    connect_failure_tasks_.clear();
   } else {
     tasks.swap(connect_failure_tasks_);
     RunAllTasksHelper(&tasks);
     DCHECK(tasks.empty());
-
-    STLDeleteElements(&connect_success_tasks_);
+    connect_success_tasks_.clear();
   }
 
-  DCHECK(connect_done_tasks_.empty());
-  DCHECK(connect_success_tasks_.empty());
-  DCHECK(connect_failure_tasks_.empty());
+  // If the same callback is passed for both success and failure tasks, one
+  // container or the other may not be empty.
+  connect_success_tasks_.clear();
+  connect_failure_tasks_.clear();
 }
 
 // static
 void ServiceProcessControl::RunAllTasksHelper(TaskList* task_list) {
   TaskList::iterator index = task_list->begin();
   while (index != task_list->end()) {
-    (*index)->Run();
-    delete (*index);
+    (*index).Run();
     index = task_list->erase(index);
   }
 }
 
-void ServiceProcessControl::Launch(Task* success_task, Task* failure_task) {
+void ServiceProcessControl::Launch(const base::Closure& success_task,
+                                   const base::Closure& failure_task) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (success_task) {
-    if (success_task == failure_task) {
-      // If the tasks are the same, then the same task needs to be invoked
-      // for success and failure.
-      failure_task = NULL;
-      connect_done_tasks_.push_back(success_task);
-    } else {
-      connect_success_tasks_.push_back(success_task);
-    }
-  }
+  base::Closure failure = failure_task;
+  if (!success_task.is_null())
+    connect_success_tasks_.push_back(success_task);
 
-  if (failure_task)
-    connect_failure_tasks_.push_back(failure_task);
+  if (!failure.is_null())
+    connect_failure_tasks_.push_back(failure);
 
   // If we already in the process of launching, then we are done.
-  if (launcher_) {
+  if (launcher_)
     return;
-  }
 
   // If the service process is already running then connects to it.
   if (CheckServiceProcessReady()) {
@@ -126,9 +111,8 @@ void ServiceProcessControl::Launch(Task* success_task, Task* failure_task) {
 #endif
 
   FilePath exe_path = ChildProcessHost::GetChildPath(flags);
-  if (exe_path.empty()) {
+  if (exe_path.empty())
     NOTREACHED() << "Unable to get service process binary name.";
-  }
 
   CommandLine* cmd_line = new CommandLine(exe_path);
   cmd_line->AppendSwitchASCII(switches::kProcessType,
@@ -155,13 +139,11 @@ void ServiceProcessControl::Launch(Task* success_task, Task* failure_task) {
   if (!v_modules.empty())
     cmd_line->AppendSwitchASCII(switches::kVModule, v_modules);
 
-  if (browser_command_line.HasSwitch(switches::kWaitForDebuggerChildren)) {
+  if (browser_command_line.HasSwitch(switches::kWaitForDebuggerChildren))
     cmd_line->AppendSwitch(switches::kWaitForDebugger);
-  }
 
-  if (browser_command_line.HasSwitch(switches::kEnableLogging)) {
+  if (browser_command_line.HasSwitch(switches::kEnableLogging))
     cmd_line->AppendSwitch(switches::kEnableLogging);
-  }
 
   std::string locale = g_browser_process->GetApplicationLocale();
   cmd_line->AppendSwitchASCII(switches::kLang, locale);

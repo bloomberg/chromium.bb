@@ -7,6 +7,7 @@
 #include <stack>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
@@ -54,7 +55,7 @@ class CloudPrintProxyService::TokenExpiredNotificationDelegate
 CloudPrintProxyService::CloudPrintProxyService(Profile* profile)
     : profile_(profile),
       token_expired_delegate_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(service_task_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
 }
 
 CloudPrintProxyService::~CloudPrintProxyService() {
@@ -71,15 +72,15 @@ void CloudPrintProxyService::Initialize() {
 
 void CloudPrintProxyService::RefreshStatusFromService() {
   InvokeServiceTask(
-      service_task_factory_.NewRunnableMethod(
-          &CloudPrintProxyService::RefreshCloudPrintProxyStatus));
+      base::Bind(&CloudPrintProxyService::RefreshCloudPrintProxyStatus,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void CloudPrintProxyService::EnableForUser(const std::string& lsid,
                                            const std::string& email) {
   InvokeServiceTask(
-      service_task_factory_.NewRunnableMethod(
-          &CloudPrintProxyService::EnableCloudPrintProxy, lsid, email));
+      base::Bind(&CloudPrintProxyService::EnableCloudPrintProxy,
+                 weak_factory_.GetWeakPtr(), lsid, email));
 }
 
 void CloudPrintProxyService::EnableForUserWithRobot(
@@ -87,18 +88,16 @@ void CloudPrintProxyService::EnableForUserWithRobot(
     const std::string& robot_email,
     const std::string& user_email) {
   InvokeServiceTask(
-      service_task_factory_.NewRunnableMethod(
-          &CloudPrintProxyService::EnableCloudPrintProxyWithRobot,
-          robot_auth_code,
-          robot_email,
-          user_email));
+      base::Bind(&CloudPrintProxyService::EnableCloudPrintProxyWithRobot,
+                 weak_factory_.GetWeakPtr(), robot_auth_code, robot_email,
+                 user_email));
 }
 
 
 void CloudPrintProxyService::DisableForUser() {
   InvokeServiceTask(
-      service_task_factory_.NewRunnableMethod(
-          &CloudPrintProxyService::DisableCloudPrintProxy));
+      base::Bind(&CloudPrintProxyService::DisableCloudPrintProxy,
+                 weak_factory_.GetWeakPtr()));
 }
 
 bool CloudPrintProxyService::ShowTokenExpiredNotification() {
@@ -206,7 +205,7 @@ void CloudPrintProxyService::ProxyInfoCallback(
       proxy_info.enabled ? proxy_info.email : std::string());
 }
 
-bool CloudPrintProxyService::InvokeServiceTask(Task* task) {
-  ServiceProcessControl::GetInstance()->Launch(task, NULL);
+bool CloudPrintProxyService::InvokeServiceTask(const base::Closure& task) {
+  ServiceProcessControl::GetInstance()->Launch(task, base::Closure());
   return true;
 }

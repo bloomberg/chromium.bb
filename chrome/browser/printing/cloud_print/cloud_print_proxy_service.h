@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/task.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_handler.h"
@@ -76,14 +76,14 @@ class CloudPrintProxyService
   // Invoke a task that gets run after the service process successfully
   // launches. The task typically involves sending an IPC to the service
   // process.
-  bool InvokeServiceTask(Task* task);
+  bool InvokeServiceTask(const base::Closure& task);
 
   void OnTokenExpiredNotificationError();
   void OnTokenExpiredNotificationClosed(bool by_user);
   void OnTokenExpiredNotificationClick();
   void TokenExpiredNotificationDone(bool keep_alive);
 
-  ScopedRunnableMethodFactory<CloudPrintProxyService> service_task_factory_;
+  base::WeakPtrFactory<CloudPrintProxyService> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CloudPrintProxyService);
 };

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/process_util.h"
 #include "base/test/test_timeouts.h"
 #include "chrome/browser/service/service_process_control.h"
@@ -33,12 +35,11 @@ class ServiceProcessControlBrowserTest
   void LaunchServiceProcessControl() {
     // Launch the process asynchronously.
     ServiceProcessControl::GetInstance()->Launch(
-        NewRunnableMethod(
-            this,
-            &ServiceProcessControlBrowserTest::ProcessControlLaunched),
-        NewRunnableMethod(
-            this,
-            &ServiceProcessControlBrowserTest::ProcessControlLaunchFailed));
+        base::Bind(&ServiceProcessControlBrowserTest::ProcessControlLaunched,
+                   this),
+        base::Bind(
+            &ServiceProcessControlBrowserTest::ProcessControlLaunchFailed,
+            this));
 
     // Then run the message loop to keep things running.
     ui_test_utils::RunMessageLoop();
@@ -139,9 +140,8 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
   int launch_count = 5;
   for (int i = 0; i < launch_count; i++) {
     // Launch the process asynchronously.
-    process->Launch(
-        NewRunnableFunction(&DecrementUntilZero, &launch_count),
-        new MessageLoop::QuitTask());
+    process->Launch(base::Bind(&DecrementUntilZero, &launch_count),
+                    MessageLoop::QuitClosure());
   }
   // Then run the message loop to keep things running.
   ui_test_utils::RunMessageLoop();
@@ -156,7 +156,7 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, SameLaunchTask) {
   int launch_count = 5;
   for (int i = 0; i < launch_count; i++) {
     // Launch the process asynchronously.
-    Task * task = NewRunnableFunction(&DecrementUntilZero, &launch_count);
+    base::Closure task = base::Bind(&DecrementUntilZero, &launch_count);
     process->Launch(task, task);
   }
   // Then run the message loop to keep things running.

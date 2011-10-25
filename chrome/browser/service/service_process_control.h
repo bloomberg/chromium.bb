@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/callback_old.h"
 #include "base/id_map.h"
 #include "base/memory/scoped_ptr.h"
@@ -52,9 +53,8 @@ class ServiceProcessControl : public IPC::Channel::Sender,
   bool is_connected() const { return channel_.get() != NULL; }
 
   // If no service process is currently running, creates a new service process
-  // and connects to it.
-  // If a service process is already running this method will try to connect
-  // to it.
+  // and connects to it. If a service process is already running this method
+  // will try to connect to it.
   // |success_task| is called when we have successfully launched the process
   // and connected to it.
   // |failure_task| is called when we failed to connect to the service process.
@@ -62,8 +62,9 @@ class ServiceProcessControl : public IPC::Channel::Sender,
   // this case, the task is invoked on success or failure.
   // Note that if we are already connected to service process then
   // |success_task| can be invoked in the context of the Launch call.
-  // Takes ownership of |success_task| and |failure_task|.
-  void Launch(Task* success_task, Task* failure_task);
+  void Launch(const base::Closure& success_task,
+              const base::Closure& failure_task);
+
   // Disconnect the IPC channel from the service process.
   void Disconnect();
 
@@ -130,9 +131,9 @@ class ServiceProcessControl : public IPC::Channel::Sender,
 
   friend struct DefaultSingletonTraits<ServiceProcessControl>;
 
-  typedef std::vector<Task*> TaskList;
+  typedef std::vector<base::Closure> TaskList;
 
-  // Helper method to invoke all the callbacks based on success on failure.
+  // Helper method to invoke all the callbacks based on success or failure.
   void RunConnectDoneTasks();
 
   // Method called by Launcher when the service process is launched.
@@ -149,12 +150,9 @@ class ServiceProcessControl : public IPC::Channel::Sender,
   // Service process launcher.
   scoped_refptr<Launcher> launcher_;
 
-  // Callbacks that get invoked when the channel is successfully connected or
-  // if there was a failure in connecting.
-  TaskList connect_done_tasks_;
-  // Callbacks that get invoked ONLY when the channel is successfully connected.
+  // Callbacks that get invoked when the channel is successfully connected.
   TaskList connect_success_tasks_;
-  // Callbacks that get invoked ONLY when there was a connection failure.
+  // Callbacks that get invoked when there was a connection failure.
   TaskList connect_failure_tasks_;
 
   // Callback that gets invoked when a status message is received from
