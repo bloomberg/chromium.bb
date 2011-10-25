@@ -275,11 +275,11 @@ string16 WrenchMenuModel::GetLabelForCommandId(int command_id) const {
         std::string username = browser_->GetProfile()->GetPrefs()->GetString(
             prefs::kGoogleServicesUsername);
         if (!username.empty()) {
-          return l10n_util::GetStringFUTF16(IDS_SHOW_SYNC_SETUP_USERNAME,
+          return l10n_util::GetStringFUTF16(IDS_SYNC_MENU_SYNCED_LABEL,
                                             UTF8ToUTF16(username));
         }
       }
-      return l10n_util::GetStringFUTF16(IDS_SHOW_SYNC_SETUP,
+      return l10n_util::GetStringFUTF16(IDS_SYNC_MENU_PRE_SYNCED_LABEL,
           l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
     }
     default:
@@ -497,7 +497,7 @@ void WrenchMenuModel::Build() {
     const string16 short_product_name =
         l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
     AddItem(IDC_SHOW_SYNC_SETUP, l10n_util::GetStringFUTF16(
-        IDS_SHOW_SYNC_SETUP, short_product_name));
+        IDS_SYNC_MENU_PRE_SYNCED_LABEL, short_product_name));
     AddSeparator();
   }
 
