@@ -120,6 +120,7 @@ class TestBrowserWindow : public BrowserWindow {
   virtual FindBar* CreateFindBar() OVERRIDE;
   virtual void ShowAvatarBubble(TabContents* tab_contents,
                                 const gfx::Rect& rect) OVERRIDE {}
+  virtual void ShowAvatarBubbleFromAvatarButton() OVERRIDE {}
 
 #if defined(OS_CHROMEOS)
   virtual void ShowMobileSetup() OVERRIDE {}

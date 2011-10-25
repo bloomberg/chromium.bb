@@ -140,16 +140,16 @@ const CGFloat kMenuYOffsetAdjust = 1.0;
   [self.buttonView setImage:[self compositeImageWithShadow:image]];
 }
 
-// Private /////////////////////////////////////////////////////////////////////
-
-- (void)setOpenMenuOnClick:(BOOL)flag {
-  [self.buttonView setEnabled:flag];
-}
-
-- (IBAction)buttonClicked:(id)sender {
-  DCHECK_EQ(self.buttonView, sender);
+- (void)showAvatarBubble {
   if (menuController_)
     return;
+
+  NSWindowController* wc =
+      [browser_->window()->GetNativeHandle() windowController];
+  if ([wc isKindOfClass:[BrowserWindowController class]]) {
+    [static_cast<BrowserWindowController*>(wc)
+        lockBarVisibilityForOwner:self withAnimation:NO delay:NO];
+  }
 
   NSView* view = self.view;
   NSPoint point = NSMakePoint(NSMidX([view bounds]),
@@ -168,7 +168,24 @@ const CGFloat kMenuYOffsetAdjust = 1.0;
   [menuController_ showWindow:self];
 }
 
+// Private /////////////////////////////////////////////////////////////////////
+
+- (void)setOpenMenuOnClick:(BOOL)flag {
+  [self.buttonView setEnabled:flag];
+}
+
+- (IBAction)buttonClicked:(id)sender {
+  DCHECK_EQ(self.buttonView, sender);
+  [self showAvatarBubble];
+}
+
 - (void)bubbleWillClose:(NSNotification*)notif {
+  NSWindowController* wc =
+      [browser_->window()->GetNativeHandle() windowController];
+  if ([wc isKindOfClass:[BrowserWindowController class]]) {
+    [static_cast<BrowserWindowController*>(wc)
+        releaseBarVisibilityForOwner:self withAnimation:YES delay:NO];
+  }
   menuController_ = nil;
 }
 

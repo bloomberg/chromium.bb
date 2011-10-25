@@ -173,6 +173,7 @@
 #define IDC_EXTENSION_ERRORS            40031
 #define IDC_SHOW_SYNC_ERROR             40032
 #define IDC_SHOW_SETTINGS_CHANGES       40033
+#define IDC_SHOW_AVATAR_MENU            40034
 
 // Spell-check
 // Insert any additional suggestions before _LAST; these have to be consecutive.

@@ -308,6 +308,10 @@ void PanelBrowserFrameView::UpdateThrobber(bool running) {
   title_icon_->Update();
 }
 
+AvatarMenuButton* PanelBrowserFrameView::GetAvatarMenuButton() {
+  return NULL;
+}
+
 gfx::Rect PanelBrowserFrameView::GetBoundsForClientView() const {
   return client_view_bounds_;
 }

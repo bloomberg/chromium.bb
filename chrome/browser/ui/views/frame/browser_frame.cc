@@ -149,3 +149,7 @@ void BrowserFrame::OnNativeWidgetActivationChanged(bool active) {
   }
   Widget::OnNativeWidgetActivationChanged(active);
 }
+
+AvatarMenuButton* BrowserFrame::GetAvatarMenuButton() {
+  return browser_frame_view_->GetAvatarMenuButton();
+}

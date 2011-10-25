@@ -142,6 +142,10 @@ void AvatarMenuButton::SetIcon(const SkBitmap& icon) {
 
 // views::ViewMenuDelegate implementation
 void AvatarMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
+  ShowAvatarBubble();
+}
+
+void AvatarMenuButton::ShowAvatarBubble() {
   if (!has_menu_ || bubble_)
     return;
 

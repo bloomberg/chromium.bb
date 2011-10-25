@@ -13,6 +13,7 @@
 #include "views/widget/widget.h"
 
 class AeroGlassNonClientView;
+class AvatarMenuButton;
 class BrowserNonClientFrameView;
 class BrowserRootView;
 class BrowserView;
@@ -75,6 +76,8 @@ class BrowserFrame : public views::Widget {
                               ui::Accelerator* accelerator) OVERRIDE;
   virtual ui::ThemeProvider* GetThemeProvider() const OVERRIDE;
   virtual void OnNativeWidgetActivationChanged(bool active) OVERRIDE;
+
+  AvatarMenuButton* GetAvatarMenuButton();
 
  private:
   NativeBrowserFrame* native_browser_frame_;

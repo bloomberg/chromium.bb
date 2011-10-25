@@ -41,6 +41,8 @@ class AvatarMenuButton : public views::MenuButton,
   // views::TextButton
   virtual void SetIcon(const SkBitmap& icon) OVERRIDE;
 
+  void ShowAvatarBubble();
+
  private:
   // views::ViewMenuDelegate
   virtual void RunMenu(views::View* source, const gfx::Point& pt) OVERRIDE;

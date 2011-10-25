@@ -109,6 +109,7 @@ BEGIN
     "H",            IDC_SHOW_HISTORY,           VIRTKEY, CONTROL
     "F",            IDC_SHOW_APP_MENU,          VIRTKEY, ALT
     "E",            IDC_SHOW_APP_MENU,          VIRTKEY, ALT
+    "M",            IDC_SHOW_AVATAR_MENU,       VIRTKEY, CONTROL, SHIFT
     VK_ESCAPE,      IDC_STOP,                   VIRTKEY
     VK_ESCAPE,      IDC_TASK_MANAGER,           VIRTKEY, SHIFT
     VK_OEM_PERIOD,  IDC_TOGGLE_SPEECH_INPUT,    VIRTKEY, CONTROL, SHIFT

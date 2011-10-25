@@ -41,6 +41,7 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   virtual void EnableClose(bool enable) OVERRIDE { }
   virtual void ResetWindowControls() OVERRIDE { }
   virtual void UpdateWindowIcon() OVERRIDE { }
+  virtual AvatarMenuButton* GetAvatarMenuButton() OVERRIDE;
 
  protected:
   // Overridden from views::View:

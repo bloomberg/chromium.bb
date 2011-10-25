@@ -358,6 +358,9 @@ class BrowserWindow {
   virtual void ShowAvatarBubble(TabContents* tab_contents,
                                 const gfx::Rect& rect) = 0;
 
+  // Shows the avatar bubble on the window frame off of the avatar button.
+  virtual void ShowAvatarBubbleFromAvatarButton() = 0;
+
  protected:
   friend class BrowserList;
   friend class BrowserView;

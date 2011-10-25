@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 
 #include "views/window/non_client_view.h"
 
+class AvatarMenuButton;
 class BrowserFrame;
 class BrowserView;
 
@@ -29,6 +30,9 @@ class BrowserNonClientFrameView : public views::NonClientFrameView {
 
   // Updates the throbber.
   virtual void UpdateThrobber(bool running) = 0;
+
+  // Gets the avatar menu button. The button maybe NULL.
+  virtual AvatarMenuButton* GetAvatarMenuButton() = 0;
 };
 
 namespace browser {

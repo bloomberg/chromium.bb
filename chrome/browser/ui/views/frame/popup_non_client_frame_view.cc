@@ -55,3 +55,7 @@ int PopupNonClientFrameView::GetHorizontalTabStripVerticalOffset(
 
 void PopupNonClientFrameView::UpdateThrobber(bool running) {
 }
+
+AvatarMenuButton* PopupNonClientFrameView::GetAvatarMenuButton() {
+  return NULL;
+}

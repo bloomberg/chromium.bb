@@ -67,6 +67,8 @@ class BrowserTitlebar : public content::NotificationObserver,
   // add to the menu.
   void ShowContextMenu(GdkEventButton* event);
 
+  AvatarMenuButtonGtk* avatar_button() { return avatar_button_.get(); }
+
  private:
   // A helper class to keep track of which frame of the throbber animation
   // we're showing.

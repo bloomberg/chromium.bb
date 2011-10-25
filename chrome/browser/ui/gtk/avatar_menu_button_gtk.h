@@ -34,6 +34,9 @@ class AvatarMenuButtonGtk {
   // Sets the image to display on the button, typically the profile icon.
   void SetIcon(const SkBitmap &icon);
 
+  // Show the avatar bubble.
+  void ShowAvatarBubble();
+
  private:
   CHROMEGTK_CALLBACK_1(AvatarMenuButtonGtk, gboolean, OnButtonPressed,
                        GdkEventButton*);

@@ -398,6 +398,10 @@ void OpaqueBrowserFrameView::UpdateWindowIcon() {
   window_icon_->SchedulePaint();
 }
 
+AvatarMenuButton* OpaqueBrowserFrameView::GetAvatarMenuButton() {
+  return avatar_button_.get();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // OpaqueBrowserFrameView, views::View overrides:
 

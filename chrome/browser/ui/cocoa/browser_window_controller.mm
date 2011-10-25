@@ -471,6 +471,10 @@ enum {
   return browser_->profile();
 }
 
+- (AvatarButtonController*)avatarButtonController {
+  return avatarButtonController_.get();
+}
+
 - (void)destroyBrowser {
   [NSApp removeWindowsItem:[self window]];
 

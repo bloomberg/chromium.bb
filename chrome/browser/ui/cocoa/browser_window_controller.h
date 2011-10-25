@@ -199,6 +199,9 @@ class TabContents;
 // Access the Profile object that backs this Browser.
 - (Profile*)profile;
 
+// Access the avatar button controller.
+- (AvatarButtonController*)avatarButtonController;
+
 // Updates the toolbar (and transitively the location bar) with the states of
 // the specified |tab|.  If |shouldRestore| is true, we're switching
 // (back?) to this tab and should restore any previous location bar state

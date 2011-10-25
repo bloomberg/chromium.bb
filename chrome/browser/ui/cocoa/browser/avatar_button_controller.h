@@ -42,6 +42,9 @@ class Observer;
 // and will be resized to the frame of the button.
 - (void)setImage:(NSImage*)image;
 
+// Shows the avatar bubble.
+- (void)showAvatarBubble;
+
 @end
 
 @interface AvatarButtonController (ExposedForTesting)

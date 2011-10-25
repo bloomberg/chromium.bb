@@ -2135,6 +2135,10 @@ void Browser::ShowAppMenu() {
   window_->ShowAppMenu();
 }
 
+void Browser::ShowAvatarMenu() {
+  window_->ShowAvatarBubbleFromAvatarButton();
+}
+
 void Browser::ShowHistoryTab() {
   UserMetrics::RecordAction(UserMetricsAction("ShowHistory"));
   ShowSingletonTabOverwritingNTP(
@@ -2830,6 +2834,7 @@ void Browser::ExecuteCommandWithDisposition(
 
     case IDC_SHOW_BOOKMARK_MANAGER: OpenBookmarkManager();            break;
     case IDC_SHOW_APP_MENU:         ShowAppMenu();                    break;
+    case IDC_SHOW_AVATAR_MENU:      ShowAvatarMenu();                 break;
     case IDC_SHOW_HISTORY:          ShowHistoryTab();                 break;
     case IDC_SHOW_DOWNLOADS:        ShowDownloadsTab();               break;
     case IDC_MANAGE_EXTENSIONS:     ShowExtensionsTab();              break;
@@ -4685,6 +4690,8 @@ void Browser::UpdateCommandsForFullscreenMode(bool is_fullscreen) {
   command_updater_.UpdateCommandEnabled(IDC_VIEW_PASSWORDS, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_ABOUT, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_APP_MENU, show_main_ui);
+  command_updater_.UpdateCommandEnabled(IDC_SHOW_AVATAR_MENU,
+      show_main_ui && !profile()->IsOffTheRecord());
 #if defined (ENABLE_PROFILING) && !defined(NO_TCMALLOC)
   command_updater_.UpdateCommandEnabled(IDC_PROFILING_ENABLED, show_main_ui);
 #endif

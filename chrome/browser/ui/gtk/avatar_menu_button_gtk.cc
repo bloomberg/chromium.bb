@@ -42,6 +42,10 @@ gboolean AvatarMenuButtonGtk::OnButtonPressed(GtkWidget* widget,
   if (event->button != 1)
     return FALSE;
 
-  new AvatarMenuBubbleGtk(browser_, widget, arrow_location_, NULL);
+  ShowAvatarBubble();
   return TRUE;
+}
+
+void AvatarMenuButtonGtk::ShowAvatarBubble() {
+  new AvatarMenuBubbleGtk(browser_, widget_.get(), arrow_location_, NULL);
 }

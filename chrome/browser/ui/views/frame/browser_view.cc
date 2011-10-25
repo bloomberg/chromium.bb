@@ -48,6 +48,7 @@
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/avatar_menu_bubble_view.h"
+#include "chrome/browser/ui/views/avatar_menu_button.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
 #include "chrome/browser/ui/views/default_search_view.h"
@@ -2623,4 +2624,10 @@ void BrowserView::ShowAvatarBubble(TabContents* tab_contents,
   Bubble::Show(this->GetWidget(), bounds,
                views::BubbleBorder::TOP_RIGHT,
                bubble_view, bubble_view);
+}
+
+void BrowserView::ShowAvatarBubbleFromAvatarButton() {
+  AvatarMenuButton* button = frame_->GetAvatarMenuButton();
+  if (button)
+    button->ShowAvatarBubble();
 }

@@ -221,6 +221,10 @@ int GlassBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
   return (window_component == HTNOWHERE) ? HTCAPTION : window_component;
 }
 
+AvatarMenuButton* GlassBrowserFrameView::GetAvatarMenuButton() {
+  return avatar_button_.get();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // GlassBrowserFrameView, views::View overrides:
 

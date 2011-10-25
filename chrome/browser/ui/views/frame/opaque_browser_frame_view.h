@@ -19,7 +19,6 @@ class BrowserView;
 namespace gfx {
 class Font;
 }
-class AvatarMenuButton;
 class TabContents;
 namespace views {
 class ImageButton;
@@ -82,6 +81,7 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   virtual void EnableClose(bool enable) OVERRIDE;
   virtual void ResetWindowControls() OVERRIDE;
   virtual void UpdateWindowIcon() OVERRIDE;
+  virtual AvatarMenuButton* GetAvatarMenuButton() OVERRIDE;
 
   // Overridden from views::View:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;

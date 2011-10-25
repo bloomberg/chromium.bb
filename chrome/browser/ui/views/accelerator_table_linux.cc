@@ -142,6 +142,9 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { ui::VKEY_H,              false, true,  false, IDC_SHOW_HISTORY },
   { ui::VKEY_F,              false, false, true,  IDC_SHOW_APP_MENU},
   { ui::VKEY_E,              false, false, true,  IDC_SHOW_APP_MENU},
+#if !defined(OS_CHROMEOS)
+  { ui::VKEY_M,              true,  true,  false, IDC_SHOW_AVATAR_MENU},
+#endif
   { ui::VKEY_ESCAPE,         false, false, false, IDC_STOP },
   { ui::VKEY_ESCAPE,         true,  false, false, IDC_TASK_MANAGER },
   { ui::VKEY_OEM_PERIOD,     true,  true,  false, IDC_TOGGLE_SPEECH_INPUT },
