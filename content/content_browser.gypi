@@ -683,6 +683,11 @@
         'browser/renderer_host/gtk_key_bindings_handler.h',
       ],
     }],
+    ['OS=="openbsd"', {
+      'sources/': [
+        ['exclude', '^browser/geolocation/wifi_data_provider_linux\\.cc$'],
+      ],
+    }],
     ['touchui==1', {
       'sources/': [
         ['exclude', '^browser/renderer_host/gtk_im_context_wrapper.cc'],

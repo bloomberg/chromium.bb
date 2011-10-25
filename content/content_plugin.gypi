@@ -34,6 +34,11 @@
   # These are layered in conditionals in the event other platforms
   # end up using this module as well.
   'conditions': [
+    ['OS=="openbsd"', {
+      'sources/': [
+        ['exclude', '^plugin/plugin_main_linux\\.cc$'],
+      ],
+    }],
     ['OS=="win"', {
       'include_dirs': [
         '<(DEPTH)/third_party/wtl/include',
