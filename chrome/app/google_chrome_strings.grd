@@ -388,9 +388,6 @@ Chrome supports. -->
       <message name="IDS_INSTALL_APP_CONFLICT" desc="Error displayed if installation fails due to another existing application.">
         A conflict with another installed application has been detected.
       </message>
-      <message name="IDS_UNINSTALL_FAILED" desc="Error during uninstall if we can not find the installation directory from registry.">
-        Google Chrome is not installed or it failed to find installation directory. Please download Google Chrome again.
-      </message>
       <message name="IDS_UNINSTALL_COMPLETE" desc="Text displayed on dialog that is shown when uninstall is complete and no reboot is required.">
         Uninstallation complete.
       </message>
@@ -402,9 +399,6 @@ Chrome supports. -->
       </message>
       <message name="IDS_INSTALL_MULTI_INSTALLATION_EXISTS" desc="Error during install if a multi-install Google Chrome or Google Chrome Frame is present, thereby preventing the installation of a single-install Google Chrome or Google Chrome Frame.">
         A conflicting installation of Google Chrome or Google Chrome Frame was found on the system. Please uninstall it and try again.
-      </message>
-      <message name="IDS_INSTALL_CONFLICTING_CHANNEL_EXISTS" desc="Error during install if a version of Google Chrome on a different update channel exists when installing Google Chrome Frame.">
-        A conflicting installation of Google Chrome was found on the system. Please uninstall it and try again.
       </message>
       <message name="IDS_INSTALL_READY_MODE_REQUIRES_CHROME" desc="Chrome Frame in ready mode requires Chrome.">
         Invalid arguments. Google Chrome Frame cannot be installed in ready mode without also installing Google Chrome.
