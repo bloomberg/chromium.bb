@@ -12,7 +12,7 @@ ScopedTempDir::ScopedTempDir() {
 
 ScopedTempDir::~ScopedTempDir() {
   if (!path_.empty() && !Delete())
-    LOG(WARNING) << "Could not delete temp dir in dtor.";
+    DLOG(WARNING) << "Could not delete temp dir in dtor.";
 }
 
 bool ScopedTempDir::CreateUniqueTempDir() {
@@ -67,7 +67,7 @@ bool ScopedTempDir::Delete() {
     // We only clear the path if deleted the directory.
     path_.clear();
   } else {
-    LOG(ERROR) << "ScopedTempDir unable to delete " << path_.value();
+    DLOG(ERROR) << "ScopedTempDir unable to delete " << path_.value();
   }
 
   return ret;
