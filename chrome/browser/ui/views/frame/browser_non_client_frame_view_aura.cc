@@ -340,6 +340,11 @@ void BrowserNonClientFrameViewAura::UpdateThrobber(bool running) {
   // TODO(jamescook): Do we need this?
 }
 
+AvatarMenuButton* BrowserNonClientFrameViewAura::GetAvatarMenuButton() {
+  // TODO(jamescook)
+  return NULL;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // views::NonClientFrameView overrides:
 
