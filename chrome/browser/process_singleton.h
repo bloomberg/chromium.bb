@@ -22,9 +22,9 @@
 #include "base/file_path.h"
 #endif  // defined(OS_POSIX)
 
-#if defined(USE_X11)
+#if defined(OS_LINUX)
 #include "base/scoped_temp_dir.h"
-#endif  // defined(USE_X11)
+#endif  // defined(OS_LINUX)
 
 class CommandLine;
 class FilePath;
@@ -128,9 +128,7 @@ class ProcessSingleton : public base::NonThreadSafe {
   bool locked_;
   gfx::NativeWindow foreground_window_;
 
-#if defined(USE_AURA)
-  // TODO(saintlou): The process_singleton_aura.cc is still a stub.
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
   // This ugly behemoth handles startup commands sent from another process.
   LRESULT OnCopyData(HWND hwnd, const COPYDATASTRUCT* cds);
 
@@ -153,7 +151,7 @@ class ProcessSingleton : public base::NonThreadSafe {
   HWND remote_window_;  // The HWND_MESSAGE of another browser.
   HWND window_;  // The HWND_MESSAGE window.
   bool is_virtualized_;  // Stuck inside Microsoft Softricity VM environment.
-#elif defined(USE_X11)
+#elif defined(OS_LINUX)
   // Path in file system to the socket.
   FilePath socket_path_;
 

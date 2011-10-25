@@ -43,7 +43,9 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#if defined(TOOLKIT_USES_GTK)
 #include <gdk/gdk.h>
+#endif
 #include <signal.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
@@ -311,6 +313,8 @@ void DisplayProfileInUseError(const std::string& lock_path,
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kNoProcessSingletonDialog))
     ProcessSingletonDialog::ShowAndRun(UTF16ToUTF8(error));
+#else
+  NOTIMPLEMENTED();
 #endif
 }
 
@@ -874,9 +878,11 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
     // The other process is shutting down, it's safe to start a new process.
     return PROCESS_NONE;
   } else if (strncmp(buf, kACKToken, arraysize(kACKToken) - 1) == 0) {
+#if defined(TOOLKIT_USES_GTK)
     // Notify the window manager that we've started up; if we do not open a
     // window, GTK will not automatically call this for us.
     gdk_notify_startup_complete();
+#endif
     // Assume the other process is handling the request.
     return PROCESS_NOTIFIED;
   }

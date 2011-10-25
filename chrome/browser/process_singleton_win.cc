@@ -239,9 +239,13 @@ LRESULT ProcessSingleton::OnCopyData(HWND hwnd, const COPYDATASTRUCT* cds) {
   // If locked, it means we are not ready to process this message because
   // we are probably in a first run critical phase.
   if (locked_) {
+#if defined(USE_AURA)
+    NOTIMPLEMENTED();
+#else
     // Attempt to place ourselves in the foreground / flash the task bar.
     if (IsWindow(foreground_window_))
       SetForegroundWindow(foreground_window_);
+#endif
     return TRUE;
   }
 
