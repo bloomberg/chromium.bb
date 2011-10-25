@@ -1,0 +1,3 @@
+# Valgrind fails with assertion. crbug.com/101370
+InProcessBrowserTest.Empty
+SafeBrowsingServiceTest.SafeBrowsingServiceTest
