@@ -526,7 +526,7 @@ void RecordAppLaunches(
   }
 }
 
-void RegisterComponentsForUpdate() {
+void RegisterComponentsForUpdate(const CommandLine& command_line) {
   ComponentUpdateService* cus = g_browser_process->component_updater();
   if (!cus)
     return;
@@ -537,10 +537,10 @@ void RegisterComponentsForUpdate() {
   RegisterPepperFlashComponent(cus);
   RegisterNPAPIFlashComponent(cus);
 
-  // CRLSetFetcher attempts to load a CRL set from either the local disk
-  // or network.
-  // TODO(agl): this is disabled for now while it's plumbed in.
-  // g_browser_process->crl_set_fetcher()->StartInitialLoad(cus);
+  // CRLSetFetcher attempts to load a CRL set from either the local disk or
+  // network.
+  if (command_line.HasSwitch(switches::kEnableCRLSets))
+    g_browser_process->crl_set_fetcher()->StartInitialLoad(cus);
 
   cus->Start();
 }
@@ -1389,7 +1389,7 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
     if (command_line.HasSwitch(switches::kDisablePromptOnRepost))
       NavigationController::DisablePromptOnRepost();
 
-    RegisterComponentsForUpdate();
+    RegisterComponentsForUpdate(command_line);
 
     // Look for the testing channel ID ONLY during process startup
     if (command_line.HasSwitch(switches::kTestingChannelID)) {

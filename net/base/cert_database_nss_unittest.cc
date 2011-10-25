@@ -540,7 +540,7 @@ TEST_F(CertDatabaseNSSTest, ImportServerCert) {
 
   int flags = 0;
   CertVerifyResult verify_result;
-  int error = goog_cert->Verify("www.google.com", flags, &verify_result);
+  int error = goog_cert->Verify("www.google.com", flags, NULL, &verify_result);
   EXPECT_EQ(OK, error);
   EXPECT_EQ(0U, verify_result.cert_status);
 }
@@ -565,7 +565,8 @@ TEST_F(CertDatabaseNSSTest, ImportServerCert_SelfSigned) {
 
   int flags = 0;
   CertVerifyResult verify_result;
-  int error = puny_cert->Verify("xn--wgv71a119e.com", flags, &verify_result);
+  int error = puny_cert->Verify("xn--wgv71a119e.com", flags, NULL,
+                                &verify_result);
   EXPECT_EQ(ERR_CERT_AUTHORITY_INVALID, error);
   EXPECT_EQ(CERT_STATUS_AUTHORITY_INVALID, verify_result.cert_status);
 
@@ -576,7 +577,7 @@ TEST_F(CertDatabaseNSSTest, ImportServerCert_SelfSigned) {
       CertDatabase::TRUSTED_SSL | CertDatabase::TRUSTED_EMAIL));
 
   verify_result.Reset();
-  error = puny_cert->Verify("xn--wgv71a119e.com", flags, &verify_result);
+  error = puny_cert->Verify("xn--wgv71a119e.com", flags, NULL, &verify_result);
   EXPECT_EQ(OK, error);
   EXPECT_EQ(0U, verify_result.cert_status);
 }

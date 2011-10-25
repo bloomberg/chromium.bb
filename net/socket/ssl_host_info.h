@@ -21,6 +21,7 @@
 
 namespace net {
 
+class CRLSet;
 class X509Certificate;
 struct SSLConfig;
 
@@ -121,9 +122,10 @@ class NET_EXPORT_PRIVATE SSLHostInfo {
   const std::string hostname_;
   bool cert_parsing_failed_;
   OldCompletionCallback* cert_verification_callback_;
-  // These two members are taken from the SSLConfig.
+  // These three members are taken from the SSLConfig.
   bool rev_checking_enabled_;
   bool verify_ev_cert_;
+  scoped_refptr<CRLSet> crl_set_;
   base::TimeTicks verification_start_time_;
   base::TimeTicks verification_end_time_;
   CertVerifyResult cert_verify_result_;

@@ -93,6 +93,7 @@ class SSLConfigServicePref : public net::SSLConfigService {
 
 void SSLConfigServicePref::GetSSLConfig(net::SSLConfig* config) {
   *config = cached_config_;
+  config->crl_set = GetCRLSet();
 }
 
 void SSLConfigServicePref::SetNewSSLConfig(

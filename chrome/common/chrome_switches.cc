@@ -434,6 +434,10 @@ const char kEnableCompositeToTexture[]      = "enable-composite-to-texture";
 // exceeded.
 const char kEnableConnectBackupJobs[]       = "enable-connect-backup-jobs";
 
+// Enables establishing certificate revocation information by downloading a set
+// of CRLs rather than performing on-line checks.
+const char kEnableCRLSets[]                 = "enable-crl-sets";
+
 // Enables web developers to create apps for Chrome without using crx packages.
 const char kEnableCrxlessWebApps[]          = "enable-crxless-web-apps";
 
