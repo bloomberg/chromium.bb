@@ -8,7 +8,6 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/task.h"
 #include "chrome/browser/ui/views/accessible_pane_view.h"
 #include "views/view.h"
 
@@ -25,7 +24,8 @@ class StatusAreaHost;
 
 // This class is used to wrap the small informative widgets in the upper-right
 // of the window title bar. It is used on ChromeOS only.
-class StatusAreaView : public AccessiblePaneView {
+class StatusAreaView : public AccessiblePaneView,
+                       public base::SupportsWeakPtr<StatusAreaView> {
  public:
   explicit StatusAreaView(StatusAreaHost* host);
   virtual ~StatusAreaView();
@@ -37,8 +37,9 @@ class StatusAreaView : public AccessiblePaneView {
   // Takes focus and transfers it to the first (last if |reverse| is true).
   // After focus has traversed through all elements, clears focus and calls
   // |return_focus_cb(reverse)| from the message loop.
+  typedef base::Callback<void(bool)> ReturnFocusCallback;
   void TakeFocus(bool reverse,
-                 const base::Callback<void(bool)>& return_focus_cb);
+                 const ReturnFocusCallback& return_focus_cb);
 
   // Overridden from views::FocusChangeListener:
   virtual void FocusWillChange(views::View* focused_before,
@@ -69,8 +70,7 @@ class StatusAreaView : public AccessiblePaneView {
 
   // True if focus needs to be returned via |return_focus_cb_| when it wraps.
   bool need_return_focus_;
-  base::Callback<void(bool)> return_focus_cb_;
-  ScopedRunnableMethodFactory<StatusAreaView> task_factory_;
+  ReturnFocusCallback return_focus_cb_;
 
   // Clears focus and calls |return_focus_cb_|.
   void ReturnFocus(bool reverse);

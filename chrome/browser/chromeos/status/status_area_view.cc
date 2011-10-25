@@ -41,8 +41,7 @@ StatusAreaView::StatusAreaView(StatusAreaHost* host)
       memory_view_(NULL),
       network_view_(NULL),
       power_view_(NULL),
-      need_return_focus_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)) {
+      need_return_focus_(false) {
 }
 
 StatusAreaView::~StatusAreaView() {
@@ -140,7 +139,7 @@ void StatusAreaView::ButtonVisibilityChanged(views::View* button_view) {
 
 void StatusAreaView::TakeFocus(
     bool reverse,
-    const base::Callback<void(bool)>& return_focus_cb) {
+    const ReturnFocusCallback& return_focus_cb) {
   // Emulates focus receive by AccessiblePaneView::SetPaneFocus.
   if (!focus_manager_)
     focus_manager_ = GetFocusManager();
@@ -172,16 +171,12 @@ void StatusAreaView::FocusWillChange(views::View* focused_before,
   if (need_return_focus_) {
     const views::View* first = GetFirstFocusableChild();
     const views::View* last = GetLastFocusableChild();
+    const bool first_to_last = (focused_before == first && focused_now == last);
+    const bool last_to_first = (focused_now == first && focused_before == last);
 
-    if (focused_before == first && focused_now == last) {
-      MessageLoop::current()->PostTask(
-          FROM_HERE,
-          task_factory_.NewRunnableMethod(&StatusAreaView::ReturnFocus, true));
-    } else if (focused_now == first && focused_before == last) {
-      MessageLoop::current()->PostTask(
-          FROM_HERE,
-          task_factory_.NewRunnableMethod(&StatusAreaView::ReturnFocus, false));
-    }
+    if (first_to_last || last_to_first)
+      MessageLoop::current()->PostTask(FROM_HERE,
+          base::Bind(&StatusAreaView::ReturnFocus, AsWeakPtr(), first_to_last));
   }
 }
 
