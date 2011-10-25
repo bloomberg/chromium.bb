@@ -70,7 +70,7 @@ class UI_EXPORT CanvasDirect2D : public Canvas {
                              const SkColor& color,
                              int x, int y, int w, int h,
                              int flags);
-  virtual void DrawFocusRect(int x, int y, int width, int height);
+  virtual void DrawFocusRect(const gfx::Rect& rect);
   virtual void TileImageInt(const SkBitmap& bitmap, int x, int y, int w, int h);
   virtual void TileImageInt(const SkBitmap& bitmap,
                             int src_x, int src_y,

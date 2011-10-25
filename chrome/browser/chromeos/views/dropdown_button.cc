@@ -71,10 +71,11 @@ DropDownButton::~DropDownButton() {
 }
 
 void DropDownButton::OnPaintFocusBorder(gfx::Canvas* canvas) {
-  if (HasFocus() && (IsFocusable() || IsAccessibilityFocusableInRootView()))
-    canvas->DrawFocusRect(kFocusFrameLeftOffset, kFocusFrameTopOffset,
-                          width() - kFocusFrameRightOffset,
-                          height() - kFocusFrameBottomOffset);
+  if (HasFocus() && (IsFocusable() || IsAccessibilityFocusableInRootView())) {
+    canvas->DrawFocusRect(gfx::Rect(kFocusFrameLeftOffset, kFocusFrameTopOffset,
+                                    width() - kFocusFrameRightOffset,
+                                    height() - kFocusFrameBottomOffset));
+  }
 }
 
 void DropDownButton::SetText(const string16& text) {

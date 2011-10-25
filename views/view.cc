@@ -299,7 +299,7 @@ gfx::Rect View::GetContentsBounds() const {
 }
 
 gfx::Rect View::GetLocalBounds() const {
-  return gfx::Rect(0, 0, width(), height());
+  return gfx::Rect(gfx::Point(), size());
 }
 
 gfx::Insets View::GetInsets() const {
@@ -1079,7 +1079,7 @@ void View::OnPaintBorder(gfx::Canvas* canvas) {
 
 void View::OnPaintFocusBorder(gfx::Canvas* canvas) {
   if ((IsFocusable() || IsAccessibilityFocusableInRootView()) && HasFocus())
-    canvas->DrawFocusRect(0, 0, width(), height());
+    canvas->DrawFocusRect(GetLocalBounds());
 }
 
 // Accelerated Painting --------------------------------------------------------

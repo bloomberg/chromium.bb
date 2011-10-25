@@ -66,8 +66,7 @@ void Checkbox::OnPaintFocusBorder(gfx::Canvas* canvas) {
     // Increate the bounding box by one on each side so that that focus border
     // does not draw on top of the letters.
     bounds.Inset(-1, -1, -1, -1);
-    canvas->DrawFocusRect(bounds.x(), bounds.y(), bounds.width(),
-                          bounds.height());
+    canvas->DrawFocusRect(bounds);
   }
 }
 

@@ -205,7 +205,7 @@ class UI_EXPORT Canvas {
                              int flags) = 0;
 
   // Draws a dotted gray rectangle used for focus purposes.
-  virtual void DrawFocusRect(int x, int y, int width, int height) = 0;
+  virtual void DrawFocusRect(const gfx::Rect& rect) = 0;
 
   // Tiles the image in the specified region.
   virtual void TileImageInt(const SkBitmap& bitmap,

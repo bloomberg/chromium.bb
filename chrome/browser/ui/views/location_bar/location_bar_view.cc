@@ -755,10 +755,11 @@ void LocationBarView::OnPaint(gfx::Canvas* canvas) {
   if (show_focus_rect_ && HasFocus()) {
     gfx::Rect r = location_entry_view_->bounds();
 #if defined(OS_WIN)
-    canvas->DrawFocusRect(r.x() - 1, r.y() - 1, r.width() + 2, r.height() + 2);
+    r.Inset(-1,  -1);
 #else
-    canvas->DrawFocusRect(r.x() - 1, r.y(), r.width() + 2, r.height());
+    r.Inset(-1, 0);
 #endif
+    canvas->DrawFocusRect(r);
   }
 }
 

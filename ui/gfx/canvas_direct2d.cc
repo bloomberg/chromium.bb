@@ -308,7 +308,7 @@ void CanvasDirect2D::DrawStringInt(const string16& text,
   NOTIMPLEMENTED();
 }
 
-void CanvasDirect2D::DrawFocusRect(int x, int y, int width, int height) {
+void CanvasDirect2D::DrawFocusRect(const gfx::Rect& rect) {
   NOTIMPLEMENTED();
 }
 

@@ -830,7 +830,7 @@ void NativeTextButton::OnPaintFocusBorder(gfx::Canvas* canvas) {
   if ((IsFocusable() || IsAccessibilityFocusableInRootView()) && HasFocus()) {
     gfx::Rect rect(GetLocalBounds());
     rect.Inset(3, 3);
-    canvas->DrawFocusRect(rect.x(), rect.y(), rect.width(), rect.height());
+    canvas->DrawFocusRect(rect);
   }
 #else
   TextButton::OnPaintFocusBorder(canvas);

@@ -181,7 +181,7 @@ void CanvasSkia::DrawLineInt(const SkColor& color,
                     SkIntToScalar(y2), paint);
 }
 
-void CanvasSkia::DrawFocusRect(int x, int y, int width, int height) {
+void CanvasSkia::DrawFocusRect(const gfx::Rect& rect) {
   // Create a 2D bitmap containing alternating on/off pixels - we do this
   // so that you never get two pixels of the same color around the edges
   // of the focus rect (this may mean that opposing edges of the rect may
@@ -206,8 +206,6 @@ void CanvasSkia::DrawFocusRect(int x, int y, int width, int height) {
     }
   }
 
-  // First the horizontal lines.
-
   // Make a shader for the bitmap with an origin of the box we'll draw. This
   // shader is refcounted and will have an initial refcount of 1.
   SkShader* shader = SkShader::CreateBitmapShader(
@@ -219,10 +217,10 @@ void CanvasSkia::DrawFocusRect(int x, int y, int width, int height) {
   paint.setShader(shader);
   shader->unref();
 
-  DrawRectInt(x, y, width, 1, paint);
-  DrawRectInt(x, y + height - 1, width, 1, paint);
-  DrawRectInt(x, y, 1, height, paint);
-  DrawRectInt(x + width - 1, y, 1, height, paint);
+  DrawRectInt(rect.x(), rect.y(), rect.width(), 1, paint);
+  DrawRectInt(rect.x(), rect.y() + rect.height() - 1, rect.width(), 1, paint);
+  DrawRectInt(rect.x(), rect.y(), 1, rect.height(), paint);
+  DrawRectInt(rect.x() + rect.width() - 1, rect.y(), 1, rect.height(), paint);
 }
 
 void CanvasSkia::DrawBitmapInt(const SkBitmap& bitmap, int x, int y) {

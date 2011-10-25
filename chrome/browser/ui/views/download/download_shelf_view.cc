@@ -163,7 +163,8 @@ void DownloadShelfView::OnPaint(gfx::Canvas* canvas) {
   for (size_t i = 0; i < download_views_.size(); ++i) {
     if (download_views_[i]->HasFocus()) {
       gfx::Rect r = GetFocusRectBounds(download_views_[i]);
-      canvas->DrawFocusRect(r.x(), r.y(), r.width(), r.height() - 1);
+      r.Inset(0, 0, 0, 1);
+      canvas->DrawFocusRect(r);
       break;
     }
   }

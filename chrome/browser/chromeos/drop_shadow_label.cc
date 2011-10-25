@@ -54,8 +54,7 @@ void DropShadowLabel::PaintText(gfx::Canvas* canvas,
     gfx::Rect focus_bounds = text_bounds;
     focus_bounds.Inset(-Label::kFocusBorderPadding,
                        -Label::kFocusBorderPadding);
-    canvas->DrawFocusRect(focus_bounds.x(), focus_bounds.y(),
-                          focus_bounds.width(), focus_bounds.height());
+    canvas->DrawFocusRect(focus_bounds);
   }
 }
 

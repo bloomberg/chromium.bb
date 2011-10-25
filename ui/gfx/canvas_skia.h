@@ -152,7 +152,7 @@ class UI_EXPORT CanvasSkia : public Canvas {
       const SkColor& color,
       const gfx::Rect& display_rect);
 #endif
-  virtual void DrawFocusRect(int x, int y, int width, int height);
+  virtual void DrawFocusRect(const gfx::Rect& rect);
   virtual void TileImageInt(const SkBitmap& bitmap, int x, int y, int w, int h);
   virtual void TileImageInt(const SkBitmap& bitmap,
                             int src_x, int src_y,

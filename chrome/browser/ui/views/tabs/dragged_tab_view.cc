@@ -183,9 +183,10 @@ void DraggedTabView::PaintDetachedView(gfx::Canvas* canvas) {
 
 void DraggedTabView::PaintFocusRect(gfx::Canvas* canvas) {
   gfx::Size ps = GetPreferredSize();
-  canvas->DrawFocusRect(0, 0,
-                        static_cast<int>(ps.width() * kScalingFactor),
-                        static_cast<int>(ps.height() * kScalingFactor));
+  canvas->DrawFocusRect(
+      gfx::Rect(0, 0,
+                static_cast<int>(ps.width() * kScalingFactor),
+                static_cast<int>(ps.height() * kScalingFactor)));
 }
 
 gfx::Size DraggedTabView::PreferredContainerSize() {
