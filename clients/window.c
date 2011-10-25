@@ -671,6 +671,10 @@ create_pointer_surfaces(struct display *display)
 			display_create_surface_from_file(display,
 							 pointer_images[i].filename,
 							 &rect);
+		if (!display->pointer_surfaces[i]) {
+			fprintf(stderr, "Error loading pointer image: %s\n",
+				pointer_images[i].filename);
+		}
 	}
 
 }
