@@ -396,7 +396,7 @@ bool NativeWidgetAura::IsFullscreen() const {
 }
 
 void NativeWidgetAura::SetOpacity(unsigned char opacity) {
-  NOTIMPLEMENTED();
+  window_->layer()->SetOpacity(opacity / 255.0);
 }
 
 void NativeWidgetAura::SetUseDragFrame(bool use_drag_frame) {
