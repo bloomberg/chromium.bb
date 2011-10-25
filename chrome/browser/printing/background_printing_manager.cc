@@ -146,22 +146,24 @@ void BackgroundPrintingManager::Observe(
 
 void BackgroundPrintingManager::OnRendererProcessClosed(
     RenderProcessHost* rph) {
+  TabContentsWrapperSet preview_tabs_pending_deletion;
   TabContentsWrapperSet::const_iterator it;
   for (it = begin(); it != end(); ++it) {
-    TabContentsWrapper* tab = *it;
-    if (tab->render_view_host()->process() == rph)
-      MessageLoop::current()->DeleteSoon(FROM_HERE, tab);
+    TabContentsWrapper* preview_tab = *it;
+    if (preview_tab->render_view_host()->process() == rph) {
+      preview_tabs_pending_deletion.insert(preview_tab);
+    }
+  }
+  for (it = preview_tabs_pending_deletion.begin();
+       it != preview_tabs_pending_deletion.end();
+       ++it) {
+    DeletePreviewTab(*it);
   }
 }
 
 void BackgroundPrintingManager::OnPrintJobReleased(
     TabContentsWrapper* preview_tab) {
-  registrar_.Remove(this, chrome::NOTIFICATION_PRINT_JOB_RELEASED,
-                    content::Source<TabContentsWrapper>(preview_tab));
-
-  // This might be happening in the middle of a RenderViewGone() loop.
-  // Deleting |contents| later so the RenderViewGone() loop can finish.
-  MessageLoop::current()->DeleteSoon(FROM_HERE, preview_tab);
+  DeletePreviewTab(preview_tab);
 }
 
 void BackgroundPrintingManager::OnTabContentsDestroyed(
@@ -186,33 +188,26 @@ void BackgroundPrintingManager::OnTabContentsDestroyed(
   if (!is_owned_printing_tab)
     return;
 
-  // Remove NOTIFICATION_RENDERER_PROCESS_CLOSED if |tab| is the last
+  // Remove NOTIFICATION_RENDERER_PROCESS_CLOSED if |preview_tab| is the last
   // TabContents associated with |rph|.
-  bool shared_rph = false;
-  RenderProcessHost* rph = preview_tab->render_view_host()->process();
-  TabContentsWrapperSet::const_iterator it;
-  for (it = begin(); it != end(); ++it) {
-    TabContentsWrapper* iter_tab = *it;
-    if (iter_tab == preview_tab)
-      continue;
-    if (iter_tab->render_view_host()->process() == rph) {
-      shared_rph = true;
-      break;
-    }
-  }
+  bool shared_rph = HasSharedRenderProcessHost(printing_tabs_, preview_tab) ||
+      HasSharedRenderProcessHost(printing_tabs_pending_deletion_, preview_tab);
   if (!shared_rph) {
+    RenderProcessHost* rph = preview_tab->render_view_host()->process();
     registrar_.Remove(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
                       content::Source<RenderProcessHost>(rph));
   }
 
-  // Remove other notifications and remove the tab from |printing_tabs_|.
-  if (registrar_.IsRegistered(
-          this, chrome::NOTIFICATION_PRINT_JOB_RELEASED,
-          content::Source<TabContentsWrapper>(preview_tab))) {
+  // Remove other notifications and remove the tab from its
+  // TabContentsWrapperSet.
+  if (printing_tabs_.find(preview_tab) != printing_tabs_.end()) {
     registrar_.Remove(this, chrome::NOTIFICATION_PRINT_JOB_RELEASED,
                       content::Source<TabContentsWrapper>(preview_tab));
+    printing_tabs_.erase(preview_tab);
+  } else {
+    // DeletePreviewTab already deleted the notification.
+    printing_tabs_pending_deletion_.erase(preview_tab);
   }
-  printing_tabs_.erase(preview_tab);
 }
 
 void BackgroundPrintingManager::RemoveFromTabStrip(TabContentsWrapper* tab) {
@@ -227,6 +222,30 @@ void BackgroundPrintingManager::RemoveFromTabStrip(TabContentsWrapper* tab) {
   tabstrip->DetachTabContentsAt(index);
 }
 
+void BackgroundPrintingManager::DeletePreviewTab(TabContentsWrapper* tab) {
+  registrar_.Remove(this, chrome::NOTIFICATION_PRINT_JOB_RELEASED,
+                    content::Source<TabContentsWrapper>(tab));
+  printing_tabs_.erase(tab);
+  printing_tabs_pending_deletion_.insert(tab);
+  MessageLoop::current()->DeleteSoon(FROM_HERE, tab);
+}
+
+bool BackgroundPrintingManager::HasSharedRenderProcessHost(
+    const TabContentsWrapperSet& set,
+    TabContentsWrapper* tab) {
+  RenderProcessHost* rph = tab->render_view_host()->process();
+  for (TabContentsWrapperSet::const_iterator it = set.begin();
+       it != set.end();
+       ++it) {
+    TabContentsWrapper* iter_tab = *it;
+    if ((iter_tab != tab) &&
+        (iter_tab->render_view_host()->process() == rph)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 BackgroundPrintingManager::TabContentsWrapperSet::const_iterator
     BackgroundPrintingManager::begin() {
   return printing_tabs_.begin();
@@ -239,7 +258,10 @@ BackgroundPrintingManager::TabContentsWrapperSet::const_iterator
 
 bool BackgroundPrintingManager::HasPrintPreviewTab(
     TabContentsWrapper* preview_tab) {
-  return printing_tabs_.find(preview_tab) != printing_tabs_.end();
+  if (printing_tabs_.find(preview_tab) != printing_tabs_.end())
+    return true;
+  return printing_tabs_pending_deletion_.find(preview_tab) !=
+      printing_tabs_pending_deletion_.end();
 }
 
 }  // namespace printing

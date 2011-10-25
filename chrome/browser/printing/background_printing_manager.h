@@ -66,8 +66,20 @@ class BackgroundPrintingManager : public base::NonThreadSafe,
   // Removes |tab| from its tab strip.
   void RemoveFromTabStrip(TabContentsWrapper* tab);
 
+  // Add |tab| to the pending deletion set and schedule deletion.
+  void DeletePreviewTab(TabContentsWrapper* tab);
+
+  // Check if any of the TabContentsWrappers in |set| share a RenderProcessHost
+  // with |tab|, excluding |tab|.
+  bool HasSharedRenderProcessHost(const TabContentsWrapperSet& set,
+                                  TabContentsWrapper* tab);
+
   // The set of print preview tabs managed by BackgroundPrintingManager.
   TabContentsWrapperSet printing_tabs_;
+
+  // The set of print preview tabs managed by BackgroundPrintingManager that
+  // are pending deletion.
+  TabContentsWrapperSet printing_tabs_pending_deletion_;
 
   // 1:1 mapping between an initiator tab managed by BackgroundPrintingManager
   // and its associated print preview tab. The print preview tab need not be in
