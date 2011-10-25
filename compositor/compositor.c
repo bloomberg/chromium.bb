@@ -1160,6 +1160,9 @@ static void
 wlsc_input_device_attach_sprite(struct wlsc_input_device *device,
 				struct wlsc_sprite *sprite, int x, int y)
 {
+	if (!sprite)
+		return;
+
 	wlsc_sprite_attach(sprite, &device->sprite->surface);
 	wlsc_input_device_attach(device, x, y, sprite->width, sprite->height);
 }
