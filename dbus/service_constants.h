@@ -220,6 +220,8 @@ const char kUnblockPinFunction[] = "UnblockPin";
 const char kChangePinFunction[] = "ChangePin";
 const char kProposeScanFunction[] = "ProposeScan";
 const char kRegisterFunction[] = "Register";
+const char kConfigureServiceFunction[] = "ConfigureService";
+const char kConfigureWifiServiceFunction[] = "ConfigureWifiService";
 
 // Flimflam Service property names.
 const char kSecurityProperty[] = "Security";
