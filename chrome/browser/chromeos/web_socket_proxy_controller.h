@@ -29,6 +29,7 @@ class WebSocketProxyController {
   // All methods can be called on any thread.
   static void Shutdown();
   static bool IsInitiated();
+  static int GetPort();  // Returns port listening websocket connections.
 
   static bool CheckCredentials(
       const std::string& extension_id,

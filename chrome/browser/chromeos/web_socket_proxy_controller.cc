@@ -24,6 +24,7 @@
 #include "content/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/network_change_notifier.h"
@@ -99,16 +100,33 @@ class ProxyTask : public Task {
   virtual void Run() OVERRIDE;
 };
 
-class ProxyLifetime : public net::NetworkChangeNotifier::OnlineStateObserver {
+class ProxyLifetime
+    : public net::NetworkChangeNotifier::OnlineStateObserver,
+      public content::NotificationObserver {
  public:
-  ProxyLifetime() : delay_ms_(1000), shutdown_requested_(false) {
+  ProxyLifetime() : delay_ms_(1000), port_(-1), shutdown_requested_(false) {
+    DLOG(INFO) << "WebSocketProxyController initiation";
     BrowserThread::PostTask(
         BrowserThread::WEB_SOCKET_PROXY, FROM_HERE, new ProxyTask());
     net::NetworkChangeNotifier::AddOnlineStateObserver(this);
+    registrar_.Add(
+        this, chrome::NOTIFICATION_WEB_SOCKET_PROXY_STARTED,
+        content::NotificationService::AllSources());
   }
 
   virtual ~ProxyLifetime() {
     net::NetworkChangeNotifier::RemoveOnlineStateObserver(this);
+  }
+
+  virtual void Observe(int type, const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE {
+    base::AutoLock alk(lock_);
+    port_ = *content::Details<int>(details).ptr();
+  }
+
+  int GetPort() {
+    base::AutoLock alk(lock_);
+    return port_;
   }
 
  private:
@@ -121,7 +139,10 @@ class ProxyLifetime : public net::NetworkChangeNotifier::OnlineStateObserver {
   }
 
   // Delay between next attempt to run proxy.
-  int delay_ms_;
+  int volatile delay_ms_;
+
+  // Proxy listens for incoming websocket connections on this port.
+  int volatile port_;
 
   chromeos::WebSocketProxy* volatile server_;
   volatile bool shutdown_requested_;
@@ -173,7 +194,6 @@ void FillWithExtensionsIdsWithPrivateAccess(std::vector<std::string>* ids) {
 
 // static
 void WebSocketProxyController::Initiate() {
-  LOG(INFO) << "WebSocketProxyController initiation";
   g_proxy_lifetime.Get();
 }
 
@@ -183,9 +203,16 @@ bool WebSocketProxyController::IsInitiated() {
 }
 
 // static
+int WebSocketProxyController::GetPort() {
+  int port = g_proxy_lifetime.Get().GetPort();
+  DCHECK(IsInitiated());
+  return port;
+}
+
+// static
 void WebSocketProxyController::Shutdown() {
   if (IsInitiated()) {
-    LOG(INFO) << "WebSocketProxyController shutdown";
+    DLOG(INFO) << "WebSocketProxyController shutdown";
     base::AutoLock alk(g_proxy_lifetime.Get().lock_);
     g_proxy_lifetime.Get().shutdown_requested_ = true;
     if (g_proxy_lifetime.Get().server_)

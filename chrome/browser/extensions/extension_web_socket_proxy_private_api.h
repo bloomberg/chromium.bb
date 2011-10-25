@@ -35,7 +35,7 @@ class WebSocketProxyPrivate
 
   content::NotificationRegistrar registrar_;
 
-  // Proxy listens incoming websocket connection on this port.
+  // Proxy accepts websocket connections on this port.
   int listening_port_;
 };
 

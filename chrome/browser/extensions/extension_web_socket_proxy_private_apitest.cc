@@ -18,6 +18,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebSocketProxyPrivateApiTest, Pass) {
 #if defined(OS_CHROMEOS)
   ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionTest("web_socket_proxy_private")) << message_;
+  // Check if API still works on subsequent calls.
+  ASSERT_TRUE(RunExtensionTest("web_socket_proxy_private")) << message_;
 #endif
 }
 

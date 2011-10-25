@@ -41,7 +41,7 @@ void WebSocketProxyPrivate::Finalize() {
   if (is_finalized_)
     return;
   is_finalized_ = true;
-  SendResponse(true);
+  SendResponse(listening_port_ > 0);
   Release();
 }
 
@@ -59,10 +59,14 @@ void WebSocketProxyPrivateGetURLForTCPFunction::Observe(
 }
 
 void WebSocketProxyPrivateGetURLForTCPFunction::Finalize() {
+#if defined(OS_CHROMEOS)
   StringValue* url = Value::CreateStringValue(std::string(
       "ws://127.0.0.1:" + base::IntToString(listening_port_) +
       "/tcpproxy?" + query_));
   result_.reset(url);
+  if (listening_port_ < 1)
+    listening_port_ = chromeos::WebSocketProxyController::GetPort();
+#endif
   WebSocketProxyPrivate::Finalize();
 }
 
@@ -80,12 +84,12 @@ bool WebSocketProxyPrivateGetPassportForTCPFunction::RunImpl() {
   if (chromeos::WebSocketProxyController::CheckCredentials(
           extension_id(), hostname, port,
           chromeos::WebSocketProxyController::PLAIN_TCP)) {
-    if (!chromeos::WebSocketProxyController::IsInitiated()) {
+    listening_port_ = chromeos::WebSocketProxyController::GetPort();
+    if (listening_port_ < 1) {
       delay_response = true;
       registrar_.Add(
           this, chrome::NOTIFICATION_WEB_SOCKET_PROXY_STARTED,
           content::NotificationService::AllSources());
-      chromeos::WebSocketProxyController::Initiate();
     }
 
     std::map<std::string, std::string> map;
@@ -132,12 +136,12 @@ bool WebSocketProxyPrivateGetURLForTCPFunction::RunImpl() {
           extension_id(), hostname, port,
           do_tls ? chromeos::WebSocketProxyController::TLS_OVER_TCP :
               chromeos::WebSocketProxyController::PLAIN_TCP)) {
-    if (!chromeos::WebSocketProxyController::IsInitiated()) {
+    listening_port_ = chromeos::WebSocketProxyController::GetPort();
+    if (listening_port_ < 1) {
       delay_response = true;
       registrar_.Add(
           this, chrome::NOTIFICATION_WEB_SOCKET_PROXY_STARTED,
           content::NotificationService::AllSources());
-      chromeos::WebSocketProxyController::Initiate();
     }
 
     std::map<std::string, std::string> map;
@@ -155,7 +159,7 @@ bool WebSocketProxyPrivateGetURLForTCPFunction::RunImpl() {
 #endif  // defined(OS_CHROMEOS)
 
   if (delay_response) {
-    const int kTimeout = 3;
+    const int kTimeout = 12;
     timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(kTimeout),
         this, &WebSocketProxyPrivate::Finalize);
   } else {
