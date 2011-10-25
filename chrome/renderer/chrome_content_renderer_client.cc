@@ -426,12 +426,21 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
     // tests will still pass.
     const char* kNaClMimeType = "application/x-nacl";
     bool is_nacl_mime_type = actual_mime_type == kNaClMimeType;
+    bool is_nacl_enabled;
+    if (is_nacl_plugin) {
+      is_nacl_enabled = cmd->HasSwitch(switches::kEnableNaCl);
+    } else {
+      // If this is an external plugin that handles NaCl mime type,
+      // we want to allow Native Client, because it's how
+      // NaCl tests for the plugin work.
+      is_nacl_enabled = true;
+    }
     if (is_nacl_plugin || is_nacl_mime_type) {
       if (!IsNaClAllowed(plugin,
                          url,
                          actual_mime_type,
                          is_nacl_mime_type,
-                         cmd->HasSwitch(switches::kEnableNaCl),
+                         is_nacl_enabled,
                          params)) {
         return CreatePluginPlaceholder(
             render_view, frame, plugin, params, group.get(),
