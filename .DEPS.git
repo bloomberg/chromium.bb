@@ -49,9 +49,9 @@ deps = {
     'src/third_party/icu':
         Var('git_url') + '/chromium/deps/icu46.git@b689cbb4cf7261f75148d8f88ff6c5a5af9fbe79',
     'src/third_party/jsoncpp/source/include':
-        Var('git_url') + '/external/jsoncpp/jsoncpp.git@586229b92307944dd750801893c8c7c624547c8a',
+        Var('git_url') + '/external/jsoncpp/jsoncpp/include.git@e0f5afd960a964e76ef18d69d27a8c3e551baeb3',
     'src/third_party/jsoncpp/source/src/lib_json':
-        Var('git_url') + '/external/jsoncpp/jsoncpp.git@586229b92307944dd750801893c8c7c624547c8a',
+        Var('git_url') + '/external/jsoncpp/jsoncpp/src/lib_json.git@ad13e4ea168dc1321047afb48a5ac87b34457eda',
     'src/third_party/leveldatabase/src':
         Var('git_url') + '/external/leveldb.git@5fb21ed7ac9e91010d473ac77e132ae68f348d6a',
     'src/third_party/libjingle/source':
