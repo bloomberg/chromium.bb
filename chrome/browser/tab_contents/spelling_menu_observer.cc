@@ -154,7 +154,7 @@ void SpellingMenuObserver::OnURLFetchComplete(
     const content::URLFetcher* source) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  fetcher_.reset();
+  scoped_ptr<content::URLFetcher> clean_up_fetcher(fetcher_.release());
   animation_timer_.Stop();
 
   // Parse the response JSON and replace misspelled words in the |result_| text

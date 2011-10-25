@@ -1072,7 +1072,8 @@ void MetricsService::OnURLFetchComplete(const content::URLFetcher* source) {
   DCHECK(waiting_for_asynchronus_reporting_step_);
   waiting_for_asynchronus_reporting_step_ = false;
   DCHECK(current_fetch_.get());
-  current_fetch_.reset(NULL);  // We're not allowed to re-use it.
+  // We're not allowed to re-use it. Delete it on function exit since we use it.
+  scoped_ptr<content::URLFetcher> s(current_fetch_.release());
 
   // Confirm send so that we can move on.
   VLOG(1) << "METRICS RESPONSE CODE: " << source->GetResponseCode()
