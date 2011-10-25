@@ -22,7 +22,7 @@ date_format = '%Y/%m/%d %H:%M:%S'
 logging.basicConfig(level=logging.DEBUG, format=logging_format,
                     datefmt=date_format)
 
-_PUSH_BRANCH = 'temp_auto_checkin_branch'
+PUSH_BRANCH = 'temp_auto_checkin_branch'
 
 class VersionUpdateException(Exception):
   """Exception gets thrown for failing to update the version file"""
@@ -58,7 +58,7 @@ def _GitCleanDirectory(directory):
       raise GitCommandException(err_msg)
 
 
-def _PrepForChanges(git_repo, dry_run):
+def PrepForChanges(git_repo, dry_run):
   """Prepare a git/repo repository for making changes. It should
      have no files modified when you call this.
   Args:
@@ -69,30 +69,30 @@ def _PrepForChanges(git_repo, dry_run):
   _GitCleanDirectory(git_repo)
   try:
     if repository.InARepoRepository(git_repo):
-      cros_lib.RunCommand(['repo', 'abandon', _PUSH_BRANCH, '.'],
+      cros_lib.RunCommand(['repo', 'abandon', PUSH_BRANCH, '.'],
                           cwd=git_repo, error_ok=True)
       cros_lib.RunCommand(['repo', 'sync', '.'], cwd=git_repo)
-      cros_lib.RunCommand(['repo', 'start', _PUSH_BRANCH, '.'], cwd=git_repo)
+      cros_lib.RunCommand(['repo', 'start', PUSH_BRANCH, '.'], cwd=git_repo)
     else:
       # Attempt the equivalent of repo abandon for retries.  Master always
       # exists for manifest_version git repos.
       try:
         cros_lib.RunCommand(['git', 'checkout', 'master'], cwd=git_repo)
         if not dry_run:
-          cros_lib.RunCommand(['git', 'branch', '-D', _PUSH_BRANCH],
+          cros_lib.RunCommand(['git', 'branch', '-D', PUSH_BRANCH],
                               cwd=git_repo)
       except:
         pass
 
       remote, branch = cros_lib.GetPushBranch('master', cwd=git_repo)
       cros_lib.RunCommand(['git', 'remote', 'update'], cwd=git_repo)
-      if not cros_lib.DoesLocalBranchExist(git_repo, _PUSH_BRANCH):
-        cros_lib.RunCommand(['git', 'checkout', '-b', _PUSH_BRANCH, '-t',
+      if not cros_lib.DoesLocalBranchExist(git_repo, PUSH_BRANCH):
+        cros_lib.RunCommand(['git', 'checkout', '-b', PUSH_BRANCH, '-t',
                              '/'.join([remote, branch])], cwd=git_repo)
       else:
         # If the branch exists, we must be dry run.   Checkout to branch.
         assert dry_run, 'Failed to previously delete push branch.'
-        cros_lib.RunCommand(['git', 'checkout', _PUSH_BRANCH], cwd=git_repo)
+        cros_lib.RunCommand(['git', 'checkout', PUSH_BRANCH], cwd=git_repo)
 
     cros_lib.RunCommand(['git', 'config', 'push.default', 'tracking'],
                         cwd=git_repo)
@@ -123,10 +123,10 @@ def _PushGitChanges(git_repo, message, dry_run=True):
   """
   try:
     # TODO(sosa): Move to using cros_lib.GitPushWithRetry.
-    remote, push_branch = cros_lib.GetPushBranch(_PUSH_BRANCH, cwd=git_repo)
+    remote, push_branch = cros_lib.GetPushBranch(PUSH_BRANCH, cwd=git_repo)
     cros_lib.RunCommand(['git', 'add', '-A'], cwd=git_repo)
     cros_lib.RunCommand(['git', 'commit', '-am', message], cwd=git_repo)
-    push_cmd = ['git', 'push', remote, '%s:%s' % (_PUSH_BRANCH, push_branch)]
+    push_cmd = ['git', 'push', remote, '%s:%s' % (PUSH_BRANCH, push_branch)]
     if dry_run: push_cmd.append('--dry-run')
     cros_lib.RunCommand(push_cmd, cwd=git_repo)
   except cros_lib.RunCommandError, e:
@@ -140,7 +140,7 @@ def _PushGitChanges(git_repo, message, dry_run=True):
     if repository.InARepoRepository(git_repo):
       # Needed for chromeos version file.  Otherwise on increment, we leave
       # local commit behind in tree.
-      cros_lib.RunCommand(['repo', 'abandon', _PUSH_BRANCH], cwd=git_repo,
+      cros_lib.RunCommand(['repo', 'abandon', PUSH_BRANCH], cwd=git_repo,
                           error_ok=True)
 
 
@@ -320,7 +320,7 @@ class VersionInfo(object):
 
     repo_dir = os.path.dirname(self.version_file)
 
-    _PrepForChanges(repo_dir, dry_run)
+    PrepForChanges(repo_dir, dry_run)
 
     shutil.copyfile(temp_file, self.version_file)
     os.unlink(temp_file)
@@ -639,7 +639,7 @@ class BuildSpecsManager(object):
     CreateSymlink(src_file, dest_file, remove_file)
 
   def _PrepSpecChanges(self):
-    _PrepForChanges(self._TMP_MANIFEST_DIR, self.dry_run)
+    PrepForChanges(self._TMP_MANIFEST_DIR, self.dry_run)
 
   def _PushSpecChanges(self, commit_message):
     _PushGitChanges(self._TMP_MANIFEST_DIR, commit_message,

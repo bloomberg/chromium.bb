@@ -104,7 +104,7 @@ def GetPathToProjectMappings(deps):
 def _CreateCrosSymlink(repo_root):
   """Create symlinks to CrOS projects specified in the cros_DEPS/DEPS file."""
   cros_deps_file = os.path.join(repo_root, _CHROMIUM_CROS_DEPS)
-  deps, merged_deps = _GetParsedDeps(cros_deps_file)
+  deps, merged_deps = GetParsedDeps(cros_deps_file)
   chromium_root = os.path.join(repo_root, _CHROMIUM_ROOT)
 
   mappings = GetPathToProjectMappings(merged_deps)
@@ -167,7 +167,7 @@ def _MergeDeps(dest, update):
   return dest
 
 
-def _GetParsedDeps(deps_file):
+def GetParsedDeps(deps_file):
   """Returns the full parsed DEPS file dictionary, and merged deps.
 
   Arguments:
@@ -236,7 +236,7 @@ def main(argv=None):
   # Parse DEPS files and store hooks.
   hook_dicts = []
   for deps_file in deps_files_to_parse:
-    deps, merged_deps = _GetParsedDeps(deps_file)
+    deps, merged_deps = GetParsedDeps(deps_file)
     _ResetGitCheckout(chromium_root, merged_deps)
     hook_dicts.append(deps.get('hooks', {}))
 

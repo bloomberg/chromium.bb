@@ -132,11 +132,12 @@ class RepoRepository(object):
                          constants.REPO_URL],
                          cwd=os.path.join(self.directory, '.repo/repo'))
 
-  def Sync(self, local_manifest=None):
+  def Sync(self, local_manifest=None, jobs=4):
     """Sync/update the source.  Changes manifest if specified.
 
     local_manifest:  If set, checks out source to manifest.  DEFAULT_MANIFEST
     may be used to set it back to the default manifest.
+    jobs: An integer representing how many repo jobs to run.
     """
     try:
       if not InARepoRepository(self.directory):
@@ -148,7 +149,7 @@ class RepoRepository(object):
       self._FixRepoToolUrl()
 
       self._ReinitializeIfNecessary(local_manifest)
-      cros_lib.OldRunCommand(['repo', 'sync', '--jobs', '4'],
+      cros_lib.OldRunCommand(['repo', 'sync', '--jobs', str(jobs)],
                              cwd=self.directory, num_retries=2)
       FixExternalRepoPushUrls(self.directory)
     except cros_lib.RunCommandError, e:

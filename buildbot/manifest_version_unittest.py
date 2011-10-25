@@ -89,7 +89,7 @@ class HelperMethodsTest(unittest.TestCase):
         ('git config url.ssh://gerrit.chromium.org:29418.insteadof'
          ' http://git.chromium.org').split(), cwd=git_dir)
 
-    manifest_version._PrepForChanges(git_dir, dry_run=True)
+    manifest_version.PrepForChanges(git_dir, dry_run=True)
 
     # Change something.
     cros_lib.RunCommand(('tee --append %s/AUTHORS' % git_dir).split(),
@@ -110,11 +110,11 @@ class HelperMethodsTest(unittest.TestCase):
           ('git config url.ssh://gerrit.chromium.org:29418.insteadof'
            ' http://git.chromium.org').split(), cwd=git_dir)
 
-      manifest_version._PrepForChanges(git_dir, dry_run=False)
+      manifest_version.PrepForChanges(git_dir, dry_run=False)
 
       # This should not error out if we are running with dry_run=False for
       # prep for changes.
-      cros_lib.RunCommand(['git', 'show', manifest_version._PUSH_BRANCH],
+      cros_lib.RunCommand(['git', 'show', manifest_version.PUSH_BRANCH],
                           cwd=git_dir)
 
       # Change something.
@@ -127,7 +127,7 @@ class HelperMethodsTest(unittest.TestCase):
 
       # This should not error out if we are running with dry_run=False for
       # prep for changes.
-      cros_lib.RunCommand(['git', 'show', manifest_version._PUSH_BRANCH],
+      cros_lib.RunCommand(['git', 'show', manifest_version.PUSH_BRANCH],
                           cwd=git_dir)
     finally:
       shutil.rmtree(git_dir)
@@ -165,10 +165,10 @@ class VersionInfoTest(mox.MoxTestBase):
   def CommonTestIncrementVersion(self, incr_type):
     """Common test increment.  Returns path to new incremented file."""
     message = 'Incrementing cuz I sed so'
-    self.mox.StubOutWithMock(manifest_version, '_PrepForChanges')
+    self.mox.StubOutWithMock(manifest_version, 'PrepForChanges')
     self.mox.StubOutWithMock(manifest_version, '_PushGitChanges')
 
-    manifest_version._PrepForChanges(self.tmpdir, False)
+    manifest_version.PrepForChanges(self.tmpdir, False)
 
     version_file = self.CreateFakeVersionFile(self.tmpdir)
 
@@ -297,7 +297,7 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
     Tests without pre-existing version file in manifest dir.
     """
     self.mox.StubOutWithMock(repository.RepoRepository, 'ExportManifest')
-    self.mox.StubOutWithMock(manifest_version, '_PrepForChanges')
+    self.mox.StubOutWithMock(manifest_version, 'PrepForChanges')
     self.mox.StubOutWithMock(manifest_version, '_PushGitChanges')
     info = manifest_version.VersionInfo(
         FAKE_VERSION_STRING, CHROME_BRANCH, incr_type='patch')
