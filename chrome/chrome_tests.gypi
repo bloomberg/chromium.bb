@@ -63,7 +63,7 @@
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
-	'../ui/gfx/compositor/compositor.gyp:compositor_test_support',
+        '../ui/gfx/compositor/compositor.gyp:compositor_test_support',
       ],
       'export_dependent_settings': [
         'renderer',
@@ -1991,7 +1991,7 @@
                 'browser/chromeos/notifications/desktop_notifications_unittest.cc',
               ],
             }],
-          ],          
+          ],
         }, { # else: chromeos == 0
           'sources/': [
             ['exclude', '^browser/chromeos/'],
@@ -2452,7 +2452,7 @@
         'browser/idbbindingutilities_browsertest.cc',
         'browser/infobars/infobar_extension_apitest.cc',
         'browser/importer/toolbar_importer_utils_browsertest.cc',
-      	'browser/magic_iframe_browsertest.cc',
+        'browser/magic_iframe_browsertest.cc',
         'browser/net/cookie_policy_browsertest.cc',
         'browser/net/ftp_browsertest.cc',
         'browser/notifications/desktop_notifications_unittest.cc',
@@ -2621,6 +2621,15 @@
             'browser/notifications/desktop_notifications_unittest.cc',
             'browser/service/service_process_control_browsertest.cc',
             'browser/ui/webui/print_preview.js',
+          ],
+          'conditions': [
+            ['use_aura==1', {
+              'sources/': [
+                ['exclude', '^browser/chromeos/login/screen_locker_browsertest.cc'],
+                ['exclude', '^browser/chromeos/login/screen_locker_tester.cc'],
+                ['exclude', '^browser/chromeos/notifications/'],
+              ],
+            }],
           ],
         }],
         ['use_virtual_keyboard==1', {
@@ -3687,7 +3696,7 @@
           ],
           'sources': [
             'browser/net/sqlite_origin_bound_cert_store_unittest.cc',
-            'browser/safe_browsing/filter_false_positive_perftest.cc',            
+            'browser/safe_browsing/filter_false_positive_perftest.cc',
             'browser/visitedlink/visitedlink_perftest.cc',
             'common/json_value_serializer_perftest.cc',
             'test/perf/perftests.cc',
