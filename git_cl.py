@@ -12,7 +12,6 @@ import optparse
 import os
 import re
 import sys
-import tempfile
 import textwrap
 import urlparse
 import urllib2
@@ -36,6 +35,7 @@ except ImportError:
 from third_party import upload
 import breakpad  # pylint: disable=W0611
 import fix_encoding
+import gclient_utils
 import presubmit_support
 import rietveld
 import scm
@@ -648,7 +648,13 @@ class ChangeDescription(object):
       initial_text += '\nBUG='
     if 'TEST=' not in self.description:
       initial_text += '\nTEST='
-    self._ParseDescription(UserEditedLog(initial_text))
+    content = gclient_utils.RunEditor(initial_text, True)
+    if not content:
+      DieWithError('Running editor failed')
+    content = re.compile(r'^#.*$', re.MULTILINE).sub('', content).strip()
+    if not content:
+      DieWithError('No CL description, aborting')
+    self._ParseDescription(content)
 
   def _ParseDescription(self, description):
     if not description:
@@ -822,39 +828,6 @@ def CreateDescriptionFromLog(args):
   else:
     log_args = args[:]  # Hope for the best!
   return RunGit(['log', '--pretty=format:%s\n\n%b'] + log_args)
-
-
-def UserEditedLog(starting_text):
-  """Given some starting text, let the user edit it and return the result."""
-  editor = os.getenv('EDITOR', 'vi')
-
-  (file_handle, filename) = tempfile.mkstemp()
-  fileobj = os.fdopen(file_handle, 'w')
-  fileobj.write(starting_text)
-  fileobj.close()
-
-  # Open up the default editor in the system to get the CL description.
-  try:
-    cmd = '%s %s' % (editor, filename)
-    if sys.platform == 'win32' and os.environ.get('TERM') == 'msys':
-      # Msysgit requires the usage of 'env' to be present.
-      cmd = 'env ' + cmd
-    # shell=True to allow the shell to handle all forms of quotes in $EDITOR.
-    try:
-      subprocess2.check_call(cmd, shell=True)
-    except subprocess2.CalledProcessError, e:
-      DieWithError('Editor returned %d' % e.returncode)
-    fileobj = open(filename)
-    text = fileobj.read()
-    fileobj.close()
-  finally:
-    os.remove(filename)
-
-  if not text:
-    return
-
-  stripcomment_re = re.compile(r'^#.*$', re.MULTILINE)
-  return stripcomment_re.sub('', text).strip()
 
 
 def ConvertToInteger(inputval):

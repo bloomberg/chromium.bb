@@ -11,6 +11,7 @@ import Queue
 import re
 import stat
 import sys
+import tempfile
 import threading
 import time
 
@@ -687,3 +688,46 @@ class ExecutionQueue(object):
         work_queue.ready_cond.notifyAll()
       finally:
         work_queue.ready_cond.release()
+
+
+def GetEditor(git):
+  """Returns the most plausible editor to use."""
+  if git:
+    editor = os.environ.get('GIT_EDITOR')
+  else:
+    editor = os.environ.get('SVN_EDITOR')
+  if not editor:
+    editor = os.environ.get('EDITOR')
+  if not editor:
+    if sys.platform.startswith('win'):
+      editor = 'notepad'
+    else:
+      editor = 'vim'
+  return editor
+
+
+def RunEditor(content, git):
+  """Opens up the default editor in the system to get the CL description."""
+  file_handle, filename = tempfile.mkstemp(text=True)
+  # Make sure CRLF is handled properly by requiring none.
+  if '\r' in content:
+    print >> sys.stderr, ('!! Please remove \\r from your content !!')
+  fileobj = os.fdopen(file_handle, 'w')
+  # Still remove \r if present.
+  fileobj.write(re.sub('\r?\n', '\n', content))
+  fileobj.close()
+
+  try:
+    cmd = '%s %s' % (GetEditor(git), filename)
+    if sys.platform == 'win32' and os.environ.get('TERM') == 'msys':
+      # Msysgit requires the usage of 'env' to be present.
+      cmd = 'env ' + cmd
+    try:
+      # shell=True to allow the shell to handle all forms of quotes in
+      # $EDITOR.
+      subprocess2.check_call(cmd, shell=True)
+    except subprocess2.CalledProcessError:
+      return None
+    return FileRead(filename)
+  finally:
+    os.remove(filename)

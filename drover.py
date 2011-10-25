@@ -477,7 +477,10 @@ def drover(options, args):
 
   change_cmd = 'change ' + str(revision) + " " + filename
   if options.revertbot:
-    change_cmd += ' --silent'
+    if sys.platform == 'win32':
+      os.environ['SVN_EDITOR'] = 'cmd.exe /c exit'
+    else:
+      os.environ['SVN_EDITOR'] = 'true'
   runGcl(change_cmd)
   os.unlink(filename)
 

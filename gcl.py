@@ -733,20 +733,6 @@ def ListFiles(show_unknown_files):
   return 0
 
 
-def GetEditor():
-  editor = os.environ.get("SVN_EDITOR")
-  if not editor:
-    editor = os.environ.get("EDITOR")
-
-  if not editor:
-    if sys.platform.startswith("win"):
-      editor = "notepad"
-    else:
-      editor = "vi"
-
-  return editor
-
-
 def GenerateDiff(files, root=None):
   return SVN.GenerateDiff(files, root=root)
 
@@ -1054,7 +1040,6 @@ def CMDchange(args):
   else:
     changename = args[0]
   change_info = ChangeInfo.Load(changename, GetRepositoryRoot(), False, True)
-  silent = FilterFlag(args, "--silent")
 
   # Verify the user is running the change command from a read-write checkout.
   svn_info = SVN.CaptureInfo('.')
@@ -1103,11 +1088,7 @@ def CMDchange(args):
                 "---Paths in this changelist (" + change_info.name + "):\n")
   separator2 = "\n\n---Paths modified but not in any changelist:\n\n"
   
-  description_to_write = description
-  if sys.platform == 'win32':
-    description_to_write = description.replace('\n', '\r\n')
-  
-  text = (description_to_write + separator1 + '\n' +
+  text = (description + separator1 + '\n' +
           '\n'.join([f[0] + f[1] for f in change_info.GetFiles()]))
 
   if change_info.Exists():
@@ -1118,40 +1099,16 @@ def CMDchange(args):
             separator2)
   text += '\n'.join([f[0] + f[1] for f in unaffected_files]) + '\n'
 
-  handle, filename = tempfile.mkstemp(text=True)
-  os.write(handle, text)
-  os.close(handle)
-
-  # Open up the default editor in the system to get the CL description.
-  try:
-    if not silent:
-      cmd = '%s %s' % (GetEditor(), filename)
-      if sys.platform == 'win32' and os.environ.get('TERM') == 'msys':
-        # Msysgit requires the usage of 'env' to be present.
-        cmd = 'env ' + cmd
-      try:
-        # shell=True to allow the shell to handle all forms of quotes in
-        # $EDITOR.
-        subprocess2.check_call(cmd, shell=True)
-      except subprocess2.CalledProcessError, e:
-        ErrorExit('Editor returned %d' % e.returncode)
-    result = gclient_utils.FileRead(filename)
-  finally:
-    os.remove(filename)
-
+  result = gclient_utils.RunEditor(text, False)
   if not result:
-    return 0
+    ErrorExit('Running editor failed')
 
   split_result = result.split(separator1, 1)
   if len(split_result) != 2:
-    ErrorExit("Don't modify the text starting with ---!\n\n" + result)
+    ErrorExit("Don't modify the text starting with ---!\n\n%r" % result)
 
   # Update the CL description if it has changed.
   new_description = split_result[0]
-  
-  if sys.platform == 'win32':
-    new_description = new_description.replace('\r\n', '\n')
-  
   cl_files_text = split_result[1]
   if new_description != description or override_description:
     change_info.description = new_description
