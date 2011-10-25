@@ -336,7 +336,14 @@ void StartupTest::RunPerfTestWithManyTabs(const char* graph, const char* trace,
                  UITestBase::DEFAULT_THEME, tab_count, nth_timed_tab);
 }
 
-TEST_F(StartupTest, PerfFewTabs) {
+// http://crbug.com/101591
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_PerfFewTabs FLAKY_PerfFewTabs
+#else
+#define MAYBE_PerfFewTabs PerfFewTabs
+#endif
+
+TEST_F(StartupTest, MAYBE_PerfFewTabs) {
   RunPerfTestWithManyTabs("few_tabs", "cmdline", 5, 2, false);
 }
 
