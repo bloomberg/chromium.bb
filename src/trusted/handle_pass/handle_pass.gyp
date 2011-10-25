@@ -28,6 +28,11 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 {
+  'variables': {
+  },
+  'includes': [
+    '../../../build/common.gypi',
+  ],
   'target_defaults': {
   },
   'defines': [

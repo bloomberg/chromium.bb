@@ -3,6 +3,9 @@
 # found in the LICENSE file.
 
 {
+  'includes': [
+    '../../../build/common.gypi',
+  ],
   'variables': {
     'sources_for_standard_interfaces': [
       'clock.c',

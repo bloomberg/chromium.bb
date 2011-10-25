@@ -3,6 +3,9 @@
 # found in the LICENSE file.
 
 {
+  'includes': [
+    '../../../build/common.gypi',
+  ],
   'variables': {
     'common_sources': [
       'ppapi_plugin_main.c',

@@ -4,6 +4,9 @@
 
 
 {
+  'includes': [
+    '../../../build/common.gypi',
+  ],
   'variables': {
     'common_sources': [
       'access.c',

@@ -4,6 +4,9 @@
 # be found in the LICENSE file.
 #
 {
+  'includes': [
+    '../../../build/common.gypi',
+  ],
   'variables': {
     'common_sources': [
       'debug_stub.h',

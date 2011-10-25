@@ -5,6 +5,9 @@
 # found in the LICENSE file.
 
 {
+  'includes': [
+    '../../../build/common.gypi',
+  ],
   'variables': {
       'src_files': ['non_standard_pepper_events.cc',
                     'parsing.cc',

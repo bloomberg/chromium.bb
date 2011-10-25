@@ -3,6 +3,9 @@
 # found in the LICENSE file.
 
 {
+  'includes': [
+    '../../../build/common.gypi',
+  ],
   'variables': {
     'irt_sources': [
 # irt_support_sources

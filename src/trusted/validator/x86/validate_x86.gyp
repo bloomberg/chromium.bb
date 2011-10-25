@@ -7,6 +7,9 @@
 # Note: Would like to name this file validator_x86.gyp, but that name is
 # already used, and on mac's, this is not allowed.
 {
+  'includes': [
+    '../../../../build/common.gypi',
+  ],
   'target_defaults': {
     'variables': {
       'target_base': 'none',

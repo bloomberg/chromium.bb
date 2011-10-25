@@ -11,6 +11,9 @@
       }],
     ],
   },
+  'includes': [
+    '../../../build/common.gypi',
+  ],
   'target_defaults': {
     'variables': {
       'target_base': 'none',

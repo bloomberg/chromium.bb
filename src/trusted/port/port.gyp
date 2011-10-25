@@ -29,6 +29,9 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 {
+  'includes': [
+    '../../src/build/common.gypi',
+  ],
   'variables': {
     'common_sources': [
         'event.h',
