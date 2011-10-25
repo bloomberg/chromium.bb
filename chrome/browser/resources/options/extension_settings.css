@@ -221,7 +221,7 @@ found in the LICENSE file.
   border-bottom: 1px solid rgb(205, 205, 205);
   height: 32px;
   padding-bottom: 7px;
-  padding-top: 4px;
+  padding-top: 13px;
   -webkit-padding-start: 4px;
   -webkit-padding-end: 3px;
   -webkit-transition: padding 300ms, height 300ms, opacity 700ms;
@@ -229,6 +229,7 @@ found in the LICENSE file.
 .dev-closed {
   height: 0;
   opacity: 0;
+  padding-top: 9px;
   -webkit-padding-start: 4px;
   -webkit-padding-end: 3px;
   -webkit-transition: padding 300ms, height 700ms, opacity 200ms;
@@ -250,7 +251,7 @@ found in the LICENSE file.
 
 #dev-toggle {
   display: block;
-  float: right;
+  text-align: end;
   margin-top: -28px;
   -webkit-margin-end: 8px;
 }
