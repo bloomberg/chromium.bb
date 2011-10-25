@@ -40,7 +40,7 @@ class TestPackage(object):
     self.test_suite_basename = os.path.basename(self.test_suite)
     self.test_suite_dirname = os.path.dirname(self.test_suite)
     self.rebaseline = rebaseline
-    self._performance_test = performance_test
+    self.performance_test = performance_test
     self.cleanup_test_files = cleanup_test_files
     self.tool = CreateTool(tool, self.adb)
     if timeout == 0:
@@ -61,7 +61,7 @@ class TestPackage(object):
     """
     initial_io_stats = None
     # Try to get the disk I/O statistics for all performance tests.
-    if self._performance_test and not self.rebaseline:
+    if self.performance_test and not self.rebaseline:
       initial_io_stats = self.adb.GetIoStats()
       # Get rid of the noise introduced by launching Chrome for page cycler.
       if self.test_suite_basename == 'page_cycler_tests':
@@ -89,7 +89,7 @@ class TestPackage(object):
       String for formated diso I/O statistics.
     """
     disk_io = ''
-    if self._performance_test and initial_io_stats:
+    if self.performance_test and initial_io_stats:
       final_io_stats = self.adb.GetIoStats()
       for stat in final_io_stats:
         disk_io += '\n' + PrintPerfResult(stat, stat,
