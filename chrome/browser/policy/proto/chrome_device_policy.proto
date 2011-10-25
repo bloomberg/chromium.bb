@@ -80,9 +80,9 @@ message ReleaseChannelProto {
   optional string release_channel = 1;
 }
 
-message NetworkConfigurationProto {
+message DeviceOpenNetworkConfigurationProto {
   // The network configuration blob. This is a JSON string as specified by ONC.
-  optional string network_configuration = 1;
+  optional string open_network_configuration = 1;
 }
 
 message ChromeDeviceSettingsProto {
@@ -96,5 +96,5 @@ message ChromeDeviceSettingsProto {
   optional AllowNewUsersProto allow_new_users = 8;
   optional MetricsEnabledProto metrics_enabled = 9;
   optional ReleaseChannelProto release_channel = 10;
-  optional NetworkConfigurationProto network_configuration = 11;
+  optional DeviceOpenNetworkConfigurationProto open_network_configuration = 11;
 }

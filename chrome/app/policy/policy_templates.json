@@ -1825,7 +1825,7 @@
       This policy is limited to 100 entries; subsequent entries will be ignored.''',
     },
     {
-      'name': 'UserNetworkConfiguration',
+      'name': 'OpenNetworkConfiguration',
       'type': 'string',
       'supported_on': ['chrome_os:0.16-'],
       'features': {'dynamic_refresh': 1},
@@ -1836,7 +1836,7 @@
       'desc': '''Allows pushing network configuration to be applied per-user to a <ph name="PRODUCT_OS_NAME">$2<ex>Chromium OS</ex></ph> device. The network configuration is a JSON-formatted string as defined by the Open Network Configuration format described at https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration''',
     },
     {
-      'name': 'DeviceNetworkConfiguration',
+      'name': 'DeviceOpenNetworkConfiguration',
       'type': 'string',
       'supported_on': ['chrome_os:0.16-'],
       'device_only': True,

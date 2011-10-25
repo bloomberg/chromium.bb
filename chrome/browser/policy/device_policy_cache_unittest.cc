@@ -241,7 +241,7 @@ TEST_F(DevicePolicyCacheTest, SetDeviceNetworkConfigurationPolicy) {
   std::string fake_config("{ 'NetworkConfigurations': [] }");
   em::PolicyFetchResponse policy;
   em::ChromeDeviceSettingsProto settings;
-  settings.mutable_network_configuration()->set_network_configuration(
+  settings.mutable_open_network_configuration()->set_open_network_configuration(
       fake_config);
   CreatePolicy(&policy, kTestUser, settings);
   EXPECT_CALL(signed_settings_helper_, StartRetrievePolicyOp(_)).WillOnce(
@@ -252,7 +252,7 @@ TEST_F(DevicePolicyCacheTest, SetDeviceNetworkConfigurationPolicy) {
   StringValue expected_config(fake_config);
   EXPECT_TRUE(
       Value::Equals(&expected_config,
-                    GetMandatoryPolicy(kPolicyDeviceNetworkConfiguration)));
+                    GetMandatoryPolicy(kPolicyDeviceOpenNetworkConfiguration)));
 }
 
 }  // namespace policy

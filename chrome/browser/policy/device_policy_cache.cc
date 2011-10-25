@@ -353,10 +353,11 @@ void DevicePolicyCache::DecodeDevicePolicy(
     chromeos::CrosLibrary::Get()->GetUpdateLibrary()->SetReleaseTrack(channel);
   }
 
-  if (policy.has_network_configuration() &&
-      policy.network_configuration().has_network_configuration()) {
-    std::string config(policy.network_configuration().network_configuration());
-    mandatory->Set(kPolicyDeviceNetworkConfiguration,
+  if (policy.has_open_network_configuration() &&
+      policy.open_network_configuration().has_open_network_configuration()) {
+    std::string config(
+        policy.open_network_configuration().open_network_configuration());
+    mandatory->Set(kPolicyDeviceOpenNetworkConfiguration,
                    Value::CreateStringValue(config));
   }
 }
