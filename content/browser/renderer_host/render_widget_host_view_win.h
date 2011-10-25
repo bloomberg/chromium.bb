@@ -129,6 +129,7 @@ class RenderWidgetHostViewWin
     MESSAGE_HANDLER(WM_MOUSEACTIVATE, OnMouseActivate)
     MESSAGE_HANDLER(WM_GETOBJECT, OnGetObject)
     MESSAGE_HANDLER(WM_PARENTNOTIFY, OnParentNotify)
+    MESSAGE_HANDLER(WM_GESTURE, OnGestureEvent)
   END_MSG_MAP()
 
   // Implementation of RenderWidgetHostView:
@@ -232,12 +233,15 @@ class RenderWidgetHostViewWin
   // Handle MSAA requests for accessibility information.
   LRESULT OnGetObject(UINT message, WPARAM wparam, LPARAM lparam,
                       BOOL& handled);
-  // Handle vertical scrolling
+  // Handle vertical scrolling.
   LRESULT OnVScroll(int code, short position, HWND scrollbar_control);
-  // Handle horizontal scrolling
+  // Handle horizontal scrolling.
   LRESULT OnHScroll(int code, short position, HWND scrollbar_control);
 
   LRESULT OnParentNotify(UINT message, WPARAM wparam, LPARAM lparam,
+                         BOOL& handled);
+  // Handle high-level touch events.
+  LRESULT OnGestureEvent(UINT message, WPARAM wparam, LPARAM lparam,
                          BOOL& handled);
 
   void OnFinalMessage(HWND window);
