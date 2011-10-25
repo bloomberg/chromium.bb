@@ -909,6 +909,10 @@ void WebGraphicsContext3DInProcessCommandBufferImpl::unmapTexSubImage2DCHROMIUM(
   gl_->UnmapTexSubImage2DCHROMIUM(mem);
 }
 
+void WebGraphicsContext3DInProcessCommandBufferImpl::setVisibilityCHROMIUM(
+    bool visible) {
+}
+
 void WebGraphicsContext3DInProcessCommandBufferImpl::
     copyTextureToParentTextureCHROMIUM(WebGLId texture, WebGLId parentTexture) {
   NOTIMPLEMENTED();

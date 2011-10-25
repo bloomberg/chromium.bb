@@ -74,8 +74,6 @@ class WebGraphicsContext3DCommandBufferImpl
 
   virtual void reshape(int width, int height);
 
-  virtual void setVisibility(bool visible);
-
   virtual bool readBackFramebuffer(unsigned char* pixels, size_t buffer_size);
   virtual bool readBackFramebuffer(unsigned char* pixels, size_t buffer_size,
                                    WebGLId framebuffer, int width, int height);
@@ -411,6 +409,8 @@ class WebGraphicsContext3DCommandBufferImpl
       WGC3Denum type,
       WGC3Denum access);
   virtual void unmapTexSubImage2DCHROMIUM(const void*);
+
+  virtual void setVisibilityCHROMIUM(bool visible);
 
   virtual void copyTextureToParentTextureCHROMIUM(
       WebGLId texture, WebGLId parentTexture);

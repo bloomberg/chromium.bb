@@ -302,11 +302,6 @@ void WebGraphicsContext3DCommandBufferImpl::reshape(int width, int height) {
 #endif  // FLIP_FRAMEBUFFER_VERTICALLY
 }
 
-void WebGraphicsContext3DCommandBufferImpl::setVisibility(bool visible) {
-  gl_->Flush();
-  context_->SetSurfaceVisible(visible);
-}
-
 #ifdef FLIP_FRAMEBUFFER_VERTICALLY
 void WebGraphicsContext3DCommandBufferImpl::FlipVertically(
     uint8* framebuffer,
@@ -418,6 +413,12 @@ void* WebGraphicsContext3DCommandBufferImpl::mapTexSubImage2DCHROMIUM(
 void WebGraphicsContext3DCommandBufferImpl::unmapTexSubImage2DCHROMIUM(
     const void* mem) {
   gl_->UnmapTexSubImage2DCHROMIUM(mem);
+}
+
+void WebGraphicsContext3DCommandBufferImpl::setVisibilityCHROMIUM(
+    bool visible) {
+  gl_->Flush();
+  context_->SetSurfaceVisible(visible);
 }
 
 void WebGraphicsContext3DCommandBufferImpl::copyTextureToParentTextureCHROMIUM(

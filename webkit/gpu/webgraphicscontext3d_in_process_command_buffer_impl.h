@@ -407,6 +407,8 @@ class WebGraphicsContext3DInProcessCommandBufferImpl
       WGC3Denum access);
   virtual void unmapTexSubImage2DCHROMIUM(const void*);
 
+  virtual void setVisibilityCHROMIUM(bool visible);
+
   virtual void copyTextureToParentTextureCHROMIUM(
       WebGLId texture, WebGLId parentTexture);
 
@@ -484,5 +486,3 @@ class WebGraphicsContext3DInProcessCommandBufferImpl
 
 #endif  // defined(ENABLE_GPU)
 #endif  // WEBKIT_GPU_WEBGRAPHICSCONTEXT3D_IN_PROCESS_COMMAND_BUFFER_IMPL_H_
-
-

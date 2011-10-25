@@ -596,9 +596,6 @@ void WebGraphicsContext3DInProcessImpl::ClearRenderTarget() {
     glDisable(GL_DITHER);
 }
 
-void WebGraphicsContext3DInProcessImpl::setVisibility(bool visible) {
-}
-
 #ifdef FLIP_FRAMEBUFFER_VERTICALLY
 void WebGraphicsContext3DInProcessImpl::FlipVertically(
     unsigned char* framebuffer, unsigned int width, unsigned int height) {
@@ -711,6 +708,9 @@ void* WebGraphicsContext3DInProcessImpl::mapTexSubImage2DCHROMIUM(
 
 void WebGraphicsContext3DInProcessImpl::unmapTexSubImage2DCHROMIUM(
     const void* mem) {
+}
+
+void WebGraphicsContext3DInProcessImpl::setVisibilityCHROMIUM(bool visible) {
 }
 
 void WebGraphicsContext3DInProcessImpl::copyTextureToParentTextureCHROMIUM(
