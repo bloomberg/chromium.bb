@@ -8,8 +8,8 @@
 #define CHROME_BROWSER_CHROMEOS_NOTIFICATIONS_NOTIFICATION_PANEL_H_
 #pragma once
 
+#include "base/memory/weak_ptr.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/task.h"
 #include "chrome/browser/chromeos/frame/panel_controller.h"
 #include "chrome/browser/chromeos/notifications/balloon_collection_impl.h"
 #include "content/public/browser/notification_registrar.h"
@@ -71,7 +71,8 @@ class NotificationPanelTester;
 //
 class NotificationPanel : public PanelController::Delegate,
                           public BalloonCollectionImpl::NotificationUI,
-                          public content::NotificationObserver {
+                          public content::NotificationObserver,
+                          public base::SupportsWeakPtr<NotificationPanel> {
  public:
   enum State {
     FULL,  // Show all notifications
@@ -175,8 +176,6 @@ class NotificationPanel : public PanelController::Delegate,
 
   // Panel's state.
   State state_;
-
-  ScopedRunnableMethodFactory<NotificationPanel> task_factory_;
 
   // The minimum size of a notification.
   gfx::Rect min_bounds_;

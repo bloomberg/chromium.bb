@@ -8,6 +8,7 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "chrome/browser/chromeos/notifications/balloon_collection_impl.h"
 #include "chrome/browser/chromeos/notifications/balloon_view.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -421,7 +422,6 @@ NotificationPanel::NotificationPanel()
       panel_widget_(NULL),
       container_host_(NULL),
       state_(CLOSED),
-      task_factory_(this),
       min_bounds_(0, 0, kBalloonMinWidth, kBalloonMinHeight),
       stale_timeout_(1000 * kStaleTimeoutInSeconds),
       active_(NULL),
@@ -812,8 +812,7 @@ void NotificationPanel::StartStaleTimer(Balloon* balloon) {
   BalloonViewImpl* view = GetBalloonViewOf(balloon);
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      task_factory_.NewRunnableMethod(
-          &NotificationPanel::OnStale, view),
+      base::Bind(&NotificationPanel::OnStale, AsWeakPtr(), view),
       stale_timeout_);
 }
 
