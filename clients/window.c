@@ -671,6 +671,10 @@ create_pointer_surfaces(struct display *display)
 			display_create_surface_from_file(display,
 							 pointer_images[i].filename,
 							 &rect);
+		if (!display->pointer_surfaces[i]) {
+			fprintf(stderr, "Error loading pointer image: %s\n",
+				pointer_images[i].filename);
+		}
 	}
 
 }
@@ -1172,6 +1176,10 @@ set_pointer_image(struct input *input, uint32_t time, int pointer)
 
 	input->current_pointer_image = pointer;
 	surface = display->pointer_surfaces[pointer];
+
+	if (!surface)
+		return;
+
 	buffer = display_get_buffer_for_surface(display, surface);
 	wl_input_device_attach(input->input_device, time, buffer,
 			       pointer_images[pointer].hotspot_x,
