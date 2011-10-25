@@ -64,6 +64,10 @@
         'status_area_view.h',
         'toplevel_frame_view.cc',
         'toplevel_frame_view.h',
+        'workspace/workspace.cc',
+        'workspace/workspace.h',
+        'workspace/workspace_manager.cc',
+        'workspace/workspace_manager.h',
       ],
     },
     {
@@ -93,6 +97,7 @@
         'launcher/launcher_model_unittest.cc',
         'launcher/view_model_unittest.cc',
         'launcher/view_model_utils_unittest.cc',
+        'workspace/workspace_manager_unittest.cc',
         'run_all_unittests.cc',
         'test_suite.cc',
         'test_suite.h',
