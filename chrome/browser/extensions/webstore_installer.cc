@@ -28,7 +28,7 @@ const char kNoBrowserError[] = "No browser found";
 const char kInlineInstallSource[] = "inline";
 const char kDefaultInstallSource[] = "";
 
-GURL GetWebstoreInstallUrl(
+GURL GetWebstoreInstallURL(
     const std::string& extension_id, const std::string& install_source) {
   std::vector<std::string> params;
   params.push_back("id=" + extension_id);
@@ -59,7 +59,7 @@ WebstoreInstaller::WebstoreInstaller(Profile* profile,
       controller_(controller),
       id_(id),
       flags_(flags) {
-  download_url_ = GetWebstoreInstallUrl(id, flags & FLAG_INLINE_INSTALL ?
+  download_url_ = GetWebstoreInstallURL(id, flags & FLAG_INLINE_INSTALL ?
       kInlineInstallSource : kDefaultInstallSource);
 
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
