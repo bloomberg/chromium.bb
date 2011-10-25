@@ -14,8 +14,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/process_util.h"
+#include "base/values.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/notification_observer.h"
 #include "content/public/common/window_container_type.h"
 #include "net/base/load_states.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
@@ -72,6 +74,27 @@ struct WebFindOptions;
 namespace net {
 class URLRequestContextGetter;
 }
+
+// NotificationObserver used to listen for EXECUTE_JAVASCRIPT_RESULT
+// notifications.
+class ExecuteNotificationObserver : public content::NotificationObserver {
+ public:
+  explicit ExecuteNotificationObserver(int id);
+  virtual ~ExecuteNotificationObserver();
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
+
+  int id() const { return id_; }
+
+  Value* value() const { return value_.get(); }
+
+ private:
+  int id_;
+  scoped_ptr<Value> value_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExecuteNotificationObserver);
+};
 
 //
 // RenderViewHost
@@ -258,6 +281,10 @@ class CONTENT_EXPORT RenderViewHost : public RenderWidgetHost {
   // is sent back via the notification EXECUTE_JAVASCRIPT_RESULT.
   int ExecuteJavascriptInWebFrameNotifyResult(const string16& frame_xpath,
                                               const string16& jscript);
+
+  Value* ExecuteJavascriptAndGetValue(const string16& frame_xpath,
+                                      const string16& jscript);
+
 
   // Notifies the RenderView that the JavaScript message that was shown was
   // closed by the user.

@@ -16,144 +16,98 @@
 #include "net/base/host_port_pair.h"
 #include "net/test/test_server.h"
 
-typedef std::pair<int, Value*> ExecuteDetailType;
-
-namespace {
-
-// NotificationObserver used to listen for EXECUTE_JAVASCRIPT_RESULT
-// notifications.
-class ExecuteNotificationObserver : public content::NotificationObserver {
- public:
-  ExecuteNotificationObserver() : id_(0) {}
-
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) {
-    id_ = (static_cast<content::Details<ExecuteDetailType > >(details))->first;
-    Value* value =
-        (static_cast<content::Details<ExecuteDetailType > >(details))->second;
-    if (value)
-      value_.reset(value->DeepCopy());
-    MessageLoopForUI::current()->Quit();
-  }
-
-  int id() const { return id_; }
-
-  Value* value() const { return value_.get(); }
-
- private:
-  int id_;
-  scoped_ptr<Value> value_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExecuteNotificationObserver);
-};
-
-}  // namespace
-
 class RenderViewHostTest : public InProcessBrowserTest {
  public:
-  RenderViewHostTest() : last_execute_id_(0) {}
-
-  void ExecuteJavascriptAndGetValue(const char* script,
-                                    ExecuteNotificationObserver* out_result) {
-    RenderViewHost* rvh =
-        browser()->GetSelectedTabContents()->render_view_host();
-    ASSERT_TRUE(rvh);
-    int execute_id = rvh->ExecuteJavascriptInWebFrameNotifyResult(
-        string16(),
-        ASCIIToUTF16(script));
-    EXPECT_NE(execute_id, last_execute_id_);
-    ExecuteNotificationObserver observer;
-    ui_test_utils::RegisterAndWait(
-        out_result,
-        content::NOTIFICATION_EXECUTE_JAVASCRIPT_RESULT,
-        content::Source<RenderViewHost>(rvh));
-    EXPECT_EQ(execute_id, out_result->id());
-    ASSERT_TRUE(out_result->value());
-    last_execute_id_ = execute_id;
-  }
-
- private:
-  int last_execute_id_;
+  RenderViewHostTest() {}
 };
 
 
-// Makes sure ExecuteJavascriptInWebFrameNotifyResult works.
 IN_PROC_BROWSER_TEST_F(RenderViewHostTest,
-                       ExecuteJavascriptInWebFrameNotifyResult) {
+                       ExecuteJavascriptAndGetValue) {
   ASSERT_TRUE(test_server()->Start());
   GURL empty_url(test_server()->GetURL("files/empty.html"));
   ui_test_utils::NavigateToURL(browser(), empty_url);
 
+  RenderViewHost* rvh =
+      browser()->GetSelectedTabContents()->render_view_host();
+
+  {
+    Value* value = rvh->ExecuteJavascriptAndGetValue(string16(),
+                                                     ASCIIToUTF16("!false;"));
+    EXPECT_EQ(Value::TYPE_BOOLEAN, value->GetType());
+    bool bool_value;
+    EXPECT_TRUE(value->GetAsBoolean(&bool_value));
+    EXPECT_TRUE(bool_value);
+  }
+
   // Execute the script 'true' and make sure we get back true.
   {
-    ExecuteNotificationObserver observer;
-    ExecuteJavascriptAndGetValue("true;", &observer);
-    EXPECT_EQ(Value::TYPE_BOOLEAN, observer.value()->GetType());
+    Value* value = rvh->ExecuteJavascriptAndGetValue(string16(),
+                                                     ASCIIToUTF16("true;"));
+    EXPECT_EQ(Value::TYPE_BOOLEAN, value->GetType());
     bool bool_value;
-    EXPECT_TRUE(observer.value()->GetAsBoolean(&bool_value));
+    EXPECT_TRUE(value->GetAsBoolean(&bool_value));
     EXPECT_TRUE(bool_value);
   }
 
   // Execute the script 'false' and make sure we get back false.
   {
-    ExecuteNotificationObserver observer;
-    ExecuteJavascriptAndGetValue("false;", &observer);
-    EXPECT_EQ(Value::TYPE_BOOLEAN, observer.value()->GetType());
+    Value* value = rvh->ExecuteJavascriptAndGetValue(string16(),
+                                                     ASCIIToUTF16("false;"));
+    EXPECT_EQ(Value::TYPE_BOOLEAN, value->GetType());
     bool bool_value;
-    EXPECT_TRUE(observer.value()->GetAsBoolean(&bool_value));
+    EXPECT_TRUE(value->GetAsBoolean(&bool_value));
     EXPECT_FALSE(bool_value);
   }
 
   // And now, for something completely different, try a number.
   {
-    ExecuteNotificationObserver observer;
-    ExecuteJavascriptAndGetValue("42;", &observer);
-    EXPECT_EQ(Value::TYPE_INTEGER, observer.value()->GetType());
+    Value* value = rvh->ExecuteJavascriptAndGetValue(string16(),
+                                                     ASCIIToUTF16("42;"));
+    EXPECT_EQ(Value::TYPE_INTEGER, value->GetType());
     int int_value;
-    EXPECT_TRUE(observer.value()->GetAsInteger(&int_value));
+    EXPECT_TRUE(value->GetAsInteger(&int_value));
     EXPECT_EQ(42, int_value);
   }
 
   // Try a floating point number.
   {
-    ExecuteNotificationObserver observer;
-    ExecuteJavascriptAndGetValue("42.2;", &observer);
-    EXPECT_EQ(Value::TYPE_DOUBLE, observer.value()->GetType());
+    Value* value = rvh->ExecuteJavascriptAndGetValue(string16(),
+                                                     ASCIIToUTF16("42.2;"));
+    EXPECT_EQ(Value::TYPE_DOUBLE, value->GetType());
     double double_value;
-    EXPECT_TRUE(observer.value()->GetAsDouble(&double_value));
+    EXPECT_TRUE(value->GetAsDouble(&double_value));
     EXPECT_EQ(42.2, double_value);
   }
 
   // Let's check out string.
   {
-    ExecuteNotificationObserver observer;
-    ExecuteJavascriptAndGetValue("\"something completely different\";",
-                                 &observer);
-    EXPECT_EQ(Value::TYPE_STRING, observer.value()->GetType());
+    Value* value = rvh->ExecuteJavascriptAndGetValue(string16(),
+        ASCIIToUTF16("\"something completely different\";"));
+    EXPECT_EQ(Value::TYPE_STRING, value->GetType());
     std::string string_value;
-    EXPECT_TRUE(observer.value()->GetAsString(&string_value));
+    EXPECT_TRUE(value->GetAsString(&string_value));
     EXPECT_EQ(std::string("something completely different"), string_value);
   }
 
   // Regular expressions might be fun.
   {
-    ExecuteNotificationObserver observer;
-    ExecuteJavascriptAndGetValue("/finder.*foo/g;", &observer);
-    EXPECT_EQ(Value::TYPE_STRING, observer.value()->GetType());
+    Value* value = rvh->ExecuteJavascriptAndGetValue(string16(),
+        ASCIIToUTF16("/finder.*foo/g;"));
+    EXPECT_EQ(Value::TYPE_STRING, value->GetType());
     std::string string_value;
-    EXPECT_TRUE(observer.value()->GetAsString(&string_value));
+    EXPECT_TRUE(value->GetAsString(&string_value));
     EXPECT_EQ(std::string("/finder.*foo/g"), string_value);
   }
 
   // Let's test some date conversions.  First up, epoch.  Can't use 0 because
   // that means uninitialized, so use the next best thing.
   {
-    ExecuteNotificationObserver observer;
-    ExecuteJavascriptAndGetValue("new Date(1);", &observer);
-    EXPECT_EQ(Value::TYPE_DOUBLE, observer.value()->GetType());
+    Value* value = rvh->ExecuteJavascriptAndGetValue(string16(),
+        ASCIIToUTF16("new Date(1);"));
+    EXPECT_EQ(Value::TYPE_DOUBLE, value->GetType());
     double date_seconds;
-    EXPECT_TRUE(observer.value()->GetAsDouble(&date_seconds));
+    EXPECT_TRUE(value->GetAsDouble(&date_seconds));
 
     base::Time time = base::Time::FromDoubleT(date_seconds);
 
@@ -169,12 +123,11 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostTest,
 
   // Test date with a real date input.
   {
-    ExecuteNotificationObserver observer;
-    ExecuteJavascriptAndGetValue("new Date(Date.UTC(2006, 7, 16, 12, 0, 15));",
-                                 &observer);
-    EXPECT_EQ(Value::TYPE_DOUBLE, observer.value()->GetType());
+    Value* value = rvh->ExecuteJavascriptAndGetValue(string16(),
+        ASCIIToUTF16("new Date(Date.UTC(2006, 7, 16, 12, 0, 15));"));
+    EXPECT_EQ(Value::TYPE_DOUBLE, value->GetType());
     double date_seconds;
-    EXPECT_TRUE(observer.value()->GetAsDouble(&date_seconds));
+    EXPECT_TRUE(value->GetAsDouble(&date_seconds));
 
     base::Time time = base::Time::FromDoubleT(date_seconds);
 
@@ -191,19 +144,19 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostTest,
 
   // And something more complicated - get an array back as a list.
   {
-    ExecuteNotificationObserver observer;
-    ExecuteJavascriptAndGetValue("new Array(\"one\", 2, false);", &observer);
-    EXPECT_EQ(Value::TYPE_LIST, observer.value()->GetType());
+    Value* value = rvh->ExecuteJavascriptAndGetValue(string16(),
+        ASCIIToUTF16("new Array(\"one\", 2, false);"));
+    EXPECT_EQ(Value::TYPE_LIST, value->GetType());
     ListValue* list_value;
-    EXPECT_TRUE(observer.value()->GetAsList(&list_value));
+    EXPECT_TRUE(value->GetAsList(&list_value));
     EXPECT_EQ(3U, list_value->GetSize());
-    Value* value;
-    EXPECT_TRUE(list_value->Get(0, &value));
-    EXPECT_EQ(Value::TYPE_STRING, value->GetType());
-    EXPECT_TRUE(list_value->Get(1, &value));
-    EXPECT_EQ(Value::TYPE_INTEGER, value->GetType());
-    EXPECT_TRUE(list_value->Get(2, &value));
-    EXPECT_EQ(Value::TYPE_BOOLEAN, value->GetType());
+    Value* element_value;
+    EXPECT_TRUE(list_value->Get(0, &element_value));
+    EXPECT_EQ(Value::TYPE_STRING, element_value->GetType());
+    EXPECT_TRUE(list_value->Get(1, &element_value));
+    EXPECT_EQ(Value::TYPE_INTEGER, element_value->GetType());
+    EXPECT_TRUE(list_value->Get(2, &element_value));
+    EXPECT_EQ(Value::TYPE_BOOLEAN, element_value->GetType());
   }
 }
 
