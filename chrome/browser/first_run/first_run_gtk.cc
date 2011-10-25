@@ -17,7 +17,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/master_preferences.h"
-#include "content/common/result_codes.h"
+#include "content/public/common/result_codes.h"
 #include "googleurl/src/gurl.h"
 #include "ui/base/ui_base_switches.h"
 

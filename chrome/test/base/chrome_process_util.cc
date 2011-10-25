@@ -13,7 +13,7 @@
 #include "base/time.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/test/base/test_switches.h"
-#include "content/common/result_codes.h"
+#include "content/public/common/result_codes.h"
 
 using base::TimeDelta;
 using base::TimeTicks;

@@ -14,9 +14,9 @@
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/user_metrics.h"
-#include "content/common/result_codes.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/common/result_codes.h"
 
 // static
 void ExtensionFunctionDeleteTraits::Destruct(const ExtensionFunction* x) {

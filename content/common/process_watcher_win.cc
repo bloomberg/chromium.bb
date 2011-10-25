@@ -6,8 +6,9 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "base/process_util.h"
 #include "base/win/object_watcher.h"
-#include "content/common/result_codes.h"
+#include "content/public/common/result_codes.h"
 
 // Maximum amount of time (in milliseconds) to wait for the process to exit.
 static const int kWaitInterval = 2000;

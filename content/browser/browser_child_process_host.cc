@@ -19,10 +19,10 @@
 #include "content/public/browser/notification_service.h"
 #include "content/common/plugin_messages.h"
 #include "content/common/process_watcher.h"
-#include "content/common/result_codes.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/result_codes.h"
 
 #if defined(OS_WIN)
 #include "base/synchronization/waitable_event.h"

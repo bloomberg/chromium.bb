@@ -8,7 +8,7 @@
 #include "base/process.h"
 #include "base/process_util.h"
 #include "content/browser/user_metrics.h"
-#include "content/common/result_codes.h"
+#include "content/public/common/result_codes.h"
 #include "ipc/ipc_sync_message.h"
 
 BrowserMessageFilter::BrowserMessageFilter()

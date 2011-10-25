@@ -13,7 +13,7 @@
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/result_codes.h"
+#include "content/public/common/result_codes.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class ChildProcessSecurityPolicyInProcessBrowserTest

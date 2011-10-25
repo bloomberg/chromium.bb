@@ -43,6 +43,7 @@
     'public/common/pepper_plugin_info.cc',
     'public/common/pepper_plugin_info.h',
     'public/common/resource_dispatcher_delegate.h',
+    'public/common/result_codes.h',
     'public/common/security_style.h',
     'public/common/serialized_script_value.cc',
     'public/common/serialized_script_value.h',

@@ -10,7 +10,7 @@
 #include "chrome/app/breakpad_win.h"
 #include "chrome/app/client_util.h"
 #include "content/app/startup_helper_win.h"
-#include "content/common/result_codes.h"
+#include "content/public/common/result_codes.h"
 #include "sandbox/src/sandbox_factory.h"
 
 int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE, wchar_t*, int) {

@@ -12,7 +12,7 @@
 #include "base/process_util.h"
 #include "base/process.h"
 #include "build/build_config.h"
-#include "content/common/result_codes.h"
+#include "content/public/common/result_codes.h"
 
 namespace {
 const int64 kCheckPeriod = 2000;

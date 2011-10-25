@@ -6,7 +6,7 @@
 #define CHROME_COMMON_CHROME_RESULT_CODES_H_
 #pragma once
 
-#include "content/common/result_codes.h"
+#include "content/public/common/result_codes.h"
 
 namespace chrome {
 

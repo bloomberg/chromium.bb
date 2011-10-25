@@ -31,7 +31,7 @@
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/result_codes.h"
+#include "content/public/common/result_codes.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/ui_resources.h"

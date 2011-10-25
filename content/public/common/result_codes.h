@@ -2,11 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_RESULT_CODES_H_
-#define CONTENT_COMMON_RESULT_CODES_H_
+#ifndef CONTENT_PUBLIC_COMMON_RESULT_CODES_H_
+#define CONTENT_PUBLIC_COMMON_RESULT_CODES_H_
 #pragma once
-
-#include "base/process_util.h"
 
 // This file consolidates all the return codes for the browser and renderer
 // process. The return code is the value that:
@@ -39,4 +37,4 @@ enum ResultCode {
 
 }  // namespace content
 
-#endif  // CONTENT_COMMON_RESULT_CODES_H_
+#endif  // CONTENT_PUBLIC_COMMON_RESULT_CODES_H_

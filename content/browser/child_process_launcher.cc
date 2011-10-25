@@ -15,9 +15,9 @@
 #include "content/browser/browser_thread.h"
 #include "content/common/chrome_descriptors.h"
 #include "content/common/process_watcher.h"
-#include "content/common/result_codes.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/result_codes.h"
 
 #if defined(OS_WIN)
 #include "base/file_path.h"

@@ -21,9 +21,9 @@
 #include "chrome/common/pref_names.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/tab_contents/navigation_details.h"
-#include "content/common/result_codes.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/common/result_codes.h"
 
 #if defined(OS_MACOSX)
 #include "chrome/browser/chrome_browser_application_mac.h"
