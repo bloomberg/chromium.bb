@@ -5,7 +5,8 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/callback.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
@@ -21,8 +22,7 @@ namespace {
 typedef BrowsingDataHelperCallback<BrowsingDataIndexedDBHelper::IndexedDBInfo>
     TestCompletionCallback;
 
-class BrowsingDataIndexedDBHelperTest : public InProcessBrowserTest {
-};
+typedef InProcessBrowserTest BrowsingDataIndexedDBHelperTest;
 
 IN_PROC_BROWSER_TEST_F(BrowsingDataIndexedDBHelperTest, CannedAddIndexedDB) {
   const GURL origin1("http://host1:1/");
@@ -36,7 +36,8 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataIndexedDBHelperTest, CannedAddIndexedDB) {
 
   TestCompletionCallback callback;
   helper->StartFetching(
-      NewCallback(&callback, &TestCompletionCallback::callback));
+      base::Bind(&TestCompletionCallback::callback,
+                 base::Unretained(&callback)));
 
   std::list<BrowsingDataIndexedDBHelper::IndexedDBInfo> result =
       callback.result();
@@ -60,7 +61,8 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataIndexedDBHelperTest, CannedUnique) {
 
   TestCompletionCallback callback;
   helper->StartFetching(
-      NewCallback(&callback, &TestCompletionCallback::callback));
+      base::Bind(&TestCompletionCallback::callback,
+                 base::Unretained(&callback)));
 
   std::list<BrowsingDataIndexedDBHelper::IndexedDBInfo> result =
       callback.result();

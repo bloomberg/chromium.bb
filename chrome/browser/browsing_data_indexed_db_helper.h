@@ -9,7 +9,8 @@
 #include <list>
 #include <string>
 
-#include "base/callback_old.h"
+#include "base/callback.h"
+#include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -54,7 +55,8 @@ class BrowsingDataIndexedDBHelper
   // callback.
   // This must be called only in the UI thread.
   virtual void StartFetching(
-      Callback1<const std::list<IndexedDBInfo>& >::Type* callback) = 0;
+      const base::Callback<void(const std::list<IndexedDBInfo>&)>&
+          callback) = 0;
   // Cancels the notification callback (i.e., the window that created it no
   // longer exists).
   // This must be called only in the UI thread.
@@ -77,7 +79,7 @@ class CannedBrowsingDataIndexedDBHelper
 
   // Return a copy of the IndexedDB helper. Only one consumer can use the
   // StartFetching method at a time, so we need to create a copy of the helper
-  // everytime we instantiate a cookies tree model for it.
+  // every time we instantiate a cookies tree model for it.
   CannedBrowsingDataIndexedDBHelper* Clone();
 
   // Add a indexed database to the set of canned indexed databases that is
@@ -93,9 +95,10 @@ class CannedBrowsingDataIndexedDBHelper
 
   // BrowsingDataIndexedDBHelper methods.
   virtual void StartFetching(
-      Callback1<const std::list<IndexedDBInfo>& >::Type* callback);
-  virtual void CancelNotification();
-  virtual void DeleteIndexedDB(const GURL& origin) {}
+      const base::Callback<void(const std::list<IndexedDBInfo>&)>&
+          callback) OVERRIDE;
+  virtual void CancelNotification() OVERRIDE;
+  virtual void DeleteIndexedDB(const GURL& origin) OVERRIDE {}
 
  private:
   struct PendingIndexedDBInfo {
@@ -124,8 +127,7 @@ class CannedBrowsingDataIndexedDBHelper
   std::list<IndexedDBInfo> indexed_db_info_;
 
   // This only mutates on the UI thread.
-  scoped_ptr<Callback1<const std::list<IndexedDBInfo>& >::Type >
-      completion_callback_;
+  base::Callback<void(const std::list<IndexedDBInfo>&)> completion_callback_;
 
   // Indicates whether or not we're currently fetching information:
   // it's true when StartFetching() is called in the UI thread, and it's reset

@@ -641,8 +641,8 @@ CookiesTreeModel::CookiesTreeModel(
         this, &CookiesTreeModel::OnSessionStorageModelInfoLoaded));
   }
 
-  // TODO(michaeln): when all of the ui impls have been updated,
-  // make this a required parameter.
+  // TODO(michaeln): When all of the UI implementations have been updated, make
+  // this a required parameter.
   if (appcache_helper_) {
     appcache_helper_->StartFetching(
         base::Bind(&CookiesTreeModel::OnAppCacheModelInfoLoaded,
@@ -650,8 +650,9 @@ CookiesTreeModel::CookiesTreeModel(
   }
 
   if (indexed_db_helper_) {
-    indexed_db_helper_->StartFetching(NewCallback(
-        this, &CookiesTreeModel::OnIndexedDBModelInfoLoaded));
+    indexed_db_helper_->StartFetching(
+        base::Bind(&CookiesTreeModel::OnIndexedDBModelInfoLoaded,
+                   base::Unretained(this)));
   }
 
   if (file_system_helper_) {

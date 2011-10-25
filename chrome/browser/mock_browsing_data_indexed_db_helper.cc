@@ -14,12 +14,12 @@ MockBrowsingDataIndexedDBHelper::~MockBrowsingDataIndexedDBHelper() {
 }
 
 void MockBrowsingDataIndexedDBHelper::StartFetching(
-    Callback1<const std::list<IndexedDBInfo>& >::Type* callback) {
-  callback_.reset(callback);
+    const base::Callback<void(const std::list<IndexedDBInfo>&)>& callback) {
+  callback_ = callback;
 }
 
 void MockBrowsingDataIndexedDBHelper::CancelNotification() {
-  callback_.reset(NULL);
+  callback_.Reset();
 }
 
 void MockBrowsingDataIndexedDBHelper::DeleteIndexedDB(
@@ -42,8 +42,8 @@ void MockBrowsingDataIndexedDBHelper::AddIndexedDBSamples() {
 }
 
 void MockBrowsingDataIndexedDBHelper::Notify() {
-  CHECK(callback_.get());
-  callback_->Run(response_);
+  CHECK_EQ(false, callback_.is_null());
+  callback_.Run(response_);
 }
 
 void MockBrowsingDataIndexedDBHelper::Reset() {

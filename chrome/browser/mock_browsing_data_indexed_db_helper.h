@@ -10,6 +10,7 @@
 #include <map>
 
 #include "base/callback.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/browsing_data_indexed_db_helper.h"
 
@@ -36,14 +37,15 @@ class MockBrowsingDataIndexedDBHelper
 
   // BrowsingDataIndexedDBHelper.
   virtual void StartFetching(
-      Callback1<const std::list<IndexedDBInfo>& >::Type* callback);
-  virtual void CancelNotification();
-  virtual void DeleteIndexedDB(const GURL& origin);
+      const base::Callback<void(const std::list<IndexedDBInfo>&)>&
+          callback) OVERRIDE;
+  virtual void CancelNotification() OVERRIDE;
+  virtual void DeleteIndexedDB(const GURL& origin) OVERRIDE;
 
  private:
   virtual ~MockBrowsingDataIndexedDBHelper();
 
-  scoped_ptr<Callback1<const std::list<IndexedDBInfo>& >::Type > callback_;
+  base::Callback<void(const std::list<IndexedDBInfo>&)> callback_;
   std::map<GURL, bool> origins_;
   std::list<IndexedDBInfo> response_;
 };
