@@ -177,6 +177,12 @@ class AutomationInterstitialPage : public InterstitialPage {
   DISALLOW_COPY_AND_ASSIGN(AutomationInterstitialPage);
 };
 
+// Helper function for nested Binds that resolves the overloading of
+// BrowserThread::PostTask, and ignores the return value.
+void PostTask(BrowserThread::ID id, const base::Closure& task) {
+  BrowserThread::PostTask(id, FROM_HERE, task);
+}
+
 }  // namespace
 
 TestingAutomationProvider::TestingAutomationProvider(Profile* profile)
@@ -2722,41 +2728,25 @@ void TestingAutomationProvider::PerformActionOnInfobar(
 
 namespace {
 
-// Task to get info about BrowserChildProcessHost. Must run on IO thread to
+// Gets info about BrowserChildProcessHost. Must run on IO thread to
 // honor the semantics of BrowserChildProcessHost.
 // Used by AutomationProvider::GetBrowserInfo().
-class GetChildProcessHostInfoTask : public Task {
- public:
-  GetChildProcessHostInfoTask(base::WaitableEvent* event,
-                              ListValue* child_processes)
-    : event_(event),
-      child_processes_(child_processes) {}
-
-  virtual void Run() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    for (BrowserChildProcessHost::Iterator iter; !iter.Done(); ++iter) {
-      // Only add processes which are already started,
-      // since we need their handle.
-      if ((*iter)->handle() == base::kNullProcessHandle) {
-        continue;
-      }
-      ChildProcessInfo* info = *iter;
-      DictionaryValue* item = new DictionaryValue;
-      item->SetString("name", info->name());
-      item->SetString("type",
-                      ChildProcessInfo::GetTypeNameInEnglish(info->type()));
-      item->SetInteger("pid", base::GetProcId(info->handle()));
-      child_processes_->Append(item);
-    }
-    event_->Signal();
+void GetChildProcessHostInfo(ListValue* child_processes) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  for (BrowserChildProcessHost::Iterator iter; !iter.Done(); ++iter) {
+    // Only add processes which are already started,
+    // since we need their handle.
+    if ((*iter)->handle() == base::kNullProcessHandle)
+      continue;
+    ChildProcessInfo* info = *iter;
+    DictionaryValue* item = new DictionaryValue;
+    item->SetString("name", info->name());
+    item->SetString("type",
+                    ChildProcessInfo::GetTypeNameInEnglish(info->type()));
+    item->SetInteger("pid", base::GetProcId(info->handle()));
+    child_processes->Append(item);
   }
-
- private:
-  base::WaitableEvent* const event_;  // weak
-  ListValue* child_processes_;
-
-  DISALLOW_COPY_AND_ASSIGN(GetChildProcessHostInfoTask);
-};
+}
 
 }  // namespace
 
@@ -2868,20 +2858,6 @@ void TestingAutomationProvider::GetBrowserInfo(
   int flags = ChildProcessHost::CHILD_NORMAL;
 #endif
 
-  return_value->SetString("child_process_path",
-                          ChildProcessHost::GetChildPath(flags).value());
-  // Child processes are the processes for plugins and other workers.
-  // Add all child processes in a list of dictionaries, one dictionary item
-  // per child process.
-  ListValue* child_processes = new ListValue;
-  base::WaitableEvent event(true   /* manual reset */,
-                            false  /* not initially signaled */);
-  CHECK(BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      new GetChildProcessHostInfoTask(&event, child_processes)));
-  event.Wait();
-  return_value->Set("child_processes", child_processes);
-
   // Add all extension processes in a list of dictionaries, one dictionary
   // item per extension process.
   ListValue* extension_views = new ListValue;
@@ -2937,7 +2913,20 @@ void TestingAutomationProvider::GetBrowserInfo(
     }
   }
   return_value->Set("extension_views", extension_views);
-  AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
+
+  return_value->SetString("child_process_path",
+                          ChildProcessHost::GetChildPath(flags).value());
+  // Child processes are the processes for plugins and other workers.
+  // Add all child processes in a list of dictionaries, one dictionary item
+  // per child process.
+  ListValue* child_processes = new ListValue;
+  return_value->Set("child_processes", child_processes);
+  BrowserThread::PostTaskAndReply(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&GetChildProcessHostInfo, child_processes),
+      base::Bind(&AutomationJSONReply::SendSuccess,
+                 base::Owned(new AutomationJSONReply(this, reply_message)),
+                 base::Owned(return_value.release())));
 }
 
 // Sample json input: { "command": "GetProcessInfo" }
@@ -5863,10 +5852,11 @@ void TestingAutomationProvider::WaitForAllTabsToStopLoading(
 void TestingAutomationProvider::SetPolicies(
     DictionaryValue* args,
     IPC::Message* reply_message) {
-  AutomationJSONReply reply(this, reply_message);
+  scoped_ptr<AutomationJSONReply> reply(
+      new AutomationJSONReply(this, reply_message));
 
 #if !defined(ENABLE_CONFIGURATION_POLICY) || defined(OFFICIAL_BUILD)
-  reply.SendError("Configuration Policy disabled");
+  reply->SendError("Configuration Policy disabled");
 #else
   const policy::PolicyDefinitionList* list =
       policy::GetChromePolicyDefinitionList();
@@ -5887,7 +5877,7 @@ void TestingAutomationProvider::SetPolicies(
     if (args->GetDictionary(providers[i].name, &policies) &&
         policies &&
         !providers[i].provider) {
-      reply.SendError("Provider not available: " + providers[i].name);
+      reply->SendError("Provider not available: " + providers[i].name);
       return;
     }
   }
@@ -5900,7 +5890,19 @@ void TestingAutomationProvider::SetPolicies(
     }
   }
 
-  reply.SendSuccess(NULL);
+  // OverridePolicies() triggers preference updates, which triggers preference
+  // listeners. Some policies (e.g. URLBlacklist) post tasks to other message
+  // loops before they start being enforced; make sure those tasks have
+  // finished.
+  // Updates of the URLBlacklist are done on IO, after building the blacklist
+  // on FILE, which is initiated from IO.
+  PostTask(BrowserThread::IO,
+      base::Bind(&PostTask, BrowserThread::FILE,
+          base::Bind(&PostTask, BrowserThread::IO,
+              base::Bind(&PostTask, BrowserThread::UI,
+                  base::Bind(&AutomationJSONReply::SendSuccess,
+                             base::Owned(reply.release()),
+                             static_cast<const Value*>(NULL))))));
 #endif  // defined(OFFICIAL_BUILD)
 }
 
