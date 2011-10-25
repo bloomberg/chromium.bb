@@ -72,7 +72,7 @@
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
-#include "chrome/common/nacl_fork_delegate_linux.h"
+#include "chrome/app/nacl_fork_delegate_linux.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -704,7 +704,7 @@ bool ChromeMainDelegate::DelaySandboxInitialization(
       process_type == switches::kRelauncherProcess;
 }
 #elif defined(OS_POSIX)
-ZygoteForkDelegate* ChromeMainDelegate::ZygoteStarting() {
+content::ZygoteForkDelegate* ChromeMainDelegate::ZygoteStarting() {
   // Each Renderer we spawn will re-attempt initialization of the media
   // libraries, at which point failure will be detected and handled, so
   // we do not need to cope with initialization failures here.

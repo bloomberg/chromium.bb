@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/nacl_fork_delegate_linux.h"
+#include "chrome/app/nacl_fork_delegate_linux.h"
 
 #include <signal.h>
 #include <stdlib.h>
@@ -17,7 +17,6 @@
 #include "base/process_util.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "content/common/unix_domain_socket_posix.h"
-#include "content/common/zygote_fork_delegate_linux.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/nacl_helper_linux.h"

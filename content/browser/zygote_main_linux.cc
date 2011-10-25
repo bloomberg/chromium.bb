@@ -37,9 +37,9 @@
 #include "content/common/seccomp_sandbox.h"
 #include "content/common/set_process_title.h"
 #include "content/common/unix_domain_socket_posix.h"
-#include "content/common/zygote_fork_delegate_linux.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
+#include "content/public/common/zygote_fork_delegate_linux.h"
 #include "skia/ext/SkFontHost_fontconfig_control.h"
 #include "unicode/timezone.h"
 #include "ipc/ipc_channel.h"
@@ -94,7 +94,7 @@ static void SELinuxTransitionToTypeOrDie(const char* type) {
 // runs it.
 class Zygote {
  public:
-  Zygote(int sandbox_flags, ZygoteForkDelegate* helper)
+  Zygote(int sandbox_flags, content::ZygoteForkDelegate* helper)
       : sandbox_flags_(sandbox_flags), helper_(helper) {
     if (helper_)
       helper_->InitialUMA(&initial_uma_name_,
@@ -535,7 +535,7 @@ class Zygote {
   ProcessMap real_pids_to_sandbox_pids;
 
   const int sandbox_flags_;
-  ZygoteForkDelegate* helper_;
+  content::ZygoteForkDelegate* helper_;
 
   // These might be set by helper_->InitialUMA.  They supply a UMA
   // enumeration sample we should report on the first fork.
@@ -806,7 +806,7 @@ static bool EnterSandbox() {
 #endif  // CHROMIUM_SELINUX
 
 bool ZygoteMain(const MainFunctionParams& params,
-                ZygoteForkDelegate* forkdelegate) {
+                content::ZygoteForkDelegate* forkdelegate) {
 #if !defined(CHROMIUM_SELINUX)
   g_am_zygote_or_renderer = true;
 #endif

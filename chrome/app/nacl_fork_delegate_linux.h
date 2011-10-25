@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_NACL_FORK_DELEGATE_LINUX_H_
-#define CHROME_COMMON_NACL_FORK_DELEGATE_LINUX_H_
+#ifndef CHROME_APP_NACL_FORK_DELEGATE_LINUX_H_
+#define CHROME_APP_NACL_FORK_DELEGATE_LINUX_H_
 #pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "content/common/zygote_fork_delegate_linux.h"
+#include "content/public/common/zygote_fork_delegate_linux.h"
 
 // The NaClForkDelegate is created during Chrome linux zygote
 // initialization, and provides "fork()" functionality with
 // NaCl specific process characteristics (specifically address
 // space layout) as an alternative to forking the zygote.
 // A new delegate is passed in as an argument to ZygoteMain().
-class NaClForkDelegate : public ZygoteForkDelegate {
+class NaClForkDelegate : public content::ZygoteForkDelegate {
  public:
   NaClForkDelegate();
   virtual ~NaClForkDelegate();
@@ -51,4 +51,4 @@ class NaClForkDelegate : public ZygoteForkDelegate {
   int fd_;
 };
 
-#endif  // CHROME_COMMON_NACL_FORK_DELEGATE_LINUX_H_
+#endif  // CHROME_APP_NACL_FORK_DELEGATE_LINUX_H_

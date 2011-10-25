@@ -48,7 +48,7 @@
 #include "content/common/chrome_descriptors.h"
 
 #if !defined(OS_MACOSX)
-#include "content/common/zygote_fork_delegate_linux.h"
+#include "content/public/common/zygote_fork_delegate_linux.h"
 #endif
 
 #endif  // OS_POSIX
@@ -68,7 +68,7 @@ extern int WorkerMain(const MainFunctionParams&);
 extern int UtilityMain(const MainFunctionParams&);
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 extern int ZygoteMain(const MainFunctionParams&,
-                      ZygoteForkDelegate* forkdelegate);
+                      content::ZygoteForkDelegate* forkdelegate);
 #endif
 
 namespace {
@@ -192,7 +192,7 @@ int RunZygote(const MainFunctionParams& main_function_params,
     { switches::kPpapiPluginProcess, PpapiPluginMain },
   };
 
-  scoped_ptr<ZygoteForkDelegate> zygote_fork_delegate;
+  scoped_ptr<content::ZygoteForkDelegate> zygote_fork_delegate;
   if (delegate) zygote_fork_delegate.reset(delegate->ZygoteStarting());
 
   // This function call can return multiple times, once per fork().

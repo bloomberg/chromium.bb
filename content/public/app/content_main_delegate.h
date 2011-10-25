@@ -11,9 +11,10 @@
 #include "build/build_config.h"
 
 struct MainFunctionParams;
-class ZygoteForkDelegate;
 
 namespace content {
+
+class ZygoteForkDelegate;
 
 class ContentMainDelegate {
  public:
@@ -61,7 +62,7 @@ class ContentMainDelegate {
 #elif defined(OS_POSIX)
   // Tells the embedder that the zygote process is starting, and allows it to
   // specify a zygote delegate if it wishes.
-  virtual ZygoteForkDelegate* ZygoteStarting() = 0;
+  virtual content::ZygoteForkDelegate* ZygoteStarting() = 0;
 
   // Called every time the zygote process forks.
   virtual void ZygoteForked() = 0;

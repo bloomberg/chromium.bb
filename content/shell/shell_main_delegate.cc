@@ -59,7 +59,7 @@ bool ShellMainDelegate::DelaySandboxInitialization(
 }
 
 #elif defined(OS_POSIX)
-ZygoteForkDelegate* ShellMainDelegate::ZygoteStarting() {
+content::ZygoteForkDelegate* ShellMainDelegate::ZygoteStarting() {
   return NULL;
 }
 

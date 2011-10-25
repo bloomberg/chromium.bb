@@ -37,7 +37,7 @@ class ShellMainDelegate : public content::ContentMainDelegate {
   virtual bool DelaySandboxInitialization(
       const std::string& process_type) OVERRIDE;
 #elif defined(OS_POSIX)
-  virtual ZygoteForkDelegate* ZygoteStarting() OVERRIDE;
+  virtual content::ZygoteForkDelegate* ZygoteStarting() OVERRIDE;
   virtual void ZygoteForked() OVERRIDE;
 #endif  // OS_MACOSX
 

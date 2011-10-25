@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_ZYGOTE_FORK_DELEGATE_LINUX_H_
-#define CONTENT_COMMON_ZYGOTE_FORK_DELEGATE_LINUX_H_
+#ifndef CONTENT_PUBLIC_COMMON_ZYGOTE_FORK_DELEGATE_LINUX_H_
+#define CONTENT_PUBLIC_COMMON_ZYGOTE_FORK_DELEGATE_LINUX_H_
 #pragma once
 
 #include <unistd.h>
@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+namespace content {
 
 // The ZygoteForkDelegate allows the Chrome Linux zygote to delegate
 // fork operations to another class that knows how to do some
@@ -22,7 +22,6 @@ class ZygoteForkDelegate {
   // initialization, and provides "fork()" functionality as an
   // alternative to forking the zygote.  A new delegate is passed in
   // as an argument to ZygoteMain().
-  ZygoteForkDelegate() {}
   virtual ~ZygoteForkDelegate() {}
 
   // Initialization happens in the zygote after it has been
@@ -54,4 +53,7 @@ class ZygoteForkDelegate {
   // channel switch as a part of acknowledgement message.
   virtual bool AckChild(int fd, const std::string& channel_switch) = 0;
 };
-#endif  // CONTENT_COMMON_ZYGOTE_FORK_DELEGATE_LINUX_H_
+
+}  // namespace content
+
+#endif  // CONTENT_PUBLIC_COMMON_ZYGOTE_FORK_DELEGATE_LINUX_H_
