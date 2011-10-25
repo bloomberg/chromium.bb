@@ -3,7 +3,4 @@
 # found in the LICENSE file.
 
 {
-  'variables': {
-    'nacl_standalone%': 0,
-  },
 }
