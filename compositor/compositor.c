@@ -552,6 +552,10 @@ create_pointer_images(struct wlsc_compositor *ec)
 			create_sprite_from_png(ec,
 					       pointer_images[i].filename,
 					       SPRITE_USE_CURSOR);
+		if (!ec->pointer_sprites[i]) {
+			fprintf(stderr, "Error loading pointer image: %s\n",
+				pointer_images[i].filename);
+		}
 	}
 }
 
