@@ -5,9 +5,12 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GPU_SCHEDULER_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GPU_SCHEDULER_H_
 
+#include <queue>
+
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/shared_memory.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
@@ -20,7 +23,9 @@ namespace gpu {
 // a command buffer and forwarded to a command parser. TODO(apatrick): This
 // class should not know about the decoder. Do not add additional dependencies
 // on it.
-class GpuScheduler : public CommandBufferEngine {
+class GpuScheduler
+    : public CommandBufferEngine,
+      public base::SupportsWeakPtr<GpuScheduler> {
  public:
   GpuScheduler(CommandBuffer* command_buffer,
                gles2::GLES2Decoder* decoder,
@@ -51,6 +56,8 @@ class GpuScheduler : public CommandBufferEngine {
 
   void SetCommandProcessedCallback(Callback0::Type* callback);
 
+  void DeferToFence(base::Closure task);
+
  private:
 
   // The GpuScheduler holds a weak reference to the CommandBuffer. The
@@ -70,6 +77,17 @@ class GpuScheduler : public CommandBufferEngine {
 
   // Greater than zero if this is waiting to be rescheduled before continuing.
   int unscheduled_count_;
+
+  // The GpuScheduler will unschedule itself in the event that further GL calls
+  // are issued to it before all these fences have been crossed by the GPU.
+  struct UnscheduleFence {
+    UnscheduleFence();
+    ~UnscheduleFence();
+
+    uint32 fence;
+    base::Closure task;
+  };
+  std::queue<UnscheduleFence> unschedule_fences_;
 
   scoped_ptr<Callback0::Type> scheduled_callback_;
   scoped_ptr<Callback0::Type> command_processed_callback_;
