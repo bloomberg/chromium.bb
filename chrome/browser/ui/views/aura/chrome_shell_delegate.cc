@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/aura/chrome_shell_delegate.h"
 
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "ui/aura/window.h"
@@ -31,6 +32,10 @@ bool ChromeShellDelegate::ShouldCreateLauncherItemForBrowser(
 }
 
 void ChromeShellDelegate::CreateNewWindow() {
+  Browser* browser = Browser::Create(
+      ProfileManager::GetDefaultProfile()->GetOriginalProfile());
+  browser->AddSelectedTabWithURL(GURL(), content::PAGE_TRANSITION_START_PAGE);
+  browser->window()->Show();
 }
 
 void ChromeShellDelegate::ShowApps() {
