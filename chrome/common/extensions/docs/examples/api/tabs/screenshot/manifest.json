@@ -6,6 +6,7 @@
   "browser_action": {
      "default_icon": "camera.png",
      "default_title": "Take a screen shot!"
-   },
-  "permissions": ["tabs", "http://code.google.com/"]
+  },
+  "permissions": ["tabs", "http://code.google.com/"],
+  "content_security_policy": "default-src 'none'; script-src 'self'; img-src data:"
 }

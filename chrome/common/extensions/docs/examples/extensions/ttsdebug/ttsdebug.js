@@ -677,6 +677,7 @@ function load() {
     var i = $('voices').selectedIndex;
     localStorage['voice'] = $('voices').item(i).value;
   }, false);
+  $('stop').addEventListener('click', stop);
 
   for (var i = 0; i < tests.length; i++) {
     registerTest(tests[i]);
@@ -689,3 +690,5 @@ function stop() {
   emergencyStop = true;
   chrome.tts.stop();
 }
+
+document.addEventListener('DOMContentLoaded', load);

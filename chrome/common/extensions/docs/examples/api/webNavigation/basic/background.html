@@ -9,22 +9,7 @@
     <title>WebNavigation Sample Extension Background Page</title>
   </head>
   <body>
-    <script src='./navigation_collector.js'></script>
-    <script>
-      var nav = new NavigationCollector();
-
-      var eventList = ['onBeforeNavigate', 'onCreatedNavigationTarget',
-          'onCommitted', 'onCompleted', 'onDOMContentLoaded',
-          'onErrorOccurred', 'onReferenceFragmentUpdated'];
-
-      eventList.forEach(function(e) {
-        chrome.webNavigation[e].addListener(function(data) {
-          if (typeof data)
-            console.log(chrome.i18n.getMessage('inHandler'), e, data);
-          else
-            console.error(chrome.i18n.getMessage('inHandlerError'), e);
-        });
-      });
-    </script>
+    <script src='navigation_collector.js'></script>
+    <script src='background.js'></script>
   </body>
 </html>

@@ -13,5 +13,6 @@
    "minimum_chrome_version": "14",
    "name": "TTS Debug",
    "permissions": [ "tts" ],
-   "version": "1.0"
+   "version": "1.0",
+   "content_security_policy": "default-src 'none'; script-src 'self'; style-src 'self'"
 }

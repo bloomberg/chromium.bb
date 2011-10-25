@@ -285,9 +285,10 @@
       "search_string": "A BROWSER ACTION WITH NO ICON THAT MAKES THE PAGE RED  BACKGROUND_PAGE BROWSER_ACTION TABS CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETBADGEBACKGROUNDCOLOR CHROME.BROWSERACTION.SETBADGETEXT CHROME.TABS.EXECUTESCRIPT",
       "source_files": [
         "background.html",
+        "background.js",
         "manifest.json"
       ],
-      "source_hash": "174cf55b15678010dff3a18983b940ef9091b115",
+      "source_hash": "e01ddafb8290fe885fd5df25699909bcf0036c51",
       "zip_path": "examples\/api\/browserAction\/make_page_red.zip"
     },
     {
@@ -377,7 +378,7 @@
         "popup.html",
         "popup.js"
       ],
-      "source_hash": "62a69b77d59cda0b038c2e5acdbcae289b3f5176",
+      "source_hash": "a557cefb7b3f3036cb65ff77b03538b6c6cdedf6",
       "zip_path": "examples\/extensions\/app_launcher.zip"
     },
     {
@@ -891,7 +892,7 @@
         "background.js",
         "manifest.json"
       ],
-      "source_hash": "4c779b160a04cb4264eee14d7969f665953699a7",
+      "source_hash": "c294cbd813e4a59b3ee8270892f10c68aa3f53b3",
       "zip_path": "examples\/api\/omnibox\/extension-docs.zip"
     },
     {
@@ -927,7 +928,7 @@
         "devtools.js",
         "manifest.json"
       ],
-      "source_hash": "259e28743c1aa6d8778f92fa1af001299f7ad774",
+      "source_hash": "b967625a22f6c961a8d3296824fc589ca1314d3a",
       "zip_path": "examples\/api\/devtools\/network\/chrome-firephp.zip"
     },
     {
@@ -1477,9 +1478,10 @@
       "search_string": "MERGE WINDOWS MERGES ALL OF THE BROWSERS WINDOWS INTO THE CURRENT WINDOW BACKGROUND_PAGE BROWSER_ACTION TABS CHROME.BROWSERACTION.ONCLICKED CHROME.TABS.GET CHROME.TABS.GETALLINWINDOW CHROME.TABS.MOVE CHROME.WINDOWS.GET CHROME.WINDOWS.GETALL CHROME.WINDOWS.GETCURRENT",
       "source_files": [
         "background.html",
+        "background.js",
         "manifest.json"
       ],
-      "source_hash": "4b5fe52788e0bef2f3871b36105eb53cc760c454",
+      "source_hash": "0dec37bcc5aa0af5c4e04c305ff90869a9502fa1",
       "zip_path": "examples\/api\/windows\/merge_windows.zip"
     },
     {
@@ -2004,13 +2006,17 @@
       "name": "Show Tabs in Process",
       "packaged_app": false,
       "path": "examples\/api\/processes\/show_tabs\/",
-      "protocols": [],
+      "protocols": [
+        "chrome:\/\/"
+      ],
       "search_string": "SHOW TABS IN PROCESS ADDS A BROWSER ACTION SHOWING WHICH TABS SHARE THE CURRENT TABS PROCESS. BROWSER_ACTION EXPERIMENTAL POPUP TABS CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.TABS.UPDATE CHROME.WINDOWS.GET CHROME.WINDOWS.GETALL CHROME.WINDOWS.GETCURRENT CHROME.WINDOWS.UPDATE",
       "source_files": [
         "manifest.json",
-        "popup.html"
+        "popup.css",
+        "popup.html",
+        "popup.js"
       ],
-      "source_hash": "c9818c3c4c2e4fae0a7cc29588514e050356fd52",
+      "source_hash": "c71a35cc8266d8cbe800e48cf3366c27dbffb3fa",
       "zip_path": "examples\/api\/processes\/show_tabs.zip"
     },
     {
@@ -2174,11 +2180,12 @@
       "search_string": "TEST SCREENSHOT EXTENSION DEMONSTRATE SCREENSHOT FUNCTIONALITY IN THE CHROME.TABS API. NOTE: ONLY WORKS FOR CODE.GOOGLE.COM BACKGROUND_PAGE BROWSER_ACTION TABS CHROME.BROWSERACTION.ONCLICKED CHROME.EXTENSION.GETURL CHROME.EXTENSION.GETVIEWS CHROME.TABS.CAPTUREVISIBLETAB CHROME.TABS.CREATE CHROME.TABS.ONUPDATED",
       "source_files": [
         "background.html",
+        "background.js",
         "manifest.json",
         "screenshot.html",
         "screenshot.js"
       ],
-      "source_hash": "559684528065aa7782e802bfba6ebf3ec238d7cc",
+      "source_hash": "59a96f4201e09897b65f219cd664119f94f3fdb5",
       "zip_path": "examples\/api\/tabs\/screenshot.zip"
     },
     {
@@ -2234,10 +2241,11 @@
       "search_string": "TTS DEBUG TOOL FOR DEVELOPERS OF CHROME TTS ENGINE EXTENSIONS TO HELP THEM TEST THEIR ENGINES ARE IMPLEMENTING THE API CORRECTLY. TTS CHROME.TTS.GETVOICES CHROME.TTS.SPEAK CHROME.TTS.STOP",
       "source_files": [
         "manifest.json",
+        "ttsdebug.css",
         "ttsdebug.html",
         "ttsdebug.js"
       ],
-      "source_hash": "e81705ac4dd9a820b403e2b77d07e72b5de0198e",
+      "source_hash": "0806af7ee646f2bae8dacd4f9fae16336e3e6807",
       "zip_path": "examples\/extensions\/ttsdebug.zip"
     },
     {
@@ -2326,11 +2334,14 @@
       "source_files": [
         "_locales\/en\/messages.json",
         "background.html",
+        "background.js",
         "manifest.json",
         "navigation_collector.js",
-        "popup.html"
+        "popup.css",
+        "popup.html",
+        "popup.js"
       ],
-      "source_hash": "b6cda534937998343a093fdb74313a85edbc771e",
+      "source_hash": "449424bf09813438d65a988ef3249d59c01462e2",
       "zip_path": "examples\/api\/webNavigation\/basic.zip"
     },
     {

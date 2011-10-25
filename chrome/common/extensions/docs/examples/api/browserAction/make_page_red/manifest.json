@@ -6,7 +6,8 @@
     "tabs", "http://*/*"
   ],
   "browser_action": {
-      "name": "Make this page red",
-      "icons": ["icon.png"]
-  }
+    "name": "Make this page red",
+    "icons": ["icon.png"]
+  },
+  "content_security_policy": "default-src 'none'; script-src 'self'"
 }

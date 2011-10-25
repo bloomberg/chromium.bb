@@ -11,5 +11,6 @@
   "permissions":    [
     "extension",
     "webNavigation"
-  ]
+  ],
+  "content_security_policy": "default-src 'none'; script-src 'self'; style-src 'self'"
 }
