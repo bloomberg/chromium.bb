@@ -69,9 +69,6 @@ class ExternalExtensionProviderImpl
   static const char kExternalUpdateUrl[];
   static const char kSupportedLocales[];
 
- protected:
-  VisitorInterface* service() const { return service_; }
-
  private:
   // Location for external extensions that are provided by this provider from
   // local crx files.

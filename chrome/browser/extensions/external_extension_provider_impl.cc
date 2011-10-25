@@ -14,7 +14,6 @@
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/default_apps_trial.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/external_extension_provider_interface.h"
 #include "chrome/browser/extensions/external_policy_extension_loader.h"
@@ -26,13 +25,15 @@
 #include "content/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if !defined(OS_CHROMEOS)
+#include "chrome/browser/extensions/default_apps.h"
+#endif
+
 #if defined(OS_WIN)
 #include "chrome/browser/extensions/external_registry_extension_loader_win.h"
 #endif
 
 // Constants for keeping track of extension preferences in a dictionary.
-const char ExternalExtensionProviderImpl::kLocation[] = "location";
-const char ExternalExtensionProviderImpl::kState[] = "state";
 const char ExternalExtensionProviderImpl::kExternalCrx[] = "external_crx";
 const char ExternalExtensionProviderImpl::kExternalVersion[] =
     "external_version";
@@ -40,47 +41,6 @@ const char ExternalExtensionProviderImpl::kExternalUpdateUrl[] =
     "external_update_url";
 const char ExternalExtensionProviderImpl::kSupportedLocales[] =
     "supported_locales";
-
-#if !defined(OS_CHROMEOS)
-class DefaultAppsProvider : public ExternalExtensionProviderImpl {
- public:
-  DefaultAppsProvider(VisitorInterface* service, Profile* profile)
-      : ExternalExtensionProviderImpl(service,
-            new ExternalPrefExtensionLoader(chrome::DIR_DEFAULT_APPS,
-                ExternalPrefExtensionLoader::NONE),
-            Extension::EXTERNAL_PREF, Extension::INVALID),
-        profile_(profile) {
-    DCHECK(profile_);
-  }
-
-  // ExternalExtensionProviderImpl overrides:
-  virtual void ServiceShutdown() OVERRIDE;
-  virtual void VisitRegisteredExtension() const OVERRIDE;
-
- private:
-  Profile* profile_;
-
-  DISALLOW_COPY_AND_ASSIGN(DefaultAppsProvider);
-};
-
-void DefaultAppsProvider::ServiceShutdown() {
-  profile_ = NULL;
-  ExternalExtensionProviderImpl::ServiceShutdown();
-}
-
-void DefaultAppsProvider::VisitRegisteredExtension() const {
-  // Don't install default apps if the profile already has apps installed.
-  if (profile_) {
-    ExtensionService* extension_service = profile_->GetExtensionService();
-    if (extension_service && extension_service->HasApps()) {
-      service()->OnExternalProviderReady(this);
-      return;
-    }
-  }
-
-  ExternalExtensionProviderImpl::VisitRegisteredExtension();
-}
-#endif
 
 ExternalExtensionProviderImpl::ExternalExtensionProviderImpl(
     VisitorInterface* service,
@@ -382,46 +342,15 @@ void ExternalExtensionProviderImpl::CreateExternalProviders(
               Extension::EXTERNAL_POLICY_DOWNLOAD)));
 
 #if !defined(OS_CHROMEOS)
-  // We decide to install or not install default apps based on the following
-  // criteria, from highest priority to lowest priority:
-  //
-  // - if this instance of chrome is participating in the default apps
-  //   field trial, then install apps based on the group
-  // - the command line option.  Tests use this option to disable installation
-  //   of default apps in some cases
-  // - the preferences value in the profile.  This value is usually set in
-  //   the master_preferences file
-  bool install_apps =
-      profile->GetPrefs()->GetString(prefs::kDefaultApps) == "install";
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableDefaultApps)) {
-    install_apps = false;
-  }
-  if (base::FieldTrialList::TrialExists(kDefaultAppsTrial_Name)) {
-    install_apps = base::FieldTrialList::Find(
-        kDefaultAppsTrial_Name)->group_name() != kDefaultAppsTrial_NoAppsGroup;
-  }
-
-  if (install_apps) {
-    // Don't bother installing default apps in locales where its known that
-    // they don't work.
-    // TODO(rogerta): Do this check dynamically once the webstore can expose
-    // an API.
-    const std::string& locale = g_browser_process->GetApplicationLocale();
-    static const char* unsupported_locales[] = {"CN", "TR", "IR"};
-    bool supported_locale = true;
-    for (size_t i = 0; i < arraysize(unsupported_locales); ++i) {
-      if (EndsWith(locale, unsupported_locales[i], false)) {
-        supported_locale = false;
-        break;
-      }
-    }
-
-    if (supported_locale) {
-      provider_list->push_back(
-          linked_ptr<ExternalExtensionProviderInterface>(
-              new DefaultAppsProvider(service, profile)));
-    }
+  if (default_apps::ShouldInstallInProfile(profile)) {
+    provider_list->push_back(
+        linked_ptr<ExternalExtensionProviderInterface>(
+            new ExternalExtensionProviderImpl(
+                service,
+                new ExternalPrefExtensionLoader(
+                    chrome::DIR_DEFAULT_APPS, options),
+                Extension::EXTERNAL_PREF,
+                Extension::INVALID)));
   }
 #endif
 }

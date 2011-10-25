@@ -938,6 +938,8 @@
         'browser/extensions/app_notification_storage.h',
         'browser/extensions/apps_promo.cc',
         'browser/extensions/apps_promo.h',
+        'browser/extensions/default_apps.cc',
+        'browser/extensions/default_apps.h',
         'browser/extensions/default_apps_trial.cc',
         'browser/extensions/default_apps_trial.h',
         'browser/extensions/convert_user_script.cc',
@@ -4050,6 +4052,8 @@
           ],
           'sources!': [
             'browser/background/background_mode_manager_gtk.cc',
+            'browser/extensions/default_apps_provider.cc',
+            'browser/extensions/default_apps_provider.h',
             'browser/first_run/upgrade_util.cc',
             'browser/first_run/upgrade_util.h',
             'browser/first_run/upgrade_util_linux.cc',

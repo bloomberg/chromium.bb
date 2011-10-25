@@ -141,6 +141,7 @@ extern const char kInstantEnabledTime[];
 extern const char kInstantPromo[];
 extern const char kMultipleProfilePrefMigration[];
 extern const char kNetworkPredictionEnabled[];
+extern const char kDefaultAppsInstallState[];
 #if defined(OS_CHROMEOS)
 extern const char kAudioMute[];
 extern const char kAudioVolume[];

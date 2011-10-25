@@ -87,6 +87,8 @@
 #include "chrome/browser/chromeos/status/input_method_menu.h"
 #include "chrome/browser/chromeos/status/network_menu_button.h"
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
+#else
+#include "chrome/browser/extensions/default_apps.h"
 #endif
 
 namespace browser {
@@ -185,6 +187,9 @@ void RegisterUserPrefs(PrefService* user_prefs) {
 #endif
   SyncPromoUI::RegisterUserPrefs(user_prefs);
   chrome_browser_net::HttpServerPropertiesManager::RegisterPrefs(user_prefs);
+#if !defined(OS_CHROMEOS)
+  default_apps::RegisterUserPrefs(user_prefs);
+#endif
 }
 
 void MigrateBrowserPrefs(PrefService* user_prefs, PrefService* local_state) {

@@ -382,6 +382,14 @@ const char kMultipleProfilePrefMigration[] =
 // preferences are not lost.
 const char kNetworkPredictionEnabled[] = "dns_prefetching.enabled";
 
+// An integer representing the state of the default apps installation process.
+// This value is persisted in the profile's user preferences because the process
+// is async, and the user may have stopped chrome in the middle.  The next time
+// the profile is opened, the process will continue from where it left off.
+//
+// See possible values in external_extension_provider_impl.cc.
+const char kDefaultAppsInstallState[] = "default_apps_install_state";
+
 #if defined(OS_CHROMEOS)
 // An integer pref to initially mute volume if 1.
 const char kAudioMute[] = "settings.audio.mute";
