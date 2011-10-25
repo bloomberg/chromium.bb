@@ -22,6 +22,17 @@
   margin-bottom: 10px;
 }
 
+#profiles-list > * {
+  height: 40px;
+}
+
+.profile-img {
+  height: 31px;
+  padding: 3px;
+  vertical-align: middle;
+  width: 38px;
+}
+
 .profile-item-current {
   font-weight: bold;
 }

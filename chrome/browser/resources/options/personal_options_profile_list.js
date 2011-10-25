@@ -48,10 +48,15 @@ cr.define('options.personal_options', function() {
 
       var profileInfo = this.profileInfo_;
 
-      var nameEl = this.contentElement;
-      nameEl.className = 'profile-item';
+      var iconEl = this.ownerDocument.createElement('img');
+      iconEl.className = 'profile-img';
+      iconEl.src = profileInfo.iconURL;
+      this.contentElement.appendChild(iconEl);
+
+      var nameEl = this.ownerDocument.createElement('div');
       if (profileInfo.isCurrentProfile)
         nameEl.classList.add('profile-item-current');
+      this.contentElement.appendChild(nameEl);
 
       var displayName = profileInfo.name;
       if (profileInfo.isCurrentProfile)
