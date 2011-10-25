@@ -16,11 +16,9 @@
       '_USE_32BIT_TIME_T',
       'SAFE_TO_DEFINE_TALK_BASE_LOGGING_MACROS',
       'EXPAT_RELATIVE_PATH',
-      'JSONCPP_RELATIVE_PATH',
       'WEBRTC_RELATIVE_PATH',
       'HAVE_WEBRTC_VIDEO',
       'HAVE_WEBRTC_VOICE',
-      'NO_SOUND_SYSTEM',
     ],
     'configurations': {
       'Debug': {
@@ -36,12 +34,12 @@
       './source',
     ],
     'dependencies': [
-      '<(DEPTH)/base/base.gyp:base',
-      '<(DEPTH)/net/net.gyp:net',
-      '<(DEPTH)/third_party/expat/expat.gyp:expat',
+      '../expat/expat.gyp:expat',
+      '../../base/base.gyp:base',
+      '../../net/net.gyp:net',
     ],
     'export_dependent_settings': [
-      '<(DEPTH)/third_party/expat/expat.gyp:expat',
+      '../expat/expat.gyp:expat',
     ],
     'direct_dependent_settings': {
       'include_dirs': [
@@ -52,9 +50,7 @@
         'FEATURE_ENABLE_SSL',
         'FEATURE_ENABLE_VOICEMAIL',
         'EXPAT_RELATIVE_PATH',
-        'JSONCPP_RELATIVE_PATH',
         'WEBRTC_RELATIVE_PATH',
-        'NO_SOUND_SYSTEM',
       ],
       'conditions': [
         ['OS=="win"', {
@@ -213,8 +209,6 @@
         'source/talk/base/httpcommon.h',
         'source/talk/base/httprequest.cc',
         'source/talk/base/httprequest.h',
-        'source/talk/base/json.cc',
-        'source/talk/base/json.h',
         'source/talk/base/linked_ptr.h',
         'source/talk/base/logging.cc',
         'source/talk/base/md5.h',
@@ -279,8 +273,6 @@
         'source/talk/base/time.h',
         'source/talk/base/urlencode.cc',
         'source/talk/base/urlencode.h',
-        'source/talk/base/worker.cc',
-        'source/talk/base/worker.h',
         'source/talk/xmllite/xmlbuilder.cc',
         'source/talk/xmllite/xmlbuilder.h',
         'source/talk/xmllite/xmlconstants.cc',
@@ -350,8 +342,6 @@
         }],
         ['OS=="linux"', {
           'sources': [
-            'source/talk/base/latebindingsymboltable.cc',
-            'source/talk/base/latebindingsymboltable.h',
             'source/talk/base/linux.cc',
             'source/talk/base/linux.h',
           ],
@@ -364,12 +354,6 @@
             'source/talk/base/macutils.h',
           ],
         }],
-      ],
-      'dependencies': [
-        '<(DEPTH)/third_party/jsoncpp/jsoncpp.gyp:jsoncpp',
-      ],
-      'export_dependent_settings': [
-        '<(DEPTH)/third_party/jsoncpp/jsoncpp.gyp:jsoncpp',
       ],
     },  # target libjingle
     # This has to be is a separate project due to a bug in MSVS:
@@ -450,16 +434,10 @@
       'type': 'static_library',
       'sources': [        
         'source/talk/app/webrtc/peerconnection.h',
-        'source/talk/app/webrtc/peerconnectionfactory.cc',
         'source/talk/app/webrtc/peerconnectionfactory.h',
-        'source/talk/app/webrtc/peerconnectionimpl.cc',
-        'source/talk/app/webrtc/peerconnectionimpl.h',
+        'source/talk/app/webrtc/peerconnectionfactory.cc',
         'source/talk/app/webrtc/peerconnectionproxy.cc',
         'source/talk/app/webrtc/peerconnectionproxy.h',
-        'source/talk/app/webrtc/webrtcsession.cc',
-        'source/talk/app/webrtc/webrtcsession.h',
-        'source/talk/app/webrtc/webrtcjson.cc',
-        'source/talk/app/webrtc/webrtcjson.h',
         'source/talk/session/phone/audiomonitor.cc',
         'source/talk/session/phone/audiomonitor.h',
         'source/talk/session/phone/call.cc',
@@ -473,8 +451,6 @@
         'source/talk/session/phone/cryptoparams.h',
         'source/talk/session/phone/currentspeakermonitor.cc',
         'source/talk/session/phone/currentspeakermonitor.h',
-        'source/talk/session/phone/devicemanager.cc',
-        'source/talk/session/phone/devicemanager.h',
         'source/talk/session/phone/filemediaengine.cc',
         'source/talk/session/phone/filemediaengine.h',   
         'source/talk/session/phone/mediachannel.h',
@@ -485,7 +461,6 @@
         'source/talk/session/phone/mediamonitor.cc',
         'source/talk/session/phone/mediamonitor.h',
         'source/talk/session/phone/mediasession.cc',
-        'source/talk/session/phone/mediasession.h',
         'source/talk/session/phone/mediasessionclient.cc',
         'source/talk/session/phone/mediasessionclient.h',
         'source/talk/session/phone/mediasink.h',
@@ -503,22 +478,17 @@
         'source/talk/session/phone/voicechannel.h',
         'source/talk/session/phone/webrtccommon.h',
         'source/talk/session/phone/webrtcpassthroughrender.cc',
-        'source/talk/session/phone/webrtcvideoengine.cc',
-        'source/talk/session/phone/webrtcvideoengine.h',
         'source/talk/session/phone/webrtcvideoframe.cc',
         'source/talk/session/phone/webrtcvideoframe.h',
         'source/talk/session/phone/webrtcvie.h',
         'source/talk/session/phone/webrtcvoe.h',
-        'source/talk/session/phone/webrtcvoiceengine.cc',
-        'source/talk/session/phone/webrtcvoiceengine.h',
       ],
       'dependencies': [
-        '<(DEPTH)/third_party/webrtc/modules/modules.gyp:video_capture_module',
-        '<(DEPTH)/third_party/webrtc/modules/modules.gyp:video_render_module',
-        '<(DEPTH)/third_party/webrtc/video_engine/video_engine.gyp:video_engine_core',
-        '<(DEPTH)/third_party/webrtc/voice_engine/voice_engine.gyp:voice_engine_core',
-        '<(DEPTH)/third_party/webrtc/system_wrappers/source/system_wrappers.gyp:system_wrappers',
-        'libjingle',
+        '../../third_party/webrtc/modules/modules.gyp:video_capture_module',
+        '../../third_party/webrtc/modules/modules.gyp:video_render_module',
+        '../../third_party/webrtc/video_engine/video_engine.gyp:video_engine_core',
+        '../../third_party/webrtc/voice_engine/voice_engine.gyp:voice_engine_core',
+        '../../third_party/webrtc/system_wrappers/source/system_wrappers.gyp:system_wrappers',
         'libjingle_p2p',
       ],          
     },  # target libjingle_peerconnection
