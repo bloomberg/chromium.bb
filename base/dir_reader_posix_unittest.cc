@@ -27,10 +27,10 @@ TEST(DirReaderPosixUnittest, Read) {
 
   char kDirTemplate[] = "/tmp/org.chromium.dir-reader-posix-XXXXXX";
   const char* dir = mkdtemp(kDirTemplate);
-  ASSERT_TRUE(dir);
+  CHECK(dir);
 
   const int prev_wd = open(".", O_RDONLY | O_DIRECTORY);
-  DCHECK_GE(prev_wd, 0);
+  CHECK_GE(prev_wd, 0);
 
   PCHECK(chdir(dir) == 0);
 

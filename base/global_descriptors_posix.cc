@@ -23,7 +23,7 @@ int GlobalDescriptors::Get(Key key) const {
   const int ret = MaybeGet(key);
 
   if (ret == -1)
-    DLOG(FATAL) << "Unknown global descriptor: " << key;
+    LOG(FATAL) << "Unknown global descriptor: " << key;
   return ret;
 }
 

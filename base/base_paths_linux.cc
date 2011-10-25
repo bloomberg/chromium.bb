@@ -83,8 +83,8 @@ bool PathProviderPosix(int key, FilePath* result) {
           *result = path;
           return true;
         } else {
-          DLOG(WARNING) << "CR_SOURCE_ROOT is set, but it appears to not "
-                        << "point to the correct source root directory.";
+          LOG(WARNING) << "CR_SOURCE_ROOT is set, but it appears to not "
+                       << "point to the correct source root directory.";
         }
       }
       // On POSIX, unit tests execute two levels deep from the source root.
@@ -113,8 +113,8 @@ bool PathProviderPosix(int key, FilePath* result) {
         *result = path;
         return true;
       }
-      DLOG(ERROR) << "Couldn't find your source root.  "
-                  << "Try running from your chromium/src directory.";
+      LOG(ERROR) << "Couldn't find your source root.  "
+                 << "Try running from your chromium/src directory.";
       return false;
     }
     case base::DIR_CACHE:

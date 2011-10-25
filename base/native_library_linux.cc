@@ -34,7 +34,7 @@ NativeLibrary LoadNativeLibrary(const FilePath& library_path,
 void UnloadNativeLibrary(NativeLibrary library) {
   int ret = dlclose(library);
   if (ret < 0) {
-    DLOG(ERROR) << "dlclose failed: " << dlerror();
+    LOG(ERROR) << "dlclose failed: " << dlerror();
     NOTREACHED();
   }
 }
