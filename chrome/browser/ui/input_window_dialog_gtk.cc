@@ -2,46 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/input_window_dialog.h"
+#include "chrome/browser/ui/input_window_dialog_gtk.h"
 
 #include <gtk/gtk.h>
-
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "ui/base/gtk/gtk_signal.h"
-
-class InputWindowDialogGtk : public InputWindowDialog {
- public:
-  // Creates a dialog. Takes ownership of |delegate|.
-  InputWindowDialogGtk(GtkWindow* parent,
-                       const std::string& window_title,
-                       const std::string& label,
-                       const std::string& contents,
-                       Delegate* delegate);
-  virtual ~InputWindowDialogGtk();
-
-  virtual void Show();
-  virtual void Close();
-
- private:
-  CHROMEG_CALLBACK_0(InputWindowDialogGtk, void, OnEntryChanged, GtkEditable*);
-  CHROMEGTK_CALLBACK_1(InputWindowDialogGtk, void, OnResponse, int);
-  CHROMEGTK_CALLBACK_1(InputWindowDialogGtk, gboolean,
-                       OnWindowDeleteEvent, GdkEvent*);
-  CHROMEGTK_CALLBACK_0(InputWindowDialogGtk, void, OnWindowDestroy);
-
-  // The underlying gtk dialog window.
-  GtkWidget* dialog_;
-
-  // The GtkEntry in this form.
-  GtkWidget* input_;
-
-  // Our delegate. Consumes the window's output.
-  scoped_ptr<InputWindowDialog::Delegate> delegate_;
-};
-
 
 InputWindowDialogGtk::InputWindowDialogGtk(GtkWindow* parent,
                                            const std::string& window_title,
@@ -131,16 +98,4 @@ gboolean InputWindowDialogGtk::OnWindowDeleteEvent(GtkWidget* widget,
 
 void InputWindowDialogGtk::OnWindowDestroy(GtkWidget* widget) {
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);
-}
-
-InputWindowDialog* InputWindowDialog::Create(gfx::NativeWindow parent,
-                                             const string16& window_title,
-                                             const string16& label,
-                                             const string16& contents,
-                                             Delegate* delegate) {
-  return new InputWindowDialogGtk(parent,
-                                  UTF16ToUTF8(window_title),
-                                  UTF16ToUTF8(label),
-                                  UTF16ToUTF8(contents),
-                                  delegate);
 }

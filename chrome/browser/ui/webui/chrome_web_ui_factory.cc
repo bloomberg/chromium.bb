@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/webui/history_ui.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "chrome/browser/ui/webui/hung_renderer_dialog_ui.h"
+#include "chrome/browser/ui/webui/input_window_dialog_ui.h"
 #include "chrome/browser/ui/webui/media/media_internals_ui.h"
 #include "chrome/browser/ui/webui/net_internals_ui.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
@@ -159,6 +160,9 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
   }
   if (url.host() == chrome::kChromeUIHungRendererDialogHost) {
     return &NewWebUI<HungRendererDialogUI>;
+  }
+  if (url.host() == chrome::kChromeUIInputWindowDialogHost) {
+    return &NewWebUI<InputWindowDialogUI>;
   }
   if (url.host() == chrome::kChromeUICrashesHost)
     return &NewWebUI<CrashesUI>;
