@@ -237,7 +237,9 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceRelease(uint64 surface_id) {
 void RenderWidgetHostViewAura::SetBackground(const SkBitmap& background) {
   RenderWidgetHostView::SetBackground(background);
   host_->SetBackground(background);
+#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
   window_->layer()->SetFillsBoundsOpaquely(background.isOpaque());
+#endif
 }
 
 #if defined(OS_POSIX)

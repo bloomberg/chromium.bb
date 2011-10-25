@@ -183,7 +183,9 @@ EventType EventTypeFromNative(const base::NativeEvent& native_event) {
     case WM_NCMOUSELEAVE:
       return ET_MOUSE_EXITED;
     default:
-      NOTREACHED();
+      // We can't NOTREACHED() here, since this function can be called for any
+      // message.
+      break;
   }
   return ET_UNKNOWN;
 }
