@@ -9,6 +9,7 @@
 #include "base/file_path.h"
 #include "base/memory/scoped_vector.h"
 #include "content/common/child_process.h"
+#include "content/common/child_process_messages.h"
 #include "content/common/indexed_db_key.h"
 #include "content/common/utility_messages.h"
 #include "content/public/utility/content_utility_client.h"
@@ -50,6 +51,19 @@ void UtilityThreadImpl::ReleaseProcessIfNeeded() {
   if (!batch_mode_)
     ChildProcess::current()->ReleaseProcess();
 }
+
+#if defined(OS_WIN)
+
+void UtilityThreadImpl::PreCacheFont(const LOGFONT& log_font) {
+  Send(new ChildProcessHostMsg_PreCacheFont(log_font));
+}
+
+void UtilityThreadImpl::ReleaseCachedFonts() {
+  Send(new ChildProcessHostMsg_ReleaseCachedFonts());
+}
+
+#endif  // OS_WIN
+
 
 bool UtilityThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
   if (content::GetContentClient()->utility()->OnMessageReceived(msg))

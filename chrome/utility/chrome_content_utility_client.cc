@@ -31,8 +31,6 @@
 #include "base/path_service.h"
 #include "base/win/iat_patch_function.h"
 #include "base/win/scoped_handle.h"
-#include "content/common/child_process_messages.h"
-#include "content/common/sandbox_init_wrapper.h"
 #include "content/public/common/content_switches.h"
 #include "printing/emf_win.h"
 #endif  // defined(OS_WIN)
@@ -234,12 +232,9 @@ DWORD WINAPI UtilityProcess_GetFontDataPatch(
     LOGFONT logfont;
     if (GetObject(font, sizeof(LOGFONT), &logfont)) {
       std::vector<char> font_data;
-      if (content::UtilityThread::Get()->Send(
-              new ChildProcessHostMsg_PreCacheFont(logfont))) {
-        rv = GetFontData(hdc, table, offset, buffer, length);
-        content::UtilityThread::Get()->Send(
-            new ChildProcessHostMsg_ReleaseCachedFonts());
-      }
+      content::UtilityThread::Get()->PreCacheFont(logfont);
+      rv = GetFontData(hdc, table, offset, buffer, length);
+      content::UtilityThread::Get()->ReleaseCachedFonts();
     }
   }
   return rv;

@@ -39,8 +39,11 @@ class UtilityThreadImpl : public content::UtilityThread,
   virtual ~UtilityThreadImpl();
 
   virtual bool Send(IPC::Message* msg) OVERRIDE;
-
   virtual void ReleaseProcessIfNeeded() OVERRIDE;
+#if defined(OS_WIN)
+  virtual void PreCacheFont(const LOGFONT& log_font) OVERRIDE;
+  virtual void ReleaseCachedFonts() OVERRIDE;
+#endif
 
  private:
   // ChildThread implementation.
