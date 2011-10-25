@@ -171,6 +171,8 @@ void LayerAnimationManager::AnimationProgressed(
 
 void LayerAnimationManager::AnimationEnded(const ui::Animation* animation) {
   AnimationProgressed(animation);
+  if (layer_->delegate())
+    layer_->delegate()->OnLayerAnimationEnded(animation);
 }
 
 void LayerAnimationManager::StopAnimating(AnimationProperty property) {
