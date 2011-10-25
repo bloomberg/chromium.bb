@@ -12,6 +12,7 @@
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/gfx/canvas.h"
 #include "views/background.h"
+#include "views/controls/single_split_view_listener.h"
 
 #if defined(TOOLKIT_USES_GTK)
 #include "ui/gfx/gtk_util.h"
@@ -33,11 +34,11 @@ static const int kDividerSize = 4;
 SingleSplitView::SingleSplitView(View* leading,
                                  View* trailing,
                                  Orientation orientation,
-                                 Observer* observer)
+                                 SingleSplitViewListener* listener)
     : is_horizontal_(orientation == HORIZONTAL_SPLIT),
       divider_offset_(-1),
       resize_leading_on_bounds_change_(true),
-      observer_(observer) {
+      listener_(listener) {
   AddChildView(leading);
   AddChildView(trailing);
 #if defined(OS_WIN)
@@ -186,7 +187,7 @@ bool SingleSplitView::OnMouseDragged(const MouseEvent& event) {
 
   if (new_size != divider_offset_) {
     set_divider_offset(new_size);
-    if (!observer_ || observer_->SplitHandleMoved(this))
+    if (!listener_ || listener_->SplitHandleMoved(this))
       Layout();
   }
   return true;
@@ -198,7 +199,7 @@ void SingleSplitView::OnMouseCaptureLost() {
 
   if (drag_info_.initial_divider_offset != divider_offset_) {
     set_divider_offset(drag_info_.initial_divider_offset);
-    if (!observer_ || observer_->SplitHandleMoved(this))
+    if (!listener_ || listener_->SplitHandleMoved(this))
       Layout();
   }
 }

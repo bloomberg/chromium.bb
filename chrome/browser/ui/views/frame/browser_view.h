@@ -25,7 +25,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/gfx/native_widget_types.h"
-#include "views/controls/single_split_view.h"
+#include "views/controls/single_split_view_listener.h"
 #include "views/widget/widget_delegate.h"
 #include "views/window/client_view.h"
 
@@ -88,7 +88,7 @@ class BrowserView : public BrowserBubbleHost,
                     public views::Widget::Observer,
                     public views::ClientView,
                     public InfoBarContainer::Delegate,
-                    public views::SingleSplitView::Observer {
+                    public views::SingleSplitViewListener {
  public:
   // The browser view's class name.
   static const char kViewClassName[];
@@ -407,8 +407,8 @@ class BrowserView : public BrowserBubbleHost,
   virtual void InfoBarContainerStateChanged(bool is_animating) OVERRIDE;
   virtual bool DrawInfoBarArrows(int* x) const OVERRIDE;
 
-  // views::SingleSplitView::Observer overrides:
-  virtual bool SplitHandleMoved(views::SingleSplitView* view) OVERRIDE;
+  // views::SingleSplitViewListener overrides:
+  virtual bool SplitHandleMoved(views::SingleSplitView* sender) OVERRIDE;
 
  protected:
   // Appends to |toolbars| a pointer to each AccessiblePaneView that

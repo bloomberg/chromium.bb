@@ -207,6 +207,7 @@
         'controls/separator.h',
         'controls/single_split_view.cc',
         'controls/single_split_view.h',
+        'controls/single_split_view_listener.h',
         'controls/tabbed_pane/native_tabbed_pane_gtk.cc',
         'controls/tabbed_pane/native_tabbed_pane_gtk.h',
         'controls/tabbed_pane/native_tabbed_pane_win.cc',

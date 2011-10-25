@@ -1830,9 +1830,9 @@ bool BrowserView::DrawInfoBarArrows(int* x) const {
   return true;
 }
 
-bool BrowserView::SplitHandleMoved(views::SingleSplitView* view) {
-  for (int i = 0; i < view->child_count(); ++i)
-    view->child_at(i)->InvalidateLayout();
+bool BrowserView::SplitHandleMoved(views::SingleSplitView* sender) {
+  for (int i = 0; i < sender->child_count(); ++i)
+    sender->child_at(i)->InvalidateLayout();
   SchedulePaint();
   Layout();
   return false;

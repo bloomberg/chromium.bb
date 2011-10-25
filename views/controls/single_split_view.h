@@ -11,11 +11,13 @@
 
 namespace views {
 
+class SingleSplitViewListener;
+
 // SingleSplitView lays out two views next to each other, either horizontally
 // or vertically. A splitter exists between the two views that the user can
 // drag around to resize the views.
-// Observer's SplitHandleMoved notification helps to monitor user initiated
-// layout changes.
+// SingleSplitViewListener's SplitHandleMoved notification helps to monitor user
+// initiated layout changes.
 class VIEWS_EXPORT SingleSplitView : public View {
  public:
   enum Orientation {
@@ -23,24 +25,12 @@ class VIEWS_EXPORT SingleSplitView : public View {
     VERTICAL_SPLIT
   };
 
-  // Internal class name
   static const char kViewClassName[];
-
-  class Observer {
-   public:
-    // Invoked when split handle is moved by the user. |source|'s divider_offset
-    // is already set to the new value, but Layout has not happened yet.
-    // Returns false if the layout has been handled by the observer, returns
-    // true if |source| should do it by itself.
-    virtual bool SplitHandleMoved(SingleSplitView* source) = 0;
-   protected:
-    virtual ~Observer() {}
-  };
 
   SingleSplitView(View* leading,
                   View* trailing,
                   Orientation orientation,
-                  Observer* observer);
+                  SingleSplitViewListener* listener);
 
   virtual void Layout() OVERRIDE;
   virtual std::string GetClassName() const OVERRIDE;
@@ -95,10 +85,9 @@ class VIEWS_EXPORT SingleSplitView : public View {
 
   // Calculates the new |divider_offset| based on the changes of split view
   // bounds.
-  int CalculateDividerOffset(
-      int divider_offset,
-      const gfx::Rect& previous_bounds,
-      const gfx::Rect& new_bounds) const;
+  int CalculateDividerOffset(int divider_offset,
+                             const gfx::Rect& previous_bounds,
+                             const gfx::Rect& new_bounds) const;
 
   // Returns divider offset within primary axis size range for given split
   // view |bounds|.
@@ -131,8 +120,8 @@ class VIEWS_EXPORT SingleSplitView : public View {
 
   bool resize_leading_on_bounds_change_;
 
-  // Observer to notify about user initiated handle movements. Not own by us.
-  Observer* observer_;
+  // Listener to notify about user initiated handle movements. Not owned.
+  SingleSplitViewListener* listener_;
 
   // The accessible name of this view.
   string16 accessible_name_;

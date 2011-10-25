@@ -6,6 +6,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "views/controls/single_split_view.h"
+#include "views/controls/single_split_view_listener.h"
 
 using ::testing::_;
 using ::testing::Return;
@@ -43,7 +44,7 @@ static void VerifySplitViewLayout(const views::SingleSplitView& split) {
   }
 }
 
-class MockObserver : public views::SingleSplitView::Observer {
+class MockObserver : public views::SingleSplitViewListener {
  public:
   MOCK_METHOD1(SplitHandleMoved, bool(views::SingleSplitView*));
 };
