@@ -54,10 +54,18 @@ AvatarMenuBubbleGtk::AvatarMenuBubbleGtk(Browser* browser,
                             true,  // |grab_input|
                             theme_service_,
                             this);  // |delegate|
+  g_signal_connect(contents_, "destroy",
+                   G_CALLBACK(&OnDestroyThunk), this);
 }
 
 AvatarMenuBubbleGtk::~AvatarMenuBubbleGtk() {
   STLDeleteContainerPointers(items_.begin(), items_.end());
+}
+
+void AvatarMenuBubbleGtk::OnDestroy(GtkWidget* widget) {
+  // We are self deleting, we have a destroy signal setup to catch when we
+  // destroyed (via the BubbleGtk being destroyed), and delete ourself.
+  delete this;
 }
 
 void AvatarMenuBubbleGtk::BubbleClosing(BubbleGtk* bubble,

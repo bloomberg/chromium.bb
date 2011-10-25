@@ -48,6 +48,8 @@ class AvatarMenuBubbleGtk : public BubbleDelegateGtk,
   virtual void EditProfile(size_t profile_index);
 
  private:
+  // Notified when |contents_| is destroyed so we can delete our instance.
+  CHROMEGTK_CALLBACK_0(AvatarMenuBubbleGtk, void, OnDestroy);
   CHROMEGTK_CALLBACK_1(AvatarMenuBubbleGtk, void, OnSizeRequest,
                        GtkRequisition*);
   CHROMEGTK_CALLBACK_0(AvatarMenuBubbleGtk, void, OnNewProfileLinkClicked);

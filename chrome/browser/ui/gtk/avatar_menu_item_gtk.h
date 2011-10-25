@@ -8,6 +8,7 @@
 
 #include <gtk/gtk.h>
 
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/profiles/avatar_menu_model.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
@@ -35,6 +36,9 @@ class AvatarMenuItemGtk {
                     size_t item_index,
                     GtkThemeService* theme_service);
   virtual ~AvatarMenuItemGtk();
+
+  void OpenProfile();
+  void EditProfile();
 
   // Returns the root widget for this menu item.
   GtkWidget* widget() { return widget_.get(); }
@@ -72,6 +76,8 @@ class AvatarMenuItemGtk {
   // A weak pointer to a link button to edit the given profile. It is shown only
   // when the user is hovering over the active profile.
   GtkWidget* link_alignment_;
+
+  base::WeakPtrFactory<AvatarMenuItemGtk> weak_factory_;
 };
 
 #endif  // CHROME_BROWSER_UI_GTK_AVATAR_MENU_ITEM_GTK_H_

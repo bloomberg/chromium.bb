@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/gtk/avatar_menu_item_gtk.h"
 
+#include "base/bind.h"
+#include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
@@ -40,16 +42,29 @@ AvatarMenuItemGtk::AvatarMenuItemGtk(Delegate* delegate,
       item_(item),
       item_index_(item_index),
       status_label_(NULL),
-      link_alignment_(NULL) {
+      link_alignment_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   Init(theme_service);
 }
 
 AvatarMenuItemGtk::~AvatarMenuItemGtk() {
+  widget_.Destroy();
+}
+
+void AvatarMenuItemGtk::OpenProfile() {
+  delegate_->OpenProfile(item_index_);
 }
 
 gboolean AvatarMenuItemGtk::OnProfileClick(GtkWidget* widget,
                                            GdkEventButton* event) {
-  delegate_->OpenProfile(item_index_);
+  // delegate_->EditProfile() will close the avatar bubble which in turn
+  // try to destroy this AvatarMenuItemGtk.
+  // This is not OK to do this from the signal handler, so we'll
+  // defer it.
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&AvatarMenuItemGtk::OpenProfile,
+                 weak_factory_.GetWeakPtr()));
   return FALSE;
 }
 
@@ -83,8 +98,19 @@ gboolean AvatarMenuItemGtk::OnProfileLeave(GtkWidget* widget,
   return FALSE;
 }
 
-void AvatarMenuItemGtk::OnEditProfileLinkClicked(GtkWidget* link) {
+void AvatarMenuItemGtk::EditProfile() {
   delegate_->EditProfile(item_index_);
+}
+
+void AvatarMenuItemGtk::OnEditProfileLinkClicked(GtkWidget* link) {
+  // delegate_->EditProfile() will close the avatar bubble which in turn
+  // try to destroy this AvatarMenuItemGtk.
+  // This is not OK to do this from the signal handler, so we'll
+  // defer it.
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&AvatarMenuItemGtk::EditProfile,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void AvatarMenuItemGtk::Init(GtkThemeService* theme_service) {
