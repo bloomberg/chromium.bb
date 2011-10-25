@@ -44,6 +44,7 @@ void CustomButton::SetState(ButtonState state) {
   }
 
   state_ = state;
+  StateChanged();
   SchedulePaint();
 }
 
@@ -259,6 +260,9 @@ CustomButton::CustomButton(ButtonListener* listener)
       request_focus_on_press_(true) {
   hover_animation_.reset(new ui::ThrobAnimation(this));
   hover_animation_->SetSlideDuration(kHoverFadeDurationMs);
+}
+
+void CustomButton::StateChanged() {
 }
 
 bool CustomButton::IsTriggerableEvent(const MouseEvent& event) {

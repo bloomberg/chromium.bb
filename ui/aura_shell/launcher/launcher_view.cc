@@ -14,6 +14,7 @@
 #include "ui/aura_shell/shell.h"
 #include "ui/aura_shell/shell_delegate.h"
 #include "ui/base/animation/animation.h"
+#include "ui/base/animation/throb_animation.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/image/image.h"
@@ -40,7 +41,53 @@ static const int kPreferredHeight = 48;
 // Minimum distance before drag starts.
 static const int kMinimumDragDistance = 8;
 
+// Opacity for the |new_browser_button_| and |show_apps_buttons_| when the mouse
+// isn't over it.
+static const float kDimmedButtonOpacity = .8f;
+
 namespace {
+
+// ImageButton subclass that animates transition changes using the opacity of
+// the layer.
+class FadeButton : public views::ImageButton {
+ public:
+  explicit FadeButton(views::ButtonListener* listener)
+      : ImageButton(listener) {
+    SetPaintToLayer(true);
+    layer()->SetFillsBoundsOpaquely(false);
+    layer()->SetOpacity(kDimmedButtonOpacity);
+  }
+
+ protected:
+  // ImageButton overrides:
+  virtual SkBitmap GetImageToPaint() OVERRIDE {
+    // ImageButton::GetImageToPaint returns an alpha blended image based on
+    // hover_animation_. FadeButton uses hover_animation to change the opacity
+    // of the layer, so this can be overriden to return the normal image always.
+    return images_[BS_NORMAL];
+  }
+  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE {
+    layer()->SetOpacity(kDimmedButtonOpacity + (1.0f - kDimmedButtonOpacity) *
+                        animation->GetCurrentValue());
+    layer()->ScheduleDraw();
+  }
+  virtual void StateChanged() OVERRIDE {
+    if (!hover_animation_->is_animating()) {
+      float opacity = state_ == BS_NORMAL ? kDimmedButtonOpacity : 1.0f;
+      if (layer()->opacity() != opacity) {
+        layer()->SetOpacity(opacity);
+        layer()->ScheduleDraw();
+      }
+    }
+  }
+  virtual void SchedulePaint() OVERRIDE {
+    // All changes we care about trigger a draw on the layer, so this can be
+    // overriden to do nothing.
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FadeButton);
+};
 
 // AnimationDelegate that deletes a view when done. This is used when a launcher
 // item is removed, which triggers a remove animation. When the animation is
@@ -163,7 +210,7 @@ LauncherView::~LauncherView() {
 void LauncherView::Init() {
   model_->AddObserver(this);
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  new_browser_button_ = new views::ImageButton(this);
+  new_browser_button_ = new FadeButton(this);
   new_browser_button_->SetImage(
       views::CustomButton::BS_NORMAL,
       rb.GetImageNamed(IDR_AURA_LAUNCHER_ICON_CHROME).ToSkBitmap());
@@ -177,7 +224,7 @@ void LauncherView::Init() {
     AddChildView(child);
   }
 
-  show_apps_button_ = new views::ImageButton(this);
+  show_apps_button_ = new FadeButton(this);
   show_apps_button_->SetImage(
       views::CustomButton::BS_NORMAL,
       rb.GetImageNamed(IDR_AURA_LAUNCHER_ICON_APPLIST).ToSkBitmap());

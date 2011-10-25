@@ -100,6 +100,12 @@ class VIEWS_EXPORT CustomButton : public Button,
   // Construct the Button with a Listener. See comment for Button's ctor.
   explicit CustomButton(ButtonListener* listener);
 
+  // Invoked from SetState() when SetState() is passed a value that differs from
+  // the current state. CustomButton's implementation of StateChanged() does
+  // nothing; this method is provided for subclasses that wish to do something
+  // on state changes.
+  virtual void StateChanged();
+
   // Returns true if the event is one that can trigger notifying the listener.
   // This implementation returns true if the left mouse button is down.
   virtual bool IsTriggerableEvent(const MouseEvent& event);
