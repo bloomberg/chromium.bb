@@ -22,7 +22,7 @@ class HungRendererControllerTest : public CocoaTest {
   HungRendererController* hung_renderer_controller_;  // owned by its window
 };
 
-TEST_F(HungRendererControllerTest, TestShowAndClose) {
+TEST_F(HungRendererControllerTest, FLAKY_TestShowAndClose) {
   // Doesn't test much functionality-wise, but makes sure we can
   // display and tear down a window.
   [hung_renderer_controller_ showWindow:nil];
