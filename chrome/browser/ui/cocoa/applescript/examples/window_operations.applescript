@@ -1,4 +1,4 @@
--- Copyright (c) 2010 The Chromium Authors. All rights reserved.
+-- Copyright (c) 2011 The Chromium Authors. All rights reserved.
 -- Use of this source code is governed by a BSD-style license that can be
 -- found in the LICENSE file.
 
@@ -18,5 +18,12 @@ tell application "Chromium"
   -- Open multiple tabs.
   set active tab index of window 1 to 2  -- Selects the second tab.
   
+  -- Enter/exit presentation mode
+  if window 1 is not presenting
+    tell window 1 to enter presentation mode
+  end if
+  if window 1 is presenting
+    tell window 1 to exit presentation mode
+  end if
   
 end tell
