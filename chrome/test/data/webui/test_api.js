@@ -528,7 +528,7 @@ var testing = {};
    * URL to dummy WebUI page for testing framework.
    * @type {string}
    */
-  var DUMMY_URL = 'http://DummyURL';
+  var DUMMY_URL = 'chrome://DummyURL';
 
   /**
    * Resets test state by clearing |errors| and |testIsDone| flags.
