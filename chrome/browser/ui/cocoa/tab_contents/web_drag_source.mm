@@ -13,8 +13,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/tab_contents/tab_contents_view_mac.h"
+#include "content/browser/browser_thread.h"
 #include "content/browser/download/drag_download_file.h"
 #include "content/browser/download/drag_download_util.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -123,13 +122,17 @@ void PromiseWriterTask::Run() {
 
 @implementation WebDragSource
 
-- (id)initWithContentsView:(TabContentsViewCocoa*)contentsView
-                  dropData:(const WebDropData*)dropData
-                     image:(NSImage*)image
-                    offset:(NSPoint)offset
-                pasteboard:(NSPasteboard*)pboard
-         dragOperationMask:(NSDragOperation)dragOperationMask {
+- (id)initWithContents:(TabContents*)contents
+                  view:(NSView*)contentsView
+              dropData:(const WebDropData*)dropData
+                 image:(NSImage*)image
+                offset:(NSPoint)offset
+            pasteboard:(NSPasteboard*)pboard
+     dragOperationMask:(NSDragOperation)dragOperationMask {
   if ((self = [super init])) {
+    contents_ = contents;
+    DCHECK(contents_);
+
     contentsView_ = contentsView;
     DCHECK(contentsView_);
 
@@ -273,9 +276,9 @@ void PromiseWriterTask::Run() {
 
 - (void)endDragAt:(NSPoint)screenPoint
         operation:(NSDragOperation)operation {
-  [contentsView_ tabContents]->SystemDragEnded();
+  contents_->SystemDragEnded();
 
-  RenderViewHost* rvh = [contentsView_ tabContents]->render_view_host();
+  RenderViewHost* rvh = contents_->render_view_host();
   if (rvh) {
     // Convert |screenPoint| to view coordinates and flip it.
     NSPoint localPoint = NSMakePoint(0, 0);
@@ -303,7 +306,7 @@ void PromiseWriterTask::Run() {
 }
 
 - (void)moveDragTo:(NSPoint)screenPoint {
-  RenderViewHost* rvh = [contentsView_ tabContents]->render_view_host();
+  RenderViewHost* rvh = contents_->render_view_host();
   if (rvh) {
     // Convert |screenPoint| to view coordinates and flip it.
     NSPoint localPoint = NSMakePoint(0, 0);
@@ -342,22 +345,22 @@ void PromiseWriterTask::Run() {
     return nil;
 
   if (downloadURL_.is_valid()) {
-    TabContents* tabContents = [contentsView_ tabContents];
     scoped_refptr<DragDownloadFile> dragFileDownloader(new DragDownloadFile(
         filePath,
         linked_ptr<net::FileStream>(fileStream),
         downloadURL_,
-        tabContents->GetURL(),
-        tabContents->encoding(),
-        tabContents));
+        contents_->GetURL(),
+        contents_->encoding(),
+        contents_));
 
     // The finalizer will take care of closing and deletion.
     dragFileDownloader->Start(
         new drag_download_util::PromiseFileFinalizer(dragFileDownloader));
   } else {
     // The writer will take care of closing and deletion.
-    g_browser_process->file_thread()->message_loop()->PostTask(FROM_HERE,
-        new PromiseWriterTask(*dropData_, fileStream));
+    BrowserThread::PostTask(BrowserThread::FILE,
+                            FROM_HERE,
+                            new PromiseWriterTask(*dropData_, fileStream));
   }
 
   // Once we've created the file, we should return the file name.

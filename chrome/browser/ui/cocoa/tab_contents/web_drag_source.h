@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "googleurl/src/gurl.h"
 
-@class TabContentsViewCocoa;
+class TabContents;
 struct WebDropData;
 
 // A class that handles tracking and event processing for a drag and drop
@@ -17,7 +17,10 @@ struct WebDropData;
 @interface WebDragSource : NSObject {
  @private
   // Our tab. Weak reference (owns or co-owns us).
-  TabContentsViewCocoa* contentsView_;
+  TabContents* contents_;
+
+  // The view from which the drag was initiated. Weak reference.
+  NSView* contentsView_;
 
   // Our drop data. Should only be initialized once.
   scoped_ptr<WebDropData> dropData_;
@@ -44,12 +47,13 @@ struct WebDropData;
 // Initialize a WebDragSource object for a drag (originating on the given
 // contentsView and with the given dropData and pboard). Fill the pasteboard
 // with data types appropriate for dropData.
-- (id)initWithContentsView:(TabContentsViewCocoa*)contentsView
-                  dropData:(const WebDropData*)dropData
-                     image:(NSImage*)image
-                    offset:(NSPoint)offset
-                pasteboard:(NSPasteboard*)pboard
-         dragOperationMask:(NSDragOperation)dragOperationMask;
+- (id)initWithContents:(TabContents*)contents
+                  view:(NSView*)contentsView
+              dropData:(const WebDropData*)dropData
+                 image:(NSImage*)image
+                offset:(NSPoint)offset
+            pasteboard:(NSPasteboard*)pboard
+     dragOperationMask:(NSDragOperation)dragOperationMask;
 
 // Returns a mask of the allowed drag operations.
 - (NSDragOperation)draggingSourceOperationMaskForLocal:(BOOL)isLocal;

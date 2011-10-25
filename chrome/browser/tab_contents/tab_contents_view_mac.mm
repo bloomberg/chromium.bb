@@ -499,12 +499,13 @@ void TabContentsViewMac::Observe(int type,
                         image:(NSImage*)image
                        offset:(NSPoint)offset {
   dragSource_.reset([[WebDragSource alloc]
-          initWithContentsView:self
-                      dropData:&dropData
-                         image:image
-                        offset:offset
-                    pasteboard:[NSPasteboard pasteboardWithName:NSDragPboard]
-             dragOperationMask:operationMask]);
+      initWithContents:[self tabContents]
+                  view:self
+              dropData:&dropData
+                 image:image
+                offset:offset
+            pasteboard:[NSPasteboard pasteboardWithName:NSDragPboard]
+     dragOperationMask:operationMask]);
   [dragSource_ startDrag];
 }
 
