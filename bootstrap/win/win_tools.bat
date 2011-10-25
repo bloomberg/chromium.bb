@@ -25,8 +25,9 @@ if "%1" == "force" (
 :GIT_CHECK
 :: If the batch file exists, skip the git check.
 if exist "%WIN_TOOLS_ROOT_DIR%\git.bat" goto :SVN_CHECK
-if "%GIT_TOOLS_FORCE%" == "1" goto :GIT_INSTALL
-:: The normal initialization will happen here when we're ready to deploy.
+if "%WIN_TOOLS_FORCE%" == "1" goto :GIT_INSTALL
+call git --version 2>nul 1>nul
+if errorlevel 1 goto :GIT_INSTALL
 goto :SVN_CHECK
 
 
