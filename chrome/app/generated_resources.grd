@@ -6377,13 +6377,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Use a number to indicate how many copies to print (1 or more).
       </message>
       <message name="IDS_PRINT_PREVIEW_INCREMENT_TITLE" desc="Title shown when the user hovers mouse over the increment button. Also added for improved accessibility">
-      Increment
+        Increment
       </message>
       <message name="IDS_PRINT_PREVIEW_DECREMENT_TITLE" desc="Title shown when the user hovers mouse over the decrement button. Also added for improved accessibility">
-      Decrement
+        Decrement
       </message>
       <message name="IDS_PRINT_PREVIEW_PRINT_PAGES_LABEL" desc="ARIA label used by screen reader to explain the purpose of the page selection textbox">
-      Print Specific Pages
+        Print Specific Pages
       </message>
       <message name="IDS_PRINT_PREVIEW_OPTIONS_LABEL" desc="Options label currently providing the choice to print headers and footers.">
         Options
@@ -6402,6 +6402,18 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_PRINT_PREVIEW_CUSTOM_MARGINS" desc="Option that specifies the page be printed with user-specified custom margins.">
         Custom
+      </message>
+      <message name="IDS_PRINT_PREVIEW_TOP_MARGIN_LABEL" desc="ARIA label used by screen reader to explain the purpose of the top margin textbox.">
+        Top margin
+      </message>
+      <message name="IDS_PRINT_PREVIEW_BOTTOM_MARGIN_LABEL" desc="ARIA label used by screen reader to explain the purpose of the bottom margin textbox.">
+        Bottom margin
+      </message>
+      <message name="IDS_PRINT_PREVIEW_LEFT_MARGIN_LABEL" desc="ARIA label used by screen reader to explain the purpose of the left margin textbox.">
+        Left margin
+      </message>
+      <message name="IDS_PRINT_PREVIEW_RIGHT_MARGIN_LABEL" desc="ARIA label used by screen reader to explain the purpose of the right margin textbox.">
+        Right margin
       </message>
 
       <!-- Load State -->

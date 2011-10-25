@@ -11,6 +11,7 @@ cr.define('print_preview', function() {
     box.setAttribute('type', 'text');
     box.className = MarginTextbox.CSS_CLASS_MARGIN_TEXTBOX;
     box.value = '0';
+    box.setAttribute('aria-label', localStrings.getString(groupName));
 
     // @type {string} Specifies which margin this line refers to.
     box.marginGroup = groupName;
