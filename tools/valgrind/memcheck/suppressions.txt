@@ -894,21 +894,6 @@
    bug_61585b
    Memcheck:Leak
    fun:malloc
-   fun:PORT_Alloc_Util
-   fun:sec_asn1e_allocate_item
-   fun:SEC_ASN1EncodeItem_Util
-   fun:sftkdb_encodeCipherText
-   fun:sftkdb_EncryptAttribute
-   fun:sftkdb_ChangePassword
-   fun:NSC_InitPIN
-   fun:PK11_InitPin
-   ...
-   fun:_ZN4base13OpenTestNSSDBERK8FilePathPKc
-}
-{
-   bug_61585c
-   Memcheck:Leak
-   fun:malloc
    fun:PL_ArenaAllocate
    fun:PORT_ArenaAlloc_Util
 }
@@ -1839,7 +1824,7 @@
    Memcheck:Leak
    ...
    fun:malloc
-   fun:PR_Malloc
+   ...
    fun:PORT_Alloc_Util
    ...
    fun:PK11_InitPin
@@ -3014,7 +2999,7 @@
    Bug_70062
    Memcheck:Leak
    fun:calloc
-   fun:PR_Calloc
+   ...
    fun:PR_NewLock
    ...
    fun:InitSessionCacheLocks
