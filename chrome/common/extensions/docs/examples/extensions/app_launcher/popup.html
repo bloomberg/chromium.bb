@@ -9,19 +9,18 @@
 <link rel="stylesheet" type="text/css" href="popup.css">
 <script src="popup.js"></script>
 </head>
-<body onload="onLoad()">
+<body>
 
 <div id="spacer_dummy"></div>
 <div id="outer">
 
-<div id="appstore_link" style="display:none">
-<p>No apps installed.</p><p>
-<a href='javascript:chrome.tabs.create({"url":"https://chrome.google.com/webstore", "selected":true});window.close();'>Go get some</a></p>
+<div id="appstore_link">
+  <p>No apps installed.</p><p>
+  <button>Go get some</button></p>
 </div>
 
 <div id="search_container">
-<input id="search" type="text" placeholder="type to search"
-       oninput="onSearchInput()" spellcheck="false">
+  <input id="search" type="text" placeholder="type to search" spellcheck="false">
 </div>
 
 <div id="apps"></div>

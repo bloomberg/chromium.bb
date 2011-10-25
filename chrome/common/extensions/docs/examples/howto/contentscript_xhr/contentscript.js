@@ -25,7 +25,7 @@ function fetchTwitterFeed(callback) {
   }
   // Note that any URL fetched here must be matched by a permission in
   // the manifest.json file!
-  var url = 'https://api.twitter.com/1/trends.json?exclude=hashtags';
+  var url = 'https://api.twitter.com/1/trends/daily.json?exclude=hashtags';
   xhr.open('GET', url, true);
   xhr.send();
 };
@@ -44,13 +44,16 @@ function onText(data) {
     var title_dom = document.createElement('strong');
     title_dom.innerText = 'Topics currently trending on Twitter:';
     trends_dom.appendChild(title_dom);
-    for (var i=0,trend; trend = data.trends[i]; i++) {
-      var link_dom = document.createElement('a');
-      link_dom.setAttribute('href', trend.url)
-      link_dom.innerText = trend.name;
-      link_dom.style.color = '#000';
-      trends_dom.appendChild(document.createTextNode(' '));
-      trends_dom.appendChild(link_dom);
+    for (var key in data.trends) {
+      for (var i=0,trend; trend = data.trends[key][i]; i++) {
+        var link_dom = document.createElement('a');
+        link_dom.setAttribute('href', trend.url)
+        link_dom.innerText = trend.name;
+        link_dom.style.color = '#000';
+        trends_dom.appendChild(document.createTextNode(' '));
+        trends_dom.appendChild(link_dom);
+      }
+      break;
     }
     trends_dom.style.cssText = [
       'background-color: #ffd700;',

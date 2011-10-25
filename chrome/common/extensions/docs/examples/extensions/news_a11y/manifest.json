@@ -11,5 +11,6 @@
   "permissions": [
     "tabs",
     "http://news.google.com/*"
-  ]
+  ],
+  "content_security_policy": "img-src 'self' http://* https://*; script-src 'self'; connect-src http://news.google.com; frame-src data:"
 }

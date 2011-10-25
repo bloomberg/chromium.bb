@@ -70,6 +70,7 @@
     "chrome.experimental.savePage.saveAsMHTML": "experimental.savePage.html#method-saveAsMHTML",
     "chrome.experimental.settings.clear": "experimental.settings.html#method-clear",
     "chrome.experimental.settings.get": "experimental.settings.html#method-get",
+    "chrome.experimental.settings.onChanged": "experimental.settings.html#event-onChanged",
     "chrome.experimental.settings.remove": "experimental.settings.html#method-remove",
     "chrome.experimental.settings.set": "experimental.settings.html#method-set",
     "chrome.experimental.speechInput.isRecording": "experimental.speechInput.html#method-isRecording",
@@ -225,9 +226,10 @@
       "search_string": "A BROWSER ACTION WHICH CHANGES ITS ICON WHEN CLICKED.  BACKGROUND_PAGE BROWSER_ACTION TABS CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETICON",
       "source_files": [
         "background.html",
+        "background.js",
         "manifest.json"
       ],
-      "source_hash": "c5752555642e89340c57657b48440b0dcd74ee99",
+      "source_hash": "ac932922a2fa7769791cf7fabefa95307d45153f",
       "zip_path": "examples\/api\/browserAction\/set_icon_path.zip"
     },
     {
@@ -375,7 +377,7 @@
         "popup.html",
         "popup.js"
       ],
-      "source_hash": "4cb1348cfca9c990117d52290f93eb5fc5081bc2",
+      "source_hash": "62a69b77d59cda0b038c2e5acdbcae289b3f5176",
       "zip_path": "examples\/extensions\/app_launcher.zip"
     },
     {
@@ -704,7 +706,7 @@
         "contentscript.js",
         "manifest.json"
       ],
-      "source_hash": "749314ae399dfc5f6759358b384bc55997fed455",
+      "source_hash": "419d1480250cc6fece78798fdfe99e4e1b4e28fd",
       "zip_path": "examples\/howto\/contentscript_xhr.zip"
     },
     {
@@ -729,9 +731,10 @@
       "search_string": "CONTENT SETTINGS SHOWS THE CONTENT SETTINGS FOR THE CURRENT SITE. BROWSER_ACTION CONTENTSETTINGS POPUP TABS CHROME.TABS.GET CHROME.TABS.GETSELECTED",
       "source_files": [
         "manifest.json",
-        "popup.html"
+        "popup.html",
+        "popup.js"
       ],
-      "source_hash": "14d647a5ea1fa8551089fdb8810b6acaf16530cf",
+      "source_hash": "95619d1c264bb65ac6f8ff105d34830ec87af284",
       "zip_path": "examples\/api\/contentSettings.zip"
     },
     {
@@ -756,7 +759,7 @@
         "manifest.json",
         "sample.js"
       ],
-      "source_hash": "0e35ce268b3b2cf3d9830e6411c85c5dfef2ffdf",
+      "source_hash": "a42707be0ca36201f6e903858a8b3cd044c4eb25",
       "zip_path": "examples\/api\/contextMenus\/basic.zip"
     },
     {
@@ -880,14 +883,15 @@
       "packaged_app": false,
       "path": "examples\/api\/omnibox\/extension-docs\/",
       "protocols": [
-        "http:\/\/"
+        "https:\/\/"
       ],
       "search_string": "EXTENSION DOCS SEARCH SEARCH THE CHROME EXTENSIONS DOCUMENTATION.  TO USE, TYPE CRDOC PLUS A SEARCH TERM INTO THE OMNIBOX. BACKGROUND_PAGE TABS CHROME.OMNIBOX.ONINPUTCHANGED CHROME.OMNIBOX.ONINPUTENTERED CHROME.TABS.CREATE CHROME.TABS.GET CHROME.TABS.ONREMOVED CHROME.TABS.UPDATE",
       "source_files": [
         "background.html",
+        "background.js",
         "manifest.json"
       ],
-      "source_hash": "0aa8ec9a2c091e227661ca5010d08f6823e643a7",
+      "source_hash": "4c779b160a04cb4264eee14d7969f665953699a7",
       "zip_path": "examples\/api\/omnibox\/extension-docs.zip"
     },
     {
@@ -918,11 +922,12 @@
       "search_string": "FIREPHP FOR CHROME EXTENDS THE DEVELOPER TOOLS, ADDING SUPPORT FOR PARSING FIREPHP MESSAGES FROM SERVER BACKGROUND_PAGE DEVTOOLS_PAGE EXPERIMENTAL TABS CHROME.EXPERIMENTAL.DEVTOOLS.NETWORK.GETHAR CHROME.EXPERIMENTAL.DEVTOOLS.NETWORK.ONREQUESTFINISHED CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.TABS.EXECUTESCRIPT",
       "source_files": [
         "background.html",
+        "background.js",
         "devtools.html",
         "devtools.js",
         "manifest.json"
       ],
-      "source_hash": "b607f6ca8f1ccf4343766b480ae21bb220dd949c",
+      "source_hash": "259e28743c1aa6d8778f92fa1af001299f7ad774",
       "zip_path": "examples\/api\/devtools\/network\/chrome-firephp.zip"
     },
     {
@@ -1560,10 +1565,14 @@
       ],
       "search_string": "NEWS READER DISPLAYS THE FIRST 5 ITEMS FROM THE GOOGLE NEWS - TOP NEWS RSS FEED IN A POPUP. BROWSER_ACTION POPUP TABS CHROME.TABS.CREATE",
       "source_files": [
+        "feed.css",
         "feed.html",
+        "feed.js",
+        "feed_iframe.css",
+        "feed_iframe.js",
         "manifest.json"
       ],
-      "source_hash": "af7474bf0d3ef1a407f27ae0900167a1408ead35",
+      "source_hash": "800a1cfe78a6ff8a82c85ef3bc52e71a42e9c664",
       "zip_path": "examples\/extensions\/news_a11y.zip"
     },
     {
@@ -1638,9 +1647,7 @@
       "zip_path": "examples\/extensions\/news.zip"
     },
     {
-      "api_calls": [
-        "chrome.tabs.create"
-      ],
+      "api_calls": [],
       "crx_path": null,
       "description": "Shows off desktop notifications, which are \"toast\" windows that pop up on the desktop.",
       "features": [
@@ -1655,14 +1662,16 @@
       "packaged_app": false,
       "path": "examples\/api\/notifications\/",
       "protocols": [],
-      "search_string": "NOTIFICATION DEMO SHOWS OFF DESKTOP NOTIFICATIONS, WHICH ARE TOAST WINDOWS THAT POP UP ON THE DESKTOP. BACKGROUND_PAGE NOTIFICATIONS OPTIONS_PAGE TABS CHROME.TABS.CREATE",
+      "search_string": "NOTIFICATION DEMO SHOWS OFF DESKTOP NOTIFICATIONS, WHICH ARE TOAST WINDOWS THAT POP UP ON THE DESKTOP. BACKGROUND_PAGE NOTIFICATIONS OPTIONS_PAGE TABS",
       "source_files": [
         "background.html",
-        "error.html",
+        "background.js",
         "manifest.json",
-        "options.html"
+        "options.html",
+        "options.js",
+        "style.css"
       ],
-      "source_hash": "bc2985ef75d717779cb6e1e523a3e063067c3494",
+      "source_hash": "e816c895b8ee88a42187bf0734ef828d0d5f375f",
       "zip_path": "examples\/api\/notifications.zip"
     },
     {
@@ -1737,9 +1746,10 @@
       "search_string": "PAGE ACTION BY URL SHOWS A PAGE ACTION FOR URLS WHICH HAVE THE LETTER G IN THEM. BACKGROUND_PAGE PAGE_ACTION TABS CHROME.PAGEACTION.SHOW CHROME.TABS.ONUPDATED",
       "source_files": [
         "background.html",
+        "background.js",
         "manifest.json"
       ],
-      "source_hash": "732ef0951e1d6ff4afedb884b0e63cb342bb1499",
+      "source_hash": "e027d9a9748719a4c216fa258a1623910509ac41",
       "zip_path": "examples\/api\/pageAction\/pageaction_by_url.zip"
     },
     {
@@ -2329,25 +2339,26 @@
         "chrome.extension.isAllowedIncognitoAccess"
       ],
       "crx_path": null,
-      "description": "Demonstrates the `extension.isAllowed???Access` APIs",
+      "description": "Demonstrates the `extension.isAllowedFileSchemeAccess` and `extesion.isAllowedIncognitoAccess` APIs",
       "features": [
         "browser_action"
       ],
       "icon": "sample-128.png",
       "id": "0fa4abe6545f0316fea7cfa07c53aa48c4f3d018",
-      "name": "`extension.isAllowed???Access` Example",
+      "name": "`extension.isAllowedFileSchemeAccess` and `extension.isAllowedIncognitoAccess` Example",
       "packaged_app": false,
       "path": "examples\/api\/extension\/isAllowedAccess\/",
       "protocols": [
         "file:\/\/"
       ],
-      "search_string": "`EXTENSION.ISALLOWED???ACCESS` EXAMPLE DEMONSTRATES THE `EXTENSION.ISALLOWED???ACCESS` APIS BROWSER_ACTION CHROME.EXTENSION.ISALLOWEDFILESCHEMEACCESS CHROME.EXTENSION.ISALLOWEDINCOGNITOACCESS",
+      "search_string": "`EXTENSION.ISALLOWEDFILESCHEMEACCESS` AND `EXTENSION.ISALLOWEDINCOGNITOACCESS` EXAMPLE DEMONSTRATES THE `EXTENSION.ISALLOWEDFILESCHEMEACCESS` AND `EXTESION.ISALLOWEDINCOGNITOACCESS` APIS BROWSER_ACTION CHROME.EXTENSION.ISALLOWEDFILESCHEMEACCESS CHROME.EXTENSION.ISALLOWEDINCOGNITOACCESS",
       "source_files": [
         "manifest.json",
         "popup.html",
+        "popup.js",
         "sample.css"
       ],
-      "source_hash": "c8bfc2b60f25c24dc3c5aaf75dd635c9419df66d",
+      "source_hash": "62ca453d8d1551ff63dd7c78b49d546bc3af17c6",
       "zip_path": "examples\/api\/extension\/isAllowedAccess.zip"
     }
   ]

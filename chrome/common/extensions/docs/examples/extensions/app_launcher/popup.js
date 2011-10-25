@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,7 @@ function $(id) {
 // Returns the largest size icon, or a default icon, for the given |app|.
 function getIconURL(app) {
   if (!app.icons || app.icons.length == 0) {
-    return chrome.extension.getURL("icon.png");
+    return chrome.extension.getURL('icon.png');
   }
   var largest = {size:0};
   for (var i = 0; i < app.icons.length; i++) {
@@ -28,19 +28,19 @@ function launchApp(id) {
 
 // Adds DOM nodes for |app| into |appsDiv|.
 function addApp(appsDiv, app, selected) {
-  var div = document.createElement("div");
-  div.className = "app" + (selected ? " app_selected" : "");
+  var div = document.createElement('div');
+  div.className = 'app' + (selected ? ' app_selected' : '');
 
   div.onclick = function() {
     launchApp(app.id);
   };
 
-  var img = document.createElement("img");
+  var img = document.createElement('img');
   img.src = getIconURL(app);
   div.appendChild(img);
 
-  var title = document.createElement("span");
-  title.className = "app_title";
+  var title = document.createElement('span');
+  title.className = 'app_title';
   title.innerText = app.name;
   div.appendChild(title);
 
@@ -57,10 +57,10 @@ var appList = [];
 var selectedIndex = 0;
 
 function reloadAppDisplay() {
-  var appsDiv = $("apps");
+  var appsDiv = $('apps');
 
   // Empty the current content.
-  appsDiv.innerHTML = "";
+  appsDiv.innerHTML = '';
 
   for (var i = 0; i < appList.length; i++) {
     var item = appList[i];
@@ -92,17 +92,17 @@ var didSetExplicitWidth = false;
 function adjustWidthIfNeeded(filter) {
   if (filter.length > 0 && !didSetExplicitWidth) {
     // Set an explicit width, correcting for any scroll bar present.
-    var outer = $("outer");
+    var outer = $('outer');
     var correction = window.innerWidth - document.documentElement.clientWidth;
     var width = outer.offsetWidth;
-    $("spacer_dummy").style.width = width + correction + "px";
+    $('spacer_dummy').style.width = width + correction + 'px';
     didSetExplicitWidth = true;
   }
 }
 
 // Shows the list of apps based on the search box contents.
 function onSearchInput() {
-  var filter = $("search").value;
+  var filter = $('search').value;
   adjustWidthIfNeeded(filter);
   rebuildAppList(filter);
   reloadAppDisplay();
@@ -116,31 +116,13 @@ function compareByName(app1, app2) {
   return compare(app1.name.toLowerCase(), app2.name.toLowerCase());
 }
 
-function onLoad() {
-  chrome.management.getAll(function(info) {
-    var appCount = 0;
-    for (var i = 0; i < info.length; i++) {
-      if (info[i].isApp) {
-        appCount++;
-      }
-    }
-    if (appCount == 0) {
-      $("search").style.display = "none";
-      $("appstore_link").style.display = "";
-      return;
-    }
-    completeList = info.sort(compareByName);
-    onSearchInput();
-  });
-}
-
 // Changes the selected app in the list.
 function changeSelection(newIndex) {
   if (newIndex >= 0 && newIndex <= appList.length - 1) {
     selectedIndex = newIndex;
     reloadAppDisplay();
 
-    var selected = document.getElementsByClassName("app_selected")[0];
+    var selected = document.getElementsByClassName('app_selected')[0];
     var rect = selected.getBoundingClientRect();
     if (newIndex == 0) {
       window.scrollTo(0, 0);
@@ -191,8 +173,41 @@ window.onkeydown = function(event) {
     default:
       // Focus the search box and return true so you can just start typing even
       // when the search box isn't focused.
-      $("search").focus();
+      $('search').focus();
       return true;
   }
   return false;
 };
+
+
+// Initalize the popup window.
+document.addEventListener('DOMContentLoaded', function () {
+  chrome.management.getAll(function(info) {
+    var appCount = 0;
+    for (var i = 0; i < info.length; i++) {
+      if (info[i].isApp) {
+        appCount++;
+      }
+    }
+    if (appCount == 0) {
+      $('search').style.display = 'none';
+      $('appstore_link').style.display = '';
+      return;
+    }
+    completeList = info.sort(compareByName);
+    onSearchInput();
+  });
+
+  $('search').addEventListener('input', onSearchInput);
+
+  // Opens the webstore in a new tab.
+  document.querySelector('#appstore_link button').addEventListener('click',
+      function () {
+        chrome.tabs.create({
+          'url':'https://chrome.google.com/webstore',
+          'selected':true
+        });
+        window.close();
+      });
+});
+

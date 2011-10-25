@@ -1,7 +1,7 @@
 {
-  "name" : "`extension.isAllowed???Access` Example",
+  "name" : "`extension.isAllowedFileSchemeAccess` and `extension.isAllowedIncognitoAccess` Example",
   "version" : "1.0.0",
-  "description" : "Demonstrates the `extension.isAllowed???Access` APIs",
+  "description" : "Demonstrates the `extension.isAllowedFileSchemeAccess` and `extesion.isAllowedIncognitoAccess` APIs",
   "permissions" : [ "file://*" ],
   "browser_action" : {
     "default_popup": "popup.html",
@@ -11,5 +11,6 @@
     "16" : "sample-16.png",
     "48" : "sample-48.png",
     "128" : "sample-128.png"
-  }
+  },
+  "content_security_policy": "default-src 'self'"
 }

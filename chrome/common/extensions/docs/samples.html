@@ -356,7 +356,7 @@
   "597015d3bcce3da693b02314afd607bec4f55291": "NEWS READER DISPLAYS THE FIRST 5 ITEMS FROM THE GOOGLE NEWS - TOP NEWS RSS FEED IN A POPUP. BROWSER_ACTION POPUP TABS CHROME.TABS.CREATE",
   "6444e5c8ae112a6a433909c5e770669cd16e2e5f": "NEWS READER DISPLAYS THE FIRST 5 ITEMS FROM THE GOOGLE NEWS - TOP NEWS RSS FEED IN A POPUP. BROWSER_ACTION POPUP TABS CHROME.I18N.GETMESSAGE CHROME.TABS.CREATE",
   "3aea027164cb9b732ba4a8c51cb93708891726ef": "NEWS READER (BY GOOGLE) DISPLAYS THE LATEST STORIES FROM GOOGLE NEWS IN A POPUP. BACKGROUND_PAGE BROWSER_ACTION OPTIONS_PAGE POPUP TABS CHROME.EXTENSION.GETURL CHROME.I18N.GETMESSAGE CHROME.TABS.CREATE",
-  "f799e26ceef2367cf836f24bcb47df4398b0df58": "NOTIFICATION DEMO SHOWS OFF DESKTOP NOTIFICATIONS, WHICH ARE TOAST WINDOWS THAT POP UP ON THE DESKTOP. BACKGROUND_PAGE NOTIFICATIONS OPTIONS_PAGE TABS CHROME.TABS.CREATE",
+  "f799e26ceef2367cf836f24bcb47df4398b0df58": "NOTIFICATION DEMO SHOWS OFF DESKTOP NOTIFICATIONS, WHICH ARE TOAST WINDOWS THAT POP UP ON THE DESKTOP. BACKGROUND_PAGE NOTIFICATIONS OPTIONS_PAGE TABS",
   "e787b322bddbc6289bb31b7d7550b1bf6456a80b": "OMNIBOX EXAMPLE TO USE, TYPE OMNIX PLUS A SEARCH TERM INTO THE OMNIBOX. BACKGROUND_PAGE CHROME.OMNIBOX.ONINPUTCHANGED CHROME.OMNIBOX.ONINPUTENTERED",
   "8d0a50b57c26bb498be592e871001ffed91541b4": "PAGE ACTION BY CONTENT SHOWS A PAGE ACTION FOR HTML PAGES CONTAINING THE WORD SANDWICH BACKGROUND_PAGE PAGE_ACTION CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.PAGEACTION.SHOW",
   "80b86ccc6e8520660fa591caa565826f0ed1b12c": "PAGE ACTION BY URL SHOWS A PAGE ACTION FOR URLS WHICH HAVE THE LETTER G IN THEM. BACKGROUND_PAGE PAGE_ACTION TABS CHROME.PAGEACTION.SHOW CHROME.TABS.ONUPDATED",
@@ -376,7 +376,7 @@
   "3a1baf15462bdae4d886c2da4ff8f35f4e8ce02f": "TTS DEMO DEMO CHROMES SYNTHESIZED TEXT-TO-SPEECH CAPABILITIES. TTS CHROME.TTS.GETVOICES CHROME.TTS.ISSPEAKING CHROME.TTS.SPEAK CHROME.TTS.STOP",
   "b3de91ab04b7d7a2670ca7ee9d740eb42cead0b6": "TYPED URL HISTORY READS YOUR HISTORY, AND SHOWS THE TOP TEN PAGES YOU GO TO BY TYPING THE URL. BROWSER_ACTION HISTORY TABS CHROME.HISTORY.GETVISITS CHROME.HISTORY.SEARCH CHROME.TABS.CREATE",
   "a3c674f7eb93621c590562ad3fa04de4f03f53a0": "WEBNAVIGATION TECH DEMO DEMONSTRATION OF THE WEBNAVIGATION EXTENSION API. BACKGROUND_PAGE BROWSER_ACTION EXTENSION POPUP WEBNAVIGATION CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.I18N.GETMESSAGE CHROME.WEBNAVIGATION.ONBEFORENAVIGATE CHROME.WEBNAVIGATION.ONCOMMITTED CHROME.WEBNAVIGATION.ONCOMPLETED CHROME.WEBNAVIGATION.ONCREATEDNAVIGATIONTARGET CHROME.WEBNAVIGATION.ONERROROCCURRED CHROME.WEBNAVIGATION.ONREFERENCEFRAGMENTUPDATED",
-  "0fa4abe6545f0316fea7cfa07c53aa48c4f3d018": "`EXTENSION.ISALLOWED???ACCESS` EXAMPLE DEMONSTRATES THE `EXTENSION.ISALLOWED???ACCESS` APIS BROWSER_ACTION CHROME.EXTENSION.ISALLOWEDFILESCHEMEACCESS CHROME.EXTENSION.ISALLOWEDINCOGNITOACCESS"
+  "0fa4abe6545f0316fea7cfa07c53aa48c4f3d018": "`EXTENSION.ISALLOWEDFILESCHEMEACCESS` AND `EXTENSION.ISALLOWEDINCOGNITOACCESS` EXAMPLE DEMONSTRATES THE `EXTENSION.ISALLOWEDFILESCHEMEACCESS` AND `EXTESION.ISALLOWEDINCOGNITOACCESS` APIS BROWSER_ACTION CHROME.EXTENSION.ISALLOWEDFILESCHEMEACCESS CHROME.EXTENSION.ISALLOWEDINCOGNITOACCESS"
 };
 </script>
 <script src="js/sample_search.js"></script>
@@ -475,6 +475,8 @@
     <ul>
       <li>
         <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/browserAction/set_icon_path/background.html?content-type=text/plain">background.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/browserAction/set_icon_path/background.js?content-type=text/plain">background.js</a></code>
       </li><li>
         <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/browserAction/set_icon_path/manifest.json?content-type=text/plain">manifest.json</a></code>
       </li>
@@ -1355,6 +1357,8 @@
         <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/contentSettings/manifest.json?content-type=text/plain">manifest.json</a></code>
       </li><li>
         <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/contentSettings/popup.html?content-type=text/plain">popup.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/contentSettings/popup.js?content-type=text/plain">popup.js</a></code>
       </li>
     </ul>
   </div>
@@ -1624,6 +1628,8 @@
       <li>
         <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/omnibox/extension-docs/background.html?content-type=text/plain">background.html</a></code>
       </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/omnibox/extension-docs/background.js?content-type=text/plain">background.js</a></code>
+      </li><li>
         <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/omnibox/extension-docs/manifest.json?content-type=text/plain">manifest.json</a></code>
       </li>
     </ul>
@@ -1678,6 +1684,8 @@
     <ul>
       <li>
         <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/devtools/network/chrome-firephp/background.html?content-type=text/plain">background.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/devtools/network/chrome-firephp/background.js?content-type=text/plain">background.js</a></code>
       </li><li>
         <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/devtools/network/chrome-firephp/devtools.html?content-type=text/plain">devtools.html</a></code>
       </li><li>
@@ -2827,7 +2835,15 @@
   <div class="sourcefiles"><strong>Source files:</strong>
     <ul>
       <li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/news_a11y/feed.css?content-type=text/plain">feed.css</a></code>
+      </li><li>
         <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/news_a11y/feed.html?content-type=text/plain">feed.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/news_a11y/feed.js?content-type=text/plain">feed.js</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/news_a11y/feed_iframe.css?content-type=text/plain">feed_iframe.css</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/news_a11y/feed_iframe.js?content-type=text/plain">feed_iframe.js</a></code>
       </li><li>
         <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/news_a11y/manifest.json?content-type=text/plain">manifest.json</a></code>
       </li>
@@ -2986,10 +3002,10 @@
     </span>
   </p>
   <p>Shows off desktop notifications, which are "toast" windows that pop up on the desktop.</p>
-  <div class="apicalls"><strong>Calls:</strong>
+  <div class="apicalls" style="display: none; "><strong>Calls:</strong>
     <ul>
       <li>
-        <code><a href="tabs.html#method-create">chrome.tabs.create</a></code>
+        <code><a></a></code>
       </li>
     </ul>
   </div>
@@ -2998,11 +3014,15 @@
       <li>
         <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/notifications/background.html?content-type=text/plain">background.html</a></code>
       </li><li>
-        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/notifications/error.html?content-type=text/plain">error.html</a></code>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/notifications/background.js?content-type=text/plain">background.js</a></code>
       </li><li>
         <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/notifications/manifest.json?content-type=text/plain">manifest.json</a></code>
       </li><li>
         <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/notifications/options.html?content-type=text/plain">options.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/notifications/options.js?content-type=text/plain">options.js</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/notifications/style.css?content-type=text/plain">style.css</a></code>
       </li>
     </ul>
   </div>
@@ -3134,6 +3154,8 @@
     <ul>
       <li>
         <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/pageAction/pageaction_by_url/background.html?content-type=text/plain">background.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/pageAction/pageaction_by_url/background.js?content-type=text/plain">background.js</a></code>
       </li><li>
         <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/pageAction/pageaction_by_url/manifest.json?content-type=text/plain">manifest.json</a></code>
       </li>
@@ -4200,7 +4222,7 @@
   <img class="icon" src="examples/api/extension/isAllowedAccess/sample-128.png">
   <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
   <h2 class="name">
-    <a href="#0fa4abe6545f0316fea7cfa07c53aa48c4f3d018">`extension.isAllowed???Access` Example</a>
+    <a href="#0fa4abe6545f0316fea7cfa07c53aa48c4f3d018">`extension.isAllowedFileSchemeAccess` and `extension.isAllowedIncognitoAccess` Example</a>
     <span style="display: none; ">(packaged app)</span>
   </h2>
   <p class="metadata features">Uses
@@ -4209,7 +4231,7 @@
       <span style="display: none; "> and</span>
     </span>
   </p>
-  <p>Demonstrates the `extension.isAllowed???Access` APIs</p>
+  <p>Demonstrates the `extension.isAllowedFileSchemeAccess` and `extesion.isAllowedIncognitoAccess` APIs</p>
   <div class="apicalls"><strong>Calls:</strong>
     <ul>
       <li>
@@ -4225,6 +4247,8 @@
         <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/extension/isAllowedAccess/manifest.json?content-type=text/plain">manifest.json</a></code>
       </li><li>
         <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/extension/isAllowedAccess/popup.html?content-type=text/plain">popup.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/extension/isAllowedAccess/popup.js?content-type=text/plain">popup.js</a></code>
       </li><li>
         <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/extension/isAllowedAccess/sample.css?content-type=text/plain">sample.css</a></code>
       </li>

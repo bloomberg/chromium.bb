@@ -9,5 +9,6 @@
   },
   "icons": {
     "48": "icon.png"
-  }
+  },
+  "content_security_policy": "default-src 'self'; img-src chrome://extension-icon"
 }

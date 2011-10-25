@@ -47,3 +47,7 @@ body {
 .app_selected,.app_selected:hover {
   background-color: rgb(230,230,230);
 }
+
+#appstore_link {
+  display: none;
+}
