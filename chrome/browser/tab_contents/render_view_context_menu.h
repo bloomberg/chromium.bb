@@ -54,7 +54,7 @@ struct WebMediaPlayerAction;
 //     }
 //     virtual ~MyTask() {
 //     }
-//     virtual void OnURLFetchComplete(const URLFetcher* source,
+//     virtual void OnURLFetchComplete(const content::URLFetcher* source,
 //                                     const GURL& url,
 //                                     const net::URLRequestStatus& status,
 //                                     int response,
@@ -66,7 +66,7 @@ struct WebMediaPlayerAction;
 //     }
 //     void Start(const GURL* url, net::URLRequestContextGetter* context) {
 //       fetcher_.reset(new URLFetcher(url, URLFetcher::GET, this));
-//       fetcher_->set_request_context(context);
+//       fetcher_->SetRequestContext(context);
 //       fetcher_->Start();
 //     }
 //

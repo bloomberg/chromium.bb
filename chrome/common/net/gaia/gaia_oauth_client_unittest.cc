@@ -57,19 +57,20 @@ class MockOAuthFetcher : public URLFetcher {
     delegate()->OnURLFetchComplete(this);
   }
 
-  virtual const GURL& url() const {
+  virtual const GURL& GetUrl() const OVERRIDE {
     return url_;
   }
 
-  virtual const net::URLRequestStatus& status() const {
+  virtual const net::URLRequestStatus& GetStatus() const OVERRIDE {
     return status_;
   }
 
-  virtual int response_code() const {
+  virtual int GetResponseCode() const OVERRIDE {
     return response_code_;
   }
 
-  virtual bool GetResponseAsString(std::string* out_response_string) const {
+  virtual bool GetResponseAsString(
+      std::string* out_response_string) const OVERRIDE {
     *out_response_string = results_;
     return true;
   }

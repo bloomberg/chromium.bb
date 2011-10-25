@@ -82,7 +82,7 @@ class GaiaAuthFetcher : public content::URLFetcherDelegate {
   void StartMergeSession(const std::string& auth_token);
 
   // Implementation of content::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const URLFetcher* source);
+  virtual void OnURLFetchComplete(const content::URLFetcher* source);
 
   // StartClientLogin been called && results not back yet?
   bool HasPendingFetch();
@@ -197,11 +197,12 @@ class GaiaAuthFetcher : public content::URLFetcherDelegate {
                                        const std::string& source);
 
   // Create a fetcher useable for making any Gaia request.
-  static URLFetcher* CreateGaiaFetcher(net::URLRequestContextGetter* getter,
-                                       const std::string& body,
-                                       const GURL& gaia_gurl,
-                                       bool send_cookies,
-                                       content::URLFetcherDelegate* delegate);
+  static content::URLFetcher* CreateGaiaFetcher(
+      net::URLRequestContextGetter* getter,
+      const std::string& body,
+      const GURL& gaia_gurl,
+      bool send_cookies,
+      content::URLFetcherDelegate* delegate);
 
   // From a URLFetcher result, generate an appropriate error.
   // From the API documentation, both IssueAuthToken and ClientLogin have
@@ -221,7 +222,7 @@ class GaiaAuthFetcher : public content::URLFetcherDelegate {
   const GURL merge_session_gurl_;
 
   // While a fetch is going on:
-  scoped_ptr<URLFetcher> fetcher_;
+  scoped_ptr<content::URLFetcher> fetcher_;
   std::string request_body_;
   std::string requested_service_;   // Currently tracked for IssueAuthToken only
   std::string requested_info_key_;  // Currently tracked for GetUserInfo only

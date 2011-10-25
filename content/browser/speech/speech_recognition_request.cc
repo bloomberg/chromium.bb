@@ -186,15 +186,15 @@ void SpeechRecognitionRequest::Start(const std::string& language,
                                         url,
                                         URLFetcher::POST,
                                         this));
-  url_fetcher_->set_chunked_upload(content_type);
-  url_fetcher_->set_request_context(url_context_);
-  url_fetcher_->set_referrer(origin_url);
+  url_fetcher_->SetChunkedUpload(content_type);
+  url_fetcher_->SetRequestContext(url_context_);
+  url_fetcher_->SetReferrer(origin_url);
 
   // The speech recognition API does not require user identification as part
   // of requests, so we don't send cookies or auth data for these requests to
   // prevent any accidental connection between users who are logged into the
   // domain for other services (e.g. bookmark sync) with the speech requests.
-  url_fetcher_->set_load_flags(
+  url_fetcher_->SetLoadFlags(
       net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES |
       net::LOAD_DO_NOT_SEND_AUTH_DATA);
   url_fetcher_->Start();
@@ -206,12 +206,13 @@ void SpeechRecognitionRequest::UploadAudioChunk(const std::string& audio_data,
   url_fetcher_->AppendChunkToUpload(audio_data, is_last_chunk);
 }
 
-void SpeechRecognitionRequest::OnURLFetchComplete(const URLFetcher* source) {
+void SpeechRecognitionRequest::OnURLFetchComplete(
+    const content::URLFetcher* source) {
   DCHECK_EQ(url_fetcher_.get(), source);
 
   SpeechInputResult result;
   std::string data;
-  if (!source->status().is_success() || source->response_code() != 200 ||
+  if (!source->GetStatus().is_success() || source->GetResponseCode() != 200 ||
       !source->GetResponseAsString(&data) ||
       !ParseServerResponse(data, &result)) {
     result.error = kErrorNetwork;

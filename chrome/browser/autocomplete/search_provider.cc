@@ -244,12 +244,12 @@ void SearchProvider::Stop() {
   default_provider_suggest_text_.clear();
 }
 
-void SearchProvider::OnURLFetchComplete(const URLFetcher* source) {
+void SearchProvider::OnURLFetchComplete(const content::URLFetcher* source) {
   DCHECK(!done_);
   suggest_results_pending_--;
   DCHECK_GE(suggest_results_pending_, 0);  // Should never go negative.
   const net::HttpResponseHeaders* const response_headers =
-      source->response_headers();
+      source->GetResponseHeaders();
   std::string json_data;
   source->GetResponseAsString(&json_data);
   // JSON is supposed to be UTF-8, but some suggest service providers send JSON
@@ -271,7 +271,7 @@ void SearchProvider::OnURLFetchComplete(const URLFetcher* source) {
   SuggestResults* suggest_results = is_keyword_results ?
       &keyword_suggest_results_ : &default_suggest_results_;
 
-  if (source->status().is_success() && source->response_code() == 200) {
+  if (source->GetStatus().is_success() && source->GetResponseCode() == 200) {
     JSONStringValueSerializer deserializer(json_data);
     deserializer.set_allow_trailing_comma(true);
     scoped_ptr<Value> root_val(deserializer.Deserialize(NULL, NULL));
@@ -432,16 +432,17 @@ void SearchProvider::StopSuggest() {
   have_suggest_results_ = false;
 }
 
-URLFetcher* SearchProvider::CreateSuggestFetcher(int id,
-                                                 const TemplateURL& provider,
-                                                 const string16& text) {
+content::URLFetcher* SearchProvider::CreateSuggestFetcher(
+    int id,
+    const TemplateURL& provider,
+    const string16& text) {
   const TemplateURLRef* const suggestions_url = provider.suggestions_url();
   DCHECK(suggestions_url->SupportsReplacement());
   URLFetcher* fetcher = URLFetcher::Create(id,
       GURL(suggestions_url->ReplaceSearchTermsUsingProfile(profile_, provider,
           text, TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16())),
       URLFetcher::GET, this);
-  fetcher->set_request_context(profile_->GetRequestContext());
+  fetcher->SetRequestContext(profile_->GetRequestContext());
   fetcher->Start();
   return fetcher;
 }

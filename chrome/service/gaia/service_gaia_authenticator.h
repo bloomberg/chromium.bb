@@ -32,7 +32,7 @@ class ServiceGaiaAuthenticator
   virtual ~ServiceGaiaAuthenticator();
 
   // content::URLFetcherDelegate implementation.
-  virtual void OnURLFetchComplete(const URLFetcher *source) OVERRIDE;
+  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
 
  protected:
   // GaiaAuthenticator overrides.

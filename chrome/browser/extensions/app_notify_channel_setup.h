@@ -44,7 +44,7 @@ class AppNotifyChannelSetup
 
  protected:
   // content::URLFetcherDelegate.
-  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
 
  private:
   friend class base::RefCountedThreadSafe<AppNotifyChannelSetup>;
@@ -59,7 +59,7 @@ class AppNotifyChannelSetup
   int return_route_id_;
   int callback_id_;
   base::WeakPtr<Delegate> delegate_;
-  scoped_ptr<URLFetcher> url_fetcher_;
+  scoped_ptr<content::URLFetcher> url_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(AppNotifyChannelSetup);
 };

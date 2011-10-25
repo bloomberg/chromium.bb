@@ -211,23 +211,23 @@ void GoogleURLTracker::StartFetchIfDesirable() {
   // We don't want this fetch to affect existing state in local_state.  For
   // example, if a user has no Google cookies, this automatic check should not
   // cause one to be set, lest we alarm the user.
-  fetcher_->set_load_flags(net::LOAD_DISABLE_CACHE |
-                           net::LOAD_DO_NOT_SAVE_COOKIES);
-  fetcher_->set_request_context(g_browser_process->system_request_context());
+  fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE |
+                         net::LOAD_DO_NOT_SAVE_COOKIES);
+  fetcher_->SetRequestContext(g_browser_process->system_request_context());
 
   // Configure to max_retries at most kMaxRetries times for 5xx errors.
   static const int kMaxRetries = 5;
-  fetcher_->set_max_retries(kMaxRetries);
+  fetcher_->SetMaxRetries(kMaxRetries);
 
   fetcher_->Start();
 }
 
-void GoogleURLTracker::OnURLFetchComplete(const URLFetcher* source) {
+void GoogleURLTracker::OnURLFetchComplete(const content::URLFetcher* source) {
   // Delete the fetcher on this function's exit.
-  scoped_ptr<URLFetcher> clean_up_fetcher(fetcher_.release());
+  scoped_ptr<content::URLFetcher> clean_up_fetcher(fetcher_.release());
 
   // Don't update the URL if the request didn't succeed.
-  if (!source->status().is_success() || (source->response_code() != 200)) {
+  if (!source->GetStatus().is_success() || (source->GetResponseCode() != 200)) {
     already_fetched_ = false;
     return;
   }

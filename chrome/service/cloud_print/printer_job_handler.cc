@@ -282,7 +282,7 @@ void PrinterJobHandler::OnReceivePrinterCaps(
 
 // CloudPrintURLFetcher::Delegate implementation.
 CloudPrintURLFetcher::ResponseAction PrinterJobHandler::HandleRawResponse(
-    const URLFetcher* source,
+    const content::URLFetcher* source,
     const GURL& url,
     const net::URLRequestStatus& status,
     int response_code,
@@ -302,7 +302,7 @@ CloudPrintURLFetcher::ResponseAction PrinterJobHandler::HandleRawResponse(
 }
 
 CloudPrintURLFetcher::ResponseAction PrinterJobHandler::HandleRawData(
-    const URLFetcher* source,
+    const content::URLFetcher* source,
     const GURL& url,
     const std::string& data) {
   if (!next_data_handler_)
@@ -311,7 +311,7 @@ CloudPrintURLFetcher::ResponseAction PrinterJobHandler::HandleRawData(
 }
 
 CloudPrintURLFetcher::ResponseAction PrinterJobHandler::HandleJSONData(
-    const URLFetcher* source,
+    const content::URLFetcher* source,
     const GURL& url,
     DictionaryValue* json_data,
     bool succeeded) {
@@ -386,7 +386,7 @@ void PrinterJobHandler::OnJobChanged() {
 // Begin Response handlers
 CloudPrintURLFetcher::ResponseAction
 PrinterJobHandler::HandlePrinterUpdateResponse(
-    const URLFetcher* source,
+    const content::URLFetcher* source,
     const GURL& url,
     DictionaryValue* json_data,
     bool succeeded) {
@@ -400,7 +400,7 @@ PrinterJobHandler::HandlePrinterUpdateResponse(
 
 CloudPrintURLFetcher::ResponseAction
 PrinterJobHandler::HandlePrinterDeleteResponse(
-    const URLFetcher* source,
+    const content::URLFetcher* source,
     const GURL& url,
     DictionaryValue* json_data,
     bool succeeded) {
@@ -414,7 +414,7 @@ PrinterJobHandler::HandlePrinterDeleteResponse(
 
 CloudPrintURLFetcher::ResponseAction
 PrinterJobHandler::HandleJobMetadataResponse(
-    const URLFetcher* source,
+    const content::URLFetcher* source,
     const GURL& url,
     DictionaryValue* json_data,
     bool succeeded) {
@@ -462,7 +462,7 @@ PrinterJobHandler::HandleJobMetadataResponse(
 }
 
 CloudPrintURLFetcher::ResponseAction
-PrinterJobHandler::HandlePrintTicketResponse(const URLFetcher* source,
+PrinterJobHandler::HandlePrintTicketResponse(const content::URLFetcher* source,
                                              const GURL& url,
                                              const std::string& data) {
   VLOG(1) << "CP_PROXY: Handle print ticket response, id: "
@@ -485,7 +485,7 @@ PrinterJobHandler::HandlePrintTicketResponse(const URLFetcher* source,
 }
 
 CloudPrintURLFetcher::ResponseAction
-PrinterJobHandler::HandlePrintDataResponse(const URLFetcher* source,
+PrinterJobHandler::HandlePrintDataResponse(const content::URLFetcher* source,
                                            const GURL& url,
                                            const std::string& data) {
   VLOG(1) << "CP_PROXY: Handle print data response, id: "
@@ -495,7 +495,7 @@ PrinterJobHandler::HandlePrintDataResponse(const URLFetcher* source,
     int ret = file_util::WriteFile(job_details_.print_data_file_path_,
                                    data.c_str(),
                                    data.length());
-    source->response_headers()->GetMimeType(
+    source->GetResponseHeaders()->GetMimeType(
         &job_details_.print_data_mime_type_);
     DCHECK(ret == static_cast<int>(data.length()));
     if (ret == static_cast<int>(data.length())) {
@@ -514,7 +514,7 @@ PrinterJobHandler::HandlePrintDataResponse(const URLFetcher* source,
 
 CloudPrintURLFetcher::ResponseAction
 PrinterJobHandler::HandleSuccessStatusUpdateResponse(
-    const URLFetcher* source,
+    const content::URLFetcher* source,
     const GURL& url,
     DictionaryValue* json_data,
     bool succeeded) {
@@ -541,7 +541,7 @@ PrinterJobHandler::HandleSuccessStatusUpdateResponse(
 
 CloudPrintURLFetcher::ResponseAction
 PrinterJobHandler::HandleFailureStatusUpdateResponse(
-    const URLFetcher* source,
+    const content::URLFetcher* source,
     const GURL& url,
     DictionaryValue* json_data,
     bool succeeded) {

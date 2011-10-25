@@ -126,7 +126,7 @@ class AutofillDownloadManager : public content::URLFetcherDelegate {
       const std::vector<std::string>& forms_in_query) const;
 
   // content::URLFetcherDelegate implementation:
-  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
 
   // Probability of the form upload. Between 0 (no upload) and 1 (upload all).
   // GetPositiveUploadRate() is for matched forms,
@@ -142,7 +142,7 @@ class AutofillDownloadManager : public content::URLFetcherDelegate {
   // For each requested form for both query and upload we create a separate
   // request and save its info. As url fetcher is identified by its address
   // we use a map between fetchers and info.
-  std::map<URLFetcher*, FormRequestData> url_fetchers_;
+  std::map<content::URLFetcher*, FormRequestData> url_fetchers_;
   AutofillDownloadManager::Observer *observer_;
 
   // Cached QUERY requests.

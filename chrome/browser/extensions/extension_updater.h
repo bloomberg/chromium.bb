@@ -255,7 +255,7 @@ class ExtensionUpdater : public content::URLFetcherDelegate,
   base::TimeDelta DetermineFirstCheckDelay();
 
   // content::URLFetcherDelegate interface.
-  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
 
   // These do the actual work when a URL fetch completes.
   virtual void OnManifestFetchComplete(const GURL& url,
@@ -263,7 +263,7 @@ class ExtensionUpdater : public content::URLFetcherDelegate,
                                        int response_code,
                                        const std::string& data);
 
-  virtual void OnCRXFetchComplete(const URLFetcher* source,
+  virtual void OnCRXFetchComplete(const content::URLFetcher* source,
                                   const GURL& url,
                                   const net::URLRequestStatus& status,
                                   int response_code);
@@ -346,8 +346,8 @@ class ExtensionUpdater : public content::URLFetcherDelegate,
   base::WeakPtrFactory<ExtensionUpdater> weak_ptr_factory_;
 
   // Outstanding url fetch requests for manifests and updates.
-  scoped_ptr<URLFetcher> manifest_fetcher_;
-  scoped_ptr<URLFetcher> extension_fetcher_;
+  scoped_ptr<content::URLFetcher> manifest_fetcher_;
+  scoped_ptr<content::URLFetcher> extension_fetcher_;
 
   // Pending manifests and extensions to be fetched when the appropriate fetcher
   // is available.

@@ -107,7 +107,7 @@ class SpellCheckHostImpl : public SpellCheckHost,
 
   // content::URLFetcherDelegate implementation.  Called when we finish
   // downloading the spellcheck dictionary; saves the dictionary to |data_|.
-  virtual void OnURLFetchComplete(const URLFetcher* source);
+  virtual void OnURLFetchComplete(const content::URLFetcher* source);
 
   // NotificationProfile implementation.
   virtual void Observe(int type,
@@ -152,7 +152,7 @@ class SpellCheckHostImpl : public SpellCheckHost,
   net::URLRequestContextGetter* request_context_getter_;
 
   // Used for downloading the dictionary file.
-  scoped_ptr<URLFetcher> fetcher_;
+  scoped_ptr<content::URLFetcher> fetcher_;
 
   content::NotificationRegistrar registrar_;
 

@@ -259,7 +259,7 @@ TEST_F(SearchProviderTest, QueryDefaultProvider) {
   // And the URL matches what we expected.
   GURL expected_url = GURL(default_t_url_->suggestions_url()->
       ReplaceSearchTerms(*default_t_url_, term, 0, string16()));
-  ASSERT_TRUE(fetcher->original_url() == expected_url);
+  ASSERT_TRUE(fetcher->GetOriginalUrl() == expected_url);
 
   // Tell the SearchProvider the suggest query is done.
   fetcher->set_response_code(200);
@@ -319,7 +319,7 @@ TEST_F(SearchProviderTest, QueryKeywordProvider) {
   // And the URL matches what we expected.
   GURL expected_url = GURL(keyword_t_url_->suggestions_url()->
       ReplaceSearchTerms(*keyword_t_url_, term, 0, string16()));
-  ASSERT_TRUE(keyword_fetcher->original_url() == expected_url);
+  ASSERT_TRUE(keyword_fetcher->GetOriginalUrl() == expected_url);
 
   // Tell the SearchProvider the keyword suggest query is done.
   keyword_fetcher->set_response_code(200);

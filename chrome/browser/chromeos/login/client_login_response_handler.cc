@@ -25,7 +25,7 @@ bool ClientLoginResponseHandler::CanHandle(const GURL& url) {
 }
 
 // Overridden from AuthResponseHandler.
-URLFetcher* ClientLoginResponseHandler::Handle(
+content::URLFetcher* ClientLoginResponseHandler::Handle(
     const std::string& to_process,
     content::URLFetcherDelegate* catcher) {
   VLOG(1) << "Handling ClientLogin response!";
@@ -37,11 +37,11 @@ URLFetcher* ClientLoginResponseHandler::Handle(
       new URLFetcher(GURL(GaiaUrls::GetInstance()->issue_auth_token_url()),
                      URLFetcher::POST,
                      catcher);
-  fetcher->set_load_flags(net::LOAD_DO_NOT_SEND_COOKIES);
-  fetcher->set_upload_data("application/x-www-form-urlencoded", payload_);
+  fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES);
+  fetcher->SetUploadData("application/x-www-form-urlencoded", payload_);
   if (getter_) {
     VLOG(1) << "Fetching " << GaiaUrls::GetInstance()->issue_auth_token_url();
-    fetcher->set_request_context(getter_);
+    fetcher->SetRequestContext(getter_);
     fetcher->Start();
   }
   return fetcher;

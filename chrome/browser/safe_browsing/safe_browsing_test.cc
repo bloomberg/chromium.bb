@@ -509,9 +509,9 @@ class SafeBrowsingServiceTestHelper
   }
 
   // Callback for URLFetcher.
-  virtual void OnURLFetchComplete(const URLFetcher* source) {
+  virtual void OnURLFetchComplete(const content::URLFetcher* source) {
     source->GetResponseAsString(&response_data_);
-    response_status_ = source->status().status();
+    response_status_ = source->GetStatus().status();
     StopUILoop();
   }
 
@@ -530,8 +530,8 @@ class SafeBrowsingServiceTestHelper
   // so the caller could wait till OnURLFetchComplete is called.
   net::URLRequestStatus::Status FetchUrl(const GURL& url) {
     url_fetcher_.reset(new URLFetcher(url, URLFetcher::GET, this));
-    url_fetcher_->set_load_flags(net::LOAD_DISABLE_CACHE);
-    url_fetcher_->set_request_context(
+    url_fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
+    url_fetcher_->SetRequestContext(
         Profile::Deprecated::GetDefaultRequestContext());
     url_fetcher_->Start();
     ui_test_utils::RunMessageLoop();
@@ -540,7 +540,7 @@ class SafeBrowsingServiceTestHelper
 
   base::OneShotTimer<SafeBrowsingServiceTestHelper> check_update_timer_;
   SafeBrowsingServiceTest* safe_browsing_test_;
-  scoped_ptr<URLFetcher> url_fetcher_;
+  scoped_ptr<content::URLFetcher> url_fetcher_;
   std::string response_data_;
   net::URLRequestStatus::Status response_status_;
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingServiceTestHelper);

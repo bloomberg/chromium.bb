@@ -71,10 +71,10 @@ class TestURLFetcher : public URLFetcher {
   // Unique ID in our factory.
   int id() const { return id_; }
 
-  // URL we were created with. Because of how we're using URLFetcher url()
-  // always returns an empty URL. Chances are you'll want to use original_url()
-  // in your tests.
-  virtual const GURL& original_url() const OVERRIDE;
+  // URL we were created with. Because of how we're using URLFetcher GetUrl()
+  // always returns an empty URL. Chances are you'll want to use
+  // GetOriginalUrl() in your tests.
+  virtual const GURL& GetOriginalUrl() const OVERRIDE;
 
   // Returns the data uploaded on this URLFetcher.
   const std::string& upload_data() const { return URLFetcher::upload_data(); }
@@ -88,18 +88,18 @@ class TestURLFetcher : public URLFetcher {
   }
 
   void set_url(const GURL& url) { fake_url_ = url; }
-  virtual const GURL& url() const OVERRIDE;
+  virtual const GURL& GetUrl() const OVERRIDE;
 
   void set_status(const net::URLRequestStatus& status);
-  virtual const net::URLRequestStatus& status() const OVERRIDE;
+  virtual const net::URLRequestStatus& GetStatus() const OVERRIDE;
 
   void set_response_code(int response_code) {
     fake_response_code_ = response_code;
   }
-  virtual int response_code() const OVERRIDE;
+  virtual int GetResponseCode() const OVERRIDE;
 
   void set_cookies(const net::ResponseCookies& c) { fake_cookies_ = c; }
-  virtual const net::ResponseCookies& cookies() const OVERRIDE;
+  virtual const net::ResponseCookies& GetCookies() const OVERRIDE;
 
   void set_was_fetched_via_proxy(bool flag);
 

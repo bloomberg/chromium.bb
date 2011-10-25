@@ -295,14 +295,14 @@ void ServicesCustomizationDocument::ReadFileInBackground(const FilePath& file) {
 void ServicesCustomizationDocument::StartFileFetch() {
   DCHECK(url_.is_valid());
   url_fetcher_.reset(new URLFetcher(url_, URLFetcher::GET, this));
-  url_fetcher_->set_request_context(
+  url_fetcher_->SetRequestContext(
       ProfileManager::GetDefaultProfile()->GetRequestContext());
   url_fetcher_->Start();
 }
 
 void ServicesCustomizationDocument::OnURLFetchComplete(
-    const URLFetcher* source) {
-  if (source->response_code() == 200) {
+    const content::URLFetcher* source) {
+  if (source->GetResponseCode() == 200) {
     std::string data;
     source->GetResponseAsString(&data);
     LoadManifestFromString(data);
@@ -316,8 +316,8 @@ void ServicesCustomizationDocument::OnURLFetchComplete(
       return;
     }
     LOG(ERROR) << "URL fetch for services customization failed:"
-               << " response code = " << source->response_code()
-               << " URL = " << source->url().spec();
+               << " response code = " << source->GetResponseCode()
+               << " URL = " << source->GetUrl().spec();
   }
 }
 

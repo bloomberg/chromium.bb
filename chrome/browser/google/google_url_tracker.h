@@ -107,7 +107,7 @@ class GoogleURLTracker : public content::URLFetcherDelegate,
   void StartFetchIfDesirable();
 
   // content::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const URLFetcher *source);
+  virtual void OnURLFetchComplete(const content::URLFetcher* source);
 
   // content::NotificationObserver
   virtual void Observe(int type,
@@ -132,7 +132,7 @@ class GoogleURLTracker : public content::URLFetcherDelegate,
   GURL google_url_;
   GURL fetched_google_url_;
   base::WeakPtrFactory<GoogleURLTracker> weak_ptr_factory_;
-  scoped_ptr<URLFetcher> fetcher_;
+  scoped_ptr<content::URLFetcher> fetcher_;
   int fetcher_id_;
   bool queue_wakeup_task_;
   bool in_startup_sleep_;  // True if we're in the five-second "no fetching"

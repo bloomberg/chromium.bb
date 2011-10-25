@@ -49,6 +49,7 @@
     'public/common/serialized_script_value.h',
     'public/common/url_constants.cc',
     'public/common/url_constants.h',
+    'public/common/url_fetcher.h',
     'public/common/url_fetcher_delegate.h',
     'public/common/view_types.h',
     'public/common/zygote_fork_delegate_linux.h',

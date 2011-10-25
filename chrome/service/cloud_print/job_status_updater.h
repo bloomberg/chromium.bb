@@ -46,7 +46,7 @@ class JobStatusUpdater : public base::RefCountedThreadSafe<JobStatusUpdater>,
 
   // CloudPrintURLFetcher::Delegate implementation.
   virtual CloudPrintURLFetcher::ResponseAction HandleJSONData(
-      const URLFetcher* source,
+      const content::URLFetcher* source,
       const GURL& url,
       base::DictionaryValue* json_data,
       bool succeeded);

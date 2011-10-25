@@ -50,34 +50,35 @@ void CloudPrintURLFetcher::StartPostRequest(
                      additional_headers);
 }
 
-void CloudPrintURLFetcher::OnURLFetchComplete(const URLFetcher* source) {
-  VLOG(1) << "CP_PROXY: OnURLFetchComplete, url: " << source->url()
-          << ", response code: " << source->response_code();
+void CloudPrintURLFetcher::OnURLFetchComplete(
+    const content::URLFetcher* source) {
+  VLOG(1) << "CP_PROXY: OnURLFetchComplete, url: " << source->GetUrl()
+          << ", response code: " << source->GetResponseCode();
   // Make sure we stay alive through the body of this function.
   scoped_refptr<CloudPrintURLFetcher> keep_alive(this);
   std::string data;
   source->GetResponseAsString(&data);
   ResponseAction action = delegate_->HandleRawResponse(
       source,
-      source->url(),
-      source->status(),
-      source->response_code(),
-      source->cookies(),
+      source->GetUrl(),
+      source->GetStatus(),
+      source->GetResponseCode(),
+      source->GetCookies(),
       data);
   if (action == CONTINUE_PROCESSING) {
     // If we are not using an OAuth token, and we got an auth error, we are
     // done. Else, the token may have been refreshed. Let us try again.
-    if ((RC_FORBIDDEN == source->response_code()) &&
+    if ((RC_FORBIDDEN == source->GetResponseCode()) &&
         (!CloudPrintTokenStore::current() ||
          !CloudPrintTokenStore::current()->token_is_oauth())) {
       delegate_->OnRequestAuthError();
       return;
     }
     // We need to retry on all network errors.
-    if (!source->status().is_success() || (source->response_code() != 200))
+    if (!source->GetStatus().is_success() || (source->GetResponseCode() != 200))
       action = RETRY_REQUEST;
     else
-      action = delegate_->HandleRawData(source, source->url(), data);
+      action = delegate_->HandleRawData(source, source->GetUrl(), data);
 
     if (action == CONTINUE_PROCESSING) {
       // If the delegate is not interested in handling the raw response data,
@@ -89,7 +90,7 @@ void CloudPrintURLFetcher::OnURLFetchComplete(const URLFetcher* source) {
       CloudPrintHelpers::ParseResponseJSON(data, &succeeded, &response_dict);
       if (response_dict)
         action = delegate_->HandleJSONData(source,
-                                           source->url(),
+                                           source->GetUrl(),
                                            response_dict,
                                            succeeded);
       else
@@ -105,8 +106,8 @@ void CloudPrintURLFetcher::OnURLFetchComplete(const URLFetcher* source) {
     request_->ReceivedContentWasMalformed();
 
     ++num_retries_;
-    if ((-1 != source->max_retries()) &&
-        (num_retries_ > source->max_retries())) {
+    if ((-1 != source->GetMaxRetries()) &&
+        (num_retries_ > source->GetMaxRetries())) {
       // Retry limit reached. Give up.
       delegate_->OnRequestGiveUp();
     } else {
@@ -131,14 +132,14 @@ void CloudPrintURLFetcher::StartRequestHelper(
   // Persist the additional headers in case we need to retry the request.
   additional_headers_ = additional_headers;
   request_.reset(new URLFetcher(url, request_type, this));
-  request_->set_request_context(GetRequestContextGetter());
+  request_->SetRequestContext(GetRequestContextGetter());
   // Since we implement our own retry logic, disable the retry in URLFetcher.
-  request_->set_automatically_retry_on_5xx(false);
-  request_->set_max_retries(max_retries);
+  request_->SetAutomaticallyRetryOn5xx(false);
+  request_->SetMaxRetries(max_retries);
   SetupRequestHeaders();
   delegate_ = delegate;
   if (request_type == URLFetcher::POST) {
-    request_->set_upload_data(post_data_mime_type, post_data);
+    request_->SetUploadData(post_data_mime_type, post_data);
   }
 
   request_->Start();
@@ -158,7 +159,7 @@ void CloudPrintURLFetcher::SetupRequestHeaders() {
     headers += "\r\n";
     headers += additional_headers_;
   }
-  request_->set_extra_request_headers(headers);
+  request_->SetExtraRequestHeaders(headers);
 }
 
 CloudPrintURLFetcher::~CloudPrintURLFetcher() {}

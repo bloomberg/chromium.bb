@@ -55,7 +55,7 @@ void WebstoreInstallHelper::Start() {
   if (!icon_url_.is_empty()) {
     CHECK(context_getter_);
     url_fetcher_.reset(new URLFetcher(icon_url_, URLFetcher::GET, this));
-    url_fetcher_->set_request_context(context_getter_);
+    url_fetcher_->SetRequestContext(context_getter_);
 
     url_fetcher_->Start();
     // We'll get called back in OnURLFetchComplete.
@@ -74,11 +74,12 @@ void WebstoreInstallHelper::StartWorkOnIOThread() {
   utility_host_->Send(new ChromeUtilityMsg_ParseJSON(manifest_));
 }
 
-void WebstoreInstallHelper::OnURLFetchComplete(const URLFetcher* source) {
+void WebstoreInstallHelper::OnURLFetchComplete(
+    const content::URLFetcher* source) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   CHECK(source == url_fetcher_.get());
-  if (source->status().status() != net::URLRequestStatus::SUCCESS ||
-      source->response_code() != 200) {
+  if (source->GetStatus().status() != net::URLRequestStatus::SUCCESS ||
+      source->GetResponseCode() != 200) {
     BrowserThread::PostTask(
         BrowserThread::IO,
         FROM_HERE,

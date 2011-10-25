@@ -45,7 +45,7 @@ class ProfileImageDownloader : public content::URLFetcherDelegate,
 
  private:
   // Overriden from content::URLFetcherDelegate:
-  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
 
   // Overriden from ImageDecoder::Delegate:
   virtual void OnImageDecoded(const ImageDecoder* decoder,
@@ -66,8 +66,8 @@ class ProfileImageDownloader : public content::URLFetcherDelegate,
 
   Delegate* delegate_;
   std::string auth_token_;
-  scoped_ptr<URLFetcher> user_entry_fetcher_;
-  scoped_ptr<URLFetcher> profile_image_fetcher_;
+  scoped_ptr<content::URLFetcher> user_entry_fetcher_;
+  scoped_ptr<content::URLFetcher> profile_image_fetcher_;
   content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileImageDownloader);

@@ -135,7 +135,7 @@ class DeviceManagementJobBase
                               const net::ResponseCookies& cookies,
                               const std::string& data);
   virtual GURL GetURL(const std::string& server_url);
-  virtual void ConfigureRequest(URLFetcher* fetcher);
+  virtual void ConfigureRequest(content::URLFetcher* fetcher);
 
  protected:
   // Constructs a device management job running for the given backend.
@@ -282,14 +282,14 @@ GURL DeviceManagementJobBase::GetURL(
   return GURL(server_url + '?' + query_params_.Encode());
 }
 
-void DeviceManagementJobBase::ConfigureRequest(URLFetcher* fetcher) {
-  fetcher->set_upload_data(kPostContentType, payload_);
+void DeviceManagementJobBase::ConfigureRequest(content::URLFetcher* fetcher) {
+  fetcher->SetUploadData(kPostContentType, payload_);
   std::string extra_headers;
   if (!gaia_auth_token_.empty())
     extra_headers += kServiceTokenAuthHeader + gaia_auth_token_ + "\n";
   if (!device_management_token_.empty())
     extra_headers += kDMTokenAuthHeader + device_management_token_ + "\n";
-  fetcher->set_extra_request_headers(extra_headers);
+  fetcher->SetExtraRequestHeaders(extra_headers);
 }
 
 // Handles device registration jobs.

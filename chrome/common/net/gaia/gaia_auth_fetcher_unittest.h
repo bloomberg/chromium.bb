@@ -42,10 +42,10 @@ class MockFetcher : public URLFetcher {
 
   virtual void Start();
 
-  virtual const GURL& url() const;
-  virtual const net::URLRequestStatus& status() const;
-  virtual int response_code() const;
-  virtual const net::ResponseCookies& cookies() const;
+  virtual const GURL& GetUrl() const OVERRIDE;
+  virtual const net::URLRequestStatus& GetStatus() const OVERRIDE;
+  virtual int GetResponseCode() const OVERRIDE;
+  virtual const net::ResponseCookies& GetCookies() const OVERRIDE;
   virtual bool GetResponseAsString(std::string* out_response_string) const;
 
  private:

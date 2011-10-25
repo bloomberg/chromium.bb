@@ -111,7 +111,7 @@ void ClientSideDetectionService::SetEnabledAndRefreshState(bool enabled) {
     // Cancel pending requests.
     model_fetcher_.reset();
     // Invoke pending callbacks with a false verdict.
-    for (std::map<const URLFetcher*, ClientReportInfo*>::iterator it =
+    for (std::map<const content::URLFetcher*, ClientReportInfo*>::iterator it =
              client_phishing_reports_.begin();
          it != client_phishing_reports_.end(); ++it) {
       ClientReportInfo* info = it->second;
@@ -184,18 +184,19 @@ bool ClientSideDetectionService::IsBadIpAddress(
   return false;
 }
 
-void ClientSideDetectionService::OnURLFetchComplete(const URLFetcher* source) {
+void ClientSideDetectionService::OnURLFetchComplete(
+    const content::URLFetcher* source) {
   std::string data;
   source->GetResponseAsString(&data);
   if (source == model_fetcher_.get()) {
     HandleModelResponse(
-        source, source->url(), source->status(), source->response_code(),
-        source->cookies(), data);
+        source, source->GetUrl(), source->GetStatus(),
+        source->GetResponseCode(), source->GetCookies(), data);
   } else if (client_phishing_reports_.find(source) !=
              client_phishing_reports_.end()) {
     HandlePhishingVerdict(
-        source, source->url(), source->status(), source->response_code(),
-        source->cookies(), data);
+        source, source->GetUrl(), source->GetStatus(),
+        source->GetResponseCode(), source->GetCookies(), data);
   } else {
     NOTREACHED();
   }
@@ -254,7 +255,7 @@ void ClientSideDetectionService::StartFetchModel() {
                                             GURL(kClientModelUrl),
                                             URLFetcher::GET,
                                             this));
-    model_fetcher_->set_request_context(request_context_getter_.get());
+    model_fetcher_->SetRequestContext(request_context_getter_.get());
     model_fetcher_->Start();
   }
 }
@@ -317,9 +318,9 @@ void ClientSideDetectionService::StartClientReportPhishingRequest(
   info->phishing_url = GURL(request->url());
   client_phishing_reports_[fetcher] = info;
 
-  fetcher->set_load_flags(net::LOAD_DISABLE_CACHE);
-  fetcher->set_request_context(request_context_getter_.get());
-  fetcher->set_upload_data("application/octet-stream", request_data);
+  fetcher->SetLoadFlags(net::LOAD_DISABLE_CACHE);
+  fetcher->SetRequestContext(request_context_getter_.get());
+  fetcher->SetUploadData("application/octet-stream", request_data);
   fetcher->Start();
 
   // Record that we made a request
@@ -327,7 +328,7 @@ void ClientSideDetectionService::StartClientReportPhishingRequest(
 }
 
 void ClientSideDetectionService::HandleModelResponse(
-    const URLFetcher* source,
+    const content::URLFetcher* source,
     const GURL& url,
     const net::URLRequestStatus& status,
     int response_code,
@@ -335,8 +336,8 @@ void ClientSideDetectionService::HandleModelResponse(
     const std::string& data) {
   base::TimeDelta max_age;
   if (status.is_success() && RC_REQUEST_OK == response_code &&
-      source->response_headers() &&
-      source->response_headers()->GetMaxAgeValue(&max_age)) {
+      source->GetResponseHeaders() &&
+      source->GetResponseHeaders()->GetMaxAgeValue(&max_age)) {
     model_max_age_.reset(new base::TimeDelta(max_age));
   }
   scoped_ptr<ClientSideModel> model(new ClientSideModel());
@@ -368,7 +369,7 @@ void ClientSideDetectionService::HandleModelResponse(
 }
 
 void ClientSideDetectionService::HandlePhishingVerdict(
-    const URLFetcher* source,
+    const content::URLFetcher* source,
     const GURL& url,
     const net::URLRequestStatus& status,
     int response_code,

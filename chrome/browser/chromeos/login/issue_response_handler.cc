@@ -21,17 +21,17 @@ bool IssueResponseHandler::CanHandle(const GURL& url) {
 }
 
 // Overridden from AuthResponseHandler.
-URLFetcher* IssueResponseHandler::Handle(
+content::URLFetcher* IssueResponseHandler::Handle(
     const std::string& to_process,
     content::URLFetcherDelegate* catcher) {
   VLOG(1) << "Handling IssueAuthToken response";
   token_url_.assign(BuildTokenAuthUrlWithToken(to_process));
   URLFetcher* fetcher =
       new URLFetcher(GURL(token_url_), URLFetcher::GET, catcher);
-  fetcher->set_load_flags(net::LOAD_DO_NOT_SEND_COOKIES);
+  fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES);
   if (getter_) {
     VLOG(1) << "Fetching " << GaiaUrls::GetInstance()->token_auth_url();
-    fetcher->set_request_context(getter_);
+    fetcher->SetRequestContext(getter_);
     fetcher->Start();
   }
   return fetcher;

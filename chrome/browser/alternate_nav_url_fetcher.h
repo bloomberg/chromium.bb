@@ -58,7 +58,7 @@ class AlternateNavURLFetcher : public content::NotificationObserver,
                        const content::NotificationDetails& details) OVERRIDE;
 
   // content::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
 
   // Sets |controller_| to the supplied pointer and begins fetching
   // |alternate_nav_url_|.
@@ -77,7 +77,7 @@ class AlternateNavURLFetcher : public content::NotificationObserver,
   void ShowInfobarIfPossible();
 
   GURL alternate_nav_url_;
-  scoped_ptr<URLFetcher> fetcher_;
+  scoped_ptr<content::URLFetcher> fetcher_;
   NavigationController* controller_;
   State state_;
   bool navigated_to_entry_;

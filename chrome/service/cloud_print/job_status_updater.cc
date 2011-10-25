@@ -78,7 +78,7 @@ void JobStatusUpdater::Stop() {
 
 // CloudPrintURLFetcher::Delegate implementation.
 CloudPrintURLFetcher::ResponseAction JobStatusUpdater::HandleJSONData(
-      const URLFetcher* source,
+      const content::URLFetcher* source,
       const GURL& url,
       DictionaryValue* json_data,
       bool succeeded) {

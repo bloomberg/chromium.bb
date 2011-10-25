@@ -41,10 +41,11 @@ void CookieFetcher::AttemptFetch(const std::string& credentials) {
   fetcher_.reset(client_login_handler_->Handle(credentials, this));
 }
 
-void CookieFetcher::OnURLFetchComplete(const URLFetcher* source) {
-  if (source->status().is_success() &&
-      source->response_code() == kHttpSuccess) {
-    if (issue_handler_->CanHandle(source->url())) {
+void CookieFetcher::
+OnURLFetchComplete(const content::URLFetcher* source) {
+  if (source->GetStatus().is_success() &&
+      source->GetResponseCode() == kHttpSuccess) {
+    if (issue_handler_->CanHandle(source->GetUrl())) {
       VLOG(1) << "Handling auth token";
       std::string data;
       source->GetResponseAsString(&data);

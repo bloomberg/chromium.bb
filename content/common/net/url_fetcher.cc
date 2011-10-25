@@ -32,7 +32,6 @@
 #include "net/url_request/url_request_throttler_manager.h"
 
 static const int kBufferSize = 4096;
-const int URLFetcher::kInvalidHttpResponseCode = -1;
 
 class URLFetcher::Core
     : public base::RefCountedThreadSafe<URLFetcher::Core>,
@@ -467,7 +466,26 @@ void URLFetcher::Core::TempFileWriter::RemoveTempFile() {
 URLFetcher::Factory* URLFetcher::factory_ = NULL;
 
 // static
-bool URLFetcher::g_interception_enabled = false;
+static bool g_interception_enabled = false;
+
+// static
+content::URLFetcher* content::URLFetcher::Create(
+    const GURL& url,
+    RequestType request_type,
+    content::URLFetcherDelegate* d) {
+  return new ::URLFetcher(url, request_type, d);
+}
+
+// static
+void content::URLFetcher::CancelAll() {
+  ::URLFetcher::CancelAll();
+}
+
+// static
+void content::URLFetcher::SetEnableInterceptionForTests(bool enabled) {
+  g_interception_enabled = enabled;
+}
+
 
 URLFetcher::URLFetcher(const GURL& url,
                        RequestType request_type,
@@ -500,7 +518,7 @@ URLFetcher::Core::Core(URLFetcher* fetcher,
           base::MessageLoopProxy::current()),
       request_(NULL),
       load_flags_(net::LOAD_NORMAL),
-      response_code_(URLFetcher::kInvalidHttpResponseCode),
+      response_code_(RESPONSE_CODE_INVALID),
       buffer_(new net::IOBuffer(kBufferSize)),
       was_fetched_via_proxy_(false),
       is_chunked_upload_(false),
@@ -857,7 +875,7 @@ void URLFetcher::Core::NotifyMalformedContent() {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
   if (url_throttler_entry_ != NULL) {
     int status_code = response_code_;
-    if (status_code == kInvalidHttpResponseCode) {
+    if (status_code == RESPONSE_CODE_INVALID) {
       // The status code will generally be known by the time clients
       // call the |ReceivedContentWasMalformed()| function (which ends up
       // calling the current function) but if it's not, we need to assume
@@ -891,14 +909,14 @@ base::TimeTicks URLFetcher::Core::GetBackoffReleaseTime() {
       original_url_backoff : destination_url_backoff;
 }
 
-void URLFetcher::set_upload_data(const std::string& upload_content_type,
-                                 const std::string& upload_content) {
+void URLFetcher::SetUploadData(const std::string& upload_content_type,
+                               const std::string& upload_content) {
   DCHECK(!core_->is_chunked_upload_);
   core_->upload_content_type_ = upload_content_type;
   core_->upload_content_ = upload_content;
 }
 
-void URLFetcher::set_chunked_upload(const std::string& content_type) {
+void URLFetcher::SetChunkedUpload(const std::string& content_type) {
   DCHECK(core_->is_chunked_upload_ ||
          (core_->upload_content_type_.empty() &&
           core_->upload_content_.empty()));
@@ -917,19 +935,19 @@ const std::string& URLFetcher::upload_data() const {
   return core_->upload_content_;
 }
 
-void URLFetcher::set_referrer(const std::string& referrer) {
+void URLFetcher::SetReferrer(const std::string& referrer) {
   core_->referrer_ = referrer;
 }
 
-void URLFetcher::set_load_flags(int load_flags) {
+void URLFetcher::SetLoadFlags(int load_flags) {
   core_->load_flags_ = load_flags;
 }
 
-int URLFetcher::load_flags() const {
+int URLFetcher::GetLoadFlags() const {
   return core_->load_flags_;
 }
 
-void URLFetcher::set_extra_request_headers(
+void URLFetcher::SetExtraRequestHeaders(
     const std::string& extra_request_headers) {
   core_->extra_request_headers_.Clear();
   core_->extra_request_headers_.AddHeadersFromString(extra_request_headers);
@@ -939,29 +957,30 @@ void URLFetcher::GetExtraRequestHeaders(net::HttpRequestHeaders* headers) {
   headers->CopyFrom(core_->extra_request_headers_);
 }
 
-void URLFetcher::set_request_context(
+void URLFetcher::SetRequestContext(
     net::URLRequestContextGetter* request_context_getter) {
   DCHECK(!core_->request_context_getter_);
   core_->request_context_getter_ = request_context_getter;
 }
 
-void URLFetcher::set_automatically_retry_on_5xx(bool retry) {
+void URLFetcher::SetAutomaticallyRetryOn5xx(bool retry) {
   core_->automatically_retry_on_5xx_ = retry;
 }
 
-int URLFetcher::max_retries() const {
-  return core_->max_retries_;
-}
-
-void URLFetcher::set_max_retries(int max_retries) {
+void URLFetcher::SetMaxRetries(int max_retries) {
   core_->max_retries_ = max_retries;
 }
 
-base::TimeDelta URLFetcher::backoff_delay() const {
+int URLFetcher::GetMaxRetries() const {
+  return core_->max_retries_;
+}
+
+
+base::TimeDelta URLFetcher::GetBackoffDelay() const {
   return core_->backoff_delay_;
 }
 
-void URLFetcher::set_backoff_delay_for_testing(
+void URLFetcher::SetBackoffDelayForTesting(
     base::TimeDelta backoff_delay) {
   core_->backoff_delay_ = backoff_delay;
 }
@@ -972,7 +991,7 @@ void URLFetcher::SaveResponseToTemporaryFile(
   core_->response_destination_ = TEMP_FILE;
 }
 
-net::HttpResponseHeaders* URLFetcher::response_headers() const {
+net::HttpResponseHeaders* URLFetcher::GetResponseHeaders() const {
   return core_->response_headers_;
 }
 
@@ -984,11 +1003,11 @@ void URLFetcher::set_response_headers(
 // TODO(panayiotis): socket_address_ is written in the IO thread,
 // if this is accessed in the UI thread, this could result in a race.
 // Same for response_headers_ above and was_fetched_via_proxy_ below.
-net::HostPortPair URLFetcher::socket_address() const {
+net::HostPortPair URLFetcher::GetSocketAddress() const {
   return core_->socket_address_;
 }
 
-bool URLFetcher::was_fetched_via_proxy() const {
+bool URLFetcher::WasFetchedViaProxy() const {
   return core_->was_fetched_via_proxy_;
 }
 
@@ -1002,27 +1021,27 @@ void URLFetcher::Start() {
 
 void URLFetcher::StartWithRequestContextGetter(
     net::URLRequestContextGetter* request_context_getter) {
-  set_request_context(request_context_getter);
+  SetRequestContext(request_context_getter);
   core_->Start();
 }
 
-const GURL& URLFetcher::original_url() const {
+const GURL& URLFetcher::GetOriginalUrl() const {
   return core_->original_url_;
 }
 
-const GURL& URLFetcher::url() const {
+const GURL& URLFetcher::GetUrl() const {
   return core_->url_;
 }
 
-const net::URLRequestStatus& URLFetcher::status() const {
+const net::URLRequestStatus& URLFetcher::GetStatus() const {
   return core_->status_;
 }
 
-int URLFetcher::response_code() const {
+int URLFetcher::GetResponseCode() const {
   return core_->response_code_;
 }
 
-const net::ResponseCookies& URLFetcher::cookies() const {
+const net::ResponseCookies& URLFetcher::GetCookies() const {
   return core_->cookies_;
 }
 

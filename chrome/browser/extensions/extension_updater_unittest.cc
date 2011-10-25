@@ -352,7 +352,7 @@ class ExtensionUpdaterTest : public testing::Test {
     // Get the url our mock fetcher was asked to fetch.
     TestURLFetcher* fetcher =
         factory.GetFetcherByID(ExtensionUpdater::kManifestFetcherId);
-    const GURL& url = fetcher->original_url();
+    const GURL& url = fetcher->GetOriginalUrl();
     EXPECT_FALSE(url.is_empty());
     EXPECT_TRUE(url.is_valid());
     EXPECT_TRUE(url.SchemeIs("http"));
@@ -402,7 +402,7 @@ class ExtensionUpdaterTest : public testing::Test {
     TestURLFetcher* fetcher =
         factory.GetFetcherByID(ExtensionUpdater::kManifestFetcherId);
     ASSERT_FALSE(fetcher == NULL);
-    const GURL& url = fetcher->original_url();
+    const GURL& url = fetcher->GetOriginalUrl();
 
     EXPECT_FALSE(url.is_empty());
     EXPECT_TRUE(url.is_valid());
@@ -603,7 +603,7 @@ class ExtensionUpdaterTest : public testing::Test {
     std::string invalid_xml = "invalid xml";
     fetcher = factory.GetFetcherByID(ExtensionUpdater::kManifestFetcherId);
     EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
-    EXPECT_TRUE(fetcher->load_flags() == expected_load_flags);
+    EXPECT_TRUE(fetcher->GetLoadFlags() == expected_load_flags);
 
     fetcher->set_url(url1);
     fetcher->set_status(net::URLRequestStatus());
@@ -624,7 +624,7 @@ class ExtensionUpdaterTest : public testing::Test {
         "</gupdate>";
     fetcher = factory.GetFetcherByID(ExtensionUpdater::kManifestFetcherId);
     EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
-    EXPECT_TRUE(fetcher->load_flags() == expected_load_flags);
+    EXPECT_TRUE(fetcher->GetLoadFlags() == expected_load_flags);
 
     fetcher->set_url(url2);
     fetcher->set_status(net::URLRequestStatus());
@@ -688,7 +688,7 @@ class ExtensionUpdaterTest : public testing::Test {
     FilePath extension_file_path(FILE_PATH_LITERAL("/whatever"));
     fetcher = factory.GetFetcherByID(ExtensionUpdater::kExtensionFetcherId);
     EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
-    EXPECT_TRUE(fetcher->load_flags() == expected_load_flags);
+    EXPECT_TRUE(fetcher->GetLoadFlags() == expected_load_flags);
 
     fetcher->set_url(test_url);
     fetcher->set_status(net::URLRequestStatus());
@@ -742,7 +742,7 @@ class ExtensionUpdaterTest : public testing::Test {
 
     fetcher = factory.GetFetcherByID(ExtensionUpdater::kExtensionFetcherId);
     EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
-    EXPECT_TRUE(fetcher->load_flags() == expected_load_flags);
+    EXPECT_TRUE(fetcher->GetLoadFlags() == expected_load_flags);
 
     fetcher->set_url(test_url);
     fetcher->set_status(net::URLRequestStatus());
@@ -801,7 +801,7 @@ class ExtensionUpdaterTest : public testing::Test {
 
     fetcher = factory.GetFetcherByID(ExtensionUpdater::kExtensionFetcherId);
     EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
-    EXPECT_TRUE(fetcher->load_flags() == expected_load_flags);
+    EXPECT_TRUE(fetcher->GetLoadFlags() == expected_load_flags);
 
     // We need some CrxInstallers, and CrxInstallers require a real
     // ExtensionService.  Create one on the testing profile.  Any action
@@ -850,7 +850,7 @@ class ExtensionUpdaterTest : public testing::Test {
     FilePath extension_file_path2(FILE_PATH_LITERAL("/whatever2"));
     fetcher = factory.GetFetcherByID(ExtensionUpdater::kExtensionFetcherId);
     EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
-    EXPECT_TRUE(fetcher->load_flags() == expected_load_flags);
+    EXPECT_TRUE(fetcher->GetLoadFlags() == expected_load_flags);
 
     fetcher->set_url(url2);
     fetcher->set_status(net::URLRequestStatus());
@@ -988,7 +988,7 @@ class ExtensionUpdaterTest : public testing::Test {
     TestURLFetcher* fetcher =
       factory.GetFetcherByID(ExtensionUpdater::kManifestFetcherId);
     EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
-    fetched_urls.push_back(fetcher->original_url());
+    fetched_urls.push_back(fetcher->GetOriginalUrl());
 
     fetcher->set_url(fetched_urls[0]);
     fetcher->set_status(net::URLRequestStatus());
@@ -997,7 +997,7 @@ class ExtensionUpdaterTest : public testing::Test {
     fetcher->delegate()->OnURLFetchComplete(fetcher);
 
     fetcher = factory.GetFetcherByID(ExtensionUpdater::kManifestFetcherId);
-    fetched_urls.push_back(fetcher->original_url());
+    fetched_urls.push_back(fetcher->GetOriginalUrl());
 
     // The urls could have been fetched in either order, so use the host to
     // tell them apart and note the query each used.

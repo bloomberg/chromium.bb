@@ -71,22 +71,22 @@ class WebResourceService::WebResourceFetcher
         URLFetcher::GET, this));
     // Do not let url fetcher affect existing state in system context (by
     // setting cookies, for example).
-    url_fetcher_->set_load_flags(net::LOAD_DISABLE_CACHE |
+    url_fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE |
         net::LOAD_DO_NOT_SAVE_COOKIES);
     net::URLRequestContextGetter* url_request_context_getter =
         g_browser_process->system_request_context();
-    url_fetcher_->set_request_context(url_request_context_getter);
+    url_fetcher_->SetRequestContext(url_request_context_getter);
     url_fetcher_->Start();
   }
 
   // From content::URLFetcherDelegate.
-  void OnURLFetchComplete(const URLFetcher* source) {
+  void OnURLFetchComplete(const content::URLFetcher* source) {
     // Delete the URLFetcher when this function exits.
-    scoped_ptr<URLFetcher> clean_up_fetcher(url_fetcher_.release());
+    scoped_ptr<content::URLFetcher> clean_up_fetcher(url_fetcher_.release());
 
     // Don't parse data if attempt to download was unsuccessful.
     // Stop loading new web resource data, and silently exit.
-    if (!source->status().is_success() || (source->response_code() != 200))
+    if (!source->GetStatus().is_success() || (source->GetResponseCode() != 200))
       return;
 
     std::string data;
@@ -101,7 +101,7 @@ class WebResourceService::WebResourceFetcher
   ScopedRunnableMethodFactory<WebResourceFetcher> fetcher_factory_;
 
   // The tool that fetches the url data from the server.
-  scoped_ptr<URLFetcher> url_fetcher_;
+  scoped_ptr<content::URLFetcher> url_fetcher_;
 
   // Our owner and creator. Ref counted.
   WebResourceService* web_resource_service_;

@@ -591,7 +591,7 @@ void ExtensionUpdater::Stop() {
   extensions_pending_.clear();
 }
 
-void ExtensionUpdater::OnURLFetchComplete(const URLFetcher* source) {
+void ExtensionUpdater::OnURLFetchComplete(const content::URLFetcher* source) {
   // Stop() destroys all our URLFetchers, which means we shouldn't be
   // called after Stop() is called.
   DCHECK(alive_);
@@ -599,15 +599,15 @@ void ExtensionUpdater::OnURLFetchComplete(const URLFetcher* source) {
   if (source == manifest_fetcher_.get()) {
     std::string data;
     source->GetResponseAsString(&data);
-    OnManifestFetchComplete(source->url(),
-                            source->status(),
-                            source->response_code(),
+    OnManifestFetchComplete(source->GetUrl(),
+                            source->GetStatus(),
+                            source->GetResponseCode(),
                             data);
   } else if (source == extension_fetcher_.get()) {
     OnCRXFetchComplete(source,
-                       source->url(),
-                       source->status(),
-                       source->response_code());
+                       source->GetUrl(),
+                       source->GetStatus(),
+                       source->GetResponseCode());
   } else {
     NOTREACHED();
   }
@@ -826,7 +826,7 @@ void ExtensionUpdater::ProcessBlacklist(const std::string& data) {
 }
 
 void ExtensionUpdater::OnCRXFetchComplete(
-    const URLFetcher* source,
+    const content::URLFetcher* source,
     const GURL& url,
     const net::URLRequestStatus& status,
     int response_code) {
@@ -1160,7 +1160,7 @@ void ExtensionUpdater::StartUpdateCheck(ManifestFetchData* fetch_data) {
   }
 
   if (manifest_fetcher_.get() != NULL) {
-    if (manifest_fetcher_->url() != fetch_data->full_url()) {
+    if (manifest_fetcher_->GetUrl() != fetch_data->full_url()) {
       manifests_pending_.push_back(scoped_fetch_data.release());
     }
   } else {
@@ -1171,11 +1171,10 @@ void ExtensionUpdater::StartUpdateCheck(ManifestFetchData* fetch_data) {
     manifest_fetcher_.reset(
         URLFetcher::Create(kManifestFetcherId, fetch_data->full_url(),
                            URLFetcher::GET, this));
-    manifest_fetcher_->set_request_context(
-        profile_->GetRequestContext());
-    manifest_fetcher_->set_load_flags(net::LOAD_DO_NOT_SEND_COOKIES |
-                                      net::LOAD_DO_NOT_SAVE_COOKIES |
-                                      net::LOAD_DISABLE_CACHE);
+    manifest_fetcher_->SetRequestContext(profile_->GetRequestContext());
+    manifest_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
+                                    net::LOAD_DO_NOT_SAVE_COOKIES |
+                                    net::LOAD_DISABLE_CACHE);
     manifest_fetcher_->Start();
   }
 }
@@ -1193,17 +1192,17 @@ void ExtensionUpdater::FetchUpdatedExtension(const std::string& id,
   }
 
   if (extension_fetcher_.get() != NULL) {
-    if (extension_fetcher_->url() != url) {
+    if (extension_fetcher_->GetUrl() != url) {
       extensions_pending_.push_back(ExtensionFetch(id, url, hash, version));
     }
   } else {
     extension_fetcher_.reset(
         URLFetcher::Create(kExtensionFetcherId, url, URLFetcher::GET, this));
-    extension_fetcher_->set_request_context(
+    extension_fetcher_->SetRequestContext(
         profile_->GetRequestContext());
-    extension_fetcher_->set_load_flags(net::LOAD_DO_NOT_SEND_COOKIES |
-                                       net::LOAD_DO_NOT_SAVE_COOKIES |
-                                       net::LOAD_DISABLE_CACHE);
+    extension_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
+                                     net::LOAD_DO_NOT_SAVE_COOKIES |
+                                     net::LOAD_DISABLE_CACHE);
     // Download CRX files to a temp file. The blacklist is small and will be
     // processed in memory, so it is fetched into a string.
     if (id != ExtensionUpdater::kBlacklistAppID) {

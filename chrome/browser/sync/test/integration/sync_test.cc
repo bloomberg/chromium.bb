@@ -71,11 +71,12 @@ class SyncServerStatusChecker : public content::URLFetcherDelegate {
  public:
   SyncServerStatusChecker() : running_(false) {}
 
-  virtual void OnURLFetchComplete(const URLFetcher* source) {
+  virtual void OnURLFetchComplete(const content::URLFetcher* source) {
     std::string data;
     source->GetResponseAsString(&data);
-    running_ = (source->status().status() == net::URLRequestStatus::SUCCESS &&
-                source->response_code() == 200 && data.find("ok") == 0);
+    running_ =
+        (source->GetStatus().status() == net::URLRequestStatus::SUCCESS &&
+        source->GetResponseCode() == 200 && data.find("ok") == 0);
     MessageLoop::current()->Quit();
   }
 
@@ -508,7 +509,7 @@ bool SyncTest::IsTestServerRunning() {
   GURL sync_url_status(sync_url.append("/healthz"));
   SyncServerStatusChecker delegate;
   URLFetcher fetcher(sync_url_status, URLFetcher::GET, &delegate);
-  fetcher.set_request_context(Profile::Deprecated::GetDefaultRequestContext());
+  fetcher.SetRequestContext(Profile::Deprecated::GetDefaultRequestContext());
   fetcher.Start();
   ui_test_utils::RunMessageLoop();
   return delegate.running();

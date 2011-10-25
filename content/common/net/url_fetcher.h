@@ -15,76 +15,14 @@
 #define CONTENT_COMMON_NET_URL_FETCHER_H_
 #pragma once
 
-#include <string>
-#include <vector>
-
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
-#include "base/platform_file.h"
 #include "base/time.h"
-#include "content/common/content_export.h"
+#include "content/public/common/url_fetcher.h"
 
-class FilePath;
-class GURL;
-
-namespace base {
-class MessageLoopProxy;
-}  // namespace base
-
-namespace content {
-class URLFetcherDelegate;
-}
-
-namespace net {
-class HostPortPair;
-class HttpResponseHeaders;
-class HttpRequestHeaders;
-class URLRequestContextGetter;
-class URLRequestStatus;
-typedef std::vector<std::string> ResponseCookies;
-}  // namespace net
-
-// To use this class, create an instance with the desired URL and a pointer to
-// the object to be notified when the URL has been loaded:
-//   URLFetcher* fetcher = new URLFetcher("http://www.google.com",
-//                                        URLFetcher::GET, this);
-//
-// Then, optionally set properties on this object, like the request context or
-// extra headers:
-//   fetcher->set_extra_request_headers("X-Foo: bar");
-//
-// Finally, start the request:
-//   fetcher->Start();
-//
-//
-// The object you supply as a delegate must inherit from
-// content::URLFetcherDelegate; when the fetch is completed,
-// OnURLFetchComplete() will be called with a pointer to the URLFetcher.  From
-// that point until the original URLFetcher instance is destroyed, you may use
-// accessor methods to see the result of the fetch. You should copy these
-// objects if you need them to live longer than the URLFetcher instance. If the
-// URLFetcher instance is destroyed before the callback happens, the fetch will
-// be canceled and no callback will occur.
-//
-// You may create the URLFetcher instance on any thread; OnURLFetchComplete()
-// will be called back on the same thread you use to create the instance.
-//
-//
-// NOTE: By default URLFetcher requests are NOT intercepted, except when
-// interception is explicitly enabled in tests.
-
-class CONTENT_EXPORT URLFetcher {
+class CONTENT_EXPORT URLFetcher : public content::URLFetcher{
  public:
-  enum RequestType {
-    GET,
-    POST,
-    HEAD,
-  };
-
-  // Imposible http response code. Used to signal that no http response code
-  // was received.
-  static const int kInvalidHttpResponseCode;
-
   // URLFetcher::Create uses the currently registered Factory to create the
   // URLFetcher. Factory is intended for testing.
   class Factory {
@@ -106,13 +44,6 @@ class CONTENT_EXPORT URLFetcher {
              content::URLFetcherDelegate* d);
   virtual ~URLFetcher();
 
-  // Normally interception is disabled for URLFetcher, but you can use this
-  // to enable it for tests. Also see ScopedURLFetcherFactory for another way
-  // of testing code that uses an URLFetcher.
-  static void enable_interception_for_tests(bool enabled) {
-    g_interception_enabled = enabled;
-  }
-
   // Creates a URLFetcher, ownership returns to the caller. If there is no
   // Factory (the default) this creates and returns a new URLFetcher. See the
   // constructor for a description of the args. |id| may be used during testing
@@ -120,132 +51,50 @@ class CONTENT_EXPORT URLFetcher {
   static URLFetcher* Create(int id, const GURL& url, RequestType request_type,
                             content::URLFetcherDelegate* d);
 
-  // Sets data only needed by POSTs.  All callers making POST requests should
-  // call this before the request is started.  |upload_content_type| is the MIME
-  // type of the content, while |upload_content| is the data to be sent (the
-  // Content-Length header value will be set to the length of this data).
-  void set_upload_data(const std::string& upload_content_type,
-                       const std::string& upload_content);
+  // content::URLFetcher implementation:
+  virtual void SetUploadData(const std::string& upload_content_type,
+                             const std::string& upload_content) OVERRIDE;
+  virtual void SetChunkedUpload(
+      const std::string& upload_content_type) OVERRIDE;
+  virtual void AppendChunkToUpload(const std::string& data,
+                                   bool is_last_chunk) OVERRIDE;
+  virtual void SetLoadFlags(int load_flags) OVERRIDE;
+  virtual int GetLoadFlags() const OVERRIDE;
+  virtual void SetReferrer(const std::string& referrer) OVERRIDE;
+  virtual void SetExtraRequestHeaders(
+      const std::string& extra_request_headers) OVERRIDE;
+  virtual void GetExtraRequestHeaders(
+      net::HttpRequestHeaders* headers) OVERRIDE;
+  virtual void SetRequestContext(
+      net::URLRequestContextGetter* request_context_getter) OVERRIDE;
+  virtual void SetAutomaticallyRetryOn5xx(bool retry) OVERRIDE;
+  virtual void SetMaxRetries(int max_retries) OVERRIDE;
+  virtual int GetMaxRetries() const OVERRIDE;
+  virtual base::TimeDelta GetBackoffDelay() const OVERRIDE;
+  virtual void SetBackoffDelayForTesting(
+      base::TimeDelta backoff_delay) OVERRIDE;
+  virtual void SaveResponseToTemporaryFile(
+      scoped_refptr<base::MessageLoopProxy> file_message_loop_proxy) OVERRIDE;
+  virtual net::HttpResponseHeaders* GetResponseHeaders() const OVERRIDE;
+  virtual net::HostPortPair GetSocketAddress() const OVERRIDE;
+  virtual bool WasFetchedViaProxy() const OVERRIDE;
+  virtual void Start() OVERRIDE;
+  virtual void StartWithRequestContextGetter(
+      net::URLRequestContextGetter* request_context_getter) OVERRIDE;
+  virtual const GURL& GetOriginalUrl() const OVERRIDE;
+  virtual const GURL& GetUrl() const OVERRIDE;
+  virtual const net::URLRequestStatus& GetStatus() const OVERRIDE;
+  virtual int GetResponseCode() const OVERRIDE;
+  virtual const net::ResponseCookies& GetCookies() const OVERRIDE;
+  virtual bool FileErrorOccurred(
+      base::PlatformFileError* out_error_code) const OVERRIDE;
+  virtual void ReceivedContentWasMalformed() OVERRIDE;
+  virtual bool GetResponseAsString(
+      std::string* out_response_string) const OVERRIDE;
+  virtual bool GetResponseAsFilePath(
+      bool take_ownership,
+      FilePath* out_response_path) const OVERRIDE;
 
-  // Indicates that the POST data is sent via chunked transfer encoding.
-  // This may only be called before calling Start().
-  // Use AppendChunkToUpload() to give the data chunks after calling Start().
-  void set_chunked_upload(const std::string& upload_content_type);
-
-  // Adds the given bytes to a request's POST data transmitted using chunked
-  // transfer encoding.
-  // This method should be called ONLY after calling Start().
-  virtual void AppendChunkToUpload(const std::string& data, bool is_last_chunk);
-
-  // Set one or more load flags as defined in net/base/load_flags.h.  Must be
-  // called before the request is started.
-  void set_load_flags(int load_flags);
-
-  // Returns the current load flags.
-  int load_flags() const;
-
-  // The referrer URL for the request. Must be called before the request is
-  // started.
-  void set_referrer(const std::string& referrer);
-
-  // Set extra headers on the request.  Must be called before the request
-  // is started.
-  void set_extra_request_headers(const std::string& extra_request_headers);
-
-  void GetExtraRequestHeaders(net::HttpRequestHeaders* headers);
-
-  // Set the net::URLRequestContext on the request.  Must be called before the
-  // request is started.
-  void set_request_context(
-      net::URLRequestContextGetter* request_context_getter);
-
-  // If |retry| is false, 5xx responses will be propagated to the observer,
-  // if it is true URLFetcher will automatically re-execute the request,
-  // after backoff_delay() elapses. URLFetcher has it set to true by default.
-  void set_automatically_retry_on_5xx(bool retry);
-
-  int max_retries() const;
-
-  void set_max_retries(int max_retries);
-
-  // Returns the back-off delay before the request will be retried,
-  // when a 5xx response was received.
-  base::TimeDelta backoff_delay() const;
-
-  // Sets the back-off delay, allowing to mock 5xx requests in unit-tests.
-  void set_backoff_delay_for_testing(base::TimeDelta backoff_delay);
-
-  // By default, the response is saved in a string. Call this method to save the
-  // response to a temporary file instead. Must be called before Start().
-  // |file_message_loop_proxy| will be used for all file operations.
-  void SaveResponseToTemporaryFile(
-      scoped_refptr<base::MessageLoopProxy> file_message_loop_proxy);
-
-  // Retrieve the response headers from the request.  Must only be called after
-  // the OnURLFetchComplete callback has run.
-  virtual net::HttpResponseHeaders* response_headers() const;
-
-  // Retrieve the remote socket address from the request.  Must only
-  // be called after the OnURLFetchComplete callback has run and if
-  // the request has not failed.
-  net::HostPortPair socket_address() const;
-
-  // Returns true if the request was delivered through a proxy.  Must only
-  // be called after the OnURLFetchComplete callback has run and the request
-  // has not failed.
-  bool was_fetched_via_proxy() const;
-
-  // Start the request.  After this is called, you may not change any other
-  // settings.
-  virtual void Start();
-
-  // Restarts the URLFetcher with a new URLRequestContextGetter.
-  void StartWithRequestContextGetter(
-      net::URLRequestContextGetter* request_context_getter);
-
-  // Return the URL that we were asked to fetch.
-  virtual const GURL& original_url() const;
-
-  // Return the URL that this fetcher is processing.
-  virtual const GURL& url() const;
-
-  // The status of the URL fetch.
-  virtual const net::URLRequestStatus& status() const;
-
-  // The http response code received. Will return
-  // URLFetcher::kInvalidHttpResponseCode if an error prevented any response
-  // from being received.
-  virtual int response_code() const;
-
-  // Cookies recieved.
-  virtual const net::ResponseCookies& cookies() const;
-
-  // Return true if any file system operation failed.  If so, set |error_code|
-  // to the error code. File system errors are only possible if user called
-  // SaveResponseToTemporaryFile().
-  virtual bool FileErrorOccurred(base::PlatformFileError* out_error_code) const;
-
-  // Reports that the received content was malformed.
-  void ReceivedContentWasMalformed();
-
-  // Get the response as a string. Return false if the fetcher was not
-  // set to store the response as a string.
-  virtual bool GetResponseAsString(std::string* out_response_string) const;
-
-  // Get the path to the file containing the response body. Returns false
-  // if the response body was not saved to a file. If take_ownership is
-  // true, caller takes responsibility for the temp file, and it will not
-  // be removed once the URLFetcher is destroyed.  User should not take
-  // ownership more than once, or call this method after taking ownership.
-  virtual bool GetResponseAsFilePath(bool take_ownership,
-                                     FilePath* out_response_path) const;
-
-  // Cancels all existing URLFetchers.  Will notify the URLFetcherDelegates.
-  // Note that any new URLFetchers created while this is running will not be
-  // cancelled.  Typically, one would call this in the CleanUp() method of an IO
-  // thread, so that no new URLRequests would be able to start on the IO thread
-  // anyway.  This doesn't prevent new URLFetchers from trying to post to the IO
-  // thread though, even though the task won't ever run.
   static void CancelAll();
 
  protected:
@@ -294,8 +143,6 @@ class CONTENT_EXPORT URLFetcher {
   scoped_refptr<Core> core_;
 
   static Factory* factory_;
-
-  static bool g_interception_enabled;
 
   DISALLOW_COPY_AND_ASSIGN(URLFetcher);
 };

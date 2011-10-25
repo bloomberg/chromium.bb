@@ -52,9 +52,9 @@ class GotCanceledFetcher : public URLFetcher {
 
   virtual void Start();
 
-  virtual const GURL& url() const;
-  virtual const net::URLRequestStatus& status() const;
-  virtual int response_code() const;
+  virtual const GURL& GetUrl() const OVERRIDE;
+  virtual const net::URLRequestStatus& GetStatus() const OVERRIDE;
+  virtual int GetResponseCode() const OVERRIDE;
 
  private:
   GURL url_;
@@ -74,9 +74,9 @@ class SuccessFetcher : public URLFetcher {
 
   virtual void Start();
 
-  virtual const GURL& url() const;
-  virtual const net::URLRequestStatus& status() const;
-  virtual int response_code() const;
+  virtual const GURL& GetUrl() const OVERRIDE;
+  virtual const net::URLRequestStatus& GetStatus() const OVERRIDE;
+  virtual int GetResponseCode() const OVERRIDE;
 
  private:
   GURL url_;
@@ -96,9 +96,9 @@ class FailFetcher : public URLFetcher {
 
   virtual void Start();
 
-  virtual const GURL& url() const;
-  virtual const net::URLRequestStatus& status() const;
-  virtual int response_code() const;
+  virtual const GURL& GetUrl() const OVERRIDE;
+  virtual const net::URLRequestStatus& GetStatus() const OVERRIDE;
+  virtual int GetResponseCode() const OVERRIDE;
 
  private:
   GURL url_;
@@ -122,10 +122,11 @@ class CaptchaFetcher : public URLFetcher {
 
   virtual void Start();
 
-  virtual const GURL& url() const;
-  virtual const net::URLRequestStatus& status() const;
-  virtual int response_code() const;
-  virtual bool GetResponseAsString(std::string* out_response_string) const;
+  virtual const GURL& GetUrl() const OVERRIDE;
+  virtual const net::URLRequestStatus& GetStatus() const OVERRIDE;
+  virtual int GetResponseCode() const OVERRIDE;
+  virtual bool GetResponseAsString(
+      std::string* out_response_string) const OVERRIDE;
 
  private:
   static const char kCaptchaToken[];
@@ -150,10 +151,11 @@ class HostedFetcher : public URLFetcher {
 
   virtual void Start();
 
-  virtual const GURL& url() const;
-  virtual const net::URLRequestStatus& status() const;
-  virtual int response_code() const;
-  virtual bool GetResponseAsString(std::string* out_response_string) const;
+  virtual const GURL& GetUrl() const OVERRIDE;
+  virtual const net::URLRequestStatus& GetStatus() const OVERRIDE;
+  virtual int GetResponseCode() const OVERRIDE;
+  virtual bool GetResponseAsString(
+      std::string* out_response_string) const OVERRIDE;
 
  private:
   GURL url_;

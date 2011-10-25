@@ -302,7 +302,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, AutoUpdate) {
   FilePath basedir = test_data_dir_.AppendASCII("autoupdate");
   // Note: This interceptor gets requests on the IO thread.
   scoped_refptr<AutoUpdateInterceptor> interceptor(new AutoUpdateInterceptor());
-  URLFetcher::enable_interception_for_tests(true);
+  content::URLFetcher::SetEnableInterceptionForTests(true);
 
   interceptor->SetResponseOnIOThread("http://localhost/autoupdate/manifest",
                                      basedir.AppendASCII("manifest_v2.xml"));
@@ -373,7 +373,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalUrlUpdate) {
 
   // Note: This interceptor gets requests on the IO thread.
   scoped_refptr<AutoUpdateInterceptor> interceptor(new AutoUpdateInterceptor());
-  URLFetcher::enable_interception_for_tests(true);
+  content::URLFetcher::SetEnableInterceptionForTests(true);
 
   interceptor->SetResponseOnIOThread("http://localhost/autoupdate/manifest",
                                      basedir.AppendASCII("manifest_v2.xml"));
@@ -456,7 +456,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalPolicyRefresh) {
 
   // Note: This interceptor gets requests on the IO thread.
   scoped_refptr<AutoUpdateInterceptor> interceptor(new AutoUpdateInterceptor());
-  URLFetcher::enable_interception_for_tests(true);
+  content::URLFetcher::SetEnableInterceptionForTests(true);
 
   interceptor->SetResponseOnIOThread("http://localhost/autoupdate/manifest",
                                      basedir.AppendASCII("manifest_v2.xml"));
@@ -526,7 +526,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, PolicyOverridesUserInstall) {
 
   // Note: This interceptor gets requests on the IO thread.
   scoped_refptr<AutoUpdateInterceptor> interceptor(new AutoUpdateInterceptor());
-  URLFetcher::enable_interception_for_tests(true);
+  content::URLFetcher::SetEnableInterceptionForTests(true);
 
   interceptor->SetResponseOnIOThread("http://localhost/autoupdate/manifest",
                                      basedir.AppendASCII("manifest_v2.xml"));

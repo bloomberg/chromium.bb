@@ -176,7 +176,7 @@ TEST_F(CookieFetcherTest, ClientLoginResponseHandlerTest) {
   std::string expected("a&b&");
   expected.append(ClientLoginResponseHandler::kService);
 
-  scoped_ptr<URLFetcher> fetcher(handler.Handle(input, NULL));
+  scoped_ptr<content::URLFetcher> fetcher(handler.Handle(input, NULL));
   EXPECT_EQ(expected, handler.payload());
 }
 
@@ -185,7 +185,8 @@ TEST_F(CookieFetcherTest, IssueResponseHandlerTest) {
   std::string expected(IssueResponseHandler::BuildTokenAuthUrlWithToken(
       std::string("a\n")));
 
-  scoped_ptr<URLFetcher> fetcher(handler.Handle(std::string("a\n"), NULL));
+  scoped_ptr<content::URLFetcher> fetcher(
+      handler.Handle(std::string("a\n"), NULL));
   EXPECT_EQ(expected, handler.token_url());
 }
 

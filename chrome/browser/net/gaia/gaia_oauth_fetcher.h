@@ -136,7 +136,7 @@ class GaiaOAuthFetcher : public content::URLFetcherDelegate,
                                 bool detail);
 
   // Implementation of content::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
 
   // StartGetOAuthToken (or other Start* routine) been called, but results
   // are not back yet.
@@ -231,12 +231,13 @@ class GaiaOAuthFetcher : public content::URLFetcherDelegate,
       const std::string& oauth2_service_scope);
 
   // Create a fetcher useable for making any Gaia OAuth request.
-  static URLFetcher* CreateGaiaFetcher(net::URLRequestContextGetter* getter,
-                                       const GURL& gaia_gurl_,
-                                       const std::string& body,
-                                       const std::string& headers,
-                                       bool send_cookies,
-                                       content::URLFetcherDelegate* delegate);
+  static content::URLFetcher* CreateGaiaFetcher(
+      net::URLRequestContextGetter* getter,
+      const GURL& gaia_gurl_,
+      const std::string& body,
+      const std::string& headers,
+      bool send_cookies,
+      content::URLFetcherDelegate* delegate);
 
   bool ShouldAutoFetch(AutoFetchLimit fetch_step);
 
@@ -248,7 +249,7 @@ class GaiaOAuthFetcher : public content::URLFetcherDelegate,
   content::NotificationRegistrar registrar_;
 
   // While a fetch is going on:
-  scoped_ptr<URLFetcher> fetcher_;
+  scoped_ptr<content::URLFetcher> fetcher_;
   std::string request_body_;
   std::string request_headers_;
   std::string service_scope_;

@@ -97,13 +97,13 @@ void Toolbar5Importer::Cancel() {
   }
 }
 
-void Toolbar5Importer::OnURLFetchComplete(const URLFetcher* source) {
+void Toolbar5Importer::OnURLFetchComplete(const content::URLFetcher* source) {
   if (cancelled()) {
     EndImport();
     return;
   }
 
-  if (200 != source->response_code()) {  // HTTP/Ok
+  if (200 != source->GetResponseCode()) {  // HTTP/Ok
     // Cancelling here will update the UI and bypass the rest of bookmark
     // import.
     EndImportBookmarks();
@@ -207,7 +207,7 @@ void Toolbar5Importer::GetAuthenticationFromServer() {
   GURL url(url_string);
 
   token_fetcher_ = new  URLFetcher(url, URLFetcher::GET, this);
-  token_fetcher_->set_request_context(
+  token_fetcher_->SetRequestContext(
       Profile::Deprecated::GetDefaultRequestContext());
   token_fetcher_->Start();
 }
@@ -241,7 +241,7 @@ void Toolbar5Importer::GetBookmarkDataFromServer(const std::string& response) {
   GURL url(conn_string);
 
   data_fetcher_ = new URLFetcher(url, URLFetcher::GET, this);
-  data_fetcher_->set_request_context(
+  data_fetcher_->SetRequestContext(
       Profile::Deprecated::GetDefaultRequestContext());
   data_fetcher_->Start();
 }

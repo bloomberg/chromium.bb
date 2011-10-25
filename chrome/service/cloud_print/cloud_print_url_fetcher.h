@@ -46,7 +46,7 @@ class CloudPrintURLFetcher
     // returns CONTINUE_PROCESSING, we will then check for network
     // errors. Most implementations will not override this.
     virtual ResponseAction HandleRawResponse(
-        const URLFetcher* source,
+        const content::URLFetcher* source,
         const GURL& url,
         const net::URLRequestStatus& status,
         int response_code,
@@ -61,7 +61,7 @@ class CloudPrintURLFetcher
     // Handling the raw data is needed when the expected response is NOT JSON
     // (like in the case of a print ticket response or a print job download
     // response).
-    virtual ResponseAction HandleRawData(const URLFetcher* source,
+    virtual ResponseAction HandleRawData(const content::URLFetcher* source,
                                          const GURL& url,
                                          const std::string& data) {
       return CONTINUE_PROCESSING;
@@ -69,7 +69,7 @@ class CloudPrintURLFetcher
     // This will be invoked only if HandleRawResponse and HandleRawData return
     // CONTINUE_PROCESSING AND if the response contains a valid JSON dictionary.
     // |succeeded| is the value of the "success" field in the response JSON.
-    virtual ResponseAction HandleJSONData(const URLFetcher* source,
+    virtual ResponseAction HandleJSONData(const content::URLFetcher* source,
                                           const GURL& url,
                                           base::DictionaryValue* json_data,
                                           bool succeeded) {
@@ -96,7 +96,7 @@ class CloudPrintURLFetcher
                         const std::string& additional_headers);
 
   // content::URLFetcherDelegate implementation.
-  virtual void OnURLFetchComplete(const URLFetcher* source);
+  virtual void OnURLFetchComplete(const content::URLFetcher* source);
 
  protected:
   friend class base::RefCountedThreadSafe<CloudPrintURLFetcher>;
@@ -115,7 +115,7 @@ class CloudPrintURLFetcher
                           const std::string& additional_headers);
   void SetupRequestHeaders();
 
-  scoped_ptr<URLFetcher> request_;
+  scoped_ptr<content::URLFetcher> request_;
   Delegate* delegate_;
   int num_retries_;
   URLFetcher::RequestType request_type_;

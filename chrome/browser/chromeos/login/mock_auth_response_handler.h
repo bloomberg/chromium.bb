@@ -34,8 +34,8 @@ class MockAuthResponseHandler : public AuthResponseHandler {
   virtual ~MockAuthResponseHandler();
 
   MOCK_METHOD1(CanHandle, bool(const GURL& url));
-  MOCK_METHOD2(Handle, URLFetcher*(const std::string& to_process,
-                                   content::URLFetcherDelegate* catcher));
+  MOCK_METHOD2(Handle, content::URLFetcher*(
+      const std::string& to_process, content::URLFetcherDelegate* catcher));
 
   URLFetcher* MockNetwork(std::string data,
                           content::URLFetcherDelegate* delegate);

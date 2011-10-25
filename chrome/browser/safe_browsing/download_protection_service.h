@@ -66,7 +66,7 @@ class DownloadProtectionService
       net::URLRequestContextGetter* request_context_getter);
 
   // From the content::URLFetcherDelegate interface.
-  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
 
   // Checks whether the given client download is likely to be
   // malicious or not.  If this method returns true it means the
@@ -145,7 +145,9 @@ class DownloadProtectionService
   // Map of client download request to the corresponding callback that
   // has to be invoked when the request is done.  This map contains all
   // pending server requests.
-  std::map<const URLFetcher*, CheckDownloadCallback> download_requests_;
+  typedef std::map<const content::URLFetcher*, CheckDownloadCallback>
+      DownloadRequests;
+  DownloadRequests download_requests_;
 
   // Keeps track of the state of the service.
   bool enabled_;

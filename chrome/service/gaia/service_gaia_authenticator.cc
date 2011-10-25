@@ -65,16 +65,17 @@ void ServiceGaiaAuthenticator::DoPost(const GURL& post_url,
                                       const std::string& post_body) {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
   URLFetcher* request = new URLFetcher(post_url, URLFetcher::POST, this);
-  request->set_request_context(
+  request->SetRequestContext(
       g_service_process->GetServiceURLRequestContextGetter());
-  request->set_upload_data("application/x-www-form-urlencoded", post_body);
+  request->SetUploadData("application/x-www-form-urlencoded", post_body);
   request->Start();
 }
 
 // content::URLFetcherDelegate implementation
-void ServiceGaiaAuthenticator::OnURLFetchComplete(const URLFetcher* source) {
+void ServiceGaiaAuthenticator::OnURLFetchComplete(
+    const content::URLFetcher* source) {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
-  http_response_code_ = source->response_code();
+  http_response_code_ = source->GetResponseCode();
   source->GetResponseAsString(&response_data_);
   delete source;
   // Add an extra reference because we want http_post_completed_ to remain

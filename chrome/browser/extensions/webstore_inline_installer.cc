@@ -171,22 +171,23 @@ void WebstoreInlineInstaller::BeginInstall() {
       new URLFetcher(webstore_data_url, URLFetcher::GET, this));
   Profile* profile = Profile::FromBrowserContext(
       tab_contents()->browser_context());
-  webstore_data_url_fetcher_->set_request_context(
+  webstore_data_url_fetcher_->SetRequestContext(
       profile->GetRequestContext());
-  webstore_data_url_fetcher_->set_load_flags(net::LOAD_DO_NOT_SEND_COOKIES |
-                                             net::LOAD_DO_NOT_SAVE_COOKIES |
-                                             net::LOAD_DISABLE_CACHE);
+  webstore_data_url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
+                                           net::LOAD_DO_NOT_SAVE_COOKIES |
+                                           net::LOAD_DISABLE_CACHE);
   webstore_data_url_fetcher_->Start();
 }
 
-void WebstoreInlineInstaller::OnURLFetchComplete(const URLFetcher* source) {
+void WebstoreInlineInstaller::OnURLFetchComplete(
+    const content::URLFetcher* source) {
   CHECK_EQ(webstore_data_url_fetcher_.get(), source);
   // We shouldn't be getting UrlFetcher callbacks if the TabContents has gone
   // away; we stop any in in-progress fetches in TabContentsDestroyed.
   CHECK(tab_contents());
 
-  if (!webstore_data_url_fetcher_->status().is_success() ||
-      webstore_data_url_fetcher_->response_code() != 200) {
+  if (!webstore_data_url_fetcher_->GetStatus().is_success() ||
+      webstore_data_url_fetcher_->GetResponseCode() != 200) {
     CompleteInstall(kWebstoreRequestError);
     return;
   }

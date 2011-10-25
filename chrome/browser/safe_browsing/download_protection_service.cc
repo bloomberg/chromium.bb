@@ -56,8 +56,7 @@ void DownloadProtectionService::SetEnabledOnIOThread(bool enabled) {
   }
   enabled_ = enabled;
   if (!enabled_) {
-    for (std::map<const URLFetcher*, CheckDownloadCallback>::iterator it =
-             download_requests_.begin();
+    for (DownloadRequests::iterator it = download_requests_.begin();
          it != download_requests_.end(); ++it) {
       it->second.Run(SAFE);
     }
@@ -67,9 +66,10 @@ void DownloadProtectionService::SetEnabledOnIOThread(bool enabled) {
   }
 }
 
-void DownloadProtectionService::OnURLFetchComplete(const URLFetcher* source) {
+void DownloadProtectionService::OnURLFetchComplete(
+    const content::URLFetcher* source) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  scoped_ptr<const URLFetcher> s(source);  // will delete the URLFetcher object.
+  scoped_ptr<const content::URLFetcher> s(source);
   if (download_requests_.find(source) != download_requests_.end()) {
     CheckDownloadCallback callback = download_requests_[source];
     download_requests_.erase(source);
@@ -81,8 +81,8 @@ void DownloadProtectionService::OnURLFetchComplete(const URLFetcher* source) {
     }
     DownloadCheckResultReason reason = REASON_MAX;
     reason = REASON_SERVER_PING_FAILED;
-    if (source->status().is_success() &&
-        RC_REQUEST_OK == source->response_code()) {
+    if (source->GetStatus().is_success() &&
+        RC_REQUEST_OK == source->GetResponseCode()) {
       std::string data;
       source->GetResponseAsString(&data);
       if (data.size() > 0) {
@@ -187,9 +187,9 @@ void DownloadProtectionService::StartCheckClientDownload(
                                            URLFetcher::POST,
                                            this);
   download_requests_[fetcher] = callback;
-  fetcher->set_load_flags(net::LOAD_DISABLE_CACHE);
-  fetcher->set_request_context(request_context_getter_.get());
-  fetcher->set_upload_data("application/octet-stream", request_data);
+  fetcher->SetLoadFlags(net::LOAD_DISABLE_CACHE);
+  fetcher->SetRequestContext(request_context_getter_.get());
+  fetcher->SetUploadData("application/octet-stream", request_data);
   fetcher->Start();
 }
 

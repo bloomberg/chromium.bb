@@ -1040,10 +1040,9 @@ void MetricsService::PrepareFetchWithStagedLog() {
   current_fetch_.reset(new URLFetcher(GURL(WideToUTF16(server_url_)),
                                       URLFetcher::POST,
                                       this));
-  current_fetch_->set_request_context(
+  current_fetch_->SetRequestContext(
       g_browser_process->system_request_context());
-  current_fetch_->set_upload_data(kMetricsType,
-                                  log_manager_.staged_log_text());
+  current_fetch_->SetUploadData(kMetricsType, log_manager_.staged_log_text());
 }
 
 static const char* StatusToString(const net::URLRequestStatus& status) {
@@ -1069,17 +1068,17 @@ static const char* StatusToString(const net::URLRequestStatus& status) {
   }
 }
 
-void MetricsService::OnURLFetchComplete(const URLFetcher* source) {
+void MetricsService::OnURLFetchComplete(const content::URLFetcher* source) {
   DCHECK(waiting_for_asynchronus_reporting_step_);
   waiting_for_asynchronus_reporting_step_ = false;
   DCHECK(current_fetch_.get());
   current_fetch_.reset(NULL);  // We're not allowed to re-use it.
 
   // Confirm send so that we can move on.
-  VLOG(1) << "METRICS RESPONSE CODE: " << source->response_code()
-          << " status=" << StatusToString(source->status());
+  VLOG(1) << "METRICS RESPONSE CODE: " << source->GetResponseCode()
+          << " status=" << StatusToString(source->GetStatus());
 
-  bool upload_succeeded = source->response_code() == 200;
+  bool upload_succeeded = source->GetResponseCode() == 200;
 
   // Provide boolean for error recovery (allow us to ignore response_code).
   bool discard_log = false;
@@ -1091,7 +1090,7 @@ void MetricsService::OnURLFetchComplete(const URLFetcher* source) {
         "UMA.Large Rejected Log was Discarded",
         static_cast<int>(log_manager_.staged_log_text().length()));
     discard_log = true;
-  } else if (source->response_code() == 400) {
+  } else if (source->GetResponseCode() == 400) {
     // Bad syntax.  Retransmission won't work.
     UMA_HISTOGRAM_COUNTS("UMA.Unacceptable_Log_Discarded", state_);
     discard_log = true;
@@ -1099,7 +1098,7 @@ void MetricsService::OnURLFetchComplete(const URLFetcher* source) {
 
   if (!upload_succeeded && !discard_log) {
     VLOG(1) << "METRICS: transmission attempt returned a failure code: "
-            << source->response_code() << ". Verify network connectivity";
+            << source->GetResponseCode() << ". Verify network connectivity";
     LogBadResponseCode();
   } else {  // Successful receipt (or we are discarding log).
     std::string data;
@@ -1136,7 +1135,7 @@ void MetricsService::OnURLFetchComplete(const URLFetcher* source) {
 
   // Error 400 indicates a problem with the log, not with the server, so
   // don't consider that a sign that the server is in trouble.
-  bool server_is_healthy = upload_succeeded || source->response_code() == 400;
+  bool server_is_healthy = upload_succeeded || source->GetResponseCode() == 400;
 
   scheduler_->UploadFinished(server_is_healthy,
                              log_manager_.has_unsent_logs());

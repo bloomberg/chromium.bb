@@ -90,7 +90,7 @@ static void QuitMessageLoop() {
 
 IN_PROC_BROWSER_TEST_F(DeviceManagementServiceIntegrationTest,
                        CannedResponses) {
-  URLFetcher::enable_interception_for_tests(true);
+  URLFetcher::SetEnableInterceptionForTests(true);
   DeviceManagementService service(kServiceUrl);
   service.ScheduleInitialization(0);
   scoped_ptr<DeviceManagementBackend> backend(service.CreateBackend());

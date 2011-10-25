@@ -45,19 +45,20 @@ class TestingPolicyURLFetcher : public URLFetcher {
   virtual void Start() OVERRIDE;
   void Respond();
 
-  virtual const GURL& url() const {
+  virtual const GURL& GetUrl() const OVERRIDE {
     return url_;
   }
 
-  virtual const net::URLRequestStatus& status() const {
+  virtual const net::URLRequestStatus& GetStatus() const OVERRIDE {
     return status_;
   }
 
-  virtual int response_code() const {
+  virtual int GetResponseCode() const OVERRIDE {
     return response_.response_code;
   }
 
-  virtual bool GetResponseAsString(std::string* out_response_string) const {
+  virtual bool GetResponseAsString(
+      std::string* out_response_string) const OVERRIDE {
     *out_response_string = response_.response_data;
     return true;
   }

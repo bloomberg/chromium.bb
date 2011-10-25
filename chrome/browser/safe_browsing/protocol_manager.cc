@@ -176,9 +176,9 @@ void SafeBrowsingProtocolManager::GetFullHash(
   SafeBrowsingProtocolParser parser;
   parser.FormatGetHash(prefixes, &get_hash);
 
-  fetcher->set_load_flags(net::LOAD_DISABLE_CACHE);
-  fetcher->set_request_context(request_context_getter_);
-  fetcher->set_upload_data("text/plain", get_hash);
+  fetcher->SetLoadFlags(net::LOAD_DISABLE_CACHE);
+  fetcher->SetRequestContext(request_context_getter_);
+  fetcher->SetUploadData("text/plain", get_hash);
   fetcher->Start();
 }
 
@@ -206,17 +206,18 @@ void SafeBrowsingProtocolManager::GetNextUpdate() {
 //              drop it. This isn't so bad because the next UPDATE_REQUEST we
 //              do will report all the chunks we have. If that chunk is still
 //              required, the SafeBrowsing servers will tell us to get it again.
-void SafeBrowsingProtocolManager::OnURLFetchComplete(const URLFetcher* source) {
-  scoped_ptr<const URLFetcher> fetcher;
+void SafeBrowsingProtocolManager::OnURLFetchComplete(
+    const content::URLFetcher* source) {
+  scoped_ptr<const content::URLFetcher> fetcher;
   bool parsed_ok = true;
   bool must_back_off = false;  // Reduce SafeBrowsing service query frequency.
 
   // See if this is a safebrowsing report fetcher. We don't take any action for
   // the response to those.
-  std::set<const URLFetcher*>::iterator sit = safebrowsing_reports_.find(
-      source);
+  std::set<const content::URLFetcher*>::iterator sit =
+      safebrowsing_reports_.find(source);
   if (sit != safebrowsing_reports_.end()) {
-    const URLFetcher* report = *sit;
+    const content::URLFetcher* report = *sit;
     safebrowsing_reports_.erase(sit);
     delete report;
     return;
@@ -229,10 +230,10 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(const URLFetcher* source) {
     SafeBrowsingService::SafeBrowsingCheck* check = it->second;
     std::vector<SBFullHashResult> full_hashes;
     bool can_cache = false;
-    if (source->response_code() == 200 || source->response_code() == 204) {
+    if (source->GetResponseCode() == 200 || source->GetResponseCode() == 204) {
       // For tracking our GetHash false positive (204) rate, compared to real
       // (200) responses.
-      if (source->response_code() == 200)
+      if (source->GetResponseCode() == 200)
         RecordGetHashResult(check->is_download, GET_HASH_STATUS_200);
       else
         RecordGetHashResult(check->is_download, GET_HASH_STATUS_204);
@@ -260,12 +261,12 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(const URLFetcher* source) {
       }
     } else {
       HandleGetHashError(Time::Now());
-      if (source->status().status() == net::URLRequestStatus::FAILED) {
-        VLOG(1) << "SafeBrowsing GetHash request for: " << source->url()
-                << " failed with error: " << source->status().error();
+      if (source->GetStatus().status() == net::URLRequestStatus::FAILED) {
+        VLOG(1) << "SafeBrowsing GetHash request for: " << source->GetUrl()
+                << " failed with error: " << source->GetStatus().error();
       } else {
-        VLOG(1) << "SafeBrowsing GetHash request for: " << source->url()
-                << " failed with error: " << source->response_code();
+        VLOG(1) << "SafeBrowsing GetHash request for: " << source->GetUrl()
+                << " failed with error: " << source->GetResponseCode();
       }
     }
 
@@ -290,14 +291,14 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(const URLFetcher* source) {
       update_timer_.Stop();
     }
 
-    if (source->response_code() == 200) {
+    if (source->GetResponseCode() == 200) {
       // We have data from the SafeBrowsing service.
       std::string data;
       source->GetResponseAsString(&data);
       parsed_ok = HandleServiceResponse(
-          source->url(), data.data(), static_cast<int>(data.length()));
+          source->GetUrl(), data.data(), static_cast<int>(data.length()));
       if (!parsed_ok) {
-        VLOG(1) << "SafeBrowsing request for: " << source->url()
+        VLOG(1) << "SafeBrowsing request for: " << source->GetUrl()
                 << " failed parse.";
         must_back_off = true;
         chunk_request_urls_.clear();
@@ -335,12 +336,12 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(const URLFetcher* source) {
       if (request_type_ == CHUNK_REQUEST)
         chunk_request_urls_.clear();
       UpdateFinished(false);
-      if (source->status().status() == net::URLRequestStatus::FAILED) {
-        VLOG(1) << "SafeBrowsing request for: " << source->url()
-                << " failed with error: " << source->status().error();
+      if (source->GetStatus().status() == net::URLRequestStatus::FAILED) {
+        VLOG(1) << "SafeBrowsing request for: " << source->GetUrl()
+                << " failed with error: " << source->GetStatus().error();
       } else {
-        VLOG(1) << "SafeBrowsing request for: " << source->url()
-                << " failed with error: " << source->response_code();
+        VLOG(1) << "SafeBrowsing request for: " << source->GetUrl()
+                << " failed with error: " << source->GetResponseCode();
       }
     }
   }
@@ -562,8 +563,8 @@ void SafeBrowsingProtocolManager::IssueChunkRequest() {
   GURL chunk_url = NextChunkUrl(next_chunk.url);
   request_type_ = CHUNK_REQUEST;
   request_.reset(new URLFetcher(chunk_url, URLFetcher::GET, this));
-  request_->set_load_flags(net::LOAD_DISABLE_CACHE);
-  request_->set_request_context(request_context_getter_);
+  request_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
+  request_->SetRequestContext(request_context_getter_);
   chunk_request_start_ = base::Time::Now();
   request_->Start();
 }
@@ -572,8 +573,8 @@ void SafeBrowsingProtocolManager::IssueKeyRequest() {
   GURL key_url = MacKeyUrl();
   request_type_ = GETKEY_REQUEST;
   request_.reset(new URLFetcher(key_url, URLFetcher::GET, this));
-  request_->set_load_flags(net::LOAD_DISABLE_CACHE);
-  request_->set_request_context(request_context_getter_);
+  request_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
+  request_->SetRequestContext(request_context_getter_);
   request_->Start();
 }
 
@@ -613,9 +614,9 @@ void SafeBrowsingProtocolManager::OnGetChunksComplete(
 
   GURL update_url = UpdateUrl(use_mac);
   request_.reset(new URLFetcher(update_url, URLFetcher::POST, this));
-  request_->set_load_flags(net::LOAD_DISABLE_CACHE);
-  request_->set_request_context(request_context_getter_);
-  request_->set_upload_data("text/plain", list_data);
+  request_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
+  request_->SetRequestContext(request_context_getter_);
+  request_->SetUploadData("text/plain", list_data);
   request_->Start();
 
   // Begin the update request timeout.
@@ -657,10 +658,10 @@ void SafeBrowsingProtocolManager::ReportSafeBrowsingHit(
                                        threat_type);
   URLFetcher* report = new URLFetcher(
       report_url, post_data.empty() ? URLFetcher::GET : URLFetcher::POST, this);
-  report->set_load_flags(net::LOAD_DISABLE_CACHE);
-  report->set_request_context(request_context_getter_);
+  report->SetLoadFlags(net::LOAD_DISABLE_CACHE);
+  report->SetRequestContext(request_context_getter_);
   if (!post_data.empty())
-    report->set_upload_data("text/plain", post_data);
+    report->SetUploadData("text/plain", post_data);
   report->Start();
   safebrowsing_reports_.insert(report);
 }
@@ -670,11 +671,11 @@ void SafeBrowsingProtocolManager::ReportMalwareDetails(
     const std::string& report) {
   GURL report_url = MalwareDetailsUrl();
   URLFetcher* fetcher = new URLFetcher(report_url, URLFetcher::POST, this);
-  fetcher->set_load_flags(net::LOAD_DISABLE_CACHE);
-  fetcher->set_request_context(request_context_getter_);
-  fetcher->set_upload_data("application/octet-stream", report);
+  fetcher->SetLoadFlags(net::LOAD_DISABLE_CACHE);
+  fetcher->SetRequestContext(request_context_getter_);
+  fetcher->SetUploadData("application/octet-stream", report);
   // Don't try too hard to send reports on failures.
-  fetcher->set_automatically_retry_on_5xx(false);
+  fetcher->SetAutomaticallyRetryOn5xx(false);
   fetcher->Start();
   safebrowsing_reports_.insert(fetcher);
 }

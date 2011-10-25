@@ -42,12 +42,12 @@ class CookieFetcher : public content::URLFetcherDelegate {
   void AttemptFetch(const std::string& credentials);
 
   // Overloaded from content::URLFetcherDelegate.
-  virtual void OnURLFetchComplete(const URLFetcher* source);
+  virtual void OnURLFetchComplete(const content::URLFetcher* source);
 
  private:
   virtual ~CookieFetcher();
 
-  scoped_ptr<URLFetcher> fetcher_;
+  scoped_ptr<content::URLFetcher> fetcher_;
   Profile* profile_;
   scoped_ptr<AuthResponseHandler> client_login_handler_;
   scoped_ptr<AuthResponseHandler> issue_handler_;

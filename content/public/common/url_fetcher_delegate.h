@@ -8,9 +8,10 @@
 
 #include "content/common/content_export.h"
 
+namespace content {
+
 class URLFetcher;
 
-namespace content {
 // A delegate interface for users of URLFetcher.
 class CONTENT_EXPORT URLFetcherDelegate {
  public:

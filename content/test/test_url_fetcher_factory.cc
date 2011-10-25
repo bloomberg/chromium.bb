@@ -42,7 +42,7 @@ void TestURLFetcher::AppendChunkToUpload(const std::string& data,
   chunks_.push_back(data);
 }
 
-const GURL& TestURLFetcher::original_url() const {
+const GURL& TestURLFetcher::GetOriginalUrl() const {
   return original_url_;
 }
 
@@ -114,19 +114,19 @@ void TestURLFetcherFactory::RemoveFetcherFromMap(int id) {
   fetchers_.erase(i);
 }
 
-const GURL& TestURLFetcher::url() const {
+const GURL& TestURLFetcher::GetUrl() const {
   return fake_url_;
 }
 
-const net::URLRequestStatus& TestURLFetcher::status() const {
+const net::URLRequestStatus& TestURLFetcher::GetStatus() const {
   return fake_status_;
 }
 
-int TestURLFetcher::response_code() const {
+int TestURLFetcher::GetResponseCode() const {
   return fake_response_code_;
 }
 
-const net::ResponseCookies& TestURLFetcher::cookies() const {
+const net::ResponseCookies& TestURLFetcher::GetCookies() const {
   return fake_cookies_;
 }
 
@@ -156,7 +156,7 @@ class FakeURLFetcher : public URLFetcher {
 
   // These methods are overriden so we can use the version of
   // OnURLFetchComplete that only has a single URLFetcher argument.
-  virtual const net::ResponseCookies& cookies() const OVERRIDE {
+  virtual const net::ResponseCookies& GetCookies() const OVERRIDE {
     return cookies_;
   }
 
@@ -166,15 +166,15 @@ class FakeURLFetcher : public URLFetcher {
     return true;
   }
 
-  virtual int response_code() const OVERRIDE {
+  virtual int GetResponseCode() const OVERRIDE {
     return success_ ? 200 : 500;
   }
 
-  virtual const net::URLRequestStatus& status() const OVERRIDE {
+  virtual const net::URLRequestStatus& GetStatus() const OVERRIDE {
     return status_;
   }
 
-  virtual const GURL& url() const OVERRIDE {
+  virtual const GURL& GetUrl() const OVERRIDE {
     return url_;
   }
 

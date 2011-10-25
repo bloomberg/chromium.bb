@@ -154,11 +154,11 @@ class ComponentUpdaterTest : public testing::Test {
       notification_tracker_.ListenFor(
           notifications[ix], content::NotificationService::AllSources());
     }
-    URLFetcher::enable_interception_for_tests(true);
+    content::URLFetcher::SetEnableInterceptionForTests(true);
   }
 
   ~ComponentUpdaterTest() {
-    URLFetcher::enable_interception_for_tests(false);
+    content::URLFetcher::SetEnableInterceptionForTests(false);
   }
 
   ComponentUpdateService* component_updater() {

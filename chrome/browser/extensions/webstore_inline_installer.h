@@ -70,7 +70,7 @@ class WebstoreInlineInstaller
   // informs our delegate of success/failure.
 
   // content::URLFetcherDelegate interface implementation.
-  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
 
   // Client callbacks for SafeWebstoreResponseParser when parsing is complete.
   void OnWebstoreResponseParseSuccess(DictionaryValue* webstore_data);
@@ -106,7 +106,7 @@ class WebstoreInlineInstaller
   Delegate* delegate_;
 
   // For fetching webstore JSON data.
-  scoped_ptr<URLFetcher> webstore_data_url_fetcher_;
+  scoped_ptr<content::URLFetcher> webstore_data_url_fetcher_;
 
   // Extracted from the webstore JSON data response.
   std::string localized_name_;

@@ -162,10 +162,11 @@ void AlternateNavURLFetcher::Observe(
   }
 }
 
-void AlternateNavURLFetcher::OnURLFetchComplete(const URLFetcher* source) {
+void AlternateNavURLFetcher::OnURLFetchComplete(
+    const content::URLFetcher* source) {
   DCHECK_EQ(fetcher_.get(), source);
   SetStatusFromURLFetch(
-      source->url(), source->status(), source->response_code());
+      source->GetUrl(), source->GetStatus(), source->GetResponseCode());
   ShowInfobarIfPossible();
   // WARNING: |this| may be deleted!
 }
@@ -179,7 +180,7 @@ void AlternateNavURLFetcher::StartFetch(NavigationController* controller) {
   state_ = IN_PROGRESS;
   fetcher_.reset(new URLFetcher(GURL(alternate_nav_url_), URLFetcher::HEAD,
                                 this));
-  fetcher_->set_request_context(
+  fetcher_->SetRequestContext(
       controller_->browser_context()->GetRequestContext());
   fetcher_->Start();
 }

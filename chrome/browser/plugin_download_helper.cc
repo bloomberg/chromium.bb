@@ -30,20 +30,21 @@ void PluginDownloadUrlHelper::InitiateDownload(
     base::MessageLoopProxy* file_thread_proxy) {
   download_file_fetcher_.reset(
       new URLFetcher(GURL(download_url_), URLFetcher::GET, this));
-  download_file_fetcher_->set_request_context(request_context);
+  download_file_fetcher_->SetRequestContext(request_context);
   download_file_fetcher_->SaveResponseToTemporaryFile(file_thread_proxy);
   download_file_fetcher_->Start();
 }
 
-void PluginDownloadUrlHelper::OnURLFetchComplete(const URLFetcher* source) {
-  bool success = source->status().is_success();
+void PluginDownloadUrlHelper::OnURLFetchComplete(
+    const content::URLFetcher* source) {
+  bool success = source->GetStatus().is_success();
   FilePath response_file;
 
   if (success) {
     if (source->GetResponseAsFilePath(true, &response_file)) {
       FilePath new_download_file_path =
           response_file.DirName().AppendASCII(
-              download_file_fetcher_->url().ExtractFileName());
+              download_file_fetcher_->GetUrl().ExtractFileName());
 
       file_util::Delete(new_download_file_path, false);
 

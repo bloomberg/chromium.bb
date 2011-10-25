@@ -231,7 +231,7 @@ class MetricsService : public content::NotificationObserver,
 
   // Implementation of content::URLFetcherDelegate. Called after transmission
   // completes (either successfully or with failure).
-  virtual void OnURLFetchComplete(const URLFetcher* source);
+  virtual void OnURLFetchComplete(const content::URLFetcher* source);
 
   // Logs debugging details, for the case where the server returns a response
   // code other than 200.
@@ -327,7 +327,7 @@ class MetricsService : public content::NotificationObserver,
   std::vector<webkit::WebPluginInfo> plugins_;
 
   // The outstanding transmission appears as a URL Fetch operation.
-  scoped_ptr<URLFetcher> current_fetch_;
+  scoped_ptr<content::URLFetcher> current_fetch_;
 
   // The URL for the metrics server.
   std::wstring server_url_;

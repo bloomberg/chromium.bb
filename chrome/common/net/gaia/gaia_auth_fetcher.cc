@@ -125,7 +125,7 @@ void GaiaAuthFetcher::CancelRequest() {
 }
 
 // static
-URLFetcher* GaiaAuthFetcher::CreateGaiaFetcher(
+content::URLFetcher* GaiaAuthFetcher::CreateGaiaFetcher(
     net::URLRequestContextGetter* getter,
     const std::string& body,
     const GURL& gaia_gurl,
@@ -137,8 +137,8 @@ URLFetcher* GaiaAuthFetcher::CreateGaiaFetcher(
                          gaia_gurl,
                          URLFetcher::POST,
                          delegate);
-  to_return->set_request_context(getter);
-  to_return->set_upload_data("application/x-www-form-urlencoded", body);
+  to_return->SetRequestContext(getter);
+  to_return->SetUploadData("application/x-www-form-urlencoded", body);
 
   // The Gaia token exchange requests do not require any cookie-based
   // identification as part of requests.  We suppress sending any cookies to
@@ -146,7 +146,7 @@ URLFetcher* GaiaAuthFetcher::CreateGaiaFetcher(
   // services.  Where such mixing is desired (MergeSession), it will be done
   // explicitly.
   if (!send_cookies)
-    to_return->set_load_flags(net::LOAD_DO_NOT_SEND_COOKIES);
+    to_return->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES);
 
   return to_return;
 }
@@ -580,11 +580,11 @@ void GaiaAuthFetcher::OnMergeSessionFetched(const std::string& data,
   }
 }
 
-void GaiaAuthFetcher::OnURLFetchComplete(const URLFetcher* source) {
+void GaiaAuthFetcher::OnURLFetchComplete(const content::URLFetcher* source) {
   fetch_pending_ = false;
-  const GURL& url = source->url();
-  const net::URLRequestStatus& status = source->status();
-  int response_code = source->response_code();
+  const GURL& url = source->GetUrl();
+  const net::URLRequestStatus& status = source->GetStatus();
+  int response_code = source->GetResponseCode();
   std::string data;
   source->GetResponseAsString(&data);
   if (url == client_login_gurl_) {
@@ -596,7 +596,7 @@ void GaiaAuthFetcher::OnURLFetchComplete(const URLFetcher* source) {
   } else if (url == token_auth_gurl_) {
     OnTokenAuthFetched(data, status, response_code);
   } else if (url == merge_session_gurl_ ||
-      (source && source->original_url() == merge_session_gurl_)) {
+      (source && source->GetOriginalUrl() == merge_session_gurl_)) {
     // MergeSession may redirect, so check the original URL of the fetcher.
     OnMergeSessionFetched(data, status, response_code);
   } else {

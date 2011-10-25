@@ -82,24 +82,26 @@ void IntranetRedirectDetector::FinishSleep() {
     GURL random_url(url_string + '/');
     URLFetcher* fetcher = new URLFetcher(random_url, URLFetcher::HEAD, this);
     // We don't want these fetches to affect existing state in the profile.
-    fetcher->set_load_flags(net::LOAD_DISABLE_CACHE |
-                            net::LOAD_DO_NOT_SAVE_COOKIES);
-    fetcher->set_request_context(g_browser_process->system_request_context());
+    fetcher->SetLoadFlags(net::LOAD_DISABLE_CACHE |
+                          net::LOAD_DO_NOT_SAVE_COOKIES);
+    fetcher->SetRequestContext(g_browser_process->system_request_context());
     fetcher->Start();
     fetchers_.insert(fetcher);
   }
 }
 
-void IntranetRedirectDetector::OnURLFetchComplete(const URLFetcher* source) {
+void IntranetRedirectDetector::OnURLFetchComplete(
+    const content::URLFetcher* source) {
   // Delete the fetcher on this function's exit.
-  Fetchers::iterator fetcher = fetchers_.find(const_cast<URLFetcher*>(source));
+  Fetchers::iterator fetcher = fetchers_.find(
+      const_cast<content::URLFetcher*>(source));
   DCHECK(fetcher != fetchers_.end());
-  scoped_ptr<URLFetcher> clean_up_fetcher(*fetcher);
+  scoped_ptr<content::URLFetcher> clean_up_fetcher(*fetcher);
   fetchers_.erase(fetcher);
 
   // If any two fetches result in the same domain/host, we set the redirect
   // origin to that; otherwise we set it to nothing.
-  if (!source->status().is_success() || (source->response_code() != 200)) {
+  if (!source->GetStatus().is_success() || (source->GetResponseCode() != 200)) {
     if ((resulting_origins_.empty()) ||
         ((resulting_origins_.size() == 1) &&
          resulting_origins_.front().is_valid())) {
@@ -108,8 +110,8 @@ void IntranetRedirectDetector::OnURLFetchComplete(const URLFetcher* source) {
     }
     redirect_origin_ = GURL();
   } else {
-    DCHECK(source->url().is_valid());
-    GURL origin(source->url().GetOrigin());
+    DCHECK(source->GetUrl().is_valid());
+    GURL origin(source->GetUrl().GetOrigin());
     if (resulting_origins_.empty()) {
       resulting_origins_.push_back(origin);
       return;

@@ -297,7 +297,7 @@ void SpellCheckHostImpl::DownloadDictionary() {
   GURL url = GURL(std::string(kDownloadServerUrl) +
                   StringToLowerASCII(bdict_file));
   fetcher_.reset(new URLFetcher(url, URLFetcher::GET, this));
-  fetcher_->set_request_context(request_context_getter_);
+  fetcher_->SetRequestContext(request_context_getter_);
   tried_to_download_ = true;
   fetcher_->Start();
   request_context_getter_ = NULL;
@@ -332,12 +332,12 @@ void SpellCheckHostImpl::WriteWordToCustomDictionary(const std::string& word) {
     profile_->WriteWordToCustomDictionary(word);
 }
 
-void SpellCheckHostImpl::OnURLFetchComplete(const URLFetcher* source) {
+void SpellCheckHostImpl::OnURLFetchComplete(const content::URLFetcher* source) {
   DCHECK(source);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  scoped_ptr<URLFetcher> fetcher_destructor(fetcher_.release());
+  scoped_ptr<content::URLFetcher> fetcher_destructor(fetcher_.release());
 
-  if ((source->response_code() / 100) != 2) {
+  if ((source->GetResponseCode() / 100) != 2) {
     // Initialize will not try to download the file a second time.
     LOG(ERROR) << "Failure to download dictionary.";
     InitializeOnFileThread();

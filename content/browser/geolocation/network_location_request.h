@@ -66,12 +66,12 @@ class NetworkLocationRequest : private content::URLFetcherDelegate {
 
  private:
   // content::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
 
   scoped_refptr<net::URLRequestContextGetter> url_context_;
   ListenerInterface* listener_;
   const GURL url_;
-  scoped_ptr<URLFetcher> url_fetcher_;
+  scoped_ptr<content::URLFetcher> url_fetcher_;
 
   // Keep a copy of the data sent in the request, so we can refer back to it
   // when the response arrives.

@@ -45,13 +45,13 @@ class PluginDownloadUrlHelper : public content::URLFetcherDelegate {
                         base::MessageLoopProxy* file_thread_proxy);
 
   // content::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const URLFetcher* source);
+  virtual void OnURLFetchComplete(const content::URLFetcher* source);
 
   void OnDownloadCompleted(net::URLRequest* request);
 
  protected:
   // The download file request initiated by the plugin.
-  scoped_ptr<URLFetcher> download_file_fetcher_;
+  scoped_ptr<content::URLFetcher> download_file_fetcher_;
   // TODO(port): this comment doesn't describe the situation on Posix.
   // The window handle for sending the WM_COPYDATA notification,
   // indicating that the download completed.

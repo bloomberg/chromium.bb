@@ -43,7 +43,7 @@ class TemplateURLFetcher::RequestDelegate
   // content::URLFetcherDelegate:
   // If data contains a valid OSDD, a TemplateURL is created and added to
   // the TemplateURLService.
-  virtual void OnURLFetchComplete(const URLFetcher* source);
+  virtual void OnURLFetchComplete(const content::URLFetcher* source);
 
   // URL of the OSDD.
   GURL url() const { return osdd_url_; }
@@ -99,7 +99,7 @@ TemplateURLFetcher::RequestDelegate::RequestDelegate(
     model->Load();
   }
 
-  url_fetcher_.set_request_context(fetcher->profile()->GetRequestContext());
+  url_fetcher_.SetRequestContext(fetcher->profile()->GetRequestContext());
   url_fetcher_.Start();
 }
 
@@ -116,7 +116,7 @@ void TemplateURLFetcher::RequestDelegate::Observe(
 }
 
 void TemplateURLFetcher::RequestDelegate::OnURLFetchComplete(
-    const URLFetcher* source) {
+    const content::URLFetcher* source) {
   template_url_.reset(new TemplateURL());
 
   // Validation checks.
@@ -126,8 +126,9 @@ void TemplateURLFetcher::RequestDelegate::OnURLFetchComplete(
   // the response_code is not applicable and should be -1. Also, ensure that
   // the returned information results in a valid search URL.
   std::string data;
-  if (!source->status().is_success() ||
-      ((source->response_code() != -1) && (source->response_code() != 200)) ||
+  if (!source->GetStatus().is_success() ||
+      ((source->GetResponseCode() != -1) &&
+        (source->GetResponseCode() != 200)) ||
       !source->GetResponseAsString(&data) ||
       !TemplateURLParser::Parse(
           reinterpret_cast<const unsigned char*>(data.c_str()),

@@ -176,7 +176,7 @@ TEST_F(SpeechRecognizerTest, StopWithData) {
   TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
 
-  fetcher->set_url(fetcher->original_url());
+  fetcher->set_url(fetcher->GetOriginalUrl());
   net::URLRequestStatus status;
   status.set_status(net::URLRequestStatus::SUCCESS);
   fetcher->set_status(status);
@@ -230,7 +230,7 @@ TEST_F(SpeechRecognizerTest, ConnectionError) {
   EXPECT_EQ(kErrorNone, error_);
 
   // Issue the network callback to complete the process.
-  fetcher->set_url(fetcher->original_url());
+  fetcher->set_url(fetcher->GetOriginalUrl());
   net::URLRequestStatus status;
   status.set_status(net::URLRequestStatus::FAILED);
   status.set_error(net::ERR_CONNECTION_REFUSED);
@@ -265,7 +265,7 @@ TEST_F(SpeechRecognizerTest, ServerError) {
   EXPECT_EQ(kErrorNone, error_);
 
   // Issue the network callback to complete the process.
-  fetcher->set_url(fetcher->original_url());
+  fetcher->set_url(fetcher->GetOriginalUrl());
   net::URLRequestStatus status;
   status.set_status(net::URLRequestStatus::SUCCESS);
   fetcher->set_status(status);

@@ -120,7 +120,7 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
       const std::string& name) const;
 
   // content::URLFetcherDelegate implementation.
-  virtual void OnURLFetchComplete(const URLFetcher* source);
+  virtual void OnURLFetchComplete(const content::URLFetcher* source);
 
 #if defined(UNIT_TEST)
   net::URLRequestContextGetter* GetRequestContextGetter() const {
@@ -176,7 +176,7 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
     // NOTE: This is not a scoped_ptr for a reason. It must be deleted on the
     // same thread that created it, which isn't the same thread |this| gets
     // deleted on. We must manually delete url_poster_ on the IO loop.
-    URLFetcher* url_poster;
+    content::URLFetcher* url_poster;
 
     // Used to support 'Abort' functionality.
     bool aborted;

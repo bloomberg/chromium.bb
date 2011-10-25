@@ -82,7 +82,7 @@ class CloudPrintProxyBackend::Core
 
   // CloudPrintURLFetcher::Delegate implementation.
   virtual CloudPrintURLFetcher::ResponseAction HandleJSONData(
-      const URLFetcher* source,
+      const content::URLFetcher* source,
       const GURL& url,
       DictionaryValue* json_data,
       bool succeeded);
@@ -118,43 +118,43 @@ class CloudPrintProxyBackend::Core
   // Prototype for a response handler.
   typedef CloudPrintURLFetcher::ResponseAction
       (CloudPrintProxyBackend::Core::*ResponseHandler)(
-          const URLFetcher* source,
+          const content::URLFetcher* source,
           const GURL& url,
           DictionaryValue* json_data,
           bool succeeded);
   // Begin response handlers
   CloudPrintURLFetcher::ResponseAction HandlePrinterListResponse(
-      const URLFetcher* source,
+      const content::URLFetcher* source,
       const GURL& url,
       DictionaryValue* json_data,
       bool succeeded);
 
   CloudPrintURLFetcher::ResponseAction HandleRegisterPrinterResponse(
-      const URLFetcher* source,
+      const content::URLFetcher* source,
       const GURL& url,
       DictionaryValue* json_data,
       bool succeeded);
 
   CloudPrintURLFetcher::ResponseAction HandleRegisterFailedStatusResponse(
-      const URLFetcher* source,
+      const content::URLFetcher* source,
       const GURL& url,
       DictionaryValue* json_data,
       bool succeeded);
 
   CloudPrintURLFetcher::ResponseAction HandlePrintSystemUnavailableResponse(
-      const URLFetcher* source,
+      const content::URLFetcher* source,
       const GURL& url,
       DictionaryValue* json_data,
       bool succeeded);
 
   CloudPrintURLFetcher::ResponseAction HandleEnumPrintersFailedResponse(
-      const URLFetcher* source,
+      const content::URLFetcher* source,
       const GURL& url,
       DictionaryValue* json_data,
       bool succeeded);
 
   CloudPrintURLFetcher::ResponseAction HandleGetAuthCodeResponse(
-      const URLFetcher* source,
+      const content::URLFetcher* source,
       const GURL& url,
       DictionaryValue* json_data,
       bool succeeded);
@@ -766,7 +766,7 @@ CloudPrintTokenStore* CloudPrintProxyBackend::Core::GetTokenStore() {
 // CloudPrintURLFetcher::Delegate implementation.
 CloudPrintURLFetcher::ResponseAction
 CloudPrintProxyBackend::Core::HandleJSONData(
-    const URLFetcher* source,
+    const content::URLFetcher* source,
     const GURL& url,
     DictionaryValue* json_data,
     bool succeeded) {
@@ -806,7 +806,7 @@ void CloudPrintProxyBackend::Core::NotifyPrintSystemUnavailable() {
 
 CloudPrintURLFetcher::ResponseAction
 CloudPrintProxyBackend::Core::HandleGetAuthCodeResponse(
-    const URLFetcher* source,
+    const content::URLFetcher* source,
     const GURL& url,
     DictionaryValue* json_data,
     bool succeeded) {
@@ -835,7 +835,7 @@ CloudPrintProxyBackend::Core::HandleGetAuthCodeResponse(
 
 CloudPrintURLFetcher::ResponseAction
 CloudPrintProxyBackend::Core::HandlePrinterListResponse(
-    const URLFetcher* source,
+    const content::URLFetcher* source,
     const GURL& url,
     DictionaryValue* json_data,
     bool succeeded) {
@@ -954,7 +954,7 @@ void CloudPrintProxyBackend::Core::ReportUserMessage(
 
 CloudPrintURLFetcher::ResponseAction
 CloudPrintProxyBackend::Core::HandleRegisterPrinterResponse(
-    const URLFetcher* source,
+    const content::URLFetcher* source,
     const GURL& url,
     DictionaryValue* json_data,
     bool succeeded) {
@@ -978,7 +978,7 @@ CloudPrintProxyBackend::Core::HandleRegisterPrinterResponse(
 
 CloudPrintURLFetcher::ResponseAction
 CloudPrintProxyBackend::Core::HandleRegisterFailedStatusResponse(
-    const URLFetcher* source,
+    const content::URLFetcher* source,
     const GURL& url,
     DictionaryValue* json_data,
     bool succeeded) {
@@ -993,7 +993,7 @@ CloudPrintProxyBackend::Core::HandleRegisterFailedStatusResponse(
 
 CloudPrintURLFetcher::ResponseAction
 CloudPrintProxyBackend::Core::HandlePrintSystemUnavailableResponse(
-    const URLFetcher* source,
+    const content::URLFetcher* source,
     const GURL& url,
     DictionaryValue* json_data,
     bool succeeded) {
@@ -1008,7 +1008,7 @@ CloudPrintProxyBackend::Core::HandlePrintSystemUnavailableResponse(
 
 CloudPrintURLFetcher::ResponseAction
 CloudPrintProxyBackend::Core::HandleEnumPrintersFailedResponse(
-    const URLFetcher* source,
+    const content::URLFetcher* source,
     const GURL& url,
     DictionaryValue* json_data,
     bool succeeded) {

@@ -92,7 +92,7 @@ class DummyURLFetcher : public TestURLFetcher {
  public:
   DummyURLFetcher() : TestURLFetcher(0, GURL(), POST, NULL) {}
 
-  net::HttpResponseHeaders* response_headers() const {
+  net::HttpResponseHeaders* GetResponseHeaders() const {
     return NULL;
   }
 };

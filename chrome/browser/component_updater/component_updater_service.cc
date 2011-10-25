@@ -102,7 +102,7 @@ class DelegateWithContext : public content::URLFetcherDelegate {
   DelegateWithContext(Del* delegate, Ctx* context)
     : delegate_(delegate), context_(context) {}
 
-  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE {
+  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE {
     delegate_->OnURLFetchComplete(source, context_);
     delete this;
   }
@@ -120,15 +120,15 @@ content::URLFetcherDelegate* MakeContextDelegate(Del* delegate, Ctx* context) {
 }
 
 // Helper to start a url request using |fetcher| with the common flags.
-void StartFetch(URLFetcher* fetcher,
+void StartFetch(content::URLFetcher* fetcher,
                 net::URLRequestContextGetter* context_getter,
                 bool save_to_file) {
-  fetcher->set_request_context(context_getter);
-  fetcher->set_load_flags(net::LOAD_DO_NOT_SEND_COOKIES |
-                          net::LOAD_DO_NOT_SAVE_COOKIES |
-                          net::LOAD_DISABLE_CACHE);
+  fetcher->SetRequestContext(context_getter);
+  fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
+                        net::LOAD_DO_NOT_SAVE_COOKIES |
+                        net::LOAD_DISABLE_CACHE);
   // TODO(cpu): Define our retry and backoff policy.
-  fetcher->set_automatically_retry_on_5xx(false);
+  fetcher->SetAutomaticallyRetryOn5xx(false);
   if (save_to_file) {
     fetcher->SaveResponseToTemporaryFile(
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
@@ -137,9 +137,9 @@ void StartFetch(URLFetcher* fetcher,
 }
 
 // Returs true if the url request of |fetcher| was succesful.
-bool FetchSuccess(const URLFetcher& fetcher) {
-  return (fetcher.status().status() == net::URLRequestStatus::SUCCESS) &&
-         (fetcher.response_code() == 200);
+bool FetchSuccess(const content::URLFetcher& fetcher) {
+  return (fetcher.GetStatus().status() == net::URLRequestStatus::SUCCESS) &&
+         (fetcher.GetResponseCode() == 200);
 }
 
 // This is the one and only per-item state structure. Designed to be hosted
@@ -272,9 +272,11 @@ class CrxUpdateService : public ComponentUpdateService {
     CRXContext() : installer(NULL) {}
   };
 
-  void OnURLFetchComplete(const URLFetcher* source, UpdateContext* context);
+  void OnURLFetchComplete(const content::URLFetcher* source,
+                          UpdateContext* context);
 
-  void OnURLFetchComplete(const URLFetcher* source, CRXContext* context);
+  void OnURLFetchComplete(const content::URLFetcher* source,
+                          CRXContext* context);
 
  private:
   // See ManifestParserBridge.
@@ -305,7 +307,7 @@ class CrxUpdateService : public ComponentUpdateService {
 
   scoped_ptr<Config> config_;
 
-  scoped_ptr<URLFetcher> url_fetcher_;
+  scoped_ptr<content::URLFetcher> url_fetcher_;
 
   typedef std::vector<CrxUpdateItem*> UpdateItems;
   UpdateItems work_items_;
@@ -557,7 +559,7 @@ void CrxUpdateService::ProcessPendingItems() {
 
 // Caled when we got a response from the update server. It consists of an xml
 // document following the omaha update scheme.
-void CrxUpdateService::OnURLFetchComplete(const URLFetcher* source,
+void CrxUpdateService::OnURLFetchComplete(const content::URLFetcher* source,
                                           UpdateContext* context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (FetchSuccess(*source)) {
@@ -662,7 +664,7 @@ void CrxUpdateService::OnParseUpdateManifestFailed(
 // Called when the CRX package has been downloaded to a temporary location.
 // Here we fire the notifications and schedule the component-specific installer
 // to be called in the file thread.
-void CrxUpdateService::OnURLFetchComplete(const URLFetcher* source,
+void CrxUpdateService::OnURLFetchComplete(const content::URLFetcher* source,
                                           CRXContext* context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   base::PlatformFileError error_code;

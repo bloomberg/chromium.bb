@@ -57,7 +57,7 @@ void GaiaOAuthFetcher::CancelRequest() {
 }
 
 // static
-URLFetcher* GaiaOAuthFetcher::CreateGaiaFetcher(
+content::URLFetcher* GaiaOAuthFetcher::CreateGaiaFetcher(
     net::URLRequestContextGetter* getter,
     const GURL& gaia_gurl,
     const std::string& body,
@@ -70,7 +70,7 @@ URLFetcher* GaiaOAuthFetcher::CreateGaiaFetcher(
                          gaia_gurl,
                          empty_body ? URLFetcher::GET : URLFetcher::POST,
                          delegate);
-  result->set_request_context(getter);
+  result->SetRequestContext(getter);
 
   // The Gaia/OAuth token exchange requests do not require any cookie-based
   // identification as part of requests.  We suppress sending any cookies to
@@ -78,12 +78,12 @@ URLFetcher* GaiaOAuthFetcher::CreateGaiaFetcher(
   // services.  Where such mixing is desired (prelogin, autologin
   // or chromeos login), it will be done explicitly.
   if (!send_cookies)
-    result->set_load_flags(net::LOAD_DO_NOT_SEND_COOKIES);
+    result->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES);
 
   if (!empty_body)
-    result->set_upload_data("application/x-www-form-urlencoded", body);
+    result->SetUploadData("application/x-www-form-urlencoded", body);
   if (!headers.empty())
-    result->set_extra_request_headers(headers);
+    result->SetExtraRequestHeaders(headers);
 
   return result;
 }
@@ -655,18 +655,18 @@ void GaiaOAuthFetcher::OnUserInfoFetched(
   }
 }
 
-void GaiaOAuthFetcher::OnURLFetchComplete(const URLFetcher* source) {
+void GaiaOAuthFetcher::OnURLFetchComplete(const content::URLFetcher* source) {
   // Keep |fetcher_| around to avoid invalidating its |status| (accessed below).
-  scoped_ptr<URLFetcher> current_fetcher(fetcher_.release());
+  scoped_ptr<content::URLFetcher> current_fetcher(fetcher_.release());
   fetch_pending_ = false;
   GaiaUrls* gaia_urls = GaiaUrls::GetInstance();
-  GURL url = source->url();
+  GURL url = source->GetUrl();
   std::string data;
   source->GetResponseAsString(&data);
-  net::URLRequestStatus status = source->status();
-  int response_code = source->response_code();
+  net::URLRequestStatus status = source->GetStatus();
+  int response_code = source->GetResponseCode();
   if (StartsWithASCII(url.spec(), gaia_urls->get_oauth_token_url(), true)) {
-    OnGetOAuthTokenUrlFetched(source->cookies(), status, response_code);
+    OnGetOAuthTokenUrlFetched(source->GetCookies(), status, response_code);
   } else if (url.spec() == gaia_urls->oauth1_login_url()) {
     OnOAuthLoginFetched(data, status, response_code);
   } else if (url.spec() == gaia_urls->oauth_get_access_token_url()) {

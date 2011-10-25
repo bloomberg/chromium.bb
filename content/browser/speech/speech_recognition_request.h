@@ -63,12 +63,12 @@ class SpeechRecognitionRequest : public content::URLFetcherDelegate {
   CONTENT_EXPORT bool HasPendingRequest() { return url_fetcher_ != NULL; }
 
   // content::URLFetcherDelegate methods.
-  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
 
  private:
   scoped_refptr<net::URLRequestContextGetter> url_context_;
   Delegate* delegate_;
-  scoped_ptr<URLFetcher> url_fetcher_;
+  scoped_ptr<content::URLFetcher> url_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(SpeechRecognitionRequest);
 };

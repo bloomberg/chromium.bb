@@ -71,19 +71,19 @@ void MockFetcher::Start() {
   delegate()->OnURLFetchComplete(this);
 }
 
-const GURL& MockFetcher::url() const {
+const GURL& MockFetcher::GetUrl() const {
   return url_;
 }
 
-const net::URLRequestStatus& MockFetcher::status() const {
+const net::URLRequestStatus& MockFetcher::GetStatus() const {
   return status_;
 }
 
-int MockFetcher::response_code() const {
+int MockFetcher::GetResponseCode() const {
   return response_code_;
 }
 
-const net::ResponseCookies& MockFetcher::cookies() const {
+const net::ResponseCookies& MockFetcher::GetCookies() const {
   return cookies_;
 }
 
@@ -646,7 +646,7 @@ TEST_F(GaiaAuthFetcherTest, MergeSessionSuccessRedirect) {
   // properties to reflect a redirect.
   TestURLFetcher* test_fetcher = factory.GetFetcherByID(0);
   EXPECT_TRUE(test_fetcher != NULL);
-  EXPECT_TRUE(test_fetcher->load_flags() == net::LOAD_NORMAL);
+  EXPECT_TRUE(test_fetcher->GetLoadFlags() == net::LOAD_NORMAL);
   EXPECT_TRUE(auth.HasPendingFetch());
 
   GURL final_url("http://www.google.com/CheckCookie");

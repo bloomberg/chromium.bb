@@ -79,18 +79,19 @@ void AppNotifyChannelSetup::Start() {
   // TODO(asargent) - we eventually want this to use the browser login
   // credentials instead of the regular cookie store, but for now to aid server
   // development, we're just using the regular cookie store.
-  url_fetcher_->set_request_context(profile_->GetRequestContext());
+  url_fetcher_->SetRequestContext(profile_->GetRequestContext());
   std::string data = "client_id=" + EscapeUrlEncodedData(client_id_, true);
-  url_fetcher_->set_upload_data("application/x-www-form-urlencoded", data);
+  url_fetcher_->SetUploadData("application/x-www-form-urlencoded", data);
   url_fetcher_->Start();
 }
 
-void AppNotifyChannelSetup::OnURLFetchComplete(const URLFetcher* source) {
+void AppNotifyChannelSetup::OnURLFetchComplete(
+    const content::URLFetcher* source) {
   CHECK(source);
-  net::URLRequestStatus status = source->status();
+  net::URLRequestStatus status = source->GetStatus();
 
   if (status.status() == net::URLRequestStatus::SUCCESS &&
-      source->response_code() == 200) {
+      source->GetResponseCode() == 200) {
     // TODO(asargent) - we need to parse the response from |source| here.
     ReportResult("dummy_do_not_use", "");
   } else {

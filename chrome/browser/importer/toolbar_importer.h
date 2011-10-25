@@ -47,7 +47,7 @@ class Toolbar5Importer : public content::URLFetcherDelegate, public Importer {
   virtual void Cancel();
 
   // content::URLFetcherDelegate method called back from the URLFetcher object.
-  virtual void OnURLFetchComplete(const URLFetcher* source);
+  virtual void OnURLFetchComplete(const content::URLFetcher* source);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(Toolbar5ImporterTest, BookmarkParse);
@@ -153,8 +153,8 @@ class Toolbar5Importer : public content::URLFetcherDelegate, public Importer {
 
   // The fetchers need to be available to cancel the network call on user cancel
   // hence they are stored as member variables.
-  URLFetcher* token_fetcher_;
-  URLFetcher* data_fetcher_;
+  content::URLFetcher* token_fetcher_;
+  content::URLFetcher* data_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(Toolbar5Importer);
 };

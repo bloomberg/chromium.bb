@@ -72,7 +72,7 @@ class WebstoreInstallHelper : public UtilityProcessHost::Client,
   void ReportResultFromUIThread();
 
   // Implementing the content::URLFetcherDelegate interface.
-  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
 
   // Implementing pieces of the UtilityProcessHost::Client interface.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -101,7 +101,7 @@ class WebstoreInstallHelper : public UtilityProcessHost::Client,
   std::vector<unsigned char> fetched_icon_data_;
 
   // For fetching the icon, if needed.
-  scoped_ptr<URLFetcher> url_fetcher_;
+  scoped_ptr<content::URLFetcher> url_fetcher_;
   net::URLRequestContextGetter* context_getter_; // Only usable on UI thread.
 
   UtilityProcessHost* utility_host_;

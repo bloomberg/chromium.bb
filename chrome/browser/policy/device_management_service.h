@@ -49,7 +49,7 @@ class DeviceManagementService : public content::URLFetcherDelegate {
     virtual GURL GetURL(const std::string& server_url) = 0;
 
     // Configures the fetcher, setting up payload and headers.
-    virtual void ConfigureRequest(URLFetcher* fetcher) = 0;
+    virtual void ConfigureRequest(content::URLFetcher* fetcher) = 0;
   };
 
   explicit DeviceManagementService(const std::string& server_url);
@@ -80,11 +80,12 @@ class DeviceManagementService : public content::URLFetcherDelegate {
   virtual void StartJob(DeviceManagementJob* job, bool bypass_proxy);
 
  private:
-  typedef std::map<const URLFetcher*, DeviceManagementJob*> JobFetcherMap;
+  typedef std::map<const content::URLFetcher*, DeviceManagementJob*>
+      JobFetcherMap;
   typedef std::deque<DeviceManagementJob*> JobQueue;
 
   // content::URLFetcherDelegate override.
-  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
 
   // Does the actual initialization using the request context specified for
   // |PrepareInitialization|. This will also fire any pending network requests.

@@ -53,7 +53,7 @@ class SpellingMenuObserver : public RenderViewContextMenuObserver,
   virtual void ExecuteCommand(int command_id) OVERRIDE;
 
   // content::URLFetcherDelegate implementation.
-  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
 
  private:
   // Invokes a JSON-RPC call in the background. This function sends a JSON-RPC
@@ -94,7 +94,7 @@ class SpellingMenuObserver : public RenderViewContextMenuObserver,
   string16 result_;
 
   // The URLFetcher object used for sending a JSON-RPC request.
-  scoped_ptr<URLFetcher> fetcher_;
+  scoped_ptr<content::URLFetcher> fetcher_;
 
   // A timer used for loading animation.
   base::RepeatingTimer<SpellingMenuObserver> animation_timer_;

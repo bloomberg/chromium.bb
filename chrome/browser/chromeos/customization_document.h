@@ -149,7 +149,7 @@ class ServicesCustomizationDocument : public CustomizationDocument,
   static void SetApplied(bool val);
 
   // Overriden from content::URLFetcherDelegate:
-  virtual void OnURLFetchComplete(const URLFetcher* source);
+  virtual void OnURLFetchComplete(const content::URLFetcher* source);
 
   // Initiate file fetching.
   void StartFileFetch();
@@ -161,7 +161,7 @@ class ServicesCustomizationDocument : public CustomizationDocument,
   GURL url_;
 
   // URLFetcher instance.
-  scoped_ptr<URLFetcher> url_fetcher_;
+  scoped_ptr<content::URLFetcher> url_fetcher_;
 
   // Timer to retry fetching file if network is not available.
   base::OneShotTimer<ServicesCustomizationDocument> retry_timer_;

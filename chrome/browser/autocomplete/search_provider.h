@@ -71,7 +71,7 @@ class SearchProvider : public AutocompleteProvider,
   virtual void Stop() OVERRIDE;
 
   // content::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const URLFetcher* source);
+  virtual void OnURLFetchComplete(const content::URLFetcher* source);
 
   // ID used in creating URLFetcher for default provider's suggest results.
   static const int kDefaultProviderURLFetcherID;
@@ -194,9 +194,9 @@ class SearchProvider : public AutocompleteProvider,
 
   // Creates a URLFetcher requesting suggest results for the specified
   // TemplateURL. Ownership of the returned URLFetchet passes to the caller.
-  URLFetcher* CreateSuggestFetcher(int id,
-                                   const TemplateURL& provider,
-                                   const string16& text);
+  content::URLFetcher* CreateSuggestFetcher(int id,
+                                            const TemplateURL& provider,
+                                            const string16& text);
 
   // Parses the results from the Suggest server and stores up to kMaxMatches of
   // them in server_results_.  Returns whether parsing succeeded.
@@ -306,11 +306,11 @@ class SearchProvider : public AutocompleteProvider,
   base::OneShotTimer<SearchProvider> timer_;
 
   // The fetcher that retrieves suggest results for the keyword from the server.
-  scoped_ptr<URLFetcher> keyword_fetcher_;
+  scoped_ptr<content::URLFetcher> keyword_fetcher_;
 
   // The fetcher that retrieves suggest results for the default engine from the
   // server.
-  scoped_ptr<URLFetcher> default_fetcher_;
+  scoped_ptr<content::URLFetcher> default_fetcher_;
 
   // Suggestions returned by the Suggest server for the input text.
   SuggestResults keyword_suggest_results_;

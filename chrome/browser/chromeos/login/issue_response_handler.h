@@ -36,8 +36,8 @@ class IssueResponseHandler : public AuthResponseHandler {
   // to sent to TokenAuth, and issues said query.  |catcher| will receive
   // the response to the fetch.  This fetch will follow redirects, which is
   // necesary to support GAFYD and corp accounts.
-  virtual URLFetcher* Handle(const std::string& to_process,
-                             content::URLFetcherDelegate* catcher);
+  virtual content::URLFetcher* Handle(const std::string& to_process,
+                                      content::URLFetcherDelegate* catcher);
 
   // exposed for testing
   std::string token_url() { return token_url_; }

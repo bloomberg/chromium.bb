@@ -75,7 +75,7 @@ class TranslateManager : public content::NotificationObserver,
                        const content::NotificationDetails& details);
 
   // content::URLFetcherDelegate implementation:
-  virtual void OnURLFetchComplete(const URLFetcher* source);
+  virtual void OnURLFetchComplete(const content::URLFetcher* source);
 
   // Used by unit-tests to override the default delay after which the translate
   // script is fetched again from the translation server.
@@ -197,11 +197,11 @@ class TranslateManager : public content::NotificationObserver,
   int translate_script_expiration_delay_;
 
   // Set when the translate JS is currently being retrieved. NULL otherwise.
-  scoped_ptr<URLFetcher> translate_script_request_pending_;
+  scoped_ptr<content::URLFetcher> translate_script_request_pending_;
 
   // Set when the list of languages is currently being retrieved.
   // NULL otherwise.
-  scoped_ptr<URLFetcher> language_list_request_pending_;
+  scoped_ptr<content::URLFetcher> language_list_request_pending_;
 
   // The list of pending translate requests.  Translate requests are queued when
   // the translate script is not ready and has to be fetched from the translate

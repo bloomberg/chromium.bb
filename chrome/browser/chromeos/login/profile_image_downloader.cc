@@ -143,10 +143,10 @@ void ProfileImageDownloader::StartFetchingImage() {
   VLOG(1) << "Fetching user entry with token: " << auth_token_;
   user_entry_fetcher_.reset(
       new URLFetcher(GURL(kUserEntryURL), URLFetcher::GET, this));
-  user_entry_fetcher_->set_request_context(
+  user_entry_fetcher_->SetRequestContext(
       ProfileManager::GetDefaultProfile()->GetRequestContext());
   if (!auth_token_.empty()) {
-    user_entry_fetcher_->set_extra_request_headers(
+    user_entry_fetcher_->SetExtraRequestHeaders(
         base::StringPrintf(kAuthorizationHeader, auth_token_.c_str()));
   }
   user_entry_fetcher_->Start();
@@ -154,13 +154,14 @@ void ProfileImageDownloader::StartFetchingImage() {
 
 ProfileImageDownloader::~ProfileImageDownloader() {}
 
-void ProfileImageDownloader::OnURLFetchComplete(const URLFetcher* source) {
+void ProfileImageDownloader::OnURLFetchComplete(
+    const content::URLFetcher* source) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   std::string data;
   source->GetResponseAsString(&data);
-  if (source->response_code() != 200) {
-    LOG(ERROR) << "Response code is " << source->response_code();
-    LOG(ERROR) << "Url is " << source->url().spec();
+  if (source->GetResponseCode() != 200) {
+    LOG(ERROR) << "Response code is " << source->GetResponseCode();
+    LOG(ERROR) << "Url is " << source->GetUrl().spec();
     LOG(ERROR) << "Data is " << data;
     if (delegate_)
       delegate_->OnDownloadFailure();
@@ -177,10 +178,10 @@ void ProfileImageDownloader::OnURLFetchComplete(const URLFetcher* source) {
     VLOG(1) << "Fetching profile image from " << image_url;
     profile_image_fetcher_.reset(
         new URLFetcher(GURL(image_url), URLFetcher::GET, this));
-    profile_image_fetcher_->set_request_context(
+    profile_image_fetcher_->SetRequestContext(
         ProfileManager::GetDefaultProfile()->GetRequestContext());
     if (!auth_token_.empty()) {
-      profile_image_fetcher_->set_extra_request_headers(
+      profile_image_fetcher_->SetExtraRequestHeaders(
           base::StringPrintf(kAuthorizationHeader, auth_token_.c_str()));
     }
     profile_image_fetcher_->Start();

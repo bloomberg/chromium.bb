@@ -45,19 +45,20 @@ class GaiaOAuthClient::Core
                     GaiaOAuthClient::Delegate* delegate);
 
   // content::URLFetcherDelegate implementation.
-  virtual void OnURLFetchComplete(const URLFetcher* source);
+  virtual void OnURLFetchComplete(const content::URLFetcher* source);
 
  private:
   void MakeGaiaRequest(std::string post_body,
                        int max_retries,
                        GaiaOAuthClient::Delegate* delegate);
-  void HandleResponse(const URLFetcher* source, bool* should_retry_request);
+  void HandleResponse(const content::URLFetcher* source,
+                      bool* should_retry_request);
 
   GURL gaia_url_;
   int num_retries_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   GaiaOAuthClient::Delegate* delegate_;
-  scoped_ptr<URLFetcher> request_;
+  scoped_ptr<content::URLFetcher> request_;
 };
 
 void GaiaOAuthClient::Core::GetTokensFromAuthCode(
@@ -96,14 +97,15 @@ void GaiaOAuthClient::Core::MakeGaiaRequest(
   delegate_ = delegate;
   num_retries_ = 0;
   request_.reset(URLFetcher::Create(0, gaia_url_, URLFetcher::POST, this));
-  request_->set_request_context(request_context_getter_);
-  request_->set_upload_data("application/x-www-form-urlencoded", post_body);
-  request_->set_max_retries(max_retries);
+  request_->SetRequestContext(request_context_getter_);
+  request_->SetUploadData("application/x-www-form-urlencoded", post_body);
+  request_->SetMaxRetries(max_retries);
   request_->Start();
 }
 
 // URLFetcher::Delegate implementation.
-void GaiaOAuthClient::Core::OnURLFetchComplete(const URLFetcher* source) {
+void GaiaOAuthClient::Core::OnURLFetchComplete(
+    const content::URLFetcher* source) {
   bool should_retry = false;
   HandleResponse(source, &should_retry);
   if (should_retry) {
@@ -115,7 +117,7 @@ void GaiaOAuthClient::Core::OnURLFetchComplete(const URLFetcher* source) {
     num_retries_++;
     // We must set our request_context_getter_ again because
     // URLFetcher::Core::RetryOrCompleteUrlFetch resets it to NULL...
-    request_->set_request_context(request_context_getter_);
+    request_->SetRequestContext(request_context_getter_);
     request_->Start();
   } else {
     request_.reset();
@@ -123,19 +125,19 @@ void GaiaOAuthClient::Core::OnURLFetchComplete(const URLFetcher* source) {
 }
 
 void GaiaOAuthClient::Core::HandleResponse(
-    const URLFetcher* source,
+    const content::URLFetcher* source,
     bool* should_retry_request) {
   *should_retry_request = false;
   // RC_BAD_REQUEST means the arguments are invalid. No point retrying. We are
   // done here.
-  if (source->response_code() == RC_BAD_REQUEST) {
+  if (source->GetResponseCode() == RC_BAD_REQUEST) {
     delegate_->OnOAuthError();
     return;
   }
   std::string access_token;
   std::string refresh_token;
   int expires_in_seconds = 0;
-  if (source->response_code() == RC_REQUEST_OK) {
+  if (source->GetResponseCode() == RC_REQUEST_OK) {
     std::string data;
     source->GetResponseAsString(&data);
     scoped_ptr<Value> message_value(base::JSONReader::Read(data, false));
@@ -151,10 +153,10 @@ void GaiaOAuthClient::Core::HandleResponse(
   if (access_token.empty()) {
     // If we don't have an access token yet and the the error was not
     // RC_BAD_REQUEST, we may need to retry.
-    if ((-1 != source->max_retries()) &&
-        (num_retries_ > source->max_retries())) {
+    if ((-1 != source->GetMaxRetries()) &&
+        (num_retries_ > source->GetMaxRetries())) {
       // Retry limit reached. Give up.
-      delegate_->OnNetworkError(source->response_code());
+      delegate_->OnNetworkError(source->GetResponseCode());
     } else {
       *should_retry_request = true;
     }

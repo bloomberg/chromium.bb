@@ -154,7 +154,7 @@ class AppsPromoLogoFetcher : public content::URLFetcherDelegate {
                        AppsPromo::PromoData promo_data);
   virtual ~AppsPromoLogoFetcher();
 
-  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
 
  private:
   // Fetches the logo and stores the result as a data URL.
@@ -172,7 +172,7 @@ class AppsPromoLogoFetcher : public content::URLFetcherDelegate {
 
   Profile* profile_;
   AppsPromo::PromoData promo_data_;
-  scoped_ptr<URLFetcher> url_fetcher_;
+  scoped_ptr<content::URLFetcher> url_fetcher_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_APPS_PROMO_H_

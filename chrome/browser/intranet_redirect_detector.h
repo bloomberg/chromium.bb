@@ -59,14 +59,14 @@ class IntranetRedirectDetector
   static const size_t kNumCharsInHostnames;
 
  private:
-  typedef std::set<URLFetcher*> Fetchers;
+  typedef std::set<content::URLFetcher*> Fetchers;
 
   // Called when the seven second startup sleep or the one second network
   // switch sleep has finished.  Runs any pending fetch.
   void FinishSleep();
 
   // content::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const URLFetcher* source);
+  virtual void OnURLFetchComplete(const content::URLFetcher* source);
 
   // NetworkChangeNotifier::IPAddressObserver
   virtual void OnIPAddressChanged();

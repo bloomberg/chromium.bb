@@ -81,7 +81,7 @@ class ClientSideDetectionService : public content::URLFetcherDelegate,
   }
 
   // From the content::URLFetcherDelegate interface.
-  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
 
   // content::NotificationObserver overrides:
   virtual void Observe(int type,
@@ -207,7 +207,7 @@ class ClientSideDetectionService : public content::URLFetcherDelegate,
 
   // Called by OnURLFetchComplete to handle the response from fetching the
   // model.
-  void HandleModelResponse(const URLFetcher* source,
+  void HandleModelResponse(const content::URLFetcher* source,
                            const GURL& url,
                            const net::URLRequestStatus& status,
                            int response_code,
@@ -216,7 +216,7 @@ class ClientSideDetectionService : public content::URLFetcherDelegate,
 
   // Called by OnURLFetchComplete to handle the server response from
   // sending the client-side phishing request.
-  void HandlePhishingVerdict(const URLFetcher* source,
+  void HandlePhishingVerdict(const content::URLFetcher* source,
                              const GURL& url,
                              const net::URLRequestStatus& status,
                              int response_code,
@@ -263,12 +263,13 @@ class ClientSideDetectionService : public content::URLFetcherDelegate,
   std::string model_str_;
   scoped_ptr<ClientSideModel> model_;
   scoped_ptr<base::TimeDelta> model_max_age_;
-  scoped_ptr<URLFetcher> model_fetcher_;
+  scoped_ptr<content::URLFetcher> model_fetcher_;
 
   // Map of client report phishing request to the corresponding callback that
   // has to be invoked when the request is done.
   struct ClientReportInfo;
-  std::map<const URLFetcher*, ClientReportInfo*> client_phishing_reports_;
+  std::map<const content::URLFetcher*, ClientReportInfo*>
+      client_phishing_reports_;
 
   // Cache of completed requests. Used to satisfy requests for the same urls
   // as long as the next request falls within our caching window (which is

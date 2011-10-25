@@ -348,15 +348,16 @@ AppsPromoLogoFetcher::AppsPromoLogoFetcher(
 
 AppsPromoLogoFetcher::~AppsPromoLogoFetcher() {}
 
-void AppsPromoLogoFetcher::OnURLFetchComplete(const URLFetcher* source) {
+void AppsPromoLogoFetcher::OnURLFetchComplete(
+    const content::URLFetcher* source) {
   std::string data;
   std::string base64_data;
 
   CHECK(source == url_fetcher_.get());
   source->GetResponseAsString(&data);
 
-  if (source->status().is_success() &&
-      source->response_code() == kHttpSuccess &&
+  if (source->GetStatus().is_success() &&
+      source->GetResponseCode() == kHttpSuccess &&
       base::Base64Encode(data, &base64_data)) {
     AppsPromo::SetSourcePromoLogoURL(promo_data_.logo);
     promo_data_.logo = GURL(kPNGDataURLPrefix + base64_data);
@@ -375,10 +376,10 @@ void AppsPromoLogoFetcher::FetchLogo() {
 
   url_fetcher_.reset(URLFetcher::Create(
       0, promo_data_.logo, URLFetcher::GET, this));
-  url_fetcher_->set_request_context(
+  url_fetcher_->SetRequestContext(
       g_browser_process->system_request_context());
-  url_fetcher_->set_load_flags(net::LOAD_DO_NOT_SEND_COOKIES |
-                               net::LOAD_DO_NOT_SAVE_COOKIES);
+  url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
+                             net::LOAD_DO_NOT_SAVE_COOKIES);
   url_fetcher_->Start();
 }
 

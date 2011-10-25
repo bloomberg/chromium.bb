@@ -29,10 +29,10 @@ class ImageDownloader : public content::URLFetcherDelegate {
 
  private:
   // Overriden from content::URLFetcherDelegate:
-  virtual void OnURLFetchComplete(const URLFetcher* source);
+  virtual void OnURLFetchComplete(const content::URLFetcher* source);
 
   ImageDecoder::Delegate* delegate_;
-  scoped_ptr<URLFetcher> image_fetcher_;
+  scoped_ptr<content::URLFetcher> image_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageDownloader);
 };

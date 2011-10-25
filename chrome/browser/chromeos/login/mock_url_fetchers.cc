@@ -60,15 +60,15 @@ void GotCanceledFetcher::Start() {
   delegate()->OnURLFetchComplete(this);
 }
 
-const GURL& GotCanceledFetcher::url() const {
+const GURL& GotCanceledFetcher::GetUrl() const {
   return url_;
 }
 
-const net::URLRequestStatus& GotCanceledFetcher::status() const {
+const net::URLRequestStatus& GotCanceledFetcher::GetStatus() const {
   return status_;
 }
 
-int GotCanceledFetcher::response_code() const {
+int GotCanceledFetcher::GetResponseCode() const {
   return RC_FORBIDDEN;
 }
 
@@ -88,15 +88,15 @@ void SuccessFetcher::Start() {
   delegate()->OnURLFetchComplete(this);
 }
 
-const GURL& SuccessFetcher::url() const {
+const GURL& SuccessFetcher::GetUrl() const {
   return url_;
 }
 
-const net::URLRequestStatus& SuccessFetcher::status() const {
+const net::URLRequestStatus& SuccessFetcher::GetStatus() const {
   return status_;
 }
 
-int SuccessFetcher::response_code() const {
+int SuccessFetcher::GetResponseCode() const {
   return RC_REQUEST_OK;
 }
 
@@ -116,15 +116,15 @@ void FailFetcher::Start() {
   delegate()->OnURLFetchComplete(this);
 }
 
-const GURL& FailFetcher::url() const {
+const GURL& FailFetcher::GetUrl() const {
   return url_;
 }
 
-const net::URLRequestStatus& FailFetcher::status() const {
+const net::URLRequestStatus& FailFetcher::GetStatus() const {
   return status_;
 }
 
-int FailFetcher::response_code() const {
+int FailFetcher::GetResponseCode() const {
   return RC_REQUEST_OK;
 }
 
@@ -177,15 +177,15 @@ void CaptchaFetcher::Start() {
   delegate()->OnURLFetchComplete(this);
 }
 
-const GURL& CaptchaFetcher::url() const {
+const GURL& CaptchaFetcher::GetUrl() const {
   return url_;
 }
 
-const net::URLRequestStatus& CaptchaFetcher::status() const {
+const net::URLRequestStatus& CaptchaFetcher::GetStatus() const {
   return status_;
 }
 
-int CaptchaFetcher::response_code() const {
+int CaptchaFetcher::GetResponseCode() const {
   return RC_FORBIDDEN;
 }
 
@@ -218,15 +218,15 @@ void HostedFetcher::Start() {
   delegate()->OnURLFetchComplete(this);
 }
 
-const GURL& HostedFetcher::url() const {
+const GURL& HostedFetcher::GetUrl() const {
   return url_;
 }
 
-const net::URLRequestStatus& HostedFetcher::status() const {
+const net::URLRequestStatus& HostedFetcher::GetStatus() const {
   return status_;
 }
 
-int HostedFetcher::response_code() const {
+int HostedFetcher::GetResponseCode() const {
   return response_code_;;
 }
 

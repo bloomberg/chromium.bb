@@ -137,7 +137,7 @@ bool AutofillDownloadManager::StartUploadRequest(
 bool AutofillDownloadManager::CancelRequest(
     const std::string& form_signature,
     AutofillDownloadManager::AutofillRequestType request_type) {
-  for (std::map<URLFetcher *, FormRequestData>::iterator it =
+  for (std::map<content::URLFetcher*, FormRequestData>::iterator it =
        url_fetchers_.begin();
        it != url_fetchers_.end();
        ++it) {
@@ -201,9 +201,9 @@ bool AutofillDownloadManager::StartRequest(
                                            URLFetcher::POST,
                                            this);
   url_fetchers_[fetcher] = request_data;
-  fetcher->set_automatically_retry_on_5xx(false);
-  fetcher->set_request_context(request_context);
-  fetcher->set_upload_data("text/plain", form_xml);
+  fetcher->SetAutomaticallyRetryOn5xx(false);
+  fetcher->SetRequestContext(request_context);
+  fetcher->SetUploadData("text/plain", form_xml);
   fetcher->Start();
   return true;
 }
@@ -262,9 +262,10 @@ std::string AutofillDownloadManager::GetCombinedSignature(
   return signature;
 }
 
-void AutofillDownloadManager::OnURLFetchComplete(const URLFetcher* source) {
-  std::map<URLFetcher *, FormRequestData>::iterator it =
-      url_fetchers_.find(const_cast<URLFetcher*>(source));
+void AutofillDownloadManager::OnURLFetchComplete(
+    const content::URLFetcher* source) {
+  std::map<content::URLFetcher *, FormRequestData>::iterator it =
+      url_fetchers_.find(const_cast<content::URLFetcher*>(source));
   if (it == url_fetchers_.end()) {
     // Looks like crash on Mac is possibly caused with callback entering here
     // with unknown fetcher when network is refreshed.
@@ -279,13 +280,13 @@ void AutofillDownloadManager::OnURLFetchComplete(const URLFetcher* source) {
   const int kHttpServiceUnavailable = 503;
 
   CHECK(it->second.form_signatures.size());
-  if (source->response_code() != kHttpResponseOk) {
+  if (source->GetResponseCode() != kHttpResponseOk) {
     bool back_off = false;
     std::string server_header;
-    switch (source->response_code()) {
+    switch (source->GetResponseCode()) {
       case kHttpBadGateway:
-        if (!source->response_headers()->EnumerateHeader(NULL, "server",
-                                                         &server_header) ||
+        if (!source->GetResponseHeaders()->EnumerateHeader(NULL, "server",
+                                                           &server_header) ||
             StartsWithASCII(server_header.c_str(),
                             kAutofillQueryServerNameStartInHeader,
                             false) != 0)
@@ -299,7 +300,7 @@ void AutofillDownloadManager::OnURLFetchComplete(const URLFetcher* source) {
     }
 
     if (back_off) {
-      base::Time back_off_time(base::Time::Now() + source->backoff_delay());
+      base::Time back_off_time(base::Time::Now() + source->GetBackoffDelay());
       if (it->second.request_type == AutofillDownloadManager::REQUEST_QUERY) {
         next_query_request_ = back_off_time;
       } else {
@@ -309,11 +310,11 @@ void AutofillDownloadManager::OnURLFetchComplete(const URLFetcher* source) {
 
     LOG(WARNING) << "AutofillDownloadManager: " << type_of_request
                  << " request has failed with response "
-                 << source->response_code();
+                 << source->GetResponseCode();
     if (observer_) {
       observer_->OnServerRequestError(it->second.form_signatures[0],
                                       it->second.request_type,
-                                      source->response_code());
+                                      source->GetResponseCode());
     }
   } else {
     VLOG(1) << "AutofillDownloadManager: " << type_of_request

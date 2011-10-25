@@ -88,7 +88,7 @@ class BugReportUtil::PostCleanup : public content::URLFetcherDelegate {
                                       post_body_(post_body),
                                       previous_delay_(previous_delay) { }
   // Overridden from content::URLFetcherDelegate.
-  virtual void OnURLFetchComplete(const URLFetcher* source);
+  virtual void OnURLFetchComplete(const content::URLFetcher* source);
 
  protected:
   virtual ~PostCleanup() {}
@@ -104,10 +104,10 @@ class BugReportUtil::PostCleanup : public content::URLFetcherDelegate {
 // Don't use the data parameter, instead use the pointer we pass into every
 // post cleanup object - that pointer will be deleted and deleted only on a
 // successful post to the feedback server.
-void BugReportUtil::PostCleanup::OnURLFetchComplete(const URLFetcher* source) {
-
+void BugReportUtil::PostCleanup::OnURLFetchComplete(
+    const content::URLFetcher* source) {
   std::stringstream error_stream;
-  int response_code = source->response_code();
+  int response_code = source->GetResponseCode();
   if (response_code == kHttpPostSuccessNoContent) {
     // We've sent our report, delete the report data
     delete post_body_;
@@ -136,8 +136,8 @@ void BugReportUtil::PostCleanup::OnURLFetchComplete(const URLFetcher* source) {
     }
   }
 
-  LOG(WARNING) << "FEEDBACK: Submission to feedback server (" << source->url()
-               << ") status: " << error_stream.str();
+  LOG(WARNING) << "FEEDBACK: Submission to feedback server (" <<
+               source->GetUrl() << ") status: " << error_stream.str();
 
   // Delete the URLFetcher.
   delete source;
@@ -192,9 +192,9 @@ void BugReportUtil::SendFeedback(Profile* profile,
                             new BugReportUtil::PostCleanup(profile,
                                                            post_body,
                                                            previous_delay));
-  fetcher->set_request_context(profile->GetRequestContext());
+  fetcher->SetRequestContext(profile->GetRequestContext());
 
-  fetcher->set_upload_data(std::string(kProtBufMimeType), *post_body);
+  fetcher->SetUploadData(std::string(kProtBufMimeType), *post_body);
   fetcher->Start();
 }
 

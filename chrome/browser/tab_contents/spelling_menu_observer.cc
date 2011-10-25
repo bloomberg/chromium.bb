@@ -140,8 +140,8 @@ bool SpellingMenuObserver::Invoke(const string16& text,
   static const char kSpellingServiceURL[] = SPELLING_SERVICE_URL;
   GURL url = GURL(kSpellingServiceURL);
   fetcher_.reset(new URLFetcher(url, URLFetcher::POST, this));
-  fetcher_->set_request_context(context);
-  fetcher_->set_upload_data("application/json", request);
+  fetcher_->SetRequestContext(context);
+  fetcher_->SetUploadData("application/json", request);
   fetcher_->Start();
 
   animation_timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(1),
@@ -150,7 +150,8 @@ bool SpellingMenuObserver::Invoke(const string16& text,
   return true;
 }
 
-void SpellingMenuObserver::OnURLFetchComplete(const URLFetcher* source) {
+void SpellingMenuObserver::OnURLFetchComplete(
+    const content::URLFetcher* source) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   fetcher_.reset();
@@ -160,7 +161,7 @@ void SpellingMenuObserver::OnURLFetchComplete(const URLFetcher* source) {
   // with their suggestions.
   std::string data;
   source->GetResponseAsString(&data);
-  succeeded_ = ParseResponse(source->response_code(), data);
+  succeeded_ = ParseResponse(source->GetResponseCode(), data);
   if (!succeeded_)
     result_ = l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_SPELLING_CORRECT);
 

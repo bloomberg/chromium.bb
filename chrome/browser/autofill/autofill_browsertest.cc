@@ -135,7 +135,7 @@ class AutofillTest : public InProcessBrowserTest {
         "  };"
         "})();";
 
-    fetcher->set_url(fetcher->original_url());
+    fetcher->set_url(fetcher->GetOriginalUrl());
     fetcher->set_status(status);
     fetcher->set_response_code(success ? 200 : 500);
     fetcher->SetResponseString(script);
