@@ -5,3 +5,5 @@ meego-tablet-protocol.c
 meego-tablet-server-protocol.h
 xserver-protocol.c
 xserver-server-protocol.h
+desktop-shell-protocol.c
+desktop-shell-server-protocol.h

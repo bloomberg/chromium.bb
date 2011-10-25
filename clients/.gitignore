@@ -13,3 +13,7 @@ simple-shm
 smoke
 terminal
 view
+desktop-shell-client-protocol.h
+desktop-shell-protocol.c
+desktop-shell
+simple-client
