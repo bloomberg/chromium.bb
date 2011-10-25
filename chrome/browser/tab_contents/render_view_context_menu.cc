@@ -620,6 +620,7 @@ void RenderViewContextMenu::AddMenuItem(int command_id,
 
 void RenderViewContextMenu::UpdateMenuItem(int command_id,
                                            bool enabled,
+                                           bool hidden,
                                            const string16& label) {
   // This function needs platform-specific implementation.
   NOTIMPLEMENTED();

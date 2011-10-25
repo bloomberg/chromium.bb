@@ -94,6 +94,7 @@ class RenderViewContextMenuProxy {
   // Update the status and text of the specified context-menu item.
   virtual void UpdateMenuItem(int command_id,
                               bool enabled,
+                              bool hidden,
                               const string16& title) = 0;
 
   // Retrieve the RenderViewHost (or Profile) instance associated with a context
@@ -131,6 +132,7 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
   virtual void AddMenuItem(int command_id, const string16& title) OVERRIDE;
   virtual void UpdateMenuItem(int command_id,
                               bool enabled,
+                              bool hidden,
                               const string16& title) OVERRIDE;
   virtual RenderViewHost* GetRenderViewHost() const;
   virtual Profile* GetProfile() const;

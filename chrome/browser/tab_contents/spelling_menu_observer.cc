@@ -170,7 +170,7 @@ void SpellingMenuObserver::OnURLFetchComplete(const URLFetcher* source) {
   // well-spelled words. For either case, we do not need to replace the input
   // text.)
   proxy_->UpdateMenuItem(IDC_CONTENT_CONTEXT_SPELLING_SUGGESTION, succeeded_,
-                         result_);
+                         false, result_);
 }
 
 bool SpellingMenuObserver::ParseResponse(int response,
@@ -268,6 +268,6 @@ void SpellingMenuObserver::OnAnimationTimerExpired() {
 
   // Update the menu item with the text. We disable this item to prevent users
   // from selecting it.
-  proxy_->UpdateMenuItem(IDC_CONTENT_CONTEXT_SPELLING_SUGGESTION, false,
+  proxy_->UpdateMenuItem(IDC_CONTENT_CONTEXT_SPELLING_SUGGESTION, false, false,
                          loading_message);
 }

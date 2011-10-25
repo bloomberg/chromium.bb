@@ -128,6 +128,7 @@ bool RenderViewContextMenuGtk::AlwaysShowIconForCmd(int command_id) const {
 
 void RenderViewContextMenuGtk::UpdateMenuItem(int command_id,
                                               bool enabled,
+                                              bool hidden,
                                               const string16& title) {
   GtkWidget* item = GetMenuItemByID(&menu_model_, menu_gtk_->widget(),
                                     command_id);
@@ -136,5 +137,9 @@ void RenderViewContextMenuGtk::UpdateMenuItem(int command_id,
 
   // Enable (or disable) the menu item and updates its text.
   gtk_widget_set_sensitive(item, enabled);
+  if (hidden)
+    gtk_widget_hide(item);
+  else
+    gtk_widget_show(item);
   gtk_menu_item_set_label(GTK_MENU_ITEM(item), UTF16ToUTF8(title).c_str());
 }

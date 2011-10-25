@@ -104,6 +104,7 @@ bool RenderViewContextMenuViews::GetAcceleratorForCommandId(
 
 void RenderViewContextMenuViews::UpdateMenuItem(int command_id,
                                                 bool enabled,
+                                                bool hidden,
                                                 const string16& title) {
   views::MenuItemView* item = menu_->GetMenuItemByID(command_id);
   if (!item)
@@ -111,6 +112,7 @@ void RenderViewContextMenuViews::UpdateMenuItem(int command_id,
 
   item->SetEnabled(enabled);
   item->SetTitle(title);
+  item->SetVisible(!hidden);
 
   views::MenuItemView* parent = item->GetParentMenuItem();
   if (!parent)

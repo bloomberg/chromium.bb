@@ -143,6 +143,7 @@ void RenderViewContextMenuMac::LookUpInDictionary() {
 
 void RenderViewContextMenuMac::UpdateMenuItem(int command_id,
                                               bool enabled,
+                                              bool hidden,
                                               const string16& title) {
   NSMenuItem* item = GetMenuItemByID(&menu_model_, [menuController_ menu],
                                      command_id);
@@ -152,5 +153,6 @@ void RenderViewContextMenuMac::UpdateMenuItem(int command_id,
   // Update the returned NSMenuItem directly so we can update it immediately.
   [item setEnabled:enabled];
   [item setTitle:SysUTF16ToNSString(title)];
+  [item setHidden:hidden];
   [[item menu] itemChanged:item];
 }
