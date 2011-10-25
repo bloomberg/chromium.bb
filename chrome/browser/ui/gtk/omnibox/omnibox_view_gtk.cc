@@ -21,6 +21,8 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/platform_util.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/view_id_util.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
@@ -33,6 +35,7 @@
 #include "third_party/undoview/undo_view.h"
 #include "ui/base/animation/multi_animation.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/dragdrop/gtk_dnd_util.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -1603,24 +1606,56 @@ void OmniboxViewGtk::HandleDragDataGet(GtkWidget* widget,
                                        guint target_type,
                                        guint time) {
   DCHECK(text_view_);
-  // If GTK put the normal textual version of the selection in our drag data,
-  // put our doctored selection that might have the 'http://' prefix. Also, GTK
-  // is confused about signedness of its datatypes, leading to the weird switch
-  // statement (no set of casts fixes this).
+
   switch (target_type) {
     case GTK_TEXT_BUFFER_TARGET_INFO_TEXT: {
       gtk_selection_data_set_text(selection_data, dragged_text_.c_str(), -1);
+      break;
+    }
+    case ui::CHROME_NAMED_URL: {
+      TabContents* current_tab =
+          BrowserList::GetLastActive()->GetSelectedTabContents();
+      string16 tab_title = current_tab->GetTitle();
+      // Pass an empty string if user has edited the URL.
+      if (current_tab->GetURL().spec() != dragged_text_)
+        tab_title = string16();
+      ui::WriteURLWithName(selection_data, GURL(dragged_text_),
+                           tab_title, target_type);
+      break;
     }
   }
 }
 
 void OmniboxViewGtk::HandleDragBegin(GtkWidget* widget,
                                        GdkDragContext* context) {
+  string16 text = UTF8ToUTF16(GetSelectedText());
+
+  if (text.empty())
+    return;
+
+  // Use AdjustTextForCopy to make sure we prefix the text with 'http://'.
+  CharRange selection = GetSelection();
+  GURL url;
+  bool write_url;
+  model_->AdjustTextForCopy(selection.selection_min(), IsSelectAll(), &text,
+                            &url, &write_url);
+  if (write_url) {
+    selected_text_ = UTF16ToUTF8(text);
+    GtkTargetList* copy_targets =
+        gtk_text_buffer_get_copy_target_list(text_buffer_);
+    gtk_target_list_add(copy_targets,
+                        ui::GetAtomForTarget(ui::CHROME_NAMED_URL),
+                        GTK_TARGET_SAME_APP, ui::CHROME_NAMED_URL);
+  }
   dragged_text_ = selected_text_;
 }
 
 void OmniboxViewGtk::HandleDragEnd(GtkWidget* widget,
                                        GdkDragContext* context) {
+  GdkAtom atom = ui::GetAtomForTarget(ui::CHROME_NAMED_URL);
+  GtkTargetList* copy_targets =
+      gtk_text_buffer_get_copy_target_list(text_buffer_);
+  gtk_target_list_remove(copy_targets, atom);
   dragged_text_.clear();
 }
 
