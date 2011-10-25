@@ -289,6 +289,10 @@ void WebKitPlatformSupportImpl::histogramEnumeration(
   counter->Add(sample);
 }
 
+bool WebKitPlatformSupportImpl::isTraceEventEnabled() const {
+  return base::debug::TraceLog::GetCategory("webkit")->enabled;
+}
+
 void WebKitPlatformSupportImpl::traceEventBegin(const char* name, void* id,
                                                 const char* extra) {
   TRACE_EVENT_BEGIN_ETW(name, id, extra);

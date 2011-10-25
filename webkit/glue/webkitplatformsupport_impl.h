@@ -54,6 +54,7 @@ class WebKitPlatformSupportImpl : public WebKit::WebKitPlatformSupport {
     const char* name, int sample, int min, int max, int bucket_count);
   virtual void histogramEnumeration(
     const char* name, int sample, int boundary_value);
+  virtual bool isTraceEventEnabled() const;
   virtual void traceEventBegin(const char* name, void* id, const char* extra);
   virtual void traceEventEnd(const char* name, void* id, const char* extra);
   virtual WebKit::WebData loadResource(const char* name);
