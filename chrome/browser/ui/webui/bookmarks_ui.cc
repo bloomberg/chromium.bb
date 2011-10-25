@@ -11,6 +11,7 @@
 #include "base/stringprintf.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -77,19 +78,33 @@ RefCountedMemory* BookmarksUI::GetFaviconResourceBytes() {
 // static
 void BookmarkEditor::ShowWebUI(Profile* profile,
                                const EditDetails& details) {
-  GURL url(chrome::kChromeUIBookmarksURL);
+  int64 editId = 0;
   if (details.type == EditDetails::EXISTING_NODE) {
     DCHECK(details.existing_node);
-    url = url.Resolve(StringPrintf("/#e=%s",
-        base::Int64ToString(details.existing_node->id()).c_str()));
+    editId = details.existing_node->id();
   } else if (details.type == EditDetails::NEW_URL) {
     DCHECK(details.parent_node);
-    url = url.Resolve(StringPrintf("/#a=%s",
-        base::Int64ToString(details.parent_node->id()).c_str()));
+    // Add a new bookmark with the title/URL of the current tab.
+    GURL bmUrl;
+    string16 bmTitle;
+    bookmark_utils::GetURLAndTitleToBookmarkFromCurrentTab(profile, &bmUrl,
+        &bmTitle);
+    BookmarkModel* bm = profile->GetBookmarkModel();
+    const BookmarkNode* newNode = bm->AddURL(details.parent_node,
+        details.parent_node->child_count(), bmTitle, bmUrl);
+
+    // Just edit this bookmark like for editing an existing node.
+    // TODO(rbyers): This is to be replaced with a WebUI dialog to prevent
+    // the context switch to a different tab.
+    editId = newNode->id();
   } else {
     NOTREACHED() << "Unhandled bookmark edit details type";
   }
-  // Get parent browser object.
+
+  GURL url = GURL(chrome::kChromeUIBookmarksURL).Resolve(StringPrintf("/#e=%s",
+      base::Int64ToString(editId).c_str()));
+
+  // Invoke the WebUI bookmark editor to edit the specified bookmark.
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
   DCHECK(browser);
   browser::NavigateParams params(

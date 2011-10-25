@@ -130,26 +130,29 @@ function addOneShotEventListener(node, name, handler) {
 }
 
 /**
+ * Updates the location hash to reflect the current state of the application.
+ */
+function updateHash() {
+  window.location.hash = tree.selectedItem.bookmarkId;
+}
+
+/**
  * Navigates to a bookmark ID.
  * @param {string} id The ID to navigate to.
  * @param {boolean=} opt_updateHashNow Whether to immediately update the
  *     location.hash. If false then it is updated in a timeout.
  */
 function navigateTo(id, opt_updateHashNow) {
-  console.info('navigateTo', 'from', window.location.hash, 'to', id);
+  // console.info('navigateTo', 'from', window.location.hash, 'to', id);
   // Update the location hash using a timer to prevent reentrancy. This is how
   // often we add history entries and the time here is a bit arbitrary but was
   // picked as the smallest time a human perceives as instant.
 
-  function f() {
-    window.location.hash = tree.selectedItem.bookmarkId;
-  }
-
   clearTimeout(navigateTo.timer_);
   if (opt_updateHashNow)
-    f();
+    updateHash();
   else
-    navigateTo.timer_ = setTimeout(f, 250);
+    navigateTo.timer_ = setTimeout(updateHash, 250);
 
   updateParentId(id);
 }
@@ -174,41 +177,42 @@ function processHash() {
   }
 
   var valid = false;
-  if (/^[ae]=/.test(id)) {
-    var command = id[0];
+  if (/^e=/.test(id)) {
     id = id.slice(2);
-    if (command == 'e') {
-      // If hash contains e= edit the item specified.
-      chrome.bookmarks.get(id, function(bookmarkNodes) {
-        // Verify the node to edit is a valid node.
-        if (!bookmarkNodes || bookmarkNodes.length != 1)
-          return;
-        var bookmarkNode = bookmarkNodes[0];
-        // After the list reloads edit the desired bookmark.
-        var editBookmark = function(e) {
-          var index = list.dataModel.findIndexById(bookmarkNode.id);
-          if (index != -1) {
-            var sm = list.selectionModel;
-            sm.anchorIndex = sm.leadIndex = sm.selectedIndex = index;
-            scrollIntoViewAndMakeEditable(index);
-          }
-        }
 
-        if (list.parentId == bookmarkNode.parentId)
-          editBookmark();
-        else {
-          // Navigate to the parent folder, once it's loaded edit the bookmark.
-          addOneShotEventListener(list, 'load', editBookmark);
-          updateParentId(bookmarkNode.parentId);
+    // If hash contains e= edit the item specified.
+    chrome.bookmarks.get(id, function(bookmarkNodes) {
+      // Verify the node to edit is a valid node.
+      if (!bookmarkNodes || bookmarkNodes.length != 1)
+        return;
+      var bookmarkNode = bookmarkNodes[0];
+
+      // After the list reloads edit the desired bookmark.
+      var editBookmark = function(e) {
+        var index = list.dataModel.findIndexById(bookmarkNode.id);
+        if (index != -1) {
+          var sm = list.selectionModel;
+          sm.anchorIndex = sm.leadIndex = sm.selectedIndex = index;
+          scrollIntoViewAndMakeEditable(index);
         }
-      });
-      // We handle the two cases of navigating to the bookmark to be edited
-      // above, don't run the standard navigation code below.
-      return;
-    } else if (command == 'a') {
-      // Once the parent folder is loaded add a page bookmark.
-      addOneShotEventListener(list, 'load', addPage);
-    }
+      };
+
+      if (list.parentId == bookmarkNode.parentId) {
+        // Clear the e= from the hash so that future attemps to edit the same
+        // entry will show up as a hash change.
+        updateHash();
+        editBookmark();
+      } else {
+        // Navigate to the parent folder (which will update the hash), once
+        // it's loaded edit the bookmark.
+        addOneShotEventListener(list, 'load', editBookmark);
+        updateParentId(bookmarkNode.parentId);
+      }
+    });
+
+    // We handle the two cases of navigating to the bookmark to be edited
+    // above, don't run the standard navigation code below.
+    return;
   } else if (/^q=/.test(id)) {
     // In case we got a search hash update the text input and the
     // bmm.treeLookup to use the new id.
@@ -233,6 +237,7 @@ function processHash() {
 // We listen to hashchange so that we can update the currently shown folder when
 // the user goes back and forward in the history.
 window.onhashchange = function(e) {
+  // console.info('onhashchange', e.oldURL, e.newURL);
   processHash();
 };
 

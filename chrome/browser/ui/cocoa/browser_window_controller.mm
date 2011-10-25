@@ -1628,17 +1628,10 @@ enum {
   DCHECK(responds);
   if (responds) {
     const BookmarkNode* node = [sender node];
-    if (node) {
-      // A BookmarkEditorController is a sheet that owns itself, and
-      // deallocates itself when closed.
-      [[[BookmarkEditorController alloc]
-         initWithParentWindow:[self window]
-                      profile:browser_->profile()
-                       parent:node->parent()
-                         node:node
-                configuration:BookmarkEditor::SHOW_TREE]
-        runAsModalSheet];
-    }
+    if (node)
+      BookmarkEditor::Show([self window], browser_->profile(),
+          BookmarkEditor::EditDetails::EditNode(node),
+          BookmarkEditor::SHOW_TREE);
   }
 }
 

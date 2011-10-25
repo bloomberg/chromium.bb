@@ -2131,10 +2131,6 @@ void Browser::OpenBookmarkManagerEditNode(int64 node_id) {
   OpenBookmarkManagerWithHash("e=", node_id);
 }
 
-void Browser::OpenBookmarkManagerAddNodeIn(int64 node_id) {
-  OpenBookmarkManagerWithHash("a=", node_id);
-}
-
 void Browser::ShowAppMenu() {
   // We record the user metric for this event in WrenchMenu::RunMenu.
   window_->ShowAppMenu();

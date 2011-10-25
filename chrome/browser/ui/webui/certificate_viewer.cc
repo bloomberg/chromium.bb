@@ -69,7 +69,7 @@ CertificateViewerDialog::~CertificateViewerDialog() {
 }
 
 bool CertificateViewerDialog::IsDialogModal() const {
-  return true;
+  return false;
 }
 
 string16 CertificateViewerDialog::GetDialogTitle() const {
