@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/dbus/power_manager_client.h"
 #include "chrome/browser/chromeos/language_preferences.h"
+#include "chrome/browser/chromeos/system/touchpad_settings.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -34,6 +35,14 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+
+namespace {
+
+void TouchpadExistsFileThread(bool* exists) {
+  *exists = chromeos::system::touchpad_settings::TouchpadExists();
+}
+
+}
 
 SystemOptionsHandler::SystemOptionsHandler()
     : chromeos::CrosOptionsPageUIHandler(
@@ -106,6 +115,17 @@ void SystemOptionsHandler::Initialize() {
   base::FundamentalValue checked(acc_enabled);
   web_ui_->CallJavascriptFunction(
       "options.SystemOptions.SetAccessibilityCheckboxState", checked);
+
+  bool* exists = new bool;
+  BrowserThread::PostTaskAndReply(BrowserThread::FILE, FROM_HERE,
+      base::Bind(&TouchpadExistsFileThread, exists),
+      base::Bind(&SystemOptionsHandler::TouchpadExists, AsWeakPtr(), exists));
+}
+
+void SystemOptionsHandler::TouchpadExists(bool* exists) {
+  if (*exists)
+    web_ui_->CallJavascriptFunction("options.SystemOptions.showTapToClick");
+  delete exists;
 }
 
 void SystemOptionsHandler::RegisterMessages() {

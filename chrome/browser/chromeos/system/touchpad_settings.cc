@@ -19,24 +19,40 @@ namespace system {
 namespace touchpad_settings {
 namespace {
 const char* kTpControl = "/opt/google/touchpad/tpcontrol";
-}  // namespace
+
+bool TPCtrlExists() {
+  return file_util::PathExists(FilePath(kTpControl));
+}
 
 // Launches the tpcontrol command asynchronously, if it exists.
 void LaunchTpControl(const std::vector<std::string>& argv) {
-  if (!system::runtime_environment::IsRunningOnChromeOS()) {
-    // Do nothing on Linux desktop, as the command does not exist.
+  if (!TPCtrlExists())
     return;
-  }
 
-  if (!file_util::PathExists(FilePath(argv[0]))) {
-    LOG(ERROR) << argv[0] << " not found";
-    return;
-  }
+  base::LaunchProcess(CommandLine(argv), base::LaunchOptions(), NULL);
+}
 
-  base::LaunchOptions options;
-  options.wait = false;  // Launch asynchronously.
+}  // namespace
 
-  base::LaunchProcess(CommandLine(argv), options, NULL);
+bool TouchpadExists() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  static bool init = false;
+  static bool exists = false;
+
+  if (init)
+    return exists;
+
+  init = true;
+  if (!TPCtrlExists())
+    return exists;
+
+  std::vector<std::string> argv;
+  argv.push_back(kTpControl);
+  argv.push_back("status");
+  std::string output;
+  // On devices with no touchpad, output is empty.
+  exists = base::GetAppOutput(CommandLine(argv), &output) && !output.empty();
+  return exists;
 }
 
 void SetSensitivity(int value) {

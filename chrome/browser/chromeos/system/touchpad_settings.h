@@ -10,6 +10,8 @@ namespace chromeos {
 namespace system {
 namespace touchpad_settings {
 
+bool TouchpadExists();
+
 // Sets the touchpad sensitivity in range from 1 to 5.
 void SetSensitivity(int value);
 

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_CHROMEOS_SYSTEM_OPTIONS_HANDLER_H_
 #pragma once
 
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/webui/options/chromeos/cros_options_page_ui_handler.h"
 
 namespace base {
@@ -13,7 +14,9 @@ class DictionaryValue;
 }
 
 // ChromeOS system options page UI handler.
-class SystemOptionsHandler : public chromeos::CrosOptionsPageUIHandler {
+class SystemOptionsHandler
+  : public chromeos::CrosOptionsPageUIHandler,
+    public base::SupportsWeakPtr<SystemOptionsHandler> {
  public:
   SystemOptionsHandler();
   virtual ~SystemOptionsHandler();
@@ -34,6 +37,9 @@ class SystemOptionsHandler : public chromeos::CrosOptionsPageUIHandler {
   // |args| will be an empty list.
   void DecreaseScreenBrightnessCallback(const base::ListValue* args);
   void IncreaseScreenBrightnessCallback(const base::ListValue* args);
+
+  // Callback for TouchpadHelper.
+  void TouchpadExists(bool* exists);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SystemOptionsHandler);

@@ -136,7 +136,7 @@ cr.define('options', function() {
    */
   SystemOptions.showBluetoothSettings = function() {
     $('bluetooth-devices').hidden = false;
-  }
+  };
 
   /**
    * Adds an element to the list of available bluetooth devices.
@@ -148,20 +148,27 @@ cr.define('options', function() {
    */
   SystemOptions.addBluetoothDevice = function(device) {
     $('bluetooth-device-list').appendDevice(device);
-  }
+  };
 
   /**
    * Hides the scanning label and icon that are used to indicate that a device
    * search is in progress.
    */
   SystemOptions.notifyBluetoothSearchComplete = function() {
-    // TDOO (kevers) - Reset state immediately once results are received
+    // TODO (kevers) - Reset state immediately once results are received
     //                 asynchronously.
     setTimeout(function() {
       setVisibility_('bluetooth-scanning-label', false);
       setVisibility_('bluetooth-scanning-icon', false);
     }, 2000);
-  }
+  };
+
+  /**
+   * Enables the Tap-To-Click radio button when we detect a touchpad.
+   */
+  SystemOptions.showTapToClick = function() {
+    $('tap-to-click').hidden = false;
+  };
 
   // Export
   return {
