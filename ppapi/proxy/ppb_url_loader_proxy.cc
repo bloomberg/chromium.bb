@@ -435,6 +435,8 @@ bool PPB_URLLoader_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnMsgUpdateProgress)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPBURLLoader_ReadResponseBody_Ack,
                         OnMsgReadResponseBodyAck)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPBURLLoader_CallbackComplete,
+                        OnMsgCallbackComplete)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   // TODO(brettw) handle bad messages!
