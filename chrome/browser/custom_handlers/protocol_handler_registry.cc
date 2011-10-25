@@ -84,7 +84,7 @@ void ProtocolHandlerRegistry::RegisterProtocolHandler(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(CanSchemeBeOverridden(handler.protocol()));
   DCHECK(!handler.IsEmpty());
-  if (HasRegisteredEquivalent(handler)) {
+  if (IsRegistered(handler)) {
     return;
   }
   if (enabled_ && !delegate_->IsExternalHandlerRegistered(handler.protocol()))
@@ -426,6 +426,20 @@ Value* ProtocolHandlerRegistry::EncodeIgnoredHandlers() {
     handlers->Append(i->Encode());
   }
   return handlers;
+}
+
+bool ProtocolHandlerRegistry::SilentlyHandleRegisterHandlerRequest(
+    const ProtocolHandler& handler) {
+  if (handler.IsEmpty() || !CanSchemeBeOverridden(handler.protocol()))
+    return true;
+
+  if (!enabled() || IsRegistered(handler) || HasIgnoredEquivalent(handler))
+    return true;
+
+  if (AttemptReplace(handler))
+    return true;
+
+  return false;
 }
 
 void ProtocolHandlerRegistry::OnAcceptRegisterProtocolHandler(

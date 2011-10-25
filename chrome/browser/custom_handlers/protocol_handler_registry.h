@@ -86,6 +86,12 @@ class ProtocolHandlerRegistry
   ProtocolHandlerRegistry(Profile* profile, Delegate* delegate);
   ~ProtocolHandlerRegistry();
 
+  // Called when a site tries to register as a protocol handler. If the request
+  // can be handled silently by the registry - either to ignore the request
+  // or to update an existing handler - the request will succeed. If this
+  // function returns false the user needs to be prompted for confirmation.
+  bool SilentlyHandleRegisterHandlerRequest(const ProtocolHandler& handler);
+
   // Called when the user accepts the registration of a given protocol handler.
   void OnAcceptRegisterProtocolHandler(const ProtocolHandler& handler);
 
