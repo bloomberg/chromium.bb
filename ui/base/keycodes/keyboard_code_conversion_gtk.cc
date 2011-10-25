@@ -39,11 +39,8 @@
 #include <gdk/gdkkeysyms.h>
 
 #include "build/build_config.h"
-#include "ui/base/keycodes/keyboard_codes_posix.h"
-
-#ifdef USE_X11
 #include "ui/base/keycodes/keyboard_code_conversion_x.h"
-#endif
+#include "ui/base/keycodes/keyboard_codes_posix.h"
 
 namespace ui {
 
@@ -637,14 +634,12 @@ int GdkNativeKeyCodeForWindowsKeyCode(KeyboardCode keycode, bool shift) {
 
 KeyboardCode KeyboardCodeFromGdkEventKey(GdkEventKey* event) {
   KeyboardCode keycode = WindowsKeyCodeForGdkKeyCode(event->keyval);
-#ifdef USE_X11
   // Gtk's key values are same as X11's keysyms.
   if (keycode == VKEY_UNKNOWN) {
     unsigned int keyval =
         DefaultXKeysymFromHardwareKeycode(event->hardware_keycode);
     keycode = WindowsKeyCodeForGdkKeyCode(keyval);
   }
-#endif
   return keycode;
 }
 

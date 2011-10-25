@@ -296,12 +296,10 @@ WebKit::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
   webkit_event.windowsKeyCode = XKeyEventToWindowsKeyCode(native_key_event);
   webkit_event.nativeKeyCode = native_key_event->keycode;
 
-  if (webkit_event.windowsKeyCode == ui::VKEY_RETURN) {
+  if (webkit_event.windowsKeyCode == ui::VKEY_RETURN)
     webkit_event.unmodifiedText[0] = '\r';
-  } else {
-    webkit_event.unmodifiedText[0] =
-        ui::DefaultXKeysymFromHardwareKeycode(native_key_event->keycode);
-  }
+  else
+    webkit_event.unmodifiedText[0] = ui::DefaultSymbolFromXEvent(native_event);
 
   if (webkit_event.modifiers & WebKit::WebInputEvent::ControlKey) {
     webkit_event.text[0] =

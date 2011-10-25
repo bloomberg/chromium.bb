@@ -6,9 +6,11 @@
 
 #include <X11/keysym.h>
 #include <X11/Xlib.h>
+#include <X11/Xutil.h>
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/utf_string_conversions.h"
 
 namespace ui {
 
@@ -287,6 +289,16 @@ KeyboardCode KeyboardCodeFromXKeysym(unsigned int keysym) {
 
   DLOG(WARNING) << "Unknown keycode: " << keysym;
   return VKEY_UNKNOWN;
+}
+
+unsigned int DefaultSymbolFromXEvent(XEvent* xev) {
+  char buf[6];
+  int bytes_written = XLookupString(&xev->xkey, buf, 6, NULL, NULL);
+  DCHECK_LE(bytes_written, 6);
+
+  string16 result;
+  return (bytes_written > 0 && UTF8ToUTF16(buf, bytes_written, &result) &&
+          result.length() == 1) ? result[0] : 0;
 }
 
 unsigned int DefaultXKeysymFromHardwareKeycode(unsigned int hardware_code) {

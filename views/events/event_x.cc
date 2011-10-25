@@ -20,16 +20,6 @@ namespace views {
 
 namespace {
 
-uint16 GetCharacterFromXKeyEvent(XKeyEvent* key) {
-  char buf[6];
-  int bytes_written = XLookupString(key, buf, 6, NULL, NULL);
-  DCHECK_LE(bytes_written, 6);
-
-  string16 result;
-  return (bytes_written > 0 && UTF8ToUTF16(buf, bytes_written, &result) &&
-          result.length() == 1) ? result[0] : 0;
-}
-
 // The following two functions are copied from event_gtk.cc. These will be
 // removed when GTK dependency is removed.
 #if defined(TOOLKIT_USES_GTK)
@@ -72,7 +62,7 @@ uint16 KeyEvent::GetCharacter() const {
   DCHECK(native_event()->type == KeyPress ||
          native_event()->type == KeyRelease);
 
-  uint16 ch = GetCharacterFromXKeyEvent(&native_event()->xkey);
+  uint16 ch = ui::DefaultSymbolFromXEvent(native_event());
   return ch ? ch : GetCharacterFromKeyCode(key_code_, flags());
 }
 
@@ -110,15 +100,15 @@ uint16 KeyEvent::GetUnmodifiedCharacter() const {
   DCHECK(native_event()->type == KeyPress ||
          native_event()->type == KeyRelease);
 
-  XKeyEvent key = native_event()->xkey;
+  XKeyEvent *key = &native_event()->xkey;
 
   static const unsigned int kIgnoredModifiers = ControlMask | LockMask |
       Mod1Mask | Mod2Mask | Mod3Mask | Mod4Mask | Mod5Mask;
 
   // We can't use things like (key.state & ShiftMask), as it may mask out bits
   // used by X11 internally.
-  key.state &= ~kIgnoredModifiers;
-  uint16 ch = GetCharacterFromXKeyEvent(&key);
+  key->state &= ~kIgnoredModifiers;
+  uint16 ch = ui::DefaultSymbolFromXEvent(native_event());
   return ch ? ch :
       GetCharacterFromKeyCode(key_code_, flags() & ui::EF_SHIFT_DOWN);
 }

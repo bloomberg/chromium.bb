@@ -417,7 +417,6 @@ void RenderWidgetHostViewAura::OnCompositingEnded(ui::Compositor* compositor) {
 }
 #endif
 
-#if !defined(TOUCH_UI)
 ////////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewAura, private:
 
@@ -425,4 +424,3 @@ void RenderWidgetHostViewAura::UpdateCursorIfOverSelf() {
   //NOTIMPLEMENTED();
   // TODO(beng): See RenderWidgetHostViewWin.
 }
-#endif
