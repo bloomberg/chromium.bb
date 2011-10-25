@@ -1593,6 +1593,10 @@ bool WebRequestAddEventListener::RunImpl() {
       event_name, sub_event_name, filter,
       extra_info_spec, ipc_sender_weak());
 
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
+      &NotifyWebRequestAPIUsed,
+      profile_id(), make_scoped_refptr(GetExtension())));
+
   return true;
 }
 
@@ -1705,10 +1709,6 @@ bool WebRequestEventHandled::RunImpl() {
   ExtensionWebRequestEventRouter::GetInstance()->OnEventHandled(
       profile_id(), extension_id(), event_name, sub_event_name, request_id,
       response.release());
-
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
-      &NotifyWebRequestAPIUsed,
-      profile_id(), make_scoped_refptr(GetExtension())));
 
   return true;
 }
