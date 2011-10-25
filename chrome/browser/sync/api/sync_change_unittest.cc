@@ -25,10 +25,10 @@ TEST_F(SyncChangeTest, LocalDelete) {
   SyncChange::SyncChangeType change_type = SyncChange::ACTION_DELETE;
   std::string tag = "client_tag";
   SyncChange e(change_type,
-              SyncData::CreateLocalData(tag));
+               SyncData::CreateLocalDelete(tag, syncable::PREFERENCES));
   EXPECT_EQ(change_type, e.change_type());
   EXPECT_EQ(tag, e.sync_data().GetTag());
-  EXPECT_EQ(syncable::UNSPECIFIED, e.sync_data().GetDataType());
+  EXPECT_EQ(syncable::PREFERENCES, e.sync_data().GetDataType());
 }
 
 TEST_F(SyncChangeTest, LocalUpdate) {
@@ -40,7 +40,7 @@ TEST_F(SyncChangeTest, LocalUpdate) {
   std::string tag = "client_tag";
   std::string title = "client_title";
   SyncChange e(change_type,
-              SyncData::CreateLocalData(tag, title, specifics));
+               SyncData::CreateLocalData(tag, title, specifics));
   EXPECT_EQ(change_type, e.change_type());
   EXPECT_EQ(tag, e.sync_data().GetTag());
   EXPECT_EQ(title, e.sync_data().GetTitle());
@@ -60,7 +60,7 @@ TEST_F(SyncChangeTest, LocalAdd) {
   std::string tag = "client_tag";
   std::string title = "client_title";
   SyncChange e(change_type,
-              SyncData::CreateLocalData(tag, title, specifics));
+               SyncData::CreateLocalData(tag, title, specifics));
   EXPECT_EQ(change_type, e.change_type());
   EXPECT_EQ(tag, e.sync_data().GetTag());
   EXPECT_EQ(title, e.sync_data().GetTitle());

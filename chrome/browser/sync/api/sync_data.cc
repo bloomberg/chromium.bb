@@ -52,10 +52,12 @@ SyncData::SyncData(int64 id, sync_pb::SyncEntity* entity)
 SyncData::~SyncData() {}
 
 // Static.
-SyncData SyncData::CreateLocalData(const std::string& sync_tag) {
-  sync_pb::SyncEntity entity;
-  entity.set_client_defined_unique_tag(sync_tag);
-  return SyncData(sync_api::kInvalidId, &entity);
+SyncData SyncData::CreateLocalDelete(
+    const std::string& sync_tag,
+    syncable::ModelType datatype) {
+  sync_pb::EntitySpecifics specifics;
+  syncable::AddDefaultExtensionValue(datatype, &specifics);
+  return CreateLocalData(sync_tag, "", specifics);
 }
 
 // Static.

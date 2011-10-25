@@ -32,22 +32,23 @@ class SyncData {
    // Default copy and assign welcome.
 
   // Helper methods for creating SyncData objects for local data.
-  // Local sync data must always at least set the sync tag (which must be a
-  // string unique to this datatype), for use as a node identifier server-side.
-  // For adds/updates, the actual sync data that is changing (in the form of
-  // sync_pb::EntitySpecifics) and a human-readable/non-unique title (can be the
-  // same as sync tag) must also specfied.
+  // The sync tag must be a string unique to this datatype and is used as a node
+  // identifier server-side.
+  // For deletes: |datatype| must specify the datatype who node is being
+  // deleted.
+  // For adds/updates: the specifics must be valid and the non-unique title (can
+  // be the same as sync tag) must be specfied.
   // Note: the non_unique_title is primarily for debug purposes, and will be
   // overwritten if the datatype is encrypted.
-  // For deletes:
-  static SyncData CreateLocalData(const std::string& sync_tag);
-  // For adds/updates:
+  static SyncData CreateLocalDelete(
+      const std::string& sync_tag,
+      syncable::ModelType datatype);
   static SyncData CreateLocalData(
       const std::string& sync_tag,
       const std::string& non_unique_title,
       const sync_pb::EntitySpecifics& specifics);
 
-  // Helper methods for creating SyncData objects originating from the syncer.
+  // Helper method for creating SyncData objects originating from the syncer.
   static SyncData CreateRemoteData(
       int64 id, const sync_pb::EntitySpecifics& specifics);
 
