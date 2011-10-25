@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/task.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -37,7 +37,8 @@ class NotificationControlView;
 // A balloon view is the UI component for a notification panel.
 class BalloonViewImpl : public BalloonView,
                         public views::View,
-                        public content::NotificationObserver {
+                        public content::NotificationObserver,
+                        public base::SupportsWeakPtr<BalloonViewImpl> {
  public:
   BalloonViewImpl(bool sticky, bool controls, bool web_ui);
   virtual ~BalloonViewImpl();
@@ -103,9 +104,6 @@ class BalloonViewImpl : public BalloonView,
 
   // The renderer of the HTML contents. Pointer owned by the views hierarchy.
   BalloonViewHost* html_contents_;
-
-  // The following factory is used to call methods at a later time.
-  ScopedRunnableMethodFactory<BalloonViewImpl> method_factory_;
 
   // A widget for ControlView.
   scoped_ptr<views::Widget> control_view_host_;

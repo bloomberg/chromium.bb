@@ -4,8 +4,10 @@
 
 #include "chrome/browser/chromeos/notifications/balloon_view.h"
 
+#include <algorithm>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/notifications/balloon_view_host.h"
@@ -19,7 +21,6 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
@@ -198,7 +199,6 @@ class NotificationControlView : public views::View,
 BalloonViewImpl::BalloonViewImpl(bool sticky, bool controls, bool web_ui)
     : balloon_(NULL),
       html_contents_(NULL),
-      method_factory_(this),
       stale_(false),
       sticky_(sticky),
       controls_(controls),
@@ -243,8 +243,7 @@ void BalloonViewImpl::Close(bool by_user) {
   closed_ = true;
   MessageLoop::current()->PostTask(
       FROM_HERE,
-      method_factory_.NewRunnableMethod(
-          &BalloonViewImpl::DelayedClose, by_user));
+      base::Bind(&BalloonViewImpl::DelayedClose, AsWeakPtr(), by_user));
 }
 
 gfx::Size BalloonViewImpl::GetSize() const {
