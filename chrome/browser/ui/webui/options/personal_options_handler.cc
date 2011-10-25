@@ -309,6 +309,12 @@ void PersonalOptionsHandler::OnStateChanged() {
   web_ui_->CallJavascriptFunction("PersonalOptions.setSyncStatusErrorVisible",
                                   *visible);
 
+  enabled.reset(Value::CreateBooleanValue(
+      !service->unrecoverable_error_detected()));
+  web_ui_->CallJavascriptFunction(
+      "PersonalOptions.setCustomizeSyncButtonEnabled",
+      *enabled);
+
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableAutologin)) {
     visible.reset(Value::CreateBooleanValue(
         service->AreCredentialsAvailable()));
