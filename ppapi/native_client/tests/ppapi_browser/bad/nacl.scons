@@ -67,11 +67,13 @@ node = env.PPAPIBrowserTester(
 
 # This test is failing on Windows:
 #   crbug.com/98720
+# This test is failing on Valgrind because of multiple nexes.
 env.AddNodeToTestSuite(node,
                        ['chrome_browser_tests'],
                        'run_ppapi_bad_browser_test',
                        is_broken=env.PPAPIBrowserTesterIsBroken() or
-                                 env.Bit('host_windows'))
+                                 env.Bit('host_windows') or 
+                                 env.Bit('running_on_valgrind'))
 
 
 # Bad nexe tests that won't work in PNaCl (native)
