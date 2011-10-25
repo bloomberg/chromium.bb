@@ -17,18 +17,12 @@ class WebDocument;
 class WebFrame;
 }
 
-namespace autofill {
-class AutofillAgent;
-}
-
 // This class deals with page translation.
 // There is one TranslateHelper per RenderView.
 
 class TranslateHelper : public content::RenderViewObserver {
  public:
-  // autofill can be NULL.
-  TranslateHelper(content::RenderView* render_view,
-                  autofill::AutofillAgent* autofill);
+  explicit TranslateHelper(content::RenderView* render_view);
   virtual ~TranslateHelper();
 
   // Informs us that the page's text has been extracted.
@@ -135,8 +129,6 @@ class TranslateHelper : public content::RenderViewObserver {
   int page_id_;
   std::string source_lang_;
   std::string target_lang_;
-
-  autofill::AutofillAgent* autofill_;
 
   // Method factory used to make calls to TranslatePageImpl.
   base::WeakPtrFactory<TranslateHelper> weak_method_factory_;

@@ -112,11 +112,6 @@ void AutofillAgent::WillSubmitForm(WebFrame* frame,
   }
 }
 
-void AutofillAgent::FrameTranslated(WebFrame* frame) {
-  // The page is translated, so try to extract the form data again.
-  DidFinishDocumentLoad(frame);
-}
-
 bool AutofillAgent::InputElementClicked(const WebInputElement& element,
                                         bool was_focused,
                                         bool is_focused) {

@@ -49,10 +49,6 @@ class AutofillAgent : public content::RenderViewObserver,
                 PasswordAutofillManager* password_autofill_manager);
   virtual ~AutofillAgent();
 
-  // Called when the translate helper has finished translating the page.  We
-  // use this signal to re-scan the page for forms.
-  void FrameTranslated(WebKit::WebFrame* frame);
-
  private:
   enum AutofillAction {
     AUTOFILL_NONE,     // No state set.

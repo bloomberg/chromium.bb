@@ -11,7 +11,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/renderer/autofill/autofill_agent.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
@@ -47,12 +46,10 @@ static const char* const kAutoDetectionLanguage = "auto";
 ////////////////////////////////////////////////////////////////////////////////
 // TranslateHelper, public:
 //
-TranslateHelper::TranslateHelper(content::RenderView* render_view,
-                                 autofill::AutofillAgent* autofill)
+TranslateHelper::TranslateHelper(content::RenderView* render_view)
     : content::RenderViewObserver(render_view),
       translation_pending_(false),
       page_id_(-1),
-      autofill_(autofill),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_method_factory_(this)) {
 }
 
@@ -333,9 +330,6 @@ void TranslateHelper::CheckTranslateStatus() {
     }
 
     translation_pending_ = false;
-
-    if (autofill_)
-      autofill_->FrameTranslated(render_view()->GetWebView()->mainFrame());
 
     // Notify the browser we are done.
     render_view()->Send(new ChromeViewHostMsg_PageTranslated(

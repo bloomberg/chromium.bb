@@ -13,7 +13,6 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/values.h"
-#include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -646,12 +645,6 @@ void TranslateManager::DoTranslatePage(TabContents* tab,
   tab->render_view_host()->Send(new ChromeViewMsg_TranslatePage(
       tab->render_view_host()->routing_id(), entry->page_id(), translate_script,
       source_lang, target_lang));
-
-  // Ideally we'd have a better way to uniquely identify form control elements,
-  // but we don't have that yet.  So before start translation, we clear the
-  // current form and re-parse it in AutofillManager first to get the new
-  // labels.
-  wrapper->autofill_manager()->Reset();
 }
 
 void TranslateManager::PageTranslated(TabContents* tab,

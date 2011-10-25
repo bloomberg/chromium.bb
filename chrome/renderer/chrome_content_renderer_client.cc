@@ -245,7 +245,7 @@ void ChromeContentRendererClient::RenderViewCreated(
   page_click_tracker->AddListener(password_autofill_manager);
   page_click_tracker->AddListener(autofill_agent);
 
-  TranslateHelper* translate = new TranslateHelper(render_view, autofill_agent);
+  TranslateHelper* translate = new TranslateHelper(render_view);
   new ChromeRenderViewObserver(
       render_view, content_settings, chrome_observer_.get(),
       extension_dispatcher_.get(), translate);
