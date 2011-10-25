@@ -272,13 +272,12 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
   //                       fullscreen_ = true
   bool IsFullscreenOrPending();
 
-  // Switches between fullscreen and normal mode. If |delay_report| is set to
-  // false, it may report the new state through DidChangeView immediately. If
-  // true, it will delay it. When called from the plugin, delay_report should be
-  // true to avoid re-entrancy. Returns true on success, false on failure
-  // (e.g. trying to enter fullscreen when not processing a user gesture or
-  // trying to set fullscreen when already in fullscreen mode).
-  bool SetFullscreen(bool fullscreen, bool delay_report);
+  // Switches between fullscreen and normal mode. The transition is
+  // asynchronous. WebKit will trigger corresponding VewChanged calls.
+  // Returns true on success, false on failure (e.g. trying to enter fullscreen
+  // when not processing a user gesture or trying to set fullscreen when
+  // already in fullscreen mode).
+  bool SetFullscreen(bool fullscreen);
 
   // Implementation of PPB_Flash.
   int32_t Navigate(PPB_URLRequestInfo_Impl* request,

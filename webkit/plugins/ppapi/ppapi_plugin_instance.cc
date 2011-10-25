@@ -425,7 +425,7 @@ void PluginInstance::InstanceCrashed() {
   HostGlobals::Get()->InstanceCrashed(pp_instance());
 
   // Free any associated graphics.
-  SetFullscreen(false, false);
+  SetFullscreen(false);
   FlashSetFullscreen(false, false);
   bound_graphics_ = NULL;
   InvalidateRect(gfx::Rect());
@@ -1156,7 +1156,7 @@ bool PluginInstance::IsFullscreenOrPending() {
   return desired_fullscreen_state_;
 }
 
-bool PluginInstance::SetFullscreen(bool fullscreen, bool delay_report) {
+bool PluginInstance::SetFullscreen(bool fullscreen) {
   // Keep a reference on the stack. See NOTE above.
   scoped_refptr<PluginInstance> ref(this);
 
@@ -1813,7 +1813,7 @@ PP_Bool PluginInstance::FlashIsFullscreen(PP_Instance instance) {
 
 PP_Bool PluginInstance::SetFullscreen(PP_Instance instance,
                                       PP_Bool fullscreen) {
-  return PP_FromBool(SetFullscreen(PP_ToBool(fullscreen), true));
+  return PP_FromBool(SetFullscreen(PP_ToBool(fullscreen)));
 }
 
 PP_Bool PluginInstance::FlashSetFullscreen(PP_Instance instance,
