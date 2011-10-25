@@ -218,9 +218,6 @@ void ExtensionSettingsHandler::MaybeRegisterForNotifications() {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_WARNING_CHANGED,
                  content::Source<Profile>(profile));
   registrar_.Add(this,
-                 content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-                 content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this,
                  content::NOTIFICATION_RENDER_VIEW_HOST_CREATED,
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this,
@@ -505,10 +502,8 @@ void ExtensionSettingsHandler::GetLocalizedValues(
   DCHECK(localized_strings);
 
   RegisterTitle(localized_strings, "extensionSettings",
-                IDS_OPTIONS_GENERAL_TAB_LABEL);
+                IDS_MANAGE_EXTENSIONS_SETTING_WINDOWS_TITLE);
 
-  localized_strings->SetString("extensionSettingsTitle",
-      l10n_util::GetStringUTF16(IDS_MANAGE_EXTENSIONS_SETTING_WINDOWS_TITLE));
   localized_strings->SetString("extensionSettingsVisitWebsite",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_VISIT_WEBSITE));
 
@@ -605,12 +600,7 @@ void ExtensionSettingsHandler::Observe(
     // For instance, EXTENSION_LOADED & EXTENSION_PROCESS_CREATED because
     // we don't know about the views for an extension at EXTENSION_LOADED, but
     // if we only listen to EXTENSION_PROCESS_CREATED, we'll miss extensions
-    // that don't have a process at startup. Similarly, NAV_ENTRY_COMMITTED &
-    // RENDER_VIEW_HOST_CREATED because we want to handle both
-    // the case of navigating from a non-extension page to an extension page in
-    // a TabContents (which will generate NAV_ENTRY_COMMITTED) as well as
-    // extension content being shown in popups and balloons (which will generate
-    // RENDER_VIEW_HOST_CREATED but no NAV_ENTRY_COMMITTED).
+    // that don't have a process at startup.
     //
     // Doing it this way gets everything but causes the page to be rendered
     // more than we need. It doesn't seem to result in any noticeable flicker.
@@ -633,14 +623,6 @@ void ExtensionSettingsHandler::Observe(
       source_profile = content::Source<Profile>(source).ptr();
       if (!profile->IsSameProfile(source_profile))
           return;
-      MaybeUpdateAfterNotification();
-      break;
-    case content::NOTIFICATION_NAV_ENTRY_COMMITTED:
-      source_profile = Profile::FromBrowserContext(
-          content::Source<NavigationController>(
-              source).ptr()->browser_context());
-      if (!profile->IsSameProfile(source_profile))
-        return;
       MaybeUpdateAfterNotification();
       break;
     case chrome::NOTIFICATION_EXTENSION_LOADED:

@@ -61,10 +61,9 @@ cr.define('options', function() {
 
       // Instal global event handlers.
       if (!handlersInstalled) {
-        this.ownerDocument.addEventListener('keyup',
-                                            this.upEventHandler_.bind(this));
-        this.ownerDocument.addEventListener('mouseup',
-                                            this.upEventHandler_.bind(this));
+        var searchPage = SearchPage.getInstance();
+        searchPage.addEventListener('searchChanged',
+                                    this.searchChangedHandler_.bind(this));
 
         // Support full keyboard accessibility without making things ugly
         // for users who click, by hiding some focus outlines when the user
@@ -648,18 +647,18 @@ cr.define('options', function() {
     },
 
     /**
-     * Handles the mouse-up and keyboard-up events. This is used to limit the
-     * number of items to show in the list, when the user is searching for items
-     * with the search box. Otherwise, if one match is found, the whole list of
+     * Handles the 'searchChanged' event. This is used to limit the number of
+     * items to show in the list, when the user is searching for items with the
+     * search box. Otherwise, if one match is found, the whole list of
      * extensions would be shown when we only want the matching items to be
      * found.
      * @param {Event} e Change event.
      * @private
      */
-    upEventHandler_: function(e) {
-      var searchString = $('search-field').value.toLowerCase();
+    searchChangedHandler_: function(e) {
+      var searchString = e.searchText;
       var child = this.firstChild;
-      while (child){
+      while (child) {
         var extension = this.getExtensionWithId_(child.id);
         if (searchString.length == 0) {
           // Show all.

@@ -100,6 +100,7 @@ cr.define('options', function() {
     }
 
     pageName = targetPage.name.toLowerCase();
+    var targetPageWasVisible = targetPage.visible;
 
     // Determine if the root page is 'sticky', meaning that it
     // shouldn't change when showing a sub-page.  This can happen for special
@@ -117,14 +118,11 @@ cr.define('options', function() {
         page.willHidePage();
     }
 
-    var prevVisible = false;
-
     // Update visibilities to show only the hierarchy of the target page.
     for (var name in this.registeredPages) {
       var page = this.registeredPages[name];
       if (!page.parentPage && isRootPageLocked)
         continue;
-      prevVisible = page.visible;
       page.visible = name == pageName ||
           (!document.documentElement.classList.contains('hide-menu') &&
            page.isAncestorOfPage(targetPage));
@@ -142,7 +140,7 @@ cr.define('options', function() {
       var page = this.registeredPages[name];
       if (!page.parentPage && isRootPageLocked)
         continue;
-      if (!prevVisible && page.didShowPage && (name == pageName ||
+      if (!targetPageWasVisible && page.didShowPage && (name == pageName ||
           page.isAncestorOfPage(targetPage)))
         page.didShowPage();
     }

@@ -105,7 +105,6 @@ cr.define('options', function() {
   function SearchPage() {
     OptionsPage.call(this, 'search', templateData.searchPageTabTitle,
         'searchPage');
-    this.searchActive = false;
   }
 
   cr.addSingletonGetter(SearchPage);
@@ -113,6 +112,13 @@ cr.define('options', function() {
   SearchPage.prototype = {
     // Inherit SearchPage from OptionsPage.
     __proto__: OptionsPage.prototype,
+
+    /**
+     * A boolean to prevent recursion. Used by setSearchText_().
+     * @type {Boolean}
+     * @private
+     */
+    insideSetSearchText_: false,
 
     /**
      * Initialize the page.
@@ -145,7 +151,7 @@ cr.define('options', function() {
       // Handle search events. (No need to throttle, WebKit's search field
       // will do that automatically.)
       searchField.onsearch = function(e) {
-        self.setSearchText_(SearchPage.canonicalizeQuery(this.value));
+        self.setSearchText_(this.value);
       };
 
       // We update the history stack every time the search field blurs. This way
@@ -284,6 +290,19 @@ cr.define('options', function() {
      * @private
      */
     setSearchText_: function(text) {
+      // Prevent recursive execution of this method.
+      if (this.insideSetSearchText_) return;
+      this.insideSetSearchText_ = true;
+
+      // Cleanup the search query string.
+      text = SearchPage.canonicalizeQuery(text);
+
+      // Notify listeners about the new search query, some pages may wish to
+      // show/hide elements based on the query.
+      var event = new cr.Event('searchChanged');
+      event.searchText = text;
+      this.dispatchEvent(event);
+
       // Toggle the search page if necessary.
       if (text.length) {
         if (!this.searchActive_)
@@ -291,6 +310,8 @@ cr.define('options', function() {
       } else {
         if (this.searchActive_)
           OptionsPage.showDefaultPage();
+
+        this.insideSetSearchText_ = false;
         return;
       }
 
@@ -381,6 +402,9 @@ cr.define('options', function() {
       length = bubbleControls.length;
       for (var i = 0; i < length; i++)
         this.createSearchBubble_(bubbleControls[i], text);
+
+      // Cleanup the recursion-prevention variable.
+      this.insideSetSearchText_ = false;
     },
 
     /**
