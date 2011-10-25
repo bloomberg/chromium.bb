@@ -11,9 +11,10 @@
 #include "base/utf_string_conversions.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/download/download_buffer.h"
-#include "content/browser/download/download_file.h"
 #include "content/browser/download/download_create_info.h"
+#include "content/browser/download/download_file.h"
 #include "content/browser/download/download_manager.h"
+#include "content/browser/download/download_request_handle.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/download_manager_delegate.h"
@@ -49,9 +50,9 @@ void DownloadFileManager::OnShutdown() {
   STLDeleteValues(&downloads_);
 }
 
-void DownloadFileManager::CreateDownloadFile(DownloadCreateInfo* info,
-                                             DownloadManager* download_manager,
-                                             bool get_hash) {
+void DownloadFileManager::CreateDownloadFile(
+    DownloadCreateInfo* info, const DownloadRequestHandle& request_handle,
+    DownloadManager* download_manager, bool get_hash) {
   DCHECK(info);
   VLOG(20) << __FUNCTION__ << "()" << " info = " << info->DebugString();
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
@@ -60,9 +61,9 @@ void DownloadFileManager::CreateDownloadFile(DownloadCreateInfo* info,
   scoped_ptr<DownloadCreateInfo> infop(info);
 
   scoped_ptr<DownloadFile>
-      download_file(new DownloadFile(info, download_manager));
+      download_file(new DownloadFile(info, request_handle, download_manager));
   if (net::OK != download_file->Initialize(get_hash)) {
-    info->request_handle.CancelRequest();
+    request_handle.CancelRequest();
     return;
   }
 
@@ -71,7 +72,7 @@ void DownloadFileManager::CreateDownloadFile(DownloadCreateInfo* info,
   downloads_[global_id] = download_file.release();
 
   // The file is now ready, we can un-pause the request and start saving data.
-  info->request_handle.ResumeRequest();
+  request_handle.ResumeRequest();
 
   StartUpdateTimer();
 
@@ -115,13 +116,14 @@ void DownloadFileManager::UpdateInProgressDownloads() {
   }
 }
 
-void DownloadFileManager::StartDownload(DownloadCreateInfo* info) {
+void DownloadFileManager::StartDownload(
+    DownloadCreateInfo* info, const DownloadRequestHandle& request_handle) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(info);
 
-  DownloadManager* manager = info->request_handle.GetDownloadManager();
+  DownloadManager* manager = request_handle.GetDownloadManager();
   if (!manager) {
-    info->request_handle.CancelRequest();
+    request_handle.CancelRequest();
     delete info;
     return;
   }
@@ -129,12 +131,13 @@ void DownloadFileManager::StartDownload(DownloadCreateInfo* info) {
   // TODO(phajdan.jr): fix the duplication of path info below.
   info->path = info->save_info.file_path;
 
-  manager->CreateDownloadItem(info);
+  manager->CreateDownloadItem(info, request_handle);
   bool hash_needed = manager->delegate()->GenerateFileHash();
 
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(this, &DownloadFileManager::CreateDownloadFile,
-                        info, make_scoped_refptr(manager), hash_needed));
+                        info, request_handle, make_scoped_refptr(manager),
+                        hash_needed));
 }
 
 // We don't forward an update to the UI thread here, since we want to throttle

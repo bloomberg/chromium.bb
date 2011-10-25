@@ -325,10 +325,12 @@ void DownloadManager::RestartDownload(
   }
 }
 
-void DownloadManager::CreateDownloadItem(DownloadCreateInfo* info) {
+void DownloadManager::CreateDownloadItem(
+    DownloadCreateInfo* info, const DownloadRequestHandle& request_handle) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DownloadItem* download = new DownloadItem(this, *info,
+                                            request_handle,
                                             browser_context_->IsOffTheRecord());
   int32 download_id = info->download_id;
   DCHECK(!ContainsKey(in_progress_, download_id));

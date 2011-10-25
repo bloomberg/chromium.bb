@@ -119,6 +119,7 @@ class CONTENT_EXPORT DownloadItem {
   // Constructing for a regular download:
   DownloadItem(DownloadManager* download_manager,
                const DownloadCreateInfo& info,
+               const DownloadRequestHandle& request_handle,
                bool is_otr);
 
   // Constructing for the "Save Page As..." feature:

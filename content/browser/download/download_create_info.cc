@@ -54,7 +54,6 @@ std::string DownloadCreateInfo::DebugString() const {
                             " path = \"%" PRFilePath "\""
                             " received_bytes = %" PRId64
                             " total_bytes = %" PRId64
-                            " request_handle = %s"
                             " prompt_user_for_save_location = %c"
                             " }",
                             download_id,
@@ -62,7 +61,6 @@ std::string DownloadCreateInfo::DebugString() const {
                             path.value().c_str(),
                             received_bytes,
                             total_bytes,
-                            request_handle.DebugString().c_str(),
                             prompt_user_for_save_location ? 'T' : 'F');
 }
 

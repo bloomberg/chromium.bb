@@ -61,7 +61,8 @@ class DownloadFileTest : public testing::Test {
     info.download_id = kDummyDownloadId + offset;
     // info.request_handle default constructed to null.
     info.save_info.file_stream = file_stream_;
-    file->reset(new DownloadFile(&info, download_manager_));
+    file->reset(
+        new DownloadFile(&info, DownloadRequestHandle(), download_manager_));
   }
 
   virtual void DestroyDownloadFile(scoped_ptr<DownloadFile>* file, int offset) {

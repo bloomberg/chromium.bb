@@ -24,6 +24,7 @@ static const int kMaxUniqueFiles = 100;
 }
 
 DownloadFile::DownloadFile(const DownloadCreateInfo* info,
+                           const DownloadRequestHandle& request_handle,
                            DownloadManager* download_manager)
     : BaseFile(info->save_info.file_path,
                info->url(),
@@ -31,7 +32,7 @@ DownloadFile::DownloadFile(const DownloadCreateInfo* info,
                info->received_bytes,
                info->save_info.file_stream),
       id_(info->download_id),
-      request_handle_(info->request_handle),
+      request_handle_(request_handle),
       download_manager_(download_manager) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 }

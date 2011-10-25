@@ -49,7 +49,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/timer.h"
 #include "content/browser/download/download_id.h"
-#include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/interrupt_reasons.h"
 #include "content/common/content_export.h"
 #include "net/base/net_errors.h"
@@ -59,6 +58,7 @@ struct DownloadCreateInfo;
 struct DownloadSaveInfo;
 class DownloadFile;
 class DownloadManager;
+class DownloadRequestHandle;
 class FilePath;
 class GURL;
 class ResourceDispatcherHost;
@@ -81,7 +81,8 @@ class CONTENT_EXPORT DownloadFileManager
   void Shutdown();
 
   // Called on UI thread to make DownloadFileManager start the download.
-  void StartDownload(DownloadCreateInfo* info);
+  void StartDownload(DownloadCreateInfo* info,
+                     const DownloadRequestHandle& request_handle);
 
   // Handlers for notifications sent from the IO thread and run on the
   // FILE thread.
@@ -144,6 +145,7 @@ class CONTENT_EXPORT DownloadFileManager
   // Creates DownloadFile on FILE thread and continues starting the download
   // process.
   void CreateDownloadFile(DownloadCreateInfo* info,
+                          const DownloadRequestHandle& request_handle,
                           DownloadManager* download_manager,
                           bool hash_needed);
 

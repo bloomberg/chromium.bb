@@ -16,6 +16,7 @@
 #include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/download_item.h"
 #include "content/browser/download/download_request_handle.h"
+#include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_stats.h"
 #include "content/browser/download/interrupt_reasons.h"
 #include "content/browser/renderer_host/global_request_id.h"
@@ -98,13 +99,13 @@ bool DownloadResourceHandler::OnResponseStarted(int request_id,
   info->state = DownloadItem::IN_PROGRESS;
   info->download_id = download_id_.local();
   info->has_user_gesture = request_info->has_user_gesture();
-  info->request_handle = DownloadRequestHandle(rdh_,
-                                               global_id_.child_id,
-                                               render_view_id_,
-                                               global_id_.request_id);
   info->content_disposition = content_disposition_;
   info->mime_type = response->response_head.mime_type;
   download_stats::RecordDownloadMimeType(info->mime_type);
+
+  DownloadRequestHandle request_handle(rdh_, global_id_.child_id,
+                                       render_view_id_, global_id_.request_id);
+
   // TODO(ahendrickson) -- Get the last modified time and etag, so we can
   // resume downloading.
 
@@ -123,7 +124,8 @@ bool DownloadResourceHandler::OnResponseStarted(int request_id,
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(
-          download_file_manager_, &DownloadFileManager::StartDownload, info));
+          download_file_manager_, &DownloadFileManager::StartDownload,
+          info, request_handle));
 
   // We can't start saving the data before we create the file on disk.
   // The request will be un-paused in DownloadFileManager::CreateDownloadFile.

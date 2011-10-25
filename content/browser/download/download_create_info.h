@@ -13,7 +13,6 @@
 #include "base/file_path.h"
 #include "base/time.h"
 #include "content/browser/download/download_file.h"
-#include "content/browser/download/download_request_handle.h"
 #include "content/common/content_export.h"
 #include "content/public/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
@@ -72,10 +71,6 @@ struct CONTENT_EXPORT DownloadCreateInfo {
   bool has_user_gesture;
 
   content::PageTransition transition_type;
-
-  // The handle to the download request information.  Used for operations
-  // outside the download system.
-  DownloadRequestHandle request_handle;
 
   // The handle of the download in the history database.
   int64 db_handle;

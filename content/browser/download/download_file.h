@@ -26,6 +26,7 @@ class ResourceDispatcherHost;
 class CONTENT_EXPORT DownloadFile : public BaseFile {
  public:
   DownloadFile(const DownloadCreateInfo* info,
+               const DownloadRequestHandle& request_handle,
                DownloadManager* download_manager);
   virtual ~DownloadFile();
 

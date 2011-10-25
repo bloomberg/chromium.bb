@@ -46,13 +46,13 @@
 #include "base/time.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/download/download_item.h"
-#include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_status_updater_delegate.h"
 #include "content/browser/download/interrupt_reasons.h"
 #include "content/common/content_export.h"
 #include "net/base/net_errors.h"
 
 class DownloadFileManager;
+class DownloadRequestHandle;
 class DownloadStatusUpdater;
 class GURL;
 class ResourceDispatcherHost;
@@ -246,7 +246,8 @@ class CONTENT_EXPORT DownloadManager
   FilePath last_download_path() { return last_download_path_; }
 
   // Creates the download item.  Must be called on the UI thread.
-  void CreateDownloadItem(DownloadCreateInfo* info);
+  void CreateDownloadItem(DownloadCreateInfo* info,
+                          const DownloadRequestHandle& request_handle);
 
   // Clears the last download path, used to initialize "save as" dialogs.
   void ClearLastDownloadPath();

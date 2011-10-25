@@ -29,6 +29,7 @@
 #include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/download_item.h"
 #include "content/browser/download/download_manager.h"
+#include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_status_updater.h"
 #include "content/browser/download/interrupt_reasons.h"
 #include "content/browser/download/mock_download_manager.h"
@@ -175,7 +176,7 @@ DownloadFileWithMockStream::DownloadFileWithMockStream(
     DownloadCreateInfo* info,
     DownloadManager* manager,
     net::testing::MockFileStream* stream)
-        : DownloadFile(info, manager) {
+    : DownloadFile(info, DownloadRequestHandle(), manager) {
   DCHECK(file_stream_ == NULL);
   file_stream_.reset(stream);
 }
@@ -273,7 +274,8 @@ const struct {
 class MockDownloadFile : public DownloadFile {
  public:
   MockDownloadFile(DownloadCreateInfo* info, DownloadManager* manager)
-      : DownloadFile(info, manager), renamed_count_(0) { }
+      : DownloadFile(info, DownloadRequestHandle(), manager),
+        renamed_count_(0) { }
   virtual ~MockDownloadFile() { Destructed(); }
   MOCK_METHOD1(Rename, net::Error(const FilePath&));
   MOCK_METHOD0(Destructed, void());
@@ -385,10 +387,11 @@ TEST_F(DownloadManagerTest, StartDownload) {
     info->prompt_user_for_save_location = kStartDownloadCases[i].save_as;
     info->url_chain.push_back(GURL(kStartDownloadCases[i].url));
     info->mime_type = kStartDownloadCases[i].mime_type;
-    download_manager_->CreateDownloadItem(info.get());
+    download_manager_->CreateDownloadItem(info.get(), DownloadRequestHandle());
 
     DownloadFile* download_file(
-        new DownloadFile(info.get(), download_manager_));
+        new DownloadFile(info.get(), DownloadRequestHandle(),
+                         download_manager_));
     AddDownloadToFileManager(info->download_id, download_file);
     download_file->Initialize(false);
     download_manager_->StartDownload(info->download_id);
@@ -439,7 +442,7 @@ TEST_F(DownloadManagerTest, DownloadRenameTest) {
               download_file, &MockDownloadFile::TestMultipleRename,
               2, new_path))));
     }
-    download_manager_->CreateDownloadItem(info.get());
+    download_manager_->CreateDownloadItem(info.get(), DownloadRequestHandle());
     DownloadItem* download = GetActiveDownloadItem(i);
     ASSERT_TRUE(download != NULL);
     if (kDownloadRenameCases[i].is_dangerous_file)
@@ -493,7 +496,7 @@ TEST_F(DownloadManagerTest, DownloadInterruptTest) {
 
   EXPECT_CALL(*download_file, Rename(cr_path)).WillOnce(Return(net::OK));
 
-  download_manager_->CreateDownloadItem(info.get());
+  download_manager_->CreateDownloadItem(info.get(), DownloadRequestHandle());
 
   DownloadItem* download = GetActiveDownloadItem(0);
   ASSERT_TRUE(download != NULL);
@@ -579,7 +582,7 @@ TEST_F(DownloadManagerTest, DownloadFileErrorTest) {
   AddDownloadToFileManager(id, download_file);
 
   // |download_file| is owned by DownloadFileManager.
-  download_manager_->CreateDownloadItem(info.get());
+  download_manager_->CreateDownloadItem(info.get(), DownloadRequestHandle());
 
   DownloadItem* download = GetActiveDownloadItem(0);
   ASSERT_TRUE(download != NULL);
@@ -661,7 +664,7 @@ TEST_F(DownloadManagerTest, DownloadCancelTest) {
 
   EXPECT_CALL(*download_file, Rename(cr_path)).WillOnce(Return(net::OK));
 
-  download_manager_->CreateDownloadItem(info.get());
+  download_manager_->CreateDownloadItem(info.get(), DownloadRequestHandle());
 
   DownloadItem* download = GetActiveDownloadItem(0);
   ASSERT_TRUE(download != NULL);
@@ -733,7 +736,7 @@ TEST_F(DownloadManagerTest, DownloadOverwriteTest) {
   info->prompt_user_for_save_location = true;
   info->url_chain.push_back(GURL());
 
-  download_manager_->CreateDownloadItem(info.get());
+  download_manager_->CreateDownloadItem(info.get(), DownloadRequestHandle());
 
   DownloadItem* download = GetActiveDownloadItem(0);
   ASSERT_TRUE(download != NULL);
@@ -748,7 +751,7 @@ TEST_F(DownloadManagerTest, DownloadOverwriteTest) {
   // name has been chosen, so we need to initialize the download file
   // properly.
   DownloadFile* download_file(
-      new DownloadFile(info.get(), download_manager_));
+      new DownloadFile(info.get(), DownloadRequestHandle(), download_manager_));
   download_file->Rename(cr_path);
   // This creates the .crdownload version of the file.
   download_file->Initialize(false);
@@ -809,7 +812,7 @@ TEST_F(DownloadManagerTest, DownloadRemoveTest) {
   info->prompt_user_for_save_location = true;
   info->url_chain.push_back(GURL());
 
-  download_manager_->CreateDownloadItem(info.get());
+  download_manager_->CreateDownloadItem(info.get(), DownloadRequestHandle());
 
   DownloadItem* download = GetActiveDownloadItem(0);
   ASSERT_TRUE(download != NULL);
@@ -824,7 +827,7 @@ TEST_F(DownloadManagerTest, DownloadRemoveTest) {
   // name has been chosen, so we need to initialize the download file
   // properly.
   DownloadFile* download_file(
-      new DownloadFile(info.get(), download_manager_));
+      new DownloadFile(info.get(), DownloadRequestHandle(), download_manager_));
   download_file->Rename(cr_path);
   // This creates the .crdownload version of the file.
   download_file->Initialize(false);
