@@ -11,7 +11,7 @@ cr.define('media', function() {
    */
   function ItemStore() {
     this.items_ = {};
-  };
+  }
 
   ItemStore.prototype = {
     /**

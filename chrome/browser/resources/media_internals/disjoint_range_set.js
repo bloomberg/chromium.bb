@@ -18,7 +18,7 @@ cr.define('media', function() {
    */
   function DisjointRangeSet() {
     this.ranges_ = {};
-  };
+  }
 
   DisjointRangeSet.prototype = {
     /**

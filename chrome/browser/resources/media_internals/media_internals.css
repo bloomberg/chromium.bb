@@ -3,12 +3,21 @@
  * found in the LICENSE file.
  */
 
-h2 {
-  margin: 15px 0px 5px 0px;
+body {
+  font-family: sans-serif;
 }
 
-ul, p {
-  margin: 0px;
+h2 {
+  margin: 15px 0 5px 0;
+}
+
+ul, p, canvas {
+  margin: 0;
+}
+
+#media-players td,
+#media-players th {
+  padding: 0 10px;
 }
 
 .audio-stream[status='created'] {
@@ -23,20 +32,17 @@ ul, p {
   color: red;
 }
 
-#cache-entries ul {
+#cache-entries ul,
+#media-players ul {
   list-style-type: none;
 }
 
 .cache-entry {
-  margin: 0px 0px 5px 0px;
+  margin: 0 0 5px 0;
 }
 
 .cache-entry-controls {
   font-size: smaller;
-}
-
-.cache-entry summary {
-  text-indent: -1em;
 }
 
 .cache-table {
@@ -44,10 +50,28 @@ ul, p {
   width: 500px;
 }
 
-.cache-table thead {
+thead {
   text-align: left;
 }
 
-.cache-table tfoot {
+tfoot {
   text-align: right;
+}
+
+.buffered {
+  display: table;
+}
+
+.buffered > div {
+  display: table-row;
+}
+
+.buffered > div > div {
+  display: table-cell;
+  vertical-align: bottom;
+}
+
+.buffered > div > div:first-child {
+  font-weight: bold;
+  padding-right: 2px;
 }

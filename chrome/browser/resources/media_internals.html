@@ -9,11 +9,14 @@ found in the LICENSE file.
     <link rel="stylesheet" href="webui.css" />
     <link rel="stylesheet" href="media_internals/media_internals.css" />
     <script src="chrome://resources/js/cr.js"></script>
+    <script src="chrome://resources/js/cr/ui.js"></script>
     <script src="chrome://media-internals/media_internals.js"></script>
     <script src="chrome://media-internals/strings.js"></script>
     <title>Media Internals</title>
   </head>
   <body>
+    <h2>Active media players:</h2>
+    <ul id="media-players"></ul>
     <h2>Active audio streams:</h2>
     <div id="audio-streams"></div>
     <h2>Cached resources:</h2>
