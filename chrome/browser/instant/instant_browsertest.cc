@@ -208,6 +208,14 @@ class InstantTest : public InProcessBrowserTest {
         browser()->instant()->loader_.get()->url() : GURL();
   }
 
+  bool LoaderIsReady() const {
+    return browser()->instant()->loader_->ready();
+  }
+
+  const string16& GetUserText() const {
+    return browser()->instant()->loader_->user_text();
+  }
+
   void SendKey(ui::KeyboardCode key) {
     ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
         browser(), key, false, false, false, false));
@@ -991,6 +999,13 @@ IN_PROC_BROWSER_TEST_F(InstantFieldTrialHiddenTest, MAYBE_ExperimentEnabled) {
   TabContentsWrapper* tab_contents = browser()->instant()->GetPreviewContents();
   EXPECT_TRUE(tab_contents);
 
+  // Wait for the underlying loader to finish processing.
+  WaitForMessageToBeProcessedByRenderer(tab_contents);
+
+  EXPECT_STR_EQ("def", location_bar_->location_entry()->GetText());
+  EXPECT_STR_EQ("defghi", GetUserText());
+  EXPECT_TRUE(LoaderIsReady());
+
   // Press <Enter> in the omnibox, causing the preview to be committed.
   SendKey(ui::VKEY_RETURN);
 
@@ -1002,8 +1017,62 @@ IN_PROC_BROWSER_TEST_F(InstantFieldTrialHiddenTest, MAYBE_ExperimentEnabled) {
   EXPECT_EQ(tab_contents, browser()->GetSelectedTabContentsWrapper());
 }
 
-// Tests the SearchToNonSearch scenario under the HIDDEN field trial.
-IN_PROC_BROWSER_TEST_F(InstantFieldTrialHiddenTest, MAYBE_SearchToNonSearch) {
+// Tests the SILENT experiment of the field trial.
+class InstantFieldTrialSilentTest : public InstantTest {
+ public:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    command_line->AppendSwitchASCII(switches::kInstantFieldTrial,
+                                    switches::kInstantFieldTrialSilent);
+  }
+};
+
+// Tests that instant is active, even without calling EnableInstant().
+IN_PROC_BROWSER_TEST_F(InstantFieldTrialSilentTest, MAYBE_ExperimentEnabled) {
+  // Check that instant is enabled, despite not setting the preference.
+  Profile* profile = browser()->profile();
+  EXPECT_FALSE(profile->GetPrefs()->GetBoolean(prefs::kInstantEnabled));
+  EXPECT_TRUE(InstantController::IsEnabled(profile));
+
+  ASSERT_TRUE(test_server()->Start());
+  SetupInstantProvider("search.html");
+  ui_test_utils::WindowedNotificationObserver instant_support_observer(
+      chrome::NOTIFICATION_INSTANT_SUPPORT_DETERMINED,
+      content::NotificationService::AllSources());
+  SetupLocationBar();
+  WaitForPreviewToNavigate();
+  instant_support_observer.Wait();
+
+  // Type into the omnibox, but don't press <Enter> yet.
+  location_bar_->location_entry()->SetUserText(UTF8ToUTF16("def"));
+
+  // Check that instant is active, but the preview is not showing.
+  EXPECT_TRUE(HasPreview());
+  EXPECT_FALSE(browser()->instant()->is_displayable());
+  EXPECT_FALSE(browser()->instant()->IsCurrent());
+
+  TabContentsWrapper* tab_contents = browser()->instant()->GetPreviewContents();
+  EXPECT_TRUE(tab_contents);
+
+  // Wait for the underlying loader to finish processing.
+  WaitForMessageToBeProcessedByRenderer(tab_contents);
+
+  EXPECT_STR_EQ("def", location_bar_->location_entry()->GetText());
+  EXPECT_STR_EQ("", GetUserText());
+  EXPECT_FALSE(LoaderIsReady());
+
+  // Press <Enter> in the omnibox, causing the preview to be committed.
+  SendKey(ui::VKEY_RETURN);
+
+  // The preview contents should now be the active tab contents.
+  EXPECT_FALSE(browser()->instant()->GetPreviewContents());
+  EXPECT_FALSE(HasPreview());
+  EXPECT_FALSE(browser()->instant()->is_displayable());
+  EXPECT_FALSE(browser()->instant()->IsCurrent());
+  EXPECT_EQ(tab_contents, browser()->GetSelectedTabContentsWrapper());
+}
+
+// Tests the SearchToNonSearch scenario under the SILENT field trial.
+IN_PROC_BROWSER_TEST_F(InstantFieldTrialSilentTest, MAYBE_SearchToNonSearch) {
   ASSERT_TRUE(test_server()->Start());
   ui_test_utils::WindowedNotificationObserver instant_support_observer(
       chrome::NOTIFICATION_INSTANT_SUPPORT_DETERMINED,

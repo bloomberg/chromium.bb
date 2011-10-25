@@ -175,8 +175,8 @@ bool InstantController::Update(TabContentsWrapper* tab_contents,
   // trial to normal mode, with no intervening call to DestroyPreviewContents().
   // This would leave the loader in a weird state, which would manifest if the
   // user pressed <Enter> without calling Update(). TODO(sreeram): Handle it.
-  if (InstantFieldTrial::IsHiddenExperiment(tab_contents->profile())) {
-    // For the HIDDEN field trial we process |user_text| at commit time, which
+  if (InstantFieldTrial::IsSilentExperiment(tab_contents->profile())) {
+    // For the SILENT field trial we process |user_text| at commit time, which
     // means we're never really out of date.
     is_out_of_date_ = false;
     loader_->MaybeLoadInstantURL(tab_contents, template_url);
@@ -236,9 +236,12 @@ bool InstantController::PrepareForCommit() {
   if (is_out_of_date_ || !loader_.get())
     return false;
 
-  // If we are not in the HIDDEN field trial, return the status of the preview.
-  if (!InstantFieldTrial::IsHiddenExperiment(tab_contents_->profile()))
+  // If we are not in the HIDDEN or SILENT field trials, return the status of
+  // the preview.
+  if (!InstantFieldTrial::IsHiddenExperiment(tab_contents_->profile()) &&
+      !InstantFieldTrial::IsSilentExperiment(tab_contents_->profile())) {
     return IsCurrent();
+  }
 
   TemplateURLService* model = TemplateURLServiceFactory::GetForProfile(
       tab_contents_->profile());
@@ -419,7 +422,10 @@ void InstantController::SetSuggestedTextFor(
     InstantLoader* loader,
     const string16& text,
     InstantCompleteBehavior behavior) {
-  delegate_->SetSuggestedText(text, behavior);
+  if (!is_out_of_date_ &&
+      !InstantFieldTrial::IsHiddenExperiment(tab_contents_->profile())) {
+    delegate_->SetSuggestedText(text, behavior);
+  }
 }
 
 gfx::Rect InstantController::GetInstantBounds() {
@@ -460,6 +466,11 @@ void InstantController::SwappedTabContents(InstantLoader* loader) {
 }
 
 void InstantController::UpdateIsDisplayable() {
+  if (!is_out_of_date_ &&
+      InstantFieldTrial::IsHiddenExperiment(tab_contents_->profile())) {
+    return;
+  }
+
   bool displayable =
       (!is_out_of_date_ && loader_.get() && loader_->ready() &&
        loader_->http_status_ok());
@@ -489,6 +500,9 @@ void InstantController::UpdateLoader(const TemplateURL* template_url,
   loader_->Update(tab_contents_, template_url, url, transition_type, user_text,
                   verbatim, suggested_text);
   UpdateIsDisplayable();
+  // For the HIDDEN field trial, don't send back suggestions to the omnibox.
+  if (InstantFieldTrial::IsHiddenExperiment(tab_contents_->profile()))
+    suggested_text->clear();
 }
 
 bool InstantController::ShouldUseInstant(const AutocompleteMatch& match) {

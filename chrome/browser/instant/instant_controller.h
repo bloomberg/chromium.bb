@@ -108,7 +108,7 @@ class InstantController : public InstantLoaderDelegate {
   // is used by Browser, when the user presses <Enter>, to decide whether to
   // load the omnibox contents through Instant or otherwise. This is needed
   // because calls to |Update| don't necessarily result in a preview being
-  // shown, such as in the HIDDEN field trial.
+  // shown, such as in the HIDDEN and SILENT field trials.
   bool PrepareForCommit();
 
   // Invoked when the user does some gesture that should trigger making the
