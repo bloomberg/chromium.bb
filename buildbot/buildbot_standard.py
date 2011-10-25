@@ -228,34 +228,6 @@ def BuildScript(status, context):
       SCons(context, browser_test=True,
             args=['SILENT=1', 'chrome_browser_tests'])
 
-    # Use SCons to test the binaries built by GYP.
-    with Step('chrome_browser_tests using GYP', status, halt_on_fail=False):
-      if context.Windows():
-        base = os.path.join('build', context['gyp_mode'])
-        plugin = os.path.join(base, 'ppGoogleNaClPlugin.dll')
-        if context['bits'] == '32':
-          sel_ldr = os.path.join(base, 'sel_ldr.exe')
-        else:
-          sel_ldr = os.path.join(base, 'sel_ldr64.exe')
-      elif context.Linux():
-        base = os.path.join('..', 'out', context['gyp_mode'])
-        plugin = os.path.join(base, 'lib.target/libppGoogleNaClPlugin.so')
-        sel_ldr = os.path.join(base, 'sel_ldr')
-      elif context.Mac():
-        base = os.path.join('..', 'xcodebuild', context['gyp_mode'])
-        plugin = os.path.join(base, 'libppGoogleNaClPlugin.dylib')
-        sel_ldr = os.path.join(base, 'sel_ldr')
-      else:
-        raise Exception('Unknown platform')
-
-      SCons(
-          context,
-          browser_test=True,
-          args=['force_ppapi_plugin=' + plugin,
-                'force_sel_ldr=' + sel_ldr,
-                'SILENT=1',
-                'chrome_browser_tests'])
-
     # TODO(mcgrathr): Clean up how we organize tests and do this differently.
     # See http://code.google.com/p/nativeclient/issues/detail?id=1691
     if not do_dso_tests:
