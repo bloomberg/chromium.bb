@@ -20,6 +20,7 @@ class CONTENT_EXPORT TabContentsObserver : public IPC::Channel::Listener,
                                            public IPC::Message::Sender {
  public:
   virtual void RenderViewCreated(RenderViewHost* render_view_host);
+  virtual void RenderViewDeleted(RenderViewHost* render_view_host);
   virtual void NavigateToPendingEntry(
       const GURL& url,
       NavigationController::ReloadType reload_type);

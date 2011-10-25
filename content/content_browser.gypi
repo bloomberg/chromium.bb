@@ -343,6 +343,8 @@
     'browser/renderer_host/gtk_window_utils.h',
     'browser/renderer_host/java_bridge_channel_host.cc',
     'browser/renderer_host/java_bridge_channel_host.h',
+    'browser/renderer_host/java_bridge_dispatcher_host_manager.cc',
+    'browser/renderer_host/java_bridge_dispatcher_host_manager.h',
     'browser/renderer_host/java_bridge_dispatcher_host.cc',
     'browser/renderer_host/java_bridge_dispatcher_host.h',
     'browser/renderer_host/media/audio_common.cc',
@@ -736,6 +738,8 @@
       'sources!': [
         'browser/renderer_host/java_bridge_channel_host.cc',
         'browser/renderer_host/java_bridge_channel_host.h',
+        'browser/renderer_host/java_bridge_dispatcher_host_manager.cc',
+        'browser/renderer_host/java_bridge_dispatcher_host_manager.h',
         'browser/renderer_host/java_bridge_dispatcher_host.cc',
         'browser/renderer_host/java_bridge_dispatcher_host.h',
       ],

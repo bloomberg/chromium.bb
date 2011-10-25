@@ -17,6 +17,7 @@
 #include "base/string16.h"
 #include "content/browser/download/save_package.h"
 #include "content/browser/javascript_dialogs.h"
+#include "content/browser/renderer_host/java_bridge_dispatcher_host_manager.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
@@ -745,6 +746,11 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
 
   // Manages creation and swapping of render views.
   RenderViewHostManager render_manager_;
+
+  // Manages injecting Java objects into all RenderViewHosts associated with
+  // this TabContents.
+  scoped_ptr<JavaBridgeDispatcherHostManager>
+      java_bridge_dispatcher_host_manager_;
 
   // SavePackage, lazily created.
   scoped_refptr<SavePackage> save_package_;

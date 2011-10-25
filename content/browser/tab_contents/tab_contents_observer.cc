@@ -11,6 +11,9 @@
 void TabContentsObserver::RenderViewCreated(RenderViewHost* render_view_host) {
 }
 
+void TabContentsObserver::RenderViewDeleted(RenderViewHost* render_view_host) {
+}
+
 void TabContentsObserver::NavigateToPendingEntry(
     const GURL& url,
     NavigationController::ReloadType reload_type) {

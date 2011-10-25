@@ -210,6 +210,11 @@ TabContents::TabContents(content::BrowserContext* browser_context,
   // tab contents (normally a tab from the same window).
   view_->CreateView(base_tab_contents ?
       base_tab_contents->view()->GetContainerSize() : gfx::Size());
+
+#if defined(ENABLE_JAVA_BRIDGE)
+  java_bridge_dispatcher_host_manager_.reset(
+      new JavaBridgeDispatcherHostManager(this));
+#endif
 }
 
 TabContents::~TabContents() {
@@ -1471,6 +1476,7 @@ void TabContents::RenderViewGone(RenderViewHost* rvh,
 
 void TabContents::RenderViewDeleted(RenderViewHost* rvh) {
   render_manager_.RenderViewDeleted(rvh);
+  FOR_EACH_OBSERVER(TabContentsObserver, observers_, RenderViewDeleted(rvh));
 }
 
 void TabContents::DidNavigate(RenderViewHost* rvh,
