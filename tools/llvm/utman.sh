@@ -252,7 +252,7 @@ else
 fi
 
 # Current milestones in each repo
-readonly UPSTREAM_REV=${UPSTREAM_REV:-6a66f368c292}
+readonly UPSTREAM_REV=${UPSTREAM_REV:-529a800f040c}
 
 readonly NEWLIB_REV=c6358617f3fd
 readonly BINUTILS_REV=17a01203bd48
@@ -1896,13 +1896,7 @@ build-compiler-rt() {
 #########################################################################
 #########################################################################
 
-libstdcpp-setup() {
-  # BUG=http://code.google.com/p/nativeclient/issues/detail?id=2289
-  prefer-frontend llvm-gcc
-}
-
 libstdcpp() {
-  libstdcpp-setup
   StepBanner "LIBSTDCPP (BITCODE)"
 
   if libstdcpp-needs-configure; then
@@ -1937,7 +1931,6 @@ libstdcpp-needs-configure() {
 }
 
 libstdcpp-configure() {
-  libstdcpp-setup
   StepBanner "LIBSTDCPP" "Configure"
   local srcdir="${TC_SRC_LIBSTDCPP}"
   local objdir="${TC_BUILD_LIBSTDCPP}"
@@ -1981,7 +1974,6 @@ libstdcpp-needs-make() {
 }
 
 libstdcpp-make() {
-  libstdcpp-setup
   StepBanner "LIBSTDCPP" "Make"
   local srcdir="${TC_SRC_LIBSTDCPP}"
   local objdir="${TC_BUILD_LIBSTDCPP}"
@@ -2001,7 +1993,6 @@ libstdcpp-make() {
 }
 
 libstdcpp-install() {
-  libstdcpp-setup
   StepBanner "LIBSTDCPP" "Install"
   local objdir="${TC_BUILD_LIBSTDCPP}"
 
@@ -3490,8 +3481,7 @@ VerifyArchive() {
 #
 #   Verifies that a given .o file is bitcode and free of ASMSs
 verify-object-llvm() {
-  # BUG: http://code.google.com/p/nativeclient/issues/detail?id=2344
-  if ${LLVM_DIS} "$1" -o - | grep asm | grep -v sideeffect ; then
+  if ${LLVM_DIS} "$1" -o - | grep asm ; then
     echo
     echo "ERROR asm in $1"
     echo
