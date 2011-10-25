@@ -54,9 +54,21 @@ gfx::Rect Screen::GetMonitorAreaNearestPoint(const gfx::Point& point) {
   return GetMonitorAreaOrWorkAreaNearestPoint(point, false);
 }
 
+// static
 gfx::NativeWindow Screen::GetWindowAtCursorScreenPoint() {
   POINT location;
   return GetCursorPos(&location) ? WindowFromPoint(location) : NULL;
+}
+
+// static
+gfx::Size Screen::GetPrimaryMonitorSize() {
+  return gfx::Size(GetSystemMetrics(SM_CXSCREEN),
+                   GetSystemMetrics(SM_CYSCREEN));
+}
+
+// static
+int Screen::GetNumMonitors() {
+  return GetSystemMetrics(SM_CMONITORS);
 }
 
 }  // namespace gfx

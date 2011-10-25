@@ -55,4 +55,12 @@ gfx::Rect ScreenAura::GetWorkAreaBounds() {
   return bounds;
 }
 
+gfx::Size ScreenAura::GetPrimaryMonitorSizeImpl() {
+  return GetMonitorWorkAreaNearestPoint(gfx::Point()).size();
+}
+
+int ScreenAura::GetNumMonitorsImpl() {
+  return 1;
+}
+
 }  // namespace aura

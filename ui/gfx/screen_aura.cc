@@ -24,38 +24,42 @@ void Screen::SetInstance(Screen* screen) {
 
 // static
 gfx::Point Screen::GetCursorScreenPoint() {
-  DCHECK(instance_);
   return instance_->GetCursorScreenPointImpl();
 }
 
 // static
 gfx::Rect Screen::GetMonitorWorkAreaNearestWindow(gfx::NativeWindow window) {
-  DCHECK(instance_);
   return instance_->GetMonitorWorkAreaNearestWindowImpl(window);
 }
 
 // static
 gfx::Rect Screen::GetMonitorAreaNearestWindow(gfx::NativeWindow window) {
-  DCHECK(instance_);
   return instance_->GetMonitorAreaNearestWindowImpl(window);
 }
 
 // static
 gfx::Rect Screen::GetMonitorWorkAreaNearestPoint(const gfx::Point& point) {
-  DCHECK(instance_);
   return instance_->GetMonitorWorkAreaNearestPointImpl(point);
 }
 
 // static
 gfx::Rect Screen::GetMonitorAreaNearestPoint(const gfx::Point& point) {
-  DCHECK(instance_);
   return instance_->GetMonitorAreaNearestPointImpl(point);
 }
 
 // static
 gfx::NativeWindow Screen::GetWindowAtCursorScreenPoint() {
-  DCHECK(instance_);
   return instance_->GetWindowAtCursorScreenPointImpl();
+}
+
+// static
+gfx::Size Screen::GetPrimaryMonitorSize() {
+  return instance_->GetPrimaryMonitorSizeImpl();
+}
+
+// static
+int Screen::GetNumMonitors() {
+  return instance_->GetNumMonitorsImpl();
 }
 
 }  // namespace gfx

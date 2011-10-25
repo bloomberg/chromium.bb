@@ -35,6 +35,8 @@ class AURA_EXPORT ScreenAura : public gfx::Screen {
   virtual gfx::Rect GetMonitorAreaNearestPointImpl(
       const gfx::Point& point) OVERRIDE;
   virtual gfx::NativeWindow GetWindowAtCursorScreenPointImpl() OVERRIDE;
+  virtual gfx::Size GetPrimaryMonitorSizeImpl() OVERRIDE;
+  virtual int GetNumMonitorsImpl() OVERRIDE;
 
  private:
   // We currently support only one monitor. These two methods return the bounds

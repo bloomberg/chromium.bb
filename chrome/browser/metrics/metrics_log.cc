@@ -19,7 +19,6 @@
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/metrics/display_utils.h"
 #include "chrome/browser/plugin_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -28,6 +27,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/browser/gpu/gpu_data_manager.h"
 #include "googleurl/src/gurl.h"
+#include "ui/gfx/screen.h"
 #include "webkit/plugins/webplugininfo.h"
 
 #define OPEN_ELEMENT_FOR_SCOPE(name) ScopedElement scoped_element(this, name)
@@ -358,12 +358,10 @@ void MetricsLog::RecordEnvironment(
 
   {
     OPEN_ELEMENT_FOR_SCOPE("display");
-    int width = 0;
-    int height = 0;
-    DisplayUtils::GetPrimaryDisplayDimensions(&width, &height);
-    WriteIntAttribute("xsize", width);
-    WriteIntAttribute("ysize", height);
-    WriteIntAttribute("screens", DisplayUtils::GetDisplayCount());
+    const gfx::Size display_size = gfx::Screen::GetPrimaryMonitorSize();
+    WriteIntAttribute("xsize", display_size.width());
+    WriteIntAttribute("ysize", display_size.height());
+    WriteIntAttribute("screens", gfx::Screen::GetNumMonitors());
   }
 
   {

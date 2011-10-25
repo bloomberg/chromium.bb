@@ -63,6 +63,7 @@ gfx::Rect Screen::GetMonitorAreaNearestPoint(const gfx::Point& point) {
   return gfx::Rect(bounds);
 }
 
+// static
 gfx::NativeWindow Screen::GetWindowAtCursorScreenPoint() {
   GdkWindow* window = gdk_window_at_pointer(NULL, NULL);
   if (!window)
@@ -75,6 +76,20 @@ gfx::NativeWindow Screen::GetWindowAtCursorScreenPoint() {
     return NULL;
   widget = gtk_widget_get_toplevel(widget);
   return GTK_IS_WINDOW(widget) ? GTK_WINDOW(widget) : NULL;
+}
+
+// static
+gfx::Size Screen::GetPrimaryMonitorSize() {
+  GdkScreen* screen = gdk_screen_get_default();
+  return gfx::Size(gdk_screen_get_width(screen), gdk_screen_get_height(screen));
+}
+
+// static
+int Screen::GetNumMonitors() {
+  // This query is kinda bogus for Linux -- do we want number of X screens?
+  // The number of monitors Xinerama has?  We'll just use whatever GDK uses.
+  GdkScreen* screen = gdk_screen_get_default();
+  return gdk_screen_get_n_monitors(screen);
 }
 
 }  // namespace gfx
