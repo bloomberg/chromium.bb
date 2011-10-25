@@ -29,6 +29,7 @@ void AuraTestSuite::Initialize() {
   // output, it'll pass regardless of the system language.
   ui::ResourceBundle::InitSharedInstance("en-US");
   ui::CompositorTestSupport::Initialize();
+  ui::CompositorTestSupport::SetupMockCompositor();
 }
 
 void AuraTestSuite::Shutdown() {

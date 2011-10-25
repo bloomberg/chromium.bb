@@ -137,6 +137,16 @@ class COMPOSITOR_EXPORT Compositor : public base::RefCounted<Compositor> {
   void RemoveObserver(CompositorObserver* observer);
   bool HasObserver(CompositorObserver* observer);
 
+  static void set_compositor_factory_for_testing(
+      ui::Compositor*(*factory)(ui::CompositorDelegate* owner)) {
+    compositor_factory_ = factory;
+  }
+
+  static ui::Compositor* (*compositor_factory())(
+      ui::CompositorDelegate* owner) {
+    return compositor_factory_;
+  }
+
  protected:
   Compositor(CompositorDelegate* delegate, const gfx::Size& size);
   virtual ~Compositor();
@@ -168,6 +178,12 @@ class COMPOSITOR_EXPORT Compositor : public base::RefCounted<Compositor> {
   Layer* root_layer_;
 
   ObserverList<CompositorObserver> observer_list_;
+
+  // Factory used to create Compositors. Settable by tests.
+  // The delegate can be NULL if you don't wish to catch the ScheduleDraw()
+  // calls to it.
+  static ui::Compositor*(*compositor_factory_)(
+      ui::CompositorDelegate* delegate);
 
   friend class base::RefCounted<Compositor>;
 };

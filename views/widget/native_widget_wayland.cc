@@ -83,8 +83,8 @@ void NativeWidgetWayland::InitNativeWidget(const Widget::InitParams& params) {
   SetNativeWindowProperty(kNativeWidgetKey, this);
 
   if (View::get_use_acceleration_when_possible()) {
-    if (Widget::compositor_factory()) {
-      compositor_ = (*Widget::compositor_factory())();
+    if (ui::Compositor::compositor_factory()) {
+      compositor_ = (*ui::Compositor::compositor_factory())(this);
     } else {
       compositor_ = ui::Compositor::Create(this,
                                            egl_window_,

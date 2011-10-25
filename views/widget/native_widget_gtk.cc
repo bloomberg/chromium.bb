@@ -691,8 +691,8 @@ void NativeWidgetGtk::InitNativeWidget(const Widget::InitParams& params) {
   }
 
   if (View::get_use_acceleration_when_possible()) {
-    if (Widget::compositor_factory()) {
-      compositor_ = (*Widget::compositor_factory())();
+    if (ui::Compositor::compositor_factory()) {
+      compositor_ = (*ui::Compositor::compositor_factory())(this);
     } else {
       gint width, height;
       gdk_drawable_get_size(window_contents_->window, &width, &height);

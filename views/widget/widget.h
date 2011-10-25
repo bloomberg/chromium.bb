@@ -496,13 +496,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     return non_client_view_ ? non_client_view_->client_view() : NULL;
   }
 
-  static void set_compositor_factory_for_testing(ui::Compositor*(*factory)()) {
-    compositor_factory_ = factory;
-  }
-  static ui::Compositor* (*compositor_factory())() {
-    return compositor_factory_;
-  }
-
   const ui::Compositor* GetCompositor() const;
   ui::Compositor* GetCompositor();
 
@@ -721,9 +714,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   // See |is_top_level()| accessor.
   bool is_top_level_;
-
-  // Factory used to create Compositors. Settable by tests.
-  static ui::Compositor*(*compositor_factory_)();
 
   // Tracks whether native widget has been initialized.
   bool native_widget_initialized_;

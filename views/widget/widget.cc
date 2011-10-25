@@ -1100,9 +1100,6 @@ void Widget::DestroyRootView() {
 ////////////////////////////////////////////////////////////////////////////////
 // Widget, private:
 
-// static
-ui::Compositor*(*Widget::compositor_factory_)() = NULL;
-
 bool Widget::ShouldReleaseCaptureOnMouseReleased() const {
   return true;
 }

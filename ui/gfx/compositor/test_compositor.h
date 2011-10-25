@@ -18,7 +18,7 @@ class TestCompositorDelegate;
 // Trivial Compositor implementation that creates Textures of type TestTexture.
 class TestCompositor : public ui::Compositor {
  public:
-  TestCompositor();
+  explicit TestCompositor(CompositorDelegate* owner);
   virtual ~TestCompositor();
 
   // ui::Compositor:
@@ -27,6 +27,9 @@ class TestCompositor : public ui::Compositor {
   virtual void OnNotifyEnd() OVERRIDE;
   virtual void Blur(const gfx::Rect& bounds) OVERRIDE;
   virtual void DrawTree() OVERRIDE;
+
+  // A simple factory that creates a test compositor with a given delegate
+  static ui::Compositor* Create(ui::CompositorDelegate* owner);
 
  protected:
   virtual void OnWidgetSizeChanged() OVERRIDE;

@@ -238,7 +238,7 @@ class LayerWithDelegateTest : public testing::Test {
 
   // Overridden from testing::Test:
   virtual void SetUp() OVERRIDE {
-    compositor_ = new TestCompositor();
+    compositor_ = new TestCompositor(NULL);
   }
 
   virtual void TearDown() OVERRIDE {

@@ -1290,8 +1290,8 @@ LRESULT NativeWidgetWin::OnCreate(CREATESTRUCT* create_struct) {
 
 #if defined(VIEWS_COMPOSITOR)
   if (View::get_use_acceleration_when_possible()) {
-    if (Widget::compositor_factory()) {
-      compositor_ = (*Widget::compositor_factory())();
+    if (ui::Compositor::compositor_factory()) {
+      compositor_ = (*Widget::compositor_factory())(this);
     } else {
       CRect window_rect;
       GetClientRect(&window_rect);

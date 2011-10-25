@@ -16,6 +16,9 @@ TextureDrawParams::TextureDrawParams()
       vertically_flipped(false) {
 }
 
+// static
+Compositor*(*Compositor::compositor_factory_)(CompositorDelegate*) = NULL;
+
 Compositor::Compositor(CompositorDelegate* delegate, const gfx::Size& size)
     : delegate_(delegate),
       size_(size),

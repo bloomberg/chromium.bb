@@ -27,10 +27,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
-
-#if defined(TOOLKIT_VIEWS)
-#include "views/view.h"
-#endif
+#include "ui/gfx/compositor/compositor_test_support.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
@@ -196,10 +193,8 @@ void ChromeTestSuite::Initialize() {
       resources_pack_path.Append(FILE_PATH_LITERAL("resources.pak"));
   ResourceBundle::AddDataPackToSharedInstance(resources_pack_path);
 
-#if defined(TOOLKIT_VIEWS) && defined(OS_LINUX)
-  // Turn of GPU compositing in browser during unit tests.
-  views::View::set_use_acceleration_when_possible(false);
-#endif
+  // Mock out the compositor on platforms that use it.
+  ui::CompositorTestSupport::SetupMockCompositor();
 
   stats_filename_ = base::StringPrintf("unit_tests-%d",
                                        base::GetCurrentProcId());

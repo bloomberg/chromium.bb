@@ -49,13 +49,6 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate,
   static Desktop* GetInstance();
   static void DeleteInstanceForTesting();
 
-  static void set_compositor_factory_for_testing(ui::Compositor*(*factory)()) {
-    compositor_factory_ = factory;
-  }
-  static ui::Compositor* (*compositor_factory())() {
-    return compositor_factory_;
-  }
-
   static void set_use_fullscreen_host_window(bool use_fullscreen) {
     use_fullscreen_host_window_ = use_fullscreen;
   }
@@ -170,9 +163,6 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate,
   scoped_ptr<DesktopDelegate> delegate_;
 
   static Desktop* instance_;
-
-  // Factory used to create Compositors. Settable by tests.
-  static ui::Compositor*(*compositor_factory_)();
 
   // If set before the Desktop is created, the host window will cover the entire
   // screen.  Note that this can still be overridden via the

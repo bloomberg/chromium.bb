@@ -42,7 +42,6 @@ static const int kDefaultHostWindowHeight = 1024;
 }  // namespace
 
 Desktop* Desktop::instance_ = NULL;
-ui::Compositor*(*Desktop::compositor_factory_)() = NULL;
 bool Desktop::use_fullscreen_host_window_ = false;
 
 Desktop::Desktop()
@@ -62,8 +61,8 @@ Desktop::Desktop()
   host_->SetDesktop(this);
   last_mouse_location_ = host_->QueryMouseLocation();
 
-  if (compositor_factory_) {
-    compositor_ = (*Desktop::compositor_factory())();
+  if (ui::Compositor::compositor_factory()) {
+    compositor_ = (*ui::Compositor::compositor_factory())(this);
   } else {
     compositor_ = ui::Compositor::Create(this, host_->GetAcceleratedWidget(),
                                          host_->GetSize());

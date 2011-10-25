@@ -11,15 +11,11 @@
 #include "ui/base/ui_base_paths.h"
 #include "ui/gfx/compositor/compositor_test_support.h"
 #include "ui/gfx/gfx_paths.h"
-#include "ui/gfx/gl/gl_implementation.h"
 
 AuraShellTestSuite::AuraShellTestSuite(int argc, char** argv)
     : TestSuite(argc, argv) {}
 
 void AuraShellTestSuite::Initialize() {
-#if defined(OS_LINUX)
-  gfx::InitializeGLBindings(gfx::kGLImplementationOSMesaGL);
-#endif
   base::TestSuite::Initialize();
 
   gfx::RegisterPathProvider();
@@ -29,6 +25,7 @@ void AuraShellTestSuite::Initialize() {
   // output, it'll pass regardless of the system language.
   ui::ResourceBundle::InitSharedInstance("en-US");
   ui::CompositorTestSupport::Initialize();
+  ui::CompositorTestSupport::SetupMockCompositor();
 }
 
 void AuraShellTestSuite::Shutdown() {

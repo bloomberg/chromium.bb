@@ -19,11 +19,8 @@ class ViewTestSuite : public base::TestSuite {
     ui::RegisterPathProvider();
     ui::ResourceBundle::InitSharedInstance("en-US");
 
-#if defined(OS_LINUX)
-    // Disable GPU browser compositor during unit tests.
-    views::View::set_use_acceleration_when_possible(false);
-#endif
     ui::CompositorTestSupport::Initialize();
+    ui::CompositorTestSupport::SetupMockCompositor();
   }
 
   virtual void Shutdown() {

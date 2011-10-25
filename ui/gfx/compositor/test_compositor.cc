@@ -19,9 +19,11 @@ class TestCompositorDelegate : public ui::CompositorDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestCompositorDelegate);
 };
 
-TestCompositor::TestCompositor()
-    : Compositor(new TestCompositorDelegate, gfx::Size(100, 100)) {
-  owned_delegate_.reset(static_cast<TestCompositorDelegate*>(delegate()));
+TestCompositor::TestCompositor(CompositorDelegate *owner)
+    : Compositor((owner ? owner : new TestCompositorDelegate),
+                 gfx::Size(100, 100)) {
+  if (!owner)
+    owned_delegate_.reset(static_cast<TestCompositorDelegate*>(delegate()));
 }
 
 TestCompositor::~TestCompositor() {
@@ -44,6 +46,10 @@ void TestCompositor::DrawTree() {
 #if !defined(USE_WEBKIT_COMPOSITOR)
   Compositor::DrawTree();
 #endif
+}
+
+ui::Compositor* TestCompositor::Create(ui::CompositorDelegate* owner) {
+  return new ui::TestCompositor(owner);
 }
 
 void TestCompositor::OnWidgetSizeChanged() {

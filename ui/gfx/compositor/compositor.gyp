@@ -106,8 +106,8 @@
       'target_name': 'compositor_test_support',
       'type': 'static_library',
       'dependencies': [
-        '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_support',
-        '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
+        '<(DEPTH)/base/base.gyp:base',
+        '<(DEPTH)/skia/skia.gyp:skia',
       ],
       'sources': [
         'compositor_test_support.cc',
@@ -117,7 +117,23 @@
         ['use_webkit_compositor == 1', {
             'dependencies': [
               '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_support',
+              '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
             ],
+        }],
+        ['views_compositor==1', {
+          'sources': [
+          'compositor.cc',
+          'compositor.h',
+          'layer.cc',
+          'layer.h',
+          'layer_animator.cc',
+          'layer_animator.h',
+          'layer_animator_delegate.h',
+          'test_compositor.cc',
+          'test_compositor.h',
+          'test_texture.cc',
+          'test_texture.h',
+          ],
         }],
       ],
     },
@@ -142,8 +158,6 @@
         'layer_animator_unittest.cc',
         'layer_unittest.cc',
         'run_all_unittests.cc',
-        'test_compositor.cc',
-        'test_compositor.h',
         'test_compositor_host.h',
         'test_compositor_host_linux.cc',
         'test_compositor_host_win.cc',

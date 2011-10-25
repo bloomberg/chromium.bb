@@ -10,14 +10,9 @@
 
 #include "ui/aura/desktop.h"
 #include "ui/aura/test/test_desktop_delegate.h"
-#include "ui/gfx/compositor/test_compositor.h"
 
 namespace aura {
 namespace test {
-
-static ui::Compositor* TestCreateCompositor() {
-  return new ui::TestCompositor();
-}
 
 AuraTestBase::AuraTestBase()
     : setup_called_(false),
@@ -26,7 +21,6 @@ AuraTestBase::AuraTestBase()
   OleInitialize(NULL);
 #endif
 
-  aura::Desktop::set_compositor_factory_for_testing(&TestCreateCompositor);
   // TestDesktopDelegate is owned by the desktop.
   new TestDesktopDelegate();
   Desktop::GetInstance()->Show();
@@ -50,7 +44,6 @@ AuraTestBase::~AuraTestBase() {
   // Ensure that we don't use the previously-allocated static Desktop object
   // later -- on Linux, it holds a reference to our message loop's X connection.
   aura::Desktop::DeleteInstanceForTesting();
-  aura::Desktop::set_compositor_factory_for_testing(NULL);
 }
 
 void AuraTestBase::SetUp() {
