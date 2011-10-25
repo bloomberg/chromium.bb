@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_bookmarks_module.h"
+#include "chrome/browser/bookmarks/bookmark_extension_api.h"
 
 #include "base/bind.h"
 #include "base/file_path.h"
@@ -18,11 +18,11 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_codec.h"
+#include "chrome/browser/bookmarks/bookmark_extension_api_constants.h"
+#include "chrome/browser/bookmarks/bookmark_extension_helpers.h"
 #include "chrome/browser/bookmarks/bookmark_html_writer.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
-#include "chrome/browser/extensions/extension_bookmark_helpers.h"
-#include "chrome/browser/extensions/extension_bookmarks_module_constants.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extensions_quota_service.h"
@@ -38,7 +38,7 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace keys = extension_bookmarks_module_constants;
+namespace keys = bookmark_extension_api_constants;
 
 using base::TimeDelta;
 typedef QuotaLimitHeuristic::Bucket Bucket;
@@ -125,21 +125,21 @@ void BookmarksFunction::Observe(int type,
   Release();  // Balanced in Run().
 }
 
-ExtensionBookmarkEventRouter::ExtensionBookmarkEventRouter(
+BookmarkExtensionEventRouter::BookmarkExtensionEventRouter(
     BookmarkModel* model) : model_(model) {
 }
 
-ExtensionBookmarkEventRouter::~ExtensionBookmarkEventRouter() {
+BookmarkExtensionEventRouter::~BookmarkExtensionEventRouter() {
   if (model_) {
     model_->RemoveObserver(this);
   }
 }
 
-void ExtensionBookmarkEventRouter::Init() {
+void BookmarkExtensionEventRouter::Init() {
   model_->AddObserver(this);
 }
 
-void ExtensionBookmarkEventRouter::DispatchEvent(Profile *profile,
+void BookmarkExtensionEventRouter::DispatchEvent(Profile *profile,
                                                  const char* event_name,
                                                  const std::string& json_args) {
   if (profile->GetExtensionEventRouter()) {
@@ -148,18 +148,18 @@ void ExtensionBookmarkEventRouter::DispatchEvent(Profile *profile,
   }
 }
 
-void ExtensionBookmarkEventRouter::Loaded(BookmarkModel* model,
+void BookmarkExtensionEventRouter::Loaded(BookmarkModel* model,
                                           bool ids_reassigned) {
   // TODO(erikkay): Perhaps we should send this event down to the extension
   // so they know when it's safe to use the API?
 }
 
-void ExtensionBookmarkEventRouter::BookmarkModelBeingDeleted(
+void BookmarkExtensionEventRouter::BookmarkModelBeingDeleted(
     BookmarkModel* model) {
   model_ = NULL;
 }
 
-void ExtensionBookmarkEventRouter::BookmarkNodeMoved(
+void BookmarkExtensionEventRouter::BookmarkNodeMoved(
     BookmarkModel* model,
     const BookmarkNode* old_parent,
     int old_index,
@@ -182,14 +182,14 @@ void ExtensionBookmarkEventRouter::BookmarkNodeMoved(
   DispatchEvent(model->profile(), keys::kOnBookmarkMoved, json_args);
 }
 
-void ExtensionBookmarkEventRouter::BookmarkNodeAdded(BookmarkModel* model,
+void BookmarkExtensionEventRouter::BookmarkNodeAdded(BookmarkModel* model,
                                                      const BookmarkNode* parent,
                                                      int index) {
   ListValue args;
   const BookmarkNode* node = parent->GetChild(index);
   args.Append(new StringValue(base::Int64ToString(node->id())));
   DictionaryValue* obj =
-      extension_bookmark_helpers::GetNodeDictionary(node, false, false);
+      bookmark_extension_helpers::GetNodeDictionary(node, false, false);
   args.Append(obj);
 
   std::string json_args;
@@ -197,7 +197,7 @@ void ExtensionBookmarkEventRouter::BookmarkNodeAdded(BookmarkModel* model,
   DispatchEvent(model->profile(), keys::kOnBookmarkCreated, json_args);
 }
 
-void ExtensionBookmarkEventRouter::BookmarkNodeRemoved(
+void BookmarkExtensionEventRouter::BookmarkNodeRemoved(
     BookmarkModel* model,
     const BookmarkNode* parent,
     int index,
@@ -215,7 +215,7 @@ void ExtensionBookmarkEventRouter::BookmarkNodeRemoved(
   DispatchEvent(model->profile(), keys::kOnBookmarkRemoved, json_args);
 }
 
-void ExtensionBookmarkEventRouter::BookmarkNodeChanged(
+void BookmarkExtensionEventRouter::BookmarkNodeChanged(
     BookmarkModel* model, const BookmarkNode* node) {
   ListValue args;
   args.Append(new StringValue(base::Int64ToString(node->id())));
@@ -236,12 +236,12 @@ void ExtensionBookmarkEventRouter::BookmarkNodeChanged(
   DispatchEvent(model->profile(), keys::kOnBookmarkChanged, json_args);
 }
 
-void ExtensionBookmarkEventRouter::BookmarkNodeFaviconChanged(
+void BookmarkExtensionEventRouter::BookmarkNodeFaviconChanged(
     BookmarkModel* model, const BookmarkNode* node) {
   // TODO(erikkay) anything we should do here?
 }
 
-void ExtensionBookmarkEventRouter::BookmarkNodeChildrenReordered(
+void BookmarkExtensionEventRouter::BookmarkNodeChildrenReordered(
     BookmarkModel* model, const BookmarkNode* node) {
   ListValue args;
   args.Append(new StringValue(base::Int64ToString(node->id())));
@@ -263,7 +263,7 @@ void ExtensionBookmarkEventRouter::BookmarkNodeChildrenReordered(
                 json_args);
 }
 
-void ExtensionBookmarkEventRouter::
+void BookmarkExtensionEventRouter::
     BookmarkImportBeginning(BookmarkModel* model) {
   ListValue args;
   std::string json_args;
@@ -273,7 +273,7 @@ void ExtensionBookmarkEventRouter::
                 json_args);
 }
 
-void ExtensionBookmarkEventRouter::BookmarkImportEnding(BookmarkModel* model) {
+void BookmarkExtensionEventRouter::BookmarkImportEnding(BookmarkModel* model) {
   ListValue args;
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
@@ -302,7 +302,7 @@ bool GetBookmarksFunction::RunImpl() {
         error_ = keys::kNoNodeError;
         return false;
       } else {
-        extension_bookmark_helpers::AddNode(node, json.get(), false);
+        bookmark_extension_helpers::AddNode(node, json.get(), false);
       }
     }
   } else {
@@ -316,7 +316,7 @@ bool GetBookmarksFunction::RunImpl() {
       error_ = keys::kNoNodeError;
       return false;
     }
-    extension_bookmark_helpers::AddNode(node, json.get(), false);
+    bookmark_extension_helpers::AddNode(node, json.get(), false);
   }
 
   result_.reset(json.release());
@@ -339,7 +339,7 @@ bool GetBookmarkChildrenFunction::RunImpl() {
   int child_count = node->child_count();
   for (int i = 0; i < child_count; ++i) {
     const BookmarkNode* child = node->GetChild(i);
-    extension_bookmark_helpers::AddNode(child, json.get(), false);
+    bookmark_extension_helpers::AddNode(child, json.get(), false);
   }
 
   result_.reset(json.release());
@@ -359,7 +359,7 @@ bool GetBookmarkRecentFunction::RunImpl() {
   std::vector<const BookmarkNode*>::iterator i = nodes.begin();
   for (; i != nodes.end(); ++i) {
     const BookmarkNode* node = *i;
-    extension_bookmark_helpers::AddNode(node, json, false);
+    bookmark_extension_helpers::AddNode(node, json, false);
   }
   result_.reset(json);
   return true;
@@ -369,7 +369,7 @@ bool GetBookmarkTreeFunction::RunImpl() {
   BookmarkModel* model = profile()->GetBookmarkModel();
   scoped_ptr<ListValue> json(new ListValue());
   const BookmarkNode* node = model->root_node();
-  extension_bookmark_helpers::AddNode(node, json.get(), true);
+  bookmark_extension_helpers::AddNode(node, json.get(), true);
   result_.reset(json.release());
   return true;
 }
@@ -389,7 +389,7 @@ bool GetBookmarkSubTreeFunction::RunImpl() {
     error_ = keys::kNoNodeError;
     return false;
   }
-  extension_bookmark_helpers::AddNode(node, json.get(), true);
+  bookmark_extension_helpers::AddNode(node, json.get(), true);
   result_.reset(json.release());
   return true;
 }
@@ -408,7 +408,7 @@ bool SearchBookmarksFunction::RunImpl() {
   std::vector<const BookmarkNode*>::iterator i = nodes.begin();
   for (; i != nodes.end(); ++i) {
     const BookmarkNode* node = *i;
-    extension_bookmark_helpers::AddNode(node, json, false);
+    bookmark_extension_helpers::AddNode(node, json, false);
   }
 
   result_.reset(json);
@@ -448,7 +448,7 @@ bool RemoveBookmarkFunction::RunImpl() {
   size_t count = ids.size();
   EXTENSION_FUNCTION_VALIDATE(count > 0);
   for (std::list<int64>::iterator it = ids.begin(); it != ids.end(); ++it) {
-    if (!extension_bookmark_helpers::RemoveNode(model, *it, recursive, &error_))
+    if (!bookmark_extension_helpers::RemoveNode(model, *it, recursive, &error_))
       return false;
   }
   return true;
@@ -516,7 +516,7 @@ bool CreateBookmarkFunction::RunImpl() {
   }
 
   DictionaryValue* ret =
-      extension_bookmark_helpers::GetNodeDictionary(node, false, false);
+      bookmark_extension_helpers::GetNodeDictionary(node, false, false);
   result_.reset(ret);
 
   return true;
@@ -595,7 +595,7 @@ bool MoveBookmarkFunction::RunImpl() {
   model->Move(node, parent, index);
 
   DictionaryValue* ret =
-      extension_bookmark_helpers::GetNodeDictionary(node, false, false);
+      bookmark_extension_helpers::GetNodeDictionary(node, false, false);
   result_.reset(ret);
 
   return true;
@@ -653,7 +653,7 @@ bool UpdateBookmarkFunction::RunImpl() {
     model->SetURL(node, url);
 
   DictionaryValue* ret =
-      extension_bookmark_helpers::GetNodeDictionary(node, false, false);
+      bookmark_extension_helpers::GetNodeDictionary(node, false, false);
   result_.reset(ret);
 
   return true;

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_bookmark_helpers.h"
+#include "chrome/browser/bookmarks/bookmark_extension_helpers.h"
 
 #include "base/string_number_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/bookmarks/bookmark_extension_api_constants.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/browser/extensions/extension_bookmarks_module_constants.h"
 
-namespace keys = extension_bookmarks_module_constants;
+namespace keys = bookmark_extension_api_constants;
 
 namespace {
 
@@ -18,7 +18,7 @@ void AddNode(const BookmarkNode* node,
              bool recurse,
              bool only_folders) {
   if (node->IsVisible()) {
-    base::DictionaryValue* dict = extension_bookmark_helpers::GetNodeDictionary(
+    base::DictionaryValue* dict = bookmark_extension_helpers::GetNodeDictionary(
         node, recurse, only_folders);
     list->Append(dict);
   }
@@ -26,7 +26,7 @@ void AddNode(const BookmarkNode* node,
 
 }  // namespace
 
-namespace extension_bookmark_helpers {
+namespace bookmark_extension_helpers {
 
 base::DictionaryValue* GetNodeDictionary(const BookmarkNode* node,
                                          bool recurse,
@@ -104,4 +104,4 @@ bool RemoveNode(BookmarkModel* model,
   return true;
 }
 
-}  // namespace extension_bookmark_helpers
+}  // namespace bookmark_extension_helpers

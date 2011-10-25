@@ -13,7 +13,7 @@ include_rules = [
   "+chrome/browser/password_manager/encryptor.h",
 
   # ExtensionsActivityMonitor
-  "+chrome/browser/extensions",
+  "+chrome/browser/bookmarks/bookmark_extension_api.h",
   "+chrome/common/extensions",
   "+chrome/common/chrome_notification_types.h",
 

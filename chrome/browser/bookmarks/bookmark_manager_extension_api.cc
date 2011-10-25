@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_bookmark_manager_api.h"
+#include "chrome/browser/bookmarks/bookmark_manager_extension_api.h"
 
 #include <vector>
 
@@ -12,8 +12,8 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
-#include "chrome/browser/extensions/extension_bookmark_helpers.h"
-#include "chrome/browser/extensions/extension_bookmarks_module_constants.h"
+#include "chrome/browser/bookmarks/bookmark_extension_api_constants.h"
+#include "chrome/browser/bookmarks/bookmark_extension_helpers.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
@@ -28,7 +28,7 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace keys = extension_bookmarks_module_constants;
+namespace keys = bookmark_extension_api_constants;
 
 namespace {
 
@@ -465,11 +465,11 @@ bool GetSubtreeBookmarkManagerFunction::RunImpl() {
   }
   scoped_ptr<ListValue> json(new ListValue());
   if (folders_only) {
-    extension_bookmark_helpers::AddNodeFoldersOnly(node,
+    bookmark_extension_helpers::AddNodeFoldersOnly(node,
                                                    json.get(),
                                                    true);
   } else {
-    extension_bookmark_helpers::AddNode(node, json.get(), true);
+    bookmark_extension_helpers::AddNode(node, json.get(), true);
   }
   result_.reset(json.release());
   return true;

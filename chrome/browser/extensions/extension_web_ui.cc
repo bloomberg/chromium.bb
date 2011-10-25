@@ -9,7 +9,7 @@
 
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/extensions/extension_bookmark_manager_api.h"
+#include "chrome/browser/bookmarks/bookmark_manager_extension_api.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/prefs/pref_service.h"

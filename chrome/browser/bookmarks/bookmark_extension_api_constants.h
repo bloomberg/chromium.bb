@@ -1,14 +1,14 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // Constants used to for the Bookmarks API.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_BOOKMARKS_MODULE_CONSTANTS_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_BOOKMARKS_MODULE_CONSTANTS_H_
+#ifndef CHROME_BROWSER_BOOKMARKS_BOOKMARK_EXTENSION_API_CONSTANTS_H_
+#define CHROME_BROWSER_BOOKMARKS_BOOKMARK_EXTENSION_API_CONSTANTS_H_
 #pragma once
 
-namespace extension_bookmarks_module_constants {
+namespace bookmark_extension_api_constants {
 
 // Keys.
 extern const char kIdKey[];
@@ -50,6 +50,6 @@ extern const char kOnBookmarkDragEnter[];
 extern const char kOnBookmarkDragLeave[];
 extern const char kOnBookmarkDrop[];
 
-};  // namespace extension_bookmarks_module_constants
+};  // namespace bookmark_extension_api_constants
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_BOOKMARKS_MODULE_CONSTANTS_H_
+#endif  // CHROME_BROWSER_BOOKMARKS_BOOKMARK_EXTENSION_API_CONSTANTS_H_

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_BOOKMARK_MANAGER_API_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_BOOKMARK_MANAGER_API_H_
+#ifndef CHROME_BROWSER_BOOKMARKS_BOOKMARK_MANAGER_EXTENSION_API_H_
+#define CHROME_BROWSER_BOOKMARKS_BOOKMARK_MANAGER_EXTENSION_API_H_
 #pragma once
 
+#include "chrome/browser/bookmarks/bookmark_extension_api.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
-#include "chrome/browser/extensions/extension_bookmarks_module.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 
@@ -20,6 +20,7 @@ class ListValue;
 }
 
 // Class that handles the chrome.experimental.bookmarkManager events.
+// TODO(aa): Rename this
 class ExtensionBookmarkManagerEventRouter
     : public BookmarkTabHelper::BookmarkDrag {
  public:
@@ -146,4 +147,4 @@ class RecordLaunchBookmarkFunction : public BookmarksFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.bookmarkManager.recordLaunch")
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_BOOKMARK_MANAGER_API_H_
+#endif  // CHROME_BROWSER_BOOKMARKS_BOOKMARK_MANAGER_EXTENSION_API_H_

@@ -8,7 +8,7 @@
 #include "base/string_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_bookmarks_module.h"
+#include "chrome/browser/bookmarks/bookmark_extension_api.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"

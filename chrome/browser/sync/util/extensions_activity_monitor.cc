@@ -5,7 +5,7 @@
 #include "chrome/browser/sync/util/extensions_activity_monitor.h"
 
 #include "base/task.h"
-#include "chrome/browser/extensions/extension_bookmarks_module.h"
+#include "chrome/browser/bookmarks/bookmark_extension_api.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/browser/browser_thread.h"

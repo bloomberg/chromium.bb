@@ -9,8 +9,8 @@
 #include "base/bind_helpers.h"
 #include "base/string_number_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/bookmarks/bookmark_extension_api_constants.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/browser/extensions/extension_bookmarks_module_constants.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -24,7 +24,7 @@
 // NTP into an embedded extension which would allow us to leverage the same
 // bookmark APIs as the bookmark manager.
 
-namespace keys = extension_bookmarks_module_constants;
+namespace keys = bookmark_extension_api_constants;
 
 BookmarksHandler::BookmarksHandler() : model_(NULL),
                                        dom_ready_(false),

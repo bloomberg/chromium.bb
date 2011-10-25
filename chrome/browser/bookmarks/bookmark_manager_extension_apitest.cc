@@ -4,9 +4,9 @@
 
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/bookmarks/bookmark_manager_extension_api.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/extensions/extension_bookmark_manager_api.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"

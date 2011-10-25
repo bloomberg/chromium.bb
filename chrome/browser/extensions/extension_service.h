@@ -46,8 +46,8 @@
 #include "content/public/browser/notification_registrar.h"
 
 class AppNotificationManager;
+class BookmarkExtensionEventRouter;
 class CrxInstaller;
-class ExtensionBookmarkEventRouter;
 class ExtensionBrowserEventRouter;
 class ExtensionContentSettingsStore;
 class ExtensionCookiesEventRouter;
@@ -811,7 +811,7 @@ class ExtensionService
 
   scoped_ptr<ExtensionPreferenceEventRouter> preference_event_router_;
 
-  scoped_ptr<ExtensionBookmarkEventRouter> bookmark_event_router_;
+  scoped_ptr<BookmarkExtensionEventRouter> bookmark_event_router_;
 
   scoped_ptr<ExtensionCookiesEventRouter> cookies_event_router_;
 

@@ -7,10 +7,10 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/browser/extensions/extension_bookmark_helpers.h"
-#include "chrome/browser/extensions/extension_bookmarks_module_constants.h"
+#include "chrome/browser/bookmarks/bookmark_extension_api_constants.h"
+#include "chrome/browser/bookmarks/bookmark_extension_helpers.h"
 
-namespace keys = extension_bookmarks_module_constants;
+namespace keys = bookmark_extension_api_constants;
 
 class ExtensionBookmarksTest : public testing::Test {
  public:
@@ -32,7 +32,7 @@ class ExtensionBookmarksTest : public testing::Test {
   const BookmarkNode* folder;
 };
 TEST_F(ExtensionBookmarksTest, GetFullTreeFromRoot) {
-  DictionaryValue* tree = extension_bookmark_helpers::GetNodeDictionary(
+  DictionaryValue* tree = bookmark_extension_helpers::GetNodeDictionary(
       model_->other_node(),
       true,    // Recurse.
       false);  // Not only folders.
@@ -42,7 +42,7 @@ TEST_F(ExtensionBookmarksTest, GetFullTreeFromRoot) {
 }
 
 TEST_F(ExtensionBookmarksTest, GetFoldersOnlyFromRoot) {
-  DictionaryValue* tree = extension_bookmark_helpers::GetNodeDictionary(
+  DictionaryValue* tree = bookmark_extension_helpers::GetNodeDictionary(
       model_->other_node(),
       true,   // Recurse.
       true);  // Only folders.
@@ -52,7 +52,7 @@ TEST_F(ExtensionBookmarksTest, GetFoldersOnlyFromRoot) {
 }
 
 TEST_F(ExtensionBookmarksTest, GetSubtree) {
-  DictionaryValue* tree = extension_bookmark_helpers::GetNodeDictionary(
+  DictionaryValue* tree = bookmark_extension_helpers::GetNodeDictionary(
       folder,
       true,    // Recurse.
       false);  // Not only folders.
@@ -67,7 +67,7 @@ TEST_F(ExtensionBookmarksTest, GetSubtree) {
 }
 
 TEST_F(ExtensionBookmarksTest, GetSubtreeFoldersOnly) {
-  DictionaryValue* tree = extension_bookmark_helpers::GetNodeDictionary(
+  DictionaryValue* tree = bookmark_extension_helpers::GetNodeDictionary(
       folder,
       true,   // Recurse.
       true);  // Only folders.

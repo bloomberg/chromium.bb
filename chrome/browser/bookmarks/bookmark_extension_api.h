@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_BOOKMARKS_MODULE_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_BOOKMARKS_MODULE_H_
+#ifndef CHROME_BROWSER_BOOKMARKS_BOOKMARK_EXTENSION_API_H_
+#define CHROME_BROWSER_BOOKMARKS_BOOKMARK_EXTENSION_API_H_
 #pragma once
 
 #include <list>
@@ -26,10 +26,10 @@ class ListValue;
 
 // Observes BookmarkModel and then routes the notifications as events to
 // the extension system.
-class ExtensionBookmarkEventRouter : public BookmarkModelObserver {
+class BookmarkExtensionEventRouter : public BookmarkModelObserver {
  public:
-  explicit ExtensionBookmarkEventRouter(BookmarkModel* model);
-  virtual ~ExtensionBookmarkEventRouter();
+  explicit BookmarkExtensionEventRouter(BookmarkModel* model);
+  virtual ~BookmarkExtensionEventRouter();
 
   void Init();
 
@@ -65,7 +65,7 @@ class ExtensionBookmarkEventRouter : public BookmarkModelObserver {
 
   BookmarkModel* model_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionBookmarkEventRouter);
+  DISALLOW_COPY_AND_ASSIGN(BookmarkExtensionEventRouter);
 };
 
 class BookmarksFunction : public AsyncExtensionFunction,
@@ -241,4 +241,4 @@ class ExportBookmarksFunction : public BookmarksIOFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.export");
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_BOOKMARKS_MODULE_H_
+#endif  // CHROME_BROWSER_BOOKMARKS_BOOKMARK_EXTENSION_API_H_

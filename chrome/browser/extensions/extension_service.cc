@@ -27,6 +27,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/version.h"
+#include "chrome/browser/bookmarks/bookmark_extension_api.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_plugin_service_filter.h"
 #include "chrome/browser/extensions/app_notification_manager.h"
@@ -34,7 +35,6 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/default_apps_trial.h"
 #include "chrome/browser/extensions/extension_accessibility_api.h"
-#include "chrome/browser/extensions/extension_bookmarks_module.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_cookies_api.h"
 #include "chrome/browser/extensions/extension_data_deleter.h"
@@ -717,7 +717,7 @@ void ExtensionService::InitEventRouters() {
   browser_event_router_.reset(new ExtensionBrowserEventRouter(profile_));
   browser_event_router_->Init();
   preference_event_router_.reset(new ExtensionPreferenceEventRouter(profile_));
-  bookmark_event_router_.reset(new ExtensionBookmarkEventRouter(
+  bookmark_event_router_.reset(new BookmarkExtensionEventRouter(
       profile_->GetBookmarkModel()));
   bookmark_event_router_->Init();
   cookies_event_router_.reset(new ExtensionCookiesEventRouter(profile_));

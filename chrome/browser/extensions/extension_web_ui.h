@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/extensions/extension_bookmark_manager_api.h"
+#include "chrome/browser/bookmarks/bookmark_manager_extension_api.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
 #include "chrome/common/extensions/extension.h"

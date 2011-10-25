@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_BOOKMARK_HELPERS_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_BOOKMARK_HELPERS_H_
+#ifndef CHROME_BROWSER_BOOKMARKS_BOOKMARK_EXTENSION_HELPERS_H_
+#define CHROME_BROWSER_BOOKMARKS_BOOKMARK_EXTENSION_HELPERS_H_
 #pragma once
 
 #include <string>
@@ -19,7 +19,7 @@ class ListValue;
 }
 
 // Helper functions.
-namespace extension_bookmark_helpers {
+namespace bookmark_extension_helpers {
 
 base::DictionaryValue* GetNodeDictionary(const BookmarkNode* node,
                                          bool recurse,
@@ -37,6 +37,6 @@ bool RemoveNode(BookmarkModel* model,
                 bool recursive,
                 std::string* error);
 
-}  // namespace extension_bookmark_helpers
+}  // namespace bookmark_extension_helpers
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_BOOKMARK_HELPERS_H_
+#endif  // CHROME_BROWSER_BOOKMARKS_BOOKMARK_EXTENSION_HELPERS_H_
