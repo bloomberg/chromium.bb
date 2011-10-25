@@ -9,8 +9,8 @@
 #include <sys/exec_elf.h>
 #else
 #include <elf.h>
-#include <fcntl.h>
 #endif
+#include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
