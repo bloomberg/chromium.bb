@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/compiler_specific.h"
+#include "ui/aura/aura_export.h"
 #include "ui/aura/event_filter.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
@@ -16,7 +17,7 @@ namespace aura {
 class Window;
 class MouseEvent;
 
-class ToplevelWindowEventFilter : public EventFilter {
+class AURA_EXPORT ToplevelWindowEventFilter : public EventFilter {
  public:
   explicit ToplevelWindowEventFilter(Window* owner);
   virtual ~ToplevelWindowEventFilter();
