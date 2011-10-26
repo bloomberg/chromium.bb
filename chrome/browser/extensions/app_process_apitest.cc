@@ -78,7 +78,15 @@ static void NavigateTabHelper(TabContents* contents, const GURL& url) {
   EXPECT_EQ(url, contents->controller().GetLastCommittedEntry()->url());
 }
 
-IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcess) {
+#if defined(OS_WIN)
+// AppProcess sometimes hangs on Windows
+// http://crbug.com/88316
+#define MAYBE_AppProcess DISABLED_AppProcess
+#else
+#define MAYBE_AppProcess AppProcess
+#endif
+
+IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_AppProcess) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisablePopupBlocking);
 
@@ -102,19 +110,12 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcess) {
   EXPECT_TRUE(extension_process_manager->IsExtensionProcess(
       browser()->GetTabContentsAt(1)->render_view_host()->process()->id()));
   EXPECT_FALSE(browser()->GetTabContentsAt(1)->web_ui());
-
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), base_url.Resolve("path2/empty.html"), NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  browser()->NewTab();
+  ui_test_utils::NavigateToURL(browser(), base_url.Resolve("path2/empty.html"));
   EXPECT_TRUE(extension_process_manager->IsExtensionProcess(
       browser()->GetTabContentsAt(2)->render_view_host()->process()->id()));
   EXPECT_FALSE(browser()->GetTabContentsAt(2)->web_ui());
-
-  ui_test_utils::WindowedNotificationObserver tab_added_observer(
-      content::NOTIFICATION_TAB_ADDED,
-      content::NotificationService::AllSources());
   browser()->NewTab();
-  tab_added_observer.Wait();
   ui_test_utils::NavigateToURL(browser(), base_url.Resolve("path3/empty.html"));
   EXPECT_FALSE(extension_process_manager->IsExtensionProcess(
       browser()->GetTabContentsAt(3)->render_view_host()->process()->id()));
@@ -172,9 +173,17 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcess) {
   ASSERT_TRUE(windowOpenerValid);
 }
 
+
+#if defined(OS_WIN)
+// Seems to timeout sometimes on Windows: http://crbug.com/89766
+#define MAYBE_AppProcessInstances FLAKY_AppProcessInstances
+#else
+#define MAYBE_AppProcessInstances AppProcessInstances
+#endif
+
 // Test that hosted apps without the background permission use a process per app
 // instance model, such that separate instances are in separate processes.
-IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcessInstances) {
+IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_AppProcessInstances) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisablePopupBlocking);
 
@@ -199,12 +208,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcessInstances) {
   EXPECT_TRUE(extension_process_manager->IsExtensionProcess(
       browser()->GetTabContentsAt(1)->render_view_host()->process()->id()));
   EXPECT_FALSE(browser()->GetTabContentsAt(1)->web_ui());
-
-  ui_test_utils::WindowedNotificationObserver tab_added_observer(
-      content::NOTIFICATION_TAB_ADDED,
-      content::NotificationService::AllSources());
   browser()->NewTab();
-  tab_added_observer.Wait();
   ui_test_utils::NavigateToURL(browser(), base_url.Resolve("path2/empty.html"));
   EXPECT_TRUE(extension_process_manager->IsExtensionProcess(
       browser()->GetTabContentsAt(2)->render_view_host()->process()->id()));
