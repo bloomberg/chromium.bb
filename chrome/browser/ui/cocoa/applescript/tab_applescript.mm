@@ -135,7 +135,6 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
         [[NSNumber alloc]
             initWithInt:futureSessionIDOfTab]);
     [self setUniqueID:numID];
-    [self setTempURL:@""];
   }
   return self;
 }
@@ -175,7 +174,8 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
           initWithInt:tabContents_->restore_tab_helper()->session_id().id()]);
   [self setUniqueID:numID];
 
-  [self setURL:[self tempURL]];
+  if ([self tempURL])
+    [self setURL:[self tempURL]];
 }
 
 - (NSString*)URL {
