@@ -109,9 +109,9 @@ class NetflixTest(pyauto.PyUITest):
     current_time = 0
     count = 0
     while current_time < title_length:
-      # We want to test playing only for five seconds
+      # We want to test playing only for ten seconds
       count = count + 1
-      if count == 5:
+      if count == 10:
         break
       current_time = self._CurrentPlaybackTime()
       self.assertTrue(prev_time <= current_time,
@@ -120,6 +120,12 @@ class NetflixTest(pyauto.PyUITest):
       prev_time = current_time
       # play video for some time 
       time.sleep(1)
+    # crosbug.com/22037
+    # In case player doesn't start playing at all, above while loop may
+    # still pass. So re-verifying and assuming that player did play something
+    # during last 10 seconds.
+    self.assertTrue(current_time > 0,
+        msg='Netflix player didnot start playing')
 
 
 if __name__ == '__main__':
