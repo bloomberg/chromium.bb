@@ -187,6 +187,10 @@ class CONTENT_EXPORT GpuDataManager {
   // and gl_renderer.
   static bool Merge(content::GPUInfo* object, const content::GPUInfo& other);
 
+  // Determin if accelerated-2d-canvas is supported, which depends on whether
+  // lose_context could happen and whether skia is the backend.
+  bool supportsAccelerated2dCanvas() const;
+
   bool complete_gpu_info_already_requested_;
 
   GpuFeatureFlags gpu_feature_flags_;

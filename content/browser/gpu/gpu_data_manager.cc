@@ -264,8 +264,10 @@ Value* GpuDataManager::GetFeatureStatus() {
       {
           "2d_canvas",
           flags & GpuFeatureFlags::kGpuFeatureAccelerated2dCanvas,
-          user_flags_.disable_accelerated_2d_canvas(),
-          "Accelerated 2D canvas has been disabled at the command line.",
+          user_flags_.disable_accelerated_2d_canvas() ||
+          !supportsAccelerated2dCanvas(),
+          "Accelerated 2D canvas is unavailable: either disabled at the command"
+          " line or not supported by the current system.",
           true
       },
       {
@@ -762,3 +764,14 @@ bool GpuDataManager::Merge(content::GPUInfo* object,
   }
   return changed;
 }
+
+bool GpuDataManager::supportsAccelerated2dCanvas() const {
+  if (gpu_info_.can_lose_context)
+    return false;
+#if defined(USE_SKIA)
+  return true;
+#else
+  return false;
+#endif
+}
+
