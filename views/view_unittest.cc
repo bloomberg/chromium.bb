@@ -2822,11 +2822,15 @@ TEST_F(ViewLayerTest, ToggleOpacityWithLayer) {
   ASSERT_TRUE(child_view->layer() == NULL);
   child_view->SetPaintToLayer(true);
   child_view->SetFillsBoundsOpaquely(true);
+
+  widget()->GetCompositor()->Draw(false);
   ASSERT_TRUE(child_view->layer());
   EXPECT_EQ(
       gfx::Rect(50, 50, 100, 100), parent_view->layer()->hole_rect());
 
   child_view->SetFillsBoundsOpaquely(false);
+
+  widget()->GetCompositor()->Draw(false);
   EXPECT_TRUE(parent_view->layer()->hole_rect().IsEmpty());
 }
 
@@ -2853,12 +2857,14 @@ TEST_F(ViewLayerTest, MultipleOpaqueLayers) {
   child_view2->SetBounds(150, 150, 200, 200);
   parent_view->AddChildView(child_view2);
 
+  widget()->GetCompositor()->Draw(false);
   // Only child_view1 is opaque
   EXPECT_EQ(
       gfx::Rect(50, 50, 100, 100), parent_view->layer()->hole_rect());
 
   // Both child views are opaque
   child_view2->SetFillsBoundsOpaquely(true);
+  widget()->GetCompositor()->Draw(false);
   EXPECT_TRUE(
       gfx::Rect(50, 50, 100, 100) == parent_view->layer()->hole_rect() ||
       gfx::Rect(150, 150, 200, 200) == parent_view->layer()->hole_rect());
@@ -2887,13 +2893,17 @@ TEST_F(ViewLayerTest, ToggleVisibilityWithOpaqueLayer) {
   child_view->SetPaintToLayer(true);
   child_view->SetFillsBoundsOpaquely(true);
   parent_view->AddChildView(child_view);
+
+  widget()->GetCompositor()->Draw(false);
   EXPECT_EQ(
        gfx::Rect(50, 50, 100, 100), parent_view->layer()->hole_rect());
 
   child_view->SetVisible(false);
+  widget()->GetCompositor()->Draw(false);
   EXPECT_TRUE(parent_view->layer()->hole_rect().IsEmpty());
 
   child_view->SetVisible(true);
+  widget()->GetCompositor()->Draw(false);
   EXPECT_EQ(
       gfx::Rect(50, 50, 100, 100), parent_view->layer()->hole_rect());
 }
@@ -2910,6 +2920,7 @@ TEST_F(ViewLayerTest, OrphanLayerAfterViewRemove) {
   View* v2 = new View;
   v1->AddChildView(v2);
   v2->SetPaintToLayer(true);
+
   EXPECT_TRUE(LayerIsAncestor(widget()->GetCompositor()->root_layer(),
                               v2->layer()));
   EXPECT_TRUE(v2->layer()->IsDrawn());
