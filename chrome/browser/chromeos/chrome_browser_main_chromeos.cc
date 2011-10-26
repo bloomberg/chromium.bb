@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
+#include "chrome/browser/chromeos/bluetooth/bluetooth_manager.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/brightness_observer.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
@@ -75,6 +76,8 @@ ChromeBrowserMainPartsChromeos::ChromeBrowserMainPartsChromeos(
 }
 
 ChromeBrowserMainPartsChromeos::~ChromeBrowserMainPartsChromeos() {
+  chromeos::BluetoothManager::Shutdown();
+
   // We should remove observers attached to D-Bus clients before
   // DBusThreadManager is shut down.
   if (session_manager_observer_.get()) {
@@ -150,4 +153,9 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
   session_manager_observer_.reset(new chromeos::SessionManagerObserver);
   chromeos::DBusThreadManager::Get()->session_manager_client()->
       AddObserver(session_manager_observer_.get());
+
+  // Initialize the Chrome OS bluetooth subsystem
+  if (parsed_command_line().HasSwitch(switches::kEnableBluetooth)) {
+    chromeos::BluetoothManager::Initialize();
+  }
 }
