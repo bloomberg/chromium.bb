@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/i18n/file_util_icu.h"
@@ -15,7 +16,6 @@
 #include "base/string_piece.h"
 #include "base/string_split.h"
 #include "base/sys_string_conversions.h"
-#include "base/task.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/browser_context.h"
@@ -509,11 +509,11 @@ void SavePackage::StartSave(const SaveFileCreateInfo* info) {
   if (info->save_source == SaveFileCreateInfo::SAVE_FILE_FROM_FILE) {
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
-        NewRunnableMethod(file_manager_,
-                          &SaveFileManager::SaveLocalFile,
-                          save_item->url(),
-                          save_item->save_id(),
-                          tab_id()));
+        base::Bind(&SaveFileManager::SaveLocalFile,
+                   file_manager_,
+                   save_item->url(),
+                   save_item->save_id(),
+                   tab_id()));
     return;
   }
 
@@ -614,9 +614,9 @@ void SavePackage::Stop() {
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(file_manager_,
-                        &SaveFileManager::RemoveSavedFileFromFileMap,
-                        save_ids));
+      base::Bind(&SaveFileManager::RemoveSavedFileFromFileMap,
+                 file_manager_,
+                 save_ids));
 
   finished_ = true;
   wait_state_ = FAILED;
@@ -647,13 +647,13 @@ void SavePackage::CheckFinish() {
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(file_manager_,
-                        &SaveFileManager::RenameAllFiles,
-                        final_names,
-                        dir,
-                        tab_contents()->GetRenderProcessHost()->id(),
-                        tab_contents()->render_view_host()->routing_id(),
-                        id()));
+      base::Bind(&SaveFileManager::RenameAllFiles,
+                 file_manager_,
+                 final_names,
+                 dir,
+                 tab_contents()->GetRenderProcessHost()->id(),
+                 tab_contents()->render_view_host()->routing_id(),
+                 id()));
 }
 
 // Successfully finished all items of this SavePackage.
@@ -674,9 +674,9 @@ void SavePackage::Finish() {
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(file_manager_,
-                        &SaveFileManager::RemoveSavedFileFromFileMap,
-                        save_ids));
+      base::Bind(&SaveFileManager::RemoveSavedFileFromFileMap,
+                 file_manager_,
+                 save_ids));
 
   if (download_) {
     download_->OnAllDataSaved(all_save_items_count_);
@@ -772,9 +772,9 @@ void SavePackage::SaveCanceled(SaveItem* save_item) {
   if (save_item->save_id() != -1)
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
-        NewRunnableMethod(file_manager_,
-                          &SaveFileManager::CancelSave,
-                          save_item->save_id()));
+        base::Bind(&SaveFileManager::CancelSave,
+                   file_manager_,
+                   save_item->save_id()));
 }
 
 // Initiate a saving job of a specific URL. We send the request to
@@ -937,12 +937,12 @@ void SavePackage::OnReceivedSerializedHtmlData(const GURL& frame_url,
                << " url = \"" << it->second->url().spec() << "\"";
       BrowserThread::PostTask(
           BrowserThread::FILE, FROM_HERE,
-          NewRunnableMethod(file_manager_,
-                            &SaveFileManager::SaveFinished,
-                            it->second->save_id(),
-                            it->second->url(),
-                            id,
-                            true));
+          base::Bind(&SaveFileManager::SaveFinished,
+                     file_manager_,
+                     it->second->save_id(),
+                     it->second->url(),
+                     id,
+                     true));
     }
     return;
   }
@@ -961,11 +961,11 @@ void SavePackage::OnReceivedSerializedHtmlData(const GURL& frame_url,
     // Call write file functionality in file thread.
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
-        NewRunnableMethod(file_manager_,
-                          &SaveFileManager::UpdateSaveProgress,
-                          save_item->save_id(),
-                          new_data,
-                          static_cast<int>(data.size())));
+        base::Bind(&SaveFileManager::UpdateSaveProgress,
+                   file_manager_,
+                   save_item->save_id(),
+                   new_data,
+                   static_cast<int>(data.size())));
   }
 
   // Current frame is completed saving, call finish in file thread.
@@ -975,12 +975,12 @@ void SavePackage::OnReceivedSerializedHtmlData(const GURL& frame_url,
              << " url = \"" << save_item->url().spec() << "\"";
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
-        NewRunnableMethod(file_manager_,
-                          &SaveFileManager::SaveFinished,
-                          save_item->save_id(),
-                          save_item->url(),
-                          id,
-                          true));
+        base::Bind(&SaveFileManager::SaveFinished,
+                   file_manager_,
+                   save_item->save_id(),
+                   save_item->url(),
+                   id,
+                   true));
   }
 }
 
@@ -1155,7 +1155,7 @@ void SavePackage::GetSaveInfo() {
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(this, &SavePackage::CreateDirectoryOnFileThread,
+      base::Bind(&SavePackage::CreateDirectoryOnFileThread, this,
           website_save_dir, download_save_dir, mime_type, accept_languages));
 }
 
@@ -1198,8 +1198,8 @@ void SavePackage::CreateDirectoryOnFileThread(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &SavePackage::ContinueGetSaveInfo, save_dir,
-                        can_save_as_complete));
+      base::Bind(&SavePackage::ContinueGetSaveInfo, this, save_dir,
+                 can_save_as_complete));
 }
 
 void SavePackage::ContinueGetSaveInfo(const FilePath& suggested_path,
