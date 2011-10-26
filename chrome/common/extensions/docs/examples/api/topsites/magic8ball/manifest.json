@@ -1,0 +1,13 @@
+{
+  "name": "NTP prototyping extension",
+  "version": "1.0",
+  "description": "extension to prototype new NTP designs",
+  "chrome_url_overrides" : {
+    "newtab": "newTab.html"
+  },
+  "permissions": [
+    "experimental",
+    "chrome://favicon/",
+    "chrome://thumb/"
+  ]
+}

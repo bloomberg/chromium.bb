@@ -2449,6 +2449,7 @@
         'browser/gpu_browsertest.cc',
         'browser/history/history_browsertest.cc',
         'browser/history/history_extension_apitest.cc',
+        'browser/history/top_sites_extension_test.cc',
         'browser/idbbindingutilities_browsertest.cc',
         'browser/infobars/infobar_extension_apitest.cc',
         'browser/importer/toolbar_importer_utils_browsertest.cc',

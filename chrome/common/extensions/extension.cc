@@ -2584,7 +2584,7 @@ bool Extension::ParsePermissions(const DictionaryValue* source,
       URLPattern::ParseResult parse_result = pattern.Parse(permission_str,
                                                            parse_strictness);
       if (parse_result == URLPattern::PARSE_SUCCESS) {
-        if (!CanSpecifyHostPermission(pattern)) {
+        if (!CanSpecifyHostPermission(pattern, *api_permissions)) {
           *error = ExtensionErrorUtils::FormatErrorMessage(
               errors::kInvalidPermissionScheme, base::IntToString(i));
           return false;
@@ -2623,13 +2623,25 @@ bool Extension::CanSilentlyIncreasePermissions() const {
   return location() != INTERNAL;
 }
 
-bool Extension::CanSpecifyHostPermission(const URLPattern& pattern) const {
+bool Extension::CanSpecifyHostPermission(const URLPattern& pattern,
+    const ExtensionAPIPermissionSet& permissions) const {
   if (!pattern.match_all_urls() &&
       pattern.MatchesScheme(chrome::kChromeUIScheme)) {
-    // Only allow access to chrome://favicon to regular extensions. Component
-    // extensions can have access to all of chrome://*.
-    return (pattern.host() == chrome::kChromeUIFaviconHost ||
-            CanExecuteScriptEverywhere());
+    // Regular extensions are only allowed access to chrome://favicon.
+    if (pattern.host() == chrome::kChromeUIFaviconHost)
+      return true;
+
+    // Experimental extensions are also allowed chrome://thumb.
+    if (pattern.host() == chrome::kChromeUIThumbnailHost) {
+      return permissions.find(ExtensionAPIPermission::kExperimental) !=
+          permissions.end();
+    }
+
+    // Component extensions can have access to all of chrome://*.
+    if (CanExecuteScriptEverywhere())
+      return true;
+
+    return false;
   }
 
   // Otherwise, the valid schemes were handled by URLPattern.
@@ -2655,11 +2667,14 @@ const URLPatternSet& Extension::GetEffectiveHostPermissions() const {
 }
 
 bool Extension::HasHostPermission(const GURL& url) const {
-  base::AutoLock auto_lock(runtime_data_lock_);
   if (url.SchemeIs(chrome::kChromeUIScheme) &&
       url.host() != chrome::kChromeUIFaviconHost &&
-      location() != Extension::COMPONENT)
+      url.host() != chrome::kChromeUIThumbnailHost &&
+      location() != Extension::COMPONENT) {
     return false;
+  }
+
+  base::AutoLock auto_lock(runtime_data_lock_);
   return runtime_data_.GetActivePermissions()->
       HasExplicitAccessToOrigin(url);
 }

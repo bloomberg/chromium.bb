@@ -1677,6 +1677,33 @@
       "zip_path": "examples\/api\/notifications.zip"
     },
     {
+      "api_calls": [],
+      "crx_path": null,
+      "description": "extension to prototype new NTP designs",
+      "features": [
+        "chrome_url_overrides",
+        "experimental"
+      ],
+      "icon": null,
+      "id": "2df34c9db20549bd52f2dec3d59d564853bdefac",
+      "name": "NTP prototyping extension",
+      "packaged_app": false,
+      "path": "examples\/api\/topsites\/magic8ball\/",
+      "protocols": [
+        "chrome:\/\/",
+        "chrome:\/\/"
+      ],
+      "search_string": "NTP PROTOTYPING EXTENSION EXTENSION TO PROTOTYPE NEW NTP DESIGNS CHROME_URL_OVERRIDES EXPERIMENTAL",
+      "source_files": [
+        "manifest.json",
+        "newTab.css",
+        "newTab.html",
+        "newTab.js"
+      ],
+      "source_hash": "fcaa8182e40d3ad7a4ed836e42d533cade008716",
+      "zip_path": "examples\/api\/topsites\/magic8ball.zip"
+    },
+    {
       "api_calls": [
         "chrome.omnibox.onInputChanged",
         "chrome.omnibox.onInputEntered"

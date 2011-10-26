@@ -1,0 +1,36 @@
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+html {
+  background-color: #ddd;
+}
+
+#spacer {
+  height: 200px;
+}
+
+#title {
+  color: #555;
+  font-size: 400%;
+  font-weight: bold;
+  vertical-align: middle;
+}
+
+#mostVisitedThumb {
+  display: inline-block;
+  height: 132px;
+  margin-left: 20px;
+  position: relative;
+  vertical-align: middle;
+  width: 212px;
+}
+
+#mostVisitedThumb span {
+  background-repeat: no-repeat;
+  bottom: -23px;
+  padding-left: 20px;
+  position: absolute;
+  white-space: nowrap;
+}

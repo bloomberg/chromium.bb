@@ -69,6 +69,7 @@ const char kChromeUIShorthangURL[] = "chrome://shorthang/";
 const char kChromeUISyncPromoURL[] = "chrome://syncpromo/";
 const char kChromeUITaskManagerURL[] = "chrome://tasks/";
 const char kChromeUITermsURL[] = "chrome://terms/";
+const char kChromeUIThumbnailURL[] = "chrome://thumb/";
 const char kChromeUIVersionURL[] = "chrome://version/";
 const char kChromeUIWorkersURL[] = "chrome://workers/";
 
@@ -173,6 +174,7 @@ const char kChromeUISyncResourcesHost[] = "syncresources";
 const char kChromeUITaskManagerHost[] = "tasks";
 const char kChromeUITCMallocHost[] = "tcmalloc";
 const char kChromeUITermsHost[] = "terms";
+const char kChromeUIThumbnailHost[] = "thumb";
 const char kChromeUITouchIconHost[] = "touch-icon";
 const char kChromeUITracingHost[] = "tracing";
 const char kChromeUITrackingHost[] = "tracking";
@@ -182,7 +184,6 @@ const char kChromeUIWorkersHost[] = "workers";
 
 const char kChromeUIScreenshotPath[] = "screenshots";
 const char kChromeUIThemePath[] = "theme";
-const char kChromeUIThumbnailPath[] = "thumb";
 
 #if defined(OS_LINUX)
 const char kChromeUILinuxProxyConfigHost[] = "linux-proxy-config";

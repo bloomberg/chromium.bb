@@ -1372,6 +1372,8 @@
         'browser/history/top_sites_cache.h',
         'browser/history/top_sites_database.cc',
         'browser/history/top_sites_database.h',
+        'browser/history/top_sites_extension_api.cc',
+        'browser/history/top_sites_extension_api.h',
         'browser/history/url_database.cc',
         'browser/history/url_database.h',
         'browser/history/visit_database.cc',

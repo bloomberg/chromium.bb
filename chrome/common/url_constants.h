@@ -64,6 +64,7 @@ extern const char kChromeUIShorthangURL[];
 extern const char kChromeUISyncPromoURL[];
 extern const char kChromeUITaskManagerURL[];
 extern const char kChromeUITermsURL[];
+extern const char kChromeUIThumbnailURL[];
 extern const char kChromeUIVersionURL[];
 extern const char kChromeUIWorkersURL[];
 
@@ -164,6 +165,7 @@ extern const char kChromeUISyncResourcesHost[];
 extern const char kChromeUITaskManagerHost[];
 extern const char kChromeUITCMallocHost[];
 extern const char kChromeUITermsHost[];
+extern const char kChromeUIThumbnailHost[];
 extern const char kChromeUITouchIconHost[];
 extern const char kChromeUITracingHost[];
 extern const char kChromeUITrackingHost[];
@@ -173,7 +175,6 @@ extern const char kChromeUIWorkersHost[];
 
 extern const char kChromeUIScreenshotPath[];
 extern const char kChromeUIThemePath[];
-extern const char kChromeUIThumbnailPath[];
 
 #if defined(OS_LINUX)
 extern const char kChromeUILinuxProxyConfigHost[];

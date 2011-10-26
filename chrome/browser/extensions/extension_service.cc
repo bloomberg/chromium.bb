@@ -72,6 +72,7 @@
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/ntp/shown_sections_handler.h"
+#include "chrome/browser/ui/webui/ntp/thumbnail_source.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
@@ -1519,6 +1520,11 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
     FaviconSource* favicon_source = new FaviconSource(profile_,
                                                       FaviconSource::FAVICON);
     profile_->GetChromeURLDataManager()->AddDataSource(favicon_source);
+  }
+  // Same for chrome://thumb/ resources.
+  if (extension->HasHostPermission(GURL(chrome::kChromeUIThumbnailURL))) {
+    ThumbnailSource* thumbnail_source = new ThumbnailSource(profile_);
+    profile_->GetChromeURLDataManager()->AddDataSource(thumbnail_source);
   }
 
   // TODO(mpcomplete): This ends up affecting all profiles. See crbug.com/80757.

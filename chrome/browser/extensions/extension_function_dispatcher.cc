@@ -55,6 +55,7 @@
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/infobars/infobar_extension_api.h"
 #include "chrome/browser/history/history_extension_api.h"
+#include "chrome/browser/history/top_sites_extension_api.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/browser/rlz/rlz_extension_api.h"
@@ -466,6 +467,9 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<WriteDataClipboardFunction>();
   RegisterFunction<ReadDataClipboardFunction>();
   RegisterFunction<GetAvailableMimeTypesClipboardFunction>();
+
+  // TopSites
+  RegisterFunction<GetTopSitesFunction>();
 }
 
 void FactoryRegistry::GetAllNames(std::vector<std::string>* names) {

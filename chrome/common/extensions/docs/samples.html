@@ -357,6 +357,7 @@
   "6444e5c8ae112a6a433909c5e770669cd16e2e5f": "NEWS READER DISPLAYS THE FIRST 5 ITEMS FROM THE GOOGLE NEWS - TOP NEWS RSS FEED IN A POPUP. BROWSER_ACTION POPUP TABS CHROME.I18N.GETMESSAGE CHROME.TABS.CREATE",
   "3aea027164cb9b732ba4a8c51cb93708891726ef": "NEWS READER (BY GOOGLE) DISPLAYS THE LATEST STORIES FROM GOOGLE NEWS IN A POPUP. BACKGROUND_PAGE BROWSER_ACTION OPTIONS_PAGE POPUP TABS CHROME.EXTENSION.GETURL CHROME.I18N.GETMESSAGE CHROME.TABS.CREATE",
   "f799e26ceef2367cf836f24bcb47df4398b0df58": "NOTIFICATION DEMO SHOWS OFF DESKTOP NOTIFICATIONS, WHICH ARE TOAST WINDOWS THAT POP UP ON THE DESKTOP. BACKGROUND_PAGE NOTIFICATIONS OPTIONS_PAGE TABS",
+  "2df34c9db20549bd52f2dec3d59d564853bdefac": "NTP PROTOTYPING EXTENSION EXTENSION TO PROTOTYPE NEW NTP DESIGNS CHROME_URL_OVERRIDES EXPERIMENTAL",
   "e787b322bddbc6289bb31b7d7550b1bf6456a80b": "OMNIBOX EXAMPLE TO USE, TYPE OMNIX PLUS A SEARCH TERM INTO THE OMNIBOX. BACKGROUND_PAGE CHROME.OMNIBOX.ONINPUTCHANGED CHROME.OMNIBOX.ONINPUTENTERED",
   "8d0a50b57c26bb498be592e871001ffed91541b4": "PAGE ACTION BY CONTENT SHOWS A PAGE ACTION FOR HTML PAGES CONTAINING THE WORD SANDWICH BACKGROUND_PAGE PAGE_ACTION CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.PAGEACTION.SHOW",
   "80b86ccc6e8520660fa591caa565826f0ed1b12c": "PAGE ACTION BY URL SHOWS A PAGE ACTION FOR URLS WHICH HAVE THE LETTER G IN THEM. BACKGROUND_PAGE PAGE_ACTION TABS CHROME.PAGEACTION.SHOW CHROME.TABS.ONUPDATED",
@@ -3033,6 +3034,51 @@
   <div>
     <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/notifications/">Browse source</a>
     - <a href="examples/api/notifications.zip">Download source</a>
+    <!-- Only show the Install CRX link if a CRX file is provided -->
+    <span style="display: none; ">
+    - <a>Install extension</a>
+    </span>
+  </div>
+</div><div class="sample" id="2df34c9db20549bd52f2dec3d59d564853bdefac">
+  <img class="icon" style="display: none; ">
+  <img class="icon" src="images/sample-default-icon.png">
+  <h2 class="name">
+    <a href="#2df34c9db20549bd52f2dec3d59d564853bdefac">NTP prototyping extension</a>
+    <span style="display: none; ">(packaged app)</span>
+  </h2>
+  <p class="metadata features">Uses
+    <span>
+      <strong>chrome_url_overrides</strong><span style="display: none; ">, </span>
+      <span> and</span>
+    </span><span>
+      <strong>experimental</strong><span style="display: none; ">, </span>
+      <span style="display: none; "> and</span>
+    </span>
+  </p>
+  <p>extension to prototype new NTP designs</p>
+  <div class="apicalls" style="display: none; "><strong>Calls:</strong>
+    <ul>
+      <li>
+        <code><a></a></code>
+      </li>
+    </ul>
+  </div>
+  <div class="sourcefiles"><strong>Source files:</strong>
+    <ul>
+      <li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/topsites/magic8ball/manifest.json?content-type=text/plain">manifest.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/topsites/magic8ball/newTab.css?content-type=text/plain">newTab.css</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/topsites/magic8ball/newTab.html?content-type=text/plain">newTab.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/topsites/magic8ball/newTab.js?content-type=text/plain">newTab.js</a></code>
+      </li>
+    </ul>
+  </div>
+  <div>
+    <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/topsites/magic8ball/">Browse source</a>
+    - <a href="examples/api/topsites/magic8ball.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
     <span style="display: none; ">
     - <a>Install extension</a>

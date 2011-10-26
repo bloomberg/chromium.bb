@@ -384,19 +384,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // mechanisms that are implicitly trusted.
   bool CanSilentlyIncreasePermissions() const;
 
-  // Returns true if this extension can specify |api|.
-  bool CanSpecifyAPIPermission(const ExtensionAPIPermission* api,
-                               std::string* error) const;
-  bool CanSpecifyComponentOnlyPermission() const;
-  bool CanSpecifyExperimentalPermission() const;
-  bool CanSpecifyPermissionForHostedApp(
-      const ExtensionAPIPermission* api) const;
-
-  // Whether or not the extension is allowed permission for a URL pattern from
-  // the manifest.  http, https, and chrome://favicon/ is allowed for all
-  // extensions, while component extensions are allowed access to
-  // chrome://resources.
-  bool CanSpecifyHostPermission(const URLPattern& pattern) const;
 
   // Whether the extension has access to the given URL.
   bool HasHostPermission(const GURL& url) const;
@@ -689,6 +676,19 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Updates the launch URL and extents for the extension using the given
   // |override_url|.
   void OverrideLaunchUrl(const GURL& override_url);
+
+  // Returns true if this extension can specify |api|.
+  bool CanSpecifyAPIPermission(const ExtensionAPIPermission* api,
+                               std::string* error) const;
+  bool CanSpecifyComponentOnlyPermission() const;
+  bool CanSpecifyExperimentalPermission() const;
+  bool CanSpecifyPermissionForHostedApp(
+      const ExtensionAPIPermission* api) const;
+
+  // Checks whether the host |pattern| is allowed for this extension, given API
+  // permissions |permissions|.
+  bool CanSpecifyHostPermission(const URLPattern& pattern,
+      const ExtensionAPIPermissionSet& permissions) const;
 
   // Cached images for this extension. This should only be touched on the UI
   // thread.

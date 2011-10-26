@@ -13,7 +13,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 ThumbnailSource::ThumbnailSource(Profile* profile)
-    : DataSource(chrome::kChromeUIThumbnailPath, MessageLoop::current()),
+    : DataSource(chrome::kChromeUIThumbnailHost, MessageLoop::current()),
       // Set TopSites now as Profile isn't thread safe.
       top_sites_(profile->GetTopSites()) {
 }

@@ -342,6 +342,7 @@ var chrome = chrome || {};
       "experimental.savePage",
       "experimental.sidebar",
       "experimental.speechInput",
+      "experimental.topSites",
       "experimental.webRequest",
       "fileBrowserHandler",
       "fileBrowserPrivate",
