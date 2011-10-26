@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/status_icons/status_icon_win.h"
 
 #include "base/sys_string_conversions.h"
+#include "base/win/windows_version.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/icon_util.h"
 #include "ui/gfx/point.h"
@@ -84,8 +85,6 @@ void StatusIconWin::SetToolTip(const string16& tool_tip) {
 void StatusIconWin::DisplayBalloon(const SkBitmap& icon,
                                    const string16& title,
                                    const string16& contents) {
-  // TODO(leandrogracia): implement custom icons for notification balloons.
-
   NOTIFYICONDATA icon_data;
   InitIconData(&icon_data);
   icon_data.uFlags = NIF_INFO;
@@ -93,6 +92,20 @@ void StatusIconWin::DisplayBalloon(const SkBitmap& icon,
   wcscpy_s(icon_data.szInfoTitle, title.c_str());
   wcscpy_s(icon_data.szInfo, contents.c_str());
   icon_data.uTimeout = 0;
+
+  base::win::Version win_version = base::win::OSInfo::GetInstance()->version();
+  if (!icon.empty() && win_version != base::win::VERSION_PRE_XP) {
+    balloon_icon_.Set(IconUtil::CreateHICONFromSkBitmap(icon));
+    if (win_version >= base::win::VERSION_VISTA) {
+      icon_data.hBalloonIcon = balloon_icon_.Get();
+      icon_data.dwInfoFlags = NIIF_USER | NIIF_LARGE_ICON;
+    } else {
+      icon_data.hIcon = balloon_icon_.Get();
+      icon_data.uFlags |= NIF_ICON;
+      icon_data.dwInfoFlags = NIIF_USER;
+    }
+  }
+
   BOOL result = Shell_NotifyIcon(NIM_MODIFY, &icon_data);
   if (!result)
     LOG(WARNING) << "Unable to create status tray balloon.";
@@ -134,7 +147,15 @@ void StatusIconWin::HandleClickEvent(int x, int y, bool left_mouse_click) {
 }
 
 void StatusIconWin::InitIconData(NOTIFYICONDATA* icon_data) {
-  icon_data->cbSize = sizeof(NOTIFYICONDATA);
+  if (base::win::OSInfo::GetInstance()->version() >=
+      base::win::VERSION_VISTA) {
+    memset(icon_data, 0, sizeof(NOTIFYICONDATA));
+    icon_data->cbSize = sizeof(NOTIFYICONDATA);
+  } else {
+    memset(icon_data, 0, NOTIFYICONDATA_V3_SIZE);
+    icon_data->cbSize = NOTIFYICONDATA_V3_SIZE;
+  }
+
   icon_data->hWnd = window_;
   icon_data->uID = icon_id_;
 }

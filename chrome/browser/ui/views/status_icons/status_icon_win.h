@@ -63,6 +63,9 @@ class StatusIconWin : public StatusIcon {
   // The currently-displayed icon for the window.
   base::win::ScopedHICON icon_;
 
+  // The currently-displayed icon for the notification balloon.
+  base::win::ScopedHICON balloon_icon_;
+
 #if !defined(USE_AURA)
   // Context menu associated with this icon (if any).
   scoped_ptr<views::Menu2> context_menu_;
