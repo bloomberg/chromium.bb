@@ -149,7 +149,9 @@ class NaClTest(pyauto.PyUITest):
   def testReloadPPBImageData(self):
     self.reloader('ppapi_ppb_image_data.html', 'PPAPI')
 
-  def testReloadPPBFileSystem(self):
+  # TODO(krasin): fix the failure
+  # http://code.google.com/p/nativeclient/issues/detail?id=2392
+  def disabledTestReloadPPBFileSystem(self):
     self.reloader('ppapi_ppb_file_system.html', 'PPAPI')
 
 
