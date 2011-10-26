@@ -57,12 +57,11 @@ void BalloonCollectionImpl::Add(const Notification& notification,
 bool BalloonCollectionImpl::AddWebUIMessageCallback(
     const Notification& notification,
     const std::string& message,
-    MessageCallback* callback) {
+    const MessageCallback& callback) {
   Balloon* balloon = FindBalloon(notification);
-  if (!balloon) {
-    delete callback;
+  if (!balloon)
     return false;
-  }
+
   BalloonViewHost* host =
       static_cast<BalloonViewHost*>(balloon->view()->GetHost());
   return host->AddWebUIMessageCallback(message, callback);

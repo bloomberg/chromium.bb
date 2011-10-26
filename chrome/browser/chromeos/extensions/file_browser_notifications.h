@@ -110,7 +110,7 @@ class FileBrowserNotifications
   void OnLinkClicked(const base::ListValue* arg);
   bool HasMoreInfoLink(NotificationType type);
   const string16& GetLinkText();
-  chromeos::MessageCallback* GetLinkCallback();
+  chromeos::MessageCallback GetLinkCallback();
 
   string16 link_text_;
   NotificationMap notifications_;

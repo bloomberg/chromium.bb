@@ -50,7 +50,7 @@ class SystemNotification {
   // Same as Show() above with a footer link at the bottom and a callback
   // for when the link is clicked.
   void Show(const string16& message, const string16& link_text,
-            MessageCallback* callback, bool urgent, bool sticky);
+            const MessageCallback& callback, bool urgent, bool sticky);
 
   // Hide will dismiss the notification, if the notification is already
   // hidden it does nothing

@@ -83,7 +83,7 @@ class BalloonCollectionImpl : public BalloonCollection,
   // object is owned and deleted by callee.
   bool AddWebUIMessageCallback(const Notification& notification,
                                const std::string& message,
-                               MessageCallback* callback);
+                               const MessageCallback& callback);
 
   // Adds new system notification.
   // |sticky| is used to indicate that the notification

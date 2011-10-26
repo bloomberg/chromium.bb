@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/locale_change_guard.h"
 
+#include "base/bind.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
@@ -165,9 +166,10 @@ void LocaleChangeGuard::Check() {
       title_text_));
   note_->Show(
       message_text_, revert_link_text_,
-      NewCallback(this, &LocaleChangeGuard::RevertLocaleChange),
-      true,  // urgent
-      false);  // non-sticky
+      base::Bind(&LocaleChangeGuard::RevertLocaleChange,
+                 AsWeakPtr()),
+                 true,  // urgent
+                 false);  // non-sticky
 }
 
 void LocaleChangeGuard::AcceptLocaleChange() {

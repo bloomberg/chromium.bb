@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/notifications/balloon_view_host.h"
 
+#include <utility>
+
+#include "base/bind.h"
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension_messages.h"
@@ -17,17 +20,13 @@ BalloonViewHost::BalloonViewHost(Balloon* balloon)
 }
 
 BalloonViewHost::~BalloonViewHost() {
-  STLDeleteContainerPairSecondPointers(message_callbacks_.begin(),
-                                       message_callbacks_.end());
 }
 
 bool BalloonViewHost::AddWebUIMessageCallback(
     const std::string& message,
-    MessageCallback* callback) {
-  std::pair<MessageCallbackMap::iterator, bool> ret;
-  ret = message_callbacks_.insert(std::make_pair(message, callback));
-  if (!ret.second)
-    delete callback;
+    const MessageCallback& callback) {
+  std::pair<MessageCallbackMap::iterator, bool> ret =
+      message_callbacks_.insert(std::make_pair(message, callback));
   return ret.second;
 }
 
@@ -42,7 +41,7 @@ void BalloonViewHost::WebUISend(RenderViewHost* render_view_host,
     return;
 
   // Run callback.
-  callback->second->Run(&args);
+  callback->second.Run(&args);
 }
 
 }  // namespace chromeos

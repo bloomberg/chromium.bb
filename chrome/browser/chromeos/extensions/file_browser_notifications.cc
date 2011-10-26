@@ -307,8 +307,7 @@ const string16& FileBrowserNotifications::GetLinkText() {
   return link_text_;
 }
 
-chromeos::MessageCallback* FileBrowserNotifications::GetLinkCallback() {
-  return NewCallback(this,
-          &FileBrowserNotifications::OnLinkClicked);
+chromeos::MessageCallback FileBrowserNotifications::GetLinkCallback() {
+  return base::Bind(&FileBrowserNotifications::OnLinkClicked, AsWeakPtr());
 }
 

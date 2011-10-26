@@ -55,12 +55,12 @@ SystemNotification::~SystemNotification() {
 void SystemNotification::Show(const string16& message,
                               bool urgent,
                               bool sticky) {
-  Show(message, string16(), NULL, urgent, sticky);
+  Show(message, string16(), MessageCallback(), urgent, sticky);
 }
 
 void SystemNotification::Show(const string16& message,
                               const string16& link,
-                              MessageCallback* callback,
+                              const MessageCallback& callback,
                               bool urgent,
                               bool sticky) {
   Notification notify = SystemNotificationFactory::Create(icon_,

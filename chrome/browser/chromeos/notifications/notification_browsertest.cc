@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
@@ -558,25 +559,22 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, TestAddWebUIMessageCallback) {
   EXPECT_TRUE(collection->AddWebUIMessageCallback(
       NewMockNotification("1"),
       "test",
-      NewCallback(
-          static_cast<NotificationTest*>(this),
-          &NotificationTest::HandleWebUIMessage)));
+      base::Bind(&NotificationTest::HandleWebUIMessage,
+          base::Unretained(static_cast<NotificationTest*>(this)))));
 
   // Adding callback for the same message twice should fail.
   EXPECT_FALSE(collection->AddWebUIMessageCallback(
       NewMockNotification("1"),
       "test",
-      NewCallback(
-          static_cast<NotificationTest*>(this),
-          &NotificationTest::HandleWebUIMessage)));
+      base::Bind(&NotificationTest::HandleWebUIMessage,
+          base::Unretained(static_cast<NotificationTest*>(this)))));
 
   // Adding callback to nonexistent notification should fail.
   EXPECT_FALSE(collection->AddWebUIMessageCallback(
       NewMockNotification("2"),
       "test1",
-      NewCallback(
-          static_cast<NotificationTest*>(this),
-          &NotificationTest::HandleWebUIMessage)));
+      base::Bind(&NotificationTest::HandleWebUIMessage,
+          base::Unretained(static_cast<NotificationTest*>(this)))));
 }
 
 // Occasional crash: http://crbug.com/96461
@@ -597,9 +595,8 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, TestWebUIMessageCallback) {
   EXPECT_TRUE(collection->AddWebUIMessageCallback(
       NewMockNotification("1"),
       "test",
-      NewCallback(
-          static_cast<NotificationTest*>(this),
-          &NotificationTest::HandleWebUIMessage)));
+      base::Bind(&NotificationTest::HandleWebUIMessage,
+          base::Unretained(static_cast<NotificationTest*>(this)))));
   MessageLoop::current()->Run();
 }
 

@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/notifications/system_notification.h"
 
@@ -20,9 +21,11 @@ namespace chromeos {
 // The network message observer displays a system notification for network
 // messages.
 
-class NetworkMessageObserver : public NetworkLibrary::NetworkManagerObserver,
-                               public NetworkLibrary::CellularDataPlanObserver,
-                               public NetworkLibrary::UserActionObserver {
+class NetworkMessageObserver
+  : public NetworkLibrary::NetworkManagerObserver,
+    public NetworkLibrary::CellularDataPlanObserver,
+    public NetworkLibrary::UserActionObserver,
+    public base::SupportsWeakPtr<NetworkMessageObserver> {
  public:
   explicit NetworkMessageObserver(Profile* profile);
   virtual ~NetworkMessageObserver();

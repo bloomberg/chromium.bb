@@ -10,6 +10,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/notifications/system_notification.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -26,7 +27,8 @@ namespace chromeos {
 // Performs check whether locale has been changed automatically recently
 // (based on synchronized user preference).  If so: shows notification that
 // allows user to revert change.
-class LocaleChangeGuard : public content::NotificationObserver {
+class LocaleChangeGuard : public content::NotificationObserver,
+                          public base::SupportsWeakPtr<LocaleChangeGuard> {
  public:
   explicit LocaleChangeGuard(Profile* profile);
   virtual ~LocaleChangeGuard();

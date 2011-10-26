@@ -23,7 +23,7 @@ class ListValue;
 
 namespace chromeos {
 
-typedef Callback1<const base::ListValue*>::Type MessageCallback;
+typedef base::Callback<void(const base::ListValue*)> MessageCallback;
 
 class BalloonViewHost : public ::BalloonViewHost {
  public:
@@ -35,7 +35,7 @@ class BalloonViewHost : public ::BalloonViewHost {
   // a callback for given message already exists. The callback object
   // is owned and deleted by callee.
   bool AddWebUIMessageCallback(const std::string& message,
-                               MessageCallback* callback);
+                               const MessageCallback& callback);
 
  private:
   // RenderViewHostDelegate
@@ -45,7 +45,7 @@ class BalloonViewHost : public ::BalloonViewHost {
                          const base::ListValue& args) OVERRIDE;
 
   // A map of message name -> message handling callback.
-  typedef std::map<std::string, MessageCallback*> MessageCallbackMap;
+  typedef std::map<std::string, MessageCallback> MessageCallbackMap;
   MessageCallbackMap message_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(BalloonViewHost);
