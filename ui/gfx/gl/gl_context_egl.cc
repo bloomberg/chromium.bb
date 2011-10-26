@@ -8,8 +8,8 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/angle/include/EGL/egl.h"
-#include "ui/gfx/gl/gl_surface_egl.h"
 #include "ui/gfx/gl/egl_util.h"
+#include "ui/gfx/gl/gl_surface.h"
 
 // This header must come after the above third-party include, as
 // it brings in #defines that cause conflicts.
@@ -52,9 +52,8 @@ bool GLContextEGL::Initialize(
     EGL_NONE
   };
 
-  GLSurfaceEGL* egl_surface = static_cast<GLSurfaceEGL*>(compatible_surface);
-  display_ = egl_surface->GetDisplay();
-  config_ = egl_surface->GetConfig();
+  display_ = compatible_surface->GetDisplay();
+  config_ = compatible_surface->GetConfig();
 
   context_ = eglCreateContext(
       display_,

@@ -28,6 +28,7 @@ class SharedResources {
  public:
   virtual ~SharedResources() {}
   virtual bool MakeSharedContextCurrent() = 0;
+  virtual void* GetDisplay() = 0;
 };
 
 struct TextureDrawParams {

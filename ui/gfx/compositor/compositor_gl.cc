@@ -314,6 +314,10 @@ scoped_refptr<gfx::GLContext> SharedResourcesGL::CreateContext(
     return NULL;
 }
 
+void* SharedResourcesGL::GetDisplay() {
+  return surface_->GetDisplay();
+}
+
 TextureGL::TextureGL() : texture_id_(0) {
 }
 

@@ -88,7 +88,7 @@ class ImageTransportClientGLX : public ImageTransportClient {
   }
 
   virtual ~ImageTransportClientGLX() {
-    Display* dpy = gfx::GLSurfaceGLX::GetDisplay();
+    Display* dpy = static_cast<Display*>(resources_->GetDisplay());
     if (glx_pixmap_)
       glXDestroyGLXPixmap(dpy, glx_pixmap_);
     if (pixmap_)
@@ -96,15 +96,16 @@ class ImageTransportClientGLX : public ImageTransportClient {
   }
 
   virtual unsigned int Initialize(uint64* surface_id) {
+    Display* dpy = static_cast<Display*>(resources_->GetDisplay());
+
     resources_->MakeSharedContextCurrent();
-    if (!InitializeOneOff())
+    if (!InitializeOneOff(dpy))
         return 0;
 
     // Create pixmap from window.
     // We receive a window here rather than a pixmap directly because drivers
     // require (or required) that the pixmap used to create the GL texture be
     // created in the same process as the texture.
-    Display* dpy = gfx::GLSurfaceGLX::GetDisplay();
     pixmap_ = XCompositeNameWindowPixmap(dpy, *surface_id);
 
     const int pixmapAttribs[] = {
@@ -120,13 +121,13 @@ class ImageTransportClientGLX : public ImageTransportClient {
   }
 
   virtual void Acquire() {
-    Display* dpy = gfx::GLSurfaceGLX::GetDisplay();
+    Display* dpy = static_cast<Display*>(resources_->GetDisplay());
     glBindTexture(GL_TEXTURE_2D, texture_);
     glXBindTexImageEXT(dpy, glx_pixmap_, GLX_FRONT_LEFT_EXT, NULL);
   }
 
   virtual void Release() {
-    Display* dpy = gfx::GLSurfaceGLX::GetDisplay();
+    Display* dpy = static_cast<Display*>(resources_->GetDisplay());
     glXReleaseTexImageEXT(dpy, glx_pixmap_, GLX_FRONT_LEFT_EXT);
   }
 
@@ -136,12 +137,10 @@ class ImageTransportClientGLX : public ImageTransportClient {
   }
 
  private:
-  static bool InitializeOneOff() {
+  static bool InitializeOneOff(Display* dpy) {
     static bool initialized = false;
     if (initialized)
       return true;
-
-    Display* dpy = gfx::GLSurfaceGLX::GetDisplay();
 
     int event_base, error_base;
     if (XCompositeQueryExtension(dpy, &event_base, &error_base)) {

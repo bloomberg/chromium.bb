@@ -86,6 +86,10 @@ bool SharedResourcesCC::MakeSharedContextCurrent() {
   return context_->MakeCurrent(surface_.get());
 }
 
+void* SharedResourcesCC::GetDisplay() {
+  return surface_->GetDisplay();
+}
+
 gfx::GLShareGroup* SharedResourcesCC::GetShareGroup() {
   DCHECK(initialized_);
   return context_->share_group();

@@ -393,7 +393,7 @@ GLXImageTransportSurface::~GLXImageTransportSurface() {
 
 bool GLXImageTransportSurface::Initialize() {
   // Create a dummy window to host the real window.
-  Display* dpy = gfx::GLSurfaceGLX::GetDisplay();
+  Display* dpy = static_cast<Display*>(GetDisplay());
   XSetWindowAttributes swa;
   swa.event_mask = StructureNotifyMask;
   swa.override_redirect = True;
@@ -439,7 +439,7 @@ void GLXImageTransportSurface::Destroy() {
     ReleaseSurface();
 
   if (window_) {
-    Display* dpy = gfx::GLSurfaceGLX::GetDisplay();
+    Display* dpy = static_cast<Display*>(GetDisplay());
     XDestroyWindow(dpy, window_);
     XDestroyWindow(dpy, dummy_parent_);
   }
@@ -462,7 +462,7 @@ void GLXImageTransportSurface::OnResize(gfx::Size size) {
     bound_ = false;
   }
 
-  Display* dpy = gfx::GLSurfaceGLX::GetDisplay();
+  Display* dpy = static_cast<Display*>(GetDisplay());
   XResizeWindow(dpy, window_, size_.width(), size_.height());
   XFlush(dpy);
 
@@ -496,7 +496,7 @@ bool GLXImageTransportSurface::OnMakeCurrent(gfx::GLContext* context) {
     return true;
 
   // Check for driver support.
-  Display* dpy = gfx::GLSurfaceGLX::GetDisplay();
+  Display* dpy = static_cast<Display*>(GetDisplay());
   int event_base, error_base;
   if (XCompositeQueryExtension(dpy, &event_base, &error_base)) {
     int major = 0, minor = 2;

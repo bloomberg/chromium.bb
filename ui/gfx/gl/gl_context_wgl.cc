@@ -28,7 +28,7 @@ std::string GLContextWGL::GetExtensions() {
     // able to use surface_ here. Either use a display device context or the
     // surface that was passed to MakeCurrent.
     const char* extensions = wglGetExtensionsStringARB(
-        GLSurfaceWGL::GetDisplay());
+        GLSurfaceWGL::GetDisplayDC());
     if (extensions) {
       return GLContext::GetExtensions() + " " + extensions;
     }
@@ -39,13 +39,12 @@ std::string GLContextWGL::GetExtensions() {
 
 bool GLContextWGL::Initialize(
     GLSurface* compatible_surface, GpuPreference gpu_preference) {
-  GLSurfaceWGL* surface_wgl = static_cast<GLSurfaceWGL*>(compatible_surface);
-
   // TODO(apatrick): When contexts and surfaces are separated, we won't be
   // able to use surface_ here. Either use a display device context or a
   // surface that the context is compatible with not necessarily limited to
   // rendering to.
-  context_ = wglCreateContext(static_cast<HDC>(surface_wgl->GetHandle()));
+  context_ = wglCreateContext(
+      static_cast<HDC>(compatible_surface->GetHandle()));
   if (!context_) {
     LOG(ERROR) << "Failed to create GL context.";
     Destroy();

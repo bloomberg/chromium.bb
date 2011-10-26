@@ -30,6 +30,8 @@ class COMPOSITOR_EXPORT SharedResourcesCC : public SharedResources {
   static SharedResourcesCC* GetInstance();
 
   virtual bool MakeSharedContextCurrent();
+  virtual void* GetDisplay();
+
   gfx::GLShareGroup* GetShareGroup();
 
  private:

@@ -307,8 +307,33 @@ gfx::Size PbufferGLSurfaceEGL::GetSize() {
   return size_;
 }
 
+bool PbufferGLSurfaceEGL::Resize(const gfx::Size& size) {
+  if (size == size_)
+    return true;
+
+  Destroy();
+  size_ = size;
+  return Initialize();
+}
+
 EGLSurface PbufferGLSurfaceEGL::GetHandle() {
   return surface_;
+}
+
+void* PbufferGLSurfaceEGL::GetShareHandle() {
+  const char* extensions = eglQueryString(g_display, EGL_EXTENSIONS);
+  if (!strstr(extensions, "EGL_ANGLE_query_surface_pointer"))
+    return NULL;
+
+  void* handle;
+  if (!eglQuerySurfacePointerANGLE(g_display,
+                                   GetHandle(),
+                                   EGL_D3D_TEXTURE_2D_SHARE_HANDLE_ANGLE,
+                                   &handle)) {
+    return NULL;
+  }
+
+  return handle;
 }
 
 }  // namespace gfx
