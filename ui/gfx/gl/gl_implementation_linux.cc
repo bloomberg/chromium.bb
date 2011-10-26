@@ -103,7 +103,11 @@ bool InitializeGLBindings(GLImplementation implementation) {
       break;
     }
     case kGLImplementationDesktopGL: {
+#if defined(OS_OPENBSD)
+      base::NativeLibrary library = LoadLibrary("libGL.so");
+#else
       base::NativeLibrary library = LoadLibrary("libGL.so.1");
+#endif
       if (!library)
         return false;
 
