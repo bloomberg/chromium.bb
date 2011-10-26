@@ -371,7 +371,7 @@ bool IconTheme::SetDirectories(const std::string& dirs) {
   while ((epos = dirs.find(',', pos)) != std::string::npos) {
     TrimWhitespaceASCII(dirs.substr(pos, epos - pos), TRIM_ALL, &dir);
     if (dir.length() == 0) {
-      LOG(WARNING) << "Invalid index.theme: blank subdir";
+      DLOG(WARNING) << "Invalid index.theme: blank subdir";
       return false;
     }
     subdirs_[dir] = num++;
@@ -379,7 +379,7 @@ bool IconTheme::SetDirectories(const std::string& dirs) {
   }
   TrimWhitespaceASCII(dirs.substr(pos), TRIM_ALL, &dir);
   if (dir.length() == 0) {
-    LOG(WARNING) << "Invalid index.theme: blank subdir";
+    DLOG(WARNING) << "Invalid index.theme: blank subdir";
     return false;
   }
   subdirs_[dir] = num++;

@@ -66,7 +66,7 @@ void InitializeXInput2(void) {
   int event, err;
 
   if (!XQueryExtension(display, "XInputExtension", &xiopcode, &event, &err)) {
-    VLOG(1) << "X Input extension not available.";
+    DVLOG(1) << "X Input extension not available.";
     xiopcode = -1;
     return;
   }
@@ -78,13 +78,13 @@ void InitializeXInput2(void) {
   int major = 2, minor = 0;
 #endif
   if (XIQueryVersion(display, &major, &minor) == BadRequest) {
-    VLOG(1) << "XInput2 not supported in the server.";
+    DVLOG(1) << "XInput2 not supported in the server.";
     xiopcode = -1;
     return;
   }
 #if defined(USE_XI2_MT)
   if (major < 2 || (major == 2 && minor < USE_XI2_MT)) {
-    VLOG(1) << "XI version on server is " << major << "." << minor << ". "
+    DVLOG(1) << "XI version on server is " << major << "." << minor << ". "
             << "But 2." << USE_XI2_MT << " is required.";
     xiopcode = -1;
     return;
@@ -148,7 +148,7 @@ void MessagePumpX::InitXSource() {
   DCHECK(!x_source_);
   GPollFD* x_poll = new GPollFD();
   Display* display = GetDefaultXDisplay();
-  CHECK(display) << "Unable to get connection to X server";
+  DCHECK(display) << "Unable to get connection to X server";
   x_poll->fd = ConnectionNumber(display);
   x_poll->events = G_IO_IN;
 
@@ -186,7 +186,7 @@ bool MessagePumpX::ProcessXEvent(XEvent* xev) {
       should_quit = true;
       Quit();
     } else if (status == MessagePumpDispatcher::EVENT_IGNORED) {
-      VLOG(1) << "Event (" << xev->type << ") not handled.";
+      DVLOG(1) << "Event (" << xev->type << ") not handled.";
     }
     DidProcessXEvent(xev);
   }
