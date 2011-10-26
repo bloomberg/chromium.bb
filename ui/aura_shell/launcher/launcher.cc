@@ -61,6 +61,9 @@ void Launcher::MaybeAdd(aura::Window* window) {
 }
 
 void Launcher::OnWindowAdded(aura::Window* new_window) {
+  if (new_window->parent() != window_container_)
+    return;
+
   DCHECK(known_windows_.find(new_window) == known_windows_.end());
   known_windows_[new_window] = false;
   new_window->AddObserver(this);
@@ -72,6 +75,9 @@ void Launcher::OnWindowAdded(aura::Window* new_window) {
 }
 
 void Launcher::OnWillRemoveWindow(aura::Window* window) {
+  if (window->parent() != window_container_)
+    return;
+
   window->RemoveObserver(this);
   known_windows_.erase(window);
   LauncherItems::const_iterator i = model_->ItemByWindow(window);
