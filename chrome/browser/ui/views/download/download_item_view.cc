@@ -466,21 +466,19 @@ bool DownloadItemView::OnMousePressed(const views::MouseEvent& event) {
   if (complete_animation_.get() && complete_animation_->is_animating())
     complete_animation_->End();
 
-  gfx::Point menu_location(event.location());
   if (event.IsOnlyLeftMouseButton()) {
-    if (!InDropDownButtonXCoordinateRange(event.x())) {
+    if (InDropDownButtonXCoordinateRange(event.x())) {
+      drop_down_pressed_ = true;
+      SetState(NORMAL, PUSHED);
+      // We are setting is_mouse_gesture to false when calling ShowContextMenu
+      // so that the positioning of the context menu will be similar to a
+      // keyboard invocation.  I.e. we want the menu to always be positioned
+      // next to the drop down button instead of the next to the pointer.
+      ShowContextMenu(event.location(), false);
+    } else {
       SetState(PUSHED, NORMAL);
-      return true;
     }
-
-    // Anchor the menu below the dropmarker.
-    menu_location.SetPoint(base::i18n::IsRTL() ?
-                               drop_down_x_right_ : drop_down_x_left_,
-                           height());
-    drop_down_pressed_ = true;
-    SetState(NORMAL, PUSHED);
   }
-  ShowContextMenu(menu_location, true);
   return true;
 }
 
@@ -591,6 +589,7 @@ bool DownloadItemView::GetTooltipText(const gfx::Point& p,
 void DownloadItemView::ShowContextMenu(const gfx::Point& p,
                                        bool is_mouse_gesture) {
   gfx::Point point = p;
+  gfx::Size size;
 
   // Similar hack as in MenuButton.
   // We're about to show the menu from a mouse press. By showing from the
@@ -608,12 +607,8 @@ void DownloadItemView::ShowContextMenu(const gfx::Point& p,
   if (!is_mouse_gesture) {
     drop_down_pressed_ = true;
     SetState(NORMAL, PUSHED);
-
-    point.set_y(height());
-    if (base::i18n::IsRTL())
-      point.set_x(drop_down_x_right_);
-    else
-      point.set_x(drop_down_x_left_);
+    point.SetPoint(drop_down_x_left_, box_y_);
+    size.SetSize(drop_down_x_right_ - drop_down_x_left_, box_height_);
   }
 
   views::View::ConvertPointToScreen(this, &point);
@@ -622,7 +617,8 @@ void DownloadItemView::ShowContextMenu(const gfx::Point& p,
     context_menu_.reset(new DownloadShelfContextMenuView(model_.get()));
   // When we call the Run method on the menu, it runs an inner message loop
   // that might causes us to be deleted.
-  if (context_menu_->Run(GetWidget()->GetTopLevelWidget(), point))
+  if (context_menu_->Run(GetWidget()->GetTopLevelWidget(),
+                         gfx::Rect(point, size)))
     return;  // We have been deleted! Don't access 'this'.
 
   // If the menu action was to remove the download, this view will also be

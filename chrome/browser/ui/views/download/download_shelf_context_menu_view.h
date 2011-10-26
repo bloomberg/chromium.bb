@@ -14,7 +14,7 @@
 class BaseDownloadItemModel;
 
 namespace gfx {
-class Point;
+class Rect;
 }
 
 namespace views {
@@ -27,9 +27,11 @@ class DownloadShelfContextMenuView : public DownloadShelfContextMenu {
   explicit DownloadShelfContextMenuView(BaseDownloadItemModel* model);
   virtual ~DownloadShelfContextMenuView();
 
-  // Returns true if menu has been deleted.
+  // Returns true if menu has been deleted.  |rect| is the bounding area for
+  // positioning the menu in screen coordinates.  The menu will be positioned
+  // above or below but not overlapping |rect|.
   bool Run(views::Widget* parent_widget,
-           const gfx::Point& point) WARN_UNUSED_RESULT;
+           const gfx::Rect& rect) WARN_UNUSED_RESULT;
 
   // This method runs when the caller has been deleted and we should not attempt
   // to access download_item().

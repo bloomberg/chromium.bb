@@ -22,7 +22,7 @@ DownloadShelfContextMenuView::DownloadShelfContextMenuView(
 DownloadShelfContextMenuView::~DownloadShelfContextMenuView() {}
 
 bool DownloadShelfContextMenuView::Run(views::Widget* parent_widget,
-                                       const gfx::Point& point) {
+                                       const gfx::Rect& rect) {
   views::MenuModelAdapter menu_model_adapter(GetMenuModel());
   menu_runner_.reset(new views::MenuRunner(menu_model_adapter.CreateMenu()));
 
@@ -35,7 +35,7 @@ bool DownloadShelfContextMenuView::Run(views::Widget* parent_widget,
   return menu_runner_->RunMenuAt(
       parent_widget,
       NULL,
-      gfx::Rect(point, gfx::Size()),
+      rect,
       position,
       views::MenuRunner::HAS_MNEMONICS) == views::MenuRunner::MENU_DELETED;
 }
