@@ -98,7 +98,7 @@ namespace webkit_glue {
 
 WebMediaPlayerImpl::WebMediaPlayerImpl(
     WebKit::WebMediaPlayerClient* client,
-    WebMediaPlayerDelegate* delegate,
+    base::WeakPtr<WebMediaPlayerDelegate> delegate,
     media::FilterCollection* collection,
     media::MessageLoopFactory* message_loop_factory,
     MediaStreamClient* media_stream_client,

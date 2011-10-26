@@ -1948,7 +1948,7 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
 
   scoped_ptr<webkit_glue::WebMediaPlayerImpl> result(
       new webkit_glue::WebMediaPlayerImpl(client,
-                                          this,
+                                          AsWeakPtr(),
                                           collection.release(),
                                           message_loop_factory.release(),
                                           media_stream_impl_.get(),

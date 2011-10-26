@@ -105,7 +105,7 @@ class WebMediaPlayerImpl
   //
   // Callers must call |Initialize()| before they can use the object.
   WebMediaPlayerImpl(WebKit::WebMediaPlayerClient* client,
-                     WebMediaPlayerDelegate* delegate,
+                     base::WeakPtr<WebMediaPlayerDelegate> delegate,
                      media::FilterCollection* collection,
                      media::MessageLoopFactory* message_loop_factory,
                      MediaStreamClient* media_stream_client,
@@ -259,7 +259,7 @@ class WebMediaPlayerImpl
 
   scoped_refptr<WebMediaPlayerProxy> proxy_;
 
-  WebMediaPlayerDelegate* delegate_;
+  base::WeakPtr<WebMediaPlayerDelegate> delegate_;
 
   MediaStreamClient* media_stream_client_;
 

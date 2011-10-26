@@ -323,12 +323,13 @@ WebKit::WebMediaPlayer* CreateMediaPlayer(WebFrame* frame,
   collection->AddVideoRenderer(video_renderer);
 
   scoped_ptr<webkit_glue::WebMediaPlayerImpl> result(
-      new webkit_glue::WebMediaPlayerImpl(client,
-                                          NULL,
-                                          collection.release(),
-                                          message_loop_factory.release(),
-                                          NULL,
-                                          new media::MediaLog()));
+      new webkit_glue::WebMediaPlayerImpl(
+          client,
+          base::WeakPtr<webkit_glue::WebMediaPlayerDelegate>(),
+          collection.release(),
+          message_loop_factory.release(),
+          NULL,
+          new media::MediaLog()));
   if (!result->Initialize(frame, false, video_renderer)) {
     return NULL;
   }
