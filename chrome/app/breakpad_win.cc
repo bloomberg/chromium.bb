@@ -526,7 +526,8 @@ bool ShowRestartDialogIfCrashed(bool* exit_now) {
                             restart_data, len);
   restart_data[len] = 0;
   // The CHROME_RESTART var contains the dialog strings separated by '|'.
-  // See PrepareRestartOnCrashEnviroment() function for details.
+  // See ChromeBrowserMainPartsWin::PrepareRestartOnCrashEnviroment()
+  // for details.
   std::vector<std::wstring> dlg_strings;
   base::SplitString(restart_data, L'|', &dlg_strings);
   delete[] restart_data;

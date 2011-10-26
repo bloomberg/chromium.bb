@@ -88,17 +88,6 @@ int DoUninstallTasks(bool chrome_still_running) {
   return content::RESULT_CODE_NORMAL_EXIT;
 }
 
-int HandleIconsCommands(const CommandLine &parsed_command_line) {
-  return 0;
-}
-
-bool CheckMachineLevelInstall() {
-  return false;
-}
-
-void PrepareRestartOnCrashEnviroment(const CommandLine &parsed_command_line) {
-}
-
 void SetBrowserX11ErrorHandlers() {
   // Set up error handlers to make sure profile gets written if X server
   // goes away.

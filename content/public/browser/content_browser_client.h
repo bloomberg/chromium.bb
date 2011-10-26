@@ -67,7 +67,6 @@ class Clipboard;
 namespace content {
 
 class BrowserContext;
-class BrowserMainParts;
 class ResourceContext;
 class WebUIFactory;
 
@@ -83,11 +82,12 @@ class ContentBrowserClient {
  public:
   virtual ~ContentBrowserClient() {}
 
-  // Allows the embedder to return a customed BrowserMainParts implementation
-  // for the browser staratup code. Can return NULL, in which case the default
-  // is used.
-  virtual BrowserMainParts* CreateBrowserMainParts(
-      const MainFunctionParams& parameters) = 0;
+  // Allows the embedder to set any number of custom BrowserMainParts
+  // implementations for the browser startup code. See comments in
+  // browser_main_parts.h.
+  virtual void CreateBrowserMainParts(
+      const MainFunctionParams& parameters,
+      std::vector<BrowserMainParts*>* parts_list) = 0;
 
   // Platform-specific creator. Use this to construct new RenderWidgetHostViews
   // rather than using RenderWidgetHostViewWin & friends.

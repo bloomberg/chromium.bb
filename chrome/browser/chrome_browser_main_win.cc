@@ -74,14 +74,6 @@ void WarnAboutMinimumSystemRequirements() {
   }
 }
 
-#if !defined(USE_AURA)
-void ShowMissingLocaleMessageBox() {
-  ui::MessageBox(NULL, ASCIIToUTF16(chrome_browser::kMissingLocaleDataMessage),
-                 ASCIIToUTF16(chrome_browser::kMissingLocaleDataTitle),
-                 MB_OK | MB_ICONERROR | MB_TOPMOST);
-}
-#endif
-
 void RecordBrowserStartupTime() {
   // Calculate the time that has elapsed from our own process creation.
   FILETIME creation_time = {};
@@ -141,11 +133,23 @@ int DoUninstallTasks(bool chrome_still_running) {
   return ret;
 }
 
-// Prepares the localized strings that are going to be displayed to
-// the user if the browser process dies. These strings are stored in the
-// environment block so they are accessible in the early stages of the
-// chrome executable's lifetime.
-void PrepareRestartOnCrashEnviroment(const CommandLine& parsed_command_line) {
+// ChromeBrowserMainPartsWin ---------------------------------------------------
+
+ChromeBrowserMainPartsWin::ChromeBrowserMainPartsWin(
+    const MainFunctionParams& parameters)
+    : ChromeBrowserMainParts(parameters) {
+}
+
+void ChromeBrowserMainPartsWin::PreMainMessageLoopStart() {
+  if (!parameters().ui_task) {
+    // Make sure that we know how to handle exceptions from the message loop.
+    InitializeWindowProcExceptions();
+  }
+}
+
+// static
+void ChromeBrowserMainPartsWin::PrepareRestartOnCrashEnviroment(
+    const CommandLine& parsed_command_line) {
   // Clear this var so child processes don't show the dialog by default.
   scoped_ptr<base::Environment> env(base::Environment::Create());
   env->UnSetVar(env_vars::kShowRestart);
@@ -177,7 +181,9 @@ void PrepareRestartOnCrashEnviroment(const CommandLine& parsed_command_line) {
   env->SetVar(env_vars::kRestartInfo, UTF16ToUTF8(dlg_strings));
 }
 
-void RegisterApplicationRestart(const CommandLine& parsed_command_line) {
+// static
+void ChromeBrowserMainPartsWin::RegisterApplicationRestart(
+    const CommandLine& parsed_command_line) {
   DCHECK(base::win::GetVersion() >= base::win::VERSION_VISTA);
   base::ScopedNativeLibrary library(FilePath(L"kernel32.dll"));
   // Get the function pointer for RegisterApplicationRestart.
@@ -207,11 +213,15 @@ void RegisterApplicationRestart(const CommandLine& parsed_command_line) {
   DCHECK(SUCCEEDED(hr)) << "RegisterApplicationRestart failed.";
 }
 
-// This method handles the --hide-icons and --show-icons command line options
-// for chrome that get triggered by Windows from registry entries
-// HideIconsCommand & ShowIconsCommand. Chrome doesn't support hide icons
-// functionality so we just ask the users if they want to uninstall Chrome.
-int HandleIconsCommands(const CommandLine& parsed_command_line) {
+void ChromeBrowserMainPartsWin::ShowMissingLocaleMessageBox() {
+  ui::MessageBox(NULL, ASCIIToUTF16(chrome_browser::kMissingLocaleDataMessage),
+                 ASCIIToUTF16(chrome_browser::kMissingLocaleDataTitle),
+                 MB_OK | MB_ICONERROR | MB_TOPMOST);
+}
+
+// static
+int ChromeBrowserMainPartsWin::HandleIconsCommands(
+    const CommandLine& parsed_command_line) {
   if (parsed_command_line.HasSwitch(switches::kHideIcons)) {
     string16 cp_applet;
     base::win::Version version = base::win::GetVersion();
@@ -237,11 +247,8 @@ int HandleIconsCommands(const CommandLine& parsed_command_line) {
   return chrome::RESULT_CODE_UNSUPPORTED_PARAM;
 }
 
-// Check if there is any machine level Chrome installed on the current
-// machine. If yes and the current Chrome process is user level, we do not
-// allow the user level Chrome to run. So we notify the user and uninstall
-// user level Chrome.
-bool CheckMachineLevelInstall() {
+// static
+bool ChromeBrowserMainPartsWin::CheckMachineLevelInstall() {
   // TODO(tommi): Check if using the default distribution is always the right
   // thing to do.
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
@@ -269,18 +276,4 @@ bool CheckMachineLevelInstall() {
     }
   }
   return false;
-}
-
-// ChromeBrowserMainPartsWin ---------------------------------------------------
-
-ChromeBrowserMainPartsWin::ChromeBrowserMainPartsWin(
-    const MainFunctionParams& parameters)
-    : ChromeBrowserMainParts(parameters) {
-}
-
-void ChromeBrowserMainPartsWin::PreMainMessageLoopStart() {
-  if (!parameters().ui_task) {
-    // Make sure that we know how to handle exceptions from the message loop.
-    InitializeWindowProcExceptions();
-  }
 }

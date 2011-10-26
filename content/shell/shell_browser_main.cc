@@ -21,7 +21,7 @@ namespace content {
 
 ShellBrowserMainParts::ShellBrowserMainParts(
     const MainFunctionParams& parameters)
-    : BrowserMainParts(parameters) {
+    : BrowserMainParts() {
   ShellContentBrowserClient* shell_browser_client =
       static_cast<ShellContentBrowserClient*>(
           content::GetContentClient()->browser());
@@ -74,6 +74,11 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
                          NULL,
                          MSG_ROUTING_NONE,
                          NULL);
+
+}
+
+bool ShellBrowserMainParts::MainMessageLoopRun(int* result_code) {
+  return false;
 }
 
 ResourceDispatcherHost* ShellBrowserMainParts::GetResourceDispatcherHost() {

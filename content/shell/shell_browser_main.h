@@ -6,10 +6,12 @@
 #define CONTENT_SHELL_SHELL_BROWSER_MAIN_H_
 #pragma once
 
+#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/browser/browser_main.h"
+#include "content/public/browser/browser_main_parts.h"
 
 class ResourceDispatcherHost;
+struct MainFunctionParams;
 
 namespace base {
 class Thread;
@@ -28,7 +30,14 @@ class ShellBrowserMainParts : public BrowserMainParts {
   explicit ShellBrowserMainParts(const MainFunctionParams& parameters);
   virtual ~ShellBrowserMainParts();
 
-  virtual void PreMainMessageLoopRun();
+  virtual void PreEarlyInitialization() OVERRIDE {}
+  virtual void PostEarlyInitialization() OVERRIDE {}
+  virtual void PreMainMessageLoopStart() OVERRIDE {}
+  virtual void ToolkitInitialized() OVERRIDE {}
+  virtual void PostMainMessageLoopStart() OVERRIDE {}
+  virtual void PreMainMessageLoopRun() OVERRIDE;
+  virtual bool MainMessageLoopRun(int* result_code) OVERRIDE;
+  virtual void PostMainMessageLoopRun() {}
 
   ResourceDispatcherHost* GetResourceDispatcherHost();
   ui::Clipboard* GetClipboard();

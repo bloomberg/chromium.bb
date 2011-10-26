@@ -8,11 +8,12 @@
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/tracked_objects.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/process_singleton.h"
-#include "content/browser/browser_main.h"
+#include "content/public/browser/browser_main_parts.h"
 
 class BrowserProcessImpl;
 class FieldTrialSynchronizer;
@@ -22,6 +23,7 @@ class PrefService;
 class Profile;
 class ShutdownWatcherHelper;
 class TranslateManager;
+struct MainFunctionParams;
 
 namespace chrome_browser {
 // For use by ShowMissingLocaleMessageBox.
@@ -36,18 +38,30 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // Constructs metrics service and does related initialization, including
   // creation of field trials. Call only after labs have been converted to
   // switches.
-  MetricsService* SetupMetricsAndFieldTrials(
-      const CommandLine& parsed_command_line,
-      PrefService* local_state);
+  MetricsService* SetupMetricsAndFieldTrials(PrefService* local_state);
+
+  const MainFunctionParams& parameters() const {
+    return parameters_;
+  }
+  const CommandLine& parsed_command_line() const {
+    return parsed_command_line_;
+  }
 
  protected:
   explicit ChromeBrowserMainParts(const MainFunctionParams& parameters);
 
-  virtual void PreMainMessageLoopRun() OVERRIDE;
-  int PreMainMessageLoopRunInternal();
-  virtual void MainMessageLoopRun() OVERRIDE;
-  virtual void PostMainMessageLoopRun() OVERRIDE;
+  // content::BrowserParts overrides
+  virtual void PreEarlyInitialization() OVERRIDE {}
+  virtual void PostEarlyInitialization() OVERRIDE {}
+  virtual void PreMainMessageLoopStart() OVERRIDE {}
   virtual void ToolkitInitialized() OVERRIDE;
+  virtual void PostMainMessageLoopStart() OVERRIDE {}
+  virtual void PreMainMessageLoopRun() OVERRIDE;
+  virtual bool MainMessageLoopRun(int* result_code) OVERRIDE;
+  virtual void PostMainMessageLoopRun();
+
+  // Displays a warning message that we can't find any locale data files.
+  virtual void ShowMissingLocaleMessageBox() = 0;
 
  private:
   // Methods for |EarlyInitialization()| ---------------------------------------
@@ -89,7 +103,15 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   void SetupFieldTrials(bool metrics_recording_enabled,
                         bool proxy_policy_is_set);
 
+  // Methods for Main Message Loop -------------------------------------------
+
+  int PreMainMessageLoopRunImpl();
+
   // Members initialized on construction ---------------------------------------
+
+  const MainFunctionParams& parameters_;
+  const CommandLine& parsed_command_line_;
+  int result_code_;
 
   // Create ShutdownWatcherHelper object for watching jank during shutdown.
   // Please keep |shutdown_watcher| as the first object constructed, and hence
@@ -137,9 +159,6 @@ void RecordBreakpadStatusUMA(MetricsService* metrics);
 // Displays a warning message if some minimum level of OS support is not
 // present on the current platform.
 void WarnAboutMinimumSystemRequirements();
-
-// Displays a warning message that we can't find any locale data files.
-void ShowMissingLocaleMessageBox();
 
 // Records the time from our process' startup to the present time in
 // the UMA histogram |metric_name|.

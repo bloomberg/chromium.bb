@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chrome_browser_main_gtk.h"
+#include "chrome/browser/chrome_browser_parts_gtk.h"
 
 #include <gtk/gtk.h>
 
@@ -14,21 +14,22 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/gtk_util.h"
 
-ChromeBrowserMainPartsGtk::ChromeBrowserMainPartsGtk(
-    const MainFunctionParams& parameters)
-    : ChromeBrowserMainPartsPosix(parameters) {
+ChromeBrowserPartsGtk::ChromeBrowserPartsGtk()
+    : content::BrowserMainParts() {
 }
 
-void ChromeBrowserMainPartsGtk::PreEarlyInitialization() {
+void ChromeBrowserPartsGtk::PreEarlyInitialization() {
   DetectRunningAsRoot();
-
-  ChromeBrowserMainPartsPosix::PreEarlyInitialization();
 }
 
-void ChromeBrowserMainPartsGtk::DetectRunningAsRoot() {
+bool ChromeBrowserPartsGtk::MainMessageLoopRun(int* result_code) {
+  return false;
+}
+
+void ChromeBrowserPartsGtk::DetectRunningAsRoot() {
   if (geteuid() == 0) {
     const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-    if (parsed_command_line().HasSwitch(switches::kUserDataDir))
+    if (command_line.HasSwitch(switches::kUserDataDir))
       return;
 
     gfx::GtkInitFromCommandLine(command_line);
@@ -66,18 +67,17 @@ void ChromeBrowserMainPartsGtk::DetectRunningAsRoot() {
   }
 }
 
-void ShowMissingLocaleMessageBox() {
+// static
+void ChromeBrowserPartsGtk::ShowMessageBox(const char* message) {
   GtkWidget* dialog = gtk_message_dialog_new(
       NULL,
       static_cast<GtkDialogFlags>(0),
       GTK_MESSAGE_ERROR,
       GTK_BUTTONS_CLOSE,
       "%s",
-      chrome_browser::kMissingLocaleDataMessage);
+      message);
 
-  gtk_window_set_title(GTK_WINDOW(dialog),
-                       chrome_browser::kMissingLocaleDataTitle);
-
+  gtk_window_set_title(GTK_WINDOW(dialog), message);
   gtk_dialog_run(GTK_DIALOG(dialog));
   gtk_widget_destroy(dialog);
 }

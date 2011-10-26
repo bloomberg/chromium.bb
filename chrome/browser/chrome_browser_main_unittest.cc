@@ -6,6 +6,7 @@
 #include <vector>
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/common/chrome_switches.h"
@@ -34,30 +35,37 @@ TEST_F(BrowserMainTest, WarmConnectionFieldTrial_WarmestSocket) {
 
   scoped_ptr<MainFunctionParams> params(
       new MainFunctionParams(command_line_, *sandbox_init_wrapper_, NULL));
-  scoped_ptr<content::BrowserMainParts> bw(
-      content::GetContentClient()->browser()->CreateBrowserMainParts(
-          *params));
-
-  ChromeBrowserMainParts* cbw = static_cast<ChromeBrowserMainParts*>(bw.get());
-  cbw->WarmConnectionFieldTrial();
-
-  EXPECT_EQ(0, net::GetSocketReusePolicy());
+  ScopedVector<content::BrowserMainParts> bwv;
+  content::GetContentClient()->browser()->CreateBrowserMainParts(
+      *params, &(bwv.get()));
+  ChromeBrowserMainParts* cbw = NULL;
+  if (bwv.size() >= 1)
+    cbw = static_cast<ChromeBrowserMainParts*>(bwv[0]);
+  EXPECT_TRUE(cbw);
+  if (cbw) {
+    cbw->WarmConnectionFieldTrial();
+    EXPECT_EQ(0, net::GetSocketReusePolicy());
+  }
 }
 
 TEST_F(BrowserMainTest, WarmConnectionFieldTrial_Random) {
   scoped_ptr<MainFunctionParams> params(
       new MainFunctionParams(command_line_, *sandbox_init_wrapper_, NULL));
-  scoped_ptr<content::BrowserMainParts> bw(
-      content::GetContentClient()->browser()->CreateBrowserMainParts(
-          *params));
-  ChromeBrowserMainParts* cbw = static_cast<ChromeBrowserMainParts*>(bw.get());
-
-  const int kNumRuns = 1000;
-  for (int i = 0; i < kNumRuns; i++) {
-    cbw->WarmConnectionFieldTrial();
-    int val = net::GetSocketReusePolicy();
-    EXPECT_LE(val, 2);
-    EXPECT_GE(val, 0);
+  ScopedVector<content::BrowserMainParts> bwv;
+  content::GetContentClient()->browser()->CreateBrowserMainParts(
+      *params, &(bwv.get()));
+  ChromeBrowserMainParts* cbw = NULL;
+  if (bwv.size() >= 1)
+    cbw = static_cast<ChromeBrowserMainParts*>(bwv[0]);
+  EXPECT_TRUE(cbw);
+  if (cbw) {
+    const int kNumRuns = 1000;
+    for (int i = 0; i < kNumRuns; i++) {
+      cbw->WarmConnectionFieldTrial();
+      int val = net::GetSocketReusePolicy();
+      EXPECT_LE(val, 2);
+      EXPECT_GE(val, 0);
+    }
   }
 }
 
@@ -68,20 +76,25 @@ TEST_F(BrowserMainTest, WarmConnectionFieldTrial_Invalid) {
       new MainFunctionParams(command_line_, *sandbox_init_wrapper_, NULL));
   // This test ends up launching a new process, and that doesn't initialize the
   // ContentClient interfaces.
-  scoped_ptr<content::BrowserMainParts> bw;
+  ScopedVector<content::BrowserMainParts> bwv;
   if (content::GetContentClient()) {
-    bw.reset(content::GetContentClient()->browser()->CreateBrowserMainParts(
-        *params));
+    content::GetContentClient()->browser()->CreateBrowserMainParts(
+        *params, &(bwv.get()));
   } else {
     chrome::ChromeContentBrowserClient ccbc;
-    bw.reset(ccbc.CreateBrowserMainParts(*params));
+    ccbc.CreateBrowserMainParts(*params, &(bwv.get()));
   }
-  ChromeBrowserMainParts* cbw = static_cast<ChromeBrowserMainParts*>(bw.get());
+  ChromeBrowserMainParts* cbw = NULL;
+  if (bwv.size() >= 1)
+    cbw = static_cast<ChromeBrowserMainParts*>(bwv[0]);
+  EXPECT_TRUE(cbw);
+  if (cbw) {
 #if defined(NDEBUG) && defined(DCHECK_ALWAYS_ON)
-  EXPECT_DEATH(cbw->WarmConnectionFieldTrial(),
-                     "Not a valid socket reuse policy group");
+    EXPECT_DEATH(cbw->WarmConnectionFieldTrial(),
+                 "Not a valid socket reuse policy group");
 #else
-  EXPECT_DEBUG_DEATH(cbw->WarmConnectionFieldTrial(),
-                     "Not a valid socket reuse policy group");
+    EXPECT_DEBUG_DEATH(cbw->WarmConnectionFieldTrial(),
+                       "Not a valid socket reuse policy group");
 #endif
+  }
 }

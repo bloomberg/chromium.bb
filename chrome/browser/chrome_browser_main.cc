@@ -33,8 +33,6 @@
 #include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/browser_shutdown.h"
-#include "chrome/browser/chrome_browser_main_gtk.h"
-#include "chrome/browser/chrome_browser_main_win.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/default_apps_trial.h"
 #include "chrome/browser/extensions/extension_protocols.h"
@@ -121,10 +119,6 @@
 #include "chrome/app/breakpad_linux.h"
 #endif
 
-#if defined(TOOLKIT_USES_GTK)
-#include "chrome/browser/ui/gtk/gtk_util.h"
-#endif
-
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #include "chrome/browser/first_run/upgrade_util_linux.h"
 #endif
@@ -161,6 +155,7 @@
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_trial.h"
 #include "chrome/browser/browser_util_win.h"
+#include "chrome/browser/chrome_browser_main_win.h"
 #include "chrome/browser/first_run/try_chrome_dialog_view.h"
 #include "chrome/browser/first_run/upgrade_util_win.h"
 #include "chrome/browser/fragmentation_checker_win.h"
@@ -195,11 +190,16 @@
 #endif
 
 #if defined(TOOLKIT_USES_GTK)
+#include "chrome/browser/ui/gtk/gtk_util.h"
 #include "ui/gfx/gtk_util.h"
 #endif
 
 #if defined(TOUCH_UI)
 #include "ui/base/touch/touch_factory.h"
+#endif
+
+#if defined(USE_X11)
+#include "chrome/browser/chrome_browser_main_x11.h"
 #endif
 
 #if defined(USE_AURA)
@@ -681,7 +681,9 @@ const char kMissingLocaleDataMessage[] =
 
 ChromeBrowserMainParts::ChromeBrowserMainParts(
     const MainFunctionParams& parameters)
-    : BrowserMainParts(parameters),
+    : parameters_(parameters),
+      parsed_command_line_(parameters.command_line_),
+      result_code_(content::RESULT_CODE_NORMAL_EXIT),
       shutdown_watcher_(new ShutdownWatcherHelper()),
       record_search_engine_(false),
       translate_manager_(NULL),
@@ -698,12 +700,12 @@ ChromeBrowserMainParts::~ChromeBrowserMainParts() {
 
 // This will be called after the command-line has been mutated by about:flags
 MetricsService* ChromeBrowserMainParts::SetupMetricsAndFieldTrials(
-    const CommandLine& parsed_command_line,
     PrefService* local_state) {
   // Must initialize metrics after labs have been converted into switches,
   // but before field trials are set up (so that client ID is available for
   // one-time randomized field trials).
-  MetricsService* metrics = InitializeMetrics(parsed_command_line, local_state);
+  MetricsService* metrics = InitializeMetrics(
+      parsed_command_line_, local_state);
 
   // Initialize FieldTrialList to support FieldTrials that use one-time
   // randomization. The client ID will be empty if the user has not opted
@@ -1176,10 +1178,10 @@ DLLEXPORT void __cdecl RelaunchChromeBrowserWithNewCommandLineIfNeeded() {
 #endif
 
 void ChromeBrowserMainParts::PreMainMessageLoopRun() {
-  set_result_code(PreMainMessageLoopRunInternal());
+  result_code_ = PreMainMessageLoopRunImpl();
 }
 
-int ChromeBrowserMainParts::PreMainMessageLoopRunInternal() {
+int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   run_message_loop_ = false;
   FilePath user_data_dir;
 #if defined(OS_WIN)
@@ -1382,8 +1384,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunInternal() {
 
   // Now the command line has been mutated based on about:flags, we can
   // set up metrics and initialize field trials.
-  MetricsService* metrics =
-      SetupMetricsAndFieldTrials(parsed_command_line(), local_state);
+  MetricsService* metrics = SetupMetricsAndFieldTrials(local_state);
 
 #if defined(USE_WEBKIT_COMPOSITOR)
   // We need to ensure WebKit has been initialized before we start the WebKit
@@ -1472,12 +1473,14 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunInternal() {
   if (parsed_command_line().HasSwitch(switches::kUninstall)) {
     return DoUninstallTasks(already_running);
   }
-#endif
 
   if (parsed_command_line().HasSwitch(switches::kHideIcons) ||
       parsed_command_line().HasSwitch(switches::kShowIcons)) {
-    return HandleIconsCommands(parsed_command_line());
+    return ChromeBrowserMainPartsWin::HandleIconsCommands(
+        parsed_command_line_);
   }
+#endif
+
   if (parsed_command_line().HasSwitch(switches::kMakeDefaultBrowser)) {
     return ShellIntegration::SetAsDefaultBrowser() ?
         static_cast<int>(content::RESULT_CODE_NORMAL_EXIT) :
@@ -1630,7 +1633,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunInternal() {
   // Do the tasks if chrome has been upgraded while it was last running.
   if (!already_running && upgrade_util::DoUpgradeTasks(parsed_command_line()))
     return content::RESULT_CODE_NORMAL_EXIT;
-#endif
 
   // Check if there is any machine level Chrome installed on the current
   // machine. If yes and the current Chrome process is user level, we do not
@@ -1641,9 +1643,10 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunInternal() {
   // processes etc).
   // Do not allow this to occur for Chrome Frame user-to-system handoffs.
   if (!parsed_command_line().HasSwitch(switches::kChromeFrame) &&
-      CheckMachineLevelInstall()) {
+      ChromeBrowserMainPartsWin::CheckMachineLevelInstall()) {
     return chrome::RESULT_CODE_MACHINE_LEVEL_INSTALL_EXISTS;
   }
+#endif
 
   // Create the TranslateManager singleton.
   translate_manager_ = TranslateManager::GetInstance();
@@ -1691,26 +1694,24 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunInternal() {
     g_browser_process->profile_manager()->OnImportFinished(profile_);
   }  // if (is_first_run)
 
+#if defined(OS_WIN)
   // Sets things up so that if we crash from this point on, a dialog will
   // popup asking the user to restart chrome. It is done this late to avoid
   // testing against a bunch of special cases that are taken care early on.
-  PrepareRestartOnCrashEnviroment(parsed_command_line());
+  ChromeBrowserMainPartsWin::PrepareRestartOnCrashEnviroment(
+      parsed_command_line());
 
-  // Start watching for hangs during startup. We disarm this hang detector when
-  // ThreadWatcher takes over or when browser is shutdown.
-  StartupTimeBomb::Arm(base::TimeDelta::FromSeconds(300));
-
-#if defined(OS_WIN)
   // Registers Chrome with the Windows Restart Manager, which will restore the
   // Chrome session when the computer is restarted after a system update.
   // This could be run as late as WM_QUERYENDSESSION for system update reboots,
   // but should run on startup if extended to handle crashes/hangs/patches.
   // Also, better to run once here than once for each HWND's WM_QUERYENDSESSION.
-  if (base::win::GetVersion() >= base::win::VERSION_VISTA)
-    RegisterApplicationRestart(parsed_command_line());
-#endif  // OS_WIN
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
+    ChromeBrowserMainPartsWin::RegisterApplicationRestart(
+        parsed_command_line());
+  }
 
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+#if defined(GOOGLE_CHROME_BUILD)
   // Init the RLZ library. This just binds the dll and schedules a task on the
   // file thread to be run sometime later. If this is the first run we record
   // the installation event.
@@ -1743,7 +1744,12 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunInternal() {
   // for the startup page if needed (i.e., when the startup page is set to
   // the home page).
   RLZTracker::GetAccessPointRlz(rlz_lib::CHROME_HOME_PAGE, NULL);
-#endif  // GOOGLE_CHROME_BUILD && OS_WIN
+#endif  // GOOGLE_CHROME_BUILD
+#endif  // OS_WIN
+
+  // Start watching for hangs during startup. We disarm this hang detector when
+  // ThreadWatcher takes over or when browser is shutdown.
+  StartupTimeBomb::Arm(base::TimeDelta::FromSeconds(300));
 
   // Configure modules that need access to resources.
   net::NetModule::SetResourceProvider(chrome_common_net::NetResourceProvider);
@@ -1948,9 +1954,12 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunInternal() {
   return result_code;
 }
 
-void ChromeBrowserMainParts::MainMessageLoopRun() {
+bool ChromeBrowserMainParts::MainMessageLoopRun(int* result_code) {
+  // Set the result code set in PreMainMessageLoopRun.
+  *result_code = result_code_;
+
   if (!run_message_loop_)
-    return;
+    return true;  // Don't run the default message loop.
 
   // This should be invoked as close to the start of the browser's
   // UI thread message loop as possible to get a stable measurement
@@ -1971,6 +1980,8 @@ void ChromeBrowserMainParts::MainMessageLoopRun() {
   chromeos::BootTimesLoader::Get()->AddLogoutTimeMarker("UIMessageLoopEnded",
                                                         true);
 #endif
+
+  return true;
 }
 
 void ChromeBrowserMainParts::PostMainMessageLoopRun() {

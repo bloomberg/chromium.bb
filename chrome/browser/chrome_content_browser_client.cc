@@ -68,6 +68,7 @@
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/worker_host/worker_process_host.h"
 #include "content/common/desktop_notification_messages.h"
+#include "content/public/browser/browser_main_parts.h"
 #include "grit/generated_resources.h"
 #include "grit/ui_resources.h"
 #include "net/base/cookie_monster.h"
@@ -75,16 +76,24 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/chrome_browser_main_chromeos.h"
-#elif defined(USE_AURA)
-#include "chrome/browser/chrome_browser_main_aura.h"
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
 #include "chrome/browser/chrome_browser_main_win.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/chrome_browser_main_mac.h"
-#elif defined(TOOLKIT_USES_GTK)
-#include "chrome/browser/chrome_browser_main_gtk.h"
+#elif defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/chrome_browser_main_chromeos.h"
+#elif defined(OS_LINUX)
+#include "chrome/browser/chrome_browser_main_linux.h"
+#elif defined(OS_POSIX)
+#include "chrome/browser/chrome_browser_main_posix.h"
+#endif
+
+#if defined(USE_AURA)
+#include "chrome/browser/chrome_browser_parts_aura.h"
+#endif
+
+#if defined(TOOLKIT_USES_GTK)
+#include "chrome/browser/chrome_browser_parts_gtk.h"
 #endif
 
 #if defined(OS_LINUX)
@@ -103,7 +112,6 @@
 #if defined(USE_NSS)
 #include "chrome/browser/ui/crypto_module_password_dialog.h"
 #endif
-
 
 #if defined(USE_AURA) || defined(TOUCH_UI)
 #include "chrome/browser/renderer_host/render_widget_host_view_views.h"
@@ -191,20 +199,31 @@ RenderProcessHostPrivilege GetProcessPrivilege(
 
 namespace chrome {
 
-content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(
-    const MainFunctionParams& parameters) {
-#if defined(OS_CHROMEOS)
-  return new ChromeBrowserMainPartsChromeos(parameters);
-#elif defined(USE_AURA)
-  return new ChromeBrowserMainPartsAura(parameters);
-#elif defined(OS_WIN)
-  return new ChromeBrowserMainPartsWin(parameters);
+void ChromeContentBrowserClient::CreateBrowserMainParts(
+    const MainFunctionParams& parameters,
+    std::vector<content::BrowserMainParts*>* parts_list) {
+  // Construct the Main browser parts based on the OS type.
+#if defined(OS_WIN)
+  parts_list->push_back(new ChromeBrowserMainPartsWin(parameters));
 #elif defined(OS_MACOSX)
-  return new ChromeBrowserMainPartsMac(parameters);
-#elif defined(TOOLKIT_USES_GTK)
-  return new ChromeBrowserMainPartsGtk(parameters);
+  parts_list->push_back(new ChromeBrowserMainPartsMac(parameters));
+#elif defined(OS_CHROMEOS)
+  parts_list->push_back(new ChromeBrowserMainPartsChromeos(parameters));
+#elif defined(OS_LINUX)
+  parts_list->push_back(new ChromeBrowserMainPartsLinux(parameters));
+#elif defined(OS_POSIX)
+  parts_list->push_back(new ChromeBrowserMainPartsPosix(parameters));
 #else
-  return NULL;
+  NOTREACHED();
+  parts_list->push_back(new ChromeBrowserMainParts(parameters));
+#endif
+
+  // Construct additional browser parts.
+#if defined(USE_AURA)
+  parts_list->push_back(new ChromeBrowserPartsAura());
+#endif
+#if defined(TOOLKIT_USES_GTK)
+  parts_list->push_back(new ChromeBrowserPartsGtk());
 #endif
 }
 

@@ -24,7 +24,7 @@ class ShellContentBrowserClient : public ContentBrowserClient
 #if defined(OS_WIN)
                                   , public TabContentsViewWinDelegate
 #endif
-    {
+{
  public:
   ShellContentBrowserClient();
   virtual ~ShellContentBrowserClient();
@@ -33,8 +33,9 @@ class ShellContentBrowserClient : public ContentBrowserClient
     shell_browser_main_parts_ = parts;
   }
 
-  virtual BrowserMainParts* CreateBrowserMainParts(
-      const MainFunctionParams& parameters) OVERRIDE;
+  virtual void CreateBrowserMainParts(
+      const MainFunctionParams& parameters,
+      std::vector<BrowserMainParts*>* parts_list) OVERRIDE;
   virtual RenderWidgetHostView* CreateViewForWidget(
       RenderWidgetHost* widget) OVERRIDE;
   virtual TabContentsView* CreateTabContentsView(
