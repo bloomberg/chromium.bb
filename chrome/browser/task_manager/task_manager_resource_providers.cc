@@ -19,6 +19,7 @@
 #include "chrome/browser/background/background_contents_service.h"
 #include "chrome/browser/background/background_contents_service_factory.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -185,6 +186,14 @@ bool TaskManagerRendererResource::ReportsFPS() const {
 
 bool TaskManagerRendererResource::ReportsV8MemoryStats() const {
   return true;
+}
+
+bool TaskManagerRendererResource::CanInspect() const {
+  return true;
+}
+
+void TaskManagerRendererResource::Inspect() const {
+  DevToolsWindow::OpenDevToolsWindow(render_view_host_);
 }
 
 bool TaskManagerRendererResource::SupportNetworkUsage() const {
@@ -1093,6 +1102,14 @@ base::ProcessHandle TaskManagerExtensionProcessResource::GetProcess() const {
 TaskManager::Resource::Type
 TaskManagerExtensionProcessResource::GetType() const {
   return EXTENSION;
+}
+
+bool TaskManagerExtensionProcessResource::CanInspect() const {
+  return true;
+}
+
+void TaskManagerExtensionProcessResource::Inspect() const {
+  DevToolsWindow::OpenDevToolsWindow(extension_host_->render_view_host());
 }
 
 bool TaskManagerExtensionProcessResource::SupportNetworkUsage() const {

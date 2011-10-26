@@ -560,6 +560,14 @@ bool TaskManagerModel::GetV8Memory(int index, size_t* result) const {
   return true;
 }
 
+bool TaskManagerModel::CanInspect(int index) const {
+  return resources_[index]->CanInspect();
+}
+
+void TaskManagerModel::Inspect(int index) const {
+  resources_[index]->Inspect();
+}
+
 int TaskManagerModel::GetGoatsTeleported(int index) const {
   int seed = goat_salt_ * (index + 1);
   return (seed >> 16) & 255;

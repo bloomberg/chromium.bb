@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "base/stl_util.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/notifications/balloon_host.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
@@ -61,6 +62,14 @@ base::ProcessHandle TaskManagerNotificationResource::GetProcess() const {
 
 TaskManager::Resource::Type TaskManagerNotificationResource::GetType() const {
   return NOTIFICATION;
+}
+
+bool TaskManagerNotificationResource::CanInspect() const {
+  return true;
+}
+
+void TaskManagerNotificationResource::Inspect() const {
+  DevToolsWindow::OpenDevToolsWindow(balloon_host_->render_view_host());
 }
 
 bool TaskManagerNotificationResource::SupportNetworkUsage() const {

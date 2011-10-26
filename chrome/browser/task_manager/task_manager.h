@@ -91,6 +91,12 @@ class TaskManager {
     virtual size_t GetV8MemoryAllocated() const { return 0; }
     virtual size_t GetV8MemoryUsed() const { return 0; }
 
+    // Returns true if this resource can be inspected using developer tools.
+    virtual bool CanInspect() const { return false; }
+
+    // Invokes or reveals developer tools window for this resource.
+    virtual void Inspect() const {}
+
     // A helper function for ActivateFocusedTab.  Returns NULL by default
     // because not all resources have an associated tab.
     virtual TabContentsWrapper* GetTabContents() const { return NULL; }
@@ -304,6 +310,13 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
   // Gets the amount of memory allocated for javascript. Returns false if the
   // resource for the given row isn't a renderer.
   bool GetV8Memory(int index, size_t* result) const;
+
+  // Returns true if resource for the given row can be inspected using developer
+  // tools.
+  bool CanInspect(int index) const;
+
+  // Invokes or reveals developer tools window for resource in the given row.
+  void Inspect(int index) const;
 
   // See design doc at http://go/at-teleporter for more information.
   int GetGoatsTeleported(int index) const;

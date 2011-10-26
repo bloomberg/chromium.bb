@@ -49,6 +49,10 @@ class TaskManagerRendererResource : public TaskManager::Resource {
   virtual size_t GetV8MemoryAllocated() const OVERRIDE;
   virtual size_t GetV8MemoryUsed() const OVERRIDE;
 
+  // RenderResources are always inspectable.
+  virtual bool CanInspect() const OVERRIDE;
+  virtual void Inspect() const OVERRIDE;
+
   // RenderResources always provide the network usage.
   virtual bool SupportNetworkUsage() const;
   virtual void SetSupportNetworkUsage() { }
@@ -326,6 +330,8 @@ class TaskManagerExtensionProcessResource : public TaskManager::Resource {
   virtual SkBitmap GetIcon() const OVERRIDE;
   virtual base::ProcessHandle GetProcess() const OVERRIDE;
   virtual Type GetType() const OVERRIDE;
+  virtual bool CanInspect() const OVERRIDE;
+  virtual void Inspect() const OVERRIDE;
   virtual bool SupportNetworkUsage() const OVERRIDE;
   virtual void SetSupportNetworkUsage() OVERRIDE;
   virtual const Extension* GetExtension() const OVERRIDE;
@@ -402,6 +408,8 @@ class TaskManagerNotificationResource : public TaskManager::Resource {
   virtual SkBitmap GetIcon() const OVERRIDE;
   virtual base::ProcessHandle GetProcess() const OVERRIDE;
   virtual Type GetType() const OVERRIDE;
+  virtual bool CanInspect() const OVERRIDE;
+  virtual void Inspect() const OVERRIDE;
   virtual bool SupportNetworkUsage() const OVERRIDE;
   virtual void SetSupportNetworkUsage() OVERRIDE { }
 

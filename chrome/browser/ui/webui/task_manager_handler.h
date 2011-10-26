@@ -36,7 +36,10 @@ class TaskManagerHandler : public WebUIMessageHandler,
   virtual void RegisterMessages() OVERRIDE;
 
   // Callback for the "killProcess" message.
-  void HandleKillProcess(const base::ListValue* args);
+  void HandleKillProcess(const base::ListValue* indexes);
+
+  // Callback for the "inspect" message.
+  void HandleInspect(const base::ListValue* resource_index);
 
   void EnableTaskManager(const base::ListValue* indexes);
   void DisableTaskManager(const base::ListValue* indexes);

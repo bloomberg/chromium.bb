@@ -26,6 +26,8 @@ namespace {
 static Value* CreateColumnValue(const TaskManagerModel* tm,
                                 const std::string column_name,
                                 const int i) {
+  if (column_name == "resourceIndex")
+    return Value::CreateIntegerValue(i);
   if (column_name == "type")
     return Value::CreateStringValue(
         TaskManager::Resource::GetResourceTypeAsString(
@@ -116,6 +118,8 @@ static Value* CreateColumnValue(const TaskManagerModel* tm,
     tm->GetV8Memory(i, &v8_memory);
     return Value::CreateDoubleValue(v8_memory);
   }
+  if (column_name == "canInspect")
+    return Value::CreateBooleanValue(tm->CanInspect(i));
 
   NOTREACHED();
   return NULL;
@@ -147,11 +151,6 @@ static DictionaryValue* CreateTaskGroupValue(const TaskManagerModel* tm,
   int length = group_range.second;
 
   val->SetInteger("index", index);
-  val->SetInteger("group_range_start", group_range.first);
-  val->SetInteger("group_range_length", group_range.second);
-  val->SetInteger("index_in_group", index - group_range.first);
-  val->SetBoolean("is_resource_first_in_group",
-                  tm->IsResourceFirstInGroup(index));
   val->SetBoolean("isBackgroundResource",
                   tm->IsBackgroundResource(index));
 
@@ -179,6 +178,7 @@ static DictionaryValue* CreateTaskGroupValue(const TaskManagerModel* tm,
   CreateGroupColumnList(tm, "v8MemoryAllocatedSizeValue", index, 1, val);
 
   // Columns which have some data in each group.
+  CreateGroupColumnList(tm, "resourceIndex", index, length, val);
   CreateGroupColumnList(tm, "icon", index, length, val);
   CreateGroupColumnList(tm, "title", index, length, val);
   CreateGroupColumnList(tm, "profileName", index, length, val);
@@ -188,6 +188,7 @@ static DictionaryValue* CreateTaskGroupValue(const TaskManagerModel* tm,
   CreateGroupColumnList(tm, "fpsValue", index, length, val);
   CreateGroupColumnList(tm, "goatsTeleported", index, length, val);
   CreateGroupColumnList(tm, "goatsTeleportedValue", index, length, val);
+  CreateGroupColumnList(tm, "canInspect", index, length, val);
 
   return val;
 }
@@ -306,6 +307,9 @@ void TaskManagerHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("killProcess",
       base::Bind(&TaskManagerHandler::HandleKillProcess,
                  base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("inspect",
+      base::Bind(&TaskManagerHandler::HandleInspect,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("openAboutMemory",
       base::Bind(&TaskManagerHandler::OpenAboutMemory,
                  base::Unretained(this)));
@@ -317,19 +321,24 @@ void TaskManagerHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
+static int parseIndex(const Value* value) {
+  int index = -1;
+  string16 string16_index;
+  double double_index;
+  if (value->GetAsString(&string16_index)) {
+    base::StringToInt(string16_index, &index);
+  } else if (value->GetAsDouble(&double_index)) {
+    index = static_cast<int>(double_index);
+  } else {
+    value->GetAsInteger(&index);
+  }
+  return index;
+}
+
 void TaskManagerHandler::HandleKillProcess(const ListValue* indexes) {
   for (ListValue::const_iterator i = indexes->begin();
        i != indexes->end(); i++) {
-    int index = -1;
-    string16 string16_index;
-    double double_index;
-    if ((*i)->GetAsString(&string16_index)) {
-      base::StringToInt(string16_index, &index);
-    } else if ((*i)->GetAsDouble(&double_index)) {
-      index = static_cast<int>(double_index);
-    } else {
-      (*i)->GetAsInteger(&index);
-    }
+    int index = parseIndex(*i);
     if (index == -1)
       continue;
 
@@ -339,6 +348,18 @@ void TaskManagerHandler::HandleKillProcess(const ListValue* indexes) {
 
     LOG(INFO) << "kill PID:" << model_->GetResourceProcessId(resource_index);
     task_manager_->KillProcess(resource_index);
+  }
+}
+
+void TaskManagerHandler::HandleInspect(const ListValue* resource_index) {
+  for (ListValue::const_iterator i = resource_index->begin();
+       i != resource_index->end(); ++i) {
+    int resource_index = parseIndex(*i);
+    if (resource_index == -1)
+      continue;
+    if (model_->CanInspect(resource_index))
+      model_->Inspect(resource_index);
+    break;
   }
 }
 
