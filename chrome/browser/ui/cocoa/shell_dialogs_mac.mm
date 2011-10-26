@@ -86,6 +86,8 @@ class SelectFileDialogImpl : public SelectFileDialog {
   NSView* GetAccessoryView(const FileTypeInfo* file_types,
                            int file_type_index);
 
+  virtual bool HasMultipleFileTypeChoicesImpl();
+
   // The bridge for results from Cocoa to return to us.
   scoped_nsobject<SelectFileDialogBridge> bridge_;
 
@@ -97,6 +99,8 @@ class SelectFileDialogImpl : public SelectFileDialog {
 
   // A map from file dialogs to their types.
   std::map<NSSavePanel*, Type> type_map_;
+
+  bool hasMultipleFileTypeChoices_;
 
   DISALLOW_COPY_AND_ASSIGN(SelectFileDialogImpl);
 };
@@ -204,6 +208,8 @@ void SelectFileDialogImpl::SelectFileImpl(
     // If no type info is specified, anything goes.
     [dialog setAllowsOtherFileTypes:YES];
   }
+  hasMultipleFileTypeChoices_ =
+      file_types ? file_types->extensions.size() > 1 : true;
 
   if (!default_extension.empty())
     [dialog setRequiredFileType:base::SysUTF8ToNSString(default_extension)];
@@ -347,6 +353,10 @@ bool SelectFileDialogImpl::ShouldEnableFilename(NSSavePanel* dialog,
     return true;
 
   return ![[NSWorkspace sharedWorkspace] isFilePackageAtPath:filename];
+}
+
+bool SelectFileDialogImpl::HasMultipleFileTypeChoicesImpl() {
+  return hasMultipleFileTypeChoices_;
 }
 
 @implementation SelectFileDialogBridge

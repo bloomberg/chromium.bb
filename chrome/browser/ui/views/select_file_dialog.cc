@@ -53,6 +53,7 @@ class SelectFileDialogImpl : public SelectFileDialog {
                               const FilePath::StringType& default_extension,
                               gfx::NativeWindow owning_window,
                               void* params);
+  virtual bool HasMultipleFileTypeChoicesImpl();
 
  private:
   virtual ~SelectFileDialogImpl();
@@ -217,6 +218,10 @@ void SelectFileDialogImpl::SelectFileImpl(
   // it be invoked when no browser is around. Silently ignore this case.
   if (browser)
     browser->BrowserShowHtmlDialog(file_browse_delegate, owning_window);
+}
+
+bool SelectFileDialogImpl::HasMultipleFileTypeChoicesImpl() {
+  return file_types_.extensions.size() > 1;
 }
 
 void SelectFileDialogImpl::OnDialogClosed(FileBrowseDelegate* delegate,

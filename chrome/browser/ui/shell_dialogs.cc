@@ -81,6 +81,10 @@ void SelectFileDialog::SelectFile(Type type,
                  default_extension, owning_window, params);
 }
 
+bool SelectFileDialog::HasMultipleFileTypeChoices() {
+  return HasMultipleFileTypeChoicesImpl();
+}
+
 void SelectFileDialog::CancelFileSelection(void* params) {
   if (listener_)
     listener_->FileSelectionCanceled(params);

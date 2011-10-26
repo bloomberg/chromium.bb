@@ -639,6 +639,10 @@ class SelectFileDialogImpl : public SelectFileDialog,
                                          LPARAM parameter,
                                          LPARAM data);
 
+  virtual bool HasMultipleFileTypeChoicesImpl();
+
+  bool hasMultipleFileTypeChoices_;
+
 
   DISALLOW_COPY_AND_ASSIGN(SelectFileDialogImpl);
 };
@@ -660,6 +664,8 @@ void SelectFileDialogImpl::SelectFileImpl(
     const FilePath::StringType& default_extension,
     gfx::NativeWindow owning_window,
     void* params) {
+  hasMultipleFileTypeChoices_ =
+      file_types ? file_types->extensions.size() > 1 : true;
   ExecuteSelectParams execute_params(type, UTF16ToWide(title), default_path,
                                      file_types, file_type_index,
                                      default_extension, BeginRun(owning_window),
@@ -668,6 +674,10 @@ void SelectFileDialogImpl::SelectFileImpl(
       FROM_HERE,
       base::Bind(&SelectFileDialogImpl::ExecuteSelectFile, this,
                  execute_params));
+}
+
+bool SelectFileDialogImpl::HasMultipleFileTypeChoicesImpl() {
+  return hasMultipleFileTypeChoices_;
 }
 
 bool SelectFileDialogImpl::IsRunning(HWND owning_hwnd) const {

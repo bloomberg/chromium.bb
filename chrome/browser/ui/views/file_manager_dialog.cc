@@ -170,6 +170,10 @@ void FileManagerDialog::AddPending(int32 tab_id) {
   PendingDialog::GetInstance()->Add(tab_id, this);
 }
 
+bool FileManagerDialog::HasMultipleFileTypeChoicesImpl() {
+  return hasMultipleFileTypeChoices_;
+}
+
 void FileManagerDialog::SelectFileImpl(
     Type type,
     const string16& title,
@@ -197,6 +201,9 @@ void FileManagerDialog::SelectFileImpl(
           owner_browser->profile(), default_path, &virtual_path)) {
     virtual_path = FilePath();
   }
+
+  hasMultipleFileTypeChoices_ =
+      file_types ? file_types->extensions.size() > 1 : true;
 
   GURL file_browser_url = FileManagerUtil::GetFileBrowserUrlWithParams(
       type, title, virtual_path, file_types, file_type_index,

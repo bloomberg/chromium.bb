@@ -158,7 +158,9 @@ void SavePackageFilePicker::FileSelected(const FilePath& path,
     Profile* profile =
         Profile::FromBrowserContext(tab_contents->browser_context());
     PrefService* prefs = profile->GetPrefs();
-    prefs->SetInteger(prefs::kSaveFileType, save_type);
+    if (select_file_dialog_ &&
+        select_file_dialog_->HasMultipleFileTypeChoices())
+      prefs->SetInteger(prefs::kSaveFileType, save_type);
 
     StringPrefMember save_file_path;
     save_file_path.Init(prefs::kSaveFileDefaultDirectory, prefs, NULL);

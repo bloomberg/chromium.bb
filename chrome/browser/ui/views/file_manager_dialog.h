@@ -52,6 +52,7 @@ class FileManagerDialog
                               gfx::NativeWindow owning_window,
                               void* params) OVERRIDE;
 
+
  private:
   friend class FileManagerDialogBrowserTest;
   friend class FileManagerDialogTest;
@@ -69,6 +70,10 @@ class FileManagerDialog
   // Adds this to the list of pending dialogs, used for testing.
   void AddPending(int32 tab_id);
 
+  // Returns if the dialog has mutiple file type choices
+  virtual bool HasMultipleFileTypeChoicesImpl();
+
+  bool hasMultipleFileTypeChoices_;
   void* params_;
 
   // Host for the extension that implements this dialog.

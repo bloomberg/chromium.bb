@@ -42,6 +42,8 @@ class SelectFileDialogImplGTK : public SelectFileDialogImpl {
  private:
   virtual ~SelectFileDialogImplGTK();
 
+  virtual bool HasMultipleFileTypeChoicesImpl();
+
   // Add the filters from |file_types_| to |chooser|.
   void AddFilters(GtkFileChooser* chooser);
 
@@ -143,6 +145,10 @@ SelectFileDialogImplGTK::~SelectFileDialogImplGTK() {
   while (dialogs_.begin() != dialogs_.end()) {
     gtk_widget_destroy(*(dialogs_.begin()));
   }
+}
+
+bool SelectFileDialogImplGTK::HasMultipleFileTypeChoicesImpl() {
+  return file_types_.extensions.size() > 1;
 }
 
 // We ignore |default_extension|.

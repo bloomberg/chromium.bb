@@ -47,6 +47,8 @@ class SelectFileDialogImplKDE : public SelectFileDialogImpl {
                               void* params);
 
  private:
+  virtual bool HasMultipleFileTypeChoicesImpl();
+
   // Get the filters from |file_types_| and concatenate them into
   // |filter_string|.
   std::string GetMimeTypeFilterString();
@@ -163,6 +165,10 @@ void SelectFileDialogImplKDE::SelectFileImpl(
       NOTREACHED();
       return;
   }
+}
+
+bool SelectFileDialogImplKDE::HasMultipleFileTypeChoicesImpl() {
+  return file_types_.extensions.size() > 1;
 }
 
 std::string SelectFileDialogImplKDE::GetMimeTypeFilterString() {

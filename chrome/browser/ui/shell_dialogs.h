@@ -138,6 +138,7 @@ class SelectFileDialog
                   TabContents* source_contents,
                   gfx::NativeWindow owning_window,
                   void* params);
+  bool HasMultipleFileTypeChoices();
 
  protected:
   friend class base::RefCountedThreadSafe<SelectFileDialog>;
@@ -169,6 +170,8 @@ class SelectFileDialog
   // Informs the |listener_| that the file seleciton dialog was canceled. Moved
   // to a function for being able to post it to the message loop.
   void CancelFileSelection(void* params);
+
+  virtual bool HasMultipleFileTypeChoicesImpl() = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_SHELL_DIALOGS_H_
