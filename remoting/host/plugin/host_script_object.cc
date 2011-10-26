@@ -42,7 +42,7 @@ namespace remoting {
 //
 // attribute Function void logDebugInfo(string);
 // attribute Function void onNatTraversalPolicyChanged(boolean);
-// attribute Function void onStateChanged();
+// attribute Function void onStateChanged(state);
 //
 // // The |auth_service_with_token| parameter should be in the format
 // // "auth_service:auth_token".  An example would be "oauth2:1/2a3912vd".
@@ -701,8 +701,10 @@ void HostNPScriptObject::NotifyStateChanged(State state) {
   }
   if (on_state_changed_func_.get()) {
     VLOG(2) << "Calling state changed " << state;
+    NPVariant state_var;
+    INT32_TO_NPVARIANT(state, state_var);
     bool is_good = InvokeAndIgnoreResult(on_state_changed_func_.get(),
-                                         NULL, 0);
+                                         &state_var, 1);
     LOG_IF(ERROR, !is_good) << "OnStateChanged failed";
   }
 }

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+'use strict';
+
 /** @suppress {duplicate} */
 var remoting = remoting || {};
-
-'use strict';
 
 /**
  * Whether or not the plugin should scale itself.
@@ -353,10 +353,13 @@ function onNatTraversalPolicyChanged_(enabled) {
   container.hidden = enabled;
 }
 
-function onStateChanged_() {
+/**
+ * Callback for the host plugin to notify the web app of state changes.
+ * @param {number} state The new state of the plugin.
+ */
+function onStateChanged_(state) {
   var plugin = /** @type {remoting.HostPlugin} */
       document.getElementById(remoting.HOST_PLUGIN_ID);
-  var state = plugin.state;
   if (state == plugin.STARTING) {
     // Nothing to do here.
     remoting.debug.log('Host plugin state: STARTING');
