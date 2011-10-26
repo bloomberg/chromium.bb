@@ -30,7 +30,7 @@ const int kStrikeWidth = 2;
 // TODO(oshima): Change this to match the standard chrome
 // before dogfooding textfield views.
 const SkColor kSelectedTextColor = SK_ColorWHITE;
-const SkColor kFocusedSelectionColor = SK_ColorCYAN;
+const SkColor kFocusedSelectionColor = SkColorSetRGB(30, 144, 255);
 const SkColor kUnfocusedSelectionColor = SK_ColorLTGRAY;
 const SkColor kCursorColor = SK_ColorBLACK;
 
