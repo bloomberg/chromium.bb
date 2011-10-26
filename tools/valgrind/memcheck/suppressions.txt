@@ -4927,6 +4927,23 @@
    fun:_ZN12_GLOBAL__N_113PrefixSetTest16GetPrefixSetFileEP8FilePath
    fun:_ZN12_GLOBAL__N_1*PrefixSetTest_*_Test8TestBodyEv
 }
+{
+   bug_101750
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocEj
+   fun:_ZN3WTF7HashSetIPN7WebCore16SVGStyledElementENS_7PtrHashIS3_EENS_10HashTraitsIS3_EEEnwEj
+   fun:_ZN7WebCore21SVGDocumentExtensions18addPendingResourceERKN3WTF12AtomicStringEPNS_16SVGStyledElementE
+}
+{
+   bug_101751
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7WebCore14SVGFontElement6createERKNS_13QualifiedNameEPNS_8DocumentE
+   fun:_ZN7WebCoreL15fontConstructorERKNS_13QualifiedNameEPNS_8DocumentEb
+   fun:_ZN7WebCore17SVGElementFactory16createSVGElementERKNS_13QualifiedNameEPNS_8DocumentEb
+   fun:_ZN7WebCore8Document13createElementERKNS_13QualifiedNameEb
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
