@@ -539,6 +539,8 @@
     'browser/tab_contents/web_drag_dest_gtk.h',
     'browser/tab_contents/web_drag_source_gtk.cc',
     'browser/tab_contents/web_drag_source_gtk.h',
+    'browser/tab_contents/web_drag_source_mac.h',
+    'browser/tab_contents/web_drag_source_mac.mm',
     'browser/trace_controller.cc',
     'browser/trace_controller.h',
     'browser/trace_message_filter.cc',

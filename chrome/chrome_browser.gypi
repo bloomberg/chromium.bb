@@ -2774,8 +2774,6 @@
         'browser/ui/cocoa/tab_contents/sad_tab_view.mm',
         'browser/ui/cocoa/tab_contents/tab_contents_controller.h',
         'browser/ui/cocoa/tab_contents/tab_contents_controller.mm',
-        'browser/ui/cocoa/tab_contents/web_drag_source.h',
-        'browser/ui/cocoa/tab_contents/web_drag_source.mm',
         'browser/ui/cocoa/tab_contents/web_drop_target.h',
         'browser/ui/cocoa/tab_contents/web_drop_target.mm',
         'browser/ui/cocoa/tab_view_picker_table.h',
