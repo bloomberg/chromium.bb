@@ -23,6 +23,7 @@ class AURA_EXPORT ScreenAura : public gfx::Screen {
   void set_work_area_insets(const gfx::Insets& insets) {
     work_area_insets_ = insets;
   }
+  const gfx::Insets& work_area_insets() const { return work_area_insets_; }
 
  protected:
   virtual gfx::Point GetCursorScreenPointImpl() OVERRIDE;

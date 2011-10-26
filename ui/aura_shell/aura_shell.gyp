@@ -33,6 +33,8 @@
       ],
       'sources': [
         # All .cc, .h under views, except unittests
+        'default_container_event_filter.cc',
+        'default_container_event_filter.h',
         'default_container_layout_manager.cc',
         'default_container_layout_manager.h',
         'desktop_background_view.cc',

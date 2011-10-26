@@ -28,6 +28,7 @@ namespace aura_shell {
 
 class Launcher;
 class ShellDelegate;
+class WorkspaceManager;
 
 // Shell is a singleton object that presents the Shell API and implements the
 // Desktop's delegate interface.
@@ -49,8 +50,8 @@ class AURA_SHELL_EXPORT Shell : public aura::DesktopDelegate {
   aura::Window* GetContainer(int container_id);
   const aura::Window* GetContainer(int container_id) const;
 
-  void TileWindows();
-  void RestoreTiledWindows();
+  // Toggles between overview mode and normal mode.
+  void ToggleOverview();
 
   Launcher* launcher() { return launcher_.get(); }
 
@@ -71,6 +72,8 @@ class AURA_SHELL_EXPORT Shell : public aura::DesktopDelegate {
   scoped_ptr<ShellDelegate> delegate_;
 
   scoped_ptr<Launcher> launcher_;
+
+  scoped_ptr<WorkspaceManager> workspace_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(Shell);
 };

@@ -40,7 +40,7 @@ bool DesktopBackgroundView::OnMousePressed(const views::MouseEvent& event) {
 }
 
 void DesktopBackgroundView::OnMouseReleased(const views::MouseEvent& event) {
-  Shell::GetInstance()->TileWindows();
+  Shell::GetInstance()->ToggleOverview();
 }
 
 views::Widget* CreateDesktopBackground() {

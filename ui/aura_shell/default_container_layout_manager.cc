@@ -4,10 +4,13 @@
 
 #include "ui/aura_shell/default_container_layout_manager.h"
 
+#include "base/auto_reset.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura/window.h"
 #include "ui/aura/screen_aura.h"
 #include "ui/aura/window_types.h"
+#include "ui/aura_shell/workspace/workspace.h"
+#include "ui/aura_shell/workspace/workspace_manager.h"
 #include "ui/base/view_prop.h"
 #include "ui/gfx/rect.h"
 #include "views/widget/native_widget_aura.h"
@@ -19,60 +22,118 @@ namespace internal {
 // DefaultContainerLayoutManager, public:
 
 DefaultContainerLayoutManager::DefaultContainerLayoutManager(
-    aura::Window* owner)
-    : owner_(owner) {
+    aura::Window* owner,
+    WorkspaceManager* workspace_manager)
+    : owner_(owner),
+      workspace_manager_(workspace_manager),
+      drag_window_(NULL),
+      ignore_calculate_bounds_(false) {
 }
 
 DefaultContainerLayoutManager::~DefaultContainerLayoutManager() {}
+
+void DefaultContainerLayoutManager::PrepareForMoveOrResize(
+    aura::Window* drag,
+    aura::MouseEvent* event) {
+  drag_window_ = drag;
+}
+
+void DefaultContainerLayoutManager::CancelMoveOrResize(
+    aura::Window* drag,
+    aura::MouseEvent* event) {
+  drag_window_ = NULL;
+}
+
+void DefaultContainerLayoutManager::EndMove(
+    aura::Window* drag,
+    aura::MouseEvent* evnet) {
+  // TODO(oshima): finish moving window between workspaces.
+  AutoReset<bool> reset(&ignore_calculate_bounds_, true);
+  drag_window_ = NULL;
+  Workspace* workspace = workspace_manager_->GetActiveWorkspace();
+  if (workspace)
+    workspace->Layout(NULL);
+}
+
+void DefaultContainerLayoutManager::EndResize(
+    aura::Window* drag,
+    aura::MouseEvent* evnet) {
+  AutoReset<bool> reset(&ignore_calculate_bounds_, true);
+  drag_window_ = NULL;
+  Workspace* workspace = workspace_manager_->GetActiveWorkspace();
+  if (workspace)
+    workspace->Layout(NULL);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // DefaultContainerLayoutManager, aura::LayoutManager implementation:
 
 void DefaultContainerLayoutManager::OnWindowResized() {
-  aura::Window::Windows::const_iterator i = owner_->children().begin();
-  // Use SetBounds because window may be maximized or fullscreen.
-  for (; i != owner_->children().end(); ++i) {
-    aura::Window* w = *i;
-    if (w->show_state() == ui::SHOW_STATE_MAXIMIZED)
-      w->Maximize();
-    else if (w->show_state() == ui::SHOW_STATE_FULLSCREEN)
-      w->Fullscreen();
-    else
-      w->SetBounds(w->bounds());
-  }
-  NOTIMPLEMENTED();
+  // Workspace is updated via DesktopObserver::OnDesktopResized.
 }
 
 void DefaultContainerLayoutManager::OnWindowAdded(aura::Window* child) {
-  child->SetBounds(child->bounds());
-  NOTIMPLEMENTED();
+  intptr_t type = reinterpret_cast<intptr_t>(
+      ui::ViewProp::GetValue(child, views::NativeWidgetAura::kWindowTypeKey));
+  if (type != views::Widget::InitParams::TYPE_WINDOW)
+    return;
+
+  AutoReset<bool> reset(&ignore_calculate_bounds_, true);
+
+  Workspace* workspace = workspace_manager_->GetActiveWorkspace();
+  if (workspace) {
+    aura::Window* active = aura::Desktop::GetInstance()->active_window();
+    // Active window may not be in the default container layer.
+    if (!workspace->Contains(active))
+      active = NULL;
+    if (workspace->AddWindowAfter(child, active))
+      return;
+  }
+  // Create new workspace if new |child| doesn't fit to current workspace.
+  Workspace* new_workspace = workspace_manager_->CreateWorkspace();
+  new_workspace->AddWindowAfter(child, NULL);
+  new_workspace->Activate();
 }
 
 void DefaultContainerLayoutManager::OnWillRemoveWindow(aura::Window* child) {
-  NOTIMPLEMENTED();
+  AutoReset<bool> reset(&ignore_calculate_bounds_, true);
+  Workspace* workspace = workspace_manager_->FindBy(child);
+  if (!workspace)
+    return;
+  workspace->RemoveWindow(child);
+  if (workspace->is_empty())
+    delete workspace;
 }
 
 void DefaultContainerLayoutManager::OnChildWindowVisibilityChanged(
-    aura::Window* window, bool visibile) {
+    aura::Window* child,
+    bool visible) {
   NOTIMPLEMENTED();
 }
 
 void DefaultContainerLayoutManager::CalculateBoundsForChild(
-    aura::Window* child, gfx::Rect* requested_bounds) {
+    aura::Window* child,
+    gfx::Rect* requested_bounds) {
   intptr_t type = reinterpret_cast<intptr_t>(
       ui::ViewProp::GetValue(child, views::NativeWidgetAura::kWindowTypeKey));
-  // DCLM controls windows with a frame.
-  if (type != views::Widget::InitParams::TYPE_WINDOW)
+  if (type != views::Widget::InitParams::TYPE_WINDOW ||
+      ignore_calculate_bounds_)
     return;
-  // TODO(oshima): Figure out bounds for default windows.
-  gfx::Rect viewport_bounds = owner_->bounds();
 
-  // A window can still be placed outside of the screen.
-  requested_bounds->SetRect(
-      requested_bounds->x(),
-      viewport_bounds.y(),
-      std::min(requested_bounds->width(), viewport_bounds.width()),
-      std::min(requested_bounds->height(), viewport_bounds.height()));
+  // If a drag window is requesting bounds, make sure its attached to
+  // the workarea's top and fits within the total drag area.
+  if (drag_window_) {
+    gfx::Rect drag_area =  workspace_manager_->GetDragAreaBounds();
+    requested_bounds->set_y(drag_area.y());
+    *requested_bounds = requested_bounds->AdjustToFit(drag_area);
+    return;
+  }
+
+  Workspace* workspace = workspace_manager_->FindBy(child);
+  gfx::Rect work_area = workspace->GetWorkAreaBounds();
+  requested_bounds->set_origin(
+      gfx::Point(child->GetTargetBounds().x(), work_area.y()));
+  *requested_bounds = requested_bounds->AdjustToFit(work_area);
 }
 
 }  // namespace internal

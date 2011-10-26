@@ -11,6 +11,7 @@
 #include "ui/aura/desktop.h"
 #include "ui/aura/screen_aura.h"
 #include "ui/aura/window.h"
+#include "ui/aura_shell/workspace/workspace_manager.h"
 #include "ui/base/view_prop.h"
 #include "views/widget/native_widget_aura.h"
 
@@ -20,6 +21,7 @@ namespace test {
 namespace {
 
 using views::Widget;
+using aura_shell::internal::DefaultContainerLayoutManager;
 
 class DefaultContainerLayoutManagerTest : public aura::test::AuraTestBase {
  public:
@@ -31,10 +33,13 @@ class DefaultContainerLayoutManagerTest : public aura::test::AuraTestBase {
     aura::Desktop* desktop = aura::Desktop::GetInstance();
     container_.reset(
         CreateTestWindow(gfx::Rect(0, 0, 500, 400), desktop));
+    workspace_manager_.reset(new WorkspaceManager(container_.get()));
+
+    desktop->SetHostSize(gfx::Size(500, 400));
+    default_container_layout_manager_ = new DefaultContainerLayoutManager(
+        container_.get(), workspace_manager_.get());
     // draggable area is 0,0 500x400.
-    container_->SetLayoutManager(
-        new aura_shell::internal::DefaultContainerLayoutManager(
-            container_.get()));
+    container_->SetLayoutManager(default_container_layout_manager_);
   }
 
   aura::Window* CreateTestWindowWithType(const gfx::Rect& bounds,
@@ -61,24 +66,33 @@ class DefaultContainerLayoutManagerTest : public aura::test::AuraTestBase {
 
   aura::Window* container() { return container_.get(); }
 
+  DefaultContainerLayoutManager* default_container_layout_manager() {
+    return default_container_layout_manager_;
+  }
+
+
  private:
   scoped_ptr<aura::Window> container_;
   ScopedVector<ui::ViewProp> props_;
+  scoped_ptr<aura_shell::WorkspaceManager> workspace_manager_;
+  DefaultContainerLayoutManager* default_container_layout_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultContainerLayoutManagerTest);
 };
 
 }  // namespace
 
+#if !defined(OS_WIN)
 TEST_F(DefaultContainerLayoutManagerTest, SetBounds) {
   // Layout Manager moves the window to (0,0) to fit to draggable area.
   scoped_ptr<aura::Window> child(
       CreateTestWindow(gfx::Rect(0, -1000, 100, 100), container()));
-  EXPECT_EQ("0,0 100x100", child->bounds().ToString());
+  // Window is centered in workspace.
+  EXPECT_EQ("200,0 100x100", child->bounds().ToString());
 
   // DCLM enforces the window height can't be taller than its owner's height.
   child->SetBounds(gfx::Rect(0, 0, 100, 500));
-  EXPECT_EQ("0,0 100x400", child->bounds().ToString());
+  EXPECT_EQ("200,0 100x400", child->bounds().ToString());
 
   // DCLM enforces the window width can't be wider than its owner's width.
   child->SetBounds(gfx::Rect(0, 0, 900, 500));
@@ -89,13 +103,26 @@ TEST_F(DefaultContainerLayoutManagerTest, SetBounds) {
   EXPECT_EQ("0,0 500x400", child->bounds().ToString());
   child->SetBounds(gfx::Rect(0, -500, 900, 500));
   EXPECT_EQ("0,0 500x400", child->bounds().ToString());
-
-  // X origin can be anywhere.
-  child->SetBounds(gfx::Rect(-100, 500, 900, 500));
-  EXPECT_EQ("-100,0 500x400", child->bounds().ToString());
-  child->SetBounds(gfx::Rect(1000, 500, 900, 500));
-  EXPECT_EQ("1000,0 500x400", child->bounds().ToString());
 }
+#endif
+
+#if !defined(OS_WIN)
+TEST_F(DefaultContainerLayoutManagerTest, DragWindow) {
+  scoped_ptr<aura::Window> child(
+      CreateTestWindow(gfx::Rect(0, -1000, 50, 50), container()));
+  gfx::Rect original_bounds = child->bounds();
+
+  default_container_layout_manager()->PrepareForMoveOrResize(
+      child.get(), NULL);
+  // X origin must fit within viewport.
+  child->SetBounds(gfx::Rect(-100, 500, 50, 50));
+  EXPECT_EQ("0,0 50x50", child->GetTargetBounds().ToString());
+  child->SetBounds(gfx::Rect(1000, 500, 50, 50));
+  EXPECT_EQ("450,0 50x50", child->GetTargetBounds().ToString());
+  default_container_layout_manager()->EndMove(child.get(), NULL);
+  EXPECT_EQ(original_bounds.ToString(), child->GetTargetBounds().ToString());
+}
+#endif
 
 TEST_F(DefaultContainerLayoutManagerTest, Popup) {
   scoped_ptr<aura::Window> popup(

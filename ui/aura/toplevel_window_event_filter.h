@@ -26,6 +26,11 @@ class ToplevelWindowEventFilter : public EventFilter {
   virtual ui::TouchStatus OnTouchEvent(Window* target,
                                        TouchEvent* event) OVERRIDE;
 
+ protected:
+  // Returns the |window_component_|. See the variable definition below for
+  // more details.
+  int window_component() const { return window_component_; }
+
  private:
   // Moves the target window and all of its parents to the front of their
   // respective z-orders.

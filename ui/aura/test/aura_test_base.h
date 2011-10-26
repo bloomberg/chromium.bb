@@ -15,11 +15,15 @@
 namespace aura {
 namespace test {
 
+class TestDesktopDelegate;
+
 // A base class for aura unit tests.
 class AURA_EXPORT AuraTestBase : public testing::Test {
  public:
   AuraTestBase();
   virtual ~AuraTestBase();
+
+  TestDesktopDelegate* GetTestDesktopDelegate();
 
   // testing::Test:
   virtual void SetUp() OVERRIDE;

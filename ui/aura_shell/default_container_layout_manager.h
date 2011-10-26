@@ -12,6 +12,7 @@
 #include "ui/aura_shell/aura_shell_export.h"
 
 namespace aura {
+class MouseEvent;
 class Window;
 }
 
@@ -20,14 +21,29 @@ class Rect;
 }
 
 namespace aura_shell {
+class WorkspaceManager;
+
 namespace internal {
 
 // LayoutManager for the default window container.
 class AURA_SHELL_EXPORT DefaultContainerLayoutManager
     : public aura::LayoutManager {
  public:
-  explicit DefaultContainerLayoutManager(aura::Window* owner);
+  DefaultContainerLayoutManager(
+      aura::Window* owner, WorkspaceManager* workspace_manager);
   virtual ~DefaultContainerLayoutManager();
+
+  // Invoked when a window receives drag event.
+  void PrepareForMoveOrResize(aura::Window* drag, aura::MouseEvent* event);
+
+  // Invoked when a drag event didn't start any drag operation.
+  void CancelMoveOrResize(aura::Window* drag, aura::MouseEvent* event);
+
+  // Invoked when a user finished moving window.
+  void EndMove(aura::Window* drag, aura::MouseEvent* evnet);
+
+  // Invoked when a user finished resizing window.
+  void EndResize(aura::Window* drag, aura::MouseEvent* evnet);
 
   // Overridden from aura::LayoutManager:
   virtual void OnWindowResized() OVERRIDE;
@@ -37,9 +53,19 @@ class AURA_SHELL_EXPORT DefaultContainerLayoutManager
                                               bool visibile) OVERRIDE;
   virtual void CalculateBoundsForChild(aura::Window* child,
                                        gfx::Rect* requested_bounds) OVERRIDE;
-
  private:
   aura::Window* owner_;
+
+  WorkspaceManager* workspace_manager_;
+
+  // A window that are currently moved or resized. Used to put
+  // different constraints on drag window.
+  aura::Window* drag_window_;
+
+  // A flag to control layout behavior. This is set to true while
+  // workspace manager is laying out children and LayoutManager
+  // ignores bounds check.
+  bool ignore_calculate_bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultContainerLayoutManager);
 };

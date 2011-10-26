@@ -46,6 +46,11 @@ AuraTestBase::~AuraTestBase() {
   aura::Desktop::DeleteInstanceForTesting();
 }
 
+TestDesktopDelegate* AuraTestBase::GetTestDesktopDelegate() {
+  return static_cast<TestDesktopDelegate*>(
+      aura::Desktop::GetInstance()->delegate());
+}
+
 void AuraTestBase::SetUp() {
   testing::Test::SetUp();
   setup_called_ = true;
