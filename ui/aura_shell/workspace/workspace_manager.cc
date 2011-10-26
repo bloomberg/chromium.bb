@@ -25,7 +25,8 @@ WorkspaceManager::WorkspaceManager()
 }
 
 WorkspaceManager::~WorkspaceManager() {
-  STLDeleteElements(&workspaces_);
+  std::vector<Workspace*> copy_to_delete(workspaces_);
+  STLDeleteElements(&copy_to_delete);
 }
 
 Workspace* WorkspaceManager::CreateWorkspace() {
