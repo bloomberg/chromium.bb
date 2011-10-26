@@ -194,7 +194,10 @@ found in the LICENSE file.
           <div id="access-code-entry-row">
             <form action="" onsubmit="remoting.tryConnect(); return false;">
               <label for="access-code-entry" i18n-content="ACCESS_CODE"></label>
-              <input id="access-code-entry" type="text" autofocus="autofocus"/>
+              <input id="access-code-entry"
+                     type="text"
+                     autofocus="autofocus"
+                     autocomplete="off"/>
               <button id="connect-button" class="big-button"
                       type="submit" i18n-content="CONNECT_BUTTON"></button>
               <button class="big-button" type="button"
