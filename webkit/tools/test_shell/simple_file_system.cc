@@ -231,6 +231,6 @@ FileSystemOperation* SimpleFileSystem::GetNewOperation(
       new SimpleFileSystemCallbackDispatcher(AsWeakPtr(), callbacks);
   FileSystemOperation* operation = new FileSystemOperation(
       dispatcher, base::MessageLoopProxy::current(),
-      file_system_context_.get(), NULL);
+      file_system_context_.get());
   return operation;
 }

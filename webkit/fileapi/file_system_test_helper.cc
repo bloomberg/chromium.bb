@@ -152,8 +152,8 @@ FileSystemOperation* FileSystemTestOriginHelper::NewOperation(
   FileSystemOperation* operation =
     new FileSystemOperation(callback_dispatcher,
                             base::MessageLoopProxy::current(),
-                            file_system_context_.get(),
-                            file_util_);
+                            file_system_context_.get());
+  operation->set_override_file_util(file_util_);
   InitializeOperationContext(operation->file_system_operation_context());
   return operation;
 }

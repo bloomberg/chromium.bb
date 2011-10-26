@@ -20,7 +20,6 @@
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_operation.h"
-#include "webkit/fileapi/file_system_path_manager.h"
 #include "webkit/fileapi/file_system_quota_util.h"
 #include "webkit/fileapi/file_system_util.h"
 
@@ -288,20 +287,13 @@ void FileSystemDispatcherHost::OnSyncGetPlatformPath(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(platform_path);
   *platform_path = FilePath();
-  base::PlatformFileInfo info;
-  GURL origin_url;
-  fileapi::FileSystemType type;
-  FilePath virtual_path;
-  if (!CrackFileSystemURL(path, &origin_url, &type, &virtual_path))
-    return;
-  FileSystemFileUtil* file_util = context_->path_manager()->GetFileUtil(type);
-  if (!file_util)
-    return;
-  FileSystemOperationContext operation_context(context_, file_util);
-  operation_context.set_src_origin_url(origin_url);
-  operation_context.set_src_type(type);
-  file_util->GetFileInfo(&operation_context, virtual_path,
-                         &info, platform_path);
+
+  FileSystemOperation* operation = new FileSystemOperation(
+      NULL,
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
+      context_);
+
+  operation->SyncGetPlatformPath(path, platform_path);
 }
 
 FileSystemOperation* FileSystemDispatcherHost::GetNewOperation(
@@ -311,8 +303,7 @@ FileSystemOperation* FileSystemDispatcherHost::GetNewOperation(
   FileSystemOperation* operation = new FileSystemOperation(
       dispatcher,
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
-      context_,
-      NULL);
+      context_);
   operations_.AddWithID(operation, request_id);
   return operation;
 }

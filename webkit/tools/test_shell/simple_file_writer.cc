@@ -130,8 +130,7 @@ class SimpleFileWriter::IOThreadProxy
   FileSystemOperation* GetNewOperation() {
     // The FileSystemOperation takes ownership of the CallbackDispatcher.
     return new FileSystemOperation(new CallbackDispatcher(this),
-                                   io_thread_, file_system_context_.get(),
-                                   NULL);
+                                   io_thread_, file_system_context_.get());
   }
 
   void DidSucceed() {

@@ -178,8 +178,7 @@ void FileSystemDirURLRequestJob::DidReadDirectory(
 FileSystemOperation* FileSystemDirURLRequestJob::GetNewOperation() {
   return new FileSystemOperation(new CallbackDispatcher(this),
                                  file_thread_proxy_,
-                                 file_system_context_,
-                                 NULL);
+                                 file_system_context_);
 }
 
 }  // namespace fileapi

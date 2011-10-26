@@ -424,8 +424,7 @@ void RequestLocalFileSystemFunction::RequestOnFileThread(
               child_id,
               GetExtension()),
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
-          profile()->GetFileSystemContext(),
-          NULL);
+          profile()->GetFileSystemContext());
   GURL origin_url = source_url.GetOrigin();
   operation->OpenFileSystem(origin_url, fileapi::kFileSystemTypeExternal,
                             false);     // create
@@ -874,8 +873,7 @@ void ExecuteTasksFileBrowserFunction::RequestFileEntryOnFileThread(
               task_id,
               file_urls),
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
-          profile()->GetFileSystemContext(),
-          NULL);
+          profile()->GetFileSystemContext());
   GURL origin_url = source_url.GetOrigin();
   operation->OpenFileSystem(origin_url, fileapi::kFileSystemTypeExternal,
                             false);     // create

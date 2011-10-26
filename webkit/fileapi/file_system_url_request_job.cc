@@ -216,8 +216,8 @@ void FileSystemURLRequestJob::StartAsync() {
   if (request_) {
     (new FileSystemOperation(new CallbackDispatcher(this),
                              file_thread_proxy_,
-                             file_system_context_,
-                             NULL))->GetMetadata(request_->url());
+                             file_system_context_)
+                            )->GetMetadata(request_->url());
   }
 }
 

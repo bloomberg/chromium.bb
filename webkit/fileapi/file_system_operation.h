@@ -50,12 +50,9 @@ class FileSystemQuotaUtil;
 class FileSystemOperation {
  public:
   // |dispatcher| will be owned by this class.
-  // |file_util| is optional; if supplied, it will not be deleted by
-  // the class.  It's expecting a pointer to a singleton.
   FileSystemOperation(FileSystemCallbackDispatcher* dispatcher,
                       scoped_refptr<base::MessageLoopProxy> proxy,
-                      FileSystemContext* file_system_context,
-                      FileSystemFileUtil* file_util);
+                      FileSystemContext* file_system_context);
   virtual ~FileSystemOperation();
 
   void OpenFileSystem(const GURL& origin_url,
@@ -87,6 +84,7 @@ class FileSystemOperation {
       const GURL& path,
       int file_flags,
       base::ProcessHandle peer_handle);
+  void SyncGetPlatformPath(const GURL& path, FilePath* platform_path);
 
   // Try to cancel the current operation [we support cancelling write or
   // truncate only].  Report failure for the current operation, then tell the
@@ -97,11 +95,11 @@ class FileSystemOperation {
   class ScopedQuotaUtilHelper;
 
   FileSystemContext* file_system_context() const {
-    return file_system_operation_context_.file_system_context();
+    return operation_context_.file_system_context();
   }
 
   FileSystemOperationContext* file_system_operation_context() {
-    return &file_system_operation_context_;
+    return &operation_context_;
   }
 
   friend class FileSystemOperationTest;
@@ -109,6 +107,14 @@ class FileSystemOperation {
   friend class FileWriterDelegateTest;
   friend class FileSystemTestOriginHelper;
   friend class FileSystemQuotaTest;
+
+  // The unit tests that need to specify and control the lifetime of the
+  // file_util on their own should call this before performing the actual
+  // operation. If it is given it will not be overwritten by the class.
+  void set_override_file_util(FileSystemFileUtil* file_util) {
+    operation_context_.set_src_file_util(file_util);
+    operation_context_.set_dest_file_util(file_util);
+  }
 
   void GetUsageAndQuotaThenCallback(
       const GURL& origin_url,
@@ -209,6 +215,14 @@ class FileSystemOperation {
                                     FilePath* virtual_path,
                                     FileSystemFileUtil** file_util);
 
+  // Setup*Context*() functions will call the appropriate VerifyFileSystem
+  // function and store the results to operation_context_ and
+  // *_virtual_path_.
+  // Return the result of VerifyFileSystem*().
+  bool SetupSrcContextForRead(const GURL& path);
+  bool SetupSrcContextForWrite(const GURL& path, bool create);
+  bool SetupDestContextForWrite(const GURL& path, bool create);
+
 #ifndef NDEBUG
   enum OperationType {
     kOperationNone,
@@ -239,7 +253,7 @@ class FileSystemOperation {
 
   scoped_ptr<FileSystemCallbackDispatcher> dispatcher_;
 
-  FileSystemOperationContext file_system_operation_context_;
+  FileSystemOperationContext operation_context_;
 
   base::WeakPtrFactory<FileSystemOperation> weak_factory_;
 
