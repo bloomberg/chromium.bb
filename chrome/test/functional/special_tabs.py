@@ -15,7 +15,8 @@ class SpecialTabsTest(pyauto.PyUITest):
 
   special_accelerator_tabs = {
     pyauto.IDC_SHOW_HISTORY: 'History',
-    pyauto.IDC_MANAGE_EXTENSIONS: 'Preferences - Extensions',
+    pyauto.IDC_MANAGE_EXTENSIONS: '%s - Extensions' % ('Options' if
+        pyauto.PyUITest.IsWin() else 'Preferences'),
     pyauto.IDC_SHOW_DOWNLOADS: 'Downloads',
   }
 
@@ -153,6 +154,7 @@ class SpecialTabsTest(pyauto.PyUITest):
 
     # OVERRIDE - different title for page.
     'chrome://settings': { 'title': 'Options - Basics' },
+    'chrome://settings/extensions': { 'title': 'Options - Extensions' },
   }
   broken_win_special_url_tabs = {
     # Sync on windows badly broken at the moment.
