@@ -27,6 +27,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/devtools_messages.h"
 #include "content/public/browser/notification_source.h"
+#include "webkit/glue/webkit_glue.h"
 
 namespace keys = extension_debugger_api_constants;
 
@@ -42,7 +43,7 @@ class ExtensionDevToolsClientHost : public DevToolsClientHost,
   bool MatchesContentsAndExtensionId(TabContents* tab_contents,
                                      const std::string& extension_id);
   void Close();
-  void SendMessageToBackend(SendRequestDebuggerFunction* function,
+  void SendMessageToBackend(SendCommandDebuggerFunction* function,
                             const std::string& method,
                             Value* params);
 
@@ -64,7 +65,7 @@ class ExtensionDevToolsClientHost : public DevToolsClientHost,
   int tab_id_;
   content::NotificationRegistrar registrar_;
   int last_request_id_;
-  typedef std::map<int, scoped_refptr<SendRequestDebuggerFunction> >
+  typedef std::map<int, scoped_refptr<SendCommandDebuggerFunction> >
       PendingRequests;
   PendingRequests pending_requests_;
 
@@ -72,6 +73,12 @@ class ExtensionDevToolsClientHost : public DevToolsClientHost,
 };
 
 namespace {
+
+static Value* CreateDebuggeeId(int tab_id) {
+  DictionaryValue* debuggeeId = new DictionaryValue();
+  debuggeeId->SetInteger(keys::kTabIdKey, tab_id);
+  return debuggeeId;
+}
 
 class AttachedClientHosts {
  public:
@@ -148,7 +155,7 @@ void ExtensionDevToolsClientHost::InspectedTabClosing() {
       Profile::FromBrowserContext(tab_contents_->browser_context());
   if (profile != NULL && profile->GetExtensionEventRouter()) {
     ListValue args;
-    args.Append(Value::CreateIntegerValue(tab_id_));
+    args.Append(CreateDebuggeeId(tab_id_));
 
     std::string json_args;
     base::JSONWriter::Write(&args, false, &json_args);
@@ -179,7 +186,7 @@ void ExtensionDevToolsClientHost::Close() {
 }
 
 void ExtensionDevToolsClientHost::SendMessageToBackend(
-    SendRequestDebuggerFunction* function,
+    SendCommandDebuggerFunction* function,
     const std::string& method,
     Value* params) {
   DictionaryValue protocol_request;
@@ -225,7 +232,7 @@ void ExtensionDevToolsClientHost::OnDispatchOnInspectorFrontend(
       return;
 
     ListValue args;
-    args.Append(Value::CreateIntegerValue(tab_id_));
+    args.Append(CreateDebuggeeId(tab_id_));
     args.Append(Value::CreateStringValue(method_name));
     Value* params_value;
     if (dictionary->Get("params", &params_value))
@@ -237,7 +244,7 @@ void ExtensionDevToolsClientHost::OnDispatchOnInspectorFrontend(
     profile->GetExtensionEventRouter()->DispatchEventToExtension(
         extension_id_, keys::kOnEvent, json_args, profile, GURL());
   } else {
-    SendRequestDebuggerFunction* function = pending_requests_[id];
+    SendCommandDebuggerFunction* function = pending_requests_[id];
     if (!function)
       return;
 
@@ -248,27 +255,34 @@ void ExtensionDevToolsClientHost::OnDispatchOnInspectorFrontend(
 
 DebuggerFunction::DebuggerFunction()
     : contents_(0),
+      tab_id_(0),
       client_host_(0) {
 }
 
-bool DebuggerFunction::InitTabContents(int tab_id) {
+bool DebuggerFunction::InitTabContents() {
+  Value* debuggee;
+  EXTENSION_FUNCTION_VALIDATE(args_->Get(0, &debuggee));
+
+  DictionaryValue* dict = static_cast<DictionaryValue*>(debuggee);
+  EXTENSION_FUNCTION_VALIDATE(dict->GetInteger(keys::kTabIdKey, &tab_id_));
+
   // Find the TabContents that contains this tab id.
   contents_ = NULL;
   TabContentsWrapper* wrapper = NULL;
   bool result = ExtensionTabUtil::GetTabById(
-      tab_id, profile(), include_incognito(), NULL, NULL, &wrapper, NULL);
+      tab_id_, profile(), include_incognito(), NULL, NULL, &wrapper, NULL);
   if (!result || !wrapper) {
-    error_ = error_ = ExtensionErrorUtils::FormatErrorMessage(
+    error_ = ExtensionErrorUtils::FormatErrorMessage(
         keys::kNoTabError,
-        base::IntToString(tab_id));
+        base::IntToString(tab_id_));
     return false;
   }
   contents_ = wrapper->tab_contents();
   return true;
 }
 
-bool DebuggerFunction::InitClientHost(int tab_id) {
-  if (!InitTabContents(tab_id))
+bool DebuggerFunction::InitClientHost() {
+  if (!InitTabContents())
     return false;
 
   RenderViewHost* rvh = contents_->render_view_host();
@@ -279,7 +293,7 @@ bool DebuggerFunction::InitClientHost(int tab_id) {
                                                    GetExtension()->id())) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(
         keys::kNotAttachedError,
-        base::IntToString(tab_id));
+        base::IntToString(tab_id_));
     return false;
   }
   return true;
@@ -290,11 +304,18 @@ AttachDebuggerFunction::AttachDebuggerFunction() {}
 AttachDebuggerFunction::~AttachDebuggerFunction() {}
 
 bool AttachDebuggerFunction::RunImpl() {
-  int tab_id;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &tab_id));
-
-  if (!InitTabContents(tab_id))
+  if (!InitTabContents())
     return false;
+
+  std::string version;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(1, &version));
+
+  if (!webkit_glue::IsInspectorProtocolVersionSupported(version)) {
+    error_ = ExtensionErrorUtils::FormatErrorMessage(
+        keys::kProtocolVersionNotSupportedError,
+        version);
+    return false;
+  }
 
   DevToolsClientHost* client_host = DevToolsManager::GetInstance()->
       GetDevToolsClientHostFor(contents_->render_view_host());
@@ -302,11 +323,11 @@ bool AttachDebuggerFunction::RunImpl() {
   if (client_host != NULL) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(
         keys::kAlreadyAttachedError,
-        base::IntToString(tab_id));
+        base::IntToString(tab_id_));
     return false;
   }
 
-  new ExtensionDevToolsClientHost(contents_, GetExtension()->id(), tab_id);
+  new ExtensionDevToolsClientHost(contents_, GetExtension()->id(), tab_id_);
   SendResponse(true);
   return true;
 }
@@ -316,10 +337,7 @@ DetachDebuggerFunction::DetachDebuggerFunction() {}
 DetachDebuggerFunction::~DetachDebuggerFunction() {}
 
 bool DetachDebuggerFunction::RunImpl() {
-  int tab_id;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &tab_id));
-
-  if (!InitClientHost(tab_id))
+  if (!InitClientHost())
     return false;
 
   client_host_->Close();
@@ -327,15 +345,13 @@ bool DetachDebuggerFunction::RunImpl() {
   return true;
 }
 
-SendRequestDebuggerFunction::SendRequestDebuggerFunction() {}
+SendCommandDebuggerFunction::SendCommandDebuggerFunction() {}
 
-SendRequestDebuggerFunction::~SendRequestDebuggerFunction() {}
+SendCommandDebuggerFunction::~SendCommandDebuggerFunction() {}
 
-bool SendRequestDebuggerFunction::RunImpl() {
-  int tab_id;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &tab_id));
+bool SendCommandDebuggerFunction::RunImpl() {
 
-  if (!InitClientHost(tab_id))
+  if (!InitClientHost())
     return false;
 
   std::string method;
@@ -349,7 +365,7 @@ bool SendRequestDebuggerFunction::RunImpl() {
   return true;
 }
 
-void SendRequestDebuggerFunction::SendResponseBody(
+void SendCommandDebuggerFunction::SendResponseBody(
     DictionaryValue* dictionary) {
   Value* error_body;
   if (dictionary->Get("error", &error_body)) {

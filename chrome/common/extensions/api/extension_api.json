@@ -8503,54 +8503,69 @@
   },
   {
     "namespace": "experimental.debugger",
+    "types": [
+      {
+        "id": "Debuggee",
+        "type": "object",
+        "description": "Debuggee identifier.",
+        "properties": {
+          "tabId": { "type": "integer", "description": "The id of the tab which you intend to debug." }
+        }
+      }
+    ],
     "functions": [
       {
         "name": "attach",
         "type": "function",
-        "description": "Attaches debugger to the tab with given id.",
+        "description": "Attaches debugger to the given target.",
         "parameters": [
           {
-            "type": "integer",
-            "name": "tabId",
-            "description": "The id of the tab to which you want to attach."
+            "$ref": "Debuggee",
+            "name": "target",
+            "description": "Debugging target to which you want to attach."
+          },
+          {
+            "type": "string",
+            "name": "requiredVersion",
+            "description": "Required debugging protocol version (\"0.1\"). One can only attach to the debuggee with matching major version and greater or equal minor version. List of the protocol versions can be obtained <a href='http://code.google.com/chrome/devtools/docs/remote-debugging.html'>here</a>."
           },
           {
             "type": "function",
             "name": "callback",
             "optional": true,
             "parameters": [],
-            "description": "If an error occurs while attaching to the tab, the callback will be called with no arguments and <a href='extension.html#property-lastError'>chrome.extension.lastError</a> will be set to the error message."
+            "description": "If an error occurs while attaching to the target, the callback will be called with no arguments and <a href='extension.html#property-lastError'>chrome.extension.lastError</a> will be set to the error message."
           }
         ]
       },
       {
         "name": "detach",
         "type": "function",
-        "description": "Detaches debugger from a tab with given id.",
+        "description": "Detaches debugger from the given target.",
         "parameters": [
           {
-            "type": "integer",
-            "name": "tabId",
-            "description": "The id of the tab from which you want to detach."
+            "$ref": "Debuggee",
+            "name": "target",
+            "description": "Debugging target from which you want to detach."
           },
           {
             "type": "function",
             "name": "callback",
             "optional": true,
             "parameters": [],
-            "description": "If an error occurs while detaching from the tab, the callback will be called with no arguments and <a href='extension.html#property-lastError'>chrome.extension.lastError</a> will be set to the error message."
+            "description": "If an error occurs while detaching from the target, the callback will be called with no arguments and <a href='extension.html#property-lastError'>chrome.extension.lastError</a> will be set to the error message."
           }
         ]
       },
       {
-        "name": "sendRequest",
+        "name": "sendCommand",
         "type": "function",
-        "description": "Sends given request to the debugger.",
+        "description": "Sends given command to the debugging target.",
         "parameters": [
           {
-            "type": "integer",
-            "name": "tabId",
-            "description": "The id of the tab to which you want to send debugging request."
+            "$ref": "Debuggee",
+            "name": "target",
+            "description": "Debugging target to which you want to send the command."
           },
           {
             "type": "string",
@@ -8588,12 +8603,12 @@
       {
         "name": "onEvent",
         "type": "function",
-        "description": "Fired whenever debugger issues instrumentation event.",
+        "description": "Fired whenever debugging target issues instrumentation event.",
         "parameters": [
           {
-            "type": "integer",
-            "name": "tabId",
-            "description": "The id of the tab that generated debug event."
+            "$ref": "Debuggee",
+            "name": "source",
+            "description": "The debuggee that generated this event."
           },
           {
             "type": "string",
@@ -8616,9 +8631,9 @@
         "description": "Fired when browser terminates debugging session for the tab. This happens when either the tab is being closed or Chrome DevTools is being invoked for the attached tab.",
         "parameters": [
           {
-            "type": "integer",
-            "name": "tabId",
-            "description": "The id of the tab that was detached."
+            "$ref": "Debuggee",
+            "name": "source",
+            "description": "The debuggee that was detached."
           }
         ]
       }

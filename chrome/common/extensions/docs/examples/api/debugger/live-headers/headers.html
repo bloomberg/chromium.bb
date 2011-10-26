@@ -22,23 +22,27 @@ body {
 }
 
 </style>
+
 <script>
 
 var tabId = parseInt(window.location.search.substring(1));
 
 window.addEventListener("load", function() {
-  chrome.experimental.debugger.sendRequest(tabId, "Network.enable");
+  chrome.experimental.debugger.sendCommand({tabId:tabId}, "Network.enable");
   chrome.experimental.debugger.onEvent.addListener(onEvent);
 });
 
 window.addEventListener("unload", function() {
-  chrome.experimental.debugger.detach(tabId);
+  chrome.experimental.debugger.detach({tabId:tabId});
 });
 
 var requests = {};
 
-function onEvent(tabId, message, params) {
-  if (message === "Network.requestWillBeSent") {
+function onEvent(debuggeeId, message, params) {
+  if (tabId != debuggeeId.tabId)
+    return;
+
+  if (message == "Network.requestWillBeSent") {
     var requestDiv = requests[params.requestId];
     if (!requestDiv) {
       var requestDiv = document.createElement("div");
@@ -57,7 +61,7 @@ function onEvent(tabId, message, params) {
         parseURL(params.request.url).path + " HTTP/1.1";
     requestDiv.appendChild(requestLine);
     document.getElementById("container").appendChild(requestDiv);
-  } else if (message === "Network.responseReceived") {
+  } else if (message == "Network.responseReceived") {
     appendResponse(params.requestId, params.response);
   }
 }
@@ -98,7 +102,7 @@ function parseURL(url) {
 </script>
 </head>
 
-<body onload="onLoad()">
+<body>
 <div id="container"></div>
 </body>
 </html>

@@ -421,7 +421,7 @@ void FactoryRegistry::ResetFunctions() {
   // Debugger
   RegisterFunction<AttachDebuggerFunction>();
   RegisterFunction<DetachDebuggerFunction>();
-  RegisterFunction<SendRequestDebuggerFunction>();
+  RegisterFunction<SendCommandDebuggerFunction>();
 
   // Settings
   RegisterFunction<GetSettingsFunction>();

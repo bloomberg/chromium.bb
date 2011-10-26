@@ -13,8 +13,10 @@ chrome.browserAction.onClicked.addListener(function() {
   });
 });
 
+var version = "0.1";
+
 function actionClicked(tab) {
-  chrome.experimental.debugger.attach(tab.id, onAttach.bind(null, tab.id));
+  chrome.experimental.debugger.attach({tabId:tab.id}, version, onAttach.bind(null, tab.id));
 }
 
 function onAttach(tabId) {

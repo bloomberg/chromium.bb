@@ -51,7 +51,7 @@
     "chrome.experimental.debugger.detach": "experimental.debugger.html#method-detach",
     "chrome.experimental.debugger.onDetach": "experimental.debugger.html#event-onDetach",
     "chrome.experimental.debugger.onEvent": "experimental.debugger.html#event-onEvent",
-    "chrome.experimental.debugger.sendRequest": "experimental.debugger.html#method-sendRequest",
+    "chrome.experimental.debugger.sendCommand": "experimental.debugger.html#method-sendCommand",
     "chrome.experimental.devtools.audits.addCategory": "experimental.devtools.audits.html#method-addCategory",
     "chrome.experimental.devtools.console.addMessage": "experimental.devtools.console.html#method-addMessage",
     "chrome.experimental.devtools.console.getMessages": "experimental.devtools.console.html#method-getMessages",
@@ -1310,7 +1310,7 @@
         "chrome.experimental.debugger.detach",
         "chrome.experimental.debugger.onDetach",
         "chrome.experimental.debugger.onEvent",
-        "chrome.experimental.debugger.sendRequest",
+        "chrome.experimental.debugger.sendCommand",
         "chrome.tabs.get",
         "chrome.tabs.getSelected",
         "chrome.windows.get",
@@ -1333,12 +1333,12 @@
       "protocols": [
         "http:\/\/"
       ],
-      "search_string": "JAVASCRIPT PAUSE\/RESUME PAUSES \/ RESUMES JAVASCRIPT EXECUTION BACKGROUND_PAGE BROWSER_ACTION DEBUGGER EXPERIMENTAL TABS CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETICON CHROME.BROWSERACTION.SETTITLE CHROME.EXPERIMENTAL.DEBUGGER.ATTACH CHROME.EXPERIMENTAL.DEBUGGER.DETACH CHROME.EXPERIMENTAL.DEBUGGER.ONDETACH CHROME.EXPERIMENTAL.DEBUGGER.ONEVENT CHROME.EXPERIMENTAL.DEBUGGER.SENDREQUEST CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.WINDOWS.GET CHROME.WINDOWS.GETCURRENT",
+      "search_string": "JAVASCRIPT PAUSE\/RESUME PAUSES \/ RESUMES JAVASCRIPT EXECUTION BACKGROUND_PAGE BROWSER_ACTION DEBUGGER EXPERIMENTAL TABS CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETICON CHROME.BROWSERACTION.SETTITLE CHROME.EXPERIMENTAL.DEBUGGER.ATTACH CHROME.EXPERIMENTAL.DEBUGGER.DETACH CHROME.EXPERIMENTAL.DEBUGGER.ONDETACH CHROME.EXPERIMENTAL.DEBUGGER.ONEVENT CHROME.EXPERIMENTAL.DEBUGGER.SENDCOMMAND CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.WINDOWS.GET CHROME.WINDOWS.GETCURRENT",
       "source_files": [
         "background.html",
         "manifest.json"
       ],
-      "source_hash": "826b57fecf6340bd7bdf2c1bd3ea3923300c4835",
+      "source_hash": "cd60498d3e2f00b369dc88df7d635247bab915e8",
       "zip_path": "examples\/api\/debugger\/pause-resume.zip"
     },
     {
@@ -1376,7 +1376,7 @@
         "chrome.experimental.debugger.attach",
         "chrome.experimental.debugger.detach",
         "chrome.experimental.debugger.onEvent",
-        "chrome.experimental.debugger.sendRequest",
+        "chrome.experimental.debugger.sendCommand",
         "chrome.tabs.get",
         "chrome.tabs.getSelected",
         "chrome.windows.create",
@@ -1400,13 +1400,13 @@
       "protocols": [
         "http:\/\/"
       ],
-      "search_string": "LIVE HTTP HEADERS DISPLAYS THE LIVE LOG WITH THE HTTP REQUESTS HEADERS BACKGROUND_PAGE BROWSER_ACTION DEBUGGER EXPERIMENTAL TABS CHROME.BROWSERACTION.ONCLICKED CHROME.EXPERIMENTAL.DEBUGGER.ATTACH CHROME.EXPERIMENTAL.DEBUGGER.DETACH CHROME.EXPERIMENTAL.DEBUGGER.ONEVENT CHROME.EXPERIMENTAL.DEBUGGER.SENDREQUEST CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.WINDOWS.CREATE CHROME.WINDOWS.GET CHROME.WINDOWS.GETCURRENT",
+      "search_string": "LIVE HTTP HEADERS DISPLAYS THE LIVE LOG WITH THE HTTP REQUESTS HEADERS BACKGROUND_PAGE BROWSER_ACTION DEBUGGER EXPERIMENTAL TABS CHROME.BROWSERACTION.ONCLICKED CHROME.EXPERIMENTAL.DEBUGGER.ATTACH CHROME.EXPERIMENTAL.DEBUGGER.DETACH CHROME.EXPERIMENTAL.DEBUGGER.ONEVENT CHROME.EXPERIMENTAL.DEBUGGER.SENDCOMMAND CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.WINDOWS.CREATE CHROME.WINDOWS.GET CHROME.WINDOWS.GETCURRENT",
       "source_files": [
         "background.html",
         "headers.html",
         "manifest.json"
       ],
-      "source_hash": "e0e33949fca99a6a5c7fdd1cc45c3ac7f1282517",
+      "source_hash": "cb4f53521f2c2be1ede59fae34457c30da87129c",
       "zip_path": "examples\/api\/debugger\/live-headers.zip"
     },
     {

@@ -27,10 +27,11 @@ class DebuggerFunction : public AsyncExtensionFunction {
   DebuggerFunction();
   virtual ~DebuggerFunction() {}
 
-  bool InitTabContents(int tab_id);
-  bool InitClientHost(int tab_id);
+  bool InitTabContents();
+  bool InitClientHost();
 
   TabContents* contents_;
+  int tab_id_;
   ExtensionDevToolsClientHost* client_host_;
 };
 
@@ -52,15 +53,15 @@ class DetachDebuggerFunction : public DebuggerFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.debugger.detach")
 };
 
-// Implements the debugger.sendRequest() extension function.
-class SendRequestDebuggerFunction : public DebuggerFunction {
+// Implements the debugger.sendCommand() extension function.
+class SendCommandDebuggerFunction : public DebuggerFunction {
  public:
-  SendRequestDebuggerFunction();
-  virtual ~SendRequestDebuggerFunction();
+  SendCommandDebuggerFunction();
+  virtual ~SendCommandDebuggerFunction();
   virtual bool RunImpl();
 
   void SendResponseBody(base::DictionaryValue* dictionary);
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.debugger.sendRequest")
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.debugger.sendCommand")
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_DEBUGGER_API_H_

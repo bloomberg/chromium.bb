@@ -9,6 +9,7 @@ namespace extension_debugger_api_constants {
 const char kCommandKey[] = "command";
 const char kDataKey[] = "data";
 const char kTabIdKey[] = "tabId";
+const char kVersionIdKey[] = "requiredVersion";
 
 const char kOnEvent[] = "experimental.debugger.onEvent";
 const char kOnDetach[] = "experimental.debugger.onDetach";
@@ -20,5 +21,7 @@ const char kNoTabError[] = "No tab with given id *.";
 const char kNotAttachedError[] =
     "Debugger is not attached to the tab with id: *.";
 const char kPermissionError[] = "You do not have permission to debug pages.";
+const char kProtocolVersionNotSupportedError[] =
+    "Requested protocol version is not supported: *.";
 
 }  // namespace extension_debugger_api_constants

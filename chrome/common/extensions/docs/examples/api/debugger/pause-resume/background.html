@@ -9,6 +9,7 @@ found in the LICENSE file.
 <script>
 
 var attachedTabs = {};
+var version = "0.1";
 
 chrome.experimental.debugger.onEvent.addListener(onEvent);
 chrome.experimental.debugger.onDetach.addListener(onDetach);
@@ -21,45 +22,50 @@ chrome.browserAction.onClicked.addListener(function() {
 
 function actionClicked(tab) {
   var tabId = tab.id;
-  if (attachedTabs[tabId] === "pausing")
+  var debuggeeId = {tabId:tabId};
+
+  if (attachedTabs[tabId] == "pausing")
     return;
 
   if (!attachedTabs[tabId])
-    chrome.experimental.debugger.attach(tabId, onAttach.bind(null, tabId));
+    chrome.experimental.debugger.attach(debuggeeId, version, onAttach.bind(null, debuggeeId));
   else if (attachedTabs[tabId])
-    chrome.experimental.debugger.detach(tabId, onDetach.bind(null, tabId));
+    chrome.experimental.debugger.detach(debuggeeId, onDetach.bind(null, debuggeeId));
 }
 
-function onAttach(tabId) {
+function onAttach(debuggeeId) {
   if (chrome.extension.lastError) {
     alert("Another debugger is already attached to this tab.");
     return;
   }
 
+  var tabId = debuggeeId.tabId;
   chrome.browserAction.setIcon({tabId: tabId, path:"debuggerPausing.png"});
   chrome.browserAction.setTitle({tabId: tabId, title:"Pausing JavaScript"});
   attachedTabs[tabId] = "pausing";
-  chrome.experimental.debugger.sendRequest(
-      tabId, "Debugger.enable", {},
-      onDebuggerEnabled.bind(null, tabId));
+  chrome.experimental.debugger.sendCommand(
+      debuggeeId, "Debugger.enable", {},
+      onDebuggerEnabled.bind(null, debuggeeId));
 }
 
-function onDebuggerEnabled(tabId) {
-  chrome.experimental.debugger.sendRequest(tabId, "Debugger.pause");
+function onDebuggerEnabled(debuggeeId) {
+  chrome.experimental.debugger.sendCommand(debuggeeId, "Debugger.pause");
 }
 
-function onEvent(tabId, method) {
-  if (method === "Debugger.paused") {
+function onEvent(debuggeeId, method) {
+  var tabId = debuggeeId.tabId;
+  if (method == "Debugger.paused") {
     attachedTabs[tabId] = "paused";
-    chrome.browserAction.setIcon({tabId: tabId, path:"debuggerContinue.png"});
-    chrome.browserAction.setTitle({tabId: tabId, title:"Resume JavaScript"});
+    chrome.browserAction.setIcon({tabId:tabId, path:"debuggerContinue.png"});
+    chrome.browserAction.setTitle({tabId:tabId, title:"Resume JavaScript"});
   }
 }
 
-function onDetach(tabId) {
+function onDetach(debuggeeId) {
+  var tabId = debuggeeId.tabId;
   delete attachedTabs[tabId];
-  chrome.browserAction.setIcon({tabId: tabId, path:"debuggerPause.png"});
-  chrome.browserAction.setTitle({tabId: tabId, title:"Pause JavaScript"});
+  chrome.browserAction.setIcon({tabId:tabId, path:"debuggerPause.png"});
+  chrome.browserAction.setTitle({tabId:tabId, title:"Pause JavaScript"});
 }
 
 </script>

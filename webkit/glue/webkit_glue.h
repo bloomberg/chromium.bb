@@ -147,6 +147,12 @@ WebKit::WebCanvas* ToWebCanvas(skia::PlatformCanvas*);
 // used to get memory usage statistics.
 int GetGlyphPageCount();
 
+// Returns WebKit Web Inspector protocol version.
+std::string GetInspectorProtocolVersion();
+
+// Tells caller whether the given protocol version is supported by the.
+bool IsInspectorProtocolVersionSupported(const std::string& version);
+
 //---- END FUNCTIONS IMPLEMENTED BY WEBKIT/GLUE -------------------------------
 
 

@@ -30,6 +30,7 @@
 #endif
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebData.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsAgent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
@@ -50,6 +51,7 @@
 
 using WebKit::WebCanvas;
 using WebKit::WebData;
+using WebKit::WebDevToolsAgent;
 using WebKit::WebElement;
 using WebKit::WebFrame;
 using WebKit::WebGlyphCache;
@@ -442,6 +444,15 @@ WebCanvas* ToWebCanvas(skia::PlatformCanvas* canvas) {
 
 int GetGlyphPageCount() {
   return WebGlyphCache::pageCount();
+}
+
+std::string GetInspectorProtocolVersion() {
+  return WebDevToolsAgent::inspectorProtocolVersion().utf8();
+}
+
+bool IsInspectorProtocolVersionSupported(const std::string& version) {
+  return WebDevToolsAgent::supportsInspectorProtocolVersion(
+      WebString::fromUTF8(version));
 }
 
 } // namespace webkit_glue

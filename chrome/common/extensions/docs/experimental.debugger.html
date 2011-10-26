@@ -298,7 +298,7 @@
                       </li><li>
                         <a href="#method-detach">detach</a>
                       </li><li>
-                        <a href="#method-sendRequest">sendRequest</a>
+                        <a href="#method-sendCommand">sendCommand</a>
                       </li>
                     </ol>
                   </li>
@@ -312,11 +312,11 @@
                       </li>
                     </ol>
                   </li>
-                  <li style="display: none; ">
+                  <li>
                     <a href="#types">Types</a>
                     <ol>
                       <li>
-                        <a href="#id-anchor">id</a>
+                        <a href="#type-Debuggee">Debuggee</a>
                       </li>
                     </ol>
                   </li>
@@ -414,13 +414,14 @@ You can find samples of this API in
 
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.debugger.attach</span>(<span class="null"><span style="display: none; ">, </span><span>integer</span>
-                      <var><span>tabId</span></var></span><span class="optional"><span>, </span><span>function</span>
+                  <span>chrome.experimental.debugger.attach</span>(<span class="null"><span style="display: none; ">, </span><span>Debuggee</span>
+                      <var><span>target</span></var></span><span class="null"><span>, </span><span>string</span>
+                      <var><span>requiredVersion</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Attaches debugger to the tab with given id.</p>
+                <p>Attaches debugger to the given target.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -428,7 +429,75 @@ You can find samples of this API in
                   <div>
                     <div>
           <dt>
-            <var>tabId</var>
+            <var>target</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="experimental.debugger.html#type-Debuggee">Debuggee</a>
+                      </span>
+                      <span style="display: none; ">
+                        <span>
+                          array of <span><span></span></span>
+                        </span>
+                        <span>paramType</span>
+                        <span></span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>Debugging target to which you want to attach.</dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+
+          <!-- OBJECT METHODS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- OBJECT EVENT FIELDS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- FUNCTION PARAMETERS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>requiredVersion</var>
               <em>
 
                 <!-- TYPE -->
@@ -444,7 +513,7 @@ You can find samples of this API in
                         <span style="display: none; ">
                           array of <span><span></span></span>
                         </span>
-                        <span>integer</span>
+                        <span>string</span>
                         <span style="display: none; "></span>
                       </span>
                     </span>
@@ -456,7 +525,7 @@ You can find samples of this API in
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The id of the tab to which you want to attach.</dd>
+          <dd>Required debugging protocol version ("0.1"). One can only attach to the debuggee with matching major version and greater or equal minor version. List of the protocol versions can be obtained <a href="http://code.google.com/chrome/devtools/docs/remote-debugging.html">here</a>.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -524,7 +593,7 @@ You can find samples of this API in
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>If an error occurs while attaching to the tab, the callback will be called with no arguments and <a href="extension.html#property-lastError">chrome.extension.lastError</a> will be set to the error message.</dd>
+          <dd>If an error occurs while attaching to the target, the callback will be called with no arguments and <a href="extension.html#property-lastError">chrome.extension.lastError</a> will be set to the error message.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -612,13 +681,13 @@ You can find samples of this API in
 
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.debugger.detach</span>(<span class="null"><span style="display: none; ">, </span><span>integer</span>
-                      <var><span>tabId</span></var></span><span class="optional"><span>, </span><span>function</span>
+                  <span>chrome.experimental.debugger.detach</span>(<span class="null"><span style="display: none; ">, </span><span>Debuggee</span>
+                      <var><span>target</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Detaches debugger from a tab with given id.</p>
+                <p>Detaches debugger from the given target.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -626,7 +695,7 @@ You can find samples of this API in
                   <div>
                     <div>
           <dt>
-            <var>tabId</var>
+            <var>target</var>
               <em>
 
                 <!-- TYPE -->
@@ -635,15 +704,15 @@ You can find samples of this API in
                     <span class="optional" style="display: none; ">optional</span>
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
+                        <a href="experimental.debugger.html#type-Debuggee">Debuggee</a>
+                      </span>
+                      <span style="display: none; ">
+                        <span>
                           array of <span><span></span></span>
                         </span>
-                        <span>integer</span>
-                        <span style="display: none; "></span>
+                        <span>paramType</span>
+                        <span></span>
                       </span>
                     </span>
                   )
@@ -654,7 +723,7 @@ You can find samples of this API in
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The id of the tab from which you want to detach.</dd>
+          <dd>Debugging target from which you want to detach.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -722,7 +791,7 @@ You can find samples of this API in
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>If an error occurs while detaching from the tab, the callback will be called with no arguments and <a href="extension.html#property-lastError">chrome.extension.lastError</a> will be set to the error message.</dd>
+          <dd>If an error occurs while detaching from the target, the callback will be called with no arguments and <a href="extension.html#property-lastError">chrome.extension.lastError</a> will be set to the error message.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -805,20 +874,20 @@ You can find samples of this API in
               </div> <!-- /description -->
 
             </div><div class="apiItem">
-              <a name="method-sendRequest"></a> <!-- method-anchor -->
-              <h4>sendRequest</h4>
+              <a name="method-sendCommand"></a> <!-- method-anchor -->
+              <h4>sendCommand</h4>
 
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.debugger.sendRequest</span>(<span class="null"><span style="display: none; ">, </span><span>integer</span>
-                      <var><span>tabId</span></var></span><span class="null"><span>, </span><span>string</span>
+                  <span>chrome.experimental.debugger.sendCommand</span>(<span class="null"><span style="display: none; ">, </span><span>Debuggee</span>
+                      <var><span>target</span></var></span><span class="null"><span>, </span><span>string</span>
                       <var><span>method</span></var></span><span class="optional"><span>, </span><span>object</span>
                       <var><span>params</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Sends given request to the debugger.</p>
+                <p>Sends given command to the debugging target.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -826,7 +895,7 @@ You can find samples of this API in
                   <div>
                     <div>
           <dt>
-            <var>tabId</var>
+            <var>target</var>
               <em>
 
                 <!-- TYPE -->
@@ -835,15 +904,15 @@ You can find samples of this API in
                     <span class="optional" style="display: none; ">optional</span>
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
+                        <a href="experimental.debugger.html#type-Debuggee">Debuggee</a>
+                      </span>
+                      <span style="display: none; ">
+                        <span>
                           array of <span><span></span></span>
                         </span>
-                        <span>integer</span>
-                        <span style="display: none; "></span>
+                        <span>paramType</span>
+                        <span></span>
                       </span>
                     </span>
                   )
@@ -854,7 +923,7 @@ You can find samples of this API in
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The id of the tab to which you want to send debugging request.</dd>
+          <dd>Debugging target to which you want to send the command.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1220,7 +1289,7 @@ You can find samples of this API in
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.experimental.debugger.</span><span>onDetach</span><span class="subdued">.addListener</span>(function(<span>integer tabId</span>) <span class="subdued">{...}</span><span></span>);
+                <span class="subdued">chrome.experimental.debugger.</span><span>onDetach</span><span class="subdued">.addListener</span>(function(<span>Debuggee source</span>) <span class="subdued">{...}</span><span></span>);
               </div>
 
               <div class="description">
@@ -1234,7 +1303,7 @@ You can find samples of this API in
                     <div>
                       <div>
           <dt>
-            <var>tabId</var>
+            <var>source</var>
               <em>
 
                 <!-- TYPE -->
@@ -1243,15 +1312,15 @@ You can find samples of this API in
                     <span class="optional" style="display: none; ">optional</span>
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
+                        <a href="experimental.debugger.html#type-Debuggee">Debuggee</a>
+                      </span>
+                      <span style="display: none; ">
+                        <span>
                           array of <span><span></span></span>
                         </span>
-                        <span>integer</span>
-                        <span style="display: none; "></span>
+                        <span>paramType</span>
+                        <span></span>
                       </span>
                     </span>
                   )
@@ -1262,7 +1331,7 @@ You can find samples of this API in
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The id of the tab that was detached.</dd>
+          <dd>The debuggee that was detached.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1330,12 +1399,12 @@ You can find samples of this API in
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.experimental.debugger.</span><span>onEvent</span><span class="subdued">.addListener</span>(function(<span>integer tabId, string method, object params</span>) <span class="subdued">{...}</span><span></span>);
+                <span class="subdued">chrome.experimental.debugger.</span><span>onEvent</span><span class="subdued">.addListener</span>(function(<span>Debuggee source, string method, object params</span>) <span class="subdued">{...}</span><span></span>);
               </div>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Fired whenever debugger issues instrumentation event.</p>
+                <p>Fired whenever debugging target issues instrumentation event.</p>
 
                 <!-- LISTENER PARAMETERS -->
                 <div>
@@ -1344,7 +1413,7 @@ You can find samples of this API in
                     <div>
                       <div>
           <dt>
-            <var>tabId</var>
+            <var>source</var>
               <em>
 
                 <!-- TYPE -->
@@ -1353,15 +1422,15 @@ You can find samples of this API in
                     <span class="optional" style="display: none; ">optional</span>
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
+                        <a href="experimental.debugger.html#type-Debuggee">Debuggee</a>
+                      </span>
+                      <span style="display: none; ">
+                        <span>
                           array of <span><span></span></span>
                         </span>
-                        <span>integer</span>
-                        <span style="display: none; "></span>
+                        <span>paramType</span>
+                        <span></span>
                       </span>
                     </span>
                   )
@@ -1372,7 +1441,7 @@ You can find samples of this API in
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The id of the tab that generated debug event.</dd>
+          <dd>The debuggee that generated this event.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1575,17 +1644,147 @@ You can find samples of this API in
           </div> <!-- /apiGroup -->
 
           <!-- TYPES -->
-          <div class="apiGroup" style="display: none; ">
+          <div class="apiGroup">
             <a name="types"></a>
             <h3 id="types">Types</h3>
 
             <!-- iterates over all types -->
             <div class="apiItem">
-              <a></a>
-              <h4>type name</h4>
+              <a name="type-Debuggee"></a>
+              <h4>Debuggee</h4>
 
               <div>
+          <dt>
+            <var style="display: none; ">paramName</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>object</span>
+                        <span style="display: none; "></span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>Debuggee identifier.</dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>tabId</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>integer</span>
+                        <span style="display: none; "></span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>The id of the tab which you intend to debug.</dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
               </div>
+            </dl>
+          </dd>
+
+          <!-- OBJECT METHODS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- OBJECT EVENT FIELDS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- FUNCTION PARAMETERS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+        </div>
+              </div>
+            </dl>
+          </dd>
+
+          <!-- OBJECT METHODS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- OBJECT EVENT FIELDS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- FUNCTION PARAMETERS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+        </div>
 
             </div> <!-- /apiItem -->
 
