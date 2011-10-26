@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/history/top_sites_extension_api.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -16,7 +17,16 @@ class TopSitesExtensionTest : public InProcessBrowserTest {
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(TopSitesExtensionTest, GetTopSites) {
+// Test started failing soon after commit. http://crbug.com/101783
+#if defined(OS_WIN)
+#define MAYBE_GetTopSites FAILS_GetTopSites
+#if defined(OS_LINUX)
+#define MAYBE_GetTopSites FLAKY_GetTopSites
+#else
+#define MAYBE_GetTopSites GetTopSites
+#endif
+
+IN_PROC_BROWSER_TEST_F(TopSitesExtensionTest, MAYBE_GetTopSites) {
   scoped_refptr<GetTopSitesFunction> get_top_sites_function(
       new GetTopSitesFunction());
   // Without a callback the function will not generate a result.
