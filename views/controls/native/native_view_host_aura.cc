@@ -27,11 +27,16 @@ void NativeViewHostAura::NativeViewAttached() {
     host_->native_view()->parent()->RemoveChild(host_->native_view());
   host_->GetWidget()->GetNativeView()->AddChild(host_->native_view());
   host_->Layout();
+
+  host_->native_view()->AddObserver(this);
 }
 
 void NativeViewHostAura::NativeViewDetaching(bool destroyed) {
-  host_->native_view()->Hide();
-  host_->GetWidget()->GetNativeView()->RemoveChild(host_->native_view());
+  if (!destroyed) {
+    host_->native_view()->RemoveObserver(this);
+    host_->native_view()->Hide();
+    host_->GetWidget()->GetNativeView()->RemoveChild(host_->native_view());
+  }
 }
 
 void NativeViewHostAura::AddedToWidget() {
@@ -83,6 +88,11 @@ void NativeViewHostAura::SetFocus() {
 
 gfx::NativeViewAccessible NativeViewHostAura::GetNativeViewAccessible() {
   return NULL;
+}
+
+void NativeViewHostAura::OnWindowDestroyed(aura::Window* window) {
+  DCHECK(window == host_->native_view());
+  host_->NativeViewDestroyed();
 }
 
 // static

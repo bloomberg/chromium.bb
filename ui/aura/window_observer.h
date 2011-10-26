@@ -25,6 +25,9 @@ class AURA_EXPORT WindowObserver {
   // may still return false. See description in Window::IsVisible() for details.
   virtual void OnWindowVisibilityChanged(Window* window, bool visible) {}
 
+  // Invoked when the Window has been destroyed (i.e. from its destructor).
+  virtual void OnWindowDestroyed(Window* window) {}
+
  protected:
   virtual ~WindowObserver() {}
 };

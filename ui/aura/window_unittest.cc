@@ -1144,7 +1144,11 @@ class WindowObserverTest : public WindowTest,
     bool visible_param;
   };
 
-  WindowObserverTest() : added_count_(0), removed_count_(0) {}
+  WindowObserverTest()
+      : added_count_(0),
+        removed_count_(0),
+        destroyed_count_(0) {
+  }
 
   virtual ~WindowObserverTest() {}
 
@@ -1165,6 +1169,12 @@ class WindowObserverTest : public WindowTest,
     return result;
   }
 
+  int DestroyedCountAndClear() {
+    int result = destroyed_count_;
+    destroyed_count_ = 0;
+    return result;
+  }
+
  private:
   virtual void OnWindowAdded(Window* new_window) OVERRIDE {
     added_count_++;
@@ -1181,8 +1191,13 @@ class WindowObserverTest : public WindowTest,
     visibility_info_->visible_param = visible;
   }
 
+  virtual void OnWindowDestroyed(Window* window) OVERRIDE {
+    destroyed_count_++;
+  }
+
   int added_count_;
   int removed_count_;
+  int destroyed_count_;
   scoped_ptr<VisibilityInfo> visibility_info_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowObserverTest);
@@ -1252,6 +1267,22 @@ TEST_F(WindowObserverTest, WindowVisibility) {
     return;
   EXPECT_TRUE(GetVisibilityInfo()->window_visible);
   EXPECT_TRUE(GetVisibilityInfo()->visible_param);
+}
+
+// Test if OnWindowDestroyed is invoked as expected.
+TEST_F(WindowObserverTest, WindowDestroyed) {
+  // Delete a window should fire a destroyed notification.
+  scoped_ptr<Window> w1(CreateTestWindowWithId(1, NULL));
+  w1->AddObserver(this);
+  w1.reset();
+  EXPECT_EQ(1, DestroyedCountAndClear());
+
+  // Observe on child and delete parent window should fire a notification.
+  scoped_ptr<Window> parent(CreateTestWindowWithId(1, NULL));
+  Window* child = CreateTestWindowWithId(1, parent.get());  // owned by parent
+  child->AddObserver(this);
+  parent.reset();
+  EXPECT_EQ(1, DestroyedCountAndClear());
 }
 
 class DesktopObserverTest : public WindowTest,

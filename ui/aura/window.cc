@@ -68,6 +68,8 @@ Window::~Window() {
     delegate_->OnWindowDestroyed();
   if (parent_)
     parent_->RemoveChild(this);
+
+  FOR_EACH_OBSERVER(WindowObserver, observers_, OnWindowDestroyed(this));
 }
 
 void Window::Init(ui::Layer::LayerType layer_type) {
