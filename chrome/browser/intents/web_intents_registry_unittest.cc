@@ -182,11 +182,13 @@ TEST_F(WebIntentsRegistryTest, BasicTests) {
 
   TestConsumer consumer;
   consumer.expected_id_ = registry_.GetIntentProviders(ASCIIToUTF16("share"),
+                                                       ASCIIToUTF16("*"),
                                                        &consumer);
   consumer.WaitForData();
   EXPECT_EQ(2U, consumer.services_.size());
 
   consumer.expected_id_ = registry_.GetIntentProviders(ASCIIToUTF16("search"),
+                                                       ASCIIToUTF16("*"),
                                                        &consumer);
   consumer.WaitForData();
   EXPECT_EQ(1U, consumer.services_.size());
@@ -196,6 +198,7 @@ TEST_F(WebIntentsRegistryTest, BasicTests) {
   registry_.UnregisterIntentProvider(service);
 
   consumer.expected_id_ = registry_.GetIntentProviders(ASCIIToUTF16("share"),
+                                                       ASCIIToUTF16("*"),
                                                        &consumer);
   consumer.WaitForData();
   EXPECT_EQ(1U, consumer.services_.size());
@@ -243,7 +246,8 @@ TEST_F(WebIntentsRegistryTest, GetSomeExtensionIntents) {
 
   TestConsumer consumer;
   consumer.expected_id_ = registry_.GetIntentProviders(
-      ASCIIToUTF16("http://webintents.org/edit"),&consumer);
+      ASCIIToUTF16("http://webintents.org/edit"), ASCIIToUTF16("*"),
+      &consumer);
   consumer.WaitForData();
   ASSERT_EQ(1U, consumer.services_.size());
 }
@@ -261,12 +265,86 @@ TEST_F(WebIntentsRegistryTest, GetIntentsFromMixedSources) {
 
   TestConsumer consumer;
   consumer.expected_id_ = registry_.GetIntentProviders(
-      ASCIIToUTF16("http://webintents.org/edit"),&consumer);
+      ASCIIToUTF16("http://webintents.org/edit"), ASCIIToUTF16("*"),
+      &consumer);
   consumer.WaitForData();
   ASSERT_EQ(2U, consumer.services_.size());
 
   consumer.expected_id_ = registry_.GetIntentProviders(
-      ASCIIToUTF16("http://webintents.org/share"),&consumer);
+      ASCIIToUTF16("http://webintents.org/share"), ASCIIToUTF16("*"),
+      &consumer);
   consumer.WaitForData();
   ASSERT_EQ(1U, consumer.services_.size());
+}
+
+TEST_F(WebIntentsRegistryTest, GetIntentsWithMimeMatching) {
+  WebIntentServiceData services[] = {
+    WebIntentServiceData(GURL("http://somewhere.com/intent/share.html"),
+                         ASCIIToUTF16("http://webintents.org/share"),
+                         ASCIIToUTF16("image/*"),
+                         ASCIIToUTF16("Image Sharing Service")),
+    WebIntentServiceData(GURL("http://elsewhere.com/intent/share.html"),
+                         ASCIIToUTF16("http://webintents.org/share"),
+                         ASCIIToUTF16("image/jpeg"),
+                         ASCIIToUTF16("Specific Image Editing Service")),
+    WebIntentServiceData(GURL("http://somewhere.com/intent/share.html"),
+                         ASCIIToUTF16("http://webintents.org/share"),
+                         ASCIIToUTF16("text/uri-list"),
+                         ASCIIToUTF16("Link Sharing Service")),
+    WebIntentServiceData(GURL("http://elsewhere.com/intent/share.html"),
+                         ASCIIToUTF16("http://webintents.org/share"),
+                         ASCIIToUTF16("text/plain"),
+                         ASCIIToUTF16("Text Sharing Service"))
+  };
+  registry_.RegisterIntentProvider(services[0]);
+  registry_.RegisterIntentProvider(services[1]);
+  registry_.RegisterIntentProvider(services[2]);
+  registry_.RegisterIntentProvider(services[3]);
+
+  TestConsumer consumer;
+
+  // Test specific match on both sides.
+  consumer.expected_id_ = registry_.GetIntentProviders(
+      ASCIIToUTF16("http://webintents.org/share"),
+      ASCIIToUTF16("text/uri-list"), &consumer);
+  consumer.WaitForData();
+  ASSERT_EQ(1U, consumer.services_.size());
+  EXPECT_EQ(services[2], consumer.services_[0]);
+
+  // Test specific query, wildcard registration.
+  consumer.expected_id_ = registry_.GetIntentProviders(
+      ASCIIToUTF16("http://webintents.org/share"),
+      ASCIIToUTF16("image/png"), &consumer);
+  consumer.WaitForData();
+  ASSERT_EQ(1U, consumer.services_.size());
+  EXPECT_EQ(services[0], consumer.services_[0]);
+
+  // Test wildcard query, specific registration.
+  consumer.expected_id_ = registry_.GetIntentProviders(
+      ASCIIToUTF16("http://webintents.org/share"),
+      ASCIIToUTF16("text/*"), &consumer);
+  consumer.WaitForData();
+  ASSERT_EQ(2U, consumer.services_.size());
+  EXPECT_EQ(services[2], consumer.services_[0]);
+  EXPECT_EQ(services[3], consumer.services_[1]);
+
+  // Test wildcard query, wildcard registration.
+  consumer.expected_id_ = registry_.GetIntentProviders(
+      ASCIIToUTF16("http://webintents.org/share"),
+      ASCIIToUTF16("image/*"), &consumer);
+  consumer.WaitForData();
+  ASSERT_EQ(2U, consumer.services_.size());
+  EXPECT_EQ(services[0], consumer.services_[0]);
+  EXPECT_EQ(services[1], consumer.services_[1]);
+
+  // Test "catch-all" query.
+  consumer.expected_id_ = registry_.GetIntentProviders(
+      ASCIIToUTF16("http://webintents.org/share"),
+      ASCIIToUTF16("*"), &consumer);
+  consumer.WaitForData();
+  ASSERT_EQ(4U, consumer.services_.size());
+  EXPECT_EQ(services[0], consumer.services_[0]);
+  EXPECT_EQ(services[1], consumer.services_[1]);
+  EXPECT_EQ(services[2], consumer.services_[2]);
+  EXPECT_EQ(services[3], consumer.services_[3]);
 }

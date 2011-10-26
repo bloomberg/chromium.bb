@@ -3,7 +3,25 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/intents/web_intents_registry.h"
+
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/webdata/web_data_service.h"
+#include "net/base/mime_util.h"
+
+namespace {
+
+// Compares two mime types for equality. Supports wild cards in both
+// |type1| and |type2|. Wild cards are of the form '<type>/*' or '*'.
+bool MimeTypesAreEqual(const string16& type1, const string16& type2) {
+  // We don't have a MIME matcher that allows patterns on both sides
+  // Instead, we do two comparison, treating each type in turn as a
+  // pattern. If either one matches, we consider this a MIME match.
+  if (net::MatchesMimeType(UTF16ToUTF8(type1), UTF16ToUTF8(type2)))
+    return true;
+  return net::MatchesMimeType(UTF16ToUTF8(type2), UTF16ToUTF8(type1));
+}
+
+}  // namespace
 
 // Internal object representing all data associated with a single query.
 struct WebIntentsRegistry::IntentsQuery {
@@ -20,8 +38,9 @@ struct WebIntentsRegistry::IntentsQuery {
   // If |action_| is empty, return all extension-provided intents.
   string16 action_;
 
-  // TODO(groby): Additional filter data will go here - filtering is handled
-  // per query.
+  // The MIME type that was requested for this intent query.
+  // Suppports wild cards.
+  string16 type_;
 };
 
 WebIntentsRegistry::WebIntentsRegistry() : next_query_id_(0) {}
@@ -54,7 +73,6 @@ void WebIntentsRegistry::OnWebDataServiceRequestDone(
   DCHECK(query);
   queries_.erase(it);
 
-  // TODO(groby): Filtering goes here.
   IntentList matching_intents = static_cast<
       const WDResult<IntentList>*>(result)->GetValue();
 
@@ -74,13 +92,21 @@ void WebIntentsRegistry::OnWebDataServiceRequestDone(
     }
   }
 
+  // Filter out all intents not matching the query type.
+  IntentList::iterator iter(matching_intents.begin());
+  while (iter != matching_intents.end()) {
+    if (MimeTypesAreEqual(iter->type, query->type_))
+      ++iter;
+    else
+      iter = matching_intents.erase(iter);
+  }
+
   query->consumer_->OnIntentsQueryDone(query->query_id_, matching_intents);
   delete query;
 }
 
 WebIntentsRegistry::QueryID WebIntentsRegistry::GetIntentProviders(
-    const string16& action,
-    Consumer* consumer) {
+    const string16& action, const string16& mimetype, Consumer* consumer) {
   DCHECK(consumer);
   DCHECK(wds_.get());
 
@@ -88,6 +114,7 @@ WebIntentsRegistry::QueryID WebIntentsRegistry::GetIntentProviders(
   query->query_id_ = next_query_id_++;
   query->consumer_ = consumer;
   query->action_ = action;
+  query->type_ = mimetype;
   query->pending_query_ = wds_->GetWebIntents(action, this);
   queries_[query->pending_query_] = query;
 
@@ -102,6 +129,7 @@ WebIntentsRegistry::QueryID WebIntentsRegistry::GetAllIntentProviders(
   IntentsQuery* query = new IntentsQuery;
   query->query_id_ = next_query_id_++;
   query->consumer_ = consumer;
+  query->type_ = ASCIIToUTF16("*");
   query->pending_query_ = wds_->GetAllWebIntents(this);
   queries_[query->pending_query_] = query;
 

@@ -11,6 +11,17 @@ WebIntentServiceData::WebIntentServiceData()
     : disposition(WebIntentServiceData::DISPOSITION_WINDOW) {
 }
 
+WebIntentServiceData::WebIntentServiceData(const GURL& svc_url,
+                                           const string16& svc_action,
+                                           const string16& svc_type,
+                                           const string16& svc_title)
+    : service_url(svc_url),
+      action(svc_action),
+      type(svc_type),
+      title(svc_title),
+      disposition(WebIntentServiceData::DISPOSITION_WINDOW) {
+}
+
 WebIntentServiceData::~WebIntentServiceData() {}
 
 bool WebIntentServiceData::operator==(const WebIntentServiceData& other) const {

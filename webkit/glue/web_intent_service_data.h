@@ -19,6 +19,10 @@ struct WebIntentServiceData {
   };
 
   WebIntentServiceData();
+  WebIntentServiceData(const GURL& service_url,
+                       const string16& action,
+                       const string16& type,
+                       const string16& title);
   ~WebIntentServiceData();
 
   bool operator==(const WebIntentServiceData& other) const;

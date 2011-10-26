@@ -276,7 +276,7 @@ void WebIntentPickerController::WebIntentDataFetcher::Fetch(
     const string16& type) {
   DCHECK(query_id_ == -1) << "Fetch already in process.";
   controller_->pending_async_count_++;
-  query_id_ = web_intents_registry_->GetIntentProviders(action, this);
+  query_id_ = web_intents_registry_->GetIntentProviders(action, type, this);
 }
 
 void WebIntentPickerController::WebIntentDataFetcher::OnIntentsQueryDone(

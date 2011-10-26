@@ -47,9 +47,12 @@ class WebIntentsRegistry
   // Removes a web intent provider from the registry.
   void UnregisterIntentProvider(const WebIntentServiceData& intent);
 
-  // Requests all intent providers matching |action|.
+  // Requests all intent providers matching |action| and |mimetype|.
+  // |mimetype| can contain wildcards, i.e. "image/*" or "*".
   // |consumer| must not be NULL.
-  QueryID GetIntentProviders(const string16& action, Consumer* consumer);
+  QueryID GetIntentProviders(const string16& action,
+                             const string16& mimetype,
+                             Consumer* consumer);
 
   // Requests all intent providers. |consumer| must not be NULL
   QueryID GetAllIntentProviders(Consumer* consumer);
