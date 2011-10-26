@@ -26,6 +26,9 @@ class ExtensionWarningSet {
     kInvalid = 0,
     // An extension caused excessive network delays.
     kNetworkDelay,
+    // This extension failed to modify a network request because the
+    // modification conflicted with a modification of another extension.
+    kNetworkConflict,
     kMaxWarningType
   };
 
@@ -58,6 +61,13 @@ class ExtensionWarningSet {
   void GetWarningsAffectingExtension(
       const std::string& extension_id,
       std::set<WarningType>* result) const;
+
+  // Notifies the ExtensionWarningSet of profile |profile_id| that
+  // |extension_ids| caused warning |warning_type|. This function must only be
+  // called on the UI thread.
+  static void NotifyWarningsOnUI(void* profile_id,
+                                 std::set<std::string> extension_ids,
+                                 WarningType warning_type);
 
  protected:
   // Virtual for testing.

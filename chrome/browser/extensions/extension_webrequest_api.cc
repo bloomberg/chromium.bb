@@ -1216,7 +1216,7 @@ linked_ptr<ExtensionWebRequestEventRouter::EventResponseDelta>
 
 void ExtensionWebRequestEventRouter::MergeOnBeforeRequestResponses(
     BlockedRequest* request,
-    std::list<std::string>* conflicting_extensions) const {
+    std::set<std::string>* conflicting_extensions) const {
   EventResponseDeltas::iterator delta;
   EventResponseDeltas& deltas = request->response_deltas;
 
@@ -1231,7 +1231,7 @@ void ExtensionWebRequestEventRouter::MergeOnBeforeRequestResponses(
             make_scoped_refptr(
                 new NetLogExtensionIdParameter((*delta)->extension_id)));
       } else {
-        conflicting_extensions->push_back((*delta)->extension_id);
+        conflicting_extensions->insert((*delta)->extension_id);
         request->net_log->AddEvent(
             net::NetLog::TYPE_CHROME_EXTENSION_IGNORED_DUE_TO_CONFLICT,
             make_scoped_refptr(
@@ -1243,7 +1243,7 @@ void ExtensionWebRequestEventRouter::MergeOnBeforeRequestResponses(
 
 void ExtensionWebRequestEventRouter::MergeOnBeforeSendHeadersResponses(
     BlockedRequest* request,
-    std::list<std::string>* conflicting_extensions) const {
+    std::set<std::string>* conflicting_extensions) const {
   EventResponseDeltas::iterator delta;
   EventResponseDeltas& deltas = request->response_deltas;
 
@@ -1332,7 +1332,7 @@ void ExtensionWebRequestEventRouter::MergeOnBeforeSendHeadersResponses(
       request->net_log->AddEvent(
           net::NetLog::TYPE_CHROME_EXTENSION_MODIFIED_HEADERS, log);
     } else {
-      conflicting_extensions->push_back((*delta)->extension_id);
+      conflicting_extensions->insert((*delta)->extension_id);
       request->net_log->AddEvent(
           net::NetLog::TYPE_CHROME_EXTENSION_IGNORED_DUE_TO_CONFLICT,
           make_scoped_refptr(
@@ -1343,7 +1343,7 @@ void ExtensionWebRequestEventRouter::MergeOnBeforeSendHeadersResponses(
 
 void ExtensionWebRequestEventRouter::MergeOnHeadersReceivedResponses(
     BlockedRequest* request,
-    std::list<std::string>* conflicting_extensions) const {
+    std::set<std::string>* conflicting_extensions) const {
   EventResponseDeltas::iterator delta;
   EventResponseDeltas& deltas = request->response_deltas;
 
@@ -1368,7 +1368,7 @@ void ExtensionWebRequestEventRouter::MergeOnHeadersReceivedResponses(
       request->net_log->AddEvent(
           net::NetLog::TYPE_CHROME_EXTENSION_MODIFIED_HEADERS, log);
     } else {
-      conflicting_extensions->push_back((*delta)->extension_id);
+      conflicting_extensions->insert((*delta)->extension_id);
       request->net_log->AddEvent(
           net::NetLog::TYPE_CHROME_EXTENSION_IGNORED_DUE_TO_CONFLICT,
           make_scoped_refptr(
@@ -1379,7 +1379,7 @@ void ExtensionWebRequestEventRouter::MergeOnHeadersReceivedResponses(
 
 bool ExtensionWebRequestEventRouter::MergeOnAuthRequiredResponses(
     BlockedRequest* request,
-    std::list<std::string>* conflicting_extensions) const {
+    std::set<std::string>* conflicting_extensions) const {
   CHECK(request);
   CHECK(request->auth_credentials);
   bool credentials_set = false;
@@ -1391,7 +1391,7 @@ bool ExtensionWebRequestEventRouter::MergeOnAuthRequiredResponses(
     if (!(*delta)->auth_credentials.get())
       continue;
     if (credentials_set) {
-      conflicting_extensions->push_back((*delta)->extension_id);
+      conflicting_extensions->insert((*delta)->extension_id);
       request->net_log->AddEvent(
           net::NetLog::TYPE_CHROME_EXTENSION_IGNORED_DUE_TO_CONFLICT,
           make_scoped_refptr(
@@ -1454,7 +1454,7 @@ void ExtensionWebRequestEventRouter::DecrementBlockCount(
     }
 
     deltas.sort(&InDecreasingExtensionInstallationTimeOrder);
-    std::list<std::string> conflicting_extensions;
+    std::set<std::string> conflicting_extensions;
 
     if (blocked_request.event == kOnBeforeRequest) {
       CHECK(blocked_request.callback);
@@ -1477,14 +1477,14 @@ void ExtensionWebRequestEventRouter::DecrementBlockCount(
     } else {
       NOTREACHED();
     }
-    std::list<std::string>::iterator conflict_iter;
-    for (conflict_iter = conflicting_extensions.begin();
-         conflict_iter != conflicting_extensions.end();
-         ++conflict_iter) {
-      // TODO(mpcomplete): Do some fancy notification in the UI.
-      LOG(ERROR) << "Extension " << *conflict_iter << " was ignored in "
-                    "webRequest API because of conflicting request "
-                    "modifications.";
+    if (!conflicting_extensions.empty()) {
+      BrowserThread::PostTask(
+          BrowserThread::UI,
+          FROM_HERE,
+          base::Bind(&ExtensionWarningSet::NotifyWarningsOnUI,
+                     profile,
+                     conflicting_extensions,
+                     ExtensionWarningSet::kNetworkConflict));
     }
 
     if (canceled) {

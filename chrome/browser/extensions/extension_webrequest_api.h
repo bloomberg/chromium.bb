@@ -351,13 +351,13 @@ class ExtensionWebRequestEventRouter {
   // in |conflicting_extensions|.
   void MergeOnBeforeRequestResponses(
       BlockedRequest* request,
-      std::list<std::string>* conflicting_extensions) const;
+      std::set<std::string>* conflicting_extensions) const;
   void MergeOnBeforeSendHeadersResponses(
       BlockedRequest* request,
-      std::list<std::string>* conflicting_extensions) const;
+      std::set<std::string>* conflicting_extensions) const;
   void MergeOnHeadersReceivedResponses(
       BlockedRequest* request,
-      std::list<std::string>* conflicting_extensions) const;
+      std::set<std::string>* conflicting_extensions) const;
 
   // Merge the responses of blocked onAuthRequired handlers. The first
   // registered listener that supplies authentication credentials in a response,
@@ -367,7 +367,7 @@ class ExtensionWebRequestEventRouter {
   // Returns whether authentication credentials are set.
   bool MergeOnAuthRequiredResponses(
       BlockedRequest* request,
-      std::list<std::string>* conflicting_extensions) const;
+      std::set<std::string>* conflicting_extensions) const;
 
   // A map for each profile that maps an event name to a set of extensions that
   // are listening to that event.

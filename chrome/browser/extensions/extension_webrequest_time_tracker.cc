@@ -32,23 +32,6 @@ const double kThresholdExcessiveDelay = 0.50;
 const size_t kNumModerateDelaysBeforeWarning = 50u;
 const size_t kNumExcessiveDelaysBeforeWarning = 10u;
 
-// Handles ExtensionWebRequestTimeTrackerDelegate calls on UI thread.
-void NotifyNetworkDelaysOnUI(void* profile,
-                             std::set<std::string> extension_ids) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  Profile* p = reinterpret_cast<Profile*>(profile);
-  if (!p || !g_browser_process->profile_manager()->IsValidProfile(p))
-    return;
-
-  ExtensionWarningSet* warnings =
-      p->GetExtensionService()->extension_warnings();
-
-  for (std::set<std::string>::const_iterator i = extension_ids.begin();
-       i != extension_ids.end(); ++i) {
-    warnings->SetWarning(ExtensionWarningSet::kNetworkDelay, *i);
-  }
-}
-
 // Default implementation for ExtensionWebRequestTimeTrackerDelegate
 // that sets a warning in the extension service of |profile|.
 class DefaultDelegate : public ExtensionWebRequestTimeTrackerDelegate {
@@ -79,7 +62,10 @@ void DefaultDelegate::NotifyExcessiveDelays(
   // BrowserThread::PostTask(
   //     BrowserThread::UI,
   //     FROM_HERE,
-  //     base::Bind(&NotifyNetworkDelaysOnUI, profile, extension_ids));
+  //     base::Bind(&NotifyNetworkDelaysOnUI,
+  //                profile,
+  //                extension_ids,
+  //                ExtensionWarningSet::kNetworkDelay));
 }
 
 void DefaultDelegate::NotifyModerateDelays(
@@ -93,7 +79,10 @@ void DefaultDelegate::NotifyModerateDelays(
   // BrowserThread::PostTask(
   //     BrowserThread::UI,
   //     FROM_HERE,
-  //     base::Bind(&NotifyNetworkDelaysOnUI, profile, extension_ids));
+  //     base::Bind(&NotifyNetworkDelaysOnUI,
+  //                profile,
+  //                extension_ids,
+  //                ExtensionWarningSet::kNetworkDelay));
 }
 
 }  // namespace

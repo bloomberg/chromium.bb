@@ -38,6 +38,10 @@ class MockExtensionWarningSet : public ExtensionWarningSet {
 
 const char* ext1_id = "extension1";
 const char* ext2_id = "extension2";
+const ExtensionWarningSet::WarningType warning_1 =
+    ExtensionWarningSet::kNetworkDelay;
+const ExtensionWarningSet::WarningType warning_2 =
+    ExtensionWarningSet::kNetworkConflict;
 
 }  // namespace
 
@@ -49,11 +53,11 @@ TEST(ExtensionWarningSet, SetWarning) {
   // Insert warning for the first time.
   EXPECT_CALL(warnings, NotifyWarningsChanged());
   EXPECT_CALL(warnings, ActivateBadge());
-  warnings.SetWarning(ExtensionWarningSet::kNetworkDelay, ext1_id);
+  warnings.SetWarning(warning_1, ext1_id);
   testing::Mock::VerifyAndClearExpectations(&warnings);
 
   // Second insertion of same warning does not trigger anything.
-  warnings.SetWarning(ExtensionWarningSet::kNetworkDelay, ext1_id);
+  warnings.SetWarning(warning_1, ext1_id);
   testing::Mock::VerifyAndClearExpectations(&warnings);
 }
 
@@ -62,22 +66,17 @@ TEST(ExtensionWarningSet, SetWarning) {
 TEST(ExtensionWarningSet, ClearWarnings) {
   MockExtensionWarningSet warnings;
 
-  // TODO(battre): Replace kInvalid with something else once we have additional
-  // warning types.
-  ExtensionWarningSet::WarningType type1 = ExtensionWarningSet::kNetworkDelay;
-  ExtensionWarningSet::WarningType type2 = ExtensionWarningSet::kInvalid;
-
   // Insert two unique warnings.
   EXPECT_CALL(warnings, NotifyWarningsChanged()).Times(2);
   EXPECT_CALL(warnings, ActivateBadge()).Times(1);
-  warnings.SetWarning(type1, ext1_id);
-  warnings.SetWarning(type2, ext2_id);
+  warnings.SetWarning(warning_1, ext1_id);
+  warnings.SetWarning(warning_2, ext2_id);
   testing::Mock::VerifyAndClearExpectations(&warnings);
 
-  // Remove the one warning and check that the badge remains.
+  // Remove one warning and check that the badge remains.
   EXPECT_CALL(warnings, NotifyWarningsChanged());
   std::set<ExtensionWarningSet::WarningType> to_clear;
-  to_clear.insert(ExtensionWarningSet::kInvalid);
+  to_clear.insert(warning_2);
   warnings.ClearWarnings(to_clear);
   testing::Mock::VerifyAndClearExpectations(&warnings);
 
@@ -91,7 +90,7 @@ TEST(ExtensionWarningSet, ClearWarnings) {
   // Remove the other one warning and check that badge disappears.
   EXPECT_CALL(warnings, NotifyWarningsChanged());
   EXPECT_CALL(warnings, DeactivateBadge());
-  to_clear.insert(ExtensionWarningSet::kNetworkDelay);
+  to_clear.insert(warning_1);
   warnings.ClearWarnings(to_clear);
   testing::Mock::VerifyAndClearExpectations(&warnings);
 
@@ -106,15 +105,11 @@ TEST(ExtensionWarningSet, ClearWarnings) {
 // warning.
 TEST(ExtensionWarningSet, SuppressBadgeForCurrentWarnings) {
   MockExtensionWarningSet warnings;
-  // TODO(battre): Replace kInvalid with something else once we have additional
-  // warning types.
-  ExtensionWarningSet::WarningType type1 = ExtensionWarningSet::kNetworkDelay;
-  ExtensionWarningSet::WarningType type2 = ExtensionWarningSet::kInvalid;
 
   // Insert first warning.
   EXPECT_CALL(warnings, NotifyWarningsChanged());
   EXPECT_CALL(warnings, ActivateBadge());
-  warnings.SetWarning(type1, ext1_id);
+  warnings.SetWarning(warning_1, ext1_id);
   testing::Mock::VerifyAndClearExpectations(&warnings);
 
   // Suppress first warning.
@@ -131,12 +126,12 @@ TEST(ExtensionWarningSet, SuppressBadgeForCurrentWarnings) {
 
   // Set first warning again and verify that not badge is shown this time.
   EXPECT_CALL(warnings, NotifyWarningsChanged());
-  warnings.SetWarning(type1, ext1_id);
+  warnings.SetWarning(warning_1, ext1_id);
   testing::Mock::VerifyAndClearExpectations(&warnings);
 
   // Set second warning and verify that it shows a badge.
   EXPECT_CALL(warnings, NotifyWarningsChanged());
   EXPECT_CALL(warnings, ActivateBadge());
-  warnings.SetWarning(type2, ext2_id);
+  warnings.SetWarning(warning_2, ext2_id);
   testing::Mock::VerifyAndClearExpectations(&warnings);
 }
