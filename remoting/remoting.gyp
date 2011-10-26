@@ -143,6 +143,46 @@
         }
       ],  # end of target 'remoting_client_test_webserver'
     }],
+    ['OS=="linux"', {
+      'targets': [
+        # Linux breakpad processing
+        {
+          'target_name': 'remoting_linux_symbols',
+          'type': 'none',
+          'conditions': [
+            ['linux_dump_symbols==1', {
+              'actions': [
+                {
+                  'action_name': 'dump_symbols',
+                  'variables': {
+                    'plugin_file': '<(host_plugin_prefix)remoting_host_plugin.<(host_plugin_extension)',
+                  },
+                  'inputs': [
+                    '<(DEPTH)/build/linux/dump_app_syms',
+                    '<(PRODUCT_DIR)/dump_syms',
+                    '<(PRODUCT_DIR)/<(plugin_file)',
+                  ],
+                  'outputs': [
+                    '<(PRODUCT_DIR)/<(plugin_file).breakpad.<(target_arch)',
+                  ],
+                  'action': ['<(DEPTH)/build/linux/dump_app_syms',
+                             '<(PRODUCT_DIR)/dump_syms',
+                             '<(linux_strip_binary)',
+                             '<(PRODUCT_DIR)/<(plugin_file)',
+                             '<@(_outputs)'],
+                  'message': 'Dumping breakpad symbols to <(_outputs)',
+                  'process_outputs_as_sources': 1,
+                },
+              ],
+              'dependencies': [
+                'remoting_host_plugin',
+                '../breakpad/breakpad.gyp:dump_syms',
+              ],
+            }],  # 'linux_dump_symbols==1'
+          ],  # end of 'conditions'
+        },  # end of target 'linux_symbols'
+      ],  # end of 'targets'
+    }],  # 'OS=="linux"'
   ],  # end of 'conditions'
 
   'targets': [
