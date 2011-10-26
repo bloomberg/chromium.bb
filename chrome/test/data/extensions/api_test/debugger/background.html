@@ -12,14 +12,14 @@ chrome.test.runTests([
   function attachMalformedVersion() {
     chrome.tabs.getSelected(null, function(tab) {
       chrome.experimental.debugger.attach({tabId: tab.id}, "malformed-version",
-          fail("Given protocol version is not supported: malformed-version."));
+          fail("Requested protocol version is not supported: malformed-version."));
     });
   },
 
   function attachUnsupportedVersion() {
     chrome.tabs.getSelected(null, function(tab) {
       chrome.experimental.debugger.attach({tabId: tab.id}, "1.0",
-          fail("Given protocol version is not supported: 1.0."));
+          fail("Requested protocol version is not supported: 1.0."));
     });
   },
 
