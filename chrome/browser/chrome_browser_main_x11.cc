@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chrome_browser_main.h"
 
+#include "base/bind.h"
 #include "base/debug/debugger.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -30,7 +31,7 @@ int BrowserX11ErrorHandler(Display* d, XErrorEvent* error) {
   if (!g_in_x11_io_error_handler)
     MessageLoop::current()->PostTask(
         FROM_HERE,
-        NewRunnableFunction(ui::LogErrorEventDescription, d, *error));
+        base::Bind(ui::LogErrorEventDescription, d, *error));
   return 0;
 }
 
