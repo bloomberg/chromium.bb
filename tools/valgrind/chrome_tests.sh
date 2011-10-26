@@ -17,15 +17,21 @@ NEEDS_VALGRIND=1
 # or
 #   tools/valgrind/chrome_tests.sh --tool=memcheck
 # (same for "--tool=tsan")
+# TODO(glider): can this be made more compact?
 for flag in $@
 do
   if [ "$flag" == "--tool" ]
   then
-    # Need to check that the next argument is either "memcheck" or "tsan".
+    # Need to check that the next argument is either "memcheck", "tsan"
+    # or "tsan_rv".
     TOOL_OPTION=1
     NEEDS_VALGRIND=0
     continue
   elif [ "$flag" == "--tool=tsan" ]
+  then
+    NEEDS_VALGRIND=1
+    break
+  elif [ "$flag" == "--tool=tsan_rv" ]
   then
     NEEDS_VALGRIND=1
     break
@@ -46,6 +52,10 @@ do
       NEEDS_VALGRIND=1
       break
     elif [ "$flag" == "tsan" ]
+    then
+      NEEDS_VALGRIND=1
+      break
+    elif [ "$flag" == "tsan_rv" ]
     then
       NEEDS_VALGRIND=1
       break
