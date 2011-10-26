@@ -561,6 +561,8 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   void ClearStaleErrors();
 
+  void ClearUnrecoverableError();
+
   // About-flags experiment names for datatypes that aren't enabled by default
   // yet.
   static std::string GetExperimentNameForDataType(

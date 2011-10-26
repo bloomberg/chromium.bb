@@ -454,6 +454,7 @@ void ProfileSyncService::DisableForUser() {
   // Clear prefs (including SyncSetupHasCompleted) before shutting down so
   // PSS clients don't think we're set up while we're shutting down.
   sync_prefs_.ClearPreferences();
+  ClearUnrecoverableError();
   Shutdown(true);
 
   signin_->SignOut();
@@ -483,10 +484,14 @@ void ProfileSyncService::NotifyObservers() {
 }
 
 void ProfileSyncService::ClearStaleErrors() {
+  ClearUnrecoverableError();
+  last_actionable_error_ = SyncProtocolError();
+}
+
+void ProfileSyncService::ClearUnrecoverableError() {
   unrecoverable_error_detected_ = false;
   unrecoverable_error_message_.clear();
   unrecoverable_error_location_ = tracked_objects::Location();
-  last_actionable_error_ = SyncProtocolError();
 }
 
 // static
