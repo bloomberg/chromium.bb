@@ -39,9 +39,9 @@ class BaseTestRunner(object):
     self._spawning_server = None
     self._spawner_forwarder = None
     self._forwarder_device_port = 8000
-    self._forwarder_base_url = ('http://localhost:%d' %
+    self.forwarder_base_url = ('http://localhost:%d' %
         self._forwarder_device_port)
-    self._flags = FlagChanger(self.adb)
+    self.flags = FlagChanger(self.adb)
 
   def RunTests(self):
     # TODO(bulach): this should actually do SetUp / RunTestsInternal / TearDown.
@@ -132,7 +132,7 @@ class BaseTestRunner(object):
       self._http_server.ShutdownHttpServer()
     if self._spawning_server:
       self._spawning_server.Stop()
-    self._flags.Restore()
+    self.flags.Restore()
 
   def LaunchChromeTestServerSpawner(self):
     """Launches test server spawner."""
