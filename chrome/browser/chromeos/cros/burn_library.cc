@@ -153,7 +153,7 @@ void BurnLibraryImpl::DoBurn(const FilePath& source_path,
 void BurnLibraryImpl::UnzipImage() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  if (Unzip(source_zip_file_, source_zip_file_.DirName())) {
+  if (zip::Unzip(source_zip_file_, source_zip_file_.DirName())) {
     source_image_file_ =
         source_zip_file_.DirName().Append(source_image_name_).value();
   }

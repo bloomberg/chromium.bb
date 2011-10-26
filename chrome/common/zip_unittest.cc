@@ -50,7 +50,7 @@ class ZipTest : public PlatformTest {
 
   void TestUnzipFile(const FilePath& path, bool expect_hidden_files) {
     ASSERT_TRUE(file_util::PathExists(path)) << "no file " << path.value();
-    ASSERT_TRUE(Unzip(path, test_dir_));
+    ASSERT_TRUE(zip::Unzip(path, test_dir_));
 
     file_util::FileEnumerator files(test_dir_, true,
         static_cast<file_util::FileEnumerator::FileType>(
@@ -99,7 +99,7 @@ TEST_F(ZipTest, UnzipEvil) {
   FilePath path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &path));
   path = path.AppendASCII("zip").AppendASCII("evil.zip");
-  ASSERT_FALSE(Unzip(path, test_dir_));
+  ASSERT_FALSE(zip::Unzip(path, test_dir_));
   FilePath evil_file = test_dir_;
   evil_file = evil_file.AppendASCII(
       "../levilevilevilevilevilevilevilevilevilevilevilevil");
@@ -110,7 +110,7 @@ TEST_F(ZipTest, UnzipEvil2) {
   FilePath path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &path));
   path = path.AppendASCII("zip").AppendASCII("evil_via_invalid_utf8.zip");
-  ASSERT_TRUE(Unzip(path, test_dir_));
+  ASSERT_TRUE(zip::Unzip(path, test_dir_));
   FilePath evil_file = test_dir_;
   evil_file = evil_file.AppendASCII("../evil.txt");
   ASSERT_FALSE(file_util::PathExists(evil_file));
@@ -125,7 +125,7 @@ TEST_F(ZipTest, Zip) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   FilePath zip_file = temp_dir.path().AppendASCII("out.zip");
 
-  EXPECT_TRUE(Zip(src_dir, zip_file, true));
+  EXPECT_TRUE(zip::Zip(src_dir, zip_file, true));
   TestUnzipFile(zip_file, true);
 }
 
@@ -138,7 +138,7 @@ TEST_F(ZipTest, ZipIgnoreHidden) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   FilePath zip_file = temp_dir.path().AppendASCII("out.zip");
 
-  EXPECT_TRUE(Zip(src_dir, zip_file, false));
+  EXPECT_TRUE(zip::Zip(src_dir, zip_file, false));
   TestUnzipFile(zip_file, false);
 }
 

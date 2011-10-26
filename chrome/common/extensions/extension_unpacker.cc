@@ -161,7 +161,7 @@ bool ExtensionUnpacker::Run() {
     return false;
   }
 
-  if (!Unzip(extension_path_, temp_install_dir_)) {
+  if (!zip::Unzip(extension_path_, temp_install_dir_)) {
     SetError(kCouldNotUnzipExtension);
     return false;
   }

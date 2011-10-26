@@ -17,6 +17,8 @@
 #include "third_party/zlib/contrib/minizip/iowin32.h"
 #endif
 
+namespace zip {
+
 static const int kZipMaxPath = 256;
 static const int kZipBufSize = 8192;
 
@@ -264,8 +266,8 @@ static bool AddEntryToZip(zipFile zip_file, const FilePath& path,
   return success;
 }
 
-bool Zip(const FilePath& src_dir, const FilePath& dest_file,
-         const base::Callback<bool(const FilePath&)>& filter_cb) {
+bool ZipWithFilterCallback(const FilePath& src_dir, const FilePath& dest_file,
+                           const FilterCallback& filter_cb) {
   DCHECK(file_util::DirectoryExists(src_dir));
 
 #if defined(OS_WIN)
@@ -327,8 +329,12 @@ static bool ExcludeHiddenFilesFilter(const FilePath& file_path) {
 bool Zip(const FilePath& src_dir, const FilePath& dest_file,
          bool include_hidden_files) {
   if (include_hidden_files) {
-    return Zip(src_dir, dest_file, base::Bind(&ExcludeNoFilesFilter));
+    return ZipWithFilterCallback(
+        src_dir, dest_file, base::Bind(&ExcludeNoFilesFilter));
   } else {
-    return Zip(src_dir, dest_file, base::Bind(&ExcludeHiddenFilesFilter));
+    return ZipWithFilterCallback(
+        src_dir, dest_file, base::Bind(&ExcludeHiddenFilesFilter));
   }
 }
+
+}  // namespace zip

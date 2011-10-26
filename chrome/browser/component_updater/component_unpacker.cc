@@ -186,7 +186,7 @@ ComponentUnpacker::ComponentUnpacker(const std::vector<uint8>& pk_hash,
     error_ = kUzipPathError;
     return;
   }
-  if (!Unzip(path, unpack_path_)) {
+  if (!zip::Unzip(path, unpack_path_)) {
     error_ = kUnzipFailed;
     return;
   }

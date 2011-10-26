@@ -148,7 +148,7 @@ void CreateSession::ExecutePost(Response* const response) {
 
     browser_options.user_data_dir =
         temp_profile_dir.path().AppendASCII("user_data_dir");
-    if (!Unzip(temp_profile_zip, browser_options.user_data_dir)) {
+    if (!zip::Unzip(temp_profile_zip, browser_options.user_data_dir)) {
       response->SetError(new Error(
           kBadRequest, "Could not unarchive provided user profile"));
       return;
