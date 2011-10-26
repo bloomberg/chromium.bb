@@ -66,7 +66,7 @@ class UpdateLibraryImpl : public UpdateLibrary {
   }
   // End UpdateLibrary implementation.
 
-  const UpdateLibrary::Status& status() OVERRIDE const{
+  virtual const UpdateLibrary::Status& status() const OVERRIDE{
     return status_;
   }
 
@@ -121,7 +121,7 @@ class UpdateLibraryStubImpl : public UpdateLibrary {
   }
   // End UpdateLibrary implementation.
 
-  const UpdateLibrary::Status& status() OVERRIDE const {
+  virtual const UpdateLibrary::Status& status() const OVERRIDE {
     return status_;
   }
 
