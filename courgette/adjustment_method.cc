@@ -18,7 +18,6 @@
 #include "courgette/assembly_program.h"
 #include "courgette/courgette.h"
 #include "courgette/encoded_program.h"
-#include "courgette/image_info.h"
 
 namespace courgette {
 

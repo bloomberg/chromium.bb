@@ -87,9 +87,17 @@ Status ApplyEnsemblePatch(const FilePath::CharType* old_file_name,
 Status GenerateEnsemblePatch(SourceStream* old, SourceStream* target,
                              SinkStream* patch);
 
-// Detects the type of an executable, and returns UNKNOWN if it cannot
-// be parsed.
-ExecutableType DetectExecutableType(const void* buffer, size_t length);
+// Detects the type of an executable file, and it's length. The length
+// may be slightly smaller than some executables (like ELF), but will include
+// all bytes the courgette algorithm has special benefit for.
+// On sucess:
+//   Fill in type and detected_length, and return C_OK.
+// On failure:
+//   Fill in type with UNKNOWN, detected_length with 0, and
+//   return C_INPUT_NOT_RECOGNIZED
+Status DetectExecutableType(const void* buffer, size_t length,
+                            ExecutableType* type,
+                            size_t* detected_length);
 
 // Attempts to detect the type of executable, and parse it with the
 // appropriate tools, storing the pointer to the AssemblyProgram in |*output|.

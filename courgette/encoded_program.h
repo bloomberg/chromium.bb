@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "courgette/image_info.h"
+#include "courgette/disassembler.h"
 #include "courgette/memory_allocator.h"
 
 namespace courgette {

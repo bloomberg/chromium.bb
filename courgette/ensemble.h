@@ -30,7 +30,6 @@ namespace courgette {
 
 // Forward declarations:
 class Ensemble;
-class PEInfo;
 
 // An Element is a region of an Ensemble with an identifyable kind.
 //
@@ -38,8 +37,7 @@ class Element {
  public:
   Element(ExecutableType kind,
           Ensemble* ensemble,
-          const Region& region,
-          PEInfo*info);
+          const Region& region);
 
   virtual ~Element();
 
@@ -53,14 +51,10 @@ class Element {
   // containing Ensemble.
   size_t offset_in_ensemble() const;
 
-  // The ImageInfo for this executable
-  virtual PEInfo* GetImageInfo() const { return info_; }
-
  private:
   ExecutableType kind_;
   Ensemble* ensemble_;
   Region region_;
-  PEInfo *info_;
 
   DISALLOW_COPY_AND_ASSIGN(Element);
 };

@@ -15,7 +15,6 @@
 #include "courgette/courgette.h"
 #include "courgette/disassembler_win32_x86.h"
 #include "courgette/encoded_program.h"
-#include "courgette/image_info.h"
 
 // COURGETTE_HISTOGRAM_TARGETS prints out a histogram of how frequently
 // different target addresses are referenced.  Purely for debugging.
@@ -25,51 +24,92 @@ namespace courgette {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-ExecutableType DetectExecutableType(const void* buffer, size_t length) {
+Disassembler* DetectDisassembler(const void* buffer, size_t length) {
+  Disassembler* disassembler = NULL;
 
-  bool parsed = false;
+  disassembler = new DisassemblerWin32X86(buffer, length);
+  if (disassembler->ParseHeader())
+    return disassembler;
 
-  PEInfo* pe_info = new PEInfo();
-  pe_info->Init(buffer, length);
-  parsed = pe_info->ParseHeader();
-  delete pe_info;
+  delete disassembler;
 
-  if (parsed)
-    return WIN32_X86;
+  return NULL;
+}
 
-  return UNKNOWN;
+Status DetectExecutableType(const void* buffer, size_t length,
+                            ExecutableType* type,
+                            size_t* detected_length) {
+
+  Disassembler* disassembler = DetectDisassembler(buffer, length);
+
+  if (disassembler) {
+    *type = disassembler->kind();
+    *detected_length = disassembler->length();
+    delete disassembler;
+    return C_OK;
+  }
+
+  // We failed to detect anything
+  *type = UNKNOWN;
+  *detected_length = 0;
+  return C_INPUT_NOT_RECOGNIZED;
 }
 
 Status ParseDetectedExecutable(const void* buffer, size_t length,
                                AssemblyProgram** output) {
   *output = NULL;
 
-  PEInfo* pe_info = new PEInfo();
-  pe_info->Init(buffer, length);
+  Disassembler* disassembler = DetectDisassembler(buffer, length);
 
-  if (!pe_info->ParseHeader()) {
-    delete pe_info;
+  if (!disassembler) {
     return C_INPUT_NOT_RECOGNIZED;
   }
 
-  Disassembler* disassembler = new DisassemblerWin32X86(pe_info);
   AssemblyProgram* program = new AssemblyProgram();
 
   if (!disassembler->Disassemble(program)) {
     delete program;
     delete disassembler;
-    delete pe_info;
     return C_DISASSEMBLY_FAILED;
   }
 
   delete disassembler;
-  delete pe_info;
   *output = program;
   return C_OK;
 }
 
 void DeleteAssemblyProgram(AssemblyProgram* program) {
   delete program;
+}
+
+Disassembler::Disassembler(const void* start, size_t length)
+  : failure_reason_("uninitialized") {
+
+  start_ = reinterpret_cast<const uint8*>(start);
+  length_ = length;
+  end_ = start_ + length_;
+};
+
+Disassembler::~Disassembler() {};
+
+const uint8* Disassembler::OffsetToPointer(size_t offset) const {
+  assert(start_ + offset <= end_);
+  return start_ + offset;
+}
+
+bool Disassembler::Good() {
+  failure_reason_ = NULL;
+  return true;
+}
+
+bool Disassembler::Bad(const char* reason) {
+  failure_reason_ = reason;
+  return false;
+}
+
+void Disassembler::ReduceLength(size_t reduced_length) {
+  if (reduced_length < length_)
+    length_ = reduced_length;
 }
 
 }  // namespace courgette

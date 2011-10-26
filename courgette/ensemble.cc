@@ -7,7 +7,6 @@
 #include "base/basictypes.h"
 #include "base/string_number_conversions.h"
 
-#include "courgette/image_info.h"
 #include "courgette/region.h"
 #include "courgette/streams.h"
 #include "courgette/simple_delta.h"
@@ -16,14 +15,11 @@ namespace courgette {
 
 Element::Element(ExecutableType kind,
                  Ensemble* ensemble,
-                 const Region& region,
-                 PEInfo* info)
-    : kind_(kind), ensemble_(ensemble), region_(region), info_(info) {
+                 const Region& region)
+    : kind_(kind), ensemble_(ensemble), region_(region) {
 }
 
-Element::~Element() {
-  delete info_;
-}
+Element::~Element() {}
 
 std::string Element::Name() const {
   return ensemble_->name() + "("
@@ -41,41 +37,22 @@ Status Ensemble::FindEmbeddedElements() {
 
   size_t position = 0;
   while (position < length) {
-    ExecutableType type = DetectExecutableType(start + position,
-                                               length - position);
+    ExecutableType type;
+    size_t detected_length;
 
-    //
-    // TODO(dgarrett) This switch can go away totally after two things.
-    //
-    // Make ImageInfo generic for all executable types.
-    // Find a generic way to handle length detection for executables.
-    //
-    // When this switch is gone, that's one less piece of code that is
-    // executable type aware.
-    //
-    switch (type) {
-      case UNKNOWN: {
-        // No Element found at current position.
-        ++position;
-        break;
-      }
-      case WIN32_X86: {
-        // The Info is only created to detect the length of the executable
-        courgette::PEInfo* info(new courgette::PEInfo());
-        info->Init(start + position, length - position);
-        if (!info->ParseHeader()) {
-          delete info;
-          position++;
-          break;
-        }
-        Region region(start + position, info->length());
+    Status result = DetectExecutableType(start + position,
+                                         length - position,
+                                         &type, &detected_length);
 
-        Element* element = new Element(type, this, region, info);
-        owned_elements_.push_back(element);
-        elements_.push_back(element);
-        position += region.length();
-        break;
-      }
+    if (result == C_OK) {
+      Region region(start + position, detected_length);
+
+      Element* element = new Element(type, this, region);
+      owned_elements_.push_back(element);
+      elements_.push_back(element);
+      position += region.length();
+    } else {
+      position++;
     }
   }
   return C_OK;

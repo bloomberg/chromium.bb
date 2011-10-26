@@ -24,7 +24,6 @@
 #include "courgette/third_party/bsdiff.h"
 #include "courgette/crc.h"
 #include "courgette/difference_estimator.h"
-#include "courgette/image_info.h"
 #include "courgette/streams.h"
 #include "courgette/region.h"
 #include "courgette/simple_delta.h"

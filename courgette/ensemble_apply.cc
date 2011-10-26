@@ -11,7 +11,6 @@
 #include "base/logging.h"
 
 #include "courgette/crc.h"
-#include "courgette/image_info.h"
 #include "courgette/region.h"
 #include "courgette/streams.h"
 #include "courgette/simple_delta.h"
