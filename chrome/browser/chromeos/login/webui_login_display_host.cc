@@ -12,6 +12,12 @@
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "views/widget/widget.h"
 
+#if defined(USE_AURA)
+#include "ui/aura/window.h"
+#include "ui/aura_shell/shell.h"
+#include "ui/aura_shell/shell_window_ids.h"
+#endif
+
 namespace chromeos {
 
 namespace {
@@ -121,10 +127,20 @@ void WebUILoginDisplayHost::LoadURL(const GURL& url) {
     login_view_ = new WebUILoginView();
 
     login_view_->Init();
+
+#if defined(USE_AURA)
+    aura_shell::Shell::GetInstance()->GetContainer(
+        aura_shell::internal::kShellWindowId_LockScreenContainer)->
+        AddChild(login_window_->GetNativeView());
+#endif
+
     login_window_->SetContentsView(login_view_);
     login_view_->UpdateWindowType();
 
     login_window_->Show();
+#if defined(USE_AURA)
+    login_window_->GetNativeView()->set_name("WebUILoginView");
+#endif
     WebUILoginDisplay::GetInstance()->set_login_window(login_window_);
     login_view_->OnWindowCreated();
   }

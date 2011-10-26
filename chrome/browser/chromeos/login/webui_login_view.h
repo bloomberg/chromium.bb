@@ -11,7 +11,7 @@
 #include "chrome/browser/chromeos/tab_first_render_watcher.h"
 #include "chrome/browser/ui/views/unhandled_keyboard_event_handler.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
-#include "views/view.h"
+#include "views/widget/widget_delegate.h"
 
 class DOMView;
 class GURL;
@@ -19,6 +19,7 @@ class Profile;
 class WebUI;
 
 namespace views {
+class View;
 class Widget;
 }
 
@@ -30,7 +31,7 @@ class TabFirstRenderWatcher;
 // View used to render a WebUI supporting Widget. This widget is used for the
 // WebUI based start up and lock screens. It contains a StatusAreaView and
 // DOMView.
-class WebUILoginView : public views::View,
+class WebUILoginView : public views::WidgetDelegateView,
                        public StatusAreaHost,
                        public TabContentsDelegate,
                        public chromeos::LoginHtmlDialog::Delegate,

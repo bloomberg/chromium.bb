@@ -292,7 +292,12 @@ void WebUILoginView::OnTabMainFrameLoaded() {
 
 void WebUILoginView::OnTabMainFrameFirstRender() {
   VLOG(1) << "WebUI login main frame rendered.";
+  // In aura there's a global status area shown already.
+  // TODO(nkostylev): Figure out how to communicate from login screen with
+  // global status area.
+#if !defined(USE_AURA)
   InitStatusArea();
+#endif
 
 #if defined(TOOLKIT_USES_GTK)
   if (host_window_frozen_) {
