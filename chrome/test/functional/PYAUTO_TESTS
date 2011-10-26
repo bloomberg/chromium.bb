@@ -458,6 +458,8 @@
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
+      # crbug.com/101787
+      '-enterprise.EnterpriseTestReverse.testDefaultSearchProviderDisabled',
       # crbug.com/95141
       '-enterprise.EnterpriseTest.testDisable3DAPI',
       # crbug.com/98500
@@ -499,6 +501,8 @@
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
+      # crbug.com/101787
+      '-enterprise.EnterpriseTestReverse.testDefaultSearchProviderDisabled',
       # crbug.com/95035
       '-enterprise.EnterpriseTestReverse.testEnable3DAPI',
       # crbug.com/98500
