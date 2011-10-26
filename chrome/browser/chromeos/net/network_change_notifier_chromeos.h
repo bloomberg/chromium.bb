@@ -30,7 +30,7 @@ class NetworkChangeNotifierChromeos
   friend class OnlineStatusReportThreadTask;
 
   // PowerLibrary::Observer overrides.
-  virtual void PowerChanged(PowerLibrary* obj) OVERRIDE;
+  virtual void PowerChanged(const PowerSupplyStatus& status) OVERRIDE;
   virtual void SystemResumed() OVERRIDE;
 
   // NetworkChangeNotifier overrides.

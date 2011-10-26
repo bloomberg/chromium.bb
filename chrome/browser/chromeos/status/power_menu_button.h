@@ -38,7 +38,7 @@ class PowerMenuButton : public StatusAreaButton,
   virtual bool IsCommandEnabled(int id) const;
 
   // PowerLibrary::Observer implementation.
-  virtual void PowerChanged(PowerLibrary* obj);
+  virtual void PowerChanged(const PowerSupplyStatus& power_status);
   virtual void SystemResumed() {}
 
   int battery_index() const { return battery_index_; }
@@ -71,6 +71,8 @@ class PowerMenuButton : public StatusAreaButton,
   bool line_power_on_;
   double battery_percentage_;
   int battery_index_;
+  PowerSupplyStatus power_status_;
+
   base::TimeDelta battery_time_to_full_;
   base::TimeDelta battery_time_to_empty_;
 

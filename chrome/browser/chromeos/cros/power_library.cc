@@ -4,8 +4,10 @@
 
 #include "chrome/browser/chromeos/cros/power_library.h"
 
-#include "base/bind.h"
+#include <algorithm>
+
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/observer_list.h"
@@ -22,8 +24,7 @@ class PowerLibraryImpl : public PowerLibrary {
  public:
   PowerLibraryImpl()
       : power_status_connection_(NULL),
-        resume_status_connection_(NULL),
-        status_(chromeos::PowerStatus()) {
+        resume_status_connection_(NULL) {
   }
 
   virtual ~PowerLibraryImpl() {
@@ -52,30 +53,6 @@ class PowerLibraryImpl : public PowerLibrary {
 
   virtual void RemoveObserver(Observer* observer) OVERRIDE {
     observers_.RemoveObserver(observer);
-  }
-
-  virtual bool IsLinePowerOn() const OVERRIDE {
-    return status_.line_power_on;
-  }
-
-  virtual bool IsBatteryFullyCharged() const OVERRIDE {
-    return status_.battery_state == chromeos::BATTERY_STATE_FULLY_CHARGED;
-  }
-
-  virtual double GetBatteryPercentage() const OVERRIDE {
-    return status_.battery_percentage;
-  }
-
-  virtual bool IsBatteryPresent() const OVERRIDE {
-    return status_.battery_is_present;
-  }
-
-  virtual base::TimeDelta GetBatteryTimeToEmpty() const OVERRIDE {
-    return base::TimeDelta::FromSeconds(status_.battery_time_to_empty);
-  }
-
-  virtual base::TimeDelta GetBatteryTimeToFull() const OVERRIDE {
-    return base::TimeDelta::FromSeconds(status_.battery_time_to_full);
   }
 
   virtual void CalculateIdleTime(CalculateIdleTimeCallback* callback) OVERRIDE {
@@ -131,8 +108,19 @@ class PowerLibraryImpl : public PowerLibrary {
     delete notify;
   }
 
-  static void PowerStatusChangedHandler(void* object,
-                                        const chromeos::PowerStatus& status) {
+  static void PowerStatusChangedHandler(
+      void* object, const chromeos::PowerStatus& power_status) {
+    // TODO(sque): this is a temporary copy-over from libcros.  Soon libcros
+    // will be removed and this will not be necessary.
+    PowerSupplyStatus status = {};
+    status.line_power_on         = power_status.line_power_on;
+    status.battery_is_present    = power_status.battery_is_present;
+    status.battery_is_full       =
+        (power_status.battery_state == chromeos::BATTERY_STATE_FULLY_CHARGED);
+    status.battery_seconds_to_empty = power_status.battery_time_to_empty;
+    status.battery_seconds_to_full  = power_status.battery_time_to_full;
+    status.battery_percentage    = power_status.battery_percentage;
+
     PowerLibraryImpl* power = static_cast<PowerLibraryImpl*>(object);
     power->UpdatePowerStatus(status);
   }
@@ -142,18 +130,16 @@ class PowerLibraryImpl : public PowerLibrary {
     power->SystemResumed();
   }
 
-  void UpdatePowerStatus(const chromeos::PowerStatus& status) {
+  void UpdatePowerStatus(const PowerSupplyStatus& status) {
     // Called from PowerStatusChangedHandler, a libcros callback which
     // should always run on UI thread.
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-    DVLOG(1) << "Power lpo=" << status.line_power_on
-             << " sta=" << status.battery_state
-             << " per=" << status.battery_percentage
-             << " tte=" << status.battery_time_to_empty
-             << " ttf=" << status.battery_time_to_full;
-    status_ = status;
-    FOR_EACH_OBSERVER(Observer, observers_, PowerChanged(this));
+    DVLOG(1) << "Power line_power_on = " << status.line_power_on
+             << " percentage = " << status.battery_percentage
+             << " seconds_to_empty = " << status.battery_seconds_to_empty
+             << " seconds_to_full = " << status.battery_seconds_to_full;
+    FOR_EACH_OBSERVER(Observer, observers_, PowerChanged(status));
   }
 
   void SystemResumed() {
@@ -171,9 +157,6 @@ class PowerLibraryImpl : public PowerLibrary {
 
   // A reference to the resume alerts.
   chromeos::ResumeConnection resume_status_connection_;
-
-  // The latest power status.
-  chromeos::PowerStatus status_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerLibraryImpl);
 };
@@ -198,36 +181,6 @@ class PowerLibraryStubImpl : public PowerLibrary {
 
   virtual void RemoveObserver(Observer* observer) OVERRIDE {
     observers_.RemoveObserver(observer);
-  }
-
-  virtual bool IsLinePowerOn() const OVERRIDE {
-    return !discharging_;
-  }
-
-  virtual bool IsBatteryFullyCharged() const OVERRIDE {
-    return battery_percentage_ == 100;
-  }
-
-  virtual double GetBatteryPercentage() const OVERRIDE {
-    return battery_percentage_;
-  }
-
-  virtual bool IsBatteryPresent() const OVERRIDE {
-    return true;
-  }
-
-  virtual base::TimeDelta GetBatteryTimeToEmpty() const OVERRIDE {
-    if (battery_percentage_ == 0)
-      return base::TimeDelta::FromSeconds(1);
-    else
-      return (base::TimeDelta::FromHours(3) * battery_percentage_) / 100;
-  }
-
-  virtual base::TimeDelta GetBatteryTimeToFull() const OVERRIDE {
-    if (battery_percentage_ == 100)
-      return base::TimeDelta::FromSeconds(1);
-    else
-      return base::TimeDelta::FromHours(3) - GetBatteryTimeToEmpty();
   }
 
   virtual void CalculateIdleTime(CalculateIdleTimeCallback* callback) OVERRIDE {
@@ -273,7 +226,17 @@ class PowerLibraryStubImpl : public PowerLibrary {
       }
     }
     battery_percentage_ += (discharging_ ? -1 : 1);
-    FOR_EACH_OBSERVER(Observer, observers_, PowerChanged(this));
+
+    PowerSupplyStatus status = {};  // Zero-clear the status.
+    status.line_power_on = !discharging_;
+    status.battery_is_present = true;
+    status.battery_percentage = battery_percentage_;
+    status.battery_seconds_to_empty =
+        std::max(1, battery_percentage_ * 180 / 100);
+    status.battery_seconds_to_full =
+        std::max(static_cast<int64>(1), 180 - status.battery_seconds_to_empty);
+
+    FOR_EACH_OBSERVER(Observer, observers_, PowerChanged(status));
   }
 
   bool discharging_;

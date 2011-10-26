@@ -22,29 +22,30 @@ LowBatteryObserver::~LowBatteryObserver() {
   Hide();
 }
 
-void LowBatteryObserver::PowerChanged(PowerLibrary* power_lib) {
-  const int limit_min = 15;   // Notification will show when remaining number
-                              // of minutes is <= limit.
-  const int limit_max = 30;   // Notification will hid when remaining number
-                              // of minutes is > limit_max.
-  const int critical = 5;  // Notification will be forced visible if hidden
-                           // by user when time remaining <= critical.
+void LowBatteryObserver::PowerChanged(const PowerSupplyStatus& power_status) {
+  // Notification will show when remaining number of minutes is <= limit_min.
+  const base::TimeDelta limit_min = base::TimeDelta::FromMinutes(15);
+  // Notification will hide when remaining number of minutes is > limit_max.
+  const base::TimeDelta limit_max = base::TimeDelta::FromMinutes(30);
+  // Notification will be forced visible if hidden by user when time remaining
+  // <= critical.
+  const base::TimeDelta critical = base::TimeDelta::FromMinutes(5);
 
-  base::TimeDelta remaining = power_lib->GetBatteryTimeToEmpty();
-  int remaining_minutes = remaining.InMinutes();
+  base::TimeDelta remaining =
+      base::TimeDelta::FromSeconds(power_status.battery_seconds_to_empty);
 
   // To simplify the logic - we handle the case of calculating the remaining
   // time as if we were on line power.
   // remaining time of zero means still calculating, this is denoted by
   // base::TimeDelta().
-  bool line_power = power_lib->IsLinePowerOn() ||
+  bool line_power = power_status.line_power_on ||
                     remaining == base::TimeDelta();
 
   // The urgent flag is used to re-notify the user if the power level
   // goes critical. We only want to do this once even if the time remaining
   // goes back up (so long as it doesn't go above limit_max.
   bool urgent = !line_power &&
-      (notification_.urgent() || remaining_minutes <= critical);
+      (notification_.urgent() || remaining <= critical);
 
   // This is a simple state machine with two states and three edges:
   // States: visible_, !visible_
@@ -59,13 +60,13 @@ void LowBatteryObserver::PowerChanged(PowerLibrary* power_lib) {
   //          we know the remaining time, and that time is less than limit.
 
   if (notification_.visible()) {
-    if (line_power || remaining_minutes > limit_max) {
+    if (line_power || remaining > limit_max) {
       Hide();
-    } else if (remaining_minutes != remaining_) {
+    } else if (remaining.InMinutes() != remaining_) {
       Show(remaining, urgent);
     }
   } else {
-    if (!line_power && remaining_minutes <= limit_min) {
+    if (!line_power && remaining <= limit_min) {
       Show(remaining, urgent);
     }
   }

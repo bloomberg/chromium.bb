@@ -46,7 +46,7 @@ class ClockMenuButton : public StatusAreaButton,
   virtual void ExecuteCommand(int id) OVERRIDE;
 
   // Overridden from ResumeLibrary::Observer:
-  virtual void PowerChanged(PowerLibrary* obj) {}
+  virtual void PowerChanged(const PowerSupplyStatus& status) {}
   virtual void SystemResumed();
 
   // Overridden from TimezoneSettings::Observer:

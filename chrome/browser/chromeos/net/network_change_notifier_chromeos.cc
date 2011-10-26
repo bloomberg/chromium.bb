@@ -96,7 +96,8 @@ NetworkChangeNotifierChromeos::~NetworkChangeNotifierChromeos() {
   power->RemoveObserver(this);
 }
 
-void NetworkChangeNotifierChromeos::PowerChanged(PowerLibrary* obj) {
+void NetworkChangeNotifierChromeos::PowerChanged(
+    const PowerSupplyStatus& status) {
 }
 
 void NetworkChangeNotifierChromeos::SystemResumed() {

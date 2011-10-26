@@ -208,6 +208,9 @@ DictionaryValue* CreateDictionaryWithPolicies(
   return dict;
 }
 
+// Last reported power status.
+chromeos::PowerSupplyStatus power_status;
+
 }  // namespace
 
 void TestingAutomationProvider::GetLoginInfo(DictionaryValue* args,
@@ -342,25 +345,24 @@ void TestingAutomationProvider::GetBatteryInfo(DictionaryValue* args,
   if (!EnsureCrosLibraryLoaded(this, reply_message))
     return;
 
-  chromeos::PowerLibrary* power_library = CrosLibrary::Get()->GetPowerLibrary();
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
 
   return_value->SetBoolean("battery_is_present",
-                           power_library->IsBatteryPresent());
-  return_value->SetBoolean("line_power_on", power_library->IsLinePowerOn());
-  if (power_library->IsBatteryPresent()) {
+                           power_status.battery_is_present);
+  return_value->SetBoolean("line_power_on", power_status.line_power_on);
+  if (power_status.battery_is_present) {
     return_value->SetBoolean("battery_fully_charged",
-                             power_library->IsBatteryFullyCharged());
+                             power_status.battery_is_full);
     return_value->SetDouble("battery_percentage",
-                            power_library->GetBatteryPercentage());
-    if (power_library->IsLinePowerOn()) {
-      int time = power_library->GetBatteryTimeToFull().InSeconds();
-      if (time > 0 || power_library->IsBatteryFullyCharged())
-        return_value->SetInteger("battery_time_to_full", time);
+                            power_status.battery_percentage);
+    if (power_status.line_power_on) {
+      int64 time = power_status.battery_seconds_to_full;
+      if (time > 0 || power_status.battery_is_full)
+        return_value->SetInteger("battery_seconds_to_full", time);
     } else {
-      int time = power_library->GetBatteryTimeToEmpty().InSeconds();
+      int64 time = power_status.battery_seconds_to_empty;
       if (time > 0)
-        return_value->SetInteger("battery_time_to_empty", time);
+        return_value->SetInteger("battery_seconds_to_empty", time);
     }
   }
 
@@ -1200,4 +1202,9 @@ void TestingAutomationProvider::CaptureProfilePhoto(
       browser->window()->GetNativeHandle(), take_photo_dialog);
   window->SetAlwaysOnTop(true);
   window->Show();
+}
+
+void TestingAutomationProvider::PowerChanged(
+    const chromeos::PowerSupplyStatus& status) {
+  power_status = status;
 }

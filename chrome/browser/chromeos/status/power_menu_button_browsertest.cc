@@ -25,16 +25,12 @@ using ::testing::_;
 
 class PowerMenuButtonTest : public CrosInProcessBrowserTest {
  protected:
-  MockPowerLibrary *mock_power_library_;
-
-  PowerMenuButtonTest() : CrosInProcessBrowserTest(),
-                          mock_power_library_(NULL) {
+  PowerMenuButtonTest() : CrosInProcessBrowserTest() {
   }
 
   virtual void SetUpInProcessBrowserTestFixture() {
     cros_mock_->InitStatusAreaMocks();
     cros_mock_->SetStatusAreaMocksExpectations();
-    mock_power_library_ = cros_mock_->mock_power_library();
   }
 
   PowerMenuButton* GetPowerMenuButton() {
@@ -44,119 +40,69 @@ class PowerMenuButtonTest : public CrosInProcessBrowserTest {
     return power;
   }
 
-  int CallPowerChangedAndGetBatteryIndex() {
+  int CallPowerChangedAndGetBatteryIndex(const PowerSupplyStatus& status) {
     PowerMenuButton* power = GetPowerMenuButton();
-    power->PowerChanged(mock_power_library_);
+    power->PowerChanged(status);
     return power->battery_index();
   }
 };
 
 IN_PROC_BROWSER_TEST_F(PowerMenuButtonTest, BatteryMissingTest) {
-  EXPECT_CALL(*mock_power_library_, IsBatteryPresent())
-      .WillOnce((Return(false)))  // no battery
-      .RetiresOnSaturation();
-  EXPECT_CALL(*mock_power_library_, GetBatteryPercentage())
-      .WillOnce((Return(42.0)))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*mock_power_library_, IsBatteryFullyCharged())
-      .WillOnce((Return(false)))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*mock_power_library_, IsLinePowerOn())
-      .WillOnce((Return(false)))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*mock_power_library_, GetBatteryTimeToEmpty())
-      .WillOnce((Return(base::TimeDelta::FromMinutes(42))))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*mock_power_library_, GetBatteryTimeToFull())
-      .WillOnce((Return(base::TimeDelta::FromMinutes(24))))
-      .RetiresOnSaturation();
-  EXPECT_EQ(-1, CallPowerChangedAndGetBatteryIndex());
+  PowerSupplyStatus status = {};
+  // No battery present.
+  status.battery_is_present    = false;
+  status.battery_percentage    = 42.0;
+  status.battery_is_full       = false;
+  status.line_power_on         = false;
+  status.battery_seconds_to_empty = 42;
+  status.battery_seconds_to_full  = 24;
+
+  EXPECT_EQ(-1, CallPowerChangedAndGetBatteryIndex(status));
 }
 
 IN_PROC_BROWSER_TEST_F(PowerMenuButtonTest, BatteryChargedTest) {
-  EXPECT_CALL(*mock_power_library_, IsBatteryPresent())
-      .WillOnce((Return(true)))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*mock_power_library_, GetBatteryPercentage())
-      .WillOnce((Return(42.0)))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*mock_power_library_, IsBatteryFullyCharged())
-      .WillOnce((Return(true)))  // fully charged
-      .RetiresOnSaturation();
-  EXPECT_CALL(*mock_power_library_, IsLinePowerOn())
-      .WillOnce((Return(true)))  // plugged in
-      .RetiresOnSaturation();
-  EXPECT_CALL(*mock_power_library_, GetBatteryTimeToEmpty())
-      .WillOnce((Return(base::TimeDelta::FromMinutes(42))))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*mock_power_library_, GetBatteryTimeToFull())
-      .WillOnce((Return(base::TimeDelta::FromMinutes(0))))
-      .RetiresOnSaturation();
-  EXPECT_EQ(kNumBatteryStates - 1, CallPowerChangedAndGetBatteryIndex());
+  PowerSupplyStatus status = {};
+  // The battery is fully charged, and line power is plugged in.
+  status.battery_is_present    = true;
+  status.battery_percentage    = 42.0;
+  status.battery_is_full       = true;
+  status.line_power_on         = true;
+  status.battery_seconds_to_empty = 42;
+  status.battery_seconds_to_full  = 24;
+
+  EXPECT_EQ(kNumBatteryStates - 1, CallPowerChangedAndGetBatteryIndex(status));
 }
 
 IN_PROC_BROWSER_TEST_F(PowerMenuButtonTest, BatteryChargingTest) {
-  const int NUM_TIMES = 19;
-  EXPECT_CALL(*mock_power_library_, IsBatteryPresent())
-      .Times(NUM_TIMES)
-      .WillRepeatedly((Return(true)))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*mock_power_library_, IsBatteryFullyCharged())
-      .Times(NUM_TIMES)
-      .WillRepeatedly((Return(false)))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*mock_power_library_, IsLinePowerOn())
-      .Times(NUM_TIMES)
-      .WillRepeatedly((Return(true)))  // plugged in
-      .RetiresOnSaturation();
-  EXPECT_CALL(*mock_power_library_, GetBatteryTimeToEmpty())
-      .Times(NUM_TIMES)
-      .WillRepeatedly((Return(base::TimeDelta::FromMinutes(42))))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*mock_power_library_, GetBatteryTimeToFull())
-      .Times(NUM_TIMES)
-      .WillRepeatedly((Return(base::TimeDelta::FromMinutes(24))))
-      .RetiresOnSaturation();
+  PowerSupplyStatus status = {};
+  status.battery_is_present    = true;
+  status.battery_is_full       = false;
+  status.line_power_on         = true;
+  status.battery_seconds_to_empty = 42;
+  status.battery_seconds_to_full  = 24;
 
+  // Simulate various levels of charging.
   int index = 0;
-  for (float percent = 5.0; percent < 100.0; percent += 5.0) {
-    EXPECT_CALL(*mock_power_library_, GetBatteryPercentage())
-        .WillOnce((Return(percent)))
-        .RetiresOnSaturation();
-    EXPECT_EQ(index, CallPowerChangedAndGetBatteryIndex());
+  for (double percent = 5.0; percent < 100.0; percent += 5.0) {
+    status.battery_percentage = percent;
+    EXPECT_EQ(index, CallPowerChangedAndGetBatteryIndex(status));
     index++;
   }
 }
 
 IN_PROC_BROWSER_TEST_F(PowerMenuButtonTest, BatteryDischargingTest) {
-  const int NUM_TIMES = 19;
-  EXPECT_CALL(*mock_power_library_, IsBatteryPresent())
-      .Times(NUM_TIMES)
-      .WillRepeatedly((Return(true)))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*mock_power_library_, IsBatteryFullyCharged())
-      .Times(NUM_TIMES)
-      .WillRepeatedly((Return(false)))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*mock_power_library_, IsLinePowerOn())
-      .Times(NUM_TIMES)
-      .WillRepeatedly((Return(false)))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*mock_power_library_, GetBatteryTimeToEmpty())
-      .Times(NUM_TIMES)
-      .WillRepeatedly((Return(base::TimeDelta::FromMinutes(42))))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*mock_power_library_, GetBatteryTimeToFull())
-      .Times(NUM_TIMES)
-      .WillRepeatedly((Return(base::TimeDelta::FromMinutes(24))))
-      .RetiresOnSaturation();
+  PowerSupplyStatus status = {};
+  status.battery_is_present    = true;
+  status.battery_is_full       = false;
+  status.line_power_on         = false;
+  status.battery_seconds_to_empty = 42;
+  status.battery_seconds_to_full  = 24;
 
+  // Simulate various levels of discharging.
   int index = 0;
   for (float percent = 5.0; percent < 100.0; percent += 5.0) {
-    EXPECT_CALL(*mock_power_library_, GetBatteryPercentage())
-        .WillOnce((Return(percent)))
-        .RetiresOnSaturation();
-    EXPECT_EQ(index, CallPowerChangedAndGetBatteryIndex());
+    status.battery_percentage = percent;
+    EXPECT_EQ(index, CallPowerChangedAndGetBatteryIndex(status));
     index++;
   }
 }

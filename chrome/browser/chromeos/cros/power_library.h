@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_CHROMEOS_CROS_POWER_LIBRARY_H_
 #pragma once
 
+// TODO(sque): Move to chrome/browser/chromeos/system, crosbug.com/16558
+
 #include "base/callback.h"
 
 namespace base {
@@ -16,6 +18,19 @@ namespace chromeos {
 
 typedef base::Callback<void(int64_t)> CalculateIdleTimeCallback;
 
+struct PowerSupplyStatus {
+  bool line_power_on;
+
+  bool battery_is_present;
+  bool battery_is_full;
+
+  // Time in seconds until the battery is empty or full, 0 for unknown.
+  int64 battery_seconds_to_empty;
+  int64 battery_seconds_to_full;
+
+  double battery_percentage;
+};
+
 // This interface defines interaction with the ChromeOS power library APIs.
 // Classes can add themselves as observers. Users can get an instance of this
 // library class like this: chromeos::CrosLibrary::Get()->GetPowerLibrary()
@@ -23,7 +38,7 @@ class PowerLibrary {
  public:
   class Observer {
    public:
-    virtual void PowerChanged(PowerLibrary* obj) = 0;
+    virtual void PowerChanged(const PowerSupplyStatus& status) = 0;
     virtual void SystemResumed() = 0;
 
    protected:
@@ -36,24 +51,6 @@ class PowerLibrary {
 
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
-
-  // Whether or not the line power is connected.
-  virtual bool IsLinePowerOn() const = 0;
-
-  // Whether or not the battery is fully charged.
-  virtual bool IsBatteryFullyCharged() const = 0;
-
-  // The percentage [0-100] of remaining battery.
-  virtual double GetBatteryPercentage() const = 0;
-
-  // Whether there is a battery present.
-  virtual bool IsBatteryPresent() const = 0;
-
-  // The amount of time until battery is empty.
-  virtual base::TimeDelta GetBatteryTimeToEmpty() const = 0;
-
-  // The amount of time until battery is full.
-  virtual base::TimeDelta GetBatteryTimeToFull() const = 0;
 
   // Calculates idle time asynchronously. If it encounters some error,
   // it returns -1.

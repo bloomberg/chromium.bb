@@ -350,7 +350,8 @@ void PowerMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
 ////////////////////////////////////////////////////////////////////////////////
 // PowerMenuButton, PowerLibrary::Observer implementation:
 
-void PowerMenuButton::PowerChanged(PowerLibrary* obj) {
+void PowerMenuButton::PowerChanged(const PowerSupplyStatus& power_status) {
+  power_status_ = power_status;
   UpdateIconAndLabelInfo();
 }
 
@@ -358,23 +359,21 @@ void PowerMenuButton::PowerChanged(PowerLibrary* obj) {
 // PowerMenuButton, StatusAreaButton implementation:
 
 void PowerMenuButton::UpdateIconAndLabelInfo() {
-  PowerLibrary* power_lib = CrosLibrary::Get()->GetPowerLibrary();
-
-  battery_is_present_ = power_lib->IsBatteryPresent();
-  line_power_on_ = power_lib->IsLinePowerOn();
+  battery_is_present_ = power_status_.battery_is_present;
+  line_power_on_ = power_status_.line_power_on;
 
   // If fully charged, always show 100% even if internal number is a bit less.
-  if (power_lib->IsBatteryFullyCharged()) {
-    // We always call power_lib->GetBatteryPercentage() for test predictability.
-    power_lib->GetBatteryPercentage();
+  if (power_status_.battery_is_full)
     battery_percentage_ = 100.0;
-  } else {
-    battery_percentage_ = power_lib->GetBatteryPercentage();
-  }
+  else
+    battery_percentage_ = power_status_.battery_percentage;
 
-  UpdateBatteryTime(&battery_time_to_full_, power_lib->GetBatteryTimeToFull());
+  UpdateBatteryTime(&battery_time_to_full_,
+                    TimeDelta::FromSeconds(
+                        power_status_.battery_seconds_to_full));
   UpdateBatteryTime(&battery_time_to_empty_,
-                    power_lib->GetBatteryTimeToEmpty());
+                    TimeDelta::FromSeconds(
+                        power_status_.battery_seconds_to_empty));
 
   string16 tooltip_text;
   if (!battery_is_present_) {

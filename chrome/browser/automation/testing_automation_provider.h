@@ -22,6 +22,11 @@
 #include "net/base/cert_status_flags.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 
+#if defined(OS_CHROMEOS)
+// TODO(sque): move to a ChromeOS-specific class.  See crosbug.com/22081.
+#include "chrome/browser/chromeos/cros/power_library.h"
+#endif  // defined(OS_CHROMEOS)
+
 class ImporterList;
 class TemplateURLService;
 
@@ -37,7 +42,11 @@ struct WebPluginInfo;
 class TestingAutomationProvider : public AutomationProvider,
                                   public BrowserList::Observer,
                                   public importer::ImporterListObserver,
+#if defined(OS_CHROMEOS)
+                                  public chromeos::PowerLibrary::Observer,
+#endif // defined(OS_CHROMEOS)
                                   public content::NotificationObserver {
+
  public:
   explicit TestingAutomationProvider(Profile* profile);
 
@@ -1343,6 +1352,10 @@ class TestingAutomationProvider : public AutomationProvider,
   void CaptureProfilePhoto(Browser* browser,
                            DictionaryValue* args,
                            IPC::Message* reply_message);
+
+  // chromeos::PowerLibrary::Observer overrides.
+  virtual void PowerChanged(const chromeos::PowerSupplyStatus& status) OVERRIDE;
+  virtual void SystemResumed() OVERRIDE {}
 #endif  // defined(OS_CHROMEOS)
 
   void WaitForTabCountToBecome(int browser_handle,
