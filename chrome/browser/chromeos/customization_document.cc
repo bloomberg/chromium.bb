@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/customization_document.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/json/json_reader.h"
@@ -268,9 +270,9 @@ void ServicesCustomizationDocument::SetApplied(bool val) {
 void ServicesCustomizationDocument::StartFetching() {
   if (url_.SchemeIsFile()) {
     BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-        NewRunnableMethod(this,
-            &ServicesCustomizationDocument::ReadFileInBackground,
-            FilePath(url_.path())));
+        base::Bind(&ServicesCustomizationDocument::ReadFileInBackground,
+                   base::Unretained(this),  // this class is a singleton.
+                   FilePath(url_.path())));
   } else {
     StartFileFetch();
   }
@@ -282,10 +284,10 @@ void ServicesCustomizationDocument::ReadFileInBackground(const FilePath& file) {
   std::string manifest;
   if (file_util::ReadFileToString(file, &manifest)) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(
-            this,
+        base::IgnoreReturn<bool>(base::Bind(
             &ServicesCustomizationDocument::LoadManifestFromString,
-            manifest));
+            base::Unretained(this),  // this class is a singleton.
+            manifest)));
   } else {
     VLOG(1) << "Failed to load services customization manifest from: "
             << file.value();
