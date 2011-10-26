@@ -24,6 +24,7 @@ enum FrameRateTestFlags {
   kDisableVsync       = 1 << 1,
   kDisableGpu         = 1 << 2,
   kUseReferenceBuild  = 1 << 3,
+  kInternal           = 1 << 4,
 };
 
 std::string GetSuffixForTestFlags(int flags) {
@@ -58,7 +59,11 @@ class FrameRateTest
     PathService::Get(chrome::DIR_TEST_DATA, &test_path);
     test_path = test_path.Append(FILE_PATH_LITERAL("perf"));
     test_path = test_path.Append(FILE_PATH_LITERAL("frame_rate"));
-    test_path = test_path.Append(FILE_PATH_LITERAL("content"));
+    if (GetParam() & kInternal) {
+      test_path = test_path.Append(FILE_PATH_LITERAL("private"));
+    } else {
+      test_path = test_path.Append(FILE_PATH_LITERAL("content"));
+    }
     test_path = test_path.AppendASCII(name);
     return test_path;
   }
@@ -148,16 +153,9 @@ class FrameRateTest
   }
 };
 
-int kTestVariant_Plain(0);
-int kTestVariant_Comp(kMakeBodyComposited);
-int kTestVariant_Reference(kUseReferenceBuild);
-int kTestVariant_Comp_Reference(kMakeBodyComposited | kUseReferenceBuild);
-int kTestVariant_NoVsync(kDisableVsync);
-int kTestVariant_NoGpu(kDisableGpu);
-int kTestVariant_NoVsync_Reference(kDisableVsync | kUseReferenceBuild);
-
 // Must use a different class name to avoid test instantiation conflicts
-// with FrameRateTest (used above). An alias is good enough.
+// with FrameRateTest. An alias is good enough. The alias names must match
+// the pattern FrameRate*Test* for them to get picked up by the test bots.
 typedef FrameRateTest FrameRateCompositingTest;
 
 // Tests that trigger compositing with a -webkit-translateZ(0)
@@ -167,42 +165,46 @@ TEST_P(FrameRateCompositingTest, content) { \
 }
 
 INSTANTIATE_TEST_CASE_P(, FrameRateCompositingTest, ::testing::Values(
-                        kTestVariant_Plain,
-                        kTestVariant_Comp,
-                        kTestVariant_Reference,
-                        kTestVariant_Comp_Reference));
+                        0,
+                        kMakeBodyComposited,
+                        kUseReferenceBuild,
+                        kUseReferenceBuild | kMakeBodyComposited));
 
 FRAME_RATE_TEST_WITH_AND_WITHOUT_ACCELERATED_COMPOSITING(blank);
 FRAME_RATE_TEST_WITH_AND_WITHOUT_ACCELERATED_COMPOSITING(googleblog);
 
-// Must use a different class name to avoid test instantiation conflicts
-// with FrameRateTest (used above). An alias is good enough.
-typedef FrameRateTest FrameRateCanvasTest;
+typedef FrameRateTest FrameRateCanvasInternalTest;
 
 // Tests for animated 2D canvas content
-#define FRAME_RATE_TEST_CANVAS(content) \
-TEST_P(FrameRateCanvasTest, content) { \
+#define INTERNAL_FRAME_RATE_TEST_CANVAS(content) \
+TEST_P(FrameRateCanvasInternalTest, content) { \
   RunTest(#content); \
 } \
 
-INSTANTIATE_TEST_CASE_P(, FrameRateCanvasTest, ::testing::Values(
-                        kTestVariant_Plain,
-                        kTestVariant_NoGpu,
-                        kTestVariant_Reference));
+INSTANTIATE_TEST_CASE_P(, FrameRateCanvasInternalTest, ::testing::Values(
+                        kInternal,
+                        kInternal | kDisableGpu,
+                        kInternal | kUseReferenceBuild));
 
-typedef FrameRateTest FrameRateNoVsyncCanvasTest;
+INTERNAL_FRAME_RATE_TEST_CANVAS(fireflies)
+INTERNAL_FRAME_RATE_TEST_CANVAS(FishIE)
+
+typedef FrameRateTest FrameRateNoVsyncCanvasInternalTest;
 
 // Tests for animated 2D canvas content with and without disabling vsync
-#define FRAME_RATE_TEST_CANVAS_WITH_AND_WITHOUT_NOVSYNC(content) \
-TEST_P(FrameRateNoVsyncCanvasTest, content) { \
+#define INTERNAL_FRAME_RATE_TEST_CANVAS_WITH_AND_WITHOUT_NOVSYNC(content) \
+TEST_P(FrameRateNoVsyncCanvasInternalTest, content) { \
   RunTest(#content); \
 } \
 
-INSTANTIATE_TEST_CASE_P(, FrameRateNoVsyncCanvasTest, ::testing::Values(
-                        kTestVariant_Plain,
-                        kTestVariant_NoVsync,
-                        kTestVariant_NoGpu,
-                        kTestVariant_Reference,
-                        kTestVariant_NoVsync_Reference));
+INSTANTIATE_TEST_CASE_P(, FrameRateNoVsyncCanvasInternalTest, ::testing::Values(
+                        kInternal,
+                        kInternal | kDisableVsync,
+                        kInternal | kDisableGpu,
+                        kInternal | kUseReferenceBuild,
+                        kInternal | kDisableVsync | kUseReferenceBuild));
+
+INTERNAL_FRAME_RATE_TEST_CANVAS_WITH_AND_WITHOUT_NOVSYNC(fishbowl)
+INTERNAL_FRAME_RATE_TEST_CANVAS_WITH_AND_WITHOUT_NOVSYNC(speedreading)
 
 }  // namespace

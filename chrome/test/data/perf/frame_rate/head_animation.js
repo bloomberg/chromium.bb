@@ -10,10 +10,13 @@
  * harness:
  * 1. Include head.js followed by head_animation.js in the head of the test
  *    page.
- * 2. If the animation loop does not already use requestAnimationFrame, convert
- *    it. For maximum portability and functionality, use the __raf function
- *    defined in head.js.
- * 3. Add a call to __animation_hook() at the end of the animation loop
+ * 2. If the animation loop does not already use requestAnimationFrame,
+ *    convert it.
+ * 3. Replace calls to requestAnimationFrame with the __requestAnimationFrame
+ *    function defined below
+ * 4. If the test page needs to call requestAnimationFrame during an
+ *    initialization phase that should not be measured by the test, then
+ *    use __requestAnimationFrame_no_sampling
  */
 
 // default gestures for animated content
@@ -34,7 +37,7 @@ __animation = true;
 // steady running state before benchmarking begins.
 var __warmup_frames = 10;
 
-function __animation_hook() {
+function __did_render_frame() {
   if (__warmup_frames > 0){
     __warmup_frames--;
     return;
@@ -49,5 +52,13 @@ function __animation_hook() {
   }
 }
 
+function __requestAnimationFrame(callback, element) {
+  __did_render_frame();
+  __raf(callback, element);
+}
+
+function __requestAnimationFrame_no_sampling(callback, element) {
+  __raf(callback, element);
+}
 
 
