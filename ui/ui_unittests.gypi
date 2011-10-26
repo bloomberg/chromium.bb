@@ -83,24 +83,12 @@
         'gfx/skia_util_unittest.cc',
         'gfx/test_suite.cc',
         'gfx/test_suite.h',
-        'views/rendering/border_unittest.cc',
-        'views/view_unittest.cc',
-        'views/widget/native_widget_win_unittest.cc',
-        'views/widget/root_view_unittest.cc',
-        'views/widget/widget_test_util.cc',
-        'views/widget/widget_test_util.h',
-        'views/widget/widget_unittest.cc',
         '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.rc',
       ],
       'include_dirs': [
         '../',
       ],
       'conditions': [
-        ['toolkit_views2==1', {
-          'dependencies': [
-            'v2',
-          ],
-        }],
         ['OS == "win"', {
           'sources': [
             'base/dragdrop/os_exchange_data_win_unittest.cc',
