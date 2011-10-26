@@ -1615,7 +1615,7 @@
    ...
    fun:zipCloseFileInZipRaw
    fun:zipCloseFileInZip
-   fun:_Z*13AddEntryToZipPvRK8FilePathS2_
+   fun:_Z*13AddEntryToZip*
 }
 {
    bug_30703b
@@ -1623,7 +1623,7 @@
    fun:deflate
    fun:zipCloseFileInZipRaw
    fun:zipCloseFileInZip
-   fun:_Z*13AddEntryToZipPvRK8FilePathS2_
+   fun:_Z*13AddEntryToZip*
 }
 {
    bug_30704a
