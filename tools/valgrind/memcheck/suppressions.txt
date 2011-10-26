@@ -5024,7 +5024,42 @@
    fun:_ZNK3net15X509Certificate6VerifyERKSsiPNS_6CRLSetEPNS_16CertVerifyResultE
    fun:_ZN3net44X509CertificateTest_GoogleDigiNotarTest_Test8TestBodyEv
 }
-
+{
+   bug_101781_a
+   Memcheck:Cond
+   fun:encode_one_block
+   fun:encode_mcu_huff
+   fun:compress_data
+   fun:process_data_simple_main
+   fun:chromium_jpeg_write_scanlines
+   fun:_ZN3gfx9JPEGCodec6EncodeEPKhNS0_11ColorFormatEiiiiPSt6vectorIhSaIhEE
+   fun:_ZN3gfx24JPEGEncodedDataFromImageERKNS_5ImageEPSt6vectorIhSaIhEE
+   fun:_ZN7history8TopSites12EncodeBitmapEPN3gfx5ImageEP13scoped_refptrI15RefCountedBytesE
+   fun:_ZN7history8TopSites16SetPageThumbnailERK4GURLPN3gfx5ImageERK14ThumbnailScore
+   fun:_ZN7history17ExpireHistoryTest14AddExampleDataEPxPN4base4TimeE
+   fun:_ZN7history*ExpireHistoryTest_*
+}
+{
+   bug_101781_b
+   Memcheck:Value4
+   fun:encode_one_block
+   fun:encode_mcu_huff
+   fun:compress_data
+   fun:process_data_simple_main
+   fun:chromium_jpeg_write_scanlines
+   fun:_ZN3gfx9JPEGCodec6EncodeEPKhNS0_11ColorFormatEiiiiPSt6vectorIhSaIhEE
+   fun:_ZN3gfx24JPEGEncodedDataFromImageERKNS_5ImageEPSt6vectorIhSaIhEE
+   fun:_ZN7history8TopSites12EncodeBitmapEPN3gfx5ImageEP13scoped_refptrI15RefCountedBytesE
+   fun:_ZN7history8TopSites16SetPageThumbnailERK4GURLPN3gfx5ImageERK14ThumbnailScore
+   fun:_ZN7history17ExpireHistoryTest14AddExampleDataEPxPN4base4TimeE
+   fun:_ZN7history*ExpireHistoryTest_*
+}
+{
+   bug_101781_c
+   Memcheck:Cond
+   fun:_ZN7testing8internal11CmpHelperGEIddEENS_15AssertionResultEPKcS4_RKT_RKT0_
+   fun:_ZN3gfx31JPEGCodec_EncodeDecodeRGBA_Test8TestBodyEv
+}
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
 {
