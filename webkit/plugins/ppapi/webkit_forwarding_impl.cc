@@ -192,6 +192,8 @@ void FontImpl::Describe(base::WaitableEvent* event,
     description->weight = static_cast<PP_FontWeight_Dev>(web_desc.weight);
     description->italic = web_desc.italic ? PP_TRUE : PP_FALSE;
     description->small_caps = web_desc.smallCaps ? PP_TRUE : PP_FALSE;
+    description->letter_spacing = static_cast<int32_t>(web_desc.letterSpacing);
+    description->word_spacing = static_cast<int32_t>(web_desc.wordSpacing);
 
     *face = UTF16ToUTF8(web_desc.family);
 
