@@ -497,7 +497,9 @@
         '../third_party/skia/src/ports/sk_predefined_gamma.h',
 
         '../third_party/skia/include/utils/mac/SkCGUtils.h',
+        '../third_party/skia/include/utils/SkMatrix44.h',
         '../third_party/skia/src/utils/mac/SkCreateCGImageRef.cpp',
+        '../third_party/skia/src/utils/SkMatrix44.cpp',
 
         '../third_party/skia/include/core/Sk64.h',
         '../third_party/skia/include/core/SkAdvancedTypefaceMetrics.h',
@@ -734,10 +736,6 @@
           'sources/': [
             ['exclude', '_mac\\.(cc|cpp|mm?)$'],
             ['exclude', '/mac/']
-          ],
-          'sources': [
-            '../third_party/skia/include/utils/SkMatrix44.h',
-            '../third_party/skia/src/utils/SkMatrix44.cpp',
           ],
         }],
         [ 'OS == "android"', {
