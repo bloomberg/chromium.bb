@@ -253,7 +253,7 @@ else
 fi
 
 # Current milestones in each repo
-readonly UPSTREAM_REV=${UPSTREAM_REV:-f4269b5e5e4d}
+readonly UPSTREAM_REV=${UPSTREAM_REV:-985ad4f98c68}
 
 readonly NEWLIB_REV=c6358617f3fd
 readonly BINUTILS_REV=17a01203bd48
@@ -297,7 +297,7 @@ if ${HOST_ARCH_X8632} ; then
   CXX="${NACL_ROOT}/tools/llvm/myg++32"
 fi
 
-force-frontend() {
+select-frontend() {
   local frontend="$1"
   if [ "${frontend}" == default ] ; then
     frontend="${DEFAULT_FRONTEND}"
@@ -319,18 +319,6 @@ force-frontend() {
       Fatal "Unknown frontend: ${frontend}"
       ;;
   esac
-}
-
-# Every prefer-frontend should be followed by a reset-frontend.
-prefer-frontend() {
-  local frontend="$1"
-  if [ "${FRONTEND}" == default ] ; then
-    force-frontend "${frontend}"
-  fi
-}
-
-reset-frontend() {
-  force-frontend "${FRONTEND}"
 }
 
 setup-libstdcpp-env() {
@@ -1914,7 +1902,6 @@ libstdcpp() {
   fi
 
   libstdcpp-install
-  reset-frontend
 }
 
 #+ libstdcpp-clean - clean libstdcpp in bitcode
@@ -2321,12 +2308,6 @@ llvm-sb-setup() {
   LLVM_SB_EXTRA_CONFIG_FLAGS="--disable-jit --enable-optimized \
   --target=${CROSS_TARGET_ARM}"
 
-  if ${LIBMODE_GLIBC} ; then
-    prefer-frontend clang
-  else
-    prefer-frontend llvm-gcc
-  fi
-
   LLVM_SB_CONFIGURE_ENV=(
     AR="${PNACL_AR}" \
     AS="${PNACL_AS}" \
@@ -2336,8 +2317,6 @@ llvm-sb-setup() {
     NM="${PNACL_NM}" \
     RANLIB="${PNACL_RANLIB}" \
     LDFLAGS="") # TODO(pdox): Support -s
-
-  reset-frontend
 }
 
 llvm-sb-setup-jit() {
@@ -2720,12 +2699,6 @@ binutils-sb-setup() {
   # Speed things up by avoiding an intermediate step
   flags+=" --pnacl-skip-ll"
 
-  if ${LIBMODE_GLIBC} ; then
-    prefer-frontend clang
-  else
-    prefer-frontend llvm-gcc
-  fi
-
   BINUTILS_SB_CONFIGURE_ENV=(
     AR="${PNACL_AR}" \
     AS="${PNACL_AS}" \
@@ -2738,8 +2711,6 @@ binutils-sb-setup() {
     RANLIB="${PNACL_RANLIB}" \
     LDFLAGS_FOR_BUILD="-L${TC_BUILD_BINUTILS_LIBERTY}/libiberty/" \
     LDFLAGS="")
-
-  reset-frontend
 }
 
 #+-------------------------------------------------------------------------
@@ -3923,7 +3894,7 @@ mkdir -p "${INSTALL_ROOT}"
 PackageCheck
 
 # Setup the initial frontend configuration
-reset-frontend
+select-frontend "${FRONTEND}"
 
 if [ $# = 0 ]; then set -- help; fi  # Avoid reference to undefined $1.
 
