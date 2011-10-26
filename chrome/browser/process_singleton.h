@@ -22,9 +22,9 @@
 #include "base/file_path.h"
 #endif  // defined(OS_POSIX)
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_OPENBSD)
 #include "base/scoped_temp_dir.h"
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_OPENBSD)
 
 class CommandLine;
 class FilePath;
@@ -151,7 +151,7 @@ class ProcessSingleton : public base::NonThreadSafe {
   HWND remote_window_;  // The HWND_MESSAGE of another browser.
   HWND window_;  // The HWND_MESSAGE window.
   bool is_virtualized_;  // Stuck inside Microsoft Softricity VM environment.
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || defined(OS_OPENBSD)
   // Path in file system to the socket.
   FilePath socket_path_;
 
