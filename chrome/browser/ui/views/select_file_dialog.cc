@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/shell_dialogs.h"
 
-#include "base/callback.h"
+#include "base/bind.h"
 #include "base/file_path.h"
 #include "base/json/json_reader.h"
 #include "base/memory/scoped_ptr.h"
@@ -455,7 +455,7 @@ SelectFileDialogImpl::FileBrowseDelegateHandler::FileBrowseDelegateHandler(
 
 void SelectFileDialogImpl::FileBrowseDelegateHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("setDialogTitle",
-      NewCallback(this, &FileBrowseDelegateHandler::HandleSetDialogTitle));
+      base::Bind(&FileBrowseDelegateHandler::HandleSetDialogTitle, this));
 }
 
 void SelectFileDialogImpl::FileBrowseDelegateHandler::HandleSetDialogTitle(
