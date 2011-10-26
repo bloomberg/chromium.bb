@@ -128,10 +128,6 @@ class FirstRun {
   // Returns false if the pref could not be set.
   static bool SetPersonalDataManagerFirstRunPref();
 
-  // True if special circumstances should prevent the search engine ballot from
-  // being shown.
-  static bool SearchEngineSelectorDisallowed();
-
   // Whether the search engine selection dialog should be shown on first run.
   static bool ShouldShowSearchEngineSelector(const TemplateURLService* model);
 
