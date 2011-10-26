@@ -5252,6 +5252,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ACCESSIBLE_INCOGNITO_WINDOW_TITLE_FORMAT" desc="The format for the accessible title of an incognito window">
         <ph name="WINDOW_TITLE">$1</ph> (Incognito)
       </message>
+      <message name="IDS_ACCNAME_APP_UPGRADE_RECOMMENDED" desc="The accessible name for the app menu when software update is available.">
+        <ph name="ACCNAME_APP">$1<ex>Chrome</ex></ph> (Update is available)
+      </message>
       <message name="IDS_ACCNAME_BACK" desc="The accessible name for the back button.">
         Back
       </message>

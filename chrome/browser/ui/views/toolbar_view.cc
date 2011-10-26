@@ -194,7 +194,7 @@ void ToolbarView::Init() {
 
   // Add any necessary badges to the menu item based on the system state.
   if (IsUpgradeRecommended() || ShouldShowIncompatibilityWarning()) {
-    UpdateAppMenuBadge();
+    UpdateAppMenuState();
   }
   LoadImages();
 
@@ -424,7 +424,7 @@ void ToolbarView::Observe(int type,
     case chrome::NOTIFICATION_UPGRADE_RECOMMENDED:
     case chrome::NOTIFICATION_MODULE_INCOMPATIBILITY_BADGE_CHANGE:
     case chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED:
-      UpdateAppMenuBadge();
+      UpdateAppMenuState();
       break;
 #if defined(OS_WIN) && !defined(USE_AURA)
     case chrome::NOTIFICATION_CRITICAL_UPGRADE_INSTALLED:
@@ -738,7 +738,14 @@ void ToolbarView::ShowCriticalNotification() {
 #endif
 }
 
-void ToolbarView::UpdateAppMenuBadge() {
+void ToolbarView::UpdateAppMenuState() {
+  string16 accname_app = l10n_util::GetStringUTF16(IDS_ACCNAME_APP);
+  if (IsUpgradeRecommended()) {
+    accname_app = l10n_util::GetStringFUTF16(
+        IDS_ACCNAME_APP_UPGRADE_RECOMMENDED, accname_app);
+  }
+  app_menu_->SetAccessibleName(accname_app);
+
   app_menu_->SetIcon(GetAppMenuIcon(views::CustomButton::BS_NORMAL));
   app_menu_->SetHoverIcon(GetAppMenuIcon(views::CustomButton::BS_HOT));
   app_menu_->SetPushedIcon(GetAppMenuIcon(views::CustomButton::BS_PUSHED));

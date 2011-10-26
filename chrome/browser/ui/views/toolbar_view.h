@@ -171,8 +171,8 @@ class ToolbarView : public AccessiblePaneView,
   // Shows the critical notification bubble against the wrench menu.
   void ShowCriticalNotification();
 
-  // Updates the badge on the app menu (Wrench).
-  void UpdateAppMenuBadge();
+  // Updates the badge and the accessible name of the app menu (Wrench).
+  void UpdateAppMenuState();
 
   // Gets a badge for the wrench icon corresponding to the number of
   // unacknowledged background pages in the system.
