@@ -107,13 +107,17 @@ cr.define('print_preview', function() {
      */
     show: function() {
       this.hidden = false;
+      this.classList.remove('invisible');
     },
 
     /**
-     * Hides the margins UI.
+     * Hides the margins UI and removes from the rendering flow if requested.
+     * @param {boolean} removeFromFlow True if |this| should also be removed
+     *     from the rendering flow (in order to not interfere with the tab
+     *     order).
      */
-    hide: function() {
-      this.hidden = true;
+    hide: function(removeFromFlow) {
+      removeFromFlow ? this.hidden = true : this.classList.add('invisible');
     },
 
     /**

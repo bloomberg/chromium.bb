@@ -94,3 +94,8 @@
   position: absolute;
   top: 0;
 }
+
+#customized-margins.invisible {
+  pointer-events: none;
+  opacity: 0;
+}

@@ -267,7 +267,7 @@ cr.define('print_preview', function() {
      */
     onSidebarMouseOver_: function(e) {
       if (!this.forceDisplayingMarginLines_)
-        this.marginsUI.hide();
+        this.marginsUI.hide(false);
     },
 
     /**
@@ -298,7 +298,7 @@ cr.define('print_preview', function() {
     onPDFGenerationError_: function() {
       if (this.isCustomMarginsSelected()) {
         this.removeCustomMarginEventListeners_();
-        this.marginsUI.hide();
+        this.marginsUI.hide(true);
       }
     },
 
@@ -426,6 +426,8 @@ cr.define('print_preview', function() {
       $('sidebar').onmouseover = this.onSidebarMouseOver_.bind(this);
       this.eventTracker_.add(
           this.marginsUI, 'DragEvent', this.onDragEvent_.bind(this), false);
+      this.eventTracker_.add(document, 'marginTextboxFocused',
+                             this.onMarginTextboxFocused_.bind(this), false);
     },
 
     /**
@@ -436,7 +438,8 @@ cr.define('print_preview', function() {
       $('mainview').onmouseover = null;
       $('sidebar').onmouseover = null;
       this.eventTracker_.remove(this.marginsUI, 'DragEvent');
-      this.marginsUI.hide();
+      this.eventTracker_.remove(document, 'marginTextboxFocused');
+      this.marginsUI.hide(true);
     },
 
     /**
@@ -467,6 +470,16 @@ cr.define('print_preview', function() {
           pageSettings.totalPageCount != undefined) {
         this.drawCustomMarginsUI_();
       }
+    },
+
+    /**
+     * Executes when a margin textbox is focused. Used for improved
+     * accessibility.
+     * @private
+     */
+    onMarginTextboxFocused_: function() {
+      this.forceDisplayingMarginLines_ = true;
+      this.marginsUI.show();
     },
 
     /**

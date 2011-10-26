@@ -134,6 +134,9 @@ cr.define('print_preview', function() {
       this.onblur = this.onBlur_.bind(this);
       this.onkeypress = this.onKeyPressed_.bind(this);
       this.onkeyup = this.onKeyUp_.bind(this);
+      this.onfocus = function() {
+        cr.dispatchSimpleEvent(document, 'marginTextboxFocused');
+      };
     },
 
     /**
