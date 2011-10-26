@@ -68,7 +68,7 @@ class TestEventFilterWindowDelegate : public TestWindowDelegate {
 Window* CreateWindow(int id, Window* parent, WindowDelegate* delegate) {
   Window* window = new Window(delegate ? delegate : new TestWindowDelegate);
   window->set_id(id);
-  window->Init();
+  window->Init(ui::Layer::LAYER_HAS_TEXTURE);
   window->SetParent(parent);
   window->SetBounds(gfx::Rect(0, 0, 100, 100));
   window->Show();
