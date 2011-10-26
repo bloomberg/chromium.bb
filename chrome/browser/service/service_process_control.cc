@@ -21,7 +21,6 @@
 #include "content/public/browser/notification_service.h"
 #include "ui/base/ui_base_switches.h"
 
-
 // ServiceProcessControl implementation.
 ServiceProcessControl::ServiceProcessControl() {
 }
@@ -64,11 +63,6 @@ void ServiceProcessControl::RunConnectDoneTasks() {
     DCHECK(tasks.empty());
     connect_success_tasks_.clear();
   }
-
-  // If the same callback is passed for both success and failure tasks, one
-  // container or the other may not be empty.
-  connect_success_tasks_.clear();
-  connect_failure_tasks_.clear();
 }
 
 // static
