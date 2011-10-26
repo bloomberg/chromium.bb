@@ -107,6 +107,10 @@ void AppPanelBrowserFrameView::UpdateThrobber(bool running) {
   window_icon_->Update();
 }
 
+AvatarMenuButton* AppPanelBrowserFrameView::GetAvatarMenuButton() {
+  return NULL;
+}
+
 gfx::Size AppPanelBrowserFrameView::GetMinimumSize() {
   gfx::Size min_size(browser_view_->GetMinimumSize());
   int border_thickness = NonClientBorderThickness();

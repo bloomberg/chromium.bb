@@ -36,6 +36,7 @@ class AppPanelBrowserFrameView : public BrowserNonClientFrameView,
   virtual gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const OVERRIDE;
   virtual int GetHorizontalTabStripVerticalOffset(bool restored) const OVERRIDE;
   virtual void UpdateThrobber(bool running) OVERRIDE;
+  virtual AvatarMenuButton* GetAvatarMenuButton() OVERRIDE;
   virtual gfx::Size GetMinimumSize() OVERRIDE;
 
  protected:
