@@ -121,6 +121,7 @@ PP_Var StringVar::GetPPVar() {
 
   PP_Var result;
   result.type = PP_VARTYPE_STRING;
+  result.padding = 0;
   result.value.as_id = id;
   return result;
 }

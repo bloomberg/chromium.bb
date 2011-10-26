@@ -100,6 +100,7 @@ void PpbFontRpcServer::PPB_Font_Describe(
   struct PP_FontDescription_Dev* pp_description =
       reinterpret_cast<struct PP_FontDescription_Dev*>(description);
   pp_description->face= PP_MakeUndefined();
+  pp_description->padding = 0;
   struct PP_FontMetrics_Dev* pp_metrics =
       reinterpret_cast<struct PP_FontMetrics_Dev*>(metrics);
   PP_Bool pp_success = PPBFontInterface()->Describe(font,
