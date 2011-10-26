@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
@@ -93,10 +94,9 @@ void OfflineResourceHandler::OnCanHandleOfflineComplete(int rv) {
     Resume();
     Release();  // Balanced with OnWillStart
   } else {
-    // Skipping AddRef/Release because they're redundant.
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this, &OfflineResourceHandler::ShowOfflinePage));
+        base::Bind(&OfflineResourceHandler::ShowOfflinePage, this));
   }
 }
 
@@ -138,9 +138,8 @@ void OfflineResourceHandler::OnBlockingPageComplete(bool proceed) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(this,
-                          &OfflineResourceHandler::OnBlockingPageComplete,
-                          proceed));
+        base::Bind(&OfflineResourceHandler::OnBlockingPageComplete,
+                   this, proceed));
     return;
   }
 
