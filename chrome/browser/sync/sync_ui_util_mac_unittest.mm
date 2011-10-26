@@ -38,7 +38,7 @@ TEST_F(SyncStatusUIHelperMacTest, UpdateSyncItem) {
   NSString* startSync =
     l10n_util::GetNSStringFWithFixup(
         IDS_SYNC_MENU_PRE_SYNCED_LABEL,
-        l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
+        l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
 
   [syncMenuItem setTitle:@""];
   [syncMenuItem setHidden:NO];
