@@ -24,7 +24,7 @@ export PNACL_BUILDBOT=true
 
 GSUTIL=buildbot/gsutil.sh
 PNACL_BUILD=pnacl/build.sh
-MERGE_TOOL=tools/llvm/merge-tool.sh
+MERGE_TOOL=pnacl/scripts/merge-tool.sh
 SPEC2K_SCRIPT=buildbot/buildbot_spec2k.sh
 PNACL_SCRIPT=buildbot/buildbot_pnacl.sh
 
