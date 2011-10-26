@@ -69,7 +69,7 @@ NonClientFrameView* BubbleDelegateView::CreateNonClientFrameView() {
                              GetColor());
 }
 
-gfx::Point BubbleDelegateView::GetAnchorPoint() const {
+gfx::Point BubbleDelegateView::GetAnchorPoint() {
   return anchor_point_;
 }
 

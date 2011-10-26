@@ -46,7 +46,7 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   void set_close_on_esc(bool close_on_esc) { close_on_esc_ = close_on_esc; }
 
   // Get the arrow's anchor point in screen space.
-  virtual gfx::Point GetAnchorPoint() const;
+  virtual gfx::Point GetAnchorPoint();
 
   // Get the arrow's location on the bubble.
   virtual BubbleBorder::ArrowLocation GetArrowLocation() const;
