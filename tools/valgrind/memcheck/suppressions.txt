@@ -662,12 +662,11 @@
    ...
    fun:_ZN7WebCoreL20paintTextWithShadowsEPNS_15GraphicsContextERKNS_4FontERKNS_7TextRunERKN3WTF12AtomicStringEiiiiRKNS_10FloatPointERKNS_9FloatRectEPKNS_10ShadowDataEbb
    fun:_ZN7WebCore13InlineTextBox5paintERNS_9PaintInfoERKNS_8IntPointEii
-   fun:_ZN7WebCore13InlineFlowBox5paintERNS_9PaintInfoERKNS_8IntPointEii
+   ...
    fun:_ZN7WebCore13RootInlineBox5paintERNS_9PaintInfoERKNS_8IntPointEii
    fun:_ZNK7WebCore17RenderLineBoxList5paintEPNS_20RenderBoxModelObjectERNS_9PaintInfoERKNS_8IntPointE
    fun:_ZN7WebCore11RenderBlock*paint*
 }
-
 
 #-----------------------------------------------------------------------
 # 2. intentional unit test errors, or stuff that is somehow a false positive
@@ -4943,6 +4942,70 @@
    fun:_ZN7WebCoreL15fontConstructorERKNS_13QualifiedNameEPNS_8DocumentEb
    fun:_ZN7WebCore17SVGElementFactory16createSVGElementERKNS_13QualifiedNameEPNS_8DocumentEb
    fun:_ZN7WebCore8Document13createElementERKNS_13QualifiedNameEb
+}
+{
+   bug_101755_a
+   Memcheck:Cond
+   ...
+   fun:_ZN7WebCore13WidthIterator*
+   fun:_ZNK7WebCore4Font30offsetForPositionForSimpleTextERKNS_7TextRunEfb
+   fun:_ZNK7WebCore4Font17offsetForPositionERKNS_7TextRunEfb
+   fun:_ZNK7WebCore13InlineTextBox17offsetForPositionEfb
+   fun:_ZN7WebCore13InlineTextBox16placeEllipsisBoxEbfffRb
+   fun:_ZN7WebCore13InlineFlowBox16placeEllipsisBoxEbfffRb
+   fun:_ZN7WebCore13RootInlineBox16placeEllipsisBoxEbfffRb
+   fun:_ZN7WebCore13RootInlineBox13placeEllipsisERKN3WTF12AtomicStringEbfffPNS_9InlineBoxE
+   fun:_ZN7WebCore11RenderBlock25checkLinesForTextOverflowEv
+   fun:_ZN7WebCore11RenderBlock20layoutInlineChildrenEbRiS1_
+   fun:_ZN7WebCore11RenderBlock11layoutBlockEbiNS0_15BlockLayoutPassE
+   fun:_ZN7WebCore11RenderBlock6layoutEv
+   fun:_ZN7WebCore11RenderBlock16layoutBlockChildEPNS_9RenderBoxERNS0_10MarginInfoERiS5_
+   fun:_ZN7WebCore11RenderBlock19layoutBlockChildrenEbRi
+   fun:_ZN7WebCore11RenderBlock11layoutBlockEbiNS0_15BlockLayoutPassE
+   fun:_ZN7WebCore11RenderBlock6layoutEv
+   fun:_ZN7WebCore11RenderBlock16layoutBlockChildEPNS_9RenderBoxERNS0_10MarginInfoERiS5_
+   fun:_ZN7WebCore11RenderBlock19layoutBlockChildrenEbRi
+   fun:_ZN7WebCore11RenderBlock11layoutBlockEbiNS0_15BlockLayoutPassE
+   fun:_ZN7WebCore11RenderBlock6layoutEv
+}
+{
+   bug_101755_b
+   Memcheck:Cond
+   fun:_ZN7WebCore13WidthIterator*
+   fun:_ZNK7WebCore4Font26selectionRectForSimpleTextERKNS_7TextRunERKNS_10FloatPointEiii
+   fun:_ZNK7WebCore4Font20selectionRectForTextERKNS_7TextRunERKNS_10FloatPointEiii
+   fun:_ZNK7WebCore13InlineTextBox17positionForOffsetEi
+   fun:_ZN7WebCore10RenderText14localCaretRectEPNS_9InlineBoxEiPi
+   fun:_ZNK7WebCore15VisiblePosition14localCaretRectERPNS_12RenderObjectE
+   fun:_ZN7WebCore9CaretBase15updateCaretRectEPNS_8DocumentERKNS_15VisiblePositionE
+   fun:_ZN7WebCore14FrameSelection14localCaretRectEv
+   fun:_ZN7WebCore14FrameSelection18recomputeCaretRectEv
+   fun:_ZN7WebCore14FrameSelection16updateAppearanceEv
+   fun:_ZN7WebCore14FrameSelection12setSelectionERKNS_16VisibleSelectionEjNS0_19CursorAlignOnScrollENS_15TextGranularityE
+   fun:_ZN7WebCore14FrameSelection12setSelectionERKNS_16VisibleSelectionENS_15TextGranularityE
+   fun:_ZN7WebCore14FrameSelection34setNonDirectionalSelectionIfNeededERKNS_16VisibleSelectionENS_15TextGranularityENS0_23EndPointsAdjustmentModeE
+   fun:_ZN7WebCore12EventHandler49updateSelectionForMouseDownDispatchingSelectStartEPNS_4NodeERKNS_16VisibleSelectionENS_15TextGranularityE
+}
+{
+   bug_101755_c
+   Memcheck:Cond
+   fun:_ZN7WebCore21ComplexTextController*
+   ...
+   fun:_ZNK7WebCore4Font15drawComplexTextEPNS_15GraphicsContextERKNS_7TextRunERKNS_10FloatPointEii
+   fun:_ZNK7WebCore4Font8drawTextEPNS_15GraphicsContextERKNS_7TextRunERKNS_10FloatPointEii
+   fun:_ZN7WebCore15GraphicsContext8drawTextERKNS_4FontERKNS_7TextRunERKNS_10FloatPointEii
+   fun:_ZN7WebCoreL20paintTextWithShadowsEPNS_15GraphicsContextERKNS_4FontERKNS_7TextRunERKN3WTF12AtomicStringEiiiiRKNS_10FloatPointERKNS_9FloatRectEPKNS_10ShadowDataEbb
+   fun:_ZN7WebCore13InlineTextBox5paintERNS_9PaintInfoERKNS_8IntPointEii
+   fun:_ZN7WebCore13InlineFlowBox5paintERNS_9PaintInfoERKNS_8IntPointEii
+   fun:_ZN7WebCore13RootInlineBox5paintERNS_9PaintInfoERKNS_8IntPointEii
+   fun:_ZNK7WebCore17RenderLineBoxList5paintEPNS_20RenderBoxModelObjectERNS_9PaintInfoERKNS_8IntPointE
+   fun:_ZN7WebCore11RenderBlock13paintContentsERNS_9PaintInfoERKNS_8IntPointE
+   fun:_ZN7WebCore11RenderBlock11paintObjectERNS_9PaintInfoERKNS_8IntPointE
+   fun:_ZN7WebCore11RenderBlock5paintERNS_9PaintInfoERKNS_8IntPointE
+   fun:_ZN7WebCore11RenderBlock13paintChildrenERNS_9PaintInfoERKNS_8IntPointE
+   fun:_ZN7WebCore11RenderBlock13paintContentsERNS_9PaintInfoERKNS_8IntPointE
+   fun:_ZN7WebCore11RenderBlock11paintObjectERNS_9PaintInfoERKNS_8IntPointE
+   fun:_ZN7WebCore11RenderBlock5paintERNS_9PaintInfoERKNS_8IntPointE
 }
 
 #-----------------------------------------------------------------------
