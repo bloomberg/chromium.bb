@@ -140,6 +140,8 @@ class CONTENT_EXPORT GpuDataManager {
 
     bool ignore_gpu_blacklist() const { return ignore_gpu_blacklist_; }
 
+    bool skip_gpu_data_loading() const { return skip_gpu_data_loading_; }
+
     const std::string& use_gl() const { return use_gl_; }
 
    private:
@@ -153,6 +155,7 @@ class CONTENT_EXPORT GpuDataManager {
     bool disable_gl_multisampling_;
 
     bool ignore_gpu_blacklist_;
+    bool skip_gpu_data_loading_;
 
     std::string use_gl_;
   };

@@ -41,6 +41,10 @@ void PrepareBrowserCommandLineForTests(CommandLine* command_line) {
   // Don't install default apps.
   command_line->AppendSwitch(switches::kDisableDefaultApps);
 
+  // Don't collect GPU info, load GPU blacklist, or schedule a GPU blacklist
+  // auto-update.
+  command_line->AppendSwitch(switches::kSkipGpuDataLoading);
+
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
   // Don't use the native password stores on Linux since they may
   // prompt for additional UI during tests and cause test failures or

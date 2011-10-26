@@ -18,6 +18,7 @@
 #include "content/browser/browser_thread.h"
 #include "content/browser/gpu/gpu_blacklist.h"
 #include "content/browser/gpu/gpu_data_manager.h"
+#include "content/public/common/content_switches.h"
 #include "grit/browser_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/gl/gl_implementation.h"
@@ -84,15 +85,14 @@ void GpuBlacklistUpdater::SetupOnFileThread() {
   // graphics information.  This has to happen on FILE thread.
   GpuDataManager::GetInstance();
 
-  // Skip auto updates in tests.
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if ((command_line.GetSwitchValueASCII(switches::kUseGL) ==
-      gfx::kGLImplementationOSMesaName))
-    return;
-
   // Cache the chrome version string.  This has to happen on FILE thread
   // because of chrome::VersionInfo::GetChannel().
   GetChromeVersionString();
+
+  // Skip auto updates in tests.
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kSkipGpuDataLoading))
+    return;
 
   // Post GpuBlacklistUpdate task on UI thread.  This has to happen
   // after GpuDataManager is initialized, otherwise it might be

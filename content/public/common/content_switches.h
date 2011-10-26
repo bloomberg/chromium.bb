@@ -143,6 +143,7 @@ CONTENT_EXPORT extern const char kServiceProcess[];
 extern const char kShowPaintRects[];
 extern const char kSimpleDataSource[];
 CONTENT_EXPORT extern const char kSingleProcess[];
+CONTENT_EXPORT extern const char kSkipGpuDataLoading[];
 CONTENT_EXPORT extern const char kSQLiteIndexedDatabase[];
 CONTENT_EXPORT extern const char kTestSandbox[];
 extern const char kUnlimitedQuotaForFiles[];

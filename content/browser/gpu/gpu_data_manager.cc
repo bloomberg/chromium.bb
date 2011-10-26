@@ -153,7 +153,8 @@ GpuDataManager::UserFlags::UserFlags()
       disable_accelerated_layers_(false),
       disable_experimental_webgl_(false),
       disable_gl_multisampling_(false),
-      ignore_gpu_blacklist_(false) {
+      ignore_gpu_blacklist_(false),
+      skip_gpu_data_loading_(false) {
 }
 
 void GpuDataManager::UserFlags::Initialize() {
@@ -173,6 +174,8 @@ void GpuDataManager::UserFlags::Initialize() {
 
   ignore_gpu_blacklist_ = browser_command_line.HasSwitch(
       switches::kIgnoreGpuBlacklist);
+  skip_gpu_data_loading_ = browser_command_line.HasSwitch(
+      switches::kSkipGpuDataLoading);
 
   use_gl_ = browser_command_line.GetSwitchValueASCII(switches::kUseGL);
 
@@ -192,17 +195,19 @@ GpuDataManager::GpuDataManager()
 }
 
 void GpuDataManager::Initialize() {
+  // User flags need to be collected before any further initialization.
+  user_flags_.Initialize();
+
   // Certain tests doesn't go through the browser startup path that
   // initializes GpuDataManager on FILE thread; therefore, it is initialized
   // on UI thread later, and we skip the preliminary gpu info collection
   // in such situation.
-  if (BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
+  if (!user_flags_.skip_gpu_data_loading() &&
+      BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
     content::GPUInfo gpu_info;
     gpu_info_collector::CollectPreliminaryGraphicsInfo(&gpu_info);
     UpdateGpuInfo(gpu_info);
   }
-
-  user_flags_.Initialize();
 
 #if defined(OS_MACOSX)
   CGDisplayRegisterReconfigurationCallback(DisplayReconfigCallback, this);
@@ -361,7 +366,7 @@ Value* GpuDataManager::GetFeatureStatus() {
     }
 
     GpuBlacklist* blacklist = GetGpuBlacklist();
-    if (blacklist && (!UseGLIsOSMesaOrAny()))
+    if (blacklist)
       blacklist->GetBlacklistReasons(problem_list);
 
     status->Set("problems", problem_list);
@@ -396,15 +401,10 @@ const ListValue& GpuDataManager::log_messages() const {
 }
 
 GpuFeatureFlags GpuDataManager::GetGpuFeatureFlags() {
-  if (UseGLIsOSMesaOrAny())
-    return GpuFeatureFlags();
   return gpu_feature_flags_;
 }
 
 bool GpuDataManager::GpuAccessAllowed() {
-  if (UseGLIsOSMesaOrAny())
-    return true;
-
   // We only need to block GPU process if more features are disallowed other
   // than those in the preliminary gpu feature flags because the latter work
   // through renderer commandline switches.
@@ -693,11 +693,6 @@ GpuBlacklist* GpuDataManager::GetGpuBlacklist() const {
   if (gpu_blacklist_.get() != NULL && gpu_blacklist_->max_entry_id() == 0)
     return NULL;
   return gpu_blacklist_.get();
-}
-
-bool GpuDataManager::UseGLIsOSMesaOrAny() {
-  return (user_flags_.use_gl() == "any" ||
-          user_flags_.use_gl() == gfx::kGLImplementationOSMesaName);
 }
 
 bool GpuDataManager::Merge(content::GPUInfo* object,

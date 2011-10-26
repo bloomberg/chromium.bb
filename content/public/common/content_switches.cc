@@ -446,6 +446,12 @@ const char kSimpleDataSource[]              = "simple-data-source";
 // Runs the renderer and plugins in the same process as the browser
 const char kSingleProcess[]                 = "single-process";
 
+// Skip gpu info collection, blacklist loading, and blacklist auto-update
+// scheduling at browser startup time.
+// Therefore, all GPU features are available, and about:gpu page shows empty
+// content. The switch is intended only for tests.
+const char kSkipGpuDataLoading[]            = "skip-gpu-data-loading";
+
 // Use SQLite as back-end for Indexed Database API.
 // Used for debugging differences between the LevelDB and SQLite back-end.
 const char kSQLiteIndexedDatabase[]         = "indexeddb-use-sqlite";
