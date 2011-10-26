@@ -478,11 +478,11 @@ BrokerDispatcherWrapper::~BrokerDispatcherWrapper() {
 }
 
 bool BrokerDispatcherWrapper::Init(
-    base::ProcessHandle plugin_process_handle,
+    base::ProcessHandle broker_process_handle,
     const IPC::ChannelHandle& channel_handle) {
   dispatcher_delegate_.reset(new DispatcherDelegate);
   dispatcher_.reset(
-      new ppapi::proxy::BrokerHostDispatcher(plugin_process_handle));
+      new ppapi::proxy::BrokerHostDispatcher(broker_process_handle));
 
   if (!dispatcher_->InitBrokerWithChannel(dispatcher_delegate_.get(),
                                           channel_handle,

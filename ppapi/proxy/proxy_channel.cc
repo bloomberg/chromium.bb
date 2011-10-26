@@ -17,6 +17,7 @@ ProxyChannel::ProxyChannel(base::ProcessHandle remote_process_handle)
 }
 
 ProxyChannel::~ProxyChannel() {
+  DVLOG(1) << "ProxyChannel::~ProxyChannel()";
 }
 
 bool ProxyChannel::InitWithChannel(Delegate* delegate,

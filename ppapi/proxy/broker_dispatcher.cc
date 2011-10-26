@@ -83,6 +83,7 @@ BrokerHostDispatcher::BrokerHostDispatcher(
 }
 
 void BrokerHostDispatcher::OnChannelError() {
+  DVLOG(1) << "BrokerHostDispatcher::OnChannelError()";
   BrokerDispatcher::OnChannelError();  // Stop using the channel.
 
   // Tell the host about the crash so it can clean up and display notification.
@@ -97,6 +98,7 @@ BrokerSideDispatcher::BrokerSideDispatcher(
 }
 
 void BrokerSideDispatcher::OnChannelError() {
+  DVLOG(1) << "BrokerSideDispatcher::OnChannelError()";
   BrokerDispatcher::OnChannelError();
 
   // The renderer has crashed or exited. This channel and all instances

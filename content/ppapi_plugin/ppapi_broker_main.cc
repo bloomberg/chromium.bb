@@ -24,5 +24,6 @@ int PpapiBrokerMain(const MainFunctionParams& parameters) {
   ppapi_broker_process.set_main_thread(new PpapiThread(true));  // Broker.
 
   main_message_loop.Run();
+  DVLOG(1) << "PpapiBrokerMain exiting";
   return 0;
 }

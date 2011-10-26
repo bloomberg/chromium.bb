@@ -8,15 +8,16 @@
 
 namespace {
 
-class PluginReleaseTask : public Task {
+class BrokerReleaseTask : public Task {
  public:
   void Run() {
+    DVLOG(1) << "BrokerReleaseTask::Run()";
     ChildProcess::current()->ReleaseProcess();
   }
 };
 
-// How long we wait before releasing the plugin process.
-const int kPluginReleaseTimeMs = 30 * 1000;  // 30 seconds.
+// How long we wait before releasing the broker process.
+const int kBrokerReleaseTimeMs = 30 * 1000;  // 30 seconds.
 
 }  // namespace
 
@@ -29,11 +30,12 @@ BrokerProcessDispatcher::BrokerProcessDispatcher(
 }
 
 BrokerProcessDispatcher::~BrokerProcessDispatcher() {
+  DVLOG(1) << "BrokerProcessDispatcher::~BrokerProcessDispatcher()";
   // Don't free the process right away. This timer allows the child process
   // to be re-used if the user rapidly goes to a new page that requires this
   // plugin. This is the case for common plugins where they may be used on a
   // source and destination page of a navigation. We don't want to tear down
   // and re-start processes each time in these cases.
-  MessageLoop::current()->PostDelayedTask(FROM_HERE, new PluginReleaseTask(),
-                                          kPluginReleaseTimeMs);
+  MessageLoop::current()->PostDelayedTask(FROM_HERE, new BrokerReleaseTask(),
+                                          kBrokerReleaseTimeMs);
 }

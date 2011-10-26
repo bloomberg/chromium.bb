@@ -4,6 +4,7 @@
 
 #include "content/browser/ppapi_plugin_process_host.h"
 
+#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/process_util.h"
@@ -52,6 +53,8 @@ class PpapiPluginProcessHost::PluginNetworkObserver
 };
 
 PpapiPluginProcessHost::~PpapiPluginProcessHost() {
+  DVLOG(1) << "PpapiPluginProcessHost" << (is_broker_ ? "[broker]" : "")
+           << "~PpapiPluginProcessHost()";
   CancelRequests();
 }
 
@@ -132,16 +135,23 @@ bool PpapiPluginProcessHost::Init(const content::PepperPluginInfo& info) {
                                          : switches::kPpapiPluginProcess);
   cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id());
 
+  // These switches are forwarded to both plugin and broker pocesses.
+  static const char* kCommonForwardSwitches[] = {
+    switches::kVModule
+  };
+  cmd_line->CopySwitchesFrom(browser_command_line, kCommonForwardSwitches,
+                             arraysize(kCommonForwardSwitches));
+
   if (!is_broker_) {
     // TODO(vtl): Stop passing flash args in the command line, on windows is
     // going to explode.
-    static const char* kForwardSwitches[] = {
+    static const char* kPluginForwardSwitches[] = {
       switches::kNoSandbox,
       switches::kPpapiFlashArgs,
       switches::kPpapiStartupDialog
     };
-    cmd_line->CopySwitchesFrom(browser_command_line, kForwardSwitches,
-                               arraysize(kForwardSwitches));
+    cmd_line->CopySwitchesFrom(browser_command_line, kPluginForwardSwitches,
+                               arraysize(kPluginForwardSwitches));
   }
 
   if (!plugin_launcher.empty())
@@ -212,6 +222,8 @@ void PpapiPluginProcessHost::OnChannelConnected(int32 peer_pid) {
 // Called when the browser <--> plugin channel has an error. This normally
 // means the plugin has crashed.
 void PpapiPluginProcessHost::OnChannelError() {
+  DVLOG(1) << "PpapiPluginProcessHost" << (is_broker_ ? "[broker]" : "")
+           << "::OnChannelError()";
   // We don't need to notify the renderers that were communicating with the
   // plugin since they have their own channels which will go into the error
   // state at the same time. Instead, we just need to notify any renderers
@@ -220,6 +232,8 @@ void PpapiPluginProcessHost::OnChannelError() {
 }
 
 void PpapiPluginProcessHost::CancelRequests() {
+  DVLOG(1) << "PpapiPluginProcessHost" << (is_broker_ ? "[broker]" : "")
+           << "CancelRequests()";
   for (size_t i = 0; i < pending_requests_.size(); i++) {
     pending_requests_[i]->OnChannelOpened(base::kNullProcessHandle,
                                           IPC::ChannelHandle());
