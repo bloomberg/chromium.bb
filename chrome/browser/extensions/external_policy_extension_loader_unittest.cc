@@ -53,7 +53,8 @@ class MockExternalPolicyExtensionProviderVisitor
         this,
         new ExternalPolicyExtensionLoader(profile_.get()),
         Extension::INVALID,
-        Extension::EXTERNAL_POLICY_DOWNLOAD));
+        Extension::EXTERNAL_POLICY_DOWNLOAD,
+        Extension::NO_FLAGS));
 
     // Extensions will be removed from this list as they visited,
     // so it should be emptied by the end.
@@ -65,7 +66,8 @@ class MockExternalPolicyExtensionProviderVisitor
   virtual void OnExternalExtensionFileFound(const std::string& id,
                                             const Version* version,
                                             const FilePath& path,
-                                            Extension::Location unused) {
+                                            Extension::Location unused,
+                                            int unused2) {
     ADD_FAILURE() << "There should be no external extensions from files.";
   }
 

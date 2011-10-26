@@ -96,7 +96,8 @@ class SandboxedExtensionUnpackerTest : public testing::Test {
     ASSERT_TRUE(file_util::CreateDirectory(temp_path_));
 
     sandboxed_unpacker_ =
-        new SandboxedExtensionUnpacker(crx_path, NULL, client_);
+        new SandboxedExtensionUnpacker(crx_path, NULL, Extension::NO_FLAGS,
+                                       client_);
 
     // Hack since SandboxedExtensionUnpacker gets its background thread id from
     // the Start call, but we don't call it here.

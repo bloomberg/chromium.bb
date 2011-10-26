@@ -101,7 +101,8 @@ class SandboxedExtensionUnpacker : public UtilityProcessHost::Client {
   // sandboxed subprocess. Otherwise, it is done in-process.
   SandboxedExtensionUnpacker(const FilePath& crx_path,
                              ResourceDispatcherHost* rdh,
-                             SandboxedExtensionUnpackerClient* cilent);
+                             int creation_flags,
+                             SandboxedExtensionUnpackerClient* client);
 
   // Start unpacking the extension. The client is called with the results.
   void Start();
@@ -240,6 +241,10 @@ class SandboxedExtensionUnpacker : public UtilityProcessHost::Client {
 
   // Time at which unpacking started. Used to compute the time unpacking takes.
   base::TimeTicks unpack_start_time_;
+
+  // Creation flags to use for the extension.  These flags will be used
+  // when calling Extenion::Create() by the crx installer.
+  int creation_flags_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_SANDBOXED_EXTENSION_UNPACKER_H_

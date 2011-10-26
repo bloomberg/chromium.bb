@@ -129,7 +129,8 @@ CrxInstaller::CrxInstaller(base::WeakPtr<ExtensionService> frontend_weak,
       client_(client),
       apps_require_extension_mime_type_(false),
       allow_silent_install_(false),
-      install_cause_(extension_misc::INSTALL_CAUSE_UNSET) {
+      install_cause_(extension_misc::INSTALL_CAUSE_UNSET),
+      creation_flags_(Extension::NO_FLAGS) {
 }
 
 CrxInstaller::~CrxInstaller() {
@@ -164,6 +165,7 @@ void CrxInstaller::InstallCrx(const FilePath& source_file) {
       new SandboxedExtensionUnpacker(
           source_file,
           g_browser_process->resource_dispatcher_host(),
+          creation_flags_,
           this));
 
   if (!BrowserThread::PostTask(

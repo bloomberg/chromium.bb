@@ -46,13 +46,15 @@ ExternalExtensionProviderImpl::ExternalExtensionProviderImpl(
     VisitorInterface* service,
     ExternalExtensionLoader* loader,
     Extension::Location crx_location,
-    Extension::Location download_location)
+    Extension::Location download_location,
+    int creation_flags)
   : crx_location_(crx_location),
     download_location_(download_location),
     service_(service),
     prefs_(NULL),
     ready_(false),
-    loader_(loader) {
+    loader_(loader),
+    creation_flags_(creation_flags) {
   loader_->Init(this);
 }
 
@@ -192,7 +194,7 @@ void ExternalExtensionProviderImpl::SetPrefs(DictionaryValue* prefs) {
         continue;
       }
       service_->OnExternalExtensionFileFound(extension_id, version.get(), path,
-                                             crx_location_);
+                                             crx_location_, creation_flags_);
     } else { // if (has_external_update_url)
       CHECK(has_external_update_url);  // Checking of keys above ensures this.
       if (download_location_ == Extension::INVALID) {
@@ -296,7 +298,8 @@ void ExternalExtensionProviderImpl::CreateExternalProviders(
               new ExternalPrefExtensionLoader(
                   chrome::DIR_EXTERNAL_EXTENSIONS, options),
               Extension::EXTERNAL_PREF,
-              Extension::EXTERNAL_PREF_DOWNLOAD)));
+              Extension::EXTERNAL_PREF_DOWNLOAD,
+              Extension::NO_FLAGS)));
 
 #if defined(OS_MACOSX)
   // Support old path to external extensions file as we migrate to the
@@ -309,7 +312,8 @@ void ExternalExtensionProviderImpl::CreateExternalProviders(
                   chrome::DIR_DEPRECATED_EXTERNAL_EXTENSIONS,
                   ExternalPrefExtensionLoader::NONE),
               Extension::EXTERNAL_PREF,
-              Extension::EXTERNAL_PREF_DOWNLOAD)));
+              Extension::EXTERNAL_PREF_DOWNLOAD,
+              Extension::NO_FLAGS)));
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -322,7 +326,8 @@ void ExternalExtensionProviderImpl::CreateExternalProviders(
                   chrome::DIR_USER_EXTERNAL_EXTENSIONS,
                   ExternalPrefExtensionLoader::NONE),
               Extension::EXTERNAL_PREF,
-              Extension::EXTERNAL_PREF_DOWNLOAD)));
+              Extension::EXTERNAL_PREF_DOWNLOAD,
+              Extension::NO_FLAGS)));
 #endif
 #if defined(OS_WIN)
   provider_list->push_back(
@@ -331,7 +336,8 @@ void ExternalExtensionProviderImpl::CreateExternalProviders(
               service,
               new ExternalRegistryExtensionLoader,
               Extension::EXTERNAL_REGISTRY,
-              Extension::INVALID)));
+              Extension::INVALID,
+              Extension::NO_FLAGS)));
 #endif
   provider_list->push_back(
       linked_ptr<ExternalExtensionProviderInterface>(
@@ -339,7 +345,8 @@ void ExternalExtensionProviderImpl::CreateExternalProviders(
               service,
               new ExternalPolicyExtensionLoader(profile),
               Extension::INVALID,
-              Extension::EXTERNAL_POLICY_DOWNLOAD)));
+              Extension::EXTERNAL_POLICY_DOWNLOAD,
+              Extension::NO_FLAGS)));
 
 #if !defined(OS_CHROMEOS)
   if (default_apps::ShouldInstallInProfile(profile)) {
@@ -350,7 +357,8 @@ void ExternalExtensionProviderImpl::CreateExternalProviders(
                 new ExternalPrefExtensionLoader(
                     chrome::DIR_DEFAULT_APPS, options),
                 Extension::EXTERNAL_PREF,
-                Extension::INVALID)));
+                Extension::INVALID,
+                Extension::FROM_BOOKMARK)));
   }
 #endif
 }

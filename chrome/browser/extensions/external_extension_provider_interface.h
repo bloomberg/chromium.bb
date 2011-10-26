@@ -29,7 +29,8 @@ class ExternalExtensionProviderInterface {
         const std::string& id,
         const Version* version,
         const FilePath& path,
-        Extension::Location location) = 0;
+        Extension::Location location,
+        int creation_flags) = 0;
 
     virtual void OnExternalExtensionUpdateUrlFound(
         const std::string& id,

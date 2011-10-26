@@ -38,7 +38,8 @@ class ExternalExtensionProviderImpl
       VisitorInterface* service,
       ExternalExtensionLoader* loader,
       Extension::Location crx_location,
-      Extension::Location download_location);
+      Extension::Location download_location,
+      int creation_flags);
 
   virtual ~ExternalExtensionProviderImpl();
 
@@ -92,6 +93,10 @@ class ExternalExtensionProviderImpl
   // The loader that loads the list of external extensions and reports them
   // via |SetPrefs|.
   scoped_refptr<ExternalExtensionLoader> loader_;
+
+  // Creation flags to use for the extension.  These flags will be used
+  // when calling Extenion::Create() by the crx installer.
+  int creation_flags_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalExtensionProviderImpl);
 };

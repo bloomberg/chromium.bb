@@ -112,10 +112,12 @@ void RecordSuccessfulUnpackTimeHistograms(
 SandboxedExtensionUnpacker::SandboxedExtensionUnpacker(
     const FilePath& crx_path,
     ResourceDispatcherHost* rdh,
+    int creation_flags,
     SandboxedExtensionUnpackerClient* client)
     : crx_path_(crx_path),
       thread_identifier_(BrowserThread::ID_COUNT),
-      rdh_(rdh), client_(client), got_response_(false) {
+      rdh_(rdh), client_(client), got_response_(false),
+      creation_flags_(creation_flags) {
 }
 
 bool SandboxedExtensionUnpacker::CreateTempDirectory() {
@@ -296,7 +298,7 @@ void SandboxedExtensionUnpacker::OnUnpackExtensionSucceeded(
       extension_root_,
       Extension::INTERNAL,
       *final_manifest,
-      Extension::REQUIRE_KEY,
+      Extension::REQUIRE_KEY | creation_flags_,
       &error);
 
   if (!extension_.get()) {

@@ -113,6 +113,9 @@ class CrxInstaller
   virtual void InstallUIProceed() OVERRIDE;
   virtual void InstallUIAbort(bool user_initiated) OVERRIDE;
 
+  int creation_flags() const { return creation_flags_; }
+  void set_creation_flags(int val) { creation_flags_ = val; }
+
   const GURL& download_url() const { return download_url_; }
   void set_download_url(const GURL& val) { download_url_ = val; }
 
@@ -311,6 +314,10 @@ class CrxInstaller
   // What caused this install?  Used only for histograms that report
   // on failure rates, broken down by the cause of the install.
   extension_misc::CrxInstallCause install_cause_;
+
+  // Creation flags to use for the extension.  These flags will be used
+  // when calling Extenion::Create() by the crx installer.
+  int creation_flags_;
 
   DISALLOW_COPY_AND_ASSIGN(CrxInstaller);
 };
