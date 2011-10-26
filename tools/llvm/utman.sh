@@ -76,7 +76,7 @@ readonly BINUTILS_TARGET=arm-pc-nacl
 readonly REAL_CROSS_TARGET=pnacl
 readonly NACL64_TARGET=x86_64-nacl
 
-readonly DRIVER_DIR="${NACL_ROOT}/tools/llvm/driver"
+readonly DRIVER_DIR="${NACL_ROOT}/pnacl/driver"
 readonly ARM_ARCH=armv7-a
 readonly ARM_FPU=vfp
 
