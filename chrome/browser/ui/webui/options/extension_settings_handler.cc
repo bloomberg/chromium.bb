@@ -566,12 +566,10 @@ void ExtensionSettingsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_IN_DEVELOPMENT));
   localized_strings->SetString("extensionSettingsWarningsTitle",
       l10n_util::GetStringUTF16(IDS_EXTENSION_WARNINGS_TITLE));
-
-  // TODO(dmazzoni): Uncomment these strings once this change is merged.
   localized_strings->SetString("extensionSettingsShowDetails",
-      "");  // l10n_util::GetStringUTF16(IDS_EXTENSIONS_SHOW_DETAILS));
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_SHOW_DETAILS));
   localized_strings->SetString("extensionSettingsHideDetails",
-      "");  // l10n_util::GetStringUTF16(IDS_EXTENSIONS_HIDE_DETAILS));
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_HIDE_DETAILS));
 }
 
 void ExtensionSettingsHandler::Initialize() {
