@@ -86,6 +86,4 @@ class VideoCaptureModuleImpl
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureModuleImpl);
 };
 
-DISABLE_RUNNABLE_METHOD_REFCOUNT(VideoCaptureModuleImpl);
-
 #endif  // CONTENT_RENDERER_MEDIA_VIDEO_CAPTURE_MODULE_IMPL_H_

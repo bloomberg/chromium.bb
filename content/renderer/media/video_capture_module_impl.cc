@@ -59,14 +59,15 @@ WebRtc_Word32 VideoCaptureModuleImpl::StartCapture(
   message_loop_proxy_->PostTask(
       FROM_HERE,
       base::Bind(&VideoCaptureModuleImpl::StartCaptureOnCaptureThread,
-                 this, capability));
+                 base::Unretained(this), capability));
   return 0;
 }
 
 WebRtc_Word32 VideoCaptureModuleImpl::StopCapture() {
   message_loop_proxy_->PostTask(
       FROM_HERE,
-      base::Bind(&VideoCaptureModuleImpl::StopCaptureOnCaptureThread, this));
+      base::Bind(&VideoCaptureModuleImpl::StopCaptureOnCaptureThread,
+                 base::Unretained(this)));
   return 0;
 }
 
@@ -91,7 +92,8 @@ void VideoCaptureModuleImpl::OnStarted(media::VideoCapture* capture) {
 void VideoCaptureModuleImpl::OnStopped(media::VideoCapture* capture) {
   message_loop_proxy_->PostTask(
       FROM_HERE,
-      base::Bind(&VideoCaptureModuleImpl::OnStoppedOnCaptureThread, this,
+      base::Bind(&VideoCaptureModuleImpl::OnStoppedOnCaptureThread,
+                 base::Unretained(this),
                  capture));
 }
 
@@ -114,7 +116,7 @@ void VideoCaptureModuleImpl::OnBufferReady(
   message_loop_proxy_->PostTask(
       FROM_HERE,
       base::Bind(&VideoCaptureModuleImpl::OnBufferReadyOnCaptureThread,
-                 this, capture, buf));
+                 base::Unretained(this), capture, buf));
 }
 
 void VideoCaptureModuleImpl::OnDeviceInfoReceived(
