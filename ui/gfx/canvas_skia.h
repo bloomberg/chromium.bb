@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "skia/ext/platform_canvas.h"
@@ -94,51 +95,57 @@ class UI_EXPORT CanvasSkia : public Canvas {
   SkBitmap ExtractBitmap() const;
 
   // Overridden from Canvas:
-  virtual void Save();
-  virtual void SaveLayerAlpha(uint8 alpha);
-  virtual void SaveLayerAlpha(uint8 alpha, const gfx::Rect& layer_bounds);
-  virtual void Restore();
-  virtual bool ClipRectInt(int x, int y, int w, int h);
-  virtual void TranslateInt(int x, int y);
-  virtual void ScaleInt(int x, int y);
-  virtual void FillRectInt(const SkColor& color, int x, int y, int w, int h);
-  virtual void FillRectInt(const SkColor& color, int x, int y, int w, int h,
-                           SkXfermode::Mode mode);
-  virtual void FillRectInt(const gfx::Brush* brush, int x, int y, int w, int h);
-  virtual void DrawRectInt(const SkColor& color, int x, int y, int w, int h);
+  virtual void Save() OVERRIDE;
+  virtual void SaveLayerAlpha(uint8 alpha) OVERRIDE;
+  virtual void SaveLayerAlpha(uint8 alpha,
+                              const gfx::Rect& layer_bounds) OVERRIDE;
+  virtual void Restore() OVERRIDE;
+  virtual bool ClipRectInt(const gfx::Rect& rect) OVERRIDE;
+  virtual void TranslateInt(int x, int y) OVERRIDE;
+  virtual void ScaleInt(int x, int y) OVERRIDE;
+  virtual void FillRectInt(const SkColor& color,
+                           int x, int y, int w, int h) OVERRIDE;
+  virtual void FillRectInt(const SkColor& color,
+                           int x, int y, int w, int h,
+                           SkXfermode::Mode mode) OVERRIDE;
+  virtual void FillRectInt(const gfx::Brush* brush,
+                           int x, int y, int w, int h) OVERRIDE;
+  virtual void DrawRectInt(const SkColor& color,
+                           int x, int y, int w, int h) OVERRIDE;
   virtual void DrawRectInt(const SkColor& color,
                            int x, int y, int w, int h,
-                           SkXfermode::Mode mode);
-  virtual void DrawRectInt(int x, int y, int w, int h, const SkPaint& paint);
+                           SkXfermode::Mode mode) OVERRIDE;
+  virtual void DrawRectInt(int x, int y, int w, int h,
+                           const SkPaint& paint) OVERRIDE;
   virtual void DrawLineInt(const SkColor& color,
                            int x1, int y1,
-                           int x2, int y2);
-  virtual void DrawBitmapInt(const SkBitmap& bitmap, int x, int y);
+                           int x2, int y2) OVERRIDE;
+  virtual void DrawBitmapInt(const SkBitmap& bitmap, int x, int y) OVERRIDE;
   virtual void DrawBitmapInt(const SkBitmap& bitmap,
                              int x, int y,
-                             const SkPaint& paint);
+                             const SkPaint& paint) OVERRIDE;
   virtual void DrawBitmapInt(const SkBitmap& bitmap,
                              int src_x, int src_y, int src_w, int src_h,
                              int dest_x, int dest_y, int dest_w, int dest_h,
-                             bool filter);
+                             bool filter) OVERRIDE;
   virtual void DrawBitmapInt(const SkBitmap& bitmap,
                              int src_x, int src_y, int src_w, int src_h,
                              int dest_x, int dest_y, int dest_w, int dest_h,
                              bool filter,
-                             const SkPaint& paint);
+                             const SkPaint& paint) OVERRIDE;
   virtual void DrawStringInt(const string16& text,
                              const gfx::Font& font,
                              const SkColor& color,
-                             int x, int y, int w, int h);
+                             int x, int y, int w, int h) OVERRIDE;
   virtual void DrawStringInt(const string16& text,
                              const gfx::Font& font,
                              const SkColor& color,
-                             const gfx::Rect& display_rect);
+                             const gfx::Rect& display_rect) OVERRIDE;
   virtual void DrawStringInt(const string16& text,
                              const gfx::Font& font,
                              const SkColor& color,
                              int x, int y, int w, int h,
-                             int flags);
+                             int flags) OVERRIDE;
 #if defined(OS_WIN)
   // Draws the given string with the beginning and/or the end using a fade
   // gradient. When truncating the head
@@ -152,21 +159,23 @@ class UI_EXPORT CanvasSkia : public Canvas {
       const SkColor& color,
       const gfx::Rect& display_rect);
 #endif
-  virtual void DrawFocusRect(const gfx::Rect& rect);
-  virtual void TileImageInt(const SkBitmap& bitmap, int x, int y, int w, int h);
+  virtual void DrawFocusRect(const gfx::Rect& rect) OVERRIDE;
+  virtual void TileImageInt(const SkBitmap& bitmap,
+                            int x, int y, int w, int h) OVERRIDE;
   virtual void TileImageInt(const SkBitmap& bitmap,
                             int src_x, int src_y,
-                            int dest_x, int dest_y, int w, int h);
-  virtual gfx::NativeDrawingContext BeginPlatformPaint();
-  virtual void EndPlatformPaint();
+                            int dest_x, int dest_y, int w, int h) OVERRIDE;
+  virtual gfx::NativeDrawingContext BeginPlatformPaint() OVERRIDE;
+  virtual void EndPlatformPaint() OVERRIDE;
 #if !defined(OS_MACOSX)
-  virtual void Transform(const ui::Transform& transform);
+  virtual void Transform(const ui::Transform& transform) OVERRIDE;
 #endif
-  virtual ui::TextureID GetTextureID();
-  virtual CanvasSkia* AsCanvasSkia();
-  virtual const CanvasSkia* AsCanvasSkia() const;
-  virtual SkCanvas* GetSkCanvas();
-  virtual const SkCanvas* GetSkCanvas() const;
+  virtual ui::TextureID GetTextureID() OVERRIDE;
+  virtual CanvasSkia* AsCanvasSkia() OVERRIDE;
+  virtual const CanvasSkia* AsCanvasSkia() const OVERRIDE;
+  virtual SkCanvas* GetSkCanvas() OVERRIDE;
+  virtual const SkCanvas* GetSkCanvas() const OVERRIDE;
+
   SkCanvas* sk_canvas() const { return canvas_; }
   skia::PlatformCanvas* platform_canvas() const { return owned_canvas_.get(); }
 

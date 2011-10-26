@@ -569,8 +569,7 @@ void CanvasSkia::DrawFadeTruncatingString(
 
   // Draw the solid part.
   canvas_->save(SkCanvas::kClip_SaveFlag);
-  ClipRectInt(solid_part.x(), solid_part.y(),
-              solid_part.width(), solid_part.height());
+  ClipRectInt(solid_part);
   DrawStringInt(text, font, color,
                 text_rect.x(), text_rect.y(),
                 text_rect.width(), text_rect.height(),

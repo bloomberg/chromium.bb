@@ -834,7 +834,8 @@ void TabRendererGtk::PaintIcon(gfx::Canvas* canvas) {
     PaintLoadingAnimation(canvas);
   } else {
     canvas->Save();
-    canvas->ClipRectInt(0, 0, width(), height() - kFaviconTitleSpacing);
+    canvas->ClipRectInt(
+        gfx::Rect(0, 0, width(), height() - kFaviconTitleSpacing));
     if (should_display_crashed_favicon_) {
       canvas->DrawBitmapInt(*crashed_favicon, 0, 0,
                             crashed_favicon->width(),
@@ -978,8 +979,8 @@ void TabRendererGtk::PaintLoadingAnimation(gfx::Canvas* canvas) {
 
   // NOTE: the clipping is a work around for 69528, it shouldn't be necessary.
   canvas->Save();
-  canvas->ClipRectInt(
-      favicon_bounds_.x(), favicon_bounds_.y(), image_size, image_size);
+  canvas->ClipRectInt(gfx::Rect(favicon_bounds_.x(), favicon_bounds_.y(),
+                                image_size, image_size));
   canvas->DrawBitmapInt(*frames, image_offset, 0, image_size, image_size,
       favicon_bounds_.x(), favicon_bounds_.y(), image_size, image_size,
       false);

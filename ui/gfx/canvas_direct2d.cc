@@ -173,13 +173,13 @@ void CanvasDirect2D::Restore() {
   rt_->RestoreDrawingState(drawing_state_block_);
 }
 
-bool CanvasDirect2D::ClipRectInt(int x, int y, int w, int h) {
-  rt_->PushAxisAlignedClip(RectToRectF(x, y, w, h),
+bool CanvasDirect2D::ClipRectInt(const gfx::Rect& rect) {
+  rt_->PushAxisAlignedClip(RectToRectF(rect),
                            D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
   // Increment the clip count so the call to PushAxisAlignedClip() can be
   // balanced with a call to PopAxisAlignedClip in the next Restore().
   ++state_.top().clip_count;
-  return w > 0 && h > 0;
+  return !rect.IsEmpty();
 }
 
 void CanvasDirect2D::TranslateInt(int x, int y) {

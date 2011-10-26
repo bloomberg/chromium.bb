@@ -451,8 +451,7 @@ void NativeWidgetWin::OnPaint(HDC dc) {
     window_contents_->save(SkCanvas::kClip_SaveFlag);
     RECT r;
     GetUpdateRect(hwnd(), &r, FALSE);
-    window_contents_->ClipRectInt(r.left, r.top, r.right - r.left,
-                                  r.bottom - r.top);
+    window_contents_->ClipRectInt(gfx::Rect(r));
     listener_->OnPaint(window_contents_.get());
     window_contents_->restore();
 

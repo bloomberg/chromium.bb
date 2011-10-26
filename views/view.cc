@@ -677,9 +677,9 @@ void View::Paint(gfx::Canvas* canvas) {
   // Note that the X (or left) position we pass to ClipRectInt takes into
   // consideration whether or not the view uses a right-to-left layout so that
   // we paint our view in its mirrored position if need be.
-  if (!canvas->ClipRectInt(GetMirroredX(), y(),
-                           width() - static_cast<int>(clip_x_),
-                           height() - static_cast<int>(clip_y_))) {
+  if (!canvas->ClipRectInt(gfx::Rect(GetMirroredX(), y(),
+                                     width() - static_cast<int>(clip_x_),
+                                     height() - static_cast<int>(clip_y_)))) {
     return;
   }
   // Non-empty clip, translate the graphics such that 0,0 corresponds to

@@ -552,7 +552,7 @@ void View::Paint(gfx::Canvas* canvas) {
     return;
 
   ScopedCanvasState canvas_state(canvas);
-  if (canvas->ClipRectInt(x(), y(), width(), height())) {
+  if (canvas->ClipRectInt(bounds_)) {
     canvas->TranslateInt(x(), y());
     // TODO(beng): RTL
     ScopedCanvasState canvas_state(canvas);

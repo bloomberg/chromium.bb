@@ -12,6 +12,7 @@
 #include "ui/gfx/brush.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/gfx/transform.h"
 
 #if defined(OS_WIN)
@@ -109,11 +110,8 @@ void CanvasSkia::Restore() {
   canvas_->restore();
 }
 
-bool CanvasSkia::ClipRectInt(int x, int y, int w, int h) {
-  SkRect new_clip;
-  new_clip.set(SkIntToScalar(x), SkIntToScalar(y),
-               SkIntToScalar(x + w), SkIntToScalar(y + h));
-  return canvas_->clipRect(new_clip);
+bool CanvasSkia::ClipRectInt(const gfx::Rect& rect) {
+  return canvas_->clipRect(gfx::RectToSkRect(rect));
 }
 
 void CanvasSkia::TranslateInt(int x, int y) {
@@ -336,7 +334,7 @@ void CanvasSkia::TileImageInt(const SkBitmap& bitmap,
   canvas_->save();
   canvas_->translate(SkIntToScalar(dest_x - src_x),
                      SkIntToScalar(dest_y - src_y));
-  ClipRectInt(src_x, src_y, w, h);
+  ClipRectInt(gfx::Rect(src_x, src_y, w, h));
   canvas_->drawPaint(paint);
   canvas_->restore();
 }

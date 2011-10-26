@@ -2322,10 +2322,7 @@ void NativeWidgetWin::RedrawLayeredWindowContents() {
 
   // We need to clip to the dirty rect ourselves.
   layered_window_contents_->sk_canvas()->save(SkCanvas::kClip_SaveFlag);
-  layered_window_contents_->ClipRectInt(invalid_rect_.x(),
-                                        invalid_rect_.y(),
-                                        invalid_rect_.width(),
-                                        invalid_rect_.height());
+  layered_window_contents_->ClipRectInt(invalid_rect_);
   GetWidget()->GetRootView()->Paint(layered_window_contents_.get());
   layered_window_contents_->sk_canvas()->restore();
 

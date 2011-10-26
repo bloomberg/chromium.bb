@@ -255,7 +255,7 @@ void InfoBarView::PaintChildren(gfx::Canvas* canvas) {
   // canvas_skia->clipPath(fill_path_);
   DCHECK_EQ(total_height(), height())
       << "Infobar piecewise heights do not match overall height";
-  canvas->ClipRectInt(0, arrow_height(), width(), bar_height());
+  canvas->ClipRectInt(gfx::Rect(0, arrow_height(), width(), bar_height()));
   views::View::PaintChildren(canvas);
   canvas->Restore();
 }

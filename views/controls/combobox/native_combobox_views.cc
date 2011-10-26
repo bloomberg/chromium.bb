@@ -302,8 +302,7 @@ void NativeComboboxViews::PaintText(gfx::Canvas* canvas) {
   gfx::Insets insets = GetInsets();
 
   canvas->Save();
-  canvas->ClipRectInt(insets.left(), insets.top(),
-                      width() - insets.width(), height() - insets.height());
+  canvas->ClipRectInt(GetContentsBounds());
 
   int x = insets.left();
   int y = insets.top();
@@ -315,7 +314,7 @@ void NativeComboboxViews::PaintText(gfx::Canvas* canvas) {
     index = 0;
   string16 text = combobox_->model()->GetItemAt(index);
 
-  const gfx::Font &font = GetFont();
+  const gfx::Font& font = GetFont();
   int width = font.GetStringWidth(text);
 
   canvas->DrawStringInt(text, font, text_color, x, y, width, text_height);

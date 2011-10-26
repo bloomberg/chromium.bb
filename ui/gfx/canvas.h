@@ -102,7 +102,7 @@ class UI_EXPORT Canvas {
   // Wrapper function that takes integer arguments.
   // Returns true if the clip is non-empty.
   // See clipRect for specifics.
-  virtual bool ClipRectInt(int x, int y, int w, int h) = 0;
+  virtual bool ClipRectInt(const gfx::Rect& rect) = 0;
 
   // Wrapper function that takes integer arguments.
   // See translate() for specifics.
