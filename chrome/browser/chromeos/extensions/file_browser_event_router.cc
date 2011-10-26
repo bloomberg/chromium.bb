@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/extensions/file_browser_event_router.h"
 
+#include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/message_loop.h"
 #include "base/stl_util.h"
@@ -445,24 +446,21 @@ void ExtensionFileBrowserEventRouter::FileWatcherDelegate::OnFilePathChanged(
     const FilePath& local_path) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this,
-          &FileWatcherDelegate::HandleFileWatchOnUIThread,
-          local_path,
-          false));    // got_error
+      base::Bind(&FileWatcherDelegate::HandleFileWatchOnUIThread,
+                 this, local_path, false));
 }
 
 void ExtensionFileBrowserEventRouter::FileWatcherDelegate::OnFilePathError(
     const FilePath& local_path) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this,
-          &FileWatcherDelegate::HandleFileWatchOnUIThread,
-          local_path,
-          true));     // got_error
+          base::Bind(&FileWatcherDelegate::HandleFileWatchOnUIThread,
+                     this, local_path, true));
 }
 
 void
 ExtensionFileBrowserEventRouter::FileWatcherDelegate::HandleFileWatchOnUIThread(
      const FilePath& local_path, bool got_error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   router_->HandleFileWatchNotification(local_path, got_error);
 }
