@@ -236,7 +236,7 @@ def FetchRevision(context, rev, filename, quit_event=None, progress_event=None):
   try:
     urllib.urlretrieve(download_url, filename, ReportHook)
     if progress_event and progress_event.isSet():
-      print()
+      print
   except RuntimeError, e:
     pass
 
