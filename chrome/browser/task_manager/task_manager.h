@@ -34,6 +34,23 @@ namespace net {
 class URLRequest;
 }
 
+#define TASKMANAGER_RESOURCE_TYPE_LIST(def) \
+    def(BROWSER)         /* The main browser process. */ \
+    def(RENDERER)        /* A normal TabContents renderer process. */ \
+    def(EXTENSION)       /* An extension or app process. */ \
+    def(NOTIFICATION)    /* A notification process. */ \
+    def(PLUGIN)          /* A plugin process. */ \
+    def(WORKER)          /* A web worker process. */ \
+    def(NACL)            /* A NativeClient loader or broker process. */ \
+    def(UTILITY)         /* A browser utility process. */ \
+    def(PROFILE_IMPORT)  /* A profile import process. */ \
+    def(ZYGOTE)          /* A Linux zygote process. */ \
+    def(SANDBOX_HELPER)  /* A sandbox helper process. */ \
+    def(GPU)             /* A graphics process. */
+
+#define TASKMANAGER_RESOURCE_TYPE_LIST_ENUM(a)   a,
+#define TASKMANAGER_RESOURCE_TYPE_LIST_AS_STRING(a)   case a: return #a;
+
 // This class is a singleton.
 class TaskManager {
  public:
@@ -44,19 +61,8 @@ class TaskManager {
     virtual ~Resource() {}
 
     enum Type {
-      UNKNOWN = 0,     // An unknown process type.
-      BROWSER,         // The main browser process.
-      RENDERER,        // A normal TabContents renderer process.
-      EXTENSION,       // An extension or app process.
-      NOTIFICATION,    // A notification process.
-      PLUGIN,          // A plugin process.
-      WORKER,          // A web worker process.
-      NACL,            // A NativeClient loader or broker process.
-      UTILITY,         // A browser utility process.
-      PROFILE_IMPORT,  // A profile import process.
-      ZYGOTE,          // A Linux zygote process.
-      SANDBOX_HELPER,  // A sandbox helper process.
-      GPU              // A graphics process.
+      UNKNOWN = 0,
+      TASKMANAGER_RESOURCE_TYPE_LIST(TASKMANAGER_RESOURCE_TYPE_LIST_ENUM)
     };
 
     virtual string16 GetTitle() const = 0;
@@ -113,6 +119,13 @@ class TaskManager {
     // Returns true if this resource is not visible to the user because it lives
     // in the background (e.g. extension background page, background contents).
     virtual bool IsBackground() const { return false; }
+
+    static const char* GetResourceTypeAsString(const Type type) {
+      switch (type) {
+        TASKMANAGER_RESOURCE_TYPE_LIST(TASKMANAGER_RESOURCE_TYPE_LIST_AS_STRING)
+        default: return "UNKNOWN";
+      }
+    };
   };
 
   // ResourceProviders are responsible for adding/removing resources to the task
@@ -203,6 +216,11 @@ class TaskManager {
 
   DISALLOW_COPY_AND_ASSIGN(TaskManager);
 };
+
+#undef TASKMANAGER_RESOURCE_TYPE_LIST
+#undef DEFINE_ENUM
+#undef DEFINE_CONVERT_TO_STRING
+
 
 class TaskManagerModelObserver {
  public:

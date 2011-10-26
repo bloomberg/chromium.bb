@@ -44,6 +44,34 @@ TaskManager.prototype = {
   },
 
   /**
+   * Handle selection change.
+   * This is also called when data of tasks are refleshed, even if selection
+   * has not been changed.
+   * @public
+   */
+  onSelectionChange: function () {
+    var sm = this.selectionModel_;
+    var dm = this.dataModel_;
+    var selectedIndexes = sm.selectedIndexes;
+
+    var is_end_process_enabled = true;
+    for (var i = 0; i < selectedIndexes.length; i++) {
+      var index = selectedIndexes[i];
+      var task = dm.item(index);
+      if (task['type'] == 'BROWSER')
+        is_end_process_enabled = false;
+    }
+    if (this.is_end_process_enabled_ != is_end_process_enabled) {
+      if (is_end_process_enabled)
+        $('kill-process').removeAttribute("disabled");
+      else
+        $('kill-process').setAttribute("disabled", "true");
+
+      this.is_end_process_enabled_ = is_end_process_enabled;
+    }
+  },
+
+  /**
    * Closes taskmanager dialog.
    * After this function is called, onClose() will be called.
    * @public
@@ -127,6 +155,9 @@ TaskManager.prototype = {
     this.initColumnModel_();
     this.selectionModel_ = new cr.ui.ListSelectionModel();
     this.dataModel_ = new cr.ui.ArrayDataModel([]);
+
+    this.selectionModel_.addEventListener('change',
+                                          this.onSelectionChange.bind(this));
 
     // Initializes compare functions for column sort.
     var dm = this.dataModel_;

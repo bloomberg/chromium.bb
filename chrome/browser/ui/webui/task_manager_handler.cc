@@ -26,6 +26,10 @@ namespace {
 static Value* CreateColumnValue(const TaskManagerModel* tm,
                                 const std::string column_name,
                                 const int i) {
+  if (column_name == "type")
+    return Value::CreateStringValue(
+        TaskManager::Resource::GetResourceTypeAsString(
+        tm->GetResourceType(i)));
   if (column_name == "processId")
     return Value::CreateStringValue(tm->GetResourceProcessId(i));
   if (column_name == "processIdValue")
@@ -152,6 +156,7 @@ static DictionaryValue* CreateTaskGroupValue(const TaskManagerModel* tm,
                   tm->IsBackgroundResource(index));
 
   // Columns which have one datum in each group.
+  CreateGroupColumnList(tm, "type", index, 1, val);
   CreateGroupColumnList(tm, "processId", index, 1, val);
   CreateGroupColumnList(tm, "processIdValue", index, 1, val);
   CreateGroupColumnList(tm, "cpuUsage", index, 1, val);
