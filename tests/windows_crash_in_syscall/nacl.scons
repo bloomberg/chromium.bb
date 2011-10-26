@@ -1,0 +1,61 @@
+# -*- python -*-
+# Copyright 2011 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+Import('env')
+
+
+if not env.Bit('host_windows'):
+  # This test is specifically for Windows: it checks how NaCl
+  # interacts with a Windows API (SetUnhandledExceptionFilter()).
+  Return()
+
+if 'TRUSTED_ENV' not in env:
+  Return()
+trusted_env = env['TRUSTED_ENV']
+
+# This duplicates the library list in src/trusted/service_runtime/build.scons.
+# We would not have to do this if we could get Scons to track dependencies
+# between libraries.
+VALIDATOR_LIBS = []
+if trusted_env.Bit('target_x86'):
+  VALIDATOR_LIBS += [trusted_env.NaClTargetArchSuffix('ncvalidate')]
+elif trusted_env.Bit('target_arm'):
+  VALIDATOR_LIBS += ['ncvalidate_arm_v2']
+
+DEBUG_LIBS = ['debug_stub_init', 'gdb_rsp', 'debug_stub']
+
+runner = trusted_env.ComponentProgram(
+    'test_host', ['test_host.c'],
+    EXTRA_LIBS=['sel',
+                'manifest_proxy',
+                'simple_service',
+                'thread_interface',
+                'gio_wrapped_desc',
+                'nonnacl_srpc',
+                'nrd_xfer',
+                'nacl_perf_counter',
+                'nacl_base',
+                'imc',
+                'container',
+                'nacl_fault_inject',
+                'platform',
+                'platform_qual_lib',
+                'gio',
+                ] + VALIDATOR_LIBS + DEBUG_LIBS)
+
+if env.Bit('bitcode'):
+  # The PNaCl compiler driver does not yet accept -nostartfiles or
+  # -Wl,--entry.
+  # TODO(mseaborn): Add support for these to the PNaCl compiler driver.
+  Return()
+guest_env = env.Clone()
+guest_env.Append(LINKFLAGS=['-nostartfiles', '-Wl,--entry=EntryPoint'])
+test_prog = guest_env.ComponentProgram(
+    'test_guest', ['test_guest.c'])
+
+node = env.CommandTest('windows_crash_in_syscall_test.out', [runner, test_prog])
+env.AddNodeToTestSuite(node, ['small_tests'],
+                       'run_windows_crash_in_syscall_test',
+                       is_broken=not env.Bit('nacl_static_link'))

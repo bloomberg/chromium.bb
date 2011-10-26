@@ -28,6 +28,7 @@
 #include "native_client/src/trusted/service_runtime/include/bits/nacl_syscalls.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_stack_safety.h"
+#include "native_client/src/trusted/service_runtime/win/stack_unwind_stop.h"
 
 int NaClArtificialDelay = -1;
 
@@ -71,6 +72,8 @@ NORETURN void NaClSyscallCSegHook(int32_t tls_idx) {
   size_t                    sysnum;
   uintptr_t                 sp_user;
   uintptr_t                 sp_sys;
+
+  NACL_WINDOWS_EXCEPTION_BEGIN;
 
   /*
    * Mark the thread as running on a trusted stack as soon as possible
@@ -185,6 +188,8 @@ NORETURN void NaClSyscallCSegHook(int32_t tls_idx) {
 
   NaClSwitchToApp(natp, user_ret);
   /* NOTREACHED */
+
+  NACL_WINDOWS_EXCEPTION_END;
 
   fprintf(stderr, "NORETURN NaClSwitchToApp returned!?!\n");
   NaClAbort();

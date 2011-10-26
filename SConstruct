@@ -3185,6 +3185,7 @@ nonvariant_tests = [
     'tests/pyauto_nacl/nacl.scons',
     'tests/unittests/shared/imc/nacl.scons',
     'tests/unittests/shared/srpc/nacl.scons',
+    'tests/windows_crash_in_syscall/nacl.scons',
     #### ALPHABETICALLY SORTED ####
     ]
 
