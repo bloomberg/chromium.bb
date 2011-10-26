@@ -39,6 +39,33 @@ static const int kDefaultHostWindowY = 200;
 static const int kDefaultHostWindowWidth = 1280;
 static const int kDefaultHostWindowHeight = 1024;
 
+class DefaultDesktopDelegate : public DesktopDelegate {
+ public:
+  explicit DefaultDesktopDelegate(Desktop* desktop) : desktop_(desktop) {}
+  virtual ~DefaultDesktopDelegate() {}
+
+ private:
+  virtual void AddChildToDefaultParent(Window* window) OVERRIDE {
+    desktop_->AddChild(window);
+  }
+
+  virtual Window* GetTopmostWindowToActivate(Window* ignore) const OVERRIDE {
+    Window::Windows::const_reverse_iterator i;
+    for (i = desktop_->children().rbegin();
+         i != desktop_->children().rend();
+         ++i) {
+      if (*i == ignore)
+        continue;
+      return *i;
+    }
+    return NULL;
+  }
+
+  Desktop* desktop_;
+
+  DISALLOW_COPY_AND_ASSIGN(DefaultDesktopDelegate);
+};
+
 }  // namespace
 
 Desktop* Desktop::instance_ = NULL;
@@ -47,6 +74,8 @@ bool Desktop::use_fullscreen_host_window_ = false;
 Desktop::Desktop()
     : Window(NULL),
       host_(aura::DesktopHost::Create(GetInitialHostWindowBounds())),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          delegate_(new DefaultDesktopDelegate(this))),
       ALLOW_THIS_IN_INITIALIZER_LIST(schedule_paint_factory_(this)),
       active_window_(NULL),
       in_destructor_(false),
