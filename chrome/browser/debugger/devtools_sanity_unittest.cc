@@ -525,9 +525,11 @@ IN_PROC_BROWSER_TEST_F(WorkerDevToolsSanityTest, MAYBE_InspectSharedWorker) {
   RunTest("testSharedWorker", kSharedWorkerTestPage);
 }
 
-
+// http://crbug.com/100538
 #if defined(OS_MACOSX)
 #define MAYBE_PauseInSharedWorkerInitialization DISABLED_PauseInSharedWorkerInitialization
+#elif defined(OS_WIN)
+#define MAYBE_PauseInSharedWorkerInitialization FLAKY_PauseInSharedWorkerInitialization
 #else
 #define MAYBE_PauseInSharedWorkerInitialization PauseInSharedWorkerInitialization
 #endif
