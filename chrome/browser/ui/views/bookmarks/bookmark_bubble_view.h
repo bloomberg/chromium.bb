@@ -51,9 +51,6 @@ class BookmarkBubbleView : public views::View,
 
   void set_bubble(Bubble* bubble) { bubble_ = bubble; }
 
-  // Invoked after the bubble has been shown.
-  virtual void BubbleShown();
-
   // Override to close on return.
   virtual bool AcceleratorPressed(
       const views::Accelerator& accelerator) OVERRIDE;
@@ -90,6 +87,7 @@ class BookmarkBubbleView : public views::View,
 
   // BubbleDelegate methods. These forward to the BubbleDelegate supplied in the
   // constructor as well as sending out the necessary notification.
+  virtual void BubbleShown() OVERRIDE;
   virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape) OVERRIDE;
   virtual bool CloseOnEscape() OVERRIDE;
   virtual bool FadeInOnShow() OVERRIDE;

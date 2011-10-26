@@ -65,6 +65,7 @@ class HighlightDelegate {
  public:
   virtual ~HighlightDelegate() {}
   virtual void OnHighlightStateChanged() = 0;
+  virtual void OnFocusStateChanged(bool has_focus) = 0;
 };
 
 
@@ -80,6 +81,8 @@ class EditProfileLink : public views::Link {
 
   virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
+  virtual void OnFocus() OVERRIDE;
+  virtual void OnBlur() OVERRIDE;
 
   views::CustomButton::ButtonState state() { return state_; }
 
@@ -105,6 +108,17 @@ void EditProfileLink::OnMouseExited(const views::MouseEvent& event) {
   views::Link::OnMouseExited(event);
   state_ = views::CustomButton::BS_NORMAL;
   delegate_->OnHighlightStateChanged();
+}
+
+void EditProfileLink::OnFocus() {
+  views::Link::OnFocus();
+  delegate_->OnFocusStateChanged(true);
+}
+
+void EditProfileLink::OnBlur() {
+  views::Link::OnBlur();
+  state_ = views::CustomButton::BS_NORMAL;
+  delegate_->OnFocusStateChanged(false);
 }
 
 
@@ -136,8 +150,11 @@ class ProfileItemView : public views::CustomButton,
   virtual void Layout() OVERRIDE;
   virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
+  virtual void OnFocus() OVERRIDE;
+  virtual void OnBlur() OVERRIDE;
 
   virtual void OnHighlightStateChanged() OVERRIDE;
+  virtual void OnFocusStateChanged(bool has_focus) OVERRIDE;
 
   EditProfileLink* edit_link() { return edit_link_; }
   const AvatarMenuModel::Item& item() { return item_; }
@@ -145,7 +162,7 @@ class ProfileItemView : public views::CustomButton,
  private:
   static SkBitmap GetBadgedIcon(const SkBitmap& icon);
 
-  bool IsHighlighted() const;
+  bool IsHighlighted();
 
   EditProfileLink* edit_link_;
   views::ImageView* image_view_;
@@ -246,6 +263,16 @@ void ProfileItemView::OnMouseExited(const views::MouseEvent& event) {
   OnHighlightStateChanged();
 }
 
+void ProfileItemView::OnFocus() {
+  views::CustomButton::OnFocus();
+  OnFocusStateChanged(true);
+}
+
+void ProfileItemView::OnBlur() {
+  views::CustomButton::OnBlur();
+  OnFocusStateChanged(false);
+}
+
 void ProfileItemView::OnHighlightStateChanged() {
   set_background(IsHighlighted() ? views::Background::CreateSolidBackground(
       SkColorSetRGB(0xe3, 0xed, 0xf6)) : NULL);
@@ -259,6 +286,12 @@ void ProfileItemView::OnHighlightStateChanged() {
   sync_state_label_->SetVisible(!show_edit);
   edit_link_->SetVisible(show_edit);
   SchedulePaint();
+}
+
+void ProfileItemView::OnFocusStateChanged(bool has_focus) {
+  if (!has_focus && state() != views::CustomButton::BS_DISABLED)
+    SetState(views::CustomButton::BS_NORMAL);
+  OnHighlightStateChanged();
 }
 
 // static
@@ -280,11 +313,13 @@ SkBitmap ProfileItemView::GetBadgedIcon(const SkBitmap& icon) {
   return canvas.ExtractBitmap();
 }
 
-bool ProfileItemView::IsHighlighted() const {
+bool ProfileItemView::IsHighlighted() {
   return state() == views::CustomButton::BS_PUSHED ||
          state() == views::CustomButton::BS_HOT ||
          edit_link_->state() == views::CustomButton::BS_PUSHED ||
-         edit_link_->state() == views::CustomButton::BS_HOT;
+         edit_link_->state() == views::CustomButton::BS_HOT ||
+         HasFocus() ||
+         edit_link_->HasFocus();
 }
 
 }  // namespace
@@ -348,6 +383,36 @@ void AvatarMenuBubbleView::Layout() {
                                add_profile_link_->GetPreferredSize().height());
 }
 
+bool AvatarMenuBubbleView::AcceleratorPressed(
+    const views::Accelerator& accelerator) {
+  if (accelerator.key_code() != ui::VKEY_DOWN &&
+      accelerator.key_code() != ui::VKEY_UP) {
+    return false;
+  }
+
+  if (item_views_.empty())
+    return true;
+
+  // Find the currently focused item. Note that if there is no focused item, the
+  // code below correctly handles a |focus_index| of -1.
+  int focus_index = -1;
+  for (size_t i = 0; i < item_views_.size(); ++i) {
+    if (item_views_[i]->HasFocus()) {
+      focus_index = i;
+      break;
+    }
+  }
+
+  // Moved the focus up or down by 1.
+  if (accelerator.key_code() == ui::VKEY_DOWN)
+    focus_index = (focus_index + 1) % item_views_.size();
+  else
+    focus_index = ((focus_index > 0) ? focus_index : item_views_.size()) - 1;
+  item_views_[focus_index]->RequestFocus();
+
+  return true;
+}
+
 void AvatarMenuBubbleView::ButtonPressed(views::Button* sender,
                                          const views::Event& event) {
   for (size_t i = 0; i < item_views_.size(); ++i) {
@@ -376,6 +441,13 @@ void AvatarMenuBubbleView::LinkClicked(views::Link* source, int event_flags) {
   }
 }
 
+void AvatarMenuBubbleView::BubbleShown() {
+  GetFocusManager()->RegisterAccelerator(
+      views::Accelerator(ui::VKEY_DOWN, false, false, false), this);
+  GetFocusManager()->RegisterAccelerator(
+      views::Accelerator(ui::VKEY_UP, false, false, false), this);
+}
+
 void AvatarMenuBubbleView::BubbleClosing(Bubble* bubble,
                                          bool closed_by_escape) {
 }
@@ -401,6 +473,7 @@ void AvatarMenuBubbleView::OnAvatarMenuModelChanged(
     ProfileItemView* item_view = new ProfileItemView(item, this, this);
     item_view->SetAccessibleName(l10n_util::GetStringFUTF16(
         IDS_PROFILES_SWITCH_TO_PROFILE_ACCESSIBLE_NAME, item.name));
+    item_view->set_focusable(true);
     AddChildView(item_view);
     item_views_.push_back(item_view);
   }

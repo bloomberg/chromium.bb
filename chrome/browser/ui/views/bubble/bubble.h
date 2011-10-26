@@ -51,6 +51,9 @@ class Widget;
 
 class BubbleDelegate {
  public:
+  // Called after the Bubble has been shown.
+  virtual void BubbleShown() {}
+
   // Called when the Bubble is closing and is about to be deleted.
   // |closed_by_escape| is true if the close is the result of the user pressing
   // escape.

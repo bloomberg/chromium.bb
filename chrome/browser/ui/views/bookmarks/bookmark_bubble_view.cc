@@ -107,7 +107,6 @@ void BookmarkBubbleView::Show(views::Widget* parent,
       chrome::NOTIFICATION_BOOKMARK_BUBBLE_SHOWN,
       content::Source<Profile>(profile->GetOriginalProfile()),
       content::Details<GURL>(&url_ptr));
-  bookmark_bubble_->BubbleShown();
 }
 
 // static

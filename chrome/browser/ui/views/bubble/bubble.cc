@@ -59,6 +59,9 @@ Bubble* Bubble::Show(views::Widget* parent,
   // Register the Escape accelerator for closing.
   bubble->RegisterEscapeAccelerator();
 
+  if (delegate)
+    delegate->BubbleShown();
+
   return bubble;
 }
 

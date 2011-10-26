@@ -235,9 +235,10 @@ void FocusManager::SetFocusedViewWithReason(
   FOR_EACH_OBSERVER(FocusChangeListener, focus_change_listeners_,
                     FocusWillChange(focused_view_, view));
 
-  if (focused_view_)
-    focused_view_->Blur();
+  View* old_focused_view = focused_view_;
   focused_view_ = view;
+  if (old_focused_view)
+    old_focused_view->Blur();
   if (focused_view_)
     focused_view_->Focus();
 }
