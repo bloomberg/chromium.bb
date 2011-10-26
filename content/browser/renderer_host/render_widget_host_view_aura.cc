@@ -195,8 +195,7 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceNew(
       uint64* surface_id,
       TransportDIB::Handle* surface_handle) {
   scoped_ptr<AcceleratedSurfaceContainerLinux> surface(
-      AcceleratedSurfaceContainerLinux::CreateAcceleratedSurfaceContainer(
-          gfx::Size(width, height)));
+      AcceleratedSurfaceContainerLinux::Create(gfx::Size(width, height)));
   if (!surface->Initialize(surface_id)) {
     LOG(ERROR) << "Failed to create AcceleratedSurfaceContainer";
     return;
@@ -211,7 +210,7 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceBuffersSwapped(
       int32 route_id,
       int gpu_host_id) {
   window_->layer()->SetExternalTexture(
-      accelerated_surface_containers_[surface_id].get());
+      accelerated_surface_containers_[surface_id]->GetTexture());
   glFlush();
 
   if (!window_->layer()->GetCompositor()) {

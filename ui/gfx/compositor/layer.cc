@@ -8,10 +8,15 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebExternalTextureLayer.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebContentLayer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFloatPoint.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFloatRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"
 #include "ui/base/animation/animation.h"
+#if defined(USE_WEBKIT_COMPOSITOR)
+#include "ui/gfx/compositor/compositor_cc.h"
+#endif
 #include "ui/gfx/compositor/layer_animation_manager.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/interpolated_transform.h"
@@ -241,6 +246,33 @@ void Layer::SetExternalTexture(ui::Texture* texture) {
   DCHECK(texture);
   layer_updated_externally_ = true;
   texture_ = texture;
+#if defined(USE_WEBKIT_COMPOSITOR)
+  if (!web_layer_is_accelerated_) {
+    web_layer_.removeAllChildren();
+    WebKit::WebLayer new_layer =
+      WebKit::WebExternalTextureLayer::create(this);
+    if (parent_) {
+      DCHECK(!parent_->web_layer_.isNull());
+      parent_->web_layer_.replaceChild(web_layer_, new_layer);
+    }
+    web_layer_ = new_layer;
+    web_layer_is_accelerated_ = true;
+    for (size_t i = 0; i < children_.size(); ++i) {
+      DCHECK(!children_[i]->web_layer_.isNull());
+      web_layer_.addChild(children_[i]->web_layer_);
+    }
+    web_layer_.setAnchorPoint(WebKit::WebFloatPoint(0.f, 0.f));
+    web_layer_.setOpaque(fills_bounds_opaquely_);
+    web_layer_.setOpacity(visible_ ? opacity_ : 0.f);
+    web_layer_.setBounds(bounds_.size());
+    RecomputeTransform();
+  }
+  TextureCC* texture_cc = static_cast<TextureCC*>(texture);
+  texture_cc->Update();
+  web_layer_.to<WebKit::WebExternalTextureLayer>().setFlipped(
+      texture_cc->flipped());
+  RecomputeDrawsContent();
+#endif
 }
 
 void Layer::SetCanvas(const SkCanvas& canvas, const gfx::Point& origin) {
@@ -263,7 +295,8 @@ void Layer::SchedulePaint(const gfx::Rect& invalid_rect) {
       invalid_rect.y(),
       invalid_rect.width(),
       invalid_rect.height());
-  web_layer_.invalidateRect(web_rect);
+  if (!web_layer_is_accelerated_)
+    web_layer_.to<WebKit::WebContentLayer>().invalidateRect(web_rect);
 #else
   invalid_rect_ = invalid_rect_.Union(invalid_rect);
   ScheduleDraw();
@@ -582,7 +615,6 @@ void Layer::SetOpacityImmediately(float opacity) {
 #if defined(USE_WEBKIT_COMPOSITOR)
   if (visible_)
     web_layer_.setOpacity(opacity);
-  RecomputeDrawsContent();
 #endif
 }
 
@@ -603,6 +635,7 @@ void Layer::CreateWebLayer() {
   web_layer_ = WebKit::WebContentLayer::create(this, this);
   web_layer_.setAnchorPoint(WebKit::WebFloatPoint(0.f, 0.f));
   web_layer_.setOpaque(true);
+  web_layer_is_accelerated_ = false;
   RecomputeDrawsContent();
 }
 
@@ -613,7 +646,22 @@ void Layer::RecomputeTransform() {
 }
 
 void Layer::RecomputeDrawsContent() {
-  web_layer_.setDrawsContent(ShouldDraw());
+  DCHECK(!web_layer_.isNull());
+  bool should_draw = type_ == LAYER_HAS_TEXTURE &&
+      !hole_rect_.Contains(gfx::Rect(gfx::Point(0, 0), bounds_.size()));
+  if (!web_layer_is_accelerated_) {
+    web_layer_.to<WebKit::WebContentLayer>().setDrawsContent(should_draw);
+  } else {
+    DCHECK(texture_);
+#if defined(USE_WEBKIT_COMPOSITOR)
+    unsigned int texture_id =
+        static_cast<TextureCC*>(texture_.get())->texture_id();
+#else
+    unsigned int texture_id = 0;
+#endif
+    web_layer_.to<WebKit::WebExternalTextureLayer>().setTextureId(
+        should_draw ? texture_id : 0);
+  }
 }
 #endif
 

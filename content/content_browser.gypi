@@ -297,7 +297,8 @@
     'browser/quota_permission_context.h',
     'browser/renderer_host/accelerated_plugin_view_mac.h',
     'browser/renderer_host/accelerated_plugin_view_mac.mm',
-    'browser/renderer_host/accelerated_surface_container_linux.cc',
+    'browser/renderer_host/accelerated_surface_container_linux_cc.cc',
+    'browser/renderer_host/accelerated_surface_container_linux_gl.cc',
     'browser/renderer_host/accelerated_surface_container_linux.h',
     'browser/renderer_host/accelerated_surface_container_mac.cc',
     'browser/renderer_host/accelerated_surface_container_mac.h',
@@ -341,6 +342,8 @@
     'browser/renderer_host/gtk_key_bindings_handler.h',
     'browser/renderer_host/gtk_window_utils.cc',
     'browser/renderer_host/gtk_window_utils.h',
+    'browser/renderer_host/image_transport_client.cc',
+    'browser/renderer_host/image_transport_client.h',
     'browser/renderer_host/java_bridge_channel_host.cc',
     'browser/renderer_host/java_bridge_channel_host.h',
     'browser/renderer_host/java_bridge_dispatcher_host_manager.cc',
@@ -729,10 +732,24 @@
       'include_dirs': [
         '../third_party/angle/include',
       ],
+      'conditions': [
+        ['use_webkit_compositor != 1', {
+          'sources/': [
+            ['exclude', '^browser/renderer_host/accelerated_surface_container_linux_cc.cc'],
+          ],
+        }, {
+          'sources/': [
+            ['exclude', '^browser/renderer_host/accelerated_surface_container_linux_gl.cc'],
+          ],
+        }],
+      ],
     }, {
       'sources/': [
-        ['exclude', '^browser/renderer_host/accelerated_surface_container_linux.cc'],
+        ['exclude', '^browser/renderer_host/accelerated_surface_container_linux_gl.cc'],
+        ['exclude', '^browser/renderer_host/accelerated_surface_container_linux_cc.cc'],
         ['exclude', '^browser/renderer_host/accelerated_surface_container_linux.h'],
+        ['exclude', '^browser/renderer_host/image_transport_client.cc'],
+        ['exclude', '^browser/renderer_host/image_transport_client.h'],
       ],
     }],
     ['java_bridge==1', {

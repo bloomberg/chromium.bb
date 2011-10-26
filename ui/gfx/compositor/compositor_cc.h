@@ -7,6 +7,8 @@
 #pragma once
 
 #include "base/compiler_specific.h"
+#include "base/memory/singleton.h"
+#include "base/memory/ref_counted.h"
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/size.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebLayer.h"
@@ -16,9 +18,36 @@
 
 namespace gfx {
 class Rect;
+class GLContext;
+class GLSurface;
+class GLShareGroup;
 }
 
 namespace ui {
+
+class COMPOSITOR_EXPORT SharedResourcesCC : public SharedResources {
+ public:
+  static SharedResourcesCC* GetInstance();
+
+  virtual bool MakeSharedContextCurrent();
+  gfx::GLShareGroup* GetShareGroup();
+
+ private:
+  friend struct DefaultSingletonTraits<SharedResourcesCC>;
+
+  SharedResourcesCC();
+  virtual ~SharedResourcesCC();
+
+  bool Initialize();
+  void Destroy();
+
+  bool initialized_;
+
+  scoped_refptr<gfx::GLContext> context_;
+  scoped_refptr<gfx::GLSurface> surface_;
+
+  DISALLOW_COPY_AND_ASSIGN(SharedResourcesCC);
+};
 
 class COMPOSITOR_EXPORT TextureCC : public Texture {
  public:
@@ -32,7 +61,13 @@ class COMPOSITOR_EXPORT TextureCC : public Texture {
   virtual void Draw(const ui::TextureDrawParams& params,
                     const gfx::Rect& clip_bounds_in_texture) OVERRIDE;
 
- private:
+  virtual void Update() = 0;
+  unsigned int texture_id() const { return texture_id_; }
+  bool flipped() const { return flipped_; }
+
+ protected:
+  unsigned int texture_id_;
+  bool flipped_;
   DISALLOW_COPY_AND_ASSIGN(TextureCC);
 };
 

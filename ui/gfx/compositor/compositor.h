@@ -24,6 +24,12 @@ namespace ui {
 class CompositorObserver;
 class Layer;
 
+class SharedResources {
+ public:
+  virtual ~SharedResources() {}
+  virtual bool MakeSharedContextCurrent() = 0;
+};
+
 struct TextureDrawParams {
   TextureDrawParams();
 

@@ -208,19 +208,19 @@ bool TextureProgramGL::InitializeCommon() {
   return true;
 }
 
-SharedResources::SharedResources() : initialized_(false) {
+SharedResourcesGL::SharedResourcesGL() : initialized_(false) {
 }
 
 
-SharedResources::~SharedResources() {
+SharedResourcesGL::~SharedResourcesGL() {
 }
 
 // static
-SharedResources* SharedResources::GetInstance() {
+SharedResourcesGL* SharedResourcesGL::GetInstance() {
   // We use LeakySingletonTraits so that we don't race with
   // the tear down of the gl_bindings.
-  SharedResources* instance = Singleton<SharedResources,
-      LeakySingletonTraits<SharedResources> >::get();
+  SharedResourcesGL* instance = Singleton<SharedResourcesGL,
+      LeakySingletonTraits<SharedResourcesGL> >::get();
   if (instance->Initialize()) {
     return instance;
   } else {
@@ -229,7 +229,7 @@ SharedResources* SharedResources::GetInstance() {
   }
 }
 
-bool SharedResources::Initialize() {
+bool SharedResourcesGL::Initialize() {
   if (initialized_)
     return true;
 
@@ -286,7 +286,7 @@ bool SharedResources::Initialize() {
   return true;
 }
 
-void SharedResources::Destroy() {
+void SharedResourcesGL::Destroy() {
   program_swizzle_.reset();
   program_no_swizzle_.reset();
 
@@ -296,14 +296,14 @@ void SharedResources::Destroy() {
   initialized_ = false;
 }
 
-bool SharedResources::MakeSharedContextCurrent() {
+bool SharedResourcesGL::MakeSharedContextCurrent() {
   if (!initialized_)
     return false;
   else
     return context_->MakeCurrent(surface_.get());
 }
 
-scoped_refptr<gfx::GLContext> SharedResources::CreateContext(
+scoped_refptr<gfx::GLContext> SharedResourcesGL::CreateContext(
     gfx::GLSurface* surface) {
   if (initialized_)
     return gfx::GLContext::CreateGLContext(
@@ -322,7 +322,7 @@ TextureGL::TextureGL(const gfx::Size& size) : texture_id_(0), size_(size) {
 
 TextureGL::~TextureGL() {
   if (texture_id_) {
-    SharedResources* instance = SharedResources::GetInstance();
+    SharedResourcesGL* instance = SharedResourcesGL::GetInstance();
     DCHECK(instance);
     instance->MakeSharedContextCurrent();
     glDeleteTextures(1, &texture_id_);
@@ -370,7 +370,7 @@ void TextureGL::SetCanvas(const SkCanvas& canvas,
 
 void TextureGL::Draw(const ui::TextureDrawParams& params,
                      const gfx::Rect& clip_bounds_in_texture) {
-  SharedResources* instance = SharedResources::GetInstance();
+  SharedResourcesGL* instance = SharedResourcesGL::GetInstance();
   DCHECK(instance);
   DrawInternal(*instance->program_swizzle(),
                params,
@@ -486,7 +486,7 @@ CompositorGL::CompositorGL(CompositorDelegate* delegate,
     : Compositor(delegate, size),
       started_(false) {
   gl_surface_ = gfx::GLSurface::CreateViewGLSurface(false, widget);
-  gl_context_ = SharedResources::GetInstance()->
+  gl_context_ = SharedResourcesGL::GetInstance()->
       CreateContext(gl_surface_.get());
   gl_context_->MakeCurrent(gl_surface_.get());
   gl_context_->SetSwapInterval(1);
@@ -544,7 +544,7 @@ void CompositorGL::Blur(const gfx::Rect& bounds) {
 Compositor* Compositor::Create(CompositorDelegate* owner,
                                gfx::AcceleratedWidget widget,
                                const gfx::Size& size) {
-  if (SharedResources::GetInstance() == NULL)
+  if (SharedResourcesGL::GetInstance() == NULL)
     return NULL;
   else
     return new CompositorGL(owner, widget, size);

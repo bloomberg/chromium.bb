@@ -12,8 +12,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebContentLayer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContentLayerClient.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebLayer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebLayerClient.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/transform.h"
@@ -179,7 +179,7 @@ class COMPOSITOR_EXPORT Layer :
   virtual void paintContents(WebKit::WebCanvas*, const WebKit::WebRect& clip);
 
 #if defined(USE_WEBKIT_COMPOSITOR)
-  WebKit::WebContentLayer web_layer() { return web_layer_; }
+  WebKit::WebLayer web_layer() { return web_layer_; }
 #endif
 
  private:
@@ -296,7 +296,8 @@ class COMPOSITOR_EXPORT Layer :
   scoped_ptr<LayerAnimationManager> animator_;
 
 #if defined(USE_WEBKIT_COMPOSITOR)
-  WebKit::WebContentLayer web_layer_;
+  WebKit::WebLayer web_layer_;
+  bool web_layer_is_accelerated_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(Layer);

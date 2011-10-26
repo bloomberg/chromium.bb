@@ -26,11 +26,11 @@ class TextureProgramGL;
 
 // We share resources (such as shaders) between different Compositors via
 // GLContext sharing so that we only have to create/destroy them once.
-class COMPOSITOR_EXPORT SharedResources {
+class COMPOSITOR_EXPORT SharedResourcesGL : public SharedResources {
  public:
-  static SharedResources* GetInstance();
+  static SharedResourcesGL* GetInstance();
 
-  bool MakeSharedContextCurrent();
+  virtual bool MakeSharedContextCurrent();
 
   // Creates a context that shares the resources hosted by this singleton.
   scoped_refptr<gfx::GLContext> CreateContext(gfx::GLSurface* surface);
@@ -44,10 +44,10 @@ class COMPOSITOR_EXPORT SharedResources {
   }
 
  private:
-  friend struct DefaultSingletonTraits<SharedResources>;
+  friend struct DefaultSingletonTraits<SharedResourcesGL>;
 
-  SharedResources();
-  virtual ~SharedResources();
+  SharedResourcesGL();
+  virtual ~SharedResourcesGL();
 
   bool Initialize();
   void Destroy();
@@ -60,7 +60,7 @@ class COMPOSITOR_EXPORT SharedResources {
   scoped_ptr<ui::TextureProgramGL> program_swizzle_;
   scoped_ptr<ui::TextureProgramGL> program_no_swizzle_;
 
-  DISALLOW_COPY_AND_ASSIGN(SharedResources);
+  DISALLOW_COPY_AND_ASSIGN(SharedResourcesGL);
 };
 
 class COMPOSITOR_EXPORT TextureGL : public Texture {
