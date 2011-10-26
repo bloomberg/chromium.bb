@@ -263,7 +263,7 @@ remoting.tryShare = function() {
     remoting.oauth2.refreshAccessToken(function() {
       if (remoting.oauth2.needsNewAccessToken()) {
         // If we still need it, we're going to infinite loop.
-        showShareError_(/*i18n-content*/'ERROR_UNABLE_TO_GET_TOKEN');
+        showShareError_(/*i18n-content*/'ERROR_AUTHENTICATION_FAILED');
         throw 'Unable to get access token';
       }
       remoting.tryShare();
@@ -567,7 +567,8 @@ function onClientStateChange_(oldState) {
       showConnectError_(remoting.ClientError.INVALID_ACCESS_CODE);
     }
   } else if (state == remoting.ClientSession.State.CONNECTION_FAILED) {
-    remoting.debug.log('Client plugin reported connection failed');
+    remoting.debug.log('Client plugin reported connection failed: ' +
+                       remoting.session.error);
     if (remoting.session.error ==
         remoting.ClientSession.ConnectionError.HOST_IS_OFFLINE) {
       showConnectError_(remoting.ClientError.HOST_IS_OFFLINE);
@@ -712,18 +713,26 @@ remoting.tryConnectWithAccessToken = function() {
       remoting.tryConnectWithWcs);
 }
 
-remoting.tryConnectWithWcs = function() {
-  var accessCode = document.getElementById('access-code-entry').value;
-  remoting.accessCode = normalizeAccessCode_(accessCode);
-  // At present, only 12-digit access codes are supported, of which the first
-  // 7 characters are the supportId.
-  if (remoting.accessCode.length != kAccessCodeLen) {
-    remoting.debug.log('Bad access code length');
-    showConnectError_(remoting.ClientError.INVALID_ACCESS_CODE);
+/**
+ * WcsLoader callback, called when the wcs script has been loaded, or on error.
+ * @param {boolean} success True if the script was loaded successfully.
+ */
+remoting.tryConnectWithWcs = function(success) {
+  if (success) {
+    var accessCode = document.getElementById('access-code-entry').value;
+    remoting.accessCode = normalizeAccessCode_(accessCode);
+    // At present, only 12-digit access codes are supported, of which the first
+    // 7 characters are the supportId.
+    if (remoting.accessCode.length != kAccessCodeLen) {
+      remoting.debug.log('Bad access code length');
+      showConnectError_(remoting.ClientError.INVALID_ACCESS_CODE);
+    } else {
+      var supportId = remoting.accessCode.substring(0, kSupportIdLen);
+      remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
+      resolveSupportId(supportId);
+    }
   } else {
-    var supportId = remoting.accessCode.substring(0, kSupportIdLen);
-    remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
-    resolveSupportId(supportId);
+    showConnectError_(remoting.ClientError.OAUTH_FETCH_FAILED);
   }
 }
 

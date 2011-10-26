@@ -103,10 +103,6 @@
     "message": "The server failed to respond to the network request.",
     "description": "Error displayed by the client if the server does not respond to a network request."
   },
-  "ERROR_UNABLE_TO_GET_TOKEN": {
-    "message": "There was a problem accessing the server. Please try again.",
-    "description": "Error message displayed if an access token could not be generated."
-  },
   "FOOTER_CHROME_OS": {
     "message": "Sharing your Chromebook will be supported in a future update\u2026 stay tuned.",
     "description": "Footer text displayed on ChromeOS in lieu of the mode switch hyperlink."

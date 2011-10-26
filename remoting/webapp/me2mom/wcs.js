@@ -21,14 +21,14 @@ remoting.wcs = null;
  *
  * @param {remoting.WcsIqClient} wcsIqClient The WCS client.
  * @param {string} token An OAuth2 access token.
- * @param {function(): void} onReady A function called when the WCS client has
- *     received a full JID.
- * @param {function(function(string): void): void} refreshToken A function
+ * @param {function(boolean): void} onReady A function called when the WCS
+ *     client has received a full JID.
+ * @param {function(function(string): void): void} tokenRefresh A function
  *     called when this object wants to see whether an updated access token is
  *     available. The passed function will be called asynchronously with a
  *     (possibly updated) access token.
  */
-remoting.Wcs = function(wcsIqClient, token, onReady, refreshToken) {
+remoting.Wcs = function(wcsIqClient, token, onReady, tokenRefresh) {
   /**
    * The WCS client.
    * @type {remoting.WcsIqClient}
@@ -45,7 +45,7 @@ remoting.Wcs = function(wcsIqClient, token, onReady, refreshToken) {
 
   /**
    * The function called when the WCS client has received a full JID.
-   * @type {function(): void}
+   * @type {function(boolean): void}
    * @private
    */
   this.onReady_ = onReady;
@@ -65,7 +65,7 @@ remoting.Wcs = function(wcsIqClient, token, onReady, refreshToken) {
    * @private
    */
   this.pollForUpdatedToken_ = setInterval(
-      function() { refreshToken(that.setToken_); },
+      function() { tokenRefresh(that.setToken_); },
       60 * 1000);
 
   /**
@@ -111,8 +111,8 @@ remoting.Wcs.prototype.onMessage_ = function(msg) {
   } else if (msg[0] == 'cfj') {
     this.clientFullJid_ = msg[1];
     remoting.debug.log('Received JID: ' + this.clientFullJid_);
-    this.onReady_();
-    this.onReady_ = function() {};
+    this.onReady_(true);
+    this.onReady_ = function(success) {};
   }
 };
 
