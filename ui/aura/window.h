@@ -165,6 +165,17 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
 
   const Windows& children() const { return children_; }
 
+  // Adds or removes |child| as a transient child of this window. Transient
+  // children get the following behavior:
+  // . The transient parent destroys any transient children when it is
+  //   destroyed. This means a transient child is destroyed if either its parent
+  //   or transient parent is destroyed.
+  // . If a transient child and its transient parent share the same parent, then
+  //   transient children are always ordered above the trasient parent.
+  // Transient windows are typically used for popups and menus.
+  void AddTransientChild(Window* child);
+  void RemoveTransientChild(Window* child);
+
   // Retrieves the first-level child with the specified id, or NULL if no first-
   // level child is found matching |id|.
   Window* GetChildById(int id);
@@ -314,6 +325,11 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
 
   // Child windows. Topmost is last.
   Windows children_;
+
+  // Transient windows.
+  Windows transient_children_;
+
+  Window* transient_parent_;
 
   int id_;
   std::string name_;

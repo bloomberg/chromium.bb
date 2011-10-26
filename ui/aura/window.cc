@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura/desktop_delegate.h"
 #include "ui/aura/event.h"
@@ -28,6 +29,7 @@ Window::Window(WindowDelegate* delegate)
       delegate_(delegate),
       show_state_(ui::SHOW_STATE_NORMAL),
       parent_(NULL),
+      transient_parent_(NULL),
       id_(-1),
       user_data_(NULL),
       stops_event_propagation_(false) {
@@ -51,6 +53,16 @@ Window::~Window() {
     DCHECK(std::find(children_.begin(), children_.end(), child) ==
            children_.end());
   }
+
+  // Removes ourselves from our transient parent.
+  if (transient_parent_)
+    transient_parent_->RemoveTransientChild(this);
+
+  // Destroy transient children.
+  Windows transient_children(transient_children_);
+  STLDeleteElements(&transient_children);
+  DCHECK(transient_children_.empty());
+
   // And let the delegate do any post cleanup.
   if (delegate_)
     delegate_->OnWindowDestroyed();
@@ -206,9 +218,18 @@ void Window::MoveChildToFront(Window* child) {
   children_.erase(i);
 
   children_.insert(children_.begin() + children_.size(), child);
+  child->layer()->parent()->MoveToFront(child->layer());
+  // Repaint the window as active status may have changed.
   SchedulePaintInRect(gfx::Rect());
 
-  child->layer()->parent()->MoveToFront(child->layer());
+  // Move any transient children that share the same parent to be in front of
+  // us.
+  for (Windows::iterator i = child->transient_children_.begin();
+       i != child->transient_children_.end(); ++i) {
+    Window* transient_child = *i;
+    if (transient_child->parent_ == this)
+      MoveChildToFront(transient_child);
+  }
 }
 
 bool Window::CanActivate() const {
@@ -226,6 +247,24 @@ void Window::AddChild(Window* child) {
   if (layout_manager_.get())
     layout_manager_->OnWindowAdded(child);
   FOR_EACH_OBSERVER(WindowObserver, observers_, OnWindowAdded(child));
+}
+
+void Window::AddTransientChild(Window* child) {
+  if (child->transient_parent_)
+    child->transient_parent_->RemoveTransientChild(child);
+  DCHECK(std::find(transient_children_.begin(), transient_children_.end(),
+                   child) == transient_children_.end());
+  transient_children_.push_back(child);
+  child->transient_parent_ = this;
+}
+
+void Window::RemoveTransientChild(Window* child) {
+  Windows::iterator i =
+      std::find(transient_children_.begin(), transient_children_.end(), child);
+  DCHECK(i != transient_children_.end());
+  transient_children_.erase(i);
+  if (child->transient_parent_ == this)
+    child->transient_parent_ = NULL;
 }
 
 void Window::RemoveChild(Window* child) {

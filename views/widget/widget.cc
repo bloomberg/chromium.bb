@@ -143,6 +143,10 @@ Widget::InitParams::InitParams(Type type)
       top_level(false) {
 }
 
+gfx::NativeView Widget::InitParams::GetParent() const {
+  return parent_widget ? parent_widget->GetNativeView() : parent;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Widget, public:
 

@@ -1016,6 +1016,36 @@ TEST_F(WindowTest, Transform) {
 }
 #endif
 
+// Various assertions for transient children.
+TEST_F(WindowTest, TransientChildren) {
+  scoped_ptr<Window> parent(CreateTestWindowWithId(0, NULL));
+  scoped_ptr<Window> w1(CreateTestWindowWithId(1, parent.get()));
+  scoped_ptr<Window> w3(CreateTestWindowWithId(3, parent.get()));
+  Window* w2 = CreateTestWindowWithId(2, parent.get());
+  w1->AddTransientChild(w2);  // w2 is now owned by w1.
+  // Move w1 to the front (end), this should force w2 to be last (on top of w1).
+  parent->MoveChildToFront(w1.get());
+  ASSERT_EQ(3u, parent->children().size());
+  EXPECT_EQ(w2, parent->children().back());
+
+  // Destroy w1, which should also destroy w3 (since it's a transient child).
+  w1.reset();
+  w2 = NULL;
+  ASSERT_EQ(1u, parent->children().size());
+  EXPECT_EQ(w3.get(), parent->children()[0]);
+
+  w1.reset(CreateTestWindowWithId(4, parent.get()));
+  w2 = CreateTestWindowWithId(5, w3.get());
+  w1->AddTransientChild(w2);
+  parent->MoveChildToFront(w3.get());
+  // Move w1 to the front (end), this shouldn't effect w2 since it has a
+  // different parent.
+  parent->MoveChildToFront(w1.get());
+  ASSERT_EQ(2u, parent->children().size());
+  EXPECT_EQ(w3.get(), parent->children()[0]);
+  EXPECT_EQ(w1.get(), parent->children()[1]);
+}
+
 class ToplevelWindowTest : public WindowTest {
  public:
   ToplevelWindowTest() {}

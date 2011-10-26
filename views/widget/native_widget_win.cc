@@ -503,9 +503,7 @@ void NativeWidgetWin::InitNativeWidget(const Widget::InitParams& params) {
                      &last_monitor_rect_, &last_work_area_);
 
   // Create the window.
-  gfx::NativeView parent = params.parent_widget ?
-      params.parent_widget->GetNativeView() : params.parent;
-  WindowImpl::Init(parent, params.bounds);
+  WindowImpl::Init(params.GetParent(), params.bounds);
 }
 
 NonClientFrameView* NativeWidgetWin::CreateNonClientFrameView() {

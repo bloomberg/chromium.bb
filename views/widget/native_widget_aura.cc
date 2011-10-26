@@ -85,10 +85,12 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   window_->set_minimum_size(delegate_->GetMinimumSize());
   window_->SetBounds(params.bounds);
   if (params.type == Widget::InitParams::TYPE_CONTROL) {
-    window_->SetParent(params.parent);
+    window_->SetParent(params.GetParent());
   } else {
     window_->SetParent(NULL);
-    // TODO(derat): Set Transient Parent.
+    gfx::NativeView parent = params.GetParent();
+    if (parent)
+      parent->AddTransientChild(window_);
   }
   // TODO(beng): do this some other way.
   delegate_->OnNativeWidgetSizeChanged(params.bounds.size());
