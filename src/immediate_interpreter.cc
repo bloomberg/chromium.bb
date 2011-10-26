@@ -135,6 +135,9 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg)
       palm_edge_width_(prop_reg, "Palm Edge Zone Width", 12.5),
       palm_edge_point_speed_(prop_reg, "Palm Edge Zone Min Point Speed", 100.0),
       palm_min_distance_(prop_reg, "Palm Min Distance", 50.0),
+      wiggle_max_dist_(prop_reg, "Wiggle Max Distance", 8.0),
+      wiggle_suppress_timeout_(prop_reg, "Wiggle Timeout", 0.075),
+      wiggle_button_down_timeout_(prop_reg, "Wiggle Button Down Timeout", 0.75),
       change_timeout_(prop_reg, "Change Timeout", 0.04),
       evaluation_timeout_(prop_reg, "Evaluation Timeout", 0.2),
       two_finger_pressure_diff_thresh_(prop_reg,
@@ -169,13 +172,15 @@ Gesture* ImmediateInterpreter::SyncInterpret(HardwareState* hwstate,
   }
 
   result_.type = kGestureTypeNull;
-  const bool same_fingers = prev_state_.SameFingersAs(*hwstate);
+  const bool same_fingers = prev_state_.SameFingersAs(*hwstate) &&
+      (hwstate->buttons_down == prev_state_.buttons_down);
   if (!same_fingers) {
     // Fingers changed, do nothing this time
     ResetSameFingersState(hwstate->timestamp);
     FillStartPositions(*hwstate);
   }
   UpdatePalmState(*hwstate);
+  UpdateClickWiggle(*hwstate);
   UpdateThumbState(*hwstate);
   set<short, kMaxGesturingFingers> gs_fingers = GetGesturingFingers(*hwstate);
 
@@ -271,6 +276,95 @@ void ImmediateInterpreter::UpdatePalmState(const HardwareState& hwstate) {
     if (FingerNearOtherFinger(hwstate, i) || !FingerInPalmEnvelope(fs))
       pointing_.insert(fs.tracking_id);
   }
+}
+
+void ImmediateInterpreter::UpdateClickWiggle(const HardwareState& hwstate) {
+  // Removed outdated fingers from wiggle_recs_
+  short dead_ids[wiggle_recs_.size()];
+  size_t dead_ids_cnt = 0;
+  for (map<short, ClickWiggleRec, kMaxFingers>::iterator it =
+           wiggle_recs_.begin(), e = wiggle_recs_.end();
+       it != e; ++it) {
+    if (hwstate.GetFingerState((*it).first))
+      continue;
+    dead_ids[dead_ids_cnt++] = (*it).first;
+  }
+  for (size_t i = 0; i < dead_ids_cnt; i++)
+    wiggle_recs_.erase(dead_ids[i]);
+
+  const bool button_down = hwstate.buttons_down & GESTURES_BUTTON_LEFT;
+  const bool prev_button_down = prev_state_.buttons_down & GESTURES_BUTTON_LEFT;
+  const bool button_down_edge = button_down && !prev_button_down;
+  const bool button_up_edge = !button_down && prev_button_down;
+
+  // Update wiggle_recs_ for each current finger
+  for (size_t i = 0; i < hwstate.finger_cnt; i++) {
+    const FingerState& fs = hwstate.fingers[i];
+    map<short, ClickWiggleRec, kMaxFingers>::iterator it =
+        wiggle_recs_.find(fs.tracking_id);
+    const bool new_finger = it == wiggle_recs_.end();
+
+    if (button_down_edge || button_up_edge || new_finger) {
+      stime_t timeout = button_down_edge ?
+          wiggle_button_down_timeout_.val_ : wiggle_suppress_timeout_.val_;
+      ClickWiggleRec rec = {
+        fs.position_x,  // button down x
+        fs.position_y,  // button down y
+        hwstate.timestamp + timeout,  // unused during click down
+        !button_up_edge,  // block inc press
+        true  // block dec press
+      };
+      wiggle_recs_[fs.tracking_id] = rec;
+      continue;
+    }
+
+    // We have an existing finger
+    ClickWiggleRec* rec = &(*it).second;
+
+    if (!rec->suppress_inc_press_ && !rec->suppress_dec_press_)
+      continue;  // It's already broken out of wiggle suppression
+
+    float dx = fs.position_x - rec->x_;
+    float dy = fs.position_y - rec->y_;
+    if (dx * dx + dy * dy > wiggle_max_dist_.val_ * wiggle_max_dist_.val_) {
+      // It's moved too much to be considered wiggle
+      rec->suppress_inc_press_ = rec->suppress_dec_press_ = false;
+      continue;
+    }
+
+    if (hwstate.timestamp >= rec->began_press_suppression_) {
+      // Too much time has passed to consider this wiggle
+      rec->suppress_inc_press_ = rec->suppress_dec_press_ = false;
+      continue;
+    }
+
+    if (!rec->suppress_inc_press_ && !rec->suppress_dec_press_)
+      continue;  // This happens when a finger is around on a down-edge
+
+    FingerState* prev_fs = prev_state_.GetFingerState(fs.tracking_id);
+    if (!prev_fs) {
+      Err("Missing prev_fs?");
+      continue;
+    }
+
+    if (fs.pressure >= prev_fs->pressure && rec->suppress_inc_press_)
+      continue;
+    rec->suppress_inc_press_ = false;
+    if (fs.pressure <= prev_fs->pressure && rec->suppress_dec_press_)
+      continue;
+    rec->suppress_dec_press_ = false;
+  }
+}
+//map<short, ClickWiggleRec, kMaxFingers> wiggle_recs_;
+
+bool ImmediateInterpreter::WiggleSuppressed(short tracking_id) const {
+  map<short, ClickWiggleRec, kMaxFingers>::const_iterator it =
+      wiggle_recs_.find(tracking_id);
+  if (it == wiggle_recs_.end()) {
+    Err("Missing wiggle rec for id %d", tracking_id);
+    return false;
+  }
+  return (*it).second.suppress_inc_press_  || (*it).second.suppress_dec_press_;
 }
 
 // Updates thumb_ below.
@@ -846,6 +940,8 @@ void ImmediateInterpreter::FillResultGesture(
         if (!current || fs->position_y < current->position_y)
           current = fs;
       }
+      if (WiggleSuppressed(current->tracking_id))
+        break;
       // Find corresponding finger id in previous state
       const FingerState* prev =
           prev_state_.GetFingerState(current->tracking_id);

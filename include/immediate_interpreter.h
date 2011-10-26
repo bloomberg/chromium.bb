@@ -64,6 +64,23 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
     kTtcDragRetouch
   };
 
+  struct ClickWiggleRec {
+    float x_, y_;  // position where we started blocking wiggle
+    stime_t began_press_suppression_;  // when we started blocking inc/dec press
+    bool suppress_inc_press_:1;
+    bool suppress_dec_press_:1;
+    bool operator==(const ClickWiggleRec& that) const {
+      return x_ == that.x_ &&
+          y_ == that.y_ &&
+          began_press_suppression_ == that.began_press_suppression_ &&
+          suppress_inc_press_ == that.suppress_inc_press_ &&
+          suppress_dec_press_ == that.suppress_dec_press_;
+    }
+    bool operator!=(const ClickWiggleRec& that) const {
+      return !(*this == that);
+    }
+  };
+
   explicit ImmediateInterpreter(PropRegistry* prop_reg);
   virtual ~ImmediateInterpreter();
 
@@ -98,6 +115,13 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
 
   // Updates *palm_, pointing_ below.
   void UpdatePalmState(const HardwareState& hwstate);
+
+  // Updates the wiggle_recs_ data based on the latest hardware state
+  void UpdateClickWiggle(const HardwareState& hwstate);
+
+  // Reads the wiggle_recs_ data to see if a given finger is being suppressed
+  // from moving.
+  bool WiggleSuppressed(short tracking_id) const;
 
   // Updates thumb_ below.
   void UpdateThumbState(const HardwareState& hwstate);
@@ -199,6 +223,9 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // tracking ids of known non-palms
   set<short, kMaxFingers> pointing_;
 
+  // Click suppression
+  map<short, ClickWiggleRec, kMaxFingers> wiggle_recs_;
+
   set<short, kMaxFingers> thumb_;  // contacts believed to be thumbs
 
   // Tap-to-click
@@ -236,6 +263,12 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   DoubleProperty palm_edge_point_speed_;
   // Fingers within this distance of each other aren't palms
   DoubleProperty palm_min_distance_;
+  // Movements that may be tap/click wiggle larger than this are allowed
+  DoubleProperty wiggle_max_dist_;
+  // Wiggles (while button up) suppressed only for this time length.
+  DoubleProperty wiggle_suppress_timeout_;
+  // Wiggles after physical button going down are suppressed for this time
+  DoubleProperty wiggle_button_down_timeout_;
   // Time [s] to block movement after number or identify of fingers change
   DoubleProperty change_timeout_;
   // Time [s] to wait before locking on to a gesture

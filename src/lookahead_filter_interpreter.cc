@@ -182,7 +182,8 @@ bool LookaheadFilterInterpreter::ShouldSuppressResult(const Gesture* gesture,
     return false;
   // Speed is slow. Suppress if fingers have changed.
   for (QState* iter = node->next_; iter != queue_.End(); iter = iter->next_)
-    if (!node->state_.SameFingersAs(iter->state_))
+    if (!node->state_.SameFingersAs(iter->state_) ||
+        (node->state_.buttons_down != iter->state_.buttons_down))
       return true;
   return false;
 }
