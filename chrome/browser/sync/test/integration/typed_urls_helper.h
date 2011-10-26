@@ -20,6 +20,12 @@ namespace typed_urls_helper {
 // Gets the typed URLs from a specific sync profile.
 std::vector<history::URLRow> GetTypedUrlsFromClient(int index);
 
+// Gets the visits for a URL from a specific sync profile.
+history::VisitVector GetVisitsFromClient(int index, history::URLID id);
+
+// Removes the passed |visits| from a specific sync profile.
+void RemoveVisitsFromClient(int index, const history::VisitVector& visits);
+
 // Adds a URL to the history DB for a specific sync profile (just registers a
 // new visit if the URL already exists) using a TYPED PageTransition.
 void AddUrlToHistory(int index, const GURL& url);
@@ -30,6 +36,15 @@ void AddUrlToHistoryWithTransition(int index,
                                    const GURL& url,
                                    content::PageTransition transition,
                                    history::VisitSource source);
+
+// Adds a URL to the history DB for a specific sync profile (just registers a
+// new visit if the URL already exists), using the passed PageTransition and
+// timestamp.
+void AddUrlToHistoryWithTimestamp(int index,
+                                  const GURL& url,
+                                  content::PageTransition transition,
+                                  history::VisitSource source,
+                                  const base::Time& timestamp);
 
 // Deletes a URL from the history DB for a specific sync profile.
 void DeleteUrlFromHistory(int index, const GURL& url);
@@ -46,6 +61,13 @@ void AssertURLRowVectorsAreEqual(
 // Checks that the passed URLRows are equivalent.
 void AssertURLRowsAreEqual(const history::URLRow& left,
                            const history::URLRow& right);
+
+// Returns true if two sets of visits are equivalent.
+bool AreVisitsEqual(const history::VisitVector& visit1,
+                    const history::VisitVector& visit2);
+
+// Returns true if there are no duplicate visit times.
+bool AreVisitsUnique(const history::VisitVector& visits);
 
 // Returns a unique timestamp to use when generating page visits
 // (HistoryService does not like having identical timestamps and will modify

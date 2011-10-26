@@ -298,36 +298,15 @@ bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
       }
 
       if (current_urls.find(typed_url.url()) == current_urls.end()) {
-        new_visits.push_back(
-            std::pair<GURL, std::vector<history::VisitInfo> >(
-                GURL(typed_url.url()),
-                std::vector<history::VisitInfo>()));
-        std::vector<history::VisitInfo>& visits = new_visits.back().second;
-        history::URLRow new_url(GURL(typed_url.url()));
-        TypedUrlModelAssociator::UpdateURLRowFromTypedUrlSpecifics(
-            typed_url, &new_url);
-
-        for (int c = 0; c < typed_url.visits_size(); ++c) {
-          if (IsAbortPending())
+        if (!UpdateFromNewTypedUrl(typed_url, &new_visits, &updated_urls,
+                                   &new_urls)) {
+            error->Reset(FROM_HERE, "Could not get existing url's visits.",
+                         model_type());
             return false;
-          // Allow duplicate visits - they aren't technically legal, but they
-          // still show up in the data sometimes and we can't figure out the
-          // source (http://crbug.com/91473).
-          DLOG_IF(ERROR, (c > 0 &&
-                          typed_url.visits(c) == typed_url.visits(c - 1)))
-              << "Duplicate visit for url: " << typed_url.url();
-          DCHECK(c == 0 || typed_url.visits(c) >= typed_url.visits(c - 1));
-          DCHECK_LE(typed_url.visit_transitions(c) &
-                        content::PAGE_TRANSITION_CORE_MASK,
-                    content::PAGE_TRANSITION_LAST_CORE);
-          visits.push_back(history::VisitInfo(
-              base::Time::FromInternalValue(typed_url.visits(c)),
-              static_cast<content::PageTransition>(
-                  typed_url.visit_transitions(c))));
         }
 
+        // Add this to our association map.
         Associate(&typed_url.url(), sync_child_node.GetId());
-        new_urls.push_back(new_url);
       }
     }
 
@@ -365,6 +344,43 @@ bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
   }
   return true;
 }
+
+bool TypedUrlModelAssociator::UpdateFromNewTypedUrl(
+    const sync_pb::TypedUrlSpecifics& typed_url,
+    TypedUrlVisitVector* visits_to_add,
+    TypedUrlUpdateVector* updated_urls,
+    TypedUrlVector* new_urls) {
+  history::URLRow new_url(GURL(typed_url.url()));
+  visits_to_add->push_back(std::pair<GURL, std::vector<history::VisitInfo> >(
+      new_url.url(), std::vector<history::VisitInfo>()));
+
+  history::VisitVector existing_visits;
+  bool existing_url = history_backend_->GetURL(new_url.url(), &new_url);
+  if (existing_url) {
+    // This URL already exists locally - fetch the visits so we can
+    // merge them below.
+    if (!FixupURLAndGetVisits(
+            history_backend_, &new_url, &existing_visits)) {
+      return false;
+    }
+  }
+  // Update the URL with information from the typed URL.
+  TypedUrlModelAssociator::UpdateURLRowFromTypedUrlSpecifics(
+      typed_url, &new_url);
+
+  // Figure out which visits we need to add.
+  DiffVisits(existing_visits, typed_url, &visits_to_add->back().second, NULL);
+
+  if (existing_url) {
+    updated_urls->push_back(
+        std::pair<history::URLID, history::URLRow>(new_url.id(), new_url));
+  } else {
+    new_urls->push_back(new_url);
+  }
+
+  return true;
+}
+
 
 bool TypedUrlModelAssociator::DeleteAllNodes(
     sync_api::WriteTransaction* trans) {
@@ -493,11 +509,11 @@ bool TypedUrlModelAssociator::WriteToHistoryBackend(
   if (updated_urls) {
     for (TypedUrlUpdateVector::const_iterator url = updated_urls->begin();
          url != updated_urls->end(); ++url) {
-      // Caller should have already initialized the visit and typed counts
-      // appropriately to match what the values should have been before adding
-      // visits.
+      // This is an existing URL, so it should have a non-zero visit_count. It
+      // may not have a non-zero typed_count, however, as it could be a
+      // non-typed URL that is now transitioning to typed as the result of a
+      // new typed visit.
       DCHECK(url->second.visit_count());
-      DCHECK(url->second.typed_count());
       DCHECK(IsAssociated(url->second.url().spec()));
       if (!history_backend_->UpdateURL(url->first, url->second)) {
         LOG(ERROR) << "Could not update page: " << url->second.url().spec();
@@ -750,6 +766,7 @@ void TypedUrlModelAssociator::DiffVisits(
     const sync_pb::TypedUrlSpecifics& new_url,
     std::vector<history::VisitInfo>* new_visits,
     history::VisitVector* removed_visits) {
+  DCHECK(new_visits);
   size_t old_visit_count = old_visits.size();
   size_t new_visit_count = new_url.visits_size();
   size_t old_index = 0;
@@ -758,7 +775,7 @@ void TypedUrlModelAssociator::DiffVisits(
     base::Time new_visit_time =
         base::Time::FromInternalValue(new_url.visits(new_index));
     if (old_visits[old_index].visit_time < new_visit_time) {
-      if (new_index > 0) {
+      if (new_index > 0 && removed_visits) {
         // If there are visits missing from the start of the node, that
         // means that they were probably clipped off due to our code that
         // limits the size of the sync nodes - don't delete them from our
@@ -778,8 +795,10 @@ void TypedUrlModelAssociator::DiffVisits(
     }
   }
 
-  for ( ; old_index < old_visit_count; ++old_index) {
-    removed_visits->push_back(old_visits[old_index]);
+  if (removed_visits) {
+    for ( ; old_index < old_visit_count; ++old_index) {
+      removed_visits->push_back(old_visits[old_index]);
+    }
   }
 
   for ( ; new_index < new_visit_count; ++new_index) {

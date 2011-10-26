@@ -24,12 +24,12 @@ class FlushHistoryDBQueueTask : public HistoryDBTask {
   explicit FlushHistoryDBQueueTask(base::WaitableEvent* event)
       : wait_event_(event) {}
   virtual bool RunOnDBThread(history::HistoryBackend* backend,
-                             history::HistoryDatabase* db) {
+                             history::HistoryDatabase* db) OVERRIDE {
     wait_event_->Signal();
     return true;
   }
 
-  virtual void DoneRunOnMainThread() {}
+  virtual void DoneRunOnMainThread() OVERRIDE {}
  private:
   base::WaitableEvent* wait_event_;
 };
@@ -41,16 +41,58 @@ class GetTypedUrlsTask : public HistoryDBTask {
       : rows_(rows), wait_event_(event) {}
 
   virtual bool RunOnDBThread(history::HistoryBackend* backend,
-                             history::HistoryDatabase* db) {
+                             history::HistoryDatabase* db) OVERRIDE {
     // Fetch the typed URLs.
     backend->GetAllTypedURLs(rows_);
     wait_event_->Signal();
     return true;
   }
 
-  virtual void DoneRunOnMainThread() {}
+  virtual void DoneRunOnMainThread() OVERRIDE {}
  private:
   std::vector<history::URLRow>* rows_;
+  base::WaitableEvent* wait_event_;
+};
+
+class GetVisitsTask : public HistoryDBTask {
+ public:
+  GetVisitsTask(history::URLID id,
+                history::VisitVector* visits,
+                base::WaitableEvent* event)
+      : id_(id), visits_(visits), wait_event_(event) {}
+
+  virtual bool RunOnDBThread(history::HistoryBackend* backend,
+                             history::HistoryDatabase* db) OVERRIDE {
+    // Fetch the visits.
+    backend->GetVisitsForURL(id_, visits_);
+    wait_event_->Signal();
+    return true;
+  }
+
+  virtual void DoneRunOnMainThread() OVERRIDE {}
+ private:
+  history::URLID id_;
+  history::VisitVector* visits_;
+  base::WaitableEvent* wait_event_;
+};
+
+class RemoveVisitsTask : public HistoryDBTask {
+ public:
+  RemoveVisitsTask(const history::VisitVector& visits,
+                   base::WaitableEvent* event)
+      : visits_(visits), wait_event_(event) {}
+
+  virtual bool RunOnDBThread(history::HistoryBackend* backend,
+                             history::HistoryDatabase* db) OVERRIDE {
+    // Fetch the visits.
+    backend->RemoveVisits(visits_);
+    wait_event_->Signal();
+    return true;
+  }
+
+  virtual void DoneRunOnMainThread() OVERRIDE {}
+ private:
+  const history::VisitVector& visits_;
   base::WaitableEvent* wait_event_;
 };
 
@@ -95,6 +137,26 @@ std::vector<history::URLRow> GetTypedUrlsFromHistoryService(
   return rows;
 }
 
+history::VisitVector GetVisitsFromHistoryService(HistoryService* service,
+                                                 history::URLID id) {
+  CancelableRequestConsumer cancelable_consumer;
+  base::WaitableEvent wait_event(true, false);
+  history::VisitVector visits;
+  service->ScheduleDBTask(new GetVisitsTask(id, &visits, &wait_event),
+                          &cancelable_consumer);
+  wait_event.Wait();
+  return visits;
+}
+
+void RemoveVisitsFromHistoryService(HistoryService* service,
+                                    const history::VisitVector& visits) {
+  CancelableRequestConsumer cancelable_consumer;
+  base::WaitableEvent wait_event(true, false);
+  service->ScheduleDBTask(new RemoveVisitsTask(visits, &wait_event),
+                          &cancelable_consumer);
+  wait_event.Wait();
+}
+
 static base::Time* timestamp = NULL;
 
 }  // namespace
@@ -105,6 +167,18 @@ std::vector<history::URLRow> GetTypedUrlsFromClient(int index) {
   HistoryService* service =
       test()->GetProfile(index)->GetHistoryServiceWithoutCreating();
   return GetTypedUrlsFromHistoryService(service);
+}
+
+history::VisitVector GetVisitsFromClient(int index, history::URLID id) {
+  HistoryService* service =
+      test()->GetProfile(index)->GetHistoryServiceWithoutCreating();
+  return GetVisitsFromHistoryService(service, id);
+}
+
+void RemoveVisitsFromClient(int index, const history::VisitVector& visits) {
+  HistoryService* service =
+      test()->GetProfile(index)->GetHistoryServiceWithoutCreating();
+  RemoveVisitsFromHistoryService(service, visits);
 }
 
 base::Time GetTimestamp() {
@@ -128,6 +202,13 @@ void AddUrlToHistoryWithTransition(int index,
                                    content::PageTransition transition,
                                    history::VisitSource source) {
   base::Time timestamp = GetTimestamp();
+  AddUrlToHistoryWithTimestamp(index, url, transition, source, timestamp);
+}
+void AddUrlToHistoryWithTimestamp(int index,
+                                  const GURL& url,
+                                  content::PageTransition transition,
+                                  history::VisitSource source,
+                                  const base::Time& timestamp) {
   AddToHistory(test()->GetProfile(index)->GetHistoryServiceWithoutCreating(),
                url,
                transition,
@@ -172,6 +253,29 @@ void AssertURLRowVectorsAreEqual(
     }
     ASSERT_TRUE(found);
   }
+}
+
+bool AreVisitsEqual(const history::VisitVector& visit1,
+                    const history::VisitVector& visit2) {
+  if (visit1.size() != visit2.size())
+    return false;
+  for (size_t i = 0; i < visit1.size(); ++i) {
+    if (visit1[i].transition != visit2[i].transition)
+      return false;
+    if (visit1[i].visit_time != visit2[i].visit_time)
+      return false;
+  }
+  return true;
+}
+
+bool AreVisitsUnique(const history::VisitVector& visits) {
+  base::Time t = base::Time::FromInternalValue(0);
+  for (size_t i = 0; i < visits.size(); ++i) {
+    if (t == visits[i].visit_time)
+      return false;
+    t = visits[i].visit_time;
+  }
+  return true;
 }
 
 void AssertURLRowsAreEqual(

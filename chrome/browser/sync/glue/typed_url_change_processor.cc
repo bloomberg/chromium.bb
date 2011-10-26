@@ -245,24 +245,17 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
         continue;
       }
 
-      history::URLRow new_url(GURL(typed_url.url()));
-      TypedUrlModelAssociator::UpdateURLRowFromTypedUrlSpecifics(
-          typed_url, &new_url);
-
-      model_associator_->Associate(&new_url.url().spec(), it->id);
-      pending_new_urls_.push_back(new_url);
-
-      std::vector<history::VisitInfo> added_visits;
-      for (int c = 0; c < typed_url.visits_size(); ++c) {
-        DCHECK(c == 0 || typed_url.visits(c) > typed_url.visits(c - 1));
-        added_visits.push_back(history::VisitInfo(
-            base::Time::FromInternalValue(typed_url.visits(c)),
-            content::PageTransitionFromInt(typed_url.visit_transitions(c))));
+      // TODO(atwilson): Combine this with the UPDATE code below
+      // (http://crbug.com/101633).
+      if (!model_associator_->UpdateFromNewTypedUrl(
+              typed_url, &pending_new_visits_, &pending_updated_urls_,
+              &pending_new_urls_)) {
+        error_handler()->OnUnrecoverableError(
+            FROM_HERE, "Could not get existing url's visits.");
+        return;
       }
 
-      pending_new_visits_.push_back(
-          std::pair<GURL, std::vector<history::VisitInfo> >(
-              url, added_visits));
+      model_associator_->Associate(&typed_url.url(), it->id);
     } else {
       DCHECK_EQ(sync_api::ChangeRecord::ACTION_UPDATE, it->action);
       history::URLRow old_url;
