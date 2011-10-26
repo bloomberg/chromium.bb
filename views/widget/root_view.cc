@@ -417,9 +417,8 @@ void RootView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
 }
 
 void RootView::OnPaint(gfx::Canvas* canvas) {
-#if !defined(TOUCH_UI)
-  canvas->GetSkCanvas()->drawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
-#endif
+  if (!layer() || !layer()->fills_bounds_opaquely())
+    canvas->GetSkCanvas()->drawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
 
   // TODO (pkotwicz): Remove this once we switch over to Aura desktop.
   // This is needed so that we can set the background behind the RWHV when the
