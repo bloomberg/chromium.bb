@@ -3,7 +3,7 @@ var htmlTextPrefix = '<meta http-equiv=\"content-type\" ' +
                      'content=\"text/html; charset=utf-8\">';
 var htmlText = '<html><img src=\"folder/image.jpg\"></img></html>';
 var plainText = 'some text';
-var url = 'http://www.google.com';
+var url = 'http://www.google.com/';
 var malformedUrl = 'something';
 
 var plainTextType = 'text/plain';
@@ -39,7 +39,7 @@ chrome.test.runTests([
                                             url);
     chrome.experimental.clipboard.readData(htmlType, standardBuffer,
         chrome.test.callbackPass(function(callbackData) {
-          chrome.test.assertTrue(callbackData.data.indexOf(htmlText) != -1);
+          chrome.test.assertEq(htmlText, callbackData.data.trim());
           chrome.test.assertEq(url, callbackData.url);
     }));
     chrome.experimental.clipboard.getAvailableTypes(standardBuffer,
@@ -57,7 +57,7 @@ chrome.test.runTests([
         malformedUrl);
     chrome.experimental.clipboard.readData(htmlType, standardBuffer,
         chrome.test.callbackPass(function(callbackData) {
-          chrome.test.assertTrue(callbackData.data.indexOf(htmlText) != -1);
+          chrome.test.assertEq(htmlText, callbackData.data.trim());
           chrome.test.assertEq('', callbackData.url);
     }));
   }
