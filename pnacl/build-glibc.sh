@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# The script is located in "native_client/tools/llvm".
-# Set pwd to native_client/
-cd "$(dirname "$0")"/../..
-LIBMODE=glibc tools/llvm/utman.sh "$@"
+# The script is located in "pnacl/".
+# Set pwd to pnacl/
+cd "$(dirname "$0")"
+LIBMODE=glibc ./build.sh "$@"

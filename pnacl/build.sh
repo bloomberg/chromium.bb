@@ -24,32 +24,33 @@
 set -o nounset
 set -o errexit
 
-# The script is located in "native_client/tools/llvm".
+# The script is located in "native_client/pnacl".
 # Set pwd to native_client/
-cd "$(dirname "$0")"/../..
+cd "$(dirname "$0")"/..
 if [[ $(basename "$(pwd)") != "native_client" ]] ; then
   echo "ERROR: cannot find native_client/ directory"
   exit -1
 fi
+
+source pnacl/scripts/common-tools.sh
+
 readonly NACL_ROOT="$(pwd)"
 
-source tools/llvm/common-tools.sh
-
-SetScriptPath "${NACL_ROOT}/tools/llvm/utman.sh"
+SetScriptPath "${NACL_ROOT}/pnacl/build.sh"
 SetLogDirectory "${NACL_ROOT}/toolchain/hg-log"
 
 # NOTE: gcc and llvm have to be synchronized
 #       we have chosen toolchains which both are based on gcc-4.2.1
 
 # For different levels of make parallelism change this in your env
-readonly UTMAN_CONCURRENCY=${UTMAN_CONCURRENCY:-8}
-readonly UTMAN_MERGE_TESTING=${UTMAN_MERGE_TESTING:-false}
-UTMAN_PRUNE=${UTMAN_PRUNE:-false}
-UTMAN_BUILD_ARM=true
+readonly PNACL_CONCURRENCY=${PNACL_CONCURRENCY:-8}
+readonly PNACL_MERGE_TESTING=${PNACL_MERGE_TESTING:-false}
+PNACL_PRUNE=${PNACL_PRUNE:-false}
+PNACL_BUILD_ARM=true
 
 if ${BUILD_PLATFORM_MAC} || ${BUILD_PLATFORM_WIN}; then
   # We don't yet support building ARM tools for mac or windows.
-  UTMAN_BUILD_ARM=false
+  PNACL_BUILD_ARM=false
 fi
 
 # Set the library mode
@@ -61,7 +62,7 @@ if [ ${LIBMODE} == "newlib" ]; then
   LIBMODE_NEWLIB=true
 elif [ ${LIBMODE} == "glibc" ]; then
   LIBMODE_GLIBC=true
-  UTMAN_BUILD_ARM=false
+  PNACL_BUILD_ARM=false
 else
   Fatal "Unknown library mode ${LIBMODE}"
 fi
@@ -85,7 +86,7 @@ readonly NNACL_BASE="${NACL_ROOT}/toolchain/${SCONS_BUILD_PLATFORM}_x86"
 readonly NNACL_NEWLIB_ROOT="${NNACL_BASE}_newlib"
 readonly NNACL_GLIBC_ROOT="${NNACL_BASE}"
 
-readonly MAKE_OPTS="-j${UTMAN_CONCURRENCY} VERBOSE=1"
+readonly MAKE_OPTS="-j${PNACL_CONCURRENCY} VERBOSE=1"
 
 readonly NONEXISTENT_PATH="/going/down/the/longest/road/to/nowhere"
 
@@ -443,7 +444,7 @@ hg-assert-safe-to-update() {
     "        (you may need to resolve conflicts)             " \
     "                                                        " \
     " If your repository is ahead of stable, then modify:    " \
-    "   ${defstr}_REV   (in tools/llvm/utman.sh)             " \
+    "   ${defstr}_REV   (in pnacl/build.sh)                  " \
     " to suppress this error message.                        "
   exit -1
 }
@@ -474,7 +475,7 @@ svn-assert-safe-to-update() {
     "        (you may need to resolve conflicts)             " \
     "                                                        " \
     " If your repository is ahead of stable, then modify:    " \
-    "   ${defstr}_REV   (in tools/llvm/utman.sh)             " \
+    "   ${defstr}_REV   (in pnacl/build.sh)                  " \
     " to suppress this error message.                        "
   exit -1
 }
@@ -483,7 +484,7 @@ hg-bot-sanity() {
   local name="$1"
   local dir="$2"
 
-  if ! ${UTMAN_BUILDBOT} ; then
+  if ! ${PNACL_BUILDBOT} ; then
     return 0
   fi
 
@@ -501,7 +502,7 @@ svn-bot-sanity() {
   local name="$1"
   local dir="$2"
 
-  if ! ${UTMAN_BUILDBOT} ; then
+  if ! ${PNACL_BUILDBOT} ; then
     return 0
   fi
 
@@ -556,7 +557,7 @@ svn-update-common() {
 
 hg-update-upstream() {
   llvm-unlink-clang
-  if ! ${UTMAN_MERGE_TESTING} ; then
+  if ! ${PNACL_MERGE_TESTING} ; then
     hg-update-common "upstream" ${UPSTREAM_REV} "${TC_SRC_UPSTREAM}"
   fi
   llvm-link-clang
@@ -656,7 +657,7 @@ checkout-all() {
 }
 
 hg-checkout-upstream() {
-  if ! ${UTMAN_MERGE_TESTING} ; then
+  if ! ${PNACL_MERGE_TESTING} ; then
     hg-checkout ${REPO_UPSTREAM} "${TC_SRC_UPSTREAM}" ${UPSTREAM_REV}
   fi
   llvm-link-clang
@@ -820,7 +821,7 @@ everything() {
 #@ everything            - Checkout everything from the repositories
 everything-hg() {
   mkdir -p "${INSTALL_ROOT}"
-  if ${UTMAN_IN_CROS_CHROOT}; then
+  if ${PNACL_IN_CROS_CHROOT}; then
     # TODO: http://code.google.com/p/nativeclient/issues/detail?id=2295
     Banner "You are running in a ChromiumOS Chroot." \
       " You should make sure that the PNaCl sources are properly checked out " \
@@ -862,12 +863,12 @@ everything-translator() {
 
   everything
   # Building the sandboxed tools requires the SDK
-  if ${UTMAN_PRUNE}; then
+  if ${PNACL_PRUNE}; then
     prune
   fi
   sdk
   install-translators srpc
-  if ${UTMAN_PRUNE}; then
+  if ${PNACL_PRUNE}; then
     prune-translator-install srpc
     track-translator-size ${SBTC_BUILD_WITH_PNACL}
   fi
@@ -1062,7 +1063,7 @@ untrusted_sdk() {
   # Remove the SDK so it doesn't end up in the tarball
   sdk-clean
 
-  if ${UTMAN_PRUNE}; then
+  if ${PNACL_PRUNE}; then
     prune
   fi
   tarball $1
@@ -1868,7 +1869,7 @@ build-compiler-rt() {
     mkdir -p "${arch}"
     spushd "${arch}"
     RunWithLog libgcc.${arch}.make \
-        make -j ${UTMAN_CONCURRENCY} -f ${src}/Makefile-pnacl libgcc.a \
+        make -j ${PNACL_CONCURRENCY} -f ${src}/Makefile-pnacl libgcc.a \
           CC="${PNACL_CC}" \
           AR="${PNACL_AR}" \
           "SRC_DIR=${src}" \
@@ -2016,7 +2017,7 @@ libstdcpp-install() {
 
 #+ misc-tools            - Build and install sel_ldr and validator for ARM.
 misc-tools() {
-  if ${UTMAN_BUILD_ARM} ; then
+  if ${PNACL_BUILD_ARM} ; then
     StepBanner "MISC-ARM" "Building sel_ldr (ARM)"
 
     # TODO(robertm): revisit some of these options
@@ -2639,7 +2640,7 @@ google-perftools-make() {
   StepBanner "GOOGLE-PERFTOOLS" "Make"
   ts-touch-open "${objdir}"
   RunWithLog google-perftools.make \
-    make -j ${UTMAN_CONCURRENCY}
+    make -j ${PNACL_CONCURRENCY}
   ts-touch-commit "${objdir}"
   spopd
 }
@@ -3169,7 +3170,7 @@ libs-platform() {
 #########################################################################
 SCONS_COMMON=(./scons
               MODE=nacl
-              -j${UTMAN_CONCURRENCY}
+              -j${PNACL_CONCURRENCY}
               bitcode=1
               sdl=none
               disable_nosys_linker_warnings=1
@@ -3314,10 +3315,10 @@ newlib-nacl-headers-check() {
     echo "*   src/trusted/service_runtime/include                           *"
     echo "*                                                                 *"
     echo "* To destroy the local changes to newlib, run:                    *"
-    echo "*  tools/llvm/utman.sh newlib-nacl-headers-clean                  *"
+    echo "*  pnacl/build.sh newlib-nacl-headers-clean                       *"
     echo "*******************************************************************"
     echo ""
-    if ${UTMAN_BUILDBOT} ; then
+    if ${PNACL_BUILDBOT} ; then
       newlib-nacl-headers-clean
     else
       exit -1
@@ -3710,14 +3711,14 @@ verify-triple-build() {
 #@ show-config
 show-config() {
   Banner "Config Settings:"
-  echo "UTMAN_BUILDBOT:    ${UTMAN_BUILDBOT}"
-  echo "UTMAN_CONCURRENCY: ${UTMAN_CONCURRENCY}"
-  echo "UTMAN_DEBUG:       ${UTMAN_DEBUG}"
-  echo "UTMAN_PRUNE:       ${UTMAN_PRUNE}"
-  echo "UTMAN_VERBOSE:     ${UTMAN_VERBOSE}"
+  echo "PNACL_BUILDBOT:    ${PNACL_BUILDBOT}"
+  echo "PNACL_CONCURRENCY: ${PNACL_CONCURRENCY}"
+  echo "PNACL_DEBUG:       ${PNACL_DEBUG}"
+  echo "PNACL_PRUNE:       ${PNACL_PRUNE}"
+  echo "PNACL_VERBOSE:     ${PNACL_VERBOSE}"
   echo "LIBMODE:           ${LIBMODE}"
   Banner "Your Environment:"
-  env | grep UTMAN
+  env | grep PNACL
 }
 
 #@ help                  - Usage information.
@@ -3731,7 +3732,7 @@ help-full() {
 }
 
 has-trusted-toolchain() {
-  if [ -f toolchain/linux_arm-trusted/ld_script_arm_trusted ]; then
+  if [ -f ${NACL_ROOT}/toolchain/linux_arm-trusted/ld_script_arm_trusted ]; then
     return 0
   else
     return 1
@@ -3739,7 +3740,7 @@ has-trusted-toolchain() {
 }
 
 check-for-trusted() {
-  if ! ${UTMAN_BUILD_ARM} ; then
+  if ! ${PNACL_BUILD_ARM} ; then
     return
   fi
 
@@ -3750,7 +3751,7 @@ check-for-trusted() {
     echo '*                                                                 *'
     echo '*   To download and install the trusted toolchain, run:           *'
     echo '*                                                                 *'
-    echo '*       $ tools/llvm/utman.sh download-trusted                    *'
+    echo '*       $ pnacl/build.sh download-trusted                         *'
     echo '*                                                                 *'
     echo '*   To compile the trusted toolchain, use:                        *'
     echo '*                                                                 *'
@@ -3759,12 +3760,12 @@ check-for-trusted() {
     echo '*******************************************************************'
 
     # If building on the bots, do not continue since it needs to run ARM tests.
-    if ${UTMAN_BUILDBOT} ; then
+    if ${PNACL_BUILDBOT} ; then
       echo "Building on bots --> need ARM trusted toolchain to run tests!"
       exit -1
     elif trusted-tc-confirm ; then
       echo "Continuing without ARM trusted toolchain"
-      UTMAN_BUILD_ARM=false
+      PNACL_BUILD_ARM=false
     else
       echo "Okay, stopping."
       exit -1
@@ -3781,7 +3782,7 @@ trusted-tc-confirm() {
 }
 
 DebugRun() {
-  if ${UTMAN_DEBUG} || ${UTMAN_BUILDBOT}; then
+  if ${PNACL_DEBUG} || ${PNACL_BUILDBOT}; then
     "$@"
   fi
 }

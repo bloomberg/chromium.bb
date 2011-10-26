@@ -109,7 +109,7 @@ prereq-x8664() {
 #@
 #@ prereq-pnacl
 prereq-pnacl() {
-  tools/llvm/utman.sh sdk
+  pnacl/build.sh sdk
 }
 
 #@

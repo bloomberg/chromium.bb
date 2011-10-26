@@ -14,7 +14,9 @@ if [[ $(basename "$(pwd)") != "spec2k" ]] ; then
   echo "ERROR: cannot find the spec2k/ directory"
   exit -1
 fi
-source ../../tools/llvm/common-tools.sh
+
+# TODO(pdox): Remove this dependency.
+source ../../pnacl/scripts/common-tools.sh
 readonly NACL_ROOT="$(GetAbsolutePath "../../")"
 SetScriptPath "$(pwd)/run_all.sh"
 SetLogDirectory "${NACL_ROOT}/toolchain/test-log"
@@ -506,7 +508,7 @@ build-libs-nacl() {
 
 build-libs-pnacl() {
   pushd "${NACL_ROOT}"
-  tools/llvm/utman.sh sdk
+  pnacl/build.sh sdk
   popd
 }
 

@@ -7,17 +7,17 @@ set -o nounset
 set -o errexit
 
 # Turn on/off debugging mode
-readonly UTMAN_DEBUG=${UTMAN_DEBUG:-false}
+readonly PNACL_DEBUG=${PNACL_DEBUG:-false}
 
 # True if the scripts are running on the build bots.
-readonly UTMAN_BUILDBOT=${UTMAN_BUILDBOT:-false}
+readonly PNACL_BUILDBOT=${PNACL_BUILDBOT:-false}
 
 # Dump all build output to stdout
-readonly UTMAN_VERBOSE=${UTMAN_VERBOSE:-false}
+readonly PNACL_VERBOSE=${PNACL_VERBOSE:-false}
 
 # Mercurial Retry settings
 HG_MAX_RETRIES=${HG_MAX_RETRIES:-3}
-if ${UTMAN_BUILDBOT} ; then
+if ${PNACL_BUILDBOT} ; then
   HG_RETRY_DELAY_SEC=${HG_RETRY_DELAY_SEC:-60}
 else
   HG_RETRY_DELAY_SEC=${HG_RETRY_DELAY_SEC:-1}
@@ -38,9 +38,9 @@ SetLogDirectory() {
 # Detect if we are in a ChromiumOS chroot
 ######################################################################
 if [ -e /etc/debian_chroot ]; then
-  readonly UTMAN_IN_CROS_CHROOT=true
+  readonly PNACL_IN_CROS_CHROOT=true
 else
-  readonly UTMAN_IN_CROS_CHROOT=false
+  readonly PNACL_IN_CROS_CHROOT=false
 fi
 
 ######################################################################
@@ -515,7 +515,7 @@ RunWithLog() {
 
   shift 1
   local ret=1
-  if ${UTMAN_VERBOSE}; then
+  if ${PNACL_VERBOSE}; then
     echo "RUNNING: " "$@" | tee -a "${log}" "${TC_LOG_ALL}"
     "$@" 2>&1 | tee -a "${log}" "${TC_LOG_ALL}"
     ret=${PIPESTATUS[0]}
@@ -534,7 +534,7 @@ RunWithLog() {
     echo
     echo "PWD: $(pwd)"
     echo
-    if ${UTMAN_BUILDBOT}; then
+    if ${PNACL_BUILDBOT}; then
       echo "BEGIN LOGFILE Contents."
       cat "${log}"
       echo "END LOGFILE Contents."
@@ -745,7 +745,7 @@ GetAbsolutePath() {
 # TODO(pdox): Right now, this abstraction is only used for
 # paralellizing translations in the self-build. If we're going
 # to use this for anything more complex, then throttling the
-# number of active processes to exactly UTMAN_CONCURRENCY would
+# number of active processes to exactly PNACL_CONCURRENCY would
 # be a useful feature.
 CT_WAIT_QUEUE=""
 QueueLastProcess() {
@@ -757,7 +757,7 @@ QueueLastProcess() {
 }
 
 QueueConcurrent() {
-  [ ${UTMAN_CONCURRENCY} -gt 1 ]
+  [ ${PNACL_CONCURRENCY} -gt 1 ]
 }
 
 QueueWait() {

@@ -15,7 +15,6 @@ CLOBBER=${CLOBBER:-yes}
 SCONS_TRUSTED="./scons --mode=opt-host -j8"
 SCONS_NACL="./scons --mode=opt-host,nacl -j8"
 SPEC_HARNESS=${SPEC_HARNESS:-${HOME}/cpu2000-redhat64-ia32}/
-UTMAN=tools/llvm/utman.sh
 
 TRYBOT_TESTS="176.gcc 179.art 181.mcf 197.parser 252.eon 254.gap"
 TRYBOT_TRANSLATOR_TESTS="176.gcc"

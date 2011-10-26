@@ -20,10 +20,10 @@ env
 TOOLCHAIN_LABEL="pnacl_linux_x86_64_newlib"
 GSBASE="gs://nativeclient-archive2/pnacl/between_bots/llvm"
 
-export UTMAN_BUILDBOT=true
+export PNACL_BUILDBOT=true
 
 GSUTIL=buildbot/gsutil.sh
-UTMAN=tools/llvm/utman.sh
+PNACL_BUILD=pnacl/build.sh
 MERGE_TOOL=tools/llvm/merge-tool.sh
 SPEC2K_SCRIPT=buildbot/buildbot_spec2k.sh
 PNACL_SCRIPT=buildbot/buildbot_pnacl.sh
@@ -72,17 +72,17 @@ merge-bot() {
   fi
 
   echo "@@@BUILD_STEP show-config@@@"
-  ${UTMAN} show-config
+  ${PNACL_BUILD} show-config
 
-  # Variables for utman.sh
+  # Variables for build.sh
   export LLVM_PROJECT_REV=${BUILDBOT_REVISION}
-  export UTMAN_MERGE_TESTING=true
-  export UTMAN_PRUNE=true
+  export PNACL_MERGE_TESTING=true
+  export PNACL_PRUNE=true
 
   # Build the un-sandboxed toolchain
   echo "@@@BUILD_STEP compile_toolchain@@@"
-  ${UTMAN} clean
-  ${UTMAN} untrusted_sdk pnaclsdk.tgz
+  ${PNACL_BUILD} clean
+  ${PNACL_BUILD} untrusted_sdk pnaclsdk.tgz
 
   #echo "@@@BUILD_STEP archive_toolchain@@@"
   #${GSUTIL} cp pnaclsdk.tgz \

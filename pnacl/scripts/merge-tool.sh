@@ -12,22 +12,24 @@
 set -o nounset
 set -o errexit
 
-# Make sure this script is run from the right place
-if [[ $(basename $(pwd)) != "native_client" ]] ; then
-  echo "ERROR: run this script from the native_client/ dir"
+# The script is located in "native_client/pnacl/scripts".
+# Set pwd to native_client/
+cd "$(dirname "$0")"/../..
+if [[ $(basename "$(pwd)") != "native_client" ]] ; then
+  echo "ERROR: cannot find native_client/ directory"
   exit -1
 fi
 
-source tools/llvm/common-tools.sh
+source pnacl/scripts/common-tools.sh
 readonly NACL_ROOT="$(pwd)"
-SetScriptPath "${NACL_ROOT}/tools/llvm/merge-tool.sh"
+SetScriptPath "${NACL_ROOT}/pnacl/scripts/merge-tool.sh"
 SetLogDirectory "${NACL_ROOT}/toolchain/hg-log"
 readonly SCRIPT_PATH="$0"
 readonly MERGE_LOG_FILE="${NACL_ROOT}/merge.log"
 ######################################################################
 
 # Location of the sources
-# These should match the values in utman.sh
+# These should match the values in build.sh
 readonly TC_SRC="$(pwd)/hg"
 readonly TC_SRC_UPSTREAM="${TC_SRC}/upstream"
 readonly TC_SRC_LLVM_MASTER="${TC_SRC}/llvm-master"
@@ -46,9 +48,9 @@ readonly HG_CONFIG_MANUAL=(
   --config kdiff3.args="--auto --base \$base \$local \$other -o \$output")
 
 # TODO(pdox): Refactor repository checkout into a separate script
-#             so that we don't need to invoke utman.
-utman() {
-  "${NACL_ROOT}"/tools/llvm/utman.sh "$@"
+#             so that we don't need to invoke build.sh.
+pnacl-build() {
+  "${NACL_ROOT}"/pnacl/build.sh "$@"
 }
 
 #@ auto [rev]            - Non-interactive merge
@@ -76,20 +78,20 @@ set-master-revision() {
   echo "@@@BUILD_STEP Set LLVM revision: ${MERGE_REVISION}@@@"
   echo "MERGE REVISION: ${MERGE_REVISION}"
 
-  # Set environmental variable for utman
+  # Set environmental variable for build.sh
   export LLVM_PROJECT_REV=${MERGE_REVISION}
-  utman svn-checkout-llvm-master
-  utman svn-update-llvm-master
-  utman svn-checkout-llvm-gcc-master
-  utman svn-update-llvm-gcc-master
+  pnacl-build svn-checkout-llvm-master
+  pnacl-build svn-update-llvm-master
+  pnacl-build svn-checkout-llvm-gcc-master
+  pnacl-build svn-update-llvm-gcc-master
 }
 
 get-upstream() {
   echo "@@@BUILD_STEP Get mercurial source@@@"
   export UPSTREAM_REV=${UPSTREAM_BRANCH}
-  utman hg-checkout-upstream
-  utman hg-pull-upstream
-  utman hg-update-upstream
+  pnacl-build hg-checkout-upstream
+  pnacl-build hg-pull-upstream
+  pnacl-build hg-update-upstream
 }
 
 #+ merge-all             - Merge everything
@@ -132,13 +134,13 @@ final-banner() {
   echo "The hg/upstream working directory is now in a merged state."
   echo "Before you commit and push, you should build PNaCl and run all tests."
   echo ""
-  echo "1) Set the default LLVM_PROJECT_REV to ${MERGE_REVISION} (in utman.sh)"
+  echo "1) Set the default LLVM_PROJECT_REV to ${MERGE_REVISION} (in build.sh)"
   echo ""
   echo "2) Build PNaCl:"
-  echo "     UTMAN_MERGE_TESTING=true tools/llvm/utman.sh everything-translator"
+  echo "     PNACL_MERGE_TESTING=true pnacl/build.sh everything-translator"
   echo ""
   echo "3) Run all tests:"
-  echo "     tools/llvm/utman-test.sh test-all"
+  echo "     pnacl/test.sh test-all"
   echo ""
   echo "Depending on the size of the merge, there may be lots of bugs. You may"
   echo "need to fix and rebuild several times. When you are confident all tests"

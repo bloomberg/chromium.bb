@@ -8,7 +8,7 @@
 #@
 #@ SCons Test Usage:
 #@
-#@   utman-test.sh test-<arch>-<mode> [extra_arguments_to_scons]
+#@   test.sh test-<arch>-<mode> [extra_arguments_to_scons]
 #@
 #@      Runs the SCons tests with selected arch and mode.
 #@      Valid arches:
@@ -23,9 +23,9 @@
 #@          browser
 #@          browser-glibc
 #@
-#@      For example: tools/llvm/utman-test.sh test-x86-32-glibc
+#@      For example: test.sh test-x86-32-glibc
 #@
-#@ The env variables: UTMAN_CONCURRENCY, UTMAN_BUILDBOT, UTMAN_DEBUG
+#@ The env variables: PNACL_CONCURRENCY, PNACL_BUILDBOT, PNACL_DEBUG
 #@ control behavior of this script
 #@
 #@
@@ -37,9 +37,9 @@
 set -o nounset
 set -o errexit
 
-# The script is located in "native_client/tools/llvm".
+# The script is located in "pnacl/".
 # Set pwd to native_client/
-cd "$(dirname "$0")"/../..
+cd "$(dirname "$0")"/..
 if [[ $(basename "$(pwd)") != "native_client" ]] ; then
   echo "ERROR: cannot find native_client/ directory"
   exit -1
@@ -52,12 +52,12 @@ readonly DRYRUN=${DRYRUN:-false}
 readonly PNACL_LIBMODE=${LIBMODE:-newlib}
 export PNACL_LIBMODE
 
-source tools/llvm/common-tools.sh
-SetScriptPath "${NACL_ROOT}/tools/llvm/utman-test.sh"
+source pnacl/scripts/common-tools.sh
+SetScriptPath "${NACL_ROOT}/pnacl/test.sh"
 SetLogDirectory "${NACL_ROOT}/toolchain/test-log"
 
 # For different levels of make parallelism change this in your env
-readonly UTMAN_CONCURRENCY=${UTMAN_CONCURRENCY:-8}
+readonly PNACL_CONCURRENCY=${PNACL_CONCURRENCY:-8}
 
 readonly OTHER_TEST_SCRIPT="${NACL_ROOT}/buildbot/buildbot_pnacl.sh"
 
@@ -70,18 +70,18 @@ readonly OTHER_TEST_SCRIPT="${NACL_ROOT}/buildbot/buildbot_pnacl.sh"
 ######################################################################
 
 # TODO(robertm): figure out what to do about concurrency in debug mode.
-# Perhaps it is fine just tweaking that via UTMAN_CONCURRENCY.
-if ${UTMAN_DEBUG} || ${UTMAN_BUILDBOT}; then
+# Perhaps it is fine just tweaking that via PNACL_CONCURRENCY.
+if ${PNACL_DEBUG} || ${PNACL_BUILDBOT}; then
   readonly SCONS_ARGS=(MODE=nacl,opt-host
                        bitcode=1
                        --verbose
-                       -j${UTMAN_CONCURRENCY})
+                       -j${PNACL_CONCURRENCY})
 else
   readonly SCONS_ARGS=(MODE=nacl,opt-host
                        bitcode=1
                        naclsdk_validate=0
                        sysinfo=0
-                       -j${UTMAN_CONCURRENCY})
+                       -j${PNACL_CONCURRENCY})
 fi
 
 #@ show-tests            - see what tests can be run
@@ -230,7 +230,7 @@ test-all() {
     exit -1
   fi
 
-  FAIL_FAST=true ${OTHER_TEST_SCRIPT} mode-test-all ${UTMAN_CONCURRENCY}
+  FAIL_FAST=true ${OTHER_TEST_SCRIPT} mode-test-all ${PNACL_CONCURRENCY}
 }
 
 #@
