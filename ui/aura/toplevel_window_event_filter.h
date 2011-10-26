@@ -23,9 +23,10 @@ class AURA_EXPORT ToplevelWindowEventFilter : public EventFilter {
   virtual ~ToplevelWindowEventFilter();
 
   // Overridden from EventFilter:
-  virtual bool OnMouseEvent(Window* target, MouseEvent* event) OVERRIDE;
-  virtual ui::TouchStatus OnTouchEvent(Window* target,
-                                       TouchEvent* event) OVERRIDE;
+  virtual bool PreHandleKeyEvent(Window* target, KeyEvent* event) OVERRIDE;
+  virtual bool PreHandleMouseEvent(Window* target, MouseEvent* event) OVERRIDE;
+  virtual ui::TouchStatus PreHandleTouchEvent(Window* target,
+                                              TouchEvent* event) OVERRIDE;
 
  protected:
   // Returns the |window_component_|. See the variable definition below for

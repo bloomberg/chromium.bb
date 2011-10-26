@@ -20,8 +20,8 @@ DefaultContainerEventFilter::DefaultContainerEventFilter(aura::Window* owner)
 DefaultContainerEventFilter::~DefaultContainerEventFilter() {
 }
 
-bool DefaultContainerEventFilter::OnMouseEvent(aura::Window* target,
-                                               aura::MouseEvent* event) {
+bool DefaultContainerEventFilter::PreHandleMouseEvent(aura::Window* target,
+                                                      aura::MouseEvent* event) {
   DefaultContainerLayoutManager* layout_manager =
       static_cast<DefaultContainerLayoutManager*>(owner()->layout_manager());
   DCHECK(layout_manager);
@@ -30,7 +30,7 @@ bool DefaultContainerEventFilter::OnMouseEvent(aura::Window* target,
   if (event->type() == ui::ET_MOUSE_DRAGGED && drag_state_ == DRAG_NONE)
     layout_manager->PrepareForMoveOrResize(target, event);
 
-  bool handled = ToplevelWindowEventFilter::OnMouseEvent(target, event);
+  bool handled = ToplevelWindowEventFilter::PreHandleMouseEvent(target, event);
 
   switch (event->type()) {
     case ui::ET_MOUSE_DRAGGED:

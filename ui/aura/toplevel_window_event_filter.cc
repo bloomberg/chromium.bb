@@ -122,12 +122,15 @@ ToplevelWindowEventFilter::ToplevelWindowEventFilter(Window* owner)
 ToplevelWindowEventFilter::~ToplevelWindowEventFilter() {
 }
 
-bool ToplevelWindowEventFilter::OnMouseEvent(Window* target,
-                                             MouseEvent* event) {
+bool ToplevelWindowEventFilter::PreHandleKeyEvent(Window* target,
+                                                  KeyEvent* event) {
+  return false;
+}
+
+bool ToplevelWindowEventFilter::PreHandleMouseEvent(Window* target,
+                                                    MouseEvent* event) {
   // Process EventFilters implementation first so that it processes
   // activation/focus first.
-  EventFilter::OnMouseEvent(target, event);
-
   switch (event->type()) {
     case ui::ET_MOUSE_MOVED:
       UpdateWindowComponentForEvent(target, event);
@@ -161,12 +164,13 @@ bool ToplevelWindowEventFilter::OnMouseEvent(Window* target,
   return false;
 }
 
-ui::TouchStatus ToplevelWindowEventFilter::OnTouchEvent(Window* target,
-                                                        TouchEvent* event) {
+ui::TouchStatus ToplevelWindowEventFilter::PreHandleTouchEvent(
+    Window* target,
+    TouchEvent* event) {
   // Process EventFilters implementation first so that it processes
   // activation/focus first.
   // TODO(sad): Allow moving/resizing/maximizing etc. from touch?
-  return EventFilter::OnTouchEvent(target, event);
+  return ui::TOUCH_STATUS_UNKNOWN;
 }
 
 void ToplevelWindowEventFilter::MoveWindowToFront(Window* target) {

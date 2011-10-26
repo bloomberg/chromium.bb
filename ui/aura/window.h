@@ -191,15 +191,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
 
   // Window takes ownership of the EventFilter.
   void SetEventFilter(EventFilter* event_filter);
-
-  // Handles a mouse event. Returns true if handled.
-  bool OnMouseEvent(MouseEvent* event);
-
-  // Handles a key event. Returns true if handled.
-  bool OnKeyEvent(KeyEvent* event);
-
-  // Handles a touch event.
-  ui::TouchStatus OnTouchEvent(TouchEvent* event);
+  EventFilter* event_filter() { return event_filter_.get(); }
 
   // Add/remove observer.
   void AddObserver(WindowObserver* observer);

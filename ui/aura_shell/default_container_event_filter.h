@@ -17,8 +17,8 @@ class DefaultContainerEventFilter : public aura::ToplevelWindowEventFilter {
   virtual ~DefaultContainerEventFilter();
 
   // Overridden from aura::ToplevelWindowEventFilter:
-  virtual bool OnMouseEvent(aura::Window* target,
-                            aura::MouseEvent* event) OVERRIDE;
+  virtual bool PreHandleMouseEvent(aura::Window* target,
+                                   aura::MouseEvent* event) OVERRIDE;
 
  private:
   enum DragState {

@@ -125,13 +125,17 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate,
   // If |window| has mouse capture, the current capture window is set to NULL.
   void ReleaseCapture(Window* window);
 
-  // Overrridden from Window:
+  // Overridden from Window:
   virtual void SetTransform(const ui::Transform& transform) OVERRIDE;
 
  private:
   // Called whenever the mouse moves, tracks the current |mouse_moved_handler_|,
   // sending exited and entered events as its value changes.
   void HandleMouseMoved(const MouseEvent& event, Window* target);
+
+  bool ProcessMouseEvent(Window* target, MouseEvent* event);
+  bool ProcessKeyEvent(Window* target, KeyEvent* event);
+  ui::TouchStatus ProcessTouchEvent(Window* target, TouchEvent* event);
 
   // Overridden from ui::CompositorDelegate
   virtual void ScheduleDraw();

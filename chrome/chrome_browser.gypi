@@ -4202,6 +4202,7 @@
           ],
           'dependencies': [
             '../ui/aura_shell/aura_shell.gyp:aura_shell',
+            '../ui/gfx/compositor/compositor.gyp:compositor',
           ],
         }],
         ['ui_compositor_image_transport==1', {

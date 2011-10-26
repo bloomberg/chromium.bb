@@ -128,6 +128,7 @@
         'test/test_suite.h',
         'test/test_window_delegate.cc',
         'test/test_window_delegate.h',
+        'event_filter_unittest.cc',
         'toplevel_window_event_filter_unittest.cc',
         'window_unittest.cc',
         '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.rc',

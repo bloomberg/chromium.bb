@@ -306,32 +306,6 @@ void Window::SetEventFilter(EventFilter* event_filter) {
   event_filter_.reset(event_filter);
 }
 
-bool Window::OnMouseEvent(MouseEvent* event) {
-  if (!parent_ || !IsVisible())
-    return false;
-  if (!parent_->event_filter_.get())
-    parent_->SetEventFilter(new EventFilter(parent_));
-  return parent_->event_filter_->OnMouseEvent(this, event) ||
-      delegate_->OnMouseEvent(event);
-}
-
-bool Window::OnKeyEvent(KeyEvent* event) {
-  return IsVisible() && delegate_->OnKeyEvent(event);
-}
-
-ui::TouchStatus Window::OnTouchEvent(TouchEvent* event) {
-  if (!parent_ || !IsVisible())
-    return ui::TOUCH_STATUS_UNKNOWN;
-
-  if (!parent_->event_filter_.get())
-    parent_->SetEventFilter(new EventFilter(parent_));
-
-  ui::TouchStatus status = parent_->event_filter_->OnTouchEvent(this, event);
-  if (status == ui::TOUCH_STATUS_UNKNOWN && delegate_)
-    status = delegate_->OnTouchEvent(event);
-  return status;
-}
-
 void Window::AddObserver(WindowObserver* observer) {
   observers_.AddObserver(observer);
 }

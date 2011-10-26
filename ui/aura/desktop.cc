@@ -18,6 +18,7 @@
 #include "ui/aura/desktop_host.h"
 #include "ui/aura/desktop_observer.h"
 #include "ui/aura/event.h"
+#include "ui/aura/event_filter.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/screen_aura.h"
 #include "ui/aura/toplevel_window_container.h"
@@ -66,6 +67,78 @@ class DefaultDesktopDelegate : public DesktopDelegate {
   DISALLOW_COPY_AND_ASSIGN(DefaultDesktopDelegate);
 };
 
+class DesktopEventFilter : public EventFilter {
+ public:
+  explicit DesktopEventFilter(Window* owner) : EventFilter(owner) {}
+  virtual ~DesktopEventFilter() {}
+
+  // Overridden from EventFilter:
+  virtual bool PreHandleKeyEvent(Window* target, KeyEvent* event) OVERRIDE {
+    return false;
+  }
+  virtual bool PreHandleMouseEvent(Window* target, MouseEvent* event) OVERRIDE {
+    switch (event->type()) {
+      case ui::ET_MOUSE_PRESSED:
+        ActivateIfNecessary(target, event);
+        break;
+      case ui::ET_MOUSE_MOVED:
+        Desktop::GetInstance()->SetCursor(target->GetCursor(event->location()));
+        break;
+      default:
+        break;
+    }
+    return false;
+  }
+  virtual ui::TouchStatus PreHandleTouchEvent(Window* target,
+                                              TouchEvent* event) OVERRIDE {
+    if (event->type() == ui::ET_TOUCH_PRESSED)
+      ActivateIfNecessary(target, event);
+    return ui::TOUCH_STATUS_UNKNOWN;
+  }
+
+ private:
+  // If necessary, activates |window| and changes focus.
+  void ActivateIfNecessary(Window* window, Event* event) {
+    // TODO(beng): some windows (e.g. disabled ones, tooltips, etc) may not be
+    //             focusable.
+
+    Window* active_window = Desktop::GetInstance()->active_window();
+    Window* toplevel_window = window;
+    while (toplevel_window && toplevel_window != active_window &&
+           toplevel_window->parent() &&
+           !toplevel_window->parent()->AsToplevelWindowContainer()) {
+      toplevel_window = toplevel_window->parent();
+    }
+    if (toplevel_window == active_window) {
+      // |window| is a descendant of the active window, no need to activate.
+      window->GetFocusManager()->SetFocusedWindow(window);
+      return;
+    }
+    if (!toplevel_window) {
+      // |window| is not in a top level window.
+      return;
+    }
+    if (!toplevel_window->delegate() ||
+        !toplevel_window->delegate()->ShouldActivate(event))
+      return;
+
+    Desktop::GetInstance()->SetActiveWindow(toplevel_window, window);
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(DesktopEventFilter);
+};
+
+typedef std::vector<EventFilter*> EventFilters;
+
+void GetEventFiltersToNotify(Window* target, EventFilters* filters) {
+  Window* window = target->parent();
+  while (window) {
+    if (window->event_filter())
+      filters->push_back(window->event_filter());
+    window = window->parent();
+  }
+}
+
 }  // namespace
 
 Desktop* Desktop::instance_ = NULL;
@@ -89,6 +162,7 @@ Desktop::Desktop()
   gfx::Screen::SetInstance(screen_);
   host_->SetDesktop(this);
   last_mouse_location_ = host_->QueryMouseLocation();
+  SetEventFilter(new DesktopEventFilter(this));
 
   if (ui::Compositor::compositor_factory()) {
     compositor_ = (*ui::Compositor::compositor_factory())(this);
@@ -178,7 +252,7 @@ bool Desktop::DispatchMouseEvent(MouseEvent* event) {
   }
   if (target && target->delegate()) {
     MouseEvent translated_event(*event, this, target);
-    return target->OnMouseEvent(&translated_event);
+    return ProcessMouseEvent(target, &translated_event);
   }
   return false;
 }
@@ -215,7 +289,7 @@ bool Desktop::DispatchKeyEvent(KeyEvent* event) {
 
   if (focused_window_) {
     KeyEvent translated_event(*event);
-    return focused_window_->OnKeyEvent(&translated_event);
+    return ProcessKeyEvent(focused_window_, &translated_event);
   }
   return false;
 }
@@ -229,7 +303,7 @@ bool Desktop::DispatchTouchEvent(TouchEvent* event) {
     target = GetEventHandlerForPoint(event->location());
   if (target) {
     TouchEvent translated_event(*event, this, target);
-    ui::TouchStatus status = target->OnTouchEvent(&translated_event);
+    ui::TouchStatus status = ProcessTouchEvent(target, &translated_event);
     if (status == ui::TOUCH_STATUS_START)
       touch_event_handler_ = target;
     else if (status == ui::TOUCH_STATUS_END ||
@@ -380,15 +454,61 @@ void Desktop::HandleMouseMoved(const MouseEvent& event, Window* target) {
   if (mouse_moved_handler_ && mouse_moved_handler_->delegate()) {
     MouseEvent translated_event(event, this, mouse_moved_handler_,
                                 ui::ET_MOUSE_EXITED);
-    mouse_moved_handler_->OnMouseEvent(&translated_event);
+    ProcessMouseEvent(mouse_moved_handler_, &translated_event);
   }
   mouse_moved_handler_ = target;
   // Send an entered event.
   if (mouse_moved_handler_ && mouse_moved_handler_->delegate()) {
     MouseEvent translated_event(event, this, mouse_moved_handler_,
                                 ui::ET_MOUSE_ENTERED);
-    mouse_moved_handler_->OnMouseEvent(&translated_event);
+    ProcessMouseEvent(mouse_moved_handler_, &translated_event);
   }
+}
+
+bool Desktop::ProcessMouseEvent(Window* target, MouseEvent* event) {
+  if (!target->IsVisible())
+    return false;
+
+  EventFilters filters;
+  GetEventFiltersToNotify(target, &filters);
+  for (EventFilters::const_reverse_iterator it = filters.rbegin();
+       it != filters.rend(); ++it) {
+    if ((*it)->PreHandleMouseEvent(target, event))
+      return true;
+  }
+
+  return target->delegate()->OnMouseEvent(event);
+}
+
+bool Desktop::ProcessKeyEvent(Window* target, KeyEvent* event) {
+  if (!target->IsVisible())
+    return false;
+
+  EventFilters filters;
+  GetEventFiltersToNotify(target, &filters);
+  for (EventFilters::const_reverse_iterator it = filters.rbegin();
+       it != filters.rend(); ++it) {
+    if ((*it)->PreHandleKeyEvent(target, event))
+      return true;
+  }
+
+  return target->delegate()->OnKeyEvent(event);
+}
+
+ui::TouchStatus Desktop::ProcessTouchEvent(Window* target, TouchEvent* event) {
+  if (!target->IsVisible())
+    return ui::TOUCH_STATUS_UNKNOWN;
+
+  EventFilters filters;
+  GetEventFiltersToNotify(target, &filters);
+  for (EventFilters::const_reverse_iterator it = filters.rbegin();
+       it != filters.rend(); ++it) {
+    ui::TouchStatus status = (*it)->PreHandleTouchEvent(target, event);
+    if (status != ui::TOUCH_STATUS_UNKNOWN)
+      return status;
+  }
+
+  return target->delegate()->OnTouchEvent(event);
 }
 
 void Desktop::ScheduleDraw() {
