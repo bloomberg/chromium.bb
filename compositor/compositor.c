@@ -220,6 +220,9 @@ output_handle_scanout_buffer_destroy(struct wl_listener *listener,
 			     scanout_buffer_destroy_listener);
 
 	output->scanout_buffer = NULL;
+
+	if (!output->pending_scanout_buffer)
+		wlsc_compositor_schedule_repaint(output->compositor);
 }
 
 static void
@@ -232,6 +235,8 @@ output_handle_pending_scanout_buffer_destroy(struct wl_listener *listener,
 			     pending_scanout_buffer_destroy_listener);
 
 	output->pending_scanout_buffer = NULL;
+
+	wlsc_compositor_schedule_repaint(output->compositor);
 }
 
 
