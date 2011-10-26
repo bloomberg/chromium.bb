@@ -76,7 +76,8 @@ void StatusIconMac::SetToolTip(const string16& tool_tip) {
   [item() setToolTip:base::SysUTF16ToNSString(tool_tip)];
 }
 
-void StatusIconMac::DisplayBalloon(const string16& title,
+void StatusIconMac::DisplayBalloon(const SkBitmap& icon,
+                                   const string16& title,
                                    const string16& contents) {
   // TODO(atwilson): Figure out the right UI to display here when actually
   // needed (not yet called).

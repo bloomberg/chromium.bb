@@ -8,6 +8,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_nsobject.h"
 #include "base/string16.h"
 #include "chrome/browser/status_icons/status_icon.h"
@@ -22,10 +23,12 @@ class StatusIconMac : public StatusIcon {
   virtual ~StatusIconMac();
 
   // Overridden from StatusIcon
-  virtual void SetImage(const SkBitmap& image);
-  virtual void SetPressedImage(const SkBitmap& image);
-  virtual void SetToolTip(const string16& tool_tip);
-  virtual void DisplayBalloon(const string16& title, const string16& contents);
+  virtual void SetImage(const SkBitmap& image) OVERRIDE;
+  virtual void SetPressedImage(const SkBitmap& image) OVERRIDE;
+  virtual void SetToolTip(const string16& tool_tip) OVERRIDE;
+  virtual void DisplayBalloon(const SkBitmap& icon,
+                              const string16& title,
+                              const string16& contents) OVERRIDE;
 
  protected:
   // Overridden from StatusIcon.
@@ -40,6 +43,5 @@ class StatusIconMac : public StatusIcon {
 
   DISALLOW_COPY_AND_ASSIGN(StatusIconMac);
 };
-
 
 #endif // CHROME_BROWSER_UI_COCOA_STATUS_ICONS_STATUS_ICON_MAC_H_

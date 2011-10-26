@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/compiler_specific.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/status_icons/status_icon.h"
@@ -12,14 +13,13 @@
 using testing::Return;
 
 class MockStatusIcon : public StatusIcon {
-  virtual void SetImage(const SkBitmap& image) {}
-  virtual void SetPressedImage(const SkBitmap& image) {}
-  virtual void SetToolTip(const string16& tool_tip) {}
-  virtual void DisplayBalloon(const string16& title,
-                              const string16& contents) {}
-  virtual void UpdatePlatformContextMenu(ui::MenuModel* menu) {}
-  virtual void AddObserver(StatusIcon::Observer* observer) {}
-  virtual void RemoveObserver(StatusIcon::Observer* observer) {}
+  virtual void SetImage(const SkBitmap& image) OVERRIDE {}
+  virtual void SetPressedImage(const SkBitmap& image) OVERRIDE {}
+  virtual void SetToolTip(const string16& tool_tip) OVERRIDE {}
+  virtual void DisplayBalloon(const SkBitmap& icon,
+                              const string16& title,
+                              const string16& contents) OVERRIDE {}
+  virtual void UpdatePlatformContextMenu(ui::MenuModel* menu) OVERRIDE {}
 };
 
 class TestStatusTray : public StatusTray {

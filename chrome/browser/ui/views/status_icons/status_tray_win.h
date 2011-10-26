@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 
 #include <windows.h>
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/status_icons/status_tray.h"
 
 class StatusTrayWin : public StatusTray {
@@ -22,7 +23,7 @@ class StatusTrayWin : public StatusTray {
                            LPARAM lparam);
  protected:
   // Overriden from StatusTray:
-  virtual StatusIcon* CreatePlatformStatusIcon();
+  virtual StatusIcon* CreatePlatformStatusIcon() OVERRIDE;
 
  private:
   // Static callback invoked when a message comes in to our messaging window.

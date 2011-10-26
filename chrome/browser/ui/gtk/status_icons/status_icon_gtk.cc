@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/gtk/status_icons/status_icon_gtk.h"
 
 #include "base/string16.h"
-#include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -43,7 +42,8 @@ void StatusIconGtk::SetToolTip(const string16& tool_tip) {
   gtk_status_icon_set_tooltip(icon_, UTF16ToUTF8(tool_tip).c_str());
 }
 
-void StatusIconGtk::DisplayBalloon(const string16& title,
+void StatusIconGtk::DisplayBalloon(const SkBitmap& icon,
+                                   const string16& title,
                                    const string16& contents) {
   // TODO(atwilson): Figure out the right thing to do here.
   // http://crbug.com/74970

@@ -15,6 +15,7 @@
 #include "content/browser/browser_thread.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
@@ -93,6 +94,7 @@ void BackgroundModeManager::DisplayAppInstalledNotification(
   // a background app has been installed.
   CreateStatusTrayIcon();
   status_icon_->DisplayBalloon(
+      SkBitmap(),
       l10n_util::GetStringUTF16(IDS_BACKGROUND_APP_INSTALLED_BALLOON_TITLE),
       l10n_util::GetStringFUTF16(
           IDS_BACKGROUND_APP_INSTALLED_BALLOON_BODY,

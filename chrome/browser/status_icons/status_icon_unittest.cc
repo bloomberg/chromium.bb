@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/status_icons/status_icon.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -15,12 +16,13 @@ class MockStatusIconObserver : public StatusIcon::Observer {
 class TestStatusIcon : public StatusIcon {
  public:
   TestStatusIcon() {}
-  virtual void SetImage(const SkBitmap& image) {}
-  virtual void SetPressedImage(const SkBitmap& image) {}
-  virtual void SetToolTip(const string16& tool_tip) {}
-  virtual void UpdatePlatformContextMenu(ui::MenuModel* menu) {}
-  virtual void DisplayBalloon(const string16& title,
-                              const string16& contents) {}
+  virtual void SetImage(const SkBitmap& image) OVERRIDE {}
+  virtual void SetPressedImage(const SkBitmap& image) OVERRIDE {}
+  virtual void SetToolTip(const string16& tool_tip) OVERRIDE {}
+  virtual void UpdatePlatformContextMenu(ui::MenuModel* menu) OVERRIDE {}
+  virtual void DisplayBalloon(const SkBitmap& icon,
+                              const string16& title,
+                              const string16& contents) OVERRIDE {}
 };
 
 TEST(StatusIconTest, ObserverAdd) {

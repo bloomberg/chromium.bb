@@ -31,7 +31,9 @@ class StatusIcon {
   virtual void SetToolTip(const string16& tool_tip) = 0;
 
   // Displays a notification balloon with the specified contents.
-  virtual void DisplayBalloon(const string16& title,
+  // Depending on the platform it might not appear by the icon tray.
+  virtual void DisplayBalloon(const SkBitmap& icon,
+                              const string16& title,
                               const string16& contents) = 0;
 
   // Set the context menu for this icon. The icon takes ownership of the passed
@@ -47,6 +49,8 @@ class StatusIcon {
     // (i.e. if there's a context menu set on this status icon, and the user
     // right clicks on the icon to display the context menu, OnClicked will not
     // be called).
+    // Note: Chrome OS displays the context menu on left button clicks.
+    // This will only be fired for this platform if no context menu is present.
     virtual void OnClicked() = 0;
   };
 

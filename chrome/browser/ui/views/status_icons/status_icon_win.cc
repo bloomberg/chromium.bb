@@ -81,8 +81,11 @@ void StatusIconWin::SetToolTip(const string16& tool_tip) {
     LOG(WARNING) << "Unable to set tooltip for status tray icon";
 }
 
-void StatusIconWin::DisplayBalloon(const string16& title,
+void StatusIconWin::DisplayBalloon(const SkBitmap& icon,
+                                   const string16& title,
                                    const string16& contents) {
+  // TODO(leandrogracia): implement custom icons for notification balloons.
+
   NOTIFYICONDATA icon_data;
   InitIconData(&icon_data);
   icon_data.uFlags = NIF_INFO;
