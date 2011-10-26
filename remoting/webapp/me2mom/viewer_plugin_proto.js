@@ -57,7 +57,8 @@ remoting.ViewerPlugin.prototype.connect =
 
 /** @type {number} */ remoting.ViewerPlugin.prototype.videoBandwidth;
 /** @type {number} */ remoting.ViewerPlugin.prototype.videoCaptureLatency;
-/** @type {number} */ remoting.ViewerPlugin.prototype.videoEncodeLatency;
 /** @type {number} */ remoting.ViewerPlugin.prototype.videoDecodeLatency;
+/** @type {number} */ remoting.ViewerPlugin.prototype.videoEncodeLatency;
+/** @type {number} */ remoting.ViewerPlugin.prototype.videoFramerate;
 /** @type {number} */ remoting.ViewerPlugin.prototype.videoRenderLatency;
 /** @type {number} */ remoting.ViewerPlugin.prototype.roundTripLatency;

@@ -73,10 +73,12 @@
 //   // Latency for capturing in milliseconds.
 //   readonly attribute int videoCaptureLatency;
 //   // Latency for video encoding in milliseconds.
-//   readonly attribute int videoEncodeLatency;
-//   // Latency for video decoding in milliseconds.
 //   readonly attribute int videoDecodeLatency;
 //   // Latency for rendering in milliseconds.
+//   readonly attribute int videoEncodeLatency;
+//   // Latency for video encoding in milliseconds.
+//   readonly attribute int videoFramerate;
+//   // The number of frames received per second.
 //   readonly attribute int videoRenderLatency;
 //   // Latency between an event is sent and a corresponding video packet is
 //   // received.
