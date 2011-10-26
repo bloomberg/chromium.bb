@@ -1560,6 +1560,7 @@
         'browser/nacl_host/nacl_broker_service_win.h',
         'browser/nacl_host/nacl_process_host.cc',
         'browser/nacl_host/nacl_process_host.h',
+        'browser/native_window_notification_source.h',
         'browser/net/browser_url_util.cc',
         'browser/net/browser_url_util.h',
         'browser/net/chrome_cookie_notification_details.h',

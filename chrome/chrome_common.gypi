@@ -185,7 +185,6 @@
         'common/nacl_types.h',
         'common/libxml_utils.cc',
         'common/libxml_utils.h',
-        'common/native_window_notification_source.h',
         'common/persistent_pref_store.h',
         'common/pref_store.cc',
         'common/pref_store.h',

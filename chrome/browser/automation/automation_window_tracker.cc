@@ -4,8 +4,8 @@
 
 #include "chrome/browser/automation/automation_window_tracker.h"
 
+#include "chrome/browser/native_window_notification_source.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/native_window_notification_source.h"
 
 AutomationWindowTracker::AutomationWindowTracker(
     IPC::Message::Sender* automation)

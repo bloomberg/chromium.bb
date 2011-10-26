@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_NATIVE_WINDOW_NOTIFICATION_SOURCE_H_
-#define CHROME_COMMON_NATIVE_WINDOW_NOTIFICATION_SOURCE_H_
+#ifndef CHROME_BROWSER_NATIVE_WINDOW_NOTIFICATION_SOURCE_H_
+#define CHROME_BROWSER_NATIVE_WINDOW_NOTIFICATION_SOURCE_H_
 #pragma once
 
 #include "content/public/browser/notification_source.h"
@@ -31,4 +31,4 @@ class Source<gfx::NativeWindow> : public content::NotificationSource {
 
 }
 
-#endif  // CHROME_COMMON_NATIVE_WINDOW_NOTIFICATION_SOURCE_H_
+#endif  // CHROME_BROWSER_NATIVE_WINDOW_NOTIFICATION_SOURCE_H_
