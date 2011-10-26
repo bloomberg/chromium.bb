@@ -337,7 +337,7 @@ bool ExpireHistoryTest::HasThumbnail(URLID url_id) {
   if (!main_db_->GetURLRow(url_id, &info))
     return false;
   GURL url = info.url();
-  scoped_refptr<RefCountedBytes> data;
+  scoped_refptr<RefCountedMemory> data;
   return top_sites_->GetPageThumbnail(url, &data);
 }
 

@@ -90,14 +90,10 @@ cr.define('ntp4', function() {
       this.classList.add('focusable');
 
       var faviconDiv = this.querySelector('.favicon');
-      var faviconUrl = data.faviconUrl ||
-          'chrome://favicon/size/16/' + data.url;
+      var faviconUrl = 'chrome://favicon/size/16/' + data.url;
       faviconDiv.style.backgroundImage = url(faviconUrl);
       faviconDiv.dir = data.direction;
-      if (data.faviconDominantColor)
-        this.stripeColor = data.faviconDominantColor;
-      else
-        chrome.send('getFaviconDominantColor', [faviconUrl, this.id]);
+      chrome.send('getFaviconDominantColor', [faviconUrl, this.id]);
 
       var title = this.querySelector('.title');
       title.textContent = data.title;
@@ -106,7 +102,7 @@ cr.define('ntp4', function() {
       // Sets the tooltip.
       this.title = data.title;
 
-      var thumbnailUrl = data.thumbnailUrl || 'chrome://thumb/' + data.url;
+      var thumbnailUrl = 'chrome://thumb/' + data.url;
       this.querySelector('.thumbnail').style.backgroundImage =
           url(thumbnailUrl);
 

@@ -161,7 +161,6 @@ void MostVisitedHandler::HandleClearBlacklist(const ListValue* args) {
     ts->ClearBlacklistedURLs();
 }
 
-
 void MostVisitedHandler::SetPagesValueFromTopSites(
     const history::MostVisitedURLList& data) {
   pages_value_.reset(new ListValue);
@@ -177,21 +176,6 @@ void MostVisitedHandler::SetPagesValueFromTopSites(
     NewTabUI::SetURLTitleAndDirection(page_value,
                                       url.title,
                                       url.url);
-    if (!url.favicon_url.is_empty())
-      page_value->SetString("faviconUrl", url.favicon_url.spec());
-
-    // Special case for prepopulated pages: thumbnailUrl is different from url.
-    if (url.url.spec() == l10n_util::GetStringUTF8(IDS_CHROME_WELCOME_URL)) {
-      page_value->SetString("thumbnailUrl",
-          "chrome://theme/IDR_NEWTAB_CHROME_WELCOME_PAGE_THUMBNAIL");
-      page_value->SetString("faviconDominantColor", "rgb(0, 147, 60)");
-    } else if (url.url.spec() ==
-               l10n_util::GetStringUTF8(IDS_WEBSTORE_URL)) {
-      page_value->SetString("thumbnailUrl",
-          "chrome://theme/IDR_NEWTAB_WEBSTORE_THUMBNAIL");
-      page_value->SetString("faviconDominantColor", "rgb(63, 132, 197)");
-    }
-
     pages_value_->Append(page_value);
   }
 }

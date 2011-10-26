@@ -10,6 +10,7 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
+#include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/extensions/extension_icon_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -17,8 +18,27 @@
 #include "chrome/common/url_constants.h"
 #include "grit/ui_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/color_analysis.h"
+
+namespace {
+
+StringValue* SkColorToCss(const SkColor& color) {
+  return new StringValue(base::StringPrintf("rgb(%d, %d, %d)",
+                                            SkColorGetR(color),
+                                            SkColorGetG(color),
+                                            SkColorGetB(color)));
+}
+
+base::StringValue* GetDominantColorCssString(
+    scoped_refptr<RefCountedMemory> png) {
+  color_utils::GridSampler sampler;
+  SkColor color = color_utils::CalculateKMeanColorOfPNG(png, 100, 665, sampler);
+  return SkColorToCss(color);
+}
+
+}  // namespace
 
 // Thin inheritance-dependent trampoline to forward notification of app
 // icon loads to the FaviconWebUIHandler. Base class does caching of icons.
@@ -66,15 +86,29 @@ void FaviconWebUIHandler::HandleGetFaviconDominantColor(const ListValue* args) {
 
   std::string dom_id;
   CHECK(args->GetString(1, &dom_id));
-  dom_id_map_[id_] = dom_id;
 
   FaviconService* favicon_service =
       Profile::FromWebUI(web_ui_)->GetFaviconService(Profile::EXPLICIT_ACCESS);
   if (!favicon_service || path.empty())
     return;
 
+  GURL url(path);
+  // Intercept requests for prepopulated pages.
+  for (size_t i = 0; i < arraysize(history::kPrepopulatedPages); i++) {
+    if (url.spec() ==
+        l10n_util::GetStringUTF8(history::kPrepopulatedPages[i].url_id)) {
+      StringValue dom_id_value(dom_id);
+      scoped_ptr<StringValue> color(
+          SkColorToCss(history::kPrepopulatedPages[i].color));
+      web_ui_->CallJavascriptFunction("ntp4.setStripeColor",
+                                      dom_id_value, *color);
+      return;
+    }
+  }
+
+  dom_id_map_[id_] = dom_id;
   FaviconService::Handle handle = favicon_service->GetFaviconForURL(
-      GURL(path),
+      url,
       history::FAVICON,
       &consumer_,
       base::Bind(&FaviconWebUIHandler::OnFaviconDataAvailable,
@@ -98,17 +132,6 @@ void FaviconWebUIHandler::OnFaviconDataAvailable(
   StringValue dom_id(dom_id_map_[id]);
   web_ui_->CallJavascriptFunction("ntp4.setStripeColor", dom_id, *color_value);
   dom_id_map_.erase(id);
-}
-
-StringValue* FaviconWebUIHandler::GetDominantColorCssString(
-    scoped_refptr<RefCountedMemory> png) {
-  color_utils::GridSampler sampler;
-  SkColor color = color_utils::CalculateKMeanColorOfPNG(png, 100, 665, sampler);
-  std::string css_color = base::StringPrintf("rgb(%d, %d, %d)",
-                                             SkColorGetR(color),
-                                             SkColorGetG(color),
-                                             SkColorGetB(color));
-  return new StringValue(css_color);
 }
 
 void FaviconWebUIHandler::HandleGetAppIconDominantColor(

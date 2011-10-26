@@ -45,8 +45,6 @@ class FaviconWebUIHandler : public WebUIMessageHandler {
   // Called when favicon data is available from the history backend.
   void OnFaviconDataAvailable(FaviconService::Handle request_handle,
                               history::FaviconData favicon);
-  base::StringValue* GetDominantColorCssString(
-      scoped_refptr<RefCountedMemory> png);
 
   CancelableRequestConsumerTSimple<int> consumer_;
 

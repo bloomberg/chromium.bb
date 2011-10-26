@@ -111,21 +111,19 @@ class TopSitesQuerier {
 
 // Extracts the data from |t1| into a SkBitmap. This is intended for usage of
 // thumbnail data, which is stored as jpgs.
-SkBitmap ExtractThumbnail(const RefCountedBytes& t1) {
+SkBitmap ExtractThumbnail(const RefCountedMemory& t1) {
   scoped_ptr<SkBitmap> image(gfx::JPEGCodec::Decode(t1.front(),
                                                     t1.size()));
   return image.get() ? *image : SkBitmap();
 }
 
 // Returns true if t1 and t2 contain the same data.
-bool ThumbnailsAreEqual(RefCountedBytes* t1, RefCountedBytes* t2) {
+bool ThumbnailsAreEqual(RefCountedMemory* t1, RefCountedMemory* t2) {
   if (!t1 || !t2)
     return false;
   if (t1->size() != t2->size())
     return false;
-  return std::equal(t1->data().begin(),
-                    t1->data().end(),
-                    t2->data().begin());
+  return !memcmp(t1->front(), t2->front(), t1->size());
 }
 
 }  // namespace
@@ -159,7 +157,7 @@ class TopSitesTest : public HistoryUnitTestBase {
 
   // Gets the thumbnail for |url| from TopSites.
   SkBitmap GetThumbnail(const GURL& url) {
-    scoped_refptr<RefCountedBytes> data;
+    scoped_refptr<RefCountedMemory> data;
     return top_sites()->GetPageThumbnail(url, &data) ?
         ExtractThumbnail(*data.get()) : SkBitmap();
   }
@@ -272,7 +270,7 @@ class TopSitesTest : public HistoryUnitTestBase {
   }
 
   // Returns true if the thumbnail equals the specified bytes.
-  bool ThumbnailEqualsBytes(const gfx::Image& image, RefCountedBytes* bytes) {
+  bool ThumbnailEqualsBytes(const gfx::Image& image, RefCountedMemory* bytes) {
     scoped_refptr<RefCountedBytes> encoded_image;
     gfx::Image copy(image);  // EncodeBitmap() doesn't accept const images.
     TopSites::EncodeBitmap(&copy, &encoded_image);
@@ -541,7 +539,7 @@ TEST_F(TopSitesTest, ThumbnailRemoved) {
   EXPECT_TRUE(top_sites()->SetPageThumbnail(url, &thumbnail, medium_score));
 
   // Make sure the thumbnail was actually set.
-  scoped_refptr<RefCountedBytes> result;
+  scoped_refptr<RefCountedMemory> result;
   EXPECT_TRUE(top_sites()->GetPageThumbnail(url, &result));
   EXPECT_TRUE(ThumbnailEqualsBytes(thumbnail, result.get()));
 
@@ -571,7 +569,7 @@ TEST_F(TopSitesTest, GetPageThumbnail) {
   gfx::Image thumbnail(CreateBitmap(SK_ColorWHITE));
   ThumbnailScore score(0.5, true, true, base::Time::Now());
 
-  scoped_refptr<RefCountedBytes> result;
+  scoped_refptr<RefCountedMemory> result;
   EXPECT_TRUE(top_sites()->SetPageThumbnail(url1.url, &thumbnail, score));
   EXPECT_TRUE(top_sites()->GetPageThumbnail(url1.url, &result));
 
@@ -645,7 +643,7 @@ TEST_F(TopSitesTest, SaveToDB) {
     EXPECT_EQ(asdf_title, querier.urls()[0].title);
     ASSERT_NO_FATAL_FAILURE(ContainsPrepopulatePages(querier, 1));
 
-    scoped_refptr<RefCountedBytes> read_data;
+    scoped_refptr<RefCountedMemory> read_data;
     EXPECT_TRUE(top_sites()->GetPageThumbnail(asdf_url, &read_data));
     EXPECT_TRUE(ThumbnailEqualsBytes(tmp_bitmap, read_data.get()));
   }
@@ -710,7 +708,7 @@ TEST_F(TopSitesTest, RealDatabase) {
     EXPECT_EQ(asdf_title, querier.urls()[0].title);
     ASSERT_NO_FATAL_FAILURE(ContainsPrepopulatePages(querier, 1));
 
-    scoped_refptr<RefCountedBytes> read_data;
+    scoped_refptr<RefCountedMemory> read_data;
     EXPECT_TRUE(top_sites()->GetPageThumbnail(asdf_url, &read_data));
     EXPECT_TRUE(ThumbnailEqualsBytes(asdf_thumbnail, read_data.get()));
   }
@@ -735,7 +733,7 @@ TEST_F(TopSitesTest, RealDatabase) {
   RefreshTopSitesAndRecreate();
 
   {
-    scoped_refptr<RefCountedBytes> read_data;
+    scoped_refptr<RefCountedMemory> read_data;
     TopSitesQuerier querier;
     querier.QueryTopSites(top_sites(), false);
 
@@ -764,7 +762,7 @@ TEST_F(TopSitesTest, RealDatabase) {
                                             medium_score));
   RefreshTopSitesAndRecreate();
   {
-    scoped_refptr<RefCountedBytes> read_data;
+    scoped_refptr<RefCountedMemory> read_data;
     EXPECT_TRUE(top_sites()->GetPageThumbnail(google3_url, &read_data));
     EXPECT_TRUE(ThumbnailEqualsBytes(weewar_bitmap, read_data.get()));
   }
@@ -784,7 +782,7 @@ TEST_F(TopSitesTest, RealDatabase) {
   // Check that the thumbnail was updated.
   RefreshTopSitesAndRecreate();
   {
-    scoped_refptr<RefCountedBytes> read_data;
+    scoped_refptr<RefCountedMemory> read_data;
     EXPECT_TRUE(top_sites()->GetPageThumbnail(google3_url, &read_data));
     EXPECT_FALSE(ThumbnailEqualsBytes(weewar_bitmap, read_data.get()));
     EXPECT_TRUE(ThumbnailEqualsBytes(green_bitmap, read_data.get()));
@@ -1101,7 +1099,7 @@ TEST_F(TopSitesTest, AddTemporaryThumbnail) {
                                             medium_score));
 
   // We shouldn't get the thumnail back though (the url isn't in to sites yet).
-  scoped_refptr<RefCountedBytes> out;
+  scoped_refptr<RefCountedMemory> out;
   EXPECT_FALSE(top_sites()->GetPageThumbnail(unknown_url, &out));
   // But we should be able to get the temporary page thumbnail score.
   ThumbnailScore out_score;

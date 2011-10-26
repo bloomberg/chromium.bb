@@ -36,7 +36,9 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_util.h"
 
 namespace history {
@@ -56,22 +58,14 @@ static const int64 kUpdateIntervalSecs = 15;
 static const int64 kMinUpdateIntervalMinutes = 1;
 static const int64 kMaxUpdateIntervalMinutes = 60;
 
-// IDs of the sites we force into top sites.
-static const int kPrepopulatePageIDs[] =
-    { IDS_CHROME_WELCOME_URL, IDS_WEBSTORE_URL };
-
-// Favicons of the sites we force into top sites.
-static const char kPrepopulateFaviconURLs[][100] =
-    { "chrome://theme/IDR_PRODUCT_LOGO_16",
-      "chrome://theme/IDR_WEBSTORE_ICON_16" };
-// Same as above, but for NTP4. TODO(estade): remove the above.
-static const char kNewPrepopulateFaviconURLs[][100] =
-    { "chrome://theme/IDR_PRODUCT_LOGO_32",
-      "chrome://theme/IDR_WEBSTORE_ICON_32" };
-
-static const int kPrepopulateTitleIDs[] =
-    { IDS_NEW_TAB_CHROME_WELCOME_PAGE_TITLE,
-      IDS_NEW_TAB_WEBSTORE_PAGE_TITLE };
+const TopSites::PrepopulatedPage kPrepopulatedPages[] = {
+  { IDS_CHROME_WELCOME_URL, IDS_NEW_TAB_CHROME_WELCOME_PAGE_TITLE,
+    IDR_PRODUCT_LOGO_16, IDR_NEWTAB_CHROME_WELCOME_PAGE_THUMBNAIL,
+    SkColorSetRGB(0, 147, 60) },
+  { IDS_WEBSTORE_URL, IDS_NEW_TAB_CHROME_WELCOME_PAGE_TITLE,
+    IDR_WEBSTORE_ICON_16, IDR_NEWTAB_WEBSTORE_THUMBNAIL,
+    SkColorSetRGB(63, 132, 197) }
+};
 
 namespace {
 
@@ -256,10 +250,24 @@ void TopSites::GetMostVisitedURLs(CancelableRequestConsumer* consumer,
 }
 
 bool TopSites::GetPageThumbnail(const GURL& url,
-                                scoped_refptr<RefCountedBytes>* bytes) {
+                                scoped_refptr<RefCountedMemory>* bytes) {
   // WARNING: this may be invoked on any thread.
-  base::AutoLock lock(lock_);
-  return thread_safe_cache_->GetPageThumbnail(url, bytes);
+  {
+    base::AutoLock lock(lock_);
+    if (thread_safe_cache_->GetPageThumbnail(url, bytes))
+      return true;
+  }
+
+  // Resource bundle is thread safe.
+  for (size_t i = 0; i < arraysize(kPrepopulatedPages); i++) {
+    if (url.spec() == l10n_util::GetStringUTF8(kPrepopulatedPages[i].url_id)) {
+      *bytes = ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
+          kPrepopulatedPages[i].thumbnail_id);
+      return true;
+    }
+  }
+
+  return false;
 }
 
 bool TopSites::GetPageThumbnailScore(const GURL& url,
@@ -661,15 +669,12 @@ int TopSites::GetRedirectDistanceForURL(const MostVisitedURL& most_visited,
 // static
 MostVisitedURLList TopSites::GetPrepopulatePages() {
   MostVisitedURLList urls;
-  urls.resize(arraysize(kPrepopulatePageIDs));
-  for (size_t i = 0; i < arraysize(kPrepopulatePageIDs); ++i) {
+  urls.resize(arraysize(kPrepopulatedPages));
+  for (size_t i = 0; i < urls.size(); ++i) {
     MostVisitedURL& url = urls[i];
-    url.url = GURL(l10n_util::GetStringUTF8(kPrepopulatePageIDs[i]));
+    url.url = GURL(l10n_util::GetStringUTF8(kPrepopulatedPages[i].url_id));
     url.redirects.push_back(url.url);
-    url.favicon_url = NewTabUI::NTP4Enabled() ?
-        GURL(kNewPrepopulateFaviconURLs[i]) :
-        GURL(kPrepopulateFaviconURLs[i]);
-    url.title = l10n_util::GetStringUTF16(kPrepopulateTitleIDs[i]);
+    url.title = l10n_util::GetStringUTF16(kPrepopulatedPages[i].title_id);
   }
   return urls;
 }
@@ -779,7 +784,7 @@ std::string TopSites::GetURLHash(const GURL& url) {
 }
 
 base::TimeDelta TopSites::GetUpdateDelay() {
-  if (cache_->top_sites().size() <= arraysize(kPrepopulateTitleIDs))
+  if (cache_->top_sites().size() <= arraysize(kPrepopulatedPages))
     return base::TimeDelta::FromSeconds(30);
 
   int64 range = kMaxUpdateIntervalMinutes - kMinUpdateIntervalMinutes;

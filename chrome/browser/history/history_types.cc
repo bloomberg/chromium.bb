@@ -319,12 +319,10 @@ KeywordSearchTermRow::~KeywordSearchTermRow() {}
 
 MostVisitedURL::MostVisitedURL() {}
 
-MostVisitedURL::MostVisitedURL(const GURL& in_url,
-                               const GURL& in_favicon_url,
-                               const string16& in_title)
-    : url(in_url),
-      favicon_url(in_favicon_url),
-      title(in_title) {
+MostVisitedURL::MostVisitedURL(const GURL& url,
+                               const string16& title)
+    : url(url),
+      title(title) {
 }
 
 MostVisitedURL::~MostVisitedURL() {}
