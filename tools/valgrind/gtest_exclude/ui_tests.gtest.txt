@@ -69,7 +69,7 @@ LayoutPluginTester.NPObjectSetException
 # This doesn't pass under valgrind, because the valgrind helper prevents us
 # from properly SIGTERMing the browser process.
 # See http://crbug.com/42105
-BrowserTest.PosixSessionEnd
+BrowserTest.SessionEnd
 
 # Fails flakily, http://crbug.com/70323
 AutomatedUITestBase.ShowBookmarkBar
