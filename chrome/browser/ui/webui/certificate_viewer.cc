@@ -48,15 +48,12 @@ void ShowCertificateViewer(gfx::NativeWindow parent,
 
 void CertificateViewerDialog::ShowDialog(gfx::NativeWindow parent,
                                          net::X509Certificate* cert) {
-  Browser* browser = BrowserList::GetLastActive();
-  DCHECK(browser);
-  browser->BrowserShowHtmlDialog(new CertificateViewerDialog(parent, cert),
-                                 parent);
+  CertificateViewerDialog* dialog = new CertificateViewerDialog(cert);
+  dialog->Show(parent);
 }
 
-CertificateViewerDialog::CertificateViewerDialog(gfx::NativeWindow parent,
-                                                 net::X509Certificate* cert)
-    : cert_(cert), parent_(parent) {
+CertificateViewerDialog::CertificateViewerDialog(net::X509Certificate* cert)
+    : cert_(cert), window_(NULL) {
   // Construct the dialog title from the certificate.
   net::X509Certificate::OSCertHandles cert_chain;
   x509_certificate_model::GetCertChainFromCert(cert_->os_cert_handle(),
@@ -66,6 +63,12 @@ CertificateViewerDialog::CertificateViewerDialog(gfx::NativeWindow parent,
 }
 
 CertificateViewerDialog::~CertificateViewerDialog() {
+}
+
+void CertificateViewerDialog::Show(gfx::NativeWindow parent) {
+  Browser* browser = BrowserList::GetLastActive();
+  DCHECK(browser);
+  window_ = browser->BrowserShowHtmlDialog(this, parent);
 }
 
 bool CertificateViewerDialog::IsDialogModal() const {
@@ -82,7 +85,7 @@ GURL CertificateViewerDialog::GetDialogContentURL() const {
 
 void CertificateViewerDialog::GetWebUIMessageHandlers(
     std::vector<WebUIMessageHandler*>* handlers) const {
-  handlers->push_back(new CertificateViewerDialogHandler(parent_, cert_));
+  handlers->push_back(new CertificateViewerDialogHandler(window_, cert_));
 }
 
 void CertificateViewerDialog::GetDialogSize(gfx::Size* size) const {
@@ -116,8 +119,8 @@ bool CertificateViewerDialog::HandleContextMenu(
 // CertificateViewerDialogHandler
 
 CertificateViewerDialogHandler::CertificateViewerDialogHandler(
-    gfx::NativeWindow parent,
-    net::X509Certificate* cert) : cert_(cert), parent_(parent) {
+    gfx::NativeWindow window,
+    net::X509Certificate* cert) : cert_(cert), window_(window) {
   x509_certificate_model::GetCertChainFromCert(cert_->os_cert_handle(),
       &cert_chain_);
 }
@@ -147,13 +150,8 @@ void CertificateViewerDialogHandler::ExportCertificate(
   if (cert_index < 0 || cert_index >= (int)cert_chain_.size())
     return;
 
-  // TODO(flackr): We should be able to use the current dialog's container
-  //     window as a parent for the export dialog however chromeos builds fail
-  //     to locate the browser for this window. HtmlDialog should probably
-  //     behave similar to a window.open popup with an associated Browser
-  //     object.
   ShowCertExportDialog(web_ui_->tab_contents(),
-                       parent_,
+                       window_,
                        cert_chain_[cert_index]);
 }
 

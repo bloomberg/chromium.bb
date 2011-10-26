@@ -31,8 +31,10 @@ class CertificateViewerDialog : private HtmlDialogUIDelegate {
   // Construct a certificate viewer for the passed in certificate. A reference
   // to the certificate pointer is added for the lifetime of the certificate
   // viewer.
-  explicit CertificateViewerDialog(gfx::NativeWindow parent,
-                                   net::X509Certificate* cert);
+  explicit CertificateViewerDialog(net::X509Certificate* cert);
+
+  // Show the dialog using the given parent window.
+  void Show(gfx::NativeWindow parent);
 
   // Overridden from HtmlDialogUI::Delegate:
   virtual bool IsDialogModal() const OVERRIDE;
@@ -51,8 +53,8 @@ class CertificateViewerDialog : private HtmlDialogUIDelegate {
   // The certificate being viewed.
   scoped_refptr<net::X509Certificate> cert_;
 
-  // The owning window.
-  gfx::NativeWindow parent_;
+  // The window displaying this dialog.
+  gfx::NativeWindow window_;
 
   // The title of the certificate viewer dialog, Certificate Viewer: CN.
   string16 title_;
@@ -64,7 +66,7 @@ class CertificateViewerDialog : private HtmlDialogUIDelegate {
 // details and export the certificate.
 class CertificateViewerDialogHandler : public WebUIMessageHandler {
  public:
-  CertificateViewerDialogHandler(gfx::NativeWindow parent,
+  CertificateViewerDialogHandler(gfx::NativeWindow window,
                                  net::X509Certificate* cert);
   virtual ~CertificateViewerDialogHandler();
 
@@ -92,8 +94,8 @@ class CertificateViewerDialogHandler : public WebUIMessageHandler {
   // The certificate being viewed.
   scoped_refptr<net::X509Certificate> cert_;
 
-  // The parent window.
-  gfx::NativeWindow parent_;
+  // The dialog window.
+  gfx::NativeWindow window_;
 
   // The certificate chain.
   net::X509Certificate::OSCertHandles cert_chain_;
