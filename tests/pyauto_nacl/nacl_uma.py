@@ -8,6 +8,8 @@ import re
 import pyauto_nacl  # Must be imported before pyauto
 import pyauto
 import nacl_utils
+import os
+import sys
 
 
 # Keep in sync with plugin_error.h
@@ -169,6 +171,17 @@ Histogram: NaCl.OSArch recorded 2 samples, average = 1.0 (flags = 0x1)
           'NaCl.Perf.StartupTime.Total',
           'NaCl.Perf.StartupTime.TotalPerMB']
 
+      # These reports are only made on Linux, and one of them only when it
+      # is using the NaCl support built into Chrome.
+      if sys.platform.startswith('linux'):
+        expected.append('NaCl.Client.Helper.InitState')
+        chrome_flags = os.getenv('EXTRA_CHROME_FLAGS')
+        if chrome_flags.find('register-pepper-plugins') == -1:
+          expected.append('NaCl.Client.Helper.StateOnFork')
+      expected_count = {
+          'NaCl.Client.Helper.InitState': 1,
+          }
+
       unpredictable = [
           # Anything that occurs at shutdown is at the mercy of the garbage
           # collector, so we don't know when it will show up in the histograms.
@@ -181,7 +194,8 @@ Histogram: NaCl.OSArch recorded 2 samples, average = 1.0 (flags = 0x1)
 
       # Check each histogram exists and has "count" samples.
       for name in expected:
-        self.assertHistogramCount(hists, name, count)
+        required_count = expected_count.get(name, count)
+        self.assertHistogramCount(hists, name, required_count)
 
       # Check predictable values.
       self.assertLoadOK(hists, count)
