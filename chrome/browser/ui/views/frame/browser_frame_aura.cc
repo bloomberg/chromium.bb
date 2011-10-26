@@ -183,14 +183,10 @@ const views::NativeWidget* BrowserFrameAura::AsNativeWidget() const {
 }
 
 int BrowserFrameAura::GetMinimizeButtonOffset() const {
-  // TODO(beng):
-  NOTIMPLEMENTED();
   return 0;
 }
 
 void BrowserFrameAura::TabStripDisplayModeChanged() {
-  // TODO(beng):
-  NOTIMPLEMENTED();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
