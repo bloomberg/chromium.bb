@@ -15,7 +15,7 @@ class SpecialTabsTest(pyauto.PyUITest):
 
   special_accelerator_tabs = {
     pyauto.IDC_SHOW_HISTORY: 'History',
-    pyauto.IDC_MANAGE_EXTENSIONS: 'Extensions',
+    pyauto.IDC_MANAGE_EXTENSIONS: 'Preferences - Extensions',
     pyauto.IDC_SHOW_DOWNLOADS: 'Downloads',
   }
 
@@ -43,7 +43,7 @@ class SpecialTabsTest(pyauto.PyUITest):
     'chrome://credits': { 'title': 'Credits', 'CSP': False },
     'chrome://downloads': { 'title': 'Downloads' },
     'chrome://dns': { 'title': 'About DNS' },
-    'chrome://settings/extensions': { 'title': 'Extensions' },
+    'chrome://settings/extensions': { 'title': 'Preferences - Extensions' },
     'chrome://flags': {},
     'chrome://flash': {},
     'chrome://gpu-internals': {},
