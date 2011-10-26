@@ -479,6 +479,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   const GURL& sync_service_url() const { return sync_service_url_; }
   SigninManager* signin() { return signin_.get(); }
   const std::string& cros_user() const { return cros_user_; }
+  bool auto_start_enabled() const { return auto_start_enabled_; }
 
   // Marks all currently registered types as "acknowledged" so we won't prompt
   // the user about them any more.

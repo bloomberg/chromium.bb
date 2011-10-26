@@ -85,6 +85,12 @@ class SyncSetupHandler : public GaiaOAuthConsumer,
   virtual void ShowSetupUI() = 0;
 
  private:
+  // If a wizard already exists, focus it and return true.
+  bool FocusExistingWizard();
+
+  // Invokes the javascript call to close the setup overlay.
+  void CloseOverlay();
+
   // Returns true if the given login data is valid, false otherwise. If the
   // login data is not valid then on return |error_message| will be set to  a
   // localized error message. Note, |error_message| must not be NULL.

@@ -546,6 +546,10 @@ void SyncSetupHandler::HandleShowErrorUI(const ListValue* args) {
 
 void SyncSetupHandler::HandleShowSetupUI(const ListValue* args) {
   DCHECK(!flow_);
+  if (FocusExistingWizard()) {
+    CloseOverlay();
+    return;
+  }
   ShowSetupUI();
 }
 
@@ -566,21 +570,43 @@ void SyncSetupHandler::OpenSyncSetup() {
     // If there's no sync service, the user tried to manually invoke a syncSetup
     // URL, but sync features are disabled.  We need to close the overlay for
     // this (rare) case.
-    web_ui_->CallJavascriptFunction("OptionsPage.closeOverlay");
+    CloseOverlay();
     return;
   }
 
-  // If the wizard is not visible, step into the appropriate UI state.
-  if (!service->get_wizard().IsVisible())
-    ShowSetupUI();
-
-  // The SyncSetupFlow will set itself as the |flow_|.
-  if (!service->get_wizard().AttachSyncSetupHandler(this)) {
-    // If attach fails, a wizard is already activated and attached to a flow
-    // handler.
-    web_ui_->CallJavascriptFunction("OptionsPage.closeOverlay");
-    service->get_wizard().Focus();
+  // If the wizard is already visible, it must be attached to another flow
+  // handler.
+  if (FocusExistingWizard()) {
+    CloseOverlay();
+    return;
   }
+
+  // Attach this as the sync setup handler, before calling ShowSetupUI().
+  if (!service->get_wizard().AttachSyncSetupHandler(this)) {
+    LOG(ERROR) << "SyncSetupHandler attach failed!";
+    CloseOverlay();
+    return;
+  }
+
+  ShowSetupUI();
+}
+
+// Private member functions.
+
+bool SyncSetupHandler::FocusExistingWizard() {
+  Profile* profile = Profile::FromWebUI(web_ui_);
+  ProfileSyncService* service = profile->GetProfileSyncService();
+  DCHECK(service);
+  // If the wizard is already visible, focus it.
+  if (service->get_wizard().IsVisible()) {
+    service->get_wizard().Focus();
+    return true;
+  }
+  return false;
+}
+
+void SyncSetupHandler::CloseOverlay() {
+  web_ui_->CallJavascriptFunction("OptionsPage.closeOverlay");
 }
 
 bool SyncSetupHandler::IsLoginAuthDataValid(const std::string& username,

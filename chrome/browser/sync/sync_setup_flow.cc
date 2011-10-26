@@ -398,7 +398,9 @@ bool SyncSetupFlow::ShouldAdvance(SyncSetupWizard::State state) {
     case SyncSetupWizard::CONFIGURE:
       return current_state_ == SyncSetupWizard::GAIA_SUCCESS;
     case SyncSetupWizard::ENTER_PASSPHRASE:
-      return current_state_ == SyncSetupWizard::SYNC_EVERYTHING ||
+      return (service_->auto_start_enabled() &&
+              current_state_ == SyncSetupWizard::GAIA_LOGIN) ||
+             current_state_ == SyncSetupWizard::SYNC_EVERYTHING ||
              current_state_ == SyncSetupWizard::CONFIGURE ||
              current_state_ == SyncSetupWizard::SETTING_UP;
     case SyncSetupWizard::SETUP_ABORTED_BY_PENDING_CLEAR:

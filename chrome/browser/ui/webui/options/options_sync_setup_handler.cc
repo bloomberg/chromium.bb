@@ -19,13 +19,6 @@ void OptionsSyncSetupHandler::ShowSetupUI() {
       Profile::FromWebUI(web_ui_)->GetProfileSyncService();
   DCHECK(service);
 
-  // If the wizard is already visible, focus it.
-  if (service->get_wizard().IsVisible()) {
-    web_ui_->CallJavascriptFunction("OptionsPage.closeOverlay");
-    service->get_wizard().Focus();
-    return;
-  }
-
   // The user is trying to manually load a syncSetup URL.  We should bring up
   // either a login or a configure flow based on the state of sync.
   if (service->HasSyncSetupCompleted()) {
