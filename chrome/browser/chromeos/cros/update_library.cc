@@ -66,7 +66,7 @@ class UpdateLibraryImpl : public UpdateLibrary {
   }
   // End UpdateLibrary implementation.
 
-  const UpdateLibrary::Status& status() const {
+  const UpdateLibrary::Status& status() OVERRIDE const{
     return status_;
   }
 
@@ -82,7 +82,7 @@ class UpdateLibraryImpl : public UpdateLibrary {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
     status_ = status;
-    FOR_EACH_OBSERVER(Observer, observers_, UpdateStatusChanged(this));
+    FOR_EACH_OBSERVER(Observer, observers_, UpdateStatusChanged(status));
   }
 
   ObserverList<Observer> observers_;
@@ -121,7 +121,9 @@ class UpdateLibraryStubImpl : public UpdateLibrary {
   }
   // End UpdateLibrary implementation.
 
-  const UpdateLibrary::Status& status() const { return status_; }
+  const UpdateLibrary::Status& status() OVERRIDE const {
+    return status_;
+  }
 
  private:
   Status status_;

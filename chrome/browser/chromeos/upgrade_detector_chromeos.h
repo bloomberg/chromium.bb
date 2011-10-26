@@ -25,7 +25,8 @@ class UpgradeDetectorChromeos : public UpgradeDetector,
   UpgradeDetectorChromeos();
 
   // chromeos::UpdateLibrary::Observer implementation.
-  virtual void UpdateStatusChanged(chromeos::UpdateLibrary* library);
+  virtual void UpdateStatusChanged(
+      const chromeos::UpdateLibrary::Status& status);
 
   // The function that sends out a notification (after a certain time has
   // elapsed) that lets the rest of the UI know we should start notifying the

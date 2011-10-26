@@ -61,7 +61,7 @@ class UpdateScreen: public UpdateLibrary::Observer,
   virtual void ExitUpdate(ExitReason reason);
 
   // UpdateLibrary::Observer implementation:
-  virtual void UpdateStatusChanged(UpdateLibrary* library);
+  virtual void UpdateStatusChanged(const UpdateLibrary::Status& status);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(UpdateScreenTest, TestBasic);

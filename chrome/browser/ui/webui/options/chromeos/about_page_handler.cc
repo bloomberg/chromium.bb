@@ -71,8 +71,8 @@ class AboutPageHandler::UpdateObserver
   AboutPageHandler* page_handler() const { return page_handler_; }
 
  private:
-  virtual void UpdateStatusChanged(UpdateLibrary* object) {
-    page_handler_->UpdateStatus(object->status());
+  virtual void UpdateStatusChanged(const UpdateLibrary::Status& status) {
+    page_handler_->UpdateStatus(status);
   }
 
   AboutPageHandler* page_handler_;

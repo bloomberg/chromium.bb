@@ -26,8 +26,8 @@ UpgradeDetectorChromeos::~UpgradeDetectorChromeos() {
 }
 
 void UpgradeDetectorChromeos::UpdateStatusChanged(
-    chromeos::UpdateLibrary* library) {
-  if (library->status().status != chromeos::UPDATE_STATUS_UPDATED_NEED_REBOOT)
+    const chromeos::UpdateLibrary::Status& status) {
+  if (status.status != chromeos::UPDATE_STATUS_UPDATED_NEED_REBOOT)
     return;
 
   NotifyUpgradeDetected();

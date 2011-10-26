@@ -49,7 +49,7 @@ class UpdateLibrary {
    public:
     virtual ~Observer() {}
 
-    virtual void UpdateStatusChanged(UpdateLibrary* library) = 0;
+    virtual void UpdateStatusChanged(const Status& status) = 0;
   };
 
   virtual ~UpdateLibrary() {}

@@ -88,16 +88,16 @@ UpdateScreen::~UpdateScreen() {
     actor_->SetDelegate(NULL);
 }
 
-void UpdateScreen::UpdateStatusChanged(UpdateLibrary* library) {
-  UpdateStatusOperation status = library->status().status;
-  if (is_checking_for_update_ && status > UPDATE_STATUS_CHECKING_FOR_UPDATE) {
+void UpdateScreen::UpdateStatusChanged(const UpdateLibrary::Status& status) {
+  if (is_checking_for_update_ &&
+      status.status > UPDATE_STATUS_CHECKING_FOR_UPDATE) {
     is_checking_for_update_ = false;
   }
-  if (ignore_idle_status_ && status > UPDATE_STATUS_IDLE) {
+  if (ignore_idle_status_ && status.status > UPDATE_STATUS_IDLE) {
     ignore_idle_status_ = false;
   }
 
-  switch (status) {
+  switch (status.status) {
     case UPDATE_STATUS_CHECKING_FOR_UPDATE:
       // Do nothing in these cases, we don't want to notify the user of the
       // check unless there is an update.
@@ -107,11 +107,11 @@ void UpdateScreen::UpdateStatusChanged(UpdateLibrary* library) {
       actor_->SetProgress(kBeforeDownloadProgress);
       if (!HasCriticalUpdate()) {
         LOG(INFO) << "Noncritical update available: "
-                  << library->status().new_version;
+                  << status.new_version;
         ExitUpdate(REASON_UPDATE_NON_CRITICAL);
       } else {
         LOG(INFO) << "Critical update available: "
-                  << library->status().new_version;
+                  << status.new_version;
         actor_->ShowPreparingUpdatesInfo(true);
         actor_->ShowCurtain(false);
       }
@@ -125,17 +125,17 @@ void UpdateScreen::UpdateStatusChanged(UpdateLibrary* library) {
           is_downloading_update_ = true;
           if (!HasCriticalUpdate()) {
             LOG(INFO) << "Non-critical update available: "
-                      << library->status().new_version;
+                      << status.new_version;
             ExitUpdate(REASON_UPDATE_NON_CRITICAL);
           } else {
             LOG(INFO) << "Critical update available: "
-                      << library->status().new_version;
+                      << status.new_version;
             actor_->ShowPreparingUpdatesInfo(false);
             actor_->ShowCurtain(false);
           }
         }
         int download_progress = static_cast<int>(
-            library->status().download_progress * kDownloadProgressIncrement);
+            status.download_progress * kDownloadProgressIncrement);
         actor_->SetProgress(kBeforeDownloadProgress + download_progress);
       }
       break;
