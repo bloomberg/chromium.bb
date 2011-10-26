@@ -123,11 +123,11 @@ bool ChromeResourceDispatcherHostDelegate::ShouldBeginRequest(
   if (request_data.resource_type == ResourceType::PRERENDER) {
     if (prerender::PrerenderManager::IsPrerenderingPossible()) {
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-          NewRunnableFunction(AddPrerenderOnUI,
-                              child_id,
-                              route_id,
-                              request_data.url,
-                              referrer));
+          base::Bind(&AddPrerenderOnUI,
+                     child_id,
+                     route_id,
+                     request_data.url,
+                     referrer));
     }
     // Prerendering or not, this request should be aborted.
     return false;
@@ -192,7 +192,7 @@ ResourceHandler* ChromeResourceDispatcherHostDelegate::DownloadStarting(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableFunction(&NotifyDownloadInitiatedOnUI, child_id, route_id));
+      base::Bind(&NotifyDownloadInitiatedOnUI, child_id, route_id));
 
   // If this isn't a new request, we've seen this before and added the safe
   // browsing resource handler already so no need to add it again. This code
@@ -284,8 +284,7 @@ void ChromeResourceDispatcherHostDelegate::HandleExternalProtocol(
     const GURL& url, int child_id, int route_id) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableFunction(
-          &ExternalProtocolHandler::LaunchUrl, url, child_id, route_id));
+      base::Bind(&ExternalProtocolHandler::LaunchUrl, url, child_id, route_id));
 }
 
 #if defined(ENABLE_SAFE_BROWSING)
