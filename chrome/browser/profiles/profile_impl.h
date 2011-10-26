@@ -201,6 +201,8 @@ class ProfileImpl : public Profile,
   scoped_ptr<ExtensionService> extension_service_;
   scoped_refptr<UserScriptMaster> user_script_master_;
   scoped_refptr<ExtensionDevToolsManager> extension_devtools_manager_;
+  // extension_info_map_ needs to outlive extension_process_manager_.
+  scoped_refptr<ExtensionInfoMap> extension_info_map_;
   scoped_ptr<ExtensionProcessManager> extension_process_manager_;
   scoped_refptr<ExtensionMessageService> extension_message_service_;
   scoped_ptr<ExtensionEventRouter> extension_event_router_;
@@ -271,8 +273,6 @@ class ProfileImpl : public Profile,
   scoped_refptr<history::TopSites> top_sites_;  // For history and thumbnails.
 
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
-
-  scoped_refptr<ExtensionInfoMap> extension_info_map_;
 
 #if defined(OS_CHROMEOS)
   scoped_ptr<chromeos::Preferences> chromeos_preferences_;
