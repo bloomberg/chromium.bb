@@ -144,10 +144,7 @@ int32_t PnaclCoordinator::GetLoadedFileDesc(int32_t pp_error,
 NaClSubprocessId PnaclCoordinator::HelperNexeDidLoad(int32_t fd,
                                                      ErrorInfo* error_info) {
   // Inform JavaScript that we successfully loaded a helper nexe.
-  instance_->EnqueueProgressEvent("progress",
-                                  Plugin::LENGTH_IS_NOT_COMPUTABLE,
-                                  Plugin::kUnknownBytes,
-                                  Plugin::kUnknownBytes);
+  instance_->EnqueueProgressEvent(Plugin::kProgressEventProgress);
   nacl::scoped_ptr<nacl::DescWrapper>
       wrapper(instance_->wrapper_factory()->MakeFileDesc(fd, O_RDONLY));
 
@@ -360,10 +357,7 @@ PnaclCoordinator::RunTranslateDidFinish(int32_t pp_error,
     return;
   }
   SetObjectFile(translate_args_->obj_fd, translate_args_->obj_len);
-  instance_->EnqueueProgressEvent("progress",
-                                  Plugin::LENGTH_IS_NOT_COMPUTABLE,
-                                  Plugin::kUnknownBytes,
-                                  Plugin::kUnknownBytes);
+  instance_->EnqueueProgressEvent(Plugin::kProgressEventProgress);
   delayed_callback->RunIfTime();
 }
 
@@ -577,10 +571,7 @@ void PnaclCoordinator::RunLinkDidFinish(int32_t pp_error) {
     return;
   }
   SetTranslatedFile(link_args_->nexe_fd);
-  instance_->EnqueueProgressEvent("progress",
-                                  Plugin::LENGTH_IS_NOT_COMPUTABLE,
-                                  Plugin::kUnknownBytes,
-                                  Plugin::kUnknownBytes);
+  instance_->EnqueueProgressEvent(Plugin::kProgressEventProgress);
   PnaclDidFinish(PP_OK);
 }
 

@@ -79,6 +79,9 @@ class FileDownloader {
   // Returns the url passed to Open().
   const nacl::string& url_to_open() const { return url_to_open_; }
 
+  // Returns the PP_Resource of the active URL loader, or kInvalidResource.
+  PP_Resource url_loader() const { return url_loader_.pp_resource(); }
+
   // Returns the buffer used for DOWNLOAD_TO_BUFFER mode.
   const std::deque<char>& buffer() const { return buffer_; }
 
