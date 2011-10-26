@@ -5,6 +5,7 @@
 #include "chrome/browser/webdata/keyword_table.h"
 
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
@@ -39,6 +40,20 @@ const char kDefaultSearchProviderBackupKey[] =
 // provider.
 const char kDefaultSearchProviderBackupSignatureKey[] =
     "Default Search Provider ID Backup Signature";
+
+// Histogram name to report protection errors for the default search
+// provider.
+const char kProtectorHistogramDefaultSearchProvider[] =
+    "Protector.DefaultSearchProvider";
+
+// Protector histogram values. TODO(avayvod): Move to protector.h/cc
+enum ProtectorError {
+  kProtectorErrorBackupInvalid,
+  kProtectorErrorValueChanged,
+
+  // This is for convenience only, must always be the last.
+  kProtectorErrorCount
+};
 
 void BindURLToStatement(const TemplateURL& url, sql::Statement* s) {
   s->BindString(0, UTF16ToUTF8(url.short_name()));
@@ -271,14 +286,18 @@ int64 KeywordTable::GetDefaultSearchProviderID() {
   std::string backup_signature;
   meta_table_->GetValue(
       kDefaultSearchProviderBackupSignatureKey, &backup_signature);
+  // For now only track how often signature or backup is lost or value is
+  // changed. Don't change the value since UI is not working yet.
   if (!IsSearchProviderIDValid(backup_value, backup_signature)) {
-    // TODO(avayvod): Notify UI about the setting having been hijacked and
-    // the backup value lost.
-    return value;
-  }
-  if (value != backup_value) {
-    // TODO(avayvod): Notify UI about the setting having been hijacked.
-    return backup_value;
+    UMA_HISTOGRAM_ENUMERATION(kProtectorHistogramDefaultSearchProvider,
+                              kProtectorErrorBackupInvalid,
+                              kProtectorErrorCount);
+    SetDefaultSearchProviderBackupID(value);
+  } else if (value != backup_value) {
+    UMA_HISTOGRAM_ENUMERATION(kProtectorHistogramDefaultSearchProvider,
+                              kProtectorErrorValueChanged,
+                              kProtectorErrorCount);
+    SetDefaultSearchProviderBackupID(value);
   }
   return value;
 }
