@@ -133,7 +133,7 @@ deps_os = {
         'src/third_party/lss':
             Var('git_url') + '/external/linux-syscall-support/lss.git@92bafa4c45f03a440868c5e2f066ef61e6f4c517',
         'src/third_party/openssl':
-            Var('git_url') + '/chromium/deps/openssl.git@c12e2b6979ff54c83f69bf85f8915388ee2c668c',
+            Var('git_url') + '/chromium/deps/openssl.git@864570723968450a32e842d39f46acfd9a5bb5e5',
         'src/third_party/swig/linux':
             Var('git_url') + '/chromium/deps/swig/linux.git@866b8e0e0e0cfe99ebe608260030916ca0c3f92d',
         'src/third_party/xdg-utils':
