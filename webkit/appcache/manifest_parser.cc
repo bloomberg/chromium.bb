@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -58,7 +58,8 @@ bool ParseManifest(const GURL& manifest_url, const char* data, int length,
   // Though you might be tempted to convert these wstrings to UTF-8 or
   // string16, this implementation seems simpler given the constraints.
 
-  static const std::wstring kSignature(L"CACHE MANIFEST");
+  const wchar_t kSignature[] = L"CACHE MANIFEST";
+  const size_t kSignatureLength = arraysize(kSignature) - 1;
 
   DCHECK(manifest.explicit_urls.empty());
   DCHECK(manifest.fallback_namespaces.empty());
@@ -89,11 +90,11 @@ bool ParseManifest(const GURL& manifest_url, const char* data, int length,
   }
 
   if (p >= end ||
-      data_string.compare(bom_offset, kSignature.length(), kSignature)) {
+      data_string.compare(bom_offset, kSignatureLength, kSignature)) {
     return false;
   }
 
-  p += kSignature.length();     // Skip past "CACHE MANIFEST"
+  p += kSignatureLength;  // Skip past "CACHE MANIFEST"
 
   // Character after "CACHE MANIFEST" must be whitespace.
   if (p < end && *p != ' ' && *p != '\t' && *p != '\n' && *p != '\r')
