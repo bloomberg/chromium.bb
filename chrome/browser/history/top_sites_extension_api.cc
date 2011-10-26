@@ -43,16 +43,7 @@ void GetTopSitesFunction::OnMostVisitedURLsAvailable(
     NewTabUI::SetURLTitleAndDirection(page_value,
                                       url.title,
                                       url.url);
-    if (!url.favicon_url.is_empty())
-      page_value->SetString("faviconUrl", url.favicon_url.spec());
 
-    // In MostVisitedHandler, there's special code here for the
-    // prepopulated thumbnails, but we can't replicate it here conveniently.
-    // TODO(estade) Do something else instead.
-
-    history::TopSites* ts = profile()->GetTopSites();
-    if (ts && ts->IsURLPinned(url.url))
-      page_value->SetBoolean("pinned", true);
     pages_value->Append(page_value);
   }
   // End copied code. ----------------------------------------------------------
