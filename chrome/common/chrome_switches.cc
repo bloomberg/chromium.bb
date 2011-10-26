@@ -1179,6 +1179,9 @@ const char kAuthExtensionPath[]             = "auth-ext-path";
 // Enables archive file (zip) handling in file manager.
 const char kEnableArchives[]                = "enable-archives";
 
+// Enables photo editor in file manager.
+const char kEnablePhotoEditor[]             = "enable-photo-editor";
+
 #ifndef NDEBUG
 // Skips all other OOBE pages after user login.
 const char kOobeSkipPostLogin[]             = "oobe-skip-postlogin";

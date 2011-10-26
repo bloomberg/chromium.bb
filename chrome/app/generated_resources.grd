@@ -4833,6 +4833,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_EXTENSION_ALERTS_DESCRIPTION" desc="Description for the flag to enable extension alerts.">
         Enable various alerts about changes in extension state.
       </message>
+      <message name="IDS_FLAGS_ENABLE_PHOTO_EDITOR_NAME" desc="Title for the flag to enable the photo editor.">
+        Photo Editor
+      </message>
+      <message name="IDS_FLAGS_ENABLE_PHOTO_EDITOR_DESCRIPTION" desc="Description for the flag to enable the photo editor.">
+      </message>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">

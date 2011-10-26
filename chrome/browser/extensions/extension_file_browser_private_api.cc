@@ -1703,6 +1703,8 @@ bool FileDialogStringsFunction::RunImpl() {
 #if defined(OS_CHROMEOS)
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableArchives))
     dict->SetString("ENABLE_ARCHIVES", "true");
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnablePhotoEditor))
+    dict->SetString("ENABLE_PHOTO_EDITOR", "true");
 #endif
 
   return true;

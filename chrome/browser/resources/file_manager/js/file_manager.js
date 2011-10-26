@@ -9,8 +9,6 @@ const EMPTY_IMAGE_URI = 'data:image/gif;base64,'
 
 var g_slideshow_data = null;
 
-const GALLERY_ENABLED = true;
-
 /**
  * FileManager constructor.
  *
@@ -1876,7 +1874,7 @@ FileManager.prototype = {
               chrome.extension.getURL('images/icon_preview_16x16.png');
           task.title = str('PREVIEW_IMAGE');
           // Do not create the Slideshow button if the Gallery is present.
-          if (GALLERY_ENABLED) continue;
+          if (str('ENABLE_PHOTO_EDITOR')) continue;
         } else if (task_parts[1] == 'play') {
           task.iconUrl =
               chrome.extension.getURL('images/icon_play_16x16.png');
@@ -1896,7 +1894,9 @@ FileManager.prototype = {
               chrome.extension.getURL('images/icon_preview_16x16.png');
           task.title = str('GALLERY');
           task.allTasks = tasksList;
-          if (!GALLERY_ENABLED) continue;  // Skip the button creation.
+
+          // Skip the button creation.
+          if (!str('ENABLE_PHOTO_EDITOR')) continue;
           this.galleryTask_ = task;
         }
       }
