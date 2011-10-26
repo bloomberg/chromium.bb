@@ -32,22 +32,22 @@ using ::testing::_;
 MockFetcher::MockFetcher(bool success,
                          const GURL& url,
                          const std::string& results,
-                         URLFetcher::RequestType request_type,
+                         content::URLFetcher::RequestType request_type,
                          content::URLFetcherDelegate* d)
-    : URLFetcher(url, request_type, d),
-      url_(url),
-      results_(results) {
+    : TestURLFetcher(0, url, request_type, d) {
+  set_url(url);
   net::URLRequestStatus::Status code;
   
   if (success) {
-    response_code_ = RC_REQUEST_OK;
+    set_response_code(RC_REQUEST_OK);
     code = net::URLRequestStatus::SUCCESS;
   } else {
-    response_code_ = RC_FORBIDDEN;
+    set_response_code(RC_FORBIDDEN);
     code = net::URLRequestStatus::FAILED;
   }
 
-  status_ = net::URLRequestStatus(code, 0);
+  set_status(net::URLRequestStatus(code, 0));
+  SetResponseString(results);
 }
 
 MockFetcher::MockFetcher(const GURL& url,
@@ -55,14 +55,14 @@ MockFetcher::MockFetcher(const GURL& url,
                          int response_code,
                          const net::ResponseCookies& cookies,
                          const std::string& results,
-                         URLFetcher::RequestType request_type,
+                         content::URLFetcher::RequestType request_type,
                          content::URLFetcherDelegate* d)
-  : URLFetcher(url, request_type, d),
-    url_(url),
-    status_(status),
-    response_code_(response_code),
-    cookies_(cookies),
-    results_(results) {
+    : TestURLFetcher(0, url, request_type, d) {
+  set_url(url);
+  set_status(status);
+  set_response_code(response_code);
+  set_cookies(cookies);
+  SetResponseString(results);
 }
 
 MockFetcher::~MockFetcher() {}
@@ -70,28 +70,6 @@ MockFetcher::~MockFetcher() {}
 void MockFetcher::Start() {
   delegate()->OnURLFetchComplete(this);
 }
-
-const GURL& MockFetcher::GetUrl() const {
-  return url_;
-}
-
-const net::URLRequestStatus& MockFetcher::GetStatus() const {
-  return status_;
-}
-
-int MockFetcher::GetResponseCode() const {
-  return response_code_;
-}
-
-const net::ResponseCookies& MockFetcher::GetCookies() const {
-  return cookies_;
-}
-
-bool MockFetcher::GetResponseAsString(std::string* out_response_string) const {
-  *out_response_string = results_;
-  return true;
-}
-
 
 class GaiaAuthFetcherTest : public testing::Test {
  public:

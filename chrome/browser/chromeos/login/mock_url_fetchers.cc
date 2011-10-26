@@ -22,9 +22,9 @@ ExpectCanceledFetcher::ExpectCanceledFetcher(
     bool success,
     const GURL& url,
     const std::string& results,
-    URLFetcher::RequestType request_type,
+    content::URLFetcher::RequestType request_type,
     content::URLFetcherDelegate* d)
-    : URLFetcher(url, request_type, d),
+    : TestURLFetcher(0, url, request_type, d),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
 }
 
@@ -44,14 +44,16 @@ void ExpectCanceledFetcher::CompleteFetch() {
   MessageLoop::current()->Quit();  // Allow exiting even if we mess up.
 }
 
-GotCanceledFetcher::GotCanceledFetcher(bool success,
-                                       const GURL& url,
-                                       const std::string& results,
-                                       URLFetcher::RequestType request_type,
-                                       content::URLFetcherDelegate* d)
-    : URLFetcher(url, request_type, d),
-      url_(url),
-      status_(net::URLRequestStatus::CANCELED, 0) {
+GotCanceledFetcher::GotCanceledFetcher(
+    bool success,
+    const GURL& url,
+    const std::string& results,
+    content::URLFetcher::RequestType request_type,
+    content::URLFetcherDelegate* d)
+    : TestURLFetcher(0, url, request_type, d) {
+  set_url(url);
+  set_status(net::URLRequestStatus(net::URLRequestStatus::CANCELED, 0));
+  set_response_code(RC_FORBIDDEN);
 }
 
 GotCanceledFetcher::~GotCanceledFetcher() {}
@@ -60,26 +62,15 @@ void GotCanceledFetcher::Start() {
   delegate()->OnURLFetchComplete(this);
 }
 
-const GURL& GotCanceledFetcher::GetUrl() const {
-  return url_;
-}
-
-const net::URLRequestStatus& GotCanceledFetcher::GetStatus() const {
-  return status_;
-}
-
-int GotCanceledFetcher::GetResponseCode() const {
-  return RC_FORBIDDEN;
-}
-
 SuccessFetcher::SuccessFetcher(bool success,
                                const GURL& url,
                                const std::string& results,
-                               URLFetcher::RequestType request_type,
+                               content::URLFetcher::RequestType request_type,
                                content::URLFetcherDelegate* d)
-    : URLFetcher(url, request_type, d),
-      url_(url),
-      status_(net::URLRequestStatus::SUCCESS, 0) {
+    : TestURLFetcher(0, url, request_type, d) {
+  set_url(url);
+  set_status(net::URLRequestStatus(net::URLRequestStatus::SUCCESS, 0));
+  set_response_code(RC_REQUEST_OK);
 }
 
 SuccessFetcher::~SuccessFetcher() {}
@@ -88,44 +79,21 @@ void SuccessFetcher::Start() {
   delegate()->OnURLFetchComplete(this);
 }
 
-const GURL& SuccessFetcher::GetUrl() const {
-  return url_;
-}
-
-const net::URLRequestStatus& SuccessFetcher::GetStatus() const {
-  return status_;
-}
-
-int SuccessFetcher::GetResponseCode() const {
-  return RC_REQUEST_OK;
-}
-
 FailFetcher::FailFetcher(bool success,
                          const GURL& url,
                          const std::string& results,
-                         URLFetcher::RequestType request_type,
+                         content::URLFetcher::RequestType request_type,
                          content::URLFetcherDelegate* d)
-    : URLFetcher(url, request_type, d),
-      url_(url),
-      status_(net::URLRequestStatus::FAILED, ECONNRESET) {
+    : TestURLFetcher(0, url, request_type, d) {
+  set_url(url);
+  set_status(net::URLRequestStatus(net::URLRequestStatus::FAILED, ECONNRESET));
+  set_response_code(RC_REQUEST_OK);
 }
 
 FailFetcher::~FailFetcher() {}
 
 void FailFetcher::Start() {
   delegate()->OnURLFetchComplete(this);
-}
-
-const GURL& FailFetcher::GetUrl() const {
-  return url_;
-}
-
-const net::URLRequestStatus& FailFetcher::GetStatus() const {
-  return status_;
-}
-
-int FailFetcher::GetResponseCode() const {
-  return RC_REQUEST_OK;
 }
 
 // static
@@ -141,19 +109,20 @@ const char CaptchaFetcher::kUnlockUrl[] = "http://what.ever";
 CaptchaFetcher::CaptchaFetcher(bool success,
                                const GURL& url,
                                const std::string& results,
-                               URLFetcher::RequestType request_type,
+                               content::URLFetcher::RequestType request_type,
                                content::URLFetcherDelegate* d)
-    : URLFetcher(url, request_type, d),
-      url_(url),
-      status_(net::URLRequestStatus::SUCCESS, 0) {
-  data_ = base::StringPrintf("Error=%s\n"
-                             "Url=%s\n"
-                             "CaptchaUrl=%s\n"
-                             "CaptchaToken=%s\n",
-                             "CaptchaRequired",
-                             kUnlockUrl,
-                             kCaptchaUrlFragment,
-                             kCaptchaToken);
+    : TestURLFetcher(0, url, request_type, d) {
+  set_url(url);
+  set_status(net::URLRequestStatus(net::URLRequestStatus::SUCCESS, 0));
+  set_response_code(RC_FORBIDDEN);
+  SetResponseString(base::StringPrintf("Error=%s\n"
+                                       "Url=%s\n"
+                                       "CaptchaUrl=%s\n"
+                                       "CaptchaToken=%s\n",
+                                       "CaptchaRequired",
+                                       kUnlockUrl,
+                                       kCaptchaUrlFragment,
+                                       kCaptchaToken));
 }
 
 CaptchaFetcher::~CaptchaFetcher() {}
@@ -177,33 +146,15 @@ void CaptchaFetcher::Start() {
   delegate()->OnURLFetchComplete(this);
 }
 
-const GURL& CaptchaFetcher::GetUrl() const {
-  return url_;
-}
-
-const net::URLRequestStatus& CaptchaFetcher::GetStatus() const {
-  return status_;
-}
-
-int CaptchaFetcher::GetResponseCode() const {
-  return RC_FORBIDDEN;
-}
-
-bool CaptchaFetcher::GetResponseAsString(
-    std::string* out_response_string) const {
-  *out_response_string = data_;
-  return true;
-}
-
 HostedFetcher::HostedFetcher(bool success,
                              const GURL& url,
                              const std::string& results,
-                             URLFetcher::RequestType request_type,
+                             content::URLFetcher::RequestType request_type,
                              content::URLFetcherDelegate* d)
-    : URLFetcher(url, request_type, d),
-      url_(url),
-      status_(net::URLRequestStatus::SUCCESS, 0),
-      response_code_(RC_REQUEST_OK) {
+    : TestURLFetcher(0, url, request_type, d) {
+  set_url(url);
+  set_status(net::URLRequestStatus(net::URLRequestStatus::SUCCESS, 0));
+  set_response_code(RC_REQUEST_OK);
 }
 
 HostedFetcher::~HostedFetcher() {}
@@ -212,28 +163,10 @@ void HostedFetcher::Start() {
   VLOG(1) << upload_data();
   if (upload_data().find("HOSTED") == std::string::npos) {
     VLOG(1) << "HostedFetcher failing request";
-    response_code_ = RC_FORBIDDEN;
-    data_.assign("Error=BadAuthentication");
+    set_response_code(RC_FORBIDDEN);
+    SetResponseString("Error=BadAuthentication");
   }
   delegate()->OnURLFetchComplete(this);
-}
-
-const GURL& HostedFetcher::GetUrl() const {
-  return url_;
-}
-
-const net::URLRequestStatus& HostedFetcher::GetStatus() const {
-  return status_;
-}
-
-int HostedFetcher::GetResponseCode() const {
-  return response_code_;;
-}
-
-bool HostedFetcher::GetResponseAsString(
-    std::string* out_response_string) const {
-  *out_response_string = data_;
-  return true;
 }
 
 }  // namespace chromeos

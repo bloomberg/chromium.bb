@@ -19,6 +19,7 @@
 #include "base/string_util.h"
 #include "base/threading/thread.h"
 #include "content/public/common/url_fetcher_delegate.h"
+#include "content/public/common/url_fetcher_factory.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
@@ -462,10 +463,7 @@ void URLFetcher::Core::TempFileWriter::RemoveTempFile() {
   }
 }
 
-// static
-URLFetcher::Factory* URLFetcher::factory_ = NULL;
-
-// static
+static content::URLFetcherFactory* g_factory = NULL;
 static bool g_interception_enabled = false;
 
 // static
@@ -482,7 +480,8 @@ content::URLFetcher* content::URLFetcher::Create(
     const GURL& url,
     RequestType request_type,
     content::URLFetcherDelegate* d) {
-  return ::URLFetcher::Create(id, url, request_type, d);
+  return g_factory ? g_factory->CreateURLFetcher(id, url, request_type, d) :
+                     new ::URLFetcher(url, request_type, d);
 }
 
 // static
@@ -505,14 +504,6 @@ URLFetcher::URLFetcher(const GURL& url,
 
 URLFetcher::~URLFetcher() {
   core_->Stop();
-}
-
-// static
-URLFetcher* URLFetcher::Create(int id, const GURL& url,
-                               RequestType request_type,
-                               content::URLFetcherDelegate* d) {
-  return factory_ ? factory_->CreateURLFetcher(id, url, request_type, d) :
-                    new URLFetcher(url, request_type, d);
 }
 
 URLFetcher::Core::Core(URLFetcher* fetcher,
@@ -989,11 +980,6 @@ base::TimeDelta URLFetcher::GetBackoffDelay() const {
   return core_->backoff_delay_;
 }
 
-void URLFetcher::SetBackoffDelayForTesting(
-    base::TimeDelta backoff_delay) {
-  core_->backoff_delay_ = backoff_delay;
-}
-
 void URLFetcher::SaveResponseToTemporaryFile(
     scoped_refptr<base::MessageLoopProxy> file_message_loop_proxy) {
   core_->file_message_loop_proxy_ = file_message_loop_proxy;
@@ -1082,16 +1068,6 @@ bool URLFetcher::GetResponseAsString(std::string* out_response_string) const {
   return true;
 }
 
-void URLFetcher::SetResponseDestinationForTesting(
-    ResponseDestinationType value) {
-  core_->response_destination_ = value;
-}
-
-URLFetcher::ResponseDestinationType
-URLFetcher::GetResponseDestinationForTesting() const {
-  return core_->response_destination_;
-}
-
 bool URLFetcher::GetResponseAsFilePath(bool take_ownership,
                                        FilePath* out_response_path) const {
   DCHECK(core_->delegate_loop_proxy_->BelongsToCurrentThread());
@@ -1120,4 +1096,14 @@ int URLFetcher::GetNumFetcherCores() {
 
 content::URLFetcherDelegate* URLFetcher::delegate() const {
   return core_->delegate();
+}
+
+// static
+content::URLFetcherFactory* URLFetcher::factory() {
+  return g_factory;
+}
+
+// static
+void URLFetcher::set_factory(content::URLFetcherFactory* factory) {
+  g_factory = factory;
 }

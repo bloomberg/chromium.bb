@@ -51,6 +51,7 @@
     'public/common/url_constants.h',
     'public/common/url_fetcher.h',
     'public/common/url_fetcher_delegate.h',
+    'public/common/url_fetcher_factory.h',
     'public/common/view_types.h',
     'public/common/zygote_fork_delegate_linux.h',
     'common/appcache/appcache_backend_proxy.cc',

@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/ref_counted.h"
 #include "base/platform_file.h"
 #include "content/common/content_export.h"
 
@@ -82,9 +83,9 @@ class CONTENT_EXPORT URLFetcher {
                             RequestType request_type,
                             URLFetcherDelegate* d);
 
-  // Like above, but if there's a Factory registered with the implementation it
-  // will be used. |id| may be used during testing to identify who is creating
-  // the URLFetcher.
+  // Like above, but if there's a URLFetcherFactory registered with the
+  // implementation it will be used. |id| may be used during testing to identify
+  // who is creating the URLFetcher.
   static URLFetcher* Create(int id,
                             const GURL& url,
                             RequestType request_type,
@@ -157,9 +158,6 @@ class CONTENT_EXPORT URLFetcher {
   // Returns the back-off delay before the request will be retried,
   // when a 5xx response was received.
   virtual base::TimeDelta GetBackoffDelay() const = 0;
-
-  // Sets the back-off delay, allowing to mock 5xx requests in unit-tests.
-  virtual void SetBackoffDelayForTesting(base::TimeDelta backoff_delay) = 0;
 
   // By default, the response is saved in a string. Call this method to save the
   // response to a temporary file instead. Must be called before Start().

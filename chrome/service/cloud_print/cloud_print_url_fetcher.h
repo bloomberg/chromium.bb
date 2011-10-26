@@ -107,7 +107,7 @@ class CloudPrintURLFetcher
 
  private:
   void StartRequestHelper(const GURL& url,
-                          URLFetcher::RequestType request_type,
+                          content::URLFetcher::RequestType request_type,
                           Delegate* delegate,
                           int max_retries,
                           const std::string& post_data_mime_type,
@@ -118,7 +118,7 @@ class CloudPrintURLFetcher
   scoped_ptr<content::URLFetcher> request_;
   Delegate* delegate_;
   int num_retries_;
-  URLFetcher::RequestType request_type_;
+  content::URLFetcher::RequestType request_type_;
   std::string additional_headers_;
   std::string post_data_mime_type_;
   std::string post_data_;

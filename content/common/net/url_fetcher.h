@@ -16,26 +16,16 @@
 #pragma once
 
 #include "base/compiler_specific.h"
-#include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
 #include "base/time.h"
 #include "content/public/common/url_fetcher.h"
 
+namespace content {
+class URLFetcherFactory;
+}
+
 class CONTENT_EXPORT URLFetcher : public content::URLFetcher{
  public:
-  // URLFetcher::Create uses the currently registered Factory to create the
-  // URLFetcher. Factory is intended for testing.
-  class Factory {
-   public:
-    virtual URLFetcher* CreateURLFetcher(int id,
-                                         const GURL& url,
-                                         RequestType request_type,
-                                         content::URLFetcherDelegate* d) = 0;
-
-   protected:
-    virtual ~Factory() {}
-  };
-
   // |url| is the URL to send the request to.
   // |request_type| is the type of request to make.
   // |d| the object that will receive the callback on fetch completion.
@@ -43,13 +33,6 @@ class CONTENT_EXPORT URLFetcher : public content::URLFetcher{
              RequestType request_type,
              content::URLFetcherDelegate* d);
   virtual ~URLFetcher();
-
-  // Creates a URLFetcher, ownership returns to the caller. If there is no
-  // Factory (the default) this creates and returns a new URLFetcher. See the
-  // constructor for a description of the args. |id| may be used during testing
-  // to identify who is creating the URLFetcher.
-  static URLFetcher* Create(int id, const GURL& url, RequestType request_type,
-                            content::URLFetcherDelegate* d);
 
   // content::URLFetcher implementation:
   virtual void SetUploadData(const std::string& upload_content_type,
@@ -71,8 +54,6 @@ class CONTENT_EXPORT URLFetcher : public content::URLFetcher{
   virtual void SetMaxRetries(int max_retries) OVERRIDE;
   virtual int GetMaxRetries() const OVERRIDE;
   virtual base::TimeDelta GetBackoffDelay() const OVERRIDE;
-  virtual void SetBackoffDelayForTesting(
-      base::TimeDelta backoff_delay) OVERRIDE;
   virtual void SaveResponseToTemporaryFile(
       scoped_refptr<base::MessageLoopProxy> file_message_loop_proxy) OVERRIDE;
   virtual net::HttpResponseHeaders* GetResponseHeaders() const OVERRIDE;
@@ -116,9 +97,6 @@ class CONTENT_EXPORT URLFetcher : public content::URLFetcher{
   // Used by tests.
   void set_response_headers(scoped_refptr<net::HttpResponseHeaders> headers);
 
-  virtual void SetResponseDestinationForTesting(ResponseDestinationType);
-  virtual ResponseDestinationType GetResponseDestinationForTesting() const;
-
  private:
   friend class ScopedURLFetcherFactory;
   friend class TestURLFetcher;
@@ -128,21 +106,17 @@ class CONTENT_EXPORT URLFetcher : public content::URLFetcher{
   // actively running.
   static int GetNumFetcherCores();
 
-  static Factory* factory() { return factory_; }
+  static content::URLFetcherFactory* factory();
 
   // Sets the factory used by the static method Create to create a URLFetcher.
   // URLFetcher does not take ownership of |factory|. A value of NULL results
   // in a URLFetcher being created directly.
   //
   // NOTE: for safety, this should only be used through ScopedURLFetcherFactory!
-  static void set_factory(Factory* factory) {
-    factory_ = factory;
-  }
+  static void set_factory(content::URLFetcherFactory* factory);
 
   class Core;
   scoped_refptr<Core> core_;
-
-  static Factory* factory_;
 
   DISALLOW_COPY_AND_ASSIGN(URLFetcher);
 };

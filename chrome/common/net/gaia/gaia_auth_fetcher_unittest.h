@@ -17,17 +17,13 @@
 #include "content/test/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
 
-namespace content {
-class URLFetcherDelegate;
-}
-
 // Responds as though ClientLogin returned from the server.
-class MockFetcher : public URLFetcher {
+class MockFetcher : public TestURLFetcher {
  public:
   MockFetcher(bool success,
               const GURL& url,
               const std::string& results,
-              URLFetcher::RequestType request_type,
+              content::URLFetcher::RequestType request_type,
               content::URLFetcherDelegate* d);
 
   MockFetcher(const GURL& url,
@@ -35,30 +31,19 @@ class MockFetcher : public URLFetcher {
               int response_code,
               const net::ResponseCookies& cookies,
               const std::string& results,
-              URLFetcher::RequestType request_type,
+              content::URLFetcher::RequestType request_type,
               content::URLFetcherDelegate* d);
 
   virtual ~MockFetcher();
 
   virtual void Start();
 
-  virtual const GURL& GetUrl() const OVERRIDE;
-  virtual const net::URLRequestStatus& GetStatus() const OVERRIDE;
-  virtual int GetResponseCode() const OVERRIDE;
-  virtual const net::ResponseCookies& GetCookies() const OVERRIDE;
-  virtual bool GetResponseAsString(std::string* out_response_string) const;
-
  private:
-  GURL url_;
-  net::URLRequestStatus status_;
-  int response_code_;
-  net::ResponseCookies cookies_;
-  std::string results_;
   DISALLOW_COPY_AND_ASSIGN(MockFetcher);
 };
 
 template<typename T>
-class MockFactory : public URLFetcher::Factory,
+class MockFactory : public content::URLFetcherFactory,
                     public ScopedURLFetcherFactory {
  public:
   MockFactory()
@@ -66,10 +51,11 @@ class MockFactory : public URLFetcher::Factory,
         success_(true) {
   }
   ~MockFactory() {}
-  URLFetcher* CreateURLFetcher(int id,
-                               const GURL& url,
-                               URLFetcher::RequestType request_type,
-                               content::URLFetcherDelegate* d) {
+  content::URLFetcher* CreateURLFetcher(
+      int id,
+      const GURL& url,
+      content::URLFetcher::RequestType request_type,
+      content::URLFetcherDelegate* d) OVERRIDE {
     return new T(success_, url, results_, request_type, d);
   }
   void set_success(bool success) {

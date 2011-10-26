@@ -25,67 +25,47 @@ using ::testing::_;
 
 namespace {
 // Responds as though OAuth returned from the server.
-class MockOAuthFetcher : public URLFetcher {
+class MockOAuthFetcher : public TestURLFetcher {
  public:
   MockOAuthFetcher(int response_code,
                    int max_failure_count,
                    const GURL& url,
                    const std::string& results,
-                   URLFetcher::RequestType request_type,
+                   content::URLFetcher::RequestType request_type,
                    content::URLFetcherDelegate* d)
-    : URLFetcher(url, request_type, d),
-      response_code_(response_code),
+    : TestURLFetcher(0, url, request_type, d),
       max_failure_count_(max_failure_count),
-      current_failure_count_(0),
-      url_(url),
-      results_(results) { }
+      current_failure_count_(0) {
+    set_url(url);
+    set_response_code(response_code);
+    SetResponseString(results);
+  }
+
   virtual ~MockOAuthFetcher() { }
 
   virtual void Start() {
-    if ((response_code_ != RC_REQUEST_OK) && (max_failure_count_ != -1) &&
+    if ((GetResponseCode() != RC_REQUEST_OK) && (max_failure_count_ != -1) &&
         (current_failure_count_ == max_failure_count_)) {
-      response_code_ = RC_REQUEST_OK;
+      set_response_code(RC_REQUEST_OK);
     }
 
     net::URLRequestStatus::Status code = net::URLRequestStatus::SUCCESS;
-    if (response_code_ != RC_REQUEST_OK) {
+    if (GetResponseCode() != RC_REQUEST_OK) {
       code = net::URLRequestStatus::FAILED;
       current_failure_count_++;
     }
-    status_ = net::URLRequestStatus(code, 0);
+    set_status(net::URLRequestStatus(code, 0));
 
     delegate()->OnURLFetchComplete(this);
   }
 
-  virtual const GURL& GetUrl() const OVERRIDE {
-    return url_;
-  }
-
-  virtual const net::URLRequestStatus& GetStatus() const OVERRIDE {
-    return status_;
-  }
-
-  virtual int GetResponseCode() const OVERRIDE {
-    return response_code_;
-  }
-
-  virtual bool GetResponseAsString(
-      std::string* out_response_string) const OVERRIDE {
-    *out_response_string = results_;
-    return true;
-  }
-
  private:
-  net::URLRequestStatus status_;
-  int response_code_;
   int max_failure_count_;
   int current_failure_count_;
-  GURL url_;
-  std::string results_;
   DISALLOW_COPY_AND_ASSIGN(MockOAuthFetcher);
 };
 
-class MockOAuthFetcherFactory : public URLFetcher::Factory,
+class MockOAuthFetcherFactory : public content::URLFetcherFactory,
                                 public ScopedURLFetcherFactory {
  public:
   MockOAuthFetcherFactory()
@@ -93,10 +73,10 @@ class MockOAuthFetcherFactory : public URLFetcher::Factory,
         response_code_(RC_REQUEST_OK) {
   }
   ~MockOAuthFetcherFactory() {}
-  virtual URLFetcher* CreateURLFetcher(
+  virtual content::URLFetcher* CreateURLFetcher(
       int id,
       const GURL& url,
-      URLFetcher::RequestType request_type,
+      content::URLFetcher::RequestType request_type,
       content::URLFetcherDelegate* d) {
     return new MockOAuthFetcher(
         response_code_,

@@ -122,7 +122,7 @@ void CloudPrintURLFetcher::OnURLFetchComplete(
 
 void CloudPrintURLFetcher::StartRequestHelper(
     const GURL& url,
-    URLFetcher::RequestType request_type,
+    content::URLFetcher::RequestType request_type,
     Delegate* delegate,
     int max_retries,
     const std::string& post_data_mime_type,

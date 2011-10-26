@@ -34,24 +34,16 @@ std::string GetRequestType(const GURL& url) {
 namespace policy {
 
 // An URLFetcher that calls back to its factory to figure out what to respond.
-class TestingPolicyURLFetcher : public URLFetcher {
+class TestingPolicyURLFetcher : public TestURLFetcher {
  public:
   TestingPolicyURLFetcher(
       const base::WeakPtr<TestingPolicyURLFetcherFactory>& parent,
       const GURL& url,
-      URLFetcher::RequestType request_type,
+      content::URLFetcher::RequestType request_type,
       content::URLFetcherDelegate* delegate);
 
   virtual void Start() OVERRIDE;
   void Respond();
-
-  virtual const GURL& GetUrl() const OVERRIDE {
-    return url_;
-  }
-
-  virtual const net::URLRequestStatus& GetStatus() const OVERRIDE {
-    return status_;
-  }
 
   virtual int GetResponseCode() const OVERRIDE {
     return response_.response_code;
@@ -64,8 +56,6 @@ class TestingPolicyURLFetcher : public URLFetcher {
   }
 
  private:
-  GURL url_;
-  net::URLRequestStatus status_;
   TestURLResponse response_;
   base::WeakPtr<TestingPolicyURLFetcherFactory> parent_;
 
@@ -75,12 +65,12 @@ class TestingPolicyURLFetcher : public URLFetcher {
 TestingPolicyURLFetcher::TestingPolicyURLFetcher(
     const base::WeakPtr<TestingPolicyURLFetcherFactory>& parent,
     const GURL& url,
-    URLFetcher::RequestType request_type,
+    content::URLFetcher::RequestType request_type,
     content::URLFetcherDelegate* delegate)
-        : URLFetcher(url, request_type, delegate),
-          url_(url),
-          status_(net::URLRequestStatus::SUCCESS, 0),
-          parent_(parent) {
+    : TestURLFetcher(0, url, request_type, delegate),
+      parent_(parent) {
+  set_url(url);
+  set_status(net::URLRequestStatus(net::URLRequestStatus::SUCCESS, 0));
 }
 
 void TestingPolicyURLFetcher::Start() {
@@ -88,7 +78,7 @@ void TestingPolicyURLFetcher::Start() {
 
   std::string auth_header;
   net::HttpRequestHeaders headers;
-  std::string request = GetRequestType(url_);
+  std::string request = GetRequestType(GetUrl());
   GetExtraRequestHeaders(&headers);
   headers.GetHeader("Authorization", &auth_header);
   // The following method is mocked by the currently running test.
@@ -128,10 +118,10 @@ void TestingPolicyURLFetcherFactory::GetResponse(
   Intercept(auth_header, request, response);
 }
 
-URLFetcher* TestingPolicyURLFetcherFactory::CreateURLFetcher(
+content::URLFetcher* TestingPolicyURLFetcherFactory::CreateURLFetcher(
     int id,
     const GURL& url,
-    URLFetcher::RequestType request_type,
+    content::URLFetcher::RequestType request_type,
     content::URLFetcherDelegate* delegate) {
   return new TestingPolicyURLFetcher(
       weak_ptr_factory_.GetWeakPtr(), url, request_type, delegate);
