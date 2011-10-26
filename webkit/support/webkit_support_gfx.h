@@ -8,10 +8,6 @@
 #include <string>
 #include <vector>
 
-// TODO(darin): Remove once this #include has been upstreamed to ImageDiff.cpp.
-// ImageDiff.cpp expects that PATH_MAX has already been defined :-/
-#include <limits.h>
-
 namespace webkit_support {
 
 // Decode a PNG into an RGBA pixel array.
