@@ -131,7 +131,8 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg)
       tap_drag_timeout_(prop_reg, "Tap Drag Timeout", 0.7),
       tap_move_dist_(prop_reg, "Tap Move Distance", 2.0),
       palm_pressure_(prop_reg, "Palm Pressure", 200.0),
-      palm_edge_width_(prop_reg, "Palm Edge Zone Width", 7.0),
+      palm_edge_min_width_(prop_reg, "Tap Exclusion Border Width", 6.0),
+      palm_edge_width_(prop_reg, "Palm Edge Zone Width", 12.5),
       palm_edge_point_speed_(prop_reg, "Palm Edge Zone Min Point Speed", 100.0),
       palm_min_distance_(prop_reg, "Palm Min Distance", 50.0),
       change_timeout_(prop_reg, "Change Timeout", 0.04),
@@ -237,19 +238,14 @@ bool ImmediateInterpreter::FingerInPalmEdgeZone(const FingerState& fs) {
       fs.position_y > (hw_props_.bottom - palm_edge_width_.val_);
 }
 
-bool ImmediateInterpreter::PossiblePalmMovingQuickly(const FingerState& fs,
-                                                     stime_t now) {
-  const FingerState* prev_fs = prev_state_.GetFingerState(fs.tracking_id);
-  if (!prev_fs)
-    return false;
-  float dx = fs.position_x - prev_fs->position_x;
-  float dy = fs.position_y - prev_fs->position_y;
-  float dt = now - prev_state_.timestamp;
-  float dist_sq = dx * dx + dy * dy;
-  float limit_dist_sq = palm_edge_point_speed_.val_ *
-      palm_edge_point_speed_.val_ *
-      dt * dt;
-  return dist_sq > limit_dist_sq;
+bool ImmediateInterpreter::FingerInPalmEnvelope(const FingerState& fs) {
+  float limit = palm_edge_min_width_.val_ +
+      (fs.pressure / palm_pressure_.val_) *
+      (palm_edge_width_.val_ - palm_edge_min_width_.val_);
+  return fs.position_x < limit ||
+      fs.position_x > (hw_props_.right - limit) ||
+      fs.position_y < limit ||
+      fs.position_y > (hw_props_.bottom - limit);
 }
 
 void ImmediateInterpreter::UpdatePalmState(const HardwareState& hwstate) {
@@ -272,8 +268,7 @@ void ImmediateInterpreter::UpdatePalmState(const HardwareState& hwstate) {
     if (prev_palm || prev_pointing)
       continue;
     // If another finger is close by, let this be pointing
-    if (FingerNearOtherFinger(hwstate, i) || !FingerInPalmEdgeZone(fs) ||
-        PossiblePalmMovingQuickly(fs, hwstate.timestamp))
+    if (FingerNearOtherFinger(hwstate, i) || !FingerInPalmEnvelope(fs))
       pointing_.insert(fs.tracking_id);
   }
 }

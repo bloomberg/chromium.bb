@@ -91,9 +91,10 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // around the outside of the touchpad.
   bool FingerInPalmEdgeZone(const FingerState& fs);
 
-  // Part of palm detection. Returns true if the finger is moving so quickly
-  // that even if it's in the edge, we still consider it to be a finger.
-  bool PossiblePalmMovingQuickly(const FingerState& fs, stime_t now);
+  // Returns true iff fs represents a contact that may be a palm. It's a palm
+  // if it's in the edge of the pad with sufficiently large pressure. The
+  // pressure required depends on exactly how close to the edge the contact is.
+  bool FingerInPalmEnvelope(const FingerState& fs);
 
   // Updates *palm_, pointing_ below.
   void UpdatePalmState(const HardwareState& hwstate);
@@ -224,7 +225,12 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   DoubleProperty tap_move_dist_;
   // Maximum pressure above which a finger is considered a palm
   DoubleProperty palm_pressure_;
-  // Palms are expected to hit palm pressure within this amount of border
+  // The smaller of two widths around the edge for palm detection. Any contact
+  // in this edge zone may be a palm, regardless of pressure
+  DoubleProperty palm_edge_min_width_;
+  // The larger of the two widths. Palms between this and the previous are
+  // expected to have pressure linearly increase from 0 to palm_pressure_
+  // as they approach this border.
   DoubleProperty palm_edge_width_;
   // Palms in edge are allowed to point if they move fast enough
   DoubleProperty palm_edge_point_speed_;

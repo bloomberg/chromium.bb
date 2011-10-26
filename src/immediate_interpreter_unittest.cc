@@ -394,6 +394,9 @@ TEST(ImmediateInterpreterTest, PalmAtEdgeTest) {
 
   const float kBig = ii->palm_pressure_.val_ + 1.0;  // palm pressure
   const float kSml = ii->palm_pressure_.val_ - 1.0;  // small, low pressure
+  const float kMid = ii->palm_pressure_.val_ / 2.0;
+  const float kMidWidth =
+      (ii->palm_edge_min_width_.val_ + ii->palm_edge_width_.val_) / 2.0;
 
   FingerState finger_states[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
@@ -405,13 +408,16 @@ TEST(ImmediateInterpreterTest, PalmAtEdgeTest) {
     {0, 0, 0, 0, kSml, 0, 50, 50, 1},
     // large contact movment in middle
     {0, 0, 0, 0, kBig, 0, 50, 40, 1},
-    {0, 0, 0, 0, kBig, 0, 50, 50, 1}
+    {0, 0, 0, 0, kBig, 0, 50, 50, 1},
+    // under mid-pressure contact move at mid-width
+    {0, 0, 0, 0, kMid - 1.0, 0, kMidWidth, 40, 1},
+    {0, 0, 0, 0, kMid - 1.0, 0, kMidWidth, 50, 1},
+    // over mid-pressure contact move at mid-width
+    {0, 0, 0, 0, kMid + 1.0, 0, kMidWidth, 40, 1},
+    {0, 0, 0, 0, kMid + 1.0, 0, kMidWidth, 50, 1},
   };
   HardwareState hardware_state[] = {
     // time, buttons, finger count, touch count, finger states pointer
-    // quick movement at edge
-    { 0.000, 0, 1, 1, &finger_states[0] },
-    { 0.001, 0, 1, 1, &finger_states[1] },
     // slow movement at edge
     { 0.0, 0, 1, 1, &finger_states[0] },
     { 1.0, 0, 1, 1, &finger_states[1] },
@@ -421,6 +427,12 @@ TEST(ImmediateInterpreterTest, PalmAtEdgeTest) {
     // slow large contact movement in middle
     { 0.0, 0, 1, 1, &finger_states[4] },
     { 1.0, 0, 1, 1, &finger_states[5] },
+    // under mid-pressure at mid-width
+    { 0.0, 0, 1, 1, &finger_states[6] },
+    { 1.0, 0, 1, 1, &finger_states[7] },
+    // over mid-pressure at mid-width
+    { 0.0, 0, 1, 1, &finger_states[8] },
+    { 1.0, 0, 1, 1, &finger_states[9] },
   };
 
   for (size_t i = 0; i < arraysize(hardware_state); ++i) {
@@ -435,13 +447,14 @@ TEST(ImmediateInterpreterTest, PalmAtEdgeTest) {
       continue;
     }
     switch (i) {
-      case 1:  // fallthrough
-      case 5:
-        ASSERT_TRUE(result);
+      case 3:  // fallthough
+      case 7:
+        ASSERT_TRUE(result) << "i=" << i;
         EXPECT_EQ(kGestureTypeMove, result->type);
         break;
-      case 3:  // fallthrough
-      case 7:
+      case 1:  // fallthrough
+      case 5:
+      case 9:
         EXPECT_FALSE(result);
         break;
       default:
