@@ -6,11 +6,11 @@
 
 #include "content/browser/download/save_file_manager.h"
 
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
-#include "base/task.h"
 #include "base/threading/thread.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/download/save_file.h"
@@ -38,7 +38,7 @@ SaveFileManager::~SaveFileManager() {
 void SaveFileManager::Shutdown() {
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(this, &SaveFileManager::OnShutdown));
+      base::Bind(&SaveFileManager::OnShutdown, this));
 }
 
 // Stop file thread operations.
@@ -128,13 +128,8 @@ void SaveFileManager::SaveURL(
 
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(this,
-                          &SaveFileManager::OnSaveURL,
-                          url,
-                          referrer,
-                          render_process_host_id,
-                          render_view_id,
-                          &context));
+        base::Bind(&SaveFileManager::OnSaveURL, this, url, referrer,
+            render_process_host_id, render_view_id, &context));
   } else {
     // We manually start the save job.
     SaveFileCreateInfo* info = new SaveFileCreateInfo(file_full_path,
@@ -148,8 +143,8 @@ void SaveFileManager::SaveURL(
     // this kind of save job by ourself.
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(
-            this, &SaveFileManager::OnRequireSaveJobFromOtherSource, info));
+        base::Bind(&SaveFileManager::OnRequireSaveJobFromOtherSource,
+            this, info));
   }
 }
 
@@ -196,8 +191,8 @@ void SaveFileManager::DeleteDirectoryOrFile(const FilePath& full_path,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(
-          this, &SaveFileManager::OnDeleteDirectoryOrFile, full_path, is_dir));
+      base::Bind(&SaveFileManager::OnDeleteDirectoryOrFile,
+          this, full_path, is_dir));
 }
 
 void SaveFileManager::SendCancelRequest(int save_id) {
@@ -205,7 +200,7 @@ void SaveFileManager::SendCancelRequest(int save_id) {
   DCHECK_GT(save_id, -1);
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(this, &SaveFileManager::CancelSave, save_id));
+      base::Bind(&SaveFileManager::CancelSave, this, save_id));
 }
 
 // Notifications sent from the IO thread and run on the file thread:
@@ -227,7 +222,7 @@ void SaveFileManager::StartSave(SaveFileCreateInfo* info) {
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &SaveFileManager::OnStartSave, info));
+      base::Bind(&SaveFileManager::OnStartSave, this, info));
 }
 
 // We do forward an update to the UI thread here, since we do not use timer to
@@ -243,10 +238,12 @@ void SaveFileManager::UpdateSaveProgress(int save_id,
     net::Error write_success =
         save_file->AppendDataToFile(data->data(), data_len);
     BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(
-            this, &SaveFileManager::OnUpdateSaveProgress, save_file->save_id(),
-            save_file->bytes_so_far(), write_success == net::OK));
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&SaveFileManager::OnUpdateSaveProgress,
+                   this,
+                   save_file->save_id(),
+                   save_file->bytes_so_far(),
+                   write_success == net::OK));
   }
 }
 
@@ -271,9 +268,8 @@ void SaveFileManager::SaveFinished(int save_id,
   VLOG(20) << " " << __FUNCTION__ << "()"
            << " save_file = " << save_file->DebugString();
     BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(
-            this, &SaveFileManager::OnSaveFinished, save_id,
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&SaveFileManager::OnSaveFinished, this, save_id,
             save_file->bytes_so_far(), is_success));
 
     save_file->Finish();
@@ -283,8 +279,7 @@ void SaveFileManager::SaveFinished(int save_id,
     DCHECK(!save_url.is_empty());
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(
-            this, &SaveFileManager::OnErrorFinished, save_url,
+        base::Bind(&SaveFileManager::OnErrorFinished, this, save_url,
             render_process_id));
   }
 }
@@ -375,7 +370,7 @@ void SaveFileManager::OnRequireSaveJobFromOtherSource(
   // Start real saving action.
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(this, &SaveFileManager::StartSave, info));
+      base::Bind(&SaveFileManager::StartSave, this, info));
 }
 
 void SaveFileManager::ExecuteCancelSaveRequest(int render_process_id,
@@ -405,8 +400,7 @@ void SaveFileManager::CancelSave(int save_id) {
     if (save_file->save_source() == SaveFileCreateInfo::SAVE_FILE_FROM_NET) {
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
-          NewRunnableMethod(
-              this, &SaveFileManager::ExecuteCancelSaveRequest,
+          base::Bind(&SaveFileManager::ExecuteCancelSaveRequest, this,
               save_file->render_process_id(), save_file->request_id()));
 
       // UI thread will notify the render process to stop sending data,
@@ -492,9 +486,8 @@ void SaveFileManager::RenameAllFiles(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(
-          this, &SaveFileManager::OnFinishSavePageJob, render_process_id,
-          render_view_id, save_package_id));
+      base::Bind(&SaveFileManager::OnFinishSavePageJob, this,
+          render_process_id, render_view_id, save_package_id));
 }
 
 void SaveFileManager::OnFinishSavePageJob(int render_process_id,
