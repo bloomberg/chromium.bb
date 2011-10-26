@@ -419,6 +419,7 @@ OmniboxViewWin::OmniboxViewWin(const gfx::Font& font,
       in_drag_(false),
       initiated_drag_(false),
       drop_highlight_position_(-1),
+      ime_candidate_window_open_(false),
       background_color_(skia::SkColorToCOLORREF(LocationBarView::GetColor(
           ToolbarModel::NONE, LocationBarView::BACKGROUND))),
       security_level_(ToolbarModel::NONE),
@@ -692,6 +693,11 @@ void OmniboxViewWin::RevertAll() {
 void OmniboxViewWin::UpdatePopup() {
   ScopedFreeze freeze(this, GetTextObjectModel());
   model_->SetInputInProgress(true);
+
+  // Don't allow the popup to open while the candidate window is open, so
+  // they don't overlap.
+  if (ime_candidate_window_open_)
+    return;
 
   if (!model_->has_focus()) {
     // When we're in the midst of losing focus, don't rerun autocomplete.  This
@@ -1368,6 +1374,26 @@ LRESULT OmniboxViewWin::OnImeComposition(UINT message,
   // to make sure the model can update its internal states correctly.
   OnAfterPossibleChangeInternal((lparam & GCS_RESULTSTR) != 0);
   return result;
+}
+
+LRESULT OmniboxViewWin::OnImeNotify(UINT message,
+                                    WPARAM wparam,
+                                    LPARAM lparam) {
+  // Close the popup when the IME composition window is open, so they don't
+  // overlap.
+  switch (wparam) {
+    case IMN_OPENCANDIDATE:
+      ime_candidate_window_open_ = true;
+      ClosePopup();
+      break;
+    case IMN_CLOSECANDIDATE:
+      ime_candidate_window_open_ = false;
+      UpdatePopup();
+      break;
+    default:
+      break;
+  }
+  return DefWindowProc(message, wparam, lparam);
 }
 
 void OmniboxViewWin::OnKeyDown(TCHAR key,
