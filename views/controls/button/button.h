@@ -40,7 +40,8 @@ class VIEWS_EXPORT Button : public View {
   void SetAccessibleKeyboardShortcut(const string16& shortcut);
 
   // Overridden from View:
-  virtual bool GetTooltipText(const gfx::Point& p, string16* tooltip) OVERRIDE;
+  virtual bool GetTooltipText(const gfx::Point& p,
+                              string16* tooltip) const OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
  protected:

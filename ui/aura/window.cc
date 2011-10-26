@@ -368,7 +368,7 @@ bool Window::CanFocus() const {
 
 internal::FocusManager* Window::GetFocusManager() {
   return const_cast<internal::FocusManager*>(
-      const_cast<const Window*>(this)->GetFocusManager());
+      static_cast<const Window*>(this)->GetFocusManager());
 }
 
 const internal::FocusManager* Window::GetFocusManager() const {

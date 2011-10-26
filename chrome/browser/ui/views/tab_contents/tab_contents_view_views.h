@@ -121,6 +121,7 @@ class TabContentsViewViews : public views::Widget,
 
   // Overridden from views::Widget:
   virtual views::FocusManager* GetFocusManager() OVERRIDE;
+  virtual const views::FocusManager* GetFocusManager() const OVERRIDE;
   virtual void OnNativeWidgetVisibilityChanged(bool visible) OVERRIDE;
 
   // A helper method for closing the tab.
@@ -169,7 +170,7 @@ class TabContentsViewViews : public views::Widget,
 
   // The FocusManager associated with this tab.  Stored as it is not directly
   // accessible when un-parented.
-  views::FocusManager* focus_manager_;
+  mutable const views::FocusManager* focus_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(TabContentsViewViews);
 };

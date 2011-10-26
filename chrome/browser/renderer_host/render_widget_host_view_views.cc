@@ -677,7 +677,7 @@ views::TextInputClient* RenderWidgetHostViewViews::GetTextInputClient() {
 }
 
 bool RenderWidgetHostViewViews::GetTooltipText(const gfx::Point& p,
-                                               string16* tooltip) {
+                                               string16* tooltip) const {
   if (tooltip_text_.length() == 0)
     return false;
   *tooltip = tooltip_text_;

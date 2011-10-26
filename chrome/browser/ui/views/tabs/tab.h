@@ -73,7 +73,7 @@ class Tab : public BaseTab {
   virtual bool HasHitTestMask() const OVERRIDE;
   virtual void GetHitTestMask(gfx::Path* path) const OVERRIDE;
   virtual bool GetTooltipTextOrigin(const gfx::Point& p,
-                                    gfx::Point* origin) OVERRIDE;
+                                    gfx::Point* origin) const OVERRIDE;
   virtual void OnMouseMoved(const views::MouseEvent& event) OVERRIDE;
 
   // Paint various portions of the Tab

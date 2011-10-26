@@ -869,11 +869,9 @@ bool View::AcceleratorPressed(const Accelerator& accelerator) {
 
 // Focus -----------------------------------------------------------------------
 
-bool View::HasFocus() {
-  FocusManager* focus_manager = GetFocusManager();
-  if (focus_manager)
-    return focus_manager->GetFocusedView() == this;
-  return false;
+bool View::HasFocus() const {
+  const FocusManager* focus_manager = GetFocusManager();
+  return focus_manager && (focus_manager->GetFocusedView() == this);
 }
 
 View* View::GetNextFocusableView() {
@@ -907,6 +905,11 @@ FocusManager* View::GetFocusManager() {
   return widget ? widget->GetFocusManager() : NULL;
 }
 
+const FocusManager* View::GetFocusManager() const {
+  const Widget* widget = GetWidget();
+  return widget ? widget->GetFocusManager() : NULL;
+}
+
 void View::RequestFocus() {
   FocusManager* focus_manager = GetFocusManager();
   if (focus_manager && IsFocusableInRootView())
@@ -927,11 +930,11 @@ FocusTraversable* View::GetPaneFocusTraversable() {
 
 // Tooltips --------------------------------------------------------------------
 
-bool View::GetTooltipText(const gfx::Point& p, string16* tooltip) {
+bool View::GetTooltipText(const gfx::Point& p, string16* tooltip) const {
   return false;
 }
 
-bool View::GetTooltipTextOrigin(const gfx::Point& p, gfx::Point* loc) {
+bool View::GetTooltipTextOrigin(const gfx::Point& p, gfx::Point* loc) const {
   return false;
 }
 

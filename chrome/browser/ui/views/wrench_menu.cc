@@ -614,7 +614,7 @@ void WrenchMenu::RunMenu(views::MenuButton* host) {
 }
 
 string16 WrenchMenu::GetTooltipText(int id,
-                                        const gfx::Point& p) {
+                                    const gfx::Point& p) const {
   return is_bookmark_command(id) ?
       bookmark_menu_delegate_->GetTooltipText(id, p) : string16();
 }

@@ -140,7 +140,8 @@ class VIEWS_EXPORT FocusManager {
   void AdvanceFocus(bool reverse);
 
   // The FocusManager keeps track of the focused view within a RootView.
-  View* GetFocusedView() const { return focused_view_; }
+  View* GetFocusedView() { return focused_view_; }
+  const View* GetFocusedView() const { return focused_view_; }
 
   // Low-level methods to force the focus to change (and optionally provide
   // a reason). If the focus change should only happen if the view is

@@ -83,7 +83,8 @@ void BookmarkMenuController::SetPageNavigator(PageNavigator* navigator) {
   menu_delegate_->SetPageNavigator(navigator);
 }
 
-string16 BookmarkMenuController::GetTooltipText(int id, const gfx::Point& p) {
+string16 BookmarkMenuController::GetTooltipText(int id,
+                                                const gfx::Point& p) const {
   return menu_delegate_->GetTooltipText(id, p);
 }
 

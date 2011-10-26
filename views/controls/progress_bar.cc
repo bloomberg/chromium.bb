@@ -289,7 +289,7 @@ void ProgressBar::OnPaint(gfx::Canvas* canvas) {
 #endif
 }
 
-bool ProgressBar::GetTooltipText(const gfx::Point& p, string16* tooltip) {
+bool ProgressBar::GetTooltipText(const gfx::Point& p, string16* tooltip) const {
   DCHECK(tooltip);
   if (tooltip == NULL)
     return false;

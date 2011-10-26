@@ -163,7 +163,7 @@ void ToggleImageButton::SetImage(ButtonState state, const SkBitmap* image) {
 // ToggleImageButton, View overrides:
 
 bool ToggleImageButton::GetTooltipText(const gfx::Point& p,
-                                       string16* tooltip) {
+                                       string16* tooltip) const {
   if (!toggled_ || toggled_tooltip_text_.empty())
     return Button::GetTooltipText(p, tooltip);
 

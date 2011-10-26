@@ -161,7 +161,7 @@ bool AccessiblePaneView::AcceleratorPressed(
   // Special case: don't handle any accelerators for the location bar,
   // so that it behaves exactly the same whether you focus it with Ctrl+L
   // or F6 or Alt+D or Alt+Shift+T.
-  views::View* focused_view = focus_manager_->GetFocusedView();
+  const views::View* focused_view = focus_manager_->GetFocusedView();
   if ((focused_view->GetClassName() == LocationBarView::kViewClassName ||
        focused_view->GetClassName() == views::NativeViewHost::kViewClassName)) {
     return false;

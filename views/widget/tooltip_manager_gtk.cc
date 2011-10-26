@@ -71,7 +71,7 @@ TooltipManagerGtk::TooltipManagerGtk(NativeWidgetGtk* widget)
 
 bool TooltipManagerGtk::ShowTooltip(int x, int y, bool for_keyboard,
                                     GtkTooltip* tooltip) {
-  View* view = NULL;
+  const View* view = NULL;
   gfx::Point view_loc;
   if (keyboard_view_) {
     view = keyboard_view_;
@@ -82,7 +82,7 @@ bool TooltipManagerGtk::ShowTooltip(int x, int y, bool for_keyboard,
     view_loc.SetPoint(x, y);
     View::ConvertPointFromWidget(view, &view_loc);
   } else {
-    FocusManager* focus_manager = widget_->GetWidget()->GetFocusManager();
+    const FocusManager* focus_manager = widget_->GetWidget()->GetFocusManager();
     if (focus_manager) {
       view = focus_manager->GetFocusedView();
       if (view)

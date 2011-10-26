@@ -437,10 +437,15 @@ views::internal::NativeWidgetDelegate*
 // TabContentsViewViews, views::Widget overrides:
 
 views::FocusManager* TabContentsViewViews::GetFocusManager() {
-  views::FocusManager* focus_manager = Widget::GetFocusManager();
+  return const_cast<views::FocusManager*>(
+      static_cast<const TabContentsViewViews*>(this)->GetFocusManager());
+}
+
+const views::FocusManager* TabContentsViewViews::GetFocusManager() const {
+  const views::FocusManager* focus_manager = Widget::GetFocusManager();
   if (focus_manager) {
-    // If focus_manager_ is non NULL, it means we have been reparented, in which
-    // case its value may not be valid anymore.
+    // If |focus_manager| is non NULL, it means we have been reparented, in
+    // which case |focus_manager_| may not be valid anymore.
     focus_manager_ = NULL;
     return focus_manager;
   }

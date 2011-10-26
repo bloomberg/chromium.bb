@@ -159,7 +159,8 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   virtual bool OnKeyReleased(const views::KeyEvent& event) OVERRIDE;
   virtual bool OnMouseWheel(const views::MouseWheelEvent& event) OVERRIDE;
   virtual views::TextInputClient* GetTextInputClient() OVERRIDE;
-  virtual bool GetTooltipText(const gfx::Point& p, string16* tooltip) OVERRIDE;
+  virtual bool GetTooltipText(const gfx::Point& p,
+                              string16* tooltip) const OVERRIDE;
 
   // Overridden from TextInputClient:
   virtual void SetCompositionText(

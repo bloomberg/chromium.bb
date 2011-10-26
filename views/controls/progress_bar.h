@@ -39,7 +39,8 @@ class VIEWS_EXPORT ProgressBar : public View {
   virtual std::string GetClassName() const OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual bool GetTooltipText(const gfx::Point& p, string16* tooltip) OVERRIDE;
+  virtual bool GetTooltipText(const gfx::Point& p,
+                              string16* tooltip) const OVERRIDE;
 
   // Sets the inclusive range of values to be displayed.  Values outside of the
   // range will be capped when displayed.

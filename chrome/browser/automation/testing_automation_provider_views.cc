@@ -145,11 +145,12 @@ void TestingAutomationProvider::GetFocusedViewID(int handle, int* view_id) {
   *view_id = -1;
   if (window_tracker_->ContainsHandle(handle)) {
     gfx::NativeWindow window = window_tracker_->GetResource(handle);
-    views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
+    const views::Widget* widget =
+        views::Widget::GetWidgetForNativeWindow(window);
     DCHECK(widget);
-    views::FocusManager* focus_manager = widget->GetFocusManager();
+    const views::FocusManager* focus_manager = widget->GetFocusManager();
     DCHECK(focus_manager);
-    views::View* focused_view = focus_manager->GetFocusedView();
+    const views::View* focused_view = focus_manager->GetFocusedView();
     if (focused_view)
       *view_id = focused_view->id();
   }

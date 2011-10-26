@@ -38,7 +38,7 @@ void StarView::GetAccessibleState(ui::AccessibleViewState* state) {
   state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
 }
 
-bool StarView::GetTooltipText(const gfx::Point& p, string16* tooltip) {
+bool StarView::GetTooltipText(const gfx::Point& p, string16* tooltip) const {
   // Don't show tooltip to distract user if BookmarkBubbleView is showing.
   if (browser::IsBookmarkBubbleViewShowing())
     return false;

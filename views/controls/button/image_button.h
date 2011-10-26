@@ -96,10 +96,11 @@ class VIEWS_EXPORT ToggleImageButton : public ImageButton {
   void SetToggledTooltipText(const string16& tooltip);
 
   // Overridden from ImageButton:
-  virtual void SetImage(ButtonState aState, const SkBitmap* anImage);
+  virtual void SetImage(ButtonState aState, const SkBitmap* anImage) OVERRIDE;
 
   // Overridden from View:
-  virtual bool GetTooltipText(const gfx::Point& p, string16* tooltip);
+  virtual bool GetTooltipText(const gfx::Point& p,
+                              string16* tooltip) const OVERRIDE;
 
  private:
   // The parent class's images_ member is used for the current images,

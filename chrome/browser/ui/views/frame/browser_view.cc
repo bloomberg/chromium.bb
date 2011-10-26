@@ -928,7 +928,7 @@ void BrowserView::RotatePaneFocus(bool forwards) {
   int count = static_cast<int>(accessible_views.size());
 
   // Figure out which view (if any) currently has the focus.
-  views::View* focused_view = GetFocusManager()->GetFocusedView();
+  const views::View* focused_view = GetFocusManager()->GetFocusedView();
   int index = -1;
   if (focused_view) {
     for (int i = 0; i < count; ++i) {

@@ -652,7 +652,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Focus ---------------------------------------------------------------------
 
   // Returns whether this view currently has the focus.
-  virtual bool HasFocus();
+  virtual bool HasFocus() const;
 
   // Returns the view that should be selected next when pressing Tab.
   View* GetNextFocusableView();
@@ -692,6 +692,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Widget that contains this view.  This can return NULL if this view is not
   // part of a view hierarchy with a Widget.
   virtual FocusManager* GetFocusManager();
+  virtual const FocusManager* GetFocusManager() const;
 
   // Request the keyboard focus. The receiving view will become the
   // focused view.
@@ -733,12 +734,12 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Any time the tooltip text that a View is displaying changes, it must
   // invoke TooltipTextChanged.
   // |p| provides the coordinates of the mouse (relative to this view).
-  virtual bool GetTooltipText(const gfx::Point& p, string16* tooltip);
+  virtual bool GetTooltipText(const gfx::Point& p, string16* tooltip) const;
 
   // Returns the location (relative to this View) for the text on the tooltip
   // to display. If false is returned (the default), the tooltip is placed at
   // a default position.
-  virtual bool GetTooltipTextOrigin(const gfx::Point& p, gfx::Point* loc);
+  virtual bool GetTooltipTextOrigin(const gfx::Point& p, gfx::Point* loc) const;
 
   // Context menus -------------------------------------------------------------
 

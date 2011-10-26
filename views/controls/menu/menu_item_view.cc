@@ -39,7 +39,8 @@ class EmptyMenuMenuItem : public MenuItemView {
     SetEnabled(false);
   }
 
-  virtual bool GetTooltipText(const gfx::Point& p, string16* tooltip) OVERRIDE {
+  virtual bool GetTooltipText(const gfx::Point& p,
+                              string16* tooltip) const OVERRIDE {
     // Empty menu items shouldn't have a tooltip.
     return false;
   }
@@ -104,7 +105,8 @@ void MenuItemView::ChildPreferredSizeChanged(View* child) {
   PreferredSizeChanged();
 }
 
-bool MenuItemView::GetTooltipText(const gfx::Point& p, string16* tooltip) {
+bool MenuItemView::GetTooltipText(const gfx::Point& p,
+                                  string16* tooltip) const {
   *tooltip = tooltip_;
   if (!tooltip->empty())
     return true;
@@ -112,14 +114,14 @@ bool MenuItemView::GetTooltipText(const gfx::Point& p, string16* tooltip) {
   if (GetType() == SEPARATOR)
     return false;
 
-  MenuController* controller = GetMenuController();
+  const MenuController* controller = GetMenuController();
   if (!controller || controller->exit_type() != MenuController::EXIT_NONE) {
     // Either the menu has been closed or we're in the process of closing the
     // menu. Don't attempt to query the delegate as it may no longer be valid.
     return false;
   }
 
-  MenuItemView* root_menu_item = GetRootMenuItem();
+  const MenuItemView* root_menu_item = GetRootMenuItem();
   if (root_menu_item->canceled_) {
     // TODO(sky): if |canceled_| is true, controller->exit_type() should be
     // something other than EXIT_NONE, but crash reports seem to indicate
@@ -127,10 +129,11 @@ bool MenuItemView::GetTooltipText(const gfx::Point& p, string16* tooltip) {
     return false;
   }
 
-  CHECK(GetDelegate());
+  const MenuDelegate* delegate = GetDelegate();
+  CHECK(delegate);
   gfx::Point location(p);
   ConvertPointToScreen(this, &location);
-  *tooltip = GetDelegate()->GetTooltipText(command_, location);
+  *tooltip = delegate->GetTooltipText(command_, location);
   return !tooltip->empty();
 }
 
@@ -367,20 +370,29 @@ MenuController* MenuItemView::GetMenuController() {
   return GetRootMenuItem()->controller_;
 }
 
+const MenuController* MenuItemView::GetMenuController() const {
+  return GetRootMenuItem()->controller_;
+}
+
 MenuDelegate* MenuItemView::GetDelegate() {
   return GetRootMenuItem()->delegate_;
 }
 
+const MenuDelegate* MenuItemView::GetDelegate() const {
+  return GetRootMenuItem()->delegate_;
+}
+
 MenuItemView* MenuItemView::GetRootMenuItem() {
-  MenuItemView* item = this;
-  while (item) {
-    MenuItemView* parent = item->GetParentMenuItem();
-    if (!parent)
-      return item;
+  return const_cast<MenuItemView*>(
+      static_cast<const MenuItemView*>(this)->GetRootMenuItem());
+}
+
+const MenuItemView* MenuItemView::GetRootMenuItem() const {
+  const MenuItemView* item = this;
+  for (const MenuItemView* parent = GetParentMenuItem(); parent;
+       parent = item->GetParentMenuItem())
     item = parent;
-  }
-  NOTREACHED();
-  return NULL;
+  return item;
 }
 
 char16 MenuItemView::GetMnemonic() {
@@ -603,10 +615,8 @@ int MenuItemView::GetDrawStringFlags() {
 const gfx::Font& MenuItemView::GetFont() {
   // Check for item-specific font.
   const MenuDelegate* delegate = GetDelegate();
-  if (delegate)
-    return delegate->GetLabelFont(GetCommand());
-  else
-    return MenuConfig::instance().font;
+  return delegate ?
+      delegate->GetLabelFont(GetCommand()) : MenuConfig::instance().font;
 }
 
 void MenuItemView::AddEmptyMenus() {

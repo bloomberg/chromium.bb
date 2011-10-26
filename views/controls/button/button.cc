@@ -31,7 +31,7 @@ void Button::SetAccessibleKeyboardShortcut(const string16& shortcut) {
 ////////////////////////////////////////////////////////////////////////////////
 // Button, View overrides:
 
-bool Button::GetTooltipText(const gfx::Point& p, string16* tooltip) {
+bool Button::GetTooltipText(const gfx::Point& p, string16* tooltip) const {
   if (tooltip_text_.empty())
     return false;
 

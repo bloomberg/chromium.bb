@@ -239,7 +239,7 @@ void Label::OnMouseExited(const MouseEvent& event) {
   SetContainsMouse(false);
 }
 
-bool Label::GetTooltipText(const gfx::Point& p, string16* tooltip) {
+bool Label::GetTooltipText(const gfx::Point& p, string16* tooltip) const {
   DCHECK(tooltip);
 
   // If a tooltip has been explicitly set, use it.

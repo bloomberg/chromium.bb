@@ -388,7 +388,7 @@ void Widget::NotifyNativeViewHierarchyChanged(bool attached,
 
 Widget* Widget::GetTopLevelWidget() {
   return const_cast<Widget*>(
-      const_cast<const Widget*>(this)->GetTopLevelWidget());
+      static_cast<const Widget*>(this)->GetTopLevelWidget());
 }
 
 const Widget* Widget::GetTopLevelWidget() const {
@@ -396,9 +396,7 @@ const Widget* Widget::GetTopLevelWidget() const {
   // property is gone after gobject gets deleted. Short circuit here
   // for toplevel so that InputMethod can remove itself from
   // focus manager.
-  if (is_top_level())
-    return this;
-  return native_widget_->GetTopLevelWidget();
+  return is_top_level() ? this : native_widget_->GetTopLevelWidget();
 }
 
 void Widget::SetContentsView(View* view) {
@@ -618,6 +616,11 @@ ThemeProvider* Widget::GetThemeProvider() const {
 }
 
 FocusManager* Widget::GetFocusManager() {
+  Widget* toplevel_widget = GetTopLevelWidget();
+  return toplevel_widget ? toplevel_widget->focus_manager_.get() : NULL;
+}
+
+const FocusManager* Widget::GetFocusManager() const {
   const Widget* toplevel_widget = GetTopLevelWidget();
   return toplevel_widget ? toplevel_widget->focus_manager_.get() : NULL;
 }

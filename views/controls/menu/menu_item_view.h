@@ -112,7 +112,8 @@ class VIEWS_EXPORT MenuItemView : public View {
   explicit MenuItemView(MenuDelegate* delegate);
 
   // Overridden from View:
-  virtual bool GetTooltipText(const gfx::Point& p, string16* tooltip) OVERRIDE;
+  virtual bool GetTooltipText(const gfx::Point& p,
+                              string16* tooltip) const OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
   // Returns the preferred height of menu items. This is only valid when the
@@ -209,14 +210,15 @@ class VIEWS_EXPORT MenuItemView : public View {
   virtual SubmenuView* GetSubmenu() const;
 
   // Returns the parent menu item.
-  MenuItemView* GetParentMenuItem() const { return parent_menu_item_; }
+  MenuItemView* GetParentMenuItem() { return parent_menu_item_; }
+  const MenuItemView* GetParentMenuItem() const { return parent_menu_item_; }
 
   // Sets/Gets the title.
   void SetTitle(const string16& title);
   const string16& title() const { return title_; }
 
   // Returns the type of this menu.
-  const Type& GetType() { return type_; }
+  const Type& GetType() const { return type_; }
 
   // Sets whether this item is selected. This is invoked as the user moves
   // the mouse around the menu while open.
@@ -251,13 +253,16 @@ class VIEWS_EXPORT MenuItemView : public View {
 
   // Returns the object responsible for controlling showing the menu.
   MenuController* GetMenuController();
+  const MenuController* GetMenuController() const;
 
   // Returns the delegate. This returns the delegate of the root menu item.
   MenuDelegate* GetDelegate();
+  const MenuDelegate* GetDelegate() const;
   void set_delegate(MenuDelegate* delegate) { delegate_ = delegate; }
 
   // Returns the root parent, or this if this has no parent.
   MenuItemView* GetRootMenuItem();
+  const MenuItemView* GetRootMenuItem() const;
 
   // Returns the mnemonic for this MenuItemView, or 0 if this MenuItemView
   // doesn't have a mnemonic.

@@ -402,6 +402,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Note that all widgets in a widget hierarchy share the same focus manager.
   // TODO(beng): remove virtual.
   virtual FocusManager* GetFocusManager();
+  virtual const FocusManager* GetFocusManager() const;
 
   // Returns the InputMethod for this widget.
   // Note that all widgets in a widget hierarchy share the same input method.

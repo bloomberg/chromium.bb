@@ -51,8 +51,7 @@ void NativeTabContentsContainerGtk::RenderViewHostChanged(
     RenderViewHost* old_host,
     RenderViewHost* new_host) {
   // If we are focused, we need to pass the focus to the new RenderViewHost.
-  views::FocusManager* focus_manager = GetFocusManager();
-  if (focus_manager->GetFocusedView() == this)
+  if (GetFocusManager()->GetFocusedView() == this)
     OnFocus();
 }
 

@@ -140,7 +140,7 @@ void ImageView::SetHorizontalAlignment(Alignment ha) {
   }
 }
 
-ImageView::Alignment ImageView::GetHorizontalAlignment() {
+ImageView::Alignment ImageView::GetHorizontalAlignment() const {
   return horiz_alignment_;
 }
 
@@ -151,7 +151,7 @@ void ImageView::SetVerticalAlignment(Alignment va) {
   }
 }
 
-ImageView::Alignment ImageView::GetVerticalAlignment() {
+ImageView::Alignment ImageView::GetVerticalAlignment() const {
   return vert_alignment_;
 }
 
@@ -159,11 +159,11 @@ void ImageView::SetTooltipText(const string16& tooltip) {
   tooltip_text_ = tooltip;
 }
 
-string16 ImageView::GetTooltipText() {
+string16 ImageView::GetTooltipText() const {
   return tooltip_text_;
 }
 
-bool ImageView::GetTooltipText(const gfx::Point& p, string16* tooltip) {
+bool ImageView::GetTooltipText(const gfx::Point& p, string16* tooltip) const {
   if (tooltip_text_.empty())
     return false;
 

@@ -252,9 +252,10 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FLAKY_BrowsersRememberFocus) {
   BrowserView* browser_view2 =
       BrowserView::GetBrowserViewForBrowser(browser2);
   ASSERT_TRUE(browser_view2);
-  views::Widget* widget2 = views::Widget::GetWidgetForNativeWindow(window2);
+  const views::Widget* widget2 =
+      views::Widget::GetWidgetForNativeWindow(window2);
   ASSERT_TRUE(widget2);
-  views::FocusManager* focus_manager2 = widget2->GetFocusManager();
+  const views::FocusManager* focus_manager2 = widget2->GetFocusManager();
   ASSERT_TRUE(focus_manager2);
   EXPECT_EQ(browser_view2->GetTabContentsContainerView(),
             focus_manager2->GetFocusedView());

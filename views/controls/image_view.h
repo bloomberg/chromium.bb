@@ -64,21 +64,22 @@ class VIEWS_EXPORT ImageView : public View {
 
   // Set / Get the horizontal alignment.
   void SetHorizontalAlignment(Alignment ha);
-  Alignment GetHorizontalAlignment();
+  Alignment GetHorizontalAlignment() const;
 
   // Set / Get the vertical alignment.
   void SetVerticalAlignment(Alignment va);
-  Alignment GetVerticalAlignment();
+  Alignment GetVerticalAlignment() const;
 
   // Set / Get the tooltip text.
   void SetTooltipText(const string16& tooltip);
-  string16 GetTooltipText();
+  string16 GetTooltipText() const;
 
   // Overriden from View
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
-  virtual bool GetTooltipText(const gfx::Point& p, string16* tooltip) OVERRIDE;
+  virtual bool GetTooltipText(const gfx::Point& p,
+                              string16* tooltip) const OVERRIDE;
 
  private:
   // Compute the image origin given the desired size and the receiver alignment

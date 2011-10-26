@@ -124,9 +124,10 @@ void ReloadButton::OnMouseExited(const views::MouseEvent& event) {
     SetState(BS_NORMAL);
 }
 
-bool ReloadButton::GetTooltipText(const gfx::Point& p, string16* tooltip) {
-  int text_id = visible_mode_ == MODE_RELOAD ? IDS_TOOLTIP_RELOAD
-                                             : IDS_TOOLTIP_STOP;
+bool ReloadButton::GetTooltipText(const gfx::Point& p,
+                                  string16* tooltip) const {
+  int text_id = (visible_mode_ == MODE_RELOAD) ?
+      IDS_TOOLTIP_RELOAD : IDS_TOOLTIP_STOP;
   tooltip->assign(l10n_util::GetStringUTF16(text_id));
   return true;
 }

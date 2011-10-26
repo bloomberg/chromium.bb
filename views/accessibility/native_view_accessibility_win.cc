@@ -299,10 +299,8 @@ STDMETHODIMP NativeViewAccessibilityWin::get_accFocus(VARIANT* focus_child) {
   if (!view_)
     return E_FAIL;
 
-  views::View* focus = NULL;
   views::FocusManager* focus_manager = view_->GetFocusManager();
-  if (focus_manager)
-    focus = focus_manager->GetFocusedView();
+  views::View* focus = focus_manager ? focus_manager->GetFocusedView() : NULL;
   if (focus == view_) {
     // This view has focus.
     focus_child->vt = VT_I4;

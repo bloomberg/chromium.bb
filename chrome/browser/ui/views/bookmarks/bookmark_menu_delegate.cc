@@ -98,11 +98,14 @@ void BookmarkMenuDelegate::SetActiveMenu(const BookmarkNode* node,
   menu_ = node_to_menu_map_[node];
 }
 
-string16 BookmarkMenuDelegate::GetTooltipText(int id,
-                                              const gfx::Point& screen_loc) {
+string16 BookmarkMenuDelegate::GetTooltipText(
+    int id,
+    const gfx::Point& screen_loc) const {
   DCHECK(menu_id_to_node_map_.find(id) != menu_id_to_node_map_.end());
 
-  const BookmarkNode* node = menu_id_to_node_map_[id];
+  MenuIDToNodeMap::const_iterator i = menu_id_to_node_map_.find(id);
+  DCHECK(i != menu_id_to_node_map_.end());
+  const BookmarkNode* node = i->second;
   if (node->is_url()) {
     return BookmarkBarView::CreateToolTipForURLAndTitle(
         screen_loc, node->url(), node->GetTitle(), profile_);
@@ -335,10 +338,10 @@ void BookmarkMenuDelegate::WillRemoveBookmarks(
       MenuItemView* menu = GetMenuByID(node_to_menu->second);
       DCHECK(menu);  // If there an entry in node_to_menu_id_map_, there should
                      // be a menu.
-      DCHECK(menu->GetParentMenuItem());
-      changed_parent_menus.insert(menu->GetParentMenuItem());
-      menu->GetParentMenuItem()->RemoveMenuItemAt(
-          menu->parent()->GetIndexOf(menu));
+      MenuItemView* parent = menu->GetParentMenuItem();
+      DCHECK(parent);
+      changed_parent_menus.insert(parent);
+      parent->RemoveMenuItemAt(menu->parent()->GetIndexOf(menu));
       node_to_menu_id_map_.erase(node_to_menu);
     }
   }

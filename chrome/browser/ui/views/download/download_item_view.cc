@@ -578,7 +578,7 @@ bool DownloadItemView::OnKeyPressed(const views::KeyEvent& event) {
 }
 
 bool DownloadItemView::GetTooltipText(const gfx::Point& p,
-                                      string16* tooltip) {
+                                      string16* tooltip) const {
   if (tooltip_text_.empty())
     return false;
 

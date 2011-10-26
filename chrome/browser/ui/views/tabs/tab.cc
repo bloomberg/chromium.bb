@@ -330,7 +330,7 @@ void Tab::GetHitTestMask(gfx::Path* path) const {
   TabResources::GetHitTestMask(width(), height(), path);
 }
 
-bool Tab::GetTooltipTextOrigin(const gfx::Point& p, gfx::Point* origin) {
+bool Tab::GetTooltipTextOrigin(const gfx::Point& p, gfx::Point* origin) const {
   origin->set_x(title_bounds_.x() + 10);
   origin->set_y(-views::TooltipManager::GetTooltipHeight() - 4);
   return true;

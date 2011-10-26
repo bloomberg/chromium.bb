@@ -150,7 +150,7 @@ class BookmarkButton : public views::TextButton {
   }
 
   virtual bool GetTooltipText(const gfx::Point& p,
-                              string16* tooltip) OVERRIDE {
+                              string16* tooltip) const OVERRIDE {
     gfx::Point location(p);
     ConvertPointToScreen(this, &location);
     *tooltip = BookmarkBarView::CreateToolTipForURLAndTitle(location, url_,
@@ -200,7 +200,7 @@ class BookmarkFolderButton : public views::MenuButton {
   }
 
   virtual bool GetTooltipText(const gfx::Point& p,
-                              string16* tooltip) OVERRIDE {
+                              string16* tooltip) const OVERRIDE {
     if (text_size_.width() > GetTextBounds().width())
       *tooltip = text_;
     return !tooltip->empty();

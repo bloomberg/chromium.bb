@@ -186,7 +186,8 @@ class VIEWS_EXPORT Label : public View {
   // when the label is multiline, in which case it just returns false (no
   // tooltip).  If a custom tooltip has been specified with SetTooltipText()
   // it is returned instead.
-  virtual bool GetTooltipText(const gfx::Point& p, string16* tooltip) OVERRIDE;
+  virtual bool GetTooltipText(const gfx::Point& p,
+                              string16* tooltip) const OVERRIDE;
 
  protected:
   // Called by Paint to paint the text.  Override this to change how

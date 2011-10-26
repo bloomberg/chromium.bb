@@ -66,7 +66,7 @@ class TabLayout : public LayoutManager {
 
     FocusManager* focus_manager = page->GetFocusManager();
     DCHECK(focus_manager);
-    View* focused_view = focus_manager->GetFocusedView();
+    const View* focused_view = focus_manager->GetFocusedView();
     if (focused_view && host->Contains(focused_view) &&
         !page->Contains(focused_view))
       focus_manager->SetFocusedView(page);

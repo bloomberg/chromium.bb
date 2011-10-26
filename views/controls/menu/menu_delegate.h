@@ -69,7 +69,7 @@ class VIEWS_EXPORT MenuDelegate {
 
   // The tooltip shown for the menu item. This is invoked when the user
   // hovers over the item, and no tooltip text has been set for that item.
-  virtual string16 GetTooltipText(int id, const gfx::Point& screen_loc);
+  virtual string16 GetTooltipText(int id, const gfx::Point& screen_loc) const;
 
   // If there is an accelerator for the menu item with id |id| it is set in
   // |accelerator| and true is returned.

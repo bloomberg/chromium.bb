@@ -370,7 +370,7 @@ void BaseTab::OnMouseExited(const views::MouseEvent& event) {
   hover_animation_->Hide();
 }
 
-bool BaseTab::GetTooltipText(const gfx::Point& p, string16* tooltip) {
+bool BaseTab::GetTooltipText(const gfx::Point& p, string16* tooltip) const {
   if (data_.title.empty())
     return false;
 

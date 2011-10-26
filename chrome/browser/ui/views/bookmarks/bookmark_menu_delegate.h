@@ -87,7 +87,7 @@ class BookmarkMenuDelegate : public BaseBookmarkModelObserver,
   bool is_mutating_model() const { return is_mutating_model_; }
 
   // MenuDelegate like methods (see class description for details).
-  string16 GetTooltipText(int id, const gfx::Point& p);
+  string16 GetTooltipText(int id, const gfx::Point& p) const;
   bool IsTriggerableEvent(views::MenuItemView* menu,
                           const views::MouseEvent& e);
   void ExecuteCommand(int id, int mouse_event_flags);
@@ -123,6 +123,7 @@ class BookmarkMenuDelegate : public BaseBookmarkModelObserver,
   virtual void DidRemoveBookmarks();
 
  private:
+  typedef std::map<int, const BookmarkNode*> MenuIDToNodeMap;
   typedef std::map<const BookmarkNode*, int> NodeToMenuIDMap;
   typedef std::map<const BookmarkNode*, views::MenuItemView*> NodeToMenuMap;
 
@@ -154,7 +155,7 @@ class BookmarkMenuDelegate : public BaseBookmarkModelObserver,
   views::Widget* parent_;
 
   // Maps from menu id to BookmarkNode.
-  std::map<int, const BookmarkNode*> menu_id_to_node_map_;
+  MenuIDToNodeMap menu_id_to_node_map_;
 
   // Mapping from node to menu id. This only contains entries for nodes of type
   // URL.

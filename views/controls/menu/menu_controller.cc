@@ -1015,9 +1015,8 @@ bool MenuController::OnKeyDown(ui::KeyboardCode key_code) {
         // User pressed escape and only one menu is shown, cancel it.
         Cancel(EXIT_OUTERMOST);
         return false;
-      } else {
-        CloseSubmenu();
       }
+      CloseSubmenu();
       break;
 
 #if defined(OS_WIN)
@@ -1175,12 +1174,11 @@ bool MenuController::ShowSiblingMenu(SubmenuView* source,
 void MenuController::CloseAllNestedMenus() {
   for (std::list<State>::iterator i = menu_stack_.begin();
        i != menu_stack_.end(); ++i) {
-    MenuItemView* item = i->item;
-    MenuItemView* last_item = item;
-    while (item) {
+    MenuItemView* last_item = i->item;
+    for (MenuItemView* item = last_item; item;
+         item = item->GetParentMenuItem()) {
       CloseMenu(item);
       last_item = item;
-      item = item->GetParentMenuItem();
     }
     i->submenu_open = false;
     i->item = last_item;
@@ -1242,13 +1240,12 @@ MenuController::MenuPart MenuController::GetMenuPartByScreenCoordinateUsingMenu(
     MenuItemView* item,
     const gfx::Point& screen_loc) {
   MenuPart part;
-  while (item) {
+  for (; item; item = item->GetParentMenuItem()) {
     if (item->HasSubmenu() && item->GetSubmenu()->IsShowing() &&
-        GetMenuPartByScreenCoordinateImpl(
-            item->GetSubmenu(), screen_loc, &part)) {
+        GetMenuPartByScreenCoordinateImpl(item->GetSubmenu(), screen_loc,
+                                          &part)) {
       return part;
     }
-    item = item->GetParentMenuItem();
   }
   return part;
 }
@@ -1364,11 +1361,10 @@ void MenuController::CommitPendingSelection() {
     // Stop the scrolling if none of the elements of the selection contain
     // the menu being scrolled.
     bool found = false;
-    MenuItemView* item = state_.item;
-    while (item && !found) {
+    for (MenuItemView* item = state_.item; item && !found;
+         item = item->GetParentMenuItem()) {
       found = (item->HasSubmenu() && item->GetSubmenu()->IsShowing() &&
                item->GetSubmenu() == scroll_task_->submenu());
-      item = item->GetParentMenuItem();
     }
     if (!found)
       StopScrolling();
@@ -1424,15 +1420,16 @@ void MenuController::MenuChildrenChanged(MenuItemView* item) {
   const MenuItemView* ancestor = state_.item;
   while (ancestor && ancestor != item)
     ancestor = ancestor->GetParentMenuItem();
-  ancestor = ancestor ? ancestor : pending_state_.item;
-  while (ancestor && ancestor != item)
-    ancestor = ancestor->GetParentMenuItem();
-
-  if (ancestor) {
-    SetSelection(item, SELECTION_OPEN_SUBMENU | SELECTION_UPDATE_IMMEDIATELY);
-    if (item->HasSubmenu())
-      OpenMenuImpl(item, false);
+  if (!ancestor) {
+    ancestor = pending_state_.item;
+    while (ancestor && ancestor != item)
+      ancestor = ancestor->GetParentMenuItem();
+    if (!ancestor)
+      return;
   }
+  SetSelection(item, SELECTION_OPEN_SUBMENU | SELECTION_UPDATE_IMMEDIATELY);
+  if (item->HasSubmenu())
+    OpenMenuImpl(item, false);
 }
 
 void MenuController::BuildPathsAndCalculateDiff(
@@ -1600,9 +1597,7 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
 
 // static
 int MenuController::MenuDepth(MenuItemView* item) {
-  if (!item)
-    return 0;
-  return MenuDepth(item->GetParentMenuItem()) + 1;
+  return item ? (MenuDepth(item->GetParentMenuItem()) + 1) : 0;
 }
 
 void MenuController::IncrementSelection(int delta) {
@@ -1637,8 +1632,8 @@ void MenuController::IncrementSelection(int delta) {
     }
   }
 
-  if (item->GetParentMenuItem()) {
-    MenuItemView* parent = item->GetParentMenuItem();
+  MenuItemView* parent = item->GetParentMenuItem();
+  if (parent) {
     int parent_count = parent->GetSubmenu()->GetMenuItemCount();
     if (parent_count > 1) {
       for (int i = 0; i < parent_count; ++i) {
@@ -1695,11 +1690,10 @@ void MenuController::CloseSubmenu() {
   DCHECK(item);
   if (!item->GetParentMenuItem())
     return;
-  if (item->HasSubmenu() && item->GetSubmenu()->IsShowing()) {
+  if (item->HasSubmenu() && item->GetSubmenu()->IsShowing())
     SetSelection(item, SELECTION_UPDATE_IMMEDIATELY);
-  } else if (item->GetParentMenuItem()->GetParentMenuItem()) {
+  else if (item->GetParentMenuItem()->GetParentMenuItem())
     SetSelection(item->GetParentMenuItem(), SELECTION_UPDATE_IMMEDIATELY);
-  }
 }
 
 MenuController::SelectByCharDetails MenuController::FindChildForMnemonic(

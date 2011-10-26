@@ -21,7 +21,8 @@ const gfx::Font& MenuDelegate::GetLabelFont(int id) const {
   return MenuConfig::instance().font;
 }
 
-string16 MenuDelegate::GetTooltipText(int id, const gfx::Point& screen_loc) {
+string16 MenuDelegate::GetTooltipText(int id,
+                                      const gfx::Point& screen_loc) const {
   return string16();
 }
 
