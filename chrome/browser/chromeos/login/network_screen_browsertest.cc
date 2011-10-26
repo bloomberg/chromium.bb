@@ -153,6 +153,8 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
   scoped_ptr<NetworkDevice> cellular_;
   NetworkScreen* network_screen_;
   ViewsNetworkScreenActor* actor_;
+  // DBusThreadManager needs a message loop.
+  MessageLoopForUI message_loop_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkScreenTest);

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/message_loop.h"
 #include "chrome/browser/chromeos/cros/mock_network_library.h"
 #include "chrome/browser/chromeos/cros/mock_update_library.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
@@ -95,6 +96,8 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
 
   scoped_ptr<MockScreenObserver> mock_screen_observer_;
   UpdateScreen* update_screen_;
+  // DBusThreadManager needs a message loop.
+  MessageLoopForUI message_loop_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UpdateScreenTest);
