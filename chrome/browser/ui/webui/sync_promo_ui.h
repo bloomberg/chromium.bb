@@ -51,6 +51,9 @@ class SyncPromoUI : public ChromeWebUI {
   // Gets the next page URL from the query portion of the sync promo URL.
   static GURL GetNextPageURLForSyncPromoURL(const GURL& url);
 
+  // Returns true if the sync promo page was ever shown at startup.
+  static bool UserHasSeenSyncPromoAtStartup(Profile* profile);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncPromoUI);
 };

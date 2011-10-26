@@ -8,6 +8,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/first_run/first_run.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -16,7 +17,6 @@
 #include "chrome/browser/ui/webui/options/core_options_handler.h"
 #include "chrome/browser/ui/webui/sync_promo_handler.h"
 #include "chrome/browser/ui/webui/theme_source.h"
-#include "chrome/browser/web_resource/promo_resource_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -37,6 +37,24 @@ const char kSyncPromoQueryKeyNextPage[]  = "next_page";
 
 // The maximum number of times we want to show the sync promo at startup.
 const int kSyncPromoShowAtStartupMaxiumum = 10;
+
+// Checks we want to show the sync promo for the given brand.
+bool AllowPromoAtStartupForCurrentBrand() {
+  std::string brand;
+  google_util::GetBrand(&brand);
+
+  if (brand.empty())
+    return true;
+
+  if (google_util::IsOrganic(brand))
+    return true;
+
+  if (StartsWithASCII(brand, "CH", true))
+    return true;
+
+  // Default to disallow for all other brand codes.
+  return false;
+}
 
 // The Web UI data source for the sync promo page.
 class SyncPromoUIHTMLSource : public ChromeWebUIDataSource {
@@ -119,9 +137,8 @@ bool SyncPromoUI::ShouldShowSyncPromo(Profile* profile) {
   if (!service || service->HasSyncSetupCompleted())
     return false;
 
-  // If we're not excluded from showing sync, let's check to see if the remote
-  // data from the promo server says we should show a promo now.
-  return PromoResourceService::CanShowSyncPromo(profile);
+  // Default to allow the promo.
+  return true;
 }
 
 // static
@@ -141,17 +158,11 @@ bool SyncPromoUI::ShouldShowSyncPromoAtStartup(Profile* profile,
   if (!ShouldShowSyncPromo(profile))
     return false;
 
-  // This pref can be set in the master preferences file to disallow showing
-  // the sync promo at startup.
-  PrefService *prefs = profile->GetPrefs();
-  if (!prefs->GetBoolean(prefs::kSyncPromoShowOnFirstRunAllowed)) {
-    return false;
-  }
-
   const CommandLine& command_line  = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kNoFirstRun))
     is_new_profile = false;
 
+  PrefService *prefs = profile->GetPrefs();
   if (!is_new_profile) {
     if (!prefs->HasPrefPath(prefs::kSyncPromoStartupCount))
       return false;
@@ -165,7 +176,20 @@ bool SyncPromoUI::ShouldShowSyncPromoAtStartup(Profile* profile,
     return false;
 
   int show_count = prefs->GetInteger(prefs::kSyncPromoStartupCount);
-  return show_count < kSyncPromoShowAtStartupMaxiumum;
+  if (show_count >= kSyncPromoShowAtStartupMaxiumum)
+    return false;
+
+  // This pref can be set in the master preferences file to allow or disallow
+  // showing the sync promo at startup.
+  if (prefs->HasPrefPath(prefs::kSyncPromoShowOnFirstRunAllowed))
+    return prefs->GetBoolean(prefs::kSyncPromoShowOnFirstRunAllowed);
+
+  // For now don't show the promo for some brands.
+  if (!AllowPromoAtStartupForCurrentBrand())
+    return false;
+
+  // Default to show the promo.
+  return true;
 }
 
 void SyncPromoUI::DidShowSyncPromoAtStartup(Profile* profile) {
@@ -219,4 +243,9 @@ GURL SyncPromoUI::GetNextPageURLForSyncPromoURL(const GURL& url) {
     return GURL(url);
   }
   return GURL();
+}
+
+// static
+bool SyncPromoUI::UserHasSeenSyncPromoAtStartup(Profile* profile) {
+  return profile->GetPrefs()->GetInteger(prefs::kSyncPromoStartupCount) > 0;
 }

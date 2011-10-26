@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/sync_promo_ui.h"
+#include "chrome/browser/web_resource/promo_resource_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -113,7 +114,9 @@ void NTPLoginHandler::UpdateLogin() {
   string16 header, sub_header;
   if (!username.empty()) {
     header = UTF8ToUTF16(username);
-  } else if (SyncPromoUI::ShouldShowSyncPromo(profile)) {
+  } else if (SyncPromoUI::ShouldShowSyncPromo(profile) &&
+             (SyncPromoUI::UserHasSeenSyncPromoAtStartup(profile) ||
+              PromoResourceService::CanShowSyncPromo(profile))) {
     string16 signed_in_link = l10n_util::GetStringUTF16(
         IDS_SYNC_PROMO_NOT_SIGNED_IN_STATUS_LINK);
     signed_in_link = ASCIIToUTF16("<span class='link-span'>") + signed_in_link +
