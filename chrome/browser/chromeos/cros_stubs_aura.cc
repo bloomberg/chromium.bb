@@ -55,7 +55,7 @@ void SystemNotification::Show(const string16& message,
 
 void SystemNotification::Show(const string16& message,
                               const string16& link,
-                              MessageCallback* callback,
+                              const MessageCallback& callback,
                               bool urgent,
                               bool sticky) {
   NOTIMPLEMENTED();
