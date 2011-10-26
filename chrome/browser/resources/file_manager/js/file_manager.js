@@ -1887,8 +1887,6 @@ FileManager.prototype = {
           task.iconUrl =
               chrome.extension.getURL('images/icon_mount_archive_16x16.png');
           task.title = str('MOUNT_ARCHIVE');
-          if (str('ENABLE_ARCHIVES') != 'true')
-            continue;
         } else if (task_parts[1] == 'gallery') {
           task.iconUrl =
               chrome.extension.getURL('images/icon_preview_16x16.png');

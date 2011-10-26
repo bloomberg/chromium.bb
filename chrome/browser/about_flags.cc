@@ -346,13 +346,6 @@ const Experiment kExperiments[] = {
   },
 #if defined(OS_CHROMEOS)
   {
-    "enable-archives",
-    IDS_FILE_BROWSER_MOUNT_ARCHIVE,
-    IDS_FILE_MANAGER,
-    kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kEnableArchives)
-  },
-  {
     "enable-bluetooth",
     IDS_FLAGS_ENABLE_BLUETOOTH_NAME,
     IDS_FLAGS_ENABLE_BLUETOOTH_DESCRIPTION,

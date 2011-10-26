@@ -1176,9 +1176,6 @@ const char kCompressSystemFeedback[]        = "compress-sys-feedback";
 // Enables overriding the path for the default authentication extension.
 const char kAuthExtensionPath[]             = "auth-ext-path";
 
-// Enables archive file (zip) handling in file manager.
-const char kEnableArchives[]                = "enable-archives";
-
 // Enables photo editor in file manager.
 const char kEnablePhotoEditor[]             = "enable-photo-editor";
 
