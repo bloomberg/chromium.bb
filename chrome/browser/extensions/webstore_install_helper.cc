@@ -10,7 +10,7 @@
 #include "base/values.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 
@@ -54,7 +54,8 @@ void WebstoreInstallHelper::Start() {
 
   if (!icon_url_.is_empty()) {
     CHECK(context_getter_);
-    url_fetcher_.reset(new URLFetcher(icon_url_, URLFetcher::GET, this));
+    url_fetcher_.reset(content::URLFetcher::Create(
+        icon_url_, content::URLFetcher::GET, this));
     url_fetcher_->SetRequestContext(context_getter_);
 
     url_fetcher_->Start();

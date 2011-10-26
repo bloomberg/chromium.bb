@@ -23,9 +23,9 @@
 #include "chrome/common/spellcheck_common.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "content/browser/renderer_host/render_process_host.h"
-#include "content/common/net/url_fetcher.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/common/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "third_party/hunspell/google/bdict.h"
@@ -296,7 +296,8 @@ void SpellCheckHostImpl::DownloadDictionary() {
   }
   GURL url = GURL(std::string(kDownloadServerUrl) +
                   StringToLowerASCII(bdict_file));
-  fetcher_.reset(new URLFetcher(url, URLFetcher::GET, this));
+  fetcher_.reset(content::URLFetcher::Create(
+      url, content::URLFetcher::GET, this));
   fetcher_->SetRequestContext(request_context_getter_);
   tried_to_download_ = true;
   fetcher_->Start();

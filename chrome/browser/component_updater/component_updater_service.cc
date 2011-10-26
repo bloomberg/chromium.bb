@@ -24,9 +24,9 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/browser/utility_process_host.h"
-#include "content/common/net/url_fetcher.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/url_fetcher_delegate.h"
+#include "content/public/common/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
@@ -492,7 +492,8 @@ void CrxUpdateService::ProcessPendingItems() {
     context->pk_hash = item->component.pk_hash;
     context->id = item->id;
     context->installer = item->component.installer;
-    url_fetcher_.reset(URLFetcher::Create(0, item->crx_url, URLFetcher::GET,
+    url_fetcher_.reset(content::URLFetcher::Create(
+        0, item->crx_url, content::URLFetcher::GET,
         MakeContextDelegate(this, context)));
     StartFetch(url_fetcher_.get(), config_->RequestContext(), true);
     return;
@@ -552,7 +553,8 @@ void CrxUpdateService::ProcessPendingItems() {
   const std::string full_query = MakeFinalQuery(config_->UpdateUrl().spec(),
                                                 query,
                                                 config_->ExtraRequestParams());
-  url_fetcher_.reset(URLFetcher::Create(0, GURL(full_query), URLFetcher::GET,
+  url_fetcher_.reset(content::URLFetcher::Create(
+      0, GURL(full_query), content::URLFetcher::GET,
       MakeContextDelegate(this, new UpdateContext())));
   StartFetch(url_fetcher_.get(), config_->RequestContext(), false);
 }

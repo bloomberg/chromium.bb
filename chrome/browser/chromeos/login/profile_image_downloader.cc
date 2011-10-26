@@ -18,12 +18,12 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/net/url_fetcher.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/common/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 #include "skia/ext/image_operations.h"
 
@@ -141,8 +141,8 @@ void ProfileImageDownloader::StartFetchingImage() {
   if (email.empty())
     return;
   VLOG(1) << "Fetching user entry with token: " << auth_token_;
-  user_entry_fetcher_.reset(
-      new URLFetcher(GURL(kUserEntryURL), URLFetcher::GET, this));
+  user_entry_fetcher_.reset(content::URLFetcher::Create(
+      GURL(kUserEntryURL), content::URLFetcher::GET, this));
   user_entry_fetcher_->SetRequestContext(
       ProfileManager::GetDefaultProfile()->GetRequestContext());
   if (!auth_token_.empty()) {
@@ -176,8 +176,8 @@ void ProfileImageDownloader::OnURLFetchComplete(
       return;
     }
     VLOG(1) << "Fetching profile image from " << image_url;
-    profile_image_fetcher_.reset(
-        new URLFetcher(GURL(image_url), URLFetcher::GET, this));
+    profile_image_fetcher_.reset(content::URLFetcher::Create(
+        GURL(image_url), content::URLFetcher::GET, this));
     profile_image_fetcher_->SetRequestContext(
         ProfileManager::GetDefaultProfile()->GetRequestContext());
     if (!auth_token_.empty()) {

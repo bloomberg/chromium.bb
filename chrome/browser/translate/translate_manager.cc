@@ -38,11 +38,11 @@
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/net/url_fetcher.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/common/url_fetcher.h"
 #include "grit/browser_resources.h"
 #include "net/base/escape.h"
 #include "net/url_request/url_request_status.h"
@@ -750,8 +750,8 @@ void TranslateManager::FetchLanguageListFromTranslateServer(
     return;
   }
 
-  language_list_request_pending_.reset(URLFetcher::Create(
-      1, GURL(kLanguageListFetchURL), URLFetcher::GET, this));
+  language_list_request_pending_.reset(content::URLFetcher::Create(
+      1, GURL(kLanguageListFetchURL), content::URLFetcher::GET, this));
   language_list_request_pending_->SetRequestContext(
       Profile::Deprecated::GetDefaultRequestContext());
   language_list_request_pending_->SetMaxRetries(kMaxRetryLanguageListFetch);
@@ -767,8 +767,8 @@ void TranslateManager::RequestTranslateScript() {
   if (translate_script_request_pending_.get() != NULL)
     return;
 
-  translate_script_request_pending_.reset(URLFetcher::Create(
-      0, GURL(kTranslateScriptURL), URLFetcher::GET, this));
+  translate_script_request_pending_.reset(content::URLFetcher::Create(
+      0, GURL(kTranslateScriptURL), content::URLFetcher::GET, this));
   translate_script_request_pending_->SetRequestContext(
       Profile::Deprecated::GetDefaultRequestContext());
   translate_script_request_pending_->SetExtraRequestHeaders(

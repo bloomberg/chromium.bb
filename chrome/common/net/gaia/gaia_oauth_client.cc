@@ -8,7 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/common/net/http_return.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher.h"
 #include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
@@ -96,7 +96,8 @@ void GaiaOAuthClient::Core::MakeGaiaRequest(
   DCHECK(!request_.get()) << "Tried to fetch two things at once!";
   delegate_ = delegate;
   num_retries_ = 0;
-  request_.reset(URLFetcher::Create(0, gaia_url_, URLFetcher::POST, this));
+  request_.reset(content::URLFetcher::Create(
+      0, gaia_url_, content::URLFetcher::POST, this));
   request_->SetRequestContext(request_context_getter_);
   request_->SetUploadData("application/x-www-form-urlencoded", post_body);
   request_->SetMaxRetries(max_retries);

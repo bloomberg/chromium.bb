@@ -24,7 +24,7 @@
 #include "chrome/common/net/http_return.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher.h"
 #include "grit/chromium_strings.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -65,11 +65,10 @@ content::URLFetcher* GaiaOAuthFetcher::CreateGaiaFetcher(
     bool send_cookies,
     content::URLFetcherDelegate* delegate) {
   bool empty_body = body.empty();
-  URLFetcher* result =
-      URLFetcher::Create(0,
-                         gaia_gurl,
-                         empty_body ? URLFetcher::GET : URLFetcher::POST,
-                         delegate);
+  content::URLFetcher* result = content::URLFetcher::Create(
+      0, gaia_gurl,
+      empty_body ? content::URLFetcher::GET : content::URLFetcher::POST,
+      delegate);
   result->SetRequestContext(getter);
 
   // The Gaia/OAuth token exchange requests do not require any cookie-based

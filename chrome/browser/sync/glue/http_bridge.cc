@@ -8,8 +8,8 @@
 #include "base/message_loop_proxy.h"
 #include "base/string_number_conversions.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/net/url_fetcher.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/url_fetcher.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/host_resolver.h"
 #include "net/base/load_flags.h"
@@ -217,8 +217,8 @@ void HttpBridge::MakeAsynchronousPost() {
   if (fetch_state_.aborted)
     return;
 
-  fetch_state_.url_poster = URLFetcher::Create(0, url_for_request_,
-                                               URLFetcher::POST, this);
+  fetch_state_.url_poster = content::URLFetcher::Create(
+      url_for_request_, content::URLFetcher::POST, this);
   fetch_state_.url_poster->SetRequestContext(context_getter_for_request_);
   fetch_state_.url_poster->SetUploadData(content_type_, request_content_);
   fetch_state_.url_poster->SetExtraRequestHeaders(extra_headers_);

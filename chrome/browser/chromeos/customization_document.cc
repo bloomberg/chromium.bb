@@ -20,7 +20,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher.h"
 
 // Manifest attributes names.
 
@@ -294,7 +294,8 @@ void ServicesCustomizationDocument::ReadFileInBackground(const FilePath& file) {
 
 void ServicesCustomizationDocument::StartFileFetch() {
   DCHECK(url_.is_valid());
-  url_fetcher_.reset(new URLFetcher(url_, URLFetcher::GET, this));
+  url_fetcher_.reset(content::URLFetcher::Create(
+      url_, content::URLFetcher::GET, this));
   url_fetcher_->SetRequestContext(
       ProfileManager::GetDefaultProfile()->GetRequestContext());
   url_fetcher_->Start();

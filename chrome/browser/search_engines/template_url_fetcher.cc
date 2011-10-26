@@ -15,10 +15,10 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/template_url_parser.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/common/net/url_fetcher.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/common/url_fetcher.h"
 #include "content/public/common/url_fetcher_delegate.h"
 #include "net/url_request/url_request_status.h"
 
@@ -57,7 +57,7 @@ class TemplateURLFetcher::RequestDelegate
  private:
   void AddSearchProvider();
 
-  URLFetcher url_fetcher_;
+  scoped_ptr<content::URLFetcher> url_fetcher_;
   TemplateURLFetcher* fetcher_;
   scoped_ptr<TemplateURL> template_url_;
   string16 keyword_;
@@ -79,8 +79,8 @@ TemplateURLFetcher::RequestDelegate::RequestDelegate(
     const GURL& favicon_url,
     TemplateURLFetcherCallbacks* callbacks,
     ProviderType provider_type)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(url_fetcher_(osdd_url,
-                                                  URLFetcher::GET, this)),
+    : ALLOW_THIS_IN_INITIALIZER_LIST(url_fetcher_(content::URLFetcher::Create(
+          osdd_url, content::URLFetcher::GET, this))),
       fetcher_(fetcher),
       keyword_(keyword),
       osdd_url_(osdd_url),
@@ -99,8 +99,8 @@ TemplateURLFetcher::RequestDelegate::RequestDelegate(
     model->Load();
   }
 
-  url_fetcher_.SetRequestContext(fetcher->profile()->GetRequestContext());
-  url_fetcher_.Start();
+  url_fetcher_->SetRequestContext(fetcher->profile()->GetRequestContext());
+  url_fetcher_->Start();
 }
 
 void TemplateURLFetcher::RequestDelegate::Observe(

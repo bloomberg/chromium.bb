@@ -12,7 +12,7 @@
 #include "base/stringprintf.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher.h"
 
 namespace chromeos {
 
@@ -28,7 +28,8 @@ ImageDownloader::ImageDownloader(ImageDecoder::Delegate* delegate,
                                  const std::string& auth_token)
     : delegate_(delegate) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  image_fetcher_.reset(new URLFetcher(GURL(image_url), URLFetcher::GET, this));
+  image_fetcher_.reset(content::URLFetcher::Create(
+      GURL(image_url), content::URLFetcher::GET, this));
   image_fetcher_->SetRequestContext(
       ProfileManager::GetDefaultProfile()->GetRequestContext());
   if (!auth_token.empty()) {

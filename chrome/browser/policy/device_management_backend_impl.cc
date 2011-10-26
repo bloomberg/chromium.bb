@@ -13,7 +13,7 @@
 #include "chrome/browser/policy/device_management_service.h"
 #include "chrome/browser/policy/enterprise_metrics.h"
 #include "chrome/common/chrome_version_info.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher.h"
 #include "net/base/escape.h"
 #include "net/url_request/url_request_status.h"
 

@@ -17,7 +17,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/libxml_utils.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher.h"
 #include "grit/generated_resources.h"
 
 // Toolbar5Importer
@@ -206,7 +206,8 @@ void Toolbar5Importer::GetAuthenticationFromServer() {
                      random_string);
   GURL url(url_string);
 
-  token_fetcher_ = new  URLFetcher(url, URLFetcher::GET, this);
+  token_fetcher_ = content::URLFetcher::Create(
+      url, content::URLFetcher::GET, this);
   token_fetcher_->SetRequestContext(
       Profile::Deprecated::GetDefaultRequestContext());
   token_fetcher_->Start();
@@ -240,7 +241,8 @@ void Toolbar5Importer::GetBookmarkDataFromServer(const std::string& response) {
                       token);
   GURL url(conn_string);
 
-  data_fetcher_ = new URLFetcher(url, URLFetcher::GET, this);
+  data_fetcher_ = content::URLFetcher::Create(
+      url, content::URLFetcher::GET, this);
   data_fetcher_->SetRequestContext(
       Profile::Deprecated::GetDefaultRequestContext());
   data_fetcher_->Start();

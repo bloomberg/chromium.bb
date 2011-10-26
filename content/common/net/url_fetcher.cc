@@ -477,6 +477,15 @@ content::URLFetcher* content::URLFetcher::Create(
 }
 
 // static
+content::URLFetcher* content::URLFetcher::Create(
+    int id,
+    const GURL& url,
+    RequestType request_type,
+    content::URLFetcherDelegate* d) {
+  return ::URLFetcher::Create(id, url, request_type, d);
+}
+
+// static
 void content::URLFetcher::CancelAll() {
   ::URLFetcher::CancelAll();
 }

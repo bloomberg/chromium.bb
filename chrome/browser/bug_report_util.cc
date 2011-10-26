@@ -22,7 +22,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher.h"
 #include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
@@ -188,10 +188,9 @@ void BugReportUtil::SendFeedback(Profile* profile,
   else
     post_url = GURL(kBugReportPostUrl);
 
-  URLFetcher* fetcher = new URLFetcher(post_url, URLFetcher::POST,
-                            new BugReportUtil::PostCleanup(profile,
-                                                           post_body,
-                                                           previous_delay));
+  content::URLFetcher* fetcher = content::URLFetcher::Create(
+      post_url, content::URLFetcher::POST,
+      new BugReportUtil::PostCleanup(profile, post_body, previous_delay));
   fetcher->SetRequestContext(profile->GetRequestContext());
 
   fetcher->SetUploadData(std::string(kProtBufMimeType), *post_body);

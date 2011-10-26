@@ -9,7 +9,7 @@
 #include "base/stringprintf.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher.h"
 #include "net/base/load_flags.h"
 
 namespace chromeos {
@@ -26,8 +26,8 @@ content::URLFetcher* IssueResponseHandler::Handle(
     content::URLFetcherDelegate* catcher) {
   VLOG(1) << "Handling IssueAuthToken response";
   token_url_.assign(BuildTokenAuthUrlWithToken(to_process));
-  URLFetcher* fetcher =
-      new URLFetcher(GURL(token_url_), URLFetcher::GET, catcher);
+  content::URLFetcher* fetcher = content::URLFetcher::Create(
+      GURL(token_url_), content::URLFetcher::GET, catcher);
   fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES);
   if (getter_) {
     VLOG(1) << "Fetching " << GaiaUrls::GetInstance()->token_auth_url();

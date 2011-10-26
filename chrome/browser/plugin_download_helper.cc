@@ -9,7 +9,7 @@
 
 #include "base/file_util.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher.h"
 #include "net/base/io_buffer.h"
 
 PluginDownloadUrlHelper::PluginDownloadUrlHelper(
@@ -28,8 +28,8 @@ PluginDownloadUrlHelper::~PluginDownloadUrlHelper() {
 void PluginDownloadUrlHelper::InitiateDownload(
     net::URLRequestContextGetter* request_context,
     base::MessageLoopProxy* file_thread_proxy) {
-  download_file_fetcher_.reset(
-      new URLFetcher(GURL(download_url_), URLFetcher::GET, this));
+  download_file_fetcher_.reset(content::URLFetcher::Create(
+      GURL(download_url_), content::URLFetcher::GET, this));
   download_file_fetcher_->SetRequestContext(request_context);
   download_file_fetcher_->SaveResponseToTemporaryFile(file_thread_proxy);
   download_file_fetcher_->Start();

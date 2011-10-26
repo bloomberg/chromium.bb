@@ -5,8 +5,9 @@
 #include "chrome/browser/net/sdch_dictionary_fetcher.h"
 
 #include "base/compiler_specific.h"
+#include "base/message_loop.h"
 #include "chrome/browser/profiles/profile.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 
 SdchDictionaryFetcher::SdchDictionaryFetcher()
@@ -64,8 +65,8 @@ void SdchDictionaryFetcher::StartFetching() {
     return;
   }
 
-  current_fetch_.reset(new URLFetcher(fetch_queue_.front(), URLFetcher::GET,
-                                      this));
+  current_fetch_.reset(content::URLFetcher::Create(
+      fetch_queue_.front(), content::URLFetcher::GET, this));
   fetch_queue_.pop();
   current_fetch_->SetRequestContext(context);
   current_fetch_->Start();

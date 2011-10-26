@@ -83,8 +83,8 @@
 #include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
-#include "content/common/net/url_fetcher.h"
 #include "content/public/browser/notification_details.h"
+#include "content/public/common/url_fetcher.h"
 #include "ipc/ipc_logging.h"
 #include "net/socket/client_socket_pool_manager.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -221,7 +221,7 @@ BrowserProcessImpl::~BrowserProcessImpl() {
   // but we have some URLFetchers using the DefaultRequestContext, so they need
   // to be cancelled too. Remove this when DefaultRequestContext goes away.
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          NewRunnableFunction(&URLFetcher::CancelAll));
+                          NewRunnableFunction(&content::URLFetcher::CancelAll));
 
   // Need to clear profiles (download managers) before the io_thread_.
   profile_manager_.reset();

@@ -179,8 +179,8 @@
 #include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/common/child_process_info.h"
-#include "content/common/net/url_fetcher.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/common/url_fetcher.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/webplugininfo.h"
 
@@ -1037,9 +1037,8 @@ void MetricsService::PrepareFetchWithStagedLog() {
   DCHECK(!log_manager_.staged_log_text().empty());
   DCHECK(!current_fetch_.get());
 
-  current_fetch_.reset(new URLFetcher(GURL(WideToUTF16(server_url_)),
-                                      URLFetcher::POST,
-                                      this));
+  current_fetch_.reset(content::URLFetcher::Create(
+      GURL(WideToUTF16(server_url_)), content::URLFetcher::POST, this));
   current_fetch_->SetRequestContext(
       g_browser_process->system_request_context());
   current_fetch_->SetUploadData(kMetricsType, log_manager_.staged_log_text());

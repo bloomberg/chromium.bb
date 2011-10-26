@@ -82,6 +82,14 @@ class CONTENT_EXPORT URLFetcher {
                             RequestType request_type,
                             URLFetcherDelegate* d);
 
+  // Like above, but if there's a Factory registered with the implementation it
+  // will be used. |id| may be used during testing to identify who is creating
+  // the URLFetcher.
+  static URLFetcher* Create(int id,
+                            const GURL& url,
+                            RequestType request_type,
+                            content::URLFetcherDelegate* d);
+
   // Cancels all existing URLFetchers.  Will notify the URLFetcherDelegates.
   // Note that any new URLFetchers created while this is running will not be
   // cancelled.  Typically, one would call this in the CleanUp() method of an IO

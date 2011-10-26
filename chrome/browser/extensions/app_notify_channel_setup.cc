@@ -10,7 +10,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher.h"
 #include "net/base/escape.h"
 #include "net/url_request/url_request_status.h"
 
@@ -73,8 +73,8 @@ void AppNotifyChannelSetup::Start() {
     return;
   }
 
-  url_fetcher_.reset(URLFetcher::Create(
-      0, channel_server_url, URLFetcher::POST, this));
+  url_fetcher_.reset(content::URLFetcher::Create(
+      0, channel_server_url, content::URLFetcher::POST, this));
 
   // TODO(asargent) - we eventually want this to use the browser login
   // credentials instead of the regular cookie store, but for now to aid server

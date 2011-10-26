@@ -12,7 +12,7 @@
 #include "chrome/common/net/http_return.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
@@ -182,10 +182,9 @@ void DownloadProtectionService::StartCheckClientDownload(
     return;
   }
 
-  URLFetcher* fetcher = URLFetcher::Create(0 /* ID used for testing */,
-                                           GURL(kDownloadRequestUrl),
-                                           URLFetcher::POST,
-                                           this);
+  content::URLFetcher* fetcher = content::URLFetcher::Create(
+      0 /* ID used for testing */, GURL(kDownloadRequestUrl),
+      content::URLFetcher::POST, this);
   download_requests_[fetcher] = callback;
   fetcher->SetLoadFlags(net::LOAD_DISABLE_CACHE);
   fetcher->SetRequestContext(request_context_getter_.get());

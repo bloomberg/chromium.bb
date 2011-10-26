@@ -28,7 +28,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher.h"
 #include "googleurl/src/url_util.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
@@ -438,10 +438,13 @@ content::URLFetcher* SearchProvider::CreateSuggestFetcher(
     const string16& text) {
   const TemplateURLRef* const suggestions_url = provider.suggestions_url();
   DCHECK(suggestions_url->SupportsReplacement());
-  URLFetcher* fetcher = URLFetcher::Create(id,
-      GURL(suggestions_url->ReplaceSearchTermsUsingProfile(profile_, provider,
-          text, TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16())),
-      URLFetcher::GET, this);
+  content::URLFetcher* fetcher = content::URLFetcher::Create(
+      id,
+      GURL(suggestions_url->ReplaceSearchTermsUsingProfile(
+          profile_, provider, text, TemplateURLRef::NO_SUGGESTIONS_AVAILABLE,
+          string16())),
+      content::URLFetcher::GET,
+      this);
   fetcher->SetRequestContext(profile_->GetRequestContext());
   fetcher->Start();
   return fetcher;

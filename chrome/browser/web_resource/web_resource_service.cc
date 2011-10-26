@@ -21,8 +21,8 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/web_resource/web_resource_unpacker.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/net/url_fetcher.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/common/url_fetcher.h"
 #include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"
@@ -66,9 +66,8 @@ class WebResourceService::WebResourceFetcher
       web_resource_server.append(locale);
     }
 
-    url_fetcher_.reset(new URLFetcher(GURL(
-        web_resource_server),
-        URLFetcher::GET, this));
+    url_fetcher_.reset(content::URLFetcher::Create(
+        GURL(web_resource_server), content::URLFetcher::GET, this));
     // Do not let url fetcher affect existing state in system context (by
     // setting cookies, for example).
     url_fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE |

@@ -25,9 +25,9 @@
 #include "chrome/common/safe_browsing/safebrowsing_messages.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_process_host.h"
-#include "content/common/net/url_fetcher.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/common/url_fetcher.h"
 #include "crypto/sha2.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"
@@ -251,10 +251,9 @@ void ClientSideDetectionService::StartFetchModel() {
   if (enabled_) {
     // Start fetching the model either from the cache or possibly from the
     // network if the model isn't in the cache.
-    model_fetcher_.reset(URLFetcher::Create(0 /* ID is not used */,
-                                            GURL(kClientModelUrl),
-                                            URLFetcher::GET,
-                                            this));
+    model_fetcher_.reset(content::URLFetcher::Create(
+        0 /* ID used for testing */, GURL(kClientModelUrl),
+        content::URLFetcher::GET, this));
     model_fetcher_->SetRequestContext(request_context_getter_.get());
     model_fetcher_->Start();
   }
@@ -307,10 +306,9 @@ void ClientSideDetectionService::StartClientReportPhishingRequest(
     return;
   }
 
-  URLFetcher* fetcher = URLFetcher::Create(0 /* ID is not used */,
-                                           GURL(kClientReportPhishingUrl),
-                                           URLFetcher::POST,
-                                           this);
+  content::URLFetcher* fetcher = content::URLFetcher::Create(
+      0 /* ID used for testing */, GURL(kClientReportPhishingUrl),
+      content::URLFetcher::POST, this);
 
   // Remember which callback and URL correspond to the current fetcher object.
   ClientReportInfo* info = new ClientReportInfo;

@@ -14,7 +14,7 @@
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "net/base/registry_controlled_domain.h"
@@ -178,8 +178,8 @@ void AlternateNavURLFetcher::StartFetch(NavigationController* controller) {
 
   DCHECK_EQ(NOT_STARTED, state_);
   state_ = IN_PROGRESS;
-  fetcher_.reset(new URLFetcher(GURL(alternate_nav_url_), URLFetcher::HEAD,
-                                this));
+  fetcher_.reset(content::URLFetcher::Create(
+      GURL(alternate_nav_url_), content::URLFetcher::HEAD, this));
   fetcher_->SetRequestContext(
       controller_->browser_context()->GetRequestContext());
   fetcher_->Start();

@@ -17,7 +17,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/url_constants.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_status.h"
 
@@ -374,8 +374,8 @@ void AppsPromoLogoFetcher::OnURLFetchComplete(
 void AppsPromoLogoFetcher::FetchLogo() {
   CHECK(promo_data_.logo.scheme() == chrome::kHttpsScheme);
 
-  url_fetcher_.reset(URLFetcher::Create(
-      0, promo_data_.logo, URLFetcher::GET, this));
+  url_fetcher_.reset(content::URLFetcher::Create(
+      0, promo_data_.logo, content::URLFetcher::GET, this));
   url_fetcher_->SetRequestContext(
       g_browser_process->system_request_context());
   url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |

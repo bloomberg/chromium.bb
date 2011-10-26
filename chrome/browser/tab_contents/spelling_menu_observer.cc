@@ -17,7 +17,7 @@
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -139,7 +139,8 @@ bool SpellingMenuObserver::Invoke(const string16& text,
 
   static const char kSpellingServiceURL[] = SPELLING_SERVICE_URL;
   GURL url = GURL(kSpellingServiceURL);
-  fetcher_.reset(new URLFetcher(url, URLFetcher::POST, this));
+  fetcher_.reset(content::URLFetcher::Create(
+      url, content::URLFetcher::POST, this));
   fetcher_->SetRequestContext(context);
   fetcher_->SetUploadData("application/json", request);
   fetcher_->Start();

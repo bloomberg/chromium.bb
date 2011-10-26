@@ -22,8 +22,8 @@
 #include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/net/url_fetcher.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/common/url_fetcher.h"
 #include "grit/generated_resources.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_util.h"
@@ -205,8 +205,9 @@ void GoogleURLTracker::StartFetchIfDesirable() {
     return;
 
   already_fetched_ = true;
-  fetcher_.reset(URLFetcher::Create(fetcher_id_, GURL(kSearchDomainCheckURL),
-                                    URLFetcher::GET, this));
+  fetcher_.reset(content::URLFetcher::Create(
+      fetcher_id_, GURL(kSearchDomainCheckURL), content::URLFetcher::GET,
+      this));
   ++fetcher_id_;
   // We don't want this fetch to affect existing state in local_state.  For
   // example, if a user has no Google cookies, this automatic check should not

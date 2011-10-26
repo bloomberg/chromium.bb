@@ -13,7 +13,7 @@
 #include "chrome/browser/policy/device_management_backend_impl.h"
 #include "content/browser/browser_thread.h"
 #include "content/public/common/content_client.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/host_resolver.h"
 #include "net/base/load_flags.h"
@@ -210,8 +210,8 @@ void DeviceManagementService::RemoveJob(DeviceManagementJob* job) {
 
 void DeviceManagementService::StartJob(DeviceManagementJob* job,
                                        bool bypass_proxy) {
-  URLFetcher* fetcher = URLFetcher::Create(0, job->GetURL(server_url_),
-                                           URLFetcher::POST, this);
+  content::URLFetcher* fetcher = content::URLFetcher::Create(
+      0, job->GetURL(server_url_), content::URLFetcher::POST, this);
   fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                         net::LOAD_DO_NOT_SAVE_COOKIES |
                         net::LOAD_DISABLE_CACHE |

@@ -21,7 +21,7 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/env_vars.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -169,7 +169,8 @@ void SafeBrowsingProtocolManager::GetFullHash(
   }
   bool use_mac = !client_key_.empty();
   GURL gethash_url = GetHashUrl(use_mac);
-  URLFetcher* fetcher = new URLFetcher(gethash_url, URLFetcher::POST, this);
+  content::URLFetcher* fetcher = content::URLFetcher::Create(
+      gethash_url, content::URLFetcher::POST, this);
   hash_requests_[fetcher] = check;
 
   std::string get_hash;
@@ -562,7 +563,8 @@ void SafeBrowsingProtocolManager::IssueChunkRequest() {
   DCHECK(!next_chunk.url.empty());
   GURL chunk_url = NextChunkUrl(next_chunk.url);
   request_type_ = CHUNK_REQUEST;
-  request_.reset(new URLFetcher(chunk_url, URLFetcher::GET, this));
+  request_.reset(content::URLFetcher::Create(
+      chunk_url, content::URLFetcher::GET, this));
   request_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
   request_->SetRequestContext(request_context_getter_);
   chunk_request_start_ = base::Time::Now();
@@ -572,7 +574,8 @@ void SafeBrowsingProtocolManager::IssueChunkRequest() {
 void SafeBrowsingProtocolManager::IssueKeyRequest() {
   GURL key_url = MacKeyUrl();
   request_type_ = GETKEY_REQUEST;
-  request_.reset(new URLFetcher(key_url, URLFetcher::GET, this));
+  request_.reset(content::URLFetcher::Create(
+      key_url, content::URLFetcher::GET, this));
   request_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
   request_->SetRequestContext(request_context_getter_);
   request_->Start();
@@ -613,7 +616,8 @@ void SafeBrowsingProtocolManager::OnGetChunksComplete(
         SBListChunkRanges(safe_browsing_util::kMalwareList), use_mac));
 
   GURL update_url = UpdateUrl(use_mac);
-  request_.reset(new URLFetcher(update_url, URLFetcher::POST, this));
+  request_.reset(content::URLFetcher::Create(
+      update_url, content::URLFetcher::POST, this));
   request_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
   request_->SetRequestContext(request_context_getter_);
   request_->SetUploadData("text/plain", list_data);
@@ -656,8 +660,10 @@ void SafeBrowsingProtocolManager::ReportSafeBrowsingHit(
   GURL report_url = SafeBrowsingHitUrl(malicious_url, page_url,
                                        referrer_url, is_subresource,
                                        threat_type);
-  URLFetcher* report = new URLFetcher(
-      report_url, post_data.empty() ? URLFetcher::GET : URLFetcher::POST, this);
+  content::URLFetcher* report = content::URLFetcher::Create(
+      report_url,
+      post_data.empty() ? content::URLFetcher::GET : content::URLFetcher::POST,
+      this);
   report->SetLoadFlags(net::LOAD_DISABLE_CACHE);
   report->SetRequestContext(request_context_getter_);
   if (!post_data.empty())
@@ -670,7 +676,8 @@ void SafeBrowsingProtocolManager::ReportSafeBrowsingHit(
 void SafeBrowsingProtocolManager::ReportMalwareDetails(
     const std::string& report) {
   GURL report_url = MalwareDetailsUrl();
-  URLFetcher* fetcher = new URLFetcher(report_url, URLFetcher::POST, this);
+  content::URLFetcher* fetcher = content::URLFetcher::Create(
+      report_url, content::URLFetcher::POST, this);
   fetcher->SetLoadFlags(net::LOAD_DISABLE_CACHE);
   fetcher->SetRequestContext(request_context_getter_);
   fetcher->SetUploadData("application/octet-stream", report);

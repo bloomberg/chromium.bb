@@ -16,7 +16,7 @@
 #include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/net/http_return.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -131,12 +131,8 @@ content::URLFetcher* GaiaAuthFetcher::CreateGaiaFetcher(
     const GURL& gaia_gurl,
     bool send_cookies,
     content::URLFetcherDelegate* delegate) {
-
-  URLFetcher* to_return =
-      URLFetcher::Create(0,
-                         gaia_gurl,
-                         URLFetcher::POST,
-                         delegate);
+  content::URLFetcher* to_return = content::URLFetcher::Create(
+      0, gaia_gurl, content::URLFetcher::POST, delegate);
   to_return->SetRequestContext(getter);
   to_return->SetUploadData("application/x-www-form-urlencoded", body);
 

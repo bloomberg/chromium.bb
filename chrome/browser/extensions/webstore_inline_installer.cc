@@ -167,8 +167,8 @@ void WebstoreInlineInstaller::BeginInstall() {
 
   GURL webstore_data_url(extension_urls::GetWebstoreItemJsonDataURL(id_));
 
-  webstore_data_url_fetcher_.reset(
-      new URLFetcher(webstore_data_url, URLFetcher::GET, this));
+  webstore_data_url_fetcher_.reset(content::URLFetcher::Create(
+      webstore_data_url, content::URLFetcher::GET, this));
   Profile* profile = Profile::FromBrowserContext(
       tab_contents()->browser_context());
   webstore_data_url_fetcher_->SetRequestContext(

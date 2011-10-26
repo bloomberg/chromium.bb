@@ -37,9 +37,9 @@
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/utility_process_host.h"
-#include "content/common/net/url_fetcher.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/common/url_fetcher.h"
 #include "crypto/sha2.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
@@ -1168,9 +1168,9 @@ void ExtensionUpdater::StartUpdateCheck(ManifestFetchData* fetch_data) {
         fetch_data->full_url().possibly_invalid_spec().length());
 
     current_manifest_fetch_.swap(scoped_fetch_data);
-    manifest_fetcher_.reset(
-        URLFetcher::Create(kManifestFetcherId, fetch_data->full_url(),
-                           URLFetcher::GET, this));
+    manifest_fetcher_.reset(content::URLFetcher::Create(
+        kManifestFetcherId, fetch_data->full_url(), content::URLFetcher::GET,
+        this));
     manifest_fetcher_->SetRequestContext(profile_->GetRequestContext());
     manifest_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                                     net::LOAD_DO_NOT_SAVE_COOKIES |
@@ -1196,8 +1196,8 @@ void ExtensionUpdater::FetchUpdatedExtension(const std::string& id,
       extensions_pending_.push_back(ExtensionFetch(id, url, hash, version));
     }
   } else {
-    extension_fetcher_.reset(
-        URLFetcher::Create(kExtensionFetcherId, url, URLFetcher::GET, this));
+    extension_fetcher_.reset(content::URLFetcher::Create(
+        kExtensionFetcherId, url, content::URLFetcher::GET, this));
     extension_fetcher_->SetRequestContext(
         profile_->GetRequestContext());
     extension_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
