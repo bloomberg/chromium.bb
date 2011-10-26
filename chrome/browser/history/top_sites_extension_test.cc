@@ -20,7 +20,7 @@ class TopSitesExtensionTest : public InProcessBrowserTest {
 // Test started failing soon after commit. http://crbug.com/101783
 #if defined(OS_WIN)
 #define MAYBE_GetTopSites FAILS_GetTopSites
-#if defined(OS_LINUX)
+#elif defined(OS_LINUX)
 #define MAYBE_GetTopSites FLAKY_GetTopSites
 #else
 #define MAYBE_GetTopSites GetTopSites
