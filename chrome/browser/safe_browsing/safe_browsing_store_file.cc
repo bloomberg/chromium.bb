@@ -48,63 +48,55 @@ bool FileSkip(size_t bytes, FILE* fp) {
   return rv == 0;
 }
 
-// Read an array of |nmemb| items from |fp| into |ptr|, and fold the
-// input data into the checksum in |context|, if non-NULL.  Return
-// true on success.
+// Read from |fp| into |item|, and fold the input data into the
+// checksum in |context|, if non-NULL.  Return true on success.
 template <class T>
-bool ReadArray(T* ptr, size_t nmemb, FILE* fp, base::MD5Context* context) {
-  const size_t ret = fread(ptr, sizeof(T), nmemb, fp);
-  if (ret != nmemb)
+bool ReadItem(T* item, FILE* fp, base::MD5Context* context) {
+  const size_t ret = fread(item, sizeof(T), 1, fp);
+  if (ret != 1)
     return false;
 
   if (context) {
     base::MD5Update(context,
-                    base::StringPiece(reinterpret_cast<char*>(ptr),
-                                      sizeof(T) * nmemb));
+                    base::StringPiece(reinterpret_cast<char*>(item),
+                                      sizeof(T)));
   }
   return true;
 }
 
-// Write an array of |nmemb| items from |ptr| to |fp|, and fold the
-// output data into the checksum in |context|, if non-NULL.  Return
-// true on success.
+// Write |item| to |fp|, and fold the output data into the checksum in
+// |context|, if non-NULL.  Return true on success.
 template <class T>
-bool WriteArray(const T* ptr, size_t nmemb, FILE* fp,
-                base::MD5Context* context) {
-  const size_t ret = fwrite(ptr, sizeof(T), nmemb, fp);
-  if (ret != nmemb)
+bool WriteItem(const T& item, FILE* fp, base::MD5Context* context) {
+  const size_t ret = fwrite(&item, sizeof(T), 1, fp);
+  if (ret != 1)
     return false;
 
   if (context) {
     base::MD5Update(context,
-                    base::StringPiece(reinterpret_cast<const char*>(ptr),
-                                      sizeof(T) * nmemb));
+                    base::StringPiece(reinterpret_cast<const char*>(&item),
+                                      sizeof(T)));
   }
 
   return true;
 }
 
-// Expand |values| to fit |count| new items, read those items from
-// |fp| and fold them into the checksum in |context|.  Returns true on
-// success.
-template <class T>
-bool ReadToVector(std::vector<T>* values, size_t count, FILE* fp,
-                  base::MD5Context* context) {
-  // Pointers into an empty vector may not be valid.
+// Read |count| items into |values| from |fp|, and fold them into the
+// checksum in |context|.  Returns true on success.
+template <typename CT>
+bool ReadToContainer(CT* values, size_t count, FILE* fp,
+                     base::MD5Context* context) {
   if (!count)
     return true;
 
-  // Grab the size for purposes of finding where to read to.  The
-  // resize could invalidate any iterator captured here.
-  const size_t original_size = values->size();
-  values->resize(original_size + count);
+  for (size_t i = 0; i < count; ++i) {
+    typename CT::value_type value;
+    if (!ReadItem(&value, fp, context))
+      return false;
 
-  // Sayeth Herb Sutter: Vectors are guaranteed to be contiguous.  So
-  // get a pointer to where to read the data to.
-  T* ptr = &((*values)[original_size]);
-  if (!ReadArray(ptr, count, fp, context)) {
-    values->resize(original_size);
-    return false;
+    // push_back() is more obvious, but coded this way std::set can
+    // also be read.
+    values->insert(values->end(), value);
   }
 
   return true;
@@ -112,43 +104,18 @@ bool ReadToVector(std::vector<T>* values, size_t count, FILE* fp,
 
 // Write all of |values| to |fp|, and fold the data into the checksum
 // in |context|, if non-NULL.  Returns true on succsess.
-template <class T>
-bool WriteVector(const std::vector<T>& values, FILE* fp,
-                 base::MD5Context* context) {
-  // Pointers into empty vectors may not be valid.
-  if (values.empty())
-    return true;
-
-  // Sayeth Herb Sutter: Vectors are guaranteed to be contiguous.  So
-  // get a pointer to where to write from.
-  const T* ptr = &(values[0]);
-  return WriteArray(ptr, values.size(), fp, context);
-}
-
-// Read an array of |count| integers and add them to |values|.
-// Returns true on success.
-bool ReadToChunkSet(std::set<int32>* values, size_t count, FILE* fp,
+template <typename CT>
+bool WriteContainer(const CT& values, FILE* fp,
                     base::MD5Context* context) {
-  if (!count)
-    return true;
-
-  std::vector<int32> flat_values;
-  if (!ReadToVector(&flat_values, count, fp, context))
-    return false;
-
-  values->insert(flat_values.begin(), flat_values.end());
-  return true;
-}
-
-// Write the contents of |values| as an array of integers.  Returns
-// true on success.
-bool WriteChunkSet(const std::set<int32>& values, FILE* fp,
-                   base::MD5Context* context) {
   if (values.empty())
     return true;
 
-  const std::vector<int32> flat_values(values.begin(), values.end());
-  return WriteVector(flat_values, fp, context);
+  for (typename CT::const_iterator iter = values.begin();
+       iter != values.end(); ++iter) {
+    if (!WriteItem(*iter, fp, context))
+      return false;
+  }
+  return true;
 }
 
 // Delete the chunks in |deleted| from |chunks|.
@@ -191,7 +158,7 @@ bool ReadAndVerifyHeader(const FilePath& filename,
                          FILE* fp,
                          FileHeader* header,
                          base::MD5Context* context) {
-  if (!ReadArray(header, 1, fp, context))
+  if (!ReadItem(header, fp, context))
     return false;
   if (header->magic != kFileMagic || header->version != kFileVersion)
     return false;
@@ -293,8 +260,7 @@ bool SafeBrowsingStoreFile::WriteAddPrefix(int32 chunk_id, SBPrefix prefix) {
   return true;
 }
 
-bool SafeBrowsingStoreFile::GetAddPrefixes(
-   std::vector<SBAddPrefix>* add_prefixes) {
+bool SafeBrowsingStoreFile::GetAddPrefixes(SBAddPrefixes* add_prefixes) {
   add_prefixes->clear();
 
   file_util::ScopedFILE file(file_util::OpenFile(filename_, "rb"));
@@ -309,7 +275,7 @@ bool SafeBrowsingStoreFile::GetAddPrefixes(
   if (!FileSkip(add_prefix_offset, file.get()))
     return false;
 
-  if (!ReadToVector(add_prefixes, header.add_prefix_count, file.get(), NULL))
+  if (!ReadToContainer(add_prefixes, header.add_prefix_count, file.get(), NULL))
     return false;
 
   return true;
@@ -334,10 +300,10 @@ bool SafeBrowsingStoreFile::GetAddFullHashes(
   if (!FileSkip(offset, file.get()))
     return false;
 
-  return ReadToVector(add_full_hashes,
-                      header.add_hash_count,
-                      file.get(),
-                      NULL);
+  return ReadToContainer(add_full_hashes,
+                         header.add_hash_count,
+                         file.get(),
+                         NULL);
 }
 
 bool SafeBrowsingStoreFile::WriteAddHash(int32 chunk_id,
@@ -393,7 +359,6 @@ bool SafeBrowsingStoreFile::BeginUpdate() {
   DCHECK(add_hashes_.empty());
   DCHECK(sub_hashes_.empty());
   DCHECK_EQ(chunks_written_, 0);
-  add_prefixes_added_ = 0;
 
   // Since the following code will already hit the profile looking for
   // database files, this is a reasonable to time delete any old
@@ -420,7 +385,7 @@ bool SafeBrowsingStoreFile::BeginUpdate() {
   }
 
   FileHeader header;
-  if (!ReadArray(&header, 1, file.get(), NULL))
+  if (!ReadItem(&header, file.get(), NULL))
       return OnCorruptDatabase();
 
   if (header.magic != kFileMagic || header.version != kFileVersion) {
@@ -444,10 +409,10 @@ bool SafeBrowsingStoreFile::BeginUpdate() {
   // Pull in the chunks-seen data for purposes of implementing
   // |GetAddChunks()| and |GetSubChunks()|.  This data is sent up to
   // the server at the beginning of an update.
-  if (!ReadToChunkSet(&add_chunks_cache_, header.add_chunk_count,
-                      file.get(), NULL) ||
-      !ReadToChunkSet(&sub_chunks_cache_, header.sub_chunk_count,
-                      file.get(), NULL))
+  if (!ReadToContainer(&add_chunks_cache_, header.add_chunk_count,
+                       file.get(), NULL) ||
+      !ReadToContainer(&sub_chunks_cache_, header.sub_chunk_count,
+                       file.get(), NULL))
     return OnCorruptDatabase();
 
   file_.swap(file);
@@ -465,17 +430,16 @@ bool SafeBrowsingStoreFile::FinishChunk() {
   header.sub_prefix_count = sub_prefixes_.size();
   header.add_hash_count = add_hashes_.size();
   header.sub_hash_count = sub_hashes_.size();
-  if (!WriteArray(&header, 1, new_file_.get(), NULL))
+  if (!WriteItem(header, new_file_.get(), NULL))
     return false;
 
-  if (!WriteVector(add_prefixes_, new_file_.get(), NULL) ||
-      !WriteVector(sub_prefixes_, new_file_.get(), NULL) ||
-      !WriteVector(add_hashes_, new_file_.get(), NULL) ||
-      !WriteVector(sub_hashes_, new_file_.get(), NULL))
+  if (!WriteContainer(add_prefixes_, new_file_.get(), NULL) ||
+      !WriteContainer(sub_prefixes_, new_file_.get(), NULL) ||
+      !WriteContainer(add_hashes_, new_file_.get(), NULL) ||
+      !WriteContainer(sub_hashes_, new_file_.get(), NULL))
     return false;
 
   ++chunks_written_;
-  add_prefixes_added_ += add_prefixes_.size();
 
   // Clear everything to save memory.
   return ClearChunkBuffers();
@@ -484,14 +448,14 @@ bool SafeBrowsingStoreFile::FinishChunk() {
 bool SafeBrowsingStoreFile::DoUpdate(
     const std::vector<SBAddFullHash>& pending_adds,
     const std::set<SBPrefix>& prefix_misses,
-    std::vector<SBAddPrefix>* add_prefixes_result,
+    SBAddPrefixes* add_prefixes_result,
     std::vector<SBAddFullHash>* add_full_hashes_result) {
   DCHECK(file_.get() || empty_);
   DCHECK(new_file_.get());
   CHECK(add_prefixes_result);
   CHECK(add_full_hashes_result);
 
-  std::vector<SBAddPrefix> add_prefixes;
+  SBAddPrefixes add_prefixes;
   std::vector<SBSubPrefix> sub_prefixes;
   std::vector<SBAddFullHash> add_full_hashes;
   std::vector<SBSubFullHash> sub_full_hashes;
@@ -514,22 +478,20 @@ bool SafeBrowsingStoreFile::DoUpdate(
     // Re-read the chunks-seen data to get to the later data in the
     // file and calculate the checksum.  No new elements should be
     // added to the sets.
-    if (!ReadToChunkSet(&add_chunks_cache_, header.add_chunk_count,
-                        file_.get(), &context) ||
-        !ReadToChunkSet(&sub_chunks_cache_, header.sub_chunk_count,
-                        file_.get(), &context))
+    if (!ReadToContainer(&add_chunks_cache_, header.add_chunk_count,
+                         file_.get(), &context) ||
+        !ReadToContainer(&sub_chunks_cache_, header.sub_chunk_count,
+                         file_.get(), &context))
       return OnCorruptDatabase();
 
-    add_prefixes.reserve(header.add_prefix_count + add_prefixes_added_);
-
-    if (!ReadToVector(&add_prefixes, header.add_prefix_count,
-                      file_.get(), &context) ||
-        !ReadToVector(&sub_prefixes, header.sub_prefix_count,
-                      file_.get(), &context) ||
-        !ReadToVector(&add_full_hashes, header.add_hash_count,
-                      file_.get(), &context) ||
-        !ReadToVector(&sub_full_hashes, header.sub_hash_count,
-                      file_.get(), &context))
+    if (!ReadToContainer(&add_prefixes, header.add_prefix_count,
+                         file_.get(), &context) ||
+        !ReadToContainer(&sub_prefixes, header.sub_prefix_count,
+                         file_.get(), &context) ||
+        !ReadToContainer(&add_full_hashes, header.add_hash_count,
+                         file_.get(), &context) ||
+        !ReadToContainer(&sub_full_hashes, header.sub_hash_count,
+                         file_.get(), &context))
       return OnCorruptDatabase();
 
     // Calculate the digest to this point.
@@ -538,7 +500,7 @@ bool SafeBrowsingStoreFile::DoUpdate(
 
     // Read the stored checksum and verify it.
     base::MD5Digest file_digest;
-    if (!ReadArray(&file_digest, 1, file_.get(), NULL))
+    if (!ReadItem(&file_digest, file_.get(), NULL))
       return OnCorruptDatabase();
 
     if (0 != memcmp(&file_digest, &calculated_digest, sizeof(file_digest)))
@@ -546,8 +508,6 @@ bool SafeBrowsingStoreFile::DoUpdate(
 
     // Close the file so we can later rename over it.
     file_.reset();
-  } else {
-    add_prefixes.reserve(add_prefixes_added_);
   }
   DCHECK(!file_.get());
 
@@ -566,9 +526,6 @@ bool SafeBrowsingStoreFile::DoUpdate(
   UMA_HISTOGRAM_COUNTS("SB2.DatabaseUpdateKilobytes",
                        std::max(static_cast<int>(size / 1024), 1));
 
-  // TODO(shess): For SB2.AddPrefixesReallocs histogram.
-  int add_prefixes_reallocs = 0;
-
   // Append the accumulated chunks onto the vectors read from |file_|.
   for (int i = 0; i < chunks_written_; ++i) {
     ChunkHeader header;
@@ -577,7 +534,7 @@ bool SafeBrowsingStoreFile::DoUpdate(
     if (ofs == -1)
       return false;
 
-    if (!ReadArray(&header, 1, new_file_.get(), NULL))
+    if (!ReadItem(&header, new_file_.get(), NULL))
       return false;
 
     // As a safety measure, make sure that the header describes a sane
@@ -590,10 +547,6 @@ bool SafeBrowsingStoreFile::DoUpdate(
     if (expected_size > size)
       return false;
 
-    // TODO(shess): For SB2.AddPrefixesReallocs histogram.
-    SBAddPrefix* add_prefixes_old_start =
-        (add_prefixes.size() ? &add_prefixes[0] : NULL);
-
     // TODO(shess): If the vectors were kept sorted, then this code
     // could use std::inplace_merge() to merge everything together in
     // sorted order.  That might still be slower than just sorting at
@@ -601,28 +554,16 @@ bool SafeBrowsingStoreFile::DoUpdate(
     // some sort of recursive binary merge might be in order (merge
     // chunks pairwise, merge those chunks pairwise, and so on, then
     // merge the result with the main list).
-    if (!ReadToVector(&add_prefixes, header.add_prefix_count,
-                      new_file_.get(), NULL) ||
-        !ReadToVector(&sub_prefixes, header.sub_prefix_count,
-                      new_file_.get(), NULL) ||
-        !ReadToVector(&add_full_hashes, header.add_hash_count,
-                      new_file_.get(), NULL) ||
-        !ReadToVector(&sub_full_hashes, header.sub_hash_count,
-                      new_file_.get(), NULL))
+    if (!ReadToContainer(&add_prefixes, header.add_prefix_count,
+                         new_file_.get(), NULL) ||
+        !ReadToContainer(&sub_prefixes, header.sub_prefix_count,
+                         new_file_.get(), NULL) ||
+        !ReadToContainer(&add_full_hashes, header.add_hash_count,
+                         new_file_.get(), NULL) ||
+        !ReadToContainer(&sub_full_hashes, header.sub_hash_count,
+                         new_file_.get(), NULL))
       return false;
-
-    // Determine if the vector data moved to a new location.  This
-    // won't track cases where the malloc library was able to expand
-    // the storage in place, but those cases shouldn't cause memory
-    // fragmentation anyhow.
-    SBAddPrefix* add_prefixes_new_start =
-        (add_prefixes.size() ? &add_prefixes[0] : NULL);
-    if (add_prefixes_old_start != add_prefixes_new_start)
-      ++add_prefixes_reallocs;
   }
-
-  // Track the number of times this number of re-allocations occurred.
-  UMA_HISTOGRAM_COUNTS_100("SB2.AddPrefixesReallocs", add_prefixes_reallocs);
 
   // Append items from |pending_adds|.
   add_full_hashes.insert(add_full_hashes.end(),
@@ -658,22 +599,22 @@ bool SafeBrowsingStoreFile::DoUpdate(
   header.sub_prefix_count = sub_prefixes.size();
   header.add_hash_count = add_full_hashes.size();
   header.sub_hash_count = sub_full_hashes.size();
-  if (!WriteArray(&header, 1, new_file_.get(), &context))
+  if (!WriteItem(header, new_file_.get(), &context))
     return false;
 
   // Write all the chunk data.
-  if (!WriteChunkSet(add_chunks_cache_, new_file_.get(), &context) ||
-      !WriteChunkSet(sub_chunks_cache_, new_file_.get(), &context) ||
-      !WriteVector(add_prefixes, new_file_.get(), &context) ||
-      !WriteVector(sub_prefixes, new_file_.get(), &context) ||
-      !WriteVector(add_full_hashes, new_file_.get(), &context) ||
-      !WriteVector(sub_full_hashes, new_file_.get(), &context))
+  if (!WriteContainer(add_chunks_cache_, new_file_.get(), &context) ||
+      !WriteContainer(sub_chunks_cache_, new_file_.get(), &context) ||
+      !WriteContainer(add_prefixes, new_file_.get(), &context) ||
+      !WriteContainer(sub_prefixes, new_file_.get(), &context) ||
+      !WriteContainer(add_full_hashes, new_file_.get(), &context) ||
+      !WriteContainer(sub_full_hashes, new_file_.get(), &context))
     return false;
 
   // Write the checksum at the end.
   base::MD5Digest digest;
   base::MD5Final(&digest, &context);
-  if (!WriteArray(&digest, 1, new_file_.get(), NULL))
+  if (!WriteItem(digest, new_file_.get(), NULL))
     return false;
 
   // Trim any excess left over from the temporary chunk data.
@@ -704,7 +645,7 @@ bool SafeBrowsingStoreFile::DoUpdate(
 bool SafeBrowsingStoreFile::FinishUpdate(
     const std::vector<SBAddFullHash>& pending_adds,
     const std::set<SBPrefix>& prefix_misses,
-    std::vector<SBAddPrefix>* add_prefixes_result,
+    SBAddPrefixes* add_prefixes_result,
     std::vector<SBAddFullHash>* add_full_hashes_result) {
   DCHECK(add_prefixes_result);
   DCHECK(add_full_hashes_result);

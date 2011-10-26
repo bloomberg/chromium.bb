@@ -89,7 +89,7 @@ TEST_F(SafeBrowsingStoreFileTest, DetectsCorruption) {
   // Can successfully open and read the store.
   std::vector<SBAddFullHash> pending_adds;
   std::set<SBPrefix> prefix_misses;
-  std::vector<SBAddPrefix> orig_prefixes;
+  SBAddPrefixes orig_prefixes;
   std::vector<SBAddFullHash> orig_hashes;
   EXPECT_TRUE(test_store.BeginUpdate());
   EXPECT_TRUE(test_store.FinishUpdate(pending_adds, prefix_misses,
@@ -111,7 +111,7 @@ TEST_F(SafeBrowsingStoreFileTest, DetectsCorruption) {
   file.reset();
 
   // Update fails and corruption callback is called.
-  std::vector<SBAddPrefix> add_prefixes;
+  SBAddPrefixes add_prefixes;
   std::vector<SBAddFullHash> add_hashes;
   corruption_detected_ = false;
   EXPECT_TRUE(test_store.BeginUpdate());

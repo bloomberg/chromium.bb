@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,37 +16,37 @@ namespace {
 // should be compatibly ordered (either by SBAddPrefixLess or
 // SBAddPrefixHashLess).
 //
-// |predAS| provides add < sub, |predSA| provides sub < add, for the
-// tightest compare appropriate (see calls in SBProcessSubs).
-template <class S, class A, typename PredAS, typename PredSA>
-void KnockoutSubs(std::vector<S>* subs,
-                  std::vector<A>* adds,
-                  PredAS predAS, PredSA predSA,
-                  std::vector<A>* adds_removed) {
+// |predAddSub| provides add < sub, |predSubAdd| provides sub < add,
+// for the tightest compare appropriate (see calls in SBProcessSubs).
+template <typename SubsT, typename AddsT,
+          typename PredAddSubT, typename PredSubAddT>
+void KnockoutSubs(SubsT* subs, AddsT* adds,
+                  PredAddSubT predAddSub, PredSubAddT predSubAdd,
+                  AddsT* adds_removed) {
   // Keep a pair of output iterators for writing kept items.  Due to
   // deletions, these may lag the main iterators.  Using erase() on
   // individual items would result in O(N^2) copies.  Using std::list
   // would work around that, at double or triple the memory cost.
-  typename std::vector<A>::iterator add_out = adds->begin();
-  typename std::vector<S>::iterator sub_out = subs->begin();
+  typename AddsT::iterator add_out = adds->begin();
+  typename SubsT::iterator sub_out = subs->begin();
 
-  // Current location in vectors.
+  // Current location in containers.
   // TODO(shess): I want these to be const_iterator, but then
   // std::copy() gets confused.  Could snag a const_iterator add_end,
   // or write an inline std::copy(), but it seems like I'm doing
   // something wrong.
-  typename std::vector<A>::iterator add_iter = adds->begin();
-  typename std::vector<S>::iterator sub_iter = subs->begin();
+  typename AddsT::iterator add_iter = adds->begin();
+  typename SubsT::iterator sub_iter = subs->begin();
 
   while (add_iter != adds->end() && sub_iter != subs->end()) {
     // If |*sub_iter| < |*add_iter|, retain the sub.
-    if (predSA(*sub_iter, *add_iter)) {
+    if (predSubAdd(*sub_iter, *add_iter)) {
       *sub_out = *sub_iter;
       ++sub_out;
       ++sub_iter;
 
       // If |*add_iter| < |*sub_iter|, retain the add.
-    } else if (predAS(*add_iter, *sub_iter)) {
+    } else if (predAddSub(*add_iter, *sub_iter)) {
       *add_out = *add_iter;
       ++add_out;
       ++add_iter;
@@ -66,18 +66,17 @@ void KnockoutSubs(std::vector<S>* subs,
 
 // Remove items in |removes| from |full_hashes|.  |full_hashes| and
 // |removes| should be ordered by SBAddPrefix component.
-template <class T>
-void RemoveMatchingPrefixes(const std::vector<SBAddPrefix>& removes,
-                            std::vector<T>* full_hashes) {
+template <typename HashesT, typename AddsT>
+void RemoveMatchingPrefixes(const AddsT& removes, HashesT* full_hashes) {
   // This is basically an inline of std::set_difference().
   // Unfortunately, that algorithm requires that the two iterator
   // pairs use the same value types.
 
   // Where to store kept items.
-  typename std::vector<T>::iterator out = full_hashes->begin();
+  typename HashesT::iterator out = full_hashes->begin();
 
-  typename std::vector<T>::iterator hash_iter = full_hashes->begin();
-  std::vector<SBAddPrefix>::const_iterator remove_iter = removes.begin();
+  typename HashesT::iterator hash_iter = full_hashes->begin();
+  typename AddsT::const_iterator remove_iter = removes.begin();
 
   while (hash_iter != full_hashes->end() && remove_iter != removes.end()) {
     // Keep items less than |*remove_iter|.
@@ -104,21 +103,21 @@ void RemoveMatchingPrefixes(const std::vector<SBAddPrefix>& removes,
   full_hashes->erase(out, hash_iter);
 }
 
-// Remove deleted items (|chunk_id| in |del_set|) from the vector.
-template <class T>
-void RemoveDeleted(std::vector<T>* vec, const base::hash_set<int32>& del_set) {
-  DCHECK(vec);
+// Remove deleted items (|chunk_id| in |del_set|) from the container.
+template <typename ItemsT>
+void RemoveDeleted(ItemsT* items, const base::hash_set<int32>& del_set) {
+  DCHECK(items);
 
-  // Scan through the items read, dropping the items in |del_set|.
-  typename std::vector<T>::iterator add_iter = vec->begin();
-  for (typename std::vector<T>::iterator iter = add_iter;
-       iter != vec->end(); ++iter) {
+  // Move items from |iter| to |end_iter|, skipping items in |del_set|.
+  typename ItemsT::iterator end_iter = items->begin();
+  for (typename ItemsT::iterator iter = end_iter;
+       iter != items->end(); ++iter) {
     if (del_set.count(iter->chunk_id) == 0) {
-      *add_iter = *iter;
-      ++add_iter;
+      *end_iter = *iter;
+      ++end_iter;
     }
   }
-  vec->erase(add_iter, vec->end());
+  items->erase(end_iter, items->end());
 }
 
 enum MissTypes {
@@ -131,7 +130,7 @@ enum MissTypes {
 
 }  // namespace
 
-void SBCheckPrefixMisses(const std::vector<SBAddPrefix>& add_prefixes,
+void SBCheckPrefixMisses(const SBAddPrefixes& add_prefixes,
                          const std::set<SBPrefix>& prefix_misses) {
   if (prefix_misses.empty())
     return;
@@ -148,9 +147,10 @@ void SBCheckPrefixMisses(const std::vector<SBAddPrefix>& add_prefixes,
   // prefix, it is not sufficient to count the number of elements
   // present in both collections.
   std::set<SBPrefix> false_misses(prefix_misses.begin(), prefix_misses.end());
-  for (size_t i = 0; i < add_prefixes.size(); ++i) {
+  for (SBAddPrefixes::const_iterator iter = add_prefixes.begin();
+       iter != add_prefixes.end(); ++iter) {
     // |erase()| on an absent element should cost like |find()|.
-    false_misses.erase(add_prefixes[i].prefix);
+    false_misses.erase(iter->prefix);
   }
 
   // Record a hit for prefixes which we shouldn't have sent in the
@@ -164,7 +164,7 @@ void SBCheckPrefixMisses(const std::vector<SBAddPrefix>& add_prefixes,
   // bloom-filter false-positive rate.
 }
 
-void SBProcessSubs(std::vector<SBAddPrefix>* add_prefixes,
+void SBProcessSubs(SBAddPrefixes* add_prefixes,
                    std::vector<SBSubPrefix>* sub_prefixes,
                    std::vector<SBAddFullHash>* add_full_hashes,
                    std::vector<SBSubFullHash>* sub_full_hashes,
@@ -186,7 +186,7 @@ void SBProcessSubs(std::vector<SBAddPrefix>* add_prefixes,
             SBAddPrefixHashLess<SBSubFullHash,SBSubFullHash>);
 
   // Factor out the prefix subs.
-  std::vector<SBAddPrefix> removed_adds;
+  SBAddPrefixes removed_adds;
   KnockoutSubs(sub_prefixes, add_prefixes,
                SBAddPrefixLess<SBAddPrefix,SBSubPrefix>,
                SBAddPrefixLess<SBSubPrefix,SBAddPrefix>,

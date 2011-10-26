@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -112,7 +112,7 @@ TEST(SafeBrowsingStoreTest, SBSubFullHashLess) {
 // SBProcessSubs does a lot of iteration, run through empty just to
 // make sure degenerate cases work.
 TEST(SafeBrowsingStoreTest, SBProcessSubsEmpty) {
-  std::vector<SBAddPrefix> add_prefixes;
+  SBAddPrefixes add_prefixes;
   std::vector<SBAddFullHash> add_hashes;
   std::vector<SBSubPrefix> sub_prefixes;
   std::vector<SBSubFullHash> sub_hashes;
@@ -143,7 +143,7 @@ TEST(SafeBrowsingStoreTest, SBProcessSubsKnockout) {
   SBFullHash kHash1mod3 = kHash1mod2;
   kHash1mod3.full_hash[sizeof(kHash1mod3.full_hash) - 1] ++;
 
-  std::vector<SBAddPrefix> add_prefixes;
+  SBAddPrefixes add_prefixes;
   std::vector<SBAddFullHash> add_hashes;
   std::vector<SBSubPrefix> sub_prefixes;
   std::vector<SBSubFullHash> sub_hashes;
@@ -206,7 +206,7 @@ TEST(SafeBrowsingStoreTest, SBProcessSubsDeleteChunk) {
   SBFullHash kHash1mod3 = kHash1mod2;
   kHash1mod3.full_hash[sizeof(kHash1mod3.full_hash) - 1] ++;
 
-  std::vector<SBAddPrefix> add_prefixes;
+  SBAddPrefixes add_prefixes;
   std::vector<SBAddFullHash> add_hashes;
   std::vector<SBSubPrefix> sub_prefixes;
   std::vector<SBSubFullHash> sub_hashes;

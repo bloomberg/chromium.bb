@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,7 +45,7 @@ void SafeBrowsingStoreTestEmpty(SafeBrowsingStore* store) {
 
   std::vector<SBAddFullHash> pending_adds;
   std::set<SBPrefix> prefix_misses;
-  std::vector<SBAddPrefix> add_prefixes_result;
+  SBAddPrefixes add_prefixes_result;
   std::vector<SBAddFullHash> add_full_hashes_result;
 
   EXPECT_TRUE(store->FinishUpdate(pending_adds,
@@ -90,7 +90,7 @@ void SafeBrowsingStoreTestStorePrefix(SafeBrowsingStore* store) {
 
   std::vector<SBAddFullHash> pending_adds;
   std::set<SBPrefix> prefix_misses;
-  std::vector<SBAddPrefix> add_prefixes_result;
+  SBAddPrefixes add_prefixes_result;
   std::vector<SBAddFullHash> add_full_hashes_result;
 
   EXPECT_TRUE(store->FinishUpdate(pending_adds,
@@ -163,7 +163,7 @@ void SafeBrowsingStoreTestSubKnockout(SafeBrowsingStore* store) {
 
   std::vector<SBAddFullHash> pending_adds;
   std::set<SBPrefix> prefix_misses;
-  std::vector<SBAddPrefix> add_prefixes_result;
+  SBAddPrefixes add_prefixes_result;
   std::vector<SBAddFullHash> add_full_hashes_result;
 
   EXPECT_TRUE(store->FinishUpdate(pending_adds,
@@ -267,7 +267,7 @@ void SafeBrowsingStoreTestDeleteChunks(SafeBrowsingStore* store) {
 
   std::vector<SBAddFullHash> pending_adds;
   std::set<SBPrefix> prefix_misses;
-  std::vector<SBAddPrefix> add_prefixes_result;
+  SBAddPrefixes add_prefixes_result;
   std::vector<SBAddFullHash> add_full_hashes_result;
 
   EXPECT_TRUE(store->FinishUpdate(pending_adds,
@@ -337,7 +337,7 @@ void SafeBrowsingStoreTestDelete(SafeBrowsingStore* store,
 
   std::vector<SBAddFullHash> pending_adds;
   std::set<SBPrefix> prefix_misses;
-  std::vector<SBAddPrefix> add_prefixes_result;
+  SBAddPrefixes add_prefixes_result;
   std::vector<SBAddFullHash> add_full_hashes_result;
 
   EXPECT_TRUE(store->FinishUpdate(pending_adds,

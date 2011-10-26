@@ -264,15 +264,16 @@ void RecordPrefixSetInfo(PrefixSetEvent event_type) {
 // PREFIX_SET_EVENT_BLOOM_MISS_PREFIX_HIT_INVALID histogram in
 // ContainsBrowseUrl() can be trustworthy.
 safe_browsing::PrefixSet* PrefixSetFromAddPrefixes(
-    const std::vector<SBAddPrefix>& add_prefixes) {
+    const SBAddPrefixes& add_prefixes) {
   // TODO(shess): If |add_prefixes| were sorted by the prefix, it
   // could be passed directly to |PrefixSet()|, removing the need for
   // |prefixes|.  For now, |prefixes| is useful while debugging
   // things.
   std::vector<SBPrefix> prefixes;
   prefixes.reserve(add_prefixes.size());
-  for (size_t i = 0; i < add_prefixes.size(); ++i) {
-    prefixes.push_back(add_prefixes[i].prefix);
+  for (SBAddPrefixes::const_iterator iter = add_prefixes.begin();
+       iter != add_prefixes.end(); ++iter) {
+    prefixes.push_back(iter->prefix);
   }
 
   std::sort(prefixes.begin(), prefixes.end());
@@ -708,13 +709,14 @@ bool SafeBrowsingDatabaseNew::MatchDownloadAddPrefixes(
     std::vector<SBPrefix>* prefix_hits) {
   prefix_hits->clear();
 
-  std::vector<SBAddPrefix> add_prefixes;
+  SBAddPrefixes add_prefixes;
   download_store_->GetAddPrefixes(&add_prefixes);
-  for (size_t i = 0; i < add_prefixes.size(); ++i) {
+  for (SBAddPrefixes::const_iterator iter = add_prefixes.begin();
+       iter != add_prefixes.end(); ++iter) {
     for (size_t j = 0; j < prefixes.size(); ++j) {
       const SBPrefix& prefix = prefixes[j];
-      if (prefix == add_prefixes[i].prefix &&
-          GetListIdBit(add_prefixes[i].chunk_id) == list_bit) {
+      if (prefix == iter->prefix &&
+          GetListIdBit(iter->chunk_id) == list_bit) {
         prefix_hits->push_back(prefix);
       }
     }
@@ -1138,7 +1140,7 @@ void SafeBrowsingDatabaseNew::UpdateWhitelistStore(
 
   // Note: prefixes will not be empty.  The current data store implementation
   // stores all full-length hashes as both full and prefix hashes.
-  std::vector<SBAddPrefix> prefixes;
+  SBAddPrefixes prefixes;
   std::vector<SBAddFullHash> full_hashes;
   if (!store->FinishUpdate(empty_add_hashes, empty_miss_cache, &prefixes,
                            &full_hashes)) {
@@ -1168,7 +1170,7 @@ void SafeBrowsingDatabaseNew::UpdateDownloadStore() {
 
   // These results are not used after this call. Simply ignore the
   // returned value after FinishUpdate(...).
-  std::vector<SBAddPrefix> add_prefixes_result;
+  SBAddPrefixes add_prefixes_result;
   std::vector<SBAddFullHash> add_full_hashes_result;
 
   if (!download_store_->FinishUpdate(empty_add_hashes,
@@ -1218,7 +1220,7 @@ void SafeBrowsingDatabaseNew::UpdateBrowseStore() {
 
   const base::Time before = base::Time::Now();
 
-  std::vector<SBAddPrefix> add_prefixes;
+  SBAddPrefixes add_prefixes;
   std::vector<SBAddFullHash> add_full_hashes;
   if (!browse_store_->FinishUpdate(pending_add_hashes, prefix_miss_cache_,
                                    &add_prefixes, &add_full_hashes)) {
@@ -1232,8 +1234,9 @@ void SafeBrowsingDatabaseNew::UpdateBrowseStore() {
   const int filter_size =
       BloomFilter::FilterSizeForKeyCount(add_prefixes.size());
   scoped_refptr<BloomFilter> filter(new BloomFilter(filter_size));
-  for (size_t i = 0; i < add_prefixes.size(); ++i) {
-    filter->Insert(add_prefixes[i].prefix);
+  for (SBAddPrefixes::const_iterator iter = add_prefixes.begin();
+       iter != add_prefixes.end(); ++iter) {
+    filter->Insert(iter->prefix);
   }
 
   scoped_ptr<safe_browsing::PrefixSet>
@@ -1345,7 +1348,7 @@ void SafeBrowsingDatabaseNew::LoadBloomFilter() {
 
   // Manually re-generate the prefix set from the main database.
   // TODO(shess): Write/read for prefix set.
-  std::vector<SBAddPrefix> add_prefixes;
+  SBAddPrefixes add_prefixes;
   browse_store_->GetAddPrefixes(&add_prefixes);
   prefix_set_.reset(PrefixSetFromAddPrefixes(add_prefixes));
 }
