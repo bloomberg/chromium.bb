@@ -436,7 +436,7 @@ bool Desktop::IsFocusedWindow(const Window* window) const {
 }
 
 void Desktop::Init() {
-  Window::Init();
+  Window::Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
   SetBounds(gfx::Rect(host_->GetSize()));
   Show();
   compositor()->SetRootLayer(layer());

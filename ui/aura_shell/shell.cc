@@ -103,7 +103,7 @@ void Shell::Init() {
   CreateSpecialContainers(&containers);
   aura::Window::Windows::const_iterator i;
   for (i = containers.begin(); i != containers.end(); ++i) {
-    (*i)->Init();
+    (*i)->Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
     desktop_window->AddChild(*i);
     (*i)->Show();
   }

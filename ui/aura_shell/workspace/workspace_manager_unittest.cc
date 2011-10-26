@@ -17,7 +17,7 @@ class WorkspaceManagerTestBase : public aura::test::AuraTestBase {
  public:
   aura::Window* CreateTestWindow() {
     aura::Window* window = new aura::Window(NULL);
-    window->Init();
+    window->Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
     return window;
   }
 
@@ -174,9 +174,6 @@ TEST_F(WorkspaceTest, WorkspaceBasic) {
   scoped_ptr<Window> w1(CreateTestWindow());
   scoped_ptr<Window> w2(CreateTestWindow());
   scoped_ptr<Window> w3(CreateTestWindow());
-  w1->Init();
-  w2->Init();
-  w3->Init();
   // ws is empty and can accomodate new window.
   EXPECT_TRUE(ws->CanAdd(w1.get()));
 

@@ -52,7 +52,7 @@ RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
 }
 
 void RenderWidgetHostViewAura::Init() {
-  window_->Init();
+  window_->Init(ui::Layer::LAYER_HAS_TEXTURE);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

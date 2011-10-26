@@ -120,7 +120,8 @@ Widget::InitParams::InitParams()
       parent(NULL),
       parent_widget(NULL),
       native_widget(NULL),
-      top_level(false) {
+      top_level(false),
+      create_texture_for_layer(true) {
 }
 
 Widget::InitParams::InitParams(Type type)
@@ -140,7 +141,8 @@ Widget::InitParams::InitParams(Type type)
       parent(NULL),
       parent_widget(NULL),
       native_widget(NULL),
-      top_level(false) {
+      top_level(false),
+      create_texture_for_layer(true) {
 }
 
 gfx::NativeView Widget::InitParams::GetParent() const {

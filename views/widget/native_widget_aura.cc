@@ -78,7 +78,8 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   SetNativeWindowProperty(kWindowTypeKey, reinterpret_cast<void*>(window_type));
   window_->SetType(window_type == Widget::InitParams::TYPE_CONTROL ?
                    aura::kWindowType_Control : aura::kWindowType_None);
-  window_->Init();
+  window_->Init(params.create_texture_for_layer ?
+                ui::Layer::LAYER_HAS_TEXTURE : ui::Layer::LAYER_HAS_NO_TEXTURE);
   // TODO(beng): respect |params| authoritah wrt transparency.
   window_->layer()->SetFillsBoundsOpaquely(false);
   delegate_->OnNativeWidgetCreated();

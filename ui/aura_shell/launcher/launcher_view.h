@@ -70,6 +70,9 @@ class LauncherView : public views::WidgetDelegateView,
   // If there is a drag operation in progress it's canceled.
   void CancelDrag(views::View* deleted_view);
 
+  // Common setup done for all children.
+  void ConfigureChildView(views::View* view);
+
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 

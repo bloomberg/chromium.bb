@@ -12,7 +12,7 @@ namespace test {
 TestDesktopDelegate::TestDesktopDelegate()
     : default_container_(new ToplevelWindowContainer) {
   Desktop::GetInstance()->SetDelegate(this);
-  default_container_->Init();
+  default_container_->Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
   default_container_->SetBounds(
       gfx::Rect(gfx::Point(), Desktop::GetInstance()->GetHostSize()));
   Desktop::GetInstance()->AddChild(default_container_.get());

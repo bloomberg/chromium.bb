@@ -15,6 +15,7 @@
 #include "ui/base/events.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/aura/aura_export.h"
+#include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/layer_delegate.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
@@ -54,7 +55,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   explicit Window(WindowDelegate* delegate);
   virtual ~Window();
 
-  void Init();
+  void Init(ui::Layer::LayerType layer_type);
 
   // A type is used to identify a class of Windows and customize behavior such
   // as event handling and parenting. The value can be any of those in

@@ -179,7 +179,7 @@ class WindowTest : public AuraTestBase {
                                        Window* parent) {
     Window* window = new Window(delegate);
     window->set_id(id);
-    window->Init();
+    window->Init(ui::Layer::LAYER_HAS_TEXTURE);
     window->SetBounds(bounds);
     window->Show();
     window->SetParent(parent);
@@ -206,7 +206,7 @@ TEST_F(WindowTest, GetChildById) {
 TEST_F(WindowTest, HitTest) {
   Window w1(new ColorTestWindowDelegate(SK_ColorWHITE));
   w1.set_id(1);
-  w1.Init();
+  w1.Init(ui::Layer::LAYER_HAS_TEXTURE);
   w1.SetBounds(gfx::Rect(10, 10, 50, 50));
   w1.Show();
   w1.SetParent(NULL);
@@ -356,11 +356,11 @@ TEST_F(WindowTest, DestroyTest) {
 // Make sure MoveChildToFront moves both the window and layer to the front.
 TEST_F(WindowTest, MoveChildToFront) {
   Window parent(NULL);
-  parent.Init();
+  parent.Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
   Window child1(NULL);
-  child1.Init();
+  child1.Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
   Window child2(NULL);
-  child2.Init();
+  child2.Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
 
   child1.SetParent(&parent);
   child2.SetParent(&parent);
@@ -1053,7 +1053,7 @@ class ToplevelWindowTest : public WindowTest {
 
   virtual void SetUp() OVERRIDE {
     WindowTest::SetUp();
-    toplevel_container_.Init();
+    toplevel_container_.Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
     toplevel_container_.SetParent(aura::Desktop::GetInstance());
     toplevel_container_.SetBounds(
         aura::Desktop::GetInstance()->bounds());

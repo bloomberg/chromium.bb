@@ -163,6 +163,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     // The Widget will not construct a default one. Default is NULL.
     NativeWidget* native_widget;
     bool top_level;
+    // Only used by NativeWidgetAura. Specifies whether the Layer created by
+    // aura::Window has a texture. The default is true.
+    bool create_texture_for_layer;
   };
 
   Widget();

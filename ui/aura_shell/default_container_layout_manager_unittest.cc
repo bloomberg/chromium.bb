@@ -50,7 +50,7 @@ class DefaultContainerLayoutManagerTest : public aura::test::AuraTestBase {
         window, views::NativeWidgetAura::kWindowTypeKey,
         reinterpret_cast<void*>(type)));
     window->SetType(type);
-    window->Init();
+    window->Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
     window->SetBounds(bounds);
     window->Show();
     window->SetParent(parent);

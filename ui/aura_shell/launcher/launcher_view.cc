@@ -214,6 +214,7 @@ void LauncherView::Init() {
   new_browser_button_->SetImage(
       views::CustomButton::BS_NORMAL,
       rb.GetImageNamed(IDR_AURA_LAUNCHER_ICON_CHROME).ToSkBitmap());
+  ConfigureChildView(new_browser_button_);
   AddChildView(new_browser_button_);
 
   const LauncherItems& items(model_->items());
@@ -228,6 +229,7 @@ void LauncherView::Init() {
   show_apps_button_->SetImage(
       views::CustomButton::BS_NORMAL,
       rb.GetImageNamed(IDR_AURA_LAUNCHER_ICON_APPLIST).ToSkBitmap());
+  ConfigureChildView(show_apps_button_);
   AddChildView(show_apps_button_);
 
   LayoutToIdealBounds();
@@ -291,7 +293,7 @@ views::View* LauncherView::CreateViewForItem(const LauncherItem& item) {
     button->SetAppImage(item.app_image);
     view = button;
   }
-  view->SetPaintToLayer(true);
+  ConfigureChildView(view);
   return view;
 }
 
@@ -342,6 +344,11 @@ void LauncherView::ContinueDrag(const views::MouseEvent& event) {
   view_model_->Move(current_index, target_index);
   AnimateToIdealBounds();
   bounds_animator_->StopAnimatingView(drag_view_);
+}
+
+void LauncherView::ConfigureChildView(views::View* view) {
+  view->SetPaintToLayer(true);
+  view->layer()->SetFillsBoundsOpaquely(false);
 }
 
 void LauncherView::CancelDrag(views::View* deleted_view) {

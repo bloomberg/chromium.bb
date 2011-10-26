@@ -70,11 +70,8 @@ Window::~Window() {
     parent_->RemoveChild(this);
 }
 
-void Window::Init() {
-  ui::Layer::LayerType type = ui::Layer::LAYER_HAS_NO_TEXTURE;
-  if (delegate_)
-    type = ui::Layer::LAYER_HAS_TEXTURE;
-  layer_.reset(new ui::Layer(Desktop::GetInstance()->compositor(), type));
+void Window::Init(ui::Layer::LayerType layer_type) {
+  layer_.reset(new ui::Layer(Desktop::GetInstance()->compositor(), layer_type));
   // Windows (and therefore their layers) should initially be hidden, except for
   // controls.
   layer_->SetVisible(type_ == kWindowType_Control);
