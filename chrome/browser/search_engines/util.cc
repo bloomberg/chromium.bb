@@ -64,6 +64,20 @@ static void RemoveDuplicatePrepopulateIDs(
   }
 }
 
+// Returns the TemplateURL with id specified from the list of TemplateURLs.
+// If not found, returns NULL.
+TemplateURL* GetTemplateURLByID(
+    const std::vector<TemplateURL*>& template_urls,
+    int64 id) {
+  for (std::vector<TemplateURL*>::const_iterator i = template_urls.begin();
+       i != template_urls.end(); ++i) {
+    if ((*i)->id() == id) {
+      return *i;
+    }
+  }
+  return NULL;
+}
+
 // Loads engines from prepopulate data and merges them in with the existing
 // engines.  This is invoked when the version of the prepopulate data changes.
 void MergeEnginesFromPrepopulateData(
@@ -162,7 +176,7 @@ void GetSearchProvidersUsingKeywordResult(
   DCHECK(template_urls->empty());
   DCHECK(default_search_provider);
   DCHECK(*default_search_provider == NULL);
-  DCHECK(result.GetType() == KEYWORDS_RESULT);
+  DCHECK_EQ(result.GetType(), KEYWORDS_RESULT);
   DCHECK(new_resource_keyword_version);
 
   *new_resource_keyword_version = 0;
@@ -180,15 +194,10 @@ void GetSearchProvidersUsingKeywordResult(
     RemoveDuplicatePrepopulateIDs(template_urls, service);
   }
 
-  if (keyword_result.default_search_provider_id) {
-    // See if we can find the default search provider.
-    for (std::vector<TemplateURL*>::iterator i = template_urls->begin();
-         i != template_urls->end(); ++i) {
-      if ((*i)->id() == keyword_result.default_search_provider_id) {
-        *default_search_provider = *i;
-        break;
-      }
-    }
+  int64 default_search_provider_id = keyword_result.default_search_provider_id;
+  if (default_search_provider_id) {
+    *default_search_provider =
+        GetTemplateURLByID(*template_urls, default_search_provider_id);
   }
 
   if (keyword_result.builtin_keyword_version != resource_keyword_version) {
@@ -196,5 +205,25 @@ void GetSearchProvidersUsingKeywordResult(
                                     default_search_provider);
     *new_resource_keyword_version = resource_keyword_version;
   }
+}
+
+bool DidDefaultSearchProviderChange(
+    const WDTypedResult& result,
+    const std::vector<TemplateURL*>& template_urls,
+    const TemplateURL** backup_default_search_provider) {
+  DCHECK(backup_default_search_provider);
+  DCHECK(*backup_default_search_provider == NULL);
+  DCHECK_EQ(result.GetType(), KEYWORDS_RESULT);
+
+  WDKeywordsResult keyword_result = reinterpret_cast<
+      const WDResult<WDKeywordsResult>*>(&result)->GetValue();
+
+  if (!keyword_result.did_default_search_provider_change)
+    return false;
+
+  *backup_default_search_provider = GetTemplateURLByID(
+      template_urls,
+      keyword_result.default_search_provider_id_backup);
+  return true;
 }
 

@@ -146,7 +146,7 @@ class WebDataServiceAutofillTest : public WebDataServiceTest {
 
 // Simple consumer for WebIntents data. Stores the result data and quits UI
 // message loop when callback is invoked.
-class WebIntentsConsumer: public WebDataServiceConsumer {
+class WebIntentsConsumer : public WebDataServiceConsumer {
  public:
   virtual void OnWebDataServiceRequestDone(WebDataService::Handle h,
                                            const WDTypedResult* result) {
@@ -171,6 +171,39 @@ class WebIntentsConsumer: public WebDataServiceConsumer {
 
   // Result data from completion callback.
   std::vector<WebIntentServiceData> intents;
+};
+
+// Simple consumer for Keywords data. Stores the result data and quits UI
+// message loop when callback is invoked.
+class KeywordsConsumer : public WebDataServiceConsumer {
+ public:
+  KeywordsConsumer() : load_succeeded(false) {}
+
+  virtual void OnWebDataServiceRequestDone(WebDataService::Handle h,
+                                           const WDTypedResult* result) {
+    if (result) {
+      load_succeeded = true;
+      DCHECK(result->GetType() == KEYWORDS_RESULT);
+      keywords_result =
+          reinterpret_cast<const WDResult<WDKeywordsResult>*>(
+              result)->GetValue();
+    }
+
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    MessageLoop::current()->Quit();
+  }
+
+  // Run the current message loop. OnWebDataServiceRequestDone will invoke
+  // MessageLoop::Quit on completion, so this call will finish at that point.
+  static void WaitUntilCalled() {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    MessageLoop::current()->Run();
+  }
+
+  // True if keywords data was loaded successfully.
+  bool load_succeeded;
+  // Result data from completion callback.
+  WDKeywordsResult keywords_result;
 };
 
 TEST_F(WebDataServiceAutofillTest, FormFillAdd) {
@@ -661,4 +694,13 @@ TEST_F(WebDataServiceTest, WebIntentsGetAll) {
   EXPECT_EQ(service, consumer.intents[0]);
   service.action = ASCIIToUTF16("share");
   EXPECT_EQ(service, consumer.intents[1]);
+}
+
+TEST_F(WebDataServiceTest, DidDefaultSearchProviderChangeOnNewProfile) {
+  KeywordsConsumer consumer;
+  wds_->GetKeywords(&consumer);
+  KeywordsConsumer::WaitUntilCalled();
+  ASSERT_TRUE(consumer.load_succeeded);
+  EXPECT_FALSE(consumer.keywords_result.did_default_search_provider_change);
+  EXPECT_EQ(0, consumer.keywords_result.default_search_provider_id_backup);
 }

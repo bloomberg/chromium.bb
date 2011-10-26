@@ -5,46 +5,57 @@
 #include "chrome/browser/protector/settings_change_global_error.h"
 
 #include "base/bind.h"
-#include "base/task.h"
+#include "base/compiler_specific.h"
+#include "base/logging.h"
+#include "base/stl_util.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/protector/settings_change_global_error_delegate.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/global_error_service.h"
 #include "chrome/browser/ui/global_error_service_factory.h"
+#include "content/browser/browser_thread.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+
+namespace protector {
 
 namespace {
 
 // Timeout before the global error is removed (wrench menu item disappears).
 const int kMenuItemDisplayPeriodMs = 10*60*1000;  // 10 min
+
 // IDs of menu item labels.
 const int kMenuItemLabelIDs[] = {
   IDS_SEARCH_ENGINE_CHANGE_WRENCH_MENU_ITEM,
   IDS_HOMEPAGE_CHANGE_WRENCH_MENU_ITEM
 };
+
 // IDs of bubble title messages.
 const int kBubbleTitleIDs[] = {
   IDS_SEARCH_ENGINE_CHANGE_BUBBLE_TITLE,
   IDS_HOMEPAGE_CHANGE_BUBBLE_TITLE
 };
+
 // IDs of bubble text messages.
 const int kBubbleMessageIDs[] = {
   IDS_SEARCH_ENGINE_CHANGE_BUBBLE_TEXT,
   IDS_HOMEPAGE_CHANGE_BUBBLE_TEXT
 };
+
 // IDs of bubble text messages when the old setting is unknown.
 const int kBubbleMessageOldUnknownIDs[] = {
   IDS_SEARCH_ENGINE_CHANGE_UNKNOWN_BUBBLE_TEXT,
   IDS_HOMEPAGE_CHANGE_UNKNOWN_BUBBLE_TEXT
 };
+
 // IDs of "Keep Setting" button titles.
 const int kBubbleKeepSettingIDs[] = {
   IDS_SEARCH_ENGINE_CHANGE_RESTORE,
   IDS_HOMEPAGE_CHANGE_RESTORE
 };
+
 // IDs of "Change Setting" button titles.
 const int kBubbleChangeSettingIDs[] = {
   IDS_SEARCH_ENGINE_CHANGE_APPLY,
@@ -54,19 +65,19 @@ const int kBubbleChangeSettingIDs[] = {
 }  // namespace
 
 SettingsChangeGlobalError::SettingsChangeGlobalError(
-    const ChangesVector& changes,
-    const base::Closure& apply_changes_cb,
-    const base::Closure& revert_changes_cb)
+    const SettingChangeVector& changes,
+    SettingsChangeGlobalErrorDelegate* delegate)
     : changes_(changes),
-      apply_changes_cb_(apply_changes_cb),
-      revert_changes_cb_(revert_changes_cb),
+      delegate_(delegate),
       profile_(NULL),
+      browser_(NULL),
       closed_by_button_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   DCHECK(changes.size() > 0);
 }
 
 SettingsChangeGlobalError::~SettingsChangeGlobalError() {
+  STLDeleteElements(&changes_);
 }
 
 bool SettingsChangeGlobalError::HasBadge() {
@@ -86,12 +97,14 @@ int SettingsChangeGlobalError::MenuItemCommandID() {
 // can display warning about multiple changes.
 
 string16 SettingsChangeGlobalError::MenuItemLabel() {
-  return l10n_util::GetStringUTF16(kMenuItemLabelIDs[changes_.front().type]);
+  return l10n_util::GetStringUTF16(kMenuItemLabelIDs[changes_.front()->type()]);
 }
 
 void SettingsChangeGlobalError::ExecuteMenuItem(Browser* browser) {
-  weak_factory_.InvalidateWeakPtrs();  // Cancel previously posted tasks.
-  ShowBubbleView(browser);
+  // Cancel previously posted tasks.
+  weak_factory_.InvalidateWeakPtrs();
+  browser_ = browser;
+  ShowBubbleView(browser_);
 }
 
 bool SettingsChangeGlobalError::HasBubbleView() {
@@ -99,30 +112,40 @@ bool SettingsChangeGlobalError::HasBubbleView() {
 }
 
 string16 SettingsChangeGlobalError::GetBubbleViewTitle() {
-  return l10n_util::GetStringUTF16(kBubbleTitleIDs[changes_.front().type]);
+  return l10n_util::GetStringUTF16(kBubbleTitleIDs[changes_.front()->type()]);
 }
 
 string16 SettingsChangeGlobalError::GetBubbleViewMessage() {
-  const Change& change = changes_.front();
-  return change.old_setting.empty() ?
-      l10n_util::GetStringFUTF16(kBubbleMessageOldUnknownIDs[change.type],
-                                 change.new_setting) :
-      l10n_util::GetStringFUTF16(kBubbleMessageIDs[change.type],
-                                 change.old_setting, change.new_setting);
+  SettingChange* change = changes_.front();
+  const string16& old_setting = change->GetOldSetting();
+  if (old_setting.empty()) {
+    return l10n_util::GetStringFUTF16(
+        kBubbleMessageOldUnknownIDs[change->type()],
+        change->GetNewSetting());
+  } else {
+    return l10n_util::GetStringFUTF16(
+        kBubbleMessageIDs[change->type()],
+        old_setting,
+        change->GetNewSetting());
+  }
 }
 
 string16 SettingsChangeGlobalError::GetBubbleViewAcceptButtonLabel() {
-  const Change& change = changes_.front();
-  return l10n_util::GetStringFUTF16(kBubbleChangeSettingIDs[change.type],
-                                    change.new_setting);
+  SettingChange* change = changes_.front();
+  return l10n_util::GetStringFUTF16(kBubbleChangeSettingIDs[change->type()],
+                                    change->GetNewSetting());
 }
 
 string16 SettingsChangeGlobalError::GetBubbleViewCancelButtonLabel() {
-  const Change& change = changes_.front();
-  return change.old_setting.empty() ?
-      l10n_util::GetStringUTF16(IDS_SETTINGS_CHANGE_OPEN_SETTINGS) :
-      l10n_util::GetStringFUTF16(kBubbleKeepSettingIDs[change.type],
-                                 change.old_setting);
+  SettingChange* change = changes_.front();
+  string16 old_setting = change->GetOldSetting();
+  if (old_setting.empty()) {
+    return l10n_util::GetStringUTF16(IDS_SETTINGS_CHANGE_OPEN_SETTINGS);
+  } else {
+    return l10n_util::GetStringFUTF16(
+        kBubbleKeepSettingIDs[change->type()],
+        old_setting);
+  }
 }
 
 bool SettingsChangeGlobalError::IsAcceptButtonDefault() {
@@ -130,24 +153,29 @@ bool SettingsChangeGlobalError::IsAcceptButtonDefault() {
 }
 
 void SettingsChangeGlobalError::BubbleViewAcceptButtonPressed() {
+  DCHECK(delegate_);
   VLOG(1) << "Apply changes";
-  apply_changes_cb_.Run();
+  delegate_->OnApplyChanges();
   closed_by_button_ = true;
 }
 
 void SettingsChangeGlobalError::BubbleViewCancelButtonPressed() {
-  VLOG(1) << "Revert changes";
-  revert_changes_cb_.Run();
+  DCHECK(delegate_);
+  VLOG(1) << "Discard changes";
+  delegate_->OnDiscardChanges();
   closed_by_button_ = true;
 }
 
 void SettingsChangeGlobalError::RemoveFromProfile() {
+  DCHECK(delegate_);
   if (profile_)
     GlobalErrorServiceFactory::GetForProfile(profile_)->RemoveGlobalError(this);
-  BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, this);
+  if (!closed_by_button_)
+    delegate_->OnDecisionTimeout();
 }
 
 void SettingsChangeGlobalError::BubbleViewDidClose() {
+  browser_ = NULL;
   if (!closed_by_button_) {
     BrowserThread::PostDelayedTask(
         BrowserThread::UI, FROM_HERE,
@@ -159,20 +187,21 @@ void SettingsChangeGlobalError::BubbleViewDidClose() {
   }
 }
 
-void SettingsChangeGlobalError::ShowForDefaultProfile() {
+void SettingsChangeGlobalError::ShowForProfile(Profile* profile) {
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    AddToDefaultProfile();
+    AddToProfile(profile);
   } else {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&SettingsChangeGlobalError::AddToDefaultProfile,
-                   base::Unretained(this)));
+        base::Bind(&SettingsChangeGlobalError::AddToProfile,
+                   base::Unretained(this),
+                   profile));
   }
 }
 
-void SettingsChangeGlobalError::AddToDefaultProfile() {
+void SettingsChangeGlobalError::AddToProfile(Profile* profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  profile_ = ProfileManager::GetDefaultProfile();
+  profile_ = profile;
   GlobalErrorServiceFactory::GetForProfile(profile_)->AddGlobalError(this);
   Show();
 }
@@ -180,7 +209,9 @@ void SettingsChangeGlobalError::AddToDefaultProfile() {
 void SettingsChangeGlobalError::Show() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(profile_);
-  Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
-  if (browser)
-    ShowBubbleView(browser);
+  browser_ = BrowserList::GetLastActiveWithProfile(profile_);
+  if (browser_)
+    ShowBubbleView(browser_);
 }
+
+}  // namespace protector

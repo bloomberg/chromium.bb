@@ -22,6 +22,8 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_set_observer.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/protector/protector.h"
+#include "chrome/browser/protector/setting_change.h"
 #include "chrome/browser/rlz/rlz.h"
 #include "chrome/browser/search_engines/search_host_to_urls_map.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
@@ -436,8 +438,8 @@ void TemplateURLService::SetDefaultSearchProvider(const TemplateURL* url) {
     NOTREACHED();
     return;
   }
-  if (default_search_provider_ == url)
-    return;
+  // Always persist the setting in the database, that way if the backup
+  // signature has changed out from under us it gets reset correctly.
   SetDefaultSearchProviderNoNotify(url);
   NotifyObservers();
 }
@@ -448,6 +450,19 @@ const TemplateURL* TemplateURLService::GetDefaultSearchProvider() {
 
   // We're not loaded, rely on the default search provider stored in prefs.
   return initial_default_search_provider_.get();
+}
+
+const TemplateURL* TemplateURLService::FindNewDefaultSearchProvider() {
+  // See if the prepoluated default still exists.
+  scoped_ptr<TemplateURL> prepopulated_default(
+      TemplateURLPrepopulateData::GetPrepopulatedDefaultSearch(GetPrefs()));
+  for (TemplateURLVector::iterator i = template_urls_.begin();
+      i != template_urls_.end(); ) {
+    if ((*i)->prepopulate_id() == prepopulated_default->prepopulate_id())
+      return *i;
+  }
+  // If not, use the first of the templates.
+  return template_urls_.empty() ? NULL : template_urls_[0];
 }
 
 void TemplateURLService::AddObserver(TemplateURLServiceObserver* observer) {
@@ -510,6 +525,22 @@ void TemplateURLService::OnWebDataServiceRequestDone(
   scoped_ptr<TemplateURL> default_from_prefs;
   LoadDefaultSearchProviderFromPrefs(&default_from_prefs,
                                      &is_default_search_managed_);
+
+  // Check if the default search provider has been changed and notify
+  // Protector instance about it. Don't check if the default search is
+  // managed.
+  const TemplateURL* backup_default_search_provider = NULL;
+  if (!is_default_search_managed_ &&
+      DidDefaultSearchProviderChange(
+          *result,
+          template_urls,
+          &backup_default_search_provider)) {
+    // Protector will delete itself when it's needed no longer.
+    protector::Protector* protector = new protector::Protector(profile());
+    protector->ShowChange(protector::CreateDefaultSearchProviderChange(
+        default_search_provider,
+        backup_default_search_provider));
+  }
 
   // Remove entries that were created because of policy as they may have
   // changed since the database was saved.
@@ -1452,22 +1483,6 @@ void TemplateURLService::UpdateDefaultSearch() {
     SetDefaultSearchProviderNoNotify(FindNewDefaultSearchProvider());
   }
   NotifyObservers();
-}
-
-const TemplateURL* TemplateURLService::FindNewDefaultSearchProvider() {
-  // See if the prepoluated default still exists.
-  scoped_ptr<TemplateURL> prepopulated_default(
-      TemplateURLPrepopulateData::GetPrepopulatedDefaultSearch(GetPrefs()));
-  for (TemplateURLVector::iterator i = template_urls_.begin();
-      i != template_urls_.end(); ) {
-    if ((*i)->prepopulate_id() == prepopulated_default->prepopulate_id())
-      return *i;
-  }
-  // If not, use the first of the templates.
-  if (!template_urls_.empty()) {
-    return template_urls_[0];
-  }
-  return NULL;
 }
 
 void TemplateURLService::SetDefaultSearchProviderNoNotify(

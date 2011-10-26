@@ -11,8 +11,9 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/history/history_database.h"
+#include "chrome/browser/protector/histograms.h"
+#include "chrome/browser/protector/protector.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "crypto/hmac.h"
 #include "googleurl/src/gurl.h"
 #include "sql/statement.h"
 
@@ -27,11 +28,6 @@ const int kUrlIdPosition = 18;
 const char kDefaultSearchProviderKey[] = "Default Search Provider ID";
 const char kBuiltinKeywordVersion[] = "Builtin Keyword Version";
 
-// Key for signing the default search provider backup.
-// TOOD(avayvod): Add key for Google Chrome to internal repository.
-const char kDefaultSearchProviderBackupSigningKey[] =
-    "Please, don't change default search engine!";
-
 // Meta table key to store backup value for the default search provider.
 const char kDefaultSearchProviderBackupKey[] =
     "Default Search Provider ID Backup";
@@ -40,20 +36,6 @@ const char kDefaultSearchProviderBackupKey[] =
 // provider.
 const char kDefaultSearchProviderBackupSignatureKey[] =
     "Default Search Provider ID Backup Signature";
-
-// Histogram name to report protection errors for the default search
-// provider.
-const char kProtectorHistogramDefaultSearchProvider[] =
-    "Protector.DefaultSearchProvider";
-
-// Protector histogram values. TODO(avayvod): Move to protector.h/cc
-enum ProtectorError {
-  kProtectorErrorBackupInvalid,
-  kProtectorErrorValueChanged,
-
-  // This is for convenience only, must always be the last.
-  kProtectorErrorCount
-};
 
 void BindURLToStatement(const TemplateURL& url, sql::Statement* s) {
   s->BindString(0, UTF16ToUTF8(url.short_name()));
@@ -91,14 +73,7 @@ void BindURLToStatement(const TemplateURL& url, sql::Statement* s) {
 
 // Signs search provider id and returns its signature.
 std::string GetSearchProviderIDSignature(int64 id) {
-  crypto::HMAC hmac(crypto::HMAC::SHA256);
-  DCHECK(hmac.Init(kDefaultSearchProviderBackupSigningKey));
-
-  std::string id_to_sign(base::Int64ToString(id));
-  std::vector<unsigned char> digest(hmac.DigestLength());
-  DCHECK(hmac.Sign(id_to_sign, &digest[0], digest.size()));
-
-  return std::string(&digest[0], &digest[0] + digest.size());
+  return protector::SignSetting(base::Int64ToString(id));
 }
 
 // Checks if signature for search provider id is correct and returns the
@@ -281,25 +256,40 @@ bool KeywordTable::SetDefaultSearchProviderID(int64 id) {
 int64 KeywordTable::GetDefaultSearchProviderID() {
   int64 value = 0;
   meta_table_->GetValue(kDefaultSearchProviderKey, &value);
+  return value;
+}
+
+int64 KeywordTable::GetDefaultSearchProviderIDBackup() {
   int64 backup_value = 0;
   meta_table_->GetValue(kDefaultSearchProviderBackupKey, &backup_value);
   std::string backup_signature;
   meta_table_->GetValue(
       kDefaultSearchProviderBackupSignatureKey, &backup_signature);
-  // For now only track how often signature or backup is lost or value is
-  // changed. Don't change the value since UI is not working yet.
+  if (!IsSearchProviderIDValid(backup_value, backup_signature))
+    return 0;
+  return backup_value;
+}
+
+bool KeywordTable::DidDefaultSearchProviderChange() {
+  int64 backup_value = 0;
+  meta_table_->GetValue(kDefaultSearchProviderBackupKey, &backup_value);
+  std::string backup_signature;
+  meta_table_->GetValue(
+      kDefaultSearchProviderBackupSignatureKey, &backup_signature);
   if (!IsSearchProviderIDValid(backup_value, backup_signature)) {
-    UMA_HISTOGRAM_ENUMERATION(kProtectorHistogramDefaultSearchProvider,
-                              kProtectorErrorBackupInvalid,
-                              kProtectorErrorCount);
-    SetDefaultSearchProviderBackupID(value);
-  } else if (value != backup_value) {
-    UMA_HISTOGRAM_ENUMERATION(kProtectorHistogramDefaultSearchProvider,
-                              kProtectorErrorValueChanged,
-                              kProtectorErrorCount);
-    SetDefaultSearchProviderBackupID(value);
+    UMA_HISTOGRAM_ENUMERATION(
+        protector::kProtectorHistogramDefaultSearchProvider,
+        protector::kProtectorErrorBackupInvalid,
+        protector::kProtectorErrorCount);
+    return true;
+  } else if (backup_value != GetDefaultSearchProviderID()) {
+    UMA_HISTOGRAM_ENUMERATION(
+        protector::kProtectorHistogramDefaultSearchProvider,
+        protector::kProtectorErrorValueChanged,
+        protector::kProtectorErrorCount);
+    return true;
   }
-  return value;
+  return false;
 }
 
 bool KeywordTable::SetBuiltinKeywordVersion(int version) {

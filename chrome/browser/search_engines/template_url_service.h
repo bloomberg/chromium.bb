@@ -202,6 +202,12 @@ class TemplateURLService : public WebDataServiceConsumer,
   // Returns true if the default search is managed through group policy.
   bool is_default_search_managed() const { return is_default_search_managed_; }
 
+  // Returns the default search specified in the prepopulated data, if it
+  // exists.  If not, returns first URL in |template_urls_|, or NULL if that's
+  // empty. The returned object is owned by TemplateURLService and can be
+  // destroyed at any time so should be used right after the call.
+  const TemplateURL* FindNewDefaultSearchProvider();
+
   // Observers used to listen for changes to the model.
   // TemplateURLService does NOT delete the observers when deleted.
   void AddObserver(TemplateURLServiceObserver* observer);
@@ -424,11 +430,6 @@ class TemplateURLService : public WebDataServiceConsumer,
   // Update the default search.  Called at initialization or when a managed
   // preference has changed.
   void UpdateDefaultSearch();
-
-  // Returns the default search specified in the prepopulated data, if it
-  // exists.  If not, returns first URL in |template_urls_|, or NULL if that's
-  // empty.
-  const TemplateURL* FindNewDefaultSearchProvider();
 
   // Set the default search provider even if it is managed. |url| may be null.
   // Caller is responsible for notifying observers.

@@ -104,6 +104,11 @@ struct WDKeywordsResult {
   int64 default_search_provider_id;
   // Version of the built-in keywords. A value of 0 indicates a first run.
   int builtin_keyword_version;
+  // Backup of the default search provider ID.
+  int64 default_search_provider_id_backup;
+  // Indicates if default search provider has been changed by something
+  // other than user's action in the browser.
+  bool did_default_search_provider_change;
 };
 
 //

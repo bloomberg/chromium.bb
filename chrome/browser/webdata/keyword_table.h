@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "base/string16.h"
 #include "chrome/browser/webdata/web_database_table.h"
 #include "chrome/browser/search_engines/template_url_id.h"
 
@@ -81,6 +82,14 @@ class KeywordTable : public WebDatabaseTable {
   // ID (TemplateURL->id) of the default search provider.
   bool SetDefaultSearchProviderID(int64 id);
   int64 GetDefaultSearchProviderID();
+
+  // Backup of the default search provider. 0 if the setting can't be verified.
+  int64 GetDefaultSearchProviderIDBackup();
+
+  // Returns true if the default search provider has been changed out under
+  // us. This can happen if another process modifies our database or the
+  // file was corrupted.
+  bool DidDefaultSearchProviderChange();
 
   // Version of the built-in keywords.
   bool SetBuiltinKeywordVersion(int version);

@@ -40,4 +40,13 @@ void GetSearchProvidersUsingKeywordResult(
     const TemplateURL** default_search_provider,
     int* new_resource_keyword_version);
 
+// Returns true if the default search provider setting has been changed or
+// corrupted. Returns the backup setting in |backup_default_search_provider|.
+// |*backup_default_search_provider| can be NULL if the original setting is
+// lost.
+bool DidDefaultSearchProviderChange(
+    const WDTypedResult& result,
+    const std::vector<TemplateURL*>& template_urls,
+    const TemplateURL** backup_default_search_provider);
+
 #endif  // CHROME_BROWSER_SEARCH_ENGINES_UTIL_H_

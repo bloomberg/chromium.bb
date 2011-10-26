@@ -165,10 +165,14 @@ TEST_F(KeywordTableTest, DefaultSearchProviderBackup) {
 
   ASSERT_TRUE(db.GetKeywordTable()->SetDefaultSearchProviderID(10));
   EXPECT_EQ(10, db.GetKeywordTable()->GetDefaultSearchProviderID());
+  EXPECT_EQ(10, db.GetKeywordTable()->GetDefaultSearchProviderIDBackup());
+  EXPECT_FALSE(db.GetKeywordTable()->DidDefaultSearchProviderChange());
 
   // Verify that backup doesn't affect the actual value for now.
   ASSERT_TRUE(db.GetKeywordTable()->SetDefaultSearchProviderBackupID(11));
   EXPECT_EQ(10, db.GetKeywordTable()->GetDefaultSearchProviderID());
+  EXPECT_EQ(11, db.GetKeywordTable()->GetDefaultSearchProviderIDBackup());
+  EXPECT_TRUE(db.GetKeywordTable()->DidDefaultSearchProviderChange());
 }
 
 TEST_F(KeywordTableTest, UpdateKeyword) {
