@@ -41,7 +41,6 @@ Layer::Layer(Compositor* compositor)
       parent_(NULL),
       visible_(true),
       fills_bounds_opaquely_(true),
-      recompute_hole_(false),
       layer_updated_externally_(false),
       opacity_(1.0f),
       delegate_(NULL) {
@@ -56,7 +55,6 @@ Layer::Layer(Compositor* compositor, LayerType type)
       parent_(NULL),
       visible_(true),
       fills_bounds_opaquely_(true),
-      recompute_hole_(false),
       layer_updated_externally_(false),
       opacity_(1.0f),
       delegate_(NULL) {
@@ -97,7 +95,7 @@ void Layer::Add(Layer* child) {
   web_layer_.addChild(child->web_layer_);
 #endif
 
-  SetNeedsToRecomputeHole();
+  RecomputeHole();
 }
 
 void Layer::Remove(Layer* child) {
@@ -110,7 +108,7 @@ void Layer::Remove(Layer* child) {
   child->web_layer_.removeFromParent();
 #endif
 
-  SetNeedsToRecomputeHole();
+  RecomputeHole();
 
   child->DropTextures();
 }
@@ -192,7 +190,8 @@ void Layer::SetVisible(bool visible) {
 
   if (!is_drawn)
     DropTextures();
-  SetNeedsToRecomputeHole();
+  if (parent_)
+    parent_->RecomputeHole();
 #if defined(USE_WEBKIT_COMPOSITOR)
   // TODO(piman): Expose a visibility flag on WebLayer.
   web_layer_.setOpacity(visible_ ? opacity_ : 0.f);
@@ -236,7 +235,8 @@ void Layer::SetFillsBoundsOpaquely(bool fills_bounds_opaquely) {
 
   fills_bounds_opaquely_ = fills_bounds_opaquely;
 
-  SetNeedsToRecomputeHole();
+  if (parent())
+    parent()->RecomputeHole();
 #if defined(USE_WEBKIT_COMPOSITOR)
   web_layer_.setOpaque(fills_bounds_opaquely);
 #endif
@@ -314,10 +314,6 @@ void Layer::Draw() {
   NOTREACHED();
 #else
   DCHECK(GetCompositor());
-
-  if (recompute_hole_ && !parent_)
-    RecomputeHole();
-
   if (!ShouldDraw())
     return;
 
@@ -423,98 +419,57 @@ void Layer::UpdateLayerCanvas() {
 #endif
 }
 
-void Layer::SetNeedsToRecomputeHole() {
-  Layer* root_layer = this;
-  while (root_layer->parent_)
-    root_layer = root_layer->parent_;
-
-  root_layer->recompute_hole_ = true;
-}
-
-void Layer::ClearHoleRects() {
-  hole_rect_ = gfx::Rect();
-
-  for (size_t i = 0; i < children_.size(); i++)
-    children_[i]->ClearHoleRects();
-}
-
-void Layer::GetLayerProperties(const ui::Transform& parent_transform,
-                               std::vector<LayerProperties>* traversal) {
-  if (!visible_ || opacity_ != 1.0f)
+void Layer::RecomputeHole() {
+  if (type_ == LAYER_HAS_NO_TEXTURE)
     return;
 
-  ui::Transform current_transform;
-  current_transform.ConcatTransform(parent_transform);
-  if (transform().HasChange())
-    current_transform.ConcatTransform(transform());
-  current_transform.ConcatTranslate(
-      static_cast<float>(bounds().x()),
-      static_cast<float>(bounds().y()));
+  // Reset to default.
+  hole_rect_ = gfx::Rect();
 
-  if (fills_bounds_opaquely_ && type_ == LAYER_HAS_TEXTURE) {
-    LayerProperties properties;
-    properties.layer = this;
-    properties.transform_relative_to_root = current_transform;
-    traversal->push_back(properties);
+  // Find the largest hole
+  for (size_t i = 0; i < children_.size(); ++i) {
+    // Ignore non-opaque and hidden children.
+    if (!children_[i]->IsCompletelyOpaque() || !children_[i]->visible_)
+      continue;
+
+    // Ignore children that aren't rotated by multiples of 90 degrees.
+    float degrees;
+    if (!InterpolatedTransform::FactorTRS(children_[i]->transform(),
+                                          NULL, &degrees, NULL) ||
+        !IsApproximateMultilpleOf(degrees, 90.0f))
+      continue;
+
+    // The reason why we don't just take the bounds and apply the transform is
+    // that the bounds encodes a position, too, so the effective transformation
+    // matrix is actually different that the one reported. As well, the bounds
+    // will not necessarily be at the origin.
+    gfx::Rect candidate_hole(children_[i]->bounds_.size());
+    ui::Transform transform = children_[i]->transform();
+    transform.ConcatTranslate(static_cast<float>(children_[i]->bounds_.x()),
+                              static_cast<float>(children_[i]->bounds_.y()));
+    transform.TransformRect(&candidate_hole);
+
+    // This layer might not contain the child (e.g., a portion of the child may
+    // be offscreen). Only the portion of the child that overlaps this layer is
+    // of any importance, so take the intersection.
+    candidate_hole = gfx::Rect(bounds().size()).Intersect(candidate_hole);
+
+    // Ensure we have the largest hole.
+    if (candidate_hole.size().GetArea() > hole_rect_.size().GetArea())
+      hole_rect_ = candidate_hole;
   }
 
-  for (size_t i = 0; i < children_.size(); i++)
-    children_[i]->GetLayerProperties(current_transform, traversal);
-}
-
-void Layer::RecomputeHole() {
-  std::vector<LayerProperties> traversal;
-  ui::Transform transform;
-
-  ClearHoleRects();
-  GetLayerProperties(transform, &traversal);
-
-  for (size_t i = 0; i < traversal.size(); i++) {
-    Layer* layer = traversal[i].layer;
-    gfx::Rect bounds = gfx::Rect(layer->bounds().size());
-
-    // Iterate through layers which are after traversal[i] in draw order
-    // and find the largest candidate hole.
-    for (size_t j = i + 1; j < traversal.size(); j++) {
-      gfx::Rect candidate_hole = gfx::Rect(traversal[j].layer->bounds().size());
-
-      // Compute transform to go from bounds of layer |j| to local bounds of
-      // layer |i|.
-      ui::Transform candidate_hole_transform;
-      ui::Transform inverted;
-
-      candidate_hole_transform.ConcatTransform(
-          traversal[j].transform_relative_to_root);
-
-      if (!traversal[i].transform_relative_to_root.GetInverse(&inverted))
-        continue;
-
-      candidate_hole_transform.ConcatTransform(inverted);
-
-      // cannot punch a hole if the relative transform between the two layers
-      // is not multiple of 90.
-      float degrees;
-      gfx::Point p;
-      if (!InterpolatedTransform::FactorTRS(candidate_hole_transform, &p,
-          &degrees, NULL) || !IsApproximateMultilpleOf(degrees, 90.0f))
-        continue;
-
-      candidate_hole_transform.TransformRect(&candidate_hole);
-      candidate_hole = candidate_hole.Intersect(bounds);
-
-      if (candidate_hole.size().GetArea() > layer->hole_rect().size().GetArea())
-        layer->set_hole_rect(candidate_hole);
-    }
-    // Free up texture memory if the hole fills bounds of layer.
-    if (!layer->ShouldDraw() && !layer_updated_externally())
-      layer->DropTexture();
+  // Free up texture memory if the hole fills bounds of layer.
+  if (!ShouldDraw() && !layer_updated_externally_)
+    texture_ = NULL;
 
 #if defined(USE_WEBKIT_COMPOSITOR)
-    layer->RecomputeDrawsContent();
+  RecomputeDrawsContent();
 #endif
-  }
+}
 
-  recompute_hole_ = false;
+bool Layer::IsCompletelyOpaque() const {
+  return fills_bounds_opaquely() && GetCombinedOpacity() == 1.0f;
 }
 
 // static
@@ -553,13 +508,9 @@ void Layer::PunchHole(const gfx::Rect& rect,
                              rect.bottom() - trimmed_rect.bottom()));
 }
 
-void Layer::DropTexture() {
+void Layer::DropTextures() {
   if (!layer_updated_externally_)
     texture_ = NULL;
-}
-
-void Layer::DropTextures() {
-  DropTexture();
   for (size_t i = 0; i < children_.size(); ++i)
     children_[i]->DropTextures();
 }
@@ -622,7 +573,8 @@ void Layer::StopAnimatingIfNecessary(
 void Layer::SetBoundsImmediately(const gfx::Rect& bounds) {
   bounds_ = bounds;
 
-  SetNeedsToRecomputeHole();
+  if (parent())
+    parent()->RecomputeHole();
 #if defined(USE_WEBKIT_COMPOSITOR)
   web_layer_.setBounds(bounds.size());
   RecomputeTransform();
@@ -633,15 +585,33 @@ void Layer::SetBoundsImmediately(const gfx::Rect& bounds) {
 void Layer::SetTransformImmediately(const ui::Transform& transform) {
   transform_ = transform;
 
-  SetNeedsToRecomputeHole();
+  if (parent())
+    parent()->RecomputeHole();
 #if defined(USE_WEBKIT_COMPOSITOR)
   RecomputeTransform();
 #endif
 }
 
 void Layer::SetOpacityImmediately(float opacity) {
+  bool was_opaque = GetCombinedOpacity() == 1.0f;
   opacity_ = opacity;
-  SetNeedsToRecomputeHole();
+  bool is_opaque = GetCombinedOpacity() == 1.0f;
+
+  // If our opacity has changed we need to recompute our hole, our parent's hole
+  // and the holes of all our descendants.
+  if (was_opaque != is_opaque) {
+    if (parent_)
+      parent_->RecomputeHole();
+    std::queue<Layer*> to_process;
+    to_process.push(this);
+    while (!to_process.empty()) {
+      Layer* current = to_process.front();
+      to_process.pop();
+      current->RecomputeHole();
+      for (size_t i = 0; i < current->children_.size(); ++i)
+        to_process.push(current->children_.at(i));
+    }
+  }
 #if defined(USE_WEBKIT_COMPOSITOR)
   if (visible_)
     web_layer_.setOpacity(opacity);
