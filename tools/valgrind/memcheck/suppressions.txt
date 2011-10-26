@@ -659,14 +659,13 @@
    fun:_ZN7WebCore13WidthIterator*
    fun:_ZNK7WebCore4Font33getGlyphsAndAdvancesForSimpleTextERKNS_7TextRunEiiRNS_11GlyphBufferENS0_20ForTextEmphasisOrNotE
    fun:_ZNK7WebCore4Font14drawSimpleTextEPNS_15GraphicsContextERKNS_7TextRunERKNS_10FloatPointEii
-   fun:_ZNK7WebCore4Font8drawTextEPNS_15GraphicsContextERKNS_7TextRunERKNS_10FloatPointEii
-   fun:_ZN7WebCore15GraphicsContext8drawTextERKNS_4FontERKNS_7TextRunERKNS_10FloatPointEii
+   ...
    fun:_ZN7WebCoreL20paintTextWithShadowsEPNS_15GraphicsContextERKNS_4FontERKNS_7TextRunERKN3WTF12AtomicStringEiiiiRKNS_10FloatPointERKNS_9FloatRectEPKNS_10ShadowDataEbb
    fun:_ZN7WebCore13InlineTextBox5paintERNS_9PaintInfoERKNS_8IntPointEii
    fun:_ZN7WebCore13InlineFlowBox5paintERNS_9PaintInfoERKNS_8IntPointEii
    fun:_ZN7WebCore13RootInlineBox5paintERNS_9PaintInfoERKNS_8IntPointEii
    fun:_ZNK7WebCore17RenderLineBoxList5paintEPNS_20RenderBoxModelObjectERNS_9PaintInfoERKNS_8IntPointE
-   fun:_ZN7WebCore11RenderBlock13paintContentsERNS_9PaintInfoERKNS_8IntPointE
+   fun:_ZN7WebCore11RenderBlock*paint*
 }
 
 
@@ -2350,7 +2349,7 @@
    fun:_ZN12TokenService10InitializeEPKcP7Profile
    fun:_ZN13SigninManager10InitializeEP7Profile
    fun:_ZN18ProfileSyncService10InitializeEv
-   fun:_ZN11ProfileImpl15InitSyncServiceERKSs
+   fun:_ZN11ProfileImpl*
 }
 {
    bug_56090b
@@ -2845,37 +2844,6 @@
    fun:_ZN7testing8internal18FunctionMockerBaseIFvN5media7PreloadEEE10InvokeWithERKNSt3tr15tupleIS3*
    fun:_ZN7testing8internal14FunctionMockerIFvN5media7PreloadEEE6InvokeES3_
    fun:_ZN5media11MockDemuxer10SetPreloadENS_7PreloadE
-}
-{
-   bug_64930a
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZNSt3setISsSt4lessISsESaISsEE6insertERKSs
-   fun:_ZN16TranslateManager19IsSupportedLanguageERKSs
-   fun:_ZN16TranslateManager17GetTargetLanguageEv
-}
-{
-   bug_64930b
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZNSt*
-   ...
-   fun:_ZN6webkit5npapi10PluginList*
-   ...
-   fun:_ZN13PluginService*
-}
-{
-   bug_64930c
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:*ThemeMapC1Ev
-   fun:*ThemeMapEE3NewEPv
-   fun:*ThemeMapENS_25DefaultLazyInstanceTraitsIS2_EEE7PointerEv
-   fun:*ThemeMapENS_25DefaultLazyInstanceTraitsIS2_EEE3GetEv
-   fun:_ZN13ResourcesUtil18GetThemeResourceIdERKSs
 }
 {
    bug_66853_a
@@ -4795,7 +4763,7 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN6WebKit19WebWorkerClientImpl24createWorkerContextProxyEPN7WebCore6WorkerE
-   fun:_ZN7WebCore18WorkerContextProxy6createEPNS_6WorkerE
+   ...
    fun:_ZN7WebCore6WorkerC1EPNS_22ScriptExecutionContextE
    fun:_ZN7WebCore6Worker6createEPNS_22ScriptExecutionContextERKN3WTF6StringERi
    fun:_ZN7WebCore8V8Worker19constructorCallbackERKN2v89ArgumentsE
@@ -4830,6 +4798,7 @@
    fun:_ZN2v88internal8ProfilerC1EPNS0_7IsolateE
    fun:_ZN2v88internal6Logger5SetupEv
    fun:_ZN2v88internal7Isolate4InitEPNS0_12DeserializerE
+   ...
    fun:_ZN7WebCore27WorkerContextExecutionProxy8evaluateERKN3WTF6StringES4_RKNS1_12TextPositionEPNS_27WorkerContextExecutionStateE
 }
 {
@@ -4987,4 +4956,11 @@
    obj:/lib/libselinux.so.1
    obj:/lib/libselinux.so.1
    obj:/lib/libselinux.so.1
+}
+{
+   bug_todo_grep
+   Memcheck:Leak
+   fun:malloc
+   obj:/bin/grep
+   obj:/bin/grep
 }
