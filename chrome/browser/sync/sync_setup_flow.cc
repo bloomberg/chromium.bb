@@ -142,8 +142,6 @@ void SyncSetupFlow::GetArgsForConfigure(ProfileSyncService* service,
       registered_types.count(syncable::SEARCH_ENGINES) > 0);
   args->SetBoolean("sessionsRegistered",
       registered_types.count(syncable::SESSIONS) > 0);
-  args->SetBoolean("appNotificationsRegistered",
-      registered_types.count(syncable::APP_NOTIFICATIONS) > 0);
   args->SetBoolean("syncBookmarks",
       service->profile()->GetPrefs()->GetBoolean(prefs::kSyncBookmarks));
   args->SetBoolean("syncPreferences",
@@ -164,8 +162,6 @@ void SyncSetupFlow::GetArgsForConfigure(ProfileSyncService* service,
       service->profile()->GetPrefs()->GetBoolean(prefs::kSyncTypedUrls));
   args->SetBoolean("syncApps",
       service->profile()->GetPrefs()->GetBoolean(prefs::kSyncApps));
-  args->SetBoolean("syncAppNotifications",
-      service->profile()->GetPrefs()->GetBoolean(prefs::kSyncAppNotifications));
   args->SetBoolean("encryptionEnabled",
       !CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableSyncEncryption));

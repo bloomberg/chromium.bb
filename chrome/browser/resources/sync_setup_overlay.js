@@ -250,8 +250,6 @@ cr.define('options', function() {
           "syncTypedUrls": syncAll || $('typed-urls-checkbox').checked,
           "syncApps": syncAll || $('apps-checkbox').checked,
           "syncSearchEngines": syncAll || $('search-engines-checkbox').checked,
-          "syncAppNotifications": syncAll ||
-                $('app-notifications-checkbox').checked,
           "syncSessions": syncAll || $('sessions-checkbox').checked,
           "encryptAllData": encryptAllData,
           "usePassphrase": usePassphrase,
@@ -357,12 +355,6 @@ cr.define('options', function() {
         $('sessions-item').className = "sync-item-show";
       } else {
         $('sessions-item').className = "sync-item-hide";
-      }
-      if (args.appNotificationsRegistered) {
-        $('app-notifications-checkbox').checked = args.syncAppNotifications;
-        $('app-notifications-item').className = "sync-item-show";
-      } else {
-        $('app-notifications-item').className = "sync-item-hide";
       }
 
       this.setCheckboxesToKeepEverythingSynced_(args.syncAllDataTypes);

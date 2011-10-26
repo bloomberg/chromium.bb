@@ -314,8 +314,7 @@ TEST_F(SyncSetupWizardTest, ChooseDataTypesSetsPrefs) {
       "\"syncPreferences\":true,\"syncThemes\":false,\"syncPasswords\":false,"
       "\"syncAutofill\":false,\"syncExtensions\":false,\"syncTypedUrls\":true,"
       "\"syncApps\":true,\"syncSearchEngines\":false,\"syncSessions\":false,"
-      "\"syncAppNotifications\":false,\"usePassphrase\":false,"
-      "\"encryptAllData\":false}";
+      "\"usePassphrase\":false,\"encryptAllData\":false}";
   data_type_choices_value.Append(new StringValue(data_type_choices));
 
   // Simulate the user choosing data types; bookmarks, prefs, typed URLS, and

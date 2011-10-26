@@ -127,11 +127,16 @@ syncable::ModelTypeSet SyncPrefs::GetPreferredDataTypes(
     return registered_types;
   }
 
-  // Remove autofill_profile since its controlled by autofill (see
+  // Remove autofill_profile since it's controlled by autofill (see
   // code below).
   syncable::ModelTypeSet user_selectable_types(registered_types);
   DCHECK_EQ(user_selectable_types.count(syncable::NIGORI), 0u);
   user_selectable_types.erase(syncable::AUTOFILL_PROFILE);
+
+  // Remove app_notifications since it's controlled by apps (see
+  // code below).
+  // TODO(akalin): Centralize notion of all user selectable data types.
+  user_selectable_types.erase(syncable::APP_NOTIFICATIONS);
 
   syncable::ModelTypeSet preferred_types;
 
@@ -151,6 +156,14 @@ syncable::ModelTypeSet SyncPrefs::GetPreferredDataTypes(
     preferred_types.insert(syncable::AUTOFILL_PROFILE);
   }
 
+  // Set app_notifications to the same enabled/disabled state as
+  // apps (since only apps is shown on the UI).
+  if (registered_types.count(syncable::APPS) &&
+      registered_types.count(syncable::APP_NOTIFICATIONS) &&
+      GetDataTypePreferred(syncable::APPS)) {
+    preferred_types.insert(syncable::APP_NOTIFICATIONS);
+  }
+
   return preferred_types;
 }
 
@@ -161,21 +174,31 @@ void SyncPrefs::SetPreferredDataTypes(
   CHECK(pref_service_);
   DCHECK(std::includes(registered_types.begin(), registered_types.end(),
                        preferred_types.begin(), preferred_types.end()));
-  syncable::ModelTypeSet preferred_types_with_autofill(preferred_types);
+  syncable::ModelTypeSet preferred_types_with_dependents(preferred_types);
   // Set autofill_profile to the same enabled/disabled state as
-  // autofill (since only autofill is shown on the UI).
+  // autofill (since only autofill is shown in the UI).
   if (registered_types.count(syncable::AUTOFILL) &&
       registered_types.count(syncable::AUTOFILL_PROFILE)) {
-    if (preferred_types_with_autofill.count(syncable::AUTOFILL)) {
-      preferred_types_with_autofill.insert(syncable::AUTOFILL_PROFILE);
+    if (preferred_types_with_dependents.count(syncable::AUTOFILL)) {
+      preferred_types_with_dependents.insert(syncable::AUTOFILL_PROFILE);
     } else {
-      preferred_types_with_autofill.erase(syncable::AUTOFILL_PROFILE);
+      preferred_types_with_dependents.erase(syncable::AUTOFILL_PROFILE);
+    }
+  }
+  // Set app_notifications to the same enabled/disabled state as
+  // apps (since only apps is shown in the UI).
+  if (registered_types.count(syncable::APPS) &&
+      registered_types.count(syncable::APP_NOTIFICATIONS)) {
+    if (preferred_types_with_dependents.count(syncable::APPS)) {
+      preferred_types_with_dependents.insert(syncable::APP_NOTIFICATIONS);
+    } else {
+      preferred_types_with_dependents.erase(syncable::APP_NOTIFICATIONS);
     }
   }
 
   for (syncable::ModelTypeSet::const_iterator it = registered_types.begin();
        it != registered_types.end(); ++it) {
-    SetDataTypePreferred(*it, preferred_types_with_autofill.count(*it) > 0);
+    SetDataTypePreferred(*it, preferred_types_with_dependents.count(*it) > 0);
   }
 }
 

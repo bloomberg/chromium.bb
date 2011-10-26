@@ -373,13 +373,6 @@ html[os='mac'] input[type='submit'] {
     } else {
       document.getElementById("sessionsItem").className = "sync-item-hide";
     }
-    if (args.appNotificationsRegistered) {
-      document.getElementById("appNotificationsCheckbox").checked =
-          args.syncAppNotifications;
-      document.getElementById("appNotificationsItem").className = "sync-item-show";
-    } else {
-      document.getElementById("appNotificationsItem").className = "sync-item-hide";
-    }
 
     setCheckboxesToKeepEverythingSynced(args.syncAllDataTypes);
   }
@@ -472,7 +465,6 @@ html[os='mac'] input[type='submit'] {
         "syncApps": syncAll || f.appsCheckbox.checked,
         "syncSearchEngines": syncAll || f.searchEnginesCheckbox.checked,
         "syncSessions": syncAll || f.sessionsCheckbox.checked,
-        "syncAppNotifications": syncAll || f.appNotificationsCheckbox.checked,
         "usePassphrase": (getRadioCheckedValue() == 'explicit'),
         "passphrase": f.passphrase.value
     });
@@ -633,12 +625,6 @@ html[os='mac'] input[type='submit'] {
               <label id="searchEnginesCheckboxLabel" name="dataTypeLabel"
                      for="searchEnginesCheckbox" i18n-content="searchengines"
                      il8n-values="title:searchengines"></label>
-            </div>
-            <div class="sync-item-show" id="appNotificationsItem">
-              <input id="appNotificationsCheckbox" name="dataTypeCheckbox" type="checkbox">
-              <label id="appNotificationsCheckboxLabel" name="dataTypeLabel"
-                     for="appNotificationsCheckbox" i18n-content="appnotifications"
-                     il8n-values="title:appnotifications"></label>
             </div>
           </div>
         </div>
