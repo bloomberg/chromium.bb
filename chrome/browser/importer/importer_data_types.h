@@ -10,8 +10,10 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
+#include "base/memory/ref_counted.h"
 #include "base/string16.h"
 #include "chrome/browser/importer/importer_type.h"
+#include "net/url_request/url_request_context_getter.h"
 
 // Types needed for importing data from other browsers and the Google Toolbar.
 namespace importer {
@@ -38,6 +40,8 @@ struct SourceProfile {
   FilePath source_path;
   FilePath app_path;
   uint16 services_supported;  // Bitmask of ImportItem.
+  // The URLRequestContextGetter is only used for Google Toolbar.
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter;
 };
 
 }  // namespace importer

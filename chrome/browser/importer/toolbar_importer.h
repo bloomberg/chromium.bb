@@ -15,10 +15,12 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/ref_counted.h"
 #include "base/string16.h"
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/importer/profile_writer.h"
 #include "content/public/common/url_fetcher_delegate.h"
+#include "net/url_request/url_request_context_getter.h"
 
 class ImporterBridge;
 class XmlReader;
@@ -155,6 +157,9 @@ class Toolbar5Importer : public content::URLFetcherDelegate, public Importer {
   // hence they are stored as member variables.
   content::URLFetcher* token_fetcher_;
   content::URLFetcher* data_fetcher_;
+
+  // Used to get correct login data for the toolbar server.
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
   DISALLOW_COPY_AND_ASSIGN(Toolbar5Importer);
 };

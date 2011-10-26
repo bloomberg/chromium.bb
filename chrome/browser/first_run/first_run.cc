@@ -341,7 +341,7 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
   if (out_prefs->do_import_items || !import_bookmarks_path.empty()) {
     // There is something to import from the default browser. This launches
     // the importer process and blocks until done or until it fails.
-    scoped_refptr<ImporterList> importer_list(new ImporterList);
+    scoped_refptr<ImporterList> importer_list(new ImporterList(NULL));
     importer_list->DetectSourceProfilesHack();
     if (!FirstRun::ImportSettings(NULL,
           importer_list->GetSourceProfileAt(0).importer_type,
@@ -562,7 +562,7 @@ void FirstRun::AutoImport(
   importer_host = new ImporterHost;
 #endif
 
-  scoped_refptr<ImporterList> importer_list(new ImporterList);
+  scoped_refptr<ImporterList> importer_list(new ImporterList(NULL));
   importer_list->DetectSourceProfilesHack();
 
   // Do import if there is an available profile for us to import.

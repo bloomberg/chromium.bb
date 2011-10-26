@@ -395,7 +395,7 @@ int FirstRun::ImportFromBrowser(Profile* profile,
   scoped_refptr<ImporterHost> importer_host(new ImporterHost);
   FirstRunImportObserver importer_observer;
 
-  scoped_refptr<ImporterList> importer_list(new ImporterList);
+  scoped_refptr<ImporterList> importer_list(new ImporterList(NULL));
   importer_list->DetectSourceProfilesHack();
 
   // If |skip_first_run_ui|, we run in headless mode.  This means that if

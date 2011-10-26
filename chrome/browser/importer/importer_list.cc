@@ -92,7 +92,8 @@ void DetectFirefoxProfiles(std::vector<importer::SourceProfile*>* profiles) {
 }
 
 void DetectGoogleToolbarProfiles(
-    std::vector<importer::SourceProfile*>* profiles) {
+    std::vector<importer::SourceProfile*>* profiles,
+    scoped_refptr<net::URLRequestContextGetter> request_context_getter) {
   if (FirstRun::IsChromeFirstRun())
     return;
 
@@ -103,16 +104,19 @@ void DetectGoogleToolbarProfiles(
   google_toolbar->source_path.clear();
   google_toolbar->app_path.clear();
   google_toolbar->services_supported = importer::FAVORITES;
+  google_toolbar->request_context_getter = request_context_getter;
   profiles->push_back(google_toolbar);
 }
 
 }  // namespace
 
-ImporterList::ImporterList()
+ImporterList::ImporterList(
+    net::URLRequestContextGetter* request_context_getter)
     : source_thread_id_(BrowserThread::UI),
       observer_(NULL),
       is_observed_(false),
       source_profiles_loaded_(false) {
+ request_context_getter_ = make_scoped_refptr(request_context_getter);
 }
 
 void ImporterList::DetectSourceProfiles(
@@ -178,7 +182,7 @@ void ImporterList::DetectSourceProfilesWorker() {
     DetectFirefoxProfiles(&profiles);
   }
   // TODO(brg) : Current UI requires win_util.
-  DetectGoogleToolbarProfiles(&profiles);
+  DetectGoogleToolbarProfiles(&profiles, request_context_getter_);
 #elif defined(OS_MACOSX)
   if (ShellIntegration::IsFirefoxDefaultBrowser()) {
     DetectFirefoxProfiles(&profiles);
