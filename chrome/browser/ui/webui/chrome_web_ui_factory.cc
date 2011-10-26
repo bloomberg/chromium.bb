@@ -155,71 +155,72 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
   if (url.host() == chrome::kChromeUICertificateViewerHost)
     return &NewWebUI<CertificateViewerUI>;
 #endif
-  if (url.host() == chrome::kChromeUIEditSearchEngineDialogHost) {
-    return &NewWebUI<EditSearchEngineDialogUI>;
-  }
-  if (url.host() == chrome::kChromeUIHungRendererDialogHost) {
-    return &NewWebUI<HungRendererDialogUI>;
-  }
-  if (url.host() == chrome::kChromeUIInputWindowDialogHost) {
-    return &NewWebUI<InputWindowDialogUI>;
-  }
-  if (url.host() == chrome::kChromeUICrashesHost)
-    return &NewWebUI<CrashesUI>;
-  if (url.host() == chrome::kChromeUIDevToolsHost)
-    return &NewWebUI<DevToolsUI>;
 #if defined(OS_WIN)
   if (url.host() == chrome::kChromeUIConflictsHost)
     return &NewWebUI<ConflictsUI>;
 #endif
+  if (url.host() == chrome::kChromeUICrashesHost)
+    return &NewWebUI<CrashesUI>;
+  if (url.host() == chrome::kChromeUIDevToolsHost)
+    return &NewWebUI<DevToolsUI>;
   if (url.host() == chrome::kChromeUIDownloadsHost)
     return &NewWebUI<DownloadsUI>;
-  if (url.host() == chrome::kChromeUITaskManagerHost)
-    return &NewWebUI<TaskManagerUI>;
-  if (url.host() == chrome::kChromeUIHistoryHost)
-    return &NewWebUI<HistoryUI>;
-  if (url.host() == chrome::kChromeUIHistory2Host)
-    return &NewWebUI<HistoryUI2>;
+  if (url.host() == chrome::kChromeUIEditSearchEngineDialogHost)
+    return &NewWebUI<EditSearchEngineDialogUI>;
   if (url.host() == chrome::kChromeUIFlagsHost)
     return &NewWebUI<FlagsUI>;
   if (url.host() == chrome::kChromeUIFlashHost)
     return &NewWebUI<FlashUI>;
+  if (url.host() == chrome::kChromeUIGpuInternalsHost)
+    return &NewWebUI<GpuInternalsUI>;
+  if (url.host() == chrome::kChromeUIHistory2Host)
+    return &NewWebUI<HistoryUI2>;
+  if (url.host() == chrome::kChromeUIHistoryHost)
+    return &NewWebUI<HistoryUI>;
+  if (url.host() == chrome::kChromeUIHungRendererDialogHost)
+    return &NewWebUI<HungRendererDialogUI>;
+  if (url.host() == chrome::kChromeUIInputWindowDialogHost)
+    return &NewWebUI<InputWindowDialogUI>;
 #if defined(USE_VIRTUAL_KEYBOARD)
   if (url.host() == chrome::kChromeUIKeyboardHost)
     return &NewWebUI<KeyboardUI>;
 #endif
-  if (url.host() == chrome::kChromeUIGpuInternalsHost)
-    return &NewWebUI<GpuInternalsUI>;
   if (url.host() == chrome::kChromeUIMediaInternalsHost)
     return &NewWebUI<MediaInternalsUI>;
   if (url.host() == chrome::kChromeUINetInternalsHost)
     return &NewWebUI<NetInternalsUI>;
-  if (url.host() == chrome::kChromeUIPluginsHost)
-    return &NewWebUI<PluginsUI>;
 #if defined(ENABLE_CONFIGURATION_POLICY)
   if (url.host() == chrome::kChromeUIPolicyHost)
     return &NewWebUI<PolicyUI>;
 #endif
+  if (url.host() == chrome::kChromeUIPluginsHost)
+    return &NewWebUI<PluginsUI>;
+  if (url.host() == chrome::kChromeUIQuotaInternalsHost)
+    return &NewWebUI<QuotaInternalsUI>;
+  if (url.host() == chrome::kChromeUISSLClientCertificateSelectorHost)
+    return &NewWebUI<ConstrainedHtmlUI>;
   if (url.host() == chrome::kChromeUISessionsHost)
     return &NewWebUI<SessionsUI>;
-  if (url.host() == chrome::kChromeUISyncInternalsHost)
-    return &NewWebUI<SyncInternalsUI>;
   if (url.host() == chrome::kChromeUISettingsHost)
     return &NewWebUI<OptionsUI>;
+  if (url.host() == chrome::kChromeUISyncInternalsHost)
+    return &NewWebUI<SyncInternalsUI>;
+  if (url.host() == chrome::kChromeUITaskManagerHost)
+    return &NewWebUI<TaskManagerUI>;
   if (url.host() == chrome::kChromeUITracingHost)
     return &NewWebUI<TracingUI>;
   if (url.host() == chrome::kChromeUITrackingHost2)
     return &NewWebUI<TrackingUI>;
-  if (url.host() == chrome::kChromeUIQuotaInternalsHost)
-    return &NewWebUI<QuotaInternalsUI>;
   if (url.host() == chrome::kChromeUIWorkersHost)
     return &NewWebUI<WorkersUI>;
 
 #if defined(OS_CHROMEOS)
-  if (url.host() == chrome::kChromeUIChooseMobileNetworkHost)
-    return &NewWebUI<chromeos::ChooseMobileNetworkUI>;
   if (url.host() == chrome::kChromeUIActiveDownloadsHost)
     return &NewWebUI<ActiveDownloadsUI>;
+  if (url.host() == chrome::kChromeUIChooseMobileNetworkHost)
+    return &NewWebUI<chromeos::ChooseMobileNetworkUI>;
+  if (url.host() == chrome::kChromeUIEnterpriseEnrollmentHost)
+    return &NewWebUI<chromeos::EnterpriseEnrollmentUI>;
   if (url.host() == chrome::kChromeUIImageBurnerHost)
     return &NewWebUI<ImageBurnUI>;
   if (url.host() == chrome::kChromeUIKeyboardOverlayHost)
@@ -229,7 +230,7 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
   if (url.host() == chrome::kChromeUIMobileSetupHost)
     return &NewWebUI<MobileSetupUI>;
   if (url.host() == chrome::kChromeUIOobeHost)
-      return &NewWebUI<chromeos::OobeUI>;
+    return &NewWebUI<chromeos::OobeUI>;
   if (url.host() == chrome::kChromeUIProxySettingsHost)
     return &NewWebUI<chromeos::ProxySettingsUI>;
   if (url.host() == chrome::kChromeUIRegisterPageHost)
@@ -238,8 +239,6 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
     return &NewWebUI<chromeos::SimUnlockUI>;
   if (url.host() == chrome::kChromeUISystemInfoHost)
     return &NewWebUI<SystemInfoUI>;
-  if (url.host() == chrome::kChromeUIEnterpriseEnrollmentHost)
-    return &NewWebUI<chromeos::EnterpriseEnrollmentUI>;
 #endif  // defined(OS_CHROMEOS)
 
 #if (defined(OS_LINUX) && defined(TOOLKIT_VIEWS)) || defined(USE_AURA)

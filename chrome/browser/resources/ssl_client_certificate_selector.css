@@ -1,0 +1,57 @@
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+html, body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+.vbox {
+  -webkit-box-align: stretch;
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
+  height: 100%;
+}
+
+input {
+  box-sizing: border-box;
+}
+
+.action-area {
+  -webkit-box-align: center;
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: end;
+  display: -webkit-box;
+  padding-top: 12px;
+}
+
+.button-strip {
+  -webkit-box-orient: horizontal;
+  display: -webkit-box;
+}
+
+.button-strip > button {
+  -webkit-margin-start: 10px;
+  display: block;
+  white-space: nowrap;
+}
+
+h1, h2 {
+  font-size: 100%;
+}
+
+h2 {
+  font-weight: normal;
+}
+
+#details {
+  -webkit-box-flex: 1;
+  border-style: solid;
+  border-width: 1px;
+  overflow: auto;
+  padding: 3px;
+  white-space: pre;
+}

@@ -397,7 +397,7 @@ void SSLClientCertificateSelector::OnPromptShown(GtkWidget* widget,
 
 namespace browser {
 
-void ShowSSLClientCertificateSelector(
+void ShowNativeSSLClientCertificateSelector(
     TabContentsWrapper* wrapper,
     net::SSLCertRequestInfo* cert_request_info,
     SSLClientAuthHandler* delegate) {

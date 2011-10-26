@@ -25,6 +25,15 @@ void ShowSSLClientCertificateSelector(
     net::SSLCertRequestInfo* cert_request_info,
     SSLClientAuthHandler* delegate);
 
+// Same as above, but doesn't check the UseMoreWebUI flag.  It just calls the
+// native implementation.  This lets us have both the WebUI implementation and
+// the native implementation linked in at the same time and switchable behind
+// a run-time flag.
+void ShowNativeSSLClientCertificateSelector(
+    TabContentsWrapper* wrapper,
+    net::SSLCertRequestInfo* cert_request_info,
+    SSLClientAuthHandler* delegate);
+
 }  // namespace browser
 
 #endif  // CHROME_BROWSER_SSL_CLIENT_CERTIFICATE_SELECTOR_H_
