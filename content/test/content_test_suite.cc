@@ -13,7 +13,7 @@
 #include "content/test/test_content_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ui_base_paths.h"
-#include "ui/gfx/compositor/compositor_test_support.h"
+#include "ui/gfx/test/gfx_test_utils.h"
 
 namespace {
 
@@ -67,7 +67,7 @@ void ContentTestSuite::Initialize() {
   ui::RegisterPathProvider();
 
   // Mock out the compositor on platforms that use it.
-  ui::CompositorTestSupport::SetupMockCompositor();
+  ui::gfx_test_utils::SetupTestCompositor();
 
   testing::TestEventListeners& listeners =
       testing::UnitTest::GetInstance()->listeners();

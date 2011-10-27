@@ -16,6 +16,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/compositor/compositor_test_support.h"
 #include "ui/gfx/rect.h"
 
 #if defined(USE_X11)
@@ -81,6 +82,7 @@ int main(int argc, char** argv) {
 
   // Create the message-loop here before creating the desktop.
   MessageLoop message_loop(MessageLoop::TYPE_UI);
+  ui::CompositorTestSupport::Initialize();
 
   aura::Desktop::GetInstance();
 
@@ -110,6 +112,9 @@ int main(int argc, char** argv) {
   window3.SetParent(&window2);
 
   aura::Desktop::GetInstance()->Run();
+
+  ui::CompositorTestSupport::Terminate();
+
   return 0;
 }
 

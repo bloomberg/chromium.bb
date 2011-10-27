@@ -54,5 +54,12 @@
         ],
       },
     }],
+    ['use_aura==1 and OS!="win"', {
+      'link_settings': {
+        'libraries': [
+          '-lXext',
+        ],
+      },
+    }],
   ],
 }

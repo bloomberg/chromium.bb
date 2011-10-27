@@ -11,6 +11,7 @@
 #include "ui/base/ui_base_paths.h"
 #include "ui/gfx/compositor/compositor_test_support.h"
 #include "ui/gfx/gfx_paths.h"
+#include "ui/gfx/test/gfx_test_utils.h"
 
 AuraShellTestSuite::AuraShellTestSuite(int argc, char** argv)
     : TestSuite(argc, argv) {}
@@ -25,7 +26,7 @@ void AuraShellTestSuite::Initialize() {
   // output, it'll pass regardless of the system language.
   ui::ResourceBundle::InitSharedInstance("en-US");
   ui::CompositorTestSupport::Initialize();
-  ui::CompositorTestSupport::SetupMockCompositor();
+  ui::gfx_test_utils::SetupTestCompositor();
 }
 
 void AuraShellTestSuite::Shutdown() {
