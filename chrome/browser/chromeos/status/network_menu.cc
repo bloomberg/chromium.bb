@@ -746,18 +746,25 @@ void MainMenuModel::InitMenuItems(bool is_browser_mode,
     }
   }
 
-  // Enable / disable wireless.
-  if (wifi_available || cellular_available) {
+  bool show_wifi_scanning = wifi_available && cros->wifi_scanning();
+  // Do not show disable wifi during oobe
+  bool show_toggle_wifi = wifi_available &&
+      (should_open_button_options || !wifi_enabled);
+  // Do not show disable cellular during oobe
+  bool show_toggle_cellular = cellular_available &&
+      (should_open_button_options || !cellular_enabled);
+
+  if (show_wifi_scanning || show_toggle_wifi || show_toggle_cellular) {
     menu_items_.push_back(MenuItem());  // Separator
 
-    if (wifi_available) {
+    if (show_wifi_scanning) {
       // Add 'Scanning...'
-      if (cros->wifi_scanning()) {
-        label = l10n_util::GetStringUTF16(IDS_STATUSBAR_WIFI_SCANNING_MESSAGE);
-        menu_items_.push_back(MenuItem(ui::MenuModel::TYPE_COMMAND, label,
-            SkBitmap(), std::string(), FLAG_DISABLED));
-      }
+      label = l10n_util::GetStringUTF16(IDS_STATUSBAR_WIFI_SCANNING_MESSAGE);
+      menu_items_.push_back(MenuItem(ui::MenuModel::TYPE_COMMAND, label,
+          SkBitmap(), std::string(), FLAG_DISABLED));
+    }
 
+    if (show_toggle_wifi) {
       int id = wifi_enabled ? IDS_STATUSBAR_NETWORK_DEVICE_DISABLE :
                               IDS_STATUSBAR_NETWORK_DEVICE_ENABLE;
       label = l10n_util::GetStringFUTF16(id,
@@ -769,7 +776,7 @@ void MainMenuModel::InitMenuItems(bool is_browser_mode,
           SkBitmap(), std::string(), flag));
     }
 
-    if (cellular_available) {
+    if (show_toggle_cellular) {
       const NetworkDevice* cellular = cros->FindCellularDevice();
       bool is_locked = false;
       if (!cellular) {
@@ -809,16 +816,16 @@ void MainMenuModel::InitMenuItems(bool is_browser_mode,
   // * Network settings;
   // * IP Address on active interface;
   // * Hardware addresses for wifi and ethernet.
-  menu_items_.push_back(MenuItem());  // Separator
   more_menu_model_->InitMenuItems(is_browser_mode, should_open_button_options);
-  if (is_browser_mode) {
-    // In browser mode we do not want separate submenu, inline items.
-    menu_items_.insert(
-        menu_items_.end(),
-        more_menu_model_->menu_items().begin(),
-        more_menu_model_->menu_items().end());
-  } else {
-    if (!more_menu_model_->menu_items().empty()) {
+  if (!more_menu_model_->menu_items().empty()) {
+    menu_items_.push_back(MenuItem());  // Separator
+    if (is_browser_mode) {
+      // In browser mode we do not want separate submenu, inline items.
+      menu_items_.insert(
+          menu_items_.end(),
+          more_menu_model_->menu_items().begin(),
+          more_menu_model_->menu_items().end());
+    } else {
       menu_items_.push_back(MenuItem(
           ui::MenuModel::TYPE_SUBMENU,
           l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_MORE),

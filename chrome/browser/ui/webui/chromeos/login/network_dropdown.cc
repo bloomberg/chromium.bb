@@ -128,7 +128,7 @@ void NetworkDropdown::OpenButtonOptions() {
 }
 
 bool NetworkDropdown::ShouldOpenButtonOptions() const {
-  return true;
+  return false;
 }
 
 void NetworkDropdown::OnNetworkManagerChanged(NetworkLibrary* cros) {
