@@ -120,7 +120,7 @@ void WorkspaceManager::SetOverview(bool overview) {
 
     transform.SetTranslateX(dx);
     transform.SetTranslateY(workspace_size_.height() *  (1.0f - scale) / 2);
-  } else {
+  } else if (active_workspace_) {
     transform.SetTranslateX(-active_workspace_->bounds().x());
   }
 

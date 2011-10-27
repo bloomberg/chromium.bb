@@ -60,9 +60,10 @@ void CreateLock() {
                             (desktop_size.height() - ps.height()) / 2,
                             ps.width(), ps.height());
   params.delegate = lock_view;
-  params.parent = Shell::GetInstance()->GetContainer(
-      aura_shell::internal::kShellWindowId_LockScreenContainer);
   widget->Init(params);
+  Shell::GetInstance()->GetContainer(
+      aura_shell::internal::kShellWindowId_LockScreenContainer)->
+      AddChild(widget->GetNativeView());
   widget->SetContentsView(lock_view);
   widget->Show();
   widget->GetNativeView()->set_name("LockView");
