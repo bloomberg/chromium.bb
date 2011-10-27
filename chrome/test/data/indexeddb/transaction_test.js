@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,7 +23,8 @@ function newTransactionAborted()
 {
   debug('The transaction was aborted.');
 
-  var finalTransaction = db.transaction([], IDBTransaction.READ_ONLY);
+  var finalTransaction = db.transaction(['employees'],
+                                        IDBTransaction.READ_ONLY);
   finalTransaction.oncomplete = finalTransactionCompleted;
   finalTransaction.onabort = finalTransactionAborted;
 
@@ -46,7 +47,8 @@ function employeeAdded()
 function onSetVersionComplete()
 {
   debug('Creating new transaction.');
-  window.newTransaction = db.transaction([], IDBTransaction.READ_WRITE);
+  window.newTransaction = db.transaction(['employees'],
+                                         IDBTransaction.READ_WRITE);
   newTransaction.oncomplete = newTransactionCompleted;
   newTransaction.onabort = newTransactionAborted;
 

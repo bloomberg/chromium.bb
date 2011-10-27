@@ -234,8 +234,7 @@ class IndexedDBBrowserTestWithLowQuota : public IndexedDBBrowserTest {
 
 };
 
-// See http://crbug.com/101927
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithLowQuota, DISABLED_QuotaTest) {
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithLowQuota, QuotaTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("quota_test.html"))));
 }
 
