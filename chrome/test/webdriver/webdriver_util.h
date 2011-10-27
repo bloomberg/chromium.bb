@@ -11,13 +11,10 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/values.h"
 #include "chrome/test/automation/value_conversion_traits.h"
 
 class FilePath;
-
-namespace base {
-class Value;
-}
 
 namespace webdriver {
 
@@ -26,6 +23,13 @@ std::string GenerateRandomID();
 
 // Returns the equivalent JSON string for the given value.
 std::string JsonStringify(const base::Value* value);
+
+// Returns the JSON string for the given value, with the exception that
+// long strings are shortened for easier display.
+std::string JsonStringifyForDisplay(const base::Value* value);
+
+// Returns the string representation of the given type, for display purposes.
+const char* GetJsonTypeName(base::Value::Type type);
 
 #if defined(OS_MACOSX)
 // Gets the paths to the user and local application directory.
