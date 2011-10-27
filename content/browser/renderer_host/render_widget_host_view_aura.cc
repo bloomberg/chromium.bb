@@ -95,11 +95,17 @@ void RenderWidgetHostViewAura::InitAsPopup(
     RenderWidgetHostView* parent_host_view,
     const gfx::Rect& pos) {
   NOTIMPLEMENTED();
+  // TODO(ivankr): there has to be an Init() call, otherwise |window_|
+  // is left uninitialized and will eventually crash.
+  Init();
 }
 
 void RenderWidgetHostViewAura::InitAsFullscreen(
     RenderWidgetHostView* reference_host_view) {
   NOTIMPLEMENTED();
+  // TODO(ivankr): there has to be an Init() call, otherwise |window_|
+  // is left uninitialized and will eventually crash.
+  Init();
 }
 
 RenderWidgetHost* RenderWidgetHostViewAura::GetRenderWidgetHost() const {

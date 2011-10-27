@@ -113,7 +113,9 @@
 #include "chrome/browser/ui/crypto_module_password_dialog.h"
 #endif
 
-#if defined(USE_AURA) || defined(TOUCH_UI)
+#if defined(USE_AURA)
+#include "content/browser/renderer_host/render_widget_host_view_aura.h"
+#elif defined(TOUCH_UI)
 #include "chrome/browser/renderer_host/render_widget_host_view_views.h"
 #elif defined(OS_WIN)
 #include "chrome/browser/renderer_host/render_widget_host_view_views.h"
@@ -229,7 +231,9 @@ void ChromeContentBrowserClient::CreateBrowserMainParts(
 
 RenderWidgetHostView* ChromeContentBrowserClient::CreateViewForWidget(
     RenderWidgetHost* widget) {
-#if defined(USE_AURA) || defined(TOUCH_UI)
+#if defined(USE_AURA)
+  return new RenderWidgetHostViewAura(widget);
+#elif defined(TOUCH_UI)
   return new RenderWidgetHostViewViews(widget);
 #elif defined(OS_WIN)
   if (views::Widget::IsPureViews())
