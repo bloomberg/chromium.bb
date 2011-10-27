@@ -2072,8 +2072,10 @@ void HistoryBackend::ProcessDBTask(
 void HistoryBackend::BroadcastNotifications(
     int type,
     HistoryDetails* details_deleted) {
-  DCHECK(delegate_.get());
-  delegate_->BroadcastNotifications(type, details_deleted);
+  // |delegate_| may be NULL if |this| is in the process of closing (closed by
+  // HistoryService -> HistroyBackend::Closing().
+  if (delegate_.get())
+    delegate_->BroadcastNotifications(type, details_deleted);
 }
 
 // Deleting --------------------------------------------------------------------
