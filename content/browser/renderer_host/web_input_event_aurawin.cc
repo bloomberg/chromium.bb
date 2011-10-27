@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/web_input_event_aura.h"
 
 #include "base/event_types.h"
+#include "base/logging.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/win/WebInputEventFactory.h"
 
 namespace content {
