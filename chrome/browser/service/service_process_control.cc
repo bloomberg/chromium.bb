@@ -220,17 +220,18 @@ void ServiceProcessControl::Observe(
 void ServiceProcessControl::OnCloudPrintProxyInfo(
     const cloud_print::CloudPrintProxyInfo& proxy_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (cloud_print_info_callback_ != NULL) {
-    cloud_print_info_callback_->Run(proxy_info);
-    cloud_print_info_callback_.reset();
+  if (!cloud_print_info_callback_.is_null()) {
+    cloud_print_info_callback_.Run(proxy_info);
+    cloud_print_info_callback_.Reset();
   }
 }
 
 bool ServiceProcessControl::GetCloudPrintProxyInfo(
-    CloudPrintProxyInfoHandler* cloud_print_info_callback) {
+    const CloudPrintProxyInfoHandler& cloud_print_info_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(cloud_print_info_callback);
-  cloud_print_info_callback_.reset(cloud_print_info_callback);
+  DCHECK_EQ(false, cloud_print_info_callback.is_null());
+
+  cloud_print_info_callback_ = cloud_print_info_callback;
   return Send(new ServiceMsg_GetCloudPrintProxyInfo());
 }
 

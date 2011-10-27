@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
@@ -152,15 +153,16 @@ void CloudPrintProxyService::TokenExpiredNotificationDone(bool keep_alive) {
 
 void CloudPrintProxyService::OnCloudPrintSetupClosed() {
   MessageLoop::current()->PostTask(
-      FROM_HERE, NewRunnableFunction(&BrowserList::EndKeepAlive));
+      FROM_HERE, base::Bind(&BrowserList::EndKeepAlive));
 }
 
 void CloudPrintProxyService::RefreshCloudPrintProxyStatus() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   ServiceProcessControl* process_control = ServiceProcessControl::GetInstance();
   DCHECK(process_control->is_connected());
-  ServiceProcessControl::CloudPrintProxyInfoHandler* callback =
-       NewCallback(this, &CloudPrintProxyService::ProxyInfoCallback);
+  ServiceProcessControl::CloudPrintProxyInfoHandler callback =
+       base::Bind(&CloudPrintProxyService::ProxyInfoCallback,
+                  base::Unretained(this));
   // GetCloudPrintProxyInfo takes ownership of callback.
   process_control->GetCloudPrintProxyInfo(callback);
 }

@@ -12,7 +12,6 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/callback_old.h"
 #include "base/id_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
@@ -44,7 +43,7 @@ class ServiceProcessControl : public IPC::Channel::Sender,
  public:
   typedef IDMap<ServiceProcessControl>::iterator iterator;
   typedef std::queue<IPC::Message> MessageQueue;
-  typedef Callback1<const cloud_print::CloudPrintProxyInfo&>::Type
+  typedef base::Callback<void(const cloud_print::CloudPrintProxyInfo&)>
       CloudPrintProxyInfoHandler;
 
   // Returns the singleton instance of this class.
@@ -93,7 +92,7 @@ class ServiceProcessControl : public IPC::Channel::Sender,
   // Send request for cloud print proxy info (enabled state, email, proxy id).
   // The callback gets the information when received.
   bool GetCloudPrintProxyInfo(
-      CloudPrintProxyInfoHandler* cloud_print_status_callback);
+      const CloudPrintProxyInfoHandler& cloud_print_status_callback);
 
  private:
   // This class is responsible for launching the service process on the
@@ -157,7 +156,7 @@ class ServiceProcessControl : public IPC::Channel::Sender,
 
   // Callback that gets invoked when a status message is received from
   // the cloud print proxy.
-  scoped_ptr<CloudPrintProxyInfoHandler> cloud_print_info_callback_;
+  CloudPrintProxyInfoHandler cloud_print_info_callback_;
 
   content::NotificationRegistrar registrar_;
 };

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "base/callback.h"
+#include "base/bind_helpers.h"
 #include "base/process_util.h"
 #include "base/test/test_timeouts.h"
 #include "chrome/browser/service/service_process_control.h"
@@ -26,7 +26,7 @@ class ServiceProcessControlBrowserTest
 
 #if defined(OS_MACOSX)
   virtual void TearDown() {
-    // ForceServiceProcessShutdown removes the process from launchd on Mac.
+    // ForceServiceProcessShutdown removes the process from launched on Mac.
     ForceServiceProcessShutdown("", 0);
   }
 #endif  // OS_MACOSX
@@ -47,8 +47,9 @@ class ServiceProcessControlBrowserTest
 
   // Send a Cloud Print status request and wait for a reply from the service.
   void SendRequestAndWait() {
-    ServiceProcessControl::GetInstance()->GetCloudPrintProxyInfo(NewCallback(
-        this, &ServiceProcessControlBrowserTest::CloudPrintInfoCallback));
+    ServiceProcessControl::GetInstance()->GetCloudPrintProxyInfo(
+        base::Bind(&ServiceProcessControlBrowserTest::CloudPrintInfoCallback,
+                   base::Unretained(this)));
     ui_test_utils::RunMessageLoop();
   }
 
