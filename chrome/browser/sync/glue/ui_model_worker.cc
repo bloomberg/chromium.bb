@@ -11,7 +11,8 @@
 
 namespace browser_sync {
 
-void UIModelWorker::DoWorkAndWaitUntilDone(Callback0::Type* work) {
+UnrecoverableErrorInfo UIModelWorker::DoWorkAndWaitUntilDone(
+    const WorkCallback& work) {
   // In most cases, this method is called in WORKING state. It is possible this
   // gets called when we are in the RUNNING_MANUAL_SHUTDOWN_PUMP state, because
   // the UI loop has initiated shutdown but the syncer hasn't got the memo yet.
@@ -19,12 +20,11 @@ void UIModelWorker::DoWorkAndWaitUntilDone(Callback0::Type* work) {
   // code handling this case in Stop(). Note there _no_ way we can be in here
   // with state_ = STOPPED, so it is safe to read / compare in this case.
   CHECK_NE(ANNOTATE_UNPROTECTED_READ(state_), STOPPED);
-
+  UnrecoverableErrorInfo error_info;
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     DLOG(WARNING) << "DoWorkAndWaitUntilDone called from "
       << "ui_loop_. Probably a nested invocation?";
-    work->Run();
-    return;
+    return work.Run();
   }
 
   // Create an unsignaled event to wait on.
@@ -35,16 +35,19 @@ void UIModelWorker::DoWorkAndWaitUntilDone(Callback0::Type* work) {
     // The task is owned by the message loop as per usual.
     base::AutoLock lock(lock_);
     DCHECK(!pending_work_);
-    pending_work_ = new CallDoWorkAndSignalTask(work, &work_done, this);
+    UnrecoverableErrorInfo error_info;
+    pending_work_ = new CallDoWorkAndSignalTask(work, &work_done, this,
+                                                &error_info);
     if (!BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, pending_work_)) {
       LOG(WARNING) << "Could not post work to UI loop.";
       pending_work_ = NULL;
       syncapi_event_.Signal();
-      return;
+      return error_info;
     }
   }
   syncapi_event_.Signal();  // Notify that the syncapi produced work for us.
   work_done.Wait();
+  return error_info;
 }
 
 UIModelWorker::UIModelWorker()
@@ -99,7 +102,7 @@ ModelSafeGroup UIModelWorker::GetModelSafeGroup() {
 }
 
 void UIModelWorker::CallDoWorkAndSignalTask::Run() {
-  if (!work_) {
+  if (work_.is_null()) {
     // This can happen during tests or cases where there are more than just the
     // default UIModelWorker in existence and it gets destroyed before
     // the main UI loop has terminated.  There is no easy way to assert the
@@ -110,11 +113,11 @@ void UIModelWorker::CallDoWorkAndSignalTask::Run() {
     // actually gets destroyed.
     return;
   }
-  work_->Run();
+  *error_info_ = work_.Run();
 
   // Sever ties with work_ to allow the sanity-checking above that we don't
   // get run twice.
-  work_ = NULL;
+  work_.Reset();
 
   // Notify the UIModelWorker that scheduled us that we have run
   // successfully.

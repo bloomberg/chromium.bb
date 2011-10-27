@@ -10,15 +10,19 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/callback_old.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/sync/syncable/model_type.h"
+#include "chrome/browser/sync/util/unrecoverable_error_info.h"
 
 namespace base {
 class DictionaryValue;
 }  // namespace
 
 namespace browser_sync {
+
+typedef base::Callback<UnrecoverableErrorInfo(void)> WorkCallback;
 
 enum ModelSafeGroup {
   GROUP_PASSIVE = 0,   // Models that are just "passively" being synced; e.g.
@@ -52,7 +56,8 @@ class ModelSafeWorker : public base::RefCountedThreadSafe<ModelSafeWorker> {
   // Any time the Syncer performs model modifications (e.g employing a
   // WriteTransaction), it should be done by this method to ensure it is done
   // from a model-safe thread.
-  virtual void DoWorkAndWaitUntilDone(Callback0::Type* work);
+  virtual UnrecoverableErrorInfo DoWorkAndWaitUntilDone(
+      const WorkCallback& work);
 
   virtual ModelSafeGroup GetModelSafeGroup();
 

@@ -7,10 +7,12 @@
 #pragma once
 
 #include "base/callback.h"
+#include "base/compiler_specific.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "base/task.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
+#include "chrome/browser/sync/util/unrecoverable_error_info.h"
 
 namespace base {
 class WaitableEvent;
@@ -36,10 +38,13 @@ class UIModelWorker : public browser_sync::ModelSafeWorker {
   // A simple task to signal a waitable event after Run()ning a Closure.
   class CallDoWorkAndSignalTask : public Task {
    public:
-    CallDoWorkAndSignalTask(Callback0::Type* work,
-                            base::WaitableEvent* work_done,
-                            UIModelWorker* scheduler)
-        : work_(work), work_done_(work_done), scheduler_(scheduler) {
+    CallDoWorkAndSignalTask(
+        const WorkCallback& work,
+        base::WaitableEvent* work_done,
+        UIModelWorker* scheduler,
+        UnrecoverableErrorInfo* error_info)
+        : work_(work), work_done_(work_done), scheduler_(scheduler),
+          error_info_(error_info) {
     }
     virtual ~CallDoWorkAndSignalTask() { }
 
@@ -49,11 +54,13 @@ class UIModelWorker : public browser_sync::ModelSafeWorker {
    private:
     // Task data - a closure and a waitable event to signal after the work has
     // been done.
-    Callback0::Type* work_;
+    WorkCallback work_;
     base::WaitableEvent* work_done_;
 
     // The UIModelWorker responsible for scheduling us.
     UIModelWorker* const scheduler_;
+
+    UnrecoverableErrorInfo* error_info_;
 
     DISALLOW_COPY_AND_ASSIGN(CallDoWorkAndSignalTask);
   };
@@ -65,8 +72,9 @@ class UIModelWorker : public browser_sync::ModelSafeWorker {
   void Stop();
 
   // ModelSafeWorker implementation. Called on syncapi SyncerThread.
-  virtual void DoWorkAndWaitUntilDone(Callback0::Type* work);
-  virtual ModelSafeGroup GetModelSafeGroup();
+  virtual UnrecoverableErrorInfo DoWorkAndWaitUntilDone(
+      const WorkCallback& work) OVERRIDE;
+  virtual ModelSafeGroup GetModelSafeGroup() OVERRIDE;
 
   // Upon receiving this idempotent call, the ModelSafeWorker can
   // assume no work will ever be scheduled again from now on. If it has any work

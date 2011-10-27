@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/sync/engine/model_safe_worker.h"
+#include "chrome/browser/sync/util/unrecoverable_error_info.h"
 
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
@@ -74,8 +75,10 @@ ModelSafeWorker::ModelSafeWorker() {}
 
 ModelSafeWorker::~ModelSafeWorker() {}
 
-void ModelSafeWorker::DoWorkAndWaitUntilDone(Callback0::Type* work) {
-  work->Run();  // For GROUP_PASSIVE, we do the work on the current thread.
+UnrecoverableErrorInfo ModelSafeWorker::DoWorkAndWaitUntilDone(
+  const WorkCallback& work) {
+  // For GROUP_PASSIVE, we do the work on the current thread.
+  return work.Run();
 }
 
 ModelSafeGroup ModelSafeWorker::GetModelSafeGroup() {

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #pragma once
 
 #include "chrome/browser/sync/engine/syncer_command.h"
+#include "chrome/browser/sync/util/unrecoverable_error_info.h"
 
 namespace browser_sync {
 namespace sessions {
@@ -32,8 +33,11 @@ class ModelChangingSyncerCommand : public SyncerCommand {
   virtual void ExecuteImpl(sessions::SyncSession* session);
 
   // wrapper so implementations don't worry about storing work_session
-  void StartChangingModel() {
+  UnrecoverableErrorInfo StartChangingModel() {
+    // TODO(lipalani): |ModelChangingExecuteImpl| should return an
+    // UnrecoverableErrorInfo struct.
     ModelChangingExecuteImpl(work_session_);
+    return UnrecoverableErrorInfo();
   }
 
   // Sometimes, a command has work to do that needs to touch global state

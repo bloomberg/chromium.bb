@@ -21,17 +21,22 @@ PasswordModelWorker::PasswordModelWorker(PasswordStore* password_store)
 
 PasswordModelWorker::~PasswordModelWorker() {}
 
-void PasswordModelWorker::DoWorkAndWaitUntilDone(Callback0::Type* work) {
+UnrecoverableErrorInfo PasswordModelWorker::DoWorkAndWaitUntilDone(
+    const WorkCallback& work) {
   WaitableEvent done(false, false);
+  UnrecoverableErrorInfo error_info;
   password_store_->ScheduleTask(
       NewRunnableMethod(this, &PasswordModelWorker::CallDoWorkAndSignalTask,
-                        work, &done));
+                        work, &done, &error_info));
   done.Wait();
+  return error_info;
 }
 
-void PasswordModelWorker::CallDoWorkAndSignalTask(Callback0::Type* work,
-                                                  WaitableEvent* done) {
-  work->Run();
+void PasswordModelWorker::CallDoWorkAndSignalTask(
+    const WorkCallback& work,
+    WaitableEvent* done,
+    UnrecoverableErrorInfo* error_info) {
+  *error_info = work.Run();
   done->Signal();
 }
 

@@ -4,10 +4,12 @@
 
 #include "chrome/browser/sync/engine/model_changing_syncer_command.h"
 
+#include "base/basictypes.h"
 #include "base/callback_old.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/sessions/status_controller.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
+#include "chrome/browser/sync/util/unrecoverable_error_info.h"
 
 namespace browser_sync {
 
@@ -45,9 +47,15 @@ void ModelChangingSyncerCommand::ExecuteImpl(sessions::SyncSession* session) {
 
     sessions::StatusController* status = work_session_->status_controller();
     sessions::ScopedModelSafeGroupRestriction r(status, group);
-    scoped_ptr<Callback0::Type> c(NewCallback(this,
-        &ModelChangingSyncerCommand::StartChangingModel));
-    worker->DoWorkAndWaitUntilDone(c.get());
+    WorkCallback c = base::Bind(
+        &ModelChangingSyncerCommand::StartChangingModel,
+        // We wait until the callback is executed. So it is safe to use
+        // unretained.
+        base::Unretained(this));
+
+    // TODO(lipalani): Check the return value for an unrecoverable error.
+    ignore_result(worker->DoWorkAndWaitUntilDone(c));
+
   }
 }
 

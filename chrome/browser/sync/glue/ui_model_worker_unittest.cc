@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -9,10 +10,12 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/sync/glue/ui_model_worker.h"
+#include "chrome/browser/sync/util/unrecoverable_error_info.h"
 #include "content/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using browser_sync::UIModelWorker;
+using browser_sync::UnrecoverableErrorInfo;
 
 // Various boilerplate, primarily for the StopWithPendingWork test.
 
@@ -24,11 +27,12 @@ class UIModelWorkerVisitor {
        was_run_(was_run) { }
   virtual ~UIModelWorkerVisitor() { }
 
-  virtual void DoWork() {
+  virtual UnrecoverableErrorInfo DoWork() {
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
     was_run_->Signal();
     if (quit_loop_when_run_)
       MessageLoop::current()->Quit();
+    return UnrecoverableErrorInfo();
   }
 
  private:
@@ -44,9 +48,10 @@ class Syncer {
   ~Syncer() {}
 
   void SyncShare(UIModelWorkerVisitor* visitor) {
-    scoped_ptr<Callback0::Type> c(NewCallback(visitor,
-        &UIModelWorkerVisitor::DoWork));
-    worker_->DoWorkAndWaitUntilDone(c.get());
+    // We wait until the callback is executed. So it is safe to use Unretained.
+    browser_sync::WorkCallback c = base::Bind(&UIModelWorkerVisitor::DoWork,
+                                              base::Unretained(visitor));
+    worker_->DoWorkAndWaitUntilDone(c);
   }
  private:
   scoped_refptr<UIModelWorker> worker_;

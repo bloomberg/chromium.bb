@@ -7,6 +7,7 @@
 #pragma once
 
 #include "chrome/browser/sync/engine/model_safe_worker.h"
+#include "chrome/browser/sync/util/unrecoverable_error_info.h"
 
 #include "base/basictypes.h"
 #include "base/callback.h"
@@ -29,8 +30,9 @@ class HistoryModelWorker : public browser_sync::ModelSafeWorker {
   virtual ~HistoryModelWorker();
 
   // ModelSafeWorker implementation. Called on syncapi SyncerThread.
-  virtual void DoWorkAndWaitUntilDone(Callback0::Type* work);
-  virtual ModelSafeGroup GetModelSafeGroup();
+  virtual UnrecoverableErrorInfo DoWorkAndWaitUntilDone(
+      const WorkCallback& work) OVERRIDE;
+  virtual ModelSafeGroup GetModelSafeGroup() OVERRIDE;
 
  private:
   scoped_refptr<HistoryService> history_service_;
