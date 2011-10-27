@@ -347,7 +347,8 @@ void RenderWidgetHostViewWin::WasHidden() {
 
   // If we have a renderer, then inform it that we are being hidden so it can
   // reduce its resource utilization.
-  render_widget_host_->WasHidden();
+  if (render_widget_host_)
+    render_widget_host_->WasHidden();
 }
 
 void RenderWidgetHostViewWin::SetSize(const gfx::Size& size) {
