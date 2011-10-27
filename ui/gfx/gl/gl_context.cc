@@ -81,4 +81,15 @@ bool GLContext::WasAllocatedUsingARBRobustness() {
   return false;
 }
 
+bool GLContext::InitializeExtensionBindings() {
+  DCHECK(IsCurrent(NULL));
+  static bool initialized = false;
+  if (initialized)
+    return initialized;
+  initialized = InitializeGLExtensionBindings(GetGLImplementation(), this);
+  if (!initialized)
+    LOG(ERROR) << "Could not initialize extension bindings.";
+  return initialized;
+}
+
 }  // namespace gfx

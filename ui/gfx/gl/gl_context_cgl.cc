@@ -103,6 +103,11 @@ bool GLContextCGL::MakeCurrent(GLSurface* surface) {
   }
 
   SetCurrent(this, surface);
+  if (!InitializeExtensionBindings()) {
+    ReleaseCurrent(surface);
+    return false;
+  }
+
   if (!surface->OnMakeCurrent(this)) {
     LOG(ERROR) << "Unable to make gl context current.";
     return false;

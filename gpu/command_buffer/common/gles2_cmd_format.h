@@ -525,4 +525,3 @@ COMPILE_ASSERT(offsetof(GetUniformLocationBucket, location_shm_offset) == 16,
 }  // namespace gpu
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_H_
-

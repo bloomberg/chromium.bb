@@ -70,6 +70,11 @@ bool GLContextOSMesa::MakeCurrent(GLSurface* surface) {
   OSMesaPixelStore(OSMESA_Y_UP, 0);
 
   SetCurrent(this, surface);
+  if (!InitializeExtensionBindings()) {
+    ReleaseCurrent(surface);
+    return false;
+  }
+
   if (!surface->OnMakeCurrent(this)) {
     LOG(ERROR) << "Could not make current.";
     return false;

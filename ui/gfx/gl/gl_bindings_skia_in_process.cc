@@ -43,9 +43,9 @@ GLvoid StubGLBindFragDataLocation(GLuint program, GLuint colorNumber,
   glBindFragDataLocation(program, colorNumber, name);
 }
 
-GLvoid StubGLBindFragDataLocationIndexedARB(GLuint program, GLuint colorNumber,
-                                            GLuint index, const GLchar * name) {
-  glBindFragDataLocationIndexedARB(program, colorNumber, index, name);
+GLvoid StubGLBindFragDataLocationIndexed(GLuint program, GLuint colorNumber,
+                                         GLuint index, const GLchar * name) {
+  glBindFragDataLocationIndexed(program, colorNumber, index, name);
 }
 
 GLvoid StubGLBindFramebuffer(GLenum target, GLuint framebuffer) {
@@ -661,9 +661,8 @@ GrGLInterface* CreateInProcessSkiaGLBinding() {
   interface->fMapBuffer = StubGLMapBuffer;
   interface->fUnmapBuffer = StubGLUnmapBuffer;
   interface->fBindFragDataLocationIndexed =
-    StubGLBindFragDataLocationIndexedARB;
+    StubGLBindFragDataLocationIndexed;
   return interface;
 }
 
 }  // namespace gfx
-

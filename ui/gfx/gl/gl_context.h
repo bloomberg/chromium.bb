@@ -77,6 +77,11 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
   virtual ~GLContext();
   static void SetCurrent(GLContext* context, GLSurface* surface);
 
+  // Initialize function pointers to extension functions in the GL
+  // implementation. Should be called immediately after this context is made
+  // current.
+  bool InitializeExtensionBindings();
+
  private:
   scoped_refptr<GLShareGroup> share_group_;
   friend class base::RefCounted<GLContext>;

@@ -33,7 +33,7 @@ class MockGLInterface : public GLInterface {
   MOCK_METHOD3(BindFragDataLocation, void(GLuint program, GLuint colorNumber,
       const char* name));
 
-  MOCK_METHOD4(BindFragDataLocationIndexedARB, void(GLuint program,
+  MOCK_METHOD4(BindFragDataLocationIndexed, void(GLuint program,
       GLuint colorNumber, GLuint index, const char* name));
 
   MOCK_METHOD2(BindFramebufferEXT, void(GLenum target, GLuint framebuffer));
@@ -476,4 +476,3 @@ class MockGLInterface : public GLInterface {
 }  // namespace gfx
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_GL_MOCK_H_
-

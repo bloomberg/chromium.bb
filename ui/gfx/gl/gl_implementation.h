@@ -15,6 +15,8 @@
 
 namespace gfx {
 
+class GLContext;
+
 // The GL implementation currently in use.
 enum GLImplementation {
   kGLImplementationNone,
@@ -32,6 +34,10 @@ typedef void* (*GLGetProcAddressProc)(const char* name);
 
 // Initialize a particular GL implementation.
 GL_EXPORT bool InitializeGLBindings(GLImplementation implementation);
+
+// Initialize extension function bindings for a GL implementation.
+GL_EXPORT bool InitializeGLExtensionBindings(GLImplementation implementation,
+    GLContext* context);
 
 // Initialize Debug logging wrappers for GL bindings.
 void InitializeDebugGLBindings();
@@ -65,6 +71,11 @@ void AddGLNativeLibrary(base::NativeLibrary library);
 
 // Set an additional function that will be called to find GL entry points.
 void SetGLGetProcAddressProc(GLGetProcAddressProc proc);
+
+// Find a core (non-extension) entry point in the current GL implementation. On
+// EGL based implementations core entry points will not be queried through
+// GLGetProcAddressProc.
+void* GetGLCoreProcAddress(const char* name);
 
 // Find an entry point in the current GL implementation.
 void* GetGLProcAddress(const char* name);

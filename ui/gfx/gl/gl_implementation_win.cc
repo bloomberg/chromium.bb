@@ -207,6 +207,31 @@ bool InitializeGLBindings(GLImplementation implementation) {
   return true;
 }
 
+bool InitializeGLExtensionBindings(GLImplementation implementation,
+    GLContext* context) {
+  switch (implementation) {
+    case kGLImplementationOSMesaGL:
+      InitializeGLExtensionBindingsGL(context);
+      InitializeGLExtensionBindingsOSMESA(context);
+      break;
+    case kGLImplementationEGLGLES2:
+      InitializeGLExtensionBindingsGL(context);
+      InitializeGLExtensionBindingsEGL(context);
+      break;
+    case kGLImplementationDesktopGL:
+      InitializeGLExtensionBindingsGL(context);
+      InitializeGLExtensionBindingsWGL(context);
+      break;
+    case kGLImplementationMockGL:
+      InitializeGLExtensionBindingsGL(context);
+      break;
+    default:
+      return false;
+  }
+
+  return true;
+}
+
 void InitializeDebugGLBindings() {
   InitializeDebugGLBindingsEGL();
   InitializeDebugGLBindingsGL();

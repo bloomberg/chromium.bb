@@ -83,6 +83,11 @@ bool GLContextWGL::MakeCurrent(GLSurface* surface) {
   }
 
   SetCurrent(this, surface);
+  if (!InitializeExtensionBindings()) {
+    ReleaseCurrent(surface);
+    return false;
+  }
+
   if (!surface->OnMakeCurrent(this)) {
     LOG(ERROR) << "Could not make current.";
     return false;

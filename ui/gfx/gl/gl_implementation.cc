@@ -41,6 +41,21 @@ void CleanupNativeLibraries(void* unused) {
     g_libraries = NULL;
   }
 }
+
+bool ExportsCoreFunctionsFromGetProcAddress(GLImplementation implementation) {
+  switch (GetGLImplementation()) {
+    case kGLImplementationDesktopGL:
+    case kGLImplementationOSMesaGL:
+    case kGLImplementationMockGL:
+      return true;
+    case kGLImplementationEGLGLES2:
+      return false;
+    default:
+      NOTREACHED();
+      return true;
+  }
+}
+
 }
 
 GLImplementation GetNamedGLImplementation(const std::string& name) {
@@ -137,7 +152,7 @@ void SetGLGetProcAddressProc(GLGetProcAddressProc proc) {
   g_get_proc_address = proc;
 }
 
-void* GetGLProcAddress(const char* name) {
+void* GetGLCoreProcAddress(const char* name) {
   DCHECK(g_gl_implementation != kGLImplementationNone);
 
   if (g_libraries) {
@@ -148,14 +163,27 @@ void* GetGLProcAddress(const char* name) {
         return proc;
     }
   }
-
-  if (g_get_proc_address) {
+  if (ExportsCoreFunctionsFromGetProcAddress(g_gl_implementation) &&
+      g_get_proc_address) {
     void* proc = g_get_proc_address(name);
     if (proc)
       return proc;
   }
 
   return NULL;
+}
+
+void* GetGLProcAddress(const char* name) {
+  DCHECK(g_gl_implementation != kGLImplementationNone);
+
+  void* proc = GetGLCoreProcAddress(name);
+  if (!proc && g_get_proc_address) {
+    proc = g_get_proc_address(name);
+    if (proc)
+      return proc;
+  }
+
+  return proc;
 }
 
 }  // namespace gfx
