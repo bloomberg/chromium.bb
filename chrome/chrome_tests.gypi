@@ -705,6 +705,7 @@
         'browser/locale_tests_uitest.cc',
         'browser/media_uitest.cc',
         'browser/metrics/metrics_service_uitest.cc',
+        'browser/net/load_timing_observer_uitest.cc',
         'browser/prefs/pref_service_uitest.cc',
         'browser/printing/printing_layout_uitest.cc',
         'browser/process_singleton_linux_uitest.cc',

@@ -150,6 +150,7 @@ void LoadTimingObserver::OnAddURLRequestEntry(
 
       URLRequestRecord& record = url_request_to_record_[source.id];
       record.base_ticks = time;
+      record.timing = ResourceLoadTimingInfo();
       record.timing.base_time = TimeTicksToTime(time);
     }
     return;
@@ -206,9 +207,9 @@ void LoadTimingObserver::OnAddURLRequestEntry(
       break;
     case net::NetLog::TYPE_HTTP_TRANSACTION_READ_HEADERS:
       if (is_begin)
-        timing.receive_headers_start =  TimeTicksToOffset(time, record);
+        timing.receive_headers_start = TimeTicksToOffset(time, record);
       else if (is_end)
-        timing.receive_headers_end =  TimeTicksToOffset(time, record);
+        timing.receive_headers_end = TimeTicksToOffset(time, record);
       break;
     default:
       break;
