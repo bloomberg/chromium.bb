@@ -872,8 +872,8 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       switches::kPpapiFlashPath,
       switches::kPpapiFlashVersion,
       switches::kViewsDesktop,
-#if defined(TOUCH_UI)
       switches::kTouchDevices,
+#if defined(TOUCH_UI)
       // The virtual keyboard extension for TOUCH_UI (chrome://keyboard) highly
       // relies on experimental APIs.
       switches::kEnableExperimentalExtensionApis,

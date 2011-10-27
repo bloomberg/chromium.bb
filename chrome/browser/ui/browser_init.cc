@@ -107,7 +107,7 @@
 #endif
 #endif
 
-#if defined(TOUCH_UI)
+#if defined(TOOLKIT_VIEWS) && defined(OS_LINUX)
 #include "ui/base/touch/touch_factory.h"
 #endif
 
@@ -1481,10 +1481,10 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
   }
 #endif
 
-#if defined(TOUCH_UI)
+#if defined(TOOLKIT_VIEWS) && defined(OS_LINUX)
   // Get a list of pointer-devices that should be treated as touch-devices.
-  // TODO(sad): Instead of/in addition to getting the list from the
-  // command-line, query X for a list of touch devices.
+  // This is primarily used for testing/debugging touch-event processing when a
+  // touch-device isn't available.
   std::string touch_devices =
     command_line.GetSwitchValueASCII(switches::kTouchDevices);
 
@@ -1495,11 +1495,10 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
     base::SplitString(touch_devices, ',', &devs);
     for (std::vector<std::string>::iterator iter = devs.begin();
         iter != devs.end(); ++iter) {
-      if (base::StringToInt(*iter, reinterpret_cast<int*>(&devid))) {
+      if (base::StringToInt(*iter, reinterpret_cast<int*>(&devid)))
         device_ids.push_back(devid);
-      } else {
+      else
         DLOG(WARNING) << "Invalid touch-device id: " << *iter;
-      }
     }
     ui::TouchFactory::GetInstance()->SetTouchDeviceList(device_ids);
   }

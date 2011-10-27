@@ -351,13 +351,10 @@ extern const char kKioskMode[];
 
 #if defined(TOOLKIT_VIEWS)
 extern const char kDebugViewsPaint[];
+extern const char kTouchDevices[];
 extern const char kViewsDesktop[];
 #endif
 
-#if defined(TOUCH_UI)
-extern const char kKeepMouseCursor[];
-extern const char kTouchDevices[];
-#endif
 
 #ifndef NDEBUG
 extern const char kOAuthHostUrl[];

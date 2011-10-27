@@ -1225,19 +1225,13 @@ const char kKioskMode[]                     = "kiosk";
 // region being painted to flash in red.
 const char kDebugViewsPaint[]               = "debug-views-paint";
 
-// Runs Chrome inside the views desktop shell.
-const char kViewsDesktop[]                  = "views-desktop";
-#endif
-
-#if defined(TOUCH_UI)
-// Debug-only switch to prevent the mouse cursor from disappearing when touch
-// is enabled
-const char kKeepMouseCursor[]               = "keep-mouse-cursor";
-
 // Tells chrome to interpret events from these devices as touch events. Only
 // available with XInput 2 (i.e. X server 1.8 or above). The id's of the
 // devices can be retrieved from 'xinput list'.
 const char kTouchDevices[]                  = "touch-devices";
+
+// Runs Chrome inside the views desktop shell.
+const char kViewsDesktop[]                  = "views-desktop";
 #endif
 
 #ifndef NDEBUG

@@ -1805,11 +1805,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   }
 #endif
 
-#if defined(TOUCH_UI)
-  ui::TouchFactory::GetInstance()->set_keep_mouse_cursor(
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kKeepMouseCursor));
-#endif
-
   HandleTestParameters(parsed_command_line());
   RecordBreakpadStatusUMA(metrics);
   about_flags::RecordUMAStatistics(local_state);
