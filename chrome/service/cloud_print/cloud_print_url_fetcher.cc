@@ -26,7 +26,7 @@ void CloudPrintURLFetcher::StartGetRequest(
     int max_retries,
     const std::string& additional_headers) {
   StartRequestHelper(url,
-                     URLFetcher::GET,
+                     content::URLFetcher::GET,
                      delegate,
                      max_retries,
                      std::string(),
@@ -42,7 +42,7 @@ void CloudPrintURLFetcher::StartPostRequest(
     const std::string& post_data,
     const std::string& additional_headers) {
   StartRequestHelper(url,
-                     URLFetcher::POST,
+                     content::URLFetcher::POST,
                      delegate,
                      max_retries,
                      post_data_mime_type,
@@ -131,14 +131,14 @@ void CloudPrintURLFetcher::StartRequestHelper(
   DCHECK(delegate);
   // Persist the additional headers in case we need to retry the request.
   additional_headers_ = additional_headers;
-  request_.reset(new URLFetcher(url, request_type, this));
+  request_.reset(content::URLFetcher::Create(url, request_type, this));
   request_->SetRequestContext(GetRequestContextGetter());
   // Since we implement our own retry logic, disable the retry in URLFetcher.
   request_->SetAutomaticallyRetryOn5xx(false);
   request_->SetMaxRetries(max_retries);
   SetupRequestHeaders();
   delegate_ = delegate;
-  if (request_type == URLFetcher::POST) {
+  if (request_type == content::URLFetcher::POST) {
     request_->SetUploadData(post_data_mime_type, post_data);
   }
 

@@ -12,7 +12,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "content/common/geoposition.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/common/net/url_fetcher_impl.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -87,8 +87,8 @@ bool NetworkLocationRequest::MakeRequest(const std::string& host_name,
 
   GURL request_url = FormRequestURL(url_.spec(), access_token,
                                     wifi_data, timestamp_);
-  url_fetcher_.reset(URLFetcher::Create(
-      url_fetcher_id_for_tests, request_url, URLFetcher::GET, this));
+  url_fetcher_.reset(URLFetcherImpl::Create(
+      url_fetcher_id_for_tests, request_url, URLFetcherImpl::GET, this));
   url_fetcher_->SetRequestContext(url_context_);
   url_fetcher_->SetLoadFlags(
       net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE |

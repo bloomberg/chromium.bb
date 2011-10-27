@@ -11,8 +11,8 @@
 // temporary situation.  We will work on allowing support for multiple "io"
 // threads per process.
 
-#ifndef CONTENT_COMMON_NET_URL_FETCHER_H_
-#define CONTENT_COMMON_NET_URL_FETCHER_H_
+#ifndef CONTENT_COMMON_NET_URL_FETCHER_IMPL_H_
+#define CONTENT_COMMON_NET_URL_FETCHER_IMPL_H_
 #pragma once
 
 #include "base/compiler_specific.h"
@@ -24,15 +24,15 @@ namespace content {
 class URLFetcherFactory;
 }
 
-class CONTENT_EXPORT URLFetcher : public content::URLFetcher{
+class CONTENT_EXPORT URLFetcherImpl : public content::URLFetcher{
  public:
   // |url| is the URL to send the request to.
   // |request_type| is the type of request to make.
   // |d| the object that will receive the callback on fetch completion.
-  URLFetcher(const GURL& url,
-             RequestType request_type,
-             content::URLFetcherDelegate* d);
-  virtual ~URLFetcher();
+  URLFetcherImpl(const GURL& url,
+                 RequestType request_type,
+                 content::URLFetcherDelegate* d);
+  virtual ~URLFetcherImpl();
 
   // content::URLFetcher implementation:
   virtual void SetUploadData(const std::string& upload_content_type,
@@ -118,7 +118,7 @@ class CONTENT_EXPORT URLFetcher : public content::URLFetcher{
   class Core;
   scoped_refptr<Core> core_;
 
-  DISALLOW_COPY_AND_ASSIGN(URLFetcher);
+  DISALLOW_COPY_AND_ASSIGN(URLFetcherImpl);
 };
 
-#endif  // CONTENT_COMMON_NET_URL_FETCHER_H_
+#endif  // CONTENT_COMMON_NET_URL_FETCHER_IMPL_H_

@@ -25,7 +25,7 @@
 #include "chrome/service/net/service_url_request_context.h"
 #include "chrome/service/service_ipc_server.h"
 #include "chrome/service/service_process_prefs.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "net/base/network_change_notifier.h"
@@ -68,7 +68,7 @@ ServiceIOThread::~ServiceIOThread() {
 }
 
 void ServiceIOThread::CleanUp() {
-  URLFetcher::CancelAll();
+  content::URLFetcher::CancelAll();
 }
 
 // Prepares the localized strings that are going to be displayed to

@@ -9,7 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher.h"
 #include "net/test/test_server.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_job.h"
@@ -90,7 +90,7 @@ static void QuitMessageLoop() {
 
 IN_PROC_BROWSER_TEST_F(DeviceManagementServiceIntegrationTest,
                        CannedResponses) {
-  URLFetcher::SetEnableInterceptionForTests(true);
+  content::URLFetcher::SetEnableInterceptionForTests(true);
   DeviceManagementService service(kServiceUrl);
   service.ScheduleInitialization(0);
   scoped_ptr<DeviceManagementBackend> backend(service.CreateBackend());

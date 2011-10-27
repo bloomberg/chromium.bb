@@ -184,7 +184,7 @@
         'common/gpu/gpu_feature_flags_unittest.cc',
         'common/gpu/gpu_info_unittest.cc',
         'common/hi_res_timer_manager_unittest.cc',
-        'common/net/url_fetcher_unittest.cc',
+        'common/net/url_fetcher_impl_unittest.cc',
         'common/process_watcher_unittest.cc',
         'common/property_bag_unittest.cc',
         'common/resource_dispatcher_unittest.cc',

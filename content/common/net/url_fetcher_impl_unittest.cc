@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/net/url_fetcher.h"
+#include "content/common/net/url_fetcher_impl.h"
 
 #include "base/bind.h"
 #include "base/message_loop_proxy.h"
@@ -64,7 +64,7 @@ class URLFetcherTest : public testing::Test,
   URLFetcherTest() : fetcher_(NULL) { }
 
   static int GetNumFetcherCores() {
-    return URLFetcher::GetNumFetcherCores();
+    return URLFetcherImpl::GetNumFetcherCores();
   }
 
   // Creates a URLFetcher, using the program's main thread to do IO.
@@ -102,11 +102,11 @@ class URLFetcherTest : public testing::Test,
   MessageLoopForIO io_loop_;
   scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
 
-  URLFetcher* fetcher_;
+  URLFetcherImpl* fetcher_;
 };
 
 void URLFetcherTest::CreateFetcher(const GURL& url) {
-  fetcher_ = new URLFetcher(url, URLFetcher::GET, this);
+  fetcher_ = new URLFetcherImpl(url, content::URLFetcher::GET, this);
   fetcher_->SetRequestContext(new TestURLRequestContextGetter(
       io_message_loop_proxy()));
   fetcher_->Start();
@@ -270,7 +270,7 @@ class URLFetcherTempFileTest : public URLFetcherTest {
 };
 
 void URLFetcherTempFileTest::CreateFetcher(const GURL& url) {
-  fetcher_ = new URLFetcher(url, URLFetcher::GET, this);
+  fetcher_ = new URLFetcherImpl(url, content::URLFetcher::GET, this);
   fetcher_->SetRequestContext(new TestURLRequestContextGetter(
       io_message_loop_proxy()));
 
@@ -345,7 +345,7 @@ class FetcherWrapperTask : public Task {
 };
 
 void URLFetcherPostTest::CreateFetcher(const GURL& url) {
-  fetcher_ = new URLFetcher(url, URLFetcher::POST, this);
+  fetcher_ = new URLFetcherImpl(url, content::URLFetcher::POST, this);
   fetcher_->SetRequestContext(new TestURLRequestContextGetter(
       io_message_loop_proxy()));
   fetcher_->SetUploadData("application/x-www-form-urlencoded",
@@ -360,7 +360,8 @@ void URLFetcherPostTest::OnURLFetchComplete(const content::URLFetcher* source) {
   URLFetcherTest::OnURLFetchComplete(source);
 }
 
-void URLFetcherHeadersTest::OnURLFetchComplete(const content::URLFetcher* source) {
+void URLFetcherHeadersTest::OnURLFetchComplete(
+    const content::URLFetcher* source) {
   std::string header;
   EXPECT_TRUE(source->GetResponseHeaders()->GetNormalizedHeader("cache-control",
                                                                 &header));
@@ -376,7 +377,7 @@ void URLFetcherSocketAddressTest::OnURLFetchComplete(
 }
 
 void URLFetcherProtectTest::CreateFetcher(const GURL& url) {
-  fetcher_ = new URLFetcher(url, URLFetcher::GET, this);
+  fetcher_ = new URLFetcherImpl(url, content::URLFetcher::GET, this);
   fetcher_->SetRequestContext(new TestURLRequestContextGetter(
       io_message_loop_proxy()));
   start_time_ = Time::Now();
@@ -414,7 +415,7 @@ void URLFetcherProtectTest::OnURLFetchComplete(
 }
 
 void URLFetcherProtectTestPassedThrough::CreateFetcher(const GURL& url) {
-  fetcher_ = new URLFetcher(url, URLFetcher::GET, this);
+  fetcher_ = new URLFetcherImpl(url, content::URLFetcher::GET, this);
   fetcher_->SetRequestContext(new TestURLRequestContextGetter(
       io_message_loop_proxy()));
   fetcher_->SetAutomaticallyRetryOn5xx(false);
@@ -477,7 +478,7 @@ void URLFetcherBadHTTPSTest::OnURLFetchComplete(
 }
 
 void URLFetcherCancelTest::CreateFetcher(const GURL& url) {
-  fetcher_ = new URLFetcher(url, URLFetcher::GET, this);
+  fetcher_ = new URLFetcherImpl(url, content::URLFetcher::GET, this);
   CancelTestURLRequestContextGetter* context_getter =
       new CancelTestURLRequestContextGetter(io_message_loop_proxy());
   fetcher_->SetRequestContext(context_getter);
@@ -777,7 +778,7 @@ TEST_F(URLFetcherMultipleAttemptTest, SameData) {
 
 void CancelAllOnIO() {
   EXPECT_EQ(1, URLFetcherTest::GetNumFetcherCores());
-  URLFetcher::CancelAll();
+  URLFetcherImpl::CancelAll();
   EXPECT_EQ(0, URLFetcherTest::GetNumFetcherCores());
 }
 

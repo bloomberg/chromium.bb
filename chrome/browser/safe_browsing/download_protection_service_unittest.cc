@@ -17,7 +17,6 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/download/download_item.h"
-#include "content/common/net/url_fetcher.h"
 #include "content/public/common/url_fetcher_delegate.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "googleurl/src/gurl.h"

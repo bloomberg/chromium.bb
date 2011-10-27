@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/message_loop.h"
-#include "content/common/net/url_fetcher.h"
 #include "content/public/common/url_fetcher_delegate.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "googleurl/src/gurl.h"
@@ -44,7 +43,7 @@ void MockAuthResponseHandler::CompleteFetch(
     const net::URLRequestStatus status,
     const int http_response_code,
     const std::string data) {
-  TestURLFetcher fetcher(0, GURL(), URLFetcher::GET, delegate);
+  TestURLFetcher fetcher(0, GURL(), content::URLFetcher::GET, delegate);
   fetcher.set_url(remote);
   fetcher.set_status(status);
   fetcher.set_response_code(http_response_code);
@@ -52,14 +51,15 @@ void MockAuthResponseHandler::CompleteFetch(
   delegate->OnURLFetchComplete(&fetcher);
 }
 
-URLFetcher* MockAuthResponseHandler::MockNetwork(
+content::URLFetcher* MockAuthResponseHandler::MockNetwork(
     std::string data,
     content::URLFetcherDelegate* delegate) {
   MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(MockAuthResponseHandler::CompleteFetch, delegate, remote_,
                  status_, http_response_code_, data_));
-  return new URLFetcher(GURL(), URLFetcher::GET, delegate);
+  return content::URLFetcher::Create(
+      GURL(), content::URLFetcher::GET, delegate);
 }
 
 }  // namespace chromeos

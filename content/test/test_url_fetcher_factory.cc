@@ -8,7 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/common/net/url_fetcher_impl.h"
 #include "content/public/common/url_fetcher_delegate.h"
 #include "net/base/host_port_pair.h"
 #include "net/http/http_response_headers.h"
@@ -16,13 +16,13 @@
 
 ScopedURLFetcherFactory::ScopedURLFetcherFactory(
     content::URLFetcherFactory* factory) {
-  DCHECK(!URLFetcher::factory());
-  URLFetcher::set_factory(factory);
+  DCHECK(!URLFetcherImpl::factory());
+  URLFetcherImpl::set_factory(factory);
 }
 
 ScopedURLFetcherFactory::~ScopedURLFetcherFactory() {
-  DCHECK(URLFetcher::factory());
-  URLFetcher::set_factory(NULL);
+  DCHECK(URLFetcherImpl::factory());
+  URLFetcherImpl::set_factory(NULL);
 }
 
 TestURLFetcher::TestURLFetcher(int id,
@@ -320,5 +320,5 @@ content::URLFetcher* URLFetcherFactory::CreateURLFetcher(
     const GURL& url,
     content::URLFetcher::RequestType request_type,
     content::URLFetcherDelegate* d) {
-  return new URLFetcher(url, request_type, d);
+  return new URLFetcherImpl(url, request_type, d);
 }

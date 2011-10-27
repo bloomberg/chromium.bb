@@ -10,7 +10,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher.h"
 #include "content/public/common/url_fetcher_delegate.h"
 
 class GURL;

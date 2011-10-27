@@ -14,7 +14,9 @@
 #include "net/url_request/url_request_status.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+namespace content {
 class URLFetcher;
+}
 
 namespace chromeos {
 
@@ -37,8 +39,8 @@ class MockAuthResponseHandler : public AuthResponseHandler {
   MOCK_METHOD2(Handle, content::URLFetcher*(
       const std::string& to_process, content::URLFetcherDelegate* catcher));
 
-  URLFetcher* MockNetwork(std::string data,
-                          content::URLFetcherDelegate* delegate);
+  content::URLFetcher* MockNetwork(std::string data,
+                                   content::URLFetcherDelegate* delegate);
 
  private:
   const GURL remote_;

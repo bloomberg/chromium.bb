@@ -20,7 +20,7 @@
 #include "chrome/common/extensions/url_pattern.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/utility_process_host.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_status.h"

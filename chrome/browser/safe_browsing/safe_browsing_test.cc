@@ -39,7 +39,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher.h"
 #include "content/public/common/url_fetcher_delegate.h"
 #include "net/base/host_resolver.h"
 #include "net/base/load_flags.h"
@@ -529,7 +529,8 @@ class SafeBrowsingServiceTestHelper
   // Fetch a URL. If message_loop_started is true, starts the message loop
   // so the caller could wait till OnURLFetchComplete is called.
   net::URLRequestStatus::Status FetchUrl(const GURL& url) {
-    url_fetcher_.reset(new URLFetcher(url, URLFetcher::GET, this));
+    url_fetcher_.reset(content::URLFetcher::Create(
+        url, content::URLFetcher::GET, this));
     url_fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
     url_fetcher_->SetRequestContext(
         Profile::Deprecated::GetDefaultRequestContext());

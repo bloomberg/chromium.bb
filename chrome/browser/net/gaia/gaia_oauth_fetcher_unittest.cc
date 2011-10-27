@@ -18,7 +18,6 @@
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/net/http_return.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/common/net/url_fetcher.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/test/test_url_fetcher_factory.h"
@@ -161,7 +160,8 @@ TEST_F(GaiaOAuthFetcherTest, OAuthGetAccessToken) {
   net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
   GURL url(GaiaUrls::GetInstance()->oauth_get_access_token_url());
 
-  TestURLFetcher test_fetcher(0, GURL(), URLFetcher::GET, &oauth_fetcher);
+  TestURLFetcher test_fetcher(
+      0, GURL(), content::URLFetcher::GET, &oauth_fetcher);
   test_fetcher.set_url(url);
   test_fetcher.set_status(status);
   test_fetcher.set_response_code(RC_REQUEST_OK);
@@ -196,7 +196,8 @@ TEST_F(GaiaOAuthFetcherTest, OAuthWrapBridge) {
   net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
   GURL url(GaiaUrls::GetInstance()->oauth_wrap_bridge_url());
 
-  TestURLFetcher test_fetcher(0, GURL(), URLFetcher::GET, &oauth_fetcher);
+  TestURLFetcher test_fetcher(
+      0, GURL(), content::URLFetcher::GET, &oauth_fetcher);
   test_fetcher.set_url(url);
   test_fetcher.set_status(status);
   test_fetcher.set_response_code(RC_REQUEST_OK);
@@ -226,7 +227,8 @@ TEST_F(GaiaOAuthFetcherTest, UserInfo) {
   net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
   GURL url(GaiaUrls::GetInstance()->oauth_user_info_url());
 
-  TestURLFetcher test_fetcher(0, GURL(), URLFetcher::GET, &oauth_fetcher);
+  TestURLFetcher test_fetcher(
+      0, GURL(), content::URLFetcher::GET, &oauth_fetcher);
   test_fetcher.set_url(url);
   test_fetcher.set_status(status);
   test_fetcher.set_response_code(RC_REQUEST_OK);
@@ -251,7 +253,8 @@ TEST_F(GaiaOAuthFetcherTest, OAuthRevokeToken) {
   net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
   GURL url(GaiaUrls::GetInstance()->oauth_revoke_token_url());
 
-  TestURLFetcher test_fetcher(0, GURL(), URLFetcher::GET, &oauth_fetcher);
+  TestURLFetcher test_fetcher(
+      0, GURL(), content::URLFetcher::GET, &oauth_fetcher);
   test_fetcher.set_url(url);
   test_fetcher.set_status(status);
   test_fetcher.set_response_code(RC_REQUEST_OK);

@@ -7,7 +7,7 @@
 #include "base/message_loop_proxy.h"
 #include "chrome/service/net/service_url_request_context.h"
 #include "chrome/service/service_process.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 
 ServiceGaiaAuthenticator::ServiceGaiaAuthenticator(
@@ -64,7 +64,8 @@ int ServiceGaiaAuthenticator::GetBackoffDelaySeconds(
 void ServiceGaiaAuthenticator::DoPost(const GURL& post_url,
                                       const std::string& post_body) {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
-  URLFetcher* request = new URLFetcher(post_url, URLFetcher::POST, this);
+  content::URLFetcher* request = content::URLFetcher::Create(
+      post_url, content::URLFetcher::POST, this);
   request->SetRequestContext(
       g_service_process->GetServiceURLRequestContextGetter());
   request->SetUploadData("application/x-www-form-urlencoded", post_body);

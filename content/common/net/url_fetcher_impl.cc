@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/net/url_fetcher.h"
+#include "content/common/net/url_fetcher_impl.h"
 
 #include <set>
 
@@ -34,15 +34,15 @@
 
 static const int kBufferSize = 4096;
 
-class URLFetcher::Core
-    : public base::RefCountedThreadSafe<URLFetcher::Core>,
+class URLFetcherImpl::Core
+    : public base::RefCountedThreadSafe<URLFetcherImpl::Core>,
       public net::URLRequest::Delegate {
  public:
   // For POST requests, set |content_type| to the MIME type of the content
   // and set |content| to the data to upload.  |flags| are flags to apply to
   // the load operation--these should be one or more of the LOAD_* flags
   // defined in net/base/load_flags.h.
-  Core(URLFetcher* fetcher,
+  Core(URLFetcherImpl* fetcher,
        const GURL& original_url,
        RequestType request_type,
        content::URLFetcherDelegate* d);
@@ -75,7 +75,7 @@ class URLFetcher::Core
   static void CancelAll();
 
  private:
-  friend class base::RefCountedThreadSafe<URLFetcher::Core>;
+  friend class base::RefCountedThreadSafe<URLFetcherImpl::Core>;
 
   class Registry {
    public:
@@ -106,7 +106,7 @@ class URLFetcher::Core
   class TempFileWriter {
    public:
     TempFileWriter(
-        URLFetcher::Core* core,
+        URLFetcherImpl::Core* core,
         scoped_refptr<base::MessageLoopProxy> file_message_loop_proxy);
 
     ~TempFileWriter();
@@ -141,15 +141,15 @@ class URLFetcher::Core
     // Callback which gets the result of closing the temp file.
     void DidCloseTempFile(base::PlatformFileError error);
 
-    // The URLFetcher::Core which instantiated this class.
-    URLFetcher::Core* core_;
+    // The URLFetcherImpl::Core which instantiated this class.
+    URLFetcherImpl::Core* core_;
 
     // The last error encountered on a file operation.  base::PLATFORM_FILE_OK
     // if no error occurred.
     base::PlatformFileError error_code_;
 
     // Callbacks are created for use with base::FileUtilProxy.
-    base::WeakPtrFactory<URLFetcher::Core::TempFileWriter> weak_factory_;
+    base::WeakPtrFactory<URLFetcherImpl::Core::TempFileWriter> weak_factory_;
 
     // Message loop on which file operations should happen.
     scoped_refptr<base::MessageLoopProxy> file_message_loop_proxy_;
@@ -216,7 +216,7 @@ class URLFetcher::Core
   // Drop ownership of any temp file managed by |temp_file_|.
   void DisownTempFile();
 
-  URLFetcher* fetcher_;              // Corresponding fetcher object
+  URLFetcherImpl* fetcher_;          // Corresponding fetcher object
   GURL original_url_;                // The URL we were asked to fetch
   GURL url_;                         // The URL we eventually wound up at
   RequestType request_type_;         // What type of request is this?
@@ -291,34 +291,34 @@ class URLFetcher::Core
 
   static base::LazyInstance<Registry> g_registry;
 
-  friend class URLFetcher;
+  friend class URLFetcherImpl;
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
 
-URLFetcher::Core::Registry::Registry() {}
-URLFetcher::Core::Registry::~Registry() {}
+URLFetcherImpl::Core::Registry::Registry() {}
+URLFetcherImpl::Core::Registry::~Registry() {}
 
-void URLFetcher::Core::Registry::AddURLFetcherCore(Core* core) {
+void URLFetcherImpl::Core::Registry::AddURLFetcherCore(Core* core) {
   DCHECK(!ContainsKey(fetchers_, core));
   fetchers_.insert(core);
 }
 
-void URLFetcher::Core::Registry::RemoveURLFetcherCore(Core* core) {
+void URLFetcherImpl::Core::Registry::RemoveURLFetcherCore(Core* core) {
   DCHECK(ContainsKey(fetchers_, core));
   fetchers_.erase(core);
 }
 
-void URLFetcher::Core::Registry::CancelAll() {
+void URLFetcherImpl::Core::Registry::CancelAll() {
   while (!fetchers_.empty())
     (*fetchers_.begin())->CancelURLRequest();
 }
 
 // static
-base::LazyInstance<URLFetcher::Core::Registry>
-    URLFetcher::Core::g_registry(base::LINKER_INITIALIZED);
+base::LazyInstance<URLFetcherImpl::Core::Registry>
+    URLFetcherImpl::Core::g_registry(base::LINKER_INITIALIZED);
 
-URLFetcher::Core::TempFileWriter::TempFileWriter(
-    URLFetcher::Core* core,
+URLFetcherImpl::Core::TempFileWriter::TempFileWriter(
+    URLFetcherImpl::Core* core,
     scoped_refptr<base::MessageLoopProxy> file_message_loop_proxy)
     : core_(core),
       error_code_(base::PLATFORM_FILE_OK),
@@ -327,21 +327,21 @@ URLFetcher::Core::TempFileWriter::TempFileWriter(
       temp_file_handle_(base::kInvalidPlatformFileValue) {
 }
 
-URLFetcher::Core::TempFileWriter::~TempFileWriter() {
+URLFetcherImpl::Core::TempFileWriter::~TempFileWriter() {
   RemoveTempFile();
 }
 
-void URLFetcher::Core::TempFileWriter::CreateTempFile() {
+void URLFetcherImpl::Core::TempFileWriter::CreateTempFile() {
   DCHECK(core_->io_message_loop_proxy_->BelongsToCurrentThread());
   CHECK(file_message_loop_proxy_.get());
   base::FileUtilProxy::CreateTemporary(
       file_message_loop_proxy_,
       0,  // No additional file flags.
-      base::Bind(&URLFetcher::Core::TempFileWriter::DidCreateTempFile,
+      base::Bind(&URLFetcherImpl::Core::TempFileWriter::DidCreateTempFile,
                  weak_factory_.GetWeakPtr()));
 }
 
-void URLFetcher::Core::TempFileWriter::DidCreateTempFile(
+void URLFetcherImpl::Core::TempFileWriter::DidCreateTempFile(
     base::PlatformFileError error_code,
     base::PassPlatformFile file_handle,
     FilePath file_path) {
@@ -363,7 +363,7 @@ void URLFetcher::Core::TempFileWriter::DidCreateTempFile(
       FROM_HERE, base::Bind(&Core::StartURLRequestWhenAppropriate, core_));
 }
 
-void URLFetcher::Core::TempFileWriter::WriteBuffer(int num_bytes) {
+void URLFetcherImpl::Core::TempFileWriter::WriteBuffer(int num_bytes) {
   DCHECK(core_->io_message_loop_proxy_->BelongsToCurrentThread());
 
   // Start writing to the temp file by setting the initial state
@@ -374,7 +374,7 @@ void URLFetcher::Core::TempFileWriter::WriteBuffer(int num_bytes) {
   ContinueWrite(base::PLATFORM_FILE_OK, 0);
 }
 
-void URLFetcher::Core::TempFileWriter::ContinueWrite(
+void URLFetcherImpl::Core::TempFileWriter::ContinueWrite(
     base::PlatformFileError error_code,
     int bytes_written) {
   DCHECK(core_->io_message_loop_proxy_->BelongsToCurrentThread());
@@ -396,7 +396,7 @@ void URLFetcher::Core::TempFileWriter::ContinueWrite(
         file_message_loop_proxy_, temp_file_handle_,
         total_bytes_written_,  // Append to the end
         (core_->buffer_->data() + buffer_offset_), pending_bytes_,
-        base::Bind(&URLFetcher::Core::TempFileWriter::ContinueWrite,
+        base::Bind(&URLFetcherImpl::Core::TempFileWriter::ContinueWrite,
                    weak_factory_.GetWeakPtr()));
   } else {
     // Finished writing core_->buffer_ to the file. Read some more.
@@ -404,7 +404,7 @@ void URLFetcher::Core::TempFileWriter::ContinueWrite(
   }
 }
 
-void URLFetcher::Core::TempFileWriter::DisownTempFile() {
+void URLFetcherImpl::Core::TempFileWriter::DisownTempFile() {
   DCHECK(core_->io_message_loop_proxy_->BelongsToCurrentThread());
 
   // Disowning is done by the delegate's OnURLFetchComplete method.
@@ -415,19 +415,19 @@ void URLFetcher::Core::TempFileWriter::DisownTempFile() {
   temp_file_ = FilePath();
 }
 
-void URLFetcher::Core::TempFileWriter::CloseTempFileAndCompleteRequest() {
+void URLFetcherImpl::Core::TempFileWriter::CloseTempFileAndCompleteRequest() {
   DCHECK(core_->io_message_loop_proxy_->BelongsToCurrentThread());
 
   if (temp_file_handle_ != base::kInvalidPlatformFileValue) {
     base::FileUtilProxy::Close(
         file_message_loop_proxy_, temp_file_handle_,
-        base::Bind(&URLFetcher::Core::TempFileWriter::DidCloseTempFile,
+        base::Bind(&URLFetcherImpl::Core::TempFileWriter::DidCloseTempFile,
                    weak_factory_.GetWeakPtr()));
     temp_file_handle_ = base::kInvalidPlatformFileValue;
   }
 }
 
-void URLFetcher::Core::TempFileWriter::DidCloseTempFile(
+void URLFetcherImpl::Core::TempFileWriter::DidCloseTempFile(
   base::PlatformFileError error_code) {
   DCHECK(core_->io_message_loop_proxy_->BelongsToCurrentThread());
 
@@ -443,7 +443,7 @@ void URLFetcher::Core::TempFileWriter::DidCloseTempFile(
   core_->RetryOrCompleteUrlFetch();
 }
 
-void URLFetcher::Core::TempFileWriter::RemoveTempFile() {
+void URLFetcherImpl::Core::TempFileWriter::RemoveTempFile() {
   DCHECK(core_->io_message_loop_proxy_->BelongsToCurrentThread());
 
   // Close the temp file if it is open.
@@ -471,7 +471,7 @@ content::URLFetcher* content::URLFetcher::Create(
     const GURL& url,
     RequestType request_type,
     content::URLFetcherDelegate* d) {
-  return new ::URLFetcher(url, request_type, d);
+  return new URLFetcherImpl(url, request_type, d);
 }
 
 // static
@@ -481,12 +481,12 @@ content::URLFetcher* content::URLFetcher::Create(
     RequestType request_type,
     content::URLFetcherDelegate* d) {
   return g_factory ? g_factory->CreateURLFetcher(id, url, request_type, d) :
-                     new ::URLFetcher(url, request_type, d);
+                     new URLFetcherImpl(url, request_type, d);
 }
 
 // static
 void content::URLFetcher::CancelAll() {
-  ::URLFetcher::CancelAll();
+  URLFetcherImpl::CancelAll();
 }
 
 // static
@@ -495,21 +495,21 @@ void content::URLFetcher::SetEnableInterceptionForTests(bool enabled) {
 }
 
 
-URLFetcher::URLFetcher(const GURL& url,
-                       RequestType request_type,
-                       content::URLFetcherDelegate* d)
+URLFetcherImpl::URLFetcherImpl(const GURL& url,
+                               RequestType request_type,
+                               content::URLFetcherDelegate* d)
     : ALLOW_THIS_IN_INITIALIZER_LIST(
       core_(new Core(this, url, request_type, d))) {
 }
 
-URLFetcher::~URLFetcher() {
+URLFetcherImpl::~URLFetcherImpl() {
   core_->Stop();
 }
 
-URLFetcher::Core::Core(URLFetcher* fetcher,
-                       const GURL& original_url,
-                       RequestType request_type,
-                       content::URLFetcherDelegate* d)
+URLFetcherImpl::Core::Core(URLFetcherImpl* fetcher,
+                           const GURL& original_url,
+                           RequestType request_type,
+                           content::URLFetcherDelegate* d)
     : fetcher_(fetcher),
       original_url_(original_url),
       request_type_(request_type),
@@ -529,13 +529,13 @@ URLFetcher::Core::Core(URLFetcher* fetcher,
       max_retries_(0) {
 }
 
-URLFetcher::Core::~Core() {
+URLFetcherImpl::Core::~Core() {
   // |request_| should be NULL.  If not, it's unsafe to delete it here since we
   // may not be on the IO thread.
   DCHECK(!request_.get());
 }
 
-void URLFetcher::Core::Start() {
+void URLFetcherImpl::Core::Start() {
   DCHECK(delegate_loop_proxy_);
   CHECK(request_context_getter_) << "We need an URLRequestContext!";
   if (io_message_loop_proxy_) {
@@ -550,7 +550,7 @@ void URLFetcher::Core::Start() {
       FROM_HERE, base::Bind(&Core::StartOnIOThread, this));
 }
 
-void URLFetcher::Core::StartOnIOThread() {
+void URLFetcherImpl::Core::StartOnIOThread() {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
 
   switch (response_destination_) {
@@ -575,7 +575,7 @@ void URLFetcher::Core::StartOnIOThread() {
   }
 }
 
-void URLFetcher::Core::Stop() {
+void URLFetcherImpl::Core::Stop() {
   if (delegate_loop_proxy_) {  // May be NULL in tests.
     DCHECK(delegate_loop_proxy_->BelongsToCurrentThread());
   }
@@ -587,7 +587,7 @@ void URLFetcher::Core::Stop() {
   }
 }
 
-void URLFetcher::Core::ReceivedContentWasMalformed() {
+void URLFetcherImpl::Core::ReceivedContentWasMalformed() {
   DCHECK(delegate_loop_proxy_->BelongsToCurrentThread());
   if (io_message_loop_proxy_.get()) {
     io_message_loop_proxy_->PostTask(
@@ -595,11 +595,11 @@ void URLFetcher::Core::ReceivedContentWasMalformed() {
   }
 }
 
-void URLFetcher::Core::CancelAll() {
+void URLFetcherImpl::Core::CancelAll() {
   g_registry.Get().CancelAll();
 }
 
-void URLFetcher::Core::OnResponseStarted(net::URLRequest* request) {
+void URLFetcherImpl::Core::OnResponseStarted(net::URLRequest* request) {
   DCHECK_EQ(request, request_.get());
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
   if (request_->status().is_success()) {
@@ -612,7 +612,7 @@ void URLFetcher::Core::OnResponseStarted(net::URLRequest* request) {
   ReadResponse();
 }
 
-void URLFetcher::Core::CompleteAddingUploadDataChunk(
+void URLFetcherImpl::Core::CompleteAddingUploadDataChunk(
     const std::string& content, bool is_last_chunk) {
   DCHECK(is_chunked_upload_);
   DCHECK(request_.get());
@@ -622,7 +622,7 @@ void URLFetcher::Core::CompleteAddingUploadDataChunk(
                                 is_last_chunk);
 }
 
-void URLFetcher::Core::AppendChunkToUpload(const std::string& content,
+void URLFetcherImpl::Core::AppendChunkToUpload(const std::string& content,
                                            bool is_last_chunk) {
   DCHECK(delegate_loop_proxy_);
   CHECK(io_message_loop_proxy_.get());
@@ -635,7 +635,7 @@ void URLFetcher::Core::AppendChunkToUpload(const std::string& content,
 // Return true if the write was done and reading may continue.
 // Return false if the write is pending, and the next read will
 // be done later.
-bool URLFetcher::Core::WriteBuffer(int num_bytes) {
+bool URLFetcherImpl::Core::WriteBuffer(int num_bytes) {
   bool write_complete = false;
   switch (response_destination_) {
     case STRING:
@@ -656,7 +656,7 @@ bool URLFetcher::Core::WriteBuffer(int num_bytes) {
   return write_complete;
 }
 
-void URLFetcher::Core::OnReadCompleted(net::URLRequest* request,
+void URLFetcherImpl::Core::OnReadCompleted(net::URLRequest* request,
                                        int bytes_read) {
   DCHECK(request == request_);
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
@@ -701,7 +701,7 @@ void URLFetcher::Core::OnReadCompleted(net::URLRequest* request,
   }
 }
 
-void URLFetcher::Core::RetryOrCompleteUrlFetch() {
+void URLFetcherImpl::Core::RetryOrCompleteUrlFetch() {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
   base::TimeDelta backoff_delay;
 
@@ -737,7 +737,7 @@ void URLFetcher::Core::RetryOrCompleteUrlFetch() {
   DCHECK(posted || !delegate_);
 }
 
-void URLFetcher::Core::ReadResponse() {
+void URLFetcherImpl::Core::ReadResponse() {
   // Some servers may treat HEAD requests as GET requests.  To free up the
   // network connection as soon as possible, signal that the request has
   // completed immediately, without trying to read any data back (all we care
@@ -748,11 +748,11 @@ void URLFetcher::Core::ReadResponse() {
   OnReadCompleted(request_.get(), bytes_read);
 }
 
-void URLFetcher::Core::DisownTempFile() {
+void URLFetcherImpl::Core::DisownTempFile() {
   temp_file_writer_->DisownTempFile();
 }
 
-void URLFetcher::Core::StartURLRequest() {
+void URLFetcherImpl::Core::StartURLRequest() {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
 
   if (was_cancelled_) {
@@ -815,7 +815,7 @@ void URLFetcher::Core::StartURLRequest() {
   request_->Start();
 }
 
-void URLFetcher::Core::StartURLRequestWhenAppropriate() {
+void URLFetcherImpl::Core::StartURLRequestWhenAppropriate() {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
 
   if (was_cancelled_)
@@ -837,7 +837,7 @@ void URLFetcher::Core::StartURLRequestWhenAppropriate() {
   }
 }
 
-void URLFetcher::Core::CancelURLRequest() {
+void URLFetcherImpl::Core::CancelURLRequest() {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
 
   if (request_.get()) {
@@ -853,7 +853,7 @@ void URLFetcher::Core::CancelURLRequest() {
   temp_file_writer_.reset();
 }
 
-void URLFetcher::Core::OnCompletedURLRequest(
+void URLFetcherImpl::Core::OnCompletedURLRequest(
     base::TimeDelta backoff_delay) {
   DCHECK(delegate_loop_proxy_->BelongsToCurrentThread());
 
@@ -864,14 +864,14 @@ void URLFetcher::Core::OnCompletedURLRequest(
   }
 }
 
-void URLFetcher::Core::InformDelegateFetchIsComplete() {
+void URLFetcherImpl::Core::InformDelegateFetchIsComplete() {
   CHECK(delegate_loop_proxy_->BelongsToCurrentThread());
   if (delegate_) {
     delegate_->OnURLFetchComplete(fetcher_);
   }
 }
 
-void URLFetcher::Core::NotifyMalformedContent() {
+void URLFetcherImpl::Core::NotifyMalformedContent() {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
   if (url_throttler_entry_ != NULL) {
     int status_code = response_code_;
@@ -887,12 +887,12 @@ void URLFetcher::Core::NotifyMalformedContent() {
   }
 }
 
-void URLFetcher::Core::ReleaseRequest() {
+void URLFetcherImpl::Core::ReleaseRequest() {
   request_.reset();
   g_registry.Get().RemoveURLFetcherCore(this);
 }
 
-base::TimeTicks URLFetcher::Core::GetBackoffReleaseTime() {
+base::TimeTicks URLFetcherImpl::Core::GetBackoffReleaseTime() {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
   DCHECK(original_url_throttler_entry_ != NULL);
 
@@ -909,14 +909,14 @@ base::TimeTicks URLFetcher::Core::GetBackoffReleaseTime() {
       original_url_backoff : destination_url_backoff;
 }
 
-void URLFetcher::SetUploadData(const std::string& upload_content_type,
-                               const std::string& upload_content) {
+void URLFetcherImpl::SetUploadData(const std::string& upload_content_type,
+                                   const std::string& upload_content) {
   DCHECK(!core_->is_chunked_upload_);
   core_->upload_content_type_ = upload_content_type;
   core_->upload_content_ = upload_content;
 }
 
-void URLFetcher::SetChunkedUpload(const std::string& content_type) {
+void URLFetcherImpl::SetChunkedUpload(const std::string& content_type) {
   DCHECK(core_->is_chunked_upload_ ||
          (core_->upload_content_type_.empty() &&
           core_->upload_content_.empty()));
@@ -925,72 +925,72 @@ void URLFetcher::SetChunkedUpload(const std::string& content_type) {
   core_->is_chunked_upload_ = true;
 }
 
-void URLFetcher::AppendChunkToUpload(const std::string& data,
-                                     bool is_last_chunk) {
+void URLFetcherImpl::AppendChunkToUpload(const std::string& data,
+                                         bool is_last_chunk) {
   DCHECK(data.length());
   core_->AppendChunkToUpload(data, is_last_chunk);
 }
 
-const std::string& URLFetcher::upload_data() const {
+const std::string& URLFetcherImpl::upload_data() const {
   return core_->upload_content_;
 }
 
-void URLFetcher::SetReferrer(const std::string& referrer) {
+void URLFetcherImpl::SetReferrer(const std::string& referrer) {
   core_->referrer_ = referrer;
 }
 
-void URLFetcher::SetLoadFlags(int load_flags) {
+void URLFetcherImpl::SetLoadFlags(int load_flags) {
   core_->load_flags_ = load_flags;
 }
 
-int URLFetcher::GetLoadFlags() const {
+int URLFetcherImpl::GetLoadFlags() const {
   return core_->load_flags_;
 }
 
-void URLFetcher::SetExtraRequestHeaders(
+void URLFetcherImpl::SetExtraRequestHeaders(
     const std::string& extra_request_headers) {
   core_->extra_request_headers_.Clear();
   core_->extra_request_headers_.AddHeadersFromString(extra_request_headers);
 }
 
-void URLFetcher::GetExtraRequestHeaders(net::HttpRequestHeaders* headers) {
+void URLFetcherImpl::GetExtraRequestHeaders(net::HttpRequestHeaders* headers) {
   headers->CopyFrom(core_->extra_request_headers_);
 }
 
-void URLFetcher::SetRequestContext(
+void URLFetcherImpl::SetRequestContext(
     net::URLRequestContextGetter* request_context_getter) {
   DCHECK(!core_->request_context_getter_);
   core_->request_context_getter_ = request_context_getter;
 }
 
-void URLFetcher::SetAutomaticallyRetryOn5xx(bool retry) {
+void URLFetcherImpl::SetAutomaticallyRetryOn5xx(bool retry) {
   core_->automatically_retry_on_5xx_ = retry;
 }
 
-void URLFetcher::SetMaxRetries(int max_retries) {
+void URLFetcherImpl::SetMaxRetries(int max_retries) {
   core_->max_retries_ = max_retries;
 }
 
-int URLFetcher::GetMaxRetries() const {
+int URLFetcherImpl::GetMaxRetries() const {
   return core_->max_retries_;
 }
 
 
-base::TimeDelta URLFetcher::GetBackoffDelay() const {
+base::TimeDelta URLFetcherImpl::GetBackoffDelay() const {
   return core_->backoff_delay_;
 }
 
-void URLFetcher::SaveResponseToTemporaryFile(
+void URLFetcherImpl::SaveResponseToTemporaryFile(
     scoped_refptr<base::MessageLoopProxy> file_message_loop_proxy) {
   core_->file_message_loop_proxy_ = file_message_loop_proxy;
   core_->response_destination_ = TEMP_FILE;
 }
 
-net::HttpResponseHeaders* URLFetcher::GetResponseHeaders() const {
+net::HttpResponseHeaders* URLFetcherImpl::GetResponseHeaders() const {
   return core_->response_headers_;
 }
 
-void URLFetcher::set_response_headers(
+void URLFetcherImpl::set_response_headers(
     scoped_refptr<net::HttpResponseHeaders> headers) {
   core_->response_headers_ = headers;
 }
@@ -998,49 +998,49 @@ void URLFetcher::set_response_headers(
 // TODO(panayiotis): socket_address_ is written in the IO thread,
 // if this is accessed in the UI thread, this could result in a race.
 // Same for response_headers_ above and was_fetched_via_proxy_ below.
-net::HostPortPair URLFetcher::GetSocketAddress() const {
+net::HostPortPair URLFetcherImpl::GetSocketAddress() const {
   return core_->socket_address_;
 }
 
-bool URLFetcher::WasFetchedViaProxy() const {
+bool URLFetcherImpl::WasFetchedViaProxy() const {
   return core_->was_fetched_via_proxy_;
 }
 
-void URLFetcher::set_was_fetched_via_proxy(bool flag) {
+void URLFetcherImpl::set_was_fetched_via_proxy(bool flag) {
   core_->was_fetched_via_proxy_ = flag;
 }
 
-void URLFetcher::Start() {
+void URLFetcherImpl::Start() {
   core_->Start();
 }
 
-void URLFetcher::StartWithRequestContextGetter(
+void URLFetcherImpl::StartWithRequestContextGetter(
     net::URLRequestContextGetter* request_context_getter) {
   SetRequestContext(request_context_getter);
   core_->Start();
 }
 
-const GURL& URLFetcher::GetOriginalUrl() const {
+const GURL& URLFetcherImpl::GetOriginalUrl() const {
   return core_->original_url_;
 }
 
-const GURL& URLFetcher::GetUrl() const {
+const GURL& URLFetcherImpl::GetUrl() const {
   return core_->url_;
 }
 
-const net::URLRequestStatus& URLFetcher::GetStatus() const {
+const net::URLRequestStatus& URLFetcherImpl::GetStatus() const {
   return core_->status_;
 }
 
-int URLFetcher::GetResponseCode() const {
+int URLFetcherImpl::GetResponseCode() const {
   return core_->response_code_;
 }
 
-const net::ResponseCookies& URLFetcher::GetCookies() const {
+const net::ResponseCookies& URLFetcherImpl::GetCookies() const {
   return core_->cookies_;
 }
 
-bool URLFetcher::FileErrorOccurred(
+bool URLFetcherImpl::FileErrorOccurred(
     base::PlatformFileError* out_error_code) const {
 
   // Can't have a file error if no file is being created or written to.
@@ -1056,11 +1056,12 @@ bool URLFetcher::FileErrorOccurred(
   return true;
 }
 
-void URLFetcher::ReceivedContentWasMalformed() {
+void URLFetcherImpl::ReceivedContentWasMalformed() {
   core_->ReceivedContentWasMalformed();
 }
 
-bool URLFetcher::GetResponseAsString(std::string* out_response_string) const {
+bool URLFetcherImpl::GetResponseAsString(
+    std::string* out_response_string) const {
   if (core_->response_destination_ != STRING)
     return false;
 
@@ -1068,8 +1069,8 @@ bool URLFetcher::GetResponseAsString(std::string* out_response_string) const {
   return true;
 }
 
-bool URLFetcher::GetResponseAsFilePath(bool take_ownership,
-                                       FilePath* out_response_path) const {
+bool URLFetcherImpl::GetResponseAsFilePath(bool take_ownership,
+                                           FilePath* out_response_path) const {
   DCHECK(core_->delegate_loop_proxy_->BelongsToCurrentThread());
   if (core_->response_destination_ != TEMP_FILE ||
       !core_->temp_file_writer_.get())
@@ -1085,25 +1086,25 @@ bool URLFetcher::GetResponseAsFilePath(bool take_ownership,
 }
 
 // static
-void URLFetcher::CancelAll() {
+void URLFetcherImpl::CancelAll() {
   Core::CancelAll();
 }
 
 // static
-int URLFetcher::GetNumFetcherCores() {
+int URLFetcherImpl::GetNumFetcherCores() {
   return Core::g_registry.Get().size();
 }
 
-content::URLFetcherDelegate* URLFetcher::delegate() const {
+content::URLFetcherDelegate* URLFetcherImpl::delegate() const {
   return core_->delegate();
 }
 
 // static
-content::URLFetcherFactory* URLFetcher::factory() {
+content::URLFetcherFactory* URLFetcherImpl::factory() {
   return g_factory;
 }
 
 // static
-void URLFetcher::set_factory(content::URLFetcherFactory* factory) {
+void URLFetcherImpl::set_factory(content::URLFetcherFactory* factory) {
   g_factory = factory;
 }

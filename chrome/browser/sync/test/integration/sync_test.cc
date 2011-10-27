@@ -35,7 +35,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/net/url_fetcher.h"
+#include "content/public/common/url_fetcher.h"
 #include "content/public/common/url_fetcher_delegate.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "googleurl/src/gurl.h"
@@ -508,9 +508,10 @@ bool SyncTest::IsTestServerRunning() {
   std::string sync_url = cl->GetSwitchValueASCII(switches::kSyncServiceURL);
   GURL sync_url_status(sync_url.append("/healthz"));
   SyncServerStatusChecker delegate;
-  URLFetcher fetcher(sync_url_status, URLFetcher::GET, &delegate);
-  fetcher.SetRequestContext(Profile::Deprecated::GetDefaultRequestContext());
-  fetcher.Start();
+  scoped_ptr<content::URLFetcher> fetcher(content::URLFetcher::Create(
+    sync_url_status, content::URLFetcher::GET, &delegate));
+  fetcher->SetRequestContext(Profile::Deprecated::GetDefaultRequestContext());
+  fetcher->Start();
   ui_test_utils::RunMessageLoop();
   return delegate.running();
 }
