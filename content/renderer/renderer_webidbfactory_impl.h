@@ -28,22 +28,9 @@ class RendererWebIDBFactoryImpl : public WebKit::WebIDBFactory {
       WebKit::WebIDBCallbacks* callbacks,
       const WebKit::WebSecurityOrigin& origin,
       WebKit::WebFrame* web_frame,
-      const WebKit::WebString& data_dir,
-      // TODO(dgrogan): Remove maximum_size after it's out of the webkit api.
-      unsigned long long maximum_size,
-      WebKit::WebIDBFactory::BackingStoreType);
+      const WebKit::WebString& data_dir);
 
   virtual void open(
-      const WebKit::WebString& name,
-      WebKit::WebIDBCallbacks* callbacks,
-      const WebKit::WebSecurityOrigin& origin,
-      WebKit::WebFrame* web_frame,
-      const WebKit::WebString& data_dir,
-      // TODO(dgrogan): Remove maximum_size after it's out of the webkit api.
-      unsigned long long maximum_size,
-      WebKit::WebIDBFactory::BackingStoreType);
-  // FIXME(jochen): remove after webkit roll.
-  virtual void deleteDatabase(
       const WebKit::WebString& name,
       WebKit::WebIDBCallbacks* callbacks,
       const WebKit::WebSecurityOrigin& origin,
@@ -54,8 +41,7 @@ class RendererWebIDBFactoryImpl : public WebKit::WebIDBFactory {
       WebKit::WebIDBCallbacks* callbacks,
       const WebKit::WebSecurityOrigin& origin,
       WebKit::WebFrame* web_frame,
-      const WebKit::WebString& data_dir,
-      WebKit::WebIDBFactory::BackingStoreType);
+      const WebKit::WebString& data_dir);
 };
 
 #endif  // CONTENT_RENDERER_RENDERER_WEBIDBFACTORY_IMPL_H_

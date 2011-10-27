@@ -26,9 +26,7 @@ void RendererWebIDBFactoryImpl::getDatabaseNames(
     WebIDBCallbacks* callbacks,
     const WebSecurityOrigin& origin,
     WebFrame* web_frame,
-    const WebString& data_dir_unused,
-    unsigned long long maximum_size_unused,
-    WebKit::WebIDBFactory::BackingStoreType) {
+    const WebString& data_dir_unused) {
   IndexedDBDispatcher* dispatcher =
       RenderThreadImpl::current()->indexed_db_dispatcher();
   dispatcher->RequestIDBFactoryGetDatabaseNames(
@@ -40,9 +38,7 @@ void RendererWebIDBFactoryImpl::open(
     WebIDBCallbacks* callbacks,
     const WebSecurityOrigin& origin,
     WebFrame* web_frame,
-    const WebString& data_dir,
-    unsigned long long maximum_size_unused,
-    WebKit::WebIDBFactory::BackingStoreType) {
+    const WebString& data_dir) {
   // Don't send the data_dir. We know what we want on the Browser side of
   // things.
   IndexedDBDispatcher* dispatcher =
@@ -57,17 +53,6 @@ void RendererWebIDBFactoryImpl::deleteDatabase(
     const WebSecurityOrigin& origin,
     WebFrame* web_frame,
     const WebString& data_dir) {
-  deleteDatabase(name, callbacks, origin, web_frame, data_dir,
-                 WebKit::WebIDBFactory::DefaultBackingStore);
-}
-
-void RendererWebIDBFactoryImpl::deleteDatabase(
-    const WebString& name,
-    WebIDBCallbacks* callbacks,
-    const WebSecurityOrigin& origin,
-    WebFrame* web_frame,
-    const WebString& data_dir,
-    WebKit::WebIDBFactory::BackingStoreType) {
   // Don't send the data_dir. We know what we want on the Browser side of
   // things.
   IndexedDBDispatcher* dispatcher =

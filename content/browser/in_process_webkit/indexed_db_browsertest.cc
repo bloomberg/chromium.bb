@@ -59,18 +59,7 @@ class IndexedDBBrowserTest : public InProcessBrowserTest {
   }
 };
 
-class IndexedDBSQLiteBrowserTest : public IndexedDBBrowserTest {
- public:
-  virtual void SetUpCommandLine(CommandLine* command_line) {
-    command_line->AppendSwitch(switches::kSQLiteIndexedDatabase);
-  }
-};
-
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CursorTest) {
-  SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("cursor_test.html"))));
-}
-
-IN_PROC_BROWSER_TEST_F(IndexedDBSQLiteBrowserTest, CursorTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("cursor_test.html"))));
 }
 

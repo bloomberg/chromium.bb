@@ -452,10 +452,6 @@ const char kSingleProcess[]                 = "single-process";
 // content. The switch is intended only for tests.
 const char kSkipGpuDataLoading[]            = "skip-gpu-data-loading";
 
-// Use SQLite as back-end for Indexed Database API.
-// Used for debugging differences between the LevelDB and SQLite back-end.
-const char kSQLiteIndexedDatabase[]         = "indexeddb-use-sqlite";
-
 // Runs the security test for the renderer sandbox.
 const char kTestSandbox[]                   = "test-sandbox";
 

@@ -210,21 +210,9 @@ void IndexedDBDispatcherHost::OnIDBFactoryGetDatabaseNames(
 
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
 
-  WebKit::WebIDBFactory::BackingStoreType backingStoreType =
-      WebKit::WebIDBFactory::LevelDBBackingStore;
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kSQLiteIndexedDatabase)) {
-    backingStoreType = WebKit::WebIDBFactory::SQLiteBackingStore;
-  }
-
-  // TODO(dgrogan): Delete this magic constant once we've removed sqlite.
-  static const uint64 kIncognitoSqliteBackendQuota = 50 * 1024 * 1024;
-
   Context()->GetIDBFactory()->getDatabaseNames(
       new IndexedDBCallbacks<WebDOMStringList>(this, params.response_id),
-      origin, NULL, webkit_glue::FilePathToWebString(indexed_db_path),
-      kIncognitoSqliteBackendQuota, backingStoreType);
+      origin, NULL, webkit_glue::FilePathToWebString(indexed_db_path));
 }
 
 void IndexedDBDispatcherHost::OnIDBFactoryOpen(
@@ -247,25 +235,13 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
 
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
 
-  WebKit::WebIDBFactory::BackingStoreType backingStoreType =
-      WebKit::WebIDBFactory::LevelDBBackingStore;
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kSQLiteIndexedDatabase)) {
-    backingStoreType = WebKit::WebIDBFactory::SQLiteBackingStore;
-  }
-
-  // TODO(dgrogan): Delete this magic constant once we've removed sqlite.
-  static const uint64 kIncognitoSqliteBackendQuota = 50 * 1024 * 1024;
-
   // TODO(dgrogan): Don't let a non-existing database be opened (and therefore
   // created) if this origin is already over quota.
   Context()->GetIDBFactory()->open(
       params.name,
       new IndexedDBCallbacks<WebIDBDatabase>(this, params.response_id,
                                              origin_url),
-      origin, NULL, webkit_glue::FilePathToWebString(indexed_db_path),
-      kIncognitoSqliteBackendQuota, backingStoreType);
+      origin, NULL, webkit_glue::FilePathToWebString(indexed_db_path));
 }
 
 void IndexedDBDispatcherHost::OnIDBFactoryDeleteDatabase(
