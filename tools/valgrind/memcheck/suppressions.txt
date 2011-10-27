@@ -5060,6 +5060,24 @@
    fun:_ZN7testing8internal11CmpHelperGEIddEENS_15AssertionResultEPKcS4_RKT_RKT0_
    fun:_ZN3gfx31JPEGCodec_EncodeDecodeRGBA_Test8TestBodyEv
 }
+{
+   bug_101867_a
+   Memcheck:Cond
+   ...
+   fun:_ZN8chromeos15PowerMenuButton22UpdateIconAndLabelInfoEv
+   fun:_ZN8chromeos15PowerMenuButtonC1EPNS_14StatusAreaHostE
+   fun:_ZN8chromeos14StatusAreaView4InitEv
+   fun:_ZN8chromeos11BrowserView4InitEv
+}
+{
+   bug_101867_b
+   Memcheck:Value4
+   fun:_ZN8chromeos15PowerMenuButton22UpdateIconAndLabelInfoEv
+   fun:_ZN8chromeos15PowerMenuButtonC1EPNS_14StatusAreaHostE
+   fun:_ZN8chromeos14StatusAreaView4InitEv
+   fun:_ZN8chromeos11BrowserView4InitEv
+}
+
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
 {
