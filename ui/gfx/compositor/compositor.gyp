@@ -107,7 +107,6 @@
       'type': 'static_library',
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
-        '<(DEPTH)/skia/skia.gyp:skia',
       ],
       'sources': [
         'compositor_test_support.cc',
@@ -119,21 +118,6 @@
               '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_support',
               '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
             ],
-        }],
-        ['views_compositor==1', {
-          'sources': [
-          'compositor.cc',
-          'compositor.h',
-          'layer.cc',
-          'layer.h',
-          'layer_animator.cc',
-          'layer_animator.h',
-          'layer_animator_delegate.h',
-          'test_compositor.cc',
-          'test_compositor.h',
-          'test_texture.cc',
-          'test_texture.h',
-          ],
         }],
       ],
     },
@@ -151,6 +135,7 @@
         '<(DEPTH)/ui/ui.gyp:ui_resources',
         'compositor',
         'compositor_test_support',
+        'test_compositor',
       ],
       'sources': [
         'layer_animation_element_unittest.cc',
@@ -183,6 +168,31 @@
           'dependencies': [
             '<(DEPTH)/chrome/chrome.gyp:packed_resources',
            ],
+        }],
+      ],
+    },
+    {
+      'target_name': 'test_compositor',
+      'type': 'static_library',
+      'dependencies': [
+        '<(DEPTH)/base/base.gyp:base',
+      ],
+      'sources': [
+        '../test/gfx_test_utils.cc',
+        '../test/gfx_test_utils.h',
+      ],
+      'conditions': [
+        ['views_compositor == 1', {
+          'dependencies': [
+            '<(DEPTH)/skia/skia.gyp:skia',
+            'compositor',
+          ],
+          'sources': [
+            'test_compositor.cc',
+            'test_compositor.h',
+            'test_texture.cc',
+            'test_texture.h',
+          ],              
         }],
       ],
     },

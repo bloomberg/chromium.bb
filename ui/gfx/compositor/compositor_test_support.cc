@@ -9,11 +9,6 @@
 #include "webkit/glue/webkitplatformsupport_impl.h"
 #endif
 
-#if defined(VIEWS_COMPOSITOR)
-#include "ui/gfx/compositor/compositor.h"
-#include "ui/gfx/compositor/test_compositor.h"
-#endif
-
 namespace ui {
 
 #if defined(USE_WEBKIT_COMPOSITOR)
@@ -34,21 +29,6 @@ void CompositorTestSupport::Terminate() {
   WebKit::shutdown();
   delete g_webkit_support;
   g_webkit_support = NULL;
-#endif
-}
-
-void CompositorTestSupport::SetupMockCompositor() {
-#if defined(USE_WEBKIT_COMPOSITOR)
-  // TODO(backer): We've got dependencies in Layer that require
-  // WebKit support even though we're mocking the Compositor. We
-  // would ideally mock out these unnecessary dependencies as well.
-  DCHECK(g_webkit_support);
-#endif
-
-#if defined(VIEWS_COMPOSITOR)
-  // Use a mock compositor that noops draws.
-  ui::Compositor::set_compositor_factory_for_testing(
-      ui::TestCompositor::Create);
 #endif
 }
 
