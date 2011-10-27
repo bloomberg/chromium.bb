@@ -247,9 +247,9 @@ class BrowserProcessImpl : public BrowserProcess,
 
   scoped_ptr<TabCloseableStateWatcher> tab_closeable_state_watcher_;
 
-  scoped_ptr<BackgroundModeManager> background_mode_manager_;
-
   scoped_ptr<StatusTray> status_tray_;
+
+  scoped_ptr<BackgroundModeManager> background_mode_manager_;
 
   bool created_safe_browsing_service_;
   scoped_refptr<SafeBrowsingService> safe_browsing_service_;
