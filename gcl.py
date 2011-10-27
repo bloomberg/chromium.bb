@@ -1339,10 +1339,11 @@ def CMDpassthru(args):
 
   It assumes a change list name is passed and is converted with the files names.
   """
+  cl_name = args[1]
   args = ["svn", args[0]]
   if len(args) > 1:
     root = GetRepositoryRoot()
-    change_info = ChangeInfo.Load(args[1], root, True, True)
+    change_info = ChangeInfo.Load(cl_name, root, True, True)
     args.extend([os.path.join(root, x) for x in change_info.GetFileNames()])
   return RunShellWithReturnCode(args, print_output=True)[1]
 
