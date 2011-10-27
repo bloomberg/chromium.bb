@@ -111,16 +111,12 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestNoUpdate) {
   update_screen_->SetIgnoreIdleStatus(true);
   UpdateLibrary::Status status;
   status.status = UPDATE_STATUS_IDLE;
-  EXPECT_CALL(*mock_update_library_, status())
-      .Times(1)
-      .WillRepeatedly(ReturnRef(status));
   update_screen_->UpdateStatusChanged(status);
   status.status = UPDATE_STATUS_CHECKING_FOR_UPDATE;
-  EXPECT_CALL(*mock_update_library_, status())
-      .Times(1)
-      .WillRepeatedly(ReturnRef(status));
   update_screen_->UpdateStatusChanged(status);
   status.status = UPDATE_STATUS_IDLE;
+  // status() will be called via ExitUpdate() called from
+  // UpdateStatusChanged().
   EXPECT_CALL(*mock_update_library_, status())
       .Times(AtLeast(1))
       .WillRepeatedly(ReturnRef(status));
@@ -135,46 +131,25 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateAvailable) {
   UpdateLibrary::Status status;
   status.status = UPDATE_STATUS_UPDATE_AVAILABLE;
   status.new_version = "latest and greatest";
-  EXPECT_CALL(*mock_update_library_, status())
-      .Times(AtLeast(1))
-      .WillRepeatedly(ReturnRef(status));
   update_screen_->UpdateStatusChanged(status);
 
   status.status = UPDATE_STATUS_DOWNLOADING;
   status.download_progress = 0.0;
-  EXPECT_CALL(*mock_update_library_, status())
-      .Times(AtLeast(1))
-      .WillRepeatedly(ReturnRef(status));
   update_screen_->UpdateStatusChanged(status);
 
   status.download_progress = 0.5;
-  EXPECT_CALL(*mock_update_library_, status())
-      .Times(AtLeast(1))
-      .WillRepeatedly(ReturnRef(status));
   update_screen_->UpdateStatusChanged(status);
 
   status.download_progress = 1.0;
-  EXPECT_CALL(*mock_update_library_, status())
-      .Times(AtLeast(1))
-      .WillRepeatedly(ReturnRef(status));
   update_screen_->UpdateStatusChanged(status);
 
   status.status = UPDATE_STATUS_VERIFYING;
-  EXPECT_CALL(*mock_update_library_, status())
-      .Times(AtLeast(1))
-      .WillRepeatedly(ReturnRef(status));
   update_screen_->UpdateStatusChanged(status);
 
   status.status = UPDATE_STATUS_FINALIZING;
-  EXPECT_CALL(*mock_update_library_, status())
-      .Times(AtLeast(1))
-      .WillRepeatedly(ReturnRef(status));
   update_screen_->UpdateStatusChanged(status);
 
   status.status = UPDATE_STATUS_UPDATED_NEED_REBOOT;
-  EXPECT_CALL(*mock_update_library_, status())
-      .Times(AtLeast(1))
-      .WillRepeatedly(ReturnRef(status));
   EXPECT_CALL(*mock_update_library_, RebootAfterUpdate())
       .Times(1);
   update_screen_->UpdateStatusChanged(status);
@@ -209,6 +184,8 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestErrorIssuingUpdateCheck) {
 IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestErrorCheckingForUpdate) {
   UpdateLibrary::Status status;
   status.status = UPDATE_STATUS_ERROR;
+  // status() will be called via ExitUpdate() called from
+  // UpdateStatusChanged().
   EXPECT_CALL(*mock_update_library_, status())
       .Times(AtLeast(1))
       .WillRepeatedly(ReturnRef(status));
@@ -222,12 +199,16 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestErrorUpdating) {
   UpdateLibrary::Status status;
   status.status = UPDATE_STATUS_UPDATE_AVAILABLE;
   status.new_version = "latest and greatest";
+  // status() will be called via ExitUpdate() called from
+  // UpdateStatusChanged().
   EXPECT_CALL(*mock_update_library_, status())
       .Times(AtLeast(1))
       .WillRepeatedly(ReturnRef(status));
   update_screen_->UpdateStatusChanged(status);
 
   status.status = UPDATE_STATUS_ERROR;
+  // status() will be called via ExitUpdate() called from
+  // UpdateStatusChanged().
   EXPECT_CALL(*mock_update_library_, status())
       .Times(AtLeast(1))
       .WillRepeatedly(ReturnRef(status));
