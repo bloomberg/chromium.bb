@@ -1254,6 +1254,16 @@ TEST_F(GLES2DecoderTest, ShaderSourceBucketInvalidArgs) {
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
 
+TEST_F(GLES2DecoderTest, ShaderSourceStripComments) {
+  const uint32 kInBucketId = 123;
+  const char kSource[] = "hello/*te\ast*/world//a\ab";
+  SetBucketAsCString(kInBucketId, kSource);
+  ShaderSourceBucket cmd;
+  cmd.Init(client_shader_id_, kInBucketId);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
 TEST_F(GLES2DecoderTest, GenerateMipmapWrongFormatsFails) {
   EXPECT_CALL(*gl_, GenerateMipmapEXT(_))
        .Times(0);

@@ -4748,7 +4748,8 @@ GLuint GLES2DecoderImpl::DoGetMaxValueInBufferCHROMIUM(
 error::Error GLES2DecoderImpl::ShaderSourceHelper(
     GLuint client_id, const char* data, uint32 data_size) {
   std::string str(data, data + data_size);
-  if (!StringIsValidForGLES(str.c_str())) {
+  std::string stripped = ShaderManager::StripComments(str);
+  if (!StringIsValidForGLES(stripped.c_str())) {
     SetGLError(GL_INVALID_VALUE, "glShaderSource: Invalid character");
     return error::kNoError;
   }
