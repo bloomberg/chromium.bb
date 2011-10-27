@@ -402,7 +402,7 @@ void TaskManagerHandler::OpenAboutMemory(const ListValue* indexes) {
 // TaskManagerHandler, private: -----------------------------------------------
 
 bool TaskManagerHandler::is_alive() {
-  return web_ui_->tab_contents()->render_view_host();
+  return web_ui_->tab_contents()->render_view_host() != NULL;
 }
 
 void TaskManagerHandler::UpdateResourceGroupTable(int start, int length) {
