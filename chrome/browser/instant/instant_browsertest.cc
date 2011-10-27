@@ -59,6 +59,7 @@
 #define MAYBE_DontCrashOnBlockedJS DISABLED_DontCrashOnBlockedJS
 #define MAYBE_DontPersistSearchbox DISABLED_DontPersistSearchbox
 #define MAYBE_PreloadsInstant DISABLED_PreloadsInstant
+#define MAYBE_PageVisibilityTest DISABLED_PageVisibilityTest
 #define MAYBE_ExperimentEnabled DISABLED_ExperimentEnabled
 #define MAYBE_IntranetPathLooksLikeSearch DISABLED_IntranetPathLooksLikeSearch
 #else
@@ -81,6 +82,7 @@
 #define MAYBE_DontCrashOnBlockedJS DontCrashOnBlockedJS
 #define MAYBE_DontPersistSearchbox DontPersistSearchbox
 #define MAYBE_PreloadsInstant PreloadsInstant
+#define MAYBE_PageVisibilityTest PageVisibilityTest
 #define MAYBE_ExperimentEnabled ExperimentEnabled
 #define MAYBE_IntranetPathLooksLikeSearch IntranetPathLooksLikeSearch
 #endif
@@ -263,6 +265,14 @@ class InstantTest : public InProcessBrowserTest {
 
   bool HasPreview() {
     return browser()->instant()->GetPreviewContents() != NULL;
+  }
+
+  bool IsVisible(TabContents* tab_contents) {
+    std::string visibility;
+    if (!GetStringFromJavascript(tab_contents, "document.webkitVisibilityState",
+            &visibility))
+      return false;
+    return visibility == "visible";
   }
 
   // Returns the state of the search box as a string. This consists of the
@@ -898,6 +908,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_PreloadsInstant) {
   // Instant should have a preview, but not display it.
   EXPECT_TRUE(HasPreview());
   EXPECT_FALSE(browser()->instant()->is_displayable());
+  EXPECT_FALSE(IsVisible(tab_contents->tab_contents()));
 
   // Adding a new tab shouldn't delete (or recreate) the TabContentsWrapper.
   AddBlankTabAndShow(browser());
@@ -934,6 +945,45 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_IntranetPathLooksLikeSearch) {
   // Instant should not have tried to load a preview for this "search".
   EXPECT_FALSE(HasPreview());
 }
+
+// Tests that the instant search page's visibility is set correctly.
+IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_PageVisibilityTest) {
+  ASSERT_TRUE(test_server()->Start());
+  EnableInstant();
+  ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
+
+  // Initially navigate to the empty page which should be visible.
+  ui_test_utils::NavigateToURL(browser(), test_server()->GetURL(""));
+  TabContents* initial_contents = browser()->GetSelectedTabContents();
+  EXPECT_TRUE(IsVisible(initial_contents));
+
+  // Type something for instant to trigger and wait for preview to navigate.
+  ASSERT_NO_FATAL_FAILURE(FindLocationBar());
+  location_bar_->FocusLocation(false);
+  SetupLocationBar();
+  SetupPreview();
+  SetLocationBarText("def");
+  TabContents* preview_contents =
+      browser()->instant()->GetPreviewContents()->tab_contents();
+  EXPECT_TRUE(IsVisible(preview_contents));
+  EXPECT_FALSE(IsVisible(initial_contents));
+
+  // Delete the user text we should show the previous page.
+  location_bar_->location_entry()->SetUserText(UTF8ToUTF16(""));
+  EXPECT_FALSE(IsVisible(preview_contents));
+  EXPECT_TRUE(IsVisible(initial_contents));
+
+  // Set the user text back and we should see the preview again.
+  location_bar_->location_entry()->SetUserText(UTF8ToUTF16("def"));
+  EXPECT_TRUE(IsVisible(preview_contents));
+  EXPECT_FALSE(IsVisible(initial_contents));
+
+  // Commit the preview.
+  SendKey(ui::VKEY_RETURN);
+  EXPECT_EQ(preview_contents, browser()->GetSelectedTabContents());
+  EXPECT_TRUE(IsVisible(preview_contents));
+}
+
 
 // Tests the INSTANT experiment of the field trial.
 class InstantFieldTrialInstantTest : public InstantTest {

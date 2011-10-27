@@ -4387,10 +4387,17 @@ void Browser::OnStateChanged() {
 void Browser::ShowInstant(TabContentsWrapper* preview_contents) {
   DCHECK(instant_->tab_contents() == GetSelectedTabContentsWrapper());
   window_->ShowInstant(preview_contents);
+
+  GetSelectedTabContents()->HideContents();
+  preview_contents->tab_contents()->ShowContents();
 }
 
 void Browser::HideInstant() {
   window_->HideInstant();
+  if (GetSelectedTabContents())
+    GetSelectedTabContents()->ShowContents();
+  if (instant_->GetPreviewContents())
+    instant_->GetPreviewContents()->tab_contents()->HideContents();
 }
 
 void Browser::CommitInstant(TabContentsWrapper* preview_contents) {

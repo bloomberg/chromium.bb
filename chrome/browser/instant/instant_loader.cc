@@ -1076,6 +1076,7 @@ void InstantLoader::LoadInstantURL(TabContentsWrapper* tab_contents,
   preview_contents_->controller().LoadURL(instant_url, GURL(), transition_type,
                                           std::string());
   RenderViewHost* host = preview_contents_->render_view_host();
+  preview_contents_->tab_contents()->HideContents();
 
   // If user_text is empty, this must be a preload of the search homepage. In
   // that case, send down a SearchBoxResize message, which will switch the page
