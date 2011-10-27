@@ -15,6 +15,7 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/screen.h"
 #include "views/widget/native_widget_delegate.h"
+#include "views/widget/tooltip_manager_views.h"
 
 #if defined(OS_WIN)
 #include "base/win/scoped_gdi_object.h"
@@ -93,6 +94,12 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   // TODO(beng): do this some other way.
   delegate_->OnNativeWidgetSizeChanged(params.bounds.size());
   can_activate_ = params.can_activate;
+  if (params.type != Widget::InitParams::TYPE_TOOLTIP && !params.child) {
+    DCHECK(GetWidget()->GetRootView());
+    views::TooltipManagerViews* manager = new views::TooltipManagerViews(
+        GetWidget()->GetRootView());
+    tooltip_manager_.reset(manager);
+  }
 }
 
 NonClientFrameView* NativeWidgetAura::CreateNonClientFrameView() {
@@ -170,8 +177,7 @@ void* NativeWidgetAura::GetNativeWindowProperty(const char* name) const {
 }
 
 TooltipManager* NativeWidgetAura::GetTooltipManager() const {
-  //NOTIMPLEMENTED();
-  return NULL;
+  return tooltip_manager_.get();
 }
 
 bool NativeWidgetAura::IsScreenReaderActive() const {

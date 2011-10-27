@@ -23,17 +23,13 @@ union WaylandEvent;
 
 namespace views {
 
-namespace internal {
-class RootView;
-}
-
 class Widget;
 
 // TooltipManager implementation for Views.
 class TooltipManagerViews : public TooltipManager,
                             public MessageLoopForUI::Observer {
  public:
-  explicit TooltipManagerViews(internal::RootView* root_view);
+  explicit TooltipManagerViews(views::View* root_view);
   virtual ~TooltipManagerViews();
 
   // TooltipManager.
@@ -76,7 +72,7 @@ class TooltipManagerViews : public TooltipManager,
   void OnMouseMoved(int x, int y);
 
   scoped_ptr<Widget> tooltip_widget_;
-  internal::RootView* root_view_;
+  views::View* root_view_;
   View* tooltip_view_;
   string16 tooltip_text_;
   Label tooltip_label_;

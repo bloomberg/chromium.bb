@@ -23,6 +23,7 @@
         'AURA_IMPLEMENTATION',
       ],
       'sources': [
+        'aura_constants.h',
         'aura_switches.cc',
         'aura_switches.h',
         'cursor.h',

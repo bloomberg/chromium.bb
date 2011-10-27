@@ -10,6 +10,7 @@
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "ui/aura/aura_constants.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura/event.h"
 #include "ui/aura/hit_test.h"
@@ -219,7 +220,8 @@ void RenderWidgetHostViewAura::Destroy() {
 }
 
 void RenderWidgetHostViewAura::SetTooltipText(const string16& tooltip_text) {
-  //NOTIMPLEMENTED();
+  string16* tooltip = new string16(tooltip_text);
+  window_->SetProperty(aura::kTooltipTextKey, tooltip);
 }
 
 BackingStore* RenderWidgetHostViewAura::AllocBackingStore(

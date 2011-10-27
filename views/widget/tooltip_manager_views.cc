@@ -17,6 +17,11 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkColor.h"
+#if defined(USE_AURA)
+#include "ui/aura/aura_constants.h"
+#include "ui/aura/event.h"
+#include "ui/aura/window.h"
+#endif
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/screen.h"
@@ -26,7 +31,6 @@
 #include "views/focus/focus_manager.h"
 #include "views/view.h"
 #include "views/widget/native_widget.h"
-#include "views/widget/root_view.h"
 
 #if defined(USE_WAYLAND)
 #include "ui/wayland/events/wayland_event.h"
@@ -69,7 +73,7 @@ int TooltipManager::GetMaxWidth(int x, int y) {
   return monitor_bounds.width() == 0 ? 800 : (monitor_bounds.width() + 1) / 2;
 }
 
-TooltipManagerViews::TooltipManagerViews(internal::RootView* root_view)
+TooltipManagerViews::TooltipManagerViews(views::View* root_view)
     : root_view_(root_view),
       tooltip_view_(NULL) {
   tooltip_label_.set_background(
@@ -115,12 +119,19 @@ base::MessagePumpObserver::EventStatus TooltipManagerViews::WillProcessEvent(
 }
 #elif defined(USE_X11)
 base::EventStatus TooltipManagerViews::WillProcessEvent(
-    const base::NativeEvent& event) {
-  XGenericEventCookie* cookie = &event->xcookie;
-  if (cookie->evtype == XI_Motion) {
-    const XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(cookie->data);
-    OnMouseMoved(static_cast<int>(xievent->event_x),
-                 static_cast<int>(xievent->event_y));
+    const base::NativeEvent& native_event) {
+  if (!ui::IsMouseEvent(native_event))
+    return base::EVENT_CONTINUE;
+#if defined(USE_AURA)
+  aura::MouseEvent event(native_event);
+#else
+  MouseEvent event(native_event);
+#endif
+  switch (event.type()) {
+    case ui::ET_MOUSE_MOVED:
+      OnMouseMoved(event.x(), event.y());
+    default:
+      break;
   }
   return base::EVENT_CONTINUE;
 }
@@ -140,19 +151,18 @@ void TooltipManagerViews::DidProcessEvent(const base::NativeEvent& event) {
 #endif
 
 void TooltipManagerViews::TooltipTimerFired() {
-  if (tooltip_widget_->IsVisible()) {
-    UpdateIfRequired(curr_mouse_pos_.x(), curr_mouse_pos_.y(), false);
-  } else {
-    tooltip_view_ = GetViewForTooltip(curr_mouse_pos_.x(), curr_mouse_pos_.y(),
-        false);
-    Update();
-  }
+  UpdateIfRequired(curr_mouse_pos_.x(), curr_mouse_pos_.y(), false);
 }
 
 View* TooltipManagerViews::GetViewForTooltip(int x, int y, bool for_keyboard) {
   View* view = NULL;
   if (!for_keyboard) {
-    view = root_view_->GetEventHandlerForPoint(gfx::Point(x, y));
+    // Convert x,y from screen coordinates to |root_view_| coordinates.
+    gfx::Point point(x, y);
+    gfx::Rect r = root_view_->GetWidget()->GetClientAreaScreenBounds();
+    point.SetPoint(point.x() - r.x(), point.y() - r.y());
+    View::ConvertPointFromWidget(root_view_, &point);
+    view = root_view_->GetEventHandlerForPoint(point);
   } else {
     FocusManager* focus_manager = root_view_->GetFocusManager();
     if (focus_manager)
@@ -167,17 +177,31 @@ void TooltipManagerViews::UpdateIfRequired(int x, int y, bool for_keyboard) {
   if (view)
     view->GetTooltipText(gfx::Point(x, y), &tooltip_text);
 
+#if defined(USE_AURA)
+  // In aura, and aura::Window can also have a tooltip. If the view doesnot have
+  // a tooltip, we must also check for the aura::Window underneath the cursor.
+  if (tooltip_text.empty()) {
+    aura::Window* root = reinterpret_cast<aura::Window*>(
+        root_view_->GetWidget()->GetNativeView());
+    if (root) {
+      aura::Window* window = root->GetEventHandlerForPoint(gfx::Point(x, y));
+      if (window) {
+        void* property = window->GetProperty(aura::kTooltipTextKey);
+        if (property)
+          tooltip_text = *reinterpret_cast<string16*>(property);
+      }
+    }
+  }
+#endif
+
   if (tooltip_view_ != view || tooltip_text_ != tooltip_text) {
     tooltip_view_ = view;
+    tooltip_text_ = tooltip_text;
     Update();
   }
 }
 
 void TooltipManagerViews::Update() {
-  if (!tooltip_view_ ||
-      !tooltip_view_->GetTooltipText(gfx::Point(), &tooltip_text_))
-    tooltip_text_.clear();
-
   if (tooltip_text_.empty()) {
     tooltip_widget_->Hide();
   } else {
@@ -196,7 +220,6 @@ void TooltipManagerViews::Update() {
 void TooltipManagerViews::SetTooltipBounds(gfx::Point mouse_pos,
                                            int tooltip_width,
                                            int tooltip_height) {
-  View::ConvertPointToScreen(root_view_, &mouse_pos);
   gfx::Rect tooltip_rect(mouse_pos.x(), mouse_pos.y(), tooltip_width,
                          tooltip_height);
 
@@ -209,12 +232,14 @@ void TooltipManagerViews::SetTooltipBounds(gfx::Point mouse_pos,
 Widget* TooltipManagerViews::CreateTooltip() {
   Widget* widget = new Widget;
   Widget::InitParams params;
+  // For aura, since we set the type to TOOLTIP_TYPE, the widget will get
+  // auto-parented to the MenuAndTooltipsContainer.
   params.type = Widget::InitParams::TYPE_TOOLTIP;
   params.keep_on_top = true;
   params.accept_events = false;
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   widget->Init(params);
-  widget->SetOpacity(0x00);
+  widget->SetOpacity(0xFF);
   return widget;
 }
 

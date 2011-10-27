@@ -158,6 +158,8 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
 
   gfx::NativeCursor cursor_;
 
+  scoped_ptr<TooltipManager> tooltip_manager_;
+
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetAura);
 };
 
