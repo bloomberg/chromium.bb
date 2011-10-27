@@ -60,6 +60,10 @@ class Suppression(object):
             re_line += re.escape(re_bucket)
             re_bucket = ''
             re_line += '.*'
+          elif char == '?':
+            re_line += re.escape(re_bucket)
+            re_bucket = ''
+            re_line += '.'
           else:  # there can't be any '\*'s in a stack trace
             re_bucket += char
         re_line += re.escape(re_bucket)

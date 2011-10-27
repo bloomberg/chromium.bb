@@ -650,6 +650,33 @@
    fun:gtk_window_group_list_windows
    fun:_ZN8gtk_util*AppModal*
 }
+{
+   getpwuid_and_getgrouplist
+   Memcheck:Leak
+   fun:malloc
+   fun:nss_parse_service_list
+   fun:__nss_database_lookup
+   obj:*
+   ...
+   fun:get*
+}
+{
+   dbus_x64_leaks
+   Memcheck:Leak
+   ...
+   obj:/usr/bin/dbus-launch
+}
+{
+   pulseaudio: pa_set_env_and_record
+   Memcheck:Leak
+   fun:malloc
+   fun:realloc
+   fun:pa_xrealloc
+   fun:pa_sprintf_malloc
+   fun:pa_set_env
+   fun:pa_set_env_and_record
+   fun:main
+}
 
 # The following stack suppresses Memcheck false positives on NaCl browser_tests
 # See https://bugs.kde.org/show_bug.cgi?id=270709#c4 for possible reason
@@ -4484,8 +4511,7 @@
    fun:gdk_x11_drawable_get_xid
    fun:_gtk_socket_windowing_realize_window
    fun:gtk_socket_realize
-   fun:g_cclosure_marshal_VOID__VOID
-   fun:g_type_class_meta_marshal
+   ...
    fun:g_closure_invoke
    fun:signal_emit_unlocked_R
    fun:g_signal_emit_valist
@@ -4513,6 +4539,7 @@
    bug_96568a
    Memcheck:Leak
    fun:realloc
+   ...
    fun:HB_OpenTypeShape
    ...
    fun:HB_ShapeItem
@@ -5036,7 +5063,7 @@
    fun:_ZN3gfx24JPEGEncodedDataFromImageERKNS_5ImageEPSt6vectorIhSaIhEE
    fun:_ZN7history8TopSites12EncodeBitmapEPN3gfx5ImageEP13scoped_refptrI15RefCountedBytesE
    fun:_ZN7history8TopSites16SetPageThumbnailERK4GURLPN3gfx5ImageERK14ThumbnailScore
-   fun:_ZN7history17ExpireHistoryTest14AddExampleDataEPxPN4base4TimeE
+   fun:_ZN7history17ExpireHistoryTest14AddExampleDataEP?PN4base4TimeE
    fun:_ZN7history*ExpireHistoryTest_*
 }
 {
@@ -5051,11 +5078,26 @@
    fun:_ZN3gfx24JPEGEncodedDataFromImageERKNS_5ImageEPSt6vectorIhSaIhEE
    fun:_ZN7history8TopSites12EncodeBitmapEPN3gfx5ImageEP13scoped_refptrI15RefCountedBytesE
    fun:_ZN7history8TopSites16SetPageThumbnailERK4GURLPN3gfx5ImageERK14ThumbnailScore
-   fun:_ZN7history17ExpireHistoryTest14AddExampleDataEPxPN4base4TimeE
+   fun:_ZN7history17ExpireHistoryTest14AddExampleDataEP?PN4base4TimeE
    fun:_ZN7history*ExpireHistoryTest_*
 }
 {
    bug_101781_c
+   Memcheck:Value8
+   fun:encode_one_block
+   fun:encode_mcu_huff
+   fun:compress_data
+   fun:process_data_simple_main
+   fun:chromium_jpeg_write_scanlines
+   fun:_ZN3gfx9JPEGCodec6EncodeEPKhNS0_11ColorFormatEiiiiPSt6vectorIhSaIhEE
+   fun:_ZN3gfx24JPEGEncodedDataFromImageERKNS_5ImageEPSt6vectorIhSaIhEE
+   fun:_ZN7history8TopSites12EncodeBitmapEPN3gfx5ImageEP13scoped_refptrI15RefCountedBytesE
+   fun:_ZN7history8TopSites16SetPageThumbnailERK4GURLPN3gfx5ImageERK14ThumbnailScore
+   fun:_ZN7history17ExpireHistoryTest14AddExampleDataEP?PN4base4TimeE
+   fun:_ZN7history*ExpireHistoryTest_*
+}
+{
+   bug_101781_d
    Memcheck:Cond
    fun:_ZN7testing8internal11CmpHelperGEIddEENS_15AssertionResultEPKcS4_RKT_RKT0_
    fun:_ZN3gfx31JPEGCodec_EncodeDecodeRGBA_Test8TestBodyEv
