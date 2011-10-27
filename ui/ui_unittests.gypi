@@ -160,8 +160,8 @@
           ],
         }],
         ['use_aura==1', {
-          'dependencies': [
-            'aura/aura.gyp:aura',
+          'sources!': [
+            'gfx/screen_unittest.cc',
           ],
         }],
       ],

@@ -5,30 +5,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/screen.h"
 
-#if defined(USE_AURA)
-#include "base/message_loop.h"
-#include "ui/aura/desktop.h"
-#endif
-
 namespace {
 
-#if defined(USE_AURA)
-class ScreenTest : public testing::Test {
- public:
-  ScreenTest() {
-    aura::Desktop::GetInstance()->ShowDesktop();
-  }
-
-  virtual ~ScreenTest() {
-    aura::Desktop::GetInstance()->DeleteInstanceForTesting();
-  }
-
- private:
-  MessageLoopForUI message_loop_;
-};
-#else
 typedef testing::Test ScreenTest;
-#endif
 
 TEST_F(ScreenTest, GetPrimaryMonitorSize) {
   // We aren't actually testing that it's correct, just that it's sane.
