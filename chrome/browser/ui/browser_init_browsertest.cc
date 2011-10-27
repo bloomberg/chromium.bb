@@ -289,11 +289,7 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenAppShortcutPanel) {
   ASSERT_NO_FATAL_FAILURE(FindOneOtherBrowser(&new_browser));
 
   // Expect an app panel.
-#if defined(OS_CHROMEOS)
   EXPECT_TRUE(new_browser->is_type_panel() && new_browser->is_app());
-#else
-  EXPECT_TRUE(new_browser->is_type_popup() && new_browser->is_app());
-#endif
 
   // The new browser's app_name should include the app's ID.
   EXPECT_NE(

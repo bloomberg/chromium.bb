@@ -332,10 +332,10 @@ const Experiment kExperiments[] = {
   },
   {
     "panels",
-    IDS_FLAGS_ENABLE_PANELS_NAME,
-    IDS_FLAGS_ENABLE_PANELS_DESCRIPTION,
+    IDS_FLAGS_DISABLE_PANELS_NAME,
+    IDS_FLAGS_DISABLE_PANELS_DESCRIPTION,
     kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnablePanels)
+    SINGLE_VALUE_TYPE(switches::kDisablePanels)
   },
   {
     "enable-shortcuts-provider",

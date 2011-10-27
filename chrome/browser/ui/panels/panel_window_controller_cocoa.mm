@@ -122,9 +122,6 @@ enum {
 
   [titlebar_view_ attach];
 
-  throbberShouldSpin_ =
-      windowShim_->browser()->GetSelectedTabContents()->IsLoading();
-
   // Set initial size of the window to match the size of the panel to give
   // the renderer the proper size to work with earlier, avoiding a resize
   // after the window is revealed.
@@ -136,10 +133,12 @@ enum {
 
   // Attach the RenderWigetHostView to the view hierarchy, it will render
   // HTML content.
+  // TODO(jennb): Find a better way to add tabcontentsview dynamically.
   NSView* tabContentsView = [self tabContentsView];
-  DCHECK(tabContentsView);
-  [[window contentView] addSubview:tabContentsView];
-  [self enableTabContentsViewAutosizing];
+  if (tabContentsView) {
+    [[window contentView] addSubview:tabContentsView];
+    [self enableTabContentsViewAutosizing];
+  }
 }
 
 - (void)mouseEntered:(NSEvent*)event {

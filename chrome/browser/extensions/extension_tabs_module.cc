@@ -434,10 +434,10 @@ bool CreateWindowFunction::RunImpl() {
         extension_id = GetExtension()->id();
       } else if (type_str == keys::kWindowTypeValuePanel) {
         if (CommandLine::ForCurrentProcess()->HasSwitch(
-                switches::kEnablePanels)) {
-          window_type = Browser::TYPE_PANEL;
-        } else {
+                switches::kDisablePanels)) {
           window_type = Browser::TYPE_POPUP;
+        } else {
+          window_type = Browser::TYPE_PANEL;
         }
         extension_id = GetExtension()->id();
       } else if (type_str != keys::kWindowTypeValueNormal) {

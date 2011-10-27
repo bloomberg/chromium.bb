@@ -444,11 +444,8 @@ Browser* Browser::CreateForApp(Type type,
 
   RegisterAppPrefs(app_name, profile);
 
-#if !defined(OS_CHROMEOS)
   if (type == TYPE_PANEL &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnablePanels)) {
-    // The panel UI is not fully implemented, so we default to TYPE_POPUP when
-    // the panel switch is not enabled.  See crbug/55943.
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisablePanels)) {
     type = TYPE_POPUP;
   }
 #if defined(TOOLKIT_GTK)
@@ -458,7 +455,6 @@ Browser* Browser::CreateForApp(Type type,
   if (type == TYPE_PANEL && !ui::GetWindowManagerName(&wm_name))
     type = TYPE_POPUP;
 #endif  // TOOLKIT_GTK
-#endif  // !OS_CHROMEOS
 
   CreateParams params(type, profile);
   params.app_name = app_name;
@@ -4471,9 +4467,13 @@ gfx::Rect Browser::GetInstantBounds() {
 // Browser, protected:
 
 BrowserWindow* Browser::CreateBrowserWindow() {
-  if (type_ == TYPE_PANEL &&
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnablePanels))
+#if !defined(OS_CHROMEOS)
+  if (type_ == TYPE_PANEL) {
+    DCHECK(!CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kDisablePanels));
     return PanelManager::GetInstance()->CreatePanel(this);
+  }
+#endif
 
   return BrowserWindow::CreateBrowserWindow(this);
 }

@@ -19,11 +19,8 @@ BrowserNonClientFrameView* CreateBrowserNonClientFrameView(
   Browser::Type type = browser_view->browser()->type();
   switch (type) {
     case Browser::TYPE_PANEL:
-      if (CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kEnablePanels)) {
-        return new PanelBrowserFrameView(
-            frame, static_cast<PanelBrowserView*>(browser_view));
-      }  // else, fall-through and treat as popup
+      return new PanelBrowserFrameView(
+          frame, static_cast<PanelBrowserView*>(browser_view));
     case Browser::TYPE_POPUP:
       return new PopupNonClientFrameView(frame);
     default:

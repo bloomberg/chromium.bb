@@ -513,8 +513,8 @@ const char kEnableNTPBookmarkFeatures[]     = "enable-ntp-bookmark-features";
 const char kEnableResourceContentSettings[] =
     "enable-resource-content-settings";
 
-// Enables panels (always on-top docked pop-up windows).
-const char kEnablePanels[]                  = "enable-panels";
+// Disables panels (always on-top docked pop-up windows).
+const char kDisablePanels[]                 = "disable-panels";
 
 // Enables speculative TCP/IP preconnection.
 const char kEnablePreconnect[]              = "enable-preconnect";

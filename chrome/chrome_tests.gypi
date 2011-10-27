@@ -587,6 +587,11 @@
             '../views/views.gyp:views',
           ],
         }],
+        ['chromeos==1', {
+          'sources!': [
+            'browser/ui/panels/panel_browsertest.cc',
+          ],
+        }],
         ['OS=="win"', {
           'include_dirs': [
             '../third_party/wtl/include',
@@ -2621,6 +2626,9 @@
           'sources!': [
             'browser/notifications/desktop_notifications_unittest.cc',
             'browser/service/service_process_control_browsertest.cc',
+            # chromeos does not use cross-platform panels
+            'browser/ui/panels/panel_app_browsertest.cc',
+            'browser/ui/panels/panel_browser_view_browsertest.cc',
             'browser/ui/webui/print_preview.js',
           ],
           'conditions': [

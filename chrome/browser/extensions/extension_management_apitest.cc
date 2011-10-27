@@ -89,11 +89,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, LaunchPanelApp) {
   // Find the app's browser.  Check that it is a panel.
   ASSERT_EQ(2u, BrowserList::GetBrowserCount(browser()->profile()));
   Browser* app_browser = FindOtherBrowser(browser());
-#if defined(OS_CHROMEOS)
   ASSERT_TRUE(app_browser->is_type_panel());
-#else
-  ASSERT_TRUE(app_browser->is_type_popup());
-#endif
   ASSERT_TRUE(app_browser->is_app());
 
   // Close the app panel.
@@ -126,11 +122,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, LaunchPanelApp) {
   // prefs, so we should still see the launch in a panel.
   ASSERT_EQ(2u, BrowserList::GetBrowserCount(browser()->profile()));
   app_browser = FindOtherBrowser(browser());
-#if defined(OS_CHROMEOS)
   ASSERT_TRUE(app_browser->is_type_panel());
-#else
-  ASSERT_TRUE(app_browser->is_type_popup());
-#endif
   ASSERT_TRUE(app_browser->is_app());
 }
 

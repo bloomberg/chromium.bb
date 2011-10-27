@@ -153,24 +153,24 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowArgumentsOverflow) {
   ASSERT_TRUE(RunExtensionTest("window_open/argument_overflow")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowOpenPanelNotEnabled) {
-  ASSERT_TRUE(RunExtensionTest("window_open/panel_not_enabled")) << message_;
-}
-
-class WindowOpenPanelTest : public ExtensionApiTest {
+class WindowOpenPanelDisabledTest : public ExtensionApiTest {
   virtual void SetUpCommandLine(CommandLine* command_line) {
     ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnablePanels);
+    command_line->AppendSwitch(switches::kDisablePanels);
   }
 };
 
-IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest, WindowOpenPanel) {
+IN_PROC_BROWSER_TEST_F(WindowOpenPanelDisabledTest, WindowOpenPanelNotEnabled) {
+  ASSERT_TRUE(RunExtensionTest("window_open/panel_not_enabled")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowOpenPanel) {
   ASSERT_TRUE(RunExtensionTest("window_open/panel")) << message_;
 }
 
 #if defined(OS_MACOSX) || defined(OS_WIN)
 // Focus test fails if there is no window manager on Linux.
-IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest, WindowOpenFocus) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowOpenFocus) {
   ASSERT_TRUE(RunExtensionTest("window_open/focus")) << message_;
 }
 #endif
