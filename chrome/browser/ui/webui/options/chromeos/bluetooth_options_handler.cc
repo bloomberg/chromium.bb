@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/bluetooth/bluetooth_device.h"
 #include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "chrome/browser/ui/webui/options/chromeos/system_settings_provider.h"
 #include "chrome/common/chrome_switches.h"
@@ -23,7 +24,23 @@ BluetoothOptionsHandler::BluetoothOptionsHandler()
 }
 
 BluetoothOptionsHandler::~BluetoothOptionsHandler() {
-  // TODO(kevers): Shutdown bluetooth.
+  if (!CommandLine::ForCurrentProcess()
+      ->HasSwitch(switches::kEnableBluetooth)) {
+    return;
+  }
+
+  chromeos::BluetoothManager* bluetooth_manager =
+      chromeos::BluetoothManager::GetInstance();
+  DCHECK(bluetooth_manager);
+
+  chromeos::BluetoothAdapter* default_adapter =
+      bluetooth_manager->DefaultAdapter();
+
+  if (default_adapter != NULL) {
+    default_adapter->RemoveObserver(this);
+  }
+
+  bluetooth_manager->RemoveObserver(this);
 }
 
 void BluetoothOptionsHandler::GetLocalizedValues(
@@ -52,14 +69,22 @@ void BluetoothOptionsHandler::Initialize() {
   DCHECK(web_ui_);
   // Bluetooth support is a work in progress.  Supress the feature unless
   // explicitly enabled via a command line flag.
-  // TODO(kevers): Test for presence of bluetooth hardware.
   if (!CommandLine::ForCurrentProcess()
       ->HasSwitch(switches::kEnableBluetooth)) {
     return;
   }
+
   web_ui_->CallJavascriptFunction(
       "options.SystemOptions.showBluetoothSettings");
-  // TODO(kevers): Initialize bluetooth.
+
+  chromeos::BluetoothManager* bluetooth_manager =
+      chromeos::BluetoothManager::GetInstance();
+  DCHECK(bluetooth_manager);
+  bluetooth_manager->AddObserver(this);
+
+  chromeos::BluetoothAdapter* default_adapter =
+      bluetooth_manager->DefaultAdapter();
+  DefaultAdapterChanged(default_adapter);
 }
 
 void BluetoothOptionsHandler::RegisterMessages() {
@@ -88,7 +113,22 @@ void BluetoothOptionsHandler::FindDevicesCallback(
     GenerateFakeDeviceList();
     return;
   }
-  // TODO(kevers): Fetch real Bluetooth devices.
+
+  chromeos::BluetoothManager* bluetooth_manager =
+      chromeos::BluetoothManager::GetInstance();
+  DCHECK(bluetooth_manager);
+
+  chromeos::BluetoothAdapter* default_adapter =
+      bluetooth_manager->DefaultAdapter();
+
+  ValidateDefaultAdapter(default_adapter);
+
+  if (default_adapter == NULL) {
+    VLOG(1) << "FindDevicesCallback: no default adapter";
+    return;
+  }
+
+  default_adapter->StartDiscovery();
 }
 
 void BluetoothOptionsHandler::UpdateDeviceCallback(
@@ -100,6 +140,91 @@ void BluetoothOptionsHandler::DeviceNotification(
     const DictionaryValue& device) {
   web_ui_->CallJavascriptFunction(
       "options.SystemOptions.addBluetoothDevice", device);
+}
+
+void BluetoothOptionsHandler::DefaultAdapterChanged(
+    chromeos::BluetoothAdapter* adapter) {
+  std::string old_default_adapter_id = default_adapter_id_;
+
+  if (adapter == NULL) {
+    default_adapter_id_.clear();
+    VLOG(2) << "DefaultAdapterChanged: no default bluetooth adapter";
+  } else {
+    default_adapter_id_ = adapter->Id();
+    VLOG(2) << "DefaultAdapterChanged: " << default_adapter_id_;
+  }
+
+  if (default_adapter_id_ == old_default_adapter_id) {
+    return;
+  }
+
+  if (adapter != NULL) {
+    adapter->AddObserver(this);
+  }
+
+  // TODO(vlaviano): Respond to adapter change.
+}
+
+void BluetoothOptionsHandler::DiscoveryStarted(const std::string& adapter_id) {
+  VLOG(2) << "Discovery started on " << adapter_id;
+}
+
+void BluetoothOptionsHandler::DiscoveryEnded(const std::string& adapter_id) {
+  VLOG(2) << "Discovery ended on " << adapter_id;
+  web_ui_->CallJavascriptFunction(
+      "options.SystemOptions.notifyBluetoothSearchComplete");
+
+  // Stop the discovery session.
+  // TODO(vlaviano): We may want to expose DeviceDisappeared, remove the
+  // "Find devices" button, and let the discovery session continue throughout
+  // the time that the page is visible rather than just doing a single discovery
+  // cycle in response to a button click.
+  chromeos::BluetoothManager* bluetooth_manager =
+      chromeos::BluetoothManager::GetInstance();
+  DCHECK(bluetooth_manager);
+
+  chromeos::BluetoothAdapter* default_adapter =
+      bluetooth_manager->DefaultAdapter();
+
+  ValidateDefaultAdapter(default_adapter);
+
+  if (default_adapter == NULL) {
+    VLOG(1) << "DiscoveryEnded: no default adapter";
+    return;
+  }
+
+  default_adapter->StopDiscovery();
+}
+
+void BluetoothOptionsHandler::DeviceFound(const std::string& adapter_id,
+                                          chromeos::BluetoothDevice* device) {
+  VLOG(2) << "Device found on " << adapter_id;
+  DCHECK(device);
+
+  // TODO(vlaviano): eliminate inconsistencies between the javascript rep and
+  // BluetoothDevice so that we can use BluetoothDevice::AsDictionary() here.
+  DictionaryValue device_js_rep;
+  device_js_rep.SetString("deviceName", device->GetName());
+  device_js_rep.SetString("deviceId", device->GetAddress());
+  device_js_rep.SetString("deviceType", device->GetIcon());
+  if (device->IsPaired()) {
+    device_js_rep.SetString("deviceStatus", "bluetoothDeviceConnected");
+  } else {
+    device_js_rep.SetString("deviceStatus", "bluetoothDeviceNotPaired");
+  }
+
+  web_ui_->CallJavascriptFunction(
+      "options.SystemOptions.addBluetoothDevice", device_js_rep);
+}
+
+void BluetoothOptionsHandler::ValidateDefaultAdapter(
+    chromeos::BluetoothAdapter* adapter) {
+  if ((adapter == NULL && !default_adapter_id_.empty()) ||
+      (adapter != NULL && default_adapter_id_ != adapter->Id())) {
+    VLOG(1) << "unexpected default adapter change from \""
+            << default_adapter_id_ << "\" to \"" << adapter->Id() << "\"";
+    DefaultAdapterChanged(adapter);
+  }
 }
 
 void BluetoothOptionsHandler::GenerateFakeDeviceList() {
@@ -125,5 +250,4 @@ void BluetoothOptionsHandler::GenerateFakeDeviceList() {
       "options.SystemOptions.notifyBluetoothSearchComplete");
 }
 
-}
-
+}  // namespace chromeos

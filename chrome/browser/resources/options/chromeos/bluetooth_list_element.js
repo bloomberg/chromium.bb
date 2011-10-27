@@ -14,9 +14,11 @@ cr.define('options.system.bluetooth', function() {
    * @enum {string}
    */
   Constants.DEVICE_TYPE = {
+    COMPUTER: 'computer',
     HEADSET: 'headset',
     KEYBOARD: 'keyboard',
-    MOUSE: 'mouse'
+    MOUSE: 'mouse',
+    PHONE: 'phone',
   };
 
   /**

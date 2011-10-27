@@ -6,6 +6,10 @@
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_CHROMEOS_BLUETOOTH_OPTIONS_HANDLER_H_
 #pragma once
 
+#include <string>
+
+#include "chrome/browser/chromeos/bluetooth/bluetooth_adapter.h"
+#include "chrome/browser/chromeos/bluetooth/bluetooth_manager.h"
 #include "chrome/browser/ui/webui/options/chromeos/cros_options_page_ui_handler.h"
 
 namespace base {
@@ -15,7 +19,9 @@ class DictionaryValue;
 namespace chromeos {
 
 // Handler for Bluetooth options on the system options page.
-class BluetoothOptionsHandler : public chromeos::CrosOptionsPageUIHandler {
+class BluetoothOptionsHandler : public chromeos::CrosOptionsPageUIHandler,
+                                public chromeos::BluetoothManager::Observer,
+                                public chromeos::BluetoothAdapter::Observer {
  public:
   BluetoothOptionsHandler();
   virtual ~BluetoothOptionsHandler();
@@ -46,14 +52,35 @@ class BluetoothOptionsHandler : public chromeos::CrosOptionsPageUIHandler {
   // for device are "deviceName", "deviceId", "deviceType" and "deviceStatus".
   void DeviceNotification(const base::DictionaryValue& device);
 
+  // chromeos::BluetoothManager::Observer override.
+  virtual void DefaultAdapterChanged(chromeos::BluetoothAdapter* adapter);
+
+  // chromeos::BluetoothAdapter::Observer override.
+  virtual void DiscoveryStarted(const std::string& adapter_id);
+
+  // chromeos::BluetoothAdapter::Observer override.
+  virtual void DiscoveryEnded(const std::string& adapter_id);
+
+  // chromeos::BluetoothAdapter::Observer override.
+  virtual void DeviceFound(const std::string& adapter_id,
+                           chromeos::BluetoothDevice* device);
+
  private:
+  // Compares |adapter| with our cached default adapter ID and calls
+  // DefaultAdapterChanged if there has been an unexpected change.
+  void ValidateDefaultAdapter(chromeos::BluetoothAdapter* adapter);
+
   // Simulates extracting a list of available bluetooth devices.
   // Called when emulating ChromeOS from a desktop environment.
   void GenerateFakeDeviceList();
 
+  // The id of the current default bluetooth adapter.
+  // The empty string represents "none".
+  std::string default_adapter_id_;
+
   DISALLOW_COPY_AND_ASSIGN(BluetoothOptionsHandler);
 };
 
-}
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS_CHROMEOS_BLUETOOTH_OPTIONS_HANDLER_H_
