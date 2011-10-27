@@ -272,34 +272,41 @@ void RenderWidget::OnResize(const gfx::Size& new_size,
   // Remember the rect where the resize corner will be drawn.
   resizer_rect_ = resizer_rect;
 
-  if (size_ == new_size)
-    return;
-
-  // TODO(darin): We should not need to reset this here.
-  SetHidden(false);
-  needs_repainting_on_restore_ = false;
-
-  size_ = new_size;
+  // NOTE: We may have entered fullscreen mode without changing our size.
+  bool fullscreen_change = is_fullscreen_ != is_fullscreen;
+  if (fullscreen_change)
+    WillToggleFullscreen();
   is_fullscreen_ = is_fullscreen;
 
-  // We should not be sent a Resize message if we have not ACK'd the previous
-  DCHECK(!next_paint_is_resize_ack());
+  if (size_ != new_size) {
+    // TODO(darin): We should not need to reset this here.
+    SetHidden(false);
+    needs_repainting_on_restore_ = false;
 
-  paint_aggregator_.ClearPendingUpdate();
+    size_ = new_size;
 
-  // When resizing, we want to wait to paint before ACK'ing the resize.  This
-  // ensures that we only resize as fast as we can paint.  We only need to send
-  // an ACK if we are resized to a non-empty rect.
-  webwidget_->resize(new_size);
-  if (!new_size.IsEmpty()) {
-    if (!is_accelerated_compositing_active_) {
-      // Resize should have caused an invalidation of the entire view.
-      DCHECK(paint_aggregator_.HasPendingUpdate());
+    // We should not be sent a Resize message if we have not ACK'd the previous
+    DCHECK(!next_paint_is_resize_ack());
+
+    paint_aggregator_.ClearPendingUpdate();
+
+    // When resizing, we want to wait to paint before ACK'ing the resize.  This
+    // ensures that we only resize as fast as we can paint.  We only need to
+    // send an ACK if we are resized to a non-empty rect.
+    webwidget_->resize(new_size);
+    if (!new_size.IsEmpty()) {
+      if (!is_accelerated_compositing_active_) {
+        // Resize should have caused an invalidation of the entire view.
+        DCHECK(paint_aggregator_.HasPendingUpdate());
+      }
+
+      // We will send the Resize_ACK flag once we paint again.
+      set_next_paint_is_resize_ack();
     }
-
-    // We will send the Resize_ACK flag once we paint again.
-    set_next_paint_is_resize_ack();
   }
+
+  if (fullscreen_change)
+    DidToggleFullscreen();
 }
 
 void RenderWidget::OnWasHidden() {
@@ -1280,6 +1287,32 @@ void RenderWidget::SetHidden(bool hidden) {
     RenderThread::Get()->WidgetHidden();
   else
     RenderThread::Get()->WidgetRestored();
+}
+
+void RenderWidget::WillToggleFullscreen() {
+#ifdef WEBKIT_HAS_NEW_FULLSCREEN_API
+  if (!webwidget_)
+    return;
+
+  if (is_fullscreen_) {
+    webwidget_->willExitFullScreen();
+  } else {
+    webwidget_->willEnterFullScreen();
+  }
+#endif
+}
+
+void RenderWidget::DidToggleFullscreen() {
+#ifdef WEBKIT_HAS_NEW_FULLSCREEN_API
+  if (!webwidget_)
+    return;
+
+  if (is_fullscreen_) {
+    webwidget_->didEnterFullScreen();
+  } else {
+    webwidget_->didExitFullScreen();
+  }
+#endif
 }
 
 void RenderWidget::SetBackground(const SkBitmap& background) {

@@ -313,6 +313,8 @@ class RenderViewImpl : public RenderWidget,
   virtual void didBlur();
   virtual void show(WebKit::WebNavigationPolicy policy);
   virtual void runModal();
+  virtual bool enterFullScreen();
+  virtual void exitFullScreen();
 
   // WebKit::WebViewClient implementation --------------------------------------
 
@@ -362,11 +364,8 @@ class RenderViewImpl : public RenderWidget,
                                           const WebKit::WebString& message);
   virtual void showContextMenu(WebKit::WebFrame* frame,
                                const WebKit::WebContextMenuData& data);
-  virtual bool supportsFullscreen();
-  virtual void enterFullscreenForNode(const WebKit::WebNode&);
-  virtual void exitFullscreenForNode(const WebKit::WebNode&);
-  virtual void enterFullscreen() OVERRIDE;
-  virtual void exitFullscreen() OVERRIDE;
+  virtual void enterFullscreen();
+  virtual void exitFullscreen();
   virtual void setStatusText(const WebKit::WebString& text);
   virtual void setMouseOverURL(const WebKit::WebURL& url);
   virtual void setKeyboardFocusURL(const WebKit::WebURL& url);

@@ -270,6 +270,9 @@ class CONTENT_EXPORT RenderWidget
 
   bool is_hidden() const { return is_hidden_; }
 
+  void WillToggleFullscreen();
+  void DidToggleFullscreen();
+
   // True if an UpdateRect_ACK message is pending.
   bool update_reply_pending() const {
     return update_reply_pending_;

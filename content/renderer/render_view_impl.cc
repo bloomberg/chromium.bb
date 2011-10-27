@@ -1653,25 +1653,14 @@ void RenderViewImpl::showContextMenu(
   Send(new ViewHostMsg_ContextMenu(routing_id_, params));
 }
 
-bool RenderViewImpl::supportsFullscreen() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableVideoFullscreen);
-}
-
-void RenderViewImpl::enterFullscreenForNode(const WebKit::WebNode& node) {
-  NOTIMPLEMENTED();
-}
-
-void RenderViewImpl::exitFullscreenForNode(const WebKit::WebNode& node) {
-  NOTIMPLEMENTED();
-}
-
 void RenderViewImpl::enterFullscreen() {
-  Send(new ViewHostMsg_ToggleFullscreen(routing_id_, true));
+  // TODO(darin): Remove once WebKit roll is complete.
+  enterFullScreen();
 }
 
 void RenderViewImpl::exitFullscreen() {
-  Send(new ViewHostMsg_ToggleFullscreen(routing_id_, false));
+  // TODO(darin): Remove once WebKit roll is complete.
+  exitFullScreen();
 }
 
 void RenderViewImpl::setStatusText(const WebString& text) {
@@ -1860,6 +1849,15 @@ void RenderViewImpl::runModal() {
     RenderThreadImpl::current()->DoNotSuspendWebKitSharedTimer();
 
   SendAndRunNestedMessageLoop(new ViewHostMsg_RunModal(routing_id_));
+}
+
+bool RenderViewImpl::enterFullScreen() {
+  Send(new ViewHostMsg_ToggleFullscreen(routing_id_, true));
+  return true;
+}
+
+void RenderViewImpl::exitFullScreen() {
+  Send(new ViewHostMsg_ToggleFullscreen(routing_id_, false));
 }
 
 // WebKit::WebFrameClient -----------------------------------------------------
@@ -3583,7 +3581,10 @@ void RenderViewImpl::OnSetZoomLevelForLoadingURL(const GURL& url,
 }
 
 void RenderViewImpl::OnExitFullscreen() {
+  // TODO(darin): Remove this IPC once WebKit has been updated.
+#ifndef WEBKIT_HAS_NEW_FULLSCREEN_API
   webview()->exitFullscreen();
+#endif
 }
 
 void RenderViewImpl::OnSetPageEncoding(const std::string& encoding_name) {
