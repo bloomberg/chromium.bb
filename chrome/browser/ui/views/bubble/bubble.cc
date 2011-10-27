@@ -205,6 +205,16 @@ void Bubble::InitBubble(views::Widget* parent,
 #if defined(USE_AURA)
   // TODO(beng):
   NOTIMPLEMENTED();
+  // NOTE: This Widget initialization here is mostly to paper over a crash.
+  // This will soon be not necessary anymore with alicet/msw's work on new
+  // bubbles infrastructure.
+  views::Widget::InitParams params;
+  params.transparent = true;
+  params.parent_widget = parent;
+  params.native_widget = this;
+  GetWidget()->Init(params);
+  if (fade_in)
+    SetOpacity(0);
 #elif defined(OS_WIN)
   views::Widget* parent_window = parent->GetTopLevelWidget();
   if (parent_window)
@@ -307,8 +317,7 @@ void Bubble::InitBubble(views::Widget* parent,
 
   // Show the window.
 #if defined(USE_AURA)
-  // TODO(beng):
-  NOTIMPLEMENTED();
+  GetWidget()->Show();
 #elif defined(OS_WIN)
   border_->ShowWindow(SW_SHOW);
   ShowWindow(SW_SHOW);
