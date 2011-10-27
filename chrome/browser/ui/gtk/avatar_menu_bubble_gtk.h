@@ -16,6 +16,8 @@
 #include "chrome/browser/profiles/avatar_menu_model_observer.h"
 #include "chrome/browser/ui/gtk/avatar_menu_item_gtk.h"
 #include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/base/gtk/gtk_signal.h"
 
 class AvatarMenuModel;
@@ -26,7 +28,8 @@ class GtkThemeService;
 // It displays a list of profiles and allows users to switch between profiles.
 class AvatarMenuBubbleGtk : public BubbleDelegateGtk,
                             public AvatarMenuModelObserver,
-                            public AvatarMenuItemGtk::Delegate {
+                            public AvatarMenuItemGtk::Delegate,
+                            public content::NotificationObserver {
  public:
   AvatarMenuBubbleGtk(Browser* browser,
                       GtkWidget* anchor,
@@ -43,9 +46,13 @@ class AvatarMenuBubbleGtk : public BubbleDelegateGtk,
       AvatarMenuModel* avatar_menu_model) OVERRIDE;
 
   // AvatarMenuItemGtk::Delegate implementation.
-  virtual void OpenProfile(size_t profile_index);
+  virtual void OpenProfile(size_t profile_index) OVERRIDE;
+  virtual void EditProfile(size_t profile_index) OVERRIDE;
 
-  virtual void EditProfile(size_t profile_index);
+  // content::NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   // Notified when |contents_| is destroyed so we can delete our instance.
@@ -69,12 +76,18 @@ class AvatarMenuBubbleGtk : public BubbleDelegateGtk,
   // A weak pointer to the theme service.
   GtkThemeService* theme_service_;
 
+  // A weak pointer to the new proifle link to keep its theme information
+  // updated.
+  GtkWidget* new_profile_link_;
+
   // A vector of all profile items in the menu.
   std::vector<AvatarMenuItemGtk*> items_;
 
   // The minimum width to display the bubble. This is used to prevent the bubble
   // from automatically reducing its size when hovering over a profile item.
   int minimum_width_;
+
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(AvatarMenuBubbleGtk);
 };

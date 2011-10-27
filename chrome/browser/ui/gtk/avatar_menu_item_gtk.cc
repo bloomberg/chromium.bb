@@ -10,6 +10,8 @@
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
+#include "chrome/common/chrome_notification_types.h"
+#include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
@@ -32,6 +34,12 @@ const int kCheckMarkXOffset = 2;
 // elided.
 const int kUserNameMaxWidth = 200;
 
+// The color of the item highlight when we're in chrome-theme mode.
+const GdkColor kHighlightColor = GDK_COLOR_RGB(0xe3, 0xed, 0xf6);
+
+// The color of the background when we're in chrome-theme mode.
+const GdkColor kBackgroundColor = GDK_COLOR_RGB(0xff, 0xff, 0xff);
+
 }  // namespace
 
 AvatarMenuItemGtk::AvatarMenuItemGtk(Delegate* delegate,
@@ -41,10 +49,16 @@ AvatarMenuItemGtk::AvatarMenuItemGtk(Delegate* delegate,
     : delegate_(delegate),
       item_(item),
       item_index_(item_index),
+      theme_service_(theme_service),
       status_label_(NULL),
       link_alignment_(NULL),
+      edit_profile_link_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
-  Init(theme_service);
+  Init(theme_service_);
+
+  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
+                 content::Source<ThemeService>(theme_service_));
+  theme_service_->InitThemesFor(this);
 }
 
 AvatarMenuItemGtk::~AvatarMenuItemGtk() {
@@ -73,9 +87,7 @@ gboolean AvatarMenuItemGtk::OnProfileEnter(GtkWidget* widget,
   if (event->detail == GDK_NOTIFY_INFERIOR)
     return FALSE;
 
-  GtkStyle* style = gtk_rc_get_style(widget);
-  GdkColor highlight_color = style->bg[GTK_STATE_SELECTED];
-  gtk_widget_modify_bg(widget, GTK_STATE_NORMAL, &highlight_color);
+  gtk_widget_modify_bg(widget, GTK_STATE_NORMAL, &highlighted_color_);
   if (item_.active) {
     gtk_widget_hide(status_label_);
     gtk_widget_show(link_alignment_);
@@ -89,7 +101,7 @@ gboolean AvatarMenuItemGtk::OnProfileLeave(GtkWidget* widget,
   if (event->detail == GDK_NOTIFY_INFERIOR)
     return FALSE;
 
-  gtk_widget_modify_bg(widget, GTK_STATE_NORMAL, NULL);
+  gtk_widget_modify_bg(widget, GTK_STATE_NORMAL, unhighlighted_color_);
   if (item_.active) {
     gtk_widget_show(status_label_);
     gtk_widget_hide(link_alignment_);
@@ -100,6 +112,32 @@ gboolean AvatarMenuItemGtk::OnProfileLeave(GtkWidget* widget,
 
 void AvatarMenuItemGtk::EditProfile() {
   delegate_->EditProfile(item_index_);
+}
+
+void AvatarMenuItemGtk::Observe(int type,
+                                const content::NotificationSource& source,
+                                const content::NotificationDetails& details) {
+  DCHECK_EQ(type, chrome::NOTIFICATION_BROWSER_THEME_CHANGED);
+  bool using_native = theme_service_->UsingNativeTheme();
+
+  if (using_native) {
+    GtkStyle* style = gtk_rc_get_style(widget_.get());
+    highlighted_color_ = style->bg[GTK_STATE_SELECTED];
+    unhighlighted_color_ = NULL;
+  } else {
+    highlighted_color_ = kHighlightColor;
+    unhighlighted_color_ = &kBackgroundColor;
+  }
+
+  // Assume that the widget isn't highlighted since theme changes will almost
+  // never happen while we're up.
+  gtk_widget_modify_bg(widget_.get(), GTK_STATE_NORMAL, unhighlighted_color_);
+
+  if (edit_profile_link_) {
+    gtk_chrome_link_button_set_use_gtk_theme(
+        GTK_CHROME_LINK_BUTTON(edit_profile_link_),
+        using_native);
+  }
 }
 
 void AvatarMenuItemGtk::OnEditProfileLinkClicked(GtkWidget* link) {
@@ -182,11 +220,11 @@ void AvatarMenuItemGtk::Init(GtkThemeService* theme_service) {
 
   if (item_.active) {
     // The "edit your profile" link.
-    GtkWidget* edit_profile_link = gtk_chrome_link_button_new(
+    edit_profile_link_ = gtk_chrome_link_button_new(
         l10n_util::GetStringUTF8(IDS_PROFILES_EDIT_PROFILE_LINK).c_str());
 
     link_alignment_ = gtk_alignment_new(0, 0, 0, 0);
-    gtk_container_add(GTK_CONTAINER(link_alignment_), edit_profile_link);
+    gtk_container_add(GTK_CONTAINER(link_alignment_), edit_profile_link_);
 
     // The chrome link button contains a label that won't be shown if the button
     // is set to "no show all", so show all first.
@@ -196,7 +234,7 @@ void AvatarMenuItemGtk::Init(GtkThemeService* theme_service) {
 
     gtk_box_pack_start(GTK_BOX(item_vbox), link_alignment_, FALSE, FALSE, 0);
 
-    g_signal_connect(edit_profile_link, "clicked",
+    g_signal_connect(edit_profile_link_, "clicked",
                      G_CALLBACK(OnEditProfileLinkClickedThunk), this);
 
     GtkSizeGroup* size_group = gtk_size_group_new(GTK_SIZE_GROUP_BOTH);

@@ -16,6 +16,8 @@
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/location_bar_view_gtk.h"
+#include "chrome/common/chrome_notification_types.h"
+#include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -37,6 +39,7 @@ AvatarMenuBubbleGtk::AvatarMenuBubbleGtk(Browser* browser,
                                          const gfx::Rect* rect)
     : contents_(NULL),
       theme_service_(GtkThemeService::GetFrom(browser->profile())),
+      new_profile_link_(NULL),
       minimum_width_(kBubbleMinWidth) {
   avatar_menu_model_.reset(new AvatarMenuModel(
       &g_browser_process->profile_manager()->GetProfileInfoCache(),
@@ -56,6 +59,10 @@ AvatarMenuBubbleGtk::AvatarMenuBubbleGtk(Browser* browser,
                             this);  // |delegate|
   g_signal_connect(contents_, "destroy",
                    G_CALLBACK(&OnDestroyThunk), this);
+
+  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
+                 content::Source<ThemeService>(theme_service_));
+  theme_service_->InitThemesFor(this);
 }
 
 AvatarMenuBubbleGtk::~AvatarMenuBubbleGtk() {
@@ -89,6 +96,15 @@ void AvatarMenuBubbleGtk::OpenProfile(size_t profile_index) {
 void AvatarMenuBubbleGtk::EditProfile(size_t profile_index) {
   avatar_menu_model_->EditProfile(profile_index);
   bubble_->Close();
+}
+
+void AvatarMenuBubbleGtk::Observe(int type,
+                                  const content::NotificationSource& source,
+                                  const content::NotificationDetails& details) {
+  DCHECK_EQ(type, chrome::NOTIFICATION_BROWSER_THEME_CHANGED);
+  gtk_chrome_link_button_set_use_gtk_theme(
+      GTK_CHROME_LINK_BUTTON(new_profile_link_),
+      theme_service_->UsingNativeTheme());
 }
 
 void AvatarMenuBubbleGtk::OnSizeRequest(GtkWidget* widget,
@@ -129,15 +145,15 @@ void AvatarMenuBubbleGtk::InitContents() {
   gtk_box_pack_start(GTK_BOX(contents_), gtk_hseparator_new(), TRUE, TRUE, 0);
 
   // The new profile link.
-  GtkWidget* new_profile_link = gtk_chrome_link_button_new(
+  new_profile_link_ = gtk_chrome_link_button_new(
       l10n_util::GetStringUTF8(IDS_PROFILES_CREATE_NEW_PROFILE_LINK).c_str());
-  g_signal_connect(new_profile_link, "clicked",
+  g_signal_connect(new_profile_link_, "clicked",
                    G_CALLBACK(OnNewProfileLinkClickedThunk), this);
 
   GtkWidget* link_align = gtk_alignment_new(0, 0, 0, 0);
   gtk_alignment_set_padding(GTK_ALIGNMENT(link_align),
                             0, 0, kNewProfileLinkLeftPadding, 0);
-  gtk_container_add(GTK_CONTAINER(link_align), new_profile_link);
+  gtk_container_add(GTK_CONTAINER(link_align), new_profile_link_);
 
   gtk_box_pack_start(GTK_BOX(contents_), link_align, FALSE, FALSE, 0);
 }
