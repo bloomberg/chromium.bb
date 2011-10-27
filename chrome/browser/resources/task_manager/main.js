@@ -284,7 +284,7 @@ TaskManager.prototype = {
     var listItem = new cr.ui.ListItem({label: ''});
 
     listItem.className = 'table-row';
-    if (this.opt_.isBackgroundMode_ && dataItem.isBackgroundResource)
+    if (this.opt_.isBackgroundMode && dataItem.isBackgroundResource)
       listItem.className += ' table-background-row';
 
     for (var i = 0; i < cm.size; i++) {
