@@ -23,9 +23,9 @@ class UI_EXPORT PlatformFont : public base::RefCounted<PlatformFont> {
   static PlatformFont* CreateDefault();
   static PlatformFont* CreateFromFont(const Font& other);
   static PlatformFont* CreateFromNativeFont(NativeFont native_font);
-  // Creates a PlatformFont implementation with the specified |font_name| and
-  // |font_size| in pixels.
-  static PlatformFont* CreateFromNameAndSize(const string16& font_name,
+  // Creates a PlatformFont implementation with the specified |font_name|
+  // (encoded in UTF-8) and |font_size| in pixels.
+  static PlatformFont* CreateFromNameAndSize(const std::string& font_name,
                                              int font_size);
 
   // Returns a new Font derived from the existing font.
@@ -59,8 +59,8 @@ class UI_EXPORT PlatformFont : public base::RefCounted<PlatformFont> {
   // Returns the style of the font.
   virtual int GetStyle() const = 0;
 
-  // Returns the font name.
-  virtual string16 GetFontName() const = 0;
+  // Returns the font name in UTF-8.
+  virtual std::string GetFontName() const = 0;
 
   // Returns the font size in pixels.
   virtual int GetFontSize() const = 0;

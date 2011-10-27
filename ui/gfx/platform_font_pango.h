@@ -20,7 +20,7 @@ class UI_EXPORT PlatformFontPango : public PlatformFont {
   PlatformFontPango();
   explicit PlatformFontPango(const Font& other);
   explicit PlatformFontPango(NativeFont native_font);
-  PlatformFontPango(const string16& font_name, int font_size);
+  PlatformFontPango(const std::string& font_name, int font_size);
 
   // Converts |gfx_font| to a new pango font. Free the returned font with
   // pango_font_description_free().
@@ -46,7 +46,7 @@ class UI_EXPORT PlatformFontPango : public PlatformFont {
   virtual int GetStringWidth(const string16& text) const;
   virtual int GetExpectedTextWidth(int length) const;
   virtual int GetStyle() const;
-  virtual string16 GetFontName() const;
+  virtual std::string GetFontName() const;
   virtual int GetFontSize() const;
   virtual NativeFont GetNativeFont() const;
 
@@ -54,15 +54,15 @@ class UI_EXPORT PlatformFontPango : public PlatformFont {
   // Create a new instance of this object with the specified properties. Called
   // from DeriveFont.
   PlatformFontPango(SkTypeface* typeface,
-                  const string16& name,
-                  int size,
-                  int style);
+                    const std::string& name,
+                    int size,
+                    int style);
   virtual ~PlatformFontPango();
 
   // Initialize this object.
-  void InitWithNameAndSize(const string16& font_name, int font_size);
+  void InitWithNameAndSize(const std::string& font_name, int font_size);
   void InitWithTypefaceNameSizeAndStyle(SkTypeface* typeface,
-                                        const string16& name,
+                                        const std::string& name,
                                         int size,
                                         int style);
   void InitFromPlatformFont(const PlatformFontPango* other);
@@ -87,7 +87,7 @@ class UI_EXPORT PlatformFontPango : public PlatformFont {
 
   // Additional information about the face
   // Skia actually expects a family name and not a font name.
-  string16 font_family_;
+  std::string font_family_;
   int font_size_pixels_;
   int style_;
 

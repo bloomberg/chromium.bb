@@ -336,7 +336,7 @@ const int kInterruptedAnimationDuration = 2.5;
 
 - (NSString*)elideTitle:(int)availableWidth {
   NSFont* font = [self font];
-  gfx::Font font_chr(base::SysNSStringToUTF16([font fontName]),
+  gfx::Font font_chr(base::SysNSStringToUTF8([font fontName]),
                      [font pointSize]);
 
   return base::SysUTF16ToNSString(
@@ -345,7 +345,7 @@ const int kInterruptedAnimationDuration = 2.5;
 
 - (NSString*)elideStatus:(int)availableWidth {
   NSFont* font = [self secondaryFont];
-  gfx::Font font_chr(base::SysNSStringToUTF16([font fontName]),
+  gfx::Font font_chr(base::SysNSStringToUTF8([font fontName]),
                      [font pointSize]);
 
   return base::SysUTF16ToNSString(ui::ElideText(

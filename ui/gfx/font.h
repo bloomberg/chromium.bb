@@ -43,8 +43,8 @@ class UI_EXPORT Font {
   // object takes ownership of the PlatformFont object.
   explicit Font(PlatformFont* platform_font);
 
-  // Creates a font with the specified name and size in pixels.
-  Font(const string16& font_name, int font_size);
+  // Creates a font with the specified name in UTF-8 and size in pixels.
+  Font(const std::string& font_name, int font_size);
 
   ~Font();
 
@@ -85,8 +85,8 @@ class UI_EXPORT Font {
   // Returns the style of the font.
   int GetStyle() const;
 
-  // Returns the font name.
-  string16 GetFontName() const;
+  // Returns the font name in UTF-8.
+  std::string GetFontName() const;
 
   // Returns the font size in pixels.
   int GetFontSize() const;

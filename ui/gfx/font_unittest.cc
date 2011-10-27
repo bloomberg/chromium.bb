@@ -57,17 +57,17 @@ int ScopedMinimumFontSizeCallback::minimum_size_ = 0;
 
 
 TEST_F(FontTest, LoadArial) {
-  Font cf(ASCIIToUTF16("Arial"), 16);
+  Font cf("Arial", 16);
   gfx::NativeFont native = cf.GetNativeFont();
   ASSERT_TRUE(native);
   ASSERT_EQ(cf.GetStyle(), Font::NORMAL);
   ASSERT_EQ(cf.GetFontSize(), 16);
-  ASSERT_EQ(cf.GetFontName(), ASCIIToUTF16("Arial"));
+  ASSERT_EQ(cf.GetFontName(), "Arial");
   FreeIfNecessary(native);
 }
 
 TEST_F(FontTest, LoadArialBold) {
-  Font cf(ASCIIToUTF16("Arial"), 16);
+  Font cf("Arial", 16);
   Font bold(cf.DeriveFont(0, Font::BOLD));
   gfx::NativeFont native = bold.GetNativeFont();
   ASSERT_TRUE(native);
@@ -76,20 +76,20 @@ TEST_F(FontTest, LoadArialBold) {
 }
 
 TEST_F(FontTest, Ascent) {
-  Font cf(ASCIIToUTF16("Arial"), 16);
+  Font cf("Arial", 16);
   ASSERT_GT(cf.GetBaseline(), 2);
   ASSERT_LE(cf.GetBaseline(), 22);
 }
 
 TEST_F(FontTest, Height) {
-  Font cf(ASCIIToUTF16("Arial"), 16);
+  Font cf("Arial", 16);
   ASSERT_GE(cf.GetHeight(), 16);
   // TODO(akalin): Figure out why height is so large on Linux.
   ASSERT_LE(cf.GetHeight(), 26);
 }
 
 TEST_F(FontTest, AvgWidths) {
-  Font cf(ASCIIToUTF16("Arial"), 16);
+  Font cf("Arial", 16);
   ASSERT_EQ(cf.GetExpectedTextWidth(0), 0);
   ASSERT_GT(cf.GetExpectedTextWidth(1), cf.GetExpectedTextWidth(0));
   ASSERT_GT(cf.GetExpectedTextWidth(2), cf.GetExpectedTextWidth(1));
@@ -97,12 +97,12 @@ TEST_F(FontTest, AvgWidths) {
 }
 
 TEST_F(FontTest, AvgCharWidth) {
-  Font cf(ASCIIToUTF16("Arial"), 16);
+  Font cf("Arial", 16);
   ASSERT_GT(cf.GetAverageCharacterWidth(), 0);
 }
 
 TEST_F(FontTest, Widths) {
-  Font cf(ASCIIToUTF16("Arial"), 16);
+  Font cf("Arial", 16);
   ASSERT_EQ(cf.GetStringWidth(ASCIIToUTF16("")), 0);
   ASSERT_GT(cf.GetStringWidth(ASCIIToUTF16("a")),
             cf.GetStringWidth(ASCIIToUTF16("")));
@@ -114,7 +114,7 @@ TEST_F(FontTest, Widths) {
 
 #if defined(OS_WIN)
 TEST_F(FontTest, DeriveFontResizesIfSizeTooSmall) {
-  Font cf(L"Arial", 8);
+  Font cf("Arial", 8);
   // The minimum font size is set to 5 in browser_main.cc.
   ScopedMinimumFontSizeCallback minimum_size(5);
 
@@ -123,7 +123,7 @@ TEST_F(FontTest, DeriveFontResizesIfSizeTooSmall) {
 }
 
 TEST_F(FontTest, DeriveFontKeepsOriginalSizeIfHeightOk) {
-  Font cf(L"Arial", 8);
+  Font cf("Arial", 8);
   // The minimum font size is set to 5 in browser_main.cc.
   ScopedMinimumFontSizeCallback minimum_size(5);
 

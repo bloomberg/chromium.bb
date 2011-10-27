@@ -22,7 +22,7 @@ PlatformFontMac::PlatformFontMac() {
   font_size_ = [NSFont systemFontSize];
   style_ = gfx::Font::NORMAL;
   NSFont* system_font = [NSFont systemFontOfSize:font_size_];
-  font_name_ = base::SysNSStringToUTF16([system_font fontName]);
+  font_name_ = base::SysNSStringToUTF8([system_font fontName]);
   CalculateMetrics();
 }
 
@@ -32,7 +32,7 @@ PlatformFontMac::PlatformFontMac(const Font& other) {
 PlatformFontMac::PlatformFontMac(NativeFont native_font) {
 }
 
-PlatformFontMac::PlatformFontMac(const string16& font_name,
+PlatformFontMac::PlatformFontMac(const std::string& font_name,
                                  int font_size) {
   InitWithNameSizeAndStyle(font_name, font_size, gfx::Font::NORMAL);
 }
@@ -71,7 +71,7 @@ int PlatformFontMac::GetStyle() const {
   return style_;
 }
 
-string16 PlatformFontMac::GetFontName() const {
+std::string PlatformFontMac::GetFontName() const {
   return font_name_;
 }
 
@@ -83,20 +83,20 @@ NativeFont PlatformFontMac::GetNativeFont() const {
   // TODO(pinkerton): apply |style_| to font. http://crbug.com/34667
   // We could cache this, but then we'd have to conditionally change the
   // dtor just for MacOS. Not sure if we want to/need to do that.
-  return [NSFont fontWithName:base::SysUTF16ToNSString(font_name_)
+  return [NSFont fontWithName:base::SysUTF8ToNSString(font_name_)
                          size:font_size_];
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // PlatformFontMac, private:
 
-PlatformFontMac::PlatformFontMac(const string16& font_name,
+PlatformFontMac::PlatformFontMac(const std::string& font_name,
                                  int font_size,
                                  int style) {
   InitWithNameSizeAndStyle(font_name, font_size, style);
 }
 
-void PlatformFontMac::InitWithNameSizeAndStyle(const string16& font_name,
+void PlatformFontMac::InitWithNameSizeAndStyle(const std::string& font_name,
                                                int font_size,
                                                int style) {
   font_name_ = font_name;
@@ -134,7 +134,7 @@ PlatformFont* PlatformFont::CreateFromNativeFont(NativeFont native_font) {
 }
 
 // static
-PlatformFont* PlatformFont::CreateFromNameAndSize(const string16& font_name,
+PlatformFont* PlatformFont::CreateFromNameAndSize(const std::string& font_name,
                                                   int font_size) {
   return new PlatformFontMac(font_name, font_size);
 }

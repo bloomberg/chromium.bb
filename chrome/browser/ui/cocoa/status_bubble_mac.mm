@@ -148,7 +148,7 @@ void StatusBubbleMac::SetURL(const GURL& url, const std::string& languages) {
   scaled_width = [[parent_ contentView] convertSize:scaled_width fromView:nil];
   text_width = static_cast<int>(scaled_width.width);
   NSFont* font = [[window_ contentView] font];
-  gfx::Font font_chr(base::SysNSStringToUTF16([font fontName]),
+  gfx::Font font_chr(base::SysNSStringToUTF8([font fontName]),
                      [font pointSize]);
 
   string16 original_url_text = net::FormatUrl(url, languages);
@@ -609,7 +609,7 @@ void StatusBubbleMac::ExpandBubble() {
 
   // Generate the URL string that fits in the expanded bubble.
   NSFont* font = [[window_ contentView] font];
-  gfx::Font font_chr(base::SysNSStringToUTF16([font fontName]),
+  gfx::Font font_chr(base::SysNSStringToUTF8([font fontName]),
       [font pointSize]);
   string16 expanded_url = ui::ElideUrl(
       url_, font_chr, max_bubble_width, languages_);

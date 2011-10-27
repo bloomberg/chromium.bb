@@ -69,7 +69,7 @@ PlatformFontWin::PlatformFontWin(NativeFont native_font) {
   InitWithCopyOfHFONT(native_font);
 }
 
-PlatformFontWin::PlatformFontWin(const string16& font_name,
+PlatformFontWin::PlatformFontWin(const std::string& font_name,
                                  int font_size) {
   InitWithFontNameAndSize(font_name, font_size);
 }
@@ -117,7 +117,7 @@ int PlatformFontWin::GetStyle() const {
   return font_ref_->style();
 }
 
-string16 PlatformFontWin::GetFontName() const {
+std::string PlatformFontWin::GetFontName() const {
   return font_ref_->font_name();
 }
 
@@ -142,10 +142,10 @@ void PlatformFontWin::InitWithCopyOfHFONT(HFONT hfont) {
   font_ref_ = CreateHFontRef(CreateFontIndirect(&font_info));
 }
 
-void PlatformFontWin::InitWithFontNameAndSize(const string16& font_name,
+void PlatformFontWin::InitWithFontNameAndSize(const std::string& font_name,
                                               int font_size) {
   HFONT hf = ::CreateFont(-font_size, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                          font_name.c_str());
+                          UTF8ToUTF16(font_name).c_str());
   font_ref_ = CreateHFontRef(hf);
 }
 
@@ -224,7 +224,7 @@ PlatformFontWin::HFontRef::HFontRef(HFONT hfont,
 
   LOGFONT font_info;
   GetObject(hfont_, sizeof(LOGFONT), &font_info);
-  font_name_ = string16(font_info.lfFaceName);
+  font_name_ = UTF16ToUTF8(string16(font_info.lfFaceName));
 }
 
 PlatformFontWin::HFontRef::~HFontRef() {
@@ -250,7 +250,7 @@ PlatformFont* PlatformFont::CreateFromNativeFont(NativeFont native_font) {
 }
 
 // static
-PlatformFont* PlatformFont::CreateFromNameAndSize(const string16& font_name,
+PlatformFont* PlatformFont::CreateFromNameAndSize(const std::string& font_name,
                                                   int font_size) {
   return new PlatformFontWin(font_name, font_size);
 }

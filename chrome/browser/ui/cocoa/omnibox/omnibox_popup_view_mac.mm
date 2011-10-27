@@ -453,7 +453,7 @@ void OmniboxPopupViewMac::UpdatePopupAppearance() {
   // The popup's font is a slightly smaller version of the field's.
   NSFont* fieldFont = OmniboxViewMac::GetFieldFont();
   const CGFloat resultFontSize = [fieldFont pointSize] + kEditFontAdjust;
-  gfx::Font resultFont(base::SysNSStringToUTF16([fieldFont fontName]),
+  gfx::Font resultFont(base::SysNSStringToUTF8([fieldFont fontName]),
                        static_cast<int>(resultFontSize));
 
   AutocompleteMatrix* matrix = GetAutocompleteMatrix();

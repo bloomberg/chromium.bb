@@ -20,7 +20,7 @@ const int kMinTextDimension = 4;
 // Courier is failing on linux because it's non scalable.
 TEST(LabelTest, FontPropertyCourier) {
   Label label;
-  string16 font_name(ASCIIToUTF16("courier"));
+  std::string font_name("courier");
   gfx::Font font(font_name, 30);
   label.SetFont(font);
   gfx::Font font_used = label.font();
@@ -31,7 +31,7 @@ TEST(LabelTest, FontPropertyCourier) {
 
 TEST(LabelTest, FontPropertyArial) {
   Label label;
-  string16 font_name(ASCIIToUTF16("arial"));
+  std::string font_name("arial");
   gfx::Font font(font_name, 30);
   label.SetFont(font);
   gfx::Font font_used = label.font();

@@ -42,7 +42,7 @@ void PrintSettingsInitializer::InitHeaderFooterStrings(
   }
 
   gfx::Font font(
-      UTF8ToUTF16(kSettingHeaderFooterFontName),
+      kSettingHeaderFooterFontName,
       ceil(ConvertPointsToPixelDouble(kSettingHeaderFooterFontSize)));
   double segment_width = GetHeaderFooterSegmentWidth(ConvertUnitDouble(
       print_settings->page_setup_device_units().physical_size().width(),

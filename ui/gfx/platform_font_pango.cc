@@ -91,7 +91,7 @@ PangoFontMetrics* GetPangoFontMetrics(PangoFontDescription* desc) {
 // PGothic".  In this case, SkTypeface for "Sans" returns NULL even if
 // the system has a font for "Sans" font family.  See FontMatch() in
 // skia/ports/SkFontHost_fontconfig.cpp for more detail.
-string16 FindBestMatchFontFamilyName(const char* family_name) {
+std::string FindBestMatchFontFamilyName(const char* family_name) {
   FcPattern* pattern = FcPatternCreate();
   FcValue fcvalue;
   fcvalue.type = FcTypeString;
@@ -106,7 +106,7 @@ string16 FindBestMatchFontFamilyName(const char* family_name) {
   FcChar8* match_family;
   FcPatternGetString(match, FC_FAMILY, 0, &match_family);
 
-  string16 font_family = UTF8ToUTF16(reinterpret_cast<char*>(match_family));
+  std::string font_family(reinterpret_cast<char*>(match_family));
   FcPatternDestroy(match);
   FcPatternDestroy(pattern);
   free(family_name_copy);
@@ -180,7 +180,7 @@ PlatformFontPango::PlatformFontPango(NativeFont native_font) {
   // Find best match font for |family_name| to make sure we can get
   // a SkTypeface for the default font.
   // TODO(agl): remove this.
-  string16 font_family = FindBestMatchFontFamilyName(family_name);
+  std::string font_family = FindBestMatchFontFamilyName(family_name);
 
   InitWithNameAndSize(font_family, size_in_pixels);
   int style = 0;
@@ -197,7 +197,7 @@ PlatformFontPango::PlatformFontPango(NativeFont native_font) {
     style_ = style;
 }
 
-PlatformFontPango::PlatformFontPango(const string16& font_name,
+PlatformFontPango::PlatformFontPango(const std::string& font_name,
                                      int font_size) {
   InitWithNameAndSize(font_name, font_size);
 }
@@ -242,7 +242,7 @@ Font PlatformFontPango::DeriveFont(int size_delta, int style) const {
     skstyle |= SkTypeface::kItalic;
 
   SkTypeface* typeface = SkTypeface::CreateFromName(
-      UTF16ToUTF8(font_family_).c_str(),
+      font_family_.c_str(),
       static_cast<SkTypeface::Style>(skstyle));
   SkAutoUnref tf_helper(typeface);
 
@@ -281,7 +281,7 @@ int PlatformFontPango::GetStyle() const {
   return style_;
 }
 
-string16 PlatformFontPango::GetFontName() const {
+std::string PlatformFontPango::GetFontName() const {
   return font_family_;
 }
 
@@ -291,7 +291,7 @@ int PlatformFontPango::GetFontSize() const {
 
 NativeFont PlatformFontPango::GetNativeFont() const {
   PangoFontDescription* pfd = pango_font_description_new();
-  pango_font_description_set_family(pfd, UTF16ToUTF8(GetFontName()).c_str());
+  pango_font_description_set_family(pfd, GetFontName().c_str());
   // Set the absolute size to avoid overflowing UI elements.
   // pango_font_description_set_absolute_size() takes a size in Pango units.
   // There are PANGO_SCALE Pango units in one device unit.  Screen output
@@ -322,7 +322,7 @@ NativeFont PlatformFontPango::GetNativeFont() const {
 // PlatformFontPango, private:
 
 PlatformFontPango::PlatformFontPango(SkTypeface* typeface,
-                                     const string16& name,
+                                     const std::string& name,
                                      int size,
                                      int style) {
   InitWithTypefaceNameSizeAndStyle(typeface, name, size, style);
@@ -330,22 +330,22 @@ PlatformFontPango::PlatformFontPango(SkTypeface* typeface,
 
 PlatformFontPango::~PlatformFontPango() {}
 
-void PlatformFontPango::InitWithNameAndSize(const string16& font_name,
+void PlatformFontPango::InitWithNameAndSize(const std::string& font_name,
                                             int font_size) {
   DCHECK_GT(font_size, 0);
-  string16 fallback;
+  std::string fallback;
 
   SkTypeface* typeface = SkTypeface::CreateFromName(
-      UTF16ToUTF8(font_name).c_str(), SkTypeface::kNormal);
+      font_name.c_str(), SkTypeface::kNormal);
   if (!typeface) {
     // A non-scalable font such as .pcf is specified. Falls back to a default
     // scalable font.
     typeface = SkTypeface::CreateFromName(
         kFallbackFontFamilyName, SkTypeface::kNormal);
     CHECK(typeface) << "Could not find any font: "
-                    << UTF16ToUTF8(font_name)
+                    << font_name
                     << ", " << kFallbackFontFamilyName;
-    fallback = UTF8ToUTF16(kFallbackFontFamilyName);
+    fallback = kFallbackFontFamilyName;
   }
   SkAutoUnref typeface_helper(typeface);
 
@@ -357,7 +357,7 @@ void PlatformFontPango::InitWithNameAndSize(const string16& font_name,
 
 void PlatformFontPango::InitWithTypefaceNameSizeAndStyle(
     SkTypeface* typeface,
-    const string16& font_family,
+    const std::string& font_family,
     int font_size,
     int style) {
   typeface_helper_.reset(new SkAutoUnref(typeface));
@@ -464,7 +464,7 @@ PlatformFont* PlatformFont::CreateFromNativeFont(NativeFont native_font) {
 }
 
 // static
-PlatformFont* PlatformFont::CreateFromNameAndSize(const string16& font_name,
+PlatformFont* PlatformFont::CreateFromNameAndSize(const std::string& font_name,
                                                   int font_size) {
   return new PlatformFontPango(font_name, font_size);
 }

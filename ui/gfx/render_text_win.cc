@@ -610,7 +610,7 @@ void RenderTextWin::DrawVisualText(Canvas* canvas) {
     internal::TextRun* run = runs_[visual_to_logical_[i]];
 
     // TODO(msw): Font default/fallback and style integration.
-    std::string font(UTF16ToASCII(run->font.GetFontName()));
+    std::string font(run->font.GetFontName());
     SkTypeface::Style style = SkTypeface::kNormal;
     SkTypeface* typeface = SkTypeface::CreateFromName(font.c_str(), style);
     if (typeface) {

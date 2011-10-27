@@ -27,7 +27,7 @@ class OmniboxPopupViewMacTest : public PlatformTest {
     color_ = [NSColor blackColor];
     dimColor_ = [NSColor darkGrayColor];
     font_ = gfx::Font(
-        base::SysNSStringToUTF16([[NSFont userFontOfSize:12] fontName]), 12);
+        base::SysNSStringToUTF8([[NSFont userFontOfSize:12] fontName]), 12);
   }
 
   // Returns the length of the run starting at |location| for which
