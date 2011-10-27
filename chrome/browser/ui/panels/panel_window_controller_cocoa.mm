@@ -187,6 +187,17 @@ enum {
   // Shows the window without making it key, on top of its layer, even if
   // Chromium is not an active app.
   [window orderFrontRegardless];
+  // TODO(dcheng): Temporary hack to work around the fact that
+  // orderFrontRegardless causes us to become the first responder. The usual
+  // Chrome assumption is that becoming the first responder = you have focus, so
+  // we always deactivate the controls here. If we're created as an active
+  // panel, we'll get a NSWindowDidBecomeKeyNotification and reactivate the web
+  // view properly. See crbug.com/97831 for more details.
+  TabContents* tab_contents =
+      windowShim_->panel()->browser()->GetSelectedTabContents();
+  // RWHV may be NULL in unit tests.
+  if (tab_contents && tab_contents->GetRenderWidgetHostView())
+    tab_contents->GetRenderWidgetHostView()->SetActive(false);
   [window setFrame:frame display:YES animate:YES];
 
   [contentView setAutoresizesSubviews:YES];
