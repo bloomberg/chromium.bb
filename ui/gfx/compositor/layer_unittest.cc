@@ -867,6 +867,11 @@ TEST_F(LayerWithNullDelegateTest, Visibility) {
   EXPECT_TRUE(l1->IsDrawn());
   EXPECT_TRUE(l2->IsDrawn());
   EXPECT_TRUE(l3->IsDrawn());
+#if defined(USE_WEBKIT_COMPOSITOR)
+  EXPECT_EQ(1.f, l1->web_layer().opacity());
+  EXPECT_EQ(1.f, l2->web_layer().opacity());
+  EXPECT_EQ(1.f, l3->web_layer().opacity());
+#endif
 
   compositor()->SetRootLayer(l1.get());
 
@@ -876,16 +881,25 @@ TEST_F(LayerWithNullDelegateTest, Visibility) {
   EXPECT_FALSE(l1->IsDrawn());
   EXPECT_FALSE(l2->IsDrawn());
   EXPECT_FALSE(l3->IsDrawn());
+#if defined(USE_WEBKIT_COMPOSITOR)
+  EXPECT_EQ(0.f, l1->web_layer().opacity());
+#endif
 
   l3->SetVisible(false);
   EXPECT_FALSE(l1->IsDrawn());
   EXPECT_FALSE(l2->IsDrawn());
   EXPECT_FALSE(l3->IsDrawn());
+#if defined(USE_WEBKIT_COMPOSITOR)
+  EXPECT_EQ(0.f, l3->web_layer().opacity());
+#endif
 
   l1->SetVisible(true);
   EXPECT_TRUE(l1->IsDrawn());
   EXPECT_TRUE(l2->IsDrawn());
   EXPECT_FALSE(l3->IsDrawn());
+#if defined(USE_WEBKIT_COMPOSITOR)
+  EXPECT_EQ(1.f, l1->web_layer().opacity());
+#endif
 }
 
 } // namespace ui

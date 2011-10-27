@@ -186,6 +186,10 @@ void Layer::SetVisible(bool visible) {
 
   bool was_drawn = IsDrawn();
   visible_ = visible;
+#if defined(USE_WEBKIT_COMPOSITOR)
+  // TODO(piman): Expose a visibility flag on WebLayer.
+  web_layer_.setOpacity(visible_ ? opacity_ : 0.f);
+#endif
   bool is_drawn = IsDrawn();
   if (was_drawn == is_drawn)
     return;
@@ -193,10 +197,6 @@ void Layer::SetVisible(bool visible) {
   if (!is_drawn)
     DropTextures();
   SetNeedsToRecomputeHole();
-#if defined(USE_WEBKIT_COMPOSITOR)
-  // TODO(piman): Expose a visibility flag on WebLayer.
-  web_layer_.setOpacity(visible_ ? opacity_ : 0.f);
-#endif
 }
 
 bool Layer::IsDrawn() const {
