@@ -16,7 +16,7 @@
 // don't support nested workers anyways.
 //#include "content/renderer/webworker_proxy.h"
 #include "content/worker/shared_worker_devtools_agent.h"
-#include "content/worker/webworker_stub_base.h"
+#include "content/worker/websharedworker_stub.h"
 #include "content/worker/worker_thread.h"
 #include "content/worker/worker_webapplicationcachehost_impl.h"
 #include "ipc/ipc_logging.h"
@@ -41,7 +41,7 @@ using WebKit::WebWorkerClient;
 #define kMaxTimeForRunawayWorkerMs 3000
 
 WebWorkerClientProxy::WebWorkerClientProxy(int route_id,
-                                           WebWorkerStubBase* stub)
+                                           WebSharedWorkerStub* stub)
     : route_id_(route_id),
       appcache_host_id_(0),
       stub_(stub),

@@ -43,13 +43,9 @@ IPC_STRUCT_END()
 // Parameter structure for WorkerProcessMsg_CreateWorker.
 IPC_STRUCT_BEGIN(WorkerProcessMsg_CreateWorker_Params)
   IPC_STRUCT_MEMBER(GURL, url)
-  IPC_STRUCT_MEMBER(bool, is_shared)
   IPC_STRUCT_MEMBER(string16, name)
   IPC_STRUCT_MEMBER(int, route_id)
   IPC_STRUCT_MEMBER(int, creator_process_id)
-  // Only valid for dedicated workers.
-  IPC_STRUCT_MEMBER(int, creator_appcache_host_id)
-  // Only valid for shared workers.
   IPC_STRUCT_MEMBER(int64, shared_worker_appcache_id)
 IPC_STRUCT_END()
 
@@ -176,4 +172,3 @@ IPC_MESSAGE_ROUTED1(WorkerHostMsg_ReportPendingActivity,
 IPC_MESSAGE_CONTROL1(WorkerHostMsg_WorkerContextClosed,
                      int /* worker_route_id */)
 IPC_MESSAGE_ROUTED0(WorkerHostMsg_WorkerContextDestroyed)
-

@@ -11,19 +11,17 @@
 // Information used to construct and initialize an appcache host
 // for a worker.
 struct WorkerAppCacheInitInfo {
-  bool is_shared_worker;
   int parent_process_id;
-  int parent_appcache_host_id;  // Only valid for dedicated workers.
   int64 main_resource_appcache_id;  // Only valid for shared workers.
 
   WorkerAppCacheInitInfo()
-      : is_shared_worker(false), parent_process_id(0),
-        parent_appcache_host_id(0), main_resource_appcache_id(0) {
+      : parent_process_id(0),
+        main_resource_appcache_id(0) {
   }
   WorkerAppCacheInitInfo(
-      bool is_shared, int process_id, int host_id, int64 cache_id)
-      : is_shared_worker(is_shared), parent_process_id(process_id),
-        parent_appcache_host_id(host_id), main_resource_appcache_id(cache_id) {
+      int process_id, int64 cache_id)
+      : parent_process_id(process_id),
+        main_resource_appcache_id(cache_id) {
   }
 };
 

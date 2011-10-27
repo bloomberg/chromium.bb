@@ -84,12 +84,10 @@ void WorkerService::CreateWorker(
   // it to.
   WorkerProcessHost::WorkerInstance instance(
       params.url,
-      params.is_shared,
       params.name,
       next_worker_route_id(),
-      params.is_shared ? 0 : filter->render_process_id(),
-      params.is_shared ? 0 : params.parent_appcache_host_id,
-      params.is_shared ? params.script_resource_appcache_id : 0,
+      0,
+      params.script_resource_appcache_id,
       &resource_context);
   instance.AddFilter(filter, route_id);
   instance.worker_document_set()->Add(
@@ -144,35 +142,8 @@ void WorkerService::LookupSharedWorker(
 void WorkerService::CancelCreateDedicatedWorker(
     int route_id,
     WorkerMessageFilter* filter) {
-  for (WorkerProcessHost::Instances::iterator i = queued_workers_.begin();
-       i != queued_workers_.end(); ++i) {
-    if (i->HasFilter(filter, route_id)) {
-      DCHECK(!i->shared());
-      queued_workers_.erase(i);
-      return;
-    }
-  }
 
-  // There could be a race condition where the WebWorkerProxy told us to cancel
-  // the worker right as we sent it a message say it's been created.  Look at
-  // the running workers.
-  for (BrowserChildProcessHost::Iterator iter(ChildProcessInfo::WORKER_PROCESS);
-       !iter.Done(); ++iter) {
-    WorkerProcessHost* worker = static_cast<WorkerProcessHost*>(*iter);
-    for (WorkerProcessHost::Instances::const_iterator instance =
-             worker->instances().begin();
-         instance != worker->instances().end(); ++instance) {
-      if (instance->HasFilter(filter, route_id)) {
-        // Fake a worker destroyed message so that WorkerProcessHost cleans up
-        // properly.
-        WorkerMsg_TerminateWorkerContext message(route_id);
-        ForwardToWorker(message, filter);
-        return;
-      }
-    }
-  }
-
-  DCHECK(false) << "Couldn't find worker to cancel";
+  NOTREACHED();
 }
 
 void WorkerService::ForwardToWorker(const IPC::Message& message,
@@ -199,12 +170,11 @@ void WorkerService::DocumentDetached(unsigned long long document_id,
   // Remove any queued shared workers for this document.
   for (WorkerProcessHost::Instances::iterator iter = queued_workers_.begin();
        iter != queued_workers_.end();) {
-    if (iter->shared()) {
-      iter->worker_document_set()->Remove(filter, document_id);
-      if (iter->worker_document_set()->IsEmpty()) {
-        iter = queued_workers_.erase(iter);
-        continue;
-      }
+
+    iter->worker_document_set()->Remove(filter, document_id);
+    if (iter->worker_document_set()->IsEmpty()) {
+      iter = queued_workers_.erase(iter);
+      continue;
     }
     ++iter;
   }
@@ -244,65 +214,63 @@ bool WorkerService::CreateWorkerFromInstance(
 
   // Check to see if this shared worker is already running (two pages may have
   // tried to start up the worker simultaneously).
-  if (instance.shared()) {
-    // See if a worker with this name already exists.
-    WorkerProcessHost::WorkerInstance* existing_instance =
-        FindSharedWorkerInstance(
-            instance.url(), instance.name(), instance.resource_context());
-    WorkerProcessHost::WorkerInstance::FilterInfo filter_info =
-        instance.GetFilter();
-    // If this worker is already running, no need to create a new copy. Just
-    // inform the caller that the worker has been created.
-    if (existing_instance) {
-      // Walk the worker's filter list to see if this client is listed. If not,
-      // then it means that the worker started by the client already exited so
-      // we should not attach to this new one (http://crbug.com/29243).
-      if (!existing_instance->HasFilter(filter_info.first, filter_info.second))
-        return false;
-      filter_info.first->Send(new ViewMsg_WorkerCreated(filter_info.second));
-      return true;
-    }
-
-    // Look to see if there's a pending instance.
-    WorkerProcessHost::WorkerInstance* pending = FindPendingInstance(
-        instance.url(), instance.name(), instance.resource_context());
-    // If there's no instance *and* no pending instance (or there is a pending
-    // instance but it does not contain our filter info), then it means the
-    // worker started up and exited already. Log a warning because this should
-    // be a very rare occurrence and is probably a bug, but it *can* happen so
-    // handle it gracefully.
-    if (!pending ||
-        !pending->HasFilter(filter_info.first, filter_info.second)) {
-      DLOG(WARNING) << "Pending worker already exited";
+  // See if a worker with this name already exists.
+  WorkerProcessHost::WorkerInstance* existing_instance =
+      FindSharedWorkerInstance(
+          instance.url(), instance.name(), instance.resource_context());
+  WorkerProcessHost::WorkerInstance::FilterInfo filter_info =
+      instance.GetFilter();
+  // If this worker is already running, no need to create a new copy. Just
+  // inform the caller that the worker has been created.
+  if (existing_instance) {
+    // Walk the worker's filter list to see if this client is listed. If not,
+    // then it means that the worker started by the client already exited so
+    // we should not attach to this new one (http://crbug.com/29243).
+    if (!existing_instance->HasFilter(filter_info.first, filter_info.second))
       return false;
-    }
+    filter_info.first->Send(new ViewMsg_WorkerCreated(filter_info.second));
+    return true;
+  }
 
-    // Assign the accumulated document set and filter list for this pending
-    // worker to the new instance.
-    DCHECK(!pending->worker_document_set()->IsEmpty());
-    instance.ShareDocumentSet(*pending);
-    for (WorkerProcessHost::WorkerInstance::FilterList::const_iterator i =
-             pending->filters().begin();
-         i != pending->filters().end(); ++i) {
-      instance.AddFilter(i->first, i->second);
-    }
-    RemovePendingInstances(
-        instance.url(), instance.name(), instance.resource_context());
+  // Look to see if there's a pending instance.
+  WorkerProcessHost::WorkerInstance* pending = FindPendingInstance(
+      instance.url(), instance.name(), instance.resource_context());
+  // If there's no instance *and* no pending instance (or there is a pending
+  // instance but it does not contain our filter info), then it means the
+  // worker started up and exited already. Log a warning because this should
+  // be a very rare occurrence and is probably a bug, but it *can* happen so
+  // handle it gracefully.
+  if (!pending ||
+      !pending->HasFilter(filter_info.first, filter_info.second)) {
+    DLOG(WARNING) << "Pending worker already exited";
+    return false;
+  }
 
-    // Remove any queued instances of this worker and copy over the filter to
-    // this instance.
-    for (WorkerProcessHost::Instances::iterator iter = queued_workers_.begin();
-         iter != queued_workers_.end();) {
-      if (iter->Matches(instance.url(), instance.name(),
-                        instance.resource_context())) {
-        DCHECK(iter->NumFilters() == 1);
-        WorkerProcessHost::WorkerInstance::FilterInfo filter_info =
-            iter->GetFilter();
-        instance.AddFilter(filter_info.first, filter_info.second);
-        iter = queued_workers_.erase(iter);
-      } else {
-        ++iter;
-      }
+  // Assign the accumulated document set and filter list for this pending
+  // worker to the new instance.
+  DCHECK(!pending->worker_document_set()->IsEmpty());
+  instance.ShareDocumentSet(*pending);
+  for (WorkerProcessHost::WorkerInstance::FilterList::const_iterator i =
+           pending->filters().begin();
+       i != pending->filters().end(); ++i) {
+    instance.AddFilter(i->first, i->second);
+  }
+  RemovePendingInstances(
+      instance.url(), instance.name(), instance.resource_context());
+
+  // Remove any queued instances of this worker and copy over the filter to
+  // this instance.
+  for (WorkerProcessHost::Instances::iterator iter = queued_workers_.begin();
+       iter != queued_workers_.end();) {
+    if (iter->Matches(instance.url(), instance.name(),
+                      instance.resource_context())) {
+      DCHECK(iter->NumFilters() == 1);
+      WorkerProcessHost::WorkerInstance::FilterInfo filter_info =
+          iter->GetFilter();
+      instance.AddFilter(filter_info.first, filter_info.second);
+      iter = queued_workers_.erase(iter);
+    } else {
+      ++iter;
     }
   }
 

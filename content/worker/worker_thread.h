@@ -14,7 +14,7 @@ class GURL;
 class AppCacheDispatcher;
 class DBMessageFilter;
 class WebDatabaseObserverImpl;
-class WebWorkerStubBase;
+class WebSharedWorkerStub;
 class WorkerWebKitPlatformSupportImpl;
 struct WorkerProcessMsg_CreateWorker_Params;
 
@@ -27,8 +27,8 @@ class WorkerThread : public ChildThread {
   static WorkerThread* current();
 
   // Invoked from stub constructors/destructors. Stubs own themselves.
-  void AddWorkerStub(WebWorkerStubBase* stub);
-  void RemoveWorkerStub(WebWorkerStubBase* stub);
+  void AddWorkerStub(WebSharedWorkerStub* stub);
+  void RemoveWorkerStub(WebSharedWorkerStub* stub);
 
   AppCacheDispatcher* appcache_dispatcher() {
     return appcache_dispatcher_.get();
@@ -45,7 +45,7 @@ class WorkerThread : public ChildThread {
   scoped_ptr<WebDatabaseObserverImpl> web_database_observer_impl_;
   scoped_refptr<DBMessageFilter> db_message_filter_;
 
-  typedef std::set<WebWorkerStubBase*> WorkerStubsList;
+  typedef std::set<WebSharedWorkerStub*> WorkerStubsList;
   WorkerStubsList worker_stubs_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkerThread);

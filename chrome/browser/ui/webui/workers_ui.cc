@@ -91,9 +91,7 @@ void WorkersUIHTMLSource::SendSharedWorkersData(int request_id) {
       const WorkerProcessHost::Instances& instances = worker->instances();
       for (WorkerProcessHost::Instances::const_iterator i = instances.begin();
            i != instances.end(); ++i) {
-        if (!i->shared())
-          continue;
-        workers_list.Append(BuildWorkerData(worker, *i));
+         workers_list.Append(BuildWorkerData(worker, *i));
       }
     }
 

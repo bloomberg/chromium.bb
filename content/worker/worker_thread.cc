@@ -12,7 +12,6 @@
 #include "content/common/web_database_observer_impl.h"
 #include "content/common/worker_messages.h"
 #include "content/public/common/content_switches.h"
-#include "content/worker/webworker_stub.h"
 #include "content/worker/websharedworker_stub.h"
 #include "content/worker/worker_webkitplatformsupport_impl.h"
 #include "ipc/ipc_sync_channel.h"
@@ -93,15 +92,11 @@ bool WorkerThread::OnControlMessageReceived(const IPC::Message& msg) {
 void WorkerThread::OnCreateWorker(
     const WorkerProcessMsg_CreateWorker_Params& params) {
   WorkerAppCacheInitInfo appcache_init_info(
-      params.is_shared, params.creator_process_id,
-      params.creator_appcache_host_id,
+      params.creator_process_id,
       params.shared_worker_appcache_id);
 
-  // WebWorkerStub and WebSharedWorkerStub own themselves.
-  if (params.is_shared)
-    new WebSharedWorkerStub(params.name, params.route_id, appcache_init_info);
-  else
-    new WebWorkerStub(params.url, params.route_id, appcache_init_info);
+  // WebSharedWorkerStub own themselves.
+  new WebSharedWorkerStub(params.name, params.route_id, appcache_init_info);
 }
 
 // The browser process is likely dead. Terminate all workers.
@@ -114,10 +109,10 @@ void WorkerThread::OnChannelError() {
   }
 }
 
-void WorkerThread::RemoveWorkerStub(WebWorkerStubBase* stub) {
+void WorkerThread::RemoveWorkerStub(WebSharedWorkerStub* stub) {
   worker_stubs_.erase(stub);
 }
 
-void WorkerThread::AddWorkerStub(WebWorkerStubBase* stub) {
+void WorkerThread::AddWorkerStub(WebSharedWorkerStub* stub) {
   worker_stubs_.insert(stub);
 }

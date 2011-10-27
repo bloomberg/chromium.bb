@@ -4,10 +4,13 @@
 
 #include "content/worker/websharedworker_stub.h"
 
+#include "content/common/child_process.h"
 #include "content/common/child_thread.h"
 #include "content/common/file_system/file_system_dispatcher.h"
 #include "content/common/webmessageportchannel_impl.h"
 #include "content/common/worker_messages.h"
+#include "base/compiler_specific.h"
+#include "content/worker/worker_thread.h"
 #include "content/worker/shared_worker_devtools_agent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSharedWorker.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
@@ -16,10 +19,20 @@
 WebSharedWorkerStub::WebSharedWorkerStub(
     const string16& name, int route_id,
     const WorkerAppCacheInitInfo& appcache_init_info)
-    : WebWorkerStubBase(route_id, appcache_init_info),
+    : route_id_(route_id),
+      appcache_init_info_(appcache_init_info),
+      ALLOW_THIS_IN_INITIALIZER_LIST(client_(route_id, this)),
       name_(name),
       started_(false),
       worker_devtools_agent_(NULL) {
+
+  WorkerThread* worker_thread = WorkerThread::current();
+  DCHECK(worker_thread);
+  worker_thread->AddWorkerStub(this);
+  // Start processing incoming IPCs for this worker.
+  worker_thread->AddRoute(route_id_, this);
+  ChildProcess::current()->AddRefProcess();
+
   // TODO(atwilson): Add support for NaCl when they support MessagePorts.
   impl_ = WebKit::WebSharedWorker::create(client());
   worker_devtools_agent_.reset(new SharedWorkerDevToolsAgent(route_id, impl_));
@@ -28,6 +41,20 @@ WebSharedWorkerStub::WebSharedWorkerStub(
 
 WebSharedWorkerStub::~WebSharedWorkerStub() {
   impl_->clientDestroyed();
+  WorkerThread* worker_thread = WorkerThread::current();
+  DCHECK(worker_thread);
+  worker_thread->RemoveWorkerStub(this);
+  worker_thread->RemoveRoute(route_id_);
+  ChildProcess::current()->ReleaseProcess();
+}
+
+void WebSharedWorkerStub::Shutdown() {
+  // The worker has exited - free ourselves and the client.
+  delete this;
+}
+
+void WebSharedWorkerStub::EnsureWorkerContextTerminates() {
+  client_.EnsureWorkerContextTerminates();
 }
 
 bool WebSharedWorkerStub::OnMessageReceived(const IPC::Message& message) {
@@ -49,7 +76,7 @@ void WebSharedWorkerStub::OnChannelError() {
     OnTerminateWorkerContext();
 }
 
-const GURL& WebSharedWorkerStub::url() const {
+const GURL& WebSharedWorkerStub::url() {
   return url_;
 }
 

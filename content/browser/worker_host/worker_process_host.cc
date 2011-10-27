@@ -281,11 +281,9 @@ void WorkerProcessHost::CreateWorker(const WorkerInstance& instance) {
 
   WorkerProcessMsg_CreateWorker_Params params;
   params.url = instance.url();
-  params.is_shared = instance.shared();
   params.name = instance.name();
   params.route_id = instance.worker_route_id();
   params.creator_process_id = instance.parent_process_id();
-  params.creator_appcache_host_id = instance.parent_appcache_host_id();
   params.shared_worker_appcache_id = instance.main_resource_appcache_id();
   Send(new WorkerProcessMsg_CreateWorker(params));
 
@@ -343,13 +341,6 @@ bool WorkerProcessHost::OnMessageReceived(const IPC::Message& message) {
 
   for (Instances::iterator i = instances_.begin(); i != instances_.end(); ++i) {
     if (i->worker_route_id() == message.routing_id()) {
-      if (!i->shared()) {
-        // Don't relay messages from shared workers (all communication is via
-        // the message port).
-        WorkerInstance::FilterInfo info = i->GetFilter();
-        RelayMessage(message, info.first, info.second);
-      }
-
       if (message.type() == WorkerHostMsg_WorkerContextDestroyed::ID) {
         instances_.erase(i);
         UpdateTitle();
@@ -455,12 +446,9 @@ void WorkerProcessHost::FilterShutdown(WorkerMessageFilter* filter) {
   for (Instances::iterator i = instances_.begin(); i != instances_.end();) {
     bool shutdown = false;
     i->RemoveFilters(filter);
-    if (i->shared()) {
-      i->worker_document_set()->RemoveAll(filter);
-      if (i->worker_document_set()->IsEmpty()) {
-        shutdown = true;
-      }
-    } else if (i->NumFilters() == 0) {
+
+    i->worker_document_set()->RemoveAll(filter);
+    if (i->worker_document_set()->IsEmpty()) {
       shutdown = true;
     }
     if (shutdown) {
@@ -513,37 +501,29 @@ void WorkerProcessHost::DocumentDetached(WorkerMessageFilter* filter,
                                          unsigned long long document_id) {
   // Walk all instances and remove the document from their document set.
   for (Instances::iterator i = instances_.begin(); i != instances_.end();) {
-    if (!i->shared()) {
-      ++i;
+    i->worker_document_set()->Remove(filter, document_id);
+    if (i->worker_document_set()->IsEmpty()) {
+      // This worker has no more associated documents - shut it down.
+      Send(new WorkerMsg_TerminateWorkerContext(i->worker_route_id()));
+      i = instances_.erase(i);
     } else {
-      i->worker_document_set()->Remove(filter, document_id);
-      if (i->worker_document_set()->IsEmpty()) {
-        // This worker has no more associated documents - shut it down.
-        Send(new WorkerMsg_TerminateWorkerContext(i->worker_route_id()));
-        i = instances_.erase(i);
-      } else {
-        ++i;
-      }
+      ++i;
     }
   }
 }
 
 WorkerProcessHost::WorkerInstance::WorkerInstance(
     const GURL& url,
-    bool shared,
     const string16& name,
     int worker_route_id,
     int parent_process_id,
-    int parent_appcache_host_id,
     int64 main_resource_appcache_id,
     const content::ResourceContext* resource_context)
     : url_(url),
-      shared_(shared),
       closed_(false),
       name_(name),
       worker_route_id_(worker_route_id),
       parent_process_id_(parent_process_id),
-      parent_appcache_host_id_(parent_appcache_host_id),
       main_resource_appcache_id_(main_resource_appcache_id),
       worker_document_set_(new WorkerDocumentSet()),
       resource_context_(resource_context) {
@@ -556,12 +536,10 @@ WorkerProcessHost::WorkerInstance::WorkerInstance(
     const string16& name,
     const content::ResourceContext* resource_context)
     : url_(url),
-      shared_(shared),
       closed_(false),
       name_(name),
       worker_route_id_(MSG_ROUTING_NONE),
       parent_process_id_(0),
-      parent_appcache_host_id_(0),
       main_resource_appcache_id_(0),
       worker_document_set_(new WorkerDocumentSet()),
       resource_context_(resource_context) {
@@ -581,7 +559,7 @@ bool WorkerProcessHost::WorkerInstance::Matches(
     const string16& match_name,
     const content::ResourceContext* resource_context) const {
   // Only match open shared workers.
-  if (!shared_ || closed_)
+  if (closed_)
     return false;
 
   // Have to match the same ResourceContext.
@@ -603,8 +581,6 @@ void WorkerProcessHost::WorkerInstance::AddFilter(WorkerMessageFilter* filter,
     FilterInfo info(filter, route_id);
     filters_.push_back(info);
   }
-  // Only shared workers can have more than one associated filter.
-  DCHECK(shared_ || filters_.size() == 1);
 }
 
 void WorkerProcessHost::WorkerInstance::RemoveFilter(

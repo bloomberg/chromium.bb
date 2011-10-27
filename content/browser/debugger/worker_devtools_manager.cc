@@ -364,7 +364,7 @@ void WorkerDevToolsManager::RegisterDevToolsAgentHostForWorker(
     const WorkerProcessHost::Instances& instances = process->instances();
     for (WorkerProcessHost::Instances::const_iterator i = instances.begin();
          i != instances.end(); ++i) {
-      if (i->shared() && i->worker_route_id() == worker_route_id) {
+      if (i->worker_route_id() == worker_route_id) {
         DCHECK(FindInspectedWorker(worker_process_id, worker_route_id) ==
                inspected_workers_.end());
         inspected_workers_.push_back(

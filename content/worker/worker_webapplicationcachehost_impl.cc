@@ -12,13 +12,8 @@ WorkerWebApplicationCacheHostImpl::WorkerWebApplicationCacheHostImpl(
     WebKit::WebApplicationCacheHostClient* client)
     : WebApplicationCacheHostImpl(client,
           WorkerThread::current()->appcache_dispatcher()->backend_proxy()) {
-  if (init_info.is_shared_worker)
-    backend()->SelectCacheForSharedWorker(host_id(),
+  backend()->SelectCacheForSharedWorker(host_id(),
                                           init_info.main_resource_appcache_id);
-  else
-    backend()->SelectCacheForWorker(host_id(),
-                                    init_info.parent_process_id,
-                                    init_info.parent_appcache_host_id);
 }
 
 void WorkerWebApplicationCacheHostImpl::willStartMainResourceRequest(

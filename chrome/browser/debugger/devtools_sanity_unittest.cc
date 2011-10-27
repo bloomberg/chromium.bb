@@ -377,8 +377,7 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
       const WorkerProcessHost::Instances& instances = worker->instances();
       for (WorkerProcessHost::Instances::const_iterator i = instances.begin();
            i != instances.end(); ++i) {
-        if (!i->shared())
-          continue;
+
         worker_data->worker_process_id = worker->id();
         worker_data->worker_route_id = i->worker_route_id();
         BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,

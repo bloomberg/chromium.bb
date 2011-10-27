@@ -36,11 +36,9 @@ class WorkerProcessHost : public BrowserChildProcessHost {
   class WorkerInstance {
    public:
     WorkerInstance(const GURL& url,
-                   bool shared,
                    const string16& name,
                    int worker_route_id,
                    int parent_process_id,
-                   int parent_appcache_host_id,
                    int64 main_resource_appcache_id,
                    const content::ResourceContext* resource_context);
     // Used for pending instances. Rest of the parameters are ignored.
@@ -82,14 +80,12 @@ class WorkerProcessHost : public BrowserChildProcessHost {
     };
 
     // Accessors
-    bool shared() const { return shared_; }
     bool closed() const { return closed_; }
     void set_closed(bool closed) { closed_ = closed; }
     const GURL& url() const { return url_; }
     const string16 name() const { return name_; }
     int worker_route_id() const { return worker_route_id_; }
     int parent_process_id() const { return parent_process_id_; }
-    int parent_appcache_host_id() const { return parent_appcache_host_id_; }
     int64 main_resource_appcache_id() const {
       return main_resource_appcache_id_;
     }
@@ -103,12 +99,10 @@ class WorkerProcessHost : public BrowserChildProcessHost {
    private:
     // Set of all filters (clients) associated with this worker.
     GURL url_;
-    bool shared_;
     bool closed_;
     string16 name_;
     int worker_route_id_;
     int parent_process_id_;
-    int parent_appcache_host_id_;
     int64 main_resource_appcache_id_;
     FilterList filters_;
     scoped_refptr<WorkerDocumentSet> worker_document_set_;
