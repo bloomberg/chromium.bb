@@ -127,8 +127,9 @@ bool RendererAccessibilityBrowserTest::GetBoolAttr(
     return false;
 }
 
+// Marked flaky per http://crbug.com/101984
 IN_PROC_BROWSER_TEST_F(RendererAccessibilityBrowserTest,
-                       CrossPlatformWebpageAccessibility) {
+                       FLAKY_CrossPlatformWebpageAccessibility) {
   // Create a data url and load it.
   const char url_str[] =
       "data:text/html,"
