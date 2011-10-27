@@ -230,7 +230,7 @@ struct wlsc_compositor {
 	void (*destroy)(struct wlsc_compositor *ec);
 	int (*authenticate)(struct wlsc_compositor *c, uint32_t id);
 	EGLImageKHR (*create_cursor_image)(struct wlsc_compositor *c,
-					   int32_t width, int32_t height);
+					   int32_t *width, int32_t *height);
 };
 
 #define MODIFIER_CTRL	(1 << 8)

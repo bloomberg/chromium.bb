@@ -466,7 +466,7 @@ wlsc_sprite_attach(struct wlsc_sprite *sprite, struct wl_surface *surface)
 	struct wlsc_surface *es = (struct wlsc_surface *) surface;
 	struct wlsc_compositor *ec = es->compositor;
 
-	es->pitch = es->width;
+	es->pitch = sprite->width;
 	es->image = sprite->image;
 	if (sprite->image != EGL_NO_IMAGE_KHR) {
 		glBindTexture(GL_TEXTURE_2D, es->texture);
@@ -494,6 +494,7 @@ create_sprite_from_png(struct wlsc_compositor *ec,
 	uint32_t *pixels;
 	struct wlsc_sprite *sprite;
 	int32_t width, height;
+	int32_t egl_img_width, egl_img_height;
 	uint32_t stride;
 
 	pixels = wlsc_load_image(filename, &width, &height, &stride);
@@ -511,8 +512,13 @@ create_sprite_from_png(struct wlsc_compositor *ec,
 	sprite->height = height;
 	sprite->image = EGL_NO_IMAGE_KHR;
 
-	if (usage & SPRITE_USE_CURSOR && ec->create_cursor_image != NULL)
-		sprite->image = ec->create_cursor_image(ec, width, height);
+	if (usage & SPRITE_USE_CURSOR && ec->create_cursor_image != NULL) {
+		egl_img_width = width;
+		egl_img_height = height;
+
+		sprite->image = ec->create_cursor_image(ec, &egl_img_width,
+							&egl_img_height);
+	}
 
 	glGenTextures(1, &sprite->texture);
 	glBindTexture(GL_TEXTURE_2D, sprite->texture);
@@ -525,6 +531,9 @@ create_sprite_from_png(struct wlsc_compositor *ec,
 		ec->image_target_texture_2d(GL_TEXTURE_2D, sprite->image);
 		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height,
 				GL_BGRA_EXT, GL_UNSIGNED_BYTE, pixels);
+
+		sprite->width = egl_img_width;
+		sprite->height = egl_img_height;
 	} else {
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_BGRA_EXT, width, height, 0,
 			     GL_BGRA_EXT, GL_UNSIGNED_BYTE, pixels);

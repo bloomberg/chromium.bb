@@ -692,7 +692,7 @@ udev_drm_event(int fd, uint32_t mask, void *data)
 
 static EGLImageKHR
 drm_compositor_create_cursor_image(struct wlsc_compositor *ec,
-				   int32_t width, int32_t height)
+				   int32_t *width, int32_t *height)
 {
 	struct drm_compositor *c = (struct drm_compositor *) ec;
 	struct gbm_bo *bo;
@@ -700,7 +700,7 @@ drm_compositor_create_cursor_image(struct wlsc_compositor *ec,
 	uint32_t *pixels;
 	GLuint tex;
 
-	if (width > 64 || height > 64)
+	if (*width > 64 || *height > 64)
 		return EGL_NO_IMAGE_KHR;
 
 	bo = gbm_bo_create(c->gbm,
@@ -714,7 +714,7 @@ drm_compositor_create_cursor_image(struct wlsc_compositor *ec,
 
 	/* If the requested size is smaller than the allocated one, make the
 	 * whole image transparent. */
-	if (width != 64 || height != 64) {
+	if (*width != 64 || *height != 64) {
 		pixels = calloc(64 * 64, sizeof *pixels);
 
 		glGenTextures(1, &tex);
@@ -734,6 +734,9 @@ drm_compositor_create_cursor_image(struct wlsc_compositor *ec,
 
 		glDeleteTextures(1, &tex);
 		free(pixels);
+
+		*width = 64;
+		*height = 64;
 	}
 
 	return image;
