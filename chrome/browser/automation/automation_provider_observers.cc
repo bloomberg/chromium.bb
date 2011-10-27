@@ -1892,46 +1892,87 @@ void SavePackageNotificationObserver::Observe(
 
 PageSnapshotTaker::PageSnapshotTaker(AutomationProvider* automation,
                                      IPC::Message* reply_message,
-                                     TabContentsWrapper* tab_contents,
+                                     RenderViewHost* render_view,
                                      const FilePath& path)
     : automation_(automation->AsWeakPtr()),
       reply_message_(reply_message),
-      tab_contents_(tab_contents),
-      image_path_(path) {
-  registrar_.Add(this, chrome::NOTIFICATION_APP_MODAL_DIALOG_SHOWN,
-                 content::NotificationService::AllSources());
-}
+      render_view_(render_view),
+      image_path_(path),
+      received_width_(false) {}
 
 PageSnapshotTaker::~PageSnapshotTaker() {}
 
 void PageSnapshotTaker::Start() {
-  StartObserving(tab_contents_->automation_tab_helper());
-  tab_contents_->automation_tab_helper()->SnapshotEntirePage();
+  ExecuteScript(L"window.domAutomationController.send(document.width);");
 }
 
-void PageSnapshotTaker::OnSnapshotEntirePageACK(
-    bool success,
-    const std::vector<unsigned char>& png_data,
-    const std::string& error_msg) {
-  bool overall_success = success;
-  std::string overall_error_msg = error_msg;
-  if (success) {
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
-    int bytes_written = file_util::WriteFile(image_path_,
-        reinterpret_cast<const char*>(&png_data[0]), png_data.size());
-    overall_success = (bytes_written == static_cast<int>(png_data.size()));
-    if (!overall_success)
-      overall_error_msg = "could not write snapshot to disk";
+void PageSnapshotTaker::OnDomOperationCompleted(const std::string& json) {
+  int dimension;
+  if (!base::StringToInt(json, &dimension)) {
+    SendMessage(false, "could not parse received dimensions: " + json);
+  } else if (!received_width_) {
+    received_width_ = true;
+    entire_page_size_.set_width(dimension);
+
+    ExecuteScript(L"window.domAutomationController.send(document.height);");
+  } else {
+    entire_page_size_.set_height(dimension);
+
+    ThumbnailGenerator* generator =
+        g_browser_process->GetThumbnailGenerator();
+    ThumbnailGenerator::ThumbnailReadyCallback callback =
+        base::Bind(&PageSnapshotTaker::OnSnapshotTaken, base::Unretained(this));
+    // Don't actually start the thumbnail generator, this leads to crashes on
+    // Mac, crbug.com/62986. Instead, just hook the generator to the
+    // RenderViewHost manually.
+
+    generator->MonitorRenderer(render_view_, true);
+    generator->AskForSnapshot(render_view_, false, callback,
+                              entire_page_size_, entire_page_size_);
   }
-  SendMessage(overall_success, overall_error_msg);
 }
 
-void PageSnapshotTaker::Observe(int type,
-                                const content::NotificationSource& source,
-                                const content::NotificationDetails& details) {
+void PageSnapshotTaker::OnModalDialogShown() {
   SendMessage(false, "a modal dialog is active");
 }
 
+void PageSnapshotTaker::OnSnapshotTaken(const SkBitmap& bitmap) {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  std::vector<unsigned char> png_data;
+  SkAutoLockPixels lock_input(bitmap);
+  bool success = gfx::PNGCodec::Encode(
+      reinterpret_cast<unsigned char*>(bitmap.getAddr32(0, 0)),
+      gfx::PNGCodec::FORMAT_BGRA,
+      gfx::Size(bitmap.width(), bitmap.height()),
+      bitmap.rowBytes(),
+      true,  // discard_transparency
+      std::vector<gfx::PNGCodec::Comment>(),
+      &png_data);
+  std::string error_msg;
+  if (!success) {
+    error_msg = "could not encode bitmap as PNG";
+  } else {
+    int bytes_written = file_util::WriteFile(image_path_,
+        reinterpret_cast<char*>(&png_data[0]), png_data.size());
+    success = bytes_written == static_cast<int>(png_data.size());
+    if (!success)
+      error_msg = "could not write snapshot to disk";
+  }
+  SendMessage(success, error_msg);
+}
+
+void PageSnapshotTaker::ExecuteScript(const std::wstring& javascript) {
+  std::wstring set_automation_id;
+  base::SStringPrintf(
+      &set_automation_id,
+      L"window.domAutomationController.setAutomationId(%d);",
+      reply_message_->routing_id());
+
+  render_view_->ExecuteJavascriptInWebFrame(string16(),
+                                            WideToUTF16Hack(set_automation_id));
+  render_view_->ExecuteJavascriptInWebFrame(string16(),
+                                            WideToUTF16Hack(javascript));
+}
 
 void PageSnapshotTaker::SendMessage(bool success,
                                     const std::string& error_msg) {

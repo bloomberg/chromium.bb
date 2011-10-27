@@ -389,6 +389,11 @@ class ScreenshotTest(ChromeDriverTest):
   REDBOX = "automation_proxy_snapshot/set_size.html"
 
   def testScreenCaptureAgainstReference(self):
+    # This has regressed on linux because of tighter sandbox restrictions.
+    # See crbug.com/89777.
+    if IsLinux():
+      return
+
     # Create a red square of 2000x2000 pixels.
     url = GetFileURLForPath(os.path.join(test_paths.DataDir(),
                                          self.REDBOX))

@@ -48,12 +48,6 @@ class TabEventObserver {
   // This method will always be called if |OnFirstPendingLoad| was called.
   virtual void OnNoMorePendingLoads(TabContents* tab_contents) { }
 
-  // Called as a result of a tab being snapshotted.
-  virtual void OnSnapshotEntirePageACK(
-      bool success,
-      const std::vector<unsigned char>& png_data,
-      const std::string& error_msg) { }
-
  protected:
   TabEventObserver();
   virtual ~TabEventObserver();
@@ -90,20 +84,12 @@ class AutomationTabHelper
   void AddObserver(TabEventObserver* observer);
   void RemoveObserver(TabEventObserver* observer);
 
-  // Snapshots the entire page without resizing.
-  void SnapshotEntirePage();
-
   // Returns true if the tab is loading or the tab is scheduled to load
   // immediately. Note that scheduled loads may be canceled.
   bool has_pending_loads() const;
 
  private:
   friend class AutomationTabHelperTest;
-
-  void OnSnapshotEntirePageACK(
-      bool success,
-      const std::vector<unsigned char>& png_data,
-      const std::string& error_msg);
 
   // TabContentsObserver implementation.
   virtual void DidStartLoading();
