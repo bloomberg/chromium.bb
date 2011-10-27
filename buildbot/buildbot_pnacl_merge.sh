@@ -17,6 +17,7 @@ fi
 echo "****************** Environment ******************"
 env
 
+RETCODE=0
 TOOLCHAIN_LABEL="pnacl_linux_x86_64_newlib"
 GSBASE="gs://nativeclient-archive2/pnacl/between_bots/llvm"
 
@@ -113,18 +114,18 @@ download-toolchain() {
 scons-bot() {
   #download-toolchain
   local concurrency=8
-  FAIL_FAST=false ${PNACL_SCRIPT} mode-test-all ${concurrency}
+  FAIL_FAST=false ${PNACL_SCRIPT} mode-test-all ${concurrency} || RETCODE=$?
 }
 
 spec2k-x86-bot() {
   #download-toolchain
-  CLOBBER=no ${SPEC2K_SCRIPT} pnacl-x8632
-  CLOBBER=no ${SPEC2K_SCRIPT} pnacl-x8664
+  CLOBBER=no ${SPEC2K_SCRIPT} pnacl-x8632 || RETCODE=$?
+  CLOBBER=no ${SPEC2K_SCRIPT} pnacl-x8664 || RETCODE=$?
 }
 
 spec2k-arm-bot() {
   #download-toolchain
-  CLOBBER=no ${SPEC2K_SCRIPT} pnacl-arm
+  CLOBBER=no ${SPEC2K_SCRIPT} pnacl-arm || RETCODE=$?
 }
 
 if [[ $# -eq 0 ]] ; then
@@ -139,3 +140,5 @@ if [ "$(type -t $1)" != "function" ]; then
 fi
 
 "$@"
+
+exit ${RETCODE}

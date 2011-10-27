@@ -149,7 +149,7 @@ fi
 
 for arch in ${RUN_TESTS} ; do
   echo @@@BUILD_STEP test-${arch}@@@
-  PNACL_BUILDBOT=true ${PNACL_TEST} test-${arch} ||
+  PNACL_BUILDBOT=true ${PNACL_TEST} test-${arch} -k ||
       { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 done
 
