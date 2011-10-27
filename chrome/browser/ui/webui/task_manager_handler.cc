@@ -401,6 +401,10 @@ void TaskManagerHandler::OpenAboutMemory(const ListValue* indexes) {
 
 // TaskManagerHandler, private: -----------------------------------------------
 
+bool TaskManagerHandler::is_alive() {
+  return web_ui_->tab_contents()->render_view_host();
+}
+
 void TaskManagerHandler::UpdateResourceGroupTable(int start, int length) {
   if (resource_to_group_table_.size() < static_cast<size_t>(start)) {
     length += start - resource_to_group_table_.size();
@@ -426,7 +430,7 @@ void TaskManagerHandler::OnGroupChanged(const int group_start,
   for (int i = 0; i < group_length; ++i)
     tasks_value.Append(CreateTaskGroupValue(model_, group_start + i));
 
-  if (is_enabled_) {
+  if (is_enabled_ && is_alive()) {
     web_ui_->CallJavascriptFunction("taskChanged",
                                     start_value, length_value, tasks_value);
   }
@@ -440,7 +444,7 @@ void TaskManagerHandler::OnGroupAdded(const int group_start,
   for (int i = 0; i < group_length; ++i)
     tasks_value.Append(CreateTaskGroupValue(model_, group_start + i));
 
-  if (is_enabled_) {
+  if (is_enabled_ && is_alive()) {
     web_ui_->CallJavascriptFunction("taskAdded",
                                     start_value, length_value, tasks_value);
   }
@@ -450,6 +454,6 @@ void TaskManagerHandler::OnGroupRemoved(const int group_start,
                                         const int group_length) {
   base::FundamentalValue start_value(group_start);
   base::FundamentalValue length_value(group_length);
-  if (is_enabled_)
+  if (is_enabled_ && is_alive())
     web_ui_->CallJavascriptFunction("taskRemoved", start_value, length_value);
 }

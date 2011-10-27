@@ -46,6 +46,8 @@ class TaskManagerHandler : public WebUIMessageHandler,
   void OpenAboutMemory(const base::ListValue* indexes);
 
  private:
+  bool is_alive();
+
   // Models
   TaskManager* task_manager_;
   TaskManagerModel* model_;
