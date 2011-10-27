@@ -173,6 +173,9 @@ void NativeTextfieldWin::AttachHack() {
 
 string16 NativeTextfieldWin::GetText() const {
   int len = GetTextLength() + 1;
+  if (len <= 1)
+    return string16();
+
   string16 str;
   GetWindowText(WriteInto(&str, len), len);
   // The text get from GetWindowText() might be wrapped with explicit bidi
@@ -204,16 +207,14 @@ void NativeTextfieldWin::AppendText(const string16& text) {
 
 string16 NativeTextfieldWin::GetSelectedText() const {
   // Figure out the length of the selection.
-  long start;
-  long end;
-  GetSel(start, end);
+  CHARRANGE sel;
+  GetSel(sel);
+  if (sel.cpMin == sel.cpMax)  // GetSelText() crashes on NULL input.
+    return string16();
 
   // Grab the selected text.
   string16 str;
-  long length = end - start;
-  if (length > 0)
-    GetSelText(WriteInto(&str, length + 1));
-
+  GetSelText(WriteInto(&str, sel.cpMax - sel.cpMin + 1));
   return str;
 }
 
