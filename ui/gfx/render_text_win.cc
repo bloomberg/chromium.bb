@@ -589,8 +589,13 @@ void RenderTextWin::DrawVisualText(Canvas* canvas) {
   Point offset(ToViewPoint(Point()));
   // TODO(msw): Establish a vertical baseline for strings of mixed font heights.
   size_t height = default_style().font.GetHeight();
+
+  float base_x = SkIntToScalar(offset.x());
+  float base_y = SkIntToScalar(offset.y());
   // Center the text vertically in the display area.
-  offset.Offset(0, (display_rect().height() - height) / 2);
+  base_y += (display_rect().height() - height) / 2;
+  // Offset by the font size to account for Skia expecting y to be the bottom.
+  base_y += default_style().font.GetFontSize();
 
   SkPaint paint;
   paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
@@ -598,8 +603,7 @@ void RenderTextWin::DrawVisualText(Canvas* canvas) {
   paint.setAntiAlias(true);
   paint.setSubpixelText(true);
   paint.setLCDRenderText(true);
-  SkPoint point(SkPoint::Make(SkIntToScalar(offset.x()),
-      SkIntToScalar(display_rect().height() - offset.y())));
+
   scoped_array<SkPoint> pos;
   for (size_t i = 0; i < runs_.size(); ++i) {
     // Get the run specified by the visual-to-logical map.
@@ -620,9 +624,9 @@ void RenderTextWin::DrawVisualText(Canvas* canvas) {
     // Based on WebCore::skiaDrawText.
     pos.reset(new SkPoint[run->glyph_count]);
     for (int glyph = 0; glyph < run->glyph_count; glyph++) {
-        pos[glyph].set(point.x() + run->offsets[glyph].du,
-                       point.y() + run->offsets[glyph].dv);
-        point.offset(SkIntToScalar(run->advance_widths[glyph]), 0);
+        pos[glyph].set(base_x + run->offsets[glyph].du,
+                       base_y + run->offsets[glyph].dv);
+        base_x += SkIntToScalar(run->advance_widths[glyph]);
     }
     size_t byte_length = run->glyph_count * sizeof(WORD);
     canvas_skia->drawPosText(run->glyphs.get(), byte_length, pos.get(), paint);
