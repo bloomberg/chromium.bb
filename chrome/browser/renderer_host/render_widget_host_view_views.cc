@@ -1127,7 +1127,7 @@ void RenderWidgetHostViewViews::AcceleratedSurfaceNew(
   }
   *surface_handle = surface->Handle();
 
-  accelerated_surface_containers_[*surface_id] = surface.release();
+  accelerated_surface_containers_[*surface_id] = surface;
 }
 
 void RenderWidgetHostViewViews::AcceleratedSurfaceRelease(uint64 surface_id) {
