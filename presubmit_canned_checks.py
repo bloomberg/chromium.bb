@@ -678,50 +678,8 @@ def RunPylint(input_api, output_api, white_list=None, black_list=None):
 # TODO(dpranke): Get the host_url from the input_api instead
 def CheckRietveldTryJobExecution(input_api, output_api, host_url, platforms,
                                  owner):
-  if not input_api.is_committing:
-    return []
-  if not input_api.change.issue or not input_api.change.patchset:
-    return []
-  url = '%s/%d/get_build_results/%d' % (
-      host_url, input_api.change.issue, input_api.change.patchset)
-  try:
-    connection = input_api.urllib2.urlopen(url)
-    # platform|status|url
-    values = [item.split('|', 2) for item in connection.read().splitlines()]
-    connection.close()
-  except input_api.urllib2.HTTPError, e:
-    if e.code == 404:
-      # Fallback to no try job.
-      return [output_api.PresubmitPromptWarning(
-          'You should try the patch first.')]
-    else:
-      # Another HTTP error happened, warn the user.
-      return [output_api.PresubmitPromptWarning(
-          'Got %s while looking for try job status.' % str(e))]
-
-  if not values:
-    # It returned an empty list. Probably a private review.
-    return []
-  # Reformat as an dict of platform: [status, url]
-  values = dict([[v[0], [v[1], v[2]]] for v in values if len(v) == 3])
-  if not values:
-    # It returned useless data.
-    return [output_api.PresubmitNotifyResult('Failed to parse try job results')]
-
-  for platform in platforms:
-    values.setdefault(platform, ['not started', ''])
-  message = None
-  non_success = [k.upper() for k, v in values.iteritems() if v[0] != 'success']
-  if 'failure' in [v[0] for v in values.itervalues()]:
-    message = 'Try job failures on %s!\n' % ', '.join(non_success)
-  elif non_success:
-    message = ('Unfinished (or not even started) try jobs on '
-                '%s.\n') % ', '.join(non_success)
-  if message:
-    message += (
-        'Is try server wrong or broken? Please notify %s. '
-        'Thanks.\n' % owner)
-    return [output_api.PresubmitPromptWarning(message=message)]
+  # Temporarily 'fix' the check while the Rietveld API is being upgraded to
+  # something sensible.
   return []
 
 

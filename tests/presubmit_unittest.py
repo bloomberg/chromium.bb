@@ -2000,48 +2000,6 @@ class CannedChecksUnittest(PresubmitTestsBase):
         input_api, presubmit.OutputApi, ['test_module'])
     self.assertEquals(len(results), 0)
 
-  def testCheckRietveldTryJobExecutionBad(self):
-    change = self.mox.CreateMock(presubmit.SvnChange)
-    change.scm = 'svn'
-    change.issue = 2
-    change.patchset = 5
-    input_api = self.MockInputApi(change, True)
-    connection = self.mox.CreateMockAnything()
-    input_api.urllib2.urlopen('uurl/2/get_build_results/5').AndReturn(
-        connection)
-    connection.read().AndReturn('foo')
-    connection.close()
-    self.mox.ReplayAll()
-
-    results = presubmit_canned_checks.CheckRietveldTryJobExecution(
-        input_api, presubmit.OutputApi, 'uurl', ('mac', 'linux'), 'georges')
-    self.assertEquals(len(results), 1)
-    self.assertEquals(results[0].__class__,
-        presubmit.OutputApi.PresubmitNotifyResult)
-
-  def testCheckRietveldTryJobExecutionGood(self):
-    change = self.mox.CreateMock(presubmit.SvnChange)
-    change.scm = 'svn'
-    change.issue = 2
-    change.patchset = 5
-    input_api = self.MockInputApi(change, True)
-    connection = self.mox.CreateMockAnything()
-    input_api.urllib2.urlopen('uurl/2/get_build_results/5').AndReturn(
-        connection)
-    connection.read().AndReturn("""amiga|Foo|blah
-linux|failure|bleh
-mac|success|blew
-""")
-    connection.close()
-    self.mox.ReplayAll()
-
-    results = presubmit_canned_checks.CheckRietveldTryJobExecution(
-        input_api, presubmit.OutputApi, 'uurl', ('mac', 'linux', 'amiga'),
-        'georges')
-    self.assertEquals(len(results), 1)
-    self.assertEquals(results[0].__class__,
-        presubmit.OutputApi.PresubmitPromptWarning)
-
   def testCheckBuildbotPendingBuildsBad(self):
     input_api = self.MockInputApi(None, True)
     connection = self.mox.CreateMockAnything()
