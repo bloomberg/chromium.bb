@@ -25,11 +25,11 @@
 #include "content/browser/renderer_host/backing_store_win.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_widget_host.h"
-#include "content/public/browser/notification_service.h"
 #include "content/common/plugin_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/common/content_switches.h"
 #include "skia/ext/skia_utils_win.h"
@@ -1024,18 +1024,15 @@ void RenderWidgetHostViewWin::OnPaint(HDC unused_dc) {
 void RenderWidgetHostViewWin::DrawBackground(const RECT& dirty_rect,
                                              CPaintDC* dc) {
   if (!background_.empty()) {
-    gfx::CanvasSkia canvas(dirty_rect.right - dirty_rect.left,
-                           dirty_rect.bottom - dirty_rect.top,
-                           true);  // opaque
-    canvas.TranslateInt(-dirty_rect.left, -dirty_rect.top);
+    gfx::Rect dirty_area(dirty_rect);
+    gfx::CanvasSkia canvas(dirty_area.width(), dirty_area.height(), true);
+    canvas.Translate(gfx::Point().Subtract(dirty_area.origin()));
 
-    const RECT& dc_rect = dc->m_ps.rcPaint;
-    canvas.TileImageInt(background_, 0, 0,
-                        dc_rect.right - dc_rect.left,
-                        dc_rect.bottom - dc_rect.top);
+    gfx::Rect dc_rect(dc->m_ps.rcPaint);
+    canvas.TileImageInt(background_, 0, 0, dc_rect.width(), dc_rect.height());
 
-    skia::DrawToNativeContext(canvas.sk_canvas(), *dc, dirty_rect.left,
-                              dirty_rect.top, NULL);
+    skia::DrawToNativeContext(canvas.sk_canvas(), *dc, dirty_area.x(),
+                              dirty_area.y(), NULL);
   } else {
     HBRUSH white_brush = reinterpret_cast<HBRUSH>(GetStockObject(WHITE_BRUSH));
     dc->FillRect(&dirty_rect, white_brush);

@@ -227,7 +227,7 @@ void FindBarView::OnPaint(gfx::Canvas* canvas) {
   // Now flip the canvas for the rest of the graphics if in RTL mode.
   canvas->Save();
   if (base::i18n::IsRTL()) {
-    canvas->TranslateInt(width(), 0);
+    canvas->Translate(gfx::Point(width(), 0));
     canvas->ScaleInt(-1, 1);
   }
 

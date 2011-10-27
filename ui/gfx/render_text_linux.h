@@ -118,6 +118,6 @@ class RenderTextLinux : public RenderText {
   DISALLOW_COPY_AND_ASSIGN(RenderTextLinux);
 };
 
-}  // namespace gfx;
+}  // namespace gfx
 
 #endif  // UI_GFX_RENDER_TEXT_LINUX_H_

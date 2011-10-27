@@ -11,6 +11,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/insets.h"
+#include "ui/gfx/point.h"
 
 namespace views {
 
@@ -149,7 +150,7 @@ void Painter::PaintPainterAt(int x, int y, int w, int h,
   if (w < 0 || h < 0)
     return;
   canvas->Save();
-  canvas->TranslateInt(x, y);
+  canvas->Translate(gfx::Point(x, y));
   painter->Paint(w, h, canvas);
   canvas->Restore();
 }

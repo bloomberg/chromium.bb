@@ -19,7 +19,6 @@ class SkCanvas;
 
 namespace ui {
 class Transform;
-
 typedef unsigned int TextureID;
 }
 
@@ -99,17 +98,12 @@ class UI_EXPORT Canvas {
   // call Restore() more times than Save*().
   virtual void Restore() = 0;
 
-  // Wrapper function that takes integer arguments.
   // Returns true if the clip is non-empty.
-  // See clipRect for specifics.
-  virtual bool ClipRectInt(const gfx::Rect& rect) = 0;
+  virtual bool ClipRect(const gfx::Rect& rect) = 0;
+
+  virtual void Translate(const gfx::Point& point) = 0;
 
   // Wrapper function that takes integer arguments.
-  // See translate() for specifics.
-  virtual void TranslateInt(int x, int y) = 0;
-
-  // Wrapper function that takes integer arguments.
-  // See scale() for specifics.
   virtual void ScaleInt(int x, int y) = 0;
 
   // Fills the specified region with the specified color using a transfer
@@ -257,6 +251,6 @@ class UI_EXPORT CanvasPaint {
   virtual Canvas* AsCanvas() = 0;
 };
 
-}  // namespace gfx;
+}  // namespace gfx
 
 #endif  // UI_GFX_CANVAS_H_

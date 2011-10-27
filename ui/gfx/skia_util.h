@@ -46,9 +46,9 @@ UI_EXPORT bool BitmapsAreEqual(const SkBitmap& bitmap1,
 // there was none.
 UI_EXPORT string16 RemoveAcceleratorChar(const string16& s,
                                          char16 accelerator_char,
-                                         int *accelerated_char_pos,
-                                         int *accelerated_char_span);
+                                         int* accelerated_char_pos,
+                                         int* accelerated_char_span);
 
-}  // namespace gfx;
+}  // namespace gfx
 
 #endif  // UI_GFX_SKIA_UTIL_H_

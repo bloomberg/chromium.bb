@@ -9,6 +9,7 @@
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/point.h"
 
 namespace {
 
@@ -29,7 +30,7 @@ const SkColor kIndicatorStroke = SkColorSetRGB(0, 0, 0);
 SkBitmap* CreateRadioButtonImage(bool selected) {
   // + 2 (1px on each side) to cover rounding error.
   gfx::CanvasSkia canvas(kIndicatorSize + 2, kIndicatorSize + 2, false);
-  canvas.TranslateInt(1, 1);
+  canvas.Translate(gfx::Point(1, 1));
 
   SkPoint gradient_points[3];
   gradient_points[0].set(SkIntToScalar(0), SkIntToScalar(0));

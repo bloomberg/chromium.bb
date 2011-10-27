@@ -110,12 +110,12 @@ void CanvasSkia::Restore() {
   canvas_->restore();
 }
 
-bool CanvasSkia::ClipRectInt(const gfx::Rect& rect) {
+bool CanvasSkia::ClipRect(const gfx::Rect& rect) {
   return canvas_->clipRect(gfx::RectToSkRect(rect));
 }
 
-void CanvasSkia::TranslateInt(int x, int y) {
-  canvas_->translate(SkIntToScalar(x), SkIntToScalar(y));
+void CanvasSkia::Translate(const gfx::Point& point) {
+  canvas_->translate(SkIntToScalar(point.x()), SkIntToScalar(point.y()));
 }
 
 void CanvasSkia::ScaleInt(int x, int y) {
@@ -334,7 +334,7 @@ void CanvasSkia::TileImageInt(const SkBitmap& bitmap,
   canvas_->save();
   canvas_->translate(SkIntToScalar(dest_x - src_x),
                      SkIntToScalar(dest_y - src_y));
-  ClipRectInt(gfx::Rect(src_x, src_y, w, h));
+  ClipRect(gfx::Rect(src_x, src_y, w, h));
   canvas_->drawPaint(paint);
   canvas_->restore();
 }

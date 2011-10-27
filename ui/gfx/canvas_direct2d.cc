@@ -173,7 +173,7 @@ void CanvasDirect2D::Restore() {
   rt_->RestoreDrawingState(drawing_state_block_);
 }
 
-bool CanvasDirect2D::ClipRectInt(const gfx::Rect& rect) {
+bool CanvasDirect2D::ClipRect(const gfx::Rect& rect) {
   rt_->PushAxisAlignedClip(RectToRectF(rect),
                            D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
   // Increment the clip count so the call to PushAxisAlignedClip() can be
@@ -182,13 +182,13 @@ bool CanvasDirect2D::ClipRectInt(const gfx::Rect& rect) {
   return !rect.IsEmpty();
 }
 
-void CanvasDirect2D::TranslateInt(int x, int y) {
+void CanvasDirect2D::Translate(const gfx::Point& point) {
   D2D1_MATRIX_3X2_F raw;
   rt_->GetTransform(&raw);
   D2D1::Matrix3x2F transform(raw._11, raw._12, raw._21, raw._22, raw._31,
                              raw._32);
-  transform = D2D1::Matrix3x2F::Translation(static_cast<float>(x),
-                                            static_cast<float>(y)) * transform;
+  transform = D2D1::Matrix3x2F::Translation(
+      static_cast<float>(point.x()), static_cast<float>(point.y())) * transform;
   rt_->SetTransform(transform);
 }
 

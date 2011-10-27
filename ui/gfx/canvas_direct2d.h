@@ -31,8 +31,8 @@ class UI_EXPORT CanvasDirect2D : public Canvas {
   virtual void SaveLayerAlpha(uint8 alpha,
                               const gfx::Rect& layer_bounds) OVERRIDE;
   virtual void Restore() OVERRIDE;
-  virtual bool ClipRectInt(const gfx::Rect& rect) OVERRIDE;
-  virtual void TranslateInt(int x, int y) OVERRIDE;
+  virtual bool ClipRect(const gfx::Rect& rect) OVERRIDE;
+  virtual void Translate(const gfx::Point& point) OVERRIDE;
   virtual void ScaleInt(int x, int y) OVERRIDE;
   virtual void FillRectInt(const SkColor& color,
                            int x, int y, int w, int h) OVERRIDE;
@@ -117,6 +117,6 @@ class UI_EXPORT CanvasDirect2D : public Canvas {
   DISALLOW_COPY_AND_ASSIGN(CanvasDirect2D);
 };
 
-}  // namespace gfx;
+}  // namespace gfx
 
 #endif  // UI_GFX_CANVAS_DIRECT2D_H_

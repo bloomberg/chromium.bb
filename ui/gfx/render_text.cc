@@ -341,7 +341,7 @@ int RenderText::GetStringWidth() {
 
 void RenderText::Draw(Canvas* canvas) {
   // Clip the canvas to the text display area.
-  canvas->ClipRectInt(display_rect_);
+  canvas->ClipRect(display_rect_);
 
   // Draw the selection.
   std::vector<Rect> selection(GetSubstringBounds(GetSelectionStart(),

@@ -391,7 +391,7 @@ void TabRendererGtk::PaintFaviconArea(GdkEventExpose* event) {
 
   // The actual paint methods expect 0, 0 to be the tab top left (see
   // PaintTab).
-  canvas.TranslateInt(x(), y());
+  canvas.Translate(bounds_.origin());
 
   // Paint the background behind the favicon.
   int theme_id;
@@ -803,7 +803,7 @@ void TabRendererGtk::PaintTab(GdkEventExpose* event) {
   // The tab is rendered into a windowless widget whose offset is at the
   // coordinate event->area.  Translate by these offsets so we can render at
   // (0,0) to match Windows' rendering metrics.
-  canvas.TranslateInt(event->area.x, event->area.y);
+  canvas.Translate(gfx::Rect(event->area).origin());
 
   // Save the original x offset so we can position background images properly.
   background_offset_x_ = event->area.x;
@@ -834,8 +834,7 @@ void TabRendererGtk::PaintIcon(gfx::Canvas* canvas) {
     PaintLoadingAnimation(canvas);
   } else {
     canvas->Save();
-    canvas->ClipRectInt(
-        gfx::Rect(0, 0, width(), height() - kFaviconTitleSpacing));
+    canvas->ClipRect(gfx::Rect(0, 0, width(), height() - kFaviconTitleSpacing));
     if (should_display_crashed_favicon_) {
       canvas->DrawBitmapInt(*crashed_favicon, 0, 0,
                             crashed_favicon->width(),
@@ -979,8 +978,8 @@ void TabRendererGtk::PaintLoadingAnimation(gfx::Canvas* canvas) {
 
   // NOTE: the clipping is a work around for 69528, it shouldn't be necessary.
   canvas->Save();
-  canvas->ClipRectInt(gfx::Rect(favicon_bounds_.x(), favicon_bounds_.y(),
-                                image_size, image_size));
+  canvas->ClipRect(gfx::Rect(favicon_bounds_.x(), favicon_bounds_.y(),
+                             image_size, image_size));
   canvas->DrawBitmapInt(*frames, image_offset, 0, image_size, image_size,
       favicon_bounds_.x(), favicon_bounds_.y(), image_size, image_size,
       false);

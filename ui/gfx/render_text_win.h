@@ -123,6 +123,6 @@ class RenderTextWin : public RenderText {
   DISALLOW_COPY_AND_ASSIGN(RenderTextWin);
 };
 
-}  // namespace gfx;
+}  // namespace gfx
 
 #endif  // UI_GFX_RENDER_TEXT_WIN_H_

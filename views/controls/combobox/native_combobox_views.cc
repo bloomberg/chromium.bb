@@ -302,7 +302,7 @@ void NativeComboboxViews::PaintText(gfx::Canvas* canvas) {
   gfx::Insets insets = GetInsets();
 
   canvas->Save();
-  canvas->ClipRectInt(GetContentsBounds());
+  canvas->ClipRect(GetContentsBounds());
 
   int x = insets.left();
   int y = insets.top();

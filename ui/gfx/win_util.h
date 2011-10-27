@@ -16,7 +16,6 @@ UI_EXPORT bool Direct2dIsAvailable();
 // Returns true if DirectWrite is available, false otherwise.
 bool DirectWriteIsAvailable();
 
-}  // namespace gfx;
+}  // namespace gfx
 
 #endif  // UI_GFX_WIN_UTIL_H_
-

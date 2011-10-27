@@ -22,4 +22,4 @@ const SkCanvas* Canvas::GetSkCanvas() const {
   return NULL;
 }
 
-}  // namespace gfx;
+}  // namespace gfx

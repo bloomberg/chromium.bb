@@ -8,8 +8,8 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebExternalTextureLayer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContentLayer.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebExternalTextureLayer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFloatPoint.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFloatRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"
@@ -17,8 +17,8 @@
 #if defined(USE_WEBKIT_COMPOSITOR)
 #include "ui/gfx/compositor/compositor_cc.h"
 #endif
-#include "ui/gfx/compositor/layer_animation_manager.h"
 #include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/compositor/layer_animation_manager.h"
 #include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/point3.h"
 
@@ -417,7 +417,7 @@ void Layer::UpdateLayerCanvas() {
   }
   scoped_ptr<gfx::Canvas> canvas(gfx::Canvas::CreateCanvas(
       draw_rect.width(), draw_rect.height(), false));
-  canvas->TranslateInt(-draw_rect.x(), -draw_rect.y());
+  canvas->Translate(gfx::Point().Subtract(draw_rect.origin()));
   delegate_->OnPaintLayer(canvas.get());
   SetCanvas(*canvas->GetSkCanvas(), draw_rect.origin());
 #endif

@@ -220,7 +220,7 @@ TEST(CanvasDirect2D, ClipRect) {
   gfx::CanvasDirect2D canvas(window.rt());
 
   canvas.FillRectInt(SK_ColorGREEN, 0, 0, 500, 500);
-  canvas.ClipRectInt(gfx::Rect(20, 20, 120, 120));
+  canvas.ClipRect(gfx::Rect(20, 20, 120, 120));
   canvas.FillRectInt(SK_ColorBLUE, 0, 0, 500, 500);
 }
 
@@ -233,14 +233,14 @@ TEST(CanvasDirect2D, ClipRectWithTranslate) {
   // Repeat the same rendering as in ClipRect...
   canvas.Save();
   canvas.FillRectInt(SK_ColorGREEN, 0, 0, 500, 500);
-  canvas.ClipRectInt(gfx::Rect(20, 20, 120, 120));
+  canvas.ClipRect(gfx::Rect(20, 20, 120, 120));
   canvas.FillRectInt(SK_ColorBLUE, 0, 0, 500, 500);
   canvas.Restore();
 
   // ... then translate, clip and fill again relative to the new origin.
   canvas.Save();
-  canvas.TranslateInt(150, 150);
-  canvas.ClipRectInt(gfx::Rect(10, 10, 110, 110));
+  canvas.Translate(gfx::Point(150, 150));
+  canvas.ClipRect(gfx::Rect(10, 10, 110, 110));
   canvas.FillRectInt(SK_ColorRED, 0, 0, 500, 500);
   canvas.Restore();
 }
@@ -254,16 +254,16 @@ TEST(CanvasDirect2D, ClipRectWithScale) {
   // Repeat the same rendering as in ClipRect...
   canvas.Save();
   canvas.FillRectInt(SK_ColorGREEN, 0, 0, 500, 500);
-  canvas.ClipRectInt(gfx::Rect(20, 20, 120, 120));
+  canvas.ClipRect(gfx::Rect(20, 20, 120, 120));
   canvas.FillRectInt(SK_ColorBLUE, 0, 0, 500, 500);
   canvas.Restore();
 
   // ... then translate and scale, clip and fill again relative to the new
   // origin.
   canvas.Save();
-  canvas.TranslateInt(150, 150);
+  canvas.Translate(gfx::Point(150, 150));
   canvas.ScaleInt(2, 2);
-  canvas.ClipRectInt(gfx::Rect(10, 10, 110, 110));
+  canvas.ClipRect(gfx::Rect(10, 10, 110, 110));
   canvas.FillRectInt(SK_ColorRED, 0, 0, 500, 500);
   canvas.Restore();
 }

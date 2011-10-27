@@ -532,7 +532,7 @@ void CanvasSkia::DrawFadeTruncatingString(
   // Move the origin to |display_rect.origin()|. This simplifies all the
   // drawing so that both the source and destination can be (0,0).
   canvas_->save(SkCanvas::kMatrix_SaveFlag);
-  TranslateInt(display_rect.x(), display_rect.y());
+  Translate(display_rect.origin());
 
   gfx::Rect solid_part(gfx::Point(), display_rect.size());
   gfx::Rect head_part;
@@ -569,7 +569,7 @@ void CanvasSkia::DrawFadeTruncatingString(
 
   // Draw the solid part.
   canvas_->save(SkCanvas::kClip_SaveFlag);
-  ClipRectInt(solid_part);
+  ClipRect(solid_part);
   DrawStringInt(text, font, color,
                 text_rect.x(), text_rect.y(),
                 text_rect.width(), text_rect.height(),

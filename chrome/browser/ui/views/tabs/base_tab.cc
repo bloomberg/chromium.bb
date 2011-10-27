@@ -88,7 +88,7 @@ void DrawIconCenter(gfx::Canvas* canvas,
   int dst_y = bounds.y() - (icon_height - bounds.height()) / 2;
   // NOTE: the clipping is a work around for 69528, it shouldn't be necessary.
   canvas->Save();
-  canvas->ClipRectInt(gfx::Rect(dst_x, dst_y, icon_width, icon_height));
+  canvas->ClipRect(gfx::Rect(dst_x, dst_y, icon_width, icon_height));
   canvas->DrawBitmapInt(image,
                         image_offset, 0, icon_width, icon_height,
                         dst_x, dst_y, icon_width, icon_height,
@@ -444,7 +444,7 @@ void BaseTab::PaintIcon(gfx::Canvas* canvas) {
                    icon_size, icon_size, bounds, false);
   } else {
     canvas->Save();
-    canvas->ClipRectInt(GetLocalBounds());
+    canvas->ClipRect(GetLocalBounds());
     if (should_display_crashed_favicon_) {
       ResourceBundle& rb = ResourceBundle::GetSharedInstance();
       SkBitmap crashed_favicon(*rb.GetBitmapNamed(IDR_SAD_FAVICON));

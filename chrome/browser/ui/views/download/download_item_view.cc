@@ -743,7 +743,7 @@ void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
     // (hot_)body_image_set->bottom_left, and drop_down_image_set,
     // for RTL UI, we flip the canvas to draw those images mirrored.
     // Consequently, we do not need to mirror the x-axis of those images.
-    canvas->TranslateInt(width(), 0);
+    canvas->Translate(gfx::Point(width(), 0));
     canvas->ScaleInt(-1, 1);
   }
   PaintBitmaps(canvas,

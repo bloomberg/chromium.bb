@@ -100,8 +100,8 @@ class UI_EXPORT CanvasSkia : public Canvas {
   virtual void SaveLayerAlpha(uint8 alpha,
                               const gfx::Rect& layer_bounds) OVERRIDE;
   virtual void Restore() OVERRIDE;
-  virtual bool ClipRectInt(const gfx::Rect& rect) OVERRIDE;
-  virtual void TranslateInt(int x, int y) OVERRIDE;
+  virtual bool ClipRect(const gfx::Rect& rect) OVERRIDE;
+  virtual void Translate(const gfx::Point& point) OVERRIDE;
   virtual void ScaleInt(int x, int y) OVERRIDE;
   virtual void FillRectInt(const SkColor& color,
                            int x, int y, int w, int h) OVERRIDE;
@@ -196,9 +196,10 @@ class UI_EXPORT CanvasSkia : public Canvas {
 
   scoped_ptr<skia::PlatformCanvas> owned_canvas_;
   SkCanvas* canvas_;
+
   DISALLOW_COPY_AND_ASSIGN(CanvasSkia);
 };
 
-}  // namespace gfx;
+}  // namespace gfx
 
 #endif  // UI_GFX_CANVAS_SKIA_H_
