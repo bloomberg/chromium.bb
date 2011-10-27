@@ -187,10 +187,26 @@ void UserImageScreen::OnDownloadSuccess(const SkBitmap& image) {
   base::TimeDelta delta = base::Time::Now() - profile_image_load_start_time_;
   VLOG(1) << "Profile image download time: " << delta.InSecondsF();
   UMA_HISTOGRAM_TIMES("UserImage.FirstTimeProfileImageDownload", delta);
+  UMA_HISTOGRAM_ENUMERATION("UserImageDownloadResult.NewUser",
+                            ProfileImageDownloader::kDownloadSuccess,
+                            ProfileImageDownloader::kDownloadResultsCount);
 
-  // TODO(avayvod): Check for the default image.
   if (actor_)
     actor_->AddProfileImage(image);
+}
+
+void UserImageScreen::OnDownloadFailure() {
+  VLOG(1) << "Download of profile image for new user failed.";
+  UMA_HISTOGRAM_ENUMERATION("UserImageDownloadResult.NewUser",
+                            ProfileImageDownloader::kDownloadFailure,
+                            ProfileImageDownloader::kDownloadResultsCount);
+}
+
+void UserImageScreen::OnDownloadDefaultImage() {
+  VLOG(1) << "New user has the default profile image.";
+  UMA_HISTOGRAM_ENUMERATION("UserImageDownloadResult.NewUser",
+                            ProfileImageDownloader::kDownloadDefault,
+                            ProfileImageDownloader::kDownloadResultsCount);
 }
 
 }  // namespace chromeos

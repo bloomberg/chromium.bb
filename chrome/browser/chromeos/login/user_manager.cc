@@ -681,6 +681,9 @@ void UserManager::OnImageLoaded(const std::string& username,
 
 void UserManager::OnDownloadSuccess(const SkBitmap& image) {
   VLOG(1) << "Downloaded profile image for logged-in user.";
+  UMA_HISTOGRAM_ENUMERATION("UserImageDownloadResult.LoggedIn",
+                            ProfileImageDownloader::kDownloadSuccess,
+                            ProfileImageDownloader::kDownloadResultsCount);
 
   std::string current_image_data_url =
       web_ui_util::GetImageDataUrl(logged_in_user_.image());
@@ -688,6 +691,10 @@ void UserManager::OnDownloadSuccess(const SkBitmap& image) {
       web_ui_util::GetImageDataUrl(image);
   if (current_image_data_url != new_image_data_url) {
     VLOG(1) << "Updating profile image for logged-in user";
+    UMA_HISTOGRAM_ENUMERATION("UserImageDownloadResult.LoggedIn",
+                              ProfileImageDownloader::kDownloadSuccessChanged,
+                              ProfileImageDownloader::kDownloadResultsCount);
+
     SetLoggedInUserImage(image, User::kProfileImageIndex);
     SaveUserImage(logged_in_user_.email(), image, User::kProfileImageIndex);
     content::NotificationService::current()->Notify(
@@ -695,6 +702,20 @@ void UserManager::OnDownloadSuccess(const SkBitmap& image) {
         content::Source<UserManager>(this),
         content::Details<const UserManager::User>(&logged_in_user()));
   }
+}
+
+void UserManager::OnDownloadFailure() {
+  VLOG(1) << "Download of profile image for logged-in user failed.";
+  UMA_HISTOGRAM_ENUMERATION("UserImageDownloadResult.LoggedIn",
+                            ProfileImageDownloader::kDownloadFailure,
+                            ProfileImageDownloader::kDownloadResultsCount);
+}
+
+void UserManager::OnDownloadDefaultImage() {
+  VLOG(1) << "Logged-in user still has the default profile image.";
+  UMA_HISTOGRAM_ENUMERATION("UserImageDownloadResult.LoggedIn",
+                            ProfileImageDownloader::kDownloadDefault,
+                            ProfileImageDownloader::kDownloadResultsCount);
 }
 
 bool UserManager::IsLoggedInAsGuest() const {

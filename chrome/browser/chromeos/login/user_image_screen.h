@@ -52,6 +52,8 @@ class UserImageScreen: public WizardScreen,
 
   // ProfileImageDownloader::Delegate implementation.
   virtual void OnDownloadSuccess(const SkBitmap& profile_image) OVERRIDE;
+  virtual void OnDownloadFailure() OVERRIDE;
+  virtual void OnDownloadDefaultImage() OVERRIDE;
 
  private:
   // Common method that handles setting photo or profile image.

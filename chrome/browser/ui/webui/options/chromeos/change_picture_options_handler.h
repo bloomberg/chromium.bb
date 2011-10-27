@@ -78,6 +78,8 @@ class ChangePictureOptionsHandler : public OptionsPageUIHandler,
 
   // ProfileImageDownloader::Delegate implementation.
   virtual void OnDownloadSuccess(const SkBitmap& image) OVERRIDE;
+  virtual void OnDownloadFailure() OVERRIDE;
+  virtual void OnDownloadDefaultImage() OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,

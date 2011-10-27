@@ -304,10 +304,21 @@ void ChangePictureOptionsHandler::OnPhotoAccepted(const SkBitmap& photo) {
 
 void ChangePictureOptionsHandler::OnDownloadSuccess(const SkBitmap& image) {
   // Profile image has been downloaded.
-  // TODO(ivankr): check if profile image is default image.
+  VLOG(1) << "Download of profile image on change picture failed.";
+  UMA_HISTOGRAM_ENUMERATION("UserImageDownloadResult.ChangePicture",
+                            ProfileImageDownloader::kDownloadSuccess,
+                            ProfileImageDownloader::kDownloadResultsCount);
 
   std::string profile_image_data_url = web_ui_util::GetImageDataUrl(image);
   if (profile_image_data_url != profile_image_data_url_) {
+    VLOG(1) << "Updating profile image for the user";
+    if (profile_image_data_url_ != chrome::kAboutBlankURL) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "UserImageDownloadResult.ChangePicture",
+          ProfileImageDownloader::kDownloadSuccessChanged,
+          ProfileImageDownloader::kDownloadResultsCount);
+    }
+
     // Differs from the current profile image.
     profile_image_ = image;
     profile_image_data_url_ = profile_image_data_url;
@@ -317,6 +328,20 @@ void ChangePictureOptionsHandler::OnDownloadSuccess(const SkBitmap& image) {
     web_ui_->CallJavascriptFunction("ChangePictureOptions.setProfileImage",
                                     image_data_url, select);
   }
+}
+
+void ChangePictureOptionsHandler::OnDownloadFailure() {
+  VLOG(1) << "Download of profile image on change picture failed.";
+  UMA_HISTOGRAM_ENUMERATION("UserImageDownloadResult.ChangePicture",
+                            ProfileImageDownloader::kDownloadFailure,
+                            ProfileImageDownloader::kDownloadResultsCount);
+}
+
+void ChangePictureOptionsHandler::OnDownloadDefaultImage() {
+  VLOG(1) << "User still has the default profile image.";
+  UMA_HISTOGRAM_ENUMERATION("UserImageDownloadResult.ChangePicture",
+                            ProfileImageDownloader::kDownloadDefault,
+                            ProfileImageDownloader::kDownloadResultsCount);
 }
 
 void ChangePictureOptionsHandler::CheckCameraPresence() {

@@ -23,6 +23,17 @@ class ProfileImageDownloader : public content::URLFetcherDelegate,
                                public ImageDecoder::Delegate,
                                public content::NotificationObserver {
  public:
+  // Enum for reporting histograms about profile picture download.
+  enum DownloadResult {
+    kDownloadSuccessChanged,
+    kDownloadSuccess,
+    kDownloadFailure,
+    kDownloadDefault,
+
+    // Must be the last, convenient count.
+    kDownloadResultsCount
+  };
+
   // Reports on success or failure of Profile image download.
   class Delegate {
    public:
@@ -33,6 +44,10 @@ class ProfileImageDownloader : public content::URLFetcherDelegate,
 
     // Called on download failure.
     virtual void OnDownloadFailure() {}
+
+    // Called when user has the default profile image and we won't download
+    // it.
+    virtual void OnDownloadDefaultImage() {}
   };
 
   explicit ProfileImageDownloader(Delegate* delegate);
@@ -60,6 +75,9 @@ class ProfileImageDownloader : public content::URLFetcherDelegate,
   // Searches for profile image URL in user entry response from Picasa.
   // Returns an empty string on failure.
   std::string GetProfileImageURL(const std::string& data) const;
+
+  // Returns true if the image url is url of the default profile picture.
+  bool IsDefaultProfileImageURL(const std::string& url) const;
 
   // Issues the first request to get user profile image.
   void StartFetchingImage();

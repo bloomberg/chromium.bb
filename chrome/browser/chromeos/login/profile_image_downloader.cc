@@ -4,11 +4,13 @@
 
 #include "chrome/browser/chromeos/login/profile_image_downloader.h"
 
+#include <string>
 #include <vector>
 
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/chromeos/login/helper.h"
@@ -43,6 +45,27 @@ const char kPhotoThumbnailURLPath[] = "entry.gphoto$thumbnail.$t";
 const char kThumbnailSizeFormat[] = "s%d-c";
 // Default Picasa thumbnail size.
 const int kDefaultThumbnailSize = 64;
+
+// Separator of URL path components.
+const char kURLPathSeparator = '/';
+
+// Photo ID of old low-res default profile picture (base64 of 0).
+const char kOldDefaultPhotoId[] = "AAAAAAAAAAA";
+
+// Current photo ID of the current profile picture (base64 of 2).
+const char kDefaultPhotoId[] = "AAAAAAAAAAI";
+
+// Photo version of the current profile picture (base64 of 0).
+const char kDefaultPhotoVersion[] = "AAAAAAAAAAA";
+
+// Number of path components in profile picture URL.
+const size_t kProfileImageURLPathComponentsCount = 7;
+
+// Index of path component with photo ID.
+const int kPhotoIdPathComponentIndex = 2;
+
+// Index of path component with photo version.
+const int kPhotoVersionPathComponentIndex = 3;
 
 }  // namespace
 
@@ -103,6 +126,28 @@ std::string ProfileImageDownloader::GetProfileImageURL(
     return std::string();
   }
   return thumbnail_url.spec();
+}
+
+bool ProfileImageDownloader::IsDefaultProfileImageURL(
+    const std::string& url) const {
+
+  GURL image_url_object(url);
+  DCHECK(image_url_object.is_valid());
+  VLOG(1) << "URL to check for default image: " << image_url_object.spec();
+  std::vector<std::string> path_components;
+  base::SplitString(image_url_object.path(),
+                    kURLPathSeparator,
+                    &path_components);
+
+  if (path_components.size() != kProfileImageURLPathComponentsCount)
+    return false;
+
+  const std::string& photo_id = path_components[kPhotoIdPathComponentIndex];
+  const std::string& photo_version =
+      path_components[kPhotoVersionPathComponentIndex];
+  return (photo_id == kOldDefaultPhotoId) ||
+         (photo_id == kDefaultPhotoId &&
+          photo_version == kDefaultPhotoVersion);
 }
 
 ProfileImageDownloader::ProfileImageDownloader(Delegate* delegate)
@@ -173,6 +218,11 @@ void ProfileImageDownloader::OnURLFetchComplete(
     if (image_url.empty()) {
       if (delegate_)
         delegate_->OnDownloadFailure();
+      return;
+    }
+    if (IsDefaultProfileImageURL(image_url)) {
+      if (delegate_)
+        delegate_->OnDownloadDefaultImage();
       return;
     }
     VLOG(1) << "Fetching profile image from " << image_url;
