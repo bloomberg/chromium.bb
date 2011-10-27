@@ -80,6 +80,7 @@ FileSystemOperation::~FileSystemOperation() {
 void FileSystemOperation::OpenFileSystem(
     const GURL& origin_url, fileapi::FileSystemType type, bool create) {
 #ifndef NDEBUG
+  DCHECK(dispatcher_.get());
   DCHECK(kOperationNone == pending_operation_);
   pending_operation_ = static_cast<FileSystemOperation::OperationType>(
       kOperationOpenFileSystem);
@@ -103,6 +104,7 @@ void FileSystemOperation::OpenFileSystem(
 void FileSystemOperation::CreateFile(const GURL& path,
                                      bool exclusive) {
 #ifndef NDEBUG
+  DCHECK(dispatcher_.get());
   DCHECK(kOperationNone == pending_operation_);
   pending_operation_ = kOperationCreateFile;
 #endif
@@ -141,6 +143,7 @@ void FileSystemOperation::CreateDirectory(const GURL& path,
                                           bool exclusive,
                                           bool recursive) {
 #ifndef NDEBUG
+  DCHECK(dispatcher_.get());
   DCHECK(kOperationNone == pending_operation_);
   pending_operation_ = kOperationCreateDirectory;
 #endif
@@ -176,6 +179,7 @@ void FileSystemOperation::DelayedCreateDirectoryForQuota(
 void FileSystemOperation::Copy(const GURL& src_path,
                                const GURL& dest_path) {
 #ifndef NDEBUG
+  DCHECK(dispatcher_.get());
   DCHECK(kOperationNone == pending_operation_);
   pending_operation_ = kOperationCopy;
 #endif
@@ -210,6 +214,7 @@ void FileSystemOperation::DelayedCopyForQuota(quota::QuotaStatusCode status,
 void FileSystemOperation::Move(const GURL& src_path,
                                const GURL& dest_path) {
 #ifndef NDEBUG
+  DCHECK(dispatcher_.get());
   DCHECK(kOperationNone == pending_operation_);
   pending_operation_ = kOperationMove;
 #endif
@@ -243,6 +248,7 @@ void FileSystemOperation::DelayedMoveForQuota(quota::QuotaStatusCode status,
 
 void FileSystemOperation::DirectoryExists(const GURL& path) {
 #ifndef NDEBUG
+  DCHECK(dispatcher_.get());
   DCHECK(kOperationNone == pending_operation_);
   pending_operation_ = kOperationDirectoryExists;
 #endif
@@ -259,6 +265,7 @@ void FileSystemOperation::DirectoryExists(const GURL& path) {
 
 void FileSystemOperation::FileExists(const GURL& path) {
 #ifndef NDEBUG
+  DCHECK(dispatcher_.get());
   DCHECK(kOperationNone == pending_operation_);
   pending_operation_ = kOperationFileExists;
 #endif
@@ -275,6 +282,7 @@ void FileSystemOperation::FileExists(const GURL& path) {
 
 void FileSystemOperation::GetMetadata(const GURL& path) {
 #ifndef NDEBUG
+  DCHECK(dispatcher_.get());
   DCHECK(kOperationNone == pending_operation_);
   pending_operation_ = kOperationGetMetadata;
 #endif
@@ -291,6 +299,7 @@ void FileSystemOperation::GetMetadata(const GURL& path) {
 
 void FileSystemOperation::ReadDirectory(const GURL& path) {
 #ifndef NDEBUG
+  DCHECK(dispatcher_.get());
   DCHECK(kOperationNone == pending_operation_);
   pending_operation_ = kOperationReadDirectory;
 #endif
@@ -307,6 +316,7 @@ void FileSystemOperation::ReadDirectory(const GURL& path) {
 
 void FileSystemOperation::Remove(const GURL& path, bool recursive) {
 #ifndef NDEBUG
+  DCHECK(dispatcher_.get());
   DCHECK(kOperationNone == pending_operation_);
   pending_operation_ = kOperationRemove;
 #endif
@@ -327,6 +337,7 @@ void FileSystemOperation::Write(
     const GURL& blob_url,
     int64 offset) {
 #ifndef NDEBUG
+  DCHECK(dispatcher_.get());
   DCHECK(kOperationNone == pending_operation_);
   pending_operation_ = kOperationWrite;
 #endif
@@ -367,6 +378,7 @@ void FileSystemOperation::DelayedWriteForQuota(quota::QuotaStatusCode status,
 
 void FileSystemOperation::Truncate(const GURL& path, int64 length) {
 #ifndef NDEBUG
+  DCHECK(dispatcher_.get());
   DCHECK(kOperationNone == pending_operation_);
   pending_operation_ = kOperationTruncate;
 #endif
@@ -401,6 +413,7 @@ void FileSystemOperation::TouchFile(const GURL& path,
                                     const base::Time& last_access_time,
                                     const base::Time& last_modified_time) {
 #ifndef NDEBUG
+  DCHECK(dispatcher_.get());
   DCHECK(kOperationNone == pending_operation_);
   pending_operation_ = kOperationTouchFile;
 #endif
@@ -420,6 +433,7 @@ void FileSystemOperation::OpenFile(const GURL& path,
                                    int file_flags,
                                    base::ProcessHandle peer_handle) {
 #ifndef NDEBUG
+  DCHECK(dispatcher_.get());
   DCHECK(kOperationNone == pending_operation_);
   pending_operation_ = kOperationOpenFile;
 #endif
