@@ -317,13 +317,11 @@ TEST_F(WorkerTest, FLAKY_WorkerMapGc) {
   RunWorkerFastLayoutTest("wrapper-map-gc.html");
 }
 
-// Broken, http://crbug.com/101665
-TEST_F(WorkerTest, DISABLED_WorkerMessagePort) {
+TEST_F(WorkerTest, WorkerMessagePort) {
   RunWorkerFastLayoutTest("worker-messageport.html");
 }
 
-// Broken, http://crbug.com/101665
-TEST_F(WorkerTest, DISABLED_WorkerMessagePortGC) {
+TEST_F(WorkerTest, WorkerMessagePortGC) {
   RunWorkerFastLayoutTest("worker-messageport-gc.html");
 }
 
