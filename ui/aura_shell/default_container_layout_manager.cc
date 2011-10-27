@@ -6,6 +6,7 @@
 
 #include "base/auto_reset.h"
 #include "ui/aura/desktop.h"
+#include "ui/aura/event.h"
 #include "ui/aura/window.h"
 #include "ui/aura/screen_aura.h"
 #include "ui/aura/window_types.h"
@@ -44,6 +45,29 @@ void DefaultContainerLayoutManager::CancelMoveOrResize(
   drag_window_ = NULL;
 }
 
+void DefaultContainerLayoutManager::ProcessMove(
+    aura::Window* drag,
+    aura::MouseEvent* event) {
+  AutoReset<bool> reset(&ignore_calculate_bounds_, true);
+
+  // TODO(oshima): Just zooming out may (and will) move/swap window without
+  // a users's intent. We probably should scroll viewport, but that may not
+  // be enough. See crbug.com/101826 for more discussion.
+  workspace_manager_->SetOverview(true);
+
+  gfx::Point point_in_owner = event->location();
+  aura::Window::ConvertPointToWindow(
+      drag,
+      owner_,
+      &point_in_owner);
+  // TODO(oshima): We should support simply moving to another
+  // workspace when the destination workspace has enough room to accomodate.
+  aura::Window* rotate_target =
+      workspace_manager_->FindRotateWindowForLocation(point_in_owner);
+  if (rotate_target)
+    workspace_manager_->RotateWindows(drag, rotate_target);
+}
+
 void DefaultContainerLayoutManager::EndMove(
     aura::Window* drag,
     aura::MouseEvent* evnet) {
@@ -52,7 +76,8 @@ void DefaultContainerLayoutManager::EndMove(
   drag_window_ = NULL;
   Workspace* workspace = workspace_manager_->GetActiveWorkspace();
   if (workspace)
-    workspace->Layout(NULL);
+    workspace->Layout(NULL, NULL);
+  workspace_manager_->SetOverview(false);
 }
 
 void DefaultContainerLayoutManager::EndResize(
@@ -62,7 +87,8 @@ void DefaultContainerLayoutManager::EndResize(
   drag_window_ = NULL;
   Workspace* workspace = workspace_manager_->GetActiveWorkspace();
   if (workspace)
-    workspace->Layout(NULL);
+    workspace->Layout(NULL, NULL);
+  workspace_manager_->SetOverview(false);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

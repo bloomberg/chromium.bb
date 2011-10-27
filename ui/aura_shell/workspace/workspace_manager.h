@@ -44,6 +44,9 @@ class AURA_SHELL_EXPORT WorkspaceManager : public aura::DesktopObserver {
   // Returns the workspace that contanis the |window|.
   Workspace* FindBy(aura::Window* window) const;
 
+  // Returns the window for rotate operation based on the |location|.
+  aura::Window* FindRotateWindowForLocation(const gfx::Point& location);
+
   // Sets the bounds of all workspaces.
   void LayoutWorkspaces();
 
@@ -54,6 +57,9 @@ class AURA_SHELL_EXPORT WorkspaceManager : public aura::DesktopObserver {
   void SetOverview(bool overview);
   bool is_overview() const { return is_overview_; }
 
+  // Rotate windows by moving |source| window to the position of |target|.
+  void RotateWindows(aura::Window* source, aura::Window* target);
+
   // Overridden from aura::DesktopObserver:
   virtual void OnDesktopResized(const gfx::Size& new_size) OVERRIDE;
   virtual void OnActiveWindowChanged(aura::Window* active) OVERRIDE;
@@ -62,6 +68,7 @@ class AURA_SHELL_EXPORT WorkspaceManager : public aura::DesktopObserver {
   friend class Workspace;
   FRIEND_TEST_ALL_PREFIXES(WorkspaceManagerTest, Overview);
   FRIEND_TEST_ALL_PREFIXES(WorkspaceManagerTest, LayoutWorkspaces);
+  FRIEND_TEST_ALL_PREFIXES(WorkspaceManagerTest, FindRotateWindow);
 
   void AddWorkspace(Workspace* workspace);
   void RemoveWorkspace(Workspace* workspace);
@@ -71,6 +78,9 @@ class AURA_SHELL_EXPORT WorkspaceManager : public aura::DesktopObserver {
 
   // Returns the bounds of the work are given |workspace_bounds|.
   gfx::Rect GetWorkAreaBounds(const gfx::Rect& workspace_bounds);
+
+  // Returns the index of the workspace that contains the |window|.
+  int GetWorkspaceIndexContaining(aura::Window* window) const;
 
   // Update viewport size and move to the active workspace.
   void UpdateViewport();

@@ -39,6 +39,9 @@ class AURA_SHELL_EXPORT DefaultContainerLayoutManager
   // Invoked when a drag event didn't start any drag operation.
   void CancelMoveOrResize(aura::Window* drag, aura::MouseEvent* event);
 
+  // Invoked when a drag event moved the |window|.
+  void ProcessMove(aura::Window* window, aura::MouseEvent* event);
+
   // Invoked when a user finished moving window.
   void EndMove(aura::Window* drag, aura::MouseEvent* evnet);
 

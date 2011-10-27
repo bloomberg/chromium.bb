@@ -60,11 +60,18 @@ Workspace* WorkspaceManager::GetActiveWorkspace() const {
 }
 
 Workspace* WorkspaceManager::FindBy(aura::Window* window) const {
+  int index = GetWorkspaceIndexContaining(window);
+  return index < 0 ? NULL : workspaces_[index];
+}
+
+aura::Window* WorkspaceManager::FindRotateWindowForLocation(
+    const gfx::Point& point) {
   for (Workspaces::const_iterator i = workspaces_.begin();
        i != workspaces_.end();
        ++i) {
-    if ((*i)->Contains(window))
-      return *i;
+    aura::Window* window = (*i)->FindRotateWindowForLocation(point);
+    if (window)
+      return window;
   }
   return NULL;
 }
@@ -128,6 +135,36 @@ void WorkspaceManager::SetOverview(bool overview) {
   viewport_->layer()->SetTransform(transform);
 }
 
+void WorkspaceManager::RotateWindows(aura::Window* source,
+                                     aura::Window* target) {
+  DCHECK(source);
+  DCHECK(target);
+  int source_ws_index = GetWorkspaceIndexContaining(source);
+  int target_ws_index = GetWorkspaceIndexContaining(target);
+  DCHECK(source_ws_index >= 0);
+  DCHECK(target_ws_index >= 0);
+  if (source_ws_index == target_ws_index) {
+    workspaces_[source_ws_index]->RotateWindows(source, target);
+  } else {
+    aura::Window* insert = source;
+    if (source_ws_index < target_ws_index) {
+      for (int i = target_ws_index; i >= source_ws_index; --i) {
+        insert = workspaces_[i]->ShiftWindows(
+            insert, source, target, Workspace::SHIFT_TO_LEFT);
+        // |target| can only be in the 1st workspace.
+        target = NULL;
+      }
+    } else {
+      for (int i = target_ws_index; i <= source_ws_index; ++i) {
+        insert = workspaces_[i]->ShiftWindows(
+            insert, source, target, Workspace::SHIFT_TO_RIGHT);
+        // |target| can only be in the 1st workspace.
+        target = NULL;
+      }
+    }
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WorkspaceManager, Overridden from aura::DesktopObserver:
 
@@ -184,6 +221,17 @@ gfx::Rect WorkspaceManager::GetWorkAreaBounds(
   bounds.Inset(
       aura::Desktop::GetInstance()->screen()->work_area_insets());
   return bounds;
+}
+
+// Returns the index of the workspace that contains the |window|.
+int WorkspaceManager::GetWorkspaceIndexContaining(aura::Window* window) const {
+  for (Workspaces::const_iterator i = workspaces_.begin();
+       i != workspaces_.end();
+       ++i) {
+    if ((*i)->Contains(window))
+      return i - workspaces_.begin();
+  }
+  return -1;
 }
 
 void WorkspaceManager::UpdateViewport() {

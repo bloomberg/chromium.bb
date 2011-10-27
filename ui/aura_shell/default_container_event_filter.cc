@@ -26,6 +26,10 @@ bool DefaultContainerEventFilter::PreHandleMouseEvent(aura::Window* target,
       static_cast<DefaultContainerLayoutManager*>(owner()->layout_manager());
   DCHECK(layout_manager);
 
+  // TODO(oshima|derat): Move ToplevelWindowEventFilter to the shell,
+  // incorporate the logic below and intorduce DragObserver (or something
+  // similar) to decouple DCLM.
+
   // Notify layout manager that drag event may move/resize the target wnidow.
   if (event->type() == ui::ET_MOUSE_DRAGGED && drag_state_ == DRAG_NONE)
     layout_manager->PrepareForMoveOrResize(target, event);
@@ -36,8 +40,21 @@ bool DefaultContainerEventFilter::PreHandleMouseEvent(aura::Window* target,
     case ui::ET_MOUSE_DRAGGED:
       // Cancel move/resize if the event wasn't handled, or
       // drag_state_ didn't move to MOVE or RESIZE.
-      if (!handled || (drag_state_ == DRAG_NONE && !UpdateDragState()))
+      if (handled) {
+        switch (drag_state_) {
+          case DRAG_NONE:
+            if (!UpdateDragState())
+              layout_manager->CancelMoveOrResize(target, event);
+            break;
+          case DRAG_MOVE:
+            layout_manager->ProcessMove(target, event);
+            break;
+          case DRAG_RESIZE:
+            break;
+        }
+      } else {
         layout_manager->CancelMoveOrResize(target, event);
+      }
       break;
     case ui::ET_MOUSE_RELEASED:
       if (drag_state_ == DRAG_MOVE)

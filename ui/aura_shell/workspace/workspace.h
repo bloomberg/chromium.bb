@@ -32,6 +32,12 @@ class AURA_SHELL_EXPORT Workspace {
   explicit Workspace(WorkspaceManager* manager);
   virtual ~Workspace();
 
+  // Specifies the direction to shift windows in |ShiftWindows()|.
+  enum ShiftDirection {
+    SHIFT_TO_RIGHT,
+    SHIFT_TO_LEFT
+  };
+
   //  Returns true if this workspace has no windows.
   bool is_empty() const { return windows_.empty(); }
 
@@ -49,23 +55,48 @@ class AURA_SHELL_EXPORT Workspace {
   // failed.
   bool AddWindowAfter(aura::Window* window, aura::Window* after);
 
-  // Removes the |window| from this workspace.
+  // Removes |window| from this workspace.
   void RemoveWindow(aura::Window* window);
 
-  // Return true if this workspace has the |window|.
+  // Return true if this workspace has |window|.
   bool Contains(aura::Window* window) const;
+
+  // Returns a window to rotate to based on |position|.
+  aura::Window* FindRotateWindowForLocation(const gfx::Point& position);
+
+  // Rotates the windows by removing |source| and inserting it to the
+  // position that |target| was in. It re-layouts windows except for |source|.
+  void RotateWindows(aura::Window* source, aura::Window* target);
+
+  // Shift the windows in the workspace by inserting |window| until it
+  // reaches |until|. If |direction| is |SHIFT_TO_RIGHT|, |insert| is
+  // inserted at the position of |target| or at the beginning if
+  // |target| is NULL. If |direction| is |SHIFT_TO_LEFT|, |insert| is
+  // inserted after the position of |target|, or at the end if
+  // |target| is NULL.  It returns the window that is overflowed by
+  // shifting, or NULL if shifting stopped at |until|.
+  aura::Window* ShiftWindows(aura::Window* insert,
+                             aura::Window* until,
+                             aura::Window* target,
+                             ShiftDirection direction);
 
   // Activates this workspace.
   void Activate();
 
-  // Layout windows. Moving animation is applied to all windows except
-  // for the window specified by |no_animation|.
-  void Layout(aura::Window* no_animation);
+  // Layout windows. The workspace doesn't set bounds on |ignore| if it's
+  // given. It still uses |ignore| window's bounds to calculate
+  // bounds for other windows. Moving animation is applied to all
+  // windows except for the window specified by |no_animation| and |ignore|.
+  void Layout(aura::Window* ignore, aura::Window* no_animation);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WorkspaceTest, WorkspaceBasic);
+  FRIEND_TEST_ALL_PREFIXES(WorkspaceTest, RotateWindows);
+  FRIEND_TEST_ALL_PREFIXES(WorkspaceTest, ShiftWindowsSingle);
+  FRIEND_TEST_ALL_PREFIXES(WorkspaceTest, ShiftWindowsMultiple);
+  FRIEND_TEST_ALL_PREFIXES(WorkspaceManagerTest, RotateWindows);
 
-  // Returns the index in layout order of the |window| in this workspace.
+  // Returns the index in layout order of |window| in this workspace.
   int GetIndexOf(aura::Window* window) const;
 
   // Returns true if the given |window| can be added to this workspace.
@@ -76,6 +107,14 @@ class AURA_SHELL_EXPORT Workspace {
   void MoveWindowTo(aura::Window* window,
                     const gfx::Point& origin,
                     bool animate);
+
+  // Returns the sum of all window's width.
+  int GetTotalWindowsWidth() const;
+
+  // Test only: Changes how may windows workspace can have.
+  // Returns the current value so that it can be reverted back to
+  // original value.
+  static size_t SetMaxWindowsCount(size_t max);
 
   WorkspaceManager* workspace_manager_;
 
