@@ -7,11 +7,3 @@
 
 // PLEASE DO NOT LEAVE ENTRIES IN THIS FILE FOR MORE THAN 24 HRS.
 
-// V8 roll, lots of ES5 related changes, upstream if V8 sticks.
-BUGRICOW : fast/js/array-functions-non-arrays.html = TEXT
-BUGRICOW : fast/js/array-prototype-properties.html = TEXT
-BUGRICOW : fast/js/exception-sequencing-binops2.html = TEXT
-BUGRICOW : fast/js/kde/RegExp.html = TEXT
-BUGRICOW : fast/js/regexp-caching.html = TEXT
-BUGRICOW : fast/js/toString-overrides.html = TEXT
-BUGRICOW : fast/js/toString-recursion.html = TEXT
