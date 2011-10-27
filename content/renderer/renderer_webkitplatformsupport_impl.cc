@@ -608,3 +608,9 @@ WebBlobRegistry* RendererWebKitPlatformSupportImpl::blobRegistry() {
   }
   return blob_registry_.get();
 }
+
+WebKit::WebString RendererWebKitPlatformSupportImpl::userAgent(
+    const WebKit::WebURL& url) {
+ return WebKitPlatformSupportImpl::userAgent(url);
+}
+

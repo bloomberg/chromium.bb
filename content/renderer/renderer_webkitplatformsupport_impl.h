@@ -87,6 +87,8 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
 
   virtual WebKit::WebBlobRegistry* blobRegistry();
 
+  virtual WebKit::WebString userAgent(const WebKit::WebURL& url);
+
  private:
   bool CheckPreparsedJsCachingEnabled() const;
 
