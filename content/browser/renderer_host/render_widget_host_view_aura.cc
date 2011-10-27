@@ -235,7 +235,7 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceNew(
       int32 height,
       uint64* surface_id,
       TransportDIB::Handle* surface_handle) {
-  scoped_ptr<AcceleratedSurfaceContainerLinux> surface(
+  scoped_refptr<AcceleratedSurfaceContainerLinux> surface(
       AcceleratedSurfaceContainerLinux::Create(gfx::Size(width, height)));
   if (!surface->Initialize(surface_id)) {
     LOG(ERROR) << "Failed to create AcceleratedSurfaceContainer";
