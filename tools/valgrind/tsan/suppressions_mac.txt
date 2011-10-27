@@ -242,3 +242,30 @@
   fun:DVSignalSync
   fun:DVDeviceTerminate
 }
+{
+   bug_101853_a
+   ThreadSanitizer:Race
+   fun:disk_cache::Rankings::IncrementCounter
+   fun:disk_cache::Rankings::Insert
+   fun:disk_cache::Eviction::OnDoomEntryV2
+   fun:disk_cache::BackendImpl::DestroyInvalidEntry
+   fun:disk_cache::BackendImpl::MatchEntry
+   fun:disk_cache::BackendImpl::InternalDoomEntry
+}
+{
+   bug_101853_b
+   ThreadSanitizer:Race
+   fun:disk_cache::BackendImpl::DecreaseNumEntries
+   fun:disk_cache::BackendImpl::DestroyInvalidEntry
+   fun:disk_cache::BackendImpl::MatchEntry
+   fun:disk_cache::BackendImpl::InternalDoomEntry
+}
+{
+   bug_101853_c
+   ThreadSanitizer:Race
+   fun:disk_cache::BackendImpl::DecreaseNumEntries
+   fun:disk_cache::BackendImpl::RemoveEntry
+   fun:disk_cache::EntryImpl::DeleteEntryData
+   fun:disk_cache::EntryImpl::~EntryImpl
+}
+
