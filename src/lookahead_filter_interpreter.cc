@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <math.h>
+#include <values.h>
 
 using std::max;
 using std::min;
@@ -55,6 +56,9 @@ Gesture* LookaheadFilterInterpreter::SyncInterpret(HardwareState* hwstate,
   }
   queue_.PushBack(node);
   AttemptInterpolation();
+  UpdateInterpreterDue(interpreter_due_ < 0.0 ?
+                       interpreter_due_ : interpreter_due_ + hwstate->timestamp,
+                       hwstate->timestamp, timeout);
   return HandleTimer(hwstate->timestamp, timeout);
 }
 
@@ -192,7 +196,9 @@ void LookaheadFilterInterpreter::UpdateInterpreterDue(
     stime_t new_interpreter_timeout,
     stime_t now,
     stime_t* timeout) {
-  stime_t next_hwstate_timeout = -1.0;
+  // The next hardware state may already be over due, thus having a negative
+  // timeout, so we use -DBL_MAX as the invalid value.
+  stime_t next_hwstate_timeout = -DBL_MAX;
   // Scan queue_ to find when next hwstate is due.
   for (QState* node = queue_.Begin(); node != queue_.End();
        node = node->next_) {
@@ -205,10 +211,10 @@ void LookaheadFilterInterpreter::UpdateInterpreterDue(
   interpreter_due_ = -1.0;
   if (new_interpreter_timeout >= 0.0 &&
       (new_interpreter_timeout < next_hwstate_timeout ||
-       next_hwstate_timeout < 0.0)) {
+       next_hwstate_timeout == -DBL_MAX)) {
     interpreter_due_ = new_interpreter_timeout + now;
     *timeout = new_interpreter_timeout;
-  } else if (next_hwstate_timeout >= 0.0) {
+  } else if (next_hwstate_timeout > -DBL_MAX) {
     *timeout = next_hwstate_timeout;
   }
 }

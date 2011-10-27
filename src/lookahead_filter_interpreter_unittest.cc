@@ -24,9 +24,13 @@ class LookaheadFilterInterpreterTest : public ::testing::Test {};
 class LookaheadFilterInterpreterTestInterpreter : public Interpreter {
  public:
   LookaheadFilterInterpreterTestInterpreter()
-      : set_hwprops_called_(false) {}
+      : timer_return_(-1.0), set_hwprops_called_(false) {}
 
   virtual Gesture* SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
+    if (timer_return_ >= 0.0) {
+      *timeout = timer_return_;
+      timer_return_ = -1.0;
+    }
     if (return_values_.empty())
       return NULL;
     return_value_ = return_values_.front();
@@ -47,6 +51,7 @@ class LookaheadFilterInterpreterTestInterpreter : public Interpreter {
 
   Gesture return_value_;
   deque<Gesture> return_values_;
+  stime_t timer_return_;
   bool set_hwprops_called_;
 };
 
@@ -419,6 +424,68 @@ TEST(LookaheadFilterInterpreterTest, InterpolateTest) {
     } while(timeout > 0.0);
     EXPECT_EQ(should_interpolate ? 3 : 2, gs_count);
   }
+}
+
+TEST(LookaheadFilterInterpreterTest, InterpolationOverdueTest) {
+  LookaheadFilterInterpreterTestInterpreter* base_interpreter = NULL;
+  scoped_ptr<LookaheadFilterInterpreter> interpreter;
+
+  HardwareProperties initial_hwprops = {
+    0, 0, 10, 10,  // left, top, right, bottom
+    1,  // x res (pixels/mm)
+    1,  // y res (pixels/mm)
+    25, 25, 2, 5,  // scrn DPI X, Y, max fingers, max_touch,
+    1, 0, 0  // t5r2, semi, button pad
+  };
+
+  FingerState fs = {
+    // TM, Tm, WM, Wm, pr, orient, x, y, id
+    0, 0, 0, 0, 1, 0, 10, 1, 1
+  };
+  // These timestamps cause an interpolated event to be 1.492 at time 1.495,
+  // and so this tests that an overdue interpolated event is handled correctly.
+  HardwareState hs[] = {
+    // Expect movement to take
+    { 1.456, 0, 1, 1, &fs },
+    { 1.495, 0, 1, 1, &fs },
+  };
+
+  base_interpreter = new LookaheadFilterInterpreterTestInterpreter;
+  base_interpreter->timer_return_ = 0.700;
+  base_interpreter->return_values_.push_back(
+      Gesture(kGestureMove,
+              0,  // start time
+              1,  // end time
+              0,  // dx
+              1));  // dy
+  base_interpreter->return_values_.push_back(
+      Gesture(kGestureMove,
+              1,  // start time
+              2,  // end time
+              0,  // dx
+              2));  // dy
+  interpreter.reset(new LookaheadFilterInterpreter(NULL, base_interpreter));
+  interpreter->SetHardwareProperties(initial_hwprops);
+
+  stime_t timeout = -1.0;
+  Gesture* out = interpreter->SyncInterpret(&hs[0], &timeout);
+  EXPECT_EQ(reinterpret_cast<Gesture*>(NULL), out);
+  EXPECT_FLOAT_EQ(timeout, interpreter->delay_.val_);
+
+  stime_t now = hs[0].timestamp + timeout;
+  timeout = -1.0;
+  out = interpreter->HandleTimer(now, &timeout);
+  ASSERT_NE(reinterpret_cast<Gesture*>(NULL), out);
+  EXPECT_EQ(kGestureTypeMove, out->type);
+  EXPECT_EQ(1, out->details.move.dy);
+  EXPECT_DOUBLE_EQ(timeout, 0.700);
+
+  timeout = -1.0;
+  out = interpreter->SyncInterpret(&hs[1], &timeout);
+  ASSERT_NE(reinterpret_cast<Gesture*>(NULL), out);
+  EXPECT_EQ(kGestureTypeMove, out->type);
+  EXPECT_EQ(2, out->details.move.dy);
+  EXPECT_GE(timeout, 0.0);
 }
 
 }  // namespace gestures
