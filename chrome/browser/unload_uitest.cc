@@ -323,7 +323,6 @@ TEST_F(UnloadTest, BrowserTerminateBeforeUnload) {
   ASSERT_TRUE(browser.get());
   NavigateToDataURL(BEFORE_UNLOAD_HTML, L"beforeunload");
   TerminateBrowser();
-  VerifyCleanExit();
 }
 #endif
 

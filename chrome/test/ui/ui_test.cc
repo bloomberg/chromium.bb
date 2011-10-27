@@ -762,6 +762,27 @@ bool UITest::WaitForFindWindowVisibilityChange(BrowserProxy* browser,
 
 void UITest::TerminateBrowser() {
   launcher_->TerminateBrowser();
+
+  // Make sure the UMA metrics say we didn't crash.
+  scoped_ptr<DictionaryValue> local_prefs(GetLocalState());
+  bool exited_cleanly;
+  ASSERT_TRUE(local_prefs.get());
+  ASSERT_TRUE(local_prefs->GetBoolean(prefs::kStabilityExitedCleanly,
+                                      &exited_cleanly));
+  ASSERT_TRUE(exited_cleanly);
+
+  // And that session end was successful.
+  bool session_end_completed;
+  ASSERT_TRUE(local_prefs->GetBoolean(prefs::kStabilitySessionEndCompleted,
+                                      &session_end_completed));
+  ASSERT_TRUE(session_end_completed);
+
+  // Make sure session restore says we didn't crash.
+  scoped_ptr<DictionaryValue> profile_prefs(GetDefaultProfilePreferences());
+  ASSERT_TRUE(profile_prefs.get());
+  ASSERT_TRUE(profile_prefs->GetBoolean(prefs::kSessionExitedCleanly,
+                                        &exited_cleanly));
+  ASSERT_TRUE(exited_cleanly);
 }
 
 void UITest::NavigateToURLAsync(const GURL& url) {
@@ -801,29 +822,4 @@ bool UITest::WaitForDownloadShelfVisibilityChange(BrowserProxy* browser,
             << " state was incorrect " << incorrect_state_count << " times";
   ADD_FAILURE() << "Timeout reached in " << __FUNCTION__;
   return false;
-}
-
-// TODO(achuith): Call VerifyCleanExit from TerminateBrowser.
-// http://crbug.com/101390
-void UITest::VerifyCleanExit() {
-  // Make sure the UMA metrics say we didn't crash.
-  scoped_ptr<DictionaryValue> local_prefs(GetLocalState());
-  bool exited_cleanly;
-  ASSERT_TRUE(local_prefs.get());
-  ASSERT_TRUE(local_prefs->GetBoolean(prefs::kStabilityExitedCleanly,
-                                      &exited_cleanly));
-  ASSERT_TRUE(exited_cleanly);
-
-  // And that session end was successful.
-  bool session_end_completed;
-  ASSERT_TRUE(local_prefs->GetBoolean(prefs::kStabilitySessionEndCompleted,
-                                      &session_end_completed));
-  ASSERT_TRUE(session_end_completed);
-
-  // Make sure session restore says we didn't crash.
-  scoped_ptr<DictionaryValue> profile_prefs(GetDefaultProfilePreferences());
-  ASSERT_TRUE(profile_prefs.get());
-  ASSERT_TRUE(profile_prefs->GetBoolean(prefs::kSessionExitedCleanly,
-                                        &exited_cleanly));
-  ASSERT_TRUE(exited_cleanly);
 }

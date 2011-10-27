@@ -48,7 +48,6 @@ TEST_F(BrowserTest, SessionEnd) {
 
   NavigateToURL(net::FilePathToFileURL(test_file));
   TerminateBrowser();
-  VerifyCleanExit();
 }
 
 // WindowOpenClose is flaky on ChromeOS and fails consistently on linux views.
