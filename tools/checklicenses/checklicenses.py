@@ -127,6 +127,9 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'gpu/gles2_conform_support/egl/native/EGL': [
         'UNKNOWN',
     ],
+    'gpu/EGL': [
+        'UNKNOWN',
+    ],
 
     'native_client': [  # http://crbug.com/98099
         'UNKNOWN',
