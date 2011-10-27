@@ -90,7 +90,6 @@ static const int kThumbnailWidth = 212;
 static const int kThumbnailHeight = 132;
 
 // Constants for UMA statistic collection.
-static const char kSSLInsecureContent[] = "SSL.InsecureContent";
 static const char kWWWDotGoogleDotCom[] = "www.google.com";
 static const char kMailDotGoogleDotCom[] = "mail.google.com";
 static const char kPlusDotGoogleDotCom[] = "plus.google.com";
@@ -448,76 +447,76 @@ bool ChromeRenderViewObserver::allowDisplayingInsecureContent(
     bool allowed_per_settings,
     const WebKit::WebSecurityOrigin& origin,
     const WebKit::WebURL& url) {
-  UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+  UMA_HISTOGRAM_ENUMERATION("SSL.InsecureContent",
                             INSECURE_CONTENT_DISPLAY,
                             INSECURE_CONTENT_NUM_EVENTS);
   std::string host(origin.host().utf8());
   GURL frame_url(frame->document().url());
   if (isHostInDomain(host, kGoogleDotCom)) {
-    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+    UMA_HISTOGRAM_ENUMERATION("SSL.InsecureContent",
                               INSECURE_CONTENT_DISPLAY_HOST_GOOGLE,
                               INSECURE_CONTENT_NUM_EVENTS);
     if (StartsWithASCII(frame_url.path(), kGoogleSupportPathPrefix, false)) {
-      UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+      UMA_HISTOGRAM_ENUMERATION("SSL.InsecureContent",
                                 INSECURE_CONTENT_DISPLAY_HOST_GOOGLE_SUPPORT,
                                 INSECURE_CONTENT_NUM_EVENTS);
     } else if (StartsWithASCII(frame_url.path(),
                                kGoogleIntlPathPrefix,
                                false)) {
-      UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+      UMA_HISTOGRAM_ENUMERATION("SSL.InsecureContent",
                                 INSECURE_CONTENT_DISPLAY_HOST_GOOGLE_INTL,
                                 INSECURE_CONTENT_NUM_EVENTS);
     }
   }
   if (host == kWWWDotGoogleDotCom) {
-    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+    UMA_HISTOGRAM_ENUMERATION("SSL.InsecureContent",
                               INSECURE_CONTENT_DISPLAY_HOST_WWW_GOOGLE,
                               INSECURE_CONTENT_NUM_EVENTS);
     if (StartsWithASCII(frame_url.path(), kGoogleReaderPathPrefix, false)) {
-      UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+      UMA_HISTOGRAM_ENUMERATION("SSL.InsecureContent",
                                 INSECURE_CONTENT_DISPLAY_HOST_GOOGLE_READER,
                                 INSECURE_CONTENT_NUM_EVENTS);
     }
   } else if (host == kMailDotGoogleDotCom) {
-    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+    UMA_HISTOGRAM_ENUMERATION("SSL.InsecureContent",
                               INSECURE_CONTENT_DISPLAY_HOST_MAIL_GOOGLE,
                               INSECURE_CONTENT_NUM_EVENTS);
   } else if (host == kPlusDotGoogleDotCom) {
-    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+    UMA_HISTOGRAM_ENUMERATION("SSL.InsecureContent",
                               INSECURE_CONTENT_DISPLAY_HOST_PLUS_GOOGLE,
                               INSECURE_CONTENT_NUM_EVENTS);
   } else if (host == kDocsDotGoogleDotCom) {
-    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+    UMA_HISTOGRAM_ENUMERATION("SSL.InsecureContent",
                               INSECURE_CONTENT_DISPLAY_HOST_DOCS_GOOGLE,
                               INSECURE_CONTENT_NUM_EVENTS);
   } else if (host == kSitesDotGoogleDotCom) {
-    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+    UMA_HISTOGRAM_ENUMERATION("SSL.InsecureContent",
                               INSECURE_CONTENT_DISPLAY_HOST_SITES_GOOGLE,
                               INSECURE_CONTENT_NUM_EVENTS);
   } else if (host == kPicasawebDotGoogleDotCom) {
-    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+    UMA_HISTOGRAM_ENUMERATION("SSL.InsecureContent",
                               INSECURE_CONTENT_DISPLAY_HOST_PICASAWEB_GOOGLE,
                               INSECURE_CONTENT_NUM_EVENTS);
   } else if (host == kCodeDotGoogleDotCom) {
-    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+    UMA_HISTOGRAM_ENUMERATION("SSL.InsecureContent",
                               INSECURE_CONTENT_DISPLAY_HOST_CODE_GOOGLE,
                               INSECURE_CONTENT_NUM_EVENTS);
   } else if (host == kGroupsDotGoogleDotCom) {
-    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+    UMA_HISTOGRAM_ENUMERATION("SSL.InsecureContent",
                               INSECURE_CONTENT_DISPLAY_HOST_GROUPS_GOOGLE,
                               INSECURE_CONTENT_NUM_EVENTS);
   } else if (host == kMapsDotGoogleDotCom) {
-    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+    UMA_HISTOGRAM_ENUMERATION("SSL.InsecureContent",
                               INSECURE_CONTENT_DISPLAY_HOST_MAPS_GOOGLE,
                               INSECURE_CONTENT_NUM_EVENTS);
   } else if (host == kWWWDotYoutubeDotCom) {
-    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+    UMA_HISTOGRAM_ENUMERATION("SSL.InsecureContent",
                               INSECURE_CONTENT_DISPLAY_HOST_YOUTUBE,
                               INSECURE_CONTENT_NUM_EVENTS);
   }
   GURL gurl(url);
   if (EndsWith(gurl.path(), kDotHTML, false)) {
-    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+    UMA_HISTOGRAM_ENUMERATION("SSL.InsecureContent",
                               INSECURE_CONTENT_DISPLAY_HTML,
                               INSECURE_CONTENT_NUM_EVENTS);
   }
@@ -537,94 +536,94 @@ bool ChromeRenderViewObserver::allowRunningInsecureContent(
   // Single value to control permissive mixed content behaviour.
   const bool enforce_insecure_content_on_all_domains = true;
 
-  UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+  UMA_HISTOGRAM_ENUMERATION("SSL.InsecureContent",
                             INSECURE_CONTENT_RUN,
                             INSECURE_CONTENT_NUM_EVENTS);
   std::string host(origin.host().utf8());
   GURL frame_url(frame->document().url());
   bool is_google = isHostInDomain(host, kGoogleDotCom);
   if (is_google) {
-    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+    UMA_HISTOGRAM_ENUMERATION("SSL.InsecureContent",
                               INSECURE_CONTENT_RUN_HOST_GOOGLE,
                               INSECURE_CONTENT_NUM_EVENTS);
     if (StartsWithASCII(frame_url.path(), kGoogleSupportPathPrefix, false)) {
-      UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+      UMA_HISTOGRAM_ENUMERATION("SSL.InsecureContent",
                                 INSECURE_CONTENT_RUN_HOST_GOOGLE_SUPPORT,
                                 INSECURE_CONTENT_NUM_EVENTS);
     } else if (StartsWithASCII(frame_url.path(),
                                kGoogleIntlPathPrefix,
                                false)) {
-      UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+      UMA_HISTOGRAM_ENUMERATION("SSL.InsecureContent",
                                 INSECURE_CONTENT_RUN_HOST_GOOGLE_INTL,
                                 INSECURE_CONTENT_NUM_EVENTS);
     }
   }
   if (host == kWWWDotGoogleDotCom) {
-    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+    UMA_HISTOGRAM_ENUMERATION("SSL.InsecureContent",
                               INSECURE_CONTENT_RUN_HOST_WWW_GOOGLE,
                               INSECURE_CONTENT_NUM_EVENTS);
     if (StartsWithASCII(frame_url.path(), kGoogleReaderPathPrefix, false)) {
-      UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+      UMA_HISTOGRAM_ENUMERATION("SSL.InsecureContent",
                                 INSECURE_CONTENT_RUN_HOST_GOOGLE_READER,
                                 INSECURE_CONTENT_NUM_EVENTS);
     }
   } else if (host == kMailDotGoogleDotCom) {
-    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+    UMA_HISTOGRAM_ENUMERATION("SSL.InsecureContent",
                               INSECURE_CONTENT_RUN_HOST_MAIL_GOOGLE,
                               INSECURE_CONTENT_NUM_EVENTS);
   } else if (host == kPlusDotGoogleDotCom) {
-    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+    UMA_HISTOGRAM_ENUMERATION("SSL.InsecureContent",
                               INSECURE_CONTENT_RUN_HOST_PLUS_GOOGLE,
                               INSECURE_CONTENT_NUM_EVENTS);
   } else if (host == kDocsDotGoogleDotCom) {
-    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+    UMA_HISTOGRAM_ENUMERATION("SSL.InsecureContent",
                               INSECURE_CONTENT_RUN_HOST_DOCS_GOOGLE,
                               INSECURE_CONTENT_NUM_EVENTS);
   } else if (host == kSitesDotGoogleDotCom) {
-    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+    UMA_HISTOGRAM_ENUMERATION("SSL.InsecureContent",
                               INSECURE_CONTENT_RUN_HOST_SITES_GOOGLE,
                               INSECURE_CONTENT_NUM_EVENTS);
   } else if (host == kPicasawebDotGoogleDotCom) {
-    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+    UMA_HISTOGRAM_ENUMERATION("SSL.InsecureContent",
                               INSECURE_CONTENT_RUN_HOST_PICASAWEB_GOOGLE,
                               INSECURE_CONTENT_NUM_EVENTS);
   } else if (host == kCodeDotGoogleDotCom) {
-    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+    UMA_HISTOGRAM_ENUMERATION("SSL.InsecureContent",
                               INSECURE_CONTENT_RUN_HOST_CODE_GOOGLE,
                               INSECURE_CONTENT_NUM_EVENTS);
   } else if (host == kGroupsDotGoogleDotCom) {
-    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+    UMA_HISTOGRAM_ENUMERATION("SSL.InsecureContent",
                               INSECURE_CONTENT_RUN_HOST_GROUPS_GOOGLE,
                               INSECURE_CONTENT_NUM_EVENTS);
   } else if (host == kMapsDotGoogleDotCom) {
-    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+    UMA_HISTOGRAM_ENUMERATION("SSL.InsecureContent",
                               INSECURE_CONTENT_RUN_HOST_MAPS_GOOGLE,
                               INSECURE_CONTENT_NUM_EVENTS);
   } else if (host == kWWWDotYoutubeDotCom) {
-    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+    UMA_HISTOGRAM_ENUMERATION("SSL.InsecureContent",
                               INSECURE_CONTENT_RUN_HOST_YOUTUBE,
                               INSECURE_CONTENT_NUM_EVENTS);
   } else if (EndsWith(host, kDotGoogleUserContentDotCom, false)) {
-    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+    UMA_HISTOGRAM_ENUMERATION("SSL.InsecureContent",
                               INSECURE_CONTENT_RUN_HOST_GOOGLEUSERCONTENT,
                               INSECURE_CONTENT_NUM_EVENTS);
   }
   GURL gurl(url);
   if (gurl.host() == kWWWDotYoutubeDotCom) {
-    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+    UMA_HISTOGRAM_ENUMERATION("SSL.InsecureContent",
                               INSECURE_CONTENT_RUN_TARGET_YOUTUBE,
                               INSECURE_CONTENT_NUM_EVENTS);
   }
   if (EndsWith(gurl.path(), kDotJS, false)) {
-    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+    UMA_HISTOGRAM_ENUMERATION("SSL.InsecureContent",
                               INSECURE_CONTENT_RUN_JS,
                               INSECURE_CONTENT_NUM_EVENTS);
   } else if (EndsWith(gurl.path(), kDotCSS, false)) {
-    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+    UMA_HISTOGRAM_ENUMERATION("SSL.InsecureContent",
                               INSECURE_CONTENT_RUN_CSS,
                               INSECURE_CONTENT_NUM_EVENTS);
   } else if (EndsWith(gurl.path(), kDotSWF, false)) {
-    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+    UMA_HISTOGRAM_ENUMERATION("SSL.InsecureContent",
                               INSECURE_CONTENT_RUN_SWF,
                               INSECURE_CONTENT_NUM_EVENTS);
   }
