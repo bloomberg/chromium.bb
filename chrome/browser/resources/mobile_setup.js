@@ -16,12 +16,14 @@ cr.define('mobile', function() {
   MobileSetup.PLAN_ACTIVATION_RECONNECTING_OTASP_TRY  = 2;
   MobileSetup.PLAN_ACTIVATION_INITIATING_ACTIVATION   = 3;
   MobileSetup.PLAN_ACTIVATION_RECONNECTING            = 4;
-  MobileSetup.PLAN_ACTIVATION_SHOWING_PAYMENT         = 5;
-  MobileSetup.PLAN_ACTIVATION_DELAY_OTASP             = 6;
-  MobileSetup.PLAN_ACTIVATION_START_OTASP             = 7;
-  MobileSetup.PLAN_ACTIVATION_OTASP                   = 8;
-  MobileSetup.PLAN_ACTIVATION_RECONNECTING_OTASP      = 9;
-  MobileSetup.PLAN_ACTIVATION_DONE                    = 10;
+  MobileSetup.PLAN_ACTIVATION_PAYMENT_PORTAL_LOADING  = 5;
+  MobileSetup.PLAN_ACTIVATION_SHOWING_PAYMENT         = 6;
+  MobileSetup.PLAN_ACTIVATION_RECONNECTING_PAYMENT    = 7;
+  MobileSetup.PLAN_ACTIVATION_DELAY_OTASP             = 8;
+  MobileSetup.PLAN_ACTIVATION_START_OTASP             = 9;
+  MobileSetup.PLAN_ACTIVATION_OTASP                   = 10;
+  MobileSetup.PLAN_ACTIVATION_RECONNECTING_OTASP      = 11;
+  MobileSetup.PLAN_ACTIVATION_DONE                    = 12;
   MobileSetup.PLAN_ACTIVATION_ERROR                   = 0xFF;
 
   MobileSetup.EXTENSION_PAGE_URL =
@@ -40,6 +42,9 @@ cr.define('mobile', function() {
     initialized_ : false,
     faked_transaction_ : false,
     payment_shown_ : false,
+    frame_load_error_ : 0,
+    frame_load_ignored_ : true,
+    spinner_int_: -1,
     // UI states.
     state_ : -1,
     STATE_UNKNOWN_: "unknown",
@@ -85,37 +90,38 @@ cr.define('mobile', function() {
       });
 
       this.changeState_({state: MobileSetup.PLAN_ACTIVATION_PAGE_LOADING});
-      setInterval(mobile.MobileSetup.drawProgress, 100);
       // Kick off activation process.
       chrome.send('startActivation', []);
     },
 
-    setupPaymentFrameListener_: function() {
-      $(this.frameName_).addEventListener('load', function(e) {
-        // Flip the visibility of the payment page only after the frame is
-        // fully loaded.
-        if (self.state_ == MobileSetup.PLAN_ACTIVATION_SHOWING_PAYMENT) {
-          $('statusHeader').textContent = '';
-          $('auxHeader').textContent = '';
-          $('finalStatus').classList.add('hidden');
-          $('systemStatus').classList.add('hidden');
-          $('canvas').classList.add('hidden');
-          $('carrierPage').classList.add('hidden');
-          $('paymentForm').classList.remove('hidden');
-        }
-      });
+    startSpinner_:function() {
+      this.stopSpinner_();
+      this.spinner_int_ = setInterval(mobile.MobileSetup.drawProgress, 100);
+    },
+
+    stopSpinner_:function() {
+      if (this.spinner_int_ != -1) {
+        clearInterval(this.spinner_int_);
+        this.spinner_int_ = -1;
+      }
+    },
+
+    onFrameLoaded_: function(success) {
+      chrome.send('paymentPortalLoad', [success ? 'ok' : 'failed']);
     },
 
     loadPaymentFrame_: function(deviceInfo) {
       if (deviceInfo) {
+        this.frame_load_error_ = 0;
         this.deviceInfo_ = deviceInfo;
         if (deviceInfo.post_data && deviceInfo.post_data.length) {
+          this.frame_load_ignored_ = true;
           $(this.frameName_).contentWindow.location.href =
               MobileSetup.REDIRECT_POST_PAGE_URL +
               '?post_data=' + escape(deviceInfo.post_data) +
               '&formUrl=' + escape(deviceInfo.payment_url);
         } else {
-          this.setupPaymentFrameListener_();
+          this.frame_load_ignored_ = false;
           $(this.frameName_).contentWindow.location.href =
               deviceInfo.payment_url;
         }
@@ -131,7 +137,7 @@ cr.define('mobile', function() {
       if (e.data.type == 'requestDeviceInfoMsg') {
         this.sendDeviceInfo_();
       } else if (e.data.type == 'framePostReady') {
-        this.setupPaymentFrameListener_();
+        this.frame_load_ignored_ = false;
         this.sendPostFrame_(e.origin);
       } else if (e.data.type == 'reportTransactionStatusMsg') {
         console.log('calling setTransactionStatus from onMessageReceived_');
@@ -152,6 +158,7 @@ cr.define('mobile', function() {
         case MobileSetup.PLAN_ACTIVATION_DELAY_OTASP:
         case MobileSetup.PLAN_ACTIVATION_START_OTASP:
         case MobileSetup.PLAN_ACTIVATION_RECONNECTING:
+        case MobileSetup.PLAN_ACTIVATION_RECONNECTING_PAYMENT:
         case MobileSetup.PLAN_ACTIVATION_RECONNECTING_OTASP_TRY:
         case MobileSetup.PLAN_ACTIVATION_RECONNECTING_OTASP:
           $('statusHeader').textContent =
@@ -161,8 +168,9 @@ cr.define('mobile', function() {
           $('paymentForm').classList.add('hidden');
           $('finalStatus').classList.add('hidden');
           $('systemStatus').classList.remove('hidden');
-          $('canvas').classList.remove('hidden');
           $('carrierPage').classList.remove('hidden');
+          $('canvas').classList.remove('hidden');
+          this.startSpinner_();
           break;
         case MobileSetup.PLAN_ACTIVATION_TRYING_OTASP:
         case MobileSetup.PLAN_ACTIVATION_INITIATING_ACTIVATION:
@@ -174,10 +182,11 @@ cr.define('mobile', function() {
           $('paymentForm').classList.add('hidden');
           $('finalStatus').classList.add('hidden');
           $('systemStatus').classList.remove('hidden');
-          $('canvas').classList.remove('hidden');
           $('carrierPage').classList.remove('hidden');
+          $('canvas').classList.remove('hidden');
+          this.startSpinner_();
           break;
-        case MobileSetup.PLAN_ACTIVATION_SHOWING_PAYMENT:
+        case MobileSetup.PLAN_ACTIVATION_PAYMENT_PORTAL_LOADING:
           $('statusHeader').textContent =
               MobileSetup.localStrings_.getString('connecting_header');
           $('auxHeader').textContent = '';
@@ -186,6 +195,16 @@ cr.define('mobile', function() {
           $('systemStatus').classList.remove('hidden');
           $('canvas').classList.remove('hidden');
           this.loadPaymentFrame_(deviceInfo);
+          break;
+        case MobileSetup.PLAN_ACTIVATION_SHOWING_PAYMENT:
+          $('statusHeader').textContent = '';
+          $('auxHeader').textContent = '';
+          $('finalStatus').classList.add('hidden');
+          $('systemStatus').classList.add('hidden');
+          $('carrierPage').classList.add('hidden');
+          $('paymentForm').classList.remove('hidden');
+          $('canvas').classList.add('hidden');
+          this.stopSpinner_();
           this.payment_shown_ = true;
           break;
         case MobileSetup.PLAN_ACTIVATION_DONE:
@@ -196,11 +215,12 @@ cr.define('mobile', function() {
           $('finalMessage').textContent =
               MobileSetup.localStrings_.getString('completed_text');
           $('systemStatus').classList.add('hidden');
-          $('canvas').classList.add('hidden');
           $('carrierPage').classList.add('hidden');
           $('paymentForm').classList.remove('hidden');
           $('closeButton').classList.remove('hidden');
           $('finalStatus').classList.remove('hidden');
+          $('canvas').classList.add('hidden');
+          this.stopSpinner_();
           if (this.payment_shown_) {
             $('closeButton').classList.remove('hidden');
           } else {
@@ -216,9 +236,10 @@ cr.define('mobile', function() {
               MobileSetup.localStrings_.getString('error_header');
           $('finalMessage').textContent = deviceInfo.error;
           $('systemStatus').classList.add('hidden');
-          $('canvas').classList.add('hidden');
           $('carrierPage').classList.add('hidden');
           $('paymentForm').classList.remove('hidden');
+          $('canvas').classList.add('hidden');
+          this.stopSpinner_();
           if (this.payment_shown_) {
             $('closeButton').classList.remove('hidden');
           } else {
@@ -234,6 +255,20 @@ cr.define('mobile', function() {
 
     updateDeviceStatus_: function(deviceInfo) {
       this.changeState_(deviceInfo);
+    },
+
+    portalFrameLoadError_: function(errorCode) {
+      if (this.frame_load_ignored_)
+        return;
+      console.log("Portal frame load error detected: " + errorCode);
+      this.frame_load_error_ = errorCode;
+    },
+
+    portalFrameLoadCompleted_: function() {
+      if (this.frame_load_ignored_)
+        return;
+      console.log("Portal frame load completed!");
+      this.onFrameLoaded_(this.frame_load_error_ == 0);
     },
 
     sendPostFrame_ : function(frameUrl) {
@@ -298,6 +333,14 @@ cr.define('mobile', function() {
 
   MobileSetup.deviceStateChanged = function(deviceInfo) {
     MobileSetup.getInstance().updateDeviceStatus_(deviceInfo);
+  };
+
+  MobileSetup.portalFrameLoadError = function(errorCode) {
+    MobileSetup.getInstance().portalFrameLoadError_(errorCode);
+  };
+
+  MobileSetup.portalFrameLoadCompleted = function() {
+    MobileSetup.getInstance().portalFrameLoadCompleted_();
   };
 
   MobileSetup.loadPage = function() {

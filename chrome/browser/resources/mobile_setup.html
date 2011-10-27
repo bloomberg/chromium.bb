@@ -18,14 +18,24 @@ body {
 
 .dialog-body {
   border: 1px #aaa solid;
-  border-radius: 4px;
   display: -webkit-box;
-  margin: 15px;
   margin-top: 0;
   overflow: hidden;
   position: relative;
   -webkit-box-orient: horizontal;
   -webkit-box-flex: 1;
+}
+
+.dialog-body-dialog {
+  border-radius: 4px;
+  margin: 15px;
+}
+
+.dialog-footer {
+  -webkit-box-orient: horizontal;
+  display: -webkit-box;
+  margin: 15px;
+  margin-top: 0;
 }
 
 iframe {
@@ -37,13 +47,20 @@ iframe {
   position: absolute;
   left: 0;
   right: 0;
-  background: rgba(0, 0, 0, .1);
   top: 0;
   bottom: 0;
   z-index: 10;
   padding: 100px;
   -webkit-box-align: center;
   -webkit-box-pack: center;
+}
+
+.opaque-overlay {
+  background: rgba(255, 255, 255, 1);
+}
+
+.tranparent-overlay {
+  background: rgba(0, 0, 0, 0.1);
 }
 
 .overlay > div {
@@ -149,12 +166,6 @@ iframe {
   vertical-align: middle;
   line-height: 0px;
 }
-.dialog-footer {
-  -webkit-box-orient: horizontal;
-  display: -webkit-box;
-  margin: 15px;
-  margin-top: 0;
-}
 
 .horizontal-spacer {
   -webkit-box-orient: horizontal;
@@ -170,9 +181,9 @@ iframe {
 </head>
 <body onload="mobile.MobileSetup.loadPage();"
   i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
- <div class="dialog-body">
+ <div id="mainDiv" class="dialog-body">
   <iframe class="hidden" id="paymentForm" frameborder="0"></iframe>
-  <div id="systemStatus" class="overlay hidden">
+  <div id="systemStatus" class="overlay opaque-overlay hidden">
     <div class="startup">
       <div id="banner">
         <table border="0">
@@ -190,7 +201,7 @@ iframe {
           id="carrierPage" frameborder="0"></iframe>
     </div>
   </div>
-  <div id="finalStatus" class="overlay hidden">
+  <div id="finalStatus" class="overlay tranparent-overlay hidden">
     <div class="startup">
       <div class="header"><h3 id="finalHeader"></h3></div>
       <div id="finalMessage"></div>
@@ -203,7 +214,7 @@ iframe {
     </div>
   </div>
  </div>
- <div class="dialog-footer">
+ <div id="footer" class="hidden dialog-footer">
    <div class=horizontal-spacer></div>
    <button id="cancelButton" class="cancel" i18n-content="cancel_button"></button>
  </div>

@@ -19,6 +19,8 @@ class FrameSniffer : public content::RenderViewObserver {
   // Implements RenderViewObserver.
   virtual void DidFailProvisionalLoad(
       WebKit::WebFrame* frame, const WebKit::WebURLError& error) OVERRIDE;
+  virtual void DidCommitProvisionalLoad(WebKit::WebFrame* frame,
+                                        bool is_new_navigation) OVERRIDE;
 
  private:
   bool ShouldSniffFrame(WebKit::WebFrame* frame);

@@ -616,6 +616,9 @@ IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_PDFHasUnsupportedFeature)
 IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_FrameLoadingError,
                     int /* error */)
 
+// This message indicates the monitored frame loading had completed.
+IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_FrameLoadingCompleted)
+
 // The following messages are used to set and get cookies for ChromeFrame
 // processes.
 // Used to set a cookie. The cookie is set asynchronously, but will be

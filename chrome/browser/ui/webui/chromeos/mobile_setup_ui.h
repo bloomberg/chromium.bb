@@ -15,6 +15,9 @@ class MobileSetupUI : public ChromeWebUI {
   explicit MobileSetupUI(TabContents* contents);
 
  private:
+  // ChromeWebUI overrides.
+  virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
+
   DISALLOW_COPY_AND_ASSIGN(MobileSetupUI);
 };
 

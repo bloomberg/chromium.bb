@@ -18,10 +18,17 @@ FrameSniffer::~FrameSniffer() {
 }
 
 void FrameSniffer::DidFailProvisionalLoad(WebKit::WebFrame* frame,
-                                    const WebKit::WebURLError& error) {
+                                          const WebKit::WebURLError& error) {
   if (!ShouldSniffFrame(frame))
     return;
   Send(new ChromeViewHostMsg_FrameLoadingError(routing_id(), -error.reason));
+}
+
+void FrameSniffer::DidCommitProvisionalLoad(WebKit::WebFrame* frame,
+                                            bool is_new_navigation) {
+  if (!ShouldSniffFrame(frame))
+    return;
+  Send(new ChromeViewHostMsg_FrameLoadingCompleted(routing_id()));
 }
 
 bool FrameSniffer::ShouldSniffFrame(WebKit::WebFrame* frame) {

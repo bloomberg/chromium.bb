@@ -11,36 +11,11 @@
 #include "base/memory/singleton.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 
-class MobileSetupDialog : public HtmlDialogUIDelegate {
+class MobileSetupDialog {
  public:
-  MobileSetupDialog();
-
   static void Show();
-  static MobileSetupDialog* GetInstance();
-
- protected:
-  friend struct DefaultSingletonTraits<MobileSetupDialog>;
-  virtual ~MobileSetupDialog();
-
-  void OnCloseDialog();
-
-  // HtmlDialogUIDelegate overrides.
-  virtual bool IsDialogModal() const OVERRIDE;
-  virtual string16 GetDialogTitle() const OVERRIDE;
-  virtual GURL GetDialogContentURL() const OVERRIDE;
-  virtual void GetWebUIMessageHandlers(
-      std::vector<WebUIMessageHandler*>* handlers) const OVERRIDE;
-  virtual void GetDialogSize(gfx::Size* size) const OVERRIDE;
-  virtual std::string GetDialogArgs() const OVERRIDE;
-  virtual void OnDialogClosed(const std::string& json_retval) OVERRIDE;
-  virtual void OnCloseContents(TabContents* source,
-                               bool* out_close_dialog) OVERRIDE;
-  virtual bool ShouldShowDialogTitle() const OVERRIDE;
-  virtual bool HandleContextMenu(const ContextMenuParams& params) OVERRIDE;
 
  private:
-  void ShowDialog();
-
   DISALLOW_COPY_AND_ASSIGN(MobileSetupDialog);
 };
 

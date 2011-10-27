@@ -16,49 +16,80 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-// static
-MobileSetupDialog* MobileSetupDialog::GetInstance() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return Singleton<MobileSetupDialog>::get();
-}
+class MobileSetupDialogDelegate : public HtmlDialogUIDelegate {
+ public:
+  static MobileSetupDialogDelegate* GetInstance();
+  void ShowDialog();
 
-MobileSetupDialog::MobileSetupDialog() {
-}
+ protected:
+  friend struct DefaultSingletonTraits<MobileSetupDialogDelegate>;
 
-MobileSetupDialog::~MobileSetupDialog() {
-}
+  MobileSetupDialogDelegate();
+  virtual ~MobileSetupDialogDelegate();
+
+  void OnCloseDialog();
+
+  // HtmlDialogUIDelegate overrides.
+  virtual bool IsDialogModal() const OVERRIDE;
+  virtual string16 GetDialogTitle() const OVERRIDE;
+  virtual GURL GetDialogContentURL() const OVERRIDE;
+  virtual void GetWebUIMessageHandlers(
+      std::vector<WebUIMessageHandler*>* handlers) const OVERRIDE;
+  virtual void GetDialogSize(gfx::Size* size) const OVERRIDE;
+  virtual std::string GetDialogArgs() const OVERRIDE;
+  virtual void OnDialogClosed(const std::string& json_retval) OVERRIDE;
+  virtual void OnCloseContents(TabContents* source,
+                               bool* out_close_dialog) OVERRIDE;
+  virtual bool ShouldShowDialogTitle() const OVERRIDE;
+  virtual bool HandleContextMenu(const ContextMenuParams& params) OVERRIDE;
+
+ private:
+
+  DISALLOW_COPY_AND_ASSIGN(MobileSetupDialogDelegate);
+};
 
 // static
 void MobileSetupDialog::Show() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  MobileSetupDialog* dialog = MobileSetupDialog::GetInstance();
-  dialog->ShowDialog();
+  MobileSetupDialogDelegate::GetInstance()->ShowDialog();
 }
 
-void MobileSetupDialog::ShowDialog() {
+// static
+MobileSetupDialogDelegate* MobileSetupDialogDelegate::GetInstance() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  return Singleton<MobileSetupDialogDelegate>::get();
+}
+
+MobileSetupDialogDelegate::MobileSetupDialogDelegate() {
+}
+
+MobileSetupDialogDelegate::~MobileSetupDialogDelegate() {
+}
+
+void MobileSetupDialogDelegate::ShowDialog() {
   Browser* browser = BrowserList::GetLastActive();
   if (!browser)
     return;
   browser->BrowserShowHtmlDialog(this, NULL);
 }
 
-bool MobileSetupDialog::IsDialogModal() const {
+bool MobileSetupDialogDelegate::IsDialogModal() const {
   return true;
 }
 
-string16 MobileSetupDialog::GetDialogTitle() const {
+string16 MobileSetupDialogDelegate::GetDialogTitle() const {
   return l10n_util::GetStringUTF16(IDS_MOBILE_SETUP_TITLE);
 }
 
-GURL MobileSetupDialog::GetDialogContentURL() const {
+GURL MobileSetupDialogDelegate::GetDialogContentURL() const {
   return GURL(chrome::kChromeUIMobileSetupURL);
 }
 
-void MobileSetupDialog::GetWebUIMessageHandlers(
+void MobileSetupDialogDelegate::GetWebUIMessageHandlers(
     std::vector<WebUIMessageHandler*>* handlers) const{
 }
 
-void MobileSetupDialog::GetDialogSize(gfx::Size* size) const {
+void MobileSetupDialogDelegate::GetDialogSize(gfx::Size* size) const {
 #if defined(POST_PORTAL)
   size->SetSize(850, 650);
 #else
@@ -66,22 +97,23 @@ void MobileSetupDialog::GetDialogSize(gfx::Size* size) const {
 #endif
 }
 
-std::string MobileSetupDialog::GetDialogArgs() const {
+std::string MobileSetupDialogDelegate::GetDialogArgs() const {
   return std::string();
 }
 
-void MobileSetupDialog::OnDialogClosed(const std::string& json_retval) {
+void MobileSetupDialogDelegate::OnDialogClosed(const std::string& json_retval) {
 }
 
-void MobileSetupDialog::OnCloseContents(TabContents* source,
+void MobileSetupDialogDelegate::OnCloseContents(TabContents* source,
                                         bool* out_close_dialog) {
   *out_close_dialog = true;
 }
 
-bool MobileSetupDialog::ShouldShowDialogTitle() const {
+bool MobileSetupDialogDelegate::ShouldShowDialogTitle() const {
   return true;
 }
 
-bool MobileSetupDialog::HandleContextMenu(const ContextMenuParams& params) {
+bool MobileSetupDialogDelegate::HandleContextMenu(
+    const ContextMenuParams& params) {
   return true;
 }
