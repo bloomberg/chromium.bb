@@ -4783,7 +4783,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Help improve Autofill.  With this enabled, Chrome will occasionally prompt you to send additional feedback to the Autofill team.
       </message>
       <message name="IDS_FLAGS_DISABLE_PANELS_NAME" desc="Name of the 'Disable Panels' lab.">
-        Panels
+        Disable Panels
       </message>
       <message name="IDS_FLAGS_DISABLE_PANELS_DESCRIPTION" desc="Description for the flag to disable Panel windows.">
         Disable Panel windows that open outside of the browser frame. Attempts to open a Panel will open a popup instead.

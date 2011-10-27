@@ -331,7 +331,7 @@ const Experiment kExperiments[] = {
     MULTI_VALUE_TYPE(kPrerenderFromOmniboxChoices)
   },
   {
-    "panels",
+    "disable-panels",
     IDS_FLAGS_DISABLE_PANELS_NAME,
     IDS_FLAGS_DISABLE_PANELS_DESCRIPTION,
     kOsAll,
