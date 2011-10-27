@@ -36,7 +36,7 @@ DBusThreadManager::DBusThreadManager() {
   system_bus_ = new dbus::Bus(system_bus_options);
 
   // Create and start the cros D-Bus service.
-  cros_dbus_service_ = CrosDBusService::Create(system_bus_.get());
+  cros_dbus_service_.reset(CrosDBusService::Create(system_bus_.get()));
   cros_dbus_service_->Start();
 
   // Start monitoring sensors if needed.
@@ -70,10 +70,6 @@ DBusThreadManager::~DBusThreadManager() {
 
   // Stop the D-Bus thread.
   dbus_thread_->Stop();
-
-  // D-Bus clients should be deleted after the D-Bus thread is stopped.
-  // See "CALLBACKS IN D-BUS CLIENTS" in the header file for why.
-  delete cros_dbus_service_;
 }
 
 void DBusThreadManager::Initialize() {

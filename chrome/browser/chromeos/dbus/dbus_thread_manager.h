@@ -39,11 +39,11 @@ class SpeechSynthesizerClient;
 // D-Bus clients managed by DBusThreadManager are guaranteed to be deleted
 // after the D-Bus thread so the clients don't need to worry if new
 // incoming messages arrive from the D-Bus thread during shutdown of the
-// clients. However, the UI message loop may still be running during the
-// shutdown, hence the D-Bus clients should inherit
-// base::RefCountedThreadSafe if they export methods or call methods, to
-// ensure that callbacks can reference |this| safely on the UI thread
-// during the shutdown.
+// clients. The UI message loop is not running during the shutdown hence
+// the UI message loop won't post tasks to D-BUS clients during the
+// shutdown. However, to be extra cautious, clients should use
+// WeakPtrFactory when creating callbacks that run on UI thread. See
+// session_manager_client.cc for examples.
 //
 class DBusThreadManager {
  public:
@@ -103,7 +103,7 @@ class DBusThreadManager {
 
   scoped_ptr<base::Thread> dbus_thread_;
   scoped_refptr<dbus::Bus> system_bus_;
-  CrosDBusService* cros_dbus_service_;
+  scoped_ptr<CrosDBusService> cros_dbus_service_;
   scoped_ptr<SensorsClient> sensors_client_;
   scoped_ptr<BluetoothManagerClient> bluetooth_manager_client_;
   scoped_ptr<BluetoothAdapterClient> bluetooth_adapter_client_;
