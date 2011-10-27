@@ -148,9 +148,11 @@ class Upgrader(object):
     """Return True if running in upgrade mode."""
     return self._upgrade or self._upgrade_deep
 
+  # TODO(mtennant): Make this smart enough to recommend the
+  # targets/chromeos/package.keywords file when applicable.
   def _GetPkgKeywordsFile(self):
     """Return the path to the package.keywords file in chromiumos-overlay."""
-    return '%s/profiles/targets/chromeos/package.keywords' % self._cros_overlay
+    return '%s/profiles/default/linux/package.keywords' % self._cros_overlay
 
   def _SaveStatusOnStableRepo(self):
     """Get the 'git status' for everything in |self._stable_repo|.
@@ -172,7 +174,8 @@ class Upgrader(object):
 
       self._stable_repo_status = statuses
     else:
-      self._stable_repo_status = None
+      raise RuntimeError("Unable to run 'git status -s' in %s:\n%s" %
+                         (self._stable_repo, result.output))
 
     self._stable_repo_stashed = False
 
@@ -388,20 +391,20 @@ class Upgrader(object):
 
     return cmd
 
-  def _AreEmergeable(self, cpvlist, stable_only):
+  def _AreEmergeable(self, cpvlist, unstable_ok):
     """Indicate whether cpvs in |cpvlist| can be emerged on current board.
 
     This essentially runs emerge with the --pretend option to verify
     that all dependencies for these package versions are satisfied.
 
-    The |stable_only| argument determines whether an unstable version
+    The |unstable_ok| argument determines whether an unstable version
     is acceptable.
 
     Return tuple with two elements:
     [0] True if |cpvlist| can be emerged.
     [1] Output from the emerge command.
     """
-    envvars = self._GenPortageEnvvars(self._curr_arch, not stable_only)
+    envvars = self._GenPortageEnvvars(self._curr_arch, unstable_ok)
     emerge = self._GetBoardCmd(self.EMERGE_CMD)
     cmd = [emerge, '-p'] + ['=' + cpv for cpv in cpvlist]
     result = cros_lib.RunCommand(cmd, exit_code=True, error_ok=True,
@@ -626,14 +629,19 @@ class Upgrader(object):
     pkgdir = os.path.join(self._stable_repo, catpkgsubdir)
     upstream_pkgdir = os.path.join(self._upstream_repo, cat, pkgname)
 
-    # If pkgdir already exists, remove everything except ebuilds that
-    # correspond to ebuilds that are also upstream.
+    # Fail early if upstream_cpv ebuild is not found
+    upstream_ebuild_path = os.path.join(upstream_pkgdir, ebuild)
+    if not os.path.exists(upstream_ebuild_path):
+      # Note: this should only be possible during unit tests.
+      raise RuntimeError("Cannot find upstream ebuild at '%s'" %
+                         upstream_ebuild_path)
+
+    # If pkgdir already exists, remove everything in it.
     if os.path.exists(pkgdir):
       items = os.listdir(pkgdir)
       for item in items:
         src = os.path.join(upstream_pkgdir, item)
-        if not item.endswith('.ebuild') or not os.path.exists(src):
-          self._RunGit(pkgdir, 'rm -rf ' + item, redirect_stdout=True)
+        self._RunGit(pkgdir, 'rm -rf ' + item, redirect_stdout=True)
     else:
       os.makedirs(pkgdir)
 
@@ -642,17 +650,17 @@ class Upgrader(object):
     # TODO: Selectively exclude files under the 'files' directory that clearly
     # apply to other package versions.  For example, 'files/foo-1.2.3-bar.patch'
     # when upgrading to foo-3.2.1.  Must do this carefully.
-    if os.path.exists(upstream_pkgdir):
-      items = os.listdir(upstream_pkgdir)
-      for item in items:
-        if os.path.basename(item) not in BLACKLISTED_FILES:
-          if not item.endswith('.ebuild') or item == ebuild:
-            src = os.path.join(upstream_pkgdir, item)
-            dst = os.path.join(pkgdir, item)
-            if os.path.isdir(src):
-              shutil.copytree(src, dst)
-            else:
-              shutil.copy2(src, dst)
+    items = os.listdir(upstream_pkgdir)
+    for item in items:
+      if os.path.basename(item) not in BLACKLISTED_FILES:
+        if not item.endswith('.ebuild') or item == ebuild:
+          src = os.path.join(upstream_pkgdir, item)
+          dst = os.path.join(pkgdir, item)
+          if os.path.isdir(src):
+            shutil.copytree(src, dst, symlinks=True)
+          else:
+            shutil.copy2(src, dst)
+
     self._RunGit(self._stable_repo, 'add ' + catpkgsubdir)
 
     # Now copy any eclasses that this package requires.
@@ -678,6 +686,8 @@ class Upgrader(object):
         return False
       else:
         oper.Info('Copying %s from upstream.' % eclass)
+        if not os.path.exists(os.path.dirname(local_path)):
+          os.makedirs(os.path.dirname(local_path))
         shutil.copy2(upstream_path, local_path)
         self._RunGit(self._stable_repo, 'add %s' % eclass_subpath)
         return True
@@ -887,9 +897,9 @@ class Upgrader(object):
 
     return sorted(pkgs)
 
-  def _CreateCommitMessage(self, upgrade_lines, bug_num=None):
+  def _CreateCommitMessage(self, upgrade_lines):
     """Create appropriate git commit message for upgrades in |upgrade_lines|."""
-    message = ''
+    message = None
     upgrade_pkgs = self._ExtractUpgradedPkgs(upgrade_lines)
     upgrade_count = len(upgrade_pkgs)
     upgrade_str = '\n'.join(upgrade_lines)
@@ -900,15 +910,12 @@ class Upgrader(object):
       message = ('Upgraded the %s Portage packages\n\n%s\n' %
                  (', '.join(upgrade_pkgs), upgrade_str))
     else:
-      message = ('Upgrade the following %d Portage packages\n\n%s\n' %
+      message = ('Upgraded the following %d Portage packages\n\n%s\n' %
                  (upgrade_count, upgrade_str))
 
     # The space before <fill-in> (at least for TEST=) fails pre-submit check,
     # which is the intention here.
-    if bug_num:
-      message += '\nBUG=chromium-os:%s' % bug_num
-    else:
-      message += '\nBUG= <fill-in>'
+    message += '\nBUG= <fill-in>'
     message += '\nTEST= <fill-in>'
 
     return message
