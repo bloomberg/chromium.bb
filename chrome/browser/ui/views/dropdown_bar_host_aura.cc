@@ -5,17 +5,18 @@
 #include "chrome/browser/ui/views/dropdown_bar_host.h"
 
 #include "base/logging.h"
+#include "ui/aura/window.h"
+#include "views/widget/widget.h"
 
 NativeWebKeyboardEvent DropdownBarHost::GetKeyboardEvent(
      const TabContents* contents,
      const views::KeyEvent& key_event) {
-  // TODO(beng):
-  NOTIMPLEMENTED();
-  return NativeWebKeyboardEvent();
+  return NativeWebKeyboardEvent(key_event.native_event());
 }
 
 void DropdownBarHost::SetWidgetPositionNative(const gfx::Rect& new_pos,
                                               bool no_redraw) {
-  // TODO(beng):
-  NOTIMPLEMENTED();
+  if (!host_->IsVisible())
+    host_->GetNativeView()->Show();
+  host_->GetNativeView()->SetBounds(new_pos);
 }
