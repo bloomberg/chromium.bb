@@ -67,6 +67,7 @@ Session::Session(const Options& options)
       async_script_timeout_(0),
       implicit_wait_(0),
       has_alert_prompt_text_(false),
+      terminated_(false),
       options_(options) {
   SessionManager::GetInstance()->Add(this);
 }
@@ -93,6 +94,8 @@ Error* Session::Init(const Automation::BrowserOptions& options) {
 }
 
 Error* Session::BeforeExecuteCommand() {
+  if (terminated_)
+    return NULL;
   Error* error = AfterExecuteCommand();
   if (!error) {
     scoped_ptr<Error> switch_error(SwitchToTopFrameIfCurrentFrameInvalid());
@@ -110,6 +113,8 @@ Error* Session::BeforeExecuteCommand() {
 }
 
 Error* Session::AfterExecuteCommand() {
+  if (terminated_)
+    return NULL;
   Error* error = NULL;
   if (!options_.load_async) {
     LOG(INFO) << "Waiting for the page to stop loading";
@@ -120,6 +125,7 @@ Error* Session::AfterExecuteCommand() {
 }
 
 void Session::Terminate() {
+  terminated_ = true;
   RunSessionTask(NewRunnableMethod(
       this,
       &Session::TerminateOnSessionThread));
