@@ -23,16 +23,10 @@ const EXIF_TAG_X_DIMENSION = 0xA002;
 const EXIF_TAG_Y_DIMENSION = 0xA003;
 
 function ExifParser(parent) {
-  MetadataParser.apply(this, [parent]);
-  this.verbose = false;
-  this.mimeType = 'image/jpeg';
+  ImageParser.call(this, parent, 'jpeg', /\.jpe?g$/i);
 }
 
-ExifParser.parserType = 'exif';
-
-ExifParser.prototype = {__proto__: MetadataParser.prototype};
-
-ExifParser.prototype.urlFilter = /\.jpe?g$/i;
+ExifParser.prototype = {__proto__: ImageParser.prototype};
 
 ExifParser.prototype.parse = function(file, callback, errorCallback) {
   var self = this;
@@ -82,7 +76,7 @@ ExifParser.prototype.parse = function(file, callback, errorCallback) {
           // with no EXIF data. Still might want to handle this more carefully.
           if (br.tell() + 7 < buf.byteLength) {
             br.seek(3, ByteReader.SEEK_CUR);
-            var metadata = {mimeType: self.mimeType};
+            var metadata = self.createDefaultMetadata();
             metadata.width = br.readScalar(2);
             metadata.height = br.readScalar(2);
             callback(metadata);
@@ -125,14 +119,11 @@ ExifParser.prototype.parse = function(file, callback, errorCallback) {
       if (tag != EXIF_TAG_TIFF)
         return onError('Invalid TIFF tag: ' + tag.toString(16));
 
-      var metadata = {
-        metadataType: ExifParser.parserType,
-        mimeType: self.mimeType,
-        littleEndian: (order == EXIF_ALIGN_LITTLE),
-        ifd: {
-          image: {},
-          thumbnail: {}
-        }
+      var metadata = self.createDefaultMetadata();
+      metadata.littleEndian = (order == EXIF_ALIGN_LITTLE);
+      metadata.ifd = {
+        image: {},
+        thumbnail: {}
       };
       var directoryOffset = br.readScalar(4);
 

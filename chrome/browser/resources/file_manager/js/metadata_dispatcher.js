@@ -18,6 +18,7 @@ importScripts('byte_reader.js');
  */
 function MetadataDispatcher() {
   importScripts('exif_parser.js');
+  importScripts('image_parsers.js');
   importScripts('mpeg_parser.js');
   importScripts('id3_parser.js');
 
@@ -25,8 +26,8 @@ function MetadataDispatcher() {
 
   for (var i = 0; i < MetadataDispatcher.parserClasses_.length; i++) {
     var parserClass = MetadataDispatcher.parserClasses_[i];
-    this.log('new parser: ' + parserClass.parserType);
     var parser = new parserClass(this);
+    this.log('new parser: ' + parser.type);
     this.parserInstances_.push(parser);
     patterns.push(parser.urlFilter.source);
   }
@@ -124,11 +125,11 @@ MetadataDispatcher.prototype.processOneFile = function(fileURL, callback) {
     steps[++currentStep].apply(self, arguments);
   }
 
-  // Even if the error occurs we still need to pass mimeType.
-  var metadata = {};
+  var defaultMetadata;  // To pass along with error.
 
   function onError(err, stepName) {
-    self.error(fileURL, stepName || steps[currentStep].name, err, metadata);
+    self.error(fileURL, stepName || steps[currentStep].name, err.toString(),
+        defaultMetadata);
   }
 
   var steps =
@@ -137,6 +138,7 @@ MetadataDispatcher.prototype.processOneFile = function(fileURL, callback) {
       for (var i = 0; i != self.parserInstances_.length; i++) {
         var parser = self.parserInstances_[i];
         if (fileURL.match(parser.urlFilter)) {
+          defaultMetadata = parser.createDefaultMetadata();
           nextStep(parser);
           return;
         }
@@ -159,7 +161,6 @@ MetadataDispatcher.prototype.processOneFile = function(fileURL, callback) {
 
     // Step four, parse the file content.
     function parseContent(file, parser) {
-      metadata.mimeType = parser.mimeType;
       parser.parse(file, callback, onError);
     }
   ];
@@ -186,7 +187,8 @@ MetadataDispatcher.prototype.processOneFile = function(fileURL, callback) {
       function detectFormat(mimeType, arrayBuffer) {
         for (var i = 0; i != self.parserInstances_.length; i++) {
           var parser = self.parserInstances_[i];
-          if (parser.mimeType && mimeType.match(parser.mimeType)) {
+          if (parser.acceptsMimeType(mimeType)) {
+            defaultMetadata = parser.createDefaultMetadata();
             var blobBuilder = new WebKitBlobBuilder();
             blobBuilder.append(arrayBuffer);
             nextStep(blobBuilder.getBlob(), parser);

@@ -3,15 +3,10 @@
 // found in the LICENSE file.
 
 function MpegParser(parent) {
-  MetadataParser.apply(this, [parent]);
-  this.verbose = true;
+  MetadataParser.call(this, parent, 'mpeg', /\.(mp4|m4v|m4a|mpe?g4?)$/i);
 }
 
-MpegParser.parserType = 'mpeg';
-
 MpegParser.prototype = {__proto__: MetadataParser.prototype};
-
-MpegParser.prototype.urlFilter = /\.(mp4|m4v|m4a|mpe?g4?)$/i;
 
 MpegParser.HEADER_SIZE = 8;
 
