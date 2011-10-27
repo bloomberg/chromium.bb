@@ -41,6 +41,9 @@ void FFmpegVideoDecodeEngine::Initialize(
     VideoDecodeEngine::EventHandler* event_handler,
     VideoDecodeContext* context,
     const VideoDecoderConfig& config) {
+  frame_rate_numerator_ = config.frame_rate_numerator();
+  frame_rate_denominator_ = config.frame_rate_denominator();
+
   // Always try to use three threads for video decoding.  There is little reason
   // not to since current day CPUs tend to be multi-core and we measured
   // performance benefits on older machines such as P4s with hyperthreading.
@@ -55,24 +58,7 @@ void FFmpegVideoDecodeEngine::Initialize(
 
   // Initialize AVCodecContext structure.
   codec_context_ = avcodec_alloc_context();
-  codec_context_->pix_fmt = VideoFormatToPixelFormat(config.format());
-  codec_context_->codec_type = AVMEDIA_TYPE_VIDEO;
-  codec_context_->codec_id = VideoCodecToCodecID(config.codec());
-  codec_context_->coded_width = config.coded_size().width();
-  codec_context_->coded_height = config.coded_size().height();
-
-  frame_rate_numerator_ = config.frame_rate_numerator();
-  frame_rate_denominator_ = config.frame_rate_denominator();
-
-  if (config.extra_data() != NULL) {
-    codec_context_->extradata_size = config.extra_data_size();
-    codec_context_->extradata = reinterpret_cast<uint8_t*>(
-        av_malloc(config.extra_data_size() + FF_INPUT_BUFFER_PADDING_SIZE));
-    memcpy(codec_context_->extradata, config.extra_data(),
-           config.extra_data_size());
-    memset(codec_context_->extradata + config.extra_data_size(), '\0',
-           FF_INPUT_BUFFER_PADDING_SIZE);
-  }
+  VideoDecoderConfigToAVCodecContext(config, codec_context_);
 
   // Enable motion vector search (potentially slow), strong deblocking filter
   // for damaged macroblocks, and set our error detection sensitivity.

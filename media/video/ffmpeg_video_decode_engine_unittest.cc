@@ -27,6 +27,7 @@ static const gfx::Size kCodedSize(320, 240);
 static const gfx::Rect kVisibleRect(320, 240);
 static const gfx::Size kNaturalSize(522, 288);
 static const AVRational kFrameRate = { 100, 1 };
+static const AVRational kAspectRatio = { 1, 1 };
 
 ACTION_P2(DemuxComplete, engine, buffer) {
   engine->ConsumeVideoSample(buffer);
@@ -38,7 +39,9 @@ class FFmpegVideoDecodeEngineTest
  public:
   FFmpegVideoDecodeEngineTest()
       : config_(kCodecVP8, kVideoFormat, kCodedSize, kVisibleRect,
-                kFrameRate.num, kFrameRate.den, NULL, 0) {
+                kFrameRate.num, kFrameRate.den,
+                kAspectRatio.num, kAspectRatio.den,
+                NULL, 0) {
     CHECK(FFmpegGlue::GetInstance());
 
     // Setup FFmpeg structures.
@@ -146,6 +149,7 @@ TEST_F(FFmpegVideoDecodeEngineTest, Initialize_FindDecoderFails) {
   VideoDecoderConfig config(kUnknownVideoCodec, kVideoFormat,
                             kCodedSize, kVisibleRect,
                             kFrameRate.num, kFrameRate.den,
+                            kAspectRatio.num, kAspectRatio.den,
                             NULL, 0);
 
   // Test avcodec_find_decoder() returning NULL.
@@ -158,6 +162,7 @@ TEST_F(FFmpegVideoDecodeEngineTest, Initialize_OpenDecoderFails) {
   VideoDecoderConfig config(kCodecTheora, kVideoFormat,
                             kCodedSize, kVisibleRect,
                             kFrameRate.num, kFrameRate.den,
+                            kAspectRatio.num, kAspectRatio.den,
                             NULL, 0);
   EXPECT_CALL(*this, OnInitializeComplete(false));
   test_engine_->Initialize(MessageLoop::current(), this, NULL, config);
