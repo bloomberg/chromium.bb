@@ -256,14 +256,6 @@
    bug_101853_b
    ThreadSanitizer:Race
    fun:disk_cache::BackendImpl::DecreaseNumEntries
-   fun:disk_cache::BackendImpl::DestroyInvalidEntry
-   fun:disk_cache::BackendImpl::MatchEntry
-   fun:disk_cache::BackendImpl::InternalDoomEntry
-}
-{
-   bug_101853_c
-   ThreadSanitizer:Race
-   fun:disk_cache::BackendImpl::DecreaseNumEntries
    fun:disk_cache::BackendImpl::RemoveEntry
    fun:disk_cache::EntryImpl::DeleteEntryData
    fun:disk_cache::EntryImpl::~EntryImpl

@@ -621,3 +621,18 @@
   ...
   fun:HostContentSettingsMap::GetDefaultContentSetting
 }
+{
+   bug_101853_a
+   ThreadSanitizer:Race
+   fun:disk_cache::BackendImpl::DecreaseNumEntries
+   fun:disk_cache::BackendImpl::DestroyInvalidEntry
+   fun:disk_cache::BackendImpl::MatchEntry
+   fun:disk_cache::BackendImpl::InternalDoomEntry
+}
+{
+  bug_101853_b
+  ThreadSanitizer:Race
+  fun:disk_cache::BackendImpl::GetEntryCount
+  fun:DiskCacheBackendTest::BackendTrimInvalidEntry2
+  fun:DiskCacheBackendTest_TrimInvalidEntry2_Test::TestBody
+}
