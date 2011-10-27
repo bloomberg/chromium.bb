@@ -11,7 +11,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
-#include "chrome/browser/safe_browsing/download_protection_service.h"
 #include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -134,11 +133,6 @@ class ChromeDownloadManagerDelegate
   // Callback function after download file hash is checked with safebrowsing
   // service.
   void CheckDownloadHashDone(int32 download_id, bool is_dangerous_hash);
-
-  // Callback function after the DownloadProtectionService completes.
-  void CheckClientDownloadDone(
-      int32 download_id,
-      safe_browsing::DownloadProtectionService::DownloadCheckResult result);
 
   Profile* profile_;
   scoped_ptr<DownloadPrefs> download_prefs_;

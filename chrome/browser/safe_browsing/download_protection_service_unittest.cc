@@ -9,15 +9,12 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "content/browser/browser_thread.h"
-#include "content/browser/download/download_item.h"
-#include "content/public/common/url_fetcher_delegate.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -44,25 +41,19 @@ class DownloadProtectionServiceTest : public testing::Test {
  protected:
   virtual void SetUp() {
     ui_thread_.reset(new BrowserThread(BrowserThread::UI, &msg_loop_));
-    // Start real threads for the IO and File threads so that the DCHECKs
-    // to test that we're on the correct thread work.
-    io_thread_.reset(new BrowserThread(BrowserThread::IO));
-    ASSERT_TRUE(io_thread_->Start());
-    file_thread_.reset(new BrowserThread(BrowserThread::FILE));
-    ASSERT_TRUE(file_thread_->Start());
+    io_thread_.reset(new BrowserThread(BrowserThread::IO, &msg_loop_));
     sb_service_ = new MockSafeBrowsingService();
-    download_service_ = sb_service_->download_protection_service();
+    download_service_ = new DownloadProtectionService(sb_service_.get(),
+                                                      NULL);
     download_service_->SetEnabled(true);
     msg_loop_.RunAllPending();
   }
 
   virtual void TearDown() {
-    // Flush all of the thread message loops to ensure that there are no
-    // tasks currently running.
-    FlushThreadMessageLoops();
+    msg_loop_.RunAllPending();
+    download_service_ = NULL;
     sb_service_ = NULL;
     io_thread_.reset();
-    file_thread_.reset();
     ui_thread_.reset();
   }
 
@@ -80,45 +71,6 @@ class DownloadProtectionServiceTest : public testing::Test {
     return false;
   }
 
-  // Flushes any pending tasks in the message loops of all threads.
-  void FlushThreadMessageLoops() {
-    FlushMessageLoop(BrowserThread::FILE);
-    FlushMessageLoop(BrowserThread::IO);
-    msg_loop_.RunAllPending();
-  }
-
- private:
-  // Helper functions for FlushThreadMessageLoops.
-  void RunAllPendingAndQuitUI() {
-    MessageLoop::current()->RunAllPending();
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&DownloadProtectionServiceTest::QuitMessageLoop,
-                   base::Unretained(this)));
-  }
-
-  void QuitMessageLoop() {
-    MessageLoop::current()->Quit();
-  }
-
-  void PostRunMessageLoopTask(BrowserThread::ID thread) {
-    BrowserThread::PostTask(
-        thread,
-        FROM_HERE,
-        base::Bind(&DownloadProtectionServiceTest::RunAllPendingAndQuitUI,
-                   base::Unretained(this)));
-  }
-
-  void FlushMessageLoop(BrowserThread::ID thread) {
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&DownloadProtectionServiceTest::PostRunMessageLoopTask,
-                   base::Unretained(this), thread));
-    msg_loop_.Run();
-  }
-
  public:
   void CheckDoneCallback(
       DownloadProtectionService::DownloadCheckResult result) {
@@ -126,51 +78,36 @@ class DownloadProtectionServiceTest : public testing::Test {
     msg_loop_.Quit();
   }
 
-  void SendURLFetchComplete(TestURLFetcher* fetcher) {
-    fetcher->delegate()->OnURLFetchComplete(fetcher);
-  }
-
  protected:
   scoped_refptr<MockSafeBrowsingService> sb_service_;
-  DownloadProtectionService* download_service_;
+  scoped_refptr<DownloadProtectionService> download_service_;
   MessageLoop msg_loop_;
   DownloadProtectionService::DownloadCheckResult result_;
   scoped_ptr<BrowserThread> io_thread_;
-  scoped_ptr<BrowserThread> file_thread_;
   scoped_ptr<BrowserThread> ui_thread_;
 };
 
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadInvalidUrl) {
   DownloadProtectionService::DownloadInfo info;
-  download_service_->CheckClientDownload(
+  EXPECT_TRUE(download_service_->CheckClientDownload(
       info,
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
-  msg_loop_.Run();
-  EXPECT_EQ(DownloadProtectionService::SAFE, result_);
-
+                 base::Unretained(this))));
   // Only http is supported for now.
-  info.local_file = FilePath(FILE_PATH_LITERAL("a.exe"));
   info.download_url_chain.push_back(GURL("https://www.google.com/"));
-  download_service_->CheckClientDownload(
+  EXPECT_TRUE(download_service_->CheckClientDownload(
       info,
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
-  msg_loop_.Run();
-  EXPECT_EQ(DownloadProtectionService::SAFE, result_);
-
+                 base::Unretained(this))));
   info.download_url_chain[0] = GURL("ftp://www.google.com/");
-  download_service_->CheckClientDownload(
+  EXPECT_TRUE(download_service_->CheckClientDownload(
       info,
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
-  msg_loop_.Run();
-  EXPECT_EQ(DownloadProtectionService::SAFE, result_);
+                 base::Unretained(this))));
 }
 
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadWhitelistedUrl) {
   DownloadProtectionService::DownloadInfo info;
-  info.local_file = FilePath(FILE_PATH_LITERAL("a.exe"));
   info.download_url_chain.push_back(GURL("http://www.evil.com/bla.exe"));
   info.download_url_chain.push_back(GURL("http://www.google.com/a.exe"));
   info.referrer_url = GURL("http://www.google.com/");
@@ -181,20 +118,20 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadWhitelistedUrl) {
               MatchDownloadWhitelistUrl(GURL("http://www.google.com/a.exe")))
       .WillRepeatedly(Return(true));
 
-  download_service_->CheckClientDownload(
+  EXPECT_FALSE(download_service_->CheckClientDownload(
       info,
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
+                 base::Unretained(this))));
   msg_loop_.Run();
   EXPECT_EQ(DownloadProtectionService::SAFE, result_);
 
   // Check that the referrer is matched against the whitelist.
   info.download_url_chain.pop_back();
   info.referrer_url = GURL("http://www.google.com/a.exe");
-  download_service_->CheckClientDownload(
+  EXPECT_FALSE(download_service_->CheckClientDownload(
       info,
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
+                 base::Unretained(this))));
   msg_loop_.Run();
   EXPECT_EQ(DownloadProtectionService::SAFE, result_);
 }
@@ -209,13 +146,12 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadFetchFailed) {
       .WillRepeatedly(Return(false));
 
   DownloadProtectionService::DownloadInfo info;
-  info.local_file = FilePath(FILE_PATH_LITERAL("a.exe"));
   info.download_url_chain.push_back(GURL("http://www.evil.com/a.exe"));
   info.referrer_url = GURL("http://www.google.com/");
-  download_service_->CheckClientDownload(
+  EXPECT_FALSE(download_service_->CheckClientDownload(
       info,
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
+                 base::Unretained(this))));
   msg_loop_.Run();
   EXPECT_EQ(DownloadProtectionService::SAFE, result_);
 }
@@ -230,13 +166,12 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
       .WillRepeatedly(Return(false));
 
   DownloadProtectionService::DownloadInfo info;
-  info.local_file = FilePath(FILE_PATH_LITERAL("a.exe"));
   info.download_url_chain.push_back(GURL("http://www.evil.com/a.exe"));
   info.referrer_url = GURL("http://www.google.com/");
-  download_service_->CheckClientDownload(
+  EXPECT_FALSE(download_service_->CheckClientDownload(
       info,
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
+                 base::Unretained(this))));
   msg_loop_.Run();
   EXPECT_EQ(DownloadProtectionService::SAFE, result_);
 
@@ -244,10 +179,10 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
   factory.SetFakeResponse(
       DownloadProtectionService::kDownloadRequestUrl, "bla", true);
 
-  download_service_->CheckClientDownload(
+  EXPECT_FALSE(download_service_->CheckClientDownload(
       info,
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
+                 base::Unretained(this))));
   msg_loop_.Run();
   EXPECT_EQ(DownloadProtectionService::SAFE, result_);
 }
@@ -256,7 +191,6 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadValidateRequest) {
   TestURLFetcherFactory factory;
 
   DownloadProtectionService::DownloadInfo info;
-  info.local_file = FilePath(FILE_PATH_LITERAL("bla.exe"));
   info.download_url_chain.push_back(GURL("http://www.google.com/"));
   info.download_url_chain.push_back(GURL("http://www.google.com/bla.exe"));
   info.referrer_url = GURL("http://www.google.com/");
@@ -266,17 +200,16 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadValidateRequest) {
 
   EXPECT_CALL(*sb_service_, MatchDownloadWhitelistUrl(_))
       .WillRepeatedly(Return(false));
-  download_service_->CheckClientDownload(
+  EXPECT_FALSE(download_service_->CheckClientDownload(
       info,
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
-  // Run the message loop(s) until SendRequest is called.
-  FlushThreadMessageLoops();
+                 base::Unretained(this))));
+  msg_loop_.RunAllPending();  // Wait until StartCheckClientDownload is called.
 
-  TestURLFetcher* fetcher = factory.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
+  ASSERT_TRUE(factory.GetFetcherByID(0));
   ClientDownloadRequest request;
-  EXPECT_TRUE(request.ParseFromString(fetcher->upload_data()));
+  EXPECT_TRUE(request.ParseFromString(
+      factory.GetFetcherByID(0)->upload_data()));
   EXPECT_EQ("http://www.google.com/bla.exe", request.url());
   EXPECT_EQ(info.sha256_hash, request.digests().sha256());
   EXPECT_EQ(info.total_bytes, request.length());
@@ -289,12 +222,5 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadValidateRequest) {
                                       ClientDownloadRequest::DOWNLOAD_URL,
                                       "http://www.google.com/bla.exe",
                                       info.referrer_url.spec()));
-
-  // Simulate the request finishing.
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&DownloadProtectionServiceTest::SendURLFetchComplete,
-                 base::Unretained(this), fetcher));
-  msg_loop_.Run();
 }
 }  // namespace safe_browsing
