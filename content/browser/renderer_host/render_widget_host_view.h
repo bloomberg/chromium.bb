@@ -109,7 +109,7 @@ class RenderWidgetHostView {
   virtual void Blur() = 0;
 
   // Returns true if the View currently has the focus.
-  virtual bool HasFocus() = 0;
+  virtual bool HasFocus() const = 0;
 
   // Shows/hides the view.  These must always be called together in pairs.
   // It is not legal to call Hide() multiple times in a row.

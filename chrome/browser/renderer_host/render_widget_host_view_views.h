@@ -73,7 +73,7 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   virtual gfx::NativeViewId GetNativeViewId() const OVERRIDE;
   virtual void MovePluginWindows(
       const std::vector<webkit::npapi::WebPluginGeometry>& moves) OVERRIDE;
-  virtual bool HasFocus() OVERRIDE;
+  virtual bool HasFocus() const OVERRIDE;
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;
   virtual bool IsShowing() OVERRIDE;

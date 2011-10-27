@@ -554,7 +554,7 @@ void RenderWidgetHostViewWin::Blur() {
   NOTREACHED();
 }
 
-bool RenderWidgetHostViewWin::HasFocus() {
+bool RenderWidgetHostViewWin::HasFocus() const {
   return ::GetFocus() == m_hWnd;
 }
 
@@ -2021,4 +2021,3 @@ void RenderWidgetHostViewWin::HandleLockedMouseEvent(UINT message,
 
   ForwardMouseEventToRenderer(message, wparam, lparam);
 }
-

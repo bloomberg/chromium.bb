@@ -30,7 +30,7 @@ class CONTENT_EXPORT BrowserAccessibilityDelegate {
   virtual ~BrowserAccessibilityDelegate() {}
   virtual void SetAccessibilityFocus(int acc_obj_id) = 0;
   virtual void AccessibilityDoDefaultAction(int acc_obj_id) = 0;
-  virtual bool HasFocus() = 0;
+  virtual bool HasFocus() const = 0;
   virtual gfx::Rect GetViewBounds() const = 0;
 };
 

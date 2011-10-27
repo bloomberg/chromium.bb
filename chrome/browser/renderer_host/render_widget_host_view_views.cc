@@ -247,7 +247,7 @@ void RenderWidgetHostViewViews::MovePluginWindows(
   // NOTIMPLEMENTED();
 }
 
-bool RenderWidgetHostViewViews::HasFocus() {
+bool RenderWidgetHostViewViews::HasFocus() const {
   return View::HasFocus();
 }
 

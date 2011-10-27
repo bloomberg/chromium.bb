@@ -425,7 +425,7 @@ void RenderWidgetHostViewMac::Blur() {
   [[cocoa_view_ window] makeFirstResponder:nil];
 }
 
-bool RenderWidgetHostViewMac::HasFocus() {
+bool RenderWidgetHostViewMac::HasFocus() const {
   return [[cocoa_view_ window] firstResponder] == cocoa_view_;
 }
 

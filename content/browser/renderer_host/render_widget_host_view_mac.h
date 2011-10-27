@@ -194,7 +194,7 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
       const std::vector<webkit::npapi::WebPluginGeometry>& moves) OVERRIDE;
   virtual void Focus() OVERRIDE;
   virtual void Blur() OVERRIDE;
-  virtual bool HasFocus() OVERRIDE;
+  virtual bool HasFocus() const OVERRIDE;
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;
   virtual bool IsShowing() OVERRIDE;
