@@ -16,8 +16,10 @@ namespace ui {
 
 // Get an ui::KeyboardCode from an X keyevent
 KeyboardCode KeyboardCodeFromXKeyEvent(XEvent* xev) {
-  KeySym keysym = XLookupKeysym(&xev->xkey, 0);
-
+  // XLookupKeysym does not take into consideration the state of the lock/shift
+  // etc. keys. So it is necessary to use XLookupString instead.
+  KeySym keysym;
+  XLookupString(&xev->xkey, NULL, 0, &keysym, NULL);
   KeyboardCode keycode = KeyboardCodeFromXKeysym(keysym);
   if (keycode == VKEY_UNKNOWN) {
     keysym = DefaultXKeysymFromHardwareKeycode(xev->xkey.keycode);
@@ -155,26 +157,30 @@ KeyboardCode KeyboardCodeFromXKeysym(unsigned int keysym) {
     case XK_Z:
     case XK_z:
       return VKEY_Z;
+
     case XK_0:
-      return VKEY_0;
     case XK_1:
-      return VKEY_1;
     case XK_2:
-      return VKEY_2;
     case XK_3:
-      return VKEY_3;
     case XK_4:
-      return VKEY_4;
     case XK_5:
-      return VKEY_5;
     case XK_6:
-      return VKEY_6;
     case XK_7:
-      return VKEY_7;
     case XK_8:
-      return VKEY_8;
     case XK_9:
-      return VKEY_9;
+      return static_cast<KeyboardCode>(VKEY_0 + (keysym - XK_0));
+
+    case XK_KP_0:
+    case XK_KP_1:
+    case XK_KP_2:
+    case XK_KP_3:
+    case XK_KP_4:
+    case XK_KP_5:
+    case XK_KP_6:
+    case XK_KP_7:
+    case XK_KP_8:
+    case XK_KP_9:
+      return static_cast<KeyboardCode>(VKEY_NUMPAD0 + (keysym - XK_KP_0));
 
     case XK_multiply:
     case XK_KP_Multiply:
