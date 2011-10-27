@@ -1283,7 +1283,7 @@ uint64 Segment::AddAudioTrack(int32 sample_rate,
   return aud_track->number();
 }
 
-bool Segment::AddFrame(uint8* frame,
+bool Segment::AddFrame(const uint8* frame,
                        uint64 length,
                        uint64 track_number,
                        uint64 timestamp,

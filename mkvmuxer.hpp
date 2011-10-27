@@ -550,7 +550,7 @@ class Segment {
   //                 functions.
   //   timestamp:    Timestamp of the frame in nanoseconds from 0.
   //   is_key:       Flag telling whether or not this frame is a key frame.
-  bool AddFrame(uint8* frame,
+  bool AddFrame(const uint8* frame,
                 uint64 length,
                 uint64 track_number,
                 uint64 timestamp,
