@@ -156,8 +156,27 @@ bool ChromeDownloadManagerDelegate::ShouldOpenDownload(DownloadItem* item) {
 }
 
 bool ChromeDownloadManagerDelegate::ShouldCompleteDownload(DownloadItem* item) {
-  if (!IsExtensionDownload(item))
+  if (!IsExtensionDownload(item)) {
+#if defined(ENABLE_SAFE_BROWSING)
+    // Begin the safe browsing download protection check.
+    SafeBrowsingService* sb_service =
+        g_browser_process->safe_browsing_service();
+    if (sb_service && sb_service->download_protection_service() &&
+        profile_->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled)) {
+      using safe_browsing::DownloadProtectionService;
+      sb_service->download_protection_service()->CheckClientDownload(
+          DownloadProtectionService::DownloadInfo::FromDownloadItem(*item),
+          base::Bind(
+              &ChromeDownloadManagerDelegate::CheckClientDownloadDone,
+              this, item->id()));
+      // For now, we won't delay the download for this.
+    }
+#else
+    // Assume safe.
+#endif
+
     return true;
+  }
 
   scoped_refptr<CrxInstaller> crx_installer =
       download_crx_util::OpenChromeExtension(profile_, *item);
@@ -225,6 +244,12 @@ void ChromeDownloadManagerDelegate::UpdatePathForItemInPersistentStore(
     DownloadItem* item,
     const FilePath& new_path) {
   download_history_->UpdateDownloadPath(item, new_path);
+}
+
+void ChromeDownloadManagerDelegate::CheckClientDownloadDone(
+    int32 download_id,
+    safe_browsing::DownloadProtectionService::DownloadCheckResult result) {
+  // TODO(bryner): notify the user based on this result
 }
 
 void ChromeDownloadManagerDelegate::RemoveItemFromPersistentStore(

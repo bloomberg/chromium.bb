@@ -30,7 +30,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -175,12 +174,9 @@ SafeBrowsingService::SafeBrowsingService()
         safe_browsing::ClientSideDetectionService::Create(
             g_browser_process->system_request_context()));
   }
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableImprovedDownloadProtection)) {
-    download_service_ = new safe_browsing::DownloadProtectionService(
-        this,
-        g_browser_process->system_request_context());
-  }
+  download_service_.reset(new safe_browsing::DownloadProtectionService(
+      this,
+      g_browser_process->system_request_context()));
 #endif
 }
 
@@ -216,20 +212,12 @@ void SafeBrowsingService::Initialize() {
 }
 
 void SafeBrowsingService::ShutDown() {
-  if (download_service_.get()) {
-    // Disabling the download service first will ensure that it is
-    // disabled before the SafeBrowsingService object becomes invalid.  The
-    // download service might stay around for a bit since it's
-    // ref-counted but it won't do any harm because it will be
-    // disabled.
-    download_service_->SetEnabled(false);
-    download_service_ = NULL;
-  }
   Stop();
   // The IO thread is going away, so make sure the ClientSideDetectionService
   // dtor executes now since it may call the dtor of URLFetcher which relies
   // on it.
   csd_service_.reset();
+  download_service_.reset();
 }
 
 bool SafeBrowsingService::CanCheckUrl(const GURL& url) const {
@@ -1368,6 +1356,9 @@ void SafeBrowsingService::RefreshState() {
 
   if (csd_service_.get())
     csd_service_->SetEnabledAndRefreshState(enable);
-  if (download_service_.get())
-    download_service_->SetEnabled(enable);
+  if (download_service_.get()) {
+    download_service_->SetEnabled(
+        enable && CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableImprovedDownloadProtection));
+  }
 }

@@ -23,6 +23,7 @@
 #include "base/task.h"
 #include "base/time.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
+#include "content/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
@@ -49,7 +50,8 @@ class DownloadProtectionService;
 
 // Construction needs to happen on the main thread.
 class SafeBrowsingService
-    : public base::RefCountedThreadSafe<SafeBrowsingService>,
+    : public base::RefCountedThreadSafe<SafeBrowsingService,
+                                        BrowserThread::DeleteOnUIThread>,
       public content::NotificationObserver {
  public:
   class Client;
@@ -267,6 +269,8 @@ class SafeBrowsingService
     return csd_service_.get();
   }
 
+  // The DownloadProtectionService is not valid after the SafeBrowsingService
+  // is destroyed.
   safe_browsing::DownloadProtectionService*
       download_protection_service() const {
     return download_service_.get();
@@ -325,7 +329,8 @@ class SafeBrowsingService
     base::TimeTicks start;  // When check was queued.
   };
 
-  friend class base::RefCountedThreadSafe<SafeBrowsingService>;
+  friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
+  friend class DeleteTask<SafeBrowsingService>;
   friend class SafeBrowsingServiceTest;
 
   // Called to initialize objects that are used on the io_thread.
@@ -556,7 +561,7 @@ class SafeBrowsingService
 
   // The DownloadProtectionService is managed by the SafeBrowsingService,
   // since its running state and lifecycle depends on SafeBrowsingService's.
-  scoped_refptr<safe_browsing::DownloadProtectionService> download_service_;
+  scoped_ptr<safe_browsing::DownloadProtectionService> download_service_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingService);
 };
