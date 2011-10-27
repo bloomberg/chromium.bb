@@ -44,8 +44,8 @@ class PromoResourceService
   // Checks for conditions to show promo: start/end times, channel, etc.
   static bool CanShowNotificationPromo(Profile* profile);
 
-  // Checks if this user is in a group for sync promo roll-out.
-  static bool CanShowSyncPromo(Profile* profile);
+  // Checks if this user is in a group for sign-in promo roll-out.
+  static bool CanShowNTPSignInPromo(Profile* profile);
 
   static void RegisterPrefs(PrefService* local_state);
 
@@ -60,7 +60,7 @@ class PromoResourceService
   static const char* kDefaultPromoResourceServer;
 
  private:
-  friend class SyncPromoTest;
+  friend class NTPSignInPromoTest;
   FRIEND_TEST_ALL_PREFIXES(PromoResourceServiceTest, IsBuildTargetedTest);
   FRIEND_TEST_ALL_PREFIXES(PromoResourceServiceTest, UnpackLogoSignal);
   FRIEND_TEST_ALL_PREFIXES(PromoResourceServiceTest, UnpackWebStoreSignal);
@@ -209,22 +209,21 @@ class PromoResourceService
   //   answer_id: the promo's id
   void UnpackWebStoreSignal(const base::DictionaryValue& parsed_json);
 
-  // Unpack the sync promo. Expects JSON delivery in the following format:
+  // Unpack the NTP sign in promo. Expects JSON in the following format:
   // {
   //   "topic": {
   //     "answers": [
   //       ...
   //       {
   //         "answer_id": "XXXXXXX",
-  //         "name": "sync_promo",
+  //         "name": "sign_in_promo",
   //         "question": "1:5"
   //       }
   //     ]
   //   }
   // }
-  //
   // The question is in the form of "<build>:<group_max>".
-  void UnpackSyncPromoSignal(const base::DictionaryValue& parsed_json);
+  void UnpackNTPSignInPromoSignal(const base::DictionaryValue& parsed_json);
 
   // NotificationPromo::Delegate override.
   virtual void OnNewNotification(double start, double end) OVERRIDE;

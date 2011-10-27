@@ -928,8 +928,10 @@ cr.define('ntp4', function() {
       $('login-container').hidden = false;
       $('login-status-header').innerHTML = loginHeader;
       $('login-status-sub-header').innerHTML = loginSubHeader;
+      $('card-slider-frame').classList.add('showing-login-area');
     } else {
       $('login-container').hidden = true;
+      $('card-slider-frame').classList.remove('showing-login-area');
     }
   }
 

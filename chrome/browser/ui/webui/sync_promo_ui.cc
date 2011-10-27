@@ -36,7 +36,7 @@ const char kSyncPromoQueryKeyShowTitle[]  = "show_title";
 const char kSyncPromoQueryKeyNextPage[]  = "next_page";
 
 // The maximum number of times we want to show the sync promo at startup.
-const int kSyncPromoShowAtStartupMaxiumum = 10;
+const int kSyncPromoShowAtStartupMaximum = 10;
 
 // Checks we want to show the sync promo for the given brand.
 bool AllowPromoAtStartupForCurrentBrand() {
@@ -120,6 +120,7 @@ SyncPromoUI::SyncPromoUI(TabContents* contents) : ChromeWebUI(contents) {
   profile->GetChromeURLDataManager()->AddDataSource(html_source);
 }
 
+// static
 bool SyncPromoUI::ShouldShowSyncPromo(Profile* profile) {
 #if defined(OS_CHROMEOS)
   // There's no need to show the sync promo on cros since cros users are logged
@@ -176,7 +177,7 @@ bool SyncPromoUI::ShouldShowSyncPromoAtStartup(Profile* profile,
     return false;
 
   int show_count = prefs->GetInteger(prefs::kSyncPromoStartupCount);
-  if (show_count >= kSyncPromoShowAtStartupMaxiumum)
+  if (show_count >= kSyncPromoShowAtStartupMaximum)
     return false;
 
   // This pref can be set in the master preferences file to allow or disallow

@@ -37,9 +37,9 @@ body {
 }
 
 /* Only change the background to a gradient when a promo is showing. */
-.showing-sync-promo #page-switcher-end:hover,
-.showing-sync-promo #page-switcher-end:focus,
-.showing-sync-promo #page-switcher-end.drag-target {
+.showing-login-area #page-switcher-end:hover,
+.showing-login-area #page-switcher-end:focus,
+.showing-login-area #page-switcher-end.drag-target {
   background:
       -webkit-linear-gradient(top, rgba($23, 0) 0,
                                    rgba($23, .01) 60px,

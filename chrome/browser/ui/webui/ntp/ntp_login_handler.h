@@ -38,10 +38,10 @@ class NTPLoginHandler : public WebUIMessageHandler,
 
  private:
   // User actions while on the NTP when clicking on or viewing the sync promo.
-  enum SyncPromoNTPPromoBuckets {
-    SYNC_PROMO_NTP_PROMO_VIEWED,
-    SYNC_PROMO_NTP_PROMO_CLICKED,
-    SYNC_PROMO_NTP_PROMO_BUCKET_BOUNDARY,
+  enum NTPSignInPromoBuckets {
+    NTP_SIGN_IN_PROMO_VIEWED,
+    NTP_SIGN_IN_PROMO_CLICKED,
+    NTP_SIGN_IN_PROMO_BUCKET_BOUNDARY,
   };
 
   // Called from JS when the NTP is loaded. |args| is the list of arguments
@@ -52,6 +52,9 @@ class NTPLoginHandler : public WebUIMessageHandler,
   // appropriate UI based on the current sync state. |args| is the list of
   // arguments passed from JS and should be an empty list.
   void HandleShowSyncLoginUI(const ListValue* args);
+
+  // Records actions in SyncPromo.NTPPromo histogram.
+  void RecordInHistogram(int type);
 
   // Internal helper method
   void UpdateLogin();

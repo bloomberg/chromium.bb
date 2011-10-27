@@ -64,9 +64,6 @@ void NTPLoginHandler::Observe(int type,
 
 void NTPLoginHandler::HandleInitializeSyncLogin(const ListValue* args) {
   UpdateLogin();
-  UMA_HISTOGRAM_ENUMERATION("SyncPromo.NTPPromo",
-                            SYNC_PROMO_NTP_PROMO_VIEWED,
-                            SYNC_PROMO_NTP_PROMO_BUCKET_BOUNDARY);
 }
 
 void NTPLoginHandler::HandleShowSyncLoginUI(const ListValue* args) {
@@ -77,12 +74,10 @@ void NTPLoginHandler::HandleShowSyncLoginUI(const ListValue* args) {
   if (username.empty()) {
     // The user isn't signed in, show the sync promo.
     if (SyncPromoUI::ShouldShowSyncPromo(profile)) {
-      UMA_HISTOGRAM_ENUMERATION("SyncPromo.NTPPromo",
-                                SYNC_PROMO_NTP_PROMO_CLICKED,
-                                SYNC_PROMO_NTP_PROMO_BUCKET_BOUNDARY);
       web_ui_->tab_contents()->OpenURL(GURL(chrome::kChromeUISyncPromoURL),
                                        GURL(), CURRENT_TAB,
                                        content::PAGE_TRANSITION_LINK);
+      RecordInHistogram(NTP_SIGN_IN_PROMO_CLICKED);
     }
   } else if (args->GetSize() == 4) {
     // The user is signed in, show the profiles menu.
@@ -107,6 +102,17 @@ void NTPLoginHandler::HandleShowSyncLoginUI(const ListValue* args) {
   }
 }
 
+void NTPLoginHandler::RecordInHistogram(int type) {
+  // Invalid type to record.
+  if (type < NTP_SIGN_IN_PROMO_VIEWED ||
+      type > NTP_SIGN_IN_PROMO_CLICKED) {
+    NOTREACHED();
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("SyncPromo.NTPPromo", type,
+                              NTP_SIGN_IN_PROMO_BUCKET_BOUNDARY);
+  }
+}
+
 void NTPLoginHandler::UpdateLogin() {
   Profile* profile = Profile::FromWebUI(web_ui_);
   std::string username = profile->GetPrefs()->GetString(
@@ -116,7 +122,7 @@ void NTPLoginHandler::UpdateLogin() {
     header = UTF8ToUTF16(username);
   } else if (SyncPromoUI::ShouldShowSyncPromo(profile) &&
              (SyncPromoUI::UserHasSeenSyncPromoAtStartup(profile) ||
-              PromoResourceService::CanShowSyncPromo(profile))) {
+              PromoResourceService::CanShowNTPSignInPromo(profile))) {
     string16 signed_in_link = l10n_util::GetStringUTF16(
         IDS_SYNC_PROMO_NOT_SIGNED_IN_STATUS_LINK);
     signed_in_link = ASCIIToUTF16("<span class='link-span'>") + signed_in_link +
@@ -126,6 +132,8 @@ void NTPLoginHandler::UpdateLogin() {
         l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
     sub_header = l10n_util::GetStringFUTF16(
         IDS_SYNC_PROMO_NOT_SIGNED_IN_STATUS_SUB_HEADER, signed_in_link);
+    // Record that the user was shown the promo.
+    RecordInHistogram(NTP_SIGN_IN_PROMO_VIEWED);
   }
 
   StringValue header_value(header);
@@ -134,6 +142,7 @@ void NTPLoginHandler::UpdateLogin() {
       "updateLogin", header_value, sub_header_value);
 }
 
+// static
 bool NTPLoginHandler::ShouldShow(Profile* profile) {
 #if defined(OS_CHROMEOS)
   // For now we don't care about showing sync status on Chrome OS. The promo

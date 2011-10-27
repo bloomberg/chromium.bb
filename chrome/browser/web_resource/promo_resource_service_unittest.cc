@@ -36,10 +36,11 @@ class PromoResourceServiceTest : public testing::Test {
   MessageLoop loop_;
 };
 
-class SyncPromoTest : public PromoResourceServiceTest,
+class NTPSignInPromoTest : public PromoResourceServiceTest,
                       public content::NotificationObserver {
  public:
-  SyncPromoTest() : PromoResourceServiceTest(), notifications_received_(0) {
+  NTPSignInPromoTest() : PromoResourceServiceTest(),
+                         notifications_received_(0) {
     web_resource_service_->set_channel(chrome::VersionInfo::CHANNEL_DEV);
     registrar_.Add(this,
                    chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED,
@@ -63,37 +64,37 @@ class SyncPromoTest : public PromoResourceServiceTest,
   }
 
  protected:
-  void ClearSyncPromoPrefs() {
+  void ClearNTPSignInPromoPrefs() {
     PrefService* prefs = profile_.GetPrefs();
-    prefs->ClearPref(prefs::kNTPSyncPromoGroup);
-    prefs->ClearPref(prefs::kNTPSyncPromoGroupMax);
-    ASSERT_FALSE(prefs->HasPrefPath(prefs::kNTPSyncPromoGroup));
-    ASSERT_FALSE(prefs->HasPrefPath(prefs::kNTPSyncPromoGroupMax));
+    prefs->ClearPref(prefs::kNTPSignInPromoGroup);
+    prefs->ClearPref(prefs::kNTPSignInPromoGroupMax);
+    ASSERT_FALSE(prefs->HasPrefPath(prefs::kNTPSignInPromoGroup));
+    ASSERT_FALSE(prefs->HasPrefPath(prefs::kNTPSignInPromoGroupMax));
   }
 
   void InvalidTestCase(const std::string& question) {
     PrefService* prefs = profile_.GetPrefs();
     ASSERT_TRUE(prefs != NULL);
-    prefs->SetInteger(prefs::kNTPSyncPromoGroup, 50);
-    prefs->SetInteger(prefs::kNTPSyncPromoGroupMax, 75);
-    UnpackSyncPromo(question);
-    EXPECT_FALSE(prefs->HasPrefPath(prefs::kNTPSyncPromoGroup));
-    EXPECT_FALSE(prefs->HasPrefPath(prefs::kNTPSyncPromoGroupMax));
+    prefs->SetInteger(prefs::kNTPSignInPromoGroup, 50);
+    prefs->SetInteger(prefs::kNTPSignInPromoGroupMax, 75);
+    UnpackNTPSignInPromo(question);
+    EXPECT_FALSE(prefs->HasPrefPath(prefs::kNTPSignInPromoGroup));
+    EXPECT_FALSE(prefs->HasPrefPath(prefs::kNTPSignInPromoGroupMax));
   }
 
-  void SetupSyncPromoCase(int build, int max_group) {
+  void SetupNTPSignInPromoCase(int build, int max_group) {
     std::string question = base::IntToString(build) + ":" +
                            base::IntToString(max_group);
-    UnpackSyncPromo(question);
+    UnpackNTPSignInPromo(question);
   }
 
-  void UnpackSyncPromo(const std::string& question) {
+  void UnpackNTPSignInPromo(const std::string& question) {
     std::string json_header =
       "{ "
       "  \"topic\": {"
       "    \"answers\": ["
       "       {"
-      "        \"name\": \"sync_promo\","
+      "        \"name\": \"sign_in_promo\","
       "        \"question\": \"";
 
     std::string json_footer = "\""
@@ -104,7 +105,7 @@ class SyncPromoTest : public PromoResourceServiceTest,
 
    scoped_ptr<DictionaryValue> test_json(static_cast<DictionaryValue*>(
         base::JSONReader::Read(json_header + question + json_footer, false)));
-   web_resource_service_->UnpackSyncPromoSignal(*(test_json.get()));
+   web_resource_service_->UnpackNTPSignInPromoSignal(*(test_json.get()));
   }
 
   private:
@@ -749,81 +750,81 @@ TEST_F(PromoResourceServiceTest, UnpackWebStoreSignalHttpLogo) {
 }
 
 // Don't run sync promo unpacking tests on ChromeOS as on that plaform
-// PromoResourceService::UnpackSyncPromoSignal() basically just no-ops.
+// PromoResourceService::UnpackNTPSignInPromoSignal() basically just no-ops.
 #if !defined(OS_CHROMEOS)
-TEST_F(SyncPromoTest, UnpackSyncPromoSignal) {
+TEST_F(NTPSignInPromoTest, UnpackNTPSignInPromoSignal) {
   PrefService* prefs = profile_.GetPrefs();
   ASSERT_TRUE(prefs != NULL);
 
   // Test on by default (currently should be false).
-  EXPECT_FALSE(PromoResourceService::CanShowSyncPromo(&profile_));
-  EXPECT_FALSE(prefs->HasPrefPath(prefs::kNTPSyncPromoGroup));
-  EXPECT_FALSE(prefs->HasPrefPath(prefs::kNTPSyncPromoGroupMax));
+  EXPECT_FALSE(PromoResourceService::CanShowNTPSignInPromo(&profile_));
+  EXPECT_FALSE(prefs->HasPrefPath(prefs::kNTPSignInPromoGroup));
+  EXPECT_FALSE(prefs->HasPrefPath(prefs::kNTPSignInPromoGroupMax));
 
   // Non-targeted build.
-  ClearSyncPromoPrefs();
-  SetupSyncPromoCase(2, 50);
-  EXPECT_FALSE(PromoResourceService::CanShowSyncPromo(&profile_));
-  EXPECT_FALSE(prefs->HasPrefPath(prefs::kNTPSyncPromoGroup));
-  EXPECT_FALSE(prefs->HasPrefPath(prefs::kNTPSyncPromoGroupMax));
+  ClearNTPSignInPromoPrefs();
+  SetupNTPSignInPromoCase(2, 50);
+  EXPECT_FALSE(PromoResourceService::CanShowNTPSignInPromo(&profile_));
+  EXPECT_FALSE(prefs->HasPrefPath(prefs::kNTPSignInPromoGroup));
+  EXPECT_FALSE(prefs->HasPrefPath(prefs::kNTPSignInPromoGroupMax));
 
   // Targeted build, doesn't create bucket and doesn't show promo because
   // groupMax < group.
-  ClearSyncPromoPrefs();
-  SetupSyncPromoCase(1, 0);
-  EXPECT_FALSE(PromoResourceService::CanShowSyncPromo(&profile_));
-  EXPECT_EQ(prefs->GetInteger(prefs::kNTPSyncPromoGroupMax), 0);
-  EXPECT_FALSE(prefs->HasPrefPath(prefs::kNTPSyncPromoGroup));
+  ClearNTPSignInPromoPrefs();
+  SetupNTPSignInPromoCase(1, 0);
+  EXPECT_FALSE(PromoResourceService::CanShowNTPSignInPromo(&profile_));
+  EXPECT_EQ(prefs->GetInteger(prefs::kNTPSignInPromoGroupMax), 0);
+  EXPECT_FALSE(prefs->HasPrefPath(prefs::kNTPSignInPromoGroup));
 
   // Targeted build, max_group = 50, ensure group pref created and within the
   // group bounds.
-  ClearSyncPromoPrefs();
-  SetupSyncPromoCase(1, 50);
-  PromoResourceService::CanShowSyncPromo(&profile_);
-  EXPECT_EQ(prefs->GetInteger(prefs::kNTPSyncPromoGroupMax), 50);
-  EXPECT_TRUE(prefs->HasPrefPath(prefs::kNTPSyncPromoGroup));
-  EXPECT_GT(prefs->GetInteger(prefs::kNTPSyncPromoGroup), 0);
-  EXPECT_LE(prefs->GetInteger(prefs::kNTPSyncPromoGroup), 100);
+  ClearNTPSignInPromoPrefs();
+  SetupNTPSignInPromoCase(1, 50);
+  PromoResourceService::CanShowNTPSignInPromo(&profile_);
+  EXPECT_EQ(prefs->GetInteger(prefs::kNTPSignInPromoGroupMax), 50);
+  EXPECT_TRUE(prefs->HasPrefPath(prefs::kNTPSignInPromoGroup));
+  EXPECT_GT(prefs->GetInteger(prefs::kNTPSignInPromoGroup), 0);
+  EXPECT_LE(prefs->GetInteger(prefs::kNTPSignInPromoGroup), 100);
 
   // Set user group = 50, now shows promo.
-  prefs->SetInteger(prefs::kNTPSyncPromoGroup, 50);
-  EXPECT_TRUE(PromoResourceService::CanShowSyncPromo(&profile_));
-  EXPECT_EQ(prefs->GetInteger(prefs::kNTPSyncPromoGroup), 50);
-  EXPECT_EQ(prefs->GetInteger(prefs::kNTPSyncPromoGroupMax), 50);
+  prefs->SetInteger(prefs::kNTPSignInPromoGroup, 50);
+  EXPECT_TRUE(PromoResourceService::CanShowNTPSignInPromo(&profile_));
+  EXPECT_EQ(prefs->GetInteger(prefs::kNTPSignInPromoGroup), 50);
+  EXPECT_EQ(prefs->GetInteger(prefs::kNTPSignInPromoGroupMax), 50);
 
   // Bump user group, ensure that we should not show promo.
-  prefs->SetInteger(prefs::kNTPSyncPromoGroup, 51);
-  EXPECT_FALSE(PromoResourceService::CanShowSyncPromo(&profile_));
-  EXPECT_EQ(prefs->GetInteger(prefs::kNTPSyncPromoGroup), 51);
-  EXPECT_EQ(prefs->GetInteger(prefs::kNTPSyncPromoGroupMax), 50);
+  prefs->SetInteger(prefs::kNTPSignInPromoGroup, 51);
+  EXPECT_FALSE(PromoResourceService::CanShowNTPSignInPromo(&profile_));
+  EXPECT_EQ(prefs->GetInteger(prefs::kNTPSignInPromoGroup), 51);
+  EXPECT_EQ(prefs->GetInteger(prefs::kNTPSignInPromoGroupMax), 50);
 
   // If the max group gets bumped to the user's group (or above), it should
   // show.
-  prefs->SetInteger(prefs::kNTPSyncPromoGroupMax, 51);
-  EXPECT_TRUE(PromoResourceService::CanShowSyncPromo(&profile_));
-  EXPECT_EQ(prefs->GetInteger(prefs::kNTPSyncPromoGroup), 51);
-  EXPECT_EQ(prefs->GetInteger(prefs::kNTPSyncPromoGroupMax), 51);
+  prefs->SetInteger(prefs::kNTPSignInPromoGroupMax, 51);
+  EXPECT_TRUE(PromoResourceService::CanShowNTPSignInPromo(&profile_));
+  EXPECT_EQ(prefs->GetInteger(prefs::kNTPSignInPromoGroup), 51);
+  EXPECT_EQ(prefs->GetInteger(prefs::kNTPSignInPromoGroupMax), 51);
 
   // Reduce max group.
-  prefs->SetInteger(prefs::kNTPSyncPromoGroupMax, 49);
-  EXPECT_FALSE(PromoResourceService::CanShowSyncPromo(&profile_));
-  EXPECT_EQ(prefs->GetInteger(prefs::kNTPSyncPromoGroup), 51);
-  EXPECT_EQ(prefs->GetInteger(prefs::kNTPSyncPromoGroupMax), 49);
+  prefs->SetInteger(prefs::kNTPSignInPromoGroupMax, 49);
+  EXPECT_FALSE(PromoResourceService::CanShowNTPSignInPromo(&profile_));
+  EXPECT_EQ(prefs->GetInteger(prefs::kNTPSignInPromoGroup), 51);
+  EXPECT_EQ(prefs->GetInteger(prefs::kNTPSignInPromoGroupMax), 49);
 
   // Ignore non-targeted builds.
-  prefs->SetInteger(prefs::kNTPSyncPromoGroup, 50);
-  prefs->SetInteger(prefs::kNTPSyncPromoGroupMax, 75);
-  EXPECT_TRUE(PromoResourceService::CanShowSyncPromo(&profile_));
-  SetupSyncPromoCase(2, 25);
+  prefs->SetInteger(prefs::kNTPSignInPromoGroup, 50);
+  prefs->SetInteger(prefs::kNTPSignInPromoGroupMax, 75);
+  EXPECT_TRUE(PromoResourceService::CanShowNTPSignInPromo(&profile_));
+  SetupNTPSignInPromoCase(2, 25);
   // Make sure the prefs are deleted.
-  EXPECT_FALSE(PromoResourceService::CanShowSyncPromo(&profile_));
-  EXPECT_FALSE(prefs->HasPrefPath(prefs::kNTPSyncPromoGroup));
-  EXPECT_FALSE(prefs->HasPrefPath(prefs::kNTPSyncPromoGroupMax));
+  EXPECT_FALSE(PromoResourceService::CanShowNTPSignInPromo(&profile_));
+  EXPECT_FALSE(prefs->HasPrefPath(prefs::kNTPSignInPromoGroup));
+  EXPECT_FALSE(prefs->HasPrefPath(prefs::kNTPSignInPromoGroupMax));
 }
 
-// Throw random stuff at UnpackSyncPromoSignal and make sure no segfaults or
-// other issues and that the prefs were cleared.
-TEST_F(SyncPromoTest, UnpackSyncPromoSignalInvalid) {
+// Throw random stuff at UnpackNTPSignInPromoSignal and make sure no segfaults
+// or other issues and that the prefs were cleared.
+TEST_F(NTPSignInPromoTest, UnpackNTPSignInPromoSignalInvalid) {
   // Empty.
   InvalidTestCase("");
 
@@ -843,28 +844,28 @@ TEST_F(SyncPromoTest, UnpackSyncPromoSignalInvalid) {
   InvalidTestCase("だからって馬鹿に:してるの？怒る友人");
 }
 
-TEST_F(SyncPromoTest, UnpackSyncPromoSignalNotify) {
+TEST_F(NTPSignInPromoTest, UnpackNTPSignInPromoSignalNotify) {
   // Clear prefs and ensure we're not triggering notifications every time we
   // receive not-targeted or valid data (only when we need to turn off the
   // promo).
-  ClearSyncPromoPrefs();
+  ClearNTPSignInPromoPrefs();
   reset_notification_count();
 
   // Non-targeted build.
-  SetupSyncPromoCase(2, 50);
+  SetupNTPSignInPromoCase(2, 50);
 
   // Targeted, but under any possible max group.
-  SetupSyncPromoCase(1, 0);
+  SetupNTPSignInPromoCase(1, 0);
 
   // Targeted for sure, but shouldn't send notification.
-  SetupSyncPromoCase(1, 100);
+  SetupNTPSignInPromoCase(1, 100);
 
   // Expect this didn't trigger any notifications.
   EXPECT_EQ(notifications_received(), 0);
 
   // Expect notifications when the promo is disabled, as this is expected
   // behavior.
-  SetupSyncPromoCase(2, 0);
+  SetupNTPSignInPromoCase(2, 0);
   EXPECT_EQ(notifications_received(), 1);
 }
 #endif  // !defined(OS_CHROMEOS)
