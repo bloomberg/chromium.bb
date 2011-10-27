@@ -17,69 +17,48 @@
 namespace net {
 namespace {
 
-class TestRegistryControlledDomainService :
-    public RegistryControlledDomainService {
- public:
-  // Sets the given data.
-  static void UseDomainData(FindDomainPtr function) {
-    RegistryControlledDomainService::UseFindDomainFunction(function);
-  }
-
-  // Creates a new dedicated instance to be used for testing, deleting any
-  // previously-set one.
-  static void UseDedicatedInstance() {
-    delete static_cast<TestRegistryControlledDomainService*>(
-        SetInstance(new TestRegistryControlledDomainService()));
-  }
-
-  // Restores RegistryControlledDomainService to using its default instance,
-  // deleting any previously-set test instance.
-  static void UseDefaultInstance() {
-    delete static_cast<TestRegistryControlledDomainService*>(SetInstance(NULL));
-  }
-};
-
-class RegistryControlledDomainTest : public testing::Test {
- protected:
-  virtual void SetUp() {
-    TestRegistryControlledDomainService::UseDedicatedInstance();
-  }
-
-  virtual void TearDown() {
-    TestRegistryControlledDomainService::UseDefaultInstance();
-  }
-};
-
-
 std::string GetDomainFromURL(const std::string& url) {
-  return TestRegistryControlledDomainService::GetDomainAndRegistry(GURL(url));
+  return RegistryControlledDomainService::GetDomainAndRegistry(GURL(url));
 }
 
 std::string GetDomainFromHost(const std::string& host) {
-  return TestRegistryControlledDomainService::GetDomainAndRegistry(host);
+  return RegistryControlledDomainService::GetDomainAndRegistry(host);
 }
 
 size_t GetRegistryLengthFromURL(const std::string& url,
                                 bool allow_unknown_registries) {
-  return TestRegistryControlledDomainService::GetRegistryLength(GURL(url),
+  return RegistryControlledDomainService::GetRegistryLength(GURL(url),
       allow_unknown_registries);
 }
 
 size_t GetRegistryLengthFromHost(const std::string& host,
                                  bool allow_unknown_registries) {
-  return TestRegistryControlledDomainService::GetRegistryLength(host,
+  return RegistryControlledDomainService::GetRegistryLength(host,
       allow_unknown_registries);
 }
 
 bool CompareDomains(const std::string& url1, const std::string& url2) {
   GURL g1 = GURL(url1);
   GURL g2 = GURL(url2);
-  return TestRegistryControlledDomainService::SameDomainOrHost(g1, g2);
+  return RegistryControlledDomainService::SameDomainOrHost(g1, g2);
 }
 
+}  // namespace
+
+class RegistryControlledDomainTest : public testing::Test {
+ protected:
+  typedef RegistryControlledDomainService::FindDomainPtr FindDomainPtr;
+  void UseDomainData(FindDomainPtr function) {
+    RegistryControlledDomainService::UseFindDomainFunction(function);
+  }
+
+  virtual void TearDown() {
+    RegistryControlledDomainService::UseFindDomainFunction(NULL);
+  }
+};
+
 TEST_F(RegistryControlledDomainTest, TestGetDomainAndRegistry) {
-  TestRegistryControlledDomainService::UseDomainData(
-      Perfect_Hash_Test1::FindDomain);
+  UseDomainData(Perfect_Hash_Test1::FindDomain);
 
   // Test GURL version of GetDomainAndRegistry().
   EXPECT_EQ("baz.jp", GetDomainFromURL("http://a.baz.jp/file.html"));    // 1
@@ -138,8 +117,7 @@ TEST_F(RegistryControlledDomainTest, TestGetDomainAndRegistry) {
 }
 
 TEST_F(RegistryControlledDomainTest, TestGetRegistryLength) {
-  TestRegistryControlledDomainService::UseDomainData(
-      Perfect_Hash_Test1::FindDomain);
+  UseDomainData(Perfect_Hash_Test1::FindDomain);
 
   // Test GURL version of GetRegistryLength().
   EXPECT_EQ(2U, GetRegistryLengthFromURL("http://a.baz.jp/file.html", false));
@@ -210,8 +188,7 @@ TEST_F(RegistryControlledDomainTest, TestGetRegistryLength) {
 }
 
 TEST_F(RegistryControlledDomainTest, TestSameDomainOrHost) {
-  TestRegistryControlledDomainService::UseDomainData(
-      Perfect_Hash_Test2::FindDomain);
+  UseDomainData(Perfect_Hash_Test2::FindDomain);
 
   EXPECT_TRUE(CompareDomains("http://a.b.bar.jp/file.html",
                              "http://a.b.bar.jp/file.html"));  // b.bar.jp
@@ -240,8 +217,6 @@ TEST_F(RegistryControlledDomainTest, TestSameDomainOrHost) {
 }
 
 TEST_F(RegistryControlledDomainTest, TestDefaultData) {
-  TestRegistryControlledDomainService::UseDefaultInstance();
-
   // Note that no data is set: we're using the default rules.
   EXPECT_EQ(3U, GetRegistryLengthFromURL("http://google.com", false));
   EXPECT_EQ(3U, GetRegistryLengthFromURL("http://stanford.edu", false));
@@ -252,5 +227,4 @@ TEST_F(RegistryControlledDomainTest, TestDefaultData) {
   EXPECT_EQ(3U, GetRegistryLengthFromURL("http://nowhere.foo", true));
 }
 
-}  // namespace
 }  // namespace net

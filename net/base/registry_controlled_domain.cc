@@ -1,4 +1,10 @@
-//* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// NB: Modelled after Mozilla's code (originally written by Pamela Greene,
+// later modified by others), but almost entirely rewritten for Chrome.
+//   (netwerk/dns/src/nsEffectiveTLDService.cpp)
 /* ***** BEGIN LICENSE BLOCK *****
  * Version: MPL 1.1/GPL 2.0/LGPL 2.1
  *
@@ -57,9 +63,11 @@ namespace {
 const int kExceptionRule = 1;
 const int kWildcardRule = 2;
 
-RegistryControlledDomainService* test_instance_;
-
 }  // namespace
+
+RegistryControlledDomainService::FindDomainPtr
+RegistryControlledDomainService::find_domain_function_ =
+    Perfect_Hash::FindDomain;
 
 // static
 std::string RegistryControlledDomainService::GetDomainAndRegistry(
@@ -114,7 +122,7 @@ size_t RegistryControlledDomainService::GetRegistryLength(
     return std::string::npos;
   if (gurl.HostIsIPAddress())
     return 0;
-  return GetInstance()->GetRegistryLengthImpl(
+  return GetRegistryLengthImpl(
       std::string(gurl.possibly_invalid_spec().data() + host.begin, host.len),
       allow_unknown_registries);
 }
@@ -129,36 +137,17 @@ size_t RegistryControlledDomainService::GetRegistryLength(
     return std::string::npos;
   if (host_info.IsIPAddress())
     return 0;
-  return GetInstance()->GetRegistryLengthImpl(canon_host,
-                                              allow_unknown_registries);
-}
-
-// static
-RegistryControlledDomainService* RegistryControlledDomainService::GetInstance()
-{
-  if (test_instance_)
-    return test_instance_;
-
-  return Singleton<RegistryControlledDomainService>::get();
-}
-
-RegistryControlledDomainService::RegistryControlledDomainService()
-    : find_domain_function_(Perfect_Hash::FindDomain) {
-}
-
-// static
-RegistryControlledDomainService* RegistryControlledDomainService::SetInstance(
-    RegistryControlledDomainService* instance) {
-  RegistryControlledDomainService* old_instance = test_instance_;
-  test_instance_ = instance;
-  return old_instance;
+  return GetRegistryLengthImpl(canon_host, allow_unknown_registries);
 }
 
 // static
 void RegistryControlledDomainService::UseFindDomainFunction(
     FindDomainPtr function) {
-  RegistryControlledDomainService* instance = GetInstance();
-  instance->find_domain_function_ = function;
+  if (function) {
+    find_domain_function_ = function;
+  } else {
+    find_domain_function_ = Perfect_Hash::FindDomain;
+  }
 }
 
 // static
@@ -167,8 +156,7 @@ std::string RegistryControlledDomainService::GetDomainAndRegistryImpl(
   DCHECK(!host.empty());
 
   // Find the length of the registry for this host.
-  const size_t registry_length =
-      GetInstance()->GetRegistryLengthImpl(host, true);
+  const size_t registry_length = GetRegistryLengthImpl(host, true);
   if ((registry_length == std::string::npos) || (registry_length == 0))
     return std::string();  // No registry.
   // The "2" in this next line is 1 for the dot, plus a 1-char minimum preceding

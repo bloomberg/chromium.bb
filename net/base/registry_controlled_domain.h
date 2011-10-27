@@ -1,4 +1,10 @@
-//* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// NB: Modelled after Mozilla's code (originally written by Pamela Greene,
+// later modified by others), but almost entirely rewritten for Chrome.
+//   (netwerk/dns/src/nsEffectiveTLDService.h)
 /* ***** BEGIN LICENSE BLOCK *****
  * Version: MPL 1.1/GPL 2.0/LGPL 2.1
  *
@@ -35,9 +41,6 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-
-// NB: Modelled after Mozilla's code (originally written by Pamela Greene,
-// later modified by others), but almost entirely rewritten for Chrome.
 
 /*
   (Documentation based on the Mozilla documentation currently at
@@ -118,19 +121,12 @@
 
 class GURL;
 
-template <typename T>
-struct DefaultSingletonTraits;
 struct DomainRule;
 
 namespace net {
 
-struct RegistryControlledDomainServiceSingletonTraits;
-
-// This class is a singleton.
 class NET_EXPORT RegistryControlledDomainService {
  public:
-   ~RegistryControlledDomainService() { }
-
   // Returns the registered, organization-identifying host and all its registry
   // information, but no subdomains, from the given GURL.  Returns an empty
   // string if the GURL is invalid, has no host (e.g. a file: URL), has multiple
@@ -196,43 +192,25 @@ class NET_EXPORT RegistryControlledDomainService {
   static size_t GetRegistryLength(const std::string& host,
                                   bool allow_unknown_registries);
 
-  // Returns the singleton instance, after attempting to initialize it.
-  // NOTE that if the effective-TLD data resource can't be found, the instance
-  // will be initialized and continue operation with simple default TLD data.
-  static RegistryControlledDomainService* GetInstance();
-
- protected:
-  typedef const struct DomainRule* (*FindDomainPtr)(const char *, unsigned int);
-
-  // The entire protected API is only for unit testing.  I mean it.  Don't make
-  // me come over there!
-  RegistryControlledDomainService();
-
-  // Set the RegistryControledDomainService instance to be used internally.
-  // |instance| will supersede the singleton instance normally used.  If
-  // |instance| is NULL, normal behavior is restored, and internal operations
-  // will return to using the singleton.  This function always returns the
-  // instance set by the most recent call to SetInstance.
-  static RegistryControlledDomainService* SetInstance(
-      RegistryControlledDomainService* instance);
-
-  // Used for unit tests, so that a different perfect hash map from the full
-  // list is used.
-  static void UseFindDomainFunction(FindDomainPtr function);
-
  private:
-  // To allow construction of the internal singleton instance.
-  friend struct DefaultSingletonTraits<RegistryControlledDomainService>;
+  friend class RegistryControlledDomainTest;
 
   // Internal workings of the static public methods.  See above.
   static std::string GetDomainAndRegistryImpl(const std::string& host);
-  size_t GetRegistryLengthImpl(const std::string& host,
-                               bool allow_unknown_registries);
+  static size_t GetRegistryLengthImpl(const std::string& host,
+                                      bool allow_unknown_registries);
+
+  typedef const struct DomainRule* (*FindDomainPtr)(const char *, unsigned int);
+
+  // Used for unit tests, so that a different perfect hash map from the full
+  // list is used. Set to NULL to use the Default function.
+  static void UseFindDomainFunction(FindDomainPtr function);
 
   // Function that returns a DomainRule given a domain.
-  FindDomainPtr find_domain_function_;
+  static FindDomainPtr find_domain_function_;
 
-  DISALLOW_COPY_AND_ASSIGN(RegistryControlledDomainService);
+
+  DISALLOW_IMPLICIT_CONSTRUCTORS(RegistryControlledDomainService);
 };
 
 }  // namespace net
