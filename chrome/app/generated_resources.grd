@@ -5323,9 +5323,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ACCNAME_CLOSE" desc="The accessible name for the Close button.">
         Close
       </message>
-      <message name="IDS_ACCNAME_SYNC_ERROR_BUTTON" desc="The accessible name for the sync error button on the bookmarks bar.">
-        Sync Error - please sign in again
-      </message>
       <message name="IDS_ACCNAME_WEB_CONTENTS" desc="The accessible name for the web contents.">
         Web Contents
       </message>
@@ -10630,13 +10627,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <!-- Success dialog strings -->
       <message name="IDS_SYNC_SETUP_OK_BUTTON_LABEL" desc="The button label on the 'OK' button displayed at the end of sync setup.">
         OK
-      </message>
-      <!-- Bookmarks bar strings -->
-      <message name="IDS_SYNC_BOOKMARK_BAR_ERROR" desc="The text to display on the bookmark bar button which indicates a sync error.">
-        Sync Error
-      </message>
-      <message name="IDS_SYNC_BOOKMARK_BAR_ERROR_DESC" desc="The detailed description of the error to associate with the bookmark bar error button.">
-        Please update your sync passphrase.
       </message>
 
       <!-- Sync sign in global error message-->

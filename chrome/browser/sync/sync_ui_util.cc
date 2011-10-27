@@ -392,22 +392,6 @@ MessageType GetStatus(ProfileSyncService* service) {
   return sync_ui_util::GetStatusInfo(service, NULL, NULL);
 }
 
-bool ShouldShowSyncErrorButton(ProfileSyncService* service) {
-  if (!service)
-    return false;
-
-  if (service->IsManaged() || !service->HasSyncSetupCompleted())
-    return false;
-
-  // Don't display error button for unrecoverable errors; they are not
-  // actionable.
-  if (service->unrecoverable_error_detected())
-    return false;
-
-  return GetStatus(service) == sync_ui_util::SYNC_ERROR ||
-      service->IsPassphraseRequired();
-}
-
 string16 GetSyncMenuLabel(ProfileSyncService* service) {
   MessageType type = GetStatus(service);
 

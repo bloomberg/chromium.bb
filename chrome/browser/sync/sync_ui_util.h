@@ -58,9 +58,6 @@ void GetStatusLabelsForSyncGlobalError(ProfileSyncService* service,
 
 MessageType GetStatus(ProfileSyncService* service);
 
-// Determines whether or not the sync error button should be visible.
-bool ShouldShowSyncErrorButton(ProfileSyncService* service);
-
 // Returns a string with the synchronization status.
 string16 GetSyncMenuLabel(ProfileSyncService* service);
 

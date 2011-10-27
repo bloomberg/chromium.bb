@@ -16,7 +16,6 @@
 #include "chrome/browser/bookmarks/bookmark_context_menu_controller.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/prefs/pref_member.h"
-#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_bar_instructions_gtk.h"
 #include "chrome/browser/ui/gtk/menu_bar_helper.h"
@@ -41,7 +40,6 @@ class PageNavigator;
 class TabstripOriginProvider;
 
 class BookmarkBarGtk : public ui::AnimationDelegate,
-                       public ProfileSyncServiceObserver,
                        public BookmarkModelObserver,
                        public MenuBarHelper::Delegate,
                        public content::NotificationObserver,
@@ -253,8 +251,6 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
   // GtkButton callbacks.
   CHROMEGTK_CALLBACK_1(BookmarkBarGtk, gboolean, OnButtonPressed,
                        GdkEventButton*);
-  CHROMEGTK_CALLBACK_1(BookmarkBarGtk, gboolean, OnSyncErrorButtonPressed,
-                       GdkEventButton*);
   CHROMEGTK_CALLBACK_0(BookmarkBarGtk, void, OnClicked);
   CHROMEGTK_CALLBACK_1(BookmarkBarGtk, void, OnButtonDragBegin,
                        GdkDragContext*);
@@ -293,9 +289,6 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
 
   // |throbbing_widget_| callback.
   CHROMEGTK_CALLBACK_0(BookmarkBarGtk, void, OnThrobbingWidgetDestroy);
-
-  // ProfileSyncServiceObserver method.
-  virtual void OnStateChanged();
 
   // Overriden from BookmarkBarInstructionsGtk::Delegate.
   virtual void ShowImportDialog();
@@ -353,12 +346,6 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
 
   // Padding for the other bookmarks button.
   GtkWidget* other_padding_;
-
-  // The sync error button.
-  GtkWidget* sync_error_button_;
-
-  // A pointer to the ProfileSyncService instance if one exists.
-  ProfileSyncService* sync_service_;
 
   // The BookmarkNode from the model being dragged. NULL when we aren't
   // dragging.

@@ -17,7 +17,6 @@
 #include "chrome/browser/ntp_background_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_menu_controller_gtk.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_utils_gtk.h"
@@ -131,7 +130,6 @@ BookmarkBarGtk::BookmarkBarGtk(BrowserWindowGtk* window,
       tabstrip_origin_provider_(tabstrip_origin_provider),
       model_(NULL),
       instructions_(NULL),
-      sync_service_(NULL),
       dragged_node_(NULL),
       drag_icon_(NULL),
       toolbar_drop_item_(NULL),
@@ -144,14 +142,6 @@ BookmarkBarGtk::BookmarkBarGtk(BrowserWindowGtk* window,
       weak_factory_(this),
       bookmark_bar_state_(BookmarkBar::DETACHED),
       max_height_(0) {
-  Profile* profile = browser->profile();
-  if (profile->GetProfileSyncService()) {
-    // Obtain a pointer to the profile sync service and add our instance as an
-    // observer.
-    sync_service_ = profile->GetProfileSyncService();
-    sync_service_->AddObserver(this);
-  }
-
   Init();
   // Force an update by simulating being in the wrong state.
   // BrowserWindowGtk sets our true state after we're created.
@@ -162,7 +152,7 @@ BookmarkBarGtk::BookmarkBarGtk(BrowserWindowGtk* window,
                  content::Source<ThemeService>(theme_service_));
 
   edit_bookmarks_enabled_.Init(prefs::kEditBookmarksEnabled,
-                               profile->GetPrefs(), this);
+                               browser_->profile()->GetPrefs(), this);
   OnEditBookmarksEnabledChanged();
 }
 
@@ -268,22 +258,6 @@ void BookmarkBarGtk::Init() {
   gtk_box_pack_start(GTK_BOX(bookmark_hbox_), other_padding_,
                      FALSE, FALSE, 0);
   gtk_widget_set_no_show_all(other_padding_, TRUE);
-
-  sync_error_button_ = theme_service_->BuildChromeButton();
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  gtk_widget_set_tooltip_text(
-      sync_error_button_,
-      l10n_util::GetStringUTF8(IDS_SYNC_BOOKMARK_BAR_ERROR_DESC).c_str());
-  gtk_button_set_label(
-      GTK_BUTTON(sync_error_button_),
-      l10n_util::GetStringUTF8(IDS_SYNC_BOOKMARK_BAR_ERROR).c_str());
-  gtk_button_set_image(
-      GTK_BUTTON(sync_error_button_),
-      gtk_image_new_from_pixbuf(rb.GetNativeImageNamed(IDR_WARNING)));
-  g_signal_connect(sync_error_button_, "button-press-event",
-                   G_CALLBACK(OnSyncErrorButtonPressedThunk), this);
-  gtk_box_pack_start(GTK_BOX(bookmark_hbox_), sync_error_button_,
-                     FALSE, FALSE, 0);
 
   gtk_widget_set_size_request(event_box_.get(), -1, kBookmarkBarMinimumHeight);
 
@@ -468,10 +442,6 @@ void BookmarkBarGtk::Show(BookmarkBar::State old_state,
       }
     }
   }
-
-  gtk_widget_set_visible(
-      sync_error_button_,
-      sync_ui_util::ShouldShowSyncErrorButton(sync_service_));
 
   // Maybe show the instructions
   gtk_widget_set_visible(bookmark_toolbar_.get(), !show_instructions_);
@@ -1142,16 +1112,6 @@ gboolean BookmarkBarGtk::OnButtonPressed(GtkWidget* sender,
   return FALSE;
 }
 
-gboolean BookmarkBarGtk::OnSyncErrorButtonPressed(GtkWidget* sender,
-                                                  GdkEventButton* event) {
-  if (sender == sync_error_button_) {
-    DCHECK(sync_service_ && !sync_service_->IsManaged());
-    sync_service_->ShowErrorUI();
-  }
-
-  return FALSE;
-}
-
 void BookmarkBarGtk::OnClicked(GtkWidget* sender) {
   const BookmarkNode* node = GetNodeForToolButton(sender);
   DCHECK(node);
@@ -1437,9 +1397,6 @@ gboolean BookmarkBarGtk::OnEventBoxExpose(GtkWidget* widget,
 void BookmarkBarGtk::OnEventBoxDestroy(GtkWidget* widget) {
   if (model_)
     model_->RemoveObserver(this);
-
-  if (sync_service_)
-    sync_service_->RemoveObserver(this);
 }
 
 void BookmarkBarGtk::OnParentSizeAllocate(GtkWidget* widget,
@@ -1458,12 +1415,6 @@ void BookmarkBarGtk::OnParentSizeAllocate(GtkWidget* widget,
 
 void BookmarkBarGtk::OnThrobbingWidgetDestroy(GtkWidget* widget) {
   SetThrobbingWidget(NULL);
-}
-
-void BookmarkBarGtk::OnStateChanged() {
-  gtk_widget_set_visible(
-      sync_error_button_,
-      sync_ui_util::ShouldShowSyncErrorButton(sync_service_));
 }
 
 void BookmarkBarGtk::ShowImportDialog() {
