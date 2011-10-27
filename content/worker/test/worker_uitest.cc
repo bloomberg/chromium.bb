@@ -286,7 +286,14 @@ TEST_F(WorkerTest, WorkerContextGc) {
   RunWorkerFastLayoutTest("worker-context-gc.html");
 }
 
-TEST_F(WorkerTest, WorkerContextMultiPort) {
+// Started flaking on Linux with WebKit roll 98537:98582.
+// crbug.com/101996
+#if defined(OS_LINUX)
+#define MAYBE_WorkerContextMultiPort FLAKY_WorkerContextMultiPort
+#else
+#define MAYBE_WorkerContextMultiPort WorkerContextMultiPort
+#endif
+TEST_F(WorkerTest, MAYBE_WorkerContextMultiPort) {
   RunWorkerFastLayoutTest("worker-context-multi-port.html");
 }
 
@@ -779,15 +786,32 @@ class WorkerFileSystemTest : public WorkerTest {
   }
 };
 
-TEST_F(WorkerFileSystemTest, Temporary) {
+// Started flaking on Linux with WebKit roll 98537:98582.
+// crbug.com/101996
+#if defined(OS_LINUX)
+#define MAYBE_Temporary FLAKY_Temporary
+#define MAYBE_Persistent FLAKY_Persistent
+#define MAYBE_SyncTemporary FLAKY_SyncTemporary
+#define MAYBE_AsyncOperations FLAKY_AsyncOperations
+#define MAYBE_SyncOperations FLAKY_SyncOperations
+#define MAYBE_FileEntryToURISync FLAKY_FileEntryToURISync
+#else
+#define MAYBE_Temporary Temporary
+#define MAYBE_Persistent Persistent
+#define MAYBE_SyncTemporary SyncTemporary
+#define MAYBE_AsyncOperations AsyncOperations
+#define MAYBE_SyncOperations SyncOperations
+#define MAYBE_FileEntryToURISync FileEntryToURISync
+#endif
+TEST_F(WorkerFileSystemTest, MAYBE_Temporary) {
   RunWorkerFileSystemLayoutTest("simple-temporary.html");
 }
 
-TEST_F(WorkerFileSystemTest, Persistent) {
+TEST_F(WorkerFileSystemTest, MAYBE_Persistent) {
   RunWorkerFileSystemLayoutTest("simple-persistent.html");
 }
 
-TEST_F(WorkerFileSystemTest, SyncTemporary) {
+TEST_F(WorkerFileSystemTest, MAYBE_SyncTemporary) {
   RunWorkerFileSystemLayoutTest("simple-temporary-sync.html");
 }
 
@@ -797,15 +821,15 @@ TEST_F(WorkerFileSystemTest, FAILS_SyncPersistent) {
   RunWorkerFileSystemLayoutTest("simple-persistent-sync.html");
 }
 
-TEST_F(WorkerFileSystemTest, AsyncOperations) {
+TEST_F(WorkerFileSystemTest, MAYBE_AsyncOperations) {
   RunWorkerFileSystemLayoutTest("async-operations.html");
 }
 
-TEST_F(WorkerFileSystemTest, SyncOperations) {
+TEST_F(WorkerFileSystemTest, MAYBE_SyncOperations) {
   RunWorkerFileSystemLayoutTest("sync-operations.html");
 }
 
-TEST_F(WorkerFileSystemTest, FileEntryToURISync) {
+TEST_F(WorkerFileSystemTest, MAYBE_FileEntryToURISync) {
   RunWorkerFileSystemLayoutTest("file-entry-to-uri-sync.html");
 }
 
