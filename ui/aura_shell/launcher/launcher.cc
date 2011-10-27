@@ -43,6 +43,10 @@ Launcher::Launcher(aura::ToplevelWindowContainer* window_container)
 
 Launcher::~Launcher() {
   window_container_->RemoveObserver(this);
+  for (WindowMap::iterator i = known_windows_.begin();
+       i != known_windows_.end(); ++i) {
+    i->first->RemoveObserver(this);
+  }
 }
 
 void Launcher::MaybeAdd(aura::Window* window) {
