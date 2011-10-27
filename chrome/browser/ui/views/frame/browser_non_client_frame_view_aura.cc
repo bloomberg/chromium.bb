@@ -237,8 +237,10 @@ int BrowserNonClientFrameViewAura::NonClientHitTestImpl(
 
   // Test window resize components.
   bool can_resize = GetWidget()->widget_delegate()->CanResize();
+  // TODO(derat): Disallow resizing via the top border in the Aura shell
+  // instead of enforcing it here.  See http://crbug.com/101830.
   frame_component = GetHTComponentForFrame(point,
-                                           kResizeBorderThickness,
+                                           0,
                                            kResizeBorderThickness,
                                            kResizeBorderThickness,
                                            kResizeBorderThickness,
