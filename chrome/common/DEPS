@@ -11,6 +11,10 @@ include_rules = [
   "+webkit/glue",
   "+webkit/plugins",
 
+  # TODO(jam): remove this once all of chrome doesn't depend on content/common.
+  "-content/common",
+  "+content/common/content_message_generator.h",  # needed by all_messages.h
+
   # TODO(jam): remove me once chrome_notifcation_types.h moves to browser
   "+content/public/browser/notification_source.h",
   "+content/public/browser/notification_types.h",
