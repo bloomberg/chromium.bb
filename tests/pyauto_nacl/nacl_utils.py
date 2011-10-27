@@ -34,7 +34,11 @@ window.domAutomationController.send(text);
 """
     print ('*** FAILED TEST ON TAB %u (%s)!  Log follows. ***' %
            (tab_index, msg))
-    print browser.ExecuteJavascript(js, 0, tab_index),
+    result = browser.ExecuteJavascript(js, 0, tab_index)
+    try:
+      print result,
+    except:
+      print repr(result)
     print '*** END OF FAILED TAB LOG ***'
     raise
 
