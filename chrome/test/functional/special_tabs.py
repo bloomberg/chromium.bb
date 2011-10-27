@@ -13,12 +13,19 @@ import test_utils
 class SpecialTabsTest(pyauto.PyUITest):
   """TestCase for Special Tabs like about:version, chrome://history, etc."""
 
-  special_accelerator_tabs = {
-    pyauto.IDC_SHOW_HISTORY: 'History',
-    pyauto.IDC_MANAGE_EXTENSIONS: '%s - Extensions' % ('Options' if
-        pyauto.PyUITest.IsWin() else 'Preferences'),
-    pyauto.IDC_SHOW_DOWNLOADS: 'Downloads',
-  }
+  @staticmethod
+  def GetSpecialAcceleratorTabs():
+    """Get a dict of accelerators and corresponding tab titles."""
+    ret = {
+        pyauto.IDC_SHOW_HISTORY: 'History',
+        pyauto.IDC_MANAGE_EXTENSIONS: 'Preferences - Extensions',
+        pyauto.IDC_SHOW_DOWNLOADS: 'Downloads',
+    }
+    if pyauto.PyUITest.IsWin():
+      ret[pyauto.IDC_MANAGE_EXTENSIONS] = 'Options - Extensions'
+    elif pyauto.PyUITest.IsChromeOS():
+      ret[pyauto.IDC_MANAGE_EXTENSIONS] = 'Settings - Extensions'
+    return ret
 
   special_url_redirects = {
    'about:': 'chrome://version',
@@ -108,6 +115,7 @@ class SpecialTabsTest(pyauto.PyUITest):
     'chrome://settings/clearBrowserData':
       { 'title': 'Settings - Clear Browsing Data' },
     'chrome://settings/content': { 'title': 'Settings - Content Settings' },
+    'chrome://settings/extensions': { 'title': 'Settings - Extensions' },
     'chrome://settings/internet': { 'title': 'Settings - Internet' },
     'chrome://settings/languages':
       { 'title': 'Settings - Languages and Input' },
@@ -323,7 +331,7 @@ class SpecialTabsTest(pyauto.PyUITest):
   def testSpecialAcceratorTabs(self):
     """Test special tabs created by acclerators like IDC_SHOW_HISTORY,
        IDC_SHOW_DOWNLOADS."""
-    for accel, title in self.special_accelerator_tabs.iteritems():
+    for accel, title in self.GetSpecialAcceleratorTabs().iteritems():
       self.RunCommand(accel)
       self.assertTrue(self.WaitUntil(
             self.GetActiveTabTitle, expect_retval=title),
