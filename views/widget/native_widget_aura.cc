@@ -9,7 +9,6 @@
 #include "ui/aura/event.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_types.h"
-#include "ui/base/view_prop.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/compositor/layer.h"
@@ -28,8 +27,6 @@
 #else
 #include "views/ime/mock_input_method.h"
 #endif
-
-using ui::ViewProp;
 
 namespace views {
 
@@ -164,24 +161,12 @@ void NativeWidgetAura::ViewRemoved(View* view) {
 }
 
 void NativeWidgetAura::SetNativeWindowProperty(const char* name, void* value) {
-  // TODO(sky): push this to Widget when we get rid of NativeWidgetGtk.
-  if (!window_)
-    return;
-
-  // Remove the existing property (if any).
-  for (ViewProps::iterator i = props_.begin(); i != props_.end(); ++i) {
-    if ((*i)->Key() == name) {
-      props_.erase(i);
-      break;
-    }
-  }
-
-  if (value)
-    props_.push_back(new ViewProp(window_, name, value));
+  if (window_)
+    window_->SetProperty(name, value);
 }
 
 void* NativeWidgetAura::GetNativeWindowProperty(const char* name) const {
-  return window_ ? ViewProp::GetValue(window_, name) : NULL;
+  return window_ ? window_->GetProperty(name) : NULL;
 }
 
 TooltipManager* NativeWidgetAura::GetTooltipManager() const {
@@ -550,7 +535,6 @@ void NativeWidgetAura::OnWindowDestroying() {
 }
 
 void NativeWidgetAura::OnWindowDestroyed() {
-  props_.reset();
   window_ = NULL;
   delegate_->OnNativeWidgetDestroyed();
   if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET)

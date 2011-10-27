@@ -6,6 +6,7 @@
 #define UI_AURA_WINDOW_H_
 #pragma once
 
+#include <map>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -27,6 +28,7 @@ class Animation;
 class Compositor;
 class Layer;
 class Transform;
+class ViewProp;
 }
 
 namespace aura {
@@ -256,6 +258,15 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // Returns true if this window is fullscreen or contains a fullscreen window.
   bool IsOrContainsFullscreenWindow() const;
 
+  // Sets the window property |value| for given |name|. Setting NULL
+  // removes the property. It uses |ui::ViewProp| to store the property.
+  // Please see the description of |prop_map_| for more details.
+  void SetProperty(const char* name, void* value);
+
+  // Returns the window property for given |name|.  Returns NULL if
+  // the property does not exist.
+  void* GetProperty(const char* name) const;
+
   // Returns an animation configured with the default duration. All animations
   // should use this. Caller owns returned value.
   static ui::Animation* CreateDefaultAnimation();
@@ -337,6 +348,13 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   bool stops_event_propagation_;
 
   ObserverList<WindowObserver> observers_;
+
+  // We're using ViewProp to store the property (for now) instead of
+  // just using std::map because chrome is still using |ViewProp| class
+  // to create and access property.
+  // TODO(oshima): Consolidcate ViewProp and aura::window property
+  // implementation.
+  std::map<const char*, ui::ViewProp*> prop_map_;
 
   DISALLOW_COPY_AND_ASSIGN(Window);
 };

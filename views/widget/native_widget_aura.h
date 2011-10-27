@@ -20,10 +20,6 @@ namespace gfx {
 class Font;
 }
 
-namespace ui {
-class ViewProp;
-}
-
 namespace views {
 
 class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
@@ -147,8 +143,6 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
   static const char* const kWindowTypeKey;
 
  private:
-  typedef ScopedVector<ui::ViewProp> ViewProps;
-
   internal::NativeWidgetDelegate* delegate_;
 
   aura::Window* window_;
@@ -163,8 +157,6 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
   bool can_activate_;
 
   gfx::NativeCursor cursor_;
-
-  ViewProps props_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetAura);
 };

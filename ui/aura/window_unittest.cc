@@ -20,6 +20,7 @@
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/base/view_prop.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/screen.h"
@@ -1134,6 +1135,36 @@ TEST_F(ToplevelWindowTest, FullscreenAfterDesktopResize) {
 
   w1->Restore();
   EXPECT_EQ(window_bounds, w1->bounds());
+}
+
+TEST_F(WindowTest, Property) {
+  scoped_ptr<Window> w(CreateTestWindowWithId(0, NULL));
+  const gfx::NativeView target = const_cast<const gfx::NativeView>(w.get());
+  const char* key = "test";
+  EXPECT_EQ(NULL, w->GetProperty(key));
+  EXPECT_EQ(NULL, ui::ViewProp::GetValue(target, key));
+
+  void* value = reinterpret_cast<void*>(static_cast<intptr_t>(1));
+  w->SetProperty(key, value);
+  EXPECT_EQ(value, w->GetProperty(key));
+  EXPECT_EQ(value, ui::ViewProp::GetValue(target, key));
+
+  // Overwrite the property with different value type.
+  w->SetProperty(key, static_cast<void*>(const_cast<char*>("string")));
+  std::string expected("string");
+  EXPECT_EQ(expected,
+            static_cast<const char*>(w->GetProperty(key)));
+  EXPECT_EQ(expected,
+            static_cast<const char*>(ui::ViewProp::GetValue(target, key)));
+
+  // Non-existent property.
+  EXPECT_EQ(NULL, w->GetProperty("foo"));
+  EXPECT_EQ(NULL, ui::ViewProp::GetValue(target, "foo"));
+
+  // Set NULL and make sure the property is gone.
+  w->SetProperty(key, NULL);
+  EXPECT_EQ(NULL, w->GetProperty(key));
+  EXPECT_EQ(NULL, ui::ViewProp::GetValue(target, key));
 }
 
 class WindowObserverTest : public WindowTest,
