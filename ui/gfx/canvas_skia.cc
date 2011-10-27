@@ -118,8 +118,8 @@ void CanvasSkia::Translate(const gfx::Point& point) {
   canvas_->translate(SkIntToScalar(point.x()), SkIntToScalar(point.y()));
 }
 
-void CanvasSkia::ScaleInt(int x, int y) {
-  canvas_->scale(SkIntToScalar(x), SkIntToScalar(y));
+void CanvasSkia::Scale(int x_scale, int y_scale) {
+  canvas_->scale(SkIntToScalar(x_scale), SkIntToScalar(y_scale));
 }
 
 void CanvasSkia::FillRectInt(const SkColor& color, int x, int y, int w, int h) {

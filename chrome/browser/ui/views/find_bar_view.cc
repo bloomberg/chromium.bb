@@ -228,7 +228,7 @@ void FindBarView::OnPaint(gfx::Canvas* canvas) {
   canvas->Save();
   if (base::i18n::IsRTL()) {
     canvas->Translate(gfx::Point(width(), 0));
-    canvas->ScaleInt(-1, 1);
+    canvas->Scale(-1, 1);
   }
 
   PaintDialogBorder(canvas, bounds);

@@ -262,7 +262,7 @@ TEST(CanvasDirect2D, ClipRectWithScale) {
   // origin.
   canvas.Save();
   canvas.Translate(gfx::Point(150, 150));
-  canvas.ScaleInt(2, 2);
+  canvas.Scale(2, 2);
   canvas.ClipRect(gfx::Rect(10, 10, 110, 110));
   canvas.FillRectInt(SK_ColorRED, 0, 0, 500, 500);
   canvas.Restore();

@@ -192,13 +192,13 @@ void CanvasDirect2D::Translate(const gfx::Point& point) {
   rt_->SetTransform(transform);
 }
 
-void CanvasDirect2D::ScaleInt(int x, int y) {
+void CanvasDirect2D::Scale(int x_scale, int y_scale) {
   D2D1_MATRIX_3X2_F raw;
   rt_->GetTransform(&raw);
   D2D1::Matrix3x2F transform(raw._11, raw._12, raw._21, raw._22, raw._31,
                              raw._32);
-  transform = D2D1::Matrix3x2F::Scale(static_cast<float>(x),
-                                      static_cast<float>(y)) * transform;
+  transform = D2D1::Matrix3x2F::Scale(static_cast<float>(x_scale),
+                                      static_cast<float>(y_scale)) * transform;
   rt_->SetTransform(transform);
 }
 

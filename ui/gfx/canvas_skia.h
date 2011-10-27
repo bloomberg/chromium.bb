@@ -102,7 +102,7 @@ class UI_EXPORT CanvasSkia : public Canvas {
   virtual void Restore() OVERRIDE;
   virtual bool ClipRect(const gfx::Rect& rect) OVERRIDE;
   virtual void Translate(const gfx::Point& point) OVERRIDE;
-  virtual void ScaleInt(int x, int y) OVERRIDE;
+  virtual void Scale(int x_scale, int y_scale) OVERRIDE;
   virtual void FillRectInt(const SkColor& color,
                            int x, int y, int w, int h) OVERRIDE;
   virtual void FillRectInt(const SkColor& color,

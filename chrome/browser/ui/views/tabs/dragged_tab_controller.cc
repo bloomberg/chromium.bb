@@ -94,7 +94,7 @@ class DockView : public views::View {
     if (rtl_ui) {
       // Flip canvas to draw the mirrored tab images for RTL UI.
       canvas->Translate(gfx::Point(width(), 0));
-      canvas->ScaleInt(-1, 1);
+      canvas->Scale(-1, 1);
     }
     int x_of_active_tab = width() / 2 + kTabSpacing / 2;
     int x_of_inactive_tab = width() / 2 - high_icon->width() - kTabSpacing / 2;

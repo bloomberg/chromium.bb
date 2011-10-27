@@ -89,7 +89,7 @@ SkBitmap* GetRtlSubmenuArrowImage() {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     SkBitmap* r = rb.GetBitmapNamed(IDR_MENU_ARROW);
     gfx::CanvasSkia canvas(r->width(), r->height(), false);
-    canvas.ScaleInt(-1, 1);
+    canvas.Scale(-1, 1);
     canvas.DrawBitmapInt(*r, - r->width(), 0);
     kRtlArrow = new SkBitmap(canvas.ExtractBitmap());
   }

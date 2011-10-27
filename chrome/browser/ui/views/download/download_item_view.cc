@@ -744,7 +744,7 @@ void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
     // for RTL UI, we flip the canvas to draw those images mirrored.
     // Consequently, we do not need to mirror the x-axis of those images.
     canvas->Translate(gfx::Point(width(), 0));
-    canvas->ScaleInt(-1, 1);
+    canvas->Scale(-1, 1);
   }
   PaintBitmaps(canvas,
                body_image_set->top_left, body_image_set->left,

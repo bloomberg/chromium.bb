@@ -1464,7 +1464,7 @@ void View::PaintCommon(gfx::Canvas* canvas) {
     ScopedCanvas scoped(canvas);
     if (FlipCanvasOnPaintForRTLUI()) {
       canvas->Translate(gfx::Point(width(), 0));
-      canvas->ScaleInt(-1, 1);
+      canvas->Scale(-1, 1);
     }
 
     OnPaint(canvas);

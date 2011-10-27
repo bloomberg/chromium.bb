@@ -103,8 +103,7 @@ class UI_EXPORT Canvas {
 
   virtual void Translate(const gfx::Point& point) = 0;
 
-  // Wrapper function that takes integer arguments.
-  virtual void ScaleInt(int x, int y) = 0;
+  virtual void Scale(int x_scale, int y_scale) = 0;
 
   // Fills the specified region with the specified color using a transfer
   // mode of SkXfermode::kSrcOver_Mode.
