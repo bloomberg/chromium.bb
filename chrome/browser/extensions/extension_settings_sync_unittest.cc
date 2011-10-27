@@ -226,10 +226,22 @@ TEST_F(ExtensionSettingsSyncTest, InSyncDataDoesNotInvokeSync) {
 
   backend_->MergeDataAndStartSyncing(
       syncable::EXTENSION_SETTINGS, sync_data, &sync_);
-  backend_->StopSyncing(syncable::EXTENSION_SETTINGS);
 
   // Already in sync, so no changes.
   ASSERT_EQ(0u, sync_.changes().size());
+
+  // Regression test: not-changing the synced value shouldn't result in a sync
+  // change, and changing the synced value should result in an update.
+  storage1->Set("foo", value1);
+  ASSERT_EQ(0u, sync_.changes().size());
+
+  storage1->Set("foo", value2);
+  ASSERT_EQ(1u, sync_.changes().size());
+  ExtensionSettingSyncData change = sync_.GetOnlyChange("s1", "foo");
+  ASSERT_EQ(SyncChange::ACTION_UPDATE, change.change_type());
+  ASSERT_TRUE(value2.Equals(&change.value()));
+
+  backend_->StopSyncing(syncable::EXTENSION_SETTINGS);
 }
 
 TEST_F(ExtensionSettingsSyncTest, LocalDataWithNoSyncDataIsPushedToSync) {

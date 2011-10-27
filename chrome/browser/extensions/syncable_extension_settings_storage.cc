@@ -174,7 +174,10 @@ SyncError SyncableExtensionSettingsStorage::OverwriteLocalSettingsWithSync(
       scoped_ptr<Value> sync_value(orphaned_sync_value);
       Value* local_value = NULL;
       settings.GetWithoutPathExpansion(*it, &local_value);
-      if (!sync_value->Equals(local_value)) {
+      if (sync_value->Equals(local_value)) {
+        // Sync and local values are the same, no changes to send.
+        synced_keys_.insert(*it);
+      } else {
         // Sync value is different, update local setting with new value.
         changes.push_back(
             ExtensionSettingSyncData(
