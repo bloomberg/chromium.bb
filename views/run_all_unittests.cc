@@ -6,7 +6,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/gfx/compositor/compositor_test_support.h"
-#include "ui/gfx/test/gfx_test_utils.h"
 #include "views/view.h"
 
 class ViewTestSuite : public base::TestSuite {
@@ -21,7 +20,7 @@ class ViewTestSuite : public base::TestSuite {
     ui::ResourceBundle::InitSharedInstance("en-US");
 
     ui::CompositorTestSupport::Initialize();
-    ui::gfx_test_utils::SetupTestCompositor();
+    ui::CompositorTestSupport::SetupMockCompositor();
   }
 
   virtual void Shutdown() {

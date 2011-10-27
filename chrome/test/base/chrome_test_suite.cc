@@ -27,7 +27,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
-#include "ui/gfx/test/gfx_test_utils.h"
+#include "ui/gfx/compositor/compositor_test_support.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
@@ -194,7 +194,7 @@ void ChromeTestSuite::Initialize() {
   ResourceBundle::AddDataPackToSharedInstance(resources_pack_path);
 
   // Mock out the compositor on platforms that use it.
-  ui::gfx_test_utils::SetupTestCompositor();
+  ui::CompositorTestSupport::SetupMockCompositor();
 
   stats_filename_ = base::StringPrintf("unit_tests-%d",
                                        base::GetCurrentProcId());
