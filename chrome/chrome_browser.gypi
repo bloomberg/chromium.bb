@@ -4293,6 +4293,8 @@
             'browser/certificate_manager_model.h',
             'browser/ui/webui/options/certificate_manager_handler.cc',
             'browser/ui/webui/options/certificate_manager_handler.h',
+            'browser/ui/webui/ssl_client_certificate_selector_webui.cc',
+            'browser/ui/webui/ssl_client_certificate_selector_webui.h',
           ],
         }],
         ['toolkit_uses_gtk == 1', {
