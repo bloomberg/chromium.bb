@@ -346,12 +346,12 @@ exposed to the Developer Tools extension pages due to security considerations
 — you will need to pass the tab ID to the background page and invoke
 the <code>chrome.tabs.*</code> API functions from there.
 </p><p></p>
-The <code>eval()</code> provides the ability for extensions to execute
+The <code>eval()</code> method provides the ability for extensions to execute
 JavaScript code in the context of the main frame of the inspected page.
-This function is different from 
+This method is different from 
 <code>chrome.tabs.executeScript()</code> in the following aspects:
 <p></p><ul>
-<li>The <code>eval()</code> does not
+<li>The <code>eval()</code> method does not
 use an isolated world for the code being evaluated, so the JavaScript state
 of the inspected window is accessible to the code.
 </li><li>
@@ -372,15 +372,15 @@ Tools console API</a> (e.g. <code>inspect()</code>, <code>$0</code> etc).
 </ul>
 <p class="caution">
 <strong>Important:</strong> 
-Due to the security considerations explained above,
-<a href="tabs.html#method-executeScript"><code>chrome.tabs.executeScript()</code></a> is the preferred way for an extension
-to access DOM data of the inspected page in cases where the access to
+Due to the security considerations explained above, the
+<a href="tabs.html#method-executeScript"><code>chrome.tabs.executeScript()</code></a> method is the preferred way for an
+extension to access DOM data of the inspected page in cases where the access to
 JavaScript state of the inspected page is not required.
 </p><p>
-The <code>reload()</code> may be used to reload the inspected page.
-Additionally, a user agent string may be specifcied, which will cause Chrome
-to use the given string in the User-Agent HTTP header while fetching the page
-and its resources, and return it to the scripts running in that page.
+The <code>reload()</code> method may be used to reload the inspected page.
+Additionally, the caller can specify an override for the user agent string,
+a script that will be injected early upon page load, and an option to force
+reload of cached resources.
 </p><p>
 Use the <code>getResources()</code> call and the <code>onResourceContent</code>
 event to obtain the list of resources (documents, stylesheets, scripts, images
@@ -1046,18 +1046,133 @@ You can find more examples that use Developer Tools APIs in
 
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.devtools.inspectedWindow.reload</span>(<span class="optional"><span style="display: none; ">, </span><span>string</span>
-                      <var><span>userAgent</span></var></span>)</div>
+                  <span>chrome.experimental.devtools.inspectedWindow.reload</span>(<span class="optional"><span style="display: none; ">, </span><span>object</span>
+                      <var><span>reloadOptions</span></var></span>)</div>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Reloads the inspected page, optionally setting override for the user agent string.</p>
+                <p>Reloads the inspected page.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
                   <div>
                     <div>
+          <dt>
+            <var>reloadOptions</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>object</span>
+                        <span style="display: none; "></span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <dd style="display: none; ">
+            Description of this parameter from the json schema.
+          </dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>ignoreCache</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>boolean</span>
+                        <span style="display: none; "></span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>When true, the loader will ignore the cache for all inspected page resources loaded before the <code>load</code> event is fired. The effect is similar to pressing Ctrl+Shift+R in the inspected window or within the Developer Tools window.</dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+
+          <!-- OBJECT METHODS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- OBJECT EVENT FIELDS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- FUNCTION PARAMETERS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+        </div>
+              </div><div>
+                <div>
           <dt>
             <var>userAgent</var>
               <em>
@@ -1087,7 +1202,7 @@ You can find more examples that use Developer Tools APIs in
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>A user agent override string.</dd>
+          <dd>If specified, the string will override the value of the <code>User-Agent</code> HTTP header that's sent while loading the resources of the inspected page. The string will also override the value of the <code>navigator.userAgent</code> property that's returned to any scripts that are running within the inspected page.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1104,6 +1219,94 @@ You can find more examples that use Developer Tools APIs in
               <div>
                 <div>
                 </div>
+              </div>
+            </dl>
+          </dd>
+
+          <!-- OBJECT METHODS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- OBJECT EVENT FIELDS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- FUNCTION PARAMETERS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>injectedScript</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>string</span>
+                        <span style="display: none; "></span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>If specified, the script will be injected into every frame of the inspected page immediately upon load, before any of the frame's scripts. The script will not be injected after subsequent reloads—for example, if the user presses Ctrl+R.</dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+
+          <!-- OBJECT METHODS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- OBJECT EVENT FIELDS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- FUNCTION PARAMETERS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+        </div>
               </div>
             </dl>
           </dd>
