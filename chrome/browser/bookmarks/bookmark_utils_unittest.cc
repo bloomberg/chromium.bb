@@ -126,9 +126,6 @@ TEST(BookmarkUtilsTest, DoesBookmarkContainText) {
 // TODO(wyck): Functionality disabled on TOUCH_UI to work around clipboard hang
 // in http://crbug.com/96448
 #define MAYBE_CopyPaste FAILS_CopyPaste
-#elif defined(USE_AURA) && !defined(OS_WIN)
-// Clipboard not yet implemented on Linux Aura, see http://crbug.com/100348
-#define MAYBE_CopyPaste FAILS_CopyPaste
 #else
 #define MAYBE_CopyPaste CopyPaste
 #endif
