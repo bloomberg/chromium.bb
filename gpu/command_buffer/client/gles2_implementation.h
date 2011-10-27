@@ -197,6 +197,8 @@ class GLES2Implementation {
     texture_id_handler_->FreeIds(1, &id);
   }
 
+  void SetSharedMemoryChunkSizeMultiple(unsigned int multiple);
+
   void FreeUnusedSharedMemory();
 
  private:

@@ -110,6 +110,14 @@ class MappedMemoryManager {
 
   ~MappedMemoryManager();
 
+  unsigned int chunk_size_multiple() const {
+    return chunk_size_multiple_;
+  }
+
+  void set_chunk_size_multiple(unsigned int multiple) {
+    chunk_size_multiple_ = multiple;
+  }
+
   // Allocates a block of memory
   // Parameters:
   //   size: size of memory to allocate.
@@ -145,6 +153,8 @@ class MappedMemoryManager {
  private:
   typedef std::vector<MemoryChunk*> MemoryChunkVector;
 
+  // size a chunk is rounded up to.
+  unsigned int chunk_size_multiple_;
   CommandBufferHelper* helper_;
   MemoryChunkVector chunks_;
 

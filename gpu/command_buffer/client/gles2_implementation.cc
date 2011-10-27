@@ -562,6 +562,7 @@ GLES2Implementation::GLES2Implementation(
   memset(&reserved_ids_, 0, sizeof(reserved_ids_));
 
   mapped_memory_.reset(new MappedMemoryManager(helper_));
+  SetSharedMemoryChunkSizeMultiple(1024 * 1024 * 2);
 
   if (share_resources) {
     if (!bind_generates_resource) {
@@ -639,6 +640,11 @@ GLES2Implementation::~GLES2Implementation() {
 #if defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
   DeleteBuffers(arraysize(reserved_ids_), &reserved_ids_[0]);
 #endif
+}
+
+void GLES2Implementation::SetSharedMemoryChunkSizeMultiple(
+    unsigned int multiple) {
+  mapped_memory_->set_chunk_size_multiple(multiple);
 }
 
 void GLES2Implementation::FreeUnusedSharedMemory() {

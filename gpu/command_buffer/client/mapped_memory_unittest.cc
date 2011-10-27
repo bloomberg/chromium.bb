@@ -273,6 +273,31 @@ TEST_F(MappedMemoryManagerTest, FreeUnused) {
   EXPECT_EQ(0u, manager_->num_chunks());
 }
 
+TEST_F(MappedMemoryManagerTest, ChunkSizeMultiple) {
+  const unsigned int kSize = 1024;
+  manager_->set_chunk_size_multiple(kSize *  2);
+  // Check if we allocate less than the chunk size multiple we get
+  // chunks arounded up.
+  int32 id1 = -1;
+  unsigned int offset1 = 0xFFFFFFFFU;
+  void* mem1 = manager_->Alloc(kSize, &id1, &offset1);
+  int32 id2 = -1;
+  unsigned int offset2 = 0xFFFFFFFFU;
+  void* mem2 = manager_->Alloc(kSize, &id2, &offset2);
+  int32 id3 = -1;
+  unsigned int offset3 = 0xFFFFFFFFU;
+  void* mem3 = manager_->Alloc(kSize, &id3, &offset3);
+  ASSERT_TRUE(mem1);
+  ASSERT_TRUE(mem2);
+  ASSERT_TRUE(mem3);
+  EXPECT_NE(-1, id1);
+  EXPECT_EQ(id1, id2);
+  EXPECT_NE(id2, id3);
+  EXPECT_EQ(0u, offset1);
+  EXPECT_EQ(kSize, offset2);
+  EXPECT_EQ(0u, offset3);
+}
+
 }  // namespace gpu
 
 
