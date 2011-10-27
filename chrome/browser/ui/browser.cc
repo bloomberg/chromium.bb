@@ -1735,12 +1735,13 @@ void Browser::ToggleFullscreenMode(bool for_tab) {
     return;
 #endif
 
-  UserMetrics::RecordAction(UserMetricsAction("ToggleFullscreen"));
   GURL url;
   if (for_tab) {
     url = GetSelectedTabContents()->GetURL();
     tab_fullscreen_accepted_ = entering_fullscreen &&
         GetFullscreenSetting(url) == CONTENT_SETTING_ALLOW;
+  } else {
+    UserMetrics::RecordAction(UserMetricsAction("ToggleFullscreen"));
   }
   if (entering_fullscreen)
     window_->EnterFullscreen(url, GetFullscreenExitBubbleType());
