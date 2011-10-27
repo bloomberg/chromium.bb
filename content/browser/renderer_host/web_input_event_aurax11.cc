@@ -199,6 +199,38 @@ void ResetClickCountState() {
   g_last_click_button = WebKit::WebMouseEvent::ButtonNone;
 }
 
+WebKit::WebTouchPoint::State TouchPointStateFromEvent(
+    const aura::TouchEvent* event) {
+  switch (event->type()) {
+    case ui::ET_TOUCH_PRESSED:
+      return WebKit::WebTouchPoint::StatePressed;
+    case ui::ET_TOUCH_RELEASED:
+      return WebKit::WebTouchPoint::StateReleased;
+    case ui::ET_TOUCH_MOVED:
+      return WebKit::WebTouchPoint::StateMoved;
+    case ui::ET_TOUCH_CANCELLED:
+      return WebKit::WebTouchPoint::StateCancelled;
+    default:
+      return WebKit::WebTouchPoint::StateUndefined;
+  }
+}
+
+WebKit::WebInputEvent::Type TouchEventTypeFromEvent(
+    const aura::TouchEvent* event) {
+  switch (event->type()) {
+    case ui::ET_TOUCH_PRESSED:
+      return WebKit::WebInputEvent::TouchStart;
+    case ui::ET_TOUCH_RELEASED:
+      return WebKit::WebInputEvent::TouchEnd;
+    case ui::ET_TOUCH_MOVED:
+      return WebKit::WebInputEvent::TouchMove;
+    case ui::ET_TOUCH_CANCELLED:
+      return WebKit::WebInputEvent::TouchCancel;
+    default:
+      return WebKit::WebInputEvent::Undefined;
+  }
+}
+
 }  // namespace
 
 WebKit::WebMouseEvent MakeWebMouseEventFromAuraEvent(aura::MouseEvent* event) {
@@ -315,6 +347,75 @@ WebKit::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
   // TODO: IsAutoRepeat/IsKeyPad?
 
   return webkit_event;
+}
+
+WebKit::WebTouchPoint* UpdateWebTouchEventFromAuraEvent(
+    aura::TouchEvent* event, WebKit::WebTouchEvent* web_event) {
+  WebKit::WebTouchPoint* point = NULL;
+  switch (event->type()) {
+    case ui::ET_TOUCH_PRESSED:
+      // Add a new touch point.
+      if (web_event->touchesLength < WebKit::WebTouchEvent::touchesLengthCap) {
+        point = &web_event->touches[web_event->touchesLength++];
+        point->id = event->touch_id();
+      }
+      break;
+    case ui::ET_TOUCH_RELEASED:
+    case ui::ET_TOUCH_CANCELLED:
+    case ui::ET_TOUCH_MOVED: {
+      // The touch point should have been added to the event from an earlier
+      // _PRESSED event. So find that.
+      // At the moment, only a maximum of 4 touch-points are allowed. So a
+      // simple loop should be sufficient.
+      for (unsigned i = 0; i < web_event->touchesLength; ++i) {
+        point = web_event->touches + i;
+        if (point->id == event->touch_id())
+          break;
+        point = NULL;
+      }
+      break;
+    }
+    default:
+      DLOG(WARNING) << "Unknown touch event " << event->type();
+      break;
+  }
+
+  if (!point)
+    return NULL;
+
+  point->radiusX = event->radius_x();
+  point->radiusY = event->radius_y();
+  point->rotationAngle = event->rotation_angle();
+  point->force = event->force();
+
+  // Update the location and state of the point.
+  point->state = TouchPointStateFromEvent(event);
+  if (point->state == WebKit::WebTouchPoint::StateMoved) {
+    // It is possible for badly written touch drivers to emit Move events even
+    // when the touch location hasn't changed. In such cases, consume the event
+    // and pretend nothing happened.
+    if (point->position.x == event->x() && point->position.y == event->y())
+      return NULL;
+  }
+  point->position.x = event->x();
+  point->position.y = event->y();
+
+  // TODO(sad): Convert to screen coordinates.
+  point->screenPosition.x = point->position.x;
+  point->screenPosition.y = point->position.y;
+
+  // Mark the rest of the points as stationary.
+  for (unsigned i = 0; i < web_event->touchesLength; ++i) {
+    WebKit::WebTouchPoint* iter = web_event->touches + i;
+    if (iter != point)
+      iter->state = WebKit::WebTouchPoint::StateStationary;
+  }
+
+  // Update the type of the touch event.
+  web_event->type = TouchEventTypeFromEvent(event);
+  web_event->timeStampSeconds = event->time_stamp().ToDoubleT();
+
+  return point;
 }
 
 }  // namespace content

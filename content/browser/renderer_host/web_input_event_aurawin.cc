@@ -36,4 +36,10 @@ WebKit::WebKeyboardEvent MakeWebKeyboardEventFromNativeEvent(
                                                      native_event.lParam);
 }
 
+WebKit::WebTouchPoint* UpdateWebTouchEventFromNativeEvent(
+    base::NativeEvent native_event, WebKit::WebTouchEvent* web_event) {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
 }  // namespace content

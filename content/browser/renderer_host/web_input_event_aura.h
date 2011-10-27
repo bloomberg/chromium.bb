@@ -11,6 +11,7 @@
 namespace aura {
 class KeyEvent;
 class MouseEvent;
+class TouchEvent;
 }
 
 namespace content {
@@ -19,7 +20,12 @@ WebKit::WebMouseEvent MakeWebMouseEvent(aura::MouseEvent* event);
 WebKit::WebMouseWheelEvent MakeWebMouseWheelEvent(aura::MouseEvent* event);
 WebKit::WebKeyboardEvent MakeWebKeyboardEvent(aura::KeyEvent* event);
 
-// TODO(beng): WebKit::WebMouseWheelEvent
+// Updates the WebTouchEvent based on the TouchEvent. It returns the updated
+// WebTouchPoint contained in the WebTouchEvent, or NULL if no point was
+// updated.
+WebKit::WebTouchPoint* UpdateWebTouchEvent(aura::TouchEvent* event,
+                                           WebKit::WebTouchEvent* web_event);
+
 
 }
 

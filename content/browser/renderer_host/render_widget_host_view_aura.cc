@@ -25,6 +25,8 @@
 #include "ui/gfx/gl/gl_bindings.h"
 #endif
 
+using WebKit::WebTouchEvent;
+
 namespace {
 
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
@@ -35,6 +37,37 @@ void AcknowledgeSwapBuffers(int32 route_id, int gpu_host_id) {
       new AcceleratedSurfaceMsg_BuffersSwappedACK(route_id));
 }
 #endif
+
+ui::TouchStatus DecideTouchStatus(const WebKit::WebTouchEvent& event,
+                                  WebKit::WebTouchPoint* point) {
+  if (event.type == WebKit::WebInputEvent::TouchStart &&
+      event.touchesLength == 1)
+    return ui::TOUCH_STATUS_START;
+
+  if (event.type == WebKit::WebInputEvent::TouchMove && point == NULL)
+    return ui::TOUCH_STATUS_CONTINUE;
+
+  if (event.type == WebKit::WebInputEvent::TouchEnd &&
+      event.touchesLength == 0)
+    return ui::TOUCH_STATUS_END;
+
+  if (event.type == WebKit::WebInputEvent::TouchCancel)
+    return ui::TOUCH_STATUS_CANCEL;
+
+  return point ? ui::TOUCH_STATUS_CONTINUE : ui::TOUCH_STATUS_UNKNOWN;
+}
+
+void UpdateWebTouchEventAfterDispatch(WebKit::WebTouchEvent* event,
+                                      WebKit::WebTouchPoint* point) {
+  if (point->state != WebKit::WebTouchPoint::StateReleased)
+    return;
+  --event->touchesLength;
+  for (unsigned i = point - event->touches;
+       i < event->touchesLength;
+       ++i) {
+    event->touches[i] = event->touches[i + 1];
+  }
+}
 
 }  // namespace
 
@@ -361,8 +394,17 @@ bool RenderWidgetHostViewAura::OnMouseEvent(aura::MouseEvent* event) {
 
 ui::TouchStatus RenderWidgetHostViewAura::OnTouchEvent(
     aura::TouchEvent* event) {
-  NOTIMPLEMENTED();
-  return ui::TOUCH_STATUS_UNKNOWN;
+  // Update the touch event first.
+  WebKit::WebTouchPoint* point = content::UpdateWebTouchEvent(event,
+      &touch_event_);
+
+  // Forward the touch event only if a touch point was updated.
+  if (point) {
+    host_->ForwardTouchEvent(touch_event_);
+    UpdateWebTouchEventAfterDispatch(&touch_event_, point);
+  }
+
+  return DecideTouchStatus(touch_event_, point);
 }
 
 bool RenderWidgetHostViewAura::ShouldActivate(aura::Event* event) {

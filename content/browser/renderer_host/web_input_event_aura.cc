@@ -15,12 +15,16 @@ WebKit::WebMouseWheelEvent MakeUntranslatedWebMouseWheelEventFromNativeEvent(
     base::NativeEvent native_event);
 WebKit::WebKeyboardEvent MakeWebKeyboardEventFromNativeEvent(
     base::NativeEvent native_event);
+WebKit::WebTouchPoint* UpdateWebTouchEventFromNativeEvent(
+    base::NativeEvent native_event, WebKit::WebTouchEvent* web_event);
 #else
 WebKit::WebMouseEvent MakeWebMouseEventFromAuraEvent(aura::MouseEvent* event);
 WebKit::WebMouseWheelEvent MakeWebMouseWheelEventFromAuraEvent(
     aura::MouseEvent* event);
 WebKit::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
     aura::KeyEvent* event);
+WebKit::WebTouchPoint* UpdateWebTouchEventFromAuraEvent(
+    aura::TouchEvent* event, WebKit::WebTouchEvent* web_event);
 #endif
 
 // General approach:
@@ -101,6 +105,15 @@ WebKit::WebKeyboardEvent MakeWebKeyboardEvent(aura::KeyEvent* event) {
   return MakeWebKeyboardEventFromNativeEvent(event->native_event());
 #else
   return MakeWebKeyboardEventFromAuraEvent(event);
+#endif
+}
+
+WebKit::WebTouchPoint* UpdateWebTouchEvent(aura::TouchEvent* event,
+                                           WebKit::WebTouchEvent* web_event) {
+#if defined(OS_WIN)
+  return UpdateWebTouchEventFromNativeEvent(event->native_event(), web_event);
+#else
+  return UpdateWebTouchEventFromAuraEvent(event, web_event);
 #endif
 }
 

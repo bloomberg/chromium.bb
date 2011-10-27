@@ -13,6 +13,10 @@
 #include "ui/gfx/compositor/compositor_observer.h"
 #include "webkit/glue/webcursor.h"
 
+namespace WebKit {
+class WebTouchEvent;
+}
+
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
 class AcceleratedSurfaceContainerLinux;
 #endif
@@ -133,6 +137,11 @@ class RenderWidgetHostViewAura : public RenderWidgetHostView,
 
   // The cursor for the page. This is passed up from the renderer.
   WebCursor current_cursor_;
+
+  // The touch-event. Its touch-points are updated as necessary. A new
+  // touch-point is added from an ET_TOUCH_PRESSED event, and a touch-point is
+  // removed from the list on an ET_TOUCH_RELEASED event.
+  WebKit::WebTouchEvent touch_event_;
 
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
   std::vector< base::Callback<void(void)> > on_compositing_ended_callbacks_;
