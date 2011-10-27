@@ -112,7 +112,7 @@ class PowerLibraryImpl : public PowerLibrary {
       void* object, const chromeos::PowerStatus& power_status) {
     // TODO(sque): this is a temporary copy-over from libcros.  Soon libcros
     // will be removed and this will not be necessary.
-    PowerSupplyStatus status = {};
+    PowerSupplyStatus status;
     status.line_power_on         = power_status.line_power_on;
     status.battery_is_present    = power_status.battery_is_present;
     status.battery_is_full       =
@@ -227,7 +227,7 @@ class PowerLibraryStubImpl : public PowerLibrary {
     }
     battery_percentage_ += (discharging_ ? -1 : 1);
 
-    PowerSupplyStatus status = {};  // Zero-clear the status.
+    PowerSupplyStatus status;
     status.line_power_on = !discharging_;
     status.battery_is_present = true;
     status.battery_percentage = battery_percentage_;

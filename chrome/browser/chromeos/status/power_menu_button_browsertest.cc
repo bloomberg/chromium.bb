@@ -48,7 +48,7 @@ class PowerMenuButtonTest : public CrosInProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(PowerMenuButtonTest, BatteryMissingTest) {
-  PowerSupplyStatus status = {};
+  PowerSupplyStatus status;
   // No battery present.
   status.battery_is_present    = false;
   status.battery_percentage    = 42.0;
@@ -61,7 +61,7 @@ IN_PROC_BROWSER_TEST_F(PowerMenuButtonTest, BatteryMissingTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(PowerMenuButtonTest, BatteryChargedTest) {
-  PowerSupplyStatus status = {};
+  PowerSupplyStatus status;
   // The battery is fully charged, and line power is plugged in.
   status.battery_is_present    = true;
   status.battery_percentage    = 42.0;
@@ -74,7 +74,7 @@ IN_PROC_BROWSER_TEST_F(PowerMenuButtonTest, BatteryChargedTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(PowerMenuButtonTest, BatteryChargingTest) {
-  PowerSupplyStatus status = {};
+  PowerSupplyStatus status;
   status.battery_is_present    = true;
   status.battery_is_full       = false;
   status.line_power_on         = true;
@@ -91,7 +91,7 @@ IN_PROC_BROWSER_TEST_F(PowerMenuButtonTest, BatteryChargingTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(PowerMenuButtonTest, BatteryDischargingTest) {
-  PowerSupplyStatus status = {};
+  PowerSupplyStatus status;
   status.battery_is_present    = true;
   status.battery_is_full       = false;
   status.line_power_on         = false;

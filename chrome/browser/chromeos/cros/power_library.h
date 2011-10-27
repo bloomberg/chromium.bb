@@ -29,6 +29,13 @@ struct PowerSupplyStatus {
   int64 battery_seconds_to_full;
 
   double battery_percentage;
+
+  PowerSupplyStatus() : line_power_on(false),
+                        battery_is_present(false),
+                        battery_is_full(false),
+                        battery_seconds_to_empty(0),
+                        battery_seconds_to_full(0),
+                        battery_percentage(0) {}
 };
 
 // This interface defines interaction with the ChromeOS power library APIs.
