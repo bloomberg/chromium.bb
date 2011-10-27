@@ -91,7 +91,6 @@ class TestBrowserWindow : public BrowserWindow {
       TabContents* tab_contents) OVERRIDE {}
   virtual void ShowCollectedCookiesDialog(
       TabContentsWrapper* wrapper) OVERRIDE {}
-  virtual void ShowThemeInstallBubble() OVERRIDE {}
   virtual void ConfirmBrowserCloseWithPendingDownloads() OVERRIDE {}
   virtual void UserChangedTheme() OVERRIDE {}
   virtual int GetExtraRenderViewHeight() const OVERRIDE;

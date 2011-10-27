@@ -153,10 +153,6 @@ class ExtensionService
   bool IsDownloadFromGallery(const GURL& download_url,
                              const GURL& referrer_url);
 
-  // Determine if the downloaded extension came from the theme mini-gallery,
-  // Used to test if we need to show the "Loading" dialog for themes.
-  static bool IsDownloadFromMiniGallery(const GURL& download_url);
-
   // Returns the Extension of hosted or packaged apps, NULL otherwise.
   const Extension* GetInstalledApp(const GURL& url);
 

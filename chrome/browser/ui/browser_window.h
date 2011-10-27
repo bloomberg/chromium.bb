@@ -243,9 +243,6 @@ class BrowserWindow {
   // Shows the collected cookies dialog box.
   virtual void ShowCollectedCookiesDialog(TabContentsWrapper* tab_contents) = 0;
 
-  // Show the bubble that indicates to the user that a theme is being installed.
-  virtual void ShowThemeInstallBubble() = 0;
-
   // Shows the confirmation dialog box warning that the browser is closing with
   // in-progress downloads.
   // This method should call Browser::InProgressDownloadResponse once the user

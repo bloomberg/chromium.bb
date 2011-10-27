@@ -405,10 +405,6 @@ void Panel::ShowCollectedCookiesDialog(TabContentsWrapper* wrapper) {
   NOTIMPLEMENTED();
 }
 
-void Panel::ShowThemeInstallBubble() {
-  NOTIMPLEMENTED();
-}
-
 void Panel::ConfirmBrowserCloseWithPendingDownloads() {
   NOTIMPLEMENTED();
 }

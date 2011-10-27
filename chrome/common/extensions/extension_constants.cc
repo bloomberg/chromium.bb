@@ -461,8 +461,6 @@ GURL GetWebstoreUpdateUrl(bool secure) {
 }
 
 const char* kGalleryBrowsePrefix = "https://chrome.google.com/webstore";
-const char* kMiniGalleryBrowsePrefix = "https://tools.google.com/chrome/";
-const char* kMiniGalleryDownloadPrefix = "https://dl-ssl.google.com/chrome/";
 }
 
 namespace extension_filenames {

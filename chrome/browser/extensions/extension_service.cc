@@ -457,14 +457,6 @@ static const char* kAllowedDownloadURLPatterns[] = {
 
 bool ExtensionService::IsDownloadFromGallery(const GURL& download_url,
                                              const GURL& referrer_url) {
-  // Special-case the themes mini-gallery.
-  // TODO(erikkay) When that gallery goes away, remove this code.
-  if (IsDownloadFromMiniGallery(download_url) &&
-      StartsWithASCII(referrer_url.spec(),
-                      extension_urls::kMiniGalleryBrowsePrefix, false)) {
-    return true;
-  }
-
   const Extension* download_extension = GetExtensionByWebExtent(download_url);
   const Extension* referrer_extension = GetExtensionByWebExtent(referrer_url);
   const Extension* webstore_app = GetWebStoreApp();
@@ -514,12 +506,6 @@ bool ExtensionService::IsDownloadFromGallery(const GURL& download_url,
   }
 
   return (referrer_valid && download_valid);
-}
-
-bool ExtensionService::IsDownloadFromMiniGallery(const GURL& download_url) {
-  return StartsWithASCII(download_url.spec(),
-                         extension_urls::kMiniGalleryDownloadPrefix,
-                         false);  // case_sensitive
 }
 
 const Extension* ExtensionService::GetInstalledApp(const GURL& url) {

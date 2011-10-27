@@ -313,10 +313,6 @@ Browser::Browser(Type type, Profile* profile)
   registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENT_SETTINGS_CHANGED,
                  content::NotificationService::AllSources());
 
-  // Need to know when to alert the user of theme install delay.
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_READY_FOR_INSTALL,
-                 content::NotificationService::AllSources());
-
   PrefService* local_state = g_browser_process->local_state();
   if (local_state) {
     local_pref_registrar_.Init(local_state);
@@ -3782,8 +3778,7 @@ void Browser::OnStartDownload(TabContents* source, DownloadItem* download) {
     // window is minimized, we're in a unit test, etc.).
     TabContents* shelf_tab = shelf->browser()->GetSelectedTabContents();
     if ((download->total_bytes() > 0) &&
-        (!ChromeDownloadManagerDelegate::IsExtensionDownload(download) ||
-         ExtensionService::IsDownloadFromMiniGallery(download->GetURL())) &&
+        !ChromeDownloadManagerDelegate::IsExtensionDownload(download) &&
         platform_util::IsVisible(shelf_tab->GetNativeView()) &&
         ui::Animation::ShouldRenderRichAnimation()) {
       DownloadStartedAnimation::Show(shelf_tab);
@@ -4303,23 +4298,6 @@ void Browser::Observe(int type,
     case chrome::NOTIFICATION_BROWSER_THEME_CHANGED:
       window()->UserChangedTheme();
       break;
-
-    case chrome::NOTIFICATION_EXTENSION_READY_FOR_INSTALL: {
-      Profile* profile = content::Source<Profile>(source).ptr();
-      if (profile_->IsSameProfile(profile)) {
-        // Handle EXTENSION_READY_FOR_INSTALL for last active tabbed browser.
-        if (BrowserList::FindTabbedBrowser(profile, true) == this) {
-          // We only want to show the loading dialog for themes, but we don't
-          // want to wait until unpack to find out an extension is a theme, so
-          // we test the download_url GURL instead. This means that themes in
-          // the extensions gallery won't get the loading dialog.
-          GURL download_url = *(content::Details<GURL>(details).ptr());
-          if (ExtensionService::IsDownloadFromMiniGallery(download_url))
-            window()->ShowThemeInstallBubble();
-        }
-      }
-      break;
-    }
 
     case chrome::NOTIFICATION_PREF_CHANGED: {
       const std::string& pref_name =

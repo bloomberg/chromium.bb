@@ -35,7 +35,6 @@
 #include "chrome/browser/ui/cocoa/restart_browser.h"
 #include "chrome/browser/ui/cocoa/status_bubble_mac.h"
 #include "chrome/browser/ui/cocoa/task_manager_mac.h"
-#import "chrome/browser/ui/cocoa/theme_install_bubble_view.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/task_manager_dialog.h"
@@ -425,10 +424,6 @@ void BrowserWindowCocoa::ShowCollectedCookiesDialog(
     TabContentsWrapper* wrapper) {
   // Deletes itself on close.
   new CollectedCookiesMac(GetNativeHandle(), wrapper);
-}
-
-void BrowserWindowCocoa::ShowThemeInstallBubble() {
-  ThemeInstallBubbleView::Show(window());
 }
 
 // We allow closing the window here since the real quit decision on Mac is made

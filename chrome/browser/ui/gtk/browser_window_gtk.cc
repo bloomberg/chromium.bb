@@ -68,7 +68,6 @@
 #include "chrome/browser/ui/gtk/tab_contents_container_gtk.h"
 #include "chrome/browser/ui/gtk/tabs/tab_strip_gtk.h"
 #include "chrome/browser/ui/gtk/task_manager_gtk.h"
-#include "chrome/browser/ui/gtk/theme_install_bubble_view_gtk.h"
 #include "chrome/browser/ui/gtk/update_recommended_dialog.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
@@ -1028,10 +1027,6 @@ void BrowserWindowGtk::ShowRepostFormWarningDialog(TabContents* tab_contents) {
 void BrowserWindowGtk::ShowCollectedCookiesDialog(TabContentsWrapper* wrapper) {
   // Deletes itself on close.
   new CollectedCookiesGtk(GetNativeHandle(), wrapper);
-}
-
-void BrowserWindowGtk::ShowThemeInstallBubble() {
-  ThemeInstallBubbleViewGtk::Show(window_);
 }
 
 void BrowserWindowGtk::UserChangedTheme() {

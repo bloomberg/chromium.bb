@@ -64,7 +64,6 @@
 #include "chrome/browser/ui/views/tab_contents/tab_contents_container.h"
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_factory.h"
-#include "chrome/browser/ui/views/theme_install_bubble_view.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
 #include "chrome/browser/ui/views/update_recommended_message_box.h"
 #include "chrome/browser/ui/views/window.h"
@@ -1121,13 +1120,6 @@ void BrowserView::ShowRepostFormWarningDialog(TabContents* tab_contents) {
 
 void BrowserView::ShowCollectedCookiesDialog(TabContentsWrapper* wrapper) {
   browser::ShowCollectedCookiesDialog(GetNativeHandle(), wrapper);
-}
-
-void BrowserView::ShowThemeInstallBubble() {
-  TabContents* tab_contents = browser_->GetSelectedTabContents();
-  if (!tab_contents)
-    return;
-  ThemeInstallBubbleView::Show(tab_contents);
 }
 
 void BrowserView::ConfirmBrowserCloseWithPendingDownloads() {
