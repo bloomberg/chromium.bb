@@ -12,6 +12,7 @@
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/gfx/size.h"
@@ -293,6 +294,65 @@ TEST_F(ClipboardTest, SharedBitmapTest) {
                                           Clipboard::BUFFER_STANDARD));
 }
 
+// The following test somehow fails on GTK. The image when read back from the
+// clipboard has the alpha channel set to 0xFF for some reason. The other
+// channels stay intact. So I am turning this on only for aura.
+#if defined(USE_AURA)
+TEST_F(ClipboardTest, MultipleBitmapReadWriteTest) {
+  Clipboard clipboard;
+
+  // Test first bitmap
+  unsigned int fake_bitmap_1[] = {
+    0x46155189, 0xF6A55C8D, 0x79845674, 0xFA57BD89,
+    0x78FD46AE, 0x87C64F5A, 0x36EDC5AF, 0x4378F568,
+    0x91E9F63A, 0xC31EA14F, 0x69AB32DF, 0x643A3FD1,
+  };
+  gfx::Size fake_bitmap_1_size(3, 4);
+  {
+    ScopedClipboardWriter clipboard_writer(&clipboard);
+    clipboard_writer.WriteBitmapFromPixels(fake_bitmap_1, fake_bitmap_1_size);
+  }
+  EXPECT_TRUE(clipboard.IsFormatAvailable(Clipboard::GetBitmapFormatType(),
+                                          Clipboard::BUFFER_STANDARD));
+  SkBitmap image_1 = clipboard.ReadImage(Clipboard::BUFFER_STANDARD);
+  EXPECT_EQ(fake_bitmap_1_size, gfx::Size(image_1.width(), image_1.height()));
+  unsigned int* pixels_1 = reinterpret_cast<unsigned int*>(image_1.getPixels());
+  for (int i = 0; i < fake_bitmap_1_size.width(); ++i) {
+    for (int j = 0; j < fake_bitmap_1_size.height(); ++j) {
+      int id = i * fake_bitmap_1_size.height() + j;
+      EXPECT_EQ(fake_bitmap_1[id], pixels_1[id]);
+    }
+  }
+
+  // Test second bitmap
+  unsigned int fake_bitmap_2[] = {
+    0x46155189, 0xF6A55C8D,
+    0x79845674, 0xFA57BD89,
+    0x78FD46AE, 0x87C64F5A,
+    0x36EDC5AF, 0x4378F568,
+    0x91E9F63A, 0xC31EA14F,
+    0x69AB32DF, 0x643A3FD1,
+    0xA6DF041D, 0x83046278,
+  };
+  gfx::Size fake_bitmap_2_size(7, 2);
+  {
+    ScopedClipboardWriter clipboard_writer(&clipboard);
+    clipboard_writer.WriteBitmapFromPixels(fake_bitmap_2, fake_bitmap_2_size);
+  }
+  EXPECT_TRUE(clipboard.IsFormatAvailable(Clipboard::GetBitmapFormatType(),
+                                          Clipboard::BUFFER_STANDARD));
+  SkBitmap image_2 = clipboard.ReadImage(Clipboard::BUFFER_STANDARD);
+  EXPECT_EQ(fake_bitmap_2_size, gfx::Size(image_2.width(), image_2.height()));
+  unsigned int* pixels_2 = reinterpret_cast<unsigned int*>(image_2.getPixels());
+  for (int i = 0; i < fake_bitmap_2_size.width(); ++i) {
+    for (int j = 0; j < fake_bitmap_2_size.height(); ++j) {
+      int id = i * fake_bitmap_2_size.height() + j;
+      EXPECT_EQ(fake_bitmap_2[id], pixels_2[id]);
+    }
+  }
+}
+#endif
+
 #if defined(OS_WIN) || (defined(OS_POSIX) && !defined(OS_MACOSX))
 TEST_F(ClipboardTest, DataTest) {
   Clipboard clipboard;
@@ -317,6 +377,61 @@ TEST_F(ClipboardTest, DataTest) {
   std::string unpickled_string;
   ASSERT_TRUE(read_pickle.ReadString(&iter, &unpickled_string));
   EXPECT_EQ(payload, unpickled_string);
+}
+
+TEST_F(ClipboardTest, MultipleDataTest) {
+  Clipboard clipboard;
+  const char* kFormat1 = "chromium/x-test-format1";
+  std::string payload1("test string1");
+  Pickle write_pickle1;
+  write_pickle1.WriteString(payload1);
+
+  const char* kFormat2 = "chromium/x-test-format2";
+  std::string payload2("test string2");
+  Pickle write_pickle2;
+  write_pickle2.WriteString(payload2);
+
+  {
+    ScopedClipboardWriter clipboard_writer(&clipboard);
+    clipboard_writer.WritePickledData(write_pickle1, kFormat1);
+    // overwrite the previous pickle for fun
+    clipboard_writer.WritePickledData(write_pickle2, kFormat2);
+  }
+
+  ASSERT_TRUE(clipboard.IsFormatAvailableByString(
+      kFormat2, Clipboard::BUFFER_STANDARD));
+
+  // Check string 2.
+  std::string output2;
+  clipboard.ReadData(kFormat2, &output2);
+  ASSERT_FALSE(output2.empty());
+
+  Pickle read_pickle2(output2.data(), output2.size());
+  void* iter2 = NULL;
+  std::string unpickled_string2;
+  ASSERT_TRUE(read_pickle2.ReadString(&iter2, &unpickled_string2));
+  EXPECT_EQ(payload2, unpickled_string2);
+
+  {
+    ScopedClipboardWriter clipboard_writer(&clipboard);
+    clipboard_writer.WritePickledData(write_pickle2, kFormat2);
+    // overwrite the previous pickle for fun
+    clipboard_writer.WritePickledData(write_pickle1, kFormat1);
+  }
+
+  ASSERT_TRUE(clipboard.IsFormatAvailableByString(
+      kFormat1, Clipboard::BUFFER_STANDARD));
+
+  // Check string 1.
+  std::string output1;
+  clipboard.ReadData(kFormat1, &output1);
+  ASSERT_FALSE(output1.empty());
+
+  Pickle read_pickle1(output1.data(), output1.size());
+  void* iter1 = NULL;
+  std::string unpickled_string1;
+  ASSERT_TRUE(read_pickle1.ReadString(&iter1, &unpickled_string1));
+  EXPECT_EQ(payload1, unpickled_string1);
 }
 #endif
 

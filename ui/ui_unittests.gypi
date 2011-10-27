@@ -159,12 +159,6 @@
             'gfx/render_text_unittest.cc',
           ],
         }],
-        ['use_aura==1 and OS!="win"', {
-          'sources!': [
-            # aura does not yet have clipboard support. http://crbug.com/97845
-            'base/clipboard/clipboard_unittest.cc',
-          ],
-        }],
         ['use_aura==1', {
           'dependencies': [
             'aura/aura.gyp:aura',
