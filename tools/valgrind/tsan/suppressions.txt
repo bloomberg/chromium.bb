@@ -352,6 +352,14 @@
    fun:GpuDataManager::GetInstance
    fun:GpuBlacklistUpdater::SetupOnFileThread
 }
+{
+  Intentional race in net_unittest
+  ThreadSanitizer:Race
+  fun:disk_cache::BackendImpl::GetEntryCount
+  fun:DiskCacheBackendTest::BackendTrimInvalidEntry2
+  fun:DiskCacheBackendTest_TrimInvalidEntry2_Test::TestBody
+  fun:testing::internal::HandleSehExceptionsInMethodIfSupported
+}
 
 ############################
 # 2.2 Benign races in Chromium
