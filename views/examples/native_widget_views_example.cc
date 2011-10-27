@@ -56,7 +56,7 @@ class TestContentView : public views::View,
 };
 
 NativeWidgetViewsExample::NativeWidgetViewsExample(ExamplesMain* main)
-    : ExampleBase(main, "NativeWidgetViews") {
+    : ExampleBase(main, "Native Widget Views") {
 }
 
 NativeWidgetViewsExample::~NativeWidgetViewsExample() {

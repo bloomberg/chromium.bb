@@ -13,7 +13,7 @@
 namespace examples {
 
 NativeThemeCheckboxExample::NativeThemeCheckboxExample(ExamplesMain* main)
-    : ExampleBase(main, "Checkbox"),
+    : ExampleBase(main, "Native Theme Checkbox"),
       count_(0) {
 }
 

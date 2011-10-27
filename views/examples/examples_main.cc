@@ -82,28 +82,29 @@ void ExamplesMain::Init() {
   views::Widget* window =
       views::Widget::CreateWindowWithBounds(this, gfx::Rect(0, 0, 850, 300));
 
-  examples_.push_back(new NativeThemeCheckboxExample(this));
-  examples_.push_back(new NativeThemeButtonExample(this));
-  examples_.push_back(new NativeWidgetViewsExample(this));
-  examples_.push_back(new TextfieldExample(this));
-  examples_.push_back(new ButtonExample(this));
-  examples_.push_back(new TextExample(this));
+  // Keep these in alphabetical order!
   examples_.push_back(new BubbleExample(this));
-  examples_.push_back(new ThrobberExample(this));
+  examples_.push_back(new ButtonExample(this));
   examples_.push_back(new ComboboxExample(this));
+  examples_.push_back(new DoubleSplitViewExample(this));
   examples_.push_back(new LinkExample(this));
-  examples_.push_back(new TabbedPaneExample(this));
+  examples_.push_back(new MenuExample(this));
   examples_.push_back(new MessageBoxExample(this));
+  examples_.push_back(new NativeThemeButtonExample(this));
+  examples_.push_back(new NativeThemeCheckboxExample(this));
+  examples_.push_back(new NativeWidgetViewsExample(this));
   examples_.push_back(new RadioButtonExample(this));
   examples_.push_back(new ScrollViewExample(this));
   examples_.push_back(new SingleSplitViewExample(this));
-  examples_.push_back(new DoubleSplitViewExample(this));
+  examples_.push_back(new TabbedPaneExample(this));
 #if defined(OS_WIN)
   examples_.push_back(new TableExample(this));
 #endif
   examples_.push_back(new Table2Example(this));
+  examples_.push_back(new TextExample(this));
+  examples_.push_back(new TextfieldExample(this));
+  examples_.push_back(new ThrobberExample(this));
   examples_.push_back(new WidgetExample(this));
-  examples_.push_back(new MenuExample(this));
 
   for (std::vector<ExampleBase*>::const_iterator i(examples_.begin());
        i != examples_.end(); ++i)
