@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
+#include "chrome/browser/ui/gtk/cairo_cached_surface.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -26,17 +27,17 @@ namespace gfx {
 class Size;
 }  // namespace gfx
 
+class CairoCachedSurface;
 class CustomDrawButton;
 class TabContents;
-class ThemeService;
+class GtkThemeService;
 
 namespace ui {
 class SlideAnimation;
 class ThrobAnimation;
 }
 
-class TabRendererGtk : public ui::AnimationDelegate,
-                       public content::NotificationObserver {
+class TabRendererGtk : public ui::AnimationDelegate {
  public:
   // Possible animation states.
   enum AnimationState {
@@ -48,17 +49,15 @@ class TabRendererGtk : public ui::AnimationDelegate,
   class LoadingAnimation : public content::NotificationObserver {
    public:
     struct Data {
-      explicit Data(ThemeService* theme_service);
+      explicit Data(GtkThemeService* theme_service);
       Data(int loading, int waiting, int waiting_to_loading);
 
-      SkBitmap* waiting_animation_frames;
-      SkBitmap* loading_animation_frames;
       int loading_animation_frame_count;
       int waiting_animation_frame_count;
       int waiting_to_loading_frame_count_ratio;
     };
 
-    explicit LoadingAnimation(ThemeService* theme_service);
+    explicit LoadingAnimation(GtkThemeService* theme_service);
 
     // Used in unit tests to inject specific data.
     explicit LoadingAnimation(const LoadingAnimation::Data& data);
@@ -73,13 +72,6 @@ class TabRendererGtk : public ui::AnimationDelegate,
     AnimationState animation_state() const { return animation_state_; }
     int animation_frame() const { return animation_frame_; }
 
-    const SkBitmap* waiting_animation_frames() const {
-      return data_->waiting_animation_frames;
-    }
-    const SkBitmap* loading_animation_frames() const {
-      return data_->loading_animation_frames;
-    }
-
     // Provide content::NotificationObserver implementation.
     virtual void Observe(int type,
                          const content::NotificationSource& source,
@@ -92,7 +84,7 @@ class TabRendererGtk : public ui::AnimationDelegate,
     content::NotificationRegistrar registrar_;
 
     // Gives us our throbber images.
-    ThemeService* theme_service_;
+    GtkThemeService* theme_service_;
 
     // Current state of the animation.
     AnimationState animation_state_;
@@ -103,7 +95,7 @@ class TabRendererGtk : public ui::AnimationDelegate,
     DISALLOW_COPY_AND_ASSIGN(LoadingAnimation);
   };
 
-  explicit TabRendererGtk(ThemeService* theme_service);
+  explicit TabRendererGtk(GtkThemeService* theme_service);
   virtual ~TabRendererGtk();
 
   // TabContents. If only the loading state was updated, the loading_only flag
@@ -146,16 +138,17 @@ class TabRendererGtk : public ui::AnimationDelegate,
   // Sets the visibility of the Tab.
   virtual void SetVisible(bool visible) const;
 
-  // Paints the tab into |canvas|.
-  virtual void Paint(gfx::Canvas* canvas);
+  // Paints the tab using resources from the display that |widget| is on,
+  // drawing into |cr|.
+  void Paint(GtkWidget* widget, cairo_t* cr);
 
   // Paints the tab, and keeps the result server-side. The returned surface must
   // be freed with cairo_surface_destroy().
-  virtual cairo_surface_t* PaintToSurface();
+  cairo_surface_t* PaintToSurface(GtkWidget* widget, cairo_t* cr);
 
   // There is no PaintNow available, so the fastest we can do is schedule a
   // paint with the windowing system.
-  virtual void SchedulePaint();
+  void SchedulePaint();
 
   // Notifies the Tab that the close button has been clicked.
   virtual void CloseButtonClicked();
@@ -163,18 +156,13 @@ class TabRendererGtk : public ui::AnimationDelegate,
   // Sets the bounds of the tab.
   virtual void SetBounds(const gfx::Rect& bounds);
 
-  // Provide NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
-
   // Advance the loading animation to the next frame, or hide the animation if
   // the tab isn't loading.  Returns |true| if the icon area needs to be
   // repainted.
   bool ValidateLoadingAnimation(AnimationState animation_state);
 
   // Repaint only the area of the tab that contains the favicon.
-  void PaintFaviconArea(GdkEventExpose* event);
+  void PaintFaviconArea(GtkWidget* widget, cairo_t* cr);
 
   // Returns whether the Tab should display a favicon.
   bool ShouldShowIcon() const;
@@ -191,9 +179,6 @@ class TabRendererGtk : public ui::AnimationDelegate,
 
   // Returns the width for mini-tabs. Mini-tabs always have this width.
   static int GetMiniWidth();
-
-  // Loads the images to be used for the tab background.
-  static void LoadTabImages();
 
   // Sets the colors used for painting text on the tabs.
   static void SetSelectedTitleColor(SkColor color);
@@ -246,34 +231,15 @@ class TabRendererGtk : public ui::AnimationDelegate,
  private:
   class FaviconCrashAnimation;
 
-  // The data structure used to hold cached bitmaps.  We need to manually free
-  // the bitmap in CachedBitmap when we remove it from |cached_bitmaps_|.  We
-  // handle this when we replace images in the map and in the destructor.
-  struct CachedBitmap {
-    int bg_offset_x;
-    int bg_offset_y;
-    SkBitmap* bitmap;
-  };
-  typedef std::map<std::pair<const SkBitmap*, const SkBitmap*>, CachedBitmap>
-      BitmapCache;
-
   // Model data. We store this here so that we don't need to ask the underlying
   // model, which is tricky since instances of this object can outlive the
   // corresponding objects in the underlying model.
   struct TabData {
-    TabData()
-        : is_default_favicon(false),
-          loading(false),
-          crashed(false),
-          incognito(false),
-          show_icon(true),
-          mini(false),
-          blocked(false),
-          animating_mini_change(false),
-          app(false) {
-    }
+    TabData();
+    ~TabData();
 
     SkBitmap favicon;
+    CairoCachedSurface cairo_favicon;
     bool is_default_favicon;
     string16 title;
     bool loading;
@@ -284,16 +250,6 @@ class TabRendererGtk : public ui::AnimationDelegate,
     bool blocked;
     bool animating_mini_change;
     bool app;
-  };
-
-  // TODO(jhawkins): Move into TabResources class.
-  struct TabImage {
-    SkBitmap* image_l;
-    SkBitmap* image_c;
-    SkBitmap* image_r;
-    int l_width;
-    int r_width;
-    int y_offset;
   };
 
   // Overridden from ui::AnimationDelegate:
@@ -327,30 +283,34 @@ class TabRendererGtk : public ui::AnimationDelegate,
   // Returns the largest of the favicon, title text, and the close button.
   static int GetContentHeight();
 
-  // A helper method for generating the masked bitmaps used to draw the curved
-  // edges of tabs.  We cache the generated bitmaps because they can take a
-  // long time to compute.
-  SkBitmap* GetMaskedBitmap(const SkBitmap* mask,
-                            const SkBitmap* background,
-                            int bg_offset_x,
-                            int bg_offset_y);
-  BitmapCache cached_bitmaps_;
-
-  // Paints the tab, minus the close button.
-  void PaintTab(GdkEventExpose* event);
+  void PaintTab(GtkWidget* widget, GdkEventExpose* event);
 
   // Paint various portions of the Tab
-  void PaintTitle(gfx::Canvas* canvas);
-  void PaintIcon(gfx::Canvas* canvas);
-  void PaintTabBackground(gfx::Canvas* canvas);
-  void PaintInactiveTabBackground(gfx::Canvas* canvas);
-  void PaintActiveTabBackground(gfx::Canvas* canvas);
-  void PaintLoadingAnimation(gfx::Canvas* canvas);
+  void PaintTitle(GtkWidget* widget, cairo_t* cr);
+  void PaintIcon(GtkWidget* widget, cairo_t* cr);
+  void PaintTabBackground(GtkWidget* widget, cairo_t* cr);
+  void PaintInactiveTabBackground(GtkWidget* widget, cairo_t* cr);
+  void PaintActiveTabBackground(GtkWidget* widget, cairo_t* cr);
+  void PaintLoadingAnimation(GtkWidget* widget, cairo_t* cairo);
+
+  // Draws the given |tab_bg| onto |cr| using the tab shape masks along the
+  // sides for the rounded tab shape.
+  void DrawTabBackground(cairo_t* cr,
+                         GtkWidget* widget,
+                         CairoCachedSurface* tab_bg,
+                         int offset_x,
+                         int offset_y);
+
+  // Draws the tab shadow using the given idr resources onto |cr|.
+  void DrawTabShadow(cairo_t* cr,
+                     GtkWidget* widget,
+                     int left_idr,
+                     int center_idr,
+                     int right_idr);
 
   // Returns the number of favicon-size elements that can fit in the tab's
   // current size.
   int IconCapacity() const;
-
 
   // Returns whether the Tab should display a close button.
   bool ShouldShowCloseBox() const;
@@ -387,9 +347,10 @@ class TabRendererGtk : public ui::AnimationDelegate,
 
   TabData data_;
 
-  static TabImage tab_active_;
-  static TabImage tab_inactive_;
-  static TabImage tab_alpha_;
+  static int tab_active_l_width_;
+  static int tab_active_l_height_;
+  static int tab_inactive_l_width_;
+  static int tab_inactive_l_height_;
 
   static gfx::Font* title_font_;
   static int title_font_height_;
@@ -444,7 +405,7 @@ class TabRendererGtk : public ui::AnimationDelegate,
   // alignment in the BrowserTitlebar.
   int background_offset_y_;
 
-  ThemeService* theme_service_;
+  GtkThemeService* theme_service_;
 
   // The close button.
   scoped_ptr<CustomDrawButton> close_button_;
@@ -454,9 +415,6 @@ class TabRendererGtk : public ui::AnimationDelegate,
 
   // Indicates whether this tab is the active one.
   bool is_active_;
-
-  // Used to listen for theme change notifications.
-  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(TabRendererGtk);
 };

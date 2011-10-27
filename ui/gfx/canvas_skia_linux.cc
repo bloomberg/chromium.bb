@@ -64,10 +64,7 @@ class DrawStringContext {
   cairo_t* cr_;
   PangoLayout* layout_;
 
-  int text_x_;
-  int text_y_;
-  int text_width_;
-  int text_height_;
+  gfx::Rect text_rect_;
 
   base::i18n::TextDirection text_direction_;
 
@@ -86,10 +83,7 @@ DrawStringContext::DrawStringContext(gfx::CanvasSkia* canvas,
       canvas_(canvas),
       cr_(NULL),
       layout_(NULL),
-      text_x_(bounds.x()),
-      text_y_(bounds.y()),
-      text_width_(0),
-      text_height_(0),
+      text_rect_(bounds.x(), bounds.y(), 0, 0),
       text_direction_(base::i18n::GetFirstStrongCharacterDirection(text)) {
   DCHECK(!bounds_.IsEmpty());
 
@@ -106,16 +100,7 @@ DrawStringContext::DrawStringContext(gfx::CanvasSkia* canvas,
   cairo_rectangle(cr_, clip.x(), clip.y(), clip.width(), clip.height());
   cairo_clip(cr_);
 
-  pango_layout_get_pixel_size(layout_, &text_width_, &text_height_);
-
-  if (flags_ & gfx::Canvas::TEXT_VALIGN_TOP) {
-    // Cairo should draw from the top left corner already.
-  } else if (flags_ & gfx::Canvas::TEXT_VALIGN_BOTTOM) {
-    text_y_ += (bounds.height() - text_height_);
-  } else {
-    // Vertically centered.
-    text_y_ += ((bounds.height() - text_height_) / 2);
-  }
+  AdjustTextRectBasedOnLayout(layout_, bounds_, flags_, &text_rect_);
 }
 
 DrawStringContext::~DrawStringContext() {
@@ -126,47 +111,8 @@ DrawStringContext::~DrawStringContext() {
 }
 
 void DrawStringContext::Draw(const SkColor& text_color) {
-  double r = SkColorGetR(text_color) / 255.0,
-         g = SkColorGetG(text_color) / 255.0,
-         b = SkColorGetB(text_color) / 255.0,
-         a = SkColorGetA(text_color) / 255.0;
-
-  cairo_pattern_t* pattern = NULL;
-
-  cairo_save(cr_);
-
-  // If we're not eliding, use a fixed color.
-  // Otherwise, create a gradient pattern to use as the source.
-  if (text_direction_ == base::i18n::RIGHT_TO_LEFT ||
-      (flags_ & gfx::Canvas::NO_ELLIPSIS) ||
-      text_width_ <= bounds_.width()) {
-    cairo_set_source_rgba(cr_, r, g, b, a);
-  } else {
-    // Fade to semi-transparent to elide.
-    int fade_width = static_cast<double>(text_height_) * kFadeWidthFactor;
-    if (fade_width > (bounds_.width() / 2)) {
-      // Don't fade more than half the text.
-      fade_width = bounds_.width() / 2;
-    }
-    int fade_x = bounds_.x() + bounds_.width() - fade_width;
-
-    pattern = cairo_pattern_create_linear(
-        fade_x, bounds_.y(), bounds_.x() + bounds_.width(), bounds_.y());
-    cairo_pattern_add_color_stop_rgba(pattern, 0, r, g, b, a);
-    cairo_pattern_add_color_stop_rgba(pattern, 1, r, g, b, kFadeFinalAlpha);
-    cairo_set_source(cr_, pattern);
-  }
-
-  cairo_move_to(cr_, text_x_, text_y_);
-  pango_cairo_show_layout(cr_, layout_);
-
-  if (font_.GetStyle() & gfx::Font::UNDERLINED)
-    DrawUnderline(cr_, 0.0);
-
-  if (pattern)
-    cairo_pattern_destroy(pattern);
-
-  cairo_restore(cr_);
+  DrawPangoLayout(cr_, layout_, font_, bounds_, text_rect_, text_color,
+                  text_direction_, flags_);
 }
 
 void DrawStringContext::DrawWithHalo(const SkColor& text_color,
@@ -217,20 +163,16 @@ void DrawStringContext::DrawWithHalo(const SkColor& text_color,
 
   const SkBitmap& text_bitmap = const_cast<SkBitmap&>(
       skia::GetTopDevice(*text_canvas.sk_canvas())->accessBitmap(false));
-  canvas_->DrawBitmapInt(text_bitmap, text_x_ - 1, text_y_ - 1);
+  canvas_->DrawBitmapInt(text_bitmap, text_rect_.x() - 1, text_rect_.y() - 1);
 }
 
 void DrawStringContext::DrawUnderline(cairo_t* cr, double extra_edge_width) {
   gfx::PlatformFontPango* platform_font =
       static_cast<gfx::PlatformFontPango*>(font_.platform_font());
-  const double underline_y =
-      static_cast<double>(text_y_) + text_height_ +
-      platform_font->underline_position();
-  cairo_set_line_width(
-      cr, platform_font->underline_thickness() + 2 * extra_edge_width);
-  cairo_move_to(cr, text_x_ - extra_edge_width, underline_y);
-  cairo_line_to(cr, text_x_ + text_width_ + extra_edge_width, underline_y);
-  cairo_stroke(cr);
+  gfx::DrawPangoTextUnderline(cr,
+                              platform_font,
+                              extra_edge_width,
+                              text_rect_);
 }
 
 }  // namespace

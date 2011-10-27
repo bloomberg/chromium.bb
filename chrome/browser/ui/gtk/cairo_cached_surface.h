@@ -30,6 +30,9 @@ class CairoCachedSurface {
     return pixbuf_;
   }
 
+  // Delete all our data.
+  void Reset();
+
   // The dimensions of the underlying pixbuf/surface. (or -1 if invalid.)
   int Width() const;
   int Height() const;
@@ -44,11 +47,18 @@ class CairoCachedSurface {
   // case we don't have an X backed surface cached.
   void SetSource(cairo_t* cr, int x, int y);
 
+  // Performs a mask operation, using this surface as the alpha channel.
+  void MaskSource(cairo_t* cr, int x, int y);
+
   // Raw access to the pixbuf. May be NULL. Used for a few gdk operations
   // regarding window shaping.
   GdkPixbuf* pixbuf() { return pixbuf_; }
 
  private:
+  // Makes sure |surface_| is a valid thing that lives on the X server,
+  // uploading it if necessary.
+  void EnsureSurfaceValid(cairo_t* cr);
+
   // The source pixbuf.
   GdkPixbuf* pixbuf_;
 

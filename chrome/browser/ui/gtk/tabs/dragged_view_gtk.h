@@ -129,7 +129,7 @@ class DraggedViewGtk : public ui::AnimationDelegate {
   // |surface| represents the tab only (not the render view).
   void SetContainerShapeMask();
 
-  void PaintTab(int index, cairo_t* cr, int widget_width);
+  void PaintTab(int index, GtkWidget* widget, cairo_t* cr, int widget_width);
 
   // expose-event handler that notifies when the tab needs to be redrawn.
   CHROMEGTK_CALLBACK_1(DraggedViewGtk, gboolean, OnExpose, GdkEventExpose*);

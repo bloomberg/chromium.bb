@@ -13,11 +13,19 @@ CairoCachedSurface::CairoCachedSurface() : pixbuf_(NULL), surface_(NULL) {
 }
 
 CairoCachedSurface::~CairoCachedSurface() {
-  if (surface_)
-    cairo_surface_destroy(surface_);
+  Reset();
+}
 
-  if (pixbuf_)
+void CairoCachedSurface::Reset() {
+  if (surface_) {
+    cairo_surface_destroy(surface_);
+    surface_ = NULL;
+  }
+
+  if (pixbuf_) {
     g_object_unref(pixbuf_);
+    pixbuf_ = NULL;
+  }
 }
 
 int CairoCachedSurface::Width() const {
@@ -47,6 +55,19 @@ void CairoCachedSurface::SetSource(cairo_t* cr, int x, int y) {
   DCHECK(pixbuf_);
   DCHECK(cr);
 
+  EnsureSurfaceValid(cr);
+  cairo_set_source_surface(cr, surface_, x, y);
+}
+
+void CairoCachedSurface::MaskSource(cairo_t* cr, int x, int y) {
+  DCHECK(pixbuf_);
+  DCHECK(cr);
+
+  EnsureSurfaceValid(cr);
+  cairo_mask_surface(cr, surface_, x, y);
+}
+
+void CairoCachedSurface::EnsureSurfaceValid(cairo_t* cr) {
   if (!surface_) {
     // First time here since last UsePixbuf call. Generate the surface.
     cairo_surface_t* target = cairo_get_target(cr);
@@ -69,6 +90,4 @@ void CairoCachedSurface::SetSource(cairo_t* cr, int x, int y) {
     cairo_paint(copy_cr);
     cairo_destroy(copy_cr);
   }
-
-  cairo_set_source_surface(cr, surface_, x, y);
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ // Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_utils_gtk.h"
+#include "chrome/browser/ui/gtk/cairo_cached_surface.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
@@ -31,8 +32,11 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/favicon_size.h"
+#include "ui/gfx/gtk_util.h"
+#include "ui/gfx/pango_util.h"
 #include "ui/gfx/platform_font_pango.h"
 #include "ui/gfx/skbitmap_operations.h"
+#include "skia/ext/image_operations.h"
 
 #if !GTK_CHECK_VERSION(2, 22, 0)
 #define gtk_button_get_event_window(button) button->event_window
@@ -81,8 +85,6 @@ const int kMiniTitleChangeThrobDuration = 1000;
 const int kCloseButtonVertFuzz = 0;
 const int kCloseButtonHorzFuzz = 5;
 
-SkBitmap* crashed_favicon = NULL;
-
 // Gets the bounds of |widget| relative to |parent|.
 gfx::Rect GetWidgetBoundsRelativeToParent(GtkWidget* parent,
                                           GtkWidget* widget) {
@@ -96,10 +98,11 @@ gfx::Rect GetWidgetBoundsRelativeToParent(GtkWidget* parent,
 }  // namespace
 
 TabRendererGtk::LoadingAnimation::Data::Data(
-    ThemeService* theme_service) {
+    GtkThemeService* theme_service) {
   // The loading animation image is a strip of states. Each state must be
   // square, so the height must divide the width evenly.
-  loading_animation_frames = theme_service->GetBitmapNamed(IDR_THROBBER);
+  SkBitmap* loading_animation_frames =
+      theme_service->GetBitmapNamed(IDR_THROBBER);
   DCHECK(loading_animation_frames);
   DCHECK_EQ(loading_animation_frames->width() %
             loading_animation_frames->height(), 0);
@@ -107,7 +110,7 @@ TabRendererGtk::LoadingAnimation::Data::Data(
       loading_animation_frames->width() /
       loading_animation_frames->height();
 
-  waiting_animation_frames =
+  SkBitmap* waiting_animation_frames =
       theme_service->GetBitmapNamed(IDR_THROBBER_WAITING);
   DCHECK(waiting_animation_frames);
   DCHECK_EQ(waiting_animation_frames->width() %
@@ -129,17 +132,15 @@ TabRendererGtk::LoadingAnimation::Data::Data(
 
 TabRendererGtk::LoadingAnimation::Data::Data(
     int loading, int waiting, int waiting_to_loading)
-    : waiting_animation_frames(NULL),
-      loading_animation_frames(NULL),
-      loading_animation_frame_count(loading),
+    : loading_animation_frame_count(loading),
       waiting_animation_frame_count(waiting),
       waiting_to_loading_frame_count_ratio(waiting_to_loading) {
 }
 
 bool TabRendererGtk::initialized_ = false;
-TabRendererGtk::TabImage TabRendererGtk::tab_active_ = {0};
-TabRendererGtk::TabImage TabRendererGtk::tab_inactive_ = {0};
-TabRendererGtk::TabImage TabRendererGtk::tab_alpha_ = {0};
+int TabRendererGtk::tab_active_l_width_ = 0;
+int TabRendererGtk::tab_active_l_height_ = 0;
+int TabRendererGtk::tab_inactive_l_height_ = 0;
 gfx::Font* TabRendererGtk::title_font_ = NULL;
 int TabRendererGtk::title_font_height_ = 0;
 int TabRendererGtk::close_button_width_ = 0;
@@ -151,7 +152,7 @@ SkColor TabRendererGtk::unselected_title_color_ = SkColorSetRGB(64, 64, 64);
 // TabRendererGtk::LoadingAnimation, public:
 //
 TabRendererGtk::LoadingAnimation::LoadingAnimation(
-    ThemeService* theme_service)
+    GtkThemeService* theme_service)
     : data_(new Data(theme_service)),
       theme_service_(theme_service),
       animation_state_(ANIMATION_NONE),
@@ -208,6 +209,20 @@ void TabRendererGtk::LoadingAnimation::Observe(
   data_.reset(new Data(theme_service_));
 }
 
+TabRendererGtk::TabData::TabData()
+    : is_default_favicon(false),
+      loading(false),
+      crashed(false),
+      incognito(false),
+      show_icon(true),
+      mini(false),
+      blocked(false),
+      animating_mini_change(false),
+      app(false) {
+}
+
+TabRendererGtk::TabData::~TabData() {}
+
 ////////////////////////////////////////////////////////////////////////////////
 // FaviconCrashAnimation
 //
@@ -250,7 +265,7 @@ class TabRendererGtk::FaviconCrashAnimation : public ui::LinearAnimation,
 ////////////////////////////////////////////////////////////////////////////////
 // TabRendererGtk, public:
 
-TabRendererGtk::TabRendererGtk(ThemeService* theme_service)
+TabRendererGtk::TabRendererGtk(GtkThemeService* theme_service)
     : showing_icon_(false),
       showing_close_button_(false),
       favicon_hiding_offset_(0),
@@ -274,17 +289,10 @@ TabRendererGtk::TabRendererGtk(ThemeService* theme_service)
 
   hover_animation_.reset(new ui::SlideAnimation(this));
   hover_animation_->SetSlideDuration(kHoverDurationMs);
-
-  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
-                 content::Source<ThemeService>(theme_service_));
 }
 
 TabRendererGtk::~TabRendererGtk() {
   tab_.Destroy();
-  for (BitmapCache::iterator it = cached_bitmaps_.begin();
-       it != cached_bitmaps_.end(); ++it) {
-    delete it->second.bitmap;
-  }
 }
 
 void TabRendererGtk::UpdateData(TabContents* contents,
@@ -302,12 +310,59 @@ void TabRendererGtk::UpdateData(TabContents* contents,
     SkBitmap* app_icon =
         TabContentsWrapper::GetCurrentWrapperForContents(contents)->
             extension_tab_helper()->GetExtensionAppIcon();
-    if (app_icon)
+    if (app_icon) {
       data_.favicon = *app_icon;
-    else
+    } else {
       data_.favicon = wrapper->favicon_tab_helper()->GetFavicon();
+    }
 
     data_.app = app;
+
+    // Make a cairo cached version of the favicon.
+    if (!data_.favicon.isNull()) {
+      // Instead of resizing the icon during each frame, create our resized
+      // icon resource now, send it to the xserver and use that each frame
+      // instead.
+
+      // For source images smaller than the favicon square, scale them as if
+      // they were padded to fit the favicon square, so we don't blow up tiny
+      // falcons into larger or nonproportional results.
+      int src_w = data_.favicon.width();
+      int src_h = data_.favicon.height();
+      float float_src_w = static_cast<float>(src_w);
+      float float_src_h = static_cast<float>(src_h);
+      float scalable_w, scalable_h;
+      if (src_w <= gfx::kFaviconSize && src_h <= gfx::kFaviconSize) {
+        scalable_w = scalable_h = gfx::kFaviconSize;
+      } else {
+        scalable_w = float_src_w;
+        scalable_h = float_src_h;
+      }
+
+      // Scale proportionately.
+      float float_size = gfx::kFaviconSize;
+      float scale = std::min(float_size / scalable_w,
+                             float_size / scalable_h);
+      int dest_w = static_cast<int>(float_src_w * scale);
+      int dest_h = static_cast<int>(float_src_h * scale);
+
+      GdkPixbuf* pixbuf;
+      if (dest_w == src_w && dest_h == src_h) {
+        pixbuf = gfx::GdkPixbufFromSkBitmap(&data_.favicon);
+      } else {
+        SkBitmap resized_icon = skia::ImageOperations::Resize(
+            data_.favicon,
+            skia::ImageOperations::RESIZE_BETTER,
+            dest_w, dest_h);
+        pixbuf = gfx::GdkPixbufFromSkBitmap(&resized_icon);
+      }
+
+      data_.cairo_favicon.UsePixbuf(pixbuf);
+      g_object_unref(pixbuf);
+    } else {
+      data_.cairo_favicon.Reset();
+    }
+
     // This is kind of a hacky way to determine whether our icon is the default
     // favicon. But the plumbing that would be necessary to do it right would
     // be a good bit of work and would sully code for other platforms which
@@ -377,63 +432,66 @@ bool TabRendererGtk::ValidateLoadingAnimation(AnimationState animation_state) {
   return loading_animation_.ValidateLoadingAnimation(animation_state);
 }
 
-void TabRendererGtk::PaintFaviconArea(GdkEventExpose* event) {
+void TabRendererGtk::PaintFaviconArea(GtkWidget* widget, cairo_t* cr) {
   DCHECK(ShouldShowIcon());
 
-  // The paint area is the favicon bounds, but we're painting into the gdk
-  // window belonging to the tabstrip.  So the coordinates are relative to the
-  // top left of the tab strip.
-  event->area.x = x() + favicon_bounds_.x();
-  event->area.y = y() + favicon_bounds_.y();
-  event->area.width = favicon_bounds_.width();
-  event->area.height = favicon_bounds_.height();
-  gfx::CanvasSkiaPaint canvas(event, false);
+  cairo_rectangle(cr,
+                  x() + favicon_bounds_.x(),
+                  y() + favicon_bounds_.y(),
+                  favicon_bounds_.width(),
+                  favicon_bounds_.height());
+  cairo_clip(cr);
 
-  // The actual paint methods expect 0, 0 to be the tab top left (see
-  // PaintTab).
-  canvas.Translate(bounds_.origin());
+  // The tab is rendered into a windowless widget whose offset is at the
+  // coordinate event->area.  Translate by these offsets so we can render at
+  // (0,0) to match Windows' rendering metrics.
+  cairo_matrix_t cairo_matrix;
+  cairo_matrix_init_translate(&cairo_matrix, x(), y());
+  cairo_set_matrix(cr, &cairo_matrix);
 
-  // Paint the background behind the favicon.
+  // Which background should we be painting?
   int theme_id;
   int offset_y = 0;
   if (IsActive()) {
     theme_id = IDR_THEME_TOOLBAR;
   } else {
-    if (!data_.incognito) {
-      theme_id = IDR_THEME_TAB_BACKGROUND;
-    } else {
-      theme_id = IDR_THEME_TAB_BACKGROUND_INCOGNITO;
-    }
+    theme_id = data_.incognito ? IDR_THEME_TAB_BACKGROUND_INCOGNITO :
+               IDR_THEME_TAB_BACKGROUND;
+
     if (!theme_service_->HasCustomImage(theme_id))
       offset_y = background_offset_y_;
   }
-  SkBitmap* tab_bg = theme_service_->GetBitmapNamed(theme_id);
-  canvas.TileImageInt(*tab_bg,
-      x() + favicon_bounds_.x(), offset_y + favicon_bounds_.y(),
-      favicon_bounds_.x(), favicon_bounds_.y(),
-      favicon_bounds_.width(), favicon_bounds_.height());
+
+  // Paint the background behind the favicon.
+  CairoCachedSurface* tab_bg =
+      theme_service_->GetSurfaceNamed(theme_id, widget);
+  tab_bg->SetSource(cr, -x(), -offset_y);
+  cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
+  cairo_rectangle(cr,
+                  favicon_bounds_.x(), favicon_bounds_.y(),
+                  favicon_bounds_.width(), favicon_bounds_.height());
+  cairo_fill(cr);
 
   if (!IsActive()) {
     double throb_value = GetThrobValue();
     if (throb_value > 0) {
-      SkRect bounds;
-      bounds.set(favicon_bounds_.x(), favicon_bounds_.y(),
-          favicon_bounds_.right(), favicon_bounds_.bottom());
-      canvas.sk_canvas()->saveLayerAlpha(
-          &bounds, static_cast<int>(throb_value * 0xff),
-          SkCanvas::kARGB_ClipLayer_SaveFlag);
-      canvas.sk_canvas()->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
-      SkBitmap* active_bg = theme_service_->GetBitmapNamed(IDR_THEME_TOOLBAR);
-      canvas.TileImageInt(*active_bg,
-          x() + favicon_bounds_.x(), favicon_bounds_.y(),
-          favicon_bounds_.x(), favicon_bounds_.y(),
-          favicon_bounds_.width(), favicon_bounds_.height());
-      canvas.sk_canvas()->restore();
+      cairo_push_group(cr);
+      CairoCachedSurface* active_bg = theme_service_->GetSurfaceNamed(
+          IDR_THEME_TOOLBAR, widget);
+      active_bg->SetSource(cr, -x(), 0);
+      cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
+
+      cairo_rectangle(cr,
+                      favicon_bounds_.x(), favicon_bounds_.y(),
+                      favicon_bounds_.width(), favicon_bounds_.height());
+      cairo_fill(cr);
+
+      cairo_pop_group_to_source(cr);
+      cairo_paint_with_alpha(cr, throb_value);
     }
   }
 
-  // Now paint the icon.
-  PaintIcon(&canvas);
+  PaintIcon(widget, cr);
 }
 
 bool TabRendererGtk::ShouldShowIcon() const {
@@ -457,7 +515,7 @@ gfx::Size TabRendererGtk::GetMinimumUnselectedSize() {
   minimum_size.set_width(kLeftPadding + kRightPadding);
   // Since we use bitmap images, the real minimum height of the image is
   // defined most accurately by the height of the end cap images.
-  minimum_size.set_height(tab_active_.image_l->height() - kToolbarOverlap);
+  minimum_size.set_height(tab_active_l_height_ - kToolbarOverlap);
   return minimum_size;
 }
 
@@ -486,29 +544,6 @@ int TabRendererGtk::GetContentHeight() {
   // the title text and the close button graphic.
   int content_height = std::max(gfx::kFaviconSize, title_font_height_);
   return std::max(content_height, close_button_height_);
-}
-
-// static
-void TabRendererGtk::LoadTabImages() {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-
-  tab_alpha_.image_l = rb.GetBitmapNamed(IDR_TAB_ALPHA_LEFT);
-  tab_alpha_.image_r = rb.GetBitmapNamed(IDR_TAB_ALPHA_RIGHT);
-
-  tab_active_.image_l = rb.GetBitmapNamed(IDR_TAB_ACTIVE_LEFT);
-  tab_active_.image_c = rb.GetBitmapNamed(IDR_TAB_ACTIVE_CENTER);
-  tab_active_.image_r = rb.GetBitmapNamed(IDR_TAB_ACTIVE_RIGHT);
-  tab_active_.l_width = tab_active_.image_l->width();
-  tab_active_.r_width = tab_active_.image_r->width();
-
-  tab_inactive_.image_l = rb.GetBitmapNamed(IDR_TAB_INACTIVE_LEFT);
-  tab_inactive_.image_c = rb.GetBitmapNamed(IDR_TAB_INACTIVE_CENTER);
-  tab_inactive_.image_r = rb.GetBitmapNamed(IDR_TAB_INACTIVE_RIGHT);
-  tab_inactive_.l_width = tab_inactive_.image_l->width();
-  tab_inactive_.r_width = tab_inactive_.image_r->width();
-
-  close_button_width_ = rb.GetBitmapNamed(IDR_TAB_CLOSE)->width();
-  close_button_height_ = rb.GetBitmapNamed(IDR_TAB_CLOSE)->height();
 }
 
 // static
@@ -553,20 +588,6 @@ void TabRendererGtk::StopMiniTabTitleAnimation() {
 void TabRendererGtk::SetBounds(const gfx::Rect& bounds) {
   requisition_ = bounds;
   gtk_widget_set_size_request(tab_.get(), bounds.width(), bounds.height());
-}
-
-void TabRendererGtk::Observe(int type,
-                             const content::NotificationSource& source,
-                             const content::NotificationDetails& details) {
-  DCHECK(type == chrome::NOTIFICATION_BROWSER_THEME_CHANGED);
-
-  // Clear our cache when we receive a theme change notification because it
-  // contains cached bitmaps based off the previous theme.
-  for (BitmapCache::iterator it = cached_bitmaps_.begin();
-       it != cached_bitmaps_.end(); ++it) {
-    delete it->second.bitmap;
-  }
-  cached_bitmaps_.clear();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -630,7 +651,7 @@ void TabRendererGtk::ResetCrashedFavicon() {
   should_display_crashed_favicon_ = false;
 }
 
-void TabRendererGtk::Paint(gfx::Canvas* canvas) {
+void TabRendererGtk::Paint(GtkWidget* widget, cairo_t* cr) {
   // Don't paint if we're narrower than we can render correctly. (This should
   // only happen during animations).
   if (width() < GetMinimumUnselectedSize().width() && !mini())
@@ -643,20 +664,28 @@ void TabRendererGtk::Paint(gfx::Canvas* canvas) {
       show_close_button != showing_close_button_)
     Layout();
 
-  PaintTabBackground(canvas);
+  PaintTabBackground(widget, cr);
 
   if (!mini() || width() > kMiniTabRendererAsNormalTabWidth)
-    PaintTitle(canvas);
+    PaintTitle(widget, cr);
 
   if (show_icon)
-    PaintIcon(canvas);
+    PaintIcon(widget, cr);
 }
 
-cairo_surface_t* TabRendererGtk::PaintToSurface() {
-  gfx::CanvasSkia canvas(width(), height(), false);
-  Paint(&canvas);
-  return cairo_surface_reference(cairo_get_target(
-      skia::BeginPlatformPaint(canvas.sk_canvas())));
+cairo_surface_t* TabRendererGtk::PaintToSurface(GtkWidget* widget,
+                                                cairo_t* cr) {
+  cairo_surface_t* target = cairo_get_target(cr);
+  cairo_surface_t* out_surface = cairo_surface_create_similar(
+      target,
+      CAIRO_CONTENT_COLOR_ALPHA,
+      width(), height());
+
+  cairo_t* out_cr = cairo_create(out_surface);
+  Paint(widget, out_cr);
+  cairo_destroy(out_cr);
+
+  return out_surface;
 }
 
 void TabRendererGtk::SchedulePaint() {
@@ -768,50 +797,29 @@ void TabRendererGtk::MoveCloseButtonWidget() {
   }
 }
 
-SkBitmap* TabRendererGtk::GetMaskedBitmap(const SkBitmap* mask,
-    const SkBitmap* background, int bg_offset_x, int bg_offset_y) {
-  // We store a bitmap for each mask + background pair (4 total bitmaps).  We
-  // replace the cached image if the tab has moved relative to the background.
-  BitmapCache::iterator it = cached_bitmaps_.find(std::make_pair(mask,
-                                                                 background));
-  if (it != cached_bitmaps_.end()) {
-    if (it->second.bg_offset_x == bg_offset_x &&
-        it->second.bg_offset_y == bg_offset_y) {
-      return it->second.bitmap;
-    }
-    // The background offset changed so we should re-render with the new
-    // offsets.
-    delete it->second.bitmap;
-  }
-  SkBitmap image = SkBitmapOperations::CreateTiledBitmap(
-      *background, bg_offset_x, bg_offset_y, mask->width(),
-      height() + kToolbarOverlap);
-  CachedBitmap bitmap = {
-    bg_offset_x,
-    bg_offset_y,
-    new SkBitmap(SkBitmapOperations::CreateMaskedBitmap(image, *mask))
-  };
-  cached_bitmaps_[std::make_pair(mask, background)] = bitmap;
-  return bitmap.bitmap;
-}
-
-void TabRendererGtk::PaintTab(GdkEventExpose* event) {
-  gfx::CanvasSkiaPaint canvas(event, false);
-  if (canvas.is_empty())
-    return;
+void TabRendererGtk::PaintTab(GtkWidget* widget, GdkEventExpose* event) {
+  cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(widget->window));
+  gdk_cairo_rectangle(cr, &event->area);
+  cairo_clip(cr);
 
   // The tab is rendered into a windowless widget whose offset is at the
   // coordinate event->area.  Translate by these offsets so we can render at
   // (0,0) to match Windows' rendering metrics.
-  canvas.Translate(gfx::Rect(event->area).origin());
+  cairo_matrix_t cairo_matrix;
+  cairo_matrix_init_translate(&cairo_matrix, event->area.x, event->area.y);
+  cairo_set_matrix(cr, &cairo_matrix);
 
   // Save the original x offset so we can position background images properly.
   background_offset_x_ = event->area.x;
 
-  Paint(&canvas);
+  Paint(widget, cr);
+  cairo_destroy(cr);
 }
 
-void TabRendererGtk::PaintTitle(gfx::Canvas* canvas) {
+void TabRendererGtk::PaintTitle(GtkWidget* widget, cairo_t* cr) {
+  if (title_bounds_.IsEmpty())
+    return;
+
   // Paint the Title.
   string16 title = data_.title;
   if (title.empty()) {
@@ -824,166 +832,171 @@ void TabRendererGtk::PaintTitle(gfx::Canvas* canvas) {
 
   SkColor title_color = IsSelected() ? selected_title_color_
                                      : unselected_title_color_;
-  canvas->DrawStringInt(title, *title_font_, title_color,
-                        title_bounds_.x(), title_bounds_.y(),
-                        title_bounds_.width(), title_bounds_.height());
+
+  DrawTextOntoCairoSurface(cr,
+                           title,
+                           *title_font_,
+                           title_bounds_,
+                           title_bounds_,
+                           title_color,
+                           base::i18n::IsRTL() ? gfx::Canvas::TEXT_ALIGN_RIGHT :
+                           gfx::Canvas::TEXT_ALIGN_LEFT);
 }
 
-void TabRendererGtk::PaintIcon(gfx::Canvas* canvas) {
+void TabRendererGtk::PaintIcon(GtkWidget* widget, cairo_t* cr) {
   if (loading_animation_.animation_state() != ANIMATION_NONE) {
-    PaintLoadingAnimation(canvas);
+    PaintLoadingAnimation(widget, cr);
   } else {
-    canvas->Save();
-    canvas->ClipRect(gfx::Rect(0, 0, width(), height() - kFaviconTitleSpacing));
     if (should_display_crashed_favicon_) {
-      canvas->DrawBitmapInt(*crashed_favicon, 0, 0,
-                            crashed_favicon->width(),
-                            crashed_favicon->height(),
-                            favicon_bounds_.x(),
-                            favicon_bounds_.y() + favicon_hiding_offset_,
-                            gfx::kFaviconSize, gfx::kFaviconSize,
-                            true);
+      theme_service_->GetSurfaceNamed(IDR_SAD_FAVICON, widget)->SetSource(
+          cr, favicon_bounds_.x(),
+          favicon_bounds_.y() + favicon_hiding_offset_);
+      cairo_paint(cr);
     } else {
       if (!data_.favicon.isNull()) {
         if (data_.is_default_favicon && theme_service_->UsingNativeTheme()) {
           GdkPixbuf* favicon = GtkThemeService::GetDefaultFavicon(true);
-          canvas->AsCanvasSkia()->DrawGdkPixbuf(
-              favicon, favicon_bounds_.x(),
-              favicon_bounds_.y() + favicon_hiding_offset_);
-        } else {
-          // If the favicon is an app icon, it is allowed to be drawn slightly
-          // larger than the standard favicon.
-          int faviconHeightOffset = data_.app ? -2 : 0;
-          int faviconWidthDelta = data_.app ?
-              data_.favicon.width() - gfx::kFaviconSize : 0;
-          int faviconHeightDelta = data_.app ?
-              data_.favicon.height() - gfx::kFaviconSize : 0;
 
-          // TODO(pkasting): Use code in tab_icon_view.cc:PaintIcon() (or switch
-          // to using that class to render the favicon).
-          canvas->DrawBitmapInt(data_.favicon, 0, 0,
-                                data_.favicon.width(),
-                                data_.favicon.height(),
-                                favicon_bounds_.x() - faviconWidthDelta/2,
-                                favicon_bounds_.y() + faviconHeightOffset
-                                    - faviconHeightDelta/2
-                                    + favicon_hiding_offset_,
-                                gfx::kFaviconSize + faviconWidthDelta,
-                                gfx::kFaviconSize + faviconHeightDelta,
-                                true);
+          // TODO(erg): Get GtkThemeService to hand us a
+          // CairoCachedSurface. Then we can simplify all of this.
+          gdk_cairo_set_source_pixbuf(
+              cr, favicon, favicon_bounds_.x(),
+              favicon_bounds_.y() + favicon_hiding_offset_);
+          cairo_paint(cr);
+        } else if (data_.cairo_favicon.valid()) {
+          // TODO(erg): We should research whether we still need to draw app
+          // icons larger. We don't appear to be getting larger icons.
+          data_.cairo_favicon.SetSource(
+              cr,
+              favicon_bounds_.x(),
+              favicon_bounds_.y() + favicon_hiding_offset_);
+          cairo_paint(cr);
         }
       }
     }
-    canvas->Restore();
   }
 }
 
-void TabRendererGtk::PaintTabBackground(gfx::Canvas* canvas) {
+void TabRendererGtk::PaintTabBackground(GtkWidget* widget, cairo_t* cr) {
   if (IsActive()) {
-    PaintActiveTabBackground(canvas);
+    PaintActiveTabBackground(widget, cr);
   } else {
-    PaintInactiveTabBackground(canvas);
+    PaintInactiveTabBackground(widget, cr);
 
     double throb_value = GetThrobValue();
     if (throb_value > 0) {
-      canvas->SaveLayerAlpha(static_cast<int>(throb_value * 0xff),
-                             gfx::Rect(width(), height()));
-      canvas->GetSkCanvas()->drawARGB(0, 255, 255, 255,
-                                      SkXfermode::kClear_Mode);
-      PaintActiveTabBackground(canvas);
-      canvas->Restore();
+      cairo_push_group(cr);
+      PaintActiveTabBackground(widget, cr);
+      cairo_pop_group_to_source(cr);
+      cairo_paint_with_alpha(cr, throb_value);
     }
   }
 }
 
-void TabRendererGtk::PaintInactiveTabBackground(gfx::Canvas* canvas) {
+void TabRendererGtk::DrawTabBackground(
+    cairo_t* cr,
+    GtkWidget* widget,
+    CairoCachedSurface* tab_bg,
+    int offset_x,
+    int offset_y) {
+  tab_bg->SetSource(cr, -offset_x, -offset_y);
+  cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
 
-  // The tab image needs to be lined up with the background image
-  // so that it feels partially transparent.
-  int offset_x = background_offset_x_;
+  // Draw left edge
+  CairoCachedSurface* tab_l_mask =
+      theme_service_->GetSurfaceNamed(IDR_TAB_ALPHA_LEFT, widget);
+  tab_l_mask->MaskSource(cr, 0, 0);
 
-  int tab_id = data_.incognito ?
+  // Draw center
+  cairo_rectangle(cr,
+                  tab_active_l_width_, kDropShadowOffset,
+                  width() - (2 * tab_active_l_width_),
+                  tab_inactive_l_height_);
+  cairo_fill(cr);
+
+  // Draw right edge
+  CairoCachedSurface* tab_r_mask =
+      theme_service_->GetSurfaceNamed(IDR_TAB_ALPHA_RIGHT, widget);
+  tab_r_mask->MaskSource(cr, width() - tab_active_l_width_, 0);
+}
+
+void TabRendererGtk::DrawTabShadow(
+    cairo_t* cr,
+    GtkWidget* widget,
+    int left_idr,
+    int center_idr,
+    int right_idr) {
+  // Draw left drop shadow
+  CairoCachedSurface* active_image_l =
+      theme_service_->GetSurfaceNamed(left_idr, widget);
+  active_image_l->SetSource(cr, 0, 0);
+  cairo_paint(cr);
+
+  // Draw the center shadow
+  CairoCachedSurface* active_image_c =
+      theme_service_->GetSurfaceNamed(center_idr, widget);
+  active_image_c->SetSource(cr, 0, 0);
+  cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
+  cairo_rectangle(cr, tab_active_l_width_, 0,
+                  width() - (2 * tab_active_l_width_),
+                  height());
+  cairo_fill(cr);
+
+  // Draw right drop shadow
+  CairoCachedSurface* active_image_r =
+      theme_service_->GetSurfaceNamed(right_idr, widget);
+  active_image_r->SetSource(cr, width() - active_image_r->Width(), 0);
+  cairo_paint(cr);
+}
+
+void TabRendererGtk::PaintInactiveTabBackground(GtkWidget* widget,
+                                                     cairo_t* cr) {
+  int theme_id = data_.incognito ?
       IDR_THEME_TAB_BACKGROUND_INCOGNITO : IDR_THEME_TAB_BACKGROUND;
   if (IsSelected())
-    tab_id = IDR_THEME_TAB_BACKGROUND_V;
+    theme_id = IDR_THEME_TAB_BACKGROUND_V;
 
-  SkBitmap* tab_bg = theme_service_->GetBitmapNamed(tab_id);
+  CairoCachedSurface* tab_bg =
+      theme_service_->GetSurfaceNamed(theme_id, widget);
 
   // If the theme is providing a custom background image, then its top edge
   // should be at the top of the tab. Otherwise, we assume that the background
   // image is a composited foreground + frame image.
-  int offset_y = theme_service_->HasCustomImage(tab_id) ?
+  int offset_y = theme_service_->HasCustomImage(theme_id) ?
       0 : background_offset_y_;
 
-  // Draw left edge.
-  SkBitmap* theme_l = GetMaskedBitmap(tab_alpha_.image_l, tab_bg, offset_x,
-                                      offset_y);
-  canvas->DrawBitmapInt(*theme_l, 0, 0);
+  DrawTabBackground(cr, widget, tab_bg, background_offset_x_, offset_y);
 
-  // Draw right edge.
-  SkBitmap* theme_r = GetMaskedBitmap(tab_alpha_.image_r, tab_bg,
-      offset_x + width() - tab_active_.r_width, offset_y);
-
-  canvas->DrawBitmapInt(*theme_r, width() - theme_r->width(), 0);
-
-  // Draw center.
-  canvas->TileImageInt(*tab_bg,
-      offset_x + tab_active_.l_width, kDropShadowOffset + offset_y,
-      tab_active_.l_width, 2,
-      width() - tab_active_.l_width - tab_active_.r_width, height() - 2);
-
-  canvas->DrawBitmapInt(*tab_inactive_.image_l, 0, 0);
-  canvas->TileImageInt(*tab_inactive_.image_c, tab_inactive_.l_width, 0,
-      width() - tab_inactive_.l_width - tab_inactive_.r_width, height());
-  canvas->DrawBitmapInt(*tab_inactive_.image_r,
-      width() - tab_inactive_.r_width, 0);
+  DrawTabShadow(cr, widget, IDR_TAB_INACTIVE_LEFT, IDR_TAB_INACTIVE_CENTER,
+                IDR_TAB_INACTIVE_RIGHT);
 }
 
-void TabRendererGtk::PaintActiveTabBackground(gfx::Canvas* canvas) {
-  int offset_x = background_offset_x_;
+void TabRendererGtk::PaintActiveTabBackground(GtkWidget* widget,
+                                                   cairo_t* cr) {
+  CairoCachedSurface* tab_bg =
+      theme_service_->GetSurfaceNamed(IDR_THEME_TOOLBAR, widget);
 
-  SkBitmap* tab_bg = theme_service_->GetBitmapNamed(IDR_THEME_TOOLBAR);
-
-  // Draw left edge.
-  SkBitmap* theme_l = GetMaskedBitmap(tab_alpha_.image_l, tab_bg, offset_x, 0);
-  canvas->DrawBitmapInt(*theme_l, 0, 0);
-
-  // Draw right edge.
-  SkBitmap* theme_r = GetMaskedBitmap(tab_alpha_.image_r, tab_bg,
-      offset_x + width() - tab_active_.r_width, 0);
-  canvas->DrawBitmapInt(*theme_r, width() - tab_active_.r_width, 0);
-
-  // Draw center.
-  canvas->TileImageInt(*tab_bg,
-      offset_x + tab_active_.l_width, kDropShadowHeight,
-      tab_active_.l_width, kDropShadowHeight,
-      width() - tab_active_.l_width - tab_active_.r_width,
-      height() - kDropShadowHeight);
-
-  canvas->DrawBitmapInt(*tab_active_.image_l, 0, 0);
-  canvas->TileImageInt(*tab_active_.image_c, tab_active_.l_width, 0,
-      width() - tab_active_.l_width - tab_active_.r_width, height());
-  canvas->DrawBitmapInt(*tab_active_.image_r, width() - tab_active_.r_width, 0);
+  DrawTabBackground(cr, widget, tab_bg, background_offset_x_, 0);
+  DrawTabShadow(cr, widget, IDR_TAB_ACTIVE_LEFT, IDR_TAB_ACTIVE_CENTER,
+                IDR_TAB_ACTIVE_RIGHT);
 }
 
-void TabRendererGtk::PaintLoadingAnimation(gfx::Canvas* canvas) {
-  const SkBitmap* frames =
-      (loading_animation_.animation_state() == ANIMATION_WAITING) ?
-      loading_animation_.waiting_animation_frames() :
-      loading_animation_.loading_animation_frames();
-  const int image_size = frames->height();
+void TabRendererGtk::PaintLoadingAnimation(GtkWidget* widget,
+                                                cairo_t* cr) {
+  int id = loading_animation_.animation_state() == ANIMATION_WAITING ?
+           IDR_THROBBER_WAITING : IDR_THROBBER;
+  CairoCachedSurface* throbber = theme_service_->GetSurfaceNamed(id, widget);
+
+  const int image_size = throbber->Height();
   const int image_offset = loading_animation_.animation_frame() * image_size;
   DCHECK(image_size == favicon_bounds_.height());
   DCHECK(image_size == favicon_bounds_.width());
 
-  // NOTE: the clipping is a work around for 69528, it shouldn't be necessary.
-  canvas->Save();
-  canvas->ClipRect(gfx::Rect(favicon_bounds_.x(), favicon_bounds_.y(),
-                             image_size, image_size));
-  canvas->DrawBitmapInt(*frames, image_offset, 0, image_size, image_size,
-      favicon_bounds_.x(), favicon_bounds_.y(), image_size, image_size,
-      false);
-  canvas->Restore();
+  throbber->SetSource(cr, favicon_bounds_.x() - image_offset,
+                      favicon_bounds_.y());
+  cairo_rectangle(cr, favicon_bounds_.x(), favicon_bounds_.y(),
+                  image_size, image_size);
+  cairo_fill(cr);
 }
 
 int TabRendererGtk::IconCapacity() const {
@@ -1047,7 +1060,7 @@ gboolean TabRendererGtk::OnCloseButtonMouseRelease(GtkWidget* widget,
 
 gboolean TabRendererGtk::OnExposeEvent(GtkWidget* widget,
                                        GdkEventExpose* event) {
-  PaintTab(event);
+  PaintTab(widget, event);
   gtk_container_propagate_expose(GTK_CONTAINER(tab_.get()),
                                  close_button_->widget(), event);
   return TRUE;
@@ -1086,14 +1099,21 @@ void TabRendererGtk::InitResources() {
   if (initialized_)
     return;
 
-  LoadTabImages();
-
+  // Grab the pixel sizes of our masking images.
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  SkBitmap* tab_active_l = rb.GetBitmapNamed(IDR_TAB_ACTIVE_LEFT);
+  tab_active_l_width_ = tab_active_l->width();
+  tab_active_l_height_ = tab_active_l->height();
+
+  SkBitmap* tab_inactive_l = rb.GetBitmapNamed(IDR_TAB_INACTIVE_LEFT);
+  tab_inactive_l_height_ = tab_inactive_l->height();
+
+  close_button_width_ = rb.GetBitmapNamed(IDR_TAB_CLOSE)->width();
+  close_button_height_ = rb.GetBitmapNamed(IDR_TAB_CLOSE)->height();
+
   const gfx::Font& base_font = rb.GetFont(ResourceBundle::BaseFont);
   title_font_ = new gfx::Font(base_font.GetFontName(), kFontPixelSize);
   title_font_height_ = title_font_->GetHeight();
-
-  crashed_favicon = rb.GetBitmapNamed(IDR_SAD_FAVICON);
 
   initialized_ = true;
 }

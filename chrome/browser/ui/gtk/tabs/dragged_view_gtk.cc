@@ -15,6 +15,7 @@
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/tabs/drag_data.h"
 #include "chrome/browser/ui/gtk/tabs/tab_renderer_gtk.h"
@@ -63,7 +64,7 @@ DraggedViewGtk::DraggedViewGtk(DragData* drag_data,
       close_animation_(this) {
   std::vector<TabContents*> data_sources(drag_data_->GetDraggedTabsContents());
   for (size_t i = 0; i < data_sources.size(); i++) {
-    renderers_.push_back(new TabRendererGtk(ThemeServiceFactory::GetForProfile(
+    renderers_.push_back(new TabRendererGtk(GtkThemeService::GetFrom(
         Profile::FromBrowserContext(data_sources[i]->browser_context()))));
   }
 
@@ -342,7 +343,7 @@ void DraggedViewGtk::SetContainerShapeMask() {
       cairo_set_operator(cairo_context, CAIRO_OPERATOR_SOURCE);
     else
       cairo_set_operator(cairo_context, CAIRO_OPERATOR_OVER);
-    PaintTab(i, cairo_context, container_->allocation.width);
+    PaintTab(i, container_, cairo_context, container_->allocation.width);
   }
 
   if (!attached_) {
@@ -422,10 +423,11 @@ gboolean DraggedViewGtk::OnExpose(GtkWidget* widget, GdkEventExpose* event) {
   for (int i = renderers_.size() - 1; i >= 0; i--) {
     if (i == drag_data_->source_tab_index())
       continue;
-    PaintTab(i, cr, widget->allocation.width);
+    PaintTab(i, widget, cr, widget->allocation.width);
   }
   // Painting the active tab last, so that it appears on top.
-  PaintTab(drag_data_->source_tab_index(), cr, widget->allocation.width);
+  PaintTab(drag_data_->source_tab_index(), widget, cr,
+           widget->allocation.width);
 
   cairo_destroy(cr);
 
@@ -433,9 +435,10 @@ gboolean DraggedViewGtk::OnExpose(GtkWidget* widget, GdkEventExpose* event) {
   return TRUE;
 }
 
-void DraggedViewGtk::PaintTab(int index, cairo_t* cr, int widget_width) {
+void DraggedViewGtk::PaintTab(int index, GtkWidget* widget, cairo_t* cr,
+                              int widget_width) {
   renderers_[index]->set_mini(drag_data_->get(index)->mini_);
-  cairo_surface_t* surface = renderers_[index]->PaintToSurface();
+  cairo_surface_t* surface = renderers_[index]->PaintToSurface(widget, cr);
 
   int paint_at = 0;
   if (!base::i18n::IsRTL()) {

@@ -12,6 +12,8 @@
 #include "base/utf_string_conversions.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/platform_font_pango.h"
+#include "ui/gfx/rect.h"
 
 #if !defined(USE_WAYLAND) && defined(TOOLKIT_USES_GTK)
 #include <gtk/gtk.h>
@@ -26,6 +28,13 @@ namespace {
 
 // Marker for accelerators in the text.
 const gunichar kAcceleratorChar = '&';
+
+// Multiply by the text height to determine how much text should be faded
+// when elliding.
+const double kFadeWidthFactor = 1.5;
+
+// End state of the elliding fade.
+const double kFadeFinalAlpha = 0.15;
 
 // Return |cairo_font_options|. If needed, allocate and update it based on
 // GtkSettings.
@@ -106,6 +115,37 @@ cairo_font_options_t* GetCairoFontOptions() {
 }  // namespace
 
 namespace gfx {
+
+void DrawTextOntoCairoSurface(cairo_t* cr,
+                              const string16& text,
+                              const gfx::Font& font,
+                              const gfx::Rect& bounds,
+                              const gfx::Rect& clip,
+                              const SkColor& text_color,
+                              int flags) {
+  PangoLayout* layout = pango_cairo_create_layout(cr);
+  base::i18n::TextDirection text_direction =
+      base::i18n::GetFirstStrongCharacterDirection(text);
+  Rect text_rect(bounds.x(), bounds.y(), 0, 0);
+  DCHECK(!bounds.IsEmpty());
+
+  gfx::SetupPangoLayout(
+      layout, text, font, bounds.width(), text_direction, flags);
+
+  pango_layout_set_height(layout, bounds.height() * PANGO_SCALE);
+
+  cairo_save(cr);
+  cairo_rectangle(cr, clip.x(), clip.y(), clip.width(), clip.height());
+  cairo_clip(cr);
+
+  AdjustTextRectBasedOnLayout(layout, bounds, flags, &text_rect);
+
+  DrawPangoLayout(cr, layout, font, bounds, text_rect,
+                  text_color, text_direction, flags);
+
+  cairo_restore(cr);
+  g_object_unref(layout);
+}
 
 // Pass a width greater than 0 to force wrapping and eliding.
 void SetupPangoLayout(PangoLayout* layout,
@@ -191,6 +231,98 @@ void SetupPangoLayout(PangoLayout* layout,
 
     pango_layout_set_text(layout, utf8.data(), utf8.size());
   }
+}
+
+void AdjustTextRectBasedOnLayout(PangoLayout* layout,
+                                 const gfx::Rect& bounds,
+                                 int flags,
+                                 gfx::Rect* text_rect) {
+  int text_width, text_height;
+  pango_layout_get_pixel_size(layout, &text_width, &text_height);
+  text_rect->set_width(text_width);
+  text_rect->set_height(text_height);
+
+  if (flags & gfx::Canvas::TEXT_VALIGN_TOP) {
+    // Cairo should draw from the top left corner already.
+  } else if (flags & gfx::Canvas::TEXT_VALIGN_BOTTOM) {
+    text_rect->set_y(text_rect->y() + bounds.height() - text_rect->height());
+  } else {
+    // Vertically centered.
+    text_rect->set_y(text_rect->y() +
+                     ((bounds.height() - text_rect->height()) / 2));
+  }
+}
+
+void DrawPangoLayout(cairo_t* cr,
+                     PangoLayout* layout,
+                     const Font& font,
+                     const gfx::Rect& bounds,
+                     const gfx::Rect& text_rect,
+                     const SkColor& text_color,
+                     base::i18n::TextDirection text_direction,
+                     int flags) {
+  double r = SkColorGetR(text_color) / 255.0,
+         g = SkColorGetG(text_color) / 255.0,
+         b = SkColorGetB(text_color) / 255.0,
+         a = SkColorGetA(text_color) / 255.0;
+
+  cairo_pattern_t* pattern = NULL;
+
+  cairo_save(cr);
+
+  // If we're not eliding, use a fixed color.
+  // Otherwise, create a gradient pattern to use as the source.
+  if (text_direction == base::i18n::RIGHT_TO_LEFT ||
+      (flags & gfx::Canvas::NO_ELLIPSIS) ||
+      text_rect.width() <= bounds.width()) {
+    cairo_set_source_rgba(cr, r, g, b, a);
+  } else {
+    // Fade to semi-transparent to elide.
+    int fade_width = static_cast<double>(text_rect.height()) * kFadeWidthFactor;
+    if (fade_width > bounds.width() / 2) {
+      // Don't fade more than half the text.
+      fade_width = bounds.width() / 2;
+    }
+    int fade_x = bounds.x() + bounds.width() - fade_width;
+
+    pattern = cairo_pattern_create_linear(
+        fade_x, bounds.y(), bounds.x() + bounds.width(), bounds.y());
+    cairo_pattern_add_color_stop_rgba(pattern, 0, r, g, b, a);
+    cairo_pattern_add_color_stop_rgba(pattern, 1, r, g, b, kFadeFinalAlpha);
+    cairo_set_source(cr, pattern);
+  }
+
+  cairo_move_to(cr, text_rect.x(), text_rect.y());
+  pango_cairo_show_layout(cr, layout);
+
+  if (font.GetStyle() & gfx::Font::UNDERLINED) {
+    gfx::PlatformFontPango* platform_font =
+        static_cast<gfx::PlatformFontPango*>(font.platform_font());
+    DrawPangoTextUnderline(cr, platform_font, 0.0, text_rect);
+  }
+
+  if (pattern)
+    cairo_pattern_destroy(pattern);
+
+  cairo_restore(cr);
+}
+
+void DrawPangoTextUnderline(cairo_t* cr,
+                            gfx::PlatformFontPango* platform_font,
+                            double extra_edge_width,
+                            const Rect& text_rect) {
+  const double underline_y =
+      static_cast<double>(text_rect.y()) + text_rect.height() +
+      platform_font->underline_position();
+  cairo_set_line_width(
+      cr, platform_font->underline_thickness() + 2 * extra_edge_width);
+  cairo_move_to(cr,
+                text_rect.x() - extra_edge_width,
+                underline_y);
+  cairo_line_to(cr,
+                text_rect.x() + text_rect.width() + extra_edge_width,
+                underline_y);
+  cairo_stroke(cr);
 }
 
 }  // namespace gfx
