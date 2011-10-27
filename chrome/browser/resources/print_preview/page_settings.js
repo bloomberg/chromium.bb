@@ -259,8 +259,8 @@ cr.define('print_preview', function() {
      */
     onSelectedPagesTextfieldChanged: function() {
       this.validateSelectedPages_();
-      cr.dispatchSimpleEvent(document, 'updateSummary');
-      cr.dispatchSimpleEvent(document, 'updatePrintButton');
+      cr.dispatchSimpleEvent(document, customEvents.UPDATE_SUMMARY);
+      cr.dispatchSimpleEvent(document, customEvents.UPDATE_PRINT_BUTTON);
     },
 
     /**
@@ -278,8 +278,8 @@ cr.define('print_preview', function() {
       // invalid entry in the page selection textfield still requires updating
       // the print summary and print button.
       if (!this.isPageSelectionValid() || !this.hasPageSelectionChanged_()) {
-        cr.dispatchSimpleEvent(document, 'updateSummary');
-        cr.dispatchSimpleEvent(document, 'updatePrintButton');
+        cr.dispatchSimpleEvent(document, customEvents.UPDATE_SUMMARY);
+        cr.dispatchSimpleEvent(document, customEvents.UPDATE_PRINT_BUTTON);
         return;
       }
       requestPrintPreview();

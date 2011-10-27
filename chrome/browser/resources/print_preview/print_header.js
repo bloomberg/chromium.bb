@@ -44,18 +44,16 @@ cr.define('print_preview', function() {
         closePrintPreviewTab();
       }.bind(this);
       this.printButton_.onclick = this.onPrintButtonClicked_.bind(this);
-      document.addEventListener('updateSummary',
+      document.addEventListener(customEvents.UPDATE_SUMMARY,
                                 this.updateSummary_.bind(this));
-      document.addEventListener('updatePrintButton',
+      document.addEventListener(customEvents.UPDATE_PRINT_BUTTON,
                                 this.updatePrintButton_.bind(this));
-      document.addEventListener('disableCancelButton',
-                                this.disableCancelButton.bind(this));
-      document.addEventListener('PDFGenerationError',
+      document.addEventListener(customEvents.PDF_GENERATION_ERROR,
                                 this.onPDFGenerationError_.bind(this));
     },
 
     /**
-     * Executes when an |PDFGenerationError| event is occurs.
+     * Executes when a |customEvents.PDF_GENERATION_ERROR| event occurs.
      * @private
      */
     onPDFGenerationError_: function() {

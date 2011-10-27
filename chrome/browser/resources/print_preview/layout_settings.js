@@ -69,13 +69,14 @@ cr.define('print_preview', function() {
     addEventListeners_: function() {
       this.landscapeRadioButton_.onclick = this.onLayoutButtonClick_.bind(this);
       this.portraitRadioButton_.onclick = this.onLayoutButtonClick_.bind(this);
-      document.addEventListener('PDFLoaded', this.onPDFLoaded_.bind(this));
-      document.addEventListener('printerCapabilitiesUpdated',
+      document.addEventListener(customEvents.PDF_LOADED,
+                                this.onPDFLoaded_.bind(this));
+      document.addEventListener(customEvents.PRINTER_CAPABILITIES_UPDATED,
                                 this.onPrinterCapabilitiesUpdated_.bind(this));
     },
 
     /**
-     * Listener triggered when a printerCapabilitiesUpdated event occurs.
+     * Executes when a |customEvents.PRINTER_CAPABILITIES_UPDATED| event occurs.
      * @private
      */
     onPrinterCapabilitiesUpdated_: function(e) {
@@ -95,7 +96,7 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * Listener executing when a PDFLoaded event occurs.
+     * Listener executing when a |customEvents.PDF_LOADED| event occurs.
      * @private
      */
     onPDFLoaded_: function() {

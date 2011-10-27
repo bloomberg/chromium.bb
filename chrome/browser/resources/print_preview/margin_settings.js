@@ -286,13 +286,14 @@ cr.define('print_preview', function() {
      */
     addEventListeners_: function() {
       this.marginList_.onchange = this.onMarginsChanged_.bind(this);
-      document.addEventListener('PDFLoaded', this.onPDFLoaded_.bind(this));
-      document.addEventListener('PDFGenerationError',
+      document.addEventListener(customEvents.PDF_LOADED,
+                                this.onPDFLoaded_.bind(this));
+      document.addEventListener(customEvents.PDF_GENERATION_ERROR,
                                 this.onPDFGenerationError_.bind(this));
     },
 
     /**
-     * Executes when an 'PDFGenerationError' event occurs.
+     * Executes when a |customEvents.PDF_GENERATION_ERROR| event occurs.
      * @private
      */
     onPDFGenerationError_: function() {
@@ -303,10 +304,10 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * Executes whenever a "DragEvent" occurs.
+     * Executes whenever a |customEvents.MARGIN_LINE_DRAG| occurs.
      * @param {cr.Event} e The event that triggered this listener.
      */
-    onDragEvent_: function(e) {
+    onMarginsLineDrag_: function(e) {
       var dragDeltaInPoints = this.convertDragDeltaToPoints_(e.dragDelta);
       this.marginsUI.lastClickedMarginsUIPair.updateWhileDragging(
           dragDeltaInPoints, e.destinationPoint);
@@ -424,9 +425,11 @@ cr.define('print_preview', function() {
     addCustomMarginEventListeners_: function() {
       $('mainview').onmouseover = this.onMainviewMouseOver_.bind(this);
       $('sidebar').onmouseover = this.onSidebarMouseOver_.bind(this);
-      this.eventTracker_.add(
-          this.marginsUI, 'DragEvent', this.onDragEvent_.bind(this), false);
-      this.eventTracker_.add(document, 'marginTextboxFocused',
+      this.eventTracker_.add(this.marginsUI,
+                             customEvents.MARGIN_LINE_DRAG,
+                             this.onMarginsLineDrag_.bind(this),
+                             false);
+      this.eventTracker_.add(document, customEvents.MARGIN_TEXTBOX_FOCUSED,
                              this.onMarginTextboxFocused_.bind(this), false);
     },
 
@@ -437,8 +440,8 @@ cr.define('print_preview', function() {
     removeCustomMarginEventListeners_: function() {
       $('mainview').onmouseover = null;
       $('sidebar').onmouseover = null;
-      this.eventTracker_.remove(this.marginsUI, 'DragEvent');
-      this.eventTracker_.remove(document, 'marginTextboxFocused');
+      this.eventTracker_.remove(this.marginsUI, customEvents.MARGIN_LINE_DRAG);
+      this.eventTracker_.remove(document, customEvents.MARGIN_TEXTBOX_FOCUSED);
       this.marginsUI.hide(true);
     },
 
@@ -607,7 +610,7 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * Executes when a PDFLoaded event occurs.
+     * Executes when a |customEvents.PDF_LOADED| event occurs.
      * @private
      */
     onPDFLoaded_: function() {

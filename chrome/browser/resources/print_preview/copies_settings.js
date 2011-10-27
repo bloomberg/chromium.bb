@@ -118,8 +118,8 @@ cr.define('print_preview', function() {
       this.showHideCollateOption_();
 
       if (!hasPendingPreviewRequest) {
-        cr.dispatchSimpleEvent(document, 'updateSummary');
-        cr.dispatchSimpleEvent(document, 'updatePrintButton');
+        cr.dispatchSimpleEvent(document, customEvents.UPDATE_SUMMARY);
+        cr.dispatchSimpleEvent(document, customEvents.UPDATE_PRINT_BUTTON);
       }
     },
 
@@ -132,8 +132,8 @@ cr.define('print_preview', function() {
       this.updateButtonsState_();
       this.showHideCollateOption_();
       if (!hasPendingPreviewRequest) {
-        cr.dispatchSimpleEvent(document, 'updateSummary');
-        cr.dispatchSimpleEvent(document, 'updatePrintButton');
+        cr.dispatchSimpleEvent(document, customEvents.UPDATE_SUMMARY);
+        cr.dispatchSimpleEvent(document, customEvents.UPDATE_PRINT_BUTTON);
       }
     },
 
@@ -148,16 +148,16 @@ cr.define('print_preview', function() {
       this.decrementButton_.onclick = this.onDecrementButtonClicked_.bind(this);
       this.twoSidedCheckbox_.onclick = function() {
         if (!hasPendingPreviewRequest)
-          cr.dispatchSimpleEvent(document, 'updateSummary');
+          cr.dispatchSimpleEvent(document, customEvents.UPDATE_SUMMARY);
       }
-      document.addEventListener('PDFLoaded',
+      document.addEventListener(customEvents.PDF_LOADED,
                                 this.updateButtonsState_.bind(this));
-      document.addEventListener('printerCapabilitiesUpdated',
+      document.addEventListener(customEvents.PRINTER_CAPABILITIES_UPDATED,
                                 this.onPrinterCapabilitiesUpdated_.bind(this));
     },
 
     /**
-     * Listener triggered when a printerCapabilitiesUpdated event occurs.
+     * Executes when a |customEvents.PRINTER_CAPABILITIES_UPDATED| event occurs.
      * @private
      */
     onPrinterCapabilitiesUpdated_: function(e) {

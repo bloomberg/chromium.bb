@@ -62,13 +62,14 @@ cr.define('print_preview', function() {
       this.bwRadioButton_.onclick = function() {
         setColor(false);
       };
-      document.addEventListener('PDFLoaded', this.onPDFLoaded_.bind(this));
-      document.addEventListener('printerCapabilitiesUpdated',
+      document.addEventListener(customEvents.PDF_LOADED,
+                                this.onPDFLoaded_.bind(this));
+      document.addEventListener(customEvents.PRINTER_CAPABILITIES_UPDATED,
                                 this.onPrinterCapabilitiesUpdated_.bind(this));
     },
 
     /**
-     * Listener triggered when a printerCapabilitiesUpdated event occurs.
+     * Executes when a |customEvents.PRINTER_CAPABILITIES_UPDATED| event occurs.
      * @private
      */
     onPrinterCapabilitiesUpdated_: function(e) {
@@ -97,7 +98,7 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * Executes when a PDFLoaded event occurs.
+     * Executes when a |customEvents.PDF_LOADED| event occurs.
      * @private
      */
     onPDFLoaded_: function() {

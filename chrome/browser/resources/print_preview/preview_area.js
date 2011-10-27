@@ -134,12 +134,12 @@ cr.define('print_preview', function() {
      * @private
      */
     addEventListeners_: function() {
-      document.addEventListener('PDFLoaded',
+      document.addEventListener(customEvents.PDF_LOADED,
                                 this.onPDFLoaded_.bind(this));
     },
 
     /**
-     * Listener executing when a PDFLoaded event occurs.
+     * Listener executing when a |customEvents.PDF_LOADED| event occurs.
      * @private
      */
     onPDFLoaded_: function() {
@@ -208,7 +208,7 @@ cr.define('print_preview', function() {
         $('mainview').removeChild(this.pdfPlugin_);
         this.pdfPlugin_ = null;
       }
-      cr.dispatchSimpleEvent(document, 'PDFGenerationError');
+      cr.dispatchSimpleEvent(document, customEvents.PDF_GENERATION_ERROR);
     },
 
     /**

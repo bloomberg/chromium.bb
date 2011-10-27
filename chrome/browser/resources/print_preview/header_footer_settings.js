@@ -42,7 +42,8 @@ cr.define('print_preview', function() {
     addEventListeners_: function() {
       this.headerFooterCheckbox_.onclick =
           this.onHeaderFooterChanged_.bind(this);
-      document.addEventListener('PDFLoaded', this.onPDFLoaded_.bind(this));
+      document.addEventListener(customEvents.PDF_LOADED,
+                                this.onPDFLoaded_.bind(this));
     },
 
     /**
@@ -55,7 +56,7 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * Listener executing when a PDFLoaded event occurs.
+     * Listener executing when a |customEvents.PDF_LOADED| event occurs.
      * @private
      */
     onPDFLoaded_: function() {

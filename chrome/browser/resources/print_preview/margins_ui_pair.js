@@ -176,7 +176,7 @@ cr.define('print_preview', function() {
       this.originBeforeDragging = { x: this.offsetLeft, y: this.offsetTop };
       this.mousePointerOffset =
           { x: point.x - this.offsetLeft, y: point.y - this.offsetTop };
-      cr.dispatchSimpleEvent(this, 'MarginsLineMouseDown');
+      cr.dispatchSimpleEvent(this, customEvents.MARGIN_LINE_MOUSE_DOWN);
     },
 
     /**

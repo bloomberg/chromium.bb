@@ -135,7 +135,7 @@ cr.define('print_preview', function() {
       this.onkeypress = this.onKeyPressed_.bind(this);
       this.onkeyup = this.onKeyUp_.bind(this);
       this.onfocus = function() {
-        cr.dispatchSimpleEvent(document, 'marginTextboxFocused');
+        cr.dispatchSimpleEvent(document, customEvents.MARGIN_TEXTBOX_FOCUSED);
       };
     },
 
@@ -152,9 +152,9 @@ cr.define('print_preview', function() {
       }
 
       this.updateColor();
-      cr.dispatchSimpleEvent(document, 'updateSummary');
-      cr.dispatchSimpleEvent(document, 'updatePrintButton');
-      cr.dispatchSimpleEvent(this, 'MarginsMayHaveChanged');
+      cr.dispatchSimpleEvent(document, customEvents.UPDATE_SUMMARY);
+      cr.dispatchSimpleEvent(document, customEvents.UPDATE_PRINT_BUTTON);
+      cr.dispatchSimpleEvent(this, customEvents.MARGINS_MAY_HAVE_CHANGED);
     },
 
     /**
@@ -180,8 +180,8 @@ cr.define('print_preview', function() {
         this.setValue_(this.lastValidValueInPoints);
         this.validate();
         this.updateColor();
-        cr.dispatchSimpleEvent(document, 'updateSummary');
-        cr.dispatchSimpleEvent(document, 'updatePrintButton');
+        cr.dispatchSimpleEvent(document, customEvents.UPDATE_SUMMARY);
+        cr.dispatchSimpleEvent(document, customEvents.UPDATE_PRINT_BUTTON);
       }
     },
 
@@ -203,12 +203,12 @@ cr.define('print_preview', function() {
     onTextValueMayHaveChanged: function() {
       this.validate();
       this.updateColor();
-      cr.dispatchSimpleEvent(document, 'updateSummary');
-      cr.dispatchSimpleEvent(document, 'updatePrintButton');
+      cr.dispatchSimpleEvent(document, customEvents.UPDATE_SUMMARY);
+      cr.dispatchSimpleEvent(document, customEvents.UPDATE_PRINT_BUTTON);
 
       if (!this.isValid)
         return;
-      cr.dispatchSimpleEvent(this, 'MarginsMayHaveChanged');
+      cr.dispatchSimpleEvent(this, customEvents.MARGINS_MAY_HAVE_CHANGED);
     }
 
   };

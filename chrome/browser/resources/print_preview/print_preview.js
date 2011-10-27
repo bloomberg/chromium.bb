@@ -103,6 +103,28 @@ const maxCloudPrinters = 10;
 const MIN_REQUEST_ID = 0;
 const MAX_REQUEST_ID = 32000;
 
+// Names of all the custom events used.
+var customEvents = {
+  // Fired when the mouse moves while a margin line is being dragged.
+  MARGIN_LINE_DRAG: 'marginLineDrag',
+  // Fired when a mousedown event occurs on a margin line.
+  MARGIN_LINE_MOUSE_DOWN: 'marginLineMouseDown',
+  // Fired when a margin textbox gains focus.
+  MARGIN_TEXTBOX_FOCUSED: 'marginTextboxFocused',
+  // Fired when a new preview might be needed because of margin changes.
+  MARGINS_MAY_HAVE_CHANGED: 'marginsMayHaveChanged',
+  // Fired when a pdf generation related error occurs.
+  PDF_GENERATION_ERROR: 'PDFGenerationError',
+  // Fired once the first page of the pdf document is loaded in the plugin.
+  PDF_LOADED: 'PDFLoaded',
+  // Fired when the selected printer capabilities change.
+  PRINTER_CAPABILITIES_UPDATED: 'printerCapabilitiesUpdated',
+  // Fired when the print button needs to be updated.
+  UPDATE_PRINT_BUTTON: 'updatePrintButton',
+  // Fired when the print summary needs to be updated.
+  UPDATE_SUMMARY: 'updateSummary',
+}
+
 /**
  * Window onload handler, sets up the page and starts print preview by getting
  * the printer list.
@@ -114,7 +136,8 @@ function onLoad() {
 
   previewArea = print_preview.PreviewArea.getInstance();
   printHeader = print_preview.PrintHeader.getInstance();
-  document.addEventListener('PDFGenerationError', cancelPendingPrintRequest);
+  document.addEventListener(customEvents.PDF_GENERATION_ERROR,
+                            cancelPendingPrintRequest);
 
   if (!checkCompatiblePluginExists()) {
     disableInputElementsInSidebar();
@@ -282,11 +305,12 @@ function doUpdateCloudPrinterCapabilities(printer) {
 }
 
 /**
- * Updates the controls with printer capabilities information.
+ * Notifies listeners of |customEvents.PRINTER_CAPABILITIES_UPDATED| about the
+ * capabilities of the currently selected printer. It is called from C++ too.
  * @param {Object} settingInfo printer setting information.
  */
 function updateWithPrinterCapabilities(settingInfo) {
-  var customEvent = new cr.Event("printerCapabilitiesUpdated");
+  var customEvent = new cr.Event(customEvents.PRINTER_CAPABILITIES_UPDATED);
   customEvent.printerCapabilities = settingInfo;
   document.dispatchEvent(customEvent);
 }
@@ -488,7 +512,7 @@ function loadSelectedPages() {
   if (pageCount == 0 || currentPreviewUid == '')
     return;
 
-  cr.dispatchSimpleEvent(document, 'updateSummary');
+  cr.dispatchSimpleEvent(document, customEvents.UPDATE_SUMMARY);
   for (var i = 0; i < pageCount; i++)
     onDidPreviewPage(pageSet[i] - 1, currentPreviewUid, lastPreviewRequestID);
 }
@@ -733,7 +757,7 @@ function onPDFLoad() {
   if (previewModifiable) {
     setPluginPreviewPageCount();
   }
-  cr.dispatchSimpleEvent(document, 'PDFLoaded');
+  cr.dispatchSimpleEvent(document, customEvents.PDF_LOADED);
   isFirstPageLoaded = true;
   checkAndHideOverlayLayerIfValid();
   sendPrintDocumentRequestIfNeeded();
@@ -761,7 +785,7 @@ function onDidGetPreviewPageCount(pageCount, isModifiable, previewResponseId) {
   if (!previewModifiable && pageSettings.requestPrintPreviewIfNeeded())
     return;
 
-  cr.dispatchSimpleEvent(document, 'updateSummary');
+  cr.dispatchSimpleEvent(document, customEvents.UPDATE_SUMMARY);
 }
 
 /**
@@ -804,7 +828,7 @@ function reloadPreviewPages(previewUid, previewResponseId) {
   if (!isExpectedPreviewResponse(previewResponseId))
     return;
 
-  cr.dispatchSimpleEvent(document, 'updatePrintButton');
+  cr.dispatchSimpleEvent(document, customEvents.UPDATE_PRINT_BUTTON);
   checkAndHideOverlayLayerIfValid();
   var pageSet = pageSettings.previouslySelectedPages;
   for (var i = 0; i < pageSet.length; i++)
@@ -875,7 +899,7 @@ function updatePrintPreview(previewUid, previewResponseId) {
     createPDFPlugin(PRINT_READY_DATA_INDEX);
   }
 
-  cr.dispatchSimpleEvent(document, 'updatePrintButton');
+  cr.dispatchSimpleEvent(document, customEvents.UPDATE_PRINT_BUTTON);
   if (previewModifiable)
     sendPrintDocumentRequestIfNeeded();
 }

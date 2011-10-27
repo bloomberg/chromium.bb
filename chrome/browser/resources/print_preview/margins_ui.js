@@ -58,14 +58,16 @@ cr.define('print_preview', function() {
     __proto__: HTMLDivElement.prototype,
 
     /**
-     * Adds an observer for |MarginsMayHaveChanged| event.
+     * Adds an observer for |customEvents.MARGINS_MAY_HAVE_CHANGED| event.
      * @param {function} func A callback function to be called when
-     *   |MarginsMayHaveChanged| event occurs.
+     *     |customEvents.MARGINS_MAY_HAVE_CHANGED| event occurs.
      */
     addObserver: function(func) {
       var uiPairs = this.pairsAsList;
-      for (var i = 0; i < uiPairs.length; i++)
-        uiPairs[i].box_.addEventListener('MarginsMayHaveChanged', func);
+      for (var i = 0; i < uiPairs.length; i++) {
+        uiPairs[i].box_.addEventListener(
+            customEvents.MARGINS_MAY_HAVE_CHANGED, func);
+      }
     },
 
     /**
@@ -137,7 +139,7 @@ cr.define('print_preview', function() {
     addEventListeners_: function() {
       var uiPairs = this.pairsAsList;
       for (var i = 0; i < uiPairs.length; i++) {
-        uiPairs[i].addEventListener('MarginsLineMouseDown',
+        uiPairs[i].addEventListener(customEvents.MARGIN_LINE_MOUSE_DOWN,
                                     this.onMarginLineMouseDown.bind(this));
       }
       // After snapping to min/max the MarginUIPair might not receive the
@@ -191,7 +193,7 @@ cr.define('print_preview', function() {
     onMouseMove_: function(e) {
       var point = MarginsUI.convert({ x: e.x, y: e.y });
 
-      var dragEvent = new cr.Event('DragEvent');
+      var dragEvent = new cr.Event(customEvents.MARGIN_LINE_DRAG);
       dragEvent.dragDelta =
           this.lastClickedMarginsUIPair.getDragDisplacementFrom(point);
       dragEvent.destinationPoint = point;
