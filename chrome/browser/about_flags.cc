@@ -443,6 +443,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnablePhotoEditor)
   },
 #endif
+  {
+    "enable-media-source",
+    IDS_FLAGS_ENABLE_MEDIA_SOURCE_NAME,
+    IDS_FLAGS_ENABLE_MEDIA_SOURCE_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableMediaSource)
+  },
 };
 
 const Experiment* experiments = kExperiments;

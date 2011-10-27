@@ -72,6 +72,7 @@ CONTENT_EXPORT extern const char kEnableDeviceMotion[];
 CONTENT_EXPORT extern const char kDisableFullScreen[];
 extern const char kEnableGPUPlugin[];
 CONTENT_EXPORT extern const char kEnableLogging[];
+extern const char kEnableMediaSource[];
 extern const char kEnableMediaStream[];
 extern const char kEnableMonitorProfile[];
 extern const char kEnableOriginBoundCerts[];

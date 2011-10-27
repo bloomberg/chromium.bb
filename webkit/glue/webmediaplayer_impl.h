@@ -179,10 +179,8 @@ class WebMediaPlayerImpl
   virtual WebKit::WebVideoFrame* getCurrentFrame();
   virtual void putCurrentFrame(WebKit::WebVideoFrame* web_video_frame);
 
-  // TODO(acolwell): Uncomment once WebKit changes are checked in.
-  // https://bugs.webkit.org/show_bug.cgi?id=64731
-  //virtual bool sourceAppend(const unsigned char* data, unsigned length);
-  //virtual void sourceEndOfStream(EndOfStreamStatus status);
+  virtual bool sourceAppend(const unsigned char* data, unsigned length);
+  virtual void sourceEndOfStream(EndOfStreamStatus status);
 
   // As we are closing the tab or even the browser, |main_loop_| is destroyed
   // even before this object gets destructed, so we need to know when

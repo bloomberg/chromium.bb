@@ -4835,6 +4835,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_FLAGS_ENABLE_PHOTO_EDITOR_DESCRIPTION" desc="Description for the flag to enable the photo editor.">
       </message>
+      <message name="IDS_FLAGS_ENABLE_MEDIA_SOURCE_NAME" desc="Title for the flag to enable the Media Source API on &lt;video&gt; elements.">
+        Enable Media Source API on &lt;video&gt; elements.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_MEDIA_SOURCE_DESCRIPTION" desc="Description for the flag to enable the Media Source API on &lt;video&gt; elements.">
+        Enable experimental Media Source API on the video elements. This API allows JavaScript to send media data directly to a video element.
+      </message>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">

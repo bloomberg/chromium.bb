@@ -571,6 +571,7 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kEnableGPUServiceLogging,
     switches::kEnableGPUClientLogging,
     switches::kEnableLogging,
+    switches::kEnableMediaSource,
     switches::kEnableMediaStream,
     switches::kEnableStrictSiteIsolation,
     switches::kDisableFullScreen,

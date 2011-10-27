@@ -479,6 +479,9 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   WebRuntimeFeatures::enableGeolocation(
       !command_line.HasSwitch(switches::kDisableGeolocation));
 
+  WebKit::WebRuntimeFeatures::enableMediaSource(
+      command_line.HasSwitch(switches::kEnableMediaSource));
+
   WebKit::WebRuntimeFeatures::enableMediaStream(
       command_line.HasSwitch(switches::kEnableMediaStream));
 

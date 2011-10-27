@@ -199,6 +199,9 @@ const char kEnableGPUPlugin[]               = "enable-gpu-plugin";
 // builds.
 const char kEnableLogging[]                 = "enable-logging";
 
+// Enables Media Source API on <audio>/<video> elements.
+const char kEnableMediaSource[]              = "enable-media-source";
+
 // Enable media stream in WebKit.
 // http://www.whatwg.org/specs/web-apps/current-work/multipage/dnd.html#mediastream
 const char kEnableMediaStream[]             = "enable-media-stream";

@@ -192,8 +192,19 @@ bool WebMediaPlayerImpl::Initialize(
     data_source_factory->AddFactory(simple_data_source_factory.release());
   }
 
-  filter_collection_->SetDemuxerFactory(new media::FFmpegDemuxerFactory(
-      data_source_factory.release(), pipeline_message_loop));
+  scoped_ptr<media::DemuxerFactory> demuxer_factory(
+      new media::FFmpegDemuxerFactory(data_source_factory.release(),
+                                      pipeline_message_loop));
+
+  std::string source_url = GetClient()->sourceURL().spec();
+
+  if (!source_url.empty()) {
+    demuxer_factory.reset(
+        new media::ChunkDemuxerFactory(source_url,
+                                       demuxer_factory.release(),
+                                       proxy_));
+  }
+  filter_collection_->SetDemuxerFactory(demuxer_factory.release());
 
   // Add in the default filter factories.
   filter_collection_->AddAudioDecoder(new media::FFmpegAudioDecoder(
@@ -645,9 +656,6 @@ void WebMediaPlayerImpl::putCurrentFrame(
   }
 }
 
-// TODO(acolwell): Uncomment once WebKit changes are checked in.
-// https://bugs.webkit.org/show_bug.cgi?id=64731
-/*
 bool WebMediaPlayerImpl::sourceAppend(const unsigned char* data,
                                       unsigned length) {
   DCHECK_EQ(main_loop_, MessageLoop::current());
@@ -674,7 +682,6 @@ void WebMediaPlayerImpl::sourceEndOfStream(
 
   proxy_->DemuxerEndOfStream(pipeline_status);
 }
-*/
 
 void WebMediaPlayerImpl::WillDestroyCurrentMessageLoop() {
   Destroy();
@@ -797,9 +804,7 @@ void WebMediaPlayerImpl::OnNetworkEvent(bool is_downloading_data) {
 void WebMediaPlayerImpl::OnDemuxerOpened() {
   DCHECK_EQ(main_loop_, MessageLoop::current());
 
-  // TODO(acolwell): Uncomment once WebKit changes are checked in.
-  // https://bugs.webkit.org/show_bug.cgi?id=64731
-  //GetClient()->sourceOpened();
+  GetClient()->sourceOpened();
 }
 
 void WebMediaPlayerImpl::SetNetworkState(
