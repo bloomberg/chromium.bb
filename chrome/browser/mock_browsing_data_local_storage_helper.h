@@ -10,6 +10,7 @@
 #include <map>
 
 #include "base/callback.h"
+#include "base/compiler_specific.h"
 #include "chrome/browser/browsing_data_local_storage_helper.h"
 
 // Mock for BrowsingDataLocalStorageHelper.
@@ -20,12 +21,12 @@ class MockBrowsingDataLocalStorageHelper
  public:
   explicit MockBrowsingDataLocalStorageHelper(Profile* profile);
 
+  // BrowsingDataLocalStorageHelper implementation.
   virtual void StartFetching(
-      Callback1<const std::list<LocalStorageInfo>& >::Type* callback);
-
-  virtual void CancelNotification();
-
-  virtual void DeleteLocalStorageFile(const FilePath& file_path);
+      const base::Callback<void(const std::list<LocalStorageInfo>&)>& callback)
+          OVERRIDE;
+  virtual void CancelNotification() OVERRIDE;
+  virtual void DeleteLocalStorageFile(const FilePath& file_path) OVERRIDE;
 
   // Adds some LocalStorageInfo samples.
   void AddLocalStorageSamples();
@@ -36,8 +37,8 @@ class MockBrowsingDataLocalStorageHelper
   // Marks all local storage files as existing.
   void Reset();
 
-  // Returns true if all local storage files were deleted since the last
-  // Reset() invokation.
+  // Returns true if all local storage files were deleted since the last Reset()
+  // invocation.
   bool AllDeleted();
 
   FilePath last_deleted_file_;
@@ -47,8 +48,7 @@ class MockBrowsingDataLocalStorageHelper
 
   Profile* profile_;
 
-  scoped_ptr<Callback1<const std::list<LocalStorageInfo>& >::Type >
-      callback_;
+  base::Callback<void(const std::list<LocalStorageInfo>&)> callback_;
 
   std::map<const FilePath::StringType, bool> files_;
 

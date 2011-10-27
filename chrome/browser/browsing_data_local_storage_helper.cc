@@ -48,7 +48,6 @@ BrowsingDataLocalStorageHelper::LocalStorageInfo::~LocalStorageInfo() {}
 BrowsingDataLocalStorageHelper::BrowsingDataLocalStorageHelper(
     Profile* profile)
     : profile_(profile),
-      completion_callback_(NULL),
       is_fetching_(false) {
   DCHECK(profile_);
 }
@@ -57,12 +56,13 @@ BrowsingDataLocalStorageHelper::~BrowsingDataLocalStorageHelper() {
 }
 
 void BrowsingDataLocalStorageHelper::StartFetching(
-    Callback1<const std::list<LocalStorageInfo>& >::Type* callback) {
+    const base::Callback<void(const std::list<LocalStorageInfo>&)>& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!is_fetching_);
-  DCHECK(callback);
+  DCHECK_EQ(false, callback.is_null());
+
   is_fetching_ = true;
-  completion_callback_.reset(callback);
+  completion_callback_ = callback;
   BrowserThread::PostTask(
       BrowserThread::WEBKIT, FROM_HERE,
       base::Bind(
@@ -72,7 +72,7 @@ void BrowsingDataLocalStorageHelper::StartFetching(
 
 void BrowsingDataLocalStorageHelper::CancelNotification() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  completion_callback_.reset(NULL);
+  completion_callback_.Reset();
 }
 
 void BrowsingDataLocalStorageHelper::DeleteLocalStorageFile(
@@ -128,9 +128,9 @@ void BrowsingDataLocalStorageHelper::NotifyInUIThread() {
   DCHECK(is_fetching_);
   // Note: completion_callback_ mutates only in the UI thread, so it's safe to
   // test it here.
-  if (completion_callback_ != NULL) {
-    completion_callback_->Run(local_storage_info_);
-    completion_callback_.reset();
+  if (!completion_callback_.is_null()) {
+    completion_callback_.Run(local_storage_info_);
+    completion_callback_.Reset();
   }
   is_fetching_ = false;
 }
@@ -178,12 +178,13 @@ bool CannedBrowsingDataLocalStorageHelper::empty() const {
 }
 
 void CannedBrowsingDataLocalStorageHelper::StartFetching(
-    Callback1<const std::list<LocalStorageInfo>& >::Type* callback) {
+    const base::Callback<void(const std::list<LocalStorageInfo>&)>& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!is_fetching_);
-  DCHECK(callback);
+  DCHECK_EQ(false, callback.is_null());
+
   is_fetching_ = true;
-  completion_callback_.reset(callback);
+  completion_callback_ = callback;
   BrowserThread::PostTask(
       BrowserThread::WEBKIT, FROM_HERE,
       base::Bind(&CannedBrowsingDataLocalStorageHelper::

@@ -5,6 +5,8 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -23,7 +25,7 @@
 namespace {
 typedef
     BrowsingDataHelperCallback<BrowsingDataLocalStorageHelper::LocalStorageInfo>
-    TestCompletionCallback;
+        TestCompletionCallback;
 
 const FilePath::CharType kTestFile0[] =
     FILE_PATH_LITERAL("http_www.chromium.org_0.localstorage");
@@ -107,7 +109,8 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataLocalStorageHelperTest, CallbackCompletes) {
   CreateLocalStorageFilesForTest();
   StopTestOnCallback stop_test_on_callback(local_storage_helper);
   local_storage_helper->StartFetching(
-      NewCallback(&stop_test_on_callback, &StopTestOnCallback::Callback));
+      base::Bind(&StopTestOnCallback::Callback,
+                 base::Unretained(&stop_test_on_callback)));
   // Blocks until StopTestOnCallback::Callback is notified.
   ui_test_utils::RunMessageLoop();
 }
@@ -153,7 +156,8 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataLocalStorageHelperTest,
 
   TestCompletionCallback callback;
   helper->StartFetching(
-      NewCallback(&callback, &TestCompletionCallback::callback));
+      base::Bind(&TestCompletionCallback::callback,
+                 base::Unretained(&callback)));
 
   std::list<BrowsingDataLocalStorageHelper::LocalStorageInfo> result =
       callback.result();
@@ -178,7 +182,8 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataLocalStorageHelperTest, CannedUnique) {
 
   TestCompletionCallback callback;
   helper->StartFetching(
-      NewCallback(&callback, &TestCompletionCallback::callback));
+      base::Bind(&TestCompletionCallback::callback,
+                 base::Unretained(&callback)));
 
   std::list<BrowsingDataLocalStorageHelper::LocalStorageInfo> result =
       callback.result();

@@ -634,11 +634,13 @@ CookiesTreeModel::CookiesTreeModel(
       base::Bind(&CookiesTreeModel::OnDatabaseModelInfoLoaded,
                  base::Unretained(this)));
   DCHECK(local_storage_helper_);
-  local_storage_helper_->StartFetching(NewCallback(
-      this, &CookiesTreeModel::OnLocalStorageModelInfoLoaded));
+  local_storage_helper_->StartFetching(
+      base::Bind(&CookiesTreeModel::OnLocalStorageModelInfoLoaded,
+                 base::Unretained(this)));
   if (session_storage_helper_) {
-    session_storage_helper_->StartFetching(NewCallback(
-        this, &CookiesTreeModel::OnSessionStorageModelInfoLoaded));
+    session_storage_helper_->StartFetching(
+        base::Bind(&CookiesTreeModel::OnSessionStorageModelInfoLoaded,
+                   base::Unretained(this)));
   }
 
   // TODO(michaeln): When all of the UI implementations have been updated, make

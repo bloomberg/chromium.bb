@@ -10,7 +10,8 @@
 #include <set>
 #include <string>
 
-#include "base/callback_old.h"
+#include "base/callback.h"
+#include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
@@ -64,7 +65,7 @@ class BrowsingDataLocalStorageHelper
   // callback.
   // This must be called only in the UI thread.
   virtual void StartFetching(
-      Callback1<const std::list<LocalStorageInfo>& >::Type* callback);
+      const base::Callback<void(const std::list<LocalStorageInfo>&)>& callback);
   // Cancels the notification callback (i.e., the window that created it no
   // longer exists).
   // This must be called only in the UI thread.
@@ -82,8 +83,7 @@ class BrowsingDataLocalStorageHelper
   Profile* profile_;
 
   // This only mutates on the UI thread.
-  scoped_ptr<Callback1<const std::list<LocalStorageInfo>& >::Type >
-      completion_callback_;
+  base::Callback<void(const std::list<LocalStorageInfo>&)> completion_callback_;
 
   // Indicates whether or not we're currently fetching information:
   // it's true when StartFetching() is called in the UI thread, and it's reset
@@ -113,7 +113,7 @@ class CannedBrowsingDataLocalStorageHelper
 
   // Return a copy of the local storage helper. Only one consumer can use the
   // StartFetching method at a time, so we need to create a copy of the helper
-  // everytime we instantiate a cookies tree model for it.
+  // every time we instantiate a cookies tree model for it.
   CannedBrowsingDataLocalStorageHelper* Clone();
 
   // Add a local storage to the set of canned local storages that is returned
@@ -126,10 +126,11 @@ class CannedBrowsingDataLocalStorageHelper
   // True if no local storages are currently stored.
   bool empty() const;
 
-  // BrowsingDataLocalStorageHelper methods.
+  // BrowsingDataLocalStorageHelper implementation.
   virtual void StartFetching(
-      Callback1<const std::list<LocalStorageInfo>& >::Type* callback);
-  virtual void CancelNotification() {}
+      const base::Callback<void(const std::list<LocalStorageInfo>&)>& callback)
+          OVERRIDE;
+  virtual void CancelNotification() OVERRIDE {}
 
  private:
   virtual ~CannedBrowsingDataLocalStorageHelper();
