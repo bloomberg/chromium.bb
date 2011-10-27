@@ -79,6 +79,8 @@
         'common/chrome_version_info_mac.mm',
         'common/chrome_version_info_win.cc',
         'common/chrome_version_info.h',
+        'common/cloud_print/cloud_print_class_mac.h',
+        'common/cloud_print/cloud_print_class_mac.mm',
         'common/cloud_print/cloud_print_proxy_info.cc',
         'common/cloud_print/cloud_print_proxy_info.h',
         'common/common_api.h',

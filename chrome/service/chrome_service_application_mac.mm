@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
-#import "content/common/cloud_print_class_mac.h"
+#import "chrome/common/cloud_print/cloud_print_class_mac.h"
 #include "chrome/common/chrome_switches.h"
 
 @interface ServiceCrApplication ()
@@ -20,8 +20,8 @@
   NSAppleEventManager* em = [NSAppleEventManager sharedAppleEventManager];
   [em setEventHandler:self
           andSelector:@selector(submitPrint:)
-        forEventClass:content::kAECloudPrintClass
-           andEventID:content::kAECloudPrintClass];
+        forEventClass:cloud_print::kAECloudPrintClass
+           andEventID:cloud_print::kAECloudPrintClass];
 }
 
 // Event handler for Cloud Print Event. Forwards print job received to Chrome,
@@ -55,17 +55,17 @@
   // Actually create the Apple Event.
   NSAppleEventDescriptor* sendEvent =
       [NSAppleEventDescriptor
-           appleEventWithEventClass:content::kAECloudPrintClass
-                            eventID:content::kAECloudPrintClass
+           appleEventWithEventClass:cloud_print::kAECloudPrintClass
+                            eventID:cloud_print::kAECloudPrintClass
                    targetDescriptor:nil
                            returnID:kAutoGenerateReturnID
                       transactionID:kAnyTransactionID];
   // Pull the parameters out of AppleEvent sent to us and attach them
   // to our Apple Event.
   NSAppleEventDescriptor* parameters =
-      [event paramDescriptorForKeyword:content::kAECloudPrintClass];
+      [event paramDescriptorForKeyword:cloud_print::kAECloudPrintClass];
   [sendEvent setParamDescriptor:parameters
-                     forKeyword:content::kAECloudPrintClass];
+                     forKeyword:cloud_print::kAECloudPrintClass];
   LSApplicationParameters params = { 0,
                                      kLSLaunchDefaults,
                                      &ref,

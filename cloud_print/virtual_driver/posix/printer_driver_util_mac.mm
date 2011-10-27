@@ -18,7 +18,7 @@
 #include <stdlib.h>
 #include <string>
 
-// Duplicated is content/common/cloud_print_class_mac.h
+// Duplicated is chrome/common/cloud_print/cloud_print_class_mac.h
 const AEEventClass kAECloudPrintClass = 'GCPp';
 
 namespace cloud_print {

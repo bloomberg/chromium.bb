@@ -54,6 +54,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/cloud_print/cloud_print_class_mac.h"
 #include "chrome/common/mac/app_mode_common.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/service_messages.h"
@@ -62,7 +63,6 @@
 #include "content/browser/download/download_manager.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/user_metrics.h"
-#include "content/common/cloud_print_class_mac.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "grit/chromium_strings.h"
@@ -200,8 +200,8 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
            andEventID:kAEGetURL];
   [em setEventHandler:self
           andSelector:@selector(submitCloudPrintJob:)
-        forEventClass:content::kAECloudPrintClass
-           andEventID:content::kAECloudPrintClass];
+        forEventClass:cloud_print::kAECloudPrintClass
+           andEventID:cloud_print::kAECloudPrintClass];
   // Install and uninstall handlers for virtual drivers.
   [em setEventHandler:self
           andSelector:@selector(installCloudPrint:)
@@ -1095,7 +1095,7 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
 - (void)submitCloudPrintJob:(NSAppleEventDescriptor*)event {
   // Pull parameter list out of Apple Event.
   NSAppleEventDescriptor *paramList =
-      [event paramDescriptorForKeyword:content::kAECloudPrintClass];
+      [event paramDescriptorForKeyword:cloud_print::kAECloudPrintClass];
 
   if (paramList != nil) {
     // Pull required fields out of parameter list.

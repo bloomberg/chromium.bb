@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "content/common/cloud_print_class_mac.h"
+#import "chrome/common/cloud_print/cloud_print_class_mac.h"
 
-namespace content {
+namespace cloud_print {
 
 const AEEventClass kAECloudPrintClass = 'GCPp';
 
-}  // namespace content
+}  // namespace cloud_print
