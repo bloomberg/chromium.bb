@@ -471,6 +471,9 @@ void LocationBarView::Layout() {
   if (!location_entry_.get())
     return;
 
+  // TODO(jhawkins): Remove once crbug.com/101994 is fixed.
+  CHECK(location_icon_view_);
+
   // TODO(sky): baseline layout.
   int location_y = kVerticalEdgeThickness;
   // In some cases (e.g. fullscreen mode) we may have 0 height.  We still want
