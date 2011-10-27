@@ -306,26 +306,19 @@ bool MessageChannel::EvaluateOnMessageInvoker() {
   const char invoke_onmessage_js[] =
       "(function(window, module_instance, message_data) {"
       "  if (module_instance) {"
-      "    var message_event = window.document.createEvent('MessageEvent');"
-      "    message_event.initMessageEvent('message',"  // type
-      "                                   false,"  // canBubble
-      "                                   false,"  // cancelable
-      "                                   message_data,"  // data
-      "                                   '',"  // origin [*]
-      "                                   '',"  // lastEventId
-      "                                   null,"  // source [*]
-      "                                   []);"  // ports
+      "    var message_event = new MessageEvent('message', "
+      "                                         { data: message_data });"
       "    module_instance.dispatchEvent(message_event);"
       "  }"
       "})";
-  // [*] Note that the |origin| is only specified for cross-document and server-
-  //     sent messages, while |source| is only specified for cross-document
-  //     messages:
-  //      http://www.whatwg.org/specs/web-apps/current-work/multipage/comms.html
-  //     This currently behaves like Web Workers. On Firefox, Chrome, and Safari
-  //     at least, postMessage on Workers does not provide the origin or source.
-  //     TODO(dmichael):  Add origin if we change to a more iframe-like origin
-  //                      policy (see crbug.com/81537)
+  // Note that we purposely omit |origin| and |source|. The |origin| is only
+  // specified for cross-document and server-sent messages, while |source| is
+  // only specified for cross-document messages:
+  //  http://www.whatwg.org/specs/web-apps/current-work/multipage/comms.html
+  // This currently behaves like Web Workers. On Firefox, Chrome, and Safari
+  // at least, postMessage on Workers does not provide the origin or source.
+  // TODO(dmichael):  Add origin if we change to a more iframe-like origin
+  //                  policy (see crbug.com/81537)
 
   NPString function_string = { invoke_onmessage_js,
                                sizeof(invoke_onmessage_js)-1 };
