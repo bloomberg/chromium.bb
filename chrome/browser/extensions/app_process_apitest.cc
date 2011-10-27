@@ -78,15 +78,9 @@ static void NavigateTabHelper(TabContents* contents, const GURL& url) {
   EXPECT_EQ(url, contents->controller().GetLastCommittedEntry()->url());
 }
 
-#if defined(OS_WIN)
-// AppProcess sometimes hangs on Windows
-// http://crbug.com/88316
-#define MAYBE_AppProcess DISABLED_AppProcess
-#else
-#define MAYBE_AppProcess AppProcess
-#endif
+IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcess) {
+  LOG(INFO) << "Start of test.";
 
-IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_AppProcess) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisablePopupBlocking);
 
@@ -97,6 +91,8 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_AppProcess) {
   ASSERT_TRUE(test_server()->Start());
 
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("app_process")));
+
+  LOG(INFO) << "Loaded extension.";
 
   // Open two tabs in the app, one outside it.
   GURL base_url = GetTestBaseURL("app_process");
@@ -110,13 +106,24 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_AppProcess) {
   EXPECT_TRUE(extension_process_manager->IsExtensionProcess(
       browser()->GetTabContentsAt(1)->render_view_host()->process()->id()));
   EXPECT_FALSE(browser()->GetTabContentsAt(1)->web_ui());
-  browser()->NewTab();
-  ui_test_utils::NavigateToURL(browser(), base_url.Resolve("path2/empty.html"));
+  LOG(INFO) << "Nav 1.";
+
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), base_url.Resolve("path2/empty.html"), NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   EXPECT_TRUE(extension_process_manager->IsExtensionProcess(
       browser()->GetTabContentsAt(2)->render_view_host()->process()->id()));
   EXPECT_FALSE(browser()->GetTabContentsAt(2)->web_ui());
+  LOG(INFO) << "Nav 2.";
+
+  ui_test_utils::WindowedNotificationObserver tab_added_observer(
+      content::NOTIFICATION_TAB_ADDED,
+      content::NotificationService::AllSources());
   browser()->NewTab();
+  tab_added_observer.Wait();
+  LOG(INFO) << "New tab.";
   ui_test_utils::NavigateToURL(browser(), base_url.Resolve("path3/empty.html"));
+  LOG(INFO) << "Nav 3.";
   EXPECT_FALSE(extension_process_manager->IsExtensionProcess(
       browser()->GetTabContentsAt(3)->render_view_host()->process()->id()));
   EXPECT_FALSE(browser()->GetTabContentsAt(3)->web_ui());
@@ -137,21 +144,26 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_AppProcess) {
   ASSERT_EQ(1u, BrowserList::GetBrowserCount(browser()->profile()));
   WindowOpenHelper(browser(), host,
                    base_url.Resolve("path1/empty.html"), true);
+  LOG(INFO) << "WindowOpenHelper 1.";
   WindowOpenHelper(browser(), host,
                    base_url.Resolve("path2/empty.html"), true);
+  LOG(INFO) << "WindowOpenHelper 2.";
   // TODO(creis): This should open in a new process (i.e., false for the last
   // argument), but we temporarily avoid swapping processes away from an app
   // until we're able to support cross-process postMessage calls.
   // See crbug.com/59285.
   WindowOpenHelper(browser(), host,
                    base_url.Resolve("path3/empty.html"), true);
+  LOG(INFO) << "WindowOpenHelper 3.";
 
   // Now let's have these pages navigate, into or out of the extension web
   // extent. They should switch processes.
   const GURL& app_url(base_url.Resolve("path1/empty.html"));
   const GURL& non_app_url(base_url.Resolve("path3/empty.html"));
   NavigateTabHelper(browser()->GetTabContentsAt(2), non_app_url);
+  LOG(INFO) << "NavigateTabHelper 1.";
   NavigateTabHelper(browser()->GetTabContentsAt(3), app_url);
+  LOG(INFO) << "NavigateTabHelper 2.";
   // TODO(creis): This should swap out of the app's process (i.e., EXPECT_NE),
   // but we temporarily avoid swapping away from an app in case the window
   // tries to send a postMessage to the app.  See crbug.com/59285.
@@ -163,6 +175,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_AppProcess) {
   // If one of the popup tabs navigates back to the app, window.opener should
   // be valid.
   NavigateTabHelper(browser()->GetTabContentsAt(6), app_url);
+  LOG(INFO) << "NavigateTabHelper 3.";
   EXPECT_EQ(host->process(),
             browser()->GetTabContentsAt(6)->render_view_host()->process());
   bool windowOpenerValid = false;
@@ -171,19 +184,15 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_AppProcess) {
       L"window.domAutomationController.send(window.opener != null)",
       &windowOpenerValid));
   ASSERT_TRUE(windowOpenerValid);
+
+  LOG(INFO) << "End of test.";
 }
-
-
-#if defined(OS_WIN)
-// Seems to timeout sometimes on Windows: http://crbug.com/89766
-#define MAYBE_AppProcessInstances FLAKY_AppProcessInstances
-#else
-#define MAYBE_AppProcessInstances AppProcessInstances
-#endif
 
 // Test that hosted apps without the background permission use a process per app
 // instance model, such that separate instances are in separate processes.
-IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_AppProcessInstances) {
+IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcessInstances) {
+  LOG(INFO) << "Start of test.";
+
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisablePopupBlocking);
 
@@ -205,11 +214,19 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_AppProcessInstances) {
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), base_url.Resolve("path1/empty.html"), NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  LOG(INFO) << "Nav 1.";
   EXPECT_TRUE(extension_process_manager->IsExtensionProcess(
       browser()->GetTabContentsAt(1)->render_view_host()->process()->id()));
   EXPECT_FALSE(browser()->GetTabContentsAt(1)->web_ui());
+
+  ui_test_utils::WindowedNotificationObserver tab_added_observer(
+      content::NOTIFICATION_TAB_ADDED,
+      content::NotificationService::AllSources());
   browser()->NewTab();
+  tab_added_observer.Wait();
+  LOG(INFO) << "New tab.";
   ui_test_utils::NavigateToURL(browser(), base_url.Resolve("path2/empty.html"));
+  LOG(INFO) << "Nav 2.";
   EXPECT_TRUE(extension_process_manager->IsExtensionProcess(
       browser()->GetTabContentsAt(2)->render_view_host()->process()->id()));
   EXPECT_FALSE(browser()->GetTabContentsAt(2)->web_ui());
@@ -227,8 +244,10 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_AppProcessInstances) {
   ASSERT_EQ(1u, BrowserList::GetBrowserCount(browser()->profile()));
   WindowOpenHelper(browser(), host1,
                    base_url.Resolve("path1/empty.html"), true);
+  LOG(INFO) << "WindowOpenHelper 1.";
   WindowOpenHelper(browser(), host2,
                    base_url.Resolve("path2/empty.html"), true);
+  LOG(INFO) << "End of test.";
 }
 
 // Tests that app process switching works properly in the following scenario:
