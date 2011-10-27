@@ -3408,10 +3408,13 @@
    Memcheck:Leak
    fun:_Znw*
    ...
+   fun:*RenderWidgetHost*
+   ...
    fun:_ZNSt3setIP16RenderWidgetHostSt4lessIS1_ESaIS1_EE6insertERKS1_
-   fun:*TabLoader7ObserveEiRK18NotificationSourceRK19NotificationDetails
-   fun:_ZN19NotificationService6NotifyEiRK18NotificationSourceRK19NotificationDetails
-   fun:_ZN11TabContents12SetIsLoadingEbP23LoadNotificationDetails
+   fun:*TabLoader7ObserveEiRKN7content18NotificationSourceERKNS1_19NotificationDetailsE
+   fun:_ZN23NotificationServiceImpl*
+   fun:_ZN11TabContents12SetIsLoading*
+   fun:_ZN11TabContents14RenderViewGone*
 }
 {
    bug_79671
