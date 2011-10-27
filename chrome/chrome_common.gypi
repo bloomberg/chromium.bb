@@ -210,6 +210,8 @@
         'common/spellcheck_common.cc',
         'common/spellcheck_common.h',
         'common/spellcheck_messages.h',
+        'common/string_ordinal.cc',
+        'common/string_ordinal.h',
         'common/switch_utils.cc',
         'common/switch_utils.h',
         'common/thumbnail_score.cc',
