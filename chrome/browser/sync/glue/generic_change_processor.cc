@@ -241,7 +241,7 @@ bool GenericChangeProcessor::SyncModelHasUserCreatedNodes(
 
   // The sync model has user created nodes if the type's root node has any
   // children.
-  *has_nodes = sync_api::kInvalidId != type_root_node.GetFirstChildId();
+  *has_nodes = type_root_node.HasChildren();
   return true;
 }
 

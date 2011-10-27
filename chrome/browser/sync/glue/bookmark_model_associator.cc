@@ -275,10 +275,9 @@ bool BookmarkModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
 
   // Sync model has user created nodes if either one of the permanent nodes
   // has children.
-  *has_nodes = bookmark_bar_node.GetFirstChildId() != sync_api::kInvalidId ||
-      other_bookmarks_node.GetFirstChildId() != sync_api::kInvalidId ||
-      (has_synced_folder &&
-          synced_bookmarks_node.GetFirstChildId() != sync_api::kInvalidId);
+  *has_nodes = bookmark_bar_node.HasChildren() ||
+      other_bookmarks_node.HasChildren() ||
+      (has_synced_folder && synced_bookmarks_node.HasChildren());
   return true;
 }
 

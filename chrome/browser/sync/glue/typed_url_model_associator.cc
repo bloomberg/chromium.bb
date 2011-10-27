@@ -429,7 +429,7 @@ bool TypedUrlModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
 
   // The sync model has user created nodes if the typed_url folder has any
   // children.
-  *has_nodes = sync_api::kInvalidId != typed_url_node.GetFirstChildId();
+  *has_nodes = typed_url_node.HasChildren();
   return true;
 }
 

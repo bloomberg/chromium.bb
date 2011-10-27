@@ -209,7 +209,7 @@ bool PasswordModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
 
   // The sync model has user created nodes if the password folder has any
   // children.
-  *has_nodes = sync_api::kInvalidId != password_node.GetFirstChildId();
+  *has_nodes = password_node.HasChildren();
   return true;
 }
 

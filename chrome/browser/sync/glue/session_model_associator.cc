@@ -101,7 +101,7 @@ bool SessionModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
   }
   // The sync model has user created nodes iff the sessions folder has
   // any children.
-  *has_nodes = root.GetFirstChildId() != sync_api::kInvalidId;
+  *has_nodes = root.HasChildren();
   return true;
 }
 

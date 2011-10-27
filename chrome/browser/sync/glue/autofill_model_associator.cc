@@ -387,7 +387,7 @@ bool AutofillModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
 
   // The sync model has user created nodes if the autofill folder has any
   // children.
-  *has_nodes = sync_api::kInvalidId != autofill_node.GetFirstChildId();
+  *has_nodes = autofill_node.HasChildren();
   return true;
 }
 

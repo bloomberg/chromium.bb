@@ -910,19 +910,24 @@ class Directory {
  public:
   typedef std::vector<int64> ChildHandles;
 
-  // Returns the child meta handles for given parent id.  Clears
-  // |result| if there are no children.
+  // Returns the child meta handles (even those for deleted/unlinked
+  // nodes) for given parent id.  Clears |result| if there are no
+  // children.
   void GetChildHandlesById(BaseTransaction*, const Id& parent_id,
       ChildHandles* result);
 
-  // Returns the child meta handles for given meta handle.  Clears
-  // |result| if there are no children.
+  // Returns the child meta handles (even those for deleted/unlinked
+  // nodes) for given meta handle.  Clears |result| if there are no
+  // children.
   void GetChildHandlesByHandle(BaseTransaction*, int64 handle,
       ChildHandles* result);
 
+  // Returns true iff |id| has children.
+  bool HasChildren(BaseTransaction* trans, const Id& id);
+
   // Find the first or last child in the positional ordering under a parent,
   // and return its id.  Returns a root Id if parent has no children.
-  virtual Id GetFirstChildId(BaseTransaction* trans, const Id& parent_id);
+  Id GetFirstChildId(BaseTransaction* trans, const Id& parent_id);
   Id GetLastChildId(BaseTransaction* trans, const Id& parent_id);
 
   // Compute a local predecessor position for |update_item|.  The position
@@ -1148,6 +1153,12 @@ class Directory {
   void AppendChildHandles(
       const ScopedKernelLock& lock,
       const Id& parent_id, Directory::ChildHandles* result);
+
+  // Returns a pointer to what is probably (but not certainly) the
+  // first child of |parent_id|, or NULL if |parent_id| definitely has
+  // no children.
+  EntryKernel* GetPossibleFirstChild(
+      const ScopedKernelLock& lock, const Id& parent_id);
 
   Kernel* kernel_;
 

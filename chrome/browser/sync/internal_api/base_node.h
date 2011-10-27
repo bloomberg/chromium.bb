@@ -156,17 +156,20 @@ class BaseNode {
   // Returns the local external ID associated with the node.
   int64 GetExternalId() const;
 
+  // Returns true iff this node has children.
+  bool HasChildren() const;
+
   // Return the ID of the node immediately before this in the sibling order.
   // For the first node in the ordering, return 0.
   int64 GetPredecessorId() const;
 
   // Return the ID of the node immediately after this in the sibling order.
   // For the last node in the ordering, return 0.
-  virtual int64 GetSuccessorId() const;
+  int64 GetSuccessorId() const;
 
   // Return the ID of the first child of this node.  If this node has no
   // children, return 0.
-  virtual int64 GetFirstChildId() const;
+  int64 GetFirstChildId() const;
 
   // These virtual accessors provide access to data members of derived classes.
   virtual const syncable::Entry* GetEntry() const = 0;

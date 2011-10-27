@@ -1765,33 +1765,27 @@ Id Directory::NextId() {
   return Id::CreateFromClientString(base::Int64ToString(result));
 }
 
+bool Directory::HasChildren(BaseTransaction* trans, const Id& id) {
+  ScopedKernelLock lock(this);
+  return (GetPossibleFirstChild(lock, id) != NULL);
+}
+
 Id Directory::GetFirstChildId(BaseTransaction* trans,
                               const Id& parent_id) {
   ScopedKernelLock lock(this);
-  // We can use the server positional ordering as a hint because it's generally
-  // in sync with the local (linked-list) positional ordering, and we have an
-  // index on it.
-  ParentIdChildIndex::iterator candidate =
-      GetParentChildIndexLowerBound(lock, parent_id);
-  ParentIdChildIndex::iterator end_range =
-      GetParentChildIndexUpperBound(lock, parent_id);
-  for (; candidate != end_range; ++candidate) {
-    EntryKernel* entry = *candidate;
-    // Filter out self-looped items, which are temporarily not in the child
-    // ordering.
-    if (entry->ref(PREV_ID).IsRoot() ||
-        entry->ref(PREV_ID) != entry->ref(NEXT_ID)) {
-      // Walk to the front of the list; the server position ordering
-      // is commonly identical to the linked-list ordering, but pending
-      // unsynced or unapplied items may diverge.
-      while (!entry->ref(PREV_ID).IsRoot()) {
-        entry = GetEntryById(entry->ref(PREV_ID), &lock);
-      }
-      return entry->ref(ID);
-    }
+  EntryKernel* entry = GetPossibleFirstChild(lock, parent_id);
+  if (!entry)
+    return Id();
+
+  // Walk to the front of the list; the server position ordering
+  // is commonly identical to the linked-list ordering, but pending
+  // unsynced or unapplied items may diverge.
+  while (!entry->ref(PREV_ID).IsRoot()) {
+    // TODO(akalin): Gracefully handle GetEntryById returning NULL
+    // (http://crbug.com/100907).
+    entry = GetEntryById(entry->ref(PREV_ID), &lock);
   }
-  // There were no children in the linked list.
-  return Id();
+  return entry->ref(ID);
 }
 
 Id Directory::GetLastChildId(BaseTransaction* trans,
@@ -1817,6 +1811,8 @@ Id Directory::GetLastChildId(BaseTransaction* trans,
       // is commonly identical to the linked-list ordering, but pending
       // unsynced or unapplied items may diverge.
       while (!entry->ref(NEXT_ID).IsRoot())
+        // TODO(akalin): Gracefully handle GetEntryById returning NULL
+        // (http://crbug.com/100907).
         entry = GetEntryById(entry->ref(NEXT_ID), &lock);
       return entry->ref(ID);
     }
@@ -1961,7 +1957,6 @@ Directory::GetParentChildIndexLowerBound(const ScopedKernelLock& lock,
       Id::GetLeastIdForLexicographicComparison());
 }
 
-
 Directory::ParentIdChildIndex::iterator
 Directory::GetParentChildIndexUpperBound(const ScopedKernelLock& lock,
                                          const Id& parent_id) {
@@ -1982,6 +1977,28 @@ void Directory::AppendChildHandles(const ScopedKernelLock& lock,
     DCHECK_EQ(parent_id, (*i)->ref(PARENT_ID));
     result->push_back((*i)->ref(META_HANDLE));
   }
+}
+
+EntryKernel* Directory::GetPossibleFirstChild(
+    const ScopedKernelLock& lock, const Id& parent_id) {
+  // We can use the server positional ordering as a hint because it's generally
+  // in sync with the local (linked-list) positional ordering, and we have an
+  // index on it.
+  ParentIdChildIndex::iterator candidate =
+      GetParentChildIndexLowerBound(lock, parent_id);
+  ParentIdChildIndex::iterator end_range =
+      GetParentChildIndexUpperBound(lock, parent_id);
+  for (; candidate != end_range; ++candidate) {
+    EntryKernel* entry = *candidate;
+    // Filter out self-looped items, which are temporarily not in the child
+    // ordering.
+    if (entry->ref(PREV_ID).IsRoot() ||
+        entry->ref(PREV_ID) != entry->ref(NEXT_ID)) {
+      return entry;
+    }
+  }
+  // There were no children in the linked list.
+  return NULL;
 }
 
 }  // namespace syncable

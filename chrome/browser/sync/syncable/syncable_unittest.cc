@@ -207,6 +207,72 @@ TEST_F(SyncableGeneralTest, General) {
   dir.SaveChanges();
 }
 
+TEST_F(SyncableGeneralTest, ChildrenOps) {
+  Directory dir;
+  dir.Open(db_path_, "SimpleTest", &delegate_);
+
+  int64 root_metahandle;
+  {
+    ReadTransaction rtrans(FROM_HERE, &dir);
+    Entry e(&rtrans, GET_BY_ID, rtrans.root_id());
+    ASSERT_TRUE(e.good());
+    root_metahandle = e.Get(META_HANDLE);
+  }
+
+  int64 written_metahandle;
+  const Id id = TestIdFactory::FromNumber(99);
+  std::string name = "Jeff";
+  {
+    ReadTransaction rtrans(FROM_HERE, &dir);
+    Entry e(&rtrans, GET_BY_ID, id);
+    ASSERT_FALSE(e.good());  // Hasn't been written yet.
+
+    EXPECT_FALSE(dir.HasChildren(&rtrans, rtrans.root_id()));
+    EXPECT_TRUE(dir.GetFirstChildId(&rtrans, rtrans.root_id()).IsRoot());
+  }
+
+  {
+    WriteTransaction wtrans(FROM_HERE, UNITTEST, &dir);
+    MutableEntry me(&wtrans, CREATE, wtrans.root_id(), name);
+    ASSERT_TRUE(me.good());
+    me.Put(ID, id);
+    me.Put(BASE_VERSION, 1);
+    written_metahandle = me.Get(META_HANDLE);
+  }
+
+  // Test children ops after something is now in the DB.
+  {
+    ReadTransaction rtrans(FROM_HERE, &dir);
+    Entry e(&rtrans, GET_BY_ID, id);
+    ASSERT_TRUE(e.good());
+
+    Entry child(&rtrans, GET_BY_HANDLE, written_metahandle);
+    ASSERT_TRUE(child.good());
+
+    EXPECT_TRUE(dir.HasChildren(&rtrans, rtrans.root_id()));
+    EXPECT_EQ(e.Get(ID), dir.GetFirstChildId(&rtrans, rtrans.root_id()));
+  }
+
+  {
+    WriteTransaction wtrans(FROM_HERE, UNITTEST, &dir);
+    MutableEntry me(&wtrans, GET_BY_HANDLE, written_metahandle);
+    ASSERT_TRUE(me.good());
+    me.Put(IS_DEL, true);
+  }
+
+  // Test children ops after the children have been deleted.
+  {
+    ReadTransaction rtrans(FROM_HERE, &dir);
+    Entry e(&rtrans, GET_BY_ID, id);
+    ASSERT_TRUE(e.good());
+
+    EXPECT_FALSE(dir.HasChildren(&rtrans, rtrans.root_id()));
+    EXPECT_TRUE(dir.GetFirstChildId(&rtrans, rtrans.root_id()).IsRoot());
+  }
+
+  dir.SaveChanges();
+}
+
 TEST_F(SyncableGeneralTest, ClientIndexRebuildsProperly) {
   int64 written_metahandle;
   TestIdFactory factory;

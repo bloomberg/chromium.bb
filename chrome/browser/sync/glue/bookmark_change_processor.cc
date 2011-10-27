@@ -90,7 +90,7 @@ void BookmarkChangeProcessor::RemoveOneSyncNode(
     return;
   }
   // This node should have no children.
-  DCHECK(sync_node.GetFirstChildId() == sync_api::kInvalidId);
+  DCHECK(!sync_node.HasChildren());
   // Remove association and delete the sync node.
   model_associator_->Disassociate(sync_node.GetId());
   sync_node.Remove();
