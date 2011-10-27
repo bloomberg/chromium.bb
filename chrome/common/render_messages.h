@@ -17,6 +17,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/common/common_param_traits.h"
+#include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_pattern.h"
 #include "chrome/common/instant_types.h"
 #include "chrome/common/nacl_types.h"
@@ -136,6 +137,14 @@ IPC_STRUCT_TRAITS_BEGIN(ContentSettingsPattern::PatternParts)
   IPC_STRUCT_TRAITS_MEMBER(path)
 IPC_STRUCT_TRAITS_END()
 
+IPC_STRUCT_TRAITS_BEGIN(ContentSettingPatternSource)
+  IPC_STRUCT_TRAITS_MEMBER(primary_pattern)
+  IPC_STRUCT_TRAITS_MEMBER(secondary_pattern)
+  IPC_STRUCT_TRAITS_MEMBER(setting)
+  IPC_STRUCT_TRAITS_MEMBER(source)
+  IPC_STRUCT_TRAITS_MEMBER(incognito)
+IPC_STRUCT_TRAITS_END()
+
 IPC_STRUCT_TRAITS_BEGIN(ThumbnailScore)
   IPC_STRUCT_TRAITS_MEMBER(boring_score)
   IPC_STRUCT_TRAITS_MEMBER(good_clipping)
@@ -232,6 +241,10 @@ IPC_MESSAGE_CONTROL2(ChromeViewMsg_SetContentSettingsForCurrentURL,
 // and ignored otherwise.
 IPC_MESSAGE_CONTROL1(ChromeViewMsg_SetDefaultContentSettings,
                      ContentSettings /* content_settings */)
+
+// Set the content settings for images.
+IPC_MESSAGE_CONTROL1(ChromeViewMsg_SetImageSettingRules,
+                     ContentSettingsForOneType /* rules */)
 
 // Tells the render view to load all blocked plugins.
 IPC_MESSAGE_ROUTED0(ChromeViewMsg_LoadBlockedPlugins)

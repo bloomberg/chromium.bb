@@ -45,11 +45,11 @@ bool ExtensionSpecialStoragePolicy::HasSessionOnlyOrigins() {
   if (host_content_settings_map_->GetDefaultContentSetting(
           CONTENT_SETTINGS_TYPE_COOKIES, NULL) == CONTENT_SETTING_SESSION_ONLY)
     return true;
-  HostContentSettingsMap::SettingsForOneType entries;
+  ContentSettingsForOneType entries;
   host_content_settings_map_->GetSettingsForOneType(
       CONTENT_SETTINGS_TYPE_COOKIES, "", &entries);
   for (size_t i = 0; i < entries.size(); ++i) {
-    if (entries[i].c == CONTENT_SETTING_SESSION_ONLY)
+    if (entries[i].setting == CONTENT_SETTING_SESSION_ONLY)
       return true;
   }
   return false;

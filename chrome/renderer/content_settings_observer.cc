@@ -50,6 +50,15 @@ static bool IsWhitelistedForContentSettings(WebFrame* frame) {
   return false;
 }
 
+GURL GetOriginOrURL(const WebFrame* frame) {
+  WebString top_origin = frame->top()->document().securityOrigin().toString();
+  // The the |top_origin| is unique ("null") e.g., for file:// URLs. Use the
+  // document URL as the primary URL in those cases.
+  if (top_origin == "null")
+    return frame->document().url();
+  return GURL(top_origin);
+}
+
 }  // namespace
 
 ContentSettings ContentSettingsObserver::default_settings_;
@@ -73,6 +82,11 @@ void ContentSettingsObserver::SetContentSettings(
 void ContentSettingsObserver::SetDefaultContentSettings(
     const ContentSettings& settings) {
   default_settings_ = settings;
+}
+
+void ContentSettingsObserver::SetImageSettingRules(
+    const ContentSettingsForOneType* image_setting_rules) {
+  image_setting_rules_ = image_setting_rules;
 }
 
 ContentSetting ContentSettingsObserver::GetContentSetting(
@@ -118,7 +132,7 @@ void ContentSettingsObserver::DidCommitProvisionalLoad(
   NavigationState* state = NavigationState::FromDataSource(frame->dataSource());
   if (!state->was_within_same_page()) {
     // Clear "block" flags for the new page. This needs to happen before any of
-    // allowScripts(), allowImages(), allowPlugins() is called for the new page
+    // allowScripts(), allowImage(), allowPlugins() is called for the new page
     // so that these functions can correctly detect that a piece of content
     // flipped from "not blocked" to "blocked".
     ClearBlockedContentSettings();
@@ -198,16 +212,28 @@ bool ContentSettingsObserver::AllowFileSystem(WebFrame* frame) {
 bool ContentSettingsObserver::AllowImage(WebFrame* frame,
                                          bool enabled_per_settings,
                                          const WebURL& image_url) {
-  if (enabled_per_settings &&
-      AllowContentType(CONTENT_SETTINGS_TYPE_IMAGES)) {
-    return true;
-  }
-
   if (IsWhitelistedForContentSettings(frame))
     return true;
 
-  DidBlockContentType(CONTENT_SETTINGS_TYPE_IMAGES, std::string());
-  return false;  // Other protocols fall through here.
+  bool allow = enabled_per_settings;
+  const GURL& primary_url = GetOriginOrURL(frame);
+  GURL secondary_url(image_url);
+  if (image_setting_rules_ &&
+      enabled_per_settings) {
+    ContentSettingsForOneType::const_iterator it;
+    for (it = image_setting_rules_->begin();
+         it != image_setting_rules_->end(); ++it) {
+      if (it->primary_pattern.Matches(primary_url) &&
+          it->secondary_pattern.Matches(secondary_url)) {
+        allow = (it->setting != CONTENT_SETTING_BLOCK);
+        break;
+      }
+    }
+  }
+
+  if (!allow)
+    DidBlockContentType(CONTENT_SETTINGS_TYPE_IMAGES, std::string());
+  return allow;
 }
 
 bool ContentSettingsObserver::AllowIndexedDB(WebFrame* frame,

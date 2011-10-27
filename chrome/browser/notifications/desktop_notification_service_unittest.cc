@@ -8,7 +8,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/synchronization/waitable_event.h"
-#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -162,33 +161,33 @@ TEST_F(DesktopNotificationServiceTest, GetNotificationsSettings) {
   service_->DenyPermission(GURL("http://denied2.com"));
   service_->DenyPermission(GURL("http://denied.com"));
 
-  HostContentSettingsMap::SettingsForOneType settings;
+  ContentSettingsForOneType settings;
   service_->GetNotificationsSettings(&settings);
   // |settings| contains the default setting and 4 exceptions.
   ASSERT_EQ(5u, settings.size());
 
   EXPECT_EQ(ContentSettingsPattern::FromURLNoWildcard(
                 GURL("http://allowed.com")),
-            settings[0].a);
+            settings[0].primary_pattern);
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            settings[0].c);
+            settings[0].setting);
   EXPECT_EQ(ContentSettingsPattern::FromURLNoWildcard(
                 GURL("http://allowed2.com")),
-            settings[1].a);
+            settings[1].primary_pattern);
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            settings[1].c);
+            settings[1].setting);
   EXPECT_EQ(ContentSettingsPattern::FromURLNoWildcard(
                 GURL("http://denied.com")),
-            settings[2].a);
+            settings[2].primary_pattern);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            settings[2].c);
+            settings[2].setting);
   EXPECT_EQ(ContentSettingsPattern::FromURLNoWildcard(
                 GURL("http://denied2.com")),
-            settings[3].a);
+            settings[3].primary_pattern);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            settings[3].c);
+            settings[3].setting);
   EXPECT_EQ(ContentSettingsPattern::Wildcard(),
-            settings[4].a);
+            settings[4].primary_pattern);
   EXPECT_EQ(CONTENT_SETTING_ASK,
-            settings[4].c);
+            settings[4].setting);
 }

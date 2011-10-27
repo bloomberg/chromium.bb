@@ -225,6 +225,10 @@ void ChromeContentRendererClient::RenderViewCreated(
     content::RenderView* render_view) {
   ContentSettingsObserver* content_settings =
       new ContentSettingsObserver(render_view);
+  if (chrome_observer_.get()) {
+    content_settings->SetImageSettingRules(
+        chrome_observer_->image_setting_rules());
+  }
   new ExtensionHelper(render_view, extension_dispatcher_.get());
   new PageLoadHistograms(render_view, histogram_snapshots_.get());
   new PrintWebViewHelper(render_view);

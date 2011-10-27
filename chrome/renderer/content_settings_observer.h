@@ -27,13 +27,18 @@ class ContentSettingsObserver
   explicit ContentSettingsObserver(content::RenderView* render_view);
   virtual ~ContentSettingsObserver();
 
-  // Sets the content settings that back allowScripts(), allowImages(), and
-  // allowPlugins().
+  // Sets the content settings that back allowScripts() and allowPlugins().
   void SetContentSettings(const ContentSettings& settings);
 
-  // Sets the default content settings that back allowScripts(),
-  // allowImages(), and allowPlugins().
+  // Sets the default content settings that back allowScripts() and
+  // allowPlugins().
   static void SetDefaultContentSettings(const ContentSettings& settings);
+
+  // Sets the image setting rules which back |allowImage()|. The
+  // |ContentSettingsForOneType| object must outlive this
+  // |ContentSettingsObserver|.
+  void SetImageSettingRules(
+      const ContentSettingsForOneType* image_setting_rules);
 
   // Returns the setting for the given type.
   ContentSetting GetContentSetting(ContentSettingsType type);
@@ -90,10 +95,16 @@ class ContentSettingsObserver
   HostContentSettings host_content_settings_;
 
   // Stores our most up-to-date view of the default content settings.
+  // TODO(marja): Store default settings in |ChromeRenderProcessObserver|.
   static ContentSettings default_settings_;
 
-  // Stores if loading of images, scripts, and plugins is allowed.
+  // Stores if loading of scripts and plugins is allowed.
   ContentSettings current_content_settings_;
+
+  // Stores the rules for image content settings. Normally, they are owned by
+  // |ChromeRenderProcessObserver|; in the tests they are owned by the caller of
+  // |SetImageSettingRules|.
+  const ContentSettingsForOneType* image_setting_rules_;
 
   // Stores if images, scripts, and plugins have actually been blocked.
   bool content_blocked_[CONTENT_SETTINGS_NUM_TYPES];

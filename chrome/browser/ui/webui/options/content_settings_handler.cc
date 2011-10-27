@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_pattern.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -468,7 +469,7 @@ void ContentSettingsHandler::UpdateGeolocationExceptionsView() {
   Profile* profile = Profile::FromWebUI(web_ui_);
   HostContentSettingsMap* map = profile->GetHostContentSettingsMap();
 
-  HostContentSettingsMap::SettingsForOneType all_settings;
+  ContentSettingsForOneType all_settings;
   map->GetSettingsForOneType(
       CONTENT_SETTINGS_TYPE_GEOLOCATION,
       std::string(),
@@ -476,11 +477,12 @@ void ContentSettingsHandler::UpdateGeolocationExceptionsView() {
 
   // Group geolocation settings by primary_pattern.
   AllPatternsSettings all_patterns_settings;
-  for (HostContentSettingsMap::SettingsForOneType::iterator i =
+  for (ContentSettingsForOneType::iterator i =
            all_settings.begin();
        i != all_settings.end();
        ++i) {
-    all_patterns_settings[i->a][i->b] = i->c;
+    all_patterns_settings[i->primary_pattern][i->secondary_pattern] =
+        i->setting;
   }
 
   ListValue exceptions;
@@ -528,17 +530,17 @@ void ContentSettingsHandler::UpdateNotificationExceptionsView() {
   DesktopNotificationService* service =
       DesktopNotificationServiceFactory::GetForProfile(profile);
 
-  HostContentSettingsMap::SettingsForOneType settings;
+  ContentSettingsForOneType settings;
   service->GetNotificationsSettings(&settings);
 
   ListValue exceptions;
-  for (HostContentSettingsMap::SettingsForOneType::const_iterator i =
+  for (ContentSettingsForOneType::const_iterator i =
            settings.begin();
        i != settings.end();
        ++i) {
-    const HostContentSettingsMap::PatternSettingSourceTuple& tuple(*i);
     exceptions.Append(
-        GetNotificationExceptionForPage(tuple.a, tuple.c, tuple.d));
+        GetNotificationExceptionForPage(i->primary_pattern, i->setting,
+                                        i->source));
   }
 
   StringValue type_string(
@@ -553,16 +555,16 @@ void ContentSettingsHandler::UpdateNotificationExceptionsView() {
 
 void ContentSettingsHandler::UpdateExceptionsViewFromHostContentSettingsMap(
     ContentSettingsType type) {
-  HostContentSettingsMap::SettingsForOneType entries;
+  ContentSettingsForOneType entries;
   GetContentSettingsMap()->GetSettingsForOneType(type, "", &entries);
 
   ListValue exceptions;
   for (size_t i = 0; i < entries.size(); ++i) {
     // Skip default settings from extensions and policy, and the default content
     // settings; all of them will affect the default setting UI.
-    if (entries[i].a == ContentSettingsPattern::Wildcard() &&
-        entries[i].b == ContentSettingsPattern::Wildcard() &&
-        entries[i].d != "preference") {
+    if (entries[i].primary_pattern == ContentSettingsPattern::Wildcard() &&
+        entries[i].secondary_pattern == ContentSettingsPattern::Wildcard() &&
+        entries[i].source != "preference") {
       continue;
     }
     // The content settings UI does not support secondary content settings
@@ -571,9 +573,10 @@ void ContentSettingsHandler::UpdateExceptionsViewFromHostContentSettingsMap(
     // able to modify content settings with a secondary pattern other than the
     // wildcard pattern. So only show settings that the user is able to modify.
     // TODO(bauerb): Support a read-only view for those patterns.
-    if (entries[i].b == ContentSettingsPattern::Wildcard()) {
+    if (entries[i].secondary_pattern == ContentSettingsPattern::Wildcard()) {
       exceptions.Append(
-          GetExceptionForPage(entries[i].a, entries[i].c, entries[i].d));
+          GetExceptionForPage(entries[i].primary_pattern, entries[i].setting,
+                              entries[i].source));
     } else {
       LOG(ERROR) << "Secondary content settings patterns are not "
                  << "supported by the content settings UI";
@@ -597,7 +600,7 @@ void ContentSettingsHandler::UpdateExceptionsViewFromOTRHostContentSettingsMap(
   if (!otr_settings_map)
     return;
 
-  HostContentSettingsMap::SettingsForOneType otr_entries;
+  ContentSettingsForOneType otr_entries;
   otr_settings_map->GetSettingsForOneType(type, "", &otr_entries);
 
   ListValue otr_exceptions;
@@ -605,7 +608,7 @@ void ContentSettingsHandler::UpdateExceptionsViewFromOTRHostContentSettingsMap(
     // Off-the-record HostContentSettingsMap contains incognito content settings
     // as well as normal content settings. Here, we use the incongnito settings
     // only.
-    if (!otr_entries[i].e)
+    if (!otr_entries[i].incognito)
       continue;
     // The content settings UI does not support secondary content settings
     // pattern yet. For content settings set through the content settings UI the
@@ -613,11 +616,12 @@ void ContentSettingsHandler::UpdateExceptionsViewFromOTRHostContentSettingsMap(
     // able to modify content settings with a secondary pattern other than the
     // wildcard pattern. So only show settings that the user is able to modify.
     // TODO(bauerb): Support a read-only view for those patterns.
-    if (otr_entries[i].b == ContentSettingsPattern::Wildcard()) {
+    if (otr_entries[i].secondary_pattern ==
+        ContentSettingsPattern::Wildcard()) {
       otr_exceptions.Append(
-          GetExceptionForPage(otr_entries[i].a,
-                              otr_entries[i].c,
-                              otr_entries[i].d));
+          GetExceptionForPage(otr_entries[i].primary_pattern,
+                              otr_entries[i].setting,
+                              otr_entries[i].source));
     } else {
       LOG(ERROR) << "Secondary content settings patterns are not "
                  << "supported by the content settings UI";

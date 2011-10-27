@@ -28,11 +28,15 @@ class MockContentSettingsObserver : public ContentSettingsObserver {
 
   MOCK_METHOD5(OnAllowDOMStorage,
                void(int, const GURL&, const GURL&, bool, IPC::Message*));
+  GURL image_url_;
+  std::string image_origin_;
 };
 
 MockContentSettingsObserver::MockContentSettingsObserver(
     content::RenderView* render_view)
-    : ContentSettingsObserver(render_view) {
+    : ContentSettingsObserver(render_view),
+      image_url_("http://www.foo.com/image.jpg"),
+      image_origin_("http://www.foo.com") {
 }
 
 bool MockContentSettingsObserver::Send(IPC::Message* message) {
@@ -161,4 +165,85 @@ TEST_F(ChromeRenderViewTest, PluginsTemporarilyAllowed) {
   // Navigate to a different page.
   LoadHTML("<html>Bar</html>");
   EXPECT_FALSE(observer->plugins_temporarily_allowed());
+}
+
+TEST_F(ChromeRenderViewTest, ImagesBlockedByDefault) {
+  MockContentSettingsObserver mock_observer(view_);
+
+  // Load some HTML.
+  LoadHTML("<html>Foo</html>");
+
+  // Set the default image blocking setting.
+  ContentSettingsForOneType image_setting_rules;
+  image_setting_rules.push_back(
+      ContentSettingPatternSource(ContentSettingsPattern::Wildcard(),
+                                  ContentSettingsPattern::Wildcard(),
+                                  CONTENT_SETTING_BLOCK,
+                                  "",
+                                  false));
+
+  ContentSettingsObserver* observer = ContentSettingsObserver::Get(view_);
+  observer->SetImageSettingRules(&image_setting_rules);
+  EXPECT_CALL(mock_observer,
+              OnContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES, std::string()));
+  EXPECT_FALSE(observer->AllowImage(GetMainFrame(),
+                                    true, mock_observer.image_url_));
+  ::testing::Mock::VerifyAndClearExpectations(&observer);
+
+  // Create an exception which allows the image.
+  image_setting_rules.insert(
+      image_setting_rules.begin(),
+      ContentSettingPatternSource(
+          ContentSettingsPattern::Wildcard(),
+          ContentSettingsPattern::FromString(mock_observer.image_origin_),
+          CONTENT_SETTING_ALLOW,
+          "",
+          false));
+
+  EXPECT_CALL(
+      mock_observer,
+      OnContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES, std::string())).Times(0);
+  EXPECT_TRUE(observer->AllowImage(GetMainFrame(), true,
+                                   mock_observer.image_url_));
+  ::testing::Mock::VerifyAndClearExpectations(&observer);
+}
+
+TEST_F(ChromeRenderViewTest, ImagesAllowedByDefault) {
+  MockContentSettingsObserver mock_observer(view_);
+
+  // Load some HTML.
+  LoadHTML("<html>Foo</html>");
+
+  // Set the default image blocking setting.
+  ContentSettingsForOneType image_setting_rules;
+  image_setting_rules.push_back(
+      ContentSettingPatternSource(ContentSettingsPattern::Wildcard(),
+                                  ContentSettingsPattern::Wildcard(),
+                                  CONTENT_SETTING_ALLOW,
+                                  "",
+                                  false));
+
+  ContentSettingsObserver* observer = ContentSettingsObserver::Get(view_);
+  observer->SetImageSettingRules(&image_setting_rules);
+  EXPECT_CALL(
+      mock_observer,
+      OnContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES, std::string())).Times(0);
+  EXPECT_TRUE(observer->AllowImage(GetMainFrame(), true,
+                                   mock_observer.image_url_));
+  ::testing::Mock::VerifyAndClearExpectations(&observer);
+
+  // Create an exception which blocks the image.
+  image_setting_rules.insert(
+      image_setting_rules.begin(),
+      ContentSettingPatternSource(
+          ContentSettingsPattern::Wildcard(),
+          ContentSettingsPattern::FromString(mock_observer.image_origin_),
+          CONTENT_SETTING_BLOCK,
+          "",
+          false));
+  EXPECT_CALL(mock_observer,
+              OnContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES, std::string()));
+  EXPECT_FALSE(observer->AllowImage(GetMainFrame(),
+                                    true, mock_observer.image_url_));
+  ::testing::Mock::VerifyAndClearExpectations(&observer);
 }

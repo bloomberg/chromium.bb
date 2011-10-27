@@ -8380,7 +8380,7 @@
       },
       "images": {
         "$ref": "ContentSetting",
-        "description": "Whether to show images. One of<br><var>allow</var>: Show images,<br><var>block</var>: Don't show images. <br>Default is <var>allow</var>.<br>The primary URL is the main-frame URL. The secondary URL is not used.",
+        "description": "Whether to show images. One of<br><var>allow</var>: Show images,<br><var>block</var>: Don't show images. <br>Default is <var>allow</var>.<br>The primary URL is the main-frame URL. The secondary URL is the URL of the image.",
         "value": [
           "images",
           {"type":"string", "enum": ["allow", "block"]}

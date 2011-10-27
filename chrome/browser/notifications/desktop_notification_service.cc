@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_pattern.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -292,7 +293,7 @@ void DesktopNotificationService::ResetToDefaultContentSetting() {
 }
 
 void DesktopNotificationService::GetNotificationsSettings(
-    HostContentSettingsMap::SettingsForOneType* settings) {
+    ContentSettingsForOneType* settings) {
   profile_->GetHostContentSettingsMap()->GetSettingsForOneType(
       CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
       NO_RESOURCE_IDENTIFIER,

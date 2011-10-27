@@ -49,15 +49,6 @@ class HostContentSettingsMap
     NUM_PROVIDER_TYPES,
   };
 
-  // TODO(markusheintz): I sold my soul to the devil on order to add this tuple.
-  // I really want my soul back, so I really will change this ASAP.
-  typedef Tuple5<ContentSettingsPattern,
-                 ContentSettingsPattern,
-                 ContentSetting,
-                 std::string,
-                 bool> PatternSettingSourceTuple;
-  typedef std::vector<PatternSettingSourceTuple> SettingsForOneType;
-
   HostContentSettingsMap(PrefService* prefs,
                          ExtensionService* extension_service,
                          bool incognito);
@@ -126,16 +117,13 @@ class HostContentSettingsMap
       const GURL& secondary_url) const;
 
   // For a given content type, returns all patterns with a non-default setting,
-  // mapped to their actual settings, in lexicographical order.  |settings|
-  // must be a non-NULL outparam. If this map was created for the
-  // incognito profile, it will only return those settings differing from
-  // the main map. For ContentSettingsTypes that require an resource identifier
-  // to be specified, the |resource_identifier| must be non-empty.
+  // mapped to their actual settings, in the precedence order of the rules.
+  // |settings| must be a non-NULL outparam.
   //
   // This may be called on any thread.
   void GetSettingsForOneType(ContentSettingsType content_type,
                              const std::string& resource_identifier,
-                             SettingsForOneType* settings) const;
+                             ContentSettingsForOneType* settings) const;
 
   // Sets the default setting for a particular content type. This method must
   // not be invoked on an incognito map.
@@ -236,7 +224,7 @@ class HostContentSettingsMap
       ProviderType provider_type,
       ContentSettingsType content_type,
       const std::string& resource_identifier,
-      SettingsForOneType* settings,
+      ContentSettingsForOneType* settings,
       bool incognito) const;
 
   // Weak; owned by the Profile.

@@ -286,6 +286,10 @@ void ChromeContentBrowserClient::BrowserRenderProcessHostCreated(
       profile->IsOffTheRecord()));
 
   SendExtensionWebRequestStatusToHost(host);
+  ContentSettingsForOneType settings;
+  HostContentSettingsMap* map = profile->GetHostContentSettingsMap();
+  map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_IMAGES, "", &settings);
+  host->Send(new ChromeViewMsg_SetImageSettingRules(settings));
 }
 
 void ChromeContentBrowserClient::PluginProcessHostCreated(

@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/common/content_settings.h"
 #include "content/public/renderer/render_process_observer.h"
 
 class GURL;
@@ -40,6 +41,10 @@ class ChromeRenderProcessObserver : public content::RenderProcessObserver {
   // any 'clear cache' commands that were delayed until the next navigation.
   void ExecutePendingClearCache();
 
+  // Returns a pointer to the image setting rules owned by
+  // |ChromeRenderProcessObserver|.
+  const ContentSettingsForOneType* image_setting_rules() const;
+
  private:
   // RenderProcessObserver implementation.
   virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -49,6 +54,7 @@ class ChromeRenderProcessObserver : public content::RenderProcessObserver {
   void OnSetContentSettingsForCurrentURL(
       const GURL& url, const ContentSettings& content_settings);
   void OnSetDefaultContentSettings(const ContentSettings& content_settings);
+  void OnSetImageSettingRules(const ContentSettingsForOneType& settings);
   void OnSetCacheCapacities(size_t min_dead_capacity,
                             size_t max_dead_capacity,
                             size_t capacity);
@@ -69,6 +75,7 @@ class ChromeRenderProcessObserver : public content::RenderProcessObserver {
   chrome::ChromeContentRendererClient* client_;
   // If true, the web cache shall be cleared before the next navigation event.
   bool clear_cache_pending_;
+  ContentSettingsForOneType image_setting_rules_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeRenderProcessObserver);
 };

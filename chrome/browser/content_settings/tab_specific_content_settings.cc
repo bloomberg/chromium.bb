@@ -489,6 +489,9 @@ void TabSpecificContentSettings::Observe(
         map->GetDefaultContentSettings()));
     Send(new ChromeViewMsg_SetContentSettingsForCurrentURL(
         entry_url, map->GetContentSettings(entry_url, entry_url)));
+    ContentSettingsForOneType settings;
+    map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_IMAGES, "", &settings);
+    Send(new ChromeViewMsg_SetImageSettingRules(settings));
   }
 }
 

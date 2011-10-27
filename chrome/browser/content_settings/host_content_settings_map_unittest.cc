@@ -180,7 +180,7 @@ TEST_F(HostContentSettingsMapTest, IndividualSettings) {
       CONTENT_SETTINGS_TYPE_PLUGINS,
       std::string(),
       CONTENT_SETTING_BLOCK);
-  HostContentSettingsMap::SettingsForOneType host_settings;
+  ContentSettingsForOneType host_settings;
   host_content_settings_map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_IMAGES,
                                                    "",
                                                    &host_settings);
@@ -233,7 +233,7 @@ TEST_F(HostContentSettingsMapTest, Clear) {
       CONTENT_SETTING_BLOCK);
   host_content_settings_map->ClearSettingsForOneType(
       CONTENT_SETTINGS_TYPE_IMAGES);
-  HostContentSettingsMap::SettingsForOneType host_settings;
+  ContentSettingsForOneType host_settings;
   host_content_settings_map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_IMAGES,
                                                    "",
                                                    &host_settings);

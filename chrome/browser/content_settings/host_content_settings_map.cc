@@ -316,7 +316,7 @@ ContentSettings HostContentSettingsMap::GetContentSettings(
 void HostContentSettingsMap::GetSettingsForOneType(
     ContentSettingsType content_type,
     const std::string& resource_identifier,
-    SettingsForOneType* settings) const {
+    ContentSettingsForOneType* settings) const {
   DCHECK(content_settings::SupportsResourceIdentifier(content_type) ||
          resource_identifier.empty());
   DCHECK(settings);
@@ -552,7 +552,7 @@ void HostContentSettingsMap::AddSettingsForOneType(
     ProviderType provider_type,
     ContentSettingsType content_type,
     const std::string& resource_identifier,
-    SettingsForOneType* settings,
+    ContentSettingsForOneType* settings,
     bool incognito) const {
   scoped_ptr<content_settings::RuleIterator> rule_iterator(
       provider->GetRuleIterator(content_type,
@@ -561,7 +561,7 @@ void HostContentSettingsMap::AddSettingsForOneType(
   ContentSettingsPattern wildcard = ContentSettingsPattern::Wildcard();
   while (rule_iterator->HasNext()) {
     const content_settings::Rule& rule = rule_iterator->Next();
-    settings->push_back(PatternSettingSourceTuple(
+    settings->push_back(ContentSettingPatternSource(
         rule.primary_pattern, rule.secondary_pattern,
         content_settings::ValueToContentSetting(rule.value.get()),
         kProviderNames[provider_type],

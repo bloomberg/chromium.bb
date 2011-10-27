@@ -14,7 +14,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/content_settings/content_settings_provider.h"
-#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/common/content_settings.h"
 #include "content/public/browser/notification_observer.h"
@@ -107,8 +106,7 @@ class DesktopNotificationService : public content::NotificationObserver,
 
   // Returns all notifications settings. |settings| is cleared before
   // notifications setting are passed to it.
-  void GetNotificationsSettings(
-      HostContentSettingsMap::SettingsForOneType* settings);
+  void GetNotificationsSettings(ContentSettingsForOneType* settings);
 
   // Clears the notifications setting for the given pattern.
   void ClearSetting(const ContentSettingsPattern& pattern);
