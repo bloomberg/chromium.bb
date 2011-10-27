@@ -92,7 +92,6 @@ void WorkspaceManager::SetOverview(bool overview) {
   if (is_overview_ == overview)
     return;
   is_overview_ = overview;
-  gfx::Rect bounds = viewport_->GetTargetBounds();
 
   ui::Transform transform;
   if (is_overview_) {
@@ -108,10 +107,18 @@ void WorkspaceManager::SetOverview(bool overview) {
     transform.SetScale(scale, scale);
 
     int overview_width = viewport_->bounds().width() * scale;
-    int dx = overview_width < workspace_size_.width() ?
-        (workspace_size_.width() - overview_width) / 2 : 0;
+    int dx = 0;
+    if (overview_width < workspace_size_.width()) {
+      dx = (workspace_size_.width() - overview_width) / 2;
+    } else if (active_workspace_) {
+      // Center the active workspace.
+      int active_workspace_mid_x = (active_workspace_->bounds().x() +
+          active_workspace_->bounds().width() / 2) * scale;
+      dx = workspace_size_.width() / 2 - active_workspace_mid_x;
+      dx = std::min(0, std::max(dx, workspace_size_.width() - overview_width));
+    }
 
-    transform.SetTranslateX(-viewport_->GetTargetBounds().x() + dx);
+    transform.SetTranslateX(dx);
     transform.SetTranslateY(workspace_size_.height() *  (1.0f - scale) / 2);
   } else {
     transform.SetTranslateX(-active_workspace_->bounds().x());

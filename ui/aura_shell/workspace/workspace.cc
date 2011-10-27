@@ -60,7 +60,6 @@ void Workspace::RemoveWindow(aura::Window* window) {
   Layout(NULL);
 }
 
-
 bool Workspace::Contains(aura::Window* window) const {
   return std::find(windows_.begin(), windows_.end(), window) != windows_.end();
 }
@@ -74,7 +73,7 @@ void Workspace::Layout(aura::Window* no_animation) {
   int total_width = 0;
   for (aura::Window::Windows::const_iterator i = windows_.begin();
        i != windows_.end();
-       i++) {
+       ++i) {
     if (total_width)
       total_width += kWindowHorizontalMargin;
     // TODO(oshima): use restored bounds.
@@ -85,7 +84,7 @@ void Workspace::Layout(aura::Window* no_animation) {
     int dx = (work_area.width() - total_width) / 2;
     for (aura::Window::Windows::iterator i = windows_.begin();
          i != windows_.end();
-         i++) {
+         ++i) {
       MoveWindowTo(*i,
                    gfx::Point(work_area.x() + dx, work_area.y()),
                    no_animation != *i);
