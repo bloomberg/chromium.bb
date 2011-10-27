@@ -43,7 +43,7 @@ class URLRequestSlowDownloadJob : public net::URLRequestJob {
 
   // Returns the current number of URLRequestSlowDownloadJobs that have
   // not yet completed.
-  static size_t NumberOutstandingRequests();
+  CONTENT_EXPORT static size_t NumberOutstandingRequests();
 
   // Adds the testing URLs to the net::URLRequestFilter.
   CONTENT_EXPORT static void AddUrlHandler();

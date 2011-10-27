@@ -103,7 +103,7 @@ void RecordHistorySize(int size);
 // Record the total number of items and the number of in-progress items showing
 // in the shelf when it closes.  Set |autoclose| to true when the shelf is
 // closing itself, false when the user explicitly closed it.
-void RecordShelfClose(int size, int in_progress, bool autoclose);
+CONTENT_EXPORT void RecordShelfClose(int size, int in_progress, bool autoclose);
 
 // Record the number of downloads removed by ClearAll.
 void RecordClearAllSize(int size);

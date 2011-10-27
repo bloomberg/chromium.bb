@@ -16,11 +16,11 @@
 
 namespace content {
 
-class NotificationService {
+class CONTENT_EXPORT NotificationService {
  public:
   // Returns the NotificationService object for the current thread, or NULL if
   // none.
-  static CONTENT_EXPORT NotificationService* current();
+  static NotificationService* current();
 
   virtual ~NotificationService() {}
 

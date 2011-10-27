@@ -595,7 +595,7 @@
   IPC_MESSAGE_EXTRA(sync, kind, msg_class, in_cnt, out_cnt, in_list, out_list)
 
 #define IPC_EMPTY_CONTROL_DECL(msg_class, in_cnt, out_cnt, in_list, out_list) \
-  class msg_class : public IPC::Message {                                     \
+  class IPC_MESSAGE_EXPORT msg_class : public IPC::Message {                  \
    public:                                                                    \
     typedef IPC::Message Schema;                                              \
     enum { ID = IPC_MESSAGE_ID() };                                           \
@@ -604,7 +604,7 @@
   };
 
 #define IPC_EMPTY_ROUTED_DECL(msg_class, in_cnt, out_cnt, in_list, out_list)  \
-  class msg_class : public IPC::Message {                                     \
+  class IPC_MESSAGE_EXPORT msg_class : public IPC::Message {                  \
    public:                                                                    \
     typedef IPC::Message Schema;                                              \
     enum { ID = IPC_MESSAGE_ID() };                                           \

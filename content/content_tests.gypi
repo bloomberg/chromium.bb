@@ -118,6 +118,7 @@
         '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
         '../ui/gfx/gl/gl.gyp:gl',
         '../ui/ui.gyp:ui',
+        '../webkit/support/webkit_support.gyp:database',
         '../webkit/support/webkit_support.gyp:glue',
         '../webkit/support/webkit_support.gyp:quota',
       ],

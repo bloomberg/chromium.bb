@@ -133,24 +133,26 @@ enum PageTransition {
 };
 
 // Simplifies the provided transition by removing any qualifier
-PageTransition PageTransitionStripQualifier(PageTransition type);
+CONTENT_EXPORT PageTransition PageTransitionStripQualifier(
+    PageTransition type);
 
 bool PageTransitionIsValidType(int32 type);
 
-PageTransition PageTransitionFromInt(int32 type);
+CONTENT_EXPORT PageTransition PageTransitionFromInt(int32 type);
 
 // Returns true if the given transition is a top-level frame transition, or
 // false if the transition was for a subframe.
-bool PageTransitionIsMainFrame(PageTransition type);
+CONTENT_EXPORT bool PageTransitionIsMainFrame(PageTransition type);
 
 // Returns whether a transition involves a redirection
-bool PageTransitionIsRedirect(PageTransition type);
+CONTENT_EXPORT bool PageTransitionIsRedirect(PageTransition type);
 
 // Return the qualifier
-int32 PageTransitionGetQualifier(PageTransition type);
+CONTENT_EXPORT int32 PageTransitionGetQualifier(PageTransition type);
 
 // Return a string version of the core type values.
-const char* PageTransitionGetCoreTransitionString(PageTransition type);
+CONTENT_EXPORT const char* PageTransitionGetCoreTransitionString(
+    PageTransition type);
 
 }  // namespace content
 

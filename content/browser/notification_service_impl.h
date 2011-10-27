@@ -17,7 +17,8 @@ class NotificationObserver;
 class NotificationRegistrar;
 }
 
-class NotificationServiceImpl : public content::NotificationService {
+class CONTENT_EXPORT NotificationServiceImpl
+    : public content::NotificationService {
  public:
   static NotificationServiceImpl* current();
 

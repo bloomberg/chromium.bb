@@ -28,7 +28,8 @@ typedef std::vector<ContentElement> ContentVector;
 // (if |num_bytes| is not NULL).
 // If |contents| is empty, returns NULL as an |IOBuffer| is not allowed
 // to have 0 bytes.
-net::IOBuffer* AssembleData(const ContentVector& contents, size_t* num_bytes);
+CONTENT_EXPORT net::IOBuffer* AssembleData(const ContentVector& contents,
+                                           size_t* num_bytes);
 
 // |DownloadBuffer| is a thread-safe wrapper around |ContentVector|.
 //

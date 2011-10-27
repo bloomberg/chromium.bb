@@ -25,7 +25,7 @@ class WorkerServiceObserver;
 struct ViewHostMsg_CreateWorker_Params;
 
 // A singleton for managing HTML5 web workers.
-class WorkerService {
+class CONTENT_EXPORT WorkerService {
  public:
   // Returns the WorkerService singleton.
   static WorkerService* GetInstance();
@@ -76,8 +76,8 @@ class WorkerService {
   static const int kMaxWorkerProcessesWhenSharing;
 
   // Used when we run each worker in a separate process.
-  CONTENT_EXPORT static const int kMaxWorkersWhenSeparate;
-  CONTENT_EXPORT static const int kMaxWorkersPerTabWhenSeparate;
+  static const int kMaxWorkersWhenSeparate;
+  static const int kMaxWorkersPerTabWhenSeparate;
 
  private:
   friend struct DefaultSingletonTraits<WorkerService>;

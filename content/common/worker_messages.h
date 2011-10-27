@@ -13,6 +13,7 @@
 
 #include "base/basictypes.h"
 #include "base/string16.h"
+#include "content/common/content_export.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
@@ -25,6 +26,8 @@ typedef std::pair<string16, std::vector<int> > QueuedMessage;
 
 #endif  // CONTENT_COMMON_WORKER_MESSAGES_H_
 
+#undef IPC_MESSAGE_EXPORT
+#define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 #define IPC_MESSAGE_START WorkerMsgStart
 
 // Parameters structure for WorkerHostMsg_PostConsoleMessageToWorkerObject,
