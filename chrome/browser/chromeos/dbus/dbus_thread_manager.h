@@ -24,7 +24,7 @@ class BluetoothManagerClient;
 class CrosDBusService;
 class PowerManagerClient;
 class SessionManagerClient;
-class SensorsSource;
+class SensorsClient;
 class SpeechSynthesizerClient;
 
 // DBusThreadManager manages the D-Bus thread, the thread dedicated to
@@ -104,7 +104,7 @@ class DBusThreadManager {
   scoped_ptr<base::Thread> dbus_thread_;
   scoped_refptr<dbus::Bus> system_bus_;
   CrosDBusService* cros_dbus_service_;
-  scoped_ptr<SensorsSource> sensors_source_;
+  scoped_ptr<SensorsClient> sensors_client_;
   scoped_ptr<BluetoothManagerClient> bluetooth_manager_client_;
   scoped_ptr<BluetoothAdapterClient> bluetooth_adapter_client_;
   scoped_ptr<PowerManagerClient> power_manager_client_;

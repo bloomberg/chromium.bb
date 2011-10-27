@@ -25,7 +25,7 @@ class SpeechSynthesizerClient {
   // The argument indicates if the speech synthesizer is speaking or not.
   typedef base::Callback<void(bool)> IsSpeakingCallback;
 
-  virtual ~SpeechSynthesizerClient() {}
+  virtual ~SpeechSynthesizerClient();
 
   // Speaks the specified text.
   virtual void Speak(const std::string& text) = 0;
@@ -53,6 +53,13 @@ class SpeechSynthesizerClient {
   static const char kSpeechPropertyVolume[];
   static const char kSpeechPropertyEquals[];
   static const char kSpeechPropertyDelimiter[];
+
+ protected:
+  // Create() should be used instead.
+  SpeechSynthesizerClient();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SpeechSynthesizerClient);
 };
 
 }  // namespace chromeos

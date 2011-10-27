@@ -45,9 +45,13 @@ class PowerManagerClient {
   // Creates the instance.
   static PowerManagerClient* Create(dbus::Bus* bus);
 
-  PowerManagerClient();
   virtual ~PowerManagerClient();
 
+ protected:
+  // Create() should be used instead.
+  PowerManagerClient();
+
+ private:
   DISALLOW_COPY_AND_ASSIGN(PowerManagerClient);
 };
 

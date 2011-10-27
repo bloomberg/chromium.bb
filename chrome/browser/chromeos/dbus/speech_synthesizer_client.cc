@@ -135,6 +135,12 @@ class SpeechSynthesizerClientStubImpl : public SpeechSynthesizerClient {
   DISALLOW_COPY_AND_ASSIGN(SpeechSynthesizerClientStubImpl);
 };
 
+SpeechSynthesizerClient::SpeechSynthesizerClient() {
+}
+
+SpeechSynthesizerClient::~SpeechSynthesizerClient() {
+}
+
 // static
 SpeechSynthesizerClient* SpeechSynthesizerClient::Create(dbus::Bus* bus) {
   if (system::runtime_environment::IsRunningOnChromeOS()) {

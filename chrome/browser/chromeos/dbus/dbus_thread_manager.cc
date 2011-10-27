@@ -9,9 +9,9 @@
 #include "chrome/browser/chromeos/dbus/bluetooth_adapter_client.h"
 #include "chrome/browser/chromeos/dbus/bluetooth_manager_client.h"
 #include "chrome/browser/chromeos/dbus/cros_dbus_service.h"
-#include "chrome/browser/chromeos/dbus/session_manager_client.h"
 #include "chrome/browser/chromeos/dbus/power_manager_client.h"
-#include "chrome/browser/chromeos/dbus/sensors_source.h"
+#include "chrome/browser/chromeos/dbus/sensors_client.h"
+#include "chrome/browser/chromeos/dbus/session_manager_client.h"
 #include "chrome/browser/chromeos/dbus/speech_synthesizer_client.h"
 #include "chrome/common/chrome_switches.h"
 #include "dbus/bus.h"
@@ -42,8 +42,7 @@ DBusThreadManager::DBusThreadManager() {
   // Start monitoring sensors if needed.
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kEnableSensors)) {
-    sensors_source_.reset(new SensorsSource);
-    sensors_source_->Init(system_bus_.get());
+    sensors_client_.reset(SensorsClient::Create(system_bus_.get()));
   }
 
   // Create bluetooth clients if bluetooth is enabled.
