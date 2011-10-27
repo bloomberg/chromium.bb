@@ -5,6 +5,7 @@
 #include "chrome/browser/background/background_contents_service.h"
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -44,9 +45,8 @@ void CloseBalloon(const std::string id) {
 void ScheduleCloseBalloon(const std::string& extension_id) {
   if (!MessageLoop::current())  // For unit_tests
     return;
-  MessageLoop::current()->PostTask(FROM_HERE,
-      NewRunnableFunction(&CloseBalloon,
-          kNotificationPrefix + extension_id));
+  MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(&CloseBalloon, kNotificationPrefix + extension_id));
 }
 
 class CrashNotificationDelegate : public NotificationDelegate {
@@ -293,8 +293,8 @@ void BackgroundContentsService::Observe(
       // notifications for this extension to be cancelled by
       // DesktopNotificationService. For this reason, instead of showing the
       // balloon right now, we schedule it to show a little later.
-      MessageLoop::current()->PostTask(FROM_HERE,
-          NewRunnableFunction(&ShowBalloon, extension, profile));
+      MessageLoop::current()->PostTask(
+          FROM_HERE, base::Bind(&ShowBalloon, extension, profile));
       break;
     }
     case chrome::NOTIFICATION_EXTENSION_UNLOADED:

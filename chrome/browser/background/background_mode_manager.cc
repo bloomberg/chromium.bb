@@ -5,6 +5,7 @@
 #include <string>
 
 #include "base/base_paths.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
@@ -426,7 +427,7 @@ void BackgroundModeManager::EndKeepAliveForStartup() {
     // keep-alive (which can shutdown Chrome) before the message loop has
     // started.
     MessageLoop::current()->PostTask(
-        FROM_HERE, NewRunnableFunction(BrowserList::EndKeepAlive));
+        FROM_HERE, base::Bind(&BrowserList::EndKeepAlive));
   }
 }
 
