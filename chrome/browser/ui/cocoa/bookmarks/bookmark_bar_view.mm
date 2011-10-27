@@ -222,20 +222,19 @@
     [data getBytes:&button length:sizeof(button)];
 
     // If we're dragging from one profile to another, disallow moving (only
-    // allow copying). Note that we need to call |GetOriginalProfile()| to make
-    // sure that Incognito profiles are handled correctly.
-    NSWindow* source_window = [[button delegate] browserWindow];
-    BrowserWindowController* source_window_controller =
-        [BrowserWindowController
-         browserWindowControllerForWindow:source_window];
-    const Profile* source_profile =
-        [source_window_controller profile]->GetOriginalProfile();
-    const Profile* target_profile =
-        [controller_ bookmarkModel]->profile()->GetOriginalProfile();
+    // allow copying). Each profile has its own bookmark model, so one way to
+    // check whether we are dragging across profiles is to see if the
+    // |BookmarkNode| corresponding to |button| exists in this profile. If it
+    // does, we're dragging within a profile; otherwise, we're dragging across
+    // profiles.
+    const BookmarkModel* const model = [[self controller] bookmarkModel];
+    const BookmarkNode* const source_node = [button bookmarkNode];
+    const BookmarkNode* const target_node =
+        model->GetNodeByID(source_node->id());
 
     BOOL copy =
         !([info draggingSourceOperationMask] & NSDragOperationMove) ||
-        source_profile != target_profile;
+        (source_node != target_node);
     rtn = [controller_ dragButton:button
                                to:[info draggingLocation]
                              copy:copy];

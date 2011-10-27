@@ -420,7 +420,7 @@ void BookmarkModel::BlockTillLoaded() {
   loaded_signal_.Wait();
 }
 
-const BookmarkNode* BookmarkModel::GetNodeByID(int64 id) {
+const BookmarkNode* BookmarkModel::GetNodeByID(int64 id) const {
   // TODO(sky): TreeNode needs a method that visits all nodes using a predicate.
   return GetNodeByID(&root_, id);
 }
@@ -699,7 +699,7 @@ BookmarkNode* BookmarkModel::AddNode(BookmarkNode* parent,
 }
 
 const BookmarkNode* BookmarkModel::GetNodeByID(const BookmarkNode* node,
-                                               int64 id) {
+                                               int64 id) const {
   if (node->id() == id)
     return node;
 

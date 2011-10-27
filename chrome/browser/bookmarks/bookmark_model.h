@@ -296,7 +296,7 @@ class BookmarkModel : public content::NotificationObserver,
   virtual void BlockTillLoaded() OVERRIDE;
 
   // Returns the node with |id|, or NULL if there is no node with |id|.
-  const BookmarkNode* GetNodeByID(int64 id);
+  const BookmarkNode* GetNodeByID(int64 id) const;
 
   // Adds a new folder node at the specified position.
   const BookmarkNode* AddFolder(const BookmarkNode* parent,
@@ -393,7 +393,7 @@ class BookmarkModel : public content::NotificationObserver,
                         bool was_bookmarked);
 
   // Implementation of GetNodeByID.
-  const BookmarkNode* GetNodeByID(const BookmarkNode* node, int64 id);
+  const BookmarkNode* GetNodeByID(const BookmarkNode* node, int64 id) const;
 
   // Returns true if the parent and index are valid.
   bool IsValidIndex(const BookmarkNode* parent, int index, bool allow_end);

@@ -3,12 +3,14 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_nsobject.h"
+#include "base/string16.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_view.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button.h"
+#import "chrome/browser/ui/cocoa/bookmarks/bookmark_button_cell.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_folder_target.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
@@ -16,8 +18,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
-#import "third_party/ocmock/OCMock/OCMock.h"
-#import "third_party/ocmock/ocmock_extensions.h"
 
 namespace {
 // Some values used for mocks and fakes.
@@ -197,24 +197,9 @@ class BookmarkBarViewTest : public CocoaProfileTest {
   virtual void SetUp() {
     CocoaProfileTest::SetUp();
     view_.reset([[BookmarkBarView alloc] init]);
-    window_ = CreateBrowserWindow()->GetNativeHandle();
-  }
-
-  id GetMockController() {
-    id mock_controller =
-        [OCMockObject mockForClass:[BookmarkBarController class]];
-    [[[mock_controller stub] andReturnBool:YES]
-     draggingAllowed:OCMOCK_ANY];
-    [[[mock_controller stub] andReturnBool:YES]
-     shouldShowIndicatorShownForPoint:kPoint];
-    [[[mock_controller stub] andReturnFloat:kFakeIndicatorPos]
-     indicatorPosForDragToPoint:kPoint];
-    [[[mock_controller stub] andReturn:window_] browserWindow];
-    return mock_controller;
   }
 
   scoped_nsobject<BookmarkBarView> view_;
-  NSWindow* window_;  // WEAK, owned by CocoaProfileTest
 };
 
 TEST_F(BookmarkBarViewTest, CanDragWindow) {
@@ -227,12 +212,24 @@ TEST_F(BookmarkBarViewTest, BookmarkButtonDragAndDrop) {
   [view_ setController:info.get()];
   [info reset];
 
+  BookmarkModel* bookmark_model = profile()->GetBookmarkModel();
+  const BookmarkNode* node =
+      bookmark_model->AddURL(bookmark_model->bookmark_bar_node(),
+                             0,
+                             ASCIIToUTF16("Test Bookmark"),
+                             GURL("http://www.exmaple.com"));
+
+  scoped_nsobject<BookmarkButtonCell> button_cell(
+      [[BookmarkButtonCell buttonCellForNode:node
+                                 contextMenu:nil
+                                    cellText:nil
+                                   cellImage:nil] retain]);
   scoped_nsobject<BookmarkButton> dragged_button([[BookmarkButton alloc] init]);
-  [dragged_button setDelegate:GetMockController()];
+  [dragged_button setCell:button_cell];
   [info setDraggingSource:dragged_button.get()];
   [info setDragDataType:kBookmarkButtonDragType];
   [info setButton:dragged_button.get()];
-  [info setBookmarkModel:profile()->GetBookmarkModel()];
+  [info setBookmarkModel:bookmark_model];
   EXPECT_EQ([view_ draggingEntered:(id)info.get()], NSDragOperationMove);
   EXPECT_TRUE([view_ performDragOperation:(id)info.get()]);
   EXPECT_TRUE([info dragButtonToPong]);
@@ -254,8 +251,20 @@ TEST_F(BookmarkBarViewTest, BookmarkButtonDragAndDropAcrossProfiles) {
   other_profile->CreateBookmarkModel(true);
   other_profile->BlockUntilBookmarkModelLoaded();
 
+  BookmarkModel* bookmark_model = profile()->GetBookmarkModel();
+  const BookmarkNode* node =
+      bookmark_model->AddURL(bookmark_model->bookmark_bar_node(),
+                             0,
+                             ASCIIToUTF16("Test Bookmark"),
+                             GURL("http://www.exmaple.com"));
+
+  scoped_nsobject<BookmarkButtonCell> button_cell(
+      [[BookmarkButtonCell buttonCellForNode:node
+                                 contextMenu:nil
+                                    cellText:nil
+                                   cellImage:nil] retain]);
   scoped_nsobject<BookmarkButton> dragged_button([[BookmarkButton alloc] init]);
-  [dragged_button setDelegate:GetMockController()];
+  [dragged_button setCell:button_cell];
   [info setDraggingSource:dragged_button.get()];
   [info setDragDataType:kBookmarkButtonDragType];
   [info setButton:dragged_button.get()];

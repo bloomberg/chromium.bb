@@ -3,9 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_nsobject.h"
+#include "base/string16.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_view.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button.h"
@@ -58,8 +59,6 @@ class BookmarkBarFolderViewTest : public CocoaProfileTest {
 
     view_.reset([[BookmarkBarFolderView alloc] init]);
 
-    // The created window will be destroyed in |CocoaProfileTest::TearDown()|.
-    window_ = CreateBrowserWindow()->GetNativeHandle();
     mock_controller_.reset(GetMockController(YES,
                                              profile()->GetBookmarkModel()));
 
@@ -70,14 +69,6 @@ class BookmarkBarFolderViewTest : public CocoaProfileTest {
 
   virtual void TearDown() {
     [mock_controller_ verify];
-
-    // Order is important here: We need to release the mock objects *prior* to
-    // calling |CocoaProfileTest::TearDown()|. This is because the
-    // |mock_controller_| retains |window_|; and if any windows remain allocated
-    // when |CocoaProfileTest::TearDown()| is called, this triggers an assertion
-    // in |ui_cocoa_test_helper.mm|.
-    mock_controller_.reset();
-    mock_button_.reset();
     CocoaProfileTest::TearDown();
   }
 
@@ -122,20 +113,25 @@ class BookmarkBarFolderViewTest : public CocoaProfileTest {
      shouldShowIndicatorShownForPoint:kPoint];
     [[[mock_controller stub] andReturnFloat:kFakeIndicatorPos]
      indicatorPosForDragToPoint:kPoint];
-    [[[mock_controller stub] andReturn:window_] browserWindow];
     [[[mock_controller stub] andReturnValue:OCMOCK_VALUE(model)] bookmarkModel];
     return [mock_controller retain];
   }
 
   id GetMockButton(id mock_controller) {
+    BookmarkModel* bookmark_model = profile()->GetBookmarkModel();
+    const BookmarkNode* node =
+        bookmark_model->AddURL(bookmark_model->bookmark_bar_node(),
+                               0,
+                               ASCIIToUTF16("Test Bookmark"),
+                               GURL("http://www.exmaple.com"));
+
     id mock_button = [OCMockObject mockForClass:[BookmarkButton class]];
-    [[[mock_button stub] andReturn:mock_controller] delegate];
+    [[[mock_button stub] andReturnValue:OCMOCK_VALUE(node)] bookmarkNode];
     return [mock_button retain];
   }
 
   scoped_nsobject<id> mock_controller_;
   scoped_nsobject<BookmarkBarFolderView> view_;
-  NSWindow* window_;  // WEAK, owned by CocoaProfileTest
   scoped_nsobject<id> mock_button_;
 };
 
