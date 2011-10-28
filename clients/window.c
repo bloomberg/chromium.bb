@@ -20,6 +20,8 @@
  * OF THIS SOFTWARE.
  */
 
+#define _GNU_SOURCE
+
 #include "../config.h"
 
 #include <stdint.h>
@@ -61,6 +63,7 @@ struct display {
 	struct wl_shell *shell;
 	struct wl_shm *shm;
 	struct wl_output *output;
+	struct wl_data_device_manager *data_device_manager;
 	struct rectangle screen_allocation;
 	EGLDisplay dpy;
 	EGLConfig rgb_config;
@@ -127,6 +130,8 @@ struct window {
 	window_enter_handler_t enter_handler;
 	window_leave_handler_t leave_handler;
 	window_item_focus_handler_t item_focus_handler;
+	window_data_handler_t data_handler;
+	window_drop_handler_t drop_handler;
 
 	struct wl_list item_list;
 	struct item *focus_item;
@@ -147,11 +152,14 @@ struct input {
 	struct wl_input_device *input_device;
 	struct window *pointer_focus;
 	struct window *keyboard_focus;
-	struct selection_offer *offer;
 	uint32_t current_pointer_image;
 	uint32_t modifiers;
 	int32_t x, y, sx, sy;
 	struct wl_list link;
+
+	struct wl_data_device *data_device;
+	struct data_offer *drag_offer;
+	struct data_offer *selection_offer;
 };
 
 enum {
@@ -695,7 +703,6 @@ display_get_pointer_surface(struct display *display, int pointer,
 	return cairo_surface_reference(surface);
 }
 
-
 static void
 window_attach_surface(struct window *window);
 
@@ -1132,8 +1139,8 @@ get_pointer_location(struct window *window, int32_t x, int32_t y)
 	return location;
 }
 
-static void
-set_pointer_image(struct input *input, uint32_t time, int pointer)
+void
+input_set_pointer_image(struct input *input, uint32_t time, int pointer)
 {
 	struct display *display = input->display;
 	struct wl_buffer *buffer;
@@ -1233,7 +1240,7 @@ window_handle_motion(void *data, struct wl_input_device *input_device,
 						    x, y, sx, sy,
 						    window->user_data);
 
-	set_pointer_image(input, time, pointer);
+	input_set_pointer_image(input, time, pointer);
 }
 
 static void
@@ -1364,7 +1371,7 @@ window_handle_pointer_focus(void *data,
 		item = window_find_item(window, x, y);
 		window_set_focus_item(window, item);
 
-		set_pointer_image(input, time, pointer);
+		input_set_pointer_image(input, time, pointer);
 	}
 }
 
@@ -1435,13 +1442,238 @@ input_get_modifiers(struct input *input)
 	return input->modifiers;
 }
 
-struct wl_drag *
-window_create_drag(struct window *window)
-{
-	cairo_device_flush (window->display->rgb_device);
-	cairo_device_flush (window->display->argb_device);
+struct data_offer {
+	struct wl_data_offer *offer;
+	struct input *input;
+	struct wl_array types;
+	int refcount;
 
-	return wl_shell_create_drag(window->display->shell);
+	struct task io_task;
+	int fd;
+	data_func_t func;
+	int32_t x, y;
+	void *user_data;
+};
+
+static void
+data_offer_offer(void *data, struct wl_data_offer *wl_data_offer, const char *type)
+{
+	struct data_offer *offer = data;
+	char **p;
+
+	p = wl_array_add(&offer->types, sizeof *p);
+	*p = strdup(type);
+}
+
+static const struct wl_data_offer_listener data_offer_listener = {
+	data_offer_offer,
+};
+
+static void
+data_offer_destroy(struct data_offer *offer)
+{
+	char **p;
+
+	offer->refcount--;
+	if (offer->refcount == 0) {
+		wl_data_offer_destroy(offer->offer);
+		for (p = offer->types.data; *p; p++)
+			free(*p);
+		wl_array_release(&offer->types);
+		free(offer);
+	}
+}
+
+static void
+data_device_data_offer(void *data,
+		       struct wl_data_device *data_device, uint32_t id)
+{
+	struct data_offer *offer;
+
+	offer = malloc(sizeof *offer);
+
+	wl_array_init(&offer->types);
+	offer->refcount = 1;
+	offer->input = data;
+
+	/* FIXME: Generate typesafe wrappers for this */
+	offer->offer = (struct wl_data_offer *)
+		wl_proxy_create_for_id((struct wl_proxy *) data_device,
+				       id, &wl_data_offer_interface);
+
+	wl_data_offer_add_listener(offer->offer,
+				   &data_offer_listener, offer);
+}
+
+static void
+data_device_enter(void *data, struct wl_data_device *data_device,
+		  uint32_t time, struct wl_surface *surface,
+		  int32_t x, int32_t y, struct wl_data_offer *offer)
+{
+	struct input *input = data;
+	struct window *window;
+	char **p;
+
+	input->drag_offer = wl_data_offer_get_user_data(offer);
+	window = wl_surface_get_user_data(surface);
+	input->pointer_focus = window;
+
+	p = wl_array_add(&input->drag_offer->types, sizeof *p);
+	*p = NULL;
+
+	window = input->pointer_focus;
+	if (window->data_handler)
+		window->data_handler(window, input, time, x, y,
+				     input->drag_offer->types.data,
+				     window->user_data);
+}
+
+static void
+data_device_leave(void *data, struct wl_data_device *data_device)
+{
+	struct input *input = data;
+
+	data_offer_destroy(input->drag_offer);
+	input->drag_offer = NULL;
+}
+
+static void
+data_device_motion(void *data, struct wl_data_device *data_device,
+		   uint32_t time, int32_t x, int32_t y)
+{
+	struct input *input = data;
+	struct window *window = input->pointer_focus;
+
+	input->sx = x;
+	input->sy = y;
+
+	if (window->data_handler)
+		window->data_handler(window, input, time, x, y,
+				     input->drag_offer->types.data,
+				     window->user_data);
+}
+
+static void
+data_device_drop(void *data, struct wl_data_device *data_device)
+{
+	struct input *input = data;
+	struct window *window = input->pointer_focus;
+
+	if (window->drop_handler)
+		window->drop_handler(window, input,
+				     input->sx, input->sy, window->user_data);
+}
+
+static void
+data_device_selection(void *data,
+		      struct wl_data_device *wl_data_device,
+		      struct wl_data_offer *offer)
+{
+	struct input *input = data;
+	char **p;
+
+	if (input->selection_offer)
+		data_offer_destroy(input->selection_offer);
+
+	input->selection_offer = wl_data_offer_get_user_data(offer);
+	p = wl_array_add(&input->selection_offer->types, sizeof *p);
+	*p = NULL;
+}
+
+static const struct wl_data_device_listener data_device_listener = {
+	data_device_data_offer,
+	data_device_enter,
+	data_device_leave,
+	data_device_motion,
+	data_device_drop,
+	data_device_selection
+};
+
+struct wl_data_device *
+input_get_data_device(struct input *input)
+{
+	return input->data_device;
+}
+
+void
+input_set_selection(struct input *input,
+		    struct wl_data_source *source, uint32_t time)
+{
+	wl_data_device_set_selection(input->data_device, source, time);
+}
+
+void
+input_accept(struct input *input, uint32_t time, const char *type)
+{
+	wl_data_offer_accept(input->drag_offer->offer, time, type);
+}
+
+static void
+offer_io_func(struct task *task, uint32_t events)
+{
+	struct data_offer *offer =
+		container_of(task, struct data_offer, io_task);
+	unsigned int len;
+	char buffer[4096];
+
+	len = read(offer->fd, buffer, sizeof buffer);
+	offer->func(buffer, len,
+		    offer->x, offer->y, offer->user_data);
+
+	if (len == 0) {
+		close(offer->fd);
+		data_offer_destroy(offer);
+	}
+}
+
+static void
+data_offer_receive_data(struct data_offer *offer, const char *mime_type,
+			data_func_t func, void *user_data)
+{
+	int p[2];
+
+	pipe2(p, O_CLOEXEC);
+	wl_data_offer_receive(offer->offer, mime_type, p[1]);
+	close(p[1]);
+
+	offer->io_task.run = offer_io_func;
+	offer->fd = p[0];
+	offer->func = func;
+	offer->refcount++;
+	offer->user_data = user_data;
+
+	display_watch_fd(offer->input->display,
+			 offer->fd, EPOLLIN, &offer->io_task);
+}
+
+void
+input_receive_drag_data(struct input *input, const char *mime_type,
+			data_func_t func, void *data)
+{
+	data_offer_receive_data(input->drag_offer, mime_type, func, data);
+	input->drag_offer->x = input->sx;
+	input->drag_offer->y = input->sy;
+}
+
+int
+input_receive_selection_data(struct input *input, const char *mime_type,
+			     data_func_t func, void *data)
+{
+	char **p;
+
+	if (input->selection_offer == NULL)
+		return -1;
+
+	for (p = input->selection_offer->types.data; *p; p++)
+		if (strcmp(mime_type, *p) == 0)
+			break;
+
+	if (*p == NULL)
+		return -1;
+
+	data_offer_receive_data(input->selection_offer,
+				mime_type, func, data);
+	return 0;
 }
 
 void
@@ -1450,13 +1682,6 @@ window_move(struct window *window, struct input *input, uint32_t time)
 	if (window->display->shell)
 		wl_shell_move(window->display->shell,
 			      window->surface, input->input_device, time);
-}
-
-void
-window_activate_drag(struct wl_drag *drag, struct window *window,
-		     struct input *input, uint32_t time)
-{
-	wl_drag_activate(drag, window->surface, input->input_device, time);
 }
 
 static void
@@ -1666,6 +1891,18 @@ window_set_item_focus_handler(struct window *window,
 }
 
 void
+window_set_data_handler(struct window *window, window_data_handler_t handler)
+{
+	window->data_handler = handler;
+}
+
+void
+window_set_drop_handler(struct window *window, window_drop_handler_t handler)
+{
+	window->drop_handler = handler;
+}
+
+void
 window_set_transparent(struct window *window, int transparent)
 {
 	window->transparent = transparent;
@@ -1834,113 +2071,12 @@ display_add_input(struct display *d, uint32_t id)
 	wl_input_device_add_listener(input->input_device,
 				     &input_device_listener, input);
 	wl_input_device_set_user_data(input->input_device, input);
-}
 
-struct selection_offer {
-	struct display *display;
-	struct wl_selection_offer *offer;
-	struct wl_array types;
-	struct input *input;
-};
-
-int
-input_offers_mime_type(struct input *input, const char *type)
-{
-	struct selection_offer *offer = input->offer;
-	char **p, **end;
-
-	if (offer == NULL)
-		return 0;
-
-	end = offer->types.data + offer->types.size;
-	for (p = offer->types.data; p < end; p++)
-		if (strcmp(*p, type) == 0)
-			return 1;
-
-	return 0;
-}
-
-void
-input_receive_mime_type(struct input *input, const char *type, int fd)
-{
-	struct selection_offer *offer = input->offer;
-
-	/* FIXME: A number of things can go wrong here: the object may
-	 * not be the current selection offer any more (which could
-	 * still work, but the source may have gone away or just
-	 * destroyed its wl_selection) or the offer may not have the
-	 * requested type after all (programmer/client error,
-	 * typically) */
-	wl_selection_offer_receive(offer->offer, type, fd);
-}
-
-static void
-selection_offer_offer(void *data,
-		      struct wl_selection_offer *selection_offer,
-		      const char *type)
-{
-	struct selection_offer *offer = data;
-
-	char **p;
-
-	p = wl_array_add(&offer->types, sizeof *p);
-	if (p)
-		*p = strdup(type);
-};
-
-static void
-selection_offer_keyboard_focus(void *data,
-			       struct wl_selection_offer *selection_offer,
-			       struct wl_input_device *input_device)
-{
-	struct selection_offer *offer = data;
-	struct input *input;
-	char **p, **end;
-
-	if (input_device == NULL) {
-		printf("selection offer retracted %p\n", selection_offer);
-		input = offer->input;
-		input->offer = NULL;
-		wl_selection_offer_destroy(selection_offer);
-		wl_array_release(&offer->types);
-		free(offer);
-		return;
-	}
-
-	input = wl_input_device_get_user_data(input_device);
-	printf("new selection offer %p:", selection_offer);
-
-	offer->input = input;
-	input->offer = offer;
-	end = offer->types.data + offer->types.size;
-	for (p = offer->types.data; p < end; p++)
-		printf(" %s", *p);
-
-	printf("\n");
-}
-
-struct wl_selection_offer_listener selection_offer_listener = {
-	selection_offer_offer,
-	selection_offer_keyboard_focus
-};
-
-static void
-add_selection_offer(struct display *d, uint32_t id)
-{
-	struct selection_offer *offer;
-
-	offer = malloc(sizeof *offer);
-	if (offer == NULL)
-		return;
-
-	offer->offer =
-		wl_display_bind(d->display, id, &wl_selection_offer_interface);
-	offer->display = d;
-	wl_array_init(&offer->types);
-	offer->input = NULL;
-
-	wl_selection_offer_add_listener(offer->offer,
-					&selection_offer_listener, offer);
+	input->data_device =
+		wl_data_device_manager_get_data_device(d->data_device_manager,
+						       input->input_device);
+	wl_data_device_add_listener(input->data_device,
+				    &data_device_listener, input);
 }
 
 static void
@@ -1962,8 +2098,10 @@ display_handle_global(struct wl_display *display, uint32_t id,
 		wl_shell_add_listener(d->shell, &shell_listener, d);
 	} else if (strcmp(interface, "wl_shm") == 0) {
 		d->shm = wl_display_bind(display, id, &wl_shm_interface);
-	} else if (strcmp(interface, "wl_selection_offer") == 0) {
-		add_selection_offer(d, id);
+	} else if (strcmp(interface, "wl_data_device_manager") == 0) {
+		d->data_device_manager =
+			wl_display_bind(display, id,
+					&wl_data_device_manager_interface);
 	}
 }
 
@@ -2213,6 +2351,12 @@ EGLDisplay
 display_get_egl_display(struct display *d)
 {
 	return d->dpy;
+}
+
+struct wl_data_source *
+display_create_data_source(struct display *display)
+{
+	return wl_data_device_manager_create_data_source(display->data_device_manager);
 }
 
 EGLConfig

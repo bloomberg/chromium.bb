@@ -112,6 +112,16 @@ struct wlsc_input_device {
 	struct wl_list link;
 	uint32_t modifier_state;
 	struct wl_selection *selection;
+
+	struct wl_list drag_resource_list;
+	struct wlsc_data_source *drag_data_source;
+	struct wl_surface *drag_focus;
+	struct wl_resource *drag_focus_resource;
+	struct wl_listener drag_focus_listener;
+
+	struct wlsc_data_source *selection_data_source;
+	struct wl_listener selection_data_source_listener;
+	struct wl_grab grab;
 };
 
 enum wlsc_visual {
@@ -163,9 +173,6 @@ struct wlsc_shell {
 	void (*configure)(struct wlsc_shell *shell,
 			  struct wlsc_surface *surface,
 			  int32_t x, int32_t y, int32_t width, int32_t height);
-	void (*set_selection_focus)(struct wlsc_shell *shell,
-				    struct wl_selection *selection,
-				    struct wl_surface *surface, uint32_t time);
 };
 
 enum {
@@ -409,6 +416,11 @@ struct wlsc_process {
 	void (*cleanup)(struct wlsc_process *process, int status);
 	struct wl_list link;
 };
+
+int
+wlsc_data_device_manager_init(struct wlsc_compositor *compositor);
+void
+wlsc_data_device_set_keyboard_focus(struct wlsc_input_device *device);
 
 void
 wlsc_watch_process(struct wlsc_process *process);

@@ -16,6 +16,7 @@ wayland_compositor_SOURCES =			\
 	compositor.c				\
 	compositor.h				\
 	image-loader.c				\
+	data-device.c				\
 	screenshooter.c				\
 	screenshooter-protocol.c		\
 	screenshooter-server-protocol.h		\

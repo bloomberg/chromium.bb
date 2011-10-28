@@ -390,10 +390,8 @@ struct terminal {
 	cairo_font_extents_t extents;
 	cairo_scaled_font_t *font_normal, *font_bold;
 
-	struct wl_selection *selection;
-	struct wl_selection_offer *selection_offer;
-	uint32_t selection_offer_has_text;
-	int32_t dragging, selection_active;
+	struct wl_data_source *selection;
+	int32_t dragging;
 	int selection_start_x, selection_start_y;
 	int selection_end_x, selection_end_y;
 };
@@ -2026,55 +2024,65 @@ terminal_data(struct terminal *terminal, const char *data, size_t length)
 }
 
 static void
-selection_listener_send(void *data, struct wl_selection *selection,
-			const char *mime_type, int fd)
+data_source_target(void *data,
+		   struct wl_data_source *source, const char *mime_type)
+{
+	fprintf(stderr, "data_source_target, %s\n", mime_type);
+}
+
+static void
+data_source_send(void *data,
+		 struct wl_data_source *source,
+		 const char *mime_type, int32_t fd)
 {
 	struct terminal *terminal = data;
 
-	fprintf(stderr, "selection send, fd is %d\n", fd);
 	terminal_send_selection(terminal, fd);
 	close(fd);
 }
 
 static void
-selection_listener_cancelled(void *data, struct wl_selection *selection)
+data_source_cancelled(void *data, struct wl_data_source *source)
 {
-	fprintf(stderr, "selection cancelled\n");
-	wl_selection_destroy(selection);
+	wl_data_source_destroy(source);
 }
 
-static const struct wl_selection_listener selection_listener = {
-	selection_listener_send,
-	selection_listener_cancelled
+static const struct wl_data_source_listener data_source_listener = {
+	data_source_target,
+	data_source_send,
+	data_source_cancelled
 };
+
+static void selection_receive_func(void *data, size_t len,
+				   int32_t x, int32_t y, void *user_data)
+{
+	struct terminal *terminal = user_data;
+
+	write(terminal->master, data, len);
+}
 
 static int
 handle_bound_key(struct terminal *terminal,
 		 struct input *input, uint32_t sym, uint32_t time)
 {
-	struct wl_shell *shell;
-
 	switch (sym) {
+	case XK_X:
+		/* Cut selection; terminal doesn't do cut, fall
+		 * through to copy. */
 	case XK_C:
-		shell = display_get_shell(terminal->display);
-		terminal->selection = wl_shell_create_selection(shell);
-		wl_selection_add_listener(terminal->selection,
-					  &selection_listener, terminal);
-		wl_selection_offer(terminal->selection, "text/plain");
-		wl_selection_activate(terminal->selection,
-				      input_get_input_device(input), time);
-
+		terminal->selection =
+			display_create_data_source(terminal->display);
+		wl_data_source_offer(terminal->selection,
+				     "text/plain; charset=utf-8");
+		wl_data_source_add_listener(terminal->selection,
+					    &data_source_listener, terminal);
+		input_set_selection(input, terminal->selection, time);
 		return 1;
 	case XK_V:
-		/* Just pass the master fd of the pty to receive the
-		 * selection. */
-		if (input_offers_mime_type(input, "text/plain"))
-			input_receive_mime_type(input, "text/plain",
-						terminal->master);
+		input_receive_selection_data(input,
+					     "text/plain; charset=utf-8",
+					     selection_receive_func, terminal);
 		return 1;
-	case XK_X:
-		/* cut selection; terminal doesn't do cut */
-		return 0;
 	default:
 		return 0;
 	}
@@ -2092,7 +2100,7 @@ key_handler(struct window *window, struct input *input, uint32_t time,
 	modifiers = input_get_modifiers(input);
 	if ((modifiers & XKB_COMMON_CONTROL_MASK) &&
 	    (modifiers & XKB_COMMON_SHIFT_MASK) &&
-	    state && handle_bound_key(terminal, input, sym, 0))
+	    state && handle_bound_key(terminal, input, sym, time))
 		return;
 
 	switch (sym) {
@@ -2234,7 +2242,6 @@ button_handler(struct window *window,
 	case 272:
 		if (state) {
 			terminal->dragging = 1;
-			terminal->selection_active = 0;
 			input_get_position(input,
 					   &terminal->selection_start_x,
 					   &terminal->selection_start_y);
@@ -2257,7 +2264,6 @@ motion_handler(struct window *window,
 	struct terminal *terminal = data;
 
 	if (terminal->dragging) {
-		terminal->selection_active = 1;
 		input_get_position(input,
 				   &terminal->selection_end_x,
 				   &terminal->selection_end_y);

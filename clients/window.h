@@ -57,6 +57,9 @@ display_get_compositor(struct display *display);
 struct wl_shell *
 display_get_shell(struct display *display);
 
+struct wl_data_source *
+display_create_data_source(struct display *display);
+
 #ifdef EGL_NO_DISPLAY
 EGLDisplay
 display_get_egl_display(struct display *d);
@@ -98,11 +101,6 @@ cairo_surface_t *
 display_get_pointer_surface(struct display *display, int pointer,
 			    int *width, int *height,
 			    int *hotspot_x, int *hotspot_y);
-
-void
-display_add_drag_listener(struct display *display,
-			  const struct wl_drag_listener *drag_listener,
-			  void *data);
 
 void
 display_defer(struct display *display, struct task *task);
@@ -157,6 +155,16 @@ typedef int (*window_motion_handler_t)(struct window *window,
 				       int32_t x, int32_t y,
 				       int32_t sx, int32_t sy, void *data);
 
+typedef void (*window_data_handler_t)(struct window *window,
+				      struct input *input, uint32_t time,
+				      int32_t x, int32_t y,
+				      const char **types,
+				      void *data);
+
+typedef void (*window_drop_handler_t)(struct window *window,
+				      struct input *input,
+				      int32_t x, int32_t y, void *data);
+
 typedef void (*window_item_focus_handler_t)(struct window *window,
 					    struct item *focus, void *data);
 
@@ -173,6 +181,9 @@ struct item *
 window_add_item(struct window *window, void *data);
 
 typedef void (*item_func_t)(struct item *item, void *data);
+
+typedef void (*data_func_t)(void *data, size_t len,
+			    int32_t x, int32_t y, void *user_data);
 
 void
 window_for_each_item(struct window *window, item_func_t func, void *data);
@@ -286,17 +297,18 @@ window_set_item_focus_handler(struct window *window,
 			      window_item_focus_handler_t handler);
 
 void
+window_set_data_handler(struct window *window,
+			window_data_handler_t handler);
+
+void
+window_set_drop_handler(struct window *window,
+			window_drop_handler_t handler);
+
+void
 window_set_title(struct window *window, const char *title);
 
 const char *
 window_get_title(struct window *window);
-
-struct wl_drag *
-window_create_drag(struct window *window);
-
-void
-window_activate_drag(struct wl_drag *drag, struct window *window,
-		     struct input *input, uint32_t time);
 
 void
 item_get_allocation(struct item *item, struct rectangle *allocation);
@@ -309,6 +321,9 @@ void *
 item_get_user_data(struct item *item);
 
 void
+input_set_pointer_image(struct input *input, uint32_t time, int pointer);
+
+void
 input_get_position(struct input *input, int32_t *x, int32_t *y);
 
 uint32_t
@@ -317,10 +332,24 @@ input_get_modifiers(struct input *input);
 struct wl_input_device *
 input_get_input_device(struct input *input);
 
-int
-input_offers_mime_type(struct input *input, const char *type);
+struct wl_data_device *
+input_get_data_device(struct input *input);
+
 void
-input_receive_mime_type(struct input *input, const char *type, int fd);
+input_set_selection(struct input *input,
+		    struct wl_data_source *source, uint32_t time);
+
+void
+input_accept(struct input *input, uint32_t time, const char *type);
+
+
+void
+input_receive_drag_data(struct input *input, const char *mime_type,
+			data_func_t func, void *user_data);
+
+int
+input_receive_selection_data(struct input *input, const char *mime_type,
+			     data_func_t func, void *data);
 
 enum {
 	CONFIG_KEY_INTEGER,

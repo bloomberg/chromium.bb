@@ -1457,17 +1457,10 @@ WL_EXPORT void
 wlsc_surface_activate(struct wlsc_surface *surface,
 		      struct wlsc_input_device *device, uint32_t time)
 {
-	struct wlsc_shell *shell = surface->compositor->shell;
-
 	wlsc_surface_raise(surface);
-	if (device->selection)
-		shell->set_selection_focus(shell,
-					   device->selection,
-					   &surface->surface, time);
-
 	wl_input_device_set_keyboard_focus(&device->input_device,
-					   &surface->surface,
-					   time);
+					   &surface->surface, time);
+	wlsc_data_device_set_keyboard_focus(device);
 }
 
 struct wlsc_binding {
@@ -1719,10 +1712,12 @@ input_device_attach(struct wl_client *client,
 
 	if (time < device->input_device.pointer_focus_time)
 		return;
+#if 0
 	if (device->input_device.pointer_focus == NULL)
 		return;
 	if (device->input_device.pointer_focus->resource.client != client)
 		return;
+#endif
 
 	if (buffer_resource) {
 		buffer = buffer_resource->data;
@@ -1762,6 +1757,7 @@ wlsc_input_device_init(struct wlsc_input_device *device,
 		       struct wlsc_compositor *ec)
 {
 	wl_input_device_init(&device->input_device);
+	wl_list_init(&device->drag_resource_list);
 
 	wl_display_add_global(ec->wl_display, &wl_input_device_interface,
 			      device, bind_input_device);
@@ -1781,6 +1777,7 @@ wlsc_input_device_init(struct wlsc_input_device *device,
 	wl_list_insert(ec->input_device_list.prev, &device->link);
 
 	wlsc_input_device_set_pointer_image(device, WLSC_POINTER_LEFT_PTR);
+	device->selection_data_source = NULL;
 }
 
 static void
@@ -2101,6 +2098,8 @@ wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
 	create_pointer_images(ec);
 
 	screenshooter_create(ec);
+
+	wlsc_data_device_manager_init(ec);
 
 	glActiveTexture(GL_TEXTURE0);
 

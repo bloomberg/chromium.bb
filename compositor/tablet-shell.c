@@ -633,14 +633,6 @@ home_key_binding(struct wl_input_device *device, uint32_t time,
 }
 
 static void
-tablet_shell_set_selection_focus(struct wlsc_shell *shell,
-				       struct wl_selection *selection,
-				       struct wl_surface *surface,
-				       uint32_t time)
-{
-}
-
-static void
 bind_shell(struct wl_client *client, void *data, uint32_t version, uint32_t id)
 {
 	struct tablet_shell *shell = data;
@@ -699,8 +691,7 @@ shell_init(struct wlsc_compositor *compositor)
 	shell->shell.unlock = tablet_shell_unlock;
 	shell->shell.map = tablet_shell_map;
 	shell->shell.configure = tablet_shell_configure;
-	shell->shell.set_selection_focus =
-		tablet_shell_set_selection_focus;
+
 	launch_ux_daemon(shell);
 
 	tablet_shell_set_state(shell, STATE_STARTING);
