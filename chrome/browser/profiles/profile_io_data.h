@@ -23,6 +23,7 @@
 class CommandLine;
 class ChromeAppCacheService;
 class ChromeBlobStorageContext;
+class CookieSettings;
 class DesktopNotificationService;
 class ExtensionInfoMap;
 class HostContentSettingsMap;
@@ -101,6 +102,7 @@ class ProfileIOData {
   // that profile.
   ExtensionInfoMap* GetExtensionInfoMap() const;
   HostContentSettingsMap* GetHostContentSettingsMap() const;
+  CookieSettings* GetCookieSettings() const;
   DesktopNotificationService* GetNotificationService() const;
 
   BooleanPrefMember* clear_local_state_on_exit()  const {
@@ -147,6 +149,7 @@ class ProfileIOData {
     std::string referrer_charset;
     IOThread* io_thread;
     scoped_refptr<HostContentSettingsMap> host_content_settings_map;
+    scoped_refptr<CookieSettings> cookie_settings;
     scoped_refptr<HostZoomMap> host_zoom_map;
     scoped_refptr<net::SSLConfigService> ssl_config_service;
     scoped_refptr<net::CookieMonster::Delegate> cookie_monster_delegate;
@@ -300,6 +303,7 @@ class ProfileIOData {
   // TODO(willchan): Remove from ResourceContext.
   mutable scoped_refptr<ExtensionInfoMap> extension_info_map_;
   mutable scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
+  mutable scoped_refptr<CookieSettings> cookie_settings_;
   mutable DesktopNotificationService* notification_service_;
 
   mutable ResourceContext resource_context_;

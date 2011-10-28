@@ -870,6 +870,8 @@
         'browser/content_settings/content_settings_rule.h',
         'browser/content_settings/content_settings_utils.cc',
         'browser/content_settings/content_settings_utils.h',
+        'browser/content_settings/cookie_settings.cc',
+        'browser/content_settings/cookie_settings.h',
         'browser/content_settings/host_content_settings_map.cc',
         'browser/content_settings/host_content_settings_map.h',
         'browser/content_settings/tab_specific_content_settings.cc',

@@ -37,18 +37,6 @@
 
 namespace {
 
-// Returns true if we should allow all content types for this URL.  This is
-// true for various internal objects like chrome:// URLs, so UI and other
-// things users think of as "not webpages" don't break.
-bool ShouldAllowAllContent(const GURL& url, ContentSettingsType content_type) {
-  if (content_type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS)
-    return false;
-  return url.SchemeIs(chrome::kChromeDevToolsScheme) ||
-         url.SchemeIs(chrome::kChromeInternalScheme) ||
-         url.SchemeIs(chrome::kChromeUIScheme) ||
-         url.SchemeIs(chrome::kExtensionScheme);
-}
-
 typedef std::vector<content_settings::Rule> Rules;
 
 typedef std::pair<std::string, std::string> StringPair;
@@ -87,10 +75,7 @@ HostContentSettingsMap::HostContentSettingsMap(
     ExtensionService* extension_service,
     bool incognito)
     : prefs_(prefs),
-      is_off_the_record_(incognito),
-      updating_preferences_(false),
-      block_third_party_cookies_(false),
-      is_block_third_party_cookies_managed_(false) {
+      is_off_the_record_(incognito) {
   content_settings::ObservableProvider* policy_provider =
       new content_settings::PolicyProvider(prefs_);
   policy_provider->AddObserver(this);
@@ -115,38 +100,12 @@ HostContentSettingsMap::HostContentSettingsMap(
       new content_settings::DefaultProvider(prefs_, is_off_the_record_);
   default_provider->AddObserver(this);
   content_settings_providers_[DEFAULT_PROVIDER] = default_provider;
-
-  MigrateObsoleteCookiePref();
-
-  // Read misc. global settings.
-  block_third_party_cookies_ =
-      prefs_->GetBoolean(prefs::kBlockThirdPartyCookies);
-  if (block_third_party_cookies_) {
-    UserMetrics::RecordAction(
-        UserMetricsAction("ThirdPartyCookieBlockingEnabled"));
-  } else {
-    UserMetrics::RecordAction(
-        UserMetricsAction("ThirdPartyCookieBlockingDisabled"));
-  }
-  is_block_third_party_cookies_managed_ =
-      prefs_->IsManagedPreference(prefs::kBlockThirdPartyCookies);
-
-  pref_change_registrar_.Init(prefs_);
-  pref_change_registrar_.Add(prefs::kBlockThirdPartyCookies, this);
 }
 
 // static
 void HostContentSettingsMap::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterBooleanPref(prefs::kBlockThirdPartyCookies,
-                             false,
-                             PrefService::SYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kContentSettingsWindowLastTabIndex,
                              0,
-                             PrefService::UNSYNCABLE_PREF);
-
-  // Obsolete prefs, for migration:
-  prefs->RegisterIntegerPref(prefs::kCookieBehavior,
-                             net::StaticCookiePolicy::ALLOW_ALL_COOKIES,
                              PrefService::UNSYNCABLE_PREF);
 
   // Register the prefs for the content settings providers.
@@ -201,53 +160,6 @@ ContentSettings HostContentSettingsMap::GetDefaultContentSettings() const {
   return output;
 }
 
-ContentSetting HostContentSettingsMap::GetCookieContentSetting(
-    const GURL& url,
-    const GURL& first_party_url,
-    bool setting_cookie) const {
-  if (ShouldAllowAllContent(first_party_url, CONTENT_SETTINGS_TYPE_COOKIES))
-    return CONTENT_SETTING_ALLOW;
-
-  // First get any host-specific settings.
-  scoped_ptr<base::Value> value;
-  for (ConstProviderIterator provider = content_settings_providers_.begin();
-       provider != content_settings_providers_.end();
-       ++provider) {
-    if (provider->first == DEFAULT_PROVIDER)
-      continue;
-
-    value.reset(content_settings::GetContentSettingValueAndPatterns(
-        provider->second, url, first_party_url, CONTENT_SETTINGS_TYPE_COOKIES,
-        std::string(), is_off_the_record_, NULL, NULL));
-    if (value.get())
-      break;
-  }
-
-  // If no explicit exception has been made and third-party cookies are blocked
-  // by default, apply that rule.
-  if (!value.get() && BlockThirdPartyCookies()) {
-    bool strict = CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kBlockReadingThirdPartyCookies);
-    net::StaticCookiePolicy policy(strict ?
-        net::StaticCookiePolicy::BLOCK_ALL_THIRD_PARTY_COOKIES :
-        net::StaticCookiePolicy::BLOCK_SETTING_THIRD_PARTY_COOKIES);
-    int rv;
-    if (setting_cookie)
-      rv = policy.CanSetCookie(url, first_party_url);
-    else
-      rv = policy.CanGetCookies(url, first_party_url);
-    DCHECK_NE(net::ERR_IO_PENDING, rv);
-    if (rv != net::OK)
-      return CONTENT_SETTING_BLOCK;
-  }
-
-  // If no other policy has changed the setting, use the default.
-  if (value.get())
-    return content_settings::ValueToContentSetting(value.get());
-
-  return GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_COOKIES, NULL);
-}
-
 ContentSetting HostContentSettingsMap::GetContentSetting(
     const GURL& primary_url,
     const GURL& secondary_url,
@@ -266,7 +178,6 @@ base::Value* HostContentSettingsMap::GetContentSettingValue(
     const std::string& resource_identifier,
     ContentSettingsPattern* primary_pattern,
     ContentSettingsPattern* secondary_pattern) const {
-  DCHECK_NE(CONTENT_SETTINGS_TYPE_COOKIES, content_type);
   DCHECK(content_settings::SupportsResourceIdentifier(content_type) ||
          resource_identifier.empty());
 
@@ -290,8 +201,7 @@ base::Value* HostContentSettingsMap::GetContentSettingValue(
 }
 
 ContentSettings HostContentSettingsMap::GetContentSettings(
-    const GURL& primary_url,
-    const GURL& secondary_url) const {
+    const GURL& primary_url) const {
   ContentSettings output;
   // If we require a resource identifier, set the content settings to default,
   // otherwise make the defaults explicit. Values for content type
@@ -299,15 +209,9 @@ ContentSettings HostContentSettingsMap::GetContentSettings(
   // |ContentSetting|. So we ignore them here.
   for (int j = 0; j < CONTENT_SETTINGS_NUM_TYPES; ++j) {
     ContentSettingsType type = ContentSettingsType(j);
-    if (type == CONTENT_SETTINGS_TYPE_COOKIES) {
-      output.settings[j] = GetCookieContentSetting(
-          primary_url, secondary_url, false);
-    } else if (!ContentTypeHasCompoundValue(type)) {
+    if (!ContentTypeHasCompoundValue(type)) {
       output.settings[j] = GetContentSetting(
-          primary_url,
-          secondary_url,
-          ContentSettingsType(j),
-          std::string());
+          primary_url, primary_url, ContentSettingsType(j), std::string());
     }
   }
   return output;
@@ -445,32 +349,6 @@ bool HostContentSettingsMap::IsSettingAllowedForType(
   }
 }
 
-void HostContentSettingsMap::SetBlockThirdPartyCookies(bool block) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(prefs_);
-
-  // This setting may not be directly modified for OTR sessions.  Instead, it
-  // is synced to the main profile's setting.
-  if (is_off_the_record_) {
-    NOTREACHED();
-    return;
-  }
-
-  // If the preference block-third-party-cookies is managed then do not allow to
-  // change it.
-  if (prefs_->IsManagedPreference(prefs::kBlockThirdPartyCookies)) {
-    NOTREACHED();
-    return;
-  }
-
-  {
-    base::AutoLock auto_lock(lock_);
-    block_third_party_cookies_ = block;
-  }
-
-  prefs_->SetBoolean(prefs::kBlockThirdPartyCookies, block);
-}
-
 void HostContentSettingsMap::OnContentSettingChanged(
     ContentSettingsPattern primary_pattern,
     ContentSettingsPattern secondary_pattern,
@@ -486,34 +364,6 @@ void HostContentSettingsMap::OnContentSettingChanged(
       content::Details<const ContentSettingsDetails>(&details));
 }
 
-void HostContentSettingsMap::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (type == chrome::NOTIFICATION_PREF_CHANGED) {
-    DCHECK_EQ(prefs_, content::Source<PrefService>(source).ptr());
-    if (updating_preferences_)
-      return;
-
-    std::string* name = content::Details<std::string>(details).ptr();
-    if (*name == prefs::kBlockThirdPartyCookies) {
-      base::AutoLock auto_lock(lock_);
-      block_third_party_cookies_ = prefs_->GetBoolean(
-          prefs::kBlockThirdPartyCookies);
-      is_block_third_party_cookies_managed_ =
-          prefs_->IsManagedPreference(
-              prefs::kBlockThirdPartyCookies);
-    } else {
-      NOTREACHED() << "Unexpected preference observed";
-      return;
-    }
-  } else {
-    NOTREACHED() << "Unexpected notification";
-  }
-}
-
 HostContentSettingsMap::~HostContentSettingsMap() {
   DCHECK(!prefs_);
   STLDeleteValues(&content_settings_providers_);
@@ -522,28 +372,11 @@ HostContentSettingsMap::~HostContentSettingsMap() {
 void HostContentSettingsMap::ShutdownOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(prefs_);
-  pref_change_registrar_.RemoveAll();
   prefs_ = NULL;
   for (ProviderIterator it = content_settings_providers_.begin();
        it != content_settings_providers_.end();
        ++it) {
     it->second->ShutdownOnUIThread();
-  }
-}
-
-void HostContentSettingsMap::MigrateObsoleteCookiePref() {
-  if (prefs_->HasPrefPath(prefs::kCookieBehavior)) {
-    int cookie_behavior = prefs_->GetInteger(prefs::kCookieBehavior);
-    prefs_->ClearPref(prefs::kCookieBehavior);
-    if (!prefs_->HasPrefPath(prefs::kDefaultContentSettings)) {
-        SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_COOKIES,
-            (cookie_behavior == net::StaticCookiePolicy::BLOCK_ALL_COOKIES) ?
-                CONTENT_SETTING_BLOCK : CONTENT_SETTING_ALLOW);
-    }
-    if (!prefs_->HasPrefPath(prefs::kBlockThirdPartyCookies)) {
-      SetBlockThirdPartyCookies(cookie_behavior ==
-          net::StaticCookiePolicy::BLOCK_SETTING_THIRD_PARTY_COOKIES);
-    }
   }
 }
 
@@ -567,4 +400,15 @@ void HostContentSettingsMap::AddSettingsForOneType(
         kProviderNames[provider_type],
         incognito));
   }
+}
+
+bool HostContentSettingsMap::ShouldAllowAllContent(
+    const GURL& url,
+    ContentSettingsType content_type) {
+  if (content_type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS)
+    return false;
+  return url.SchemeIs(chrome::kChromeDevToolsScheme) ||
+         url.SchemeIs(chrome::kChromeInternalScheme) ||
+         url.SchemeIs(chrome::kChromeUIScheme) ||
+         url.SchemeIs(chrome::kExtensionScheme);
 }

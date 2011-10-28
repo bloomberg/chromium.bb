@@ -34,6 +34,5 @@ void MockSettingsObserver::Observe(
                            settings_details->update_all());
   // This checks that calling a Get function from an observer doesn't
   // deadlock.
-  map->GetContentSettings(GURL("http://random-hostname.com/"),
-                          GURL("http://random-hostname.com/"));
+  map->GetContentSettings(GURL("http://random-hostname.com/"));
 }

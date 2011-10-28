@@ -1265,6 +1265,7 @@
         'browser/content_settings/content_settings_provider_unittest.cc',
         'browser/content_settings/content_settings_rule_unittest.cc',
         'browser/content_settings/content_settings_utils_unittest.cc',
+        'browser/content_settings/cookie_settings_unittest.cc',
         'browser/content_settings/host_content_settings_map_unittest.cc',
         'browser/content_settings/mock_settings_observer.cc',
         'browser/content_settings/mock_settings_observer.h',

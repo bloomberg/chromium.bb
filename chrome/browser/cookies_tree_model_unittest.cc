@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/mock_settings_observer.h"
 #include "chrome/browser/mock_browsing_data_appcache_helper.h"
@@ -948,6 +949,7 @@ TEST_F(CookiesTreeModelTest, ContentSettings) {
   TestingProfile profile;
   HostContentSettingsMap* content_settings =
       profile.GetHostContentSettingsMap();
+  CookieSettings* cookie_settings = CookieSettings::GetForProfile(&profile);
   MockSettingsObserver observer;
 
   CookieTreeRootNode* root =
@@ -972,9 +974,9 @@ TEST_F(CookiesTreeModelTest, ContentSettings) {
                   ContentSettingsPattern::Wildcard(),
                   false));
   origin->CreateContentException(
-      content_settings, CONTENT_SETTING_SESSION_ONLY);
-  EXPECT_EQ(CONTENT_SETTING_SESSION_ONLY,
-      content_settings->GetCookieContentSetting(host, host, true));
+      cookie_settings, CONTENT_SETTING_SESSION_ONLY);
+  EXPECT_TRUE(cookie_settings->IsReadingCookieAllowed(host, host));
+  EXPECT_TRUE(cookie_settings->IsCookieSessionOnly(host));
 }
 
 TEST_F(CookiesTreeModelTest, FileSystemFilter) {

@@ -11,6 +11,7 @@
 #include "chrome/browser/automation/automation_resource_message_filter.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
+#include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/extensions/extension_event_router.h"
@@ -100,6 +101,7 @@ ChromeRenderMessageFilter::ChromeRenderMessageFilter(
                                  profile_->GetPrefs(), NULL);
   always_authorize_plugins_.MoveToThread(BrowserThread::IO);
   host_content_settings_map_ = profile->GetHostContentSettingsMap();
+  cookie_settings_ = CookieSettings::GetForProfile(profile);
 }
 
 ChromeRenderMessageFilter::~ChromeRenderMessageFilter() {
@@ -434,13 +436,8 @@ void ChromeRenderMessageFilter::OnAllowDatabase(int render_view_id,
                                                 const string16& name,
                                                 const string16& display_name,
                                                 bool* allowed) {
-  ContentSetting setting = host_content_settings_map_->GetCookieContentSetting(
-      origin_url, top_origin_url, true);
-  DCHECK((setting == CONTENT_SETTING_ALLOW) ||
-         (setting == CONTENT_SETTING_BLOCK) ||
-         (setting == CONTENT_SETTING_SESSION_ONLY));
-  *allowed = setting != CONTENT_SETTING_BLOCK;
-
+  *allowed = cookie_settings_->IsSettingCookieAllowed(origin_url,
+                                                      top_origin_url);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableFunction(
@@ -454,9 +451,8 @@ void ChromeRenderMessageFilter::OnAllowDOMStorage(int render_view_id,
                                                   const GURL& top_origin_url,
                                                   DOMStorageType type,
                                                   bool* allowed) {
-  ContentSetting setting = host_content_settings_map_->GetCookieContentSetting(
-      origin_url, top_origin_url, true);
-  *allowed = setting != CONTENT_SETTING_BLOCK;
+  *allowed = cookie_settings_->IsSettingCookieAllowed(origin_url,
+                                                      top_origin_url);
   // Record access to DOM storage for potential display in UI.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -469,12 +465,8 @@ void ChromeRenderMessageFilter::OnAllowFileSystem(int render_view_id,
                                                   const GURL& origin_url,
                                                   const GURL& top_origin_url,
                                                   bool* allowed) {
-  ContentSetting setting = host_content_settings_map_->GetCookieContentSetting(
-      origin_url, top_origin_url, true);
-  DCHECK((setting == CONTENT_SETTING_ALLOW) ||
-         (setting == CONTENT_SETTING_BLOCK) ||
-         (setting == CONTENT_SETTING_SESSION_ONLY));
-  *allowed = setting != CONTENT_SETTING_BLOCK;
+  *allowed = cookie_settings_->IsSettingCookieAllowed(origin_url,
+                                                      top_origin_url);
   // Record access to file system for potential display in UI.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -488,10 +480,8 @@ void ChromeRenderMessageFilter::OnAllowIndexedDB(int render_view_id,
                                                  const GURL& top_origin_url,
                                                  const string16& name,
                                                  bool* allowed) {
-  ContentSetting setting = host_content_settings_map_->GetCookieContentSetting(
-      origin_url, top_origin_url, true);
-  *allowed = setting != CONTENT_SETTING_BLOCK;
-
+  *allowed = cookie_settings_->IsSettingCookieAllowed(origin_url,
+                                                      top_origin_url);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableFunction(

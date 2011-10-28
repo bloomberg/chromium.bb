@@ -15,6 +15,7 @@
 #include "base/string_number_conversions.h"
 #include "base/task.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/extensions/extension_info_map.h"
@@ -220,6 +221,7 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   params->io_thread = g_browser_process->io_thread();
 
   params->host_content_settings_map = profile->GetHostContentSettingsMap();
+  params->cookie_settings = CookieSettings::GetForProfile(profile);
   params->host_zoom_map = profile->GetHostZoomMap();
   params->ssl_config_service = profile->GetSSLConfigService();
   base::Callback<Profile*(void)> profile_getter =
@@ -371,6 +373,10 @@ HostContentSettingsMap* ProfileIOData::GetHostContentSettingsMap() const {
   return host_content_settings_map_;
 }
 
+CookieSettings* ProfileIOData::GetCookieSettings() const {
+  return cookie_settings_;
+}
+
 DesktopNotificationService* ProfileIOData::GetNotificationService() const {
   return notification_service_;
 }
@@ -486,6 +492,7 @@ void ProfileIOData::LazyInitialize() const {
   quota_manager_ = profile_params_->quota_manager;
   host_zoom_map_ = profile_params_->host_zoom_map;
   host_content_settings_map_ = profile_params_->host_content_settings_map;
+  cookie_settings_ = profile_params_->cookie_settings;
   notification_service_ = profile_params_->notification_service;
   extension_info_map_ = profile_params_->extension_info_map;
 

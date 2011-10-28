@@ -16,6 +16,7 @@
 
 struct ChromeViewHostMsg_GetPluginInfo_Status;
 class ContentSettingsPattern;
+class CookieSettings;
 struct ExtensionHostMsg_Request_Params;
 class ExtensionInfoMap;
 class FilePath;
@@ -165,6 +166,7 @@ class ChromeRenderMessageFilter : public BrowserMessageFilter {
   scoped_refptr<ExtensionInfoMap> extension_info_map_;
   // Used to look up permissions at database creation time.
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
+  scoped_refptr<CookieSettings> cookie_settings_;
 
   const content::ResourceContext& resource_context_;
 

@@ -22,6 +22,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/chrome_plugin_service_filter.h"
+#include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/defaults.h"
@@ -823,7 +824,7 @@ ExtensionSpecialStoragePolicy*
     ProfileImpl::GetExtensionSpecialStoragePolicy() {
   if (!extension_special_storage_policy_.get()) {
     extension_special_storage_policy_ =
-        new ExtensionSpecialStoragePolicy(GetHostContentSettingsMap());
+        new ExtensionSpecialStoragePolicy(CookieSettings::GetForProfile(this));
   }
   return extension_special_storage_policy_.get();
 }

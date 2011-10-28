@@ -13,16 +13,15 @@
 #include "googleurl/src/gurl.h"
 #include "webkit/quota/special_storage_policy.h"
 
+class CookieSettings;
 class Extension;
-class HostContentSettingsMap;
 
 // Special rights are granted to 'extensions' and 'applications'. The
 // storage subsystems and the browsing data remover query this interface
 // to determine which origins have these rights.
 class ExtensionSpecialStoragePolicy : public quota::SpecialStoragePolicy {
  public:
-  explicit ExtensionSpecialStoragePolicy(
-      HostContentSettingsMap* host_content_settings_map);
+  explicit ExtensionSpecialStoragePolicy(CookieSettings* cookie_settings);
 
   // SpecialStoragePolicy methods used by storage subsystems and the browsing
   // data remover. These methods are safe to call on any thread.
@@ -65,7 +64,7 @@ class ExtensionSpecialStoragePolicy : public quota::SpecialStoragePolicy {
   SpecialCollection protected_apps_;
   SpecialCollection unlimited_extensions_;
   SpecialCollection file_handler_extensions_;
-  scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
+  scoped_refptr<CookieSettings> cookie_settings_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_SPECIAL_STORAGE_POLICY_H_

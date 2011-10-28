@@ -21,8 +21,6 @@
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_pattern.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 
 namespace base {
 class Value;
@@ -38,7 +36,6 @@ class PrefService;
 
 class HostContentSettingsMap
     : public content_settings::Observer,
-      public content::NotificationObserver,
       public base::RefCountedThreadSafe<HostContentSettingsMap> {
  public:
   enum ProviderType {
@@ -68,12 +65,12 @@ class HostContentSettingsMap
   // This may be called on any thread.
   ContentSettings GetDefaultContentSettings() const;
 
-  // Returns a single |ContentSetting| which applies to the given URLs.
-  // Note that certain internal schemes are whitelisted.
-  // For |CONTENT_TYPE_COOKIES|, |GetCookieContentSetting| should be called,
-  // and for content types that can't be converted to a ContentSetting,
-  // |GetContentSettingValue| should be called.
+  // Returns a single |ContentSetting| which applies to the given URLs.  Note
+  // that certain internal schemes are whitelisted. For |CONTENT_TYPE_COOKIES|,
+  // |CookieSettings| should be used instead. For content types that can't be
+  // converted to a |ContentSetting|, |GetContentSettingValue| should be called.
   // If there is no content setting, returns CONTENT_SETTING_DEFAULT.
+  //
   // May be called on any thread.
   ContentSetting GetContentSetting(
       const GURL& primary_url,
@@ -97,24 +94,13 @@ class HostContentSettingsMap
       ContentSettingsPattern* primary_pattern,
       ContentSettingsPattern* secondary_pattern) const;
 
-  // Gets the content setting for cookies. This takes the third party cookie
-  // flag into account, and therefore needs to know whether we read or write a
-  // cookie.
-  //
-  // This may be called on any thread.
-  ContentSetting GetCookieContentSetting(
-      const GURL& url,
-      const GURL& first_party_url,
-      bool setting_cookie) const;
-
-  // Returns all ContentSettings which apply to the given URLs. For content
-  // setting types that require an additional resource identifier, the default
-  // content setting is returned.
+  // Returns all ContentSettings which apply to the given |primary_url|. For
+  // content setting types that require an additional resource identifier, the
+  // default content setting is returned.
   //
   // This may be called on any thread.
   ContentSettings GetContentSettings(
-      const GURL& primary_url,
-      const GURL& secondary_url) const;
+      const GURL& primary_url) const;
 
   // For a given content type, returns all patterns with a non-default setting,
   // mapped to their actual settings, in the precedence order of the rules.
@@ -165,18 +151,6 @@ class HostContentSettingsMap
   static bool IsSettingAllowedForType(ContentSetting setting,
                                       ContentSettingsType content_type);
 
-  // This setting trumps any host-specific settings.
-  bool BlockThirdPartyCookies() const { return block_third_party_cookies_; }
-  bool IsBlockThirdPartyCookiesManaged() const {
-    return is_block_third_party_cookies_managed_;
-  }
-
-  // Sets whether we block all third-party cookies. This method must not be
-  // invoked on an incognito map.
-  //
-  // This should only be called on the UI thread.
-  void SetBlockThirdPartyCookies(bool block);
-
   // Detaches the HostContentSettingsMap from all Profile-related objects like
   // PrefService. This methods needs to be called before destroying the Profile.
   // Afterwards, none of the methods above that should only be called on the UI
@@ -190,10 +164,11 @@ class HostContentSettingsMap
       ContentSettingsType content_type,
       std::string resource_identifier);
 
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+  // Returns true if we should allow all content types for this URL.  This is
+  // true for various internal objects like chrome:// URLs, so UI and other
+  // things users think of as "not webpages" don't break.
+  static bool ShouldAllowAllContent(const GURL& url,
+                                    ContentSettingsType content_type);
 
  private:
   friend class base::RefCountedThreadSafe<HostContentSettingsMap>;
@@ -230,8 +205,6 @@ class HostContentSettingsMap
   // Weak; owned by the Profile.
   PrefService* prefs_;
 
-  PrefChangeRegistrar pref_change_registrar_;
-
   // Whether this settings map is for an OTR session.
   bool is_off_the_record_;
 
@@ -244,10 +217,6 @@ class HostContentSettingsMap
 
   // Used around accesses to the following objects to guarantee thread safety.
   mutable base::Lock lock_;
-
-  // Misc global settings.
-  bool block_third_party_cookies_;
-  bool is_block_third_party_cookies_managed_;
 
   DISALLOW_COPY_AND_ASSIGN(HostContentSettingsMap);
 };

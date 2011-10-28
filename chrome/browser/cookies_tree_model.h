@@ -28,6 +28,7 @@
 #include "ui/base/models/tree_node_model.h"
 
 class BrowsingDataCookieHelper;
+class CookieSettings;
 class CookiesTreeModel;
 class CookieTreeAppCacheNode;
 class CookieTreeAppCachesNode;
@@ -45,7 +46,6 @@ class CookieTreeSessionStoragesNode;
 class CookieTreeIndexedDBNode;
 class CookieTreeIndexedDBsNode;
 class CookieTreeOriginNode;
-class HostContentSettingsMap;
 
 // CookieTreeNode -------------------------------------------------------------
 // The base node type in the Cookies, Databases, and Local Storage options
@@ -228,7 +228,7 @@ class CookieTreeOriginNode : public CookieTreeNode {
 
   // Creates an content exception for this origin of type
   // CONTENT_SETTINGS_TYPE_COOKIES.
-  void CreateContentException(HostContentSettingsMap* content_settings,
+  void CreateContentException(CookieSettings* cookie_settings,
                               ContentSetting setting) const;
 
   // True if a content exception can be created for this origin.

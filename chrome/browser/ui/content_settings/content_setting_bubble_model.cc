@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
@@ -253,14 +254,15 @@ class ContentSettingSingleRadioGroup
     radio_group.radio_items.push_back(radio_allow_label);
     radio_group.radio_items.push_back(radio_block_label);
     HostContentSettingsMap* map = profile()->GetHostContentSettingsMap();
-    ContentSetting mostRestrictiveSetting;
+    CookieSettings* cookie_settings = CookieSettings::GetForProfile(profile());
+    ContentSetting most_restrictive_setting;
     if (resources.empty()) {
-      mostRestrictiveSetting =
+      most_restrictive_setting =
           content_type() == CONTENT_SETTINGS_TYPE_COOKIES ?
-              map->GetCookieContentSetting(url, url, true) :
+              cookie_settings->GetCookieSetting(url, url, true) :
               map->GetContentSetting(url, url, content_type(), std::string());
     } else {
-      mostRestrictiveSetting = CONTENT_SETTING_ALLOW;
+      most_restrictive_setting = CONTENT_SETTING_ALLOW;
       for (std::set<std::string>::const_iterator it = resources.begin();
            it != resources.end(); ++it) {
         ContentSetting setting = map->GetContentSetting(url,
@@ -268,19 +270,19 @@ class ContentSettingSingleRadioGroup
                                                         content_type(),
                                                         *it);
         if (setting == CONTENT_SETTING_BLOCK) {
-          mostRestrictiveSetting = CONTENT_SETTING_BLOCK;
+          most_restrictive_setting = CONTENT_SETTING_BLOCK;
           break;
         }
         if (setting == CONTENT_SETTING_ASK)
-          mostRestrictiveSetting = CONTENT_SETTING_ASK;
+          most_restrictive_setting = CONTENT_SETTING_ASK;
       }
     }
-    if (mostRestrictiveSetting == CONTENT_SETTING_ALLOW) {
+    if (most_restrictive_setting == CONTENT_SETTING_ALLOW) {
       radio_group.default_item = 0;
       // |block_setting_| is already set to |CONTENT_SETTING_BLOCK|.
     } else {
       radio_group.default_item = 1;
-      block_setting_ = mostRestrictiveSetting;
+      block_setting_ = most_restrictive_setting;
     }
     selected_item_ = radio_group.default_item;
     set_radio_group(radio_group);

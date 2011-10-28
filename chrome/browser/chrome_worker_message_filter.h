@@ -9,8 +9,8 @@
 #include "base/string16.h"
 #include "ipc/ipc_channel_proxy.h"
 
+class CookieSettings;
 class GURL;
-class HostContentSettingsMap;
 class WorkerProcessHost;
 
 // This class filters out incoming Chrome-specific IPC messages for the renderer
@@ -40,7 +40,7 @@ class ChromeWorkerMessageFilter : public IPC::ChannelProxy::MessageFilter,
                          bool* result);
 
   WorkerProcessHost* process_;
-  scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
+  scoped_refptr<CookieSettings> cookie_settings_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeWorkerMessageFilter);
 };

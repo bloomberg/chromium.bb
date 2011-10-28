@@ -6,8 +6,10 @@
 #include "base/task.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "net/base/cookie_store.h"
@@ -80,8 +82,8 @@ class CookiePolicyBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(CookiePolicyBrowserTest, AllowFirstPartyCookies) {
   ASSERT_TRUE(test_server()->Start());
 
-  browser()->profile()->GetHostContentSettingsMap()->
-      SetBlockThirdPartyCookies(true);
+  browser()->profile()->GetPrefs()->SetBoolean(prefs::kBlockThirdPartyCookies,
+                                               true);
 
   GURL url(test_server()->GetURL("set-cookie?cookie1"));
 
@@ -100,8 +102,8 @@ IN_PROC_BROWSER_TEST_F(CookiePolicyBrowserTest,
                        AllowFirstPartyCookiesRedirect) {
   ASSERT_TRUE(test_server()->Start());
 
-  browser()->profile()->GetHostContentSettingsMap()->
-      SetBlockThirdPartyCookies(true);
+  browser()->profile()->GetPrefs()->SetBoolean(prefs::kBlockThirdPartyCookies,
+                                               true);
 
   GURL url(test_server()->GetURL("server-redirect?"));
   GURL redirected_url(test_server()->GetURL("set-cookie?cookie2"));

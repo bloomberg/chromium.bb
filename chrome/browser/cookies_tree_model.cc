@@ -15,7 +15,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browsing_data_cookie_helper.h"
-#include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
 #include "grit/generated_resources.h"
@@ -453,13 +453,17 @@ CookieTreeQuotaNode* CookieTreeOriginNode::UpdateOrCreateQuotaNode(
 }
 
 void CookieTreeOriginNode::CreateContentException(
-    HostContentSettingsMap* content_settings, ContentSetting setting) const {
+    CookieSettings* cookie_settings, ContentSetting setting) const {
+  DCHECK(setting == CONTENT_SETTING_ALLOW ||
+         setting == CONTENT_SETTING_BLOCK ||
+         setting == CONTENT_SETTING_SESSION_ONLY);
   if (CanCreateContentException()) {
-    content_settings->AddExceptionForURL(url_,
-                                         url_,
-                                         CONTENT_SETTINGS_TYPE_COOKIES,
-                                         "",
-                                         setting);
+    cookie_settings->ResetCookieSetting(
+        ContentSettingsPattern::FromURLNoWildcard(url_),
+        ContentSettingsPattern::Wildcard());
+    cookie_settings->SetCookieSetting(
+        ContentSettingsPattern::FromURL(url_),
+        ContentSettingsPattern::Wildcard(), setting);
   }
 }
 

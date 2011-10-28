@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/values.h"
-#include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
@@ -220,36 +220,32 @@ TEST_F(ExtensionSpecialStoragePolicyTest, HasSessionOnlyOrigins) {
   BrowserThread ui_thread(BrowserThread::UI, &message_loop);
 
   TestingProfile profile;
-  HostContentSettingsMap* host_content_settings_map =
-      profile.GetHostContentSettingsMap();
+  CookieSettings* cookie_settings = CookieSettings::GetForProfile(&profile);
   scoped_refptr<ExtensionSpecialStoragePolicy> policy(
-      new ExtensionSpecialStoragePolicy(host_content_settings_map));
+      new ExtensionSpecialStoragePolicy(cookie_settings));
 
   EXPECT_FALSE(policy->HasSessionOnlyOrigins());
 
   // The default setting can be session-only.
-  host_content_settings_map->SetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_COOKIES, CONTENT_SETTING_SESSION_ONLY);
+  cookie_settings->SetDefaultCookieSetting(CONTENT_SETTING_SESSION_ONLY);
   EXPECT_TRUE(policy->HasSessionOnlyOrigins());
 
-  host_content_settings_map->SetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_COOKIES, CONTENT_SETTING_ALLOW);
+  cookie_settings->SetDefaultCookieSetting(CONTENT_SETTING_ALLOW);
   EXPECT_FALSE(policy->HasSessionOnlyOrigins());
 
   // Or the session-onlyness can affect individual origins.
   ContentSettingsPattern pattern =
       ContentSettingsPattern::FromString("pattern.com");
 
-  host_content_settings_map->SetContentSetting(
-      pattern, ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTINGS_TYPE_COOKIES, "", CONTENT_SETTING_SESSION_ONLY);
+  cookie_settings->SetCookieSetting(pattern,
+                                    ContentSettingsPattern::Wildcard(),
+                                    CONTENT_SETTING_SESSION_ONLY);
 
   EXPECT_TRUE(policy->HasSessionOnlyOrigins());
 
   // Clearing an origin-spesific rule.
-  host_content_settings_map->SetContentSetting(
-      pattern, ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTINGS_TYPE_COOKIES, "", CONTENT_SETTING_DEFAULT);
+  cookie_settings->ResetCookieSetting(pattern,
+                                      ContentSettingsPattern::Wildcard());
 
   EXPECT_FALSE(policy->HasSessionOnlyOrigins());
 }

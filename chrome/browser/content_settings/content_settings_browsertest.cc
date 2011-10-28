@@ -4,6 +4,7 @@
 
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/profiles/profile.h"
@@ -19,8 +20,8 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, RedirectLoopCookies) {
 
   GURL test_url = test_server()->GetURL("files/redirect-loop.html");
 
-  browser()->profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_COOKIES, CONTENT_SETTING_BLOCK);
+  CookieSettings::GetForProfile(browser()->profile())->
+      SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
 
   ui_test_utils::NavigateToURL(browser(), test_url);
 
@@ -60,8 +61,8 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, RedirectCrossOrigin) {
       host_port.port()));
   GURL test_url = test_server()->GetURL("server-redirect?" + redirect);
 
-  browser()->profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_COOKIES, CONTENT_SETTING_BLOCK);
+  CookieSettings::GetForProfile(browser()->profile())->
+      SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
 
   ui_test_utils::NavigateToURL(browser(), test_url);
 

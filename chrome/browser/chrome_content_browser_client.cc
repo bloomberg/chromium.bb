@@ -14,7 +14,7 @@
 #include "chrome/browser/chrome_plugin_message_filter.h"
 #include "chrome/browser/chrome_quota_permission_context.h"
 #include "chrome/browser/chrome_worker_message_filter.h"
-#include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/extension_info_map.h"
@@ -584,10 +584,8 @@ bool ChromeContentBrowserClient::AllowAppCache(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   ProfileIOData* io_data =
       reinterpret_cast<ProfileIOData*>(context.GetUserData(NULL));
-  ContentSetting setting = io_data->GetHostContentSettingsMap()->
-      GetCookieContentSetting(manifest_url, first_party, true);
-  DCHECK(setting != CONTENT_SETTING_DEFAULT);
-  return setting != CONTENT_SETTING_BLOCK;
+  return io_data->GetCookieSettings()->
+      IsSettingCookieAllowed(manifest_url, first_party);
 }
 
 bool ChromeContentBrowserClient::AllowGetCookie(
@@ -600,10 +598,8 @@ bool ChromeContentBrowserClient::AllowGetCookie(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   ProfileIOData* io_data =
       reinterpret_cast<ProfileIOData*>(context.GetUserData(NULL));
-  ContentSetting setting = io_data->GetHostContentSettingsMap()->
-      GetCookieContentSetting(url, first_party, false);
-  bool allow = setting == CONTENT_SETTING_ALLOW ||
-      setting == CONTENT_SETTING_SESSION_ONLY;
+  bool allow = io_data->GetCookieSettings()->
+      IsReadingCookieAllowed(url, first_party);
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -624,14 +620,12 @@ bool ChromeContentBrowserClient::AllowSetCookie(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   ProfileIOData* io_data =
       reinterpret_cast<ProfileIOData*>(context.GetUserData(NULL));
-  ContentSetting setting = io_data->GetHostContentSettingsMap()->
-      GetCookieContentSetting(url, first_party, true);
 
-  if (setting == CONTENT_SETTING_SESSION_ONLY)
+  CookieSettings* cookie_settings = io_data->GetCookieSettings();
+  bool allow = cookie_settings->IsSettingCookieAllowed(url, first_party);
+
+  if (cookie_settings->IsCookieSessionOnly(url))
     options->set_force_session();
-
-  bool allow = setting == CONTENT_SETTING_ALLOW ||
-      setting == CONTENT_SETTING_SESSION_ONLY;
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,

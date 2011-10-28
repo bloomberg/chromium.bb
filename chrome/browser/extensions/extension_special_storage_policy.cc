@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/extensions/extension.h"
@@ -14,8 +14,8 @@
 #include "content/browser/browser_thread.h"
 
 ExtensionSpecialStoragePolicy::ExtensionSpecialStoragePolicy(
-    HostContentSettingsMap* host_content_settings_map)
-    : host_content_settings_map_(host_content_settings_map) {}
+    CookieSettings* cookie_settings)
+    : cookie_settings_(cookie_settings) {}
 
 ExtensionSpecialStoragePolicy::~ExtensionSpecialStoragePolicy() {}
 
@@ -32,22 +32,19 @@ bool ExtensionSpecialStoragePolicy::IsStorageUnlimited(const GURL& origin) {
 }
 
 bool ExtensionSpecialStoragePolicy::IsStorageSessionOnly(const GURL& origin) {
-  if (host_content_settings_map_ == NULL)
+  if (cookie_settings_ == NULL)
     return false;
-  ContentSetting content_setting = host_content_settings_map_->
-      GetCookieContentSetting(origin, origin, true);
-  return (content_setting == CONTENT_SETTING_SESSION_ONLY);
+  return cookie_settings_->IsCookieSessionOnly(origin);
 }
 
 bool ExtensionSpecialStoragePolicy::HasSessionOnlyOrigins() {
-  if (host_content_settings_map_ == NULL)
+  if (cookie_settings_ == NULL)
     return false;
-  if (host_content_settings_map_->GetDefaultContentSetting(
-          CONTENT_SETTINGS_TYPE_COOKIES, NULL) == CONTENT_SETTING_SESSION_ONLY)
+  if (cookie_settings_->GetDefaultCookieSetting(NULL) ==
+      CONTENT_SETTING_SESSION_ONLY)
     return true;
   ContentSettingsForOneType entries;
-  host_content_settings_map_->GetSettingsForOneType(
-      CONTENT_SETTINGS_TYPE_COOKIES, "", &entries);
+  cookie_settings_->GetCookieSettings(&entries);
   for (size_t i = 0; i < entries.size(); ++i) {
     if (entries[i].setting == CONTENT_SETTING_SESSION_ONLY)
       return true;

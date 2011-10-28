@@ -321,7 +321,7 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
       resource_dispatcher_host_->InfoForRequest(request);
   filter->Send(new ChromeViewMsg_SetContentSettingsForLoadingURL(
       info->route_id(), request->url(),
-      map->GetContentSettings(request->url(), request->url())));
+      map->GetContentSettings(request->url())));
 
   // See if the response contains the X-Auto-Login header.  If so, this was
   // a request for a login page, and the server is allowing the browser to

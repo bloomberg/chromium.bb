@@ -5,7 +5,7 @@
 #include "chrome/browser/chrome_worker_message_filter.h"
 
 #include "base/bind.h"
-#include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "content/browser/resource_context.h"
@@ -16,7 +16,7 @@ ChromeWorkerMessageFilter::ChromeWorkerMessageFilter(WorkerProcessHost* process)
     : process_(process) {
   ProfileIOData* io_data = reinterpret_cast<ProfileIOData*>(
       process->resource_context()->GetUserData(NULL));
-  host_content_settings_map_ = io_data->GetHostContentSettingsMap();
+  cookie_settings_ = io_data->GetCookieSettings();
 }
 
 ChromeWorkerMessageFilter::~ChromeWorkerMessageFilter() {
@@ -43,10 +43,7 @@ void ChromeWorkerMessageFilter::OnAllowDatabase(int worker_route_id,
                                                 const string16& display_name,
                                                 unsigned long estimated_size,
                                                 bool* result) {
-  ContentSetting content_setting =
-      host_content_settings_map_->GetCookieContentSetting(url, url, true);
-
-  *result = content_setting != CONTENT_SETTING_BLOCK;
+  *result = cookie_settings_->IsSettingCookieAllowed(url, url);
 
   // Record access to database for potential display in UI: Find the worker
   // instance and forward the message to all attached documents.
@@ -73,10 +70,7 @@ void ChromeWorkerMessageFilter::OnAllowDatabase(int worker_route_id,
 void ChromeWorkerMessageFilter::OnAllowFileSystem(int worker_route_id,
                                                   const GURL& url,
                                                   bool* result) {
-  ContentSetting content_setting =
-      host_content_settings_map_->GetCookieContentSetting(url, url, true);
-
-  *result = content_setting != CONTENT_SETTING_BLOCK;
+  *result = cookie_settings_->IsSettingCookieAllowed(url, url);
 
   // Record access to file system for potential display in UI: Find the worker
   // instance and forward the message to all attached documents.
