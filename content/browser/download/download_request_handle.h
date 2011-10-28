@@ -8,6 +8,8 @@
 
 #include <string>
 
+#include "content/common/content_export.h"
+
 class DownloadManager;
 class ResourceDispatcherHost;
 class TabContents;
@@ -16,7 +18,7 @@ class TabContents;
 // or objects conditional on it (e.g. TabContents).
 // This class needs to be copyable, so we can pass it across threads and not
 // worry about lifetime or const-ness.
-class DownloadRequestHandle {
+class CONTENT_EXPORT DownloadRequestHandle {
  public:
   // Create a null DownloadRequestHandle: getters will return null, and
   // all actions are no-ops.
