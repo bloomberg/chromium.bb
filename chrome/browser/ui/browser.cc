@@ -2402,9 +2402,6 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kCloudPrintProxyEnabled,
                              true,
                              PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kCloudPrintSubmitEnabled,
-                             true,
-                             PrefService::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kDevToolsDisabled,
                              false,
                              PrefService::UNSYNCABLE_PREF);

@@ -210,8 +210,6 @@ INSTANTIATE_TEST_CASE_P(
                     prefs::kRemoteAccessHostFirewallTraversal),
         TypeAndName(kPolicyCloudPrintProxyEnabled,
                     prefs::kCloudPrintProxyEnabled),
-        TypeAndName(kPolicyCloudPrintSubmitEnabled,
-                    prefs::kCloudPrintSubmitEnabled),
         TypeAndName(kPolicySavingBrowserHistoryDisabled,
                     prefs::kSavingBrowserHistoryDisabled),
         TypeAndName(kPolicySavingBrowserHistoryDisabled,
