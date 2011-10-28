@@ -7,6 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/mac/cocoa_protocols.h"
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
@@ -50,7 +51,7 @@ class Browser;
 ////////////////////////////////////////////////////////////////////////////////
 
 // This view controller manages the menu item XIB.
-@interface AvatarMenuItemController : NSViewController {
+@interface AvatarMenuItemController : NSViewController<NSAnimationDelegate> {
  @private
   // The parent menu controller; owns this.
   __weak AvatarMenuBubbleController* controller_;
@@ -60,6 +61,10 @@ class Browser;
 
   // Tracks whether this item is currently highlighted.
   BOOL isHighlighted_;
+
+  // The animation showing the edit link, which is run after the user has
+  // dwelled over the item for a short delay.
+  scoped_nsobject<NSAnimation> linkAnimation_;
 
   // Instance variables that back the outlets.
   __weak NSImageView* iconView_;

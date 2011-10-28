@@ -368,11 +368,28 @@ const CGFloat kLabelInset = 49.0;
   isHighlighted_ = isHighlighted;
   [[self view] setNeedsDisplay:YES];
 
-  if (!self.activeView.isHidden) {
-    if (isHighlighted_)
-      [self animateFromView:self.emailField toView:self.editButton];
-    else
+  // Cancel any running animation.
+  if (linkAnimation_.get()) {
+    [NSObject cancelPreviousPerformRequestsWithTarget:linkAnimation_
+                                             selector:@selector(startAnimation)
+                                               object:nil];
+  }
+
+  // Fade the edit link in or out only if this is the active view.
+  if (self.activeView.isHidden)
+    return;
+
+  if (isHighlighted_) {
+    [self animateFromView:self.emailField toView:self.editButton];
+  } else {
+    // If the edit button is visible or the animation to make it so is
+    // running, stop the animation and fade it back to the email. If not, then
+    // don't run an animation to prevent flickering.
+    if (!self.editButton.isHidden || [linkAnimation_ isAnimating]) {
+      [linkAnimation_ stopAnimation];
+      linkAnimation_.reset();
       [self animateFromView:self.editButton toView:self.emailField];
+    }
   }
 }
 
@@ -390,15 +407,29 @@ const CGFloat kLabelInset = 49.0;
       nil
   ];
 
-  scoped_nsobject<NSViewAnimation> animation(
-      [[NSViewAnimation alloc] initWithViewAnimations:[NSArray arrayWithObjects:
-          outDict, inDict, nil]]);
-  [animation setDuration:kAnimationDuration];
-  [self willStartAnimation:animation];
-  [animation startAnimation];
+  linkAnimation_.reset([[NSViewAnimation alloc] initWithViewAnimations:
+      [NSArray arrayWithObjects:outDict, inDict, nil]]);
+  [linkAnimation_ setDelegate:self];
+  [linkAnimation_ setDuration:kAnimationDuration];
+
+  [self willStartAnimation:linkAnimation_];
+
+  [linkAnimation_ performSelector:@selector(startAnimation)
+                       withObject:nil
+                       afterDelay:0.2];
 }
 
 - (void)willStartAnimation:(NSAnimation*)animation {
+}
+
+- (void)animationDidEnd:(NSAnimation*)animation {
+  if (animation == linkAnimation_.get())
+    linkAnimation_.reset();
+}
+
+- (void)animationDidStop:(NSAnimation*)animation {
+  if (animation == linkAnimation_.get())
+    linkAnimation_.reset();
 }
 
 @end

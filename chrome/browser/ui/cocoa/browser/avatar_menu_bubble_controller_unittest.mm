@@ -167,11 +167,19 @@ TEST_F(AvatarMenuBubbleControllerTest, PerformLayout) {
 }
 
 - (void)animationDidEnd:(NSAnimation*)anim {
+  [super animationDidEnd:anim];
   pump_->Quit();
 }
 
 - (void)animationDidStop:(NSAnimation*)anim {
+  [super animationDidStop:anim];
   FAIL() << "Animation stopped before it completed its run";
+  pump_->Quit();
+}
+
+- (void)sendHighlightMessageForMouseExited {
+  [self highlightForEventType:NSMouseExited];
+  // Quit the pump because the animation was cancelled before it even ran.
   pump_->Quit();
 }
 @end
@@ -205,6 +213,17 @@ TEST_F(AvatarMenuBubbleControllerTest, HighlightForEventType) {
   EXPECT_TRUE(emailField.isHidden);
 
   [item setIsHighlighted:NO];
+  [item runMessagePump];
+
+  EXPECT_TRUE(editButton.isHidden);
+  EXPECT_FALSE(emailField.isHidden);
+
+  // Now mouse over and out quickly, as if scrubbing through the menu, to test
+  // the hover dwell delay.
+  [item highlightForEventType:NSMouseEntered];
+  [item performSelector:@selector(sendHighlightMessageForMouseExited)
+             withObject:nil
+             afterDelay:0];
   [item runMessagePump];
 
   EXPECT_TRUE(editButton.isHidden);
