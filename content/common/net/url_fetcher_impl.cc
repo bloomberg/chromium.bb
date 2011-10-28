@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop_proxy.h"
+#include "base/metrics/histogram.h"
 #include "base/platform_file.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
@@ -1066,6 +1067,9 @@ bool URLFetcherImpl::GetResponseAsString(
     return false;
 
   *out_response_string = core_->data_;
+  UMA_HISTOGRAM_MEMORY_KB("UrlFetcher.StringResponseSize",
+                          (core_->data_.length() / 1024));
+
   return true;
 }
 
