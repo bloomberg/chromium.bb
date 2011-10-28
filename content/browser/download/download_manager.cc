@@ -15,7 +15,6 @@
 #include "base/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/sys_string_conversions.h"
-#include "base/task.h"
 #include "build/build_config.h"
 #include "content/browser/browser_context.h"
 #include "content/browser/download/download_create_info.h"
@@ -37,23 +36,34 @@
 
 namespace {
 
-void BeginDownload(
-    const GURL& url,
-    const GURL& referrer,
-    const DownloadSaveInfo& save_info,
-    ResourceDispatcherHost* resource_dispatcher_host,
-    int render_process_id,
-    int render_view_id,
-    const content::ResourceContext* context) {
-  net::URLRequest* request = new net::URLRequest(url, resource_dispatcher_host);
-  request->set_referrer(referrer.spec());
+// Param structs exist because base::Bind can only handle 6 args.
+struct URLParams {
+  URLParams(const GURL& url, const GURL& referrer)
+    : url_(url), referrer_(referrer) {}
+  GURL url_;
+  GURL referrer_;
+};
+
+struct RenderParams {
+  RenderParams(int rpi, int rvi)
+    : render_process_id_(rpi), render_view_id_(rvi) {}
+  int render_process_id_;
+  int render_view_id_;
+};
+
+void BeginDownload(const URLParams& url_params,
+                   const DownloadSaveInfo& save_info,
+                   ResourceDispatcherHost* resource_dispatcher_host,
+                   const RenderParams& render_params,
+                   const content::ResourceContext* context) {
+  net::URLRequest* request = new net::URLRequest(url_params.url_,
+                                                 resource_dispatcher_host);
+  request->set_referrer(url_params.referrer_.spec());
   resource_dispatcher_host->BeginDownload(
-      request,
-      save_info,
-      true,
+      request, save_info, true,
       DownloadResourceHandler::OnStartedCallback(),
-      render_process_id,
-      render_view_id,
+      render_params.render_process_id_,
+      render_params.render_view_id_,
       *context);
 }
 
@@ -94,9 +104,8 @@ void DownloadManager::Shutdown() {
 
   if (file_manager_) {
     BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-        NewRunnableMethod(file_manager_,
-                          &DownloadFileManager::OnDownloadManagerShutdown,
-                          make_scoped_refptr(this)));
+        base::Bind(&DownloadFileManager::OnDownloadManagerShutdown,
+                   file_manager_, make_scoped_refptr(this)));
   }
 
   AssertContainersConsistent();
@@ -263,10 +272,9 @@ void DownloadManager::CheckForFileRemoval(DownloadItem* download_item) {
       !download_item->file_externally_removed()) {
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
-        NewRunnableMethod(this,
-                          &DownloadManager::CheckForFileRemovalOnFileThread,
-                          download_item->db_handle(),
-                          download_item->GetTargetFilePath()));
+        base::Bind(&DownloadManager::CheckForFileRemovalOnFileThread,
+                   this, download_item->db_handle(),
+                   download_item->GetTargetFilePath()));
   }
 }
 
@@ -276,9 +284,7 @@ void DownloadManager::CheckForFileRemovalOnFileThread(
   if (!file_util::PathExists(path)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this,
-                          &DownloadManager::OnFileRemovalDetected,
-                          db_handle));
+        base::Bind(&DownloadManager::OnFileRemovalDetected, this, db_handle));
   }
 }
 
@@ -371,9 +377,8 @@ void DownloadManager::ContinueDownloadWithPath(DownloadItem* download,
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(
-          file_manager_, &DownloadFileManager::RenameInProgressDownloadFile,
-          download->global_id(), download_path));
+      base::Bind(&DownloadFileManager::RenameInProgressDownloadFile,
+                 file_manager_, download->global_id(), download_path));
 
   download->Rename(download_path);
 
@@ -534,10 +539,10 @@ void DownloadManager::OnDownloadRenamedToFinalName(int download_id,
     DCHECK_EQ(0, uniquifier) << "We should not uniquify SAFE downloads twice";
   }
 
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, NewRunnableMethod(
-      file_manager_,
-      &DownloadFileManager::CompleteDownload,
-      item->global_id()));
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&DownloadFileManager::CompleteDownload,
+                 file_manager_, item->global_id()));
 
   if (uniquifier)
     item->set_path_uniquifier(uniquifier);
@@ -718,16 +723,14 @@ void DownloadManager::DownloadUrlToFile(const GURL& url,
       content::GetContentClient()->browser()->GetResourceDispatcherHost();
   // We send a pointer to content::ResourceContext, instead of the usual
   // reference, so that a copy of the object isn't made.
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-      NewRunnableFunction(&BeginDownload,
-                          url,
-                          referrer,
-                          save_info,
-                          resource_dispatcher_host,
-                          tab_contents->GetRenderProcessHost()->id(),
-                          tab_contents->render_view_host()->routing_id(),
-                          &tab_contents->browser_context()->
-                              GetResourceContext()));
+  // base::Bind can't handle 7 args, so we use URLParams and RenderParams.
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&BeginDownload,
+          URLParams(url, referrer), save_info, resource_dispatcher_host,
+          RenderParams(tab_contents->GetRenderProcessHost()->id(),
+                       tab_contents->render_view_host()->routing_id()),
+          &tab_contents->browser_context()->GetResourceContext()));
 }
 
 void DownloadManager::AddObserver(Observer* observer) {
