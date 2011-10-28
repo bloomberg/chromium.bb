@@ -27,7 +27,8 @@ class Widget;
 
 // TooltipManager implementation for Views.
 class TooltipManagerViews : public TooltipManager,
-                            public MessageLoopForUI::Observer {
+                            public MessageLoopForUI::Observer,
+                            public Widget::Observer {
  public:
   explicit TooltipManagerViews(views::View* root_view);
   virtual ~TooltipManagerViews();
@@ -47,6 +48,9 @@ class TooltipManagerViews : public TooltipManager,
       const base::NativeEvent& event) OVERRIDE;
   virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;
 #endif
+
+  // Widget::Observer
+  virtual void OnWidgetClosing(Widget* widget) OVERRIDE;
 
  private:
   void TooltipTimerFired();
@@ -79,6 +83,9 @@ class TooltipManagerViews : public TooltipManager,
 
   gfx::Point curr_mouse_pos_;
   base::RepeatingTimer<TooltipManagerViews> tooltip_timer_;
+
+  // true when the widget that owns us has closed.
+  bool widget_closed_;
 
   DISALLOW_COPY_AND_ASSIGN(TooltipManagerViews);
 };

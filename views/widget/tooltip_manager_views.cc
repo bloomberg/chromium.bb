@@ -75,7 +75,8 @@ int TooltipManager::GetMaxWidth(int x, int y) {
 
 TooltipManagerViews::TooltipManagerViews(views::View* root_view)
     : root_view_(root_view),
-      tooltip_view_(NULL) {
+      tooltip_view_(NULL),
+      widget_closed_(false) {
   tooltip_label_.set_background(
       views::Background::CreateSolidBackground(kTooltipBackground));
   tooltip_widget_.reset(CreateTooltip());
@@ -86,6 +87,7 @@ TooltipManagerViews::TooltipManagerViews(views::View* root_view)
       base::TimeDelta::FromMilliseconds(kTooltipTimeoutMs),
       this, &TooltipManagerViews::TooltipTimerFired);
   MessageLoopForUI::current()->AddObserver(this);
+  root_view_->GetWidget()->AddObserver(this);
 }
 
 TooltipManagerViews::~TooltipManagerViews() {
@@ -150,6 +152,11 @@ void TooltipManagerViews::DidProcessEvent(const base::NativeEvent& event) {
 }
 #endif
 
+void TooltipManagerViews::OnWidgetClosing(Widget* widget) {
+  tooltip_timer_.Stop();
+  widget_closed_ = true;
+}
+
 void TooltipManagerViews::TooltipTimerFired() {
   UpdateIfRequired(curr_mouse_pos_.x(), curr_mouse_pos_.y(), false);
 }
@@ -172,6 +179,9 @@ View* TooltipManagerViews::GetViewForTooltip(int x, int y, bool for_keyboard) {
 }
 
 void TooltipManagerViews::UpdateIfRequired(int x, int y, bool for_keyboard) {
+  if (widget_closed_)
+    return;
+
   View* view = GetViewForTooltip(x, y, for_keyboard);
   string16 tooltip_text;
   if (view)
