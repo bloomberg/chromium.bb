@@ -24,11 +24,11 @@ namespace ui {
 class Animation;
 class Layer;
 class LayerAnimationSequence;
+class LayerAnimatorDelegate;
 class Transform;
 
 // When a property of layer needs to be changed it is set by way of
-// LayerAnimator. This enables LayerAnimator to animate property
-// changes.
+// LayerAnimator. This enables LayerAnimator to animate property changes.
 class COMPOSITOR_EXPORT LayerAnimator : public AnimationContainerElement {
  public:
   enum PreemptionStrategy {
@@ -50,16 +50,19 @@ class COMPOSITOR_EXPORT LayerAnimator : public AnimationContainerElement {
 
   // Sets the transform on the delegate. May cause an implicit animation.
   virtual void SetTransform(const Transform& transform);
+  Transform GetTargetTransform() const;
 
   // Sets the bounds on the delegate. May cause an implicit animation.
   virtual void SetBounds(const gfx::Rect& bounds);
+  gfx::Rect GetTargetBounds() const;
 
   // Sets the opacity on the delegate. May cause an implicit animation.
   virtual void SetOpacity(float opacity);
+  float GetTargetOpacity() const;
 
   // Sets the layer animation delegate the animator is associated with. The
   // animator does not own the delegate.
-  void SetDelegate(LayerAnimationDelegate* delegate);
+  void SetDelegate(LayerAnimatorDelegate* delegate);
 
   // Sets the animation preemption strategy. This determines the behaviour if
   // a property is set during an animation. The default is
@@ -82,6 +85,14 @@ class COMPOSITOR_EXPORT LayerAnimator : public AnimationContainerElement {
   // animation sequences.
   void ScheduleTogether(const std::vector<LayerAnimationSequence*>& animations);
 
+  // These are cover functions that create sequences for you to wrap the given
+  // elements. These sequences are then passed to the corresponding function
+  // above.
+  void StartAnimationElement(LayerAnimationElement* element);
+  void ScheduleAnimationElement(LayerAnimationElement* element);
+  void ScheduleElementsTogether(
+      const std::vector<LayerAnimationElement*>& element);
+
   // Returns true if there is an animation in the queue (animations remain in
   // the queue until they complete).
   bool is_animating() const { return !animation_queue_.empty(); }
@@ -101,10 +112,30 @@ class COMPOSITOR_EXPORT LayerAnimator : public AnimationContainerElement {
   }
   base::TimeTicks get_last_step_time_for_test() { return last_step_time_; }
 
+  // Scoped settings allow you to temporarily change the animator's settings and
+  // these changes are reverted when the object is destroyed. NOTE: when the
+  // settings object is created, it applies the default transition duration
+  // (200ms).
+  class ScopedSettings {
+   public:
+    explicit ScopedSettings(LayerAnimator* animator);
+    virtual ~ScopedSettings();
+
+    void SetTransitionDuration(base::TimeDelta duration);
+
+   private:
+    LayerAnimator* animator_;
+    base::TimeDelta old_transition_duration_;
+
+    DISALLOW_COPY_AND_ASSIGN(ScopedSettings);
+  };
+
  protected:
-  LayerAnimationDelegate* delegate() { return delegate_; }
+  LayerAnimatorDelegate* delegate() { return delegate_; }
 
  private:
+  friend class TransientSettings;
+
   // We need to keep track of the start time of every running animation.
   struct RunningAnimation {
     RunningAnimation(LayerAnimationSequence* sequence,
@@ -176,11 +207,15 @@ class COMPOSITOR_EXPORT LayerAnimator : public AnimationContainerElement {
   // properties affected by |sequence|.
   bool StartSequenceImmediately(LayerAnimationSequence* sequence);
 
+  // Sets the value of target as if all the running and queued animations were
+  // allowed to finish.
+  void GetTargetValue(LayerAnimationElement::TargetValue* target) const;
+
   // This is the queue of animations to run.
   AnimationQueue animation_queue_;
 
   // The target of all layer animations.
-  LayerAnimationDelegate* delegate_;
+  LayerAnimatorDelegate* delegate_;
 
   // The currently running animations.
   RunningAnimations running_animations_;

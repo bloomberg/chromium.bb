@@ -301,8 +301,6 @@
         'ime/text_input_client.h',
         'ime/text_input_type_tracker.h',
         'ime/text_input_type_tracker.cc',
-        'layer_property_setter.cc',
-        'layer_property_setter.h',
         'layout/box_layout.cc',
         'layout/box_layout.h',
         'layout/fill_layout.cc',
@@ -661,7 +659,7 @@
           'sources/': [
             ['exclude', '../ui/aura/test/test_desktop_delegate.cc'],
             ['exclude', '../ui/aura/test/test_desktop_delegate.h'],
-          ],        
+          ],
         }],
         ['OS!="mac"', {
           'dependencies': [
@@ -852,6 +850,7 @@
         '../ui/ui.gyp:ui',
         '../ui/ui.gyp:ui_resources',
         '../ui/ui.gyp:ui_resources_standard',
+        '../ui/gfx/compositor/compositor.gyp:compositor',
         'views',
         'views_desktop_lib',
       ],

@@ -36,6 +36,7 @@ namespace ui {
 struct AccessibleViewState;
 class Compositor;
 class Layer;
+class LayerAnimationSequence;
 class Texture;
 class ThemeProvider;
 class Transform;
@@ -55,7 +56,6 @@ class DragController;
 class FocusManager;
 class FocusTraversable;
 class InputMethod;
-class LayerPropertySetter;
 class LayoutManager;
 class ScrollView;
 class TextInputClient;
@@ -285,11 +285,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // View creates the Layer only when it exists in a Widget with a non-NULL
   // Compositor.
   void SetPaintToLayer(bool paint_to_layer);
-
-  // Sets the LayerPropertySetter for this view. A value of NULL resets the
-  // LayerPropertySetter to the default (immediate). Can only be called on a
-  // View that has a layer().
-  void SetLayerPropertySetter(LayerPropertySetter* setter);
 
   const ui::Layer* layer() const { return layer_.get(); }
   ui::Layer* layer() { return layer_.get(); }
@@ -990,7 +985,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Overridden from ui::LayerDelegate:
   virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE;
-  virtual void OnLayerAnimationEnded(const ui::Animation* animation) OVERRIDE;
+  virtual void OnLayerAnimationEnded(
+      const ui::LayerAnimationSequence* animation) OVERRIDE;
 
   // Finds the layer that this view paints to (it may belong to an ancestor
   // view), then reorders the immediate children of that layer to match the
@@ -1400,7 +1396,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   bool paint_to_layer_;
   scoped_ptr<ui::Layer> layer_;
-  scoped_ptr<LayerPropertySetter> layer_property_setter_;
 
   // Accelerators --------------------------------------------------------------
 

@@ -45,6 +45,8 @@
         'layout_manager.h',
         'screen_aura.cc',
         'screen_aura.h',
+        'screen_rotation.cc',
+        'screen_rotation.h',
         'toplevel_window_container.cc',
         'toplevel_window_container.h',
         'toplevel_window_event_filter.cc',

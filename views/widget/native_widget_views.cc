@@ -6,6 +6,8 @@
 
 #include "base/bind.h"
 #include "ui/gfx/compositor/compositor.h"
+#include "ui/gfx/compositor/layer.h"
+#include "ui/gfx/compositor/layer_animator.h"
 #include "views/view.h"
 #include "views/views_delegate.h"
 #include "views/widget/native_widget_view.h"
@@ -462,6 +464,9 @@ void NativeWidgetViews::Maximize() {
 }
 
 void NativeWidgetViews::Minimize() {
+  if (view_->layer() && view_->layer()->GetAnimator()->is_animating())
+    return;
+
   gfx::Rect view_bounds = view_->bounds();
   gfx::Rect parent_bounds = view_->parent()->bounds();
 
@@ -503,6 +508,9 @@ bool NativeWidgetViews::IsMinimized() const {
 }
 
 void NativeWidgetViews::Restore() {
+  if (view_->layer() && view_->layer()->GetAnimator()->is_animating())
+    return;
+
   window_state_ = ui::SHOW_STATE_NORMAL;
   view_->SetBoundsRect(restored_bounds_);
   view_->SetTransform(restored_transform_);
