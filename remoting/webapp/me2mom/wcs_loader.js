@@ -143,5 +143,5 @@ remoting.WcsLoader.prototype.constructWcs_ = function() {
 remoting.WcsLoader.prototype.onWcsReady_ = function() {
   this.loadState_ = this.LoadState_.READY;
   this.onReady_(true);
-  this.onReady_ = function() {};
+  this.onReady_ = function(success) {};
 };

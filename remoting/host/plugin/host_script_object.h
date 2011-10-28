@@ -84,6 +84,8 @@ class HostNPScriptObject : public HostStatusObserver {
   void PostLogDebugInfo(const std::string& message);
 
  private:
+  // These state values are duplicated in the JS code. Remember to update both
+  // copies when making changes.
   enum State {
     kDisconnected,
     kStarting,

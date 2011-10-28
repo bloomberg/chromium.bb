@@ -29,20 +29,26 @@ remoting.OAuth2 = function() {
 remoting.OAuth2.prototype.KEY_REFRESH_TOKEN_ = 'oauth2-refresh-token';
 /** @private */
 remoting.OAuth2.prototype.KEY_ACCESS_TOKEN_ = 'oauth2-access-token';
+/** @private */
+remoting.OAuth2.prototype.KEY_EMAIL_ = 'remoting-email';
 
 // Constants for parameters used in retrieving the OAuth2 credentials.
-/** @private */ remoting.OAuth2.prototype.CLIENT_ID_ =
+/** @private */
+remoting.OAuth2.prototype.CLIENT_ID_ =
       '440925447803-2pi3v45bff6tp1rde2f7q6lgbor3o5uj.' +
       'apps.googleusercontent.com';
 /** @private */
 remoting.OAuth2.prototype.CLIENT_SECRET_ = 'W2ieEsG-R1gIA4MMurGrgMc_';
-/** @private */ remoting.OAuth2.prototype.SCOPE_ =
+/** @private */
+remoting.OAuth2.prototype.SCOPE_ =
       'https://www.googleapis.com/auth/chromoting ' +
       'https://www.googleapis.com/auth/googletalk ' +
       'https://www.googleapis.com/auth/userinfo#email';
-/** @private */ remoting.OAuth2.prototype.REDIRECT_URI_ =
+/** @private */
+remoting.OAuth2.prototype.REDIRECT_URI_ =
       'https://talkgadget.google.com/talkgadget/blank';
-/** @private */ remoting.OAuth2.prototype.OAUTH2_TOKEN_ENDPOINT_ =
+/** @private */
+remoting.OAuth2.prototype.OAUTH2_TOKEN_ENDPOINT_ =
     'https://accounts.google.com/o/oauth2/token';
 
 /** @return {boolean} True if the app is already authenticated. */
@@ -60,6 +66,7 @@ remoting.OAuth2.prototype.isAuthenticated = function() {
  */
 remoting.OAuth2.prototype.clear = function() {
   window.localStorage.removeItem(this.KEY_REFRESH_TOKEN_);
+  window.localStorage.removeItem(this.KEY_EMAIL_);
   this.clearAccessToken();
 };
 
@@ -290,4 +297,50 @@ remoting.OAuth2.prototype.callWithToken = function(myfunc) {
   }
 
   myfunc(this.getAccessToken());
+};
+
+/**
+ * Get the user's email address.
+ *
+ * @param {function(?string):void} setEmail Callback invoked when the email
+ *     address is available, or on error.
+ * @return {void} Nothing.
+ */
+remoting.OAuth2.prototype.getEmail = function(setEmail) {
+  /** @type {remoting.OAuth2} */
+  var that = this;
+  /** @param {XMLHttpRequest} xhr The XHR response. */
+  var onResponse = function(xhr) {
+    that.email = null;
+    if (xhr.status == 200) {
+      // TODO(ajwong): See if we can't find a JSON endpoint.
+      that.email = xhr.responseText.split('&')[0].split('=')[1];
+    }
+    window.localStorage.setItem(that.KEY_EMAIL_, that.email);
+    setEmail(that.email);
+  };
+
+  /** @param {string} token The access token. */
+  var getEmailFromToken = function(token) {
+    var headers = { 'Authorization': 'OAuth ' + token };
+    // TODO(ajwong): Update to new v2 API.
+    remoting.xhr.get('https://www.googleapis.com/userinfo/email',
+                     onResponse, '', headers);
+  };
+
+  this.callWithToken(getEmailFromToken);
+};
+
+/**
+ * If the user's email address is cached, return it, otherwise return null.
+ *
+ * @return {?string} The email address, if it has been cached by a previous call
+ *     to getEmail, otherwise null.
+ */
+remoting.OAuth2.prototype.getCachedEmail = function() {
+  var value = window.localStorage.getItem(this.KEY_EMAIL_);
+  if (typeof value == 'string') {
+    return value;
+  }
+  return null;
 };
