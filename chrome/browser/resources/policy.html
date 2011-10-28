@@ -106,7 +106,9 @@
               '': 'none'">
             <table id="policy-table">
               <tr>
+                <!-- TODO(joaodasilva): http://crbug.com/102114
                 <th i18n-content="appliesToTableHeader"></th>
+                -->
                 <th i18n-content="policyLevelTableHeader"></th>
                 <th i18n-content="policyNameTableHeader"></th>
                 <th i18n-content="policyValueTableHeader"></th>
@@ -116,9 +118,11 @@
                   jsvalues=".className: $this.set ?
                   'policy-set': 'policy-unset';
                   .hidden: !Policy.shouldDisplayPolicy($this)">
+                <!-- TODO(joaodasilva): http://crbug.com/102114
                 <td>
                   <span class="policy-type" jscontent="sourceType"></span>
                 </td>
+                -->
                 <td>
                   <span class="policy-level" jscontent="level"></span>
                 </td>
