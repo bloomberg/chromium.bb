@@ -43,6 +43,12 @@ BrowserThreadImpl::BrowserThreadImpl(BrowserThread::ID identifier,
 }
 
 BrowserThreadImpl::~BrowserThreadImpl() {
+  // Subclasses of base::Thread() (or at least the most-derived
+  // subclass) must call Stop() in their destructor, otherwise the
+  // vtable for the object can change while the thread's message loop
+  // is still running, and it uses the object's vtable (it calls the
+  // virtual method Run).
+  Stop();
 }
 
 // static
