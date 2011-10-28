@@ -719,6 +719,8 @@ tests_to_disable = set([
     'run_ppapi_ppb_url_loader_browser_test',
     'run_ppapi_ppb_graphics2d_browser_test',
     'run_ppapi_ppb_core_browser_test',
+    'run_ppapi_ppb_image_data_browser_test',
+    'run_ppapi_ppb_file_system_browser_test',
 
     'run_nacl_uma_test',
 
