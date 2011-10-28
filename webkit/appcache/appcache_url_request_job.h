@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/task.h"
+#include "base/memory/weak_ptr.h"
 #include "net/http/http_byte_range.h"
 #include "net/url_request/url_request_job.h"
 #include "webkit/appcache/appcache_entry.h"
@@ -137,7 +137,7 @@ class APPCACHE_EXPORT AppCacheURLRequestJob : public net::URLRequestJob,
   scoped_ptr<net::HttpResponseInfo> range_response_info_;
   scoped_ptr<AppCacheResponseReader> reader_;
   net::OldCompletionCallbackImpl<AppCacheURLRequestJob> read_callback_;
-  ScopedRunnableMethodFactory<AppCacheURLRequestJob> method_factory_;
+  base::WeakPtrFactory<AppCacheURLRequestJob> weak_factory_;
 };
 
 }  // namespace appcache

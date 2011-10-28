@@ -8,7 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/task.h"
+#include "base/memory/weak_ptr.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/completion_callback.h"
 #include "net/http/http_response_info.h"
@@ -100,8 +100,6 @@ class APPCACHE_EXPORT AppCacheResponseIO {
   int64 response_id() const { return response_id_; }
 
  protected:
-  friend class ScopedRunnableMethodFactory<AppCacheResponseIO>;
-
   template <class T>
   class EntryCallback : public net::CancelableOldCompletionCallback<T> {
    public:
@@ -137,7 +135,7 @@ class APPCACHE_EXPORT AppCacheResponseIO {
   scoped_refptr<net::IOBuffer> buffer_;
   int buffer_len_;
   net::OldCompletionCallback* user_callback_;
-  ScopedRunnableMethodFactory<AppCacheResponseIO> method_factory_;
+  base::WeakPtrFactory<AppCacheResponseIO> weak_factory_;
 
  private:
   void OnRawIOComplete(int result);

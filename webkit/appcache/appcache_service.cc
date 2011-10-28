@@ -4,6 +4,7 @@
 
 #include "webkit/appcache/appcache_service.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/stl_util.h"
@@ -49,13 +50,13 @@ class AppCacheService::AsyncHelper
     if (callback_) {
       // Defer to guarentee async completion.
       MessageLoop::current()->PostTask(
-          FROM_HERE,
-          NewRunnableFunction(&DeferredCallCallback, callback_, rv));
+          FROM_HERE, base::Bind(&DeferredCallCallback, callback_, rv));
     }
     callback_ = NULL;
   }
 
-  static void DeferredCallCallback(net::OldCompletionCallback* callback, int rv) {
+  static void DeferredCallCallback(net::OldCompletionCallback* callback,
+                                   int rv) {
     callback->Run(rv);
   }
 

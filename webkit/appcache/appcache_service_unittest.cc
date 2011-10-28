@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/pickle.h"
 #include "net/base/completion_callback.h"
@@ -65,9 +66,10 @@ class MockResponseReader : public AppCacheResponseReader {
 
  private:
   void ScheduleUserCallback(int result) {
-    MessageLoop::current()->PostTask(FROM_HERE,
-        method_factory_.NewRunnableMethod(
-            &MockResponseReader::InvokeUserOldCompletionCallback, result));
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&MockResponseReader::InvokeUserOldCompletionCallback,
+                   weak_factory_.GetWeakPtr(), result));
   }
 
   scoped_ptr<net::HttpResponseInfo> info_;

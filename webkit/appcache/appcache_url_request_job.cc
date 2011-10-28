@@ -30,7 +30,7 @@ AppCacheURLRequestJob::AppCacheURLRequestJob(
       cache_entry_not_found_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(read_callback_(
           this, &AppCacheURLRequestJob::OnReadComplete)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   DCHECK(storage_);
 }
 
@@ -73,8 +73,8 @@ void AppCacheURLRequestJob::MaybeBeginDelivery() {
     // callbacks happen as they would for network requests.
     MessageLoop::current()->PostTask(
         FROM_HERE,
-        method_factory_.NewRunnableMethod(
-            &AppCacheURLRequestJob::BeginDelivery));
+        base::Bind(&AppCacheURLRequestJob::BeginDelivery,
+                   weak_factory_.GetWeakPtr()));
   }
 }
 
@@ -220,7 +220,7 @@ void AppCacheURLRequestJob::Kill() {
       storage_ = NULL;
     }
     net::URLRequestJob::Kill();
-    method_factory_.RevokeAll();
+    weak_factory_.InvalidateWeakPtrs();
   }
 }
 
