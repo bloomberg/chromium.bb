@@ -42,8 +42,7 @@ struct evdev_input_device {
 	struct wl_event_source *source;
 	struct wlsc_output *output;
 	char *devnode;
-	int tool, new_x, new_y;
-	int base_x, base_y;
+	int tool;
 	int fd;
 	int min_x, max_x, min_y, max_y;
 	int is_touchpad, old_x_value, old_y_value, reset_x_value, reset_y_value;
@@ -298,8 +297,6 @@ evdev_input_device_create(struct evdev_input *master,
 		container_of(ec->output_list.next, struct wlsc_output, link);
 
 	device->tool = 1;
-	device->new_x = 1;
-	device->new_y = 1;
 	device->master = master;
 	device->is_touchpad = 0;
 	device->devnode = strdup(path);
