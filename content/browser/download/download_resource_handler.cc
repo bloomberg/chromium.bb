@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/stats_counters.h"
@@ -14,7 +15,6 @@
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/download_item.h"
-#include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_stats.h"
 #include "content/browser/download/interrupt_reasons.h"
@@ -123,9 +123,8 @@ bool DownloadResourceHandler::OnResponseStarted(int request_id,
   info->save_info = save_info_;
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(
-          download_file_manager_, &DownloadFileManager::StartDownload,
-          info, request_handle));
+      base::Bind(&DownloadFileManager::StartDownload,
+                 download_file_manager_, info, request_handle));
 
   // We can't start saving the data before we create the file on disk.
   // The request will be un-paused in DownloadFileManager::CreateDownloadFile.
@@ -176,10 +175,8 @@ bool DownloadResourceHandler::OnReadCompleted(int request_id, int* bytes_read) {
   if (need_update) {
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
-        NewRunnableMethod(download_file_manager_,
-                          &DownloadFileManager::UpdateDownload,
-                          download_id_,
-                          buffer_));
+        base::Bind(&DownloadFileManager::UpdateDownload,
+                   download_file_manager_, download_id_, buffer_));
   }
 
   // We schedule a pause outside of the read loop if there is too much file
@@ -224,11 +221,8 @@ bool DownloadResourceHandler::OnResponseCompleted(
   // before deletion.
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(download_file_manager_,
-                        &DownloadFileManager::OnResponseCompleted,
-                        download_id_,
-                        reason,
-                        security_info));
+      base::Bind(&DownloadFileManager::OnResponseCompleted,
+                 download_file_manager_, download_id_, reason, security_info));
   buffer_ = NULL;  // The buffer is longer needed by |DownloadResourceHandler|.
   read_buffer_ = NULL;
   return true;
