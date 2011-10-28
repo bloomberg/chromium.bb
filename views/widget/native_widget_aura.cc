@@ -164,7 +164,7 @@ void NativeWidgetAura::ReorderLayers() {
 }
 
 void NativeWidgetAura::ViewRemoved(View* view) {
-//  NOTIMPLEMENTED();
+  //NOTIMPLEMENTED();
 }
 
 void NativeWidgetAura::SetNativeWindowProperty(const char* name, void* value) {
@@ -181,14 +181,14 @@ TooltipManager* NativeWidgetAura::GetTooltipManager() const {
 }
 
 bool NativeWidgetAura::IsScreenReaderActive() const {
-  NOTIMPLEMENTED();
+  //NOTIMPLEMENTED();
   return false;
 }
 
 void NativeWidgetAura::SendNativeAccessibilityEvent(
     View* view,
     ui::AccessibilityTypes::Event event_type) {
-  NOTIMPLEMENTED();
+  //NOTIMPLEMENTED();
 }
 
 void NativeWidgetAura::SetMouseCapture() {
@@ -228,24 +228,24 @@ void NativeWidgetAura::GetWindowPlacement(
 }
 
 void NativeWidgetAura::SetWindowTitle(const string16& title) {
-  NOTIMPLEMENTED();
+  // Aura doesn't have native window frames.
 }
 
 void NativeWidgetAura::SetWindowIcons(const SkBitmap& window_icon,
                                      const SkBitmap& app_icon) {
-  NOTIMPLEMENTED();
+  // Aura doesn't have window icons.
 }
 
 void NativeWidgetAura::SetAccessibleName(const string16& name) {
-  NOTIMPLEMENTED();
+  //NOTIMPLEMENTED();
 }
 
 void NativeWidgetAura::SetAccessibleRole(ui::AccessibilityTypes::Role role) {
-  NOTIMPLEMENTED();
+  //NOTIMPLEMENTED();
 }
 
 void NativeWidgetAura::SetAccessibleState(ui::AccessibilityTypes::State state) {
-  NOTIMPLEMENTED();
+  //NOTIMPLEMENTED();
 }
 
 void NativeWidgetAura::BecomeModal() {
@@ -257,15 +257,12 @@ gfx::Rect NativeWidgetAura::GetWindowScreenBounds() const {
 }
 
 gfx::Rect NativeWidgetAura::GetClientAreaScreenBounds() const {
-  // TODO(beng):
-  NOTIMPLEMENTED();
+  // In Aura, the entire window is the client area.
   return window_->GetScreenBounds();
 }
 
 gfx::Rect NativeWidgetAura::GetRestoredBounds() const {
-  // TODO(beng):
-  NOTIMPLEMENTED();
-  return window_->bounds();
+  return window_->restore_bounds();
 }
 
 void NativeWidgetAura::SetBounds(const gfx::Rect& bounds) {

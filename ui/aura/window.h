@@ -77,6 +77,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   WindowDelegate* delegate() { return delegate_; }
 
   const gfx::Rect& bounds() const;
+  const gfx::Rect& restore_bounds() const { return restore_bounds_; }
 
   Window* parent() { return parent_; }
   const Window* parent() const { return parent_; }
