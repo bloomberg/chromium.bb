@@ -20,6 +20,7 @@
 #include "ui/base/view_prop.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/compositor/compositor.h"
+#include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/screen.h"
 
 namespace aura {
@@ -436,6 +437,15 @@ void* Window::GetProperty(const char* name) const {
   return ui::ViewProp::GetValue(const_cast<gfx::NativeView>(this), name);
 }
 
+// static
+ui::Animation* Window::CreateDefaultAnimation() {
+  std::vector<ui::MultiAnimation::Part> parts;
+  parts.push_back(ui::MultiAnimation::Part(200, ui::Tween::LINEAR));
+  ui::MultiAnimation* multi_animation = new ui::MultiAnimation(parts);
+  multi_animation->set_continuous(false);
+  return multi_animation;
+}
+
 Desktop* Window::GetDesktop() {
   return parent_ ? parent_->GetDesktop() : NULL;
 }
@@ -531,8 +541,7 @@ void Window::OnPaintLayer(gfx::Canvas* canvas) {
   delegate_->OnPaint(canvas);
 }
 
-void Window::OnLayerAnimationEnded(
-    const ui::LayerAnimationSequence* animation) {
+void Window::OnLayerAnimationEnded(const ui::Animation* animation) {
 }
 
 }  // namespace aura

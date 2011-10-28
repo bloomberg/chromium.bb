@@ -37,10 +37,6 @@ class COMPOSITOR_EXPORT LayerAnimationSequence {
   // guaranteed that Animate will be called with elapsed = Duration().
   void Progress(base::TimeDelta elapsed, LayerAnimationDelegate* delegate);
 
-  // Sets the target value to the value that would have been set had
-  // the sequence completed. Does nothing if the sequence is cyclic.
-  void GetTargetValue(LayerAnimationElement::TargetValue* target) const;
-
   // Aborts the given animation.
   void Abort();
 

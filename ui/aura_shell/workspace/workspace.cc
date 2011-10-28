@@ -9,7 +9,6 @@
 #include "ui/aura/window.h"
 #include "ui/aura_shell/workspace/workspace_manager.h"
 #include "ui/gfx/compositor/layer.h"
-#include "ui/gfx/compositor/layer_animator.h"
 
 namespace {
 // Horizontal margin between windows.
@@ -212,13 +211,9 @@ void Workspace::MoveWindowTo(
   else {
     gfx::Rect bounds = window->GetTargetBounds();
     bounds.set_origin(origin);
-    if (animate) {
-      ui::LayerAnimator::ScopedSettings settings(
-          window->layer()->GetAnimator());
-      window->SetBounds(bounds);
-    } else {
-      window->SetBounds(bounds);
-    }
+    if (animate)
+      window->layer()->SetAnimation(aura::Window::CreateDefaultAnimation());
+    window->SetBounds(bounds);
   }
 }
 

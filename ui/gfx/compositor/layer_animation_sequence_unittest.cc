@@ -11,10 +11,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/transform.h"
-#include "ui/gfx/compositor/dummy_layer_animation_delegate.h"
 #include "ui/gfx/compositor/layer_animation_delegate.h"
 #include "ui/gfx/compositor/layer_animation_element.h"
 #include "ui/gfx/compositor/test_utils.h"
+#include "ui/gfx/compositor/test_layer_animation_delegate.h"
 
 namespace ui {
 
@@ -33,7 +33,7 @@ TEST(LayerAnimationSequenceTest, NoElement) {
 // a single element.
 TEST(LayerAnimationSequenceTest, SingleElement) {
   LayerAnimationSequence sequence;
-  DummyLayerAnimationDelegate delegate;
+  TestLayerAnimationDelegate delegate;
   float start = 0.0;
   float middle = 0.5;
   float target = 1.0;
@@ -61,7 +61,7 @@ TEST(LayerAnimationSequenceTest, SingleElement) {
 // multiple elements. Note, see the layer animator tests for cyclic sequences.
 TEST(LayerAnimationSequenceTest, MultipleElement) {
   LayerAnimationSequence sequence;
-  DummyLayerAnimationDelegate delegate;
+  TestLayerAnimationDelegate delegate;
   float start_opacity = 0.0;
   float middle_opacity = 0.5;
   float target_opacity = 1.0;
@@ -93,7 +93,7 @@ TEST(LayerAnimationSequenceTest, MultipleElement) {
     EXPECT_FLOAT_EQ(middle_opacity, delegate.GetOpacityForAnimation());
     sequence.Progress(base::TimeDelta::FromMilliseconds(1000), &delegate);
     EXPECT_FLOAT_EQ(target_opacity, delegate.GetOpacityForAnimation());
-    DummyLayerAnimationDelegate copy = delegate;
+    TestLayerAnimationDelegate copy = delegate;
 
     // In the middle of the pause -- nothing should have changed.
     sequence.Progress(base::TimeDelta::FromMilliseconds(1500), &delegate);
@@ -129,7 +129,7 @@ TEST(LayerAnimationSequenceTest, MultipleElement) {
 // Check that a sequence can still be aborted if it has cycled many times.
 TEST(LayerAnimationSequenceTest, AbortingCyclicSequence) {
   LayerAnimationSequence sequence;
-  DummyLayerAnimationDelegate delegate;
+  TestLayerAnimationDelegate delegate;
   float start_opacity = 0.0;
   float target_opacity = 1.0;
   base::TimeDelta delta = base::TimeDelta::FromSeconds(1);
@@ -151,28 +151,6 @@ TEST(LayerAnimationSequenceTest, AbortingCyclicSequence) {
   delegate.SetOpacityFromAnimation(start_opacity);
   sequence.Progress(base::TimeDelta::FromMilliseconds(100000), &delegate);
   EXPECT_FLOAT_EQ(start_opacity, delegate.GetOpacityForAnimation());
-}
-
-// Check that a sequence can be 'fast-forwarded' to the end and the target set.
-// Also check that this has no effect if the sequence is cyclic.
-TEST(LayerAnimationSequenceTest, SetTarget) {
-  LayerAnimationSequence sequence;
-  DummyLayerAnimationDelegate delegate;
-  float start_opacity = 0.0;
-  float target_opacity = 1.0;
-  base::TimeDelta delta = base::TimeDelta::FromSeconds(1);
-  sequence.AddElement(
-      LayerAnimationElement::CreateOpacityElement(target_opacity, delta));
-
-  LayerAnimationElement::TargetValue target_value;
-  target_value.opacity = start_opacity;
-  sequence.GetTargetValue(&target_value);
-  EXPECT_FLOAT_EQ(target_opacity, target_value.opacity);
-
-  sequence.set_is_cyclic(true);
-  target_value.opacity = start_opacity;
-  sequence.GetTargetValue(&target_value);
-  EXPECT_FLOAT_EQ(start_opacity, target_value.opacity);
 }
 
 } // namespace

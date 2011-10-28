@@ -8,11 +8,15 @@
 
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view.h"
 
+#include "content/browser/sensors/sensors_provider.h"
+#include "content/common/sensors.h"
+
 class BrowserFrame;
 class BrowserView;
 
 class TouchBrowserFrameView
-    : public OpaqueBrowserFrameView {
+    : public OpaqueBrowserFrameView,
+      public sensors::Listener {
  public:
   // Internal class name.
   static const char kViewClassName[];
@@ -20,6 +24,10 @@ class TouchBrowserFrameView
   // Constructs a non-client view for an BrowserFrame.
   TouchBrowserFrameView(BrowserFrame* frame, BrowserView* browser_view);
   virtual ~TouchBrowserFrameView();
+
+   // sensors::Listener implementation
+  virtual void OnScreenOrientationChanged(
+      const sensors::ScreenOrientation& change) OVERRIDE;
 
  private:
   // Overridden from views::View

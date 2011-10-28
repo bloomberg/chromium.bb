@@ -21,15 +21,11 @@
 #include "ui/aura/event_filter.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/screen_aura.h"
-#include "ui/aura/screen_rotation.h"
 #include "ui/aura/toplevel_window_container.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/compositor/layer.h"
-#include "ui/gfx/compositor/layer_animation_sequence.h"
-#include "ui/gfx/compositor/layer_animator.h"
-#include "ui/gfx/interpolated_transform.h"
 
 using std::string;
 using std::vector;
@@ -43,22 +39,6 @@ static const int kDefaultHostWindowX = 200;
 static const int kDefaultHostWindowY = 200;
 static const int kDefaultHostWindowWidth = 1280;
 static const int kDefaultHostWindowHeight = 1024;
-
-#if !defined(NDEBUG)
-// Converts degrees to an angle in the range [-180, 180).
-int NormalizeAngle(int degrees) {
-  while (degrees <= -180) degrees += 360;
-  while (degrees > 180) degrees -= 360;
-  return degrees;
-}
-
-static int SymmetricRound(float x) {
-  return static_cast<int>(
-    x > 0
-      ? std::floor(x + 0.5f)
-      : std::ceil(x - 0.5f));
-}
-#endif
 
 class DefaultDesktopDelegate : public DesktopDelegate {
  public:
@@ -279,37 +259,31 @@ bool Desktop::DispatchMouseEvent(MouseEvent* event) {
 
 bool Desktop::DispatchKeyEvent(KeyEvent* event) {
 #if !defined(NDEBUG)
+  // Press Home key to rotate the screen. Primarily used for testing.
   if (event->type() == ui::ET_KEY_PRESSED &&
-      (event->flags() & ui::EF_SHIFT_DOWN) &&
-      (event->flags() & ui::EF_ALT_DOWN) &&
-      event->is_char()) {
-
-    bool should_rotate = true;
-    int new_degrees = 0;
-    switch (event->key_code()) {
-      case ui::VKEY_UP: new_degrees = 0; break;
-      case ui::VKEY_DOWN: new_degrees = 180; break;
-      case ui::VKEY_RIGHT: new_degrees = 90; break;
-      case ui::VKEY_LEFT: new_degrees = -90; break;
-      default: should_rotate = false; break;
+      (event->flags() & ui::EF_CONTROL_DOWN) &&
+      event->key_code() == ui::VKEY_HOME) {
+    ui::Transform transform;
+    static int count = 0;
+    gfx::Size size = host_->GetSize();
+    switch (count) {
+      case 0:
+        transform.ConcatRotate(-90.0f);
+        transform.ConcatTranslate(0, size.height());
+        break;
+      case 1:
+        transform.ConcatRotate(180.0f);
+        transform.ConcatTranslate(size.width(), size.height());
+        break;
+      case 2:
+        transform.ConcatRotate(90.0f);
+        transform.ConcatTranslate(size.width(), 0);
+        break;
     }
-
-    if (should_rotate) {
-      float rotation = 0.0f;
-      int degrees = 0;
-      const ui::Transform& transform = layer()->GetTargetTransform();
-      if (ui::InterpolatedTransform::FactorTRS(transform,
-                                               NULL, &rotation, NULL))
-        degrees = NormalizeAngle(new_degrees - SymmetricRound(rotation));
-
-      if (degrees != 0) {
-        layer()->GetAnimator()->set_preemption_strategy(
-            ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
-        layer()->GetAnimator()->ScheduleAnimationElement(
-            new ScreenRotation(degrees));
-        return true;
-      }
-    }
+    layer()->SetAnimation(CreateDefaultAnimation());
+    SetTransform(transform);
+    count = (count + 1) % 4;
+    return true;
   }
 #endif
 
@@ -468,7 +442,7 @@ void Desktop::SetTransform(const ui::Transform& transform) {
 
   // If the layer is not animating, then we need to update the host size
   // immediately.
-  if (!layer()->GetAnimator()->is_animating())
+  if (!layer()->has_animation())
     OnHostResized(host_->GetSize());
 }
 
@@ -557,8 +531,7 @@ Desktop* Desktop::GetDesktop() {
   return this;
 }
 
-void Desktop::OnLayerAnimationEnded(
-    const ui::LayerAnimationSequence* animation) {
+void Desktop::OnLayerAnimationEnded(const ui::Animation* animation) {
   OnHostResized(host_->GetSize());
 }
 

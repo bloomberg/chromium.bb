@@ -131,7 +131,7 @@ void WorkspaceManager::SetOverview(bool overview) {
     transform.SetTranslateX(-active_workspace_->bounds().x());
   }
 
-  ui::LayerAnimator::ScopedSettings settings(viewport_->layer()->GetAnimator());
+  viewport_->layer()->SetAnimation(aura::Window::CreateDefaultAnimation());
   viewport_->layer()->SetTransform(transform);
 }
 
@@ -247,8 +247,7 @@ void WorkspaceManager::UpdateViewport() {
   if (active_workspace_) {
     ui::Transform transform;
     transform.SetTranslateX(-active_workspace_->bounds().x());
-    ui::LayerAnimator::ScopedSettings settings(
-        viewport_->layer()->GetAnimator());
+    viewport_->layer()->SetAnimation(aura::Window::CreateDefaultAnimation());
     viewport_->SetTransform(transform);
   }
 }

@@ -7,6 +7,8 @@
 #include "base/compiler_specific.h"
 #include "ui/base/animation/tween.h"
 #include "ui/gfx/compositor/layer_animation_delegate.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/transform.h"
 
 namespace ui {
 
@@ -24,7 +26,6 @@ class Pause : public LayerAnimationElement {
   virtual void OnStart(LayerAnimationDelegate* delegate) OVERRIDE {}
   virtual void OnProgress(double t,
                           LayerAnimationDelegate* delegate) OVERRIDE {}
-  virtual void OnGetTarget(TargetValue* target) const OVERRIDE {}
   virtual void OnAbort() OVERRIDE {}
 
   DISALLOW_COPY_AND_ASSIGN(Pause);
@@ -48,10 +49,6 @@ class TransformTransition : public LayerAnimationElement {
   virtual void OnProgress(double t, LayerAnimationDelegate* delegate) OVERRIDE {
     delegate->SetTransformFromAnimation(
         Tween::ValueBetween(t, start_, target_));
-  }
-
-  virtual void OnGetTarget(TargetValue* target) const OVERRIDE {
-    target->transform = target_;
   }
 
   virtual void OnAbort() OVERRIDE {}
@@ -89,10 +86,6 @@ class BoundsTransition : public LayerAnimationElement {
     delegate->SetBoundsFromAnimation(Tween::ValueBetween(t, start_, target_));
   }
 
-  virtual void OnGetTarget(TargetValue* target) const OVERRIDE {
-    target->bounds = target_;
-  }
-
   virtual void OnAbort() OVERRIDE {}
 
  private:
@@ -126,10 +119,6 @@ class OpacityTransition : public LayerAnimationElement {
     delegate->SetOpacityFromAnimation(Tween::ValueBetween(t, start_, target_));
   }
 
-  virtual void OnGetTarget(TargetValue* target) const OVERRIDE {
-    target->opacity = target_;
-  }
-
   virtual void OnAbort() OVERRIDE {}
 
  private:
@@ -147,11 +136,6 @@ class OpacityTransition : public LayerAnimationElement {
 };
 
 }  // namespace
-
-// LayerAnimationElement::TargetValue ------------------------------------------
-
-LayerAnimationElement::TargetValue::TargetValue() : opacity(0.0f) {
-}
 
 // LayerAnimationElement -------------------------------------------------------
 
@@ -171,12 +155,7 @@ void LayerAnimationElement::Progress(double t,
   if (first_frame_)
     OnStart(delegate);
   OnProgress(t, delegate);
-  delegate->ScheduleDrawForAnimation();
   first_frame_ = t == 1.0;
-}
-
-void LayerAnimationElement::GetTargetValue(TargetValue* target) const {
-  OnGetTarget(target);
 }
 
 void LayerAnimationElement::Abort() {

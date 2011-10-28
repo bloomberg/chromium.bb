@@ -10,8 +10,10 @@
 
 #include "base/time.h"
 #include "ui/gfx/compositor/compositor_export.h"
-#include "ui/gfx/rect.h"
-#include "ui/gfx/transform.h"
+
+namespace gfx {
+class Rect;
+}  // gfx
 
 namespace ui {
 
@@ -27,14 +29,6 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
     TRANSFORM = 0,
     BOUNDS,
     OPACITY
-  };
-
-  struct TargetValue {
-   public:
-    TargetValue();
-    gfx::Rect bounds;
-    Transform transform;
-    float opacity;
   };
 
   typedef std::set<AnimatableProperty> AnimatableProperties;
@@ -77,9 +71,6 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
   // before OnStarted or Progress.
   void Abort();
 
-  // Assigns the target value to |target|.
-  void GetTargetValue(TargetValue* target) const;
-
   // The properties that the element modifies.
   const AnimatableProperties& properties() const { return properties_; }
 
@@ -91,7 +82,6 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
   // OnProgress.
   virtual void OnStart(LayerAnimationDelegate* delegate) = 0;
   virtual void OnProgress(double t, LayerAnimationDelegate* delegate) = 0;
-  virtual void OnGetTarget(TargetValue* target) const = 0;
   virtual void OnAbort() = 0;
 
  private:

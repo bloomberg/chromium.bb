@@ -9,7 +9,6 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/compositor/compositor_observer.h"
 #include "ui/gfx/compositor/layer.h"
-#include "ui/gfx/compositor/layer_animation_sequence.h"
 #include "ui/gfx/compositor/test_compositor.h"
 #include "ui/gfx/compositor/test_compositor_host.h"
 
@@ -42,8 +41,7 @@ class ColoredLayer : public Layer, public LayerDelegate {
     canvas->GetSkCanvas()->drawColor(color_);
   }
 
-  virtual void OnLayerAnimationEnded(
-      const LayerAnimationSequence* animation) OVERRIDE {
+  virtual void OnLayerAnimationEnded(const ui::Animation* animation) OVERRIDE {
   }
 
  private:
@@ -134,8 +132,7 @@ class TestLayerDelegate : public LayerDelegate {
                         contents.height());
     color_index_ = (color_index_ + 1) % static_cast<int>(colors_.size());
   }
-  virtual void OnLayerAnimationEnded(
-      const LayerAnimationSequence* animation) OVERRIDE {
+  virtual void OnLayerAnimationEnded(const ui::Animation* animation) OVERRIDE {
   }
 
  private:
@@ -163,8 +160,7 @@ class DrawTreeLayerDelegate : public LayerDelegate {
   virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE {
     painted_ = true;
   }
-  virtual void OnLayerAnimationEnded(
-      const LayerAnimationSequence* animation) OVERRIDE {
+  virtual void OnLayerAnimationEnded(const ui::Animation* animation) OVERRIDE {
   }
 
   bool painted_;
@@ -182,8 +178,7 @@ class NullLayerDelegate : public LayerDelegate {
   // Overridden from LayerDelegate:
   virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE {
   }
-  virtual void OnLayerAnimationEnded(
-      const LayerAnimationSequence* animation) OVERRIDE {
+  virtual void OnLayerAnimationEnded(const ui::Animation* animation) OVERRIDE {
   }
 
   DISALLOW_COPY_AND_ASSIGN(NullLayerDelegate);

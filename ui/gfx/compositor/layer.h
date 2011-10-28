@@ -18,6 +18,7 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/transform.h"
 #include "ui/gfx/compositor/compositor.h"
+#include "ui/gfx/compositor/layer_animation_manager.h"
 #include "ui/gfx/compositor/layer_animator_delegate.h"
 #include "ui/gfx/compositor/layer_delegate.h"
 
@@ -25,9 +26,8 @@ class SkCanvas;
 
 namespace ui {
 
+class Animation;
 class Compositor;
-class LayerAnimator;
-class LayerAnimationSequence;
 class Texture;
 
 // Layer manages a texture, transform and a set of child Layers. Any View that
@@ -84,22 +84,21 @@ class COMPOSITOR_EXPORT Layer :
   // Returns true if this Layer contains |other| somewhere in its children.
   bool Contains(const Layer* other) const;
 
-  // The layer's animator is responsible for causing automatic animations when
-  // properties are set. It also manages a queue of pending animations and
-  // handles blending of animations. The layer takes ownership of the animator.
-  void SetAnimator(LayerAnimator* animator);
-
-  // Returns the layer's animator. Creates a default animator of one has not
-  // been set. Will not return NULL.
-  LayerAnimator* GetAnimator();
+  // Sets the animation to use for changes to opacity, position or transform.
+  // That is, if you invoke this with non-NULL |animation| is started and any
+  // changes to opacity, position or transform are animated between the current
+  // value and target value. If the current animation is NULL or completed,
+  // changes are immediate. If the opacity, transform or bounds are changed
+  // and the animation is part way through, the animation is canceled and
+  // the bounds, opacity and transfrom and set to the target value.
+  // Layer takes ownership of |animation| and installs it's own delegate on the
+  // animation.
+  void SetAnimation(Animation* animation);
+  bool has_animation() const { return animator_.get() != NULL; }
 
   // The transform, relative to the parent.
-  void SetTransform(const Transform& transform);
-  const Transform& transform() const { return transform_; }
-
-  // Return the target transform if animator is running, or the current
-  // transform otherwise.
-  Transform GetTargetTransform() const;
+  void SetTransform(const ui::Transform& transform);
+  const ui::Transform& transform() const { return transform_; }
 
   // The bounds, relative to the parent.
   void SetBounds(const gfx::Rect& bounds);
@@ -113,10 +112,6 @@ class COMPOSITOR_EXPORT Layer :
   // texture (resulting alpha = opacity * alpha).
   float opacity() const { return opacity_; }
   void SetOpacity(float opacity);
-
-  // Return the target opacity if animator is running, or the current bounds
-  // otherwise.
-  float GetTargetOpacity() const;
 
   // Sets the visibility of the Layer. A Layer may be visible but not
   // drawn. This happens if any ancestor of a Layer is not visible.
@@ -267,21 +262,22 @@ class COMPOSITOR_EXPORT Layer :
   // should have valid alpha.
   bool has_valid_alpha_channel() const { return !layer_updated_externally_; }
 
+  // If the animation is running and has progressed, it is stopped and all
+  // properties that are animated (except |property|) are immediately set to
+  // their target value.
+  void StopAnimatingIfNecessary(
+      LayerAnimationManager::AnimationProperty property);
+
   // Following are invoked from the animation or if no animation exists to
   // update the values immediately.
   void SetBoundsImmediately(const gfx::Rect& bounds);
   void SetTransformImmediately(const ui::Transform& transform);
   void SetOpacityImmediately(float opacity);
 
-  // Implementation of LayerAnimatorDelegate
-  virtual void SetBoundsFromAnimation(const gfx::Rect& bounds) OVERRIDE;
-  virtual void SetTransformFromAnimation(const Transform& transform) OVERRIDE;
-  virtual void SetOpacityFromAnimation(float opacity) OVERRIDE;
-  virtual void ScheduleDrawForAnimation() OVERRIDE;
-  virtual const gfx::Rect& GetBoundsForAnimation() const OVERRIDE;
-  virtual const Transform& GetTransformForAnimation() const OVERRIDE;
-  virtual float GetOpacityForAnimation() const OVERRIDE;
-  virtual void OnLayerAnimationEnded(LayerAnimationSequence* sequence) OVERRIDE;
+  // LayerAnimatorDelegate overrides:
+  virtual void SetBoundsFromAnimator(const gfx::Rect& bounds) OVERRIDE;
+  virtual void SetTransformFromAnimator(const Transform& transform) OVERRIDE;
+  virtual void SetOpacityFromAnimator(float opacity) OVERRIDE;
 
 #if defined(USE_WEBKIT_COMPOSITOR)
   void CreateWebLayer();
@@ -321,7 +317,7 @@ class COMPOSITOR_EXPORT Layer :
 
   LayerDelegate* delegate_;
 
-  scoped_ptr<LayerAnimator> animator_;
+  scoped_ptr<LayerAnimationManager> animator_;
 
 #if defined(USE_WEBKIT_COMPOSITOR)
   WebKit::WebLayer web_layer_;

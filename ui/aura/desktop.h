@@ -25,7 +25,6 @@ class Size;
 }
 
 namespace ui {
-class LayerAnimationSequence;
 class Transform;
 }
 
@@ -147,8 +146,7 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate,
   virtual Desktop* GetDesktop() OVERRIDE;
 
   // Overridden from ui::LayerDelegate:
-  virtual void OnLayerAnimationEnded(
-      const ui::LayerAnimationSequence* animation) OVERRIDE;
+  virtual void OnLayerAnimationEnded(const ui::Animation* animation) OVERRIDE;
 
   // Overridden from FocusManager:
   virtual void SetFocusedWindow(Window* window) OVERRIDE;

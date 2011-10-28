@@ -15,7 +15,6 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/compositor/layer.h"
-#include "ui/gfx/compositor/layer_animator.h"
 #include "ui/gfx/compositor/test_compositor.h"
 #include "ui/gfx/compositor/test_texture.h"
 #include "ui/gfx/path.h"
@@ -29,6 +28,7 @@
 #include "views/events/event.h"
 #include "views/focus/accelerator_handler.h"
 #include "views/focus/view_storage.h"
+#include "views/layer_property_setter.h"
 #include "views/test/views_test_base.h"
 #include "views/touchui/gesture_manager.h"
 #include "views/view.h"
@@ -2444,27 +2444,44 @@ TEST_F(ViewTest, GetViewByID) {
 
 namespace {
 
-// Test implementation of LayerAnimator.
-class TestLayerAnimator : public ui::LayerAnimator {
+// Test implementation of LayerPropertySetter;
+class TestLayerPropertySetter : public LayerPropertySetter {
  public:
-  TestLayerAnimator();
+  TestLayerPropertySetter();
 
+  bool installed() const { return installed_; }
   const gfx::Rect& last_bounds() const { return last_bounds_; }
 
-  // LayerAnimator.
-  virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
+  // LayerPropertySetter:
+  virtual void Installed(ui::Layer* layer) OVERRIDE;
+  virtual void Uninstalled(ui::Layer* layer) OVERRIDE;
+  virtual void SetTransform(ui::Layer* layer,
+                            const ui::Transform& transform) OVERRIDE;
+  virtual void SetBounds(ui::Layer* layer, const gfx::Rect& bounds) OVERRIDE;
 
  private:
+  bool installed_;
   gfx::Rect last_bounds_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestLayerAnimator);
+  DISALLOW_COPY_AND_ASSIGN(TestLayerPropertySetter);
 };
 
-TestLayerAnimator::TestLayerAnimator()
-    : ui::LayerAnimator(base::TimeDelta::FromMilliseconds(0)) {
+TestLayerPropertySetter::TestLayerPropertySetter() : installed_(false) {}
+
+void TestLayerPropertySetter::Installed(ui::Layer* layer) {
+  installed_ = true;
 }
 
-void TestLayerAnimator::SetBounds(const gfx::Rect& bounds) {
+void TestLayerPropertySetter::Uninstalled(ui::Layer* layer) {
+  installed_ = false;
+}
+
+void TestLayerPropertySetter::SetTransform(ui::Layer* layer,
+                                          const ui::Transform& transform) {
+}
+
+void TestLayerPropertySetter::SetBounds(ui::Layer* layer,
+                                       const gfx::Rect& bounds) {
   last_bounds_ = bounds;
 }
 
@@ -2659,22 +2676,28 @@ TEST_F(ViewLayerTest, NestedLayerToggling) {
   EXPECT_EQ(v1->layer(), v3->layer()->parent());
 }
 
-TEST_F(ViewLayerTest, LayerAnimator) {
+TEST_F(ViewLayerTest, LayerPropertySetter) {
   View* content_view = new View;
   widget()->SetContentsView(content_view);
 
   View* v1 = new View;
   content_view->AddChildView(v1);
   v1->SetPaintToLayer(true);
-  EXPECT_TRUE(v1->layer() != NULL);
+  TestLayerPropertySetter* setter = new TestLayerPropertySetter;
+  v1->SetLayerPropertySetter(setter);
+  EXPECT_TRUE(setter->installed());
 
-  TestLayerAnimator* animator = new TestLayerAnimator();
-  v1->layer()->SetAnimator(animator);
+  // Turn off the layer, which should trigger uninstall.
+  v1->SetPaintToLayer(false);
+  EXPECT_FALSE(setter->installed());
+
+  v1->SetPaintToLayer(true);
+  EXPECT_TRUE(setter->installed());
 
   gfx::Rect bounds(1, 2, 3, 4);
   v1->SetBoundsRect(bounds);
-  EXPECT_EQ(bounds, animator->last_bounds());
-  // TestLayerAnimator doesn't update the layer.
+  EXPECT_EQ(bounds, setter->last_bounds());
+  // TestLayerPropertySetter doesn't update the layer.
   EXPECT_NE(bounds, v1->layer()->bounds());
 }
 

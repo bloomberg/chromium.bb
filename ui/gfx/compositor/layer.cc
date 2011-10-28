@@ -18,7 +18,7 @@
 #include "ui/gfx/compositor/compositor_cc.h"
 #endif
 #include "ui/gfx/canvas_skia.h"
-#include "ui/gfx/compositor/layer_animator.h"
+#include "ui/gfx/compositor/layer_animation_manager.h"
 #include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/point3.h"
 
@@ -135,46 +135,49 @@ bool Layer::Contains(const Layer* other) const {
   return false;
 }
 
-void Layer::SetAnimator(LayerAnimator* animator) {
-  if (animator)
-    animator->SetDelegate(this);
-  animator_.reset(animator);
-}
-
-LayerAnimator* Layer::GetAnimator() {
-  if (!animator_.get())
-    SetAnimator(LayerAnimator::CreateDefaultAnimator());
-  return animator_.get();
+void Layer::SetAnimation(Animation* animation) {
+  if (animation) {
+    if (!animator_.get())
+      animator_.reset(new LayerAnimationManager(this));
+    animation->Start();
+    animator_->SetAnimation(animation);
+  } else {
+    animator_.reset();
+  }
 }
 
 void Layer::SetTransform(const ui::Transform& transform) {
-  GetAnimator()->SetTransform(transform);
-}
-
-Transform Layer::GetTargetTransform() const {
-  if (animator_.get() && animator_->is_animating())
-    return animator_->GetTargetTransform();
-  return transform_;
+  StopAnimatingIfNecessary(LayerAnimationManager::TRANSFORM);
+  if (animator_.get() && animator_->IsRunning()) {
+    animator_->AnimateTransform(transform);
+    return;
+  }
+  SetTransformImmediately(transform);
 }
 
 void Layer::SetBounds(const gfx::Rect& bounds) {
-  GetAnimator()->SetBounds(bounds);
+  StopAnimatingIfNecessary(LayerAnimationManager::LOCATION);
+  if (animator_.get() && animator_->IsRunning() &&
+      bounds.size() == bounds_.size()) {
+    animator_->AnimateToPoint(bounds.origin());
+    return;
+  }
+  SetBoundsImmediately(bounds);
 }
 
 gfx::Rect Layer::GetTargetBounds() const {
-  if (animator_.get() && animator_->is_animating())
-    return animator_->GetTargetBounds();
+  if (animator_.get() && animator_->IsRunning())
+    return gfx::Rect(animator_->GetTargetPoint(), bounds_.size());
   return bounds_;
 }
 
 void Layer::SetOpacity(float opacity) {
-  GetAnimator()->SetOpacity(opacity);
-}
-
-float Layer::GetTargetOpacity() const {
-  if (animator_.get() && animator_->is_animating())
-    return animator_->GetTargetOpacity();
-  return opacity_;
+  StopAnimatingIfNecessary(LayerAnimationManager::OPACITY);
+  if (animator_.get() && animator_->IsRunning()) {
+    animator_->AnimateOpacity(opacity);
+    return;
+  }
+  SetOpacityImmediately(opacity);
 }
 
 void Layer::SetVisible(bool visible) {
@@ -593,6 +596,29 @@ bool Layer::GetTransformRelativeTo(const Layer* ancestor,
   return p == ancestor;
 }
 
+void Layer::StopAnimatingIfNecessary(
+    LayerAnimationManager::AnimationProperty property) {
+  if (!animator_.get() || !animator_->IsRunning() ||
+      !animator_->got_initial_tick()) {
+    return;
+  }
+
+  if (property != LayerAnimationManager::LOCATION &&
+      animator_->IsAnimating(LayerAnimationManager::LOCATION)) {
+    SetBoundsImmediately(
+        gfx::Rect(animator_->GetTargetPoint(), bounds_.size()));
+  }
+  if (property != LayerAnimationManager::OPACITY &&
+      animator_->IsAnimating(LayerAnimationManager::OPACITY)) {
+    SetOpacityImmediately(animator_->GetTargetOpacity());
+  }
+  if (property != LayerAnimationManager::TRANSFORM &&
+      animator_->IsAnimating(LayerAnimationManager::TRANSFORM)) {
+    SetTransformImmediately(animator_->GetTargetTransform());
+  }
+  animator_.reset();
+}
+
 void Layer::SetBoundsImmediately(const gfx::Rect& bounds) {
   bounds_ = bounds;
 
@@ -622,37 +648,16 @@ void Layer::SetOpacityImmediately(float opacity) {
 #endif
 }
 
-void Layer::SetBoundsFromAnimation(const gfx::Rect& bounds) {
+void Layer::SetBoundsFromAnimator(const gfx::Rect& bounds) {
   SetBoundsImmediately(bounds);
 }
 
-void Layer::SetTransformFromAnimation(const Transform& transform) {
+void Layer::SetTransformFromAnimator(const Transform& transform) {
   SetTransformImmediately(transform);
 }
 
-void Layer::SetOpacityFromAnimation(float opacity) {
+void Layer::SetOpacityFromAnimator(float opacity) {
   SetOpacityImmediately(opacity);
-}
-
-void Layer::ScheduleDrawForAnimation() {
-  ScheduleDraw();
-}
-
-const gfx::Rect& Layer::GetBoundsForAnimation() const {
-  return bounds();
-}
-
-const Transform& Layer::GetTransformForAnimation() const {
-  return transform();
-}
-
-float Layer::GetOpacityForAnimation() const {
-  return opacity();
-}
-
-void Layer::OnLayerAnimationEnded(LayerAnimationSequence* sequence) {
-  if (delegate_)
-    delegate_->OnLayerAnimationEnded(sequence);
 }
 
 #if defined(USE_WEBKIT_COMPOSITOR)

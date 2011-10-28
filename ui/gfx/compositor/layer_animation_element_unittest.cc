@@ -11,9 +11,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/transform.h"
-#include "ui/gfx/compositor/dummy_layer_animation_delegate.h"
 #include "ui/gfx/compositor/layer_animation_delegate.h"
 #include "ui/gfx/compositor/test_utils.h"
+#include "ui/gfx/compositor/test_layer_animation_delegate.h"
 
 namespace ui {
 
@@ -22,7 +22,7 @@ namespace {
 // Check that the transformation element progresses the delegate as expected and
 // that the element can be reused after it completes.
 TEST(LayerAnimationElementTest, TransformElement) {
-  DummyLayerAnimationDelegate delegate;
+  TestLayerAnimationDelegate delegate;
   Transform start_transform, target_transform, middle_transform;
   start_transform.SetRotate(-90);
   target_transform.SetRotate(90);
@@ -44,17 +44,13 @@ TEST(LayerAnimationElementTest, TransformElement) {
                             delegate.GetTransformForAnimation());
   }
 
-  LayerAnimationElement::TargetValue target_value;
-  element->GetTargetValue(&target_value);
-  CheckApproximatelyEqual(target_transform, target_value.transform);
-
   EXPECT_EQ(delta, element->duration());
 }
 
 // Check that the bounds element progresses the delegate as expected and
 // that the element can be reused after it completes.
 TEST(LayerAnimationElementTest, BoundsElement) {
-  DummyLayerAnimationDelegate delegate;
+  TestLayerAnimationDelegate delegate;
   gfx::Rect start, target, middle;
   start = target = middle = gfx::Rect(0, 0, 50, 50);
   start.set_x(-90);
@@ -74,17 +70,13 @@ TEST(LayerAnimationElementTest, BoundsElement) {
     CheckApproximatelyEqual(target, delegate.GetBoundsForAnimation());
   }
 
-  LayerAnimationElement::TargetValue target_value;
-  element->GetTargetValue(&target_value);
-  CheckApproximatelyEqual(target, target_value.bounds);
-
   EXPECT_EQ(delta, element->duration());
 }
 
 // Check that the opacity element progresses the delegate as expected and
 // that the element can be reused after it completes.
 TEST(LayerAnimationElementTest, OpacityElement) {
-  DummyLayerAnimationDelegate delegate;
+  TestLayerAnimationDelegate delegate;
   float start = 0.0;
   float middle = 0.5;
   float target = 1.0;
@@ -102,10 +94,6 @@ TEST(LayerAnimationElementTest, OpacityElement) {
     EXPECT_FLOAT_EQ(target, delegate.GetOpacityForAnimation());
   }
 
-  LayerAnimationElement::TargetValue target_value;
-  element->GetTargetValue(&target_value);
-  EXPECT_FLOAT_EQ(target, target_value.opacity);
-
   EXPECT_EQ(delta, element->duration());
 }
 
@@ -121,8 +109,8 @@ TEST(LayerAnimationElementTest, PauseElement) {
   scoped_ptr<LayerAnimationElement> element(
       LayerAnimationElement::CreatePauseElement(properties, delta));
 
-  DummyLayerAnimationDelegate delegate;
-  DummyLayerAnimationDelegate copy = delegate;
+  TestLayerAnimationDelegate delegate;
+  TestLayerAnimationDelegate copy = delegate;
 
   element->Progress(1.0, &delegate);
 

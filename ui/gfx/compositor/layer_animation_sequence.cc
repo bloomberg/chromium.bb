@@ -29,6 +29,7 @@ LayerAnimationSequence::~LayerAnimationSequence() {
 
 void LayerAnimationSequence::Progress(base::TimeDelta elapsed,
                                       LayerAnimationDelegate* delegate) {
+  TRACE_EVENT0("LayerAnimationSequence", "Progress");
   if (elements_.size() == 0 || duration_ == base::TimeDelta())
     return;
 
@@ -66,15 +67,6 @@ void LayerAnimationSequence::Progress(base::TimeDelta elapsed,
     last_element_ = 0;
     last_start_ = base::TimeDelta::FromMilliseconds(0);
   }
-}
-
-void LayerAnimationSequence::GetTargetValue(
-    LayerAnimationElement::TargetValue* target) const {
-  if (is_cyclic_)
-    return;
-
-  for (size_t i = last_element_; i < elements_.size(); ++i)
-    elements_[i]->GetTargetValue(target);
 }
 
 void LayerAnimationSequence::Abort() {

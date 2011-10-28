@@ -12,7 +12,7 @@
 
 namespace ui {
 
-// Layer animations interact with the layers using this interface.
+// LayerAnimation interacts with the Layer using this interface.
 class COMPOSITOR_EXPORT LayerAnimationDelegate {
  public:
   virtual void SetBoundsFromAnimation(const gfx::Rect& bounds) = 0;
