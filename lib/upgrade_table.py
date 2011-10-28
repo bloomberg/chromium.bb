@@ -8,7 +8,6 @@
 import logging
 import optparse
 import os
-import parallel_emerge
 import portage
 import re
 import shutil
@@ -85,3 +84,10 @@ class UpgradeTable(table.Table):
   def GetArch(self):
     """Get the architecture associated with this UpgradeTable."""
     return self._arch
+
+# Support having this module test itself if run as __main__, by leveraging
+# the upgrade_table_unittest module.
+# Also, the unittests serve as extra documentation.
+if __name__ == "__main__":
+  import upgrade_table_unittest
+  upgrade_table_unittest.unittest.main(upgrade_table_unittest)
