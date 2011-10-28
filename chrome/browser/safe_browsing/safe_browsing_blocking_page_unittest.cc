@@ -90,6 +90,12 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness,
     ResetUserResponse();
   }
 
+  virtual void TearDown() {
+    // Release the SafeBrowsingService before the BrowserThreads are destroyed.
+    service_ = NULL;
+    ChromeRenderViewHostTestHarness::TearDown();
+  }
+
   // SafeBrowsingService::Client implementation.
   virtual void OnUrlCheckResult(const GURL& url,
                                 SafeBrowsingService::UrlCheckResult result) {

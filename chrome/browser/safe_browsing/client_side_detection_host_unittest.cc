@@ -170,11 +170,13 @@ class ClientSideDetectionHostTest : public TabContentsWrapperTestHarness {
   }
 
   virtual void TearDown() {
-    // Delete the host object on the UI thread.
+    // Delete the host object on the UI thread and release the
+    // SafeBrowsingService.
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
         new DeleteTask<ClientSideDetectionHost>(csd_host_.release()));
+    sb_service_ = NULL;
     message_loop_.RunAllPending();
     TabContentsWrapperTestHarness::TearDown();
     io_thread_.reset();

@@ -1508,6 +1508,7 @@
         'browser/safe_browsing/safe_browsing_store_unittest.cc',
         'browser/safe_browsing/safe_browsing_store_unittest_helper.cc',
         'browser/safe_browsing/safe_browsing_util_unittest.cc',
+        'browser/safe_browsing/signature_util_win_unittest.cc',
         'browser/search_engines/search_host_to_urls_map_unittest.cc',
         'browser/search_engines/search_provider_install_data_unittest.cc',
         'browser/search_engines/template_url_fetcher_unittest.cc',
@@ -1989,6 +1990,7 @@
           'sources/': [
             ['exclude', '^browser/password_manager/native_backend_gnome_x_unittest.cc'],
             ['exclude', '^browser/password_manager/native_backend_kwallet_x_unittest.cc'],
+            ['exclude', '^browser/safe_browsing/download_protection_service_unittest.cc' ],
             ['exclude', '^../content/browser/geolocation/wifi_data_provider_linux_unittest.cc'],
             # TODO(thestig) Enable PrintPreviewUI tests on CrOS when
             # print preview is enabled on CrOS.
