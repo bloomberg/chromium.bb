@@ -743,10 +743,6 @@ class Browser : public TabHandlerDelegate,
                                   content::PageTransition transition,
                                   bool user_initiated);
 
-  // Called by browser::Navigate() to retrieve the home page if no URL is
-  // specified.
-  GURL GetHomePage() const;
-
   // Shows the cookies collected in the tab contents wrapper.
   void ShowCollectedCookiesDialog(TabContentsWrapper* wrapper);
 

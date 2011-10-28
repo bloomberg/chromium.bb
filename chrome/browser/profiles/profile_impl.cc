@@ -53,6 +53,7 @@
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/pref_proxy_config_service.h"
 #include "chrome/browser/net/ssl_config_service_manager.h"
+#include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/password_manager/password_store_default.h"
 #include "chrome/browser/plugin_prefs.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
@@ -92,6 +93,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/spellcheck_messages.h"
+#include "chrome/common/url_constants.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/chrome_blob_storage_context.h"
 #include "content/browser/file_system/browser_file_system_helper.h"
@@ -1678,6 +1680,33 @@ chrome_browser_net::Predictor* ProfileImpl::GetNetworkPredictor() {
 
 void ProfileImpl::ClearNetworkingHistorySince(base::Time time) {
   io_data_.ClearNetworkingHistorySince(time);
+}
+
+GURL ProfileImpl::GetHomePage() {
+  // --homepage overrides any preferences.
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kHomePage)) {
+    // TODO(evanm): clean up usage of DIR_CURRENT.
+    //   http://code.google.com/p/chromium/issues/detail?id=60630
+    // For now, allow this code to call getcwd().
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+
+    FilePath browser_directory;
+    PathService::Get(base::DIR_CURRENT, &browser_directory);
+    GURL home_page(URLFixerUpper::FixupRelativeFile(browser_directory,
+        command_line.GetSwitchValuePath(switches::kHomePage)));
+    if (home_page.is_valid())
+      return home_page;
+  }
+
+  if (GetPrefs()->GetBoolean(prefs::kHomePageIsNewTabPage))
+    return GURL(chrome::kChromeUINewTabURL);
+  GURL home_page(URLFixerUpper::FixupURL(
+      GetPrefs()->GetString(prefs::kHomePage),
+      std::string()));
+  if (!home_page.is_valid())
+    return GURL(chrome::kChromeUINewTabURL);
+  return home_page;
 }
 
 SpellCheckProfile* ProfileImpl::GetSpellCheckProfile() {

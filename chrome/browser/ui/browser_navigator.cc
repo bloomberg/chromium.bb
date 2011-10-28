@@ -446,7 +446,7 @@ void Navigate(NavigateParams* params) {
   if (!params->target_contents && singleton_index < 0) {
     GURL url;
     if (params->url.is_empty()) {
-      url = params->browser->GetHomePage();
+      url = params->browser->profile()->GetHomePage();
       params->transition = content::PageTransitionFromInt(
           params->transition | content::PAGE_TRANSITION_HOME_PAGE);
     } else {

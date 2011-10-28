@@ -490,6 +490,9 @@ class Profile : public content::BrowserContext {
   // method returns data is not guaranteed to be deleted.
   virtual void ClearNetworkingHistorySince(base::Time time) = 0;
 
+  // Returns the home page for this profile.
+  virtual GURL GetHomePage() = 0;
+
   std::string GetDebugName();
 
   // Returns whether it is a guest session.

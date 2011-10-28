@@ -1027,7 +1027,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RestorePinnedTabs) {
   EXPECT_TRUE(new_model->IsTabPinned(1));
   EXPECT_FALSE(new_model->IsTabPinned(2));
 
-  EXPECT_EQ(browser()->GetHomePage(),
+  EXPECT_EQ(browser()->profile()->GetHomePage(),
       new_model->GetTabContentsAt(2)->tab_contents()->GetURL());
 
   EXPECT_TRUE(

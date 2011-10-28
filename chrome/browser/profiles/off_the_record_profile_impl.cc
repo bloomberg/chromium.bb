@@ -564,6 +564,10 @@ void OffTheRecordProfileImpl::ClearNetworkingHistorySince(base::Time time) {
   // No need to do anything here, our transport security state is read-only.
 }
 
+GURL OffTheRecordProfileImpl::GetHomePage() {
+  return profile_->GetHomePage();
+}
+
 void OffTheRecordProfileImpl::Observe(int type,
                      const content::NotificationSource& source,
                      const content::NotificationDetails& details) {

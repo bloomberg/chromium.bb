@@ -781,6 +781,10 @@ void TestingProfile::ClearNetworkingHistorySince(base::Time time) {
   NOTIMPLEMENTED();
 }
 
+GURL TestingProfile::GetHomePage() {
+  return GURL(chrome::kChromeUINewTabURL);
+}
+
 PrefService* TestingProfile::GetOffTheRecordPrefs() {
   return NULL;
 }

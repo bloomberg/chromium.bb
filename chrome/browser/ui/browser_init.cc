@@ -1288,11 +1288,31 @@ void BrowserInit::LaunchWithProfile::AddStartupURLs(
     }
   }
 
-  // If the sync promo page is going to be displayed then replace the first
-  // startup URL with the sync promo page.
+  // If the sync promo page is going to be displayed then insert it at the front
+  // of the list.
   if (SyncPromoUI::ShouldShowSyncPromoAtStartup(profile_, is_first_run_)) {
     SyncPromoUI::DidShowSyncPromoAtStartup(profile_);
-    (*startup_urls)[0] = SyncPromoUI::GetSyncPromoURL((*startup_urls)[0], true);
+    GURL old_url = (*startup_urls)[0];
+    (*startup_urls)[0] =
+        SyncPromoUI::GetSyncPromoURL(GURL(chrome::kChromeUINewTabURL), true);
+
+    // An empty URL means to go to the home page.
+    if (old_url.is_empty() &&
+        profile_->GetHomePage() == GURL(chrome::kChromeUINewTabURL)) {
+      old_url = GURL(chrome::kChromeUINewTabURL);
+    }
+
+    // If the old URL is not the NTP then insert it right after the sync promo.
+    if (old_url != GURL(chrome::kChromeUINewTabURL))
+      startup_urls->insert(startup_urls->begin() + 1, old_url);
+
+    // If we have more than two startup tabs then skip the welcome page.
+    if (startup_urls->size() > 2) {
+      std::vector<GURL>::iterator it = std::find(
+          startup_urls->begin(), startup_urls->end(), GetWelcomePageURL());
+      if (it != startup_urls->end())
+        startup_urls->erase(it);
+    }
   }
 }
 

@@ -1523,7 +1523,7 @@ void Browser::ReloadInternal(WindowOpenDisposition disposition,
 void Browser::Home(WindowOpenDisposition disposition) {
   UserMetrics::RecordAction(UserMetricsAction("Home"));
   OpenURL(
-      GetHomePage(), GURL(), disposition,
+      profile_->GetHomePage(), GURL(), disposition,
       content::PageTransitionFromInt(
           content::PAGE_TRANSITION_AUTO_BOOKMARK |
           content::PAGE_TRANSITION_HOME_PAGE));
@@ -2949,33 +2949,6 @@ void Browser::UpdateUIForNavigationInTab(TabContentsWrapper* contents,
 
   if (contents_is_selected)
     contents->tab_contents()->Focus();
-}
-
-GURL Browser::GetHomePage() const {
-  // --homepage overrides any preferences.
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kHomePage)) {
-    // TODO(evanm): clean up usage of DIR_CURRENT.
-    //   http://code.google.com/p/chromium/issues/detail?id=60630
-    // For now, allow this code to call getcwd().
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
-
-    FilePath browser_directory;
-    PathService::Get(base::DIR_CURRENT, &browser_directory);
-    GURL home_page(URLFixerUpper::FixupRelativeFile(browser_directory,
-        command_line.GetSwitchValuePath(switches::kHomePage)));
-    if (home_page.is_valid())
-      return home_page;
-  }
-
-  if (profile_->GetPrefs()->GetBoolean(prefs::kHomePageIsNewTabPage))
-    return GURL(chrome::kChromeUINewTabURL);
-  GURL home_page(URLFixerUpper::FixupURL(
-      profile_->GetPrefs()->GetString(prefs::kHomePage),
-      std::string()));
-  if (!home_page.is_valid())
-    return GURL(chrome::kChromeUINewTabURL);
-  return home_page;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
