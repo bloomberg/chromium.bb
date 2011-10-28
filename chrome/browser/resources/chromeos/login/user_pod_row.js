@@ -15,6 +15,10 @@ cr.define('login', function() {
   const OAUTH_TOKEN_STATUS_INVALID = 1;
   const OAUTH_TOKEN_STATUS_VALID = 2;
 
+  // Tab index for pods.  Update these when adding new controls.
+  const TAB_INDEX_POD_INPUT = 1;
+  const TAB_INDEX_REMOVE_USER = 2;
+
   /**
    * Helper function to remove a class from given element.
    * @param {!HTMLElement} el Element whose class list to change.
@@ -40,7 +44,7 @@ cr.define('login', function() {
     decorate: function() {
       // Make this focusable
       if (!this.hasAttribute('tabindex'))
-        this.tabIndex = 0;
+        this.tabIndex = TAB_INDEX_POD_INPUT;
 
       this.addEventListener('mousedown',
           this.handleMouseDown_.bind(this));
@@ -49,6 +53,8 @@ cr.define('login', function() {
           this.activate.bind(this));
       this.signinButtonElement.addEventListener('click',
           this.activate.bind(this));
+      this.removeUserButtonElement.addEventListener('click',
+          this.handleRemoveButtonClick_.bind(this));
       this.removeUserButtonElement.addEventListener('mouseout',
           this.handleRemoveButtonMouseOut_.bind(this));
     },
@@ -175,6 +181,9 @@ cr.define('login', function() {
         this.imageElement.title = userDict.emailAddress;
         this.enterButtonElement.hidden = true;
         this.passwordElement.hidden = needSignin;
+        this.removeUserButtonElement.setAttribute(
+            'aria-label', localStrings.getStringF('removeButtonAccessibleName',
+                                                  userDict.emailAddress));
         this.passwordElement.setAttribute('aria-label',
                                           localStrings.getStringF(
                                               'passwordFieldAccessibleName',
@@ -319,10 +328,7 @@ cr.define('login', function() {
       if (!this.parentNode.rowEnabled)
         return;
       var handled = false;
-      if (e.target == this.removeUserButtonElement) {
-        this.handleRemoveButtonClick_(e);
-        handled = true;
-      } else if (!this.signinButtonElement.hidden) {
+      if (!this.signinButtonElement.hidden) {
         this.parentNode.showSigninUI(this.user.emailAddress);
         handled = true;
       }
@@ -403,6 +409,8 @@ cr.define('login', function() {
 
       this.appendChild(userPod);
       userPod.initialize();
+      var index = this.findIndex_(userPod);
+      userPod.removeUserButtonElement.tabIndex = TAB_INDEX_REMOVE_USER;
     },
 
     /**
@@ -470,6 +478,7 @@ cr.define('login', function() {
       // Popoulate the pod row.
       for (var i = 0; i < users.length; ++i) {
         this.addUserPod(users[i], animated);
+        this.pods[i].tabIndex = TAB_INDEX_POD_INPUT;
       }
     },
 
@@ -491,9 +500,10 @@ cr.define('login', function() {
           } else {
             this.pods[i].classList.remove('focused');
             this.pods[i].classList.add('faded');
-            this.pods[i].tabIndex = 0;
+            this.pods[i].tabIndex = TAB_INDEX_POD_INPUT;
           }
         }
+        pod.mainInput.tabIndex = TAB_INDEX_POD_INPUT;
         pod.focusInput();
 
         this.focusedPod_ = pod;
@@ -503,7 +513,7 @@ cr.define('login', function() {
           this.pods[i].classList.remove('focused');
           this.pods[i].classList.remove('faded');
           this.pods[i].activeRemoveButton = false;
-          this.pods[i].tabIndex = 0;
+          this.pods[i].tabIndex = TAB_INDEX_POD_INPUT;
         }
         this.focusedPod_ = undefined;
       }
