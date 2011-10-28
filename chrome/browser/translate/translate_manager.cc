@@ -753,7 +753,7 @@ void TranslateManager::FetchLanguageListFromTranslateServer(
   language_list_request_pending_.reset(content::URLFetcher::Create(
       1, GURL(kLanguageListFetchURL), content::URLFetcher::GET, this));
   language_list_request_pending_->SetRequestContext(
-      Profile::Deprecated::GetDefaultRequestContext());
+      g_browser_process->system_request_context());
   language_list_request_pending_->SetMaxRetries(kMaxRetryLanguageListFetch);
   language_list_request_pending_->Start();
 }
@@ -770,7 +770,7 @@ void TranslateManager::RequestTranslateScript() {
   translate_script_request_pending_.reset(content::URLFetcher::Create(
       0, GURL(kTranslateScriptURL), content::URLFetcher::GET, this));
   translate_script_request_pending_->SetRequestContext(
-      Profile::Deprecated::GetDefaultRequestContext());
+      g_browser_process->system_request_context());
   translate_script_request_pending_->SetExtraRequestHeaders(
       kTranslateScriptHeader);
   translate_script_request_pending_->Start();
