@@ -1,4 +1,4 @@
-From 3759b424e3347153e8c9011d9f462f9a351120bb Mon Sep 17 00:00:00 2001
+From 0c2f72b38711abdd4ada08ae8d7e96dce79a672b Mon Sep 17 00:00:00 2001
 From: Adam Langley <agl@chromium.org>
 Date: Mon, 3 Oct 2011 12:19:28 -0400
 Subject: [PATCH 01/15] nextproto.patch
@@ -6,14 +6,14 @@ Subject: [PATCH 01/15] nextproto.patch
 ---
  mozilla/security/nss/lib/ssl/ssl.def    |    8 ++
  mozilla/security/nss/lib/ssl/ssl.h      |   51 ++++++++++++
- mozilla/security/nss/lib/ssl/ssl3con.c  |   54 +++++++++++++
+ mozilla/security/nss/lib/ssl/ssl3con.c  |   58 +++++++++++++
  mozilla/security/nss/lib/ssl/ssl3ext.c  |  104 ++++++++++++++++++++++++-
  mozilla/security/nss/lib/ssl/ssl3prot.h |    3 +-
  mozilla/security/nss/lib/ssl/sslerr.h   |    2 +
  mozilla/security/nss/lib/ssl/sslimpl.h  |   21 +++++
- mozilla/security/nss/lib/ssl/sslsock.c  |  131 +++++++++++++++++++++++++++++++
+ mozilla/security/nss/lib/ssl/sslsock.c  |  134 +++++++++++++++++++++++++++++++
  mozilla/security/nss/lib/ssl/sslt.h     |    3 +-
- 9 files changed, 374 insertions(+), 3 deletions(-)
+ 9 files changed, 381 insertions(+), 3 deletions(-)
 
 diff --git a/mozilla/security/nss/lib/ssl/ssl.def b/mozilla/security/nss/lib/ssl/ssl.def
 index d3f455c..6ea48c0 100644
@@ -94,7 +94,7 @@ index 4a9e89d..f54eb09 100644
  ** Control ciphers that SSL uses. If on is non-zero then the named cipher
  ** is enabled, otherwise it is disabled. 
 diff --git a/mozilla/security/nss/lib/ssl/ssl3con.c b/mozilla/security/nss/lib/ssl/ssl3con.c
-index 8048913..8f860a9 100644
+index 8048913..d2d4f91 100644
 --- a/mozilla/security/nss/lib/ssl/ssl3con.c
 +++ b/mozilla/security/nss/lib/ssl/ssl3con.c
 @@ -81,6 +81,7 @@ static SECStatus ssl3_InitState(             sslSocket *ss);
@@ -105,20 +105,24 @@ index 8048913..8f860a9 100644
  static SECStatus ssl3_SendFinished(          sslSocket *ss, PRInt32 flags);
  static SECStatus ssl3_SendServerHello(       sslSocket *ss);
  static SECStatus ssl3_SendServerHelloDone(   sslSocket *ss);
-@@ -5742,6 +5743,12 @@ ssl3_HandleServerHelloDone(sslSocket *ss)
+@@ -5742,6 +5743,16 @@ ssl3_HandleServerHelloDone(sslSocket *ss)
      if (rv != SECSuccess) {
  	goto loser;	/* err code was set. */
      }
 +
-+    rv = ssl3_SendNextProto(ss);
-+    if (rv != SECSuccess) {
-+	goto loser;	/* err code was set. */
++    /* We don't send NPN in a renegotiation as it's explicitly disallowed by
++     * the spec. */
++    if (!ss->firstHsDone) {
++	rv = ssl3_SendNextProto(ss);
++	if (rv != SECSuccess) {
++	    goto loser;	/* err code was set. */
++	}
 +    }
 +
      rv = ssl3_SendFinished(ss, 0);
      if (rv != SECSuccess) {
  	goto loser;	/* err code was set. */
-@@ -8169,6 +8176,40 @@ ssl3_ComputeTLSFinished(ssl3CipherSpec *spec,
+@@ -8169,6 +8180,40 @@ ssl3_ComputeTLSFinished(ssl3CipherSpec *spec,
  }
  
  /* called from ssl3_HandleServerHelloDone
@@ -159,12 +163,12 @@ index 8048913..8f860a9 100644
   *             ssl3_HandleClientHello
   *             ssl3_HandleFinished
   */
-@@ -8421,6 +8462,14 @@ ssl3_HandleFinished(sslSocket *ss, SSL3Opaque *b, PRUint32 length,
+@@ -8421,6 +8466,14 @@ ssl3_HandleFinished(sslSocket *ss, SSL3Opaque *b, PRUint32 length,
  	if (doStepUp || ss->writerThread == PR_GetCurrentThread()) {
  	    flags = ssl_SEND_FLAG_FORCE_INTO_BUFFER;
  	}
 +
-+	if (!isServer) {
++	if (!isServer && !ss->firstHsDone) {
 +	    rv = ssl3_SendNextProto(ss);
 +	    if (rv != SECSuccess) {
 +		goto xmit_loser;	/* err code was set. */
@@ -174,7 +178,7 @@ index 8048913..8f860a9 100644
  	rv = ssl3_SendFinished(ss, flags);
  	if (rv != SECSuccess) {
  	    goto xmit_loser;	/* err is set. */
-@@ -9488,6 +9537,11 @@ ssl3_DestroySSL3Info(sslSocket *ss)
+@@ -9488,6 +9541,11 @@ ssl3_DestroySSL3Info(sslSocket *ss)
      ssl3_DestroyCipherSpec(&ss->ssl3.specs[1], PR_TRUE/*freeSrvName*/);
  
      ss->ssl3.initialized = PR_FALSE;
@@ -412,7 +416,7 @@ index 9af471d..199c573 100644
  /* call the registered extension handlers. */
  extern SECStatus ssl3_HandleHelloExtensions(sslSocket *ss, 
 diff --git a/mozilla/security/nss/lib/ssl/sslsock.c b/mozilla/security/nss/lib/ssl/sslsock.c
-index bc770a1..769ea0a 100644
+index bc770a1..829103b 100644
 --- a/mozilla/security/nss/lib/ssl/sslsock.c
 +++ b/mozilla/security/nss/lib/ssl/sslsock.c
 @@ -163,6 +163,7 @@ static const sslSocketOps ssl_secure_ops = {	/* SSL. */
@@ -434,7 +438,7 @@ index bc770a1..769ea0a 100644
      PORT_Assert(!ss->xtnData.sniNameArr);
      if (ss->xtnData.sniNameArr) {
          PORT_Free(ss->xtnData.sniNameArr);
-@@ -1266,6 +1271,132 @@ SSL_ImportFD(PRFileDesc *model, PRFileDesc *fd)
+@@ -1266,6 +1271,135 @@ SSL_ImportFD(PRFileDesc *model, PRFileDesc *fd)
      return fd;
  }
  
@@ -447,6 +451,7 @@ index bc770a1..769ea0a 100644
 +    if (!ss) {
 +	SSL_DBG(("%d: SSL[%d]: bad socket in SSL_SetNextProtoNego", SSL_GETPID(),
 +		fd));
++	PORT_SetError(SEC_ERROR_INVALID_ARGS);
 +	return SECFailure;
 +    }
 +
@@ -454,6 +459,7 @@ index bc770a1..769ea0a 100644
 +    ss->nextProtoCallback = callback;
 +    ss->nextProtoArg = arg;
 +    ssl_ReleaseSSL3HandshakeLock(ss);
++    return SECSuccess;
 +}
 +
 +/* NextProtoStandardCallback is set as an NPN callback for the case when the
@@ -515,6 +521,7 @@ index bc770a1..769ea0a 100644
 +    if (!ss) {
 +	SSL_DBG(("%d: SSL[%d]: bad socket in SSL_SetNextProtoNego",
 +		 SSL_GETPID(), fd));
++	PORT_SetError(SEC_ERROR_INVALID_ARGS);
 +	return SECFailure;
 +    }
 +
