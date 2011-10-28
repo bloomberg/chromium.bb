@@ -133,7 +133,9 @@ static void formatChar(int cval, char** buf, size_t* bytes_remaining) {
       *bytes_remaining -= kBytesRequiredForEscapedChar;
     }
   } else {
-    static const size_t kBytesRequiredForHex = 4;
+    /* SNPRINTF needs space to write the NUL, but reports only the non-NUL
+     * byte count written. */
+    static const size_t kBytesRequiredForHex = 4 + 1;
     if (*bytes_remaining >= kBytesRequiredForHex) {
       size_t written_bytes =
           SNPRINTF(*buf, kBytesRequiredForHex, "\\x%02x", (unsigned char) cval);
@@ -206,18 +208,26 @@ void NaClSrpcFormatArg(int detail_level,
       break;
     case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
       formatCount(arg->u.count, &buffer, &buffer_size);
-      formatString(",", &buffer, &buffer_size);
-      for (i = 0; i < arg->u.count; ++i)
-        formatChar(arg->arrays.carr[i], &buffer, &buffer_size);
+      if (arg->arrays.carr == NULL) {
+        formatString(",(nil)", &buffer, &buffer_size);
+      } else  {
+        formatString(",", &buffer, &buffer_size);
+        for (i = 0; i < arg->u.count; ++i)
+          formatChar(arg->arrays.carr[i], &buffer, &buffer_size);
+      }
       break;
     case NACL_SRPC_ARG_TYPE_DOUBLE:
       formatDouble(arg->u.dval, &buffer, &buffer_size);
       break;
     case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
       formatCount(arg->u.count, &buffer, &buffer_size);
-      for (i = 0; i < arg->u.count; ++i) {
-        formatString(",", &buffer, &buffer_size);
-        formatDouble(arg->arrays.darr[i], &buffer, &buffer_size);
+      if (arg->arrays.darr == NULL) {
+        formatString(",(nil)", &buffer, &buffer_size);
+      } else  {
+        for (i = 0; i < arg->u.count; ++i) {
+          formatString(",", &buffer, &buffer_size);
+          formatDouble(arg->arrays.darr[i], &buffer, &buffer_size);
+        }
       }
       break;
     case NACL_SRPC_ARG_TYPE_HANDLE:
@@ -228,9 +238,13 @@ void NaClSrpcFormatArg(int detail_level,
       break;
     case NACL_SRPC_ARG_TYPE_INT_ARRAY:
       formatCount(arg->u.count, &buffer, &buffer_size);
-      for (i = 0; i < arg->u.count; ++i) {
-        formatString(",", &buffer, &buffer_size);
-        formatInt(arg->arrays.iarr[i], &buffer, &buffer_size);
+      if (arg->arrays.iarr == NULL) {
+        formatString(",(nil)", &buffer, &buffer_size);
+      } else  {
+        for (i = 0; i < arg->u.count; ++i) {
+          formatString(",", &buffer, &buffer_size);
+          formatInt(arg->arrays.iarr[i], &buffer, &buffer_size);
+        }
       }
       break;
     case NACL_SRPC_ARG_TYPE_LONG:
@@ -239,9 +253,13 @@ void NaClSrpcFormatArg(int detail_level,
       break;
     case NACL_SRPC_ARG_TYPE_LONG_ARRAY:
       formatCount(arg->u.count, &buffer, &buffer_size);
-      for (i = 0; i < arg->u.count; ++i) {
-        formatString(",", &buffer, &buffer_size);
-        formatLong(arg->arrays.larr[i], &buffer, &buffer_size);
+      if (arg->arrays.larr == NULL) {
+        formatString(",(nil)", &buffer, &buffer_size);
+      } else  {
+        for (i = 0; i < arg->u.count; ++i) {
+          formatString(",", &buffer, &buffer_size);
+          formatLong(arg->arrays.larr[i], &buffer, &buffer_size);
+        }
       }
       break;
     case NACL_SRPC_ARG_TYPE_STRING:
