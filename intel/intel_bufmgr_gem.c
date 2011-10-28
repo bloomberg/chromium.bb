@@ -196,6 +196,9 @@ struct _drm_intel_bo_gem {
 	 * relocations.
 	 */
 	int reloc_tree_fences;
+
+	/** Flags that we may need to do the SW_FINSIH ioctl on unmap. */
+	bool mapped_cpu_write;
 };
 
 static unsigned int
@@ -1051,6 +1054,9 @@ static int drm_intel_gem_bo_map(drm_intel_bo *bo, int write_enable)
 		    strerror(errno));
 	}
 
+	if (write_enable)
+		bo_gem->mapped_cpu_write = true;
+
 	pthread_mutex_unlock(&bufmgr_gem->lock);
 
 	return 0;
@@ -1148,21 +1154,27 @@ static int drm_intel_gem_bo_unmap(drm_intel_bo *bo)
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
 	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
 	struct drm_i915_gem_sw_finish sw_finish;
-	int ret;
+	int ret = 0;
 
 	if (bo == NULL)
 		return 0;
 
 	pthread_mutex_lock(&bufmgr_gem->lock);
 
-	/* Cause a flush to happen if the buffer's pinned for scanout, so the
-	 * results show up in a timely manner.
-	 */
-	sw_finish.handle = bo_gem->gem_handle;
-	ret = drmIoctl(bufmgr_gem->fd,
-		       DRM_IOCTL_I915_GEM_SW_FINISH,
-		       &sw_finish);
-	ret = ret == -1 ? -errno : 0;
+	if (bo_gem->mapped_cpu_write) {
+		/* Cause a flush to happen if the buffer's pinned for
+		 * scanout, so the results show up in a timely manner.
+		 * Unlike GTT set domains, this only does work if the
+		 * buffer should be scanout-related.
+		 */
+		sw_finish.handle = bo_gem->gem_handle;
+		ret = drmIoctl(bufmgr_gem->fd,
+			       DRM_IOCTL_I915_GEM_SW_FINISH,
+			       &sw_finish);
+		ret = ret == -1 ? -errno : 0;
+
+		bo_gem->mapped_cpu_write = false;
+	}
 
 	bo->virtual = NULL;
 	pthread_mutex_unlock(&bufmgr_gem->lock);
