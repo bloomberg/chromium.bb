@@ -416,7 +416,10 @@ def GetGitSourceDirectory(root):
                        pipes.quote(root))
   for line in popen_out.readlines():
     dir_name = os.path.join(root, os.path.dirname(line))
-    git_source_directory.add(dir_name)
+    # Add the directory as well as all the parent directories.
+    while dir_name != root:
+      git_source_directory.add(dir_name)
+      dir_name = os.path.dirname(dir_name)
   git_source_directory.add(root)
   return git_source_directory
 
