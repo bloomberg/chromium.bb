@@ -31,12 +31,17 @@
 
 struct evdev_input {
 	struct wlsc_input_device base;
+	struct wl_list devices_list;
+	struct udev_monitor *udev_monitor;
+	char *seat_id;
 };
 
 struct evdev_input_device {
 	struct evdev_input *master;
+	struct wl_list link;
 	struct wl_event_source *source;
 	struct wlsc_output *output;
+	char *devnode;
 	int tool, new_x, new_y;
 	int base_x, base_y;
 	int fd;
@@ -180,7 +185,7 @@ evdev_input_device_data(int fd, uint32_t mask, void *data)
 
 	len = read(fd, &ev, sizeof ev);
 	if (len < 0 || len % sizeof e[0] != 0) {
-		/* FIXME: handle error... reopen device? */;
+		/* FIXME: call device_removed when errno is ENODEV. */;
 		return 1;
 	}
 
@@ -297,9 +302,11 @@ evdev_input_device_create(struct evdev_input *master,
 	device->new_y = 1;
 	device->master = master;
 	device->is_touchpad = 0;
+	device->devnode = strdup(path);
 
 	device->fd = open(path, O_RDONLY);
 	if (device->fd < 0) {
+		free(device->devnode);
 		free(device);
 		fprintf(stderr, "couldn't create pointer for %s: %m\n", path);
 		return NULL;
@@ -307,6 +314,7 @@ evdev_input_device_create(struct evdev_input *master,
 
 	if (evdev_configure_device(device) == -1) {
 		close(device->fd);
+		free(device->devnode);
 		free(device);
 		return NULL;
 	}
@@ -317,14 +325,108 @@ evdev_input_device_create(struct evdev_input *master,
 					      evdev_input_device_data, device);
 	if (device->source == NULL) {
 		close(device->fd);
+		free(device->devnode);
 		free(device);
 		return NULL;
 	}
 
+	wl_list_insert(master->devices_list.prev, &device->link);
 	return device;
 }
 
 static const char default_seat[] = "seat0";
+
+static void
+device_added(struct udev_device *udev_device, struct evdev_input *master)
+{
+	struct wlsc_compositor *c;
+	const char *devnode;
+	const char *device_seat;
+
+	device_seat = udev_device_get_property_value(udev_device, "ID_SEAT");
+	if (!device_seat)
+		device_seat = default_seat;
+
+	if (strcmp(device_seat, master->seat_id))
+		return;
+
+	c = (struct wlsc_compositor *) master->base.input_device.compositor;
+	devnode = udev_device_get_devnode(udev_device);
+	if (evdev_input_device_create(master, c->wl_display, devnode))
+		fprintf(stderr, "evdev input device: added: %s\n", devnode);
+}
+
+static void
+device_removed(struct udev_device *udev_device, struct evdev_input *master)
+{
+	const char *devnode = udev_device_get_devnode(udev_device);
+	struct evdev_input_device *device, *next;
+
+	wl_list_for_each_safe(device, next, &master->devices_list, link) {
+		if (!strcmp(device->devnode, devnode)) {
+			wl_event_source_remove(device->source);
+			wl_list_remove(&device->link);
+			close(device->fd);
+			free(device->devnode);
+			free(device);
+			break;
+		}
+	}
+	fprintf(stderr, "evdev input device: removed: %s\n", devnode);
+}
+
+static int
+evdev_udev_handler(int fd, uint32_t mask, void *data)
+{
+	struct evdev_input *master = data;
+	struct udev_device *udev_device;
+	const char *action;
+
+	udev_device = udev_monitor_receive_device(master->udev_monitor);
+	if (!udev_device)
+		return 1;
+
+	action = udev_device_get_action(udev_device);
+	if (action) {
+		if (strncmp("event", udev_device_get_sysname(udev_device), 5) != 0)
+			return 0;
+
+		if (!strcmp(action, "add")) {
+			device_added(udev_device, master);
+		}
+		else if (!strcmp(action, "remove"))
+			device_removed(udev_device, master);
+	}
+	udev_device_unref(udev_device);
+
+	return 0;
+}
+
+static int
+evdev_config_udev_monitor(struct udev *udev, struct evdev_input *master)
+{
+	struct wl_event_loop *loop;
+	struct wlsc_compositor *c =
+	    (struct wlsc_compositor *) master->base.input_device.compositor;
+
+	master->udev_monitor = udev_monitor_new_from_netlink(udev, "udev");
+	if (!master->udev_monitor)
+		return 0;
+
+	udev_monitor_filter_add_match_subsystem_devtype(master->udev_monitor,
+			"input", NULL);
+
+	if (udev_monitor_enable_receiving(master->udev_monitor)) {
+		fprintf(stderr, "udev: failed to bind the udev monitor\n");
+		return 0;
+	}
+
+	loop = wl_display_get_event_loop(c->wl_display);
+	wl_event_loop_add_fd(loop, udev_monitor_get_fd(master->udev_monitor),
+			     WL_EVENT_READABLE, evdev_udev_handler, master);
+
+	return 1;
+}
 
 void
 evdev_input_add_devices(struct wlsc_compositor *c,
@@ -334,7 +436,6 @@ evdev_input_add_devices(struct wlsc_compositor *c,
 	struct udev_enumerate *e;
 	struct udev_list_entry *entry;
 	struct udev_device *device;
-	const char *device_seat;
 	const char *path;
 
 	input = malloc(sizeof *input);
@@ -343,6 +444,14 @@ evdev_input_add_devices(struct wlsc_compositor *c,
 
 	memset(input, 0, sizeof *input);
 	wlsc_input_device_init(&input->base, c);
+
+	wl_list_init(&input->devices_list);
+	input->seat_id = strdup(seat);
+	if (!evdev_config_udev_monitor(udev, input)) {
+		free(input->seat_id);
+		free(input);
+		return;
+	}
 
 	e = udev_enumerate_new(udev);
 	udev_enumerate_add_match_subsystem(e, "input");
@@ -354,15 +463,7 @@ evdev_input_add_devices(struct wlsc_compositor *c,
 		if (strncmp("event", udev_device_get_sysname(device), 5) != 0)
 			continue;
 
-                device_seat =
-			udev_device_get_property_value(device, "ID_SEAT");
-		if (!device_seat)
-			device_seat = default_seat;
-
-		if (strcmp(device_seat, seat) == 0) {
-			evdev_input_device_create(input, c->wl_display,
-						  udev_device_get_devnode(device));
-		}
+		device_added(device, input);
 
 		udev_device_unref(device);
 	}
