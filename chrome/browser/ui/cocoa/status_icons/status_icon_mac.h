@@ -11,7 +11,6 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_nsobject.h"
 #include "base/string16.h"
-#include "chrome/browser/status_icons/desktop_notification_balloon.h"
 #include "chrome/browser/status_icons/status_icon.h"
 
 class SkBitmap;
@@ -23,7 +22,7 @@ class StatusIconMac : public StatusIcon {
   StatusIconMac();
   virtual ~StatusIconMac();
 
-  // Overridden from StatusIcon.
+  // Overridden from StatusIcon
   virtual void SetImage(const SkBitmap& image) OVERRIDE;
   virtual void SetPressedImage(const SkBitmap& image) OVERRIDE;
   virtual void SetToolTip(const string16& tool_tip) OVERRIDE;
@@ -41,9 +40,6 @@ class StatusIconMac : public StatusIcon {
   scoped_nsobject<NSStatusItem> item_;
 
   scoped_nsobject<StatusItemController> controller_;
-
-  // Notification balloon.
-  DesktopNotificationBalloon notification_;
 
   DISALLOW_COPY_AND_ASSIGN(StatusIconMac);
 };
