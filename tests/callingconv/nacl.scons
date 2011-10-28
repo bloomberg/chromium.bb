@@ -56,11 +56,6 @@ if env.Bit('bitcode'):
   pnacl_env.PNaClForceNative()
   envlist.append(pnacl_env)
 
-  if env['PNACL_FRONTEND'] == 'clang':
-    alt_env = base_env.PNaClChangeFrontend('llvmgcc')
-    alt_env.PNaClForceNative()
-    envlist.append(alt_env)
-
   # On X86-32 and X86-64, test against nacl-gcc also.
   # For ARM, we can only test PNaCl's self-consistency.
   if not base_env.Bit('target_arm'):
