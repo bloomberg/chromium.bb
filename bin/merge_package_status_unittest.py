@@ -6,9 +6,7 @@
 
 """Unit tests for cros_portage_upgrade.py."""
 
-import cStringIO
 import exceptions
-import optparse
 import os
 import re
 import sys
@@ -17,11 +15,13 @@ import unittest
 
 import mox
 
+import chromite.lib.cros_test_lib as test_lib
 import chromite.lib.table as table
 import merge_package_status as mps
 
 # pylint: disable=W0212,R0904
-class MergeTest(unittest.TestCase):
+
+class MergeTest(test_lib.TestCase):
   """Test the functionality of merge_package_status."""
 
   # These taken from cros_portage_upgrade column names.
@@ -86,10 +86,10 @@ class MergeTest(unittest.TestCase):
         mytable.AppendRow(dict(row))
     return mytable
 
-  def _CreateTmpCsvFile(self, table):
-    fd, path = tempfile.mkstemp(text=True)
+  def _CreateTmpCsvFile(self, table_obj):
+    _fd, path = tempfile.mkstemp(text=True)
     tmpfile = open(path, 'w')
-    table.WriteCSV(tmpfile)
+    table_obj.WriteCSV(tmpfile)
     tmpfile.close()
     return path
 
@@ -132,10 +132,10 @@ class MergeTest(unittest.TestCase):
         ['chromeos-dev', 'hard-host-depends', 'world'],
         ]
 
-    for input, good_out, rev_out in zip(test_in, test_out, test_rev_out):
-      output = mps.ProcessTargets(input)
+    for targets, good_out, rev_out in zip(test_in, test_out, test_rev_out):
+      output = mps.ProcessTargets(targets)
       self.assertEquals(output, good_out)
-      output = mps.ProcessTargets(input, reverse_cros=True)
+      output = mps.ProcessTargets(targets, reverse_cros=True)
       self.assertEquals(output, rev_out)
 
   def testLoadTable(self):
@@ -220,36 +220,12 @@ class MergeTest(unittest.TestCase):
     for ix, row_out in enumerate(final_rows):
       self.assertRowsEqual(row_out, self._table[ix])
 
-class MainTest(mox.MoxTestBase):
+class MainTest(test_lib.MoxTestCase):
   """Test argument handling at the main method level."""
 
   def setUp(self):
     """Setup for all tests in this class."""
     mox.MoxTestBase.setUp(self)
-
-  def _StartCapturingOutput(self):
-    """Begin capturing stdout and stderr."""
-    self._stdout = sys.stdout
-    self._stderr = sys.stderr
-    sys.stdout = self._stdout_cap = cStringIO.StringIO()
-    sys.stderr = self._stderr_cap = cStringIO.StringIO()
-
-  def _RetrieveCapturedOutput(self):
-    """Return captured output so far as (stdout, stderr) tuple."""
-    try:
-      return (self._stdout_cap.getvalue(), self._stderr_cap.getvalue())
-    except AttributeError:
-      # This will happen if output capturing isn't on.
-      return None
-
-  def _StopCapturingOutput(self):
-    """Stop capturing stdout and stderr."""
-    try:
-      sys.stdout = self._stdout
-      sys.stderr = self._stderr
-    except AttributeError:
-      # This will happen if output capturing wasn't on.
-      pass
 
   def _PrepareArgv(self, *args):
     """Prepare command line for calling merge_package_status.main"""
@@ -270,7 +246,7 @@ class MainTest(mox.MoxTestBase):
       self.assertEquals(e.args[0], 0)
 
     # Verify that a message beginning with "Usage: " was printed
-    (stdout, stderr) = self._RetrieveCapturedOutput()
+    (stdout, _stderr) = self._RetrieveCapturedOutput()
     self._StopCapturingOutput()
     self.assertTrue(stdout.startswith("Usage: "))
 
@@ -287,10 +263,10 @@ class MainTest(mox.MoxTestBase):
     except exceptions.SystemExit, e:
       self.assertNotEquals(e.args[0], 0)
 
-    # Verify that a message containing "ERROR: " was printed
-    (stdout, stderr) = self._RetrieveCapturedOutput()
+    # Verify that output ends in error.
+    (stdout, _stderr) = self._RetrieveCapturedOutput()
     self._StopCapturingOutput()
-    self.assertTrue("ERROR:" in stderr)
+    self._AssertOutputEndsInError(stdout)
 
   def testMissingPackage(self):
     """Test that running without a package argument exits with an error."""
@@ -305,10 +281,10 @@ class MainTest(mox.MoxTestBase):
     except exceptions.SystemExit, e:
       self.assertNotEquals(e.args[0], 0)
 
-    # Verify that a message containing "ERROR: " was printed
-    (stdout, stderr) = self._RetrieveCapturedOutput()
+    # Verify that output ends in error.
+    (stdout, _stderr) = self._RetrieveCapturedOutput()
     self._StopCapturingOutput()
-    self.assertTrue("ERROR:" in stderr)
+    self._AssertOutputEndsInError(stdout)
 
   def testMain(self):
     """Verify that running main method runs expected functons.
@@ -322,23 +298,6 @@ class MainTest(mox.MoxTestBase):
     self.mox.ReplayAll()
 
     self._PrepareArgv("--out=any-out", "any-package")
-    mps.main()
-    self.mox.VerifyAll()
-
-  def testMainWithFinalize(self):
-    """Verify that running main method runs expected functions.
-
-    Expected: LoadAndMergeTables, WriteTable.
-    """
-    self.mox.StubOutWithMock(mps, 'LoadAndMergeTables')
-    self.mox.StubOutWithMock(mps, 'FinalizeTable')
-    self.mox.StubOutWithMock(mps, 'WriteTable')
-    mps.LoadAndMergeTables(mox.IgnoreArg()).AndReturn('csv_table')
-    mps.FinalizeTable(mox.Regex(r'csv_table'))
-    mps.WriteTable(mox.Regex(r'csv_table'), 'any-out')
-    self.mox.ReplayAll()
-
-    self._PrepareArgv("--out=any-out", "--finalize-for-upload", "any-package")
     mps.main()
     self.mox.VerifyAll()
 

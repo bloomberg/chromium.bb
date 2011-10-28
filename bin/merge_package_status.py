@@ -87,7 +87,7 @@ def LoadTable(filepath):
 
 def MergeTables(tables):
   """Merge all |tables| into one merged table.  Return table."""
-  def TargetMerger(col, val, other_val):
+  def TargetMerger(_col, val, other_val):
     """Function to merge two values in Root Target column from two tables."""
     targets = []
     if val:
@@ -128,7 +128,7 @@ def MergeTables(tables):
     # The effect should be the same as having no merge_rule for this column.
     raise ValueError
 
-  def MergeToSuperset(col, val, other_val):
+  def MergeToSuperset(_col, val, other_val):
     """Merge |col| values as superset of tokens in |val| and |other_val|."""
     tokens = set(val.split())
     other_tokens = set(other_val.split())
@@ -137,7 +137,7 @@ def MergeTables(tables):
 
   # This is only needed because the automake-wrapper package is coming from
   # different overlays for different boards right now!
-  def MergeWithAND(col, val, other_val):
+  def MergeWithAND(_col, val, other_val):
     """For merging columns that might have differences but should not!."""
     if not val:
       return '"" AND ' + other_val
