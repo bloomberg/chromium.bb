@@ -123,6 +123,7 @@ PrintPreviewDataSource::PrintPreviewDataSource()
   AddLocalizedString("defaultMargins", IDS_PRINT_PREVIEW_DEFAULT_MARGINS);
   AddLocalizedString("noMargins", IDS_PRINT_PREVIEW_NO_MARGINS);
   AddLocalizedString("customMargins", IDS_PRINT_PREVIEW_CUSTOM_MARGINS);
+  AddLocalizedString("minimumMargins", IDS_PRINT_PREVIEW_MINIMUM_MARGINS);
   AddLocalizedString("top", IDS_PRINT_PREVIEW_TOP_MARGIN_LABEL);
   AddLocalizedString("bottom", IDS_PRINT_PREVIEW_BOTTOM_MARGIN_LABEL);
   AddLocalizedString("left", IDS_PRINT_PREVIEW_LEFT_MARGIN_LABEL);

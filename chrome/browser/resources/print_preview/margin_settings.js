@@ -155,6 +155,7 @@ cr.define('print_preview', function() {
   MarginSettings.MARGINS_VALUE_DEFAULT = 0;
   MarginSettings.MARGINS_VALUE_NO_MARGINS = 1;
   MarginSettings.MARGINS_VALUE_CUSTOM = 2;
+  MarginSettings.MARGINS_VALUE_MINIMUM = 3;
   // Default Margins option index.
   MarginSettings.DEFAULT_MARGINS_OPTION_INDEX = 0;
   // Group name corresponding to the top margin.
@@ -244,6 +245,13 @@ cr.define('print_preview', function() {
      */
     isCustomMarginsSelected: function() {
       return this.selectedMarginsValue == MarginSettings.MARGINS_VALUE_CUSTOM;
+    },
+
+    /**
+     * @return {boolean} True if minimum margins are selected.
+     */
+    isMinimumMarginsSelected: function() {
+      return this.selectedMarginsValue == MarginSettings.MARGINS_VALUE_MINIMUM;
     },
 
     /**
@@ -491,10 +499,9 @@ cr.define('print_preview', function() {
      * @private
      */
     onMarginsChanged_: function() {
-      if (this.isDefaultMarginsSelected())
-        this.onDefaultMarginsSelected_();
-      else if (this.isNoMarginsSelected())
-        this.onNoMarginsSelected_();
+      if (this.isDefaultMarginsSelected() || this.isMinimumMarginsSelected() ||
+          this.isNoMarginsSelected())
+        this.onDefaultMinimumNoMarginsSelected_();
       else if (this.isCustomMarginsSelected())
         this.onCustomMarginsSelected_();
 
@@ -502,23 +509,12 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * Executes when the default margins option is selected.
+     * Executes when the default or minimum or no margins option is selected.
      * @private
      */
-    onDefaultMarginsSelected_: function() {
+    onDefaultMinimumNoMarginsSelected_: function() {
       this.removeCustomMarginEventListeners_();
       this.forceDisplayingMarginLines_ = true;
-      setDefaultValuesAndRegeneratePreview(false);
-    },
-
-    /**
-     * Executes when the no margins option is selected.
-     * @private
-     */
-    onNoMarginsSelected_: function() {
-      this.removeCustomMarginEventListeners_();
-      this.forceDisplayingMarginLines_ = true;
-      this.customMargins_ = new Margins(0, 0, 0, 0);
       setDefaultValuesAndRegeneratePreview(false);
     },
 
@@ -529,10 +525,8 @@ cr.define('print_preview', function() {
     onCustomMarginsSelected_: function() {
       this.addCustomMarginEventListeners_();
 
-      if (this.lastSelectedOption_ == MarginSettings.MARGINS_VALUE_DEFAULT) {
-        this.customMargins_ = this.currentDefaultPageLayout.margins_;
-        this.customMargins_.roundToLocaleUnits();
-      }
+      this.customMargins_ = this.currentDefaultPageLayout.margins_;
+      this.customMargins_.roundToLocaleUnits();
       this.previousCustomMargins_.copy(this.customMargins_);
 
       if (this.previousDefaultPageLayout_ != this.currentDefaultPageLayout) {
