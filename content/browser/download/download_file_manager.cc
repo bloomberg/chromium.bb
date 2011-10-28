@@ -4,10 +4,13 @@
 
 #include "content/browser/download/download_file_manager.h"
 
+#include <set>
+#include <string>
+
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/download/download_buffer.h"
 #include "content/browser/download/download_create_info.h"
@@ -41,7 +44,7 @@ void DownloadFileManager::Shutdown() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(this, &DownloadFileManager::OnShutdown));
+      base::Bind(&DownloadFileManager::OnShutdown, this));
 }
 
 void DownloadFileManager::OnShutdown() {
@@ -78,8 +81,8 @@ void DownloadFileManager::CreateDownloadFile(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(download_manager,
-                        &DownloadManager::StartDownload, info->download_id));
+      base::Bind(&DownloadManager::StartDownload, download_manager,
+                 info->download_id));
 }
 
 DownloadFile* DownloadFileManager::GetDownloadFile(DownloadId global_id) {
@@ -110,8 +113,8 @@ void DownloadFileManager::UpdateInProgressDownloads() {
     DownloadManager* manager = download_file->GetDownloadManager();
     if (manager) {
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-          NewRunnableMethod(manager, &DownloadManager::UpdateDownload,
-                            global_id.local(), download_file->bytes_so_far()));
+          base::Bind(&DownloadManager::UpdateDownload, manager,
+                     global_id.local(), download_file->bytes_so_far()));
     }
   }
 }
@@ -135,9 +138,9 @@ void DownloadFileManager::StartDownload(
   bool hash_needed = manager->delegate()->GenerateFileHash();
 
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(this, &DownloadFileManager::CreateDownloadFile,
-                        info, request_handle, make_scoped_refptr(manager),
-                        hash_needed));
+      base::Bind(&DownloadFileManager::CreateDownloadFile, this,
+                 info, request_handle, make_scoped_refptr(manager),
+                 hash_needed));
 }
 
 // We don't forward an update to the UI thread here, since we want to throttle
@@ -172,16 +175,11 @@ void DownloadFileManager::UpdateDownload(
 
         if (download_manager) {
           BrowserThread::PostTask(
-              BrowserThread::UI,
-              FROM_HERE,
-              NewRunnableMethod(
-                  download_manager,
-                  &DownloadManager::OnDownloadInterrupted,
-                  global_id.local(),
-                  bytes_downloaded,
-                  ConvertNetErrorToInterruptReason(
-                      write_result,
-                      DOWNLOAD_INTERRUPT_FROM_DISK)));
+              BrowserThread::UI, FROM_HERE,
+              base::Bind(&DownloadManager::OnDownloadInterrupted,
+                         download_manager, global_id.local(), bytes_downloaded,
+                         ConvertNetErrorToInterruptReason(
+                             write_result, DOWNLOAD_INTERRUPT_FROM_DISK)));
         }
       }
     }
@@ -215,24 +213,16 @@ void DownloadFileManager::OnResponseCompleted(
 
   if (reason == DOWNLOAD_INTERRUPT_REASON_NONE) {
     BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        NewRunnableMethod(
-            download_manager,
-            &DownloadManager::OnResponseCompleted,
-            global_id.local(),
-            download_file->bytes_so_far(),
-            hash));
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&DownloadManager::OnResponseCompleted,
+                   download_manager, global_id.local(),
+                   download_file->bytes_so_far(), hash));
   } else {
     BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        NewRunnableMethod(
-            download_manager,
-            &DownloadManager::OnDownloadInterrupted,
-            global_id.local(),
-            download_file->bytes_so_far(),
-            reason));
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&DownloadManager::OnDownloadInterrupted,
+                   download_manager, global_id.local(),
+                   download_file->bytes_so_far(), reason));
   }
   // We need to keep the download around until the UI thread has finalized
   // the name.
@@ -383,9 +373,8 @@ void DownloadFileManager::RenameCompletingDownloadFile(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(
-          download_manager, &DownloadManager::OnDownloadRenamedToFinalName,
-          global_id.local(), new_path, uniquifier));
+      base::Bind(&DownloadManager::OnDownloadRenamedToFinalName,
+                 download_manager, global_id.local(), new_path, uniquifier));
 }
 
 // Called only from RenameInProgressDownloadFile and
@@ -409,13 +398,11 @@ void DownloadFileManager::CancelDownloadOnRename(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(download_manager,
-                        &DownloadManager::OnDownloadInterrupted,
-                        global_id.local(),
-                        download_file->bytes_so_far(),
-                        ConvertNetErrorToInterruptReason(
-                            rename_error,
-                            DOWNLOAD_INTERRUPT_FROM_DISK)));
+      base::Bind(&DownloadManager::OnDownloadInterrupted,
+                 download_manager, global_id.local(),
+                 download_file->bytes_so_far(),
+                 ConvertNetErrorToInterruptReason(
+                     rename_error, DOWNLOAD_INTERRUPT_FROM_DISK)));
 }
 
 void DownloadFileManager::EraseDownload(DownloadId global_id) {
