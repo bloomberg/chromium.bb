@@ -50,7 +50,7 @@ class WriteToDiskTask : public Task {
       return;
     }
 
-    CHECK_LE(data_.length(), static_cast<size_t>(kint32max));
+    DCHECK_LE(data_.length(), static_cast<size_t>(kint32max));
     int bytes_written = base::WritePlatformFile(
         tmp_file, 0, data_.data(), static_cast<int>(data_.length()));
     base::FlushPlatformFile(tmp_file);  // Ignore return value.
@@ -88,8 +88,8 @@ class WriteToDiskTask : public Task {
   void LogFailure(TempFileFailure failure_code, const std::string& message) {
     UMA_HISTOGRAM_ENUMERATION("ImportantFile.TempFileFailures", failure_code,
                               TEMP_FILE_FAILURE_MAX);
-    PLOG(WARNING) << "temp file failure: " << path_.value()
-                  << " : " << message;
+    DPLOG(WARNING) << "temp file failure: " << path_.value()
+                   << " : " << message;
   }
 
   const FilePath path_;
@@ -163,8 +163,8 @@ void ImportantFileWriter::DoScheduledWrite() {
   if (serializer_->SerializeData(&data)) {
     WriteNow(data);
   } else {
-    LOG(WARNING) << "failed to serialize data to be saved in "
-                 << path_.value();
+    DLOG(WARNING) << "failed to serialize data to be saved in "
+                  << path_.value();
   }
   serializer_ = NULL;
 }

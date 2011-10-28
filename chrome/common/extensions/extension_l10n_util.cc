@@ -165,8 +165,8 @@ bool AddLocale(const std::set<std::string>& chrome_locales,
   if (chrome_locales.find(locale_name) == chrome_locales.end()) {
     // Warn if there is an extension locale that's not in the Chrome list,
     // but don't fail.
-    LOG(WARNING) << base::StringPrintf("Supplied locale %s is not supported.",
-                                       locale_name.c_str());
+    DLOG(WARNING) << base::StringPrintf("Supplied locale %s is not supported.",
+                                        locale_name.c_str());
     return true;
   }
   // Check if messages file is actually present (but don't check content).

@@ -282,11 +282,11 @@ Extension::Location Extension::GetHigherPriorityLocation(
 void Extension::OverrideLaunchUrl(const GURL& override_url) {
   GURL new_url(override_url);
   if (!new_url.is_valid()) {
-    LOG(WARNING) << "Invalid override url given for " << name();
+    DLOG(WARNING) << "Invalid override url given for " << name();
   } else {
     if (new_url.has_port()) {
-      LOG(WARNING) << "Override URL passed for " << name()
-                   << " should not contain a port.  Removing it.";
+      DLOG(WARNING) << "Override URL passed for " << name()
+                    << " should not contain a port.  Removing it.";
 
       GURL::Replacements remove_port;
       remove_port.ClearPort();
@@ -380,7 +380,7 @@ GURL Extension::GetResourceURL(const GURL& extension_url,
 }
 
 bool Extension::GenerateId(const std::string& input, std::string* output) {
-  CHECK(output);
+  DCHECK(output);
   uint8 hash[Extension::kIdSize];
   crypto::SHA256HashString(input, hash, sizeof(hash));
   *output = StringToLowerASCII(base::HexEncode(hash, sizeof(hash)));
@@ -1159,8 +1159,8 @@ bool Extension::LoadAppIsolation(const DictionaryValue* manifest,
     if (isolation_string == values::kIsolatedStorage) {
       is_storage_isolated_ = true;
     } else {
-      LOG(WARNING) << "Did not recognize isolation type: "
-                   << isolation_string;
+      DLOG(WARNING) << "Did not recognize isolation type: "
+                    << isolation_string;
     }
   }
   return true;
@@ -1334,7 +1334,7 @@ bool Extension::ParsePEMKeyBytes(const std::string& input,
 }
 
 bool Extension::ProducePEM(const std::string& input, std::string* output) {
-  CHECK(output);
+  DCHECK(output);
   if (input.length() == 0)
     return false;
 
@@ -1344,7 +1344,7 @@ bool Extension::ProducePEM(const std::string& input, std::string* output) {
 bool Extension::FormatPEMForFileOutput(const std::string& input,
                                        std::string* output,
                                        bool is_public) {
-  CHECK(output);
+  DCHECK(output);
   if (input.length() == 0)
     return false;
   *output = "";
@@ -1388,7 +1388,7 @@ void Extension::DecodeIconFromPath(const FilePath& icon_path,
 
   std::string file_contents;
   if (!file_util::ReadFileToString(icon_path, &file_contents)) {
-    LOG(ERROR) << "Could not read icon file: " << icon_path.LossyDisplayName();
+    DLOG(ERROR) << "Could not read icon file: " << icon_path.LossyDisplayName();
     return;
   }
 
@@ -1399,15 +1399,15 @@ void Extension::DecodeIconFromPath(const FilePath& icon_path,
   scoped_ptr<SkBitmap> decoded(new SkBitmap());
   *decoded = decoder.Decode(data, file_contents.length());
   if (decoded->empty()) {
-    LOG(ERROR) << "Could not decode icon file: "
-               << icon_path.LossyDisplayName();
+    DLOG(ERROR) << "Could not decode icon file: "
+                << icon_path.LossyDisplayName();
     return;
   }
 
   if (decoded->width() != icon_size || decoded->height() != icon_size) {
-    LOG(ERROR) << "Icon file has unexpected size: "
-               << base::IntToString(decoded->width()) << "x"
-               << base::IntToString(decoded->height());
+    DLOG(ERROR) << "Icon file has unexpected size: "
+                << base::IntToString(decoded->width()) << "x"
+                << base::IntToString(decoded->height());
     return;
   }
 

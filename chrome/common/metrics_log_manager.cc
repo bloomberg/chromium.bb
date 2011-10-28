@@ -112,9 +112,9 @@ void MetricsLogManager::CompressStagedLog() {
   bool success = Bzip2Compress(staged_log_text, &compressed_staged_log_text_);
   if (success) {
     // Allow security-conscious users to see all metrics logs that we send.
-    VLOG(1) << "METRICS LOG: " << staged_log_text;
+    DVLOG(1) << "METRICS LOG: " << staged_log_text;
   } else {
-    LOG(DFATAL) << "Failed to compress log for transmission.";
+    NOTREACHED() << "Failed to compress log for transmission.";
   }
 }
 

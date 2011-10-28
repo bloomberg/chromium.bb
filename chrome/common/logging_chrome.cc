@@ -187,15 +187,15 @@ FilePath SetUpSymlinkIfNeeded(const FilePath& symlink_path, bool new_log) {
     // We don't care if the unlink fails; we're going to continue anyway.
     if (::unlink(symlink_path.value().c_str()) == -1) {
       if (symlink_exists) // only warn if we might expect it to succeed.
-        PLOG(WARNING) << "Unable to unlink " << symlink_path.value();
+        DPLOG(WARNING) << "Unable to unlink " << symlink_path.value();
     }
     if (!file_util::CreateSymbolicLink(target_path, symlink_path)) {
-      PLOG(ERROR) << "Unable to create symlink " << symlink_path.value()
-                  << " pointing at " << target_path.value();
+      DPLOG(ERROR) << "Unable to create symlink " << symlink_path.value()
+                   << " pointing at " << target_path.value();
     }
   } else {
     if (!file_util::ReadSymbolicLink(symlink_path, &target_path))
-      PLOG(ERROR) << "Unable to read symlink " << symlink_path.value();
+      DPLOG(ERROR) << "Unable to read symlink " << symlink_path.value();
   }
   return target_path;
 }
@@ -203,9 +203,9 @@ FilePath SetUpSymlinkIfNeeded(const FilePath& symlink_path, bool new_log) {
 void RemoveSymlinkAndLog(const FilePath& link_path,
                          const FilePath& target_path) {
   if (::unlink(link_path.value().c_str()) == -1)
-    PLOG(WARNING) << "Unable to unlink symlink " << link_path.value();
+    DPLOG(WARNING) << "Unable to unlink symlink " << link_path.value();
   if (::unlink(target_path.value().c_str()) == -1)
-    PLOG(WARNING) << "Unable to unlink log file " << target_path.value();
+    DPLOG(WARNING) << "Unable to unlink log file " << target_path.value();
 }
 
 }  // anonymous namespace
@@ -252,7 +252,7 @@ void RedirectChromeLogging(const CommandLine& command_line) {
                    logging::LOCK_LOG_FILE,
                    logging::APPEND_TO_OLD_LOG_FILE,
                    dcheck_state)) {
-    LOG(ERROR) << "Unable to initialize logging to " << log_path.value();
+    DLOG(ERROR) << "Unable to initialize logging to " << log_path.value();
     RemoveSymlinkAndLog(log_path, target_path);
   } else {
     chrome_logging_redirected_ = true;
@@ -314,7 +314,7 @@ void InitChromeLogging(const CommandLine& command_line,
 
 #if defined(OS_CHROMEOS)
   if (!success) {
-    PLOG(ERROR) << "Unable to initialize logging to " << log_path.value()
+    DPLOG(ERROR) << "Unable to initialize logging to " << log_path.value()
                 << " (which should be a link to " << target_path.value() << ")";
     RemoveSymlinkAndLog(log_path, target_path);
     chrome_logging_failed_ = true;
@@ -322,7 +322,7 @@ void InitChromeLogging(const CommandLine& command_line,
   }
 #else
   if (!success) {
-    PLOG(ERROR) << "Unable to initialize logging to " << log_path.value();
+    DPLOG(ERROR) << "Unable to initialize logging to " << log_path.value();
     chrome_logging_failed_ = true;
     return;
   }
@@ -357,7 +357,7 @@ void InitChromeLogging(const CommandLine& command_line,
         level >= 0 && level < LOG_NUM_SEVERITIES) {
       logging::SetMinLogLevel(level);
     } else {
-      LOG(WARNING) << "Bad log level: " << log_level;
+      DLOG(WARNING) << "Bad log level: " << log_level;
     }
   }
 

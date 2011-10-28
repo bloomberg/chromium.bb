@@ -93,7 +93,7 @@ std::string JSONSchemaValidator::GetJSONSchemaType(Value* value) {
     case Value::TYPE_LIST:
       return "array";
     default:
-      CHECK(false) << "Unexpected value type: " << value->GetType();
+      NOTREACHED() << "Unexpected value type: " << value->GetType();
       return "";
   }
 }
@@ -156,7 +156,7 @@ void JSONSchemaValidator::Validate(Value* instance,
     if (iter == types_.end())
       types_[id] = schema;
     else
-      CHECK(iter->second == schema);
+      DCHECK(iter->second == schema);
   }
 
   // If the schema has a $ref property, the instance must validate against
@@ -206,7 +206,7 @@ void JSONSchemaValidator::Validate(Value* instance,
     else if (type == "number" || type == "integer")
       ValidateNumber(instance, schema, path);
     else if (type != "boolean" && type != "null")
-      CHECK(false) << "Unexpected type: " << type;
+      NOTREACHED() << "Unexpected type: " << type;
   }
 }
 
@@ -257,7 +257,7 @@ void JSONSchemaValidator::ValidateEnum(Value* instance,
         break;
 
       default:
-        CHECK(false) << "Unexpected type in enum: " << choice->GetType();
+       NOTREACHED() << "Unexpected type in enum: " << choice->GetType();
     }
   }
 

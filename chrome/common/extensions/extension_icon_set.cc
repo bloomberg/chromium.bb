@@ -15,7 +15,7 @@ void ExtensionIconSet::Clear() {
 }
 
 void ExtensionIconSet::Add(int size, const std::string& path) {
-  CHECK(!path.empty() && path[0] != '/');
+  DCHECK(!path.empty() && path[0] != '/');
   map_[size] = path;
 }
 
@@ -36,7 +36,7 @@ std::string ExtensionIconSet::Get(int size, MatchType match_type) const {
     }
     return result == map_.rend() ? std::string() : result->second;
   } else {
-    CHECK(match_type == MATCH_BIGGER);
+    DCHECK(match_type == MATCH_BIGGER);
     IconMap::const_iterator result = map_.end();
     for (IconMap::const_iterator iter = map_.begin(); iter != map_.end();
          ++iter) {
@@ -53,7 +53,7 @@ bool ExtensionIconSet::ContainsPath(const std::string& path) const {
   if (path.empty())
     return false;
 
-  CHECK(path[0] != '/') <<
+  DCHECK(path[0] != '/') <<
       "ExtensionIconSet stores icon paths without leading slash.";
 
   for (IconMap::const_iterator iter = map_.begin(); iter != map_.end();

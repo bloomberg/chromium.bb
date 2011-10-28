@@ -44,7 +44,7 @@ NSURL* GetPlistURL(Launchd::Domain domain,
                                  withIntermediateDirectories:YES
                                                   attributes:nil
                                                        error:&err]) {
-    LOG(ERROR) << "GetPlistURL " << base::mac::NSToCFCast(err);
+    DLOG(ERROR) << "GetPlistURL " << base::mac::NSToCFCast(err);
     return nil;
   }
 
@@ -161,7 +161,7 @@ bool Launchd::DeletePlist(Domain domain, Type type, CFStringRef name) {
   if (![[NSFileManager defaultManager] removeItemAtPath:[ns_url path]
                                                   error:&err]) {
     if ([err code] != NSFileNoSuchFileError) {
-      LOG(ERROR) << "DeletePlist: " << base::mac::NSToCFCast(err);
+      DLOG(ERROR) << "DeletePlist: " << base::mac::NSToCFCast(err);
     }
     return false;
   }

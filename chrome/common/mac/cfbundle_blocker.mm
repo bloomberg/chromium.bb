@@ -175,12 +175,12 @@ Boolean ChromeCFBundleLoadExecutableAndReturnError(CFBundleRef bundle,
     NSString* bundle_id_print = bundle_id ? bundle_id : @"(nil)";
     NSString* version_print = version ? version : @"(nil)";
 
-    LOG(INFO) << "Blocking attempt to load bundle "
-              << [bundle_id_print UTF8String]
-              << " version "
-              << [version_print UTF8String]
-              << " at "
-              << [path fileSystemRepresentation];
+    DLOG(INFO) << "Blocking attempt to load bundle "
+               << [bundle_id_print UTF8String]
+               << " version "
+               << [version_print UTF8String]
+               << " at "
+               << [path fileSystemRepresentation];
 
     if (error) {
       base::mac::ScopedCFTypeRef<CFStringRef> app_bundle_id(
@@ -229,8 +229,8 @@ void EnableCFBundleBlocker() {
       reinterpret_cast<void**>(
           &g_original_underscore_cfbundle_load_executable_and_return_error));
   if (err != err_none) {
-    LOG(WARNING) << "mach_override _CFBundleLoadExecutableAndReturnError: "
-                 << err;
+    DLOG(WARNING) << "mach_override _CFBundleLoadExecutableAndReturnError: "
+                  << err;
   }
 }
 

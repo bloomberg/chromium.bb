@@ -332,23 +332,23 @@ string GetDerString(X509Certificate::OSCertHandle cert_handle) {
 string GetCMSString(const X509Certificate::OSCertHandles& cert_chain,
                     size_t start, size_t end) {
   ScopedPRArenaPool arena(PORT_NewArena(1024));
-  CHECK(arena.get());
+  DCHECK(arena.get());
 
   ScopedNSSCMSMessage message(NSS_CMSMessage_Create(arena.get()));
-  CHECK(message.get());
+  DCHECK(message.get());
 
   // First, create SignedData with the certificate only (no chain).
   ScopedNSSCMSSignedData signed_data(NSS_CMSSignedData_CreateCertsOnly(
       message.get(), cert_chain[start], PR_FALSE));
   if (!signed_data.get()) {
-    LOG(ERROR) << "NSS_CMSSignedData_Create failed";
+    DLOG(ERROR) << "NSS_CMSSignedData_Create failed";
     return "";
   }
   // Add the rest of the chain (if any).
   for (size_t i = start + 1; i < end; ++i) {
     if (NSS_CMSSignedData_AddCertificate(signed_data.get(), cert_chain[i]) !=
         SECSuccess) {
-      LOG(ERROR) << "NSS_CMSSignedData_AddCertificate failed on " << i;
+      DLOG(ERROR) << "NSS_CMSSignedData_AddCertificate failed on " << i;
       return "";
     }
   }
@@ -358,7 +358,7 @@ string GetCMSString(const X509Certificate::OSCertHandles& cert_chain,
       message.get(), cinfo, signed_data.get()) == SECSuccess) {
     ignore_result(signed_data.release());
   } else {
-    LOG(ERROR) << "NSS_CMSMessage_GetContentInfo failed";
+    DLOG(ERROR) << "NSS_CMSMessage_GetContentInfo failed";
     return "";
   }
 
@@ -368,12 +368,12 @@ string GetCMSString(const X509Certificate::OSCertHandles& cert_chain,
                                                    NULL, NULL, NULL, NULL,
                                                    NULL);
   if (!ecx) {
-    LOG(ERROR) << "NSS_CMSEncoder_Start failed";
+    DLOG(ERROR) << "NSS_CMSEncoder_Start failed";
     return "";
   }
 
   if (NSS_CMSEncoder_Finish(ecx) != SECSuccess) {
-    LOG(ERROR) << "NSS_CMSEncoder_Finish failed";
+    DLOG(ERROR) << "NSS_CMSEncoder_Finish failed";
     return "";
   }
 

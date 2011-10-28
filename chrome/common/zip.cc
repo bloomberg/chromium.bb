@@ -175,14 +175,14 @@ bool Unzip(const FilePath& src_file, const FilePath& dest_dir) {
   unzFile zip_file = unzOpen2(src_file_str.c_str(), &zip_funcs);
 #endif
   if (!zip_file) {
-    LOG(WARNING) << "couldn't create file " << src_file_str;
+    DLOG(WARNING) << "couldn't create file " << src_file_str;
     return false;
   }
   unz_global_info zip_info;
   int err;
   err = unzGetGlobalInfo(zip_file, &zip_info);
   if (err != UNZ_OK) {
-    LOG(WARNING) << "couldn't open zip " << src_file_str;
+    DLOG(WARNING) << "couldn't open zip " << src_file_str;
     return false;
   }
   bool ret = true;
@@ -195,7 +195,7 @@ bool Unzip(const FilePath& src_file, const FilePath& dest_dir) {
     if (i + 1 < zip_info.number_entry) {
       err = unzGoToNextFile(zip_file);
       if (err != UNZ_OK) {
-        LOG(WARNING) << "error %d in unzGoToNextFile";
+        DLOG(WARNING) << "error %d in unzGoToNextFile";
         ret = false;
         break;
       }
@@ -209,8 +209,8 @@ static bool AddFileToZip(zipFile zip_file, const FilePath& src_dir) {
   net::FileStream stream;
   int flags = base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ;
   if (stream.Open(src_dir, flags) != 0) {
-    LOG(ERROR) << "Could not open stream for path "
-               << src_dir.value();
+    DLOG(ERROR) << "Could not open stream for path "
+                << src_dir.value();
     return false;
   }
 
@@ -220,8 +220,8 @@ static bool AddFileToZip(zipFile zip_file, const FilePath& src_dir) {
     num_bytes = stream.Read(buf, kZipBufSize, net::CompletionCallback());
     if (num_bytes > 0) {
       if (ZIP_OK != zipWriteInFileInZip(zip_file, buf, num_bytes)) {
-        LOG(ERROR) << "Could not write data to zip for path "
-                   << src_dir.value();
+        DLOG(ERROR) << "Could not write data to zip for path "
+                    << src_dir.value();
         return false;
       }
     }
@@ -249,7 +249,7 @@ static bool AddEntryToZip(zipFile zip_file, const FilePath& path,
       NULL, NULL, 0u, NULL, 0u, NULL,  // file info, extrafield local, length,
                                        // extrafield global, length, comment
       Z_DEFLATED, Z_DEFAULT_COMPRESSION)) {
-    LOG(ERROR) << "Could not open zip file entry " << str_path;
+    DLOG(ERROR) << "Could not open zip file entry " << str_path;
     return false;
   }
 
@@ -259,7 +259,7 @@ static bool AddEntryToZip(zipFile zip_file, const FilePath& path,
   }
 
   if (ZIP_OK != zipCloseFileInZip(zip_file)) {
-    LOG(ERROR) << "Could not close zip file entry " << str_path;
+    DLOG(ERROR) << "Could not close zip file entry " << str_path;
     return false;
   }
 
@@ -288,7 +288,7 @@ bool ZipWithFilterCallback(const FilePath& src_dir, const FilePath& dest_file,
 #endif
 
   if (!zip_file) {
-    LOG(WARNING) << "couldn't create file " << dest_file_str;
+    DLOG(WARNING) << "couldn't create file " << dest_file_str;
     return false;
   }
 
@@ -311,7 +311,7 @@ bool ZipWithFilterCallback(const FilePath& src_dir, const FilePath& dest_file,
   }
 
   if (ZIP_OK != zipClose(zip_file, NULL)) {  // global comment
-    LOG(ERROR) << "Error closing zip file " << dest_file_str;
+    DLOG(ERROR) << "Error closing zip file " << dest_file_str;
     return false;
   }
 

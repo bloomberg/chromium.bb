@@ -107,7 +107,7 @@ TEST(ObjcZombieTest, CxxDestructors) {
 // the 10.5 version in |ZombieInit()|, and run this test on 10.6.
 TEST(ObjcZombieTest, AssociatedObjectsReleased) {
   if (![ZombieAssociatedObjectTest supportsAssociatedObjects]) {
-    LOG(ERROR)
+    DLOG(ERROR)
         << "ObjcZombieTest.AssociatedObjectsReleased not supported on 10.5";
     return;
   }

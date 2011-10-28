@@ -64,7 +64,7 @@ scoped_refptr<Extension>
       Extension::Create(path, location, *manifest, creation_flags,
                         &error));
   if (!extension.get())
-    LOG(ERROR) << "Error deserializing extension: " << error;
+    DLOG(ERROR) << "Error deserializing extension: " << error;
   else
     extension->SetActivePermissions(
         new ExtensionPermissionSet(apis, explicit_hosts, scriptable_hosts));

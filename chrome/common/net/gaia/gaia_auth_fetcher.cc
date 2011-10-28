@@ -301,7 +301,7 @@ void GaiaAuthFetcher::StartClientLogin(
 
   // This class is thread agnostic, so be sure to call this only on the
   // same thread each time.
-  VLOG(1) << "Starting new ClientLogin fetch for:" << username;
+  DVLOG(1) << "Starting new ClientLogin fetch for:" << username;
 
   // Must outlive fetcher_.
   request_body_ = MakeClientLoginBody(username,
@@ -325,7 +325,7 @@ void GaiaAuthFetcher::StartIssueAuthToken(const std::string& sid,
                                           const char* const service) {
   DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
 
-  VLOG(1) << "Starting IssueAuthToken for: " << service;
+  DVLOG(1) << "Starting IssueAuthToken for: " << service;
   requested_service_ = service;
   request_body_ = MakeIssueAuthTokenBody(sid, lsid, service);
   fetcher_.reset(CreateGaiaFetcher(getter_,
@@ -341,7 +341,7 @@ void GaiaAuthFetcher::StartGetUserInfo(const std::string& lsid,
                                        const std::string& info_key) {
   DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
 
-  VLOG(1) << "Starting GetUserInfo for lsid=" << lsid;
+  DVLOG(1) << "Starting GetUserInfo for lsid=" << lsid;
   request_body_ = MakeGetUserInfoBody(lsid);
   fetcher_.reset(CreateGaiaFetcher(getter_,
                                    request_body_,
@@ -356,7 +356,7 @@ void GaiaAuthFetcher::StartGetUserInfo(const std::string& lsid,
 void GaiaAuthFetcher::StartTokenAuth(const std::string& auth_token) {
   DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
 
-  VLOG(1) << "Starting TokenAuth with auth_token=" << auth_token;
+  DVLOG(1) << "Starting TokenAuth with auth_token=" << auth_token;
 
   // The continue URL is a required parameter of the TokenAuth API, but in this
   // case we don't actually need or want to navigate to it.  Setting it to
@@ -375,7 +375,7 @@ void GaiaAuthFetcher::StartTokenAuth(const std::string& auth_token) {
 void GaiaAuthFetcher::StartMergeSession(const std::string& auth_token) {
   DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
 
-  VLOG(1) << "Starting MergeSession with auth_token=" << auth_token;
+  DVLOG(1) << "Starting MergeSession with auth_token=" << auth_token;
 
   // The continue URL is a required parameter of the MergeSession API, but in
   // this case we don't actually need or want to navigate to it.  Setting it to
@@ -404,7 +404,7 @@ GoogleServiceAuthError GaiaAuthFetcher::GenerateAuthError(
     if (status.status() == net::URLRequestStatus::CANCELED) {
       return GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED);
     } else {
-      LOG(WARNING) << "Could not reach Google Accounts servers: errno "
+      DLOG(WARNING) << "Could not reach Google Accounts servers: errno "
           << status.error();
       return GoogleServiceAuthError::FromConnectionError(status.error());
     }
@@ -418,7 +418,7 @@ GoogleServiceAuthError GaiaAuthFetcher::GenerateAuthError(
     std::string captcha_url;
     std::string captcha_token;
     ParseClientLoginFailure(data, &error, &url, &captcha_url, &captcha_token);
-    LOG(WARNING) << "ClientLogin failed with " << error;
+    DLOG(WARNING) << "ClientLogin failed with " << error;
 
     if (error == kCaptchaError) {
       GURL image_url(
@@ -440,7 +440,7 @@ GoogleServiceAuthError GaiaAuthFetcher::GenerateAuthError(
           GoogleServiceAuthError::SERVICE_UNAVAILABLE);
     }
 
-    LOG(WARNING) << "Incomprehensible response from Google Accounts servers.";
+    DLOG(WARNING) << "Incomprehensible response from Google Accounts servers.";
     return GoogleServiceAuthError(
         GoogleServiceAuthError::SERVICE_UNAVAILABLE);
   }
@@ -457,7 +457,7 @@ GoogleServiceAuthError GaiaAuthFetcher::GenerateOAuthLoginError(
     if (status.status() == net::URLRequestStatus::CANCELED) {
       return GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED);
     } else {
-      LOG(WARNING) << "Could not reach Google Accounts servers: errno "
+      DLOG(WARNING) << "Could not reach Google Accounts servers: errno "
           << status.error();
       return GoogleServiceAuthError::FromConnectionError(status.error());
     }
@@ -493,7 +493,7 @@ GoogleServiceAuthError GaiaAuthFetcher::GenerateOAuthLoginError(
           GoogleServiceAuthError::SERVICE_UNAVAILABLE);
     }
 
-    LOG(WARNING) << "Incomprehensible response from Google Accounts servers.";
+    DLOG(WARNING) << "Incomprehensible response from Google Accounts servers.";
     return GoogleServiceAuthError(
         GoogleServiceAuthError::SERVICE_UNAVAILABLE);
   }
@@ -506,7 +506,7 @@ void GaiaAuthFetcher::OnClientLoginFetched(const std::string& data,
                                            const net::URLRequestStatus& status,
                                            int response_code) {
   if (status.is_success() && response_code == RC_REQUEST_OK) {
-    VLOG(1) << "ClientLogin successful!";
+    DVLOG(1) << "ClientLogin successful!";
     std::string sid;
     std::string lsid;
     std::string token;

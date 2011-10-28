@@ -47,7 +47,7 @@ class MetricsLogBase::XmlWrapper {
         buffer_(NULL),
         writer_(NULL) {
     buffer_ = xmlBufferCreate();
-    CHECK(buffer_);
+    DCHECK(buffer_);
 
     #if defined(OS_CHROMEOS)
       writer_ = xmlNewTextWriterDoc(&doc_, /* compression */ 0);
@@ -197,8 +197,8 @@ std::string MetricsLogBase::CreateHash(const std::string& value) {
   // name.  We can then use this logging to find out what histogram name was
   // being hashed to a given MD5 value by just running the version of Chromium
   // in question with --enable-logging.
-  VLOG(1) << "Metrics: Hash numeric [" << value
-          << "]=[" << reverse_uint64 << "]";
+  DVLOG(1) << "Metrics: Hash numeric [" << value
+           << "]=[" << reverse_uint64 << "]";
   return std::string(reinterpret_cast<char*>(digest.a), arraysize(digest.a));
 }
 

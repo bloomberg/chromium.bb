@@ -197,8 +197,8 @@ std::string HashCertSHA256(net::X509Certificate::OSCertHandle cert_handle) {
   unsigned char sha256_data[SHA256_DIGEST_LENGTH] = {0};
   unsigned int sha256_size = sizeof(sha256_data);
   int ret = X509_digest(cert_handle, EVP_sha256(), sha256_data, &sha256_size);
-  CHECK(ret);
-  CHECK_EQ(sha256_size, sizeof(sha256_data));
+  DCHECK(ret);
+  DCHECK_EQ(sha256_size, sizeof(sha256_data));
   return ProcessRawBytes(sha256_data, sha256_size);
 }
 
@@ -206,8 +206,8 @@ std::string HashCertSHA1(net::X509Certificate::OSCertHandle cert_handle) {
   unsigned char sha1_data[SHA_DIGEST_LENGTH] = {0};
   unsigned int sha1_size = sizeof(sha1_data);
   int ret = X509_digest(cert_handle, EVP_sha1(), sha1_data, &sha1_size);
-  CHECK(ret);
-  CHECK_EQ(sha1_size, sizeof(sha1_data));
+  DCHECK(ret);
+  DCHECK_EQ(sha1_size, sizeof(sha1_data));
   return ProcessRawBytes(sha1_data, sha1_size);
 }
 

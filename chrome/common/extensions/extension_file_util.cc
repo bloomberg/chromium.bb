@@ -70,8 +70,8 @@ FilePath InstallExtension(const FilePath& unpacked_source_dir,
   }
 
   if (version_dir.empty()) {
-    LOG(ERROR) << "Could not find a home for extension " << id << " with "
-               << "version " << version << ".";
+    DLOG(ERROR) << "Could not find a home for extension " << id << " with "
+                << "version " << version << ".";
     return FilePath();
   }
 
@@ -314,7 +314,7 @@ void GarbageCollectExtensions(
   if (!file_util::DirectoryExists(install_directory))
     return;
 
-  VLOG(1) << "Garbage collecting extensions...";
+  DVLOG(1) << "Garbage collecting extensions...";
   file_util::FileEnumerator enumerator(install_directory,
                                        false,  // Not recursive.
                                        file_util::FileEnumerator::DIRECTORIES);
@@ -332,10 +332,10 @@ void GarbageCollectExtensions(
 
     // Delete directories that aren't valid IDs.
     if (extension_id.empty()) {
-      LOG(WARNING) << "Invalid extension ID encountered in extensions "
-                      "directory: " << basename.value();
-      VLOG(1) << "Deleting invalid extension directory "
-              << extension_path.value() << ".";
+      DLOG(WARNING) << "Invalid extension ID encountered in extensions "
+                       "directory: " << basename.value();
+      DVLOG(1) << "Deleting invalid extension directory "
+               << extension_path.value() << ".";
       file_util::Delete(extension_path, true);  // Recursive.
       continue;
     }
@@ -347,8 +347,8 @@ void GarbageCollectExtensions(
     // move on. This can legitimately happen when an uninstall does not
     // complete, for example, when a plugin is in use at uninstall time.
     if (iter == extension_paths.end()) {
-      VLOG(1) << "Deleting unreferenced install for directory "
-              << extension_path.LossyDisplayName() << ".";
+      DVLOG(1) << "Deleting unreferenced install for directory "
+               << extension_path.LossyDisplayName() << ".";
       file_util::Delete(extension_path, true);  // Recursive.
       continue;
     }
@@ -362,8 +362,8 @@ void GarbageCollectExtensions(
          !version_dir.value().empty();
          version_dir = versions_enumerator.Next()) {
       if (version_dir.BaseName() != iter->second.BaseName()) {
-        VLOG(1) << "Deleting old version for directory "
-                << version_dir.LossyDisplayName() << ".";
+        DVLOG(1) << "Deleting old version for directory "
+                 << version_dir.LossyDisplayName() << ".";
         file_util::Delete(version_dir, true);  // Recursive.
       }
     }

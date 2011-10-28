@@ -84,7 +84,7 @@ const char kOldUnlimitedStoragePermission[] = "unlimited_storage";
 const char kWindowsPermission[] = "windows";
 
 void AddPatternsAndRemovePaths(const URLPatternSet& set, URLPatternSet* out) {
-  CHECK(out);
+  DCHECK(out);
   for (URLPatternSet::const_iterator i = set.begin(); i != set.end(); ++i) {
     URLPattern p = *i;
     p.SetPath("/*");
@@ -102,7 +102,7 @@ void AddPatternsAndRemovePaths(const URLPatternSet& set, URLPatternSet* out) {
 ExtensionPermissionMessage ExtensionPermissionMessage::CreateFromHostList(
     const std::set<std::string>& hosts) {
   std::vector<std::string> host_list(hosts.begin(), hosts.end());
-  CHECK_GT(host_list.size(), 0UL);
+  DCHECK_GT(host_list.size(), 0UL);
   ID message_id;
   string16 message;
 
@@ -355,8 +355,8 @@ ExtensionPermissionsInfo::ExtensionPermissionsInfo()
 
 void ExtensionPermissionsInfo::RegisterAlias(
     const char* name, const char* alias) {
-  CHECK(name_map_.find(name) != name_map_.end());
-  CHECK(name_map_.find(alias) == name_map_.end());
+  DCHECK(name_map_.find(name) != name_map_.end());
+  DCHECK(name_map_.find(alias) == name_map_.end());
   name_map_[alias] = name_map_[name];
 }
 
@@ -366,8 +366,8 @@ void ExtensionPermissionsInfo::RegisterPermission(
     int l10n_message_id,
     ExtensionPermissionMessage::ID message_id,
     int flags) {
-  CHECK(id_map_.find(id) == id_map_.end());
-  CHECK(name_map_.find(name) == name_map_.end());
+  DCHECK(id_map_.find(id) == id_map_.end());
+  DCHECK(name_map_.find(name) == name_map_.end());
 
   ExtensionAPIPermission* permission =
       new ExtensionAPIPermission(id, name, l10n_message_id, message_id, flags);
@@ -392,7 +392,7 @@ ExtensionPermissionSet::ExtensionPermissionSet(
     const ExtensionAPIPermissionSet& apis,
     const URLPatternSet& explicit_hosts)
   : apis_(apis) {
-  CHECK(extension);
+  DCHECK(extension);
   AddPatternsAndRemovePaths(explicit_hosts, &explicit_hosts_);
   InitImplicitExtensionPermissions(extension);
   InitEffectiveHosts();

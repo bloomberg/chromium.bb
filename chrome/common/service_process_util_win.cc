@@ -56,7 +56,7 @@ class ServiceProcessTerminateMonitor
   }
   void Start() {
     string16 event_name = GetServiceProcessTerminateEventName();
-    CHECK(event_name.length() <= MAX_PATH);
+    DCHECK(event_name.length() <= MAX_PATH);
     terminate_event_.Set(CreateEvent(NULL, TRUE, FALSE, event_name.c_str()));
     watcher_.StartWatching(terminate_event_.Get(), this);
   }
@@ -111,14 +111,14 @@ struct ServiceProcessState::StateData {
 };
 
 void ServiceProcessState::CreateState() {
-  CHECK(!state_);
+  DCHECK(!state_);
   state_ = new StateData;
 }
 
 bool ServiceProcessState::TakeSingletonLock() {
   DCHECK(state_);
   string16 event_name = GetServiceProcessReadyEventName();
-  CHECK(event_name.length() <= MAX_PATH);
+  DCHECK(event_name.length() <= MAX_PATH);
   base::win::ScopedHandle service_process_ready_event;
   service_process_ready_event.Set(
       CreateEvent(NULL, TRUE, FALSE, event_name.c_str()));

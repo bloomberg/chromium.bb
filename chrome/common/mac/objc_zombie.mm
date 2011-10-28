@@ -450,7 +450,7 @@ bool ZombieEnable(bool zombieAllObjects,
                   size_t zombieCount) {
   // Only allow enable/disable on the main thread, just to keep things
   // simple.
-  CHECK([NSThread isMainThread]);
+  DCHECK([NSThread isMainThread]);
 
   if (!ZombieInit())
     return false;
@@ -527,7 +527,7 @@ bool ZombieEnable(bool zombieAllObjects,
 void ZombieDisable() {
   // Only allow enable/disable on the main thread, just to keep things
   // simple.
-  CHECK([NSThread isMainThread]);
+  DCHECK([NSThread isMainThread]);
 
   // |ZombieInit()| was never called.
   if (!g_originalDeallocIMP)
@@ -535,7 +535,7 @@ void ZombieDisable() {
 
   // Put back the original implementation of -[NSObject dealloc].
   Method m = class_getInstanceMethod([NSObject class], @selector(dealloc));
-  CHECK(m);
+  DCHECK(m);
   method_setImplementation(m, g_originalDeallocIMP);
 
   // Can safely grab this because it only happens on the main thread.

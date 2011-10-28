@@ -63,7 +63,7 @@ MultiProcessLock* TakeServiceRunningLock(bool waiting) {
 bool ForceServiceProcessShutdown(const std::string& version,
                                  base::ProcessId process_id) {
   if (kill(process_id, SIGTERM) < 0) {
-    PLOG(ERROR) << "kill";
+    DPLOG(ERROR) << "kill";
     return false;
   }
   return true;

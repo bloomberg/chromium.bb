@@ -116,8 +116,8 @@ bool ForceServiceProcessShutdown(const std::string& /* version */,
   CFErrorRef err = NULL;
   bool ret = Launchd::GetInstance()->RemoveJob(label, &err);
   if (!ret) {
-    LOG(ERROR) << "ForceServiceProcessShutdown: " << err << " "
-               << base::SysCFStringRefToUTF8(label);
+    DLOG(ERROR) << "ForceServiceProcessShutdown: " << err << " "
+                << base::SysCFStringRefToUTF8(label);
     CFRelease(err);
   }
   return ret;
@@ -147,17 +147,17 @@ bool GetServiceProcessData(std::string* version, base::ProcessId* pid) {
         if (ns_version) {
           *version = base::SysNSStringToUTF8(ns_version);
         } else {
-          LOG(ERROR) << "Unable to get version at: "
-                     << reinterpret_cast<CFStringRef>(bundle_path);
+          DLOG(ERROR) << "Unable to get version at: "
+                      << reinterpret_cast<CFStringRef>(bundle_path);
         }
       } else {
         // The bundle has been deleted out from underneath the registered
         // job.
-        LOG(ERROR) << "Unable to get bundle at: "
-                   << reinterpret_cast<CFStringRef>(bundle_path);
+        DLOG(ERROR) << "Unable to get bundle at: "
+                    << reinterpret_cast<CFStringRef>(bundle_path);
       }
     } else {
-      LOG(ERROR) << "Unable to get executable path for service process";
+      DLOG(ERROR) << "Unable to get executable path for service process";
     }
   }
   if (pid) {
@@ -175,8 +175,8 @@ bool ServiceProcessState::Initialize() {
   CFDictionaryRef dict =
       Launchd::GetInstance()->CopyDictionaryByCheckingIn(&err);
   if (!dict) {
-    LOG(ERROR) << "ServiceProcess must be launched by launchd. "
-               << "CopyLaunchdDictionaryByCheckingIn: " << err;
+    DLOG(ERROR) << "ServiceProcess must be launched by launchd. "
+                << "CopyLaunchdDictionaryByCheckingIn: " << err;
     CFRelease(err);
     return false;
   }
@@ -185,13 +185,13 @@ bool ServiceProcessState::Initialize() {
 }
 
 IPC::ChannelHandle ServiceProcessState::GetServiceProcessChannel() {
-  CHECK(state_);
+  DCHECK(state_);
   NSDictionary *ns_launchd_conf = base::mac::CFToNSCast(state_->launchd_conf_);
   NSDictionary* socket_dict =
       [ns_launchd_conf objectForKey:@ LAUNCH_JOBKEY_SOCKETS];
   NSArray* sockets =
       [socket_dict objectForKey:GetServiceProcessLaunchDSocketKey()];
-  CHECK_EQ([sockets count], 1U);
+  DCHECK_EQ([sockets count], 1U);
   int socket = [[sockets objectAtIndex:0] intValue];
   base::FileDescriptor fd(socket, false);
   return IPC::ChannelHandle(std::string(), fd);
@@ -313,7 +313,7 @@ bool ServiceProcessState::StateData::WatchExecutable() {
   NSDictionary* ns_launchd_conf = base::mac::CFToNSCast(launchd_conf_);
   NSString* exe_path = [ns_launchd_conf objectForKey:@ LAUNCH_JOBKEY_PROGRAM];
   if (!exe_path) {
-    LOG(ERROR) << "No " LAUNCH_JOBKEY_PROGRAM;
+    DLOG(ERROR) << "No " LAUNCH_JOBKEY_PROGRAM;
     return false;
   }
 
@@ -321,11 +321,11 @@ bool ServiceProcessState::StateData::WatchExecutable() {
   scoped_ptr<ExecFilePathWatcherDelegate> delegate(
       new ExecFilePathWatcherDelegate);
   if (!delegate->Init(executable_path)) {
-    LOG(ERROR) << "executable_watcher_.Init " << executable_path.value();
+    DLOG(ERROR) << "executable_watcher_.Init " << executable_path.value();
     return false;
   }
   if (!executable_watcher_.Watch(executable_path, delegate.release())) {
-    LOG(ERROR) << "executable_watcher_.watch " << executable_path.value();
+    DLOG(ERROR) << "executable_watcher_.watch " << executable_path.value();
     return false;
   }
   return true;
@@ -404,17 +404,17 @@ void ExecFilePathWatcherDelegate::OnFilePathChanged(const FilePath& path) {
                                                       Launchd::Agent,
                                                       name,
                                                       plist)) {
-          LOG(ERROR) << "Unable to rewrite plist.";
+          DLOG(ERROR) << "Unable to rewrite plist.";
           needs_shutdown = true;
         }
       } else {
-        LOG(ERROR) << "Unable to read plist.";
+        DLOG(ERROR) << "Unable to read plist.";
         needs_shutdown = true;
       }
     }
     if (needs_shutdown) {
       if (!RemoveFromLaunchd()) {
-        LOG(ERROR) << "Unable to RemoveFromLaunchd.";
+        DLOG(ERROR) << "Unable to RemoveFromLaunchd.";
       }
     }
 
@@ -425,7 +425,7 @@ void ExecFilePathWatcherDelegate::OnFilePathChanged(const FilePath& path) {
                                               Launchd::Agent,
                                               name,
                                               session_type)) {
-        LOG(ERROR) << "RestartLaunchdJob";
+        DLOG(ERROR) << "RestartLaunchdJob";
         needs_shutdown = true;
       }
     }
@@ -435,7 +435,7 @@ void ExecFilePathWatcherDelegate::OnFilePathChanged(const FilePath& path) {
       CFErrorRef err = NULL;
       if (!Launchd::GetInstance()->RemoveJob(label, &err)) {
         base::mac::ScopedCFTypeRef<CFErrorRef> scoped_err(err);
-        LOG(ERROR) << "RemoveJob " << err;
+        DLOG(ERROR) << "RemoveJob " << err;
         // Exiting with zero, so launchd doesn't restart the process.
         exit(0);
       }
