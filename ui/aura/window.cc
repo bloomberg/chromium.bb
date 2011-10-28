@@ -442,6 +442,9 @@ Desktop* Window::GetDesktop() {
 
 void Window::SetBoundsInternal(const gfx::Rect& new_bounds) {
   const gfx::Rect old_bounds = bounds();
+  if (old_bounds == new_bounds)
+    return;
+
   bool was_move = old_bounds.size() == new_bounds.size();
   layer_->SetBounds(new_bounds);
 

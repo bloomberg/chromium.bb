@@ -85,10 +85,8 @@ void TabContentsContainer::Observe(
 // TabContentsContainer, View overrides:
 
 void TabContentsContainer::Layout() {
-  if (native_container_) {
+  if (native_container_)
     native_container_->GetView()->SetBounds(0, 0, width(), height());
-    native_container_->GetView()->Layout();
-  }
 }
 
 void TabContentsContainer::GetAccessibleState(ui::AccessibleViewState* state) {
