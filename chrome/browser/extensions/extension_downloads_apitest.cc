@@ -26,7 +26,7 @@ class DownloadsApiTest : public ExtensionApiTest {
   ScopedTempDir tmpdir;
 };
 
-IN_PROC_BROWSER_TEST_F(DownloadsApiTest, Downloads) {
+IN_PROC_BROWSER_TEST_F(DownloadsApiTest, DISABLED_Downloads) {
   SetUpTempDownloadsDir();
   ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionTest("downloads")) << message_;
