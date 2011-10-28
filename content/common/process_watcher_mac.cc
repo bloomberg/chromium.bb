@@ -22,7 +22,7 @@ const int kWaitBeforeKillSeconds = 2;
 void BlockingReap(pid_t child) {
   const pid_t result = HANDLE_EINTR(waitpid(child, NULL, 0));
   if (result == -1) {
-    DPLOG(ERROR) << "waitpid(" << child << ", NULL, 0)";
+    PLOG(ERROR) << "waitpid(" << child << ", NULL, 0)";
   }
 }
 
@@ -77,7 +77,7 @@ void WaitForChildToDie(pid_t child, int timeout) {
 
   int kq = HANDLE_EINTR(kqueue());
   if (kq == -1) {
-    DPLOG(ERROR) << "kqueue()";
+    PLOG(ERROR) << "kqueue()";
   } else {
     file_util::ScopedFD auto_close_kq(&kq);
 
@@ -87,7 +87,7 @@ void WaitForChildToDie(pid_t child, int timeout) {
 
     if (result == -1) {
       if (errno != ESRCH) {
-        DPLOG(ERROR) << "kevent (setup " << child << ")";
+        PLOG(ERROR) << "kevent (setup " << child << ")";
       } else {
         // At this point, one of the following has occurred:
         // 1. The process has died but has not yet been reaped.
@@ -129,10 +129,10 @@ void WaitForChildToDie(pid_t child, int timeout) {
       }
 
       if (result == -1) {
-        DPLOG(ERROR) << "kevent (wait " << child << ")";
+        PLOG(ERROR) << "kevent (wait " << child << ")";
       } else if (result > 1) {
-        DLOG(ERROR) << "kevent (wait " << child << "): unexpected result "
-                    << result;
+        LOG(ERROR) << "kevent (wait " << child << "): unexpected result "
+                   << result;
       } else if (result == 1) {
         if ((event.fflags & NOTE_EXIT) &&
             (event.ident == static_cast<uintptr_t>(child))) {
@@ -141,9 +141,9 @@ void WaitForChildToDie(pid_t child, int timeout) {
           BlockingReap(child);
           return;
         } else {
-          DLOG(ERROR) << "kevent (wait " << child
-                      << "): unexpected event: fflags=" << event.fflags
-                      << ", ident=" << event.ident;
+          LOG(ERROR) << "kevent (wait " << child
+                     << "): unexpected event: fflags=" << event.fflags
+                     << ", ident=" << event.ident;
         }
       }
     }
@@ -155,7 +155,7 @@ void WaitForChildToDie(pid_t child, int timeout) {
   // signal is not delivered to a live process.
   result = kill(child, SIGKILL);
   if (result == -1) {
-    DPLOG(ERROR) << "kill(" << child << ", SIGKILL)";
+    PLOG(ERROR) << "kill(" << child << ", SIGKILL)";
   } else {
     // The child is definitely on the way out now. BlockingReap won't need to
     // wait for long, if at all.

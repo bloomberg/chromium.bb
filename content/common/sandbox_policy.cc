@@ -198,7 +198,7 @@ void BlacklistAddOneDll(const wchar_t* module_name,
     }
   }
   policy->AddDllToUnload(module_name);
-  DVLOG(1) << "dll to unload found: " << module_name;
+  VLOG(1) << "dll to unload found: " << module_name;
   return;
 }
 
@@ -374,8 +374,8 @@ namespace sandbox {
 void InitBrokerServices(sandbox::BrokerServices* broker_services) {
   // TODO(abarth): DCHECK(CalledOnValidThread());
   //               See <http://b/1287166>.
-  DCHECK(broker_services);
-  DCHECK(!g_broker_services);
+  CHECK(broker_services);
+  CHECK(!g_broker_services);
   broker_services->Init();
   g_broker_services = broker_services;
 }
@@ -420,7 +420,7 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
   if ((type == ChildProcessInfo::GPU_PROCESS) &&
       (browser_command_line.HasSwitch(switches::kDisableGpuSandbox))) {
     in_sandbox = false;
-    DVLOG(1) << "GPU sandbox is disabled";
+    VLOG(1) << "GPU sandbox is disabled";
   }
 
   if (browser_command_line.HasSwitch(switches::kNoSandbox) ||
@@ -532,7 +532,7 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
   TRACE_EVENT_END_ETW("StartProcessWithAccess::LAUNCHPROCESS", 0, 0);
 
   if (sandbox::SBOX_ALL_OK != result) {
-    DLOG(ERROR) << "Failed to launch process. Error: " << result;
+    LOG(ERROR) << "Failed to launch process. Error: " << result;
     return 0;
   }
 

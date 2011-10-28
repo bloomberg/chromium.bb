@@ -84,7 +84,7 @@ static OMX_U32 MapH264ProfileToOMXAVCProfile(uint32 profile) {
 #define RETURN_ON_FAILURE(result, log, error, ret_val)             \
   do {                                                             \
     if (!(result)) {                                               \
-      DLOG(ERROR) << log;                                          \
+      LOG(ERROR) << log;                                           \
       StopOnError(error);                                          \
       return ret_val;                                              \
     }                                                              \
@@ -339,9 +339,9 @@ void OmxVideoDecodeAccelerator::AssignPictureBuffers(
   DCHECK_EQ(message_loop_, MessageLoop::current());
   RETURN_ON_FAILURE(CanFillBuffer(), "Can't fill buffer", ILLEGAL_STATE,);
 
-  DCHECK_EQ(output_buffers_at_component_, 0);
-  DCHECK_EQ(fake_output_buffers_.size(), 0U);
-  DCHECK_EQ(pictures_.size(), 0U);
+  CHECK_EQ(output_buffers_at_component_, 0);
+  CHECK_EQ(fake_output_buffers_.size(), 0U);
+  CHECK_EQ(pictures_.size(), 0U);
 
   static Gles2TextureToEglImageTranslator texture2eglImage_translator;
   for (size_t i = 0; i < buffers.size(); ++i) {
@@ -605,7 +605,7 @@ void OmxVideoDecodeAccelerator::OnReachedInvalidInErroring() {
 void OmxVideoDecodeAccelerator::ShutdownComponent() {
   OMX_ERRORTYPE result = omx_free_handle(component_handle_);
   if (result != OMX_ErrorNone)
-    DLOG(ERROR) << "OMX_FreeHandle() error. Error code: " << result;
+    LOG(ERROR) << "OMX_FreeHandle() error. Error code: " << result;
   component_handle_ = NULL;
   client_state_ = OMX_StateMax;
   // This Release() call must happen *after* any access to |*this| because it
@@ -695,7 +695,7 @@ void OmxVideoDecodeAccelerator::FreeOutputBuffers() {
   for (OutputPictureById::iterator it = pictures_.begin();
        it != pictures_.end(); ++it) {
     OMX_BUFFERHEADERTYPE* omx_buffer = it->second.omx_buffer_header;
-    DCHECK(omx_buffer);
+    CHECK(omx_buffer);
     delete reinterpret_cast<media::Picture*>(omx_buffer->pAppPrivate);
     result = OMX_FreeBuffer(component_handle_, output_port_, omx_buffer);
     RETURN_ON_OMX_FAILURE(result, "OMX_FreeBuffer", PLATFORM_FAILURE,);
@@ -768,13 +768,13 @@ void OmxVideoDecodeAccelerator::FillBufferDoneTask(
   --output_buffers_at_component_;
 
   if (fake_output_buffers_.size() && fake_output_buffers_.count(buffer)) {
-    DCHECK_EQ(fake_output_buffers_.erase(buffer), 1U);
+    CHECK_EQ(fake_output_buffers_.erase(buffer), 1U);
     OMX_ERRORTYPE result =
         OMX_FreeBuffer(component_handle_, output_port_, buffer);
     RETURN_ON_OMX_FAILURE(result, "OMX_FreeBuffer failed", PLATFORM_FAILURE,);
     return;
   }
-  DCHECK(!fake_output_buffers_.size());
+  CHECK(!fake_output_buffers_.size());
 
   if (buffer->nFlags & OMX_BUFFERFLAG_EOS) {
     // Avoid sending the (fake) EOS buffer to the client.

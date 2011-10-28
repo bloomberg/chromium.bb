@@ -37,7 +37,7 @@ NPObjectStub::NPObjectStub(
 
 NPObjectStub::~NPObjectStub() {
   channel_->RemoveRoute(route_id_);
-  DCHECK(!npobject_);
+  CHECK(!npobject_);
 }
 
 void NPObjectStub::DeleteSoon() {

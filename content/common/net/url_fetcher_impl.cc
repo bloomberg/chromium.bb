@@ -334,7 +334,7 @@ URLFetcherImpl::Core::TempFileWriter::~TempFileWriter() {
 
 void URLFetcherImpl::Core::TempFileWriter::CreateTempFile() {
   DCHECK(core_->io_message_loop_proxy_->BelongsToCurrentThread());
-  DCHECK(file_message_loop_proxy_.get());
+  CHECK(file_message_loop_proxy_.get());
   base::FileUtilProxy::CreateTemporary(
       file_message_loop_proxy_,
       0,  // No additional file flags.
@@ -538,14 +538,14 @@ URLFetcherImpl::Core::~Core() {
 
 void URLFetcherImpl::Core::Start() {
   DCHECK(delegate_loop_proxy_);
-  DCHECK(request_context_getter_) << "We need an URLRequestContext!";
+  CHECK(request_context_getter_) << "We need an URLRequestContext!";
   if (io_message_loop_proxy_) {
     DCHECK_EQ(io_message_loop_proxy_,
               request_context_getter_->GetIOMessageLoopProxy());
   } else {
     io_message_loop_proxy_ = request_context_getter_->GetIOMessageLoopProxy();
   }
-  DCHECK(io_message_loop_proxy_.get()) << "We need an IO message loop proxy";
+  CHECK(io_message_loop_proxy_.get()) << "We need an IO message loop proxy";
 
   io_message_loop_proxy_->PostTask(
       FROM_HERE, base::Bind(&Core::StartOnIOThread, this));
@@ -626,7 +626,7 @@ void URLFetcherImpl::Core::CompleteAddingUploadDataChunk(
 void URLFetcherImpl::Core::AppendChunkToUpload(const std::string& content,
                                            bool is_last_chunk) {
   DCHECK(delegate_loop_proxy_);
-  DCHECK(io_message_loop_proxy_.get());
+  CHECK(io_message_loop_proxy_.get());
   io_message_loop_proxy_->PostTask(
       FROM_HERE,
       base::Bind(&Core::CompleteAddingUploadDataChunk, this, content,
@@ -762,7 +762,7 @@ void URLFetcherImpl::Core::StartURLRequest() {
     return;
   }
 
-  DCHECK(request_context_getter_);
+  CHECK(request_context_getter_);
   DCHECK(!request_.get());
 
   g_registry.Get().AddURLFetcherCore(this);
@@ -810,8 +810,8 @@ void URLFetcherImpl::Core::StartURLRequest() {
 
   // If we are writing the response to a file, the only caller
   // of this function should have created it and not written yet.
-  DCHECK(!temp_file_writer_.get() ||
-         temp_file_writer_->total_bytes_written() == 0);
+  CHECK(!temp_file_writer_.get() ||
+        temp_file_writer_->total_bytes_written() == 0);
 
   request_->Start();
 }
@@ -866,7 +866,7 @@ void URLFetcherImpl::Core::OnCompletedURLRequest(
 }
 
 void URLFetcherImpl::Core::InformDelegateFetchIsComplete() {
-  DCHECK(delegate_loop_proxy_->BelongsToCurrentThread());
+  CHECK(delegate_loop_proxy_->BelongsToCurrentThread());
   if (delegate_) {
     delegate_->OnURLFetchComplete(fetcher_);
   }

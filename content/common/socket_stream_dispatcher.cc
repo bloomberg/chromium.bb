@@ -149,7 +149,7 @@ void IPCWebSocketStreamHandleBridge::DoConnect(const GURL& url) {
     DVLOG(1) << "Connect socket_id=" << socket_id_;
     // TODO(ukai): timeout to OnConnected.
   } else {
-    DLOG(ERROR) << "IPC SocketStream_Connect failed.";
+    LOG(ERROR) << "IPC SocketStream_Connect failed.";
     OnClosed();
   }
 }
