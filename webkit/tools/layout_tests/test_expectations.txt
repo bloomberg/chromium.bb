@@ -15,3 +15,7 @@ BUGRICOW : fast/js/kde/RegExp.html = TEXT
 BUGRICOW : fast/js/regexp-caching.html = TEXT
 BUGRICOW : fast/js/toString-overrides.html = TEXT
 BUGRICOW : fast/js/toString-recursion.html = TEXT
+
+// rebaseline after skia rev. 2549 has landed
+BUGREED : svg/hixie/perf/001.xml = IMAGE
+BUGREED : svg/hixie/perf/002.xml = IMAGE
